@@ -1,0 +1,3 @@
+-- Hack Infrastructure
+-- CommandUnits (+10 Units)
+-- GoodWill (draw Ressources from own account/Antagonists)
