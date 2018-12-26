@@ -1,4 +1,4 @@
-local ComSatellit = Satellite:New{
+local ComSat = Satellite:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
@@ -14,7 +14,7 @@ local ComSatellit = Satellite:New{
 	
 	footprintX = 1,
 	footprintZ = 1,
-	script = "Satellite.lua",
+	script 			= "Satellite.lua",
 	objectName        	= "satellite.s3o",
 
 	--cruisealt = 50,
@@ -27,12 +27,12 @@ local ComSatellit = Satellite:New{
 	
 	customparams = {
 		helptext		= "Observationsatellite",
-		baseclass		= "satellite", -- TODO: hacks
+		baseclass		= "Satellite", -- TODO: hacks
     },
 }
 
 return lowerkeys({
 	--Temp
-	["comsatellite"] = ComSatellit:New(),
+	["comsatellite"] = ComSat:New(),
 	
 })

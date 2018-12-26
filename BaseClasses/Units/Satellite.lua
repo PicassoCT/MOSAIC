@@ -13,7 +13,6 @@ local Satellite = Unit:New{
 	cruiseAlt					= 1500,
 	
 	customparams = {
-		baseclass			= "satellite",
     },
 }
 	
@@ -28,19 +27,9 @@ local Satellite = Unit:New{
 	-- },
 -- }
 
--- local VTOL = Aircraft:New{
-	-- category 			= "vtol air notbeacon",
-	-- noChaseCategory		= "beacon air vtol",
-	-- cruiseAlt			= 250,
-	-- hoverAttack			= true,
-	-- airHoverFactor		= -0.0001,
-	
-	-- customparams = {
-		-- hasturnbutton		= "1",
-		-- baseclass			= "vtol",
-    -- },
--- }
+
+
 
 return {
-	satellite =satellite
+	Satellite =Satellite
 }

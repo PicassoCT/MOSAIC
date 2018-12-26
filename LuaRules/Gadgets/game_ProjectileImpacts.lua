@@ -78,9 +78,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 
 	end
-	
+	GG.exploAmmoBlowTable ={}
 	function addChainExplosion(unitID, damage, weaponDefID, cegName, NumberOfExplosions, delayMin, delayMax )
-		if not GG.exploAmmoBlowTable then GG.exploAmmoBlowTable ={} end
+		
 		if not GG.exploAmmoBlowTable[unitID] then 
 			GG.exploAmmoBlowTable[unitID] = {number=0,id= unitID} 
 		end

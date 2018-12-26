@@ -1,0 +1,43 @@
+--c4
+--soft interrigation
+--hard interrigation
+--ranged attacks
+
+
+
+-- Sprüche:
+--Selected
+"Feet on the ground"
+"Ready when you are!"
+
+
+--Ordered
+- "Hands up!"
+
+
+-- Raiding a place
+--"Opening Investigation Number 
+- collecting DNA-Samples
+- collecting substance Samples
+- Providing Lidar Scans
+- acessing Storage-Media
+- Fullfilling (IAC-Requests) Intelligence Analytics Cloud: 
+- starting destructive Documentscan
+
+- Connecting Suspect Civilians to Virtual Offsite Investigators:
+"Creating first contact with already known Social Service AI"
+"Hello Fatima-"
+
+"We can provide you with.."
+"You must help us, so that things can improve.."
+"They did hurt your .."
+- Social graph updatet
+- Listening Grids deployed
+- Follow Up Investigations - Pending
+
+-> SafeHouse found
+-> Civilian House Searched
+
+
+
+
