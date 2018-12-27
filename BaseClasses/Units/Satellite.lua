@@ -11,6 +11,10 @@ local Satellite = Unit:New{
 	script						= "Satellite.lua",
 	usepiececollisionvolumes 	= true,
 	cruiseAlt					= 1500,
+	myGravity 					= 0,
+	wantedHeight				= 1500,
+	maxElevator 				= 0,
+
 	
 	customparams = {
     },

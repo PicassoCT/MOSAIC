@@ -58,8 +58,8 @@ function getSatelliteTypesSpeedTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 5/framesPerSecond,
-		[UnitDefNames["scansatellite"].id] = 3/framesPerSecond
+		[UnitDefNames["comsatellite"].id] = 90/framesPerSecond,
+		[UnitDefNames["scansatellite"].id] = 90/framesPerSecond
 	}
 	
 	return valuetable
