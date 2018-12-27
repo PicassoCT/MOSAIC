@@ -87,7 +87,7 @@ function AddExampleRocketCode(proID, proOwnerID)
 end
 
 --makes the projectile go ninja style - jumping from place to place 
-GG.AddCodeByType[WeaponDefNames["jvaryjump"].id] = AddExampleRocketCode
+-- GG.AddCodeByType[WeaponDefNames["jvaryjump"].id] = AddExampleRocketCode
 
 function getProjectileTargetXYZ(proID)
     local targetTypeInt, target = Spring.GetProjectileTarget(proID)

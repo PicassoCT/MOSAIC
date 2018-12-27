@@ -16,19 +16,6 @@ local Satellite = Unit:New{
     },
 }
 	
--- local Aero = Aircraft:New{
-	-- category 			= "aero air notbeacon",
-	-- noChaseCategory		= "beacon ground",
-	-- cruiseAlt			= 300,
-	-- canLoopbackAttack 	= true,
-	
-	-- customparams = {
-		-- baseclass			= "aero",
-	-- },
--- }
-
-
-
 
 return {
 	Satellite =Satellite

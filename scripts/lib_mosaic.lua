@@ -11,6 +11,7 @@ end
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)
 	local UnitDefNames = {}
+	assert(UnitDefs)
 	for defID,v in pairs(UnitDefs) do
 		UnitDefNames[v.name]=v
 	end
@@ -23,8 +24,10 @@ function getTypeTable(UnitDefNames, StringTable)
 	local Stringtable = StringTable
 	retVal = {}
 	for i = 1, #Stringtable do
-		assert(UnitDefNames[Stringtable[i]], "Error: Unitdef of Unittype " .. Stringtable[i] .. " does not exists")
+		if not UnitDefNames[Stringtable[i]] then Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] .. " does not exists") 
+		else
 		retVal[UnitDefNames[Stringtable[i]].id] = true
+		end
 	end
 	return retVal
 end
@@ -39,7 +42,9 @@ function getWeaponTypeTable(WeaponDefNames, StringTable)
 	return retVal
 end
 
-function getSatteliteTypes(UnitDefNames)
+function getSatteliteTypes(UnitDefs)
+	assert(UnitDefs)
+	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"comsatellite",
 		"scansatellite"
@@ -59,9 +64,17 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 	
 	return valuetable
 end
+function getSatelliteAltitudeTable(UnitDefs) --per Frame
+UnitDefNames = getUnitDefNames(UnitDefs)
 
-	SatelliteTypes = getSatteliteTypes(UnitDef)
-	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDef)
+	valuetable={
+		[UnitDefNames["comsatellite"].id] = 1500,
+		[UnitDefNames["scansatellite"].id] = 1500
+	}
+	
+	return valuetable
+end
+
 
 function getCategoryNameWeaponTypes()
 	typeTable= {
@@ -89,6 +102,7 @@ end
 --computates a map of all unittypes buildable by a unit (detects loops)
 --> getUnitBuildAbleMap
 function getUnitCanBuildList(unitDefID, closedTableExtern, root)
+	if not unitDefID then return {} end
 	if not root then root = true end
 	Result = {}
 	assert(type(unitDefID)=="number")
@@ -104,7 +118,7 @@ function getUnitCanBuildList(unitDefID, closedTableExtern, root)
 	closedTable = closedTableExtern or {}
 	local CanBuildList = unitCanBuild(unitDefID)
 	closedTable[unitDefID] = true 
-	
+	assert(CanBuildList)
 	for num, unitName in pairs(CanBuildList) do		
 		defID = getUnitDefIDFromName(unitName)
 		boolCanBuildSomething = true

@@ -23,8 +23,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_Build.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	
-	SatelliteTypes = getSatteliteTypes(UnitDef)
-	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDef)
+	SatelliteTypes = getSatteliteTypes(UnitDefs)
+	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
+	SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
 	
 	Satellites ={}
 	function gadget:UnitDestroyed(unitID, unitDefID)
@@ -52,9 +53,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function gadget:GameFrame(n)
 		for id, utype in pairs(Satellites) do
-			x,y,z = spGetUnitPosition(id)
+			x,y,z = Spring.GetUnitPosition(id)
 			x,y,z= circularClamp(x,y,z)
-			Spring.SetUnitPosition(id,x + SatelliteTypesSpeedTable[utype] ,y,z )
+			Spring.SetUnitPosition(id,x + SatelliteTypesSpeedTable[utype] ,SatelliteAltitudeTable[utype],z )
 		end
 	end
 end

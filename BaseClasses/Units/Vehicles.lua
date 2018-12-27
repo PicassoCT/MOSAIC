@@ -15,34 +15,21 @@ local Vehicle = Unit:New{
     },
 }
 
-local Tank = Vehicle:New{
-	category 			= "tank ground notbeacon",
-	corpse				= "<NAME>_x",
+local Truck = Vehicle:New{
+	category 			= "civilian vehicle ground",
 	explodeAs          	= "mechexplode",
 	leaveTracks			= true,	
-	movementClass   	= "TANK",
-	noChaseCategory		= "beacon air",
+	movementClass   	= "TRUCK",
+	noChaseCategory		= "civilian air",
 	trackType			= "Thick",
 	trackOffset			= 10,
 	customparams = {
-		hasturnbutton	= "1",
     },
 }
 
-local LightTank = Tank:New{
-	footprintX			= 2, 
-	footprintZ 			= 2,
-	trackType			= "Thin",
-}
-
-local Hover = LightTank:New{
-	movementClass   = "HOVER",
-	leaveTracks		= false,
-}
 
 return {
 	Vehicle = Vehicle,
-	Tank = Tank,
-	LightTank = LightTank,
-	Hover = Hover,
+	Truck = Truck
+
 }

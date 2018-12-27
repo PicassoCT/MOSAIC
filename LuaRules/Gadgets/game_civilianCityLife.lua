@@ -123,7 +123,8 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
   
-    gcarDefID = UnitDefNames["truck"].id
+    gcarDefID = UnitDefNames["truck"].id or nil
+	if not gcarDefID then gcarDefID = 0 end
 
     function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID, attackerDefID, attackerTeamID)
 

@@ -15,7 +15,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_UnitScript.lua")
 	VFS.Include("scripts/lib_Animation.lua")
 	VFS.Include("scripts/lib_Build.lua")
-	VFS.Include("scripts/lib_jw.lua")
+	VFS.Include("scripts/lib_mosaic.lua")
 	
 	local UnitDamageFuncT = {}
 	local StunnedUnitsTable = {}
@@ -30,7 +30,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	--Centrail Weapons
 	-- examleWeaponDefID = WeaponDefNames["exampleweapon"].id
 	-- Script.SetWatchWeapon(examleWeaponDefID, true)
-	
+	exampleDefID = -1
 	
 	--units To be exempted from instantly lethal force
 
@@ -78,6 +78,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 
 	end
+	
 	GG.exploAmmoBlowTable ={}
 	function addChainExplosion(unitID, damage, weaponDefID, cegName, NumberOfExplosions, delayMin, delayMax )
 		
