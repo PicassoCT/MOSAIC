@@ -26,6 +26,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	SatelliteTypes = getSatteliteTypes(UnitDefs)
 	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
 	SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
+	SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)
 	
 	Satellites ={}
 	function gadget:UnitDestroyed(unitID, unitDefID)
@@ -38,6 +39,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function gadget:UnitCreated(unitID, unitDefID)
 		if SatelliteTypes[unitDefID] then
+			satteliteStateTable[unitID] = "flying"
 			Spring.MoveCtrl.Enable(unitID,true)
 			Satellites[unitID] = unitDefID
 		end		
@@ -47,14 +49,17 @@ if (gadgetHandler:IsSyncedCode()) then
 	local mapSizeZ = Game.mapSizeZ
 	
 	function circularClamp(x,y,z)
-		if (x >= mapSizeX) then x = 1 end
-		if (z >= mapSizeZ) then z = 1 end
+		if (x >= mapSizeX) then x = 2 end
+		if (x <= 1) then x = mapSizeX-1 end
+		
 		return x,y,z
 	end
 	
 	function getComandOffset(id, x, speed)
-	 CommandTable = Spring.GetUnitCommands(id)
+  
+	 CommandTable = Spring.GetUnitCommands(id, 3)
 	 boolFirst=true
+	 
 		 for _, cmd in pairs(CommandTable) do
 				if boolFirst == true and cmd.id == CMD.MOVE then 
 					boolFirst = false 
@@ -66,16 +71,43 @@ if (gadgetHandler:IsSyncedCode()) then
 						end
 					end
 				end	 
-		 end
-		 
+		 end		 
 	return 0
 	end
+	timeOutTable={}
+	satteliteStateTable={}
+	
+local	satelliteStates={
+	["flying"] = function(id, x, y, z, utype)	
+					-- Spring.Echo("State flying")
+					if  (z >= mapSizeZ) then
+						return "timeout", x, y, 1
+					end
+					
+					return "flying", x,y,z
+				  end,
+	["timeout"] =  function(id, x,y,z, utype)
+						-- Spring.Echo("State timeout")
+						if not timeOutTable[id] then timeOutTable[id] = SatelliteTimeOutTable[utype] end
+						timeOutTable[id]= timeOutTable[id] -1
+						
+						if timeOutTable[id] <= 0 then 
+							 timeOutTable[id] = nil
+							return "flying", x,y,1
+						end
+	
+					return "timeout", x,y,1
+					end	
+	}
 	
 	function gadget:GameFrame(n)
 		for id, utype in pairs(Satellites) do
 			x,y,z = Spring.GetUnitPosition(id)
-			x,y,z = circularClamp(x, y ,z + SatelliteTypesSpeedTable[utype])
-			Spring.MoveCtrl.SetPosition(id,x + getComandOffset(id, x, SatelliteTypesSpeedTable[utype]) , SatelliteAltitudeTable[utype], z )
+			x,y,z = circularClamp(x + getComandOffset(id, x, SatelliteTypesSpeedTable[utype]), y , z + SatelliteTypesSpeedTable[utype])
+			
+			satteliteStateTable[id],x,y,z = satelliteStates[satteliteStateTable[id]](id, x, y, z, utype)
+			
+			Spring.MoveCtrl.SetPosition(id, x, SatelliteAltitudeTable[utype], z )
 		end
 	end
 end

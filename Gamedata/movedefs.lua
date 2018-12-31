@@ -9,9 +9,10 @@ local moveDefs 	=	 {
 	},
 	
 	{
-		name			=	"INFANTRY",
-		footprintX		=	2,
-		maxWaterDepth	=	30,
+		name			=	"BIPEDAL",
+		footprintX		=	1,
+		footprintZ 		=	1,
+		maxWaterDepth	=	5,
 		maxSlope		=	45,
 		crushStrength	=	25,
 		heatmapping		=	false,

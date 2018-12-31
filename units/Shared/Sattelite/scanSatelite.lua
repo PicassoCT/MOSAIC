@@ -16,7 +16,7 @@ local ScanSat = Satellite:New{
 	footprintZ 			= 1,
 	script 				= "Satellite.lua",
 	objectName 			= "satellite.s3o",
-	viewradius 			= 	, --formula offset: 
+	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
 		
 	customparams = {
 		helptext		= "Observationsatellite",
