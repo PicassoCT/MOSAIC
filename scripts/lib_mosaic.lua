@@ -2,7 +2,12 @@
 -- Game Configuration
 function getGameConfig()
 	return {
-
+	numberOfBuildings 	= 75,
+    numberOfVehicles 	= 25,
+    numberOfPersons		= 50,
+	 houseSizeX			= 32, 
+	 houseSizeY			= 16, 
+	 houseSizeZ			= 32
 	}
 end
 
@@ -50,6 +55,27 @@ function getSatteliteTypes(UnitDefs)
 		"scansatellite"
 	}
 	return getTypeTable(UnitDefNames, typeTable)
+end
+
+function getCivilianTypeTable(UnitDefs)
+	assert(UnitDefs)
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"house",
+		"civillian",
+		"truck"
+	}
+	
+	retTable = {}
+	for k,v in pairs(typeTable) do
+		for _,defs in pairs(UnitDefs)
+			if defs.name = k then
+				retTable[k] = defs.id
+			end
+		end
+	
+	end
+	return retTable
 end
 
 framesPerSecond = 30
