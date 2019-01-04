@@ -12,7 +12,7 @@ end
 
 zeppelins={
 		[UnitDefNames["comsatellite"].id]=true,
-		[UnitDefNames["scansattelite"].id]=true,	
+		[UnitDefNames["scansatellite"].id]=true,	
 		}
 zeppelin={}
 

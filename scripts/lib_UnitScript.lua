@@ -2327,6 +2327,7 @@ end
 
 -->Generic to String
 function toString(element)
+	if not element then return "nil" end
 	typeE = type(element)
 	
 	if typeE == "boolean" then return boolToString(element) end
@@ -3901,8 +3902,9 @@ end
 --> echos out strings
 function echo(stringToEcho, ...)
 	local arg = arg; if (not arg) then arg = { ... }; arg.n = #arg end
-	
-	Spring.Echo(stringToEcho)
+	if stringToEcho then
+		Spring.Echo(toString(stringToEcho))
+	end
 	if arg then
 		counter = 0
 		for k, v in ipairs(arg) do

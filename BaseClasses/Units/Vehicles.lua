@@ -19,17 +19,17 @@ local Truck = Vehicle:New{
 	category 			= "civilian vehicle ground",
 	explodeAs          	= "mechexplode",
 	leaveTracks			= true,	
-	movementClass   	= "TRUCK",
+	movementClass   	= "VEHICLE",
 	noChaseCategory		= "civilian air",
 	trackType			= "Thick",
 	trackOffset			= 10,
+	turnRate			= 300,
 	customparams = {
     },
 }
 
 
 return {
-	Vehicle = Vehicle,
 	Truck = Truck
 
 }

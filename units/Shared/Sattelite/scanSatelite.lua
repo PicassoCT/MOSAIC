@@ -25,7 +25,6 @@ local ScanSat = Satellite:New{
 }
 
 return lowerkeys({
-	--Temp
 	["scansatellite"] = ScanSat:New(),
 	
 })

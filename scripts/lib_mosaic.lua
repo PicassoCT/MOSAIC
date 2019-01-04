@@ -2,17 +2,23 @@
 -- Game Configuration
 function getGameConfig()
 	return {
-	numberOfBuildings 	= 75,
+	 numberOfBuildings 	= 75,
     numberOfVehicles 	= 25,
     numberOfPersons		= 50,
 	 houseSizeX			= 32, 
 	 houseSizeY			= 16, 
-	 houseSizeZ			= 32
+	 houseSizeZ			= 32,
+	 allyWaySizeX 		= 10,
+	 allyWaySizeZ		= 10,
+	 civilianInterestRadius = 750,
+	 inHundredChanceOfInterestInDisaster = 75,
+	 mainStreetModulo	= 4
+	 
 	}
 end
 
 --===================================================================================================================
---Journeywar specific functions 
+--Mosaic specific functions 
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)
 	local UnitDefNames = {}
@@ -22,7 +28,6 @@ function getUnitDefNames(UnitDefs)
 	end
 	return UnitDefNames
 end
-
 
 
 function getTypeTable(UnitDefNames, StringTable)
@@ -57,25 +62,38 @@ function getSatteliteTypes(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
+function  getMobileCivilianDefIDTypeTable(UnitDefs)
+	assert(UnitDefs)
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"civilian",
+		"truck"
+	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 function getCivilianTypeTable(UnitDefs)
 	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"house",
-		"civillian",
+		"civilian",
 		"truck"
 	}
 	
-	retTable = {}
-	for k,v in pairs(typeTable) do
-		for _,defs in pairs(UnitDefs)
-			if defs.name = k then
-				retTable[k] = defs.id
-			end
+	local retTable = {}
+	for _,defs in pairs(UnitDefs) do
+		for num,k in pairs(typeTable) do
+			
+				if defs.name == k then			
+					retTable[k] = defs.id
+				end
+			
 		end
-	
 	end
-	return retTable
+	
+	return retTable, getTypeTable(UnitDefNames, typeTable)
 end
 
 framesPerSecond = 30
@@ -84,7 +102,7 @@ function getSatelliteTimeOutTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 90 * framesPerSecond,
+		[UnitDefNames["comsatellite"].id] = 3*90 * framesPerSecond,
 		[UnitDefNames["scansatellite"].id] = 90 * framesPerSecond
 	}
 	
@@ -95,7 +113,7 @@ function getSatelliteTypesSpeedTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 90/framesPerSecond,
+		[UnitDefNames["comsatellite"].id] = 30/framesPerSecond,
 		[UnitDefNames["scansatellite"].id] = 90/framesPerSecond
 	}
 	

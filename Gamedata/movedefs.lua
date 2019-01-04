@@ -1,6 +1,6 @@
 local moveDefs 	=	 {
 	{
-		name			=	"TRUCK",
+		name			=	"VEHICLE",
 		footprintX		=	3,
 		maxWaterDepth	=	10,
 		maxSlope		=	20,
