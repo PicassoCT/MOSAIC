@@ -2,17 +2,20 @@
 -- Game Configuration
 function getGameConfig()
 	return {
-	 numberOfBuildings 	= 75,
-    numberOfVehicles 	= 25,
-    numberOfPersons		= 50,
-	 houseSizeX			= 32, 
+	numberOfBuildings 	= 75,
+    numberOfVehicles 	= 5,
+    numberOfPersons		= 10,
+	 houseSizeX			= 256, 
 	 houseSizeY			= 16, 
-	 houseSizeZ			= 32,
-	 allyWaySizeX 		= 10,
-	 allyWaySizeZ		= 10,
+	 houseSizeZ			= 256,
+	 xRandOffset		= 20,
+	 zRandOffset		= 20,
+	 allyWaySizeX 		= 25,
+	 allyWaySizeZ		= 25,
 	 civilianInterestRadius = 750,
 	 inHundredChanceOfInterestInDisaster = 75,
-	 mainStreetModulo	= 4
+	 mainStreetModulo	= 4,
+	 maxIterationSteps = 2048
 	 
 	}
 end

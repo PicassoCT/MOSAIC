@@ -2219,7 +2219,7 @@ function randDict(Dict)
 	anyElement=1
 	for k,v in pairs (Dict) do
 		anyElement = k
-		if index ==randElement then 
+		if index == randElement and k and v then 
 			return k,v
 		end
 		index=inc(index)

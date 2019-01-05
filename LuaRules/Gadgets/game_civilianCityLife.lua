@@ -24,18 +24,18 @@ if (gadgetHandler:IsSyncedCode()) then
 	CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
 	assert(CivilianTypeTable["civilian"])
 	assert(CivilianTypeTable["truck"])
-	assert(#CivilianUnitDefsT > 0)
+	assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
 	MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 		
 
-	GG.CivilianTable = {} --[id ] ={ defID, CurrentTargetNode{routeIndex, stationIndex} , LastTargetNode{routeIndex, stationindex} }
+	GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
 	GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
 	GG.BuildingTable= {} --[BuildingUnitID] = {routeID, stationIndex}
 	BuildingPlaceTable={} -- SizeOf Map/Divide by Size of Building
 	uDim ={}
 	uDim.x,uDim.y,uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ+ GameConfig.allyWaySizeZ	
 	numberTileX, numberTileZ =  Game.mapSizeX/uDim.x,  Game.mapSizeZ/uDim.z
-	RouteTabel = {} --Every Subtable route = {consists of a finite series of coordpairs[i][1] [i][2] ={x,z}}, start, target
+	RouteTabel = {} --Every start has a subtable of reachable nodes 
 
 	gaiaTeamID = Spring.GetGaiaTeamID()
 	
@@ -52,6 +52,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		ux,uy,uz= Spring.GetUnitPosition(unitID)
 			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 					function(id)
+						assert(type(GG.CivilianTable[unitID].defID)== "string"),GG.CivilianTable[unitID].defID)
 						if 	MobileCivilianDefIds[GG.CivilianTable[unitID].defID] then
 							return id
 						end
@@ -65,16 +66,31 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
 	end
 	
-	-- check Traversability from each position to the previous position	
-	function validateBuildSpotsReachable( tileX, tileZ)
-	BuildingPlaceTable = makeTable(false, Game.mapSizeX/uDim.x, 1, Game.mapSizeZ/uDim.z)	
+		
+	BuildingPlaceTable = makeTable(true, Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z)	 
+	startindex = 1
+	function distributedPathValidationComplete(frame, elements)
+		oldstartindex = startindex
+		
+		boolComplete = false
+		startindex = validateBuildSpotsReachable(startindex, math.min(startindex + elements, #BuildingPlaceTable))
+				echo("Pathingpercentage: ", startindex/((#BuildingPlaceTable)))
+		if startindex >= #BuildingPlaceTable then boolComplete = true end
+		
+		return boolComplete
+	end
+
 	
-		for x=1,#BuildingPlaceTable do
-			
+	-- check Traversability from each position to the previous position	
+	function validateBuildSpotsReachable(start, endindex)
+	 tileX, tileZ = uDim.x, uDim.z
+	 
+		for x=start, endindex, 1 do	
 			for z=1,#BuildingPlaceTable[1] do
 				startx, startz = x * tileX, z * tileZ
 		
 				PlacesReachableFromPosition = 0
+				local boolEarlyOut
 					for xi=1,#BuildingPlaceTable do
 						for zi=1,#BuildingPlaceTable[1] do
 							if xi~= x or  zi~= z then
@@ -82,90 +98,117 @@ if (gadgetHandler:IsSyncedCode()) then
 					
 								if Spring.RequestPath(UnitDefNames["truck"].moveDef.name , startx,0,startz,endx,0,endz) then
 									PlacesReachableFromPosition = PlacesReachableFromPosition + 1
+									if PlacesReachableFromPosition > 5 then
+										BuildingPlaceTable[x][z] = true
+										boolEarlyOut = true
+										break;
+									end
 								end
 							end
 						end
+					if boolEarlyOut then
+						break
 					end
-				if PlacesReachableFromPosition > 5 then
-					BuildingPlaceTable[x][z] = true
-				end
+					end
+				
 			end
 		end
+
+		return endindex +1
 	end
 
-	function cursorsIsOnMainRoad(cursor)
-		return cursor.x % GameConfig.mainStreetModulo == 0 or  cursor.z % GameConfig.mainStreetModulo == 0 
+	function cursorIsOnMainRoad(cursor,sx,sz)
+		return( (cursor.x-sx) % GameConfig.mainStreetModulo == 0 ) or  ((cursor.z-sz) % GameConfig.mainStreetModulo == 0 )
 	end
 	
-	function randomWalk(cursor)
-		return {x = cursor.x + randSign(), z = cursor.z +randSign()}
-	end
-	function mirrorCursor(cursor, x,z)
-		x,z = x - cursor.x, z - cursor.z
-		x,z = x*-1,z*-1
-		cursor.x,cursor.z =x + cursor.x, z + cursor.z
+	function clampCursor(cursor)
+		cursor.x = math.max(1,math.min(cursor.x, math.floor(Game.mapSizeX/uDim.x)))
+		cursor.z = math.max(1,math.min(cursor.z, math.floor(Game.mapSizeZ/uDim.z)))
 		return cursor
 	end
+	
+	
+	function randomWalk(cursor)
+		return {x = cursor.x + randSign(), z = cursor.z + randSign()}
+	end
+	
+	function mirrorCursor(cursor, cx,cz)
+		x,z = cx - cursor.x, cz - cursor.z
+		return {x=  cx +x , z= cz +z} 
+	end
+	
 	--spawns intial buildings
 	function fromMapCenterOutwards(BuildingPlaceT,startx, startz)
-	local finiteSteps= 255
+	echo("fromMapCenterOutwards")
+	
+	local finiteSteps= GameConfig.maxIterationSteps
 	cursor ={x=startx, z=startz}
 	mirror = {x=startx, z=startz}
 	local numberOfBuildings = GameConfig.numberOfBuildings -1
 	
 		while finiteSteps > 0 and numberOfBuildings > 0 do
 			finiteSteps = finiteSteps -1
-			
-			RandomWalkTable = makeTable(false, Game.mapSizeX/uDim.x, 1, Game.mapSizeZ/uDim.z)		
-			dice= math.random(1,3)		
+				
+			dice= math.floor(math.random(10,30)/10)		
 				if dice == 1 then 	--1 random walk into a direction doing nothing
 					cursor = randomWalk(cursor)
+					cursor = clampCursor(cursor)
 					mirror = mirrorCursor(cursor, startx, startz)
-					
+					mirror = clampCursor(mirror)
+					-- Spring.Echo("dice 1")
 				elseif dice == 2 then --2 place a single block
-					if BuildingPlaceT[cursor.x][cursor.z] == true and cursorsIsOnMainRoad(cursor) == false then
+					boolFirstPlaced= false
+					if BuildingPlaceT[cursor.x][cursor.z] == true and cursorIsOnMainRoad(cursor,startx,startz) == false then
 						spawnBuilding(CivilianTypeTable["house"], 
 						cursor.x * uDim.x,
-						cursor.z * uDim.Z,
+						cursor.z * uDim.z,
 						(GameConfig.numberOfBuildings-numberOfBuildings),
 						1
 						)
 						numberOfBuildings = numberOfBuildings -1
 						BuildingPlaceT[cursor.x][cursor.z] = false
+						boolFirstPlaced = true
+											-- Spring.Echo("dice 2.1")
 					end
 					
-					if BuildingPlaceT[mirror.x][mirror.z] == true and cursorsIsOnMainRoad(mirror) == false then
+					if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and cursorIsOnMainRoad(mirror,   startx,startz) == false then
 						spawnBuilding(CivilianTypeTable["house"], 
 						mirror.x * uDim.x,
-						mirror.z * uDim.Z,
+						mirror.z * uDim.z,
 						(GameConfig.numberOfBuildings-numberOfBuildings),
 						1
 						)
 						numberOfBuildings = numberOfBuildings -1
-						BuildingPlaceT[cursor.x][cursor.z] = false
+						BuildingPlaceT[mirror.x][mirror.z] = false
+								-- Spring.Echo("dice 2.2")
 					end
 					
 				elseif dice == 3 then
 					numberOfBuildings, BuildingPlaceT = placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings, BuildingPlaceT)
 					numberOfBuildings, BuildingPlaceT = placeThreeByThreeBlockAroundCursor(mirror, numberOfBuildings, BuildingPlaceT)
+							-- Spring.Echo("dice 3")
 				end
 		end
 	end
 	
 	function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings, BuildingPlaceT)
 		for offx = -1, 1, 1 do
-			if 	BuildingPlaceT[cursor.x+ offx] then
+			if 	BuildingPlaceT[cursor.x + offx] then
 				for offz = -1, 1, 1 do 
-					if 	BuildingPlaceT[cursor.x+ offx][cursor.z+offz] then
+				local tmpCursor= cursor
+				tmpCursor.x = tmpCursor.x + offx ;	tmpCursor.z = tmpCursor.z + offz
+				tmpCursor = clampCursor(tmpCursor)
+				
+					if 	BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true  then
 								spawnBuilding(
 								CivilianTypeTable["house"], 
-								cursor.x * uDim.x + offx*cursor,
-								cursor.z * uDim.Z + offz*cursor,
+								tmpCursor.x * uDim.x,
+								tmpCursor.z * uDim.z,
 								(GameConfig.numberOfBuildings-numberOfBuildings),
 								1
 								)
 								numberOfBuildings=numberOfBuildings-1
-								BuildingPlaceT[cursor.x+ offx][cursor.z+offz] = false
+								BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
 					end                          
 				end                          
 			end                          
@@ -174,22 +217,32 @@ if (gadgetHandler:IsSyncedCode()) then
 		return numberOfBuildings, BuildingPlaceT
 	end
 	
-	function spawnInitialPopulation()
-	-- create Grid of all placeable Positions
+	function spawnInitialPopulation(frame)
+	
+		
+	
+		-- create Grid of all placeable Positions
 		-- great Grid of placeable Positions 
-		validateBuildSpotsReachable(uDim.x, uDim.z)	
-		
-		-- spawn Buildings from MapCenter Outwards
-		fromMapCenterOutwards(BuildingPlaceTable, math.ceil((Game.mapSizeX/uDim.x)*0.5), math.ceil((Game.mapSizeZ/uDim.z)*0.5))
-		
-		generateRoutesTable()
+		if distributedPathValidationComplete(frame, 10) == true then
 
-		-- spawn Population at Buildings
-		checkReSpawnPopulation()
-		
-		-- give Arrived Units Commands
-		sendArrivedUnitsCommands()
+
+			-- spawn Buildings from MapCenter Outwards
+			fromMapCenterOutwards(BuildingPlaceTable, math.ceil((Game.mapSizeX/uDim.x)*0.5), math.ceil((Game.mapSizeZ/uDim.z)*0.5))
+
+			echo("generateRoutesTable()")
+			generateRoutesTable()
+
+			-- spawn Population at Buildings
+			echo("checkReSpawnPopulation()")
+			checkReSpawnPopulation()
+			
+			-- give Arrived Units Commands
+			sendArrivedUnitsCommands()
+			boolInitialized = true
+		end
 	end
+	
+	
 	
 	function checkReSpawnHouses()
 		dataToAdd= {}
@@ -197,9 +250,9 @@ if (gadgetHandler:IsSyncedCode()) then
 			local routeDataCopy = routeData
 			if doesUnitExistAlive(bID) ~= true then
 				GG.BuildingTable[bID]= nil
-				rID, nID = routeData.rID, routeData.nID
-				x, z = RouteTabel[rID][nID].x, RouteTabel[rID][nID].z 
-				id = spawnBuilding(CivilianTypeTable["house"], x, z, rID, nID)
+				
+				x, z = routeDataCopy.x, routeDataCopy.z 
+				id = spawnBuilding(CivilianTypeTable["house"], x, z)
 				dataToAdd[id] = routeDataCopy
 			end
 		end
@@ -223,8 +276,11 @@ if (gadgetHandler:IsSyncedCode()) then
 		
 		if counter < GameConfig.numberOfPersons then
 			for i=1, GameConfig.numberOfPersons - counter do
-				x,z,rID, nID = getRandomSpawnNode()
-				id = spawnAMobileCivilianUnit(CivilianTypeTable["civilian"], x,z, rID,nID)	
+				x,_,z, startNode = getRandomSpawnNode()
+				assert(startNode)
+				assert(RouteTabel[startNode])
+				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
+				id = spawnAMobileCivilianUnit(CivilianTypeTable["civilian"], x,z, startNode, goalNode )	
 				if id then
 					GG.UnitArrivedAtTarget[id] = true
 				end
@@ -233,14 +289,13 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function getRandomSpawnNode()
-		rID = math.random(1,#RouteTabel)
-		nID = 1
-		if math.random(0,1)==1 then nID = 3 end
-		
-		return RouteTabel[rID][nID].x, RouteTabel[rID][nID].z, rID, nID
+		startNode = randDict(RouteTabel)
+		x,y,z= Spring.GetUnitPosition(startNode)
+		return x,y,z , startNode
 	end
 	
 	function buildRouteSquareFromTwoUnits(unitOne, unitTwo)
+
 		Route = {}
 		x1, _, z1 = spGetPosition(unitOne)
 		x2, _, z2 = spGetPosition(unitTwo)
@@ -251,7 +306,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		index = index + 1
 		Route[index]= {}
 		
-		if Spring.GetGroundHeigth(x1, z2) > 5 then
+		if Spring.GetGroundHeight(x1, z2) > 5 then
 			Route[index][1] = x1
 			Route[index][2] = z2
 			index = index + 1
@@ -264,7 +319,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		Route[index]= {}
 
 		
-		if Spring.GetGroundHeigth(x2, z1) > 5 then
+		if Spring.GetGroundHeight(x2, z1) > 5 then
 			Route[index][1] = x2
 			Route[index][2] = z1
 			index = index + 1
@@ -279,9 +334,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function generateRoutesTable()
 		for thisBuildingID, data in pairs(GG.BuildingTable) do--[BuildingUnitID] = {routeID, stationIndex} 
-			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {routeID, stationIndex} 
+			RouteTabel[thisBuildingID]={}
+			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {routeID, stationIndex} 		
 				if thisBuildingID ~= otherID and isRouteTraversable(CivilianTypeTable["truck"], thisBuildingID, otherID  ) then
-					 RouteTabel[#RouteTabel +1] = buildRouteSquareFromTwoUnits(thisBuildingID, otherID)
+					 RouteTabel[thisBuildingID][# RouteTabel[thisBuildingID]+1] = otherID
 				end
 			end
 		end
@@ -290,9 +346,11 @@ if (gadgetHandler:IsSyncedCode()) then
 	function isRouteTraversable(defID, unitA, unitB)
 		vA = getUnitPositionV(unitA)
 		vB = getUnitPositionV(unitB)
-		assert(UnitDefNames["truck"].movementClass )
-		assert(UnitDefNames["truck"].moveDef.name )
-		path = 	Path.RequestPath(UnitDefNames["truck"].movementClass , vA.x,vA.y,vA.z,vB.y,vB.z)
+
+		path = 	Spring.RequestPath(UnitDefNames["truck"].moveDef.id ,
+		vA.x,vA.y,vA.z,
+		vB.x,vB.y,vB.z)
+		
 		return path ~= nil
 	end
 	
@@ -308,27 +366,40 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	-- truck or Person
-	function spawnAMobileCivilianUnit(defID, x, z, rID, nID)
-		id = spawnUnit(defID, Route[rID][nID].x,Route[rID][nID].z)
+	function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
+		--offx, offz = randSign()*(GameConfig.houseSizeX/2),randSign()*(GameConfig.houseSizeZ/2)
+		id = spawnUnit(defID,x ,z)
 		if id then 
-			GG.CivilianTable [id] = {defID = defID, LastTargetNode = {rID = rID, nID = nID}, CurrentTargetNode ={rID=rID, nID=nID}}
+			GG.CivilianTable [id] = {defID = defID, startID =startID, goalID = goalID}
 			GG.UnitArrivedAtTarget[id]= defID
 		end
 	end
 	
-	function spawnBuilding(defID, x, z, rID, nID)
-		id = spawnUnit(defID, Route[rID][nID].x,Route[rID][nID].z)
+	function spawnBuilding(defID, x, z)
+		
+		id = spawnUnit(
+		defID,
+		x + math.random(-1* GameConfig.xRandOffset,GameConfig.xRandOffset),
+		z + math.random(-1* GameConfig.zRandOffset,GameConfig.zRandOffset)
+		)
+
 		if id then 
-			GG.BuildingTable[id] = {rID = rID, nID = nID}
+			GG.BuildingTable[id] = {x=x, z=z}
 			return id
 		end
 	end
 	
 	function gadget:Initialize()
-		spawnInitialPopulation()
+		Spring.Echo("gadget:Initialize")
+			process(Spring.GetAllUnits(),
+				function(id)
+					Spring.DestroyUnit(id,true,true)
+				end
+				)
+	
 	end
 	
-	function giveWaypointsToUnit(uID, uType, startroute, startnode)
+	function giveWaypointsToUnit(uID, uType, startNodeID)
 		boolIsCivilian = (uType == CivilianTypeTable["civilian"])
 		boolShortestPath= not( math.random(0,1)==1 or uType == CivilianTypeTable["truck"] )-- direct route to target
 		
@@ -357,13 +428,15 @@ if (gadgetHandler:IsSyncedCode()) then
 			end
 			
 			--ocassionally detour toward the nearest ally or enemy
-			if math.random(0, 4) > 2 and uType == Ci then
+			if math.random(0, 4) > 2 and  CivilianTypeTable[uType] then
 				local partnerID
+				
 				if math.random(0,1)==1 then
 					partnerID = Spring.GetUnitNearestAlly(persPack.unitID)
 				else
 					partnerID = Spring.GetUnitNearestEnemy(persPack.unitID)
 				end
+				
 				if partnerID then
 					x,y,z= Spring.GetUnitPosition(partnerID)
 					return frame + math.random(500,5000) , persPack
@@ -388,33 +461,42 @@ if (gadgetHandler:IsSyncedCode()) then
 		
 		GG.EventStream:CreateEvent(
 		travellFunction,
-		{ unitID = id },
+		{--persistance Pack
+			unitID = uID ,
+			goalIndex = 1,
+			goalList = buildRouteSquareFromTwoUnits(startNodeID, RouteTabel[startNodeID][math.random(1,#RouteTabel[startNodeID])])
+		},
 		Spring.GetGameFrame() + 1
 		)
 	end
 	
 	function sendArrivedUnitsCommands()
 		for id, uType in pairs(GG.UnitArrivedAtTarget) do
-			giveWaypointsToUnit(id, uType, GG.CivilianTable [id].LastTargetNode.rID, GG.CivilianTable [id].LastTargetNode.nID )
+			giveWaypointsToUnit(id, uType, GG.CivilianTable[id].startID)
 		end
 		
 		GG.UnitArrivedAtTarget = {}
 	end
 	
 	
+	boolInitialized = false
 	
 	function gadget:GameFrame(frame)
-		if frame > 0 then
-			-- recreate buildings 
-			-- recreate civilians
-			checkReSpawnHouses()
-			
-			--Check number of Units	
-			checkReSpawnPopulation()
-			
-			--if Unit arrived at Location
-			--give new Target
-			sendArrivedUnitsCommands()
+		if boolInitialized == false then
+			spawnInitialPopulation(frame)
+			echo("Initialization:Frame:"..frame)
+		elseif boolInitialized == true and  frame > 0 and frame % 5 == 0  then
+				echo("Runcycle:Frame:"..frame)
+				-- recreate buildings 
+				-- recreate civilians
+				checkReSpawnHouses()
+				
+				--Check number of Units	
+				checkReSpawnPopulation()
+				
+				--if Unit arrived at Location
+				--give new Target
+				sendArrivedUnitsCommands()
 		end		
 	end
 end
