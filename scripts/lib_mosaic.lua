@@ -3,8 +3,8 @@
 function getGameConfig()
 	return {
 	numberOfBuildings 	= 75,
-    numberOfVehicles 	= 5,
-    numberOfPersons		= 10,
+    numberOfVehicles 	= 15,
+    numberOfPersons		= 35,
 	 houseSizeX			= 256, 
 	 houseSizeY			= 16, 
 	 houseSizeZ			= 256,

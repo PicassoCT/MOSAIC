@@ -46,13 +46,13 @@ if (gadgetHandler:IsSyncedCode()) then
 		-- Transfer Funds according to who caused the destruction
 	end
 	
-	function gadget:UnitDestroyed(unitID, unitDefID, teamID)
+	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 		--if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
-		if teamID == gaiaTeamID then
+		if teamID == gaiaTeamID and attackerID then
 		ux,uy,uz= Spring.GetUnitPosition(unitID)
 			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 					function(id)
-						assert(type(GG.CivilianTable[unitID].defID)== "string"),GG.CivilianTable[unitID].defID)
+						assert(type(GG.CivilianTable[unitID].defID)== "string",GG.CivilianTable[unitID].defID)
 						if 	MobileCivilianDefIds[GG.CivilianTable[unitID].defID] then
 							return id
 						end
@@ -99,7 +99,9 @@ if (gadgetHandler:IsSyncedCode()) then
 								if Spring.RequestPath(UnitDefNames["truck"].moveDef.name , startx,0,startz,endx,0,endz) then
 									PlacesReachableFromPosition = PlacesReachableFromPosition + 1
 									if PlacesReachableFromPosition > 5 then
-										BuildingPlaceTable[x][z] = true
+										dx, dy, dz, slope =Spring.GetGroundNormal(x*tileX,z*tileZ)
+
+										BuildingPlaceTable[x][z] = Spring.GetGroundHeight(x*tileX,z*tileZ) > 5 and slope < 0.2
 										boolEarlyOut = true
 										break;
 									end
@@ -139,8 +141,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	--spawns intial buildings
 	function fromMapCenterOutwards(BuildingPlaceT,startx, startz)
-	echo("fromMapCenterOutwards")
-	
+
 	local finiteSteps= GameConfig.maxIterationSteps
 	cursor ={x=startx, z=startz}
 	mirror = {x=startx, z=startz}
@@ -234,7 +235,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
 			-- spawn Population at Buildings
 			echo("checkReSpawnPopulation()")
-			checkReSpawnPopulation()
+			 checkReSpawnPopulation()
+			 
+			 checkReSpawnTraffic()
 			
 			-- give Arrived Units Commands
 			sendArrivedUnitsCommands()
@@ -264,14 +267,19 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function checkReSpawnPopulation()
 		counter = 0
+		nilTable={}
 		for id, data in pairs(GG.CivilianTable) do
-			if id then
+			if id and data.defID == CivilianTypeTable["civilian"] then
 				if doesUnitExistAlive(id) == true then
 					counter = counter + 1
 				else
-					GG.CivilianTable[id] = nil
+					nilTable[id] = true
 				end
 			end
+		end
+		
+		for id, data in pairs(nilTable) do
+			GG.CivilianTable[id]= nil
 		end
 		
 		if counter < GameConfig.numberOfPersons then
@@ -288,6 +296,37 @@ if (gadgetHandler:IsSyncedCode()) then
 		end	
 	end
 	
+	function checkReSpawnTraffic()
+		counter = 0
+		nilTable={}
+		for id, data in pairs(GG.CivilianTable) do
+			if id and data.defID == CivilianTypeTable["truck"] then
+				if doesUnitExistAlive(id) == true then
+					counter = counter + 1
+				else
+					nilTable[id] = true
+				end
+			end
+		end
+		
+		for id, data in pairs(nilTable) do
+			GG.CivilianTable[id]= nil
+		end
+		
+		if counter < GameConfig.numberOfVehicles then
+			for i=1, GameConfig.numberOfVehicles - counter do
+				x,_,z, startNode = getRandomSpawnNode()
+				assert(startNode)
+				assert(RouteTabel[startNode])
+				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
+				id = spawnAMobileCivilianUnit(CivilianTypeTable["truck"], x,z, startNode, goalNode )	
+				if id then
+					GG.UnitArrivedAtTarget[id] = true
+				end
+			end
+		end	
+	end
+	
 	function getRandomSpawnNode()
 		startNode = randDict(RouteTabel)
 		x,y,z= Spring.GetUnitPosition(startNode)
@@ -295,39 +334,42 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function buildRouteSquareFromTwoUnits(unitOne, unitTwo)
-
-		Route = {}
+		assert(unitOne)
+		assert(unitTwo)
+		
+		local Route = {}
+		
 		x1, _, z1 = spGetPosition(unitOne)
 		x2, _, z2 = spGetPosition(unitTwo)
 		index= 1
 		Route[index]= {}
-		Route[index][1] = x1
-		Route[index][2] = z1
+		Route[index].x = x1
+		Route[index].z = z1
 		index = index + 1
 		Route[index]= {}
 		
 		if Spring.GetGroundHeight(x1, z2) > 5 then
-			Route[index][1] = x1
-			Route[index][2] = z2
+			Route[index].x = x1
+			Route[index].z = z2
 			index = index + 1
 			Route[index]= {}
 		end
 		
-		Route[index][1] = x2
-		Route[index][2] = z2
+		Route[index].x = x2
+		Route[index].z = z2
 		index = index + 1
 		Route[index]= {}
 
 		
 		if Spring.GetGroundHeight(x2, z1) > 5 then
-			Route[index][1] = x2
-			Route[index][2] = z1
+			Route[index].x = x2
+			Route[index].z = z1
 			index = index + 1
 			Route[index]= {}
 		end		
 		
-		Route[index][1] = x1
-		Route[index][2] = z1
+		Route[index].x = x1
+		Route[index].z = z1
 		
 		return Route
 	end
@@ -356,8 +398,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function spawnUnit(defID, x,z)	
 		dir = math.max(1, math.floor(math.random(1, 3)))
-		
-		id = Spring.CreateUnit(defID, x, 100, z, dir, gaiaTeamID)
+		h = Spring.GetGroundHeight(x,z)
+		id = Spring.CreateUnit(defID, x, h, z, dir, gaiaTeamID)
 		if id then
 			Spring.SetUnitNoSelect(id, true)
 			Spring.SetUnitAlwaysVisible(id, true)
@@ -370,6 +412,8 @@ if (gadgetHandler:IsSyncedCode()) then
 		--offx, offz = randSign()*(GameConfig.houseSizeX/2),randSign()*(GameConfig.houseSizeZ/2)
 		id = spawnUnit(defID,x ,z)
 		if id then 
+			assert(goalID)
+			assert(startID)
 			GG.CivilianTable [id] = {defID = defID, startID =startID, goalID = goalID}
 			GG.UnitArrivedAtTarget[id]= defID
 		end
@@ -384,6 +428,8 @@ if (gadgetHandler:IsSyncedCode()) then
 		)
 
 		if id then 
+			Spring.SetUnitAlwaysVisible(id, true)
+			Spring.SetUnitBlocking(id, false)
 			GG.BuildingTable[id] = {x=x, z=z}
 			return id
 		end
@@ -401,10 +447,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function giveWaypointsToUnit(uID, uType, startNodeID)
 		boolIsCivilian = (uType == CivilianTypeTable["civilian"])
-		boolShortestPath= not( math.random(0,1)==1 or uType == CivilianTypeTable["truck"] )-- direct route to target
+		boolShortestPath= ( math.random(0,1)== 1 and  uType ~= CivilianTypeTable["truck"] )-- direct route to target
 		
 		travellFunction = function(evtID, frame, persPack, startFrame)
-			--only apply if Unit is still alive
+		--	only apply if Unit is still alive
 			if Spring.GetUnitIsDead(persPack.unitID) == true then
 				return nil, persPack
 			end
@@ -412,23 +458,41 @@ if (gadgetHandler:IsSyncedCode()) then
 			hp = Spring.GetUnitHealth(persPack.unitID)
 			if not persPack.myHP then persPack.myHP = hp end
 			
+			x,y,z = Spring.GetUnitPosition(persPack.unitID)
+			if not persPack.currPos then
+				persPack.currPos ={x=x,y=y,z=z}
+				persPack.stuckCounter=0
+			end
+			
+			if distance(x,y,z, persPack.currPos.x,persPack.currPos.y,persPack.currPos.z) < 100 then
+				
+				persPack.stuckCounter=persPack.stuckCounter+1
+			else
+				persPack.currPos={x=x,y=y,z=z}
+				persPack.stuckCounter=0
+			end
+			
+			if persPack.stuckCounter > 5 then
+				Spring.DestroyUnit(persPack.unitID,true,true)
+				return nil, nil
+			end
 			--we where obviously attacked - flee from attacker
-			if persPack.myHP < hp and math.random(0,10) < 5 then
+			if persPack.myHP < hp then
 				attackerID = Spring.GetUnitLastAttacker(persPack.unitID)
 				if attackerID then
-					ax,ay,az = spGetPosition(attackerID)
-					x,y,z = spGetPosition(persPack.unitID)
+					ax,ay,az = Spring.GetUnitPosition(attackerID)
+			
 					if ax and x then
 						dx,dz = x -ax, z- az
 						dx,dz = dx * 100, dz * 100
-						Command(persPack.unitID, "go", { x+ dx ,0 ,z+dz}, {"shift"})
+						Command(persPack.unitID, "go", { x=x+ dx ,y= 0 , z=z+dz}, {"shift"})
 						return frame + 1000 , persPack
 					end
 				end
 			end
 			
-			--ocassionally detour toward the nearest ally or enemy
-			if math.random(0, 4) > 2 and  CivilianTypeTable[uType] then
+			---ocassionally detour toward the nearest ally or enemy
+			if math.random(0, 42) > 35  then
 				local partnerID
 				
 				if math.random(0,1)==1 then
@@ -437,14 +501,19 @@ if (gadgetHandler:IsSyncedCode()) then
 					partnerID = Spring.GetUnitNearestEnemy(persPack.unitID)
 				end
 				
-				if partnerID then
-					x,y,z= Spring.GetUnitPosition(partnerID)
+				if partnerID and distanceUnitToUnit(persPack.unitID, partnerID) < 350 then
+					px,py,pz= Spring.GetUnitPosition(partnerID)
+						Command(persPack.unitID, "go", {x= px ,y= py ,z=pz}, {})
 					return frame + math.random(500,5000) , persPack
 				end
 			end
 			
 			--if near Destination increase goalIndex
-			if distanceUnitToPoint(persPack.unitID, persPack.goalList[persPack.goalIndex].x,0,persPack.goalList[persPack.goalIndex].z) < (GameConfig.houseSizeX + GameConfig.houseSizeZ)/2 + 40 then
+			if distanceUnitToPoint(persPack.unitID, 
+									persPack.goalList[persPack.goalIndex].x,
+									0,
+									persPack.goalList[persPack.goalIndex].z)
+									< (GameConfig.houseSizeX + GameConfig.houseSizeZ)/2 + 40 then
 				persPack.goalIndex = persPack.goalIndex + 1
 				
 				if persPack.goalIndex > #persPack.goalList then						
@@ -454,17 +523,22 @@ if (gadgetHandler:IsSyncedCode()) then
 			end			
 			
 			Command(persPack.unitID, "go", 
-			{persPack.goalList[persPack.goalIndex].x,0,persPack.goalList[persPack.goalIndex].z}, {})
+			{x=persPack.goalList[persPack.goalIndex].x,y=0,z=persPack.goalList[persPack.goalIndex].z}, {})
 			
-			return frame + math.random(50,100), persPack
+			return frame + 50, persPack
 		end	
+		
+		-- travellFunction = function()
+							-- return nil 
+							
+							-- end
 		
 		GG.EventStream:CreateEvent(
 		travellFunction,
 		{--persistance Pack
 			unitID = uID ,
 			goalIndex = 1,
-			goalList = buildRouteSquareFromTwoUnits(startNodeID, RouteTabel[startNodeID][math.random(1,#RouteTabel[startNodeID])])
+			goalList = buildRouteSquareFromTwoUnits(startNodeID, RouteTabel[startNodeID][math.random(2,#RouteTabel[startNodeID])])
 		},
 		Spring.GetGameFrame() + 1
 		)
@@ -486,13 +560,15 @@ if (gadgetHandler:IsSyncedCode()) then
 			spawnInitialPopulation(frame)
 			echo("Initialization:Frame:"..frame)
 		elseif boolInitialized == true and  frame > 0 and frame % 5 == 0  then
-				echo("Runcycle:Frame:"..frame)
+				-- echo("Runcycle:Frame:"..frame)
 				-- recreate buildings 
 				-- recreate civilians
 				checkReSpawnHouses()
 				
 				--Check number of Units	
-				checkReSpawnPopulation()
+				 checkReSpawnPopulation()
+				 
+				 checkReSpawnTraffic()
 				
 				--if Unit arrived at Location
 				--give new Target

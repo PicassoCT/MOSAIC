@@ -2339,12 +2339,11 @@ function toString(element)
 end
 
 function echoUnitDefs(unitDefNames)
-for k,v in pairs(unitDefNames) do
-	for key,values in pairs(v) do
-		echoT({key, values})
+	for k,v in pairs(unitDefNames) do
+		for key,values in pairs(v) do
+			echoT({key, values})
+		end
 	end
-end
-
 end
 
 function tableToString(tab)
