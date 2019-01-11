@@ -793,6 +793,17 @@ function transferUnitStatusToUnit(unitID, targetID)
 	Spring.SetUnitHealth(targetID, { health = hp, capture = cap, paralyze = para, build = bP })
 end
 
+
+function moveUnitToUnit(id , target, ox, oy, oz)
+ox, oy, oz= ox or 0, oy or 0, oz or 0
+x,y,z = Spring.GetUnitPosition(target)
+	if x then
+		Spring.SetUnitPosition(id, x + ox,y + oy ,z + oz )
+	return true
+	end
+return false
+end
+
 function transferUnitTeam(id, targetTeam)
 	Spring.TransferUnit(id, targetTeam)
 end
@@ -4668,6 +4679,7 @@ function removeUnitsOfTypeInT(T, UnitTypeTable, Cache)
 	end
 end
 
+
 -->filtersOutUnitsOfType. Uses a Cache, if handed one to return allready Identified Units
 function getUnitsOfTypeInT(T, UnitTypeTable, Cache)
 	if type(UnitTypeTable) == "number" then
@@ -5352,6 +5364,7 @@ function transferOrders(originID, unitID)
 		end
 	end
 end
+
 function delayedCommand(id, command, target, option, framesToDelay)
 	
 	persPack={}

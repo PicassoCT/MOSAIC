@@ -1,10 +1,12 @@
 --===================================================================================================================
 -- Game Configuration
+
+
 function getGameConfig()
 	return {
 	numberOfBuildings 	= 75,
-    numberOfVehicles 	= 15,
-    numberOfPersons		= 35,
+    numberOfVehicles 	= 100,
+    numberOfPersons		= 200,
 	 houseSizeX			= 256, 
 	 houseSizeY			= 16, 
 	 houseSizeZ			= 256,
@@ -12,7 +14,9 @@ function getGameConfig()
 	 zRandOffset		= 20,
 	 allyWaySizeX 		= 25,
 	 allyWaySizeZ		= 25,
+	 --civilianbehaviour
 	 civilianInterestRadius = 750,
+	 groupChatDistance = 150,
 	 inHundredChanceOfInterestInDisaster = 75,
 	 mainStreetModulo	= 4,
 	 maxIterationSteps = 2048

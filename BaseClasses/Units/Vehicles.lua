@@ -7,7 +7,7 @@ local Vehicle = Unit:New{
 	moveState			= 0, -- Hold Position
 	onoffable           = true,
 	script				= "Vehicle.lua",
-	usepiececollisionvolumes = true,
+	-- usepiececollisionvolumes = true,
 	
 	customparams = {
 		ignoreatbeacon  = true,
