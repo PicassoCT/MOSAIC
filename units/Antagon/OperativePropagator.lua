@@ -20,7 +20,7 @@ local OperativePropagator = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 					= "operativePropagatorscript.lua",
+	script 				= "operativePropagatorscript.lua",
 	objectName        	= "operative_placeholder.s3o",
 
 	-- Hack Infrastructure

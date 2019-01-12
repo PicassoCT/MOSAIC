@@ -74,7 +74,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		
 		boolComplete = false
 		startindex = validateBuildSpotsReachable(startindex, math.min(startindex + elements, #BuildingPlaceTable))
-		echo("Pathingpercentage: ", startindex/((#BuildingPlaceTable)))
+		-- echo("Pathingpercentage: ", startindex/((#BuildingPlaceTable)))
 		if startindex >= #BuildingPlaceTable then boolComplete = true end
 		
 		return boolComplete

@@ -10,7 +10,7 @@ local Civilian = Human:New{
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
-	MaxVelocity = 4.5,
+	MaxVelocity = 4.5*0.35,
 	
 
 	CanAttack = false,
@@ -19,7 +19,7 @@ local Civilian = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 					= "Civilian.lua",
+	script 					= "Civilianscript.lua",
 	objectName        	= "human_placeholder.s3o",
 
 

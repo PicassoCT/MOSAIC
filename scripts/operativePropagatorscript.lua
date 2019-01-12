@@ -13,7 +13,7 @@ center = piece "center"
 
 function script.Create()
 	Spring.Echo("script.Create-Operative")
-    generatepiecesTableAndArrayCode(unitID)
+    -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 end
 
