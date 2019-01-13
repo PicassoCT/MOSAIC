@@ -489,7 +489,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local scriptHeader = VFS.LoadFile("gamedata/unit_script_header.lua", VFSMODE)
+local scriptHeader = VFS.LoadFile("Gamedata/unit_script_header.lua", VFSMODE)
 
 -- Newlines (and comments) are stripped to not change line numbers in stacktraces.
 scriptHeader = scriptHeader:gsub("%-%-[^\r\n]*", ""):gsub("[\r\n]", " ")

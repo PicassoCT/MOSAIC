@@ -14,13 +14,13 @@ end
 
 local modOptions = Spring.GetModOptions()
 if not modOptions.startmetal then -- load via file
-	local raw = VFS.Include("modoptions.lua", nil, VFS.ZIP)
+	local raw = VFS.Include("ModOptions.lua", nil, VFS.ZIP)
 	for i, v in ipairs(raw) do
 		if v.type ~= "section" then
 			modOptions[v.key] = v.def
 		end
 	end
-	raw = VFS.Include("engineoptions.lua", nil, VFS.ZIP)
+	raw = VFS.Include("EngineOptions.lua", nil, VFS.ZIP)
 	for i, v in ipairs(raw) do
 		if v.type ~= "section" then
 			modOptions[v.key:lower()] = v.def
@@ -30,7 +30,7 @@ end
 
 
 -- TODO: I still don't quite follow why the SIDES table from _pre (available to all defs) isn't available here
-local sideData = VFS.Include("gamedata/sidedata.lua", VFS.ZIP)
+local sideData = VFS.Include("Gamedata/sidedata.lua", VFS.ZIP)
 local SIDES = {}
 local VALID_SIDES = {}
 for sideNum, data in pairs(sideData) do
@@ -66,6 +66,6 @@ local function ReplaceStrings(t, name)
 	RecursiveReplaceStrings(t, name, side, replacedMap)
 end
 
-local ammoPerTon = lowerkeys(VFS.Include("gamedata/AmmoTypes.lua", nil, VFS.ZIP))
-local armorTypes = lowerkeys(VFS.Include("gamedata/ArmorTypes.lua", nil, VFS.ZIP))
+local ammoPerTon = lowerkeys(VFS.Include("Gamedata/AmmoTypes.lua", nil, VFS.ZIP))
+local armorTypes = lowerkeys(VFS.Include("Gamedata/ArmorTypes.lua", nil, VFS.ZIP))
 
