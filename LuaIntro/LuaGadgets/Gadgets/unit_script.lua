@@ -138,8 +138,8 @@ end
 -- needed here too, and gadget handler doesn't expose it
 
 VFS.Include('scripts/lib_UnitScript.lua', nil, VFSMODE)
-VFS.Include('luagadgets/system.lua', nil, VFSMODE)
-VFS.Include('gamedata/VFSUtils.lua', nil, VFSMODE)
+VFS.Include('LuaRules/system.lua', nil, VFSMODE)
+VFS.Include('Gamedata/VFSUtils.lua', nil, VFSMODE)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -519,7 +519,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local scriptHeader = VFS.LoadFile("gamedata/unit_script_header.lua", VFSMODE)
+local scriptHeader = VFS.LoadFile("Gamedata/unit_script_header.lua", VFSMODE)
 
 -- Newlines (and comments) are stripped to not change line numbers in stacktraces.
 scriptHeader = scriptHeader:gsub("%-%-[^\r\n]*", ""):gsub("[\r\n]", " ")

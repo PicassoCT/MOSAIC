@@ -148,7 +148,7 @@ VFS.Include(HEADERS_DIRNAME .. 'figures.lua',nil,VFSMODE)
 VFS.Include(HEADERS_DIRNAME .. 'vectors.lua',nil,VFSMODE)
 VFS.Include(HEADERS_DIRNAME .. 'hsl.lua',nil,VFSMODE)
 VFS.Include(HEADERS_DIRNAME .. 'nanoupdate.lua',nil,VFSMODE)
---VFS.Include("luarules/Utilities/unitrendering.lua", nil, VFSMODE)
+--VFS.Include("LuaRules/Utilities/unitrendering.lua", nil, VFSMODE)
 
 
 --// load binary insert library

@@ -14,6 +14,6 @@ for unitName, unitDef in pairs(DEFS.unitDefs) do
 end
 
 
-local system = VFS.Include('gamedata/system.lua')  
+local system = VFS.Include('Gamedata/system.lua')  
 
 return system.lowerkeys(armorDefs)

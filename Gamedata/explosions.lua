@@ -15,13 +15,13 @@ local explosionDefs = {}
 
 local shared = {} -- shared amongst the lua explosiondef enviroments
 
-local preProcFile  = 'gamedata/explosions_pre.lua'
-local postProcFile = 'gamedata/explosions_post.lua'
+local preProcFile  = 'Gamedata/explosions_pre.lua'
+local postProcFile = 'Gamedata/explosions_post.lua'
 
-local TDF = TDFparser or VFS.Include('gamedata/parse_tdf.lua')
+local TDF = TDFparser or VFS.Include('Gamedata/parse_tdf.lua')
 
-local system = VFS.Include('gamedata/system.lua')
-VFS.Include('gamedata/VFSUtils.lua')
+local system = VFS.Include('Gamedata/system.lua')
+VFS.Include('Gamedata/VFSUtils.lua')
 local section = 'explosions.lua'
 
 --------------------------------------------------------------------------------
@@ -121,13 +121,13 @@ local function LoadLuas(dir)
 end
 
 --  Load the TDF format explosiondef files
---  Files in effects/ will override those in gamedata/explosions/
-LoadTDFs('gamedata/explosions/')
+--  Files in effects/ will override those in Gamedata/explosions/
+LoadTDFs('Gamedata/explosions/')
 LoadTDFs('effects/')
 --  Load the raw LUA format explosiondef files
 --  (these will override the TDF versions)
---  Files in effects/ will override those in gamedata/explosions/
-LoadLuas('gamedata/explosions/')
+--  Files in effects/ will override those in Gamedata/explosions/
+LoadLuas('Gamedata/explosions/')
 LoadLuas('effects/')
 
 --------------------------------------------------------------------------------
