@@ -938,6 +938,15 @@ function getUnitBiggestPiece(unit, cache)
 	return biggestPieceSoFar, cache or {}
 end
 
+function getUnitPieceByName(id, Name)
+pieceMap= Spring.GetUnitPieceMap(id)
+	
+	for name,number in pairs(pieceMap) do
+		if name == Name then return number end 
+	end
+end
+
+
 function getUnitPieceVolume(unit, Piece)
 	vx, vy, vz = Spring.GetUnitPieceCollisionVolumeD
 	if vx then

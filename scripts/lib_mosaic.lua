@@ -19,7 +19,11 @@ function getGameConfig()
 	 groupChatDistance = 150,
 	 inHundredChanceOfInterestInDisaster = 75,
 	 mainStreetModulo	= 4,
-	 maxIterationSteps = 2048
+	 maxIterationSteps = 2048,
+	 
+	 --safehouseConfig
+	 buildSafeHouseRange = 66,
+	 safeHousePieceName = "center"
 	 
 	}
 end

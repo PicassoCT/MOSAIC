@@ -9,7 +9,7 @@ local SafeHouse = Building:New{
 
 	footprintX = 4,
 	footprintZ = 4,
-	script 			= "House.lua",
+	script 			= "safehousescript.lua",
 	objectName        	= "house.s3o",
 
 
