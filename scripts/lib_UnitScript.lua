@@ -1,4 +1,4 @@
-VFS.Include("scripts/lib_type.lua", nil, VFS.DEF_MODE)
+VFS.Include("scripts/lib_type.lua",nil, VFS.RAW_FIRST)
 
 --[[
 Section: Team Information Getters/Setters 

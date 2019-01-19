@@ -11,7 +11,7 @@ local RecruitCivilian = Abstract:New{
 	--orders
 	
 	script 				= "recruitcivilianscript.lua",
-	objectName        	= "placeholder.s3o",
+	objectName        	= "recruitcivilian.s3o",
 
 	-- Hack Infrastructure
 	--CommandUnits (+10 Units)

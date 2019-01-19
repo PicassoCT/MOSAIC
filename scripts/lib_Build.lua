@@ -1,4 +1,4 @@
-VFS.Include("scripts/lib_UnitScript.lua", nil, VFS.DEF_MODE)
+
 
 --> mirrors a coordinate pair on the maps center
 function mirrorMapCenter(x,y,z)

@@ -107,12 +107,13 @@ local sp_WaitForMove = Spring.UnitScript.WaitForMove
 local sp_WaitForTurn = Spring.UnitScript.WaitForTurn
 local sp_SetPieceVisibility = Spring.UnitScript.SetPieceVisibility
 local sp_SetDeathScriptFinished = Spring.UnitScript.SetDeathScriptFinished
+local sp_Turn = Spring.UnitScript.Turn
 
 local LUA_WEAPON_MIN_INDEX = 1
 local LUA_WEAPON_MAX_INDEX = LUA_WEAPON_MIN_INDEX + 31										  
 
 local UNITSCRIPT_DIR = (UNITSCRIPT_DIR or "scripts/"):lower()
-local VFSMODE = VFS.ZIP_ONLY
+local VFSMODE = VFS.RAW_ONLY --VFS.ZIP_ONLY
 if (Spring.IsDevLuaEnabled()) then
         VFSMODE = VFS.RAW_ONLY
 end
@@ -120,7 +121,7 @@ end
 -- needed here too, and gadget handler doesn't expose it
 
 VFS.Include('LuaRules/system.lua', nil, VFSMODE)
-VFS.Include('Gamedata/VFSUtils.lua', nil, VFSMODE)
+VFS.Include('gamedata/VFSUtils.lua', nil, VFSMODE)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -528,6 +529,7 @@ end
 
 local function LoadChunk(filename)
         local text = VFS.LoadFile(filename, VFSMODE)
+			Spring.Echo("Loading File:: "..filename)
         if (text == nil) then
                 Spring.Log(gadget:GetInfo().name, LOG.ERROR, "Failed to load: " .. filename)
                 return nil
@@ -536,7 +538,9 @@ local function LoadChunk(filename)
         if (chunk == nil) then
                 Spring.Log(gadget:GetInfo().name, LOG.ERROR, "Failed to load: " .. Basename(filename) .. "  (" .. err .. ")")
                 return nil
-        end
+        else
+				Spring.Echo("Completed Loading File: "..filename)
+			end
         return chunk
 end
 

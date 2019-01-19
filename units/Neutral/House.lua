@@ -6,16 +6,24 @@ local House = Building:New{
 	buildCostMetal    	= 5,
 	explodeAs				= "none",
 	
+	Builder					= true,
 	levelground				= true,
-	footprintX 				= 4,
-	footprintZ				= 4,
-	script 					= "House.lua",
+	FootprintX = 8,
+	FootprintZ = 8,
+	script 					= "Housescript.lua",
 	objectName       	= "house.s3o",
+	
+	YardMap = 	[[	oooyyooo oyyyyyyo oyyyyyyo yyyyyyyy yyyyyyyy oyyyyyyo oyyyyyyo oooyyooo]]	,
+	
 
 	customparams = {	
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },
+	buildoptions = 
+	{
+	"safehouse"
+	}
 }
 
 

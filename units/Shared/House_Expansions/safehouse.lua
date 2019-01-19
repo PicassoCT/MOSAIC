@@ -18,6 +18,17 @@ local SafeHouse = Building:New{
 		helptext		= "Civilian Building",
 		baseclass		= "Building", -- TODO: hacks
     },
+	
+	buildoptions={
+	"operativeasset",
+	"operativepropagator",
+	
+	"nimrod",
+	"noonelaser",
+	"propagandaserver",
+	"assembly",
+	"launcherproject"
+	}
 }
 
 

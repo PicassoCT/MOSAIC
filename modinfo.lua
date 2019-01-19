@@ -3,13 +3,13 @@ local modinfo = {
 	shortname = "MOSAIC",
 	game = "Mosaic",
 	shortgame = "MS",
-	description = "Modular Ordanance Symmetric Intelligence Conflicts",
+	description = "Modular Ordanance ASymmetric Intelligence Conflict",
 	url = "http://springrts.com/phpbb/viewtopic.php?f=69&t=23275",
 	version = '$VERSION',
 	modtype = "1",
 	--Perfectionism is the death of good things
 	depend = {
-		"cursors.sdz", 
+		"cursors.sdz",
 		"Spring content v1"
 	}
 }
