@@ -215,8 +215,8 @@ function getUnitCanBuildList(unitDefID, closedTableExtern, root)
 end
 
 
-ProtagonUnitTypeList = getUnitCanBuildList(UnitDefNames["safehouse"].id)
-AntagonUnitTypeList = getUnitCanBuildList(UnitDefNames["safehouse"].id)
+ProtagonUnitTypeList = getUnitCanBuildList(UnitDefNames["protagonsafehouse"].id)
+AntagonUnitTypeList = getUnitCanBuildList(UnitDefNames["antagonsafehouse"].id)
 
 function getUnitSide(unitID)
 	defID= Spring.GetUnitDefID(unitID)

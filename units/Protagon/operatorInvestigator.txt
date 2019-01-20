@@ -1,8 +1,13 @@
+--house Search
+-- recruit Civilian
+--stealth/Non-Stealth
+--softInterrogation/ hardInterrigation
+
+
 --c4
 --soft interrigation
 --hard interrigation
---ranged attacks
-
+-- Pistole als Waffe
 
 
 -- Sprüche:
@@ -12,11 +17,13 @@
 
 
 --Ordered
-- "Hands up!"
-
+-- "Hands up!"
+--"Everybody on the floor"
 
 -- Raiding a place
+--"Placing pre-Raid behaviour camdrones"
 --"Opening Investigation Number 
+--"No, you do not swallow that"
 - collecting DNA-Samples
 - collecting substance Samples
 - Providing Lidar Scans
@@ -25,12 +32,14 @@
 - starting destructive Documentscan
 
 - Connecting Suspect Civilians to Virtual Offsite Investigators:
-"Creating first contact with already known Social Service AI"
+"Creating first contact with already known Social Service AI Alexa"
 "Hello Fatima-"
 
 "We can provide you with.."
 "You must help us, so that things can improve.."
 "They did hurt your .."
+"They lied to you- there is no.."
+
 - Social graph updatet
 - Listening Grids deployed
 - Follow Up Investigations - Pending

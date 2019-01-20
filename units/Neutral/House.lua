@@ -7,13 +7,13 @@ local House = Building:New{
 	explodeAs				= "none",
 	
 	Builder					= true,
-	levelground				= true,
+	levelground				= false,
 	FootprintX = 8,
 	FootprintZ = 8,
 	script 					= "Housescript.lua",
 	objectName       	= "house.s3o",
 	
-	YardMap = 	[[	oooyyooo oyyyyyyo oyyyyyyo yyyyyyyy yyyyyyyy oyyyyyyo oyyyyyyo oooyyooo]]	,
+	YardMap = 	[[ooyyyyoo oyyyyyyo yyyyyyyy yyyyyyyy yyyyyyyy yyyyyyyy oyyyyyyo ooyyyyoo]]	,
 	
 
 	customparams = {	

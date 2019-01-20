@@ -1,4 +1,4 @@
-local OperativePropagator = Human:New{
+local OperativeInvestigator = Human:New{
 	corpse					  = "",
 	maxDamage         	  = 500,
 	mass                = 500,
@@ -6,7 +6,7 @@ local OperativePropagator = Human:New{
 	buildCostMetal     	  = 5,
 
 	explodeAs				  = "none",
-	description= "Recruiter Operative <recruits Agents>",
+	description= "Investigator Operative <recruits Agents>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
@@ -20,12 +20,10 @@ local OperativePropagator = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 				= "operativePropagatorscript.lua",
+	script 				= "operativeInvestigatorscript.lua",
 	objectName        	= "operative_placeholder.s3o",
 
-	-- Hack Infrastructure
-	--CommandUnits (+10 Units)
-	-- WithinCellsInterlinked (Recruit)
+
 	
 	canCloak =true,
 	cloakCost=0.0001,
@@ -40,7 +38,7 @@ local OperativePropagator = Human:New{
 	},
 
 	customparams = {
-		helptext		= "Propaganda Operative",
+		helptext		= "Investigative Operative",
 		baseclass		= "Human", -- TODO: hacks
     },
 }
@@ -48,7 +46,7 @@ local OperativePropagator = Human:New{
 
 return lowerkeys({
 	--Temp
-	["operativepropagator"] = OperativePropagator:New(),
+	["operativinvestigator"] = OperativeInvestigator:New(),
 	
 })
 

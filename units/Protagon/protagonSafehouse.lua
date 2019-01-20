@@ -1,4 +1,4 @@
-local SafeHouse = Building:New{
+local ProtagonSafeHouse = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
@@ -26,14 +26,14 @@ local SafeHouse = Building:New{
 	"nimrod",
 	"noonelaser",
 	"propagandaserver",
-	"assembly",
-	"launcherproject"
+	"assembly"
+
 	}
 }
 
 
 return lowerkeys({
 	--Temp
-	["safehouse"] = SafeHouse:New(),
+	["protagonsafehouse"] = ProtagonSafeHouse:New(),
 	
 })
