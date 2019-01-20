@@ -1,6 +1,7 @@
-# spring-models-pbr
-PBR shader and materials for Spring RTS
+#Mosaic
+Modula Ordanance Standardisation Program Adaptive Artefact Intelligence Combat
 
+https://springrts.com/phpbb/viewtopic.php?f=47&t=38699
+
+Using Ivands PBR Shader 
 See: https://springrts.com/phpbb/viewtopic.php?f=12&t=37691
-
-Let me know if better README is required
