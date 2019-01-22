@@ -14,8 +14,8 @@ end
 
 ------------------------------------------
 
-Spring.SetSoundStreamVolume(0)
-local musicfiles = VFS.DirList("sounds/Intro", "*.ogg")
+Spring.SetSoundStreamVolume(1)
+local musicfiles = VFS.DirList("sounds/music", "*.ogg")
 if (#musicfiles > 0) then
 	index=math.random(1,#musicfiles)
 	Spring.PlaySoundStream(musicfiles[ index ], 1)

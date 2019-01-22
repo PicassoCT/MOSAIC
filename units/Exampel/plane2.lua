@@ -48,7 +48,6 @@ unitDef = {
   sfxtypes               = {
 
     explosiongenerators = {
-      [[custom:rapiermuzzle]],
     },
 
   },

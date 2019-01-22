@@ -1,15 +1,6 @@
 -- USEFUL FUNCTIONS & INCLUDES
 VFS.Include("LuaRules/Includes/utilities.lua", nil, VFS.ZIP)
 
-local function GetWeight(mass)
-	mass = tonumber(mass)
-	local light = mass < 40
-	local medium = not light and mass < 60
-	local heavy = not light and not medium and mass < 80
-	local assault = not light and not medium and not heavy
-	local weight = light and "light" or medium and "medium" or heavy and "heavy" or "assault"
-	return weight
-end
 
 
 local modOptions = Spring.GetModOptions()
@@ -66,6 +57,4 @@ local function ReplaceStrings(t, name)
 	RecursiveReplaceStrings(t, name, side, replacedMap)
 end
 
-local ammoPerTon = lowerkeys(VFS.Include("Gamedata/AmmoTypes.lua", nil, VFS.ZIP))
-local armorTypes = lowerkeys(VFS.Include("Gamedata/ArmorTypes.lua", nil, VFS.ZIP))
 

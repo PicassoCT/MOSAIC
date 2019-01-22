@@ -1,16 +1,14 @@
 local sidedata = {
 
-	{
+	[1] = {
 		name = "Antagon",
 		shortName = "AT",
-		startUnit = "operative",
+		startUnit = "operativepropagator",
 	},
-	{
+	[2] = {
 		name = "Protagon",
 		shortName = "PT",
 		startUnit = "operativeinterrigator",
-	},
-	
-	
+	}
 }
 return sidedata

@@ -1,5 +1,7 @@
 local armorDefs = {
 	satellite = {
+	"scansatellite",
+	"comsatellite"
 	},
 	
 }
@@ -10,7 +12,15 @@ for unitName, unitDef in pairs(DEFS.unitDefs) do
 	local basicType = cp.baseclass
 
 	local typeString  = basicType
+end
 
+
+for categoryName, categoryTable in pairs(armorDefs) do
+  local t = {}
+  for _, unitName in pairs(categoryTable) do
+    t[unitName] = 1
+  end
+  armorDefs[categoryName] = t
 end
 
 

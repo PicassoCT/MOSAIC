@@ -152,26 +152,24 @@ local options =
     desc   = 'Enable mod usage of luarules',
     type   = 'bool',
     def    = true,
-  }  
-
-
---[[   {
-    key    = 'LuaGaia',
-    name   = 'Enables gaia',
-    desc   = 'Enables gaia player',
-    type   = 'bool',
-    def    = false,
-  },
+	}
+    -- {
+    -- key    = 'LuaGaia',
+    -- name   = 'Enables gaia',
+    -- desc   = 'Enables gaia player',
+    -- type   = 'bool',
+    -- def    = false,
+  -- },
   
-  {
-    key    = 'NoHelperAIs',
-    name   = 'Disable helper AIs',
-    desc   = 'Disables luaui and group ai usage for all players',
-    type   = 'bool',
-    def    = false,
-  },
+  -- {
+    -- key    = 'NoHelperAIs',
+    -- name   = 'Disable helper AIs',
+    -- desc   = 'Disables luaui and group ai usage for all players',
+    -- type   = 'bool',
+    -- def    = false,
+  -- },
  
-]]
+
 
 }
 return options

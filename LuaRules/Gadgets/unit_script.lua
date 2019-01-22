@@ -113,15 +113,15 @@ local LUA_WEAPON_MIN_INDEX = 1
 local LUA_WEAPON_MAX_INDEX = LUA_WEAPON_MIN_INDEX + 31										  
 
 local UNITSCRIPT_DIR = (UNITSCRIPT_DIR or "scripts/"):lower()
-local VFSMODE = VFS.RAW_ONLY --VFS.ZIP_ONLY
+local VFSMODE = VFS.ZIP_ONLY
 if (Spring.IsDevLuaEnabled()) then
         VFSMODE = VFS.RAW_ONLY
 end
 
 -- needed here too, and gadget handler doesn't expose it
 
-VFS.Include('LuaRules/system.lua', nil, VFS.ZIP_ONLY)
-VFS.Include('gamedata/VFSUtils.lua', nil, VFS.ZIP_ONLY)
+VFS.Include('LuaRules/system.lua', nil, VFSMODE)
+VFS.Include('Gamedata/VFSUtils.lua', nil, VFSMODE)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -490,7 +490,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local scriptHeader = VFS.LoadFile("Gamedata/unit_script_header.lua", VFS.ZIP_ONLY)
+local scriptHeader = VFS.LoadFile("Gamedata/unit_script_header.lua", VFSMODE)
 
 -- Newlines (and comments) are stripped to not change line numbers in stacktraces.
 scriptHeader = scriptHeader:gsub("%-%-[^\r\n]*", ""):gsub("[\r\n]", " ")
