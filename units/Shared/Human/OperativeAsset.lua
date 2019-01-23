@@ -1,53 +1,53 @@
-local OperativePropagator = Human:New{
+local OperativeAsset = Human:New{
 	corpse					  = "",
-	maxDamage         	  = 500,
+	maxDamage         	  = 1500,
 	mass                = 500,
 	buildCostEnergy    	  = 5,
 	buildCostMetal     	  = 5,
 
 	explodeAs				  = "none",
-	description= "Recruiter Operative <recruits Agents>",
-	Acceleration = 0.4,
-	BrakeRate = 0.3,
-	TurnRate = 900,
-	MaxVelocity = 4.5,
+	description= "Assasination Operative <recruits Agents>",
+	Acceleration = 0.8,
+	BrakeRate = 0.6,
+	TurnRate = 1200,
+	MaxVelocity = 9,
 	
 	--orders
-	canMove					  = true,
+	canMove	= true,
 	CanAttack = true,
 	CanGuard = true,
 
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 				= "operativePropagatorscript.lua",
+	script 				= "operativeassetscript.lua",
 	objectName        	= "operative_placeholder.s3o",
 
 	-- Hack Infrastructure
 	--CommandUnits (+10 Units)
 	-- WithinCellsInterlinked (Recruit)
 	
-	Builder = true,
-	nanocolor=[[0 0 0]], --
-	CanReclaim=false,	
-	workerTime = 0.005,
-	buildDistance = 60,
-	terraformSpeed = 1,
-	
 	canCloak =true,
 	cloakCost=0.0001,
 	cloakCostMoving =0.0001,
 	minCloakDistance = 15,
 	onoffable=true,
-
-	buildoptions = 
-	{
-		"recruitcivilian",
-		"antagonsafehouse"
-	},
-
+	
+		weapons={
+			[1]={name  = "pistol",
+				onlyTargetCategory = [[LAND ]],
+			},
+			[2]={name  = "gun",
+				onlyTargetCategory = [[LAND ]],
+			},
+			[3]={name  = "c4",
+				onlyTargetCategory = [[BUILDING ]],
+			},
+		},
+	
+	
 	customparams = {
-		helptext		= "Propaganda Operative",
+		helptext		= "Stealth Assasin",
 		baseclass		= "Human", -- TODO: hacks
     },
 }
@@ -55,7 +55,7 @@ local OperativePropagator = Human:New{
 
 return lowerkeys({
 	--Temp
-	["operativepropagator"] = OperativePropagator:New(),
+	["operativeasset"] = OperativeAsset:New(),
 	
 })
 

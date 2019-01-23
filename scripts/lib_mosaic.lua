@@ -4,6 +4,8 @@
 
 function getGameConfig()
 	return {
+	Version = 0.1,
+	
 	numberOfBuildings 	= 75,
     numberOfVehicles 	= 100,
     numberOfPersons		= 200,

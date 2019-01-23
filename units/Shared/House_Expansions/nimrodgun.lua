@@ -14,8 +14,18 @@ local NimRodGun = Building:New{
 	explodeAs			= "none",
 
 
+
+	Builder = true,
+	nanocolor=[[0 0 0]], --
+	CanReclaim=false,	
+	workerTime = 0.005,
+	buildDistance = 1,
+	terraformSpeed = 1,
+	YardMap ="oooo oooo oooo oooo ",
+	
 	footprintX = 4,
 	footprintZ = 4,
+	
 	script 					= "nimrodscript.lua",
 	objectName        	= "nimrod.s3o",
 
