@@ -54,7 +54,7 @@ local OperativeInvestigator = Human:New{
 
 return lowerkeys({
 	--Temp
-	["operativinvestigator"] = OperativeInvestigator:New(),
+	["operativeinvestigator"] = OperativeInvestigator:New(),
 	
 })
 

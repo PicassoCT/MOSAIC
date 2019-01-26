@@ -6,6 +6,7 @@ local Propagandaserver = Building:New{
 	buildCostMetal      = 5,
 	explodeAs			= "none",
 
+	MaxSlope 					= 50,
 
 	footprintX = 1,
 	footprintZ = 1,

@@ -52,7 +52,7 @@ function GetAIStartUnit(teamID, leader, isDead, boolIsAI, side, playerInfo)
             return "operativeinvestigator"
         end
 
-        return "operativeasset"
+        return "operativepropagator"
     end
 
  
@@ -103,7 +103,7 @@ local function GetStartUnit(teamID)
     if side == "antagon" then return "operativepropagator" end
     if side == "protagon" then return "operativeinvestigator" end
 
-    return "operativeasset"
+    return "operativepropagator"
 end
 
 local function SpawnStartUnit(teamID)

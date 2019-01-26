@@ -1,4 +1,4 @@
-	Spring.Echo("script.Create-Operative")
+
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -13,11 +13,10 @@ center = piece "center"
 boolStarted= false
 
 function script.Create()
-
-    -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(delayedStart)
 end
+
 	function delayedStart()
 	Sleep(100)
 	boolStarted= true
@@ -29,30 +28,6 @@ function script.Killed(recentDamage, _)
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
    return 1
-end
-
-
---- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return center
-end
-
-
-
-function script.QueryWeapon1()
-    return center
-end
-
-function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
-
-    return true
-end
-
-
-function script.FireWeapon1()
-
-    return true
 end
 
 

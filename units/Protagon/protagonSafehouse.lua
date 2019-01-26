@@ -7,7 +7,6 @@ local ProtagonSafeHouse = Building:New{
 	explodeAs			= "none",
 
 
-
 	Builder = true,
 	nanocolor=[[0 0 0]], --
 	CanReclaim=false,	
@@ -15,7 +14,8 @@ local ProtagonSafeHouse = Building:New{
 	buildDistance = 1,
 	terraformSpeed = 1,
 	YardMap ="oooo oooo oooo oooo ",
-	
+	MaxSlope 					= 50,
+
 	footprintX = 4,
 	footprintZ = 4,
 	

@@ -7,6 +7,7 @@ local Building = Unit:New{
 	footprintX					= 4,
 	footprintZ 					= 4,
 	iconType					= "house",
+	MaxSlope 					= 50,	
 	moveState					= 0, -- Hold Position
 	script						= "House.lua",
 	usepiececollisionvolumes 	= true,

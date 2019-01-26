@@ -16,6 +16,11 @@ function getGameConfig()
 	 zRandOffset		= 20,
 	 allyWaySizeX 		= 25,
 	 allyWaySizeZ		= 25,
+	 
+	 agentConfig={
+		recruitmentRange= 60,
+	 },
+	 
 	 --civilianbehaviour
 	 civilianInterestRadius = 750,
 	 groupChatDistance = 150,

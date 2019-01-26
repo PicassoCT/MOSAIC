@@ -6,7 +6,7 @@ local OperativePropagator = Human:New{
 	buildCostMetal     	  = 5,
 
 	explodeAs				  = "none",
-	description= "Recruiter Operative <recruits Agents>",
+	description= "Propaganda Operative <recruits Agents>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
@@ -31,13 +31,13 @@ local OperativePropagator = Human:New{
 	nanocolor=[[0 0 0]], --
 	CanReclaim=false,	
 	workerTime = 0.005,
-	buildDistance = 60,
+	buildDistance = 120,
 	terraformSpeed = 1,
 	
 	canCloak =true,
 	cloakCost=0.0001,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 15,
+	minCloakDistance = 0,
 	onoffable=true,
 
 	buildoptions = 

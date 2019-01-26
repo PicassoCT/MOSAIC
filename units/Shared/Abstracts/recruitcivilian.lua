@@ -22,6 +22,7 @@ local RecruitCivilian = Abstract:New{
 	cloakCostMoving =0.0001,
 	minCloakDistance = 5,
 	onoffable=true,
+	MaxSlope 					= 100,
 
 
 	customparams = {

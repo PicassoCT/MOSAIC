@@ -4,6 +4,7 @@ local AntagonSafeHouse = Building:New{
 	mass                = 500,
 	buildCostEnergy     = 5,
 	buildCostMetal      = 5,
+	MaxSlope 					= 50,
 	explodeAs			= "none",
 	NoWeapon=true,
 

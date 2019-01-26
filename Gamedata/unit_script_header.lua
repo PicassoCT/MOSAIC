@@ -38,10 +38,3 @@ local z_axis = 3
 
 local EMPTY = {}
 
-local function PlaySound(sound, volume, channel)
-	GG.PlaySoundAtUnit(unitID, sound, volume, channel)
-end
-
-local function RecursiveHide(pieceNum, hide)
-	GG.RecursiveHide(unitID, pieceNum, hide)
-end
