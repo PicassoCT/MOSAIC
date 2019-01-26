@@ -19,12 +19,8 @@ local AntagonSafeHouse = Building:New{
 	footprintX = 4,
 	footprintZ = 4,
 	
-
-	
 	script 			= "safehousescript.lua",
 	objectName        	= "house_safehouse.s3o",
-
-
 	
 	customparams = {
 		helptext		= "Civilian Building",
@@ -34,12 +30,11 @@ local AntagonSafeHouse = Building:New{
 	buildoptions={
 	"operativeasset",
 	"operativepropagator",
-	
 	"nimrod",
-	"noonelaser",
+	"noone",
 	"propagandaserver",
 	"assembly",
-	"armageddonlauncher"
+	"launcher"
 	},
 	category = [[LAND BUILDING]]
 }

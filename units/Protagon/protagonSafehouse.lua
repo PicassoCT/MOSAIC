@@ -34,7 +34,7 @@ local ProtagonSafeHouse = Building:New{
 	"operativepropagator",
 	
 	"nimrod",
-	"noonelaser",
+	"noone",
 	"propagandaserver",
 	"assembly"
 
