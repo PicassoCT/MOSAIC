@@ -34,12 +34,13 @@ local AntagonSafeHouse = Building:New{
 	buildoptions={
 	"operativeasset",
 	"operativepropagator",
+	"civilianagent",
 	
 	"nimrod",
-	"noonelaser",
+	"noone",
 	"propagandaserver",
 	"assembly",
-	"armageddonlauncher"
+	"launcher"
 	},
 	category = [[LAND BUILDING]]
 }

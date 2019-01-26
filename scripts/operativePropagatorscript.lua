@@ -1,4 +1,4 @@
-	Spring.Echo("script.Create-Operative")
+
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -68,11 +68,12 @@ local civilianID
 --EventStream Function
 syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
 				--	only apply if Unit is still alive
-				if Spring.GetUnitIsDead(persPack.unitID) == true then
+				if Spring.GetUnitIsDead(persPack.syncedID) == true then
+					echo("syncDecoyToAgent dead")
 					return nil, persPack
 				end
 				
-				x,y,z = Spring.GetUnitPosition(persPack.unitID)
+				x,y,z = Spring.GetUnitPosition(persPack.myID)
 				
 				if not persPack.currPos then
 					persPack.currPos ={x=x,y=y,z=z}
@@ -88,11 +89,11 @@ syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
 						
 				if persPack.stuckCounter > 5 then
 					moveUnitToUnit(persPack.myID, persPack.syncedID, math.random(-10,10),0, math.random(-10,10))
-					return nil, nil
+					echo("syncDecoyToAgent stuck")
+					return frame + 30 , persPack	
 				end
 
 				transferOrders( persPack.syncedID, persPack.myID)
-				
 				return frame + 30 , persPack	
 			end
 		

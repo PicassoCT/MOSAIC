@@ -16,7 +16,7 @@ local safeHouseID
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(houseAttach)
-	StartThread(detectUpgrade)
+	
 end
 
 CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
@@ -44,6 +44,7 @@ function houseAttach()
 					Sleep(GameConfig.delayTillSafeHouseEstablished)
 					boolSafeHouseActive = true
 					Spring.SetUnitNoSelect(unitID, false)
+					StartThread(detectUpgrade)
 				end
 			end
 			)
@@ -69,7 +70,8 @@ function detectUpgrade()
 end
 
 function script.Killed(recentDamage, _)
-    return 1
+    Spring.Echo("Safe killed")
+	return 1
 end
 
 function script.Activate()

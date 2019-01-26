@@ -31,13 +31,13 @@ local ProtagonSafeHouse = Building:New{
 	
 	buildoptions={
 	"operativeasset",
-	"operativepropagator",
+	"operativepropagator",	
+	"civilianagent",
 	
 	"nimrod",
-	"noonelaser",
+	"noone",
 	"propagandaserver",
 	"assembly"
-
 	}
 }
 

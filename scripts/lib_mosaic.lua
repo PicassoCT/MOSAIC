@@ -30,6 +30,7 @@ function getGameConfig()
 	 
 	 --safehouseConfig
 	 buildSafeHouseRange = 66,
+	 delayTillSafeHouseEstablished = 15000,
 	 safeHousePieceName = "center"
 	 
 	}
@@ -91,6 +92,20 @@ function  getMobileCivilianDefIDTypeTable(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
+function  getSafeHouseUpgradeTypeTable(UnitDefs)
+
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"nimrod",
+		"assembly",
+		"noone",
+		"propagandaserver",
+		"launcher"
+	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 function getCivilianTypeTable(UnitDefs)
 	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
@@ -141,7 +156,7 @@ function getSatelliteAltitudeTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 1500,
+		[UnitDefNames["comsatellite"].id] = 1400,
 		[UnitDefNames["scansatellite"].id] = 1500
 	}
 	
