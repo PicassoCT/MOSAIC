@@ -13,7 +13,7 @@ center = piece "center"
 boolStarted= false
 
 function script.Create()
-
+	GG.OperativesDiscovered[unitID] = nil
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(delayedStart)
@@ -67,6 +67,7 @@ local civilianID
 
 --EventStream Function
 syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
+	echo("syncDecoyToAgent")
 				--	only apply if Unit is still alive
 				if Spring.GetUnitIsDead(persPack.syncedID) == true then
 					echo("syncDecoyToAgent dead")
@@ -122,7 +123,7 @@ if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Activate()
 	if not GG.OperativesDiscovered[unitID] then
-        SetUnitValue(COB.WANT_CLOAK, 1)
+         SetUnitValue(COB.WANT_CLOAK, 1)
 		  Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
 		  spawnDecoyCivilian()
 		  return 1
