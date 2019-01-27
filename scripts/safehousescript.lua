@@ -40,8 +40,10 @@ function houseAttach()
 					safeHouseID= id
 					
 					Spring.UnitAttach(id, unitID, getUnitPieceByName(id, GameConfig.safeHousePieceName))
+					Spring.Echo("SafehouseAttached")
 					Spring.SetUnitNoSelect(unitID, true)	
 					Sleep(GameConfig.delayTillSafeHouseEstablished)
+					Spring.Echo("Safehouse Active")
 					boolSafeHouseActive = true
 					Spring.SetUnitNoSelect(unitID, false)
 					StartThread(detectUpgrade)
@@ -50,7 +52,7 @@ function houseAttach()
 			)
 end
 
-safeHouseUpgradeTable= getSafeHouseUpgradeTypeTable(UnitDefs)
+safeHouseUpgradeTable= getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefID(unitID))
 
 function detectUpgrade()
 	while true do 
@@ -62,6 +64,7 @@ function detectUpgrade()
 				id= transformUnitInto(unitID, buildDefID)
 				GG.houseHasSafeHouseTable[safeHouseID] = id
 				Spring.UnitAttach(safeHouseID, id, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
+				Spring.Echo("Upgrade Complete")
 				Spring.DestroyUnit(buildID,true,true)
 			end
 		end
@@ -70,8 +73,10 @@ function detectUpgrade()
 end
 
 function script.Killed(recentDamage, _)
-    Spring.Echo("Safe killed")
-	return 1
+
+	Spring.Echo("Safehouse killed")
+    return 1
+
 end
 
 function script.Activate()

@@ -38,8 +38,9 @@ function recruiteLoop()
 				end,
 				function(id)
 					if spGetUnitDefID(id)== civilianDefID then
-						id = transformUnitInto(id, UnitDefNames["civilianagent"].id)
-						Spring.TransferUnit(id, Spring.GetUnitTeam(unitID), true)
+						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id)
+						Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
+						Spring.DestroyUnit(id,true,true)
 						Spring.DestroyUnit(unitID,true,true)
 					end
 				end
@@ -49,8 +50,6 @@ function recruiteLoop()
 end
 
 function script.Killed(recentDamage, _)
-
-    createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 

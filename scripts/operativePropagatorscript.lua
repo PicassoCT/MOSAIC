@@ -10,19 +10,19 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-boolStarted= false
+
+
+if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
+
 	GG.OperativesDiscovered[unitID] = nil
+
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	StartThread(delayedStart)
+
 end
-	function delayedStart()
-	Sleep(100)
-	boolStarted= true
-	spawnDecoyCivilian()
-	end
+
 
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then
@@ -62,82 +62,112 @@ end
 
 function script.StopMoving()
 end
-gaiaTeamID = Spring.GetGaiaTeamID()
+
 local civilianID 
 
+
+function spawnDecoyCivilian()
+--spawnDecoyCivilian
+		Sleep(10)	
+
+		x,y,z= Spring.GetUnitPosition(unitID)
+		civilianID = Spring.CreateUnit("civilian" , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
+		transferUnitStatusToUnit(unitID,civilianID)
+		Spring.SetUnitNoSelect(civilianID, true)
+		Spring.SetUnitAlwaysVisible(civilianID, true)
+	
 --EventStream Function
 syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
 	echo("syncDecoyToAgent")
 				--	only apply if Unit is still alive
-				if Spring.GetUnitIsDead(persPack.syncedID) == true then
-					echo("syncDecoyToAgent dead")
+				if doesUnitExistAlive(persPack.myID) == false  then
 					return nil, persPack
 				end
 				
-				x,y,z = Spring.GetUnitPosition(persPack.myID)
+				if doesUnitExistAlive(persPack.syncedID) == false  then
+					return nil, persPack
+				end
+				
+				--sync Health
+				transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
+				
+				x,y,z = Spring.GetUnitPosition(persPack.syncedID)
+				mx,my,mz = Spring.GetUnitPosition(persPack.myID)
+				if not x then 
+					return nil, persPack 
+				end
+				
+				if not persPack.oldSyncedPos then persPack.oldSyncedPos ={x=x,y=y,z=z} end
+				-- Test Synced Unit Stopped
+				
+				if distance ( persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,persPack.oldSyncedPos.z, x,y, z) < 5 then
+					-- Unit has stopped, test wether we are near it
+					if distance(mx,my,mz,x, y, z) < 25 then
+						Command(persPack.myID, "stop")
+						return frame + 30, persPack 
+					end
+				end
+				--update old Pos
+				persPack.oldSyncedPos ={x=x,y=y,z=z}
+				
 				
 				if not persPack.currPos then
-					persPack.currPos ={x=x,y=y,z=z}
+					persPack.currPos ={x=mx,y=my,z=mz}
 					persPack.stuckCounter=0
 				end
 				
-				if distance(x,y,z, persPack.currPos.x,persPack.currPos.y,persPack.currPos.z) < 100 then				
+				if distance(mx,my,mz, persPack.currPos.x,persPack.currPos.y,persPack.currPos.z) < 50 then				
 					persPack.stuckCounter=persPack.stuckCounter+1
 				else
-					persPack.currPos={x=x, y=y, z=z}
+					persPack.currPos={x=mx, y=my, z=mz}
 					persPack.stuckCounter=0
 				end
 						
 				if persPack.stuckCounter > 5 then
 					moveUnitToUnit(persPack.myID, persPack.syncedID, math.random(-10,10),0, math.random(-10,10))
-					echo("syncDecoyToAgent stuck")
-					return frame + 30 , persPack	
 				end
 
 				transferOrders( persPack.syncedID, persPack.myID)
 				return frame + 30 , persPack	
 			end
-		
-		
+			
+			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
+			
+			
+			if civilianID then
+				GG.EventStream:CreateEvent(
+				syncDecoyToAgent,
+				persPack,
+				Spring.GetGameFrame()+1
+				)
 
-function spawnDecoyCivilian()
---spawnDecoyCivilian
-		if boolStarted == true then
-		x,y,z= Spring.GetUnitPosition(unitID)
-		civilianID = Spring.CreateUnit("civilian" , x +randSign()*5, y, z +randSign()*5 , 1, gaiaTeamID)
-		persPack = {myID= civilianID, syncedID= unitID }
-		if civilianID then
-			GG.EventStream:CreateEvent(
-			syncDecoyToAgent,
-			persPack,
-			Spring.GetGameFrame()
-			)
-		end
-		end
--- setEvent
+			end
 
 	return 0
 end
 
-if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
-
 function script.Activate()
+	setSpeedEnv(unitID, 0.35)
+	Spring.Echo("Activate "..unitID)
 	if not GG.OperativesDiscovered[unitID] then
          SetUnitValue(COB.WANT_CLOAK, 1)
 		  Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-		  spawnDecoyCivilian()
+		  StartThread(spawnDecoyCivilian)
 		  return 1
    else
+		Spring.Echo("Operative ".. unitID.." is discovered")
 			return 0
    end
   
 end
 
 function script.Deactivate()
+	setSpeedEnv(unitID, 1.0)
+	Spring.Echo("Deactivate "..unitID)
 		SetUnitValue(COB.WANT_CLOAK, 0)
 		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {2}, {}) 
-		if doesUnitExistAlive(civilianID) == true then
-			Spring.DestroyUnit(civilianID,true,true)
+		if civilianID and doesUnitExistAlive(civilianID) == true then
+			Spring.DestroyUnit(civilianID, true, true)
 		end
     return 0
 end
