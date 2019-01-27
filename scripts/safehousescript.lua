@@ -72,6 +72,7 @@ function detectUpgrade()
 end
 
 function script.Killed(recentDamage, _)
+	Spring.Echo("Safehouse killed")
     return 1
 end
 

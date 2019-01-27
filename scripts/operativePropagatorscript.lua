@@ -79,7 +79,6 @@ function spawnDecoyCivilian()
 --EventStream Function
 syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
 				--	only apply if Unit is still alive
-				Spring.Echo("syncDecoyToAgent running")
 				if doesUnitExistAlive(persPack.myID) == false  then
 					return nil, persPack
 				end
