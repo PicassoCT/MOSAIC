@@ -459,6 +459,10 @@ if (gadgetHandler:IsSyncedCode()) then
 		if not persPack.myHP then persPack.myHP = hp end
 		
 		x,y,z = Spring.GetUnitPosition(persPack.unitID)
+		if not x then 
+			return nil, persPack
+		end
+		
 		if not persPack.currPos then
 			persPack.currPos ={x=x,y=y,z=z}
 			persPack.stuckCounter=0

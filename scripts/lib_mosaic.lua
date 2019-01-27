@@ -30,7 +30,8 @@ function getGameConfig()
 	 
 	 --safehouseConfig
 	 buildSafeHouseRange = 66,
-	 safeHousePieceName = "center"
+	 safeHousePieceName = "center",
+	 delayTillSafeHouseEstablished= 15000
 	 
 	}
 end
@@ -87,6 +88,28 @@ function  getMobileCivilianDefIDTypeTable(UnitDefs)
 		"civilian",
 		"truck"
 	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={}
+	if myDefID == UnitDefNames["antagonsafehouse"].id then
+		typeTable={
+		"nimrod",
+		"noone",
+		"propagandaserver",
+		"assembly",
+		"launcher"
+		}
+	else
+	typeTable={
+		"nimrod",
+		"noone",
+		"propagandaserver",
+		"assembly"
+		}
+	end
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end

@@ -29,8 +29,8 @@ if not GG.BoolDebug then GG.BoolDebug=bool_GadgetDebug end
 local thread_wrap = {
         -- "StartMoving",
         -- "StopMoving",
-        -- "Activate",
-        --"Deactivate",
+        "Activate",
+        "Deactivate",
         --"WindChanged",
         --"ExtractionRateChanged",
         "RockUnit",
