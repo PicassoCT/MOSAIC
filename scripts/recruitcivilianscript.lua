@@ -35,18 +35,35 @@ function recruiteLoop()
 					if spGetUnitTeam(id)== gaiaTeamID then
 						return id
 					end
-				end,
+				end,	
 				function(id)
 					if spGetUnitDefID(id)== civilianDefID then
+						
 						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id)
 						Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
-						Spring.DestroyUnit(id,true,true)
+
+
+						if GG.DisguiseCivilianFor[id] then
+							attachDoubleAgentToUnit(ad, Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
+							Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
+							defID =  Spring.GetUnitDefID(GG.DisguiseCivilianFor[id]) 
+							if defID == UnitDefNames["operativeinvestigator"].id  or defID == UnitDefNames["operativeinvestigator"].id then
+								--beam out  to nearest building
+								beamOperativeToNextCivilian(GG.DisguiseCivilianFor[id])
+							end	
+						end	
 						Spring.DestroyUnit(unitID,true,true)
 					end
 				end
 				)				
 	
 	end
+end
+
+function beamOperativeToNearestHouse(id)
+TODO
+
+
 end
 
 function script.Killed(recentDamage, _)

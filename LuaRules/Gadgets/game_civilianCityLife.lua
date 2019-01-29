@@ -440,6 +440,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function gadget:Initialize()
+	--Initialize global tables
+	GG.DisguiseCivilianFor={}
+	
+
 		Spring.Echo("gadget:Initialize")
 		process(Spring.GetAllUnits(),
 		function(id)

@@ -126,7 +126,7 @@ syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
 				if persPack.stuckCounter > 5 then
 					moveUnitToUnit(persPack.myID, persPack.syncedID, math.random(-10,10),0, math.random(-10,10))
 				end
-
+				
 				transferOrders( persPack.syncedID, persPack.myID)
 				return frame + 30 , persPack	
 			end

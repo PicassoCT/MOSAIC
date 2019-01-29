@@ -26,6 +26,7 @@ gaiaTeamID = Spring.GetGaiaTeamID()
 
 function houseAttach()
 	waitTillComplete(unitID)
+	Spring.Echo("Safehouse completed")
 	process(
 			getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
 			function(id)
@@ -41,11 +42,11 @@ function houseAttach()
 					
 					Spring.UnitAttach(id, unitID, getUnitPieceByName(id, GameConfig.safeHousePieceName))
 					Spring.Echo("SafehouseAttached")
-					Spring.SetUnitNoSelect(unitID, true)	
+					-- Spring.SetUnitNoSelect(unitID, true)	
 					Sleep(GameConfig.delayTillSafeHouseEstablished)
 					Spring.Echo("Safehouse Active")
 					boolSafeHouseActive = true
-					Spring.SetUnitNoSelect(unitID, false)
+					-- Spring.SetUnitNoSelect(unitID, false)
 					StartThread(detectUpgrade)
 				end
 			end
@@ -56,8 +57,10 @@ safeHouseUpgradeTable= getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefI
 
 function detectUpgrade()
 	while true do 
+		Spring.Echo("Detect Upgrade")
 		buildID = Spring.GetUnitIsBuilding(unitID)
 		if buildID then
+		Spring.Echo("buildID found Upgrade")
 			buildDefID = Spring.GetUnitDefID(buildID)
 			if safeHouseUpgradeTable[buildDefID] then
 				waitTillComplete(buildID)

@@ -321,6 +321,13 @@ function createStreamEvent(unitID, func, framerate, persPack)
 	GG.EventStream:CreateEvent(eventFunction, persPack, Spring.GetGameFrame() + 1)
 end
 
+function attachDoubleAgentToUnit(id, team)
+--create a double agent
+TODO
+
+-- tie it with a event stream to a unit
+
+end
 
 function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
 	

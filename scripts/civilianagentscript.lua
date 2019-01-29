@@ -107,7 +107,9 @@ syncDecoyToAgent = function(evtID, frame, persPack, startFrame)
 			end
 			
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
-	
+			
+			GG.DisguiseCivilianFor[civilianID]= unitID
+			
 			if civilianID then
 				GG.EventStream:CreateEvent(
 				syncDecoyToAgent,
