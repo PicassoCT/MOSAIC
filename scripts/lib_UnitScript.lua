@@ -5350,7 +5350,7 @@ end
 --======================================================================================
 
 --> transfers Order from one Unit to another
-function transferOrders(originID, targetID)
+function transferOrders(originID, unitID)
 	
 	CommandTable = Spring.GetUnitCommands(originID)
 	first = false
@@ -5360,15 +5360,15 @@ function transferOrders(originID, targetID)
 				if first == false then
 					first = true
 					if cmd.id == CMD.MOVE then
-						Spring.GiveOrderToUnit(targetID, cmd.id, cmd.params, {})
+						Spring.GiveOrderToUnit(unitID, cmd.id, cmd.params, {})
 					elseif cmd.id == CMD.STOP then
-						Spring.GiveOrderToUnit(targetID, CMD.STOP, {}, {})
+						Spring.GiveOrderToUnit(unitID, CMD.STOP, {}, {})
 					end
 				else
-					Spring.GiveOrderToUnit(targetID, cmd.id, cmd.params, { "shift" })
+					Spring.GiveOrderToUnit(unitID, cmd.id, cmd.params, { "shift" })
 				end
 			else
-				Spring.GiveOrderToUnit(targetID, CMD.STOP, {}, {})
+				Spring.GiveOrderToUnit(unitID, CMD.STOP, {}, {})
 			end
 		end
 	end
