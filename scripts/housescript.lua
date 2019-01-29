@@ -13,7 +13,6 @@ center = piece "center"
 
 
 function script.Create()
-    generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 end
 

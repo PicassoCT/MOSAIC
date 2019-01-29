@@ -1126,18 +1126,23 @@ function getPieceMap(unitID)
 	return List 
 end
 
-function waitTillComplete(unitID)
-	while not buildProgress and hp ~= mHp do
-	hp, mHp, _, _, _, buildProgress = Spring.GetUnitHealth(unitID)
-	Sleep(500)
+function waitTillComplete(id)
+	hp, mHp, _, _, _, buildProgress = Spring.GetUnitHealth(id)
+	while not buildProgress and Spring.ValidUnitID(id) == true do 
+		hp, mHp, _, _, _, buildProgress = Spring.GetUnitHealth(id)
+			Sleep(500)
+	end
+
+	
+	
+	while buildProgress < 1.0 and  hp < mHp  do
+		hp, mHp, _, _, _, buildProgress = Spring.GetUnitHealth(id)
+
+		Sleep(500)
 	end
 	
-	while buildProgress and buildProgress < 0 and hp < mHp do
-        hp, mHp, _, _, _, buildProgress = Spring.GetUnitHealth(unitID)
-        Sleep(500)
-   end
    
-	return bP ~=nil
+	return buildProgress ~= nil
 end
 
 function createUnit_TerrainTest(uType, x,y,z, orientation, teamID, acceptableIncline)

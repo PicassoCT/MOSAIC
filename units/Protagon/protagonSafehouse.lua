@@ -4,6 +4,7 @@ local ProtagonSafeHouse = Building:New{
 	mass                = 500,
 	buildCostEnergy     = 5,
 	buildCostMetal      = 5,
+	buildTime = 15,
 	explodeAs			= "none",
 
 

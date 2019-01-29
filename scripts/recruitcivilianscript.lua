@@ -49,9 +49,10 @@ function recruiteLoop()
 							defID =  Spring.GetUnitDefID(GG.DisguiseCivilianFor[id]) 
 							if defID == UnitDefNames["operativeinvestigator"].id  or defID == UnitDefNames["operativeinvestigator"].id then
 								--beam out  to nearest building
-								beamOperativeToNextCivilian(GG.DisguiseCivilianFor[id])
+								beamOperativeToNearestHouse(GG.DisguiseCivilianFor[id])
 							end	
 						end	
+						Spring.DestroyUnit(id,true,true)
 						Spring.DestroyUnit(unitID,true,true)
 					end
 				end
@@ -61,10 +62,24 @@ function recruiteLoop()
 end
 
 function beamOperativeToNearestHouse(id)
-TODO
-
-
+	x,y,z= Spring.GetUnitPosition(id)
+	maxdist= math.huge
+	local jumpID
+	
+	T= Spring.GetTeamUnitsByDefs(gaiaTeamID, UnitDefNames["house"].id)
+		for i=1,#T do
+			id = T[i]
+			tx,ty,tz= Spring.GetUnitPosition(id)
+			dist = distance(x,y,z, tx,ty,tz)
+				if dist < maxdist then 
+					maxdist = dist
+					jumpID = id 
+				end
+		end
+			
+	moveUnitToUnit(id, jumpID, 15*randSign(),0, 15*randSign())	
 end
+
 
 function script.Killed(recentDamage, _)
     return 1

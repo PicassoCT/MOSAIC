@@ -21,7 +21,7 @@ local DoubleAgent = Abstract:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 					= "doubleagentscript.lua",
-	objectName        	= "placeholder.s3o",
+	objectName        	= "doubleagent.s3o",
 
 
 	canCloak =true,
@@ -30,7 +30,7 @@ local DoubleAgent = Abstract:New{
 	minCloakDistance = 0,
 	
 	onoffable=true,
-	
+	activatewhenbuilt = true,
 	
 	
 	

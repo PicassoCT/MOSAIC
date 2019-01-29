@@ -31,7 +31,13 @@ function getGameConfig()
 	 --safehouseConfig
 	 buildSafeHouseRange = 66,
 	 safeHousePieceName = "center",
-	 delayTillSafeHouseEstablished= 15000
+	 delayTillSafeHouseEstablished= 15000,
+	 
+	 --doubleAgentHeight
+	 doubleAgentHeight = 256,
+	 
+	 --Dayproperties
+	 daylength = 28800,
 	 
 	}
 end
@@ -311,7 +317,7 @@ function createStreamEvent(unitID, func, framerate, persPack)
 		end
 		
 		boolDoneFor, persPack = persPack.functionToCall(persPack)
-		if boolDoneFor then
+		if boolDoneFor and boolDoneFor == true then
 			return nil 
 		end
 		
@@ -321,11 +327,53 @@ function createStreamEvent(unitID, func, framerate, persPack)
 	GG.EventStream:CreateEvent(eventFunction, persPack, Spring.GetGameFrame() + 1)
 end
 
-function attachDoubleAgentToUnit(id, team)
---create a double agent
-TODO
+function attachDoubleAgentToUnit(id, teamToTurnTo)
+gameConfig = getGameConfig()
 
--- tie it with a event stream to a unit
+doubleAgentID = createUnitAtUnit(teamToTurnTo, "doubleagent", id, 0, gameConfig.doubleAgentHeight , 0)
+
+Spring.MoveCtrl.Enable(doubleAgentID, true)
+--set invisible
+
+--set non-collidable
+
+hoverAboveFunc = function( persPack)
+					boolContinue = false
+					boolEndFunction= true
+					
+					if doesUnitExistAlive(persPack.toTrackID)== false then 
+						Spring.DestroyUnit(persPack.unitID,true,true)
+						return boolEndFunction, nil
+					end					
+						
+					x,y,z= Spring.GetUnitPosition(persPack.toTrackID)
+							
+					if doesUnitExistAlive(persPack.unitID)== false then 
+						persPack.unitID =createUnitAtUnit(persPack.myTeam, "doubleagent", persPack.toTrackID, x, y + persPack.heightAbove , z)
+						Spring.MoveCtrl.Enable(persPack.unitID)
+						
+						return boolContinue, persPack
+					end					
+					
+					Spring.MoveCtrl.SetPosition(persPack.unitID, x,y + persPack.heightAbove,z)	
+					boolUnitIsActive =	Spring.GetUnitIsActive (persPack.unitID)
+					
+					if boolUnitIsActive and boolUnitIsActive == false then
+						Spring.TransferUnit(persPack.toTrackID, persPack.myTeam)
+						Spring.Destroy(persPack.unitID,true,true)
+						return boolEndFunction, nil
+					end
+				
+
+					return boolContinue, persPack
+				end
+
+createStreamEvent(doubleAgentID, hoverAboveFunc, 1, {
+													myTeam = teamToTurnTo, 
+													toTrackID = id, 
+													heightAbove = gameConfig.doubleAgentHeight,
+													}
+													)
 
 end
 
@@ -368,3 +416,59 @@ function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
 	Spring.GetGameFrame() + 1)
 	
 end
+
+--EventStream Function
+function syncDecoyToAgent(evtID, frame, persPack, startFrame)
+				--	only apply if Unit is still alive
+				if doesUnitExistAlive(persPack.myID) == false  then
+					return nil, persPack
+				end
+				
+				if doesUnitExistAlive(persPack.syncedID) == false  then
+					return nil, persPack
+				end
+				
+				--sync Health
+				transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
+				
+				x,y,z = Spring.GetUnitPosition(persPack.syncedID)
+				mx,my,mz = Spring.GetUnitPosition(persPack.myID)
+				if not x then 
+					return nil, persPack 
+				end
+				
+				if not persPack.oldSyncedPos then persPack.oldSyncedPos ={x=x,y=y,z=z} end
+				-- Test Synced Unit Stopped
+				
+				if distance ( persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,persPack.oldSyncedPos.z, x,y, z) < 5 then
+					-- Unit has stopped, test wether we are near it
+					if distance(mx,my,mz,x, y, z) < 25 then
+						Command(persPack.myID, "stop")
+						return frame + 30, persPack 
+					end
+				end
+				--update old Pos
+				persPack.oldSyncedPos ={x=x,y=y,z=z}
+				
+				
+				if not persPack.currPos then
+					persPack.currPos ={x=mx,y=my,z=mz}
+					persPack.stuckCounter=0
+				end
+				
+				if distance(mx,my,mz, persPack.currPos.x,persPack.currPos.y,persPack.currPos.z) < 50 then				
+					persPack.stuckCounter=persPack.stuckCounter+1
+				else
+					persPack.currPos={x=mx, y=my, z=mz}
+					persPack.stuckCounter=0
+				end
+						
+				if persPack.stuckCounter > 5 then
+					moveUnitToUnit(persPack.myID, persPack.syncedID, math.random(-10,10),0, math.random(-10,10))
+				end
+
+				transferOrders( persPack.syncedID, persPack.myID)
+				
+				return frame + 30 , persPack	
+			end
+			
