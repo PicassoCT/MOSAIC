@@ -22,7 +22,7 @@ local House = Building:New{
     },
 	buildoptions = 
 	{
-	"safehouse"
+	"civilian"
 	}
 }
 

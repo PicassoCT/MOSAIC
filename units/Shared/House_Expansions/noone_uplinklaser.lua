@@ -22,8 +22,8 @@ local Noone_UplinkLaser = Building:New{
 	footprintX = 4,
 	footprintZ = 4,
 	
-	script 					= "assemblyscript.lua",
-	objectName        	= "assembly.s3o",
+	script 					= "noonescript.lua",
+	objectName        	= "noone.s3o",
 	name = "Noone",
 	description = "Uplinklaser  <Com with Satellites / blind Scansatellites>",
 

@@ -11,6 +11,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
+nano = piece "nano"
 local safeHouseID
 
 function script.Create()
@@ -19,12 +20,15 @@ function script.Create()
 	
 end
 
+
+
 CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
 local houseDefID= CivilianTypeDefTable["house"]
 GameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
 
 function houseAttach()
+	Sleep(100)
 	waitTillComplete(unitID)
 	Spring.Echo("Safehouse completed")
 	process(
@@ -83,11 +87,21 @@ function script.Killed(recentDamage, _)
 end
 
 function script.Activate()
+
+    SetUnitValue(COB.YARD_OPEN, 1)
+
+    SetUnitValue(COB.BUGGER_OFF, 1)
+
+    SetUnitValue(COB.INBUILDSTANCE, 1)
     return 1
 end
 
 function script.Deactivate()
+    SetUnitValue(COB.YARD_OPEN, 0)
 
+    SetUnitValue(COB.BUGGER_OFF, 0)
+
+    SetUnitValue(COB.INBUILDSTANCE, 0)
     return 0
 end
 
@@ -95,9 +109,14 @@ function script.QueryBuildInfo()
     return center
 end
 
-Spring.SetUnitNanoPieces(unitID, { center })
+Spring.SetUnitNanoPieces(unitID, { nano })
 
 
 function script.StartBuilding()
+
+end
+
+
+function script.StopBuilding()
 
 end

@@ -11,7 +11,7 @@ local Propagandaserver = Building:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "propagandaserverscript.lua",
-	objectName        	= "placeholder.s3o",
+	objectName        	= "propagandaserver.s3o",
 
 
 	
