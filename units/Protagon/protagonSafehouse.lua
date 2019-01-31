@@ -2,8 +2,7 @@ local ProtagonSafeHouse = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
-	buildCostEnergy     = 5,
-	buildCostMetal      = 5,
+
 	buildTime = 15,
 	explodeAs			= "none",
 
@@ -19,6 +18,18 @@ local ProtagonSafeHouse = Building:New{
 
 	footprintX = 4,
 	footprintZ = 4,
+	
+	buildCostEnergy     = 0,
+	buildCostMetal      = 500,
+	
+	EnergyStorage = 0,
+	EnergyUse = 0,
+	MetalStorage = 0,
+	MetalUse = 1,
+	EnergyMake = 0, 
+	MakesMetal = 0, 
+	MetalMake = 0,	
+	
 	
 	script 			= "safehousescript.lua",
 	objectName        	= "house_safehouse.s3o",
