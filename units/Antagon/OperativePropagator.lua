@@ -44,13 +44,30 @@ local OperativePropagator = Human:New{
 	buildoptions = 
 	{
 		"recruitcivilian",
-		"antagonsafehouse"
+		"antagonsafehouse",
+		"groundssied",
 	},
 
 	customparams = {
 		helptext		= "Propaganda Operative",
 		baseclass		= "Human", -- TODO: hacks
     },
+		weapons={
+			[1]={name  = "raidarrest", --prevents other weapon usage
+				onlyTargetCategory = [[ARRESTABLE]],
+			},				
+			[2]={name  = "pistol",
+				onlyTargetCategory = [[LAND]],
+			},
+			[3]={name  = "machinegun",
+				onlyTargetCategory = [[LAND]],
+			}
+		},	
+		
+	category = "ARRESTABLE LAND",
+
+
+	
 }
 
 

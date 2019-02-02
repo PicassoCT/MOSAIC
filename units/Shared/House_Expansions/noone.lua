@@ -47,6 +47,12 @@ local Noone_UplinkLaser = Building:New{
 		
 	},
 	
+		weapons={
+			[1]={name  = "odysseuslaser",
+				onlyTargetCategory = [[SATELLITE AIR]],
+			},
+		},	
+
 
 	}
 

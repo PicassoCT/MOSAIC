@@ -21,7 +21,7 @@ local Launcher = Building:New{
 	script 					= "launcherscript.lua",
 	objectName        	= "Launcher.s3o",
 	name = "Launcher",
-	description = " attacks a remote target with a ICBM - ending the game ",
+	description = " ends the game with a ICBM launch",
 
 
 	
@@ -34,6 +34,7 @@ local Launcher = Building:New{
 	{
 		"launcherstep"
 	},
+	category = [[LAND BUILDING]],
 }
 
 return lowerkeys(

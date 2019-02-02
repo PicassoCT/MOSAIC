@@ -20,10 +20,13 @@ local House = Building:New{
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },
+	
 	buildoptions = 
 	{
 	"civilian"
-	}
+	},
+	
+	category =  [[BUILDING ARRESTABLE]],
 }
 
 

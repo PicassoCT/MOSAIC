@@ -50,7 +50,9 @@ local ProtagonSafeHouse = Building:New{
 	"noone",
 	"propagandaserver",
 	"assembly"
-	}
+	},
+	
+	category=[[LAND BUILDING]],
 }
 
 

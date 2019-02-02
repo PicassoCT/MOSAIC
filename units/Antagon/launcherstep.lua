@@ -1,8 +1,10 @@
 local BuildLauncherStep = Abstract:New{
+	name =  "Launcher",
+	description = " build xth step out of n",
 	maxDamage         	  = 500,
 	mass                = 500,
-	buildCostEnergy    	  = 5,
-	buildCostMetal     	  = 5,
+	buildCostEnergy    	  = 0,
+	buildCostMetal     	  = 5000,
 	explodeAs				  = "none",
 	script 				= "placeholder.lua",
 	objectName        	= "placeholder.s3o",
@@ -17,8 +19,10 @@ local BuildLauncherStep = Abstract:New{
 
 	customparams = {
 		helptext		= "Launcher step",
-		baseclass		= "Human", 
+		baseclass		= "Abstract", 
     },
+	
+	category = [[NOTARGET]],
 }
 
 

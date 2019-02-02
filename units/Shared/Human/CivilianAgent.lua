@@ -36,6 +36,13 @@ local CivilianAgent = Human:New{
 		helptext		= "Civilian Building",
 		baseclass		= "Human", -- TODO: hacks
     },
+	
+	weapons ={
+		[1]={name  = "pistol",
+				onlyTargetCategory = [[LAND]],
+			},
+	
+	},
 }
 
 

@@ -29,7 +29,9 @@ local RecruitCivilian = Abstract:New{
 		helptext		= "Propaganda Operative",
 		baseclass		= "Human", -- TODO: hacks
     },
-}
+
+	category = [[NOTARGET]],
+	}
 
 
 return lowerkeys({

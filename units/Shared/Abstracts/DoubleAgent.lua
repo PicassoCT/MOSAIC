@@ -38,6 +38,7 @@ local DoubleAgent = Abstract:New{
 		helptext		= "Civilian Agent working for the opposite site",
 		baseclass		= "Human", -- TODO: hacks
     },
+	category = "NOTARGET",
 }
 
 

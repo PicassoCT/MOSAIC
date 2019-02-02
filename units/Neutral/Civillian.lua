@@ -19,7 +19,7 @@ local Civilian = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 					= "Civilianscript.lua",
+	script 					= "civilianscript.lua",
 	objectName        	= "human_placeholder.s3o",
 
 
@@ -28,6 +28,8 @@ local Civilian = Human:New{
 		helptext		= "Civilian Building",
 		baseclass		= "Human", -- TODO: hacks
     },
+	
+	category = [[LAND]],
 }
 
 

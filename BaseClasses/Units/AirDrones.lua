@@ -17,7 +17,7 @@ local Aircraft = Unit:New{
 }
 	
 local Aero = Aircraft:New{
-	category 			= "aero air notbeacon",
+	category 			= "AIR",
 	noChaseCategory		= "beacon ground",
 	cruiseAlt			= 300,
 	canLoopbackAttack 	= true,

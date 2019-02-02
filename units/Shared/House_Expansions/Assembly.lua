@@ -33,7 +33,7 @@ local Assembly = Building:New{
 	
 		buildoptions = 
 	{
-		
+	"airssied"	
 	},
 	
 

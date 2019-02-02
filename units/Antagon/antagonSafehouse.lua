@@ -50,6 +50,7 @@ local AntagonSafeHouse = Building:New{
 	"assembly",
 	"launcher"
 	},
+	
 	category = [[LAND BUILDING]]
 }
 
