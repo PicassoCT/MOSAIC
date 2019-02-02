@@ -49,6 +49,9 @@ local OperativeInvestigator = Human:New{
 		helptext		= "Investigative Operative",
 		baseclass		= "Human", -- TODO: hacks
     },
+	
+	fireState= 1,
+	
 	weapons={
 			[1]={name  = "raidarrest", --prevents other weapon usage
 				onlyTargetCategory = [[ARRESTABLE]],

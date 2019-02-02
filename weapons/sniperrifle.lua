@@ -6,7 +6,7 @@ local weaponDef = {
 	weaponType = [[Cannon]],
 
 	
-	model="cSniperBullet.s3o",
+	model="sniperProj.s3o",
 	smokeTrail=true,
 	 soundFire = "weapons/sniper/sniperFire.wav",
 	

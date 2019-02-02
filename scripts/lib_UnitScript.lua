@@ -819,6 +819,11 @@ function createUnitAtUnit(teamID, typeID, otherID,ox,oy,oz)
 	return Spring.CreateUnit(typeID, x+ox, y+oy, z+oz, math.ceil(math.random(0, 3)), teamID)
 end
 
+function createUnitAtFeature(teamID, typeID, featureID,ox,oy,oz)
+	x,y,z,_,_,_ =Spring.GetFeaturePosition(featureID)
+	return Spring.CreateUnit(typeID, x+ox, y+oy, z+oz, math.ceil(math.random(0, 3)), teamID)
+end
+
 --> Transforms a selected unit into another type
 function transformUnitInto(oldID, unitType, setVel, boolKill)
 	x, y, z = Spring.GetUnitPosition(oldID)
@@ -3103,6 +3108,7 @@ end
 
 -->returns the 2 norm of a vector
 function distance(x, y, z, xa, ya, za)
+	assert(x)
 	if type(x)== "table" then
 		return distance(x.x, x.y, x.z, y.x, y.y, y.z)
 	end
@@ -5302,24 +5308,25 @@ end
 --======================================================================================
 
 --> consumes a resource if available 
-function consumeAvailableRessource(typeRessource, amount, teamID)
+function consumeAvailableRessource(typeRessource, amount, teamID, boolConsumeAllAvailable)
+boolConsumeAllAvailable= boolConsumeAllAvailable or false
 	
 	if "m" == string.lower(typeRessource) or "metal" == string.lower(typeRessource) then
 		currentLevel = Spring.GetTeamResources(teamID, "metal")
-		if amount > currentLevel then
+		if amount > currentLevel and boolConsumeAllAvailable == false then
 			return false
 		end
 		
-		if Spring.UseTeamResource(teamID, "metal", amount) then return true end
+		if Spring.UseTeamResource(teamID, "metal", math.min(amount,currentLevel)) then return true end
 	end
 	
 	if "energy" == string.lower(typeRessource) or "e" == string.lower(typeRessource) then
 		currentLevel = Spring.GetTeamResources(teamID, "energy")
-		if amount > currentLevel then
+		if amount > currentLevel and boolConsumeAllAvailable == false then
 			return false
 		end
 		
-		if Spring.UseTeamResource(teamID, "energy", amount) then return true end
+		if Spring.UseTeamResource(teamID, "energy", math.min(amount,currentLevel)) then return true end
 	end
 	return false
 end

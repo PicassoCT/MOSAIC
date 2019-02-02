@@ -24,7 +24,7 @@ local ProtagonSafeHouse = Building:New{
 	
 	EnergyStorage = 0,
 	EnergyUse = 0,
-	MetalStorage = 0,
+	MetalStorage = 1000,
 	MetalUse = 1,
 	EnergyMake = 0, 
 	MakesMetal = 0, 

@@ -52,14 +52,14 @@ if (gadgetHandler:IsSyncedCode()) then
 			ux,uy,uz= Spring.GetUnitPosition(unitID)
 			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 			function(id)
-				assert(type(GG.CivilianTable[unitID].defID)== "string",GG.CivilianTable[unitID].defID)
+				
 				if 	MobileCivilianDefIds[GG.CivilianTable[unitID].defID] then
 					return id
 				end
 			end,
 			function(id)
 				if math.random(0,100) > GameConfig.inHundredChanceOfInterestInDisaster then						
-					Command(persPack.unitID, "go", { ux+ math.random(-10,10), uy, uz+ math.random(-10,10)}, {})					
+					Command(id, "go", { ux+ math.random(-10,10), uy, uz+ math.random(-10,10)}, {})					
 				end
 			end
 			)
@@ -345,6 +345,8 @@ if (gadgetHandler:IsSyncedCode()) then
 		Route[index].z = z1
 		index = index + 1
 		Route[index]= {}
+
+		
 		boolLongWay = distance(x1,y1,z1,x2,y2,z2) > 2048 
 		
 		if boolLongWay == false then				
@@ -566,6 +568,8 @@ if (gadgetHandler:IsSyncedCode()) then
 		-- return nil 
 		
 		-- end
+		assert(startNodeID)
+		assert(RouteTabel[startNodeID][math.random(2,#RouteTabel[startNodeID])])
 		mydefID = Spring.GetUnitDefID(uID)
 		GG.EventStream:CreateEvent(
 		travellFunction,

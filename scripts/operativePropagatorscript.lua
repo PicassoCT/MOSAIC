@@ -11,12 +11,13 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
+gun = piece "gun"
 
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
-
+	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
     -- generatepiecesTableAndArrayCode(unitID)
@@ -30,30 +31,6 @@ function script.Killed(recentDamage, _)
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
    return 1
-end
-
-
---- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return center
-end
-
-
-
-function script.QueryWeapon1()
-    return center
-end
-
-function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
-
-    return true
-end
-
-
-function script.FireWeapon1()
-
-    return true
 end
 
 
@@ -94,12 +71,14 @@ function spawnDecoyCivilian()
 	return 0
 end
 
+boolCloaked = false
 function script.Activate()
 	setSpeedEnv(unitID, 0.35)
 	Spring.Echo("Activate "..unitID)
 	if not GG.OperativesDiscovered[unitID] then
          SetUnitValue(COB.WANT_CLOAK, 1)
 		  Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+		  boolCloaked=true
 		  StartThread(spawnDecoyCivilian)
 		  return 1
    else
@@ -114,6 +93,7 @@ function script.Deactivate()
 	Spring.Echo("Deactivate "..unitID)
 		SetUnitValue(COB.WANT_CLOAK, 0)
 		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {2}, {}) 
+		boolCloaked= false
 		if civilianID and doesUnitExistAlive(civilianID) == true then
 			Spring.DestroyUnit(civilianID, true, true)
 		end
@@ -135,6 +115,90 @@ end
 
 function script.StartBuilding(heading, pitch)
 	SetUnitValue(COB.INBUILDSTANCE, 1)
+end
+function raidAimFunction(weaponID, heading, pitch)
+return true
+end
+
+function pistolAimFunction(weaponID, heading, pitch)
+return true
+end
+
+function gunAimFunction(weaponID, heading, pitch)
+return boolCloaked
+end
+
+function raidFireFunction(weaponID, heading, pitch)
+return true
+end
+
+function pistolFireFunction(weaponID, heading, pitch)
+return true
+end
+
+function gunFireFunction(weaponID, heading, pitch)
+return true
+end
+
+
+SIG_RAID = 1
+SIG_PISTOL = 2
+SIG_GUN = 4
+
+WeaponsTable = {}
+function makeWeaponsTable()
+    WeaponsTable[1] = { aimpiece = gun, emitpiece = gun, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
+    WeaponsTable[2] = { aimpiece = gun, emitpiece = gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
+	WeaponsTable[3] = { aimpiece = gun, emitpiece = gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
+end
+
+
+function turretReseter()
+    while true do
+        Sleep(1000)
+        for i = 1, #WeaponsTable do
+			if WeaponsTable[i].coolDownTimer then
+				if WeaponsTable[i].coolDownTimer > 0 then
+					WeaponsTable[i].coolDownTimer = math.max(WeaponsTable[i].coolDownTimer - 1000, 0)
+
+				elseif WeaponsTable[i].coolDownTimer <= 0 then
+					tP(WeaponsTable[i].emitpiece, -90, 0, 0, 0)
+					WeaponsTable[i].coolDownTimer = -1
+				end
+			end
+        end
+    end
+end
+
+function script.AimFromWeapon(weaponID)
+    if WeaponsTable[weaponID] then
+        return WeaponsTable[weaponID].aimpiece
+    else
+        return center
+    end
+end
+
+function script.QueryWeapon(weaponID)
+    if WeaponsTable[weaponID] then
+        return WeaponsTable[weaponID].emitpiece
+    else
+        return center
+    end
+end
+
+
+
+function script.AimWeapon(weaponID, heading, pitch)
+    if WeaponsTable[weaponID] then
+        if WeaponsTable[weaponID].aimfunc then
+            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+        else
+            WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
+            WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
+            return true
+        end
+    end
+    return false
 end
 
 

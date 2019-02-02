@@ -22,27 +22,29 @@ local OperativeAsset = Human:New{
 	CanStop = true,
 	script 				= "operativeassetscript.lua",
 	objectName        	= "operative_placeholder.s3o",
-
-	-- Hack Infrastructure
-	--CommandUnits (+10 Units)
-	-- WithinCellsInterlinked (Recruit)
+	firestate = 1,
 	
 	canCloak =true,
 	cloakCost=0.0001,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 15,
+	minCloakDistance = 0,
 	onoffable=true,
+		
+	fireState= 1,
 	
 		weapons={
 			[1]={name  = "pistol",
 				onlyTargetCategory = [[LAND ]],
 			},
 			[2]={name  = "gun",
+				onlyTargetCategory = [[LAND AIR ]],
+			},
+			[3]={name  = "sniperrifle",
 				onlyTargetCategory = [[LAND ]],
 			},
-			[3]={name  = "c4",
-				onlyTargetCategory = [[BUILDING ]],
-			},
+			[4]={name  = "c4",
+				onlyTargetCategory = [[LAND ]],
+			}
 		},
 	
 	

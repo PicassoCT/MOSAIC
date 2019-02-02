@@ -28,8 +28,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	--local totalTime=9000
 	
 	--Centrail Weapons
-	-- examleWeaponDefID = WeaponDefNames["exampleweapon"].id
-	-- Script.SetWatchWeapon(examleWeaponDefID, true)
+	 c4WeaponDefID = WeaponDefNames["c4"].id
+	 Script.SetWatchWeapon(c4WeaponDefID, true)
 	exampleDefID = -1
 	
 	--units To be exempted from instantly lethal force
@@ -146,8 +146,36 @@ if (gadgetHandler:IsSyncedCode()) then
 		
 		
 	end
+
+
+GROUND= string.byte('g') 
+UNIT=   string.byte('u') 
+FEATURE=   string.byte('f') 
+PROJECTILE=   string.byte('p') 	
+
+	projectileDestroyedFunctions = {
+	[c4WeaponDefID] = function (projID, defID, teamID)
+		target, targetID = Spring.GetProjectileTarget(proID)
+		
+		if type(target) == "table" then
+			Spring.CreateUnit("stationaryssied",target[1],target[2], target[3], 1, teamID)
+		else
+			if target== UNIT then
+				createUnitAtUnit(teamID, "stationaryssied", targetID)
+			elseif target == FEATURE then
+				createUnitAtFeature(teamID, "stationaryssied", targetID)
+			end		
+		end
 	
-	function gadget:ProjectileDestroyed(proID, proOwnerID)
+	end
+	
+	
+	}
+	function gadget:ProjectileDestroyed(proID)
+	defid= Spring.GetProjectileDefID(proID)
+	if projectileDestroyedFunctions[defID] then
+		return projectileDestroyedFunctions[defID] (proID, defID, Spring.GetProjectileTeamID (proID))
+	end
 		
 	
 	end
