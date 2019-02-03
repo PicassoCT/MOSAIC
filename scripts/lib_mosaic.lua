@@ -472,3 +472,27 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 				return frame + 30 , persPack	
 			end
 			
+function initalizeInheritanceManagement()
+--GG.InheritanceTable = [teamid] ={ [parent] = {[child] = true}}}
+
+
+
+end
+
+function registerChild( teamID, parent, childID)
+
+end
+
+function getChildrenOfUnit(teamID, unit)
+
+end
+
+function getParentOfUnit(teamID, unit)
+
+end
+
+ß
+function removeUnit(teamID, unit)
+
+
+end

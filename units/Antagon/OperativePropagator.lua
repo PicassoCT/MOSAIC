@@ -6,6 +6,7 @@ local OperativePropagator = Human:New{
 	buildCostMetal     	  = 5,
 
 	explodeAs				  = "none",
+	name = "Propagator",
 	description= "Propaganda Operative <recruits Agents>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
@@ -23,10 +24,6 @@ local OperativePropagator = Human:New{
 	CanStop = true,
 	script 				= "operativePropagatorscript.lua",
 	objectName        	= "operative_placeholder.s3o",
-
-	-- Hack Infrastructure
-	--CommandUnits (+10 Units)
-	-- WithinCellsInterlinked (Recruit)
 	
 	Builder = true,
 	nanocolor=[[0 0 0]], --

@@ -41,12 +41,19 @@ local OperativeAsset = Human:New{
 			},
 			[3]={name  = "sniperrifle",
 				onlyTargetCategory = [[LAND ]],
-			},
-			[4]={name  = "c4",
-				onlyTargetCategory = [[LAND ]],
 			}
 		},
-	
+		
+		
+	Builder = true,
+	nanocolor=[[0 0 0]], --
+	CanReclaim=false,	
+	workerTime = 0.25,
+	buildDistance = 25,
+	terraformSpeed = 1,
+	buildoptions = {
+		"stationaryssied"
+	},
 	
 	customparams = {
 		helptext		= "Stealth Assasin",
