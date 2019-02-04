@@ -474,25 +474,36 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 			
 function initalizeInheritanceManagement()
 --GG.InheritanceTable = [teamid] ={ [parent] = {[child] = true}}}
-
-
-
+	if not GG.InheritanceTable then  
+	GG.InheritanceTable ={} 
+		for _,teams in pairs(Spring.GetTeamList()) do
+				GG.InheritanceTable[teams] ={}
+		end
+	end
 end
 
 function registerChild( teamID, parent, childID)
+if not GG.InheritanceTable[teamID][parent] then GG.InheritanceTable[teamID][parent] ={} end
 
+	GG.InheritanceTable[teamID][parent][childID]= true
 end
 
 function getChildrenOfUnit(teamID, unit)
-
+return GG.InheritanceTable[teamID][unit] or {}
 end
 
 function getParentOfUnit(teamID, unit)
-
+	for parent, unitTable in pairs( GG.InheritanceTable[teamID]) do
+		if unitTable then
+			for thisUnit,_ in pairs(unitTable) do
+				if unit == thisUnit then return parent end
+			end
+		end
+	end
 end
 
-ß
 function removeUnit(teamID, unit)
-
-
+	parent= getParentOfUnit(teamID, unit)
+	if parent then  GG.InheritanceTable[teamID][parent][unit] = nil end
+	if GG.InheritanceTable[teamID][unit] then GG.InheritanceTable[teamID][unit] = nil end
 end
