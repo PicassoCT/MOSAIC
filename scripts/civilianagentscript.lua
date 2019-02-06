@@ -70,7 +70,7 @@ function spawnDecoyCivilian()
 	return 0
 end
 
-if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
+
 
 function script.Activate()
 	if not GG.OperativesDiscovered[unitID] then

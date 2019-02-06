@@ -710,7 +710,7 @@ end
 --------------------------------------------------------------------------------
 
 
-function gadget:UnitCreated(unitID, unitDefID)
+function gadget:UnitCreated(unitID, unitDefID, unitTeamID, parentID)
         local ud = UnitDefs[unitDefID]
         local chunk = scripts[ud.scriptName]
         if (not chunk) then return end
@@ -725,6 +725,7 @@ function gadget:UnitCreated(unitID, unitDefID)
 
         local pieces = Spring.GetUnitPieceMap(unitID)
         local env = {
+				parent = parentID
                 unitID = unitID,
                 unitDefID = unitDefID,
                 script = {},     -- will store the callins

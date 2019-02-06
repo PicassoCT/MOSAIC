@@ -444,8 +444,6 @@ if (gadgetHandler:IsSyncedCode()) then
 	function gadget:Initialize()
 	--Initialize global tables
 	GG.DisguiseCivilianFor={}
-		initalizeInheritanceManagement()
-	
 
 		Spring.Echo("gadget:Initialize")
 		process(Spring.GetAllUnits(),

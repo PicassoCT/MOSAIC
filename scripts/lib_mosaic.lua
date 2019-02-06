@@ -39,6 +39,13 @@ function getGameConfig()
 	 --Dayproperties
 	 daylength = 28800,
 	 
+	 -- Interrogation
+	 InterrogationTimeInSeconds = 20,
+	 InterrogationTimeInFrames = 20*30,
+	 InterrogationDistance= 80,
+	 
+	 
+	 
 	}
 end
 
@@ -127,6 +134,23 @@ function  getSafeHouseUpgradeTypeTable(UnitDefs)
 		"nimrod",
 		"assembly",
 		"noone",
+		"propagandaserver",
+		"launcher"
+	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
+function  getInterrogateAbleTypeTable(UnitDefs)
+	
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"civilianagent",
+		"operativeasset",
+		"operativepropagator",
+		"operativeinterogator",
+		"antagonsafehouse",
+		"protagonsafehouse",
 		"propagandaserver",
 		"launcher"
 	}

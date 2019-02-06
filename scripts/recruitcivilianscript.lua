@@ -22,12 +22,14 @@ function script.Create()
 
 end
 
+
 function recruiteLoop()
 	local recruitmentRange = gameConfig.agentConfig.recruitmentRange
 	local civilianDefID=  UnitDefNames["civilian"].id
 	local spGetUnitDefID =Spring.GetUnitDefID
 	local spGetUnitTeam = Spring.GetUnitTeam
-	
+	Sleep(100)
+
 	while true do
 		Sleep(100)
 		process(getAllNearUnit(unitID, recruitmentRange),
@@ -38,8 +40,8 @@ function recruiteLoop()
 				end,	
 				function(id)
 					if spGetUnitDefID(id)== civilianDefID then
-						
-						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id)
+						assert(parent)
+						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id, parent)
 						Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
 
 
@@ -54,6 +56,7 @@ function recruiteLoop()
 						end	
 						Spring.DestroyUnit(id,true,true)
 						Spring.DestroyUnit(unitID,true,true)
+						break
 					end
 				end
 				)				

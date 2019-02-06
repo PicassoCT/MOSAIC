@@ -825,14 +825,14 @@ function createUnitAtFeature(teamID, typeID, featureID,ox,oy,oz)
 end
 
 --> Transforms a selected unit into another type
-function transformUnitInto(oldID, unitType, setVel, boolKill)
+function transformUnitInto(oldID, unitType, setVel, boolKill, parentID)
 	x, y, z = Spring.GetUnitPosition(oldID)
 	teamID = Spring.GetUnitTeam(oldID)
 	vx, vy, vz, vl = Spring.GetUnitVelocity(oldID)
 	rotx, roty, rotz = Spring.GetUnitRotation(oldID)
 	currHp, oldMaxHp = Spring.GetUnitHealth(oldID)
 	
-	id = Spring.CreateUnit(unitType, x, y, z, math.ceil(math.random(0, 3)), teamID)
+	id = Spring.CreateUnit(unitType, x, y, z, math.ceil(math.random(0, 3)), teamID, false, false, oldID, parentID)
 	if id then
 		transferUnitStatusToUnit(oldID, id)
 		transferOrders(oldID, id)
