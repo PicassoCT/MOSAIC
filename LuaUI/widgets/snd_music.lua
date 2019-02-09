@@ -104,6 +104,8 @@ local function StartLoopingTrack(trackInit, trackLoop)
 	looping = 0.5
 end
 
+
+
 local function StartTrack(track)
 	if not peaceTracks then
 		Spring.Echo("Missing peaceTracks file, no music started")
@@ -127,7 +129,7 @@ local function StartTrack(track)
 		repeat
 			if (not gameStarted) then
 				if (#briefingTracks == 0) then return end
-				newTrack = briefingTracks[math.random(1, #briefingTracks)]
+				newTrack = briefingTracks[ #briefingTracks -math.random(1, #briefingTracks-1)]
 				musicType = "briefing"
 			elseif musicType == 'peace' then
 				if (#peaceTracks == 0) then return end

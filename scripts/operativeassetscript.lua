@@ -57,7 +57,7 @@ function spawnDecoyCivilian()
 
 			
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
-			
+			GG.DisguiseCivilianFor[civilianID]= unitID
 			
 			if civilianID then
 				GG.EventStream:CreateEvent(

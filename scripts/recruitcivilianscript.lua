@@ -22,6 +22,12 @@ function script.Create()
 
 end
 
+boolKillParent= false
+overWriteIDOnCreation= nil
+boolSetVelocity= true
+
+operativeTypeTable = getOperativeTypeTable(UnitDefs)
+civilianAgentDefID = UnitDefNames["civilianagent"].id
 
 function recruiteLoop()
 	local recruitmentRange = gameConfig.agentConfig.recruitmentRange
@@ -32,35 +38,63 @@ function recruiteLoop()
 
 	while true do
 		Sleep(100)
-		process(getAllNearUnit(unitID, recruitmentRange),
+		process(
+				getAllNearUnit(unitID, recruitmentRange),
 				function(id)
 					if spGetUnitTeam(id)== gaiaTeamID then
 						return id
 					end
 				end,	
+				function(id) --filter out disguise units
+boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id] ~= fatherID and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= Spring.GetUnitTeam(unitID)  
+					
+					if spGetUnitDefID(id)== civilianDefID and  not GG.DisguiseCivilianFor[id]	or 		boolIsDisguiseCivilian == true			
+					then
+						return id
+					end
+				end,
 				function(id)
-					if spGetUnitDefID(id)== civilianDefID then
-						assert(parent)
-						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id, true, false,  parent)
-						Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
-
-
-						if GG.DisguiseCivilianFor[id] then
-							attachDoubleAgentToUnit(ad, Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
-							Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
-							defID =  Spring.GetUnitDefID(GG.DisguiseCivilianFor[id]) 
-							if defID == UnitDefNames["operativeinvestigator"].id  or defID == UnitDefNames["operativeinvestigator"].id then
-								--beam out  to nearest building
+					if id then
+						--create a civilian agent
+						recruitedDefID = Spring.GetUnitDefID(id)
+						teamID =Spring.GetUnitTeam(unitID)
+			
+						x,y,z,_,_,_ =Spring.GetUnitPosition(id)
+						ad = Spring.CreateUnit("civilianagent",			
+								x,y,z, 			
+								1,		
+								teamID,	
+								false,				
+								false,	
+								nil,
+								fatherID)
+						assert(ad)
+						transferUnitStatusToUnit(id, ad)
+						transferOrders(id, ad)
+						
+						--if the recruitedunit was a civilianagent
+							if recruitedDefID == civilianAgentDefID then
+								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
+								Spring.DestroyUnit( id , false, true)
+							elseif operativeTypeTable[recruitedDefID] and recruitedDefID ~= civilianAgentDefID then
+								--if the recruited unit was a operative
+								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
 								beamOperativeToNearestHouse(GG.DisguiseCivilianFor[id])
-							end	
-						end	
-						Spring.DestroyUnit(id,true,true)
-						Spring.DestroyUnit(unitID,true,true)
+								MoveUnitToUnit(id, GG.DisguiseCivilianFor[id])
+							end
+							
+							if recruitedDefID == civilianDefID then
+								Spring.DestroyUnit( id , false, true)
+							end
+					Spring.DestroyUnit(unitID, false, true) 
+					while true do
+						Sleep(1000)
+					end
 					end
 				end
-				)				
+			)				
 	
-	end
+		end
 end
 
 function beamOperativeToNearestHouse(id)

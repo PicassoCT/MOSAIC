@@ -62,7 +62,7 @@ function spawnDecoyCivilian()
 				GG.EventStream:CreateEvent(
 				syncDecoyToAgent,
 				persPack,
-				Spring.GetGameFrame()
+				Spring.GetGameFrame()+1
 				)
 			end
 

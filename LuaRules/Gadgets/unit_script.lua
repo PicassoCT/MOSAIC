@@ -725,7 +725,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeamID, parentID)
 
         local pieces = Spring.GetUnitPieceMap(unitID)
         local env = {
-				parent = parentID,
+				fatherID = parentID,
                 unitID = unitID,
                 unitDefID = unitDefID,
                 script = {},     -- will store the callins

@@ -781,10 +781,10 @@ function stunUnit(k, factor)
 end
 
 --> Transfer UnitStats
-function transferUnitStatusToUnit(unitID, targetID)
-	exP = Spring.GetUnitExperience(unitID)
-	hp, maxHP, para, cap, bP = Spring.GetUnitHealth(unitID)
-	newhp, newmaxHP, _, _, _ = Spring.GetUnitHealth(unitID)
+function transferUnitStatusToUnit(id, targetID)
+	exP = Spring.GetUnitExperience(id)
+	hp, maxHP, para, cap, bP = Spring.GetUnitHealth(id)
+	newhp, newmaxHP, _, _, _ = Spring.GetUnitHealth(id)
 	Spring.SetUnitExperience(targetID, exP)
 	
 	factor = 1 / (hp / maxHP)
@@ -808,9 +808,9 @@ function transferUnitTeam(id, targetTeam)
 	Spring.TransferUnit(id, targetTeam)
 end
 --> Create a Unit at Piece of another Unit
-function createUnitAtPiece(unitID, typeID, Piece, team)
-	x,y,z,_,_,_ =Spring.GetUnitPiecePosDir(unitID, Piece)
-	teamID= team or Spring.GetUnitTeam(unitID)
+function createUnitAtPiece(id, typeID, Piece, team)
+	x,y,z,_,_,_ =Spring.GetUnitPiecePosDir(id, Piece)
+	teamID= team or Spring.GetUnitTeam(id)
 	return Spring.CreateUnit(typeID, x, y, z, math.ceil(math.random(0, 3)), teamID)
 end
 --> Create a Unit at another Unit
@@ -826,14 +826,15 @@ function createUnitAtFeature(teamID, typeID, featureID,ox,oy,oz)
 end
 
 --> Transforms a selected unit into another type
-function transformUnitInto(oldID, unitType, setVel, boolKill, parentID)
+function transformUnitInto(oldID, unitType, setVel, boolKill, parentID, overWriteID)
 	x, y, z = Spring.GetUnitPosition(oldID)
 	teamID = Spring.GetUnitTeam(oldID)
 	vx, vy, vz, vl = Spring.GetUnitVelocity(oldID)
 	rotx, roty, rotz = Spring.GetUnitRotation(oldID)
 	currHp, oldMaxHp = Spring.GetUnitHealth(oldID)
 	
-	id = Spring.CreateUnit(unitType, x, y, z, math.ceil(math.random(0, 3)), teamID, false, false, oldID, parentID)
+	id = Spring.CreateUnit(unitType, x, y, z, math.ceil(math.random(0, 3)), teamID, false, false, overWriteID, parentID)
+	assert(id)
 	if id then
 		transferUnitStatusToUnit(oldID, id)
 		transferOrders(oldID, id)

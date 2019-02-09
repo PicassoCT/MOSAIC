@@ -158,6 +158,20 @@ function  getInterrogateAbleTypeTable(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
+function  getOperativeTypeTable(UnitDefs)
+	
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"civilianagent",
+		"operativeasset",
+		"operativepropagator",
+		"operativeinvestigator"
+		
+	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 function getCivilianTypeTable(UnitDefs)
 	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
