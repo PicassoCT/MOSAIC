@@ -114,7 +114,7 @@ end
 
 
 
-Spring.SetUnitNanoPieces(unitID, { center })
+Spring.SetUnitNanoPieces(unitID, { gun })
 
 
 function raidAimFunction(weaponID, heading, pitch)

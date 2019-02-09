@@ -36,7 +36,16 @@ local Noone_UplinkLaser = Building:New{
 	name = "Noone",
 	description = "Uplinklaser  <Com with Satellites / blind Scansatellites>",
 
-	
+	canCloak =true,
+	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
+	cloakCostMoving =0.0001,
+	minCloakDistance = 0,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
+
 	customparams = {
 		helptext		= "Noone Uplinklaser",
 		baseclass		= "Building", -- TODO: hacks

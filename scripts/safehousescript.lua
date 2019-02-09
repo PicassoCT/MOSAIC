@@ -68,7 +68,7 @@ function detectUpgrade()
 			buildDefID = Spring.GetUnitDefID(buildID)
 			if safeHouseUpgradeTable[buildDefID] then
 				waitTillComplete(buildID)
-				id= transformUnitInto(unitID, buildDefID)
+				id= createUnitAtUnit(Spring.GetUnitTeam(unitID), buildDefID, unitID)
 				GG.houseHasSafeHouseTable[safeHouseID] = id
 				Spring.UnitAttach(safeHouseID, id, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
 				Spring.Echo("Upgrade Complete")

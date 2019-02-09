@@ -26,19 +26,21 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-options_path = 'Settings/Audio/Music'
+options_path = 'Settings/Audio'
 options = {
 	useIncludedTracks = {
 		name = "Use Included Tracks",
 		type = 'bool',
 		value = true,
-		desc = 'Use the tracks included with Journeywar',
+		desc = 'Use the tracks included with Zero-K',
+		noHotkey = true,
 	},
 	pausemusic = {
-		name='Pause Music',
-		type='bool',
-		value=false,
+		name = 'Pause Music',
+		type = 'bool',
+		value = false,
 		desc = "Music pauses with game",
+		noHotkey = true,
 	},
 }
 
@@ -81,7 +83,7 @@ local gameOver = false
 local myTeam = Spring.GetMyTeamID()
 local isSpec = Spring.GetSpectatingState() or Spring.IsReplay()
 local defeat = false
-
+unitExceptions ={}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function GetMusicType()
@@ -103,6 +105,11 @@ local function StartLoopingTrack(trackInit, trackLoop)
 end
 
 local function StartTrack(track)
+	if not peaceTracks then
+		Spring.Echo("Missing peaceTracks file, no music started")
+		return
+	end
+
 	haltMusic = false
 	looping = false
 	Spring.StopSoundStream()
@@ -118,7 +125,11 @@ local function StartTrack(track)
 	else
 		local tries = 0
 		repeat
-			if musicType == 'peace' then
+			if (not gameStarted) then
+				if (#briefingTracks == 0) then return end
+				newTrack = briefingTracks[math.random(1, #briefingTracks)]
+				musicType = "briefing"
+			elseif musicType == 'peace' then
 				if (#peaceTracks == 0) then return end
 				newTrack = peaceTracks[math.random(1, #peaceTracks)]
 			elseif musicType == 'war' then
@@ -156,14 +167,6 @@ local function StopTrack(noContinue)
 	end
 end
 
-function ActivateSlowMoShader(boolActive)
-	if boolActive == true then
-		WG.music_volume = 0.0
-	else
-		WG.music_volume = 0.5
-	end
-end
-
 
 local function SetWarThreshold(num)
 	if num and num >= 0 then
@@ -185,8 +188,6 @@ function widget:Update(dt)
 	if gameOver then
 		return
 	end
-
-
 	if not initialized then
 		math.randomseed(os.clock()* 100)
 		initialized=true
@@ -305,49 +306,27 @@ function widget:Update(dt)
 end
 
 function widget:GameStart()
-	gameStarted = true
-	previousTrackType = musicType
-	StartTrack()
+	if not gameStarted then
+		gameStarted = true
+		previousTrackType = musicType
+		musicType = "peace"
+		StartTrack()
+	end
 	
 	--Spring.Echo("Track: " .. newTrack)
 	newTrackWait = 0	
 end
 
-function widget:Initialize()
-	WG.Music = WG.Music or {}
-	WG.Music.StartTrack = StartTrack
-	WG.Music.StartLoopingTrack = StartLoopingTrack
-	WG.Music.StopTrack = StopTrack
-	WG.Music.SetWarThreshold = SetWarThreshold
-	WG.Music.SetPeaceThreshold = SetPeaceThreshold
-	WG.Music.GetMusicType = GetMusicType
-
-	-- Spring.Echo(math.random(), math.random())
-	-- Spring.Echo(os.clock())
-	if peaceTracks then
-		for TrackName,TrackDef in pairs(peaceTracks) do
-			Spring.Echo("Track: " .. TrackDef)	
-		end
-	end
-	math.randomseed(os.clock()* 101.01)--lurker wants you to burn in hell rgn
-	-- for i=1,20 do Spring.Echo(math.random()) end
-	
-	for i = 1, 30, 1 do
-		dethklok[i]=0
-	end
-end
-
-function widget:Shutdown()
-	Spring.StopSoundStream()
-	WG.Music = nil
-	
-	for i=1,#windows do
-		(windows[i]):Dispose()
-	end
+-- Safety of a heisenbug
+function widget:GameFrame()
+	widget:GameStart()
+	widgetHandler:RemoveCallIn('GameFrame')
 end
 
 function widget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer)
-
+	if unitExceptions[unitDefID] then
+		return
+	end
 	
 	if (damage < 1.5) then return end
 	local PlayerTeam = Spring.GetMyTeamID()
@@ -369,7 +348,9 @@ function widget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer)
 end
 
 function widget:UnitDestroyed(unitID, unitDefID, teamID) 
-	
+	if unitExceptions[unitDefID] then
+		return
+	end
 	local unitWorth = 50
 	if (UnitDefs[unitDefID].metalCost > 500) then
 		unitWorth = 200
@@ -399,11 +380,9 @@ function widget:TeamDied(team)
 	end
 end
 
-function widget:GameOver()
-	--gameOver = true
+local function PlayGameOverMusic(gameWon)
 	local track
-	-- FIXME: get a better way to detect who won
-	if not defeat then
+	if gameWon then
 		if #victoryTracks <= 0 then return end
 		track = victoryTracks[math.random(1, #victoryTracks)]
 		musicType = "victory"
@@ -418,3 +397,42 @@ function widget:GameOver()
 	WG.music_start_volume = WG.music_volume
 end
 
+function widget:GameOver()
+	PlayGameOverMusic(not defeat)
+end
+
+function widget:Initialize()
+	WG.Music = WG.Music or {}
+	WG.Music.StartTrack = StartTrack
+	WG.Music.StartLoopingTrack = StartLoopingTrack
+	WG.Music.StopTrack = StopTrack
+	WG.Music.SetWarThreshold = SetWarThreshold
+	WG.Music.SetPeaceThreshold = SetPeaceThreshold
+	WG.Music.GetMusicType = GetMusicType
+	WG.Music.PlayGameOverMusic = PlayGameOverMusic
+
+	-- Spring.Echo(math.random(), math.random())
+	-- Spring.Echo(os.clock())
+ 
+	-- for TrackName,TrackDef in pairs(peaceTracks) do
+		-- Spring.Echo("Track: " .. TrackDef)	
+	-- end
+	--math.randomseed(os.clock()* 101.01)--lurker wants you to burn in hell rgn
+	-- for i=1,20 do Spring.Echo(math.random()) end
+	
+	for i = 1, 30, 1 do
+		dethklok[i]=0
+	end
+end
+
+function widget:Shutdown()
+	Spring.StopSoundStream()
+	WG.Music = nil
+	
+	for i=1,#windows do
+		(windows[i]):Dispose()
+	end
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------

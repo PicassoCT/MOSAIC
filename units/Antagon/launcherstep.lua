@@ -10,10 +10,14 @@ local BuildLauncherStep = Abstract:New{
 	objectName        	= "placeholder.s3o",
 	
 	canCloak =true,
-	cloakCost=0.000001,
+	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 5,
+	minCloakDistance = 0,
 	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
 	MaxSlope 					= 100,
 
 

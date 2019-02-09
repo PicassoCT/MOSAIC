@@ -20,7 +20,7 @@ local unitDef = {
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
-	TEDClass            = [[VTOL]],
+	TEDClass            = "AIRUNIT",
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
@@ -44,7 +44,7 @@ local unitDef = {
 	LeaveTracks = false, 
 	cruiseAlt= 25,
 
-	ActivateWhenBuilt=0,
+	ActivateWhenBuilt=1,
 	maxBank=0.4,
 	myGravity =0.5,
 	mass                = 150,

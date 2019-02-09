@@ -148,7 +148,7 @@ function  getInterrogateAbleTypeTable(UnitDefs)
 		"civilianagent",
 		"operativeasset",
 		"operativepropagator",
-		"operativeinterogator",
+		"operativeinvestigator",
 		"antagonsafehouse",
 		"protagonsafehouse",
 		"propagandaserver",
@@ -504,6 +504,10 @@ function initalizeInheritanceManagement()
 				GG.InheritanceTable[teams] ={}
 		end
 	end
+end
+
+function registerFather( teamID, parent)
+	if not GG.InheritanceTable[teamID][parent] then GG.InheritanceTable[teamID][parent] ={} end
 end
 
 function registerChild( teamID, parent, childID)

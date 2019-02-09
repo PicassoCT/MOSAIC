@@ -30,6 +30,15 @@ local ProtagonSafeHouse = Building:New{
 	MakesMetal = 0, 
 	MetalMake = 0,	
 	
+	canCloak =true,
+	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
+	cloakCostMoving =0.0001,
+	minCloakDistance = 0,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
 	
 	script 			= "safehousescript.lua",
 	objectName        	= "house_safehouse.s3o",

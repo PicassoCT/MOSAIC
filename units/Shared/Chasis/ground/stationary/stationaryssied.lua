@@ -2,7 +2,7 @@ local unitName = "stationaryssied"
 local unitDef = {
 	name = "SIED",
 	Description = " 3.. 2... 1 <Projectile>",
-	objectName = "placeholder.s3o",
+	objectName = "ssied.s3o",
 	script = "placeholder.lua",
 	buildPic = "placeholder.png",
 	--cost

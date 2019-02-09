@@ -47,14 +47,17 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-		--if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
+		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
 		if teamID == gaiaTeamID and attackerID then
 			ux,uy,uz= Spring.GetUnitPosition(unitID)
 			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 			function(id)
 				
-				if 	MobileCivilianDefIds[GG.CivilianTable[unitID].defID] then
-					return id
+				if  id then
+				defID = Spring.GetUnitDefID(id)				
+					if defID and MobileCivilianDefIds[defID] then
+						return id
+					end
 				end
 			end,
 			function(id)
@@ -64,6 +67,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			end
 			)
 		end
+		return unitID
 	end
 	
 	

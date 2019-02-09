@@ -26,10 +26,14 @@ local OperativeAsset = Human:New{
 	
 	canCloak =true,
 	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
 	minCloakDistance = 0,
 	onoffable=true,
-		
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
+	
 	fireState= 1,
 	
 		weapons={
@@ -49,7 +53,7 @@ local OperativeAsset = Human:New{
 	nanocolor=[[0 0 0]], --
 	CanReclaim=false,	
 	workerTime = 0.25,
-	buildDistance = 25,
+	buildDistance = 45,
 	terraformSpeed = 1,
 	buildoptions = {
 		"stationaryssied"

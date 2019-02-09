@@ -23,11 +23,15 @@ local DoubleAgent = Abstract:New{
 	script 					= "doubleagentscript.lua",
 	objectName        	= "doubleagent.s3o",
 
-
 	canCloak =true,
-	cloakCost=0,
-	cloakCostMoving =0,
+	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
+	cloakCostMoving =0.0001,
 	minCloakDistance = 0,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
 	
 	onoffable=true,
 	activatewhenbuilt = true,

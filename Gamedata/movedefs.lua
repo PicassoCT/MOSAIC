@@ -1,4 +1,6 @@
 local moveDefs 	=	 {
+		
+	
 		{
 			name			=	"bhover3",
 			footprintX		=	3,
@@ -27,7 +29,7 @@ local moveDefs 	=	 {
 	},
 	{
 		name			=	"AIRUNIT",
-		footprintX		=	3,
+		footprintX		=	2,
 		maxWaterDepth	=	2,
 		maxSlope		=	100,
 		crushStrength	=	0,

@@ -41,7 +41,7 @@ function recruiteLoop()
 				function(id)
 					if spGetUnitDefID(id)== civilianDefID then
 						assert(parent)
-						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id, parent)
+						ad = transformUnitInto(id, UnitDefNames["civilianagent"].id, true, false,  parent)
 						Spring.TransferUnit(ad, Spring.GetUnitTeam(unitID), true)
 
 
@@ -56,7 +56,6 @@ function recruiteLoop()
 						end	
 						Spring.DestroyUnit(id,true,true)
 						Spring.DestroyUnit(unitID,true,true)
-						break
 					end
 				end
 				)				

@@ -1,6 +1,6 @@
 function gadget:GetInfo()
 	return {
-		name = "Civilian City and Inhabitants Gadget",
+		name = "Treason and Betrayal",
 		desc = "Coordinates Traffic ",
 		author = "Picasso",
 		date = "3rd of May 2010",
@@ -27,27 +27,28 @@ if (gadgetHandler:IsSyncedCode()) then
 	assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
 	MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
-	reruitmentDefID = UnitDefNames["recruitcivilians"].id
+	reruitmentDefID = UnitDefNames["recruitcivilian"].id
 
-	-- GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
-	-- GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
-	-- GG.BuildingTable= {} --[BuildingUnitID] = {routeID, stationIndex}
-	
+
 	
 	gaiaTeamID = Spring.GetGaiaTeamID()
 	
    function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
-		assert(unitTeam)
-			assert(father)
-   
+	
 		if InterrogateableType[unitdefid] then
-			 registerChild( unitTeam, father, unitid)
+		Spring.Echo("UnitCreated of InterrogateableType")
+			if father  then		
+				 registerChild( unitTeam, father, unitid)		
+			else
+				registerFather( unitTeam, unitid)
+			end
+			Spring.Echo("UnitCreated Registered InterrogateableType")
 		end
 	end
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-		if InterrogateableType[unitdefid] then
-			 removeUnit( unitTeam, father, unitid)
+		if InterrogateableType[unitDefID] then
+			 removeUnit( teamID, unitID)
 		end
 	end
 	

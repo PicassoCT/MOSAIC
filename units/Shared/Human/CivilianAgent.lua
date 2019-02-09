@@ -22,15 +22,15 @@ local CivilianAgent = Human:New{
 	script 					= "civilianagentscript.lua",
 	objectName        	= "human_placeholder.s3o",
 
-
 	canCloak =true,
 	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 15,
+	minCloakDistance = 0,
 	onoffable=true,
-	
-	
-	
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
 	
 	customparams = {
 		helptext		= "Civilian Building",
