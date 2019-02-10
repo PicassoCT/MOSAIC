@@ -12,6 +12,7 @@ end
 center = piece "center"
 aimpiece = piece "aimpiece"
 nano = piece "nano"
+shotemit = piece "shotemit"
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -26,20 +27,20 @@ end
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
-    return aimpiece
+    return shotemit
 end
 
 
 
 function script.QueryWeapon1()
-    return aimpiece
+    return shotemit
 end
 
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 
-        Turn(aimpiece, y_axis, Heading, 0.4)
-        Turn(aimpiece, x_axis, -pitch, 1.3)
+        WTurn(aimpiece, y_axis, Heading, 0.4)
+        WTurn(aimpiece, x_axis, -pitch, 1.3)
     return true
 end
 
@@ -81,18 +82,11 @@ function script.Deactivate()
     return 0
 end
 
-function script.StopBuilding()
-end
 
-
-
-function script.StartBuilding(heading, pitch)
-
-end
 
 
 function script.QueryBuildInfo()
-    return center
+    return aimpiece
 end
 
 Spring.SetUnitNanoPieces(unitID, { nano })

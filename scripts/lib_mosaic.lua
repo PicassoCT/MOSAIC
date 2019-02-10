@@ -1,17 +1,15 @@
 --===================================================================================================================
 -- Game Configuration
 
-
+unitFactor= 0.5
 function getGameConfig()
 	return {
 	Version = 0.1,
 	
-	-- numberOfBuildings 	= 75,
-    -- numberOfVehicles 	= 100,
-    -- numberOfPersons		= 200,
-	numberOfBuildings 	= 35,
-    numberOfVehicles 	= 50,
-    numberOfPersons		= 100,
+	numberOfBuildings 	= 75 *unitFactor,
+    numberOfVehicles 	= 100 *unitFactor,
+    numberOfPersons		= 200 *unitFactor,
+
 	 houseSizeX			= 256, 
 	 houseSizeY			= 16, 
 	 houseSizeZ			= 256,

@@ -23,7 +23,16 @@ local Propagandaserver = Building:New{
 	objectName        	= "propagandaserver.s3o",
 
 
-	
+	canCloak =true,
+	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
+	cloakCostMoving =0.0001,
+	minCloakDistance = 0,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
+
 
 }
 

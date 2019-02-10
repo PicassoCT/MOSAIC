@@ -47,12 +47,13 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+		Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
 		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
 		if teamID == gaiaTeamID and attackerID then
 			ux,uy,uz= Spring.GetUnitPosition(unitID)
 			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 			function(id)
-				
+				--filter out civilians
 				if  id then
 				defID = Spring.GetUnitDefID(id)				
 					if defID and MobileCivilianDefIds[defID] then
@@ -61,13 +62,20 @@ if (gadgetHandler:IsSyncedCode()) then
 				end
 			end,
 			function(id)
-				if math.random(0,100) > GameConfig.inHundredChanceOfInterestInDisaster then						
-					Command(id, "go", { ux+ math.random(-10,10), uy, uz+ math.random(-10,10)}, {})					
+				if math.random(0,100) > GameConfig.inHundredChanceOfInterestInDisaster then			
+					offx, offz= math.random(0,10)*randSign(), math.random(0,10)*randSign()
+					Command(id, "go", { x=  ux+ offx, y=  uy, z = uz+ offz}, {})					
 				end
 			end
 			)
+			
+			if unitDefID == UnitDefNames["house"].id then
+				checkReSpawnHouses()
+			end
 		end
-		return unitID
+		
+
+
 	end
 	
 	

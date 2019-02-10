@@ -72,7 +72,7 @@ function spawnDecoyCivilian()
 end
 
 function script.Activate()
-	setSpeedEnv(unitID, 0.35)
+	setSpeedEnv(unitID, 0.175) -- 9,00 -> 1,575  must be as slow as a civilian when moving hidden
 	Spring.Echo("Activate "..unitID)
 	if not GG.OperativesDiscovered[unitID] then
          SetUnitValue(COB.WANT_CLOAK, 1)
