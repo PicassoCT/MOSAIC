@@ -39,7 +39,7 @@ end
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 
-        WTurn(aimpiece, y_axis, Heading, 0.4)
+        WTurn(center, y_axis, Heading, 0.4)
         WTurn(aimpiece, x_axis, -pitch, 1.3)
     return true
 end

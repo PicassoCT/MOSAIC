@@ -47,9 +47,9 @@ function houseAttach()
 					Spring.UnitAttach(id, unitID, getUnitPieceByName(id, GameConfig.safeHousePieceName))
 					Spring.Echo("SafehouseAttached")
 					-- Spring.SetUnitNoSelect(unitID, true)	
-					Sleep(GameConfig.delayTillSafeHouseEstablished)
-					Spring.Echo("Safehouse Active")
-					boolSafeHouseActive = true
+					-- stunUnit(unitID,GameConfig.delayTillSafeHouseEstablished/1000)
+					-- Sleep(GameConfig.delayTillSafeHouseEstablished)
+
 					-- Spring.SetUnitNoSelect(unitID, false)
 					StartThread(detectUpgrade)
 				end
@@ -72,7 +72,7 @@ function detectUpgrade()
 				GG.houseHasSafeHouseTable[safeHouseID] = buildID
 				Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
 				Spring.Echo("Upgrade Complete")
-				Spring.DestroyUnit(unitID,true,true)
+				Spring.DestroyUnit(unitID,false,true)
 			end
 		end
 		Sleep(500)

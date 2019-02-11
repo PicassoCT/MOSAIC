@@ -358,7 +358,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		index = index + 1
 		Route[index]= {}
 
-		
+		assert(x1)
 		boolLongWay = distance(x1,y1,z1,x2,y2,z2) > 2048 
 		
 		if boolLongWay == false then				
@@ -580,8 +580,12 @@ if (gadgetHandler:IsSyncedCode()) then
 		
 		-- end
 		assert(startNodeID)
-		assert(RouteTabel[startNodeID][math.random(2,#RouteTabel[startNodeID])])
+		targetNodeID = math.random(2,#RouteTabel[startNodeID])
+		assert(RouteTabel[startNodeID][targetNodeID])
+		
 		mydefID = Spring.GetUnitDefID(uID)
+		
+		
 		GG.EventStream:CreateEvent(
 		travellFunction,
 		{--persistance Pack
@@ -589,7 +593,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			myTeam = Spring.GetUnitTeam(uID),
 			unitID = uID ,
 			goalIndex = 1,
-			goalList = buildRouteSquareFromTwoUnits(startNodeID, RouteTabel[startNodeID][math.random(2,#RouteTabel[startNodeID])], mydefID )
+			goalList = buildRouteSquareFromTwoUnits(startNodeID, RouteTabel[startNodeID][targetNodeID], mydefID )
 		},
 		Spring.GetGameFrame() + (uID % 100)
 		)

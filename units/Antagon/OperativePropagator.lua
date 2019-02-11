@@ -57,10 +57,7 @@ local OperativePropagator = Human:New{
 			[1]={name  = "raidarrest", --prevents other weapon usage
 				onlyTargetCategory = [[ARRESTABLE]],
 			},				
-			[2]={name  = "pistol",
-				onlyTargetCategory = [[LAND]],
-			},
-			[3]={name  = "machinegun",
+			[2]={name  = "stunpistol",
 				onlyTargetCategory = [[LAND]],
 			}
 		},	
