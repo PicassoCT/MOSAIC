@@ -238,7 +238,7 @@ PROJECTILE=   string.byte('p')
 	
 		-- x,y,z= getProjectileTargetXYZ(proID)
 		
-		-- Spring.CreateUnit("stationaryssied",x,y,z, 1, teamID)
+		-- Spring.CreateUnit("ground_station_ssied",x,y,z, 1, teamID)
 		
 	
 	-- end

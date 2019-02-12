@@ -33,6 +33,7 @@ function getGameConfig()
 	 buildSafeHouseRange = 66,
 	 safeHousePieceName = "center",
 	 delayTillSafeHouseEstablished= 15000,
+	 safeHouseLiftimeUnattached= 15000,
 	 
 	 --doubleAgentHeight
 	 doubleAgentHeight = 256,

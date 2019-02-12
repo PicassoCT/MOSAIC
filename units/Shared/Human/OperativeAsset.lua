@@ -40,10 +40,9 @@ local OperativeAsset = Human:New{
 			[1]={name  = "pistol",
 				onlyTargetCategory = [[LAND ]],
 			},
-			,
 			[2]={name  = "machinegun",
 				onlyTargetCategory = [[LAND]],
-			}
+			},
 			[3]={name  = "sniperrifle",
 				onlyTargetCategory = [[LAND ]],
 			}
@@ -57,7 +56,7 @@ local OperativeAsset = Human:New{
 	buildDistance = 45,
 	terraformSpeed = 1,
 	buildoptions = {
-		"stationaryssied"
+		"air_copter_ssied"
 	},
 	
 	customparams = {

@@ -12,27 +12,45 @@ end
 
 center = piece "center"
 nano = piece "nano"
-local safeHouseID
+local safeHouseID = nil
+gameConfig = getGameConfig()
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(houseAttach)
+	StartThread(killMyselfIfNotAttached)
+
 	
 end
 
-
+function killMyselfIfNotAttached()
+	Sleep(gameConfig.safeHouseLiftimeUnattached)
+	counter = 0
+	while  safeHouseID == nil and boolAttached == false do
+		Sleep(100)
+		counter = counter + 100
+		if counter > gameConfig.safeHouseLiftimeUnattached then 
+			Spring.DestroyUnit(unitID,false,true)
+		end
+	end
+	
+	while doesUnitExistAlive(safeHouseID) == true do
+		Sleep(100)
+	end
+	Spring.DestroyUnit(unitID,false,true)
+end
 
 CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
 local houseDefID= CivilianTypeDefTable["house"]
-GameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
+boolAttached= false
 
 function houseAttach()
 	Sleep(100)
 	waitTillComplete(unitID)
 	Spring.Echo("Safehouse completed")
 	process(
-			getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
+			getAllNearUnit(unitID, gameConfig.buildSafeHouseRange),
 			function(id)
 				if Spring.GetUnitDefID(id) == houseDefID and Spring.GetUnitTeam(id) == gaiaTeamID then
 					return id
@@ -44,12 +62,12 @@ function houseAttach()
 					GG.houseHasSafeHouseTable[id] = unitID 
 					safeHouseID= id
 					
-					Spring.UnitAttach(id, unitID, getUnitPieceByName(id, GameConfig.safeHousePieceName))
+					Spring.UnitAttach(id, unitID, getUnitPieceByName(id, gameConfig.safeHousePieceName))
 					Spring.Echo("SafehouseAttached")
 					-- Spring.SetUnitNoSelect(unitID, true)	
-					-- stunUnit(unitID,GameConfig.delayTillSafeHouseEstablished/1000)
-					-- Sleep(GameConfig.delayTillSafeHouseEstablished)
-
+					-- stunUnit(unitID,gameConfig.delayTillSafeHouseEstablished/1000)
+					-- Sleep(gameConfig.delayTillSafeHouseEstablished)
+					boolAttached= true
 					-- Spring.SetUnitNoSelect(unitID, false)
 					StartThread(detectUpgrade)
 				end
@@ -70,7 +88,7 @@ function detectUpgrade()
 				waitTillComplete(buildID)
 				
 				GG.houseHasSafeHouseTable[safeHouseID] = buildID
-				Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
+				Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, gameConfig.safeHousePieceName))
 				Spring.Echo("Upgrade Complete")
 				Spring.DestroyUnit(unitID,false,true)
 			end

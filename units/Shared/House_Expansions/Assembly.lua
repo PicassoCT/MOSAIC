@@ -22,7 +22,7 @@ local Assembly = Building:New{
 	script 					= "assemblyscript.lua",
 	objectName        	= "assembly.s3o",
 	name = "Assembly",
-	description = " create Standardized Robots <Automated Factory>",
+	description = " creates MOSAIC Standardized drones <Automated Factory>",
 
 	canCloak =true,
 	cloakCost=0.0001,
@@ -42,7 +42,24 @@ local Assembly = Building:New{
 	
 		buildoptions = 
 	{
-	"airssied"	
+	--chassis
+	--air
+		 --copter  --jet -- bomber --long range rocket
+		
+			"air_copter_ssied",	
+	--ground
+		--turret --snake --walker(roach) --truck
+	--water
+		-- boat -- sub
+	
+	--weapon
+	 --ssied --rocket --gattling --sniperrifle --mortar --anit-projectile -- anti-launch 
+	 
+	 --scan -- jam 
+	 
+	 --transport -only works for bomber, copter and longrange rocket
+	
+
 	},
 	
 

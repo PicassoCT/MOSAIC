@@ -1,7 +1,7 @@
-local unitName = "airssied"
+local unitName = "air_copter_ssied"
 
 local unitDef = {
-	name = "SSIED",
+	name = "Airborne SSIED",
 	Description = "Standardized Smart Improvised Explosive Device ",
 	objectName = "ssied.s3o",
 	script = "airssiedscript.lua",
@@ -20,7 +20,7 @@ local unitDef = {
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
-	TEDClass            = "AIRUNIT",
+
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
@@ -32,15 +32,16 @@ local unitDef = {
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 250,
 	CanFly   = true,
+	activateWhenBuilt   	= true,
+	MaxSlope 					= 75,
 
-	Builder = true,
 	--canHover=true,
-	CanAttack = false,
+	CanAttack = true,
 	CanGuard = true,
 	CanMove = true,
 	CanPatrol = true,
-	Canstop  = false,
-	onOffable = true,
+	Canstop  = true,
+	onOffable = false,
 	LeaveTracks = false, 
 	cruiseAlt= 25,
 
