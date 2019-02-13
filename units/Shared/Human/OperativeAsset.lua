@@ -56,7 +56,7 @@ local OperativeAsset = Human:New{
 	buildDistance = 45,
 	terraformSpeed = 1,
 	buildoptions = {
-		"air_copter_ssied"
+		"ground_turret_ssied"
 	},
 	
 	customparams = {

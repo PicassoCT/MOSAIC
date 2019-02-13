@@ -1,10 +1,10 @@
-local unitName = "air_copter_ssied"
+local unitName = "ground_turret_ssied"
 
 local unitDef = {
-	name = "Airborne SSIED",
+	name = "Stationary SSIED",
 	Description = "Standardized Smart Improvised Explosive Device ",
-	objectName = "ssied.s3o",
-	script = "airssiedscript.lua",
+	objectName = "groundturretssied.s3o",
+	script = "placeholder.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -15,9 +15,9 @@ local unitDef = {
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	Acceleration = 0.5,
+	
 	 fireState=1,
-	BrakeRate = 1,
+
 	FootprintX = 1,
 	FootprintZ = 1,
 
@@ -25,10 +25,11 @@ local unitDef = {
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
 	dontLand		 	= false,
-	MaxVelocity = 2.5,
+
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
-	TurnRate = 150,
+
+	
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 250,
 	CanFly   = true,
@@ -37,23 +38,22 @@ local unitDef = {
 
 	--canHover=true,
 	CanAttack = true,
-	CanGuard = true,
-	CanMove = true,
-	CanPatrol = true,
-	Canstop  = true,
+	CanGuard = false,
+	CanMove = false,
+	CanPatrol = false,
+	Canstop  = false,
 	onOffable = false,
 	LeaveTracks = false, 
-	cruiseAlt= 25,
-
+	
+	
+	canCloak =true,
+	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
-	maxBank=0.4,
-	myGravity =0.5,
-	mass                = 150,
-	canSubmerge         = false,
-	useSmoothMesh 		=false,
-	collide             = true,
-	crashDrag =0.035,
-
+	minCloakDistance =  5,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
 
 	Category = [[AIR]],
 
