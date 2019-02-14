@@ -10,6 +10,9 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
+buildspot = piece "buildspot"
+structure = piece "structure"
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -25,39 +28,29 @@ end
 
 
 
-function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
-
-    return true
-end
-
-
-function script.FireWeapon1()
-
-    return true
-end
-
-
-
-function script.StartMoving()
-end
-
-function script.StopMoving()
-end
 
 function script.Activate()
+    SetUnitValue(COB.YARD_OPEN, 1)
 
+    SetUnitValue(COB.BUGGER_OFF, 1)
+
+    SetUnitValue(COB.INBUILDSTANCE, 1)
     return 1
 end
 
 function script.Deactivate()
 
+    SetUnitValue(COB.YARD_OPEN, 0)
+
+    SetUnitValue(COB.BUGGER_OFF, 0)
+
+    SetUnitValue(COB.INBUILDSTANCE, 0)
     return 0
 end
 
 function script.QueryBuildInfo()
-    return center
+    return buildspot
 end
 
-Spring.SetUnitNanoPieces(unitID, { center })
+Spring.SetUnitNanoPieces(unitID, { structure })
 
