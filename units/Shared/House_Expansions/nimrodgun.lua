@@ -13,6 +13,7 @@ local NimRodGun = Building:New{
 	buildCostMetal      = 5,
 	explodeAs			= "none",
 
+	MetalStorage = 2500,
 
 
 	Builder = true,

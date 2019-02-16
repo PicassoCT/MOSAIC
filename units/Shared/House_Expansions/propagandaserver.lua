@@ -6,7 +6,8 @@ local Propagandaserver = Building:New{
 	buildCostMetal      = 150,
 	EnergyStorage = 0,
 	EnergyUse = 0,
-	MetalStorage = 0,
+	MetalStorage = 5000,
+
 	EnergyMake = 5, 
 	MakesMetal = 5, 
 	MetalMake = 0,	

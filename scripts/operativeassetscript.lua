@@ -50,7 +50,7 @@ function spawnDecoyCivilian()
 
 		x,y,z= Spring.GetUnitPosition(unitID)
 		civilianID = Spring.CreateUnit("civilian" , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
-		transferUnitStatusToUnit(unitID,civilianID)
+		transferUnitStatusToUnit(unitID, civilianID)
 		Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
 	
@@ -114,22 +114,39 @@ function script.StartBuilding(heading, pitch)
 	SetUnitValue(COB.INBUILDSTANCE, 1)
 end
 
+local spGetUnitTeam = Spring.GetUnitTeam
+local myTeamID = spGetUnitTeam(unitID)
+local gaiaTeamID = Spring.GetGaiaTeamID()
+local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget 
+local loc_doesUnitExistAlive = doesUnitExistAlive
+
+function allowTarget(weaponNumber)
+	isGround, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponNumber)
+	if isGround and isGround == 1  then
+	
+		if spGetUnitTeam(targetID) == gaiaTeamID then
+
+			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then
+		
+			return false
+			end
+		end
+	end
+return true
+end
 
 function pistolAimFunction(weaponID, heading, pitch)
-return true
+return  allowTarget(weaponID)
 end
 
 function gunAimFunction(weaponID, heading, pitch)
-return true
+return  allowTarget(weaponID)
 end
 
 function sniperAimFunction(weaponID, heading, pitch)
-return true
+return  allowTarget(weaponID)
 end
 
-function c4AimFunction(weaponID, heading, pitch)
-return true
-end
 
 
 function pistolFireFunction(weaponID, heading, pitch)
@@ -144,21 +161,16 @@ function sniperFireFunction(weaponID, heading, pitch)
 return true
 end
 
-function c4FireFunction(weaponID, heading, pitch)
-return true
-end
 
 SIG_PISTOL =1
 SIG_GUN = 2
 SIG_SNIPER = 4
-SIG_C4 = 8
 
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = gun, emitpiece = gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
 	WeaponsTable[2] = { aimpiece = gun, emitpiece = gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
 	WeaponsTable[3] = { aimpiece = gun, emitpiece = gun, aimfunc = sniperAimFunction, firefunc = sniperFireFunction, signal = SIG_SNIPER }
-	WeaponsTable[4] = { aimpiece = gun, emitpiece = gun, aimfunc = c4AimFunction, firefunc = c4FireFunction, signal = SIG_C4 }
 end
 
 

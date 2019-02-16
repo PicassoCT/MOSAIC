@@ -5,7 +5,8 @@ local CivilianAgent = Human:New{
 	buildCostEnergy    	  = 5,
 	buildCostMetal     	  = 5,
 	canMove					  = true,
-	
+	MetalStorage 		= 250,
+
 	explodeAs				  = "none",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,

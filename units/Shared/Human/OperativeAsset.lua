@@ -4,6 +4,7 @@ local OperativeAsset = Human:New{
 	mass                = 500,
 	buildCostEnergy    	  = 5,
 	buildCostMetal     	  = 5,
+	MetalStorage = 1500,
 
 	explodeAs				  = "none",
 	description= "Assasination Operative <recruits Agents>",

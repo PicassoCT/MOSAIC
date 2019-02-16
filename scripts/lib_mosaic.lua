@@ -34,6 +34,9 @@ function getGameConfig()
 	 safeHousePieceName = "center",
 	 delayTillSafeHouseEstablished= 15000,
 	 safeHouseLiftimeUnattached= 15000,
+
+	 --propagandaserver 
+	 propandaServerFactor = 0.1,
 	 
 	 --doubleAgentHeight
 	 doubleAgentHeight = 256,

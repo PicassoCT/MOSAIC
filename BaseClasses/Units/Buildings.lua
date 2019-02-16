@@ -12,6 +12,8 @@ local Building = Unit:New{
 	script						= "House.lua",
 	usepiececollisionvolumes 	= true,
 	
+	metalStorage = 2500,
+	
 	customparams = {
     },
 }

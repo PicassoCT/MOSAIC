@@ -24,7 +24,7 @@ local AntagonSafeHouse = Building:New{
 	
 	EnergyStorage = 0,
 	EnergyUse = 0,
-	MetalStorage = 1000,
+	MetalStorage = 2500,
 	MetalUse = 1,
 	EnergyMake = 0, 
 	MakesMetal = 0, 

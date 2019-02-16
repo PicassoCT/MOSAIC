@@ -1,7 +1,7 @@
 function gadget:GetInfo()
 	return {
-		name = "Treason and Betrayal",
-		desc = "Coordinates Traffic ",
+		name = "Treason and Betrayal Gadget",
+		desc = " who betrays whom, in the nth layer",
 		author = "Picasso",
 		date = "3rd of May 2010",
 		license = "GPL3",

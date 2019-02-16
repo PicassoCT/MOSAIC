@@ -24,7 +24,7 @@ local Noone_UplinkLaser = Building:New{
 	
 	EnergyStorage = 0,
 	EnergyUse = 0,
-	MetalStorage = 0,
+	MetalStorage = 1500,
 	MetalUse = 3,
 	EnergyMake = 0, 
 	MakesMetal = 0, 

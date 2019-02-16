@@ -15,6 +15,7 @@ local Assembly = Building:New{
 	workerTime = 0.05,
 	YardMap ="oooo oooo oooo oooo ",
 	MaxSlope 					= 50,
+	MetalStorage = 2500,
 
 	footprintX = 4,
 	footprintZ = 4,

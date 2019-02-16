@@ -17,24 +17,19 @@ local unitDef = {
 	--Movement
 	
 	 fireState=1,
-
+	YardMap ="o",
 	FootprintX = 1,
 	FootprintZ = 1,
-
-	steeringmode        = [[1]],
-	maneuverleashlength = 1380,
-	turnRadius		  	= 8,
-	dontLand		 	= false,
-
+	maxSlope = 50,
+	
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
 
 	
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 250,
-	CanFly   = true,
 	activateWhenBuilt   	= true,
-	MaxSlope 					= 75,
+
 
 	--canHover=true,
 	CanAttack = true,
@@ -44,9 +39,8 @@ local unitDef = {
 	Canstop  = false,
 	onOffable = false,
 	LeaveTracks = false, 
-	
-	
 	canCloak =true,
+	
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
 	minCloakDistance =  5,
