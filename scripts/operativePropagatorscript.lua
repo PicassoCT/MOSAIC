@@ -22,7 +22,7 @@ function script.Create()
 
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+	StartThread(raidReactor)
 end
 
 
@@ -54,10 +54,8 @@ function spawnDecoyCivilian()
 		Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
 	
-	
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
 			GG.DisguiseCivilianFor[civilianID]= unitID
-			
 			
 			if civilianID then
 				GG.EventStream:CreateEvent(
@@ -116,8 +114,42 @@ end
 function script.StartBuilding(heading, pitch)
 	SetUnitValue(COB.INBUILDSTANCE, 1)
 end
+
+Spring.SetUnitNanoPieces(unitID, { gun })
+
+gameConfig = getGameConfig()
+local raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
+local raidComRange = gameConfig.agentConfig.raidComRange
+myRaidDownTime = raidDownTime
+local comSatDefID = UnitDefNames["comsatellite"].id
+local raidBonusFactorSatellite=  gameConfig.agentConfig.raidBonusFactorSatellite
+
+function raidReactor()
+	myTeam = Spring.GetUnitTeam(unitID)
+	while true do
+		Sleep(100)
+		boolComSatelliteNearby= false
+		process(getAllNearUnit(unitID, raidComRange),
+				function (id)
+					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == comSatDefID then
+						myRaidDownTime= math.max( -100, myRaidDownTime - 100* raidBonusFactorSatellite)
+						boolComSatelliteNearby == true
+					end				
+				end
+				)
+
+		myRaidDownTime= math.max( -100, myRaidDownTime - 100)
+
+	end
+end
+
+function raidReloadComplete()
+	return myRaidDownTime < 0
+end
+
+
 function raidAimFunction(weaponID, heading, pitch)
-return true
+return raidReloadComplete()
 end
 
 function pistolAimFunction(weaponID, heading, pitch)
@@ -129,6 +161,7 @@ return boolCloaked
 end
 
 function raidFireFunction(weaponID, heading, pitch)
+myRaidDownTime = raidDownTime
 return true
 end
 
@@ -203,5 +236,4 @@ end
 
 
 
-Spring.SetUnitNanoPieces(unitID, { center })
 

@@ -20,6 +20,9 @@ function getGameConfig()
 	 
 	 agentConfig={
 		recruitmentRange= 60,
+		raidWeaponDownTimeInSeconds = 15,
+		raidComRange= 900,
+		raidBonusFactorSatellite = 2.5,
 	 },
 	 
 	 --civilianbehaviour

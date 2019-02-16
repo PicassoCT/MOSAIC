@@ -74,63 +74,76 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	--===========UnitDamaged Functions ====================================================
+	--victim -- interrogator -- boolInerrogationOngoing
 	InterrogationTable={}
 
 	UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
 	
-		if InterrogateAbleType[unitDefID] then
-			
-			--Stun 
-			interrogationFunction = function( persPack)
-				--check Unit existing
-				if false == doesUnitExistAlive(persPack.myID) then 
-					return true, persPack
-				end	
-				
-				if false == doesUnitExistAlive(persPack.interrogatorID) then 
-					return true, persPack
-				end
-				
-				-- check distance is still okay
-				if distanceUnitToUnit(persPack.interrogatorID, persPack.myID) > gameConfig.InterrogationDistance then
-					return true, persPack
-				end
-				
-				stunUnit(persPack.myID, 1.0)
+	Spring.Echo("Interrogation Weapon Fired")
 	
-				if persPack.startFrame + gameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
-					--succesfull interrogation
-					children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.myID),myID)
-					parent = getParentOfUnit(Spring.GetUnitTeam(persPack.myID),myID)
-					
-					for childID, v in pairs(children) do
-						if doesUnitExistAlive(childID) == true then
-						Spring.GiveOrderToUnit(childID, CMD.CLOAK, {},{})
-						GG.OperativesDiscovered[childID] = true						
-						Spring.SetUnitAlwaysVisible(childID, true)
-						end
-					end
-					
-					
-					if doesUnitExistAlive(parent) == true then
-						Spring.GiveOrderToUnit(parent, CMD.CLOAK, {},{})
-						GG.OperativesDiscovered[parent] = true						
-						Spring.SetUnitAlwaysVisible(parent, true)
-						
-					end
-						
-					Spring.DestroyUnit(persPack.myID, true, true)	
-					return true, persPack
-				end
+		if InterrogateAbleType[unitDefID] then
+		Spring.Echo("Interrogatable Unit hit by raid weapon")
 		
+
+		stunUnit(unitID, 2.0)
+		
+		if not InterrogationTable[unitID] then InterrogationTable[unitID] ={} end
+		if not InterrogationTable[unitID][attackerID] then InterrogationTable[unitID][attackerID] = false end
+		
+		if  InterrogationTable[unitID][attackerID] == false then
+				--Stun 
+				interrogationFunction = function( persPack)
+					--check Unit existing
+					if false == doesUnitExistAlive(persPack.myID) then 
+						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+						return true, persPack
+					end	
+					
+					if false == doesUnitExistAlive(persPack.interrogatorID) then 
+						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+						return true, persPack
+					end
+					
+					-- check distance is still okay
+					if distanceUnitToUnit(persPack.interrogatorID, persPack.myID) > gameConfig.InterrogationDistance then
+						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+						return true, persPack
+					end
+					
+		
+					if persPack.startFrame + gameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
+						--succesfull interrogation
+						Spring.Echo("Raid was succesfull - childs of "..persPack.myID .." are revealed")
+						children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.myID),myID)
+						parent = getParentOfUnit(Spring.GetUnitTeam(persPack.myID),myID)
+						
+						for childID, v in pairs(children) do
+							if doesUnitExistAlive(childID) == true then
+							Spring.GiveOrderToUnit(childID, CMD.CLOAK, {},{})
+							GG.OperativesDiscovered[childID] = true						
+							Spring.SetUnitAlwaysVisible(childID, true)
+							end
+						end
+						
+						
+						if doesUnitExistAlive(parent) == true then
+							Spring.GiveOrderToUnit(parent, CMD.CLOAK, {},{})
+							GG.OperativesDiscovered[parent] = true						
+							Spring.SetUnitAlwaysVisible(parent, true)
+							
+						end
+							
+						Spring.DestroyUnit(persPack.myID, true, true)	
+						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+						return true, persPack
+					end
+			
+			
+				return false, persPack	
+				end
 				
-				
-								
-			return false, persPack	
+				createStreamEvent(unitID, interrogationFunction, 30, {interrogatorID = attackerID, myID= unitID, startFrame = Spring.GetGameFrame()})
 			end
-			
-			createStreamEvent(unitID, interrogationFunction, 30, {interrogatorID = attackerID, myID= unitID, startFrame = Spring.GetGameFrame()})
-			
 			
 			--on Complete Raid/Interrogation
 			--Transfer Units into No Longer Cloakable table

@@ -1,4 +1,4 @@
-
+	Spring.Echo("script.Create-Operative")
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -48,10 +48,11 @@ function spawnDecoyCivilian()
 		Sleep(10)	
 
 		x,y,z= Spring.GetUnitPosition(unitID)
-		civilianID = Spring.CreateUnit("civilian" , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
+		civilianID = Spring.CreateUnit("civilian" , x + 5 , y, z , 1, Spring.GetGaiaTeamID())
 		transferUnitStatusToUnit(unitID,civilianID)
 		Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
+	
 
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
 			GG.DisguiseCivilianFor[civilianID]= unitID
@@ -68,14 +69,12 @@ function spawnDecoyCivilian()
 	return 0
 end
 
-boolCloaked = false
 function script.Activate()
 	setSpeedEnv(unitID, 0.35)
 	Spring.Echo("Activate "..unitID)
 	if not GG.OperativesDiscovered[unitID] then
         SetUnitValue(COB.WANT_CLOAK, 1)
 		  Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-		  boolCloaked=true
 		  StartThread(spawnDecoyCivilian)
 		  return 1
    else
@@ -90,7 +89,6 @@ function script.Deactivate()
 	Spring.Echo("Deactivate "..unitID)
 		SetUnitValue(COB.WANT_CLOAK, 0)
 		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {2}, {}) 
-		boolCloaked= false
 		if civilianID and doesUnitExistAlive(civilianID) == true then
 			Spring.DestroyUnit(civilianID, true, true)
 		end
@@ -157,7 +155,7 @@ return true
 end
 
 function gunAimFunction(weaponID, heading, pitch)
-return boolCloaked
+return true
 end
 
 function raidFireFunction(weaponID, heading, pitch)

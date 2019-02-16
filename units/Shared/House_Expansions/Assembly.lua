@@ -50,7 +50,7 @@ local Assembly = Building:New{
 			"air_copter_ssied",	
 	--ground
 		--turret --snake --walker(roach) --truck
-			"air_turret_ssied",	
+			"ground_turret_ssied",	"ground_truck_assembly",
 	--water
 		-- boat -- sub
 	
