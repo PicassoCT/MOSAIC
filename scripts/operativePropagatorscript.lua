@@ -133,7 +133,7 @@ function raidReactor()
 				function (id)
 					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == comSatDefID then
 						myRaidDownTime= math.max( -100, myRaidDownTime - 100* raidBonusFactorSatellite)
-						boolComSatelliteNearby == true
+						boolComSatelliteNearby = true
 					end				
 				end
 				)

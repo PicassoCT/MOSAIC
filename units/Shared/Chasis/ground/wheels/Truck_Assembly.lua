@@ -22,6 +22,8 @@ local TruckAssembly = Truck:New{
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	
+	category = [[LAND ARRESTABLE]],
 }
 
 

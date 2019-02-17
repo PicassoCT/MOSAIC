@@ -7,7 +7,7 @@ local House = Building:New{
 	explodeAs				= "none",
 	
 	Builder					= true,
-	levelground				= false,
+	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
 	script 					= "Housescript.lua",
@@ -26,7 +26,7 @@ local House = Building:New{
 	"civilian"
 	},
 	
-	category =  [[BUILDING ARRESTABLE]],
+	category =  [[LAND BUILDING ARRESTABLE]],
 }
 
 
