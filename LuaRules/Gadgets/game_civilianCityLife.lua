@@ -36,20 +36,18 @@ if (gadgetHandler:IsSyncedCode()) then
 	uDim.x,uDim.y,uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ+ GameConfig.allyWaySizeZ	
 	numberTileX, numberTileZ = Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z
 	RouteTabel = {} --Every start has a subtable of reachable nodes 
-	
+local houseDefID = UnitDefNames["house"].id	
 	gaiaTeamID = Spring.GetGaiaTeamID()
 	
 	-- function gadget:UnitCreated(unitID, unitDefID)
 	-- end
 	
-	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-		-- Transfer Funds according to who caused the destruction
-	end
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 		Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
 		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
 		if teamID == gaiaTeamID and attackerID then
+			Spring.Echo("Redirecting passer-bys")
 			ux,uy,uz= Spring.GetUnitPosition(unitID)
 			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 			function(id)
@@ -68,14 +66,13 @@ if (gadgetHandler:IsSyncedCode()) then
 				end
 			end
 			)
-			
-			if unitDefID == UnitDefNames["house"].id then
+			Spring.Echo("Exit Redirecting passer-bys")
+	
+			if unitDefID == houseDefID then
 				checkReSpawnHouses()
+				regenerateRoutesTable()
 			end
 		end
-		
-
-
 	end
 	
 	
@@ -242,8 +239,8 @@ if (gadgetHandler:IsSyncedCode()) then
 			-- spawn Buildings from MapCenter Outwards
 			fromMapCenterOutwards(BuildingPlaceTable, math.ceil((Game.mapSizeX/uDim.x)*0.5), math.ceil((Game.mapSizeZ/uDim.z)*0.5))
 			
-			echo("generateRoutesTable()")
-			generateRoutesTable()
+			echo("regenerateRoutesTable()")
+			regenerateRoutesTable()
 			
 			-- spawn Population at Buildings
 			echo("checkReSpawnPopulation()")
@@ -346,7 +343,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
-		
+		assert(unitOne)
+		assert(unitTwo)
+		assert(doesUnitExistAlive(unitOne)==true)
+		assert(doesUnitExistAlive(unitTwo)==true)
 		local Route = {}
 		
 		x1,y1, z1 = spGetPosition(unitOne)
@@ -358,7 +358,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		index = index + 1
 		Route[index]= {}
 
-		assert(x1)
+
 		boolLongWay = distance(x1,y1,z1,x2,y2,z2) > 2048 
 		
 		if boolLongWay == false then				
@@ -392,10 +392,10 @@ if (gadgetHandler:IsSyncedCode()) then
 		return testClampRoute(Route,uType)
 	end
 	
-	function generateRoutesTable()
-		for thisBuildingID, data in pairs(GG.BuildingTable) do--[BuildingUnitID] = {routeID, stationIndex} 
+	function regenerateRoutesTable()
+		for thisBuildingID, data in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 
 			RouteTabel[thisBuildingID]={}
-			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {routeID, stationIndex} 		
+			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 		
 				if thisBuildingID ~= otherID and isRouteTraversable(CivilianTypeTable["truck"], thisBuildingID, otherID ) then
 					RouteTabel[thisBuildingID][# RouteTabel[thisBuildingID]+1] = otherID
 				end
