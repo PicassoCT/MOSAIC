@@ -20,8 +20,8 @@ function getGameConfig()
 	 
 	 agentConfig={
 		recruitmentRange= 60,
-		raidWeaponDownTimeInSeconds = 15,
-		raidComRange= 900,
+		raidWeaponDownTimeInSeconds =  60,
+		raidComRange= 1200,
 		raidBonusFactorSatellite = 2.5,
 	 },
 	 
@@ -96,8 +96,8 @@ function getSatteliteTypes(UnitDefs)
 	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
-		"comsatellite",
-		"scansatellite"
+		"satellitecom",
+		"satellitescan"
 	}
 	return getTypeTable(UnitDefNames, typeTable)
 end
@@ -209,8 +209,8 @@ function getSatelliteTimeOutTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 3*90 * framesPerSecond,
-		[UnitDefNames["scansatellite"].id] = 90 * framesPerSecond
+		[UnitDefNames["satellitecom"].id] = 3*90 * framesPerSecond,
+		[UnitDefNames["satellitescan"].id] = 90 * framesPerSecond
 	}
 	
 	return valuetable
@@ -220,8 +220,8 @@ function getSatelliteTypesSpeedTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 30/framesPerSecond,
-		[UnitDefNames["scansatellite"].id] = 90/framesPerSecond
+		[UnitDefNames["satellitecom"].id] = 30/framesPerSecond,
+		[UnitDefNames["satellitescan"].id] = 90/framesPerSecond
 	}
 	
 	return valuetable
@@ -230,8 +230,8 @@ function getSatelliteAltitudeTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["comsatellite"].id] = 1400,
-		[UnitDefNames["scansatellite"].id] = 1500
+		[UnitDefNames["satellitecom"].id] = 1400,
+		[UnitDefNames["satellitescan"].id] = 1500
 	}
 	
 	return valuetable

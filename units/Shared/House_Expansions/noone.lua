@@ -34,7 +34,7 @@ local Noone_UplinkLaser = Building:New{
 	script 					= "noonescript.lua",
 	objectName        	= "noone.s3o",
 	name = "Noone",
-	description = "Uplinklaser  <Com with Satellites / blind Scansatellites>",
+	description = "Uplinklaser  <Com with Satellites / blind scansattelites>",
 
 	canCloak =true,
 	cloakCost=0.0001,

@@ -25,6 +25,6 @@ local ScanSat = Satellite:New{
 }
 
 return lowerkeys({
-	["scansatellite"] = ScanSat:New(),
+	["satellitescan"] = ScanSat:New(),
 	
 })

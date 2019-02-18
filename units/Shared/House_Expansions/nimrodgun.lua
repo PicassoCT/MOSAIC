@@ -48,8 +48,8 @@ local NimRodGun = Building:New{
 	
 		buildoptions = 
 	{
-		"scansatellite",
-		"comsatellite"
+		"satellitescan",
+		"satellitecom"
 	},
 	weapons={
 			[1]={name  = "railgun",

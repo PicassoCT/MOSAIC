@@ -18,6 +18,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_mosaic.lua")
 	
 	local UnitDamageFuncT = {}
+	local UnitDefNames = getUnitDefNames(UnitDefs)
 
 	gameConfig = getGameConfig()
 	--1 unitid
@@ -28,6 +29,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	--local totalTime=9000
 	
 	raidWeaponDefID = WeaponDefNames["raidarrest"].id
+	stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
 	--Centrail Weapons
 	
 	Script.SetWatchWeapon(raidWeaponDefID, true)
@@ -76,16 +78,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	--===========UnitDamaged Functions ====================================================
 	--victim -- interrogator -- boolInerrogationOngoing
 	InterrogationTable={}
-
-	UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
+	civilianDefID = UnitDefNames["civilian"].id
 	
-	Spring.Echo("Interrogation Weapon Fired")
-	
-		if InterrogateAbleType[unitDefID] then
-		Spring.Echo("Interrogatable Unit hit by raid weapon")
-		
-
-		stunUnit(unitID, 2.0)
+	interrogationFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
 		
 		if not InterrogationTable[unitID] then InterrogationTable[unitID] ={} end
 		if not InterrogationTable[unitID][attackerID] then InterrogationTable[unitID][attackerID] = false end
@@ -94,28 +89,28 @@ if (gadgetHandler:IsSyncedCode()) then
 				--Stun 
 				interrogationFunction = function( persPack)
 					--check Unit existing
-					if false == doesUnitExistAlive(persPack.myID) then 
-						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+					if false == doesUnitExistAlive(persPack.unitID) then 
+						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
 						return true, persPack
 					end	
 					
 					if false == doesUnitExistAlive(persPack.interrogatorID) then 
-						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
 						return true, persPack
 					end
 					
 					-- check distance is still okay
-					if distanceUnitToUnit(persPack.interrogatorID, persPack.myID) > gameConfig.InterrogationDistance then
-						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+					if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > gameConfig.InterrogationDistance then
+						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
 						return true, persPack
 					end
 					
 		
 					if persPack.startFrame + gameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
 						--succesfull interrogation
-						Spring.Echo("Raid was succesfull - childs of "..persPack.myID .." are revealed")
-						children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.myID),myID)
-						parent = getParentOfUnit(Spring.GetUnitTeam(persPack.myID),myID)
+						Spring.Echo("Raid was succesfull - childs of "..persPack.unitID .." are revealed")
+						children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
+						parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
 						
 						for childID, v in pairs(children) do
 							if doesUnitExistAlive(childID) == true then
@@ -133,16 +128,16 @@ if (gadgetHandler:IsSyncedCode()) then
 							
 						end
 							
-						Spring.DestroyUnit(persPack.myID, true, true)	
-						InterrogationTable[persPack.myID][persPack.interrogatorI] = false
+						Spring.DestroyUnit(persPack.unitID, true, true)	
+						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
 						return true, persPack
 					end
 			
 			
 				return false, persPack	
 				end
-				
-				createStreamEvent(unitID, interrogationFunction, 30, {interrogatorID = attackerID, myID= unitID, startFrame = Spring.GetGameFrame()})
+				persPack =  {interrogatorID = attackerID, unitID= unitID}
+				createStreamEvent(unitID, interrogationFunction, 30, persPack)
 			end
 			
 			--on Complete Raid/Interrogation
@@ -150,9 +145,29 @@ if (gadgetHandler:IsSyncedCode()) then
 			-- SetAlwaysVisible
 			-- Set Uncloak
 			
-		end
-
+	end
 	
+	UnitDamageFuncT[stunpistoldWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
+		Spring.Echo("Stunning unit".. unitID)
+		if unitID ~= attackerID then
+			stunUnit(unitID, 2.0)
+		end 
+		
+		if unitDefID == civilianDefID and GG.DisguiseCivilianFor[unitID] then
+			stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
+			interrogationFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)	
+		end
+		
+	end
+	
+	UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
+	
+	Spring.Echo("Interrogation Weapon Fired")
+	
+		if InterrogateAbleType[unitDefID] then
+			stunUnit(unitID, 2.0)	
+			interrogationFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)		
+		end
 	end
 	
 	DefaultUnitDamageFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)

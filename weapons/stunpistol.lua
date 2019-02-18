@@ -8,7 +8,7 @@ local weaponDef = {
         default = 1,
         HeavyArmor = 1,
     },
-    areaOfEffect = 8,
+    areaOfEffect = 0,
     explosionGenerator = "custom:gunimpact",
     cegTag = "gunprojectile",
     texture1 = "gunshot",

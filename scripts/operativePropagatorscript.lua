@@ -121,13 +121,14 @@ gameConfig = getGameConfig()
 local raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = gameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
-local comSatDefID = UnitDefNames["comsatellite"].id
+local comSatDefID = UnitDefNames["satellitecom"].id
 local raidBonusFactorSatellite=  gameConfig.agentConfig.raidBonusFactorSatellite
 
 function raidReactor()
 	myTeam = Spring.GetUnitTeam(unitID)
 	while true do
 		Sleep(100)
+		if myRaidDownTime % 500 == 0 then Spring.Echo("raid reactor :"..myRaidDownTime) end
 		boolComSatelliteNearby= false
 		process(getAllNearUnit(unitID, raidComRange),
 				function (id)
@@ -138,17 +139,18 @@ function raidReactor()
 				end
 				)
 
-		myRaidDownTime= math.max( -100, myRaidDownTime - 100)
+		myRaidDownTime= math.max( 0, myRaidDownTime - 100)
 
 	end
 end
 
 function raidReloadComplete()
-	return myRaidDownTime < 0
+	return myRaidDownTime <= 0
 end
 
 
 function raidAimFunction(weaponID, heading, pitch)
+	Spring.Echo("Raid Aiming")
 return raidReloadComplete()
 end
 
@@ -223,11 +225,12 @@ end
 
 function script.AimWeapon(weaponID, heading, pitch)
     if WeaponsTable[weaponID] then
-        if WeaponsTable[weaponID].aimfunc then
+	   WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
+       WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
+	   
+        if WeaponsTable[weaponID].aimfunc then		
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
         else
-            WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
-            WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
             return true
         end
     end

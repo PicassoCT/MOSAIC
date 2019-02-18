@@ -1,4 +1,4 @@
-local ComSat = Satellite:New{
+local satteliteGodrod = Satellite:New{
 	corpse						= "",
 	maxDamage          		= 500,
 	mass              	= 500,
@@ -23,6 +23,6 @@ local ComSat = Satellite:New{
 
 return lowerkeys({
 	--Temp
-	["comsatellite"] = ComSat:New(),
+	["satellitegodrod"] = satteliteGodrod:New(),
 	
 })
