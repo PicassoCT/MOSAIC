@@ -79,7 +79,7 @@ safeHouseUpgradeTable= getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefI
 
 function detectUpgrade()
 	while true do 
-		Spring.Echo("Detect Upgrade")
+		-- Spring.Echo("Detect Upgrade")
 		buildID = Spring.GetUnitIsBuilding(unitID)
 		if buildID then
 		Spring.Echo("buildID found Upgrade")

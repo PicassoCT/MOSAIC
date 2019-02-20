@@ -118,7 +118,7 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { gun })
 gameConfig = getGameConfig()
-local raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
+ raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = gameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
 local comSatDefID = UnitDefNames["satellitecom"].id
@@ -161,17 +161,17 @@ return boolCloaked
 end
 
 function raidFireFunction(weaponID, heading, pitch)
-myRaidDownTime = raidDownTime
+Spring.Echo("raidAimFunction")
+boolRecharge = raidDownTime
 return true
 end
 
 function pistolFireFunction(weaponID, heading, pitch)
+Spring.Echo("pistolFireFunction")
 return true
 end
 
-function gunFireFunction(weaponID, heading, pitch)
-return true
-end
+
 
 SIG_RAID = 1
 SIG_PISTOL = 2
@@ -181,7 +181,6 @@ WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = gun, emitpiece = gun, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
     WeaponsTable[2] = { aimpiece = gun, emitpiece = gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL}
-	WeaponsTable[3] = { aimpiece = gun, emitpiece = gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
 end
 
 

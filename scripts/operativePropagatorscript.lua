@@ -118,17 +118,18 @@ end
 Spring.SetUnitNanoPieces(unitID, { gun })
 
 gameConfig = getGameConfig()
-local raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
+raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = gameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
 local comSatDefID = UnitDefNames["satellitecom"].id
 local raidBonusFactorSatellite=  gameConfig.agentConfig.raidBonusFactorSatellite
+oldRaidDownTime = myRaidDownTime
 
 function raidReactor()
 	myTeam = Spring.GetUnitTeam(unitID)
 	while true do
 		Sleep(100)
-		if myRaidDownTime % 500 == 0 then Spring.Echo("raid reactor :"..myRaidDownTime) end
+		--if myRaidDownTime % 500 == 0 and myRaidDownTime ~= oldRaidDownTime then Spring.Echo("raid reactor :"..myRaidDownTime); oldRaidDownTime =myRaidDownTime end
 		boolComSatelliteNearby= false
 		process(getAllNearUnit(unitID, raidComRange),
 				function (id)
@@ -151,27 +152,26 @@ end
 
 function raidAimFunction(weaponID, heading, pitch)
 	Spring.Echo("Raid Aiming")
-return raidReloadComplete()
+	return raidReloadComplete()
 end
 
 function pistolAimFunction(weaponID, heading, pitch)
-return true
+	return true
 end
 
 function gunAimFunction(weaponID, heading, pitch)
-return boolCloaked
+	return boolCloaked
 end
 
 function raidFireFunction(weaponID, heading, pitch)
-myRaidDownTime = raidDownTime
-return true
+	Spring.Echo("raidFireFunction")
+	myRaidDownTime = raidDownTime
+	return true
 end
 
 function pistolFireFunction(weaponID, heading, pitch)
-return true
-end
+Spring.Echo("pistolFireFunction")
 
-function gunFireFunction(weaponID, heading, pitch)
 return true
 end
 
@@ -184,7 +184,6 @@ WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = gun, emitpiece = gun, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
     WeaponsTable[2] = { aimpiece = gun, emitpiece = gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
-	WeaponsTable[3] = { aimpiece = gun, emitpiece = gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
 end
 
 

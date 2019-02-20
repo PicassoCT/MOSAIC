@@ -50,7 +50,7 @@ function getGameConfig()
 	 -- Interrogation
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
-	 InterrogationDistance= 80,
+	 InterrogationDistance= 120,
 	 
 	 
 	 
@@ -353,12 +353,10 @@ function createStreamEvent(unitID, func, framerate, persPack)
 				
 				if not persPack.startFrame then
 					persPack.startFrame = frame
+
 				end
 				
-				if persPack.startFrame then
-					nextFrame = persPack.startFrame + framerate
-					persPack.startFrame = nil
-				end 
+				nextFrame = frame + framerate
 			end
 		end
 		

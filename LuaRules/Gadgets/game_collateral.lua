@@ -38,7 +38,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weap
 
 			if team ~= gaiaTeamID  then
 				boolTeamsAreAllied = Spring.AreTeamsAllied(attackerTeam, team)
-				Spring.Echo(boolToString(boolTeamsAreAllied).."team "..team.. " is allied with attackerTeam "..attackerTeam)
+				
 				if  boolTeamsAreAllied == true then		
 					 Spring.UseTeamResource(team, "metal", damage)
 				else  -- get enemy Teams -- tranfer damage as budget to them

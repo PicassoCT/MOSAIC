@@ -80,38 +80,46 @@ if (gadgetHandler:IsSyncedCode()) then
 	InterrogationTable={}
 	civilianDefID = UnitDefNames["civilian"].id
 	
-	interrogationFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
-		
+	interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
+			Spring.Echo("interrogation 3")
 		if not InterrogationTable[unitID] then InterrogationTable[unitID] ={} end
 		if not InterrogationTable[unitID][attackerID] then InterrogationTable[unitID][attackerID] = false end
 		
 		if  InterrogationTable[unitID][attackerID] == false then
+			Spring.Echo("interrogation 4")
 				--Stun 
 				interrogationFunction = function( persPack)
 					--check Unit existing
 					if false == doesUnitExistAlive(persPack.unitID) then 
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+						Spring.Echo("interrogation 5")
+						if  true == doesUnitExistAlive(persPack.interrogatorID) then
+							setSpeedEnv(persPack.interrogatorID, 1.0)	
+						end
 						return true, persPack
 					end	
 					
 					if false == doesUnitExistAlive(persPack.interrogatorID) then 
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+							Spring.Echo("interrogation 6")
 						return true, persPack
 					end
-					
+	
 					-- check distance is still okay
 					if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > gameConfig.InterrogationDistance then
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+							Spring.Echo("interrogation 7")
+						setSpeedEnv(persPack.interrogatorID, 1.0)	
 						return true, persPack
 					end
 					
-		
+				Spring.Echo("Raid running " .. (persPack.startFrame + gameConfig.InterrogationTimeInFrames )- Spring.GetGameFrame()   )
 					if persPack.startFrame + gameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
 						--succesfull interrogation
 						Spring.Echo("Raid was succesfull - childs of "..persPack.unitID .." are revealed")
 						children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
 						parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
-						
+							Spring.Echo("interrogation 8")
 						for childID, v in pairs(children) do
 							if doesUnitExistAlive(childID) == true then
 							Spring.GiveOrderToUnit(childID, CMD.CLOAK, {},{})
@@ -130,14 +138,17 @@ if (gadgetHandler:IsSyncedCode()) then
 							
 						Spring.DestroyUnit(persPack.unitID, true, true)	
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+							Spring.Echo("interrogation 9")
+						setSpeedEnv(persPack.interrogatorID, 1.0)		
 						return true, persPack
 					end
 			
 			
 				return false, persPack	
 				end
-				persPack =  {interrogatorID = attackerID, unitID= unitID}
-				createStreamEvent(unitID, interrogationFunction, 30, persPack)
+				
+	
+				createStreamEvent(unitID, interrogationFunction, 30,  {interrogatorID = attackerID, unitID= unitID})
 			end
 			
 			--on Complete Raid/Interrogation
@@ -155,18 +166,27 @@ if (gadgetHandler:IsSyncedCode()) then
 		
 		if unitDefID == civilianDefID and GG.DisguiseCivilianFor[unitID] then
 			stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
-			interrogationFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)	
+			setSpeedEnv(attackerID, 0.0)
+			interrogationEventStreamFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)	
 		end
 		
 	end
 	
+	houseDefID = UnitDefNames["house"].id
+	
 	UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
 	
 	Spring.Echo("Interrogation Weapon Fired")
+		if unitDefID == houseDefID and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
+			Spring.Echo("interrogation 1")
+			unitID = GG.houseHasSafeHouseTable[unitID]
+		end
 	
-		if InterrogateAbleType[unitDefID] then
+		if InterrogateAbleType[Spring.GetUnitDefID(unitID)] then
+			Spring.Echo("interrogation 2")
 			stunUnit(unitID, 2.0)	
-			interrogationFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)		
+			setSpeedEnv(attackerID, 0.0)
+			interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)		
 		end
 	end
 	
