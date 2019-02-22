@@ -51,6 +51,11 @@ function getGameConfig()
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
 	 InterrogationDistance= 120,
+	
+	 --Game State
+	 StartGameState = "NormalGameState",
+	 LaunchDetectedGameState = "LaunchDetectedGameState",
+	 PostLaunchGameState = "PostLaunchGameState",
 	 
 	 
 	 

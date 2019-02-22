@@ -28,6 +28,7 @@ if (not gadgetHandler:IsSyncedCode()) then
     return false
 end
 
+VFS.Include("scripts/lib_mosaic.lua")
 
 local modOptions = Spring.GetModOptions()
 
@@ -66,7 +67,19 @@ local killedAllyTeams = {}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+GameConfig = getGameConfig()
 
+	function gadget:Initialize()
+		GG.GlobalGameState= GameConfig.StartGameState
+	end
+	
+	function setGlobalGameState(frame)
+		-- TODO
+		-- Track Launchers
+		-- Track Near-Ready Launchers
+		-- Declare Game Ended whenn succesfull launch
+	end
+	
 function gadget:GameOver()
 
     -- remove ourself after successful game over
@@ -189,7 +202,9 @@ end
 function gadget:GameFrame(frame)
     -- only do a check in slowupdate
     if (frame % 16) == 0 then
-        CheckGameOver()
+    setGlobalGameState(frame)
+	
+		CheckGameOver()
         -- kill teams after checking for gameover to avoid to trigger instantly gameover
         if teamDeathMode == "teamzerounits" then
             KillTeamsZeroUnits()
@@ -198,6 +213,8 @@ function gadget:GameFrame(frame)
         end
         KillResignedTeams()
     end
+	
+	
 end
 
 

@@ -457,6 +457,7 @@ local houseDefID = UnitDefNames["house"].id
 	--Initialize global tables
 	GG.DisguiseCivilianFor={}
 
+
 		Spring.Echo("gadget:Initialize")
 		process(Spring.GetAllUnits(),
 		function(id)
