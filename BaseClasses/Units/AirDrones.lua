@@ -2,7 +2,6 @@
 local Aircraft = Unit:New{
 	canFly						= true,
 	canMove 					= true,
-	explodeAs          			= "mechexplode",
 	factoryHeadingTakeoff 		= false,
 	footprintX					= 2,
 	footprintZ 					= 2,
@@ -17,8 +16,7 @@ local Aircraft = Unit:New{
 }
 	
 local Aero = Aircraft:New{
-	category 			= "AIR",
-	noChaseCategory		= "beacon ground",
+	category 			= [[AIR]],
 	cruiseAlt			= 300,
 	canLoopbackAttack 	= true,
 	
@@ -28,15 +26,26 @@ local Aero = Aircraft:New{
 }
 
 local VTOL = Aircraft:New{
-	category 			= "vtol air notbeacon",
-	noChaseCategory		= "beacon air vtol",
+	category 			= [[AIR]],
 	cruiseAlt			= 250,
 	hoverAttack			= true,
 	airHoverFactor		= -0.0001,
 	
 	customparams = {
 		hasturnbutton		= "1",
-		baseclass			= "vtol",
+		baseclass			= "aircraft",
+    },
+}
+
+local Rocket = Aircraft:New{
+	category 			= [[ROCKET]],
+	cruiseAlt			= 2048,
+	hoverAttack			= false,
+	airHoverFactor		= -0.0001,
+	
+	customparams = {
+		hasturnbutton		= "1",
+		baseclass			= "aircraft",
     },
 }
 
@@ -44,4 +53,5 @@ return {
 	Aircraft = Aircraft,
 	Aero = Aero,
 	VTOL = VTOL,
+	Rocket= Rocket
 }

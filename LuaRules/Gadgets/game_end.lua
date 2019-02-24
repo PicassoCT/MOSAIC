@@ -16,7 +16,7 @@ function gadget:GetInfo()
         date = "August, 2010",
         license = "GNU GPL, v2 or later",
         layer = 0,
-        enabled = false -- loaded by default?
+        enabled = true -- loaded by default?
     }
 end
 
@@ -29,6 +29,7 @@ if (not gadgetHandler:IsSyncedCode()) then
 end
 
 VFS.Include("scripts/lib_mosaic.lua")
+VFS.Include("scripts/lib_UnitScript.lua")
 
 local modOptions = Spring.GetModOptions()
 
@@ -71,13 +72,54 @@ GameConfig = getGameConfig()
 
 	function gadget:Initialize()
 		GG.GlobalGameState= GameConfig.StartGameState
+		GG.Launchers ={}
+		
 	end
 	
+	LaunchedRockets={}
 	function setGlobalGameState(frame)
-		-- TODO
-		-- Track Launchers
-		-- Track Near-Ready Launchers
-		-- Declare Game Ended whenn succesfull launch
+		--Set GameState
+		boolIsPreLaunch, boolIsPostLaunch = false, false
+		if GG.Launchers then
+			for teamID, launchersT in pairs(GG.Launchers) do	
+				if teamID and launchersT then
+					for launcherID, step  in pairs(launchersT) do
+						if launcherID and step > GameConfig.PreLauchLeakSteps then
+							boolIsPreLaunch = true
+							if step >= GameConfig.LaunchReadySteps then
+								id = createUnitAtUnit(teamID, "launchedicbm", launcherID, 0, 70, 0)
+								if not LaunchedRockets[teamID] then 
+								 LaunchedRockets[teamID]={}
+								end
+								 LaunchedRockets[teamID][id] = frame
+								Spring.DestroyUnit(launcherID, false, true)
+								
+								boolIsPostLaunch = true
+							end
+						end		
+					end		
+				end
+			end
+		end
+		
+		if boolIsPreLaunch == true then
+			GG.GlobalGameState= GameConfig.LaunchDetectedGameState
+			if boolIsPostLaunch == true then
+				GG.GlobalGameState= GameConfig.PostLaunchGameState
+			end
+		end
+		
+		for teamID, launchedT in pairs(LaunchedRockets) do
+	
+			for id, launchedFrame in pairs(launchedT) do
+				if  id and doesUnitExistAlive(id) == true and launchedFrame + GameConfig.TimeForInterceptionInFrames < frame then
+
+					winners = {teamID}
+					spGameOver(winners)
+				end
+			end
+		end
+		
 	end
 	
 function gadget:GameOver()

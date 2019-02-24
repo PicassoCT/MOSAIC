@@ -7,7 +7,7 @@ local BuildLauncherStep = Abstract:New{
 	buildCostMetal     	  = 5000,
 	explodeAs				  = "none",
 	script 				= "placeholder.lua",
-	objectName        	= "placeholder.s3o",
+	objectName        	= "launcherstep.s3o",
 	
 	canCloak =true,
 	cloakCost=0.0001,
