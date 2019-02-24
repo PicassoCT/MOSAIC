@@ -1,10 +1,10 @@
-local unitName = "air_copter_ssied"
+local unitName = "air_copter_mg"
 
 local unitDef = {
-	name = "Airborne SSIED",
-	Description = "Standardized Smart Improvised Explosive Device ",
-	objectName = "aircopterssied.s3o",
-	script = "airssiedscript.lua",
+	name = "Airborne machinegun ",
+	Description = "Standardized Machine Gun Drone ",
+	objectName = "aircoptermg.s3o",
+	script = "airmgscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -65,7 +65,7 @@ local unitDef = {
 				},
 				
 				weapons = {
-				[1]={name  = "ssied",
+				[1]={name  = "machinegun",
 					onlyTargetCategory = [[BUILDING LAND]],
 					},
 					
