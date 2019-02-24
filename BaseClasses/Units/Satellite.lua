@@ -2,7 +2,6 @@
 local Satellite = Unit:New{
 	canFly						= true,
 	canMove 					= true,
-	explodeAs          			= "mechexplode",
 	factoryHeadingTakeoff 		= false,
 	footprintX					= 2,
 	footprintZ 					= 2,
@@ -18,6 +17,7 @@ local Satellite = Unit:New{
 	
 	customparams = {
     },
+	category = [[orbit]],
 }
 	
 

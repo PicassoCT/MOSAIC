@@ -19,6 +19,7 @@ local satteliteGodrod = Satellite:New{
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks
     },
+		category = [[orbit]],
 }
 
 return lowerkeys({

@@ -11,7 +11,7 @@ local LaunchedICBM = Rocket:New{
 	footprintX = 1,
 	footprintZ = 1,
 	
-	script 					= "launchedICBMscript.lua",
+	script 					= "launchedicbmscript.lua",
 	objectName        	= "launchedICBM.s3o",
 	name = "MOSAICBM",
 	description = " the end",
@@ -25,7 +25,7 @@ local LaunchedICBM = Rocket:New{
     },
 	
 
-	category = [[AIR]],
+	category = [[ORBIT]],
 }
 
 return lowerkeys(

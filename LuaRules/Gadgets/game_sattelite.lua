@@ -81,6 +81,7 @@ local	satelliteStates={
 	["flying"] = function(id, x, y, z, utype)	
 					-- Spring.Echo("State flying")
 					if  (z >= mapSizeZ) then
+						Spring.SetUnitNeutral(id, true)
 						return "timeout", x, y, 1
 					end
 					
@@ -93,6 +94,7 @@ local	satelliteStates={
 						
 						if timeOutTable[id] <= 0 then 
 							 timeOutTable[id] = nil
+							 Spring.SetUnitNeutral(id, false)
 							return "flying", x,y,1
 						end
 	
