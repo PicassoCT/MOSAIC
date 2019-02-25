@@ -28,6 +28,7 @@ boolSetVelocity= true
 
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
 civilianAgentDefID = UnitDefNames["civilianagent"].id
+truckDefID = UnitDefNames["truck"].id
 
 function recruiteLoop()
 	local recruitmentRange = gameConfig.agentConfig.recruitmentRange
@@ -47,6 +48,30 @@ function recruiteLoop()
 				end,	
 				function(id) --filter out disguise units
 boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id] ~= fatherID and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= Spring.GetUnitTeam(unitID)  
+
+					defID = spGetUnitDefID(id)
+					if defID== truckDefID then
+					
+								x,y,z,_,_,_ =Spring.GetUnitPosition(id)
+								ad = Spring.CreateUnit("truck",			
+								x,y,z, 			
+								1,		
+								teamID,	
+								false,				
+								false,	
+								nil,
+								fatherID)
+							transferUnitStatusToUnit(id, ad)
+							transferOrders(id, ad)	
+								
+							consumeAvailableRessourceUnit(unitID, "metal", gameConfig.costs.RecruitingTruck)
+							Spring.DestroyUnit( id , false, true)
+							Spring.DestroyUnit( unitID , false, true)
+							while true do
+								Sleep(1000)
+							end	
+					
+					end
 					
 					if spGetUnitDefID(id)== civilianDefID and  not GG.DisguiseCivilianFor[id]	or 		boolIsDisguiseCivilian == true			
 					then
@@ -56,7 +81,6 @@ boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id
 				function(id)
 					if id then
 						--create a civilian agent
-						recruitedDefID = Spring.GetUnitDefID(id)
 						teamID =Spring.GetUnitTeam(unitID)
 			
 						x,y,z,_,_,_ =Spring.GetUnitPosition(id)

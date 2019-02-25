@@ -1,6 +1,5 @@
-local unitName = "air_copter_ssied"
 
-local unitDef = {
+local AIRC_COPTER_SSIED = VTOL:New{
 	name = "Airborne SSIED",
 	Description = "Standardized Smart Improvised Explosive Device ",
 	objectName = "aircopterssied.s3o",
@@ -57,7 +56,10 @@ local unitDef = {
 
 	Category = [[AIR]],
 
-	  customParams = {},
+	  customParams = {
+	  baseclass ="vtol"
+	  },
+	  
 	 sfxtypes = {
 		explosiongenerators = {
 							"custom:bigbulletimpact"
@@ -75,5 +77,8 @@ local unitDef = {
 
 
 }
-
-return lowerkeys({ [unitName] = unitDef })
+return lowerkeys({
+	--Temp
+	["air_copter_ssied"] = AIRC_COPTER_SSIED:New()
+	
+})

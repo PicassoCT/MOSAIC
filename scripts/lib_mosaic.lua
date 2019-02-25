@@ -62,6 +62,9 @@ function getGameConfig()
 	 PostLaunchGameState = "PostLaunchGameState",
 	 TimeForInterceptionInFrames= 30 * 10,
 	 
+	 costs ={
+	 RecruitingTruck= 500,
+	 }
 	 
 	 
 	}

@@ -1,6 +1,5 @@
-local unitName = "air_copter_mg"
+local airc_copter_mg = VTOL:New{
 
-local unitDef = {
 	name = "Airborne machinegun ",
 	Description = "Standardized Machine Gun Drone ",
 	objectName = "aircoptermg.s3o",
@@ -57,7 +56,9 @@ local unitDef = {
 
 	Category = [[AIR]],
 
-	  customParams = {},
+	  customParams = {
+	  baseclass = "vtol",
+	  },
 	 sfxtypes = {
 		explosiongenerators = {
 							"custom:bigbulletimpact"
@@ -76,4 +77,8 @@ local unitDef = {
 
 }
 
-return lowerkeys({ [unitName] = unitDef })
+return lowerkeys({
+	--Temp
+	["air_copter_mg"] = air_copter_mg:New(),
+	
+})

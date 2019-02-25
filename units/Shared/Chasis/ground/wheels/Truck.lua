@@ -1,6 +1,6 @@
 local MilitaryTruck = Truck:New{
 	corpse				= "",
-	maxDamage = 500,
+	maxDamage = 1500,
 	mass = 500,
 	buildCostEnergy = 5,
 	buildCostMetal = 5,
@@ -13,9 +13,13 @@ local MilitaryTruck = Truck:New{
 	turninplace		= true,
 	footprintX = 1,
 	footprintZ = 1,
-	script 			= "Truck.lua",
+	script 			= "Truckscript.lua",
 	objectName 	= "Truck.s3o",
 	movementClass   	= "VEHICLE",
+	
+	 transportSize = 16,
+	transportCapacity = 2,
+	isFirePlatform  = true,
 	
 	customparams = {
 		helptext		= "Military Truck/Technical",
@@ -33,15 +37,19 @@ local CivilianTruck = Truck:New{
 	--conType			= "infantry",
 	maxVelocity		= 7.15, --14.3, --86kph/20
 	--maxReverseVelocity= 2.15,
-		movementClass   	= "VEHICLE",
+	movementClass   	= "VEHICLE",
 	acceleration = 1.7,
 	brakeRate = 0.1,
 	turninplace		= true,
-	
+	transportSize = 4,
+	isFirePlatform  = true,
+ 
+	 
 	footprintX = 1,
 	footprintZ = 1,
-	script 			= "Truck.lua",
+	script 			= "Truckscript.lua",
 	objectName 	= "Truck.s3o",
+	transportCapacity = 1,
 	
 	
 	customparams = {
