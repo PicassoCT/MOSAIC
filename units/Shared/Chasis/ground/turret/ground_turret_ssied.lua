@@ -17,7 +17,7 @@ local unitDef = {
 	--Movement
 	
 	 fireState=1,
-	YardMap ="o",
+	
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
@@ -29,7 +29,7 @@ local unitDef = {
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
-
+	cantBeTransported = false,
 
 	--canHover=true,
 	CanAttack = true,
@@ -49,7 +49,7 @@ local unitDef = {
 	decloakOnFire = true,
 	cloakTimeout = 5,
 
-	Category = [[AIR]],
+	Category = [[LAND]],
 
 	  customParams = {},
 	 sfxtypes = {

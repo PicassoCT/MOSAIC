@@ -17,7 +17,7 @@ local MilitaryTruck = Truck:New{
 	objectName 	= "Truck.s3o",
 	movementClass   	= "VEHICLE",
 	
-	 transportSize = 16,
+	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
 	
@@ -41,7 +41,9 @@ local CivilianTruck = Truck:New{
 	acceleration = 1.7,
 	brakeRate = 0.1,
 	turninplace		= true,
-	transportSize = 4,
+	
+	transportSize = 16,
+	transportCapacity = 1,
 	isFirePlatform  = true,
  
 	 
@@ -49,7 +51,7 @@ local CivilianTruck = Truck:New{
 	footprintZ = 1,
 	script 			= "Truckscript.lua",
 	objectName 	= "Truck.s3o",
-	transportCapacity = 1,
+
 	
 	
 	customparams = {

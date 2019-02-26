@@ -1,9 +1,9 @@
-local airc_copter_mg = VTOL:New{
+local AIRC_COPTER_MG = VTOL:New{
 
 	name = "Airborne machinegun ",
 	Description = "Standardized Machine Gun Drone ",
 	objectName = "aircoptermg.s3o",
-	script = "airmgscript.lua",
+	script = "aircoptermgscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -14,7 +14,7 @@ local airc_copter_mg = VTOL:New{
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	Acceleration = 0.5,
+	
 	 fireState=1,
 	BrakeRate = 1,
 	FootprintX = 1,
@@ -24,6 +24,7 @@ local airc_copter_mg = VTOL:New{
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
 	dontLand		 	= false,
+	Acceleration = 0.5,
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
@@ -42,7 +43,7 @@ local airc_copter_mg = VTOL:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	cruiseAlt= 25,
+	cruiseAlt= 42,
 
 	ActivateWhenBuilt=1,
 	maxBank=0.4,
@@ -57,7 +58,7 @@ local airc_copter_mg = VTOL:New{
 	Category = [[AIR]],
 
 	  customParams = {
-	  baseclass = "vtol",
+	  baseclass = "vtol"
 	  },
 	 sfxtypes = {
 		explosiongenerators = {
@@ -79,6 +80,6 @@ local airc_copter_mg = VTOL:New{
 
 return lowerkeys({
 	--Temp
-	["air_copter_mg"] = air_copter_mg:New(),
+	["air_copter_mg"] = AIRC_COPTER_MG:New(),
 	
 })

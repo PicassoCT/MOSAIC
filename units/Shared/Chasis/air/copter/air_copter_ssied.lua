@@ -77,6 +77,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 
 
 }
+
 return lowerkeys({
 	--Temp
 	["air_copter_ssied"] = AIRC_COPTER_SSIED:New()
