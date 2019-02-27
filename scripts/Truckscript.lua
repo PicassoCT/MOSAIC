@@ -24,6 +24,7 @@ function script.Killed(recentDamage, _)
 end
 
 function script.TransportPickup ( passengerID ) 
+	if count(Spring.GetUnitIsTransporting(passengerID)) ~= 0 then return end 
 	Spring.UnitAttach(unitID, passengerID, attachPoint)
 end
 
