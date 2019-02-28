@@ -44,7 +44,7 @@ local CivilianTruck = Truck:New{
 	
 	transportSize = 16,
 	transportCapacity = 1,
-	isFirePlatform  = true,
+	isFirePlatform  = true, 
  
 	 
 	footprintX = 1,
