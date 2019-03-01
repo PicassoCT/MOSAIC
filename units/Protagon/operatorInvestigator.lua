@@ -5,7 +5,7 @@ local OperativeInvestigator = Human:New{
 	buildCostEnergy    	  = 5,
 	buildCostMetal     	  = 5,
 	MetalStorage = 5000,
-	makeMetal = 1,
+	metalMake  = 3,
 	
 	explodeAs				  = "none",
 	description= "Investigator Operative <recruits Agents>",

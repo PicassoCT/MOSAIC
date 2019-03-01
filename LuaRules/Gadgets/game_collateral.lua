@@ -21,10 +21,9 @@ if ( gadgetHandler:IsSyncedCode()) then
 	local gaiaTeamID= Spring.GetGaiaTeamID()
 
 	gameConfig = getGameConfig()
-
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
 		assert(damage)
-		assert(attackerID)
+		if not attackerID then echo("Unit "..unitID .. " was damaged without perpetrator with weapon ".. WeaponDefs[weaponDefID].name ); return end
 		if ( GG.DisguiseCivilianFor[unitID] ) then return damage end 
 		
 		--civilian attacked

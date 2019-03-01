@@ -1,54 +1,41 @@
 -- Mechs ----
-local Mech = Unit:New{
-	activateWhenBuilt   = true,
-	canMove				= true,
-	corpse				= "<NAME>_x",
-	explodeAs          	= "mechexplode",
-	category 			= "mech ground notbeacon",
-	noChaseCategory		= "beacon air",
-	onoffable           = true,
-	script				= "Mech.lua",
+local Turret = Unit:New{
+
+	FootprintX = 1,
+	FootprintZ = 1,
+	maxSlope = 50,
+	
+	MaxWaterDepth = 0,
+	MovementClass = "Default2x2",
+
+	
+	nanocolor=[[0 0.9 0.9]],
+	sightDistance = 250,
+	activateWhenBuilt   	= true,
+	cantBeTransported = false,
+
+	--canHover=true,
+	CanAttack = true,
+	CanGuard = false,
+	CanMove = false,
+	CanPatrol = false,
+	Canstop  = false,
+	onOffable = false,
+	LeaveTracks = false, 
+	canCloak =true,
 	upright				= true,
+	onoffable           = true,
+	script				= "placeholder.lua",
+
 	usepiececollisionvolumes = true,
 	
 	customparams = {
 		hasturnbutton	= true,
-		baseclass		= "mech",
+		baseclass		= "unit",
     },
 }
 
-local Light = Mech:New{
-	iconType			= "light",
-	footprintX			= 1,
-	footprintZ 			= 1,
-	movementClass		= "SMALLMECH",
-}
-
-local Medium = Mech:New{
-	iconType			= "medium",
-	footprintX			= 2,
-	footprintZ 			= 2,
-	movementClass		= "SMALLMECH",
-}
-
-local Heavy = Mech:New{
-	iconType			= "heavy",
-	footprintX			= 3,
-	footprintZ 			= 3,
-	movementClass		= "LARGEMECH",
-}
-
-local Assault = Mech:New{
-	iconType			= "assault",
-	footprintX			= 3,
-	footprintZ 			= 3,
-	movementClass		= "LARGEMECH",
-}
-
 return {
-	Mech = Mech,
-	Light = Light,
-	Medium = Medium,
-	Heavy = Heavy,
-	Assault = Assault,
+	Turret = Turret,
+
 }

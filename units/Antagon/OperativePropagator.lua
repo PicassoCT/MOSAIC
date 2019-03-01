@@ -13,7 +13,7 @@ local OperativePropagator = Human:New{
 	TurnRate = 900,
 	MaxVelocity = 4.5,
 	MetalStorage = 5000,
-	makeMetal = 1,
+	metalMake  = 3,
 
 	
 	--orders
