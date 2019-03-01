@@ -13,7 +13,7 @@ local Assembly = Building:New{
 	nanocolor=[[0 0 0]], --
 	CanReclaim=false,	
 	workerTime = 0.05,
-	YardMap ="cccc cccc cccc cccc ",
+	YardMap ="yyyy yyyy yyyy yyyy ",
 	MaxSlope 					= 50,
 	MetalStorage = 2500,
 
