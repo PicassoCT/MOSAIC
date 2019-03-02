@@ -22,9 +22,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	GameConfig = getGameConfig()
 	CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
-	assert(CivilianTypeTable["civilian"])
-	assert(CivilianTypeTable["truck"])
-	assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
+	--assert(CivilianTypeTable["civilian"])
+	--assert(CivilianTypeTable["truck"])
+	--assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
 	MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	
 	
@@ -42,14 +42,9 @@ local houseDefID = UnitDefNames["house"].id
 	-- function gadget:UnitCreated(unitID, unitDefID)
 	-- end
 	
-	
-	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-		Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
-		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
-		if teamID == gaiaTeamID and attackerID then
-			Spring.Echo("Redirecting passer-bys")
-			ux,uy,uz= Spring.GetUnitPosition(unitID)
-			process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
+	function makePasserBysLook(unitID)
+		ux,uy,uz= Spring.GetUnitPosition(unitID)
+		process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 			function(id)
 				--filter out civilians
 				if  id then
@@ -66,8 +61,17 @@ local houseDefID = UnitDefNames["house"].id
 				end
 			end
 			)
-			Spring.Echo("Exit Redirecting passer-bys")
 	
+	end
+	
+	
+	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+		Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
+		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
+		if teamID == gaiaTeamID and attackerID then
+
+			makePasserBysLook(unitID)
+			--other gadgets worries about propaganda price
 			if unitDefID == houseDefID then
 				checkReSpawnHouses()
 				regenerateRoutesTable()
@@ -294,8 +298,10 @@ local houseDefID = UnitDefNames["house"].id
 		if counter < GameConfig.numberOfPersons then
 			for i=1, GameConfig.numberOfPersons - counter do
 				x,_,z, startNode = getRandomSpawnNode()
-				assert(startNode)
-				assert(RouteTabel[startNode])
+				--assert(z)
+				--assert(x)
+				--assert(startNode)
+				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
 				id = spawnAMobileCivilianUnit(CivilianTypeTable["civilian"], x,z, startNode, goalNode )	
 				if id then
@@ -325,8 +331,8 @@ local houseDefID = UnitDefNames["house"].id
 		if counter < GameConfig.numberOfVehicles then
 			for i=1, GameConfig.numberOfVehicles - counter do
 				x,_,z, startNode = getRandomSpawnNode()
-				assert(startNode)
-				assert(RouteTabel[startNode])
+				
+				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
 				id = spawnAMobileCivilianUnit(CivilianTypeTable["truck"], x,z, startNode, goalNode )	
 				if id then
@@ -338,15 +344,18 @@ local houseDefID = UnitDefNames["house"].id
 	
 	function getRandomSpawnNode()
 		startNode = randDict(RouteTabel)
+		--assert(doesUnitExistAlive(startNode) == true)
+		--assert(startNode)
 		x,y,z= Spring.GetUnitPosition(startNode)
+		--assert(x)
+		--assert(z)
 		return x,y,z , startNode
 	end
 	
 	function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
-		assert(unitOne)
-		assert(unitTwo)
-		assert(doesUnitExistAlive(unitOne)==true)
-		assert(doesUnitExistAlive(unitTwo)==true)
+		--assert(unitOne)
+		--assert(unitTwo)
+
 		local Route = {}
 		
 		x1,y1, z1 = spGetPosition(unitOne)
@@ -393,14 +402,16 @@ local houseDefID = UnitDefNames["house"].id
 	end
 	
 	function regenerateRoutesTable()
+		local newRouteTabel={}
 		for thisBuildingID, data in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 
-			RouteTabel[thisBuildingID]={}
+			newRouteTabel[thisBuildingID]={}
 			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 		
 				if thisBuildingID ~= otherID and isRouteTraversable(CivilianTypeTable["truck"], thisBuildingID, otherID ) then
-					RouteTabel[thisBuildingID][# RouteTabel[thisBuildingID]+1] = otherID
+					newRouteTabel[thisBuildingID][# newRouteTabel[thisBuildingID]+1] = otherID
 				end
 			end
 		end
+		RouteTabel = newRouteTabel
 	end
 	
 	function isRouteTraversable(defID, unitA, unitB)
@@ -416,6 +427,7 @@ local houseDefID = UnitDefNames["house"].id
 	
 	function spawnUnit(defID, x,z)	
 		dir = math.max(1, math.floor(math.random(1, 3)))
+			if not x then echo("Spawning unit of typ "..UnitDefs[defID].name .." with no coords") end
 		h = Spring.GetGroundHeight(x,z)
 		id = Spring.CreateUnit(defID, x, h, z, dir, gaiaTeamID)
 		if id then
@@ -427,11 +439,12 @@ local houseDefID = UnitDefNames["house"].id
 	
 	-- truck or Person
 	function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
+	
 		--offx, offz = randSign()*(GameConfig.houseSizeX/2),randSign()*(GameConfig.houseSizeZ/2)
 		id = spawnUnit(defID,x ,z)
 		if id then 
-			assert(goalID)
-			assert(startID)
+			--assert(goalID)
+			--assert(startID)
 			GG.CivilianTable [id] = {defID = defID, startID =startID, goalID = goalID}
 			GG.UnitArrivedAtTarget[id]= defID
 		end
@@ -573,16 +586,18 @@ local houseDefID = UnitDefNames["house"].id
 	function giveWaypointsToUnit(uID, uType, startNodeID)
 		boolIsCivilian = (uType == CivilianTypeTable["civilian"])
 		boolShortestPath= ( math.random(0,1)== 1 and uType ~= CivilianTypeTable["truck"] )-- direct route to target
-		
+	
+		--assert(doesUnitExistAlive(startNodeID)==true)
+	
 		
 		
 		-- travellFunction = function()
 		-- return nil 
 		
 		-- end
-		assert(startNodeID)
+		--assert(startNodeID)
 		targetNodeID = math.random(2,#RouteTabel[startNodeID])
-		assert(RouteTabel[startNodeID][targetNodeID])
+		--assert(RouteTabel[startNodeID][targetNodeID])
 		
 		mydefID = Spring.GetUnitDefID(uID)
 		
@@ -606,7 +621,9 @@ local houseDefID = UnitDefNames["house"].id
 	end
 	function sendArrivedUnitsCommands()
 		for id, uType in pairs(GG.UnitArrivedAtTarget) do
-			giveWaypointsToUnit(id, uType, GG.CivilianTable[id].startID)
+			if doesUnitExistAlive(GG.CivilianTable[id].startID) == true and doesUnitExistAlive(id) then
+				giveWaypointsToUnit(id, uType, GG.CivilianTable[id].startID)
+			end
 		end
 		
 		GG.UnitArrivedAtTarget = {}
