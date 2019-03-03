@@ -41,7 +41,7 @@ local groundturretssied =  Turret:New{
 	canCloak =true,
 	
 	cloakCost=0.0001,
-	ActivateWhenBuilt=1,
+
 	minCloakDistance =  5,
 	onoffable=true,
 	initCloaked = true,

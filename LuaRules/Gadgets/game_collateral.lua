@@ -19,7 +19,17 @@ if ( gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_UnitScript.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	local gaiaTeamID= Spring.GetGaiaTeamID()
-
+	
+	accumulatedInSecond ={}
+	function addInSecond(team, uid,  rtype, damage)
+		if not accumulatedInSecond[uid] then 
+			accumulatedInSecond[uid] ={ team = team, rtype = rtype, damage = 0}
+		end
+		
+	accumulatedInSecond[uid].damage = 		accumulatedInSecond[uid].damage  + damage
+	
+	end
+	
 	gameConfig = getGameConfig()
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
 		assert(damage)
@@ -41,19 +51,29 @@ if ( gadgetHandler:IsSyncedCode()) then
 					
 					if  boolTeamsAreAllied == true then		
 						 Spring.UseTeamResource(team, "metal", damage)
-						 SendToUnsynced("DisplaytAtUnit", unitID, team, -1* damage)
+						 addInSecond(team, unitID, "metal",  math.ceil(-1.0 * damage))
 					else  -- get enemy Teams -- tranfer damage as budget to them
 						factor = 1 + (GG.Propgandaservers[team]* gameConfig.propandaServerFactor)
-						Spring.AddTeamResource(team, "metal", damage * factor)
-						SendToUnsynced("DisplaytAtUnit", unitID, team, damage*factor)
+						Spring.AddTeamResource(team, "metal", math.ceil(math.abs(damage * factor)))
+						 addInSecond(team, unitID, "metal",   math.ceil(math.abs(damage * factor)))
 					end
 				end
 			end
 		end  
 	end
+	
+	function gadget:GameFrame(frame)
+		if frame % 30 == 0 then
+			for uid,v in pairs(accumulatedInSecond) do
+				SendToUnsynced("DisplaytAtUnit", uid, v.team, v.damage)
+			end
+			accumulatedInSecond= {}				
+		end
+	
+	end
 
 else -- UNSYNCED
-	DrawForFrames = 5 * 30
+	DrawForFrames = 1 * 30
 	Unit_StartFrame_Message={}
 	constOffsetY= 25	
 
@@ -61,12 +81,8 @@ else -- UNSYNCED
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage)
 		Spring.Echo("Arriving in Unsynced")
-		if Unit_StartFrame_Message[unitID] and Unit_StartFrame_Message[unitID].damage  then
-			Unit_StartFrame_Message[unitID].message = Unit_StartFrame_Message[unitID].message+ damage
-			Unit_StartFrame_Message[unitID].frame = Spring.GetGameFrame()
-		else
-			Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
-		end
+		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
+
     end
 	
 	 function gadget:Initialize()
@@ -94,6 +110,12 @@ else -- UNSYNCED
 						 x, y, z = Spring.GetUnitPosition(uid)	
 						 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
 						 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+						 if valueT.message < 0 then 
+							gl.Color(1.0,0.0,0.0)
+						 else
+							gl.Color(0.0,1.0,0.0)
+						 end
+						 
 						 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
 					 elseif currFrame > valueT.frame + DrawForFrames then
 						UnitsToNil[uid]=true

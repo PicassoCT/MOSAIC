@@ -115,6 +115,22 @@ function getSatteliteTypes(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
+function getTruckLoadOutTypeTable()
+	mapping = {
+	["ground_truck_mg"] = "ground_turret_mg",
+	["ground_truck_ssied"] = "ground_turret_ssied",
+	
+	}
+	typeDefMappingTable ={}
+	
+	for k,v in pairs(mapping) do
+		typeDefMappingTable[UnitDefNames[k].id] = UnitDefNames[v].id
+	end
+	
+	return typeDefMappingTable
+
+end
+
 function  getMobileCivilianDefIDTypeTable(UnitDefs)
 	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
