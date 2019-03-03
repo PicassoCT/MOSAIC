@@ -1,7 +1,8 @@
 
 local AIRC_COPTER_SSIED = VTOL:New{
-	name = "Airborne SSIED",
-	Description = "Standardized Smart Improvised Explosive Device ",
+	name = "Airborne SSIED Drone ",
+	Description = " MOSAIC Standardized Explosive Device Drone ",
+	
 	objectName = "aircopterssied.s3o",
 	script = "airssiedscript.lua",
 	buildPic = "placeholder.png",

@@ -1,8 +1,9 @@
 local groundturretssied =  Turret:New{
 	name = "Stationary SSIED",
-	Description = "Standardized Smart Improvised Explosive Device ",
+	Description = " MOSAIC Standardized Smart Improvised Explosive Device ",
+	
 	objectName = "groundturretssied.s3o",
-	script = "placeholder.lua",
+	script = "turretscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -69,10 +70,11 @@ local groundturretssied =  Turret:New{
 
 
 }local groundturretmg =  Turret:New{
-	name = "Stationary M62",
-	Description = "Standardized Machine Gun ",
+	name = "Stationary Machinegun",
+	Description = " MOSAIC Standardized Machine Gun Emplacement ",
+	
 	objectName = "groundturretmg.s3o",
-	script = "placeholder.lua",
+	script = "turretscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost

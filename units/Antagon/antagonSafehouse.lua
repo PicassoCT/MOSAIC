@@ -7,7 +7,9 @@ local AntagonSafeHouse = Building:New{
 	MaxSlope 					= 50,
 	explodeAs			= "none",
 	NoWeapon=true,
-
+	name = "Safehouse",
+	description= " base of operation <recruits Agents/ builds upgrades>",
+	
 	Builder = true,
 	nanocolor=[[0 0 0]], --
 	CanReclaim=false,	

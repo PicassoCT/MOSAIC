@@ -8,7 +8,8 @@ local OperativeInvestigator = Human:New{
 	metalMake  = 3,
 	
 	explodeAs				  = "none",
-	description= "Investigator Operative <recruits Agents>",
+	name = 		"Investigator",
+	description= " pre-incident investigation <recruits Agents/ creates safehouses/ interrogates terrorists>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,

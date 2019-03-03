@@ -601,7 +601,7 @@ end
 local function _ProcessMaterials(rendering, materialDefs)
   local engineShaderTypes = {"3do", "s3o", "obj", "ass"}
   for _, mat_src in pairs(rendering.materialDefs) do
-    --mat_src = {shader = include("ModelMaterials/Shaders/default.lua") or "s3o"}
+    --mat_src = {shader = include("modelmaterials/Shaders/default.lua") or "s3o"}
     if mat_src.shader ~= nil and engineShaderTypes[mat_src.shader] == nil then
       mat_src.shaderSource = mat_src.shader
       mat_src.shader = nil
@@ -629,7 +629,7 @@ function gadget:Initialize()
   normalmapping = (Spring.GetConfigInt("NormalMapping", 1)>0)
 
   --// load the materials config files
-  local MATERIALS_DIR = "ModelMaterials/"
+  local MATERIALS_DIR = "modelmaterials/"
   local unitMaterialDefs, featureMaterialDefs = _LoadMaterialConfigFiles(MATERIALS_DIR)
   --// process the materials (compile shaders, load textures, ...)
   _ProcessMaterials(unitRendering,    unitMaterialDefs)

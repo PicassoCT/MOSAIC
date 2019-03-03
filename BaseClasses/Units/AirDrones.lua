@@ -56,7 +56,7 @@ local VTOL = Unit:New{
 }
 
 local Rocket = Unit:New{
-	category 			= [[ROCKET]],
+	category 			= [[ORBIT]],
 	cruiseAlt			= 2048,
 	hoverAttack			= false,
 	airHoverFactor		= -0.0001,

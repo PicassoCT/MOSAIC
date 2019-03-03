@@ -28,7 +28,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 		
 		--civilian attacked
 		if unitTeam == gaiaTeamID and attackerID and attackerTeam ~= unitTeam then
-			Spring.Echo("UnitDamaged is gaia "..gaiaTeamID)
+		--	Spring.Echo("UnitDamaged is gaia "..gaiaTeamID)
 			attackerPlayerList = Spring.GetPlayerList(attackerTeam)
 
 			for _, team in pairs(Spring.GetTeamList()) do
@@ -56,10 +56,17 @@ else -- UNSYNCED
 	DrawForFrames = 5 * 30
 	Unit_StartFrame_Message={}
 	constOffsetY= 25	
+
 	
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage)
-		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
+		Spring.Echo("Arriving in Unsynced")
+		if Unit_StartFrame_Message[unitID] and Unit_StartFrame_Message[unitID].damage  then
+			Unit_StartFrame_Message[unitID].message = Unit_StartFrame_Message[unitID].message+ damage
+			Unit_StartFrame_Message[unitID].frame = Spring.GetGameFrame()
+		else
+			Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
+		end
     end
 	
 	 function gadget:Initialize()
@@ -67,22 +74,34 @@ else -- UNSYNCED
         gadgetHandler:AddSyncAction("DisplaytAtUnit", DisplaytAtUnit)
     end
 	
-	function gadget:GameFrame(currFrame)
+	
+
+	function gadget:DrawScreenEffects()
+	currFrame = Spring.GetGameFrame()
 		UnitsToNil={}
 		myPlayerTeam = Spring.GetLocalTeamID()
 	
-		for id, valueT in pairs(Unit_StartFrame_Message) do
-			-- Check if Time has expsired
-			if valueT then
-				if id and valueT.team == myPlayerTeam and currFrame < valueT.frame + DrawForFrames then
-					 x, y, z = Spring.GetUnitPosition(id)	
-					 sx, sy = Spring.WorldToScreenCoords(x, y + constOffsetY, z)
-					 glText("$ "..valueT.message, sx, sy, fontsize, "laos")
-				else
-					UnitsToNil[id]=true
+		for _,id in ipairs(Spring.GetAllUnits()) do	
+			-- Spring.Echo("itterating over all units")
+			for uid, valueT in pairs(Unit_StartFrame_Message) do
+			-- Spring.Echo("itterating over all damaged")
+				-- Check if Time has expsired
+				if id == uid and valueT then
+				-- Spring.Echo("id == uid")
+				-- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
+					 if currFrame < valueT.frame + DrawForFrames then
+						-- Spring.Echo("Drawing Prizes")
+						 x, y, z = Spring.GetUnitPosition(uid)	
+						 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
+						 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+						 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
+					 elseif currFrame > valueT.frame + DrawForFrames then
+						UnitsToNil[uid]=true
+					end
 				end
 			end
 		end
+	
 		
 		for id, _ in pairs(UnitsToNil) do
 			Unit_StartFrame_Message[id] = nil

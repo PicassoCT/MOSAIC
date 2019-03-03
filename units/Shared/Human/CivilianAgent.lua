@@ -1,4 +1,7 @@
 local CivilianAgent = Human:New{
+	name = "Civilian Asset",
+	Description = " Agent ",
+
 	corpse					  = "",
 	maxDamage         	  = 500,
 	mass                = 500,

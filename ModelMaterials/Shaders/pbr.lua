@@ -1,7 +1,7 @@
 return {
 	-- Heavily inspired by https://github.com/KhronosGroup/glTF-WebGL-PBR/blob/master/shaders/pbr-vert.glsl
-	vertex = VFS.LoadFile("ModelMaterials/Shaders/pbr.vert"),
-	fragment = VFS.LoadFile("ModelMaterials/Shaders/pbr.frag"),
+	vertex = VFS.LoadFile("modelmaterials/Shaders/pbr.vert"),
+	fragment = VFS.LoadFile("modelmaterials/Shaders/pbr.frag"),
 
 	uniformInt = {
 		tex0 = 0,

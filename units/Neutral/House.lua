@@ -5,7 +5,8 @@ local House = Building:New{
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
 	explodeAs				= "none",
-	
+	name = "Housing Block",
+	description = "houses civilians",
 	Builder					= true,
 	levelground				= true,
 	FootprintX = 8,

@@ -1,4 +1,8 @@
 local OperativeAsset = Human:New{
+
+	name = "Operative Assset",
+	description= "Assasination Operative <stealth Assasin>",
+	
 	corpse					  = "",
 	maxDamage         	  = 1500,
 	mass                = 500,
@@ -7,7 +11,7 @@ local OperativeAsset = Human:New{
 	MetalStorage = 1500,
 
 	explodeAs				  = "none",
-	description= "Assasination Operative <recruits Agents>",
+
 	Acceleration = 0.8,
 	BrakeRate = 0.6,
 	TurnRate = 1200,

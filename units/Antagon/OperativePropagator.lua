@@ -7,7 +7,7 @@ local OperativePropagator = Human:New{
 
 	explodeAs				  = "none",
 	name = "Propagator",
-	description= "Propaganda Operative <recruits Agents>",
+	description= "Propaganda Operative <recruits Agents/ builds Safehouses / interrogates Intruders>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,

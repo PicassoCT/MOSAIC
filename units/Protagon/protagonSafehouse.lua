@@ -5,7 +5,8 @@ local ProtagonSafeHouse = Building:New{
 
 	buildTime = 15,
 	explodeAs			= "none",
-
+	name = "Safehouse",
+	description= " base of operation <recruits Agents/ builds upgrades>",
 
 	Builder = true,
 	nanocolor=[[0 0 0]], --

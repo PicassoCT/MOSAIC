@@ -21,7 +21,7 @@ local Launcher = Building:New{
 	script 					= "launcherscript.lua",
 	objectName        	= "Launcher.s3o",
 	name = "Launcher",
-	description = " ends the game with a ICBM launch",
+	description = " ends the game with a MOSA ICBM launch",
 
 	canCloak =true,
 	cloakCost=0.0001,

@@ -40,8 +40,8 @@ function genBrdfLut:Initialize()
 	end
 
 	self.brdfShader = gl.CreateShader({
-		vertex = VFS.LoadFile("ModelMaterials/Shaders/genBrdfLut.vert"),
-		fragment = VFS.LoadFile("ModelMaterials/Shaders/genBrdfLut.frag"),
+		vertex = VFS.LoadFile("modelmaterials/Shaders/genBrdfLut.vert"),
+		fragment = VFS.LoadFile("modelmaterials/Shaders/genBrdfLut.frag"),
 		uniformInt = {
 			texSize = {self.textureSize, self.textureSize},
 		},

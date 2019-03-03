@@ -5,7 +5,8 @@ local Civilian = Human:New{
 	buildCostEnergy    	  = 5,
 	buildCostMetal     	  = 5,
 	canMove					  = true,
-	
+	name = "Civilian",
+	description = " innocent colateral bystander",
 	explodeAs				  = "none",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,

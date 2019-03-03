@@ -9,7 +9,7 @@ local mapInfo = VFS.FileExists(MAPSIDE_MAPINFO) and VFS.Include(MAPSIDE_MAPINFO)
 local pbrMapRaw = (mapInfo.custom or {}).pbr
 
 -----------===================================-------------
-local genBrdfLutClass = VFS.Include("ModelMaterials/Shaders/genBrdfLut.lua")
+local genBrdfLutClass = VFS.Include("modelmaterials/Shaders/genBrdfLut.lua")
 local BRDFLUT_TEXDIM = 512 --512 is BRDF LUT texture size
 local genBrdfLut = genBrdfLutClass(BRDFLUT_TEXDIM)
 
@@ -475,7 +475,7 @@ local function createNewMatDef(modelNiceName, pbrModel, pbrMap)
 	local newMat = {
 		shaderDefinitions = shaderDefinitions,
 		--deferredDefinitions = deferredDefinitions,
-		shader    = include("ModelMaterials/Shaders/pbr.lua"),
+		shader    = include("modelmaterials/Shaders/pbr.lua"),
 		usecamera = false,
 		culling   = GL.BACK,
 		predl  = nil,
@@ -508,7 +508,7 @@ end
 for i = 1, #UnitDefs do
 	local udef = UnitDefs[i]
 	local modelNiceName = string.format("%s(%s)", udef.humanName, udef.name)
-	local modelFilename = string.format("Objects3d/%s.lua", udef.modelname)
+	local modelFilename = string.format("objects3d/%s.lua", udef.modelname)
 	if VFS.FileExists(modelFilename) then
 		local model = VFS.Include(modelFilename)
 		if model and model.pbr then

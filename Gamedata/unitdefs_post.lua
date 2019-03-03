@@ -21,7 +21,7 @@ end
 
 
 -- TODO: I still don't quite follow why the SIDES table from _pre (available to all defs) isn't available here
-local sideData = VFS.Include("Gamedata/sidedata.lua", VFS.ZIP)
+local sideData = VFS.Include("gamedata/sidedata.lua", VFS.ZIP)
 local SIDES = {}
 local VALID_SIDES = {}
 for sideNum, data in pairs(sideData) do

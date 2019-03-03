@@ -24,6 +24,6 @@ for categoryName, categoryTable in pairs(armorDefs) do
 end
 
 
-local system = VFS.Include('Gamedata/system.lua')  
+local system = VFS.Include('gamedata/system.lua')  
 
 return system.lowerkeys(armorDefs)

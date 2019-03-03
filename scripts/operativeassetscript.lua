@@ -90,7 +90,7 @@ function script.Deactivate()
 	setSpeedEnv(unitID, 1.0)
 	Spring.Echo("Deactivate "..unitID)
 		SetUnitValue(COB.WANT_CLOAK, 0)
-		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {2}, {}) 
+		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
 		if civilianID and doesUnitExistAlive(civilianID) == true then
 			Spring.DestroyUnit(civilianID, true, true)
 		end

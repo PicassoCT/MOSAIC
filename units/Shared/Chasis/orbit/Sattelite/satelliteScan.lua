@@ -1,4 +1,7 @@
 local ScanSat = Satellite:New{
+	name = "Orbital Surveilance Satellite ",
+	Description = " MOSAIC Standardized Reconnisance Satellite ",
+
 	corpse				= "",
 	maxDamage 			= 500,
 	mass 				= 500,
@@ -14,7 +17,7 @@ local ScanSat = Satellite:New{
 	
 	footprintX 			= 1,
 	footprintZ 			= 1,
-	script 				= "Satellite.lua",
+	script 				= "satellitescript.lua",
 	objectName 			= "satellite.s3o",
 	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
 		

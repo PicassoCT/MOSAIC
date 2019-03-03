@@ -51,10 +51,11 @@ local unitDef = {
 	--air
 		 --copter  --jet -- bomber --long range rocket
 		
-			"air_copter_ssied",	"air_copter_mg",
+			"air_copter_ssied",	"air_copter_mg", 
+			"truck",
 	--ground
 		--turret --snake --walker(roach) --truck
-			"ground_turret_ssied",	"ground_truck_assembly",	
+			"ground_turret_ssied",	"ground_turret_mg", "ground_truck_assembly",	
 	},
 	
 	

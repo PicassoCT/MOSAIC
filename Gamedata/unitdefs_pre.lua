@@ -1,5 +1,5 @@
-VFS.Include('Gamedata/VFSUtils.lua') -- for RecursiveFileSearch()
-lowerkeys = VFS.Include('Gamedata/system.lua').lowerkeys -- for lowerkeys()
+VFS.Include('gamedata/VFSUtils.lua') -- for RecursiveFileSearch()
+lowerkeys = VFS.Include('gamedata/system.lua').lowerkeys -- for lowerkeys()
 modOptions = Spring.GetModOptions()
 
 -- Our shared funcs
@@ -48,7 +48,7 @@ local function append (c, p)
 end
 
 -- Make sides available to all def files
-local sideData = VFS.Include("Gamedata/sidedata.lua", VFS.ZIP)
+local sideData = VFS.Include("gamedata/sidedata.lua", VFS.ZIP)
 local Sides = {}
 for sideNum, data in pairs(sideData) do
 	Sides[sideNum] = data.shortName:lower()
@@ -121,7 +121,7 @@ local sharedEnv = {
 local baseClassTypes = {"units", "weapons", "features"}
 
 for _, baseClassType in pairs(baseClassTypes) do
-	local baseClasses = RecursiveFileSearch("Baseclasses/" .. baseClassType, "*.lua", VFS.ZIP)
+	local baseClasses = RecursiveFileSearch("baseclasses/" .. baseClassType, "*.lua", VFS.ZIP)
 	for _, file in pairs(baseClasses) do
 		newClasses = VFS.Include(file, VFS.ZIP)
 		for className, class in pairs(newClasses) do

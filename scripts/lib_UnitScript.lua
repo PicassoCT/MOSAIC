@@ -1135,6 +1135,7 @@ end
 
 function waitTillComplete(id)
 	hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
+	Sleep(1)
 		repeat
 			hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
 			Sleep(500)

@@ -25,7 +25,7 @@ local	resources = {
 		}
 	}
 
-local VFSUtils = VFS.Include('Gamedata/VFSUtils.lua')
+local VFSUtils = VFS.Include('gamedata/VFSUtils.lua')
 
 local function AutoAdd(subDir, map, filter)
   local dirList = RecursiveFileSearch("bitmaps/" .. subDir)

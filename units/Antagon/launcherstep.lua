@@ -8,7 +8,8 @@ local BuildLauncherStep = Abstract:New{
 	explodeAs				  = "none",
 	script 				= "placeholder.lua",
 	objectName        	= "launcherstep.s3o",
-	
+	name = "Build Launcherstage",
+	description = " n stages must be built to complete the ICBM",
 	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,

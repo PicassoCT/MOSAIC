@@ -1,4 +1,7 @@
 local satteliteGodrod = Satellite:New{
+	name = "Orbital Strike Satellite ",
+	Description = " MOSAIC Standardized Assault Satellite ",
+
 	corpse						= "",
 	maxDamage          		= 500,
 	mass              	= 500,
@@ -12,7 +15,7 @@ local satteliteGodrod = Satellite:New{
 	
 	footprintX 					= 1,
 	footprintZ 					= 1,
-	script 						= "Satellite.lua",
+	script 						= "satellitescript.lua",
 	objectName        		= "satellite.s3o",
 
 	customparams = {

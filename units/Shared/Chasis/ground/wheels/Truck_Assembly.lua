@@ -1,4 +1,7 @@
 local TruckAssembly = Truck:New{
+	name = "Assembly Truck ",
+	Description = " MOSAIC Standardized Vehicle Factory ",
+
 	corpse				= "",
 	
 	maxDamage = 500,

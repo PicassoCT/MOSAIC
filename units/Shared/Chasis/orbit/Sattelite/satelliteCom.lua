@@ -1,4 +1,7 @@
 local ComSat = Satellite:New{
+	name = "Communication Satellite ",
+	Description = " MOSAIC Standardized Communication Satellite ",
+
 	corpse						= "",
 	maxDamage          		= 500,
 	mass              	= 500,
@@ -12,7 +15,7 @@ local ComSat = Satellite:New{
 	
 	footprintX 					= 1,
 	footprintZ 					= 1,
-	script 						= "Satellite.lua",
+	script 						= "satellitescript.lua",
 	objectName        		= "satellite.s3o",
 
 	customparams = {
