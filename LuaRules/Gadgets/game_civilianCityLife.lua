@@ -66,7 +66,7 @@ local houseDefID = UnitDefNames["house"].id
 	
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-		Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
+		--Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
 		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
 		if teamID == gaiaTeamID and attackerID then
 
@@ -243,11 +243,11 @@ local houseDefID = UnitDefNames["house"].id
 			-- spawn Buildings from MapCenter Outwards
 			fromMapCenterOutwards(BuildingPlaceTable, math.ceil((Game.mapSizeX/uDim.x)*0.5), math.ceil((Game.mapSizeZ/uDim.z)*0.5))
 			
-			echo("regenerateRoutesTable()")
+		--	echo("regenerateRoutesTable()")
 			regenerateRoutesTable()
 			
 			-- spawn Population at Buildings
-			echo("checkReSpawnPopulation()")
+		--	echo("checkReSpawnPopulation()")
 			checkReSpawnPopulation()
 			
 			checkReSpawnTraffic()
@@ -471,7 +471,7 @@ local houseDefID = UnitDefNames["house"].id
 	GG.DisguiseCivilianFor={}
 
 
-		Spring.Echo("gadget:Initialize")
+	--	Spring.Echo("gadget:Initialize")
 		process(Spring.GetAllUnits(),
 		function(id)
 			Spring.DestroyUnit(id,true,true)
@@ -635,7 +635,7 @@ local houseDefID = UnitDefNames["house"].id
 	function gadget:GameFrame(frame)
 		if boolInitialized == false then
 			spawnInitialPopulation(frame)
-			echo("Initialization:Frame:"..frame)
+		--	echo("Initialization:Frame:"..frame)
 		elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
 			-- echo("Runcycle:Frame:"..frame)
 			-- recreate buildings 
