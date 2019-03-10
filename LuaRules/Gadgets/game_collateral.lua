@@ -35,11 +35,22 @@ if ( gadgetHandler:IsSyncedCode()) then
 	end
 	
 	gameConfig = getGameConfig()
+	function gadgetUnitDestroyed(unitID, unitDefID, teamID, attackerID)
+		if ( GG.DisguiseCivilianFor[unitID] ) then
+			maxhp = UnitDefs[unitDefID].maxdamage 
+			-- _, maxhp = Spring.GetUnitHealth(unitID)
+			assert(maxhp)
+			factor = 1 + (GG.Propgandaservers[team]* gameConfig.propandaServerFactor)
+			Spring.AddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
+			addInSecond(team, attackerID, "metal",   math.ceil((maxhp * factor)))
+		end 
+	end
+	
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
 		assert(damage)
 
 		if not attackerID then echo("Unit "..unitID .. " was damaged without perpetrator with weapon ".. WeaponDefs[weaponDefID].name ); return end
-		if ( GG.DisguiseCivilianFor[unitID] ) then return damage end 
+	
 		if not GG.Propgandaservers then GG.Propgandaservers ={} end
 		
 		--civilian attacked by a not civilian
