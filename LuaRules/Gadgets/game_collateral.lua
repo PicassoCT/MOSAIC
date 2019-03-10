@@ -22,40 +22,46 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 	accumulatedInSecond ={}
 	function addInSecond(team, uid,  rtype, damage)
-		if not accumulatedInSecond[uid] then 
-			accumulatedInSecond[uid] ={ team = team, rtype = rtype, damage = 0}
+		if not accumulatedInSecond[team] then 
+			accumulatedInSecond[team] ={ }
 		end
 		
-	accumulatedInSecond[uid].damage = 		accumulatedInSecond[uid].damage  + damage
+		if not accumulatedInSecond[team][uid] then 
+			accumulatedInSecond[team][uid] ={  rtype = rtype, damage = 0}
+		end
+		
+	accumulatedInSecond[team][uid].damage = 		accumulatedInSecond[team][uid].damage  + damage
 	
 	end
 	
 	gameConfig = getGameConfig()
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
 		assert(damage)
+
 		if not attackerID then echo("Unit "..unitID .. " was damaged without perpetrator with weapon ".. WeaponDefs[weaponDefID].name ); return end
 		if ( GG.DisguiseCivilianFor[unitID] ) then return damage end 
+		if not GG.Propgandaservers then GG.Propgandaservers ={} end
 		
-		--civilian attacked
+		--civilian attacked by a not civilian
 		if unitTeam == gaiaTeamID and attackerID and attackerTeam ~= unitTeam then
-		--	Spring.Echo("UnitDamaged is gaia "..gaiaTeamID)
-			attackerPlayerList = Spring.GetPlayerList(attackerTeam)
-
+		
+			-- attackerPlayerList = Spring.GetPlayerList(attackerTeam)
 			for _, team in pairs(Spring.GetTeamList()) do
-
-				if not GG.Propgandaservers then GG.Propgandaservers ={} end
+			-- for all teams 
+				-- if no propagandaserver registered 
 				if not GG.Propgandaservers[team] then GG.Propgandaservers[team] = 0 end
 
 				if team ~= gaiaTeamID  then
+					
 					boolTeamsAreAllied = Spring.AreTeamsAllied(attackerTeam, team)
 					
 					if  boolTeamsAreAllied == true then		
 						 Spring.UseTeamResource(team, "metal", damage)
-						 addInSecond(team, unitID, "metal",  math.ceil(-1.0 * damage))
+						 addInSecond(team, unitID, "metal",  -1 *math.ceil( damage))
 					else  -- get enemy Teams -- tranfer damage as budget to them
 						factor = 1 + (GG.Propgandaservers[team]* gameConfig.propandaServerFactor)
 						Spring.AddTeamResource(team, "metal", math.ceil(math.abs(damage * factor)))
-						 addInSecond(team, unitID, "metal",   math.ceil(math.abs(damage * factor)))
+						addInSecond(team, unitID, "metal",   math.ceil((damage * factor)))
 					end
 				end
 			end
@@ -64,10 +70,12 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 	function gadget:GameFrame(frame)
 		if frame % 30 == 0 then
-			for uid,v in pairs(accumulatedInSecond) do
-				SendToUnsynced("DisplaytAtUnit", uid, v.team, v.damage)
+			for team, deedtable in pairs(accumulatedInSecond) do
+				for uid,v in pairs(deedtable) do
+					SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
+				end
+				accumulatedInSecond= {}				
 			end
-			accumulatedInSecond= {}				
 		end
 	
 	end
