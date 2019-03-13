@@ -105,6 +105,7 @@ function script.Killed(recentDamage, _)
 end
 
 function script.Activate()
+	if not safeHouseID then return 0 end
 
     SetUnitValue(COB.YARD_OPEN, 1)
 
@@ -115,6 +116,7 @@ function script.Activate()
 end
 
 function script.Deactivate()
+	if not safeHouseID then return 0 end
     SetUnitValue(COB.YARD_OPEN, 0)
 
     SetUnitValue(COB.BUGGER_OFF, 0)
@@ -131,7 +133,7 @@ Spring.SetUnitNanoPieces(unitID, { nano })
 
 
 function script.StartBuilding()
-
+	if not safeHouseID then return false end
 end
 
 
