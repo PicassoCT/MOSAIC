@@ -21,7 +21,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- Configuration:
     local SinkEndTime = -35 * 10 -- In frame (10 seconds x 30 frames per seconds)
-    local SinkBeginTime = 90 * 10
+    local SinkBeginTime = 30 * 10
 
     function isWreck(FeatureID)
         FeatureDefID = Spring.GetFeatureDefID(FeatureID)
