@@ -78,9 +78,13 @@ void main(void)	{
 	worldPos = worldPos4.xyz / worldPos4.w; //doesn't make much sense (?)
 
 	#ifdef use_shadows
-		shadowTexCoord = shadowMatrix * worldPos4;
-		shadowTexCoord.xy *= (inversesqrt(abs(shadowTexCoord.xy) + shadowParams.zz) + shadowParams.ww);
-		shadowTexCoord.xy += shadowParams.xy;
+	shadowTexCoord = shadowMatrix * worldPos4;
+		#if 1
+			shadowTexCoord.xy = shadowTexCoord.xy + 0.5;
+		#else
+			shadowTexCoord.xy *= (inversesqrt(abs(shadowTexCoord.xy) + shadowParams.zz) + shadowParams.ww);
+			shadowTexCoord.xy += shadowParams.xy;
+		#endif
 	#endif
 
 	cameraDir = cameraPos - worldPos;

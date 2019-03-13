@@ -108,7 +108,8 @@ vec4 texels[4]; //change to something else if more/less base textures are requir
 
 const float M_PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062;
 const float M_PI2 = M_PI * 2.0;
-const float MINROUGHNESS = 0.04;
+const float MIN_ROUGHNESS = 0.04;
+const float DEFAULT_FO = 0.04;
 
 in Data {
 	vec3 worldPos;
@@ -386,6 +387,11 @@ vec4 sampleEquiRectLod(in sampler2D tex, in vec3 direction, in float lod) {
 	return rgbeToLinear(rgbe);
 }
 
+//https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/IBL.glsl
+float GetMipFromRoughness(float roughness, float lodMax) {
+	return (roughness * (lodMax + 1.0) - pow(roughness, 6.0) * 1.5);
+}
+
 void getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, out vec3 diffuse, out vec3 specular)
 {
 	diffuse = vec3(iblMapScale.x);
@@ -408,7 +414,7 @@ void getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, out vec3 dif
 			#ifdef HAS_IRRADIANCEMAP
 				vec3 diffuseLight = sampleEquiRectLod(irradianceEnvTex, n, iblDiffMapLOD - 4.0).rgb;
 			#else
-				vec3 diffuseLight = textureLod(irradianceEnvTex, n, iblDiffMapLOD - 4.0).rgb;
+				vec3 diffuseLight = texture(irradianceEnvTex, n, iblDiffMapLOD - 4.0).rgb;
 			#endif
 
 			#ifdef SRGB_IBLMAP
@@ -435,12 +441,16 @@ void getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, out vec3 dif
 		#endif
 
 		#ifdef IBL_TEX_LOD
-			float lod = (pbrInputs.roughness * iblMapLOD);
+			#if 0
+				float lod = (pbrInputs.roughness * iblMapLOD);
+			#else
+				float lod = GetMipFromRoughness(pbrInputs.roughness, iblMapLOD);
+			#endif
 			//lod = 0.1 * mod(float(simFrame), 160.0);
 			#ifdef HAS_SPECULARMAP
 				vec3 specularLight = sampleEquiRectLod(specularEnvTex, reflection, lod).rgb;
 			#else
-				vec3 specularLight = textureLod(specularEnvTex, reflection, lod).rgb;
+				vec3 specularLight = texture(specularEnvTex, reflection, lod).rgb;
 			#endif
 		#else
 			#ifdef HAS_SPECULARMAP
@@ -755,13 +765,13 @@ void main(void) {
 	#endif
 
 	// sanitize inputs
-	roughness = clamp(roughness, MINROUGHNESS, 1.0);
+	roughness = clamp(roughness, MIN_ROUGHNESS, 1.0);
 	metallic = clamp(metallic, 0.0, 1.0);
 
 	float roughness2 = roughness * roughness;
 	float roughness4 = roughness2 * roughness2; // roughness^4
 
-	vec3 f0 = vec3(MINROUGHNESS);
+	vec3 f0 = vec3(DEFAULT_FO);
 	vec3 diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
 	diffuseColor *= vec3(1.0 - metallic);
 	vec3 specularColor = mix(f0, baseColor.rgb, vec3(metallic));
@@ -924,6 +934,8 @@ void main(void) {
 			gl_FragColor = vec4( modelDiffColor, 1.0);
 	#elif (DEBUG == DEBUG_MODELSPECULARCOLOR)
 			gl_FragColor = vec4( modelSpecColor, 1.0);
+	#elif (DEBUG == DEBUG_MODELTOTALCOLOR)
+			gl_FragColor = vec4( modelDiffColor + modelSpecColor, 1.0);
 	#elif (DEBUG == DEBUG_IBLSPECULARCOLOR)
 		gl_FragColor = vec4( iblSpecular, 1.0 );
 	#elif (DEBUG == DEBUG_IBLDIFFUSECOLOR)

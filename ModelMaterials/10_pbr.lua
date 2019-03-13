@@ -230,6 +230,7 @@ local pbrDebug = { -- Debug output. Will replace output color if enabled
 	irradianceWorldReflection = false,
 	modelSpecularColor = false,
 	modelDiffuseColor = false,
+	modelTotalColor = false,
 	iblSpecularColor = false,
 	iblDiffuseColor = false,
 	iblSpecularAndDiffuseColor = false,
@@ -475,7 +476,7 @@ local function createNewMatDef(modelNiceName, pbrModel, pbrMap)
 	local newMat = {
 		shaderDefinitions = shaderDefinitions,
 		--deferredDefinitions = deferredDefinitions,
-		shader    = include("modelmaterials/Shaders/pbr.lua"),
+		shader    = VFS.Include("modelmaterials/Shaders/pbr.lua"),
 		usecamera = false,
 		culling   = GL.BACK,
 		predl  = nil,
@@ -527,7 +528,7 @@ for i = 1, #UnitDefs do
 			unitMaterials[i] = matDef
 		end
 	else
-		Spring.Echo(string.format("10_pbr.lua: Failed to load model definition file (%s) for unit (%s)", modelFilename, modelNiceName))
+		--Spring.Echo(string.format("10_pbr.lua: Failed to load model definition file (%s) for unit (%s)", modelFilename, modelNiceName))
 	end
 end
 
