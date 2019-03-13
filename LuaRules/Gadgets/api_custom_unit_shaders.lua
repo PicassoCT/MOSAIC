@@ -18,10 +18,13 @@ function gadget:GetInfo()
     date      = "2008,2009,2010,2016",
     license   = "GNU GPL, v2 or later",
     layer     = 1,
-    enabled   = false,
+    enabled   = Spring.Utilities.IsCurrentVersionNewerThan(100, 0)  --  loaded by default?
   }
 end
 
+if not Spring.Utilities.IsCurrentVersionNewerThan(100, 0) then
+	return
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -48,7 +51,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-VFS.Include("LuaRules/utilities/unitrendering.lua", nil, VFS.MOD .. VFS.BASE)
+VFS.Include("luarules/utilities/unitrendering.lua", nil, VFS.MOD .. VFS.BASE)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -143,7 +146,7 @@ local function CompileShader(shader, definitions, plugins)
       hasVersion = hasVersion or string.sub(def,1,string.len("#version")) == "#version"
     end
     if not hasVersion then
-      table.insert(definitions, 1, "#version 150 compatibility")
+      table.insert(definitions, 1, "#version 130")
     end
     if (shadows) then
       table.insert(definitions, "#define use_shadows")
@@ -630,6 +633,9 @@ function gadget:Initialize()
 
   --// load the materials config files
   local MATERIALS_DIR = "modelmaterials/"
+  if not Spring.Utilities.IsCurrentVersionNewerThan(103, 0) then
+    MATERIALS_DIR = "modelmaterials_103/"
+  end
   local unitMaterialDefs, featureMaterialDefs = _LoadMaterialConfigFiles(MATERIALS_DIR)
   --// process the materials (compile shaders, load textures, ...)
   _ProcessMaterials(unitRendering,    unitMaterialDefs)

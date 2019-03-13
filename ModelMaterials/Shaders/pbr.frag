@@ -108,8 +108,7 @@ vec4 texels[4]; //change to something else if more/less base textures are requir
 
 const float M_PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062;
 const float M_PI2 = M_PI * 2.0;
-const float MIN_ROUGHNESS = 0.04;
-const float DEFAULT_FO = 0.04;
+const float MINROUGHNESS = 0.04;
 
 in Data {
 	vec3 worldPos;
@@ -765,13 +764,13 @@ void main(void) {
 	#endif
 
 	// sanitize inputs
-	roughness = clamp(roughness, MIN_ROUGHNESS, 1.0);
+	roughness = clamp(roughness, MINROUGHNESS, 1.0);
 	metallic = clamp(metallic, 0.0, 1.0);
 
 	float roughness2 = roughness * roughness;
 	float roughness4 = roughness2 * roughness2; // roughness^4
 
-	vec3 f0 = vec3(DEFAULT_FO);
+	vec3 f0 = vec3(MINROUGHNESS);
 	vec3 diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
 	diffuseColor *= vec3(1.0 - metallic);
 	vec3 specularColor = mix(f0, baseColor.rgb, vec3(metallic));
@@ -934,8 +933,6 @@ void main(void) {
 			gl_FragColor = vec4( modelDiffColor, 1.0);
 	#elif (DEBUG == DEBUG_MODELSPECULARCOLOR)
 			gl_FragColor = vec4( modelSpecColor, 1.0);
-	#elif (DEBUG == DEBUG_MODELTOTALCOLOR)
-			gl_FragColor = vec4( modelDiffColor + modelSpecColor, 1.0);
 	#elif (DEBUG == DEBUG_IBLSPECULARCOLOR)
 		gl_FragColor = vec4( iblSpecular, 1.0 );
 	#elif (DEBUG == DEBUG_IBLDIFFUSECOLOR)

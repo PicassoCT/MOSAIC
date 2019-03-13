@@ -6,7 +6,7 @@ function widget:GetInfo()
     author    = "knorke, tweaked by KR",
     date      = "Sep 2011",
     license   = "PD",
-    layer     =3,
+    layer     = -3,
     enabled   = false,
     --detailsDefault = 3,
   }
