@@ -386,11 +386,6 @@ vec4 sampleEquiRectLod(in sampler2D tex, in vec3 direction, in float lod) {
 	return rgbeToLinear(rgbe);
 }
 
-//https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/IBL.glsl
-float GetMipFromRoughness(float roughness, float lodMax) {
-	return (roughness * (lodMax + 1.0) - pow(roughness, 6.0) * 1.5);
-}
-
 void getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, out vec3 diffuse, out vec3 specular)
 {
 	diffuse = vec3(iblMapScale.x);
@@ -413,7 +408,7 @@ void getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, out vec3 dif
 			#ifdef HAS_IRRADIANCEMAP
 				vec3 diffuseLight = sampleEquiRectLod(irradianceEnvTex, n, iblDiffMapLOD - 4.0).rgb;
 			#else
-				vec3 diffuseLight = texture(irradianceEnvTex, n, iblDiffMapLOD - 4.0).rgb;
+				vec3 diffuseLight = textureLod(irradianceEnvTex, n, iblDiffMapLOD - 4.0).rgb;
 			#endif
 
 			#ifdef SRGB_IBLMAP
@@ -440,16 +435,12 @@ void getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, out vec3 dif
 		#endif
 
 		#ifdef IBL_TEX_LOD
-			#if 0
-				float lod = (pbrInputs.roughness * iblMapLOD);
-			#else
-				float lod = GetMipFromRoughness(pbrInputs.roughness, iblMapLOD);
-			#endif
+			float lod = (pbrInputs.roughness * iblMapLOD);
 			//lod = 0.1 * mod(float(simFrame), 160.0);
 			#ifdef HAS_SPECULARMAP
 				vec3 specularLight = sampleEquiRectLod(specularEnvTex, reflection, lod).rgb;
 			#else
-				vec3 specularLight = texture(specularEnvTex, reflection, lod).rgb;
+				vec3 specularLight = textureLod(specularEnvTex, reflection, lod).rgb;
 			#endif
 		#else
 			#ifdef HAS_SPECULARMAP
