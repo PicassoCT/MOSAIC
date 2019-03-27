@@ -14,7 +14,7 @@ local OperativePropagator = Human:New{
 	MaxVelocity = 4.5,
 	MetalStorage = 5000,
 	metalMake  = 3,
-
+	buildtime = 60,
 	
 	--orders
 	canMove					  = true,

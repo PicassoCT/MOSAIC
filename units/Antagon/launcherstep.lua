@@ -4,6 +4,7 @@ local BuildLauncherStep = Abstract:New{
 	maxDamage         	  = 500,
 	mass                = 500,
 	buildCostEnergy    	  = 0,
+	buildtime			 = 3* 60,
 	buildCostMetal     	  = 5000,
 	explodeAs				  = "none",
 	script 				= "placeholder.lua",

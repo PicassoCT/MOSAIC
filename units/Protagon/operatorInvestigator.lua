@@ -6,7 +6,7 @@ local OperativeInvestigator = Human:New{
 	buildCostMetal     	  = 5,
 	MetalStorage = 5000,
 	metalMake  = 3,
-	
+	buildtime = 60,
 	explodeAs				  = "none",
 	name = 		"Investigator",
 	description= " pre-incident investigation <recruits Agents/ creates safehouses/ interrogates terrorists>",

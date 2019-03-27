@@ -16,7 +16,7 @@ local OperativeAsset = Human:New{
 	BrakeRate = 0.6,
 	TurnRate = 1200,
 	MaxVelocity = 9,
-	
+	buildtime			 = 2 * 60,
 	--orders
 	canMove	= true,
 	CanAttack = true,

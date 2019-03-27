@@ -6,7 +6,7 @@ local Launcher = Building:New{
 	buildCostMetal      = 5,
 	explodeAs			= "none",
 
-
+	buildtime			 = 2*60,
 
 	Builder = true,
 	nanocolor=[[0 0 0]], --

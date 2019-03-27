@@ -16,7 +16,7 @@ local CivilianAgent = Human:New{
 	TurnRate = 900,
 	MaxVelocity = 4.5*0.35,
 	
-
+	buildtime			 = 40,
 	CanAttack = false,
 	CanGuard = true,
 

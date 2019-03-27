@@ -9,7 +9,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 0,
-	buildTime = 5,
+	buildTime = 2 * 60,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,
