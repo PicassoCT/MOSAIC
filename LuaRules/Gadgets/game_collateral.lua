@@ -21,9 +21,11 @@ if ( gadgetHandler:IsSyncedCode()) then
 	local gaiaTeamID= Spring.GetGaiaTeamID()
 	
 	accumulatedInSecond ={}
+	
 	function addInSecond(team, uid,  rtype, damage)
 		if not accumulatedInSecond[team] then 
 			accumulatedInSecond[team] ={ }
+
 		end
 		
 		if not accumulatedInSecond[team][uid] then 
@@ -65,15 +67,19 @@ if ( gadgetHandler:IsSyncedCode()) then
 				if team ~= gaiaTeamID  then
 					
 					boolTeamsAreAllied = Spring.AreTeamsAllied(attackerTeam, team)
+
 					
-					if  boolTeamsAreAllied == true then		
+					if  boolTeamsAreAllied == true then	
+
 						 Spring.UseTeamResource(team, "metal", damage)
 						 addInSecond(team, unitID, "metal",  -1 *math.ceil( damage))
 					else  -- get enemy Teams -- tranfer damage as budget to them
 						factor = 1 + (GG.Propgandaservers[team]* gameConfig.propandaServerFactor)
 						Spring.AddTeamResource(team, "metal", math.ceil(math.abs(damage * factor)))
 						addInSecond(team, unitID, "metal",   math.ceil((damage * factor)))
+
 					end
+					-- This table contains per team- for each gaia Unit a entry of how much damage was done - per second
 				end
 			end
 		end  
@@ -86,7 +92,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 					SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
 				end
 				accumulatedInSecond= {}				
-			end
+			end 	
 		end
 	
 	end
@@ -95,7 +101,7 @@ else -- UNSYNCED
 	DrawForFrames = 1 * 30
 	Unit_StartFrame_Message={}
 	constOffsetY= 25	
-
+    gaiaTeamID= Spring.GetGaiaTeamID()
 	
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage)
@@ -119,26 +125,31 @@ else -- UNSYNCED
 		for _,id in ipairs(Spring.GetAllUnits()) do	
 			-- Spring.Echo("itterating over all units")
 			for uid, valueT in pairs(Unit_StartFrame_Message) do
+
 			-- Spring.Echo("itterating over all damaged")
 				-- Check if Time has expsired
-				if id == uid and valueT then
-				-- Spring.Echo("id == uid")
-				-- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
-					 if currFrame < valueT.frame + DrawForFrames then
-						-- Spring.Echo("Drawing Prizes")
-						 x, y, z = Spring.GetUnitPosition(uid)	
-						 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
-						 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
-						 if valueT.message < 0 then 
-							gl.Color(1.0,0.0,0.0)
-						 else
-							gl.Color(0.0,1.0,0.0)
-						 end
-						 
-						 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
-					 elseif currFrame > valueT.frame + DrawForFrames then
-						UnitsToNil[uid]=true
-					end
+			if id == uid and valueT then
+				--if attacker was me or i get a reward for another team attack a gaia unit
+				teamid= Spring.GetUnitTeam(id)
+				-- if teamid == myPlayerTeam then
+					-- Spring.Echo("id == uid")
+					-- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
+						 if currFrame < valueT.frame + DrawForFrames then
+							-- Spring.Echo("Drawing Prizes")
+							 x, y, z = Spring.GetUnitPosition(uid)	
+							 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
+							 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+							 if valueT.message < 0 then 
+								gl.Color(1.0,0.0,0.0)
+							 else
+								gl.Color(0.0,1.0,0.0)
+							 end
+							 
+							 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
+						 elseif currFrame > valueT.frame + DrawForFrames then
+							-- UnitsToNil[uid]=true
+						end
+					-- end
 				end
 			end
 		end
