@@ -92,7 +92,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 					SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
 				end
 				accumulatedInSecond= {}				
-			end 	
+			end 
 		end
 	
 	end
