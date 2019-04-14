@@ -11,7 +11,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-gun = piece "gun"
+gun = piece "Gun"
 
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
