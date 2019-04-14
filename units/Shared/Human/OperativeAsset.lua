@@ -26,7 +26,7 @@ local OperativeAsset = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 				= "operativeassetscript.lua",
-	objectName        	= "operative_placeholder.s3o",
+	objectName        	= "asset.dae",
 	firestate = 1,
 	
 	canCloak =true,
