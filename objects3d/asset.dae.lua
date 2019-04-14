@@ -1,4 +1,4 @@
-model = {
+model = { 
 	--radius = 25.0,
 	--height = 40,
 	--tex1 = "Jeffy_Diffuse+TeamColor.dds",
