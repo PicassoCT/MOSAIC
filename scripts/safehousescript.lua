@@ -79,6 +79,7 @@ safeHouseUpgradeTable= getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefI
 
 function detectUpgrade()
 	while true do 
+	Sleep(500)
 		-- Spring.Echo("Detect Upgrade")
 		buildID = Spring.GetUnitIsBuilding(unitID)
 		if buildID then
@@ -92,8 +93,7 @@ function detectUpgrade()
 				Spring.Echo("Upgrade Complete")
 				Spring.DestroyUnit(unitID,false,true)
 			end
-		end
-		Sleep(500)
+		end		
 	end
 end
 

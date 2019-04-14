@@ -28,7 +28,9 @@ end
 function loadLoadOutLoop()
 	Sleep(100)
 	myLoadOutType =  LoadOutTypes[myDefID]
-	while true do
+	while true do			
+	Sleep(100)
+	
 		if doesUnitExistAlive(loadOutUnitID) == false then
 			myTeam = Spring.GetUnitTeam(unitID)
 
@@ -38,8 +40,7 @@ function loadLoadOutLoop()
 		else
 			transferOrders(unitID, loadOutUnitID)
 		end
-		
-	Sleep(100)
+
 	end
 
 end

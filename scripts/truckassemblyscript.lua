@@ -89,7 +89,8 @@ function updateBoolisBuilding()
 		Sleep(150)
 	end
 	
-	while true do
+	while true do,
+	Sleep(500)
 		if GG.Factorys[factoryID][2]==true then
 			
 			boolBuilding=true
@@ -99,7 +100,7 @@ function updateBoolisBuilding()
 		end
 		
 		
-		Sleep(500)
+		
 	end
 	
 end
@@ -113,8 +114,8 @@ function workInProgress()
 	buildID=nil
 	buildIDofOld=nil
 	counter=0
-	while(true)do
-		
+	while(true) do
+	Sleep(120)	
 		if factoryID and Spring.ValidUnitID(factoryID)== true then
 			
 			buildID=Spring.GetUnitIsBuilding(factoryID)
@@ -147,7 +148,7 @@ function workInProgress()
 				end		
 			end
 		end
-		Sleep(120)
+	
 	end
 	boolBuilding=false
 end

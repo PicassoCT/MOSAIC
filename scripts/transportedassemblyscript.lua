@@ -20,6 +20,7 @@ end
 function transferCommands()
 
     while true do
+	Sleep(150)
         if GG.Factorys and GG.Factorys[unitID] and GG.Factorys[unitID][1] then
 
             CommandTable = Spring.GetUnitCommands(unitID)
@@ -46,7 +47,7 @@ function transferCommands()
                 end
             end
         end
-        Sleep(150)
+   
     end
 end
 
@@ -107,11 +108,12 @@ end
 boolDoIt = false
 function whileMyThreadGentlyWeeps()
     while true do
+	 Sleep(150)
         if boolDoIt == true then
             boolDoIt = false
             StartThread(delayedBuildEnd)
         end
-        Sleep(150)
+       
     end
 end
 
