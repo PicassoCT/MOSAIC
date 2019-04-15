@@ -93,7 +93,8 @@ function detectUpgrade()
 				Spring.Echo("Upgrade Complete")
 				Spring.DestroyUnit(unitID,false,true)
 			end
-		end		
+		end
+		
 	end
 end
 
