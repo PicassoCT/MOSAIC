@@ -89,7 +89,7 @@ function updateBoolisBuilding()
 		Sleep(150)
 	end
 	
-	while true do,
+	while true do
 	Sleep(500)
 		if GG.Factorys[factoryID][2]==true then
 			

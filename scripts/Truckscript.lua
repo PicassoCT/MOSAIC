@@ -17,6 +17,7 @@ boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
 local loadOutUnitID 
 
 function script.Create()
+
 	if boolIsCivilianTruck == false then
 		StartThread(loadLoadOutLoop)
 	end

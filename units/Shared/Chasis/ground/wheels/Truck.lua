@@ -17,7 +17,7 @@ local ground_truck_mg = Truck:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "Truckscript.lua",
-	objectName 	= "Truck.s3o",
+	objectName 	= "apc.dae",
 	movementClass   	= "VEHICLE",
 	
 	category = [[LAND]],
@@ -51,7 +51,7 @@ local ground_truck_ssied = Truck:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "Truckscript.lua",
-	objectName 	= "Truck.s3o",
+	objectName 	= "apc.dae",
 	movementClass   	= "VEHICLE",
 	
 	category = [[LAND]],
@@ -90,7 +90,8 @@ local CivilianTruck = Truck:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "Truckscript.lua",
-	objectName 	= "Truck.s3o",
+	objectName 	= "truck.dae",
+	-- objectName 	= "Truck.s3o",
 
 	category = [[LAND]],
 	
