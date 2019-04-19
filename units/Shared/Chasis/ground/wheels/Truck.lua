@@ -24,7 +24,8 @@ local ground_truck_mg = Truck:New{
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
-	usepiececollisionvolumes = true,
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
 	
 	customparams = {
 		helptext		= "Military Truck/Technical",
@@ -53,7 +54,8 @@ local ground_truck_ssied = Truck:New{
 	script 			= "Truckscript.lua",
 	objectName 	= "apc.dae",
 	movementClass   	= "VEHICLE",
-	
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
 	category = [[LAND]],
 	transportSize = 16,
 	transportCapacity = 2,
@@ -85,8 +87,9 @@ local CivilianTruck = Truck:New{
 	transportSize = 16,
 	transportCapacity = 1,
 	isFirePlatform  = true, 
- usepiececollisionvolumes = true,
-	 
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "Truckscript.lua",

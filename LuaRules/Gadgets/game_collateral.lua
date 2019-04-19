@@ -51,8 +51,12 @@ if ( gadgetHandler:IsSyncedCode()) then
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
 		assert(damage)
 
-		if not attackerID then echo("Unit "..unitID .. " was damaged without perpetrator with weapon ".. WeaponDefs[weaponDefID].name ); return end
-	
+		if not attackerID and weaponDefID then
+			if WeaponDefs[weaponDefID] then
+				echo("Unit "..unitID .. " was damaged without perpetrator with weapon ".. WeaponDefs[weaponDefID].name )
+			end
+		return 
+		end
 		if not GG.Propgandaservers then GG.Propgandaservers ={} end
 		
 		--civilian attacked by a not civilian

@@ -16,6 +16,18 @@ myDefID = Spring.GetUnitDefID(unitID)
 boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
 local loadOutUnitID 
 
+function showAndTell()
+	showAll(unitID)
+	teamID =Spring.GetUnitTeam(unitID)
+	teamID,_,_,_,sidename =Spring.GetTeamInfo(teamID)
+	if not sidename or sidename == "protagon" then
+		hideT(TablesOfPiecesGroups["BodyB"])
+	else
+		hideT(TablesOfPiecesGroups["Body"])
+	end
+
+end
+
 function script.Create()
 
 	if boolIsCivilianTruck == false then
@@ -24,6 +36,7 @@ function script.Create()
 
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	showAndTell()
 end
 
 function loadLoadOutLoop()

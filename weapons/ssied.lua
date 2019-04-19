@@ -13,7 +13,7 @@ local weaponDef = {
     ImpulseBoost = 1.2,
     ImpulseFactor = 3,
     damage = {
-        default = 800,
+        default = 1600,
     },
     areaOfEffect = 250,
     craterMult = 1,
