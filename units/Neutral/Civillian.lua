@@ -21,7 +21,7 @@ local Civilian = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 					= "civilianscript.lua",
-	objectName        	= "human_placeholder.s3o",
+	objectName        	= "civilian.dae",
 
 
 	

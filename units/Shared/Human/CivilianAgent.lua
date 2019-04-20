@@ -24,7 +24,7 @@ local CivilianAgent = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 					= "civilianagentscript.lua",
-	objectName        	= "human_placeholder.s3o",
+	objectName        	= "civilian.dae",
 
 	canCloak =true,
 	cloakCost=0.0001,
