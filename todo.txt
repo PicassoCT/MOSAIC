@@ -1,0 +1,37 @@
+Civilian
+Props:
+	-Abstract Female and Male Skeletton
+	- Bags, Luggage, Crates, Trolleys, Rucksack
+	- Cellphones, Handbags
+Animation:
+	Walk Animation:
+	- walk Cycle
+	- cowering run Cycle
+	- run Cycle
+	- Carrying Animation
+	
+	Idle-Animation:
+		- talk Cycle, debate-intensity
+		- stand alone idle: cellphone, smoking, squatting
+		- prayer
+	ReactionAnimation:
+		Catastrophe:
+		- filming
+		- whailing
+		- Protesting
+	Hit Animation:
+		- touch Wound
+	
+	Death Animation:
+		- Blasted
+		- Swirling
+		- Suprised 
+		-Collapsing, Shiveirng
+
+
+ 
+
+
+		https://i.imgur.com/dQK20di.mp4
+
+
