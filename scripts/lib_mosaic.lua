@@ -164,6 +164,17 @@ function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
+function  getSafeHouseTypeTable(UnitDefs)
+
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"protagonsafehouse",
+		"antagonsafehouse"
+	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 function  getSafeHouseUpgradeTypeTable(UnitDefs)
 
 	UnitDefNames = getUnitDefNames(UnitDefs)
