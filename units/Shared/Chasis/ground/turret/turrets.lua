@@ -73,7 +73,7 @@ local groundturretssied =  Turret:New{
 	name = "Stationary Machinegun",
 	Description = " MOSAIC Standardized Machine Gun Emplacement ",
 	
-	objectName = "groundturretmg.s3o",
+	objectName = "ground_turret_mg.dae",
 	script = "turretscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,

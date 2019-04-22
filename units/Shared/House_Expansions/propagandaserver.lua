@@ -15,7 +15,7 @@ local Propagandaserver = Building:New{
 	acceleration = 0,
 	
 	explodeAs			= "none",
-
+	buildingMask = 8,
 	MaxSlope 					= 50,
 
 	footprintX = 1,

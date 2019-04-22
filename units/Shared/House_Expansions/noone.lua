@@ -12,7 +12,7 @@ local Noone_UplinkLaser = Building:New{
 	buildCostEnergy     = 5,
 	buildCostMetal      = 5,
 	explodeAs			= "none",
-
+	buildingMask = 8,
 
 
 

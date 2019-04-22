@@ -17,6 +17,7 @@ local Launcher = Building:New{
 
 	footprintX = 4,
 	footprintZ = 4,
+	buildingMask = 8,
 	
 	script 					= "launcherscript.lua",
 	objectName        	= "Launcher.s3o",

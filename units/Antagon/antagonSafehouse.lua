@@ -17,7 +17,7 @@ local AntagonSafeHouse = Building:New{
 	buildDistance = 1,
 	terraformSpeed = 1,
 	YardMap ="oooo oooo oooo oooo ",
-	
+	buildingMask = 8,
 	footprintX = 4,
 	footprintZ = 4,
 

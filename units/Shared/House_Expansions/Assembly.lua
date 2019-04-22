@@ -16,7 +16,7 @@ local Assembly = Building:New{
 	YardMap ="yyyy yyyy yyyy yyyy ",
 	MaxSlope 					= 50,
 	MetalStorage = 2500,
-
+	buildingMask = 8,
 	footprintX = 4,
 	footprintZ = 4,
 	
