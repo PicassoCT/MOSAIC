@@ -25,13 +25,23 @@ end
 	
 	safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 	areaDenyMapResolution = 16
+	SAFEHOUSEBUILDING = 8 
 	areaDenyMap= {}
-local houseDefID = UnitDefs["house"].id
+local houseDefID 
+	for id, t in pairs(UnitDefs) do
+		if t.name == "house" then
+		houseDefID = id
+		end
+	end
 	
-function setAroundPoint(x,z, valueToSet, halfSize)
-	for rx= math.max(1, x - (halfSize)), math.min(Game.mapSizeX/ areaDenyMapResolution -1, x + halfSize)do
-		for rz= math.max(1, z -(halfSize)), math.min(Game.mapSizeZ/ areaDenyMapResolution -1, z + halfSize)do
-			Spring.SetSquareBuildingMask(x, z , valueToSet)
+local xMax = Game.mapSizeX/ areaDenyMapResolution 
+local zMax = Game.mapSizeZ/ areaDenyMapResolution
+
+	
+function setAroundPoint(x, z, valueToSet, halfSize)
+	for rx= math.max(1, x - (halfSize)), math.min(xMax-1, x + halfSize)do
+		for rz= math.max(1, z -(halfSize)), math.min(zMax -1, z + halfSize)do
+			Spring.SetSquareBuildingMask(rx, rz , valueToSet)
 		end
 	end
 end
@@ -43,7 +53,7 @@ function gadget:Initialize()
 	for x=1, mapSizeX do
 		for z=1, mapSizeZ do
 			if x > 0 and z > 0 and x < Game.mapSizeX/areaDenyMapResolution and z < Game.mapSizeZ/areaDenyMapResolution then
-				Spring.SetSquareBuildingMask(x , z, 0)
+				Spring.SetSquareBuildingMask(x , z, 1)
 			end
 		end
 	end
@@ -56,7 +66,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 	if houseDefID == unitDefID then
 	x,y,z = Spring.GetUnitPosition(unitID)
 		if x then			
-			setAroundPoint(x * 0.0625, z * 0.0625, 0, 2)
+			setAroundPoint(x * 0.0625, z * 0.0625, 1, 4)
 		end
 	end
 end
@@ -64,9 +74,9 @@ end
 function gadget:UnitCreated(unitID, unitDefID)
 	if houseDefID == unitDefID then
 	x,y,z = Spring.GetUnitPosition(unitID)
-	Spring.Echo("gadget:UnitCreated", x, y, z)
+
 		if x then
-			setAroundPoint(x * 0.0625, z * 0.0625, 8, 2)			
+			setAroundPoint(x * 0.0625, z * 0.0625, SAFEHOUSEBUILDING, 4)			
 		end
 	end
 end
