@@ -14,6 +14,7 @@ Animation:
 		- talk Cycle, debate-intensity
 		- stand alone idle: cellphone, smoking, squatting
 		- prayer
+		- sleep on street
 	ReactionAnimation:
 		Catastrophe:
 		- filming
