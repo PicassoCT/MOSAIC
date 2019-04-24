@@ -21,6 +21,11 @@ Animation:
 		- Protesting
 	Hit Animation:
 		- touch Wound
+		
+	AttackAnimation:
+		- punching
+		- hitting with stick
+		- throwing molotow cocktail
 	
 	Death Animation:
 		- Blasted
