@@ -30,8 +30,7 @@ Animation:
 
 
  
+ UnitCommand(unitID, unitDefID, unitTeam, cmdID, cmdParams, cmdOpts, cmdTag) by checking the cmdID and then the number of cmdParams
 
-
-		https://i.imgur.com/dQK20di.mp4
 
 
