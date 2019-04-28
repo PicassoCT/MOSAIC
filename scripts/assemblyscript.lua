@@ -38,13 +38,18 @@ function script.Activate()
     return 1
 end
 
-function script.Deactivate()
-
+function delayedDeactivation()
+Sleep(1000)
     SetUnitValue(COB.YARD_OPEN, 0)
 
     SetUnitValue(COB.BUGGER_OFF, 0)
 
     SetUnitValue(COB.INBUILDSTANCE, 0)
+end
+
+function script.Deactivate()
+	StartThread(delayedDeactivation)
+
     return 0
 end
 

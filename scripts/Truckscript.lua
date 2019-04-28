@@ -4,7 +4,6 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 include "lib_mosaic.lua"
-
 TablesOfPiecesGroups = {}
 
 LoadOutTypes = getTruckLoadOutTypeTable()
@@ -40,9 +39,15 @@ function script.Create()
 end
 
 function loadLoadOutLoop()
-	Sleep(100)
+	Sleep(5000)
 	myLoadOutType =  LoadOutTypes[myDefID]
-	while true do			
+	explosiveDefID = UnitDefNames["ground_turret_ssied"].id
+	
+	loadOutUnitID= createUnitAtUnit( myTeam, myLoadOutType, unitID, 0, 10, 0)
+	Spring.SetUnitNoSelect(loadOutUnitID, true)
+	Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
+	
+	while myLoadOutType ~= explosiveDefID  do			
 	Sleep(100)
 	
 		if doesUnitExistAlive(loadOutUnitID) == false then

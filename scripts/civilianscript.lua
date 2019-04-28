@@ -28,6 +28,7 @@ boolTurning = false
 boolTurnLeft = false
 
 local SIG_STOP = 1
+AnimationState = "Stopping_TransferPose"
 function setOverrideAnimationState( Animationstate, ConditionFunction, boolInstantOverride)
 
 end
@@ -151,14 +152,14 @@ function script.StartMoving()
 end
 
 function delayedStop()
-Signal(SIG_STOP)
-SetSignalMas(SIG_STOP)
-Sleep(250)
-boolWalking = false
+	Signal(SIG_STOP)
+	SetSignalMask(SIG_STOP)
+	Sleep(250)
+	boolWalking = false
 end
 
 function script.StopMoving()
-StartThread(delayedStop)
+	StartThread(delayedStop)
 end
 
 function script.Activate()
