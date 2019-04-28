@@ -10,10 +10,63 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
+boolWalking = false
+boolTurning = false
+boolTurnLeft = false
+
+local SIG_STOP = 1
+function setOverrideAnimationState( Animationstate, ConditionFunction)
+
+end
+
+-- Animation StateMachine
+	-- Every Animation abortable for fast blending
+	-- Health dependent loops
+	-- External Override
+	-- AnimationStates have abort Condition
+
+-- Civilian
+-- Props:
+	-- -Abstract Female and Male Skeletton
+	-- - Bags, Luggage, Crates, Trolleys, Rucksack
+	-- - Cellphones, Handbags
+-- Animation:
+	-- Walk Animation:
+	-- - walk Cycle
+	-- - cowering run Cycle
+	-- - run Cycle
+	-- - Carrying Animation
+	
+	-- Idle-Animation:
+		-- - talk Cycle, debate-intensity
+		-- - stand alone idle: cellphone, smoking, squatting
+		-- - prayer
+		-- sleep on street
+	-- ReactionAnimation:
+		-- Catastrophe:
+		-- - filming
+		-- - whailing
+		-- - Protesting
+	-- Hit Animation:
+		-- - touch Wound
+		
+	-- AttackAnimation:
+		-- - punching
+		-- - hitting with stick
+		-- - throwing molotow cocktail
+	
+	-- Death Animation:
+		-- - Blasted
+		-- - Swirling
+		-- - Suprised 
+		-- -Collapsing, Shiveirng
+
+
 
 function script.Create()
     
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(turnDetector)
 end
 
 function script.Killed(recentDamage, _)
@@ -49,9 +102,18 @@ end
 
 
 function script.StartMoving()
+	boolWalking= true
+end
+
+function delayedStop()
+Signal(SIG_STOP)
+SetSignalMas(SIG_STOP)
+Sleep(250)
+boolWalking = false
 end
 
 function script.StopMoving()
+StartThread(delayedStop)
 end
 
 function script.Activate()
