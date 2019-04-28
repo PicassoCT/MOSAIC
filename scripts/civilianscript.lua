@@ -5,6 +5,19 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
+--Contains:
+-- center
+-- uparm (1= left, 2 = right)
+-- lowarm
+-- hand
+-- torso
+-- upbody
+-- head
+-- upleg
+-- lowleg
+-- feet
+
+--equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -15,9 +28,40 @@ boolTurning = false
 boolTurnLeft = false
 
 local SIG_STOP = 1
-function setOverrideAnimationState( Animationstate, ConditionFunction)
+function setOverrideAnimationState( Animationstate, ConditionFunction, boolInstantOverride)
 
 end
+-- +STOPED+---------------------------------------------------+    +----------------------------+
+-- |                                                          |    |Aiming/Assaultanimation:    |
+-- |  +--------------+         +----------------------------+ |    |Stick                       |
+-- |  |Transfer Pose |         |Idle Animations:            | |    |Molotowcocktail             |
+-- |  +--------+----++         |talk Cycle, debate-intensity| |    |Fist                        |
+-- |           ^    ^          |stand alone idle:           | |    |                            |
+-- |           |    |          |cellphone,                  | |    |                            |
+-- |           |    |          |smoking, squatting          | |    |                            |
+-- |           |    +--------->+prayer                      | |    |                            |
+-- |           |    |          |sleep on street             | |    |                            |
+-- |           |    |          +----------------------------+ |    +----------------------------+
+-- |           |    |          +----------------------------+ |
+-- |           |    |          |   ReactionAnimation:       | |    +----------------------------+
+-- |           |    |          |		   Catastrophe:     | |    | Hit-Animation              |
+-- |           |    |          |		     filming        | |    |touch Wound/ hold wound		|
+-- |           |    +--------->+		     whailing       | |    |	                        |
+-- |           |    |          |		     Protesting     | |    |                            |
+-- |           |    |          +----------------------------+ |    |                            |
+-- |           |    |          +-------------------------+    |    |                            |
+-- |           |    +----------> Hit Animation           |    |    |                            |
+-- |           |               | touch Wound/ hold wound |    |    +----------------------------+
+-- +----------------------------------------------------------+
+-- +-Walking+-------------------------------------------------+  +-------------------------------------+
+-- |           v                                              |  |Death Animation                      |
+-- | +---------+-------------------------+                    |  |Blasteded                            |
+-- | |Transfer Pose|TransferPose Wounded +<--+                |  |Swirlingng                           |
+-- | +-----------------------------------+   |                |  |Suprised                             |
+-- +-----------------------------------------v----------------+  Collapsing, Shivering, Coiling Up     |
+-- |    Walk Animation:                                       |  |                                     |
+-- |walk Cycles: Normal/ Wounded/ Carrying/ Cowering/Run      |  +-------------------------------------+
+-- |-----------------------------------------------------------
 
 -- Animation StateMachine
 	-- Every Animation abortable for fast blending
@@ -48,7 +92,7 @@ end
 		-- - whailing
 		-- - Protesting
 	-- Hit Animation:
-		-- - touch Wound
+		-- - touch Wound/ hold wound
 		
 	-- AttackAnimation:
 		-- - punching
@@ -59,7 +103,8 @@ end
 		-- - Blasted
 		-- - Swirling
 		-- - Suprised 
-		-- -Collapsing, Shiveirng
+		-- -Collapsing, Shivering, Coiling Up
+
 
 
 
