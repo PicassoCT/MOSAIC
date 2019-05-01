@@ -13,6 +13,7 @@ center = piece "center"
 attachPoint = piece "attachPoint"
 myDefID = Spring.GetUnitDefID(unitID)
 boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
+myLoadOutType =  LoadOutTypes[myDefID]
 local loadOutUnitID 
 
 function showAndTell()
@@ -39,8 +40,10 @@ function script.Create()
 end
 
 function loadLoadOutLoop()
+	waitTillComplete(unitID)
 	Sleep(5000)
-	myLoadOutType =  LoadOutTypes[myDefID]
+	myTeam = Spring.GetUnitTeam(unitID)
+
 	explosiveDefID = UnitDefNames["ground_turret_ssied"].id
 	
 	loadOutUnitID= createUnitAtUnit( myTeam, myLoadOutType, unitID, 0, 10, 0)
@@ -90,6 +93,7 @@ function script.TransportDrop ( passengerID, x, y, z )
 		end
 	end
 end
+
 
 function script.StartMoving()
 end
