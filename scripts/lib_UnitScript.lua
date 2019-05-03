@@ -833,7 +833,8 @@ function transformUnitInto(oldID, unitType, setVel, boolKill, parentID, overWrit
 	rotx, roty, rotz = Spring.GetUnitRotation(oldID)
 	currHp, oldMaxHp = Spring.GetUnitHealth(oldID)
 	
-	id = Spring.CreateUnit(unitType, x, y, z, math.ceil(math.random(0, 3)), teamID, false, false, overWriteID, parentID)
+	facing = Spring.GetUnitBuildFacing(oldID)
+	id = Spring.CreateUnit(unitType, x, y, z, facing, teamID, false, false, overWriteID, parentID)
 	assert(id)
 	if id then
 		transferUnitStatusToUnit(oldID, id)
