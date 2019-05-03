@@ -652,4 +652,8 @@ local houseDefID = UnitDefNames["house"].id
 			sendArrivedUnitsCommands()
 		end		
 	end
+	
+	function gadget:UnitFinished(unitID, unitDefID)
+		Spring.Echo("Unit "..unitID.." of type "..UnitDefs[unitDefID].name.." is finnished")	
+	end
 end
