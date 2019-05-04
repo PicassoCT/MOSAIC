@@ -12,10 +12,11 @@ end
 center = piece "center"
 buildspot = piece "buildspot"
 structure = piece "structure"
-
+myTeamID = Spring.GetUnitTeam(unitID)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(buildWatcher)
 end
 
 function script.Killed(recentDamage, _)
@@ -25,7 +26,40 @@ function script.Killed(recentDamage, _)
 end
 
 
+function buildWatcher()
+	
+	while true do 
+	buildID = Spring.GetUnitIsBuilding(unitID)
+		if buildID then
+		hp, mhp, pd, captProg, buildProgress = Spring.GetUnitHealth(buildID)
+		laststep= 0
+		while buildProgress and buildProgress + laststep  > 0.95		do
+			Sleep(1)
+			hp, mhp, pd, captProg, tbuildProgress = Spring.GetUnitHealth(buildID)
+			laststep = buildProgress - tbuildProgress
+			buildProgress = tbuildProgress
+			
+		end
 
+		if buildProgress then 
+			unitDefID = Spring.GetUnitDefID(buildID)
+			createUnitAtUnit(myTeamID, unitDefID, unitID, 0,0, 0)
+			local facCmds = Spring.GetFactoryCommands(unitID) 
+			if facCmds then -- nil check
+				local cmd = facCmds[1]
+				Spring.GiveOrderToUnit(unitID, CMD.REMOVE, {1,cmd.tag}, {"ctrl"})
+			end
+		
+		end
+		
+		
+		end
+	
+	Sleep(1)
+	end
+
+
+end
 
 
 
