@@ -41,7 +41,7 @@ end
 
 function loadLoadOutLoop()
 	waitTillComplete(unitID)
-	Sleep(5000)
+	Sleep(100)
 	myTeam = Spring.GetUnitTeam(unitID)
 
 	explosiveDefID = UnitDefNames["ground_turret_ssied"].id
