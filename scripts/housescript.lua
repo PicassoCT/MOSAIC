@@ -24,10 +24,23 @@ end
 
 
 --- -aimining & fire weapon
+--TODO generate Algo to create building
 
+--parts
+--roofdeco:
+-- Gardens, Atenna, Sunsails and Beds, AC-Units, Solarpanels, Penthouse, Swimmingpool, Werbung, , Windkraftwerk, Belüftung, Vögel
 
-
-
+--Walls:
+	--	Fenster, Sichtschutz, Wohnung, Baustellen, Anbauten, AC-Units, Water-Installations, Pflanzen, Lagerhaus,Werbung
+-- Floor:
+--innenhof
+		-- Abgehängt:  Sunsail/Teppich überspannt, NeonLeuchten, Kinoleinwand
+		-- Boden: Pflanzen, Spielplatz, Fuss/Basketball, Mini-Chemiewerk(Destillery), Basar
+--FloorWall:
+	--	 Shop, Kleidung, Spielzeug, Elektronika, Tankstelle, Essen, Cafes, Religion (Mosque), Waffenladen, minimarket
+-- Street:
+	-- Parked Motorbikes, Tables, Garbagedumps, Sitting People, NeonLeuchten/Neonsigns, Bildschirme, Straßenleuchten, Hydranten
+	
 function script.StartMoving()
 end
 
