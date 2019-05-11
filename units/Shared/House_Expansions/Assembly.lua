@@ -26,6 +26,7 @@ local Assembly = Building:New{
 	description = " creates MOSAIC Standardized drones <Automated Factory>",
 
 	canCloak =true,
+	canMove = true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
