@@ -133,15 +133,17 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 end
 
 function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverride)
-		boolUpperStateWaitForEnd = true
-		 boolLowerStateWaitForEnd = true
-		 while boolLowerAnimationEnded = false or boolUpperAnimationEnded = false do
+		if AnimationstateUpperOverride then		boolUpperStateWaitForEnd = true end
+		if AnimationstateLowerOverride then boolLowerStateWaitForEnd = true end
+		
+		
+		 while AnimationstateLowerOverride and boolLowerAnimationEnded = false or AnimationstateUpperOverride and boolUpperAnimationEnded = false do
 			Sleep(10)
 		 end
-		UpperAnimationState = AnimationstateUpperOverride
-		LowerAnimationState = AnimationstateLowerOverride
-		boolUpperStateWaitForEnd = false
-		boolLowerStateWaitForEnd = false
+		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
+		if AnimationstateLowerOverride then LowerAnimationState = AnimationstateLowerOverride end
+		if AnimationstateUpperOverride then	boolUpperStateWaitForEnd = false end
+		if AnimationstateLowerOverride then boolLowerStateWaitForEnd = false end
 end
 
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
@@ -162,8 +164,9 @@ State_Hit 	= "hit"
 State_Death ="dieing"
 --Walk Cycle
 State_Walking = "walk"
-State_CoverWalk = "cowering"
-State_Limping = "wounded"
+	-- State_Running = "walk"
+	-- State_CoverWalk = "cowering"
+	-- State_Limping = "wounded"
 
 UpperAnimationStateFunctions ={
 [State_Standing] = 	function () 
@@ -244,13 +247,15 @@ function delayedStop()
 Signal(SIG_STOP)
 SetSignalMask(SIG_STOP)
 Sleep(250)
-
+StartThread(setAnimationState, State_Standing, State_Standing)
 end
 
 function script.StartMoving()
+StartThread(setAnimationState, State_Walking, State_Walking)
 end
 
 function script.StopMoving()
+StartThread(delayedStop)
 end
 
 local civilianID 
