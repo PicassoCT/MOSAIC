@@ -72,7 +72,6 @@ function initializeAnimationSystem()
 
 
 end
-
 function constructSkeleton(unit, piece, offset)
     if (offset == nil) then
         offset = { 0, 0, 0 };
@@ -109,14 +108,17 @@ end
 
 function threadStarter()
 	while true do
-		if boolStartThread = true then
+		if boolStartThread == true then
 			boolStartThread = false
 			StartThread(deferedOverrideAnimationState, locAnimationstateUpperOverride, locAnimationstateLowerOverride, locBoolInstantOverride, locConditionFunction)
+			while boolStartThread == false do
+				Sleep(1)
+			end
 		end
-		Sleep(5)
+		Sleep(1)
 	end
-
 end
+
 function deferedOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
 	if boolInstantOverride == true then
 		UpperAnimationState = AnimationstateUpperOverride
@@ -124,7 +126,14 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 		StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
 		StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
 	else
-		 boolUpperStateWaitForEnd = true
+		setAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride)
+	end
+	
+	if conditionFunction then StartThread(conditionFunction) end
+end
+
+function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverride)
+		boolUpperStateWaitForEnd = true
 		 boolLowerStateWaitForEnd = true
 		 while boolLowerAnimationEnded = false or boolUpperAnimationEnded = false do
 			Sleep(10)
@@ -132,9 +141,9 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 		UpperAnimationState = AnimationstateUpperOverride
 		LowerAnimationState = AnimationstateLowerOverride
 		boolUpperStateWaitForEnd = false
-		 boolLowerStateWaitForEnd = false
-	end
+		boolLowerStateWaitForEnd = false
 end
+
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
 	locAnimationstateUpperOverride =AnimationstateUpperOverride
 	locAnimationstateLowerOverride = AnimationstateLowerOverride
@@ -159,12 +168,14 @@ State_Limping = "wounded"
 UpperAnimationStateFunctions ={
 [State_Standing] = 	function () 
 						Sleep(100)
+						return State_Standing
 					end
 
 }
 LowerAnimationStateFunctions ={
 [State_Standing] = 	function () 
 						Sleep(100)
+						return State_Standing
 					end
 }
 
@@ -230,8 +241,10 @@ end
 
 
 function delayedStop()
+Signal(SIG_STOP)
 SetSignalMask(SIG_STOP)
 Sleep(250)
+
 end
 
 function script.StartMoving()
