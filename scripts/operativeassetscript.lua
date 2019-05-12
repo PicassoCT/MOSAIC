@@ -22,10 +22,84 @@ function script.Create()
 
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	initializeAnimationSystem()
+	StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
+	StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+	StartThread(threadStarter)
+end
+
+local Animations = {};
+
+
+local animCmd = { ['turn'] = Turn, ['move'] = Move };
+
+function PlayAnimation(animname)
+
+
+    if not Animations[animname] then Spring.Echo(animname.." is missing") end
+
+    local anim = Animations[animname];
+    assert(anim, animname)
+    for i = 1, #anim do
+        local commands = anim[i].commands;
+        for j = 1, #commands do
+            local cmd = commands[j];
+            animCmd[cmd.c](cmd.p, cmd.a, cmd.t, cmd.s);
+        end
+        if (i < #anim) then
+            local t = anim[i + 1]['Time'] - anim[i]['Time'];
+            Sleep(t * 33); -- sleep works on milliseconds
+        end
+    end
+end
+function initializeAnimationSystem()
+    local map = Spring.GetUnitPieceMap(unitID)
+    local offsets = constructSkeleton(unitID, deathpivot, { 0, 0, 0 })
+
+    for a, anim in pairs(Animations) do
+        for i, keyframe in pairs(anim) do
+            local commands = keyframe.commands;
+            for k, command in pairs(commands) do
+                -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
+                -- the t attribute needs to be adjusted for move commands from blender's absolute values
+                if (command.c == "move") then
+                    local adjusted = command.t - (offsets[command.p][command.a]);
+                    Animations[a][i]['commands'][k].t = command.t - (offsets[command.p][command.a]);
+                end
+            end
+        end
+    end
+
 
 end
 
+function constructSkeleton(unit, piece, offset)
+    if (offset == nil) then
+        offset = { 0, 0, 0 };
+    end
 
+    local bones = {};
+    local info = Spring.GetUnitPieceInfo(unit, piece);
+
+    for i = 1, 3 do
+        info.offset[i] = offset[i] + info.offset[i];
+    end
+
+    bones[piece] = info.offset;
+    local map = Spring.GetUnitPieceMap(unit);
+    local children = info.children;
+
+    if (children) then
+        for i, childName in pairs(children) do
+            local childId = map[childName];
+            local childBones = constructSkeleton(unit, childId, info.offset);
+            for cid, cinfo in pairs(childBones) do
+                bones[cid] = cinfo;
+            end
+        end
+    end
+    return bones;
+end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
@@ -33,7 +107,132 @@ function script.Killed(recentDamage, _)
    return 1
 end
 
+function threadStarter()
+	while true do
+		if boolStartThread = true then
+			boolStartThread = false
+			StartThread(deferedOverrideAnimationState, locAnimationstateUpperOverride, locAnimationstateLowerOverride, locBoolInstantOverride, locConditionFunction)
+		end
+		Sleep(5)
+	end
 
+end
+function deferedOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
+	if boolInstantOverride == true then
+		UpperAnimationState = AnimationstateUpperOverride
+		LowerAnimationState = AnimationstateLowerOverride
+		StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
+		StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+	else
+		 boolUpperStateWaitForEnd = true
+		 boolLowerStateWaitForEnd = true
+		 while boolLowerAnimationEnded = false or boolUpperAnimationEnded = false do
+			Sleep(10)
+		 end
+		UpperAnimationState = AnimationstateUpperOverride
+		LowerAnimationState = AnimationstateLowerOverride
+		boolUpperStateWaitForEnd = false
+		 boolLowerStateWaitForEnd = false
+	end
+end
+function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
+	locAnimationstateUpperOverride =AnimationstateUpperOverride
+	locAnimationstateLowerOverride = AnimationstateLowerOverride
+	locBoolInstantOverride = boolInstantOverride
+	locConditionFunction = conditionFunction
+	boolStartThread = true
+end
+
+State_Standing = "standing"
+State_Idle	   = "idle"
+
+--Interaction Cycles
+State_Idle = "idling" --observing, comchatter, guncleaning
+State_Aiming = "aim"
+State_Hit 	= "hit"
+State_Death ="dieing"
+--Walk Cycle
+State_Walking = "walk"
+State_CoverWalk = "cowering"
+State_Limping = "wounded"
+
+UpperAnimationStateFunctions ={
+[State_Standing] = 	function () 
+						Sleep(100)
+					end
+
+}
+LowerAnimationStateFunctions ={
+[State_Standing] = 	function () 
+						Sleep(100)
+					end
+}
+
+
+UpperAnimationState = State_Standing
+boolUpperStateWaitForEnd = false
+boolUpperAnimationEnded = false
+function animationStateMachineLower(AnimationTable)
+Signal(SIG_UP)
+SetSignalMask(SIG_UP)
+
+boolUpperStateWaitForEnd = false
+
+local animationTable = AnimationTable
+
+	while true do
+		UpperAnimationState = animationTable[UpperAnimationState]()
+		
+		--Sync Animations
+		if boolUpperStateWaitForEnd = true then
+			boolUpperAnimationEnded = true
+			while boolUpperStateWaitForEnd = true do
+				Sleep(10)
+			end
+			boolUpperAnimationEnded = false
+		end
+		
+	end
+	
+
+	
+
+end
+
+LowerAnimationState = State_Standing
+boolLowerStateWaitForEnd = false
+boolLowerAnimationEnded = false
+
+function animationStateMachineUpper(AnimationTable)
+Signal(SIG_LOW)
+SetSignalMask(SIG_LOW)
+
+boolLowerStateWaitForEnd = false
+local animationTable = AnimationTable
+
+	while true do
+		LowerAnimationState = animationTable[LowerAnimationState]()
+		
+		--Sync Animations
+		if boolLowerStateWaitForEnd = true then
+			boolLowerAnimationEnded = true
+			while boolLowerStateWaitForEnd = true do
+				Sleep(10)
+			end
+			boolLowerAnimationEnded = false
+		end
+		
+		
+	end
+
+end
+
+
+
+function delayedStop()
+SetSignalMask(SIG_STOP)
+Sleep(250)
+end
 
 function script.StartMoving()
 end
@@ -161,10 +360,12 @@ function sniperFireFunction(weaponID, heading, pitch)
 return true
 end
 
-
 SIG_PISTOL =1
 SIG_GUN = 2
 SIG_SNIPER = 4
+SIG_STOP = 8
+SIG_UP = 16
+SIG_LOW = 32
 
 WeaponsTable = {}
 function makeWeaponsTable()

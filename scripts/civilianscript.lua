@@ -65,7 +65,7 @@ end
 -- |-----------------------------------------------------------
 
 -- Animation StateMachine
-	-- Every Animation abortable for fast blending
+	-- Every Animation e for fast blending
 	-- Health dependent loops
 	-- External Override
 	-- AnimationStates have abort Condition
