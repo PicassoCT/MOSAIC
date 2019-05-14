@@ -11,6 +11,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
+torso = piece "Torso"
 gun = piece "Gun"
 
 
@@ -106,6 +107,12 @@ function script.Killed(recentDamage, _)
    return 1
 end
 
+local	locAnimationstateUpperOverride 
+local	locAnimationstateLowerOverride
+local	locBoolInstantOverride 
+local	locConditionFunction
+local	boolStartThread = false
+
 function threadStarter()
 	while true do
 		if boolStartThread == true then
@@ -133,11 +140,16 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 end
 
 function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverride)
+
 		if AnimationstateUpperOverride then		boolUpperStateWaitForEnd = true end
 		if AnimationstateLowerOverride then boolLowerStateWaitForEnd = true end
 		
 		
 		 while AnimationstateLowerOverride and boolLowerAnimationEnded = false or AnimationstateUpperOverride and boolUpperAnimationEnded = false do
+
+			boolUpperStateWaitForEnd = true
+			boolLowerStateWaitForEnd = true
+
 			Sleep(10)
 		 end
 		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
@@ -170,13 +182,26 @@ State_Walking = "walk"
 
 UpperAnimationStateFunctions ={
 [State_Standing] = 	function () 
+						WTurn(torso,y_axis,math.rad(0),math.pi)
 						Sleep(100)
 						return State_Standing
+					end,
+[State_Walking] = 	function () 
+						WTurn(torso,y_axis,math.rad(15),math.pi)
+						WTurn(torso,y_axis,math.rad(-15),math.pi)
+						return State_Walking
 					end
 
 }
 LowerAnimationStateFunctions ={
+[State_Walking] = function()
+						WMove(center,y_axis, 15, math.pi)
+						Sleep(100)
+						WMove(center,y_axis, 0, math.pi)
+						return State_Walking
+				end,
 [State_Standing] = 	function () 
+						WMove(center,y_axis, 0, math.pi)
 						Sleep(100)
 						return State_Standing
 					end
