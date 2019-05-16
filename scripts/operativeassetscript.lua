@@ -128,10 +128,15 @@ end
 
 function deferedOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
 	if boolInstantOverride == true then
-		UpperAnimationState = AnimationstateUpperOverride
-		LowerAnimationState = AnimationstateLowerOverride
-		StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
-		StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+		if AnimationstateUpperOverride then
+			UpperAnimationState = AnimationstateUpperOverride
+			StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
+		end
+		if AnimationstateLowerOverride then
+			LowerAnimationState = AnimationstateLowerOverride
+			StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+		end
+		
 	else
 		setAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride)
 	end
@@ -146,9 +151,13 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 		
 		
 		 while AnimationstateLowerOverride and boolLowerAnimationEnded = false or AnimationstateUpperOverride and boolUpperAnimationEnded = false do
-
-			boolUpperStateWaitForEnd = true
-			boolLowerStateWaitForEnd = true
+			if AnimhationstateUpperOverride then
+				boolUpperStateWaitForEnd = true
+			end
+			 
+			if AnimationstateLowerOverride			
+				boolLowerStateWaitForEnd = true
+			end
 
 			Sleep(10)
 		 end
