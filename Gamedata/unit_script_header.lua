@@ -33,8 +33,9 @@ local WaitForMove = UnitScript.WaitForMove
 local WaitForTurn = UnitScript.WaitForTurn
 
 local x_axis = 1
-local y_axis = 2
-local z_axis = 3
+local y_axis = 3
+local z_axis = 2
+
 
 local EMPTY = {}
 

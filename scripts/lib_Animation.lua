@@ -675,6 +675,7 @@ end
 
 --> Stops Spinning Table
 function stopSpinT(Table, axis, speed)
+	if not Table then return end
     for i = 1, #Table do
         StopSpin(Table[i], axis, speed)
     end

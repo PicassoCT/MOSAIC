@@ -18,7 +18,7 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
-
+		
     createCorpseCUnitGeneric(recentDamage)
     return 1
 end

@@ -14,7 +14,33 @@ local House = Building:New{
 	script 					= "Housescript.lua",
 	objectName       	= "house.s3o",
 	
-	YardMap = 	[[ooyyyyoo oyyyyyyo yyyyyyyy yyyyyyyy yyyyyyyy yyyyyyyy oyyyyyyo ooyyyyoo]]	,
+	YardMap = 	[[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
+				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				   oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	,
 	
 
 	customparams = {	

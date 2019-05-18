@@ -150,12 +150,12 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 		if AnimationstateLowerOverride then boolLowerStateWaitForEnd = true end
 		
 		
-		 while AnimationstateLowerOverride and boolLowerAnimationEnded = false or AnimationstateUpperOverride and boolUpperAnimationEnded = false do
+		 while AnimationstateLowerOverride and boolLowerAnimationEnded == false or AnimationstateUpperOverride and boolUpperAnimationEnded == false do
 			if AnimhationstateUpperOverride then
 				boolUpperStateWaitForEnd = true
 			end
 			 
-			if AnimationstateLowerOverride			
+			if AnimationstateLowerOverride	then		
 				boolLowerStateWaitForEnd = true
 			end
 
@@ -232,9 +232,9 @@ local animationTable = AnimationTable
 		UpperAnimationState = animationTable[UpperAnimationState]()
 		
 		--Sync Animations
-		if boolUpperStateWaitForEnd = true then
+		if boolUpperStateWaitForEnd == true then
 			boolUpperAnimationEnded = true
-			while boolUpperStateWaitForEnd = true do
+			while boolUpperStateWaitForEnd == true do
 				Sleep(10)
 			end
 			boolUpperAnimationEnded = false
@@ -262,9 +262,9 @@ local animationTable = AnimationTable
 		LowerAnimationState = animationTable[LowerAnimationState]()
 		
 		--Sync Animations
-		if boolLowerStateWaitForEnd = true then
+		if boolLowerStateWaitForEnd == true then
 			boolLowerAnimationEnded = true
-			while boolLowerStateWaitForEnd = true do
+			while boolLowerStateWaitForEnd == true do
 				Sleep(10)
 			end
 			boolLowerAnimationEnded = false
@@ -278,18 +278,18 @@ end
 
 
 function delayedStop()
-Signal(SIG_STOP)
-SetSignalMask(SIG_STOP)
-Sleep(250)
-StartThread(setAnimationState, State_Standing, State_Standing)
+	Signal(SIG_STOP)
+	SetSignalMask(SIG_STOP)
+	Sleep(250)
+	StartThread(setAnimationState, State_Standing, State_Standing)
 end
 
 function script.StartMoving()
-StartThread(setAnimationState, State_Walking, State_Walking)
+	StartThread(setAnimationState, State_Walking, State_Walking)
 end
 
 function script.StopMoving()
-StartThread(delayedStop)
+	StartThread(delayedStop)
 end
 
 local civilianID 
@@ -326,13 +326,13 @@ function script.Activate()
 	setSpeedEnv(unitID, 0.175) -- 9,00 -> 1,575  must be as slow as a civilian when moving hidden
 	Spring.Echo("Activate "..unitID)
 	if not GG.OperativesDiscovered[unitID] then
-         SetUnitValue(COB.WANT_CLOAK, 1)
-		  Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-		  StartThread(spawnDecoyCivilian)
-		  return 1
+        SetUnitValue(COB.WANT_CLOAK, 1)
+		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+		StartThread(spawnDecoyCivilian)
+		return 1
    else
 		Spring.Echo("Operative ".. unitID.." is discovered")
-			return 0
+		return 0
    end
   
 end
@@ -340,11 +340,11 @@ end
 function script.Deactivate()
 	setSpeedEnv(unitID, 1.0)
 	Spring.Echo("Deactivate "..unitID)
-		SetUnitValue(COB.WANT_CLOAK, 0)
-		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
-		if civilianID and doesUnitExistAlive(civilianID) == true then
-			Spring.DestroyUnit(civilianID, true, true)
-		end
+	SetUnitValue(COB.WANT_CLOAK, 0)
+	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
+	if civilianID and doesUnitExistAlive(civilianID) == true then
+		Spring.DestroyUnit(civilianID, true, true)
+	end
     return 0
 end
 

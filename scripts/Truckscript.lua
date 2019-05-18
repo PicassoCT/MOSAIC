@@ -17,26 +17,34 @@ myLoadOutType =  LoadOutTypes[myDefID]
 local loadOutUnitID 
 
 function showAndTell()
+
 	showAll(unitID)
+
 	teamID =Spring.GetUnitTeam(unitID)
 	teamID,_,_,_,sidename =Spring.GetTeamInfo(teamID)
-	if not sidename or sidename == "protagon" then
-		hideT(TablesOfPiecesGroups["BodyB"])
-	else
+	-- Spring.Echo("Truckside is >"..sidename.."< of type "..type(sidename))
+
+	if TablesOfPiecesGroups["Body"]  then
 		hideT(TablesOfPiecesGroups["Body"])
+		if string.find(sidename, "protagon") then		
+			Show(TablesOfPiecesGroups["Body"][1])
+		else
+			Show(TablesOfPiecesGroups["Body"][2])
+		end
 	end
 
 end
 
 function script.Create()
-
+	
 	if boolIsCivilianTruck == false then
 		StartThread(loadLoadOutLoop)
 	end
 
     generatepiecesTableAndArrayCode(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
+
 end
 
 function loadLoadOutLoop()
@@ -96,9 +104,11 @@ end
 
 
 function script.StartMoving()
+	spinT(TablesOfPiecesGroups["wheel"], x_axis ,0.3 , -180)
 end
 
 function script.StopMoving()
+	stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3)	
 end
 
 function script.Activate()
