@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-05-18T15:54:57Z</created><keywords></keywords><modified>2019-05-18T15:54:57Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-05-19T17:20:46Z</created><keywords></keywords><modified>2019-05-19T17:20:46Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #8-image" name="Map #8"><init_from>file://D:\spring\games\Mosaic.sdd\unittextures\Car_difuse.png</init_from></image>
   </library_images>
@@ -29458,14 +29458,14 @@
       <mesh>
         <source id="attachPoint-POSITION">
           <float_array id="attachPoint-POSITION-array" count="24">
--65.086716 -65.086700 0.000000
-65.086716 -65.086700 0.000000
--65.086716 65.086700 0.000000
-65.086716 65.086700 0.000000
--65.086716 -65.086700 97.630096
-65.086716 -65.086700 97.630096
--65.086716 65.086700 97.630096
-65.086716 65.086700 97.630096
+-65.086716 -65.086700 -48.815063
+65.086716 -65.086700 -48.815063
+-65.086716 65.086700 -48.815063
+65.086716 65.086700 -48.815063
+-65.086716 -65.086700 48.815033
+65.086716 -65.086700 48.815033
+-65.086716 65.086700 48.815033
+65.086716 65.086700 48.815033
 </float_array>
           <technique_common>
             <accessor source="#attachPoint-POSITION-array" count="8" stride="3">
@@ -29567,7 +29567,7 @@
     <visual_scene id="truck" name="truck">
       <node name="Glass" id="Glass" sid="Glass"><matrix sid="matrix">800.000000 -0.001144 -0.000000 25.544533 0.000000 0.000000 800.000000 496.004639 -0.001144 -800.000000 0.000000 -93.543022 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Glass-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="body" id="body" sid="body"><matrix sid="matrix">800.000000 -0.001144 -0.000000 25.544533 0.000000 0.000000 800.000000 496.004639 -0.001144 -800.000000 0.000000 -93.543022 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#body-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="wheel1" id="wheel1" sid="wheel1"><matrix sid="matrix">1.000000 -0.000000 0.000000 0.510468 0.000000 1.000000 0.000000 -1.084305 0.000000 0.000000 1.000000 -0.390451 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#wheel1-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="wheel3" id="wheel3" sid="wheel3"><matrix sid="matrix">1.000000 -0.000000 0.000000 0.510468 0.000000 1.000000 0.000000 0.861633 0.000000 0.000000 1.000000 -0.390450 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#wheel3-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="wheel2" id="wheel2" sid="wheel2"><matrix sid="matrix">1.000000 -0.000000 0.000000 -0.552151 0.000000 1.000000 0.000000 -1.084312 0.000000 0.000000 1.000000 -0.390450 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#wheel2-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="wheel4" id="wheel4" sid="wheel4"><matrix sid="matrix">1.000000 -0.000000 0.000000 -0.552151 0.000000 1.000000 0.000000 0.874771 0.000000 0.000000 1.000000 -0.390451 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#wheel4-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="center" id="center" sid="center"><matrix sid="matrix">0.000000 -0.000000 1.000000 -0.004192 0.000000 1.000000 0.000000 0.785734 -1.000000 -0.000000 0.000000 -0.043745 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="Material #36" target="#Material #36"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
-      <node name="attachPoint" id="attachPoint" sid="attachPoint"><matrix sid="matrix">1.000000 0.000000 0.000000 8.138050 0.000000 0.000000 1.000000 413.310303 0.000000 -1.000000 0.000000 -772.910889 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#attachPoint-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
+      <node name="attachPoint" id="attachPoint" sid="attachPoint"><matrix sid="matrix">1.000000 0.000000 0.000000 18.729515 0.000000 0.000000 1.000000 440.916321 0.000000 -1.000000 0.000000 -803.889343 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#attachPoint-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
     </visual_scene>
   </library_visual_scenes>

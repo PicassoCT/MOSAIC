@@ -13,8 +13,16 @@ center = piece "center"
 
 
 function script.Create()
+	resetAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	buildHouse()
 end
+
+function buildHouse()
+
+
+end
+
 
 function script.Killed(recentDamage, _)
 
