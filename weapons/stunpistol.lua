@@ -26,7 +26,7 @@ local weaponDef = {
     craterMult = 0,
     burst = 1,
     burstrate = 0.5,
-    soundStart = "weapons/pistol/stealthpistol.wav",
+    soundStart = "sounds/weapons/pistol/pistolshot2.wav",
     soundtrigger = 1,
     SweepFire = false,
     --apperance

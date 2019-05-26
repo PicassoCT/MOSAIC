@@ -10,6 +10,7 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
+deathpivot = piece "deathpivot"
 center = piece "center"
 torso = piece "Torso"
 gun = piece "Gun"
