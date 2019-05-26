@@ -48,7 +48,7 @@ local groundturretssied =  Turret:New{
 	decloakOnFire = true,
 	cloakTimeout = 5,
 
-	Category = [[LAND]],
+	Category = [[GROUND]],
 
 	  customParams = {
 	  baseclass = "turret"
@@ -61,7 +61,7 @@ local groundturretssied =  Turret:New{
 				
 				weapons = {
 				[1]={name  = "ssied",
-					onlyTargetCategory = [[BUILDING LAND]],
+					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
 		},	
@@ -114,7 +114,7 @@ local groundturretmg =  Turret:New{
 	canCloak =true,
 	
 	
-	Category = [[LAND]],
+	Category = [[GROUND]],
 
 	  customParams = {
 	  baseclass = "turret"
@@ -127,7 +127,7 @@ local groundturretmg =  Turret:New{
 				
 				weapons = {
 				[1]={name  = "machinegun",
-					onlyTargetCategory = [[BUILDING LAND]],
+					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
 		},	
@@ -179,7 +179,7 @@ local groundturretantitank =  Turret:New{
 	canCloak =true,
 	
 	
-	Category = [[ARMOR LAND BUILDING]],
+	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
 	  baseclass = "turret"
@@ -192,7 +192,7 @@ local groundturretantitank =  Turret:New{
 				
 	weapons = {
 		[1]={name  = "antitank",
-			onlyTargetCategory = [[BUILDING LAND]],
+			onlyTargetCategory = [[BUILDING GROUND]],
 			},
 			
 		},	

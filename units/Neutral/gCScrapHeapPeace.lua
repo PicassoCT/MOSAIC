@@ -45,7 +45,7 @@ CanStop = false,
     
    
 
-Category = [[LAND]],
+Category = [[GROUND]],
 
 EnergyStorage = 0,
 	EnergyUse = 75,

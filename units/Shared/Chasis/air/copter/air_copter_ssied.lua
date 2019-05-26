@@ -69,7 +69,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 				
 				weapons = {
 				[1]={name  = "ssied",
-					onlyTargetCategory = [[BUILDING LAND]],
+					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
 		},	

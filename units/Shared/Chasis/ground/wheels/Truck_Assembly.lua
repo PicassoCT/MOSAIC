@@ -26,7 +26,7 @@ local TruckAssembly = Truck:New{
 		baseclass		= "Truck", -- TODO: hacks
 	},
 	
-	category = [[LAND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE]],
 }
 
 

@@ -66,7 +66,7 @@ local Assembly = Building:New{
 
 	},
 	
-	category = [[LAND BUILDING ARRESTABLE]],
+	category = [[GROUND BUILDING ARRESTABLE]],
 	}
 
 

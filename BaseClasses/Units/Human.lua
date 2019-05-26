@@ -2,8 +2,8 @@
 local Human = Unit:New{
 	activateWhenBuilt   	= true,
 	canMove					= true,
-	category 				= "ground",
-	noChaseCategory		 	= "air building",
+	category 				= "GROUND",
+	noChaseCategory		 	= "AIR BUILDING",
 	onoffable        	= true,
 	script					= "Civillian.lua",
 	upright					= true,

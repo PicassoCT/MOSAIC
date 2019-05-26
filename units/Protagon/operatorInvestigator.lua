@@ -65,11 +65,11 @@ local OperativeInvestigator = Human:New{
 				onlyTargetCategory = [[ARRESTABLE]],
 			},				
 			[2]={name  = "stunpistol",
-				onlyTargetCategory = [[LAND]],
+				onlyTargetCategory = [[GROUND]],
 			}
 		},	
 	
-	category = [[LAND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE]],
 	
 }
 

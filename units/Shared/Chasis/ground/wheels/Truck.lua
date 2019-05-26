@@ -20,7 +20,7 @@ local ground_truck_mg = Truck:New{
 	objectName 	= "apc.dae",
 	movementClass   	= "VEHICLE",
 	
-	category = [[LAND]],
+	category = [[GROUND]],
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
@@ -56,7 +56,7 @@ local ground_truck_ssied = Truck:New{
 	movementClass   	= "VEHICLE",
 	collisionVolumeType = "box",
 	collisionvolumescales = "40 50 70",
-	category = [[LAND]],
+	category = [[GROUND]],
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
@@ -96,7 +96,7 @@ local CivilianTruck = Truck:New{
 	objectName 	= "truck.dae",
 	-- objectName 	= "Truck.s3o",
 
-	category = [[LAND]],
+	category = [[GROUND]],
 	
 	customparams = {
 		helptext		= "Transportation Truck",

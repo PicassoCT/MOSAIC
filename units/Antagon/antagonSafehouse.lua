@@ -62,7 +62,7 @@ local AntagonSafeHouse = Building:New{
 	"launcher"
 	},
 	
-	category = [[LAND BUILDING ARRESTABLE]]
+	category = [[GROUND BUILDING ARRESTABLE]]
 }
 
 

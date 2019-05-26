@@ -53,7 +53,7 @@ local NimRodGun = Building:New{
 	},
 	weapons={
 			[1]={name  = "railgun",
-				onlyTargetCategory = [[LAND BUILDING]],
+				onlyTargetCategory = [[GROUND BUILDING]],
 			},
 		},	
 

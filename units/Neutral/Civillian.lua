@@ -30,7 +30,7 @@ local Civilian = Human:New{
 		baseclass		= "Human", -- TODO: hacks
     },
 	
-	category = [[LAND]],
+	category = [[GROUND]],
 }
 
 

@@ -16,7 +16,7 @@ local Vehicle = Unit:New{
 }
 
 local Truck = Vehicle:New{
-	category 			= "civilian vehicle ground",
+	category 			= "CIVILIAN VEHICLE GROUND",
 	explodeAs          	= "mechexplode",
 	leaveTracks			= true,	
 	movementClass   	= "VEHICLE",

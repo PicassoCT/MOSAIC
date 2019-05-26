@@ -63,7 +63,7 @@ local ProtagonSafeHouse = Building:New{
 	"assembly"
 	},
 	
-	category=[[LAND BUILDING]],
+	category=[[GROUND BUILDING]],
 }
 
 

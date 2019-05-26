@@ -60,11 +60,11 @@ local OperativePropagator = Human:New{
 				onlyTargetCategory = [[ARRESTABLE]],
 			},				
 			[2]={name  = "stunpistol",
-				onlyTargetCategory = [[LAND]],
+				onlyTargetCategory = [[GROUND]],
 			}
 		},	
 		
-	category = "ARRESTABLE LAND",
+	category = "ARRESTABLE GROUND",
 
 
 	

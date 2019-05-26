@@ -44,7 +44,7 @@ local Launcher = Building:New{
 	{
 		"launcherstep"
 	},
-	category = [[LAND BUILDING ARRESTABLE]],
+	category = [[GROUND BUILDING ARRESTABLE]],
 }
 
 return lowerkeys(

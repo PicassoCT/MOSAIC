@@ -1,20 +1,21 @@
-local AIRC_COPTER_MG = VTOL:New{
 
-	name = "Airborne machinegun Drone ",
-	Description = " MOSAIC Standardized Drone ",
-	objectName = "aircoptermg.s3o",
-	script = "aircoptermgscript.lua",
+local AIRC_COPTER_ANTIARMOR = VTOL:New{
+	name = "Airborne Anti Vehicle Drone ",
+	Description = " Launches a Javeline ",
+	
+	objectName = "air_copter_antiarmor.dae",
+	script = "airantiarmorscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 0,
-	buildTime = 2 * 60,
+	buildTime = 3*60,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	
+	Acceleration = 0.5,
 	 fireState=1,
 	BrakeRate = 1,
 	FootprintX = 1,
@@ -24,7 +25,6 @@ local AIRC_COPTER_MG = VTOL:New{
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
 	dontLand		 	= false,
-	Acceleration = 0.5,
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
@@ -43,7 +43,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	cruiseAlt= 42,
+	cruiseAlt= 25,
 
 	ActivateWhenBuilt=1,
 	maxBank=0.4,
@@ -58,17 +58,18 @@ local AIRC_COPTER_MG = VTOL:New{
 	Category = [[AIR]],
 
 	  customParams = {
-	  baseclass = "vtol"
+	  baseclass ="vtol"
 	  },
+	  
 	 sfxtypes = {
 		explosiongenerators = {
 							"custom:bigbulletimpact"
 							  },
 				},
 				
-				weapons = {
-				[1]={name  = "machinegun",
-					onlyTargetCategory = [[BUILDING GROUND]],
+		weapons = {
+				[1]={name  = "javelinrocket",
+					onlyTargetCategory = [[BUILDING VEHICLE]],
 					},
 					
 		},	
@@ -80,6 +81,6 @@ local AIRC_COPTER_MG = VTOL:New{
 
 return lowerkeys({
 	--Temp
-	["air_copter_mg"] = AIRC_COPTER_MG:New(),
+	["air_copter_antiarmor"] = AIRC_COPTER_ANTIARMOR:New()
 	
 })

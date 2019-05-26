@@ -53,7 +53,7 @@ local House = Building:New{
 	"civilian"
 	},
 	
-	category =  [[LAND BUILDING ARRESTABLE]],
+	category =  [[GROUND BUILDING ARRESTABLE]],
 }
 
 
