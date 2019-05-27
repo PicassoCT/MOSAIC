@@ -2,29 +2,36 @@
 local weaponName = "javelinrocket" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
     name = "Indirect Self Aiming Rocket with Shaped Charge",
-    weaponType = [[MISSILE]],
-    --damage
+    weaponType = [[MissileLauncher]],
+
     damage = {
-        default = 1500,
-        HeavyArmor = 1,
+        default = 1500
     },
-    areaOfEffect = 8,
-	trajectoryHeight = 450 ,
+	range = 1024,
+	impulseBoost            = 0,
+	impulseFactor = 0.4,
+	reloadtime = 100,
+    areaOfEffect = 128,
+	 noSelfDamage = true,
+	trajectoryHeight = 2.1 ,
+	avoidFeature            = false,
+	avoidGround = false,
 	smokeTrail = true,
-	startVelocity  = 0.1,
-	weaponAcceleration = 0.0125,
-	weaponVelocity = 140,
+	startVelocity  = 380,
+	weaponAcceleration = 100,
+	turnRate = 150,
+	weaponVelocity = 450,
 	tracks = true,
-	turnRate = 12,
 	flightTime = 14.5 ,
-	fixedLauncher = true,
-	model = "air_copter_antiarmor.dae",
+	turret = true,
+	model = "air_copter_antiarmor_projectile.s3o",
 	explosionScar = true, 
     explosionGenerator = "custom:gunimpact",
     cegTag = "gunprojectile",
     texture1 = "gunshot",
-
-    --physics
-   
-}
+	fireStarter  = 50.0,
+	cameraShake =1.0
+	
+    }
+  
 return lowerkeys({ [weaponName] = weaponDef })
