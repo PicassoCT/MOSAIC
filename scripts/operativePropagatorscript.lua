@@ -72,9 +72,10 @@ end
 boolCloaked = false
 function script.Activate()
 	setSpeedEnv(unitID, 0.35)
-	Spring.Echo("Activate "..unitID)
+	Spring.Echo("Activate "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
 	if not GG.OperativesDiscovered[unitID] then
          SetUnitValue(COB.WANT_CLOAK, 1)
+		 Spring.Echo("Operative still hidden")
 		  Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
 		  boolCloaked=true
 		  StartThread(spawnDecoyCivilian)

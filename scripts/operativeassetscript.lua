@@ -325,8 +325,9 @@ end
 
 function script.Activate()
 	setSpeedEnv(unitID, 0.175) -- 9,00 -> 1,575  must be as slow as a civilian when moving hidden
-	Spring.Echo("Activate "..unitID)
+	Spring.Echo("Activate "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
 	if not GG.OperativesDiscovered[unitID] then
+		 Spring.Echo("Operative still hidden")
         SetUnitValue(COB.WANT_CLOAK, 1)
 		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
 		StartThread(spawnDecoyCivilian)
