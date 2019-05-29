@@ -19,6 +19,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(houseAttach)
 	StartThread(killMyselfIfNotAttached)
+	Spring.SetUnitBlocking(unitID, false, false, false)
 
 	
 end
