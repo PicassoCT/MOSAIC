@@ -26,10 +26,24 @@ local Truck = Vehicle:New{
 	turnRate			= 300,
 	customparams = {
     },
+	}
+
+local Tank = Vehicle:New{
+	category 			= "VEHICLE GROUND",
+	explodeAs          	= "mechexplode",
+	leaveTracks			= true,	
+	movementClass   	= "TANK",
+	noChaseCategory		= "civilian air",
+	trackType			= "Thick",
+	trackOffset			= 10,
+	turnRate			= 300,
+	customparams = {
+    },
 }
 
 
 return {
-	Truck = Truck
+	Truck = Truck,
+	Tank = Tank
 
 }

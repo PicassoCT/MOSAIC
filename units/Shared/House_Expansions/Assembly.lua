@@ -51,13 +51,12 @@ local Assembly = Building:New{
 			"air_copter_ssied",	"air_copter_mg","air_copter_antiarmor",  
 	--ground
 		--turret --snake --walker(roach) --truck
-			"ground_turret_ssied",	
-			"ground_turret_mg",	
-			"ground_turret_antitank",
+			"ground_turret_ssied",	"ground_turret_mg",	"ground_turret_antiarmor",
 			"ground_truck_assembly", 
 			"truck", "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor"
 			--
 			--tank (expensive, slow, easy destroyable by drones)
+			"ground_tank_night"
 	--weapon
 			
 	 --ssied --rocket --gattling --sniperrifle --mortar --anit-projectile -- anti-launch 

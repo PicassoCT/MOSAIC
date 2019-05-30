@@ -133,7 +133,7 @@ local groundturretmg =  Turret:New{
 		},	
 }
 
-local ground_turret_antitank =  Turret:New{
+local ground_turret_antiarmor =  Turret:New{
 	name = "Deployed Anti Tank",
 	-- This is a anti-tank drone body, deployed after flight
 	--capable to one-time launch a projectile 
@@ -192,7 +192,7 @@ local ground_turret_antitank =  Turret:New{
 				
 	weapons = {
 		[1]={name  = "javelinrocket",
-			onlyTargetCategory = [[BUILDING GROUND]],
+			onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 			},
 			
 		},	
@@ -207,6 +207,6 @@ return lowerkeys({
 
 	["ground_turret_ssied"] = groundturretssied:New(),
 	["ground_turret_mg"] = groundturretmg:New(),
-	["ground_turret_antitank"] = ground_turret_antitank:New(),
+	["ground_turret_antiarmor"] = ground_turret_antiarmor:New(),
 	
 })

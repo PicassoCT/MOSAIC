@@ -16,6 +16,15 @@ local moveDefs 	=	 {
 		maxSlope		=	20,
 		crushStrength	=	25,
 		heatmapping		=	false,
+	},	
+	{
+		name			=	"TANK",
+		footprintZ		=	4,
+		footprintX		=	4,
+		maxWaterDepth	=	0,
+		maxSlope		=	35,
+		crushStrength	=	150,
+		heatmapping		=	false,
 	},
 	
 	{

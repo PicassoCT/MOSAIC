@@ -69,7 +69,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 				
 		weapons = {
 				[1]={name  = "javelinrocket",
-					onlyTargetCategory = [[BUILDING VEHICLE]],
+					onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 					},
 					
 		},	
