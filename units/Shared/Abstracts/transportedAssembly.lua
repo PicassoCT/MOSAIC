@@ -52,7 +52,7 @@ local unitDef = {
 		 --copter  --jet -- bomber --long range rocket
 		
 			"air_copter_ssied",	"air_copter_mg", 
-			"truck", "ground_truck_mg", "ground_truck_ssied",
+			"truck","ground_truck_antiarmor", "ground_truck_mg", "ground_truck_ssied",
 	--ground
 		--turret --snake --walker(roach) --truck
 			"ground_turret_ssied",	"ground_turret_mg", "ground_truck_assembly",	
