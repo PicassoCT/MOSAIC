@@ -48,7 +48,7 @@ local Assembly = Building:New{
 	--air
 		 --copter  --jet -- bomber --long range rocket
 		
-			"air_copter_ssied",	"air_copter_mg","air_copter_antiarmor", 
+			"air_copter_ssied",	"air_copter_mg","air_copter_antiarmor",  
 	--ground
 		--turret --snake --walker(roach) --truck
 			"ground_turret_ssied",	

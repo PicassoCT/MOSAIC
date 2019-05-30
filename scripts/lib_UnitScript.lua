@@ -835,7 +835,7 @@ function transformUnitInto(oldID, unitType, setVel, boolKill, parentID, overWrit
 	
 	facing = Spring.GetUnitBuildFacing(oldID)
 	id = Spring.CreateUnit(unitType, x, y, z, facing, teamID, false, false, overWriteID, parentID)
-	assert(id)
+
 	if id then
 		transferUnitStatusToUnit(oldID, id)
 		transferOrders(oldID, id)
