@@ -2,7 +2,7 @@ local groundturretssied =  Turret:New{
 	name = "Stationary SSIED",
 	Description = " MOSAIC Standardized Smart Improvised Explosive Device ",
 	
-	objectName = "groundturretssied.s3o",
+	objectName = "ground_turret_sied.dae",
 	script = "turretscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,

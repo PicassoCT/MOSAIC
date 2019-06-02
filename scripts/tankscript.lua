@@ -33,7 +33,7 @@ end
 
 
 function script.QueryWeapon1()
-    return aimpiece
+    return Cannon1
 end
 
 function script.AimWeapon1(Heading, pitch)

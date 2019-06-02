@@ -27,7 +27,7 @@ local ground_tank_day = Tank:New{
 	},
 	
 				weapons = {
-				[1]={name  = "machinegun",
+				[1]={name  = "tankcannon",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
@@ -63,7 +63,7 @@ local ground_tank_night = Tank:New{
 	},
 	
 				weapons = {
-				[1]={name  = "machinegun",
+				[1]={name  = "tankcannon",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
