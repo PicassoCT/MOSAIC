@@ -51,9 +51,15 @@ end
 
 
 function script.StartMoving()
+	Turn(center,y_axis,math.rad(180),90)
+	spinT(TablesOfPiecesGroups["uprotor"],y_axis,350,9500)
+	spinT(TablesOfPiecesGroups["downrotor"],y_axis,350,-8500)
 end
 
 function script.StopMoving()
+	Turn(center,y_axis,math.rad(0),90)
+	stopSpinT(TablesOfPiecesGroups["uprotor"],y_axis,math.pi)
+	stopSpinT(TablesOfPiecesGroups["downrotor"],y_axis,math.pi)
 end
 
 function script.Activate()

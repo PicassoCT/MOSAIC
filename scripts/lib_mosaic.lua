@@ -125,7 +125,12 @@ function getTruckLoadOutTypeTable()
 	typeDefMappingTable ={}
 	
 	for k,v in pairs(mapping) do
+		if  UnitDefNames[v] and  UnitDefNames[k] then
 		typeDefMappingTable[UnitDefNames[k].id] = UnitDefNames[v].id
+		else
+			if  not UnitDefNames[v] then echo("getTruckLoadOutTypeTable "..v.." is undefined") end
+			if  not UnitDefNames[k] then echo("getTruckLoadOutTypeTable "..k.." is undefined") end  
+		end
 	end
 	
 	return typeDefMappingTable

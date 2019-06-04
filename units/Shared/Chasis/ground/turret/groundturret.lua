@@ -140,7 +140,7 @@ local ground_turret_antiarmor =  Turret:New{
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
 	Description = "Deployed Anti Armor Projectile ",
 	
-	objectName = "groundturretssied.s3o",
+	objectName = "ground_turret_sied.dae",
 	script = "groundturretantitankscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
