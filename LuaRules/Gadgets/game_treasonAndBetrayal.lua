@@ -38,7 +38,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		if InterrogateableType[unitdefid] then
 		Spring.Echo("UnitCreated of InterrogateableType")
 			if father  then		
-				 registerChild( unitTeam, father, unitid)		
+				registerChild( unitTeam, father, unitid)		
 			else
 				registerFather( unitTeam, unitid)
 			end

@@ -113,6 +113,15 @@ function script.Create()
     
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
+	StartThread(delayedDoubleAgent)
+end
+
+function delayedDoubleAgent()
+Sleep(500)
+allTeams = Spring.GetTeamList()
+randomEnemyTeamID = allTeams[math.random(1,#allTeams)]
+attachDoubleAgentToUnit(unitID, randomEnemyTeamID)
+
 end
 
 function script.Killed(recentDamage, _)

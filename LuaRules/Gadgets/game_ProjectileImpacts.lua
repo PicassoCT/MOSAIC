@@ -147,8 +147,8 @@ if (gadgetHandler:IsSyncedCode()) then
 				return false, persPack	
 				end
 				
-	
-				createStreamEvent(unitID, interrogationFunction, 30,  {interrogatorID = attackerID, unitID= unitID})
+				Spring.Echo("Starting Interrogation Event Stream")
+				createStreamEvent(unitID, interrogationFunction, 31,  {interrogatorID = attackerID, unitID= unitID})
 			end
 			
 			--on Complete Raid/Interrogation
@@ -307,9 +307,9 @@ PROJECTILE=   string.byte('p')
 		
 	
 		
-		if frame % everyNthFrame == 0 then
-		
-		end
+		-- if frame % everyNthFrame == 0 then
+			
+		-- end
 		
 	end
 	

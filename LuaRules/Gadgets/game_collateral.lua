@@ -91,8 +91,10 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 	function gadget:GameFrame(frame)
 		if frame % 30 == 0 then
+		-- Spring.Echo("GameFrame:: Display Update Collateral")  
 			for team, deedtable in pairs(accumulatedInSecond) do
 				for uid,v in pairs(deedtable) do
+					-- Spring.Echo("Display Update Collateral")  
 					SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
 				end
 				accumulatedInSecond= {}				

@@ -59,7 +59,7 @@ local smokeFX = {
 		{0.15, 0.15, 0.15, 0.20},
 		{0.00, 0.00, 0.00, 0.01}
 	},
-	texture        = 'bitmaps/ProjectileTextures/smoke.tga',
+	texture        = 'bitmaps/projectiletextures/smoke.tga',
 }
 
 --------------------------------------------------------------------------------

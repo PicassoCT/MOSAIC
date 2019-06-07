@@ -51,10 +51,6 @@ local Noone_UplinkLaser = Building:New{
 		baseclass		= "Building", -- TODO: hacks
     },
 	
-		buildoptions = 
-	{
-		
-	},
 	
 		weapons={
 			[1]={name  = "oddyseelaser",

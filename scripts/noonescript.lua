@@ -9,7 +9,6 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
 aimpiece = piece "aimpiece"
 base = piece "base"
 emitpiece = piece "emitpiece"
@@ -35,7 +34,7 @@ end
 
 
 function script.QueryWeapon1()
-    return emitpiece
+    return base
 end
 
 
@@ -57,11 +56,7 @@ end
 
 
 
-function script.StartMoving()
-end
 
-function script.StopMoving()
-end
 
 function script.Activate()
 

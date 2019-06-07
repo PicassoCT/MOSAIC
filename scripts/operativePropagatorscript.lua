@@ -74,10 +74,12 @@ boolStartDecloaking= false
 boolStartCloaking= true
 
 function cloakLoop()
-	waitTillComplete(unitID)
-	while true do 
 	Sleep(100)
-		if boolStartCloaking== true and not  GG.OperativesDiscovered[unitID]  then
+	waitTillComplete(unitID)
+	Sleep(100)
+	while true do 
+
+		if boolStartCloaking == true and not  GG.OperativesDiscovered[unitID]  then
 			boolStartCloaking = false
 			setSpeedEnv(unitID, 0.35)
 			Spring.Echo("Hide "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
@@ -86,9 +88,10 @@ function cloakLoop()
 			boolCloaked=true
 			StartThread(spawnDecoyCivilian)
 		end
-
+		
+		Sleep(100)
 		if boolStartDecloaking == true then
-		boolStartDecloaking = false
+			boolStartDecloaking = false
 			setSpeedEnv(unitID, 1.0)
 			Spring.Echo("Deactivate "..unitID)
 			SetUnitValue(COB.WANT_CLOAK, 0)
@@ -98,7 +101,7 @@ function cloakLoop()
 				Spring.DestroyUnit(civilianID, true, true)
 			end
 		end
-
+		Sleep(100)
 	end
 end
 

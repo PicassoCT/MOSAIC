@@ -34,6 +34,7 @@ function gadget:GameFrame(frame)
         if GG.UnitsToSpawn and GG.UnitsToSpawn[1] then
             local cur = GG.UnitsToSpawn
             GG.UnitsToSpawn = { PushCreateUnit = PushCreateUnit }
+			Spring.Echo("Spawn Units")
             for i = 1, #cur, 1 do
                 --	Spring.Echo(unpack(cur[i]))
 						assert(cur[i][4], "Z missing in PushCreateUnit "..cur[i][1])
@@ -49,6 +50,7 @@ function gadget:GameFrame(frame)
         if GG.UnitsToKill and GG.UnitsToKill[1] then
             local cur = GG.UnitsToKill
             GG.UnitsToKill = { PushKillUnit = PushKillUnit }
+			Spring.Echo("Destroy Unit")
             for i = 1, #cur, 1 do
                 Spring.DestroyUnit(unpack(cur[i]))
             end

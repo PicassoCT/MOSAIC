@@ -329,20 +329,22 @@ boolStartDecloaking= false
 boolStartCloaking= true
 
 function cloakLoop()
-	waitTillComplete(unitID)
-	while true do 
 	Sleep(100)
-		if boolStartCloaking== true and not  GG.OperativesDiscovered[unitID]  then
-		boolStartCloaking= false
-		setSpeedEnv(unitID, 0.175) -- 9,00 -> 1,575  must be as slow as a civilian when moving hidden
-		Spring.Echo("Hide "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
-		Spring.Echo("Operative still hidden")
-        SetUnitValue(COB.WANT_CLOAK, 1)
-		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-		StartThread(spawnDecoyCivilian)
-
+	waitTillComplete(unitID)
+	Sleep(100)
+	while true do 
+		if boolStartCloaking == true and not  GG.OperativesDiscovered[unitID]  then
+			boolStartCloaking= false
+			setSpeedEnv(unitID, 0.175) -- 9,00 -> 1,575  must be as slow as a civilian when moving hidden
+			Spring.Echo("Hide "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
+			Spring.Echo("Operative still hidden")
+			SetUnitValue(COB.WANT_CLOAK, 1)
+			boolCloaked= true
+			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+			StartThread(spawnDecoyCivilian)
 		end
-
+		
+		Sleep(100)
 		if boolStartDecloaking == true then
 		boolStartDecloaking= false
 			setSpeedEnv(unitID, 1.0)
@@ -354,7 +356,7 @@ function cloakLoop()
 				Spring.DestroyUnit(civilianID, true, true)
 			end
 		end
-
+		Sleep(100)
 	end
 end
 

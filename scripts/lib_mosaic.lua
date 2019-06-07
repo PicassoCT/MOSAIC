@@ -42,7 +42,7 @@ function getGameConfig()
 	 propandaServerFactor = 0.1,
 	 
 	 --doubleAgentHeight
-	 doubleAgentHeight = 256,
+	 doubleAgentHeight = 128,
 	 
 	 --Dayproperties
 	 daylength = 28800,
@@ -459,6 +459,7 @@ hoverAboveFunc = function( persPack)
 				end
 
 createStreamEvent(doubleAgentID, hoverAboveFunc, 1, {
+													unitID = doubleAgentID,
 													myTeam = teamToTurnTo, 
 													toTrackID = id, 
 													heightAbove = gameConfig.doubleAgentHeight,
@@ -573,20 +574,24 @@ function initalizeInheritanceManagement()
 end
 
 function registerFather( teamID, parent)
+Spring.Echo("register Father of unit")
 	if not GG.InheritanceTable[teamID][parent] then GG.InheritanceTable[teamID][parent] ={} end
 end
 
 function registerChild( teamID, parent, childID)
+Spring.Echo("register Child child of unit")
 if not GG.InheritanceTable[teamID][parent] then GG.InheritanceTable[teamID][parent] ={} end
 
 	GG.InheritanceTable[teamID][parent][childID]= true
 end
 
 function getChildrenOfUnit(teamID, unit)
+Spring.Echo("Getting children of unit")
 return GG.InheritanceTable[teamID][unit] or {}
 end
 
 function getParentOfUnit(teamID, unit)
+Spring.Echo("getParentOfUnit")
 	for parent, unitTable in pairs( GG.InheritanceTable[teamID]) do
 		if unitTable then
 			for thisUnit,_ in pairs(unitTable) do
@@ -597,6 +602,7 @@ function getParentOfUnit(teamID, unit)
 end
 
 function removeUnit(teamID, unit)
+Spring.Echo("removing unit from graph")
 	parent= getParentOfUnit(teamID, unit)
 	if parent then  GG.InheritanceTable[teamID][parent][unit] = nil end
 	if GG.InheritanceTable[teamID][unit] then GG.InheritanceTable[teamID][unit] = nil end

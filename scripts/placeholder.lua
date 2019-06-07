@@ -11,6 +11,8 @@ end
 
 center = piece "center"
 aimpiece = piece "aimpiece"
+if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
+if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)

@@ -132,9 +132,10 @@ boolStartDecloaking= false
 boolStartCloaking= true
 
 function cloakLoop()
-	waitTillComplete(unitID)
-	while true do 
 	Sleep(100)
+	waitTillComplete(unitID)
+	Sleep(100)
+	while true do 
 		if boolStartCloaking== true and not  GG.OperativesDiscovered[unitID]  then
 			boolStartCloaking = false
 			SetUnitValue(COB.WANT_CLOAK, 1)
@@ -142,7 +143,7 @@ function cloakLoop()
 			StartThread(spawnDecoyCivilian)
 
 		end
-
+		Sleep(100)
 		if boolStartDecloaking == true then
 				boolStartDecloaking = false
 				SetUnitValue(COB.WANT_CLOAK, 0)
