@@ -74,11 +74,9 @@ end
 
 function delayedDeactivation()
 Sleep(1000)
-    SetUnitValue(COB.YARD_OPEN, 0)
-
-    SetUnitValue(COB.BUGGER_OFF, 0)
-
+     SetUnitValue(COB.YARD_OPEN, 0)
     SetUnitValue(COB.INBUILDSTANCE, 0)
+    SetUnitValue(COB.BUGGER_OFF, 0)
 end
 
 function script.Deactivate()
@@ -92,4 +90,16 @@ function script.QueryBuildInfo()
 end
 
 Spring.SetUnitNanoPieces(unitID, { structure })
+
+
+function script.StartBuilding()
+
+	SetUnitValue(COB.INBUILDSTANCE, 1)
+	
+end
+
+
+function script.StopBuilding()
+    SetUnitValue(COB.INBUILDSTANCE, 0)
+end
 

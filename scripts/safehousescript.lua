@@ -12,7 +12,7 @@ end
 
 center = piece "center"
 nano = piece "nano"
-local safeHouseID = nil
+safeHouseID = nil
 gameConfig = getGameConfig()
 
 
@@ -171,23 +171,17 @@ function script.Killed(recentDamage, _)
 end
 
 function script.Activate()
-    if not safeHouseID then return 0 end
-
-    SetUnitValue(COB.YARD_OPEN, 1)
-
-    SetUnitValue(COB.BUGGER_OFF, 1)
-
+    -- if not safeHouseID then return 0 end
+	SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.INBUILDSTANCE, 1)
-    return 1
+    SetUnitValue(COB.BUGGER_OFF, 1)
 end
 
 function script.Deactivate()
-    if not safeHouseID then return 0 end
-    SetUnitValue(COB.YARD_OPEN, 0)
-
-    SetUnitValue(COB.BUGGER_OFF, 0)
-
+    -- if not safeHouseID then return 0 end
+	SetUnitValue(COB.YARD_OPEN, 0)
     SetUnitValue(COB.INBUILDSTANCE, 0)
+    SetUnitValue(COB.BUGGER_OFF, 0)
     return 0
 end
 
@@ -199,10 +193,10 @@ Spring.SetUnitNanoPieces(unitID, { nano })
 
 
 function script.StartBuilding()
-    if not safeHouseID then return false end
+	SetUnitValue(COB.INBUILDSTANCE, 1)
 end
 
 
 function script.StopBuilding()
-
+    SetUnitValue(COB.INBUILDSTANCE, 0)
 end
