@@ -446,11 +446,13 @@ hoverAboveFunc = function( persPack)
 					end					
 					
 					Spring.MoveCtrl.SetPosition(persPack.unitID, x,y + persPack.heightAbove,z)	
-					boolUnitIsActive =	Spring.GetUnitIsActive (persPack.unitID)
+					boolUnitIsCloaked =	Spring.GetUnitIsCloaked (persPack.unitID)
 					
-					if boolUnitIsActive and boolUnitIsActive == false then
-						Spring.TransferUnit(persPack.toTrackID, persPack.myTeam)
-						Spring.Destroy(persPack.unitID,true,true)
+					
+					if persPack.startFrame + 30 < Spring.GetGameFrame()  and  boolUnitIsCloaked == false then
+						copyUnit(persPack.toTrackID, persPack.myTeam)
+						Spring.DestroyUnit(persPack.toTrackID,true,true)
+						Spring.DestroyUnit(persPack.unitID,true,true)
 						return boolEndFunction, nil
 					end
 				
@@ -459,6 +461,7 @@ hoverAboveFunc = function( persPack)
 				end
 
 createStreamEvent(doubleAgentID, hoverAboveFunc, 1, {
+													startFrame = Spring.GetGameFrame(),
 													unitID = doubleAgentID,
 													myTeam = teamToTurnTo, 
 													toTrackID = id, 

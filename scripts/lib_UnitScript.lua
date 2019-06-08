@@ -804,6 +804,14 @@ x,y,z = Spring.GetUnitPosition(target)
 return false
 end
 
+function copyUnit(id, teamID)
+ox,oy,oz= ox or 0,oy or 0,oz or 0
+copyID =  createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id,ox,oy,oz)
+transferUnitStatusToUnit(id, copyID)
+transferOrders(id, copyID)
+return copyID
+end
+
 function transferUnitTeam(id, targetTeam)
 	Spring.TransferUnit(id, targetTeam)
 end
