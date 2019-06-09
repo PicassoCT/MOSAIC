@@ -19,6 +19,7 @@ gadget.minBuildRequirementProtagon = {
 
 
 gadget.minBuildRequirementAntagon = {
+	
 	"propagandaserver" = 2,
 	"operativepropagator"= 1,
 	"antagonsafehouse" = 2,

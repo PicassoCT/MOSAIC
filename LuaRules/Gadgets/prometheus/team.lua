@@ -175,7 +175,7 @@ function normalBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, s
 					if bo and UnitDefs[bo]  then
 						Log("Queueing: ", UnitDefs[bo].humanName)
 						GiveOrderToUnit(unitID, -bo, {}, {})
-					else
+					else 
 						Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 					end
 				end
