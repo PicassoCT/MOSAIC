@@ -64,6 +64,9 @@ function GetAIStartUnit(teamID, leader, isDead, boolIsAI, side, playerInfo)
             return "operativeinvestigator"
         end
     end
+	
+	
+	  return "operativepropagator"
 end
 
 local function GetStartUnit(teamID)
