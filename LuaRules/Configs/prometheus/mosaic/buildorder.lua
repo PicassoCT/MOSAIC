@@ -6,8 +6,7 @@ FLAG_RADIUS = 230 --from S44 game_flagManager.lua
 SQUAD_SIZE = 24
 
 -- unit names must be lowercase!
-
--- Format: factory = { "unit to build 1", "unit to build 2", ... }
+--minbuild requirements for safehouses
 gadget.minBuildRequirementProtagon = {
 	["propagandaserver"] = 2,
 	["operativeinvestigator"] = 1,
@@ -26,6 +25,7 @@ gadget.minBuildRequirementAntagon = {
 	["recruitcivilian"] = 1
 }
 
+-- Format: factory = { "unit to build 1", "unit to build 2", ... }
 gadget.unitBuildOrder = UnitBag{
 	-- Antagon
 	operativepropagator =UnitArray{"antagonsafehouse"},
