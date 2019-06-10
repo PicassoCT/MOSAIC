@@ -9,22 +9,21 @@ SQUAD_SIZE = 24
 
 -- Format: factory = { "unit to build 1", "unit to build 2", ... }
 gadget.minBuildRequirementProtagon = {
-	"propagandaserver" = 2,
-	"operativeinvestigator"= 1,
-	"protagonsafehouse" = 2,
-	"operativeasset" = 1,
-	"recruitcivilian" = 1
+	["propagandaserver"] = 2,
+	["operativeinvestigator"] = 1,
+	["protagonsafehouse"] = 2,
+	["operativeasset"] = 1,
+	["recruitcivilian"] = 1
 
 }
 
 
 gadget.minBuildRequirementAntagon = {
-	
-	"propagandaserver" = 2,
-	"operativepropagator"= 1,
-	"antagonsafehouse" = 2,
-	"operativeasset" = 1,
-	"recruitcivilian" = 1
+	["propagandaserver"] = 2,
+	["operativepropagator"] = 1,
+	["antagonsafehouse"] = 2,
+	["operativeasset"] = 1,
+	["recruitcivilian"] = 1
 }
 
 gadget.unitBuildOrder = UnitBag{
@@ -48,13 +47,17 @@ gadget.unitBuildOrder = UnitBag{
 		"civilianagent",
 	},
 	assembly = UnitArray{
-			"ground_truck_mg", "ground_truck_ssied",
-			"ground_truck_antiarmor","air_copter_ssied",	
-			"air_copter_mg","air_copter_antiarmor",  	
+			"ground_truck_mg", 
+			"ground_truck_ssied",
+			"ground_truck_antiarmor",
+			"air_copter_ssied",	
+			"air_copter_mg",
+			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
 			"ground_tank_night"
 	},
-	operativeinvestigator =UnitArray{"protagonsafehouse"
+	operativeinvestigator =UnitArray{
+	"protagonsafehouse"
 	},
 	protagonsafehouse = UnitArray{
 		"operativeinvestigator", 
@@ -68,8 +71,8 @@ gadget.unitBuildOrder = UnitBag{
 		"civilianagent"
 	},
 	transportedassembly = UnitArray{
-				"ground_turret_ssied",	
-				"ground_turret_mg",
+		"ground_turret_ssied",	
+		"ground_turret_mg",
 	},
 }
 

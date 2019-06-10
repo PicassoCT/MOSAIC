@@ -12,8 +12,18 @@ local function NameToID(name)
 	if unitDef then
 		return unitDef.id
 	else
-		error("Bad unitname: " .. name)
+		error("Prometheus: Bad unitname: " .. name)
 	end
+end
+
+
+local function convertTableToDefIDNumberTable(t)
+local ret={}
+	for k,v in pairs(t) do
+		ret[NameToID(k)] = v
+	end
+	
+return ret
 end
 
 local function NameArrayToIdArray(array)
@@ -50,14 +60,6 @@ do
 end
 
 
-function convertTableToDefIDNumberTable(t)
-ret={}
-	for k,v in pairs(t) do
-		ret[NameToID(k)] = v
-	end
-	
-return ret
-end
 
 gadget.minBuildRequirementProtagon = convertTableToDefIDNumberTable(gadget.minBuildRequirementProtagon)
 gadget.minBuildRequirementAntagon = convertTableToDefIDNumberTable(gadget.minBuildRequirementAntagon)

@@ -169,8 +169,8 @@ end
 
 function gadget:Initialize()
 	setmetatable(gadget, {
-		__index = function() error("Attempt to read undeclared global variable", 2) end,
-		__newindex = function() error("Attempt to write undeclared global variable", 2) end,
+		__index = function() error("Prometheus: Attempt to read undeclared global variable", 2) end,
+		__newindex = function() error("Prometheus: Attempt to write undeclared global variable", 2) end,
 	})
 	SetupCmdChangeAIDebugVerbosity()
 end

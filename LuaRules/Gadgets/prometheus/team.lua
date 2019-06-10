@@ -55,7 +55,8 @@ local combatMgr = CreateCombatMgr(myTeamID, myAllyTeamID, Log)
 
 -- Flag capping
 local flagsMgr = CreateFlagsMgr(myTeamID, myAllyTeamID, mySide, Log)
-
+local ANTAGONSAFEHOUSEDFID 	= UnitDefNames["antagonsafehouse"].id
+local PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -114,35 +115,34 @@ Team.AllowUnitCreation = unitLimitsMgr.AllowUnitCreation
 Team.UnitCreated = baseMgr.UnitCreated
 
 
-function minBuildOrderFullfilled(unitTeam)
-_,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
+function Team.minBuildOrderFullfilled(unitTeam)
+local _,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
 
-checkTable={}
+local checkTable={}
 	if side and side == "protagon" then
-		checkTable = gadget.minBuildRequirementProtagon
+		checkTable = minBuildOrderProtagon
+	else
+		checkTable = minBuildOrderAntagon
 	end
-	if side and side == "antagon" then
-		checkTable = gadget.minBuildRequirementAntagon
-	end
-unitCounts= Spring.GetTeamUnitsCounts(unitTeam)
+local unitCounts= Spring.GetTeamUnitsCounts(unitTeam)
 
-boolMinBuildFullfilled = true
-unitsToBuild = {}
+local boolMinBuildFullfilled = true
+local unitsToBuild = {}
 
-	for unitDefID, Nr in pairs(checkTable)
-		if Nr > unitCounts[unitDefID] then
+	for unitDefID, Nr in pairs(checkTable) do
+		if Nr and  unitDefID and unitCounts[unitDefID] and  Nr > unitCounts[unitDefID] then
 			boolMinBuildFullfilled = false
-			unitsToBuild[unitDefID] = Nr -unitCounts[unitDefID] 
+			unitsToBuild[unitDefID] = Nr - unitCounts[unitDefID] 
+			Spring.Echo("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
 		end
 	end
 
 	return boolMinBuildFullfilled, unitsToBuild, side
 end
-ANTAGONSAFEHOUSEDFID = UnitDefNames["antagonsafehouse"].id
-PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
 
-function normalBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, side)
-	if unitBuildOrder[unitDefID] and  then
+
+function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, side)
+	if unitBuildOrder[unitDefID]   then
 		-- factory or builder?
 		if not (UnitDefs[unitDefID].speed > 0) then
 			-- If there are no enemies, don't bother lagging Spring to death:
@@ -169,9 +169,8 @@ function normalBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, s
 				end
 			end
 			
-			boolFallBack = true
-			if side == "antagon" and unitDefID == ANTAGONSAFEHOUSEDFID then
-					for _,bo in ipairs(gadget.minBuildRequirementAntagon) do
+			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
+				for bo,nr in ipairs(stillMissingUnitsTable) do
 					if bo and UnitDefs[bo]  then
 						Log("Queueing: ", UnitDefs[bo].humanName)
 						GiveOrderToUnit(unitID, -bo, {}, {})
@@ -179,21 +178,10 @@ function normalBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, s
 						Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 					end
 				end
-				boolFallBack = false
-			end
-			if side == "protagon" and unitDefID == PROTAGONSAFEHOUSEDEFID then
-				for _,bo in ipairs(gadget.minBuildRequirementProtagon) do
-					if bo and UnitDefs[bo]  then
-						Log("Queueing: ", UnitDefs[bo].humanName)
-						GiveOrderToUnit(unitID, -bo, {}, {})
-					else
-						Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
-					end
-				end
-				boolFallBack = false
-			end
+
+			else
 			
-			if boolFallBack == true then
+		
 				for _,bo in ipairs(unitBuildOrder[unitDefID]) do
 					if bo and UnitDefs[bo]  then
 						Log("Queueing: ", UnitDefs[bo].humanName)
@@ -210,8 +198,8 @@ function normalBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, s
 	
 end
 
-function normalBuildOrder(unitID, unitDefID, unitTeam)
-	if unitBuildOrder[unitDefID] and  then
+function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
+	if unitBuildOrder[unitDefID]   then
 		-- factory or builder?
 		if not (UnitDefs[unitDefID].speed > 0) then
 			-- If there are no enemies, don't bother lagging Spring to death:
@@ -256,7 +244,7 @@ end
 
 function Team.UnitFinished(unitID, unitDefID, unitTeam)
 	Log("UnitFinished: ", UnitDefs[unitDefID].humanName)
-	boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = minBuildOrderFullfilled(unitTeam)
+	local boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = Team.minBuildOrderFullfilled(unitTeam)
 	-- idea from BrainDamage: instead of cheating huge amounts of resources,
 	-- just cheat in the cost of the units we build.
 	--Spring.AddTeamResource(myTeamID, "metal", UnitDefs[unitDefID].metalCost)
@@ -264,9 +252,9 @@ function Team.UnitFinished(unitID, unitDefID, unitTeam)
 
 	-- queue unitBuildOrders if we have any for this unitDefID
 	if boolMinBuildOrderFullfilled == true then
-		normalBuildOrder(unitID,unitDefID, unitTeam)	
+		Team.normalBuildOrder(unitID,unitDefID, unitTeam)	
 	else
-		minBuildOrder(unitID,unitDefID,unitTeam, stillMissingUnitsTable, side)		
+		Team.minBuildOrder(unitID,unitDefID,unitTeam, stillMissingUnitsTable, side)		
 	end
 
 	-- if any unit manager takes care of the unit, return
@@ -302,7 +290,9 @@ end
 function Team.UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
 	Team.UnitCreated(unitID, unitDefID, unitTeam, nil)
 	local _, _, inBuild = Spring.GetUnitIsStunned(unitID)
+	Spring.Echo("Prometheus: Unit created")
 	if not inBuild then
+		Spring.Echo("Prometheus: UnitGiven finnished")
 		Team.UnitFinished(unitID, unitDefID, unitTeam)
 	end
 end
