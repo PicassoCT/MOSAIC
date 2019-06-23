@@ -16,6 +16,9 @@ function Team.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDef
 function Team.UnitTaken(unitID, unitDefID, unitTeam, newTeam)
 function Team.UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
 ]]--
+VFS.Include("scripts/lib_OS.lua")
+VFS.Include("scripts/lib_UnitScript.lua")
+VFS.Include("scripts/lib_mosaic.lua")
 
 function CreateTeam(myTeamID, myAllyTeamID, mySide)
 
@@ -136,7 +139,7 @@ local unitsToBuild = {}
 			Spring.Echo("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
 		end
 	end
-
+	echo("MinBuilder is fullfiled:", boolMinBuildFullfilled, " for side ".. side)
 	return boolMinBuildFullfilled, unitsToBuild, side
 end
 

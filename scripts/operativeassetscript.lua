@@ -10,10 +10,11 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-deathpivot = piece "deathpivot"
+deathpivot = piece "Torso"
 center = piece "center"
 torso = piece "Torso"
 gun = piece "Gun"
+head = piece "Head"
 
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
@@ -193,13 +194,14 @@ State_Walking = "walk"
 
 UpperAnimationStateFunctions ={
 [State_Standing] = 	function () 
-						WTurn(torso,y_axis,math.rad(0),math.pi)
+						WTurn(head,y_axis,math.rad(0),math.pi)
 						Sleep(100)
+						
 						return State_Standing
 					end,
 [State_Walking] = 	function () 
-						WTurn(torso,y_axis,math.rad(15),math.pi)
-						WTurn(torso,y_axis,math.rad(-15),math.pi)
+						WTurn(head,y_axis,math.rad(15),math.pi)
+						WTurn(head,y_axis,math.rad(-15),math.pi)
 						return State_Walking
 					end
 
@@ -337,7 +339,6 @@ function cloakLoop()
 			boolStartCloaking= false
 			setSpeedEnv(unitID, 0.175) -- 9,00 -> 1,575  must be as slow as a civilian when moving hidden
 			Spring.Echo("Hide "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
-			Spring.Echo("Operative still hidden")
 			SetUnitValue(COB.WANT_CLOAK, 1)
 			boolCloaked= true
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
@@ -348,7 +349,6 @@ function cloakLoop()
 		if boolStartDecloaking == true then
 		boolStartDecloaking= false
 			setSpeedEnv(unitID, 1.0)
-			Spring.Echo("Show "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
 			SetUnitValue(COB.WANT_CLOAK, 0)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
 			boolCloaked= false
@@ -368,7 +368,6 @@ end
 
 function script.Deactivate()
 	setSpeedEnv(unitID, 1.0)
-	Spring.Echo("Deactivate "..unitID)
 	SetUnitValue(COB.WANT_CLOAK, 0)
 	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
 	if civilianID and doesUnitExistAlive(civilianID) == true then
