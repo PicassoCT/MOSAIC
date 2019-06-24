@@ -37,6 +37,7 @@ end
 --------------------------------------------------------------------------------
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
+
 local modOptions = Spring.GetModOptions()
 
 function GetAIStartUnit(teamID, leader, isDead, boolIsAI, side, playerInfo)

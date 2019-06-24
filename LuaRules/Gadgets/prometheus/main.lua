@@ -8,7 +8,7 @@
 
 function gadget:GetInfo()
 	return {
-		name = "prometheus",
+		name = "Prometheus",
 		desc = "Configurable Reusable Artificial Intelligence Gadget for Mosaic",
 		author = "Tobi Vollebregt",
 		date = "2009-02-12",
@@ -113,7 +113,7 @@ include("LuaRules/Gadgets/prometheus/team.lua")
 include("LuaRules/Gadgets/prometheus/waypoints.lua")
 
 -- locals
-local prometheus_Debug_Mode = 1 -- Must be 0 or 1
+local prometheus_Debug_Mode = 0 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
 
@@ -169,6 +169,7 @@ end
 --  gadget:GameStart
 
 function gadget:Initialize()
+	Spring.Echo("Prometheus Initialise: Debugomode is "..prometheus_Debug_Mode)
 	setmetatable(gadget, {
 		__index = function() error("Prometheus: Attempt to read undeclared global variable", 2) end,
 		__newindex = function() error("Prometheus: Attempt to write undeclared global variable", 2) end,
@@ -219,7 +220,7 @@ local function CreateTeams()
 						end
 					end
 				else
-					Warning("Prometheus: Startunit not found, don't know as which side I'm supposed to be playing.")
+					Warning(" Startunit not found, don't know as which side I'm supposed to be playing.")
 				end
 			end
 		end
@@ -227,6 +228,7 @@ local function CreateTeams()
 end
 
 function gadget:GameFrame(f)
+	-- Log("gadget:GameFrame"..f)
 	if f == 1 then
 		-- This is executed AFTER headquarters / commander is spawned
 		Log("gadget:GameFrame 1")

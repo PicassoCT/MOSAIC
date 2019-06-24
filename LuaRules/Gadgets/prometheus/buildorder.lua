@@ -19,7 +19,7 @@ end
 
 local function convertTableToDefIDNumberTable(t)
 local ret={}
-	for k,v in pairs(t) do
+	for k,v in ipairs(t) do
 		ret[NameToID(k)] = v
 	end
 	

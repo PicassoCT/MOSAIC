@@ -10,10 +10,11 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-aimpiece = piece "aimpiece"
+aimpiece = piece "Turret"
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
+	resetAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 end
 
@@ -37,8 +38,8 @@ end
 
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
-	WTurn(aimpiece,y_axis, Heading, math.pi)
-	WTurn(aimpiece, x_axis , pitch, math.pi)
+	WTurn(aimpiece,1, Heading, math.pi)
+	
     return true
 end
 

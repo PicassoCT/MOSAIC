@@ -5,6 +5,7 @@
 --
 --  Data structures (constructor syntax)
 --
+Spring.Echo("Prometheus loading configs")
 
 -- Converts UnitDefName to UnitDefID, raises an error if name is not valid.
 local function NameToID(name)
@@ -54,8 +55,12 @@ if (gadgetHandler:IsSyncedCode()) then
 	-- SYNCED
 else
 	-- UNSYNCED
+	Spring.Echo("Prometheus start buildorder loading")
 	include(dir .. "buildorder.lua")
+	Spring.Echo("Prometheus buildorder loading completed")
 end
 
 -- both SYNCED and UNSYNCED
+Spring.Echo("Prometheus start unitlimits loading")
 include(dir .. "unitlimits.lua")
+Spring.Echo("Prometheus unitlimits loading completed")

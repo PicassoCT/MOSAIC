@@ -67,7 +67,7 @@ local PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
 --
 
 function Team.GameStart()
-	Log("GameStart")
+	Spring.Echo("Prometheus: GameStart")
 	-- Can not run this in the initialization code at the end of this file,
 	-- because at that time Spring.GetTeamStartPosition seems to always return 0,0,0.
 	for _,t in ipairs(Spring.GetTeamList()) do
@@ -90,7 +90,7 @@ end
 
 function Team.GameFrame(f)
 	--Log("GameFrame")
-
+	-- Spring.Echo("Prometheus GameFrame")
 	baseMgr.GameFrame(f)
 
 	if waypointMgr then
@@ -119,6 +119,7 @@ Team.UnitCreated = baseMgr.UnitCreated
 
 
 function Team.minBuildOrderFullfilled(unitTeam)
+	Spring.Echo("Prmetheus: Checking Min Buildorder fullfilled")
 local _,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
 
 local checkTable={}
@@ -136,10 +137,14 @@ local unitsToBuild = {}
 		if Nr and  unitDefID and unitCounts[unitDefID] and  Nr > unitCounts[unitDefID] then
 			boolMinBuildFullfilled = false
 			unitsToBuild[unitDefID] = Nr - unitCounts[unitDefID] 
-			Spring.Echo("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
+			Log("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
 		end
 	end
-	echo("MinBuilder is fullfiled:", boolMinBuildFullfilled, " for side ".. side)
+	
+local	boolString= "true"
+	if boolMinBuildFullfilled == false then boolString = "false" end
+	
+	Log("MinBuilder is fullfiled:",boolString, " for side ".. side)
 	return boolMinBuildFullfilled, unitsToBuild, side
 end
 
@@ -178,7 +183,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 						Log("Queueing: ", UnitDefs[bo].humanName)
 						GiveOrderToUnit(unitID, -bo, {}, {})
 					else 
-						Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
+						Log("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 					end
 				end
 
@@ -246,7 +251,7 @@ function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
 end
 
 function Team.UnitFinished(unitID, unitDefID, unitTeam)
-	Log("UnitFinished: ", UnitDefs[unitDefID].humanName)
+	Log(" UnitFinished: ", UnitDefs[unitDefID].humanName)
 	local boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = Team.minBuildOrderFullfilled(unitTeam)
 	-- idea from BrainDamage: instead of cheating huge amounts of resources,
 	-- just cheat in the cost of the units we build.
@@ -276,7 +281,7 @@ function Team.UnitFinished(unitID, unitDefID, unitTeam)
 end
 
 function Team.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-	Log("UnitDestroyed: ", UnitDefs[unitDefID].humanName)
+	Spring.Echo("Prometheus: UnitDestroyed: ", UnitDefs[unitDefID].humanName)
 
 	baseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 
@@ -293,9 +298,8 @@ end
 function Team.UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
 	Team.UnitCreated(unitID, unitDefID, unitTeam, nil)
 	local _, _, inBuild = Spring.GetUnitIsStunned(unitID)
-	Spring.Echo("Prometheus: Unit created")
+	Log("Unit given")
 	if not inBuild then
-		Spring.Echo("Prometheus: UnitGiven finnished")
 		Team.UnitFinished(unitID, unitDefID, unitTeam)
 	end
 end
