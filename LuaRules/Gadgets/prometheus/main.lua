@@ -113,7 +113,7 @@ include("LuaRules/Gadgets/prometheus/team.lua")
 include("LuaRules/Gadgets/prometheus/waypoints.lua")
 
 -- locals
-local prometheus_Debug_Mode = 0 -- Must be 0 or 1
+local prometheus_Debug_Mode =  1 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
 

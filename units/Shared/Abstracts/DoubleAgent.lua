@@ -43,11 +43,58 @@ local DoubleAgent = Abstract:New{
 		baseclass		= "Human", -- TODO: hacks
     },
 	category = "NOTARGET",
+	
+}local RaidIcon = Abstract:New{
+	corpse					  = "",
+	maxDamage         	  = 500,
+	mass                = 500,
+	buildCostEnergy    	  = 5,
+	buildCostMetal     	  = 5,
+	canMove					  = true,
+	
+	explodeAs				  = "none",
+	Acceleration = 0,
+	BrakeRate = 0,
+	TurnRate = 0,
+	MaxVelocity = 0,
+	--
+	description = "Display raid progress",
+
+	CanAttack = false,
+	CanGuard = false,
+
+	CanMove = true,
+	CanPatrol = true,
+	CanStop = true,
+	script 					= "raidiconscript.lua",
+	objectName        	= "RaidIcon.dae",
+
+	canCloak =true,
+	cloakCost=0.0001,
+	ActivateWhenBuilt=1,
+	cloakCostMoving =0.0001,
+	minCloakDistance = 0,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
+	
+	onoffable=true,
+	activatewhenbuilt = true,
+	
+	
+	
+	customparams = {
+		helptext		= "Civilian Agent working for the opposite site",
+		baseclass		= "Human", -- TODO: hacks
+    },
+	category = "NOTARGET",
 }
 
 
 return lowerkeys({
 	--Temp
 	["doubleagent"] = DoubleAgent:New(),
+	["raidicon"] = RaidIcon:New(),
 	
 })
