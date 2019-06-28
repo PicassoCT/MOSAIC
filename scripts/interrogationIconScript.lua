@@ -11,6 +11,9 @@ end
 
 
 function script.Create()
+	Spring.SetUnitAlwaysVisible(unitID,true)
+	Spring.SetUnitNeutral(unitID,true)
+	Spring.SetUnitNoSelect(unitID,true)
 	Spring.MoveCtrl.Enable(unitID)
 	ox,oy,oz = Spring.GetUnitPosition(unitID)
 	Spring.SetUnitPosition(unitID, ox,oy + 50, oz)
@@ -58,20 +61,20 @@ randStart = math.random(#mapTable)
 	
 end
 
+function raidPercentage()
 
+	while not GG.raidIconPercentage or not GG.raidIconPercentage[unitID] do
+		Sleep(100)
+	end
 
-function interrogatePercentage()
-	-- while not GG.raidPercentageToIcon or not GG.raidPercentageToIcon[unitID] do
-		-- Sleep(100)
-	-- end
-	Sleep(100)
-	while  true do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
+	while   GG.raidIconPercentage[unitID] do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
+	
 		lastIndex= math.random(1,16)
 		alreadyVisitedTable=makeTable(false, 16)	
 		hideT(TablesOfPiecesGroups["puzzle"])
 		Show(TablesOfPiecesGroups["puzzle"][lastIndex])
 		alreadyVisitedTable[lastIndex] = true
-		factor = 1
+		factor = math.min(20,math.max(1, GG.raidIconPercentage[unitID] * 20))
 		
 		while factor < 17 do
 			factor = factor +1
@@ -86,8 +89,10 @@ function interrogatePercentage()
 			end
 		Sleep(1000)
 	end
-
+	
+	Spring.DestroyUnit(unitID,false, true)
 end
+
 function script.Killed(recentDamage, _)
 
     createCorpseCUnitGeneric(recentDamage)

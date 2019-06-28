@@ -13,6 +13,9 @@ center = piece "Frame"
 door = 1
 spys={}
 function script.Create()
+	Spring.SetUnitAlwaysVisible(unitID,true)
+	Spring.SetUnitNeutral(unitID,true)
+	Spring.SetUnitNoSelect(unitID,true)
 	Spring.MoveCtrl.Enable(unitID)
 	ox,oy,oz = Spring.GetUnitPosition(unitID)
 	Spring.SetUnitPosition(unitID, ox,oy + 50, oz)
@@ -129,14 +132,15 @@ function raidAnimationLoop()
 	end
 end
 function raidPercentage()
-	-- while not GG.raidPercentageToIcon or not GG.raidPercentageToIcon[unitID] do
-		-- Sleep(100)
-	-- end
 
-	while  true do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
+	while not GG.raidIconPercentage or not GG.raidIconPercentage[unitID] do
+		Sleep(100)
+	end
+
+	while   GG.raidIconPercentage[unitID] do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
 		hideT(TablesOfPiecesGroups["door"])
 		hideT(TablesOfPiecesGroups["bdoor"])
-		factor =  21-((Spring.GetGameFrame()/300) %20)-- math.min(1.0, math.max(0, GG.raidPercentageToIcon[unitID]))
+		factor =  math.min(20,math.max(1, GG.raidIconPercentage[unitID] * 20))
 		
 		showT(TablesOfPiecesGroups["door"], 1, math.floor(factor))
 		showT(TablesOfPiecesGroups["bdoor"], 1, math.floor(factor))
@@ -144,7 +148,7 @@ function raidPercentage()
 		showT(TablesOfPiecesGroups["bdoor"], 41, 41+ math.floor(factor))
 		Sleep(100)
 	end
-
+	Spring.DestroyUnit(unitID,false, true)
 end
 function script.Killed(recentDamage, _)
 
