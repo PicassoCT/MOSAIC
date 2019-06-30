@@ -45,6 +45,7 @@ local Noone_UplinkLaser = Building:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
+	category = [[GROUND BUILDING]],
 
 	customparams = {
 		helptext		= "Noone Uplinklaser",

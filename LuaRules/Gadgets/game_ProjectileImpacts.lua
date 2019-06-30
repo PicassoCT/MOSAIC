@@ -82,18 +82,18 @@ if (gadgetHandler:IsSyncedCode()) then
 	civilianDefID = UnitDefNames["civilian"].id
 	
 	interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, iconUnitTypeName)
-			Spring.Echo("interrogation 3")
+			Spring.Echo("caught 1")
 		if not InterrogationTable[unitID] then InterrogationTable[unitID] ={} end
 		if not InterrogationTable[unitID][attackerID] then InterrogationTable[unitID][attackerID] = false end
 		
 		if  InterrogationTable[unitID][attackerID] == false then
-			Spring.Echo("interrogation 4")
+			Spring.Echo("caught 2")
 				--Stun 
 				interrogationFunction = function( persPack)
 					--check Unit existing
 					if false == doesUnitExistAlive(persPack.unitID) then 
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-						Spring.Echo("interrogation 5")
+						Spring.Echo("caught 3 ")
 						if  true == doesUnitExistAlive(persPack.interrogatorID) then
 							setSpeedEnv(persPack.interrogatorID, 1.0)	
 						end
@@ -105,7 +105,7 @@ if (gadgetHandler:IsSyncedCode()) then
 					
 					if false == doesUnitExistAlive(persPack.interrogatorID) then 
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-							Spring.Echo("interrogation 6")
+							Spring.Echo("caught 4")
 						if persPack.IconId then
 							GG.raidIconPercentage[persPack.IconId] = nil
 						end
@@ -115,7 +115,7 @@ if (gadgetHandler:IsSyncedCode()) then
 					-- check distance is still okay
 					if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > gameConfig.InterrogationDistance then
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-							Spring.Echo("interrogation 7")
+							Spring.Echo("caught 5 ")
 						setSpeedEnv(persPack.interrogatorID, 1.0)
 						if persPack.IconId then
 							GG.raidIconPercentage[persPack.IconId] = nil
@@ -137,7 +137,7 @@ if (gadgetHandler:IsSyncedCode()) then
 						Spring.Echo("Raid was succesfull - childs of "..persPack.unitID .." are revealed")
 						children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
 						parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
-							Spring.Echo("interrogation 8")
+							Spring.Echo(" caught 6 ")
 						for childID, v in pairs(children) do
 							if doesUnitExistAlive(childID) == true then
 							Spring.GiveOrderToUnit(childID, CMD.CLOAK, {},{})
@@ -156,7 +156,7 @@ if (gadgetHandler:IsSyncedCode()) then
 							
 						Spring.DestroyUnit(persPack.unitID, true, true)	
 						InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-							Spring.Echo("interrogation 9")
+							Spring.Echo("caught 7")
 						setSpeedEnv(persPack.interrogatorID, 1.0)		
 						GG.raidIconPercentage[persPack.IconId] = nil
 						return true, persPack
@@ -178,51 +178,62 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	UnitDamageFuncT[stunpistoldWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
-		Spring.Echo("Interrogating unit".. unitID)
+		Spring.Echo("Stunning unit".. unitID)
 		if unitID ~= attackerID then
 			stunUnit(unitID, 2.0)
 		end 
 		
-		if unitDefID == civilianDefID and GG.DisguiseCivilianFor[unitID] then
-			stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
-			setSpeedEnv(attackerID, 0.0)
-			interrogationEventStreamFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")	
-		end
+
 		
 	end
 	
 	houseDefID = UnitDefNames["house"].id
+	InterrogateAbleType = getInterrogateAbleTypeTable(UniDefs)
+	raidTable= {
+		[UnitDefNames["house"].id] = true,
+		[UnitDefNames["antagonsafehouse"].id] = true,
+		[UnitDefNames["protagonsafehouse"].id] = true
+		
+	}
+	
 	
 	UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
-	
-	Spring.Echo("Raid Weapon Fired")
-		if unitDefID == houseDefID and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
-			Spring.Echo("Raid 1")
-			unitID = GG.houseHasSafeHouseTable[unitID]
-		end
-	
-		if InterrogateAbleType[Spring.GetUnitDefID(unitID)] then
-			Spring.Echo("Raid 2")
-			stunUnit(unitID, 2.0)	
-			setSpeedEnv(attackerID, 0.0)
-			interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "raidIcon")		
+		Spring.Echo("Raid Weapon ")
+		if InterrogateAbleType[unitDefID] then	
+			if raidTable[unitDefID] then
+			Spring.Echo("Raid Weapon Fired")
+				if unitDefID == houseDefID and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
+					Spring.Echo("Raid 1")
+					unitID = GG.houseHasSafeHouseTable[unitID]
+				end
+			
+				if InterrogateAbleType[Spring.GetUnitDefID(unitID)] then
+					Spring.Echo("Raid 2")
+					stunUnit(unitID, 2.0)	
+					setSpeedEnv(attackerID, 0.0)
+					interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "raidIcon")		
+				end
+			else
+				Spring.Echo("Interrogation 1")
+				if unitDefID == civilianDefID and GG.DisguiseCivilianFor[unitID] then
+							Spring.Echo("Interrogation 2")
+					stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
+					setSpeedEnv(attackerID, 0.0)
+								Spring.Echo("Interrogation 3")
+					interrogationEventStreamFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")	
+				else
+							Spring.Echo("Interrogation 2")
+					stunUnit(unitID, 2.0)
+					setSpeedEnv(attackerID, 0.0)
+								Spring.Echo("Interrogation 3")
+					interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")		
+		
+				end
+			end
 		end
 	end
 	
-	DefaultUnitDamageFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
-	--look for Betrayal
-		if InterrogateAbleType[unitDefID] and unitTeam == attackerTeam then
-			--Stun 
-			
-			--on Complete Raid/Interrogation
-			--Transfer Units into No Longer Cloakable table
-			-- SetAlwaysVisible
-			-- Set Uncloak
-			
-		end
-
 	
-	end
 	
 	
 	

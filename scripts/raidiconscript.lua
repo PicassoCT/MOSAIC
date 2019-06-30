@@ -132,10 +132,17 @@ function raidAnimationLoop()
 	end
 end
 function raidPercentage()
-
-	while not GG.raidIconPercentage or not GG.raidIconPercentage[unitID] do
+	timer = 0
+	hideAll(unitID)
+	while not GG.raidIconPercentage or not GG.raidIconPercentage[unitID] and timer < 5000 do
 		Sleep(100)
 	end
+	
+	if timer >= 5000 then 	
+		Spring.DestroyUnit(unitID,false, true)
+	end
+	
+	showAll(unitID)
 
 	while   GG.raidIconPercentage[unitID] do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
 		hideT(TablesOfPiecesGroups["door"])

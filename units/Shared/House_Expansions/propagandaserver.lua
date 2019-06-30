@@ -33,6 +33,7 @@ local Propagandaserver = Building:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
+	category = [[GROUND BUILDING ARRESTABLE]],
 
 
 }

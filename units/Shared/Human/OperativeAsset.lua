@@ -38,7 +38,7 @@ local OperativeAsset = Human:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
-	
+	category = "GROUND ARRESTABLE",
 	fireState= 1,
 	
 		weapons={

@@ -52,6 +52,7 @@ local OperativePropagator = Human:New{
 		helptext		= "Propaganda Operative",
 		baseclass		= "Human", -- TODO: hacks
     },
+	category = "GROUND ARRESTABLE",
 	
 	fireState= 1,
 	

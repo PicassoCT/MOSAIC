@@ -43,7 +43,7 @@ local CivilianAgent = Human:New{
 	
 	weapons ={
 		[1]={name  = "pistol",
-				onlyTargetCategory = [[GROUND]],
+				onlyTargetCategory = [[GROUND ARRESTABLE]],
 			},
 	
 	},
