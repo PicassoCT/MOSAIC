@@ -251,7 +251,7 @@ function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
 end
 
 function Team.UnitFinished(unitID, unitDefID, unitTeam)
-	Log(" UnitFinished: ", UnitDefs[unitDefID].humanName)
+	-- Log(" UnitFinished: ", UnitDefs[unitDefID].humanName)
 	local boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = Team.minBuildOrderFullfilled(unitTeam)
 	-- idea from BrainDamage: instead of cheating huge amounts of resources,
 	-- just cheat in the cost of the units we build.
@@ -281,7 +281,7 @@ function Team.UnitFinished(unitID, unitDefID, unitTeam)
 end
 
 function Team.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-	Spring.Echo("Prometheus: UnitDestroyed: ", UnitDefs[unitDefID].humanName)
+	-- Spring.Echo("Prometheus: UnitDestroyed: ", UnitDefs[unitDefID].humanName)
 
 	baseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 

@@ -181,6 +181,18 @@ function  getSafeHouseTypeTable(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
+function  getRaidAbleTypeTable(UnitDefs)
+
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"house",
+		"antagonsafehouse",
+		"protagonsafehouse"
+	}
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 function  getSafeHouseUpgradeTypeTable(UnitDefs)
 
 	UnitDefNames = getUnitDefNames(UnitDefs)
@@ -196,7 +208,7 @@ function  getSafeHouseUpgradeTypeTable(UnitDefs)
 end
 
 function  getInterrogateAbleTypeTable(UnitDefs)
-	
+	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"civilianagent",

@@ -16,7 +16,7 @@ function script.Create()
 	Spring.SetUnitNoSelect(unitID,true)
 	Spring.MoveCtrl.Enable(unitID)
 	ox,oy,oz = Spring.GetUnitPosition(unitID)
-	Spring.SetUnitPosition(unitID, ox,oy + 50, oz)
+	Spring.SetUnitPosition(unitID, ox,oy + 125, oz)
 	showAll(unitID)
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -61,9 +61,9 @@ randStart = math.random(#mapTable)
 	
 end
 
-function raidPercentage()
+function interrogatePercentage()
 	timer = 0
-	hideAll(unitID)
+	
 	while not GG.raidIconPercentage or not GG.raidIconPercentage[unitID] and timer < 5000 do
 		Sleep(100)
 	end
@@ -71,7 +71,7 @@ function raidPercentage()
 	if timer >= 5000 then 	
 		Spring.DestroyUnit(unitID,false, true)
 	end
-	
+	SetUnitValue(COB.WANT_CLOAK, 0)
 	showAll(unitID)
 	
 	while   GG.raidIconPercentage[unitID] do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do

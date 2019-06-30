@@ -113,7 +113,7 @@ include("LuaRules/Gadgets/prometheus/team.lua")
 include("LuaRules/Gadgets/prometheus/waypoints.lua")
 
 -- locals
-local prometheus_Debug_Mode =  1 -- Must be 0 or 1
+local prometheus_Debug_Mode =  0 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
 
@@ -288,7 +288,7 @@ end
 --
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
+	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
 	if waypointMgr then
 		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
@@ -298,7 +298,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 end
 
 function gadget:UnitFinished(unitID, unitDefID, unitTeam)
-	Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." finnished")
+	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." finnished")
 	if team[unitTeam] then
 		team[unitTeam].UnitFinished(unitID, unitDefID, unitTeam)
 	end
@@ -320,7 +320,7 @@ function gadget:UnitTaken(unitID, unitDefID, unitTeam, newTeam)
 end
 
 function gadget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
-	Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." given")
+	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." given")
 	if team[unitTeam] then
 		Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." given to team "..unitTeam)
 		team[unitTeam].UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
