@@ -11,6 +11,7 @@ end
 
 center = piece "Frame"
 door = 1
+factor= 7
 spys={}
 function script.Create()
 	Spring.SetUnitAlwaysVisible(unitID,true)
@@ -31,20 +32,20 @@ end
 function agentOneThread()
 agentActiveCounter = agentActiveCounter+1
 
-	Move(spys[1], y_axis, -100*4, 768)
+	Move(spys[1], y_axis, -100*factor, 768)
 	randVal= math.random(-120,-70)
 	Turn(spys[1], y_axis, math.rad(randVal), 5)	
 
 	Sleep(900)
 	randVal= math.random(-15,25)
 	Turn(spys[1], y_axis, math.rad(randVal	), 8)
-	WMove(spys[1], y_axis, -100*4, 512)
+	WMove(spys[1], y_axis, -100*factor, 512)
 	randVal= math.random(60,100)
 	Turn(spys[1], y_axis, math.rad(randVal), 3)
-	WMove(spys[1], y_axis, -130*4, 512)
+	WMove(spys[1], y_axis, -130*factor, 512)
 	randVal= math.random(0,30)
 	Turn(spys[1], y_axis, math.rad(randVal), 3)
-	WMove(spys[1], x_axis, -50*4, 512)
+	WMove(spys[1], x_axis, -50*factor, 512)
 		randVal= math.random(0,30)
 	WTurn(spys[1], y_axis, math.rad(150), 3)
 	Hide(spys[1])
@@ -55,23 +56,23 @@ end
 function agentTwoThread()
 agentActiveCounter = agentActiveCounter+1
 
-	WMove(spys[2], x_axis, 50*4, 512
+	WMove(spys[2], x_axis, 50*factor, 512
 	)
 	randVal= math.random(0,30)  + 90
 	Turn(spys[2], y_axis, math.rad(randVal), 12)
 	randVal= math.random(-80,-40)
-	WMove(spys[2], y_axis, randVal*4, 512)
+	WMove(spys[2], y_axis, randVal*factor, 512)
 	randVal= math.random(45,140) 
 	WTurn(spys[2], y_axis, math.rad(randVal), 8)
 	randVal= math.random(60,90) 
-	WMove(spys[2], x_axis, randVal*4, 512)
+	WMove(spys[2], x_axis, randVal*factor, 512)
 	randVal= math.random(70, 120) 
 	WTurn(spys[2], y_axis, math.rad(randVal), 8)
 	randVal= math.random(60,90) 
 	randVal= math.random(0,30)  + 90
 	Turn(spys[2], y_axis, math.rad(randVal), 12)
-	Move(spys[2], x_axis, 70*4, 512)
-	WMove(spys[2], y_axis, -160*4, 512)
+	Move(spys[2], x_axis, 70*factor, 512)
+	WMove(spys[2], y_axis, -160*factor, 512)
 	WTurn(spys[2], y_axis, math.rad(60), 3)
 	WTurn(spys[2], y_axis, math.rad(120), 2)
 	Sleep(500)
@@ -84,7 +85,7 @@ function agentThreeThread()
 agentActiveCounter = agentActiveCounter+1
 spy = spys[3]
 
-	WMove(spy, x_axis, -50*4, 256
+	WMove(spy, x_axis, -50*factor, 256
 	)
 	randVal= math.random(0,30)  - 90
 	Turn(spy, y_axis, math.rad(randVal), 12)
@@ -93,14 +94,14 @@ spy = spys[3]
 	randVal= math.random(-150,-120) 
 	WTurn(spy, y_axis, math.rad(randVal), 8)
 	randVal= math.random(60,90) 
-	WMove(spy, x_axis, randVal*4, 512)
+	WMove(spy, x_axis, randVal*factor, 512)
 	randVal= math.random(160, 180) 
 	WTurn(spy, y_axis, math.rad(randVal), 8)
 
 	randVal= math.random(60,80) *-1
 	Turn(spy, y_axis, math.rad(randVal), 12)
-	Move(spy, x_axis, 70*4, 512)
-	WMove(spy, y_axis, -160*4, 512)
+	Move(spy, x_axis, 70*factor, 512)
+	WMove(spy, y_axis, -160*factor, 512)
 	WTurn(spy, y_axis, math.rad(180), 3)
 	Sleep(500)
 	Hide(spy)
