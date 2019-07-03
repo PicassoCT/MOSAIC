@@ -64,7 +64,10 @@ function getGameConfig()
 	 
 	 costs ={
 	 RecruitingTruck= 500,
-	 }
+	 },
+	 
+	 --Icons
+	 iconGroundOffset = 50,
 	 
 	 
 	}

@@ -11,14 +11,19 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
+
 gameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
 
 function script.Create()
+		Spring.MoveCtrl.Enable(unitID,true)
        TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	   StartThread(recruiteLoop)
+	   x,y,z= Spring.GetUnitPosition(unitID)
+
+	   Spring.MoveCtrl.SetPosition(unitID, x,y+ gameConfig.iconGroundOffset,z)
 	   StartThread(lifeTime, unitID, 10000, true, false)
+	   StartThread(animationLoop, 2)
 
 end
 
@@ -145,7 +150,72 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+function animationLoop(speedfactor)
+civhat = piece"civhat"
+civloop = piece"civloop"
+GoodCiv = piece"GoodCiv"
+BadCiv = piece"BadCiv"
+agentloop = piece"agentloop"
+civbodyup = piece"civbodyup"
+civbodydown = piece"civbodydown"
+agent1 = TablesOfPiecesGroups["Agent"][1]
+agent2 = TablesOfPiecesGroups["Agent"][2]
 
+while true do
+	resetAll(unitID)
+	hideAll(unitID)
+	Show(civloop)
+
+	Show(TablesOfPiecesGroups["CivBox"][1])
+	Show(civbodyup)
+	Show(civbodydown)
+	Show(agent1)
+	Move(civbodydown,x_axis, -900, 450 * speedfactor)
+	Move(agent1, x_axis, 900, 450* speedfactor)
+	WaitForMoves(civbodydown,agent1)
+	Sleep(500)
+	Turn(civbodydown,y_axis, math.rad(-45),15* speedfactor)
+	Turn(agent1,y_axis, math.rad(-45),10* speedfactor)
+	WaitForTurns(civbodydown,agent1)
+	Sleep(100)
+	Hide(TablesOfPiecesGroups["CivBox"][1])
+	Show(TablesOfPiecesGroups["AgentBox"][1])
+	Show(TablesOfPiecesGroups["AgentBox"][2])
+	Show(agent2)
+	WTurn(agent1,y_axis, math.rad(-180),25* speedfactor)
+	Turn(civbodydown,y_axis, math.rad(90),5* speedfactor)
+	Move(agent2, 3, 900, 450* speedfactor)
+	Move(agent1, x_axis, 0, 450* speedfactor)
+	Show(GoodCiv)
+	Move(GoodCiv,y_axis, 512, 750* speedfactor)
+	Move(BadCiv,y_axis, 512, 750* speedfactor)
+	WMove(civbodyup,y_axis, 1024, 750* speedfactor)
+	Hide(GoodCiv)
+	Show(BadCiv)
+	Sleep(250)
+	Move(civbodyup,y_axis, 0, 750* speedfactor)
+	Move(GoodCiv,y_axis, 0, 750* speedfactor)
+	WMove(BadCiv,y_axis, 0, 750* speedfactor)
+	WMove(agent2, 3, 900, 450* speedfactor)
+	Hide(agent1)
+	Hide(TablesOfPiecesGroups["AgentBox"][1])
+	Hide(TablesOfPiecesGroups["AgentBox"][2])
+	Show(TablesOfPiecesGroups["CivBox"][2])
+	Show(agentloop)
+	Hide(civloop)
+	--point of handover	
+	Turn(civbodydown,y_axis, math.rad(180),5* speedfactor)
+	--matroshka	
+	WTurn(agent2,y_axis, math.rad(90),5* speedfactor)
+	Show(civhat)
+	Turn(civbodydown,y_axis, math.rad(180),15* speedfactor)
+	Turn(agent2,y_axis, math.rad(180),5* speedfactor)
+	Move(civbodydown, x_axis, 0, 450* speedfactor)
+	WMove(agent2, y_axis, 0, 450* speedfactor)
+
+end
+
+end
 
 function script.Activate()
 

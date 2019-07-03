@@ -13,6 +13,38 @@ center = piece "Frame"
 door = 1
 factor= 7
 spys={}
+
+protagon_talk ={
+"(dart sounds)",
+"away from the window",
+"to the wall",
+"drop it", 
+"Defeat device removed",
+"System subverted",
+"Observation, Neutralization",
+"Encapsulated Cloud Interrogation ",
+"Individual Deprecation ",
+"Sampling Artefacts",
+"FragPellets in Sit, HiSpeedCam, Upload (BOOM)",
+"Investigating",
+"Two. Two Two!"
+}
+
+antagon_talk ={
+"-your guests torture people",
+"  puppets",
+" just give us the keys",
+"Suprise, Motherfuckers",
+"Allah al Akbahr",
+"This must hurt so much ?",
+"Talk, talk - your live depends on it",
+"They simply gave you up..",
+"we, we are your own shadow, thats what you fight",
+"you would never betray them, but they already betrayed you",
+
+
+}
+
 function script.Create()
 	Spring.SetUnitAlwaysVisible(unitID,true)
 	Spring.SetUnitNeutral(unitID,true)

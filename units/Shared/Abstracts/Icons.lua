@@ -61,7 +61,7 @@ local RecruitCivilian = Abstract:New{
         --orders
 
         script 				= "recruitcivilianscript.lua",
-        objectName        	= "recruitcivilian.s3o",
+        objectName        	= "RecruitIcon.dae",
 
         -- Hack Infrastructure
         --CommandUnits (+10 Units)
@@ -82,10 +82,6 @@ local RecruitCivilian = Abstract:New{
 
         category = [[NOTARGET]],
 }
-
-
-
-
 
 local RaidIcon = Abstract:New{
     corpse					  = "",
@@ -124,8 +120,6 @@ local RaidIcon = Abstract:New{
 
     onoffable=true,
     activatewhenbuilt = true,
-
-
 
     customparams = {
         helptext		= "Civilian Agent working for the opposite site",
