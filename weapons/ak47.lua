@@ -1,11 +1,11 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "pistol" --this is the actually maschinegune of the inferno trooper
+local weaponName = "ak47" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
-    name = "Glock S19 - Pistol",
+    name = "Antonov Kalshnikow Model 47",
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 100,
+        default = 10,
         HeavyArmor = 1,
     },
     areaOfEffect = 8,
@@ -16,17 +16,15 @@ local weaponDef = {
     --physics
     weaponVelocity = 850,
     reloadtime = 3,
-    range = 200,
+    range = 250,
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
     craterMult = 0,
-    burst = 3,
-    burstrate = 0.5,
-    soundStart = "weapons/pistol/pistolshot1.wav",
-    soundtrigger = 1,
-    SweepFire = false,
+    burst = 20,
+    burstrate = 0.15,
+     SweepFire = false,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,

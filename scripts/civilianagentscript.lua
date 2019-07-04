@@ -158,9 +158,15 @@ function cloakLoop()
 	end
 end
 
-
+justOnce = 1
 function script.Activate()
-	boolStartCloaking = true
+	if justOnce > 0 then
+		justOnce = justOnce  -1
+		boolStartCloaking = true
+		Spring.SetUnitTooltip(unitID, "Militia")
+
+	end
+
 	return 1 
 end
 

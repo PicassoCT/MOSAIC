@@ -1,6 +1,6 @@
 local CivilianAgent = Human:New{
 	name = "Civilian Asset",
-	Description = " Agent ",
+	Description = " Recruited Civilian ",
 
 	corpse					  = "",
 	maxDamage         	  = 500,
@@ -42,7 +42,7 @@ local CivilianAgent = Human:New{
     },
 	
 	weapons ={
-		[1]={name  = "pistol",
+		[1]={name  = "ak47",
 				onlyTargetCategory = [[GROUND ARRESTABLE]],
 			},
 	
