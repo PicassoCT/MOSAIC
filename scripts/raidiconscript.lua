@@ -160,8 +160,7 @@ function raidAnimationLoop()
 		Sleep(100)
 	end
 	WTurn(door,y_axis,math.rad(0), 15)
-	
-	Sleep(4000)
+
 	end
 end
 function raidPercentage()
