@@ -21,7 +21,7 @@ local Propagandaserver = Building:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "propagandaserverscript.lua",
-	objectName        	= "propagandaserver.s3o",
+	objectName        	= "propagandaserver.dae",
 
 
 	canCloak =true,

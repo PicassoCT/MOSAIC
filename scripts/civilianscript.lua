@@ -181,3 +181,18 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { center })
 
+function makeProtestSign(signSizeX,signSizeZ, sizeLetter, sentence)
+index = 0
+xIndexMax= signSizeX/sizeLetter
+zIndexMax= signSizeZ/sizeLetter
+everyLetter ={}
+
+for i=0, 23 do
+everyLetter[string.char(i+ 65)] = piece(string.char(i+ 65))
+
+end
+
+
+
+
+end
