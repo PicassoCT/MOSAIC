@@ -4,6 +4,11 @@
 unitFactor= 0.5
 function getGameConfig()
 	return {
+	instance = {
+	culture = "arabic", -- "international", "europe", "china", "russia", "northamerica", "southamerica"
+	
+	},
+	
 	Version = 0.1,
 	
 	numberOfBuildings 	= 75 *unitFactor,
@@ -116,6 +121,47 @@ function getSatteliteTypes(UnitDefs)
 		"satellitescan"
 	}
 	return getTypeTable(UnitDefNames, typeTable)
+end
+
+
+function getCultureUnitModelNames(cultureName, unitType, UnitDefNames)
+translation ={
+	["arabic"] = {
+		["house"] = {name= "house_arab", range=0},
+		["civilian"] = {name= "civilian_arab", range=0},
+		["truck"] ={name = "truck_arab", range = 0}
+	}
+}
+
+return translation[cultureName][unitType]
+end
+
+function expandNameSubSetTable(SubsetTable)
+expandedNamesTable = {}
+for i=0, SubsetTable.range do
+	name = SubsetTable.name.. i
+	expandedNamesTable[#expandedNamesTable +1] = name
+end
+return expandedNamesTable
+end
+
+function isUnitOfCivilianType(TypeName, cache, gameconfig)
+boolIsOfType = true
+localcache = cache or {}
+	if not cache or #cache < 1 then
+		myCulture = gameConfig.instance.culture
+		lUnitDefNames =  getUnitDefNames(UnitDefs)
+		modelNames = getCultureUnitModelNames(myCulture, TypeName, lUnitDefNames)
+		expandedModelNames = expandNameSubSetTable(modelNames)
+		for i=1, #expandedModelNames do 
+			localcache[UnitDefNames[expandedModelNames[i]].id] = expandedModelNames[i]
+		end
+	end
+	
+TypeID = getUnitDefIDFromName(TypeName)
+boolIsOfType = (localcache[TypeID] ~= nil)
+
+return boolIsOfType, localcache
 end
 
 function getTruckLoadOutTypeTable()
