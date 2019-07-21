@@ -113,6 +113,20 @@ function script.Create()
     
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
+	hideAll(unitID)
+	bodyBuild()
+	StartThread(randSignLoop)
+
+end
+
+function bodyBuild()
+showT(TablesOfPiecesGroups["UpLeg"])
+showT(TablesOfPiecesGroups["LowLeg"])
+showT(TablesOfPiecesGroups["LowArm"])
+showT(TablesOfPiecesGroups["UpArm"])
+showT(TablesOfPiecesGroups["Head"])
+Show(center)
+
 
 end
 
@@ -159,6 +173,7 @@ function delayedStop()
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
 	boolWalking = false
+	
 end
 
 function script.StopMoving()
@@ -180,17 +195,63 @@ function script.QueryBuildInfo()
 end
 
 Spring.SetUnitNanoPieces(unitID, { center })
+function randSignLoop()
+	ProtestSign = piece"ProtestSign"
+	while true do
+	resetAll(unitID)
+	Show(ProtestSign)
+	Turn(ProtestSign,x_axis,math.rad(-90),0)
+	Sleep(5000)
 
-function makeProtestSign(signSizeX,signSizeZ, sizeLetter, sentence)
+
+	makeProtestSign(80, 30, 160,"SPRING")
+	end
+
+end
+
+
+function makeProtestSign(signSizeX, signSizeZ, sizeLetter, sentence)
 index = 0
 xIndexMax= signSizeX/sizeLetter
 zIndexMax= signSizeZ/sizeLetter
-everyLetter ={}
 
-for i=0, 23 do
-everyLetter[string.char(i+ 65)] = piece(string.char(i+ 65))
+alreadyUsedLetter ={}
 
-end
+
+for i=1, #sentence do
+	letter = string.upper(string.sub(sentence, i, i))
+	if letter == "!" then letter = "Exclam" end
+	if letter == "?" then letter = "Quest" end
+	if letter == "\n" then zIndex=  math.floor(index /zIndexMax); zIndex = zIndex +1; index = zIndex*xIndexMax; break;  end
+	local pieceToMove 
+		if TablesOfPiecesGroups[letter] then 
+			if  not alreadyUsedLetter[letter] then 
+				alreadyUsedLetter[letter]= 1; 
+				pieceToMove = TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]]		
+			else
+			alreadyUsedLetter[letter]= alreadyUsedLetter[letter] +  1; 
+				if TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]] then
+					pieceToMove = TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]]
+				end
+			end
+		end
+		
+		if letter == " " then	
+			index= index+1
+		elseif pieceToMove ~= nil then
+			--place and show letter
+			Show(pieceToMove)
+
+			xIndex= index % xIndexMax
+			zIndex=  math.floor(index /zIndexMax)
+
+			-- Move(pieceToMove,z_axis, zIndex* sizeLetter,0)
+			-- Move(pieceToMove,x_axis, xIndex* sizeLetter,0)
+			index= index+1
+		end
+
+	end
+
 
 
 

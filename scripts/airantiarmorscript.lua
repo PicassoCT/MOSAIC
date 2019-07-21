@@ -16,7 +16,7 @@ gun = piece "MosaicJavelin"
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	Hide(firepiece)
+	--Hide(firepiece)
 end
 
 function script.Killed(recentDamage, _)
@@ -52,9 +52,13 @@ end
 
 
 function script.StartMoving()
+spinT(TablesOfPiecesGroups["uprotor"],y_axis,350,9500)
+spinT(TablesOfPiecesGroups["lowrotor"],y_axis,350,-9500)
 end
 
 function script.StopMoving()
+stopSpinT(TablesOfPiecesGroups["uprotor"],y_axis,1)
+stopSpinT(TablesOfPiecesGroups["lowrotor"],y_axis,1)
 end
 
 function script.Activate()

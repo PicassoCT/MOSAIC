@@ -42,15 +42,15 @@ end
 function propagandaLoop()
     Sleep(100)
     local oldSubject, oldAddjective = 1,1
-	
+	index= 0
     while true do
         if boolLocalCloaked == false then
             hideT(TablesOfPiecesGroups["Screen"])
             hideT(TablesOfPiecesGroups["ADDJ"])
             hideT(TablesOfPiecesGroups["Subject"])
-            ScreenDice = math.random(1,#TablesOfPiecesGroups["Screen"])
-            AddjDice = math.random(1,#TablesOfPiecesGroups["ADDJ"])
-            SubjectDice = math.random(1,#TablesOfPiecesGroups["Subject"])
+            ScreenDice = math.random(1,33)
+            AddjDice = math.random(1,11)
+            SubjectDice = math.random(1,13)
 
 
             Show(TablesOfPiecesGroups["Screen"][ScreenDice])
@@ -75,8 +75,7 @@ function propagandaLoop()
 
             oldAddjective = AddjDice
             oldSubject = SubjectDice
-
-
+	
             Sleep(3000)
         end
         Sleep(100)
