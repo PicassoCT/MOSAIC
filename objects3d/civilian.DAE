@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-07-20T21:11:04Z</created><keywords></keywords><modified>2019-07-20T21:11:04Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-07-21T12:54:56Z</created><keywords></keywords><modified>2019-07-21T12:54:56Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="ARABIC01_10_MAP-image" name="ARABIC01_10_MAP"><init_from>file://D:\spring\games\MosaicDev\Models\civilians\civ_arab_tex_diffd.psd</init_from></image>
     <image id="Map #1-image" name="Map #1"><init_from>file://D:\spring\games\MosaicDev\Models\civilians\civ_arab_tex_diffd.psd</init_from></image>
@@ -15224,10 +15224,10 @@
         </source>
         <source id="Exlam003-UV0">
           <float_array id="Exlam003-UV0-array" count="8">
-0.705561 0.102609
-0.705561 0.081773
-0.717010 0.081773
-0.717010 0.102609
+0.706757 0.102609
+0.706757 0.081773
+0.715066 0.081773
+0.715066 0.102609
 </float_array>
           <technique_common>
             <accessor source="#Exlam003-UV0-array" count="4" stride="2">
@@ -15278,10 +15278,10 @@
         </source>
         <source id="F001-UV0">
           <float_array id="F001-UV0-array" count="8">
-0.587315 0.123444
-0.587315 0.102609
-0.604788 0.102609
-0.604788 0.123444
+0.591799 0.123444
+0.591799 0.102609
+0.602695 0.102609
+0.602695 0.123444
 </float_array>
           <technique_common>
             <accessor source="#F001-UV0-array" count="4" stride="2">
@@ -15332,10 +15332,10 @@
         </source>
         <source id="A002-UV0">
           <float_array id="A002-UV0-array" count="8">
-0.499950 0.123444
-0.499950 0.102609
-0.517423 0.102609
-0.517423 0.123444
+0.503389 0.123444
+0.503389 0.102609
+0.514889 0.102609
+0.514889 0.123444
 </float_array>
           <technique_common>
             <accessor source="#A002-UV0-array" count="4" stride="2">
@@ -15386,10 +15386,10 @@
         </source>
         <source id="A001-UV0">
           <float_array id="A001-UV0-array" count="8">
-0.499950 0.123444
-0.499950 0.102609
-0.517423 0.102609
-0.517423 0.123444
+0.503815 0.123444
+0.503815 0.102609
+0.515032 0.102609
+0.515032 0.123444
 </float_array>
           <technique_common>
             <accessor source="#A001-UV0-array" count="4" stride="2">
@@ -15440,10 +15440,10 @@
         </source>
         <source id="I001-UV0">
           <float_array id="I001-UV0-array" count="8">
-0.640705 0.123444
-0.640705 0.102609
-0.658178 0.102609
-0.658178 0.123444
+0.646535 0.123444
+0.646535 0.102609
+0.654740 0.102609
+0.654740 0.123444
 </float_array>
           <technique_common>
             <accessor source="#I001-UV0-array" count="4" stride="2">
@@ -15494,10 +15494,10 @@
         </source>
         <source id="B001-UV0">
           <float_array id="B001-UV0-array" count="8">
-0.517423 0.123444
-0.517423 0.102609
-0.534896 0.102609
-0.534896 0.123444
+0.521459 0.123444
+0.521459 0.102609
+0.532953 0.102609
+0.532953 0.123444
 </float_array>
           <technique_common>
             <accessor source="#B001-UV0-array" count="4" stride="2">
@@ -15548,10 +15548,10 @@
         </source>
         <source id="K001-UV0">
           <float_array id="K001-UV0-array" count="8">
-0.673319 0.123444
-0.673319 0.102609
-0.690792 0.102609
-0.690792 0.123444
+0.674515 0.123444
+0.674515 0.102609
+0.687802 0.102609
+0.687802 0.123444
 </float_array>
           <technique_common>
             <accessor source="#K001-UV0-array" count="4" stride="2">
@@ -15602,10 +15602,10 @@
         </source>
         <source id="L001-UV0">
           <float_array id="L001-UV0-array" count="8">
-0.689043 0.123444
-0.689043 0.102609
-0.706516 0.102609
-0.706516 0.123444
+0.692332 0.123444
+0.692332 0.102609
+0.704124 0.102609
+0.704124 0.123444
 </float_array>
           <technique_common>
             <accessor source="#L001-UV0-array" count="4" stride="2">
@@ -15656,10 +15656,10 @@
         </source>
         <source id="C001-UV0">
           <float_array id="C001-UV0-array" count="8">
-0.534896 0.123444
-0.534896 0.102609
-0.552369 0.102609
-0.552369 0.123444
+0.539680 0.123444
+0.539680 0.102609
+0.550725 0.102609
+0.550725 0.123444
 </float_array>
           <technique_common>
             <accessor source="#C001-UV0-array" count="4" stride="2">
@@ -15710,10 +15710,10 @@
         </source>
         <source id="N001-UV0">
           <float_array id="N001-UV0-array" count="8">
-0.744571 0.123444
-0.727098 0.123444
-0.727098 0.102609
-0.744571 0.102609
+0.742179 0.123444
+0.728892 0.123444
+0.728892 0.102609
+0.742179 0.102609
 </float_array>
           <technique_common>
             <accessor source="#N001-UV0-array" count="4" stride="2">
@@ -15764,10 +15764,10 @@
         </source>
         <source id="O001-UV0">
           <float_array id="O001-UV0-array" count="8">
-0.499950 0.102609
-0.499950 0.081773
-0.517423 0.081773
-0.517423 0.102609
+0.503688 0.102609
+0.503688 0.081773
+0.515480 0.081773
+0.515480 0.102609
 </float_array>
           <technique_common>
             <accessor source="#O001-UV0-array" count="4" stride="2">
@@ -15818,10 +15818,10 @@
         </source>
         <source id="Y002-UV0">
           <float_array id="Y002-UV0-array" count="8">
-0.684979 0.081773
-0.702452 0.081773
-0.684979 0.102609
-0.702452 0.102609
+0.690510 0.081773
+0.700060 0.081773
+0.690510 0.102609
+0.700060 0.102609
 </float_array>
           <technique_common>
             <accessor source="#Y002-UV0-array" count="4" stride="2">
@@ -15872,10 +15872,10 @@
         </source>
         <source id="Q001-UV0">
           <float_array id="Q001-UV0-array" count="8">
-0.543447 0.102609
-0.543447 0.081773
-0.560920 0.081773
-0.560920 0.102609
+0.546586 0.102609
+0.546586 0.081773
+0.558677 0.081773
+0.558677 0.102609
 </float_array>
           <technique_common>
             <accessor source="#Q001-UV0-array" count="4" stride="2">
@@ -15926,10 +15926,10 @@
         </source>
         <source id="Quest001-UV0">
           <float_array id="Quest001-UV0-array" count="8">
-0.744571 0.102609
-0.727681 0.102609
-0.727681 0.081773
-0.744571 0.081773
+0.742628 0.102609
+0.733062 0.102609
+0.733062 0.081773
+0.742628 0.081773
 </float_array>
           <technique_common>
             <accessor source="#Quest001-UV0-array" count="4" stride="2">
@@ -15980,8 +15980,8 @@
         </source>
         <source id="R001-UV0">
           <float_array id="R001-UV0-array" count="8">
-0.560531 0.102609
-0.560531 0.081773
+0.565315 0.102609
+0.565315 0.081773
 0.578004 0.081773
 0.578004 0.102609
 </float_array>
@@ -16034,10 +16034,10 @@
         </source>
         <source id="W002-UV0">
           <float_array id="W002-UV0-array" count="8">
-0.650810 0.102609
-0.650810 0.081773
-0.668283 0.081773
-0.668283 0.102609
+0.651558 0.102609
+0.651558 0.081773
+0.666191 0.081773
+0.666191 0.102609
 </float_array>
           <technique_common>
             <accessor source="#W002-UV0-array" count="4" stride="2">
@@ -16088,10 +16088,10 @@
         </source>
         <source id="T001-UV0">
           <float_array id="T001-UV0-array" count="8">
-0.595477 0.102609
-0.595477 0.081773
-0.612950 0.081773
-0.612950 0.102609
+0.599662 0.102609
+0.599662 0.081773
+0.611156 0.081773
+0.611156 0.102609
 </float_array>
           <technique_common>
             <accessor source="#T001-UV0-array" count="4" stride="2">
@@ -16142,10 +16142,10 @@
         </source>
         <source id="Exlam002-UV0">
           <float_array id="Exlam002-UV0-array" count="8">
-0.705561 0.102609
-0.705561 0.081773
-0.717010 0.081773
-0.717010 0.102609
+0.706757 0.102609
+0.706757 0.081773
+0.715066 0.081773
+0.715066 0.102609
 </float_array>
           <technique_common>
             <accessor source="#Exlam002-UV0-array" count="4" stride="2">
@@ -16196,10 +16196,10 @@
         </source>
         <source id="V002-UV0">
           <float_array id="V002-UV0-array" count="8">
-0.629839 0.102609
-0.629839 0.081773
-0.647312 0.081773
-0.647312 0.102609
+0.634324 0.102609
+0.634324 0.081773
+0.645668 0.081773
+0.645668 0.102609
 </float_array>
           <technique_common>
             <accessor source="#V002-UV0-array" count="4" stride="2">
@@ -16250,10 +16250,10 @@
         </source>
         <source id="T002-UV0">
           <float_array id="T002-UV0-array" count="8">
-0.595477 0.102609
-0.595477 0.081773
-0.612950 0.081773
-0.612950 0.102609
+0.599662 0.102609
+0.599662 0.081773
+0.611156 0.081773
+0.611156 0.102609
 </float_array>
           <technique_common>
             <accessor source="#T002-UV0-array" count="4" stride="2">
@@ -16304,8 +16304,8 @@
         </source>
         <source id="R002-UV0">
           <float_array id="R002-UV0-array" count="8">
-0.560531 0.102609
-0.560531 0.081773
+0.565315 0.102609
+0.565315 0.081773
 0.578004 0.081773
 0.578004 0.102609
 </float_array>
@@ -16358,10 +16358,10 @@
         </source>
         <source id="Y001-UV0">
           <float_array id="Y001-UV0-array" count="8">
-0.684979 0.081773
-0.702452 0.081773
-0.684979 0.102609
-0.702452 0.102609
+0.690510 0.081773
+0.700060 0.081773
+0.690510 0.102609
+0.700060 0.102609
 </float_array>
           <technique_common>
             <accessor source="#Y001-UV0-array" count="4" stride="2">
@@ -16412,10 +16412,10 @@
         </source>
         <source id="D001-UV0">
           <float_array id="D001-UV0-array" count="8">
-0.552369 0.123444
-0.552369 0.102609
-0.569842 0.102609
-0.569842 0.123444
+0.556555 0.123444
+0.556555 0.102609
+0.569244 0.102609
+0.569244 0.123444
 </float_array>
           <technique_common>
             <accessor source="#D001-UV0-array" count="4" stride="2">
@@ -16466,10 +16466,10 @@
         </source>
         <source id="B002-UV0">
           <float_array id="B002-UV0-array" count="8">
-0.517423 0.123444
-0.517423 0.102609
-0.534896 0.102609
-0.534896 0.123444
+0.521459 0.123444
+0.521459 0.102609
+0.532953 0.102609
+0.532953 0.123444
 </float_array>
           <technique_common>
             <accessor source="#B002-UV0-array" count="4" stride="2">
@@ -16520,10 +16520,10 @@
         </source>
         <source id="C002-UV0">
           <float_array id="C002-UV0-array" count="8">
-0.534896 0.123444
-0.534896 0.102609
-0.552369 0.102609
-0.552369 0.123444
+0.539680 0.123444
+0.539680 0.102609
+0.550725 0.102609
+0.550725 0.123444
 </float_array>
           <technique_common>
             <accessor source="#C002-UV0-array" count="4" stride="2">
@@ -16574,10 +16574,10 @@
         </source>
         <source id="D002-UV0">
           <float_array id="D002-UV0-array" count="8">
-0.552369 0.123444
-0.552369 0.102609
-0.569842 0.102609
-0.569842 0.123444
+0.556555 0.123444
+0.556555 0.102609
+0.569244 0.102609
+0.569244 0.123444
 </float_array>
           <technique_common>
             <accessor source="#D002-UV0-array" count="4" stride="2">
@@ -16628,10 +16628,10 @@
         </source>
         <source id="Quest002-UV0">
           <float_array id="Quest002-UV0-array" count="8">
-0.744571 0.102609
-0.727681 0.102609
-0.727681 0.081773
-0.744571 0.081773
+0.742628 0.102609
+0.733062 0.102609
+0.733062 0.081773
+0.742628 0.081773
 </float_array>
           <technique_common>
             <accessor source="#Quest002-UV0-array" count="4" stride="2">
@@ -16682,10 +16682,10 @@
         </source>
         <source id="Q002-UV0">
           <float_array id="Q002-UV0-array" count="8">
-0.543447 0.102609
-0.543447 0.081773
-0.560920 0.081773
-0.560920 0.102609
+0.546586 0.102609
+0.546586 0.081773
+0.558677 0.081773
+0.558677 0.102609
 </float_array>
           <technique_common>
             <accessor source="#Q002-UV0-array" count="4" stride="2">
@@ -16736,10 +16736,10 @@
         </source>
         <source id="W001-UV0">
           <float_array id="W001-UV0-array" count="8">
-0.650810 0.102609
-0.650810 0.081773
-0.668283 0.081773
-0.668283 0.102609
+0.651558 0.102609
+0.651558 0.081773
+0.666191 0.081773
+0.666191 0.102609
 </float_array>
           <technique_common>
             <accessor source="#W001-UV0-array" count="4" stride="2">
@@ -16790,10 +16790,10 @@
         </source>
         <source id="F002-UV0">
           <float_array id="F002-UV0-array" count="8">
-0.587315 0.123444
-0.587315 0.102609
-0.604788 0.102609
-0.604788 0.123444
+0.591799 0.123444
+0.591799 0.102609
+0.602695 0.102609
+0.602695 0.123444
 </float_array>
           <technique_common>
             <accessor source="#F002-UV0-array" count="4" stride="2">
@@ -16844,10 +16844,10 @@
         </source>
         <source id="P002-UV0">
           <float_array id="P002-UV0-array" count="8">
-0.525391 0.102609
-0.525391 0.081773
-0.542864 0.081773
-0.542864 0.102609
+0.526886 0.102609
+0.526886 0.081773
+0.540472 0.081773
+0.540472 0.102609
 </float_array>
           <technique_common>
             <accessor source="#P002-UV0-array" count="4" stride="2">
@@ -16898,8 +16898,8 @@
         </source>
         <source id="H002-UV0">
           <float_array id="H002-UV0-array" count="8">
-0.625370 0.123444
-0.625370 0.102609
+0.629406 0.123444
+0.629406 0.102609
 0.642843 0.102609
 0.642843 0.123444
 </float_array>
@@ -16952,10 +16952,10 @@
         </source>
         <source id="I002-UV0">
           <float_array id="I002-UV0-array" count="8">
-0.640705 0.123444
-0.640705 0.102609
-0.658178 0.102609
-0.658178 0.123444
+0.646535 0.123444
+0.646535 0.102609
+0.654740 0.102609
+0.654740 0.123444
 </float_array>
           <technique_common>
             <accessor source="#I002-UV0-array" count="4" stride="2">
@@ -17006,10 +17006,10 @@
         </source>
         <source id="O002-UV0">
           <float_array id="O002-UV0-array" count="8">
-0.499950 0.102609
-0.499950 0.081773
-0.517423 0.081773
-0.517423 0.102609
+0.503688 0.102609
+0.503688 0.081773
+0.515480 0.081773
+0.515480 0.102609
 </float_array>
           <technique_common>
             <accessor source="#O002-UV0-array" count="4" stride="2">
@@ -17060,10 +17060,10 @@
         </source>
         <source id="K002-UV0">
           <float_array id="K002-UV0-array" count="8">
-0.673319 0.123444
-0.673319 0.102609
-0.690792 0.102609
-0.690792 0.123444
+0.674515 0.123444
+0.674515 0.102609
+0.687802 0.102609
+0.687802 0.123444
 </float_array>
           <technique_common>
             <accessor source="#K002-UV0-array" count="4" stride="2">
@@ -17114,10 +17114,10 @@
         </source>
         <source id="L002-UV0">
           <float_array id="L002-UV0-array" count="8">
-0.689043 0.123444
-0.689043 0.102609
-0.706516 0.102609
-0.706516 0.123444
+0.692332 0.123444
+0.692332 0.102609
+0.704124 0.102609
+0.704124 0.123444
 </float_array>
           <technique_common>
             <accessor source="#L002-UV0-array" count="4" stride="2">
@@ -17168,10 +17168,10 @@
         </source>
         <source id="N002-UV0">
           <float_array id="N002-UV0-array" count="8">
-0.744571 0.123444
-0.727098 0.123444
-0.727098 0.102609
-0.744571 0.102609
+0.742179 0.123444
+0.728892 0.123444
+0.728892 0.102609
+0.742179 0.102609
 </float_array>
           <technique_common>
             <accessor source="#N002-UV0-array" count="4" stride="2">
@@ -17222,10 +17222,10 @@
         </source>
         <source id="M002-UV0">
           <float_array id="M002-UV0-array" count="8">
-0.708265 0.123444
-0.708265 0.102609
-0.725738 0.102609
-0.725738 0.123444
+0.709162 0.123444
+0.709162 0.102609
+0.723196 0.102609
+0.723196 0.123444
 </float_array>
           <technique_common>
             <accessor source="#M002-UV0-array" count="4" stride="2">
@@ -17276,10 +17276,10 @@
         </source>
         <source id="J002-UV0">
           <float_array id="J002-UV0-array" count="8">
-0.657206 0.123444
-0.657206 0.102609
-0.674679 0.102609
-0.674679 0.123444
+0.660196 0.123444
+0.660196 0.102609
+0.670793 0.102609
+0.670793 0.123444
 </float_array>
           <technique_common>
             <accessor source="#J002-UV0-array" count="4" stride="2">
@@ -17332,8 +17332,8 @@
           <float_array id="G002-UV0-array" count="8">
 0.608480 0.123444
 0.608480 0.102609
-0.625953 0.102609
-0.625953 0.123444
+0.622963 0.102609
+0.622963 0.123444
 </float_array>
           <technique_common>
             <accessor source="#G002-UV0-array" count="4" stride="2">
@@ -17438,10 +17438,10 @@
         </source>
         <source id="E002-UV0">
           <float_array id="E002-UV0-array" count="8">
-0.571980 0.123444
-0.571980 0.102609
-0.589452 0.102609
-0.589452 0.123444
+0.575866 0.123444
+0.575866 0.102609
+0.586014 0.102609
+0.586014 0.123444
 </float_array>
           <technique_common>
             <accessor source="#E002-UV0-array" count="4" stride="2">
@@ -17492,10 +17492,10 @@
         </source>
         <source id="E001-UV0">
           <float_array id="E001-UV0-array" count="8">
-0.571980 0.123444
-0.571980 0.102609
-0.589452 0.102609
-0.589452 0.123444
+0.575866 0.123444
+0.575866 0.102609
+0.586014 0.102609
+0.586014 0.123444
 </float_array>
           <technique_common>
             <accessor source="#E001-UV0-array" count="4" stride="2">
@@ -17546,10 +17546,10 @@
         </source>
         <source id="S002-UV0">
           <float_array id="S002-UV0-array" count="8">
-0.578587 0.102609
-0.578587 0.081773
-0.596060 0.081773
-0.596060 0.102609
+0.583072 0.102609
+0.583072 0.081773
+0.593518 0.081773
+0.593518 0.102609
 </float_array>
           <technique_common>
             <accessor source="#S002-UV0-array" count="4" stride="2">
@@ -17654,10 +17654,10 @@
         </source>
         <source id="U002-UV0">
           <float_array id="U002-UV0-array" count="8">
-0.613727 0.102609
-0.613727 0.081773
-0.631200 0.081773
-0.631200 0.102609
+0.617614 0.102609
+0.617614 0.081773
+0.628359 0.081773
+0.628359 0.102609
 </float_array>
           <technique_common>
             <accessor source="#U002-UV0-array" count="4" stride="2">
@@ -17708,10 +17708,10 @@
         </source>
         <source id="V001-UV0">
           <float_array id="V001-UV0-array" count="8">
-0.629839 0.102609
-0.629839 0.081773
-0.647312 0.081773
-0.647312 0.102609
+0.634324 0.102609
+0.634324 0.081773
+0.645668 0.081773
+0.645668 0.102609
 </float_array>
           <technique_common>
             <accessor source="#V001-UV0-array" count="4" stride="2">
@@ -17762,10 +17762,10 @@
         </source>
         <source id="S001-UV0">
           <float_array id="S001-UV0-array" count="8">
-0.578587 0.102609
-0.578587 0.081773
-0.596060 0.081773
-0.596060 0.102609
+0.583072 0.102609
+0.583072 0.081773
+0.593518 0.081773
+0.593518 0.102609
 </float_array>
           <technique_common>
             <accessor source="#S001-UV0-array" count="4" stride="2">
@@ -17816,10 +17816,10 @@
         </source>
         <source id="X002-UV0">
           <float_array id="X002-UV0-array" count="8">
-0.687117 0.102609
-0.669644 0.102609
-0.669644 0.081773
-0.687117 0.081773
+0.684276 0.102609
+0.672932 0.102609
+0.672932 0.081773
+0.684276 0.081773
 </float_array>
           <technique_common>
             <accessor source="#X002-UV0-array" count="4" stride="2">
@@ -17870,10 +17870,10 @@
         </source>
         <source id="P001-UV0">
           <float_array id="P001-UV0-array" count="8">
-0.525391 0.102609
-0.525391 0.081773
-0.542864 0.081773
-0.542864 0.102609
+0.526886 0.102609
+0.526886 0.081773
+0.540472 0.081773
+0.540472 0.102609
 </float_array>
           <technique_common>
             <accessor source="#P001-UV0-array" count="4" stride="2">
@@ -17924,10 +17924,10 @@
         </source>
         <source id="M001-UV0">
           <float_array id="M001-UV0-array" count="8">
-0.708265 0.123444
-0.708265 0.102609
-0.725738 0.102609
-0.725738 0.123444
+0.709162 0.123444
+0.709162 0.102609
+0.723196 0.102609
+0.723196 0.123444
 </float_array>
           <technique_common>
             <accessor source="#M001-UV0-array" count="4" stride="2">
@@ -17978,10 +17978,10 @@
         </source>
         <source id="J001-UV0">
           <float_array id="J001-UV0-array" count="8">
-0.657206 0.123444
-0.657206 0.102609
-0.674679 0.102609
-0.674679 0.123444
+0.660196 0.123444
+0.660196 0.102609
+0.670793 0.102609
+0.670793 0.123444
 </float_array>
           <technique_common>
             <accessor source="#J001-UV0-array" count="4" stride="2">
@@ -18032,8 +18032,8 @@
         </source>
         <source id="H001-UV0">
           <float_array id="H001-UV0-array" count="8">
-0.625370 0.123444
-0.625370 0.102609
+0.629406 0.123444
+0.629406 0.102609
 0.642843 0.102609
 0.642843 0.123444
 </float_array>
@@ -18088,8 +18088,8 @@
           <float_array id="G001-UV0-array" count="8">
 0.608480 0.123444
 0.608480 0.102609
-0.625953 0.102609
-0.625953 0.123444
+0.622963 0.102609
+0.622963 0.123444
 </float_array>
           <technique_common>
             <accessor source="#G001-UV0-array" count="4" stride="2">
@@ -18140,10 +18140,10 @@
         </source>
         <source id="X001-UV0">
           <float_array id="X001-UV0-array" count="8">
-0.687117 0.102609
-0.669644 0.102609
-0.669644 0.081773
-0.687117 0.081773
+0.684276 0.102609
+0.672932 0.102609
+0.672932 0.081773
+0.684276 0.081773
 </float_array>
           <technique_common>
             <accessor source="#X001-UV0-array" count="4" stride="2">
@@ -18194,10 +18194,10 @@
         </source>
         <source id="U001-UV0">
           <float_array id="U001-UV0-array" count="8">
-0.613727 0.102609
-0.613727 0.081773
-0.631200 0.081773
-0.631200 0.102609
+0.617614 0.102609
+0.617614 0.081773
+0.628359 0.081773
+0.628359 0.102609
 </float_array>
           <technique_common>
             <accessor source="#U001-UV0-array" count="4" stride="2">
@@ -100388,7 +100388,7 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="civilian" name="civilian">
-      <node name="center" id="center" layer="Layer02" sid="center"><matrix sid="matrix">1.000000 0.000000 0.000000 -13.008575 0.000000 0.000000 1.000000 579.259827 0.000000 -1.000000 0.000000 13.026917 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpArm1" id="UpArm1" layer="Layer02" sid="UpArm1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -105.751511 0.000000 1.000000 0.000000 15.079251 0.000000 0.000000 1.000000 268.054443 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpArm1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowArm1" id="LowArm1" layer="Layer02" sid="LowArm1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -129.206360 0.000000 1.000000 0.000000 11.952206 -0.000000 -0.000000 1.000000 -0.665161 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowArm1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="cigarett" id="cigarett" sid="cigarett"><matrix sid="matrix">1.000000 -0.000000 0.000000 -197.467514 0.000000 1.000000 -0.000000 -31.233643 0.000000 0.000000 1.000000 19.832275 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cigarett-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="cellphone2" id="cellphone2" sid="cellphone2"><matrix sid="matrix">1.000000 -0.000000 -0.000000 -185.046463 0.000000 1.000000 -0.000000 -67.090103 0.000000 0.000000 1.000000 -18.604492 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cellphone2-lib"><bind_material><technique_common><instance_material symbol="Material #25" target="#Material #25"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="cofee" id="cofee" sid="cofee"><matrix sid="matrix">1.000000 -0.000000 0.000000 -187.676132 0.000000 1.000000 -0.000000 1.876928 0.000000 0.000000 1.000000 -29.164795 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cofee-lib"><bind_material><technique_common><instance_material symbol="Material #318" target="#Material #318"/><instance_material symbol="_234324" target="#_234324"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ProtestSign" id="ProtestSign" sid="ProtestSign"><matrix sid="matrix">1.000000 -0.000000 0.000000 -183.098129 0.000000 1.000000 -0.000000 -23.980316 0.000000 0.000000 1.000000 -13.691895 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ProtestSign-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Exlam003" id="Exlam003" sid="Exlam003"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.279663 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exlam003-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="F001" id="F001" sid="F001"><matrix sid="matrix">1.000000 0.000000 0.000000 -109.863953 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#F001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="A002" id="A002" sid="A002"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.162964 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#A002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="A001" id="A001" sid="A001"><matrix sid="matrix">1.000000 0.000000 0.000000 -110.238953 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#A001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="I001" id="I001" sid="I001"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.632874 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#I001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="B001" id="B001" sid="B001"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.574463 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#B001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="K001" id="K001" sid="K001"><matrix sid="matrix">1.000000 0.000000 0.000000 -110.182983 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#K001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="L001" id="L001" sid="L001"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.355652 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#L001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="C001" id="C001" sid="C001"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.141113 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#C001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="N001" id="N001" sid="N001"><matrix sid="matrix">1.000000 0.000000 0.000000 -108.905701 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#N001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="O001" id="O001" sid="O001"><matrix sid="matrix">1.000000 0.000000 0.000000 -113.591064 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#O001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Y002" id="Y002" sid="Y002"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.106995 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Y002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Q001" id="Q001" sid="Q001"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.141174 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Q001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Quest001" id="Quest001" sid="Quest001"><matrix sid="matrix">1.000000 0.000000 0.000000 -108.905701 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Quest001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="R001" id="R001" sid="R001"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.313904 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#R001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="W002" id="W002" sid="W002"><matrix sid="matrix">1.000000 0.000000 0.000000 -113.556946 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#W002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="T001" id="T001" sid="T001"><matrix sid="matrix">1.000000 0.000000 0.000000 -109.863953 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#T001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Exlam002" id="Exlam002" sid="Exlam002"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.355652 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exlam002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="V002" id="V002" sid="V002"><matrix sid="matrix">1.000000 0.000000 0.000000 -109.560791 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#V002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="T002" id="T002" sid="T002"><matrix sid="matrix">1.000000 0.000000 0.000000 -110.787964 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#T002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="R002" id="R002" sid="R002"><matrix sid="matrix">1.000000 0.000000 0.000000 -113.237915 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#R002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Y001" id="Y001" sid="Y001"><matrix sid="matrix">1.000000 0.000000 0.000000 -110.182983 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Y001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="D001" id="D001" sid="D001"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.313843 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#D001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="B002" id="B002" sid="B002"><matrix sid="matrix">1.000000 0.000000 0.000000 -113.498474 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#B002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="C002" id="C002" sid="C002"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.065125 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#C002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="D002" id="D002" sid="D002"><matrix sid="matrix">1.000000 0.000000 0.000000 -113.237854 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#D002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Quest002" id="Quest002" sid="Quest002"><matrix sid="matrix">1.000000 0.000000 0.000000 -109.829712 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Quest002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Q002" id="Q002" sid="Q002"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.065186 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Q002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="W001" id="W001" sid="W001"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.632935 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#W001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="F002" id="F002" sid="F002"><matrix sid="matrix">1.000000 0.000000 0.000000 -110.787964 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#F002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="P002" id="P002" sid="P002"><matrix sid="matrix">1.000000 0.000000 0.000000 -108.840820 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#P002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="H002" id="H002" sid="H002"><matrix sid="matrix">1.000000 0.000000 0.000000 -109.560730 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#H002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="I002" id="I002" sid="I002"><matrix sid="matrix">1.000000 0.000000 0.000000 -113.556885 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#I002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="O002" id="O002" sid="O002"><matrix sid="matrix">1.000000 0.000000 0.000000 -114.515076 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#O002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="K002" id="K002" sid="K002"><matrix sid="matrix">1.000000 0.000000 0.000000 -111.106995 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#K002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="L002" id="L002" sid="L002"><matrix sid="matrix">1.000000 0.000000 0.000000 -112.279663 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#L002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="N002" id="N002" sid="N002"><matrix sid="matrix">1.000000 0.000000 0.000000 -109.829712 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#N002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="M002" id="M002" sid="M002"><matrix sid="matrix">1.000000 0.000000 0.000000 -106.605469 0.000000 1.000000 0.000000 -513.920471 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#M002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="J002" id="J002" sid="J002"><matrix sid="matrix">1.000000 0.000000 0.000000 -107.882629 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#J002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="G002" id="G002" sid="G002"><matrix sid="matrix">1.000000 0.000000 0.000000 -105.113770 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#G002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Exclam004" id="Exclam004" sid="Exclam004"><matrix sid="matrix">1.000000 0.000000 0.000000 -106.605469 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exclam004-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="E002" id="E002" sid="E002"><matrix sid="matrix">1.000000 0.000000 0.000000 -107.563660 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#E002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="E001" id="E001" sid="E001"><matrix sid="matrix">1.000000 0.000000 0.000000 -106.639648 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#E001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="S002" id="S002" sid="S002"><matrix sid="matrix">1.000000 0.000000 0.000000 -107.563660 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#S002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Exclam001" id="Exclam001" sid="Exclam001"><matrix sid="matrix">1.000000 0.000000 0.000000 -105.681458 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exclam001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="U002" id="U002" sid="U002"><matrix sid="matrix">1.000000 0.000000 0.000000 -105.113770 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#U002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="V001" id="V001" sid="V001"><matrix sid="matrix">1.000000 0.000000 0.000000 -108.636780 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#V001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="S001" id="S001" sid="S001"><matrix sid="matrix">1.000000 0.000000 0.000000 -106.639648 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#S001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="X002" id="X002" sid="X002"><matrix sid="matrix">1.000000 0.000000 0.000000 -107.882690 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#X002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="P001" id="P001" sid="P001"><matrix sid="matrix">1.000000 0.000000 0.000000 -107.916809 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#P001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="M001" id="M001" sid="M001"><matrix sid="matrix">1.000000 0.000000 0.000000 -105.681458 0.000000 1.000000 0.000000 -513.920471 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#M001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="J001" id="J001" sid="J001"><matrix sid="matrix">1.000000 0.000000 0.000000 -106.958679 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#J001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="H001" id="H001" sid="H001"><matrix sid="matrix">1.000000 0.000000 0.000000 -108.636719 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#H001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="G001" id="G001" sid="G001"><matrix sid="matrix">1.000000 0.000000 0.000000 -104.189758 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#G001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="X001" id="X001" sid="X001"><matrix sid="matrix">1.000000 0.000000 0.000000 -106.958679 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#X001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="U001" id="U001" sid="U001"><matrix sid="matrix">1.000000 0.000000 0.000000 -104.189758 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#U001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node><node name="cellphone1" id="cellphone1" sid="cellphone1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -185.389297 0.000000 1.000000 -0.000000 -67.870850 -0.000000 0.000000 1.000000 -10.452637 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cellphone1-lib"><bind_material><technique_common><instance_material symbol="Material #1634" target="#Material #1634"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ak47" id="ak47" layer="LP" sid="ak47"><matrix sid="matrix">1.000000 -0.000000 0.000000 -246.141861 0.000000 1.000000 -0.000000 -72.265785 -0.000000 0.000000 1.000000 -16.095459 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ak47-lib"><bind_material><technique_common><instance_material symbol="Material #0" target="#Material #0"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="SittingBaby" id="SittingBaby" sid="SittingBaby"><matrix sid="matrix">1.000000 -0.000000 0.000000 -67.416367 0.000000 1.000000 -0.000000 -42.055862 0.000000 0.000000 1.000000 -5.218262 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#SittingBaby-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault_ncl1_1" target="#baby_08___Def345ault_ncl1_1"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="UpArm2" id="UpArm2" layer="Layer02" sid="UpArm2"><matrix sid="matrix">1.000000 0.000000 0.000000 105.634888 0.000000 1.000000 0.000000 18.426992 0.000000 0.000000 1.000000 268.421753 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpArm2-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowArm2" id="LowArm2" layer="Layer02" sid="LowArm2"><matrix sid="matrix">1.000000 0.000000 0.000000 120.527985 0.000000 1.000000 0.000000 1.354415 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowArm2-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ShoppingBag" id="ShoppingBag" sid="ShoppingBag"><matrix sid="matrix">1.000000 0.000000 0.000000 195.689880 0.000000 1.000000 -0.000000 -22.967594 0.000000 0.000000 1.000000 -2.908936 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ShoppingBag-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault_ncl1_2" target="#baby_08___Def345ault_ncl1_2"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="molotow" id="molotow" sid="molotow"><matrix sid="matrix">1.000000 0.000000 0.000000 192.955750 0.000000 1.000000 0.000000 34.834438 0.000000 0.000000 1.000000 -27.076782 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#molotow-lib"><bind_material><technique_common><instance_material symbol="Bottle_001_mia_m376445aterial_x6SG" target="#Bottle_001_mia_m376445aterial_x6SG"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="Head1" id="Head1" layer="Layer02" sid="Head1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.132782 0.000000 1.000000 0.000000 17.006485 0.000000 0.000000 1.000000 331.164551 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Head1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="MilitiaMask" id="MilitiaMask" layer="Layer02" sid="MilitiaMask"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.000031 0.000000 1.000000 0.000000 -54.108047 0.000000 0.000000 1.000000 23.860107 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#MilitiaMask-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node><node name="UpLeg1" id="UpLeg1" sid="UpLeg1"><matrix sid="matrix">1.000000 0.000000 0.000000 -65.931015 -0.000000 1.000000 0.000000 21.871223 -0.000000 0.000000 1.000000 -11.636841 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg1-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg1" id="LowLeg1" sid="LowLeg1"><matrix sid="matrix">1.000000 0.000000 -0.000000 -0.000015 -0.000000 1.000000 0.000000 -0.000008 0.000000 -0.000000 1.000000 -218.522003 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg1-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Feet1" id="Feet1" layer="Layer02" sid="Feet1"><matrix sid="matrix">1.000000 -0.000000 -0.000000 -10.155884 0.000000 1.000000 -0.000000 -9.610374 0.000000 0.000000 1.000000 -207.688370 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Feet1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="UpLeg2" id="UpLeg2" sid="UpLeg2"><matrix sid="matrix">1.000000 0.000000 0.000000 71.960579 -0.000000 1.000000 0.000000 21.871246 -0.000000 0.000000 1.000000 -11.636719 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg2-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg2" id="LowLeg2" sid="LowLeg2"><matrix sid="matrix">1.000000 0.000000 -0.000000 0.000000 -0.000000 1.000000 0.000000 -0.000024 0.000000 -0.000000 1.000000 -218.522095 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg2-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Feet2" id="Feet2" layer="Layer02" sid="Feet2"><matrix sid="matrix">1.000000 -0.000000 -0.000000 12.141171 0.000000 1.000000 -0.000000 -9.685616 0.000000 0.000000 1.000000 -207.687347 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Feet2-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node>
+      <node name="center" id="center" layer="Layer02" sid="center"><matrix sid="matrix">1.000000 0.000000 0.000000 -13.008575 0.000000 0.000000 1.000000 579.259827 0.000000 -1.000000 0.000000 13.026917 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpArm1" id="UpArm1" layer="Layer02" sid="UpArm1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -105.751511 0.000000 1.000000 0.000000 15.079251 0.000000 0.000000 1.000000 268.054443 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpArm1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowArm1" id="LowArm1" layer="Layer02" sid="LowArm1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -129.206360 0.000000 1.000000 0.000000 11.952206 -0.000000 -0.000000 1.000000 -0.665161 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowArm1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="cigarett" id="cigarett" sid="cigarett"><matrix sid="matrix">1.000000 -0.000000 0.000000 -197.467514 0.000000 1.000000 -0.000000 -31.233643 0.000000 0.000000 1.000000 19.832275 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cigarett-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="cellphone2" id="cellphone2" sid="cellphone2"><matrix sid="matrix">1.000000 -0.000000 -0.000000 -185.046463 0.000000 1.000000 -0.000000 -67.090103 0.000000 0.000000 1.000000 -18.604492 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cellphone2-lib"><bind_material><technique_common><instance_material symbol="Material #25" target="#Material #25"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="cofee" id="cofee" sid="cofee"><matrix sid="matrix">1.000000 -0.000000 0.000000 -187.676132 0.000000 1.000000 -0.000000 1.876928 0.000000 0.000000 1.000000 -29.164795 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cofee-lib"><bind_material><technique_common><instance_material symbol="Material #318" target="#Material #318"/><instance_material symbol="_234324" target="#_234324"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ProtestSign" id="ProtestSign" sid="ProtestSign"><matrix sid="matrix">1.000000 -0.000000 0.000000 -183.098129 0.000000 1.000000 -0.000000 -23.980316 0.000000 0.000000 1.000000 -13.691895 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ProtestSign-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Exlam003" id="Exlam003" sid="Exlam003"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.976318 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exlam003-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="F001" id="F001" sid="F001"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.535095 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#F001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="A002" id="A002" sid="A002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.310059 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#A002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="A001" id="A001" sid="A001"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.758789 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#A001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="I001" id="I001" sid="I001"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.187012 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#I001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="B001" id="B001" sid="B001"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.152161 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#B001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="K001" id="K001" sid="K001"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.725464 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#K001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="L001" id="L001" sid="L001"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.425049 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#L001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="C001" id="C001" sid="C001"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.296997 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#C001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="N001" id="N001" sid="N001"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.963379 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#N001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="O001" id="O001" sid="O001"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.758667 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#O001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Y002" id="Y002" sid="Y002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.276672 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Y002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Q001" id="Q001" sid="Q001"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.297058 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Q001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Quest001" id="Quest001" sid="Quest001"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.963379 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Quest001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="R001" id="R001" sid="R001"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.996704 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#R001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="W002" id="W002" sid="W002"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.738281 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#W002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="T001" id="T001" sid="T001"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.535095 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#T001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Exlam002" id="Exlam002" sid="Exlam002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.425049 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exlam002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="V002" id="V002" sid="V002"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.354248 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#V002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="T002" id="T002" sid="T002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.086304 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#T002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="R002" id="R002" sid="R002"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.547974 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#R002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Y001" id="Y001" sid="Y001"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.725464 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Y001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="D001" id="D001" sid="D001"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.996704 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#D001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="B002" id="B002" sid="B002"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.703430 0.000000 1.000000 0.000000 -512.919006 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#B002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="C002" id="C002" sid="C002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.848267 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#C002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="D002" id="D002" sid="D002"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.547974 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#D002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Quest002" id="Quest002" sid="Quest002"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.514648 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Quest002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Q002" id="Q002" sid="Q002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.848328 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Q002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="W001" id="W001" sid="W001"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.187012 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#W001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="F002" id="F002" sid="F002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.086304 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#F002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="P002" id="P002" sid="P002"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.924683 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#P002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="H002" id="H002" sid="H002"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.354187 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#H002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="I002" id="I002" sid="I002"><matrix sid="matrix">0.596592 0.000000 0.000000 -123.738281 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#I002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="O002" id="O002" sid="O002"><matrix sid="matrix">0.596592 0.000000 0.000000 -124.309937 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#O002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="K002" id="K002" sid="K002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.276672 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#K002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="L002" id="L002" sid="L002"><matrix sid="matrix">0.596592 0.000000 0.000000 -122.976318 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#L002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="N002" id="N002" sid="N002"><matrix sid="matrix">0.596592 0.000000 0.000000 -121.514648 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#N002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="M002" id="M002" sid="M002"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.591064 0.000000 1.000000 0.000000 -513.920471 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#M002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="J002" id="J002" sid="J002"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.353027 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#J002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="G002" id="G002" sid="G002"><matrix sid="matrix">0.596592 0.000000 0.000000 -118.701172 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#G002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Exclam004" id="Exclam004" sid="Exclam004"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.591064 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exclam004-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="E002" id="E002" sid="E002"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.162720 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#E002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="E001" id="E001" sid="E001"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.611511 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#E001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="S002" id="S002" sid="S002"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.162720 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#S002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Exclam001" id="Exclam001" sid="Exclam001"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.039856 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Exclam001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="U002" id="U002" sid="U002"><matrix sid="matrix">0.596592 0.000000 0.000000 -118.701172 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#U002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="V001" id="V001" sid="V001"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.802979 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#V001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="S001" id="S001" sid="S001"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.611511 0.000000 1.000000 0.000000 -514.029724 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#S001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="X002" id="X002" sid="X002"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.353088 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#X002-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="P001" id="P001" sid="P001"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.373413 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#P001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="M001" id="M001" sid="M001"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.039856 0.000000 1.000000 0.000000 -513.920471 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#M001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="J001" id="J001" sid="J001"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.801819 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#J001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="H001" id="H001" sid="H001"><matrix sid="matrix">0.596592 0.000000 0.000000 -120.802917 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#H001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="G001" id="G001" sid="G001"><matrix sid="matrix">0.596592 0.000000 0.000000 -118.149902 0.000000 1.000000 0.000000 -513.920593 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#G001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="X001" id="X001" sid="X001"><matrix sid="matrix">0.596592 0.000000 0.000000 -119.801819 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#X001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="U001" id="U001" sid="U001"><matrix sid="matrix">0.596592 0.000000 0.000000 -118.149902 0.000000 1.000000 0.000000 -514.029602 0.000000 0.000000 1.000000 -20.220337 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#U001-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault" target="#baby_08___Def345ault"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node><node name="cellphone1" id="cellphone1" sid="cellphone1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -185.389297 0.000000 1.000000 -0.000000 -67.870850 -0.000000 0.000000 1.000000 -10.452637 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#cellphone1-lib"><bind_material><technique_common><instance_material symbol="Material #1634" target="#Material #1634"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ak47" id="ak47" layer="LP" sid="ak47"><matrix sid="matrix">1.000000 -0.000000 0.000000 -246.141861 0.000000 1.000000 -0.000000 -72.265785 -0.000000 0.000000 1.000000 -16.095459 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ak47-lib"><bind_material><technique_common><instance_material symbol="Material #0" target="#Material #0"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="SittingBaby" id="SittingBaby" sid="SittingBaby"><matrix sid="matrix">1.000000 -0.000000 0.000000 -67.416367 0.000000 1.000000 -0.000000 -42.055862 0.000000 0.000000 1.000000 -5.218262 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#SittingBaby-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault_ncl1_1" target="#baby_08___Def345ault_ncl1_1"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="UpArm2" id="UpArm2" layer="Layer02" sid="UpArm2"><matrix sid="matrix">1.000000 0.000000 0.000000 105.634888 0.000000 1.000000 0.000000 18.426992 0.000000 0.000000 1.000000 268.421753 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpArm2-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowArm2" id="LowArm2" layer="Layer02" sid="LowArm2"><matrix sid="matrix">1.000000 0.000000 0.000000 120.527985 0.000000 1.000000 0.000000 1.354415 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowArm2-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ShoppingBag" id="ShoppingBag" sid="ShoppingBag"><matrix sid="matrix">1.000000 0.000000 0.000000 195.689880 0.000000 1.000000 -0.000000 -22.967594 0.000000 0.000000 1.000000 -2.908936 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ShoppingBag-lib"><bind_material><technique_common><instance_material symbol="baby_08___Def345ault_ncl1_2" target="#baby_08___Def345ault_ncl1_2"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="molotow" id="molotow" sid="molotow"><matrix sid="matrix">1.000000 0.000000 0.000000 192.955750 0.000000 1.000000 0.000000 34.834438 0.000000 0.000000 1.000000 -27.076782 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#molotow-lib"><bind_material><technique_common><instance_material symbol="Bottle_001_mia_m376445aterial_x6SG" target="#Bottle_001_mia_m376445aterial_x6SG"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="Head1" id="Head1" layer="Layer02" sid="Head1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.132782 0.000000 1.000000 0.000000 17.006485 0.000000 0.000000 1.000000 331.164551 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Head1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="MilitiaMask" id="MilitiaMask" layer="Layer02" sid="MilitiaMask"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.000031 0.000000 1.000000 0.000000 -54.108047 0.000000 0.000000 1.000000 23.860107 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#MilitiaMask-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node><node name="UpLeg1" id="UpLeg1" sid="UpLeg1"><matrix sid="matrix">1.000000 0.000000 0.000000 -65.931015 -0.000000 1.000000 0.000000 21.871223 -0.000000 0.000000 1.000000 -11.636841 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg1-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg1" id="LowLeg1" sid="LowLeg1"><matrix sid="matrix">1.000000 0.000000 -0.000000 -0.000015 -0.000000 1.000000 0.000000 -0.000008 0.000000 -0.000000 1.000000 -218.522003 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg1-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Feet1" id="Feet1" layer="Layer02" sid="Feet1"><matrix sid="matrix">1.000000 -0.000000 -0.000000 -10.155884 0.000000 1.000000 -0.000000 -9.610374 0.000000 0.000000 1.000000 -207.688370 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Feet1-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="UpLeg2" id="UpLeg2" sid="UpLeg2"><matrix sid="matrix">1.000000 0.000000 0.000000 71.960579 -0.000000 1.000000 0.000000 21.871246 -0.000000 0.000000 1.000000 -11.636719 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg2-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg2" id="LowLeg2" sid="LowLeg2"><matrix sid="matrix">1.000000 0.000000 -0.000000 0.000000 -0.000000 1.000000 0.000000 -0.000024 0.000000 -0.000000 1.000000 -218.522095 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg2-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Feet2" id="Feet2" layer="Layer02" sid="Feet2"><matrix sid="matrix">1.000000 -0.000000 -0.000000 12.141171 0.000000 1.000000 -0.000000 -9.685616 0.000000 0.000000 1.000000 -207.687347 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Feet2-lib"><bind_material><technique_common><instance_material symbol="ARABIC01_10" target="#ARABIC01_10"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node>
       <node name="trolley" id="trolley" sid="trolley"><matrix sid="matrix">1.000000 0.000000 0.000000 -251.450378 0.000000 0.000000 1.000000 17.410309 0.000000 -1.000000 0.000000 -54.490372 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#trolley-lib"><bind_material><technique_common><instance_material symbol="_14 - Default" target="#_14 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>1.733333</end_time></technique></extra>
     </visual_scene>

@@ -113,18 +113,20 @@ function script.Create()
     
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
-	hideAll(unitID)
+
 	bodyBuild()
 	StartThread(randSignLoop)
 
 end
 
 function bodyBuild()
+	hideAll(unitID)
 showT(TablesOfPiecesGroups["UpLeg"])
 showT(TablesOfPiecesGroups["LowLeg"])
 showT(TablesOfPiecesGroups["LowArm"])
 showT(TablesOfPiecesGroups["UpArm"])
 showT(TablesOfPiecesGroups["Head"])
+showT(TablesOfPiecesGroups["Feet"])
 Show(center)
 
 
@@ -193,36 +195,127 @@ end
 function script.QueryBuildInfo()
     return center
 end
+nonsense={
+	
+	"CONCERNED MUMS",
+	"   BAR&  BAR&  YENS",
+	" HITLER& LOVES& SPRING",
+	" NEWB& TEST",
+	
+	"SOCIAL& TEROR",
+	
+}
+seriously ={
+	--Denial
+	" SHAME ",
+	"THEY &ARE NOT& US",
+	"INOCENT",
 
+	" CITY &FOR AN &CITY",
+	" BROTHFRS& KEEPFRS",
+	"WE WILL &NOT DIE",
+	"VENGANCE IS MURDFR",
+	"  IT &CANT BE& US",
+	"COLLECTIV PUNISHMENT",
+	"LIES ANDWAR&CRIMES",
+	"THE END&IS& NIGH",
+	"PHOENIX &FACTION",
+	"FOR MAN&KIND",
+	"THATS&LIFE",
+	"AND LET LIFE",
+	--Anger
+	" ICBM& UP YOUR ASS",
+	"RISE &UP",
+	"UNDEFEATED",
+	" BURN& THE& BRIDGE",	
+	" KILL&THEM& ALL",
+	" ANARCHY",
+	" FUCK& YOU& ALL",
+	" HOPE&  IT&HURTS",
+	"VENGANCE IS& OURS",
+	"MAD&IS&MURDER",
+	--Bargaining
+	" SPARE& US",
+	" SPARE& OUR&CHILDREN",
+	"ANYTHINGFOR LIFE",
+	"ANARCHY",
+	"ANARCHY",
+
+
+	--DEPRESSION
+	"HIROSHIMA& ALL OVER",
+	" SEX& KILLS",
+	" GOD& IS& DEATH",
+	"NEVR &FORGET& LA",
+	"NEVR &FORGET& SA",
+	"REMEMBR PALO& ALTO",
+	"REMEBR  LAGOS",
+	"REMEBR  DUBAI",
+	"NEVER &AGAIN",
+	"IN DUBIO&PRO LJFE",
+	--Accepting
+	"NO&  CITYCIDE",
+	" REPENT& YOUR& SINS",
+	"DUST&IN THE&WIND",
+	"MAN IS& MEN A& WULF",
+	"POMPEJ  ALLOVER",
+	"AVENGE&US",
+	"SHIT&HAPPENS",
+	--Personification
+	"I&LOVE&Ü",
+	"Ü&MARRY&ME",
+	" DEATH&TO&Ü",
+	"  I& BLAME&Ü",
+	"WHAT DO&YOU DESIRE?Ü",
+	--Humor
+	" PRO&TEST&ICLES",
+	
+}
+usedPieces ={}
 Spring.SetUnitNanoPieces(unitID, { center })
 function randSignLoop()
+	lettersize = 34
+	letterSizeZ= 62
 	ProtestSign = piece"ProtestSign"
-	while true do
 	resetAll(unitID)
+	
+	while true do
+	WTurn(ProtestSign,z_axis, math.rad(0), 1)
+	bodyBuild()
+	resetAll(unitID)	
+	WTurn(ProtestSign,z_axis, math.rad(0), 0)
 	Show(ProtestSign)
-	Turn(ProtestSign,x_axis,math.rad(-90),0)
+	makeProtestSign(8, 3, lettersize, letterSizeZ, seriously[math.random(1,#seriously)], "RAPHI")
+	WTurn(ProtestSign,x_axis,math.rad(-90),5)
+	WTurn(ProtestSign,y_axis,math.rad(0),5)
+	WTurn(ProtestSign,z_axis,math.rad(0),5)
+	Spin(ProtestSign,z_axis, math.rad(math.random(-3,3)*2),3)
+	Spin(ProtestSign,x_axis, math.rad(math.random(-2,2)),1)
+	Spin(ProtestSign,y_axis, math.rad(math.random(-2,2)),1)
 	Sleep(5000)
 
 
-	makeProtestSign(80, 30, 160,"SPRING")
+	
 	end
 
 end
 
 
-function makeProtestSign(signSizeX, signSizeZ, sizeLetter, sentence)
+function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ, sentence, personification)
 index = 0
-xIndexMax= signSizeX/sizeLetter
-zIndexMax= signSizeZ/sizeLetter
 
-alreadyUsedLetter ={}
-
+alreadyUsedLetter ={} 
+sentence = string.gsub(sentence, "Ü", personification or "")
 
 for i=1, #sentence do
 	letter = string.upper(string.sub(sentence, i, i))
 	if letter == "!" then letter = "Exclam" end
 	if letter == "?" then letter = "Quest" end
-	if letter == "\n" then zIndex=  math.floor(index /zIndexMax); zIndex = zIndex +1; index = zIndex*xIndexMax; break;  end
+
+	if letter == "&" then 
+		index = (index + xIndexMax ) - ((index + xIndexMax)%xIndexMax); 
+	else
+	
 	local pieceToMove 
 		if TablesOfPiecesGroups[letter] then 
 			if  not alreadyUsedLetter[letter] then 
@@ -243,17 +336,15 @@ for i=1, #sentence do
 			Show(pieceToMove)
 
 			xIndex= index % xIndexMax
-			zIndex=  math.floor(index /zIndexMax)
-
-			-- Move(pieceToMove,z_axis, zIndex* sizeLetter,0)
-			-- Move(pieceToMove,x_axis, xIndex* sizeLetter,0)
-			index= index+1
+			zIndex=  math.floor((index/xIndexMax))
+			Turn(pieceToMove,z_axis,math.rad(math.random(-2,2)),0)
+			Move(pieceToMove,z_axis, zIndex* sizeLetterZ ,0)
+			Move(pieceToMove,x_axis, xIndex* sizeLetterX,0)
+			index= index + 1
+			if zIndex > zIndexMax then return end
 		end
 
 	end
-
-
-
-
-
+	end
+	
 end
