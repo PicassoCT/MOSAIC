@@ -36,6 +36,15 @@ local moveDefs 	=	 {
 		crushStrength	=	25,
 		heatmapping		=	false,
 	},
+		{
+		name			=	"QUADRUPED",
+		footprintX		=	2,
+		footprintZ 		=	2,
+		maxWaterDepth	=	5,
+		maxSlope		=	80,
+		crushStrength	=	25,
+		heatmapping		=	false,
+	},
 	{
 		name			=	"AIRUNIT",
 		footprintX		=	2,

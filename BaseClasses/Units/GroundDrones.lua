@@ -35,7 +35,28 @@ local Turret = Unit:New{
     },
 }
 
+local Walker = Unit:New{
+
+	
+	category 			= "VEHICLE GROUND",
+	explodeAs          	= "mechexplode",
+	leaveTracks			= true,	
+	movementClass   	= "QUADRUPED",
+	noChaseCategory		= "civilian air",
+	trackType			= "Thick",
+	script				= "placeholder.lua",
+		usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
+	
+	trackOffset			= 10,
+	turnRate			= 300,
+	customparams = {
+    },
+  }
+
 return {
 	Turret = Turret,
+	Walker = Walker,
 
 }

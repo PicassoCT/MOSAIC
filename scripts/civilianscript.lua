@@ -195,72 +195,77 @@ end
 function script.QueryBuildInfo()
     return center
 end
-nonsense={
-	
-	"CONCERNED MUMS",
-	"   BAR&  BAR&  YENS",
-	" HITLER& LOVES& SPRING",
-	" NEWB& TEST",
-	
-	"SOCIAL& TEROR",
-	
-}
+
 seriously ={
 	--Denial
 	" SHAME ",
 	"THEY &ARE NOT& US",
 	"INOCENT",
-
+	"NOT&GUILTY",
+	"COULD&BE&WORSER",
+	"CONSPIRACY",
 	" CITY &FOR AN &CITY",
 	" BROTHFRS& KEEPFRS",
 	"WE WILL &NOT DIE",
 	"VENGANCE IS MURDFR",
 	"  IT &CANT BE& US",
-	"COLLECTIV PUNISHMENT",
+	"PUNISH&GROUPS ",
+	"VIVE&LA RESISTANCE ",
 	"LIES ANDWAR&CRIMES",
 	"THE END&IS& NIGH",
 	"PHOENIX &FACTION",
 	"FOR MAN&KIND",
 	"THATS&LIFE",
 	"AND LET LIFE",
+	"MOTHERS&AGAINST$",
+	
 	--Anger
 	" ICBM& UP YOUR ASS",
 	"RISE &UP",
 	"UNDEFEATED",
 	" BURN& THE& BRIDGE",	
-	" KILL&THEM& ALL",
+	" BURN&THEM& ALL",
 	" ANARCHY",
 	" FUCK& YOU& ALL",
 	" HOPE&  IT&HURTS",
 	"VENGANCE IS& OURS",
 	"MAD&IS&MURDER",
+	"WE& SHALL& REBUILD",
 	--Bargaining
 	" SPARE& US",
 	" SPARE& OUR&CHILDREN",
 	"ANYTHINGFOR LIFE",
+	"NO ISM&WORTH IT",
 	"ANARCHY",
-	"ANARCHY",
-
+	"KILL THE GODS",
+	"NO GODS&ONLY US",
 
 	--DEPRESSION
-	"HIROSHIMA& ALL OVER",
+	"HIROSHIMA&ALL OVER",
 	" SEX& KILLS",
 	" GOD& IS& DEATH",
+	"TEARS& IN& RAIN",
 	"NEVR &FORGET& LA",
 	"NEVR &FORGET& SA",
 	"REMEMBR PALO& ALTO",
 	"REMEBR  LAGOS",
 	"REMEBR  DUBAI",
+	"HITLER&WOULD&BE PROUD",
 	"NEVER &AGAIN",
-	"IN DUBIO&PRO LJFE",
+	"IN DUBIO&PRU REO",
 	--Accepting
-	"NO&  CITYCIDE",
+	"NO&CITYCIDE",
 	" REPENT& YOUR& SINS",
 	"DUST&IN THE&WIND",
 	"MAN IS& MEN A& WULF",
 	"POMPEJ  ALLOVER",
 	"AVENGE&US",
 	"SHIT&HAPPENS",
+	"IT TOLLS&FOR THEE",
+	"MEMENTO",
+	"MORI",
+	"CARPE&DIEM",
+	
 	--Personification
 	"I&LOVE&Ü",
 	"Ü&MARRY&ME",
@@ -269,6 +274,7 @@ seriously ={
 	"WHAT DO&YOU DESIRE?Ü",
 	--Humor
 	" PRO&TEST&ICLES",
+	"NO MORE&TAXES",
 	
 }
 usedPieces ={}
