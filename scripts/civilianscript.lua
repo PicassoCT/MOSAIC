@@ -220,7 +220,7 @@ seriously ={
 	"MOTHERS&AGAINST$",
 	
 	--Anger
-	" ICBM& UP YOUR ASS",
+	"HYPFICBM& UP YOUR ASS",
 	"RISE &UP",
 	"UNDEFEATED",
 	" BURN& THE& BRIDGE",	
@@ -238,7 +238,7 @@ seriously ={
 	"NO ISM&WORTH IT",
 	"ANARCHY",
 	"KILL THE GODS",
-	"NO GODS&ONLY US",
+	"NO GODS&JUST MEN",
 
 	--DEPRESSION
 	"HIROSHIMA&ALL OVER",
