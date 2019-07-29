@@ -154,7 +154,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     end
 
-                    Spring.DestroyUnit(persPack.unitID, true, true)
+                    Spring.DestroyUnit(persPack.unitID, false, true)
                     InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
                     Spring.Echo("caught 7")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
