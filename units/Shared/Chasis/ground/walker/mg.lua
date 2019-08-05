@@ -26,9 +26,7 @@ local ground_walker_mg = Walker:New{
 	script 			= "placeholder.lua",
 	objectName 	= "ground_walker_mg.dae",
 
-	collisionVolumeType = "box",
-	collisionvolumescales = "70 50 70",
-	
+	usepiececollisionvolumes = true,
 	customparams = {
 		helptext		= "Military Tank",
 		baseclass		= "Tank", -- TODO: hacks

@@ -239,6 +239,8 @@ seriously ={
 	"ANARCHY",
 	"KILL THE GODS",
 	"NO GODS&JUST MEN",
+	" SEX&SAVES",
+	" MERCY",
 
 	--DEPRESSION
 	"HIROSHIMA&ALL OVER",
