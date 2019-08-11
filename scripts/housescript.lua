@@ -36,19 +36,43 @@ end
 
 --parts
 --roofdeco:
--- Gardens, Atenna, Sunsails and Beds, AC-Units, Solarpanels, Penthouse, Swimmingpool, Werbung, , Windkraftwerk, Belüftung, Vögel
+-- Gardens, Atenna, Beds, AC-Units,  Penthouse, Swimmingpool, Werbung, Windkraftwerk, Belüftung, Vögel
 
 --Walls:
 	--	Fenster, Sichtschutz, Wohnung, Baustellen, Anbauten, AC-Units, Water-Installations, Pflanzen, Lagerhaus,Werbung
 -- Floor:
 --innenhof
-		-- Abgehängt:  Sunsail/Teppich überspannt, NeonLeuchten, Kinoleinwand
-		-- Boden: Pflanzen, Spielplatz, Fuss/Basketball, Mini-Chemiewerk(Destillery), Basar
+		-- Abgehängt:  NeonLeuchten, Kinoleinwand
+		-- Boden: , Spielplatz, Fuss/Basketball, Mini-Chemiewerk(Destillery), Basar
 --FloorWall:
-	--	 Shop, Kleidung, Spielzeug, Elektronika, Tankstelle, Essen, Cafes, Religion (Mosque), Waffenladen, minimarket
+	--	 Shop, Kleidung, Spielzeug, Elektronika, Tankstelle, Essen, Cafes,  Waffenladen, minimarket
 -- Street:
-	-- Parked Motorbikes, Tables, Garbagedumps, Sitting People, NeonLeuchten/Neonsigns, Bildschirme, Straßenleuchten, Hydranten
+	--  Garbagedumps, Sitting People, NeonLeuchten/Neonsigns, Bildschirme, , Hydranten
+
+--[[
+--necessary
+-- + optional
+-- > at least one
+
+--BuildingBase  + DecoPlate
+			   -- Buildingblock  + Window
+								 + Door
+								 + Decoration	
+				+ HoodDecoration
+				 
+]]
 	
+function buildBuilding()
+	selectBase()
+	selectBackYard()
+	buildGroundLvl()
+	decorateGroundLvl()
+	for i=1, 3 do
+		buildLvl(i)
+		decorateLvl(i)
+	end
+
+end
 function script.StartMoving()
 end
 

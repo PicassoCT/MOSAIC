@@ -343,7 +343,14 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 	
 	return valuetable
 end
-
+function getUnitScaleTable(UnitDefNames)
+defaultScaleTable={}
+	for k,v in pairs(UnitDefNames) do
+		defaultScaleTable[v.id]	= { realScale = 0.5,   tacticalScale = 1.0}
+	end
+	
+	return defaultScaleTable
+end
 
 function getCategoryNameWeaponTypes()
 	typeTable= {
