@@ -175,6 +175,13 @@ local teamColors = {}
 
 
 local function GetTeamColorSet(teamID)
+  if teamID == Spring.GetGaiaTeamID() then
+	r,g,b = 122/255, 222/255, 255/255
+	  colors = {{ r, g, b, 0.4 },
+				{ r, g, b, 0.7 }}
+  return colors  
+  end
+  
   local colors = teamColors[teamID]
   if (colors) then
     return colors
@@ -274,7 +281,7 @@ function widget:DrawWorldPreUnit()
   for _,unitID in ipairs(spGetAllUnits()) do
     if (spIsUnitVisible(unitID)) then
       local teamID = spGetUnitTeam(unitID)
-      if (teamID and teamID ~= gaiaTeamID) then	
+      if (teamID ) then	
 		
         local udid = 0
 		if unitCache[unitID] then
