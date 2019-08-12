@@ -13,7 +13,7 @@ function getGameConfig()
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,
-    numberOfPersons		= 200 *unitFactor,
+    numberOfPersons		= 150 *unitFactor,
 
 	 houseSizeX			= 256, 
 	 houseSizeY			= 16, 
