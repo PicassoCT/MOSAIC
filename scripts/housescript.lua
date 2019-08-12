@@ -36,13 +36,14 @@ end
 
 --parts
 --roofdeco:
--- Gardens, Atenna, Beds, AC-Units,  Penthouse, Swimmingpool, Werbung, Windkraftwerk, Belüftung, Vögel
+-- Japan Gardens, Automated Veggie or Ganjagarden, Atenna, Beds, AC-Units,  Penthouse, Swimmingpool, Werbung, Windkraftwerk, Belüftung, Vögel
+-- Clothing drying, Sunsails, Satantenna, Chicken Coop, Sunbathing Sightline
 
 --Walls:
 	--	Fenster, Sichtschutz, Wohnung, Baustellen, Anbauten, AC-Units, Water-Installations, Pflanzen, Lagerhaus,Werbung
 -- Floor:
 --innenhof
-		-- Abgehängt:  NeonLeuchten, Kinoleinwand
+		-- Abgehängt:  NeonLeuchten, Lautsprecher
 		-- Boden: , Spielplatz, Fuss/Basketball, Mini-Chemiewerk(Destillery), Basar
 --FloorWall:
 	--	 Shop, Kleidung, Spielzeug, Elektronika, Tankstelle, Essen, Cafes,  Waffenladen, minimarket

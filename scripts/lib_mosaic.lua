@@ -237,6 +237,7 @@ function  getRaidAbleTypeTable(UnitDefs)
 		"house",
 		"antagonsafehouse",
 		"protagonsafehouse"
+
 	}
 	
 	return getTypeTable(UnitDefNames, typeTable)
@@ -344,9 +345,24 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 	return valuetable
 end
 function getUnitScaleTable(UnitDefNames)
-defaultScaleTable={}
-	for k,v in pairs(UnitDefNames) do
-		defaultScaleTable[v.id]	= { realScale = 0.5,   tacticalScale = 1.0}
+	local defaultScaleTable={}
+	realScaleTable ={
+	["house"]= 1.0,
+	["antagonsafehouse"]=1.0,
+	["protagonsafehouse"]=1.0
+	[	"nimrod"]=1.0,
+	["assembly"]=1.0,
+	["noone"]=1.0,
+	["propagandaserver"]=1.0,
+	["launcher"]=1.0
+	
+	
+	}
+	
+	for name,v in pairs(UnitDefNames) do
+		factor = 0.3
+		if realScaleTable[name] then factor = realScaleTable[name] end
+		defaultScaleTable[v.id]	= { realScale = factor,   tacticalScale = 1.0}
 	end
 	
 	return defaultScaleTable

@@ -21,18 +21,18 @@ if (gadgetHandler:IsSyncedCode()) then
 	
    local function tansferScaleTable()
 
-        for typeDef, scales in pairs(scaleTable) do
-            SendToUnsynced("transferScaleTable", typeDefID, scales.realScale, scale.tacticalScale)
+        for typeDefID, scales in pairs(scaleTable) do
+            SendToUnsynced("transferScaleTable", typeDefID, scales.realScale, scales.tacticalScale)
         end
     end
 	
-	function gadget:UnitCreated(unitID)
-		SendToUnsynced("SetUnitLuaDraw", unitID)
+	function gadget:UnitCreated(unitID, unitDefID)
+		SendToUnsynced("SetUnitLuaDraw", unitID, unitDefID)
 	end
 
-
+	StartFrame = Spring.GetGameFrame()
     function gadget:GameFrame(frame)
-      if frame  == 1 then  then
+      if frame  ==  StartFrame + 1 then  
             tansferScaleTable()
 	  end
     end
@@ -42,9 +42,11 @@ else -- unsynced
     local UnsyncedScaleTable = {} 
     local unitIDtypeDefIDMap = {}
 	
-	limitOfTacticalScale = 1000
-	limitOfRealisticScale = 500
-
+	local limitOfTacticalScale = 2500
+	local limitOfRealisticScale = 500
+	local camPos={x=0, y=0, z=0}
+	local groundHeigth = 0
+	
     local function transferScaleTable(callname, typeDefID, realScale, tacticalScale)
         UnsyncedScaleTable[typeDefID] = {realScale=realScale, tacticalScale =tacticalScale}
     end
@@ -56,18 +58,25 @@ else -- unsynced
 
     function gadget:Initialize()
         gadgetHandler:AddSyncAction("transferScaleTable", transferScaleTable)
-        gadgetHandler:AddSyncAction("SetUnitLuaDraw", UnsetScale)
+        gadgetHandler:AddSyncAction("SetUnitLuaDraw", setUnitLuaDraw)
     end
 	
-	local camPos={x=0, y=0, z=0}
-	local groundHeigth = 0
-	function gaget:GameFrame(frame)
+
+	function gadget:GameFrame(frame)
 		camPos.x,camPos.y,camPos.z =	Spring.GetCameraPosition()
-		groundHeigth = Spring.GetGroundHeigth(camPos.x,camPos.z)
+		groundHeigth = Spring.GetGroundHeight(camPos.x,camPos.z)
 	end
 	
+	local function mix(vA, vB, fac)
+
+		return (fac * vA +(1-fac) * vB)
+
+	end
+
+	
+	
     function gadget:DrawUnit(unitID)
-        if unitIDtypeDefIDMap[unitID] then
+        if unitIDtypeDefIDMap[unitID] and UnsyncedScaleTable[unitIDtypeDefIDMap[unitID]] then
             local scale = UnsyncedScaleTable[unitIDtypeDefIDMap[unitID]]
 			
 			if scale then 
@@ -75,7 +84,7 @@ else -- unsynced
 				
 				factor = 0.0
 				if camHeigth >= limitOfRealisticScale and camHeigth <= limitOfTacticalScale then
-					factor = mix(scale.realScale, scale.tacticalScale, (camHeigth - scale.realScale)/(limitOfTacticalScale - limitOfRealisticScale))
+					factor = mix(scale.realScale, scale.tacticalScale, 1 - (math.abs(camHeigth - limitOfRealisticScale)/math.abs(limitOfTacticalScale - limitOfRealisticScale)))
 				end
 				
 				if camHeigth > limitOfTacticalScale then 

@@ -220,7 +220,8 @@ seriously ={
 	"MOTHERS&AGAINST$",
 	
 	--Anger
-	"HYPFICBM& UP YOUR ASS",
+	"ROCKET&IS&RAPE",
+	"HYICBM& UP YOUR ASS",
 	"RISE &UP",
 	"UNDEFEATED",
 	" BURN& THE& BRIDGE",	
@@ -254,6 +255,7 @@ seriously ={
 	"REMEBR  DUBAI",
 	"HITLER&WOULD&BE PROUD",
 	"NEVER &AGAIN",
+	"  HOLO&  CAUST",
 	"IN DUBIO&PRU REO",
 	--Accepting
 	"NO&CITYCIDE",
