@@ -40,7 +40,7 @@ end
 -- Clothing drying, Sunsails, Satantenna, Chicken Coop, Sunbathing Sightline
 
 --Walls:
-	--	Fenster, Sichtschutz, Wohnung, Baustellen, Anbauten, AC-Units, Water-Installations, Pflanzen, Lagerhaus,Werbung
+	--	Fenster, Sichtschutz, Wohnung,  Anbauten,  Pflanzen, Lagerhaus,Werbung
 -- Floor:
 --innenhof
 		-- Abgehängt:  NeonLeuchten, Lautsprecher

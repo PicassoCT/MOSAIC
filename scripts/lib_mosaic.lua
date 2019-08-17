@@ -349,8 +349,8 @@ function getUnitScaleTable(UnitDefNames)
 	realScaleTable ={
 	["house"]= 1.0,
 	["antagonsafehouse"]=1.0,
-	["protagonsafehouse"]=1.0
-	[	"nimrod"]=1.0,
+	["protagonsafehouse"]=1.0,
+	["nimrod"]=1.0,
 	["assembly"]=1.0,
 	["noone"]=1.0,
 	["propagandaserver"]=1.0,

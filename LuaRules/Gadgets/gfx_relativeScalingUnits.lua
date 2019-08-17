@@ -14,7 +14,6 @@ end
 if (gadgetHandler:IsSyncedCode()) then
 
 
-	 VFS.Include("scripts/lib_UnitScript.lua")
 	 VFS.Include("scripts/lib_mosaic.lua")
 
 	scaleTable= getUnitScaleTable(UnitDefNames)

@@ -176,7 +176,7 @@ local teamColors = {}
 
 local function GetTeamColorSet(teamID)
   if teamID == Spring.GetGaiaTeamID() then
-	r,g,b = 122/255, 222/255, 255/255
+	r,g,b = 122/255, 250/255, 255/255
 	  colors = {{ r, g, b, 0.4 },
 				{ r, g, b, 0.7 }}
   return colors  
