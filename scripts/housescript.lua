@@ -19,7 +19,8 @@ function script.Create()
 end
 
 function buildHouse()
-
+	hideAll(unitID)
+	buildBuilding()
 
 end
 
@@ -62,14 +63,93 @@ end
 				+ HoodDecoration
 				 
 ]]
+function showOne(T)
+dice = math.random(1,#T)
+Show(T[dice])
+return dice
+end
+
+function showOneOrNone(T)
+	if math.random(1,100) > 50 then
+		return showOne(T)
+	else
+		return
+	end
+end
+
+
+function selectBase()
+	showOne(TablesOfPiecesGroups["Base"])
+end
+
+function selectBackYard()
+	showOneOrNone(TablesOfPiecesGroups["Back"])
+end
+
+-- x:0-6 z:0-6   
+function  getLocationInPlan(index)
+if index > 0 and index < 7 then
+return index -1, 0
+end
+
+if index > 31 and index < 37 then
+return index-1, 5
+end
+
+if (index % 6)== 1 then
+	return index-1, math.floor(index/6)
+end
+if (index % 6) == 0 then
+return 5 ,  math.floor(index/6)
+end
+end
+
+
+function partOfPlan(index)
+if index > 0 and index < 7 or index > 31 and index < 37 then return true end
+
+if (index % 6)== 1 or (index % 6) == 0 then return true end
+
+return false
+end
+
+function removeElementFromBuildMaterial(element, buildMaterial)
+
+end
+
+function buildDecorateGroundLvl()
+local cubeDim ={length = 32, heigth= 16}
+centerP = {x = (cubeDim.length/2)*2.5, z= (cubeDim.length/2)*2.5}
+buildMaterial = {}
+buildMaterial, materialGroup = selectBuildMaterial()
+
+	for i=1, 36 do
+		if partOfPlan(i)==true then
+			xLoc,zLoc = getLocationInPlan(i)
+			xRealLoc, zRealLoc = -centerP.x + xLoc* cubeDim.length,  -centerP.z + zLoc* cubeDim.length, 
+			element = getRandomElementRing(buildMaterial)
+			buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+			mP(element,xRealLoc,0, zRealLoc,0, true)
+			DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
+			DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+		end
+	end
+	
+return materialGroup
+end
+
+function buildDecorateLvl(Level, materialGroup)
+
+end
 	
 function buildBuilding()
 	selectBase()
 	selectBackYard()
-	buildGroundLvl()
-	decorateGroundLvl()
-	for i=1, 3 do
-		buildLvl(i)
+	decorateBackYard()
+	materialGroup= buildDecorateGroundLvl()
+
+	for i=1, 2 do
+		buildDecorateLvl(i, materialGroup)
 		decorateLvl(i)
 	end
 

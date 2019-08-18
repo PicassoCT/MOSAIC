@@ -12,7 +12,7 @@ local House = Building:New{
 	FootprintX = 8,
 	FootprintZ = 8,
 	script 					= "Housescript.lua",
-	objectName       	= "house.s3o",
+	objectName       	= "house.dae",
 	
 	YardMap = 	[[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
 				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
