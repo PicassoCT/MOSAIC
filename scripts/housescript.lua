@@ -20,7 +20,17 @@ end
 
 function buildHouse()
 	hideAll(unitID)
-	buildBuilding()
+	if math.random(0,1)== true then
+	process(TablesOfPiecesGroups["PowerPole"],
+			function(id)
+				Turn(id,z_axis, math.rad(math.random(-10,10)),0)
+				Show(id)
+			end
+			)
+			Turn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
+	end
+
+	 buildBuilding()
 
 end
 
@@ -117,6 +127,9 @@ function removeElementFromBuildMaterial(element, buildMaterial)
 
 end
 
+function selectBuildMaterial
+return TablesOfPiecesGroups["FloorBlock"]
+end
 function buildDecorateGroundLvl()
 local cubeDim ={length = 32, heigth= 16}
 centerP = {x = (cubeDim.length/2)*2.5, z= (cubeDim.length/2)*2.5}
@@ -126,7 +139,7 @@ buildMaterial, materialGroup = selectBuildMaterial()
 	for i=1, 36 do
 		if partOfPlan(i)==true then
 			xLoc,zLoc = getLocationInPlan(i)
-			xRealLoc, zRealLoc = -centerP.x + xLoc* cubeDim.length,  -centerP.z + zLoc* cubeDim.length, 
+			xRealLoc, zRealLoc = -centerP.x + xLoc* cubeDim.length,  -centerP.z + zLoc* cubeDim.length 
 			element = getRandomElementRing(buildMaterial)
 			buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 			mP(element,xRealLoc,0, zRealLoc,0, true)
@@ -139,6 +152,12 @@ return materialGroup
 end
 
 function buildDecorateLvl(Level, materialGroup)
+
+end
+
+function decorateLvl(lvl)
+end
+function decorateBackYard()
 
 end
 	

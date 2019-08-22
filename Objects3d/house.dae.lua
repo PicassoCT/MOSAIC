@@ -1,8 +1,8 @@
 model = {
 	radius = 25.0,
 	height = 40,
-	tex1 = "house_arab_diffuse.tga",
-	tex2 = "house_arab_normal.tga",
+	tex1 = "testtex.dds",
+	tex2 = "testtex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
 	--rotAxisSigns = {-1, -1, -1}
