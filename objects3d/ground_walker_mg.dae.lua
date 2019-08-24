@@ -1,9 +1,10 @@
 model = {
 	radius = 25.0,
 	height = 40,
-	--tex1 = "Jeffy_Diffuse+TeamColor.dds",
-	tex1 = "component_atlas_normal.png",
-	tex2 = "component_atlas_diffuse.png",
+	tex1 = "testtex1.dds",
+	tex2 = "testtex2.dds",
+	--tex1 = "component_atlas_normal.png",
+	--tex2 = "component_atlas_diffuse.png",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
 	--rotAxisSigns = {-1, -1, -1}

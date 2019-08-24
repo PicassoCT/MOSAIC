@@ -36,6 +36,7 @@ function showPowerPoles()
 	WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
 	process(TablesOfPiecesGroups["PowerPole"],
 			function(id)
+					if id == TablesOfPiecesGroups["PowerPole"][1] then return end
 				thisHeigth= getGroundHeigthAtPiece(unitID,id)
 				diff  = absdiff(startHeigth , thisHeigth)
 				Spring.Echo("Diff:"..diff)
@@ -151,7 +152,7 @@ function removeElementFromBuildMaterial(element, buildMaterial)
 end
 
 function selectBuildMaterial()
-	return TablesOfPiecesGroups["FloorBlock"]
+	return TablesOfPiecesGroups["FloorBlock"], "FloorBlock"
 end
 
 function DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
@@ -163,20 +164,27 @@ function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
 end
 
 function buildDecorateGroundLvl()
-local cubeDim ={length = 32, heigth= 16}
+local cubeDim ={length = 128, heigth= 64}
 centerP = {x = (cubeDim.length/2)*2.5, z= (cubeDim.length/2)*2.5}
 buildMaterial = {}
 buildMaterial, materialGroup = selectBuildMaterial()
 
-	for i=1, 36 do
+	for i=1, 37 do
 		if partOfPlan(i)==true then
 			xLoc,zLoc = getLocationInPlan(i)
 			xRealLoc, zRealLoc = -centerP.x + xLoc* cubeDim.length,  -centerP.z + zLoc* cubeDim.length 
 			element = getRandomElementRing(buildMaterial)
-			buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+			buildMaterial = process(buildMaterial,
+										function(id) 
+											if id =~ element then 
+											return id
+											end
+										end
+									)
+
 			mP(element,xRealLoc,0, zRealLoc,0, true)
-			DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
-			DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+			--DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
+			--DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
 		end
 	end
 	
@@ -196,8 +204,8 @@ end
 function buildBuilding()
 	selectBase()
 	selectBackYard()
---	decorateBackYard()
---materialGroup= buildDecorateGroundLvl()
+	-- decorateBackYard()
+materialGroup= buildDecorateGroundLvl()
 
 	--for i=1, 2 do
 	--	buildDecorateLvl(i, materialGroup)
