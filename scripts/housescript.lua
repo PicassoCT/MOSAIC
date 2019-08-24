@@ -15,18 +15,19 @@ center = piece "center"
 function script.Create()
 	resetAll(unitID)
 	hideAll(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+        TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	buildHouse()
 end
 
 function buildHouse()
-
-	 buildBuilding()
+         buildBuilding()
 	 StartThread(showPowerPoles)
 end
 
 function absdiff(value, compval)
-if value < compval then return math.abs(compval - value) end
+  if value < compval then 
+    return math.abs(compval - value)
+  end
 return math.abs( value - compval) 
 end
 
@@ -58,45 +59,12 @@ function showPowerPoles()
 end
 
 function script.Killed(recentDamage, _)
-
     createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
-
---- -aimining & fire weapon
---TODO generate Algo to create building
-
---parts
---roofdeco:
--- Japan Gardens, Automated Veggie or Ganjagarden, Atenna, Beds, AC-Units,  Penthouse, Swimmingpool, Werbung, Windkraftwerk, Belüftung, Vögel
--- Clothing drying, Sunsails, Satantenna, Chicken Coop, Sunbathing Sightline
-
---Walls:
-	--	Fenster, Sichtschutz, Wohnung,  Anbauten,  Pflanzen, Lagerhaus,Werbung
--- Floor:
---innenhof
-		-- Abgehängt:  NeonLeuchten, Lautsprecher
-		-- Boden: , Spielplatz, Fuss/Basketball, Mini-Chemiewerk(Destillery), Basar
---FloorWall:
-	--	 Shop, Kleidung, Spielzeug, Elektronika, Tankstelle, Essen, Cafes,  Waffenladen, minimarket
--- Street:
-	--  Garbagedumps, Sitting People, NeonLeuchten/Neonsigns, Bildschirme, , Hydranten
-
---[[
---necessary
--- + optional
--- > at least one
-
---BuildingBase  + DecoPlate
-			   -- Buildingblock  + Window
-								 + Door
-								 + Decoration	
-				+ HoodDecoration
-				 
-]]
 function showOne(T)
-if not T then return end
+  if not T then return end
 dice = math.random(1,#T)
 Show(T[dice])
 return dice
@@ -105,9 +73,9 @@ end
 function showOneOrNone(T)
 	if not T then return end
 	if math.random(1,100) > 50 then
-		return showOne(T)
+	  return showOne(T)
 	else
-		return
+	  return
 	end
 end
 
@@ -148,40 +116,48 @@ return false
 end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
-
+		buildMaterial = process(buildMaterial,
+					function(id) 
+					if id =~ element then 
+					return id
+				        end
+				        end
+				        )
+return buildMaterial
 end
 
-function selectBuildMaterial()
+function selectBuildMaterial( selectedGroup)
+  diceTable
+
+
+
 	return TablesOfPiecesGroups["FloorBlock"], "FloorBlock"
 end
 
 function DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
-
+ 
 end
 
 function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
 
 end
 
+funtion getRandomBuildMaterial(buildMaterial)
+ return buildMaterial[math.random(1, buildMaterial])
+end
+
 function buildDecorateGroundLvl()
 local cubeDim ={length = 128, heigth= 64}
 centerP = {x = (cubeDim.length/2)*2.5, z= (cubeDim.length/2)*2.5}
-buildMaterial = {}
+buildMaterial = {} v
 buildMaterial, materialGroup = selectBuildMaterial()
 
 	for i=1, 37 do
 		if partOfPlan(i)==true then
 			xLoc,zLoc = getLocationInPlan(i)
 			xRealLoc, zRealLoc = -centerP.x + xLoc* cubeDim.length,  -centerP.z + zLoc* cubeDim.length 
-			element = getRandomElementRing(buildMaterial)
-			buildMaterial = process(buildMaterial,
-										function(id) 
-											if id =~ element then 
-											return id
-											end
-										end
-									)
-
+			element = getRandomBuildMaterial(buildMaterial)u
+	                 buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 			mP(element,xRealLoc,0, zRealLoc,0, true)
 			--DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
 			--DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
