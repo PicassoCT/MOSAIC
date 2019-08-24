@@ -14,26 +14,47 @@ center = piece "center"
 
 function script.Create()
 	resetAll(unitID)
+	hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	buildHouse()
 end
 
 function buildHouse()
-	hideAll(unitID)
-	if math.random(0,1)== true then
-	process(TablesOfPiecesGroups["PowerPole"],
-			function(id)
-				Turn(id,z_axis, math.rad(math.random(-10,10)),0)
-				Show(id)
-			end
-			)
-			Turn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
-	end
 
 	 buildBuilding()
-
+	 StartThread(showPowerPoles)
 end
 
+function absdiff(value, compval)
+if value < compval then return math.abs(compval - value) end
+return math.abs( value - compval) 
+end
+
+function showPowerPoles()
+	Sleep(1)
+	startHeigth= getUnitGroundHeigth(unitID)
+	WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
+	process(TablesOfPiecesGroups["PowerPole"],
+			function(id)
+				thisHeigth= getGroundHeigthAtPiece(unitID,id)
+				diff  = absdiff(startHeigth , thisHeigth)
+				Spring.Echo("Diff:"..diff)
+				if diff < 100 then
+					WTurn(id,z_axis, math.rad(math.random(-10,10)),0)
+					Show(id)
+				else
+					value=randSign()*math.random(70,90)
+					WTurn(id,z_axis, math.rad(value),0)
+					diff  = absdiff(startHeigth , thisHeigth)
+					if diff < 100 then
+						Show(id)
+					end
+				end
+			end
+			)
+			
+
+end
 
 function script.Killed(recentDamage, _)
 
@@ -74,12 +95,14 @@ end
 				 
 ]]
 function showOne(T)
+if not T then return end
 dice = math.random(1,#T)
 Show(T[dice])
 return dice
 end
 
 function showOneOrNone(T)
+	if not T then return end
 	if math.random(1,100) > 50 then
 		return showOne(T)
 	else
@@ -89,11 +112,11 @@ end
 
 
 function selectBase()
-	showOne(TablesOfPiecesGroups["Base"])
+	showOne(TablesOfPiecesGroups["base"])
 end
 
 function selectBackYard()
-	showOneOrNone(TablesOfPiecesGroups["Back"])
+	showOneOrNone(TablesOfPiecesGroups["back"])
 end
 
 -- x:0-6 z:0-6   
@@ -127,9 +150,18 @@ function removeElementFromBuildMaterial(element, buildMaterial)
 
 end
 
-function selectBuildMaterial
-return TablesOfPiecesGroups["FloorBlock"]
+function selectBuildMaterial()
+	return TablesOfPiecesGroups["FloorBlock"]
 end
+
+function DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
+
+end
+
+function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+
+end
+
 function buildDecorateGroundLvl()
 local cubeDim ={length = 32, heigth= 16}
 centerP = {x = (cubeDim.length/2)*2.5, z= (cubeDim.length/2)*2.5}
@@ -164,13 +196,13 @@ end
 function buildBuilding()
 	selectBase()
 	selectBackYard()
-	decorateBackYard()
-	materialGroup= buildDecorateGroundLvl()
+--	decorateBackYard()
+--materialGroup= buildDecorateGroundLvl()
 
-	for i=1, 2 do
-		buildDecorateLvl(i, materialGroup)
-		decorateLvl(i)
-	end
+	--for i=1, 2 do
+	--	buildDecorateLvl(i, materialGroup)
+	--	decorateLvl(i)
+	--end
 
 end
 function script.StartMoving()

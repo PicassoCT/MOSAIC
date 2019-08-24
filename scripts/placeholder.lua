@@ -9,13 +9,13 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
-aimpiece = piece "aimpiece"
+-- center = piece "center"
+-- aimpiece = piece "aimpiece"
 if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function script.Create()
-    generatepiecesTableAndArrayCode(unitID)
+    -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 end
 
@@ -27,27 +27,27 @@ end
 
 
 --- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return aimpiece
-end
+-- function script.AimFromWeapon1()
+    -- return aimpiece
+-- end
 
 
 
-function script.QueryWeapon1()
-    return aimpiece
-end
+-- function script.QueryWeapon1()
+    -- return aimpiece
+-- end
 
-function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
+-- function script.AimWeapon1(Heading, pitch)
+    -- aiming animation: instantly turn the gun towards the enemy
 
-    return true
-end
+    -- return true
+-- end
 
 
-function script.FireWeapon1()
+-- function script.FireWeapon1()
 
-    return true
-end
+    -- return true
+-- end
 
 
 
@@ -67,9 +67,9 @@ function script.Deactivate()
     return 0
 end
 
-function script.QueryBuildInfo()
-    return center
-end
+-- function script.QueryBuildInfo()
+    -- return center
+-- end
 
-Spring.SetUnitNanoPieces(unitID, { center })
+-- Spring.SetUnitNanoPieces(unitID, { center })
 
