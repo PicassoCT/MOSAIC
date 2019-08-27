@@ -106,7 +106,7 @@ return result
 end
 
 function selectGroundBuildMaterial( )
-  diceTable ={ "FloorBlock", "BrownFloorBlock", "YellowFloorBlock", "RedFloorBLock"}
+  diceTable ={ "FloorBlock", "BrownFloorBlock", "WhiteFloorBlock", "RedFloorBLock"}
   dice = diceTable[math.random(1,#diceTable)]
   dice = "FloorBlock"
   return TablesOfPiecesGroups[dice], dice
