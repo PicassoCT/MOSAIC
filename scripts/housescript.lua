@@ -13,13 +13,16 @@ center = piece "center"
 
 
 function script.Create()
-	resetAll(unitID)
-	hideAll(unitID)
-        TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	buildHouse()
+	
+	StartThread(buildHouse)
 end
 
 function buildHouse()
+resetAll(unitID)
+Sleep(1)
+	hideAll(unitID)
+        TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+		
          buildBuilding()
 	 StartThread(showPowerPoles)
 end
@@ -88,83 +91,115 @@ function selectBackYard()
 	showOneOrNone(TablesOfPiecesGroups["back"])
 end
 
--- x:0-6 z:0-6   
-function  getLocationInPlan(index)
-if index > 0 and index < 7 then
-return index -1, 0
-end
-
-if index > 31 and index < 37 then
-return index-1, 5
-end
-
-if (index % 6)== 1 then
-	return index-1, math.floor(index/6)
-end
-if (index % 6) == 0 then
-return 5 ,  math.floor(index/6)
-end
-end
 
 
-function partOfPlan(index)
-if index > 0 and index < 7 or index > 31 and index < 37 then return true end
-
-if (index % 6)== 1 or (index % 6) == 0 then return true end
-
-return false
-end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
-		buildMaterial = process(buildMaterial,
+		local result = process(buildMaterial,
 					function(id) 
-					if id =~ element then 
-					return id
-				        end
-				        end
-				        )
-return buildMaterial
+						if id ~= element then 
+							return id
+						end
+				    end
+				    )
+return result
 end
 
-function selectBuildMaterial( selectedGroup)
-  diceTable
-
-
-
-	return TablesOfPiecesGroups["FloorBlock"], "FloorBlock"
+function selectGroundBuildMaterial( )
+  diceTable ={ "FloorBlock", "BrownFloorBlock", "YellowFloorBlock", "RedFloorBLock"}
+  dice = diceTable[math.random(1,#diceTable)]
+  dice = "FloorBlock"
+  return TablesOfPiecesGroups[dice], dice
+end
+function selectBuildMaterial(dice)
+  diceTable ={ "FloorBlock", "BrownFloorBlock", "YellowFloorBlock", "RedFloorBLock"}
+ 
+  return TablesOfPiecesGroups[dice], dice
 end
 
 function DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
  
 end
 
-function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc) 
 
 end
 
-funtion getRandomBuildMaterial(buildMaterial)
- return buildMaterial[math.random(1, buildMaterial])
+function getRandomBuildMaterial(buildMaterial)
+ 
+ if not buildMaterial then return end
+  total = count(buildMaterial)
+ if total == 0 then  return end 
+ 
+ 
+ dice = math.random(1,total)
+ total =0
+ for k,v in pairs (buildMaterial) do 
+	
+	total = total + 1
+	if total == dice then
+		return v
+	end
+ end
+
+end
+
+-- x:0-6 z:0-6   
+function  getLocationInPlan(index)
+
+	if index < 7 then
+		return true, (index - 1),  0
+	end
+	
+	if index > 30 and index < 37 then
+		return true,   ((index -30) - 1), 5
+	end
+
+	if (index % 6) == 1 and ( index < 37 and index > 6)then
+		return true, 0 , math.floor( (index-1)/6.0)
+	end
+
+	if (index % 6) == 0 and ( index < 37 and index > 6) then
+		return true, 5 ,  math.floor((index-1)/6.0)
+	end
+	
+	return false, 0, 0
 end
 
 function buildDecorateGroundLvl()
-local cubeDim ={length = 128, heigth= 64}
-centerP = {x = (cubeDim.length/2)*2.5, z= (cubeDim.length/2)*2.5}
-buildMaterial = {} v
-buildMaterial, materialGroup = selectBuildMaterial()
+	local cubeDim ={length = 14.5, heigth= 8}
+	centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 
-	for i=1, 37 do
-		if partOfPlan(i)==true then
-			xLoc,zLoc = getLocationInPlan(i)
-			xRealLoc, zRealLoc = -centerP.x + xLoc* cubeDim.length,  -centerP.z + zLoc* cubeDim.length 
-			element = getRandomBuildMaterial(buildMaterial)u
-	                 buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-			mP(element,xRealLoc,0, zRealLoc,0, true)
-			--DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
-			--DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+	buildMaterial = {} 
+	buildMaterial, materialGroup = selectGroundBuildMaterial()
+	countElements= 0
+
+		for i=1, 37, 1 do
+			local index = i
+			partOfPlan, xLoc,zLoc= getLocationInPlan(index)
+			echo(xLoc.."/"..zLoc)
+			if partOfPlan == true then
+				xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length) 
+				local element = getRandomBuildMaterial(buildMaterial)
+				while not element do
+					element = getRandomBuildMaterial(buildMaterial)
+					Sleep(1)
+				end
+				
+				if element then
+					countElements = countElements+1
+					buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+					Move(element, 1, xRealLoc, 0)
+					Move(element, 3, zRealLoc, 0)
+					Show(element)
+					if countElements == 24 then return materialGroup end
+				end
+				--DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
+				--DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+			end
 		end
-	end
-	
-return materialGroup
+		
+	return materialGroup
 end
 
 function buildDecorateLvl(Level, materialGroup)
