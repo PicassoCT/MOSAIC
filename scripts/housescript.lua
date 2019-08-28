@@ -5,6 +5,7 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
+local cubeDim ={length = 14.5*1.45, heigth= 14 * 0.75*1.45}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -21,10 +22,10 @@ function buildHouse()
 resetAll(unitID)
 Sleep(1)
 	hideAll(unitID)
-        TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 		
-         buildBuilding()
-	 StartThread(showPowerPoles)
+    buildBuilding()
+	StartThread(showPowerPoles)
 end
 
 function absdiff(value, compval)
@@ -38,12 +39,14 @@ function showPowerPoles()
 	Sleep(1)
 	startHeigth= getUnitGroundHeigth(unitID)
 	WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
+	Show(TablesOfPiecesGroups["PowerPole"][1])
+	
 	process(TablesOfPiecesGroups["PowerPole"],
 			function(id)
-					if id == TablesOfPiecesGroups["PowerPole"][1] then return end
+				if id == TablesOfPiecesGroups["PowerPole"][1] then return end
 				thisHeigth= getGroundHeigthAtPiece(unitID,id)
 				diff  = absdiff(startHeigth , thisHeigth)
-				Spring.Echo("Diff:"..diff)
+
 				if diff < 100 then
 					WTurn(id,z_axis, math.rad(math.random(-10,10)),0)
 					Show(id)
@@ -82,7 +85,6 @@ function showOneOrNone(T)
 	end
 end
 
-
 function selectBase()
 	showOne(TablesOfPiecesGroups["base"])
 end
@@ -90,9 +92,6 @@ end
 function selectBackYard()
 	showOneOrNone(TablesOfPiecesGroups["back"])
 end
-
-
-
 
 function removeElementFromBuildMaterial(element, buildMaterial)
 		local result = process(buildMaterial,
@@ -106,16 +105,13 @@ return result
 end
 
 function selectGroundBuildMaterial( )
-  diceTable ={ "FloorBlock", "BrownFloorBlock", "WhiteFloorBlock", "RedFloorBLock"}
+  diceTable ={ "FloorBlock", "BrownFloorBlock", "WhiteFloorBlock", "RedFloorBlock"}
   dice = diceTable[math.random(1,#diceTable)]
-  dice = "FloorBlock"
-  return TablesOfPiecesGroups[dice], dice
+  echo(dice)
+
+  return TablesOfPiecesGroups[dice], string.gsub(dice, "FloorBlock", "")
 end
-function selectBuildMaterial(dice)
-  diceTable ={ "FloorBlock", "BrownFloorBlock", "YellowFloorBlock", "RedFloorBLock"}
- 
-  return TablesOfPiecesGroups[dice], dice
-end
+
 
 function DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
  
@@ -129,7 +125,7 @@ function getRandomBuildMaterial(buildMaterial)
  
  if not buildMaterial then return end
   total = count(buildMaterial)
- if total == 0 then  return end 
+ if total == 0 then  echo("BuildMaterial exausted");return end 
  
  
  dice = math.random(1,total)
@@ -167,7 +163,7 @@ function  getLocationInPlan(index)
 end
 
 function buildDecorateGroundLvl()
-	local cubeDim ={length = 14.5, heigth= 8}
+
 	centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 
 	buildMaterial = {} 
@@ -177,7 +173,6 @@ function buildDecorateGroundLvl()
 		for i=1, 37, 1 do
 			local index = i
 			partOfPlan, xLoc,zLoc= getLocationInPlan(index)
-			echo(xLoc.."/"..zLoc)
 			if partOfPlan == true then
 				xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length) 
 				local element = getRandomBuildMaterial(buildMaterial)
@@ -199,11 +194,40 @@ function buildDecorateGroundLvl()
 			end
 		end
 		
-	return materialGroup
+	return materialGroup.."WallBlock"
 end
 
-function buildDecorateLvl(Level, materialGroup)
+function buildDecorateLvl(Level, materialGroup, buildMaterial)
+	
+	centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 
+	
+	countElements= 0
+
+		for i=1, 37, 1 do
+			local index = i
+			partOfPlan, xLoc,zLoc= getLocationInPlan(index)
+			if partOfPlan == true then
+				xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length) 
+				local element = getRandomBuildMaterial(buildMaterial)
+				while not element do
+					element = getRandomBuildMaterial(buildMaterial)
+					Sleep(1)
+				end
+				
+				if element then
+					countElements = countElements+1
+					buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+					Move(element, 1, xRealLoc, 0)
+					Move(element, 3, zRealLoc, 0)
+					Move(element, 2, Level * cubeDim.heigth , 0)
+					Show(element)
+					if countElements == 24 then return materialGroup end
+				end
+			end
+		end
+		
+	return materialGroup, buildMaterial
 end
 
 function decorateLvl(lvl)
@@ -216,12 +240,13 @@ function buildBuilding()
 	selectBase()
 	selectBackYard()
 	-- decorateBackYard()
-materialGroup= buildDecorateGroundLvl()
+	materialGroup= buildDecorateGroundLvl()
 
-	--for i=1, 2 do
-	--	buildDecorateLvl(i, materialGroup)
-	--	decorateLvl(i)
-	--end
+	buildMaterial = TablesOfPiecesGroups[materialGroup]
+	for i=1, 2 do
+		materialGroup, buildMaterial = buildDecorateLvl(i, materialGroup, buildMaterial)
+
+	end
 
 end
 function script.StartMoving()

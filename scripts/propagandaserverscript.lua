@@ -75,8 +75,8 @@ function propagandaLoop()
 
             oldAddjective = AddjDice
             oldSubject = SubjectDice
-	
-            Sleep(3000)
+			randSleep= math.random(400,750)
+            Sleep(randSleep)
         end
         Sleep(100)
     end
