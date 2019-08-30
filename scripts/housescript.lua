@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-local cubeDim ={length = 14.5*1.45, heigth= 14 * 0.75*1.45}
+local cubeDim ={length = 14.5*1.45, heigth= 14 * 0.75*1.45, roofHeigth = 1.5}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -121,7 +121,8 @@ function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
 
 end
 
-function getRandomBuildMaterial(buildMaterial)
+function getRandomBuildMaterial(buildMaterial, orgstring)
+	piecegroupName = orgstring or ""
  
  if not buildMaterial then return end
   total = count(buildMaterial)
@@ -134,7 +135,7 @@ function getRandomBuildMaterial(buildMaterial)
 	
 	total = total + 1
 	if total == dice then
-		return v
+		return v, piecegroupName..total
 	end
  end
 
@@ -160,6 +161,45 @@ function  getLocationInPlan(index)
 	end
 	
 	return false, 0, 0
+end
+
+
+function  getWallDeocrationRotation(index)
+
+	if index < 7 then
+		return 0
+	end
+	
+	if index > 30 and index < 37 then
+		return 180
+	end
+
+	if (index % 6) == 1 and ( index < 37 and index > 6)then
+		return -90
+	end
+
+	if (index % 6) == 0 and ( index < 37 and index > 6) then
+		return 90
+	end
+end
+
+function  getRotationOfBlockInPlan(index)
+	
+	if (index > 30 and index < 37) or (index < 7)  then
+		if math.random(0,1)== 1 then
+			return 90
+		else
+			return -90
+		end	
+	end
+
+	if ((index % 6) == 1 and ( index < 37 and index > 6)) or ((index % 6) == 0 and ( index < 37 and index > 6) )then
+		if math.random(0,1)== 1 then
+			return 0
+		else
+			return 180
+		end			
+	end
 end
 
 function buildDecorateGroundLvl()
@@ -216,11 +256,14 @@ function buildDecorateLvl(Level, materialGroup, buildMaterial)
 				end
 				
 				if element then
+					rotation = getRotationOfBlockInPlan(i)
 					countElements = countElements+1
 					buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 					Move(element, 1, xRealLoc, 0)
 					Move(element, 3, zRealLoc, 0)
 					Move(element, 2, Level * cubeDim.heigth , 0)
+					WaitForMoves(element)
+					Turn(element, 3, math.rad(rotation),0)
 					Show(element)
 					if countElements == 24 then return materialGroup end
 				end
@@ -233,7 +276,77 @@ end
 function decorateLvl(lvl)
 end
 function decorateBackYard()
+end
 
+function addRoofDeocrate(Level, buildMaterial)
+	
+	centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
+
+	
+	countElements= 0
+
+		for i=1, 37, 1 do
+			local index = i
+			partOfPlan, xLoc,zLoc= getLocationInPlan(index)
+			if partOfPlan == true then
+				xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length) 
+				local element = getRandomBuildMaterial(buildMaterial)
+				while not element do
+					element = getRandomBuildMaterial(buildMaterial)
+					Sleep(1)
+				end
+				
+				if element then
+					rotation = getRotationOfBlockInPlan(i)
+					countElements = countElements+1
+					buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+					Move(element, 1, xRealLoc, 0)
+					Move(element, 3, zRealLoc, 0)
+					Move(element, 2, Level * cubeDim.heigth -0.5 , 0)
+					WaitForMoves(element)
+					Turn(element, 3, math.rad(rotation),0)
+					Show(element)
+					if countElements == 24 then break; end
+				end
+			end
+		end
+	countElements= 0	
+	local 	decoMaterial = TablesOfPiecesGroups["RoofDeco"]
+		
+		for i=1, 37, 1 do
+			partOfPlan, xLoc,zLoc= getLocationInPlan(i)
+			if partOfPlan == true  then
+				xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length), -centerP.z + (zLoc* cubeDim.length) 
+				local element, piecename = getRandomBuildMaterial(decoMaterial,"RoofDeco")
+				while not element do
+					element, piecename = getRandomBuildMaterial(decoMaterial,"RoofDeco")
+					Sleep(1)
+				end
+				
+				if element and math.random(0,10) > 5 then
+					rotation = getRotationOfBlockInPlan(i)
+					countElements = countElements+1
+					decoMaterial = removeElementFromBuildMaterial(element, decoMaterial)
+					Move(element, 1, xRealLoc, 0)
+					Move(element, 3, zRealLoc, 0)
+					Move(element, 2, Level * cubeDim.heigth -0.5 +cubeDim.roofHeigth , 0)
+					WaitForMoves(element)
+					if TablesOfPiecesGroups[piecename.."sub"] then
+						showT(TablesOfPiecesGroups[piecename.."sub"])
+					end
+					
+					if TablesOfPiecesGroups[piecename.."Sub"] then
+						showT(TablesOfPiecesGroups[piecename.."Sub"])
+					end
+					-- 
+					-- Turn(element, 3, math.rad(rotation),0)
+					Show(element)
+					if countElements == 24 then return  end
+				end
+			end
+		end
+		
+	
 end
 	
 function buildBuilding()
@@ -245,8 +358,9 @@ function buildBuilding()
 	buildMaterial = TablesOfPiecesGroups[materialGroup]
 	for i=1, 2 do
 		materialGroup, buildMaterial = buildDecorateLvl(i, materialGroup, buildMaterial)
-
 	end
+	
+	addRoofDeocrate(3, TablesOfPiecesGroups[string.gsub(materialGroup,"WallBlock","").."Roof"])
 
 end
 function script.StartMoving()
