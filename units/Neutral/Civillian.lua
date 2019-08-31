@@ -22,7 +22,9 @@ local Civilian = Human:New{
 	CanStop = true,
 	script 					= "civilianscript.lua",
 	objectName        	= "civilian.dae",
-
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "10 25 10",
 
 	
 	customparams = {

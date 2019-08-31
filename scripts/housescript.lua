@@ -5,7 +5,8 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-local cubeDim ={length = 14.5*1.45, heigth= 14 * 0.75*1.45, roofHeigth = 1.5}
+local cubeDim ={length = 14.5*1.45, heigth= 14 * 0.75*1.45, roofHeigth = 4}
+decoChances={ roof = 0.5, yard = 0.3, street = 0.5, powerpoles = 0.5}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -37,6 +38,8 @@ end
 
 function showPowerPoles()
 	Sleep(1)
+	if math.random(0,10)/10 > decoChances.powerpoles then return end
+	
 	startHeigth= getUnitGroundHeigth(unitID)
 	WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
 	Show(TablesOfPiecesGroups["PowerPole"][1])
@@ -71,9 +74,17 @@ end
 
 function showOne(T)
   if not T then return end
-dice = math.random(1,#T)
-Show(T[dice])
-return dice
+	dice = math.random(1,count(T))
+	c= 0
+	for k,v in pairs(T) do
+		if k and v then 
+		c= c+1
+		end
+		if c== dice  then
+			Show(v)
+			return v
+		end
+	end
 end
 
 function showOneOrNone(T)
@@ -202,12 +213,24 @@ function  getRotationOfBlockInPlan(index)
 	end
 end
 
-function buildDecorateGroundLvl()
+function getElasticTable( search)
+local mergeTable={}
+	for k, v in pairs(TablesOfPiecesGroups) do
+		if string.find(k,search) then
+			mergeTable = mergeTables(mergeTable, TablesOfPiecesGroups[k])
+		end
 
+	end
+return mergeTable
+end
+
+function buildDecorateGroundLvl()
+Sleep(1)
 	centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 
 	buildMaterial = {} 
 	buildMaterial, materialGroup = selectGroundBuildMaterial()
+	yardMaterial = getElasticTable("Yard")
 	countElements= 0
 
 		for i=1, 37, 1 do
@@ -231,6 +254,11 @@ function buildDecorateGroundLvl()
 				end
 				--DecorateDoor(element,xRealLoc,zRealLoc, xLoc,zLoc)
 				--DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
+			elseif partOfPlan == false then
+				--BackYard
+				if math.random(0,10)/10 > decoChances.yard then
+					element, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial)		
+				end				
 			end
 		end
 		
@@ -238,7 +266,7 @@ function buildDecorateGroundLvl()
 end
 
 function buildDecorateLvl(Level, materialGroup, buildMaterial)
-	
+Sleep(1)	
 	centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 
 	
@@ -273,9 +301,23 @@ function buildDecorateLvl(Level, materialGroup, buildMaterial)
 	return materialGroup, buildMaterial
 end
 
-function decorateLvl(lvl)
-end
-function decorateBackYard()
+
+function decorateBackYard(index, xLoc, zLoc, buildMaterial)
+	local element = getRandomBuildMaterial(buildMaterial)
+	while not element do
+		element = getRandomBuildMaterial(buildMaterial)
+		Sleep(1)
+	end
+	buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+	
+	rotation = math.random(0,4) *90			
+	xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length) 			
+	Move(element, 1, xRealLoc, 0)
+	Move(element, 3, zRealLoc, 0)
+	Move(element, 2, 10, 0)
+	Show(element)
+	
+return element, buildMaterial			
 end
 
 function addRoofDeocrate(Level, buildMaterial)
@@ -323,23 +365,21 @@ function addRoofDeocrate(Level, buildMaterial)
 					Sleep(1)
 				end
 				
-				if element and math.random(0,10) > 5 then
+				if element and math.random(0,10)/10 > decoChances.roof then
 					rotation = getRotationOfBlockInPlan(i)
 					countElements = countElements+1
 					decoMaterial = removeElementFromBuildMaterial(element, decoMaterial)
 					Move(element, 1, xRealLoc, 0)
 					Move(element, 3, zRealLoc, 0)
-					Move(element, 2, Level * cubeDim.heigth -0.5 +cubeDim.roofHeigth , 0)
+					Move(element, 2, Level * cubeDim.heigth -0.5 + cubeDim.roofHeigth , 0)
 					WaitForMoves(element)
-					if TablesOfPiecesGroups[piecename.."sub"] then
-						showT(TablesOfPiecesGroups[piecename.."sub"])
-					end
+					--Turn(element, 3, math.rad(rotation),0)
 					
-					if TablesOfPiecesGroups[piecename.."Sub"] then
-						showT(TablesOfPiecesGroups[piecename.."Sub"])
+					if TablesOfPiecesGroups[piecename.."Sub"] then						
+						showOne(TablesOfPiecesGroups[piecename.."Sub"])
 					end
 					-- 
-					-- Turn(element, 3, math.rad(rotation),0)
+					
 					Show(element)
 					if countElements == 24 then return  end
 				end
@@ -352,7 +392,7 @@ end
 function buildBuilding()
 	selectBase()
 	selectBackYard()
-	-- decorateBackYard()
+
 	materialGroup= buildDecorateGroundLvl()
 
 	buildMaterial = TablesOfPiecesGroups[materialGroup]

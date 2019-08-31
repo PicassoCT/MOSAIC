@@ -52,7 +52,9 @@ local House = Building:New{
 	{
 	"civilian"
 	},
-	
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "130 120 130",
 	category =  [[GROUND BUILDING ARRESTABLE]],
 }
 
