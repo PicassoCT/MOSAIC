@@ -15,30 +15,34 @@ factor= 7
 spys={}
 
 protagon_talk ={
+"Retro-Observation-Results",
+"TAC Plan has go",
 "(dart sounds)",
 "away from the window",
 "to the wall",
 "drop it", 
 "Defeat device removed",
+"Subjects are dosed and stable",
 "System subverted",
 "Observation, Neutralization",
 "Encapsulated Cloud Interrogation ",
 "Individual Deprecation ",
 "Sampling Artefacts",
 "FragPellets in Sit, HiSpeedCam, Upload (BOOM)",
-"Investigating",
-"Two. Two Two!"
+"Investigating Distribution",
 }
 
 antagon_talk ={
 "-your guests torture people",
-"  puppets",
-" just give us the keys",
+"kings things, puppets and strings",
+"I just need another key to the apartment",
 "Suprise, Motherfuckers",
-"Allah al Akbahr",
+"God is greater",
 "This must hurt so much ?",
+"Suffer like they did",
 "Talk, talk - your live depends on it",
 "They simply gave you up..",
+"Though i walk through the valley of shadows",
 "we, we are your own shadow, thats what you fight",
 "you would never betray them, but they already betrayed you",
 
