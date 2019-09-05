@@ -607,6 +607,7 @@ end
 function mSyncIn(piecename, x_val, y_val, z_val, times)
 	syncMoveInTime(piecename, x_val, y_val, z_val, times)
 end
+
 --> Move a piece so that it arrives at all axis on the given times
 function syncMoveInTime(piecename, x_val, y_val, z_val, times)
     times = (math.abs(times)+1)/1000 
@@ -616,6 +617,14 @@ function syncMoveInTime(piecename, x_val, y_val, z_val, times)
     Move(piecename, 1, x_val, 	xd/times )
     Move(piecename, 2, y_val,	 yd/times)
     Move(piecename, 3, z_val,	zd/times)
+end
+
+--> Move a piece so that it arrives at all axis on the given times
+function moveSyncInTimeT(T, x_val, y_val, z_val, times)
+	for k, v in pairs(T) do
+		syncMoveInTime(v, x_val, y_val, z_val, times)
+	end
+   
 end
 
 function unZero(val)

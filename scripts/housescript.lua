@@ -5,8 +5,9 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-local cubeDim ={length = 14.5*1.45, heigth= 14 * 0.75*1.45, roofHeigth = 3.6}
+local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2.5}
 decoChances={ roof = 0.5, yard = 0.3, street = 1, powerpoles = 0.5, door = 0.6, windowwall= 0.7}
+ToShowTable ={}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -44,7 +45,7 @@ function showPowerPoles()
 
   startHeigth= getUnitGroundHeigth(unitID)
   WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
-  Show(TablesOfPiecesGroups["PowerPole"][1])
+  ToShowTable[#ToShowTable+1]=TablesOfPiecesGroups["PowerPole"][1]
 
   process(TablesOfPiecesGroups["PowerPole"],
   function(id)
@@ -54,13 +55,13 @@ function showPowerPoles()
 
     if diff < 100 then
       WTurn(id,z_axis, math.rad(math.random(-10,10)),0)
-      Show(id)
+      ToShowTable[#ToShowTable+1]=id
     else
       value=randSign()*math.random(70,90)
       WTurn(id,z_axis, math.rad(value),0)
       diff  = absdiff(startHeigth , thisHeigth)
       if diff < 100 then
-        Show(id)
+        ToShowTable[#ToShowTable+1]=id
       end
     end
   end
@@ -74,7 +75,7 @@ function script.Killed(recentDamage, _)
   return 1
 end
 
-function showOne(T)
+function showOne(T, bNotDelayd)
   if not T then return end
   dice = math.random(1,count(T))
   c= 0
@@ -83,7 +84,11 @@ function showOne(T)
       c= c+1
     end
     if c== dice  then
-      Show(v)
+	  if bNotDelayd and bNotDelayd == true then
+		Show(v)
+	  else
+		ToShowTable[#ToShowTable+1]=v
+	  end
       return v
     end
   end
@@ -92,7 +97,7 @@ end
 function showOneOrNone(T)
   if not T then return end
   if math.random(1,100) > 50 then
-    return showOne(T)
+    return showOne(T, true)
   else
     return
   end
@@ -103,13 +108,15 @@ function showOneOrAll(T)
   if chancesAre(10) > 0.5 then
     return showOne(T)
   else
-    showT(T)
+		for num, val in pairs(T) do
+			ToShowTable[#ToShowTable+1]=val
+		end
     return
   end
 end
 
 function selectBase()
-  showOne(TablesOfPiecesGroups["base"])
+  showOne(TablesOfPiecesGroups["base"], true)
 end
 
 function selectBackYard()
@@ -130,7 +137,10 @@ end
 
 function selectGroundBuildMaterial( )
   diceTable ={ "", "Brown", "White", "Red"}
-  dice = diceTable[math.random(1,#diceTable)]
+  x,y,z =Spring.GetUnitPosition(unitID)
+  x, z = math.ceil(x/1000), math.ceil(z/1000)
+  nice= ((x+z)%(#diceTable)+1)
+  dice = diceTable[nice]
   --echo(dice)
 
   return dice
@@ -151,7 +161,7 @@ function DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc, rotation, leve
     Move(Deco, 3, zRealLoc, 0)
     Move(Deco, 2, level* cubeDim.heigth + y_offset, 0)
     Turn(Deco, y_axis, math.rad(rotation),0)
-    Show(Deco)
+    ToShowTable[#ToShowTable+1]=Deco
   end
 
   if TablesOfPiecesGroups[piecename.."Sub"] then
@@ -210,19 +220,21 @@ function  getLocationInPlan(index)
 end
 
 function isBackYardWall(index)
-  if index > 7 and index < 11 then
-    return true
-  end
+	return (getLocationInPlan(index)==false)
 
-  if index > 25 and index < 30 then
-    return true
-  end
+  -- if index > 7 and index < 11 then
+    -- return true
+  -- end
 
-  if (index % 6) == 2 or (index %6) == 4 and (index > 11 and index < 25) then
-    return true
-  end
+  -- if index > 25 and index < 30 then
+    -- return true
+  -- end
 
-  return false
+  -- if (index % 6) == 2 or (index %6) == 4 and (index > 11 and index < 25) then
+    -- return true
+  -- end
+
+  -- return false
 end
 
 function  getWallDeocrationRotation(index)
@@ -294,6 +306,7 @@ function buildDecorateGroundLvl()
   countElements= 0
 	
   for i=1, 37, 1 do
+	Sleep(1)
 
     local index = i
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
@@ -311,7 +324,7 @@ function buildDecorateGroundLvl()
         buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
         Move(element, 1, xRealLoc, 0)
         Move(element, 3, zRealLoc, 0)
-        Show(element)
+        ToShowTable[#ToShowTable+1]=element
         if countElements == 24 then return materialColourName end
 		
 		rotation = getWallDeocrationRotation(index)
@@ -324,6 +337,7 @@ function buildDecorateGroundLvl()
 			end
 			
 			 if chancesAre(10) < decoChances.door  then
+				rotation = getWallDeocrationRotation(index)
 				DoorMaterial = DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc, rotation, 0, DoorMaterial, 3 )
 				if chancesAre(10) < decoChances.door  then
 				--	DoorDecoMaterial = DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc, rotation, 0, DoorDecoMaterial)  
@@ -331,10 +345,13 @@ function buildDecorateGroundLvl()
 			end
       end
 
-    elseif partOfPlan == false and isBackYardWall(index) == true then
+    end
+
+	if  isBackYardWall(index) == true then
       --BackYard
+	  Spring.Echo("Backyard")
       if chancesAre(10) < decoChances.yard then
-      --  element, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial)
+		element, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial)
       end
     end
   end
@@ -354,6 +371,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
   countElements= 0
 
   for i=1, 37, 1 do
+	Sleep(1)
     local index = i
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
     if partOfPlan == true then
@@ -373,7 +391,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         Move(element, 2, Level * cubeDim.heigth , 0)
         WaitForMoves(element)
         Turn(element, 3, math.rad(rotation),0)
-        Show(element)
+        ToShowTable[#ToShowTable+1]=element
 
         if chancesAre(10) > decoChances.windowwall then	
 			--WindowWallMaterial = DecorateBlockWall(element, xRealLoc, zRealLoc, xLoc, zLoc, getWallDeocrationRotation(index), Level, WindowWallMaterial, "Window")
@@ -396,12 +414,12 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial)
   
   buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 
-  rotation = math.random(0,4) *90
+  -- rotation = math.random(0,4) *90
   xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
   Move(element, 1, xRealLoc, 0)
   Move(element, 3, zRealLoc, 0)
-  Move(element, 2, 10, 0)
-  Show(element)
+  
+  ToShowTable[#ToShowTable+1]=element
 
   return element, buildMaterial
 end
@@ -431,7 +449,7 @@ function addRoofDeocrate(Level, buildMaterial)
         Move(element, 2, Level * cubeDim.heigth -0.5 , 0)
         WaitForMoves(element)
         Turn(element, 3, math.rad(rotation),0)
-        Show(element)
+        ToShowTable[#ToShowTable+1]=element
         if countElements == 24 then break; end
       end
     end
@@ -464,14 +482,58 @@ function addRoofDeocrate(Level, buildMaterial)
         end
         --
 
-        Show(element)
+        ToShowTable[#ToShowTable+1]=element
         if countElements == 24 then return  end
       end
     end
   end
 end
 
+function buildAnimation()
+	local builT= TablesOfPiecesGroups["Build"]
+	axis= 2
+		for i=1,3 do
+			Move(builT[i],axis, -1*cubeDim.heigth,0)
+		end
+	moveT(TablesOfPiecesGroups["Build01Sub"],3 ,-3000,0)
+	WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
+	WaitForMoves(builT)
+	showT(builT)
+	showT(TablesOfPiecesGroups["Build01Sub"])
+	showT(TablesOfPiecesGroups["BuildCrane"])
+	
+	moveSyncInTimeT(builT,0,0,0, 3000)
+	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,0,0, 3000)
+
+	process(TablesOfPiecesGroups["BuildCrane"],
+		function(id) 
+			craneFunction = function(id)
+								while true do
+									target = math.random(-120,120)
+									WTurn(id, y_axis, math.rad(target),math.pi/10)
+									Sleep(1000)
+								end
+							end
+		
+				StartThread(craneFunction, id)
+				end
+				)
+
+	Sleep(15000)
+	showT(ToShowTable)
+	
+	moveSyncInTimeT(builT,0, -1*cubeDim.heigth,0, 50000)
+	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,-200,0, 50000)
+	WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
+	WaitForMoves(builT)
+	hideT(builT)
+	hideT(TablesOfPiecesGroups["Build01Sub"])
+	hideT(TablesOfPiecesGroups["BuildCrane"])
+end
+
+
 function buildBuilding()
+  StartThread(buildAnimation)
   selectBase()
   selectBackYard()
 
