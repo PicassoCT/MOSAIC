@@ -5,9 +5,13 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2.5}
-decoChances={ roof = 0.5, yard = 0.3, street = 1, powerpoles = 0.5, door = 0.6, windowwall= 0.7}
+local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2}
+decoChances={ roof = 0.4, yard = 0.6, street = 0.8, powerpoles = 0.5, door = 0.6, windowwall= 0.8}
 ToShowTable ={}
+
+_x_axis = 1
+_y_axis = 2
+_z_axis = 3
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -15,10 +19,76 @@ end
 AlreadyUsedPiece ={}
 center = piece "center"
 
+pericodicRotationYPieces ={}
+spinYPieces ={}
+clocks ={}
 
 function script.Create()
-
+  TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
   StartThread(buildHouse)
+  
+  spinYPieces ={
+  TablesOfPiecesGroups["StreetDeco29Sub"][1] ,
+  TablesOfPiecesGroups["RoofDeco32Sub"][1]   ,
+  TablesOfPiecesGroups["RoofDeco33Sub"][1]   ,
+  TablesOfPiecesGroups["RoofDeco38Sub"][1]   ,
+  TablesOfPiecesGroups["RoofDeco30Sub"][1]   ,
+  TablesOfPiecesGroups["RoofDeco31Sub"][1]   ,
+  }
+  
+ pericodicRotationYPieces= {
+  [TablesOfPiecesGroups["StreetWallDeco4Sub"][1]]= false, 
+  [TablesOfPiecesGroups["StreetWallDeco13Sub"][1]]= false, 
+  [TablesOfPiecesGroups["StreetWallDeco12Sub"][1]]= false, 
+  [TablesOfPiecesGroups["StreetWallDeco10Sub"][1]]= false, 
+  [TablesOfPiecesGroups["StreetWallDeco11Sub"][1]]= false, 
+  [TablesOfPiecesGroups["StreetWallDeco3Sub"][1]]= false, 
+  [TablesOfPiecesGroups["StreetWallDeco5Sub"][1]] = false 
+  }
+  windsolar= {
+  [TablesOfPiecesGroups["RoofDeco"][4]]= false, 
+  [TablesOfPiecesGroups["RoofDeco"][6]]= false, 
+  [TablesOfPiecesGroups["RoofDeco"][5]]= false
+  }
+  
+
+  
+  StartThread(rotations)
+  
+end
+
+
+function rotations()
+	process(spinYPieces,
+			function(id)
+				direction = 42*randSign()
+				Spin(id,y_axis, math.rad(direction), math.pi)
+				end
+				)
+	
+	periodicFunc= function(p) while true do Sleep(500); dir= math.random(-45,45); WTurn(p,y_axis,math.rad(dir),math.pi/1000); end;end
+	for k,v in pairs(pericodicRotationYPieces) do		
+				StartThread(periodicFunc, k)			
+	end
+	
+	windfunc= function(p) 
+		while true do 
+			Sleep(500)
+			TurnTowardsWind(p, math.pi/500, math.random(-10,10))
+			WaitForTurns(p)
+		end 
+	end
+	
+	for k,v in pairs(windsolar) do		
+		StartThread(windfunc, k)			
+	end
+	
+   showT(TablesOfPiecesGroups["StreetDeco6Sub"])
+   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1],	z_axis,math.rad(3),10)
+   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2],	z_axis,math.rad(36),10)
+
+
+
 end
 
 function buildHouse()
@@ -26,7 +96,7 @@ function buildHouse()
   hideAll(unitID)
   Sleep(1)
 
-  TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+
 
   buildBuilding()
   StartThread(showPowerPoles)
@@ -66,8 +136,6 @@ function showPowerPoles()
     end
   end
   )
-
-
 end
 
 function script.Killed(recentDamage, _)
@@ -140,49 +208,61 @@ function selectGroundBuildMaterial( )
   x,y,z =Spring.GetUnitPosition(unitID)
   x, z = math.ceil(x/1000), math.ceil(z/1000)
   nice= ((x+z)%(#diceTable)+1)
+	if not nice then nice = 1 end
   dice = diceTable[nice]
-  --echo(dice)
+
 
   return dice
 end
 
-function DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc, rotation, level, DecoMaterial,name, yoffset)
- piecegroupName = name or ""
+function getPieceGroupName(Deco)
+	t = Spring.GetUnitPieceInfo(unitID, Deco)
+
+return t.name:gsub('%d+','')
+end
+
+function DecorateBlockWall( xRealLoc,zRealLoc,  level, DecoMaterial, yoffset)
+ if count(DecoMaterial) <= 0 then 
+	 echo("Material exausted")
+	 return DecoMaterial, piecename
+ end
+ 
  y_offset = yoffset or 0
-  local Deco, piecename = getRandomBuildMaterial(DecoMaterial, piecegroupName)
-  while not Deco do
-    Deco, piecename = getRandomBuildMaterial(DecoMaterial, piecegroupName)
+  local Deco,nr = getRandomBuildMaterial(DecoMaterial)
+  while not Deco  do
+    Deco,nr = getRandomBuildMaterial(DecoMaterial)
     Sleep(1)
   end
+    
+	piecename=""
 
   if Deco then
     DecoMaterial = removeElementFromBuildMaterial(Deco, DecoMaterial)
-    Move(Deco, 1, xRealLoc, 0)
-    Move(Deco, 3, zRealLoc, 0)
-    Move(Deco, 2, level* cubeDim.heigth + y_offset, 0)
-    Turn(Deco, y_axis, math.rad(rotation),0)
+    Move(Deco, _x_axis, xRealLoc, 0)
+    Move(Deco, _y_axis, level* cubeDim.heigth + y_offset, 0)
+    Move(Deco, _z_axis, zRealLoc, 0)
+   
     ToShowTable[#ToShowTable+1]=Deco
+	piecename = getPieceGroupName(Deco)
   end
 
-  if TablesOfPiecesGroups[piecename.."Sub"] then
-    showOneOrAll(TablesOfPiecesGroups[piecename.."Sub"])
+  if TablesOfPiecesGroups[piecename..nr.."Sub"] then
+    showOneOrAll(TablesOfPiecesGroups[piecename..nr.."Sub"])
   end
 
-  return DecoMaterial, piecename
+  return DecoMaterial, piecename, Deco
 end
 
-function DecorateStreet(element,xRealLoc,zRealLoc, xLoc,zLoc)
 
-end
-
-function getRandomBuildMaterial(buildMaterial, orgstring)
-  piecegroupName = orgstring or ""
-
+function getRandomBuildMaterial(buildMaterial)
+  
   if not buildMaterial then return end
   total = count(buildMaterial)
-  if total == 0 then  echo("BuildMaterial exausted");return end
-
-
+  if total == 0 then 
+	echo("getRandomBuildMaterial:buildMaterial: exausted")
+  return 
+  end
+  
   dice = math.random(1,total)
   total =0
   for k,v in pairs (buildMaterial) do
@@ -190,11 +270,10 @@ function getRandomBuildMaterial(buildMaterial, orgstring)
       total = total + 1
       if total == dice  then
         AlreadyUsedPiece[v] = true
-        return v, piecegroupName..total
+        return v, k
       end
     end
   end
-
 end
 
 -- x:0-6 z:0-6
@@ -220,71 +299,94 @@ function  getLocationInPlan(index)
 end
 
 function isBackYardWall(index)
-	return (getLocationInPlan(index)==false)
-
-  -- if index > 7 and index < 11 then
-    -- return true
-  -- end
-
-  -- if index > 25 and index < 30 then
-    -- return true
-  -- end
-
-  -- if (index % 6) == 2 or (index %6) == 4 and (index > 11 and index < 25) then
-    -- return true
-  -- end
-
-  -- return false
-end
-
-function  getWallDeocrationRotation(index)
-
-  if index < 7 then
-    return 90
+  if index == 1 or index == 6 or index == 31 or index == 36 then return false end
+	
+  if index > 1 and index < 6 then
+    return true
   end
 
-  if index > 30 and index < 37 then
+  if index > 31 and index < 36 then
+    return true
+  end
+
+  if (index % 6) == 0 or (index %6) == 1 and not (index > 31 and index < 36) and not (index > 1 and index < 6 ) then
+    return true
+  end
+
+  return false
+end
+
+function  getWallBackyardDeocrationRotation(index)
+  if index == 1 or index == 6 or index == 31 or index == 36 then return 0 end
+	
+  if index > 1 and index < 6 then
     return 270
   end
 
-  if (index % 6) == 1 and ( index < 37 and index > 6)then
+    if index > 31 and index < 36 then
+    return 90
+  end
+
+  if (index % 6) == 0 then
     return 180
   end
-
-  if (index % 6) == 0 and ( index < 37 and index > 6) then
+  
+ if (index % 6) == 1  then
     return 0
   end
+
+return 0
 end
 
-function  getRotationOfBlockInPlan(index)
+function  getOutsideFacingRotationOfBlockFromPlan(index)
 
-  if (index > 30 and index < 37) or (index < 7)  then
-    if math.random(0,1)== 1 then
-      return 90
-    else
-      return -90
-    end
+  if (index > 30 and index < 37)  then
+	if (index == 31 ) then
+		return 270 - math.random(0,1)*90
+	end
+	
+	if (index == 36 ) then
+		return 270 + math.random(0,1)*90
+	end
+
+	return 270
+  end
+  
+   if (index > 0 and index < 7)  then
+	if (index == 1 ) then
+		return 90 + math.random(0,1)*90
+	end
+	
+	if (index == 6 ) then
+		return 90 - math.random(0,1)*90
+	end
+
+	return 90
+  end
+  
+  if ((index % 6) == 1 and ( index < 31 and index > 6)) then
+	return 180  
+  end 
+  
+  if ((index % 6) == 0 and ( index < 31 and index > 6) )then
+	return 0
   end
 
-  if ((index % 6) == 1 and ( index < 37 and index > 6)) or ((index % 6) == 0 and ( index < 37 and index > 6) )then
-    if math.random(0,1)== 1 then
-      return 0
-    else
-      return 180
-    end
-  end
+  return 0
 end
-
-
 
 function getElasticTable( ...)
-  if (not arg) then arg = {...}; arg.n = #arg end
+  local arg = arg; if (not arg) then arg = { ... } end
    mergeTable={}
-  for i=1, arg.n do 
+ for k, searchterm in pairs(arg) do
     for k, v in pairs(TablesOfPiecesGroups) do
-      if string.find(string.lower(k), string.lower(arg[i])) then
-		for a,b in pairs(TablesOfPiecesGroups[k]) do mergeTable[a] = b end
-      end
+		-- s = "Searching for "..string.lower(searchterm).." in "..string.lower(k)
+      if string.find(string.lower(k), string.lower(searchterm)) and  string.find(string.lower(k), "sub") == nil and string.find(string.lower(k), "_ncl1_") == nil then
+		-- Spring.Echo (s.." with succes")
+		for num, piecenum in pairs(TablesOfPiecesGroups[k]) do 
+			mergeTable[#mergeTable + 1] = piecenum 
+		end 
+	  end
     end
   end
 
@@ -294,10 +396,12 @@ end
 function buildDecorateGroundLvl()
   Sleep(1)
   centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
-  StreetDecoMaterial = getElasticTable("Street")
+  local StreetDecoMaterial = getElasticTable("Street")
   local DoorMaterial = TablesOfPiecesGroups["Door"]
-  DoorDecoMaterial = TablesOfPiecesGroups["DoorDeco"]
-  yardMaterial = getElasticTable("Yard")
+  local DoorDecoMaterial = TablesOfPiecesGroups["DoorDeco"]
+  local yardMaterial = getElasticTable("Yard")
+  
+
 
   materialColourName = selectGroundBuildMaterial()
   materialGroupName = materialColourName.."FloorBlock"
@@ -309,51 +413,58 @@ function buildDecorateGroundLvl()
 	Sleep(1)
 
     local index = i
+	rotation = getOutsideFacingRotationOfBlockFromPlan(index)
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
+
     if partOfPlan == true then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
-      local element = getRandomBuildMaterial(buildMaterial, materialGroupName)
+      local element, nr = getRandomBuildMaterial(buildMaterial)
       while not element do
-        element = getRandomBuildMaterial(buildMaterial, materialGroupName)
+        element, nr = getRandomBuildMaterial(buildMaterial)
         Sleep(1)
       end
 
       if element then
-        rotation = getRotationOfBlockInPlan(index)
+       
         countElements = countElements + 1
         buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-        Move(element, 1, xRealLoc, 0)
-        Move(element, 3, zRealLoc, 0)
-        ToShowTable[#ToShowTable+1]=element
-        if countElements == 24 then return materialColourName end
-		
-		rotation = getWallDeocrationRotation(index)
-			if chancesAre(10) < decoChances.street   then
-			
-				StreetMaterial,piecename  = DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc,  rotation, 0, StreetDecoMaterial)
-				if TablesOfPiecesGroups[piecename.."Sub"] then
-					showOneOrAll(TablesOfPiecesGroups[piecename.."Sub"])
-				end
+        Move(element, _x_axis, xRealLoc, 0)
+        Move(element, _z_axis, zRealLoc, 0)
+		ToShowTable[#ToShowTable+1]=element
+
+        if countElements == 24 then return materialColourName end	
+	
+			if  chancesAre(10) < decoChances.street   then	
+				rotation = getOutsideFacingRotationOfBlockFromPlan(index)			
+				StreetDecoMaterial, piecename, StreetDeco  = DecorateBlockWall( xRealLoc,zRealLoc, 0, StreetDecoMaterial, 0)
+				Turn(StreetDeco, 3, math.rad(rotation),0)
+				
 			end
 			
 			 if chancesAre(10) < decoChances.door  then
-				rotation = getWallDeocrationRotation(index)
-				DoorMaterial = DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc, rotation, 0, DoorMaterial, 3 )
+				axis = _z_axis
+				DoorMaterial,piecename, Door = DecorateBlockWall( xRealLoc, zRealLoc , 0, DoorMaterial, 0 )
+				Turn(Door,axis, math.rad(rotation),0)
 				if chancesAre(10) < decoChances.door  then
-				--	DoorDecoMaterial = DecorateBlockWall(element, xRealLoc,zRealLoc, xLoc,zLoc, rotation, 0, DoorDecoMaterial)  
+					DoorDecoMaterial, piecename, DoorDeco = DecorateBlockWall( xRealLoc, zRealLoc, 0, DoorDecoMaterial)  
+					Turn(DoorDeco,axis, math.rad(rotation),0)
 				end
 			end
       end
 
     end
 
-	if  isBackYardWall(index) == true then
+	if   isBackYardWall(index) == true then
       --BackYard
-	  Spring.Echo("Backyard")
+
       if chancesAre(10) < decoChances.yard then
-		element, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial)
-      end
-    end
+		rotation = getWallBackyardDeocrationRotation(index)
+		yardDeco, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0, rotation)
+		if yardDeco then
+			Turn(yardDeco, _z_axis, math.rad(rotation),0)
+		end
+      end    
+	end
   end
 
   return materialColourName
@@ -366,49 +477,70 @@ end
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
   Sleep(1)
   centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
-  local WindowWallMaterial = TablesOfPiecesGroups["Window"]--getElasticTable( "Window")--"Wall",
-
+  local WindowWallMaterial = getElasticTable("Window")--getElasticTable( "Window")--"Wall",
+  yardMaterial = getElasticTable("YardWall")
   countElements= 0
+
 
   for i=1, 37, 1 do
 	Sleep(1)
     local index = i
+	rotation = getOutsideFacingRotationOfBlockFromPlan(i)
+	
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
     if partOfPlan == true then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
-      local element = getRandomBuildMaterial(buildMaterial, materialGroupName)
+      local element, nr = getRandomBuildMaterial(buildMaterial)
       while not element do
-        element = getRandomBuildMaterial(buildMaterial, materialGroupName)
+        element, nr = getRandomBuildMaterial(buildMaterial)
         Sleep(1)
       end
 
       if element then
-        rotation = getRotationOfBlockInPlan(i)
+        
         countElements = countElements+1
         buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-        Move(element, 1, xRealLoc, 0)
-        Move(element, 3, zRealLoc, 0)
-        Move(element, 2, Level * cubeDim.heigth , 0)
+        Move(element, _x_axis, xRealLoc, 0)
+        Move(element, _z_axis, zRealLoc, 0)
+        Move(element, _y_axis, Level * cubeDim.heigth , 0)
         WaitForMoves(element)
-        Turn(element, 3, math.rad(rotation),0)
-        ToShowTable[#ToShowTable+1]=element
+        Turn(element, _z_axis, math.rad(rotation),0)
+		echo("Adding Element to level"..Level)
+        ToShowTable[#ToShowTable + 1] = element
 
-        if chancesAre(10) > decoChances.windowwall then	
-			--WindowWallMaterial = DecorateBlockWall(element, xRealLoc, zRealLoc, xLoc, zLoc, getWallDeocrationRotation(index), Level, WindowWallMaterial, "Window")
+        if  chancesAre(10) > decoChances.windowwall then	
+			rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+			echo("Adding Window decoration to"..Level)
+			WindowWallMaterial,  piecename, WindowDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, WindowWallMaterial, 0)
+			Turn(WindowDeco, _z_axis, math.rad(rotation),0)
         end
 
         if countElements == 24 then return materialGroupName, buildMaterial end
       end
     end
+	
+	if  isBackYardWall(index) == true then
+      --BackYard
+
+      if chancesAre(10) < decoChances.yard then
+		echo("Adding YardWall decoration to"..Level)
+		-- yardWall, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level, rotation )
+		if yardWall and roation then
+			Turn(yardWall, _z_axis, math.rad(rotation), 0)
+		end
+      end
+    end
+	
   end
 
   return materialGroupName, buildMaterial
 end
 
-function decorateBackYard(index, xLoc, zLoc, buildMaterial)
-  local element = getRandomBuildMaterial(buildMaterial)
+function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, rotation)
+  if count(buildMaterial) == 0 then return nil, buildMaterial end 
+  local element, nr = getRandomBuildMaterial(buildMaterial)
   while not element do
-    element = getRandomBuildMaterial(buildMaterial)
+    element, nr = getRandomBuildMaterial(buildMaterial)
     Sleep(1)
   end
   
@@ -416,8 +548,15 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial)
 
   -- rotation = math.random(0,4) *90
   xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
-  Move(element, 1, xRealLoc, 0)
-  Move(element, 3, zRealLoc, 0)
+  Move(element, _x_axis, xRealLoc, 0)
+  Move(element, _z_axis, zRealLoc, 0)
+  Move(element, _y_axis, Level*cubeDim.heigth, 0)
+  
+  pieceGroupName = getPieceGroupName(element)
+
+  if TablesOfPiecesGroups[pieceGroupName..nr.."Sub"] then
+	showOneOrAll(TablesOfPiecesGroups[pieceGroupName..nr.."Sub"])
+  end
   
   ToShowTable[#ToShowTable+1]=element
 
@@ -434,21 +573,21 @@ function addRoofDeocrate(Level, buildMaterial)
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
     if partOfPlan == true then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
-      local element = getRandomBuildMaterial(buildMaterial)
+      local element, nr = getRandomBuildMaterial(buildMaterial)
       while not element do
-        element = getRandomBuildMaterial(buildMaterial)
+        element, nr = getRandomBuildMaterial(buildMaterial)
         Sleep(1)
       end
 
       if element then
-        rotation = getRotationOfBlockInPlan(i)
+        rotation = getOutsideFacingRotationOfBlockFromPlan(i)
         countElements = countElements+1
         buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-        Move(element, 1, xRealLoc, 0)
-        Move(element, 3, zRealLoc, 0)
-        Move(element, 2, Level * cubeDim.heigth -0.5 , 0)
+        Move(element, _x_axis, xRealLoc, 0)
+        Move(element, _z_axis, zRealLoc, 0)
+        Move(element, _y_axis, Level * cubeDim.heigth -0.5 , 0)
         WaitForMoves(element)
-        Turn(element, 3, math.rad(rotation),0)
+        Turn(element, _z_axis, math.rad(rotation),0)
         ToShowTable[#ToShowTable+1]=element
         if countElements == 24 then break; end
       end
@@ -461,24 +600,24 @@ function addRoofDeocrate(Level, buildMaterial)
     partOfPlan, xLoc,zLoc= getLocationInPlan(i)
     if partOfPlan == true  then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length), -centerP.z + (zLoc* cubeDim.length)
-      local element, piecename = getRandomBuildMaterial(decoMaterial,"RoofDeco")
+      local element, nr = getRandomBuildMaterial(decoMaterial)
       while not element do
-        element, piecename = getRandomBuildMaterial(decoMaterial,"RoofDeco")
+        element, nr = getRandomBuildMaterial(decoMaterial)
         Sleep(1)
       end
 
       if element and chancesAre(10) > decoChances.roof then
-        rotation = getRotationOfBlockInPlan(i)
+        rotation = getOutsideFacingRotationOfBlockFromPlan(i)
         countElements = countElements+1
         decoMaterial = removeElementFromBuildMaterial(element, decoMaterial)
-        Move(element, 1, xRealLoc, 0)
-        Move(element, 3, zRealLoc, 0)
-        Move(element, 2, Level * cubeDim.heigth -0.5 + cubeDim.roofHeigth , 0)
+        Move(element, _x_axis, xRealLoc, 0)
+        Move(element, _z_axis, zRealLoc, 0)
+        Move(element, _y_axis, Level * cubeDim.heigth -0.5 + cubeDim.roofHeigth , 0)
         WaitForMoves(element)
-        --Turn(element, 3, math.rad(rotation),0)
-
-        if TablesOfPiecesGroups[piecename.."Sub"] then
-          showOneOrAll(TablesOfPiecesGroups[piecename.."Sub"])
+        Turn(element, _z_axis, math.rad(rotation),0)
+		piecename = getPieceGroupName(element)
+        if TablesOfPiecesGroups[piecename..nr.."Sub"] then
+          showOneOrAll(TablesOfPiecesGroups[piecename..nr.."Sub"])
         end
         --
 
@@ -491,19 +630,20 @@ end
 
 function buildAnimation()
 	local builT= TablesOfPiecesGroups["Build"]
-	axis= 2
-		for i=1,3 do
-			Move(builT[i],axis, -1*cubeDim.heigth,0)
-		end
-	moveT(TablesOfPiecesGroups["Build01Sub"],3 ,-3000,0)
+	axis = _y_axis
+	for i=1,3 do
+		Move(builT[i], axis,  i* -cubeDim.heigth,0)
+	end
+	moveT(TablesOfPiecesGroups["Build01Sub"],axis ,-60,0)
+	
 	WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
 	WaitForMoves(builT)
 	showT(builT)
 	showT(TablesOfPiecesGroups["Build01Sub"])
 	showT(TablesOfPiecesGroups["BuildCrane"])
 	
-	moveSyncInTimeT(builT,0,0,0, 3000)
-	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,0,0, 3000)
+	moveSyncInTimeT(builT,0,0,0, 5000)
+	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,0,0, 5000)
 
 	process(TablesOfPiecesGroups["BuildCrane"],
 		function(id) 
@@ -522,8 +662,12 @@ function buildAnimation()
 	Sleep(15000)
 	showT(ToShowTable)
 	
-	moveSyncInTimeT(builT,0, -1*cubeDim.heigth,0, 50000)
-	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,-200,0, 50000)
+	moveSyncInTimeT(builT,0, -1*cubeDim.heigth,0, 5000)
+	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,0,-1000, 8000)
+	moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"],0,0,-1000, 8000)
+	Sleep(1000)
+	hideT(TablesOfPiecesGroups["BuildCrane"])
+	Sleep(7000)
 	WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
 	WaitForMoves(builT)
 	hideT(builT)
