@@ -451,7 +451,21 @@ function getUnitSide(unitID)
 	return "gaia"
 end
 
+function getDecalMap(culture)
 
+if culture == "arabic" then
+return {
+["house"] = {
+"house_arab_decal1",
+"house_arab_decal2",
+-- "house_arab_decal3",
+"house_arab_decal4",
+}
+
+}
+end
+
+end
 
 
 function getDayTime()
