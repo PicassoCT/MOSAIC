@@ -354,7 +354,9 @@ function getUnitScaleTable(UnitDefNames)
 	["assembly"]=1.0,
 	["noone"]=1.0,
 	["propagandaserver"]=1.0,
-	["launcher"]=1.0
+	["launcher"]=1.0,
+	["ground_truck_mg"]=1.0,
+	["ground_turret_mg"]=1.0,
 	
 	
 	}
@@ -458,8 +460,9 @@ return {
 ["house"] = {
 "house_arab_decal1",
 "house_arab_decal2",
--- "house_arab_decal3",
+"house_arab_decal3",
 "house_arab_decal4",
+"house_arab_decal5",
 }
 
 }

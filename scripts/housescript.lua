@@ -116,12 +116,27 @@ function showPowerPoles()
   startHeigth= getUnitGroundHeigth(unitID)
   WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
   ToShowTable[#ToShowTable+1]=TablesOfPiecesGroups["PowerPole"][1]
-
+  teamID =Spring.GetUnitTeam(unitID)
+  
   process(TablesOfPiecesGroups["PowerPole"],
   function(id)
     if id == TablesOfPiecesGroups["PowerPole"][1] then return end
     thisHeigth= getGroundHeigthAtPiece(unitID,id)
     diff  = absdiff(startHeigth , thisHeigth)
+
+	unitsNearPole = getAllInCircle(x,z, 200, unitID, teamID)
+	boolHouseToHouseWire= false
+	process(unitsNearPole,
+			function(id)
+				if Spring.GetUnitDefID(id) == UnitDefNames["house"].id then
+					boolHouseToHouseWire = true
+				end
+			end
+			)
+	if boolHouseToHouseWire == true then
+		ToShowTable[#ToShowTable+1]=id
+	return
+	end	
 
     if diff < 100 then
       WTurn(id,z_axis, math.rad(math.random(-10,10)),0)
@@ -632,7 +647,7 @@ function buildAnimation()
 	local builT= TablesOfPiecesGroups["Build"]
 	axis = _y_axis
 	for i=1,3 do
-		Move(builT[i], axis,  i* -cubeDim.heigth,0)
+		WMove(builT[i], axis,  i* -cubeDim.heigth*2,0)
 	end
 	moveT(TablesOfPiecesGroups["Build01Sub"],axis ,-60,0)
 	
@@ -662,9 +677,11 @@ function buildAnimation()
 	Sleep(15000)
 	showT(ToShowTable)
 	
-	moveSyncInTimeT(builT,0, -1*cubeDim.heigth,0, 5000)
-	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,0,-1000, 8000)
-	moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"],0,0,-1000, 8000)
+	for i=1,3 do
+		Move(builT[i], _y_axis,  i* -cubeDim.heigth*10, 3*math.pi)
+	end
+	moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"],0,0, -1000,8000)
+	moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"],0,0, -1000,8000)
 	Sleep(1000)
 	hideT(TablesOfPiecesGroups["BuildCrane"])
 	Sleep(7000)
