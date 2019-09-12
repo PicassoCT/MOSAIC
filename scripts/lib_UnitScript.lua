@@ -2539,6 +2539,20 @@ validator = function(id)
 	end
 end
 
+function contains(T, key)
+	if T[key] then 
+		return true 
+	end
+
+	for i=1,#T do
+		if T[i] and T[i] == key then
+			return true 
+		end
+	end
+
+	return false
+end
+
 --> takes a Table, and executes Function on it
 -- non Function Values are handed to the function following it
 -- returning nil removes a element from the process chain

@@ -21,11 +21,14 @@ center = piece "center"
 
 pericodicRotationYPieces ={}
 spinYPieces ={}
-clocks ={}
+
 
 function script.Create()
   TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    x,y,z= Spring.GetUnitPosition(unitID)
+  math.randomseed(x+y+z)
   StartThread(buildHouse)
+
   
   spinYPieces ={
   TablesOfPiecesGroups["StreetDeco29Sub"][1] ,
@@ -50,24 +53,22 @@ function script.Create()
   [TablesOfPiecesGroups["RoofDeco"][6]]= false, 
   [TablesOfPiecesGroups["RoofDeco"][5]]= false
   }
-  
-
-  
-  StartThread(rotations)
-  
+   
+  StartThread(rotations) 
 end
-
 
 function rotations()
 	process(spinYPieces,
 			function(id)
 				direction = 42*randSign()
 				Spin(id,y_axis, math.rad(direction), math.pi)
+			
 				end
 				)
 	
 	periodicFunc= function(p) while true do Sleep(500); dir= math.random(-45,45); WTurn(p,y_axis,math.rad(dir),math.pi/1000); end;end
 	for k,v in pairs(pericodicRotationYPieces) do		
+			
 				StartThread(periodicFunc, k)			
 	end
 	
@@ -82,10 +83,14 @@ function rotations()
 	for k,v in pairs(windsolar) do		
 		StartThread(windfunc, k)			
 	end
-	
-   showT(TablesOfPiecesGroups["StreetDeco6Sub"])
-   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1],	z_axis,math.rad(3),10)
-   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2],	z_axis,math.rad(36),10)
+	Sleep(500)
+	clockPiece= piece("StreetDeco06")
+	if  contains(ToShowTable, clockPiece) then
+		
+	   showT(TablesOfPiecesGroups["StreetDeco6Sub"])
+	   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1],	z_axis,math.rad(3),10)
+	   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2],	z_axis,math.rad(36),10)
+   end
 
 
 
@@ -267,7 +272,6 @@ function DecorateBlockWall( xRealLoc,zRealLoc,  level, DecoMaterial, yoffset)
 
   return DecoMaterial, piecename, Deco
 end
-
 
 function getRandomBuildMaterial(buildMaterial)
   
@@ -494,6 +498,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
   centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
   local WindowWallMaterial = getElasticTable("Window")--getElasticTable( "Window")--"Wall",
   yardMaterial = getElasticTable("YardWall")
+  streetWall = getElasticTable("StreetWall")
   countElements= 0
 
 
@@ -541,10 +546,18 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 		echo("Adding YardWall decoration to"..Level)
 		-- yardWall, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level, rotation )
 		if yardWall and roation then
-			Turn(yardWall, _z_axis, math.rad(rotation), 0)
+			-- Turn(yardWall, _z_axis, math.rad(rotation), 0)
 		end
-      end
+      end 	 
     end
+	
+	 -- if chancesAre(10) < decoChances.yard then
+		-- echo("Adding YardWall decoration to"..Level)
+		-- streetWallDeco, streetWall = decorateBackYard(index, xLoc, zLoc, streetWall, Level, rotation )
+		-- if streetWallDeco and roation then
+			-- Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
+		-- end
+      -- end
 	
   end
 
@@ -691,7 +704,6 @@ function buildAnimation()
 	hideT(TablesOfPiecesGroups["Build01Sub"])
 	hideT(TablesOfPiecesGroups["BuildCrane"])
 end
-
 
 function buildBuilding()
   StartThread(buildAnimation)
