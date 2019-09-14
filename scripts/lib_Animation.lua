@@ -41,31 +41,31 @@ end
 
 -->Move Unit to Position
 function MoveUnit(id, px,py,pz, speed,ox,oy,oz )
-ox,oy,oz = ox or 0,oy or 0,oz or 0
+	ox,oy,oz = ox or 0,oy or 0,oz or 0
 
-if not speed or speed == 0 then 
-	Spring.SetUnitPosition(id,px + ox,py +oy,pz + oz)
-	return
-end
-
-Spring.MoveCtrl.Enable(id,true)
-u={}
-p={x=px,y=py,z=pz}
-u.x,u.y,u.z = Spring.GetUnitPosition(id)
-
-dist= distance(p,u)
-timeInMsSecond = dist/speed
-timeInto = 0
-while distance(p,u) > 0.1 do
-
+	if not speed or speed == 0 then 
+		Spring.SetUnitPosition(id,px + ox,py +oy,pz + oz)
+		return
+	end
+	 
+	Spring.MoveCtrl.Enable(id,true)
+	u={}
+	p={x=px,y=py,z=pz}
 	u.x,u.y,u.z = Spring.GetUnitPosition(id)
-	v= mix(p,u,timeInto/timeInMsSecond)
-	Spring.MoveCtrl.SetPosition(id, v.x+ ox, v.y + oy, v.z +oz)
-	timeInto= math.min(timeInMsSecond,timeInto+1)
-	Sleep(1)
-end
 
-Spring.MoveCtrl.Disable(id,true)
+	dist= distance(p,u)
+	timeInMsSecond = dist/speed
+	timeInto = 0
+		while distance(p,u) > 0.1 do
+
+			u.x,u.y,u.z = Spring.GetUnitPosition(id)
+			v= mix(p,u,timeInto/timeInMsSecond)
+			Spring.MoveCtrl.SetPosition(id, v.x+ ox, v.y + oy, v.z +oz)
+			timeInto= math.min(timeInMsSecond,timeInto+1)
+			Sleep(1)
+		end
+
+	Spring.MoveCtrl.Disable(id,true)
 end
 
 -->CombinedWaitForMove

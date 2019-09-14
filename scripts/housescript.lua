@@ -6,7 +6,8 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2}
-decoChances={ roof = 0.4, yard = 0.6, street = 0.8, powerpoles = 0.5, door = 0.6, windowwall= 0.8}
+decoChances={ roof = 0.4, yard = 0.6, yardwall = 0.4, street = 0.8, powerpoles = 0.5, door = 0.6, windowwall= 0.8, streetwall=0.3}
+  centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 ToShowTable ={}
 
 _x_axis = 1
@@ -20,6 +21,7 @@ AlreadyUsedPiece ={}
 center = piece "center"
 
 pericodicRotationYPieces ={}
+pericodicMovingZPieces = {}
 spinYPieces ={}
 
 
@@ -54,6 +56,13 @@ function script.Create()
   [TablesOfPiecesGroups["RoofDeco"][5]]= false
   }
    
+   pericodicMovingZPieces={
+   [TablesOfPiecesGroups["RoofDeco29Sub"][1]]= 5000, 
+   [TablesOfPiecesGroups["RoofDeco54Sub"][1]]= 5000, 
+   [TablesOfPiecesGroups["RoofDeco55Sub"][1]]= 5000, 
+   [TablesOfPiecesGroups["RoofDeco56Sub"][1]]= 5000, 
+   }
+   
   StartThread(rotations) 
 end
 
@@ -66,7 +75,7 @@ function rotations()
 				end
 				)
 	
-	periodicFunc= function(p) while true do Sleep(500); dir= math.random(-45,45); WTurn(p,y_axis,math.rad(dir),math.pi/1000); end;end
+	periodicFunc= function(p) while true do Sleep(500); dir= math.random(-45,45); WTurn(p,_y_axis,math.rad(dir),math.pi/250); end;end
 	for k,v in pairs(pericodicRotationYPieces) do		
 			
 				StartThread(periodicFunc, k)			
@@ -92,7 +101,20 @@ function rotations()
 	   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2],	z_axis,math.rad(36),10)
    end
 
+	periodicMovementFunc= function(p, value) 
+							while true do
+								Sleep(500); 	
+								Move(p,_x_axis,math.rad(value), 5); 
+								WaitForMoves(p)
+								Move(p,_x_axis,math.rad(0), 5); 
+								WaitForMoves(p)
+								end;
+							end
 
+	for k,v in pairs(pericodicMovingZPieces) do
+		StartThread(periodicMovementFunc, k, v)		
+	
+	end
 
 end
 
@@ -197,7 +219,7 @@ function showOneOrAll(T)
     return showOne(T)
   else
 		for num, val in pairs(T) do
-			ToShowTable[#ToShowTable+1]=val
+			ToShowTable[#ToShowTable + 1] = val
 		end
     return
   end
@@ -242,19 +264,25 @@ return t.name:gsub('%d+','')
 end
 
 function DecorateBlockWall( xRealLoc,zRealLoc,  level, DecoMaterial, yoffset)
- if count(DecoMaterial) <= 0 then 
+ countedElements = count(DecoMaterial)
+ 	piecename=""
+ if countedElements <= 0 then 
 	 echo("Material exausted")
-	 return DecoMaterial, piecename
+	 return DecoMaterial
  end
  
  y_offset = yoffset or 0
+ attempts= 0
   local Deco,nr = getRandomBuildMaterial(DecoMaterial)
-  while not Deco  do
+  while not Deco  and attempts < countedElements do
     Deco,nr = getRandomBuildMaterial(DecoMaterial)
     Sleep(1)
+	attempts= attempts+1
   end
+  
+  if attempts >= countedElements then return DecoMaterial end
     
-	piecename=""
+
 
   if Deco then
     DecoMaterial = removeElementFromBuildMaterial(Deco, DecoMaterial)
@@ -270,13 +298,17 @@ function DecorateBlockWall( xRealLoc,zRealLoc,  level, DecoMaterial, yoffset)
     showOneOrAll(TablesOfPiecesGroups[piecename..nr.."Sub"])
   end
 
-  return DecoMaterial, piecename, Deco
+  return DecoMaterial, Deco
 end
 
 function getRandomBuildMaterial(buildMaterial)
   
   if not buildMaterial then return end
-  total = count(buildMaterial)
+  if not type(buildMaterial)=="table" then 
+	echo("buildMaterial recieved"..toString(buildMaterial).." of type "..type(buildMaterial))
+	return
+  end
+ total = count(buildMaterial)
   if total == 0 then 
 	echo("getRandomBuildMaterial:buildMaterial: exausted")
   return 
@@ -284,12 +316,12 @@ function getRandomBuildMaterial(buildMaterial)
   
   dice = math.random(1,total)
   total =0
-  for k,v in pairs (buildMaterial) do
-    if not AlreadyUsedPiece[v] then
+  for num, piecenum in pairs (buildMaterial) do
+    if (not AlreadyUsedPiece[piecenum]  and type(num)== "number" and type(piecenum)=="number" )then
       total = total + 1
-      if total == dice  then
-        AlreadyUsedPiece[v] = true
-        return v, k
+      if total == dice   then
+        AlreadyUsedPiece[piecenum] = true
+        return piecenum, num
       end
     end
   end
@@ -394,27 +426,90 @@ function  getOutsideFacingRotationOfBlockFromPlan(index)
   return 0
 end
 
-function getElasticTable( ...)
+function  getStreetWallDecoRotation(index)
+offset= 180
+
+  if (index > 30 and index < 37)  then
+	if (index == 31 ) then
+		return offset+ 90 - math.random(0,1)*90
+	end
+	
+	if (index == 36 ) then
+		return offset+  90 + math.random(0,1)*90
+	end
+
+	return offset+ 90
+  end
+  
+   if (index > 0 and index < 7)  then
+	if (index == 1 ) then
+		return offset+ 270 + math.random(0,1)*90
+	end
+	
+	if (index == 6 ) then
+		return offset+ 270 - math.random(0,1)*90
+	end
+
+	return offset+ 270
+  end
+  
+  if ((index % 6) == 1 and ( index < 31 and index > 6)) then
+	return offset+ 0  
+  end 
+  
+  if ((index % 6) == 0 and ( index < 31 and index > 6) )then
+	return offset+ 180
+  end
+
+  return offset
+end
+
+
+function getElasticTable( ... )
   local arg = arg; if (not arg) then arg = { ... } end
-   mergeTable={}
+   resulT={}
  for k, searchterm in pairs(arg) do
     for k, v in pairs(TablesOfPiecesGroups) do
-		-- s = "Searching for "..string.lower(searchterm).." in "..string.lower(k)
       if string.find(string.lower(k), string.lower(searchterm)) and  string.find(string.lower(k), "sub") == nil and string.find(string.lower(k), "_ncl1_") == nil then
-		-- Spring.Echo (s.." with succes")
-		for num, piecenum in pairs(TablesOfPiecesGroups[k]) do 
-			mergeTable[#mergeTable + 1] = piecenum 
+		if TablesOfPiecesGroups[k] then
+			for num, piecenum in pairs(TablesOfPiecesGroups[k]) do 
+				resulT[#resulT + 1] = piecenum 
+			end 
 		end 
 	  end
     end
   end
 
-  return mergeTable
+  return resulT
+end
+
+function getElasticTableDebugCopy( ... )
+  local arg = arg; if (not arg) then arg = { ... } end
+   resulT={}
+ for k, searchterm in pairs(arg) do
+	if type(searchterm)== "string" then
+    for k, v in pairs(TablesOfPiecesGroups) do
+		s = "Searching for "..string.lower(searchterm).." in "..string.lower(k)
+      if string.find( string.lower(k), string.lower(searchterm)) and  string.find(string.lower(k), "sub") == nil and string.find(string.lower(k), "_ncl1_") == nil then
+		Spring.Echo (s.." with succes")
+		if TablesOfPiecesGroups[k] then
+			for num, piecenum in pairs(TablesOfPiecesGroups[k]) do 
+				Spring.Echo("Adding "..k.." "..num)
+				resulT[#resulT + 1] = piecenum 
+			end 
+		end 
+	  else
+		Spring.Echo (s.." failing")
+	  end
+    end
+    end
+  end
+  return resulT
 end
 
 function buildDecorateGroundLvl()
   Sleep(1)
-  centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
+
   local StreetDecoMaterial = getElasticTable("Street")
   local DoorMaterial = TablesOfPiecesGroups["Door"]
   local DoorDecoMaterial = TablesOfPiecesGroups["DoorDeco"]
@@ -455,17 +550,17 @@ function buildDecorateGroundLvl()
 	
 			if  chancesAre(10) < decoChances.street   then	
 				rotation = getOutsideFacingRotationOfBlockFromPlan(index)			
-				StreetDecoMaterial, piecename, StreetDeco  = DecorateBlockWall( xRealLoc,zRealLoc, 0, StreetDecoMaterial, 0)
+				StreetDecoMaterial,  StreetDeco  = DecorateBlockWall( xRealLoc,zRealLoc, 0, StreetDecoMaterial, 0)
 				Turn(StreetDeco, 3, math.rad(rotation),0)
 				
 			end
 			
 			 if chancesAre(10) < decoChances.door  then
 				axis = _z_axis
-				DoorMaterial,piecename, Door = DecorateBlockWall( xRealLoc, zRealLoc , 0, DoorMaterial, 0 )
+				DoorMaterial, Door = DecorateBlockWall( xRealLoc, zRealLoc , 0, DoorMaterial, 0 )
 				Turn(Door,axis, math.rad(rotation),0)
 				if chancesAre(10) < decoChances.door  then
-					DoorDecoMaterial, piecename, DoorDeco = DecorateBlockWall( xRealLoc, zRealLoc, 0, DoorDecoMaterial)  
+					DoorDecoMaterial,  DoorDeco = DecorateBlockWall( xRealLoc, zRealLoc, 0, DoorDecoMaterial)  
 					Turn(DoorDeco,axis, math.rad(rotation),0)
 				end
 			end
@@ -478,7 +573,7 @@ function buildDecorateGroundLvl()
 
       if chancesAre(10) < decoChances.yard then
 		rotation = getWallBackyardDeocrationRotation(index)
-		yardDeco, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0, rotation)
+		 yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
 		if yardDeco then
 			Turn(yardDeco, _z_axis, math.rad(rotation),0)
 		end
@@ -495,10 +590,10 @@ end
 
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
   Sleep(1)
-  centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
   local WindowWallMaterial = getElasticTable("Window")--getElasticTable( "Window")--"Wall",
-  yardMaterial = getElasticTable("YardWall")
-  streetWall = getElasticTable("StreetWall")
+  local yardMaterial = getElasticTable("YardWall")
+  local streetWallMaterial = getElasticTable("StreetWall")
+
   countElements= 0
 
 
@@ -530,8 +625,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
         if  chancesAre(10) > decoChances.windowwall then	
 			rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-			echo("Adding Window decoration to"..Level)
-			WindowWallMaterial,  piecename, WindowDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, WindowWallMaterial, 0)
+			-- echo("Adding Window decoration to"..Level)
+			WindowWallMaterial,  WindowDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, WindowWallMaterial, 0)
 			Turn(WindowDeco, _z_axis, math.rad(rotation),0)
         end
 
@@ -543,34 +638,44 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
       --BackYard
 
       if chancesAre(10) < decoChances.yard then
-		echo("Adding YardWall decoration to"..Level)
-		-- yardWall, yardMaterial = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level, rotation )
-		if yardWall and roation then
-			-- Turn(yardWall, _z_axis, math.rad(rotation), 0)
+		assert(type(yardMaterial)=="table")
+	
+		yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level )
+		if yardWall then
+			rotation  = getWallBackyardDeocrationRotation(index)
+			Turn(yardWall, _z_axis, math.rad(rotation),0)
 		end
       end 	 
     end
 	
-	 -- if chancesAre(10) < decoChances.yard then
-		-- echo("Adding YardWall decoration to"..Level)
-		-- streetWallDeco, streetWall = decorateBackYard(index, xLoc, zLoc, streetWall, Level, rotation )
-		-- if streetWallDeco and roation then
-			-- Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
-		-- end
-      -- end
+	 if chancesAre(10) < decoChances.streetwall then
+		
+		streetWallMaterial, streetWallDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, streetWallMaterial, 0)
+		
+		if streetWallDeco then
+			rotation = getStreetWallDecoRotation(index) 
+			Turn(streetWallDeco, _y_axis, math.rad(rotation), 0)
+		end
+      end
 	
   end
 
   return materialGroupName, buildMaterial
 end
 
-function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, rotation)
-  if count(buildMaterial) == 0 then return nil, buildMaterial end 
+function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
+	countedElements = count(buildMaterial)
+  if countedElements == 0 then return buildMaterial end 
+  
   local element, nr = getRandomBuildMaterial(buildMaterial)
-  while not element do
+  attempts = 0
+  while not element and attempts < countedElements do
     element, nr = getRandomBuildMaterial(buildMaterial)
     Sleep(1)
+	attempts = attempts +1
   end
+  
+  if attempts >= countedElements then return buildMaterial end
   
   buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 
@@ -588,12 +693,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, rotation)
   
   ToShowTable[#ToShowTable+1]=element
 
-  return element, buildMaterial
+  return  buildMaterial,element
 end
 
 function addRoofDeocrate(Level, buildMaterial)
-  centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
-
   countElements= 0
 
   for i=1, 37, 1 do
