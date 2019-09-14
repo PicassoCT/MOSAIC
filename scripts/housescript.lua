@@ -23,6 +23,15 @@ center = piece "center"
 pericodicRotationYPieces ={}
 pericodicMovingZPieces = {}
 spinYPieces ={}
+gameConfig = getGameConfig()
+
+function timeOfDay()
+
+	WholeDay = gameConfig.daylength
+		timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
+			--echo(getDayTime(timeFrame%WholeDay, WholeDay))
+    return ((timeFrame % (WholeDay)) / (WholeDay))
+end
 
 
 function script.Create()
@@ -83,8 +92,17 @@ function rotations()
 	
 	windfunc= function(p) 
 		while true do 
-			Sleep(500)
-			TurnTowardsWind(p, math.pi/500, math.random(-10,10))
+			Sleep(1000)
+			percentage = timeOfDay()
+			if percentage > 0.25 and percentage < 0.75 then
+				percentage = (percentage -0.25)/0.5
+				degree = (percentage * 180) +  math.random(-10,10)
+				Turn(p, _z_axis, math.rad(degree), math.pi/100)
+				echo("Day")
+			else
+				TurnTowardsWind(p, math.pi/100, math.random(-10,10))
+				echo("Night")
+			end
 			WaitForTurns(p)
 		end 
 	end

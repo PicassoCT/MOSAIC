@@ -90,7 +90,6 @@ function getUnitDefNames(UnitDefs)
 	return UnitDefNames
 end
 
-
 function getTypeTable(UnitDefNames, StringTable)
 	local Stringtable = StringTable
 	retVal = {}
@@ -122,7 +121,6 @@ function getSatteliteTypes(UnitDefs)
 	}
 	return getTypeTable(UnitDefNames, typeTable)
 end
-
 
 function getCultureUnitModelNames(cultureName, unitType, UnitDefNames)
 translation ={
@@ -334,6 +332,7 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 	
 	return valuetable
 end
+
 function getSatelliteAltitudeTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
@@ -344,6 +343,7 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 	
 	return valuetable
 end
+
 function getUnitScaleTable(UnitDefNames)
 	local defaultScaleTable={}
 	realScaleTable ={
@@ -441,7 +441,6 @@ function getUnitCanBuildList(unitDefID, closedTableExtern, root)
 	
 	return Result,closedTable
 end
-
 
 ProtagonUnitTypeList = getUnitCanBuildList(UnitDefNames["protagonsafehouse"].id)
 AntagonUnitTypeList = getUnitCanBuildList(UnitDefNames["antagonsafehouse"].id)
