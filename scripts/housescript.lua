@@ -6,8 +6,16 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2}
-decoChances={ roof = 0.4, yard = 0.6, yardwall = 0.4, street = 0.8, powerpoles = 0.5, door = 0.6, windowwall= 0.8, streetwall=0.3}
-  centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
+supriseChances={ roof = 0.5, yard = 0.6, yardwall = 0.4, street = 0.7, powerpoles = 0.5, door = 0.6, windowwall= 0.7, streetwall=0.5}
+boringChances={ roof = 0.2, yard = 0.1, yardwall = 0.4, street = 0.1, powerpoles = 0.5, door = 0.6, windowwall= 0.5, streetwall=0.1}
+decoChances = boringChances
+x,y,z= Spring.GetUnitPosition(unitID)
+geoHash= (x-(x-math.floor(x)))+(y-(y-math.floor(y)))+(z-(z-math.floor(z)))
+Spring.Echo("House geohash:"..geoHash)
+if geoHash % 2 == 0 then
+	decoChances = supriseChances 
+end
+centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
 ToShowTable ={}
 
 _x_axis = 1
@@ -98,10 +106,8 @@ function rotations()
 				percentage = (percentage -0.25)/0.5
 				degree = (percentage * 180) +  math.random(-10,10)
 				Turn(p, _z_axis, math.rad(degree), math.pi/100)
-				echo("Day")
 			else
 				TurnTowardsWind(p, math.pi/100, math.random(-10,10))
-				echo("Night")
 			end
 			WaitForTurns(p)
 		end 
@@ -285,7 +291,6 @@ function DecorateBlockWall( xRealLoc,zRealLoc,  level, DecoMaterial, yoffset)
  countedElements = count(DecoMaterial)
  	piecename=""
  if countedElements <= 0 then 
-	 echo("Material exausted")
 	 return DecoMaterial
  end
  
@@ -322,14 +327,10 @@ end
 function getRandomBuildMaterial(buildMaterial)
   
   if not buildMaterial then return end
-  if not type(buildMaterial)=="table" then 
-	echo("buildMaterial recieved"..toString(buildMaterial).." of type "..type(buildMaterial))
-	return
-  end
+  if not type(buildMaterial)=="table" then 	return  end
  total = count(buildMaterial)
   if total == 0 then 
-	echo("getRandomBuildMaterial:buildMaterial: exausted")
-  return 
+	return 
   end
   
   dice = math.random(1,total)
@@ -509,10 +510,10 @@ function getElasticTableDebugCopy( ... )
     for k, v in pairs(TablesOfPiecesGroups) do
 		s = "Searching for "..string.lower(searchterm).." in "..string.lower(k)
       if string.find( string.lower(k), string.lower(searchterm)) and  string.find(string.lower(k), "sub") == nil and string.find(string.lower(k), "_ncl1_") == nil then
-		Spring.Echo (s.." with succes")
+		-- Spring.Echo (s.." with succes")
 		if TablesOfPiecesGroups[k] then
 			for num, piecenum in pairs(TablesOfPiecesGroups[k]) do 
-				Spring.Echo("Adding "..k.." "..num)
+				-- Spring.Echo("Adding "..k.." "..num)
 				resulT[#resulT + 1] = piecenum 
 			end 
 		end 
@@ -603,7 +604,7 @@ function buildDecorateGroundLvl()
 end
 
 function chancesAre(outOfX)
-  return (math.random(1,outOfX)/outOfX)
+  return (math.random(0,outOfX)/outOfX)
 end
 
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
@@ -638,10 +639,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         Move(element, _y_axis, Level * cubeDim.heigth , 0)
         WaitForMoves(element)
         Turn(element, _z_axis, math.rad(rotation),0)
-		echo("Adding Element to level"..Level)
+		-- echo("Adding Element to level"..Level)
         ToShowTable[#ToShowTable + 1] = element
 
-        if  chancesAre(10) > decoChances.windowwall then	
+        if  chancesAre(10) < decoChances.windowwall then	
 			rotation = getOutsideFacingRotationOfBlockFromPlan(index)
 			-- echo("Adding Window decoration to"..Level)
 			WindowWallMaterial,  WindowDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, WindowWallMaterial, 0)
@@ -755,7 +756,7 @@ function addRoofDeocrate(Level, buildMaterial)
         Sleep(1)
       end
 
-      if element and chancesAre(10) > decoChances.roof then
+      if element and chancesAre(10) < decoChances.roof then
         rotation = getOutsideFacingRotationOfBlockFromPlan(i)
         countElements = countElements+1
         decoMaterial = removeElementFromBuildMaterial(element, decoMaterial)

@@ -1,11 +1,11 @@
 model = {
-	radius = 25.0,
+	radius = 10.0,
 	height = 40,
 	tex1 = "arab_civilian_diffuse.png",
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
-	--rotAxisSigns = {-1, -1, -1}
+	-- rotAxisSigns = {1, -1, 1}
 	--[[
 	pbr = {
 		flipUV = true, --flip second component of UV map. False is for DDS, True is for everything else. For now keep everything either in DDS or in PNG/TGA
