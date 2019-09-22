@@ -314,16 +314,18 @@ function getCivilianAnimationStates()
 return {
 -- Upper Body States
 Slaved 		="STATE_SLAVED", -- do nothing
-Standing		="STATE_STANDING",
 Idle	   		="STATE_IDLE"    ,
 Filming  		="STATE_FILMING" ,
+Phone	 		="STATE_PHONE" ,
 Wailing  		="STATE_WAILING" ,
 Talking			= "STATE_TALKING",
 
 --Coupled Cycles	
+Standing		="STATE_STANDING",
 Aiming		="STATE_AIMING"  ,
 Hit 			="STATE_HIT" ,
 Death 		="STATE_DEATH"   ,
+Transported 		="STATE_TRANSPORTED"   ,
 -- Self Ending Cycles		
 Walking		="STATE_WALKING"		,
 Running		="STATE_RUNNING"       ,
