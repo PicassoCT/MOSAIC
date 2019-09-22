@@ -38,7 +38,7 @@ local scriptEnv = {
 	y_axis = y_axis,
 	z_axis = z_axis,
 }
-
+eAnimState = getCivilianAnimationStates()
 upperBodyPieces =
 {
 	[Head1	]  = true,
@@ -68,6 +68,7 @@ end
 boolWalking = false
 boolTurning = false
 boolTurnLeft = false
+boolDecoupled = false
 
 function script.Create()
     
@@ -87,7 +88,7 @@ end
 function testLoop()
 	while true do
 	Sleep(500)
-	PlayAnimation(lowerBodyAnimations[State_Walking],{})
+	PlayAnimation(lowerBodyAnimations[eAnimState.Walking],{})
 
 	end
 end
@@ -541,25 +542,13 @@ Animations = {
 	-- Usually the Lower animation state is the master- but the upper can detach, so seperate upper Body Animations are possible
 
 
-State_Slaved = "slaved" --does no animation
-State_Standing = "standing"
-State_Idle	   = "idle"
---Interaction Cycles
-State_Aiming = "aim"
-State_Hit 	= "hit"
-State_Death ="dieing"
---Walk Cycle
-State_Walking = "walk"
-State_Running = "running"
-State_CoverWalk = "coverwalk"
-State_Limping = "wounded"
 
 uppperBodyAnimations ={
-[State_Walking] = "WALKCYCLE_UNLOADED",
-[State_Slaved] = "SLAVED"
+[eAnimState.Walking] = "WALKCYCLE_UNLOADED",
+[eAnimState.Slaved] = "SLAVED"
 }
 lowerBodyAnimations ={
-[State_Walking] = "WALKCYCLE_UNLOADED"
+[eAnimState.Walking] = "WALKCYCLE_UNLOADED"
 
 }
 
@@ -700,7 +689,7 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 		end
 		
 	else
-		setAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride)
+		StartThread(setAnimationState, AnimationstateUpperOverride, AnimationstateLowerOverride)
 	end
 	
 	if conditionFunction then StartThread(conditionFunction) end
@@ -729,17 +718,19 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 		if AnimationstateLowerOverride then boolLowerStateWaitForEnd = false end
 end
 
-function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
+--Exposed Function
+function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
+	boolDecoupled = boolDecoupledStates
 	locAnimationstateUpperOverride =AnimationstateUpperOverride
 	locAnimationstateLowerOverride = AnimationstateLowerOverride
-	locBoolInstantOverride = boolInstantOverride
-	locConditionFunction = conditionFunction
+	locBoolInstantOverride = boolInstantOverride or false
+	locConditionFunction = conditionFunction or (function() return true end)
 	boolStartThread = true
 end
 
 
 function conditionalFilterOutUpperBodyTable()
-	if UpperAnimationState == State_Slaved  then 
+	if boolDecoupled == false  then 
 		return {}
 	 else
 		return upperBodyPieces
@@ -747,34 +738,34 @@ function conditionalFilterOutUpperBodyTable()
 end
 
 UpperAnimationStateFunctions ={
-[State_Standing] = 	function () 
+[eAnimState.Standing] = 	function () 
 						resetAll(unitID)
 						Sleep(100)
 						
-						return State_Standing
+						return eAnimState.Standing
 					end,
-[State_Walking] = 	function () 
+[eAnimState.Walking] = 	function () 
 					
-						return State_Walking
+						return eAnimState.Walking
 					end,
-[State_Slaved] = 	function () 
+[eAnimState.Slaved] = 	function () 
 					
-						return State_Slaved
+						return eAnimState.Slaved
 					end
 }
 
 LowerAnimationStateFunctions ={
-[State_Walking] = function()
-						PlayAnimation(Animations[lowerBodyAnimations[State_Walking]], conditionalFilterOutUpperBodyTable())					
-						return State_Walking
+[eAnimState.Walking] = function()
+						PlayAnimation(Animations[lowerBodyAnimations[eAnimState.Walking]], conditionalFilterOutUpperBodyTable())					
+						return eAnimState.Walking
 				end,
-[State_Standing] = 	function () 
+[eAnimState.Standing] = 	function () 
 						WMove(center,y_axis, 0, math.pi)
 						Sleep(100)
-						return State_Standing
+						return eAnimState.Standing
 					end
 }
-LowerAnimationState = State_Standing
+LowerAnimationState = eAnimState.Standing
 boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
 
@@ -806,7 +797,7 @@ local animationTable = AnimationTable
 
 end
 
-UpperAnimationState = State_Standing
+UpperAnimationState = eAnimState.Standing
 boolUpperStateWaitForEnd = false
 boolUpperAnimationEnded = false
 
@@ -839,11 +830,11 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
-	StartThread(setAnimationState, State_Standing, State_Standing)
+	StartThread(setAnimationState, eAnimState.Standing, eAnimState.Standing)
 end
 
 function script.StartMoving()
-	StartThread(setAnimationState, State_Walking, State_Walking)
+	StartThread(setAnimationState, eAnimState.Walking, eAnimState.Walking)
 end
 
 function script.StopMoving()

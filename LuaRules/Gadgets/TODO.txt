@@ -1,0 +1,8 @@
+
+--uprising
+	-- speach
+	-- civilians split into factions
+	-- foritifcation of buildings
+	-- plunderings and fires
+	-- Aerosols for Peace-fication and crowd controll
+--Military cleanup once uprising ends (neutral Tanks)

@@ -34,6 +34,7 @@ function getGameConfig()
 	 civilianInterestRadius = 750,
 	 groupChatDistance = 150,
 	 inHundredChanceOfInterestInDisaster = 75,
+	 inHundredChanceOfDisasterWailing = 35,
 	 mainStreetModulo	= 4,
 	 maxIterationSteps = 2048,
 	 
@@ -309,6 +310,28 @@ function getCivilianTypeTable(UnitDefs)
 	return retTable, getTypeTable(UnitDefNames, typeTable)
 end
 
+function getCivilianAnimationStates()
+return {
+-- Upper Body States
+Slaved 		="STATE_SLAVED", -- do nothing
+Standing		="STATE_STANDING",
+Idle	   		="STATE_IDLE"    ,
+Filming  		="STATE_FILMING" ,
+Wailing  		="STATE_WAILING" ,
+Talking			= "STATE_TALKING",
+
+--Coupled Cycles	
+Aiming		="STATE_AIMING"  ,
+Hit 			="STATE_HIT" ,
+Death 		="STATE_DEATH"   ,
+-- Self Ending Cycles		
+Walking		="STATE_WALKING"		,
+Running		="STATE_RUNNING"       ,
+CoverWalk 	="STATE_COVERWALK"     ,
+Limping 		="STATE_LIMPING"   
+}
+
+end
 framesPerSecond = 30
 
 function getSatelliteTimeOutTable(UnitDefs) --per Frame

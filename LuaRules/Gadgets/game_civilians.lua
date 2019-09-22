@@ -26,7 +26,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	--assert(CivilianTypeTable["truck"])
 	--assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
 	MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
-	
+	CivAnimStates = getCivilianAnimationStates()
 	
 	GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
 	GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
@@ -39,8 +39,12 @@ if (gadgetHandler:IsSyncedCode()) then
 local houseDefID = UnitDefNames["house"].id	
 	gaiaTeamID = Spring.GetGaiaTeamID()
 	
-	-- function gadget:UnitCreated(unitID, unitDefID)
-	-- end
+	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride)
+	  env = Spring.UnitScript.GetScriptEnv(unitID)
+        if env and env.showHideIcon then
+			Spring.UnitScript.CallAsUnit(unitID, env.setOverrideAnimationState,  AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride or false, conditionFunction or nil, boolCoupled or false)
+        end
+	end
 	
 	function makePasserBysLook(unitID)
 		ux,uy,uz= Spring.GetUnitPosition(unitID)
@@ -57,7 +61,15 @@ local houseDefID = UnitDefNames["house"].id
 			function(id)
 				if math.random(0,100) > GameConfig.inHundredChanceOfInterestInDisaster then			
 					offx, offz= math.random(0,10)*randSign(), math.random(0,10)*randSign()
-					Command(id, "go", { x=  ux+ offx, y=  uy, z = uz+ offz}, {})					
+					Command(id, "go", { x=  ux+ offx, y=  uy, z = uz+ offz}, {})
+					--TODO Set Behaviour filming
+					UnitSetAnimationState(id, CivAnimStates.Filming, CivAnimStates.Walking, true)
+					
+				elseif math.random(0,100) > GameConfig.inHundredChanceOfDisasterWailing then			
+					offx, offz= math.random(0,10)*randSign(), math.random(0,10)*randSign()
+					Command(id, "go", { x=  ux+ offx, y=  uy, z = uz+ offz}, {})
+					UnitSetAnimationState(id, CivAnimStates.Wailing, CivAnimStates.Walking, true)
+					
 				end
 			end
 			)
@@ -526,6 +538,7 @@ local houseDefID = UnitDefNames["house"].id
 					dx,dz = x -ax, z- az
 					dx,dz = dx * 100, dz * 100
 					Command(persPack.unitID, "go", { x=x+ dx ,y= 0 , z=z+dz}, {"shift"})
+					UnitSetAnimationState(id, CivAnimStates.Slaved, CivAnimStates.CoverWalk, true)
 					return frame + 1000 , persPack
 				end
 			end
@@ -545,7 +558,7 @@ local houseDefID = UnitDefNames["house"].id
 				px,py,pz= Spring.GetUnitPosition(partnerID)
 				Command(persPack.unitID, "go", {x= px ,y= py ,z=pz}, {})
 				Command(partnerID, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
-				
+			
 				--assemble a small group for communication
 				if math.random(0,1)==1 then
 					process(getAllNearUnit(persPack.unitID, GameConfig.groupChatDistance),
@@ -555,7 +568,8 @@ local houseDefID = UnitDefNames["house"].id
 						end
 					end,
 					function(id)
-						Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
+						Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {}),
+						UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.Walking, true)
 					end
 					)
 				end
