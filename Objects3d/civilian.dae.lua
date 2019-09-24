@@ -5,7 +5,7 @@ model = {
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
-	-- rotAxisSigns = {1, -1, 1}
+	-- rotAxisSigns = {1, 1, 1}
 	--[[
 	pbr = {
 		flipUV = true, --flip second component of UV map. False is for DDS, True is for everything else. For now keep everything either in DDS or in PNG/TGA

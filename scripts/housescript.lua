@@ -6,7 +6,7 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2}
-supriseChances={ roof = 0.5, yard = 0.6, yardwall = 0.4, street = 0.7, powerpoles = 0.5, door = 0.6, windowwall= 0.7, streetwall=0.5}
+supriseChances={ roof = 0.5, yard = 0.6, yardwall = 0.4, street = 0.5, powerpoles = 0.5, door = 0.6, windowwall= 0.7, streetwall=0.5}
 boringChances={ roof = 0.2, yard = 0.1, yardwall = 0.4, street = 0.1, powerpoles = 0.5, door = 0.6, windowwall= 0.5, streetwall=0.1}
 decoChances = boringChances
 x,y,z= Spring.GetUnitPosition(unitID)
@@ -487,7 +487,7 @@ end
 function getElasticTable( ... )
   local arg = arg; if (not arg) then arg = { ... } end
    resulT={}
- for k, searchterm in pairs(arg) do
+ for _, searchterm in pairs(arg) do
     for k, v in pairs(TablesOfPiecesGroups) do
       if string.find(string.lower(k), string.lower(searchterm)) and  string.find(string.lower(k), "sub") == nil and string.find(string.lower(k), "_ncl1_") == nil then
 		if TablesOfPiecesGroups[k] then
@@ -620,8 +620,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 	Sleep(1)
     local index = i
 	rotation = getOutsideFacingRotationOfBlockFromPlan(i)
-	
+
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
+	xRealLoc,zRealLoc = xLoc, zLoc
     if partOfPlan == true then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
       local element, nr = getRandomBuildMaterial(buildMaterial)
@@ -651,14 +652,38 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
         if countElements == 24 then return materialGroupName, buildMaterial end
       end
+	  
+		if chancesAre(10) < decoChances.streetwall and count(streetWallMaterial) > 0 then
+			assert(type(streetWallMaterial)=="table")
+			assert(index)
+			assert(xRealLoc)
+			assert(zRealLoc)
+		--	assert(count(streetWallMaterial) > 0)
+			assert(Level)
+			assert(streetWallMaterial)
+
+			streetWallMaterial, streetWallDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, streetWallMaterial, 0)
+			
+			if streetWallDeco then
+				rotation = getStreetWallDecoRotation(index) 
+				Turn(streetWallDeco, _y_axis, math.rad(rotation), 0)
+			end
+		end	  
+	  
     end
-	
+		
 	if  isBackYardWall(index) == true then
       --BackYard
 
       if chancesAre(10) < decoChances.yard then
 		assert(type(yardMaterial)=="table")
-	
+		assert(index)
+		assert(xLoc)
+		assert(zLoc)
+		assert(count(yardMaterial) > 0)
+		assert(Level)
+		assert(yardMaterial)
+
 		yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level )
 		if yardWall then
 			rotation  = getWallBackyardDeocrationRotation(index)
@@ -667,17 +692,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
       end 	 
     end
 	
-	 if chancesAre(10) < decoChances.streetwall then
-		
-		streetWallMaterial, streetWallDeco = DecorateBlockWall( xRealLoc, zRealLoc,  Level, streetWallMaterial, 0)
-		
-		if streetWallDeco then
-			rotation = getStreetWallDecoRotation(index) 
-			Turn(streetWallDeco, _y_axis, math.rad(rotation), 0)
-		end
-      end
+
 	
   end
+  Spring.Echo("Completed buildDecorateLvl")
 
   return materialGroupName, buildMaterial
 end

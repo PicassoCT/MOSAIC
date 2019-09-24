@@ -568,7 +568,7 @@ local houseDefID = UnitDefNames["house"].id
 						end
 					end,
 					function(id)
-						Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {}),
+						Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
 						UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.Walking, true)
 					end
 					)
