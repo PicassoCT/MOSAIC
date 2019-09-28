@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-09-25T17:33:19Z</created><keywords></keywords><modified>2019-09-25T17:33:19Z</modified><revision></revision><subject></subject><title></title><unit meter="1.000000" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <library_images>
+    <image id="Map #1-image" name="Map #1"><init_from>file://D:\spring\games\Mosaic.sdd\unittextures\testtex.dds</init_from></image>
+  </library_images>
+  <library_materials>
+    <material id="Material #25" name="Material #25">
+      <instance_effect url="#Material #25-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+ 
+  </library_effects>
+  <library_geometries>
+    <geometry id="center-lib" name="centerMesh">
+      <mesh>
+        <source id="center-POSITION">
+          <float_array id="center-POSITION-array" count="24">
+-37.712357 -33.941124 0.000000
+37.712357 -33.941124 0.000000
+-37.712357 33.941124 0.000000
+37.712357 33.941124 0.000000
+-37.712357 -33.941124 163.000000
+37.712357 -33.941124 163.000000
+-37.712357 33.941124 163.000000
+37.712357 33.941124 163.000000
+</float_array>
+          <technique_common>
+            <accessor source="#center-POSITION-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="center-Normal0">
+          <float_array id="center-Normal0-array" count="108">
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+</float_array>
+          <technique_common>
+            <accessor source="#center-Normal0-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="center-UV0">
+          <float_array id="center-UV0-array" count="24">
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+</float_array>
+          <technique_common>
+            <accessor source="#center-UV0-array" count="12" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="center-VERTEX">
+          <input semantic="POSITION" source="#center-POSITION"/>
+        </vertices>
+        <triangles count="12" material="Material #25"><input semantic="VERTEX" offset="0" source="#center-VERTEX"/><input semantic="NORMAL" offset="1" source="#center-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#center-UV0"/><p> 1 0 8 0 1 9 3 2 10 0 3 9 2 4 11 3 5 10 7 6 11 6 7 10 4 8 8 7 9 11 4 10 8 5 11 9 4 12 6 0 13 4 5 14 7 5 15 7 0 16 4 1 17 5 5 18 2 1 19 0 7 20 3 7 21 3 1 22 0 3 23 1 7 24 6 3 25 4 6 26 7 6 27 7 3 28 4 2 29 5 6 30 2 2 31 0 4 32 3 4 33 3 2 34 0 0 35 1</p></triangles>
+      </mesh>
+    </geometry>
+    <geometry id="left-lib" name="leftMesh">
+      <mesh>
+        <source id="left-POSITION">
+          <float_array id="left-POSITION-array" count="24">
+1.302940 -19.047735 -17.334311
+-1.348978 19.195370 -17.167124
+1.348978 -19.195370 17.167124
+-1.302940 19.047735 17.334311
+83.950653 -13.316263 -17.420067
+81.298729 24.926844 -17.252880
+83.996696 -13.463900 17.081367
+81.344780 24.779207 17.248554
+</float_array>
+          <technique_common>
+            <accessor source="#left-POSITION-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="left-Normal0">
+          <float_array id="left-Normal0-array" count="108">
+-0.997603 -0.069182 0.001035
+-0.997603 -0.069182 0.001035
+-0.997604 -0.069182 0.001035
+-0.997603 -0.069182 0.001035
+-0.997603 -0.069182 0.001035
+-0.997604 -0.069182 0.001035
+0.997603 0.069182 -0.001035
+0.997603 0.069182 -0.001035
+0.997603 0.069182 -0.001035
+0.997603 0.069182 -0.001035
+0.997603 0.069182 -0.001035
+0.997603 0.069182 -0.001035
+-0.001334 0.004279 -0.999990
+-0.001334 0.004279 -0.999990
+-0.001334 0.004279 -0.999990
+-0.001334 0.004279 -0.999990
+-0.001334 0.004279 -0.999990
+-0.001334 0.004279 -0.999990
+-0.069177 0.997595 0.004361
+-0.069177 0.997595 0.004361
+-0.069177 0.997595 0.004361
+-0.069177 0.997595 0.004361
+-0.069177 0.997595 0.004361
+-0.069177 0.997595 0.004361
+0.001334 -0.004279 0.999990
+0.001334 -0.004279 0.999990
+0.001334 -0.004279 0.999990
+0.001334 -0.004279 0.999990
+0.001334 -0.004279 0.999990
+0.001334 -0.004279 0.999990
+0.069177 -0.997595 -0.004361
+0.069177 -0.997595 -0.004361
+0.069177 -0.997595 -0.004361
+0.069177 -0.997595 -0.004361
+0.069177 -0.997595 -0.004361
+0.069177 -0.997595 -0.004361
+</float_array>
+          <technique_common>
+            <accessor source="#left-Normal0-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="left-UV0">
+          <float_array id="left-UV0-array" count="24">
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+</float_array>
+          <technique_common>
+            <accessor source="#left-UV0-array" count="12" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="left-VERTEX">
+          <input semantic="POSITION" source="#left-POSITION"/>
+        </vertices>
+        <triangles count="12" material="Material #25"><input semantic="VERTEX" offset="0" source="#left-VERTEX"/><input semantic="NORMAL" offset="1" source="#left-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#left-UV0"/><p> 2 0 11 1 1 8 0 2 9 1 3 8 2 4 11 3 5 10 6 6 10 5 7 9 7 8 11 5 9 9 6 10 10 4 11 8 1 12 5 4 13 6 0 14 4 4 15 6 1 16 5 5 17 7 3 18 1 5 19 2 1 20 0 5 21 2 3 22 1 7 23 3 2 24 5 6 25 7 3 26 4 7 27 6 3 28 4 6 29 7 0 30 1 4 31 3 2 32 0 6 33 2 2 34 0 4 35 3</p></triangles>
+      </mesh>
+    </geometry>
+    <geometry id="frontw-lib" name="frontwMesh">
+      <mesh>
+        <source id="frontw-POSITION">
+          <float_array id="frontw-POSITION-array" count="24">
+-19.092237 0.017857 -17.334311
+19.242704 0.017857 -17.167124
+-19.242704 -0.017857 17.167124
+19.092237 -0.017857 17.334311
+-19.091864 -82.828346 -17.420067
+19.243078 -82.828346 -17.252880
+-19.242331 -82.864067 17.081367
+19.092611 -82.864067 17.248554
+</float_array>
+          <technique_common>
+            <accessor source="#frontw-POSITION-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="frontw-Normal0">
+          <float_array id="frontw-Normal0-array" count="108">
+-0.000005 0.999999 0.001035
+-0.000005 0.999999 0.001035
+-0.000005 0.999999 0.001035
+-0.000005 0.999999 0.001035
+-0.000005 0.999999 0.001035
+-0.000005 0.999999 0.001035
+0.000005 -0.999999 -0.001035
+0.000005 -0.999999 -0.001035
+0.000005 -0.999999 -0.001035
+0.000005 -0.999999 -0.001035
+0.000005 -0.999999 -0.001035
+0.000005 -0.999999 -0.001035
+0.004361 0.001035 -0.999990
+0.004361 0.001035 -0.999990
+0.004361 0.001035 -0.999990
+0.004361 0.001035 -0.999990
+0.004361 0.001035 -0.999990
+0.004361 0.001035 -0.999990
+0.999990 -0.000000 0.004361
+0.999990 -0.000000 0.004361
+0.999990 -0.000000 0.004361
+0.999990 -0.000000 0.004361
+0.999990 -0.000000 0.004361
+0.999991 -0.000000 0.004361
+-0.004361 -0.001035 0.999990
+-0.004361 -0.001035 0.999990
+-0.004361 -0.001035 0.999990
+-0.004361 -0.001035 0.999990
+-0.004361 -0.001035 0.999990
+-0.004361 -0.001035 0.999990
+-0.999990 0.000000 -0.004361
+-0.999990 0.000000 -0.004361
+-0.999990 0.000000 -0.004361
+-0.999991 0.000000 -0.004361
+-0.999990 0.000000 -0.004361
+-0.999990 0.000000 -0.004361
+</float_array>
+          <technique_common>
+            <accessor source="#frontw-Normal0-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="frontw-UV0">
+          <float_array id="frontw-UV0-array" count="24">
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+</float_array>
+          <technique_common>
+            <accessor source="#frontw-UV0-array" count="12" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="frontw-VERTEX">
+          <input semantic="POSITION" source="#frontw-POSITION"/>
+        </vertices>
+        <triangles count="12" material="Material #25"><input semantic="VERTEX" offset="0" source="#frontw-VERTEX"/><input semantic="NORMAL" offset="1" source="#frontw-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#frontw-UV0"/><p> 2 0 11 1 1 8 0 2 9 1 3 8 2 4 11 3 5 10 6 6 10 5 7 9 7 8 11 5 9 9 6 10 10 4 11 8 4 12 6 1 13 5 5 14 7 1 15 5 4 16 6 0 17 4 3 18 1 5 19 2 1 20 0 5 21 2 3 22 1 7 23 3 2 24 5 6 25 7 3 26 4 3 27 4 6 28 7 7 29 6 0 30 1 4 31 3 2 32 0 6 33 2 2 34 0 4 35 3</p></triangles>
+      </mesh>
+    </geometry>
+    <geometry id="right-lib" name="rightMesh">
+      <mesh>
+        <source id="right-POSITION">
+          <float_array id="right-POSITION-array" count="24">
+0.045135 19.092194 -17.334311
+-0.009636 -19.242710 -17.167124
+0.009636 19.242710 17.167124
+-0.045135 -19.092194 17.334311
+-82.800987 19.210186 -17.420067
+-82.855759 -19.124718 -17.252880
+-82.836487 19.360704 17.081367
+-82.891258 -18.974199 17.248554
+</float_array>
+          <technique_common>
+            <accessor source="#right-POSITION-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="right-Normal0">
+          <float_array id="right-Normal0-array" count="108">
+0.999999 -0.001424 0.001035
+0.999999 -0.001424 0.001035
+0.999998 -0.001424 0.001035
+0.999999 -0.001424 0.001035
+0.999999 -0.001424 0.001035
+0.999998 -0.001424 0.001035
+-0.999998 0.001424 -0.001035
+-0.999998 0.001424 -0.001035
+-0.999998 0.001424 -0.001035
+-0.999998 0.001424 -0.001035
+-0.999998 0.001424 -0.001035
+-0.999998 0.001424 -0.001035
+0.001029 -0.004363 -0.999990
+0.001029 -0.004363 -0.999990
+0.001029 -0.004363 -0.999990
+0.001029 -0.004363 -0.999990
+0.001029 -0.004363 -0.999990
+0.001029 -0.004363 -0.999990
+-0.001429 -0.999989 0.004361
+-0.001429 -0.999989 0.004361
+-0.001429 -0.999989 0.004361
+-0.001429 -0.999989 0.004361
+-0.001429 -0.999989 0.004361
+-0.001429 -0.999989 0.004361
+-0.001029 0.004363 0.999990
+-0.001029 0.004363 0.999990
+-0.001029 0.004363 0.999990
+-0.001029 0.004363 0.999990
+-0.001029 0.004363 0.999990
+-0.001029 0.004363 0.999990
+0.001429 0.999989 -0.004361
+0.001429 0.999989 -0.004361
+0.001429 0.999989 -0.004361
+0.001429 0.999989 -0.004361
+0.001429 0.999989 -0.004361
+0.001429 0.999989 -0.004361
+</float_array>
+          <technique_common>
+            <accessor source="#right-Normal0-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="right-UV0">
+          <float_array id="right-UV0-array" count="24">
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+0.000000 0.000000
+1.000000 0.000000
+0.000000 1.000000
+1.000000 1.000000
+</float_array>
+          <technique_common>
+            <accessor source="#right-UV0-array" count="12" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="right-VERTEX">
+          <input semantic="POSITION" source="#right-POSITION"/>
+        </vertices>
+        <triangles count="12" material="Material #25"><input semantic="VERTEX" offset="0" source="#right-VERTEX"/><input semantic="NORMAL" offset="1" source="#right-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#right-UV0"/><p> 3 0 10 0 1 9 2 2 11 0 3 9 3 4 10 1 5 8 7 6 11 6 7 10 4 8 8 7 9 11 4 10 8 5 11 9 1 12 5 4 13 6 0 14 4 4 15 6 1 16 5 5 17 7 7 18 3 1 19 0 3 20 1 1 21 0 7 22 3 5 23 2 6 24 7 3 25 4 2 26 5 3 27 4 6 28 7 7 29 6 0 30 1 6 31 2 2 32 0 6 33 2 0 34 1 4 35 3</p></triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="test" name="test">
+      <node name="center" id="center" sid="center"><matrix sid="matrix">0.025400 0.000000 0.000000 0.000000 0.000000 0.000000 0.025400 0.000000 0.000000 -0.025400 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="Material #25" target="#Material #25"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="left" id="left" sid="left"><matrix sid="matrix">1.000000 0.000000 0.000000 56.157440 0.000000 1.000000 0.000000 -45.002197 0.000000 0.000000 1.000000 128.542847 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#left-lib"><bind_material><technique_common><instance_material symbol="Material #25" target="#Material #25"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="frontw" id="frontw" sid="frontw"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.362976 0.000000 1.000000 0.000000 -45.002197 0.000000 0.000000 1.000000 128.542847 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#frontw-lib"><bind_material><technique_common><instance_material symbol="Material #25" target="#Material #25"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="right" id="right" sid="right"><matrix sid="matrix">1.000000 0.000000 0.000000 -60.695404 0.000000 1.000000 0.000000 -45.002197 0.000000 0.000000 1.000000 128.542847 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#right-lib"><bind_material><technique_common><instance_material symbol="Material #25" target="#Material #25"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
+      <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#test"></instance_visual_scene>
+  </scene>
+</COLLADA>

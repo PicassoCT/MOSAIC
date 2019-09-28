@@ -11,7 +11,7 @@
 function gadget:GetInfo()
     return {
         name = "Game End",
-        desc = "Handles team/allyteam deaths and declares gameover",
+        desc = "Detects Teamdeaths and Win/Loose Condtions",
         author = "Andrea Piras",
         date = "August, 2010",
         license = "GNU GPL, v2 or later",
@@ -71,54 +71,123 @@ local killedAllyTeams = {}
 GameConfig = getGameConfig()
 
 	function gadget:Initialize()
-		GG.GlobalGameState= GameConfig.StartGameState
-		GG.Launchers ={}
-		
+		GG.GlobalGameState= GameConfig.GameState.Normal
+		GG.Launchers ={}		
 	end
 	
-	LaunchedRockets={}
-	function setGlobalGameState(frame)
-		--Set GameState
-		boolIsPreLaunch, boolIsPostLaunch = false, false
-		if GG.Launchers then
+	function TranstionStateTo( newState)
+		GG.GlobalGameState = newState
+	end
+	
+	
+	function constantCheck(frame)
+		if GG.Launchers then		
 			for teamID, launchersT in pairs(GG.Launchers) do	
 				if teamID and launchersT then
-					for launcherID, step  in pairs(launchersT) do
-						if launcherID and step > GameConfig.PreLauchLeakSteps then
-							boolIsPreLaunch = true
-							if step >= GameConfig.LaunchReadySteps then
+					for launcherID, step  in pairs(launchersT) do						
+						if launcherID and step >= GameConfig.LaunchReadySteps then
 								id = createUnitAtUnit(teamID, "launchedicbm", launcherID, 0, 70, 0)
 								if not LaunchedRockets[teamID] then 
-								 LaunchedRockets[teamID]={}
+									LaunchedRockets[teamID]={}
 								end
-								 LaunchedRockets[teamID][id] = frame
+								LaunchedRockets[teamID][id] = frame
 								Spring.DestroyUnit(launcherID, false, true)
-								
-								boolIsPostLaunch = true
-							end
+								GameStateMachine.Timer = frame
+								GG.GlobalGameState= GameConfig.GameState.PostLaunch
+						end	
+					end
+				end
+			end
+		end
+	end
+	
+	
+
+	 GameStateMachine=
+	 { 
+		Timer =Spring.GetGameFrame(),
+	 
+		["NormalGameState"]			= function(frame) 
+		if GG.Launchers then						
+							
+			for teamID, launchersT in pairs(GG.Launchers) do	
+				if teamID and launchersT then
+					for launcherID, step  in pairs(launchersT) do	
+						if launcherID and step > GameConfig.PreLaunchLeakSteps then
+							GameStateMachine.Timer = frame
+							return GameConfig.GameState.LaunchLeak
 						end		
 					end		
 				end
 			end
-		end
-		
-		if boolIsPreLaunch == true then
-			GG.GlobalGameState= GameConfig.LaunchDetectedGameState
-			if boolIsPostLaunch == true then
-				GG.GlobalGameState= GameConfig.PostLaunchGameState
+		end		
+			return GameConfig.GameState.Normal
+		end,
+		["LaunchLeakGameState"]     = function(frame) 
+			if GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames < frame then
+				GameStateMachine.Timer = frame
+				return GameConfig.GameState.Anarchy
 			end
-		end
 		
-		for teamID, launchedT in pairs(LaunchedRockets) do
-	
-			for id, launchedFrame in pairs(launchedT) do
-				if  id and doesUnitExistAlive(id) == true and launchedFrame + GameConfig.TimeForInterceptionInFrames < frame then
-
-					winners = {teamID}
-					spGameOver(winners)
+			return GameConfig.GameState.LaunchLeak
+		end,
+		
+		["PostLaunchGameState"]        = function(frame)
+			if LaunchedRockets then
+				for teamID, launchedT in pairs(LaunchedRockets) do		
+					for id, launchedFrame in pairs(launchedT) do
+						if  id and doesUnitExistAlive(id) == true and launchedFrame + GameConfig.TimeForInterceptionInFrames < frame then
+							winners = {teamID}
+							spGameOver(winners)
+							return GameConfig.GameState.GameOver
+						end
+					end
+				end	
+			end	
+		
+			return GameConfig.GameState.PostLaunch
+		end,
+		["AnarchyGameState"]        = function(frame)
+			if GG.Launchers then
+				boolNoReadyLaunchers= true
+					for teamID, launchersT in pairs(GG.Launchers) do	
+						if teamID and launchersT then
+							for launcherID, step  in pairs(launchersT) do	
+								if launcherID and step > GameConfig.PreLaunchLeakSteps then
+									boolNoReadyLaunchers = false
+								end		
+							end		
+						end
+					end
+					
+				if boolNoReadyLaunchers == true then
+					GameStateMachine.Timer = frame
+					return GameConfig.GameState.Pacification				
 				end
+			end		
+				
+			return GameConfig.GameState.Anarchy
+		end,
+		["GameOverGameState"]       = function(frame) 
+			return GameConfig.GameState.GameOver
+		end,
+		["PacificationGameState"]   = function(frame) 
+			
+			if GameStateMachine.Timer + GameConfig.TimeForPacification < frame then 
+				GameStateMachine.Timer = frame
+				return GameConfig.GameState.Normal
 			end
-		end
+			
+			return GameConfig.GameState.Pacification
+		end,	
+	}
+	
+	LaunchedRockets={}
+	function setGlobalGameState(frame)
+		--Set GameState
+
+		
+		
 		
 	end
 	
@@ -244,7 +313,9 @@ end
 function gadget:GameFrame(frame)
     -- only do a check in slowupdate
     if (frame % 16) == 0 then
-    setGlobalGameState(frame)
+		constantCheck(frame)
+		GG.GlobalGameState = GameStateMachine[GG.GlobalGameState](frame)
+   
 	
 		CheckGameOver()
         -- kill teams after checking for gameover to avoid to trigger instantly gameover

@@ -59,17 +59,27 @@ function getGameConfig()
 	 InterrogationDistance= 120,
 	 
 	 --Launcher
-	 PreLauchLeakSteps = 5,
+	 PreLaunchLeakSteps = 3,
 	 LaunchReadySteps = 7,
+		 
+	 --Game States
+	 GameState={
+				Normal = "NormalGameState",
+				LaunchLeak = "LaunchLeakGameState"
+				Anarchy = "AnarchyGameState",
+				PostLaunch= "PostLaunchGameState"
+				GameOver= "GameOverGameState",
+				Pacification= "PacificationGameState",
+	 }
 	
-	 --Game State
-	 StartGameState = "NormalGameState",
-	 LaunchDetectedGameState = "LaunchDetectedGameState",
-	 PostLaunchGameState = "PostLaunchGameState",
+	 
+	 
 	 TimeForInterceptionInFrames= 30 * 10,
+	 TimeForPanicSpreadInFrames= 30 * 30,
+	 TimeForPacification = 30* 90
 	 
 	 costs ={
-	 RecruitingTruck= 500,
+		RecruitingTruck= 500,
 	 },
 	 
 	 --Icons
