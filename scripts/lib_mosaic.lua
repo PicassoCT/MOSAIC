@@ -2,6 +2,8 @@
 -- Game Configuration
 
 unitFactor= 0.5
+
+
 function getGameConfig()
 	return {
 	instance = {
@@ -51,7 +53,7 @@ function getGameConfig()
 	 doubleAgentHeight = 128,
 	 
 	 --Dayproperties
-	 daylength = 28800,
+	 daylength = 28800, --in frames
 	 
 	 -- Interrogation
 	 InterrogationTimeInSeconds = 20,
@@ -64,19 +66,19 @@ function getGameConfig()
 		 
 	 --Game States
 	 GameState={
-				Normal = "NormalGameState",
-				LaunchLeak = "LaunchLeakGameState"
-				Anarchy = "AnarchyGameState",
-				PostLaunch= "PostLaunchGameState"
-				GameOver= "GameOverGameState",
-				Pacification= "PacificationGameState",
-	 }
+				["Normal"] = "normal",
+				["LaunchLeak"] = "launchleak",
+				["Anarchy"] = "anarchy",
+				["PostLaunch"] = "postlaunch",
+				["GameOver"] = "gameover",
+				["Pacification"] = "pacification",
+	 },
 	
 	 
 	 
 	 TimeForInterceptionInFrames= 30 * 10,
 	 TimeForPanicSpreadInFrames= 30 * 30,
-	 TimeForPacification = 30* 90
+	 TimeForPacification = 30* 90,
 	 
 	 costs ={
 		RecruitingTruck= 500,
@@ -88,7 +90,9 @@ function getGameConfig()
 	 
 	}
 end
-
+GG.GameConfig = getGameConfig()
+_G.GameConfig = getGameConfig()
+--===================================================================================================================
 --===================================================================================================================
 --Mosaic specific functions 
 --> creates a table from names to check unittypes against

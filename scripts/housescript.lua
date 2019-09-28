@@ -11,8 +11,8 @@ boringChances={ roof = 0.2, yard = 0.1, yardwall = 0.4, street = 0.1, powerpoles
 decoChances = boringChances
 x,y,z= Spring.GetUnitPosition(unitID)
 geoHash= (x-(x-math.floor(x)))+(y-(y-math.floor(y)))+(z-(z-math.floor(z)))
-Spring.Echo("House geohash:"..geoHash)
-if geoHash % 2 == 0 then
+-- Spring.Echo("House geohash:"..geoHash)
+if geoHash % 3 == 1 then
 	decoChances = supriseChances 
 end
 centerP = {x = (cubeDim.length/2) * 5, z= (cubeDim.length/2) *  5}
@@ -675,16 +675,16 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 	if  isBackYardWall(index) == true then
       --BackYard
 
-      if chancesAre(10) < decoChances.yard then
+      if chancesAre(10) < decoChances.yard and xLoc and zLoc then
 		assert(type(yardMaterial)=="table")
 		assert(index)
-		assert(xLoc)
-		assert(zLoc)
-		assert(count(yardMaterial) > 0)
+
 		assert(Level)
 		assert(yardMaterial)
 
 		yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level )
+		assert(type(yardMaterial)== "table")
+		
 		if yardWall then
 			rotation  = getWallBackyardDeocrationRotation(index)
 			Turn(yardWall, _z_axis, math.rad(rotation),0)
@@ -702,7 +702,9 @@ end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 	countedElements = count(buildMaterial)
-  if countedElements == 0 then return buildMaterial end 
+  if countedElements == 0 then 
+	return buildMaterial 
+  end 
   
   local element, nr = getRandomBuildMaterial(buildMaterial)
   attempts = 0
@@ -712,7 +714,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 	attempts = attempts +1
   end
   
-  if attempts >= countedElements then return buildMaterial end
+  if attempts >= countedElements then 
+  return buildMaterial 
+  end
+  
   
   buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 

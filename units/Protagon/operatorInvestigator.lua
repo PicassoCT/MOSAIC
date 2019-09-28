@@ -13,7 +13,7 @@ local OperativeInvestigator = Human:New{
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
-	MaxVelocity = 4.5,
+	MaxVelocity = 2.2,
 	
 	--orders
 	canMove					  = true,

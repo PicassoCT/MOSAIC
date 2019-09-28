@@ -8,7 +8,7 @@ local ground_tank_day = Tank:New{
 	buildCostEnergy = 0,
 	buildCostMetal = 5000,
 	explodeAs			= "none",
-	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
+
 	--maxReverseVelocity= 2.15,
 	acceleration = 0.7,
 	brakeRate = 0.1,

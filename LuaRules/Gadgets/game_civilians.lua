@@ -11,7 +11,10 @@ function gadget:GetInfo()
 	}
 end
 
-if (gadgetHandler:IsSyncedCode()) then
+if (not gadgetHandler:IsSyncedCode()) then
+    return false
+end
+
 	VFS.Include("scripts/lib_OS.lua")
 	VFS.Include("scripts/lib_UnitScript.lua")
 	VFS.Include("scripts/lib_Animation.lua")
@@ -35,7 +38,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	uDim ={}
 	uDim.x,uDim.y,uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ+ GameConfig.allyWaySizeZ	
 	numberTileX, numberTileZ = Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z
-	RouteTabel = {} --Every start has a subtable of reachable nodes 
+	RouteTabel = {} --Every start has a subtable of reachable nodes 	
+	boolInitialized = false
+	
 local houseDefID = UnitDefNames["house"].id	
 	gaiaTeamID = Spring.GetGaiaTeamID()
 	
@@ -76,7 +81,6 @@ local houseDefID = UnitDefNames["house"].id
 	
 	end
 	
-	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 		--Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
 		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
@@ -91,7 +95,6 @@ local houseDefID = UnitDefNames["house"].id
 		end
 	end
 	
-	
 	BuildingPlaceTable = makeTable(true, Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z)	 
 	startindex = 1
 	function distributedPathValidationComplete(frame, elements)
@@ -104,7 +107,6 @@ local houseDefID = UnitDefNames["house"].id
 		
 		return boolComplete
 	end
-	
 	
 	-- check Traversability from each position to the previous position	
 	function validateBuildSpotsReachable(start, endindex)
@@ -153,7 +155,6 @@ local houseDefID = UnitDefNames["house"].id
 		cursor.z = math.max(1,math.min(cursor.z, math.floor(Game.mapSizeZ/uDim.z)))
 		return cursor
 	end
-	
 	
 	function randomWalk(cursor)
 		return {x = cursor.x + randSign(), z = cursor.z + randSign()}
@@ -244,9 +245,6 @@ local houseDefID = UnitDefNames["house"].id
 	end
 	
 	function spawnInitialPopulation(frame)
-		
-		
-		
 		-- create Grid of all placeable Positions
 		-- great Grid of placeable Positions 
 		if distributedPathValidationComplete(frame, 10) == true then
@@ -269,8 +267,6 @@ local houseDefID = UnitDefNames["house"].id
 			boolInitialized = true
 		end
 	end
-	
-	
 	
 	function checkReSpawnHouses()
 		dataToAdd= {}
@@ -633,6 +629,7 @@ local houseDefID = UnitDefNames["house"].id
 		
 		return Route
 	end
+
 	function sendArrivedUnitsCommands()
 		for id, uType in pairs(GG.UnitArrivedAtTarget) do
 			if doesUnitExistAlive(GG.CivilianTable[id].startID) == true and doesUnitExistAlive(id) then
@@ -642,9 +639,6 @@ local houseDefID = UnitDefNames["house"].id
 		
 		GG.UnitArrivedAtTarget = {}
 	end
-	
-	
-	boolInitialized = false
 	
 	function gadget:GameFrame(frame)
 		if boolInitialized == false then
@@ -666,6 +660,3 @@ local houseDefID = UnitDefNames["house"].id
 			sendArrivedUnitsCommands()
 		end		
 	end
-	
-
-end

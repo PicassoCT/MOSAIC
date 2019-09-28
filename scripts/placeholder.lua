@@ -10,8 +10,8 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-left = piece "left"
-right = piece "right"
+-- left = piece "left"
+-- right = piece "right"
 -- aimpiece = piece "aimpiece"
 if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
@@ -19,23 +19,23 @@ if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].na
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	StartThread(AnimationTest)
+	-- StartThread(AnimationTest)
 end
 
-function AnimationTest()
-while true do
-	resetAll(unitID)
-	Sleep(3000)
-		WTurn(right,z_axis,math.rad(-89),math.pi)
-		WTurn(left,z_axis,math.rad(89),math.pi)
-	Sleep(3000)
-	Turn(left,y_axis,math.rad(-89),math.pi)
-	WTurn(right,y_axis,math.rad(89),math.pi)
+-- function AnimationTest()
+-- while true do
+	-- resetAll(unitID)
+	-- Sleep(3000)
+		-- WTurn(right,z_axis,math.rad(-89),math.pi)
+		-- WTurn(left,z_axis,math.rad(89),math.pi)
+	-- Sleep(3000)
+	-- Turn(left,y_axis,math.rad(-89),math.pi)
+	-- WTurn(right,y_axis,math.rad(89),math.pi)
 	
-	Turn(left,y_axis,math.rad(89),math.pi)	
-	WTurn(right,y_axis,math.rad(-89),math.pi)
-	end
-end
+	-- Turn(left,y_axis,math.rad(89),math.pi)	
+	-- WTurn(right,y_axis,math.rad(-89),math.pi)
+	-- end
+-- end
 
 function script.Killed(recentDamage, _)
 

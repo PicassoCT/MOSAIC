@@ -11,7 +11,7 @@ local Civilian = Human:New{
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
-	MaxVelocity = 4.5*0.35,
+	MaxVelocity = 0.7875,
 	
 
 	CanAttack = false,

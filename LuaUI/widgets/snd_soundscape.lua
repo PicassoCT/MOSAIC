@@ -25,21 +25,14 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
-options_path = 'Settings/Audio'
 options = {
-
 }
-
-
-
 local windows = {}
-
-
 
 local LOOP_BUFFER = 0.015	-- if looping track is this close to the end, go ahead and loop
 local UPDATE_PERIOD = 1
-local soundScapePath = "sounds/civilian/".._G.GameConfig.instance.culture.."/soundscape/"
+-- local soundScapePath = "sounds/civilian/".._G.GameConfig.instance.culture.."/soundscape/"
+local soundScapePath = "sounds/civilian/".."arabic".."/soundscape/"
 
 local timeframetimer = 0
 local timeframetimer_short = 0
@@ -55,7 +48,6 @@ local haltMusic = false
 local looping = false
 local paused = false
 local lastTrackTime = -1
-
 
 local	normalTracks		
 local	launchleakTracks	
@@ -75,18 +67,15 @@ local gameOver = false
 local myTeam = Spring.GetMyTeamID()
 local isSpec = Spring.GetSpectatingState() or Spring.IsReplay()
 local defeat = false
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
-
 local function StartLoopingTrack(trackInit, trackLoop)
 	if not (VFS.FileExists(trackInit) and VFS.FileExists(trackLoop)) then
 		Spring.Log(widget:GetInfo().name, LOG.ERROR, "Missing one or both tracks for looping")
 	end
 	haltMusic = true
 	Spring.StopSoundStream()
-	soundScapeType = GG.GlobalGameState or "Normal"
+	soundScapeType = Spring.GetGameRulesParam("GlobalGameState") or "Normal"
 	
 	curTrack = trackInit
 	loopTrack = trackLoop
@@ -94,72 +83,62 @@ local function StartLoopingTrack(trackInit, trackLoop)
 	looping = 0.5
 end
 
-
-
-local function StartTrack(track)
-	if not peaceTracks then
-		Spring.Echo("Missing peaceTracks file, no music started")
-		return
-	end
+local function StartTrack()
+	Spring.Echo("Playing soundscape")
 
 	haltMusic = false
 	looping = false
 	Spring.StopSoundStream()
 	
 	local newTrack = previousTrack
-	if soundScapeType == 'custom' then
-		previousTrackType = "peace"
-		soundScapeType = "peace"
-	end
-	if track then
-		newTrack = track	-- play specified track
-		soundScapeType = 'custom'
-	else
+	
 		local tries = 0
 		repeat
-			if (not gameStarted) then
-				if (#briefingTracks == 0) then return end
-				newTrack = briefingTracks[ #briefingTracks -math.random(1, #briefingTracks-1)]
-				soundScapeType = "briefing"
-			elseif soundScapeType == 'peace' then
-				if (#peaceTracks == 0) then return end
-				newTrack = peaceTracks[math.random(1, #peaceTracks)]
-			elseif soundScapeType == 'war' then
-				if (#warTracks == 0) then return end
-				newTrack = warTracks[math.random(1, #warTracks)]
+			if ( gameStarted)and soundScapeType == 'normal' then
+				if (#normalTracks == 0) then return end
+				newTrack = normalTracks[math.random(1, #normalTracks)]
+			elseif soundScapeType == 'launchleak' then
+				if (#launchleak == 0) then return end
+				newTrack = launchleakTracks[math.random(1, #launchleakTracks)]
+			elseif soundScapeType == 'anarchy' then
+				if (#anarchyTracks == 0) then return end
+				newTrack = anarchyTracks[math.random(1, #anarchyTracks)]
+			elseif soundScapeType == 'gameover' then
+				if (#gameover == 0) then return end
+				newTrack = anarchy[math.random(1, #anarchy)]
+			elseif soundScapeType == 'postlaunch' then
+				if (#postlaunchTracks == 0) then return end
+				newTrack = postlaunchTracks[math.random(1, #postlaunchTracks)]
 			end
 			tries = tries + 1
 		until newTrack ~= previousTrack or tries >= 10
-	end
 	-- for key, val in pairs(oggInfo) do
 		-- Spring.Echo(key, val)	
 	-- end
 	firstFade = false
 	previousTrack = newTrack
 	
-	-- if (oggInfo.comments.TITLE and oggInfo.comments.TITLE) then
-		-- Spring.Echo("Soundscape changed to: " .. oggInfo.comments.TITLE .. " By: " .. oggInfo.comments.ARTIST)
+	if (oggInfo.comments.TITLE and oggInfo.comments.TITLE) then
+		Spring.Echo("Soundscape changed to: " .. oggInfo.comments.TITLE .. " By: " .. oggInfo.comments.ARTIST)
 	-- else
 		-- Spring.Echo("Soundscape changed but unable to get the artist and title info")
-	-- end
+	end
 	curTrack = newTrack
 	Spring.PlaySoundStream(curTrack,WG.music_volume or 0.5)
 	
 	WG.music_start_volume = WG.music_volume
 end
 
-
-
-
 function widget:Update(dt)
 	if gameOver then
 		return
 	end
+	Spring.Echo("widget:Update:SoundScape")
 	if not initialized then
 		math.randomseed(os.clock()* 100)
 		initialized=true
 				
-		local vfsMode = (options.useIncludedTracks.value and VFS.RAW_FIRST) or VFS.RAW
+		local vfsMode =  VFS.RAW
 		normalTracks		= normalTracks or VFS.DirList(soundScapePath..'normal/', '*.ogg', vfsMode)
 		launchleakTracks	= launchleakTracks or VFS.DirList(soundScapePath..'launchleak/', '*.ogg', vfsMode)
 		anarchyTracks		= anarchyTracks or VFS.DirList(soundScapePath..'anarchy/', '*.ogg', vfsMode)
@@ -169,34 +148,14 @@ function widget:Update(dt)
 		
 	end
 	
-	timeframetimer_short = timeframetimer_short + dt
-	if timeframetimer_short > 0.03 then
-		local playedTime, totalTime = Spring.GetSoundStreamTime()
-		playedTime = tonumber( ("%.2f"):format(playedTime) )
-		paused = (playedTime == lastTrackTime)
-		lastTrackTime = playedTime
-		if looping then
-			if looping == 0.5 then
-				looping = 1
-			elseif playedTime >= totalTime - LOOP_BUFFER then
-				Spring.StopSoundStream()
-				Spring.PlaySoundStream(loopTrack,WG.music_volume or 0.5)
-			end
-		end
-		timeframetimer_short = 0
-	end
+	soundScapeType = Spring.GetGameRulesParam("GlobalGameState") or "normal"
+	
 	
 	timeframetimer = timeframetimer + dt
 	if (timeframetimer > UPDATE_PERIOD) then	-- every second
 		timeframetimer = 0
 		newTrackWait = newTrackWait + 1
-		local PlayerTeam = Spring.GetMyTeamID()
-
-			
-
-		
-		soundScapeType = string.gsub(GG.GlobalGameState, "GameState")
-	
+		local PlayerTeam = Spring.GetMyTeamID()	
 	
 		if (not firstTime) then
 			StartTrack()
@@ -207,13 +166,12 @@ function widget:Update(dt)
 		playedTime = math.floor(playedTime)
 		totalTime = math.floor(totalTime)
 	
-		if ( previousTrackType == "Normal" and soundScapeType == 'LaunchLeak' )
+		if ( previousTrackType ~= soundScapeType )
 		 or (playedTime >= totalTime)	-- both zero means track stopped
 		 then
-			previousTrackType = soundScapeType
-			StartTrack()
 			
-			--Spring.Echo("Track: " .. newTrack)
+			previousTrackType = soundScapeType
+			StartTrack()			
 			newTrackWait = 0
 		end
 		local _, _, paused = Spring.GetGameSpeed()
@@ -228,11 +186,9 @@ function widget:GameStart()
 	if not gameStarted then
 		gameStarted = true
 		previousTrackType = soundScapeType
-		soundScapeType = string.gsub(GG.GlobalGameState, "GameState")
+		soundScapeType = Spring.GetGameRulesParam("GlobalGameState") or "normal"
 		StartTrack()
 	end
-	
-	--Spring.Echo("Track: " .. newTrack)
 	newTrackWait = 0	
 end
 
@@ -241,10 +197,6 @@ function widget:GameFrame()
 	widget:GameStart()
 	widgetHandler:RemoveCallIn('GameFrame')
 end
-
-
-
-
 
 function widget:TeamDied(team)
 	if team == myTeam and not isSpec then
@@ -274,23 +226,13 @@ function widget:GameOver()
 end
 
 function widget:Initialize()
-	WG.Music = WG.Music or {}
-	WG.Music.StartTrack = StartTrack
-	WG.Music.StartLoopingTrack = StartLoopingTrack
-
-	WG.Music.SetWarThreshold = SetWarThreshold
-	WG.Music.SetPeaceThreshold = SetPeaceThreshold
-	WG.Music.GetsoundScapeType = GetsoundScapeType
-	WG.Music.PlayGameOverMusic = PlayGameOverMusic
-
-
+	WG.SoundScape = WG.SoundScape or {}
+	WG.SoundScape.StartTrack = StartTrack
+	WG.SoundScape.StartLoopingTrack = StartLoopingTrack
+	WG.SoundScape.GetsoundScapeType = GetsoundScapeType
+	WG.SoundScape.PlayGameOverMusic = PlayGameOverMusic
 end
 
 function widget:Shutdown()
 	Spring.StopSoundStream()
-	WG.Music = nil
-
 end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
