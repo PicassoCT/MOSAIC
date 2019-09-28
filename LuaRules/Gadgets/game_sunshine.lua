@@ -264,7 +264,7 @@ if gadgetHandler:IsSyncedCode() then
     --set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
-			Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
+			-- Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
             aDay(n + startMorningOffset, DAYLENGTH)
         end
             setSunArc(n)
