@@ -68,17 +68,36 @@ local killedAllyTeams = {}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-GameConfig = getGameConfig()
+GameConfig = {}
 
-	function gadget:Initialize()
-		GG.GlobalGameState= GameConfig.GameState.Normal
-		GG.Launchers ={}		
-	end
-	
-	function TranstionStateTo( newState)
-		GG.GlobalGameState = newState
-	end
-	
+function gadget:Initialize()
+	GameConfig =getGameConfig()
+	GG.GlobalGameState= GameConfig.GameState.Normal
+	GG.Launchers ={}
+
+    if teamDeathMode == "none" then
+			Spring.Echo("GameEndGadget: No teamDeathMode specified")
+        gadgetHandler:RemoveGadget()
+    end
+
+    gaiaAllyTeamID = select(6, spGetTeamInfo(gaiaTeamID))
+
+    -- at start, fill in the table of all alive allyteams
+    for _, allyTeamID in ipairs(allyTeams) do
+        local teamList = spGetTeamList(allyTeamID)
+        local teamCount = 0
+        for _, teamID in ipairs(teamList) do
+            teamToAllyTeam[teamID] = allyTeamID
+            if (ignoreGaia == 0) or (teamID ~= gaiaTeamID) then
+                teamCount = teamCount + 1
+            end
+        end
+        allyTeamAliveTeamsCount[allyTeamID] = teamCount
+        if teamCount > 0 then
+            aliveAllyTeamCount = aliveAllyTeamCount + 1
+        end
+    end
+end
 	
 	function constantCheck(frame)
 		if GG.Launchers then		
@@ -107,7 +126,7 @@ GameConfig = getGameConfig()
 	 { 
 		Timer =Spring.GetGameFrame(),
 	 
-		["NormalGameState"]			= function(frame) 
+		["normal"]			= function(frame) 
 		if GG.Launchers then						
 							
 			for teamID, launchersT in pairs(GG.Launchers) do	
@@ -123,7 +142,8 @@ GameConfig = getGameConfig()
 		end		
 			return GameConfig.GameState.Normal
 		end,
-		["LaunchLeakGameState"]     = function(frame) 
+		
+		["launchleak"]     = function(frame) 
 			if GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames < frame then
 				GameStateMachine.Timer = frame
 				return GameConfig.GameState.Anarchy
@@ -132,7 +152,7 @@ GameConfig = getGameConfig()
 			return GameConfig.GameState.LaunchLeak
 		end,
 		
-		["PostLaunchGameState"]        = function(frame)
+		["postlaunch"]        = function(frame)
 			if LaunchedRockets then
 				for teamID, launchedT in pairs(LaunchedRockets) do		
 					for id, launchedFrame in pairs(launchedT) do
@@ -147,7 +167,8 @@ GameConfig = getGameConfig()
 		
 			return GameConfig.GameState.PostLaunch
 		end,
-		["AnarchyGameState"]        = function(frame)
+		
+		["anarchy"]        = function(frame)
 			if GG.Launchers then
 				boolNoReadyLaunchers= true
 					for teamID, launchersT in pairs(GG.Launchers) do	
@@ -168,10 +189,12 @@ GameConfig = getGameConfig()
 				
 			return GameConfig.GameState.Anarchy
 		end,
-		["GameOverGameState"]       = function(frame) 
+		
+		["gameover"]       = function(frame) 
 			return GameConfig.GameState.GameOver
 		end,
-		["PacificationGameState"]   = function(frame) 
+		
+		["pacification"]   = function(frame) 
 			
 			if GameStateMachine.Timer + GameConfig.TimeForPacification < frame then 
 				GameStateMachine.Timer = frame
@@ -309,13 +332,17 @@ local function KillResignedTeams()
     end
 end
 
-
+oldState=""
 function gadget:GameFrame(frame)
     -- only do a check in slowupdate
-    if (frame % 16) == 0 then
+    if (frame % 16) == 0 and GG.GlobalGameState then
 		constantCheck(frame)
 		GG.GlobalGameState = GameStateMachine[GG.GlobalGameState](frame)
-   
+		Spring.SetGameRulesParam("GlobalGameState", GG.GlobalGameState)
+		if oldState ~= GG.GlobalGameState then
+			Spring.Echo("Current GameState:"..GG.GlobalGameState)
+			oldState = GG.GlobalGameState
+		end
 	
 		CheckGameOver()
         -- kill teams after checking for gameover to avoid to trigger instantly gameover
@@ -351,30 +378,6 @@ function gadget:TeamDied(teamID)
 end
 
 
-function gadget:Initialize()
-    if teamDeathMode == "none" then
-			Spring.Echo("GameEndGadget: No teamDeathMode specified")
-        gadgetHandler:RemoveGadget()
-    end
-
-    gaiaAllyTeamID = select(6, spGetTeamInfo(gaiaTeamID))
-
-    -- at start, fill in the table of all alive allyteams
-    for _, allyTeamID in ipairs(allyTeams) do
-        local teamList = spGetTeamList(allyTeamID)
-        local teamCount = 0
-        for _, teamID in ipairs(teamList) do
-            teamToAllyTeam[teamID] = allyTeamID
-            if (ignoreGaia == 0) or (teamID ~= gaiaTeamID) then
-                teamCount = teamCount + 1
-            end
-        end
-        allyTeamAliveTeamsCount[allyTeamID] = teamCount
-        if teamCount > 0 then
-            aliveAllyTeamCount = aliveAllyTeamCount + 1
-        end
-    end
-end
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeamID)
     local teamUnitCount = teamsUnitCount[unitTeamID] or 0
