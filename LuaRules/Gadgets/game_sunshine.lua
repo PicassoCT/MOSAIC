@@ -20,6 +20,7 @@ if gadgetHandler:IsSyncedCode() then
 	gameConfig = getGameConfig()
 	
     DAYLENGTH = gameConfig.daylength
+	local EVERY_NTH_FRAME =32
     --==========================WhereTheSunDontShines============================
     --Initialses the sun control and sets the inital arc
     function gadget:GameStart()
@@ -211,6 +212,12 @@ if gadgetHandler:IsSyncedCode() then
     function aDay(timeFrame, WholeDay)
 			--echo(getDayTime(timeFrame%WholeDay, WholeDay))
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
+		
+		
+		if timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME and gameConfig.instance.culture == "arabic" then
+			Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer"..math.random(1,3)..".ogg", 0.9)
+		end
+	
         config = getDefaultConfg({ r = 0.5, g = 0.5, b = 0.5, a = 0.5 })
         -- if GG.SunConfig and GG.SunConfig[1] then
         -- config= GG.SunConfig[1]
@@ -251,11 +258,14 @@ if gadgetHandler:IsSyncedCode() then
 
         setSun(config, percent)
     end
-	offset= DAYLENGTH/4
+	startMorningOffset= DAYLENGTH/4
+	DAWN_FRAME= math.ceil((DAYLENGTH/EVERY_NTH_FRAME)*0.25)*EVERY_NTH_FRAME
+	DUSK_FRAME= math.ceil((DAYLENGTH/EVERY_NTH_FRAME)*0.75)*EVERY_NTH_FRAME
     --set the sun
     function gadget:GameFrame(n)
-        if n % 32 == 0 then
-            aDay(n + offset, DAYLENGTH)
+        if n % EVERY_NTH_FRAME == 0 then
+			Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
+            aDay(n + startMorningOffset, DAYLENGTH)
         end
             setSunArc(n)
     end
