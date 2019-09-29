@@ -70,7 +70,7 @@ boolWalking = false
 boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
-
+boolLoaded	= false
 function script.Create()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -80,9 +80,9 @@ function script.Create()
 	-- StartThread(randSignLoop)
 
 	setupAnimation()
-	StartThread(testLoop)
-	-- StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
-	-- StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+	-- StartThread(testLoop)
+	StartThread(eAnimState.Slaved, UpperAnimationStateFunctions)
+	StartThread(eAnimState.Walking, LowerAnimationStateFunctions)
 	-- StartThread(threadStarter)
 end
 
@@ -139,7 +139,21 @@ yFac= 1
 zFac= 1
 
 Animations = {
-["UPBODY_PHONECYCLE"]={
+["SLAVED"]={
+		{
+			['time'] = 1,
+			['commands'] = {		
+			},
+		},		
+		{
+			['time'] = 60,
+			['commands'] = {		
+			},
+		},
+
+
+},
+["UPBODY_PHONE"]={
 	{
 		['time'] = 1,
 		['commands'] = {
@@ -288,7 +302,7 @@ Animations = {
 		['commands'] = {
 		}
 	},
-}
+},
 ["WALKCYCLE_UNLOADED"]={
 	{
 		['time'] = 1,
@@ -683,8 +697,7 @@ Animations = {
 			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=yFac*0.013474, ['s']=0.497133},
 			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=xFac*0.730477, ['s']=0.496548},
 			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=zFac*0.143282, ['s']=0.442650},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=yFac*-0.145
-			76, ['s']=1.912759},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=yFac*-0.14576, ['s']=1.912759},
 		}
 	},
 	{
@@ -748,11 +761,15 @@ Animations = {
 
 
 uppperBodyAnimations ={
-[eAnimState.Walking] = "WALKCYCLE_UNLOADED",
-[eAnimState.Slaved] = "SLAVED"
+[eAnimState.idle] = { 
+	[1] = "UPBODY_PHONE",
+	[2] = "SLAVED"
+},
+[eAnimState.walking] = "WALKCYCLE_UNLOADED",
 }
+
 lowerBodyAnimations ={
-[eAnimState.Walking] = "WALKCYCLE_UNLOADED"
+[eAnimState.walking] = "WALKCYCLE_UNLOADED"
 
 }
 
@@ -821,9 +838,13 @@ function PlayAnimation(animname, piecesToFilterOutTable)
         local commands = anim[i].commands;
         for j = 1,#commands do
             local cmd = commands[j];
-			if  not piecesToFilterOutTable[cmd.p] then
-	
-				animCmd[cmd.c](cmd.p,cmd.a,cmd.t ,cmd.s)
+			randoffset = 0.0
+			if cmd.r then
+				randoffset = math.random(-cmd.r, cmdr)
+			end
+			
+			if  not piecesToFilterOutTable[cmd.p] then	
+				animCmd[cmd.c](cmd.p,cmd.a,cmd.t + randoffset ,cmd.s)
 				
 			end
         end
@@ -934,7 +955,6 @@ function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateL
 	boolStartThread = true
 end
 
-
 function conditionalFilterOutUpperBodyTable()
 	if boolDecoupled == false  then 
 		return {}
@@ -943,14 +963,37 @@ function conditionalFilterOutUpperBodyTable()
 	end
 end
 
+function showHideProps(selectedIdleFunction, bShow)
+	if selectedIdleFunction== 1 then
+	
+	elseif selectedIdleFunction == 2 then
+	
+	elseif selectedIdleFunction == 3 then
+	
+	end
+
+end
+
+function playUpperBodyIdleAnimation()
+							selectedIdleFunction =math.random(1,#uppperBodyAnimations[eAnimState.Idle])
+							showHideProps(selectedIdleFunction, true)
+							PlayAnimation(Animations[uppperBodyAnimations[eAnimState.Idle][selectedIdleFunction]])
+							showHideProps(selectedIdleFunction, false)
+
+end
+
 UpperAnimationStateFunctions ={
 [eAnimState.Standing] = 	function () 
-							--resetAll(unitID)
-						Sleep(10)
-						
-						return eAnimState.Standing
-					end,
+								playUpperBodyIdleAnimation()
+								Sleep(10)						
+								return eAnimState.Standing
+							end,
 [eAnimState.Walking] = 	function () 
+							if boolLoaded == false and math.random(1,100) > 50 then
+								boolDecoupled = true
+								playUpperBodyIdleAnimation()
+								boolDecoupled = false
+							end
 					
 						return eAnimState.Walking
 					end,
@@ -966,7 +1009,7 @@ LowerAnimationStateFunctions ={
 						return eAnimState.Walking
 				end,
 [eAnimState.Standing] = 	function () 
-						WMove(center,y_axis, 0, math.pi)
+						resetT(lowerBodyPieces, math.pi)
 						Sleep(100)
 						return eAnimState.Standing
 					end
@@ -1082,6 +1125,7 @@ seriously ={
 	"THATS&LIFE",
 	"AND LET LIFE",
 	"MOTHERS&AGAINST$",
+	"ALWAYS&LCOK ON&BRIGHTSIDE",
 	
 	--Anger
 	"ROCKET&IS&RAPE",
@@ -1129,13 +1173,15 @@ seriously ={
 	"POMPEJ  ALLOVER",
 	"AVENGE&US",
 	"SHIT&HAPPENS",
-	"IT TOLLS&FOR THEE",
+	"FOR WHOM&THE BELL",
+	"IS TOLLS&FOR THEE",
 	"MEMENTO",
 	"MORI",
 	"CARPE&DIEM",
 	
 	--Personification
 	"I&LOVE&Ü",
+	"Ü&U HAVE A&SON",
 	"Ü&MARRY&ME",
 	" DEATH&TO&Ü",
 	"  I& BLAME&Ü",
@@ -1143,10 +1189,11 @@ seriously ={
 	--Humor
 	" PRO&TEST&ICLES",
 	"NO MORE&TAXES",
+	"NO&PROTEST"
 	
 }
-usedPieces ={}
-Spring.SetUnitNanoPieces(unitID, { center })
+
+
 -- function randSignLoop()
 	-- lettersize = 34
 	-- letterSizeZ= 62

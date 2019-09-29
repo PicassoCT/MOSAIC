@@ -327,23 +327,23 @@ end
 function getCivilianAnimationStates()
 return {
 	-- Upper Body States
-	["Slaved"]	="STATE_SLAVED", -- do nothing
-	["Idle	"]	="STATE_IDLE",
-	["Filming"]	="STATE_FILMING" ,
-	["Phone	"]	="STATE_PHONE",
-	["Wailing"]	="STATE_WAILING" ,
-	["Talking"]		="STATE_TALKING",
-	--Coupled Cycles	
-	["Standing"]	="STATE_STANDING",
-	["Aiming"]	="STATE_AIMING",
-	["Hit"]	="STATE_HIT",
-	["Death"]	="STATE_DEATH",
-	["Transported"] 		="STATE_TRANSPORTED",
-	-- Self Ending Cycles		
-	["Walking"]	="STATE_WALKING",
-	["Running"]	="STATE_RUNNING",
-	["CoverWalk"]	="STATE_COVERWALK",
-	["Limping"]	="STATE_LIMPING"   
+	slaved	="STATE_SLAVED", -- do nothing
+	idle	="STATE_IDLE",
+	filming	="STATE_FILMING" ,
+	phone	="STATE_PHONE",
+	wailing	="STATE_WAILING" ,
+	talking		="STATE_TALKING",
+	coupled cycles	
+	--standing	="STATE_STANDING",
+	aiming	="STATE_AIMING",
+	hit	="stATE_HIT",
+	death	="STATE_DEATH",
+	transported 		="STATE_TRANSPORTED",
+	-- self ending Cycles		
+	walking	="STATE_WALKING",
+	running	="STATE_RUNNING",
+	coverwalk	="STATE_COVERWALK",
+	limping	="STATE_LIMPING"   
 }
 
 end

@@ -68,11 +68,15 @@ local killedAllyTeams = {}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-GameConfig = {}
+GameConfig =getGameConfig()
+function setGlobalGameState(state)
+GG.GlobalGameState= state
+Spring.SetGameRulesParam("GlobalGameState", state)
+end
 
 function gadget:Initialize()
-	GameConfig =getGameConfig()
-	GG.GlobalGameState= GameConfig.GameState.Normal
+	setGlobalGameState(GameConfig.GameState.Normal)
+	
 	GG.Launchers ={}
 
     if teamDeathMode == "none" then
@@ -112,7 +116,7 @@ end
 								LaunchedRockets[teamID][id] = frame
 								Spring.DestroyUnit(launcherID, false, true)
 								GameStateMachine.Timer = frame
-								GG.GlobalGameState= GameConfig.GameState.PostLaunch
+								setGlobalGameState(GameConfig.GameState.PostLaunch)
 						end	
 					end
 				end
@@ -337,8 +341,8 @@ function gadget:GameFrame(frame)
     -- only do a check in slowupdate
     if (frame % 16) == 0 and GG.GlobalGameState then
 		constantCheck(frame)
-		GG.GlobalGameState = GameStateMachine[GG.GlobalGameState](frame)
-		Spring.SetGameRulesParam("GlobalGameState", GG.GlobalGameState)
+		setGlobalGameState(GameStateMachine[GG.GlobalGameState](frame))
+
 		if oldState ~= GG.GlobalGameState then
 			Spring.Echo("Current GameState:"..GG.GlobalGameState)
 			oldState = GG.GlobalGameState

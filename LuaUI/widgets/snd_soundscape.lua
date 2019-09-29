@@ -118,11 +118,11 @@ local function StartTrack()
 	firstFade = false
 	previousTrack = newTrack
 	
-	if (oggInfo.comments.TITLE and oggInfo.comments.TITLE) then
-		Spring.Echo("Soundscape changed to: " .. oggInfo.comments.TITLE .. " By: " .. oggInfo.comments.ARTIST)
+	-- if (oggInfo.comments.TITLE and oggInfo.comments.TITLE) then
+		-- Spring.Echo("Soundscape changed to: " .. oggInfo.comments.TITLE .. " By: " .. oggInfo.comments.ARTIST)
 	-- else
 		-- Spring.Echo("Soundscape changed but unable to get the artist and title info")
-	end
+	-- end
 	curTrack = newTrack
 	Spring.PlaySoundStream(curTrack,WG.music_volume or 0.5)
 	
