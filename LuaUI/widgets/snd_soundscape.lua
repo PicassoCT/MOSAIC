@@ -75,7 +75,7 @@ local function StartLoopingTrack(trackInit, trackLoop)
 	end
 	haltMusic = true
 	Spring.StopSoundStream()
-	soundScapeType = Spring.GetGameRulesParam("GlobalGameState") or "Normal"
+	soundScapeType = Spring.GetGameRulesParam("GlobalGameState") or "normal"
 	
 	curTrack = trackInit
 	loopTrack = trackLoop
@@ -84,7 +84,7 @@ local function StartLoopingTrack(trackInit, trackLoop)
 end
 
 local function StartTrack()
-	Spring.Echo("Playing soundscape")
+	-- Spring.Echo("Playing soundscape")
 
 	haltMusic = false
 	looping = false
@@ -124,6 +124,7 @@ local function StartTrack()
 		-- Spring.Echo("Soundscape changed but unable to get the artist and title info")
 	-- end
 	curTrack = newTrack
+	-- Spring.Echo("curttrack:"..curTrack)
 	Spring.PlaySoundStream(curTrack,WG.music_volume or 0.5)
 	
 	WG.music_start_volume = WG.music_volume
@@ -133,12 +134,12 @@ function widget:Update(dt)
 	if gameOver then
 		return
 	end
-	Spring.Echo("widget:Update:SoundScape")
+	-- Spring.Echo("widget:Update:SoundScape")
 	if not initialized then
 		math.randomseed(os.clock()* 100)
 		initialized=true
 				
-		local vfsMode =  VFS.RAW
+		local vfsMode =  VFS.RAW_FIRST
 		normalTracks		= normalTracks or VFS.DirList(soundScapePath..'normal/', '*.ogg', vfsMode)
 		launchleakTracks	= launchleakTracks or VFS.DirList(soundScapePath..'launchleak/', '*.ogg', vfsMode)
 		anarchyTracks		= anarchyTracks or VFS.DirList(soundScapePath..'anarchy/', '*.ogg', vfsMode)

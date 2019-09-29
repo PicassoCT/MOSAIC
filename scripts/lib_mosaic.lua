@@ -333,8 +333,8 @@ return {
 	phone	="STATE_PHONE",
 	wailing	="STATE_WAILING" ,
 	talking		="STATE_TALKING",
-	coupled cycles	
-	--standing	="STATE_STANDING",
+	--	coupled cycles	
+	standing	="STATE_STANDING",
 	aiming	="STATE_AIMING",
 	hit	="stATE_HIT",
 	death	="STATE_DEATH",

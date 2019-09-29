@@ -983,12 +983,12 @@ function playUpperBodyIdleAnimation()
 end
 
 UpperAnimationStateFunctions ={
-[eAnimState.Standing] = 	function () 
+[eAnimState.standing] = 	function () 
 								playUpperBodyIdleAnimation()
 								Sleep(10)						
 								return eAnimState.Standing
 							end,
-[eAnimState.Walking] = 	function () 
+[eAnimState.walking] = 	function () 
 							if boolLoaded == false and math.random(1,100) > 50 then
 								boolDecoupled = true
 								playUpperBodyIdleAnimation()
@@ -997,18 +997,18 @@ UpperAnimationStateFunctions ={
 					
 						return eAnimState.Walking
 					end,
-[eAnimState.Slaved] = 	function () 
+[eAnimState.slaved] = 	function () 
 					
 						return eAnimState.Slaved
 					end
 }
 
 LowerAnimationStateFunctions ={
-[eAnimState.Walking] = function()
+[eAnimState.walking] = function()
 						PlayAnimation(Animations[lowerBodyAnimations[eAnimState.Walking]], conditionalFilterOutUpperBodyTable())					
 						return eAnimState.Walking
 				end,
-[eAnimState.Standing] = 	function () 
+[eAnimState.standing] = 	function () 
 						resetT(lowerBodyPieces, math.pi)
 						Sleep(100)
 						return eAnimState.Standing
