@@ -51,6 +51,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     local function CreateEvent(self, action, persPack, startFrame)
+	
         startFrame = math.max(startFrame, Spring.GetGameFrame())
         --	Spring.Echo("Create event "..(GG.EventStreamID+1).. "waiting for frame  "..startFrame)
         myID = GG.EventStreamID

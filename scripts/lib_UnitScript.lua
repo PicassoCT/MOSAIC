@@ -2342,7 +2342,7 @@ function echoT(T, layer)
 			Spring.Echo(stringBuilder( l, "-") .. "[]T:")
 			for k, v in pairs(T) do
 				Spring.Echo(stringBuilder( l, " ").."Key [\""..k.."\"]")					
-				echoT(T[k], l + 1)
+				echoT(T[k], l + string.len(k)+2)
 			end
 		else
 			Concated = stringBuilder( math.max(1, l) - 1, " ") .. "|-►"
@@ -2364,6 +2364,8 @@ function echoT(T, layer)
 		end
 	end
 end
+
+--> debugEchoT(
 
 -->Generic to String
 function toString(element)
@@ -5429,6 +5431,7 @@ function delayedCommand(id, command, target, option, framesToDelay)
 end
 -->Generic Simple Commands
 function Command(id, command, target, option)
+	
 	options = option or {}
 	--abort previous command
 	

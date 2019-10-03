@@ -21,34 +21,44 @@ end
 	VFS.Include("scripts/lib_Build.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	
+	statistics ={}
 	local spGetPosition = Spring.GetUnitPosition
-	UnitDefNames = getUnitDefNames(UnitDefs)
-	GameConfig = getGameConfig()
-	CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
+	local currentGlobalGameState = GG.GlobalGameState or "normal"
+	local UnitDefNames = getUnitDefNames(UnitDefs)
+	local GameConfig = getGameConfig()
+	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
 	--assert(CivilianTypeTable["civilian"])
 	--assert(CivilianTypeTable["truck"])
 	--assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
-	MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
-	CivAnimStates = getCivilianAnimationStates()
+	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
+	local CivAnimStates = getCivilianAnimationStates()
 	
 	GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
 	GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
 	GG.BuildingTable= {} --[BuildingUnitID] = {routeID, stationIndex}
-	BuildingPlaceTable={} -- SizeOf Map/Divide by Size of Building
-	uDim ={}
+	local BuildingPlaceTable={} -- SizeOf Map/Divide by Size of Building
+	local uDim ={}
 	uDim.x,uDim.y,uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ+ GameConfig.allyWaySizeZ	
 	numberTileX, numberTileZ = Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z
-	RouteTabel = {} --Every start has a subtable of reachable nodes 	
+	local RouteTabel = {} --Every start has a subtable of reachable nodes 	
 	boolInitialized = false
 	
-local houseDefID = UnitDefNames["house"].id	
-	gaiaTeamID = Spring.GetGaiaTeamID()
+	local houseDefID = UnitDefNames["house"].id	
+	local gaiaTeamID = Spring.GetGaiaTeamID()
 	
-	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride)
+	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, boolDeCoupled)
 	  env = Spring.UnitScript.GetScriptEnv(unitID)
         if env and env.showHideIcon then
-			Spring.UnitScript.CallAsUnit(unitID, env.setOverrideAnimationState,  AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride or false, conditionFunction or nil, boolCoupled or false)
+			Spring.UnitScript.CallAsUnit(unitID, env.setOverrideAnimationState,  AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride or false, conditionFunction or nil, boolDeCoupled)
         end
+	end
+	
+	function SetCivilianBehaviourMode(unitID, boolStartUnitBehaviourState, TypeOfBehaviour )
+		env = Spring.UnitScript.GetScriptEnv(unitID)
+        if env and env.showHideIcon then
+			Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, boolStartUnitBehaviourState, TypeOfBehaviour)
+        end
+	
 	end
 	
 	function makePasserBysLook(unitID)
@@ -68,12 +78,12 @@ local houseDefID = UnitDefNames["house"].id
 					offx, offz= math.random(0,10)*randSign(), math.random(0,10)*randSign()
 					Command(id, "go", { x=  ux+ offx, y=  uy, z = uz+ offz}, {})
 					--TODO Set Behaviour filming
-					UnitSetAnimationState(id, CivAnimStates.Filming, CivAnimStates.Walking, true)
+					UnitSetAnimationState(id, CivAnimStates.filming, CivAnimStates.walking, true, true)
 					
 				elseif math.random(0,100) > GameConfig.inHundredChanceOfDisasterWailing then			
 					offx, offz= math.random(0,10)*randSign(), math.random(0,10)*randSign()
 					Command(id, "go", { x=  ux+ offx, y=  uy, z = uz+ offz}, {})
-					UnitSetAnimationState(id, CivAnimStates.Wailing, CivAnimStates.Walking, true)
+					UnitSetAnimationState(id, CivAnimStates.wailing, CivAnimStates.walking, true, true)
 					
 				end
 			end
@@ -438,6 +448,10 @@ local houseDefID = UnitDefNames["house"].id
 			if not x then echo("Spawning unit of typ "..UnitDefs[defID].name .." with no coords") end
 		h = Spring.GetGroundHeight(x,z)
 		id = Spring.CreateUnit(defID, x, h, z, dir, gaiaTeamID)
+		
+		if not statistics[defID] then statistics[defID]= 0 end
+		statistics[defID] = statistics[defID]+1
+		
 		if id then
 			Spring.SetUnitNoSelect(id, true)
 			Spring.SetUnitAlwaysVisible(id, true)
@@ -490,14 +504,31 @@ local houseDefID = UnitDefNames["house"].id
 	
 	travellFunction = function(evtID, frame, persPack, startFrame)
 		--	only apply if Unit is still alive
-		if Spring.GetUnitIsDead(persPack.unitID) == true then
+		myID = persPack.unitID
+		if Spring.GetUnitIsDead(myID) == true then
 			return nil, persPack
 		end
 		
-		hp = Spring.GetUnitHealth(persPack.unitID)
+		-- <External GameState Handling>
+		if not 	persPack.boolAnarchy then 	persPack.boolAnarchy = false end
+		
+		if  GG.GlobalGameState and GG.GlobalGameState == GameConfig.GameState.Normal and persPack.boolAnarchy == true then
+			SetCivilianBehaviourMode(myID, false)
+			persPack.boolAnarchy = false
+		end
+		
+		if  GG.GlobalGameState and GG.GlobalGameState ~= GameConfig.GameState.Normal then
+			--TODO End the external statemachine- enter the the internal statemachine 
+			SetCivilianBehaviourMode(myID, true, GG.GlobalGameState )
+			persPack.boolAnarchy = true
+			return frame + math.random(30*5,30*25) , persPack
+		end			
+		-- </External GameState Handling>
+		
+		hp = Spring.GetUnitHealth(myID)
 		if not persPack.myHP then persPack.myHP = hp end
 		
-		x,y,z = Spring.GetUnitPosition(persPack.unitID)
+		x,y,z = Spring.GetUnitPosition(myID)
 		if not x then 
 			return nil, persPack
 		end
@@ -521,20 +552,20 @@ local houseDefID = UnitDefNames["house"].id
 		end
 		
 		if persPack.stuckCounter > 5 then
-			Spring.DestroyUnit(persPack.unitID,true,true)
+			Spring.DestroyUnit(myID,true,true)
 			return nil, nil
 		end
 		--we where obviously attacked - flee from attacker
 		if persPack.myHP < hp then
-			attackerID = Spring.GetUnitLastAttacker(persPack.unitID)
+			attackerID = Spring.GetUnitLastAttacker(myID)
 			if attackerID then
 				ax,ay,az = Spring.GetUnitPosition(attackerID)
 				
 				if ax and x then
 					dx,dz = x -ax, z- az
 					dx,dz = dx * 100, dz * 100
-					Command(persPack.unitID, "go", { x=x+ dx ,y= 0 , z=z+dz}, {"shift"})
-					UnitSetAnimationState(id, CivAnimStates.Slaved, CivAnimStates.CoverWalk, true)
+					Command(myID, "go", { x=x+ dx ,y= 0 , z=z+dz}, {"shift"})
+					UnitSetAnimationState(id, CivAnimStates.slaved, CivAnimStates.coverwalk, true, false)
 					return frame + 1000 , persPack
 				end
 			end
@@ -545,19 +576,19 @@ local houseDefID = UnitDefNames["house"].id
 			local partnerID
 			
 			if math.random(0,1)==1 then
-				partnerID = Spring.GetUnitNearestAlly(persPack.unitID)
+				partnerID = Spring.GetUnitNearestAlly(myID)
 			else
-				partnerID = Spring.GetUnitNearestEnemy(persPack.unitID)
+				partnerID = Spring.GetUnitNearestEnemy(myID)
 			end
 			
-			if partnerID and distanceUnitToUnit(persPack.unitID, partnerID) < 350 then
+			if partnerID and distanceUnitToUnit(myID, partnerID) < 150 then
 				px,py,pz= Spring.GetUnitPosition(partnerID)
-				Command(persPack.unitID, "go", {x= px ,y= py ,z=pz}, {})
+				Command(myID, "go", {x= px ,y= py ,z=pz}, {})
 				Command(partnerID, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
 			
 				--assemble a small group for communication
 				if math.random(0,1)==1 then
-					process(getAllNearUnit(persPack.unitID, GameConfig.groupChatDistance),
+					process(getAllNearUnit(myID, GameConfig.groupChatDistance),
 					function (id)
 						if Spring.GetUnitTeam(id) == persPack.myTeam then 
 							return id
@@ -565,7 +596,7 @@ local houseDefID = UnitDefNames["house"].id
 					end,
 					function(id)
 						Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
-						UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.Walking, true)
+						UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.walking, true, true)
 					end
 					)
 				end
@@ -574,7 +605,7 @@ local houseDefID = UnitDefNames["house"].id
 		end
 		
 		--if near Destination increase goalIndex
-		if distanceUnitToPoint(persPack.unitID, 
+		if distanceUnitToPoint(myID, 
 		persPack.goalList[persPack.goalIndex].x,
 		0,
 		persPack.goalList[persPack.goalIndex].z)
@@ -582,15 +613,16 @@ local houseDefID = UnitDefNames["house"].id
 			persPack.goalIndex = persPack.goalIndex + 1
 			
 			if persPack.goalIndex > #persPack.goalList then						
-				GG.UnitArrivedAtTarget[persPack.unitID] = true
+				GG.UnitArrivedAtTarget[myID] = true
 				return nil, persPack
 			end					
 		end			
 		
-		Command(persPack.unitID, "go", 
-		{x=persPack.goalList[persPack.goalIndex].x,y=0,z=persPack.goalList[persPack.goalIndex].z}, {})
-		
-		return frame + 50, persPack
+		--only issue commands if not moving for a time - prevents repathing frame drop of 15 fps
+		if persPack.stuckCounter > 1 then
+			Command(myID, "go",  {x=persPack.goalList[persPack.goalIndex].x,y=0,z=persPack.goalList[persPack.goalIndex].z}, {})
+		end
+		return frame +  math.random(60,90), persPack
 	end	
 	
 	function giveWaypointsToUnit(uID, uType, startNodeID)
@@ -645,6 +677,7 @@ local houseDefID = UnitDefNames["house"].id
 			spawnInitialPopulation(frame)
 		--	echo("Initialization:Frame:"..frame)
 		elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
+			currentGlobalGameState = GG.GlobalGameState or "normal"
 			-- echo("Runcycle:Frame:"..frame)
 			-- recreate buildings 
 			-- recreate civilians
@@ -658,5 +691,7 @@ local houseDefID = UnitDefNames["house"].id
 			--if Unit arrived at Location
 			--give new Target
 			sendArrivedUnitsCommands()
+			
+			--echoT(statistics)
 		end		
 	end

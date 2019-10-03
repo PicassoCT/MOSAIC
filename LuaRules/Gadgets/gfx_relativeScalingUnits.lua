@@ -1,12 +1,12 @@
 function gadget:GetInfo()
     return {
         name = "Relative Unit Scale:",
-        desc = "Scales Units between a realistic scale and a tactical scale depending on camera heigth",
+        desc = "Scales Units between a realistic scale and a tactical scale depending on camera heigth - eats fps 30",
         author = "Picasso",
         date = "21st of March 2019",
         license = "GPLv3", 
         layer = 0,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -16,7 +16,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
 	 VFS.Include("scripts/lib_mosaic.lua")
 
-	scaleTable= getUnitScaleTable(UnitDefNames)
+   local scaleTable= getUnitScaleTable(UnitDefNames)
 	
    local function tansferScaleTable()
 
@@ -45,6 +45,7 @@ else -- unsynced
 	local limitOfRealisticScale = 500
 	local camPos={x=0, y=0, z=0}
 	local groundHeigth = 0
+	local camHeigth = 0
 	
     local function transferScaleTable(callname, typeDefID, realScale, tacticalScale)
         UnsyncedScaleTable[typeDefID] = {realScale=realScale, tacticalScale =tacticalScale}
@@ -64,6 +65,7 @@ else -- unsynced
 	function gadget:GameFrame(frame)
 		camPos.x,camPos.y,camPos.z =	Spring.GetCameraPosition()
 		groundHeigth = Spring.GetGroundHeight(camPos.x,camPos.z)
+		camHeigth = math.abs(camPos.y - groundHeigth)
 	end
 	
 	local function mix(vA, vB, fac)
@@ -72,14 +74,14 @@ else -- unsynced
 
 	end
 
-	
+	local glScale = gl.Scale
+	local glUnitRaw = gl.UnitRaw
 	
     function gadget:DrawUnit(unitID)
         if unitIDtypeDefIDMap[unitID] and UnsyncedScaleTable[unitIDtypeDefIDMap[unitID]] then
             local scale = UnsyncedScaleTable[unitIDtypeDefIDMap[unitID]]
 			
-			if scale then 
-				camHeigth = math.abs(camPos.y - groundHeigth)
+			if scale then 				
 				
 				factor = 0.0
 				if camHeigth >= limitOfRealisticScale and camHeigth <= limitOfTacticalScale then
@@ -93,9 +95,9 @@ else -- unsynced
 					factor = scale.realScale
 				end
 			
-            gl.Scale(factor, factor, factor)
+				glScale(factor, factor, factor)
 
-            gl.UnitRaw(unitID, true)
+				glUnitRaw(unitID, true)
 			end
         end
     end
