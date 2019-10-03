@@ -139,9 +139,6 @@ function script.FireWeapon1()
     return true
 end
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
-xFac= 1
-yFac= 1
-zFac= 1
 
 Animations = {
 ["SLAVED"]={
@@ -336,9 +333,9 @@ Animations = {
 			{['c']='turn',['p']=LowLeg2, ['a']=x_axis, ['t']=0.280484, ['s']=0.676133},
 			{['c']='turn',['p']=LowLeg2, ['a']=y_axis, ['t']=0.023582, ['s']=0.178514},
 			{['c']='turn',['p']=LowLeg2, ['a']=z_axis, ['t']=-0.005542, ['s']=0.058872},
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.885990, ['s']=2.983798},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.142516, ['s']=0.253383},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.860676, ['s']=2.918265},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0, ['s']=2.594607},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.311438, ['s']=0.220333},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.61, ['s']=2.537622},					
 			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0.000070, ['s']=3.669806},
 			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=1.314122, ['s']=0.362698},
 			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.000154, ['s']=3.578656},
@@ -419,9 +416,9 @@ Animations = {
 			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.031109, ['s']=0.906234},
 			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.059460, ['s']=0.033937},
 			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.033922, ['s']=0.297869},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=1.495232, ['s']=2.585034},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0  		, ['s']=2.585034},
 			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=1.304638, ['s']=0.027696},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=1.479168, ['s']=2.559561},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0		, ['s']=2.559561},
 		}
 	},
 	{
@@ -468,9 +465,10 @@ Animations = {
 			{['c']='turn',['p']=LowLeg2, ['a']=x_axis, ['t']=-0.009824, ['s']=0.269113},
 			{['c']='turn',['p']=LowLeg2, ['a']=y_axis, ['t']=-0.005613, ['s']=0.072528},
 			{['c']='turn',['p']=LowLeg2, ['a']=z_axis, ['t']=-0.029465, ['s']=0.006334},
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=1.103209, ['s']=2.594607},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.311438, ['s']=0.220333},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=-1.084834, ['s']=2.537622},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0, ['s']=0.053383},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.142516, ['s']=0.253383},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=-0.360676, ['s']=0.253383},
+
 		}
 	},
 	{
@@ -498,9 +496,9 @@ Animations = {
 	{
 		['time'] = 25,
 		['commands'] = {
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.000001, ['s']=3.450537},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0, ['s']=3.450537},
 			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=1.361461, ['s']=0.131130},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.000001, ['s']=3.413466},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0, ['s']=3.413466},
 		}
 	},
 	{
@@ -915,7 +913,7 @@ UpperAnimationStateFunctions ={
 						return eAnimState.walking
 					end,
 [eAnimState.slaved] = 	function () 
-						Sleep(10)
+						Sleep(100)
 						return eAnimState.slaved
 					end
 }
@@ -924,7 +922,7 @@ LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
 						PlayAnimation(lowerBodyAnimations[eAnimState.walking], conditionalFilterOutUpperBodyTable())					
 						return eAnimState.walking
-				end,
+						end,
 [eAnimState.standing] = 	function () 
 						resetT(lowerBodyPieces, math.pi)
 						Sleep(100)
@@ -1021,7 +1019,7 @@ function script.QueryBuildInfo()
     return center
 end
 
-seriously ={
+signMessages ={
 	--Denial
 	" SHAME ",
 	"THEY &ARE NOT& US",
@@ -1124,7 +1122,7 @@ seriously ={
 	-- resetAll(unitID)	
 	-- WTurn(ProtestSign,z_axis, math.rad(0), 0)
 	-- Show(ProtestSign)
-	-- makeProtestSign(8, 3, lettersize, letterSizeZ, seriously[math.random(1,#seriously)], "RAPHI")
+	-- makeProtestSign(8, 3, lettersize, letterSizeZ, signMessages[math.random(1,#signMessages)], "RAPHI")
 	-- WTurn(ProtestSign,x_axis,math.rad(-90),5)
 	-- WTurn(ProtestSign,y_axis,math.rad(0),5)
 	-- WTurn(ProtestSign,z_axis,math.rad(0),5)
