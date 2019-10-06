@@ -156,151 +156,174 @@ Animations = {
 
 },
 ["UPBODY_PHONE"]={
-{
-		['time'] = 1,
+		{
+		['time'] = 0,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.317617, ['s']=0.076913},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000626, ['s']=0.729646},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.003907, ['s']=0.262642},
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.356655, ['s']=0.360143},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.409520, ['s']=0.951310},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.344713, ['s']=2.232887},
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-1.066430, ['s']=1.103204},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.285977, ['s']=0.148830},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=1.045669, ['s']=1.081726},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0.009983, ['s']=0.014974},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.436585, ['s']=1.056268},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.804000, ['s']=1.206000},
+			
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.045881, ['s']=0.229407},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.196004, ['s']=0.001407},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.005441, ['s']=0.027205},
+		
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-2.100111, ['s']=0.070260},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=1.226809, ['s']=0.032465},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.652054, ['s']=0.053747},
+		
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0.481837, ['s']=5.372822},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=2.859853, ['s']=2.345814},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.101742, ['s']=3.011065},
+			
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.904468, ['s']=0.205598},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.269985, ['s']=0.064629},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.336757, ['s']=0.047300},
+		
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.964919, ['s']=0.006732},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.414678, ['s']=1.108110},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.002218, ['s']=0.049504},
+		
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.045319, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.053385, ['s']=0.042968},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 		}
 	},
 	{
-		['time'] = 12,
+		['time'] = 5,
 		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.783519, ['s']=1.422880, r= 0.25},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.238784, ['s']=0.569120, r= 0.25},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.434815, ['s']=0.300341, r= 0.25},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=1.240101, ['s']=3.791323},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=2.235171, ['s']=3.123409},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.841845, ['s']=3.700511},
 		}
 	},
 	{
-		['time'] = 13,
+		['time'] = 6,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.278025, ['s']=0.197959},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.163020, ['s']=0.811970},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.003865, ['s']=0.000214},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.000802, ['s']=0.175062},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.196288, ['s']=0.001065},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000095, ['s']=0.020761},
 		}
 	},
 	{
-		['time'] = 19,
+		['time'] = 11,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.218613, ['s']=0.222794},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000298, ['s']=0.610207},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.002713, ['s']=0.004317},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0.738226, ['s']=1.158174},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=2.852072, ['s']=1.423618},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=1.920629, ['s']=2.125883},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1.052336, ['s']=0.201731},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=-0.105158, ['s']=1.199621},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.092752, ['s']=0.219161},
+		}
+	},
+	{
+		['time'] = 14,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.098156, ['s']=0.296875},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.195385, ['s']=0.002707},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.011617, ['s']=0.035137},
+		}
+	},
+	{
+		['time'] = 17,
+		['commands'] = {
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.045319, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.080521, ['s']=0.054271},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 		}
 	},
 	{
 		['time'] = 21,
 		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.272995, ['s']=0.863781,r= 0.25 },
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.483588, ['s']=1.274776 ,r= 0.25 },
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.211576, ['s']=0.393952,r= 0.25 },
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.604630, ['s']=1.317027},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=-0.280064, ['s']=1.535677},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.869592, ['s']=0.140554},
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-2.149293, ['s']=0.061477},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=1.204084, ['s']=0.028407},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.614431, ['s']=0.047028},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.760550, ['s']=0.179898},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.315225, ['s']=0.056551},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.303648, ['s']=0.041387},
 		}
 	},
 	{
-		['time'] = 27,
+		['time'] = 24,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.351973, ['s']=1.333600},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000661, ['s']=0.003628},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.126216, ['s']=1.289298},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.017473, ['s']=0.302563},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.196207, ['s']=0.003081},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.002074, ['s']=0.035788},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=2.671537, ['s']=5.272667},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=2.409114, ['s']=1.208068},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=3.865303, ['s']=5.303657},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1.212641, ['s']=0.437195},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=-0.070820, ['s']=0.093650},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.029634, ['s']=0.172140},
 		}
 	},
 	{
-		['time'] = 30,
+		['time'] = 32,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.311133, ['s']=0.408401},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000601, ['s']=0.000599},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.003830, ['s']=1.300466},
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.655820, ['s']=1.368700},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.214088, ['s']=0.239629},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.895085, ['s']=0.501947},
-		}
-	},
-	{
-		['time'] = 33,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.412977, ['s']=0.611068},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000997, ['s']=0.002376},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.088928, ['s']=0.556548},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.098156, ['s']=0.201709},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.195385, ['s']=0.002054},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.011617, ['s']=0.023859},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.045319, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.053385, ['s']=0.067839},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 		}
 	},
 	{
 		['time'] = 35,
 		['commands'] = {
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.046619, ['s']=1.395026},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=1.027228, ['s']=3.268232},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.555935, ['s']=3.563817},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=2.310166, ['s']=1.548734},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=1.965195, ['s']=1.902509},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.910463, ['s']=4.092169},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-2.386995, ['s']=5.032946},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=-0.009300, ['s']=0.263655},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.002601, ['s']=0.138147},
 		}
 	},
 	{
-		['time'] = 38,
+		['time'] = 42,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.318324, ['s']=0.354949},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000566, ['s']=0.001617},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.104319, ['s']=0.724677},
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-2.160848, ['s']=2.421416,r= 0.25 	},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.443659, ['s']=0.108899 ,r= 0.25		},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.191915, ['s']=0.053620,r= 0.25	},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=1.240101, ['s']=3.566881},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=2.235171, ['s']=0.899919},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.841845, ['s']=0.228729},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.967388, ['s']=2.661764},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.008370, ['s']=0.033133},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.015934, ['s']=0.034752},
 		}
 	},
 	{
-		['time'] = 39,
+		['time'] = 44,
 		['commands'] = {
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-1.019890, ['s']=0.910175},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.278650, ['s']=0.161406},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=1.240725, ['s']=0.864099},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.017473, ['s']=0.403418},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.196207, ['s']=0.004108},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.002074, ['s']=0.047717},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.077734, ['s']=0.052175},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 		}
 	},
 	{
-		['time'] = 46,
+		['time'] = 45,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.286851, ['s']=0.067442},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.292484, ['s']=0.625540},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.108964, ['s']=0.009953},
 		}
 	},
 	{
-		['time'] = 47,
+		['time'] = 50,
 		['commands'] = {
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.000000, ['s']=0.116549},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=1.140764, ['s']=0.283839},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.000000, ['s']=1.389838},
-		}
-	},
-	{
-		['time'] = 49,
-		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.224603, ['s']=5.280669, r= 0.25},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.060707, ['s']=1.375542, r= 0.25},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.525988, ['s']=1.816166, r= 0.25},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.000000, ['s']=0.074883},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.196285, ['s']=0.000335},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.008887},
 		}
 	},
 	{
 		['time'] = 51,
 		['commands'] = {
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.000000, ['s']=3.399633},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1.429846, ['s']=0.503986},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.000000, ['s']=4.135748},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=1.377307, ['s']=0.588025},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=2.468884, ['s']=1.001626},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.603586, ['s']=1.021106},
 		}
 	},
 	{
-		['time'] = 59,
+		['time'] = 57,
 		['commands'] = {
 		}
 	},
 	{
-		['time'] = 60,
+		['time'] = 58,
 		['commands'] = {
 		}
 	},
@@ -621,9 +644,305 @@ Animations = {
 		['commands'] = {
 		}
 	},
+},
+["UPBODY_AGGRO_TALK"]={
+	{
+		['time'] = 0,
+		['commands'] = {
+			
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.050508, ['s']=0.379929},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.794486, ['s']=0.364301},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-1.133969, ['s']=0.357030},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.797779, ['s']=1.292637},
+		
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0.055937, ['s']=0.079489},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.387603, ['s']=1.772668},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=0.034407, ['s']=0.095823},
+		
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-2.374084, ['s']=2.784815},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0.033274, ['s']=0.047021},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.013436, ['s']=0.003703},
+			
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-2.053590, ['s']=2.333279},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.721923, ['s']=3.016129},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.740506, ['s']=3.256374},
+		
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.015417, ['s']=0.236374},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 7,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.360008, ['s']=2.123916},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.730244, ['s']=0.513963},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.397316, ['s']=2.147583},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.203889, ['s']=2.774552},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.765950, ['s']=0.066041},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.695412, ['s']=2.153876},
+		}
+	},
+	{
+		['time'] = 10,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.048429, ['s']=0.228316},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 12,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.527957, ['s']=1.142270},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-0.725322, ['s']=1.751343},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.001014, ['s']=3.414708},
+		}
+	},
+	{
+		['time'] = 17,
+		['commands'] = {
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.103547, ['s']=0.509847},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 19,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-1.067904, ['s']=3.239687},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-0.529153, ['s']=1.177016},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=1.098887, ['s']=6.587234},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-1.136410, ['s']=1.687738},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0.011287, ['s']=0.029982},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.016929, ['s']=0.004763},
+		}
+	},
+	{
+		['time'] = 23,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.005059, ['s']=0.123433},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 24,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.344935, ['s']=1.807424},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-0.344614, ['s']=0.461348},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.047984, ['s']=2.627256},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.067652, ['s']=0.427998},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 27,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.499885, ['s']=2.867074},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.499941, ['s']=0.767678},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=0.310028, ['s']=5.691143},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.644192, ['s']=1.467679},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.160050, ['s']=2.019668},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.486740, ['s']=0.695572},
+		}
+	},
+	{
+		['time'] = 36,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.128774, ['s']=0.446110},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-2.144801, ['s']=5.999552},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-1.191648, ['s']=2.823448},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=2.444769, ['s']=7.989284},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0.037389, ['s']=1.790915},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.026020, ['s']=1.753204},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=0.056765, ['s']=0.844208},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1.509158, ['s']=2.883219},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.018160, ['s']=0.472968},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.019315, ['s']=1.558084},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.118529, ['s']=0.620602},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 41,
+		['commands'] = {
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-1.313511, ['s']=1.328257},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0.014428, ['s']=0.023552},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.018715, ['s']=0.013394},
+		}
+	},
+	{
+		['time'] = 45,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.648766, ['s']=2.137193},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-0.991157, ['s']=0.286416},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.280725, ['s']=3.091492},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.433385, ['s']=1.412322},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=1.419432, ['s']=4.336356},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.136855, ['s']=3.580860},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.610368, ['s']=1.004489},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0.003494, ['s']=0.015619},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.011091, ['s']=0.010890},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-3.119716, ['s']=4.831673},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.278273, ['s']=0.780341},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.029676, ['s']=0.031084},
+		}
+	},
+	{
+		['time'] = 55,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0.037389, ['s']=1.283929},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.026020, ['s']=3.942142},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=0.056765, ['s']=3.255327},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1.509158, ['s']=4.392430},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.018160, ['s']=0.709401},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.019315, ['s']=0.028259},
+		}
+	},
+	{
+		['time'] = 66,
+		['commands'] = {
+		}
+	},
+},
+["UPBODY_NORMAL_TALK"]={
+	{
+		['time'] = 0,
+		['commands'] = {
+		
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.009083, ['s']=0.078608},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='move',['p']=LowArm2, ['a']=x_axis, ['t']=4.899570, ['s']=0.000000},
+			{['c']='move',['p']=LowArm2, ['a']=y_axis, ['t']=0.088726, ['s']=0.000000},
+			{['c']='move',['p']=LowArm2, ['a']=z_axis, ['t']=19.415604, ['s']=0.000000},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0.011472, ['s']=0.452530},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.000554, ['s']=0.094582},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=0.008242, ['s']=0.317252},
+			{['c']='move',['p']=UpArm1, ['a']=x_axis, ['t']=-2.304994, ['s']=0.000000},
+			{['c']='move',['p']=UpArm1, ['a']=y_axis, ['t']=-0.067494, ['s']=0.000000},
+			{['c']='move',['p']=UpArm1, ['a']=z_axis, ['t']=21.692083, ['s']=0.000000},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.004839, ['s']=0.009532},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.378985, ['s']=0.245984},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.028545, ['s']=0.021297},
+			{['c']='move',['p']=UpBody, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='move',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='move',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.093853, ['s']=0.209316},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 1,
+		['commands'] = {
+		}
+	},
+	{
+		['time'] = 15,
+		['commands'] = {
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.014752, ['s']=0.148313},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 18,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.205645, ['s']=0.737109},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 21,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.163123, ['s']=0.212891},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.015469, ['s']=0.045869},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.113488, ['s']=0.122251},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.011511, ['s']=0.005133},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.551174, ['s']=0.132453},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.043453, ['s']=0.011468},
+		}
+	},
+	{
+		['time'] = 26,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.051642, ['s']=0.924019},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 30,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.441059, ['s']=0.452530},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.094028, ['s']=0.094582},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.309010, ['s']=0.317252},
+		}
+	},
+	{
+		['time'] = 31,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.037382, ['s']=0.085562},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.071781, ['s']=0.122203},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 36,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.111530, ['s']=0.741476},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 39,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.024322, ['s']=0.261623},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 45,
+		['commands'] = {
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.010805, ['s']=0.165172},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 49,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.056248, ['s']=0.087070},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.361822, ['s']=0.541904},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.058280, ['s']=0.116756},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.227590, ['s']=0.311185},
+		}
+	},
+	{
+		['time'] = 60,
+		['commands'] = {
+		}
+	},
+	}
 }
 
-}
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
 -- +STOPED+---------------------------------------------------+    +----------------------------+
@@ -674,11 +993,14 @@ uppperBodyAnimations ={
 	[2] = "SLAVED"
 },
 [eAnimState.walking] = "WALKCYCLE_UNLOADED",
+[eAnimState.talking] = {
+	[1] = "UPBODY_AGGRO_TALK",
+	[2] = "UPBODY_NORMAL_TALK",
+	}
 }
 
 lowerBodyAnimations ={
-[eAnimState.walking] = "WALKCYCLE_UNLOADED"
-
+[eAnimState.walking] = "WALKCYCLE_UNLOADED",
 }
 
 -- Civilian
@@ -752,7 +1074,8 @@ local axisSign ={
 	[z_axis]=1,
 }
 
-function PlayAnimation(animname, piecesToFilterOutTable)
+function PlayAnimation(animname, piecesToFilterOutTable, speed)
+	local speedFactor = speed or 1.0
 	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
 	assert(animname, "animation name is nil")
 	assert(Animations[animname], "No animation with name "..animname)
@@ -768,13 +1091,13 @@ function PlayAnimation(animname, piecesToFilterOutTable)
 			end
 			
 			if  not piecesToFilterOutTable[cmd.p] then	
-				animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset) ,cmd.s)
+				animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset) ,cmd.s*speedFactor)
 				
 			end
         end
         if(i < #anim) then
             local t = anim[i+1]['time'] - anim[i]['time'];
-            Sleep(t*33); -- sleep works on milliseconds
+            Sleep(t*33* math.abs(1/speedFactor)); -- sleep works on milliseconds
         end
     end
 end
@@ -918,8 +1241,14 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
-								--playUpperBodyIdleAnimation()
-								Sleep(10)						
+								resetT(upperBodyPieces, math.pi, false, true)
+									-- if boolDecoupled == true then
+										if math.random(1,10) > 5 then
+										playUpperBodyIdleAnimation()							
+										resetT(upperBodyPieces, math.pi, false, true)
+										end
+									-- end
+								Sleep(30)	
 								return eAnimState.standing
 							end,
 [eAnimState.walking] = 	function () 
@@ -943,6 +1272,7 @@ LowerAnimationStateFunctions ={
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
+						Spring.Echo("Lower Body standing")
 						resetT(lowerBodyPieces, math.pi)
 						Sleep(100)
 						return eAnimState.standing
@@ -959,7 +1289,7 @@ SetSignalMask(SIG_UP)
 boolLowerStateWaitForEnd = false
 
 local animationTable = AnimationTable
-	Spring.Echo("lower Animation StateMachine Cycle")
+	-- Spring.Echo("lower Animation StateMachine Cycle")
 	while true do
 		assert(animationTable[LowerAnimationState], "Animationstate not existing "..LowerAnimationState)
 		LowerAnimationState = animationTable[LowerAnimationState]()
@@ -969,7 +1299,7 @@ local animationTable = AnimationTable
 			boolLowerAnimationEnded = true
 			while boolLowerStateWaitForEnd == true do
 				Sleep(33)
-				Spring.Echo("lower Animation Waiting For End")
+				-- Spring.Echo("lower Animation Waiting For End")
 			end
 			boolLowerAnimationEnded = false
 		end
