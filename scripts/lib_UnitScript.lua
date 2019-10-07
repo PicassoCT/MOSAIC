@@ -631,7 +631,15 @@ function returnToWorld(unit, px, py, pz)
 	Spring.SetUnitNoSelect(unit, false)
 end
 
+--> 
+function showHide(id, bShow)
+	if bShow== true then
+		Show(id)
+	else
+		Hide(id)
+	end
 
+end
 --> Shows all Pieces of a a Unit in 
 function showAll(id)
 	if not unitID then unitID = id end

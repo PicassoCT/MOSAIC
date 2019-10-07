@@ -1600,7 +1600,7 @@ end
 
 function showHideProps(selectedIdleFunction, bShow)
 	if selectedIdleFunction== 1 then
-	
+		showHide(TablesOfPiecesGroups["phone"][unitID %((#TablesOfPiecesGroups["phone"]-1)+1)], bShow)
 	elseif selectedIdleFunction == 2 then
 	
 	elseif selectedIdleFunction == 3 then
