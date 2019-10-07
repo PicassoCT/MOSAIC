@@ -155,6 +155,7 @@ Animations = {
 
 
 },
+["WALKCYCLE_WOUNDED"]
 ["WALKCYCLE_UNLOADED"]={
 	{
 		['time'] = 0,
@@ -645,6 +646,52 @@ Animations = {
 	},
 
 },
+["WALKCYCLE_ROLLY"]={{
+		['time'] = 1,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.077418, ['s']=0.061639},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-0.894400, ['s']=0.062763},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.041369, ['s']=0.038654},
+			{['c']='turn',['p']=trolley, ['a']=x_axis, ['t']=0.471759, ['s']=0.046341},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.242967, ['s']=0.002215},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.186960, ['s']=0.003036},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=-1.157361, ['s']=0.375518},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.000145, ['s']=0.000141},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.009999, ['s']=0.009676},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.014522, ['s']=0.254374},
+		}
+	},
+	{
+		['time'] = 31,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.015778, ['s']=0.063765},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-0.831637, ['s']=0.064927},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.002715, ['s']=0.039987},
+		}
+	},
+	{
+		['time'] = 32,
+		['commands'] = {
+			{['c']='turn',['p']=trolley, ['a']=x_axis, ['t']=0.423873, ['s']=0.053206},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.240679, ['s']=0.002543},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.183823, ['s']=0.003486},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=-0.769325, ['s']=0.431151},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.000000, ['s']=0.000161},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.011110},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.248331, ['s']=0.292060},
+		}
+	},
+	{
+		['time'] = 59,
+		['commands'] = {
+		}
+	},
+	{
+		['time'] = 60,
+		['commands'] = {
+		}
+	},
+	},
 ["UPBODY_AGGRO_TALK"]={
 	{
 		['time'] = 0,
@@ -1114,7 +1161,167 @@ Animations = {
 		}
 	},
 },
-	
+["UPBODY_LOADED"]={
+	{
+		['time'] = 1,
+		['commands'] = {
+			{['c']='turn',['p']=Handbag, ['a']=x_axis, ['t']=-0.029155, ['s']=0.016287},
+			{['c']='turn',['p']=Handbag, ['a']=y_axis, ['t']=-0.045022, ['s']=0.118480},
+			{['c']='turn',['p']=Handbag, ['a']=z_axis, ['t']=-1.416788, ['s']=0.143623},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.265485, ['s']=0.140177},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.014153, ['s']=0.003016},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.159935, ['s']=0.018162},
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-1.134383, ['s']=0.047092},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.244268, ['s']=0.070327},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=1.153013, ['s']=0.044243},
+			{['c']='turn',['p']=ShoppingBag, ['a']=x_axis, ['t']=-0.117924, ['s']=0.005448},
+			{['c']='turn',['p']=ShoppingBag, ['a']=y_axis, ['t']=-0.148104, ['s']=0.046261},
+			{['c']='turn',['p']=ShoppingBag, ['a']=z_axis, ['t']=-1.794599, ['s']=0.384701},
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0.169240, ['s']=0.024587},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.459893, ['s']=0.022664},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=1.143636, ['s']=0.016866},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0.183250, ['s']=0.305417},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.301351, ['s']=0.008707},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.054955, ['s']=0.091592},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.011348, ['s']=0.022963},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 3,
+		['commands'] = {
+			{['c']='turn',['p']=SittingBaby, ['a']=x_axis, ['t']=-0.016479, ['s']=0.017047},
+			{['c']='turn',['p']=SittingBaby, ['a']=y_axis, ['t']=0.157080, ['s']=0.162496},
+			{['c']='turn',['p']=SittingBaby, ['a']=z_axis, ['t']=0.052360, ['s']=0.054165},
+		}
+	},
+	{
+		['time'] = 13,
+		['commands'] = {
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0.185410, ['s']=0.014700},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.474434, ['s']=0.013220},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=1.132428, ['s']=0.010190},
+		}
+	},
+	{
+		['time'] = 18,
+		['commands'] = {
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.059251, ['s']=0.055273},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 19,
+		['commands'] = {
+			{['c']='turn',['p']=ShoppingBag, ['a']=x_axis, ['t']=-0.119448, ['s']=0.011434},
+			{['c']='turn',['p']=ShoppingBag, ['a']=y_axis, ['t']=-0.133895, ['s']=0.106565},
+			{['c']='turn',['p']=ShoppingBag, ['a']=z_axis, ['t']=-1.676702, ['s']=0.884227},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.107804, ['s']=0.379636},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.304904, ['s']=0.004634},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.032478, ['s']=0.114042},
+		}
+	},
+	{
+		['time'] = 20,
+		['commands'] = {
+			{['c']='turn',['p']=Handbag, ['a']=x_axis, ['t']=-0.019781, ['s']=0.011249},
+			{['c']='turn',['p']=Handbag, ['a']=y_axis, ['t']=0.026275, ['s']=0.085556},
+			{['c']='turn',['p']=Handbag, ['a']=z_axis, ['t']=-1.516682, ['s']=0.119873},
+		}
+	},
+	{
+		['time'] = 23,
+		['commands'] = {
+			{['c']='turn',['p']=ShoppingBag, ['a']=x_axis, ['t']=-0.118826, ['s']=0.001166},
+			{['c']='turn',['p']=ShoppingBag, ['a']=y_axis, ['t']=-0.097433, ['s']=0.068367},
+			{['c']='turn',['p']=ShoppingBag, ['a']=z_axis, ['t']=-1.373211, ['s']=0.569046},
+		}
+	},
+	{
+		['time'] = 26,
+		['commands'] = {
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.148671, ['s']=0.106194},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=-0.016667, ['s']=0.002285},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.175070, ['s']=0.013759},
+		}
+	},
+	{
+		['time'] = 32,
+		['commands'] = {
+			{['c']='turn',['p']=SittingBaby, ['a']=x_axis, ['t']=0.000000, ['s']=0.019014},
+			{['c']='turn',['p']=SittingBaby, ['a']=y_axis, ['t']=0.000000, ['s']=0.181246},
+			{['c']='turn',['p']=SittingBaby, ['a']=z_axis, ['t']=0.000000, ['s']=0.060415},
+		}
+	},
+	{
+		['time'] = 33,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-1.084152, ['s']=0.055812},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.319284, ['s']=0.083351},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=1.200206, ['s']=0.052437},
+		}
+	},
+	{
+		['time'] = 39,
+		['commands'] = {
+			{['c']='turn',['p']=ShoppingBag, ['a']=x_axis, ['t']=-0.120942, ['s']=0.010576},
+			{['c']='turn',['p']=ShoppingBag, ['a']=y_axis, ['t']=-0.113837, ['s']=0.082020},
+			{['c']='turn',['p']=ShoppingBag, ['a']=z_axis, ['t']=-1.509792, ['s']=0.682902},
+		}
+	},
+	{
+		['time'] = 42,
+		['commands'] = {
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0.000000, ['s']=0.179674},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.306575, ['s']=0.002785},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.000000, ['s']=0.054129},
+		}
+	},
+	{
+		['time'] = 44,
+		['commands'] = {
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.024360, ['s']=0.069781},
+			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+		}
+	},
+	{
+		['time'] = 45,
+		['commands'] = {
+			{['c']='turn',['p']=Handbag, ['a']=x_axis, ['t']=-0.018840, ['s']=0.001881},
+			{['c']='turn',['p']=Handbag, ['a']=y_axis, ['t']=0.030015, ['s']=0.007481},
+			{['c']='turn',['p']=Handbag, ['a']=z_axis, ['t']=-1.507750, ['s']=0.017865},
+			{['c']='turn',['p']=ShoppingBag, ['a']=x_axis, ['t']=-0.121193, ['s']=0.000502},
+			{['c']='turn',['p']=ShoppingBag, ['a']=y_axis, ['t']=-0.120347, ['s']=0.013020},
+			{['c']='turn',['p']=ShoppingBag, ['a']=z_axis, ['t']=-1.563779, ['s']=0.107974},
+		}
+	},
+	{
+		['time'] = 46,
+		['commands'] = {
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0.159405, ['s']=0.055725},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.450827, ['s']=0.050587},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=1.150382, ['s']=0.038475},
+		}
+	},
+	{
+		['time'] = 58,
+		['commands'] = {
+		}
+	},
+	{
+		['time'] = 59,
+		['commands'] = {
+		}
+	},
+	{
+		['time'] = 60,
+		['commands'] = {
+		}
+	},
+},	
 ["UPBODY_CONSUMPTION"]={
 {
 		['time'] = 1,
@@ -1614,7 +1821,6 @@ function playUpperBodyIdleAnimation()
 							showHideProps(selectedIdleFunction, true)
 							PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 							showHideProps(selectedIdleFunction, false)
-
 end
 
 UpperAnimationStateFunctions ={
@@ -1683,10 +1889,6 @@ local animationTable = AnimationTable
 		end
 	Sleep(33)
 	end
-	
-
-	
-
 end
 
 UpperAnimationState = eAnimState.standing
@@ -1871,44 +2073,43 @@ index = 0
 alreadyUsedLetter ={} 
 sentence = string.gsub(sentence, "Ü", personification or "")
 
-for i=1, #sentence do
-	letter = string.upper(string.sub(sentence, i, i))
-	if letter == "!" then letter = "Exclam" end
-	if letter == "?" then letter = "Quest" end
+	for i=1, #sentence do
+		letter = string.upper(string.sub(sentence, i, i))
+		if letter == "!" then letter = "Exclam" end
+		if letter == "?" then letter = "Quest" end
 
-	if letter == "&" then 
-		index = (index + xIndexMax ) - ((index + xIndexMax)%xIndexMax); 
-	else
-	
-	local pieceToMove 
-		if TablesOfPiecesGroups[letter] then 
-			if  not alreadyUsedLetter[letter] then 
-				alreadyUsedLetter[letter]= 1; 
-				pieceToMove = TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]]		
-			else
-			alreadyUsedLetter[letter]= alreadyUsedLetter[letter] +  1; 
-				if TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]] then
-					pieceToMove = TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]]
+			if letter == "&" then 
+				index = (index + xIndexMax ) - ((index + xIndexMax)%xIndexMax); 
+			else	
+				local pieceToMove 
+				if TablesOfPiecesGroups[letter] then 
+					if  not alreadyUsedLetter[letter] then 
+						alreadyUsedLetter[letter]= 1; 
+						pieceToMove = TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]]		
+					else
+					alreadyUsedLetter[letter]= alreadyUsedLetter[letter] +  1; 
+						if TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]] then
+							pieceToMove = TablesOfPiecesGroups[letter][alreadyUsedLetter[letter]]
+						end
+					end
 				end
+				
+				if letter == " " then	
+					index= index+1
+				elseif pieceToMove ~= nil then
+					--place and show letter
+					Show(pieceToMove)
+
+					xIndex= index % xIndexMax
+					zIndex=  math.floor((index/xIndexMax))
+					Turn(pieceToMove,z_axis,math.rad(math.random(-2,2)),0)
+					Move(pieceToMove,z_axis, zIndex* sizeLetterZ ,0)
+					Move(pieceToMove,x_axis, xIndex* sizeLetterX,0)
+					index= index + 1
+					if zIndex > zIndexMax then return end
+				end
+
 			end
-		end
-		
-		if letter == " " then	
-			index= index+1
-		elseif pieceToMove ~= nil then
-			--place and show letter
-			Show(pieceToMove)
-
-			xIndex= index % xIndexMax
-			zIndex=  math.floor((index/xIndexMax))
-			Turn(pieceToMove,z_axis,math.rad(math.random(-2,2)),0)
-			Move(pieceToMove,z_axis, zIndex* sizeLetterZ ,0)
-			Move(pieceToMove,x_axis, xIndex* sizeLetterX,0)
-			index= index + 1
-			if zIndex > zIndexMax then return end
-		end
-
-	end
 	end
 	
 end
