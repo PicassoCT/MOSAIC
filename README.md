@@ -28,15 +28,15 @@ the world watching, to recive redemption and avoid retribution.
 
 There is no law, no hope and no god in a city shortly before and forever after a launch.
 
-Then it comes, a deafening roar, a noise to end all noises, out of those bells, the burning cars, already darkening the sun, a pillar of smoke rises higher then all those others.
+Then it comes, a deafening roar, a noise to end all noises, out of those bells, the burning cars, already darkening the sun, a pillar of fire rises higher then all those others.
 
 Chaff and decoys rain down from above all around.
 
-Like a final statement on the hubris of monkeys it jabs into the sky.
+Like a final statement on the hubris of compostable monkeys it jabs into the sky.
 
 One moment of realization, of horror on whats to come.
 
-Then the madness resumes, some running towards the launch-site, lots of others desperatly trying to leave the doomed city.
+Then the madness resumes, some running towards the launch-site, lots of others desperatly trying to leave. As if you could outrun the worlds wrath.
 
 Then the hammer comes down- on good and evil alike.
 
@@ -44,4 +44,4 @@ A eye for a eye, a city for a city.
 
 So it has been, so it shall always be.
 
-Men is men a wulf.
+Men is men a wulf, until there is no men left to be.
