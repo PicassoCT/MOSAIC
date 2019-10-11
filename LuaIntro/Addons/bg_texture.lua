@@ -14,7 +14,7 @@ end
 
 ------------------------------------------
 
-local loadscreens = VFS.DirList("bitmaps/loadpictures/")
+local loadscreens = VFS.DirList("LuaUI/images/loadpictures/")
 val=os.clock()
 
 local backgroundTexture=loadscreens[ math.min(math.max(1,math.ceil(val%#loadscreens)),#loadscreens)]
