@@ -16,6 +16,7 @@ local Vehicle = Unit:New{
 }
 
 local Truck = Vehicle:New{
+	canMove 			= true,
 	category 			= "CIVILIAN VEHICLE GROUND",
 	explodeAs          	= "mechexplode",
 	leaveTracks			= true,	
@@ -29,6 +30,10 @@ local Truck = Vehicle:New{
 	}
 
 local Tank = Vehicle:New{
+	canMove 			= true,
+	canStop				= true,
+	canGuard			= true,
+	canAttack			= true,
 	category 			= "VEHICLE GROUND",
 	explodeAs          	= "mechexplode",
 	leaveTracks			= true,	
