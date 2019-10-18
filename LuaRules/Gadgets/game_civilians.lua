@@ -48,14 +48,15 @@ end
 	
 	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, boolDeCoupled)
 	  env = Spring.UnitScript.GetScriptEnv(unitID)
-        if env and env.showHideIcon then
+        if env and env.setOverrideAnimationState then
+			--TODO
 			Spring.UnitScript.CallAsUnit(unitID, env.setOverrideAnimationState,  AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride or false, conditionFunction or nil, boolDeCoupled)
         end
 	end
 	
 	function SetCivilianBehaviourMode(unitID, boolStartUnitBehaviourState, TypeOfBehaviour )
 		env = Spring.UnitScript.GetScriptEnv(unitID)
-        if env and env.showHideIcon then
+        if env and env.setBehaviourStateMachineExternal then
 			Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, boolStartUnitBehaviourState, TypeOfBehaviour)
         end
 	
