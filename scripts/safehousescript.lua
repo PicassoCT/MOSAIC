@@ -11,7 +11,8 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-nano = piece "nano"
+Icon = piece "Icon"
+
 safeHouseID = nil
 gameConfig = getGameConfig()
 
@@ -189,7 +190,7 @@ function script.QueryBuildInfo()
     return center
 end
 
-Spring.SetUnitNanoPieces(unitID, { nano })
+Spring.SetUnitNanoPieces(unitID, { center })
 
 
 function script.StartBuilding()
@@ -199,4 +200,19 @@ end
 
 function script.StopBuilding()
     SetUnitValue(COB.INBUILDSTANCE, 0)
+end
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
+
+
 end
