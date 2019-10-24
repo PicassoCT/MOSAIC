@@ -43,7 +43,7 @@ local ProtagonSafeHouse = Building:New{
 	cloakTimeout = 5,
 	
 	script 			= "safehousescript.lua",
-	objectName        	= "safehouse.dae",
+	objectName        	= "house_safehouse.s3o",
 
 
 	

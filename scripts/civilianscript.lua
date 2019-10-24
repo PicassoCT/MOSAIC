@@ -113,12 +113,7 @@ function script.Create()
 	StartThread(threadStarter)
 end
 
-function testLoop()
-	while true do
-	PlayAnimation(lowerBodyAnimations[eAnimState.walking],{})
 
-	end
-end
 
 function bodyBuild()
 	iShoppingConfig = bodyConfig.boolShoppingLoaded 
@@ -2735,8 +2730,9 @@ end
 
 function playUpperBodyIdleAnimation()
 	 if bodyConfig.boolLoaded == false then
-		selectedIdleFunction =math.random(1,#uppperBodyAnimations[eAnimState.idle])
+		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
 		showHideProps(selectedIdleFunction, true)
+		assert(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		showHideProps(selectedIdleFunction, false)
 	end
@@ -2771,6 +2767,7 @@ UpperAnimationStateFunctions ={
 
 LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
+						assert(lowerBodyAnimations[eAnimState.walking])
 						PlayAnimation(lowerBodyAnimations[eAnimState.walking], conditionalFilterOutUpperBodyTable())					
 						return eAnimState.walking
 						end,
@@ -2955,6 +2952,7 @@ signMessages ={
 	--Humor
 	" PRO&TEST&ICLES",
 	"NO MORE&TAXES",
+	"PRO&TAXES"
 	"NO&PROTEST"
 	
 }

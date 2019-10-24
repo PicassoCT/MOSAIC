@@ -43,7 +43,7 @@ local AntagonSafeHouse = Building:New{
 	cloakTimeout = 5,
 	
 	script 			= "safehousescript.lua",
-	objectName        	= "safehouse.dae",
+	objectName        	= "house_safehouse.s3o",
 	
 	customparams = {
 		helptext		= "Civilian Building",
