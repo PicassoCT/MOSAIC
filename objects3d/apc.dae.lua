@@ -2,6 +2,7 @@ model = {
 	radius = 25.0,
 	height = 40,
 	tex1 = "apc_diffuse.png",
+	tex2 = "apc_normal.png",
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
