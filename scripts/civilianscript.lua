@@ -24,6 +24,8 @@ local Handbag = piece('Handbag');
 local SittingBaby = piece('SittingBaby');
 local ak47		= piece('ak47')
 local cofee = piece('cofee');
+local ProtestSign = piece"ProtestSign"
+
 local scriptEnv = {
 	Handbag = Handbag,
 	SittingBaby = SittingBaby,
@@ -101,6 +103,8 @@ function script.Create()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
+	Spring.Echo("LOAD CIVILIANSCRIPT")
+	
 
 	bodyBuild()
 	-- StartThread(randSignLoop)
@@ -111,9 +115,21 @@ function script.Create()
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
 
 	StartThread(threadStarter)
+	StartThread(testAnimationLoop)
 end
 
+function testAnimationLoop()
+	Sleep(500)
+	while true do
 
+		makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], "RAPHI")
+		PlayAnimation("UPBODY_PROTEST2", {}, 1)
+		WaitForAll(unitID)
+		resetAll(unitID)
+		WaitForAll(unitID)
+		Sleep(100)
+	end
+end
 
 function bodyBuild()
 	iShoppingConfig = bodyConfig.boolShoppingLoaded 
@@ -1585,7 +1601,6 @@ Animations = {
 		}
 	},
 },
-
 ["SLAVED"]={
 		{
 			['time'] = 1,
@@ -2452,27 +2467,33 @@ function setWalkingAnimation(name, upBodyOverride)
 	lowerBodyAnimations [eAnimState.walking] = name
 	uppperBodyAnimations[eAnimState.walking] = upBodyOverride or  "SLAVED"
 end
-uppperBodyAnimations ={
-[eAnimState.idle] = { 	
-	[1] = "SLAVED",
-	[2] = "UPBODY_PHONE",
-	[3] = "UPBODY_CONSUMPTION",
-},
-[eAnimState.walking] = "SLAVED",
-[eAnimState.talking] = {
-	[1] = "UPBODY_AGGRO_TALK",
-	[2] = "UPBODY_NORMAL_TALK",
-	}
+uppperBodyAnimations = {
+	[eAnimState.idle] = { 	
+		[1] = "SLAVED",
+		[2] = "UPBODY_PHONE",
+		[3] = "UPBODY_CONSUMPTION",
+	},
+	[eAnimState.walking] = "SLAVED",
+	[eAnimState.talking] = {
+		[1] = "UPBODY_AGGRO_TALK",
+		[2] = "UPBODY_NORMAL_TALK",
+	},
 }
 
-lowerBodyAnimations={
+
+lowerBodyAnimations = {
+	[eAnimState.walking] = "WALKCYCLE_UNLOADED"
 }
 
+	
 if bodyConfig.boolLoaded == true then
 	boolDecoupled=true
-	lowerBodyAnimations [eAnimState.walking] = "WALKCYCLE_UNLOADED"
+
 	uppperBodyAnimations[eAnimState.walking] = "UPBODY_LOADED"
+else
+	uppperBodyAnimations[eAnimState.walking] = "SLAVED"
 end
+
 accumulatedTimeInSeconds=0
 function script.HitByWeapon(x, z, weaponDefID, damage)
 	setWalkingAnimation("WALKCYCLE_COVERWALK")
@@ -2672,20 +2693,21 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 		
 		
 		 while AnimationstateLowerOverride and boolLowerAnimationEnded == false or AnimationstateUpperOverride and boolUpperAnimationEnded == false do
-			if AnimhationstateUpperOverride then
+			if AnimationstateUpperOverride == true then
 				boolUpperStateWaitForEnd = true
 			end
 			 
-			if AnimationstateLowerOverride	then		
+			if AnimationstateLowerOverride == true then		
 				boolLowerStateWaitForEnd = true
 			end
 
 			Sleep(30)
 		 end
-		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
-		if AnimationstateLowerOverride then LowerAnimationState = AnimationstateLowerOverride end
-		if AnimationstateUpperOverride then	boolUpperStateWaitForEnd = false end
-		if AnimationstateLowerOverride then boolLowerStateWaitForEnd = false end
+		 
+		if AnimationstateUpperOverride == true then	UpperAnimationState = AnimationstateUpperOverride end
+		if AnimationstateLowerOverride == true then LowerAnimationState = AnimationstateLowerOverride end
+		if AnimationstateUpperOverride == true then	boolUpperStateWaitForEnd = false end
+		if AnimationstateLowerOverride == true then boolLowerStateWaitForEnd = false end
 end
 
 --<Exposed Function>
@@ -2740,6 +2762,7 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
+								echo("UpperBody Standing")
 								resetT(upperBodyPieces, math.pi, false, true)
 									 if boolDecoupled == true then
 										if math.random(1,10) > 5 then
@@ -2773,7 +2796,7 @@ LowerAnimationStateFunctions ={
 						end,
 [eAnimState.standing] = 	function () 
 						Spring.Echo("Lower Body standing")
-						resetT(lowerBodyPieces, math.pi)
+						resetT(lowerBodyPieces, math.pi,false, true)
 						Sleep(100)
 						return eAnimState.standing
 					end
@@ -2873,6 +2896,9 @@ signMessages ={
 	"NOT&GUILTY",
 	"COULD&BE&WORSER",
 	"CONSPIRACY",
+	"CHEMTRAJLS DID THIS",
+	"GOD SAVE US",
+	
 	" CITY &FOR AN &CITY",
 	" BROTHFRS& KEEPFRS",
 	"WE WILL &NOT DIE",
@@ -2886,7 +2912,7 @@ signMessages ={
 	"FOR MAN&KIND",
 	"THATS&LIFE",
 	"AND LET LIFE",
-	"MUMS&AGAINST$",
+
 	"ALWAYS&LCOK ON&BRIGHTSIDE",
 	
 	--Anger
@@ -2902,6 +2928,7 @@ signMessages ={
 	"VENGANCE IS& OURS",
 	"MAD&IS&MURDER",
 	"WE& SHALL& REBUILD",
+	
 	--Bargaining
 	" SPARE& US",
 	" SPARE& OUR&CHILDREN",
@@ -2949,19 +2976,24 @@ signMessages ={
 	" DEATH&TO&Ü",
 	"  I& BLAME&Ü",
 	"WHAT DO&YOU DESIRE?Ü",
+	"MUMS&AGAINST&Ü",	
+	
 	--Humor
 	" PRO&TEST&ICLES",
 	"NO MORE&TAXES",
-	"PRO&TAXES"
-	"NO&PROTEST"
-	
+	"PRO&TAXES",
+	"NO&PROTEST",
+	"NEVER GONNA GIVE",
+	"YOU UP",
+	"NEVER GONNA LET",
+	"YOU DOWN",
 }
 
 
 -- function randSignLoop()
 	-- lettersize = 34
 	-- letterSizeZ= 62
-	-- ProtestSign = piece"ProtestSign"
+
 	-- resetAll(unitID)
 	
 	-- while true do
@@ -2988,7 +3020,7 @@ signMessages ={
 
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ, sentence, personification)
 index = 0
-
+Show(ProtestSign)
 alreadyUsedLetter ={} 
 sentence = string.gsub(sentence, "Ü", personification or "")
 
@@ -3017,6 +3049,7 @@ sentence = string.gsub(sentence, "Ü", personification or "")
 					index= index+1
 				elseif pieceToMove ~= nil then
 					--place and show letter
+					assert(pieceToMove)
 					Show(pieceToMove)
 
 					xIndex= index % xIndexMax

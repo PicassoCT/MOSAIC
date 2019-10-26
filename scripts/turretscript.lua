@@ -16,6 +16,7 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
 	resetAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	Hide(aimpiece)
 end
 
 function script.Killed(recentDamage, _)

@@ -139,6 +139,18 @@ function WaitForTurnT(T)
         end
 end
 
+function WaitForAll(unitID)
+pieceMap = Spring.GetUnitpieceMap(unitID)
+
+	if pieceMap then
+		for k,v in pairs(pieceMap) do
+			WaitForTurns(v)
+			WaitForMoves(v)
+		end
+
+	end
+
+end
 -->Waits for anyTurnToComplete
 function WaitForMoves(...)
 	local arg = arg
