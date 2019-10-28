@@ -61,6 +61,22 @@ return process(Spring.GetTeamList(),
 
 end
 
+--> get all Player Units in a Range around a unit
+function isPlayerUnitNearby(unitID, range)
+gaiaTeamID= Spring.GetGaiaTeamID()
+	T = getAllNearUnit(unitID, range)
+	if T then
+	T =	process(T,
+				function (id)
+					if Spring.GetUnitTeam(id) ~= gaiaTeamID then return id end
+				end
+				)
+				
+	if #T > 0 then return true, T end
+	end
+
+return false
+end
 
 --> Grabs every Unit in a circle, filters out the unitid or teamid if given
 function getAllInCircle(x, z, Range, unitID, teamid)
@@ -5418,6 +5434,17 @@ function transferOrders(originID, targetID)
 			end
 		end
 	end
+end
+
+--> move away from another unit by distance*scalingfactor
+function runAwayFrom(unitID, horrorID, scale)
+	x,y,z = Spring.GetUnitPosition(unitID)
+	hx,hy,hz = Spring.GetUnitPosition(horrorID)
+
+	-- Compute Offset
+	hx,hz = (hx - x)*scale, (hz - z)*scale
+	x,z = x + hx , z  + hz
+	Command( unitID, "go", {x = x, y= y, z = z})
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)
