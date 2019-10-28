@@ -54,6 +54,8 @@ SIG_ANIM = 1
 SIG_UP = 2
 SIG_LOW = 4
 SIG_COVER_WALK= 8
+SIG_BEHAVIOUR_STATE_MACHINE = 16
+GameConfig = getGameConfig()
 
 eAnimState = getCivilianAnimationStates()
 upperBodyPieces =
@@ -95,6 +97,7 @@ bodyConfig={
 	boolLoaded = iLoaded >  loadMax/2,
 	boolArmed = false,
 	boolWounded = false,
+	boolInfluenced = false
 
 }
 
@@ -114,7 +117,7 @@ function script.Create()
 
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
 
-	StartThread(threadStarter)
+	-- StartThread(threadStarter)
 	StartThread(testAnimationLoop)
 end
 
@@ -123,10 +126,8 @@ function testAnimationLoop()
 	while true do
 
 		makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], "RAPHI")
-		PlayAnimation("UPBODY_PROTEST2", {}, 1)
-		WaitForAll(unitID)
-		resetAll(unitID)
-		WaitForAll(unitID)
+		PlayAnimation("UPBODY_PROTEST", {})
+	
 		Sleep(100)
 	end
 end
@@ -193,8 +194,8 @@ end
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 
 Animations = {
-["UPBODY_PROTEST2"]={
-{
+["UPBODY_PROTEST"] =  {
+	{
 		['time'] = 1,
 		['commands'] = {
 			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.021178, ['s']=0.070484},
@@ -211,9 +212,29 @@ Animations = {
 	{
 		['time'] = 2,
 		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']= 0 		, ['s']=0.185710},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']= -0.95			, ['s']=0.19733},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']= math.pi*0.64, ['s']=0.18104},
+		
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']= 0.609187 , ['s']=0.147741},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']= -0.283807, ['s']=0.052407},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']= -1.250055, ['s']=0.041912},
+			
 			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.183930, ['s']=0.111408},
 			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.910735, ['s']=0.736785},
 			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.665229, ['s']=0.255216},
+			{['c']='turn',['p']=ProtestSign, ['a']=x_axis, ['t']=0.056186, ['s']=0.496796},
+			{['c']='turn',['p']=ProtestSign, ['a']=y_axis, ['t']=1.281049, ['s']=0.024313},
+			{['c']='turn',['p']=ProtestSign, ['a']=z_axis, ['t']=0.055234, ['s']=0.500869},
+
+		}
+	},
+	{
+		['time'] = 9,
+		['commands'] = {
+			{['c']='turn',['p']=ProtestSign, ['a']=x_axis, ['t']=0.100448, ['s']=0.028867},
+			{['c']='turn',['p']=ProtestSign, ['a']=y_axis, ['t']=1.278556, ['s']=0.001626},
+			{['c']='turn',['p']=ProtestSign, ['a']=z_axis, ['t']=0.096349, ['s']=0.026814},
 		}
 	},
 	{
@@ -222,6 +243,18 @@ Animations = {
 			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.000418, ['s']=0.064788},
 			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.008744, ['s']=0.021496},
 			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.181563, ['s']=0.399200},
+		}
+	},
+	{
+		['time'] = 12,
+		['commands'] = {
+
+		}
+	},
+	{
+		['time'] = 13,
+		['commands'] = {
+
 		}
 	},
 	{
@@ -246,9 +279,9 @@ Animations = {
 			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.512093, ['s']=0.839797},
 			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.761485, ['s']=2.090275},
 			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.480960, ['s']=1.480337},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.840463, ['s']=0.609814},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.367146, ['s']=0.038288},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.381224, ['s']=0.241749},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.840463, ['s']=0.643693},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.367146, ['s']=0.040415},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.381224, ['s']=0.255179},
 		}
 	},
 	{
@@ -270,9 +303,9 @@ Animations = {
 	{
 		['time'] = 38,
 		['commands'] = {
-			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.015532, ['s']=0.080956},
+			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.015532, ['s']=0.084811},
 			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.098284},
+			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.102965},
 		}
 	},
 	{
@@ -286,164 +319,34 @@ Animations = {
 	{
 		['time'] = 47,
 		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.105945, ['s']=1.187704},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.394986, ['s']=2.312942},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.486578, ['s']=2.011237},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.105945, ['s']=1.484630},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.394986, ['s']=2.891177},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.486578, ['s']=2.514046},
 		}
 	},
 	{
 		['time'] = 48,
 		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.000033, ['s']=0.146023},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.001011, ['s']=0.025414},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.065138, ['s']=0.016411},
+			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.000033, ['s']=0.159298},
+			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.001011, ['s']=0.027724},
+			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.065138, ['s']=0.017903},
 		}
 	},
 	{
-		['time'] = 60,
+		['time'] = 49,
 		['commands'] = {
 		}
 	},
 	{
-		['time'] = 61,
+		['time'] = 55,
 		['commands'] = {
+			{['c']='turn',['p']=ProtestSign, ['a']=x_axis, ['t']=0.172105, ['s']=0.537422},
+			{['c']='turn',['p']=ProtestSign, ['a']=y_axis, ['t']=1.275377, ['s']=0.023848},
+			{['c']='turn',['p']=ProtestSign, ['a']=z_axis, ['t']=0.172103, ['s']=0.568157},
 		}
 	},
 	{
-		['time'] = 62,
-		['commands'] = {
-		}
-	},
-},
-["UPBODY_PROTEST"] ={
-{
-		['time'] = 1,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.021178, ['s']=0.070484},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.001579, ['s']=0.001893},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.048496, ['s']=0.378781},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.068032, ['s']=1.053315},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.415644, ['s']=0.066133},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.075009, ['s']=0.417566},
-			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=-0.041625, ['s']=0.114315},
-			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.237889, ['s']=0.475778},
-		}
-	},
-	{
-		['time'] = 2,
-		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.183930, ['s']=0.111408},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.910735, ['s']=0.736785},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.665229, ['s']=0.255216},
-		}
-	},
-	{
-		['time'] = 10,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.000418, ['s']=0.064788},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.008744, ['s']=0.021496},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.181563, ['s']=0.399200},
-		}
-	},
-	{
-		['time'] = 16,
-		['commands'] = {
-			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.074899, ['s']=0.158897},
-			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=-0.072075, ['s']=0.422678},
-		}
-	},
-	{
-		['time'] = 20,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.021228, ['s']=0.108229},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.009685, ['s']=0.004703},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.134532, ['s']=0.235154},
-		}
-	},
-	{
-		['time'] = 23,
-		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.510443, ['s']=1.063401},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.692785, ['s']=2.531874},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.467067, ['s']=1.891835},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-2.678790, ['s']=4.351263},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=-0.461191, ['s']=1.461392},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.036221, ['s']=0.064646},
-		}
-	},
-	{
-		['time'] = 26,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.121386, ['s']=0.713068},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.005533, ['s']=0.020760},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=-0.036988, ['s']=0.487717},
-		}
-	},
-	{
-		['time'] = 32,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.000019, ['s']=0.364098},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.012285, ['s']=0.020257},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.074651, ['s']=0.334918},
-		}
-	},
-	{
-		['time'] = 38,
-		['commands'] = {
-			{['c']='turn',['p']=UpBody, ['a']=x_axis, ['t']=0.015532, ['s']=0.080956},
-			{['c']='turn',['p']=UpBody, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=UpBody, ['a']=z_axis, ['t']=0.000000, ['s']=0.098284},
-		}
-	},
-	{
-		['time'] = 41,
-		['commands'] = {
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.840463, ['s']=2.757490},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.367146, ['s']=1.242506},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.381224, ['s']=0.517504},
-		}
-	},
-	{
-		['time'] = 42,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=-0.058376, ['s']=0.291785},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.011177, ['s']=0.005542},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.071703, ['s']=0.014742},
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.863341, ['s']=2.117388},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0.485702, ['s']=1.242494},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.814859, ['s']=2.086752},
-		}
-	},
-	{
-		['time'] = 47,
-		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.105945, ['s']=0.485208},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.394986, ['s']=1.761377},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.486578, ['s']=1.343437},
-		}
-	},
-	{
-		['time'] = 48,
-		['commands'] = {
-			{['c']='turn',['p']=Head1, ['a']=x_axis, ['t']=0.000033, ['s']=0.146023},
-			{['c']='turn',['p']=Head1, ['a']=y_axis, ['t']=0.001011, ['s']=0.025414},
-			{['c']='turn',['p']=Head1, ['a']=z_axis, ['t']=0.065138, ['s']=0.016411},
-		}
-	},
-	{
-		['time'] = 60,
-		['commands'] = {
-		}
-	},
-	{
-		['time'] = 61,
-		['commands'] = {
-		}
-	},
-	{
-		['time'] = 62,
+		['time'] = 59,
 		['commands'] = {
 		}
 	},
@@ -1601,6 +1504,38 @@ Animations = {
 		}
 	},
 },
+["UPBODY_HANDSUP"] ={
+	{
+		['time'] = 1,
+		['commands'] = {
+
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-2.779952, ['s']=3.626025},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0.015828, ['s']=0.042717},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.005987, ['s']=0.007809},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-2.779952, ['s']=3.626025},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.015828, ['s']=0.042717},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.005987, ['s']=0.007809},
+		}
+	},
+	{
+		['time'] = 3,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-0.300155, ['s']=0.362696},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=-1.364498, ['s']=0.505998},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0.506473, ['s']=0.301638},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-0.465758, ['s']=0.529789},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=1.397668, ['s']=0.602274},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-0.683451, ['s']=0.452204},
+		}
+	},
+	{
+		['time'] = 128,
+		['commands'] = {
+		}
+	},
+
+
+},
 ["SLAVED"]={
 		{
 			['time'] = 1,
@@ -2650,6 +2585,98 @@ local	locBoolInstantOverride
 local	locConditionFunction
 local	boolStartThread = false
 
+-- allow external behaviour statemachine to be started and stopped, and set
+function setBehaviourStateMachineExternal( boolStartStateMachine, State)
+	if bodyConfig.boolInfluenced == true then return end
+	
+	if boolStartStateMachine == true then
+		StartThread( beeHaviourStateMachine, State)
+	else
+		if bodyConfig.boolInfluenced == true then return end
+		
+		Signal(SIG_BEHAVIOUR_STATE_MACHINE)
+		Hide(ak47)
+		Explode(ak47, SFX.FALL + SFX_NO_HEATCLOUD)
+		bodyConfig.boolArmed = false
+		bodyBuild(bodyConfig)
+		Command(unitID, "stop")
+	end
+end
+
+normalBehavourStateMachine = {
+	--Normal gamestate is handled external
+	[GameConfig.GameState.Anarchy] = function(lastState, currentState)
+										-- init clause
+										if lastState ~= currentState then
+											if bodyConfig.boolArmed == true then
+												Show(ak47)
+												-- if anarchy and armed then civilians either join a faction (protagon, antagon, or fight against these)	
+												--TODO
+											else
+												playerName = "TODO"
+												makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
+												Show(molotow)
+												setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false, nil, true)
+											end	
+											
+										end
+										
+										
+										
+									end,
+	[GameConfig.GameState.PostLaunch]= function(lastState, currentState)
+										if unitID%2 == 1 then -- cower catatonic
+											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
+											setSpeedEnv(unitID, 0)
+										else -- run around wailing
+											setOverrideAnimationState(eAnimState.wailing, eAnimState.walking, true, nil, true)
+											x, y,z= Spring.GetUnitPosition(unitID)
+											Command(unitID,go, {x = x+ math.random(-100,100), y =y, z =z+ math.random(-100,100)})
+										end
+									end,
+	[GameConfig.GameState.GameOver]= function(lastState, currentState)
+											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
+											setSpeedEnv(unitID, 0)
+									end,
+	[GameConfig.GameState.Pacification]= function(lastState, currentState)
+										boolPlayerUnitNearby, T = isPlayerUnitNearby(unitID, 250)
+										if  boolPlayerUnitNearby == true then
+											setOverrideAnimationState(eAnimState.handsup, eAnimState.slaved, false, nil, true )
+											runAwayFrom(unitID, T[1], math.pi)
+										end
+									end,
+}
+
+AerosolTypes = getChemTrailTypes()
+influencedStateMachine ={
+	[AerosolTypes.OrgyAnyl] = function (lastState, currentState)
+							 end,
+	[AerosolTypes.Wanderlost] = function (lastState, currentState)
+							 end,
+	[AerosolTypes.Tollwutox] = function (lastState, currentState)
+							 end,
+	[AerosolTypes.Depressol] = function (lastState, currentState)
+							 end
+}
+
+oldBehaviourState =  ""
+function beeHaviourStateMachine(newState)
+Signal(SIG_BEHAVIOUR_STATE_MACHINE)
+SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
+
+	if influencedStateMachine[newState] then
+		bodyConfig.boolInfluenced = true
+	end
+	
+	while true do
+		if influencedStateMachine[newState] then influencedStateMachine[newState](oldBehaviourState, newState) end
+		if normalBehavourStateMachine[newState] then normalBehavourStateMachine[newState](oldBehaviourState, newState) end
+		-- Verschiedene States
+		Sleep(250)
+		oldBehaviourState = newState
+	end
+end
+
 function threadStarter()
 	while true do
 		if boolStartThread == true then
@@ -2721,9 +2748,7 @@ function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateL
 	boolStartThread = true
 end
 
-function setBehaviourStateMachineExternal( boolStartStateMachine, BEHAVIOUR_STATE)
-	Spring.Echo("TODO: Create behavioural State machine")
-end
+
 --</Exposed Function>
 function conditionalFilterOutUpperBodyTable()
 	if boolDecoupled == false  then 
@@ -2977,6 +3002,10 @@ signMessages ={
 	"  I& BLAME&Ü",
 	"WHAT DO&YOU DESIRE?Ü",
 	"MUMS&AGAINST&Ü",	
+	"HATE Ü",
+	"FUCK Ü",
+	"Ü IS&EVIL",
+	
 	
 	--Humor
 	" PRO&TEST&ICLES",
@@ -2990,35 +3019,20 @@ signMessages ={
 }
 
 
--- function randSignLoop()
-	-- lettersize = 34
-	-- letterSizeZ= 62
-
-	-- resetAll(unitID)
-	
-	-- while true do
-	-- WTurn(ProtestSign,z_axis, math.rad(0), 1)
-	-- bodyBuild()
-	-- resetAll(unitID)	
-	-- WTurn(ProtestSign,z_axis, math.rad(0), 0)
-	-- Show(ProtestSign)
-	-- makeProtestSign(8, 3, lettersize, letterSizeZ, signMessages[math.random(1,#signMessages)], "RAPHI")
-	-- WTurn(ProtestSign,x_axis,math.rad(-90),5)
-	-- WTurn(ProtestSign,y_axis,math.rad(0),5)
-	-- WTurn(ProtestSign,z_axis,math.rad(0),5)
-	-- Spin(ProtestSign,z_axis, math.rad(math.random(-3,3)*2),3)
-	-- Spin(ProtestSign,x_axis, math.rad(math.random(-2,2)),1)
-	-- Spin(ProtestSign,y_axis, math.rad(math.random(-2,2)),1)
-	-- Sleep(5000)
-
-
-	
-	-- end
-
--- end
-
 
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ, sentence, personification)
+	for i=1, 26 do
+		charOn = string.char(64+i) 
+		if TablesOfPiecesGroups[charOn] then
+			resetT(TablesOfPiecesGroups[charOn])
+			hideT(TablesOfPiecesGroups[charOn])
+		end		
+	end
+	hideT(TablesOfPiecesGroups["Quest"])
+	resetT(TablesOfPiecesGroups["Quest"])
+	hideT(TablesOfPiecesGroups["Exclam"])
+	resetT(TablesOfPiecesGroups["Exclam"])
+
 index = 0
 Show(ProtestSign)
 alreadyUsedLetter ={} 
