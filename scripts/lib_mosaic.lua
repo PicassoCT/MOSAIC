@@ -94,6 +94,15 @@ GG.GameConfig = getGameConfig()
 _G.GameConfig = getGameConfig()
 --===================================================================================================================
 --===================================================================================================================
+function getChemTrailTypes()
+return {
+	["OrgyAnyl"] = "orgyanyl",
+	["Wanderlost"] = "wanderlost",
+	["Tollwutox"] = "tollwutox",
+	["Depressol"] = "depressol"
+}
+end
+
 --Mosaic specific functions 
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)
@@ -333,17 +342,21 @@ return {
 	phone	="STATE_PHONE",
 	wailing	="STATE_WAILING" ,
 	talking		="STATE_TALKING",
+	handsup	= "STATE_HANDSUP",
+	protest = "STATE_PROTEST",
+
 	--	coupled cycles	
 	standing	="STATE_STANDING",
 	aiming	="STATE_AIMING",
-	hit	="stATE_HIT",
+	hit	="STATE_HIT",
 	death	="STATE_DEATH",
 	transported 		="STATE_TRANSPORTED",
+	catatonic = "STATE_CATATONIC",
 	-- self ending Cycles		
 	walking	="STATE_WALKING",
 	running	="STATE_RUNNING",
 	coverwalk	="STATE_COVERWALK",
-	limping	="STATE_LIMPING"   
+	wounded	="STATE_WOUNDED"   
 }
 
 end
