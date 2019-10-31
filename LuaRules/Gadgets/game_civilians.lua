@@ -54,14 +54,7 @@ end
         end
 	end
 	
-	function SetCivilianBehaviourMode(unitID, boolStartUnitBehaviourState, TypeOfBehaviour )
-		env = Spring.UnitScript.GetScriptEnv(unitID)
-        if env and env.setBehaviourStateMachineExternal then
-			Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, boolStartUnitBehaviourState, TypeOfBehaviour)
-        end
-	
-	end
-	
+
 	function makePasserBysLook(unitID)
 		ux,uy,uz= Spring.GetUnitPosition(unitID)
 		process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
@@ -511,16 +504,20 @@ end
 		end
 		
 		-- <External GameState Handling>
+		-- abort if aerosol afflicted
+		if GG.AerosolAffectedCivilians and GG.AerosolAffectedCivilians[myID] then 
+			return nil, persPack
+		end
+		
 		if not 	persPack.boolAnarchy then 	persPack.boolAnarchy = false end
 		
-		if  GG.GlobalGameState and GG.GlobalGameState == GameConfig.GameState.Normal and persPack.boolAnarchy == true then
-			SetCivilianBehaviourMode(myID, false)
+		if  GG.GlobalGameState and GG.GlobalGameState == GameConfig.GameState.normal and persPack.boolAnarchy == true then
+			setCivilianBehaviourMode(myID, false)
 			persPack.boolAnarchy = false
 		end
 		
-		if  GG.GlobalGameState and GG.GlobalGameState ~= GameConfig.GameState.Normal then
-			--TODO End the external statemachine- enter the the internal statemachine 
-			SetCivilianBehaviourMode(myID, true, GG.GlobalGameState )
+		if  GG.GlobalGameState and GG.GlobalGameState ~= GameConfig.GameState.normal then
+			setCivilianBehaviourMode(myID, true, GG.GlobalGameState )
 			persPack.boolAnarchy = true
 			return frame + math.random(30*5,30*25) , persPack
 		end			

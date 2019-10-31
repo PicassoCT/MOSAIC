@@ -55,6 +55,9 @@ function getGameConfig()
 	 --Dayproperties
 	 daylength = 28800, --in frames
 	 
+	 --Aerosoldrone
+	 aerosolDistance = 250,
+	 
 	 -- Interrogation
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
@@ -90,6 +93,7 @@ function getGameConfig()
 	 
 	}
 end
+
 GG.GameConfig = getGameConfig()
 _G.GameConfig = getGameConfig()
 --===================================================================================================================
@@ -333,6 +337,22 @@ function getCivilianTypeTable(UnitDefs)
 	return retTable, getTypeTable(UnitDefNames, typeTable)
 end
 
+function getAersolAffectableUnits()
+	typeTable={
+		"civilian",
+		"truck"
+	}
+	return getTypeTable(getUnitDefNames(UnitDefs), typeTable)
+end
+
+function setCivilianBehaviourMode(unitID, boolStartUnitBehaviourState, TypeOfBehaviour )
+	env = Spring.UnitScript.GetScriptEnv(unitID)
+       if env and env.setBehaviourStateMachineExternal then
+		Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, boolStartUnitBehaviourState, TypeOfBehaviour)
+       end
+
+end
+	
 function getCivilianAnimationStates()
 return {
 	-- Upper Body States

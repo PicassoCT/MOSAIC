@@ -5464,6 +5464,7 @@ function delayedCommand(id, command, target, option, framesToDelay)
 	Spring.GetGameFrame() + framesToDelay)
 	
 end
+
 -->Generic Simple Commands
 function Command(id, command, target, option)
 	
@@ -5499,9 +5500,7 @@ function Command(id, command, target, option)
 	
 	if command == "setactive" then
 		if type(option)== "number" then
-	
 			Spring.GiveOrderToUnit(unitID, CMD.ONOFF, option,{})
-
 		else
 			currentState = GetUnitValue(COB.ACTIVATION)
 			if currentState == 0 then currentState = 1 else currentState = 0 end
