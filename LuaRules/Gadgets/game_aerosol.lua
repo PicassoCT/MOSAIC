@@ -22,7 +22,7 @@ end
 	VFS.Include("scripts/lib_mosaic.lua")
 	
 	local GameConfig = getGameConfig()
-	local UnitDefNames = getUnitDefNames()
+	local UnitDefNames = getUnitDefNames(UnitDefs)
 	
 	aeroSolDroneDefID = UnitDefNames["air_copter_aerosol"].id
 	aeroSolUnits = {}
@@ -47,10 +47,10 @@ function gadget:GameFrame(n)
 
 	if n % 16 == 1 then
 		for unitID, unitDefID in pairs(aeroSolUnits) do
-				if unitID and unitDefID and isUnitActive(unitID) == true then
-					aerosolTypeOfUnit  = "wanderlost"
+			if unitID and unitDefID and isUnitActive(unitID) == true then
+					aerosolTypeOfUnit  = getUnitVariable(unitID, "aerosoltype")
 					if GG.SelectedAerosol then
-						aerosolTypeOfUnit =  GG.SelectedAerosol[unitID] -- TODO set this in Unit
+						aerosolTypeOfUnit =  GG.SelectedAerosol[unitID]
 					end
 					
 					-- if unit is activate 
@@ -64,8 +64,8 @@ function gadget:GameFrame(n)
 								end
 							end
 							)
-				end
 			end
 		end
 	end
 end
+

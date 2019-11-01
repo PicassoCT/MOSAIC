@@ -32,8 +32,8 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 1024+128,
 	CanFly   = true,
-	activateWhenBuilt   	= true,
-	MaxSlope 					= 90,
+	activateWhenBuilt = true,
+	MaxSlope = 90,
 
 	canHover=true,
 	CanAttack = true,
@@ -67,20 +67,20 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 							  },
 				},
 				
-		weapons = {
-				[1]={name  = "orgyanyl",
-					onlyTargetCategory = [[GROUND VEHICLE]],
-					},
-				[2]={name  = "toolwutox",
-					onlyTargetCategory = [[GROUND VEHICLE]],
-					},
-				[3]={name  = "depressol",
-					onlyTargetCategory = [[GROUND VEHICLE]],
-					},	
-				[4]={name  = "wanderlost",
-					onlyTargetCategory = [[GROUND VEHICLE]],
-					},	
-		},	
+		-- weapons = {
+				-- [1]={name  = "orgyanyl",
+					-- onlyTargetCategory = [[GROUND VEHICLE]],
+					-- },
+				-- [2]={name  = "toolwutox",
+					-- onlyTargetCategory = [[GROUND VEHICLE]],
+					-- },
+				-- [3]={name  = "depressol",
+					-- onlyTargetCategory = [[GROUND VEHICLE]],
+					-- },	
+				-- [4]={name  = "wanderlost",
+					-- onlyTargetCategory = [[GROUND VEHICLE]],
+					-- },	
+		-- },	
 
 			
 

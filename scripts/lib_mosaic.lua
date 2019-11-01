@@ -100,10 +100,10 @@ _G.GameConfig = getGameConfig()
 --===================================================================================================================
 function getChemTrailTypes()
 return {
-	["OrgyAnyl"] = "orgyanyl",
-	["Wanderlost"] = "wanderlost",
-	["Tollwutox"] = "tollwutox",
-	["Depressol"] = "depressol"
+	["orgyanyl"] = "orgyanyl",
+	["wanderlost"] = "wanderlost",
+	["tollwutox"] = "tollwutox",
+	["depressol"] = "depressol"
 }
 end
 

@@ -3174,6 +3174,15 @@ function distance(x, y, z, xa, ya, za)
 	end
 end
 
+function getUnitVariable(unitID, varname)
+	
+	env = Spring.UnitScript.GetScriptEnv(unitID)
+	
+	if env and env.varname then
+		return env.varname
+	end
+end
+
 function setParent(unitID, child)
 	
 	env = Spring.UnitScript.GetScriptEnv(child)

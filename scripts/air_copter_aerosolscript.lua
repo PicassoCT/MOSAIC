@@ -8,6 +8,8 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
+chemTrails = getChemTrailTypes()
+aerosoltype = chemTrails.wanderlost
 
 center = piece "center"
 -- left = piece "left"
@@ -69,10 +71,4 @@ function script.Deactivate()
 
     return 0
 end
-
--- function script.QueryBuildInfo()
-    -- return center
--- end
-
--- Spring.SetUnitNanoPieces(unitID, { center })
 
