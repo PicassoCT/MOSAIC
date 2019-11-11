@@ -12,9 +12,8 @@ chemTrails = getChemTrailTypes()
 aerosoltype = chemTrails.wanderlost
 
 center = piece "center"
--- left = piece "left"
--- right = piece "right"
--- aimpiece = piece "aimpiece"
+
+aimpiece = piece "aimpiece"
 if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
@@ -43,10 +42,7 @@ end
 function script.AimWeapon1(Heading, pitch)
 return true
 end
-    -- aiming animation: instantly turn the gun towards the enemy
 
-    -- return true
--- end
 
 
 function script.FireWeapon1()

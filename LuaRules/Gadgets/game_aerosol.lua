@@ -45,7 +45,7 @@ TaeroSolAffectableUnits= getAersolAffectableUnits()
 
 function gadget:GameFrame(n)
 
-	if n % 16 == 1 then
+	if n % 33 == 1 then
 		for unitID, unitDefID in pairs(aeroSolUnits) do
 			if unitID and unitDefID and isUnitActive(unitID) == true then
 					aerosolTypeOfUnit  = getUnitVariable(unitID, "aerosoltype")
@@ -54,16 +54,19 @@ function gadget:GameFrame(n)
 					end
 					
 					-- if unit is activate 
-					T = getAllNearUnit(unitID, GameConfig.aerosolDistance)
-					process(T,
-							function(id)
-								if TaeroSolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then
-									setCivilianBehaviourMode(id, true, aerosolTypeOfUnit)
-									if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
-									GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit 
+					if getUnitValueEnv(unitID, "ACTIVATION") == 1 then
+					
+						T = getAllNearUnit(unitID, GameConfig.aerosolDistance)
+						process(T,
+								function(id)
+									if TaeroSolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then
+										setCivilianBehaviourMode(id, true, aerosolTypeOfUnit)
+										if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
+										GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit 
+									end
 								end
-							end
-							)
+								)
+					end
 			end
 		end
 	end

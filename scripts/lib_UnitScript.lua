@@ -5528,6 +5528,16 @@ function Command(id, command, target, option)
 	end
 end
 
+function getUnitValueEnv(unitID, ValueName)
+	env = Spring.UnitScript.GetScriptEnv(unitID)
+
+	if env and env.UnitScript.GetUnitValue then
+		local cob = env.UnitScript.COB
+		return Spring.UnitScript.CallAsUnit(unitID, Spring.UnitScript.GetUnitValue, cob[ValueName])
+	end
+
+end
+
 function setFireState(unitID, fireStateStr)
 states={ 
 		["holdfire"]=1,
