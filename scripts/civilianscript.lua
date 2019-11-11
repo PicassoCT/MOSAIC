@@ -2665,13 +2665,13 @@ normalBehavourStateMachine = {
 
 AerosolTypes = getChemTrailTypes()
 influencedStateMachine ={
-	[AerosolTypes.OrgyAnyl] = function (lastState, currentState)
+	[AerosolTypes.orgyanyl] = function (lastState, currentState)
 							 end,
-	[AerosolTypes.Wanderlost] = function (lastState, currentState)
+	[AerosolTypes.wanderlost] = function (lastState, currentState)
 							 end,
-	[AerosolTypes.Tollwutox] = function (lastState, currentState)
+	[AerosolTypes.tollwutox] = function (lastState, currentState)
 							 end,
-	[AerosolTypes.Depressol] = function (lastState, currentState)
+	[AerosolTypes.depressol] = function (lastState, currentState)
 							 end
 }
 

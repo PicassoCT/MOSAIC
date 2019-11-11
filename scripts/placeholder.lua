@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
+-- center = piece "center"
 -- left = piece "left"
 -- right = piece "right"
 -- aimpiece = piece "aimpiece"
@@ -19,6 +19,9 @@ if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].na
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	-- Spring.MoveCtrl.Enable(unitID,true)
+	-- x,y,z =Spring.GetUnitPosition(unitID)
+	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
 	-- StartThread(AnimationTest)
 end
 
