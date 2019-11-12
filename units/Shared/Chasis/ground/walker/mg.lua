@@ -23,7 +23,7 @@ local ground_walker_mg = Walker:New{
 
 	footprintX = 2,
 	footprintZ = 2,
-	script 			= "placeholder.lua",
+	script 			= "groundwalkerscript.lua",
 	objectName 	= "ground_walker_mg.dae",
 
 	usepiececollisionvolumes = true,

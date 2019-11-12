@@ -27,9 +27,7 @@ end
 	local UnitDefNames = getUnitDefNames(UnitDefs)
 	local GameConfig = getGameConfig()
 	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
-	--assert(CivilianTypeTable["civilian"])
-	--assert(CivilianTypeTable["truck"])
-	--assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
+
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	local CivAnimStates = getCivilianAnimationStates()
 	
