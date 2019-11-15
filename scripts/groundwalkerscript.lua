@@ -4,8 +4,59 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+center = 	piece"center"
+uparm01 = 	piece"uparm01"
+uparm002 = 	piece"uparm002"
+uparm003 = 	piece"uparm003"
+uparm004 = 	piece"uparm004"
+
+lowarm01 = piece"lowarm01"
+lowarm002 = piece"lowarm002"
+lowarm003 = piece"lowarm003"
+lowarm004 = piece"lowarm004"
+
+lowleg01 = piece"lowleg01"
+lowleg002 = piece"lowleg002"
+lowleg003 = piece"lowleg003"
+lowleg004 = piece"lowleg004"
+Parachute = piece"Parachute"
+upleg01 	=  piece"upleg01"
+upleg002 = piece"upleg002"
+upleg003 = piece"upleg003"
+upleg004 = piece"upleg004"
+	
+local scriptEnv = {
+	center = center,
+	
+	upleg01 = upleg01  ,
+	upleg002 = upleg002  ,
+	upleg003 = upleg003  ,
+	upleg004 = upleg004  ,
+	
+	uparm01 = uparm01  ,
+	uparm002 = uparm002  ,
+	uparm003 = uparm003  ,
+	uparm004 = uparm004  ,
+	
+	lowarm01 = lowarm01,
+	lowarm002 = lowarm002,
+	lowarm003 = lowarm003,
+	lowarm004 = lowarm004,
+	
+	lowleg01 =  lowleg01,
+	lowleg002 =  lowleg002,
+	lowleg003 =  lowleg003,
+	lowleg004 =  lowleg004,
+		
+	Parachute = Parachute,
+	x_axis = x_axis,
+	y_axis = y_axis,
+	z_axis = z_axis,
+}
+
+
 TablesOfPiecesGroups = {}
-local Animations = {
+Animations = {
 ["SIT"]={
 	{
 		['time'] = 1,
@@ -869,27 +920,25 @@ local Animations = {
 		['commands'] = {
 		}
 	},
-}
-,
+},
 ["WALK"]={
 	{
 		['time'] = 2,
 		['commands'] = {
 			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-0.952307, ['s']=0.000000},
-			{['c']='move',['p']=center, ['a']=z_axis, ['t']=15.271389, ['s']=0.417845},
+			{['c']='move',['p']=center, ['a']=z_axis, ['t']=12.271389, ['s']=4.17845},
 			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000309, ['s']=0.000261},
 			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=-0.139802, ['s']=0.133503},
 			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.001958, ['s']=0.000020},
-			{['c']='turn',['p']=lowarm002, ['a']=x_axis, ['t']=0.000000, ['s']=0.037677},
+
 			{['c']='turn',['p']=lowarm002, ['a']=y_axis, ['t']=1.585332, ['s']=1.521410},
-			{['c']='turn',['p']=lowarm002, ['a']=z_axis, ['t']=0.000000, ['s']=0.025750},
-			{['c']='turn',['p']=lowarm003, ['a']=x_axis, ['t']=0.001361, ['s']=0.002722},
+
 			{['c']='turn',['p']=lowarm003, ['a']=y_axis, ['t']=1.935109, ['s']=2.373748},
-			{['c']='turn',['p']=lowarm003, ['a']=z_axis, ['t']=0.001580, ['s']=0.003160},
+
 			{['c']='turn',['p']=lowarm004, ['a']=y_axis, ['t']=0.866274, ['s']=1.303885},
-			{['c']='turn',['p']=lowarm01, ['a']=x_axis, ['t']=0.001156, ['s']=0.001577},
+
 			{['c']='turn',['p']=lowarm01, ['a']=y_axis, ['t']=0.592413, ['s']=0.709420},
-			{['c']='turn',['p']=lowarm01, ['a']=z_axis, ['t']=0.000920, ['s']=0.001255},
+
 			{['c']='turn',['p']=lowleg002, ['a']=y_axis, ['t']=2.456964, ['s']=3.719651},
 			{['c']='turn',['p']=lowleg003, ['a']=x_axis, ['t']=0.003429, ['s']=0.016092},
 			{['c']='turn',['p']=lowleg003, ['a']=y_axis, ['t']=1.101753, ['s']=6.393243},
@@ -991,9 +1040,7 @@ local Animations = {
 	{
 		['time'] = 17,
 		['commands'] = {
-			{['c']='turn',['p']=lowarm003, ['a']=x_axis, ['t']=-0.003149, ['s']=0.006150},
 			{['c']='turn',['p']=lowarm003, ['a']=y_axis, ['t']=1.261882, ['s']=0.918036},
-			{['c']='turn',['p']=lowarm003, ['a']=z_axis, ['t']=-0.002768, ['s']=0.005928},
 			{['c']='turn',['p']=lowleg01, ['a']=y_axis, ['t']=2.002497, ['s']=0.381231},
 		}
 	},
@@ -1030,9 +1077,7 @@ local Animations = {
 	{
 		['time'] = 24,
 		['commands'] = {
-			{['c']='turn',['p']=lowarm01, ['a']=x_axis, ['t']=0.003541, ['s']=0.007155},
 			{['c']='turn',['p']=lowarm01, ['a']=y_axis, ['t']=2.055061, ['s']=4.387945},
-			{['c']='turn',['p']=lowarm01, ['a']=z_axis, ['t']=0.003979, ['s']=0.009178},
 			{['c']='turn',['p']=lowleg004, ['a']=x_axis, ['t']=0.001655, ['s']=0.009931},
 			{['c']='turn',['p']=lowleg004, ['a']=y_axis, ['t']=3.029286, ['s']=3.722660},
 			{['c']='turn',['p']=lowleg004, ['a']=z_axis, ['t']=-0.000351, ['s']=0.002105},
@@ -1078,7 +1123,7 @@ local Animations = {
 		['time'] = 30,
 		['commands'] = {
 			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-0.952307, ['s']=0.000000},
-			{['c']='move',['p']=center, ['a']=z_axis, ['t']=15.661378, ['s']=0.467987},
+			{['c']='move',['p']=center, ['a']=z_axis, ['t']=12.661378, ['s']=4.67987},
 			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000066, ['s']=0.000292},
 			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=-0.015199, ['s']=0.149524},
 			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.001939, ['s']=0.000023},
@@ -1090,9 +1135,7 @@ local Animations = {
 	{
 		['time'] = 32,
 		['commands'] = {
-			{['c']='turn',['p']=lowarm002, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowarm002, ['a']=y_axis, ['t']=0.632747, ['s']=0.020034},
-			{['c']='turn',['p']=lowarm002, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg002, ['a']=y_axis, ['t']=1.546031, ['s']=7.460107},
 			{['c']='turn',['p']=lowleg003, ['a']=x_axis, ['t']=-0.003675, ['s']=0.022849},
 			{['c']='turn',['p']=lowleg003, ['a']=y_axis, ['t']=3.970223, ['s']=1.037360},
@@ -1106,9 +1149,7 @@ local Animations = {
 	{
 		['time'] = 34,
 		['commands'] = {
-			{['c']='turn',['p']=lowarm01, ['a']=x_axis, ['t']=0.000000, ['s']=0.005059},
 			{['c']='turn',['p']=lowarm01, ['a']=y_axis, ['t']=1.112654, ['s']=1.346296},
-			{['c']='turn',['p']=lowarm01, ['a']=z_axis, ['t']=0.000000, ['s']=0.005685},
 		}
 	},
 	{
@@ -1129,9 +1170,9 @@ local Animations = {
 	{
 		['time'] = 39,
 		['commands'] = {
-			{['c']='turn',['p']=lowarm003, ['a']=x_axis, ['t']=0.000000, ['s']=0.005905},
+
 			{['c']='turn',['p']=lowarm003, ['a']=y_axis, ['t']=0.748235, ['s']=0.963089},
-			{['c']='turn',['p']=lowarm003, ['a']=z_axis, ['t']=0.000000, ['s']=0.005189},
+
 			{['c']='turn',['p']=lowleg01, ['a']=y_axis, ['t']=1.509544, ['s']=3.592914},
 			{['c']='turn',['p']=upleg004, ['a']=y_axis, ['t']=-1.243565, ['s']=8.464653},
 		}
@@ -1171,11 +1212,11 @@ local Animations = {
 			{['c']='turn',['p']=lowleg01, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
 		}
 	},
-	{
-		['time'] = 55,
-		['commands'] = {
-		}
-	},
+	-- {
+		-- ['time'] = 55,
+		-- ['commands'] = {
+		-- }
+	-- },
 },
 ["FIRING"] ={
 	{
@@ -1304,13 +1345,14 @@ end
 
 function AnimationTest()
 	while true do
-		Sleep(1000)
-		PlayAnimation("WALK")
+		Sleep(1)
+		PlayAnimation("WALK", nil, 2.0)
 	end
 
 end
 
 function setupAnimation()
+	echo("Start setupAnimation groundwalker")
     local map = Spring.GetUnitPieceMap(unitID);
 	local switchAxis = function(axis) 
 		if axis == z_axis then return y_axis end
@@ -1335,6 +1377,8 @@ function setupAnimation()
             end
         end
     end
+	
+	echo("End setupAnimation groundwalker")
 end
 
 local animCmd = {['turn']=Turn,['move']=Move};
@@ -1346,6 +1390,7 @@ local axisSign ={
 }
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
+	-- echo("Start Playing Animation")
 	local speedFactor = speed or 1.0
 	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
 	assert(animname, "animation name is nil")
@@ -1360,10 +1405,10 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 			if cmd.r then
 				randoffset = math.random(-cmd.r, cmd.r)
 			end
-			
-			if  not piecesToFilterOutTable[cmd.p] and cmd.p then	
+
+			if  piecesToFilterOutTable[cmd.p] == nil and cmd.p then	
 				animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset) ,cmd.s*speedFactor)
-				
+
 			end
         end
         if(i < #anim) then

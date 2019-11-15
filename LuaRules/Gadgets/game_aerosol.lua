@@ -37,7 +37,7 @@ function gadget:UnitDestroyed(unitID)
 	if aeroSolUnits[unitID] then aeroSolUnits[unitID] = nil end
 end
 
-function gaget:Initialize()
+function gadget:Initialize()
 	if not GG.SelectedAerosol then GG.SelectedAerosol = {} end
 end
 
