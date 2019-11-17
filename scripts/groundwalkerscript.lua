@@ -1060,42 +1060,29 @@ Animations = {
 			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0.034907, ['s']=0.087266},
 			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowarm002, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=lowarm002, ['a']=y_axis, ['t']=0.910915, ['s']=0.136506},
-			{['c']='turn',['p']=lowarm002, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowarm002, ['a']=y_axis, ['t']=0.910915, ['s']=0.138820},
 			{['c']='turn',['p']=lowarm004, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowarm003, ['a']=y_axis, ['t']=0.314159*2, ['s']=0.222930},
 			{['c']='turn',['p']=lowarm004, ['a']=y_axis, ['t']=2.024119, ['s']=0.222930},
 			{['c']='turn',['p']=lowarm004, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=lowarm01, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowarm01, ['a']=y_axis, ['t']=1.897787, ['s']=0.225906},
 			{['c']='turn',['p']=lowarm01, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg002, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg002, ['a']=y_axis, ['t']=1.465346, ['s']=1.653813},
 			{['c']='turn',['p']=lowleg002, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=lowleg003, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg003, ['a']=y_axis, ['t']=1.700160, ['s']=1.350379},
-			{['c']='turn',['p']=lowleg003, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=lowleg004, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg004, ['a']=y_axis, ['t']=2.818596, ['s']=0.420370},
-			{['c']='turn',['p']=lowleg004, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=lowleg01, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg01, ['a']=y_axis, ['t']=2.844518, ['s']=0.413586},
-			{['c']='turn',['p']=lowleg01, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=uparm002, ['a']=z_axis, ['t']=-0.785398, ['s']=0.174533},
+			{['c']='turn',['p']=uparm002, ['a']=z_axis, ['t']=-0.785398, ['s']=0.177491},
 			{['c']='turn',['p']=uparm003, ['a']=z_axis, ['t']=0.785398, ['s']=0.180551},
 			{['c']='turn',['p']=uparm004, ['a']=z_axis, ['t']=-0.610865, ['s']=0.088746},
 			{['c']='turn',['p']=uparm01, ['a']=z_axis, ['t']=0.610865, ['s']=0.088746},
 			{['c']='turn',['p']=upleg002, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=upleg002, ['a']=y_axis, ['t']=-1.232287, ['s']=0.856143},
+			{['c']='turn',['p']=upleg002, ['a']=y_axis, ['t']=-1.232287, ['s']=0.856147},
 			{['c']='turn',['p']=upleg002, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=upleg003, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=upleg003, ['a']=y_axis, ['t']=-1.307403, ['s']=0.810933},
-			{['c']='turn',['p']=upleg003, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=upleg004, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=upleg004, ['a']=y_axis, ['t']=-2.591597, ['s']=0.497574},
-			{['c']='turn',['p']=upleg004, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=upleg01, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=upleg01, ['a']=y_axis, ['t']=-2.432522, ['s']=0.488409},
-			{['c']='turn',['p']=upleg01, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
 		}
 	},
 	{
@@ -1124,9 +1111,7 @@ Animations = {
 			{['c']='turn',['p']=lowleg002, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg002, ['a']=y_axis, ['t']=1.214377, ['s']=0.250969},
 			{['c']='turn',['p']=lowleg002, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=lowleg003, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowleg003, ['a']=y_axis, ['t']=1.326462, ['s']=0.373698},
-			{['c']='turn',['p']=lowleg003, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 		}
 	},
 	{
@@ -1139,16 +1124,44 @@ Animations = {
 	{
 		['time'] = 48,
 		['commands'] = {
+			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-2.998426, ['s']=2.783460},
+			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0.000000, ['s']=0.033781},
+			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
 		}
 	},
 	{
 		['time'] = 59,
 		['commands'] = {
+			{['c']='turn',['p']=uparm003, ['a']=z_axis, ['t']=0.436332, ['s']=0.523599},
 		}
 	},
 	{
 		['time'] = 60,
 		['commands'] = {
+			{['c']='turn',['p']=lowarm002, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowarm002, ['a']=y_axis, ['t']=0.637903, ['s']=0.431071},
+			{['c']='turn',['p']=lowarm004, ['a']=x_axis, ['t']=0.000000, ['s']=0.000002},
+			{['c']='turn',['p']=lowarm003, ['a']=y_axis, ['t']=0.62, ['s']=0.222930},
+			{['c']='turn',['p']=lowarm004, ['a']=y_axis, ['t']=1.585689, ['s']=0.692257},
+			{['c']='turn',['p']=lowarm004, ['a']=z_axis, ['t']=0.000000, ['s']=0.000001},
+			{['c']='turn',['p']=lowarm01, ['a']=y_axis, ['t']=1.453506, ['s']=0.701497},
+			{['c']='turn',['p']=lowarm01, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowleg002, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowleg002, ['a']=y_axis, ['t']=1.745329, ['s']=1.592858},
+			{['c']='turn',['p']=lowleg002, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowleg003, ['a']=y_axis, ['t']=1.745329, ['s']=1.256603},
+			{['c']='turn',['p']=lowleg004, ['a']=y_axis, ['t']=1.991869, ['s']=1.305359},
+			{['c']='turn',['p']=lowleg01, ['a']=y_axis, ['t']=2.031132, ['s']=1.284294},
+			{['c']='turn',['p']=uparm002, ['a']=z_axis, ['t']=-0.436332, ['s']=0.551157},
+			{['c']='turn',['p']=uparm004, ['a']=z_axis, ['t']=-0.785398, ['s']=0.275578},
+			{['c']='turn',['p']=uparm01, ['a']=z_axis, ['t']=0.785398, ['s']=0.275578},
+			{['c']='turn',['p']=upleg002, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=upleg002, ['a']=y_axis, ['t']=-2.916044, ['s']=2.658563},
+			{['c']='turn',['p']=upleg002, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=upleg003, ['a']=y_axis, ['t']=-2.902238, ['s']=2.518161},
+			{['c']='turn',['p']=upleg004, ['a']=y_axis, ['t']=-1.613036, ['s']=1.545097},
+			{['c']='turn',['p']=upleg01, ['a']=y_axis, ['t']=-1.471983, ['s']=1.516640},
 		}
 	},
 	{
@@ -1156,8 +1169,21 @@ Animations = {
 		['commands'] = {
 		}
 	},
-},
-
+	{
+		['time'] = 70,
+		['commands'] = {
+			{['c']='turn',['p']=lowleg002, ['a']=x_axis, ['t']=-0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowleg002, ['a']=y_axis, ['t']=3.064032, ['s']=4.395675},
+			{['c']='turn',['p']=lowleg002, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=lowleg003, ['a']=y_axis, ['t']=3.005526, ['s']=4.200654},
+		}
+	},
+	{
+		['time'] = 79,
+		['commands'] = {
+		}
+	},
+}
 }
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -1173,14 +1199,28 @@ function script.Create()
 	-- Spring.MoveCtrl.Enable(unitID,true)
 	-- x,y,z =Spring.GetUnitPosition(unitID)
 	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-	StartThread(AnimationTest)
+	StartThread(Landing)
+	StartThread(walkAnimationLoop)
 end
 
-function AnimationTest()
-	while true do
-		Sleep(1)
+function Landing()
+		PlayAnimation("UPRIGHT", nil, 2.0)
 		PlayAnimation("FIRING", nil, 2.0)
-		Sleep(3000)
+end
+
+function walkAnimationLoop()
+	while true do
+		if boolAiming == false and boolWalking == true then
+			while boolAiming == false and boolWalking == true do
+					PlayAnimation("WALK", nil, 2.0)
+			end
+			if math.random(0,4) < 2 then
+			PlayAnimation("SIT",nil, 2.0)
+			else
+				PlayAnimation("FIRING",nil, 4.0)
+			end
+		end
+	Sleep(100)
 	end
 
 end
@@ -1286,11 +1326,14 @@ end
 
 
 function script.Killed(recentDamage, _)
-
-    createCorpseCUnitGeneric(recentDamage)
+	PlayAnimation("UPRIGHT",nil, math.pi)
+	for k,v in pairs(TablesOfPiecesGroups) do
+		explodeT(v, SFX.FALL+SFX.FIRE+SFX.EXPLODE_ON_HIT)
+		hideT(v)
+	end
     return 1
 end
-
+	boolAiming = false
 
 -- aimining & fire weapon
 function script.AimFromWeapon1()
@@ -1304,6 +1347,8 @@ function script.QueryWeapon1()
 end
 
 function script.AimWeapon1(Heading, pitch)
+	boolAiming = true
+	PlayAnimation("WALK",nil, 2.0)
     -- aiming animation: instantly turn the gun towards the enemy
 
     return true
@@ -1311,25 +1356,28 @@ end
 
 
 function script.FireWeapon1()
-
+	boolAiming = false
+	PlayAnimation("FIRING",nil, 2.0)
     return true
 end
 
 
-
+boolWalking= false
 function script.StartMoving()
+boolWalking= true
 end
 
 function script.StopMoving()
+boolWalking= false
 end
 
 function script.Activate()
-
+	PlayAnimation("UPRIGHT",nil, 2.0)
     return 1
 end
 
 function script.Deactivate()
-
+	resetAll(unitID, 3.0)
     return 0
 end
 
