@@ -109,14 +109,11 @@ function script.Create()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
-	Spring.Echo("LOAD CIVILIANSCRIPT")
-	
 
 	bodyBuild()
 	-- StartThread(randSignLoop)
 	-- spinT(TablesOfPiecesGroups["UpArm"],x_axis,math.rad(2),math.pi)
 	setupAnimation()
-
 
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
 
@@ -2927,6 +2924,7 @@ signMessages ={
 	"ALWAYS&LCOK ON&BRIGHTSIDE",
 	
 	--Anger
+	"ANTIFA",
 	"ROCKET&IS&RAPE",
 	"HICBM& UP YOUR ASS",
 	"RISE &UP",
@@ -2957,6 +2955,7 @@ signMessages ={
 	" GOD& IS& DEATH",
 	"TEARS& IN& RAIN",
 	"NEVR &FORGET& LA",
+	"REMBR&HONG&KONG",
 	"NEVR &FORGET& SA",
 	"REMEMBR PALO& ALTO",
 	"REMEBR  LAGOS",
