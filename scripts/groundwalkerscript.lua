@@ -759,7 +759,8 @@ Animations = {
 		['commands'] = {
 			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-0.952307, ['s']=0.000000},
 			{['c']='move',['p']=center, ['a']=z_axis, ['t']=12.271389, ['s']=4.17845},
-			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000309, ['s']=0.000261},
+			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+
 			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=-0.139802, ['s']=0.133503},
 			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.001958, ['s']=0.000020},
 
@@ -1056,7 +1057,7 @@ Animations = {
 		['commands'] = {
 			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-2.146206, ['s']=2.130550},
 			{['c']='move',['p']=center, ['a']=z_axis, ['t']=8.146206, ['s']=12.130550},
-			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			-- {['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0.034907, ['s']=0.087266},
 			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=lowarm002, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
@@ -1125,7 +1126,7 @@ Animations = {
 		['time'] = 48,
 		['commands'] = {
 			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-2.998426, ['s']=2.783460},
-			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
+			-- {['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0.000000, ['s']=0.033781},
 			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
 		}
@@ -1348,15 +1349,15 @@ end
 
 function script.AimWeapon1(Heading, pitch)
 	boolAiming = true
-	PlayAnimation("WALK",nil, 2.0)
+	Turn(center,y_axis,Heading,math.pi)
     -- aiming animation: instantly turn the gun towards the enemy
-
+	boolAiming = false
     return true
 end
 
 
 function script.FireWeapon1()
-	boolAiming = false
+	
 	PlayAnimation("FIRING",nil, 2.0)
     return true
 end
