@@ -1,4 +1,4 @@
-return {
+ {
 	{
 		['time'] = 1,
 		['commands'] = {
