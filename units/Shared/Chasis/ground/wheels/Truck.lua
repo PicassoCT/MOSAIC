@@ -1,6 +1,6 @@
 local ground_truck_mg = Truck:New{
 	name = "Machinegun Truck",
-	description = "MOSAIC standardized selfdriving Truck with Machinegun <Assault Vehicle>",
+	description = "Selfdriving Truck with Machinegun <Assault Vehicle>",
 	
 	corpse				= "",
 	maxDamage = 1500,
@@ -35,7 +35,7 @@ local ground_truck_mg = Truck:New{
 
 local ground_truck_ssied = Truck:New{
 	name = "SSIED Truck",
-	description = "MOSAIC standardized explosive truck <Assault Vehicle>",
+	description = "Selfdriving explosive truck <Assault Vehicle>",
 	
 	corpse				= "",
 	maxDamage = 1500,
@@ -69,7 +69,7 @@ local ground_truck_ssied = Truck:New{
 
 local ground_truck_antiarmor = Truck:New{
 	name = "AntiArmor Truck",
-	description = "MOSAIC anti vehicle truck <Assault Vehicle>",
+	description = "Selfdriving anti vehicle truck <Assault Vehicle>",
 	
 	corpse				= "",
 	maxDamage = 1500,
@@ -138,8 +138,55 @@ local CivilianTruck = Truck:New{
 	},
 }
 
+local PoliceTruck = Truck:New{
+	name = "Police Vehicle",
+	description = "corrupt, chaotic - local authority",
+	corpse				= "",
+	maxDamage = 500,
+	mass = 500,
+	buildCostEnergy = 5,
+	buildCostMetal = 5,
+	explodeAs			= "none",
+	--conType			= "infantry",
+	maxVelocity		= 4.2, --14.3, --86kph/20
+	--maxReverseVelocity= 2.15,
+	movementClass   	= "VEHICLE",
+	acceleration = 1.7,
+	brakeRate = 0.1,
+	turninplace		= true,
+	
+	transportSize = 16,
+	transportCapacity = 1,
+	isFirePlatform  = true, 
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
+	footprintX = 1,
+	footprintZ = 1,
+	script 			= "Policetruckscript.lua",
+	objectName 	= "apc.dae",
+
+	weapons = {
+				[1]={name  = "pistol",
+					onlyTargetCategory = [[GROUND]],
+					},
+					
+	},	
+	
+
+	category = [[GROUND]],
+	
+	customparams = {
+		helptext		= "Transportation Truck",
+		baseclass		= "Truck", -- TODO: hacks
+	},
+}
+
+
+
 return lowerkeys({
 	--Temp
+	["policetruck"]			 	= PoliceTruck:New(),
 	["truck"]			 	= CivilianTruck:New(),
 	["ground_truck_mg"]		= ground_truck_mg:New(),
 	["ground_truck_ssied"]	= ground_truck_ssied:New(),
