@@ -25,9 +25,11 @@ end
 	local spGetPosition = Spring.GetUnitPosition
 	local currentGlobalGameState = GG.GlobalGameState or "normal"
 	local UnitDefNames = getUnitDefNames(UnitDefs)
+	local PoliceTypes = getPoliceTypes(UnitDefs)
 	local GameConfig = getGameConfig()
+	local maxNrPolice = GameConfig.maxNrPolice
 	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
-
+	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	local CivAnimStates = getCivilianAnimationStates()
 	
@@ -43,6 +45,10 @@ end
 	
 	local houseDefID = UnitDefNames["house"].id	
 	local gaiaTeamID = Spring.GetGaiaTeamID()
+	function getPoliceSpawnLocation(suspect)
+	--TODO
+	return 0,0,0
+	end
 	
 	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, boolDeCoupled)
 	  env = Spring.UnitScript.GetScriptEnv(unitID)
@@ -83,7 +89,17 @@ end
 	
 	end
 	
+	function gadget:UnitCreated(unitID, unitDefID, teamID)
+		if PoliceTypes[unitDefID] then
+			maxNrPolice = math.max( maxNrPolice - 1, 0)
+		end
+	end
+	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+	if PoliceTypes[unitDefID] then
+		maxNrPolice = math.min( maxNrPolice +1, GameConfig.maxNrPolice)
+	end
+	
 		--Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
 		-- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
 		if teamID == gaiaTeamID and attackerID then
@@ -93,6 +109,26 @@ end
 			if unitDefID == houseDefID then
 				checkReSpawnHouses()
 				regenerateRoutesTable()
+			end
+		end
+	end
+	
+	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, attackerID, attackerDefID, attackerTeam)
+		if MobileCivilianDefIds[unitDefID] then
+			if not attackerID then attackerID = Spring.GetUnitLastAttacker(unitID) end
+			
+			officerID = nil
+			if maxNrPolice > 0 then
+				--TODO: Location, location, location
+				px,py,pz = getPoliceSpawnLocation(attackerID)
+				officerID = Spring.CreateUnit("policetruck",px,py,pz, math.random(0,4), gaiaTeamID)
+				activePoliceUnitIds[officerID] = gameconfig.policeMaxDispatchTime
+			else --reasign one
+				officerID = randDict(activePoliceUnitIds)				
+			end
+			
+			if officerID then
+				delayedCommand(officerID, "attack" , attackerID, option, math.random(math.random(1,10),5*30))
 			end
 		end
 	end
@@ -555,15 +591,9 @@ end
 		if persPack.myHP < hp then
 			attackerID = Spring.GetUnitLastAttacker(myID)
 			if attackerID then
-				ax,ay,az = Spring.GetUnitPosition(attackerID)
-				
-				if ax and x then
-					dx,dz = x -ax, z- az
-					dx,dz = dx * 100, dz * 100
-					Command(myID, "go", { x=x+ dx ,y= 0 , z=z+dz}, {"shift"})
-					UnitSetAnimationState(id, CivAnimStates.slaved, CivAnimStates.coverwalk, true, false)
-					return frame + 1000 , persPack
-				end
+				runAwayFrom(myID, attackerID, 4.0)
+				UnitSetAnimationState(id, CivAnimStates.slaved, CivAnimStates.coverwalk, true, false)
+				return frame + 1000 , persPack
 			end
 		end
 		
