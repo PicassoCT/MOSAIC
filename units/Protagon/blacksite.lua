@@ -42,7 +42,11 @@ local BlackSite = Building:New{
 	
 		buildoptions = 
 	{
-		"launcherstep"
+		"air_copter_aerosol_orgyanyl",
+		"air_copter_aerosol_wanderlost",
+		"air_copter_aerosol_tollwutox", 
+		"air_copter_aerosol_depressol" 
+		
 	},
 	category = [[GROUND BUILDING ARRESTABLE]],
 }
