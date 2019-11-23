@@ -40,6 +40,9 @@ function getGameConfig()
 	 mainStreetModulo	= 4,
 	 maxIterationSteps = 2048,
 	 
+	 maxNrPolice = 6,
+	 policeMaxDispatchTime = 45000,
+	 
 	 --safehouseConfig
 	 buildSafeHouseRange = 66,
 	 safeHousePieceName = "center",
@@ -107,6 +110,13 @@ return {
 }
 end
 
+function getPoliceTypes()
+UnitDefNames= getUnitDefNames(UnitDefs)
+return {
+			[UnitDefNames["policetruck"].id		]= true
+		}
+
+end
 --Mosaic specific functions 
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)
@@ -128,6 +138,16 @@ function getTypeTable(UnitDefNames, StringTable)
 		end
 	end
 	return retVal
+end
+
+function getAerosolUnitDefIDs(UnitDefNames)
+		AerosolTypes = getChemTrailTypes()
+		return {
+		[UnitDefNames["air_copter_aerosol_orgyanyl"].id		]= AerosolTypes.orgyanyl,
+		[UnitDefNames["air_copter_aerosol_wanderlost"].id	]= AerosolTypes.wanderlost,
+		[UnitDefNames["air_copter_aerosol_tollwutox"].id 	]= AerosolTypes.tollwutox,
+		[UnitDefNames["air_copter_aerosol_depressol"].id 	]= AerosolTypes.depressol,
+		}
 end
 
 function getWeaponTypeTable(WeaponDefNames, StringTable)
