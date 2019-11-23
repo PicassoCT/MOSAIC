@@ -1,8 +1,6 @@
 
 local AIR_COPTER_AEROSOL = VTOL:New{
-	name = "Airborne Aerosol Distribution Vehicle",
-	Description = " Launches a Javeline ",
-	
+
 	objectName = "air_copter_aerosol.dae",
 	script = "air_copter_aerosolscript.lua",
 	buildPic = "placeholder.png",
@@ -67,28 +65,27 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 							  },
 				},
 				
-		-- weapons = {
-				-- [1]={name  = "orgyanyl",
-					-- onlyTargetCategory = [[GROUND VEHICLE]],
-					-- },
-				-- [2]={name  = "toolwutox",
-					-- onlyTargetCategory = [[GROUND VEHICLE]],
-					-- },
-				-- [3]={name  = "depressol",
-					-- onlyTargetCategory = [[GROUND VEHICLE]],
-					-- },	
-				-- [4]={name  = "wanderlost",
-					-- onlyTargetCategory = [[GROUND VEHICLE]],
-					-- },	
-		-- },	
-
-			
 
 
 }
 
+local AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_ORGYANYL.name, AIR_COPTER_AEROSOL_ORGYANYL.description ="Aerosoldrone: Orgyanyl", "Makes citizens horny till death"
+
+local AIR_COPTER_AEROSOL_WANDERLOST = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_WANDERLOST.name, AIR_COPTER_AEROSOL_WANDERLOST.description ="Aerosoldrone: Wanderlost", "Makes citizens wander aimless till death"
+
+local AIR_COPTER_AEROSOL_TOLLWUTOX = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_TOLLWUTOX.name, AIR_COPTER_AEROSOL_TOLLWUTOX.description ="Aerosoldrone: Tollwutox", "Makes citizens aggressive till death"
+
+local AIR_COPTER_AEROSOL_DEPRESSOL = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Aerosoldrone: Depressol", "Makes citizens catatonic till death"
+
+
 return lowerkeys({
 	--Temp
-	["air_copter_aerosol"] = AIR_COPTER_AEROSOL :New()
-	
+	["air_copter_aerosol_orgyanyl"] = AIR_COPTER_AEROSOL_ORGYANYL:New(),
+	["air_copter_aerosol_wanderlost"] = AIR_COPTER_AEROSOL_WANDERLOST :New(),
+	["air_copter_aerosol_tollwutox"] = AIR_COPTER_AEROSOL_TOLLWUTOX :New(),
+	["air_copter_aerosol_depressol"] = AIR_COPTER_AEROSOL_DEPRESSOL :New(),	
 })
