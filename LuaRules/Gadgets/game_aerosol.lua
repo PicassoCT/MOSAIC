@@ -24,11 +24,12 @@ end
 	local GameConfig = getGameConfig()
 	local UnitDefNames = getUnitDefNames(UnitDefs)
 	
-	aeroSolDroneDefID = UnitDefNames["air_copter_aerosol"].id
+	aeroSolDroneDefIDs = getAerosolUnitDefIDs(UnitDefNames)	
+	
 	aeroSolUnits = {}
 	
 function gadget:UnitCreated(unitID, unitDefID)
-	if aeroSolDroneDefID == unitDefID then
+	if aeroSolDroneDefIDs[unitDefID] then
 		aeroSolUnits[unitID] = unitDefID
 	end
 end
@@ -48,10 +49,8 @@ function gadget:GameFrame(n)
 	if n % 33 == 1 then
 		for unitID, unitDefID in pairs(aeroSolUnits) do
 			if unitID and unitDefID and isUnitActive(unitID) == true then
-					aerosolTypeOfUnit  = getUnitVariable(unitID, "aerosoltype")
-					if GG.SelectedAerosol then
-						aerosolTypeOfUnit =  GG.SelectedAerosol[unitID]
-					end
+					aerosolTypeOfUnit  = aeroSolDroneDefIDs[unitDefID]
+				
 					
 					-- if unit is activate 
 					if getUnitValueEnv(unitID, "ACTIVATION") == 1 then
