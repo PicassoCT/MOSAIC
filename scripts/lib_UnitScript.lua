@@ -5488,7 +5488,12 @@ function Command(id, command, target, option)
 	end
 	
 	if command == "attack" then
-		coords = { target.x, target.y, target.z }
+		coords={}
+		if target.x then
+			coords = { target.x, target.y, target.z }
+		else
+			coords = { target }
+		end
 		Spring.SelectUnitArray({ [1] = id })
 		Spring.GiveOrder(CMD.FIGHT, coords, CMD.OPT_RIGHT + CMD.OPT_SHIFT)
 	end
