@@ -17,21 +17,10 @@ myLoadOutType =  LoadOutTypes[myDefID]
 local loadOutUnitID 
 
 function showAndTell()
-
 	showAll(unitID)
+	hideT(TablesOfPiecesGroups["Body"])	
+	Show(TablesOfPiecesGroups["Body"][1])
 
-	teamID =Spring.GetUnitTeam(unitID)
-	teamID,_,_,_,sidename =Spring.GetTeamInfo(teamID)
-	-- Spring.Echo("Truckside is >"..sidename.."< of type "..type(sidename))
-
-	if TablesOfPiecesGroups["Body"]  then
-		hideT(TablesOfPiecesGroups["Body"])
-		if string.find(sidename, "protagon") then		
-			Show(TablesOfPiecesGroups["Body"][1])
-		else
-			Show(TablesOfPiecesGroups["Body"][2])
-		end
-	end
 
 end
 
