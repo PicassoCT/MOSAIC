@@ -41,7 +41,9 @@ function getGameConfig()
 	 maxIterationSteps = 2048,
 	 
 	 maxNrPolice = 6,
-	 policeMaxDispatchTime = 45000,
+	 policeMaxDispatchTime = 2000,
+	 policeSpawnMinDistance = 800, --preferably at houses
+	 policeSpawnMaxDistance = 2500,
 	 
 	 --safehouseConfig
 	 buildSafeHouseRange = 66,
