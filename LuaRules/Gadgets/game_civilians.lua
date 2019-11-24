@@ -27,6 +27,7 @@ end
 	local UnitDefNames = getUnitDefNames(UnitDefs)
 	local PoliceTypes = getPoliceTypes(UnitDefs)
 	local GameConfig = getGameConfig()
+	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
 	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
@@ -45,9 +46,34 @@ end
 	
 	local houseDefID = UnitDefNames["house"].id	
 	local gaiaTeamID = Spring.GetGaiaTeamID()
+	
 	function getPoliceSpawnLocation(suspect)
-	--TODO
-	return 0,0,0
+		sx,sy,sz = Spring.GetUnitPosition(suspect)
+		Tmax = getAllNearUnit(suspect, GameConfig.policeSpawnMinDistance)
+		Tmin = getAllNearUnit(suspect, GameConfig.policeSpawnMaxDistance)
+		T= removeDictFromDict(Tmax, Tmin)
+		T= process(T,
+				function (id)
+					if  Spring.GetUnitDefID(id) == houseDefID then
+						return id
+					end
+				end
+				)
+				
+		randDeg =math.random(1,360)
+		px, pz = Rotate(0,GameConfig.policeSpawnMaxDistance, math.rad(randDeg))
+		px,pz = px+ sx, pz+sz
+		
+		if count(T) > 0 then
+			element= randDict(T)
+			dx,py,dz = Spring.GetUnitPosition(element)		
+			if dx then
+				px, pz= dx, dz
+			end
+		end
+		
+
+	return px,0,pz
 	end
 	
 	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, boolDeCoupled)
@@ -97,6 +123,7 @@ end
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 	if PoliceTypes[unitDefID] then
+		activePoliceUnitIds_DispatchTime[unitID] = nil
 		maxNrPolice = math.min( maxNrPolice +1, GameConfig.maxNrPolice)
 	end
 	
@@ -118,17 +145,22 @@ end
 			if not attackerID then attackerID = Spring.GetUnitLastAttacker(unitID) end
 			
 			officerID = nil
-			if maxNrPolice > 0 then
-				--TODO: Location, location, location
+			if maxNrPolice > 0 then				
 				px,py,pz = getPoliceSpawnLocation(attackerID)
-				officerID = Spring.CreateUnit("policetruck",px,py,pz, math.random(0,4), gaiaTeamID)
-				activePoliceUnitIds[officerID] = gameconfig.policeMaxDispatchTime
+				direction = math.random(1,4)
+				officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
+				activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime
 			else --reasign one
-				officerID = randDict(activePoliceUnitIds)				
+				officerID = randDict(activePoliceUnitIds_DispatchTime)		
+				activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime				
 			end
 			
 			if officerID then
-				delayedCommand(officerID, "attack" , attackerID, option, math.random(math.random(1,10),5*30))
+				delay = 5*30
+				echo("Spawning Police Officer")
+				Command(officerID, "attack", attackerID, {"shift"})
+				delayedCommand(officerID, "attack" , attackerID,  {"shift"} , delay)
+
 			end
 		end
 	end
@@ -717,7 +749,14 @@ end
 			--if Unit arrived at Location
 			--give new Target
 			sendArrivedUnitsCommands()
-			
 			--echoT(statistics)
+			for id,times in pairs(activePoliceUnitIds_DispatchTime) do
+				if times then
+					activePoliceUnitIds_DispatchTime[id] = times - 5
+					if activePoliceUnitIds_DispatchTime[id] <= 0 then
+						Spring.DestroyUnit(id,true,true)
+					end
+				end
+			end
 		end		
 	end
