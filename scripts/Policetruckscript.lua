@@ -33,9 +33,20 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
+	StartThread(delayedSirens)
+end
+function delayedSirens()
+	sleeptime= math.random(1,10)
+	Sleep(sleeptime*1000)
+	
+	while true do
+		sirenDice=math.random(1,2)
+		StartThread(PlaySoundByUnitDefID, unitdef, "sounds/civilian/police/siren"..sirenDice..".ogg", 0.9,50, 2)
+		Sleep(50*1000)	
+	end
+
 
 end
-
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 function script.Killed(recentDamage, _)
