@@ -111,14 +111,14 @@ function script.Create()
 	StartThread(turnDetector)
 
 	bodyBuild()
-	-- StartThread(randSignLoop)
-	-- spinT(TablesOfPiecesGroups["UpArm"],x_axis,math.rad(2),math.pi)
+
+
 	setupAnimation()
 
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
 
-	-- StartThread(threadStarter)
-	StartThread(testAnimationLoop)
+	StartThread(threadStarter)
+	-- StartThread(testAnimationLoop)
 end
 
 function testAnimationLoop()
