@@ -1201,12 +1201,12 @@ end
 
 
 function playUpperBodyIdleAnimation()
-	 if bodyConfig.boolLoaded == false then
+	
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
 		if selectedIdleFunction and uppperBodyAnimations[eAnimState.idle] and uppperBodyAnimations[eAnimState.idle][selectedIdleFunction] then
 			PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		end	
-	end
+	
 end
 
 UpperAnimationStateFunctions ={
@@ -1223,12 +1223,11 @@ UpperAnimationStateFunctions ={
 								return eAnimState.standing
 							end,
 [eAnimState.walking] = 	function () 
-							if bodyConfig.boolLoaded == false and math.random(1,100) > 50 then
+							
 								boolDecoupled = true
 									playUpperBodyIdleAnimation()
 								boolDecoupled = false
-							end
-					
+				
 						return eAnimState.walking
 					end,
 [eAnimState.slaved] = 	function () 
