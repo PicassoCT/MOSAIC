@@ -18,9 +18,10 @@ local loadOutUnitID
 
 function showAndTell()
 	showAll(unitID)
-	hideT(TablesOfPiecesGroups["Body"])	
-	Show(TablesOfPiecesGroups["Body"][1])
-
+	if TablesOfPiecesGroups["Body"] then
+		hideT(TablesOfPiecesGroups["Body"])	
+		Show(TablesOfPiecesGroups["Body"][1])
+	end
 
 end
 
