@@ -10,13 +10,30 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-aimpiece = piece "Turret"
+Turret = piece "Turret"
+aimpiece = piece "aimpiece"
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
 	resetAll(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	Hide(aimpiece)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(unfold)
+end
+
+function unfold()
+	if isTransported(unitID)== false then
+		Turn(Turret,x_axis,math.rad(90),0)
+		Sleep(1000)
+		
+		Turn(TablesOfPiecesGroups["UpLeg"][1],y_axis,math.rad(-30),0)
+		Turn(TablesOfPiecesGroups["UpLeg"][2],y_axis,math.rad(30),0)
+		Turn(TablesOfPiecesGroups["UpLeg"][3],y_axis,math.rad(30),0)
+		Turn(TablesOfPiecesGroups["UpLeg"][4],y_axis,math.rad(-30),0)
+
+
+		WTurn(Turret,x_axis,math.rad(0),math.pi)
+	end
 end
 
 function script.Killed(recentDamage, _)
@@ -28,18 +45,20 @@ end
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
-    return aimpiece
+    return Turret
 end
 
 
 
 function script.QueryWeapon1()
-    return aimpiece
+    return Turret
 end
 
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
-	WTurn(aimpiece,1, Heading, math.pi)
+
+	WTurn(Turret,y_axis, Heading, math.pi)
+
 	
     return true
 end
