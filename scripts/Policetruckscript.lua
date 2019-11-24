@@ -10,7 +10,7 @@ center = piece "center"
 attachPoint = piece "attachPoint"
 myDefID = Spring.GetUnitDefID(unitID)
 boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
-
+gameConfig= getGameConfig()
 
 
 function showAndTell()
@@ -40,7 +40,7 @@ function delayedSirens()
 	Sleep(sleeptime*1000)
 	
 	while true do
-		sirenDice=math.random(1,2)
+		sirenDice=math.random(1,gameConfig.maxSirenSoundFiles)
 		StartThread(PlaySoundByUnitDefID, unitdef, "sounds/civilian/police/siren"..sirenDice..".ogg", 0.9,50, 2)
 		Sleep(50*1000)	
 	end
