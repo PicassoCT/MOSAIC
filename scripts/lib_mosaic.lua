@@ -44,6 +44,7 @@ function getGameConfig()
 	 policeMaxDispatchTime = 2000,
 	 policeSpawnMinDistance = 800, --preferably at houses
 	 policeSpawnMaxDistance = 2500,
+	 maxSirenSoundFiles = 7,
 	 
 	 --safehouseConfig
 	 buildSafeHouseRange = 66,
