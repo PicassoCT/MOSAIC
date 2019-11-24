@@ -1765,10 +1765,11 @@ end
 
 
 function removeDictFromDict(dA, dB)
+	returnTable={}
 	for k, v in pairs(dA) do
-		dB[k] = nil
+		if not dB[k] then returnTable[k] = v end
 	end
-	return dB
+	return returnTable
 end
 
 
@@ -2274,11 +2275,17 @@ end
 
 -->Retrieves a random element from a Dictionary
 function randDict(Dict)
+	if not Dict then return end
 	if lib_boolDebug == true then
 		assert(type(Dict)=="table")
 	end
 	
-	randElement = math.random(1,count(Dict))
+	countDict= count(Dict)
+	randElement=1 
+	if countDict > 1 then
+		randElement = math.random(1,count(Dict))
+	end
+	
 	index= 1
 	anyElement=1
 	for k,v in pairs (Dict) do
@@ -5458,9 +5465,9 @@ end
 
 function delayedCommand(id, command, target, option, framesToDelay)
 	
-	persPack={}
+	persPack={framesToDelay= framesToDelay}
 	function delay(evtID, frame, persPack, startFrame)
-		if frame >= startFrame +framesToDelay then
+		if frame >= startFrame + persPack.framesToDelay then
 			Command(id, command, target, option)
 			return nil, persPack
 		end
@@ -5468,11 +5475,16 @@ function delayedCommand(id, command, target, option, framesToDelay)
 		return frame+10, persPack
 	end
 	
-	GG.EventStream:CreateEvent(delayedCommand,
+	GG.EventStream:CreateEvent(delay,
 	persPack,
-	Spring.GetGameFrame() + framesToDelay)
+	Spring.GetGameFrame() + framesToDelay - 1)
 	
 end
+
+function isTransported(unitID)
+	return (Spring.GetUnitTransporter(unitID) ~= nil)
+end
+
 
 -->Generic Simple Commands
 function Command(id, command, target, option)
@@ -5489,7 +5501,7 @@ function Command(id, command, target, option)
 	
 	if command == "attack" then
 		coords={}
-		if target.x then
+		if type(target) == "table" then
 			coords = { target.x, target.y, target.z }
 		else
 			coords = { target }
