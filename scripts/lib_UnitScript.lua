@@ -5482,7 +5482,8 @@ function delayedCommand(id, command, target, option, framesToDelay)
 end
 
 function isTransported(unitID)
-	return (Spring.GetUnitTransporter(unitID) ~= nil)
+	transporterID = Spring.GetUnitTransporter(unitID)
+	return ( transporterID ~= nil)
 end
 
 
