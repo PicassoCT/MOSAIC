@@ -2770,7 +2770,7 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
-								echo("UpperBody Standing")
+								-- echo("UpperBody Standing")
 								resetT(upperBodyPieces, math.pi, false, true)
 									 if boolDecoupled == true then
 										if math.random(1,10) > 5 then
@@ -2803,7 +2803,7 @@ LowerAnimationStateFunctions ={
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
-						Spring.Echo("Lower Body standing")
+						-- Spring.Echo("Lower Body standing")
 						resetT(lowerBodyPieces, math.pi,false, true)
 						Sleep(100)
 						return eAnimState.standing
