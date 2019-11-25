@@ -759,10 +759,11 @@ Animations = {
 		['commands'] = {
 			{['c']='move',['p']=center, ['a']=y_axis, ['t']=-0.952307, ['s']=0.000000},
 			{['c']='move',['p']=center, ['a']=z_axis, ['t']=12.271389, ['s']=4.17845},
-			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
 
-			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=-0.139802, ['s']=0.133503},
-			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.001958, ['s']=0.000020},
+
+			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=-0.139802, ['s']=1.133503},
+			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.001958, ['s']=5.000020},
+			{['c']='turn',['p']=center, ['a']=x_axis, ['t']=0, ['s']=1.000020},
 
 			{['c']='turn',['p']=lowarm002, ['a']=y_axis, ['t']=1.585332, ['s']=1.521410},
 
@@ -1205,7 +1206,7 @@ function script.Create()
 end
 
 function Landing()
-		PlayAnimation("UPRIGHT", nil, 2.0)
+		PlayAnimation("UPRIGHT", nil, 5.0)
 		PlayAnimation("FIRING", nil, 2.0)
 end
 
