@@ -89,19 +89,19 @@ function script.Create()
 	setupAnimation()
 	-- StartThread(turnDetector)
 	
-	-- setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
-	-- StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
-	-- StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
-	-- StartThread(threadStarter)
-	-- StartThread(cloakLoop)
-	StartThread(testAnimationLoop)
+	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
+	StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
+	StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+	StartThread(threadStarter)
+	StartThread(cloakLoop)
+	-- StartThread(testAnimationLoop)
 	
 end
 
 function testAnimationLoop()
 	Sleep(500)
 	while true do
-		PlayAnimation("UPBODY_AIMING", nil,1.0)	
+		-- PlayAnimation("WALKCYCLE_RUNNING")
 		Sleep(100)
 			
 	end
@@ -113,6 +113,9 @@ local Animations = {
 	{
 		['time'] = 1,
 		['commands'] = {
+			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0, ['s']=1.615665},
+			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.034907, ['s']=0.261799},
+
 			{['c']='turn',['p']=Gun, ['a']=x_axis, ['t']=0, ['s']=0.67402},
 			{['c']='turn',['p']=Gun, ['a']=y_axis, ['t']=0, ['s']=0.99771},
 			{['c']='turn',['p']=Gun, ['a']=z_axis, ['t']=0, ['s']=0.5199562},
@@ -120,7 +123,6 @@ local Animations = {
 			{['c']='turn',['p']=backpack, ['a']=x_axis, ['t']=-0.081532, ['s']=0.188139},
 			{['c']='turn',['p']=backpack, ['a']=y_axis, ['t']=0.004441, ['s']=0.007041},
 			{['c']='turn',['p']=backpack, ['a']=z_axis, ['t']=-0.001655, ['s']=0.002265},
-			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.034907, ['s']=0.261799},
 			{['c']='turn',['p']=Head, ['a']=x_axis, ['t']=-0.338011, ['s']=0.690723},
 			{['c']='turn',['p']=Head, ['a']=y_axis, ['t']=-0.063962, ['s']=0.029047},
 			{['c']='turn',['p']=Head, ['a']=z_axis, ['t']=-0.125517, ['s']=0.016983},
@@ -409,19 +411,25 @@ local Animations = {
 	{
 		['time'] = 1,
 		['commands'] = {
+			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0, ['s']=1.615665},
 			{['c']='turn',['p']=Head, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=Head, ['a']=y_axis, ['t']=-0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=Head, ['a']=z_axis, ['t']=-0.087266, ['s']=0.327249},
-			{['c']='turn',['p']=LowLeg1, ['a']=x_axis, ['t']=0.766573, ['s']=3.832864},
-			{['c']='turn',['p']=LowLeg1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=LowLeg1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
+			{['c']='turn',['p']=Head, ['a']=z_axis, ['t']=0, ['s']=0.327249, ['r']=47.266},
+	
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-2.56, ['s']=0.67402},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.86, ['s']=0.99771},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=-1.02+deg_90, ['s']=0.5199562},
+			
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0, ['s']=0.108948},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0, ['s']=0.075341},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=math.pi/2, ['s']=0.5462},
+
+
+
 			{['c']='turn',['p']=LowLeg2, ['a']=x_axis, ['t']=0.184435, ['s']=2.702649},
 			{['c']='turn',['p']=LowLeg2, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=LowLeg2, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0.387580, ['s']=0.318066},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-0.581724, ['s']=0.816132},
-			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=1.350141, ['s']=0.151935},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.379829, ['s']=1.543785},
+		
 			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.585767, ['s']=0.071736},
 			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.217219, ['s']=0.886505},
 			{['c']='turn',['p']=UpLeg1, ['a']=x_axis, ['t']=0.244089, ['s']=0.630598},
@@ -507,7 +515,8 @@ local Animations = {
 		['commands'] = {
 			{['c']='turn',['p']=Head, ['a']=x_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=Head, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
-			{['c']='turn',['p']=Head, ['a']=z_axis, ['t']=0.087266, ['s']=0.402768},
+			{['c']='turn',['p']=Head, ['a']=z_axis, ['t']=0, ['s']=0.327249, ['r']=47.266},
+
 			{['c']='turn',['p']=UpLeg1, ['a']=x_axis, ['t']=0.160009, ['s']=1.669857},
 			{['c']='turn',['p']=UpLeg1, ['a']=y_axis, ['t']=0.000000, ['s']=0.000000},
 			{['c']='turn',['p']=UpLeg1, ['a']=z_axis, ['t']=0.000000, ['s']=0.000000},
@@ -542,7 +551,7 @@ local Animations = {
 	{
 		['time'] = 1,
 		['commands'] = {
-			{['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.287310, ['s']=0.615665},
+			-- {['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.287310, ['s']=0.615665},
 			{['c']='turn',['p']=Gun, ['a']=x_axis, ['t']=0, ['s']=1.315678},
 			{['c']='turn',['p']=Gun, ['a']=y_axis, ['t']=0.5234, ['s']=1.007879},
 			{['c']='turn',['p']=Gun, ['a']=z_axis, ['t']=0, ['s']=0.37769},
@@ -555,15 +564,29 @@ local Animations = {
 			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=1.2671090, ['s']=0.50394},
 			
 			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=deg_90*2 + deg_45, ['s']=2.668237},
-			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1*deg_45 , ['s']=1.80692},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-1*deg_45, ['s']=1.80692},
 			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=-1*deg_45, ['s']=1.77392},
 		
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-3*deg_45, ['s']=0.929477},
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-3*deg_45 + deg_45/2, ['s']=0.929477},
 			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0, ['s']=0.21964},
 			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.5*deg_45, ['s']=4.221870},
 			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1*deg_90+ deg_45, ['s']=7.328537},
 			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0, ['s']=0.456564},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-1*deg_45, ['s']=7.078054},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-1*deg_45 - 0.2, ['s']=7.078054},
+			
+			
+			{['c']='turn',['p']=LowLeg1, ['a']=x_axis, ['t']=0, ['s']=6.162637},
+			{['c']='turn',['p']=LowLeg1, ['a']=y_axis, ['t']=0, ['s']=0.000000},
+			{['c']='turn',['p']=LowLeg1, ['a']=z_axis, ['t']=0, ['s']=0.000000},
+			{['c']='turn',['p']=UpLeg1, ['a']=x_axis, ['t']=-0, ['s']=1.942624},
+			{['c']='turn',['p']=UpLeg1, ['a']=y_axis, ['t']=-0, ['s']=0.000000},
+			{['c']='turn',['p']=UpLeg1, ['a']=z_axis, ['t']=0, ['s']=0.000000},			
+			{['c']='turn',['p']=LowLeg2, ['a']=x_axis, ['t']=0, ['s']=6.162637},
+			{['c']='turn',['p']=LowLeg2, ['a']=y_axis, ['t']=0, ['s']=0.000000},
+			{['c']='turn',['p']=LowLeg2, ['a']=z_axis, ['t']=0, ['s']=0.000000},
+			{['c']='turn',['p']=UpLeg2, ['a']=x_axis, ['t']=-0, ['s']=1.942624},
+			{['c']='turn',['p']=UpLeg2, ['a']=y_axis, ['t']=-0, ['s']=0.000000},
+			{['c']='turn',['p']=UpLeg2, ['a']=z_axis, ['t']=0, ['s']=0.000000},
 		}
 	},
 	{
@@ -882,28 +905,25 @@ local Animations = {
 	{
 		['time'] = 1,
 		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.461476, ['s']=0.067402},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.660466, ['s']=0.099771},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.401301, ['s']=0.199562},
-			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1.567193, ['s']=0.108948},
-			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.002495, ['s']=0.075341},
-			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.605631, ['s']=0.002462},
-			
-			-- {['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=math.pi/4, ['s']=0.67402},
-			-- {['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0, ['s']=0.99771},
-			-- {['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=math.pi/2, ['s']=0.5199562},		
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=1.761476 +deg_90, ['s']=6.67402},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.460466 - deg_45, ['s']=9.9771},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=1.401301, ['s']=2.99562},
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1.567193, ['s']=1.208948},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0.002495, ['s']=1.75341},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-0.605631, ['s']=1.2462},
+
 			
 			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-2.56, ['s']=0.67402},
 			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.86, ['s']=0.99771},
-			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=-1.02+deg_90, ['s']=0.5199562},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']= -1.02 + deg_90, ['s']= 0.5199562},
 			
 			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0, ['s']=0.108948},
 			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0, ['s']=0.075341},
 			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=math.pi/2, ['s']=0.5462},
 			
-			{['c']='turn',['p']=Gun, ['a']=x_axis, ['t']=math.pi/4, ['s']=0.67402},
+			{['c']='turn',['p']=Gun, ['a']=x_axis, ['t']=0, ['s']=0.67402},
 			{['c']='turn',['p']=Gun, ['a']=y_axis, ['t']=0, ['s']=0.99771},
-			{['c']='turn',['p']=Gun, ['a']=z_axis, ['t']=math.pi/4, ['s']=0.5199562},
+			{['c']='turn',['p']=Gun, ['a']=z_axis, ['t']=0, ['s']=0.5199562},
 			
 		}
 	},
@@ -926,9 +946,7 @@ local Animations = {
 	{
 		['time'] = 15,
 		['commands'] = {
-			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-1.492930, ['s']=0.067402},
-			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.707026, ['s']=0.099771},
-			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.308172, ['s']=0.199562},
+		
 		}
 	},
 	{
@@ -962,6 +980,11 @@ local Animations = {
 	},
 	{
 		['time'] = 30,
+		['commands'] = {
+		}
+	},
+	{
+		['time'] = 90,
 		['commands'] = {
 		}
 	},
@@ -1031,7 +1054,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             local cmd = commands[j];
 			randoffset = 0.0
 			if cmd.r then
-				randoffset = math.random(-cmd.r, cmd.r)
+				randoffset = math.random(-cmd.r, cmd.r)/1000
 			end
 			
 			if  not piecesToFilterOutTable[cmd.p] then	
@@ -1077,6 +1100,7 @@ function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
+	PlayAnimation("DEATH")
    return 1
 end
 
@@ -1181,12 +1205,11 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
-								echo("UpperBody Standing")
+								-- echo("UpperBody Standing")
 								resetT(upperBodyPieces, math.pi, false, true)
 									 if boolDecoupled == true then
 										if math.random(1,10) > 5 then
 										playUpperBodyIdleAnimation()							
-										resetT(upperBodyPieces, math.pi, false, true)
 										end
 									 end
 								Sleep(30)	
@@ -1213,7 +1236,7 @@ LowerAnimationStateFunctions ={
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
-						Spring.Echo("Lower Body standing")
+						-- Spring.Echo("Lower Body standing")
 						resetT(lowerBodyPieces, math.pi,false, true)
 						Sleep(100)
 						return eAnimState.standing
@@ -1401,9 +1424,7 @@ function allowTarget(weaponNumber)
 	if isGround and isGround == 1  then
 	
 		if spGetUnitTeam(targetID) == gaiaTeamID then
-
-			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then
-		
+			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then		
 			return false
 			end
 		end
@@ -1412,18 +1433,21 @@ return true
 end
 
 function pistolAimFunction(weaponID, heading, pitch)
-	StartThread(PlayAnimation,"UPBODY_AIMING")
-return  allowTarget(weaponID)
+	WTurn(center,y_axis,heading , 12)
+	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
+	return  allowTarget(weaponID)
 end
 
 function gunAimFunction(weaponID, heading, pitch)
-	StartThread(PlayAnimation,"UPBODY_AIMING")
-return  allowTarget(weaponID)
+	WTurn(center,y_axis,heading, 12)
+	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
+	return  allowTarget(weaponID)
 end
 
 function sniperAimFunction(weaponID, heading, pitch)
-	StartThread(PlayAnimation,"UPBODY_AIMING")
-return  allowTarget(weaponID)
+	WTurn(center,y_axis,heading, 12)
+	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
+	return  allowTarget(weaponID)
 end
 
 
@@ -1449,9 +1473,9 @@ SIG_LOW = 32
 
 WeaponsTable = {}
 function makeWeaponsTable()
-    WeaponsTable[1] = { aimpiece = gun, emitpiece = gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
-	WeaponsTable[2] = { aimpiece = gun, emitpiece = gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
-	WeaponsTable[3] = { aimpiece = gun, emitpiece = gun, aimfunc = sniperAimFunction, firefunc = sniperFireFunction, signal = SIG_SNIPER }
+    WeaponsTable[1] = { aimpiece = center, emitpiece = Gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
+	WeaponsTable[2] = { aimpiece = center, emitpiece = Gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
+	WeaponsTable[3] = { aimpiece = center, emitpiece = Gun, aimfunc = sniperAimFunction, firefunc = sniperFireFunction, signal = SIG_SNIPER }
 end
 
 
