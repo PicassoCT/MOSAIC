@@ -118,6 +118,7 @@ function script.Create()
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
 
 	StartThread(threadStarter)
+
 	-- StartThread(testAnimationLoop)
 end
 
@@ -2675,12 +2676,16 @@ function threadStarter()
 end
 
 function deferedOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, conditionFunction)
+	
+	
 	if boolInstantOverride == true then
 		if AnimationstateUpperOverride then
+			echo(unitID.." Starting new Animation State Machien Upper")
 			UpperAnimationState = AnimationstateUpperOverride
 			StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
 		end
 		if AnimationstateLowerOverride then
+			echo(unitID.." Starting new Animation State Machien Lower")
 			LowerAnimationState = AnimationstateLowerOverride
 			StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
 		end
@@ -2714,6 +2719,7 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 
 			Sleep(30)
 		 end
+		 echo(unitID.." Animation State Machine has ended")
 		 
 		if AnimationstateUpperOverride == true then	UpperAnimationState = AnimationstateUpperOverride end
 		if AnimationstateLowerOverride == true then LowerAnimationState = AnimationstateLowerOverride end
@@ -2725,7 +2731,7 @@ end
 
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
 	boolDecoupled = boolDecoupledStates
-	locAnimationstateUpperOverride =AnimationstateUpperOverride
+	locAnimationstateUpperOverride = AnimationstateUpperOverride
 	locAnimationstateLowerOverride = AnimationstateLowerOverride
 	locBoolInstantOverride = boolInstantOverride or false
 	locConditionFunction = conditionFunction or (function() return true end)
@@ -2762,7 +2768,6 @@ function playUpperBodyIdleAnimation()
 	 if bodyConfig.boolLoaded == false then
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
 		showHideProps(selectedIdleFunction, true)
-		assert(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		showHideProps(selectedIdleFunction, false)
 	end
@@ -2798,7 +2803,6 @@ UpperAnimationStateFunctions ={
 
 LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
-						assert(lowerBodyAnimations[eAnimState.walking])
 						PlayAnimation(lowerBodyAnimations[eAnimState.walking], conditionalFilterOutUpperBodyTable())					
 						return eAnimState.walking
 						end,
@@ -2871,6 +2875,7 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
+	Spring.Echo("Stopping")
 	StartThread(setAnimationState, eAnimState.standing, eAnimState.standing)
 end
 
