@@ -112,9 +112,5 @@ function script.Deactivate()
     return 0
 end
 
-function script.QueryBuildInfo()
-    return center
-end
 
-Spring.SetUnitNanoPieces(unitID, { center })
 
