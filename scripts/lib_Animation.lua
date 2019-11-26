@@ -2140,18 +2140,25 @@ end
 function resetT(tableName, speed, boolShowAll, boolWait, boolIstantUpdate, interValStart, interValEnd)
     lboolWait = boolWait or false
     lspeed = speed or 0
-	interValStart= interValStart or 1
-	interValEnd = interValEnd or #tableName
+
 
     assert(tableName, "libAnimation::resetT: No valid Table")
+	if interValStart and interValEnd then
+		for i = interValStart, interValEnd do
 
-    for i = interValStart, interValEnd do
-
-        reset(tableName[i], lspeed, false, boolIstantUpdate or true)
-        if boolShowAll and tableName[i] then
-            Show(tableName[i])
-        end
-    end
+			reset(tableName[i], lspeed, false, boolIstantUpdate or true)
+			if boolShowAll and tableName[i] then
+				Show(tableName[i])
+			end
+		end
+	else
+		for k,v in pairs(tableName) do 
+			reset(k, lspeed, false, boolIstantUpdate or true)
+			if boolShowAll and v then
+					Show(v)
+			end
+		end
+	end	
 
     if lboolWait == true then
         WaitForTurns(tableName)
