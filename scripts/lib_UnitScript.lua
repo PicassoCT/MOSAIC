@@ -2365,6 +2365,12 @@ function explodeT(TableOfPieces, Conditions, StepSize)
 	end
 end
 
+function echoNFrames( str, frames)
+	if Spring.GetGameFrame()% frames == 0 then
+		echo(str)
+	end
+end
+
 --> Recursively Echo a Table out
 function echoT(T, layer)
 	local l = layer or 0
@@ -5485,6 +5491,7 @@ function isTransported(unitID)
 	transporterID = Spring.GetUnitTransporter(unitID)
 	return ( transporterID ~= nil)
 end
+
 
 
 -->Generic Simple Commands
