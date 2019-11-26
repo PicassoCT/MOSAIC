@@ -63,12 +63,12 @@ GameConfig = getGameConfig()
 eAnimState = getCivilianAnimationStates()
 upperBodyPieces =
 {
-	[Head1	]  = true,
-	[LowArm1 ] = true,
-	[LowArm2]  = true,
-	[UpBody  ]	= true,
-	[UpArm1 ]= true,
-	[UpArm2 ]= true,
+	[Head1	]  = Head1,
+	[LowArm1 ] = LowArm1,
+	[LowArm2]  = LowArm2,
+	[UpBody  ]	= UpBody,
+	[UpArm1 ]= UpArm1,
+	[UpArm2 ]= UpArm2,
 	}
 	
 lowerBodyPieces =
@@ -125,16 +125,16 @@ end
 function testAnimationLoop()
 	Sleep(500)
 	while true do
-
+	
 		--makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], "RAPHI")
 		--Show(TablesOfPiecesGroups["cellphone"][1])
 		-- Show(cigarett)
 		-- Show(Handbag)
-		Show(cofee)
+		-- Show(cofee)
 		-- Show(SittingBaby)
 		-- Show(ak47)
 		
-		PlayAnimation("UPBODY_CONSUMPTION", nil, 1.0)
+		-- PlayAnimation("UPBODY_CONSUMPTION", nil, 1.0)
 	
 		Sleep(100)
 	end
@@ -2663,6 +2663,7 @@ SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
 end
 
 function threadStarter()
+	Sleep(100)
 	while true do
 		if boolStartThread == true then
 			boolStartThread = false
@@ -2680,12 +2681,12 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 	
 	if boolInstantOverride == true then
 		if AnimationstateUpperOverride then
-			echo(unitID.." Starting new Animation State Machien Upper")
+			-- echo(unitID.." Starting new Animation State Machien Upper")
 			UpperAnimationState = AnimationstateUpperOverride
 			StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
 		end
 		if AnimationstateLowerOverride then
-			echo(unitID.." Starting new Animation State Machien Lower")
+			-- echo(unitID.." Starting new Animation State Machien Lower")
 			LowerAnimationState = AnimationstateLowerOverride
 			StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
 		end
@@ -2709,6 +2710,7 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 		
 		
 		 while AnimationstateLowerOverride and boolLowerAnimationEnded == false or AnimationstateUpperOverride and boolUpperAnimationEnded == false do
+		 Sleep(30)
 			if AnimationstateUpperOverride == true then
 				boolUpperStateWaitForEnd = true
 			end
@@ -2717,14 +2719,13 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 				boolLowerStateWaitForEnd = true
 			end
 
-			Sleep(30)
+	
 		 end
-		 echo(unitID.." Animation State Machine has ended")
-		 
-		if AnimationstateUpperOverride == true then	UpperAnimationState = AnimationstateUpperOverride end
-		if AnimationstateLowerOverride == true then LowerAnimationState = AnimationstateLowerOverride end
-		if AnimationstateUpperOverride == true then	boolUpperStateWaitForEnd = false end
-		if AnimationstateLowerOverride == true then boolLowerStateWaitForEnd = false end
+			 
+		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
+		if AnimationstateLowerOverride then LowerAnimationState = AnimationstateLowerOverride end
+		if boolUpperStateWaitForEnd == true then	boolUpperStateWaitForEnd = false end
+		if boolLowerStateWaitForEnd == true then boolLowerStateWaitForEnd = false end
 end
 
 --<Exposed Function>
@@ -2766,7 +2767,7 @@ end
 
 function playUpperBodyIdleAnimation()
 	 if bodyConfig.boolLoaded == false then
-		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
+		selectedIdleFunction = (unitID % #uppperBodyAnimations[eAnimState.idle])+1
 		showHideProps(selectedIdleFunction, true)
 		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		showHideProps(selectedIdleFunction, false)
@@ -2774,13 +2775,24 @@ function playUpperBodyIdleAnimation()
 end
 
 UpperAnimationStateFunctions ={
+[eAnimState.talking] = 	function () 
+							if math.random(0,1)==1 then
+								PlayAnimation("UPBODY_NORMAL_TALK")
+							else
+								PlayAnimation("UPBODY_AGGRO_TALK")				
+							end
+							return eAnimState.talking
+						end,
 [eAnimState.standing] = 	function () 
 								-- echo("UpperBody Standing")
-								resetT(upperBodyPieces, math.pi, false, true)
+
+								Turn(LowArm1, y_axis,math.rad(12),1)
+								Turn(LowArm2, y_axis,math.rad(-12),1)
+								WaitForTurns(TablesOfPiecesGroups["LowArm"])
 									 if boolDecoupled == true then
 										if math.random(1,10) > 5 then
-										playUpperBodyIdleAnimation()							
-										resetT(upperBodyPieces, math.pi, false, true)
+										playUpperBodyIdleAnimation()	
+										resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
 										end
 									 end
 								Sleep(30)	
@@ -2808,8 +2820,10 @@ LowerAnimationStateFunctions ={
 						end,
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
+						WaitForTurns(lowerBodyPieces)
 						resetT(lowerBodyPieces, math.pi,false, true)
-						Sleep(100)
+						WaitForTurns(lowerBodyPieces)
+						Sleep(10)
 						return eAnimState.standing
 					end
 }
@@ -2818,22 +2832,25 @@ boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
 
 function animationStateMachineLower(AnimationTable)
-Signal(SIG_UP)
-SetSignalMask(SIG_UP)
+Signal(SIG_LOW)
+SetSignalMask(SIG_LOW)
 
 boolLowerStateWaitForEnd = false
 
 local animationTable = AnimationTable
 	-- Spring.Echo("lower Animation StateMachine Cycle")
 	while true do
+		assert(LowerAnimationState)
 		assert(animationTable[LowerAnimationState], "Animationstate not existing "..LowerAnimationState)
 		LowerAnimationState = animationTable[LowerAnimationState]()
 		
 		--Sync Animations
+		--echoNFrames("Unit "..unitID.." :LStatMach :"..LowerAnimationState, 500)
 		if boolLowerStateWaitForEnd == true then
 			boolLowerAnimationEnded = true
 			while boolLowerStateWaitForEnd == true do
 				Sleep(33)
+				--echoNFrames("Unit "..unitID.." :LWaitForEnd :"..LowerAnimationState, 500)
 				-- Spring.Echo("lower Animation Waiting For End")
 			end
 			boolLowerAnimationEnded = false
@@ -2847,22 +2864,24 @@ boolUpperStateWaitForEnd = false
 boolUpperAnimationEnded = false
 
 function animationStateMachineUpper(AnimationTable)
-Signal(SIG_LOW)
-SetSignalMask(SIG_LOW)
+Signal(SIG_UP)
+SetSignalMask(SIG_UP)
 
 boolUpperStateWaitForEnd = false
 local animationTable = AnimationTable
 
 	while true do
+		assert(UpperAnimationState)
 		assert(animationTable[UpperAnimationState], "Animationstate not existing "..UpperAnimationState)
 
-		LowerAnimationState = animationTable[LowerAnimationState]()
-		
+		UpperAnimationState = animationTable[UpperAnimationState]()
+		--echoNFrames("Unit "..unitID.." :UStatMach :"..UpperAnimationState, 500)
 		--Sync Animations
 		if boolUpperStateWaitForEnd == true then
 			boolUpperAnimationEnded = true
 			while boolUpperStateWaitForEnd == true do
 				Sleep(10)
+				--echoNFrames("Unit "..unitID.." :UWaitForEnd :"..UpperAnimationState, 500)
 			end
 			boolUpperAnimationEnded = false
 		end
@@ -2875,7 +2894,7 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
-	Spring.Echo("Stopping")
+	-- Spring.Echo("Stopping")
 	StartThread(setAnimationState, eAnimState.standing, eAnimState.standing)
 end
 
