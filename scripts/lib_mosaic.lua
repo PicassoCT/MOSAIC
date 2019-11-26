@@ -547,19 +547,18 @@ function getUnitSide(unitID)
 end
 
 function getDecalMap(culture)
-
-if culture == "arabic" then
-return {
-["house"] = {
-"house_arab_decal1",
-"house_arab_decal2",
-"house_arab_decal3",
-"house_arab_decal4",
-"house_arab_decal5",
-}
-
-}
-end
+	if culture == "arabic" then
+		return {
+			["house"] = {
+						"house_arab_decal1",
+						"house_arab_decal2",
+						"house_arab_decal3",
+						"house_arab_decal4",
+						"house_arab_decal5",
+						"house_arab_decal6",
+						}
+		}
+	end
 
 end
 
