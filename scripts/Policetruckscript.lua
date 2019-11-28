@@ -14,39 +14,38 @@ gameConfig= getGameConfig()
 
 
 function showAndTell()
-
 	showAll(unitID)
+	if TablesOfPiecesGroups["EmitLight"] then
+		hideT(TablesOfPiecesGroups["EmitLight"])
+	end
 
 	if TablesOfPiecesGroups["Body"]  then
 		hideT(TablesOfPiecesGroups["Body"])
-
-			Show(TablesOfPiecesGroups["Body"][2])
-	
+		Show(TablesOfPiecesGroups["Body"][2])
 	end
 
 end
 
 function script.Create()
-	
-
-
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
 	StartThread(delayedSirens)
 end
+
 function delayedSirens()
 	sleeptime= math.random(1,10)
 	Sleep(sleeptime*1000)
-	
+	StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][1], "policelight",250)
+	Sleep
+	StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][2], "policelight",250)
 	while true do
 		sirenDice=math.random(1,gameConfig.maxSirenSoundFiles)
 		StartThread(PlaySoundByUnitDefID, unitdef, "sounds/civilian/police/siren"..sirenDice..".ogg", 0.9,50, 2)
 		Sleep(50*1000)	
 	end
-
-
 end
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 function script.Killed(recentDamage, _)

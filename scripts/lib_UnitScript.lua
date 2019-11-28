@@ -3675,11 +3675,12 @@ function todoAssert(object, functionToPass, todoCheckNext)
 end
 
 
-function PieceLight(unitID, piecename, cegname)
+function PieceLight(unitID, piecename, cegname,delayTime)
+	delayTime= delayTime or 250
 	while true do
 		x, y, z = Spring.GetUnitPiecePosDir(unitID, piecename)
 		Spring.SpawnCEG(cegname, x, y + 10, z, 0, 1, 0, 50, 0)
-		Sleep(250)
+		Sleep(delayTime)
 	end
 end
 

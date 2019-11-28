@@ -18,6 +18,10 @@ local loadOutUnitID
 
 function showAndTell()
 	showAll(unitID)
+	
+	if TablesOfPiecesGroups["EmitLight"] then
+		hideT(TablesOfPiecesGroups["EmitLight"])
+	end
 	if TablesOfPiecesGroups["Body"] then
 		hideT(TablesOfPiecesGroups["Body"])	
 		Show(TablesOfPiecesGroups["Body"][1])
