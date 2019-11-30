@@ -550,12 +550,17 @@ function getDecalMap(culture)
 	if culture == "arabic" then
 		return {
 			["house"] = {
-						"house_arab_decal1",
-						"house_arab_decal2",
-						"house_arab_decal3",
-						"house_arab_decal4",
-						"house_arab_decal5",
-						"house_arab_decal6",
+							rural={
+								"house_arab_decal7",
+								"house_arab_decal4"
+							},						
+							urban={
+							"house_arab_decal1",
+							"house_arab_decal2",
+							"house_arab_decal3",				
+							"house_arab_decal5",
+							"house_arab_decal6"
+							}			
 						}
 		}
 	end

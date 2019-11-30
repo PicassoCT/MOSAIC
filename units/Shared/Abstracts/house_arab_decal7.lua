@@ -1,4 +1,4 @@
-local unitName = "house_arab_decal5"
+local unitName = "house_arab_decal7"
 
 local unitDef = {
 name = "house_arab_decal",
@@ -48,7 +48,7 @@ LeaveTracks = false,
 		buildinggrounddecaldecayspeed = 0.00000002,
 		buildinggrounddecalsizex = 40,
 		buildinggrounddecalsizey = 40,
-		buildinggrounddecaltype = "HouseDecal5_arab_city.png",
+		buildinggrounddecaltype = "HouseDecal7_arab_rural.png",
 
 
 

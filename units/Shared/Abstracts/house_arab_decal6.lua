@@ -48,7 +48,7 @@ LeaveTracks = false,
 		buildinggrounddecaldecayspeed = 0.00000002,
 		buildinggrounddecalsizex = 20,
 		buildinggrounddecalsizey = 20,
-		buildinggrounddecaltype = "HouseDecal6.png",
+		buildinggrounddecaltype = "HouseDecal6_arab_city.png",
 
 
 

@@ -158,7 +158,7 @@ end
 			if officerID then
 				delay = 5*30
 				echo("Spawning Police Officer")
-				Command(officerID, "attack", attackerID, {"shift"})
+				Command(officerID, "attack", attackerID, {})
 				delayedCommand(officerID, "attack" , attackerID,  {"shift"} , delay)
 
 			end
