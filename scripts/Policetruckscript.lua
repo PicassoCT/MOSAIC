@@ -12,6 +12,7 @@ myDefID = Spring.GetUnitDefID(unitID)
 boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
 gameConfig= getGameConfig()
 
+SIG_LOUDNESOVERRIDE= 2
 
 function showAndTell()
 	showAll(unitID)
@@ -36,17 +37,34 @@ end
 function delayedSirens()
 	sleeptime= math.random(1,10)
 	Sleep(sleeptime*1000)
-	StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][1], "policelight",250)
-	Sleep(350)
-	StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][2], "policelight",250)
+	for i=1,3 do
+		StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][i], "policelight",1000)
+		Sleep(350)
+	end
+	seconds = 35
+	framesPerSecond=30
+
 	while true do
 		sirenDice=math.random(1,gameConfig.maxSirenSoundFiles)
-		StartThread(PlaySoundByUnitDefID, unitdef, "sounds/civilian/police/siren"..sirenDice..".ogg", 0.9,50, 2)
+		loudness = math.max(0,math.sin((((Spring.GetGameFrame()/framesPerSecond)%seconds)/seconds)*2*math.pi))
+		if boolLoudnessOverrideActive == true then loudness = 1.0 end
+		StartThread(PlaySoundByUnitDefID, myDefID, "sounds/civilian/police/siren"..sirenDice..".ogg", 0.9,50, 2)
 		Sleep(50*1000)	
 	end
 end
+boolLoudnessOverrideActive = false
+function loudnessOverride()
+	Signal(SIG_LOUDNESOVERRIDE)
+	SetSignalMask(SIG_LOUDNESOVERRIDE)
+	boolLoudnessOverrideActive = true
+	Sleep(30000)
+
+	boolLoudnessOverrideActive = false
+end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
+StartThread(loudnessOverride)
+return damage
 end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(loadOutUnitID) then Spring.DestroyUnit(loadOutUnitID,true,true) end

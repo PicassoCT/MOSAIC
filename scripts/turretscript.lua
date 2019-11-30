@@ -12,6 +12,7 @@ end
 center = piece "center"
 Turret = piece "Turret"
 aimpiece = piece "aimpiece"
+SIG_GUARDMODE = 1
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
@@ -20,8 +21,30 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["TBase"])
 	StartThread(unfold)
+	StartThread(guardSwivelTurret)
+end
+
+boolAiming = false
+
+function guardSwivelTurret()
+Signal(SIG_GUARDMODE)
+SetSignalMask(SIG_GUARDMODE)
+Sleep(5000)
+
+	while true do
+		if isTransported(unitID)== false then
+			target = math.random(1,360)
+			WTurn(center,y_axis, math.rad(target),math.pi)
+			Sleep(500)
+			WTurn(center,y_axis, math.rad(target),math.pi)
+		end
+		Sleep(500)
+	end
+
 
 end
+
+
 
 function unfold()
 	Sleep(10)
@@ -34,6 +57,7 @@ function unfold()
 	
 	while true do
 		if isTransported(unitID)== false then
+			
 			Sleep(100)
 			WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
 			for i=1,2 do
@@ -87,7 +111,7 @@ function script.QueryWeapon1()
 end
 
 function script.AimWeapon1(Heading, pitch)
-
+	Signal(SIG_GUARDMODE)
     --aiming animation: instantly turn the gun towards the enemy
 
 	Turn(center,y_axis, Heading, math.pi)
@@ -100,7 +124,7 @@ end
 
 
 function script.FireWeapon1()
-
+	StartThread(guardSwivelTurret)
     return true
 end
 
