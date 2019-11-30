@@ -15,8 +15,8 @@ gameConfig= getGameConfig()
 
 function showAndTell()
 	showAll(unitID)
-	if TablesOfPiecesGroups["EmitLight"] then
-		hideT(TablesOfPiecesGroups["EmitLight"])
+	if TablesOfPiecesGroups["LightEmit"] then
+		hideT(TablesOfPiecesGroups["LightEmit"])
 	end
 
 	if TablesOfPiecesGroups["Body"]  then
@@ -37,7 +37,7 @@ function delayedSirens()
 	sleeptime= math.random(1,10)
 	Sleep(sleeptime*1000)
 	StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][1], "policelight",250)
-	Sleep
+	Sleep(350)
 	StartThread( PieceLight, unitID, TablesOfPiecesGroups["LightEmit"][2], "policelight",250)
 	while true do
 		sirenDice=math.random(1,gameConfig.maxSirenSoundFiles)

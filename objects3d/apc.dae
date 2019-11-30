@@ -445,9 +445,9 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
-      <node id="LightEmit1_001" name="LightEmit1.001" type="NODE">
+      <node id="LightEmit1" name="LightEmit01" type="NODE">
         <matrix sid="transform">1 0 0 5.851315 0 1 0 -5.24158 0 0 1 32.56471 0 0 0 1</matrix>
-        <instance_geometry url="#Cube_002-mesh" name="LightEmit1.001"/>
+        <instance_geometry url="#Cube_002-mesh" name="LightEmit01"/>
       </node>
       <node id="LightEmit2" name="LightEmit2" type="NODE">
         <matrix sid="transform">1 0 0 -2.925658 0 1 0 -5.24158 0 0 1 32.56471 0 0 0 1</matrix>
