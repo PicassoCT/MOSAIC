@@ -13,6 +13,7 @@ local LowArm1 = piece('LowArm1');
 local LowArm2 = piece('LowArm2');
 local LowLeg1 = piece('LowLeg1');
 local LowLeg2 = piece('LowLeg2');
+local trolley = piece('trolley');
 local root = piece('root');
 local UpArm1 = piece('UpArm1');
 local UpArm2 = piece('UpArm2');
@@ -31,6 +32,7 @@ local ShoppingBag = piece"ShoppingBag"
 
 local scriptEnv = {
 	Handbag = Handbag,
+	trolley = trolley,
 	SittingBaby = SittingBaby,
 	center = center,
 	Feet1 = Feet1,
@@ -91,32 +93,35 @@ boolTurnLeft = false
 boolDecoupled = false
 
 loadMax = 8
-iLoaded = math.random(1,loadMax)
-bodyConfig={
-	boolShoppingLoaded = iLoaded == 1,
-	boolCarrysBaby = iLoaded == 2,
-	boolTrolley = iLoaded == 3,
-	boolHandbag = iLoaded == 4,
-	boolLoaded = iLoaded >  4,
-	boolArmed = false,
-	boolWounded = false,
-	boolInfluenced = false,
-	boolCoverWalk = false
 
-}
+local bodyConfig={}
 
+
+	iShoppingConfig =  math.floor(math.random(1,8))
 
 function script.Create()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
+	
 
+
+	bodyConfig.boolShoppingLoaded = (iShoppingConfig == 1)
+	bodyConfig.boolCarrysBaby =( iShoppingConfig == 2)
+	bodyConfig.boolTrolley = (iShoppingConfig == 3)
+	bodyConfig.boolHandbag =( iShoppingConfig == 4)
+	bodyConfig.boolLoaded = ( iShoppingConfig <  5)
+	bodyConfig.boolArmed = false
+	bodyConfig.boolWounded = false
+	bodyConfig.boolInfluenced = false
+	bodyConfig.boolCoverWalk = false
+	
 	bodyBuild()
 
 
 	setupAnimation()
 
-	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
+	setOverrideAnimationState( eAnimState.slaved, eAnimState.standing,  true, nil, false)
 
 	StartThread(threadStarter)
 
@@ -143,7 +148,8 @@ function testAnimationLoop()
 end
 
 function bodyBuild()
-	iShoppingConfig = bodyConfig.boolShoppingLoaded 
+
+
 
 	hideAll(unitID)
 	Show(UpBody)
@@ -156,17 +162,26 @@ function bodyBuild()
 	showT(TablesOfPiecesGroups["Feet"])
 	
 	if bodyConfig.boolArmed == true  then
-		Show(ak47)
+		Show(ak47)	
+		return
+	end
 	
-	elseif bodyConfig.boolLoaded == true  and bodyConfig.boolWounded == false then
+	if bodyConfig.boolLoaded == true  and bodyConfig.boolWounded == false then
+	
 		if iShoppingConfig == 1 then
-			Show(ShoppingBag)
-		elseif iShoppingConfig == 2 then
-			Show(SittingBaby)
-		elseif iShoppingConfig == 3 then
-			Show(trolley)
-		elseif iShoppingConfig == 4 then
-			Show(Handbag)
+			Show(ShoppingBag);return
+		end
+		
+		if iShoppingConfig == 2 then
+			Show(SittingBaby);return
+		end
+		
+		if iShoppingConfig == 3 then
+			Show(trolley);return
+		end
+		
+		if iShoppingConfig == 4 then
+			Show(Handbag);return
 		end
 	end
 end
@@ -2455,7 +2470,7 @@ Animations = {
 uppperBodyAnimations = {
 	[eAnimState.slaved] = { 
 		[1] = "SLAVED",	
-	}
+	},
 	[eAnimState.idle] = { 	
 		[1] = "SLAVED",
 		[2] = "UPBODY_PHONE",
