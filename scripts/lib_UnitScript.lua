@@ -61,6 +61,23 @@ return process(Spring.GetTeamList(),
 
 end
 
+
+function getRandomPlayerName()
+	T =Spring.GetPlayerList()
+	local numberOfPlayers=#playerIDList
+	result={}
+	
+	for i=1,numberOfPlayers do
+		local name, bActive,spectator,_,_,_,_,_,_=Spring.GetPlayerInfo(T[i])
+		if string.len(name) > 1 and bActive == true  then
+			result[name]= name
+		end
+	end
+
+	return randDict(result)
+end
+
+
 --> get all Player Units in a Range around a unit
 function isPlayerUnitNearby(unitID, range)
 gaiaTeamID= Spring.GetGaiaTeamID()

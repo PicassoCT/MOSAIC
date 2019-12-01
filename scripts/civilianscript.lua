@@ -2654,10 +2654,10 @@ normalBehavourStateMachine = {
 												-- if anarchy and armed then civilians either join a faction (protagon, antagon, or fight against these)	
 												--TODO
 											else
-												playerName = "TODO"
+												playerName = getRandomPlayerName()
 												makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
 												Show(molotow)
-												setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false, nil, true)
+												setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false, function() return GameConfig.GameState.Anarchy == GG.GlobalGameState end  , true)
 											end	
 											
 										end
