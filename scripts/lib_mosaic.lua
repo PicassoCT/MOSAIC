@@ -395,9 +395,9 @@ return {
 	death	="STATE_DEATH",
 	transported 		="STATE_TRANSPORTED",
 	catatonic = "STATE_CATATONIC",
-	-- self ending Cycles		
+	-- self ending Cycles	
+	trolley = "STATE_PULL",
 	walking	="STATE_WALKING",
-	running	="STATE_RUNNING",
 	coverwalk	="STATE_COVERWALK",
 	wounded	="STATE_WOUNDED"   
 }
