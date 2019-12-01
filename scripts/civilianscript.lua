@@ -100,7 +100,8 @@ bodyConfig={
 	boolLoaded = iLoaded >  4,
 	boolArmed = false,
 	boolWounded = false,
-	boolInfluenced = false
+	boolInfluenced = false,
+	boolCoverWalk = false
 
 }
 
@@ -159,17 +160,12 @@ function bodyBuild()
 	
 	elseif bodyConfig.boolLoaded == true  and bodyConfig.boolWounded == false then
 		if iShoppingConfig == 1 then
-			setWalkingAnimation("WALKCYCLE_UNLOADED", "UPBODY_LOADED")
 			Show(ShoppingBag)
 		elseif iShoppingConfig == 2 then
 			Show(SittingBaby)
-			setWalkingAnimation("WALKCYCLE_UNLOADED", "UPBODY_LOADED")
-			uppperBodyAnimations[eAnimState.walking] = "UPBODY_LOADED"
 		elseif iShoppingConfig == 3 then
-			setWalkingAnimation("WALKCYCLE_ROLLY", "SLAVED")
 			Show(trolley)
 		elseif iShoppingConfig == 4 then
-			setWalkingAnimation("WALKCYCLE_UNLOADED", "SLAVED")
 			Show(Handbag)
 		end
 	end
@@ -2455,10 +2451,6 @@ Animations = {
 	-- Usually the Lower animation state is the master- but the upper can detach, so seperate upper Body Animations are possible
 
 
-function setWalkingAnimation(name, upBodyOverride)
-	lowerBodyAnimations [eAnimState.walking] = name
-	uppperBodyAnimations[eAnimState.walking] = upBodyOverride or  "SLAVED"
-end
 
 uppperBodyAnimations = {
 	[eAnimState.slaved] = { 
@@ -2516,22 +2508,24 @@ end
 
 accumulatedTimeInSeconds=0
 function script.HitByWeapon(x, z, weaponDefID, damage)
-	setWalkingAnimation("WALKCYCLE_COVERWALK")
+	
 
 	clampedDamage = math.max(math.min(damage,10),35)
 	StartThread(delayedWoundedWalkAfterCover,  clampedDamage)
 	accumulatedTimeInSeconds = accumulatedTimeInSeconds + clampedDamage
-	
+	bodyConfig.boolCoverWalk = true
 	bodyConfig.boolLoaded = false
 	bodyConfig.boolWounded = true
 	bodyBuild()
+	StartThread(setAnimationState,getWalkingState(), getWalkingState())
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)
 	Signal(SIG_COVER_WALK)
 	SetSignalMask(SIG_COVER_WALK)
 	Sleep(accumulatedTimeInSeconds *1000)
-	setWalkingAnimation ("WALKCYCLE_WOUNDED")
+	bodyConfig.boolWounded = true
+	bodyConfig.boolCoverWalk = false
 end
 
 
@@ -2958,8 +2952,10 @@ LowerAnimationStateFunctions ={
 						return eAnimState.aiming
 					end,					
 [eAnimState.walking] = function()
+						
+
 						if bodyConfig.boolWounded == true then
-							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],conditionalFilterOutUpperBodyTable())
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],conditionalFilterOutUpperBodyTable()))
 							return eAnimState.walking
 						end
 						
@@ -2979,11 +2975,19 @@ LowerAnimationStateFunctions ={
 						echo("TODO: Civilian State catatonic")
 						return eAnimState.catatonic
 						end,
-[eAnimState.coverwalk] = function()
-						
+[eAnimState.coverwalk] = function()					
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.coverwalk]))
+							
 						echo("TODO: Civilian State coverwalk")
 						return eAnimState.coverwalk
-						end,						
+						end,	
+
+[eAnimState.wounded] = function()					
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded]))
+							
+						echo("TODO: Civilian State coverwalk")
+						return eAnimState.wounded
+						end,							
 [eAnimState.trolley] = function()
 						
 						PlayAnimation(randT(lowerBodyAnimations[eAnimState.trolley]))
@@ -2992,6 +2996,7 @@ LowerAnimationStateFunctions ={
 						return eAnimState.trolley
 						end,	
 }
+
 LowerAnimationState = eAnimState.standing
 boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
@@ -3063,8 +3068,15 @@ function delayedStop()
 	StartThread(setAnimationState, eAnimState.standing, eAnimState.standing)
 end
 
+function getWalkingState()
+if bodyConfig.boolCoverWalk == true then return eAnimState.coverwalk end
+if bodyConfig.boolWounded == true then return eAnimState.wounded end
+
+return eAnimState.walking
+end
+
 function script.StartMoving()
-	StartThread(setAnimationState, eAnimState.walking, eAnimState.walking)
+	StartThread(setAnimationState,getWalkingState(), getWalkingState())
 end
 
 function script.StopMoving()

@@ -398,6 +398,7 @@ return {
 	-- self ending Cycles	
 	trolley = "STATE_PULL",
 	walking	="STATE_WALKING",
+	running = "STATE_RUNNING",
 	coverwalk	="STATE_COVERWALK",
 	wounded	="STATE_WOUNDED"   
 }

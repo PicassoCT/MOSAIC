@@ -995,13 +995,23 @@ uppperBodyAnimations = {
 	[eAnimState.idle] = { 	
 		[1] = "WALKCYCLE_STANDING"
 	},
-	[eAnimState.walking] = "SLAVED",
-	[eAnimState.talking] =  "WALKCYCLE_STANDING",
+	[eAnimState.walking] =  { 
+		[1]="SLAVED"
+	},
+		
+	[eAnimState.standing] =  { 	
+		[1] = "WALKCYCLE_STANDING"
+	},
 }
 
 
 lowerBodyAnimations = {
-	[eAnimState.walking] = "WALKCYCLE_RUNNING"
+	[eAnimState.walking] = {
+		[1]="WALKCYCLE_RUNNING"
+	},
+	[eAnimState.standing] =  { 	
+		[1] = "WALKCYCLE_STANDING"
+	},
 }
 
 local animCmd = { ['turn'] = Turn, ['move'] = Move };
