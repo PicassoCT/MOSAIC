@@ -4225,6 +4225,19 @@ function randTableFunc(Table)
 	return Table[randElement]()
 end
 
+function deterministicElement(nr, Table )
+if #Table == 1 then return Table[1]end
+
+return Table[math.random(1, (nr % #Table) + 1)]
+end
+
+--> Execute Random Function in Table
+function randT(Table)
+	if #Table == 1 then return Table[1] end
+
+	return Table[math.random(1,#Table)]
+end
+
 function fairRandom(identifier, chance) --chance as factor 0.1 == 1 out of ten is a hit
 if not GG.FairRandom then  GG.FairRandom = {} end
 if not GG.FairRandom[identifier] then  GG.FairRandom[identifier] = { numberOfCalls=0, pattern = {}} end

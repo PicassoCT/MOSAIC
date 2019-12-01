@@ -97,7 +97,7 @@ bodyConfig={
 	boolCarrysBaby = iLoaded == 2,
 	boolTrolley = iLoaded == 3,
 	boolHandbag = iLoaded == 4,
-	boolLoaded = iLoaded >  loadMax/2,
+	boolLoaded = iLoaded >  4,
 	boolArmed = false,
 	boolWounded = false,
 	boolInfluenced = false
@@ -363,6 +363,29 @@ Animations = {
 		}
 	},
 },
+["UPBODY_HANDSUP"]={
+	{
+		['time'] = 1,
+		['commands'] = {
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=3.714181 *-1, ['s']=0.535925},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0.296218 , ['s']=0.141328},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=1.991118*-1, ['s']=1.085806},
+			
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-2.664833 *-1, ['s']=0.735825},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=-0.550202 , ['s']=0.323870},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=-1.537796*-1, ['s']=0.899105},
+			
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-0.798368 *-1, ['s']=0.021825},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=0.453922, ['s']=1.324240},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0.698181*-1, ['s']=2.222537},
+			
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-0.831275 *-1, ['s']=1.115186},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=-0.091092, ['s']=1.326423},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0.569845*-1, ['s']=1.113761},
+		}
+	}
+},
+
 ["UPBODY_WAILING2"]={
 	{
 		['time'] = 1,
@@ -2436,22 +2459,50 @@ function setWalkingAnimation(name, upBodyOverride)
 	lowerBodyAnimations [eAnimState.walking] = name
 	uppperBodyAnimations[eAnimState.walking] = upBodyOverride or  "SLAVED"
 end
+
 uppperBodyAnimations = {
+	[eAnimState.slaved] = { 
+		[1] = "SLAVED",	
+	}
 	[eAnimState.idle] = { 	
 		[1] = "SLAVED",
 		[2] = "UPBODY_PHONE",
 		[3] = "UPBODY_CONSUMPTION",
 	},
-	[eAnimState.walking] = "SLAVED",
+	[eAnimState.filming] = {
+		[1] = "UPBODY_FILMING",
+		[2] = "UPBODY_PHONE",
+	},
+	[eAnimState.wailing] = {
+		[1] = "UPBODY_WAILING1",
+		[2] = "UPBODY_WAILING2",
+	},
 	[eAnimState.talking] = {
 		[1] = "UPBODY_AGGRO_TALK",
 		[2] = "UPBODY_NORMAL_TALK",
+	},
+	[eAnimState.walking] ={ 
+		[1] = "UPBODY_LOADED",
+	},
+	[eAnimState.protest] ={ 
+		[1] = "UPBODY_PROTEST",
+	},
+	[eAnimState.handsup] ={ 
+		[1] = "UPBODY_HANDSUP",
 	},
 }
 
 
 lowerBodyAnimations = {
-	[eAnimState.walking] = "WALKCYCLE_UNLOADED"
+	[eAnimState.walking] = {
+		[1]="WALKCYCLE_UNLOADED"},
+	[eAnimState.wounded] = {
+		[1]="WALKCYCLE_WOUNDED"},		
+	[eAnimState.coverwalk] = {
+		[1]="WALKCYCLE_COVERWALK"},
+	[eAnimState.trolley] = {
+		[1]="WALKCYCLE_ROLLY"},
+
 }
 
 	
@@ -2795,7 +2846,6 @@ function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateL
 	boolStartThread = true
 end
 
-
 --</Exposed Function>
 function conditionalFilterOutUpperBodyTable()
 	if boolDecoupled == false  then 
@@ -2832,37 +2882,58 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.talking] = 	function () 
-							if math.random(0,1)==1 then
-								PlayAnimation("UPBODY_NORMAL_TALK")
-							else
-								PlayAnimation("UPBODY_AGGRO_TALK")				
-							end
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.talking]))			
 							return eAnimState.talking
 						end,
-[eAnimState.standing] = 	function () 
-								-- echo("UpperBody Standing")
-
-								Turn(LowArm1, y_axis,math.rad(12),1)
-								Turn(LowArm2, y_axis,math.rad(-12),1)
-								WaitForTurns(TablesOfPiecesGroups["LowArm"])
-									 if boolDecoupled == true then
-										if math.random(1,10) > 5 then
-										playUpperBodyIdleAnimation()	
-										resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
-										end
-									 end
-								Sleep(30)	
-								return eAnimState.standing
-							end,
+[eAnimState.standing] = function () 
+							Turn(LowArm1, y_axis,math.rad(12),1)
+							Turn(LowArm2, y_axis,math.rad(-12),1)
+							WaitForTurns(TablesOfPiecesGroups["LowArm"])
+								 if boolDecoupled == true then
+									if math.random(1,10) > 5 then
+									playUpperBodyIdleAnimation()	
+									resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
+									end
+								 end
+							Sleep(30)	
+							return eAnimState.standing
+						end,
 [eAnimState.walking] = 	function () 
 							if bodyConfig.boolLoaded == false and math.random(1,100) > 50 then
 								boolDecoupled = true
 									playUpperBodyIdleAnimation()
+									WaitForTurns(upperBodyPieces)
+									resetT(upperBodyPieces, math.pi,false, true)
 								boolDecoupled = false
-							end
+							elseif bodyConfig.boolLoaded == true then
+								PlayAnimation("UPBODY_LOADED")									
+							end							
 					
 						return eAnimState.walking
 					end,
+[eAnimState.filming] = 	function () 
+								cellID= (unitID%2)+1
+								Show(TablesOfPiecesGroups["cellphone"][cellID])
+								PlayAnimation(uppperBodyAnimations[eAnimState.filming])								
+								Hide(TablesOfPiecesGroups["cellphone"][cellID])
+						return eAnimState.filming
+					end,					
+[eAnimState.wailing] = 	function () 								
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.filming]))								
+								
+						return eAnimState.wailing
+					end,	
+[eAnimState.handsup] = 	function () 								
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.handsup]))															
+						return eAnimState.handsup
+					end,		
+
+[eAnimState.protest] = 	function () 
+								 makeProtestSign(8, 3, 34, 62, deterministicElement(unitID, signMessages), getRandomPlayerName())		
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.protest]))															
+						return eAnimState.protest
+					end,						
+					
 [eAnimState.slaved] = 	function () 
 						Sleep(100)
 						return eAnimState.slaved
@@ -2870,10 +2941,6 @@ UpperAnimationStateFunctions ={
 }
 
 LowerAnimationStateFunctions ={
-[eAnimState.walking] = function()
-						PlayAnimation(lowerBodyAnimations[eAnimState.walking], conditionalFilterOutUpperBodyTable())					
-						return eAnimState.walking
-						end,
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
 						WaitForTurns(lowerBodyPieces)
@@ -2881,7 +2948,49 @@ LowerAnimationStateFunctions ={
 						WaitForTurns(lowerBodyPieces)
 						Sleep(10)
 						return eAnimState.standing
-					end
+					end,
+[eAnimState.aiming] = 	function () 
+						
+						WaitForTurns(lowerBodyPieces)
+						resetT(lowerBodyPieces, math.pi,false, true)
+						WaitForTurns(lowerBodyPieces)
+						Sleep(10)
+						return eAnimState.aiming
+					end,					
+[eAnimState.walking] = function()
+						if bodyConfig.boolWounded == true then
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],conditionalFilterOutUpperBodyTable())
+							return eAnimState.walking
+						end
+						
+						if bodyConfig.boolTrolley == true then
+								PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), conditionalFilterOutUpperBodyTable())					
+						else
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), conditionalFilterOutUpperBodyTable())					
+						end
+						
+						return eAnimState.walking
+						end,
+[eAnimState.transported] = function()
+						echo("TODO: Civilian State transported")
+						return eAnimState.transported
+						end,	
+[eAnimState.catatonic] = function()
+						echo("TODO: Civilian State catatonic")
+						return eAnimState.catatonic
+						end,
+[eAnimState.coverwalk] = function()
+						
+						echo("TODO: Civilian State coverwalk")
+						return eAnimState.coverwalk
+						end,						
+[eAnimState.trolley] = function()
+						
+						PlayAnimation(randT(lowerBodyAnimations[eAnimState.trolley]))
+						
+
+						return eAnimState.trolley
+						end,	
 }
 LowerAnimationState = eAnimState.standing
 boolLowerStateWaitForEnd = false

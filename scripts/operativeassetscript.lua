@@ -89,7 +89,7 @@ function script.Create()
 	setupAnimation()
 	-- StartThread(turnDetector)
 	
-	setOverrideAnimationState( eAnimState.slaved, eAnimState.walking,  true, nil, false)
+	setOverrideAnimationState( eAnimState.slaved, eAnimState.standing,  true, nil, false)
 	StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
 	StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
 	StartThread(threadStarter)
