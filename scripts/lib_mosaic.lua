@@ -33,6 +33,7 @@ function getGameConfig()
 	 },
 	 
 	 --civilianbehaviour
+	 civilianPanicRadius = 350,
 	 civilianInterestRadius = 750,
 	 groupChatDistance = 150,
 	 inHundredChanceOfInterestInDisaster = 75,

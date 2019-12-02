@@ -623,7 +623,7 @@ end
 		if persPack.myHP < hp then
 			attackerID = Spring.GetUnitLastAttacker(myID)
 			if attackerID then
-				runAwayFrom(myID, attackerID, 4.0)
+				runAwayFrom(myID, attackerID, 500)
 				UnitSetAnimationState(id, CivAnimStates.slaved, CivAnimStates.coverwalk, true, false)
 				return frame + 1000 , persPack
 			end

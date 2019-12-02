@@ -5490,14 +5490,17 @@ function transferOrders(originID, targetID)
 end
 
 --> move away from another unit by distance*scalingfactor
-function runAwayFrom(unitID, horrorID, scale)
+function runAwayFrom(unitID, horrorID, distanceToRun)
 	x,y,z = Spring.GetUnitPosition(unitID)
 	hx,hy,hz = Spring.GetUnitPosition(horrorID)
 
 	-- Compute Offset
-	hx,hz = (hx - x)*scale, (hz - z)*scale
-	x,z = x + hx , z  + hz
-	Command( unitID, "go", {x = x, y= y, z = z})
+	hx,hz = (x-hx), ( z-hz)
+	maX= math.max(math.abs(hx),math.max(hz))
+	hx,hz= hx/maX, hz/maX
+	hx,hz = hx*distanceToRun, hz*distanceToRun
+	hx,hz = x + hx , z  + hz
+	Command( unitID, "go", {x = hx, y= y, z = hz})
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)

@@ -28,6 +28,7 @@ function showAndTell()
 end
 
 function script.Create()
+	Spring.SetUnitAlwaysVisible(unitID, true)
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
@@ -93,9 +94,26 @@ function script.Deactivate()
     return 0
 end
 
-function script.QueryBuildInfo()
+
+--- -aimining & fire weapon
+function script.AimFromWeapon1()
     return center
 end
 
-Spring.SetUnitNanoPieces(unitID, { center })
+
+
+function script.QueryWeapon1()
+    return center
+end
+
+function script.AimWeapon1(Heading, pitch)
+    return true
+end
+
+
+
+function script.FireWeapon1()
+    return true
+end
+
 
