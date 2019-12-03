@@ -13,9 +13,19 @@ center = piece "center"
 aimpiece = piece "aimpiece"
 nano = piece "nano"
 shotemit = piece "shotemit"
+GameConfig = getGameConfig()
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	
+	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
+				function(id)
+					if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
+						return id
+					end
+				end
+				)
+	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 end
 
 function script.Killed(recentDamage, _)
@@ -39,9 +49,10 @@ end
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 
-        Turn(aimpiece, y_axis, Heading, 0.4)
+        Turn(center, z_axis, Heading, 0.4)
         Turn(aimpiece, x_axis, -pitch, 1.3)
 		WaitForTurns(aimpiece)
+		WaitForTurns(center)
     return true
 end
 
