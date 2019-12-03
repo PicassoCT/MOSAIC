@@ -174,7 +174,26 @@ function getSatteliteTypes(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
-function getCultureUnitModelNames(cultureName, unitType, UnitDefNames)
+function isUnitInGroup(id, groupname, culture, UnitDefs)
+	defID = Spring.GetUnitDefID(id)
+	name = UnitDefs[defID].name
+	
+	if name == groupname then return true end
+	culturUnitGroupTable = getCultureUnitModelNames(culture, groupname)
+
+	if ( culturUnitGroupTable.range == 0 ) then
+		echo(name.." == "..culturUnitGroupTable.name)
+		return (name == culturUnitGroupTable.name) 
+	end
+
+	for i=1,culturUnitGroupTable.range do
+		if name == (culturUnitGroupTable.name..i) then return true end
+	end
+	
+return false
+end
+
+function getCultureUnitModelNames(cultureName, unitType)
 translation ={
 	["arabic"] = {
 		["house"] = {name= "house_arab", range=0},
