@@ -85,22 +85,17 @@ function script.StopMoving()
 end
 
 function script.Activate()
-
     return 1
 end
 
 function script.Deactivate()
-
     return 0
 end
-
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
     return center
 end
-
-
 
 function script.QueryWeapon1()
     return center
@@ -110,10 +105,6 @@ function script.AimWeapon1(Heading, pitch)
     return true
 end
 
-
-
 function script.FireWeapon1()
     return true
 end
-
-
