@@ -2925,7 +2925,10 @@ UpperAnimationStateFunctions ={
 						Sleep(100)
 						return eAnimState.coverwalk
 						end,	
-
+[eAnimState.wounded] = function()					
+						Sleep(100)
+						return eAnimState.wounded
+						end,
 
 }
 
@@ -3037,7 +3040,7 @@ local animationTable = AnimationTable
 
 	while true do
 		assert(UpperAnimationState)
-		assert(animationTable[UpperAnimationState], "Animationstate not existing "..UpperAnimationState)
+		assert(animationTable[UpperAnimationState], "Upper Animationstate not existing "..UpperAnimationState)
 
 		UpperAnimationState = animationTable[UpperAnimationState]()
 		--echoNFrames("Unit "..unitID.." :UStatMach :"..UpperAnimationState, 500)
