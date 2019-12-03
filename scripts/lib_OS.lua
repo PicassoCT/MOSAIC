@@ -548,6 +548,14 @@ function breathOS(body, lowDist, upDist, LegTable, LegNumber, degree, Time, coun
     end
 end
 
+function mortallyDependant(id, LiveGiver, checkTime, boolSelfDestruct, boolReclaimed)
+
+	while LiveGiver ~= nil and not Spring.GetUnitIsDead(LiveGiver) do
+		Sleep(checkTime)
+	end
+Spring.DestroyUnit(id,boolSelfDestruct, boolReclaimed)
+end
+
 -->plays the sounds handed over in a table 
 function playSoundByUnitTypOS(unitID, loudness, SoundNameTimeT)
     local SoundNameTimeTable = SoundNameTimeT
