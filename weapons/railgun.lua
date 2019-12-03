@@ -17,8 +17,15 @@ local weaponDef = {
     explosionGenerator = [[custom:cRailSparks]],
     groundbounce = 1,
     impactOnly = true,
+	avoidFriendly = true,
+	avoidGround  = true,
+	collideNeutral = false,
 	collideFirebase  = false,
 	collideGround = true,
+	
+	--command
+	canAttackGround  = true,
+	
     impulseBoost = 0,
     impulseFactor = 0,
     interceptedByShieldType = 0,
