@@ -845,6 +845,23 @@ x,y,z = Spring.GetUnitPosition(target)
 return false
 end
 
+function moveUnitToUnitPiece(id , target, Name)
+pieceID=Name
+	if type(Name)== "string" then
+		listOfPieces=Spring.GetUnitPieceMap(target)
+		if not listOfPieces[Name] then echo( "Unit "..UnitDefs[Spring.GetUnitDefID(target)].name.." has no piece called "..Name); return false; end;
+		pieceID= listOfPieces[Name]
+	end
+	
+x,y,z = Spring.GetUnitPiecePosDir(target, pieceID)
+	if x then
+		Spring.SetUnitPosition(id, x ,y  ,z  )
+	return true
+	end
+return false
+end
+
+
 function copyUnit(id, teamID)
 ox,oy,oz= ox or 0,oy or 0,oz or 0
 copyID =  createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id,ox,oy,oz)
