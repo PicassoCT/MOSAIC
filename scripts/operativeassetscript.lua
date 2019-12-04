@@ -4,15 +4,23 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 include "lib_mosaic.lua"
-
+myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
+SIG_PISTOL =1
+SIG_GUN = 2
+SIG_SNIPER = 4
+SIG_STOP = 8
+SIG_UP = 16
+SIG_LOW = 32
+
 
 local center = piece('center');
 local Torso = piece('Torso');
+local Pistol = piece('Pistol');
 local Gun = piece('Gun');
 local Head = piece('Head');
 local UpLeg2 = piece('UpLeg2');
@@ -31,6 +39,7 @@ local backpack = piece('backpack');
 local scriptEnv = {
 	center = center,
 	Torso = Torso,
+	Pistol = Pistol,
 	Gun = Gun,
 	Head = Head,
 	UpLeg2 = UpLeg2,
@@ -52,24 +61,25 @@ local scriptEnv = {
 eAnimState = getCivilianAnimationStates()
 upperBodyPieces =
 {
-	[Head	]  = true,
-	[UpArm1 ] = true,
-	[UpArm2]  = true,
-	[LowArm1 ] = true,
-	[LowArm2]  = true,
-	[Torso  ]	= true,
-	[Eye1 ]= true,
-	[Eye2 ]= true,
-	[backpack]= true,
+	[Head	]  = Head,
+	[Pistol]= Pistol,
+	[UpArm1 ] = UpArm1,
+	[UpArm2]  = UpArm2,
+	[LowArm1 ] = LowArm1,
+	[LowArm2]  = LowArm2,
+	[Torso  ]	= Torso,
+	[Eye1 ]= Eye1,
+	[Eye2 ]= Eye2,
+	[backpack]= backpack,
 	}
 	
 lowerBodyPieces =
 {
-	[center	]= true,
-	[UpLeg1	]= true,
-	[UpLeg2 ]= true,
-	[LowLeg1]= true,
-	[LowLeg2]= true,
+	[center	]= center,
+	[UpLeg1	]= UpLeg1,
+	[UpLeg2 ]= UpLeg2,
+	[LowLeg1]= LowLeg1,
+	[LowLeg2]= LowLeg2,
 
 }
 
@@ -83,6 +93,7 @@ if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 function script.Create()
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
+	Hide(Gun)
 
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -90,8 +101,7 @@ function script.Create()
 	-- StartThread(turnDetector)
 	
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.standing,  true, nil, false)
-	StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
-	StartThread(animationStateMachineLower, LowerAnimationStateFunctions)
+
 	StartThread(threadStarter)
 	StartThread(cloakLoop)
 	-- StartThread(testAnimationLoop)
@@ -106,9 +116,10 @@ function testAnimationLoop()
 			
 	end
 end
-deg_45=math.pi/4
+
 deg_90=math.pi/2
-local Animations = {
+deg_45=math.pi/4
+Animations = {
 ["WALKCYCLE_RUNNING"]= {
 	{
 		['time'] = 1,
@@ -1055,7 +1066,8 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 	local speedFactor = speed or 1.0
 	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
 	assert(animname, "animation name is nil")
-	assert(Animations[animname], "No animation with name "..animname)
+assert(type(animname)=="string", "Animname is not string "..toString(animname))
+	assert(Animations[animname], "No animation with name ")
     local anim = Animations[animname];
 	local randoffset 
     for i = 1, #anim do
@@ -1064,7 +1076,14 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             local cmd = commands[j];
 			randoffset = 0.0
 			if cmd.r then
-				randoffset = math.random(-cmd.r, cmd.r)/1000
+				randVal = cmd.r* 100
+				randoffset = math.random(-randVal, randVal)/100
+			end
+			
+			if cmd.ru or cmd.rl then
+				randUpVal=	( cmd.ru or 0.01)*100
+				randLowVal=	( cmd.rl or 0	)*100
+				randoffset = math.random(randLowVal, randUpVal)/100
 			end
 			
 			if  not piecesToFilterOutTable[cmd.p] then	
@@ -1122,6 +1141,7 @@ local	locConditionFunction
 local	boolStartThread = false
 
 function threadStarter()
+	Sleep(100)
 	while true do
 		if boolStartThread == true then
 			boolStartThread = false
@@ -1164,6 +1184,7 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 		
 		
 		 while AnimationstateLowerOverride and boolLowerAnimationEnded == false or AnimationstateUpperOverride and boolUpperAnimationEnded == false do
+		 Sleep(30)
 			if AnimationstateUpperOverride == true then
 				boolUpperStateWaitForEnd = true
 			end
@@ -1174,11 +1195,11 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 
 			Sleep(30)
 		 end
-		 
-		if AnimationstateUpperOverride == true then	UpperAnimationState = AnimationstateUpperOverride end
-		if AnimationstateLowerOverride == true then LowerAnimationState = AnimationstateLowerOverride end
-		if AnimationstateUpperOverride == true then	boolUpperStateWaitForEnd = false end
-		if AnimationstateLowerOverride == true then boolLowerStateWaitForEnd = false end
+			 
+		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
+		if AnimationstateLowerOverride then LowerAnimationState = AnimationstateLowerOverride end
+		if boolUpperStateWaitForEnd == true then	boolUpperStateWaitForEnd = false end
+		if boolLowerStateWaitForEnd == true then boolLowerStateWaitForEnd = false end
 end
 
 --<Exposed Function>
@@ -1242,12 +1263,12 @@ UpperAnimationStateFunctions ={
 LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
 						assert(lowerBodyAnimations[eAnimState.walking])
-						PlayAnimation(lowerBodyAnimations[eAnimState.walking], conditionalFilterOutUpperBodyTable())					
+						PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]))					
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
-						resetT(lowerBodyPieces, math.pi,false, true)
+						resetT(lowerBodyPieces, 25,false, true)
 						Sleep(100)
 						return eAnimState.standing
 					end
@@ -1257,22 +1278,25 @@ boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
 
 function animationStateMachineLower(AnimationTable)
-Signal(SIG_UP)
-SetSignalMask(SIG_UP)
+Signal(SIG_LOW)
+SetSignalMask(SIG_LOW)
 
 boolLowerStateWaitForEnd = false
 
 local animationTable = AnimationTable
 	-- Spring.Echo("lower Animation StateMachine Cycle")
 	while true do
+		assert(LowerAnimationState)
 		assert(animationTable[LowerAnimationState], "Animationstate not existing "..LowerAnimationState)
 		LowerAnimationState = animationTable[LowerAnimationState]()
 		
 		--Sync Animations
+		--echoNFrames("Unit "..unitID.." :LStatMach :"..LowerAnimationState, 500)
 		if boolLowerStateWaitForEnd == true then
 			boolLowerAnimationEnded = true
 			while boolLowerStateWaitForEnd == true do
 				Sleep(33)
+				--echoNFrames("Unit "..unitID.." :LWaitForEnd :"..LowerAnimationState, 500)
 				-- Spring.Echo("lower Animation Waiting For End")
 			end
 			boolLowerAnimationEnded = false
@@ -1286,17 +1310,18 @@ boolUpperStateWaitForEnd = false
 boolUpperAnimationEnded = false
 
 function animationStateMachineUpper(AnimationTable)
-Signal(SIG_LOW)
-SetSignalMask(SIG_LOW)
+Signal(SIG_UP)
+SetSignalMask(SIG_UP)
 
 boolUpperStateWaitForEnd = false
 local animationTable = AnimationTable
 
 	while true do
-		assert(animationTable[UpperAnimationState], "Animationstate not existing "..UpperAnimationState)
+		assert(UpperAnimationState)
+		assert(animationTable[UpperAnimationState], "Upper Animationstate not existing "..UpperAnimationState)
 
-		LowerAnimationState = animationTable[LowerAnimationState]()
-		
+		UpperAnimationState = animationTable[UpperAnimationState]()
+		--echoNFrames("Unit "..unitID.." :UStatMach :"..UpperAnimationState, 500)
 		--Sync Animations
 		if boolUpperStateWaitForEnd == true then
 			boolUpperAnimationEnded = true
@@ -1314,11 +1339,12 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
-	StartThread(setAnimationState, eAnimState.standing, eAnimState.standing)
+	-- Spring.Echo("Stopping")
+	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 end
 
 function script.StartMoving()
-	StartThread(setAnimationState, eAnimState.walking, eAnimState.walking)
+	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
 
 function script.StopMoving()
@@ -1414,7 +1440,6 @@ end
 
 
 function script.StopBuilding()
-
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 
@@ -1429,35 +1454,23 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget 
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
-function allowTarget(weaponNumber)
-	isGround, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponNumber)
-	if isGround and isGround == 1  then
-	
-		if spGetUnitTeam(targetID) == gaiaTeamID then
-			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then		
-			return false
-			end
-		end
-	end
-return true
-end
 
 function pistolAimFunction(weaponID, heading, pitch)
 	WTurn(center,y_axis,heading , 12)
 	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
-	return  allowTarget(weaponID)
+	return  true
 end
 
 function gunAimFunction(weaponID, heading, pitch)
 	WTurn(center,y_axis,heading, 12)
 	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
-	return  allowTarget(weaponID)
+	return  true
 end
 
 function sniperAimFunction(weaponID, heading, pitch)
 	WTurn(center,y_axis,heading, 12)
 	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
-	return  allowTarget(weaponID)
+	return  true
 end
 
 
@@ -1474,16 +1487,11 @@ function sniperFireFunction(weaponID, heading, pitch)
 return true
 end
 
-SIG_PISTOL =1
-SIG_GUN = 2
-SIG_SNIPER = 4
-SIG_STOP = 8
-SIG_UP = 16
-SIG_LOW = 32
+
 
 WeaponsTable = {}
 function makeWeaponsTable()
-    WeaponsTable[1] = { aimpiece = center, emitpiece = Gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
+    WeaponsTable[1] = { aimpiece = center, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
 	WeaponsTable[2] = { aimpiece = center, emitpiece = Gun, aimfunc = gunAimFunction, firefunc = gunFireFunction, signal = SIG_GUN }
 	WeaponsTable[3] = { aimpiece = center, emitpiece = Gun, aimfunc = sniperAimFunction, firefunc = sniperFireFunction, signal = SIG_SNIPER }
 end
@@ -1523,15 +1531,32 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
-    if WeaponsTable[weaponID] then
-        if WeaponsTable[weaponID].aimfunc then
-            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
-        else
-            WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
-            WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
-            return true
-        end
-    end
+		targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
+		if not targetType or  (targetType ~= 1 )  then return false end
+		
+		--Do not aim at your own disguise civilian
+		if spGetUnitTeam(targetID) == gaiaTeamID then
+				if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then		
+					return false
+				end
+		end
+		
+		--if distance to target is smaller then 500 switch to pistol
+		if distanceUnitToUnit(unitID, targetID) < 400 then 
+			Hide(Gun)
+			Show(Pistol)
+			if weaponID == 1 then 			
+				return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+			end		
+			
+		else
+			Hide(Pistol)
+			Show(Gun)
+			if weaponID ~= 1 then 			
+				return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+			end	
+		end
+
     return false
 end
 
