@@ -1006,6 +1006,9 @@ uppperBodyAnimations = {
 	[eAnimState.idle] = { 	
 		[1] = "WALKCYCLE_STANDING"
 	},
+	[eAnimState.aiming] = { 	
+		[1] = "UPBODY_AIMING"
+	},
 	[eAnimState.walking] =  { 
 		[1]="SLAVED"
 	},
@@ -1022,6 +1025,10 @@ lowerBodyAnimations = {
 	},
 	[eAnimState.standing] =  { 	
 		[1] = "WALKCYCLE_STANDING"
+	},
+	[eAnimState.aiming] =  { 	
+		[1] = "WALKCYCLE_STANDING"
+	
 	},
 }
 
@@ -1257,8 +1264,13 @@ UpperAnimationStateFunctions ={
 [eAnimState.slaved] = 	function () 
 						Sleep(100)
 						return eAnimState.slaved
+					end,
+[eAnimState.aiming] = 	function () 
+						PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]))	
+						Sleep(100)
+						return eAnimState.aiming 
 					end
-}
+} 
 
 LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
@@ -1271,6 +1283,11 @@ LowerAnimationStateFunctions ={
 						resetT(lowerBodyPieces, 25,false, true)
 						Sleep(100)
 						return eAnimState.standing
+					end,
+[eAnimState.aiming] = 	function () 
+						PlayAnimation(randT(lowerBodyAnimations[eAnimState.aiming]),upperBodyPieces)	
+						Sleep(100)
+						return eAnimState.aiming
 					end
 }
 LowerAnimationState = eAnimState.standing
@@ -1456,20 +1473,23 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 
 
 function pistolAimFunction(weaponID, heading, pitch)
-	WTurn(center,y_axis,heading , 12)
-	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
+	Turn(center,y_axis,heading , 12)
+	setOverrideAnimationState(eAnimState.slaved, eAnimState.aiming,  true, nil, true)
+	echo("Aiming Pistol finnished")
 	return  true
 end
 
 function gunAimFunction(weaponID, heading, pitch)
-	WTurn(center,y_axis,heading, 12)
-	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
+	Turn(center,y_axis,heading, 12)
+	setOverrideAnimationState(eAnimState.slaved, eAnimState.aiming,  true, nil, true)
+	echo("Aiming Gun finnished")
 	return  true
 end
 
 function sniperAimFunction(weaponID, heading, pitch)
-	WTurn(center,y_axis,heading, 12)
-	StartThread(PlayAnimation,"UPBODY_AIMING", nil, 9.0)
+	Turn(center,y_axis,heading, 12)
+	setOverrideAnimationState(eAnimState.slaved, eAnimState.aiming,  true, nil, true)
+	echo("Aiming Sniper finnished")
 	return  true
 end
 
@@ -1497,22 +1517,7 @@ function makeWeaponsTable()
 end
 
 
-function turretReseter()
-    while true do
-        Sleep(1000)
-        for i = 1, #WeaponsTable do
-			if WeaponsTable[i].coolDownTimer then
-				if WeaponsTable[i].coolDownTimer > 0 then
-					WeaponsTable[i].coolDownTimer = math.max(WeaponsTable[i].coolDownTimer - 1000, 0)
 
-				elseif WeaponsTable[i].coolDownTimer <= 0 then
-					tP(WeaponsTable[i].emitpiece, -90, 0, 0, 0)
-					WeaponsTable[i].coolDownTimer = -1
-				end
-			end
-        end
-    end
-end
 
 function script.AimFromWeapon(weaponID)
     if WeaponsTable[weaponID] then
@@ -1532,20 +1537,31 @@ end
 
 function script.AimWeapon(weaponID, heading, pitch)
 		targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
-		if not targetType or  (targetType ~= 1 )  then return false end
+		
+		if targetType == 2 then
+			return true
+		end
+		
+		if not targetType or  (targetType ~= 1 )  then
+			echo("TargetType:"..targetType.." TargetID:");echo(targetID)
+			return false 
+		end
 		
 		--Do not aim at your own disguise civilian
-		if spGetUnitTeam(targetID) == gaiaTeamID then
-				if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then		
+		if spGetUnitTeam(targetID) == gaiaTeamID then		
+				if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
+					echo("Target is disguised civilian of asset")		
 					return false
 				end
 		end
 		
 		--if distance to target is smaller then 500 switch to pistol
-		if distanceUnitToUnit(unitID, targetID) < 400 then 
+		echo("Distance to target:"..distanceUnitToUnit(unitID, targetID))
+		if distanceUnitToUnit(unitID, targetID) < 250 then 
 			Hide(Gun)
 			Show(Pistol)
-			if weaponID == 1 then 			
+			if weaponID == 1 then 		
+	
 				return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
 			end		
 			
