@@ -2671,7 +2671,7 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State)
 		
 		Signal(SIG_BEHAVIOUR_STATE_MACHINE)
 		Hide(ak47)
-		Explode(ak47, SFX.FALL + SFX_NO_HEATCLOUD)
+		Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
 		bodyConfig.boolArmed = false
 		bodyBuild(bodyConfig)
 		Command(unitID, "stop")

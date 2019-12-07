@@ -3278,6 +3278,8 @@ end
 
 -->returns the Distance between two units
 function distanceUnitToUnit(idA, idB)
+	assert(type(idA)=="number")
+	assert(type(idB)=="number")
 	
 	if lib_boolDebug == true then
 		if (not idA or type(idA) ~= "number") then echo("Not existing idA or not a number"); return nil; end

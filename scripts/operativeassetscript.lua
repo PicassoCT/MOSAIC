@@ -71,11 +71,11 @@ upperBodyPieces =
 	[Eye1 ]= Eye1,
 	[Eye2 ]= Eye2,
 	[backpack]= backpack,
+	[center	]= center,
 	}
 	
 lowerBodyPieces =
 {
-	[center	]= center,
 	[UpLeg1	]= UpLeg1,
 	[UpLeg2 ]= UpLeg2,
 	[LowLeg1]= LowLeg1,
@@ -88,6 +88,7 @@ boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
 
+boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
@@ -97,6 +98,7 @@ function script.Create()
 
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	hideT(TablesOfPiecesGroups["Shell"])
 	setupAnimation()
 	-- StartThread(turnDetector)
 	
@@ -105,21 +107,91 @@ function script.Create()
 	StartThread(threadStarter)
 	StartThread(cloakLoop)
 	-- StartThread(testAnimationLoop)
+	StartThread(breathing)
 	
+end
+
+function breathing()
+	local breathSpeed= 0.1/3
+	while true do
+		if boolAiming == false and boolWalking == false then
+			Turn(Head,x_axis,math.rad(-1),breathSpeed)
+			WTurn(Torso,x_axis, math.rad(1), breathSpeed)
+			Turn(Head,x_axis,math.rad(0),breathSpeed)
+			WTurn(Torso,x_axis, math.rad(0), breathSpeed)
+		end
+		Sleep(250)
+	end
+
 end
 
 function testAnimationLoop()
 	Sleep(500)
 	while true do
-		-- PlayAnimation("WALKCYCLE_RUNNING")
+		PlayAnimation("UPBODY_STANDING_PISTOL")
 		Sleep(100)
 			
 	end
 end
-
+function degToRad(val)
+return (val/180)*math.pi
+end
 deg_90=math.pi/2
 deg_45=math.pi/4
 Animations = {
+["UPBODY_STANDING_PISTOL"]= {{
+		
+		['time'] = 1,
+		['commands'] = {
+					{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=0, ['s']=3.615665},
+					{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-deg_45, ['s']=1.615665},
+					{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=0, ['s']=3.615665},
+				
+					
+					{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=-deg_90 -deg_45*0.5	, ['s']=1.615665},
+					{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=deg_45, ['s']=1.615665},
+					{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']= deg_90*0.5, ['s']=1.615665},
+					
+					
+			
+					{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=0, ['s']=1.615665},
+					{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=deg_45, ['s']=1.615665},
+					{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=0, ['s']=1.615665},					
+					{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=0, ['s']=1.615665},
+					{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0, ['s']=1.615665},
+					{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=0, ['s']=1.615665},
+					
+					}
+					}
+},
+["UPBODY_AIM_PISTOL"]= {
+{
+		['time'] = 1,
+		['commands'] = {
+			{['c']='turn',['p']=Torso, ['a']=z_axis, ['t']=-0.5, ['s']=16.15665},
+			{['c']='turn',['p']=Head, ['a']=z_axis, ['t']=0.4, ['s']=16.15665},
+			
+			{['c']='turn',['p']=UpArm1, ['a']=x_axis, ['t']=-deg_45/2, ['s']=36.15665},
+			{['c']='turn',['p']=UpArm1, ['a']=y_axis, ['t']=-deg_90, ['s']=16.15665},
+			{['c']='turn',['p']=UpArm1, ['a']=z_axis, ['t']=deg_90, ['s']=36.15665},
+			
+			
+			{['c']='turn',['p']=LowArm1, ['a']=x_axis, ['t']=0, ['s']=16.15665},
+			{['c']='turn',['p']=LowArm1, ['a']=y_axis, ['t']=0, ['s']=16.15665},
+			{['c']='turn',['p']=LowArm1, ['a']=z_axis, ['t']=0, ['s']=16.15665},
+
+			{['c']='turn',['p']=LowArm2, ['a']=x_axis, ['t']=-3*deg_45 + deg_45/2, ['s']=9.29477},
+			{['c']='turn',['p']=LowArm2, ['a']=y_axis, ['t']=0, ['s']=2.1964},
+			{['c']='turn',['p']=LowArm2, ['a']=z_axis, ['t']=2.5*deg_45, ['s']=42.21870},
+			
+			{['c']='turn',['p']=UpArm2, ['a']=x_axis, ['t']=-1*deg_90+ deg_45, ['s']=73.28537},
+			{['c']='turn',['p']=UpArm2, ['a']=y_axis, ['t']=0, ['s']=45.6564},
+			{['c']='turn',['p']=UpArm2, ['a']=z_axis, ['t']=-1*deg_45 - 0.2, ['s']=70.78054},
+
+		
+		},
+}
+},
 ["WALKCYCLE_RUNNING"]= {
 	{
 		['time'] = 1,
@@ -563,6 +635,7 @@ Animations = {
 		['time'] = 1,
 		['commands'] = {
 			-- {['c']='turn',['p']=center, ['a']=z_axis, ['t']=-0.287310, ['s']=0.615665},
+			{['c']='turn',['p']=center, ['a']=y_axis, ['t']=0, ['s']=1.315678},
 			{['c']='turn',['p']=Gun, ['a']=x_axis, ['t']=0, ['s']=1.315678},
 			{['c']='turn',['p']=Gun, ['a']=y_axis, ['t']=0.5234, ['s']=1.007879},
 			{['c']='turn',['p']=Gun, ['a']=z_axis, ['t']=0, ['s']=0.37769},
@@ -606,7 +679,6 @@ Animations = {
 	}
 
 }
-
 ,["DEATH"] =  {
 	{
 		['time'] = 1,
@@ -911,8 +983,7 @@ Animations = {
 		}
 	},
 }
-
-,["WALKCYCLE_STANDING"] =  {
+,["UPBODY_STANDING_GUN"] =  {
 	{
 		['time'] = 1,
 		['commands'] = {
@@ -1004,7 +1075,8 @@ Animations = {
 
 uppperBodyAnimations = {
 	[eAnimState.idle] = { 	
-		[1] = "WALKCYCLE_STANDING"
+		[1] = "UPBODY_STANDING_GUN",
+		[2] = "UPBODY_STANDING_PISTOL"
 	},
 	[eAnimState.aiming] = { 	
 		[1] = "UPBODY_AIMING"
@@ -1014,7 +1086,8 @@ uppperBodyAnimations = {
 	},
 		
 	[eAnimState.standing] =  { 	
-		[1] = "WALKCYCLE_STANDING"
+		[1] = "UPBODY_STANDING_GUN",
+		[2] = "UPBODY_STANDING_PISTOL"
 	},
 }
 
@@ -1024,10 +1097,10 @@ lowerBodyAnimations = {
 		[1]="WALKCYCLE_RUNNING"
 	},
 	[eAnimState.standing] =  { 	
-		[1] = "WALKCYCLE_STANDING"
+		[1] = "UPBODY_STANDING_GUN"
 	},
 	[eAnimState.aiming] =  { 	
-		[1] = "WALKCYCLE_STANDING"
+		[1] = "UPBODY_STANDING_GUN"
 	
 	},
 }
@@ -1146,6 +1219,7 @@ local	locAnimationstateLowerOverride
 local	locBoolInstantOverride 
 local	locConditionFunction
 local	boolStartThread = false
+boolPistol = true
 
 function threadStarter()
 	Sleep(100)
@@ -1243,13 +1317,18 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
+							resetT(lowerBodyPieces, 10)
+							if boolPistol== true then							
+								PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)
+							else
+								PlayAnimation("UPBODY_STANDING_GUN", lowerBodyPieces, 3.0)
+							end
 								-- echo("UpperBody Standing")
-								resetT(upperBodyPieces, math.pi, false, true)
-									 if boolDecoupled == true then
+							if boolDecoupled == true then
 										if math.random(1,10) > 5 then
 										playUpperBodyIdleAnimation()							
 										end
-									 end
+							 end
 								Sleep(30)	
 								return eAnimState.standing
 							end,
@@ -1266,7 +1345,11 @@ UpperAnimationStateFunctions ={
 						return eAnimState.slaved
 					end,
 [eAnimState.aiming] = 	function () 
-						PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]))	
+						if boolPistol == true then
+							PlayAnimation("UPBODY_AIM_PISTOL")
+						else	
+							PlayAnimation("UPBODY_AIMING", nil, 3.0)
+						end
 						Sleep(100)
 						return eAnimState.aiming 
 					end
@@ -1280,7 +1363,7 @@ LowerAnimationStateFunctions ={
 						end,
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
-						resetT(lowerBodyPieces, 25,false, true)
+						resetT(lowerBodyPieces, 22)
 						Sleep(100)
 						return eAnimState.standing
 					end,
@@ -1356,11 +1439,14 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
+	boolWalking = false
 	-- Spring.Echo("Stopping")
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 end
 
 function script.StartMoving()
+	boolWalking = true
+	Turn(center,y_axis, math.rad(0), 12)
 	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
 
@@ -1473,38 +1559,53 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 
 
 function pistolAimFunction(weaponID, heading, pitch)
-	Turn(center,y_axis,heading , 12)
-	setOverrideAnimationState(eAnimState.slaved, eAnimState.aiming,  true, nil, true)
-	echo("Aiming Pistol finnished")
+	boolAiming = true
+
+	setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	WTurn(center,y_axis,heading, 22)
+	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
+	-- echo("Aiming Pistol finnished")
 	return  true
 end
 
 function gunAimFunction(weaponID, heading, pitch)
-	Turn(center,y_axis,heading, 12)
-	setOverrideAnimationState(eAnimState.slaved, eAnimState.aiming,  true, nil, true)
-	echo("Aiming Gun finnished")
+	boolAiming = true
+	
+	setOverrideAnimationState( eAnimState.aiming, eAnimState.standing, true, nil, false)
+	WTurn(center,y_axis,heading, 22)
+	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
+	-- echo("Aiming Gun finnished")
 	return  true
 end
 
 function sniperAimFunction(weaponID, heading, pitch)
-	Turn(center,y_axis,heading, 12)
-	setOverrideAnimationState(eAnimState.slaved, eAnimState.aiming,  true, nil, true)
-	echo("Aiming Sniper finnished")
+	boolAiming = true
+
+	setOverrideAnimationState( eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	WTurn(center,y_axis,heading, 22)
+	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
+	-- echo("Aiming Sniper finnished")
 	return  true
 end
 
 
 
 function pistolFireFunction(weaponID, heading, pitch)
-return true
+	boolAiming = false
+	Explode(TablesOfPiecesGroups["Shell"][1], SFX.FALL + SFX.NO_HEATCLOUD)
+	return true
 end
 
 function gunFireFunction(weaponID, heading, pitch)
-return true
+	boolAiming = false
+	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
+	return true
 end
 
 function sniperFireFunction(weaponID, heading, pitch)
-return true
+	boolAiming = false
+	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
+	return true
 end
 
 
@@ -1527,6 +1628,11 @@ function script.AimFromWeapon(weaponID)
     end
 end
 
+validTargetType={
+[1]=true,
+[2]=true,
+
+}
 function script.QueryWeapon(weaponID)
     if WeaponsTable[weaponID] then
         return WeaponsTable[weaponID].emitpiece
@@ -1537,37 +1643,41 @@ end
 
 function script.AimWeapon(weaponID, heading, pitch)
 		targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
-		
-		if targetType == 2 then
-			return true
-		end
-		
-		if not targetType or  (targetType ~= 1 )  then
-			echo("TargetType:"..targetType.." TargetID:");echo(targetID)
+	
+		if not targetType or  (not validTargetType[targetType])  then
+			-- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
 			return false 
 		end
-		
+		-- echo(targetType, targetID)
+		dist = 0
+		if targetType == 2 then
+			dist = distanceOfUnitToPoint(unitID, targetID[1],targetID[2],targetID[3])		
+		elseif targetType == 1 then
+			dist = distanceUnitToUnit(unitID, targetID)
+			-- echo("Distance to target:"..distanceUnitToUnit(unitID, targetID))
+		end
+				
 		--Do not aim at your own disguise civilian
-		if spGetUnitTeam(targetID) == gaiaTeamID then		
-				if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
+		if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
+			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
 					echo("Target is disguised civilian of asset")		
 					return false
-				end
+			end
 		end
 		
 		--if distance to target is smaller then 500 switch to pistol
-		echo("Distance to target:"..distanceUnitToUnit(unitID, targetID))
-		if distanceUnitToUnit(unitID, targetID) < 250 then 
+
+		if dist  < 250 then 
 			Hide(Gun)
 			Show(Pistol)
-			if weaponID == 1 then 		
-	
+			boolPistol = true
+			if weaponID == 1 then 	
 				return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
-			end		
-			
+			end				
 		else
 			Hide(Pistol)
 			Show(Gun)
+			boolPistol = false
 			if weaponID ~= 1 then 			
 				return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
 			end	
