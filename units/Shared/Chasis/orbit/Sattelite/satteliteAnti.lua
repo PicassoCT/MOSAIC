@@ -1,6 +1,6 @@
-local ComSat = Satellite:New{
-	name = "Communication Satellite ",
-	Description = " MOSAIC Standardized Communication Satellite ",
+local AntiSat = Satellite:New{
+	name = "Anti Satellite  Satellite",
+	Description = "Destroys other satellites ",
 
 	corpse						= "",
 	maxDamage          		= 500,
@@ -22,11 +22,11 @@ local ComSat = Satellite:New{
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks
     },
-		category = [[orbit]],
+		category = [[ORBIT]],
 }
 
 return lowerkeys({
 	--Temp
-	["satellitecom"] = ComSat:New(),
+	["satelliteanti"] = AntiSat:New(),
 	
 })
