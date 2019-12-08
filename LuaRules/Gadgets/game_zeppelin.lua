@@ -11,8 +11,9 @@ function gadget:GetInfo()
 end
 
 zeppelins={
-		[UnitDefNames["satellitecom"].id]=true,
 		[UnitDefNames["satellitescan"].id]=true,	
+		[UnitDefNames["satellitegodrod"].id]=true,	
+		[UnitDefNames["satelliteanti"].id]=true,	
 		}
 zeppelin={}
 

@@ -168,8 +168,9 @@ function getSatteliteTypes(UnitDefs)
 	assert(UnitDefs)
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
-		"satellitecom",
-		"satellitescan"
+		"satelliteanti",
+		"satellitescan",
+		"satellitegodrod"		
 	}
 	return getTypeTable(UnitDefNames, typeTable)
 end
@@ -429,7 +430,8 @@ function getSatelliteTimeOutTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["satellitecom"].id] = 3*90 * framesPerSecond,
+		[UnitDefNames["satelliteanti"].id] = 2*90 * framesPerSecond,
+		[UnitDefNames["satellitegodrod"].id] = 3*90 * framesPerSecond,
 		[UnitDefNames["satellitescan"].id] = 90 * framesPerSecond
 	}
 	
@@ -440,7 +442,8 @@ function getSatelliteTypesSpeedTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["satellitecom"].id] = 30/framesPerSecond,
+		[UnitDefNames["satellitegodrod"].id] = 30/framesPerSecond,
+		[UnitDefNames["satelliteanti"].id] = 30/framesPerSecond,
 		[UnitDefNames["satellitescan"].id] = 90/framesPerSecond
 	}
 	
@@ -451,7 +454,8 @@ function getSatelliteAltitudeTable(UnitDefs) --per Frame
 UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
-		[UnitDefNames["satellitecom"].id] = 1400,
+		[UnitDefNames["satellitegodrod"].id] = 1450,
+		[UnitDefNames["satelliteanti"].id] = 1550,
 		[UnitDefNames["satellitescan"].id] = 1500
 	}
 	
