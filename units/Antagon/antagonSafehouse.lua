@@ -56,7 +56,6 @@ local AntagonSafeHouse = Building:New{
 	"civilianagent",
 	
 	"nimrod",
-	"noone",
 	"propagandaserver",
 	"assembly",
 	"launcher"

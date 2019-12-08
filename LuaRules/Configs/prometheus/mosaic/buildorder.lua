@@ -38,7 +38,6 @@ gadget.unitBuildOrder = UnitBag{
 		"propagandaserver",
 		"assembly",
 		"nimrod",
-		"noone",
 		"propagandaserver",
 		"launcher",
 		"launcherstep",
@@ -66,7 +65,6 @@ gadget.unitBuildOrder = UnitBag{
 		"propagandaserver",
 		"assembly",
 		"nimrod",
-		"noone",
 		"propagandaserver",	
 		"civilianagent"
 	},

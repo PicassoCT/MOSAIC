@@ -29,7 +29,7 @@ local NimRodGun = Building:New{
 	footprintZ = 4,
 	
 	script 					= "nimrodscript.lua",
-	objectName        	= "nimrod.s3o",
+	objectName        	= "nimrod.dae",
 
 	canCloak =true,
 	cloakCost=0.0001,

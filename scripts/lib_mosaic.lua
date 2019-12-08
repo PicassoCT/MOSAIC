@@ -271,7 +271,6 @@ function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 	if myDefID == UnitDefNames["antagonsafehouse"].id then
 		typeTable={
 		"nimrod",
-		"noone",
 		"propagandaserver",
 		"assembly",
 		"launcher"
@@ -279,7 +278,7 @@ function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 	else
 	typeTable={
 		"nimrod",
-		"noone",
+		"blacksite",
 		"propagandaserver",
 		"assembly"
 		}
@@ -318,7 +317,7 @@ function  getSafeHouseUpgradeTypeTable(UnitDefs)
 	typeTable={
 		"nimrod",
 		"assembly",
-		"noone",
+		"blacksite",
 		"propagandaserver",
 		"launcher"
 	}
@@ -467,7 +466,6 @@ function getUnitScaleTable(UnitDefNames)
 	["protagonsafehouse"]=1.0,
 	["nimrod"]=1.0,
 	["assembly"]=1.0,
-	["noone"]=1.0,
 	["propagandaserver"]=1.0,
 	["launcher"]=1.0,
 	["ground_truck_mg"]=1.0,

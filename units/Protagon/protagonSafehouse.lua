@@ -58,7 +58,6 @@ local ProtagonSafeHouse = Building:New{
 	"civilianagent",
 	
 	"nimrod",
-	"noone",
 	"propagandaserver",
 	"blacksite",
 	"assembly",

@@ -5,15 +5,13 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-
 center = piece "center"
-aimpiece = piece "aimpiece"
-nano = piece "nano"
-shotemit = piece "shotemit"
+turret = piece "turret"
+projectile = piece "projectile"
+projectile = piece "projectile"
 GameConfig = getGameConfig()
+
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -28,30 +26,24 @@ function script.Create()
 	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 end
 
-function script.Killed(recentDamage, _)
-
-    createCorpseCUnitGeneric(recentDamage)
-    return 1
+function script.HitByWeapon(x, z, weaponDefID, damage)
 end
-
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
-    return shotemit
+    return projectile
 end
 
-
-
 function script.QueryWeapon1()
-    return shotemit
+    return projectile
 end
 
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 
         Turn(center, z_axis, Heading, 0.4)
-        Turn(aimpiece, x_axis, -pitch, 1.3)
-		WaitForTurns(aimpiece)
+        Turn(turret, x_axis, -pitch, 1.3)
+		WaitForTurns(turret)
 		WaitForTurns(center)
     return true
 end
@@ -98,8 +90,13 @@ end
 
 
 function script.QueryBuildInfo()
-    return aimpiece
+    return projectile
 end
 
-Spring.SetUnitNanoPieces(unitID, { nano })
+Spring.SetUnitNanoPieces(unitID, { projectile })
 
+function script.Killed(recentDamage, _)
+
+    createCorpseCUnitGeneric(recentDamage)
+    return 1
+end
