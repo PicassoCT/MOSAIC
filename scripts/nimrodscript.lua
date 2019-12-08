@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 center = piece "center"
 turret = piece "turret"
 projectile = piece "projectile"
-projectile = piece "projectile"
+Icon = piece "Icon"
 GameConfig = getGameConfig()
 
 
@@ -41,10 +41,9 @@ end
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 
-        Turn(center, z_axis, Heading, 0.4)
-        Turn(turret, x_axis, -pitch, 1.3)
-		WaitForTurns(turret)
-		WaitForTurns(center)
+        WTurn(center, y_axis, Heading, 0.4)
+        WTurn(turret, x_axis, pitch, 1.3)
+		
     return true
 end
 
@@ -99,4 +98,19 @@ function script.Killed(recentDamage, _)
 
     createCorpseCUnitGeneric(recentDamage)
     return 1
+end
+
+
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
 end
