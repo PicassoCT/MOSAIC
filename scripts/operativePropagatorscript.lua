@@ -143,7 +143,7 @@ gameConfig = getGameConfig()
 raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = gameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
-local comSatDefID = UnitDefNames["satellitecom"].id
+local scanSatDefID = UnitDefNames["satellitescan"].id
 local raidBonusFactorSatellite=  gameConfig.agentConfig.raidBonusFactorSatellite
 oldRaidDownTime = myRaidDownTime
 
@@ -155,7 +155,7 @@ function raidReactor()
 		boolComSatelliteNearby= false
 		process(getAllNearUnit(unitID, raidComRange),
 				function (id)
-					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == comSatDefID then
+					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == scanSatDefID then
 						myRaidDownTime= math.max( -100, myRaidDownTime - 100* raidBonusFactorSatellite)
 						boolComSatelliteNearby = true
 					end				
