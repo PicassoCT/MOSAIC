@@ -49,11 +49,15 @@ local NimRodGun = Building:New{
 		buildoptions = 
 	{
 		"satellitescan",
-		"satellitecom"
+		"satelliteanti",
+		"satellitegodrod",
 	},
+	
+	fireState= 1,
+	
 	weapons={
 			[1]={name  = "railgun",
-				onlyTargetCategory = [[GROUND BUILDING]],
+				onlyTargetCategory = [[GROUND BUILDING ORBIT]],
 			},
 		},	
 
