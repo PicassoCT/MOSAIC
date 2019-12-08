@@ -701,7 +701,8 @@ end
 		
 		mydefID = Spring.GetUnitDefID(uID)
 		
-		
+		assert(not Spring.GetUnitIsDead(startNodeID) )
+		assert(not Spring.GetUnitIsDead(RouteTabel[startNodeID][targetNodeID]) )
 		GG.EventStream:CreateEvent(
 		travellFunction,
 		{--persistance Pack
