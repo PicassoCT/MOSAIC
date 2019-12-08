@@ -1,7 +1,6 @@
 local armorDefs = {
 	satellite = {
-	"satellitescan",
-	"satellitecom"
+	"satellitescan"
 	},
 	
 }
