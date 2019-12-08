@@ -11,7 +11,10 @@ end
 
 
 center = piece "center"
+Icon = piece "Icon"
 function script.Create()
+	Spin(center,y_axis,math.rad(1),0.5)
+	if Icon then 	Hide(Icon) end
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 end
@@ -40,3 +43,17 @@ function script.Deactivate()
     return 0
 end
 
+
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
+end
