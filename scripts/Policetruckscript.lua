@@ -33,7 +33,73 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
 	StartThread(delayedSirens)
+	StartThread(theySeeMeRollin)
 end
+
+function theySeeMeRollin()
+	oldConvictID = unitID --police will never chase itself
+	x,y,z = Spring.GetUnitPosition(unitID)
+	local lastSeenPos ={x=x,y=y,z=z};	
+	local searchRange =1
+	--echo("Entering Police truck loop")
+	while true do
+		if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
+		
+		if ( GG.PoliceInPursuit and  GG.PoliceInPursuit[unitID] )	then
+			local convictID = GG.PoliceInPursuit[unitID]
+			while not Spring.GetUnitIsDead(convictID) do
+			
+				-- there is still a person to pursuit..
+				if oldConvictID ~= convictID then
+					x,y,z = Spring.GetUnitPosition(convictID)
+					lastSeenPos ={x=x,y=y,z=z};	
+					oldConvictID = convictID; 
+					searchRange =1; 
+				end
+					
+					boolDisguised= false
+					if GG.DisguiseCivilianFor then 
+						for agentID, disguiseID in pairs( GG.DisguiseCivilianFor) do
+							if agentID == convictID then
+							boolDisguised = true
+							end
+						end
+					end
+						
+						--if visible hunt him
+					if boolDisguised == false then
+						lastSeenPos.x,lastSeenPos.y,lastSeenPos.z = Spring.GetUnitPosition(convictID)
+						Command(unitID, "attack", attackerID,  {})	
+					echo("Hunting visible convict "..convictID)
+					else -- circle around last known position
+						searchRange = math.min(2000,searchRange + 33)
+						xOffset, zOffset= math.random(0,searchRange)*randSign(),  math.random(0,searchRange)*randSign()
+						
+						if math.random(0,100) > 85 then -- a little suspense now and then
+							lastSeenPos.x,lastSeenPos.y,lastSeenPos.z = Spring.GetUnitPosition(convictID)
+						end
+						
+						targetCopy= lastSeenPos
+						targetCopy.x, targetCopy.z = targetCopy.x + xOffset,targetCopy.z + zOffset,
+						Command(unitID, "go", targetCopy,  {})
+					echo("Hunting hidden convict "..convictID)						
+					end
+				
+					
+			Sleep(500)	
+			end
+		end
+		
+		searchRange = math.min(4000,searchRange + 33)
+		xOffset, zOffset= math.random(0,searchRange)*randSign(),  math.random(0,searchRange)*randSign()
+		targetCopy= lastSeenPos
+		targetCopy.x, targetCopy.z = targetCopy.x + xOffset,targetCopy.z + zOffset,
+		Command(unitID, "go", targetCopy,  {})	
+		echo("Patrollin officer "..unitID)	
+		Sleep(8000)
+	end
+end
+
 
 function delayedSirens()
 	sleeptime= math.random(1,10)

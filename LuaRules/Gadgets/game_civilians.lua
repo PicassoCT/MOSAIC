@@ -156,10 +156,9 @@ end
 			end
 			
 			if officerID then
-				delay = 5*30
-				echo("Spawning Police Officer")
-				Command(officerID, "attack", attackerID, {})
-				delayedCommand(officerID, "attack" , attackerID,  {"shift"} , delay)
+				if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
+				GG.PoliceInPursuit[officerID]= attackerID 
+				Command(officerID, "attack", attackerID,  {})			
 
 			end
 		end

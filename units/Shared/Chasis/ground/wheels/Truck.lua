@@ -94,6 +94,7 @@ local ground_truck_antiarmor = Truck:New{
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
+	fireState= 0,
 	
 	customparams = {
 		helptext		= "Military Truck/Technical",
@@ -154,6 +155,8 @@ local PoliceTruck = Truck:New{
 	acceleration = 1.7,
 	brakeRate = 0.1,
 	turninplace		= true,
+	canAttack = true,
+	canMove = true,
 	
 	transportSize = 16,
 	transportCapacity = 1,

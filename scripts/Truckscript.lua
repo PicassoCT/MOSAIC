@@ -33,13 +33,18 @@ function script.Create()
 	
 	if boolIsCivilianTruck == false then
 		StartThread(loadLoadOutLoop)
+	
 	end
-
+	if UnitDefs[myDefID].name == "polictruck" then
+			StartThread(theySeeMeRollin)
+	end	
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
 
 end
+
+
 
 function loadLoadOutLoop()
 	waitTillComplete(unitID)

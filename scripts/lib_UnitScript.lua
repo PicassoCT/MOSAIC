@@ -5562,7 +5562,7 @@ function Command(id, command, target, option)
 	
 	if command == "attack" then
 		coords={}
-		if type(target) == "table" then
+		if type(target) == "table" and target.x then
 			coords = { target.x, target.y, target.z }
 		else
 			coords = { target }
