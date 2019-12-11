@@ -45,7 +45,7 @@ local OperativeAsset = Human:New{
 			[1]={name  = "pistol",
 				onlyTargetCategory = [[GROUND ]],
 			},
-			[2]={name  = "machinegun",
+			[2]={name  = "submachingegun",
 				onlyTargetCategory = [[GROUND]],
 			},
 			[3]={name  = "sniperrifle",
