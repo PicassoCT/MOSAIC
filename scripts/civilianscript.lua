@@ -99,19 +99,22 @@ local bodyConfig={}
 
 
 	iShoppingConfig =  math.floor(math.random(1,8))
-
-function script.Create()
-    Move(root,y_axis, -3,0)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	StartThread(turnDetector)
+	function variousBodyConfigs()
 	
-
-
 	bodyConfig.boolShoppingLoaded = (iShoppingConfig == 1)
 	bodyConfig.boolCarrysBaby =( iShoppingConfig == 2)
 	bodyConfig.boolTrolley = (iShoppingConfig == 3)
 	bodyConfig.boolHandbag =( iShoppingConfig == 4)
 	bodyConfig.boolLoaded = ( iShoppingConfig <  5)
+	end
+
+function script.Create()
+    Move(root,y_axis, -3,0)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(turnDetector)
+	hideAll(unitID)
+	variousBodyConfigs()
+
 	bodyConfig.boolArmed = false
 	bodyConfig.boolWounded = false
 	bodyConfig.boolInfluenced = false
@@ -132,17 +135,17 @@ end
 function testAnimationLoop()
 	Sleep(500)
 	while true do
-	
+
 		-- makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], "RAPHI")
 		-- Show(TablesOfPiecesGroups["cellphone"][1])
 		-- Show(cigarett)
-		Show(ShoppingBag)
+		-- Show(ShoppingBag)
 		-- Show(Handbag)
 		-- Show(cofee)
-		Show(SittingBaby)
+		-- Show(SittingBaby)
 		-- Show(ak47)
 		
-		PlayAnimation("UPBODY_LOADED", nil, 1.0)
+		-- PlayAnimation("UPBODY_LOADED", nil, 1.0)
 	
 		Sleep(100)
 	end
@@ -152,7 +155,7 @@ function bodyBuild()
 
 
 
-	hideAll(unitID)
+
 	Show(UpBody)
 	Show(center)
 	showT(TablesOfPiecesGroups["UpLeg"])
@@ -189,7 +192,7 @@ end
 
 function script.Killed(recentDamage, _)
 
- --   createCorpseCUnitGeneric(recentDamage)
+ --   --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
@@ -2717,7 +2720,7 @@ normalBehavourStateMachine = {
 										boolPlayerUnitNearby, T = isPlayerUnitNearby(unitID, 250)
 										if  boolPlayerUnitNearby == true then
 											setOverrideAnimationState(eAnimState.handsup, eAnimState.slaved, false, nil, true )
-											runAwayFrom(unitID, T[1], 314)
+											runAwayFrom(unitID, T[1], GameConfig.civilianPanicRadius)
 										end
 									end,
 }
@@ -2921,8 +2924,29 @@ UpperAnimationStateFunctions ={
 						Sleep(100)
 						return eAnimState.slaved
 					end,
-[eAnimState.coverwalk] = function()					
+[eAnimState.coverwalk] = function()		
+			
+						Hide(ShoppingBag);				
+						Hide(SittingBaby);				
+						Hide(trolley);			
+						Hide(Handbag);
+			
 						Sleep(100)
+							Turn(UpArm1,z_axis,math.rad(0), 7)
+							Turn(UpArm1,y_axis,math.rad(0), 7)
+							Turn(UpArm1,x_axis,math.rad(-120), 7)
+							
+							Turn(LowArm1,y_axis,math.rad(0), 7)
+							Turn(LowArm1,x_axis,math.rad(-60), 7)
+							Turn(LowArm1,z_axis,math.rad(-45), 7)
+							
+							Turn(UpArm2,x_axis,math.rad(-120), 7)
+							Turn(UpArm2,y_axis,math.rad(0), 7)
+							Turn(UpArm2,z_axis,math.rad(0), 7)
+							
+							Turn(LowArm2,x_axis,math.rad(-60), 7)
+							Turn(LowArm2,y_axis,math.rad(0), 7)
+							Turn(LowArm2,z_axis,math.rad(45), 7)
 						return eAnimState.coverwalk
 						end,	
 [eAnimState.wounded] = function()					
@@ -2974,16 +2998,13 @@ LowerAnimationStateFunctions ={
 						return eAnimState.catatonic
 						end,
 [eAnimState.coverwalk] = function()					
-							PlayAnimation(randT(lowerBodyAnimations[eAnimState.coverwalk]))
-							
-						echo("TODO: Civilian State coverwalk")
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded]),upperBodyPieces)							
+					
 						return eAnimState.coverwalk
 						end,	
 
 [eAnimState.wounded] = function()					
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded]))
-							
-						echo("TODO: Civilian State coverwalk")
 						return eAnimState.wounded
 						end,							
 [eAnimState.trolley] = function()
