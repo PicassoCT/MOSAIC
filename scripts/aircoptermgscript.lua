@@ -19,7 +19,7 @@ end
 
 function script.Killed(recentDamage, _)
 
-    createCorpseCUnitGeneric(recentDamage)
+    --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 

@@ -56,6 +56,7 @@ function spawnDecoyCivilian()
 		Spring.SetUnitAlwaysVisible(civilianID, true)
 	
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
+			if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 			GG.DisguiseCivilianFor[civilianID]= unitID
 			
 			if civilianID then

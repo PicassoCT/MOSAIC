@@ -29,6 +29,7 @@ end
 
 function script.Create()
 	Spring.SetUnitAlwaysVisible(unitID, true)
+	Spring.SetUnitNeutral(unitID, false)
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 	showAndTell()
@@ -36,18 +37,23 @@ function script.Create()
 	StartThread(theySeeMeRollin)
 end
 
+
+
+
 function theySeeMeRollin()
 	oldConvictID = unitID --police will never chase itself
 	x,y,z = Spring.GetUnitPosition(unitID)
 	local lastSeenPos ={x=x,y=y,z=z};	
 	local searchRange =1
+	options = 4
+
 	--echo("Entering Police truck loop")
 	while true do
 		if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
 		
 		if ( GG.PoliceInPursuit and  GG.PoliceInPursuit[unitID] )	then
-			local convictID = GG.PoliceInPursuit[unitID]
-			while not Spring.GetUnitIsDead(convictID) do
+			convictID = GG.PoliceInPursuit[unitID]
+			while isUnitAlive(convictID) == true  do
 			
 				-- there is still a person to pursuit..
 				if oldConvictID ~= convictID then
@@ -68,9 +74,10 @@ function theySeeMeRollin()
 						
 						--if visible hunt him
 					if boolDisguised == false then
-						lastSeenPos.x,lastSeenPos.y,lastSeenPos.z = Spring.GetUnitPosition(convictID)
-						Command(unitID, "attack", attackerID,  {})	
-					echo("Hunting visible convict "..convictID)
+						lastSeenPos.x,lastSeenPos.y,lastSeenPos.z = Spring.GetUnitPosition(convictID)	
+						
+						Command(unitID, "attack", convictID,  {"shift"})	
+						-- echo("Hunting visible convict "..convictID)
 					else -- circle around last known position
 						searchRange = math.min(2000,searchRange + 33)
 						xOffset, zOffset= math.random(0,searchRange)*randSign(),  math.random(0,searchRange)*randSign()
@@ -81,8 +88,10 @@ function theySeeMeRollin()
 						
 						targetCopy= lastSeenPos
 						targetCopy.x, targetCopy.z = targetCopy.x + xOffset,targetCopy.z + zOffset,
-						Command(unitID, "go", targetCopy,  {})
-					echo("Hunting hidden convict "..convictID)						
+
+						Command(unitID, "go",  {x=targetCopy.x, y= targetCopy.y, z= target.z}, {})
+
+					-- echo("Hunting hidden convict "..convictID)						
 					end
 				
 					
@@ -92,9 +101,18 @@ function theySeeMeRollin()
 		
 		searchRange = math.min(4000,searchRange + 33)
 		xOffset, zOffset= math.random(0,searchRange)*randSign(),  math.random(0,searchRange)*randSign()
+		
 		targetCopy= lastSeenPos
+		if math.random(0,100) > 50 then
+			ed = getNearestGroundEnemy(unitID, UnitDefs)
+			if ed then
+				targetCopy= getUnitPositionV(ed)
+			end
+		end
+		
 		targetCopy.x, targetCopy.z = targetCopy.x + xOffset,targetCopy.z + zOffset,
-		Command(unitID, "go", targetCopy,  {})	
+
+		Command(unitID, "go", {x=targetCopy.x, y= targetCopy.y, z= targetCopy.z},  {})	
 		echo("Patrollin officer "..unitID)	
 		Sleep(8000)
 	end
@@ -136,7 +154,7 @@ end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(loadOutUnitID) then Spring.DestroyUnit(loadOutUnitID,true,true) end
 
-    createCorpseCUnitGeneric(recentDamage)
+    --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 

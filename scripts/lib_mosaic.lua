@@ -34,7 +34,7 @@ function getGameConfig()
 	 
 	 --civilianbehaviour
 	 civilianPanicRadius = 350,
-	 civilianInterestRadius = 750,
+	 civilianInterestRadius = 150,
 	 groupChatDistance = 150,
 	 inHundredChanceOfInterestInDisaster = 75,
 	 inHundredChanceOfDisasterWailing = 35,
@@ -265,6 +265,15 @@ function  getMobileCivilianDefIDTypeTable(UnitDefs)
 	}
 	
 	return getTypeTable(UnitDefNames, typeTable)
+end
+
+function  getPanicableCiviliansTypeTable(UnitDefs)
+	assert(UnitDefs)
+	typeTable={
+		"civilian"
+	}
+	
+	return getTypeTable(getUnitDefNames(UnitDefs), typeTable)
 end
 function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 	UnitDefNames = getUnitDefNames(UnitDefs)

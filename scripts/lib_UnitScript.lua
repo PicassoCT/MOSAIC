@@ -744,7 +744,7 @@ function getNearestGroundEnemy(id, UnitDefs)
 		--early out
 		eType = Spring.GetUnitDefID(ed)
 		
-		if UnitDef[eType].isAirUnit == false then return ed end
+		if UnitDefs[eType].isAirUnit == false then return ed end
 		eTeam = Spring.GetUnitTeam()
 		allUnitsOfTeam = Spring.GetTeamUnits(eTeam)
 		mindist = math.huge
@@ -756,7 +756,7 @@ function getNearestGroundEnemy(id, UnitDefs)
 			if ied ~= ed then
 				distUnit = distanceUnitToUnit(id, ied)
 				if distUnit and distUnit < mindist then
-					if UnitDef[Spring.GetUnitDefID(ied)].isAirUnit == false then
+					if UnitDefs[Spring.GetUnitDefID(ied)].isAirUnit == false then
 						mindist = distUnit
 						foundUnit = ied
 					end
@@ -954,11 +954,15 @@ function doesUnitExistAlive(id)
 end
 
 -->Unit Verfication
-function isAlive(unitid)
-	validUnit = Spring.GetUnitIsDead(unitid)
-	if validUnit and validUnit == true then return true end
+function isUnitAlive(unitid)
+	if not unitid then return false end
 	
-	return false
+	isDead = Spring.GetUnitIsDead(unitid)
+	if isDead == nil then return true end
+	
+	if isDead and isDead == true then return false end
+	
+	return true
 end
 
 function confirmUnit(id)
@@ -972,7 +976,7 @@ function affirm(T)
 	if type(T) == "number" then t1 = T; T = { [1] = t1 } end
 	resulT = process(T,
 	function(id)
-		if isAlive(id) == true then return id end
+		if isUnitAlive(id) == true then return id end
 	end)
 	if resulT then
 		if #resulT > 1 then
@@ -5509,8 +5513,8 @@ function transferOrders(originID, targetID)
 end
 
 --> move away from another unit by distance*scalingfactor
-function runAwayFrom(unitID, horrorID, distanceToRun)
-	x,y,z = Spring.GetUnitPosition(unitID)
+function runAwayFrom(id, horrorID, distanceToRun)
+	x,y,z = Spring.GetUnitPosition(id)
 	hx,hy,hz = Spring.GetUnitPosition(horrorID)
 
 	-- Compute Offset
@@ -5519,7 +5523,10 @@ function runAwayFrom(unitID, horrorID, distanceToRun)
 	hx,hz= hx/maX, hz/maX
 	hx,hz = hx*distanceToRun, hz*distanceToRun
 	hx,hz = x + hx , z  + hz
-	Command( unitID, "go", {x = hx, y= y, z = hz})
+	Command( id, "stop", {},{})
+	Spring.SetUnitMoveGoal(id, hx, y, z)
+	-- Command( id, "go", {x = hx, y= y, z = hz},{})
+	-- Command( id, "go", {x = hx, y= y, z = hz},{"shift"})
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)
@@ -5548,8 +5555,8 @@ end
 
 
 -->Generic Simple Commands
-function Command(id, command, target, option)
-	
+function Command(id, command, tarGet, option)
+	local target = tarGet
 	options = option or {}
 	--abort previous command
 	
@@ -5562,38 +5569,54 @@ function Command(id, command, target, option)
 	
 	if command == "attack" then
 		coords={}
-		if type(target) == "table" and target.x then
-			coords = { target.x, target.y, target.z }
-		else
-			coords = { target }
+		targetType = type(target)
+		
+		if targetType == "table" then
+			if #target == 1 then
+				Spring.GiveOrderToUnit(id, CMD.ATTACK, target, option)	
+				return				
+			end
+			
+			if target.x then
+				Spring.GiveOrderToUnit(id, CMD.ATTACK,  { target.x, target.y, target.z }, option)
+				return
+			else 
+				Spring.GiveOrderToUnit(id, CMD.ATTACK,  { target[1], target[2], target[3] }, option)
+				return
+			end			
 		end
-		Spring.SelectUnitArray({ [1] = id })
-		Spring.GiveOrder(CMD.FIGHT, coords, CMD.OPT_RIGHT + CMD.OPT_SHIFT)
-	end
+		
+		if targetType== "number" then
+			Spring.GiveOrderToUnit(id, CMD.ATTACK, {target}, option)	
+			return				
+		end
+	end		
+		
+
 	
-	if command == "repair" or command == "assist" then
-		Spring.GiveOrder(id, CMD.GUARD, { target }, { "shift" })
+	if command == "repair" or command == "assist" or command == "guard" then
+		Spring.GiveOrderToUnit(id, CMD.GUARD, { target }, { "shift" })
 	end
 	
 	if command == "go" then
 		Spring.GiveOrderToUnit(id, CMD.MOVE, { target.x, target.y, target.z }, options) --{"shift"}
-		return
+
 	end
 	
 	if command == "stop" then
 		Spring.GiveOrderToUnit(id, CMD.STOP, {}, {})
-		return
+
 	end
 	
 	if command == "setactive" then
 		if type(option)== "number" then
-			Spring.GiveOrderToUnit(unitID, CMD.ONOFF, option,{})
+			Spring.GiveOrderToUnit(id, CMD.ONOFF, option,{})
 		else
 			currentState = GetUnitValue(COB.ACTIVATION)
 			if currentState == 0 then currentState = 1 else currentState = 0 end
 			SetUnitValue(COB.ACTIVATION, currentState)
 		end
-		return
+
 	end
 	
 	if command == "cloak" then
@@ -5601,9 +5624,8 @@ function Command(id, command, target, option)
 		if currentState == 0 then currentState = 1 else currentState = 0 end
 		
 		Spring.UnitScript.SetUnitValue(COB.CLOAKED, currentState)
-		
-		return
 	end
+
 end
 
 function getUnitValueEnv(unitID, ValueName)
