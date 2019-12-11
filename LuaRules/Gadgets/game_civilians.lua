@@ -33,6 +33,7 @@ end
 	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	local CivAnimStates = getCivilianAnimationStates()
+	local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
 	
 	GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
 	GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
@@ -92,7 +93,7 @@ end
 				--filter out civilians
 				if  id then
 				defID = Spring.GetUnitDefID(id)				
-					if defID and MobileCivilianDefIds[defID] then
+					if defID and PanicAbleCivliansTable[defID] then
 						return id
 					end
 				end
@@ -142,24 +143,27 @@ end
 	
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, attackerID, attackerDefID, attackerTeam)
 		if MobileCivilianDefIds[unitDefID] then
-			if not attackerID then attackerID = Spring.GetUnitLastAttacker(unitID) end
-			
-			officerID = nil
-			if maxNrPolice > 0 then				
-				px,py,pz = getPoliceSpawnLocation(attackerID)
-				direction = math.random(1,4)
-				officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
-				activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime
-			else --reasign one
-				officerID = randDict(activePoliceUnitIds_DispatchTime)		
-				activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime				
-			end
-			
-			if officerID then
-				if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
-				GG.PoliceInPursuit[officerID]= attackerID 
-				Command(officerID, "attack", attackerID,  {})			
+			attackerID =  Spring.GetUnitLastAttacker(unitID) 
+			if attackerID and isUnitAlive(attackerID) == true then
+				
+				officerID = nil
+				if maxNrPolice > 0 then				
+					px,py,pz = getPoliceSpawnLocation(attackerID)
+					direction = math.random(1,4)
+					officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
+					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime + math.random(1, GameConfig.policeMaxDispatchTime)	
+				else --reasign one
+					officerID = randDict(activePoliceUnitIds_DispatchTime)		
+					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime	+ math.random(1, GameConfig.policeMaxDispatchTime)			
+				end
+				
+				if officerID then
+					if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
+					GG.PoliceInPursuit[officerID]= attackerID 
+					Command(officerID, "attack", {attackerID},  4)	
+							
 
+				end
 			end
 		end
 	end
@@ -621,10 +625,12 @@ end
 		--we where obviously attacked - flee from attacker
 		if persPack.myHP < hp then
 			attackerID = Spring.GetUnitLastAttacker(myID)
-			if attackerID then
+			if attackerID and isUnitAlive(attackerID)== true then
+				--panic ends with distance
+				if distanceUnitToUnit (id, attackerID) > GameConfig.civilianPanicRadius then persPack.myHP = hp end
 				runAwayFrom(myID, attackerID, 500)
 				UnitSetAnimationState(id, CivAnimStates.slaved, CivAnimStates.coverwalk, true, false)
-				return frame + 1000 , persPack
+				return frame + 30 , persPack
 			end
 		end
 		
