@@ -7,8 +7,6 @@ include "lib_mosaic.lua"
 myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
 
 SIG_PISTOL =1
 SIG_GUN = 2
@@ -110,6 +108,11 @@ function script.Create()
 	StartThread(breathing)
 	
 end
+
+function script.HitByWeapon(x, z, weaponDefID, damage)
+	return damage
+end
+
 
 function breathing()
 	local breathSpeed= 0.1/3
@@ -1363,16 +1366,24 @@ LowerAnimationStateFunctions ={
 						end,
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
-						resetT(lowerBodyPieces, 22)
+						resetT(lowerBodyPieces, 12)
 						Sleep(100)
 						return eAnimState.standing
 					end,
 [eAnimState.aiming] = 	function () 
-						PlayAnimation(randT(lowerBodyAnimations[eAnimState.aiming]),upperBodyPieces)	
+						AimDelay=AimDelay+100
+						if boolWalking == true  or AimDelay < 1000 then
+							AimDelay=0	
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)	
+						elseif AimDelay > 1000 then		
+
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.standing]),upperBodyPieces)	
+						end
 						Sleep(100)
 						return eAnimState.aiming
 					end
 }
+AimDelay = 0
 LowerAnimationState = eAnimState.standing
 boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
