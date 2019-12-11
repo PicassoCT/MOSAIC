@@ -111,7 +111,7 @@ else -- UNSYNCED
 	
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage)
-		Spring.Echo("Arriving in Unsynced")
+		-- Spring.Echo("Arriving in Unsynced")
 		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
 
     end
