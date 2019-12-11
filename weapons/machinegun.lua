@@ -26,7 +26,7 @@ local weaponDef = {
     craterMult = 0,
     burst = 15,
     burstrate = 0.1,
-    soundStart = "weapons/machinegun/salvo.wav",
+    soundStart = "weapons/machinegun/salvo2.ogg",
     soundtrigger = 1,
     SweepFire = 1,
     --apperance

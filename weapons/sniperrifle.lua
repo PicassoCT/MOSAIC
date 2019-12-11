@@ -8,7 +8,7 @@ local weaponDef = {
 	
 	model="sniperProj.s3o",
 	smokeTrail=true,
-	 soundFire = "weapons/sniper/sniperFire.wav",
+	 soundFire = "sounds/sniper/sniperFire.ogg",
 	
 	areaOfEffect = 1,
 	--physics

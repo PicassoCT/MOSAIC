@@ -1,11 +1,11 @@
---- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "pistol" --this is the actually maschinegune of the inferno trooper
+
+local weaponName = "submachingegun" 
 local weaponDef = {
-    name = "Glock S19 - Pistol",
+    name = "Automatic",
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 100,
+        default = 10,
         HeavyArmor = 1,
     },
     areaOfEffect = 8,
@@ -15,22 +15,25 @@ local weaponDef = {
 
     --physics
     weaponVelocity = 850,
-    reloadtime = 3,
-    range = 200,
+    reloadtime = 15,
+    range = 350,
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
+	collideFirebase  = false,
+	
     craterMult = 0,
-    burst = 3,
-    burstrate = 0.5,
-    soundStart = "weapons/pistol/pistolshot1.ogg",
+    burst = 15,
+    burstrate = 0.1,
+    soundStart = "weapons/machinegun/salvo.ogg",
     soundtrigger = 1,
-    SweepFire = false,
+    SweepFire = 1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,
     stages = 20,
     separation = 0.2,
 }
+
 return lowerkeys({ [weaponName] = weaponDef })
