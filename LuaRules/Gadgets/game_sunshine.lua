@@ -214,7 +214,7 @@ if gadgetHandler:IsSyncedCode() then
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 		
 		
-		if timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME and gameConfig.instance.culture == "arabic" then
+		if math.random(1,10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) and gameConfig.instance.culture == "arabic" then
 			Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer"..math.random(1,3)..".ogg", 0.9)
 		end
 	
