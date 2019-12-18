@@ -11,7 +11,7 @@ local unitDef = {
 	--cost
 	buildCostMetal = 200,
 	buildCostEnergy = 50,
-	buildTime = 12,
+	buildTime = 60,
 	CanReclaim=false,
 	buildDistance = 200,
 	onoffable=true,
@@ -51,11 +51,12 @@ local unitDef = {
 	--air
 		 --copter  --jet -- bomber --long range rocket
 		
-			"air_copter_ssied",	"air_copter_mg", 
+			"air_copter_ssied",	"air_copter_mg", "air_copter_antiarmor",
 
 	--ground
 		--turret --snake --walker(roach) --truck
-			"ground_turret_ssied",	"ground_turret_mg", "ground_truck_assembly",	
+			"ground_turret_ssied",	"ground_turret_mg", "ground_truck_assembly",
+			"ground_walker_mg"
 	},
 	
 	

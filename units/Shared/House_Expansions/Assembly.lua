@@ -8,7 +8,7 @@ local Assembly = Building:New{
 	explodeAs			= "none",
 
 
-
+	buildTime =    60,
 	Builder = true,
 	nanocolor=[[0 0 0]], --
 	CanReclaim=false,	

@@ -9,7 +9,7 @@ local groundturretssied =  Turret:New{
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 0,
-	buildTime = 5,
+	buildTime = 35,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,
@@ -82,9 +82,9 @@ local groundturretmg =  Turret:New{
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 0,
-	buildTime = 5,
+	buildTime = 35,
 	--Health
-	maxDamage = 50,
+	maxDamage = 500,
 	idleAutoHeal = 0,
 	--Movement
 	
@@ -147,7 +147,7 @@ local ground_turret_antiarmor =  Turret:New{
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 0,
-	buildTime = 5,
+	buildTime = 35,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

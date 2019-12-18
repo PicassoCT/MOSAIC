@@ -3,6 +3,7 @@ local Propagandaserver = Building:New{
 	maxDamage           = 500,
 	mass                = 500,
 
+	buildTime = 25,
 	buildCostMetal      = 150,
 	EnergyStorage = 0,
 	EnergyUse = 0,
