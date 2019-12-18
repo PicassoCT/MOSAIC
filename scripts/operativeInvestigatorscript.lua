@@ -70,17 +70,21 @@ function spawnDecoyCivilian()
 end
 
 
-boolStartDecloaking= false
-boolStartCloaking= true
+	boolCloaked = false
 
 function cloakLoop()
+	local spGetUnitIsActive = Spring.GetUnitIsActive
+	local boolIsCurrentlyActive= spGetUnitIsActive(unitID)
 	Sleep(100)
 	waitTillComplete(unitID)
-	Sleep(100)
-	while true do 
 
-		if boolStartCloaking== true and not  GG.OperativesDiscovered[unitID]  then
-			boolStartCloaking = false
+	Sleep(100)
+
+	
+	while true do 
+	
+		boolIsCurrentlyActive = spGetUnitIsActive(unitID)
+		if boolCloaked == false and boolIsCurrentlyActive == true  and not  GG.OperativesDiscovered[unitID]  then
 			setSpeedEnv(unitID, 0.35)
 			Spring.Echo("Hide "..UnitDefs[Spring.GetUnitDefID(unitID)].name)			
 			SetUnitValue(COB.WANT_CLOAK, 1)
@@ -89,8 +93,9 @@ function cloakLoop()
 			StartThread(spawnDecoyCivilian)
 		end
 		Sleep(100)
-		if boolStartDecloaking == true then
-			boolStartDecloaking= false
+		if (boolIsCurrentlyActive == true and  GG.OperativesDiscovered[unitID] ) or  
+		 (boolIsCurrentlyActive == false and boolCloaked == true )then
+	
 			setSpeedEnv(unitID, 1.0)
 			Spring.Echo("Show "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
 			SetUnitValue(COB.WANT_CLOAK, 0)
@@ -104,15 +109,13 @@ function cloakLoop()
 	end
 end
 
-boolCloaked = false
+
 function script.Activate()
-	boolStartCloaking = true
 	return 1
   
 end
 
 function script.Deactivate()
-	boolStartDecloaking= true
     return 0
 end
 
@@ -141,7 +144,7 @@ gameConfig = getGameConfig()
  raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = gameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
-local scanSatDefID = UnitDefNames["sattelitescan"].id
+local scanSatDefID = UnitDefNames["satellitescan"].id
 local raidBonusFactorSatellite=  gameConfig.agentConfig.raidBonusFactorSatellite
 
 function raidReactor()
