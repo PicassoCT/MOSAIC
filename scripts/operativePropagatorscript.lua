@@ -89,7 +89,6 @@ function cloakLoop()
 		boolIsCurrentlyActive = spGetUnitIsActive(unitID)
 		if boolCloaked == false and boolIsCurrentlyActive == true  and not  GG.OperativesDiscovered[unitID]  then
 			setSpeedEnv(unitID, 0.35)
-			Spring.Echo("Hide "..UnitDefs[Spring.GetUnitDefID(unitID)].name)			
 			SetUnitValue(COB.WANT_CLOAK, 1)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
 			boolCloaked=true
@@ -100,7 +99,6 @@ function cloakLoop()
 		 (boolIsCurrentlyActive == false and boolCloaked == true )then
 	
 			setSpeedEnv(unitID, 1.0)
-			Spring.Echo("Show "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
 			SetUnitValue(COB.WANT_CLOAK, 0)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
 			boolCloaked= false
@@ -193,13 +191,11 @@ function gunAimFunction(weaponID, heading, pitch)
 end
 
 function raidFireFunction(weaponID, heading, pitch)
-	Spring.Echo("raidFireFunction")
 	myRaidDownTime = raidDownTime
 	return true
 end
 
 function pistolFireFunction(weaponID, heading, pitch)
-Spring.Echo("pistolFireFunction")
 
 return true
 end

@@ -4072,7 +4072,7 @@ function echo2DMap(tmap, squareSideDimension, valueSignMap)
 	
 	valueSignMap = valueSignMap or {
 		[0] = " ҉ ",
-		[false] = " ● ",
+		[false] = " �? ",
 		[true] = " "
 	}
 	

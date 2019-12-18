@@ -156,6 +156,7 @@ end
 
 
 function moveFactory ()
+	Sleep(100)
 	local spGetUnitPosition=Spring.GetUnitPosition
 	local spMovCtrlSetPos=Spring.MoveCtrl.SetPosition
 	local spValidUnitID=Spring.ValidUnitID
