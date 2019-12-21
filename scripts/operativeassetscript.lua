@@ -623,6 +623,8 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget 
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
+
+
 function pistolAimFunction(weaponID, heading, pitch)
 	boolAiming = true
 
@@ -718,8 +720,7 @@ function script.AimWeapon(weaponID, heading, pitch)
 		--Do not aim at your own disguise civilian
 		if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
 			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
-					echo("Target is disguised civilian of asset")		
-					return false
+				return false
 			end
 		end
 		
