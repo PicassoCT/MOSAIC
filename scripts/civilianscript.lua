@@ -5,9 +5,16 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 local Animations = include('animations_civilian_female.lua')
-
+include "lib_mosaic.lua"
 myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
+
+SIG_ANIM = 1
+SIG_UP = 2
+SIG_LOW = 4
+SIG_COVER_WALK= 8
+SIG_BEHAVIOUR_STATE_MACHINE = 16
+SIG_PISTOL = 32
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -31,6 +38,7 @@ local cofee = piece('cofee');
 local ProtestSign = piece"ProtestSign"
 local cellphone1 = piece"cellphone1"
 local cellphone2 = piece"cellphone2"
+local molotow = piece"molotow"
 local ShoppingBag = piece"ShoppingBag"
 
 local scriptEnv = {
@@ -66,11 +74,7 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget 
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
-SIG_ANIM = 1
-SIG_UP = 2
-SIG_LOW = 4
-SIG_COVER_WALK= 8
-SIG_BEHAVIOUR_STATE_MACHINE = 16
+
 GameConfig = getGameConfig()
 
 eAnimState = getCivilianAnimationStates()
@@ -94,6 +98,9 @@ lowerBodyPieces =
 	[Feet1 	]= Feet1,
 	[Feet2	]= Feet2
 }
+
+catatonicBodyPieces = lowerBodyPieces
+catatonicBodyPieces[UpBody] = UpBody
 --equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
 
@@ -102,23 +109,26 @@ boolWalking = false
 boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
+boolAiming = false
 
 loadMax = 8
 
 local bodyConfig={}
 
 
-	iShoppingConfig =  math.floor(math.random(1,8))
+	iShoppingConfig = math.random(1,8)
 	function variousBodyConfigs()
-	
-	bodyConfig.boolShoppingLoaded = (iShoppingConfig == 1)
-	bodyConfig.boolCarrysBaby =( iShoppingConfig == 2)
-	bodyConfig.boolTrolley = (iShoppingConfig == 3)
-	bodyConfig.boolHandbag =( iShoppingConfig == 4)
-	bodyConfig.boolLoaded = ( iShoppingConfig <  5)
+		
+		bodyConfig.boolShoppingLoaded = (iShoppingConfig == 1)
+		bodyConfig.boolCarrysBaby =( iShoppingConfig == 2)
+		bodyConfig.boolTrolley = (iShoppingConfig == 3)
+		bodyConfig.boolHandbag =( iShoppingConfig == 4)
+		bodyConfig.boolLoaded = ( iShoppingConfig <  5)
+		bodyConfig.boolProtest = GG.GlobalGameState== GameConfig.GameState.anarchy
 	end
 
 function script.Create()
+	makeWeaponsTable()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
@@ -135,7 +145,7 @@ function script.Create()
 
 	setupAnimation()
 
-	setOverrideAnimationState( eAnimState.slaved, eAnimState.standing,  true, nil, false)
+	setOverrideAnimationState( eAnimState.standing, eAnimState.standing,  true, nil, false)
 
 	StartThread(threadStarter)
 
@@ -155,7 +165,7 @@ function testAnimationLoop()
 		-- Show(SittingBaby)
 		-- Show(ak47)
 		
-		-- PlayAnimation("UPBODY_LOADED", nil, 1.0)
+		PlayAnimation("UPBODY_LOADED", nil, 1.0)
 	
 		Sleep(100)
 	end
@@ -200,31 +210,8 @@ function bodyBuild()
 	end
 end
 
-function script.Killed(recentDamage, _)
 
- --   --createCorpseCUnitGeneric(recentDamage)
-    return 1
-end
 
---- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return center
-end
-
-function script.QueryWeapon1()
-    return center
-end
-
-function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
-
-    return true
-end
-
-function script.FireWeapon1()
-
-    return true
-end
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 
 
@@ -317,14 +304,7 @@ lowerBodyAnimations = {
 
 }
 
-	
-if bodyConfig.boolLoaded == true then
-	boolDecoupled=true
 
-	uppperBodyAnimations[eAnimState.walking] = "UPBODY_LOADED"
-else
-	uppperBodyAnimations[eAnimState.walking] = "SLAVED"
-end
 
 accumulatedTimeInSeconds=0
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -526,18 +506,20 @@ end
 
 normalBehavourStateMachine = {
 	--Normal gamestate is handled external
-	[GameConfig.GameState.Anarchy] = function(lastState, currentState)
+	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
+											bodyConfig.boolArmed = (math.random(1,10) > 5)
 											if bodyConfig.boolArmed == true then
 												Show(ak47)
-												-- if anarchy and armed then civilians either join a faction (protagon, antagon, or fight against these)	
-												--TODO
 											else
-												playerName = getRandomPlayerName()
-												makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
-												Show(molotow)
-												setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false, function() return GameConfig.GameState.Anarchy == GG.GlobalGameState end  , true)
+												bodyConfig.boolProtest = (math.random(1,10) > 5)
+												if bodyConfig.boolProtest == true then
+													playerName = getRandomPlayerName()
+													makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
+													Show(molotow)
+													setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
+												end
 											end	
 											
 										end
@@ -545,7 +527,7 @@ normalBehavourStateMachine = {
 										
 										
 									end,
-	[GameConfig.GameState.PostLaunch]= function(lastState, currentState)
+	[GameConfig.GameState.postlaunch]= function(lastState, currentState)
 										if unitID%2 == 1 then -- cower catatonic
 											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
 											setSpeedEnv(unitID, 0)
@@ -555,11 +537,11 @@ normalBehavourStateMachine = {
 											Command(unitID,go, {x = x+ math.random(-100,100), y =y, z =z+ math.random(-100,100)})
 										end
 									end,
-	[GameConfig.GameState.GameOver]= function(lastState, currentState)
+	[GameConfig.GameState.gameover]= function(lastState, currentState)
 											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
 											setSpeedEnv(unitID, 0)
 									end,
-	[GameConfig.GameState.Pacification]= function(lastState, currentState)
+	[GameConfig.GameState.pacification]= function(lastState, currentState)
 										boolPlayerUnitNearby, T = isPlayerUnitNearby(unitID, 250)
 										if  boolPlayerUnitNearby == true then
 											setOverrideAnimationState(eAnimState.handsup, eAnimState.slaved, false, nil, true )
@@ -655,7 +637,7 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 				boolLowerStateWaitForEnd = true
 			end
 
-	
+			Sleep(30)
 		 end
 			 
 		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
@@ -677,10 +659,10 @@ end
 
 --</Exposed Function>
 function conditionalFilterOutUpperBodyTable()
-	if boolDecoupled == false  then 
-		return {}
-	 else
+	if boolDecoupled == true or boolAiming == true then 
 		return upperBodyPieces
+	 else
+		return {}
 	end
 end
 
@@ -710,33 +692,73 @@ function playUpperBodyIdleAnimation()
 end
 
 UpperAnimationStateFunctions ={
+[eAnimState.catatonic] = 	function () 
+							PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),catatonicBodyPieces)
+							Turn(UpBody,x_axis, math.rad(126.2),60)
+							Turn(center,x_axis, math.rad(-91.2),45)
+							return eAnimState.talking
+							end,
 [eAnimState.talking] = 	function () 
-								PlayAnimation(randT(uppperBodyAnimations[eAnimState.talking]))			
+								if bodyConfig.boolLoaded == false then
+									PlayAnimation(randT(uppperBodyAnimations[eAnimState.talking]))	
+								end
 							return eAnimState.talking
 						end,
 [eAnimState.standing] = function () 
-							Turn(LowArm1, y_axis,math.rad(12),1)
-							Turn(LowArm2, y_axis,math.rad(-12),1)
-							WaitForTurns(TablesOfPiecesGroups["LowArm"])
-								 if boolDecoupled == true then
-									if math.random(1,10) > 5 then
-									playUpperBodyIdleAnimation()	
-									resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
-									end
-								 end
 							Sleep(30)	
+							if bodyConfig.boolArmed == true then
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]),lowerBodyPieces)
+								return eAnimState.standing
+							end
+							
+							if bodyConfig.boolProtest == true then
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.protest]), lowerBodyPieces)
+								return eAnimState.standing
+							end
+							
+							if bodyConfig.boolLoaded == true then
+								return eAnimState.standing
+							end
+							
+							
+							if bodyConfig.boolLoaded == false then
+								Turn(LowArm1, y_axis,math.rad(12),1)
+								Turn(LowArm2, y_axis,math.rad(-12),1)
+								WaitForTurns(TablesOfPiecesGroups["LowArm"])
+							end
+							
+							
+							if boolDecoupled == true then
+								if math.random(1,10) > 5 then
+								playUpperBodyIdleAnimation()	
+								resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
+								end
+							 end
+							 
+							
 							return eAnimState.standing
 						end,
 [eAnimState.walking] = 	function () 
+							if bodyConfig.boolArmed == true  then
+								PlayAnimation("UPBODY_LOADED")		
+								return eAnimState.walking									
+							end	
+
+							if bodyConfig.boolProtest == true  then
+								return eAnimState.protest									
+							end								
+						
+							if  bodyConfig.boolLoaded == true  then
+								PlayAnimation("UPBODY_LOADED")		
+								return eAnimState.walking									
+							end	
+
 							if bodyConfig.boolLoaded == false and math.random(1,100) > 50 then
-								boolDecoupled = true
 									playUpperBodyIdleAnimation()
 									WaitForTurns(upperBodyPieces)
 									resetT(upperBodyPieces, math.pi,false, true)
-								boolDecoupled = false
-							elseif bodyConfig.boolLoaded == true then
-								PlayAnimation("UPBODY_LOADED")									
-							end							
+								return eAnimState.walking
+							end											
 					
 						return eAnimState.walking
 					end,
@@ -758,7 +780,7 @@ UpperAnimationStateFunctions ={
 					end,		
 
 [eAnimState.protest] = 	function () 
-								 makeProtestSign(8, 3, 34, 62, deterministicElement(unitID, signMessages), getRandomPlayerName())		
+		
 								PlayAnimation(randT(uppperBodyAnimations[eAnimState.protest]))															
 						return eAnimState.protest
 					end,						
@@ -796,6 +818,12 @@ UpperAnimationStateFunctions ={
 						Sleep(100)
 						return eAnimState.wounded
 						end,
+						
+[eAnimState.aiming] = function()					
+						Sleep(100)
+						PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]),lowerBodyPieces)
+						return eAnimState.aiming
+						end,
 
 }
 
@@ -817,12 +845,23 @@ LowerAnimationStateFunctions ={
 						return eAnimState.aiming
 					end,					
 [eAnimState.walking] = function()
+									
+						if bodyConfig.boolArmed == true then	
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), conditionalFilterOutUpperBodyTable())					
+							return eAnimState.walking
+						end
 						
-
+						Turn(center,y_axis, math.rad(0), 12)
+							
 						if bodyConfig.boolWounded == true then
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],conditionalFilterOutUpperBodyTable()))
 							return eAnimState.walking
-						end
+						end					
+						
+						if bodyConfig.boolProtest == true then	
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), upperBodyPieces)
+							return eAnimState.walking
+						end				
 						
 						if bodyConfig.boolTrolley == true then
 								PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), conditionalFilterOutUpperBodyTable())					
@@ -836,9 +875,9 @@ LowerAnimationStateFunctions ={
 						echo("TODO: Civilian State transported")
 						return eAnimState.transported
 						end,	
-[eAnimState.catatonic] = function()
-						echo("TODO: Civilian State catatonic")
-						return eAnimState.catatonic
+[eAnimState.slaved] = function()
+						Sleep(100)
+						return eAnimState.slaved
 						end,
 [eAnimState.coverwalk] = function()					
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded]),upperBodyPieces)							
@@ -857,8 +896,22 @@ LowerAnimationStateFunctions ={
 
 						return eAnimState.trolley
 						end,	
+[eAnimState.aiming] = 	function () 
+						AimDelay=AimDelay+100
+						if boolWalking == true  or AimDelay < 1000 then
+							AimDelay=0	
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)	
+						elseif AimDelay > 1000 then		
+
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.standing]),upperBodyPieces)	
+						end
+						Sleep(100)
+						return eAnimState.aiming
+					end			
+						
 }
 
+AimDelay = 0
 LowerAnimationState = eAnimState.standing
 boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
@@ -926,8 +979,9 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
+	boolWalking = false
 	-- Spring.Echo("Stopping")
-	StartThread(setAnimationState, eAnimState.standing, eAnimState.standing)
+	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 end
 
 function getWalkingState()
@@ -938,7 +992,8 @@ return eAnimState.walking
 end
 
 function script.StartMoving()
-	StartThread(setAnimationState,getWalkingState(), getWalkingState())
+	boolWalking = true
+	setOverrideAnimationState(eAnimState.walking, eAnimState.walking,  true, nil, true)
 end
 
 function script.StopMoving()
@@ -1126,4 +1181,69 @@ sentence = string.gsub(sentence, "Ü", personification or "")
 			end
 	end
 	
+end
+
+
+function akAimFunction(weaponID, heading, pitch)
+	if bodyConfig.boolArmed == false or oldBehaviourState ~= GameConfig.GameState.anarchy then return false end
+	
+	boolAiming = true
+	setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	WTurn(center,y_axis,heading, 22)
+	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
+	boolAiming = false
+return  allowTarget(weaponID)
+end
+
+function akFireFunction(weaponID, heading, pitch)
+	boolAiming = false
+
+	return true
+end
+
+
+
+WeaponsTable = {}
+function makeWeaponsTable()
+    WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = akAimFunction, firefunc = akFireFunction, signal = SIG_PISTOL }
+end
+
+function script.AimFromWeapon(weaponID)
+    if WeaponsTable[weaponID] then
+        return WeaponsTable[weaponID].aimpiece
+    else
+        return ak47
+    end
+end
+
+function script.QueryWeapon(weaponID)
+    if WeaponsTable[weaponID] then
+        return WeaponsTable[weaponID].emitpiece
+    else
+        return ak47
+    end
+end
+
+function script.AimWeapon(weaponID, heading, pitch)
+    if WeaponsTable[weaponID] then
+        if WeaponsTable[weaponID].aimfunc then
+            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+        else
+            WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
+            WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
+            return allowTarget(weaponID)
+        end
+    end
+    return false
+end
+
+
+function allowTarget(weaponID)
+	
+	return true
+end
+function script.Killed(recentDamage, _)
+
+ --   --createCorpseCUnitGeneric(recentDamage)
+    return 1
 end
