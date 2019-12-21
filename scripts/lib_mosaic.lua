@@ -40,6 +40,7 @@ function getGameConfig()
 	 inHundredChanceOfDisasterWailing = 35,
 	 mainStreetModulo	= 4,
 	 maxIterationSteps = 2048,
+	 chanceCivilianArmsItselfInHundred = 50,
 	 
 	 maxNrPolice = 6,
 	 policeMaxDispatchTime = 2000,
