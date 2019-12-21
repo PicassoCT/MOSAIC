@@ -4,9 +4,17 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 local Animations = include('animations_civilian_female.lua')
-
+include "lib_mosaic.lua"
 myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
+
+SIG_ANIM = 1
+SIG_UP = 2
+SIG_LOW = 4
+SIG_COVER_WALK= 8
+SIG_BEHAVIOUR_STATE_MACHINE = 16
+
+SIG_PISTOL = 32
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -64,12 +72,6 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget 
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
-SIG_ANIM = 1
-SIG_UP = 2
-SIG_LOW = 4
-SIG_COVER_WALK= 8
-SIG_BEHAVIOUR_STATE_MACHINE = 16
-SIG_PISTOL = 32
 
 GameConfig = getGameConfig()
 
@@ -122,6 +124,7 @@ local bodyConfig={}
 
 boolStarted= false
 function script.Create()
+	makeWeaponsTable()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
@@ -184,11 +187,6 @@ function bodyBuild()
 	end
 end
 
-function script.Killed(recentDamage, _)
-
- --   --createCorpseCUnitGeneric(recentDamage)
-    return 1
-end
 
 
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
@@ -240,6 +238,9 @@ end
 
 
 uppperBodyAnimations = {
+	[eAnimState.aiming] = { 
+		[1] = "UPBODY_AIMING",
+	},
 	[eAnimState.slaved] = { 
 		[1] = "SLAVED",	
 	},
@@ -369,7 +370,7 @@ function setupAnimation()
 		return axis
 	end
 
-    local offsets = constructSkeleton(unitID, map.root, {0,0,0});
+    local offsets = constructSkeleton(unitID, map.center, {0,0,0});
     
     for a,anim in pairs(Animations) do
         for i,keyframe in pairs(anim) do
@@ -493,7 +494,7 @@ end
 
 normalBehavourStateMachine = {
 	--Normal gamestate is handled external
-	[GameConfig.GameState.Anarchy] = function(lastState, currentState)
+	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
 											if bodyConfig.boolArmed == true then
@@ -504,7 +505,7 @@ normalBehavourStateMachine = {
 												playerName = getRandomPlayerName()
 												makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
 												Show(molotow)
-												setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false, function() return GameConfig.GameState.Anarchy == GG.GlobalGameState end  , true)
+												setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false, function() return GameConfig.GameState.anarchy == GG.GlobalGameState end  , true)
 											end	
 											
 										end
@@ -512,7 +513,7 @@ normalBehavourStateMachine = {
 										
 										
 									end,
-	[GameConfig.GameState.PostLaunch]= function(lastState, currentState)
+	[GameConfig.GameState.postlaunch]= function(lastState, currentState)
 										if unitID%2 == 1 then -- cower catatonic
 											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
 											setSpeedEnv(unitID, 0)
@@ -526,7 +527,7 @@ normalBehavourStateMachine = {
 											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
 											setSpeedEnv(unitID, 0)
 									end,
-	[GameConfig.GameState.Pacification]= function(lastState, currentState)
+	[GameConfig.GameState.pacification]= function(lastState, currentState)
 										boolPlayerUnitNearby, T = isPlayerUnitNearby(unitID, 250)
 										if  boolPlayerUnitNearby == true then
 											setOverrideAnimationState(eAnimState.handsup, eAnimState.slaved, false, nil, true )
@@ -622,7 +623,7 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 				boolLowerStateWaitForEnd = true
 			end
 
-	
+			Sleep(30)
 		 end
 			 
 		if AnimationstateUpperOverride then	UpperAnimationState = AnimationstateUpperOverride end
@@ -644,7 +645,7 @@ end
 
 --</Exposed Function>
 function conditionalFilterOutUpperBodyTable()
-	if boolDecoupled == false  then 
+	if boolDecoupled == false and boolAiming == true then 
 		return {}
 	 else
 		return upperBodyPieces
@@ -682,19 +683,35 @@ UpperAnimationStateFunctions ={
 							return eAnimState.talking
 						end,
 [eAnimState.standing] = function () 
-							Turn(LowArm1, y_axis,math.rad(12),1)
-							Turn(LowArm2, y_axis,math.rad(-12),1)
-							WaitForTurns(TablesOfPiecesGroups["LowArm"])
-								 if boolDecoupled == true then
-									if math.random(1,10) > 5 then
-									playUpperBodyIdleAnimation()	
-									resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
-									end
-								 end
+							
+							if boolArmed == true then
+								PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]),lowerBodyPieces)
+								return eAnimState.standing
+							end
+							
+							if bodyConfig.boolLoaded == false then
+								Turn(LowArm1, y_axis,math.rad(12),1)
+								Turn(LowArm2, y_axis,math.rad(-12),1)
+								WaitForTurns(TablesOfPiecesGroups["LowArm"])
+							end
+							
+							
+							if boolDecoupled == true then
+								if math.random(1,10) > 5 then
+								playUpperBodyIdleAnimation()	
+								resetT(TablesOfPiecesGroups["UpArm"],math.pi,false,true)
+								end
+							 end
+							 
 							Sleep(30)	
 							return eAnimState.standing
 						end,
 [eAnimState.walking] = 	function () 
+							if boolArmed == true then
+								PlayAnimation("UPBODY_LOADED")		
+								return eAnimState.walking									
+							end
+
 							if bodyConfig.boolLoaded == false and math.random(1,100) > 50 then
 								boolDecoupled = true
 									playUpperBodyIdleAnimation()
@@ -763,6 +780,12 @@ UpperAnimationStateFunctions ={
 						Sleep(100)
 						return eAnimState.wounded
 						end,
+						
+[eAnimState.aiming] = function()					
+						Sleep(100)
+						PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]),lowerBodyPieces)
+						return eAnimState.aiming
+						end,
 
 }
 
@@ -775,17 +798,15 @@ LowerAnimationStateFunctions ={
 						Sleep(10)
 						return eAnimState.standing
 					end,
-[eAnimState.aiming] = 	function () 
-						
-						WaitForTurns(lowerBodyPieces)
-						resetT(lowerBodyPieces, math.pi,false, true)
-						WaitForTurns(lowerBodyPieces)
-						Sleep(10)
-						return eAnimState.aiming
-					end,					
+				
 [eAnimState.walking] = function()
 						
-
+						Turn(center,y_axis, math.rad(0), 12)
+						if boolArmed == true then	
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), conditionalFilterOutUpperBodyTable())					
+							return eAnimState.walking
+						end
+						
 						if bodyConfig.boolWounded == true then
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],conditionalFilterOutUpperBodyTable()))
 							return eAnimState.walking
@@ -835,14 +856,7 @@ LowerAnimationStateFunctions ={
 						end
 						Sleep(100)
 						return eAnimState.aiming
-					end	,
-[eAnimState.aiming] = 	function () 
-
-						PlayAnimation("UPBODY_AIMING", nil, 3.0)
-
-						Sleep(100)
-						return eAnimState.aiming 
-					end					
+					end			
 						
 }
 
@@ -914,8 +928,9 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
+	boolWalking = false
 	-- Spring.Echo("Stopping")
-	StartThread(setAnimationState, eAnimState.standing, eAnimState.standing)
+	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 end
 
 function getWalkingState()
@@ -926,7 +941,8 @@ return eAnimState.walking
 end
 
 function script.StartMoving()
-	StartThread(setAnimationState,getWalkingState(), getWalkingState())
+	boolWalking = true
+	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
 
 function script.StopMoving()
@@ -1149,33 +1165,39 @@ function spawnDecoyCivilian()
 
 	return 0
 end
-boolStartDecloaking= false
-boolStartCloaking= true
+
+	boolCloaked = false
 
 function cloakLoop()
+	local spGetUnitIsActive = Spring.GetUnitIsActive
+	local boolIsCurrentlyActive= spGetUnitIsActive(unitID)
 	Sleep(100)
 	waitTillComplete(unitID)
 	Sleep(100)
+	
+	setSpeedEnv(unitID, 0.35)
+	SetUnitValue(COB.WANT_CLOAK, 1)
+	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+	boolCloaked=true
+	StartThread(spawnDecoyCivilian)
+	
 	while true do 
-		if boolStartCloaking== true and not  GG.OperativesDiscovered[unitID]  then
-			boolStartCloaking = false
-			SetUnitValue(COB.WANT_CLOAK, 1)
-			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-			StartThread(spawnDecoyCivilian)
+	
+		boolIsCurrentlyActive = spGetUnitIsActive(unitID)
 
+		Sleep(100)
+		if (boolIsCurrentlyActive == true and  GG.OperativesDiscovered[unitID] ) or  
+		 (boolIsCurrentlyActive == false and boolCloaked == true )then
+	
+			setSpeedEnv(unitID, 1.0)
+			SetUnitValue(COB.WANT_CLOAK, 0)
+			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
+			boolCloaked= false
+			if civilianID and doesUnitExistAlive(civilianID) == true then
+				Spring.DestroyUnit(civilianID, true, true)
+			end
 		end
 		Sleep(100)
-		if boolStartDecloaking == true then
-				boolStartDecloaking = false
-				SetUnitValue(COB.WANT_CLOAK, 0)
-				Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {2}, {}) 
-				if civilianID and doesUnitExistAlive(civilianID) == true then
-					Spring.DestroyUnit(civilianID,true,true)
-				end
-
-
-		end
-
 	end
 end
 
@@ -1183,7 +1205,8 @@ justOnce = 1
 function script.Activate()
 	if justOnce > 0 then
 		justOnce = justOnce  -1
-		boolStartCloaking = true
+
+
 		Spring.SetUnitTooltip(unitID, "Militia")
 
 	end
@@ -1192,36 +1215,20 @@ function script.Activate()
 end
 
 function script.Deactivate()
-	boolStartDecloaking = true
+
 	Spring.SetUnitTooltip(unitID, "Militia : Cover blown")
+	boolArmed = true
+	Show(ak47)
+	
     return 0
 end
 
 
 
 
-function allowTarget(weaponNumber)
-	isGround, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponNumber)
-	if isGround and isGround == 1  then
-	
-		if spGetUnitTeam(targetID) == gaiaTeamID then
 
-			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then
-		
-			return false
-			end
-		end
-	end
-return true
-end
 
-function pistolFireFunction(weaponID, heading, pitch)
-	boolAiming = false
-
-	return true
-end
-
-function pistolAimFunction(weaponID, heading, pitch)
+function akAimFunction(weaponID, heading, pitch)
 	boolAiming = true
 
 	setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
@@ -1231,10 +1238,17 @@ function pistolAimFunction(weaponID, heading, pitch)
 return  allowTarget(weaponID)
 end
 
+function akFireFunction(weaponID, heading, pitch)
+	boolAiming = false
+
+	return true
+end
+
+
 
 WeaponsTable = {}
 function makeWeaponsTable()
-    WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
+    WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = akAimFunction, firefunc = akFireFunction, signal = SIG_PISTOL }
 end
 
 function script.AimFromWeapon(weaponID)
@@ -1260,18 +1274,40 @@ function script.AimWeapon(weaponID, heading, pitch)
         else
             WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
             WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
-            return true
+            return allowTarget(weaponID)
         end
     end
     return false
 end
 
+local validTargetType={
+[1]=true,
+[2]=true,
 
+}
+function allowTarget(weaponID)
+		targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
+	
+		if not targetType or  (not validTargetType[targetType])  then
+			-- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
+			return false 
+		end
 
+				
+		--Do not aim at your own disguise civilian
+		if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
+			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
+					return false
+			end
+		end
+		
+	return true
+end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
    return 1
 end
+
 
