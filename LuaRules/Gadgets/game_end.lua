@@ -75,7 +75,7 @@ Spring.SetGameRulesParam("GlobalGameState", state)
 end
 
 function gadget:Initialize()
-	setGlobalGameState(GameConfig.GameState.Normal)
+	setGlobalGameState(GameConfig.GameState.normal)
 	
 	GG.Launchers ={}
 
@@ -116,7 +116,7 @@ end
 								LaunchedRockets[teamID][id] = frame
 								Spring.DestroyUnit(launcherID, false, true)
 								GameStateMachine.Timer = frame
-								setGlobalGameState(GameConfig.GameState.PostLaunch)
+								setGlobalGameState(GameConfig.GameState.postlaunch)
 						end	
 					end
 				end
@@ -138,22 +138,22 @@ end
 					for launcherID, step  in pairs(launchersT) do	
 						if launcherID and step > GameConfig.PreLaunchLeakSteps then
 							GameStateMachine.Timer = frame
-							return GameConfig.GameState.LaunchLeak
+							return GameConfig.GameState.launchleak
 						end		
 					end		
 				end
 			end
 		end		
-			return GameConfig.GameState.Normal
+			return GameConfig.GameState.normal
 		end,
 		
 		["launchleak"]     = function(frame) 
 			if GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames < frame then
 				GameStateMachine.Timer = frame
-				return GameConfig.GameState.Anarchy
+				return GameConfig.GameState.anarchy
 			end
 		
-			return GameConfig.GameState.LaunchLeak
+			return GameConfig.GameState.launchleak
 		end,
 		
 		["postlaunch"]        = function(frame)
@@ -169,7 +169,7 @@ end
 				end	
 			end	
 		
-			return GameConfig.GameState.PostLaunch
+			return GameConfig.GameState.postlaunch
 		end,
 		
 		["anarchy"]        = function(frame)
@@ -187,11 +187,11 @@ end
 					
 				if boolNoReadyLaunchers == true then
 					GameStateMachine.Timer = frame
-					return GameConfig.GameState.Pacification				
+					return GameConfig.GameState.pacification				
 				end
 			end		
 				
-			return GameConfig.GameState.Anarchy
+			return GameConfig.GameState.anarchy
 		end,
 		
 		["gameover"]       = function(frame) 
@@ -202,10 +202,10 @@ end
 			
 			if GameStateMachine.Timer + GameConfig.TimeForPacification < frame then 
 				GameStateMachine.Timer = frame
-				return GameConfig.GameState.Normal
+				return GameConfig.GameState.normal
 			end
 			
-			return GameConfig.GameState.Pacification
+			return GameConfig.GameState.pacification
 		end,	
 	}
 	
