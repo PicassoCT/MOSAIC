@@ -4266,7 +4266,7 @@ end
 
 --> Execute Random Function in Table
 function randT(Table)
-	assert(Table)
+
 	if #Table == 1 then return Table[1] end
 
 	return Table[math.random(1,#Table)]

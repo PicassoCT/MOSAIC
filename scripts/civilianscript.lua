@@ -105,6 +105,7 @@ boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
 boolAiming = false
+home ={}
 
 loadMax = 8
 
@@ -133,7 +134,7 @@ function script.Create()
 	bodyConfig.boolWounded = false
 	bodyConfig.boolInfluenced = false
 	bodyConfig.boolCoverWalk = false
-	
+	home.x,home.y,home.z= Spring.GetUnitPosition(unitID)
 	bodyBuild()
 
 
@@ -492,17 +493,19 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State)
 end
 
 normalBehavourStateMachine = {
-	[GameConfig.GameState.prelaunch] = function(lastState, currentState)
+	[GameConfig.GameState.launchleak] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
-										
-											x,y,z = 
-											Command(unitID,go, {x = x+ math.random(-100,100), y =y, z =z+ math.random(-100,100)}, {"shift"})
+											if bodyConfig.boolLoaded == false then
+												PlayAnimation("UPBODY_PHONE", lowerBodyPieces)
+											end
 										end
-										
-										--Going home
-										
-										
+											
+											
+										--Going home	
+										Command(unitID,go, {x =home.x, y=home.y, z = home.z}, {})
+										Command(unitID,go, {x =home.x, y=home.y, z = home.z}, {"shift"})
+											
 									end,
 	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
@@ -511,12 +514,14 @@ normalBehavourStateMachine = {
 											
 											if bodyConfig.boolArmed == true then
 												Show(ak47)
+												Hide(ShoppingBag)
 											else
 												bodyConfig.boolProtest = (math.random(1,10) > 5)
 												if bodyConfig.boolProtest == true then
 													playerName = getRandomPlayerName()
 													makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
 													Show(molotow)
+													Hide(ShoppingBag)
 													setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
 												end
 											end	
@@ -543,16 +548,18 @@ normalBehavourStateMachine = {
 										end
 										Sleep(1000)
 										
-										T= getAllNearUnit(unitID, 512)
+										T= getAllNearUnit(unitID, 1024)
 										T= process(T, function(id) 
 														if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
 															return id 
 														end
 													end)
-										ed = randT(T)
-										
-										if ed  then
-											Command(unitID, "attack" , ed,{})
+										if T and #T > 0 then
+											ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
+											
+											if ed  then
+												Command(unitID, "attack" , ed,{})
+											end
 										end
 										Sleep(3000)
 										--pick a side - depending on the money
@@ -581,7 +588,8 @@ normalBehavourStateMachine = {
 											Spring.TransferUnit(unitID, gaiaTeamID)
 											setSpeedEnv(unitID, 1.0)
 											Turn(UpBody,x_axis, math.rad(0),60)
-											Turn(center,x_axis, math.rad(),45)											
+											Turn(center,x_axis, math.rad(0),45)
+											Move(center, y_axis, 0, 60)											
 											hideAll(unitID)
 											bodyConfig.boolArmed = false
 											bodyConfig.boolProtest = false
@@ -742,6 +750,7 @@ UpperAnimationStateFunctions ={
 							PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),catatonicBodyPieces)
 							Turn(UpBody,x_axis, math.rad(126.2),60)
 							Turn(center,x_axis, math.rad(-91.2),45)
+							Move(center, y_axis, -60, 60)
 							return eAnimState.talking
 							end,
 [eAnimState.talking] = 	function () 
