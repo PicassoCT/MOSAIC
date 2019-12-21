@@ -143,7 +143,17 @@ function getAllInSphere(x, y, z, Range, unitID, teamid)
 	return T
 end
 
-
+function isUnitEnemy(teamID, id)
+	eTeam = Spring.GetUnitTeam(id)
+	if eTeam then
+		if eTeam ~= Spring.GetGaiaTeamID() and eTeam ~= teamID then
+			return true
+		else
+			return false
+		end
+	end
+	
+end
 
 --> Removes Units of a Team from a table
 function removeUnitsOfTeam(TableOfUnits, teamid)
@@ -4256,36 +4266,56 @@ end
 
 --> Execute Random Function in Table
 function randT(Table)
+	assert(Table)
 	if #Table == 1 then return Table[1] end
 
 	return Table[math.random(1,#Table)]
 end
 
-function fairRandom(identifier, chance) --chance as factor 0.1 == 1 out of ten is a hit
+function fairRandom(identifier, diffDistance) --chance to get true
 if not GG.FairRandom then  GG.FairRandom = {} end
-if not GG.FairRandom[identifier] then  GG.FairRandom[identifier] = { numberOfCalls=0, pattern = {}} end
+if not GG.FairRandom[identifier] or  GG.FairRandom[identifier].numberOfCalls == 0  then  GG.FairRandom[identifier] = { numberOfCalls=0, pro = 0, contra= 0} end
 
-if GG.FairRandom[identifier].numberOfCalls == 0 then
-	-- new pattern
-	GG.FairRandom[identifier].pattern={}
-	quota = math.ceil(chance*10)
-	index=1
-	while quota > 0 do
-		index= (index+3) % 10
-		if not GG.FairRandom[identifier].pattern[index] then GG.FairRandom[identifier].pattern[index]= false end
-		if math.random(0,1)==1 and GG.FairRandom[identifier].pattern[index]== false then
-		GG.FairRandom[identifier].pattern[index]= true
-		quota= quota -1
+
+ diff = absDistance(GG.FairRandom[identifier].pro , GG.FairRandom[identifier].contra)
+GG.FairRandom[identifier].numberOfCalls = GG.FairRandom[identifier].numberOfCalls + 1
+
+ if diff > diffDistance then
+	if GG.FairRandom[identifier].pro <= GG.FairRandom[identifier].contra then
+		GG.FairRandom[identifier].pro = GG.FairRandom[identifier].pro +1
+		return true
+	else
+		GG.FairRandom[identifier].contra = GG.FairRandom[identifier].contra +1
+		return false
+	end
+
+  else
+
+	minimum = math.min(GG.FairRandom[identifier].contra, GG.FairRandom[identifier].pro)
+	maximum = math.max(GG.FairRandom[identifier].contra, GG.FairRandom[identifier].pro)
+
+	if minimum == maximum then
+
+		if math.random(0,10) >  5 then
+			GG.FairRandom[identifier].pro = GG.FairRandom[identifier].pro +1
+			return true
+		else
+			GG.FairRandom[identifier].contra = GG.FairRandom[identifier].contra +1
+			return false
 		end
 	end
+
+	bResult=  ( math.random(0, maximum- minimum) ) > diff/2
+
+		if bResult == true then
+			GG.FairRandom[identifier].pro = GG.FairRandom[identifier].pro +1
+			return true
+		else
+			GG.FairRandom[identifier].contra = GG.FairRandom[identifier].contra +1
+			return false
+		end
+  end
 end
-
-GG.FairRandom[identifier].numberOfCalls=(GG.FairRandom[identifier].numberOfCalls +1) % 10
-
-
-return  GG.FairRandom[identifier].pattern[(GG.FairRandom[identifier].numberOfCalls%10)]
-end
-
 
 -->a Fairer random Function that selects of a table everyNthElement at least candidatesInInterval Number many elements
 function randFairT(T, candidatesInInterval, everyNthElement)
