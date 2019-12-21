@@ -17,7 +17,7 @@ local CivilianAgent = Human:New{
 	MaxVelocity = 0.7875,
 	
 	buildtime			 = 40,
-	CanAttack = false,
+	CanAttack = true,
 	CanGuard = true,
 
 	CanMove = true,
@@ -37,7 +37,7 @@ local CivilianAgent = Human:New{
 	cloakTimeout = 5,
 	
 	customparams = {
-		helptext		= "Civilian Building",
+		helptext		= "Civilian ",
 		baseclass		= "Human", -- TODO: hacks
     },
 	
