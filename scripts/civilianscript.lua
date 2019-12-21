@@ -66,14 +66,11 @@ local scriptEnv = {
 	z_axis = z_axis,
 }
 
-
-
 local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget 
 local loc_doesUnitExistAlive = doesUnitExistAlive
-
 
 GameConfig = getGameConfig()
 
@@ -103,8 +100,6 @@ catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 --equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
-
-
 boolWalking = false
 boolTurning = false
 boolTurnLeft = false
@@ -115,11 +110,10 @@ loadMax = 8
 
 local bodyConfig={}
 
-
-	iShoppingConfig = math.random(1,8)
+	iShoppingConfig = math.random(0,8)
 	function variousBodyConfigs()
 		
-		bodyConfig.boolShoppingLoaded = (iShoppingConfig == 1)
+		bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
 		bodyConfig.boolCarrysBaby =( iShoppingConfig == 2)
 		bodyConfig.boolTrolley = (iShoppingConfig == 3)
 		bodyConfig.boolHandbag =( iShoppingConfig == 4)
@@ -210,11 +204,7 @@ function bodyBuild()
 	end
 end
 
-
-
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
-
-
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
 -- +STOPED+---------------------------------------------------+    +----------------------------+
@@ -257,9 +247,10 @@ end
 	--Animations can be diffrent depending on buildScript (State_Idle/Walk Animation loaded)
 	-- Usually the Lower animation state is the master- but the upper can detach, so seperate upper Body Animations are possible
 
-
-
 uppperBodyAnimations = {
+	[eAnimState.aiming] = { 
+		[1] = "UPBODY_AIMING",
+	},
 	[eAnimState.slaved] = { 
 		[1] = "SLAVED",	
 	},
@@ -291,7 +282,6 @@ uppperBodyAnimations = {
 	},
 }
 
-
 lowerBodyAnimations = {
 	[eAnimState.walking] = {
 		[1]="WALKCYCLE_UNLOADED"},
@@ -303,8 +293,6 @@ lowerBodyAnimations = {
 		[1]="WALKCYCLE_ROLLY"},
 
 }
-
-
 
 accumulatedTimeInSeconds=0
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -336,7 +324,6 @@ function delayedWoundedWalkAfterCover(timeInSeconds)
 	bodyConfig.boolWounded = true
 	bodyConfig.boolCoverWalk = false
 end
-
 
 -- Civilian
 -- Props:
@@ -479,7 +466,6 @@ function constructSkeleton(unit, piece, offset)
     return bones;
 end
 
-
 local	locAnimationstateUpperOverride 
 local	locAnimationstateLowerOverride
 local	locBoolInstantOverride 
@@ -493,23 +479,36 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State)
 	if boolStartStateMachine == true then
 		StartThread(beeHaviourStateMachine, State)
 	else
-		if bodyConfig.boolInfluenced == true then return end
 		
 		Signal(SIG_BEHAVIOUR_STATE_MACHINE)
-		Hide(ak47)
-		Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
-		bodyConfig.boolArmed = false
+		if bodyConfig.boolArmed == true then
+			Hide(ak47)
+			Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
+			bodyConfig.boolArmed = false
+		end
 		bodyBuild(bodyConfig)
 		Command(unitID, "stop")
 	end
 end
 
 normalBehavourStateMachine = {
-	--Normal gamestate is handled external
+	[GameConfig.GameState.prelaunch] = function(lastState, currentState)
+										-- init clause
+										if lastState ~= currentState then
+										
+											x,y,z = 
+											Command(unitID,go, {x = x+ math.random(-100,100), y =y, z =z+ math.random(-100,100)}, {"shift"})
+										end
+										
+										--Going home
+										
+										
+									end,
 	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
-											bodyConfig.boolArmed = (math.random(1,10) > 5)
+											bodyConfig.boolArmed = (math.random(1,100) > GameConfig.chanceCivilianArmsItselfInHundred)
+											
 											if bodyConfig.boolArmed == true then
 												Show(ak47)
 											else
@@ -522,19 +521,54 @@ normalBehavourStateMachine = {
 												end
 											end	
 											
+											Spring.SetUnitNeutral(unitID, false)	
+											
+											if fairRandom("JoinASide", 5)== true then
+												enemy = Spring.GetUnitNearestEnemy(unitID)
+												if enemy then
+												targetTeamID= Spring.GetUnitTeam(enemy)
+													if targetTeamID then
+														Spring.TransferUnit(unitID, targetTeamID)
+													end
+												end
+											end
+											
 										end
 										
+									
+										ad = Spring.GetUnitNearestAlly(unitID)
+										if ad then
+											x,y,z=Spring.GetUnitPosition(ad)
+											Command(unitID, "go" , {x=x,y=y,z=z},{})
+										end
+										Sleep(1000)
+										
+										T= getAllNearUnit(unitID, 512)
+										T= process(T, function(id) 
+														if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
+															return id 
+														end
+													end)
+										ed = randT(T)
+										
+										if ed  then
+											Command(unitID, "attack" , ed,{})
+										end
+										Sleep(3000)
+										--pick a side - depending on the money
 										
 										
 									end,
 	[GameConfig.GameState.postlaunch]= function(lastState, currentState)
+										Spring.SetUnitNeutral(unitID, true)
+										Spring.TransferUnit(unitID, gaiaTeamID)
 										if unitID%2 == 1 then -- cower catatonic
 											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
 											setSpeedEnv(unitID, 0)
 										else -- run around wailing
 											setOverrideAnimationState(eAnimState.wailing, eAnimState.walking, true, nil, true)
 											x, y,z= Spring.GetUnitPosition(unitID)
-											Command(unitID,go, {x = x+ math.random(-100,100), y =y, z =z+ math.random(-100,100)})
+											Command(unitID, "go", {x = x+ math.random(-100,100), y =y, z =z+ math.random(-100,100)})
 										end
 									end,
 	[GameConfig.GameState.gameover]= function(lastState, currentState)
@@ -542,11 +576,24 @@ normalBehavourStateMachine = {
 											setSpeedEnv(unitID, 0)
 									end,
 	[GameConfig.GameState.pacification]= function(lastState, currentState)
+										if lastState ~= currentState then
+											Spring.SetUnitNeutral(unitID, true)
+											Spring.TransferUnit(unitID, gaiaTeamID)
+											setSpeedEnv(unitID, 1.0)
+											Turn(UpBody,x_axis, math.rad(0),60)
+											Turn(center,x_axis, math.rad(),45)											
+											hideAll(unitID)
+											bodyConfig.boolArmed = false
+											bodyConfig.boolProtest = false
+											bodyBuild()
+										end
+										
 										boolPlayerUnitNearby, T = isPlayerUnitNearby(unitID, 250)
 										if  boolPlayerUnitNearby == true then
 											setOverrideAnimationState(eAnimState.handsup, eAnimState.slaved, false, nil, true )
 											runAwayFrom(unitID, T[1], GameConfig.civilianPanicRadius)
 										end
+
 									end,
 }
 
@@ -647,7 +694,6 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 end
 
 --<Exposed Function>
-
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
 	boolDecoupled = boolDecoupledStates
 	locAnimationstateUpperOverride = AnimationstateUpperOverride
