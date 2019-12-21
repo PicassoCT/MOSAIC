@@ -64,7 +64,7 @@ end
 
 function getRandomPlayerName()
 	T =Spring.GetPlayerList()
-	local numberOfPlayers=#playerIDList
+	local numberOfPlayers=#T
 	result={}
 	
 	for i=1,numberOfPlayers do
