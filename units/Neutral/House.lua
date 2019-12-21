@@ -1,6 +1,6 @@
 local House = Building:New{
 	corpse					= "",
-	maxDamage        	= 500,
+	maxDamage        	= 1500,
 	mass           	= 500,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
