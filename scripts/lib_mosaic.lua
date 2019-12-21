@@ -76,12 +76,12 @@ function getGameConfig()
 		 
 	 --Game States
 	 GameState={
-				["Normal"] = "normal",
-				["LaunchLeak"] = "launchleak",
-				["Anarchy"] = "anarchy",
-				["PostLaunch"] = "postlaunch",
-				["GameOver"] = "gameover",
-				["Pacification"] = "pacification",
+				["normal"] = "normal",
+				["launchleak"] = "launchleak",
+				["anarchy"] = "anarchy",
+				["postlaunch"] = "postlaunch",
+				["gameover"] = "gameover",
+				["pacification"] = "pacification",
 	 },
 	
 	 
