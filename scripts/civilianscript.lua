@@ -536,10 +536,8 @@ normalBehavourStateMachine = {
 														Spring.TransferUnit(unitID, targetTeamID)
 													end
 												end
-											end
-											
-										end
-										
+											end											
+										end										
 									
 										ad = Spring.GetUnitNearestAlly(unitID)
 										if ad then
