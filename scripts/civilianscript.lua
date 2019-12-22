@@ -1298,7 +1298,7 @@ function allowTarget(weaponID)
 	return true
 end
 function script.Killed(recentDamage, _)
-
+-- TODO Test
  --   --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
