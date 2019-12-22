@@ -1225,7 +1225,8 @@ function waitTillComplete(id)
 	
 	while buildProgress and buildProgress < 1.0 or  hp < mHp  do
 			hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
-
+		
+		if not buildProgress then return buildProgress ~= nil end
 		Sleep(500)
 	end
 

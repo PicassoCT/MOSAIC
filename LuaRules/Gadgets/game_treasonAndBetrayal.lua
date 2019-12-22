@@ -36,13 +36,13 @@ if (gadgetHandler:IsSyncedCode()) then
    function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
 	
 		if InterrogateableType[unitdefid] then
-		Spring.Echo("UnitCreated of InterrogateableType")
+		-- Spring.Echo("UnitCreated of InterrogateableType")
 			if father  then		
 				registerChild( unitTeam, father, unitid)		
 			else
 				registerFather( unitTeam, unitid)
 			end
-			Spring.Echo("UnitCreated Registered InterrogateableType")
+			-- Spring.Echo("UnitCreated Registered InterrogateableType")
 		end
 	end
 	

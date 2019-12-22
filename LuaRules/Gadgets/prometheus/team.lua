@@ -119,7 +119,7 @@ Team.UnitCreated = baseMgr.UnitCreated
 
 
 function Team.minBuildOrderFullfilled(unitTeam)
-	Spring.Echo("Prmetheus: Checking Min Buildorder fullfilled")
+	Spring.Echo("Prometheus: Checking Min Buildorder fullfilled")
 local _,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
 
 local checkTable={}
@@ -144,7 +144,7 @@ local unitsToBuild = {}
 local	boolString= "true"
 	if boolMinBuildFullfilled == false then boolString = "false" end
 	
-	Log("MinBuilder is fullfiled:",boolString, " for side ".. side)
+	Log("Prometheus: MinBuilder is fullfiled:",boolString, " for side ".. side)
 	return boolMinBuildFullfilled, unitsToBuild, side
 end
 

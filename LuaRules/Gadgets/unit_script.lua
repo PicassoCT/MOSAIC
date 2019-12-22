@@ -529,7 +529,7 @@ end
 
 local function LoadChunk(filename)
         local text = VFS.LoadFile(filename, VFSMODE)
-			Spring.Echo("Loading File:: "..filename)
+			-- Spring.Echo("Loading File:: "..filename)
         if (text == nil) then
                 Spring.Log(gadget:GetInfo().name, LOG.ERROR, "Failed to load: " .. filename)
                 return nil
@@ -539,7 +539,7 @@ local function LoadChunk(filename)
                 Spring.Log(gadget:GetInfo().name, LOG.ERROR, "Failed to load: " .. Basename(filename) .. "  (" .. err .. ")")
                 return nil
         else
-				Spring.Echo("Completed Loading File: "..filename)
+				-- Spring.Echo("Completed Loading File: "..filename)
 			end
         return chunk
 end

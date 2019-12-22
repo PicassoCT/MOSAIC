@@ -96,7 +96,7 @@ function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID
 function houseAttach()
     Sleep(100)
     waitTillComplete(unitID)
-    Spring.Echo("Safehouse completed")
+    -- Spring.Echo("Safehouse completed")
     process(
         getAllNearUnit(unitID, gameConfig.buildSafeHouseRange),
         function(id) --filter out all the safe houses
@@ -113,7 +113,7 @@ function houseAttach()
 
                 -- Spring.UnitAttach(id, unitID, getUnitPieceByName(id, gameConfig.safeHousePieceName))
                 moveUnitToUnit(unitID, id)
-                Spring.Echo("SafehouseAttached")
+                -- Spring.Echo("SafehouseAttached")
                 -- Spring.SetUnitNoSelect(unitID, true)
                 -- stunUnit(unitID,gameConfig.delayTillSafeHouseEstablished/1000)
                 -- Sleep(gameConfig.delayTillSafeHouseEstablished)
