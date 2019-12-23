@@ -14,10 +14,17 @@ center = piece "center"
 aimpiece = center
 
 function script.Create()
+
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	
+	StartThread(unfold)
 end
-
+function unfold()
+	turnT(TablesOfPiecesGroups["Arm"],y_axis, 180, 0)
+	Sleep(100)
+	turnT(TablesOfPiecesGroups["Arm"],y_axis, 0, 15)
+end
 function script.Killed(recentDamage, _)
 
     --createCorpseCUnitGeneric(recentDamage)
@@ -51,15 +58,17 @@ end
 
 
 function script.StartMoving()
-	Turn(center,y_axis,math.rad(180),90)
+	Turn(center,x_axis,math.rad(40),0)
 	spinT(TablesOfPiecesGroups["uprotor"],y_axis,350,9500)
 	spinT(TablesOfPiecesGroups["downrotor"],y_axis,350,-8500)
+	turnT(TablesOfPiecesGroups["Arm"],y_axis, 0, 15)
 end
 
 function script.StopMoving()
-	Turn(center,y_axis,math.rad(0),90)
+	Turn(center,x_axis,math.rad(0),0)
 	stopSpinT(TablesOfPiecesGroups["uprotor"],y_axis,math.pi)
 	stopSpinT(TablesOfPiecesGroups["downrotor"],y_axis,math.pi)
+	turnT(TablesOfPiecesGroups["Arm"],y_axis, 180, 1)
 end
 
 function script.Activate()

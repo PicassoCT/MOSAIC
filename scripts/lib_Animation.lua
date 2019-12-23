@@ -1829,22 +1829,22 @@ function resetMT(t)
 end
 
 --> Turn a Table towards local T
-function turnT(t, axis, deg, speed, boolInstantUpdate, boolWait)
+function turnT(t, axis, degs, speed, boolInstantUpdate, boolWait)
     if boolInstantUpdate then
         for i = 1, #t, 1 do
-            Turn(t[i], axis, math.rad(deg), 0, true)
+            Turn(t[i], axis, math.rad(degs), 0, true)
         end
         return
     end
 
     if not speed or speed == 0 then
         for i = 1, #t, 1 do
-            Turn(t[i], axis, math.rad(deg), 0)
+            Turn(t[i], axis, math.rad(degs), 0)
         end
 
     else
         for i = 1, #t, 1 do
-            Turn(t[i], axis, math.rad(deg), speed)
+            Turn(t[i], axis, math.rad(degs), speed)
         end
         if boolWait then for i = 1, #t, 1 do WaitForTurn(t[i], axis) end end
     end
