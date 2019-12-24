@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
+center = piece "elevator"
 teamID = Spring.GetUnitTeam(unitID)
 
 function script.Create()

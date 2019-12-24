@@ -20,7 +20,7 @@ local Launcher = Building:New{
 	buildingMask = 8,
 	
 	script 					= "launcherscript.lua",
-	objectName        	= "Launcher.s3o",
+	objectName        	= "launcher.dae",
 	name = "Launcher",
 	description = " ends the game with a MOSA ICBM launch",
 
