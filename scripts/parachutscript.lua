@@ -9,18 +9,50 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
--- center = piece "center"
+center = piece "center"
 
 -- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 -- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
-
+testOffset = 300
+dropRate= 0.25
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	Spring.MoveCtrl.Enable(unitID,true)
-	x,y,z =Spring.GetUnitPosition(unitID)
-	Spring.MoveCtrl.SetPosition(unitID, x,y+200,z)
+	Spring.SetUnitNoSelect(unitID,true)
 	StartThread(AnimationTest)
+	StartThread(fallingDown)
+end
+
+function fallingDown()
+	while not GG.ParachutPassengers do
+		Sleep(1)
+	end
+	
+	while not GG.ParachutPassengers[unitID] do
+		Sleep(1)
+	end
+	--debug code
+	passengerID= GG.ParachutPassengers[unitID].id
+	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
+
+	if not passengerID or isUnitAlive(passengerID)== false then Spring.DestroyUnit(unitID, false, true); return end
+	GG.ParachutPassengers[unitID] = nil
+	
+	Spring.UnitAttach(unitID, passengerID, center)
+	Spring.MoveCtrl.SetPosition(unitID, x,y,z)
+
+	
+	while isPieceAboveGround(unitID, center) == true do
+		x,y,z =Spring.GetUnitPosition(unitID)
+		Spring.MoveCtrl.SetPosition(unitID, x,y - dropRate,z)
+		Sleep(1)
+		
+	end
+	
+	Spring.UnitDetach ( passengerID)
+	Spring.DestroyUnit(unitID, false, true)
+
 end
 
 function sinusWaveThread(start,ends)
@@ -43,6 +75,16 @@ times = 0
 	end
 end
 
+function Fibonacci_tail_call(n)
+  local function inner(m, a, b)
+    if m == 0 then
+      return a
+    end
+    return inner(m-1, b, a+b)
+  end
+  return inner(n, 0, 1)
+end
+
 function AnimationTest()
 local Fract=TablesOfPiecesGroups["Fract"]
 	for i=1,#Fract do
@@ -55,11 +97,11 @@ local Fract=TablesOfPiecesGroups["Fract"]
 		--resetAll(unitID)
 		Sleep(3000)
 		for i=1,#Fract do
+			
 			if i% 15 == 1 then 
+			degToTurn= Fibonacci_tail_call(math.ceil(i/15))* 10
+			WTurn(Fract[i],y_axis,math.rad(degToTurn),0)
 
-				WTurn(Fract[i],y_axis,math.rad((i/15)*22),0)
-				--spi= math.random(-2,2)
-				--Spin(Fract[i],y_axis, math.rad(spi),0.01)
 			end
 		end
 		Sleep(3000)
