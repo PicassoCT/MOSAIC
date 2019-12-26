@@ -1,3 +1,5 @@
+#version 150 compatibility
+
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 	// ancient GL3 ATI drivers confuse GLSL for GLSL-ES and require this
 	precision highp float;

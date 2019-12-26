@@ -1151,7 +1151,7 @@ function spawnDecoyCivilian()
 	return 0
 end
 
-	boolCloaked = false
+boolCloaked = false
 
 function cloakLoop()
 	local spGetUnitIsActive = Spring.GetUnitIsActive

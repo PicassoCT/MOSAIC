@@ -1,3 +1,5 @@
+#version 150 compatibility
+
 %%VERTEX_GLOBAL_NAMESPACE%%
 
 uniform mat4 camera;		//ViewMatrix (gl_ModelViewMatrix is ModelMatrix!)
