@@ -58,7 +58,8 @@ function spawnDecoyCivilian()
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
 			if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 			GG.DisguiseCivilianFor[civilianID]= unitID
-			
+			GG.DiedPeacefully[civilianID] = false
+				
 			if civilianID then
 				GG.EventStream:CreateEvent(
 				syncDecoyToAgent,
@@ -103,6 +104,7 @@ function cloakLoop()
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
 			boolCloaked= false
 			if civilianID and doesUnitExistAlive(civilianID) == true then
+				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
 			end
 		end
