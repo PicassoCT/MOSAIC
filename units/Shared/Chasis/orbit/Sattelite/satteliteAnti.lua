@@ -15,7 +15,7 @@ local AntiSat = Satellite:New{
 	
 	footprintX 					= 1,
 	footprintZ 					= 1,
-	script 						= "satellitescript.lua",
+	script 						= "satelliteantitscript.lua",
 	objectName        		= "satellite.s3o",
 
 	customparams = {
@@ -23,6 +23,13 @@ local AntiSat = Satellite:New{
 		baseclass		= "Satellite", -- TODO: hacks
     },
 		category = [[ORBIT]],
+		
+	weapons = {
+		[1]={name  = "noonelaser",
+			onlyTargetCategory = [[ORBIT]],
+			},
+					
+		},
 }
 
 return lowerkeys({
