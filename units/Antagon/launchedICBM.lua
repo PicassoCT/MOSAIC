@@ -26,7 +26,7 @@ local LaunchedICBM = Rocket:New{
     },
 	
 
-	category = [[ORBIT]],
+	category = [[ORBIT AIR]],
 }
 
 return lowerkeys(

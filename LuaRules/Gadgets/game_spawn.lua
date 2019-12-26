@@ -39,7 +39,7 @@ VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 local modOptions = Spring.GetModOptions()
-
+GameConfig = getGameConfig()
 function GetAIStartUnit(teamID, leader, isDead, boolIsAI, side, playerInfo)
 
     aiName = Spring.GetTeamLuaAI(teamID)
@@ -123,7 +123,8 @@ local function SpawnStartUnit(teamID)
         local facing = math.abs(Game.mapSizeX / 2 - x) > math.abs(Game.mapSizeZ / 2 - z)
                 and ((x > Game.mapSizeX / 2) and "west" or "east")
                 or ((z > Game.mapSizeZ / 2) and "north" or "south")
-        local unitID = Spring.CreateUnit(startUnit, x, y, z, facing, teamID)
+        local unitID = Spring.CreateUnit(startUnit, x, y + GameConfig.OperativeDropHeigthOffset, z, facing, teamID)
+				giveParachutToUnit(unitID,  x, y + GameConfig.OperativeDropHeigthOffset, z)
        -- Here be additional units
     end
 
@@ -169,8 +170,8 @@ if #Spring.GetAllUnits() == 0 then return false end
 end
 
 function gadget:GameStart()
-	gameConfig= getGameConfig()
-	Spring.Echo("Starting game MOSAIC Version "..gameConfig.Version)
+	
+	Spring.Echo("Starting game MOSAIC Version "..GameConfig.Version)
 
     --creates a Tech Tree in GG
     local teams = Spring.GetTeamList()

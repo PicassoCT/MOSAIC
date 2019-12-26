@@ -125,10 +125,10 @@ local groundturretmg =  Turret:New{
 							  },
 				},
 				
-				weapons = {
-				[1]={name  = "machinegun",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},
+		weapons = {
+		[1]={name  = "machinegun",
+			onlyTargetCategory = [[BUILDING GROUND AIR]],
+			},
 					
 		},	
 }

@@ -68,17 +68,20 @@ local killedAllyTeams = {}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-GameConfig =getGameConfig()
+GameConfig = getGameConfig()
+
+GG.GlobalGameState = GameConfig.GameState.normal
+
 function setGlobalGameState(state)
 GG.GlobalGameState= state
-Spring.SetGameRulesParam("GlobalGameState", state)
+Spring.SetGameRulesParam("GlobalGameState:", state)
 end
 
 function gadget:Initialize()
 	setGlobalGameState(GameConfig.GameState.normal)
 	
 	GG.Launchers ={}
-
+	
     if teamDeathMode == "none" then
 			Spring.Echo("GameEndGadget: No teamDeathMode specified")
         gadgetHandler:RemoveGadget()
@@ -103,30 +106,11 @@ function gadget:Initialize()
     end
 end
 	
-	function constantCheck(frame)
-		if GG.Launchers then		
-			for teamID, launchersT in pairs(GG.Launchers) do	
-				if teamID and launchersT then
-					for launcherID, step  in pairs(launchersT) do						
-						if launcherID and step >= GameConfig.LaunchReadySteps then
-								id = createUnitAtUnit(teamID, "launchedicbm", launcherID, 0, 70, 0)
-								if not LaunchedRockets[teamID] then 
-									LaunchedRockets[teamID]={}
-								end
-								LaunchedRockets[teamID][id] = frame
-								Spring.DestroyUnit(launcherID, false, true)
-								GameStateMachine.Timer = frame
-								setGlobalGameState(GameConfig.GameState.postlaunch)
-						end	
-					end
-				end
-			end
-		end
-	end
+	
 	
 	
 
-	 GameStateMachine=
+GameStateMachine =
 	 { 
 		Timer =Spring.GetGameFrame(),
 	 
@@ -172,13 +156,13 @@ end
 			return GameConfig.GameState.postlaunch
 		end,
 		
-		["anarchy"]        = function(frame)
+		anarchy       = function(frame)
 			if GG.Launchers then
 				boolNoReadyLaunchers= true
 					for teamID, launchersT in pairs(GG.Launchers) do	
 						if teamID and launchersT then
 							for launcherID, step  in pairs(launchersT) do	
-								if launcherID and step > GameConfig.PreLaunchLeakSteps then
+								if launcherID and step >= GameConfig.PreLaunchLeakSteps then
 									boolNoReadyLaunchers = false
 								end		
 							end		
@@ -210,13 +194,7 @@ end
 	}
 	
 	LaunchedRockets={}
-	function setGlobalGameState(frame)
-		--Set GameState
 
-		
-		
-		
-	end
 	
 function gadget:GameOver()
 
@@ -316,7 +294,7 @@ local function KillAllyTeamsZeroUnits()
             local teamList = spGetTeamList(allyTeamID)
             for _, teamID in ipairs(teamList) do
                 --DelME
-                --spKillTeam( teamID )
+                spKillTeam( teamID )
             end
         end
     end
@@ -336,14 +314,39 @@ local function KillResignedTeams()
     end
 end
 
+function constantCheck(frame)
+		if GG.Launchers then		
+			for teamID, launchersT in pairs(GG.Launchers) do	
+				if teamID and launchersT then
+					for launcherID, step  in pairs(launchersT) do	
+						Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
+						if launcherID and step >= GameConfig.LaunchReadySteps then
+								id = createUnitAtUnit(teamID, "launchedicbm", launcherID, 0, 70, 0)
+								if not LaunchedRockets[teamID] then 
+									LaunchedRockets[teamID]={}
+								end
+								LaunchedRockets[teamID][id] = frame
+								Spring.DestroyUnit(launcherID, false, true)
+								GG.Launchers[teamID][launcherID] = nil
+
+								GameStateMachine.Timer = frame
+								setGlobalGameState(GameConfig.GameState.postlaunch)
+						end	
+					end
+				end
+			end
+		end
+	end
+
 oldState=""
 function gadget:GameFrame(frame)
     -- only do a check in slowupdate
-    if (frame % 16) == 0 and GG.GlobalGameState then
+    if frame > 1 and (frame % 16) == 0  then
+ 
 		constantCheck(frame)
 		setGlobalGameState(GameStateMachine[GG.GlobalGameState](frame))
 
-		if oldState ~= GG.GlobalGameState then
+		if  GG.GlobalGameState and oldState ~= GG.GlobalGameState then
 			Spring.Echo("Current GameState:"..GG.GlobalGameState)
 			oldState = GG.GlobalGameState
 		end
@@ -397,7 +400,7 @@ gadget.UnitGiven = gadget.UnitCreated
 gadget.UnitCaptured = gadget.UnitCreated
 
 function gadget:UnitDestroyed(unitID, unitDefID, unitTeamID)
-    if unitTeamID == gaiaTeamID and ignoreGaia ~= 0 then
+	if unitTeamID == gaiaTeamID and ignoreGaia ~= 0 then
         -- skip gaia
         return
     end

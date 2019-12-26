@@ -11,6 +11,7 @@ end
 
 
 center = piece "center"
+turret = piece "turret"
 
 function script.Create()
 	Spin(center,y_axis,math.rad(1),0.5)
@@ -46,18 +47,19 @@ end
 
 function script.AimFromWeapon1()
 
-        return center
+        return turret
 
 end
 
 function script.QueryWeapon1()
-	return center
+	return turret
 end
 
 
 
 function script.AimWeapon1( heading, pitch)
-	-- WTurn(center,y_axis, heading, math.pi)
+	 Turn(turret,y_axis, heading,10)
+	 Turn(turret,y_axis, -pitch, 10)
     return true
 end
 
