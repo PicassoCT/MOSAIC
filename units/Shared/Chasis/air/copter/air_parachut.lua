@@ -1,7 +1,7 @@
 local AIR_PARACHUT = VTOL:New{
 
 	name = "EGP ",
-	Description = " Electrostatic Graphene Parachute ",
+	Description = "Electrostatic Graphene Parachut",
 	objectName = "air_parachut.dae",
 	script = "parachutscript.lua",
 	buildPic = "placeholder.png",
