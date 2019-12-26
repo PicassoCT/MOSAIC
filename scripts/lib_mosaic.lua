@@ -11,7 +11,7 @@ function getGameConfig()
 	
 	},
 	
-	Version = 0.1,
+	Version = "Alpha: 0.655",
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,
@@ -77,12 +77,12 @@ function getGameConfig()
 		 
 	 --Game States
 	 GameState={
-				["normal"] = "normal",
-				["launchleak"] = "launchleak",
-				["anarchy"] = "anarchy",
-				["postlaunch"] = "postlaunch",
-				["gameover"] = "gameover",
-				["pacification"] = "pacification",
+				normal = "normal",
+				launchleak = "launchleak",
+				anarchy = "anarchy",
+				postlaunch = "postlaunch",
+				gameover = "gameover",
+				pacification = "pacification",
 	 },
 	
 	 
@@ -98,7 +98,9 @@ function getGameConfig()
 	 --Icons
 	 iconGroundOffset = 50,
 	 
-	 
+	
+	--Operativedrop HeightOffset
+	OperativeDropHeigthOffset = 400,
 	}
 end
 
@@ -746,6 +748,11 @@ end
 function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 				--	only apply if Unit is still alive
 				if doesUnitExistAlive(persPack.myID) == false  then
+					--if Unit did not die peacefully - kill the synced unit
+					if not GG.DiedPeacefully[persPack.myID] then
+						Spring.DestroyUnit(persPack.syncedID, false, true) 
+					end
+				
 					return nil, persPack
 				end
 				
@@ -833,6 +840,16 @@ function getParentOfUnit(teamID, unit)
 			end
 		end
 	end
+end
+
+function giveParachutToUnit(id,x,y, z)
+	parachutID = createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
+	
+	if not GG.ParachutPassengers then GG.ParachutPassengers  ={} end
+
+	GG.ParachutPassengers[parachutID]={id=id, x= x, y=y, z= z}
+	Spring.SetUnitTooltip(parachutID,id.."")
+	setUnitValueExternal(id, 'WANT_CLOAK' , 0)
 end
 
 function removeUnit(teamID, unit)
