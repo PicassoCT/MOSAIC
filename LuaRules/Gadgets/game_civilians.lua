@@ -22,11 +22,12 @@ end
 	VFS.Include("scripts/lib_mosaic.lua")
 	
 	statistics ={}
+	local GameConfig = getGameConfig()
 	local spGetPosition = Spring.GetUnitPosition
-	local currentGlobalGameState = GG.GlobalGameState or "normal"
+	local currentGlobalGameState = GG.GlobalGameState or  GameConfig.GameState.normal
 	local UnitDefNames = getUnitDefNames(UnitDefs)
 	local PoliceTypes = getPoliceTypes(UnitDefs)
-	local GameConfig = getGameConfig()
+	
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
 	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
@@ -552,6 +553,7 @@ end
 	function gadget:Initialize()
 	--Initialize global tables
 	GG.DisguiseCivilianFor={}
+	 GG.DiedPeacefully = {}
 
 
 	--	Spring.Echo("gadget:Initialize")
@@ -739,7 +741,7 @@ end
 			spawnInitialPopulation(frame)
 		--	echo("Initialization:Frame:"..frame)
 		elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-			currentGlobalGameState = GG.GlobalGameState or "normal"
+			currentGlobalGameState = GG.GlobalGameState or GameConfig.GameState.normal
 			-- echo("Runcycle:Frame:"..frame)
 			-- recreate buildings 
 			-- recreate civilians
