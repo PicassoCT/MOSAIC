@@ -263,6 +263,15 @@ function setSpeedEnv(k, val)
 	end
 end
 
+--> Sets the Speed of a Unit
+function setUnitValueExternal(k, cobArgh, val)
+	env = Spring.UnitScript.GetScriptEnv(k)
+	
+	if env then
+		Spring.UnitScript.CallAsUnit(k, Spring.UnitScript.SetUnitValue, COB[cobArgh], val)
+	end
+end
+
 
 -->Generate a Description Text for a Unit
 function unitDescriptionGenerator(Unit, UnitDefNames)
@@ -891,6 +900,7 @@ function createUnitAtPiece(id, typeID, Piece, team)
 end
 --> Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID,ox,oy,oz)
+	if isUnitAlive(otherID) == false then return end
 	ox,oy,oz= ox or 0,oy or 0,oz or 0
 	x,y,z,_,_,_ =Spring.GetUnitPosition(otherID)
 	return Spring.CreateUnit(typeID, x+ox, y+oy, z+oz, math.ceil(math.random(0, 3)), teamID)
