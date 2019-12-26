@@ -9,8 +9,13 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "elevator"
+center = piece "Elevator"
+Icon = piece "Icon"
+
 teamID = Spring.GetUnitTeam(unitID)
+stepIndex = 0
+rocketHeigth= 4200
+stepHeight = rocketHeigth/GameConfig.LaunchReadySteps
 
 function script.Create()
 	if not GG.Launchers then GG.Launchers = {} end
@@ -20,6 +25,8 @@ function script.Create()
 	
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	Move(center,y_axis,-1* rocketHeigth, 0)
+	hideT(TablesOfPiecesGroups["Step"])
 	StartThread(accountForBuiltLauncherSteps)
 end
 
@@ -33,6 +40,9 @@ function accountForBuiltLauncherSteps()
 			buildDefID = Spring.GetUnitDefID(buildID)
 			if buildDefID == launcherStepDefID  then
 				waitTillComplete(buildID)
+				stepIndex = stepIndex +1
+				Move(center,y_axis,math.min( -rocketHeigth + stepIndex*stepHeight, 0), 10)
+				showT(TablesOfPiecesGroups["Step"],0,stepIndex)
 				GG.Launchers[teamID][unitID] = GG.Launchers[teamID][unitID] + 1
 				Spring.Echo("Launcherstep Complete")
 				Spring.DestroyUnit(buildID,false,true)
@@ -43,7 +53,9 @@ function accountForBuiltLauncherSteps()
 end
 
 function script.Killed(recentDamage, _)
+	if GG.Launchers[teamID][unitID] then
 	GG.Launchers[teamID][unitID] = nil
+	end
     return 1
 end
 
@@ -71,4 +83,19 @@ function script.QueryBuildInfo()
 end
 
 Spring.SetUnitNanoPieces(unitID, { center })
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
+
+
+end
 
