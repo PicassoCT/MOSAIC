@@ -26,7 +26,7 @@ local weaponDef = {
 	collideFirebase = false,
 	avoidFriendly = false, 
 	noSelfDamage = false,
-    range = 2048,
+    range = 4096,
 	cylinderTargeting = 1.0,	
 	
     reloadtime = 0.02,
