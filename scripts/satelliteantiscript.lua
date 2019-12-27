@@ -10,6 +10,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
+turret = piece "turret"
 
 
 function script.Create()
@@ -19,8 +20,11 @@ end
 
 function attachLaser()
  Sleep(1)
- id = createUnitAtUnit(Spring.GetUnitTeam(unitID), "noone", unitID) 
- Spring.UnitAttach(unitID, id, center)
+ myTeam = Spring.GetUnitTeam(unitID)
+ x,y,z = Spring.GetUnitPosition(unitID)
+ id = Spring.CreateUnit( "noone", myTeam, 1, x,y,z ) 
+  Spring.SetUnitAlwaysVisible(id,true)
+ Spring.UnitAttach(unitID, id, turret)
 end
 
 
@@ -48,7 +52,6 @@ function script.AimWeapon1(Heading, pitch)
 
 	WTurn(base, y_axis, Heading, math.pi)
 	WTurn(aimpiece, x_axis, -pitch, math.pi)
-	EmitSfx(aimpiece, 2048)
     return true
 end
 

@@ -1,7 +1,7 @@
 local weaponName = "noonelaser"
 local weaponDef = {
     name = "NO^2N-Laser",
-    weaponType = [[Cannon]],
+    weaponType = [[Beamlaser]],
     beamweapon = 1,
 
     accuracy = 16,
@@ -25,8 +25,8 @@ local weaponDef = {
 	commandFire  = true,
 	collideFirebase = false,
 	avoidFriendly = false, 
-	noSelfDamage = false,
-    range = 4096,
+
+    range = 8192,
 	cylinderTargeting = 1.0,	
 	
     reloadtime = 0.02,

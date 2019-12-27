@@ -69,23 +69,24 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 
 }
 
-local AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_ORGYANYL.name, AIR_COPTER_AEROSOL_ORGYANYL.description ="Aerosoldrone: Orgyanyl", "Makes citizens horny till death"
 
-local AIR_COPTER_AEROSOL_WANDERLOST = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_WANDERLOST = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_WANDERLOST.name, AIR_COPTER_AEROSOL_WANDERLOST.description ="Aerosoldrone: Wanderlost", "Makes citizens wander aimless till death"
 
-local AIR_COPTER_AEROSOL_TOLLWUTOX = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_TOLLWUTOX = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_TOLLWUTOX.name, AIR_COPTER_AEROSOL_TOLLWUTOX.description ="Aerosoldrone: Tollwutox", "Makes citizens aggressive till death"
 
-local AIR_COPTER_AEROSOL_DEPRESSOL = AIR_COPTER_AEROSOL
+AIR_COPTER_AEROSOL_DEPRESSOL = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Aerosoldrone: Depressol", "Makes citizens catatonic till death"
 
 
 return lowerkeys({
 	--Temp
-	["air_copter_aerosol_orgyanyl"] = AIR_COPTER_AEROSOL_ORGYANYL:New(),
-	["air_copter_aerosol_wanderlost"] = AIR_COPTER_AEROSOL_WANDERLOST :New(),
-	["air_copter_aerosol_tollwutox"] = AIR_COPTER_AEROSOL_TOLLWUTOX :New(),
-	["air_copter_aerosol_depressol"] = AIR_COPTER_AEROSOL_DEPRESSOL :New(),	
+	["air_copter_aerosol_orgyanyl"] = AIR_COPTER_AEROSOL_ORGYANYL,
+	["air_copter_aerosol_wanderlost"] = AIR_COPTER_AEROSOL_WANDERLOST/
+	,
+	["air_copter_aerosol_tollwutox"] = AIR_COPTER_AEROSOL_TOLLWUTOX,
+	["air_copter_aerosol_depressol"] = AIR_COPTER_AEROSOL_DEPRESSOL,	
 })

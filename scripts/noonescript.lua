@@ -6,8 +6,6 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
 
 aimpiece = piece "aimpiece"
 base = piece "base"

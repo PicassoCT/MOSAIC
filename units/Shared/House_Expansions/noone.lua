@@ -5,7 +5,7 @@
 --NimRod_Railgun_SatelliteLauncher
 
 
-local NooneLaser = Satellite:New{
+local NooneLaser = Human:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
@@ -18,8 +18,8 @@ local NooneLaser = Satellite:New{
 
 	MaxSlope 					= 50,
 
-	footprintX = 4,
-	footprintZ = 4,
+	footprintX = 1,
+	footprintZ = 1,
 	
 	EnergyStorage = 0,
 	EnergyUse = 0,

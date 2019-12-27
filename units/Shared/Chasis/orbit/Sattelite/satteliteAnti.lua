@@ -3,8 +3,8 @@ local AntiSat = Satellite:New{
 	Description = "Destroys other satellites ",
 	isFirePlatform 				 = true,
 	corpse						= "",
-	transportSize  = 4,
-	transportCapacity = 1,
+	transportSize  ,
+	transportCapacity = 2,
 	maxDamage          		= 500,
 	mass              	= 500,
 	buildCostEnergy    		= 5,
@@ -27,6 +27,8 @@ local AntiSat = Satellite:New{
     },
 		category = [[ORBIT]],
 		
+	
+	
 
 }
 
