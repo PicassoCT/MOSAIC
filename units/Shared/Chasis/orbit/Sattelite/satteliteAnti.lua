@@ -12,7 +12,7 @@ local AntiSat = Satellite:New{
 	explodeAs					= "none",
 	maxVelocity					= 7.15, --14.3, --86kph/20
 	acceleration   		 	= 1.7,
-	brakeRate      		 	= 0.1,
+	brakeRate      		 	= 0.01,
 	turninplace					= true,
 	sightDistance 				= 320,
 	footprintX 					= 1,
@@ -22,7 +22,7 @@ local AntiSat = Satellite:New{
 	objectName        		= "satellite.s3o",
 	usePieceCollisionVolumes = false,
 	customparams = {
-		helptext		= "Observationsatellite",
+		helptext		= "Anti-Satellite Satellite",
 		baseclass		= "Satellite", -- TODO: hacks
     },
 		category = [[ORBIT]],

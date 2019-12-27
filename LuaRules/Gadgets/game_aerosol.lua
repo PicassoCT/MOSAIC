@@ -53,12 +53,13 @@ function gadget:GameFrame(n)
 				
 					
 					-- if unit is activate 
-					if getUnitValueEnv(unitID, "ACTIVATION") == 1 then
-					
+					-- if getUnitValueEnv(unitID, "ACTIVATION") == 1 then
+					if Spring.GetUnitActive(unitID) == true then
 						T = getAllNearUnit(unitID, GameConfig.aerosolDistance)
 						process(T,
 								function(id)
 									if TaeroSolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then
+										Spring.Echo("Unit ".. id.." is now under the influence of "..aerosolTypeOfUnit)
 										setCivilianBehaviourMode(id, true, aerosolTypeOfUnit)
 										if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
 										GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit 

@@ -20,9 +20,7 @@ end
 
 function attachLaser()
  Sleep(1)
- myTeam = Spring.GetUnitTeam(unitID)
- x,y,z = Spring.GetUnitPosition(unitID)
- id = Spring.CreateUnit( "noone", myTeam, 1, x,y,z ) 
+ id = createUnitAtUnit(Spring.GetUnitTeam(unitID), "noone", unitID) 
   Spring.SetUnitAlwaysVisible(id,true)
  Spring.UnitAttach(unitID, id, turret)
 end

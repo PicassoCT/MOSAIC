@@ -8,7 +8,7 @@
 local NooneLaser = Human:New{
 	corpse				= "",
 	maxDamage           = 500,
-	mass                = 500,
+	mass                = 1,
 	buildCostEnergy     = 5,
 	buildCostMetal      = 5,
 	explodeAs			= "none",
@@ -37,7 +37,7 @@ local NooneLaser = Human:New{
 
 
 	cantBeTransported  = false,
-	category = [[ORBIT ]],
+	category = [[ORBIT]],
 
 	customparams = {
 		helptext		= "Noone Uplinklaser",
@@ -46,7 +46,7 @@ local NooneLaser = Human:New{
 	
 	
 		weapons = {
-		[1]={name  = "noonelaser",
+		[1]={name  = "noonelaser",-- who blinded you ? Noone.
 			onlyTargetCategory = [[ORBIT]],
 			},
 					
