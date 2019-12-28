@@ -11,8 +11,10 @@ end
 
 
 center = piece "center"
+Line001 = piece "Line001"
 Icon = piece "Icon"
 function script.Create()
+	Hide(Line001)
 	Spin(center,y_axis,math.rad(1),0.5)
 	if Icon then 	Hide(Icon) end
     generatepiecesTableAndArrayCode(unitID)

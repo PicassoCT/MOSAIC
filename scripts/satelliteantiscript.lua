@@ -9,38 +9,46 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
-turret = piece "turret"
+base = piece "base"
+aimpiece = piece "aimpiece"
 
+emitpiece = piece "emitpiece"
+
+function attach()
+ Sleep(1)
+ x,y,z = Spring.GetUnitPosition(unitID)
+ teamID= Spring.GetUnitTeam(unitID)
+ id = Spring.CreateUnit("noone", x,y,z, 1, teamID)
+  echo("Spawning noone of id : "..id)
+ Spring.SetUnitAlwaysVisible(id,true)
+ Spring.UnitAttach(unitID, id, base)
+end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	StartThread(attachLaser)
+	StartThread(attach)
 end
 
-function attachLaser()
- Sleep(1)
- id = createUnitAtUnit(Spring.GetUnitTeam(unitID), "noone", unitID) 
- Spring.SetUnitAlwaysVisible(id,true)
- Spring.UnitAttach(unitID, id, turret)
-end
+local id
+
 
 
 function script.Killed(recentDamage, _)
+	if id and isUnitAlive(id)== true then Spring.DetachUnit(id,true); Spring.DestroyUnit(id, false, true) end
     return 1
 end
 
 --- -aimining & fire weapon
+--- -aimining & fire weapon
 function script.AimFromWeapon1()
-    return aimpiece
+    return emitpiece
 end
 
 
 
 function script.QueryWeapon1()
-    return emitpiece
+    return aimpiece
 end
-
 
 
 
@@ -48,17 +56,10 @@ function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 	
 
-	WTurn(base, y_axis, Heading, math.pi)
+	WTurn(base, z_axis, Heading, math.pi)
 	WTurn(aimpiece, x_axis, -pitch, math.pi)
     return true
 end
-
-
-function script.FireWeapon1()
-
-    return true
-end
-
 
 
 function script.StartMoving()
@@ -73,7 +74,6 @@ end
 
 function script.Deactivate()
 
-/cheat
     return 0
 end
 

@@ -16,7 +16,7 @@ local satteliteGodrod = Satellite:New{
 	footprintX 					= 1,
 	footprintZ 					= 1,
 	script 						= "satellitescript.lua",
-	objectName        		= "satellite.s3o",
+	objectName        		= "SatGodRod.dae",
 
 	customparams = {
 		helptext		= "Observationsatellite",

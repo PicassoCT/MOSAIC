@@ -85,8 +85,7 @@ AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Ae
 return lowerkeys({
 	--Temp
 	["air_copter_aerosol_orgyanyl"] = AIR_COPTER_AEROSOL_ORGYANYL,
-	["air_copter_aerosol_wanderlost"] = AIR_COPTER_AEROSOL_WANDERLOST/
-	,
+	["air_copter_aerosol_wanderlost"] = AIR_COPTER_AEROSOL_WANDERLOST,
 	["air_copter_aerosol_tollwutox"] = AIR_COPTER_AEROSOL_TOLLWUTOX,
 	["air_copter_aerosol_depressol"] = AIR_COPTER_AEROSOL_DEPRESSOL,	
 })

@@ -1,9 +1,10 @@
 local weaponName = "noonelaser"
 local weaponDef = {
     name = "NO^2N-Laser",
-    weaponType = [[Beamlaser]],
+    weaponType = [[BeamLaser]],
     beamweapon = 1,
-
+    -- beamlaser=1,
+    -- WeaponAcceleration=0,
     accuracy = 16,
     laserflaresize = 3, --0.3
     beamTtl = 0.05, --0.01
@@ -16,23 +17,19 @@ local weaponDef = {
     beamtime = 0.02, --0.01
 
     FireSubmersed = 0,
+    --impulseFactor = 0.025,
     largeBeamLaser = true,
     lineOfSight = false,
 
     targetMoveError = 0.5,
-    noSelfDamage = false,
-	impactOnly = true,
-	commandFire  = true,
-	collideFirebase = false,
-	avoidFriendly = false, 
-
-    range = 8192,
-	cylinderTargeting = 1.0,	
-	
+    noSelfDamage = true,
+	 impactOnly = true,
+    range = 2048,
     reloadtime = 0.02,
     renderType = 0,
     turret = true,
-
+    	-- soundHit = "sounds/jEliah/jEliahLaserLoop.ogg",
+    -- soundStart = "sounds/jEliah/jEliahLaserStart.ogg",
 
     coreThickness = 1.3,
     thickness = 9.5,
@@ -42,6 +39,7 @@ local weaponDef = {
     Intensity = 1.4, --test It
     scrollspeed = 0.3,
 
+    -- explosionGenerator = "custom:smallblueburn",
     tolerance = 1000,
     damage = {
         default = 10,

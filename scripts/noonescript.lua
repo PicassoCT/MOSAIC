@@ -26,13 +26,13 @@ end
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
-    return aimpiece
+    return emitpiece
 end
 
 
 
 function script.QueryWeapon1()
-    return base
+    return aimpiece
 end
 
 
@@ -41,7 +41,7 @@ function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 	
 
-	WTurn(base, y_axis, Heading, math.pi)
+	WTurn(base, z_axis, Heading, math.pi)
 	WTurn(aimpiece, x_axis, -pitch, math.pi)
     return true
 end

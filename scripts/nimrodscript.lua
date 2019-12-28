@@ -6,13 +6,15 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 center = piece "center"
+base = piece "base"
+slider = piece "slider"
 turret = piece "turret"
 projectile = piece "projectile"
-Icon = piece "Icon"
+
 GameConfig = getGameConfig()
 
 
-
+boolBuilding = false
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	
@@ -24,9 +26,45 @@ function script.Create()
 				end
 				)
 	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
+	StartThread(goToFireMode)
+	StartThread(modeChangeOS)
+
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
+end
+
+function modeChangeOS()
+	oldBuildState= boolBuilding
+	while true do
+	buildID = Spring.GetUnitIsBuilding(unitID)
+		if buildID then 
+			boolBuilding = true	
+			if oldBuildState ~= boolBuilding then
+				oldBuildState = boolBuilding
+				StartThread(goToSpaceMode)
+			end			
+		else
+			boolBuilding = false
+			if oldBuildState ~= boolBuilding then
+				oldBuildState = boolBuilding
+				StartThread(goToFireMode)
+			end
+		end
+	Sleep(100)
+	end
+
+end
+
+function goToSpaceMode()
+	WTurn(turret,x_axis, math.rad(-90), math.pi)
+	Move(slider,z_axis, -350, 50)
+
+end
+
+function goToFireMode()
+	WMove(slider,z_axis, 0, 50)
+	WTurn(turret,x_axis, math.rad(0), math.pi)
 end
 
 --- -aimining & fire weapon
@@ -40,9 +78,10 @@ end
 
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
-
+	if boolBuilding == true then return false end
+	
         WTurn(center, y_axis, Heading, 0.4)
-        WTurn(turret, x_axis, -pitch, 0.4)
+        -- WTurn(turret, x_axis, -pitch, 0.4)
 		
     return true
 end
@@ -108,9 +147,13 @@ function showHideIcon(boolCloaked)
     if  boolCloaked == true then
 
         hideAll(unitID)
-        Show(Icon)
+		if TablesOfPiecesGroups then
+			showT(TablesOfPiecesGroups["Icon"])
+		end
     else
         showAll(unitID)
-        Hide(Icon)
+		if TablesOfPiecesGroups then
+			hideT(TablesOfPiecesGroups["Icon"])
+		end
     end
 end

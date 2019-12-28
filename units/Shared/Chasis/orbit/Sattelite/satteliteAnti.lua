@@ -14,6 +14,7 @@ local AntiSat = Satellite:New{
 	acceleration   		 	= 1.7,
 	brakeRate      		 	= 0.01,
 	turninplace					= true,
+	canattack					= true,
 	sightDistance 				= 320,
 	footprintX 					= 1,
 	footprintZ 					= 1,
@@ -27,6 +28,12 @@ local AntiSat = Satellite:New{
     },
 		category = [[ORBIT]],
 		
+	weapons = {
+		[1]={name  = "noonelaser",-- who blinded you ? Noone.
+			onlyTargetCategory = [[ORBIT]],
+			},
+					
+		},	
 	
 	
 

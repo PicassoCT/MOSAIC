@@ -161,47 +161,55 @@ function absdiff(value, compval)
 end
 
 function showPowerPoles()
-  Sleep(1)
+  Sleep(1000)
   if chancesAre(10) < decoChances.powerpoles then return end
-
-  startHeigth= getUnitGroundHeigth(unitID)
-  WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(math.random(-360,360)),0)
-  ToShowTable[#ToShowTable+1]=TablesOfPiecesGroups["PowerPole"][1]
-  teamID =Spring.GetUnitTeam(unitID)
   
-  process(TablesOfPiecesGroups["PowerPole"],
-  function(id)
-    if id == TablesOfPiecesGroups["PowerPole"][1] then return end
-    thisHeigth= getGroundHeigthAtPiece(unitID,id)
-    diff  = absdiff(startHeigth , thisHeigth)
+  --Turn till detecting another house
+	local spGetUnitDefID = Spring.GetUnitDefID
+	local houseID = UnitDefNames["house"].id 
+  	local resultDeg 
 
-	unitsNearPole = getAllInCircle(x,z, 200, unitID, teamID)
-	boolHouseToHouseWire= false
-	process(unitsNearPole,
+	teamID = Spring.GetUnitTeam(unitID)
+	boolBreakOuter = false
+	startHeigth= getUnitGroundHeigth(unitID)
+
+  start=math.random(0,360)
+  for i=start, start + 360, 6 do
+	WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(i), 0)
+	Sleep(1)
+	for p=1, #TablesOfPiecesGroups["PowerPole"], 1 do
+		x,_,z = Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["PowerPole"][p])
+		
+		if x then
+			unitsNearPole = getAllInCircle(x, z, 90, unitID, teamID)
+			boolFinishFunction = false
+			process(unitsNearPole,
 			function(id)
-				if Spring.GetUnitDefID(id) == UnitDefNames["house"].id then
-					boolHouseToHouseWire = true
+				--found a 
+				if id and id ~= unitID and spGetUnitDefID(id) == houseID then
+					for l= 1, p do	
+						pieceID = TablesOfPiecesGroups["PowerPole"][l]
+					
+						thisHeigth= getGroundHeigthAtPiece(unitID,pieceID)
+						diff  = absdiff(startHeigth , thisHeigth)
+						if diff < 100 and isPieceAboveGround(unitID, pieceID) == true then
+							Show(pieceID)
+						else
+							boolFinishFunction = true
+							break
+						end
+					end
+					boolFinishFunction= true
 				end
 			end
 			)
-	if boolHouseToHouseWire == true then
-		ToShowTable[#ToShowTable+1]=id
-	return
-	end	
-
-    if diff < 100 then
-      WTurn(id,z_axis, math.rad(math.random(-10,10)),0)
-      ToShowTable[#ToShowTable+1]=id
-    else
-      value=randSign()*math.random(70,90)
-      WTurn(id,z_axis, math.rad(value),0)
-      diff  = absdiff(startHeigth , thisHeigth)
-      if diff < 100 then
-        ToShowTable[#ToShowTable+1]=id
-      end
-    end
+			if boolFinishFunction== true then
+				return 
+			end
+		end
+	end
   end
-  )
+  
 end
 
 function script.Killed(recentDamage, _)

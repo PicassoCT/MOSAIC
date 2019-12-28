@@ -55,22 +55,39 @@ function fallingDown()
 
 end
 
+function pieceOrder(i)
+if i== 1 then return 1 end
+if i> 1 and i < 4 then return 2 end
+if i> 3 and i < 8 then return 3 end
+if i> 7 and i < 16 then return 4 end
+return 0
+end
+
 function sinusWaveThread(start,ends)
 local Fract=TablesOfPiecesGroups["Fract"]
-times = 0
+
 	while true do
+		--one animation cycle
+		sintime = ((Spring.GetGameFrame()%300)/300)*2*math.pi
+		base = math.abs(math.sin(sintime)*45)
+		costime = ((Spring.GetGameFrame()%600)/600)*2*math.pi
 		for i=start,ends do
-			if Fract[i] then
+			if Fract[i] then	
+				locTimeOffset = ( math.pi)/2 -- 5seconds  divided by 4 depth
+				if i% 15 ~= 1 then 
+					base = 0
+				end
+				
+				pOrder = pieceOrder(i%15)
+				wavetime = costime + (locTimeOffset* pOrder)			
+				wave =  math.cos(wavetime)*42            
 				rVal= math.random(-6,6)
-				base = 0
-				if i% 15 == 1 then base = 22 end
-				wave = math.sin((i%15)*(times/8)*math.pi*2)*42
-				speed = 0.15*((i%15)/15)
+				speed= math.abs(base + wave +rVal)/100
+				
 				Turn(Fract[i],x_axis,math.rad(base + wave +rVal ),speed)	
 			end
 		end
-		WaitForTurns(Fract)
-		times = times + 100
+	
 		Sleep(100)
 	end
 end
@@ -96,15 +113,17 @@ local Fract=TablesOfPiecesGroups["Fract"]
 	while true do
 		--resetAll(unitID)
 		Sleep(3000)
-		for i=1,#Fract do
+		gameFrame = Spring.GetGameFrame()
+		for i=1, #Fract, 15 do
 			
-			if i% 15 == 1 then 
-			degToTurn= Fibonacci_tail_call(math.ceil(i/15))* 10
-			WTurn(Fract[i],y_axis,math.rad(degToTurn),0)
+			degToTurn = (360 / (#Fract/15))*(i-1)
+			ndegree= math.random(10,80)
+			Turn(Fract[i],y_axis,math.rad(degToTurn),math.pi)
 
-			end
+		
 		end
-		Sleep(3000)
+		WaitForTurns(Fract)
+		Sleep(10)
 	end
 end
 
