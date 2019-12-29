@@ -22,9 +22,8 @@ end
 	VFS.Include("scripts/lib_mosaic.lua")
 	
 	local GameConfig = getGameConfig()
-	local UnitDefNames = getUnitDefNames(UnitDefs)
 	
-	aeroSolDroneDefIDs = getAerosolUnitDefIDs(UnitDefNames)	
+	aeroSolDroneDefIDs = getAerosolUnitDefIDs(getUnitDefNames(UnitDefs))	
 	
 	aeroSolUnits = {}
 	
@@ -42,11 +41,11 @@ function gadget:Initialize()
 	if not GG.SelectedAerosol then GG.SelectedAerosol = {} end
 end
 
-TaeroSolAffectableUnits= getAersolAffectableUnits()
+aerosolAffectableUnits= getAersolAffectableUnits()
 
 function gadget:GameFrame(n)
 
-	if n % 33 == 1 then
+	if n > 1 and n % 33 == 1 then
 		for unitID, unitDefID in pairs(aeroSolUnits) do
 			if unitID and unitDefID and isUnitActive(unitID) == true then
 					aerosolTypeOfUnit  = aeroSolDroneDefIDs[unitDefID]
@@ -56,13 +55,19 @@ function gadget:GameFrame(n)
 					-- if getUnitValueEnv(unitID, "ACTIVATION") == 1 then
 					if Spring.GetUnitActive(unitID) == true then
 						T = getAllNearUnit(unitID, GameConfig.aerosolDistance)
-						process(T,
+						affectedUnits = process(T,
 								function(id)
-									if TaeroSolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then
-										Spring.Echo("Unit ".. id.." is now under the influence of "..aerosolTypeOfUnit)
-										setCivilianBehaviourMode(id, true, aerosolTypeOfUnit)
+									if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then
 										if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
-										GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit 
+										
+										--if unit is not already affected by aerosolDistance
+										if not GG.AerosolAffectedCivilians[id] thn
+											Spring.Echo("Unit ".. id.." is now under the influence of "..aerosolTypeOfUnit)
+											setCivilianBehaviourMode(id, true, aerosolTypeOfUnit)
+											if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
+											GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit 
+											return id
+										end
 									end
 								end
 								)
