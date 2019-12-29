@@ -2424,6 +2424,14 @@ function explodeT(TableOfPieces, Conditions, StepSize)
 	end
 end
 
+--> Explodes a Table of Pieces 
+function explodeD(TableOfPieces, Conditions)
+	lStepSize = StepSize or 1
+	for num,pieces in pairs(TableOfPieces) do
+		Explode(pieces, Conditions)
+	end
+end
+
 function echoNFrames( str, frames)
 	if Spring.GetGameFrame()% frames == 0 then
 		echo(str)

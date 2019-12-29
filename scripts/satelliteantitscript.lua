@@ -11,10 +11,10 @@ end
 
 base = piece "base"
 aimpiece = piece "aimpiece"
+emitpiece = piece "emitPiece"
 
-emitpiece = piece "emitpiece"
-
-function attach()
+local id
+function attachSatellite()
  Sleep(1)
  x,y,z = Spring.GetUnitPosition(unitID)
  teamID= Spring.GetUnitTeam(unitID)
@@ -26,16 +26,18 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	StartThread(attach)
+	-- echo("Satellite Anti Script here")
+	-- StartThread(attachSatellite)
 end
 
-local id
 
 
 
 function script.Killed(recentDamage, _)
 	if id and isUnitAlive(id)== true then Spring.DetachUnit(id,true); Spring.DestroyUnit(id, false, true) end
-    return 1
+	explodeD(Spring.GetUnitPieceMap(unitID), SFX.FALL + SFX.FIRE)
+
+  return 1
 end
 
 --- -aimining & fire weapon
@@ -56,9 +58,14 @@ function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 	
 
-	WTurn(base, z_axis, Heading, math.pi)
-	WTurn(aimpiece, x_axis, -pitch, math.pi)
+	-- WTurn(base, z_axis, Heading, math.pi)
+	-- WTurn(aimpiece, x_axis, -pitch, math.pi)
     return true
+end
+
+function script.FireWeapon1()
+
+
 end
 
 

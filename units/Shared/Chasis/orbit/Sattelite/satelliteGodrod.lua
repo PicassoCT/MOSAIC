@@ -12,17 +12,26 @@ local satteliteGodrod = Satellite:New{
 	acceleration   		 	= 1.7,
 	brakeRate      		 	= 0.1,
 	turninplace					= true,
-	
+	turret = true,
+	fixedLauncher  = true,
 	footprintX 					= 1,
 	footprintZ 					= 1,
-	script 						= "satellitescript.lua",
+	script 						= "satellitegodscript.lua",
 	objectName        		= "SatGodRod.dae",
-
+	fireState=0,
 	customparams = {
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks
     },
 		category = [[orbit]],
+	
+	weapons = {
+		[1]={name  = "godrod",
+			onlyTargetCategory = [[GROUND]],
+			},
+					
+		},	
+		
 }
 
 return lowerkeys({

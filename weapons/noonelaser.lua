@@ -20,11 +20,11 @@ local weaponDef = {
     --impulseFactor = 0.025,
     largeBeamLaser = true,
     lineOfSight = false,
-
+	cylinderTargeting = true,
     targetMoveError = 0.5,
     noSelfDamage = true,
 	 impactOnly = true,
-    range = 2048,
+    range = 4096,
     reloadtime = 0.02,
     renderType = 0,
     turret = true,
