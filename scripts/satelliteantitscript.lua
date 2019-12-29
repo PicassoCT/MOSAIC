@@ -15,19 +15,19 @@ emitpiece = piece "emitPiece"
 
 local id
 function attachSatellite()
- Sleep(1)
- x,y,z = Spring.GetUnitPosition(unitID)
- teamID= Spring.GetUnitTeam(unitID)
- id = Spring.CreateUnit("noone", x,y,z, 1, teamID)
-  echo("Spawning noone of id : "..id)
- Spring.SetUnitAlwaysVisible(id,true)
- Spring.UnitAttach(unitID, id, base)
+	 Sleep(1)
+	 x,y,z = Spring.GetUnitPosition(unitID)
+	 teamID= Spring.GetUnitTeam(unitID)
+	 id = Spring.CreateUnit("noone", x,y,z, 1, teamID)
+	  echo("Spawning noone of id : "..id)
+	 Spring.SetUnitAlwaysVisible(id,true)
+	 Spring.UnitAttach(unitID, id, base)
 end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	-- echo("Satellite Anti Script here")
-	-- StartThread(attachSatellite)
+	StartThread(attachSatellite)
 end
 
 
