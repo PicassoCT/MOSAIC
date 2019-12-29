@@ -21,7 +21,8 @@ local AntiSat = Satellite:New{
 	noAutoFire                = false,
 	script 						= "satelliteantitscript.lua",
 	objectName        		= "satellite.s3o",
-	usePieceCollisionVolumes = false,
+	usePieceCollisionVolumes = true,
+	
 	customparams = {
 		helptext		= "Anti-Satellite Satellite",
 		baseclass		= "Satellite", -- TODO: hacks
