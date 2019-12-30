@@ -210,31 +210,31 @@ return translation[cultureName][unitType]
 end
 
 function expandNameSubSetTable(SubsetTable)
-expandedNamesTable = {}
-for i=0, SubsetTable.range do
-	name = SubsetTable.name.. i
-	expandedNamesTable[#expandedNamesTable +1] = name
-end
-return expandedNamesTable
+	expandedNamesTable = {}
+		for i=0, SubsetTable.range do
+			name = SubsetTable.name.. i
+			expandedNamesTable[#expandedNamesTable +1] = name
+		end
+	return expandedNamesTable
 end
 
 function isUnitOfCivilianType(TypeName, cache, gameconfig)
-boolIsOfType = true
-localcache = cache or {}
-	if not cache or #cache < 1 then
-		myCulture = gameConfig.instance.culture
-		lUnitDefNames =  getUnitDefNames(UnitDefs)
-		modelNames = getCultureUnitModelNames(myCulture, TypeName, lUnitDefNames)
-		expandedModelNames = expandNameSubSetTable(modelNames)
-		for i=1, #expandedModelNames do 
-			localcache[UnitDefNames[expandedModelNames[i]].id] = expandedModelNames[i]
+	boolIsOfType = true
+	localcache = cache or {}
+		if not cache or #cache < 1 then
+			myCulture = gameConfig.instance.culture
+			lUnitDefNames =  getUnitDefNames(UnitDefs)
+			modelNames = getCultureUnitModelNames(myCulture, TypeName, lUnitDefNames)
+			expandedModelNames = expandNameSubSetTable(modelNames)
+			for i=1, #expandedModelNames do 
+				localcache[UnitDefNames[expandedModelNames[i]].id] = expandedModelNames[i]
+			end
 		end
-	end
-	
-TypeID = getUnitDefIDFromName(TypeName)
-boolIsOfType = (localcache[TypeID] ~= nil)
+		
+	TypeID = getUnitDefIDFromName(TypeName)
+	boolIsOfType = (localcache[TypeID] ~= nil)
 
-return boolIsOfType, localcache
+	return boolIsOfType, localcache
 end
 
 function getTruckLoadOutTypeTable()
@@ -256,7 +256,6 @@ function getTruckLoadOutTypeTable()
 	end
 	
 	return typeDefMappingTable
-
 end
 
 function  getMobileCivilianDefIDTypeTable(UnitDefs)
