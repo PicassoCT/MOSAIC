@@ -19,9 +19,15 @@ function attachSatellite()
 	 x,y,z = Spring.GetUnitPosition(unitID)
 	 teamID= Spring.GetUnitTeam(unitID)
 	 id = Spring.CreateUnit("noone", x,y,z, 1, teamID)
-	  echo("Spawning noone of id : "..id)
-	 Spring.SetUnitAlwaysVisible(id,true)
+	 -- Spring.SetUnitAlwaysVisible(id,true)
 	 Spring.UnitAttach(unitID, id, base)
+	 Spring.SetUnitNoSelect(id,true)
+	 
+	 while isUnitAlive(id) == true do
+		Sleep(10)
+		transferOrders(unitID, id)
+	 end
+	 Spring.DestroyUnit(unitID,true, false)
 end
 
 function script.Create()
@@ -35,12 +41,13 @@ end
 
 function script.Killed(recentDamage, _)
 	if id and isUnitAlive(id)== true then Spring.DetachUnit(id,true); Spring.DestroyUnit(id, false, true) end
-	explodeD(Spring.GetUnitPieceMap(unitID), SFX.FALL + SFX.FIRE)
+	explodeD(Spring.GetUnitPieceMap(unitID), SFX.SHATTER + SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
 
   return 1
 end
 
---- -aimining & fire weapon
+
+
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
     return emitpiece
@@ -58,15 +65,17 @@ function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 	
 
-	-- WTurn(base, z_axis, Heading, math.pi)
-	-- WTurn(aimpiece, x_axis, -pitch, math.pi)
+	WTurn(base, z_axis, Heading, math.pi)
+	WTurn(aimpiece, x_axis, -pitch, math.pi)
     return true
 end
 
+
 function script.FireWeapon1()
 
-
+    return true
 end
+
 
 
 function script.StartMoving()
