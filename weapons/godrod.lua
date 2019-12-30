@@ -3,28 +3,33 @@ local weaponName = "godrod" --this is the actually maschinegune of the inferno t
 local weaponDef = {
     name = "Mjoelnir Project",
     weaponType = [[MissileLauncher]],
-
+	--aiming behaviour
+		turret = true,
+		tracks = true,
+		noSelfDamage = true,
+		avoidFeature            = false,
+		avoidGround = false,
+		range = 3000,
+		trajectoryHeight = 0 ,
+		flightTime = 14.5 ,	
+		fixedLauncher  			= true,
+		canAttackGround = true,
+		
+		--projectile physics
+		turnRate = 190000,
+		weaponVelocity = 9000,
+		startVelocity  = 1,
+		weaponAcceleration = 900,
+		impulseBoost            = 0,
+		impulseFactor = 0.4,
+	   areaOfEffect = 512,
+	   
     damage = {
         default = 3500
     },
-
-	range = 3000,
-	impulseBoost            = 0,
-	impulseFactor = 0.4,
-	reloadtime = 1,
-    areaOfEffect = 512,
-	 noSelfDamage = true,
-	trajectoryHeight = 2.1 ,
-	avoidFeature            = false,
-	avoidGround = false,
+	
+	reloadtime = 3, -- seconds
 	smokeTrail = true,
-	startVelocity  = 380,
-	weaponAcceleration = 100,
-	turnRate = 150,
-	weaponVelocity = 450,
-	tracks = false,
-	flightTime = 14.5 ,
-	turret = true,
 	model = "air_copter_antiarmor_projectile.s3o",
 	explosionScar = true, 
     explosionGenerator = "custom:missile_explosion",
