@@ -11,7 +11,7 @@ function getGameConfig()
 	
 	},
 	
-	Version = "Alpha: 0.655",
+	Version = "Alpha: 0.658",
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,

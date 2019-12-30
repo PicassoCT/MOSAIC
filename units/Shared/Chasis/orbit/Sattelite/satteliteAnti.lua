@@ -1,6 +1,6 @@
 local AntiSat = Satellite:New{
-	name = "Spacecraft  Destroyer",
-	Description = "Destroys other satellites ",
+	name = "Cyclopian Satellite",
+	Description = "destroys other satellites ",
 	isFirePlatform 				= true,
 	corpse						= "",
 	transportSize				= 1024  ,
