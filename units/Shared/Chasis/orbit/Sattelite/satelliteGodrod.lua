@@ -2,31 +2,32 @@ local satteliteGodrod = Satellite:New{
 	name = "Orbital Strike Satellite ",
 	Description = " MOSAIC Standardized Assault Satellite ",
 
-	corpse						= "",
 	maxDamage          		= 500,
-	mass              	= 500,
+	mass              		= 500,
 	buildCostEnergy    		= 5,
-	buildCostMetal      		= 5,
-	explodeAs					= "none",
-	maxVelocity					= 7.15, --14.3, --86kph/20
+	buildCostMetal      	= 5,
+	explodeAs				= "none",
+	maxVelocity				= 7.15, --14.3, --86kph/20
 	acceleration   		 	= 1.7,
 	brakeRate      		 	= 0.1,
-	turninplace					= true,
-	turret = true,
-	fixedLauncher  = true,
-	footprintX 					= 1,
-	footprintZ 					= 1,
-	script 						= "satellitegodscript.lua",
+	turninplace				= true,
+	footprintX 				= 1,
+	footprintZ 				= 1,
+	script 					= "satellitegodscript.lua",
 	objectName        		= "SatGodRod.dae",
-	fireState=0,
-	customparams = {
+	fireState				=0,
+	alwaysupright			= true,
+	customparams			= {
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks
     },
-		category = [[orbit]],
+		category = [[ORBIT]],
 	
 	weapons = {
-		[1]={name  = "godrod",
+		[1]={
+			name  = "godrod",   
+			-- mainDir = "0 1 0",
+			-- maxAngleDif = 90,
 			onlyTargetCategory = [[GROUND]],
 			},
 					
