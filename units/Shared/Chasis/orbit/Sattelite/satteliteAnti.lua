@@ -20,7 +20,7 @@ local AntiSat = Satellite:New{
 	footprintZ 					= 1,
 	noAutoFire                	= false,
 	script 						= "satelliteantiscript.lua",
-	objectName        			= "satellite.s3o",
+	objectName        			= "orbit_satellite_cyclops.dae",
 	usePieceCollisionVolumes 	= true,
 	
 	customparams = {

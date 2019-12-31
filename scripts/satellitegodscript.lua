@@ -9,8 +9,10 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
+
 center = piece "center"
 Icon = piece "Icon"
+	Packed = piece "Packed"
 NumberOfRods = 3
 function script.Create()
 	
@@ -18,6 +20,18 @@ function script.Create()
 	if Icon then 	Hide(Icon) end
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(delayedShow)
+end
+
+function delayedShow()
+	
+	hideAll(unitID)
+	Show(Packed)
+	waitTillComplete(unitID)
+	Explode(Packed, SFX.SHATTER)
+	showAll(unitID)
+	Hide(Packed)
+
 end
 
 

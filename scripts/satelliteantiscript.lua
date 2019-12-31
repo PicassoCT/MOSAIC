@@ -9,9 +9,9 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-base = piece "base"
-aimpiece = piece "aimpiece"
-emitpiece = piece "emitPiece"
+-- base = piece "base"
+-- aimpiece = piece "aimpiece"
+-- emitpiece = piece "emitPiece"
 
 local id
 function attachSatellite()
@@ -34,6 +34,17 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	-- echo("Satellite Anti Script here")
 	StartThread(attachSatellite)
+	StartThread(delayedShow)
+end
+function delayedShow()
+	Packed = piece "Packed"	
+	hideAll(unitID)
+	Show(Packed)
+	waitTillComplete(unitID)
+	Explode(Packed, SFX.SHATTER)
+	showAll(unitID)
+	Hide(Packed)
+
 end
 
 
@@ -48,33 +59,6 @@ end
 
 
 
---- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return emitpiece
-end
-
-
-
-function script.QueryWeapon1()
-    return aimpiece
-end
-
-
-
-function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
-	
-
-	WTurn(base, z_axis, Heading, math.pi)
-	WTurn(aimpiece, x_axis, -pitch, math.pi)
-    return true
-end
-
-
-function script.FireWeapon1()
-
-    return true
-end
 
 
 

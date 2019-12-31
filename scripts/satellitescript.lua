@@ -19,6 +19,18 @@ function script.Create()
 	if Icon then 	Hide(Icon) end
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(delayedShow)
+end
+
+function delayedShow()
+	Packed = piece "Packed"	
+	hideAll(unitID)
+	Show(Packed)
+	waitTillComplete(unitID)
+	Explode(Packed, SFX.SHATTER)
+	showAll(unitID)
+	Hide(Packed)
+
 end
 
 function script.Killed(recentDamage, _)

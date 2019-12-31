@@ -31,7 +31,7 @@ local NooneLaser = Human:New{
 	
 	
 	script 					= "noonescript.lua",
-	objectName        	= "noone.s3o",
+	objectName        	= "orbit_turret_noone.dae",
 	name = "Noone",
 	description = "Satellite Destroying Laser",
 
