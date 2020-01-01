@@ -13,8 +13,11 @@ local NooneLaser = Human:New{
 	buildCostMetal      = 5,
 	explodeAs			= "none",
 	buildingMask = 8,
-	MovementClass = "Default2x2",
-
+	MovementClass = "AIRUNIT",
+	maxVelocity				= 7.15, --14.3, --86kph/20
+	acceleration   		 	= 1.7,
+	brakeRate      		 	= 0.1,
+	turninplace				= true,
 
 	MaxSlope 					= 50,
 
@@ -37,6 +40,9 @@ local NooneLaser = Human:New{
 
 
 	cantBeTransported  = false,
+	canAttack = true,
+	canGuard = true,
+	canMove = true,
 	category = [[ORBIT]],
 
 	customparams = {

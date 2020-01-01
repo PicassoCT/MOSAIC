@@ -36,6 +36,7 @@ MA 02110-1301, USA.
 
 ]] -- test
 
+
 -------------- DEBUG HEADER
 -- Central Debug Header Controlled in UnitScript
 -------------- DEBUG HEADER
@@ -2403,6 +2404,17 @@ function tableCopy(orig)
 		copy = orig
 	end
 	return copy
+end
+
+
+function sendMessage(Message, reciverID)
+if not GG.Messages then GG.Messages ={} end
+ GG.Messages[reciverID] = Message 
+end
+
+function recieveMessage( reciverID)
+if not GG.Messages then return end
+return  GG.Messages[reciverID]
 end
 
 --> Destroys A Table of Units

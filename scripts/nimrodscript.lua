@@ -12,7 +12,7 @@ turret = piece "turret"
 projectile = piece "projectile"
 
 GameConfig = getGameConfig()
-
+if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 
 boolBuilding = false
 function script.Create()
@@ -25,6 +25,8 @@ function script.Create()
 					end
 				end
 				)
+				
+	GG.UnitHeldByHouseMap[unitID] = T[1]
 	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 	StartThread(goToFireMode)
 	StartThread(modeChangeOS)
@@ -81,7 +83,7 @@ function script.AimWeapon1(Heading, pitch)
 	if boolBuilding == true then return false end
 	
         WTurn(center, y_axis, Heading, 0.4)
-        -- WTurn(turret, x_axis, -pitch, 0.4)
+        WTurn(turret, x_axis, pitch, 0.4)
 		
     return true
 end
@@ -134,7 +136,7 @@ end
 Spring.SetUnitNanoPieces(unitID, { projectile })
 
 function script.Killed(recentDamage, _)
-
+	GG.UnitHeldByHouseMap[unitID] = nil
     --createCorpseCUnitGeneric(recentDamage)
     return 1
 end

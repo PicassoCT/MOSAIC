@@ -9,9 +9,10 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
--- base = piece "base"
--- aimpiece = piece "aimpiece"
--- emitpiece = piece "emitPiece"
+center = piece "center"
+
+attachpoint = piece "attachpoint"
+Packed = piece "Packed"
 
 local id
 function attachSatellite()
@@ -20,12 +21,14 @@ function attachSatellite()
 	 teamID= Spring.GetUnitTeam(unitID)
 	 id = Spring.CreateUnit("noone", x,y,z, 1, teamID)
 	 -- Spring.SetUnitAlwaysVisible(id,true)
-	 Spring.UnitAttach(unitID, id, base)
-	 Spring.SetUnitNoSelect(id,true)
-	 
-	 while isUnitAlive(id) == true do
+	 Spring.UnitAttach(unitID, id, attachpoint)
+	 sendMessage(unitID, id)
+	 Spring.SetUnitNoSelect(unitID,true)
+	 hp,mp = Spring.GetUnitHealth(id)
+	 while hp and hp > 0  do
+		hp,mp = Spring.GetUnitHealth(id)
 		Sleep(10)
-		transferOrders(unitID, id)
+
 	 end
 	 Spring.DestroyUnit(unitID,true, false)
 end
@@ -33,17 +36,21 @@ end
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	-- echo("Satellite Anti Script here")
-	StartThread(attachSatellite)
+
 	StartThread(delayedShow)
 end
 function delayedShow()
-	Packed = piece "Packed"	
+	Turn(center,x_axis,math.rad(180),0)
 	hideAll(unitID)
 	Show(Packed)
 	waitTillComplete(unitID)
+	WTurn(center,x_axis,math.rad(0),math.pi)
+	Spin(center,y_axis,math.rad(42),0)
 	Explode(Packed, SFX.SHATTER)
 	showAll(unitID)
 	Hide(Packed)
+	StartThread(attachSatellite)
+
 
 end
 
@@ -52,7 +59,8 @@ end
 
 function script.Killed(recentDamage, _)
 	if id and isUnitAlive(id)== true then Spring.DetachUnit(id,true); Spring.DestroyUnit(id, false, true) end
-	explodeD(Spring.GetUnitPieceMap(unitID), SFX.SHATTER + SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
+	explodeD(Spring.GetUnitPieceMap(unitID), SFX.SHATTER )
+	-- explodeD(Spring.GetUnitPieceMap(unitID),  SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
 
   return 1
 end

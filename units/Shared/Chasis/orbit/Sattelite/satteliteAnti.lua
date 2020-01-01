@@ -21,7 +21,10 @@ local AntiSat = Satellite:New{
 	noAutoFire                	= false,
 	script 						= "satelliteantiscript.lua",
 	objectName        			= "orbit_satellite_cyclops.dae",
-	usePieceCollisionVolumes 	= true,
+	usePieceCollisionVolumes 	= false,
+	collisionVolumeType = "box",
+	collisionVolumeScales = {1.0,1.0,1.0},
+	collisionVolumeOffsets  ={0.0,0.0,0.0},
 	
 	customparams = {
 		helptext		= "Anti-Satellite Satellite",

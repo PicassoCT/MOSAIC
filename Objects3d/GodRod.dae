@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-12-30T14:13:25Z</created><keywords></keywords><modified>2019-12-30T14:13:25Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2019-12-31T12:21:37Z</created><keywords></keywords><modified>2019-12-31T12:21:37Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #4-image" name="Map #4"><init_from>file://D:\spring\games\MosaicDev\Models\components\tex\DiffuseMaterialAtlas.psd</init_from></image>
   </library_images>
@@ -10,111 +10,9 @@
     </material>
   </library_materials>
   <library_effects>
-   
+  
   </library_effects>
   <library_geometries>
-    <geometry id="Line001-lib" name="Line001Mesh">
-      <mesh>
-        <source id="Line001-POSITION">
-          <float_array id="Line001-POSITION-array" count="36">
-26.516500 -241.333298 26.516500
--9.705718 -241.333298 36.222214
--36.222218 -241.333298 9.705709
--26.516497 -241.333298 -26.516506
-9.705712 -241.333298 -36.222214
-36.222214 -241.333298 -9.705722
-26.516500 241.333282 26.516500
--9.705718 241.333282 36.222214
--36.222218 241.333282 9.705709
--26.516497 241.333282 -26.516506
-9.705712 241.333282 -36.222214
-36.222214 241.333282 -9.705722
-</float_array>
-          <technique_common>
-            <accessor source="#Line001-POSITION-array" count="12" stride="3">
-              <param name="X" type="float"/>
-              <param name="Y" type="float"/>
-              <param name="Z" type="float"/>
-            </accessor>
-          </technique_common>
-        </source>
-        <source id="Line001-Normal0">
-          <float_array id="Line001-Normal0-array" count="180">
-0.258819 0.000000 0.965926
-0.258819 0.000000 0.965926
-0.258819 0.000000 0.965926
-0.258819 0.000000 0.965926
-0.258819 0.000000 0.965926
-0.258819 0.000000 0.965926
--0.707107 0.000000 0.707107
--0.707107 0.000000 0.707107
--0.707107 0.000000 0.707107
--0.707107 0.000000 0.707107
--0.707107 0.000000 0.707107
--0.707107 0.000000 0.707107
--0.965926 0.000000 -0.258819
--0.965926 0.000000 -0.258819
--0.965926 0.000000 -0.258819
--0.965926 0.000000 -0.258819
--0.965926 0.000000 -0.258819
--0.965926 0.000000 -0.258819
--0.258819 0.000000 -0.965926
--0.258819 0.000000 -0.965926
--0.258819 0.000000 -0.965926
--0.258819 0.000000 -0.965926
--0.258819 0.000000 -0.965926
--0.258819 0.000000 -0.965926
-0.707107 0.000000 -0.707107
-0.707107 0.000000 -0.707107
-0.707107 0.000000 -0.707107
-0.707107 0.000000 -0.707107
-0.707107 0.000000 -0.707107
-0.707107 0.000000 -0.707107
-0.965926 0.000000 0.258819
-0.965926 0.000000 0.258819
-0.965926 0.000000 0.258819
-0.965926 0.000000 0.258819
-0.965926 0.000000 0.258819
-0.965926 0.000000 0.258819
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-</float_array>
-          <technique_common>
-            <accessor source="#Line001-Normal0-array" count="60" stride="3">
-              <param name="X" type="float"/>
-              <param name="Y" type="float"/>
-              <param name="Z" type="float"/>
-            </accessor>
-          </technique_common>
-        </source>
-        <vertices id="Line001-VERTEX">
-          <input semantic="POSITION" source="#Line001-POSITION"/>
-        </vertices>
-        <triangles count="20"><input semantic="VERTEX" offset="0" source="#Line001-VERTEX"/><input semantic="NORMAL" offset="1" source="#Line001-Normal0"/><p> 7 0 0 1 6 2 0 3 7 4 1 5 8 6 1 7 7 8 1 9 8 10 2 11 2 12 8 13 9 14 2 15 9 16 3 17 10 18 4 19 3 20 3 21 9 22 10 23 11 24 5 25 4 26 4 27 10 28 11 29 6 30 0 31 5 32 6 33 5 34 11 35 1 36 3 37 0 38 0 39 4 40 5 41 3 42 1 43 2 44 4 45 0 46 3 47 8 48 7 49 6 50 6 51 9 52 8 53 9 54 6 55 10 56 11 57 10 58 6 59</p></triangles>
-      </mesh>
-    </geometry>
     <geometry id="GodRod-lib" name="GodRodMesh">
       <mesh>
         <source id="GodRod-POSITION">
@@ -1060,8 +958,7 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="GodRod" name="GodRod">
-      <node name="Line001" id="Line001" sid="Line001"><matrix sid="matrix">1.000000 0.000000 0.000000 -30.030085 0.000000 1.000000 -0.000000 199.892365 0.000000 0.000000 1.000000 -26.310913 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Line001-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
-      <node name="GodRod" id="GodRod" sid="GodRod"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GodRod-lib"><bind_material><technique_common><instance_material symbol="_08 - Default" target="#_08 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
+      <node name="GodRod" id="GodRod" sid="GodRod"><matrix sid="matrix">1.000000 0.000000 0.000000 0.745041 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 -2.908508 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GodRod-lib"><bind_material><technique_common><instance_material symbol="_08 - Default" target="#_08 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
     </visual_scene>
   </library_visual_scenes>

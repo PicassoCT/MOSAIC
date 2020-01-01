@@ -588,7 +588,9 @@ function buildDecorateGroundLvl()
 				Turn(Door,axis, math.rad(rotation),0)
 				if chancesAre(10) < decoChances.door  then
 					DoorDecoMaterial,  DoorDeco = DecorateBlockWall( xRealLoc, zRealLoc, 0, DoorDecoMaterial)  
-					Turn(DoorDeco,axis, math.rad(rotation),0)
+					if DoorDeco then
+						Turn(DoorDeco,axis, math.rad(rotation),0)
+					end
 				end
 			end
       end

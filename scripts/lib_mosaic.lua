@@ -11,7 +11,7 @@ function getGameConfig()
 	
 	},
 	
-	Version = "Alpha: 0.658",
+	Version = "Alpha: 0.659",
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,
@@ -352,6 +352,15 @@ function  getInterrogateAbleTypeTable(UnitDefs)
 	}
 	
 	return getTypeTable(UnitDefNames, typeTable)
+end
+
+function  getHouseTypeTable(UnitDefs)
+
+	typeTable={
+			"house"		
+	}
+	
+	return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
 end
 
 function  getOperativeTypeTable(UnitDefs)

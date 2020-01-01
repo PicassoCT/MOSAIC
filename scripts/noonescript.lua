@@ -10,9 +10,38 @@ TablesOfPiecesGroups = {}
 aimpiece = piece "aimpiece"
 base = piece "base"
 emitpiece = piece "emitpiece"
+RadiatorCold = piece "RadiatorCold"
+RadiatorHot = piece "RadiatorHot"
+SIG_RADIATOR= 1
+
+function hotRadiators()
+Show(RadiatorHot)
+Hide(RadiatorCold)
+Signal(SIG_RADIATOR)
+SetSignalMask(SIG_RADIATOR)
+Sleep(9000)
+Show(RadiatorCold)
+Hide(RadiatorHot)
+
+end
 
 function script.Create()
+	Show(RadiatorCold)
+	Hide(RadiatorHot)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(updateMothership)
+end
+
+function updateMothership()
+	while not recieveMessage(unitID) do
+		Sleep(10)
+	end
+
+	parentID = recieveMessage(unitID)
+	while isUnitAlive(parentID) == true do
+		transferOrders(unitID, parentID)
+		Sleep(100)
+	end
 end
 
 function script.Killed(recentDamage, _)
@@ -48,7 +77,7 @@ end
 
 
 function script.FireWeapon1()
-
+	StartThread(hotRadiators)
     return true
 end
 
