@@ -1501,6 +1501,7 @@ function gadgetHandler:UnitCmdDone(unitID, unitDefID, unitTeam, cmdID, cmdParams
   return
 end
 
+-- returning a value consumes the event
 function gadgetHandler:UnitPreDamaged(
   unitID,
   unitDefID,
@@ -1517,17 +1518,18 @@ function gadgetHandler:UnitPreDamaged(
   local retImpulse = 1.0
 
   for _,g in ipairs(self.UnitPreDamagedList) do
-    dmg, imp = g:UnitPreDamaged(
+    local dmg, imp = g:UnitPreDamaged(
       unitID, unitDefID, unitTeam,
       retDamage, paralyzer,
       weaponDefID, projectileID,
       attackerID, attackerDefID, attackerTeam
     )
 
-    if (dmg ~= nil) then retDamage = dmg end
-    if (imp ~= nil) then retImpulse = imp end
+    if (dmg ~= nil) then 	retDamage = dmg 	end
+    if (imp ~= nil) then 	retImpulse = imp 	end
   end
-
+	assert(retDamage)
+	assert(retImpulse)
   return retDamage, retImpulse
 end
 

@@ -11,7 +11,7 @@ local weaponDef = {
     craterBoost = 0,
     craterMult = 0,
     damage = {
-        default = 1000,
+        default = 250,
 
     },
     explosionGenerator = [[custom:cRailSparks]],

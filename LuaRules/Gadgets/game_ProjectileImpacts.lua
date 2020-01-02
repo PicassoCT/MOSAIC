@@ -329,16 +329,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     end
 
-    local everyNthFrame = 30
-    function gadget:GameFrame(frame)
-
-
-
-    -- if frame % everyNthFrame == 0 then
-
-    -- end
-
-    end
 
 
 

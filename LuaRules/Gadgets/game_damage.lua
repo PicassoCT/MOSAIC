@@ -24,28 +24,31 @@ if ( gadgetHandler:IsSyncedCode()) then
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	houseTypeTables= getHouseTypeTable(UnitDefs)
 	local NimRodDefID = UnitDefNames["house"].id
+	assert(NimRodDefID)
+	local NimrodWeaponDefID = WeaponDefNames["railgun"].id
+	assert(NimrodWeaponDefID)
 	if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap={} end
 	
 	-- Script.SetWatchWeapon( WeaponDefNames["railgun"].id, true)
 
 	function gadget:UnitPreDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-		--if unit is house
-		if attackerDefID == NimRodDefID then
+		--if weapon is Nimrod
+		if weaponDefID == NimrodWeaponDefID then
 	
-		Spring.Echo("PreDamaged called Attacker is nimrod and assaulted unit is "..UnitDefs[unitDefID].name)
+		-- Spring.Echo("PreDamaged called Attacker is nimrod and assaulted unit is "..UnitDefs[unitDefID].name)
 			if houseTypeTables[unitDefID] then
-				-- if GG.UnitHeldByHouseMap[attackerID] and GG.UnitHeldByHouseMap[attackerID] == unitID then
-					Spring.Echo("House spared")
-					return 0.0, 0.0
-				-- end
+				if GG.UnitHeldByHouseMap[attackerID] and GG.UnitHeldByHouseMap[attackerID] == unitID then
+					-- Spring.Echo("House spared")
+					return 0,1.0
+				end
 			end
 		
-			if unitDefID == NimRodDefID then
-			Spring.Echo("Nimrod spared")
-				return 0.0, 0.0 
+			if unitDefID == NimRodDefID and unitID == attackerID then
+			-- Spring.Echo("Nimrod spared")
+				return 0 , 1.0 
 			end
 		end
 	end
 	
-
+	return damage
 end
