@@ -17,7 +17,8 @@ if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 boolBuilding = false
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	
+	Hide(projectile)
+	Move(projectile,z_axis, -210,0)
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 				function(id)
 					if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
@@ -30,7 +31,6 @@ function script.Create()
 	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 	StartThread(goToFireMode)
 	StartThread(modeChangeOS)
-
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -83,7 +83,7 @@ function script.AimWeapon1(Heading, pitch)
 	if boolBuilding == true then return false end
 	
         WTurn(center, y_axis, Heading, 0.4)
-        WTurn(turret, x_axis, pitch, 0.4)
+        WTurn(turret, x_axis, -pitch, 0.7)
 		
     return true
 end
@@ -102,32 +102,18 @@ end
 function script.StopBuilding()
 end
 function script.Activate()
-
-
-
     SetUnitValue(COB.YARD_OPEN, 1)
-
     SetUnitValue(COB.BUGGER_OFF, 1)
-
     SetUnitValue(COB.INBUILDSTANCE, 1)
     return 1
 end
 
-
-
 function script.Deactivate()
-
     SetUnitValue(COB.YARD_OPEN, 0)
-
     SetUnitValue(COB.BUGGER_OFF, 0)
-
     SetUnitValue(COB.INBUILDSTANCE, 0)
-
     return 0
 end
-
-
-
 
 function script.QueryBuildInfo()
     return projectile
@@ -147,7 +133,6 @@ boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if  boolCloaked == true then
-
         hideAll(unitID)
 		if TablesOfPiecesGroups then
 			showT(TablesOfPiecesGroups["Icon"])

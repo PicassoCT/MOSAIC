@@ -10,6 +10,7 @@ local weaponDef = {
 		avoidFeature            = false,
 		avoidGround = false,
 		range = 3000,
+		commandFire  = true,
 		trajectoryHeight = 0 ,
 		flightTime = 14.5 ,	
 		fixedLauncher  			= true,

@@ -17,6 +17,7 @@ local satteliteGodrod = Satellite:New{
 	objectName        		= "SatGodRod.dae",
 	fireState				=0,
 	alwaysupright			= true,
+	canManualFire = true,
 	customparams			= {
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks
