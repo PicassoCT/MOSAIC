@@ -319,7 +319,7 @@ function constantCheck(frame)
 			for teamID, launchersT in pairs(GG.Launchers) do	
 				if teamID and launchersT then
 					for launcherID, step  in pairs(launchersT) do	
-						Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
+						-- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
 						if launcherID and step >= GameConfig.LaunchReadySteps then
 								id = createUnitAtUnit(teamID, "launchedicbm", launcherID, 0, 70, 0)
 								if not LaunchedRockets[teamID] then 

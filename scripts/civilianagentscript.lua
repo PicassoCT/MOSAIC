@@ -98,6 +98,16 @@ lowerBodyPieces =
 	[Feet2	]= Feet2
 }
 
+lowerBodyPiecesNoCenter =
+{
+	[UpLeg1	]= UpLeg1,
+	[UpLeg2 ]= UpLeg2,
+	[LowLeg1]= LowLeg1,
+	[LowLeg2]= LowLeg2,
+	[Feet1 	]= Feet1,
+	[Feet2	]= Feet2
+}
+
 catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 --equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
@@ -771,8 +781,8 @@ LowerAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
 						WaitForTurns(lowerBodyPieces)
-						resetT(lowerBodyPieces, math.pi,false, true)
-						WaitForTurns(lowerBodyPieces)
+						resetT(lowerBodyPiecesNoCenter, math.pi,false, true)
+						WaitForTurns(lowerBodyPiecesNoCenter)
 						Sleep(10)
 						return eAnimState.standing
 					end,
@@ -1160,7 +1170,7 @@ function cloakLoop()
 	waitTillComplete(unitID)
 	Sleep(100)
 	
-	setSpeedEnv(unitID, 0.35)
+
 	SetUnitValue(COB.WANT_CLOAK, 1)
 	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
 	boolCloaked=true
@@ -1174,7 +1184,7 @@ function cloakLoop()
 		if (boolIsCurrentlyActive == true and  GG.OperativesDiscovered[unitID] ) or  
 		 (boolIsCurrentlyActive == false and boolCloaked == true )then
 	
-			setSpeedEnv(unitID, 1.0)
+	
 			SetUnitValue(COB.WANT_CLOAK, 0)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
 			boolCloaked= false
@@ -1287,7 +1297,7 @@ function allowTarget(weaponID)
 			end
 		end
 		
-	return true
+	return boolCloaked == false
 end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then

@@ -49,7 +49,6 @@ if ( gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-		assert(damage)
 
 		if not attackerID and weaponDefID then
 			if WeaponDefs[weaponDefID] then

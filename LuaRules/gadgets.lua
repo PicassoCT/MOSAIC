@@ -1501,61 +1501,34 @@ function gadgetHandler:UnitCmdDone(unitID, unitDefID, unitTeam, cmdID, cmdParams
   return
 end
 
-local UnitPreDamaged_GadgetMap = {}
-local UnitPreDamaged_first = true
-local allWeaponDefs = {}
+function gadgetHandler:UnitPreDamaged(
+  unitID,
+  unitDefID,
+  unitTeam,
+  damage,
+  paralyzer,
+  weaponDefID,
+  projectileID,
+  attackerID,
+  attackerDefID,
+  attackerTeam
+)
+  local retDamage = damage
+  local retImpulse = 1.0
 
-do
-	for i=-7,#WeaponDefs do
-		allWeaponDefs[#allWeaponDefs+1] = i
-	end
-end
+  for _,g in ipairs(self.UnitPreDamagedList) do
+    dmg, imp = g:UnitPreDamaged(
+      unitID, unitDefID, unitTeam,
+      retDamage, paralyzer,
+      weaponDefID, projectileID,
+      attackerID, attackerDefID, attackerTeam
+    )
 
-function gadgetHandler:UnitPreDamaged(unitID, unitDefID, unitTeam,
-                                   damage, paralyzer, weaponDefID,
-								   projectileID, attackerID, attackerDefID, attackerTeam)
-	
-	if UnitPreDamaged_first then
-		for _,g in ipairs(self.UnitPreDamagedList) do
-			local weaponDefs = (g.UnitPreDamaged_GetWantedWeaponDef and g:UnitPreDamaged_GetWantedWeaponDef()) or allWeaponDefs
-			for _,wdid in ipairs(weaponDefs) do
-				if UnitPreDamaged_GadgetMap[wdid] then
-					UnitPreDamaged_GadgetMap[wdid].count = UnitPreDamaged_GadgetMap[wdid].count + 1
-					UnitPreDamaged_GadgetMap[wdid].data[UnitPreDamaged_GadgetMap[wdid].count] = g
-				else
-					UnitPreDamaged_GadgetMap[wdid] = {
-						count = 1,
-						data = {g}
-					}
-				end
-			end
-		end
-		UnitPreDamaged_first = false
-	end
-	
-	local rDam = damage
-	local rImp = 1.0
+    if (dmg ~= nil) then retDamage = dmg end
+    if (imp ~= nil) then retImpulse = imp end
+  end
 
-	local gadgets = UnitPreDamaged_GadgetMap[weaponDefID]
-	if gadgets then
-		local data = gadgets.data
-		local g
-		for i = 1, gadgets.count do
-			g = data[i]
-			dam, imp = g:UnitPreDamaged(unitID, unitDefID, unitTeam,
-					  rDam, paralyzer, weaponDefID,
-					  attackerID, attackerDefID, attackerTeam,
-					  projectileID)
-			if (dam ~= nil) then
-				rDam = dam
-			end
-			if (imp ~= nil) then
-				rImp = math.min(imp, rImp)
-			end
-		end
-	end
-
-	return rDam, rImp
+  return retDamage, retImpulse
 end
 
 
@@ -1564,7 +1537,8 @@ local UnitDamaged_count = 0
 local UnitDamaged_gadgets = {}
 
 function gadgetHandler:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, attackerID, attackerDefID, attackerTeam)
-								   
+
+
 	if UnitDamaged_first then
 		for _,g in ipairs(self.UnitDamagedList) do
 			UnitDamaged_count = UnitDamaged_count + 1

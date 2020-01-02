@@ -1226,13 +1226,16 @@ function getPieceMap(unitID)
 end
 
 function waitTillComplete(id)
+	if not id then return end
+	if  doesUnitExistAlive(id) == false then return end
 	hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
 	Sleep(1)
 		repeat
 			hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
 			Sleep(500)
-		until buildProgress   
+		until buildProgress  or doesUnitExistAlive(id) == false
 
+	if  doesUnitExistAlive(id) == false then return end
 	
 	while buildProgress and buildProgress < 1.0 or  hp < mHp  do
 			hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
