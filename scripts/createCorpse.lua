@@ -36,7 +36,7 @@ function createCorpseCBuilding(unitID, recentDamage)
             spx, spy, spz = Spring.GetUnitPosition(unitID)
             teamID = Spring.GetGaiaTeamID()
             x = math.random(0, 3)
-            GG.UnitsToSpawn:PushCreateUnit("gCScrapHeapPeace", spx, spy, spz, x, teamID)
+            -- GG.UnitsToSpawn:PushCreateUnit("gCScrapHeapPeace", spx, spy, spz, x, teamID)
 
         end
         --</RubbleScript>

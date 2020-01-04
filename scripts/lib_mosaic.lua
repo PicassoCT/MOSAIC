@@ -90,6 +90,7 @@ function getGameConfig()
 	 TimeForInterceptionInFrames= 30 * 10,
 	 TimeForPanicSpreadInFrames= 30 * 30,
 	 TimeForPacification = 30* 90,
+	 TimeForScrapHeapDisappearanceInMs = 42 *1000,
 	 
 	 costs ={
 		RecruitingTruck= 500,
@@ -115,6 +116,13 @@ return {
 	["tollwutox"] = "tollwutox",
 	["depressol"] = "depressol"
 }
+end
+function getScrapheapTypeTable(UnitDefs)
+UnitDefNames= getUnitDefNames(UnitDefs)
+return {
+			[UnitDefNames["gcscrapheap"].id	]= true
+		}
+
 end
 
 function getPoliceTypes()

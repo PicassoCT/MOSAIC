@@ -3847,6 +3847,14 @@ function HideWrap(piecenr)
 	end
 end
 
+function randHide(T)
+process(T,
+	function(id)
+		if math.random(0,1)== 1 then Show(id) else Hide(id) end
+		end
+		)
+end
+
 function ShowWrap(piecenr)
 	if lib_boolDebug == true then
 		if type(piecenr) == "string" then

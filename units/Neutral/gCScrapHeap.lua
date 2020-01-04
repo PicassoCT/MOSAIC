@@ -80,11 +80,11 @@ EnergyStorage = 0,
    customParams = {},
  sfxtypes = {
 				explosiongenerators = {
-				   "custom:factory_explosion",
-	   		       "custom:flames",
-				   "custom:glowsmoke",
-				   "custom:blackerthensmoke",
-				   "custom:LightUponSmoke",
+				   -- "custom:factory_explosion",
+	   		       -- "custom:flames",
+				   -- "custom:glowsmoke",
+				   -- "custom:blackerthensmoke",
+				   -- "custom:LightUponSmoke",
 				  
 				   --
 				    --Bulletof The Cannon

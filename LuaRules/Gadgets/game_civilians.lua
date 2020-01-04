@@ -31,10 +31,12 @@ end
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
 	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
+	local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	local CivAnimStates = getCivilianAnimationStates()
 	local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
+	local TimeDelayedRespawn ={}
 	
 	GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
 	GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
@@ -135,10 +137,21 @@ end
 			makePasserBysLook(unitID)
 			--other gadgets worries about propaganda price
 			if unitDefID == houseDefID then
-				checkReSpawnHouses()
-				regenerateRoutesTable()
+				rubbleHeapID = spawnRubbleHeapAt(unitID)
+				
+				-- checkReSpawnHouses()
+				-- regenerateRoutesTable()
 			end
 		end
+	end
+	
+	function spawnRubbleHeapAt(id)
+		x,y,z = Spring.GetUnitPosition(id)
+		if x then
+		
+			id= Spring.CreateUnit(randT(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
+			TimeDelayedRespawn[id] ={frame= GameConfig.TimeForScrapHeapDisappearanceInMs, x= x, z= z, bID = id}
+		end	
 	end
 	
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, attackerID, attackerDefID, attackerTeam)
@@ -339,6 +352,16 @@ end
 			boolInitialized = true
 		end
 	end
+	function checkReSpawnHouseAt(x,z, bID)
+			dataToAdd= {}	
+			GG.BuildingTable[bID]= nil
+			id = spawnBuilding(CivilianTypeTable["house"], x, z)
+			dataToAdd[id] = {x=x,z=z}
+			GG.BuildingTable[id] = dataToAdd[id]
+
+	end
+	
+	
 	
 	function checkReSpawnHouses()
 		dataToAdd= {}
@@ -736,11 +759,26 @@ end
 		GG.UnitArrivedAtTarget = {}
 	end
 	
+	function checkScrapHeap(timeToSubstract)
+	 for rubbleHeapID, tables in pairs( TimeDelayedRespawn) do
+		TimeDelayedRespawn[rubbleHeapID].frame = TimeDelayedRespawn[rubbleHeapID].frame - timeToSubstract
+		if TimeDelayedRespawn[rubbleHeapID] <= 0 then
+			if isUnitAlive(rubbleHeapID) then Spring.DestroyUnit(rubbleHeapID, false, true) end
+			checkReSpawnHouseAt(TimeDelayedRespawn[rubbleHeapID].x,TimeDelayedRespawn[rubbleHeapID].z, TimeDelayedRespawn[rubbleHeapID].bID)
+			regenerateRoutesTable()
+			TimeDelayedRespawn[rubbleHeapID] = nil
+		end
+	 end
+	end
+	
 	function gadget:GameFrame(frame)
 		if boolInitialized == false then
 			spawnInitialPopulation(frame)
 		--	echo("Initialization:Frame:"..frame)
 		elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
+			checkScrapHeap(5)
+		
+		
 			currentGlobalGameState = GG.GlobalGameState or GameConfig.GameState.normal
 			-- echo("Runcycle:Frame:"..frame)
 			-- recreate buildings 
@@ -760,7 +798,9 @@ end
 				if times then
 					activePoliceUnitIds_DispatchTime[id] = times - 5
 					if activePoliceUnitIds_DispatchTime[id] <= 0 then
-						Spring.DestroyUnit(id,true,true)
+						checkReSpawnHouses()
+						regenerateRoutesTable()
+						Spring.DestroyUnit(id, false,true)
 					end
 				end
 			end
