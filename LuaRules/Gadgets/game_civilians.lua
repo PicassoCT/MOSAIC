@@ -37,6 +37,7 @@ end
 	local CivAnimStates = getCivilianAnimationStates()
 	local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
 	local TimeDelayedRespawn ={}
+		  BuildingWithWaitingRespawn={}
 	
 	GG.CivilianTable = {} --[id ] ={ defID, startNodeID }
 	GG.UnitArrivedAtTarget = {} --[id] = true UnitID -- Units report back once they reach this target
@@ -149,8 +150,11 @@ end
 		x,y,z = Spring.GetUnitPosition(id)
 		if x then
 		
-			id= Spring.CreateUnit(randT(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
-			TimeDelayedRespawn[id] ={frame= GameConfig.TimeForScrapHeapDisappearanceInMs, x= x, z= z, bID = id}
+			rubbleHeapID= Spring.CreateUnit(randT(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
+			TimeDelayedRespawn[rubbleHeapID] ={
+			frame= GameConfig.TimeForScrapHeapDisappearanceInMs,
+			x= x, z= z, bID = id}
+			BuildingWithWaitingRespawn[id]= true
 		end	
 	end
 	
@@ -367,7 +371,7 @@ end
 		dataToAdd= {}
 		for bID, routeData in pairs(GG.BuildingTable) do
 			local routeDataCopy = routeData
-			if doesUnitExistAlive(bID) ~= true then
+			if doesUnitExistAlive(bID) ~= true and  BuildingWithWaitingRespawn[bID] == nil then
 				GG.BuildingTable[bID]= nil
 				
 				x, z = routeDataCopy.x, routeDataCopy.z 
@@ -751,7 +755,7 @@ end
 
 	function sendArrivedUnitsCommands()
 		for id, uType in pairs(GG.UnitArrivedAtTarget) do
-			if doesUnitExistAlive(GG.CivilianTable[id].startID) == true and doesUnitExistAlive(id) then
+			if GG.CivilianTable[id] and doesUnitExistAlive(GG.CivilianTable[id].startID) == true and doesUnitExistAlive(id) then
 				giveWaypointsToUnit(id, uType, GG.CivilianTable[id].startID)
 			end
 		end
@@ -759,14 +763,15 @@ end
 		GG.UnitArrivedAtTarget = {}
 	end
 	
-	function checkScrapHeap(timeToSubstract)
+	function countDownRespawnHouses(framesToSubstract)
 	 for rubbleHeapID, tables in pairs( TimeDelayedRespawn) do
-		TimeDelayedRespawn[rubbleHeapID].frame = TimeDelayedRespawn[rubbleHeapID].frame - timeToSubstract
-		if TimeDelayedRespawn[rubbleHeapID] <= 0 then
-			if isUnitAlive(rubbleHeapID) then Spring.DestroyUnit(rubbleHeapID, false, true) end
-			checkReSpawnHouseAt(TimeDelayedRespawn[rubbleHeapID].x,TimeDelayedRespawn[rubbleHeapID].z, TimeDelayedRespawn[rubbleHeapID].bID)
+		TimeDelayedRespawn[rubbleHeapID].frame = TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
+		-- Spring.Echo("ScrapHeap"..rubbleHeapID.. " is alive for "..TimeDelayedRespawn[rubbleHeapID].frame .." frames")
+		if TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
+			if isUnitAlive(rubbleHeapID) == true then Spring.DestroyUnit(rubbleHeapID, false, true) end	
 			regenerateRoutesTable()
-			TimeDelayedRespawn[rubbleHeapID] = nil
+			BuildingWithWaitingRespawn[tables.bID]= nil
+			TimeDelayedRespawn[rubbleHeapID] = nil			
 		end
 	 end
 	end
@@ -776,10 +781,8 @@ end
 			spawnInitialPopulation(frame)
 		--	echo("Initialization:Frame:"..frame)
 		elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-			checkScrapHeap(5)
-		
-		
-			currentGlobalGameState = GG.GlobalGameState or GameConfig.GameState.normal
+			countDownRespawnHouses(5)		
+
 			-- echo("Runcycle:Frame:"..frame)
 			-- recreate buildings 
 			-- recreate civilians

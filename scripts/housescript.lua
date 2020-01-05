@@ -811,7 +811,24 @@ function addRoofDeocrate(Level, buildMaterial)
   end
 end
 
+boolDoneShowing= false
+
 function buildAnimation()
+	local builT= TablesOfPiecesGroups["Build"]
+	axis = _y_axis
+
+	if Spring.GetGameSeconds() < 10 then
+		hideT(builT)
+		hideT(TablesOfPiecesGroups["Build01Sub"])
+		hideT(TablesOfPiecesGroups["BuildCrane"])
+		while boolDoneShowing == false do
+			Sleep(100)
+		end
+		showT(ToShowTable)
+		
+		return
+	end
+	
 	local builT= TablesOfPiecesGroups["Build"]
 	axis = _y_axis
 	for i=1,3 do
@@ -843,6 +860,9 @@ function buildAnimation()
 				)
 
 	Sleep(15000)
+	while boolDoneShowing == false do
+			Sleep(100)
+	end
 	showT(ToShowTable)
 	
 	for i=1,3 do
@@ -873,7 +893,7 @@ function buildBuilding()
   end
 
   addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName.."Roof"])
-
+	boolDoneShowing = true
 end
 
 function script.StartMoving()

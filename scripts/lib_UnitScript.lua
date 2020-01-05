@@ -4308,8 +4308,15 @@ end
 
 --> Execute Random Function in Table
 function randT(Table)
-
-	if #Table == 1 then return Table[1] end
+	sizeOf = #Table 
+	if sizeOf == 0 then 
+		sizeOf = count(Table)
+		if sizeOf > 0 then
+			return randDict(Table)
+		end
+	
+	return end
+	if sizeOf == 1 then return Table[1] end
 
 	return Table[math.random(1,#Table)]
 end

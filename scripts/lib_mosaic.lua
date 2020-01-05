@@ -90,7 +90,7 @@ function getGameConfig()
 	 TimeForInterceptionInFrames= 30 * 10,
 	 TimeForPanicSpreadInFrames= 30 * 30,
 	 TimeForPacification = 30* 90,
-	 TimeForScrapHeapDisappearanceInMs = 42 *1000,
+	 TimeForScrapHeapDisappearanceInMs = 3*60* 30, -- 3 Minutes off line
 	 
 	 costs ={
 		RecruitingTruck= 500,
