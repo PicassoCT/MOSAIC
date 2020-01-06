@@ -20,10 +20,10 @@ if ( gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_mosaic.lua")
 	local gaiaTeamID= Spring.GetGaiaTeamID()
 
-	gameConfig = getGameConfig()
+	GameConfig = getGameConfig()
 	UnitDefNames = getUnitDefNames(UnitDefs)
-	houseTypeTables= getHouseTypeTable(UnitDefs)
-	local NimRodDefID = UnitDefNames["house"].id
+	houseTypeTables= getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
+	local NimRodDefID = UnitDefNames["nimrod"].id
 	assert(NimRodDefID)
 	local NimrodWeaponDefID = WeaponDefNames["railgun"].id
 	assert(NimrodWeaponDefID)

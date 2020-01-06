@@ -21,10 +21,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local spGetPosition = Spring.GetUnitPosition
 	UnitDefNames = getUnitDefNames(UnitDefs)
 	GameConfig = getGameConfig()
-	CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
-	assert(CivilianTypeTable["civilian"])
-	assert(CivilianTypeTable["truck"])
-	assert(CivilianUnitDefsT[CivilianTypeTable["truck"]] )
+
 	MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 	InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
 	reruitmentDefID = UnitDefNames["recruitcivilian"].id

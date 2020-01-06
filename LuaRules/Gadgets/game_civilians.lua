@@ -30,7 +30,8 @@ end
 	
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
-	local CivilianTypeTable, CivilianUnitDefsT = getCivilianTypeTable(UnitDefs)
+	local CivilianTypeTable = getCivilianTypeTable(UnitDefs)
+	local TruckTypeTable = getTruckTypeTable(UnitDefs)
 	local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
@@ -48,9 +49,35 @@ end
 	numberTileX, numberTileZ = Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z
 	local RouteTabel = {} --Every start has a subtable of reachable nodes 	
 	boolInitialized = false
-	
-	local houseDefID = UnitDefNames["house"].id	
+
+	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+	local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 	local gaiaTeamID = Spring.GetGaiaTeamID()
+	
+		
+	assert(	activePoliceUnitIds_DispatchTime )
+	assert(maxNrPolice )
+	assert(CivilianTypeTable )
+	assert(TruckTypeTable )
+	assert(scrapHeapTypeTable )
+	assert(activePoliceUnitIds_Dispatchtime )
+	assert(MobileCivilianDefIds )
+	assert(CivAnimStates )
+	assert(PanicAbleCivliansTable )
+	assert(TimeDelayedRespawn )
+	assert(	  BuildingWithWaitingRespawn)
+	
+	assert(	GG.CivilianTable )
+	assert(	GG.UnitArrivedAtTarget )
+	assert(	GG.BuildingTable)
+	assert(	BuildingPlaceTable)
+	assert(	uDim)
+	assert( RouteTabel )
+
+	assert(houseTypeTable )
+	assert(civilianWalkingTypeTable )
+	assert(gaiaTeamID )
+	
 	
 	function getPoliceSpawnLocation(suspect)
 		sx,sy,sz = Spring.GetUnitPosition(suspect)
@@ -59,7 +86,7 @@ end
 		T= removeDictFromDict(Tmax, Tmin)
 		T= process(T,
 				function (id)
-					if  Spring.GetUnitDefID(id) == houseDefID then
+					if  houseTypeTable[Spring.GetUnitDefID(id)] then
 						return id
 					end
 				end
@@ -137,7 +164,7 @@ end
 
 			makePasserBysLook(unitID)
 			--other gadgets worries about propaganda price
-			if unitDefID == houseDefID then
+			if houseTypeTable[unitDefID] then
 				rubbleHeapID = spawnRubbleHeapAt(unitID)
 				
 				-- checkReSpawnHouses()
@@ -275,7 +302,7 @@ end
 			elseif dice == 2 then --2 place a single block
 				boolFirstPlaced= false
 				if BuildingPlaceT[cursor.x][cursor.z] == true and cursorIsOnMainRoad(cursor,startx,startz) == false then
-					spawnBuilding(CivilianTypeTable["house"], 
+					spawnBuilding(randT(houseTypeTable), 
 					cursor.x * uDim.x,
 					cursor.z * uDim.z,
 					(GameConfig.numberOfBuildings-numberOfBuildings),
@@ -288,7 +315,7 @@ end
 				end
 				
 				if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and cursorIsOnMainRoad(mirror, startx,startz) == false then
-					spawnBuilding(CivilianTypeTable["house"], 
+					spawnBuilding(randT(houseTypeTable), 
 					mirror.x * uDim.x,
 					mirror.z * uDim.z,
 					(GameConfig.numberOfBuildings-numberOfBuildings),
@@ -317,7 +344,7 @@ end
 					
 					if 	BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
 						spawnBuilding(
-						CivilianTypeTable["house"], 
+						randT(houseTypeTable), 
 						tmpCursor.x * uDim.x,
 						tmpCursor.z * uDim.z,
 						(GameConfig.numberOfBuildings-numberOfBuildings),
@@ -359,7 +386,7 @@ end
 	function checkReSpawnHouseAt(x,z, bID)
 			dataToAdd= {}	
 			GG.BuildingTable[bID]= nil
-			id = spawnBuilding(CivilianTypeTable["house"], x, z)
+			id = spawnBuilding(randT(houseTypeTable), x, z)
 			dataToAdd[id] = {x=x,z=z}
 			GG.BuildingTable[id] = dataToAdd[id]
 
@@ -375,7 +402,7 @@ end
 				GG.BuildingTable[bID]= nil
 				
 				x, z = routeDataCopy.x, routeDataCopy.z 
-				id = spawnBuilding(CivilianTypeTable["house"], x, z)
+				id = spawnBuilding(randT(houseTypeTable), x, z)
 				dataToAdd[id] = routeDataCopy
 			end
 		end
@@ -389,7 +416,7 @@ end
 		counter = 0
 		nilTable={}
 		for id, data in pairs(GG.CivilianTable) do
-			if id and data.defID == CivilianTypeTable["civilian"] then
+			if id and CivilianTypeTable[data.defID] then
 				if doesUnitExistAlive(id) == true then
 					counter = counter + 1
 				else
@@ -410,7 +437,7 @@ end
 				--assert(startNode)
 				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
-				id = spawnAMobileCivilianUnit(CivilianTypeTable["civilian"], x,z, startNode, goalNode )	
+				id = spawnAMobileCivilianUnit(randT(MobileCivilianDefIds), x,z, startNode, goalNode )	
 				if id then
 					GG.UnitArrivedAtTarget[id] = true
 				end
@@ -422,7 +449,7 @@ end
 		counter = 0
 		nilTable={}
 		for id, data in pairs(GG.CivilianTable) do
-			if id and data.defID == CivilianTypeTable["truck"] then
+			if id and CivilianTypeTable[data.defID] then
 				if doesUnitExistAlive(id) == true then
 					counter = counter + 1
 				else
@@ -441,7 +468,7 @@ end
 				
 				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
-				id = spawnAMobileCivilianUnit(CivilianTypeTable["truck"], x,z, startNode, goalNode )	
+				id = spawnAMobileCivilianUnit(randT(TruckTypeTable), x,z, startNode, goalNode )	
 				if id then
 					GG.UnitArrivedAtTarget[id] = true
 				end
@@ -513,7 +540,7 @@ end
 		for thisBuildingID, data in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 
 			newRouteTabel[thisBuildingID]={}
 			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 		
-				if thisBuildingID ~= otherID and isRouteTraversable(CivilianTypeTable["truck"], thisBuildingID, otherID ) then
+				if thisBuildingID ~= otherID and isRouteTraversable(randT(TruckTypeTable), thisBuildingID, otherID ) then
 					newRouteTabel[thisBuildingID][# newRouteTabel[thisBuildingID]+1] = otherID
 				end
 			end
@@ -662,7 +689,7 @@ end
 		end
 		
 		---ocassionally detour toward the nearest ally or enemy
-		if math.random(0, 42) > 35 and persPack.mydefID ~= CivilianTypeTable["truck"] then
+		if math.random(0, 42) > 35 and TruckTypeTable[persPack.mydefID] ~= nil then
 			local partnerID
 			
 			if math.random(0,1)==1 then
@@ -716,8 +743,8 @@ end
 	end	
 	
 	function giveWaypointsToUnit(uID, uType, startNodeID)
-		boolIsCivilian = (uType == CivilianTypeTable["civilian"])
-		boolShortestPath= ( math.random(0,1)== 1 and uType ~= CivilianTypeTable["truck"] )-- direct route to target
+		boolIsCivilian = ( CivilianTypeTable[uType] ~= nil)
+		boolShortestPath= ( math.random(0,1)== 1 and TruckTypeTable[uType] == nil )-- direct route to target
 	
 		--assert(doesUnitExistAlive(startNodeID)==true)
 	

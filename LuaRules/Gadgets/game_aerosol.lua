@@ -23,7 +23,8 @@ end
 	
 	local GameConfig = getGameConfig()
 	
-	aeroSolDroneDefIDs = getAerosolUnitDefIDs(getUnitDefNames(UnitDefs))	
+
+	aeroSolDroneDefIDs = getAerosolUnitDefIDs(UnitDefs)	
 	
 	aeroSolUnits = {}
 	
@@ -41,7 +42,7 @@ function gadget:Initialize()
 	if not GG.SelectedAerosol then GG.SelectedAerosol = {} end
 end
 
-aerosolAffectableUnits= getAersolAffectableUnits()
+aerosolAffectableUnits= getAersolAffectableUnits(UnitDefs)
 
 function gadget:GameFrame(n)
 	if n > 1 and n % 33 == 1 then

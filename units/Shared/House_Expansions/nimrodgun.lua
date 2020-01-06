@@ -14,6 +14,8 @@ local NimRodGun = Building:New{
 	explodeAs			= "none",
 
 	MetalStorage = 2500,
+	name = "Nimrod",
+	description = " railgun and orbital launch system <launches satellites /destroys heavy units>",
 
 
 	Builder = true,

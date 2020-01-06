@@ -17,9 +17,9 @@ if gadgetHandler:IsSyncedCode() then
     ---------------- SYNCED---------------
     VFS.Include("scripts/lib_mosaic.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
-	gameConfig = getGameConfig()
+	GameConfig = getGameConfig()
 	
-    DAYLENGTH = gameConfig.daylength
+    DAYLENGTH = GameConfig.daylength
 	local EVERY_NTH_FRAME =32
     --==========================WhereTheSunDontShines============================
     --Initialses the sun control and sets the inital arc
@@ -214,7 +214,7 @@ if gadgetHandler:IsSyncedCode() then
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 		
 		
-		if math.random(1,10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) and gameConfig.instance.culture == "arabic" then
+		if math.random(1,10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) and GameConfig.instance.culture == "arabic" then
 			Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer"..math.random(1,3)..".ogg", 0.9)
 		end
 	

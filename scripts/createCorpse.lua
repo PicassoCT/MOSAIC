@@ -6,6 +6,8 @@ include "lib_Build.lua"
 include "lib_mosaic.lua"
 
 --die young- leave a great corpse
+GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 
 function createCorpseCBuilding(unitID, recentDamage)
     --<RubbleScript>
@@ -25,7 +27,7 @@ function createCorpseCBuilding(unitID, recentDamage)
             x = math.random(1, 5)
             for i = 1, x, 1 do
                 maRa = math.random(-1, 1)
-                heapID = Spring.CreateUnit("civilian", spx + (150 * maRa), spy, spz + (150 * maRa), 1, teamID)
+                heapID = Spring.CreateUnit(randT(civilianWalkingTypeTable), spx + (150 * maRa), spy, spz + (150 * maRa), 1, teamID)
                 Spring.SetUnitMoveGoal(heapID, spx + 1000, spy, spz + 1000)
                 Spring.SetUnitNeutral(heapID, true)
             end

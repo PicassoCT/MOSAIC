@@ -20,7 +20,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
 
-    gameConfig = getGameConfig()
+    GameConfig = getGameConfig()
     --1 unitid
     --2 counter
     --3 orgBuildSpeed
@@ -79,7 +79,7 @@ if (gadgetHandler:IsSyncedCode()) then
     --===========UnitDamaged Functions ====================================================
     --victim -- interrogator -- boolInerrogationOngoing
     InterrogationTable={}
-    civilianDefID = UnitDefNames["civilian"].id
+    local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 
     interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, iconUnitTypeName)
         Spring.Echo("caught 1")
@@ -113,7 +113,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
 
                 -- check distance is still okay
-                if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > gameConfig.InterrogationDistance then
+                if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
                     InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
                     Spring.Echo("caught 5 ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
@@ -129,10 +129,10 @@ if (gadgetHandler:IsSyncedCode()) then
                     if not GG.raidIconPercentage[persPack.IconId] then  GG.raidIconPercentage[persPack.IconId] = 0 end
                 end
                 --update the icons percentage
-                GG.raidIconPercentage[persPack.IconId] = (Spring.GetGameFrame() - persPack.startFrame) / gameConfig.InterrogationTimeInFrames
-                Spring.Echo("Raid running " .. (persPack.startFrame + gameConfig.InterrogationTimeInFrames )- Spring.GetGameFrame()   )
+                GG.raidIconPercentage[persPack.IconId] = (Spring.GetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames
+                Spring.Echo("Raid running " .. (persPack.startFrame + GameConfig.InterrogationTimeInFrames )- Spring.GetGameFrame()   )
 
-                if persPack.startFrame + gameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
+                if persPack.startFrame + GameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
                     --succesfull interrogation
                     Spring.Echo("Raid was succesfull - childs of "..persPack.unitID .." are revealed")
                     children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
@@ -187,18 +187,18 @@ if (gadgetHandler:IsSyncedCode()) then
 
     end
 
-    houseDefID = UnitDefNames["house"].id
+	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
     raidTable= getRaidAbleTypeTable(UnitDefs)
 
 
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
         Spring.Echo("Raid Weapon fired upon"..UnitDefs[unitDefID].name)
-        if InterrogateAbleType[unitDefID] or  unitDefID == houseDefID  then
+        if InterrogateAbleType[unitDefID] or   houseTypeTable[unitDefID]  then
 		 Spring.Echo("RInterrogateable Unit fired  ")
-            if raidTable[unitDefID] or  unitDefID == houseDefID then
+            if raidTable[unitDefID] or   houseTypeTable[unitDefID] then
                 Spring.Echo("Raid Weapon Fired")
-                if unitDefID == houseDefID and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
+                if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
                     Spring.Echo("Raid 1")
                     unitID = GG.houseHasSafeHouseTable[unitID]
                 end
@@ -212,7 +212,7 @@ if (gadgetHandler:IsSyncedCode()) then
 				return damage	
             else
                 Spring.Echo("Interrogation 1")
-                if unitDefID == civilianDefID and GG.DisguiseCivilianFor[unitID] then
+                if civilianWalkingTypeTable[unitDefID] and GG.DisguiseCivilianFor[unitID] then
                     Spring.Echo("Interrogation 21")
                     stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
                     setSpeedEnv(attackerID, 0.0)

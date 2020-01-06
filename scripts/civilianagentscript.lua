@@ -75,7 +75,8 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 
 
 GameConfig = getGameConfig()
-
+local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+	
 eAnimState = getCivilianAnimationStates()
 upperBodyPieces =
 {
@@ -1137,7 +1138,7 @@ function spawnDecoyCivilian()
 		Sleep(10)
 		x,y,z= Spring.GetUnitPosition(unitID)
 
-		civilianID = Spring.CreateUnit("civilian" , x +  randSign()*5 , y, z +  randSign()*5, 1, Spring.GetGaiaTeamID())
+		civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable) , x +  randSign()*5 , y, z +  randSign()*5, 1, Spring.GetGaiaTeamID())
 		transferUnitStatusToUnit(unitID,civilianID)
 		Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)

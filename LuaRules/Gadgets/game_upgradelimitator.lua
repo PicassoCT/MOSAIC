@@ -27,13 +27,9 @@ end
 	areaDenyMapResolution = 16
 	SAFEHOUSEBUILDING = 8 
 	areaDenyMap= {}
-local houseDefID 
-	for id, t in pairs(UnitDefs) do
-		if t.name == "house" then
-		houseDefID = id
-		end
-	end
-	
+	GameConfig = getGameConfig()
+	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+
 local xMax = Game.mapSizeX/ areaDenyMapResolution 
 local zMax = Game.mapSizeZ/ areaDenyMapResolution
 
@@ -63,7 +59,7 @@ end
 --https://springrts.com/phpbb/viewtopic.php?f=23&t=35994&p=581356&hilit=SetSquareBuildingMask#p581356
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-	if houseDefID == unitDefID then
+	if houseTypeTable[unitDefID] then
 	x,y,z = Spring.GetUnitPosition(unitID)
 		if x then			
 			setAroundPoint(x * 0.0625, z * 0.0625, 1, 4)
@@ -72,7 +68,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 end
 
 function gadget:UnitCreated(unitID, unitDefID)
-	if houseDefID == unitDefID then
+	if houseTypeTable[unitDefID] then
 	x,y,z = Spring.GetUnitPosition(unitID)
 
 		if x then

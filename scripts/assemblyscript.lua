@@ -15,12 +15,14 @@ structure = piece "structure"
 myTeamID = Spring.GetUnitTeam(unitID)
 
 GameConfig = getGameConfig()
+local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(buildWatcher)
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 				function(id)
-					if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
+					if houseTypeTable[Spring.GetUnitDefID(id)] then
 						return id
 					end
 				end

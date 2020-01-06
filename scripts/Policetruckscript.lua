@@ -10,7 +10,7 @@ center = piece "center"
 attachPoint = piece "attachPoint"
 myDefID = Spring.GetUnitDefID(unitID)
 boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
-gameConfig= getGameConfig()
+GameConfig= getGameConfig()
 
 SIG_LOUDNESOVERRIDE= 2
 
@@ -130,7 +130,7 @@ function delayedSirens()
 	framesPerSecond=30
 	startFrame = Spring.GetGameFrame()
 	while true do
-		sirenDice=math.random(1,gameConfig.maxSirenSoundFiles)
+		sirenDice=math.random(1,GameConfig.maxSirenSoundFiles)
 		loudness = math.max(0,math.sin(((((Spring.GetGameFrame()-startFrame)/framesPerSecond)%seconds)/seconds)*2*math.pi))
 		if boolLoudnessOverrideActive == true then loudness = 1.0 end
 		StartThread(PlaySoundByUnitDefID, myDefID, "sounds/civilian/police/siren"..sirenDice..".ogg", 0.9,50, 2)

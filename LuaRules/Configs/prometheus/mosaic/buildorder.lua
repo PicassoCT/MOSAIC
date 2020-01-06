@@ -103,7 +103,7 @@ gadget.baseBuilders = UnitSet{
 
 -- This lists all the units that should be considered flags.
 gadget.flags = UnitSet{
-	"house",
+	"house_arab0",
 }
 
 -- This lists all the units (of all sides) that may be used to cap flags.

@@ -13,6 +13,8 @@ end
 center = piece "center"
 gun = piece "gun"
 
+GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
@@ -49,7 +51,7 @@ function spawnDecoyCivilian()
 		Sleep(10)	
 
 		x,y,z= Spring.GetUnitPosition(unitID)
-		civilianID = Spring.CreateUnit("civilian" , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
+		civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable) , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
 		transferUnitStatusToUnit(unitID,civilianID)
 		Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
@@ -142,12 +144,12 @@ end
 
 
 Spring.SetUnitNanoPieces(unitID, { gun })
-gameConfig = getGameConfig()
- raidDownTime = gameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
-local raidComRange = gameConfig.agentConfig.raidComRange
+GameConfig = getGameConfig()
+ raidDownTime = GameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
+local raidComRange = GameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
 local scanSatDefID = UnitDefNames["satellitescan"].id
-local raidBonusFactorSatellite=  gameConfig.agentConfig.raidBonusFactorSatellite
+local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
 
 function raidReactor()
 	myTeam = Spring.GetUnitTeam(unitID)

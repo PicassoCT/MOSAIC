@@ -38,6 +38,6 @@ local Civilian = Human:New{
 
 return lowerkeys({
 	--Temp
-	["civilian"] = Civilian:New(),
+	["civilian_arab0"] = Civilian:New(),
 	
 })

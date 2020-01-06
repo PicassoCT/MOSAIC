@@ -89,6 +89,8 @@ boolDecoupled = false
 
 boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
+GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 
 function script.Create()
 	makeWeaponsTable()
@@ -538,7 +540,7 @@ function spawnDecoyCivilian()
 		Sleep(10)	
 
 		x,y,z= Spring.GetUnitPosition(unitID)
-		civilianID = Spring.CreateUnit("civilian" , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
+		civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable) , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
 		transferUnitStatusToUnit(unitID, civilianID)
 		Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)

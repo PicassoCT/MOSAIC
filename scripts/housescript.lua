@@ -31,11 +31,11 @@ center = piece "center"
 pericodicRotationYPieces ={}
 pericodicMovingZPieces = {}
 spinYPieces ={}
-gameConfig = getGameConfig()
+GameConfig = getGameConfig()
 
 function timeOfDay()
 
-	WholeDay = gameConfig.daylength
+	WholeDay = GameConfig.daylength
 		timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
 			--echo(getDayTime(timeFrame%WholeDay, WholeDay))
     return ((timeFrame % (WholeDay)) / (WholeDay))

@@ -36,13 +36,13 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 	end
 	
-	gameConfig = getGameConfig()
+	GameConfig = getGameConfig()
 	function gadgetUnitDestroyed(unitID, unitDefID, teamID, attackerID)
 		if ( GG.DisguiseCivilianFor[unitID] ) then
 			maxhp = UnitDefs[unitDefID].maxdamage 
 			-- _, maxhp = Spring.GetUnitHealth(unitID)
 			assert(maxhp)
-			factor = 1 + (GG.Propgandaservers[team]* gameConfig.propandaServerFactor)
+			factor = 1 + (GG.Propgandaservers[team]* GameConfig.propandaServerFactor)
 			Spring.AddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
 			addInSecond(team, attackerID, "metal",   math.ceil((maxhp * factor)))
 		end 
@@ -77,7 +77,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 						 Spring.UseTeamResource(team, "metal", damage)
 						 addInSecond(team, unitID, "metal",  -1 *math.ceil( damage))
 					else  -- get enemy Teams -- tranfer damage as budget to them
-						factor = 1 + (GG.Propgandaservers[team]* gameConfig.propandaServerFactor)
+						factor = 1 + (GG.Propgandaservers[team]* GameConfig.propandaServerFactor)
 						Spring.AddTeamResource(team, "metal", math.ceil(math.abs(damage * factor)))
 						addInSecond(team, unitID, "metal",   math.ceil((damage * factor)))
 

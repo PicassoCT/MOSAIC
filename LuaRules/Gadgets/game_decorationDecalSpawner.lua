@@ -17,11 +17,11 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_Animation.lua")
 	VFS.Include("scripts/lib_Build.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
-	gameConfig = getGameConfig()
+	GameConfig = getGameConfig()
 	
-	defIDDecalNameMap = getDecalMap(gameConfig.instance.culture)	
+	defIDDecalNameMap = getDecalMap(GameConfig.instance.culture)	
 	gaiaTeamID = Spring.GetGaiaTeamID()
-	houseDefID = UnitDefNames["house"].id
+	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
 	function gadget:GameFrame(n)
 		frameDelayedAction(n)
 	end
@@ -42,7 +42,7 @@ if (gadgetHandler:IsSyncedCode()) then
 					T= getAllNearUnit(unitID, 725)
 					T = process(T,
 								function(id)
-									if Spring.GetUnitTeam(id) == gaiaTeamID and Spring.GetUnitDefID(id)== houseDefID then
+									if Spring.GetUnitTeam(id) == gaiaTeamID and houseTypeTable[Spring.GetUnitDefID(id)] then
 										return id
 									end
 								end

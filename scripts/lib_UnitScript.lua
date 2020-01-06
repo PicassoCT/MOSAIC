@@ -4319,6 +4319,7 @@ end
 
 --> Execute Random Function in Table
 function randT(Table)
+	assert(Table)
 	sizeOf = #Table 
 	if sizeOf == 0 then 
 		sizeOf = count(Table)

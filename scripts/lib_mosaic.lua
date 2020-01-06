@@ -11,7 +11,7 @@ function getGameConfig()
 	
 	},
 	
-	Version = "Alpha: 0.660",
+	Version = "Alpha: 0.666",
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,
@@ -111,6 +111,10 @@ end
 GG.GameConfig = getGameConfig()
 _G.GameConfig = getGameConfig()
 --===================================================================================================================
+function getCultureName()
+GameConfig = getGameConfig()
+return GameConfig.instance.culture
+end
 --===================================================================================================================
 function getChemTrailTypes()
 return {
@@ -121,15 +125,15 @@ return {
 }
 end
 function getScrapheapTypeTable(UnitDefs)
-UnitDefNames= getUnitDefNames(UnitDefs)
+local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
 			[UnitDefNames["gcscrapheap"].id	]= true
 		}
 
 end
 
-function getPoliceTypes()
-UnitDefNames= getUnitDefNames(UnitDefs)
+function getPoliceTypes(UnitDefs)
+local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
 			[UnitDefNames["policetruck"].id		]= true
 		}
@@ -139,7 +143,8 @@ end
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)
 	local UnitDefNames = {}
-	assert(UnitDefs)
+	if UnitDefs == nil then return nil end
+	
 	for defID,v in pairs(UnitDefs) do
 		UnitDefNames[v.name]=v
 	end
@@ -159,6 +164,7 @@ function getTypeTable(UnitDefNames, StringTable)
 end
 
 function getAerosolUnitDefIDs(UnitDefNames)
+	local UnitDefNames = getUnitDefNames(UnitDefs)
 		AerosolTypes = getChemTrailTypes()
 		return {
 		[UnitDefNames["air_copter_aerosol_orgyanyl"].id		]= AerosolTypes.orgyanyl,
@@ -180,7 +186,7 @@ end
 
 function getSatteliteTypes(UnitDefs)
 	assert(UnitDefs)
-	UnitDefNames = getUnitDefNames(UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"satelliteanti",
 		"satellitescan",
@@ -189,63 +195,60 @@ function getSatteliteTypes(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
-function isUnitInGroup(id, groupname, culture, UnitDefs)
-	defID = Spring.GetUnitDefID(id)
-	name = UnitDefs[defID].name
-	
-	if name == groupname then return true end
-	culturUnitGroupTable = getCultureUnitModelNames(culture, groupname)
-
-	if ( culturUnitGroupTable.range == 0 ) then
-		echo(name.." == "..culturUnitGroupTable.name)
-		return (name == culturUnitGroupTable.name) 
-	end
-
-	for i=1,culturUnitGroupTable.range do
-		if name == (culturUnitGroupTable.name..i) then return true end
-	end
-	
-return false
-end
-
-function getCultureUnitModelNames(cultureName, unitType)
+function getTranslation(cultureName)
 translation ={
-	["arabic"] = {
-		["house"] = {name= "house_arab", range=0},
-		["civilian"] = {name= "civilian_arab", range=0},
-		["truck"] ={name = "truck_arab", range = 0}
+		["arabic"] = {
+			["house"] = {name= "house_arab", range=0},
+			["civilian"] = {name= "civilian_arab", range=0},
+			["truck"] ={name = "truck_arab", range = 0}
+		}
 	}
-}
-
-return translation[cultureName][unitType]
+	return translation[cultureName]
 end
 
-function expandNameSubSetTable(SubsetTable)
-	expandedNamesTable = {}
-		for i=0, SubsetTable.range do
-			name = SubsetTable.name.. i
-			expandedNamesTable[#expandedNamesTable +1] = name
+function getCultureUnitModelNames(cultureName, unitType, UnitDefs)
+	assert( UnitDefs )
+	translation =getTranslation(cultureName)
+	return expandNameSubSetTable(translation[unitType], UnitDefs)
+end
+
+function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
+	assert( UnitDefs )
+	ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation, UnitDefs)
+
+	results= {}
+		for defID, name in pairs(ID_Name_Map) do
+			table.insert(results, name)
 		end
-	return expandedNamesTable
+
+return results
 end
 
-function isUnitOfCivilianType(TypeName, cache, gameconfig)
-	boolIsOfType = true
-	localcache = cache or {}
-		if not cache or #cache < 1 then
-			myCulture = gameConfig.instance.culture
-			lUnitDefNames =  getUnitDefNames(UnitDefs)
-			modelNames = getCultureUnitModelNames(myCulture, TypeName, lUnitDefNames)
-			expandedModelNames = expandNameSubSetTable(modelNames)
-			for i=1, #expandedModelNames do 
-				localcache[UnitDefNames[expandedModelNames[i]].id] = expandedModelNames[i]
+function expandNameSubSetTable(SubsetTable, UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
+	expandedDictId_Name = {}
+		for i=0, SubsetTable.range do
+			if UnitDefNames[SubsetTable.name.. i] then
+				expandedDictId_Name[UnitDefNames[SubsetTable.name.. i].id]= SubsetTable.name.. i
 			end
 		end
-		
-	TypeID = getUnitDefIDFromName(TypeName)
-	boolIsOfType = (localcache[TypeID] ~= nil)
+	return expandedDictId_Name
+end
 
-	return boolIsOfType, localcache
+function getBaseTypeName(name)
+	if name:match("house") then return "house" end
+	if name:match("civilian") then return "civilian" end
+	if name:match("truck") then return "truck" end
+	assert(true==false)
+end
+
+function isUnitOfCivilianType(TypeDefID, GameConfig, UnitDefs)
+	assert( UnitDefs )
+	TypeName = getBaseTypeName(UnitDefs[TypeDefID].name)
+	myCulture = GameConfig.instance.culture
+	modelNames = getCultureUnitModelNames(myCulture, TypeName, UnitDefs)
+
+	return modelNames[TypeDefID] ~= nil
 end
 
 function getTruckLoadOutTypeTable()
@@ -269,27 +272,38 @@ function getTruckLoadOutTypeTable()
 	return typeDefMappingTable
 end
 
+function getTruckTypeTable(UnitDefs)
+	local UnitDefNames =  getUnitDefNames(UnitDefs)
+	typeTable={
+		"truck"
+	}	
+	
+	return getTypeTable( UnitDefNames, typeTable)
+end
+
 function  getMobileCivilianDefIDTypeTable(UnitDefs)
 	assert(UnitDefs)
-	UnitDefNames = getUnitDefNames(UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
-		"civilian",
 		"truck"
 	}
+	
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
 function  getPanicableCiviliansTypeTable(UnitDefs)
 	assert(UnitDefs)
-	typeTable={
-		"civilian"
-	}
+	local UnitDefNames =  getUnitDefNames(UnitDefs)
+
+	typeTable = {}
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
 	
-	return getTypeTable(getUnitDefNames(UnitDefs), typeTable)
+	return getTypeTable(UnitDefNames, typeTable)
 end
 function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
-	UnitDefNames = getUnitDefNames(UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={}
 	if myDefID == UnitDefNames["antagonsafehouse"].id then
 		typeTable={
@@ -312,7 +326,7 @@ end
 
 function  getSafeHouseTypeTable(UnitDefs)
 
-	UnitDefNames = getUnitDefNames(UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"protagonsafehouse",
 		"antagonsafehouse"
@@ -323,13 +337,13 @@ end
 
 function  getRaidAbleTypeTable(UnitDefs)
 
-	UnitDefNames = getUnitDefNames(UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
+	
 	typeTable={
-		"house",
 		"antagonsafehouse",
 		"protagonsafehouse"
-
 	}
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "house", UnitDefs))
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end
@@ -350,7 +364,7 @@ end
 
 function  getInterrogateAbleTypeTable(UnitDefs)
 	assert(UnitDefs)
-	UnitDefNames = getUnitDefNames(UnitDefs)
+local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"civilianagent",
 		"operativeasset",
@@ -365,16 +379,9 @@ function  getInterrogateAbleTypeTable(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
-function  getHouseTypeTable(UnitDefs, cultureName)
-
-	typeTable={
-			"house"		
-	}
-	if cultureName then
-		return getCultureUnitModelNames(cultureName, "house")
-	end
-	
-	return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
+function  getHouseTypeTable(UnitDefs, culturename)
+		assert( UnitDefs )
+		return getCultureUnitModelNames(culturename , "house", UnitDefs)
 end
 
 function  getOperativeTypeTable(UnitDefs)
@@ -393,12 +400,12 @@ end
 
 function getCivilianTypeTable(UnitDefs)
 	assert(UnitDefs)
-	UnitDefNames = getUnitDefNames(UnitDefs)
-	typeTable={
-		"house",
-		"civilian",
-		"truck"
+local	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable=
+	{	"truck"
 	}
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "house", UnitDefs))
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
 	
 	local retTable = {}
 	for _,defs in pairs(UnitDefs) do
@@ -414,12 +421,14 @@ function getCivilianTypeTable(UnitDefs)
 	return retTable, getTypeTable(UnitDefNames, typeTable)
 end
 
-function getAersolAffectableUnits()
+function getAersolAffectableUnits(UnitDefs)
+	local UnitDefNames =  getUnitDefNames(UnitDefs)
 	typeTable={
-		"civilian",
 		"truck"
 	}
-	return getTypeTable(getUnitDefNames(UnitDefs), typeTable)
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
+	
+	return getTypeTable(UnitDefNames, typeTable)
 end
 
 function setCivilianBehaviourMode(unitID, boolStartUnitBehaviourState, TypeOfBehaviour )
@@ -461,7 +470,7 @@ end
 framesPerSecond = 30
 
 function getSatelliteTimeOutTable(UnitDefs) --per Frame
-UnitDefNames = getUnitDefNames(UnitDefs)
+local UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
 		[UnitDefNames["satelliteanti"].id] = 2*90 * framesPerSecond,
@@ -473,7 +482,7 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 end
 
 function getSatelliteTypesSpeedTable(UnitDefs) --per Frame
-UnitDefNames = getUnitDefNames(UnitDefs)
+local UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
 		[UnitDefNames["satellitegodrod"].id] = 30/framesPerSecond,
@@ -485,7 +494,7 @@ UnitDefNames = getUnitDefNames(UnitDefs)
 end
 
 function getSatelliteAltitudeTable(UnitDefs) --per Frame
-UnitDefNames = getUnitDefNames(UnitDefs)
+local UnitDefNames = getUnitDefNames(UnitDefs)
 
 	valuetable={
 		[UnitDefNames["satellitegodrod"].id] = 1450,
@@ -673,9 +682,9 @@ function createStreamEvent(unitID, func, framerate, persPack)
 end
 
 function attachDoubleAgentToUnit(id, teamToTurnTo)
-gameConfig = getGameConfig()
+GameConfig = getGameConfig()
 
-doubleAgentID = createUnitAtUnit(teamToTurnTo, "doubleagent", id, 0, gameConfig.doubleAgentHeight , 0)
+doubleAgentID = createUnitAtUnit(teamToTurnTo, "doubleagent", id, 0, GameConfig.doubleAgentHeight , 0)
 
 Spring.MoveCtrl.Enable(doubleAgentID, true)
 --set invisible
@@ -720,7 +729,7 @@ createStreamEvent(doubleAgentID, hoverAboveFunc, 1, {
 													unitID = doubleAgentID,
 													myTeam = teamToTurnTo, 
 													toTrackID = id, 
-													heightAbove = gameConfig.doubleAgentHeight,
+													heightAbove = GameConfig.doubleAgentHeight,
 													}
 													)
 

@@ -12,6 +12,8 @@ turret = piece "turret"
 projectile = piece "projectile"
 
 GameConfig = getGameConfig()
+local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+
 if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 
 boolBuilding = false
@@ -21,7 +23,7 @@ function script.Create()
 	Move(projectile,z_axis, -210,0)
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 				function(id)
-					if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
+					if houseTypeTable[Spring.GetUnitDefID(id)] then
 						return id
 					end
 				end

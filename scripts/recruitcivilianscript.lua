@@ -12,7 +12,8 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 
-gameConfig = getGameConfig()
+GameConfig = getGameConfig()
+local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
 gaiaTeamID = Spring.GetGaiaTeamID()
 
 function script.Create()
@@ -21,7 +22,7 @@ function script.Create()
 	   StartThread(recruiteLoop)
 	   x,y,z= Spring.GetUnitPosition(unitID)
 
-	   Spring.MoveCtrl.SetPosition(unitID, x,y+ gameConfig.iconGroundOffset,z)
+	   Spring.MoveCtrl.SetPosition(unitID, x,y+ GameConfig.iconGroundOffset,z)
 	   -- StartThread(lifeTime, unitID, 15000, true, false)
 	   StartThread(animationLoop, 2)
 
@@ -36,8 +37,10 @@ civilianAgentDefID = UnitDefNames["civilianagent"].id
 truckDefID = UnitDefNames["truck"].id
 
 function recruiteLoop()
-	local recruitmentRange = gameConfig.agentConfig.recruitmentRange
-	local civilianDefID=  UnitDefNames["civilian"].id
+	local recruitmentRange = GameConfig.agentConfig.recruitmentRange
+	
+	local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+
 	local spGetUnitDefID =Spring.GetUnitDefID
 	local spGetUnitTeam = Spring.GetUnitTeam
 	Sleep(100)
@@ -69,7 +72,7 @@ boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id
 							transferUnitStatusToUnit(id, ad)
 							transferOrders(id, ad)	
 								
-							consumeAvailableRessourceUnit(unitID, "metal", gameConfig.costs.RecruitingTruck)
+							consumeAvailableRessourceUnit(unitID, "metal", GameConfig.costs.RecruitingTruck)
 							Spring.DestroyUnit( id , false, true)
 							Spring.DestroyUnit( unitID , false, true)
 							while true do
@@ -78,7 +81,7 @@ boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id
 					
 					end
 					
-					if spGetUnitDefID(id)== civilianDefID and  not GG.DisguiseCivilianFor[id]	or 		boolIsDisguiseCivilian == true			
+					if civilianWalkingTypeTable[spGetUnitDefID(id)] and  not GG.DisguiseCivilianFor[id]	or 		boolIsDisguiseCivilian == true			
 					then
 						return id
 					end
@@ -112,7 +115,7 @@ boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id
 								MoveUnitToUnit(id, GG.DisguiseCivilianFor[id])
 							end
 							
-							if recruitedDefID == civilianDefID then
+							if civilianWalkingTypeTable[recruitedDefID] then
 								Spring.DestroyUnit( id , false, true)
 							end
 					Spring.DestroyUnit(unitID, false, true) 
@@ -131,18 +134,22 @@ function beamOperativeToNearestHouse(id)
 	maxdist= math.huge
 	local jumpID
 	
-	T= Spring.GetTeamUnitsByDefs(gaiaTeamID, UnitDefNames["house"].id)
+	T= Spring.GetTeamUnits(gaiaTeamID)
 		for i=1,#T do
 			id = T[i]
-			tx,ty,tz= Spring.GetUnitPosition(id)
-			dist = distance(x,y,z, tx,ty,tz)
+			if houseTypeTable[Spring.GetUnitDefID(id)] then
+				tx,ty,tz= Spring.GetUnitPosition(id)
+				dist = distance(x,y,z, tx,ty,tz)
 				if dist < maxdist then 
 					maxdist = dist
 					jumpID = id 
 				end
+			end
 		end
-			
-	moveUnitToUnit(id, jumpID, 15*randSign(),0, 15*randSign())	
+	
+	if jumpID then
+		moveUnitToUnit(id, jumpID, 15*randSign(),0, 15*randSign())	
+	end
 end
 
 

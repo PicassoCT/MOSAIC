@@ -20,21 +20,22 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(houseAttach)
     StartThread(killMyselfIfNotAttached)
+    StartThread(drawMapRoom)
     Spring.SetUnitBlocking(unitID, false, false, false)
 
 
 end
 
-gameConfig = getGameConfig()
+GameConfig = getGameConfig()
 safeHouseID = nil
 boolAttached= false
 function killMyselfIfNotAttached()
-    Sleep(gameConfig.safeHouseLiftimeUnattached)
+    Sleep(GameConfig.safeHouseLiftimeUnattached)
     counter = 0
     while  safeHouseID == nil and boolAttached == false do
         Sleep(100)
         counter = counter + 100
-        if counter > gameConfig.safeHouseLiftimeUnattached then
+        if counter > GameConfig.safeHouseLiftimeUnattached then
             Spring.DestroyUnit(unitID,false,true)
         end
     end
@@ -99,7 +100,7 @@ function houseAttach()
     waitTillComplete(unitID)
     -- Spring.Echo("Safehouse completed")
     process(
-        getAllNearUnit(unitID, gameConfig.buildSafeHouseRange),
+        getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
         function(id) --filter out all the safe houses
             if Spring.GetUnitDefID(id) == houseDefID and Spring.GetUnitTeam(id) == gaiaTeamID then
                 return id
@@ -112,12 +113,12 @@ function houseAttach()
                 GG.houseHasSafeHouseTable[id] = unitID
                 safeHouseID = id
 
-                -- Spring.UnitAttach(id, unitID, getUnitPieceByName(id, gameConfig.safeHousePieceName))
+                -- Spring.UnitAttach(id, unitID, getUnitPieceByName(id, GameConfig.safeHousePieceName))
                 moveUnitToUnit(unitID, id)
                 -- Spring.Echo("SafehouseAttached")
                 -- Spring.SetUnitNoSelect(unitID, true)
-                -- stunUnit(unitID,gameConfig.delayTillSafeHouseEstablished/1000)
-                -- Sleep(gameConfig.delayTillSafeHouseEstablished)
+                -- stunUnit(unitID,GameConfig.delayTillSafeHouseEstablished/1000)
+                -- Sleep(GameConfig.delayTillSafeHouseEstablished)
                 boolAttached= true
                 -- Spring.SetUnitNoSelect(unitID, false)
                 StartThread(detectUpgrade)
@@ -148,15 +149,18 @@ function detectUpgrade()
         if buildID then
 
             buildDefID = Spring.GetUnitDefID(buildID)
-            -- Spring.Echo("buildID found Upgrade of type ".. UnitDefs[buildDefID].name)
+            Spring.Echo("buildID found Upgrade of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTable[buildDefID] then
+				Sleep(100)
                 waitTillComplete(buildID)
+				Sleep(100)
                 if doesUnitExistAlive(buildID) then
 
+                    if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable ={} end
                     GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
-                    -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, gameConfig.safeHousePieceName))
-                    -- Spring.Echo("Upgrade Complete")
+                    -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
+                    Spring.Echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID,false,true)
                 end
             end
@@ -215,3 +219,69 @@ function showHideIcon(boolCloaked)
         Hide(Icon)
     end
 end
+
+safeHouseTypes= getSafeHouseTypeTable(UnitDefs)
+houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
+echo(houseTypeTable)
+
+function drawMapRoom()
+	Sleep(100)
+	hideT(TablesOfPiecesGroups["house"])
+	hideT(TablesOfPiecesGroups["SafeHouse"])
+	dictSafeHouse_Pos={}
+	dictHouses_Pos ={}
+	local spGetUnitDefID= Spring.GetUnitDefID
+	local spGetUnitPosition= Spring.GetUnitPosition
+	
+	
+	process(Spring.GetAllUnits(),
+			function(id) 
+				if Spring.GetUnitTeam(id)== gaiaTeamID then return id end
+			end,
+			function (id)
+				if houseTypeTable[spGetUnitDefID(id)] then
+					Spring.Echo("House found")
+					x,_,z = spGetUnitPosition(id)
+					dictHouses_Pos[id]={x=x/Game.mapSizeX,z=z/Game.mapSizeZ}
+				end
+			end
+			)	
+	
+	process(Spring.GetAllUnits(),
+			function (id)
+				if safeHouseTypes[spGetUnitDefID(id)] then
+					x,_,z = spGetUnitPosition(id)
+					dictSafeHouse_Pos[id]={x=x/Game.mapSizeX,z=z/Game.mapSizeZ}
+				end
+			end
+			)
+
+	
+	mapDim={x=-500,z=-750}
+	
+	pieceIndex= 0
+	for id, coords in pairs(dictHouses_Pos) do
+		if math.random(0,1)==1 then
+			pieceIndex= (	pieceIndex % #TablesOfPiecesGroups["house"])+1
+			if TablesOfPiecesGroups["house"][pieceIndex] then
+			pieceInOurTime = TablesOfPiecesGroups["house"][pieceIndex]
+			Show(pieceInOurTime)
+			mP(pieceInOurTime,coords.x*mapDim.x,0,coords.z*mapDim.z,0)	
+			end
+		end
+	end	
+	pieceIndex= 0
+	for id, coords in pairs(dictSafeHouse_Pos) do
+		if math.random(0,1)==1 then
+			pieceIndex= (	pieceIndex % #TablesOfPiecesGroups["SafeHouse"])+1
+			if TablesOfPiecesGroups["SafeHouse"][pieceIndex] then
+			pieceInOurTime = randT(TablesOfPiecesGroups["SafeHouse"])
+			Show(pieceInOurTime)
+			mP(pieceInOurTime,coords.x*mapDim.x,0,coords.z*mapDim.z,0)	
+			end
+		end
+	end
+
+end
+	
+	
