@@ -70,9 +70,9 @@ end
 function script.StartMoving()
 	Turn(center,x_axis,math.rad(10),0)
 	spinT(TablesOfPiecesGroups["uprotor"],y_axis, 350, 9500)
-	for i=1,#TablesOfPiecesGroups["downrotor"] do
-		if TablesOfPiecesGroups["downrotor"][i] then
-		Spin(TablesOfPiecesGroups["downrotor"][i],y_axis, math.rad(350),0)
+	for i=1,#TablesOfPiecesGroups["lowrotor"] do
+		if TablesOfPiecesGroups["lowrotor"][i] then
+		Spin(TablesOfPiecesGroups["lowrotor"][i],y_axis, math.rad(350),0)
 		end
 	end
 end
@@ -80,9 +80,9 @@ end
 function script.StopMoving()
 	Turn(center,x_axis,math.rad(0),0)
 	stopSpinT(TablesOfPiecesGroups["uprotor"],y_axis,math.pi)
-	for i=1,#TablesOfPiecesGroups["downrotor"] do
-		if TablesOfPiecesGroups["downrotor"][i] then
-			StopSpin(TablesOfPiecesGroups["downrotor"][i],y_axis, math.pi)
+	for i=1,#TablesOfPiecesGroups["lowrotor"] do
+		if TablesOfPiecesGroups["lowrotor"][i] then
+			StopSpin(TablesOfPiecesGroups["lowrotor"][i],y_axis, math.pi)
 		end
 	end
 end

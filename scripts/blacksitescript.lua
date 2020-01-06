@@ -20,6 +20,7 @@ if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].na
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	spinT(TablesOfPiecesGroups["SignalLight"],y_axis, math.random(42,420)*randSign(), 42)
+	Spring.SetUnitNanoPieces(unitID, TablesOfPiecesGroups["SignalLight"] )
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 					function(id)
 						if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
@@ -45,10 +46,10 @@ function script.Deactivate()
 end
 
 function script.QueryBuildInfo()
-    return center
+    return Icon
 end
 
-Spring.SetUnitNanoPieces(unitID, { emitor })
+
 
 function script.Activate()
     SetUnitValue(COB.YARD_OPEN, 1)
