@@ -52,8 +52,8 @@ end
 
 
 function script.StartMoving()
-spinT(TablesOfPiecesGroups["uprotor"],y_axis,350,9500)
-spinT(TablesOfPiecesGroups["lowrotor"],y_axis,350,-9500)
+spinT(TablesOfPiecesGroups["uprotor"],y_axis,9500,350)
+spinT(TablesOfPiecesGroups["lowrotor"],y_axis,-9500,350)
 end
 
 function script.StopMoving()

@@ -3,6 +3,7 @@ model = {
 	height = 40,
 	--tex1 = "Jeffy_Diffuse+TeamColor.dds",
 	tex1 = "tank_day_diffuse.tga",
+	tex2 = "tank_day_normal.png",
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},

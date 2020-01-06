@@ -46,22 +46,25 @@ aerosolAffectableUnits= getAersolAffectableUnits()
 function gadget:GameFrame(n)
 	if n > 1 and n % 33 == 1 then
 		for unitID, unitDefID in pairs(aeroSolUnits) do
-			if unitID and unitDefID and isUnitActive(unitID) == true then
+			
+			if unitID and unitDefID  then
+					boolIsUnitActive = Spring.GetUnitIsActive(unitID)
 					aerosolTypeOfUnit  = aeroSolDroneDefIDs[unitDefID]
 					-- if unit is activate 
 					-- if getUnitValueEnv(unitID, "ACTIVATION") == 1 then
-					if Spring.GetUnitActive(unitID) == true then
+					if boolIsUnitActive == true then
+						if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
 						T = getAllNearUnit(unitID, GameConfig.aerosolDistance)
 						affectedUnits = process(T,
 								function(id)
-									if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then
+									if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
 										if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
 										
 										--if unit is not already affected by aerosolDistance
 										if not GG.AerosolAffectedCivilians[id] then
 											Spring.Echo("Unit ".. id.." is now under the influence of "..aerosolTypeOfUnit)
 											setCivilianBehaviourMode(id, true, aerosolTypeOfUnit)
-											if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
+											
 											GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit 
 											return id
 										end

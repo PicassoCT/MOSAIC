@@ -3536,6 +3536,17 @@ function say(LineNameTimeT, timeToShowMs, NameColour, TextColour, OptionString, 
 	
 end
 
+-- sums up a strings byte values
+function hashString(str, modulus)
+	x= 0
+	for i=1, string.len(str) do
+		x = x + str:byte(i)
+	end
+	modulus = modulus or (x +1)
+	return x % modulus
+end
+
+
 -->prepares large speaches for the release to the world
 function prepSpeach(Speach, Names, Limits, Alphas, DefaultSleepBylines)
 	--if only Speach 

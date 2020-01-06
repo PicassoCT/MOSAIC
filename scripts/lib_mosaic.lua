@@ -53,6 +53,9 @@ function getGameConfig()
 	 safeHousePieceName = "center",
 	 delayTillSafeHouseEstablished= 15000,
 	 safeHouseLiftimeUnattached= 15000,
+	 
+	 --all buildings
+	buildingLiftimeUnattached = 10000,
 
 	 --propagandaserver 
 	 propandaServerFactor = 0.1,
@@ -362,11 +365,14 @@ function  getInterrogateAbleTypeTable(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
-function  getHouseTypeTable(UnitDefs)
+function  getHouseTypeTable(UnitDefs, cultureName)
 
 	typeTable={
 			"house"		
 	}
+	if cultureName then
+		return getCultureUnitModelNames(cultureName, "house")
+	end
 	
 	return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
 end

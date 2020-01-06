@@ -766,7 +766,7 @@ end
 	function countDownRespawnHouses(framesToSubstract)
 	 for rubbleHeapID, tables in pairs( TimeDelayedRespawn) do
 		TimeDelayedRespawn[rubbleHeapID].frame = TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
-		-- Spring.Echo("ScrapHeap"..rubbleHeapID.. " is alive for "..TimeDelayedRespawn[rubbleHeapID].frame .." frames")
+
 		if TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
 			if isUnitAlive(rubbleHeapID) == true then Spring.DestroyUnit(rubbleHeapID, false, true) end	
 			regenerateRoutesTable()

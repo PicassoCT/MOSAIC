@@ -49,7 +49,7 @@ local OperativeInvestigator = Human:New{
 	buildoptions = 
 	{
 		"recruitcivilian",
-		"antagonsafehouse",
+		"protagonsafehouse",
 		"air_copter_ssied"
 	},
 

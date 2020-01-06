@@ -54,7 +54,7 @@ local ProtagonSafeHouse =    Building:New{
 
   buildoptions =  {
     "operativeasset",
-    "operativepropagator",
+    "operativeinvestigator",
     "civilianagent",
 
     "nimrod",

@@ -13,8 +13,7 @@ end
 center = piece "center"
 Icon = piece "Icon"
 
-safeHouseID = nil
-gameConfig = getGameConfig()
+
 
 
 function script.Create()
@@ -26,6 +25,9 @@ function script.Create()
 
 end
 
+gameConfig = getGameConfig()
+safeHouseID = nil
+boolAttached= false
 function killMyselfIfNotAttached()
     Sleep(gameConfig.safeHouseLiftimeUnattached)
     counter = 0
@@ -46,7 +48,6 @@ end
 CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
 local houseDefID= CivilianTypeDefTable["house"]
 gaiaTeamID = Spring.GetGaiaTeamID()
-boolAttached= false
 
 function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID)
 	turnEveryoneDoubleAgentEventStream = function(houseID, doubleAgentTeamDefID, safeHouseID)
@@ -213,6 +214,4 @@ function showHideIcon(boolCloaked)
         showAll(unitID)
         Hide(Icon)
     end
-
-
 end

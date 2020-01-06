@@ -14,14 +14,25 @@ buildspot = piece "buildspot"
 structure = piece "structure"
 myTeamID = Spring.GetUnitTeam(unitID)
 
+GameConfig = getGameConfig()
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(buildWatcher)
+	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
+				function(id)
+					if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
+						return id
+					end
+				end
+				)
+				
+	GG.UnitHeldByHouseMap[unitID] = T[1]
+	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 end
 
-function script.Killed(recentDamage, _)
 
-    --createCorpseCUnitGeneric(recentDamage)
+
+function script.Killed(recentDamage, _)
     return 1
 end
 
@@ -48,32 +59,23 @@ function buildWatcher()
 			if facCmds then -- nil check
 				local cmd = facCmds[1]
 				Spring.GiveOrderToUnit(unitID, CMD.REMOVE, {1,cmd.tag}, {"ctrl"})
-			end
-		
-		end
-		
-		
+			end		
+		end		
 		end
 	
 	Sleep(1)
 	end
-
-
 end
-
-
 
 function script.Activate()
     SetUnitValue(COB.YARD_OPEN, 1)
-
     SetUnitValue(COB.BUGGER_OFF, 1)
-
     SetUnitValue(COB.INBUILDSTANCE, 1)
     return 1
 end
 
 function delayedDeactivation()
-Sleep(1000)
+	Sleep(1000)
      SetUnitValue(COB.YARD_OPEN, 0)
     SetUnitValue(COB.INBUILDSTANCE, 0)
     SetUnitValue(COB.BUGGER_OFF, 0)
@@ -91,13 +93,9 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { structure })
 
-
 function script.StartBuilding()
-
 	SetUnitValue(COB.INBUILDSTANCE, 1)
-	
 end
-
 
 function script.StopBuilding()
     SetUnitValue(COB.INBUILDSTANCE, 0)

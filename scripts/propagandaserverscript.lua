@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 
 Icon = piece "Icon"
 
-
+GameConfig = getGameConfig()
 function script.Create()
     team = Spring.GetUnitTeam(unitID)
     if not GG.Propgandaservers then  GG.Propgandaservers ={} end
@@ -17,11 +17,25 @@ function script.Create()
     GG.Propgandaservers[team] = GG.Propgandaservers[team] +1
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
-
     StartThread(propagandaLoop)
     StartThread(delayedSpinStart)
+	
+	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
+				function(id)
+					if isUnitInGroup(id, "house", GameConfig.instance.culture, UnitDefs)== true then
+						return id
+					end
+				end
+				)
+				
+	GG.UnitHeldByHouseMap[unitID] = T[1]
+	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
+	
+	
 end
+
+
+
 
 function delayedSpinStart()
 

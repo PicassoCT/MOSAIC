@@ -20,8 +20,9 @@ function script.Create()
 	Hide(aimpiece)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["TBase"])
-	StartThread(unfold)
+	StartThread(foldControl)
 	StartThread(guardSwivelTurret)
+	StartThread(orderTransfer)
 end
 
 boolAiming = false
@@ -44,9 +45,26 @@ Sleep(5000)
 
 end
 
+function orderTransfer()
+	local transporterID 
+	while true do
+		while isTransported(unitID)== true do
+			transporterID = Spring.GetUnitTransporter(unitID)
+			if transporterID then
+				Spring.SetUnitNoSelect(transporterID, true)
+				transferOrders(unitID, transporterID)
+			end
+			Sleep(100)
+		end
+		if doesUnitExistAlive(transporterID) == true then
+			Spring.SetUnitNoSelect(transporterID, false)
+		end
+		Sleep(100)
+	end
+end
 
 
-function unfold()
+function foldControl()
 	Sleep(10)
 	Turn(Turret,x_axis,math.rad(90),0)
 	Turn(TablesOfPiecesGroups["TBase"][1],2,math.rad(-30),0)
@@ -57,7 +75,19 @@ function unfold()
 	
 	while true do
 		if isTransported(unitID)== false then
+
+			unfold()
+		else
 			
+			fold()		
+		end
+	Sleep(1000)
+	end
+
+
+end
+
+function unfold()	
 			Sleep(100)
 			WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
 			for i=1,2 do
@@ -70,7 +100,9 @@ function unfold()
 			end
 			WaitForTurns(TablesOfPiecesGroups["LowLeg"])
 			WaitForTurns(TablesOfPiecesGroups["UpLeg"])
-		else
+end
+
+function fold()
 			WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
 				for i=1,2 do
 					Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(0),math.pi)
@@ -82,15 +114,8 @@ function unfold()
 				end
 			WaitForTurns(TablesOfPiecesGroups["LowLeg"])
 			WaitForTurns(TablesOfPiecesGroups["UpLeg"])
-		
-		
-		end
-	Sleep(1000)
-	end
-
 
 end
-
 
 function script.Killed(recentDamage, _)
 		

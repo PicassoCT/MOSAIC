@@ -59,8 +59,8 @@ end
 
 function script.StartMoving()
 	Turn(center,x_axis,math.rad(40),0)
-	spinT(TablesOfPiecesGroups["uprotor"],y_axis,350,9500)
-	spinT(TablesOfPiecesGroups["downrotor"],y_axis,350,-8500)
+	spinT(TablesOfPiecesGroups["uprotor"],y_axis,9500,350)
+	spinT(TablesOfPiecesGroups["downrotor"],y_axis,-8500,350)
 	turnT(TablesOfPiecesGroups["Arm"],y_axis, 0, 15)
 end
 

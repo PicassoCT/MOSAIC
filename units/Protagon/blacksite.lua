@@ -20,7 +20,7 @@ local BlackSite = Building:New{
 	buildingMask = 8,
 	
 	script 					= "blacksitescript.lua",
-	objectName        	= "placeholder.s3o",
+	objectName        	= "blacksite.dae",
 	name = "BlackSite",
 	description = "creates aerosol drones",
 

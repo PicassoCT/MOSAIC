@@ -673,7 +673,7 @@ function spinRand(p, intervallLow,intervallUp,startspeed)
 end
 
 -->Spins a Table
-function spinT(Table, axis, speed, rdeg, degup)
+function spinT(Table, axis, rdeg, speed, degup)
 	if type(Table) == "number" then val = math.random(rdeg,rdeg+degup);Spin(Table,axis,math.rad(val),speed) end
 
     if not degup then
