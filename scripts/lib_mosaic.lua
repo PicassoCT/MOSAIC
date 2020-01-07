@@ -124,6 +124,7 @@ return {
 	["depressol"] = "depressol"
 }
 end
+
 function getScrapheapTypeTable(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
@@ -206,10 +207,23 @@ translation ={
 	return translation[cultureName]
 end
 
-function getCultureUnitModelNames(cultureName, unitType, UnitDefs)
+function getCultureUnitModelTypes (cultureName, typeName, UnitDefs)
+	UnitDefNames = getUnitDefNames(UnitDefs)
+	allNames = getCultureUnitModelNames(cultureName, typeName, UnitDefs)
+	result ={}
+	
+	for num, name in pairs(allNames) do
+		result[UnitDefNames[name].id] = UnitDefNames[name].id
+	end
+	
+	return result
+end
+
+
+function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
 	assert( UnitDefs )
 	translation =getTranslation(cultureName)
-	return expandNameSubSetTable(translation[unitType], UnitDefs)
+	return expandNameSubSetTable(translation[typeName], UnitDefs)
 end
 
 function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
@@ -240,15 +254,6 @@ function getBaseTypeName(name)
 	if name:match("civilian") then return "civilian" end
 	if name:match("truck") then return "truck" end
 	assert(true==false)
-end
-
-function isUnitOfCivilianType(TypeDefID, GameConfig, UnitDefs)
-	assert( UnitDefs )
-	TypeName = getBaseTypeName(UnitDefs[TypeDefID].name)
-	myCulture = GameConfig.instance.culture
-	modelNames = getCultureUnitModelNames(myCulture, TypeName, UnitDefs)
-
-	return modelNames[TypeDefID] ~= nil
 end
 
 function getTruckLoadOutTypeTable()
@@ -302,6 +307,7 @@ function  getPanicableCiviliansTypeTable(UnitDefs)
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end
+
 function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={}
@@ -632,7 +638,6 @@ function getDecalMap(culture)
 	end
 
 end
-
 
 function getDayTime()
 	DAYLENGTH = 28800

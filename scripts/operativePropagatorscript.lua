@@ -10,9 +10,10 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
+GameConfig = getGameConfig()
 center = piece "center"
 gun = piece "gun"
-
+civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 

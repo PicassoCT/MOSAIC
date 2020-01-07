@@ -30,7 +30,7 @@ end
 	
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
-	local CivilianTypeTable = getCivilianTypeTable(UnitDefs)
+	local _,CivilianTypeTable = getCivilianTypeTable(UnitDefs)
 	local TruckTypeTable = getTruckTypeTable(UnitDefs)
 	local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
@@ -54,31 +54,7 @@ end
 	local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
 	local gaiaTeamID = Spring.GetGaiaTeamID()
 	
-		
-	assert(	activePoliceUnitIds_DispatchTime )
-	assert(maxNrPolice )
-	assert(CivilianTypeTable )
-	assert(TruckTypeTable )
-	assert(scrapHeapTypeTable )
-	assert(activePoliceUnitIds_Dispatchtime )
-	assert(MobileCivilianDefIds )
-	assert(CivAnimStates )
-	assert(PanicAbleCivliansTable )
-	assert(TimeDelayedRespawn )
-	assert(	  BuildingWithWaitingRespawn)
-	
-	assert(	GG.CivilianTable )
-	assert(	GG.UnitArrivedAtTarget )
-	assert(	GG.BuildingTable)
-	assert(	BuildingPlaceTable)
-	assert(	uDim)
-	assert( RouteTabel )
 
-	assert(houseTypeTable )
-	assert(civilianWalkingTypeTable )
-	assert(gaiaTeamID )
-	
-	
 	function getPoliceSpawnLocation(suspect)
 		sx,sy,sz = Spring.GetUnitPosition(suspect)
 		Tmax = getAllNearUnit(suspect, GameConfig.policeSpawnMinDistance)
@@ -430,6 +406,7 @@ end
 		end
 		
 		if counter < GameConfig.numberOfPersons then
+		Spring.Echo("Spawning "..(GameConfig.numberOfPersons - counter).." nr of persons")
 			for i=1, GameConfig.numberOfPersons - counter do
 				x,_,z, startNode = getRandomSpawnNode()
 				--assert(z)
@@ -437,11 +414,12 @@ end
 				--assert(startNode)
 				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
-				id = spawnAMobileCivilianUnit(randT(MobileCivilianDefIds), x,z, startNode, goalNode )	
+				id = spawnAMobileCivilianUnit(randT(civilianWalkingTypeTable), x,z, startNode, goalNode )	
 				if id then
 					GG.UnitArrivedAtTarget[id] = true
 				end
 			end
+		
 		end	
 	end
 	
@@ -463,6 +441,7 @@ end
 		end
 		
 		if counter < GameConfig.numberOfVehicles then
+	Spring.Echo("Spawning "..(GameConfig.numberOfVehicles - counter).." nr of vehicles")
 			for i=1, GameConfig.numberOfVehicles - counter do
 				x,_,z, startNode = getRandomSpawnNode()
 				

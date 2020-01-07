@@ -50,7 +50,7 @@ local House = Building:New{
 	
 	buildoptions = 
 	{
-	"civilian"
+	"civilian_arab0"
 	},
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",

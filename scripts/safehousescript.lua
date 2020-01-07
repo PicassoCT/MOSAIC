@@ -46,8 +46,10 @@ function killMyselfIfNotAttached()
     Spring.DestroyUnit(unitID,false,true)
 end
 
-CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
-local houseDefID= CivilianTypeDefTable["house"]
+_, CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
+	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+	
+
 gaiaTeamID = Spring.GetGaiaTeamID()
 
 function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID)
@@ -102,7 +104,7 @@ function houseAttach()
     process(
         getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
         function(id) --filter out all the safe houses
-            if Spring.GetUnitDefID(id) == houseDefID and Spring.GetUnitTeam(id) == gaiaTeamID then
+            if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID then
                 return id
         end
         end,

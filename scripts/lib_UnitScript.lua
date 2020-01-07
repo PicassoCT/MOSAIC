@@ -4319,7 +4319,7 @@ end
 
 --> Execute Random Function in Table
 function randT(Table)
-	assert(Table)
+	if not Table then return nil end
 	sizeOf = #Table 
 	if sizeOf == 0 then 
 		sizeOf = count(Table)

@@ -119,7 +119,7 @@ function rotations()
 	Sleep(500)
 	clockPiece= piece("StreetDeco06")
 	if  contains(ToShowTable, clockPiece) then
-		
+		WTurn(TablesOfPiecesGroups["StreetDeco6Sub"][1],z_axis,math.rad(180),0)
 	   showT(TablesOfPiecesGroups["StreetDeco6Sub"])
 	   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1],	z_axis,math.rad(3),10)
 	   Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2],	z_axis,math.rad(36),10)
@@ -166,7 +166,8 @@ function showPowerPoles()
   
   --Turn till detecting another house
 	local spGetUnitDefID = Spring.GetUnitDefID
-	local houseID = UnitDefNames["house"].id 
+	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+
   	local resultDeg 
 
 	teamID = Spring.GetUnitTeam(unitID)
@@ -186,7 +187,7 @@ function showPowerPoles()
 			process(unitsNearPole,
 			function(id)
 				--found a 
-				if id and id ~= unitID and spGetUnitDefID(id) == houseID then
+				if id and id ~= unitID and houseTypeTable[spGetUnitDefID(id)] then
 					for l= 1, p do	
 						pieceID = TablesOfPiecesGroups["PowerPole"][l]
 					
