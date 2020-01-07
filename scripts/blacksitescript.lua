@@ -16,7 +16,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
-local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

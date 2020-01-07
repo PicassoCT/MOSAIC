@@ -166,7 +166,7 @@ function showPowerPoles()
   
   --Turn till detecting another house
 	local spGetUnitDefID = Spring.GetUnitDefID
-	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 
   	local resultDeg 
 

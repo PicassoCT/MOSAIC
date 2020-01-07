@@ -12,7 +12,9 @@ LoadOutTypes = getTruckLoadOutTypeTable()
 center = piece "center"
 attachPoint = piece "attachPoint"
 myDefID = Spring.GetUnitDefID(unitID)
-boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
+local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+
+boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
 myLoadOutType =  LoadOutTypes[myDefID]
 local loadOutUnitID 
 

@@ -9,7 +9,8 @@ TablesOfPiecesGroups = {}
 center = piece "center"
 attachPoint = piece "attachPoint"
 myDefID = Spring.GetUnitDefID(unitID)
-boolIsCivilianTruck = (myDefID == UnitDefNames["truck"].id)
+TruckTypeTable = getTruckTypeTable(UnitDefs)
+boolIsCivilianTruck = (TruckTypeTable[myDefID] == nil)
 GameConfig= getGameConfig()
 
 SIG_LOUDNESOVERRIDE= 2

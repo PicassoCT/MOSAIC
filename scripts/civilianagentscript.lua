@@ -75,7 +75,7 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 
 
 GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 	
 eAnimState = getCivilianAnimationStates()
 upperBodyPieces =

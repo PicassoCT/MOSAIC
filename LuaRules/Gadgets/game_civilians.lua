@@ -50,8 +50,8 @@ end
 	local RouteTabel = {} --Every start has a subtable of reachable nodes 	
 	boolInitialized = false
 
-	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
-	local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
+	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 	local gaiaTeamID = Spring.GetGaiaTeamID()
 	
 
@@ -216,7 +216,7 @@ end
 						if xi~= x or zi~= z then
 							endx, endz = xi*tileX, zi*tileZ
 							
-							if Spring.RequestPath(UnitDefNames["truck"].moveDef.name , startx,0,startz,endx,0,endz) then
+							if Spring.RequestPath(UnitDefNames["truck_arab0"].moveDef.name , startx,0,startz,endx,0,endz) then
 								PlacesReachableFromPosition = PlacesReachableFromPosition + 1
 								if PlacesReachableFromPosition > 5 then
 									dx, dy, dz, slope =Spring.GetGroundNormal(x*tileX,z*tileZ)
@@ -531,7 +531,7 @@ end
 		vA = getUnitPositionV(unitA)
 		vB = getUnitPositionV(unitB)
 		
-		path = 	Spring.RequestPath(UnitDefNames["truck"].moveDef.id ,
+		path = 	Spring.RequestPath(UnitDefNames["truck_arab0"].moveDef.id ,
 		vA.x,vA.y,vA.z,
 		vB.x,vB.y,vB.z)
 		

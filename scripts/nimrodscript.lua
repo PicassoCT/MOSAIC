@@ -12,7 +12,7 @@ turret = piece "turret"
 projectile = piece "projectile"
 
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 
 if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 

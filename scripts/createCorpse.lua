@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 
 --die young- leave a great corpse
 GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 function createCorpseCBuilding(unitID, recentDamage)
     --<RubbleScript>

@@ -79,7 +79,7 @@ if (gadgetHandler:IsSyncedCode()) then
     --===========UnitDamaged Functions ====================================================
     --victim -- interrogator -- boolInerrogationOngoing
     InterrogationTable={}
-    local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+    local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
     interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, iconUnitTypeName)
         Spring.Echo("caught 1")
@@ -187,7 +187,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     end
 
-	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
     raidTable= getRaidAbleTypeTable(UnitDefs)
 

@@ -253,7 +253,7 @@ function getBaseTypeName(name)
 	if name:match("house") then return "house" end
 	if name:match("civilian") then return "civilian" end
 	if name:match("truck") then return "truck" end
-	assert(true==false)
+	return ""
 end
 
 function getTruckLoadOutTypeTable()
@@ -279,21 +279,19 @@ end
 
 function getTruckTypeTable(UnitDefs)
 	local UnitDefNames =  getUnitDefNames(UnitDefs)
-	typeTable={
-		"truck"
-	}	
+	GameConfig= getGameConfig()
+	
+	typeTable= getCultureUnitModelNames(GameConfig.instance.culture, "truck", UnitDefs)
 	
 	return getTypeTable( UnitDefNames, typeTable)
 end
 
 function  getMobileCivilianDefIDTypeTable(UnitDefs)
 	assert(UnitDefs)
+	GameConfig = getGameConfig()
 local	UnitDefNames = getUnitDefNames(UnitDefs)
-	typeTable={
-		"truck"
-	}
-	
-	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
+	typeTable=getTypeUnitNameTable(GameConfig.instance.culture, "truck", UnitDefs)
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end
@@ -407,11 +405,10 @@ end
 function getCivilianTypeTable(UnitDefs)
 	assert(UnitDefs)
 local	UnitDefNames = getUnitDefNames(UnitDefs)
-	typeTable=
-	{	"truck"
-	}
-	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "house", UnitDefs))
-	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
+	GameConfig = getGameConfig()
+	typeTable=getTypeUnitNameTable(GameConfig.instance.culture, "truck", UnitDefs)
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "house", UnitDefs))
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))
 	
 	local retTable = {}
 	for _,defs in pairs(UnitDefs) do

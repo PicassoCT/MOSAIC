@@ -190,7 +190,7 @@ local PoliceTruck = Truck:New{
 return lowerkeys({
 	--Temp
 	["policetruck"]			 	= PoliceTruck:New(),
-	["truck"]			 	= CivilianTruck:New(),
+	["truck_arab0"]			 	= CivilianTruck:New(),
 	["ground_truck_mg"]		= ground_truck_mg:New(),
 	["ground_truck_ssied"]	= ground_truck_ssied:New(),
 	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New()

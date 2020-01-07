@@ -13,7 +13,7 @@ end
 
 
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 gaiaTeamID = Spring.GetGaiaTeamID()
 
 function script.Create()
@@ -34,12 +34,12 @@ boolSetVelocity= true
 
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
 civilianAgentDefID = UnitDefNames["civilianagent"].id
-truckDefID = UnitDefNames["truck"].id
+TruckTypeTable = getTruckTypeTable(UnitDefs)
 
 function recruiteLoop()
 	local recruitmentRange = GameConfig.agentConfig.recruitmentRange
 	
-	local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 	local spGetUnitDefID =Spring.GetUnitDefID
 	local spGetUnitTeam = Spring.GetUnitTeam
@@ -58,10 +58,10 @@ function recruiteLoop()
 boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id] ~= fatherID and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= Spring.GetUnitTeam(unitID)  
 
 					defID = spGetUnitDefID(id)
-					if defID== truckDefID then
+					if TruckTypeTable[defID] then
 					
 								x,y,z,_,_,_ =Spring.GetUnitPosition(id)
-								ad = Spring.CreateUnit("truck",			
+								ad = Spring.CreateUnit(randT(TruckTypeTable),			
 								x,y,z, 			
 								1,		
 								teamID,	

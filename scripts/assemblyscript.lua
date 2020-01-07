@@ -15,7 +15,7 @@ structure = piece "structure"
 myTeamID = Spring.GetUnitTeam(unitID)
 
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

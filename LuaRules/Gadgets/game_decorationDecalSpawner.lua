@@ -21,7 +21,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	defIDDecalNameMap = getDecalMap(GameConfig.instance.culture)	
 	gaiaTeamID = Spring.GetGaiaTeamID()
-	local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	function gadget:GameFrame(n)
 		frameDelayedAction(n)
 	end
@@ -36,7 +36,7 @@ if (gadgetHandler:IsSyncedCode()) then
 				local unitDefID = SpawnedUnits[frame][i].defID
 				local teamID = SpawnedUnits[frame][i].teamID
 				
-				if defIDDecalNameMap[UnitDefs[unitDefID].name] and teamID == gaiaTeamID then
+				if defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)] and teamID == gaiaTeamID then
 					x,y,z= Spring.GetUnitPosition(unitID)
 					
 					T= getAllNearUnit(unitID, 725)
@@ -51,11 +51,11 @@ if (gadgetHandler:IsSyncedCode()) then
 					
 					ID = 0
 					if T and count(T) > 2 then
-						nrElement= math.random(1,#defIDDecalNameMap[UnitDefs[unitDefID].name].urban)
-						ID =defIDDecalNameMap[UnitDefs[unitDefID].name].urban[nrElement]
+						nrElement= math.random(1,#defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].urban)
+						ID =defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].urban[nrElement]
 					else
-						nrElement= math.random(1,#defIDDecalNameMap[UnitDefs[unitDefID].name].rural)
-						ID =defIDDecalNameMap[UnitDefs[unitDefID].name].rural[nrElement]
+						nrElement= math.random(1,#defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].rural)
+						ID =defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].rural[nrElement]
 					end
 					
 					GG.UnitsToSpawn:PushCreateUnit(ID, x,y,z, 1 , gaiaTeamID)				

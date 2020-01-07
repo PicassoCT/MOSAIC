@@ -90,7 +90,7 @@ boolDecoupled = false
 boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 function script.Create()
 	makeWeaponsTable()

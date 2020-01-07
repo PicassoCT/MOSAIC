@@ -14,7 +14,7 @@ center = piece "center"
 gun = piece "gun"
 
 GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
