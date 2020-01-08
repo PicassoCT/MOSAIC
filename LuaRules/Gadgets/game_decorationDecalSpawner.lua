@@ -18,10 +18,11 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_Build.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	GameConfig = getGameConfig()
-	
+	Type_BaseTypeMap= getUnitType_BaseTypeMap(UnitDefs, GameConfig.instance.culture)
+
 	defIDDecalNameMap = getDecalMap(GameConfig.instance.culture)	
 	gaiaTeamID = Spring.GetGaiaTeamID()
-	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
+	houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	function gadget:GameFrame(n)
 		frameDelayedAction(n)
 	end
@@ -30,13 +31,16 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function frameDelayedAction(frame)
 		if SpawnedUnits[frame] then
-		
+
 			for i=1, #SpawnedUnits[frame] do
+
 				local unitID = SpawnedUnits[frame][i].id
 				local unitDefID = SpawnedUnits[frame][i].defID
 				local teamID = SpawnedUnits[frame][i].teamID
+				local baseType = Type_BaseTypeMap[UnitDefs[unitDefID].name] 
 				
-				if defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)] and teamID == gaiaTeamID then
+				if baseType and defIDDecalNameMap[baseType] and teamID == gaiaTeamID then
+			
 					x,y,z= Spring.GetUnitPosition(unitID)
 					
 					T= getAllNearUnit(unitID, 725)
@@ -51,11 +55,11 @@ if (gadgetHandler:IsSyncedCode()) then
 					
 					ID = 0
 					if T and count(T) > 2 then
-						nrElement= math.random(1,#defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].urban)
-						ID =defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].urban[nrElement]
+						nrElement= math.random(1,#defIDDecalNameMap[baseType].urban)
+						ID =defIDDecalNameMap[baseType].urban[nrElement]
 					else
-						nrElement= math.random(1,#defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].rural)
-						ID =defIDDecalNameMap[getBaseTypeName(UnitDefs[unitDefID].name)].rural[nrElement]
+						nrElement= math.random(1,#defIDDecalNameMap[baseType].rural)
+						ID =defIDDecalNameMap[baseType].rural[nrElement]
 					end
 					
 					GG.UnitsToSpawn:PushCreateUnit(ID, x,y,z, 1 , gaiaTeamID)				

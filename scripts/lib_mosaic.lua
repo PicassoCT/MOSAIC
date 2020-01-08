@@ -249,11 +249,34 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 	return expandedDictId_Name
 end
 
+function getUnitType_BaseTypeMap(UnitDefs, culture)
+	truckTypes = getTypeUnitNameTable(culture, "truck", UnitDefs)
+	houseTypes = getTypeUnitNameTable(culture, "house", UnitDefs)
+	civilianTypes = getTypeUnitNameTable(culture, "civilian", UnitDefs)
+	results ={}
+
+	echo("trucktypes:",truckTypes)
+	for num, name in pairs(truckTypes) do
+		results[name]= "truck"
+	end
+
+	for num, name in pairs(houseTypes) do
+		results[name]= "house"
+	end
+
+	for num, name in pairs(civilianTypes) do
+		results[name]= "civilian"
+	end
+
+	return results
+end
+
+
 function getBaseTypeName(name)
 	if name:match("house") then return "house" end
 	if name:match("civilian") then return "civilian" end
 	if name:match("truck") then return "truck" end
-	return ""
+
 end
 
 function getTruckLoadOutTypeTable()
@@ -289,7 +312,7 @@ end
 function  getMobileCivilianDefIDTypeTable(UnitDefs)
 	assert(UnitDefs)
 	GameConfig = getGameConfig()
-local	UnitDefNames = getUnitDefNames(UnitDefs)
+	local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable=getTypeUnitNameTable(GameConfig.instance.culture, "truck", UnitDefs)
 	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))
 	
@@ -426,9 +449,8 @@ end
 
 function getAersolAffectableUnits(UnitDefs)
 	local UnitDefNames =  getUnitDefNames(UnitDefs)
-	typeTable={
-		"truck"
-	}
+
+	typeTable = mergeTables({}, getTypeUnitNameTable(getCultureName(), "truck", UnitDefs))
 	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
 	
 	return getTypeTable(UnitDefNames, typeTable)

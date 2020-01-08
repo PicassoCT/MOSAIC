@@ -30,8 +30,9 @@ end
 	
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
-	local _,CivilianTypeTable = getCivilianTypeTable(UnitDefs)
+	local _,AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
 	local TruckTypeTable = getTruckTypeTable(UnitDefs)
+	assert(TruckTypeTable[UnitDefNames["truck_arab0"].id])
 	local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
@@ -73,7 +74,7 @@ end
 		px,pz = px+ sx, pz+sz
 		
 		if count(T) > 0 then
-			element= randDict(T)
+			element= randT(T)
 			dx,py,dz = Spring.GetUnitPosition(element)		
 			if dx then
 				px, pz= dx, dz
@@ -173,7 +174,7 @@ end
 					officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime + math.random(1, GameConfig.policeMaxDispatchTime)	
 				else --reasign one
-					officerID = randDict(activePoliceUnitIds_DispatchTime)		
+					officerID = randT(activePoliceUnitIds_DispatchTime)		
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime	+ math.random(1, GameConfig.policeMaxDispatchTime)			
 				end
 				
@@ -392,7 +393,7 @@ end
 		counter = 0
 		nilTable={}
 		for id, data in pairs(GG.CivilianTable) do
-			if id and CivilianTypeTable[data.defID] then
+			if id and civilianWalkingTypeTable[data.defID] then
 				if doesUnitExistAlive(id) == true then
 					counter = counter + 1
 				else
@@ -427,7 +428,7 @@ end
 		counter = 0
 		nilTable={}
 		for id, data in pairs(GG.CivilianTable) do
-			if id and CivilianTypeTable[data.defID] then
+			if id and TruckTypeTable[data.defID] then
 				if doesUnitExistAlive(id) == true then
 					counter = counter + 1
 				else
@@ -441,7 +442,7 @@ end
 		end
 		
 		if counter < GameConfig.numberOfVehicles then
-	Spring.Echo("Spawning "..(GameConfig.numberOfVehicles - counter).." nr of vehicles")
+		echo("Spawning "..(GameConfig.numberOfVehicles - counter).." nr of vehicles")
 			for i=1, GameConfig.numberOfVehicles - counter do
 				x,_,z, startNode = getRandomSpawnNode()
 				
@@ -456,7 +457,7 @@ end
 	end
 	
 	function getRandomSpawnNode()
-		startNode = randDict(RouteTabel)
+		startNode = randT(RouteTabel)
 		--assert(doesUnitExistAlive(startNode) == true)
 		--assert(startNode)
 		x,y,z= Spring.GetUnitPosition(startNode)
@@ -722,7 +723,7 @@ end
 	end	
 	
 	function giveWaypointsToUnit(uID, uType, startNodeID)
-		boolIsCivilian = ( CivilianTypeTable[uType] ~= nil)
+		boolIsCivilian = ( civilianWalkingTypeTable[uType] ~= nil)
 		boolShortestPath= ( math.random(0,1)== 1 and TruckTypeTable[uType] == nil )-- direct route to target
 	
 		--assert(doesUnitExistAlive(startNodeID)==true)

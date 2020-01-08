@@ -4317,20 +4317,23 @@ if #Table == 1 then return Table[1]end
 return Table[math.random(1, (nr % #Table) + 1)]
 end
 
---> Execute Random Function in Table
+
 function randT(Table)
 	if not Table then return nil end
-	sizeOf = #Table 
-	if sizeOf == 0 then 
-		sizeOf = count(Table)
-		if sizeOf > 0 then
-			return randDict(Table)
-		end
 	
-	return end
-	if sizeOf == 1 then return Table[1] end
-
-	return Table[math.random(1,#Table)]
+	sizeOf = #Table 
+	
+	--attempt to get a random element from the numeric part only
+	i= 1
+	if sizeof > 1 then
+		i= math.random(1,sizeOf)
+	end
+	
+	for num, val in pairs(Table) do
+		i=i-1
+		if i <= 0 then return val end
+	end
+	
 end
 
 function fairRandom(identifier, diffDistance) --chance to get true
