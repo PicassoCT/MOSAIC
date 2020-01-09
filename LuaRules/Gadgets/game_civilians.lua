@@ -31,8 +31,6 @@ end
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
 	local _,AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
-	local TruckTypeTable = getTruckTypeTable(UnitDefs)
-	assert(TruckTypeTable[UnitDefNames["truck_arab0"].id])
 	local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
@@ -51,6 +49,8 @@ end
 	local RouteTabel = {} --Every start has a subtable of reachable nodes 	
 	boolInitialized = false
 
+	local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+	assert(TruckTypeTable[UnitDefNames["truck_arab0"].id]==UnitDefNames["truck_arab0"].id)
 	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 	local gaiaTeamID = Spring.GetGaiaTeamID()
@@ -154,7 +154,7 @@ end
 		x,y,z = Spring.GetUnitPosition(id)
 		if x then
 		
-			rubbleHeapID= Spring.CreateUnit(randT(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
+			rubbleHeapID= Spring.CreateUnit(randDict(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
 			TimeDelayedRespawn[rubbleHeapID] ={
 			frame= GameConfig.TimeForScrapHeapDisappearanceInMs,
 			x= x, z= z, bID = id}
@@ -174,7 +174,7 @@ end
 					officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime + math.random(1, GameConfig.policeMaxDispatchTime)	
 				else --reasign one
-					officerID = randT(activePoliceUnitIds_DispatchTime)		
+					officerID = randDict(activePoliceUnitIds_DispatchTime)		
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime	+ math.random(1, GameConfig.policeMaxDispatchTime)			
 				end
 				
@@ -279,7 +279,8 @@ end
 			elseif dice == 2 then --2 place a single block
 				boolFirstPlaced= false
 				if BuildingPlaceT[cursor.x][cursor.z] == true and cursorIsOnMainRoad(cursor,startx,startz) == false then
-					spawnBuilding(randT(houseTypeTable), 
+					buildingType = randDict(houseTypeTable)				
+					spawnBuilding(buildingType, 
 					cursor.x * uDim.x,
 					cursor.z * uDim.z,
 					(GameConfig.numberOfBuildings-numberOfBuildings),
@@ -292,7 +293,8 @@ end
 				end
 				
 				if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and cursorIsOnMainRoad(mirror, startx,startz) == false then
-					spawnBuilding(randT(houseTypeTable), 
+					buildingType = randDict(houseTypeTable)
+					spawnBuilding(buildingType, 
 					mirror.x * uDim.x,
 					mirror.z * uDim.z,
 					(GameConfig.numberOfBuildings-numberOfBuildings),
@@ -318,10 +320,10 @@ end
 					local tmpCursor= cursor
 					tmpCursor.x = tmpCursor.x + offx ;	tmpCursor.z = tmpCursor.z + offz
 					tmpCursor = clampCursor(tmpCursor)
-					
+					buildingType = randDict(houseTypeTable)
 					if 	BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
 						spawnBuilding(
-						randT(houseTypeTable), 
+						buildingType, 
 						tmpCursor.x * uDim.x,
 						tmpCursor.z * uDim.z,
 						(GameConfig.numberOfBuildings-numberOfBuildings),
@@ -363,7 +365,8 @@ end
 	function checkReSpawnHouseAt(x,z, bID)
 			dataToAdd= {}	
 			GG.BuildingTable[bID]= nil
-			id = spawnBuilding(randT(houseTypeTable), x, z)
+			buildingType = randDict(houseTypeTable)
+			id = spawnBuilding(buildingType, x, z)
 			dataToAdd[id] = {x=x,z=z}
 			GG.BuildingTable[id] = dataToAdd[id]
 
@@ -378,8 +381,9 @@ end
 			if doesUnitExistAlive(bID) ~= true and  BuildingWithWaitingRespawn[bID] == nil then
 				GG.BuildingTable[bID]= nil
 				
-				x, z = routeDataCopy.x, routeDataCopy.z 
-				id = spawnBuilding(randT(houseTypeTable), x, z)
+				x, z = routeDataCopy.x, routeDataCopy.z
+				buildingType = randDict(houseTypeTable)
+				id = spawnBuilding(buildingType, x, z)
 				dataToAdd[id] = routeDataCopy
 			end
 		end
@@ -415,7 +419,8 @@ end
 				--assert(startNode)
 				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
-				id = spawnAMobileCivilianUnit(randT(civilianWalkingTypeTable), x,z, startNode, goalNode )	
+				civilianType = randDict(civilianWalkingTypeTable)
+				id = spawnAMobileCivilianUnit(civilianType, x,z, startNode, goalNode )	
 				if id then
 					GG.UnitArrivedAtTarget[id] = true
 				end
@@ -448,7 +453,8 @@ end
 				
 				--assert(RouteTabel[startNode])
 				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
-				id = spawnAMobileCivilianUnit(randT(TruckTypeTable), x,z, startNode, goalNode )	
+				TruckType = randDict(TruckTypeTable)
+				id = spawnAMobileCivilianUnit(TruckType, x,z, startNode, goalNode )	
 				if id then
 					GG.UnitArrivedAtTarget[id] = true
 				end
@@ -517,10 +523,11 @@ end
 	
 	function regenerateRoutesTable()
 		local newRouteTabel={}
+		TruckType = randDict(TruckTypeTable)
 		for thisBuildingID, data in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 
 			newRouteTabel[thisBuildingID]={}
 			for otherID, oData in pairs(GG.BuildingTable) do--[BuildingUnitID] = {x=x, z=z} 		
-				if thisBuildingID ~= otherID and isRouteTraversable(randT(TruckTypeTable), thisBuildingID, otherID ) then
+				if thisBuildingID ~= otherID and isRouteTraversable(TruckType, thisBuildingID, otherID ) then
 					newRouteTabel[thisBuildingID][# newRouteTabel[thisBuildingID]+1] = otherID
 				end
 			end

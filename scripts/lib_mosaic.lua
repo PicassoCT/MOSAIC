@@ -128,7 +128,7 @@ end
 function getScrapheapTypeTable(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
-			[UnitDefNames["gcscrapheap"].id	]= true
+			[UnitDefNames["gcscrapheap"].id	]= UnitDefNames["gcscrapheap"].id	
 		}
 
 end

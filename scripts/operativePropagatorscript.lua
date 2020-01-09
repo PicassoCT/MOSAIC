@@ -59,6 +59,7 @@ function spawnDecoyCivilian()
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
 			if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 			GG.DisguiseCivilianFor[civilianID]= unitID
+			if not GG.DiedPeacefully then GG.DiedPeacefully ={} end
 			GG.DiedPeacefully[civilianID] = false
 				
 			if civilianID then

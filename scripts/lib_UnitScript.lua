@@ -2350,15 +2350,15 @@ function randDict(Dict)
 	end
 	
 	index= 1
-	anyElement=1
+	anyKey=1
 	for k,v in pairs (Dict) do
-		anyElement = k
+		anyKey = k
 		if index == randElement and k and v then 
 			return k,v
 		end
 		index=inc(index)
 	end
-	return anyElement
+	return anyElement, Dict[anyKey]
 end
 
 --> randomizes Table Entrys
@@ -4319,21 +4319,17 @@ end
 
 
 function randT(Table)
-	if not Table then return nil end
-	
 	sizeOf = #Table 
+	if sizeOf == 0 then 
+		sizeOf = count(Table)
+		if sizeOf > 0 then
+			return randDict(Table)
+		end
 	
-	--attempt to get a random element from the numeric part only
-	i= 1
-	if sizeof > 1 then
-		i= math.random(1,sizeOf)
-	end
-	
-	for num, val in pairs(Table) do
-		i=i-1
-		if i <= 0 then return val end
-	end
-	
+	return end
+	if sizeOf == 1 then return Table[1] end
+
+	return Table[math.random(1,#Table)]
 end
 
 function fairRandom(identifier, diffDistance) --chance to get true
