@@ -28,7 +28,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
 	SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)
 	
-	Satellites ={}
+	Satellites ={} --utype --direction
 	function gadget:UnitDestroyed(unitID, unitDefID)
 		if Satellites[unitID] then
 			Satellites[unitID] = nil
@@ -41,7 +41,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		if SatelliteTypes[unitDefID] then
 			satteliteStateTable[unitID] = "flying"
 			Spring.MoveCtrl.Enable(unitID,true)
-			Satellites[unitID] = unitDefID
+			Satellites[unitID] = {utype =unitDefID, direction = "orthogonal"}
 		end		
 	end
 	
@@ -55,59 +55,115 @@ if (gadgetHandler:IsSyncedCode()) then
 		return x,y,z
 	end
 	
-	function getComandOffset(id, x, speed)
-  
-	 CommandTable = Spring.GetUnitCommands(id, 3)
-	 boolFirst=true
+	function getComandOffset(id, x, z, direction, speed)
+
+		 CommandTable = Spring.GetUnitCommands(id, 3)
+		 boolFirst=true
 	 
 		 for _, cmd in pairs(CommandTable) do
-				if boolFirst == true and cmd.id == CMD.MOVE then 
-					boolFirst = false 
+			if boolFirst == true and cmd.id == CMD.MOVE then 
+				boolFirst = false 
+				if direction == "orthogonal" then
 					if math.abs(cmd.params[1] - x)> 10 then
 						if cmd.params[1] < x then
-							return speed *-1
+							return speed *-1, 0
 						elseif cmd.params[1]  > x then
-							return speed 
+							return speed, 0
 						end
 					end
-				end	 
+				else
+					if math.abs(cmd.params[3] - z)> 10 then
+						if cmd.params[3] < z then
+							return 0, speed *-1
+						elseif cmd.params[3]  > z then
+							return 0, speed 
+						end
+					end				
+				end			
+				break
+			end		 
 		 end		 
-	return 0
+	return 0, 0
 	end
 	timeOutTable={}
+	directionalChangeTable={}
 	satteliteStateTable={}
 	
+function directionalArrest(x,y,z, direction)
+	if direction == "orthogonal" then
+		return x,y, 1
+	end
+	
+	if direction == "horizontal" then
+		return 1, y, z
+	end
+
+end	
+	
+
+function dectectDirectionalChange(id, direction)
+	 mx,my,mz = Spring.GetUnitPosition(id)
+
+				if direction == "orthogonal" and (mx < 5 or mx > Game.mapSizeX-5 )then
+					return "horizontal"
+				end
+				
+				if direction == "horizontal" and (mz < 5 or mz > Game.mapSizeZ-5 ) then
+					return "orthogonal"
+				end				
+		
+	return direction
+end
+	
 local	satelliteStates={
-	["flying"] = function(id, x, y, z, utype)	
-					-- Spring.Echo("State flying")
+	["flying"] = function(id, x, y, z, utype, direction)	
+
 					if  (z >= mapSizeZ) then
-						Spring.SetUnitNeutral(id, true)
-						return "timeout", x, y, 1
+						Spring.SetUnitNeutral(id, true)					
+						
+						x,y,z = directionalArrest(x,y,z, direction)
+						return "timeout", x, y, z
 					end
 					
 					return "flying", x,y,z
 				  end,
-	["timeout"] =  function(id, x,y,z, utype)
-						-- Spring.Echo("State timeout")
+	["timeout"] =  function(id, x,y,z, utype, direction)
+					direction = dectectDirectionalChange(id, direction)
+					Satellites[id].direction = direction
+	
 						if not timeOutTable[id] then timeOutTable[id] = SatelliteTimeOutTable[utype] end
 						timeOutTable[id]= timeOutTable[id] -1
 						
 						if timeOutTable[id] <= 0 then 
 							 timeOutTable[id] = nil
 							 Spring.SetUnitNeutral(id, false)
-							return "flying", x,y,1
+							 x,y,z = directionalArrest(x,y,z, direction)
+							return "flying", x,y,z
 						end
-	
-					return "timeout", x,y,1
+					x,y,z = directionalArrest(x,y,z, direction)
+					return "timeout", x,y,z
 					end	
 	}
 	
+	function getDirectionalTypeTravelSpeed(utype, direction)
+	ox, oz = 0,0
+		if direction == "orthogonal" then
+			 oz =  SatelliteTypesSpeedTable[utype]
+		else
+			 ox =  SatelliteTypesSpeedTable[utype]
+		end
+	return ox, oz
+	end
+	
 	function gadget:GameFrame(n)
-		for id, utype in pairs(Satellites) do
+		for id, tables in pairs(Satellites) do
+			utype = tables.utype
 			x,y,z = Spring.GetUnitPosition(id)
-			x,y,z = circularClamp(x + getComandOffset(id, x, SatelliteTypesSpeedTable[utype]), y , z + SatelliteTypesSpeedTable[utype])
+			ox, oz = getDirectionalTypeTravelSpeed(utype, tables.direction)
+			speedx, speedz= getComandOffset(id, x, z, tables.direction, SatelliteTypesSpeedTable[utype])
+			x,y,z = circularClamp(x + ox+ speedx , y , z+oz +speedz)
 			
-			satteliteStateTable[id],x,y,z = satelliteStates[satteliteStateTable[id]](id, x, y, z, utype)
+			satteliteStateTable[id],x,y,z = satelliteStates[satteliteStateTable[id]](id, x, y, z, utype, tables.direction)
 			
 			Spring.MoveCtrl.SetPosition(id, x, SatelliteAltitudeTable[utype], z )
 		end
