@@ -3,8 +3,10 @@ local weaponDef = {
     name = "Rail Gun",
     alphaDecay = 0.12,
     areaOfEffect = 16,
-    bouncerebound = 0.15,
-    bounceslip = 1,
+	--aiming
+	accuracy = 0.0,
+	predictBoost  = 1.0,
+	
     burst = 2,
     burstrate = 0.4,
     cegTag = [[railGunCeg]],
@@ -15,7 +17,7 @@ local weaponDef = {
 
     },
     explosionGenerator = [[custom:cRailSparks]],
-    groundbounce = 1,
+ 
     impactOnly = true,
 	avoidFriendly = false,
 	avoidGround  = true,
@@ -31,7 +33,7 @@ local weaponDef = {
     interceptedByShieldType = 0,
     tolerance = 3000,
     noExplode = true,
-    numbounce = 40,
+
     range = 2048,
     reloadtime = 12,
     rgbColor = [[0.5 1 1]],
@@ -43,7 +45,7 @@ local weaponDef = {
     stages = 32,
     fireStarter = 35,
     turret = true,
-    waterbounce = 1,
+
     weaponType = [[Cannon]],
     weaponVelocity = 2400,
 }

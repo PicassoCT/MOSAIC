@@ -199,14 +199,17 @@ local	satelliteStates={
 	function gadget:GameFrame(n)
 		for id, tables in pairs(Satellites) do
 			utype = tables.utype
-			x,y,z = Spring.GetUnitPosition(id)
+			sx,sy,sz = Spring.GetUnitPosition(id)
 			ox, oz = getDirectionalTypeTravelSpeed(utype, tables.direction)
-			speedx, speedz= getComandOffset(id, x, z, tables.direction, SatelliteTypesSpeedTable[utype])
-			x,y,z = circularClamp(x + ox+ speedx , y , z+oz +speedz)
+			speedx, speedz= getComandOffset(id, sx, sz, tables.direction, SatelliteTypesSpeedTable[utype])
+			x,y,z = circularClamp(sx + ox+ speedx , sy , sz+oz +speedz)
 			
 			satteliteStateTable[id],x,y,z = satelliteStates[satteliteStateTable[id]](id, x, y, z, utype, tables.direction)
 			
 			Spring.MoveCtrl.SetPosition(id, x, SatelliteAltitudeTable[utype], z )
+			vx,vy,vz = absDistance(sx,x),0,absDistance(sz,z)
+			Spring.MoveCtrl.SetVelocity(id, vx, vy, vz)
+			Spring.MoveCtrl.SetRotation(id, 0, 0, 0)
 		end
 	end
 end

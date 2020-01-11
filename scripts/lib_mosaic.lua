@@ -642,6 +642,7 @@ function getDecalMap(culture)
 		return {
 			["house"] = {
 							rural={
+								"house_arab_decal8",
 								"house_arab_decal7",
 								"house_arab_decal4"
 							},						
@@ -650,7 +651,8 @@ function getDecalMap(culture)
 							"house_arab_decal2",
 							"house_arab_decal3",				
 							"house_arab_decal5",
-							"house_arab_decal6"
+							"house_arab_decal6",
+
 							}			
 						}
 		}
