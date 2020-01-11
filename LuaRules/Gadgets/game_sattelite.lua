@@ -153,13 +153,13 @@ end
 
 function deactivateSatellite(id)
 	Spring.SetUnitNeutral(id, true)	
-	setUnitValueExternal(id, VIEWRADIUS, 0)
+	-- setUnitValueExternal(id, VIEWRADIUS, 0)
 end
 	
 local	satelliteStates={
 	["flying"] = function(id, x, y, z, utype, direction)	
 
-					if  (direction == "horizontal" and z >= mapSizeZ) or (direction == "orthogonal" and x >= mapSizeX)  then
+					if  (direction == "orthogonal" and z >= mapSizeZ) or (direction == "horizontal" and x >= mapSizeX) then
 						deactivateSatellite(id)				
 						x,y,z = directionalArrestTimeOut(x,y,z, direction)
 						return "timeout", x, y, z
