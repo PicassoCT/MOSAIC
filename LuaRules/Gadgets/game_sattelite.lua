@@ -6,7 +6,7 @@ function gadget:GetInfo()
 		desc = "Collects Engagment Data and Displays it at exit of person",
 		author = "pica",
 		date = "Anno Domini 2018",
-		license = "Comrade Stallmans License",
+		license = "Comrade Stallmans License, disregard the starving wretches and bastards, rise above - strive for freedom",
 		layer = 109,
 		version = 1,
 		enabled = true,
@@ -27,6 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
 	SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
 	SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)
+	local directionalSwitchValue = 50
 	
 	Satellites ={} --utype --direction
 	function gadget:UnitDestroyed(unitID, unitDefID)
@@ -88,6 +89,23 @@ if (gadgetHandler:IsSyncedCode()) then
 	timeOutTable={}
 	directionalChangeTable={}
 	satteliteStateTable={}
+
+function directionalArrestTimeOut(x,y,z, direction)
+	if direction == "orthogonal" then
+		if x > directionalSwitchValue then z = 1 end
+		return x,y, z
+	end
+	
+	if direction == "horizontal" then
+		if z > directionalSwitchValue then x = 1 end
+
+		return x , y, z
+	end
+	
+	echo("directionalArrest Error")
+	return x,y,z
+end	
+
 	
 function directionalArrest(x,y,z, direction)
 	if direction == "orthogonal" then
@@ -97,31 +115,53 @@ function directionalArrest(x,y,z, direction)
 	if direction == "horizontal" then
 		return 1, y, z
 	end
-
+	
+	echo("directionalArrest Error")
+	return x,y,z
 end	
 	
-
+directionalChangeTable ={}
 function dectectDirectionalChange(id, direction)
-	 mx,my,mz = Spring.GetUnitPosition(id)
+	-- only one directional change per waiting period -- prevents pendulum behaviour
+	if directionalChangeTable[id] then return direction end
+	--data preparation
+	CommandTable = Spring.GetUnitCommands(id, 3)
+	boolFirst=true
+	tx, tz = 0, 0
+	for _, cmd in pairs(CommandTable) do
+		if boolFirst == true and cmd.id == CMD.MOVE then 
+			tx, tz = cmd.params[1] , cmd.params[3]
+			boolFirst = false 
+		end
+	end
 
-				if direction == "orthogonal" and (mx < 5 or mx > Game.mapSizeX-5 )then
-					return "horizontal"
-				end
-				
-				if direction == "horizontal" and (mz < 5 or mz > Game.mapSizeZ-5 ) then
-					return "orthogonal"
-				end				
-		
+	 mx,my,mz = Spring.GetUnitPosition(id)
+	 
+	-- directional change 
+	if tx < directionalSwitchValue and tz < directionalSwitchValue then return direction end
+	
+	if tx < directionalSwitchValue and direction == "orthogonal" then 
+		return  "horizontal"
+	end
+	
+	if tz < directionalSwitchValue and direction == "horizontal" then
+		return "orthogonal"
+	end
+	
 	return direction
+end
+
+function deactivateSatellite(id)
+	Spring.SetUnitNeutral(id, true)	
+	setUnitValueExternal(id, VIEWRADIUS, 0)
 end
 	
 local	satelliteStates={
 	["flying"] = function(id, x, y, z, utype, direction)	
 
-					if  (z >= mapSizeZ) then
-						Spring.SetUnitNeutral(id, true)					
-						
-						x,y,z = directionalArrest(x,y,z, direction)
+					if  (direction == "horizontal" and z >= mapSizeZ) or (direction == "orthogonal" and x >= mapSizeX)  then
+						deactivateSatellite(id)				
+						x,y,z = directionalArrestTimeOut(x,y,z, direction)
 						return "timeout", x, y, z
 					end
 					
@@ -138,9 +178,10 @@ local	satelliteStates={
 							 timeOutTable[id] = nil
 							 Spring.SetUnitNeutral(id, false)
 							 x,y,z = directionalArrest(x,y,z, direction)
+							if directionalChangeTable[id] then directionalChangeTable[id] = nil end
 							return "flying", x,y,z
 						end
-					x,y,z = directionalArrest(x,y,z, direction)
+					x,y,z = directionalArrestTimeOut(x,y,z, direction)
 					return "timeout", x,y,z
 					end	
 	}
