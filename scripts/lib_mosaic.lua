@@ -652,6 +652,7 @@ function getDecalMap(culture)
 							"house_arab_decal3",				
 							"house_arab_decal5",
 							"house_arab_decal6",
+							"house_arab_decal9",
 
 							}			
 						}

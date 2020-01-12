@@ -59,7 +59,7 @@ end
 
 
 function script.Killed(recentDamage, _)
-	if id and isUnitAlive(id)== true then Spring.DetachUnit(id,true); Spring.DestroyUnit(id, false, true) end
+	if id and isUnitAlive(id)== true then Spring.UnitDetach (id,true); Spring.DestroyUnit(id, true, false) end
 	explodeD(Spring.GetUnitPieceMap(unitID), SFX.SHATTER )
 	-- explodeD(Spring.GetUnitPieceMap(unitID),  SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
 

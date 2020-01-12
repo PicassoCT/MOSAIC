@@ -153,7 +153,13 @@ end
 
 function deactivateSatellite(id)
 	Spring.SetUnitNeutral(id, true)	
+	Spring.SetUnitBlocking(id , false, false, false)
 	-- setUnitValueExternal(id, VIEWRADIUS, 0)
+end
+
+function reactivateSatellite(id)
+	if directionalChangeTable[id] then directionalChangeTable[id] = nil end
+ Spring.SetUnitNeutral(id, false)
 end
 	
 local	satelliteStates={
@@ -175,10 +181,9 @@ local	satelliteStates={
 						timeOutTable[id]= timeOutTable[id] -1
 						
 						if timeOutTable[id] <= 0 then 
-							 timeOutTable[id] = nil
-							 Spring.SetUnitNeutral(id, false)
+							 timeOutTable[id] = nil							
 							 x,y,z = directionalArrest(x,y,z, direction)
-							if directionalChangeTable[id] then directionalChangeTable[id] = nil end
+							 reactivateSatellite(id)
 							return "flying", x,y,z
 						end
 					x,y,z = directionalArrestTimeOut(x,y,z, direction)
@@ -208,8 +213,10 @@ local	satelliteStates={
 			
 			Spring.MoveCtrl.SetPosition(id, x, SatelliteAltitudeTable[utype], z )
 			vx,vy,vz = absDistance(sx,x),0,absDistance(sz,z)
-			Spring.MoveCtrl.SetVelocity(id, vx, vy, vz)
-			Spring.MoveCtrl.SetRotation(id, 0, 0, 0)
+			if satelliteStates[id] ~= "timeout" then
+				Spring.MoveCtrl.SetVelocity(id, vx, vy, vz)
+			end
+			-- Spring.MoveCtrl.SetRotation(id, 0, 0, 0)
 		end
 	end
 end
