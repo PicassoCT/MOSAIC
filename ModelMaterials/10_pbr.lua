@@ -37,9 +37,12 @@ local function DrawUnit(unitID, material, drawMode)
 			end)
 		end
 		gl.BlendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ZERO, GL.ZERO)
+		if not material then Spring.Echo("Aborting draw, material missing");return end
 		local curShader = material.standardShader
+		if not curShader then Spring.Echo("CurrentShader is missing" ); return end
 		for _, uniformData in pairs(material.customStandardUniforms) do
-			if not uniformData.location then
+		
+			if not uniformData.location  and curShader then
 				uniformData.location = gl.GetUniformLocation(curShader, uniformData.name)
 			end
 			local valType = type(uniformData.value)

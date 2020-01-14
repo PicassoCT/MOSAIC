@@ -255,7 +255,7 @@ function getUnitType_BaseTypeMap(UnitDefs, culture)
 	civilianTypes = getTypeUnitNameTable(culture, "civilian", UnitDefs)
 	results ={}
 
-	echo("trucktypes:",truckTypes)
+	-- echo("trucktypes:",truckTypes)
 	for num, name in pairs(truckTypes) do
 		results[name]= "truck"
 	end

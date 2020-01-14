@@ -25,7 +25,7 @@ local OperativePropagator = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 				= "operativePropagatorscript.lua",
-	objectName        	= "operative_placeholder.s3o",
+	objectName        	= "operative_investigator.dae",
 	
 	Builder = true,
 	nanocolor=[[0 0 0]], --

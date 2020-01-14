@@ -24,7 +24,7 @@ local OperativeInvestigator = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 				= "operativeInvestigatorscript.lua",
-	objectName        	= "operative_placeholder.s3o",
+	objectName        	= "operative_investigator.dae",
 
 
 	

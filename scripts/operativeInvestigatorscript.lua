@@ -11,7 +11,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-gun = piece "gun"
+Pistol = piece "Pistol"
 
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
@@ -73,8 +73,8 @@ function spawnDecoyCivilian()
 end
 
 
-	boolCloaked = false
-
+boolCloaked = false
+Icon = piece("Icon")
 function cloakLoop()
 	local spGetUnitIsActive = Spring.GetUnitIsActive
 	local boolIsCurrentlyActive= spGetUnitIsActive(unitID)
@@ -143,7 +143,7 @@ end
 
 
 
-Spring.SetUnitNanoPieces(unitID, { gun })
+Spring.SetUnitNanoPieces(unitID, { Pistol })
 GameConfig = getGameConfig()
  raidDownTime = GameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = GameConfig.agentConfig.raidComRange
@@ -192,10 +192,11 @@ Spring.Echo("raidAimFunction")
 boolRecharge = raidDownTime
 return true
 end
-
+Shell1 = piece("Shell1")
 function pistolFireFunction(weaponID, heading, pitch)
-Spring.Echo("pistolFireFunction")
-return true
+	Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
+	Spring.Echo("pistolFireFunction")
+	return true
 end
 
 
@@ -206,8 +207,8 @@ SIG_GUN = 4
 
 WeaponsTable = {}
 function makeWeaponsTable()
-    WeaponsTable[1] = { aimpiece = gun, emitpiece = gun, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
-    WeaponsTable[2] = { aimpiece = gun, emitpiece = gun, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL}
+    WeaponsTable[1] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
+    WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL}
 end
 
 
@@ -257,4 +258,16 @@ function script.AimWeapon(weaponID, heading, pitch)
         end
     end
     return false
+end
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
 end

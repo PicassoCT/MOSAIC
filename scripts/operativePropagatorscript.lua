@@ -266,6 +266,17 @@ function script.AimWeapon(weaponID, heading, pitch)
     return false
 end
 
-
+Icon = piece("Icon")
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
+end
 
 
