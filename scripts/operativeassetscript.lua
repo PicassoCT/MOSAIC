@@ -139,9 +139,6 @@ function testAnimationLoop()
 			
 	end
 end
-function degToRad(val)
-return (val/180)*math.pi
-end
 
 
 uppperBodyAnimations = {
@@ -599,10 +596,12 @@ function cloakLoop()
 	end
 end
 function script.Activate()
+	SetUnitValue(COB.WANT_CLOAK, 1)
 	return 1
 end
 
 function script.Deactivate()
+	SetUnitValue(COB.WANT_CLOAK, 0)
     return 0
 end
 
