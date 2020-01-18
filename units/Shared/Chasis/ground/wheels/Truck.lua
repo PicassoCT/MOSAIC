@@ -102,9 +102,9 @@ local ground_truck_antiarmor = Truck:New{
 	},
 }
 
-local CivilianTruck = Truck:New(){
+local CivilianTruck = Truck:New{
 	name = "Civilian Vehicle",
-	description = "Locally assembled electric truck",
+	description = "locally assembled electric truck",
 	corpse				= "",
 	maxDamage = 500,
 	mass = 500,
@@ -184,22 +184,20 @@ local PoliceTruck = Truck:New{
 		baseclass		= "Truck", -- TODO: hacks
 	},
 }
-truck_arab0		 	= CivilianTruck:New()
-truck_arab0.objectName = [[truck_arab0.dae]]
-local truck_arab1		 	= truck_arab0
-truck_arab1.objectName = [[truck_arab1.dae]]
-local truck_arab2		 	=	truck_arab0
-truck_arab2.objectName = [[truck_arab2.dae]]
-local truck_arab3		 	=  truck_arab0
-truck_arab3.objectName = [[truck_arab3.dae]]
+
+CivilianTrucks ={}
+for i=0, 3 do
+CivilianTruck.objectName = "truck_arab"..i..".dae"
+CivilianTrucks["truck_arab"..i] = CivilianTruck:New()
+end
 
 return lowerkeys({
 	--Temp
 	["policetruck"]			 	= PoliceTruck:New(),
-	["truck_arab0"]			 	= truck_arab0,
-	["truck_arab1"]			 	= truck_arab1,
-	["truck_arab2"]			 	= truck_arab2,
-	["truck_arab3"]			 	= truck_arab3,
+	["truck_arab0"]			 	= CivilianTrucks["truck_arab0"],
+	["truck_arab1"]			 	= CivilianTrucks["truck_arab1"],
+	["truck_arab2"]			 	= CivilianTrucks["truck_arab2"],
+	["truck_arab3"]			 	= CivilianTrucks["truck_arab3"],
 	["ground_truck_mg"]		= ground_truck_mg:New(),
 	["ground_truck_ssied"]	= ground_truck_ssied:New(),
 	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New()

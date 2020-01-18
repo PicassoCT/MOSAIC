@@ -7,7 +7,7 @@ unitFactor= 0.5
 function getGameConfig()
 	return {
 	instance = {
-	culture = "arabic", -- "international", "europe", "china", "russia", "northamerica", "southamerica"
+	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
 	
 	},
 	
@@ -200,9 +200,19 @@ function getTranslation(cultureName)
 translation ={
 		["arabic"] = {
 			["house"] = {name= "house_arab", range=0},
-			["civilian"] = {name= "civilian_arab", range=3},
+			["civilian"] = {name= "civilian_arab", range=0},
 			["truck"] ={name = "truck_arab", range = 3}
-		}
+		},
+		["international"] = {
+			["house"] = {name= "house_int", range=0},
+			["civilian"] = {name= "civilian_int", range=0},
+			["truck"] ={name = "truck_int", range = 3}
+		},
+		["european"] = {
+			["house"] = {name= "house_european", range=0},
+			["civilian"] = {name= "civilian_european", range=0},
+			["truck"] ={name = "truck_european", range = 3}
+		},
 	}
 	return translation[cultureName]
 end
