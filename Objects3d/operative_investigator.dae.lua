@@ -73,8 +73,10 @@ model = {
 		texUnits = { -- substitute values
 			["TEX0"] = "operative_investigator_diffuse.png",
 			["TEX1"] = "operative_investigator_normal.png",
-			["TEX2"] = "operative_asset_metallicity.png",
+			["TEX2"] = "operative_investigator_normal.png",		
 			["TEX3"] = "operative_asset_roughness.png",
+			["TEX4"] = "operative_asset_metallicity.png",
+			["TEX5"] = "operative_investigator_normal.png",
 		}
 	},
 }

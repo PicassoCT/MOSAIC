@@ -8,7 +8,7 @@ local weaponDef = {
 	
 	model="sniperProj.s3o",
 	smokeTrail=true,
-	 soundFire = "sounds/weapons/sniper/sniperFire.ogg",
+	 soundStart = "sounds/weapons/sniper/sniperFire.ogg",
 	
 	areaOfEffect = 1,
 	--physics
@@ -27,10 +27,7 @@ local weaponDef = {
 	rgbColor = [[0.5 0.5 0.5]],		 	 
 	size = 12,
 	
-	
-	
-	---------------------------------------------------------------
-	
+
 	----------------------------------------------------------------
 	ImpulseBoost=2.8,
 	impulseFactor = 10,
