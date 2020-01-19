@@ -2,7 +2,17 @@
 local weaponName = "raidarrest"
 local weaponDef = {
     name = "Arrest Players & Raid Safehouses",
-    weaponType = [[LightningCannon]],
+	 weaponType = [[MissileLauncher]],
+	model = "RaidDroneProjectile.dae",
+	weaponVelocity = 150,
+	startVelocity  = 10,
+
+	--aiming behaviour
+	turret = true,
+	tracks = true,
+	noSelfDamage = true,
+	avoidFeature            = false,
+	avoidGround = true,
     areaOfEffect = 8,
     craterBoost = 0,
     craterMult = 0,
@@ -10,9 +20,8 @@ local weaponDef = {
         default = 1,
         HeavyArmor = 1,
     },
-	beamTTL = 20,
-    duration = 20,
-    fireStarter = 0,
+	burst = 15,
+	burstrate = 1,
     impactOnly = true,
 	 impulseBoost = 3,
     impulseFactor = 6,
@@ -26,12 +35,7 @@ local weaponDef = {
     rgbColor = [[0.0 0.5 0.8]],
     soundHit = "weapons/raid/flashbang.ogg",
     -- explosionGenerator = "custom:psiimpact",
-    FireStarter = 75,
     targetMoveError = 0.3,
-
-    texture1 = [[FreemanZone]],
-    thickness = 10,
-    turret = true,
     weaponVelocity = 400,
 }
 

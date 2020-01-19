@@ -186,7 +186,7 @@ local PoliceTruck = Truck:New{
 }
 
 CivilianTrucks ={}
-for i=0, 3 do
+for i=0, 5 do
 CivilianTruck.objectName = "truck_arab"..i..".dae"
 CivilianTrucks["truck_arab"..i] = CivilianTruck:New()
 end
@@ -198,6 +198,8 @@ return lowerkeys({
 	["truck_arab1"]			 	= CivilianTrucks["truck_arab1"],
 	["truck_arab2"]			 	= CivilianTrucks["truck_arab2"],
 	["truck_arab3"]			 	= CivilianTrucks["truck_arab3"],
+	["truck_arab4"]			 	= CivilianTrucks["truck_arab4"],
+	["truck_arab5"]			 	= CivilianTrucks["truck_arab5"],
 	["ground_truck_mg"]		= ground_truck_mg:New(),
 	["ground_truck_ssied"]	= ground_truck_ssied:New(),
 	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New()

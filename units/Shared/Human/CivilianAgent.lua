@@ -1,6 +1,6 @@
 local CivilianAgent = Human:New{
 	name = "Civilian Asset",
-	Description = " Recruited Civilian ",
+	Description = " recruited Civilian <spies/ militia> ",
 
 	corpse					  = "",
 	maxDamage         	  = 500,
@@ -24,7 +24,7 @@ local CivilianAgent = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 					= "civilianagentscript.lua",
-	objectName        	= "civilian.dae",
+	objectName        	= "civilian0_arab.dae",
 
 	canCloak =true,
 	cloakCost=0.0001,

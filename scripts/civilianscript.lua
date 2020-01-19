@@ -120,6 +120,7 @@ local bodyConfig={}
 		bodyConfig.boolHandbag =( iShoppingConfig == 4)
 		bodyConfig.boolLoaded = ( iShoppingConfig <  5)
 		bodyConfig.boolProtest = GG.GlobalGameState== GameConfig.GameState.anarchy
+		if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"] ) end
 	end
 
 function script.Create()

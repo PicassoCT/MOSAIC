@@ -6,9 +6,9 @@ include "lib_Build.lua"
 include "lib_mosaic.lua"
 myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
-echo("Loading operative Propagator script")
+
 local Animations = include('animation_assasin_female.lua')
-echo("Loading operative Propagator script animation")
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
 return damage
 end
@@ -92,13 +92,14 @@ boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
-echo("Create Propagator reached")
+-- echo("Create Propagator reached")
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
 -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideAll(unitID)
+
 	hideT(TablesOfPiecesGroups["SoftRobot"])
 	showT(upperBodyPieces)
 	showT(lowerBodyPieces)
@@ -112,7 +113,7 @@ echo("Create Propagator reached")
 	-- StartThread(testAnimationLoop)
 	StartThread(breathing)
 	StartThread(raidReactor)
-echo("Create complted")
+-- echo("Create complted")
 end
 
 function breathing()
@@ -742,18 +743,9 @@ end
 
 
 
+
 function script.AimWeapon(weaponID, heading, pitch)
-    if WeaponsTable[weaponID] then
-	   WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
-       WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
-	   
-        if WeaponsTable[weaponID].aimfunc then		
-            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
-        else
-            return true
-        end
-    end
-    return false
+	return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)		
 end
 
 Icon = piece("Icon")

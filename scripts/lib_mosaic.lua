@@ -200,8 +200,8 @@ function getTranslation(cultureName)
 translation ={
 		["arabic"] = {
 			["house"] = {name= "house_arab", range=0},
-			["civilian"] = {name= "civilian_arab", range=0},
-			["truck"] ={name = "truck_arab", range = 3}
+			["civilian"] = {name= "civilian_arab", range=3},
+			["truck"] ={name = "truck_arab", range = 5}
 		},
 		["international"] = {
 			["house"] = {name= "house_int", range=0},
