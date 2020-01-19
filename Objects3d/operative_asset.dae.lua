@@ -1,10 +1,19 @@
 model = { 
 	radius = 25.0,
 	height = 40,
-	tex1 = "operative_asset_diffuse.png",
-	tex2 = "operative_asset_normal.png",
-	tex3 = "operative_asset_metalicity.png",
-	tex4 = "operative_asset_roughness.png",
+	--new version following https://springrts.com/wiki/Shaders:IvandPBRShader
+	tex1 = "operative_asset_diffuse.tga",
+	tex2 = "operative_asset_pbr.tga",
+	tex3 = "operative_asset_normalpha.tga",
+	
+	-- DELME: old version 
+	-- tex1 = "operative_asset_diffuse.png",
+	-- tex2 = "operative_asset_metalicity.png",
+	-- tex3 = "operative_asset_normal.png",
+	-- tex4 = "operative_asset_occlussion.png",
+	-- tex5 = "operative_asset_roughness.png",
+	
+	
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 0, 0},
 	--rotAxisSigns = {-1, -1, -1}
@@ -70,10 +79,9 @@ model = {
 		--toneMapping = "aces", --valid values are "aces", "uncharted2", "filmic".
 		gammaCorrection = true, -- do gamma correction (RGB-->sRGB) on the final color.
 		texUnits = { -- substitute values
-			["TEX0"] = "operative_asset_diffuse.png",
-			["TEX1"] = "operative_asset_normal.png",
-			["TEX2"] = "operative_asset_metalicity.png",
-			["TEX3"] = "operative_asset_roughness.png",
+			["TEX0"] = "operative_asset_diffuse.tga",
+			["TEX1"] = "operative_asset_pbr.tga",
+			["TEX2"] = "operative_asset_normalpha.tga",
 		}
 	},
 }

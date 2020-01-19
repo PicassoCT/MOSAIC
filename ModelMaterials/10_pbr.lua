@@ -36,13 +36,13 @@ local function DrawUnit(unitID, material, drawMode)
 				brdflutTexInitialized = true
 			end)
 		end
-		gl.BlendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ZERO, GL.ZERO)
-		if not material then Spring.Echo("Aborting draw, material missing");return end
-		local curShader = material.standardShader
-		if not curShader then Spring.Echo("CurrentShader is missing" ); return end
-		for _, uniformData in pairs(material.customStandardUniforms) do
 		
-			if not uniformData.location  and curShader then
+		gl.BlendFuncSeparate(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ZERO, GL.ZERO)
+		local curShader = material.standardShader
+		
+		if not curShader then return end
+		for _, uniformData in pairs(material.customStandardUniforms) do
+			if not uniformData.location then
 				uniformData.location = gl.GetUniformLocation(curShader, uniformData.name)
 			end
 			local valType = type(uniformData.value)
