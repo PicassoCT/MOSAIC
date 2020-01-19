@@ -35,6 +35,9 @@ function getGameConfig()
 	 --civilianbehaviour
 	 civilianPanicRadius = 350,
 	 civilianInterestRadius = 150,
+	 generalInteractionDistance= 250,
+	 minConversationLengthFrames= 3 * 30,
+	 maxConversationLengthFrames= 25 *30,
 	 groupChatDistance = 150,
 	 inHundredChanceOfInterestInDisaster = 75,
 	 inHundredChanceOfDisasterWailing = 35,

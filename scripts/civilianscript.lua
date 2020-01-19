@@ -105,6 +105,7 @@ boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
 boolAiming = false
+
 home ={}
 
 loadMax = 8
@@ -807,11 +808,22 @@ UpperAnimationStateFunctions ={
 								return eAnimState.walking									
 							end	
 
-							if bodyConfig.boolLoaded == false and math.random(1,100) > 50 then
+							if bodyConfig.boolLoaded == false then
+						
+								if math.random(1,100) > 75  then
 									playUpperBodyIdleAnimation()
 									WaitForTurns(upperBodyPieces)
-									resetT(upperBodyPieces, math.pi,false, true)
-								return eAnimState.walking
+									-- resetT(upperBodyPieces, math.pi,false, true)
+									return eAnimState.walking
+								else
+									GameFrame= Spring.GetGameFrame()
+									Turn(UpArm1, z_axis,math.rad(-25),math.pi)
+									Turn(UpArm2, z_axis,math.rad(25),math.pi)
+									Turn(UpArm1, x_axis,math.rad(25*math.sin(unitID + GameFrame/15)),math.pi*2)
+									Turn(UpArm2, x_axis,math.rad(25*math.cos(unitID + GameFrame/15)),math.pi*2)
+									WaitForTurns(upperBodyPieces)
+									return eAnimState.walking
+								end								
 							end											
 					
 						return eAnimState.walking

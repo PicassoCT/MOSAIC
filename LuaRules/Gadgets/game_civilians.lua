@@ -23,7 +23,8 @@ end
 	
 	statistics ={}
 	local GameConfig = getGameConfig()
-	local spGetPosition = Spring.GetUnitPosition
+	local spGetUnitPosition = Spring.GetUnitPosition
+	local spGetUnitDefID = Spring.GetUnitDefID
 	local currentGlobalGameState = GG.GlobalGameState or  GameConfig.GameState.normal
 	local UnitDefNames = getUnitDefNames(UnitDefs)
 	local PoliceTypes = getPoliceTypes(UnitDefs)
@@ -57,13 +58,13 @@ end
 	
 
 	function getPoliceSpawnLocation(suspect)
-		sx,sy,sz = Spring.GetUnitPosition(suspect)
+		sx,sy,sz = spGetUnitPosition(suspect)
 		Tmax = getAllNearUnit(suspect, GameConfig.policeSpawnMinDistance)
 		Tmin = getAllNearUnit(suspect, GameConfig.policeSpawnMaxDistance)
 		T= removeDictFromDict(Tmax, Tmin)
 		T= process(T,
 				function (id)
-					if  houseTypeTable[Spring.GetUnitDefID(id)] then
+					if  houseTypeTable[spGetUnitDefID(id)] then
 						return id
 					end
 				end
@@ -75,7 +76,7 @@ end
 		
 		if count(T) > 0 then
 			element= randT(T)
-			dx,py,dz = Spring.GetUnitPosition(element)		
+			dx,py,dz = spGetUnitPosition(element)		
 			if dx then
 				px, pz= dx, dz
 			end
@@ -94,12 +95,12 @@ end
 	end
 
 	function makePasserBysLook(unitID)
-		ux,uy,uz= Spring.GetUnitPosition(unitID)
+		ux,uy,uz= spGetUnitPosition(unitID)
 		process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
 			function(id)
 				--filter out civilians
 				if  id then
-				defID = Spring.GetUnitDefID(id)				
+				defID = spGetUnitDefID(id)				
 					if defID and PanicAbleCivliansTable[defID] then
 						return id
 					end
@@ -151,7 +152,7 @@ end
 	end
 	
 	function spawnRubbleHeapAt(id)
-		x,y,z = Spring.GetUnitPosition(id)
+		x,y,z = spGetUnitPosition(id)
 		if x then
 		
 			rubbleHeapID= Spring.CreateUnit(randDict(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
@@ -466,7 +467,7 @@ end
 		startNode = randT(RouteTabel)
 		--assert(doesUnitExistAlive(startNode) == true)
 		--assert(startNode)
-		x,y,z= Spring.GetUnitPosition(startNode)
+		x,y,z= spGetUnitPosition(startNode)
 		--assert(x)
 		--assert(z)
 		return x,y,z , startNode
@@ -478,8 +479,8 @@ end
 
 		local Route = {}
 		
-		x1,y1, z1 = spGetPosition(unitOne)
-		x2, y2, z2 = spGetPosition(unitTwo)
+		x1,y1, z1 = spGetUnitPosition(unitOne)
+		x2, y2, z2 = spGetUnitPosition(unitTwo)
 		index= 1
 		Route[index]= {}
 		Route[index].x = x1
@@ -636,7 +637,7 @@ end
 		hp = Spring.GetUnitHealth(myID)
 		if not persPack.myHP then persPack.myHP = hp end
 		
-		x,y,z = Spring.GetUnitPosition(myID)
+		x,y,z = spGetUnitPosition(myID)
 		if not x then 
 			return nil, persPack
 		end
@@ -676,7 +677,7 @@ end
 		end
 		
 		---ocassionally detour toward the nearest ally or enemy
-		if math.random(0, 42) > 35 and TruckTypeTable[persPack.mydefID] ~= nil then
+		if math.random(0, 42) > 35 and civilianWalkingTypeTable[persPack.mydefID]  then
 			local partnerID
 			
 			if math.random(0,1)==1 then
@@ -685,26 +686,38 @@ end
 				partnerID = Spring.GetUnitNearestEnemy(myID)
 			end
 			
-			if partnerID and distanceUnitToUnit(myID, partnerID) < 150 then
-				px,py,pz= Spring.GetUnitPosition(partnerID)
+			if partnerID and distanceUnitToUnit(myID, partnerID) < GameConfig.generalInteractionDistance then
+				px,py,pz= spGetUnitPosition(partnerID)
 				Command(myID, "go", {x= px ,y= py ,z=pz}, {})
 				Command(partnerID, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
 			
-				--assemble a small group for communication
+				--assemble a small group for communication 
 				if math.random(0,1)==1 then
-					process(getAllNearUnit(myID, GameConfig.groupChatDistance),
+	
+					T= process(getAllNearUnit(myID, GameConfig.groupChatDistance),
 					function (id)
-						if Spring.GetUnitTeam(id) == persPack.myTeam then 
+						if Spring.GetUnitTeam(id) == persPack.myTeam and civilianWalkingTypeTable[spGetUnitDefID(id)] then 
 							return id
 						end
 					end,
 					function(id)
-						Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
-						UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.walking, true, true)
+						if distanceUnitToPoint(id, myID) > GameConfig.groupChatDistance/2 then
+							Command(id, "go", {x= px + math.random(-20,20) ,y= py ,z=pz+ math.random(-20,20)}, {})
+							UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.walking, true, true)
+						else
+							Command(id, "stop")
+							UnitSetAnimationState(id, CivAnimStates.Talking, CivAnimStates.stop, true, true)
+
+						end
+						
+						
+						return id
 					end
 					)
+			
 				end
-				return frame + math.random(30*5,30*25) , persPack
+				
+				return frame + math.random(GameConfig.minConversationLengthFrames, GameConfig.maxConversationLengthFrames) , persPack
 			end
 		end
 		
@@ -745,7 +758,7 @@ end
 		targetNodeID = math.random(2,#RouteTabel[startNodeID])
 		--assert(RouteTabel[startNodeID][targetNodeID])
 		
-		mydefID = Spring.GetUnitDefID(uID)
+		mydefID = spGetUnitDefID(uID)
 		
 		assert(not Spring.GetUnitIsDead(startNodeID) )
 		assert(not Spring.GetUnitIsDead(RouteTabel[startNodeID][targetNodeID]) )
