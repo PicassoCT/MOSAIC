@@ -76,6 +76,7 @@ local spGetUnitViewPosition  = Spring.GetUnitViewPosition
 local spGetUnitDirection     = Spring.GetUnitDirection
 local spGetHeadingFromVector = Spring.GetHeadingFromVector
 local spGetUnitIsActive      = Spring.GetUnitIsActive
+local spGetUnitRulesParam    = Spring.GetUnitRulesParam
 local spGetGameFrame         = Spring.GetGameFrame
 local spGetFrameTimeOffset   = Spring.GetFrameTimeOffset
 local spGetUnitPieceList     = Spring.GetUnitPieceList
@@ -84,7 +85,9 @@ local spGetLocalAllyTeamID   = Spring.GetLocalAllyTeamID
 local scGetReadAllyTeam      = Script.GetReadAllyTeam
 local spGetUnitPieceMap      = Spring.GetUnitPieceMap
 local spValidUnitID          = Spring.ValidUnitID
+local spGetUnitIsStunned     = Spring.GetUnitIsStunned
 local spGetProjectilePosition = Spring.GetProjectilePosition
+local spGetUnitHealth		 = Spring.GetUnitHealth
 
 local glUnitPieceMatrix = gl.UnitPieceMatrix
 local glPushMatrix      = gl.PushMatrix
@@ -128,10 +131,14 @@ canDistortions = false --// check Initialize()
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local reflectionrefractionEnabled = false
+
 --// widget/gadget handling
 local handler = (widget and widgetHandler)or(gadgetHandler)
 local GG      = (widget and WG)or(GG)
 local VFSMODE = (widget and VFS.RAW_FIRST)or(VFS.ZIP_ONLY)
+
+local this = widget or gadget
 
 --// locations
 local LUPS_LOCATION    = 'lups/'
@@ -148,8 +155,6 @@ VFS.Include(HEADERS_DIRNAME .. 'figures.lua',nil,VFSMODE)
 VFS.Include(HEADERS_DIRNAME .. 'vectors.lua',nil,VFSMODE)
 VFS.Include(HEADERS_DIRNAME .. 'hsl.lua',nil,VFSMODE)
 VFS.Include(HEADERS_DIRNAME .. 'nanoupdate.lua',nil,VFSMODE)
---VFS.Include("LuaRules/Utilities/unitrendering.lua", nil, VFSMODE)
-
 
 --// load binary insert library
 VFS.Include(HEADERS_DIRNAME .. 'tablebin.lua')
@@ -182,40 +187,25 @@ LocalAllyTeamID = 0
 thisGameFrame   = 0
 frameOffset     = 0
 LupsConfig      = {}
-local boolversion=Game.version=="0.76b1"
-local noDrawUnits = {}
 
+local noDrawUnits = {}
 function SetUnitLuaDraw(unitID,nodraw)
-  if (nodraw) then
-    noDrawUnits[unitID] = (noDrawUnits[unitID] or 0) + 1
-    if (noDrawUnits[unitID]==1) then
-      --if (Game.version=="0.76b1") then
-	if Spring.UnitRendering then  
-		if   Spring.UnitRendering.ActivateMaterial then
-        Spring.UnitRendering.ActivateMaterial(unitID,1)
+	if (nodraw) then
+		noDrawUnits[unitID] = (noDrawUnits[unitID] or 0) + 1
+		if (noDrawUnits[unitID]==1) then
+			Spring.UnitRendering.ActivateMaterial(unitID,1)
+			--Spring.UnitRendering.SetLODLength(unitID,1,-1000)
+			for pieceID in ipairs(Spring.GetUnitPieceList(unitID) or {}) do
+				Spring.UnitRendering.SetPieceList(unitID,1,pieceID,nilDispList)
+			end
 		end
-        --Spring.UnitRendering.SetLODLength(unitID,1,-1000)
-        for pieceID in ipairs(Spring.GetUnitPieceList(unitID) or {}) do
-          Spring.UnitRendering.SetPieceList(unitID,1,pieceID,nilDispList)
-        end
-      --else
-      --  Spring.UnitRendering.SetUnitLuaDraw(unitID,true)
-      --end
-    end
-    end
-  else
-    noDrawUnits[unitID] = (noDrawUnits[unitID] or 0) - 1
-    if (noDrawUnits[unitID]==0) then
-      --if (Game.version=="0.76b1") then
-	  	if Spring.UnitRendering and Spring.UnitRendering.DeactivateMaterial then  
-        Spring.UnitRendering.DeactivateMaterial(unitID,1)
-      --else
-      --  Spring.UnitRendering.SetUnitLuaDraw(unitID,false)
-      --end
-      noDrawUnits[unitID] = nil
-	  end
-    end
-  end
+	else
+		noDrawUnits[unitID] = (noDrawUnits[unitID] or 0) - 1
+		if (noDrawUnits[unitID]==0) then
+			Spring.UnitRendering.DeactivateMaterial(unitID,1)
+			noDrawUnits[unitID] = nil
+		end
+	end
 end
 
 local function DrawUnit(_,unitID,drawMode)
@@ -245,20 +235,20 @@ local DistortionClass
 
 local files = VFS.DirList(PCLASSES_DIRNAME, "*.lua",VFSMODE)
 for _,filename in ipairs(files) do
-  local Class = VFS.Include(filename,nil,VFSMODE)
-  if (Class) then
-    if (Class.GetInfo) then
-      Class.pi = Class.GetInfo()
-      local sClassName = string.lower(Class.pi.name)
-      if (fxClasses[sClassName]) then
-        print(PRIO_LESS,'LUPS: duplicated particle class name "' .. sClassName .. '"')
-      else
-        fxClasses[sClassName] = Class
-      end
-    else
-      print(PRIO_ERROR,'LUPS: "' .. Class .. '" is missing GetInfo() ')
-    end
-  end
+	local Class = VFS.Include(filename,nil,VFSMODE)
+	if (Class) then
+		if (Class.GetInfo) then
+			Class.pi = Class.GetInfo()
+			local sClassName = string.lower(Class.pi.name)
+			if (fxClasses[sClassName]) then
+				print(PRIO_LESS,'LUPS: duplicated particle class name "' .. sClassName .. '"')
+			else
+				fxClasses[sClassName] = Class
+			end
+		else
+			print(PRIO_ERROR,'LUPS: "' .. Class .. '" is missing GetInfo() ')
+		end
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -391,6 +381,11 @@ function RemoveParticles(particlesID)
       end
     end
     fx:Destroy()
+  if fx.lightID then
+	      if WG and WG['lighteffects'] then
+	        WG['lighteffects'].removeLight(fx.lightID)
+	      end
+ end
     particles[particlesID] = nil
     particlesCount = particlesCount-1;
     return
@@ -502,6 +497,9 @@ local function IsUnitPositionKnown(unitID)
 		return true
 	end
 	local targetVisiblityState = Spring.GetUnitLosState(unitID, LocalAllyTeamID, true) 
+	if not targetVisiblityState then
+		return false
+	end
 	local inLos = (targetVisiblityState == 15)
 	if inLos then
 		return true
@@ -522,9 +520,9 @@ local function RadarDotCheck(unitID)
 	return true
 end
 
-local function Draw(extension,layer)
-  local FxLayer = RenderSequence[layer];
-  if (not FxLayer) then return end
+local function Draw(extension,layer,water)
+	local FxLayer = RenderSequence[layer];
+	if (not FxLayer) then return end
 
   local BeginDrawPass = "BeginDraw"..extension
   local DrawPass      = "Draw"..extension
@@ -547,61 +545,69 @@ local function Draw(extension,layer)
 
             if (unitID>-1) then
 
-              ------------------------------------------------------------------------------------
-              -- render in unit/piece space ------------------------------------------------------
-              ------------------------------------------------------------------------------------
-              glPushMatrix()
-              if gadget and not IsUnitPositionKnown(unitID) then
-                local x, y, z = Spring.GetUnitPosition(unitID)
-                local a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44 = Spring.GetUnitTransformMatrix(unitID)
-                gl.MultMatrix(a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, x, y, z , a44)
-              else
-                glUnitMultMatrix(unitID)
-              end
-              
+							------------------------------------------------------------------------------------
+							-- render in unit/piece space ------------------------------------------------------
+							------------------------------------------------------------------------------------
+							glPushMatrix()
+							if gadget and not IsUnitPositionKnown(unitID) then
+								local x, y, z = Spring.GetUnitPosition(unitID)
+								local a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44 = Spring.GetUnitTransformMatrix(unitID)
+								if a11 then
+									gl.MultMatrix(a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, x, y, z , a44)
+								else
+									glUnitMultMatrix(unitID)
+								end
+							else
+								glUnitMultMatrix(unitID)
+							end
+							
 
-              --// render effects
-              for i=1,#UnitEffects do
-                local fx = UnitEffects[i]
-                if (fx.alwaysVisible or fx.visible) then
-                  if (fx.piecenum) then
-                    --// enter piece space
-                    glPushMatrix()
-                      glUnitPieceMultMatrix(unitID,fx.piecenum)
-                      glScale(1,1,-1)
-                      drawfunc(fx)
-                    glPopMatrix()
-                    --// leave piece space
-                  else
-                    fx[DrawPass](fx)
-                  end
-                end
-              end
+							--// render effects
+							for i=1,#UnitEffects do
+								local fx = UnitEffects[i]
+								if (fx.alwaysVisible or fx.visible) then
+									if not water or not fx.nowater then
+										if (fx.piecenum) then
+											--// enter piece space
+											glPushMatrix()
+												glUnitPieceMultMatrix(unitID,fx.piecenum)
+												glScale(1,1,-1)
+												drawfunc(fx)
+											glPopMatrix()
+											--// leave piece space
+										else
+											fx[DrawPass](fx)
+										end
+									end
+								end
+							end
 
               --// leave unit space
               glPopMatrix()
 
             else
 
-              ------------------------------------------------------------------------------------
-              -- render in world space -----------------------------------------------------------
-              ------------------------------------------------------------------------------------
-              for i=1,#UnitEffects do
-                local fx = UnitEffects[i]
-                if (fx.alwaysVisible or fx.visible) then
-                  glPushMatrix()
-                  if fx.projectile and not fx.worldspace then
-                    local x,y,z = spGetProjectilePosition(fx.projectile)
-                    glTranslate(x,y,z)
-                  end
-                  drawfunc(fx)
-                  glPopMatrix()
-                end
-              end -- for
-            end -- if
-          end  --if
-        end  --for
-      end
+							------------------------------------------------------------------------------------
+							-- render in world space -----------------------------------------------------------
+							------------------------------------------------------------------------------------
+							for i=1,#UnitEffects do
+								local fx = UnitEffects[i]
+								if (fx.alwaysVisible or fx.visible) then
+									if not water or not fx.nowater then
+										glPushMatrix()
+										if fx.projectile and not fx.worldspace then
+											local x,y,z = spGetProjectilePosition(fx.projectile)
+											glTranslate(x,y,z)
+										end
+										drawfunc(fx)
+										glPopMatrix()
+									end
+								end
+							end -- for
+						end -- if
+					end  --if
+				end  --for
+			end
 
       partClass[EndDrawPass]()
 
@@ -696,8 +702,7 @@ end
 local activeUnit = {}
 local activeUnitCheckTime = {}
 local ACTIVE_CHECK_PERIOD = 10
-local spGetUnitRulesParam = Spring.GetUnitRulesParam
-local spGetUnitIsStunned = Spring.GetUnitIsStunned
+
 local function GetUnitIsActive(unitID)
 	if activeUnitCheckTime[unitID] and activeUnitCheckTime[unitID] > thisGameFrame then
 		return activeUnit[unitID]
@@ -763,8 +768,20 @@ end
 local function IsUnitFXVisible(fx)
 	local unitActive = true
 	local unitID = fx.unit
+	local unitHealth = spGetUnitHealth(unitID)
+	if not unitHealth or unitHealth <= 0 then
+		return false
+	end
 	if fx.onActive then
 		unitActive = GetUnitIsActive(unitID)
+	end
+	if fx.xzVelocity then
+		local uvx,_,uvz = Spring.GetUnitVelocity(unitID)
+		if math.abs(uvx)+math.abs(uvz) > fx.xzVelocity then
+			unitActive = true
+		else
+			return false
+		end
 	end
 	--Spring.Utilities.UnitEcho(unitID, "w")
 	if (not fx.onActive) or (unitActive) then
@@ -816,9 +833,7 @@ local function CreateVisibleFxList()
 	local removeFX = {}
 	local removeCnt = 1
 
-	local foo = 0
 	for _,fx in pairs(particles) do
-		foo = foo + 1
 		if ((fx.unit or -1) > -1) then
 			fx.visible = IsUnitFXVisible(fx)
 			if (fx.visible) then
@@ -842,7 +857,7 @@ local function CreateVisibleFxList()
 			end
 		end
 	end
-	--Spring.Echo("Lups fx cnt", foo)
+	--Spring.Echo("Lups fx cnt", particles.GetIndexMax())
 
 	for i=1,removeCnt-1 do
 		RemoveParticles(removeFX[i])
@@ -887,7 +902,9 @@ end
 
 --// needed to allow to use RemoveParticles in :Update of the particleclasses
 local fxRemoveList = {}
-function BufferRemoveParticles(id) fxRemoveList[#fxRemoveList+1] = id end
+function BufferRemoveParticles(id)
+	fxRemoveList[#fxRemoveList+1] = id
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -941,7 +958,7 @@ local function GameFrame(_,n)
           partFx.dieGameFrame = partFx.dieGameFrame + partFx.life
         end
       else
-        RemoveParticles(partFx.id)
+        	BufferRemoveParticles(partFx.id)
       end
     else
       --// update particles
@@ -951,19 +968,20 @@ local function GameFrame(_,n)
     end
   end
 
-  --// now we can remove them
-  RemoveParticles = RemoveParticles_old
-  if (#fxRemoveList>0) then
-    for i=1,#fxRemoveList do
-      RemoveParticles(fxRemoveList[i])
-    end
-    fxRemoveList = {}
-  end
+	--// now we can remove particles
+	if (#fxRemoveList>0) then
+		for i=1,#fxRemoveList do
+			RemoveParticles(fxRemoveList[i])
+		end
+		fxRemoveList = {}
+	end
 end
 
 local function Update(_,dt)
-  --// update frameoffset
-  frameOffset = spGetFrameTimeOffset()
+	UpdateAllyTeamStatus()
+
+	--// update frameoffset
+	frameOffset = spGetFrameTimeOffset()
 
   --// Game Frame Update
   local x = spGetGameFrame()
@@ -972,12 +990,23 @@ local function Update(_,dt)
     lastGameFrame = x
   end
 
-  --// check which fxs are visible
-  anyFXVisible = false
-  anyDistortionsVisible = false
-  if (next(particles)) then
-    CreateVisibleFxList()
-  end
+	--// check which fxs are visible
+	anyFXVisible = false
+	anyDistortionsVisible = false
+	if (next(particles)) then
+		CreateVisibleFxList()
+	end
+	if reflectionrefractionEnabled and Spring.GetConfigInt("lupsreflectionrefraction", 0) ~= 1 then
+		handler:RemoveCallIn("DrawWorldReflection")
+		handler:RemoveCallIn("DrawWorldRefraction")
+		reflectionrefractionEnabled = false
+		Spring.Echo("Lups reflection and refraction pass Disabled")
+	elseif not reflectionrefractionEnabled and Spring.GetConfigInt("lupsreflectionrefraction", 0) ~= 0 then
+		handler:UpdateCallIn("DrawWorldReflection")
+		handler:UpdateCallIn("DrawWorldRefraction")
+		reflectionrefractionEnabled = true
+		Spring.Echo("Lups reflection and refraction pass Enabled")
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -1081,6 +1110,7 @@ local function Initialize()
   GG.Lups.RemoveParticles   = RemoveParticles
   GG.Lups.AddParticlesArray = AddParticlesArray
   GG.Lups.HasParticleClass  = HasParticleClass
+  GG.Lups.IsPosInLos        = IsPosInLos
 
   for fncname,fnc in pairs(GG.Lups) do
     handler:RegisterGlobal('Lups_'..fncname,fnc)
@@ -1116,8 +1146,11 @@ this.Initialize = Initialize
 this.Shutdown   = Shutdown
 this.DrawWorldPreUnit    = DrawParticlesOpaque
 this.DrawWorld           = DrawParticles
-this.DrawWorldReflection = DrawParticlesWater
-this.DrawWorldRefraction = DrawParticlesWater
+if Spring.GetConfigInt("lupsreflectionrefraction", 0) == 1 then
+	reflectionrefractionEnabled = true
+	this.DrawWorldReflection = DrawParticlesWater
+	this.DrawWorldRefraction = DrawParticlesWater
+end
 this.ViewResize = ViewResize
 this.Update     = Update
 if gadget then

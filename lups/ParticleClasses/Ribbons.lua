@@ -162,9 +162,10 @@ end
 function Ribbon.Initialize()
   RibbonShader = gl.CreateShader({
     vertex = [[
+	  #version 150 compatibility
       uniform float width;
       uniform int   quads;
-      uniform vec3  oldPos[32];
+      uniform vec3  oldPos[256];
 
       varying vec2 texCoord;
 
@@ -217,7 +218,7 @@ function Ribbon.Initialize()
   widthLoc = gl.GetUniformLocation(RibbonShader, 'width')
   quadsLoc = gl.GetUniformLocation(RibbonShader, 'quads')
 
-  for i=1,32 do
+  for i=1,256 do
     oldPosUniform[i] = gl.GetUniformLocation(RibbonShader,"oldPos["..(i-1).."]")
   end
 end
