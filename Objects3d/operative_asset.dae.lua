@@ -5,13 +5,7 @@ model = {
 	tex1 = "operative_asset_diffuse.tga",
 	tex2 = "operative_asset_pbr.tga",
 	tex3 = "operative_asset_normalpha.tga",
-	
-	-- DELME: old version 
-	-- tex1 = "operative_asset_diffuse.png",
-	-- tex2 = "operative_asset_metalicity.png",
-	-- tex3 = "operative_asset_normal.png",
-	-- tex4 = "operative_asset_occlussion.png",
-	-- tex5 = "operative_asset_roughness.png",
+
 	
 	
 	--tex2 = "armtech_tex2.dds",
@@ -81,7 +75,7 @@ model = {
 		texUnits = { -- substitute values
 			["TEX0"] = "operative_asset_diffuse.tga",
 			["TEX1"] = "operative_asset_pbr.tga",
-			["TEX2"] = "operative_asset_normalpha.tga",
+			["NORMALTEX"] = "operative_asset_normalpha.tga",
 		}
 	},
 }
