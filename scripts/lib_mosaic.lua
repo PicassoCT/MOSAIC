@@ -657,7 +657,8 @@ function getDecalMap(culture)
 							rural={
 								"house_arab_decal8",
 								"house_arab_decal7",
-								"house_arab_decal4"
+								"house_arab_decal4",
+								"house_arab_decal10"
 							},						
 							urban={
 							"house_arab_decal1",

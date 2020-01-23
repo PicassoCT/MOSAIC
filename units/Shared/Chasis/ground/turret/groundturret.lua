@@ -3,7 +3,7 @@ local groundturretssied =  Turret:New{
 	Description = " MOSAIC Standardized Smart Improvised Explosive Device ",
 	
 	objectName = "ground_turret_sied.dae",
-	script = "ground_turret_sied.lua.lua",
+	script = "ground_turret_sied.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -29,6 +29,8 @@ local groundturretssied =  Turret:New{
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
+	canSelfD = true,
+	canManualFire  = true,
 
 	--canHover=true,
 	CanAttack = true,
@@ -167,6 +169,8 @@ local ground_turret_antiarmor =  Turret:New{
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
+	canSelfD = true,
+	canManualFire  = true,
 
 	--canHover=true,
 	CanAttack = true,
@@ -178,6 +182,14 @@ local ground_turret_antiarmor =  Turret:New{
 	LeaveTracks = false, 
 	canCloak =true,
 	
+	cloakCost=0.0001,
+
+	minCloakDistance =  5,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
+
 	
 	Category = [[ARMOR GROUND BUILDING]],
 
@@ -261,7 +273,7 @@ local ground_turret_weevillauncher =  Turret:New{
 				
 	weapons = {
 		[1]={name  = "javelinrocket",
-			onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+			onlyTargetCategory = [[BUILDING GROUND VEHICLE ARMOR]],
 			},
 			
 		},	

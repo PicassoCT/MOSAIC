@@ -17,9 +17,12 @@ local Vehicle = Unit:New{
 
 local Truck = Vehicle:New{
 	canMove 			= true,
+	canAttack 			= true,
+	canManualFire 		= true,
 	category 			= "CIVILIAN VEHICLE GROUND",
 	explodeAs          	= "mechexplode",
 	leaveTracks			= true,	
+	isFirePlatform  	= true,
 	movementClass   	= "VEHICLE",
 	noChaseCategory		= "civilian air",
 	trackType			= "Thick",

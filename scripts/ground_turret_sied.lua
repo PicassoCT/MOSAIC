@@ -9,13 +9,12 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
+center = piece "center001"
 Turret = piece "Turret"
-aimpiece = piece "aimpiece"
+aimpiece = Turret
 SIG_GUARDMODE = 1
 
 function script.Create()
-    generatepiecesTableAndArrayCode(unitID)
 	resetAll(unitID)
 	Hide(aimpiece)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -23,7 +22,7 @@ function script.Create()
 end
 
 boolAiming = false
-
+local transporterID 
 function orderTransfer()
 	while true do
 		while isTransported(unitID)== true do
@@ -34,7 +33,9 @@ function orderTransfer()
 			end
 			Sleep(100)
 		end
-		Spring.SetUnitNoSelect(transporterID, false)
+		if transporterID then
+			Spring.SetUnitNoSelect(transporterID, false)
+		end
 		Sleep(100)
 	end
 end
@@ -42,36 +43,29 @@ end
 
 
 function script.Killed(recentDamage, _)
-		
+	if transporterID and doesUnitExistAlive(transporterID)== true then
+		Spring.DestroyUnit(transporterID, false, true)
+	end
     --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
     return Turret
 end
 
-
-
 function script.QueryWeapon1()
-    return Turret
+    return center
 end
 
 function script.AimWeapon1(Heading, pitch)
-
     return true
 end
-
-
 
 function script.FireWeapon1()
-	StartThread(guardSwivelTurret)
     return true
 end
-
-
 
 function script.StartMoving()
 end
@@ -88,6 +82,3 @@ function script.Deactivate()
 
     return 0
 end
-
-
-

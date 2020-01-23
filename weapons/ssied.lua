@@ -3,13 +3,16 @@ local weaponDef = {
     name = "Standardized Smart Improvised Explosive Device",
       --weaponType=[[Cannon]],
     rendertype = 4,
-
+	canAttackGround  = true	,
+	proximityPriority  = 2.0,
     reloadtime = 19,
     CameraShake = 6,
     accuracy = 10,
     explosionGenerator = "custom:bigbulletimpact",
     avoidFeature = false,
     avoidFriendly = false,
+	collideFriendly  = false,
+	collideFirebase = false,
     ImpulseBoost = 1.2,
     ImpulseFactor = 3,
     damage = {
