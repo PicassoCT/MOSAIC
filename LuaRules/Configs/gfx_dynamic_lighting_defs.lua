@@ -26,6 +26,9 @@ local copyLightDefs = {
 		["javelinrocket"  ] = "rocket",
 		["tankcannon"  ] = "cannon",
 		["machinegun"  ] = "machinegunsalvo",
+		["railgun"  ] = "plasmarail",
+		["ssied"  ] = "improvisedexplosivedevice",
+
 		
 	},
 }
@@ -52,7 +55,7 @@ local dynLightDefs = {
 			},
 
 			-- explodeas/selfdestructas lights for various large units
-			["godrod"] = {
+			["impactor"] = {
 				explosionLightDef = {
 					diffuseColor      = {1.0,                   1.0,                   1.0                  },
 					specularColor     = {1.0 * rgbSpecMults[1], 1.0 * rgbSpecMults[2], 1.0 * rgbSpecMults[3]},
@@ -66,7 +69,7 @@ local dynLightDefs = {
 			},
 
 
-			["javelinrocket"] = {
+			["rocket"] = {
 				projectileLightDef = {
 					diffuseColor      = {0.7,                  0.4,                   0.4                  },
 					specularColor     = {0.7 * rgbSpecMults[1], 0.4 * rgbSpecMults[2], 0.4 * rgbSpecMults[3]},
@@ -88,7 +91,7 @@ local dynLightDefs = {
 			},
 
 			-- Arm Stunner / Core Neutron (small nuke) projectiles
-			["railgun"] = {
+			["plasmarail"] = {
 				projectileLightDef = {
 					diffuseColor      = {0.7,                  0.4,                   0.4                  },
 					specularColor     = {0.7 * rgbSpecMults[1], 0.4 * rgbSpecMults[2], 0.4 * rgbSpecMults[3]},
@@ -128,7 +131,7 @@ local dynLightDefs = {
 				},
 			},
 
-			["ssied"] = {
+			["improvisedexplosivedevice"] = {
 				projectileLightDef = {
 					diffuseColor    = {0.8,                   0.6,                   0.0                  },
 					specularColor   = {1.9 * rgbSpecMults[1], 0.9 * rgbSpecMults[2], 0.0 * rgbSpecMults[3]},
@@ -154,6 +157,9 @@ local dynLightDefs = {
 
 
 local modLightDefs = dynLightDefs[Game.gameShortName]
+assert(Game.gameShortName == "MOSAIC",Game.gameShortName)
+assert(copyLightDefs["MOSAIC"])
+assert(copyLightDefs[Game.gameShortName])
 local modCopyDefs = copyLightDefs[Game.gameShortName]
 
 -- insert copy-definitions for each light that has one

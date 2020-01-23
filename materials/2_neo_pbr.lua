@@ -467,7 +467,7 @@ end
 
 local default_lua = VFS.Include("materials/Shaders/default.lua")
 
-local function createNewMatDef(pbrModel, pbrMap)
+local function createNewMatDef(pbrModel, pbrMap, name)
 	local _, _, customStandardUniforms, customDefferedUniforms = parsePbrMatParams(pbrModel, pbrMap)
 
 	local newMat = {
@@ -552,6 +552,7 @@ local function createNewMatDef(pbrModel, pbrMap)
 	}
 	--Spring.Utilities.TableEcho(newMat, "")
 	if not pbrMap then
+		Spring.Echo("Pbr shader falling back for "..name)
 		newMat.texunits[0] = "%%UNITDEFID:0"
 		newMat.texunits[1] = "%%UNITDEFID:1"
 	end
@@ -569,7 +570,7 @@ for i = 1, #UnitDefs do
 			local pbrIndex = getPbrMaterialIndex(pbrModel, pbrMap)
 			local pbrMatName = "pbr_" .. tostring(pbrIndex)
 			if not materials[pbrMatName] then
-				local pbrMatDef = createNewMatDef(pbrModel, pbrMap)
+				local pbrMatDef = createNewMatDef(pbrModel, pbrMap,pbrMatName)
 				materials[pbrMatName] = pbrMatDef
 			end
 			local boundTexUnits = parseNewMatTexUnits(pbrModel, pbrMap)
