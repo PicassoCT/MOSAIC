@@ -14,7 +14,47 @@ local Human = Unit:New{
 }
 
 
+-- Mechs ----
+local Civilian = Human:New{
+corpse					  = "",
+	maxDamage         	  = 500,
+	mass                = 500,
+	buildCostEnergy    	  = 5,
+	buildCostMetal     	  = 5,
+	canMove					  = true,
+
+	explodeAs				  = "none",
+	Acceleration = 0.4,
+	BrakeRate = 0.3,
+	TurnRate = 900,
+	MaxVelocity = 0.7875,
+	
+
+	CanAttack = false,
+	CanGuard = true,
+
+	CanMove = true,
+	CanPatrol = true,
+	CanStop = true,
+	script 					= "civilianscript.lua",
+	
+		
+	weapons ={
+		[1]={name  = "ak47",
+				onlyTargetCategory = [[GROUND ARRESTABLE]],
+			},	
+		[2]={name  = "molotow",
+				onlyTargetCategory = [[GROUND]],
+			},
+	
+	},
+	
+}
+
+
+
 return {
 	Human = Human,
+	Civilian = Civilian,
 
 }

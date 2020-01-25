@@ -5,6 +5,7 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 local Animations = include('animations_civilian_female.lua')
+local signMessages = include('protestSignMessages.lua')
 include "lib_mosaic.lua"
 myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
@@ -121,7 +122,6 @@ local bodyConfig={}
 		bodyConfig.boolHandbag =( iShoppingConfig == 4)
 		bodyConfig.boolLoaded = ( iShoppingConfig <  5)
 		bodyConfig.boolProtest = GG.GlobalGameState== GameConfig.GameState.anarchy
-		if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"] ) end
 	end
 
 function script.Create()
@@ -129,7 +129,7 @@ function script.Create()
     Move(root,y_axis, -3,0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(turnDetector)
-	hideAll(unitID)
+	
 	variousBodyConfigs()
 
 	bodyConfig.boolArmed = false
@@ -170,9 +170,7 @@ end
 
 function bodyBuild()
 
-
-
-
+	hideAll(unitID)
 	Show(UpBody)
 	Show(center)
 	showT(TablesOfPiecesGroups["UpLeg"])
@@ -181,9 +179,12 @@ function bodyBuild()
 	showT(TablesOfPiecesGroups["UpArm"])
 	showT(TablesOfPiecesGroups["Head"])
 	showT(TablesOfPiecesGroups["Feet"])
+	if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"] ) end
+
 	
 	if bodyConfig.boolArmed == true  then
 		Show(ak47)	
+		Show(molotow)
 		return
 	end
 	
@@ -296,6 +297,7 @@ lowerBodyAnimations = {
 		[1]="WALKCYCLE_ROLLY"},
 
 }
+	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 accumulatedTimeInSeconds=0
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -303,8 +305,8 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 	if attackerID and confirmUnit(attackerID) then
 	process(getAllNearUnit(unitID, GameConfig.civilianPanicRadius),
 			function(id)
-					if Spring.GetUnitDefID(id) == myDefID and not GG.DisguiseCivilianFor[unitID] then
-						runAwayFrom(id, attackerID, 500)
+					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[unitID] then
+						runAwayFrom(id, attackerID, GameConfig.civilianFleeDistance)
 					end				
 				end
 			)
@@ -489,6 +491,11 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State)
 			Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
 			bodyConfig.boolArmed = false
 		end
+		
+		if bodyConfig.boolProtest == true then
+			Explode(ProtestSign, SFX.FALL + SFX.SHATTER + SFX.NO_HEATCLOUD)
+		end
+		
 		bodyBuild(bodyConfig)
 		Command(unitID, "stop")
 	end
@@ -512,6 +519,9 @@ normalBehavourStateMachine = {
 	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
+											Spring.SetUnitNeutral(unitID, false)
+											Spring.SetUnitNoSelect(unitID, true)
+											
 											bodyConfig.boolArmed = (math.random(1,100) > GameConfig.chanceCivilianArmsItselfInHundred)
 											
 											if bodyConfig.boolArmed == true then
@@ -527,8 +537,7 @@ normalBehavourStateMachine = {
 													setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
 												end
 											end	
-											
-											Spring.SetUnitNeutral(unitID, false)	
+
 											
 											if fairRandom("JoinASide", 5)== true then
 												enemy = Spring.GetUnitNearestEnemy(unitID)
@@ -541,6 +550,7 @@ normalBehavourStateMachine = {
 											end											
 										end										
 									
+									
 										ad = Spring.GetUnitNearestAlly(unitID)
 										if ad then
 											x,y,z=Spring.GetUnitPosition(ad)
@@ -548,17 +558,19 @@ normalBehavourStateMachine = {
 										end
 										Sleep(1000)
 										
-										T= getAllNearUnit(unitID, 1024)
-										T= process(T, function(id) 
-														if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
-															return id 
-														end
-													end)
-										if T and #T > 0 then
-											ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
-											
-											if ed  then
-												Command(unitID, "attack" , ed,{})
+										if bodyConfig.boolArmed == true then
+											T= getAllNearUnit(unitID, 1024)
+											T= process(T, function(id) 
+															if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
+																return id 
+															end
+														end)
+											if T and #T > 0 then
+												ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
+												
+												if ed  then
+													Command(unitID, "attack" , ed,{})
+												end
 											end
 										end
 										Sleep(3000)
@@ -569,6 +581,7 @@ normalBehavourStateMachine = {
 	[GameConfig.GameState.postlaunch]= function(lastState, currentState)
 										Spring.SetUnitNeutral(unitID, true)
 										Spring.TransferUnit(unitID, gaiaTeamID)
+										
 										if unitID%2 == 1 then -- cower catatonic
 											setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true, nil, false)
 											setSpeedEnv(unitID, 0)
@@ -584,13 +597,13 @@ normalBehavourStateMachine = {
 									end,
 	[GameConfig.GameState.pacification]= function(lastState, currentState)
 										if lastState ~= currentState then
-											Spring.SetUnitNeutral(unitID, true)
 											Spring.TransferUnit(unitID, gaiaTeamID)
+											Spring.SetUnitNeutral(unitID, true)
+											PlayAnimation("UPBODY_HANDSUP")
 											setSpeedEnv(unitID, 1.0)
 											Turn(UpBody,x_axis, math.rad(0),60)
 											Turn(center,x_axis, math.rad(0),45)
 											Move(center, y_axis, 0, 60)											
-											hideAll(unitID)
 											bodyConfig.boolArmed = false
 											bodyConfig.boolProtest = false
 											bodyBuild()
@@ -1079,113 +1092,7 @@ function script.QueryBuildInfo()
     return center
 end
 
-signMessages ={
-	--Denial
-	"JUST&NUKE&THEM",
-	" SHAME ",
-	"THEY &ARE NOT& US",
-	"INOCENT",
-	"NOT&GUILTY",
-	"COULD&BE&WORSER",
-	"CONSPIRACY",
-	"CHEMTRAJLS DID THIS",
-	"GOD SAVE US",
-	
-	" CITY &FOR AN &CITY",
-	" BROTHFRS& KEEPFRS",
-	"WE WILL &NOT DIE",
-	"VENGANCE IS MURDFR",
-	"  IT &CANT BE& US",
-	"PUNISH&GROUPS ",
-	"VIVE&LA RESISTANCE ",
-	"LIES ANDWAR&CRIMES",
-	"THE END&IS& NIGH",
-	"PHOENIX &FACTION",
-	"FOR MAN&KIND",
-	"THATS&LIFE",
-	"AND LET LIFE",
 
-	"ALWAYS&LCOK ON&BRIGHTSIDE",
-	
-	--Anger
-	"ANTIFA",
-	"ROCKET&IS&RAPE",
-	"HICBM& UP YOUR ASS",
-	"RISE &UP",
-	"UNDEFEATED",
-	" BURN& THE& BRIDGE",	
-	" BURN&THEM& ALL",
-	" ANARCHY",
-	" FUCK& YOU& ALL",
-	" HOPE&  IT&HURTS",
-	"VENGANCE IS& OURS",
-	"MAD&IS&MURDER",
-	"WE& SHALL& REBUILD",
-	
-	--Bargaining
-	" SPARE& US",
-	" SPARE& OUR&CHILDREN",
-	"ANYTHINGFOR LIFE",
-	"NO ISM&WORTH IT",
-	"ANARCHY",
-	"KILL THE GODS",
-	"NO GODS&JUST MEN",
-	" SEX&SAVES",
-	" MERCY",
-
-	--DEPRESSION
-	"HIROSHIMA&ALL OVER",
-	" SEX& KILLS",
-	" GOD& IS& DEATH",
-	"TEARS& IN& RAIN",
-	"NEVR &FORGET& LA",
-	"REMBR&HONG&KONG",
-	"NEVR &FORGET& SA",
-	"REMEMBR PALO& ALTO",
-	"REMEBR  LAGOS",
-	"REMEBR  DUBAI",
-	"HITLER&WOULD&BE PROUD",
-	"NEVER &AGAIN",
-	"  HOLO&  CAUST",
-	"IN DUBIO&PRU REO",
-	--Accepting
-	"NO&CITYCIDE",
-	" REPENT& YOUR& SINS",
-	"DUST&IN THE&WIND",
-	"MAN IS& MEN A& WULF",
-	"POMPEJ  ALLOVER",
-	"AVENGE&US",
-	"SHIT&HAPPENS",
-	"FOR WHOM&THE BELL",
-	"IS TOLLS&FOR THEE",
-	"MEMENTO",
-	"MORI",
-	"CARPE&DIEM",
-	
-	--Personification
-	"Ü&HAS SMALL&DICK",
-	"I&LOVE&Ü",
-	"Ü&U HAVE A&SON",
-	"Ü&MARRY&ME",
-	" DEATH&TO&Ü",
-	"  I& BLAME&Ü",
-	"WHAT DO&YOU DESIRE?Ü",
-	"MUMS&AGAINST&Ü",	
-	"HATE Ü",
-	"FUCK Ü",
-	"Ü IS&EVIL",
-	
-	
-	--Humor
-	" PRO&TEST&ICLES",
-	"NO MORE&TAXES",
-	"PRO&TAXES",
-	"NO&PROTEST",
-	"NEVER GONNA GIVE",
-	"YOU UP",
-	"NEVER GONNA LET",
-	"YOU DOWN",
-}
 
 
 
@@ -1260,10 +1167,18 @@ function akAimFunction(weaponID, heading, pitch)
 	boolAiming = false
 return  allowTarget(weaponID)
 end
+ 
+function molotowAimFunction(weaponID, heading, pitch)
+	-- Aim Animation
+return  allowTarget(weaponID)
+end
 
 function akFireFunction(weaponID, heading, pitch)
 	boolAiming = false
+	return true
+end
 
+function molotowFireFunction(weaponID, heading, pitch)
 	return true
 end
 
@@ -1272,6 +1187,7 @@ end
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = akAimFunction, firefunc = akFireFunction, signal = SIG_PISTOL }
+    WeaponsTable[2] = { aimpiece = center, emitpiece = molotow, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
 end
 
 function script.AimFromWeapon(weaponID)

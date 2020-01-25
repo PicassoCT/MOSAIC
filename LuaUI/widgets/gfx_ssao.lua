@@ -53,9 +53,9 @@ local math_sqrt = math.sqrt
 -----------------------------------------------------------------
 -- File path Constants
 -----------------------------------------------------------------
-
-local shadersDir = "LuaUI/Widgets_BAR/Shaders/"
-local luaShaderDir = "LuaUI/Widgets_BAR/Include/"
+local baseDir = "LuaUI/widgets/"
+local shadersDir = baseDir.."Shaders/"
+local luaShaderDir = baseDir.."Include/"
 
 -----------------------------------------------------------------
 -- Global Variables

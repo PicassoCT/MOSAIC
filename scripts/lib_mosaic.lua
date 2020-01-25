@@ -34,6 +34,7 @@ function getGameConfig()
 	 
 	 --civilianbehaviour
 	 civilianPanicRadius = 350,
+	 civilianFleeDistance = 500,
 	 civilianInterestRadius = 150,
 	 generalInteractionDistance= 250,
 	 minConversationLengthFrames= 3 * 30,
