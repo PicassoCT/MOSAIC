@@ -10,7 +10,7 @@ local weaponDef = {
 	areaOfEffect = 25,
 	craterMult = 1,
 	
-	model = "placeholder.s3o",
+	model = "molotow.dae",
 	--physics
 	
 	weaponVelocity = 50,
@@ -19,7 +19,7 @@ local weaponDef = {
 	sprayAngle = 6000,
 	accuracy = 0.2,
 	tolerance = 5000,
-	lineOfSight = true,
+	lineOfSight = false,
 	turret = true,
 	groundbounce = false,
 	WaterBounce = false,

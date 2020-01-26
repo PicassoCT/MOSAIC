@@ -30,7 +30,7 @@ corpse					  = "",
 	MaxVelocity = 0.7875,
 	
 
-	CanAttack = false,
+	CanAttack = true, -- todo undo
 	CanGuard = true,
 
 	CanMove = true,

@@ -745,19 +745,9 @@ end
 	function giveWaypointsToUnit(uID, uType, startNodeID)
 		boolIsCivilian = ( civilianWalkingTypeTable[uType] ~= nil)
 		boolShortestPath= ( math.random(0,1)== 1 and TruckTypeTable[uType] == nil )-- direct route to target
-	
-		--assert(doesUnitExistAlive(startNodeID)==true)
-	
-		
-		
-		-- travellFunction = function()
-		-- return nil 
-		
-		-- end
-		--assert(startNodeID)
+
 		targetNodeID = math.random(2,#RouteTabel[startNodeID])
-		--assert(RouteTabel[startNodeID][targetNodeID])
-		
+
 		mydefID = spGetUnitDefID(uID)
 		
 		assert(not Spring.GetUnitIsDead(startNodeID) )

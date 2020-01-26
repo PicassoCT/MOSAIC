@@ -297,20 +297,10 @@ lowerBodyAnimations = {
 		[1]="WALKCYCLE_ROLLY"},
 
 }
-	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 accumulatedTimeInSeconds=0
 function script.HitByWeapon(x, z, weaponDefID, damage)
-	attackerID =Spring.GetUnitLastAttacker(unitID)
-	if attackerID and confirmUnit(attackerID) then
-	process(getAllNearUnit(unitID, GameConfig.civilianPanicRadius),
-			function(id)
-					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[unitID] then
-						runAwayFrom(id, attackerID, GameConfig.civilianFleeDistance)
-					end				
-				end
-			)
-	end
+
 
 	clampedDamage = math.max(math.min(damage,10),35)
 	StartThread(delayedWoundedWalkAfterCover,  clampedDamage)

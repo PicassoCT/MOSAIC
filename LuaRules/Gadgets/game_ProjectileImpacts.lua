@@ -19,21 +19,30 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
-
+	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
     GameConfig = getGameConfig()
-    --1 unitid
-    --2 counter
-    --3 orgBuildSpeed
-    --local stunTime=9
-    --local selectRange=300
-    --local totalTime=9000
+	GaiaTeamID = Spring.GetGaiaTeamID()
 
     raidWeaponDefID = WeaponDefNames["raidarrest"].id
     stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
-    --Centrail Weapons
+    stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
+	panicWeapons = {
+		[WeaponDefNames["ssied"].id] = {damage= WeaponDefNames["ssied"].damage ,range=WeaponDefNames["ssied"].range},
+		[WeaponDefNames["ak47"].id] = {damage= WeaponDefNames["ak47"].damage ,range=WeaponDefNames["ak47"].range},
+		[WeaponDefNames["pistol"].id] ={damage=  WeaponDefNames["pistol"].damage ,range=WeaponDefNames["pistol"].range},
+		[WeaponDefNames["tankcannon"].id] ={ damage= WeaponDefNames["tankcannon"].damage ,range=WeaponDefNames["tankcannon"].range},
+		[WeaponDefNames["railgun"].id] = {damage= WeaponDefNames["railgun"].damage ,range=WeaponDefNames["railgun"].range},
+	}
+    machinegun = 
+	
+    --Watched Weapons Weapons
+	for wId, wRange in pairs(panicWeapons) do
+	   Script.SetWatchWeapon(wId, true)
+	end
 
     Script.SetWatchWeapon(raidWeaponDefID, true)
     Script.SetWatchWeapon(stunpistoldWeaponDefID, true)
+	
     exampleDefID = -1
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
 
@@ -191,7 +200,6 @@ if (gadgetHandler:IsSyncedCode()) then
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
     raidTable= getRaidAbleTypeTable(UnitDefs)
 
-
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
         Spring.Echo("Raid Weapon fired upon"..UnitDefs[unitDefID].name)
         if InterrogateAbleType[unitDefID] or   houseTypeTable[unitDefID]  then
@@ -229,10 +237,6 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
     end
-
-
-
-
 
     GG.exploAmmoBlowTable ={}
     function addChainExplosion(unitID, damage, weaponDefID, cegName, NumberOfExplosions, delayMin, delayMax )
@@ -298,7 +302,56 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
+	
+	flightFunction = function(evtID, frame, persPack, startFrame)
+		--Setup
+		myID = persPack.unitID
+		attackerID = persPack.attackerID
+		boolIsDead = Spring.GetUnitIsDead(myID) 
+		if not boolIsDead or boolIsDead == true then
+			GG.FleeingCivilians[myID] = nil
+			return nil, persPack
+		end
+		
+		if Spring.GetUnitIsDead(attackerID) == true then
+			return nil, persPack
+		end
+		
+		if not GG.FleeingCivilians then GG.FleeingCivilians ={} end
+		if not GG.FleeingCivilians[myID] then GG.FleeingCivilians[myID] = persPack.flighttime end
+		
+		GG.FleeingCivilians[myID] = GG.FleeingCivilians[myID] - persPack.updateIntervall
+		
+		if GG.FleeingCivilians[myID] < 0 then
+			return nil, persPack
+		end
+		
+		runAwayFrom(myID, attackerID, persPack.civilianFleeDistance)
 
+		return frame + persPack.updateIntervall, persPack
+	end
+
+	
+		if panicWeapons[projWeaponDefID] then
+			process(getAllInCircle(getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
+			function(id)
+				if Spring.GetUnitTeam(unitID) == GaiaTeamID not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
+					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[unitID] then
+						GG.EventStream:CreateEvent(
+							flightFunction,
+							{--persistance Pack
+								unitID = id ,
+								attackerID =proOwnerID,
+								flighttime = 20*30,
+								updateIntervall = 33
+							},
+							Spring.GetGameFrame() + (id % 10)
+							)									
+					
+				end
+			end
+		
+		end
 
     end
 

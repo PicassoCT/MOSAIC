@@ -2,7 +2,7 @@
 local weaponName = "sniperrifle"
 local weaponDef = {
 	name = "barret-s64",
-	description = "high calibre, long range rifle",
+
 	weaponType = [[Cannon]],
 
 	
