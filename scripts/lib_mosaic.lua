@@ -205,7 +205,7 @@ translation ={
 		["arabic"] = {
 			["house"] = {name= "house_arab", range=0},
 			["civilian"] = {name= "civilian_arab", range=3},
-			["truck"] ={name = "truck_arab", range = 5}
+			["truck"] ={name = "truck_arab", range = 8}
 		},
 		["international"] = {
 			["house"] = {name= "house_int", range=0},

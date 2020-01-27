@@ -302,9 +302,10 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
-	
+	echo("Projectile Created")
 	flightFunction = function(evtID, frame, persPack, startFrame)
 		--Setup
+		if not persPack.startFrame then persPack.startFrame = Spring.GetGameFrame() end
 		myID = persPack.unitID
 		attackerID = persPack.attackerID
 		boolIsDead = Spring.GetUnitIsDead(myID) 
@@ -318,9 +319,14 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
 		
 		if not GG.FleeingCivilians then GG.FleeingCivilians ={} end
-		if not GG.FleeingCivilians[myID] then GG.FleeingCivilians[myID] = persPack.flighttime end
+		if not GG.FleeingCivilians[myID] then GG.FleeingCivilians[myID] = {flighttime = persPack.flighttime, startFrame = Spring.GetGameFrame()} end
 		
-		GG.FleeingCivilians[myID] = GG.FleeingCivilians[myID] - persPack.updateIntervall
+		GG.FleeingCivilians[myID].flighttime = GG.FleeingCivilians[myID].flighttime - persPack.updateIntervall
+		
+		--we have two panic events.. the older one has too die
+		if GG.FleeingCivilians[myID].startFrame > persPack.startFrame then 
+			return nil, persPack
+		end
 		
 		if GG.FleeingCivilians[myID] < 0 then
 			return nil, persPack
@@ -333,7 +339,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
 	
 		if panicWeapons[projWeaponDefID] then
-			process(getAllInCircle(getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
+			T=process(getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
 			function(id)
 				if Spring.GetUnitTeam(unitID) == GaiaTeamID not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
 					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[unitID] then
@@ -347,10 +353,12 @@ if (gadgetHandler:IsSyncedCode()) then
 							},
 							Spring.GetGameFrame() + (id % 10)
 							)									
-					
+					return id
+					end
 				end
 			end
-		
+			)
+			if T then echo("Units who are in panic:", T) end
 		end
 
     end

@@ -25,17 +25,20 @@ boolAiming = false
 local transporterID 
 function orderTransfer()
 	while true do
-		while isTransported(unitID)== true do
-			transporterID = Spring.GetUnitTransporter(unitID)
-			if transporterID then
-				Spring.SetUnitNoSelect(transporterID, true)
-				transferOrders(unitID, transporterID)
+		if isTransported(unitID)== true then
+			while isTransported(unitID)== true do
+				transporterID = Spring.GetUnitTransporter(unitID)
+				if transporterID then
+					Spring.SetUnitNoSelect(transporterID, true)
+					transferOrders(unitID, transporterID)
+				end
+				Sleep(100)
 			end
-			Sleep(100)
+			transporterID = nil
 		end
-		if transporterID then
-			Spring.SetUnitNoSelect(transporterID, false)
-		end
+		-- if transporterID then
+			-- Spring.SetUnitNoSelect(transporterID, false)
+		-- end
 		Sleep(100)
 	end
 end

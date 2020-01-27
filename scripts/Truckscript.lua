@@ -42,6 +42,8 @@ function script.Create()
 	end	
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
+	Hide(attachPoint)
+	Hide(center)
 	showAndTell()
 
 end

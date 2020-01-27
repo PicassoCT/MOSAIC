@@ -44,7 +44,6 @@ if (gadgetHandler:IsSyncedCode()) then
     local projectiles = {}
 
     function gadget:ProjectileCreated(proID, proOwnerID, weaponID)
-		Spring.Echo("ProjectileCreated3")
         if weapons[weaponID] then
             projectiles[proID] = true;
             SendToUnsynced("lupsProjectiles_AddProjectile", proID, proOwnerID, weaponID)

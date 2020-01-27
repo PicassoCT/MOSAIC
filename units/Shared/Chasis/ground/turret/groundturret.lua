@@ -78,7 +78,7 @@ local groundturretmg =  Turret:New{
 	Description = " MOSAIC Standardized Machine Gun Emplacement ",
 	
 	objectName = "ground_turret_mg.dae",
-	script = "turretscript.lua",
+	script = "ground_turretscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -113,8 +113,7 @@ local groundturretmg =  Turret:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	canCloak =true,
-	
+	canCloak =true,	
 	
 	Category = [[GROUND]],
 
@@ -123,15 +122,14 @@ local groundturretmg =  Turret:New{
 	  },
 	 sfxtypes = {
 		explosiongenerators = {
-							"custom:bigbulletimpact"
+								"custom:bigbulletimpact"
 							  },
 				},
 				
 		weapons = {
 		[1]={name  = "machinegun",
 			onlyTargetCategory = [[BUILDING GROUND AIR]],
-			},
-					
+			},					
 		},	
 }
 
