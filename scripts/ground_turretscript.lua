@@ -22,7 +22,7 @@ function script.Create()
 	hideT(TablesOfPiecesGroups["TBase"])
 	StartThread(foldControl)
 	StartThread(guardSwivelTurret)
-	StartThread(orderTransfer)
+
 end
 
 boolAiming = false
@@ -44,25 +44,6 @@ Sleep(5000)
 
 
 end
-
-function orderTransfer()
-	local transporterID 
-	while true do
-		while isTransported(unitID)== true do
-			transporterID = Spring.GetUnitTransporter(unitID)
-			if transporterID then
-				Spring.SetUnitNoSelect(transporterID, true)
-				transferOrders(unitID, transporterID)
-			end
-			Sleep(100)
-		end
-		if doesUnitExistAlive(transporterID) == true then
-			Spring.SetUnitNoSelect(transporterID, false)
-		end
-		Sleep(100)
-	end
-end
-
 
 function foldControl()
 	Sleep(10)

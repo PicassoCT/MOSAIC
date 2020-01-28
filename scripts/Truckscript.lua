@@ -8,10 +8,12 @@ TablesOfPiecesGroups = {}
 
 LoadOutTypes = getTruckLoadOutTypeTable()
 
+SIG_ORDERTRANFER = 1
 
 center = piece "center"
 attachPoint = piece "attachPoint"
 myDefID = Spring.GetUnitDefID(unitID)
+
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 
 boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
@@ -35,8 +37,8 @@ function script.Create()
 	
 	if boolIsCivilianTruck == false then
 		StartThread(loadLoadOutLoop)
-	
 	end
+	
 	if UnitDefs[myDefID].name == "polictruck" then
 			StartThread(theySeeMeRollin)
 	end	
@@ -62,21 +64,49 @@ function loadLoadOutLoop()
 	Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
 	
 	while myLoadOutType ~= explosiveDefID  do			
-	Sleep(100)
+		Sleep(100)
 	
 		if doesUnitExistAlive(loadOutUnitID) == false then
 			myTeam = Spring.GetUnitTeam(unitID)
-
 			loadOutUnitID= createUnitAtUnit( myTeam, myLoadOutType, unitID, 0, 10, 0)
 			Spring.SetUnitNoSelect(loadOutUnitID, true)
 			Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
 		else
 			transferOrders(unitID, loadOutUnitID)
 		end
+	end
+end
 
+local passenger 
+
+function script.TransportPickup ( passengerID ) 
+	if boolIsCivilianTruck then
+		Spring.SetUnitNoSelect(passengerID, true)
+		Spring.UnitAttach(unitID, passengerID, attachPoint)
+		passenger= passengerID
+		StartThread(tranferOrdersToLoadedUnit, passengerID)
+	end
+end
+
+function tranferOrdersToLoadedUnit(passengerID)
+	Signal(SIG_ORDERTRANFER)
+	SetSignalMask(SIG_ORDERTRANFER)
+	
+	while doesUnitExistAlive(passengerID) ==  true do
+		transferAttackOrder(unitID, passengerID)
+		Sleep(100)
 	end
 
+
 end
+
+function script.TransportDrop ( passengerID, x, y, z ) 
+	Signal(SIG_ORDERTRANFER)
+	if boolIsCivilianTruck == true then
+		Spring.UnitDetach(passengerID)
+	end
+end
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 function script.Killed(recentDamage, _)
@@ -86,24 +116,30 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
-function script.TransportPickup ( passengerID ) 
-	if boolIsCivilianTruck then
-		if count(Spring.GetUnitIsTransporting(passengerID)) ~= 0 then return end 
-		Spring.UnitAttach(unitID, passengerID, attachPoint)
-	else
-		Spring.UnitAttach(unitID, passengerID, attachPoint)
-	end
+
+--- -aimining & fire weapon
+function script.AimFromWeapon1()
+    return center
 end
 
-function script.TransportDrop ( passengerID, x, y, z ) 
-	if boolIsCivilianTruck == true then
-		Spring.UnitDetach(passengerID)
-	else
-		if passengerID ~= loadOutUnitID then
-			Spring.UnitDetach(passengerID)	
-		end
-	end
+
+
+function script.QueryWeapon1()
+    return center
 end
+
+function script.AimWeapon1(Heading, pitch)
+    return false
+end
+
+
+
+function script.FireWeapon1()
+   return true
+end
+
+
+
 
 
 function script.StartMoving()

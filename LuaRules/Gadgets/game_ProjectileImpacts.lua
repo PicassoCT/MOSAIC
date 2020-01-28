@@ -33,7 +33,6 @@ if (gadgetHandler:IsSyncedCode()) then
 		[WeaponDefNames["tankcannon"].id] ={ damage= WeaponDefNames["tankcannon"].damage ,range=WeaponDefNames["tankcannon"].range},
 		[WeaponDefNames["railgun"].id] = {damage= WeaponDefNames["railgun"].damage ,range=WeaponDefNames["railgun"].range},
 	}
-    machinegun = 
 	
     --Watched Weapons Weapons
 	for wId, wRange in pairs(panicWeapons) do
@@ -341,7 +340,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		if panicWeapons[projWeaponDefID] then
 			T=process(getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
 			function(id)
-				if Spring.GetUnitTeam(unitID) == GaiaTeamID not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
+				if Spring.GetUnitTeam(unitID) == GaiaTeamID and not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
 					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[unitID] then
 						GG.EventStream:CreateEvent(
 							flightFunction,

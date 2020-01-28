@@ -123,6 +123,8 @@ local CivilianTruck = Truck:New{
 	transportCapacity = 1,
 	isFirePlatform  = true, 
 	usepiececollisionvolumes = false,
+	canAttack= true,
+	canFight = true,
 	collisionVolumeType = "box",
 	collisionvolumescales = "40 50 70",
 	footprintX = 1,
@@ -130,6 +132,11 @@ local CivilianTruck = Truck:New{
 	script 			= "Truckscript.lua",
 
 	-- objectName 	= "Truck.s3o",
+		weapons = {
+				[1]={name  = "pistol",
+					onlyTargetCategory = [[NIL]],
+					},
+				},
 
 	category = [[GROUND]],
 	

@@ -10,7 +10,7 @@ local weaponDef = {
 	areaOfEffect = 25,
 	craterMult = 1,
 	
-	model = "molotow.dae",
+	model = "placeholder.s3o",-- "molotow.dae"
 	--physics
 	
 	weaponVelocity = 50,

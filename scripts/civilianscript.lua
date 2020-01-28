@@ -16,6 +16,7 @@ SIG_LOW = 4
 SIG_COVER_WALK= 8
 SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
+SIG_MOLOTOW = 64
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -1163,6 +1164,7 @@ return  allowTarget(weaponID)
 end
  
 function molotowAimFunction(weaponID, heading, pitch)
+if true== true then return true end
 	-- Aim Animation
 return  allowTarget(weaponID)
 end
@@ -1181,7 +1183,7 @@ end
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = akAimFunction, firefunc = akFireFunction, signal = SIG_PISTOL }
-    WeaponsTable[2] = { aimpiece = center, emitpiece = molotow, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
+    WeaponsTable[2] = { aimpiece = center, emitpiece = ak47, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
 end
 
 function script.AimFromWeapon(weaponID)

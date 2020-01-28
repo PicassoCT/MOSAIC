@@ -5602,6 +5602,22 @@ function transferOrders(originID, targetID)
 	end
 end
 
+--> transfers Order from one Unit to another
+function transferAttackOrder(originID, targetID)
+	
+	CommandTable = Spring.GetUnitCommands(originID, 1)
+	if CommandTable and CommandTable[1] then
+	cmd = CommandTable[1]			
+		if cmd.id == CMD.ATTACK or cmd.id == CMD.FIGHT then
+			Spring.GiveOrderToUnit(targetID, cmd.id, cmd.params, {})
+		elseif cmd.id == CMD.STOP then
+			Spring.GiveOrderToUnit(targetID, CMD.STOP, {}, {})
+		end		
+	end
+
+end
+
+
 --> move away from another unit by distance*scalingfactor
 function runAwayFrom(id, horrorID, distanceToRun)
 	x,y,z = Spring.GetUnitPosition(id)

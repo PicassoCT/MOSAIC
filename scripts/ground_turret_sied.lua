@@ -18,30 +18,11 @@ function script.Create()
 	resetAll(unitID)
 	Hide(aimpiece)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	StartThread(orderTransfer)
+
 end
 
 boolAiming = false
 local transporterID 
-function orderTransfer()
-	while true do
-		if isTransported(unitID)== true then
-			while isTransported(unitID)== true do
-				transporterID = Spring.GetUnitTransporter(unitID)
-				if transporterID then
-					Spring.SetUnitNoSelect(transporterID, true)
-					transferOrders(unitID, transporterID)
-				end
-				Sleep(100)
-			end
-			transporterID = nil
-		end
-		-- if transporterID then
-			-- Spring.SetUnitNoSelect(transporterID, false)
-		-- end
-		Sleep(100)
-	end
-end
 
 
 
