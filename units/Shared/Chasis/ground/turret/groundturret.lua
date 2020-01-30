@@ -41,6 +41,9 @@ local groundturretssied =  Turret:New{
 	onOffable = false,
 	LeaveTracks = false, 
 	canCloak =true,
+	kamikaze = true,
+	kamikazeDistance  = 10,
+	kamikazeUseLOS = false,
 	
 	cloakCost=0.0001,
 

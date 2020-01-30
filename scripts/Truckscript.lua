@@ -73,6 +73,8 @@ function loadLoadOutLoop()
 			Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
 		else
 			transferOrders(unitID, loadOutUnitID)
+			transferStates(unitID, loadOutUnitID)
+
 		end
 	end
 end
@@ -94,6 +96,7 @@ function tranferOrdersToLoadedUnit(passengerID)
 	
 	while doesUnitExistAlive(passengerID) ==  true do
 		transferAttackOrder(unitID, passengerID)
+		transferStates(unitID, passengerID)
 		Sleep(100)
 	end
 

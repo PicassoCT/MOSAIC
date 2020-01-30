@@ -18,15 +18,22 @@ function script.Create()
 	resetAll(unitID)
 	Hide(aimpiece)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+	StartThread(uncloakWhenTransported)
 end
 
-boolAiming = false
-local transporterID 
+function uncloakWhenTransported()
+	while true do
+		transporterID = Spring.GetUnitTransporter(unitID)
+		if transporterID then
+			Spring.SetUnitCloak(unitID, false)
+		end
 
-
+	Sleep(100)
+	end
+end
 
 function script.Killed(recentDamage, _)
+	transporterID = Spring.GetUnitTransporter(unitID)
 	if transporterID and doesUnitExistAlive(transporterID)== true then
 		Spring.DestroyUnit(transporterID, false, true)
 	end

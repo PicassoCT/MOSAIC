@@ -7,9 +7,9 @@ local weaponDef = {
 		default = 50,
 		heavyarmor = 75,
 	},
-	areaOfEffect = 25,
+	areaOfEffect = 50,
 	craterMult = 1,
-	
+	impulseFactor = 3.0,
 	model = "placeholder.s3o",-- "molotow.dae"
 	--physics
 	
@@ -20,12 +20,9 @@ local weaponDef = {
 	accuracy = 0.2,
 	tolerance = 5000,
 	lineOfSight = false,
-	turret = true,
 	groundbounce = false,
 	WaterBounce = false,
-	
 	flighttime = 20,
-	collideFriendly = true,
 
 	soundtrigger = 1,
 	--apperance
@@ -36,10 +33,24 @@ local weaponDef = {
 	cylinderTargeting = 17.0,
 	edgeEffectiveness = 0.2,
 	fireStarter = 100,
-	impulseFactor = 3.1,
+
 	
 	myGravity = 1,
 	targetBorder = 0,
+	
+	--targeting
+	collideFriendly = false,
+	avoidGround = false,
+	avoidFeature  = false,
+	avoidNeutral =false,
+	collideEnemy  = true,
+	collideFirebase  = false,
+	collideFeature  = false,
+	collideNeutral = true,
+	collideGround  = true,
+	turret = true,
+	canAttackGround  = true,
+	proximityPriority = -1,
 }
 
 return lowerkeys({ [weaponName] = weaponDef })

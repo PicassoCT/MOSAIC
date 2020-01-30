@@ -40,6 +40,9 @@ local OperativePropagator = Human:New{
 	cloakCostMoving =0.0001,
 	minCloakDistance = 0,
 	onoffable=true,
+	kamikaze = true,
+	kamikazeDistance  = 10,
+	kamikazeUseLOS = false,
 
 	buildoptions = 
 	{

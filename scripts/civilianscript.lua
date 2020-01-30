@@ -1083,10 +1083,6 @@ function script.QueryBuildInfo()
     return center
 end
 
-
-
-
-
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ, sentence, personification)
 	for i=1, 26 do
 		charOn = string.char(64+i) 
@@ -1164,7 +1160,7 @@ return  allowTarget(weaponID)
 end
  
 function molotowAimFunction(weaponID, heading, pitch)
-if true== true then return true end
+if true == true then return true end
 	-- Aim Animation
 return  allowTarget(weaponID)
 end
@@ -1183,7 +1179,7 @@ end
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = akAimFunction, firefunc = akFireFunction, signal = SIG_PISTOL }
-    WeaponsTable[2] = { aimpiece = center, emitpiece = ak47, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
+    WeaponsTable[2] = { aimpiece = UpBody, emitpiece = Head1, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
 end
 
 function script.AimFromWeapon(weaponID)

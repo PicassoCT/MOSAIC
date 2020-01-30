@@ -841,6 +841,14 @@ function stunUnit(k, factor)
 	if hp then Spring.SetUnitHealth(k, { paralyze = hp * factor }) end
 end
 
+function transferStates(orgID, targID)
+State= Spring.GetUnitStates(orgID)
+	if State then
+	 setFireState(targID, State.firestate)
+	 setMoveState(targID, State.movestate)
+	end
+end
+
 --> Transfer UnitStats
 function transferUnitStatusToUnit(id, targetID)
 	exP = Spring.GetUnitExperience(id)

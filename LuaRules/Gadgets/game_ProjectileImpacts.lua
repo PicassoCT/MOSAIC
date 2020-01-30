@@ -19,8 +19,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
+	GameConfig = getGameConfig()
 	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
-    GameConfig = getGameConfig()
 	GaiaTeamID = Spring.GetGaiaTeamID()
 
     raidWeaponDefID = WeaponDefNames["raidarrest"].id
@@ -299,68 +299,84 @@ if (gadgetHandler:IsSyncedCode()) then
 
     --===========Projectile Persistence Functions ====================================================
 
-
+   local  NewUnitsInPanic={}
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
-	echo("Projectile Created")
-	flightFunction = function(evtID, frame, persPack, startFrame)
-		--Setup
-		if not persPack.startFrame then persPack.startFrame = Spring.GetGameFrame() end
-		myID = persPack.unitID
-		attackerID = persPack.attackerID
-		boolIsDead = Spring.GetUnitIsDead(myID) 
-		if not boolIsDead or boolIsDead == true then
-			GG.FleeingCivilians[myID] = nil
-			return nil, persPack
-		end
 		
-		if Spring.GetUnitIsDead(attackerID) == true then
-			return nil, persPack
-		end
-		
-		if not GG.FleeingCivilians then GG.FleeingCivilians ={} end
-		if not GG.FleeingCivilians[myID] then GG.FleeingCivilians[myID] = {flighttime = persPack.flighttime, startFrame = Spring.GetGameFrame()} end
-		
-		GG.FleeingCivilians[myID].flighttime = GG.FleeingCivilians[myID].flighttime - persPack.updateIntervall
-		
-		--we have two panic events.. the older one has too die
-		if GG.FleeingCivilians[myID].startFrame > persPack.startFrame then 
-			return nil, persPack
-		end
-		
-		if GG.FleeingCivilians[myID] < 0 then
-			return nil, persPack
-		end
-		
-		runAwayFrom(myID, attackerID, persPack.civilianFleeDistance)
-
-		return frame + persPack.updateIntervall, persPack
-	end
-
-	
 		if panicWeapons[projWeaponDefID] then
 			T=process(getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
 			function(id)
-				if Spring.GetUnitTeam(unitID) == GaiaTeamID and not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
-					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[unitID] then
-						GG.EventStream:CreateEvent(
-							flightFunction,
-							{--persistance Pack
-								unitID = id ,
-								attackerID =proOwnerID,
-								flighttime = 20*30,
-								updateIntervall = 33
-							},
-							Spring.GetGameFrame() + (id % 10)
-							)									
+				if Spring.GetUnitTeam(id) == GaiaTeamID and not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
+					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[id] then
+						NewUnitsInPanic[id]={ proOwnerID= proOwnerID,
+											flighttime = (panicWeapons[projWeaponDefID].damage*panicWeapons[projWeaponDefID].range)/30, 
+											updateIntervall = 33}														
 					return id
 					end
 				end
 			end
 			)
-			if T then echo("Units who are in panic:", T) end
+			
 		end
 
     end
+	
+	function gadget:GameFrame(n)
+		if n % 33 == 0 and count(NewUnitsInPanic) > 0 then
+				flightFunction = function(evtID, frame, persPack, startFrame)
+				--Setup
+				if not GG.FleeingCivilians then GG.FleeingCivilians ={} end
+				if not persPack.startFrame then persPack.startFrame = Spring.GetGameFrame() end
+				myID = persPack.unitID
+				attackerID = persPack.attackerID
+				boolIsDead = Spring.GetUnitIsDead(myID) 
+				if not boolIsDead or boolIsDead == true then
+					GG.FleeingCivilians[myID] = nil
+					return nil, persPack
+				end
+				
+				if Spring.GetUnitIsDead(attackerID) == true then
+					return nil, persPack
+				end
+				
+			
+				if not GG.FleeingCivilians[myID] then GG.FleeingCivilians[myID] = {flighttime = persPack.flighttime, startFrame = Spring.GetGameFrame()} end
+				
+				GG.FleeingCivilians[myID].flighttime = GG.FleeingCivilians[myID].flighttime - persPack.updateIntervall
+				
+				--we have two panic events.. the older one has too die
+				if GG.FleeingCivilians[myID].startFrame > persPack.startFrame then 
+					return nil, persPack
+				end
+				
+				if GG.FleeingCivilians[myID] < 0 then
+					return nil, persPack
+				end
+				
+				runAwayFrom(myID, attackerID, persPack.civilianFleeDistance)
+
+				return frame + persPack.updateIntervall, persPack
+				end
+
+		
+			for id, data in pairs(NewUnitsInPanic) do
+				if id then
+							GG.EventStream:CreateEvent(
+								flightFunction,
+								{--persistance Pack
+									unitID = id ,
+									attackerID =data.proOwnerID,
+									flighttime =data.flighttime,
+									updateIntervall = data.updateIntervall
+								},
+								Spring.GetGameFrame() + (id % 10)
+								)
+		
+				end
+			end
+			NewUnitsInPanic ={}
+		
+		end
+	end
 
 
     GROUND= string.byte('g')
