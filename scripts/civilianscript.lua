@@ -1145,7 +1145,7 @@ end
 
 
 function akAimFunction(weaponID, heading, pitch)
-	if true == true then return true end
+	-- if true == true then return true end
 
 	if bodyConfig.boolArmed == false or oldBehaviourState ~= GameConfig.GameState.anarchy then
 		return false 
@@ -1160,7 +1160,7 @@ return  allowTarget(weaponID)
 end
  
 function molotowAimFunction(weaponID, heading, pitch)
-if true == true then return true end
+-- if true == true then return true end
 	-- Aim Animation
 return  allowTarget(weaponID)
 end
