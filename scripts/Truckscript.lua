@@ -72,7 +72,7 @@ function loadLoadOutLoop()
 			Spring.SetUnitNoSelect(loadOutUnitID, true)
 			Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
 		else
-			transferOrders(unitID, loadOutUnitID)
+			transferAttackOrder(unitID, loadOutUnitID)
 			transferStates(unitID, loadOutUnitID)
 
 		end
@@ -107,6 +107,7 @@ function script.TransportDrop ( passengerID, x, y, z )
 	Signal(SIG_ORDERTRANFER)
 	if boolIsCivilianTruck == true then
 		Spring.UnitDetach(passengerID)
+		Spring.SetUnitNoSelect(passengerID, false)
 	end
 end
 

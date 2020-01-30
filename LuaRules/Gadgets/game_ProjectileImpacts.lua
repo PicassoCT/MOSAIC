@@ -17,6 +17,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
+	if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
 	GameConfig = getGameConfig()
@@ -26,6 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
     raidWeaponDefID = WeaponDefNames["raidarrest"].id
     stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
     stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
+	
 	panicWeapons = {
 		[WeaponDefNames["ssied"].id] = {damage= WeaponDefNames["ssied"].damage ,range=WeaponDefNames["ssied"].range},
 		[WeaponDefNames["ak47"].id] = {damage= WeaponDefNames["ak47"].damage ,range=WeaponDefNames["ak47"].range},
@@ -33,6 +35,10 @@ if (gadgetHandler:IsSyncedCode()) then
 		[WeaponDefNames["tankcannon"].id] ={ damage= WeaponDefNames["tankcannon"].damage ,range=WeaponDefNames["tankcannon"].range},
 		[WeaponDefNames["railgun"].id] = {damage= WeaponDefNames["railgun"].damage ,range=WeaponDefNames["railgun"].range},
 	}
+	assert(WeaponDefNames["ssied"].damage )
+	assert(WeaponDefNames["ssied"].range )
+	assert(WeaponDefNames["railgun"].range )
+	assert(WeaponDefNames["railgun"].damage )
 	
     --Watched Weapons Weapons
 	for wId, wRange in pairs(panicWeapons) do
@@ -306,10 +312,12 @@ if (gadgetHandler:IsSyncedCode()) then
 			T=process(getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
 			function(id)
 				if Spring.GetUnitTeam(id) == GaiaTeamID and not GG.DisguiseCivilianFor[id] and civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
-					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[id] then
-						NewUnitsInPanic[id]={ proOwnerID= proOwnerID,
+					if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[id] and not GG.AerosolAffectedCivilians[id] then
+						NewUnitsInPanic[id]={
+											proOwnerID= proOwnerID,
 											flighttime = (panicWeapons[projWeaponDefID].damage*panicWeapons[projWeaponDefID].range)/30, 
-											updateIntervall = 33}														
+											updateIntervall = 33
+											}														
 					return id
 					end
 				end

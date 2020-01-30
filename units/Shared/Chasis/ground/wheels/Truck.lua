@@ -24,6 +24,7 @@ local ground_truck_mg = Truck:New{
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
+	canCloak= false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "40 50 70",
 	
@@ -95,7 +96,7 @@ local ground_truck_antiarmor = Truck:New{
 	transportCapacity = 2,
 	isFirePlatform  = true,
 	fireState= 0,
-	
+	canCloak= false,
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
@@ -125,6 +126,7 @@ local CivilianTruck = Truck:New{
 	usepiececollisionvolumes = false,
 	canAttack= true,
 	canFight = true,
+	canCloak= false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "40 50 70",
 	footprintX = 1,
@@ -164,7 +166,7 @@ local PoliceTruck = Truck:New{
 	turninplace		= true,
 	canAttack = true,
 	canMove = true,
-	
+	canCloak= false,
 	transportSize = 16,
 	transportCapacity = 1,
 	isFirePlatform  = true, 

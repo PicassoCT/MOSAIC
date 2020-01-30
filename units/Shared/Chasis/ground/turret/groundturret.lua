@@ -63,17 +63,14 @@ local groundturretssied =  Turret:New{
 							"custom:bigbulletimpact"
 							  },
 				},
+	
+
 				
 				weapons = {
 				[1]={name  = "ssied",
 					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-					
+					},					
 		},	
-
-			
-
-
 }
 
 local groundturretmg =  Turret:New{
@@ -116,7 +113,7 @@ local groundturretmg =  Turret:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	canCloak =true,	
+	canCloak =false,	
 	
 	Category = [[GROUND]],
 
@@ -181,7 +178,7 @@ local ground_turret_antiarmor =  Turret:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	canCloak =true,
+	canCloak =false,
 	
 	cloakCost=0.0001,
 
@@ -215,12 +212,12 @@ local ground_turret_antiarmor =  Turret:New{
 
 }
 
-local ground_turret_weevillauncher =  Turret:New{
-	name = "Deployed Anti Tank",
+local ground_turret_cruisemissilepod =  Turret:New{
+	name = "Cruise Missile Pod",
 	-- This is a anti-tank drone body, deployed after flight
 	--capable to one-time launch a projectile 
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
-	Description = "Deployed Anti Armor Projectile ",
+	Description = "Deploys a Unit via rocketlaunch ",
 	
 	objectName = "ground_turret_sied.dae",
 	script = "groundturretantitankscript.lua",
@@ -271,6 +268,11 @@ local ground_turret_weevillauncher =  Turret:New{
 							"custom:bigbulletimpact"
 							  },
 				},
+	builds={
+			"ground_walker_mg","ground_turret_ssied", "bunkerbuster",
+			"ground_turret_mg","Anti_armour", "anti_launch"
+	
+	}
 				
 	weapons = {
 		[1]={name  = "javelinrocket",
@@ -285,74 +287,6 @@ local ground_turret_weevillauncher =  Turret:New{
 }
 
 
-local ground_turret_airborniedlauncher =  Turret:New{
-	name = "Deployed Anti Tank",
-	-- This is a anti-tank drone body, deployed after flight
-	--capable to one-time launch a projectile 
-	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
-	Description = "Deployed Anti Armor Projectile ",
-	
-	objectName = "ground_turret_sied.dae",
-	script = "groundturretantitankscript.lua",
-	buildPic = "placeholder.png",
-	--floater = true,
-	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
-	buildTime = 5,
-	--Health
-	maxDamage = 50,
-	idleAutoHeal = 0,
-	--Movement
-	
-	 fireState=1,
-	
-	FootprintX = 1,
-	FootprintZ = 1,
-	maxSlope = 50,
-	
-	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
-
-	
-	nanocolor=[[0 0.9 0.9]],
-	sightDistance = 250,
-	activateWhenBuilt   	= true,
-	cantBeTransported = false,
-
-	--canHover=true,
-	CanAttack = true,
-	CanGuard = true,
-	CanMove = true,
-	CanPatrol = true,
-	Canstop  = true,
-	onOffable = false,
-	LeaveTracks = false, 
-	canCloak =true,
-	
-	
-	Category = [[ARMOR GROUND BUILDING]],
-
-	  customParams = {
-	  baseclass = "turret"
-	  },
-	 sfxtypes = {
-		explosiongenerators = {
-							"custom:bigbulletimpact"
-							  },
-				},
-				
-	weapons = {
-		[1]={name  = "javelinrocket",
-			onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
-			},
-			
-		},	
-
-			
-
-
-}
 
 
 return lowerkeys({

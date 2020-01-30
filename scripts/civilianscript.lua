@@ -600,11 +600,6 @@ normalBehavourStateMachine = {
 											bodyBuild()
 										end
 										
-										boolPlayerUnitNearby, T = isPlayerUnitNearby(unitID, 250)
-										if  boolPlayerUnitNearby == true then
-											setOverrideAnimationState(eAnimState.handsup, eAnimState.slaved, false, nil, true )
-											runAwayFrom(unitID, T[1], GameConfig.civilianPanicRadius)
-										end
 
 									end,
 }
@@ -1145,8 +1140,6 @@ end
 
 
 function akAimFunction(weaponID, heading, pitch)
-	-- if true == true then return true end
-
 	if bodyConfig.boolArmed == false or oldBehaviourState ~= GameConfig.GameState.anarchy then
 		return false 
 	end
@@ -1179,7 +1172,7 @@ end
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = center, emitpiece = ak47, aimfunc = akAimFunction, firefunc = akFireFunction, signal = SIG_PISTOL }
-    WeaponsTable[2] = { aimpiece = UpBody, emitpiece = Head1, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
+    WeaponsTable[2] = { aimpiece = Head1, emitpiece = cellphone1, aimfunc = molotowAimFunction, firefunc = molotowFireFunction, signal = SIG_MOLOTOW }
 end
 
 function script.AimFromWeapon(weaponID)
