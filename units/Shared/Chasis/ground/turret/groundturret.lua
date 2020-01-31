@@ -219,7 +219,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
 	Description = "Deploys a Unit via rocketlaunch ",
 	
-	objectName = "ground_turret_sied.dae",
+	objectName = "ground_turret_cruisemissilepod.dae",
 	script = "groundturretantitankscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
@@ -270,9 +270,9 @@ local ground_turret_cruisemissilepod =  Turret:New{
 				},
 	builds={
 			"ground_walker_mg","ground_turret_ssied", "bunkerbuster",
-			"ground_turret_mg","Anti_armour", "anti_launch"
+			"ground_turret_mg","Anti_armour", "anti_launch", "air_copter_ssied",
 	
-	}
+	},
 				
 	weapons = {
 		[1]={name  = "javelinrocket",
@@ -291,6 +291,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 
 return lowerkeys({
 
+	["ground_turret_cruisemissilepod"] = ground_turret_cruisemissilepod:New(),
 	["ground_turret_ssied"] = groundturretssied:New(),
 	["ground_turret_mg"] = groundturretmg:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New(),
