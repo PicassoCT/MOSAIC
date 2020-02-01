@@ -7,16 +7,17 @@ local function SunChanged(curShaderObj)
 	curShaderObj:SetUniformAlways("sunAmbient", gl.GetSun("ambient" ,"unit"))
 	curShaderObj:SetUniformAlways("sunDiffuse", gl.GetSun("diffuse" ,"unit"))
 	curShaderObj:SetUniformAlways("sunSpecular", gl.GetSun("specular" ,"unit"))
-
+	local spGetConfigFloat = Spring.GetConfigFloat or function(a,b) return b end
+	
 	curShaderObj:SetUniformFloatArrayAlways("pbrParams", {
-		Spring.GetConfigFloat("tonemapA", 0.0),
-		Spring.GetConfigFloat("tonemapB", 1.0),
-		Spring.GetConfigFloat("tonemapC", 0.0),
-		Spring.GetConfigFloat("tonemapD", 0.0),
-		Spring.GetConfigFloat("tonemapE", 1.0),
-		Spring.GetConfigFloat("envAmbient", 0.5),
-		Spring.GetConfigFloat("unitSunMult", 1.5),
-		Spring.GetConfigFloat("unitExposureMult", 1.0),
+		spGetConfigFloat("tonemapA", 0.0),
+		spGetConfigFloat("tonemapB", 1.0),
+		spGetConfigFloat("tonemapC", 0.0),
+		spGetConfigFloat("tonemapD", 0.0),
+		spGetConfigFloat("tonemapE", 1.0),
+		spGetConfigFloat("envAmbient", 0.5),
+		spGetConfigFloat("unitSunMult", 1.5),
+		spGetConfigFloat("unitExposureMult", 1.0),
 	})
 end
 
@@ -106,11 +107,8 @@ local unitMaterials = {}
 for i = 1, #UnitDefs do
 	local udef = UnitDefs[i]
 	local udefCM = udef.customParams
-	
-	Spring.Echo(i,  udefCM.arm_tank, udefCM.core_tank ,udefCM.normaltex, udefCM.normaltex and VFS.FileExists(udefCM.normaltex))
 
 	if udefCM.arm_tank == nil and udefCM.core_tank == nil and udefCM.normaltex and VFS.FileExists(udefCM.normaltex) then
-		Spring.Echo("bla)")
 		local lm = tonumber(udefCM.lumamult) or 1
 		local matName = string.format("%s(lumamult=%f)", "normalMappedS3O", lm)
 		if not materials[matName] then
@@ -123,7 +121,6 @@ for i = 1, #UnitDefs do
 		end
 
 		unitMaterials[udef.name] = {matName, NORMALTEX = udefCM.normaltex}
-		Spring.Echo("udefCM.normaltex", udefCM.normaltex)
 	end
 end
 
