@@ -35,6 +35,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		[WeaponDefNames["tankcannon"].id] ={ damage= WeaponDefNames["tankcannon"].damage ,range=WeaponDefNames["tankcannon"].range},
 		[WeaponDefNames["railgun"].id] = {damage= WeaponDefNames["railgun"].damage ,range=WeaponDefNames["railgun"].range},
 	}
+	echo(WeaponDefNames)
 	assert(WeaponDefNames["ssied"].damage )
 	assert(WeaponDefNames["ssied"].range )
 	assert(WeaponDefNames["railgun"].range )

@@ -1,6 +1,6 @@
 model = {
-	radius = 25.0,
-	height = 40,
+	radius = 15.0,
+	height = 20.0,
 	-- tex1 = "testtex1.dds",
 	-- tex2 = "testtex2.dds",
 	tex1 = "component_atlas_diffuse.png",

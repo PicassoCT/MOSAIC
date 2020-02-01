@@ -220,7 +220,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	Description = "Deploys a Unit via rocketlaunch ",
 	
 	objectName = "ground_turret_cruisemissilepod.dae",
-	script = "groundturretantitankscript.lua",
+	script = "ground_turret_cruisemissilepod_script.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
@@ -238,9 +238,11 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	FootprintZ = 1,
 	maxSlope = 50,
 	
-	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MaxWaterDepth = 60,
 
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "5 25 5",
 	
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 250,
@@ -250,8 +252,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	--canHover=true,
 	CanAttack = true,
 	CanGuard = true,
-	CanMove = true,
-	CanPatrol = true,
+
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
@@ -268,11 +269,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 							"custom:bigbulletimpact"
 							  },
 				},
-	builds={
-			"ground_walker_mg","ground_turret_ssied", "bunkerbuster",
-			"ground_turret_mg","Anti_armour", "anti_launch", "air_copter_ssied",
-	
-	},
+
 				
 	weapons = {
 		[1]={name  = "javelinrocket",
@@ -287,11 +284,43 @@ local ground_turret_cruisemissilepod =  Turret:New{
 }
 
 
+CruiseMissilePods ={}
+
+ground_turret_cruisemissilepod.weapons  = {
+											[1] = { name =  "cm_airstrike"	,
+													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+											}
+										}
+CruiseMissilePods["ground_turret_cm_airdrop"] = ground_turret_cruisemissilepod:New()
+
+ground_turret_cruisemissilepod.weapons  = {
+											[1] = { name =  "cm_walker"	,
+													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+											}
+										}
+CruiseMissilePods["ground_turret_cm_walker"] = ground_turret_cruisemissilepod:New()
+
+ground_turret_cruisemissilepod.weapons  = {
+											[1] = { name =  "cm_antiarmor"	,
+													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+											}
+										}
+CruiseMissilePods["ground_turret_cm_antiarmor"] = ground_turret_cruisemissilepod:New()
+
+ground_turret_cruisemissilepod.weapons  = {
+											[1] = { name =  "cm_turret_ssied"	,
+													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+											}
+										}
+CruiseMissilePods["ground_turret_cm_ssied"] = ground_turret_cruisemissilepod:New()
 
 
 return lowerkeys({
 
-	["ground_turret_cruisemissilepod"] = ground_turret_cruisemissilepod:New(),
+	["ground_turret_cm_airdrop"] = CruiseMissilePods["ground_turret_cm_airdrop"],
+	["ground_turret_cm_walker"] = CruiseMissilePods["ground_turret_cm_walker"],
+	["ground_turret_cm_antiarmor"] = CruiseMissilePods["ground_turret_cm_antiarmor"],
+	["ground_turret_cm_ssied"] = CruiseMissilePods["ground_turret_cm_ssied"],
 	["ground_turret_ssied"] = groundturretssied:New(),
 	["ground_turret_mg"] = groundturretmg:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New(),
