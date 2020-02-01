@@ -81,6 +81,9 @@ function getGameConfig()
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
 	 LaunchReadySteps = 7,
+	 
+	 --CruiseMissiles
+	 CruiseMissilesHeightOverGround= 256,
 		 
 	 --Game States
 	 GameState={
