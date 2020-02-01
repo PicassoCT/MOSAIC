@@ -16,6 +16,7 @@ unitDef = {
   category            = [[SWIM]],
 
   customParams        = {
+	normaltex = "unittextures/blank_normal.dds",
   },
   objectName          = [[pbr_testsphere.dae]],
   explodeAs           = [[NOWEAPON]],

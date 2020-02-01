@@ -18,12 +18,8 @@ function gadget:GetInfo()
     date      = "2008,2009,2010,2016",
     license   = "GNU GPL, v2 or later",
     layer     = 1,
-    enabled   = Spring.Utilities.IsCurrentVersionNewerThan(100, 0)  --  loaded by default?
+    enabled   = true  --  loaded by default?
   }
-end
-
-if not Spring.Utilities.IsCurrentVersionNewerThan(100, 0) then
-	return
 end
 
 --------------------------------------------------------------------------------
@@ -43,9 +39,8 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-if not gl.CreateShader then
-	Spring.Log("CUS", LOG.WARNING, "Shaders not supported, disabling")
-	return false
+if (not gl.CreateShader) then
+  return false
 end
 
 --------------------------------------------------------------------------------
@@ -358,7 +353,7 @@ local function ToggleShadows()
 
   featureRendering.bufMaterials = {}
   local features = Spring.GetAllFeatures()
-   for i=1,#features do
+  for i=1,#features do
     ResetFeature(features[i])
   end
 end
@@ -470,6 +465,7 @@ function gadget:RenderUnitDestroyed(unitID, unitDefID)
 	idToDefID[unitID] = nil  --not really required
 	ObjectDestroyed(unitRendering, unitID, unitDefID)
 end
+
 function gadget:FeatureDestroyed(featureID)
 	idToDefID[-featureID] = nil --not really required
 	ObjectDestroyed(featureRendering, featureID, Spring.GetFeatureDefID(featureID))
@@ -559,6 +555,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+
 function gadget:GameFrame()
   for _, uid in ipairs(Spring.GetAllUnits()) do
     if not select(3,Spring.GetUnitIsStunned(uid)) then --// inbuild?
@@ -571,8 +568,12 @@ function gadget:GameFrame()
   gadgetHandler:RemoveCallIn('GameFrame')
 end
 
+
+
+
 --// Workaround: unsynced LuaRules doesn't receive Shutdown events
 Shutdown = Script.CreateScream()
+
 
 local function _CleanupTextures(rendering)
   for i = 1, #rendering.loadedTextures do
@@ -583,12 +584,20 @@ local function _CleanupTextures(rendering)
   end
 end
 
+
+
+
+
+
+
+
 Shutdown.func = function()
 	--// unload textures, so the user can do a `/luarules reload` to reload the normalmaps
 	for _, rendering in ipairs(allRendering) do
 		_CleanupTextures(rendering)
 	end
 end
+
 
 local function _LoadMaterialConfigFiles(path)
   local unitMaterialDefs = {}
@@ -599,8 +608,9 @@ local function _LoadMaterialConfigFiles(path)
 
   for i = 1, #files do
     local mats, unitMats = VFS.Include(files[i])
+
     for k, v in pairs(mats) do
-                -- Spring.Echo(files[i],'is a feature?',v.feature)
+		-- Spring.Echo(files[i],'is a feature?',v.feature)
       local rendering
       if v.feature then
         rendering = featureRendering
