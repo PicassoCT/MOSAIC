@@ -1,14 +1,7 @@
 local moveDefs 	=	 {
 		
 	
-		{
-			name			=	"bhover3",
-			footprintX		=	3,
-			maxWaterDepth	=	10,
-			maxSlope		=	20,
-			crushStrength	=	25,
-			heatmapping		=	false,
-		},
+
 		{
 		name			=	"VEHICLE",
 		footprintX		=	3,

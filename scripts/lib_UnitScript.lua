@@ -5587,6 +5587,7 @@ end
 
 --> transfers Order from one Unit to another
 function transferOrders(originID, targetID)
+	if not originID or not targetID then return end
 	
 	CommandTable = Spring.GetUnitCommands(originID)
 	first = false

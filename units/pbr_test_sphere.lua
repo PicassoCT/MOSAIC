@@ -30,7 +30,7 @@ unitDef = {
   maxVelocity         = 2.9,
   minCloakDistance    = 75,
   
-  movementClass       = [[BHOVER3]],
+  movementClass       = [[VEHICLE]],
   noAutoFire          = false,
 
   power               = 100,
