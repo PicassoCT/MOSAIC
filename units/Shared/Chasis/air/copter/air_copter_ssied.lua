@@ -20,6 +20,10 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
+	customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
+	
 
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
