@@ -7,7 +7,7 @@ function gadget:GetInfo()
 		license = "GPL3",
 		layer = 3,
 		version = 1,
-		enabled = false
+		enabled = true
 	}
 end
 
