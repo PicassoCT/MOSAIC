@@ -27,6 +27,9 @@ local OperativeAsset = Human:New{
 	CanStop = true,
 	script 				= "operativeassetscript.lua",
 	objectName        	= "operative_asset.dae",
+	customParams        = {
+		normaltex = "unittextures/operative_asset_normalpha.tga",
+	},
 	firestate = 1,
 	
 	canCloak =true,
