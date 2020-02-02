@@ -16,7 +16,7 @@ local function SunChanged(curShaderObj)
 	curShaderObj:SetUniformAlways("sunDiffuse", gl.GetSun("diffuse" ,"unit"))
 	curShaderObj:SetUniformAlways("sunSpecular", gl.GetSun("specular" ,"unit"))
 	local spGetConfigFloat = Spring.GetConfigFloat or function(a,b) return b end
-	
+
 	curShaderObj:SetUniformFloatArrayAlways("pbrParams", {
 		spGetConfigFloat("tonemapA", 0.0),
 		spGetConfigFloat("tonemapB", 1.0),
