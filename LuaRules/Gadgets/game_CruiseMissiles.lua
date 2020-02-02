@@ -6,7 +6,7 @@ function gadget:GetInfo()
                 date                    = "Mar 2014",
                 license  				= "later horses dont be mean.",
                 layer            		= 0,
-                enabled  = true, --      loaded by default?
+                enabled  = false, --      loaded by default?
         }
 end
 
@@ -43,8 +43,8 @@ onImpact = {
 										teamID = Spring.GetProjectileTeamID (projID)
 										pOwner = Spring.GetProjectileOwner(proID)
 											for i=1, 6 do
-												Spring.SpawnProjectile()
-												 ( WeaponDefNames["javelinrocket"].id, {
+												Spring.SpawnProjectile(
+												   WeaponDefNames["javelinrocket"].id, {
 												   pos = {px,py,pz},
 												   ["end"] = {tx,ty,tz},
 												   -- speed = {number x, number y, number z},
@@ -52,14 +52,13 @@ onImpact = {
 												   -- error = {number x, number y, number z},
 												   owner = pOwner,
 												    team = teamID,
-												   -- ttl = number,
-												   -- gravity = number,
-												   -- tracking = number,
-												   -- maxRange = number,
-												   -- startAlpha = number,
-												   -- endAlpha = number,
-												   -- model = string,
-												   -- cegTag = string,
+													ttl = 30*30,
+													error = { 0, 5, 0 },
+													maxRange = 1200,
+													gravity = Game.gravity,
+													startAlpha = 1,
+													endAlpha = 1,
+													model = "air_copter_antiarmor_projectile.s3o",
 												 } )
 											end
 										Spring.DeleteProjectile(projID)	
@@ -85,7 +84,7 @@ onLastPointBeforeImpactSetTargetTo ={
 									  end,
 [WeaponDefNames["cm_walker"].id] = function (tx,ty,tz, projID)
 										return tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz
-									end
+									end,
 [WeaponDefNames["cm_antiarmor"].id] =  function (tx,ty,tz, projID)
 										return tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz
 									end,
