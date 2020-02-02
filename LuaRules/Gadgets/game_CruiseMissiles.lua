@@ -25,6 +25,75 @@ cruiseMissileWeapons[WeaponDefNames["cm_walker"].id] = true
 cruiseMissileWeapons[WeaponDefNames["cm_antiarmor"].id] = true
 cruiseMissileWeapons[WeaponDefNames["cm_turret_ssied"].id] = true
 
+onImpact = {
+[WeaponDefNames["cm_airstrike"].id] = function ( projID)
+											
+									  end,
+[WeaponDefNames["cm_airstrike"].id] = function ( projID)
+										px,py,pz =Spring.GetProjectilePosition(projID)
+										teamID = GetProjectileTeamID (projID)
+										for i=1,2 do
+											unitID = Spring.CreateUnit("ground_walker_mg", px,py,pz, 1, teamID)
+											giveParachutToUnit(unitID,  px,py,pz)
+										end
+										Spring.DeleteProjectile (projID)
+									end,
+[WeaponDefNames["cm_antiarmor"].id] =  function ( projID)
+										px,py,pz =Spring.GetProjectilePosition(projID)
+										teamID = Spring.GetProjectileTeamID (projID)
+										pOwner = Spring.GetProjectileOwner(proID)
+											for i=1, 6 do
+												Spring.SpawnProjectile()
+												 ( WeaponDefNames["javelinrocket"].id, {
+												   pos = {px,py,pz},
+												   ["end"] = {tx,ty,tz},
+												   -- speed = {number x, number y, number z},
+												   -- spread = {number x, number y, number z},
+												   -- error = {number x, number y, number z},
+												   owner = pOwner,
+												    team = teamID,
+												   -- ttl = number,
+												   -- gravity = number,
+												   -- tracking = number,
+												   -- maxRange = number,
+												   -- startAlpha = number,
+												   -- endAlpha = number,
+												   -- model = string,
+												   -- cegTag = string,
+												 } )
+											end
+										Spring.DeleteProjectile(projID)	
+										end,
+[WeaponDefNames["cm_turret_ssied"].id] =  function ( projID)
+											px,py,pz =Spring.GetProjectilePosition(projID)
+										teamID = GetProjectileTeamID (projID)
+										unitID = Spring.CreateUnit("ground_turret_mg", px,py,pz, 1, teamID)
+										giveParachutToUnit(unitID,  px,py,pz)
+										
+										Spring.DeleteProjectile (projID)
+end
+}
+onLastPointBeforeImpactSetTargetTo ={
+[WeaponDefNames["cm_airstrike"].id] = function (tx,ty,tz, projID)
+										px,py,pz =Spring.GetProjectilePosition(projID)
+										teamID = GetProjectileTeamID (projID)
+										
+										for i=1, 4 do
+											GG.UnitsToSpawn:PushCreateUnit("air_copter_ssied",px,py,pz,1,teamID)
+										end
+										return tx, ty , tz
+									  end,
+[WeaponDefNames["cm_walker"].id] = function (tx,ty,tz, projID)
+										return tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz
+									end
+[WeaponDefNames["cm_antiarmor"].id] =  function (tx,ty,tz, projID)
+										return tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz
+									end,
+[WeaponDefNames["cm_turret_ssied"].id] =  function (tx,ty,tz, projID)
+										return tx, ty + 3* GameConfig.CruiseMissilesHeightOverGround, tz
+									end,
+}
+
 local redirectProjectiles = {}  -- [frame][projectileID] = table with .targetType .targetX .targetY .targetZ .targetID
 
 function gadget:Initialize()

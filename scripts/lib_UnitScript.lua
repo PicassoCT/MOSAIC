@@ -1004,9 +1004,9 @@ end
 function affirm(T)
 	if type(T) == "number" then t1 = T; T = { [1] = t1 } end
 	resulT = process(T,
-	function(id)
-		if isUnitAlive(id) == true then return id end
-	end)
+			function(id)
+				if isUnitAlive(id) == true then return id end
+			end)
 	if resulT then
 		if #resulT > 1 then
 		return resulT else
