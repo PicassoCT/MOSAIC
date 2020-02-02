@@ -23,7 +23,7 @@ function transferCommands()
 	Sleep(150)
         if GG.Factorys and GG.Factorys[unitID] and GG.Factorys[unitID][1] then
 
-            CommandTable = Spring.GetUnitCommands(unitID)
+            CommandTable = Spring.GetUnitCommands(unitID, -1)
             first = false
 
             for _, cmd in pairs(CommandTable) do
