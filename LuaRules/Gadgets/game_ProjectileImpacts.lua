@@ -26,7 +26,11 @@ if (gadgetHandler:IsSyncedCode()) then
 
     raidWeaponDefID = WeaponDefNames["raidarrest"].id
     stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
-    stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
+	
+	assert(WeaponDefNames["ssied"].damage )
+	assert(WeaponDefNames["ssied"].range )
+	assert(WeaponDefNames["railgun"].range )
+	assert(WeaponDefNames["railgun"].damage )
 	
 	panicWeapons = {
 		[WeaponDefNames["ssied"].id] = {damage= WeaponDefNames["ssied"].damage ,range=WeaponDefNames["ssied"].range},
@@ -35,11 +39,8 @@ if (gadgetHandler:IsSyncedCode()) then
 		[WeaponDefNames["tankcannon"].id] ={ damage= WeaponDefNames["tankcannon"].damage ,range=WeaponDefNames["tankcannon"].range},
 		[WeaponDefNames["railgun"].id] = {damage= WeaponDefNames["railgun"].damage ,range=WeaponDefNames["railgun"].range},
 	}
-	echo(WeaponDefNames)
-	assert(WeaponDefNames["ssied"].damage )
-	assert(WeaponDefNames["ssied"].range )
-	assert(WeaponDefNames["railgun"].range )
-	assert(WeaponDefNames["railgun"].damage )
+
+	
 	
     --Watched Weapons Weapons
 	for wId, wRange in pairs(panicWeapons) do
