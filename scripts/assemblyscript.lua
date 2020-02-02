@@ -57,10 +57,12 @@ function buildWatcher()
 		if buildProgress then 
 			unitDefID = Spring.GetUnitDefID(buildID)
 			createUnitAtUnit(myTeamID, unitDefID, unitID, 0,0, 0)
-			local facCmds = Spring.GetFactoryCommands(unitID) 
-			if facCmds then -- nil check
-				local cmd = facCmds[1]
-				Spring.GiveOrderToUnit(unitID, CMD.REMOVE, {1,cmd.tag}, {"ctrl"})
+			if doesUnitExistAlive(unitID) == true then
+				local facCmds = Spring.GetFactoryCommands(unitID) 
+				if facCmds then -- nil check
+					local cmd = facCmds[1]
+					Spring.GiveOrderToUnit(unitID, CMD.REMOVE, {1,cmd.tag}, {"ctrl"})
+				end		
 			end		
 		end		
 		end
