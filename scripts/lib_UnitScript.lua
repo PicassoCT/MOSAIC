@@ -2499,6 +2499,7 @@ function toString(element)
 	if not element then return "nil" end
 	typeE = type(element)
 	
+	if typeE == "nil" then return "nil" end
 	if typeE == "boolean" then return boolToString(element) end
 	if typeE == "number" then return ""..element end
 	if typeE == "string" then return element end
@@ -2516,11 +2517,14 @@ function echoUnitDefs(unitDefNames)
 end
 
 function tableToString(tab)
+	if not tab then return "nil" end
 	PostFix = "}"
 	PreFix = "{"
 	conCat=""..PreFix
 	for key, value in pairs(tab) do
-		conCat= conCat.."["..toString(key).."] ="..toString(value)..","
+		if key and value then
+			conCat= conCat.."["..toString(key).."] ="..toString(value)..","
+		end
 	end
 	
 	return conCat..PostFix
@@ -5591,7 +5595,7 @@ function transferOrders(originID, targetID)
 	echo(argtype1, argtype2) 
 	if not originID or not targetID then return end
 	
-	CommandTable = Spring.GetUnitCommands(originID)
+	CommandTable = Spring.GetUnitCommands(originID, -1)
 	first = false
 	if CommandTable then
 		for _, cmd in pairs(CommandTable) do
@@ -5936,22 +5940,4 @@ function cegDevil(cegname, x, y, z, rate, lifetimefunc, endofLifeFunc, boolStrob
 	end
 end
 
-function UnitThrowUnit(unitA, unitB, target,duration)
-dist= distanceUnitToPoint(unitA,target)
-posA= getUnitPositionV(unitA)
-midPoint= {
-			x= (posA.x+target.x)/2,
-			y= posA.y,
-			z= (posA.z+target.z)/2,			
-			}
-			
-while duration > 0 do
 
-
-Sleep(33)
-duration= duration -33
-end
---TODO
-
-
-end
