@@ -2505,7 +2505,7 @@ function toString(element)
 	if typeE == "string" then return element end
 	if typeE == "table" then return tableToString(element) end
 	
-	
+	return typeE	
 end
 
 function echoUnitDefs(unitDefNames)

@@ -19,7 +19,7 @@ rocketPiece= aimpiece
 DefIDPieceMap = {
 	[UnitDefNames["ground_turret_cm_airdrop"].id	]= "cm_airstrike_fold",
 	[UnitDefNames["ground_turret_cm_walker"].id		]= "cm_walker_fold",
-	[UnitDefNames["ground_turret_cm_antiarmor"].id	]= "cm_AntiAmour_fold" ,
+	[UnitDefNames["ground_turret_cm_antiarmor"].id	]= "cm_AntiArmour_fold" ,
 	[UnitDefNames["ground_turret_cm_ssied"].id		]= "cm_turret_ssied_fold" 
 	}
 
@@ -44,6 +44,7 @@ function script.Create()
 	showDependantOnType()
 
 	Hide(aimpiece)
+	Turn(aimpiece,x_axis,math.rad(180),0)
 
 end
 
@@ -75,7 +76,7 @@ end
 
 
 function script.FireWeapon1()
-		Spring.DestroyUnit(unitID, true, false)
+		-- Spring.DestroyUnit(unitID, true, false)
 	return true
 end
 
