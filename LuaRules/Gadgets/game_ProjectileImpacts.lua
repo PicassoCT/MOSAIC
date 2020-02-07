@@ -27,10 +27,15 @@ if (gadgetHandler:IsSyncedCode()) then
     raidWeaponDefID = WeaponDefNames["raidarrest"].id
     stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
 	
-	assert(WeaponDefNames["ssied"].damage )
-	assert(WeaponDefNames["ssied"].range )
-	assert(WeaponDefNames["railgun"].range )
-	assert(WeaponDefNames["railgun"].damage )
+	function getWeapondefByName(name)
+		return WeaponDefs[WeaponDefNames[name].id]
+	end
+	
+	SSied_Def = getWeapondefByName("ssied")
+	
+	assert(SSied_Def)
+	assert(SSied_Def.range)
+	-- echo("SSied_Def", SSied_Def)
 	
 	panicWeapons = {
 		[WeaponDefNames["ssied"].id] = {damage= WeaponDefNames["ssied"].damage ,range=WeaponDefNames["ssied"].range},

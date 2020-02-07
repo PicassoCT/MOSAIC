@@ -288,8 +288,7 @@ CruiseMissilePods ={}
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_airstrike"	,
-													mainDir = [[0 1 0]],
-													maxAngleDif = 45,											
+																							
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
@@ -297,8 +296,7 @@ CruiseMissilePods["ground_turret_cm_airdrop"] = ground_turret_cruisemissilepod:N
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_walker"	,
-													mainDir = [[0 1 0]],
-													maxAngleDif = 45,
+											
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
@@ -306,8 +304,7 @@ CruiseMissilePods["ground_turret_cm_walker"] = ground_turret_cruisemissilepod:Ne
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_antiarmor"	,
-													mainDir = [[0 1 0]],
-													maxAngleDif = 45,
+													
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
@@ -315,8 +312,7 @@ CruiseMissilePods["ground_turret_cm_antiarmor"] = ground_turret_cruisemissilepod
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_turret_ssied",
-													mainDir = [[0 1 0]],
-													maxAngleDif = 45,
+												
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}

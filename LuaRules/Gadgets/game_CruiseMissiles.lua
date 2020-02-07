@@ -6,7 +6,7 @@ function gadget:GetInfo()
                 date                    = "Mar 2014",
                 license  				= "later horses dont be mean.",
                 layer            		= 0,
-                enabled  = false, --      loaded by default?
+                enabled  = true, --      loaded by default?
         }
 end
 
@@ -80,18 +80,39 @@ onLastPointBeforeImpactSetTargetTo ={
 										for i=1, 4 do
 											GG.UnitsToSpawn:PushCreateUnit("air_copter_ssied",px,py,pz,1,teamID)
 										end
-										return tx, ty , tz
+										return makeTargetTable(tx, ty , tz)
 									  end,
 [WeaponDefNames["cm_walker"].id] = function (tx,ty,tz, projID)
-										return tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz
+										return makeTargetTable(tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz)
 									end,
 [WeaponDefNames["cm_antiarmor"].id] =  function (tx,ty,tz, projID)
-										return tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz
+										return makeTargetTable(tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz)
 									end,
 [WeaponDefNames["cm_turret_ssied"].id] =  function (tx,ty,tz, projID)
-										return tx, ty + 3* GameConfig.CruiseMissilesHeightOverGround, tz
+										return makeTargetTable(tx, ty + 3* GameConfig.CruiseMissilesHeightOverGround, tz)
 									end,
 }
+
+function getWeapondefByName(name)
+	for id, def in pairs (WeaponDefs) do
+		if def.name == name then 
+		return def
+		end
+	end
+	
+	return WeaponDefs[WeaponDefNames[name].id]
+end
+
+local SSied_Def = getWeapondefByName("ssied")
+
+assert(SSied_Def)
+assert(SSied_Def.range)
+
+-- for k,v in pairs(SSied_Def) do
+	-- if k and v then
+	-- echo(k,v)
+	-- end
+-- end
 
 local redirectProjectiles = {}  -- [frame][projectileID] = table with .targetType .targetX .targetY .targetZ .targetID
 
@@ -106,6 +127,7 @@ end
 	-- if frame%60==0 then Spring.Echo ("projectile_test.lua"..frame) end
 
 	if redirectProjectiles[frame] then
+	echo("redirectProjectiles active"..frame)
 		for projectileID,_ in pairs (redirectProjectiles[frame]) do
 			if (Spring.GetProjectileType (projectileID)) then
 				setTargetTable (projectileID, redirectProjectiles[frame][projectileID])		
@@ -115,16 +137,38 @@ end
 	end
 end
  
+ 
+ function makeGroundTarget(x,y,z)
+ return{
+		targetX = x,
+		targetY = y,
+		targetZ = z,
+		targetType = 'g'
+		}
+ end
 
 
-
+ function gadget:ProjectileDestroyed(proID)
+	 if redirectedProjectiles[proID]then
+		onImpact[redirectedProjectiles[proID]](proID)
+		redirectedProjectiles[proID] = nil
+	 end
+ end
+ 
+ redirectedProjectiles={}
  function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
 	if (cruiseMissileWeapons [proWeaponDefID] or cruiseMissileWeapons[Spring.GetProjectileDefID(proID)]) then
+		echo("Cruise Missile registered")
+		redirectedProjectiles[proID]=proWeaponDefID
 		local originalTarget = getTargetTable (proID)
 		local tx,ty,tz = getProjectileTargetXYZ (proID)
 		local x,y,z = Spring.GetUnitPosition (proOwnerID)		
 		local resolution = 20
 		local preCog = 3
+		local cruiseMissileVelocity = 250
+
+		
+		local FramesPerResolutionStep = ((distance(x,y,z, tx,ty,tz)/cruiseMissileVelocity)/resolution)*30
 		
 		for i= 1, resolution, 1 do
 			
@@ -132,15 +176,23 @@ end
 			
 			interpolate_Y = 0
 			for add= 0, preCog, 1 do
-				it = math.max(0, math.min(resolution, i+add))
-				ix, iz =  mix(tx, x, resolution/it), mix(tz, z, resolution/it)
-				interpolate_Y =  math.max(Spring.GetSmoothMeshHeight(ix,iz),interpolate_Y)
+				it = math.max(1, math.min(resolution, i+add))
+				ix, iz =  mix(tx, x, it/resolution) + math.random(-50,50), mix(tz, z, it/resolution)+ math.random(-50,50)
+				interpolate_Y =  math.max(Spring.GetSmoothMeshHeight(ix, iz),interpolate_Y)
+				echo("Waypoint:" .. ix .." / ".. interpolate_Y .." / "..iz)
 			end
-			
-			addProjectileRedirect (proID, rx, interpolate_Y + GameConfig.CruiseMissilesHeightOverGround , rz)
+			if i==1 then
+				setTargetTable (proID, makeTargetTable(rx,interpolate_Y + GameConfig.CruiseMissilesHeightOverGround, rz))
+			end			
+			addProjectileRedirect (proID,
+									makeTargetTable(rx,interpolate_Y + GameConfig.CruiseMissilesHeightOverGround, rz),
+									i*30*FramesPerResolutionStep	)
 		end
 		
-		addProjectileRedirect (proID, tx, ty + GameConfig.CruiseMissilesHeightOverGround, tz)		
+		addProjectileRedirect (proID, makeTargetTable(tx, ty , tz), resolution * *30*FramesPerResolutionStep)	
+		addProjectileRedirect (proID, makeTargetTable(tx, ty , tz), resolution * *30*FramesPerResolutionStep)	
+		
+		addProjectileRedirect (proID, onLastPointBeforeImpactSetTargetTo[proWeaponDefID](tx,ty,tz,projID), resolution * 60)		
 		
 		return true
 	end

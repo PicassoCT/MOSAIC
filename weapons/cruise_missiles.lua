@@ -14,20 +14,24 @@ local weaponDef = {
 	reloadtime = 1,
     areaOfEffect = 256,
 	noSelfDamage = true,
-	trajectoryHeight = 150 ,
-	-- fixedLauncher = true, 
+	trajectoryHeight = 0 ,
+	
 	avoidFeature = false,
 	avoidGround = true,
+	commandFire = true,
+	canAttackGround = true,
+		
 	smokeTrail = true,
-	startVelocity  = 380,
-	weaponAcceleration = 100,
-	turnRate = 4*182, --degrees per second
-	weaponVelocity = 1950,
+	startVelocity  = 10,
+	weaponAcceleration = 10,
+	    -- BurnBlow = 0,
+	Turnrate = 1066*30, --degrees per second
+	weaponVelocity = 42,
 	tracks = true,
 	flightTime = 2500 ,
 	-- uselos = false,
-	canAttackGround = true,
-	turret = false,
+
+	turret = true,
 	explosionScar = true, 
     explosionGenerator = "custom:missile_explosion",
 	fireStarter  = 50.0,
@@ -36,6 +40,10 @@ local weaponDef = {
     }	
 	
 local CruiseMissiles ={}
+local Missile = weaponDef
+
+CruiseMissiles["cruisemissile"] = Missile
+
 
 local Missile = weaponDef
 Missile.model = "cm_airstrike_proj.dae"
