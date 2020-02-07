@@ -69,11 +69,8 @@ if ( gadgetHandler:IsSyncedCode()) then
 
 				if team ~= gaiaTeamID  then
 					
-					boolTeamsAreAllied = Spring.AreTeamsAllied(attackerTeam, team)
-
-					
+					boolTeamsAreAllied = Spring.AreTeamsAllied(attackerTeam, team)					
 					if  boolTeamsAreAllied == true then	
-
 						 Spring.UseTeamResource(team, "metal", damage)
 						 addInSecond(team, unitID, "metal",  -1 *math.ceil( damage))
 					else  -- get enemy Teams -- tranfer damage as budget to them
