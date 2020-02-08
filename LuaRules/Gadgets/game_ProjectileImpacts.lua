@@ -20,29 +20,31 @@ if (gadgetHandler:IsSyncedCode()) then
 	if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
-	GameConfig = getGameConfig()
+	local GameConfig = getGameConfig()
 	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 	GaiaTeamID = Spring.GetGaiaTeamID()
 
-    raidWeaponDefID = WeaponDefNames["raidarrest"].id
-    stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
+    local raidWeaponDefID = WeaponDefNames["raidarrest"].id
+    local stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
 	
 	function getWeapondefByName(name)
 		return WeaponDefs[WeaponDefNames[name].id]
 	end
 	
 	SSied_Def = getWeapondefByName("ssied")
+	ak47_Def = getWeapondefByName("ak47")
+	pistol_Def = getWeapondefByName("pistol")
+	tankcannon_Def = getWeapondefByName("tankcannon")
+	railgun_Def = getWeapondefByName("railgun")
 	
-	assert(SSied_Def)
-	assert(SSied_Def.range)
-	-- echo("SSied_Def", SSied_Def)
+
 	
 	panicWeapons = {
-		[WeaponDefNames["ssied"].id] = {damage= WeaponDefNames["ssied"].damage ,range=WeaponDefNames["ssied"].range},
-		[WeaponDefNames["ak47"].id] = {damage= WeaponDefNames["ak47"].damage ,range=WeaponDefNames["ak47"].range},
-		[WeaponDefNames["pistol"].id] ={damage=  WeaponDefNames["pistol"].damage ,range=WeaponDefNames["pistol"].range},
-		[WeaponDefNames["tankcannon"].id] ={ damage= WeaponDefNames["tankcannon"].damage ,range=WeaponDefNames["tankcannon"].range},
-		[WeaponDefNames["railgun"].id] = {damage= WeaponDefNames["railgun"].damage ,range=WeaponDefNames["railgun"].range},
+		[WeaponDefNames["ssied"].id] = {damage = 500 ,range = SSied_Def.range},
+		[WeaponDefNames["ak47"].id] = {damage = 100 ,range = ak47_Def.range},
+		[WeaponDefNames["pistol"].id] ={damage =  75 ,range = pistol_Def.range},
+		[WeaponDefNames["tankcannon"].id] ={ damage = 250 ,range = tankcannon_Def.range},
+		[WeaponDefNames["railgun"].id] = {damage = 300 ,range = railgun_Def.range},
 	}
 
 	
@@ -302,16 +304,13 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID,  attackerID, attackerDefID, attackerTeam)
             if resultDamage then return resultDamage end
         end
-
     end
 
     --===========Projectile Persistence Functions ====================================================
-
    local  NewUnitsInPanic={}
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
 		
@@ -329,10 +328,8 @@ if (gadgetHandler:IsSyncedCode()) then
 					end
 				end
 			end
-			)
-			
+			)			
 		end
-
     end
 	
 	function gadget:GameFrame(n)
