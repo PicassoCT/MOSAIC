@@ -84,7 +84,7 @@ local reverseCompatAllowStartPosition = not Spring.Utilities.IsCurrentVersionNew
 function pgl() -- (print gadget list)  FIXME: move this into a gadget
   for k,v in ipairs(gadgetHandler.gadgets) do
     Spring.Echo(
-      string.format("%3i  %3i  %s", k, v.ghInfo.layer, v.ghInfo.name)
+      string.format("Gadget: %3i  %3i  %s", k, v.ghInfo.layer, v.ghInfo.name)
     )
   end
 end
