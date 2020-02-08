@@ -53,7 +53,7 @@ local scriptEnv = {
 	y_axis = y_axis,
 	z_axis = z_axis,
 }
-
+local SIG_AIM = 1
 
 TablesOfPiecesGroups = {}
 Animations = {
@@ -1217,7 +1217,7 @@ function walkAnimationLoop()
 					PlayAnimation("WALK", nil, 2.0)
 			end
 			if math.random(0,4) < 2 then
-			PlayAnimation("SIT",nil, 2.0)
+				PlayAnimation("SIT",nil, 2.0)
 			else
 				PlayAnimation("FIRING",nil, 4.0)
 			end
@@ -1348,17 +1348,46 @@ function script.QueryWeapon1()
     return aimpiece
 end
 
+function isFireReady()
+	if boolWalking == true then
+	State= Spring.GetUnitStates(unitID)
+	if State.firestate > 0 and State.movestate > 0 then
+		Command( unitID, "stop", {},{})
+		return true
+	end
+	else
+
+
+	return  true
+	end
+return false
+end
+
 function script.AimWeapon1(Heading, pitch)
+	
+	
+
+
+	if isFireReady()== true then
 	boolAiming = true
 	Turn(center,y_axis,Heading,math.pi)
     -- aiming animation: instantly turn the gun towards the enemy
-	boolAiming = false
-    return true
+	
+		return true
+	else
+		return false
+	end
 end
 
+function delayedDeactivateAiming()
+	Signal(SIG_AIM)
+	SetSignalMask(SIG_AIM)
+	Sleep(500)
+	boolAiming = false
+end
 
 function script.FireWeapon1()
-	
+	StartThread(delayedDeactivateAiming)
 	PlayAnimation("FIRING",nil, 2.0)
     return true
 end
