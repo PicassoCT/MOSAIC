@@ -702,6 +702,7 @@ function script.QueryWeapon(weaponID)
     end
 end
 
+lastShownWeapon= Pistol
 function script.AimWeapon(weaponID, heading, pitch)
 		targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 	
@@ -730,12 +731,14 @@ function script.AimWeapon(weaponID, heading, pitch)
 		if dist  < 250 then 
 			Hide(Gun)
 			Show(Pistol)
+			lastShownWeapon=Pistol
 			boolPistol = true
 			if weaponID == 1 then 	
 				return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
 			end				
 		else
 			Hide(Pistol)
+			lastShownWeapon=Gun
 			Show(Gun)
 			boolPistol = false
 			if weaponID ~= 1 then 			
@@ -758,6 +761,10 @@ function showHideIcon(boolCloaked)
         Show(Icon)
     else
         showAll(unitID)
+		Hide(Gun)
+		Hide(Pistol)
+		Show(lastShownWeapon)
+		hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end
 end
