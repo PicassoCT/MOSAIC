@@ -2504,8 +2504,9 @@ function toString(element)
 	if typeE == "number" then return ""..element end
 	if typeE == "string" then return element end
 	if typeE == "table" then return tableToString(element) end
+	if typeE == "function" then return "function :"..elment.."()" end
 	
-	return typeE	
+	return "Unknown Type in to String for ".. element	
 end
 
 function echoUnitDefs(unitDefNames)
@@ -5759,30 +5760,34 @@ function getUnitValueEnv(unitID, ValueName)
 
 end
 
-function setFireState(unitID, fireStateStr)
-states={ 
-		["holdfire"]=1,
-		["returnfire"]=1,
-		["fireatwill"]=2,
+function setFireState(unitID, fireState)
+if type(fireState)=="string" then
 
-}
-state=states[string.lower(fireStateStr)] or 0
+	states={ 
+			["holdfire"]= 0,
+			["returnfire"]=1,
+			["fireatwill"]=2,
 
-	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {state}, {}) 
-
+	}
+	fireState=states[string.lower(fireStateStr)] or 0
 end
 
-function setMoveState(unitID, fireStateStr)
-states={ 
-		["holdposition"]=1,
-		["maneuver"]=1,
-		["roam"]=2,
+	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {fireState}, {}) 
+end
 
-}
-state=states[string.lower(fireStateStr)] or 0
+function setMoveState(unitID, moveState)
+	if type(moveState)=="string" then
 
-	Spring.GiveOrderToUnit(unitID, CMD.MOVE_STATE, {state}, {}) 
+		states={ 
+				["holdposition"]=0,
+				["maneuver"]=1,
+				["roam"]=2,
 
+		}
+		moveState=states[string.lower(fireStateStr)] or 0
+	end
+	
+	Spring.GiveOrderToUnit(unitID, CMD.MOVE_STATE, {moveState}, {}) 
 end
 
 --======================================================================================
