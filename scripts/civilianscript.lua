@@ -21,6 +21,7 @@ local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
 local Head1 = piece('Head1');
+local MilitiaMask = piece('MilitiaMask');
 local LowArm1 = piece('LowArm1');
 local LowArm2 = piece('LowArm2');
 local LowLeg1 = piece('LowLeg1');
@@ -123,6 +124,7 @@ local bodyConfig={}
 		bodyConfig.boolHandbag =( iShoppingConfig == 4)
 		bodyConfig.boolLoaded = ( iShoppingConfig <  5)
 		bodyConfig.boolProtest = GG.GlobalGameState== GameConfig.GameState.anarchy
+		
 	end
 
 function script.Create()
@@ -182,8 +184,12 @@ function bodyBuild()
 	showT(TablesOfPiecesGroups["Feet"])
 	if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"] ) end
 
+	if math.random(0,4) > 3 then 
+			Show(MilitiaMask)
+	end
 	
 	if bodyConfig.boolArmed == true  then
+		Show(MilitiaMask)
 		Show(ak47)	
 		Show(molotow)
 		return
@@ -523,6 +529,7 @@ normalBehavourStateMachine = {
 												if bodyConfig.boolProtest == true then
 													playerName = getRandomPlayerName()
 													makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], playerName)
+													Show(MilitiaMask)
 													Show(molotow)
 													Hide(ShoppingBag)
 													setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
