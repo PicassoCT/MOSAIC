@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2020-02-07T22:03:59Z</created><keywords></keywords><modified>2020-02-07T22:03:59Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2020-02-07T22:04:31Z</created><keywords></keywords><modified>2020-02-07T22:04:31Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #3-image" name="Map #3"><init_from>file://D:\spring\games\Mosaic.sdd\unittextures\operative_investigator_diffuse.png</init_from></image>
     <image id="Map #1-image" name="Map #1"><init_from>file://D:\spring\games\MosaicDev\Models\operative\investigator\femaletex\diffuse_tex.psd</init_from></image>
@@ -62324,7 +62324,7 @@
 </Name_array><technique_common><accessor source="#fem-Interpolations-array" count="0"><param type="name"/></accessor></technique_common></source><sampler id="fem-Matrix-animation-transform"><input semantic="INPUT" source="#fem-Matrix-animation-input"/><input semantic="OUTPUT" source="#fem-Matrix-animation-output-transform"/><input semantic="INTERPOLATION" source="#fem-Interpolations"/></sampler><channel source="#fem-Matrix-animation-transform" target="fem/matrix"/></animation></animation>
   </library_animations>
   <library_visual_scenes>
-    <visual_scene id="operative_investigator" name="operative_investigator">
+    <visual_scene id="operative_propagator" name="operative_propagator">
       <node name="fem" id="fem" sid="fem"><matrix sid="matrix">1.000000 0.000000 0.000000 0.615689 0.000000 0.000000 1.000000 -377.166901 0.000000 -1.000000 0.000000 -176.030121 0.000000 0.000000 0.000000 1.000000</matrix><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="SoftRobot1" id="SoftRobot1" sid="SoftRobot1"><matrix sid="matrix">1.000000 0.000000 0.000000 2.811707 0.000000 0.000000 1.000000 45.183472 0.000000 -1.000000 0.000000 1.420334 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#SoftRobot1-lib"><bind_material><technique_common><instance_material symbol="default" target="#default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Object001" id="Object001" sid="Object001"><matrix sid="matrix">1.000000 0.000000 0.000000 727.318481 0.000000 0.000000 1.000000 36.039444 0.000000 -1.000000 0.000000 -431.232880 0.000000 0.000000 0.000000 1.000000</matrix><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
@@ -62341,6 +62341,6 @@
     </visual_scene>
   </library_visual_scenes>
   <scene>
-    <instance_visual_scene url="#operative_investigator"></instance_visual_scene>
+    <instance_visual_scene url="#operative_propagator"></instance_visual_scene>
   </scene>
 </COLLADA>
