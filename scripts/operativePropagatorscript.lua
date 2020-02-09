@@ -669,7 +669,7 @@ end
 
 
 function raidAimFunction(weaponID, heading, pitch)
-	return raidReloadComplete()
+	return raidReloadComplete() and boolCloaked == false
 end
 
 function pistolAimFunction(weaponID, heading, pitch)
