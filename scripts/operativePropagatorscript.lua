@@ -29,6 +29,7 @@ local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
+local Drone = piece("Drone")
 
 GameConfig = getGameConfig()
 
@@ -681,10 +682,6 @@ function pistolAimFunction(weaponID, heading, pitch)
 end
 
 
-function gunAimFunction(weaponID, heading, pitch)
-	return boolCloaked
-end
-
 function raidFireFunction(weaponID, heading, pitch)
 	myRaidDownTime = raidDownTime
 	return true
@@ -699,11 +696,10 @@ end
 
 SIG_RAID = 1
 SIG_PISTOL = 2
-SIG_GUN = 4
 
 WeaponsTable = {}
 function makeWeaponsTable()
-    WeaponsTable[1] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
+    WeaponsTable[1] = { aimpiece = Drone, emitpiece = Drone, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
     WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
 end
 

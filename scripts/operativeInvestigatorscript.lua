@@ -12,6 +12,7 @@ end
 
 center = piece "center"
 Pistol = piece "Pistol"
+Drone = piece "Drone"
 
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
@@ -189,7 +190,7 @@ end
 
 function raidFireFunction(weaponID, heading, pitch)
 Spring.Echo("raidAimFunction")
-boolRecharge = raidDownTime
+myRaidDownTime = raidDownTime
 return true
 end
 Shell1 = piece("Shell1")
@@ -203,11 +204,10 @@ end
 
 SIG_RAID = 1
 SIG_PISTOL = 2
-SIG_GUN = 4
 
 WeaponsTable = {}
 function makeWeaponsTable()
-    WeaponsTable[1] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
+    WeaponsTable[1] = { aimpiece = Drone, emitpiece = Drone, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
     WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL}
 end
 
