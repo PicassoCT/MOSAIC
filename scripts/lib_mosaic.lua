@@ -417,6 +417,7 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 		"antagonsafehouse",
 		"protagonsafehouse",
 		"propagandaserver",
+		"assembly",
 		"launcher"
 	}
 	
