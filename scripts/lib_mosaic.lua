@@ -77,6 +77,7 @@ function getGameConfig()
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
 	 InterrogationDistance= 120,
+	 RaidInterrogationPropgandaPrice = 50,
 	 
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
@@ -379,18 +380,6 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
-function  getRaidAbleTypeTable(UnitDefs)
-
-local	UnitDefNames = getUnitDefNames(UnitDefs)
-	
-	typeTable={
-		"antagonsafehouse",
-		"protagonsafehouse"
-	}
-	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "house", UnitDefs))
-	
-	return getTypeTable(UnitDefNames, typeTable)
-end
 
 function  getSafeHouseUpgradeTypeTable(UnitDefs)
 
@@ -436,8 +425,7 @@ function  getOperativeTypeTable(UnitDefs)
 		"civilianagent",
 		"operativeasset",
 		"operativepropagator",
-		"operativeinvestigator"
-		
+		"operativeinvestigator"		
 	}
 	
 	return getTypeTable(UnitDefNames, typeTable)
