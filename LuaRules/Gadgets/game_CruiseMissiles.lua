@@ -188,7 +188,7 @@ end
 		end
 		
 		
-		addProjectileRedirect (proID, onLastPointBeforeImpactSetTargetTo[proWeaponDefID](tx,ty,tz,projID), resolution * FramesPerResolutionStep, true)		
+		addProjectileRedirect (proID, onLastPointBeforeImpactSetTargetTo[proWeaponDefID](tx,ty,tz,proID), resolution * FramesPerResolutionStep, true)		
 		
 		return true
 	end
