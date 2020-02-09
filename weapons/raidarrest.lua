@@ -4,39 +4,50 @@ local weaponDef = {
     name = "Arrest Players & Raid Safehouses",
 	 weaponType = [[MissileLauncher]],
 	model = "RaidDroneProjectile.dae",
-	weaponVelocity = 150,
-	startVelocity  = 10,
 
-	--aiming behaviour
-	turret = true,
-	tracks = true,
-	noSelfDamage = true,
-	avoidFeature            = false,
-	avoidGround = true,
-    areaOfEffect = 8,
-    craterBoost = 0,
-    craterMult = 0,
+    Accuracy = 2000,
+
+    --Physic/flight path
+    range = 256,
+	burst  = 9,
+	burstRate = 1.0,
+    reloadtime = 10,
+    weaponVelocity = 500,
+    startVelocity = 15,
+    weaponAcceleration = 250,
+    flightTime = 6.5,
+    BurnBlow = 0,
+    FixedLauncher = false,
+    dance = 15,
+    wobble = 30,
+    tolerance = 16000,
+    tracks = true,
+    Turnrate = 8000,
+    collideFriendly = true,
+
+    --- -APPEARANCE
+    smokeTrail = false,
+  
+    --- -TARGETING
+    turret = true,
+    cylinderTargeting = 55.0,
+    avoidFeature = true,
+    avoidFriendly = true,
+
+
+    commandfire=true,
+
+    --- -DAMAGE
     damage = {
-        default = 1,
-        HeavyArmor = 1,
+        default = 1
     },
-	burst = 15,
-	burstrate = 1,
-    impactOnly = true,
-	 impulseBoost = 3,
-    impulseFactor = 6,
-    intensity = 12,
-    interceptedByShieldType = 1,
+    areaOfEffect = 25,
+    craterMult = 0,
+
     lineOfSight = true,
-    paralyzer = true,
-    paralyzeTime = 1,
-    range = 80,
-    reloadtime = 25,
-    rgbColor = [[0.0 0.5 0.8]],
+
     soundHit = "weapons/raid/flashbang.ogg",
-    -- explosionGenerator = "custom:psiimpact",
-    targetMoveError = 0.3,
-    weaponVelocity = 400,
+    
 }
 
 return lowerkeys({ [weaponName] = weaponDef })
