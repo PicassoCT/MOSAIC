@@ -37,6 +37,12 @@ if (gadgetHandler:IsSyncedCode()) then
 	tankcannon_Def = getWeapondefByName("tankcannon")
 	railgun_Def = getWeapondefByName("railgun")
 	
+	if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
+	function gadget:Initialize()
+		if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
+	
+	end
+	
 
 	
 panicWeapons = {
@@ -214,99 +220,58 @@ panicWeapons = {
 
 	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
-    raidTable= getRaidAbleTypeTable(UnitDefs)
+	local stunContainerUnitTimePeriodInSeconds = 10.0
+	local allTeams = Spring.GetTeamList()
 
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
         Spring.Echo("Raid/Interrogatable Weapon fired upon"..UnitDefs[unitDefID].name)
-        if InterrogateAbleType[unitDefID] or   houseTypeTable[unitDefID]  then
-		 Spring.Echo("Raid/Interrogatable Unit hit  ")
-            if raidTable[unitDefID] or   houseTypeTable[unitDefID] then
-                Spring.Echo("Raid Weapon Fired on raidable Unit")
-                if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
-                    Spring.Echo("Raid: Replacing hit ID with safehouse ID")
-                    unitID = GG.houseHasSafeHouseTable[unitID]
-                end
-				
-                if InterrogateAbleType[Spring.GetUnitDefID(unitID)] then
-                    Spring.Echo("Starting Raid Eventstream")
-                    stunUnit(unitID, 2.0)
-                    setSpeedEnv(attackerID, 0.0)
-                    interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "raidIcon")	
-				end
-				return damage	
-            else
-                Spring.Echo("Interrogation of Unit")
-                if civilianWalkingTypeTable[unitDefID] and GG.DisguiseCivilianFor[unitID] then
-                    Spring.Echo("Interrogation of Operatives/Agents")
-                    stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
-                    setSpeedEnv(attackerID, 0.0)
-                    Spring.Echo("Interrogation 31")
-                    interrogationEventStreamFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")
-                else
-                    Spring.Echo("Interrogating a civilian/truck/whatever wtf - but hey you are free to waste your time")
-                    stunUnit(unitID, 2.0)
-                    setSpeedEnv(attackerID, 0.0)
-                    Spring.Echo("Todo Propaganda fines")
-                    interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")
-                end
-				return damage
-            end
-        else
-			Spring.Echo("Hitting a Innocent Unit: TODO Propaganda Damage")
-		end
+		
+	--stupidity edition
+	if attackerID == unitID then return damage end
+     
+	 --make disguise civilians transparent
+	 if civilianWalkingTypeTable[unitDefID] and  GG.DisguiseCivilianFor[unitID] then
+		stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
+		unitID= GG.DisguiseCivilianFor[unitID]
+		unitDefID = Spring.GetUnitDefID(unitID)
+		unitTeam = Spring.GetUnitTeam(unitID)
+	 end
+	 
+	 --make houses transparent
+	 if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable[unitID] then
+		stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
+		unitID = GG.houseHasSafeHouseTable[unitID]
+		unitDefID = Spring.GetUnitDefID(unitID)
+		unitTeam = Spring.GetUnitTeam(unitID)
+	 end
+	 
+	--stupidity edition
+	if attackerID == unitID then return damage end
+     
+	 
+	 --Interrogation
+	 if InterrogateAbleType[unitDefID]   then
+        Spring.Echo("Interrogation/Raid of "..UnitDefs[unitDefID].name)
+        stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
+        setSpeedEnv(attackerID, 0.0)
+        interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")       
+		return damage
+	 end
+	 
+	 -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
+	 assert(attackerTeam)
+	 GG.Bank:TransferToTeam(-GameConfig.RaidInterrogationPropgandaPrice, attackerTeam, attackerID )
+	 for i=1,#allTeams,1  do
+		 if allTeams[i] ~= attackerTeam then
+			GG.Bank:TransferToTeam(GameConfig.RaidInterrogationPropgandaPrice, allTeams[i], unitID )
+		 end
+	 end
+		
+	
+		
     end
 
-    GG.exploAmmoBlowTable ={}
-    function addChainExplosion(unitID, damage, weaponDefID, cegName, NumberOfExplosions, delayMin, delayMax )
-
-        if not GG.exploAmmoBlowTable[unitID] then
-            GG.exploAmmoBlowTable[unitID] = {number=0,id= unitID}
-        end
-
-        GG.exploAmmoBlowTable[unitID].number = GG.exploAmmoBlowTable[unitID].number + NumberOfExplosions
-
-        persPack = {startFrame = Spring.GetGameFrame()}
-        for i=1,NumberOfExplosions do
-            persPack[#persPack + 1] = math.random(delayMin, delayMax)
-        end
-        persPack.ListOfPieces= getPieceTable(unitID)
-
-        --Start Chain Explosion EventStream
-        eventFunction = function(id, frame, persPack)
-            nextFrame = frame + 1
-            if persPack then
-                if persPack.unitID then
-                    --check
-                    boolDead = Spring.GetUnitIsDead(persPack.unitID)
-
-                    if boolDead and boolDead == true then
-                        return
-                    end
-
-                    if not persPack.startFrame then
-                        persPack.startFrame = frame
-                    end
-
-                    if not persPack[1] then
-                        return
-                    end
-
-                    if persPack.startFrame then
-                        nextFrame = persPack.startFrame + persPack[1]
-                        table.remove(persPack,1)
-                    end
-                    val= math.random(1,#persPack.ListOfPieces)
-                    shakeUnitPieceRelative(persPack.unitID, persPack.ListOfPieces[val],math.random(-25,25),50 )
-                    Spring.AddUnitDamage(persPack.unitID, 15)
-
-                end
-            end
-            return nextFrame, persPack
-        end
-
-        GG.EventStream:CreateEvent(eventFunction, persPack, Spring.GetGameFrame() + 1)
-    end
-
+   
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID,  attackerID, attackerDefID, attackerTeam)
