@@ -39,7 +39,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 
 	
-	panicWeapons = {
+panicWeapons = {
 		[WeaponDefNames["ssied"].id] = {damage = 500 ,range = SSied_Def.range},
 		[WeaponDefNames["ak47"].id] = {damage = 100 ,range = ak47_Def.range},
 		[WeaponDefNames["pistol"].id] ={damage =  75 ,range = pistol_Def.range},
@@ -126,6 +126,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     return true, persPack
                 end
 
+				--check wether the interrogator is still there
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
                     Spring.Echo("caught 4")
@@ -146,12 +147,13 @@ if (gadgetHandler:IsSyncedCode()) then
                     return true, persPack
                 end
 
+				--check if the icon is still there
                 if not persPack.IconId then
                     persPack.IconId = createUnitAtUnit(Spring.GetUnitTeam(persPack.interrogatorID), iconUnitTypeName , persPack.unitID, 0, 0, 0)
                     if not GG.raidIconPercentage then  GG.raidIconPercentage = {} end
                     if not GG.raidIconPercentage[persPack.IconId] then  GG.raidIconPercentage[persPack.IconId] = 0 end
                 end
-                --update the icons percentage
+                --update the icons  ercentage
                 GG.raidIconPercentage[persPack.IconId] = (Spring.GetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames
                 Spring.Echo("Raid running " .. (persPack.startFrame + GameConfig.InterrogationTimeInFrames )- Spring.GetGameFrame()   )
 
@@ -215,41 +217,43 @@ if (gadgetHandler:IsSyncedCode()) then
     raidTable= getRaidAbleTypeTable(UnitDefs)
 
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
-        Spring.Echo("Raid Weapon fired upon"..UnitDefs[unitDefID].name)
+        Spring.Echo("Raid/Interrogatable Weapon fired upon"..UnitDefs[unitDefID].name)
         if InterrogateAbleType[unitDefID] or   houseTypeTable[unitDefID]  then
-		 Spring.Echo("RInterrogateable Unit fired  ")
+		 Spring.Echo("Raid/Interrogatable Unit hit  ")
             if raidTable[unitDefID] or   houseTypeTable[unitDefID] then
-                Spring.Echo("Raid Weapon Fired")
+                Spring.Echo("Raid Weapon Fired on raidable Unit")
                 if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID] then
-                    Spring.Echo("Raid 1")
+                    Spring.Echo("Raid: Replacing hit ID with safehouse ID")
                     unitID = GG.houseHasSafeHouseTable[unitID]
                 end
-
+				
                 if InterrogateAbleType[Spring.GetUnitDefID(unitID)] then
-                    Spring.Echo("Raid 2")
+                    Spring.Echo("Starting Raid Eventstream")
                     stunUnit(unitID, 2.0)
                     setSpeedEnv(attackerID, 0.0)
                     interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "raidIcon")	
 				end
 				return damage	
             else
-                Spring.Echo("Interrogation 1")
+                Spring.Echo("Interrogation of Unit")
                 if civilianWalkingTypeTable[unitDefID] and GG.DisguiseCivilianFor[unitID] then
-                    Spring.Echo("Interrogation 21")
+                    Spring.Echo("Interrogation of Operatives/Agents")
                     stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
                     setSpeedEnv(attackerID, 0.0)
                     Spring.Echo("Interrogation 31")
                     interrogationEventStreamFunction(GG.DisguiseCivilianFor[unitID], unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")
                 else
-                    Spring.Echo("Interrogation 22")
+                    Spring.Echo("Interrogating a civilian/truck/whatever wtf - but hey you are free to waste your time")
                     stunUnit(unitID, 2.0)
                     setSpeedEnv(attackerID, 0.0)
-                    Spring.Echo("Interrogation 32")
+                    Spring.Echo("Todo Propaganda fines")
                     interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")
                 end
 				return damage
             end
-        end
+        else
+			Spring.Echo("Hitting a Innocent Unit: TODO Propaganda Damage")
+		end
     end
 
     GG.exploAmmoBlowTable ={}
