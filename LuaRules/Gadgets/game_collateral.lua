@@ -11,7 +11,6 @@ function gadget:GetInfo()
     }
 end
 
---GG.UnitsToSpawn:PushCreateUnit(name,x,y,z,dir,teamID)
 
 if ( gadgetHandler:IsSyncedCode()) then
 	   
@@ -19,7 +18,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_UnitScript.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	local gaiaTeamID= Spring.GetGaiaTeamID()
-	
+	GameConfig = getGameConfig()
 	accumulatedInSecond ={}
 	
 	function addInSecond(team, uid,  rtype, damage)
@@ -36,15 +35,37 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 	end
 	
-	GameConfig = getGameConfig()
-	function gadgetUnitDestroyed(unitID, unitDefID, teamID, attackerID)
-		if ( GG.DisguiseCivilianFor[unitID] ) then
-			maxhp = UnitDefs[unitDefID].maxdamage 
-			-- _, maxhp = Spring.GetUnitHealth(unitID)
-			assert(maxhp)
-			factor = 1 + (GG.Propgandaservers[team]* GameConfig.propandaServerFactor)
-			Spring.AddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
-			addInSecond(team, attackerID, "metal",   math.ceil((maxhp * factor)))
+	
+	local function TransferToTeam(self,  money, reciever, displayunit)
+		self[#self + 1] = {  Money = money, Reciever= reciever, DisplayUnit = displayunit}
+	end
+	
+	if not GG.Bank then GG.Bank = {TransferToTeam = TransferToTeam}	 end
+	if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {}	 end
+	if not GG.Propgandaservers then GG.Propgandaservers ={} end
+		
+	function gadget:Intialize()
+		if not GG.Bank then GG.Bank = {TransferToTeam = TransferToTeam}	 end
+		if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {}	 end
+		if not GG.Propgandaservers then GG.Propgandaservers ={} end
+	end
+	
+	
+	allTeams = Spring.GetTeamList()
+	for i=1,#allTeams do
+		GG.Propgandaservers[allTeams[i]] = 0		
+	end
+	
+	
+	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+
+		if attackerID and ( GG.DisguiseCivilianFor[unitID] ) and teamID ~= Spring.GetUnitTeam(attackerID) then
+			maxhp = UnitDefs[unitDefID].maxDamage 
+			if not maxhp then			
+				factor = 1 + (GG.Propgandaservers[team]* GameConfig.propandaServerFactor)
+				Spring.AddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
+				addInSecond(team, attackerID, "metal",   math.ceil((maxhp * factor)))
+			end
 		end 
 	end
 	
@@ -56,8 +77,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 			end
 		return 
 		end
-		if not GG.Propgandaservers then GG.Propgandaservers ={} end
-		
+	
 		--civilian attacked by a not civilian
 		if unitTeam == gaiaTeamID and attackerID and attackerTeam ~= unitTeam then
 		
@@ -85,7 +105,33 @@ if ( gadgetHandler:IsSyncedCode()) then
 		end  
 	end
 	
+	
+	
 	function gadget:GameFrame(frame)
+	
+		if frame % 10 == 0 then
+			if GG.Bank and GG.Bank[1] then
+				local cur = GG.Bank
+				GG.Bank = { TransferToTeam = TransferToTeam }
+
+				for i = 1, #cur, 1 do					
+					assert(cur[i].Reciever, "Reciever team missing ")
+					assert(cur[i].Money, "Money missing ")
+					assert(cur[i].DisplayUnit, "DisplayUnit missing ")
+					assert(cur[i], "DisplayUnit missing ")
+					assert(Spring.GetTeamInfo(cur[i].Reciever), "DisplayUnit missing ")
+					if  cur[i].Money < 0 then
+
+						Spring.UseTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+					else
+						Spring.AddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+					end
+					addInSecond(cur[i].Reciever, cur[i].DisplayUnit,  "metal", cur[i].Money)
+				end
+				
+			end
+		end
+		
 		if frame % 30 == 0 then
 		-- Spring.Echo("GameFrame:: Display Update Collateral")  
 			for team, deedtable in pairs(accumulatedInSecond) do

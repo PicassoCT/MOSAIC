@@ -11,7 +11,7 @@ function gadget:GetInfo()
     }
 end
 
---GG.UnitsToSpawn:PushCreateUnit(name,x,y,z,dir,teamID)
+
 
 if (not gadgetHandler:IsSyncedCode()) then
     return
