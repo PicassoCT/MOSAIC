@@ -4720,11 +4720,11 @@ end
 -- for more recent implementations see lib_type
 
 function mix(vA, vB, fac)
+	if fac > 1 or fac < 0 then  assert(true==false) end
 	if type(vA) == "number" and type(vB) == "number" then
 		return (fac * vA +(1-fac) * vB)
 	end
 	
-	fac = math.min(1.0, math.max(0.0, fac))
 	return mixTable(vA,vB,fac)
 end
 

@@ -160,35 +160,35 @@ end
 		local originalTarget = getTargetTable (proID)
 		local tx,ty,tz = getProjectileTargetXYZ (proID)
 		local x,y,z = Spring.GetUnitPosition (proOwnerID)		
-		local resolution = 20
-		local preCog = 3
+		local resolution = 10
+		local preCog = 2
+		startoffsetInFrames = 300 --10 seconds
 
 
 		
-		local FramesPerResolutionStep = math.ceil((distance(x,y,z, tx,ty,tz)/CM_Def.projectilespeed)/resolution)*30
-		
+		local SecondsPerResolutionStep = math.ceil((distance(x,y,z, tx,ty,tz)/resolution)* (1/(CM_Def.projectilespeed*30)))
+		Spring.Echo("Frames Per Resolutionstep:"..SecondsPerResolutionStep)
 		for i= 1, resolution -1, 1 do
 			
-			rx,  rz = mix(tx, x, resolution/i), mix(tz, z, resolution/i)
+			rx,  rz = mix(tx, x, i/resolution), mix(tz, z, i/resolution)
 			
 			interpolate_Y = 0
 			for add= 0, preCog, 1 do
 				it = math.max(1, math.min(resolution, i+add))
-				ix, iz =  mix(tx, x, it/resolution) + math.random(-500,500), mix(tz, z, it/resolution)
+				ix, iz =  mix(tx, x, it/resolution) , mix(tz, z, it/resolution)
 				interpolate_Y =  math.max(Spring.GetSmoothMeshHeight(ix, iz),interpolate_Y)	
 			end
 			
-			echo("Waypoint ["..Spring.GetGameFrame()+ (i*FramesPerResolutionStep).."]:" .. rx .." / ".. interpolate_Y .." / "..rz)
 			if i==1 then
-				setTargetTable (proID, makeTargetTable(rx,interpolate_Y + GameConfig.CruiseMissilesHeightOverGround, rz))
+				setTargetTable (proID, makeTargetTable(rx,interpolate_Y + GameConfig.CruiseMissilesHeightOverGround, rz), true)
 			end			
 			addProjectileRedirect (proID,
 								   makeTargetTable(rx,interpolate_Y + GameConfig.CruiseMissilesHeightOverGround, rz),
-								   i*FramesPerResolutionStep	)
+								   startoffsetInFrames+ i*SecondsPerResolutionStep*30	)
 		end
 		
 		
-		addProjectileRedirect (proID, onLastPointBeforeImpactSetTargetTo[proWeaponDefID](tx,ty,tz,proID), resolution * FramesPerResolutionStep, true)		
+		addProjectileRedirect (proID, onLastPointBeforeImpactSetTargetTo[proWeaponDefID](tx,ty,tz,proID), startoffsetInFrames+ resolution * SecondsPerResolutionStep*30, true)		
 		
 		return true
 	end
@@ -237,7 +237,7 @@ function getTargetTable (proID)
 	return targetTable
 end
 
-function setTargetTable (proID, targetTable)	
+function setTargetTable (proID, targetTable, boolFirst)	
 	if targetTable.targetType == string.byte('g') then
 		Spring.SetProjectileTarget (proID, targetTable.targetX, targetTable.targetY, targetTable.targetZ)
 	else

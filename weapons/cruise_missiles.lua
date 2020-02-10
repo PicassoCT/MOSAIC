@@ -14,7 +14,7 @@ local weaponDef = {
 	reloadtime = 1,
     areaOfEffect = 256,
 	noSelfDamage = true,
-	trajectoryHeight = 0 ,
+	trajectoryHeight = 2.0 ,
 	
 	avoidFeature = false,
 	avoidGround = true,
@@ -23,10 +23,10 @@ local weaponDef = {
 		
 	smokeTrail = true,
 	startVelocity  = 10,
-	weaponAcceleration = 10,
-	    -- BurnBlow = 0,
+	weaponAcceleration = 50,
+	-- BurnBlow = 0,
 	Turnrate = 1066*30, --degrees per second
-	weaponVelocity = 42,
+	weaponVelocity = 400,
 	tracks = true,
 	flightTime = 2500 ,
 	-- uselos = false,
