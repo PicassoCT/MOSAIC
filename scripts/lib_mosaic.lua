@@ -84,7 +84,7 @@ function getGameConfig()
 	 LaunchReadySteps = 7,
 	 
 	 --CruiseMissiles
-	 CruiseMissilesHeightOverGround= 100,
+	 CruiseMissilesHeightOverGround=  22,
 		 
 	 --Game States
 	 GameState={

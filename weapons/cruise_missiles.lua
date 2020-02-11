@@ -22,11 +22,11 @@ local weaponDef = {
 	canAttackGround = true,
 		
 	smokeTrail = true,
-	startVelocity  = 10,
-	weaponAcceleration = 50,
+	startVelocity  = 5,
+	weaponAcceleration = 15,
 	-- BurnBlow = 0,
 	Turnrate = 1066*30, --degrees per second
-	weaponVelocity = 400,
+	weaponVelocity = 800,
 	tracks = true,
 	flightTime = 2500 ,
 	-- uselos = false,
