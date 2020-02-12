@@ -693,6 +693,7 @@ function showHide(id, bShow)
 	end
 
 end
+
 --> Shows all Pieces of a a Unit in 
 function showAll(id)
 	if not unitID then unitID = id end
