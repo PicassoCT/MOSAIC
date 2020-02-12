@@ -1344,7 +1344,7 @@ end
 
 
 function generateSknakeOnAPlaneDefaults(cPceDescLst)
-  for iNumerated, arm in ipairs(PceDescLst) do
+  for iNumerated, arm in pairs(PceDescLst) do
 
         if not arm.Piece then echo("libAnimation::snakeOnAPlane - No Valid Piece in Arm"); return end
 
@@ -1433,7 +1433,7 @@ function snakeOnAPlane(unitID, cPceDescLst, FirstSensor, WindowDescriptorList, a
     --if not defined ArmCenter - define Arm as centered in UnitSpace
     if not PceDescLst.ArmCenterOffset then PceDescLst.ArmCenterOffset = { ox = 0, oz = 0 } end
 
-    for iNumerated, arm in ipairs(PceDescLst) do
+    for iNumerated, arm in pairs(PceDescLst) do
         --TODO
     end
     --total Length arm
