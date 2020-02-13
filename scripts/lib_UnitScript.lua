@@ -4125,17 +4125,19 @@ function echo(stringToEcho, ...)
 	if stringToEcho then
 		Spring.Echo(toString(stringToEcho))
 	end
+	if true then return end
+	
 	if arg then
-		counter = 0
 		for k, v in pairs(arg) do
-			if k and v then
+			if k then
+				keyString = "["..toString(k).."]"
 				if type(v) == "table" then
-					echoT(v)
+					Spring.Echo(keyString.."{")
+						echoT(v)
+					Spring.Echo("}")
 				else
-					Spring.Echo(toString(k) .. " " .. toString(v))
+					Spring.Echo(keyString .. "»" .. toString(v))
 				end
-			elseif k then
-				Spring.Echo(toString(k))
 			end
 		end
 	end

@@ -3,7 +3,7 @@ function gadget:GetInfo()
         name = "CruiseMissile Management",
         desc = "SetProjectileTarget etc",
         author = "PicassoCT",
-        date = "Mar 2014",
+        date = "Mar 2020",
         license = "later horses dont be mean.",
         layer = 0,
         enabled = true --      loaded by default?
@@ -118,7 +118,7 @@ cruiseMissileFunction = function(evtID, frame, persPack, startFrame)
     px, py, pz = Spring.GetProjectilePosition(projID)
 
     if not px then
-        echo("Projectile died")
+       -- echo("Projectile died")
         return nil, persPack
     end
 
@@ -132,28 +132,28 @@ cruiseMissileFunction = function(evtID, frame, persPack, startFrame)
         if persPack.redirectIndex == #persPack.redirectList then
             --if pre last target
             persPack.on_Impact(projID, nextTarget.targetX, nextTarget.targetY, nextTarget.targetZ)
-            echo("Projectile ready to die")
+           -- echo("Projectile ready to die")
             return nil, persPack
         elseif persPack.redirectIndex + 1 == #persPack.redirectList then
             persPack.on_LastPointBeforeImpactSetTargetTo(projID)
         end
 
         persPack.redirectIndex = math.min(#persPack.redirectList, persPack.redirectIndex + 1)
-        echo("Setting next target:" .. frame .. " to target " .. persPack.redirectIndex)
+       -- echo("Setting next target:" .. frame .. " to target " .. persPack.redirectIndex)
         nextTarget = persPack.redirectList[persPack.redirectIndex]
         dist = distance(px, py, pz, nextTarget.targetX, nextTarget.targetY, nextTarget.targetZ)
     end
 
     FramesToTarget = math.max(2, math.ceil(dist / CM_Def.projectilespeed) - 2)
     setTargetTable(projID, persPack.redirectList[persPack.redirectIndex])
-    echo("game_cruiseMissiles:" .. (FramesToTarget / 30) .. " seconds till waypoint " .. persPack.redirectIndex)
+   -- echo("game_cruiseMissiles:" .. (FramesToTarget / 30) .. " seconds till waypoint " .. persPack.redirectIndex)
     return frame + FramesToTarget, persPack
 end
 
 redirectedProjectiles = {}
 function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
     if (cruiseMissileWeapons[proWeaponDefID] or cruiseMissileWeapons[Spring.GetProjectileDefID(proID)]) then
-        echo("Cruise Missile registered")
+       -- echo("Cruise Missile registered")
         redirectedProjectiles[proID] = proWeaponDefID
 
         local tx, ty, tz = getProjectileTargetXYZ(proID)

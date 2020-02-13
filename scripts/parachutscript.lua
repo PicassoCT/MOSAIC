@@ -22,6 +22,7 @@ function script.Create()
 	Spring.SetUnitNoSelect(unitID,true)
 	StartThread(AnimationTest)
 	StartThread(fallingDown)
+	Hide(center)
 end
 
 function fallingDown()

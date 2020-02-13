@@ -839,7 +839,7 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 				if distance ( persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,persPack.oldSyncedPos.z, x,y, z) < 5 then
 					-- Unit has stopped, test wether we are near it
 					if distance(mx,my,mz,x, y, z) < 25 then
-						Command(persPack.myID, "stop")
+						Command(persPack.myID, "stop", {},{})
 						return frame + 30, persPack 
 					end
 				end
