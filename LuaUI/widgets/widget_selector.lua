@@ -137,6 +137,7 @@ function widget:Initialize()
       buttons[3] = "Allow User Widgets"
     end
   end
+  
   if Spring.GetGameFrame() <= 0 then
     Spring.SendLuaRulesMsg('xmas'..((os.date("%m") == "12"  and  os.date("%d") >= "13") and '1' or '0'))
   end

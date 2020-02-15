@@ -231,7 +231,7 @@ function gadget:GameFrame(f)
 	-- Log("gadget:GameFrame"..f)
 	if f == 1 then
 		-- This is executed AFTER headquarters / commander is spawned
-		Log("gadget:GameFrame 1")
+		Log("Prometheus :GameFrame 1")
 		if waypointMgr then
 			waypointMgr.GameStart()
 		end
@@ -288,7 +288,7 @@ end
 --
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
+	Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
 	if waypointMgr then
 		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
@@ -320,7 +320,7 @@ function gadget:UnitTaken(unitID, unitDefID, unitTeam, newTeam)
 end
 
 function gadget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
-	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." given")
+	Spring.Echo("Prometheus: Unit "..unitID.." of type "..UnitDefs[unitDefID].name.." given")
 	if team[unitTeam] then
 		Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." given to team "..unitTeam)
 		team[unitTeam].UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
@@ -328,7 +328,9 @@ function gadget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
 end
 
 -- This may be called by engine from inside Spring.GiveOrderToUnit (e.g. if unit limit is reached)
+GG.PrometheusDebugging_IdlingUnits ={}
 function gadget:UnitIdle(unitID, unitDefID, unitTeam)
+	
 	if team[unitTeam] then
 		team[unitTeam].UnitIdle(unitID, unitDefID, unitTeam)
 	end

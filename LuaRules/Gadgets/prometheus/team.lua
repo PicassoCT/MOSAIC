@@ -178,22 +178,24 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 			end
 			
 			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
-				for bo,nr in ipairs(stillMissingUnitsTable) do
+				local shuffledBuildOrder = shuffleT(unitBuildOrder[unitDefID])
+				
+				for bo,nr in ipairs(shuffledBuildOrder) do
 					if bo and UnitDefs[bo]  then
 						Log("Queueing: ", UnitDefs[bo].humanName)
+						Spring.Echo("Safehouse ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
 						GiveOrderToUnit(unitID, -bo, {}, {})
 					else 
 						Log("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 					end
 				end
 
-			else
-			
-		
+			else		
 				for _,bo in ipairs(unitBuildOrder[unitDefID]) do
 					if bo and UnitDefs[bo]  then
 						Log("Queueing: ", UnitDefs[bo].humanName)
 						GiveOrderToUnit(unitID, -bo, {}, {})
+						Spring.Echo("Factory ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
 					else
 						Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 					end
@@ -207,6 +209,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 end
 
 function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
+
 	if unitBuildOrder[unitDefID]   then
 		-- factory or builder?
 		if not (UnitDefs[unitDefID].speed > 0) then
@@ -214,6 +217,7 @@ function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
 			-- just go through the build queue exactly once, instead of repeating it.
 			if (enemyBaseCount > 0 or Spring.GetGameSeconds() < 0.1) then
 				GiveOrderToUnit(unitID, CMD.REPEAT, {1}, {})
+
 				-- Each next factory gives fight command to next enemy.
 				-- Didn't use math.random() because it's really hard to establish
 				-- a 100% correct distribution when you don't know whether the
@@ -228,6 +232,7 @@ function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
 					for i=1,enemyBaseCount do
 						-- enemyBases[] is in the right format to pass into GiveOrderToUnit...
 						GiveOrderToUnit(unitID, CMD.FIGHT, enemyBases[idx], {})
+						Spring.Echo("Unit "..unitID.." orderded to attack ", enemyBases[idx])
 						idx = idx + 1
 						if idx > enemyBaseCount then idx = 1 end
 					end
@@ -239,6 +244,8 @@ function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
 				if bo and UnitDefs[bo]  then
 					Log("Queueing: ", UnitDefs[bo].humanName)
 					GiveOrderToUnit(unitID, -bo, {}, {})
+					Spring.Echo("Mobile Unit "..unitID.." orderded to build unit of type "..UnitDefs[bo].name)
+
 				else
 					Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 				end

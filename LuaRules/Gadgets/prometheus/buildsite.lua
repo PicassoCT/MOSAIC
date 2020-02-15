@@ -143,6 +143,7 @@ end
 
 local function UpdateAdd(unitID, supplyInfo)
 	local r0 = supplyInfo.r
+	
 	local numSegments = supplyInfo.numSegments
 	local x0, y0, z0 = supplyInfo.x, supplyInfo.y, supplyInfo.z
 
@@ -157,7 +158,12 @@ local function UpdateAdd(unitID, supplyInfo)
 			--is there overlap?
 			local r = currSupplyInfo.r
 			local x, z = currSupplyInfo.x, currSupplyInfo.z
+			assert(unitID)
+			assert(currUnitID)
 			local dist = GetUnitSeparation(unitID, currUnitID, true)
+			assert(r0)
+			assert(dist)
+			assert(r)
 			if (dist < r0 + r) then
 				RemovePoints(supplyInfo, x, z, r)
 				RemovePoints(currSupplyInfo, x0, z0, r0)

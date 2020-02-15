@@ -8,19 +8,18 @@ SQUAD_SIZE = 24
 -- unit names must be lowercase!
 --minbuild requirements for safehouses
 gadget.minBuildRequirementProtagon = {
-	["propagandaserver"] = 2,
 	["operativeinvestigator"] = 1,
-	["protagonsafehouse"] = 2,
+	["protagonsafehouse"] = 1,
+	["propagandaserver"] = 1,
 	["operativeasset"] = 1,
 	["recruitcivilian"] = 1
-
 }
 
 
 gadget.minBuildRequirementAntagon = {
-	["propagandaserver"] = 2,
 	["operativepropagator"] = 1,
-	["antagonsafehouse"] = 2,
+	["antagonsafehouse"] = 1,
+	["propagandaserver"] = 1,
 	["operativeasset"] = 1,
 	["recruitcivilian"] = 1
 }
@@ -31,19 +30,15 @@ gadget.unitBuildOrder = UnitBag{
 	operativepropagator =UnitArray{"antagonsafehouse"},
 	antagonsafehouse = UnitArray{
 		"operativepropagator", 
+		"civilianagent",
+		"propagandaserver",
 		"propagandaserver",
 		"operativepropagator",
-		"propagandaserver",
-		"antagonsafehouse",
 		"propagandaserver",
 		"assembly",
 		"nimrod",
 		"propagandaserver",
 		"launcher",
-		"launcherstep",
-		"launcherstep",
-		"launcherstep",
-		"civilianagent",
 	},
 	assembly = UnitArray{
 			"ground_truck_mg", 
@@ -53,20 +48,33 @@ gadget.unitBuildOrder = UnitBag{
 			"air_copter_mg",
 			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
-			"ground_tank_night"
+			"ground_tank_night",
+			"ground_turret_cm_walker"
+	},
+	launcher = UnitArray{
+		"launcherstep",
+		"launcherstep",
+		"launcherstep",
+		"launcherstep",
+		"launcherstep",
+		"launcherstep"
 	},
 	operativeinvestigator =UnitArray{
 	"protagonsafehouse"
 	},
 	protagonsafehouse = UnitArray{
-		"operativeinvestigator", 
+		"operativepropagator", 
+		"operativepropagator", 
+		"civilianagent",
 		"propagandaserver",
-		"operativeinvestigator",
+		"propagandaserver",
+		"operativepropagator",
+		"propagandaserver",
 		"propagandaserver",
 		"assembly",
 		"nimrod",
-		"propagandaserver",	
-		"civilianagent"
+		"propagandaserver",
+		"launcher",
 	},
 	transportedassembly = UnitArray{
 		"ground_turret_ssied",	
@@ -110,7 +118,8 @@ gadget.flags = UnitSet{
 gadget.flagCappers = UnitSet{
 	"operativeinvestigator",
 	"civilianagent",
-	"operativeasset"
+	"operativeasset",
+	"ground_truck_mg"
 }
 
 -- Number of units per side used to cap flags.
