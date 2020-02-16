@@ -60,6 +60,8 @@ local combatMgr = CreateCombatMgr(myTeamID, myAllyTeamID, Log)
 local flagsMgr = CreateFlagsMgr(myTeamID, myAllyTeamID, mySide, Log)
 local ANTAGONSAFEHOUSEDFID 	= UnitDefNames["antagonsafehouse"].id
 local PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
+local PROPAGANDASERVER = UnitDefNames["propagandaserver"].id
+PropandaServerTeamCounter ={}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -99,6 +101,18 @@ function Team.GameFrame(f)
 	end
 end
 
+
+function teamHasEnoughPropagandaservers(teamID)
+teamIDCount =Spring.GetTeamUnitsCounts(teamID)
+allOthersCounted = 0 
+upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs)
+	for defID, count in pairs(teamIDCount) do
+		if defID == ANTAGONSAFEHOUSEDFID or defID== PROTAGONSAFEHOUSEDEFID or upgradeTypeTable[defID] then
+			allOthersCounted = allOthersCounted + count
+		end
+	end
+	return teamIDCount[PROPAGANDASERVER] > allOthersCounted
+end
 --------------------------------------------------------------------------------
 --
 --  Game call-ins
@@ -178,15 +192,20 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 			end
 			
 			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
-				local shuffledBuildOrder = shuffleT(unitBuildOrder[unitDefID])
+				if teamHasEnoughPropagandaservers(unitTeam) == true then
+					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})
 				
-				for bo,nr in ipairs(shuffledBuildOrder) do
-					if bo and UnitDefs[bo]  then
-						Log("Queueing: ", UnitDefs[bo].humanName)
-						Spring.Echo("Safehouse ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
-						GiveOrderToUnit(unitID, -bo, {}, {})
-					else 
-						Log("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
+				else
+					local shuffledBuildOrder = shuffleT(unitBuildOrder[unitDefID])
+					
+					for bo,nr in ipairs(shuffledBuildOrder) do
+						if bo and UnitDefs[bo]  then
+							Log("Queueing: ", UnitDefs[bo].humanName)
+							Spring.Echo("Safehouse ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
+							GiveOrderToUnit(unitID, -bo, {}, {})
+						else 
+							Log("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
+						end
 					end
 				end
 
