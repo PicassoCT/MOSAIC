@@ -61,7 +61,7 @@ local flagsMgr = CreateFlagsMgr(myTeamID, myAllyTeamID, mySide, Log)
 local ANTAGONSAFEHOUSEDFID 	= UnitDefNames["antagonsafehouse"].id
 local PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
 local PROPAGANDASERVER = UnitDefNames["propagandaserver"].id
-PropandaServerTeamCounter ={}
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -102,15 +102,17 @@ function Team.GameFrame(f)
 end
 
 
-function teamHasEnoughPropagandaservers(teamID)
-teamIDCount =Spring.GetTeamUnitsCounts(teamID)
-allOthersCounted = 0 
-upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs)
-	for defID, count in pairs(teamIDCount) do
+function Team.hasEnoughPropagandaservers(teamID)
+	local teamIDCount = Spring.GetTeamUnitsCounts(teamID)
+	local allOthersCounted = 0 
+	local upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs)
+	
+	for defID, count in ipairs(teamIDCount) do
 		if defID == ANTAGONSAFEHOUSEDFID or defID== PROTAGONSAFEHOUSEDEFID or upgradeTypeTable[defID] then
 			allOthersCounted = allOthersCounted + count
 		end
 	end
+		
 	return teamIDCount[PROPAGANDASERVER] > allOthersCounted
 end
 --------------------------------------------------------------------------------
@@ -192,7 +194,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 			end
 			
 			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
-				if teamHasEnoughPropagandaservers(unitTeam) == true then
+				if Team.hasEnoughPropagandaservers(unitTeam) == true then
 					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})
 				
 				else
