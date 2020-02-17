@@ -27,7 +27,7 @@ gadget.minBuildRequirementAntagon = {
 -- Format: factory = { "unit to build 1", "unit to build 2", ... }
 gadget.unitBuildOrder = UnitBag{
 	-- Antagon
-	operativepropagator =UnitArray{"antagonsafehouse"},
+	operativepropagator = UnitArray{"antagonsafehouse"},
 	antagonsafehouse = UnitArray{
 		"operativepropagator", 
 		"civilianagent",

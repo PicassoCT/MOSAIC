@@ -288,7 +288,7 @@ end
 --
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
+	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
 	if waypointMgr then
 		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end

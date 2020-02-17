@@ -62,6 +62,15 @@ local ANTAGONSAFEHOUSEDFID 	= UnitDefNames["antagonsafehouse"].id
 local PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
 local PROPAGANDASERVER = UnitDefNames["propagandaserver"].id
 
+
+
+local upgradeTypeTable = {
+ [UnitDefNames["nimrod"] .id]=true,
+ [UnitDefNames["propagandaserver" ].id]=true,
+ [UnitDefNames["assembly"].id]=true,
+}
+
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -105,15 +114,20 @@ end
 function Team.hasEnoughPropagandaservers(teamID)
 	local teamIDCount = Spring.GetTeamUnitsCounts(teamID)
 	local allOthersCounted = 0 
-	local upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs)
+	
 	
 	for defID, count in ipairs(teamIDCount) do
-		if defID == ANTAGONSAFEHOUSEDFID or defID== PROTAGONSAFEHOUSEDEFID or upgradeTypeTable[defID] then
+		if defID == ANTAGONSAFEHOUSEDFID or defID== PROTAGONSAFEHOUSEDEFID or Team.upgradeTypeTable[defID] then
 			allOthersCounted = allOthersCounted + count
 		end
 	end
+	
+	propagandaserverCount= 0
+	if teamIDCount[PROPAGANDASERVER] then 
+		propagandaserverCount = teamIDCount[PROPAGANDASERVER]
+	end
 		
-	return teamIDCount[PROPAGANDASERVER] > allOthersCounted
+	return propagandaserverCount  > allOthersCounted
 end
 --------------------------------------------------------------------------------
 --
@@ -223,55 +237,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 				end
 			end
 		else
-			Log("Warning: unitBuildOrder can only be used to control factories")
-		end
-	end
-	
-end
-
-function Team.normalBuildOrder(unitID, unitDefID, unitTeam)
-
-	if unitBuildOrder[unitDefID]   then
-		-- factory or builder?
-		if not (UnitDefs[unitDefID].speed > 0) then
-			-- If there are no enemies, don't bother lagging Spring to death:
-			-- just go through the build queue exactly once, instead of repeating it.
-			if (enemyBaseCount > 0 or Spring.GetGameSeconds() < 0.1) then
-				GiveOrderToUnit(unitID, CMD.REPEAT, {1}, {})
-
-				-- Each next factory gives fight command to next enemy.
-				-- Didn't use math.random() because it's really hard to establish
-				-- a 100% correct distribution when you don't know whether the
-				-- upper bound of the RNG is inclusive or exclusive.
-				if (not waypointMgr) then
-					enemyBaseLastAttacked = enemyBaseLastAttacked + 1
-					if enemyBaseLastAttacked > enemyBaseCount then
-						enemyBaseLastAttacked = 1
-					end
-					-- queue up a bunch of fight orders towards all enemies
-					local idx = enemyBaseLastAttacked
-					for i=1,enemyBaseCount do
-						-- enemyBases[] is in the right format to pass into GiveOrderToUnit...
-						GiveOrderToUnit(unitID, CMD.FIGHT, enemyBases[idx], {})
-						Spring.Echo("Unit "..unitID.." orderded to attack ", enemyBases[idx])
-						idx = idx + 1
-						if idx > enemyBaseCount then idx = 1 end
-					end
-				end
-			end
-			for _,bo in ipairs(unitBuildOrder[unitDefID]) do
-			
-
-				if bo and UnitDefs[bo]  then
-					Log("Queueing: ", UnitDefs[bo].humanName)
-					GiveOrderToUnit(unitID, -bo, {}, {})
-					Spring.Echo("Mobile Unit "..unitID.." orderded to build unit of type "..UnitDefs[bo].name)
-
-				else
-					Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
-				end
-			end
-		else
+			-- TODO Go near houses
 			Log("Warning: unitBuildOrder can only be used to control factories")
 		end
 	end
@@ -287,16 +253,15 @@ function Team.UnitFinished(unitID, unitDefID, unitTeam)
 	--Spring.AddTeamResource(myTeamID, "energy", UnitDefs[unitDefID].energyCost)
 
 	-- queue unitBuildOrders if we have any for this unitDefID
-	if boolMinBuildOrderFullfilled == true then
-		Team.normalBuildOrder(unitID,unitDefID, unitTeam)	
-	else
+	-- if boolMinBuildOrderFullfilled == true then
+		-- Team.normalBuildOrder(unitID,unitDefID, unitTeam)	
+	-- else
 		Team.minBuildOrder(unitID,unitDefID,unitTeam, stillMissingUnitsTable, side)		
-	end
+	-- end
 
 	-- if any unit manager takes care of the unit, return
 	-- managers are in order of preference
 
-	-- need to prefer flag capping over building to handle Russian commissars
 	if waypointMgr then
 		if flagsMgr.UnitFinished(unitID, unitDefID, unitTeam) then return end
 	end
