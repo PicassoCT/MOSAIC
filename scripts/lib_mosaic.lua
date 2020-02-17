@@ -350,20 +350,30 @@ end
 function  getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={}
-	if myDefID == UnitDefNames["antagonsafehouse"].id then
-		typeTable={
-		"nimrod",
-		"propagandaserver",
-		"assembly",
-		"launcher"
-		}
+	if not myDefID then 
+			typeTable={
+			"nimrod",
+			"propagandaserver",
+			"assembly"
+			}
+
 	else
-	typeTable={
-		"nimrod",
-		"blacksite",
-		"propagandaserver",
-		"assembly"
-		}
+
+		if myDefID == UnitDefNames["antagonsafehouse"].id then
+			typeTable={
+			"nimrod",
+			"propagandaserver",
+			"assembly",
+			"launcher"
+			}
+		else
+		typeTable={
+			"nimrod",
+			"blacksite",
+			"propagandaserver",
+			"assembly"
+			}
+		end
 	end
 	
 	return getTypeTable(UnitDefNames, typeTable)
@@ -380,20 +390,6 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 	return getTypeTable(UnitDefNames, typeTable)
 end
 
-
-function  getSafeHouseUpgradeTypeTable(UnitDefs)
-
-	UnitDefNames = getUnitDefNames(UnitDefs)
-	typeTable={
-		"nimrod",
-		"assembly",
-		"blacksite",
-		"propagandaserver",
-		"launcher"
-	}
-	
-	return getTypeTable(UnitDefNames, typeTable)
-end
 
 function  getInterrogateAbleTypeTable(UnitDefs)
 	assert(UnitDefs)
@@ -860,7 +856,7 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 				end
 						
 				if persPack.stuckCounter > 5 then
-					moveUnitToUnit(persPack.myID, persPack.syncedID, math.random(-10,10),0, math.random(-10,10))
+					moveUnitToUnitGrounded(persPack.myID, persPack.syncedID, math.random(-10,10),0, math.random(-10,10))
 				end
 
 				transferOrders( persPack.syncedID, persPack.myID)

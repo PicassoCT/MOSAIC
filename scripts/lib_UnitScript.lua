@@ -874,6 +874,16 @@ x,y,z = Spring.GetUnitPosition(target)
 return false
 end
 
+function moveUnitToUnitGrounded(id , target, ox, oy, oz)
+ox, oy, oz= ox or 0, oy or 0, oz or 0
+x,y,z = Spring.GetUnitPosition(target)
+	if x then
+		Spring.SetUnitPosition(id, x + ox, Spring.GetGroundHeight(x,z) + oy ,z + oz )
+	return true
+	end
+return false
+end
+
 function moveUnitToUnitPiece(id , target, Name)
 pieceID=Name
 	if type(Name)== "string" then

@@ -224,7 +224,6 @@ end
 
 safeHouseTypes= getSafeHouseTypeTable(UnitDefs)
 houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
-echo(houseTypeTable)
 
 function drawMapRoom()
 	Sleep(100)
@@ -259,7 +258,7 @@ function drawMapRoom()
 			)
 
 	
-	mapDim={x=-500,z=-750}
+	mapDim={x=500,z=-250}
 	
 	pieceIndex= 0
 	for id, coords in pairs(dictHouses_Pos) do
