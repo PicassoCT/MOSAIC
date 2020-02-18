@@ -23,7 +23,7 @@ local OperativeInvestigator = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 				= "operativeInvestigatorscript.lua",
+	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
 
 

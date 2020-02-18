@@ -7,6 +7,9 @@ include "lib_mosaic.lua"
 myDefID=Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
+SIG_PISTOL = 1
+SIG_RAID = 1
+
 local Animations = include('animation_assasin_female.lua')
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -30,10 +33,13 @@ local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
 local Drone = piece("Drone")
+Icon = piece("Icon")
+Shell1 = piece("Shell1")
+FoldtopUnfolded = piece'FoldtopUnfolded'
+FoldtopFolded= piece'FoldtopFolded'
 
 GameConfig = getGameConfig()
-
-civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 
 local scriptEnv = {
@@ -93,7 +99,7 @@ boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
--- echo("Create Propagator reached")
+
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
@@ -516,13 +522,24 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP)
 	Sleep(250)
+
 	boolWalking = false
 	-- Spring.Echo("Stopping")
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
+	Sleep(1000)
+	 if  boolCloaked == false then
+	Show(FoldtopUnfolded)
+	Hide(FoldtopFolded)
+	end
+
 end
 
 function script.StartMoving()
 	boolWalking = true
+	if  boolCloaked == false then
+	Hide(FoldtopUnfolded)
+	Show(FoldtopFolded)
+	end
 	Turn(center,y_axis, math.rad(0), 12)
 	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
@@ -634,14 +651,13 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
 
-GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
+
 raidDownTime = GameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = GameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
 local scanSatDefID = UnitDefNames["satellitescan"].id
 local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
-oldRaidDownTime = myRaidDownTime
+
 
 function raidReactor()
 	myTeam = Spring.GetUnitTeam(unitID)
@@ -652,7 +668,7 @@ function raidReactor()
 		process(getAllNearUnit(unitID, raidComRange),
 				function (id)
 					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == scanSatDefID then
-						myRaidDownTime= math.max( -100, myRaidDownTime - 100* raidBonusFactorSatellite)
+						myRaidDownTime= math.max( -100, myRaidDownTime - 100* GameConfig.agentConfig.raidBonusFactorSatellite)
 						boolComSatelliteNearby = true
 					end				
 				end
@@ -689,13 +705,11 @@ end
 
 function pistolFireFunction(weaponID, heading, pitch)
 	boolAiming = false
-	Explode(TablesOfPiecesGroups["Shell"][1], SFX.FALL + SFX.NO_HEATCLOUD)
+	Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
 	return true
 end
 
 
-SIG_RAID = 1
-SIG_PISTOL = 2
 
 WeaponsTable = {}
 function makeWeaponsTable()
@@ -704,22 +718,7 @@ function makeWeaponsTable()
 end
 
 
-function turretReseter()
-    while true do
-        Sleep(1000)
-        for i = 1, #WeaponsTable do
-			if WeaponsTable[i].coolDownTimer then
-				if WeaponsTable[i].coolDownTimer > 0 then
-					WeaponsTable[i].coolDownTimer = math.max(WeaponsTable[i].coolDownTimer - 1000, 0)
 
-				elseif WeaponsTable[i].coolDownTimer <= 0 then
-					tP(WeaponsTable[i].emitpiece, -90, 0, 0, 0)
-					WeaponsTable[i].coolDownTimer = -1
-				end
-			end
-        end
-    end
-end
 
 function script.AimFromWeapon(weaponID)
     if WeaponsTable[weaponID] then
@@ -741,10 +740,18 @@ end
 
 
 function script.AimWeapon(weaponID, heading, pitch)
-	return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)		
+    if WeaponsTable[weaponID] then
+        if WeaponsTable[weaponID].aimfunc then
+            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+        else
+            WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
+            WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
+            return true
+        end
+    end
+    return false
 end
 
-Icon = piece("Icon")
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
@@ -753,6 +760,12 @@ function showHideIcon(boolCloaked)
         Show(Icon)
     else
         showAll(unitID)
+		Hide(Drone)
+		hideT(TablesOfPiecesGroups["SoftRobot"])
+		hideT(TablesOfPiecesGroups["Shell"])			
+		Show(FoldtopUnfolded)
+		Hide(FoldtopFolded)
+		
         Hide(Icon)
     end
 end
