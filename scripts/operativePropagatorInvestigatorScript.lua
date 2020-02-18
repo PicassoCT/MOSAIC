@@ -520,7 +520,7 @@ end
 
 function delayedStop()
 	Signal(SIG_STOP)
-	SetSignalMask(SIG_STOP)
+	SetSignalMask(SIG_STOP) 
 	Sleep(250)
 
 	boolWalking = false
