@@ -19,7 +19,7 @@ function gadget:GetInfo()
     date      = "Apr, 2008",
     license   = "GNU GPL, v2 or later",
     layer     = 10,
-    enabled   = true,
+    enabled   = false,
   }
 end
 
@@ -97,7 +97,6 @@ local tryloading  = 1     --// try to activate lups if it isn't found
 local lups_luaui = false --// lups running as widget?
 local nilDispList
 
---local corfusdefid = UnitDefNames["corfus"].id
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
