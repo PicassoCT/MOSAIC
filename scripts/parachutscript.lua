@@ -105,6 +105,12 @@ end
 
 function AnimationTest()
 local Fract=TablesOfPiecesGroups["Fract"]
+	for i=1, #Fract, 15 do			
+		degToTurn = (360 / (#Fract/15))*(i-1)
+		ndegree= math.random(10,80)
+		Turn(Fract[i],y_axis,math.rad(degToTurn),0)
+	end
+	
 	for i=1,#Fract do
 		if i% 15 == 1 then 
 			StartThread(sinusWaveThread,i ,i + 15 )
@@ -115,14 +121,12 @@ local Fract=TablesOfPiecesGroups["Fract"]
 		--resetAll(unitID)
 		Sleep(3000)
 		gameFrame = Spring.GetGameFrame()
-		for i=1, #Fract, 15 do
-			
+		for i=1, #Fract, 15 do			
 			degToTurn = (360 / (#Fract/15))*(i-1)
 			ndegree= math.random(10,80)
-			Turn(Fract[i],y_axis,math.rad(degToTurn),math.pi)
-
-		
+			Turn(Fract[i],y_axis,math.rad(degToTurn),math.pi)		
 		end
+		
 		WaitForTurns(Fract)
 		Sleep(10)
 	end
