@@ -526,7 +526,13 @@ function delayedStop()
 	boolWalking = false
 	-- Spring.Echo("Stopping")
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
-	Sleep(1000)
+	
+
+
+end
+
+function showFoldTop()
+	Sleep(2500)
 	 if  boolCloaked == false then
 	Show(FoldtopUnfolded)
 	Hide(FoldtopFolded)
@@ -546,6 +552,7 @@ end
 
 function script.StopMoving()
 	StartThread(delayedStop)
+	StartThread(showFoldTop)
 end
 
 local civilianID 

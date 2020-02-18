@@ -33,6 +33,8 @@ local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
+GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 
 local scriptEnv = {
@@ -89,8 +91,6 @@ boolDecoupled = false
 
 boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
-GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 function script.Create()
 	makeWeaponsTable()
@@ -545,7 +545,9 @@ function spawnDecoyCivilian()
 
 			
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
+			if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 			GG.DisguiseCivilianFor[civilianID]= unitID
+			if not GG.DiedPeacefully then GG.DiedPeacefully ={} end
 			GG.DiedPeacefully[civilianID] = false
 			
 			if civilianID then
