@@ -21,7 +21,7 @@ local Assembly = Building:New{
 	footprintZ = 4,
 	
 	script 					= "assemblyscript.lua",
-	objectName        	= "assembly.s3o",
+	objectName        	= "assembly.dae",
 	name = "Assembly",
 	description = " creates MOSAIC Standardized drones <Automated Factory>",
 

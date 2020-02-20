@@ -18,6 +18,7 @@ rocketHeigth= 4200
 stepHeight = rocketHeigth/GameConfig.LaunchReadySteps
 
 function script.Create()
+ 	Spring.SetUnitBlocking(unitID, false, false, false)
 	if not GG.Launchers then GG.Launchers = {} end
 	if not GG.Launchers[teamID] then GG.Launchers[teamID] = {} end
 	GG.Launchers[teamID][unitID]= 0
