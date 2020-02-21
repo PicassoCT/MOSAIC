@@ -21,6 +21,7 @@ SIG_BUILD = 1
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+
 	StartThread(buildWatcher)
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 				function(id)
@@ -76,8 +77,8 @@ function buildWatcher()
 	end
 end
 
-LongDistance = 1900
-ShortDistance = 950
+LongDistance = 2100
+ShortDistance = 1150
 function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceStation)
 	reset(partName)
 	Hide(partName)
@@ -118,40 +119,59 @@ process(TablesOfPiecesGroups["TrayShort"],
 		function(id)
 			StartThread(trayAnimation,id, ShortDistance, (id % 2)*7000, ShortDistance*0.25)
 		end)
-	while boolBuilding == true do
-		process(TablesOfPiecesGroups["1Axis"],
+		
+	while boolBuilding == true or true do
+		process(TablesOfPiecesGroups["AAxis"],
 				function(id)
 					target= math.random(1,4)*90
 					Turn(id,y_axis,math.rad(target),math.pi)
 					end
 				)		
-		process(TablesOfPiecesGroups["2Axis"],
+		process(TablesOfPiecesGroups["BAxis"],
 				function(id)
 					target= math.random(1,35)*randSign()
-					Turn(id,x_axis,math.rad(target),math.pi)
-					end
-				)	
-		process(TablesOfPiecesGroups["3Axis"],
-				function(id)
-					target= math.random(1,35)*randSign()
-					Turn(id,x_axis,math.rad(target),math.pi)
-					end
-				)	
-		process(TablesOfPiecesGroups["4Axis"],
-				function(id)
-					target= math.random(1,4)*90
 					Turn(id,z_axis,math.rad(target),math.pi)
 					end
 				)	
-		process(TablesOfPiecesGroups["5Axis"],
+		process(TablesOfPiecesGroups["CAxis"],
 				function(id)
-					target= math.random(1,90)*randSign()
+					target= math.random(1,35)*randSign()
+					Turn(id,z_axis,math.rad(target),math.pi)
+					end
+				)	
+		process(TablesOfPiecesGroups["DAxis"],
+				function(id)
+					target= math.random(1,4)*90
 					Turn(id,x_axis,math.rad(target),math.pi)
 					end
+				)	
+		process(TablesOfPiecesGroups["EAxis"],
+				function(id)
+					target= math.random(1,90)*randSign()
+					Turn(id,z_axis,math.rad(target),math.pi)
+					end
 				)
-		for i=1,5 do
-			WaitForTurns(TablesOfPiecesGroups[i.."Axis"])		
-		end
+		
+		process(TablesOfPiecesGroups["_1SAxis"],
+				function(id)
+					target= math.random(-90,90)*randSign()
+					Turn(id,y_axis,math.rad(target),math.pi)
+					end
+				)	
+		process(TablesOfPiecesGroups["_2SAxis"],
+				function(id)
+					target= math.random(-90,90)*randSign()
+					Turn(id,y_axis,math.rad(target),math.pi)
+					end
+				)
+
+
+			WaitForTurns(TablesOfPiecesGroups["AAxis"])		
+			WaitForTurns(TablesOfPiecesGroups["BAxis"])		
+			WaitForTurns(TablesOfPiecesGroups["CAxis"])		
+			WaitForTurns(TablesOfPiecesGroups["DAxis"])		
+			WaitForTurns(TablesOfPiecesGroups["EAxis"])		
+	
 				
 				
 				
