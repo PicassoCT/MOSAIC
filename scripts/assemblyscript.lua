@@ -77,7 +77,7 @@ function buildWatcher()
 	end
 end
 
-LongDistance = 2100
+LongDistance = 2050
 ShortDistance = 1150
 function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceStation)
 	reset(partName)
@@ -124,44 +124,44 @@ process(TablesOfPiecesGroups["TrayShort"],
 		process(TablesOfPiecesGroups["AAxis"],
 				function(id)
 					target= math.random(1,4)*90
-					Turn(id,y_axis,math.rad(target),math.pi)
+					Turn(id,y_axis,math.rad(target),math.pi/2)
 					end
 				)		
 		process(TablesOfPiecesGroups["BAxis"],
 				function(id)
 					target= math.random(1,35)*randSign()
-					Turn(id,z_axis,math.rad(target),math.pi)
+					Turn(id,z_axis,math.rad(target),math.pi/2)
 					end
 				)	
 		process(TablesOfPiecesGroups["CAxis"],
 				function(id)
 					target= math.random(1,35)*randSign()
-					Turn(id,z_axis,math.rad(target),math.pi)
+					Turn(id,z_axis,math.rad(target),math.pi/2)
 					end
 				)	
 		process(TablesOfPiecesGroups["DAxis"],
 				function(id)
 					target= math.random(1,4)*90
-					Turn(id,x_axis,math.rad(target),math.pi)
+					Turn(id,x_axis,math.rad(target),math.pi/2)
 					end
 				)	
 		process(TablesOfPiecesGroups["EAxis"],
 				function(id)
 					target= math.random(1,90)*randSign()
-					Turn(id,z_axis,math.rad(target),math.pi)
+					Turn(id,z_axis,math.rad(target),math.pi/2)
 					end
 				)
 		
-		process(TablesOfPiecesGroups["_1SAxis"],
+		process(TablesOfPiecesGroups["ASAxis"],
 				function(id)
 					target= math.random(-90,90)*randSign()
-					Turn(id,y_axis,math.rad(target),math.pi)
+					Turn(id,y_axis,math.rad(target),math.pi/2)
 					end
 				)	
-		process(TablesOfPiecesGroups["_2SAxis"],
+		process(TablesOfPiecesGroups["BSAxis"],
 				function(id)
 					target= math.random(-90,90)*randSign()
-					Turn(id,y_axis,math.rad(target),math.pi)
+					Turn(id,y_axis,math.rad(target),math.pi/2)
 					end
 				)
 
