@@ -1,4 +1,4 @@
-  
+
 -- $Id: ModOptions.lua 4642 2009-05-22 05:32:36Z carrepairer $
 
 
@@ -40,66 +40,9 @@ local options = {
 
 
 
- 
-    {
-    key    = 'waterlevel',
-    name   = 'Water Level',
-    desc   = 'Adjusts the water level of the map',
-    type   = 'number',
-    section= 'mapsettings',
-    def    = 0,
-    min    = -2000,
-    max    = 2000,
-    step   = 1,
-  },
-  {
-    key    = 'MetalMult',
-    name   = 'Metal Extraction Multiplier',
-    desc   = 'Multiplies metal extraction rate. For use in large team games when there are fewer mexes per player.',
-    type   = 'number',
-    section= 'mapsettings',
-    def    = 1,
-    min    = 0,
-    max    = 100,
-    step   = 0.05,  -- quantization is aligned to the def value
-                    -- (step <= 0) means that there is no quantization
-  },
-  {
-    key    = 'EnergyMult',
-    name   = 'Energy Production Multiplier',
-    desc   = 'Useful for speed games without relying on map units.',
-    type   = 'number',
-    section= 'mapsettings',
-    def    = 1,
-    min    = 0,
-    max    = 100,
-    step   = 0.05,  -- quantization is aligned to the def value
-                    -- (step <= 0) means that there is no quantization
-  },
-  {
-    key    = 'minwind',
-    name   = 'Minimum Wind',
-    desc   = 'Minimum wind strength. Entering a negative value will use map\'s default.',
-    type   = 'number',
-    section= 'mapsettings',
-    def    = 0,
-    min    = -0.1,
-    max    = 20,
-    step   = 0.1,  -- quantization is aligned to the def value
-                    -- (step <= 0) means that there is no quantization
-  },
-  {
-    key    = 'maxwind',
-    name   = 'Maximum Wind',
-    desc   = 'Maximum wind strength. Entering a negative value will use map\'s default.',
-    type   = 'number',
-    section= 'mapsettings',
-    def    = 2.5,
-    min    = -0.1,
-    max    = 20,
-    step   = 0.1,  -- quantization is aligned to the def value
-                    -- (step <= 0) means that there is no quantization
-  },
+
+
+
   {
     key		= "pathfinder",
     name	= "Pathfinder type",
@@ -123,10 +66,10 @@ local options = {
 	--	name = 'Classic',
 	--	desc = 'An older pathfinding system without turninplace or reverse',
     --  }
-    },	
-  },  
-  
-  
+    },
+  },
+
+
 }
 
 --// add key-name to the description (so you can easier manage modoptions in springie)

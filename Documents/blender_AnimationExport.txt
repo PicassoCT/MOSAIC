@@ -1,0 +1,14 @@
+
+Tutorial on using Anarchids 
+exchanged z - y axis
+inverted rotations for y_axis
+
+undo axischange for movement
+
+{\['c']='turn',\['p']=([^\s]+), \['a']=y_axis, \['t']=-1\*
+{\['c']='move',\['p']=([^\s]+), \['a']=y_axis, \['t']=-1\*
+{\['c']='move',\['p']=\1, \['a']=y_axis, \['t']=\*
+{\['c']='move',\['p']=([^\s]+), \['a']=([^\s]+), \['t']=([^\n]+), \['s']=([^\n]+)\}\,
+Remove unused moves
+
+

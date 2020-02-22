@@ -7,14 +7,14 @@ function gadget:GetInfo()
         license = "Free",
         layer = 0,
         version = 1,
-        enabled = false
+        enabled = true
     }
 end
 
 -- modified the script: only corpses with the customParam "featuredecaytime" will disappear
 
 local corpsePrideTable = {
-
+	[FeatureDefNames["bodybag"].id] = true,
 }
 
 if (gadgetHandler:IsSyncedCode()) then

@@ -32,7 +32,7 @@ options = {
 		name = "Use Included Tracks",
 		type = 'bool',
 		value = true,
-		desc = 'Use the tracks included with Zero-K',
+		desc = 'Use the tracks included with MOSAIC',
 		noHotkey = true,
 	},
 	pausemusic = {

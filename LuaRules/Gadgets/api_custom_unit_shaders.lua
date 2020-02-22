@@ -21,7 +21,9 @@ function gadget:GetInfo()
     enabled   = true  --  loaded by default?
   }
 end
-
+if Spring.Utilities and  Spring.Utilities.IsCurrentVersionNewerThan and Spring.Utilities.IsCurrentVersionNewerThan(100, 0) then
+	return
+end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Synced

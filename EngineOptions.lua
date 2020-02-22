@@ -52,8 +52,9 @@ local options =
       { 
         key  = '0',
         name = 'Kill everything',
-        desc = 'The player will lose when all his units have died',
+        desc = 'The player will lose when all his units have died or a enemy team launches',
       },
+
 
    
     },
@@ -133,7 +134,7 @@ local options =
     desc   = 'Sets the maximum speed that the players will be allowed to change to',
     type   = 'number',
     section= 'modifiers',
-    def    = 2,
+    def    = 10,
     min    = 0.1,
     max    = 10,
     step   = 0.1,  -- quantization is aligned to the def value

@@ -56,6 +56,7 @@ function createCorpseCUnitSmall(recentDamage)
 
 
        GG.UnitsToSpawn:PushCreateUnit("gCVehicCorpseMini", spx, spy, spz, 1, teamID)
+  GG.UnitsToSpawn:PushCreateFeature("bodybag", spx, spy, spz, 1, teamID)
 
     end
 end

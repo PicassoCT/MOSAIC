@@ -1,0 +1,33 @@
+
+local bodyBagDefs = 
+   {
+["bodybag"] =	{
+	name = "bodybag",
+	description =" the body of a person",
+	blocking = false,
+	flammable = true,
+	upright = false,
+	category = [[GROUND]],
+	energy = 50,
+	damage = 5,
+	metal = 0,
+	object = "bodybag.dae",
+	
+
+     reclaimTime = 1500,
+     mass        = 20,
+     drawType    = DRAWTYPE.MODEL,
+
+     collisionVolumeTest = 0,
+     collisionvolumescales ="5 3 2",
+     collisionvolumetype = "Box",
+        customParams = {
+            nohealthbars = true,
+        },
+     }
+}
+
+
+
+return lowerkeys( bodyBagDefs )
+
