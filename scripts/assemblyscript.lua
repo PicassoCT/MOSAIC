@@ -77,9 +77,12 @@ function buildWatcher()
 	end
 end
 
+TrayInPlaceStation={}
+TrayInPickUpStation={}
+
 LongDistance = 2050
 ShortDistance = 1150
-function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceStation)
+function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceStation, boolTravelDirection, inStationSignalID)
 	reset(partName)
 	Hide(partName)
 	Sleep(delayInMs)
@@ -91,37 +94,103 @@ function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceS
 	waitTimeStation = 5000
 
 	while true do
-		WTurn(partName,raxis,math.rad(0), math.pi)
-		WMove(partName, maxis, travelDistanceStation, sspeed)
-		Sleep(waitTimeStation)
-
-		WMove(partName, maxis, totalTravelDistance, sspeed)
-		WTurn(partName,raxis,math.rad(179), math.pi)
-		Sleep(waitTimeStation)
-		WMove(partName, maxis, 0, sspeed)
-		WTurn(partName,raxis,math.rad(181), math.pi)
-		WTurn(partName,raxis,math.rad(0), math.pi)
-		Sleep(delayInMs)
+		if boolTravelDirection == true then
+			WTurn(partName,raxis,math.rad(0), math.pi)
+			WMove(partName, maxis, travelDistanceStation, sspeed)
+			TrayInPlaceStation[inStationSignalID]= true
+			Sleep(waitTimeStation)
+			TrayInPlaceStation[inStationSignalID]= false
+			WMove(partName, maxis, totalTravelDistance, sspeed)
+			WTurn(partName,raxis,math.rad(90), math.pi)
+			TrayInPickUpStation[inStationSignalID] = true
+			Sleep(waitTimeStation)
+			TrayInPickUpStation[inStationSignalID] = false
+			WTurn(partName,raxis,math.rad(179), math.pi)
+			WMove(partName, maxis, 0, sspeed)
+			WTurn(partName,raxis,math.rad(181), math.pi)
+			WTurn(partName,raxis,math.rad(0), math.pi)
+			Sleep(delayInMs)
+		else
+			WTurn(partName,raxis,math.rad(-179), math.pi)
+			WMove(partName, maxis, travelDistanceStation, sspeed)
+			TrayInPlaceStation[inStationSignalID]= true
+			Sleep(waitTimeStation)
+			TrayInPlaceStation[inStationSignalID]= false
+			WMove(partName, maxis, totalTravelDistance, sspeed)
+			WTurn(partName,raxis,math.rad(-270), math.pi)
+			TrayInPickUpStation[inStationSignalID] = true
+			Sleep(waitTimeStation)
+			TrayInPickUpStation[inStationSignalID] = false
+			WTurn(partName,raxis,math.rad(-360), math.pi)
+			WMove(partName, maxis, 0, sspeed)
+			WTurn(partName,raxis,math.rad(0), math.pi)
+			Sleep(delayInMs)		
+		end
 
 	end
 
 end
 
-
-function buildAnimation()
-Signal(SIG_BUILD)
-SetSignalMask(SIG_BUILD)
-process(TablesOfPiecesGroups["TrayLong"],
-		function(id)
-			StartThread(trayAnimation,id, LongDistance, (id % 2)*7000, LongDistance*0.25)
-		end)
-process(TablesOfPiecesGroups["TrayShort"],
-		function(id)
-			StartThread(trayAnimation,id, ShortDistance, (id % 2)*7000, ShortDistance*0.25)
-		end)
+function 	WMoveScara(scaraNumber, jointPosA,jointPosB, jointPosC,  moveSpeed)
 		
-	while boolBuilding == true or true do
-		process(TablesOfPiecesGroups["AAxis"],
+			Turn(TablesOfPiecesGroups["ASAxis"][scaraNumber],y_axis,math.rad(jointPosA), moveSpeed)
+			Turn(TablesOfPiecesGroups["BSAxis"][scaraNumber],y_axis,math.rad(jointPosB), moveSpeed)
+			Turn(TablesOfPiecesGroups["CSAxis"][scaraNumber],y_axis,math.rad(jointPosC), moveSpeed)
+			WaitForTurns(TablesOfPiecesGroups["ASAxis"][scaraNumber],TablesOfPiecesGroups["BSAxis"][scaraNumber],TablesOfPiecesGroups["CSAxis"][scaraNumber])
+	
+
+end
+
+function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable, jointPosTable)
+	Hide(objectToPick)
+	boolObjectPicked = false
+	moveSpeed= math.pi
+	while true do
+		
+		--Move to CenterPos
+		WMoveScara(scaraNumber, jointPosTable.HomePos.a, jointPosTable.HomePos.b, jointPosTable.HomePos.c,  moveSpeed)
+		--check if one of the trays is in station
+		local targetID 
+		if maRa == true then
+			for i=1, #targetIDTable, 1 do
+				if TrayInPlaceStation[targetIDTable[i]] and  TrayInPlaceStation[targetIDTable[i]] == true then
+					targetID = targetIDTable[i]
+					break
+				end
+			end
+		else
+			for i=#targetIDTable, 1, -1 do
+				if TrayInPlaceStation[targetIDTable[i]] and  TrayInPlaceStation[targetIDTable[i]] == true then
+					targetID = targetIDTable[i]
+					break
+				end
+			end
+		end
+		
+		if targetID and boolObjectPicked == false then
+		--Move to PickUpPos
+			WMoveScara(scaraNumber, jointPosTable.PickUp.a, jointPosTable.PickUp.b, 0,  moveSpeed)
+			WMoveScara(scaraNumber, jointPosTable.PickUp.a, jointPosTable.PickUp.b, jointPosTable.PickUp.c,  moveSpeed)
+			--Pick up ObjectToPick
+			Show(objectToPick)
+			boolObjectPicked = true
+			WMoveScara(scaraNumber, jointPosTable.PickUp.a, jointPosTable.PickUp.b, 0,  moveSpeed)
+		end
+		
+		if boolObjectPicked == true and targetID then
+			Pos = jointPosTable.PlaceTable[targetID]
+			WMoveScara(scaraNumber, Pos.a, Pos.b, 0,  moveSpeed)
+			WMoveScara(scaraNumber, Pos.a, Pos.b, Pos.c,  moveSpeed)
+			Hide(objectToPick)
+			WMoveScara(scaraNumber, Pos.a, Pos.b, 0,  moveSpeed)
+		
+		end	
+	Sleep(100)
+	end
+end
+
+function robotArmAnimationLoop()
+process(TablesOfPiecesGroups["AAxis"],
 				function(id)
 					target= math.random(1,4)*90
 					Turn(id,y_axis,math.rad(target),math.pi/2)
@@ -151,19 +220,7 @@ process(TablesOfPiecesGroups["TrayShort"],
 					Turn(id,z_axis,math.rad(target),math.pi/2)
 					end
 				)
-		
-		process(TablesOfPiecesGroups["ASAxis"],
-				function(id)
-					target= math.random(-90,90)*randSign()
-					Turn(id,y_axis,math.rad(target),math.pi/2)
-					end
-				)	
-		process(TablesOfPiecesGroups["BSAxis"],
-				function(id)
-					target= math.random(-90,90)*randSign()
-					Turn(id,y_axis,math.rad(target),math.pi/2)
-					end
-				)
+
 
 
 			WaitForTurns(TablesOfPiecesGroups["AAxis"])		
@@ -172,6 +229,29 @@ process(TablesOfPiecesGroups["TrayShort"],
 			WaitForTurns(TablesOfPiecesGroups["DAxis"])		
 			WaitForTurns(TablesOfPiecesGroups["EAxis"])		
 	
+
+end
+
+function buildAnimation()
+Signal(SIG_BUILD)
+SetSignalMask(SIG_BUILD)
+process(TablesOfPiecesGroups["TrayLong"],
+		function(id)
+			StartThread(trayAnimation,id, LongDistance, (id % 2)*7000, LongDistance*0.25, true)
+		end)
+process(TablesOfPiecesGroups["TrayShort"],
+		function(id)
+			StartThread(trayAnimation,id, ShortDistance, (id % 2)*7000, ShortDistance*0.25, true)
+		end)
+		
+		StartThread(scaraAnimationLoop,1, objectToPick, targetIDTable, jointPosTable)
+		StartThread(scaraAnimationLoop,2, objectToPick, targetIDTable, jointPosTable)
+		StartThread(scaraAnimationLoop,3, objectToPick, targetIDTable, jointPosTable)
+		
+		
+		
+	while boolBuilding == true or true do
+		
 				
 				
 				
