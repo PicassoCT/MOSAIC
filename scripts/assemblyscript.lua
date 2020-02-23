@@ -243,31 +243,56 @@ function WMoveRobotToPos(robotID, JointPos, MSpeed)
 
 end
 
-function robotArmAnimationLoop(robotID, posTable, speed, lineIDTable)
+function robotArmAnimationLoop(robotID, posTable, speed, lineIDTable, targetIDTable, objectPickedSet)
 	
-	
-	--move into homepos
-	WMoveRobotToPos(robotID, posTable.homepos, speed)
-	
-	while true do
-	
-	--move into HomePos
-	WMoveRobotToPos(robotID, posTable.homepos, speed)
-	
-	--Check if there is stuff to be picked up
-	
-	
-	-- pick it up
-	
-	
-	-- place it on the table
-	
-	
-	
-	
-	end
 	
 
+	--move into HomePos
+	WMoveRobotToPos(robotID, posTable.homepos, speed)
+	boolObjectPicked = false
+	while true do
+	
+
+	
+	--Check if there is stuff to be picked up
+		local targetID 
+		if maRa == true then
+			for i=1, #targetIDTable, 1 do
+				if TrayInPickUpStation[targetIDTable[i]] and  TrayInPickUpStation[targetIDTable[i]] == true then
+					targetID = targetIDTable[i]
+					break
+				end
+			end
+		else
+			for i=#targetIDTable, 1, -1 do
+				if TrayInPickUpStation[targetIDTable[i]] and  TrayInPickUpStation[targetIDTable[i]] == true then
+					targetID = targetIDTable[i]
+					break
+				end
+			end
+		end
+	
+		if targetID and boolObjectPicked == false then
+		--Move to PickUpPos
+			WMoveRobotToPos(scaraNumber, posTable.hubposT[targetID],  speed)
+			WMoveRobotToPos(scaraNumber, posTable.pickUpPosT[targetID],  speed)
+			showT(objectPickedSet)
+			boolObjectPicked = true
+			WMoveRobotToPos(scaraNumber, posTable.hubposT[targetID],  speed)
+			WMoveRobotToPos(scaraNumber, posTable.deskHub,  speed)
+
+		end
+		
+		if boolObjectPicked == true and targetID then
+			WMoveRobotToPos(scaraNumber, posTable.deskHub,  speed)
+			-- place it on the table
+			tablePos = calcTablePos(posTable.TableRange)
+			WMoveRobotToPos(robotID, tablePos, speed)
+			WMoveRobotToPos(scaraNumber, posTable.deskHub,  speed)
+		end	
+		
+		Sleep(100)	
+	end
 end
 
 
