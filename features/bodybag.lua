@@ -16,7 +16,7 @@ local bodyBagDefs =
 
      reclaimTime = 1500,
      mass        = 20,
-     drawType    = DRAWTYPE.MODEL,
+     drawType    = 0,
 
      collisionVolumeTest = 0,
      collisionvolumescales ="5 3 2",
