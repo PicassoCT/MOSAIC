@@ -17,11 +17,25 @@ myTeamID = Spring.GetUnitTeam(unitID)
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 SIG_BUILD = 1
+Tool_FoilGlue= 1
+Tool_FoilWeld= 2
+Tool_FoilCamo= 3
+Tool_FoilWeld= 4
+Tool_ModuleGripper= 5
+ToolTable={} --[robot][toolnumber]
 
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
+	for k=1,3 do
+		ToolTable[k] ={}
+
+		for i=1,5 do
+			ToolName= string.upper(string.char(96+i)).."Tool"
+			ToolTable[k][ #ToolTable[k]+1] = TablesOfPiecesGroups[ToolName][i]
+		end
+	end
 	StartThread(buildWatcher)
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 				function(id)
@@ -83,20 +97,27 @@ TrayInPickUpStation={}
 LongDistance = 2050
 ShortDistance = 1150
 
-LINE_1_PlaceStation=1
-LINE_2_PlaceStation=2
-LINE_3_PlaceStation=3
-LINE_4_PlaceStation=4
-
-trayDecoMap{
-	[piece("TrayLong1")]={start=1, ends=5	,counter=0},
-	[piece("TrayLong2")]={start=6, ends=10	,counter=0},
-	[piece("TrayShort1")]={start=11, ends=15,counter=0},
-	[piece("TrayShort2")]={start=16, ends=20,counter=0},
-	[piece("TrayShort3")]={start=21, ends=25,counter=0},
-	[piece("TrayShort4")]={start=26, ends=30,counter=0},
-	[piece("TrayLong3")]={start=31, ends=35	,counter=0},
-	[piece("TrayLong4")]={start=36, ends=40	,counter=0}
+LINE_1=1
+LINE_2=2
+LINE_3=3
+LINE_4=4
+TrayLong1	= piece("TrayLong1")
+TrayLong2	= piece("TrayLong2")
+TrayShort1	= piece("TrayShort1")
+TrayShort2	= piece("TrayShort2")
+TrayShort3	= piece("TrayShort3")
+TrayShort4	= piece("TrayShort4")
+TrayLong3	= piece("TrayLong3")
+TrayLong4	= piece("TrayLong4")
+trayDecoMap ={
+	[TrayLong1	 ]={start=1, ends=5	,counter=0, line = LINE_1},
+	[TrayLong2	 ]={start=6, ends=10	,counter=0, line= LINE_1},
+	[TrayShort1	 ]={start=11, ends=15,counter=0, line= LINE_2},
+	[TrayShort2	 ]={start=16, ends=20,counter=0, line= LINE_2},
+	[TrayShort3	 ]={start=21, ends=25,counter=0, line= LINE_3},
+	[TrayShort4	 ]={start=26, ends=30,counter=0, line= LINE_3},
+	[TrayLong3	 ]={start=31, ends=35	,counter=0, line= LINE_4},
+	[TrayLong4	 ]={start=36, ends=40	,counter=0, line= LINE_4}
 }
 
 trayPartInPlaceLine={
@@ -219,7 +240,9 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable, jointPosTa
 			Pos = jointPosTable.PlaceTable[targetID]
 			WMoveScara(scaraNumber, Pos.a, Pos.b, 0, 0,  moveSpeed)
 			WMoveScara(scaraNumber, Pos.a, Pos.b, 0, Pos.d,  moveSpeed)
-			incShowTrayObjects(trayPartInPlaceLine[targetID])
+			if trayPartInPlaceLine[targetID] then
+				incShowTrayObjects(trayPartInPlaceLine[targetID])
+			end
 			Hide(objectToPick)
 			WMoveScara(scaraNumber, Pos.a, Pos.b, 0,  0,  moveSpeed)
 		
@@ -229,11 +252,11 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable, jointPosTa
 end
 
 function WMoveRobotToPos(robotID, JointPos, MSpeed)
-	Turn(TablesOfPiecesGroups["AAxis"][robotID], y_axis, JoinPos.a, MSpeed)
-	Turn(TablesOfPiecesGroups["BAxis"][robotID], z_axis, JoinPos.b, MSpeed)
-	Turn(TablesOfPiecesGroups["CAxis"][robotID], z_axis, JoinPos.c, MSpeed)
-	Turn(TablesOfPiecesGroups["DAxis"][robotID], x_axis, JoinPos.d, MSpeed)
-	Turn(TablesOfPiecesGroups["EAxis"][robotID], z_axis, JoinPos.e, MSpeed)
+	Turn(TablesOfPiecesGroups["AAxis"][robotID], y_axis, JointPos[1], MSpeed)
+	Turn(TablesOfPiecesGroups["BAxis"][robotID], z_axis, JointPos[2], MSpeed)
+	Turn(TablesOfPiecesGroups["CAxis"][robotID], z_axis, JointPos[3], MSpeed)
+	Turn(TablesOfPiecesGroups["DAxis"][robotID], x_axis, JointPos[4], MSpeed)
+	Turn(TablesOfPiecesGroups["EAxis"][robotID], z_axis, JointPos[5], MSpeed)
 
 	WaitForTurns(TablesOfPiecesGroups["AAxis"][robotID],		
 				 TablesOfPiecesGroups["BAxis"][robotID],		
@@ -243,15 +266,26 @@ function WMoveRobotToPos(robotID, JointPos, MSpeed)
 
 end
 
-function robotArmAnimationLoop(robotID, posTable, speed, lineIDTable, targetIDTable, objectPickedSet)
-	
-	
 
+
+function changeToolTo(robotID, ToolType, posTable, speed)
+	--Drive to tooltables
+	WMoveRobotToPos(robotID, posTable.toolPos, speed)
+	Show(ToolTable[robotID][ToolType])
+	--return to homepos
+	WMoveRobotToPos(robotID, posTable.homepos, speed)
+end
+
+function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPickedSet)
+	Sleep(100)
+	-- assert(ToolTable[robotID])
+	-- hideT(ToolTable[robotID])
 	--move into HomePos
 	WMoveRobotToPos(robotID, posTable.homepos, speed)
 	boolObjectPicked = false
+	-- changeToolTo(robotID, Tool_ModuleGripper, posTable, speed)
+
 	while true do
-	
 
 	
 	--Check if there is stuff to be picked up
@@ -274,20 +308,21 @@ function robotArmAnimationLoop(robotID, posTable, speed, lineIDTable, targetIDTa
 	
 		if targetID and boolObjectPicked == false then
 		--Move to PickUpPos
+		assert(posTable.hubposT[targetID])
 			WMoveRobotToPos(scaraNumber, posTable.hubposT[targetID],  speed)
 			WMoveRobotToPos(scaraNumber, posTable.pickUpPosT[targetID],  speed)
-			showT(objectPickedSet)
+			-- showT(objectPickedSet)
+			-- while (TrayInPickUpStation[inStationSignalID] and TrayInPickUpStation[inStationSignalID] == true) do Sleep(100) end
 			boolObjectPicked = true
 			WMoveRobotToPos(scaraNumber, posTable.hubposT[targetID],  speed)
 			WMoveRobotToPos(scaraNumber, posTable.deskHub,  speed)
 
 		end
 		
-		if boolObjectPicked == true and targetID then
+		if boolObjectPicked == true  then
 			WMoveRobotToPos(scaraNumber, posTable.deskHub,  speed)
 			-- place it on the table
-			tablePos = calcTablePos(posTable.TableRange)
-			WMoveRobotToPos(robotID, tablePos, speed)
+			WMoveRobotToPos(robotID, calcTablePos(posTable.TableRange), speed)
 			WMoveRobotToPos(scaraNumber, posTable.deskHub,  speed)
 		end	
 		
@@ -295,54 +330,130 @@ function robotArmAnimationLoop(robotID, posTable, speed, lineIDTable, targetIDTa
 	end
 end
 
+function calcTablePos(TableRange)
+return {
+[1]=	math.random(TableRange.min[1],TableRange.max[1]),
+[2]=	math.random(TableRange.min[2],TableRange.max[2]),
+[3]=	math.random(TableRange.min[3],TableRange.max[3]),
+[4]=	math.random(TableRange.min[4],TableRange.max[4]),
+[5]=	math.random(TableRange.min[5],TableRange.max[5]),
+[6]=	math.random(TableRange.min[6],TableRange.max[6])
+	}
+end
+
+
 
 function buildAnimation()
+Sleep(500)
+
 Signal(SIG_BUILD)
 SetSignalMask(SIG_BUILD)
 
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][1], LongDistance, (math.random() % 4)* 7000, LongDistance*0.25, true, LINE_1_PlaceStation)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][2], LongDistance, (math.random() % 4)* 7000, LongDistance*0.25, true, LINE_1_PlaceStation)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][1], LongDistance, (math.random() % 4)* 7000, LongDistance*0.25, true, LINE_1)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][2], LongDistance, (math.random() % 4)* 7000, LongDistance*0.25, true, LINE_1)
 
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][1], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_2_PlaceStation)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][2], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_2_PlaceStation)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][1], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_2)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][2], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_2)
 	
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][3], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_3_PlaceStation)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][4], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_3_PlaceStation)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][3], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_3)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][4], ShortDistance, (math.random() % 4)* 7000, ShortDistance*0.25, true, LINE_3)
 
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][3], LongDistance, (math.random() % 4)* 7000 , LongDistance*0.25, true, LINE_4_PlaceStation)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][4], LongDistance, (math.random() % 4)* 7000, LongDistance*0.25, true, LINE_4_PlaceStation)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][3], LongDistance, (math.random() % 4)* 7000 , LongDistance*0.25, true, LINE_4)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][4], LongDistance, (math.random() % 4)* 7000, LongDistance*0.25, true, LINE_4)
 		
-		targetIDTable ={LINE_1_PlaceStation, LINE_2_PlaceStation }
+		targetIDTable ={LINE_1, LINE_2 }
 		jointPosTable={HomePos={a=0,b=0,c=0,d=0}, PickUp={a=0,b=12,c=0,d=-7}, 
 		PlaceTable ={
-			[LINE_1_PlaceStation] ={a=80,b=0,c=0,d=-7}, 
-			[LINE_2_PlaceStation] ={a=-55,b=-20,c=0,d=-7}, 		
+			[LINE_1] ={a=80,b=0,c=0,d=-7}, 
+			[LINE_2] ={a=-55,b=-20,c=0,d=-7}, 		
 			}		
 		}
 		StartThread(scaraAnimationLoop,1, TablesOfPiecesGroups["Object"][1], targetIDTable, jointPosTable)
 		
-		targetIDTable ={LINE_2_PlaceStation, LINE_3_PlaceStation}
+		targetIDTable ={LINE_2, LINE_3}
 		jointPosTable={HomePos={a=0,b=0,c=0,d=0}, PickUp={a=-45,b=-50,c=0,d=-7}, 
 			PlaceTable ={
-				[LINE_2_PlaceStation] ={a=65,b=45,c=0,d=-7}, 
-				[LINE_3_PlaceStation] ={a=-65,b=-35,c=0,d=-7}, 		
+				[LINE_2] ={a=65,b=45,c=0,d=-7}, 
+				[LINE_3] ={a=-65,b=-35,c=0,d=-7}, 		
 				}		
 			}
 		StartThread(scaraAnimationLoop,2,  TablesOfPiecesGroups["Object"][2], targetIDTable, jointPosTable)
 		
-		targetIDTable ={LINE_3_PlaceStation, LINE_4_PlaceStation}
+		targetIDTable ={LINE_3, LINE_4}
 		jointPosTable={HomePos={a=0,b=0,c=0,d=0}, PickUp={a=12,b=22,c=0,d=-7}, 
 			PlaceTable ={
-				[LINE_3_PlaceStation] ={a=45,b=70,c=0,d=-7}, 
-				[LINE_4_PlaceStation] ={a=-22,b=0,c=0,d=-7}, 		
+				[LINE_3] ={a=45,b=70,c=0,d=-7}, 
+				[LINE_4] ={a=-22,b=0,c=0,d=-7}, 		
 				}		
 			}
 		StartThread(scaraAnimationLoop,3,  TablesOfPiecesGroups["Object"][3], targetIDTable, jointPosTable)
 		
+		--Robot1
+		posTable={		
+		homepos={-90,50,-50,0,-90,0},
+		TableRange={
+			min={-115,-40,-20,0,-90,0},
+			max={-70,-20,10,3,-60,3}	
+		},
+		toolPos ={195, -15, -25, 0, -50, 0},
+		hubposT={
+		[LINE_4]={-210, 35,-75,0, 50,0}
 		
+		},	
+		pickUpPosT={
+			[LINE_4]={-210, 30,-60,0, 50,0}
+			
+		},
+		deskHub={0, -25,-15,
+				 0,-45, 0}
+		}
+		targetIDTable={LINE_4}
+		
+
+		StartThread(robotArmAnimation,1, posTable, math.pi, targetIDTable , {})
+		
+		--Robot3
+		-- posTable={
+		-- homepos=	{0	,50		,-50	,0,	-90,	0},
+		-- TableRange={		
+			-- min=	{-35,-40	,-20	,0,	-90,	0},
+			-- max=	{35	,-20	,10		,3,	-60,	3}	
+		-- },
+		-- toolPos ={-105, -35, -65, 0, -60, 0},
+		-- hubposT={
+		-- [LINE_2]={-65, 35,-75,0, 50,0},
+		-- [LINE_3]={70,35,-75,0, 50,0}
+		-- },	
+		
+		-- pickUpPosT={
+			-- [LINE_2]={-65, 30,-60,0, 50,0},
+			-- [LINE_3]={70,30,-60,0, 50,0}
+		-- },
+		-- deskHub={0, -25,-15,0,-45, 0}
+		-- }
+		-- targetIDTable={LINE_2, LINE_3}
+		-- StartThread(robotArmAnimation,3, posTable, math.pi, targetIDTable , {})
+		
+		-- Robot2
+		-- posTable={
+		-- homepos={90,50,-50,0,-90,0},
+		-- TableRange={
+		-- min={65,-40,-20,0,-90,0},
+		-- max={135,-20,10,3,-60,3}
+		-- },
+		-- toolPos ={-190, -15, -25, 0, -50, 0},
+		
+		-- hubposT={[LINE_1]={180, 35,-60,0, -65,0}},
+		-- pickUpPosT={[LINE_1]={200, 15,-70,0, -35,0}},
+		-- deskHub={0, -25,-15,0,-45, 0}
+		-- }
+		-- targetIDTable={LINE_1}
+		
+
+		-- StartThread(robotArmAnimation,2, posTable, math.pi/2, targetIDTable , {})
 		
 	while boolBuilding == true or true do	
-		robotArmAnimationLoop()	
+		
 		Sleep(100)
 	end
 end
