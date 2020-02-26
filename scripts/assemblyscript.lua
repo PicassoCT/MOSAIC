@@ -57,7 +57,7 @@ end
 
 function script.Killed(recentDamage, _)
     return 1
-end
+end 
 
 boolBuilding = false
 local buildID = nil
