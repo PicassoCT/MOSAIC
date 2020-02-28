@@ -279,7 +279,7 @@ end
 function changeToolTo(robotID, ToolType, posTable, speed, currentTool)
 	--Drive to tooltables
 	offset= ((robotID-1)*3)
-	hideT(TablesOfPiecesGroups["Module"],offset, offset+3)
+	hideT(TablesOfPiecesGroups["Modul"],offset, offset+3)
 	WMoveRobotToPos(robotID, posTable.toolPos, speed)
 	hideT(ToolTable[robotID],1,5)
 	if DeskTable[robotID][currentTool] then
@@ -298,7 +298,7 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 	--move into HomePos
 	-- echo("Robot:Driving Home")
 	offset= ((robotID-1)*3)
-	showT(TablesOfPiecesGroups["Module"],offset, offset+3)
+	showT(TablesOfPiecesGroups["Modul"],offset+1, offset+3)
 	WMoveRobotToPos(robotID, posTable.homepos, speed)
 	boolObjectPicked = false
 	changeToolTo(robotID, Tool_ModuleGripper, posTable, speed, Tool_FoilWeld)
@@ -327,7 +327,7 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 		end
 
 		--switch Tool
-		if not targetID and boolObjectPicked == false and currentTool == Tool_ModuleGripper then
+		if not targetID and boolObjectPicked == false and currentTool == Tool_ModuleGripper and robotID ~= 2 then
 			currentTool = math.random(1,4)
 			changeToolTo(robotID, currentTool , posTable, speed, Tool_ModuleGripper)
 		end
@@ -354,7 +354,7 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 			end
 			-- while (TrayInPickUpStation[inStationSignalID] and TrayInPickUpStation[inStationSignalID] == true) do Sleep(100) end
 			boolObjectPicked = true
-			showT(TablesOfPiecesGroups["Module"],offset, offset+3)
+			showT(TablesOfPiecesGroups["Modul"],offset+1, offset+3)
 			-- echo("Robot:Driving to desk Hub Position")
 
 			WMoveRobotToPos(robotID, posTable.deskHub,  speed)
@@ -370,7 +370,7 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 						end
 						boolObjectPicked = false
 			offset= ((robotID-1)*3)
-			hideT(TablesOfPiecesGroups["Module"],offset, offset+3)
+			hideT(TablesOfPiecesGroups["Modul"],offset+1, offset+3)
 			WMoveRobotToPos(robotID, posTable.deskHub,  speed)
 			WMoveRobotToPos(robotID, posTable.homepos,  speed)
 		end	
