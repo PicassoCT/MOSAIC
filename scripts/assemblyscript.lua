@@ -23,13 +23,16 @@ Tool_FoilCamo= 3
 Tool_FoilWeld= 4
 Tool_ModuleGripper= 5
 ToolTable={} --[robot][toolnumber]
-
+DeskTable={}
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	hideT(TablesOfPiecesGroups["Deco"])
+	hideT(TablesOfPiecesGroups["Object"])
 
 	for k=1,3 do
 		ToolTable[k] ={}
+		DeskTable[k] ={}
 
 		for i=1,5 do
 			ToolName= string.upper(string.char(96+i)).."Tool"
@@ -37,6 +40,7 @@ function script.Create()
 			assert(TablesOfPiecesGroups[ToolName])
 			assert(TablesOfPiecesGroups[ToolName])
 			ToolTable[k][ #ToolTable[k]+1] = TablesOfPiecesGroups[ToolName][k]
+			DeskTable[k][ #DeskTable[k]+1] = TablesOfPiecesGroups["D_"..ToolName][k]
 		end
 	end
 	StartThread(buildWatcher)
@@ -136,20 +140,19 @@ function hideTrayObjects(partName)
 end
 
 function incShowTrayObjects(partName)
-if not partName then return end
-Show(TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start + trayDecoMap[partName].counter])
-trayDecoMap[partName].counter = math.min(trayDecoMap[partName].counter+1, trayDecoMap[partName].ends)
+	if not partName then return end
+	Show(TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start + trayDecoMap[partName].counter])
+	trayDecoMap[partName].counter = math.min(trayDecoMap[partName].counter+1, trayDecoMap[partName].ends)
 end
 
-function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceStation, boolTravelDirection, inStationSignalID)
+function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceStation, boolTravelDirection, inStationSignalID, sspeed)
 	reset(partName)
 	Hide(partName)
 	Sleep(delayInMs)
 	Show(partName)
 	maxis= x_axis
 	raxis = y_axis
-	
-	sspeed = 1000
+
 	waitTimeStation = 2000
 	
 	if not TrayInPlaceStation[inStationSignalID] then TrayInPlaceStation[inStationSignalID]= false end
@@ -158,7 +161,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceS
 	while true do
 		if boolTravelDirection == true then
 			WTurn(partName,raxis,math.rad(0), math.pi)
-			while TrayInPlaceStation[inStationSignalID] == true do Sleep(100) end
+				while TrayInPlaceStation[inStationSignalID] == true do Sleep(100) end
 			WMove(partName, maxis, travelDistanceStation, sspeed)
 			TrayInPlaceStation[inStationSignalID]= true
 			trayPartInPlaceLine[inStationSignalID] = partName
@@ -166,7 +169,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceS
 			trayPartInPlaceLine[inStationSignalID] = nil
 			TrayInPlaceStation[inStationSignalID]= false
 			WMove(partName, maxis, totalTravelDistance, sspeed)
-			while TrayInPickUpStation[inStationSignalID] == true do Sleep(100) end
+				while TrayInPickUpStation[inStationSignalID] == true do Sleep(100) end
 			WTurn(partName,raxis,math.rad(90), math.pi)
 			TrayInPickUpStation[inStationSignalID] = true
 			Sleep(waitTimeStation)
@@ -179,7 +182,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceS
 
 		else
 			WTurn(partName,raxis,math.rad(-179), math.pi)
-			while TrayInPlaceStation[inStationSignalID] == true do Sleep(100) end
+				while TrayInPlaceStation[inStationSignalID] == true do Sleep(100) end
 			WMove(partName, maxis, travelDistanceStation, sspeed)
 			TrayInPlaceStation[inStationSignalID]= true
 			trayPartInPlaceLine[inStationSignalID] = partName
@@ -187,7 +190,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceS
 			trayPartInPlaceLine[inStationSignalID] = nil
 			TrayInPlaceStation[inStationSignalID]= false
 			WMove(partName, maxis, totalTravelDistance, sspeed)
-			while TrayInPickUpStation[inStationSignalID] == true do Sleep(100) end
+				while TrayInPickUpStation[inStationSignalID] == true do Sleep(100) end
 			WTurn(partName,raxis,math.rad(-270), math.pi)
 			TrayInPickUpStation[inStationSignalID] = true
 			Sleep(waitTimeStation)
@@ -202,8 +205,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs, travelDistanceS
 
 end
 
-function WMoveScara(scaraNumber, jointPosA,jointPosB, jointPosC,jointPosD,   moveSpeed)
-
+function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD, moveSpeed)
 	Turn(TablesOfPiecesGroups["ASAxis"][scaraNumber],y_axis,math.rad(jointPosA), moveSpeed)
 	Turn(TablesOfPiecesGroups["BSAxis"][scaraNumber],y_axis,math.rad(jointPosB), moveSpeed)
 	Turn(TablesOfPiecesGroups["CSAxis"][scaraNumber],y_axis,math.rad(jointPosC), moveSpeed)
@@ -214,27 +216,20 @@ end
 function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable, jointPosTable, moveSpeed)
 	Hide(objectToPick)
 	boolObjectPicked = false
-
+	WMoveScara(scaraNumber, jointPosTable.HomePos.a, jointPosTable.HomePos.b, 0, jointPosTable.HomePos.d,  moveSpeed)
+		
 	while true do		
 		--Move to CenterPos
-		WMoveScara(scaraNumber, jointPosTable.HomePos.a, jointPosTable.HomePos.b, 0, jointPosTable.HomePos.d,  moveSpeed)
 		--check if one of the trays is in station
 		local targetID 	
-		if maRa == true then
-			for i=1, #targetIDTable, 1 do
-				if TrayInPlaceStation[targetIDTable[i]] and  TrayInPlaceStation[targetIDTable[i]] == true then
-					targetID = targetIDTable[i]
-					break
-				end
-			end
-		else
-			for i=#targetIDTable, 1, -1 do
-				if TrayInPlaceStation[targetIDTable[i]] and  TrayInPlaceStation[targetIDTable[i]] == true then
-					targetID = targetIDTable[i]
-					break
-				end
+
+		for i=1, #targetIDTable, 1 do
+			if TrayInPlaceStation[targetIDTable[i]] and  TrayInPlaceStation[targetIDTable[i]] == true then
+				targetID = targetIDTable[i]
+				break
 			end
 		end
+	
 		
 		if targetID and boolObjectPicked == false then
 		--Move to PickUpPos
@@ -244,6 +239,7 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable, jointPosTa
 			Show(objectToPick)
 			boolObjectPicked = true
 			WMoveScara(scaraNumber, jointPosTable.PickUp.a, jointPosTable.PickUp.b, 0, 0,  moveSpeed)
+			WMoveScara(scaraNumber, jointPosTable.HomePos.a, jointPosTable.HomePos.b, 0, jointPosTable.HomePos.d,  moveSpeed)
 		end
 		
 		if boolObjectPicked == true and targetID then
@@ -256,7 +252,7 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable, jointPosTa
 			boolObjectPicked = false
 			Hide(objectToPick)
 			WMoveScara(scaraNumber, Pos.a, Pos.b, 0,  0,  moveSpeed)
-		
+			WMoveScara(scaraNumber, jointPosTable.HomePos.a, jointPosTable.HomePos.b, 0, jointPosTable.HomePos.d,  moveSpeed)
 		end	
 	Sleep(100)
 	end
@@ -274,30 +270,40 @@ function WMoveRobotToPos(robotID, JointPos, MSpeed)
 				 TablesOfPiecesGroups["CAxis"][robotID],		
 				 TablesOfPiecesGroups["DAxis"][robotID],		
 				 TablesOfPiecesGroups["EAxis"][robotID])	
-	echo("Robot: Move Completed")
+	-- echo("Robot: Move Completed")
 
 end
 
 
 
-function changeToolTo(robotID, ToolType, posTable, speed)
+function changeToolTo(robotID, ToolType, posTable, speed, currentTool)
 	--Drive to tooltables
+	offset= ((robotID-1)*3)
+	hideT(TablesOfPiecesGroups["Module"],offset, offset+3)
 	WMoveRobotToPos(robotID, posTable.toolPos, speed)
-
+	hideT(ToolTable[robotID],1,5)
+	if DeskTable[robotID][currentTool] then
+		Show(DeskTable[robotID][currentTool])
+	end
 	Show(ToolTable[robotID][ToolType])
+	Hide(DeskTable[robotID][ToolType])
+	Sleep(500)
 	--return to homepos
-	WMoveRobotToPos(robotID, posTable.homepos, speed)
 end
 
 function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPickedSet)
 	Sleep(100)
 	-- assert(ToolTable[robotID])
-	-- hideT(ToolTable[robotID])
+	
 	--move into HomePos
-	echo("Robot:Driving Home")
+	-- echo("Robot:Driving Home")
+	offset= ((robotID-1)*3)
+	showT(TablesOfPiecesGroups["Module"],offset, offset+3)
 	WMoveRobotToPos(robotID, posTable.homepos, speed)
 	boolObjectPicked = false
-	-- changeToolTo(robotID, Tool_ModuleGripper, posTable, speed)
+	changeToolTo(robotID, Tool_ModuleGripper, posTable, speed, Tool_FoilWeld)
+	currentTool= Tool_ModuleGripper
+	WMoveRobotToPos(robotID, posTable.homepos, speed)
 
 	while true do
 
@@ -319,22 +325,39 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 				end
 			end
 		end
-	
+
+		--switch Tool
+		if not targetID and boolObjectPicked == false and currentTool == Tool_ModuleGripper then
+			currentTool = math.random(1,4)
+			changeToolTo(robotID, currentTool , posTable, speed, Tool_ModuleGripper)
+		end
+		
+		if not targetID and currentTool ~= Tool_ModuleGripper then
+			WMoveRobotToPos(robotID, posTable.deskHub,  speed)
+			WMoveRobotToPos(robotID, calcTablePos(posTable.TableRange), speed)
+			WMoveRobotToPos(robotID, posTable.deskHub,  speed)
+		end
+		
 		if targetID and boolObjectPicked == false then
-		--Move to PickUpPos
-			-- echo("Robot:Driving to Hub Position")
+			if currentTool ~= Tool_ModuleGripper then
+				changeToolTo(robotID, Tool_ModuleGripper, posTable, speed,currentTool)
+				currentTool= Tool_ModuleGripper
+			end
+			
+			--Move to PickUpPos
 			WMoveRobotToPos(robotID, posTable.hubposT[targetID],  speed)
 			-- echo("Robot:Driving to Hub Position")
 			WMoveRobotToPos(robotID, posTable.pickUpPosT[targetID],  speed)
+			
 			if #objectPickedSet > 0 then
 			 showT(objectPickedSet)
 			end
 			-- while (TrayInPickUpStation[inStationSignalID] and TrayInPickUpStation[inStationSignalID] == true) do Sleep(100) end
 			boolObjectPicked = true
+			showT(TablesOfPiecesGroups["Module"],offset, offset+3)
 			-- echo("Robot:Driving to desk Hub Position")
 
 			WMoveRobotToPos(robotID, posTable.deskHub,  speed)
-			WMoveRobotToPos(robotID, posTable.homepos, speed)
 		end
 		
 		if targetID and boolObjectPicked == true  then
@@ -346,7 +369,8 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 							hideT(objectPickedSet)
 						end
 						boolObjectPicked = false
-						echo("Robot:Driving to desk Hub Position")
+			offset= ((robotID-1)*3)
+			hideT(TablesOfPiecesGroups["Module"],offset, offset+3)
 			WMoveRobotToPos(robotID, posTable.deskHub,  speed)
 			WMoveRobotToPos(robotID, posTable.homepos,  speed)
 		end	
@@ -377,46 +401,55 @@ Signal(SIG_BUILD)
 SetSignalMask(SIG_BUILD)
 	
 	randoVal= (math.random() % 4)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][1], LongDistance, randoVal * 7000	, LongDistance*0.2, false, LINE_1)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][2], LongDistance, (randoVal+1)* 7000, LongDistance*0.2, false, LINE_1)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][1], LongDistance, randoVal * 7000	, LongDistance*0.2, false, LINE_1, 2000)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][2], LongDistance, (randoVal+1)* 7000, LongDistance*0.2, false, LINE_1, 2000)
 	
 	randoVal= (math.random() % 4)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][1], ShortDistance,  randoVal * 7000		, ShortDistance*0.2, false, LINE_2)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][2], ShortDistance,  (randoVal+1)*7000, ShortDistance*0.2, false, LINE_2)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][1], ShortDistance,  randoVal * 7000		, ShortDistance*0.2, false, LINE_2, 1000)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][2], ShortDistance,  (randoVal+1)*7000, ShortDistance*0.2, false, LINE_2, 1000)
 	
 	randoVal= (math.random() % 4)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][3], ShortDistance, randoVal * 7000		, ShortDistance*0.2, true, LINE_3)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][4], ShortDistance, (randoVal+1)*7000, ShortDistance*0.2, true, LINE_3)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][3], ShortDistance, randoVal * 7000		, ShortDistance*0.2, true, LINE_3, 1000)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayShort"][4], ShortDistance, (randoVal+1)*7000, ShortDistance*0.2, true, LINE_3, 1000)
 	randoVal= (math.random() % 4)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][3], LongDistance, randoVal * 7000	, LongDistance*0.2, true, LINE_4)
-	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][4], LongDistance, (randoVal+1)*7000, LongDistance*0.2, true, LINE_4)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][3], LongDistance, randoVal * 7000	, LongDistance*0.2, true, LINE_4, 2000)
+	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][4], LongDistance, (randoVal+1)*7000, LongDistance*0.2, true, LINE_4, 2000)
 		
-		targetIDTable ={LINE_1, LINE_2 }
-		jointPosTable={HomePos={a=0,b=0,c=0,d=0}, PickUp={a=0,b=12,c=0,d=-7}, 
+
+		local targetIDTable1 ={LINE_1, LINE_2 }
+
+		local jointPosTable1={
+		HomePos={a=-35,b=35,c=0,d=0},   
+		PickUp= {a=10,b=10,c=0,d=0},  
 		PlaceTable ={
-			[LINE_1] ={a=80,b=0,c=0,d=-7}, 
-			[LINE_2] ={a=-55,b=-20,c=0,d=-7}, 		
+			[LINE_1] = {a=35,b=110,c=0,d=0}, 
+			[LINE_2] = {a=-45,b=-45,c=0,d=0}, 
+
 			}		
 		}
-		StartThread(scaraAnimationLoop,1, TablesOfPiecesGroups["Object"][1], targetIDTable, jointPosTable,animationSpeed)
+		StartThread(scaraAnimationLoop,1, TablesOfPiecesGroups["Object"][1], targetIDTable1, jointPosTable1,animationSpeed)
 		
-		targetIDTable ={LINE_2, LINE_3}
-		jointPosTable={HomePos={a=0,b=0,c=0,d=0}, PickUp={a=-45,b=-50,c=0,d=-7}, 
+		local targetIDTable2 ={LINE_2, LINE_3}
+		local jointPosTable2={HomePos={a=0,b=0,c=0,d=0}, 
+		PickUp={a=-25,b=-90,c=0,d=-7},
 			PlaceTable ={
-				[LINE_2] ={a=65,b=45,c=0,d=-7}, 
-				[LINE_3] ={a=-65,b=-35,c=0,d=-7}, 		
+				[LINE_2] ={a=15,b=90,c=0,d=-7}, 
+				[LINE_3] ={a=-15,b=-90,c=0,d=-7}, 		
 				}		
 			}
-		StartThread(scaraAnimationLoop,2,  TablesOfPiecesGroups["Object"][2], targetIDTable, jointPosTable,animationSpeed)
+		StartThread(scaraAnimationLoop,2,  TablesOfPiecesGroups["Object"][2], targetIDTable2, jointPosTable2,animationSpeed)
 		
-		targetIDTable ={LINE_3, LINE_4}
-		jointPosTable={HomePos={a=0,b=0,c=0,d=0}, PickUp={a=12,b=22,c=0,d=-7}, 
+		local targetIDTable3 ={ LINE_4, LINE_3}
+		local jointPosTable3={
+		HomePos={a=25,b=-50,c=0,d=0}, 
+		PickUp={a=-55,b=0,c=0,d=-7}, 
 			PlaceTable ={
-				[LINE_3] ={a=45,b=70,c=0,d=-7}, 
-				[LINE_4] ={a=-22,b=0,c=0,d=-7}, 		
+				[LINE_4] ={a=60,b=30,c=0,d=-7}, 		
+				[LINE_3] ={a=-55,b=-90,c=0,d=-7}, 
+				
 				}		
 			}
-		StartThread(scaraAnimationLoop,3,  TablesOfPiecesGroups["Object"][3], targetIDTable, jointPosTable,animationSpeed)
+		StartThread(scaraAnimationLoop,3,  TablesOfPiecesGroups["Object"][3], targetIDTable3, jointPosTable3,animationSpeed)
 		
 		--Robot1
 		posTable={		
@@ -481,8 +514,10 @@ SetSignalMask(SIG_BUILD)
 		StartThread(robotArmAnimation,2, posTable, math.pi, targetIDTable , {})
 		
 	while boolBuilding == true or true do	
+	
 		if buildID then
 		hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
+		buildProgress = buildProgress or 0
 		if buildProgress then
 			Plattformheight= 300* (1-buildProgress)
 			Move(buildspot, y_axis, Plattformheight, math.pi)
