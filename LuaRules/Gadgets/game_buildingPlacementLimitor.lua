@@ -43,7 +43,7 @@ end
 function gadget:Initialize()
 	mapSizeX, mapSizeZ	=Game.mapSizeX/areaDenyMapResolution, Game.mapSizeZ/ areaDenyMapResolution
 	areaDenyMap = makeTable(0,mapSizeX,mapSizeZ)
-	Spring.Echo("Mapsize:",mapSizeX,mapSizeZ)
+	Spring.Echo("Mapsize:"..mapSizeX.."/"..mapSizeZ)
 	for x=1, mapSizeX do
 		for z=1, mapSizeZ do
 			if x > 0 and z > 0 and x < Game.mapSizeX/areaDenyMapResolution and z < Game.mapSizeZ/areaDenyMapResolution then

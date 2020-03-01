@@ -53,7 +53,7 @@ function getGameConfig()
 	 maxSirenSoundFiles = 7,
 	 
 	 --safehouseConfig
-	 buildSafeHouseRange = 66,
+	 buildSafeHouseRange = 80,
 	 safeHousePieceName = "center",
 	 delayTillSafeHouseEstablished= 15000,
 	 safeHouseLiftimeUnattached= 15000,

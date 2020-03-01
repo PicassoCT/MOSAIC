@@ -13,6 +13,7 @@ end
 buildspot = piece "buildspot"
 Containers = piece "Containers"
 myTeamID = Spring.GetUnitTeam(unitID)
+MaxPlattformHeigth = 750
 
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
@@ -24,6 +25,7 @@ Tool_FoilWeld= 4
 Tool_ModuleGripper= 5
 ToolTable={} --[robot][toolnumber]
 DeskTable={}
+
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -43,6 +45,7 @@ function script.Create()
 			DeskTable[k][ #DeskTable[k]+1] = TablesOfPiecesGroups["D_"..ToolName][k]
 		end
 	end
+	
 	StartThread(buildWatcher)
 	T= process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange*2),
 				function(id)
@@ -54,7 +57,7 @@ function script.Create()
 				
 	GG.UnitHeldByHouseMap[unitID] = T[1]
 	StartThread(mortallyDependant, unitID, T[1], 15, false, true)
-	StartThread(buildAnimation)
+
 end
 
 
@@ -69,32 +72,21 @@ function buildWatcher()
 	
 	while true do 
 	buildID = Spring.GetUnitIsBuilding(unitID)
-		if buildID then
+	if buildID then
+		StartThread(buildAnimation)
+		
 		hp, mhp, pd, captProg, buildProgress = Spring.GetUnitHealth(buildID)
 		laststep= 0
 		boolBuilding = true
-		while buildProgress and buildProgress + laststep  > 0.95		do
-			Sleep(1)
+		while buildProgress and buildProgress + laststep  <  0.95		do
+			Sleep(10)
 			hp, mhp, pd, captProg, tbuildProgress = Spring.GetUnitHealth(buildID)
 			laststep = buildProgress - tbuildProgress
-			buildProgress = tbuildProgress
-			
-		end
-
-		if buildProgress then 
-			unitDefID = Spring.GetUnitDefID(buildID)
-			createUnitAtUnit(myTeamID, unitDefID, unitID, 0,0, 0)
-			if doesUnitExistAlive(unitID) == true then
-				local facCmds = Spring.GetFactoryCommands(unitID) 
-				if facCmds then -- nil check
-					local cmd = facCmds[1]
-					Spring.GiveOrderToUnit(unitID, CMD.REMOVE, {1,cmd.tag}, {"ctrl"})
-				end		
-			end		
-		end	
-		boolBuilding = false		
-		end
+			buildProgress = tbuildProgress			
+		end		
+	end
 	
+	boolBuilding = false		
 	Sleep(1)
 	end
 end
@@ -310,7 +302,7 @@ function robotArmAnimation(robotID, posTable, speed,  targetIDTable, objectPicke
 	
 	--Check if there is stuff to be picked up
 		local targetID 
-		if maRa == true then
+		if maRa() == true then
 			for i=1, #targetIDTable, 1 do
 				if TrayInPickUpStation[targetIDTable[i]] and  TrayInPickUpStation[targetIDTable[i]] == true then
 					targetID = targetIDTable[i]
@@ -390,15 +382,28 @@ return {
 	}
 end
 
+	robotArmHomePos={
+		[1]={90,-50,50,0,90,0},
+		[2]={0,-50,50,0,90,0},
+		[3]={-90,-50,50,0,90,0}
+	}
 
+function driveHome()
+	for i=1,3 do
+		StartThread(WMoveScara,i, 0,0, 0,0,  math.pi)
+		StartThread(WMoveRobotToPos,i,robotArmHomePos[i],math.pi)
+	end	
+end
 
 function buildAnimation()
+Signal(SIG_BUILD)
+SetSignalMask(SIG_BUILD)
+
+StartThread(driveHome)
 Sleep(500)
 
 animationSpeed= math.pi*3
 
-Signal(SIG_BUILD)
-SetSignalMask(SIG_BUILD)
 	
 	randoVal= (math.random() % 4)
 	StartThread(trayAnimation,TablesOfPiecesGroups["TrayLong"][1], LongDistance, randoVal * 7000	, LongDistance*0.2, false, LINE_1, 2000)
@@ -433,8 +438,8 @@ SetSignalMask(SIG_BUILD)
 		local jointPosTable2={HomePos={a=0,b=0,c=0,d=0}, 
 		PickUp={a=-25,b=-90,c=0,d=-7},
 			PlaceTable ={
-				[LINE_2] ={a=15,b=90,c=0,d=-7}, 
-				[LINE_3] ={a=-15,b=-90,c=0,d=-7}, 		
+				[LINE_3] ={a=15,b=90,c=0,d=-7}, 
+				[LINE_2] ={a=-15,b=-90,c=0,d=-7}, 		
 				}		
 			}
 		StartThread(scaraAnimationLoop,2,  TablesOfPiecesGroups["Object"][2], targetIDTable2, jointPosTable2,animationSpeed)
@@ -444,8 +449,8 @@ SetSignalMask(SIG_BUILD)
 		HomePos={a=25,b=-50,c=0,d=0}, 
 		PickUp={a=-55,b=0,c=0,d=-7}, 
 			PlaceTable ={
-				[LINE_4] ={a=60,b=30,c=0,d=-7}, 		
-				[LINE_3] ={a=-55,b=-90,c=0,d=-7}, 
+				[LINE_3] ={a=60,b=30,c=0,d=-7}, 		
+				[LINE_4] ={a=-55,b=-90,c=0,d=-7}, 
 				
 				}		
 			}
@@ -453,7 +458,7 @@ SetSignalMask(SIG_BUILD)
 		
 		--Robot1
 		posTable={		
-		homepos={90,-50,50,0,90,0},
+		homepos= robotArmHomePos[1],
 		TableRange={
 			["min"]={70,20,10,0,45,0},
 			["max"]={115,40,20,3,55,3}	
@@ -475,12 +480,12 @@ SetSignalMask(SIG_BUILD)
 		
 		--Robot3
 		posTable={
-		homepos={0,-50,50,0,90,0},
+		homepos= robotArmHomePos[3],
 		TableRange={		
 			["min"]=	{-35,20	,10	,0,	45,	0},
 			["max"]=	{35	,40	,20		,3,	55,	3}	
 		},
-		toolPos ={105, -35, -65, 0, -60, 0},
+		toolPos ={105, -35, 65, 0, 60, 0},
 		hubposT={
 		[LINE_2]={65, -35,75,0, 50,0},
 		[LINE_3]={-70,-35,75,0, 50,0}
@@ -497,7 +502,7 @@ SetSignalMask(SIG_BUILD)
 		
 		-- Robot2
 		posTable={
-		homepos={-90,-50,50,0,90,0},
+		homepos= robotArmHomePos[2],
 		TableRange={
 		["min"]=	{-135,20	,10	,0,	45,	0},
 		["max"]={-65	,40	,20		,3,	55,	3}	
@@ -513,24 +518,26 @@ SetSignalMask(SIG_BUILD)
 
 		StartThread(robotArmAnimation,2, posTable, math.pi, targetIDTable , {})
 		
-	while boolBuilding == true or true do	
+	while boolBuilding == true  do	
 	
 		if buildID then
-		hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
-		buildProgress = buildProgress or 0
-		if buildProgress then
-			Plattformheight= 300* (1-buildProgress)
-			Move(buildspot, y_axis, Plattformheight, math.pi)
+			hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
+			buildProgress = buildProgress or 0
+			if buildProgress then
+				Plattformheight= MaxPlattformHeigth* (1-buildProgress)
+				Move(buildspot, z_axis, Plattformheight, math.pi*15)
+			end
 		end
-		end
-		Sleep(100)
+		
+		Sleep(100)
 	end
+	
+	driveHome()	
 end
 
 
 
-function script.Activate()
-	
+function script.Activate()	
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)
     SetUnitValue(COB.INBUILDSTANCE, 1)
@@ -546,7 +553,6 @@ end
 
 function script.Deactivate()
 	StartThread(delayedDeactivation)
-
     return 0
 end
 

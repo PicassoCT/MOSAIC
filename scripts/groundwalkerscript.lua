@@ -1,4 +1,4 @@
-include "createCorpse.lua"
+include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -1195,22 +1195,16 @@ center = piece "center"
 aimpiece = piece"center"
 
 function script.Create()
-    -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	setupAnimation()
-	-- Spring.MoveCtrl.Enable(unitID,true)
-	-- x,y,z =Spring.GetUnitPosition(unitID)
-	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-	StartThread(Landing)
+
 	StartThread(walkAnimationLoop)
 end
 
-function Landing()
-		PlayAnimation("UPRIGHT", nil, 5.0)
-		PlayAnimation("FIRING", nil, 2.0)
-end
+function Landing()		PlayAnimation("UPRIGHT", nil, 5.0)		PlayAnimation("FIRING", nil, 2.0)end
 
-function walkAnimationLoop()
+function walkAnimationLoop()	waitTillComplete(unitID)
+	Landing()
 	while true do
 		if boolAiming == false and boolWalking == true then
 			while boolAiming == false and boolWalking == true do

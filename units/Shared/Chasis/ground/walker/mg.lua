@@ -7,6 +7,7 @@ local ground_walker_mg = Walker:New{
 	mass = 600,
 	buildCostEnergy = 0,
 	buildCostMetal = 5000,
+	buildTime = 60,
 	explodeAs			= "none",
 	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
 	--maxReverseVelocity= 2.15,
