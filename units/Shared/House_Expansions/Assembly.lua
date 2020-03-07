@@ -52,6 +52,7 @@ local Assembly = Building:New{
 	--ground
 		--turret --snake --walker(roach) --truck
 			"ground_turret_ssied",	"ground_turret_mg",	"ground_turret_antiarmor",
+			"ground_turret_cm_walkerdrop",
 			"ground_truck_assembly", 			"ground_walker_mg",
 			"truck_arab0", "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor",
 			--
