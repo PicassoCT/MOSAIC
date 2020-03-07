@@ -589,29 +589,56 @@ end
 
 
 	boolCloaked = false
+function needsCloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive, idOperativeDiscoverd)
+if idOperativeDiscoverd then return false end
 
+if boolCloaked == true and boolAlreadyCloaked == false then
+return true
+end
+
+return false
+end
+
+function needsToUncloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive, idOperativeDiscoverd)
+if idOperativeDiscoverd and boolAlreadyCloaked == true then return true end
+
+if boolCloaked == false and boolAlreadyCloaked == true then return true end
+
+if boolAlreadyCloaked== true and boolIsCurrentlyActive== true then return true end
+
+return false
+end
 function cloakLoop()
 	local spGetUnitIsActive = Spring.GetUnitIsActive
+	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 	local boolIsCurrentlyActive= spGetUnitIsActive(unitID)
 	Sleep(100)
 	waitTillComplete(unitID)
-
-	Sleep(100)
-
+	--initialisation
+	boolAlreadyCloaked= spGetUnitIsCloaked()
+	if boolAlreadyCloaked == true then
+		setSpeedEnv(unitID, 0.35)
+		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+		StartThread(spawnDecoyCivilian)
+	end
 	
 	while true do 
 	
 		boolIsCurrentlyActive = spGetUnitIsActive(unitID)
-		if boolCloaked == false and boolIsCurrentlyActive == true  and not  GG.OperativesDiscovered[unitID]  then
+		boolCloaked= spGetUnitIsCloaked(unitID)
+		
+		
+		
+		if  needsCloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, 0.35)
-			SetUnitValue(COB.WANT_CLOAK, 1)
+			-- SetUnitValue(COB.WANT_CLOAK, 1)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-			boolCloaked=true
+			boolAlreadyCloaked=true
 			StartThread(spawnDecoyCivilian)
 		end
+		
 		Sleep(100)
-		if (boolIsCurrentlyActive == true and  GG.OperativesDiscovered[unitID] ) or  
-		 (boolIsCurrentlyActive == false and boolCloaked == true )then
+		if needsToUncloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive, GG.OperativesDiscovered[unitID])== true then
 	
 			setSpeedEnv(unitID, 1.0)
 			SetUnitValue(COB.WANT_CLOAK, 0)
