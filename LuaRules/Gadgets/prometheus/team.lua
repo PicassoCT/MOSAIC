@@ -114,7 +114,7 @@ end
 function Team.hasEnoughPropagandaservers(teamID)
 	local teamIDCount = Spring.GetTeamUnitsCounts(teamID)
 	local allOthersCounted = 0 
-	
+	local propagandaserverCount= 0	
 	
 	for defID, count in ipairs(teamIDCount) do
 		if defID == ANTAGONSAFEHOUSEDFID or defID== PROTAGONSAFEHOUSEDEFID or Team.upgradeTypeTable[defID] then
@@ -122,7 +122,7 @@ function Team.hasEnoughPropagandaservers(teamID)
 		end
 	end
 	
-	propagandaserverCount= 0
+
 	if teamIDCount[PROPAGANDASERVER] then 
 		propagandaserverCount = teamIDCount[PROPAGANDASERVER]
 	end
