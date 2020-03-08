@@ -57,11 +57,11 @@ function fallingDown()
 end
 
 function pieceOrder(i)
-if i== 1 then return 1 end
-if i> 1 and i < 4 then return 2 end
-if i> 3 and i < 8 then return 3 end
-if i> 7 and i < 16 then return 4 end
-return 0
+	if i== 1 then return 1 end
+	if i> 1 and i < 4 then return 2 end
+	if i> 3 and i < 8 then return 3 end
+	if i> 7 and i < 16 then return 4 end
+	return 0
 end
 
 function sinusWaveThread(start,ends)

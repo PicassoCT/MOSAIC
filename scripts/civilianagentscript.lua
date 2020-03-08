@@ -1204,7 +1204,7 @@ function script.Activate()
 		justOnce = justOnce  -1
 
 
-		Spring.SetUnitTooltip(unitID, "Militia")
+		Spring.SetUnitTooltip(unitID, "Hidden Militia")
 
 	end
 
