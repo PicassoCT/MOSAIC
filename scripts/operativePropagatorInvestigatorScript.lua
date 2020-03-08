@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 
 SIG_PISTOL = 1
 SIG_RAID = 1
-
+local boolCloaked = false
 local Animations = include('animation_assasin_female.lua')
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -533,9 +533,12 @@ end
 
 function showFoldTop()
 	Sleep(2500)
-	 if  boolCloaked == false then
-	Show(FoldtopUnfolded)
-	Hide(FoldtopFolded)
+	if  boolCloaked == false then
+		Show(FoldtopUnfolded)
+		Hide(FoldtopFolded)
+	else
+		Hide(FoldtopUnfolded)
+		Hide(FoldtopFolded)
 	end
 
 end
@@ -543,8 +546,11 @@ end
 function script.StartMoving()
 	boolWalking = true
 	if  boolCloaked == false then
-	Hide(FoldtopUnfolded)
-	Show(FoldtopFolded)
+		Hide(FoldtopUnfolded)
+		Show(FoldtopFolded)
+	else
+		Hide(FoldtopUnfolded)
+		Hide(FoldtopFolded)
 	end
 	Turn(center,y_axis, math.rad(0), 12)
 	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
@@ -557,10 +563,10 @@ end
 
 local civilianID 
 
-
 function spawnDecoyCivilian()
 --spawnDecoyCivilian
 		Sleep(10)	
+		if civilianID ~= nil and doesUnitExistAlive(civilianID) == true then return end
 
 		x,y,z= Spring.GetUnitPosition(unitID)
 		civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable) , x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
@@ -587,8 +593,6 @@ function spawnDecoyCivilian()
 end
 
 
-
-	boolCloaked = false
 function needsCloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive, idOperativeDiscoverd)
 if idOperativeDiscoverd then return false end
 
@@ -608,19 +612,24 @@ if boolAlreadyCloaked== true and boolIsCurrentlyActive== true then return true e
 
 return false
 end
+
 function cloakLoop()
 	local spGetUnitIsActive = Spring.GetUnitIsActive
 	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 	local boolIsCurrentlyActive= spGetUnitIsActive(unitID)
 	Sleep(100)
 	waitTillComplete(unitID)
+	
 	--initialisation
-	boolAlreadyCloaked= spGetUnitIsCloaked()
+	boolAlreadyCloaked= spGetUnitIsCloaked(unitID)
 	if boolAlreadyCloaked == true then
-		setSpeedEnv(unitID, 0.35)
-		Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-		StartThread(spawnDecoyCivilian)
+			setSpeedEnv(unitID, 0.35)
+			-- SetUnitValue(COB.WANT_CLOAK, 1)
+			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+			StartThread(spawnDecoyCivilian)
+
 	end
+	showHideIcon(boolAlreadyCloaked)
 	
 	while true do 
 	
@@ -629,21 +638,20 @@ function cloakLoop()
 		
 		
 		
-		if  needsCloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive,  GG.OperativesDiscovered[unitID]) == true then
+		if  needsCloak( boolAlreadyCloaked, boolIsCurrentlyActive,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, 0.35)
-			-- SetUnitValue(COB.WANT_CLOAK, 1)
+			SetUnitValue(COB.CLOAKED, 1)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
 			boolAlreadyCloaked=true
 			StartThread(spawnDecoyCivilian)
 		end
 		
 		Sleep(100)
-		if needsToUncloak(boolCloaked, boolAlreadyCloaked, boolIsCurrentlyActive, GG.OperativesDiscovered[unitID])== true then
+		if needsToUncloak( boolAlreadyCloaked, boolIsCurrentlyActive, GG.OperativesDiscovered[unitID])== true then
 	
 			setSpeedEnv(unitID, 1.0)
-			SetUnitValue(COB.WANT_CLOAK, 0)
+			SetUnitValue(COB.CLOAKED, 0)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
-			boolCloaked= false
 			if civilianID and doesUnitExistAlive(civilianID) == true then
 				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
@@ -652,10 +660,6 @@ function cloakLoop()
 		Sleep(100)
 	end
 end
-
-
-
-
 
 function script.Activate()
 	SetUnitValue(COB.WANT_CLOAK, 1)
@@ -667,17 +671,14 @@ function script.Deactivate()
     return 0
 end
 
-
 function script.QueryBuildInfo()
     return center
 end
-
 
 function script.StopBuilding()
 
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
-
 
 function script.StartBuilding(heading, pitch)
 	SetUnitValue(COB.INBUILDSTANCE, 1)
@@ -685,13 +686,11 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
 
-
 raidDownTime = GameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = GameConfig.agentConfig.raidComRange
 myRaidDownTime = raidDownTime
 local scanSatDefID = UnitDefNames["satellitescan"].id
 local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
-
 
 function raidReactor()
 	myTeam = Spring.GetUnitTeam(unitID)
@@ -717,7 +716,6 @@ function raidReloadComplete()
 	return myRaidDownTime <= 0
 end
 
-
 function raidAimFunction(weaponID, heading, pitch)
 	return raidReloadComplete() and boolCloaked == false
 end
@@ -731,7 +729,6 @@ function pistolAimFunction(weaponID, heading, pitch)
 	return  true
 end
 
-
 function raidFireFunction(weaponID, heading, pitch)
 	myRaidDownTime = raidDownTime
 	return true
@@ -743,16 +740,11 @@ function pistolFireFunction(weaponID, heading, pitch)
 	return true
 end
 
-
-
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = Drone, emitpiece = Drone, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
     WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
 end
-
-
-
 
 function script.AimFromWeapon(weaponID)
     if WeaponsTable[weaponID] then
@@ -770,9 +762,6 @@ function script.QueryWeapon(weaponID)
     end
 end
 
-
-
-
 function script.AimWeapon(weaponID, heading, pitch)
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
@@ -786,10 +775,10 @@ function script.AimWeapon(weaponID, heading, pitch)
     return false
 end
 
-boolLocalCloaked = false
-function showHideIcon(boolCloaked)
-    boolLocalCloaked = boolCloaked
-    if  boolCloaked == true then
+
+function showHideIcon(boolShowIcon)
+
+    if  boolShowIcon == true then
         hideAll(unitID)
         Show(Icon)
     else
