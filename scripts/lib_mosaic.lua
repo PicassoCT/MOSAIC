@@ -58,6 +58,7 @@ function getGameConfig()
 	 delayTillSafeHouseEstablished= 15000,
 	 safeHouseLiftimeUnattached= 15000,
 	 
+	
 	 --all buildings
 	buildingLiftimeUnattached = 10000,
 
@@ -78,6 +79,12 @@ function getGameConfig()
 	 InterrogationTimeInFrames = 20*30,
 	 InterrogationDistance= 120,
 	 RaidInterrogationPropgandaPrice = 50,
+	 investigatorCloakedSpeedReduction = 0.35,
+	 raidWaitTimeToRecloak = 5000,
+	 
+	 --asset
+	 assetCloakedSpeedReduction = 0.175,
+	 assetShotFiredWaitTimeToRecloak = 12000,
 	 
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
