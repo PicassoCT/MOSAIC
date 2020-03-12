@@ -290,11 +290,23 @@ end
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
 	if waypointMgr then
+		if waypointMgr.UnitCreated == nil then
+			restoreWayPointManager()		
+		end
+		
 		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
 	if team[unitTeam] then
 		team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
+end
+
+function restoreWayPointManager()
+		waypointMgr = CreateWaypointMgr()
+					if waypointMgr then
+						waypointMgr.GameStart()
+					end
+					CreateTeams()
 end
 
 function gadget:UnitFinished(unitID, unitDefID, unitTeam)
@@ -306,8 +318,13 @@ end
 
 function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	if waypointMgr then
+		--restore the wayPointManager
+		if  waypointMgr.UnitDestroyed == nil then 
+			restoreWayPointManager()
+		end	
 		waypointMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	end
+	
 	if team[unitTeam] then
 		team[unitTeam].UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	end

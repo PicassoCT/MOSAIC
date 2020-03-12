@@ -1,8 +1,9 @@
 -- Aircraft ----
-local Aircraft = Unit:New{
+local AIRCRAFT = Unit:New{
 	canFly						= true,
 	canMove 					= true,
 	factoryHeadingTakeoff 		= false,
+	cruiseAlt					= 600,
 	footprintX					= 2,
 	footprintZ 					= 2,
 	iconType					= "aero",
@@ -77,7 +78,7 @@ local Rocket = Unit:New{
 }
 
 return {
-	Aircraft = Aircraft,
+	AIRCRAFT = AIRCRAFT,
 	Aero = Aero,
 	VTOL = VTOL,
 	Rocket= Rocket
