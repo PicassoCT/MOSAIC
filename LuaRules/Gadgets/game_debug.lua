@@ -50,5 +50,7 @@ end
 
 
 function gadget:Initialize()
+		Spring.Echo(GetInfo().name.." Initialization started")
   startFrame = Spring.GetGameFrame()+ 10
+  		Spring.Echo(GetInfo().name.." Initialization ended")
 end

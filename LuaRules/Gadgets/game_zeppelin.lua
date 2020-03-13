@@ -21,6 +21,7 @@ zeppelin={}
 if (gadgetHandler:IsSyncedCode()) then
 
  function gadget:Initialize()
+ 		Spring.Echo(GetInfo().name.." Initialization started")
 	 for id,unitDef in pairs(UnitDefs) do
 		if unitDef.myGravity == 0 and
 		   unitDef.maxElevator == 0 then
@@ -32,6 +33,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			}
 		end
 	 end
+	 		Spring.Echo(GetInfo().name.." Initialization ended")
  end
 
  function gadget:UnitCreated(UnitID, whatever)

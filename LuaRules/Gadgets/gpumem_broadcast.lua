@@ -51,7 +51,9 @@ else
 	local updateTimer = 0
 
 	function gadget:Initialize()
+		Spring.Echo(GetInfo().name.." Initialization started")
 		gadgetHandler:AddSyncAction("gpumemBroadcast", handleEvent)
+		Spring.Echo(GetInfo().name.." Initialization ended")
 	end
 
 	function gadget:Shutdown()

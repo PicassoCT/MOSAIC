@@ -553,6 +553,7 @@ end
 
 
 function gadget:Initialize()
+		Spring.Echo(GetInfo().name.." Initialization started")
         Spring.Echo(string.format("Loading gadget: %-18s  <%s>", ghInfo.name, ghInfo.basename))
 
         -- This initialization code has following properties:
@@ -599,6 +600,7 @@ function gadget:Initialize()
                 local unitID = allUnits[i]
                 gadget:UnitCreated(unitID, Spring.GetUnitDefID(unitID))
         end
+		Spring.Echo(GetInfo().name.." Initialization ended")
 end
 
 --------------------------------------------------------------------------------

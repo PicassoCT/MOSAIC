@@ -57,8 +57,10 @@ else -- unsynced
     end
 
     function gadget:Initialize()
+			Spring.Echo(GetInfo().name.." Initialization started")
         gadgetHandler:AddSyncAction("transferScaleTable", transferScaleTable)
         gadgetHandler:AddSyncAction("SetUnitLuaDraw", setUnitLuaDraw)
+				Spring.Echo(GetInfo().name.." Initialization ended")
     end
 	
 

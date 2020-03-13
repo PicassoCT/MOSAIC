@@ -805,7 +805,8 @@ end
 
 
 function gadget:Initialize()
-    --// check user configs
+	Spring.Echo(GetInfo().name.." Initialization started")
+  --// check user configs
     shadows = Spring.HaveShadows()
     advShading = Spring.HaveAdvShading()
 
@@ -824,6 +825,7 @@ function gadget:Initialize()
     gadgetHandler:AddChatAction("treewind", ToggleTreeWind)
     gadgetHandler:AddChatAction("reloadshaders", ReloadShaders)
     gadgetHandler:AddChatAction("updatesun", UpdateSun)
+		Spring.Echo(GetInfo().name.." Initialization ended")
 end
 
 function to_string(data, indent)

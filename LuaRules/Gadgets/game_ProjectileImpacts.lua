@@ -39,8 +39,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
 	function gadget:Initialize()
+		Spring.Echo(GetInfo().name.." Initialization started")
 		if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
-	
+		Spring.Echo(GetInfo().name.." Initialization ended")	
 	end
 	
 

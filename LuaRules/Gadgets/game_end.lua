@@ -78,6 +78,7 @@ Spring.SetGameRulesParam("GlobalGameState:", state)
 end
 
 function gadget:Initialize()
+	Spring.Echo(GetInfo().name.." Initialization started")
 	setGlobalGameState(GameConfig.GameState.normal)
 	
 	GG.Launchers ={}
@@ -104,6 +105,7 @@ function gadget:Initialize()
             aliveAllyTeamCount = aliveAllyTeamCount + 1
         end
     end
+			Spring.Echo(GetInfo().name.." Initialization ended")
 end
 	
 	

@@ -108,9 +108,11 @@ assert(CM_Def.projectilespeed)
 local redirectProjectiles = {} -- [frame][projectileID] = table with .targetType .targetX .targetY .targetZ .targetID
 
 function gadget:Initialize()
+		Spring.Echo(GetInfo().name.." Initialization started")
     for id, boolActive in pairs(cruiseMissileWeapons) do
         Script.SetWatchWeapon(id, true)
     end
+			Spring.Echo(GetInfo().name.." Initialization ended")
 end
 
 cruiseMissileFunction = function(evtID, frame, persPack, startFrame)

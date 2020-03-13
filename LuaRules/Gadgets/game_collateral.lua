@@ -159,8 +159,10 @@ else -- UNSYNCED
     end
 	
 	 function gadget:Initialize()
+	 		Spring.Echo(GetInfo().name.." Initialization started")
         -- This associate the messages with the functions
         gadgetHandler:AddSyncAction("DisplaytAtUnit", DisplaytAtUnit)
+				Spring.Echo(GetInfo().name.." Initialization ended")
     end
 	
 	
