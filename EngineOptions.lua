@@ -101,6 +101,13 @@ local options =
   },
 
   {
+    key    = 'GhostedBuildings',
+    name   = 'Ghosted buildings',
+    desc   = "Once an enemy building will be spotted\n a ghost trail will be placed to memorize location even after the loss of the line of sight",
+    type   = 'bool',
+    def    = true,
+  },
+  {
     key    = 'diplomacy',
     name   = 'Diplomacy Settings',
     desc   = 'Configure diplomacy settings.',
@@ -148,27 +155,36 @@ local options =
     type   = 'section',
   }, 
   {
+    key    = 'DisableMapDamage',
+    name   = 'Disable Map Deformations',
+    desc   = 'Prevents the map shape from being changed by weapons and terraforming',
+    type   = 'bool',
+	section= 'mapsettings',
+    def    = false,
+  },
+  {
+    key    = 'LuaGaia',
+    name   = 'Enables gaia',
+    desc   = 'Enables gaia player',
+    type   = 'bool',
+    def    = true,
+  },
+  {
+    key    = 'NoHelperAIs',
+    name   = 'Disable helper AIs',
+    desc   = 'Disables luaui and group ai usage for all players',
+    type   = 'bool',
+    def    = false,
+  },
+ {
     key    = 'LuaRules',
     name   = 'Enable LuaRules',
     desc   = 'Enable mod usage of luarules',
     type   = 'bool',
     def    = true,
 	}
-    -- {
-    -- key    = 'LuaGaia',
-    -- name   = 'Enables gaia',
-    -- desc   = 'Enables gaia player',
-    -- type   = 'bool',
-    -- def    = false,
-  -- },
-  
-  -- {
-    -- key    = 'NoHelperAIs',
-    -- name   = 'Disable helper AIs',
-    -- desc   = 'Disables luaui and group ai usage for all players',
-    -- type   = 'bool',
-    -- def    = false,
-  -- },
+
+
  
 
 

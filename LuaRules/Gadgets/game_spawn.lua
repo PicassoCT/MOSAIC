@@ -172,16 +172,14 @@ end
 function gadget:GameStart()
 	
 	Spring.Echo("Starting game MOSAIC Version "..GameConfig.Version)
-
     --creates a Tech Tree in GG
     local teams = Spring.GetTeamList()
-
-
+	
     -- only activate if engine didn't already spawn units (compatibility)
     if (noStartUnitsNeeded(teams)==true) then
         return
     end
-
+	
     -- spawn start units
     local gaiaTeamID = Spring.GetGaiaTeamID()
 
