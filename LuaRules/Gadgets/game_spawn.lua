@@ -166,6 +166,8 @@ if #Spring.GetAllUnits() == 0 then return false end
 				end		   
         end
   end
+  
+  Spring.Echo("noStartUnitsNeeded")
   return true
 end
 
@@ -177,6 +179,7 @@ function gadget:GameStart()
 	
     -- only activate if engine didn't already spawn units (compatibility)
     if (noStartUnitsNeeded(teams)==true) then
+		Spring.Echo("game_spawn: no Start Units Needed")
         return
     end
 	
