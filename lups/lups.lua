@@ -23,7 +23,7 @@ local function GetInfo()
     license   = "GNU GPL, v2 or later",
     layer     = 1000,
     api       = true,
-    enabled   = true
+    enabled   = false
   }
 end
 
