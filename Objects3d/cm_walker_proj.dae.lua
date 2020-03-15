@@ -1,15 +1,12 @@
 model = {
-	radius = 15.0,
-	height = 20.0,
-	-- tex1 = "testtex1.dds",
-	-- tex2 = "testtex2.dds",
+	radius = 25.0,
+	height = 40,
 	tex1 = "component_atlas_diffuse.png",
 	tex2 = "component_atlas_normal.png",
 
 	--tex2 = "armtech_tex2.dds",
-	midpos = {0, 5, 0},
+	midpos = {0, 0, 0},
 	--rotAxisSigns = {-1, -1, -1}
-	--[[
 	pbr = {
 		flipUV = true, --flip second component of UV map. False is for DDS, True is for everything else. For now keep everything either in DDS or in PNG/TGA
 		fastGamma = true, --default is false i.e. more precise method
@@ -72,12 +69,12 @@ model = {
 		--toneMapping = "aces", --valid values are "aces", "uncharted2", "filmic".
 		gammaCorrection = true, -- do gamma correction (RGB-->sRGB) on the final color.
 		texUnits = { -- substitute values
-			["TEX0"] = "for_texture_devil_dog_low_poly_1_default_B_1k.png",
-			["TEX1"] = "for_texture_devil_dog_low_poly_1_default_N_1k.png",
-			["TEX2"] = "for_texture_devil_dog_low_poly_1_default_MR_1k.png",
-			--["TEX3"] = "for_texture_devil_dog_low_poly_1_default_R.png",
+			["TEX0"] = "component_atlas_diffuse.png",
+			["TEX1"] = "component_atlas_normal.png",
+			["TEX2"] = "operative_asset_metallicity.png",
+			["TEX3"] = "operative_asset_roughness.png",
 		}
 	},
-	]]
+
 }
 return model

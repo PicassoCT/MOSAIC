@@ -1,7 +1,7 @@
 --===================================================================================================================
 -- Game Configuration
 
-unitFactor= 0.1 --0.5
+unitFactor= 0.5 --0.5
 
 
 function getGameConfig()
@@ -11,7 +11,7 @@ function getGameConfig()
 	
 	},
 	
-	Version = "Alpha: 0.6747",
+	Version = "Alpha: 0.6748",
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,

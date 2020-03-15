@@ -75,7 +75,7 @@ onImpact = {
     end,
     [WeaponDefNames["cm_turret_ssied"].id] = function(projID)
         px, py, pz = Spring.GetProjectilePosition(projID)
-        teamID = GetProjectileTeamID(projID)
+        teamID = Spring.GetProjectileTeamID(projID)
         unitID = Spring.CreateUnit("ground_turret_mg", px, py, pz, 1, teamID)
         giveParachutToUnit(unitID, px, py, pz)
 
