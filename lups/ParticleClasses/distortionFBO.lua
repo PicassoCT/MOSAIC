@@ -263,7 +263,8 @@ function PostDistortion.Initialize()
   ------------------------------------------------------------------------------------------
   -- FBO + some OpenGL stuff
   --
-
+  assert(gl)
+  assert(gl.CreateList)
   enterIdentity = gl.CreateList(function()
     gl.DepthTest(false);
     gl.UseShader(jitterShader);
