@@ -22,7 +22,7 @@ local weaponDef = {
 	avoidFriendly = false,
 	avoidGround  = true,
 	collideNeutral = false,
-	noFirebaseCollide  = false,
+	-- noFirebaseCollide  = false,
 	collideGround = true,
 	
 	--command
