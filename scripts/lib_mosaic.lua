@@ -10,8 +10,8 @@ function getGameConfig()
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
 	
 	},
+	Version = "Alpha: 0.6750",
 	
-	Version = "Alpha: 0.6748",
 	
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,
