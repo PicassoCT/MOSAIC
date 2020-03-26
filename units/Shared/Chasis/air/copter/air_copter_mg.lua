@@ -2,8 +2,8 @@ local AIRC_COPTER_MG = VTOL:New{
 
 	name = "Airborne machinegun Drone ",
 	Description = " MOSAIC Standardized Drone ",
-	objectName = "aircoptermg.s3o",
-	script = "aircoptermgscript.lua",
+	objectName = "air_copter_mg.dae",
+	script = "air_copter_mg_script.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
