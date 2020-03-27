@@ -421,6 +421,8 @@ UpperAnimationStateFunctions ={
 						return eAnimState.slaved
 					end,
 [eAnimState.aiming] = 	function () 
+						Hide(FoldtopUnfolded)
+						Hide(FoldtopFolded)
 						if boolPistol == true then
 							PlayAnimation("UPBODY_AIM_PISTOL")
 						else	

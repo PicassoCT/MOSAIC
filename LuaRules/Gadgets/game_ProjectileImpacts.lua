@@ -36,7 +36,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	pistol_Def = getWeapondefByName("pistol")
 	tankcannon_Def = getWeapondefByName("tankcannon")
 	railgun_Def = getWeapondefByName("railgun")
-	
+	local stunContainerUnitTimePeriodInSeconds = 10.0
+
 	if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
 	function gadget:Initialize()
 		Spring.Echo(GetInfo().name.." Initialization started")
@@ -107,22 +108,37 @@ panicWeapons = {
     end
 
     --===========UnitDamaged Functions ====================================================
-    --victim -- interrogator -- boolInerrogationOngoing
-    InterrogationTable={}
+    function currentlyInterrogationRunning(suspectID, interrogatorID)
+	if not GG.InterrogationTable[suspectID] or not GG.InterrogationTable[suspectID][interrogatorID] then 
+	return false 
+	end
+	
+	if GG.InterrogationTable[suspectID][interrogatorID]  and GG.InterrogationTable[suspectID][interrogatorID]  == false  then 
+	return false 
+	end
+	
+	return true
+	end
+	
+	--victim -- interrogator -- boolInerrogationOngoing
+    GG.InterrogationTable={}
     local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
     interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, iconUnitTypeName)
         Spring.Echo("caught 1")
-        if not InterrogationTable[unitID] then InterrogationTable[unitID] ={} end
-        if not InterrogationTable[unitID][attackerID] then InterrogationTable[unitID][attackerID] = false end
 
-        if  InterrogationTable[unitID][attackerID] == false then
+        if not GG.InterrogationTable[unitID] then GG.InterrogationTable[unitID] ={} end
+        if not GG.InterrogationTable[unitID][attackerID] then GG.InterrogationTable[unitID][attackerID] = false end
+
+        if  GG.InterrogationTable[unitID][attackerID] == false then
+			GG.InterrogationTable[unitID][attackerID] = true
+
             Spring.Echo("caught 2")
             --Stun
             interrogationFunction = function( persPack)
                 --check Unit existing
                 if false == doesUnitExistAlive(persPack.unitID) then
-                    InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
                     Spring.Echo("caught 3 ")
                     if  true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
@@ -135,7 +151,7 @@ panicWeapons = {
 
 				--check wether the interrogator is still there
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
                     Spring.Echo("caught 4")
                     if persPack.IconId then
                         GG.raidIconPercentage[persPack.IconId] = nil
@@ -145,7 +161,7 @@ panicWeapons = {
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
-                    InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
                     Spring.Echo("caught 5 ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconId then
@@ -160,12 +176,14 @@ panicWeapons = {
                     if not GG.raidIconPercentage then  GG.raidIconPercentage = {} end
                     if not GG.raidIconPercentage[persPack.IconId] then  GG.raidIconPercentage[persPack.IconId] = 0 end
                 end
-                --update the icons  ercentage
+				
+                --update the icons  percentage
                 GG.raidIconPercentage[persPack.IconId] = (Spring.GetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames
                 Spring.Echo("Raid running " .. (persPack.startFrame + GameConfig.InterrogationTimeInFrames )- Spring.GetGameFrame()   )
 
                 if persPack.startFrame + GameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
                     --succesfull interrogation
+
                     Spring.Echo("Raid was succesfull - childs of "..persPack.unitID .." are revealed")
                     children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
                     parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
@@ -183,17 +201,15 @@ panicWeapons = {
                         Spring.GiveOrderToUnit(parent, CMD.CLOAK, {},{})
                         GG.OperativesDiscovered[parent] = true
                         Spring.SetUnitAlwaysVisible(parent, true)
-
                     end
 
                     Spring.DestroyUnit(persPack.unitID, false, true)
-                    InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
+					GG.InterrogationTable[persPack.unitID][persPack.interrogatorID]= nil
                     Spring.Echo("caught 7")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     GG.raidIconPercentage[persPack.IconId] = nil
                     return true, persPack
                 end
-
 
                 return false, persPack
             end
@@ -210,18 +226,35 @@ panicWeapons = {
     end
 
     UnitDamageFuncT[stunpistoldWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
-        Spring.Echo("Stunning unit".. unitID)
-        if unitID ~= attackerID then
-            stunUnit(unitID, 2.0)
-        end
 
+	--stupidity edition
+	if attackerID == unitID then return damage end
 
+    Spring.Echo("Stunning unit".. unitID)
+    if unitID ~= attackerID then
+        stunUnit(unitID, 2.0)
+    end
 
+	 --make disguise civilians transparent
+	 if civilianWalkingTypeTable[unitDefID] and  GG.DisguiseCivilianFor[unitID] then
+		stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
+		unitID= GG.DisguiseCivilianFor[unitID]
+		unitDefID = Spring.GetUnitDefID(unitID)
+		unitTeam = Spring.GetUnitTeam(unitID)
+	 end
+
+		if InterrogateAbleType[unitDefID] and currentlyInterrogationRunning(unitID, attacker) == false then
+			Spring.Echo("Interrogation/Raid of "..UnitDefs[unitDefID].name)
+			stunUnit(unitID, 2.0)
+			setSpeedEnv(attackerID, 0.0)
+			interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")       
+			return damage
+		end
     end
 
 	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
-	local stunContainerUnitTimePeriodInSeconds = 10.0
+
 	local allTeams = Spring.GetTeamList()
 
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
@@ -250,10 +283,10 @@ panicWeapons = {
 	if attackerID == unitID then return damage end
      
 	 
-	 --Interrogation
-	 if InterrogateAbleType[unitDefID]   then
+	 --Interrogation -- an not already Interrogated
+	 if InterrogateAbleType[unitDefID] and currentlyInterrogationRunning(unitID, attacker) == false then
         Spring.Echo("Interrogation/Raid of "..UnitDefs[unitDefID].name)
-        stunUnit(GG.DisguiseCivilianFor[unitID], 2.0)
+        stunUnit(unitID, 2.0)
         setSpeedEnv(attackerID, 0.0)
         interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")       
 		return damage
