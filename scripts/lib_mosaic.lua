@@ -10,7 +10,7 @@ function getGameConfig()
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
 	
 	},
-	Version = "Alpha: 0.6751",
+	Version = "Alpha: 0.6752",
 	
 	
 	numberOfBuildings 	= 75 *unitFactor,
