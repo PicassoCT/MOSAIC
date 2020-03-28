@@ -41,7 +41,7 @@ local ProtagonSafeHouse =    Building:New{
   initCloaked =    true,
   decloakOnFire =    true,
   cloakTimeout =    5,
-
+showNanoFrame= true,
   script =       "safehousescript.lua",
   objectName =            "safehouse.dae",
 

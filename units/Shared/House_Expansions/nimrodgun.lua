@@ -16,10 +16,10 @@ local NimRodGun = Building:New{
 	MetalStorage = 2500,
 	name = "Nimrod",
 	description = " railgun and orbital launch system <launches satellites /destroys heavy units>",
-
+showNanoFrame= true,
 
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 	workerTime = 0.005,
 	buildDistance = 1,

@@ -73,7 +73,7 @@ local unitDef = {
 	MetalMake = 0,	
 	acceleration = 0,
 	
-	nanocolor=[[1 0.2 0.05]],
+nanocolor=[[0.20 0.411 0.611]],
 	
 	levelGround = false,
 	mass = 9990,

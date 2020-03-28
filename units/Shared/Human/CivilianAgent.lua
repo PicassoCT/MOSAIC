@@ -15,6 +15,7 @@ local CivilianAgent = Human:New{
 	BrakeRate = 0.3,
 	TurnRate = 900,
 	MaxVelocity = 0.7875,
+	showNanoFrame= true,
 	
 	buildtime			 = 40,
 	CanAttack = true,

@@ -25,7 +25,7 @@ local groundturretssied =  Turret:New{
 	MovementClass = "Default2x2",
 
 	
-	nanocolor=[[0 0.9 0.9]],
+	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
@@ -100,7 +100,7 @@ local groundturretmg =  Turret:New{
 	MovementClass = "Default2x2",
 
 	
-	nanocolor=[[0 0.9 0.9]],
+	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
@@ -163,7 +163,7 @@ local ground_turret_antiarmor =  Turret:New{
 	MovementClass = "Default2x2",
 
 	
-	nanocolor=[[0 0.9 0.9]],
+	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
@@ -244,7 +244,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "5 25 5",
 	
-	nanocolor=[[0 0.9 0.9]],
+	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,

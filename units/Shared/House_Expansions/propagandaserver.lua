@@ -23,7 +23,7 @@ local Propagandaserver = Building:New{
 	footprintZ = 1,
 	script 			= "propagandaserverscript.lua",
 	objectName        	= "propagandaserver.dae",
-
+showNanoFrame= true,
 
 	canCloak =true,
 	cloakCost=0.0001,

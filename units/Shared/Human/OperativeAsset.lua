@@ -21,6 +21,7 @@ local OperativeAsset = Human:New{
 	canMove	= true,
 	CanAttack = true,
 	CanGuard = true,
+showNanoFrame= true,
 
 	CanMove = true,
 	CanPatrol = true,
@@ -58,7 +59,7 @@ local OperativeAsset = Human:New{
 		
 		
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 	workerTime = 0.25,
 	buildDistance = 45,

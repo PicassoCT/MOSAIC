@@ -10,7 +10,7 @@ local Assembly = Building:New{
 
 	buildTime =    60,
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+	nanocolor=[[0.20 0.411 0.611]], --
 	CanReclaim=false,	
 	workerTime = 0.065,
 	YardMap ="yyyy yyyy yyyy yyyy ",
@@ -19,7 +19,7 @@ local Assembly = Building:New{
 	buildingMask = 8,
 	footprintX = 4,
 	footprintZ = 4,
-	
+	showNanoFrame= true,
 	script 					= "assemblyscript.lua",
 	objectName        	= "assembly.dae",
 	name = "Assembly",
