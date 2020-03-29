@@ -19,7 +19,6 @@ Icon = piece "Icon"
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(houseAttach)
-    StartThread(killMyselfIfNotAttached)
     StartThread(drawMapRoom)
     Spring.SetUnitBlocking(unitID, false, false, false)
 
@@ -29,22 +28,6 @@ end
 GameConfig = getGameConfig()
 safeHouseID = nil
 boolAttached= false
-function killMyselfIfNotAttached()
-    Sleep(GameConfig.safeHouseLiftimeUnattached)
-    counter = 0
-    while  safeHouseID == nil and boolAttached == false do
-        Sleep(100)
-        counter = counter + 100
-        if counter > GameConfig.safeHouseLiftimeUnattached then
-            Spring.DestroyUnit(unitID,false,true)
-        end
-    end
-
-    while doesUnitExistAlive(safeHouseID) == true do
-        Sleep(100)
-    end
-    Spring.DestroyUnit(unitID,false,true)
-end
 
 _, CivilianTypeDefTable= getCivilianTypeTable(UnitDefs)
 	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
@@ -98,10 +81,11 @@ function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID
 	
 
 function houseAttach()
-    Sleep(100)
+    Sleep(GameConfig.safeHouseLiftimeUnattached)
     waitTillComplete(unitID)
     -- Spring.Echo("Safehouse completed")
-    process(
+	boolJustOnce= false
+    T = process(
         getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
         function(id) --filter out all the safe houses
             if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID then
@@ -109,12 +93,15 @@ function houseAttach()
         end
         end,
         function(id)
+			if 	boolJustOnce == true then return end
+
             if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable ={} end
             -- if no previous safe house was attached to this building or the previous attached safehouse has died
             if not GG.houseHasSafeHouseTable[id] or doesUnitExistAlive(GG.houseHasSafeHouseTable[id] ) == false then
+				boolJustOnce = true
                 GG.houseHasSafeHouseTable[id] = unitID
                 safeHouseID = id
-
+				StartThread(mortallyDependant, unitID, id, 250, false, true)
                 -- Spring.UnitAttach(id, unitID, getUnitPieceByName(id, GameConfig.safeHousePieceName))
                 moveUnitToUnit(unitID, id)
                 -- Spring.Echo("SafehouseAttached")
@@ -124,21 +111,27 @@ function houseAttach()
                 boolAttached= true
                 -- Spring.SetUnitNoSelect(unitID, false)
                 StartThread(detectUpgrade)
+				return id
             end
 
             --if a previous safehouse is attached
             if GG.houseHasSafeHouseTable[id] and doesUnitExistAlive(GG.houseHasSafeHouseTable[id] ) == true and GG.houseHasSafeHouseTable[id] ~= unitID then
+			boolJustOnce = true
             --destroy the previous created safehouse
 			enemyTeamID = Spring.GetUnitTeam(GG.houseHasSafeHouseTable[id])
 			Spring.DestroyUnit(GG.houseHasSafeHouseTable[id],true,false)
 			
 			--Turn everything that comes out of this safehouse into a double agent
-			createDoubleAgentEventStream(id , enemyTeamID, unitID)	
-			
-	
+			createDoubleAgentEventStream(id , enemyTeamID, unitID)				
             end
         end
     )
+	
+	if #T < 1 then 
+		echo("Safehouse not attached to house") 
+	else
+		echo("Safehouse attached to house") 
+	end
 end
 
 safeHouseUpgradeTable= getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefID(unitID))
@@ -149,14 +142,13 @@ function detectUpgrade()
         -- Spring.Echo("Detect Upgrade")
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
-
             buildDefID = Spring.GetUnitDefID(buildID)
-            Spring.Echo("buildID found Upgrade of type ".. UnitDefs[buildDefID].name)
+            Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTable[buildDefID] then
 				Sleep(100)
                 waitTillComplete(buildID)
 				Sleep(100)
-                if doesUnitExistAlive(buildID) then
+                if doesUnitExistAlive(buildID) == true then
 
                     if not  GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable ={} end
                     GG.houseHasSafeHouseTable[safeHouseID] = buildID
@@ -241,7 +233,6 @@ function drawMapRoom()
 			end,
 			function (id)
 				if houseTypeTable[spGetUnitDefID(id)] then
-					Spring.Echo("House found")
 					x,_,z = spGetUnitPosition(id)
 					dictHouses_Pos[id]={x=x/Game.mapSizeX,z=z/Game.mapSizeZ}
 				end

@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-
+GameConfig = getGameConfig()
 center = piece "center"
 Icon = piece "Icon"
 	Packed = piece "Packed"
@@ -17,7 +17,7 @@ NumberOfRods = 3
 function script.Create()
 	
 	-- Spin(center,y_axis,math.rad(1),0.5)
-	if Icon then 	Hide(Icon) end
+	 if Icon then  Move(Icon,y_axis, GameConfig.SatelliteIconDistance, 0);	Hide(Icon) end
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(delayedShow)

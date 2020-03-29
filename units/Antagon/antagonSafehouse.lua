@@ -11,7 +11,7 @@ local AntagonSafeHouse = Building:New{
 	description= " base of operation <recruits Agents/ builds upgrades>",
 	
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+nanocolor=[[0.20 0.411 0.611]],
 	CanReclaim=false,	
 	workerTime = 0.4,
 	buildDistance = 1,
@@ -20,6 +20,7 @@ local AntagonSafeHouse = Building:New{
 	buildingMask = 8,
 	footprintX = 4,
 	footprintZ = 4,
+showNanoFrame= true,
 
 	buildCostEnergy     = 0,
 	buildCostMetal      = 500,

@@ -28,11 +28,12 @@ local OperativePropagator = Human:New{
 	objectName        	= "operative_investigator.dae",
 	
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 	workerTime = 0.75,
 	buildDistance = 120,
 	terraformSpeed = 350,
+	showNanoFrame= true,
 	
 	canCloak =true,
 	cloakCost=0.0001,

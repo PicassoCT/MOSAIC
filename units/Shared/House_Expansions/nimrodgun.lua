@@ -12,7 +12,8 @@ local NimRodGun = Building:New{
 	buildCostEnergy     = 5,
 	buildCostMetal      = 5,
 	explodeAs			= "none",
-
+	buildTime =    60,
+	
 	MetalStorage = 2500,
 	name = "Nimrod",
 	description = " railgun and orbital launch system <launches satellites /destroys heavy units>",
@@ -21,7 +22,7 @@ showNanoFrame= true,
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
-	workerTime = 0.005,
+	workerTime = 0.065,
 	buildDistance = 1,
 	terraformSpeed = 1,
 	YardMap ="oooo oooo oooo oooo ",

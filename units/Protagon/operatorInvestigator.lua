@@ -27,7 +27,7 @@ local OperativeInvestigator = Human:New{
 	objectName        	= "operative_investigator.dae",
 
 
-	
+	showNanoFrame= true,
 	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
@@ -39,7 +39,7 @@ local OperativeInvestigator = Human:New{
 	cloakTimeout = 5,
 	
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 	workerTime = 0.75,
 	buildDistance = 120,

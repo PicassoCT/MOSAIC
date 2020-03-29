@@ -147,7 +147,7 @@ end
 
 
 function script.StartMoving()
-	spinT(TablesOfPiecesGroups["wheel"], x_axis , -160,0.3 )
+	spinT(TablesOfPiecesGroups["wheel"], x_axis , 260,0.3 )
 end
 
 function script.StopMoving()

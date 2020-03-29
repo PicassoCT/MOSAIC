@@ -20,7 +20,7 @@ local ScanSat = Satellite:New{
 	script 				= "satellitescript.lua",
 	objectName 			= "SpySat.dae",
 	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
-		
+		upright= true,	
 	customparams = {
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks

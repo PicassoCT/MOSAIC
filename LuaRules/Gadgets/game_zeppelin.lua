@@ -10,12 +10,19 @@ function gadget:GetInfo()
 	}
 end
 
+    VFS.Include("scripts/lib_OS.lua")
+    VFS.Include("scripts/lib_UnitScript.lua")
+    VFS.Include("scripts/lib_Animation.lua")
+    VFS.Include("scripts/lib_Build.lua")
+    VFS.Include("scripts/lib_mosaic.lua")
+
 zeppelins={
 		[UnitDefNames["satellitescan"].id]=true,	
 		[UnitDefNames["satellitegodrod"].id]=true,	
 		[UnitDefNames["satelliteanti"].id]=true,	
 		}
 zeppelin={}
+zeppelin_waiting = {}
 
 --SYNCED
 if (gadgetHandler:IsSyncedCode()) then
@@ -39,7 +46,7 @@ if (gadgetHandler:IsSyncedCode()) then
  function gadget:UnitCreated(UnitID, whatever)
  	local type=Spring.GetUnitDefID(UnitID);
 	if zeppelins[type] then
-		zeppelin[UnitID]=type
+		zeppelin_waiting[UnitID] = type
 	end
  end
 
@@ -56,6 +63,20 @@ if (gadgetHandler:IsSyncedCode()) then
  end
 
  function gadget:GameFrame(f)
+	if f % 30 == 0 then
+		for id,types in pairs(zeppelin_waiting) do
+			if doesUnitExistAlive(id)== true then
+				hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
+				if buildProgress and buildProgress >= 1.0 then
+					zeppelin[id]=types
+					zeppelin_waiting[id] = nil
+				end
+			else
+				zeppelin_waiting[id] = nil
+			end
+		end
+	end
+ 
 	if f%20<1 then
 		for zid,zepp in pairs(zeppelin) do
 			local x,y,z=Spring.GetUnitVectors(zid)

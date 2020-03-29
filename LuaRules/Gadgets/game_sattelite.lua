@@ -42,17 +42,24 @@ if (gadgetHandler:IsSyncedCode()) then
 		if SatelliteTypes[unitDefID] then
 			satteliteStateTable[unitID] = "flying"
 			Spring.MoveCtrl.Enable(unitID,true)
-			Satellites[unitID] = {utype =unitDefID, direction = "orthogonal"}
+			Satellites[unitID] = {utype =unitDefID, direction = "vertical"}
 		end		
 	end
 	
 	local mapSizeX = Game.mapSizeX
 	local mapSizeZ = Game.mapSizeZ
+	echo("MapsizeX:"..mapSizeX.."/".."MapsizeZ:".. mapSizeZ)
 	
-	function circularClamp(x,y,z)
-		if (x >= mapSizeX) then x = 2 end
-		if (x <= 1) then x = mapSizeX-1 end
+	function circularClamp(x,y,z, direction)
+		if direction == "horizontal" then
+			if (x >= mapSizeX) then x = 2 end
+			if (x <= 1) then x = mapSizeX-1 end
+		end
 		
+		if direction == "vertical" then
+			if (z >= mapSizeZ) then z = 2 end
+			if (z <= 1) then z = mapSizeZ-1 end
+		end
 		return x,y,z
 	end
 	
@@ -64,7 +71,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		 for _, cmd in pairs(CommandTable) do
 			if boolFirst == true and cmd.id == CMD.MOVE then 
 				boolFirst = false 
-				if direction == "orthogonal" then
+				if direction == "vertical" then
 					if math.abs(cmd.params[1] - x)> 10 then
 						if cmd.params[1] < x then
 							return speed *-1, 0
@@ -91,7 +98,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	satteliteStateTable={}
 
 function directionalArrestTimeOut(x,y,z, direction)
-	if direction == "orthogonal" then
+	if direction == "vertical" then
 		if x > directionalSwitchValue then z = 1 end
 		return x,y, z
 	end
@@ -108,7 +115,7 @@ end
 
 	
 function directionalArrest(x,y,z, direction)
-	if direction == "orthogonal" then
+	if direction == "vertical" then
 		return x,y, 1
 	end
 	
@@ -140,12 +147,14 @@ function dectectDirectionalChange(id, direction)
 	-- directional change 
 	if tx < directionalSwitchValue and tz < directionalSwitchValue then return direction end
 	
-	if tx < directionalSwitchValue and direction == "orthogonal" then 
+	if tx < directionalSwitchValue and direction == "vertical" then 
+		echo("Satellite new direction horizontal")
 		return  "horizontal"
 	end
 	
 	if tz < directionalSwitchValue and direction == "horizontal" then
-		return "orthogonal"
+		echo("Satellite new direction vertical")
+		return "vertical"
 	end
 	
 	return direction
@@ -165,7 +174,7 @@ end
 local	satelliteStates={
 	["flying"] = function(id, x, y, z, utype, direction)	
 
-					if  (direction == "orthogonal" and z >= mapSizeZ) or (direction == "horizontal" and x >= mapSizeX) then
+					if  (direction == "vertical" and z >= mapSizeZ) or (direction == "horizontal" and x >= mapSizeX) then
 						deactivateSatellite(id)				
 						x,y,z = directionalArrestTimeOut(x,y,z, direction)
 						return "timeout", x, y, z
@@ -193,7 +202,7 @@ local	satelliteStates={
 	
 	function getDirectionalTypeTravelSpeed(utype, direction)
 	ox, oz = 0,0
-		if direction == "orthogonal" then
+		if direction == "vertical" then
 			 oz =  SatelliteTypesSpeedTable[utype]
 		else
 			 ox =  SatelliteTypesSpeedTable[utype]
@@ -212,11 +221,8 @@ local	satelliteStates={
 			satteliteStateTable[id],x,y,z = satelliteStates[satteliteStateTable[id]](id, x, y, z, utype, tables.direction)
 			
 			Spring.MoveCtrl.SetPosition(id, x, SatelliteAltitudeTable[utype], z )
-			vx,vy,vz = absDistance(sx,x),0,absDistance(sz,z)
-			if satelliteStates[id] ~= "timeout" then
-				Spring.MoveCtrl.SetVelocity(id, vx, vy, vz)
-			end
-			-- Spring.MoveCtrl.SetRotation(id, 0, 0, 0)
+
+
 		end
 	end
 end

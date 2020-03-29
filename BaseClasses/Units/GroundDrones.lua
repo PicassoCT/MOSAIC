@@ -9,7 +9,7 @@ local Turret = Unit:New{
 	MovementClass = "Default2x2",
 
 	
-	nanocolor=[[0 0.9 0.9]],
+	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,

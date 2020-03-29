@@ -10,9 +10,10 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "center"
-
+Icon = piece "Icon"
 attachpoint = piece "attachpoint"
 Packed = piece "Packed"
+GameConfig = getGameConfig()
 
 local id
 function attachSatellite()
@@ -20,6 +21,7 @@ function attachSatellite()
 	 x,y,z = Spring.GetUnitPosition(unitID)
 	 teamID= Spring.GetUnitTeam(unitID)
 	 id = Spring.CreateUnit("noone", x,y,z, 1, teamID)
+	 if Icon then  Move(Icon,y_axis, GameConfig.SatelliteIconDistance, 0);	Show(Icon) end
 	 -- Spring.SetUnitAlwaysVisible(id,true)
 	 Spring.UnitAttach(unitID, id, attachpoint)
 	 sendMessage(unitID, id)
@@ -86,4 +88,15 @@ function script.Deactivate()
     return 0
 end
 
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
 
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
+end

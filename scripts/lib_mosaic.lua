@@ -8,9 +8,9 @@ function getGameConfig()
 	return {
 	instance = {
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
-	
+	Version = "Alpha: 0.6753",
 	},
-	Version = "Alpha: 0.6752",
+	
 	
 	
 	numberOfBuildings 	= 75 *unitFactor,
@@ -60,7 +60,7 @@ function getGameConfig()
 	 
 	
 	 --all buildings
-	buildingLiftimeUnattached = 10000,
+	 buildingLiftimeUnattached = 10000,
 
 	 --propagandaserver 
 	 propandaServerFactor = 0.1,
@@ -116,7 +116,7 @@ function getGameConfig()
 	 
 	 --Icons
 	 iconGroundOffset = 50,
-	 
+	 SatelliteIconDistance = 50,
 	
 	--Operativedrop HeightOffset
 	OperativeDropHeigthOffset = 400,

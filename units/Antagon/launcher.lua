@@ -9,7 +9,7 @@ local Launcher = Building:New{
 	buildtime			 = 2*60,
 
 	Builder = true,
-	nanocolor=[[0 0 0]], --
+	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 	workerTime = 0.005,
 	YardMap ="oooo oooo oooo oooo ",
