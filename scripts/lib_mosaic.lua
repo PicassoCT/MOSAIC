@@ -8,7 +8,7 @@ function getGameConfig()
 	return {
 	instance = {
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
-	Version = "Alpha: 0.6754",
+	Version = "Alpha: 0.6755",
 	},
 	
 	

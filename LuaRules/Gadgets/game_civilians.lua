@@ -354,9 +354,9 @@ end
 			
 			-- spawn Population at Buildings
 		--	echo("checkReSpawnPopulation()")
-			checkReSpawnPopulation()
+			-- checkReSpawnPopulation()
 			
-			checkReSpawnTraffic()
+			-- checkReSpawnTraffic()
 			
 			-- give Arrived Units Commands
 			sendArrivedUnitsCommands()
@@ -806,9 +806,13 @@ end
 			checkReSpawnHouses()
 			
 			--Check number of Units	
-			checkReSpawnPopulation()
+			if frame % 30 == 0  then
+				checkReSpawnPopulation()
+			end
 			
-			checkReSpawnTraffic()
+			if frame % 60 == 0  then
+			checkReSpawnTraffic()			
+			end
 			
 			--if Unit arrived at Location
 			--give new Target
