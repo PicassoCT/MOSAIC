@@ -128,7 +128,7 @@ local buttonTop = 28 -- offset between top of buttons and bottom of widget
 
 function widget:Initialize()
   widgetHandler.knownChanged = true
-  Spring.SendCommands('unbindkeyset f11')
+  Spring.SendCommands('bindkeyset f11')
 
   if allowuserwidgets then
     if widgetHandler.allowUserWidgets then
@@ -137,7 +137,6 @@ function widget:Initialize()
       buttons[3] = "Allow User Widgets"
     end
   end
-  
   if Spring.GetGameFrame() <= 0 then
     Spring.SendLuaRulesMsg('xmas'..((os.date("%m") == "12"  and  os.date("%d") >= "13") and '1' or '0'))
   end
@@ -305,12 +304,14 @@ local function UpdateList()
   local myName = widget:GetInfo().name
   maxWidth = 0
   widgetsList = {}
+  local fullWidgetsListCount = #fullWidgetsList
   for name,data in pairs(widgetHandler.knownWidgets) do
-    if (name ~= myName) then
-      fullWidgetsList[#fullWidgetsList+1] = { name, data }
+    if name ~= myName then
+      fullWidgetsListCount = fullWidgetsListCount + 1
+      fullWidgetsList[fullWidgetsListCount] = { name, data }
       -- look for the maxWidth
       local width = fontSize * font:GetTextWidth(name)
-      if (width > maxWidth) then
+      if width > maxWidth then
         maxWidth = width
       end
     end
@@ -318,8 +319,7 @@ local function UpdateList()
   
   maxWidth = (maxWidth / fontSize)
 
-  local myCount = #fullWidgetsList
-  if (widgetHandler.knownCount ~= (myCount + 1)) then
+  if widgetHandler.knownCount ~= (fullWidgetsListCount + 1) then
     error('knownCount mismatch')
   end
 

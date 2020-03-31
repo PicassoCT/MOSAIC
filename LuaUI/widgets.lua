@@ -1,4 +1,4 @@
--- $Id: cawidgets.lua 4261 2009-03-31 16:34:36Z licho $
+-- $Id: widgets.lua 4261 2009-03-31 16:34:36Z licho $
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -375,7 +375,7 @@ function widgetHandler:Initialize()
 
   -- Add ignorelist --
   local customkeys = select(10, Spring.GetPlayerInfo(Spring.GetMyPlayerID()))
-  if customkeys["ignored"] then
+  if customkeys and customkeys["ignored"] then
     if string.find(customkeys["ignored"],",") then
       local newignorelist = string.gsub(customkeys["ignored"],","," ")
       Spring.Echo("Setting Serverside ignorelist: " .. newignorelist)

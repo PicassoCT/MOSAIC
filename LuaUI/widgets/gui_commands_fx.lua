@@ -498,10 +498,15 @@ end
 
 local newUnitCommands = {}
 function widget:UnitCommand(unitID, unitDefID, teamID, cmdID, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua)
+	if not cmdID then return end
+	
 	if enabledTeams[teamID] ~= nil then
 		if teamID ~= GaiaTeamID or not isCritter[unitDefID] then
 			if ignoreUnits[unitDefID] == nil then
 				if newUnitCommands[unitID] == nil then		-- only process the first in queue, else when super large queue order is given widget will hog memory and crash
+					assert(cmdID)
+					assert(unitDefID)
+					assert(unitID)
 					addUnitCommand(unitID, unitDefID, cmdID)
 					newUnitCommands[unitID] = true
 				else
@@ -567,6 +572,9 @@ function widget:Update(dt)
 		-- process newly given commands (not done in widgetUnitCommand() because with huge build queue it eats memory and can crash lua)
 		for unitID,v in pairs(newUnitCommands) do
 			if v ~= true and ignoreUnits[v[1]] == nil then
+					assert(cmdID)
+					assert(unitDefID)
+					assert(unitID)
 				addUnitCommand(unitID, v[1], v[2])
 			end
 		end

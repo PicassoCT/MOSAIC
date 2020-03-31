@@ -129,7 +129,7 @@ local options = {
         desc='Allow players to set the start positions of AIs.',
         type='bool',
         section= 'startconds',
-        def=false,
+        def=true,
     },
     { -- Might cause desync, check if they occur.
         key    = 'waterlevel',

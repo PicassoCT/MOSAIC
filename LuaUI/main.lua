@@ -1,4 +1,4 @@
--- $Id: camain.lua 3171 2008-11-06 09:06:29Z det $
+-- $Id: main.lua 3171 2008-11-06 09:06:29Z det $
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -22,7 +22,7 @@ include("savetable.lua")
 include("debug.lua")
 include("modfonts.lua")
 include("layout.lua")   -- contains a simple LayoutButtons()
-include("cawidgets.lua")  -- the widget handler
+include("widgets.lua")  -- the widget handler
 
 --------------------------------------------------------------------------------
 --

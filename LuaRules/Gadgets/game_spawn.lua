@@ -173,7 +173,7 @@ end
 
 function gadget:GameStart()
 	
-	Spring.Echo("Starting game MOSAIC Version "..GameConfig.Version)
+	Spring.Echo("Starting game MOSAIC Version "..GameConfig.instance.Version)
     --creates a Tech Tree in GG
     local teams = Spring.GetTeamList()
 	

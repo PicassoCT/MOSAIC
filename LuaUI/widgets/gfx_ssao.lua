@@ -9,6 +9,7 @@ function widget:GetInfo()
         license   = "GPL",
         layer     = math.huge,
         enabled   = false, --true
+		hidden = true,
     }
 end
 

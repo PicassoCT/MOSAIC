@@ -16,6 +16,7 @@ FireEmit2 = piece "FireEmit2"
 
 
 function script.Create()
+	Spin(Rotor,z_axis,math.rad(9000),0)
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["FireEmit"])
