@@ -26,7 +26,7 @@ local GameConfig = getGameConfig()
 
     function gadget:RecvLuaMsg(msg, playerID)
         if msg then
-            Spring.Echo("RecvLuaMsg"..msg)
+            -- Spring.Echo("RecvLuaMsg"..msg)
 			
 			if string.find(msg,"SetGameState:") then
 			msg = msg:gsub("SetGameState:","")

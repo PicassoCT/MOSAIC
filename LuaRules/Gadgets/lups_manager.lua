@@ -57,6 +57,7 @@ if (gadgetHandler:IsSyncedCode()) then
     SendToUnsynced("lups_unit_cloaked", unitID,unitDefID,teamID)
   end
   function gadget:UnitDecloaked(unitID,unitDefID,teamID)
+    	Spring.Echo("  lups_unit_decloaked")
     SendToUnsynced("lups_unit_decloaked", unitID,unitDefID,teamID)
   end
 
@@ -205,9 +206,11 @@ end
 
 local function UnitDecloaked(_,unitID,unitDefID,teamID)
   if (not Lups) then
+	assert(true==false, "No Lups instance in widget part")
     return
   end
 
+  Spring.Echo("Decloaking Unit")
   local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
   local LocalAllyTeamID

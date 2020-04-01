@@ -412,8 +412,8 @@ end
 		end
 		
 		if counter < GameConfig.numberOfPersons then
-		Spring.Echo("Spawning "..(GameConfig.numberOfPersons - counter).." nr of persons")
-			for i=1, GameConfig.numberOfPersons - counter do
+		Spring.Echo("Spawning ".. math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax).." nr of persons")
+			for i=1, math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax) do
 				x,_,z, startNode = getRandomSpawnNode()
 				--assert(z)
 				--assert(x)
@@ -448,8 +448,8 @@ end
 		end
 		
 		if counter < GameConfig.numberOfVehicles then
-		echo("Spawning "..(GameConfig.numberOfVehicles - counter).." nr of vehicles")
-			for i=1, GameConfig.numberOfVehicles - counter do
+		echo("Spawning "..math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter).." nr of vehicles")
+			for i=1, math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter) do
 				x,_,z, startNode = getRandomSpawnNode()
 				
 				--assert(RouteTabel[startNode])
@@ -810,8 +810,8 @@ end
 				checkReSpawnPopulation()
 			end
 			
-			if frame % 60 == 0  then
-			checkReSpawnTraffic()			
+			if frame % 55 == 0  then
+				checkReSpawnTraffic()			
 			end
 			
 			--if Unit arrived at Location
