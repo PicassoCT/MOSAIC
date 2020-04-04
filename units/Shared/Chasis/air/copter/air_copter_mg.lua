@@ -3,6 +3,9 @@ local AIRC_COPTER_MG = VTOL:New{
 	name = "Airborne machinegun Drone ",
 	Description = " MOSAIC Standardized Drone ",
 	objectName = "air_copter_mg.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 	script = "air_copter_mg_script.lua",
 	buildPic = "placeholder.png",
 	--floater = true,

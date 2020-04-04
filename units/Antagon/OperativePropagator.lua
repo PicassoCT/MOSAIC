@@ -26,6 +26,10 @@ local OperativePropagator = Human:New{
 	CanStop = true,
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
+	objectName        	= "propagandaserver.dae",
+	customParams        = {
+		normaltex = "unittextures/operative_investigator_normal.png",
+	},
 	
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
@@ -62,14 +66,14 @@ local OperativePropagator = Human:New{
 	
 		weapons={
 			[1]={name  = "raidarrest", --prevents other weapon usage
-				onlyTargetCategory = [[ARRESTABLE]],
+				onlyTargetCategory = [[RAIDABLE]],
 			},				
 			[2]={name  = "stunpistol",
-				onlyTargetCategory = [[GROUND]],
+				onlyTargetCategory = [[GROUND ARRESTABLE]],
 			}
 		},	
 		
-	category = "ARRESTABLE GROUND",
+	category = [[GROUND ARRESTABLE]],
 
 
 	

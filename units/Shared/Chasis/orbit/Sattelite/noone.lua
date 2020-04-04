@@ -35,6 +35,9 @@ local NooneLaser = Human:New{
 	
 	script 					= "noonescript.lua",
 	objectName        	= "orbit_turret_noone.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 	name = "Noone",
 	description = "Satellite Destroying Laser",
 

@@ -21,6 +21,10 @@ local BlackSite = Building:New{
 	
 	script 					= "blacksitescript.lua",
 	objectName        	= "blacksite.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
+	
 	name = "BlackSite",
 	description = "creates aerosol drones",
 
@@ -48,7 +52,7 @@ local BlackSite = Building:New{
 		"air_copter_aerosol_depressol" 
 		
 	},
-	category = [[GROUND BUILDING ARRESTABLE]],
+  category =  [[GROUND BUILDING RAIDABLE]],
 }
 
 return lowerkeys(

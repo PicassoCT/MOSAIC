@@ -21,6 +21,9 @@ local AntiSat = Satellite:New{
 	noAutoFire                	= false,
 	script 						= "satelliteantiscript.lua",
 	objectName        			= "orbit_satellite_cyclops.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 	usePieceCollisionVolumes 	= false,
 	upright= true,
 	collisionVolumeType = "box",

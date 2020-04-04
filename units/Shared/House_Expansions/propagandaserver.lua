@@ -23,6 +23,9 @@ local Propagandaserver = Building:New{
 	footprintZ = 1,
 	script 			= "propagandaserverscript.lua",
 	objectName        	= "propagandaserver.dae",
+		customParams        = {
+		normaltex = "unittextures/propagandaserver_normal.tga",
+	},
 showNanoFrame= true,
 
 	canCloak =true,
@@ -34,7 +37,7 @@ showNanoFrame= true,
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
-	category = [[GROUND BUILDING ARRESTABLE]],
+	category = [[GROUND BUILDING RAIDABLE]],
 
 
 }

@@ -4,6 +4,9 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	Description = " Launches a Javeline ",
 	
 	objectName = "air_copter_antiarmor.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 	script = "airantiarmorscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,

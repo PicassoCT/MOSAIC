@@ -15,6 +15,10 @@ local satteliteGodrod = Satellite:New{
 	footprintZ 				= 1,
 	script 					= "satellitegodscript.lua",
 	objectName        		= "SatGodRod.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
+	
 	fireState				=0,
 	alwaysupright			= true,
 		upright= true,

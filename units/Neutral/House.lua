@@ -13,6 +13,10 @@ local House = Building:New{
 	FootprintZ = 8,
 	script 					= "Housescript.lua",
 	objectName       	= "house.dae",
+			customParams        = {
+		normaltex = "unittextures/house_arab_normal.png",
+	},
+	
 	
 	YardMap = 	[[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
 				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
@@ -55,7 +59,8 @@ local House = Building:New{
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 120 130",
-	category =  [[GROUND BUILDING ARRESTABLE]],
+	category = [[GROUND BUILDING RAIDABLE]],
+
 }
 
 

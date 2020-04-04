@@ -26,6 +26,10 @@ local ground_walker_mg = Walker:New{
 	footprintZ = 2,
 	script 			= "groundwalkerscript.lua",
 	objectName 	= "ground_walker_mg.dae",
+	
+	customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 
 	usepiececollisionvolumes = true,
 	customparams = {

@@ -3,6 +3,9 @@ local Civil = Civilian:New{
 	name = "Civilian",
 	description = " innocent bystander <colateral>",
 	objectName        	= "civilian3_arab.dae",
+			customParams        = {
+		normaltex = "unittextures/arab_civilian_normal.png",
+	},
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -14,7 +17,8 @@ local Civil = Civilian:New{
     },
 
 	
-	category = [[GROUND]],
+
+	category = [[GROUND ARRESTABLE]],
 }
 
 

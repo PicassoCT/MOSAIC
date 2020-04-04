@@ -4,6 +4,10 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	Description = " MOSAIC Standardized Explosive Device Drone ",
 	
 	objectName = "air_copter_sied.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
+	
 	script = "airssiedscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,

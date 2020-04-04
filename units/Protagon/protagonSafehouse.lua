@@ -48,6 +48,7 @@ showNanoFrame= true,
 
 
   customparams =    {
+  		normaltex = "unittextures/safehouse_normal.png",
     helptext =     "Civilian Building",
     baseclass =     "Building", -- TODO: hacks
   },
@@ -63,7 +64,7 @@ showNanoFrame= true,
     "assembly",
   },
 
-  category =  [[GROUND BUILDING BUILDING]],
+  category =  [[GROUND BUILDING RAIDABLE]],
 }
 
 

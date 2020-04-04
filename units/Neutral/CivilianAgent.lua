@@ -22,6 +22,10 @@ local Civilian = Human:New{
 	CanStop = true,
 	script 					= "civilianscript.lua",
 	objectName        	= "civilian1_arab.dae",
+			customParams        = {
+		normaltex = "unittextures/arab_civilian_normal.png",
+	},
+	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",
@@ -32,7 +36,7 @@ local Civilian = Human:New{
 		baseclass		= "Human", -- TODO: hacks
     },
 	
-	category = [[GROUND]],
+	category = [[GROUND ARRESTABLE]],
 }
 
 

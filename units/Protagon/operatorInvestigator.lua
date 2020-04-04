@@ -25,6 +25,9 @@ local OperativeInvestigator = Human:New{
 	CanStop = true,
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
+		customParams        = {
+		normaltex = "unittextures/operative_investigator_normal.png",
+	},
 
 
 	showNanoFrame= true,
@@ -62,10 +65,10 @@ local OperativeInvestigator = Human:New{
 	
 	weapons={
 			[1]={name  = "raidarrest", --prevents other weapon usage
-				onlyTargetCategory = [[ARRESTABLE]],
+				onlyTargetCategory = [[RAIDABLE]],
 			},				
 			[2]={name  = "stunpistol",
-				onlyTargetCategory = [[GROUND]],
+				onlyTargetCategory = [[GROUND ARRESTABLE]],
 			}
 		},	
 	

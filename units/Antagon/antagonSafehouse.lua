@@ -47,6 +47,7 @@ showNanoFrame= true,
 	objectName        	= "safehouse.dae",
 	
 	customparams = {
+		normaltex = "unittextures/safehouse_normal.png",
 		helptext		= "Civilian Building",
 		baseclass		= "Building", -- TODO: hacks
     },
@@ -61,8 +62,8 @@ showNanoFrame= true,
 	"assembly",
 	"launcher"
 	},
-	
-	category = [[GROUND BUILDING ARRESTABLE]]
+	category = [[GROUND BUILDING RAIDABLE]],
+
 }
 
 

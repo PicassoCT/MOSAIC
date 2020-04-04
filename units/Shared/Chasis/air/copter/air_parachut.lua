@@ -3,6 +3,9 @@ local AIR_PARACHUT = VTOL:New{
 	name = "EGP ",
 	Description = "Electrostatic Graphene Parachut",
 	objectName = "air_parachut.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 	script = "parachutscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,

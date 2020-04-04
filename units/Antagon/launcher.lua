@@ -21,6 +21,9 @@ local Launcher = Building:New{
 	
 	script 					= "launcherscript.lua",
 	objectName        	= "launcher.dae",
+		customParams        = {
+		normaltex = "unittextures/component_atlas_normal.png",
+	},
 	name = "Launcher",
 	description = " ends the game with a MOSA ICBM launch",
 
@@ -44,7 +47,8 @@ local Launcher = Building:New{
 	{
 		"launcherstep"
 	},
-	category = [[GROUND BUILDING ARRESTABLE]],
+		category = [[GROUND BUILDING RAIDABLE]],
+
 }
 
 return lowerkeys(
