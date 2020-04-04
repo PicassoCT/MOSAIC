@@ -26,7 +26,9 @@ local CivilianAgent = Human:New{
 	CanStop = true,
 	script 					= "civilianagentscript.lua",
 	objectName        	= "civilian0_arab.dae",
-
+	customParams        = {
+		normaltex = "unittextures/arab_civilian_normal.tga",
+	},
 	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,

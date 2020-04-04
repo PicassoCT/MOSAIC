@@ -26,7 +26,6 @@ local OperativePropagator = Human:New{
 	CanStop = true,
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
-	objectName        	= "propagandaserver.dae",
 	customParams        = {
 		normaltex = "unittextures/operative_investigator_normal.png",
 	},
