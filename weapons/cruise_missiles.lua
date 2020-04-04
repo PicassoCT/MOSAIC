@@ -46,22 +46,22 @@ CruiseMissiles["cruisemissile"] = Missile
 
 
 local Missile = weaponDef
-Missile.model = "cm_airstrike_proj.dae"
+Missile.model = "cm_airstrike_proj.s3o"
 Missile.name = "cruisemissile airstrike | airssied droplets"
 CruiseMissiles["cm_airstrike"] = Missile
 
 local Missile = weaponDef
-Missile.model = "cm_walker_proj.dae"
+Missile.model = "cm_walker_proj.s3o"
 Missile.name = "cruise missile walkerdrop"
 CruiseMissiles["cm_walker"] = Missile
 
 local Missile = weaponDef
-Missile.model = "cm_antiarmor_proj.dae"
+Missile.model = "cm_antiarmor_proj.s3o"
 Missile.name = "cruisemissile antiarmour"
 CruiseMissiles["cm_antiarmor"] = Missile
 
 local Missile = weaponDef
-Missile.model = "cm_turret_ssied_proj.dae"
+Missile.model = "cm_turret_ssied_proj.s3o"
 Missile.name = "cruisemissile ssied | turret drop"
 CruiseMissiles["cm_turret_ssied"] = Missile
 

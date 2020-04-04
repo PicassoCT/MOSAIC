@@ -70,7 +70,7 @@ local Assembly = Building:New{
 
 	},
 	
-	category = [[GROUND BUILDING ARRESTABLE]],
+	category = [[GROUND BUILDING RAIDABLE]],
 	}
 
 

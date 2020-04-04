@@ -78,7 +78,7 @@ function getGameConfig()
 	 -- Interrogation
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
-	 InterrogationDistance= 120,
+	 InterrogationDistance= 200,
 	 RaidInterrogationPropgandaPrice = 50,
 	 investigatorCloakedSpeedReduction = 0.35,
 	 raidWaitTimeToRecloak = 5000,
@@ -401,6 +401,7 @@ end
 
 function  getInterrogateAbleTypeTable(UnitDefs)
 	assert(UnitDefs)
+	GameConfig = getGameConfig()
 local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"civilianagent",
@@ -413,6 +414,9 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 		"assembly",
 		"launcher"
 	}
+	
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))
+	
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end

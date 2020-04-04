@@ -57,7 +57,8 @@ showNanoFrame= true,
 	},
 	
 	fireState= 1,
-	
+	category = [[GROUND BUILDING RAIDABLE]],
+
 	weapons={
 			[1]={name  = "railgun",
 				onlyTargetCategory = [[ORBIT]], --GROUND BUILDING 

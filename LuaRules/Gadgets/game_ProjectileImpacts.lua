@@ -120,10 +120,16 @@ panicWeapons = {
 	return true
 	end
 	
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-- Interrogation
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------	
 	--victim -- interrogator -- boolInerrogationOngoing
     GG.InterrogationTable={}
     local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
-
+	local innocentCivilianTypeTable = getPanicableCiviliansTypeTable(UnitDefs)
+	
     interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, iconUnitTypeName)
         Spring.Echo("caught 1")
 
@@ -183,10 +189,26 @@ panicWeapons = {
 
                 if persPack.startFrame + GameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
                     --succesfull interrogation
+					
+					--of a innocent person / innocent house
+					if innocentCivilianTypeTable[persPack.suspectDefID]  or houseTypeTable[persPack.suspectDefID] then
+						Spring.Echo("Interrogated innocent civilian")						
+						-- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
+						 assert(persPack.attackerTeam)
+						 GG.Bank:TransferToTeam(-GameConfig.RaidInterrogationPropgandaPrice, persPack.attackerTeam, persPack.attackerID )
+						 for i=1,#allTeams,1  do
+							 if allTeams[i] ~= persPack.attackerTeam then
+								GG.Bank:TransferToTeam(GameConfig.RaidInterrogationPropgandaPrice, allTeams[i], persPack.unitID )
+							 end
+						 end					
+					
+					return true, persPack
+					end
 
                     Spring.Echo("Raid was succesfull - childs of "..persPack.unitID .." are revealed")
                     children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
                     parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID),persPack.unitID)
+					GG.Bank:TransferToTeam(GameConfig.RaidInterrogationPropgandaPrice, persPack.attackerTeam, persPack.attackerID )
                     Spring.Echo(" caught 6 ")
                     for childID, v in pairs(children) do
                         if doesUnitExistAlive(childID) == true then
@@ -215,7 +237,13 @@ panicWeapons = {
             end
 
             Spring.Echo("Starting Interrogation Event Stream")
-            createStreamEvent(unitID, interrogationFunction, 31,  {interrogatorID = attackerID, unitID= unitID})
+            createStreamEvent(unitID, interrogationFunction, 31,  {interrogatorID = attackerID, 
+																	unitID= unitID, 
+																	suspectDefID= unitDefID,
+																	attackerTeam = attackerTeam,
+																	attackerID = attackerID
+																	
+																	})
         end
 
         --on Complete Raid/Interrogation
@@ -252,11 +280,17 @@ panicWeapons = {
 		end
     end
 
+
+	
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-- Raid
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
 	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
     InterrogateAbleType = getInterrogateAbleTypeTable(UnitDefs)
-
 	local allTeams = Spring.GetTeamList()
-
+	
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam)
         Spring.Echo("Raid/Interrogatable Weapon fired upon"..UnitDefs[unitDefID].name)
 		
@@ -280,29 +314,19 @@ panicWeapons = {
 	 end
 	 
 	--stupidity edition
-	if attackerID == unitID then return damage end
-     
+	if attackerID == unitID then return damage end     
 	 
 	 --Interrogation -- an not already Interrogated
-	 if InterrogateAbleType[unitDefID] and currentlyInterrogationRunning(unitID, attacker) == false then
-        Spring.Echo("Interrogation/Raid of "..UnitDefs[unitDefID].name)
+	if (houseTypeTable[unitDefID] or InterrogateAbleType[unitDefID]) and currentlyInterrogationRunning(unitID, attacker) == false then
+        Spring.Echo("Raid of "..UnitDefs[unitDefID].name)
         stunUnit(unitID, 2.0)
         setSpeedEnv(attackerID, 0.0)
-        interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")       
+        interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "raidicon")       
 		return damage
-	 end
-	 
-	 -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
-	 assert(attackerTeam)
-	 GG.Bank:TransferToTeam(-GameConfig.RaidInterrogationPropgandaPrice, attackerTeam, attackerID )
-	 for i=1,#allTeams,1  do
-		 if allTeams[i] ~= attackerTeam then
-			GG.Bank:TransferToTeam(GameConfig.RaidInterrogationPropgandaPrice, allTeams[i], unitID )
-		 end
-	 end
-		
+	end
 	
-		
+
+	 		
     end
 
    
@@ -406,22 +430,15 @@ panicWeapons = {
 
         -- Spring.CreateUnit("ground_station_ssied",x,y,z, 1, teamID)
 
-
         -- end
-
-
         }
+		
     function gadget:ProjectileDestroyed(proID)
         defid= Spring.GetProjectileDefID(proID)
         if projectileDestroyedFunctions[defID] then
             return projectileDestroyedFunctions[defID] (proID, defID, Spring.GetProjectileTeamID (proID))
         end
-
-
     end
-
-
-
 
     function getProjectileTargetXYZ(proID)
         targetTypeInt, target = Spring.GetProjectileTarget(proID)
