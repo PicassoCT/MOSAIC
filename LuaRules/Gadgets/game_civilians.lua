@@ -172,6 +172,12 @@ end
 				if maxNrPolice > 0 then				
 					px,py,pz = getPoliceSpawnLocation(attackerID)
 					direction = math.random(1,4)
+					
+					ptype = "policetruck"
+					if GG.GlobalGameState == GameConfig.GameState.anarchy or  GG.GlobalGameState == GameConfig.GameState.pacification then
+						ptype = randT(PoliceTypes)
+					end
+					
 					officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime + math.random(1, GameConfig.policeMaxDispatchTime)	
 				else --reasign one
@@ -412,8 +418,10 @@ end
 		end
 		
 		if counter < GameConfig.numberOfPersons then
-		Spring.Echo("Spawning ".. math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax).." nr of persons")
-			for i=1, math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax) do
+		local stepSpawn = math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax)
+		echo("Spawning "..stepSpawn.. " of "..GameConfig.numberOfPersons .." persons")		
+		
+			for i=1, stepSpawn do
 				x,_,z, startNode = getRandomSpawnNode()
 				--assert(z)
 				--assert(x)
@@ -448,8 +456,9 @@ end
 		end
 		
 		if counter < GameConfig.numberOfVehicles then
-		echo("Spawning "..math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter).." nr of vehicles")
-			for i=1, math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter) do
+		local stepSpawn = math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter)
+		echo("Spawning ".. stepSpawn.. " of "..GameConfig.numberOfPersons .." vehicles")
+			for i=1,stepSpawn  do
 				x,_,z, startNode = getRandomSpawnNode()
 				
 				--assert(RouteTabel[startNode])

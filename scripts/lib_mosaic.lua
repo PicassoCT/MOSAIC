@@ -10,9 +10,7 @@ function getGameConfig()
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
 	Version = "Alpha: 0.6755",
 	},
-	
-	
-	
+		
 	numberOfBuildings 	= 75 *unitFactor,
     numberOfVehicles 	= 100 *unitFactor,
     numberOfPersons		= 150 *unitFactor,
@@ -34,6 +32,8 @@ function getGameConfig()
 	 },
 	 
 	 --civilianbehaviour
+	 civilianGatheringBehaviourIntervalFrames = 3*60*30,
+	 
 	 civilianPanicRadius = 350,
 	 civilianFleeDistance = 500,
 	 civilianInterestRadius = 150,
@@ -58,8 +58,7 @@ function getGameConfig()
 	 safeHousePieceName = "center",
 	 delayTillSafeHouseEstablished= 15000,
 	 safeHouseLiftimeUnattached= 15000,
-	 
-	
+	 	
 	 --all buildings
 	 buildingLiftimeUnattached = 10000,
 
@@ -102,9 +101,7 @@ function getGameConfig()
 				postlaunch = "postlaunch",
 				gameover = "gameover",
 				pacification = "pacification",
-	 },
-	
-	 
+	 },	 
 	 
 	 TimeForInterceptionInFrames= 30 * 10,
 	 TimeForPanicSpreadInFrames= 30 * 30,
@@ -152,7 +149,9 @@ end
 function getPoliceTypes(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
-			[UnitDefNames["policetruck"].id		]= true
+			[UnitDefNames["policetruck"].id		]= true,
+			[UnitDefNames["ground_tank_night"].id		]= true,
+			[UnitDefNames["ground_tank_day"].id		]= true
 		}
 
 end
@@ -929,4 +928,27 @@ function removeUnit(teamID, unit)
 	parent= getParentOfUnit(teamID, unit)
 	if parent then  GG.InheritanceTable[teamID][parent][unit] = nil end
 	if GG.InheritanceTable[teamID][unit] then GG.InheritanceTable[teamID][unit] = nil end
+end
+
+
+function getHouseClusterPoints(UnitDefs, culture)
+	houseTypeTable= getHouseTypeTable(UnitDefs, culture)
+	
+	PositionTable = process(Spring.GetAllUnits(),
+			function(id)
+				if houseTypeTable[Spring.GetUnitDefID(id)] then 	return id,
+				end
+			end,
+			function(id)
+				x,y,z= Spring.GetUnitPosition(id)
+			return {x=x,y=y,z=z}			
+			end,
+			)
+			
+			--
+			
+			
+
+
+
 end

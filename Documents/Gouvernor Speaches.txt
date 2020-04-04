@@ -1,31 +1,32 @@
-PreLaunch  Speach:
-Citizens, 
-i hereby declare a state of emeregency.
-There is a launcher in this city, built by a <Noise> cell.
-Should it fire, its the end. A Eye for a eye, a city for a city. 
-In addition a general amnesty till sundown is now in effect.
-All rights, all privacy is hereby revoked.
-We will hand out weapons.
-End this nightmare before it ends us.
+	Normal -> Anarchy Speach:
+	Citizens, 
+	i hereby declare a state of emeregency.
+	There is a launcher in this city, built by a <Noise> cell.
+	Should it fire, its the end. A Eye for a eye, a city for a city. 
+	In addition a general amnesty till sundown is now in effect.
+	All rights, all privacy is hereby revoked.
+	We will hand out weapons.
+	End this nightmare before it ends us.
 
-Return to Normal:
+	Anarchy -> Pacification Speach:
 
-Rebells,
-this is your last chance to drop your weapons and return to a normal life.
+	Rebels,
+	this is your last chance to drop your weapons 
+	and return to a normal life.
+	After this, there will be no mercy and
+	everyone holding onto weapons will be euthanized.
+	You can not win. Surrender.
+	If not for yourself, then at least for 
+	those still cowering in the cellars.
 
 
-
-
-
-
-
-Bioweapons:
-Citizenry,
-a highly infectious agent was detected in this community.
-Please return home immediatly for quarantine.
-Do not go outside or try to leave the area.
-A vaccacine is auto-sequenced as we speak.
-Please remain inside, until the vaccacine is distributed.
+	Bioweapons:
+	Citizenry,
+	a highly infectious agent was discovered in this community.
+	Please return home immediatly for quarantine.
+	Do not go outside or try to leave the area.
+	A vaccacine  auto-sequencing is in progress.
+	Please remain inside, until the vaccacinations are implemented.
 
 
 

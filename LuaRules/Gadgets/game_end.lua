@@ -149,7 +149,7 @@ GameStateMachine =
 						if  id and doesUnitExistAlive(id) == true and launchedFrame + GameConfig.TimeForInterceptionInFrames < frame then
 							winners = {teamID}
 							spGameOver(winners)
-							return GameConfig.GameState.GameOver
+							return GameConfig.GameState.gameover
 						end
 					end
 				end	
@@ -158,7 +158,11 @@ GameStateMachine =
 			return GameConfig.GameState.postlaunch
 		end,
 		
-		anarchy       = function(frame)
+		["anarchy"]        = function(frame)
+			
+			--TODO 
+				return GameConfig.GameState.anarchy
+			
 			if GG.Launchers then
 				boolNoReadyLaunchers= true
 					for teamID, launchersT in pairs(GG.Launchers) do	
@@ -181,7 +185,7 @@ GameStateMachine =
 		end,
 		
 		["gameover"]       = function(frame) 
-			return GameConfig.GameState.GameOver
+			return GameConfig.GameState.gameover
 		end,
 		
 		["pacification"]   = function(frame) 
@@ -340,7 +344,19 @@ function constantCheck(frame)
 		end
 	end
 
-oldState=""
+oldState="normal"
+function holdSpeach(transition)
+speaches ={
+[GameConfig.GameState.normal..">"..GameConfig.GameState.launchleak]="Transition from normal to launchleakpanic",
+[GameConfig.GameState.launchleak..">"..GameConfig.GameState.anarchy]="Transition from launchleak to anarchy",
+[GameConfig.GameState.anarchy..">"..GameConfig.GameState.postlaunch]="Transition from anarchy to postlaunch",
+[GameConfig.GameState.anarchy..">"..GameConfig.GameState.pacification]="Transition from anarchy to pacification",
+[GameConfig.GameState.pacification..">"..GameConfig.GameState.normal]="Transition from pacification to normal",
+}
+
+if speaches[transition] then echo(speaches[transition]) end
+
+end
 function gadget:GameFrame(frame)
     -- only do a check in slowupdate
     if frame > 1 and (frame % 16) == 0  then
@@ -349,7 +365,7 @@ function gadget:GameFrame(frame)
 		setGlobalGameState(GameStateMachine[GG.GlobalGameState](frame))
 
 		if  GG.GlobalGameState and oldState ~= GG.GlobalGameState then
-			Spring.Echo("Current GameState:"..GG.GlobalGameState)
+			holdSpeach(oldState..">"..GG.GlobalGameState)		
 			oldState = GG.GlobalGameState
 		end
 	

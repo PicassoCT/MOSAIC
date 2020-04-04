@@ -498,6 +498,38 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State)
 	end
 end
 
+function anarchyGatheringBehaviour()
+
+	timeInFrames = math.abs(math.sin(math.pi*Spring.GetGameFrame() / GameConfig.civilianGatheringBehaviourIntervalFrames)) -- 0 -- 1
+	
+	--compute voronoi cells in various resolutions from houses as borders
+	-- merge them depending on where you are in the intervall- move people to vornoi centers
+										
+	ad = Spring.GetUnitNearestAlly(unitID)
+	if ad then
+		x,y,z=Spring.GetUnitPosition(ad)
+		Command(unitID, "go" , {x=x,y=y,z=z},{})
+	end
+	Sleep(1000)
+	
+	if bodyConfig.boolArmed == true then
+		T= getAllNearUnit(unitID, 1024)
+		T= process(T, function(id) 
+						if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
+							return id 
+						end
+					end)
+		if T and #T > 0 then
+			ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
+			
+			if ed  then
+				Command(unitID, "attack" , ed,{})
+			end
+		end
+	end
+
+end
+
 normalBehavourStateMachine = {
 	[GameConfig.GameState.launchleak] = function(lastState, currentState)
 										-- init clause
@@ -516,6 +548,7 @@ normalBehavourStateMachine = {
 	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
+											Spring.Echo("Civilian entering gamestate anarchy")
 											Spring.SetUnitNeutral(unitID, false)
 											Spring.SetUnitNoSelect(unitID, true)
 											
@@ -536,7 +569,7 @@ normalBehavourStateMachine = {
 												end
 											end	
 
-											
+											--pick a side - depending on the money
 											if fairRandom("JoinASide", 5)== true then
 												enemy = Spring.GetUnitNearestEnemy(unitID)
 												if enemy then
@@ -546,33 +579,12 @@ normalBehavourStateMachine = {
 													end
 												end
 											end											
-										end										
+										end									
 									
-									
-										ad = Spring.GetUnitNearestAlly(unitID)
-										if ad then
-											x,y,z=Spring.GetUnitPosition(ad)
-											Command(unitID, "go" , {x=x,y=y,z=z},{})
-										end
-										Sleep(1000)
-										
-										if bodyConfig.boolArmed == true then
-											T= getAllNearUnit(unitID, 1024)
-											T= process(T, function(id) 
-															if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
-																return id 
-															end
-														end)
-											if T and #T > 0 then
-												ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
-												
-												if ed  then
-													Command(unitID, "attack" , ed,{})
-												end
-											end
-										end
-										Sleep(3000)
-										--pick a side - depending on the money
+										anarchyGatheringBehaviour()
+								
+										Sleep(500)
+
 										
 										
 									end,
@@ -754,9 +766,6 @@ end
 UpperAnimationStateFunctions ={
 [eAnimState.catatonic] = 	function () 
 							PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),catatonicBodyPieces)
-							Turn(UpBody,x_axis, math.rad(126.2),60)
-							Turn(center,x_axis, math.rad(-91.2),45)
-							Move(center, y_axis, -60, 60)
 							return eAnimState.talking
 							end,
 [eAnimState.talking] = 	function () 
