@@ -8,6 +8,7 @@ local Civilian = Human:New{
 	name = "Civilian",
 	description = " innocent bystander <colateral>",
 	explodeAs				  = "none",
+		buildPic = "civilianagent.png",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,

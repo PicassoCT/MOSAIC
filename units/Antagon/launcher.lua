@@ -7,7 +7,7 @@ local Launcher = Building:New{
 	explodeAs			= "none",
 
 	buildtime			 = 2*60,
-
+	buildPic = "launcher.png",
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	

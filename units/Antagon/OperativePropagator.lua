@@ -4,7 +4,7 @@ local OperativePropagator = Human:New{
 	mass                = 500,
 	buildCostEnergy    	  = 5,
 	buildCostMetal     	  = 5,
-
+	buildPic = "operativepropagator.png",
 	explodeAs				  = "none",
 	name = "Propagator",
 	description= "Propaganda Operative <recruits Agents/ builds Safehouses / interrogates Intruders>",

@@ -160,9 +160,6 @@ GameStateMachine =
 		
 		["anarchy"]        = function(frame)
 			
-			--TODO 
-				return GameConfig.GameState.anarchy
-			
 			if GG.Launchers then
 				boolNoReadyLaunchers= true
 					for teamID, launchersT in pairs(GG.Launchers) do	

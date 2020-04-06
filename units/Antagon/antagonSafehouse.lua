@@ -8,6 +8,7 @@ local AntagonSafeHouse = Building:New{
 	explodeAs			= "none",
 	NoWeapon=true,
 	name = "Safehouse",
+	buildPic = "antagonsafehouse.png",
 	description= " base of operation <recruits Agents/ builds upgrades>",
 	
 	Builder = true,

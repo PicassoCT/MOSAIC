@@ -12,7 +12,7 @@ local Civil = Civilian:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",
 
-	
+			buildPic = "civilian.png",
 	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks
     },

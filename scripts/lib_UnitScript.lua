@@ -1972,6 +1972,11 @@ function inherit(childClass, parent)
 	return copy
 end
 
+function inRange(mins, val, maxs)
+if val >= mins and val <= maxs then return true end
+
+return false
+end
 
 
 
@@ -3279,9 +3284,15 @@ end
 
 -->returns the 2 norm of a vector
 function distance(x, y, z, xa, ya, za)
-	assert(x)
+	if not x or not y then assert(true==false, "No value given to distance"); return nil ; end
+	
 	if type(x)== "table" then
+		if x.x then
 		return distance(x.x, x.y, x.z, y.x, y.y, y.z)
+		else
+		return distance(x[1], x[2], x[3], y[1], y[2], y[3])
+		end
+		
 	end
 	
 	if xa ~= nil and ya ~= nil and za ~= nil then
@@ -5956,6 +5967,34 @@ function cegDevil(cegname, x, y, z, rate, lifetimefunc, endofLifeFunc, boolStrob
 	if endofLifeFunc then
 		endofLifeFunc(x, y, z)
 	end
+end
+
+--> shared Computation
+
+function sharedComputationResult( key, func, data, frameInterval, GameConfig)
+if not GG.SharedComputationResult then GG.SharedComputationResult=  {} end
+if not GG.SharedComputationResult[key] then GG.SharedComputationResult[key] =  {frame = Spring.GetGameFrame(), result = func(data, GameConfig)} end
+
+currentFrame = Spring.GetGameFrame()
+
+--recomputate sharedResults
+if GG.SharedComputationResult[key].frame + frameInterval < currentFrame then
+	GG.SharedComputationResult[key].result = func(data, GameConfig)
+	GG.SharedComputationResult[key].frame = currentFrame
+end
+
+return GG.SharedComputationResult[key].result
+
+end
+
+function getBelowPow2( value)
+	n=2
+	it=1
+		while n < value do 
+			it= inc(it)
+			n= 2^it
+		end
+	return  it, n
 end
 
 

@@ -46,6 +46,7 @@ function getGameConfig()
 	 mainStreetModulo	= 4,
 	 maxIterationSteps = 2048,
 	 chanceCivilianArmsItselfInHundred = 50,
+	demonstrationMarchRadius = 50,
 	 
 	 maxNrPolice = 6,
 	 policeMaxDispatchTime = 2000,
@@ -114,7 +115,7 @@ function getGameConfig()
 	 
 	 --Icons
 	 iconGroundOffset = 50,
-	 SatelliteIconDistance = 50,
+	 SatelliteIconDistance = 150,
 	
 	--Operativedrop HeightOffset
 	OperativeDropHeigthOffset = 400,
@@ -932,23 +933,93 @@ end
 
 
 function getHouseClusterPoints(UnitDefs, culture)
+
 	houseTypeTable= getHouseTypeTable(UnitDefs, culture)
+	local PositionTable ={}
 	
-	PositionTable = process(Spring.GetAllUnits(),
+	process(Spring.GetAllUnits(),
 			function(id)
-				if houseTypeTable[Spring.GetUnitDefID(id)] then 	return id,
+				defID = Spring.GetUnitDefID(id)
+				if houseTypeTable[defID] then 	
+					return id
 				end
 			end,
 			function(id)
 				x,y,z= Spring.GetUnitPosition(id)
-			return {x=x,y=y,z=z}			
-			end,
+				PositionTable[#PositionTable+1]= {x=x,y=y,z=z}
+			end
 			)
-			
-			--
-			
-			
+	assert(#PositionTable > 0)
 
-
-
+	--PositionTable= shuffleT(PositionTable)		
+		local	midPoints ={}
+			--calculate midpoints
+			for n=1, #PositionTable  do
+				for i=1, #PositionTable  do
+					dist = distance(PositionTable[i],PositionTable[n])
+					local pos = mixTable(PositionTable[i],PositionTable[n], 0.5)
+					_,_,_,slope =	Spring.GetGroundNormal(pos.x, pos.z)
+					
+					if dist < 1024 and i ~= n and slope < 0.1 then 
+						midPoints[#midPoints+1] = 	pos	
+					end
+				end
+			end
+	
+	assert(#midPoints > 0)	
+	return midPoints
 end
+
+function cullPositionCluster(PosTable, iterrations)
+	if count(PosTable) <= 3 then 
+		Spring.Echo("cullPositionCluster: PosTable to small")
+		return PosTable 
+	end
+
+	local culledPoints= PosTable
+
+	for it=1, iterrations do
+		local result={}
+		for i=1, count(culledPoints)-1, 2 do
+			pos = mixTable(culledPoints[i], culledPoints[i+1], 0.5)	
+			_,_,_,slope =	Spring.GetGroundNormal(pos.x, pos.z)
+			
+			if slope <  0.1  then 
+				result[#result+1] = pos
+			end
+		end
+		culledPoints = result
+			
+		if count(culledPoints) <= 3 then
+			Spring.Echo("Aborting with Points:"..count(culledPoints))
+			return culledPoints
+		end
+	end
+	
+	return culledPoints
+end
+
+function computateClusterNodes(housePosTable, GameConfig)
+	timeFactor = math.abs(math.sin(math.pi*Spring.GetGameFrame() / GameConfig.civilianGatheringBehaviourIntervalFrames)) -- [0 - 1]
+	
+	goalIndexMaxDivider = getBelowPow2(GameConfig.numberOfBuildings)
+	--protect against min and max
+	goalIndexDivider = math.floor(goalIndexMaxDivider*timeFactor)
+	Spring.Echo("IndexDivider : "..goalIndexDivider)
+	local result = cullPositionCluster(housePosTable, goalIndexDivider)
+	return result
+end
+
+function computeOrgHouseTable(UnitDefs, GameConfig)
+	return getHouseClusterPoints(UnitDefs, GameConfig.instance.culture)
+end
+
+
+
+function showHideIconEnv( unitID, arg)
+    env = Spring.UnitScript.GetScriptEnv(unitID)
+    if env and env.showHideIcon then
+		Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, arg)
+    end
+end
+   

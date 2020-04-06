@@ -29,6 +29,7 @@ local CivilianAgent = Human:New{
 	customParams        = {
 		normaltex = "unittextures/arab_civilian_normal.tga",
 	},
+			buildPic = "civilianagent.png",
 	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,

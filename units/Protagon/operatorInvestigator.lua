@@ -28,7 +28,7 @@ local OperativeInvestigator = Human:New{
 		customParams        = {
 		normaltex = "unittextures/operative_investigator_normal.png",
 	},
-
+		buildPic = "operativeinvestigator.png",
 
 	showNanoFrame= true,
 	canCloak =true,

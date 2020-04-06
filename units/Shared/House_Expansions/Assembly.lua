@@ -27,7 +27,7 @@ local Assembly = Building:New{
 	},
 	name = "Assembly",
 	description = " creates MOSAIC Standardized drones <Automated Factory>",
-
+		buildPic = "assembly.png",
 	canCloak =true,
 	canMove = true,
 	cloakCost=0.0001,

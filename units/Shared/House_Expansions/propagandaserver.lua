@@ -2,7 +2,8 @@ local Propagandaserver = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
-
+	name = "Propagandaserver",
+	buildPic = "propagandaserver.png",
 	buildTime = 25,
 	buildCostMetal      = 150,
 	EnergyStorage = 0,
@@ -26,8 +27,9 @@ local Propagandaserver = Building:New{
 		customParams        = {
 		normaltex = "unittextures/propagandaserver_normal.tga",
 	},
-showNanoFrame= true,
-
+			buildPic = "propagandaserver.png",
+	showNanoFrame= true,
+	nanocolor=[[0.20 0.411 0.611]],
 	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,

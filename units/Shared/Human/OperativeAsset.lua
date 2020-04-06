@@ -22,7 +22,7 @@ local OperativeAsset = Human:New{
 	CanAttack = true,
 	CanGuard = true,
 showNanoFrame= true,
-
+		buildPic = "operativeasset.png",
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,

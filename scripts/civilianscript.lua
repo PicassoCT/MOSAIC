@@ -127,6 +127,8 @@ local bodyConfig={}
 		
 	end
 
+orgHousePosTable={}
+
 function script.Create()
 	makeWeaponsTable()
     Move(root,y_axis, -3,0)
@@ -148,8 +150,9 @@ function script.Create()
 	setOverrideAnimationState( eAnimState.standing, eAnimState.standing,  true, nil, false)
 
 	StartThread(threadStarter)
+	
+	orgHousePosTable = sharedComputationResult( "orgHousePosTable", computeOrgHouseTable, UnitDefs, math.huge, GameConfig )
 
-	-- StartThread(testAnimationLoop)
 end
 
 function testAnimationLoop()
@@ -498,30 +501,42 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State)
 	end
 end
 
-function anarchyGatheringBehaviour()
 
-	timeInFrames = math.abs(math.sin(math.pi*Spring.GetGameFrame() / GameConfig.civilianGatheringBehaviourIntervalFrames)) -- 0 -- 1
+function anarchyBehaviour()
 	
-	--compute voronoi cells in various resolutions from houses as borders
-	-- merge them depending on where you are in the intervall- move people to vornoi centers
-										
-	ad = Spring.GetUnitNearestAlly(unitID)
-	if ad then
-		x,y,z=Spring.GetUnitPosition(ad)
-		Command(unitID, "go" , {x=x,y=y,z=z},{})
-	end
+	currentPositionClusters = sharedComputationResult( "civilianAnarchyPositionClusters", computateClusterNodes, orgHousePosTable, 15, GameConfig )
+	
+	myPos ={}
+	myPos.x,myPos.y,myPos.z = Spring.GetUnitPosition(unitID)
+	nearestClusterNode ={}
+	smallestDistance= math.huge
+	process(currentPositionClusters,
+			--get nearest cluster
+			function(cluster)
+				if distance(myPos, cluster) < smallestDistance then
+					smallestDistance = distance(myPos, cluster)
+					nearestClusterNode = cluster
+				end
+			end
+			)
+	nearestClusterNode.x,nearestClusterNode.z= nearestClusterNode.x+math.random(-1*GameConfig.demonstrationMarchRadius,GameConfig.demonstrationMarchRadius),nearestClusterNode.z+math.random(-1*GameConfig.demonstrationMarchRadius,GameConfig.demonstrationMarchRadius)
+	Command(unitID, "go" , nearestClusterNode,{})
+	
 	Sleep(1000)
 	
 	if bodyConfig.boolArmed == true then
-		T= getAllNearUnit(unitID, 1024)
-		T= process(T, function(id) 
+
+		T= process(
+			getAllNearUnit(unitID, 512),
+			function(id) 
 						if isUnitEnemy( myTeamID, id) == true and Spring.GetUnitIsCloaked(id) == false  then 
 							return id 
 						end
-					end)
+					end
+					)
+					
 		if T and #T > 0 then
-			ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
-			
+			ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)			
 			if ed  then
 				Command(unitID, "attack" , ed,{})
 			end
@@ -548,7 +563,7 @@ normalBehavourStateMachine = {
 	[GameConfig.GameState.anarchy] = function(lastState, currentState)
 										-- init clause
 										if lastState ~= currentState then
-											Spring.Echo("Civilian entering gamestate anarchy")
+											-- Spring.Echo("Civilian entering gamestate anarchy")
 											Spring.SetUnitNeutral(unitID, false)
 											Spring.SetUnitNoSelect(unitID, true)
 											
@@ -581,7 +596,7 @@ normalBehavourStateMachine = {
 											end											
 										end									
 									
-										anarchyGatheringBehaviour()
+										anarchyBehaviour()
 								
 										Sleep(500)
 

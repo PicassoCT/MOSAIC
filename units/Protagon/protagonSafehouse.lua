@@ -7,7 +7,7 @@ local ProtagonSafeHouse =    Building:New{
   explodeAs =      "none",
   name =    "Safehouse",
   description =   " base of operation <recruits Agents/ builds upgrades>",
-
+		buildPic = "protagonsafehouse.png",
   Builder =    true,
   nanocolor =  [[0 0 0]], --
   CanReclaim =  false,

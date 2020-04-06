@@ -40,6 +40,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function gadget:UnitCreated(unitID, unitDefID)
 		if SatelliteTypes[unitDefID] then
+			showHideIconEnv(unitID, false)
 			satteliteStateTable[unitID] = "flying"
 			Spring.MoveCtrl.Enable(unitID,true)
 			Satellites[unitID] = {utype =unitDefID, direction = "vertical"}
@@ -163,12 +164,15 @@ end
 function deactivateSatellite(id)
 	Spring.SetUnitNeutral(id, true)	
 	Spring.SetUnitBlocking(id , false, false, false)
-	-- setUnitValueExternal(id, VIEWRADIUS, 0)
+	showHideIconEnv(id, true)
+	-- setUnitValueExternal(id, "VIEWRADIUS", 0)
 end
 
 function reactivateSatellite(id)
+	showHideIconEnv(id, false)
 	if directionalChangeTable[id] then directionalChangeTable[id] = nil end
- Spring.SetUnitNeutral(id, false)
+	Spring.SetUnitNeutral(id, false)
+ 	-- setUnitValueExternal(id, "VIEWRADIUS", 1)
 end
 	
 local	satelliteStates={

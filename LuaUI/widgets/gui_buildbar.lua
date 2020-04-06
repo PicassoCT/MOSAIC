@@ -567,7 +567,7 @@ function widget:Update(dt)
         iconResize = true
       elseif (unfinished_facs[facInfo.unitID]) then
         _, _, _, _, options.progress = GetUnitHealth(facInfo.unitID)
-        if (options.progress>=1) then
+        if (options and options.progress and options.progress>=1) then
           options.progress = -1
           unfinished_facs[facInfo.unitID] = nil
         end
