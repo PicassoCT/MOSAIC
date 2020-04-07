@@ -20,6 +20,7 @@ local ground_truck_mg = Truck:New{
 	objectName 	= "apc.dae",
 	movementClass   	= "VEHICLE",
 			buildPic = "truck.png",
+			iconType = "truck",
 	category = [[GROUND]],
 	transportSize = 16,
 	transportCapacity = 2,
@@ -32,12 +33,19 @@ local ground_truck_mg = Truck:New{
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	
+	LeaveTracks = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,
+	
 }
 
 local ground_truck_ssied = Truck:New{
 	name = "SSIED Truck",
 	description = "Selfdriving explosive truck <Assault Vehicle>",
 		buildPic = "truck.png",
+		iconType = "truck",
 	corpse				= "",
 	maxDamage = 1500,
 	mass = 500,
@@ -66,12 +74,19 @@ local ground_truck_ssied = Truck:New{
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	
+	LeaveTracks = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,
+	
 }
 
 local ground_truck_antiarmor = Truck:New{
 	name = "AntiArmor Truck",
 	description = "Selfdriving anti vehicle truck <Assault Vehicle>",
 			buildPic = "truck.png",
+			iconType = "truck",
 	corpse				= "",
 	maxDamage = 1500,
 	mass = 500,
@@ -101,6 +116,11 @@ local ground_truck_antiarmor = Truck:New{
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	
+	LeaveTracks = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,	
 }
 
 local CivilianTruck = Truck:New{
@@ -109,6 +129,7 @@ local CivilianTruck = Truck:New{
 	corpse				= "",
 	maxDamage = 500,
 			buildPic = "truck.png",
+			iconType = "truck",
 	mass = 500,
 	buildCostEnergy = 5,
 	buildCostMetal = 5,
@@ -147,6 +168,11 @@ local CivilianTruck = Truck:New{
 		helptext		= "Transportation Truck",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	
+	LeaveTracks = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,	
 }
 
 local PoliceTruck = Truck:New{
@@ -154,6 +180,7 @@ local PoliceTruck = Truck:New{
 	description = "corrupt, chaotic - local authority",
 	corpse				= "",
 			buildPic = "truck.png",
+			iconType = "truck",
 	maxDamage = 500,
 	mass = 500,
 	buildCostEnergy = 5,
@@ -187,6 +214,13 @@ local PoliceTruck = Truck:New{
 					
 	},	
 	
+	LeaveTracks = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,
+	
+
+	
 
 	category = [[GROUND]],
 	
@@ -216,7 +250,5 @@ return lowerkeys({
 	["truck_arab8"]			 	= CivilianTrucks["truck_arab8"],
 	["ground_truck_mg"]		= ground_truck_mg:New(),
 	["ground_truck_ssied"]	= ground_truck_ssied:New(),
-	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New()
-
-	
+	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New()	
 })
