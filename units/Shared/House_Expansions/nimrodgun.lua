@@ -36,7 +36,7 @@ showNanoFrame= true,
 	customParams        = {
 		normaltex = "unittextures/component_atlas_normal.png",
 	},
-	
+	buildPic = "nimrod.png",
 	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,

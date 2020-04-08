@@ -62,7 +62,7 @@ local RecruitCivilian = Abstract:New{
 
         script 				= "recruitcivilianscript.lua",
         objectName        	= "RecruitIcon.dae",
-
+		buildPic = "recruitcivilian.png",
         -- Hack Infrastructure
         --CommandUnits (+10 Units)
         -- WithinCellsInterlinked (Recruit)
@@ -73,7 +73,7 @@ local RecruitCivilian = Abstract:New{
         minCloakDistance = 5,
         onoffable=true,
         MaxSlope 					= 100,
-
+		
 
         customparams = {
             helptext		= "Propaganda Operative",
