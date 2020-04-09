@@ -107,7 +107,7 @@ local RaidIcon = Abstract:New{
     CanStop = true,
     script 					= "raidiconscript.lua",
     objectName        	= "RaidIcon.dae",
-
+	buildPic = "raidicon.png",
     canCloak =true,
     cloakCost=0.0001,
     ActivateWhenBuilt=1,
@@ -135,7 +135,7 @@ local InterrogationIcon = Abstract:New{
     buildCostEnergy    	  = 5,
     buildCostMetal     	  = 5,
     canMove					  = true,
-
+buildPic = "interrogationicon.png",
     explodeAs				  = "none",
     Acceleration = 0,
     BrakeRate = 0,

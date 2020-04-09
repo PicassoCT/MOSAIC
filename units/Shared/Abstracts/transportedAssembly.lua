@@ -7,7 +7,7 @@ local unitDef = {
 	objectName = "emptyObjectIsEmpty.s3o",
 	script = "transportedassemblyscript.lua",
 	
-	
+				buildPic = "truck_assembly.png",
 	--cost
 	buildCostMetal = 200,
 	buildCostEnergy = 50,

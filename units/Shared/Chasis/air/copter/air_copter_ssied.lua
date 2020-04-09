@@ -9,7 +9,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	},
 	
 	script = "airssiedscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "air_iied.png",
 	--floater = true,
 	--cost
 	buildCostMetal = 50,
