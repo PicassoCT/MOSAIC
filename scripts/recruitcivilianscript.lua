@@ -23,7 +23,7 @@ function script.Create()
 	   x,y,z= Spring.GetUnitPosition(unitID)
 
 	   Spring.MoveCtrl.SetPosition(unitID, x,y+ GameConfig.iconGroundOffset,z)
-	   -- StartThread(lifeTime, unitID, 15000, true, false)
+	   StartThread(lifeTime, unitID, 15000, true, false)
 	   StartThread(animationLoop, 2)
 
 end

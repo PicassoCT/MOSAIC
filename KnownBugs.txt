@@ -1,0 +1,3 @@
+- recruited civilians kill themselve
+- units turn black
+- startup bug

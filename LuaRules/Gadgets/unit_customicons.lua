@@ -48,12 +48,17 @@ end
 
 local icons = {
     -- ID,   icon png file,   scale
+	{"satellitegodrod", "satellite", 0.75},
+	{"satelliteanti", "satellite", 0.75},
+	{"satellitescan", "satellite", 0.75},
 	{"house_arab0", "house", 0.75},
 	{"policetruck", "truck", 1.0},
 	{"assembly", "assembly", 1.0},
 	{"nimrod", "nimrod", 1.0},
 	{"doubleagent", "doubleagent", 1.0},
 	{"launcher", "launcher", 1.0},
+	{"ground_tank_night", "tank", 1.0},
+	{"ground_tank_day", "tank", 1.0},
 	{"recruitcivilian", "recruitcivilian", 1.0},
 	{"raidicon", "raidicon", 1.0},
 	{"interrogationicon", "interrogationicon", 1.0},
@@ -64,6 +69,8 @@ local icons = {
 	{"operativepropagator", "operativepropagator", 1.0},
 	{"operativeinvestigator", "operativeinvestigator", 1.0},
 	{"civilianagent", "civilianagent", 1.0},
+	{"ground_truck_mg", "truck_mg", 1.0},
+	{"ground_walker_mg", "ground_walker_mg", 1.0},
 	
 }
 

@@ -1,6 +1,6 @@
 function gadget:GetInfo()
     return {
-        name = "guiShowHideIcon",
+        name = "gui Show/ Hide 3D Icons",
         desc = "Coordinates Traffic ",
         author = "Picasso",
         date = "3rd of May 2010",

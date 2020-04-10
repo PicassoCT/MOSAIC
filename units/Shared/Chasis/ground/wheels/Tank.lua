@@ -24,7 +24,7 @@ local ground_tank_day = Tank:New{
 	footprintZ = 5,
 	script 			= "tankscript.lua",
 	objectName 	= "ground_tank_day.dae",
-
+	buildPic = "tank.png",
 	collisionVolumeType = "box",
 	collisionvolumescales = "70 50 70",
 	
@@ -68,7 +68,8 @@ local ground_tank_night = Tank:New{
 	footprintZ = 5,
 	script 			= "tankscript.lua",
 	objectName 	= "ground_tank_night.dae",
-
+	buildPic = "tank.png",
+	
 	collisionVolumeType = "box",
 	collisionvolumescales = "70 50 70",
 	

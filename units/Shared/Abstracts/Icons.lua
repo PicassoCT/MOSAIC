@@ -12,8 +12,9 @@ local DoubleAgent = Abstract:New{
     TurnRate = 0,
     MaxVelocity = 0,
     --
+	name = "DoubleAgent",
     description = "Activate to turn sides",
-
+	levelGround = false,
     CanAttack = false,
     CanGuard = false,
 
@@ -63,6 +64,9 @@ local RecruitCivilian = Abstract:New{
         script 				= "recruitcivilianscript.lua",
         objectName        	= "RecruitIcon.dae",
 		buildPic = "recruitcivilian.png",
+		--
+		name = "Recruit civilian",
+		description = "- recruits a civilian for your team",
         -- Hack Infrastructure
         --CommandUnits (+10 Units)
         -- WithinCellsInterlinked (Recruit)
@@ -73,7 +77,7 @@ local RecruitCivilian = Abstract:New{
         minCloakDistance = 5,
         onoffable=true,
         MaxSlope 					= 100,
-		
+		levelGround = false,
 
         customparams = {
             helptext		= "Propaganda Operative",
@@ -90,14 +94,15 @@ local RaidIcon = Abstract:New{
     buildCostEnergy    	  = 5,
     buildCostMetal     	  = 5,
     canMove					  = true,
-
+	levelGround = false,
     explodeAs				  = "none",
     Acceleration = 0,
     BrakeRate = 0,
     TurnRate = 0,
     MaxVelocity = 0,
     --
-    description = "Display raid progress",
+	name = "Raid Location",
+    description = "a raid of a location is in Progress",
 
     CanAttack = false,
     CanGuard = false,
@@ -143,10 +148,11 @@ buildPic = "interrogationicon.png",
     MaxVelocity = 0,
     --
     description = "Interrogation progress",
-
+	levelGround = false,
     CanAttack = false,
     CanGuard = false,
-
+	name = "Interrogation",
+    description = "a interrogation of a person is in progress",
     CanMove = true,
     CanPatrol = true,
     CanStop = true,
