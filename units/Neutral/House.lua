@@ -19,33 +19,33 @@ local House = Building:New{
 	},
 	
 	
-	YardMap = 	[[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
-				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				   oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				   oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	,
+	YardMap = 	[[oooyyyyyyyyyyyyyyyyyyyyyyyyyooo
+				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+				  oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	,
 	
 
 	customparams = {	
