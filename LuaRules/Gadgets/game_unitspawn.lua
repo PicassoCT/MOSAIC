@@ -30,7 +30,7 @@ if GG.UnitsToKill == nil then GG.UnitsToKill = { PushKillUnit = PushKillUnit } e
 
 
 function gadget:GameFrame(frame)
-    if (frame % 10 == 0) then
+    if (frame > 1 and frame % 10 == 0) then
         if GG.UnitsToSpawn and GG.UnitsToSpawn[1] then
             local cur = GG.UnitsToSpawn
             GG.UnitsToSpawn = { PushCreateUnit = PushCreateUnit }
