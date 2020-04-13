@@ -258,7 +258,7 @@ if gadgetHandler:IsSyncedCode() then
 
         setSun(config, percent)
     end
-	startMorningOffset= DAYLENGTH/4
+	startMorningOffset= DAYLENGTH/2
 	DAWN_FRAME= math.ceil((DAYLENGTH/EVERY_NTH_FRAME)*0.25)*EVERY_NTH_FRAME
 	DUSK_FRAME= math.ceil((DAYLENGTH/EVERY_NTH_FRAME)*0.75)*EVERY_NTH_FRAME
     --set the sun
