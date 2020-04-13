@@ -2874,8 +2874,12 @@ end
 
 --> returns a Unique ID - upper limit is 565939020162275221
 function getUniqueID()
-	if not GG.GUID then GG.GUID = 0 end
-	GG.GUID = GG.GUID + 0.1 / math.pi
+	if not GG.GUID then GG.GUID = 1 end
+
+	repeat
+		GG.GUID = GG.GUID + 1
+	until Spring.ValidUnitID(GG.GUID) == false
+	
 	return GG.GUID
 end
 
@@ -5969,6 +5973,8 @@ function cegDevil(cegname, x, y, z, rate, lifetimefunc, endofLifeFunc, boolStrob
 	end
 end
 
+
+--New Unsorted code
 --> shared Computation
 
 function sharedComputationResult( key, func, data, frameInterval, GameConfig)
