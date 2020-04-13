@@ -1,10 +1,8 @@
 model = {
 	radius = 15.0,
 	height = 20.0,
-	-- tex1 = "testtex1.dds",
-	-- tex2 = "testtex2.dds",
-	tex1 = "component_atlas_diffuse.png",
-	tex2 = "component_atlas_normal.png",
+	tex1 = "component_atlas_diffuse.dds",
+	tex2 = "component_atlas_normal.dds",
 
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},

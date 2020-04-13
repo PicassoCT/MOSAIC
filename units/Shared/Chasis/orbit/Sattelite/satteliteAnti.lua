@@ -22,7 +22,7 @@ local AntiSat = Satellite:New{
 	script 						= "satelliteantiscript.lua",
 	objectName        			= "orbit_satellite_cyclops.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	buildPic = "satellite.png",
 	usePieceCollisionVolumes 	= false,

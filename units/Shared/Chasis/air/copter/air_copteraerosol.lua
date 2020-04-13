@@ -3,7 +3,7 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 
 	objectName = "air_copter_aerosol.dae",
 			customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
 	

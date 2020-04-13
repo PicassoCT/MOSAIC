@@ -4,7 +4,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	Description = " MOSAIC Standardized Drone ",
 	objectName = "air_copter_mg.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "air_copter_mg_script.lua",
 	buildPic = "placeholder.png",

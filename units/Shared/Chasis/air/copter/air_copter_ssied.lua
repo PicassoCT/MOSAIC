@@ -5,7 +5,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	
 	objectName = "air_copter_sied.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
 	script = "airssiedscript.lua",
@@ -25,7 +25,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	FootprintX = 1,
 	FootprintZ = 1,
 	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
 

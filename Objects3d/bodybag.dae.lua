@@ -1,9 +1,9 @@
 model = {
 	radius = 10.0,
 	height = 3,
-	tex1 = "bodybag/Specular/BodyBag_diffuse.tga",
-	tex2 = "bodybag/Specular/BodyBag_normal.tga",
-	tex2 = "apc_normal.png",
+	tex1 = "BodyBag_diffuse.dds",
+	tex2 = "BodyBag_normal.dds",
+
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},

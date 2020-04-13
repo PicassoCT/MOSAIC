@@ -20,7 +20,7 @@ local ScanSat = Satellite:New{
 	script 				= "satellitescript.lua",
 	objectName 			= "SpySat.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	buildPic = "satellite.png",
 	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2

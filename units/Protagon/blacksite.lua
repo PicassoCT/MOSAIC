@@ -22,7 +22,7 @@ local BlackSite = Building:New{
 	script 					= "blacksitescript.lua",
 	objectName        	= "blacksite.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 			buildPic = "blacksite.png",
 	name = "BlackSite",

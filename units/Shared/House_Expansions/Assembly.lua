@@ -23,7 +23,7 @@ local Assembly = Building:New{
 	script 					= "assemblyscript.lua",
 	objectName        	= "assembly.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	name = "Assembly",
 	description = " creates MOSAIC Standardized drones <Automated Factory>",

@@ -10,7 +10,7 @@ local BuildLauncherStep = Abstract:New{
 	script 				= "placeholder.lua",
 	objectName        	= "launcherstep.s3o",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
 	

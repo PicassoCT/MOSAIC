@@ -1,10 +1,10 @@
 model = { 
 	radius = 25.0,
 	height = 40,
-	tex1 = "operative_investigator_diffuse.png",
-	tex2 = "operative_investigator_normal.png",
-	tex3 = "operative_asset_metallicity.png",
-	tex4 = "operative_asset_roughness.png",
+	tex1 = "operative_investigator_diffuse.dds",
+	tex2 = "operative_investigator_normal.dds",
+	tex3 = "operative_asset_metallicity.dds",
+	tex4 = "operative_asset_roughness.dds",
 	
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 0, 0},

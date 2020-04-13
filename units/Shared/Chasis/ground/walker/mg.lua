@@ -28,7 +28,7 @@ local ground_walker_mg = Walker:New{
 	objectName 	= "ground_walker_mg.dae",
 	
 	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 
 	usepiececollisionvolumes = true,

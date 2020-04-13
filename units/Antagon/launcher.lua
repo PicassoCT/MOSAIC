@@ -22,7 +22,7 @@ local Launcher = Building:New{
 	script 					= "launcherscript.lua",
 	objectName        	= "launcher.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	name = "Launcher",
 	description = " ends the game with a MOSA ICBM launch",

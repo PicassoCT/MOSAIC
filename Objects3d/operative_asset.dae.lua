@@ -2,9 +2,9 @@ model = {
 	radius = 25.0,
 	height = 40,
 	--new version following https://springrts.com/wiki/Shaders:IvandPBRShader
-	tex1 = "operative_asset_diffuse.tga",
-	tex2 = "operative_asset_pbr.tga",
-	tex3 = "operative_asset_normalpha.tga",
+	tex1 = "operative_asset_diffuse.dds",
+	tex2 = "operative_asset_pbr.dds",
+	tex3 = "operative_asset_normalpha.dds",
 
 	
 	
@@ -73,9 +73,9 @@ model = {
 		--toneMapping = "aces", --valid values are "aces", "uncharted2", "filmic".
 		gammaCorrection = true, -- do gamma correction (RGB-->sRGB) on the final color.
 		texUnits = { -- substitute values
-			["TEX0"] = "operative_asset_diffuse.tga",
-			["TEX1"] = "operative_asset_pbr.tga",
-			["NORMALTEX"] = "operative_asset_normalpha.tga",
+			["TEX0"] = "operative_asset_diffuse.dds",
+			["TEX1"] = "operative_asset_pbr.dds",
+			["NORMALTEX"] = "operative_asset_normalpha.dds",
 		}
 	},
 }

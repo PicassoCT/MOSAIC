@@ -34,7 +34,7 @@ showNanoFrame= true,
 	script 					= "nimrodscript.lua",
 	objectName        	= "nimrod.dae",
 	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	buildPic = "nimrod.png",
 	canCloak =true,

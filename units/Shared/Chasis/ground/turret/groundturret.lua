@@ -79,7 +79,7 @@ local groundturretmg =  Turret:New{
 	
 	objectName = "ground_turret_mg.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "ground_turretscript.lua",
 	buildPic = "placeholder.png",

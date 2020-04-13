@@ -4,7 +4,7 @@ local AIR_PARACHUT = VTOL:New{
 	Description = "Electrostatic Graphene Parachut",
 	objectName = "air_parachut.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "parachutscript.lua",
 	buildPic = "placeholder.png",

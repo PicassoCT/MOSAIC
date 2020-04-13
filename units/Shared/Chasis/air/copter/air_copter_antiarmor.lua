@@ -5,7 +5,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	
 	objectName = "air_copter_antiarmor.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "airantiarmorscript.lua",
 	buildPic = "placeholder.png",

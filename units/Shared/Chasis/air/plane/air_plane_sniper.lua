@@ -4,7 +4,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	Description = "Electrostatic Graphene Parachut",
 	objectName = "air_plane_sniper.dae",
 		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.png",
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "airplanesniperscript.lua",
 	buildPic = "placeholder.png",
