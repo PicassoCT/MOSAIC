@@ -1,6 +1,7 @@
 
 -- disable for intel cards (else it will render solid dark screen)
 if Platform ~= nil and Platform.gpuVendor == 'Intel' then
+	Spring.Echo("Intel hardware is not supported - not even by intel. Some projects need sepuku.")
     return
 end
 

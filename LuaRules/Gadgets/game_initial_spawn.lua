@@ -12,6 +12,10 @@ function gadget:GetInfo()
 	}
 end
 
+	VFS.Include("scripts/lib_UnitScript.lua")
+	VFS.Include("scripts/lib_Build.lua")
+	VFS.Include("scripts/lib_mosaic.lua")
+	
 local engineVersion = 104 -- just filled this in here incorrectly but old engines arent used anyway
 if Engine and Engine.version then
 	local function Split(s, separator)
@@ -38,6 +42,7 @@ if (engineVersion < 1000 and engineVersion >= 105) or engineVersion >= 104011455
 	enabled = true
 end
 
+Spring.Echo("gadget:InitialSpawn. Engine version is supported is "..toString(enabled))
 local unsupportedAI = false
 
 -- Note: (31/03/13) coop_II deals with the extra startpoints etc needed for teamsIDs with more than one playerID.
@@ -191,7 +196,7 @@ function gadget:Initialize()
 			if teamID ~= gaiaTeamID then
 				--set & broadcast (current) start unit
 				local _, _, _, _, teamSide, teamAllyID = spGetTeamInfo(teamID,false)
-				if teamSide == 'core' then
+				if teamSide == 'protagon' then
 					spSetTeamRulesParam(teamID, startUnitParamName, protagonStartUnitDefID)
 				else
 					spSetTeamRulesParam(teamID, startUnitParamName, antagonStartUnitDefID)
@@ -467,8 +472,8 @@ function SpawnStartUnit(teamID, x, z)
 	
 	--spawn starting unit
 	local y = spGetGroundHeight(x,z)
-	local unitID = spCreateUnit(startUnit, x, y, z, 0, teamID) 
-
+	-- local unitID = spCreateUnit(startUnit, x, y, z, 0, teamID) 
+	GG.UnitsToSpawn:PushCreateUnit(startUnit,x,y,z,0, teamID)
 	--share info
 	teamStartPoints[teamID] = {x,y,z}
 	spSetTeamRulesParam(teamID, startUnitParamName, startUnit, {public=true}) -- visible to all (and picked up by advpllist)
@@ -501,7 +506,6 @@ local customScale = 1.23
 local uiScale = customScale
 local myPlayerID = Spring.GetMyPlayerID()
 local _,_,spec,myTeamID = Spring.GetPlayerInfo(myPlayerID,false)
-local amNewbie
 local ffaMode = (tonumber(Spring.GetModOptions().ffa_mode) or 0) == 1
 local isReplay = Spring.IsReplay()
 
@@ -638,9 +642,8 @@ function gadget:GameSetup(state,ready,playerStates)
 	end
 	
 	-- set my readyState to true if i am a newbie, or if ffa 
-	if not readied or not ready then 
-		amNewbie = (Spring.GetTeamRulesParam(myTeamID, 'isNewbie') == 1)
-		if amNewbie or ffaMode then
+	if not readied or not ready then 	
+		if  ffaMode then
 			readied = true
 			return true, true 
 		end
@@ -677,12 +680,6 @@ function gadget:MousePress(sx,sy)
 	end
 	
 	-- message when trying to place startpoint but can't
-	if amNewbie then
-		local target,_ = Spring.TraceScreenRay(sx,sy)
-		if target == "ground" then
-			Spring.Echo("In this match, newbies (rank 0) will have a faction and startpoint chosen for them!")
-		end
-	end
 end
 
 function gadget:MouseRelease(x,y)
