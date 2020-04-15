@@ -15,7 +15,7 @@ local House = Building:New{
 	script 					= "Housescript.lua",
 	objectName       	= "house.dae",
 			customParams        = {
-		normaltex = "unittextures/house_arab_normal.png",
+		normaltex = "unittextures/house_arab_normal.dds",
 	},
 	
 	

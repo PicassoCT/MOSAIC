@@ -48,7 +48,7 @@ showNanoFrame= true,
 
 
   customparams =    {
-  		normaltex = "unittextures/safehouse_normal.png",
+  		normaltex = "unittextures/safehouse_normal.dds",
     helptext =     "Civilian Building",
     baseclass =     "Building", -- TODO: hacks
   },

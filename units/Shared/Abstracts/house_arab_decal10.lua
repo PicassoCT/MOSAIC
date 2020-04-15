@@ -47,19 +47,8 @@ LeaveTracks = false,
 
 		buildinggrounddecaldecayspeed = 0.00000002,
 		buildinggrounddecalsizex = 14,
-		buildinggrounddecalsizey = 14
-		,
+		buildinggrounddecalsizey = 14,
 		buildinggrounddecaltype = "HouseDecal10_arab_rural.png",
-
-
-
-
-
- 
- 
- 
-
-   
 
 Category = [[LAND]],
 

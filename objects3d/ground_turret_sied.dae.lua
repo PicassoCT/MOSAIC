@@ -70,10 +70,10 @@ model = {
 		--toneMapping = "aces", --valid values are "aces", "uncharted2", "filmic".
 		gammaCorrection = true, -- do gamma correction (RGB-->sRGB) on the final color.
 		texUnits = { -- substitute values
-			["TEX0"] = "for_texture_devil_dog_low_poly_1_default_B_1k.png",
-			["TEX1"] = "for_texture_devil_dog_low_poly_1_default_N_1k.png",
-			["TEX2"] = "for_texture_devil_dog_low_poly_1_default_MR_1k.png",
-			--["TEX3"] = "for_texture_devil_dog_low_poly_1_default_R.png",
+			["TEX0"] = "for_texture_devil_dog_low_poly_1_default_B_1k.dds",
+			["TEX1"] = "for_texture_devil_dog_low_poly_1_default_N_1k.dds",
+			["TEX2"] = "for_texture_devil_dog_low_poly_1_default_MR_1k.dds",
+			--["TEX3"] = "for_texture_devil_dog_low_poly_1_default_R.dds",
 		}
 	},
 	]]

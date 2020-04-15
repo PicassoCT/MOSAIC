@@ -24,7 +24,7 @@ local Civilian = Human:New{
 	script 					= "civilianscript.lua",
 	objectName        	= "civilian1_arab.dae",
 			customParams        = {
-		normaltex = "unittextures/arab_civilian_normal.png",
+		normaltex = "unittextures/arab_civilian_normal.dds",
 	},
 	
 	usepiececollisionvolumes = false,

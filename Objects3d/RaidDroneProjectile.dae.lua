@@ -1,10 +1,10 @@
 model = { 
 	radius = 25.0,
 	height = 40,
-	tex1 = "operative_investigator_diffuse.png",
-	tex2 = "operative_investigator_normal.png",
-	tex3 = "operative_asset_metallicity.png",
-	tex4 = "operative_asset_roughness.png",
+	tex1 = "operative_investigator_diffuse.dds",
+	tex2 = "operative_investigator_normal.dds",
+	tex3 = "operative_asset_metallicity.dds",
+	tex4 = "operative_asset_roughness.dds",
 	
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 0, 0},
@@ -71,10 +71,10 @@ model = {
 		--toneMapping = "aces", --valid values are "aces", "uncharted2", "filmic".
 		gammaCorrection = true, -- do gamma correction (RGB-->sRGB) on the final color.
 		texUnits = { -- substitute values
-			["TEX0"] = "operative_investigator_diffuse.png",
-			["TEX1"] = "operative_investigator_normal.png",
-			["TEX2"] = "operative_asset_metallicity.png",
-			["TEX3"] = "operative_asset_roughness.png",
+			["TEX0"] = "operative_investigator_diffuse.dds",
+			["TEX1"] = "operative_investigator_normal.dds",
+			["TEX2"] = "operative_asset_metallicity.dds",
+			["TEX3"] = "operative_asset_roughness.dds",
 		}
 	},
 }

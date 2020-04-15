@@ -4,7 +4,7 @@ local Civil = Civilian:New{
 	description = " innocent bystander <colateral>",
 	objectName        	= "civilian2_arab.dae",
 			customParams        = {
-		normaltex = "unittextures/arab_civilian_normal.png",
+		normaltex = "unittextures/arab_civilian_normal.dds",
 	},
 	
 	

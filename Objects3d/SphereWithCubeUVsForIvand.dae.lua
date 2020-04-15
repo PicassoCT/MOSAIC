@@ -1,7 +1,7 @@
 model = {
 	--radius = 25.0,
 	--height = 40,
-	tex1 = "uv-test.png",
+	tex1 = "uv-test.dds",
 	--tex1 = "Jeffy_DiffuseTeamColor1024x1024.dds",
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
@@ -68,12 +68,12 @@ model = {
 		toneMapping = "", --valid values are "aces", "uncharted2", "filmic", "reinhard", "log", "romBinDaHouse", "lumaReinhard", "hejl2015", "steveM1", "steveM2".
 		gammaCorrection = true, -- do gamma correction (RGB-->sRGB) on the final color.
 		texUnits = { -- substitute values
-			["TEX0"] = "uv-test.png",
-			["TEX1"] = "normal_mapping_normal_map.png",
+			["TEX0"] = "uv-test.dds",
+			["TEX1"] = "normal_mapping_normal_map.dds",
 			--["TEX2"] = "Jeffy_Emissive512x512.dds",
 			--["TEX3"] = "Jeffy_ORM_EMGS_1k.dds",
-			--["SPECULARMAP"] = "whipple_creek_regional_park_01_1k.png",
-			--["IRRADIANCEMAP"] = "whipple_creek_regional_park_01_1k.png",
+			--["SPECULARMAP"] = "whipple_creek_regional_park_01_1k.dds",
+			--["IRRADIANCEMAP"] = "whipple_creek_regional_park_01_1k.dds",
 		}
 	},
 }
