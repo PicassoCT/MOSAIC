@@ -112,6 +112,11 @@ function getGameConfig()
 	 costs ={
 		RecruitingTruck= 500,
 	 },
+	 --startenergymetal
+	 energyStartVolume = 5000,
+	 energyStart = 2500,
+	 metalStartVolume = 5000,
+	 metalStart = 2500,
 	 
 	 --Icons
 	 iconGroundOffset = 50,

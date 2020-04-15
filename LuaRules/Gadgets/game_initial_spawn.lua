@@ -479,6 +479,26 @@ function SpawnStartUnit(teamID, x, z)
 	spSetTeamRulesParam(teamID, startUnitParamName, startUnit, {public=true}) -- visible to all (and picked up by advpllist)
 
 	--team storage is set up by game_team_resources
+	    -- set start resources, either from mod options or custom team keys
+
+    -- using SetTeamResource to get rid of any existing resource without affecting stats
+    -- using AddTeamResource to add starting resource and counting it as income
+
+        -- remove the pre-existing storage
+        -- must be done after the start unit is spawned,
+        -- otherwise the starting resources are lost!
+        Spring.SetTeamResource(teamID, "ms", GameConfig.metalStartVolume)
+        Spring.SetTeamResource(teamID, "m", 0)
+        Spring.AddTeamResource(teamID, "m", GameConfig.metalStart)
+
+        -- remove the pre-existing storage
+        -- must be done after the start unit is spawned,
+        -- otherwise the starting resources are lost!
+        Spring.SetTeamResource(teamID, "es", GameConfig.energyStartVolume)
+        Spring.SetTeamResource(teamID, "e", 0)
+        Spring.AddTeamResource(teamID, "e", GameConfig.energyStart)
+
+	
 end
 
 function gadget:GameFrame()
