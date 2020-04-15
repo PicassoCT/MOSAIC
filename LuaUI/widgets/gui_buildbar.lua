@@ -502,6 +502,22 @@ local function DrawButton(rect, unitDefID, options, iconResize, isFac)
   end]]--
 end
 
+function doesUnitExistAlive(id)
+	valid = Spring.ValidUnitID(id)
+	if valid == nil or valid == false then
+		--echo("doesUnitExistAlive::Invalid ID")
+		return false 
+	end
+	
+	dead = Spring.GetUnitIsDead(id)
+	if  dead == nil or dead == true then 
+	--echo("doesUnitExistAlive::Dead Unit")
+	return false 
+	end
+	
+	return true	
+end
+
 local sec = 0
 function widget:Update(dt)
 	if chobbyInterface then return end

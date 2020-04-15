@@ -3,6 +3,7 @@ local Propagandaserver = Building:New{
 	maxDamage           = 500,
 	mass                = 500,
 	name = "Propagandaserver",
+	description = "earns your team money by spreading propaganda",
 	buildPic = "propagandaserver.png",
 	buildTime = 25,
 	buildCostMetal      = 150,
@@ -25,7 +26,7 @@ local Propagandaserver = Building:New{
 	script 			= "propagandaserverscript.lua",
 	objectName        	= "propagandaserver.dae",
 		customParams        = {
-		normaltex = "unittextures/propagandaserver_normal.tga",
+		normaltex = "unittextures/propagandaserver_normal.dds",
 	},
 
 	showNanoFrame= true,

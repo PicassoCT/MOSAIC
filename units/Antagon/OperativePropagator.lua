@@ -27,7 +27,7 @@ local OperativePropagator = Human:New{
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
 	customParams        = {
-		normaltex = "unittextures/operative_investigator_normal.png",
+		normaltex = "unittextures/operative_investigator_normal.dds",
 	},
 	
 	Builder = true,
