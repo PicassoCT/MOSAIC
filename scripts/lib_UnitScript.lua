@@ -242,7 +242,7 @@ function getMaxSpeed(unitID, UnitDefs)
 end
 
 --> resets the speed of a unit
-function reSetSpeed(unitID, UnitDefs)
+function reSetSpeed(unitID)
 	setSpeedEnv(unitID, 1.0)
 end
 

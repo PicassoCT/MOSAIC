@@ -13,7 +13,7 @@ local ground_tank_day = Tank:New{
 	canAttack = true,
 	canGuard = true,
 	canStop = true,
-	
+
 	fireState= 1,
 	
 	--maxReverseVelocity= 2.15,
@@ -29,6 +29,7 @@ local ground_tank_day = Tank:New{
 	collisionvolumescales = "70 50 70",
 	
 	customparams = {
+		normaltex = "unittextures/tank_day_normal.dds",
 		helptext		= "Military Tank",
 		baseclass		= "Tank", -- TODO: hacks
 	},
@@ -57,7 +58,7 @@ local ground_tank_night = Tank:New{
 	canGuard = true,
 	canStop = true,
 	fireState= 1,	
-	
+
 	explodeAs			= "none",
 	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
 	--maxReverseVelocity= 2.15,
@@ -74,6 +75,7 @@ local ground_tank_night = Tank:New{
 	collisionvolumescales = "70 50 70",
 	
 	customparams = {
+		normaltex = "unittextures/tank_day_normal.dds",
 		helptext		= "Military Tank",
 		baseclass		= "Tank", -- TODO: hacks
 	},

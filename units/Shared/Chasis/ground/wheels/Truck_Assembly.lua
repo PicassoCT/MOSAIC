@@ -18,8 +18,9 @@ local TruckAssembly = Truck:New{
 	turninplace		= true,
 	footprintX = 1,
 	footprintZ = 1,
+	holdSteady = true,
 	script 			= "Truckassemblyscript.lua",
-	objectName 	= "TruckAssembly.s3o",
+	objectName 	= "truck_arab6.dae",
 	movementClass   	= "VEHICLE",
 	
 	customparams = {

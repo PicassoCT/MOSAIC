@@ -4,7 +4,10 @@ local unitDef = {
 	name = "Mobile Assembly",
 	Description = "",
 	
-	objectName = "emptyObjectIsEmpty.s3o",
+	objectName = "mobile_assembly.dae",
+	customparams = {
+	normaltex= "unittextures/component_atlas_normal.dds"
+	},
 	script = "transportedassemblyscript.lua",
 	
 				buildPic = "truck_assembly.png",

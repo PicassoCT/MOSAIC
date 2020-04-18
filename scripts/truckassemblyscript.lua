@@ -8,6 +8,7 @@ TablesOfPiecesGroups = {}
 
 
 center = piece "center"
+attachPoint = piece "attachPoint"
 
 
 function script.Create()
@@ -33,6 +34,7 @@ function script.Deactivate()
 end
 
 -- Signals for moving
+SIG_RESET=1
 SIG_FOLD=2
 SIG_MOVE=4
 SIG_RESET=8
@@ -42,12 +44,10 @@ SIG_UPGRADE=64
 SIG_STOP=128
 
 
-
 local boolAllreadyDead=false
 local boolAllreadyStarted=false
 local boolMurdered=true
 local mexID = -666
-SIG_RESET=1
 
 
 function UpdateUnitPosition(ParentID, UnitID, attach)
@@ -78,10 +78,8 @@ function newFactory ()
 	Spring.SetUnitNoSelect(unitID,true)
 	Spring.MoveCtrl.Enable(factoryID,true) 
 	Spring.SetUnitNeutral(factoryID,true)
-	Spring.SetUnitBlocking (factoryID,false,false)
-	
+	Spring.SetUnitBlocking (factoryID,false,false)	
 end
-
 
 boolBuilding=false
 function updateBoolisBuilding()
@@ -91,31 +89,25 @@ function updateBoolisBuilding()
 	
 	while true do
 	Sleep(500)
-		if GG.Factorys[factoryID][2]==true then
-			
+		if GG.Factorys[factoryID][2]==true then			
 			boolBuilding=true
-		else 
-			
+		else 			
 			boolBuilding=false
-		end
-		
-		
-		
-	end
-	
+		end	
+	end	
 end
 
 function workInProgress()
 	while factoryID == nil do
 		Sleep(250)
-	end
-	
+	end	
 
 	buildID=nil
 	buildIDofOld=nil
 	counter=0
+	
 	while(true) do
-	Sleep(120)	
+		Sleep(120)	
 		if factoryID and Spring.ValidUnitID(factoryID)== true then
 			
 			buildID=Spring.GetUnitIsBuilding(factoryID)
@@ -129,9 +121,7 @@ function workInProgress()
 				buildProgress=0
 	
 				while buildProgress and buildProgress < 1 do
-		
-					health,maxHealth,paralyzeDamage,captureProgress,buildProgress=Spring.GetUnitHealth(buildID)
-	
+					health,maxHealth,paralyzeDamage,captureProgress,buildProgress=Spring.GetUnitHealth(buildID)	
 					Sleep(150)
 				end
 				
@@ -140,11 +130,9 @@ function workInProgress()
 					buildID=nil
 				end	
 				
-				if buildID == nil and buildIDofOld ~= nil and Spring.ValidUnitID(buildIDofOld)==true then				
+				if buildID == nil and buildIDofOld ~= nil and Spring.ValidUnitID(buildIDofOld)==true then		
 					Spring.SetUnitNoDraw(buildIDofOld,false)
-
-					buildIDofOld=nil
-					
+					buildIDofOld=nil					
 				end		
 			end
 		end
@@ -157,21 +145,30 @@ end
 
 function moveFactory ()
 	Sleep(100)
-	local spGetUnitPosition=Spring.GetUnitPosition
+	local spGetUnitPiecePosition= Spring.GetUnitPiecePosDir
 	local spMovCtrlSetPos=Spring.MoveCtrl.SetPosition
 	local spValidUnitID=Spring.ValidUnitID
 	local LGetUnitPieceRotation=GetUnitPieceRotation
 	local LUpdateUnitPosition=UpdateUnitPosition
-	
+	local spMoveCtrlSetRotation= Spring.MoveCtrl.SetRotation
+	Turn(attachPoint,y_axis,math.rad(90),0)
+	-- oldID = unitID
 	while (true) do
 		if (not spValidUnitID (factoryID)) then newFactory () end
-		local x,y,z = spGetUnitPosition (unitID)	 
-		spMovCtrlSetPos(factoryID, x, y+ 50, z+ 2)
-		Sleep(50)
+
+		local x,y,z = spGetUnitPiecePosition (unitID, attachPoint)	 
+		spMovCtrlSetPos(factoryID, x, y-10, z+ 1)
+		dx, dy,dz = Spring.GetUnitRotation(unitID)
+		spMoveCtrlSetRotation(factoryID, dx, dy , dz)
+		buildID = Spring.GetUnitIsBuilding(factoryID)
+		if buildID then
+			setSpeedEnv(unitID, 0.0)
+		else
+			reSetSpeed(unitID)
+		end
+		Sleep(30)
 	end
 end
-
-
 
 boolMoving=false
 function delayedStop()
@@ -179,22 +176,26 @@ function delayedStop()
 	SetSignalMask(SIG_STOP)
 	Sleep(400)
 	boolMoving= false
-
 end
 
 function script.StartMoving()
 	boolMoving= true
 end
-function script.StopMoving()
 
-	StartThread(delayedStop)
-	
-	
+function script.StopMoving()
+	StartThread(delayedStop)	
 end
 
 
-function script.Killed(recentDamage, maxHealth)
-	
+function script.StartMoving()
+	spinT(TablesOfPiecesGroups["wheel"], x_axis , 260,0.3 )
+end
+
+function script.StopMoving()
+	stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3)	
+end
+
+function script.Killed(recentDamage, maxHealth)	
 	if Spring.ValidUnitID(factoryID)== true then
 		GG.UnitsToKill:PushKillUnit(factoryID,true,true)
 	end

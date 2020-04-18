@@ -233,8 +233,13 @@ local PoliceTruck = Truck:New{
 
 CivilianTrucks ={}
 for i=0, 8 do
-CivilianTruck.objectName = "truck_arab"..i..".dae"
-CivilianTrucks["truck_arab"..i] = CivilianTruck:New()
+	CivilianTruck.objectName = "truck_arab"..i..".dae"
+	if not CivilianTruck.customparams then CivilianTruck.customparams ={} end
+	CivilianTruck.customparams.normaltex = "unittextures/truck_normal.dds"
+	if i >=6 then
+		CivilianTruck.customparams.normaltex = "unittextures/truck_"..i.."_normal.dds"
+	end
+	CivilianTrucks["truck_arab"..i] = CivilianTruck:New()
 end
 
 return lowerkeys({

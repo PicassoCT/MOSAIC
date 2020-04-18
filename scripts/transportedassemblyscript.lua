@@ -10,6 +10,7 @@ local SIG_RESET = 2
 center = piece"center"
 buildspot = piece"buildspot"
 teamID = Spring.GetUnitTeam(unitID)
+TablesOfPiecesGroups ={}
 
 function getDistance(cmd, x, z)
     val = ((cmd.params[1] - x) ^ 2 + (cmd.params[3] - z) ^ 2) ^ 0.5
@@ -52,8 +53,12 @@ function transferCommands()
 end
 
 function script.Create()
+  TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
-	 hideAll(unitID)
+	Turn(center, y_axis,math.rad(270),0)
+	foldPosition(0)
+	hideT(TablesOfPiecesGroups["Deco"])
+	 --hideAll(unitID)
     StartThread(transferCommands)
     StartThread(whileMyThreadGentlyWeeps)
 
@@ -62,6 +67,20 @@ function script.Create()
     GG.Factorys[unitID] = {}
 end
 
+function foldPosition(speed)
+
+
+end
+
+function unfoldPosition(speed)
+
+
+end
+
+function workLoop()
+
+
+end
 
 function script.QueryBuildInfo()
     return center
