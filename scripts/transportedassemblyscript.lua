@@ -9,6 +9,7 @@ include "lib_Build.lua"
 local SIG_RESET = 2
 center = piece"center"
 buildspot = piece"buildspot"
+Object = piece"Object1"
 teamID = Spring.GetUnitTeam(unitID)
 TablesOfPiecesGroups ={}
 
@@ -55,31 +56,129 @@ end
 function script.Create()
   TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
-	Turn(center, y_axis,math.rad(270),0)
-	foldPosition(0)
+	Turn(center, y_axis,math.rad(-90),0)
+	
+	assert(#TablesOfPiecesGroups["Deco"]>0)	
 	hideT(TablesOfPiecesGroups["Deco"])
 	 --hideAll(unitID)
     StartThread(transferCommands)
     StartThread(whileMyThreadGentlyWeeps)
+    StartThread(workLoop)
 
 
     if GG.Factorys == nil then GG.Factorys = {} end
     GG.Factorys[unitID] = {}
 end
 
-function foldPosition(speed)
+function foldScara(speed)
+	unfoldScara(speed)
+	WMoveScara(1, 90, 0, 0, 10, speed)
 
+end
+
+function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD, moveSpeed)
+	assert(#TablesOfPiecesGroups["ASAxis"]>0)	
+	assert(#TablesOfPiecesGroups["BSAxis"]>0)	
+	assert(#TablesOfPiecesGroups["CSAxis"]>0)	
+	Turn(TablesOfPiecesGroups["ASAxis"][scaraNumber],y_axis,math.rad(jointPosA), moveSpeed)
+	Turn(TablesOfPiecesGroups["BSAxis"][scaraNumber],y_axis,math.rad(jointPosB), moveSpeed)
+	Turn(TablesOfPiecesGroups["CSAxis"][scaraNumber],y_axis,math.rad(jointPosC), moveSpeed)
+	WMove(TablesOfPiecesGroups["CSAxis"][scaraNumber],y_axis, jointPosD , moveSpeed * 10)
+	WaitForTurns(TablesOfPiecesGroups["ASAxis"][scaraNumber],TablesOfPiecesGroups["BSAxis"][scaraNumber],TablesOfPiecesGroups["CSAxis"][scaraNumber])
+end
+
+function unfoldScara(speed)
+	WMoveScara(1, 0, 0, 0, 0, speed)
+end
+
+function scaraCycle(speed)
+	unfoldScara()
+	WMoveScara(1, 165, 0, 0, 0, speed)
+	Show(Object)
+	WMoveScara(1,  -math.random(0,20), -115+math.random(-20,20), 0, 0, speed)
+	Hide(Object)
+end
+
+function roboCycle(speed)
+WMoveRobotToPos(1, CannonPreWorkPos, speed)
+WMoveRobotToPos(1, PickUpPos, speed)
+setWorkPos(1,speed)
+WMoveRobotToPos(1, CannonPreWorkPos, speed)
+end
+
+-- RobotFoldPos 		={90,	45,	-45, 	-90, 0}
+-- CannonPreWorkPos 	={0,	 0,	  0,	-60, 0}
+-- PickUpPos 			={-90, -15,	 75, 	 30, 0}
+RobotFoldPos 		={-90,	-45,	45,  0,	90}
+CannonPreWorkPos 	={0,	 0,	  0,	0,-60}
+PickUpPos 			={-90, -15,	 75, 	 0,30}
+
+function setWorkPos(robotID, speed)
+	JointPos={math.random(-45,45), -math.random(-20,-5),- math.random(-20,-5), -math.random(-40,-20),0 }
+	WMoveRobotToPos(robotID, JointPos, speed)
+end
+
+function WMoveRobotToPos(robotID, JointPos, MSpeed)
+	assert(TablesOfPiecesGroups["AAxis"][robotID])		
+	assert(TablesOfPiecesGroups["BAxis"][robotID])		
+	assert(TablesOfPiecesGroups["CAxis"][robotID])		
+	assert(TablesOfPiecesGroups["DAxis"][robotID])		
+	assert(TablesOfPiecesGroups["EAxis"][robotID])
+	
+	Turn(TablesOfPiecesGroups["AAxis"][robotID], y_axis, math.rad(JointPos[1]), MSpeed)
+	Turn(TablesOfPiecesGroups["AAxis"][robotID], y_axis, math.rad(JointPos[1]), MSpeed)
+	Turn(TablesOfPiecesGroups["BAxis"][robotID], z_axis, math.rad(JointPos[2]), MSpeed)
+	Turn(TablesOfPiecesGroups["CAxis"][robotID], z_axis, math.rad(JointPos[3]), MSpeed)
+	Turn(TablesOfPiecesGroups["DAxis"][robotID], x_axis, math.rad(JointPos[4]), MSpeed)
+	Turn(TablesOfPiecesGroups["EAxis"][robotID], z_axis, math.rad(JointPos[5]), MSpeed)
+
+	WaitForTurns(TablesOfPiecesGroups["AAxis"][robotID],		
+				 TablesOfPiecesGroups["BAxis"][robotID],		
+				 TablesOfPiecesGroups["CAxis"][robotID],		
+				 TablesOfPiecesGroups["DAxis"][robotID],		
+				 TablesOfPiecesGroups["EAxis"][robotID])	
+end
+
+
+function foldPosition(speed)
+	assert(#TablesOfPiecesGroups["Deco"]>0)
+	hideT(TablesOfPiecesGroups["Deco"])
+	StartThread(foldScara, speed)
+	StartThread(WMoveRobotToPos,1, RobotFoldPos, speed)
+	assert(#TablesOfPiecesGroups["stuetze"]>0)
+	resetT(TablesOfPiecesGroups["stuetze"], speed, true, true)
 
 end
 
 function unfoldPosition(speed)
-
+	WMove(buildspot, x_axis, 150, speed)
+	moveT(TablesOfPiecesGroups["stuetze"],  y_axis, -50, speed, false)
 
 end
 
+function workAnimation(speed)
+StartThread(roboCycle,speed*10)
+scaraCycle(speed)
+scaraCycle(speed)
+end
+
 function workLoop()
-
-
+	foldPosition(1.0)
+	Sleep(10)
+	while true do
+		buildID= Spring.GetUnitIsBuilding(unitID)
+		if buildID then
+			oldID = buildID
+			unfoldPosition(1.0)
+			while buildID and buildID == oldID do
+				buildID= Spring.GetUnitIsBuilding(unitID)
+				workAnimation(1.0)			
+				Sleep(10)
+			end
+			foldPosition(1.0)
+		end
+		Sleep(100)
+	end
 end
 
 function script.QueryBuildInfo()
