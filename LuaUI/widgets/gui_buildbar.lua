@@ -375,33 +375,43 @@ local function DrawBuildProgress(left,top,right,bottom, progress, color)
   local alpha_rad = math.rad(alpha)
   local beta_rad  = math.pi/2 - alpha_rad
   local list = {}
-
-  list[#list+1] = {v = { xcen,  ycen }}
+  local listCount = 1
+  list[listCount] = {v = { xcen,  ycen }}
+  listCount = listCount + 1
   list[#list+1] = {v = { xcen,  top }}
 
   local x,y
   x = (top-ycen)*tan(alpha_rad) + xcen
   if (alpha<90)and(x<right) then
-    list[#list+1] = {v = { x,  top }}
+    listCount = listCount + 1
+    list[listCount] = {v = { x,  top }}
   else
-    list[#list+1] = {v = { right,  top }}
+    listCount = listCount + 1
+    list[listCount] = {v = { right,  top }}
     y = (right-xcen)*tan(beta_rad) + ycen
     if (alpha<180)and(y>bottom) then
-      list[#list+1] = {v = { right,  y }}
+      listCount = listCount + 1
+      list[listCount] = {v = { right,  y }}
     else
-      list[#list+1] = {v = { right,  bottom }}
+      listCount = listCount + 1
+      list[listCount] = {v = { right,  bottom }}
       x = (top-ycen)*tan(-alpha_rad) + xcen
       if (alpha<270)and(x>left) then
-        list[#list+1] = {v = { x,  bottom }}
+        listCount = listCount + 1
+        list[listCount] = {v = { x,  bottom }}
       else
-        list[#list+1] = {v = { left,  bottom }}
+        listCount = listCount + 1
+        list[listCount] = {v = { left,  bottom }}
         y = (right-xcen)*tan(-beta_rad) + ycen
         if (alpha<350)and(y<top) then
-          list[#list+1] = {v = { left,  y }}
+          listCount = listCount + 1
+          list[listCount] = {v = { left,  y }}
         else
-          list[#list+1] = {v = { left,  top }}
+          listCount = listCount + 1
+          list[listCount] = {v = { left,  top }}
           x = (top-ycen)*tan(alpha_rad) + xcen
-          list[#list+1] = {v = { x,  top }}
+          listCount = listCount + 1
+          list[listCount] = {v = { x,  top }}
         end
       end
     end
@@ -502,22 +512,6 @@ local function DrawButton(rect, unitDefID, options, iconResize, isFac)
   end]]--
 end
 
-function doesUnitExistAlive(id)
-	valid = Spring.ValidUnitID(id)
-	if valid == nil or valid == false then
-		--echo("doesUnitExistAlive::Invalid ID")
-		return false 
-	end
-	
-	dead = Spring.GetUnitIsDead(id)
-	if  dead == nil or dead == true then 
-	--echo("doesUnitExistAlive::Dead Unit")
-	return false 
-	end
-	
-	return true	
-end
-
 local sec = 0
 function widget:Update(dt)
 	if chobbyInterface then return end
@@ -560,6 +554,8 @@ function widget:Update(dt)
       gl.DeleteList(dlists[i])
     end
     dlists = {}
+    local dlistsCount = 0
+
     factoriesArea = nil
 
     -- draw factory list
@@ -581,7 +577,7 @@ function widget:Update(dt)
         _, _, _, _, options.progress = GetUnitHealth(unitBuildID)
         unitDefID      = unitBuildDefID
         iconResize = true
-      elseif (unfinished_facs[facInfo.unitID] and doesUnitExistAlive(facInfo.unitID) == true ) then
+      elseif (unfinished_facs[facInfo.unitID]) then
         _, _, _, _, options.progress = GetUnitHealth(facInfo.unitID)
         if (options.progress>=1) then
           options.progress = -1
@@ -605,8 +601,8 @@ function widget:Update(dt)
       options.selected = (i==openedMenu+1)
       -----------------------------------------------------------------------------------------
       --DrawButton(fac_rec,unitDefID,options, iconResize, true)
-
-      dlists[#dlists+1] = gl.CreateList(DrawButton,fac_rec,unitDefID,options, iconResize, true)
+      dlistsCount = dlistsCount + 1
+      dlists[dlistsCount] = gl.CreateList(DrawButton,fac_rec,unitDefID,options, iconResize, true)
       if factoriesArea == nil then
         factoriesArea = {fac_rec[1],fac_rec[2],fac_rec[3],fac_rec[4]}
       else
@@ -757,7 +753,7 @@ end
 
 function widget:DrawInMiniMap(sx,sy)
   
-   if (openedMenu>-1) then
+   if openedMenu >- 1 then
      gl.PushMatrix()
        local pt = math.min(sx,sy)
 
@@ -872,7 +868,7 @@ end
 function GetBuildQueue(unitID)
   local result = {}
   local queue = GetFullBuildQueue(unitID)
-  if (queue ~= nil) then
+  if queue ~= nil then
     for _,buildPair in ipairs(queue) do
       local udef, count = next(buildPair, nil)
       if result[udef]~=nil then
@@ -901,7 +897,7 @@ function UpdateFactoryList()
       count = count + 1
       facs[count] = { unitID=unitID, unitDefID=unitDefID, buildList=unitBuildOptions[unitDefID] }
       local _, _, _, _, buildProgress = GetUnitHealth(unitID)
-      if (buildProgress)and(buildProgress<1) then
+      if buildProgress and buildProgress < 1 then
         unfinished_facs[unitID] = true
       end
     end
@@ -911,7 +907,7 @@ end
 
 --function widget:UnitFinished(unitID, unitDefID, unitTeam)
 function widget:UnitCreated(unitID, unitDefID, unitTeam)
-  if (unitTeam ~= myTeamID) then
+  if unitTeam ~= myTeamID then
     return
   end
 
@@ -926,16 +922,16 @@ function widget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
 end
 
 function widget:UnitDestroyed(unitID, unitDefID, unitTeam)
-  if (unitTeam ~= myTeamID) then
+  if unitTeam ~= myTeamID then
     return
   end
 
   if unitBuildOptions[unitDefID] then
     for i,facInfo in ipairs(facs) do
       if unitID==facInfo.unitID then
-        if (openedMenu+1==i)and(openedMenu > #facs-2) then
+        if openedMenu + 1 == i and openedMenu > #facs-2 then
           openedMenu = openedMenu-1
-          if (openedMenu<0) then
+          if openedMenu < 0 then
             menuHovered = false
           end
         end
