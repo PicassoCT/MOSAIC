@@ -56,7 +56,8 @@ end
 function script.Create()
   TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
-	Turn(center, y_axis,math.rad(-90),0)
+	Spring.SetUnitNanoPieces(unitID, TablesOfPiecesGroups["Deco"])
+	-- Turn(center, y_axis,math.rad(-90),0)
 	
 	assert(#TablesOfPiecesGroups["Deco"]>0)	
 	hideT(TablesOfPiecesGroups["Deco"])
@@ -77,6 +78,7 @@ function foldScara(speed)
 end
 
 function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD, moveSpeed)
+	assert(moveSpeed)
 	assert(#TablesOfPiecesGroups["ASAxis"]>0)	
 	assert(#TablesOfPiecesGroups["BSAxis"]>0)	
 	assert(#TablesOfPiecesGroups["CSAxis"]>0)	
@@ -92,30 +94,33 @@ function unfoldScara(speed)
 end
 
 function scaraCycle(speed)
-	unfoldScara()
-	WMoveScara(1, 165, 0, 0, 0, speed)
+	unfoldScara(speed)
+	WMoveScara(1, -165, 0, 0, 0, speed)
 	Show(Object)
-	WMoveScara(1,  -math.random(0,20), -115+math.random(-20,20), 0, 0, speed)
+	WMoveScara(1,  math.random(0,20), 115+math.random(-20,20), 0, 0, speed)
 	Hide(Object)
 end
 
 function roboCycle(speed)
 WMoveRobotToPos(1, CannonPreWorkPos, speed)
 WMoveRobotToPos(1, PickUpPos, speed)
+hideT(TablesOfPiecesGroups["Deco"])
+WMoveRobotToPos(1, CannonPreWorkPos, speed)
 setWorkPos(1,speed)
 WMoveRobotToPos(1, CannonPreWorkPos, speed)
+
 end
 
 -- RobotFoldPos 		={90,	45,	-45, 	-90, 0}
 -- CannonPreWorkPos 	={0,	 0,	  0,	-60, 0}
 -- PickUpPos 			={-90, -15,	 75, 	 30, 0}
 RobotFoldPos 		={-90,	-45,	45,  0,	90}
-CannonPreWorkPos 	={0,	 0,	  0,	0,-60}
-PickUpPos 			={-90, -15,	 75, 	 0,30}
+CannonPreWorkPos 	={0,	 0,	  0,	0, 60}
+PickUpPos 			={90, -15,	 75, 	 0,30}
 
 function setWorkPos(robotID, speed)
 	JointPos={math.random(-45,45), -math.random(-20,-5),- math.random(-20,-5), -math.random(-40,-20),0 }
-	WMoveRobotToPos(robotID, JointPos, speed)
+	WMoveRobotToPos(robotID, JointPos, speed/3)
 end
 
 function WMoveRobotToPos(robotID, JointPos, MSpeed)
@@ -141,25 +146,33 @@ end
 
 
 function foldPosition(speed)
-	assert(#TablesOfPiecesGroups["Deco"]>0)
+	
 	hideT(TablesOfPiecesGroups["Deco"])
 	StartThread(foldScara, speed)
 	StartThread(WMoveRobotToPos,1, RobotFoldPos, speed)
-	assert(#TablesOfPiecesGroups["stuetze"]>0)
-	resetT(TablesOfPiecesGroups["stuetze"], speed, true, true)
+
+	WMove(buildspot, z_axis, 0, 850/(5/speed))
+	moveT(TablesOfPiecesGroups["stuetze"],  y_axis, 0, 900/(15/speed), false)
 
 end
 
 function unfoldPosition(speed)
-	WMove(buildspot, x_axis, 150, speed)
-	moveT(TablesOfPiecesGroups["stuetze"],  y_axis, -50, speed, false)
+	WMove(buildspot, z_axis, 850, 850/(5/speed))
+	moveT(TablesOfPiecesGroups["stuetze"],  y_axis, -900, 900/(15/speed), false)
 
 end
 
 function workAnimation(speed)
-StartThread(roboCycle,speed*10)
-scaraCycle(speed)
-scaraCycle(speed)
+StartThread(roboCycle,speed)
+scaraCycle(speed*3)
+show(randT(TablesOfPiecesGroups["Deco"]))
+show(randT(TablesOfPiecesGroups["Deco"]))
+scaraCycle(speed*3)
+show(randT(TablesOfPiecesGroups["Deco"]))
+show(randT(TablesOfPiecesGroups["Deco"]))
+scaraCycle(speed*3)
+show(randT(TablesOfPiecesGroups["Deco"]))
+show(randT(TablesOfPiecesGroups["Deco"]))
 end
 
 function workLoop()
@@ -182,10 +195,9 @@ function workLoop()
 end
 
 function script.QueryBuildInfo()
-    return center
+    return buildspot
 end
 
-Spring.SetUnitNanoPieces(unitID, { buildspot })
 
 
 function script.Activate()

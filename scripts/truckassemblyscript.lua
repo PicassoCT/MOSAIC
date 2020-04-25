@@ -151,15 +151,17 @@ function moveFactory ()
 	local LGetUnitPieceRotation=GetUnitPieceRotation
 	local LUpdateUnitPosition=UpdateUnitPosition
 	local spMoveCtrlSetRotation= Spring.MoveCtrl.SetRotation
-	Turn(attachPoint,y_axis,math.rad(90),0)
-	-- oldID = unitID
+	Hide(attachPoint)
+
 	while (true) do
 		if (not spValidUnitID (factoryID)) then newFactory () end
+		Spring.UnitAttach(unitID, factoryID,attachPoint)
 
 		local x,y,z = spGetUnitPiecePosition (unitID, attachPoint)	 
 		spMovCtrlSetPos(factoryID, x, y-10, z+ 1)
 		dx, dy,dz = Spring.GetUnitRotation(unitID)
-		spMoveCtrlSetRotation(factoryID, dx, dy , dz)
+	
+		spMoveCtrlSetRotation(factoryID, dx, dy + math.pi/2 , dz)
 		buildID = Spring.GetUnitIsBuilding(factoryID)
 		if buildID then
 			setSpeedEnv(unitID, 0.0)
@@ -188,11 +190,15 @@ end
 
 
 function script.StartMoving()
-	spinT(TablesOfPiecesGroups["wheel"], x_axis , 260,0.3 )
+	if TablesOfPiecesGroups and TablesOfPiecesGroups["wheel"]then
+		spinT(TablesOfPiecesGroups["wheel"], x_axis , 260,0.3 )
+	end
 end
 
 function script.StopMoving()
-	stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3)	
+	if TablesOfPiecesGroups and TablesOfPiecesGroups["wheel"]then
+		stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3)	
+	end
 end
 
 function script.Killed(recentDamage, maxHealth)	

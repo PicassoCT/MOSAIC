@@ -17,6 +17,7 @@ myDefID = Spring.GetUnitDefID(unitID)
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 
 boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
+boolIsPoliceTruck = myDefID == UnitDefNames["policetruck"].id
 myLoadOutType =  LoadOutTypes[myDefID]
 local loadOutUnitID 
 
@@ -144,10 +145,12 @@ end
 
 
 
-
-
 function script.StartMoving()
-	spinT(TablesOfPiecesGroups["wheel"], x_axis , -260,0.3 )
+	if boolIsPoliceTruck == true then
+		spinT(TablesOfPiecesGroups["wheel"], x_axis , -260,0.3 )
+	else
+		spinT(TablesOfPiecesGroups["wheel"], x_axis , 260,0.3 )
+	end
 end
 
 function script.StopMoving()

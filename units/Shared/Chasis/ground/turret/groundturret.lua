@@ -1,3 +1,79 @@
+local groundturretspyder =  Turret:New{
+	name = "Stationary Spyder mine",
+	Description = " MOSAIC Spyder ",
+	
+	objectName = "ground_turret_spyder.dae",
+	script = "placeholderscript.lua",
+	buildPic = "placeholder.png",
+	--floater = true,
+	--cost
+	buildCostMetal = 50,
+	buildCostEnergy = 0,
+	buildTime = 35,
+	--Health
+	maxDamage = 50,
+	idleAutoHeal = 0,
+	--Movement
+	
+	 fireState=1,
+	
+	FootprintX = 1,
+	FootprintZ = 1,
+	maxSlope = 50,
+	
+	MaxWaterDepth = 0,
+	MovementClass = "Default2x2",
+
+	
+	nanocolor=[[0.20 0.411 0.611]],
+	sightDistance = 250,
+	activateWhenBuilt   	= true,
+	cantBeTransported = false,
+	canSelfD = true,
+	canManualFire  = true,
+
+	--canHover=true,
+	CanAttack = true,
+	CanGuard = true,
+	CanMove = true,
+	CanPatrol = true,
+	Canstop  = true,
+	onOffable = false,
+	LeaveTracks = false, 
+	canCloak =true,
+	kamikaze = true,
+	kamikazeDistance  = 10,
+	kamikazeUseLOS = false,
+	
+	cloakCost=0.0001,
+
+	minCloakDistance =  5,
+	onoffable=true,
+	initCloaked = true,
+	decloakOnFire = true,
+	cloakTimeout = 5,
+
+	Category = [[GROUND]],
+
+	  customParams = {
+	  baseclass = "turret"
+	  },
+	 sfxtypes = {
+		explosiongenerators = {
+							"custom:bigbulletimpact"
+							  },
+				},
+	
+
+				
+				weapons = {
+				[1]={name  = "ssied",
+					onlyTargetCategory = [[BUILDING GROUND]],
+					},					
+		},	
+}
+
+
 local groundturretssied =  Turret:New{
 	name = "Stationary SSIED",
 	Description = " MOSAIC Standardized Smart Improvised Explosive Device ",
@@ -333,5 +409,6 @@ return lowerkeys(
 	["ground_turret_cm_ssied"] = CruiseMissilePods["ground_turret_cm_ssied"],
 	["ground_turret_ssied"] = groundturretssied:New(),
 	["ground_turret_mg"] = groundturretmg:New(),
+	["ground_turret_spyder"] = groundturretspyder:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New()	
 })
