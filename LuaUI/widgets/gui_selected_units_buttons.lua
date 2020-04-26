@@ -79,10 +79,9 @@ end
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
-local spGetConfigFloat = Spring.GetConfigFloat or function(a,b) return b end
 
 local ui_opacityMultiplier = 0.6
-local ui_opacity = tonumber(spGetConfigFloat("ui_opacity",0.66) or 0.66) * ui_opacityMultiplier
+local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity",0.66) or 0.66) * ui_opacityMultiplier
 
 local bgcorner = ":l:LuaUI/Images/bgcorner.png"
 local highlightImg = ":l:LuaUI/Images/button-highlight.dds"
@@ -295,8 +294,8 @@ function widget:Update(dt)
   uiOpacitySec = uiOpacitySec + dt
   if uiOpacitySec>0.5 then
     uiOpacitySec = 0
-    if ui_opacity ~= (spGetConfigFloat("ui_opacity",0.66) * ui_opacityMultiplier) then
-      ui_opacity = spGetConfigFloat("ui_opacity",0.66) * ui_opacityMultiplier
+    if ui_opacity ~= (Spring.GetConfigFloat("ui_opacity",0.66) * ui_opacityMultiplier) then
+      ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66) * ui_opacityMultiplier
       gl.DeleteList(picList)
       picList = gl.CreateList(DrawPicList)
     end

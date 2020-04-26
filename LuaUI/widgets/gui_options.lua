@@ -1562,7 +1562,7 @@ function applyOptionValue(i, skipRedrawWindow)
 end
 
 
--- loads values via stored game config in luaui/configs
+-- loads values via stored game config in luaui/config
 function loadAllWidgetData()
 
 	for oid,option in pairs(options) do
