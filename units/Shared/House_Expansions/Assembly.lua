@@ -57,10 +57,14 @@ local Assembly = Building:New{
 		--turret --snake --walker(roach) --truck
 
 			"ground_turret_ssied",	"ground_turret_mg",	"ground_turret_antiarmor",
-			 "ground_turret_cm_airdrop",	"ground_turret_cm_antiarmor", "ground_turret_cm_ssied", "ground_turret_cm_walker",	 "ground_walker_mg","truck_arab0", 
+			--walkers
+			 "ground_turret_cm_airdrop",	"ground_turret_cm_antiarmor", "ground_turret_cm_ssied", 
+			 --turrets
+			 "ground_turret_cm_walker",	 "ground_walker_mg", "ground_tumbleweedspyder",
+			 --vehicles
 			 "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor",
-			 "ground_truck_assembly",	
-			--tank (expensive, slow, easy destroyable by drones)
+			 "ground_truck_assembly",	"truck_arab6", 
+			--tank 
 			"ground_tank_night"
 	--weapon
 			
