@@ -19,7 +19,7 @@ local House = Building:New{
 	},
 	
 	
-	YardMap = 	[[oooyyyyyyyyyyyyyyyyyyyyyyyyyooo
+	YardMap = 	[[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
 				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
 				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
