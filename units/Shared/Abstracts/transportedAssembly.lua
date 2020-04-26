@@ -58,8 +58,9 @@ local unitDef = {
 
 	--ground
 		--turret --snake --walker(roach) --truck
-			"ground_turret_ssied",	"ground_turret_mg", "ground_truck_assembly",
-			"ground_walker_mg"
+			"ground_turret_ssied",	"ground_turret_mg", "ground_walker_mg",
+			"ground_turret_cm_airdrop"  ,"ground_turret_cm_walker"   ,	"ground_turret_cm_ssied"
+			
 	},
 	
 	

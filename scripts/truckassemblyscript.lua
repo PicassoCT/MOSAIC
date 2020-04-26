@@ -155,13 +155,12 @@ function moveFactory ()
 
 	while (true) do
 		if (not spValidUnitID (factoryID)) then newFactory () end
-		Spring.UnitAttach(unitID, factoryID,attachPoint)
 
 		local x,y,z = spGetUnitPiecePosition (unitID, attachPoint)	 
 		spMovCtrlSetPos(factoryID, x, y-10, z+ 1)
 		dx, dy,dz = Spring.GetUnitRotation(unitID)
 	
-		spMoveCtrlSetRotation(factoryID, dx, dy + math.pi/2 , dz)
+		spMoveCtrlSetRotation(factoryID, dx, dy, dz)
 		buildID = Spring.GetUnitIsBuilding(factoryID)
 		if buildID then
 			setSpeedEnv(unitID, 0.0)

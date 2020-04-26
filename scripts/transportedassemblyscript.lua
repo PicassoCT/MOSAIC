@@ -57,11 +57,9 @@ function script.Create()
   TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
 	Spring.SetUnitNanoPieces(unitID, TablesOfPiecesGroups["Deco"])
-	-- Turn(center, y_axis,math.rad(-90),0)
+	Turn(center, y_axis,math.rad(90),0)
 	
-	assert(#TablesOfPiecesGroups["Deco"]>0)	
 	hideT(TablesOfPiecesGroups["Deco"])
-	 --hideAll(unitID)
     StartThread(transferCommands)
     StartThread(whileMyThreadGentlyWeeps)
     StartThread(workLoop)
@@ -78,10 +76,6 @@ function foldScara(speed)
 end
 
 function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD, moveSpeed)
-	assert(moveSpeed)
-	assert(#TablesOfPiecesGroups["ASAxis"]>0)	
-	assert(#TablesOfPiecesGroups["BSAxis"]>0)	
-	assert(#TablesOfPiecesGroups["CSAxis"]>0)	
 	Turn(TablesOfPiecesGroups["ASAxis"][scaraNumber],y_axis,math.rad(jointPosA), moveSpeed)
 	Turn(TablesOfPiecesGroups["BSAxis"][scaraNumber],y_axis,math.rad(jointPosB), moveSpeed)
 	Turn(TablesOfPiecesGroups["CSAxis"][scaraNumber],y_axis,math.rad(jointPosC), moveSpeed)
@@ -119,16 +113,11 @@ CannonPreWorkPos 	={0,	 0,	  0,	0, 60}
 PickUpPos 			={90, -15,	 75, 	 0,30}
 
 function setWorkPos(robotID, speed)
-	JointPos={math.random(-45,45), -math.random(-20,-5),- math.random(-20,-5), -math.random(-40,-20),0 }
+	JointPos={math.random(-45,45), -math.random(-20,-5),- math.random(-20,-5), 0,math.random(20,40) }
 	WMoveRobotToPos(robotID, JointPos, speed/3)
 end
 
 function WMoveRobotToPos(robotID, JointPos, MSpeed)
-	assert(TablesOfPiecesGroups["AAxis"][robotID])		
-	assert(TablesOfPiecesGroups["BAxis"][robotID])		
-	assert(TablesOfPiecesGroups["CAxis"][robotID])		
-	assert(TablesOfPiecesGroups["DAxis"][robotID])		
-	assert(TablesOfPiecesGroups["EAxis"][robotID])
 	
 	Turn(TablesOfPiecesGroups["AAxis"][robotID], y_axis, math.rad(JointPos[1]), MSpeed)
 	Turn(TablesOfPiecesGroups["AAxis"][robotID], y_axis, math.rad(JointPos[1]), MSpeed)
@@ -162,18 +151,20 @@ function unfoldPosition(speed)
 
 end
 
-function workAnimation(speed)
-StartThread(roboCycle,speed)
-scaraCycle(speed*3)
-show(randT(TablesOfPiecesGroups["Deco"]))
-show(randT(TablesOfPiecesGroups["Deco"]))
-scaraCycle(speed*3)
-show(randT(TablesOfPiecesGroups["Deco"]))
-show(randT(TablesOfPiecesGroups["Deco"]))
-scaraCycle(speed*3)
-show(randT(TablesOfPiecesGroups["Deco"]))
-show(randT(TablesOfPiecesGroups["Deco"]))
+
+function scaraLoop(scaraCycles)
+for i=1, scaraCycles, 1 do
+scaraCycle(speed*scaraCycles)
+Show(randT(TablesOfPiecesGroups["Deco"]))
 end
+end
+
+function workAnimation(speed)
+scaraLoop(5)
+StartThread(roboCycle,speed)
+
+end
+
 
 function workLoop()
 	foldPosition(1.0)
@@ -188,6 +179,7 @@ function workLoop()
 				workAnimation(1.0)			
 				Sleep(10)
 			end
+			scaraCycle(5)
 			foldPosition(1.0)
 		end
 		Sleep(100)
