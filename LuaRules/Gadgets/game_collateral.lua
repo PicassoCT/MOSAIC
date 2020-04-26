@@ -61,10 +61,13 @@ if ( gadgetHandler:IsSyncedCode()) then
 
 		if attackerID and ( GG.DisguiseCivilianFor[unitID] ) and teamID ~= Spring.GetUnitTeam(attackerID) then
 			maxhp = UnitDefs[unitDefID].maxDamage 
-			if not maxhp then			
-				factor = 1 + (GG.Propgandaservers[team]* GameConfig.propandaServerFactor)
+			if not maxhp then	
+				factor	= 1.0			
+				if GG.Propgandaservers and GG.Propgandaservers[teamID] then
+					factor = factor + (GG.Propgandaservers[teamID]* GameConfig.propandaServerFactor)
+				end
 				Spring.AddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
-				addInSecond(team, attackerID, "metal",   math.ceil((maxhp * factor)))
+				addInSecond(teamID, attackerID, "metal",   math.ceil((maxhp * factor)))
 			end
 		end 
 	end
