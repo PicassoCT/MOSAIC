@@ -11,9 +11,9 @@ function getGameConfig()
 	Version = "Alpha: 0.663",
 	},
 		
-	numberOfBuildings 	= 75 *unitFactor,
-    numberOfVehicles 	= 100 *unitFactor,
-    numberOfPersons		= 150 *unitFactor,
+	numberOfBuildings 	= 75 *unitFactor,  --not related to the hangdetector bug
+    numberOfVehicles 	= 100 *unitFactor, --not related to the hangdetector bug
+    numberOfPersons		= 150 *unitFactor, --not related to the hangdetector bug
 	LoadDistributionMax = 5,
 	
 	 houseSizeX			= 256, 
