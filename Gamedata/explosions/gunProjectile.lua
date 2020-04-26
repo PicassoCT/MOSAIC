@@ -16,13 +16,7 @@ return {
         texture            = [[ar2groundflash]],
         ttl                = [[9 r4 r-4]],
       },
-    },
-  
-  
-  
-  
-  
-  
+    },  
 
                
        
@@ -34,7 +28,7 @@ return {
       water              = false,
       properties = {
         airdrag            = 1,
-        colormap           = [[1 0.6 0.3 1  1 0.6 0.12 1    0 0 0 0.1]],
+        colormap           = [[1 0.6 0.3 0.01  1 0.6 0.12 0.01    0 0 0 0.01]],
         directional        = true,
         emitrot            = 0,
         emitrotspread      = 0,
@@ -50,7 +44,7 @@ return {
         pos                = [[0, 0, 0]],
         sizegrowth         = [[0.6 r.35]],
         sizemod            = 1.0,
-        texture            = [[flashside1]],
+        texture            = [[gunshot]],
         useairlos          = false,
       },
     },
@@ -62,7 +56,7 @@ return {
       water              = false,
       properties = {
         airdrag            = 1,
-        colormap           = [[1 0.4 0.3 1  1 0.6 0.12 1    0 0 0 0.1]],
+        colormap           = [[1 0.4 0.3 0.01     1 0.6 0.12 0.01      0 0 0 0.01]],
         directional        = true,
         emitrot            = 0,
         emitrotspread      = 0,
@@ -78,7 +72,7 @@ return {
         pos                = [[0, 0, 0]],
         sizegrowth         = [[0.6 r.35]],
         sizemod            = 1.0,
-        texture            = [[flashside1]],
+        texture            = [[gunshot]],
         useairlos          = false,
       },
     },

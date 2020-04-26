@@ -87,7 +87,7 @@ end
 
 Unit = Def:New{
 	activateWhenBuilt   = true,
-	buildPic			= "<NAME>.png",
+	buildPic			= "placeholder.png",
 	idleautoheal 		= 0,
 	shownanoframe 		= false,
 	turninplace 		= false,
