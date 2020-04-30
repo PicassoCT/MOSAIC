@@ -1,8 +1,9 @@
 #MOSAIC
 
 Modular Ordanance Standardization Advanced Intelligence Combat
+![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen2.png "")
 
-[alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=10960| "Logo Title Text 1")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen11.png "Logo Title Text 1")
 
 This is an RTS game for the spring engine (www.springrts.com). 
 
@@ -10,9 +11,13 @@ Its very near future, and plays out in the cities left in the world.
 You play either as antigen or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
 the unit you start with is an agent, who can hire civilians or create a safe house.
 
+![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen16.png "")
+
 Slowly two parties infiltrate the city, subverting the public, advancing their goals.
 
 But beware, you are always one raid, one interrogation away from failure. If one of yours is caught and gives up, those we trained and who trained him, the whole net of treason and trust can unravel.
+
+![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen8.png "")
 
 If they have the ICBM almost ready, and the information about that gets out there, chaos will break out. For somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
 
