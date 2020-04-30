@@ -1,42 +1,25 @@
 #Mosaic
-Modula Ordanance Standardisation Program Adaptive Artefact Intelligence Combat
+Modular Ordanance Standardization Advanced Intelligence Combat
 
-https://springrts.com/phpbb/viewtopic.php?f=47&t=38699
+This is a RTS game for the spring engine (springrts.com). Its very near future, and plays out in the citys left in the world.
+You play either as antagon or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
+the unit you start with is a agent, who can hire civilians or create a safehouse.
 
-Using Ivands PBR Shader 
-See: https://springrts.com/phpbb/viewtopic.php?f=12&t=37691
+Slowly too party infiltrate the city, subverting the public, advancing theire goals.
+But beware, you are always one raid, one interrogation away from failure. If one of yours is caught and gives up, those we trained and who trained him, the whole net of treason and trust can unravel.
 
-Eventually it leaks.
-Somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
-
+If they have the ICBM almost ready, and the information about that gets out there, chaos will break out. For somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
 It always does leak and it always does that too late.
-
-Around 5 corners, everyone knows everyone.
-
 So they tell theire relatives to leave the target, tell theire believe brothers to leave the origin-city. A city they doomed to have gods firy thumb come down upon.
-
 Even the most hardened cells loose it near the end, the mad-idea trying to stay alive in other crazed heads.
 
 Through all the delusional haze, they sense, that they will be hunted into extinction for this atrocity.
 
 Sometimes, just some hireling realizing to late what he has assembled, for that ever absent employer.
 
-Then all hell breaks loose.
-
-Riots in the street, as the crowd in a frenzy searches for suspects - tearing them apart in front of
-the world watching, to recive redemption and avoid retribution.
-
 There is no law, no hope and no god in a city shortly before and forever after a launch.
 
 Then it comes, a deafening roar, a noise to end all noises, out of those bells, the burning cars, already darkening the sun, a pillar of fire rises higher then all those others.
-
-Chaff and decoys rain down from above all around.
-
-Like a final statement on the hubris of compostable monkeys it jabs into the sky.
-
-One moment of realization, of horror on whats to come.
-
-Then the madness resumes, some running towards the launch-site, lots of others desperatly trying to leave. As if you could outrun the worlds wrath.
 
 Then the hammer comes down- on good and evil alike.
 
@@ -45,3 +28,11 @@ A eye for a eye, a city for a city.
 So it has been, so it shall always be.
 
 Men is men a wulf, until there is no men left to be.
+
+Development thread:
+
+https://springrts.com/phpbb/viewtopic.php?f=47&t=38699
+
+Using Ivands PBR Shader 
+See: https://springrts.com/phpbb/viewtopic.php?f=12&t=37691
+
