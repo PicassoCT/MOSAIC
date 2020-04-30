@@ -1,6 +1,7 @@
 #MOSAIC
 
 Modular Ordanance Standardization Advanced Intelligence Combat
+[[https://springrts.com/phpbb/download/file.php?mode=view&id=10960 |ALT TEXT]]
 
 This is an RTS game for the spring engine (www.springrts.com). 
 
