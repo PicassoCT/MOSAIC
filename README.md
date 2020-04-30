@@ -2,7 +2,7 @@
 
 Modular Ordanance Standardization Advanced Intelligence Combat
 
-This is an RTS game for the spring engine (springrts.com). 
+This is an RTS game for the spring engine (www.springrts.com). 
 
 Its very near future, and plays out in the cities left in the world.
 You play either as antigen or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
