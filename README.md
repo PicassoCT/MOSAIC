@@ -1,16 +1,13 @@
-#Mosaic
+#MOSAIC
 Modular Ordanance Standardization Advanced Intelligence Combat
-
-This is a RTS game for the spring engine (springrts.com). Its very near future, and plays out in the citys left in the world.
-You play either as antagon or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
-the unit you start with is a agent, who can hire civilians or create a safehouse.
-
-Slowly too party infiltrate the city, subverting the public, advancing theire goals.
+This is an RTS game for the spring engine (springrts.com). Its very near future, and plays out in the cities left in the world.
+You play either as antigen or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
+the unit you start with is an agent, who can hire civilians or create a safe house.
+Slowly two parties infiltrate the city, subverting the public, advancing their goals.
 But beware, you are always one raid, one interrogation away from failure. If one of yours is caught and gives up, those we trained and who trained him, the whole net of treason and trust can unravel.
-
 If they have the ICBM almost ready, and the information about that gets out there, chaos will break out. For somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
 It always does leak and it always does that too late.
-So they tell theire relatives to leave the target, tell theire believe brothers to leave the origin-city. A city they doomed to have gods firy thumb come down upon.
+So they tell their relatives to leave the target, tell their believe brothers to leave the origin-city. A city they doomed to have gods free thumb come down upon.
 Even the most hardened cells loose it near the end, the mad-idea trying to stay alive in other crazed heads.
 
 Through all the delusional haze, they sense, that they will be hunted into extinction for this atrocity.
