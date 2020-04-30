@@ -17,7 +17,7 @@ But beware, you are always one raid, one interrogation away from failure. If one
 
 If they have the ICBM almost ready, and the information about that gets out there, chaos will break out. For somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
 
-![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen16.png "")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen15.png "")
 
 It always does leak and it always does that too late.
 
@@ -34,6 +34,8 @@ Sometimes, just some hireling realizing to late what he has assembled, for that 
 There is no law, no hope and no god in a city shortly before and forever after a launch.
 
 Then it comes, a deafening roar, a noise to end all noises, out of those bells, the burning cars, already darkening the sun, a pillar of fire rises higher then all those others.
+
+![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen14.png "")
 
 Then the hammer comes down- on good and evil alike.
 
