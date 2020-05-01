@@ -20,14 +20,14 @@ local buildNextKey = 110
 local buildKeys = {113, 119, 101, 114, 116, 97, 115, 100, 102, 103, 122, 120, 99, 118, 98}
 local buildLetters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
 
-local stateTexture		     = ":l:LuaUI/Images/resbar.dds"
-local buttonTexture		     = ":l:LuaUI/Images/button.dds"
-local barGlowCenterTexture = ":l:LuaUI/Images/barglow-center.png"
-local barGlowEdgeTexture   = ":l:LuaUI/Images/barglow-edge.png"
+local stateTexture		     = ":l:LuaUI/images/resbar.dds"
+local buttonTexture		     = ":l:LuaUI/images/button.dds"
+local barGlowCenterTexture = ":l:LuaUI/images/barglow-center.png"
+local barGlowEdgeTexture   = ":l:LuaUI/images/barglow-edge.png"
 
-local sound_queue_add = 'LuaUI/Sounds/buildbar_add.wav'
-local sound_queue_rem = 'LuaUI/Sounds/buildbar_rem.wav'
-local sound_button = 'LuaUI/Sounds/buildbar_waypoint.wav'
+local sound_queue_add = 'LuaUI/sounds/buildbar_add.wav'
+local sound_queue_rem = 'LuaUI/sounds/buildbar_rem.wav'
+local sound_button = 'LuaUI/sounds/buildbar_waypoint.wav'
 
 local iconTypesMap = {}
 local NeededFrameworkVersion = 9

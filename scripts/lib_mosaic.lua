@@ -8,7 +8,7 @@ function getGameConfig()
 	return {
 	instance = {
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
-	Version = "Alpha: 0.669",
+	Version = "Alpha: 0.670",
 	},
 		
 	numberOfBuildings 	= 75 *unitFactor,  --not related to the hangdetector bug
@@ -420,11 +420,43 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 		"launcher"
 	}
 	
-	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))
-	
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))	
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end
+
+function  getMobileInterrogateAbleTypeTable(UnitDefs)
+	assert(UnitDefs)
+	GameConfig = getGameConfig()
+local	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"civilianagent",
+		"operativeasset",
+		"operativepropagator",
+		"operativeinvestigator"
+	}
+	
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))	
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
+function getRaidAbleTypeTable(UnitDefs)
+	assert(UnitDefs)
+	GameConfig = getGameConfig()
+local	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"civilianagent",
+		"operativeasset",
+		"operativepropagator",
+		"operativeinvestigator"
+	}
+	
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))	
+	
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 
 function  getHouseTypeTable(UnitDefs, culturename)
 		assert( UnitDefs )
