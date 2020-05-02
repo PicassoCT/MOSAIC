@@ -63,6 +63,8 @@ local mouseClicked = 0
 local vsx, vsy = gl.GetViewSizes()
 local widgetScale = (1 + (vsx*vsy / 7500000))
 
+Spring.Echo("gui_red_builordermenue:Viewsize "..vsx.." / "..vsy)
+
 WG.hoverID = nil
 
 local normalUnitIconSize = {
@@ -1420,9 +1422,10 @@ local uiOpacitySec = 0
 function widget:Update(dt)
 	uiOpacitySec = uiOpacitySec + dt
 	if uiOpacitySec>0.5 then
+	
 		uiOpacitySec = 0
 		if ui_opacity ~= Spring.GetConfigFloat("ui_opacity",0.66) then
-			ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66)
+			ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66) or 0.66
 			ordermenu.background.color = {0,0,0,ui_opacity}
 			buildmenu.background.color = {0,0,0,ui_opacity}
 			ordermenu.background2.color = {1,1,1,ui_opacity*0.055}

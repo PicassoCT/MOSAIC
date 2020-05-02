@@ -239,7 +239,7 @@ panicWeapons = {
 
 	--stupidity edition
 	if attackerID == unitID then 
-	Spring.Echo(" attackerID == unitID")
+	Spring.Echo("Interrogation:Aborted: attackerID == unitID")
 	return damage end
 
     Spring.Echo("Stunning unit".. unitID)
@@ -256,7 +256,7 @@ panicWeapons = {
 	 end
 
 		if MobileInterrogateAbleType[unitDefID] and currentlyInterrogationRunning(unitID, attacker) == false then
-			Spring.Echo("Interrogation of "..UnitDefs[unitDefID].name)
+			Spring.Echo("Interrogation: Start with "..UnitDefs[unitDefID].name)
 			stunUnit(unitID, 2.0)
 			setSpeedEnv(attackerID, 0.0)
 			interrogationEventStreamFunction(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, attackerID, attackerDefID, attackerTeam, "interrogationIcon")       
@@ -276,7 +276,9 @@ panicWeapons = {
         Spring.Echo("Raid/Interrogatable Weapon fired upon"..UnitDefs[unitDefID].name)
 		
 	--stupidity edition
-	if attackerID == unitID then return damage end
+	if attackerID == unitID then 
+	Spring.Echo("Raid Aborted")
+	return damage end
 	 
 	 --make houses transparent
 	 if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable[unitID] then
@@ -290,7 +292,7 @@ panicWeapons = {
 	if attackerID == unitID then return damage end     
 	 
 	 --Interrogation -- an not already Interrogated
-	if (houseTypeTable[unitDefID] or MobileInterrogateAbleType[unitDefID]) and currentlyInterrogationRunning(unitID, attacker) == false then
+	if (houseTypeTable[unitDefID] or RaidAbleType[unitDefID]) and currentlyInterrogationRunning(unitID, attacker) == false then
         Spring.Echo("Raid of "..UnitDefs[unitDefID].name)
         stunUnit(unitID, 2.0)
         setSpeedEnv(attackerID, 0.0)

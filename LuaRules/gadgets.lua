@@ -1094,6 +1094,7 @@ function gadgetHandler:SetViewSize(vsx, vsy)
 end
 
 
+
 function gadgetHandler:ViewResize(vsx, vsy)
   for _,g in ipairs(self.ViewResizeList) do
     g:ViewResize(vsx, vsy)

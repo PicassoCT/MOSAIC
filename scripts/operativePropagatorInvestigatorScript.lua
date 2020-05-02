@@ -678,11 +678,13 @@ function script.QueryBuildInfo()
 end
 
 function script.StopBuilding()
+	SetUnitValue(COB.CLOAKED, 1)
 	boolIsBuilding = false
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 
 function script.StartBuilding(heading, pitch)
+	SetUnitValue(COB.CLOAKED, 0)
 	boolIsBuilding = true
 	SetUnitValue(COB.INBUILDSTANCE, 1)
 end
