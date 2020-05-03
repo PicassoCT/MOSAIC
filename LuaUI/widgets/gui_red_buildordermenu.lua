@@ -9,7 +9,7 @@ function widget:GetInfo()
 	license   = "GNU GPL, v2 or later",
 	layer     = -10,
 	enabled   = true, --enabled by default
-	handler   = true, --can use widgetHandler:x()
+	handler   = false, --can use widgetHandler:x()
 	}
 end
 
