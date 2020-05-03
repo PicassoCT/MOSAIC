@@ -277,8 +277,9 @@ panicWeapons = {
 		
 	--stupidity edition
 	if attackerID == unitID then 
-	Spring.Echo("Raid Aborted")
-	return damage end
+		Spring.Echo("Raid Aborted")
+		return damage 
+	end
 	 
 	 --make houses transparent
 	 if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable[unitID] then

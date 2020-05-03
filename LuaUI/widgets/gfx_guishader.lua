@@ -1,10 +1,8 @@
-
 -- disable for intel cards (else it will render solid dark screen)
 if Platform ~= nil and Platform.gpuVendor == 'Intel' then
-	Spring.Echo("Intel hardware is not supported - not even by intel. Some projects need sepuku.")
+	Spring.Echo("GUIShader: Intel hardware is not supported - not even by intel. Some projects need sepuku.")
     return
 end
-
 
 function widget:GetInfo()
   return {
@@ -25,7 +23,6 @@ local defaultBlurIntensity = 0.002
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
 --hardware capability
 
 local canRTT    = (gl.RenderToTexture ~= nil)
@@ -61,6 +58,7 @@ local ivsx, ivsy = vsx, vsy
 function widget:ViewResize(viewSizeX, viewSizeY)
   vsx, vsy  = viewSizeX,viewSizeY
   ivsx,ivsy = vsx, vsy
+  Spring.Echo("GuiShader:X:"..ivsx.." Y:"..ivsy)
 
   if (gl.DeleteTextureFBO) then
     gl.DeleteTextureFBO(blurtex)
@@ -108,7 +106,13 @@ end
 
 local function DrawStencilTexture(world,fullscreen)
   local usedStencilTex
-  if world then usedStencilTex = stenciltex else usedStencilTex = stenciltexScreen end
+  if world then 
+  usedStencilTex = stenciltex
+  else 
+  usedStencilTex = stenciltexScreen
+  end
+  
+  
 
   if (next(guishaderRects) or next(guishaderScreenRects) or next(guishaderDlists)) then
 
@@ -210,6 +214,7 @@ end
 
 
 function widget:Initialize()
+  Spring.Echo("GuiShader:Starting gfx_guishader")
   if (not CheckHardware()) then return false end
   
   CreateShaders()
@@ -314,8 +319,9 @@ function widget:Initialize()
       end
   end
 
-    widgetHandler:RegisterGlobal('GuishaderInsertRect', WG['guishader'].InsertRect)
-    widgetHandler:RegisterGlobal('GuishaderRemoveRect', WG['guishader'].RemoveRect)
+  widgetHandler:RegisterGlobal('GuishaderInsertRect', WG['guishader'].InsertRect)
+  widgetHandler:RegisterGlobal('GuishaderRemoveRect', WG['guishader'].RemoveRect)
+  Spring.Echo("GuiShader: Completed loading")
 end
 
 

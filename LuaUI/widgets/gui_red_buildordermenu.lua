@@ -198,8 +198,16 @@ local sGetActiveCmdDescs = Spring.GetActiveCmdDescs
 local ssub = string.sub
 
 local function IncludeRedUIFrameworkFunctions()
+	assert(WG.Red.New)
+	assert(WG.Red.Copytable)
+	assert(WG.Red.SetTooltip)
+	assert(WG.Red.GetSetTooltip)
+	assert(WG.Red.Screen)
+	assert(WG.Red.GetWidgetObjects)
 	New = WG.Red.New(widget)
+
 	Copy = WG.Red.Copytable
+	
 	SetTooltip = WG.Red.SetTooltip
 	GetSetTooltip = WG.Red.GetSetTooltip
 	Screen = WG.Red.Screen
@@ -588,7 +596,7 @@ local function CreateGrid(r)
 	New(heldhighlight)
 	
 	--tooltip
-	background.mouseover = function(mx,my,self) SetTooltip(r.tooltip.background) end
+	background.mouseover = function(mx,my,self) Spring.Echo("Background Mouseover"); SetTooltip(r.tooltip.background) end
 	
 	return {
 		["menuname"] = r.menuname,
@@ -1145,8 +1153,11 @@ function widget:Initialize()
 	if WG['Red'].font then
 		font = WG['Red'].font
 	end
-
+	
+	assert( WG['Red'].font)
+	
 	PassedStartupCheck = RedUIchecks()
+	assert(PassedStartupCheck)
 	if (not PassedStartupCheck) then return end
 
 	if largeUnitIcons then
@@ -1156,14 +1167,18 @@ function widget:Initialize()
 		Config.buildmenu = tableMerge(deepcopy(Config.buildmenu), deepcopy(normalUnitIconSize))
 		Config.ordermenu = tableMerge(deepcopy(Config.ordermenu), deepcopy(normalOrderIconSize))
 	end
+	assert(Config.buildmenu)
+	assert(Config.ordermenu)
 
 	ordermenu = CreateGrid(Config.ordermenu)
 	ordermenu.page = 1
 	buildmenu = CreateGrid(Config.buildmenu)
 	buildmenu.page = 1
+	
+	assert(buildmenu)
+	assert(ordermenu)
 
 	AutoResizeObjects() --fix for displacement on crash issue
-
 
   WG['red_buildmenu'] = {}
   WG['red_buildmenu'].getConfigUnitPrice = function()
@@ -1224,7 +1239,6 @@ function widget:Initialize()
   end
 end
 
-
 local function onWidgetUpdate() --function widget:Update()
 	AutoResizeObjects()
 end
@@ -1281,11 +1295,10 @@ function widget:SetConfigData(data) --load config
 	end
 end
 
-
-
 --lots of hacks under this line ------------- overrides/disables default spring menu layout and gets current orders + filters out some commands
 local hijackedlayout = false
 function widget:Shutdown()
+	Spring.Echo("Shutdown builordermenue")
 	if (hijackedlayout) then
 		widgetHandler:ConfigLayoutHandler(true)
 		Spring.ForceLayoutUpdate()
@@ -1405,6 +1418,7 @@ local updatehax = false
 local updatehax2 = true
 local firstupdate = true
 local function haxlayout()
+
 	if (WG.layoutpinghax~=layoutping) then
 		hijacklayout()
 	end
@@ -1423,6 +1437,7 @@ function widget:Update(dt)
 	uiOpacitySec = uiOpacitySec + dt
 	if uiOpacitySec>0.5 then
 	
+		
 		uiOpacitySec = 0
 		if ui_opacity ~= Spring.GetConfigFloat("ui_opacity",0.66) then
 			ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66) or 0.66
@@ -1481,6 +1496,7 @@ end
 
 
 function widget:KeyPress(key, mods, isRepeat)
+	-- Spring.Echo("Key Pressed for buildorermenue "..key)
 	if shortcutsInfo then
 		if building ~= -1 then
  			if building == 1 and key == buildNextKey then
