@@ -55,7 +55,7 @@ function recruiteLoop()
 					end
 				end,	
 				function(id) --filter out disguise units
-boolIsDisguiseCivilian =GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id] ~= fatherID and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= Spring.GetUnitTeam(unitID)  
+boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivilianFor[id] ~= fatherID) and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= Spring.GetUnitTeam(unitID)  
 
 					defID = spGetUnitDefID(id)
 					if TruckTypeTable[defID] then

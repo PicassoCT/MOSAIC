@@ -70,7 +70,7 @@ local RecruitCivilian = Abstract:New{
         -- Hack Infrastructure
         --CommandUnits (+10 Units)
         -- WithinCellsInterlinked (Recruit)
-
+		buildtime = 15,
         canCloak =true,
         cloakCost=0.000001,
         cloakCostMoving =0.0001,
