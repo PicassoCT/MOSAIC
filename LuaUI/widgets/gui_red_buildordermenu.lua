@@ -228,10 +228,13 @@ local function RedUIchecks()
 		passed = false
 	end
 	if (not passed) then
+		Spring.Echo("gui_red_builordermenue: Build Order menue did not pass check")
 		widgetHandler:ToggleWidget(widget:GetInfo().name)
 		return false
 	end
 	IncludeRedUIFrameworkFunctions()
+	Spring.Echo("gui_red_builordermenue: Build Order menue did  pass check")
+
 	return true
 end
 
@@ -239,6 +242,10 @@ local function AutoResizeObjects() --autoresize v2
 	if (LastAutoResizeX==nil) then
 		LastAutoResizeX = CanvasX
 		LastAutoResizeY = CanvasY
+		assert(CanvasX)
+		assert(CanvasX> 2)
+		assert(CanvasY)
+		assert(CanvasY > 2)
 	end
 	local lx,ly = LastAutoResizeX,LastAutoResizeY
 	local vsx,vsy = Screen.vsx,Screen.vsy
@@ -295,6 +302,7 @@ local function esc(x)
             :gsub('%?', '%%?'))
 end
 local function CreateGrid(r)
+	Spring.Echo("Drawing Grid")
 	local background2 = {"rectanglerounded",
 		px=r.px+r.padding,py=r.py+r.padding,
 		sx=(r.isx*r.ix+r.ispreadx*(r.ix-1) +r.margin*2) -r.padding -r.padding,
@@ -522,10 +530,10 @@ local function CreateGrid(r)
 	New(background2)
 
 	local backward = New(Copy(icon,true))
-	backward.texture = "LuaUI/Images/backward.dds"
+	backward.texture = "LuaUI/images/backward.dds"
 
 	local forward = New(Copy(icon,true))
-	forward.texture = "LuaUI/Images/forward.dds"
+	forward.texture = "LuaUI/images/forward.dds"
 	
 	local indicator = New({"rectangle",
 		px=0,py=0,
@@ -1147,6 +1155,7 @@ end
 
 
 function widget:Initialize()
+	Spring.Echo("gui_red_builordermenue intialization started")
 	if Script.LuaRules('GetIconTypes') then
 		iconTypesMap = Script.LuaRules.GetIconTypes()
 	end
@@ -1184,62 +1193,85 @@ function widget:Initialize()
   WG['red_buildmenu'].getConfigUnitPrice = function()
   	return drawPrice
   end
+  assert(WG['red_buildmenu'].getConfigUnitPrice)
   WG['red_buildmenu'].getConfigUnitRadaricon = function()
   	return drawRadaricon
   end
+    assert(WG['red_buildmenu'].getConfigUnitRadaricon)
   WG['red_buildmenu'].getConfigUnitTooltip = function()
   	return drawTooltip
   end
+      assert(WG['red_buildmenu'].getConfigUnitTooltip)
   WG['red_buildmenu'].getConfigUnitBigTooltip = function()
-  	return drawBigTooltip
+  	return drawBigTooltip  
   end
+  assert(WG['red_buildmenu'].getConfigUnitBigTooltip)
   WG['red_buildmenu'].getConfigUnitPriceLarge = function()
   	return largePrice
   end
+  assert( WG['red_buildmenu'].getConfigUnitPriceLarge)
   WG['red_buildmenu'].getConfigShortcutsInfo = function()
   	return shortcutsInfo
   end
+  assert( WG['red_buildmenu'].getConfigShortcutsInfo)
   WG['red_buildmenu'].getConfigPlaySounds = function()
   	return playSounds
   end
+   assert( WG['red_buildmenu'].getConfigPlaySounds)
 	WG['red_buildmenu'].getConfigLargeUnitIcons = function()
 		return largeUnitIcons
 	end
+	assert( WG['red_buildmenu'].getConfigLargeUnitIcons)
+
 	WG['red_buildmenu'].getConfigAlternativeIcons = function()
 		return alternativeUnitpics
 	end
+	assert( WG['red_buildmenu'].getConfigAlternativeIcons)
 
   WG['red_buildmenu'].setConfigUnitPrice = function(value)
   	drawPrice = value
   end
+  assert( WG['red_buildmenu'].setConfigUnitPrice)
   WG['red_buildmenu'].setConfigUnitRadaricon = function(value)
 	drawRadaricon = value
   end
+  assert( WG['red_buildmenu'].setConfigUnitRadaricon)
   WG['red_buildmenu'].setConfigUnitTooltip = function(value)
   	drawTooltip = value
   end
+  
+   assert( WG['red_buildmenu'].setConfigUnitTooltip)
   WG['red_buildmenu'].setConfigUnitBigTooltip = function(value)
   	drawBigTooltip = value
   end
+  assert( WG['red_buildmenu'].setConfigUnitBigTooltip)
   WG['red_buildmenu'].setConfigUnitPriceLarge = function(value)
   	largePrice = value
   end
+       
+  assert( WG['red_buildmenu'].setConfigUnitPriceLarge)
   WG['red_buildmenu'].setConfigShortcutsInfo = function(value)
   	shortcutsInfo = value
   end
+  assert( WG['red_buildmenu'].setConfigShortcutsInfo)
   WG['red_buildmenu'].setConfigPlaySounds = function(value)
   	playSounds = value
   end
+  assert( WG['red_buildmenu'].setConfigPlaySounds)
   WG['red_buildmenu'].setConfigLargeUnitIcons = function(value)
 	largeUnitIcons = value
 	Spring.SendCommands("luarules reloadluaui")
   end
+  assert( WG['red_buildmenu'].setConfigLargeUnitIcons)
   WG['red_buildmenu'].setConfigAlternativeIcons = function(value)
   	alternativeUnitpics = value
   end
+  assert( WG['red_buildmenu'].setConfigAlternativeIcons)
+  Spring.Echo("gui_red_builordermenue intialization ended")
 end
 
 local function onWidgetUpdate() --function widget:Update()
+	-- Spring.Echo("gui_red_builordermenue:onWidgetUpdate")
 	AutoResizeObjects()
 end
 
@@ -1253,9 +1285,21 @@ function widget:GetConfigData() --save config
 		Config.buildmenu.py = buildmenu.background.py * unscale
 		Config.ordermenu.px = ordermenu.background.px * unscale
 		Config.ordermenu.py = ordermenu.background.py * unscale
-		return {Config=Config, iconScaling=iconScaling, drawPrice=drawPrice, drawRadaricon=drawRadaricon, drawTooltip=drawTooltip, drawBigTooltip=drawBigTooltip, largePrice=largePrice, shortcutsInfo=shortcutsInfo, playSounds=playSounds, largeUnitIcons=largeUnitIcons, alternativeUnitpics=alternativeUnitpics}
+		return {
+		Config=Config, 
+		iconScaling=iconScaling, 
+		drawPrice=drawPrice, 
+		drawRadaricon=drawRadaricon, 
+		drawTooltip=drawTooltip, 
+		drawBigTooltip=drawBigTooltip, 
+		largePrice=largePrice, 
+		shortcutsInfo=shortcutsInfo, 
+		playSounds=playSounds, 
+		largeUnitIcons=largeUnitIcons, 
+		alternativeUnitpics=alternativeUnitpics}
 	end
 end
+
 function widget:SetConfigData(data) --load config
 	if (data.Config ~= nil) then
 		Config.buildmenu.px = data.Config.buildmenu.px
