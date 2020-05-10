@@ -60,8 +60,8 @@ if ( gadgetHandler:IsSyncedCode()) then
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 
 		if attackerID and ( GG.DisguiseCivilianFor[unitID] ) and teamID ~= Spring.GetUnitTeam(attackerID) then
-			maxhp = UnitDefs[unitDefID].maxDamage 
-			if not maxhp then	
+			maxhp = UnitDefs[unitDefID].health or UnitDefs[unitDefID].maxDamage
+			if maxhp then	
 				factor	= 1.0			
 				if GG.Propgandaservers and GG.Propgandaservers[teamID] then
 					factor = factor + (GG.Propgandaservers[teamID]* GameConfig.propandaServerFactor)
