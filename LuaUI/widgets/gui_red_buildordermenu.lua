@@ -8,8 +8,8 @@ function widget:GetInfo()
 	date      = "29 may 2015", --modified by CommonPlayer, Oct 2016
 	license   = "GNU GPL, v2 or later",
 	layer     = -10,
-	enabled   = false, --enabled by default
-	handler   = false, --can use widgetHandler:x() 
+	enabled   = true, --enabled by default
+	handler   = true, --can use widgetHandler:x() 
 	}
 end
 
@@ -1392,6 +1392,24 @@ local function updateGrids()
 	UpdateGrid(buildmenu,buildcmds,1)
 end
 
+local updatehax = false
+local updatehax2 = true
+local firstupdate = true
+local function haxlayout()
+
+	if (WG.layoutpinghax~=layoutping) then
+		hijacklayout()
+	end
+	WG.layoutpinghax = nil
+	updatehax = true
+end
+
+
+function widget:CommandsChanged()
+	haxlayout()
+end
+
+
 local hijackattempts = 0
 local layoutping = 54352 --random number
 local function hijacklayout()
@@ -1404,7 +1422,9 @@ local function hijacklayout()
 		WG.layoutpinghax = 54352
 		widgetHandler.commands = commands
 		widgetHandler.commands.n = cmdCount
+		
 		widgetHandler:CommandsChanged() --call widget:CommandsChanged()
+
 		local iconList = {[1337]=9001}
 		local custom_cmdz = widgetHandler.customCommands
 		return "", xIcons, yIcons, {}, custom_cmdz, {}, {}, {}, {}, {}, iconList
@@ -1413,20 +1433,6 @@ local function hijacklayout()
 	Spring.ForceLayoutUpdate()
 	hijackedlayout = true
 	hijackattempts = hijackattempts + 1
-end
-local updatehax = false
-local updatehax2 = true
-local firstupdate = true
-local function haxlayout()
-
-	if (WG.layoutpinghax~=layoutping) then
-		hijacklayout()
-	end
-	WG.layoutpinghax = nil
-	updatehax = true
-end
-function widget:CommandsChanged()
-	haxlayout()
 end
 
 local sec = 0
