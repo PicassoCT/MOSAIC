@@ -12,8 +12,8 @@ local unitDef = {
 	
 				buildPic = "truck_assembly.png",
 	--cost
-	buildCostMetal = 200,
-	buildCostEnergy = 50,
+	buildCostMetal = 50,
+	buildCostEnergy = 200,
 	buildTime = 60,
 	CanReclaim=false,
 	buildDistance = 200,
@@ -72,8 +72,8 @@ local unitDef = {
 	EnergyStorage = 0,
 	EnergyUse = 75,
 	MetalStorage = 0,
-	EnergyMake = 0, 
-	MakesMetal = 16, 
+	EnergyMake = 16, 
+	MakesMetal = 0, 
 	MetalMake = 0,	
 	acceleration = 0,
 	
