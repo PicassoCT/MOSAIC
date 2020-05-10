@@ -7,11 +7,12 @@ local Propagandaserver = Building:New{
 	buildPic = "propagandaserver.png",
 	buildTime = 25,
 	buildCostMetal      = 150,
+	buildCostEnergy     = 50,
 	EnergyStorage = 0,
 	EnergyUse = 0,
 	MetalStorage = 5000,
 
-	EnergyMake = 5, 
+	EnergyMake = 2.5, 
 	MakesMetal = 5, 
 	MetalMake = 0,	
 	

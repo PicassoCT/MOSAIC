@@ -7,8 +7,8 @@ local groundturretspyder =  Turret:New{
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostEnergy = 50,
+	buildCostMetal = 0,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -83,8 +83,8 @@ local groundturretssied =  Turret:New{
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostEnergy = 50,
+	 buildCostMetal= 0,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -161,8 +161,8 @@ local groundturretmg =  Turret:New{
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostEnergy  = 50,
+	buildCostMetal= 0,
 	buildTime = 35,
 	--Health
 	maxDamage = 500,
@@ -224,8 +224,8 @@ local ground_turret_antiarmor =  Turret:New{
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostEnergy  = 50,
+	buildCostMetal= 0,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -303,8 +303,8 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostEnergy = 50,
+	buildCostMetal = 0,
 	buildTime = 5,
 	--Health
 	maxDamage = 50,
