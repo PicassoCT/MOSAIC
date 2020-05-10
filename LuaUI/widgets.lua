@@ -544,13 +544,22 @@ function widgetHandler:Initialize()
 
   -- stuff the widgets into unsortedWidgets
   if self.allowUserWidgets and allowuserwidgets the
-  local widgetFiles = VFS.DirList(WIDGET_DIRNAME, "*.lua", VFSMODE)
-	  for k,wf in ipairs(widgetFiles) do
-		local widget = self:LoadWidget(wf)
-		if (widget) then
-		  table.insert(unsortedWidgets, widget)
-		end
-	  end
+     local widgetFiles = VFS.DirList(WIDGET_DIRNAME, "*.lua", VFS.RAW)
+    for k,wf in ipairs(widgetFiles) do
+      GetWidgetInfo(wf, VFS.RAW)
+      local widget = self:LoadWidget(wf, false)
+      if (widget) and not zipOnly[widget.whInfo.name] then
+        table.insert(unsortedWidgets, widget)
+      end
+    end
+  end
+ local widgetFiles = VFS.DirList(WIDGET_DIRNAME, "*.lua", VFS.ZIP)
+  for k,wf in ipairs(widgetFiles) do
+    GetWidgetInfo(wf, VFS.ZIP)
+    local widget = self:LoadWidget(wf, true)
+    if (widget) then
+      table.insert(unsortedWidgets, widget)
+    end
   end
 
   -- stuff the map widgets into unsortedWidgets
@@ -769,12 +778,12 @@ end
 
 
 function widgetHandler:FinalizeWidget(widget, filename, basename)
-  local wi
+  local wi = {}
 
-  if (widget.GetInfo == nil) then
-    wi = {}
+
     wi.filename = filename
     wi.basename = basename
+  if (widget.GetInfo == nil) then
     wi.name  = basename
     wi.layer = 0
   else
@@ -822,6 +831,31 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+local function SafeWrapFuncNoGL(func, funcName)
+  local wh = widgetHandler
+
+  return function(w, ...)
+
+    local r = { pcall(func, w, ...) }
+
+    if (r[1]) then
+      table.remove(r, 1)
+      return unpack(r)
+    else
+      if (funcName ~= 'Shutdown') then
+        widgetHandler:RemoveWidget(w)
+      else
+        Spring.Echo('Error in Shutdown()')
+      end
+      local name = w.whInfo.name
+      Spring.Echo(r[1])
+      Spring.Echo('Error in ' .. funcName ..'(): ' .. tostring(r[2]))
+      Spring.Echo('Removed widget: ' .. name)
+      return nil
+    end
+  end
+end
+
 local function HandleError(widget, funcName, status, ...)
   if (status) then
     return ...
@@ -959,7 +993,7 @@ end
 
 
 function widgetHandler:RemoveWidget(widget)
-  if (widget == nil) then
+  if (widget == nil) or (widget.whInfo == nil) then
     return
   end
 
@@ -1047,6 +1081,9 @@ end
 
 --------------------------------------------------------------------------------
 
+function widgetHandler:IsWidgetKnown(name)
+  return self.knownWidgets[name] and true or false
+end
 function widgetHandler:EnableWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
@@ -1062,6 +1099,7 @@ function widgetHandler:EnableWidget(name)
     local w = self:LoadWidget(ki.filename)
     if (not w) then return false end
     self:InsertWidget(w)
+    self:SaveConfigData()
     self:SaveOrderList()
   end
   return true
@@ -1100,6 +1138,7 @@ function widgetHandler:ToggleWidget(name)
     -- the widget is not active, but enabled; disable it
     self.orderList[name] = 0
     self:SaveOrderList()
+    self:SaveConfigData()
   end
   return true
 end
@@ -1532,6 +1571,13 @@ function widgetHandler:DrawInMiniMap(xSize, ySize)
   return
 end
 
+function widgetHandler:SunChanged()
+  for _,w in ripairs(self.SunChangedList) do
+    w:SunChanged()
+  end
+  return
+end
+
 --------------------------------------------------------------------------------
 --
 --  Keyboard call-ins
@@ -1896,6 +1942,66 @@ function widgetHandler:GameFrame(frameNum)
 end
 
 
+-- local helper (not a real call-in)
+local oldSelection = {}
+function widgetHandler:UpdateSelection()
+  local changed
+  local newSelection = Spring.GetSelectedUnits()
+  if (#newSelection == #oldSelection) then
+    for i = 1, #oldSelection do
+      if (newSelection[i] ~= oldSelection[i]) then -- it seems the order stays
+        changed = true
+        break
+      end
+    end
+  else
+    changed = true
+  end
+  if (changed) then
+    local subselection = true
+    if #newSelection > #oldSelection then
+      subselection = false
+    else
+      local newSeen = 0
+      local oldSelectionMap = {}
+      for i = 1, #oldSelection do
+        oldSelectionMap[oldSelection[i]] = true
+      end
+      for i = 1, #newSelection do
+        if not oldSelectionMap[newSelection[i]] then
+          subselection = false
+          break
+        end
+      end
+    end
+    if widgetHandler:SelectionChanged(newSelection, subselection) then
+      -- selection changed, don't set old selection to new selection as it is soon to change.
+      return true
+    end
+  end
+  oldSelection = newSelection
+  return false
+end
+
+function widgetHandler:SelectionChanged(selectedUnits, subselection)
+  for _,w in ipairs(self.SelectionChangedList) do
+    if widgetHandler.WG['smartselect'] and not widgetHandler.WG['smartselect'].updateSelection then return end
+      local unitArray = w:SelectionChanged(selectedUnits, subselection)
+      if (unitArray) then
+        Spring.SelectUnitArray(unitArray)
+        return true
+      end
+  end
+  return false
+end
+
+function widgetHandler:GameProgress(serverFrameNum)
+  for _,w in ipairs(self.GameProgressList) do
+    w:GameProgress(serverFrameNum)
+  end
+  return
+end
+
 function widgetHandler:ShockFront(power, dx, dy, dz)
   for _,w in ipairs(self.ShockFrontList) do
     w:ShockFront(power, dx, dy, dz)
@@ -2051,13 +2157,13 @@ end
 
 
 function widgetHandler:UnitCommand(unitID, unitDefID, unitTeam,
-                                   cmdId, cmdParams, cmdOpts, cmdTag) --cmdTag available in Spring 95
+                                   cmdId, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua) --cmdTag available in Spring 95
   if reverseCompat then
     cmdOpts, cmdParams = cmdParams, cmdOpts
   end
   for _,w in ipairs(self.UnitCommandList) do
     w:UnitCommand(unitID, unitDefID, unitTeam,
-                  cmdId, cmdParams, cmdOpts, cmdTag)
+                  cmdId, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua)
   end
   return
 end
@@ -2113,9 +2219,9 @@ function widgetHandler:UnitLeftRadar(unitID, unitTeam)
 end
 
 
-function widgetHandler:UnitLeftLos(unitID, unitDefID, unitTeam)
+function widgetHandler:UnitLeftLos(unitID,  unitTeam)
   for _,w in ipairs(self.UnitLeftLosList) do
-    w:UnitLeftLos(unitID, unitDefID, unitTeam)
+    w:UnitLeftLos(unitID,  unitTeam)
   end
   return
 end
@@ -2287,6 +2393,23 @@ function widgetHandler:GameProgress(frame)
   return
 end
 
+Feature call-ins
+--
+
+function widgetHandler:FeatureCreated(featureID, allyTeam)
+  for _,w in ipairs(self.FeatureCreatedList) do
+    w:FeatureCreated(featureID, allyTeam)
+  end
+  return
+end
+
+
+function widgetHandler:FeatureDestroyed(featureID, allyTeam)
+  for _,w in ipairs(self.FeatureDestroyedList) do
+    w:FeatureDestroyed(featureID, allyTeam)
+  end
+  return
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
