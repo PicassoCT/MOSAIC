@@ -34,7 +34,7 @@ local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 -- Configuration Constants
 -----------------------------------------------------------------
 
-local SSAO_KERNEL_SIZE = 24 -- how many samples are used for SSAO spatial sampling
+local SSAO_KERNEL_SIZE = 48 -- how many samples are used for SSAO spatial sampling
 local SSAO_RADIUS = 5 -- world space maximum sampling radius
 local SSAO_MIN = 1.0 -- minimum depth difference between fragment and sample depths to trigger SSAO sample occlusion. Absolute value in world space coords.
 local SSAO_MAX = 1.0 -- maximum depth difference between fragment and sample depths to trigger SSAO sample occlusion. Percentage of SSAO_RADIUS.
@@ -46,10 +46,35 @@ local BLUR_SIGMA = 1.8 -- Gaussian sigma of a single blur pass, other factors li
 
 local DOWNSAMPLE = 2 -- increasing downsapling will reduce GPU RAM occupation (a little bit), increase performace (a little bit), introduce occlusion blockiness
 
---local MERGE_MISC = true -- for future material indices based SSAO evaluation
+local MERGE_MISC = true -- for future material indices based SSAO evaluation
 local DEBUG_SSAO = false -- use for debug
 
 local math_sqrt = math.sqrt
+
+local preset = 1
+local presets = {
+	{
+		SSAO_KERNEL_SIZE = 24,
+		DOWNSAMPLE = 3,
+		BLUR_HALF_KERNEL_SIZE = 4,
+		BLUR_PASSES = 2,
+		BLUR_SIGMA = 2.4,
+	},
+	{
+		SSAO_KERNEL_SIZE = 48,
+		DOWNSAMPLE = 2,
+		BLUR_HALF_KERNEL_SIZE = 6,
+		BLUR_PASSES = 3,
+		BLUR_SIGMA = 4.5,
+	},
+	{
+		SSAO_KERNEL_SIZE = 64,
+		DOWNSAMPLE = 1,
+		BLUR_HALF_KERNEL_SIZE = 8,
+		BLUR_PASSES = 4,
+		BLUR_SIGMA = 6.5,
+	},
+}
 
 -----------------------------------------------------------------
 -- File path Constants
@@ -173,6 +198,14 @@ end
 
 function widget:Initialize()
 	WG['ssao'] = {}
+	WG['ssao'].getPreset = function()
+		return preset
+	end
+	WG['ssao'].setPreset = function(value)
+		preset = value
+		widget:Shutdown()
+		widget:Initialize()
+	end
 	WG['ssao'].getStrength = function()
 		return SSAO_ALPHA_POW
 	end
@@ -222,11 +255,11 @@ function widget:Initialize()
 	commonTexOpts.mag_filter = GL.LINEAR
 
 	commonTexOpts.format = GL_RGBA8
-	ssaoTex = gl.CreateTexture(vsx / DOWNSAMPLE, vsy / DOWNSAMPLE, commonTexOpts)
+	ssaoTex = gl.CreateTexture(vsx / presets[preset].DOWNSAMPLE, vsy / presets[preset].DOWNSAMPLE, commonTexOpts)
 
 	commonTexOpts.format = GL_RGBA8
 	for i = 1, 2 do
-		ssaoBlurTexes[i] = gl.CreateTexture(vsx / DOWNSAMPLE, vsy / DOWNSAMPLE, commonTexOpts)
+		ssaoBlurTexes[i] = gl.CreateTexture(vsx / presets[preset].DOWNSAMPLE, vsy / presets[preset].DOWNSAMPLE, commonTexOpts)
 	end
 
 	if MERGE_MISC then
@@ -301,7 +334,7 @@ function widget:Initialize()
 	local ssaoShaderVert = VFS.LoadFile(shadersDir.."identity.vert.glsl")
 	local ssaoShaderFrag = VFS.LoadFile(shadersDir.."ssao.frag.glsl")
 
-	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_KERNEL_SIZE###", tostring(SSAO_KERNEL_SIZE))
+	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_KERNEL_SIZE###", tostring(presets[preset].SSAO_KERNEL_SIZE))
 
 	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_RADIUS###", tostring(SSAO_RADIUS))
 	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_MIN###", tostring(SSAO_MIN))
@@ -319,14 +352,14 @@ function widget:Initialize()
 			miscTex = 2,
 		},
 		uniformFloat = {
-			viewPortSize = {vsx / DOWNSAMPLE, vsy / DOWNSAMPLE},
+			viewPortSize = {vsx / presets[preset].DOWNSAMPLE, vsy / presets[preset].DOWNSAMPLE},
 		},
 	}, wiName..": Processing")
 	ssaoShader:Initialize()
 
 	ssaoShader:ActivateWith( function()
-		local samplingKernel = GetSamplingVectorArray(SSAO_KERNEL_SIZE)
-		for i = 0, SSAO_KERNEL_SIZE - 1 do
+		local samplingKernel = GetSamplingVectorArray(presets[preset].SSAO_KERNEL_SIZE)
+		for i = 0, presets[preset].SSAO_KERNEL_SIZE - 1 do
 			local sv = samplingKernel[i]
 			ssaoShader:SetUniformFloatAlways(string.format("samplingKernel[%d]", i), sv.x, sv.y, sv.z)
 		end
@@ -336,7 +369,7 @@ function widget:Initialize()
 	local gaussianBlurVert = VFS.LoadFile(shadersDir.."identity.vert.glsl")
 	local gaussianBlurFrag = VFS.LoadFile(shadersDir.."gaussianBlur.frag.glsl")
 
-	gaussianBlurFrag = gaussianBlurFrag:gsub("###BLUR_HALF_KERNEL_SIZE###", tostring(BLUR_HALF_KERNEL_SIZE))
+	gaussianBlurFrag = gaussianBlurFrag:gsub("###BLUR_HALF_KERNEL_SIZE###", tostring(presets[preset].BLUR_HALF_KERNEL_SIZE))
 
 	gaussianBlurShader = LuaShader({
 		vertex = gaussianBlurVert,
@@ -345,12 +378,12 @@ function widget:Initialize()
 			tex = 0,
 		},
 		uniformFloat = {
-			viewPortSize = {vsx / DOWNSAMPLE, vsy / DOWNSAMPLE},
+			viewPortSize = {vsx / presets[preset].DOWNSAMPLE, vsy / presets[preset].DOWNSAMPLE},
 		},
 	}, wiName..": Gaussian Blur")
 	gaussianBlurShader:Initialize()
 
-	local gaussWeights, gaussOffsets = GetGaussLinearWeightsOffsets(BLUR_SIGMA, BLUR_HALF_KERNEL_SIZE, 1.0)
+	local gaussWeights, gaussOffsets = GetGaussLinearWeightsOffsets(presets[preset].BLUR_SIGMA, presets[preset].BLUR_HALF_KERNEL_SIZE, 1.0)
 
 	gaussianBlurShader:ActivateWith( function()
 		gaussianBlurShader:SetUniformFloatArrayAlways("weights", gaussWeights)
@@ -444,7 +477,6 @@ local function DoDrawSSAO(isScreenSpace)
 			gl.Texture(3, false)
 			gl.Texture(4, false)
 			if MERGE_MISC then
-				gl.Texture(4, false)
 				gl.Texture(5, false)
 				gl.Texture(6, false)
 			end
@@ -452,6 +484,7 @@ local function DoDrawSSAO(isScreenSpace)
 	end)
 
 	gl.ActiveFBO(ssaoFBO, function()
+		gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
 		ssaoShader:ActivateWith( function ()
 			ssaoShader:SetUniformMatrix("projMatrix", "projection")
 
@@ -473,7 +506,7 @@ local function DoDrawSSAO(isScreenSpace)
 
 	gl.Texture(0, ssaoTex)
 
-	for i = 1, BLUR_PASSES do
+	for i = 1, presets[preset].BLUR_PASSES do
 		gaussianBlurShader:ActivateWith( function ()
 
 			gaussianBlurShader:SetUniform("dir", 1.0, 0.0) --horizontal blur
@@ -549,6 +582,7 @@ function widget:GetConfigData(data)
 	savedTable = {}
 	savedTable.strength = SSAO_ALPHA_POW
 	savedTable.radius = SSAO_RADIUS
+	savedTable.preset = preset
 	return savedTable
 end
 
@@ -558,5 +592,8 @@ function widget:SetConfigData(data)
 	end
 	if data.strength ~= nil then
 		SSAO_RADIUS = data.radius
+	end
+	if data.preset ~= nil then
+		preset = data.preset
 	end
 end

@@ -27,7 +27,6 @@ local sIsGUIHidden = Spring.IsGUIHidden
 
 local F = {} --function table
 local Todo = {} --function queue
-local dList = {}
 local StartList
 
 local glText = gl.Text
@@ -135,7 +134,6 @@ local function Rect(px,py,sx,sy,c,scale)
 end
 
 local function DrawRectRound(px,py,sx,sy,cs)
-	gl.TexCoord(0.8,0.8)
 	gl.Vertex(px+cs, py, 0)
 	gl.Vertex(sx-cs, py, 0)
 	gl.Vertex(sx-cs, sy, 0)
@@ -150,57 +148,49 @@ local function DrawRectRound(px,py,sx,sy,cs)
 	gl.Vertex(sx-cs, py+cs, 0)
 	gl.Vertex(sx-cs, sy-cs, 0)
 	gl.Vertex(sx, sy-cs, 0)
-	
-	local offset = 0.05		-- texture offset, because else gaps could show
-	
+
 	-- top left
-	if py <= 0 or px <= 0 then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(px, py, 0)
-	gl.TexCoord(o,1-offset)
+	if py <= 0 or px <= 0 then
+		gl.Vertex(px, py, 0)
+	else
+		gl.Vertex(px+cs, py, 0)
+	end
 	gl.Vertex(px+cs, py, 0)
-	gl.TexCoord(1-offset,1-offset)
 	gl.Vertex(px+cs, py+cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(px, py+cs, 0)
 	-- top right
-	if py <= 0 or sx >= vsx then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(sx, py, 0)
-	gl.TexCoord(o,1-offset)
+	if py <= 0 or sx >= vsx then
+		gl.Vertex(sx, py, 0)
+	else
+		gl.Vertex(sx-cs, py, 0)
+	end
 	gl.Vertex(sx-cs, py, 0)
-	gl.TexCoord(1-offset,1-offset)
 	gl.Vertex(sx-cs, py+cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(sx, py+cs, 0)
 	-- bottom left
-	if sy >= vsy or px <= 0 then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(px, sy, 0)
-	gl.TexCoord(o,1-offset)
+	if sy >= vsy or px <= 0 then
+		gl.Vertex(px, sy, 0)
+	else
+		gl.Vertex(px+cs, sy, 0)
+	end
 	gl.Vertex(px+cs, sy, 0)
-	gl.TexCoord(1-offset,1-offset)
 	gl.Vertex(px+cs, sy-cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(px, sy-cs, 0)
 	-- bottom right
-	if sy >= vsy or sx >= vsx then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(sx, sy, 0)
-	gl.TexCoord(o,1-offset)
+	if sy >= vsy or sx >= vsx then
+		gl.Vertex(sx, sy, 0)
+	else
+		gl.Vertex(sx-cs, sy, 0)
+	end
 	gl.Vertex(sx-cs, sy, 0)
-	gl.TexCoord(1-offset,1-offset)
 	gl.Vertex(sx-cs, sy-cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(sx, sy-cs, 0)
 end
 
 function RectRoundOrg(px,py,sx,sy,cs)
 	--local px,py,sx,sy,cs = math.floor(px),math.floor(py),math.ceil(sx),math.ceil(sy),math.floor(cs)
-
-	gl.Texture(bgcorner)
-	gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs)
 	gl.Texture(false)
+	gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs)
 end
 
 local function RectRound(px,py,sx,sy,c,cs,scale,glone,guishader)
@@ -233,9 +223,8 @@ local function RectRound(px,py,sx,sy,c,cs,scale,glone,guishader)
 	sx = px+sx
 	sy = py+sy
 
-	gl.Texture(bgcorner)
-	glBeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs)
 	gl.Texture(false)
+	glBeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs)
 
 	if glone then
 		glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -305,7 +294,7 @@ function widget:Initialize()
 	font2 = WG['Red'].font2
 	vsx,vsy = widgetHandler:GetViewSizes()
 	CreateStartList()
-	
+
 	local T = {}
 	WG[TN] = T
 	T.version = version
@@ -327,7 +316,7 @@ function widget:Initialize()
 	T.RectRound = function(a,b,c,d,e,f,g,h,i)
 		Todo[#Todo+1] = {6,a,b,c,d,e,f,g,h,i}
 	end
-	
+
 	F[1] = Color
 	F[2] = Rect
 	F[3] = TexRect
@@ -357,25 +346,7 @@ function widget:DrawScreen()
 	local t
 	for i=1,#Todo do
 		t = Todo[i]
-		id = ''
-		if t[1] == 5 then	-- text
-			id = t[1]..'_'..t[2]..'_'..t[3]..'_'..t[4]..'_'..t[5]
-			if type(t[7]) == 'table' then
-				id = id .. t[7][1]..'_'..t[7][2]..'_'..t[7][3]..'_'..t[7][4]
-			end
-		end
-
-		if id ~= '' then
-			if dList[id] == nil then
-				dList[id] = glCreateList(function()
-					F[t[1]](t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],t[10])
-				end)
-			end
-			glCallList(dList[id])
-		else
-			F[t[1]](t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],t[10])
-		end
-
+		F[t[1]](t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],t[10])
 		Todo[i] = nil
 	end
 
@@ -418,7 +389,6 @@ function widget:DrawScreen()
 end
 
 local sec = 0
-local flushDistsTime = 20
 function widget:Update(dt)
 	if chobbyInterface then return end
 	if (sIsGUIHidden()) then
@@ -426,25 +396,11 @@ function widget:Update(dt)
 			Todo[i] = nil
 		end
 	end
-
-	sec=sec+dt
-	if (sec>flushDistsTime) then
-		sec = 0
-		removeDLists()
-	end
-end
-
-function removeDLists()
-	for t, l in pairs(dList) do
-		glDeleteList(dList[l])
-	end
-	dList = {}
 end
 
 function widget:Shutdown()
 	glDeleteList(StartList)
-	removeDLists()
-	
+
 	if WG['guishader'] then
 	
 		-- remove blur areas

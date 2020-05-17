@@ -28,13 +28,17 @@ local OrangeStr  = "\255\255\190\128"
 --
 --  vars
 --
+local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity",0.66) or 0.66)
+local ui_scale = tonumber(Spring.GetConfigFloat("ui_scale",1) or 1)
+
 local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()
 local fontfileScale = (0.5 + (vsx*vsy / 5700000))
 local fontfileSize = 25
-local fontfileOutlineSize = 6
-local fontfileOutlineStrength = 1.4
+local fontfileOutlineSize = 5
+local fontfileOutlineStrength = 1.3
 local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
+
 
 -- saved values
 local bar_side         = 1     --left:0,top:2,right:1,bottom:3
@@ -163,7 +167,7 @@ end
 
 
 local function UpdateIconSizes()
-  iconSizeX = math.floor(bar_iconSizeBase+((vsx-800)/35))
+  iconSizeX = math.floor((vsy / 18) * (1+(ui_scale-1)/1.5))
   iconSizeY = math.floor(iconSizeX * 0.95)
   fontSize  = iconSizeY * 0.31
   repIcoSize = math.floor(iconSizeY*0.4)
@@ -171,9 +175,12 @@ end
 
 function widget:ViewResize(n_vsx,n_vsy)
   vsx,vsy = Spring.GetViewGeometry()
-  widgetScale = (0.5 + (vsx*vsy / 5700000))
+  widgetScale = (((vsx+vsy) / 2000) * 0.66) * (1+(ui_scale-1)/1.5)
   local fontScale = widgetScale/2
-  font = gl.LoadFont(fontfile, 52*fontScale, 17*fontScale, 1.5)
+  if font then
+    gl.DeleteFont(font)
+  end
+  font = gl.LoadFont(fontfile, 52*fontScale, 15*fontScale, 1.3)
 
   UpdateIconSizes()
   SetupNewScreenAlignment()
@@ -242,6 +249,7 @@ function widget:Shutdown()
   end
   dlists = {}
   gl.DeleteFont(font)
+  font = nil
 end
 
 function widget:GetConfigData()
@@ -513,8 +521,25 @@ local function DrawButton(rect, unitDefID, options, iconResize, isFac)
 end
 
 local sec = 0
+local uiOpacitySec = 0.5
 function widget:Update(dt)
-	if chobbyInterface then return end
+
+  if chobbyInterface then return end
+
+  uiOpacitySec = uiOpacitySec + dt
+  if uiOpacitySec > 0.5 then
+    uiOpacitySec = 0
+    if ui_scale ~= Spring.GetConfigFloat("ui_scale",1) then
+      ui_scale = Spring.GetConfigFloat("ui_scale",1)
+      widget:ViewResize(Spring.GetViewGeometry())
+      widget:Shutdown()
+      widget:Initialize()
+    end
+    uiOpacitySec = 0
+    if ui_opacity ~= Spring.GetConfigFloat("ui_opacity",0.66) then
+      ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66)
+    end
+  end
 
   if Spring.GetGameFrame() > 0 and Spring.GetSpectatingState() then
       widgetHandler:RemoveWidget(self)
@@ -626,6 +651,7 @@ function widget:RecvLuaMsg(msg, playerID)
 end
 
 function widget:DrawScreen()
+  local t0 = Spring.GetTimer()
   if chobbyInterface then return end
 
   local icon,mx,my,lb,mb,rb = -1,-1,-1,false,false,false
@@ -1104,9 +1130,9 @@ function WaypointHandler(x,y,button)
 
   local type,param = Spring.TraceScreenRay(x,y)
   if type=='ground' then
-    Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.MOVE,param,opt) 
+    Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.MOVE,param,opt)
   elseif type=='unit' then
-    Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.GUARD,{param},opt)     
+    Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.GUARD,{param},opt)
   else --feature
     type,param = Spring.TraceScreenRay(x,y,true)
     Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.MOVE,param,opt)

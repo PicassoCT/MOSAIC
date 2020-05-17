@@ -21,8 +21,6 @@ local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSi
 local fontfile2 = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font2", "Exo2-SemiBold.otf")
 local font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 
-local bgcorner = ":l:LuaUI/Images/bgcorner.png"
-
 local bgMargin = 6
 
 local screenHeight = 520-bgMargin-bgMargin
@@ -55,8 +53,8 @@ local GL_LINE_STRIP = GL.LINE_STRIP
 
 local widgetScale = 1
 
-local customScale = 1.1
-local centerPosX = 0.51	-- note: dont go too far from 0.5
+local customScale = 1
+local centerPosX = 0.5	-- note: dont go too far from 0.5
 local centerPosY = 0.49		-- note: dont go too far from 0.5
 local screenX = (vsx*centerPosX) - (screenWidth/2)
 local screenY = (vsy*centerPosY) + (screenHeight/2)
@@ -65,7 +63,8 @@ function widget:ViewResize()
 	vsx,vsy = Spring.GetViewGeometry()
 	screenX = (vsx*centerPosX) - (screenWidth/2)
 	screenY = (vsy*centerPosY) + (screenHeight/2)
-	widgetScale = (0.5 + (vsx*vsy / 5700000)) * customScale
+	widgetScale = ((vsx+vsy) / 2000) * 0.65 * customScale
+	widgetScale = widgetScale * (1 - (0.11 * ((vsx/vsy) - 1.78)))		-- make smaller for ultrawide screens
   local newFontfileScale = (0.5 + (vsx*vsy / 5700000))
   if (fontfileScale ~= newFontfileScale) then
     fontfileScale = newFontfileScale
@@ -81,75 +80,115 @@ end
 local myTeamID = Spring.GetMyTeamID()
 local showOnceMore = false
 
-local function DrawRectRound(px,py,sx,sy,cs, tl,tr,br,bl)
-	gl.TexCoord(0.8,0.8)
+local function DrawRectRound(px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)
+	local csyMult = 1 / ((sy-py)/cs)
+
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
 	gl.Vertex(px+cs, py, 0)
 	gl.Vertex(sx-cs, py, 0)
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
 	gl.Vertex(sx-cs, sy, 0)
 	gl.Vertex(px+cs, sy, 0)
-	
+
+	-- left side
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
 	gl.Vertex(px, py+cs, 0)
 	gl.Vertex(px+cs, py+cs, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
 	gl.Vertex(px+cs, sy-cs, 0)
 	gl.Vertex(px, sy-cs, 0)
-	
+
+	-- right side
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
 	gl.Vertex(sx, py+cs, 0)
 	gl.Vertex(sx-cs, py+cs, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
 	gl.Vertex(sx-cs, sy-cs, 0)
 	gl.Vertex(sx, sy-cs, 0)
-	
-	local offset = 0.07		-- texture offset, because else gaps could show
-	
+
+	local offset = 0.15		-- texture offset, because else gaps could show
+
 	-- bottom left
-	if ((py <= 0 or px <= 0)  or (bl ~= nil and bl == 0)) and bl ~= 2   then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(px, py, 0)
-	gl.TexCoord(o,1-offset)
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	if ((py <= 0 or px <= 0)  or (bl ~= nil and bl == 0)) and bl ~= 2   then
+		gl.Vertex(px, py, 0)
+	else
+		gl.Vertex(px+cs, py, 0)
+	end
 	gl.Vertex(px+cs, py, 0)
-	gl.TexCoord(1-offset,1-offset)
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
 	gl.Vertex(px+cs, py+cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(px, py+cs, 0)
 	-- bottom right
-	if ((py <= 0 or sx >= vsx) or (br ~= nil and br == 0)) and br ~= 2   then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(sx, py, 0)
-	gl.TexCoord(o,1-offset)
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	if ((py <= 0 or sx >= vsx) or (br ~= nil and br == 0)) and br ~= 2 then
+		gl.Vertex(sx, py, 0)
+	else
+		gl.Vertex(sx-cs, py, 0)
+	end
 	gl.Vertex(sx-cs, py, 0)
-	gl.TexCoord(1-offset,1-offset)
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
 	gl.Vertex(sx-cs, py+cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(sx, py+cs, 0)
 	-- top left
-	if ((sy >= vsy or px <= 0) or (tl ~= nil and tl == 0)) and tl ~= 2   then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(px, sy, 0)
-	gl.TexCoord(o,1-offset)
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	if ((sy >= vsy or px <= 0) or (tl ~= nil and tl == 0)) and tl ~= 2 then
+		gl.Vertex(px, sy, 0)
+	else
+		gl.Vertex(px+cs, sy, 0)
+	end
 	gl.Vertex(px+cs, sy, 0)
-	gl.TexCoord(1-offset,1-offset)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
 	gl.Vertex(px+cs, sy-cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(px, sy-cs, 0)
 	-- top right
-	if ((sy >= vsy or sx >= vsx)  or (tr ~= nil and tr == 0)) and tr ~= 2   then o = 0.5 else o = offset end
-	gl.TexCoord(o,o)
-	gl.Vertex(sx, sy, 0)
-	gl.TexCoord(o,1-offset)
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	if ((sy >= vsy or sx >= vsx)  or (tr ~= nil and tr == 0)) and tr ~= 2 then
+		gl.Vertex(sx, sy, 0)
+	else
+		gl.Vertex(sx-cs, sy, 0)
+	end
 	gl.Vertex(sx-cs, sy, 0)
-	gl.TexCoord(1-offset,1-offset)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
 	gl.Vertex(sx-cs, sy-cs, 0)
-	gl.TexCoord(1-offset,o)
 	gl.Vertex(sx, sy-cs, 0)
 end
-function RectRound(px,py,sx,sy,cs, tl,tr,br,bl)		-- (coordinates work differently than the RectRound func in other widgets)
-	gl.Texture(bgcorner)
-	gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs, tl,tr,br,bl)
+function RectRound(px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)		-- (coordinates work differently than the RectRound func in other widgets)
 	gl.Texture(false)
+	gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)
 end
 
 -- keybind info
 
-include("config/MOSAIC_HotkeyInfo.lua")
+include("configs/BAR_HotkeyInfo.lua")
 local bindColor			= "\255\235\185\070"
 local titleColor		= "\255\254\254\254"
 local descriptionColor	= "\255\192\190\180"
@@ -197,10 +236,10 @@ function DrawWindow()
 	else
 		gl.Color(0,0,0,0.85)
 	end
-	RectRound(x-bgMargin,y-screenHeight-bgMargin,x+screenWidth+bgMargin,y+bgMargin,8, 0,1,1,1)
+	RectRound(x-bgMargin,y-screenHeight-bgMargin,x+screenWidth+bgMargin,y+bgMargin,8, 0,1,1,1, {0.05,0.05,0.05,WG['guishader'] and 0.8 or 0.88}, {0,0,0,WG['guishader'] and 0.8 or 0.88})
 	-- content area
 	gl.Color(0.33,0.33,0.33,0.15)
-	RectRound(x,y-screenHeight,x+screenWidth,y,5.5)
+	RectRound(x,y-screenHeight,x+screenWidth,y,5.5, 1,1,1,1, {0.25,0.25,0.25,0.2}, {0.5,0.5,0.5,0.2})
 	
 	-- title background
     local title = "Keybinds"

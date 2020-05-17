@@ -54,15 +54,15 @@ local useSelection = true
 local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()
 local fontfileScale = (0.7 + (vsx*vsy / 7000000))
-local fontfileSize = 36
-local fontfileOutlineSize = 7
-local fontfileOutlineStrength = 1.4
+local fontfileSize = 40
+local fontfileOutlineSize = 6
+local fontfileOutlineStrength = 1.1
 local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 
-local customFontSize = 15
+local customFontSize = 15.5
 
-local bgcornerSize = fontSize*0.45
-local bgpadding = fontSize*0.9
+local bgcornerSize = fontSize*0.35
+local bgpadding = fontSize*1.15
 
 local cX, cY, cYstart
 
@@ -159,27 +159,117 @@ end
 ------------------------------------------------------------------------------------
 
 
-function RectRound(px,py,sx,sy,cs)
-	
-	local px,py,sx,sy,cs = math.floor(px),math.floor(py),math.floor(sx),math.floor(sy),math.floor(cs)
-	
-	gl.Rect(px+cs, py, sx-cs, sy)
-	gl.Rect(sx-cs, py+cs, sx, sy-cs)
-	gl.Rect(px+cs, py+cs, px, sy-cs)
-	
-	gl.Texture(bgcorner)
-	gl.TexRect(px, py+cs, px+cs, py)		-- top left
-	gl.TexRect(sx, py+cs, sx-cs, py)		-- top right
-	gl.TexRect(px, sy-cs, px+cs, sy)		-- bottom left
-	gl.TexRect(sx, sy-cs, sx-cs, sy)		-- bottom right
+local function DrawRectRound(px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)
+	local csyMult = 1 / ((sy-py)/cs)
+
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	gl.Vertex(px+cs, py, 0)
+	gl.Vertex(sx-cs, py, 0)
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	gl.Vertex(sx-cs, sy, 0)
+	gl.Vertex(px+cs, sy, 0)
+
+	-- left side
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(px, py+cs, 0)
+	gl.Vertex(px+cs, py+cs, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(px+cs, sy-cs, 0)
+	gl.Vertex(px, sy-cs, 0)
+
+	-- right side
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(sx, py+cs, 0)
+	gl.Vertex(sx-cs, py+cs, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(sx-cs, sy-cs, 0)
+	gl.Vertex(sx, sy-cs, 0)
+
+	local offset = 0.15		-- texture offset, because else gaps could show
+
+	-- bottom left
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	if ((py <= 0 or px <= 0)  or (bl ~= nil and bl == 0)) and bl ~= 2   then
+		gl.Vertex(px, py, 0)
+	else
+		gl.Vertex(px+cs, py, 0)
+	end
+	gl.Vertex(px+cs, py, 0)
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(px+cs, py+cs, 0)
+	gl.Vertex(px, py+cs, 0)
+	-- bottom right
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	if ((py <= 0 or sx >= vsx) or (br ~= nil and br == 0)) and br ~= 2 then
+		gl.Vertex(sx, py, 0)
+	else
+		gl.Vertex(sx-cs, py, 0)
+	end
+	gl.Vertex(sx-cs, py, 0)
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(sx-cs, py+cs, 0)
+	gl.Vertex(sx, py+cs, 0)
+	-- top left
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	if ((sy >= vsy or px <= 0) or (tl ~= nil and tl == 0)) and tl ~= 2 then
+		gl.Vertex(px, sy, 0)
+	else
+		gl.Vertex(px+cs, sy, 0)
+	end
+	gl.Vertex(px+cs, sy, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(px+cs, sy-cs, 0)
+	gl.Vertex(px, sy-cs, 0)
+	-- top right
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	if ((sy >= vsy or sx >= vsx)  or (tr ~= nil and tr == 0)) and tr ~= 2 then
+		gl.Vertex(sx, sy, 0)
+	else
+		gl.Vertex(sx-cs, sy, 0)
+	end
+	gl.Vertex(sx-cs, sy, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(sx-cs, sy-cs, 0)
+	gl.Vertex(sx, sy-cs, 0)
+end
+function RectRound(px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)		-- (coordinates work differently than the RectRound func in other widgets)
 	gl.Texture(false)
+	gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)
 end
 
 local function DrawText(t1, t2)
 	textBufferCount = textBufferCount + 1
 	textBuffer[textBufferCount] = {t1,t2,cX,cY}
 	cY = cY - fontSize
-	maxWidth = max(maxWidth, (font:GetTextWidth(t1)*fontSize), (font:GetTextWidth(t2)*fontSize)+(fontSize*6.5))
+	maxWidth = max(maxWidth, (font:GetTextWidth(t1)*fontSize) + bgpadding*2, (font:GetTextWidth(t2)*fontSize)+(fontSize*6.5) + bgpadding*2)
 end
 
 local function DrawTextBuffer()
@@ -262,19 +352,31 @@ end
 
 function init()
 	vsx, vsy = gl.GetViewSizes()
-	widgetScale = (0.60 + (vsx*vsy / 5000000))
+	widgetScale = ((vsx+vsy) / 2000) * 0.66 * (1+(ui_scale-1)/2)
 	fontSize = customFontSize * widgetScale
 	
-	bgcornerSize = fontSize*0.45
-	bgpadding = fontSize*0.9
+	bgcornerSize = fontSize*0.35
+	bgpadding = fontSize*1.05
 
 	xOffset = (32 + bgpadding)*widgetScale
 	yOffset = -((32 + bgpadding)*widgetScale)
 end
 
+local uiSec = 0
+function widget:Update(dt)
+	uiSec = uiSec + dt
+	if uiSec > 0.5 then
+		uiSec = 0
+		if ui_scale ~= Spring.GetConfigFloat("ui_scale",1) then
+			ui_scale = Spring.GetConfigFloat("ui_scale",1)
+			widget:ViewResize(vsx,vsy)
+		end
+	end
+end
+
 function widget:ViewResize(n_vsx,n_vsy)
 	vsx,vsy = Spring.GetViewGeometry()
-	widgetScale = (0.5 + (vsx*vsy / 5700000))
+	widgetScale = ((vsx+vsy) / 2000) * 0.66 * (1+(ui_scale-1)/2)
   local newFontfileScale = (0.5 + (vsx*vsy / 5700000))
   if (fontfileScale ~= newFontfileScale) then
     fontfileScale = newFontfileScale
@@ -373,9 +475,10 @@ function widget:DrawScreen()
 	cY = my + yOffset
 	cYstart = cY
 
+	cY = cY - (bgpadding/2)
 
-	local titleFontSize = fontSize*1.12
-	local cornersize = ceil(bgpadding*0.21)
+	local titleFontSize = fontSize*1.1
+	local cornersize = ceil(bgpadding*0.2)
 	cY = cY - 2 * titleFontSize
 	textBuffer = {}
 	textBufferCount = 0
@@ -651,17 +754,20 @@ function widget:DrawScreen()
 	if uID then
 		text = text .. "   " ..  grey ..  uDef.name .. "   #" .. uID .. "   "..GetTeamColorCode(uTeam) .. GetTeamName(uTeam)
 	end
-	local iconHalfSize = titleFontSize*0.75
+	local iconHalfSize = titleFontSize*0.9
 	if not uID then
 		iconHalfSize = -bgpadding/2.5
 	end
 	cornersize = 0
+	local color1,color2
 	if not uID then
-		glColor(0.1,0.1,0.1,(WG['guishader'] and 0.8 or 0.88))
+		color1 = {0.14,0.14,0.14 ,(WG['guishader'] and 0.77 or 0.96)}
+		color2 = {0,0,0,(WG['guishader'] and 0.77 or 0.96)}
 	else
-		glColor(0,0,0,(WG['guishader'] and 0.7 or 0.75))
+		color1 = {0.07,0.07,0.07 ,(WG['guishader'] and 0.77 or 0.96)}
+		color2 = {0,0,0, (WG['guishader'] and 0.77 or 0.96)}
 	end
-	RectRound(cX-bgpadding+cornersize, cYstart-bgpadding+cornersize, cX+(font:GetTextWidth(text)*titleFontSize)+iconHalfSize+iconHalfSize+bgpadding+(bgpadding/1.5)-cornersize, cYstart+(titleFontSize/2)+bgpadding-cornersize, bgcornerSize)
+	RectRound(cX-bgpadding+cornersize, cYstart-bgpadding+cornersize, cX+(font:GetTextWidth(text)*titleFontSize)+iconHalfSize+iconHalfSize+bgpadding+(bgpadding/1.5)-cornersize, cYstart+(titleFontSize/2)+bgpadding-cornersize, bgcornerSize, 2,2,2,2, color1,color2)
 
 	if WG['guishader'] then
 		guishaderEnabled = true
@@ -670,9 +776,8 @@ function widget:DrawScreen()
 		end), 'unit_stats_title')
 	end
 
-	cornersize = ceil(bgpadding*0.25)
-	glColor(1,1,1,0.023)
-	RectRound(cX-bgpadding+cornersize, cYstart-bgpadding+cornersize, cX+(font:GetTextWidth(text)*titleFontSize)+iconHalfSize+iconHalfSize+bgpadding+(bgpadding/1.5)-cornersize, cYstart+(titleFontSize/2)+bgpadding-cornersize, bgcornerSize*0.88)
+	cornersize = ceil(bgpadding*0.2)
+	RectRound(cX-bgpadding+cornersize, cYstart-bgpadding+cornersize, cX+(font:GetTextWidth(text)*titleFontSize)+iconHalfSize+iconHalfSize+bgpadding+(bgpadding/1.5)-cornersize, cYstart+(titleFontSize/2)+bgpadding-cornersize, bgcornerSize*0.88, 2,2,2,2, {0.25,0.25,0.25,0.1}, {1,1,1,0.1})
 
 
 	-- icon
@@ -684,7 +789,7 @@ function widget:DrawScreen()
 			--glTexture('#' .. uDefID)
 			glTexture(':lcr80,80:unitpics/'..unitBuildPic[uDefID])
 		end
-		glTexRect(cX, cYstart+cornersize-iconHalfSize, cX+iconHalfSize+iconHalfSize, cYstart+cornersize+iconHalfSize)
+		glTexRect(cX-(iconHalfSize*0.6), cYstart+cornersize-iconHalfSize, cX+(iconHalfSize*1.4), cYstart+cornersize+iconHalfSize)
 		glTexture(false)
 	end
 
@@ -695,13 +800,13 @@ function widget:DrawScreen()
 	font:End()
 
 	-- stats
-	cornersize = 0
+	cornersize = -1
 	if not uID then
 		glColor(0.1,0.1,0.1,(WG['guishader'] and 0.8 or 0.88))
 	else
 		glColor(0,0,0,(WG['guishader'] and 0.7 or 0.75))
 	end
-	RectRound(floor(cX-bgpadding)+cornersize, ceil(cY+(fontSize/3)+bgpadding)+cornersize, ceil(cX+maxWidth+bgpadding)-cornersize, floor(cYstart-bgpadding)-cornersize, bgcornerSize)
+	RectRound(floor(cX-bgpadding)+cornersize, ceil(cY+(fontSize/3)+(bgpadding*0.3))-cornersize, ceil(cX+maxWidth+bgpadding)-cornersize, floor(cYstart-bgpadding)-cornersize, bgcornerSize, 2,2,2,2, {0.05,0.05,0.05,WG['guishader'] and 0.8 or 0.88}, {0,0,0,WG['guishader'] and 0.8 or 0.88})
 
 	if WG['guishader'] then
 		guishaderEnabled = true
@@ -710,9 +815,8 @@ function widget:DrawScreen()
 		end), 'unit_stats_data')
 	end
 
-	cornersize = ceil(bgpadding*0.23)
-	glColor(1,1,1,0.025)
-	RectRound(floor(cX-bgpadding)+cornersize, ceil(cY+(fontSize/3)+bgpadding)+cornersize, ceil(cX+maxWidth+bgpadding)-cornersize, floor(cYstart-bgpadding)-cornersize, bgcornerSize*0.88)
+	cornersize = ceil(bgpadding*0.15)
+	RectRound(floor(cX-bgpadding)+cornersize, ceil(cY+(fontSize/3)+(bgpadding*0.3))-cornersize, ceil(cX+maxWidth+bgpadding)-cornersize, floor(cYstart-bgpadding)-cornersize, bgcornerSize*0.88, 2,2,2,2, {0.25,0.25,0.25,0.1}, {1,1,1,0.1})
 
 	DrawTextBuffer()
 

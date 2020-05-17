@@ -9,7 +9,7 @@ function widget:GetInfo()
 	license   = "GNU GPL, v2 or later",
 	layer     = -10,
 	enabled   = true, --enabled by default
-	handler   = false, --can use widgetHandler:x()
+	handler   = true, --can use widgetHandler:x()
 	}
 end
 
@@ -252,6 +252,7 @@ local function esc(x)
             :gsub('%-', '%%-')
             :gsub('%?', '%%?'))
 end
+
 local function CreateGrid(r)
 	local background2 = {"rectanglerounded",
 		px=r.px+r.padding,py=r.py+r.padding,
@@ -558,7 +559,6 @@ local function CreateGrid(r)
 	}
 end
 
-
 local function UpdateGrid(g,cmds)
 	if #cmds==0 then
 		-- deactivate
@@ -812,7 +812,6 @@ local function UpdateGrid(g,cmds)
 	end
 end
 
-
 function widget:TextCommand(command)
 	if (string.find(command, "iconspace") == 1  and  string.len(command) == 9) then
 		iconScaling = not iconScaling
@@ -855,7 +854,6 @@ function deepcopy(orig)
 	end
 	return copy
 end
-
 
 function widget:Initialize()
 	if Script.LuaRules('GetIconTypes') then
@@ -939,7 +937,6 @@ function widget:Initialize()
   end
 end
 
-
 local function onWidgetUpdate() --function widget:Update()
 	AutoResizeObjects()
 end
@@ -955,6 +952,7 @@ function widget:GetConfigData() --save config
 		return {Config=Config, iconScaling=iconScaling, drawPrice=drawPrice, drawRadaricon=drawRadaricon, drawTooltip=drawTooltip, drawBigTooltip=drawBigTooltip, largePrice=largePrice, shortcutsInfo=shortcutsInfo, playSounds=playSounds, largeUnitIcons=largeUnitIcons, alternativeUnitpics=alternativeUnitpics}
 	end
 end
+
 function widget:SetConfigData(data) --load config
 	if (data.Config ~= nil) then
 		--Config.buildmenu.px = data.Config.buildmenu.px
@@ -991,8 +989,6 @@ function widget:SetConfigData(data) --load config
 		end
 	end
 end
-
-
 
 --lots of hacks under this line ------------- overrides/disables default spring menu layout and gets current orders + filters out some commands
 local hijackedlayout = false
@@ -1040,8 +1036,6 @@ local function GetCommands()
 	return buildcmds
 end
 
-
-
 local selectionChanged = true
 local function onNewCommands(force)
 	local buildcmds = {}
@@ -1088,6 +1082,7 @@ local function hijacklayout()
 	hijackedlayout = true
 	hijackattempts = hijackattempts + 1
 end
+
 local updatehax = false
 local updatehax2 = true
 local firstupdate = true
@@ -1098,6 +1093,7 @@ local function haxlayout()
 	WG.layoutpinghax = nil
 	updatehax = true
 end
+
 function widget:CommandsChanged()
 	haxlayout()
 end
@@ -1107,6 +1103,7 @@ local queueUpdateSec = 0
 local guishaderCheckInterval = 1
 local uiOpacitySec = 0
 function widget:Update(dt)
+
 	uiOpacitySec = uiOpacitySec + dt
 	if uiOpacitySec>0.5 then
 		uiOpacitySec = 0
@@ -1210,4 +1207,5 @@ function widget:KeyPress(key, mods, isRepeat)
 		return false
 	end
 end
+
 

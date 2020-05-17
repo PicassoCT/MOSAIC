@@ -23,7 +23,9 @@ local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSi
 local fontfile2 = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font2", "Exo2-SemiBold.otf")
 local font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 
-local height = 44
+local orgHeight = 46
+local height = orgHeight * (1+(ui_scale-1)/1.7)
+
 local relXpos = 0.3
 local borderPadding = 5
 local showConversionSlider = true
@@ -79,6 +81,10 @@ local numTeamsInAllyTeam = #Spring.GetTeamList(myAllyTeamID)
 
 local sformat = string.format
 
+local glBlending = gl.Blending
+local GL_SRC_ALPHA = GL.SRC_ALPHA
+local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
+local GL_ONE = GL.ONE
 local minWind = Game.windMin
 local maxWind = Game.windMax
 local windRotation = 0
@@ -154,101 +160,137 @@ end
 
 function widget:ViewResize(n_vsx,n_vsy)
 	vsx, vsy = gl.GetViewSizes()
-	widgetScale = (vsy / height) * 0.043	-- using 734 because redui-console uses this value too
+	widgetScale = (vsy / height) * 0.046
+	widgetScale = widgetScale * ui_scale
 	xPos = vsx*relXpos
 
-  local newFontfileScale = (0.5 + (vsx*vsy / 5700000))
-  if (fontfileScale ~= newFontfileScale) then
-    fontfileScale = newFontfileScale
-	gl.DeleteFont(font)
-	font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
-    gl.DeleteFont(font2)
-    font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
-  end
+	local newFontfileScale = (0.5 + (vsx*vsy / 5700000)) * ui_scale
+	if fontfileScale ~= newFontfileScale or force then
+		fontfileScale = newFontfileScale
+		gl.DeleteFont(font)
+		font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
+		gl.DeleteFont(font2)
+		font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
+	end
 
     for n,_ in pairs(dlistWindText) do
-        glDeleteList(dlistWindText[n])
+		dlistWindText[n] = glDeleteList(dlistWindText[n])
     end
-    dlistWindText = {}
 	for n,_ in pairs(dlistResValues['metal']) do
-		glDeleteList(dlistResValues['metal'][n])
+		dlistResValues['metal'][n] = glDeleteList(dlistResValues['metal'][n])
 	end
-	dlistResValues['metal'] = {}
 	for n,_ in pairs(dlistResValues['energy']) do
-		glDeleteList(dlistResValues['energy'][n])
+		dlistResValues['energy'][n] = glDeleteList(dlistResValues['energy'][n])
 	end
-	dlistResValues['energy'] = {}
 
 	init()
 end
 
 
-local function DrawRectRound(px,py,sx,sy,cs, tl,tr,br,bl)
-    gl.TexCoord(0.8,0.8)
-    gl.Vertex(px+cs, py, 0)
-    gl.Vertex(sx-cs, py, 0)
-    gl.Vertex(sx-cs, sy, 0)
-    gl.Vertex(px+cs, sy, 0)
+local function DrawRectRound(px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)
+	local csyMult = 1 / ((sy-py)/cs)
 
-    gl.Vertex(px, py+cs, 0)
-    gl.Vertex(px+cs, py+cs, 0)
-    gl.Vertex(px+cs, sy-cs, 0)
-    gl.Vertex(px, sy-cs, 0)
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	gl.Vertex(px+cs, py, 0)
+	gl.Vertex(sx-cs, py, 0)
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	gl.Vertex(sx-cs, sy, 0)
+	gl.Vertex(px+cs, sy, 0)
 
-    gl.Vertex(sx, py+cs, 0)
-    gl.Vertex(sx-cs, py+cs, 0)
-    gl.Vertex(sx-cs, sy-cs, 0)
-    gl.Vertex(sx, sy-cs, 0)
+	-- left side
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(px, py+cs, 0)
+	gl.Vertex(px+cs, py+cs, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(px+cs, sy-cs, 0)
+	gl.Vertex(px, sy-cs, 0)
 
-    local offset = 0.07		-- texture offset, because else gaps could show
+	-- right side
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(sx, py+cs, 0)
+	gl.Vertex(sx-cs, py+cs, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(sx-cs, sy-cs, 0)
+	gl.Vertex(sx, sy-cs, 0)
 
-    -- bottom left
-    if ((py <= 0 or px <= 0)  or (bl ~= nil and bl == 0)) and bl ~= 2   then o = 0.5 else o = offset end
-    gl.TexCoord(o,o)
-    gl.Vertex(px, py, 0)
-    gl.TexCoord(o,1-offset)
-    gl.Vertex(px+cs, py, 0)
-    gl.TexCoord(1-offset,1-offset)
-    gl.Vertex(px+cs, py+cs, 0)
-    gl.TexCoord(1-offset,o)
-    gl.Vertex(px, py+cs, 0)
-    -- bottom right
-    if ((py <= 0 or sx >= vsx) or (br ~= nil and br == 0)) and br ~= 2   then o = 0.5 else o = offset end
-    gl.TexCoord(o,o)
-    gl.Vertex(sx, py, 0)
-    gl.TexCoord(o,1-offset)
-    gl.Vertex(sx-cs, py, 0)
-    gl.TexCoord(1-offset,1-offset)
-    gl.Vertex(sx-cs, py+cs, 0)
-    gl.TexCoord(1-offset,o)
-    gl.Vertex(sx, py+cs, 0)
-    -- top left
-    if ((sy >= vsy or px <= 0) or (tl ~= nil and tl == 0)) and tl ~= 2   then o = 0.5 else o = offset end
-    gl.TexCoord(o,o)
-    gl.Vertex(px, sy, 0)
-    gl.TexCoord(o,1-offset)
-    gl.Vertex(px+cs, sy, 0)
-    gl.TexCoord(1-offset,1-offset)
-    gl.Vertex(px+cs, sy-cs, 0)
-    gl.TexCoord(1-offset,o)
-    gl.Vertex(px, sy-cs, 0)
-    -- top right
-    if ((sy >= vsy or sx >= vsx)  or (tr ~= nil and tr == 0)) and tr ~= 2   then o = 0.5 else o = offset end
-    gl.TexCoord(o,o)
-    gl.Vertex(sx, sy, 0)
-    gl.TexCoord(o,1-offset)
-    gl.Vertex(sx-cs, sy, 0)
-    gl.TexCoord(1-offset,1-offset)
-    gl.Vertex(sx-cs, sy-cs, 0)
-    gl.TexCoord(1-offset,o)
-    gl.Vertex(sx, sy-cs, 0)
+	-- bottom left
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	if ((py <= 0 or px <= 0)  or (bl ~= nil and bl == 0)) and bl ~= 2   then
+		gl.Vertex(px, py, 0)
+	else
+		gl.Vertex(px+cs, py, 0)
+	end
+	gl.Vertex(px+cs, py, 0)
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(px+cs, py+cs, 0)
+	gl.Vertex(px, py+cs, 0)
+	-- bottom right
+	if c2 then
+		gl.Color(c1[1],c1[2],c1[3],c1[4])
+	end
+	if ((py <= 0 or sx >= vsx) or (br ~= nil and br == 0)) and br ~= 2 then
+		gl.Vertex(sx, py, 0)
+	else
+		gl.Vertex(sx-cs, py, 0)
+	end
+	gl.Vertex(sx-cs, py, 0)
+	if c2 then
+		gl.Color(c1[1]*(1-csyMult)+(c2[1]*csyMult),c1[2]*(1-csyMult)+(c2[2]*csyMult),c1[3]*(1-csyMult)+(c2[3]*csyMult),c1[4]*(1-csyMult)+(c2[4]*csyMult))
+	end
+	gl.Vertex(sx-cs, py+cs, 0)
+	gl.Vertex(sx, py+cs, 0)
+	-- top left
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	if ((sy >= vsy or px <= 0) or (tl ~= nil and tl == 0)) and tl ~= 2 then
+		gl.Vertex(px, sy, 0)
+	else
+		gl.Vertex(px+cs, sy, 0)
+	end
+	gl.Vertex(px+cs, sy, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(px+cs, sy-cs, 0)
+	gl.Vertex(px, sy-cs, 0)
+	-- top right
+	if c2 then
+		gl.Color(c2[1],c2[2],c2[3],c2[4])
+	end
+	if ((sy >= vsy or sx >= vsx)  or (tr ~= nil and tr == 0)) and tr ~= 2 then
+		gl.Vertex(sx, sy, 0)
+	else
+		gl.Vertex(sx-cs, sy, 0)
+	end
+	gl.Vertex(sx-cs, sy, 0)
+	if c2 then
+		gl.Color(c2[1]*(1-csyMult)+(c1[1]*csyMult),c2[2]*(1-csyMult)+(c1[2]*csyMult),c2[3]*(1-csyMult)+(c1[3]*csyMult),c2[4]*(1-csyMult)+(c1[4]*csyMult))
+	end
+	gl.Vertex(sx-cs, sy-cs, 0)
+	gl.Vertex(sx, sy-cs, 0)
 end
-function RectRound(px,py,sx,sy,cs, tl,tr,br,bl)		-- (coordinates work differently than the RectRound func in other widgets)
-    gl.Texture(bgcorner)
-    gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs, tl,tr,br,bl)
-    gl.Texture(false)
-end
 
+function RectRound(px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)		-- (coordinates work differently than the RectRound func in other widgets)
+	--gl.Texture(false)
+	gl.BeginEnd(GL.QUADS, DrawRectRound, px,py,sx,sy,cs, tl,tr,br,bl, c1,c2)
+end
 
 local function short(n,f)
 	if (f == nil) then
@@ -285,49 +327,50 @@ local function updateRejoin()
 		glDeleteList(dlistRejoin)
 	end
 	dlistRejoin = glCreateList( function()
-	
+
 		-- background
-		glColor(0,0,0,ui_opacity)
-		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale)
+		--glColor(0,0,0,ui_opacity)
+		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale, 1,1,1,1, {0,0,0,ui_opacity}, {0.1,0.1,0.1,ui_opacity})
 		local bgpadding = 3*widgetScale
-		glColor(1,1,1,ui_opacity*0.055)
-		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3]-bgpadding, area[4], bgpadding*1.25)
+		--glColor(1,1,1,ui_opacity*0.055)
+		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3]-bgpadding, area[4], bgpadding*1.25, 1,1,1,1, {1,1,1,ui_opacity*0.2}, {0.3,0.3,0.3,ui_opacity*0.2})
 
 		if WG['guishader'] then
 			WG['guishader'].InsertDlist(dlistRejoinGuishader, 'topbar_rejoin')
 		end
-		
-		local barHeight = (height*widgetScale/10)
+
+		local barHeight = (height*widgetScale/9)
 		local barHeighPadding = 7*widgetScale --((height/2) * widgetScale) - (barHeight/2)
 		local barLeftPadding = 7* widgetScale
 		local barRightPadding = 7 * widgetScale
 		local barArea = {area[1]+barLeftPadding, area[2]+barHeighPadding, area[3]-barRightPadding, area[2]+barHeight+barHeighPadding}
 		local barWidth = barArea[3] - barArea[1]
-		
-		glColor(0.0,0.5,0,0.33)
-		glTexture(barbg)
-		glTexRect(barArea[1], barArea[2], barArea[3], barArea[4])
+
+		-- bar background
+		RectRound(barArea[1], barArea[2], barArea[3], barArea[4], barHeight*0.2, 1,1,1,1, {0,0,0,0.27},{0.44,0.44,0.44,0.44})
 
 		-- Bar value
 		glColor(0, 1, 0, 1)
-		glTexture(barbg)
-		glTexRect(barArea[1], barArea[2], barArea[1]+(catchup * barWidth), barArea[4])
-		
+		RectRound(barArea[1], barArea[2], barArea[1]+(catchup * barWidth), barArea[4], barHeight*0.2, 1,1,1,1, {0,0.55,0,1},{0, 1, 0, 1})
+
 		-- Bar value glow
 		local glowSize = barHeight * 6
-		glColor(0, 1, 0, 0.09)
+		glBlending(GL_SRC_ALPHA, GL_ONE)
+		glColor(0, 1, 0, 0.085)
 		glTexture(barGlowCenterTexture)
 		glTexRect(barArea[1], barArea[2] - glowSize, barArea[1]+(catchup * barWidth), barArea[4] + glowSize)
 		glTexture(barGlowEdgeTexture)
 		glTexRect(barArea[1]-(glowSize*2), barArea[2] - glowSize, barArea[1], barArea[4] + glowSize)
 		glTexRect((barArea[1]+(catchup * barWidth))+(glowSize*2), barArea[2] - glowSize, barArea[1]+(catchup * barWidth), barArea[4] + glowSize)
-		
+		glTexture(false)
+		glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
 		-- Text
 		local fontsize = 12*widgetScale
         font2:Begin()
         font2:Print('\255\225\255\225Catching up', area[1]+((area[3]-area[1])/2), area[2]+barHeight*2+fontsize, fontsize, 'cor')
         font2:End()
-		
+
 	end)
 	if WG['tooltip'] ~= nil then
 		WG['tooltip'].AddTooltip('rejoin', area, "Displays the catchup progress")
@@ -337,7 +380,7 @@ end
 
 local function updateButtons()
 	local area = buttonsArea
-	
+
 	local totalWidth = area[3] - area[1]
 
 	local text = '    '
@@ -375,21 +418,24 @@ local function updateButtons()
 		glDeleteList(dlistButtons1)
 	end
 	dlistButtons1 = glCreateList( function()
-	
+
 		-- background
-		glColor(0,0,0,ui_opacity)
-		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale)
+		--glColor(0,0,0,ui_opacity)
+		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale, 1,1,1,1, {0,0,0,0.38+(ui_opacity*0.44)}, {0.1,0.1,0.1,(ui_opacity)})
 		local bgpadding = 3*widgetScale
-		glColor(1,1,1,ui_opacity*0.055)
-		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3], area[4], bgpadding*1.25)
-		
+		--glColor(1,1,1,ui_opacity*0.055)
+		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3], area[4], bgpadding*1.25, 0,0,1,1, {0.2,0.2,0.2,(ui_opacity)},{0,0,0,(ui_opacity)})
+
+		RectRound(area[1]+bgpadding, area[4]+bgpadding-((area[4]-area[2])*0.5), area[3], area[4], 3.3*widgetScale, 0,0,0,0, {1,1,1,0.07}, {1,1,1,0.21})
+		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3], area[2]+bgpadding+((area[4]-area[2])*0.35), bgpadding*1.25, 0,0,1,1, {1,1,1,0.09},{0,0,0,0})
+
 		if WG['guishader'] then
 			WG['guishader'].InsertDlist(dlistButtonsGuishader, 'topbar_buttons')
 		end
-		
+
 		if buttonsArea['buttons'] == nil then
 			buttonsArea['buttons'] = {}
-			
+
 			local margin = height*widgetScale / 11
 			local offset = margin
 			local width = 0
@@ -442,16 +488,17 @@ local function updateButtons()
 			end
 		end
 	end)
-	
+
 	if dlistButtons2 ~= nil then
 		glDeleteList(dlistButtons2)
 	end
 	dlistButtons2 = glCreateList( function()
         font2:Begin()
-        font2:Print('\255\210\210\210'..text, area[1], area[2]+((area[4]-area[2])/2)-(fontsize/5), fontsize, 'o')
+		font2:Print('\255\210\210\210'..text, area[1], area[2]+((area[4]-area[2])*0.52)-(fontsize/5), fontsize, 'o')
         font2:End()
 	end)
 end
+
 
 
 local function updateWind()
@@ -484,10 +531,12 @@ local function updateWind()
 	dlistWind1 = glCreateList( function()
 
 		-- background
-		glColor(0,0,0,ui_opacity)
-		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale)
-		glColor(1,1,1,ui_opacity*0.055)
-		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3]-bgpadding, area[4], 5*widgetScale)
+		--glColor(0,0,0,ui_opacity)
+		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale, 1,1,1,1, {0,0,0,ui_opacity}, {0.1,0.1,0.1,ui_opacity})
+		local bgpadding = 3*widgetScale
+		--glColor(1,1,1,ui_opacity*0.055)
+		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3]-bgpadding, area[4], bgpadding*1.25, 1,1,1,1, {1,1,1,ui_opacity*0.2},{0.15,0.15,0.15,ui_opacity*0.2})
+
 
 		if WG['guishader'] then
 			WG['guishader'].InsertDlist(dlistWindGuishader, 'topbar_wind')
@@ -624,42 +673,51 @@ local function updateResbarText(res)
 							end
 						end
 					end
-					local textWidth = (bgpadding*2) + 15 + (font2:GetTextWidth(text) * 11.5) * widgetScale
+					local textWidth = (bgpadding*2) + 22 + font2:GetTextWidth(text) * (orgHeight * (1+(ui_scale-1)/1.33)/4) * widgetScale
 
 					-- background
+					local color1,color2
 					if res == 'metal' then
 						if allyteamOverflowingMetal then
-							glColor(0.3,0,0,0.6)
+							color1 = {0.33,0,0,0.6}
+							color2 = {0.22,0,0,0.6}
 						else
-							glColor(0.3,0.3,0.3,0.4)
+							color1 = {0.33,0.33,0.33,0.4}
+							color2 = {0.22,0.22,0.22,0.4}
 						end
 					else
 						if allyteamOverflowingEnergy then
-							glColor(0.3,0,0,0.6)
+							color1 = {0.33,0,0,0.6}
+							color2 = {0.22,0,0,0.6}
 						else
-							glColor(0.3,0.25,0,0.6)
+							color1 = {0.33,0.22,0,0.6}
+							color2 = {0.22,0.15,0,0.6}
 						end
 					end
-					RectRound(resbarArea[res][3]-textWidth, resbarArea[res][4]-15.5*widgetScale, resbarArea[res][3], resbarArea[res][4], 4*widgetScale)
+					RectRound(resbarArea[res][3]-textWidth, resbarArea[res][4]-15.5*widgetScale, resbarArea[res][3], resbarArea[res][4], 4*widgetScale, 1,1,1,1, color1,color2)
 					if res == 'metal' then
 						if allyteamOverflowingMetal then
-							glColor(1,0.3,0.3,0.2)
+							color1 = {1,0.3,0.3,0.2}
+							color2 = {1,0.3,0.3,0.33}
 						else
-							glColor(1,1,1,0.15)
+							color1 = {1,1,1,0.15}
+							color2 = {1,1,1,0.33}
 						end
 					else
 						if allyteamOverflowingEnergy then
-							glColor(1,0.3,0.3,0.2)
+							color1 = {1,0.3,0.3,0.2}
+							color2 = {1,0.3,0.3,0.33}
 						else
-							glColor(1,0.88,0,0.2)
+							color1 = {1,0.88,0,0.2}
+							color2 = {1,0.88,0,0.33}
 						end
 					end
-					RectRound(resbarArea[res][3]-textWidth+bgpadding, resbarArea[res][4]-15.5*widgetScale+bgpadding, resbarArea[res][3]-bgpadding, resbarArea[res][4], bgpadding*1.25)
+					RectRound(resbarArea[res][3]-textWidth+bgpadding, resbarArea[res][4]-15.5*widgetScale+bgpadding, resbarArea[res][3]-bgpadding, resbarArea[res][4], bgpadding*1.25, 1,1,1,1, color1,color2)
 
                     font2:Begin()
                     font2:SetTextColor(1,0.88,0.88,1)
                     font2:SetOutlineColor(0.2,0,0,0.6)
-                    font2:Print(text, resbarArea[res][3]-5*widgetScale, resbarArea[res][4]-9.5*widgetScale, 11.5*widgetScale, 'or')
+                    font2:Print(text, resbarArea[res][3]-7*widgetScale, resbarArea[res][4]-9.5*widgetScale, (orgHeight * (1+(ui_scale-1)/1.33)/4)*widgetScale, 'or')
                     font2:End()
 				end
 			else
@@ -677,19 +735,19 @@ local function updateResbar(res)
 		glDeleteList(dlistResbar[res][1])
 		glDeleteList(dlistResbar[res][2])
 	end
-	local barHeight = (height*widgetScale/10)
-	local barHeighPadding = 9*widgetScale --((height/2) * widgetScale) - (barHeight/2)
+	local barHeight = (height*widgetScale/9)
+	local barHeighPadding = (height/4.25)*widgetScale --((height/2) * widgetScale) - (barHeight/2)
 	--local barLeftPadding = 2 * widgetScale
-	local barLeftPadding = 41 * widgetScale
-	local barRightPadding = 10 * widgetScale
+	local barLeftPadding = 45 * widgetScale
+	local barRightPadding = 14.5 * widgetScale
 	local barArea = {area[1]+(height*widgetScale)+barLeftPadding, area[2]+barHeighPadding, area[3]-barRightPadding, area[2]+barHeight+barHeighPadding}
-	local sliderHeightAdd = barHeight / 2.2
+	local sliderHeightAdd = barHeight / 1.55
 	local shareSliderWidth = barHeight + sliderHeightAdd + sliderHeightAdd
 	local barWidth = barArea[3] - barArea[1]
-	local glowSize = barHeight * 6
+	local glowSize = barHeight * 7
 
 	if not showQuitscreen and resbarHover ~= nil and resbarHover == res then
-		sliderHeightAdd = barHeight/0.77
+		sliderHeightAdd = barHeight / 0.75
 		shareSliderWidth = barHeight + sliderHeightAdd + sliderHeightAdd
 	end
 
@@ -702,14 +760,14 @@ local function updateResbar(res)
 	
 	resbarDrawinfo[res].barTexRect = {barArea[1], barArea[2], barArea[1]+((r[res][1]/r[res][2]) * barWidth), barArea[4]}
 	resbarDrawinfo[res].barGlowMiddleTexRect = {resbarDrawinfo[res].barTexRect[1], resbarDrawinfo[res].barTexRect[2] - glowSize, resbarDrawinfo[res].barTexRect[3], resbarDrawinfo[res].barTexRect[4] + glowSize}
-	resbarDrawinfo[res].barGlowLeftTexRect = {resbarDrawinfo[res].barTexRect[1]-(glowSize*2), resbarDrawinfo[res].barTexRect[2] - glowSize, resbarDrawinfo[res].barTexRect[1], resbarDrawinfo[res].barTexRect[4] + glowSize}
-	resbarDrawinfo[res].barGlowRightTexRect = {resbarDrawinfo[res].barTexRect[3]+(glowSize*2), resbarDrawinfo[res].barTexRect[2] - glowSize, resbarDrawinfo[res].barTexRect[3], resbarDrawinfo[res].barTexRect[4] + glowSize}
-	
-	resbarDrawinfo[res].textCurrent	= {short(r[res][1]), barArea[1]+barWidth/2, barArea[2]+barHeight*2, (height/2.75)*widgetScale, 'ocd'}
-	resbarDrawinfo[res].textStorage	= {"\255\150\150\150"..short(r[res][2]), barArea[3], barArea[2]+barHeight*2, (height/3.2)*widgetScale, 'ord'}
-	resbarDrawinfo[res].textPull	= {"\255\210\100\100"..short(r[res][3]), barArea[1]-(8*widgetScale), barArea[2]+barHeight*2.7, (height/3.2)*widgetScale, 'ord'}
-	resbarDrawinfo[res].textExpense	= {"\255\210\100\100"..short(r[res][5]), barArea[1]+(10*widgetScale), barArea[2]+barHeight*2.7, (height/3.2)*widgetScale, 'old'}
-	resbarDrawinfo[res].textIncome	= {"\255\100\210\100"..short(r[res][4]), barArea[1]-(8*widgetScale), barArea[2]-barHeight/1.2, (height/3.2)*widgetScale, 'ord'}
+	resbarDrawinfo[res].barGlowLeftTexRect = {resbarDrawinfo[res].barTexRect[1]-(glowSize*2.5), resbarDrawinfo[res].barTexRect[2] - glowSize, resbarDrawinfo[res].barTexRect[1], resbarDrawinfo[res].barTexRect[4] + glowSize}
+	resbarDrawinfo[res].barGlowRightTexRect = {resbarDrawinfo[res].barTexRect[3]+(glowSize*2.5), resbarDrawinfo[res].barTexRect[2] - glowSize, resbarDrawinfo[res].barTexRect[3], resbarDrawinfo[res].barTexRect[4] + glowSize}
+
+	resbarDrawinfo[res].textCurrent	= {short(r[res][1]), barArea[1]+barWidth/2, barArea[2]+barHeight*2.2, (height/2.75)*widgetScale, 'ocd'}
+	resbarDrawinfo[res].textStorage	= {"\255\150\150\150"..short(r[res][2]), barArea[3], barArea[2]+barHeight*2.35, (height/3.2)*widgetScale, 'ord'}
+	resbarDrawinfo[res].textPull	= {"\255\210\100\100"..short(r[res][3]), barArea[1]-(10*widgetScale), barArea[2]+barHeight*2.75, (height/3.2)*widgetScale, 'ord'}
+	resbarDrawinfo[res].textExpense	= {"\255\210\100\100"..short(r[res][5]), barArea[1]+(10*widgetScale), barArea[2]+barHeight*2.2, (height/3.2)*widgetScale, 'old'}
+	resbarDrawinfo[res].textIncome	= {"\255\100\210\100"..short(r[res][4]), barArea[1]-(10*widgetScale), barArea[2]-barHeight/1.65, (height/3.2)*widgetScale, 'ord'}
 
 	-- add background blur
 	if dlistResbar[res][0] ~= nil then
@@ -725,35 +783,30 @@ local function updateResbar(res)
 	dlistResbar[res][1] = glCreateList( function()
 
 		-- background
-		glColor(0,0,0,ui_opacity)
-		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale)
+		--glColor(0,0,0,ui_opacity)
+		RectRound(area[1], area[2], area[3], area[4], 5.5*widgetScale, 1,1,1,1, {0,0,0,ui_opacity}, {0.1,0.1,0.1,ui_opacity})
 		local bgpadding = 3*widgetScale
-		glColor(1,1,1,ui_opacity*0.055)
-		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3]-bgpadding, area[4], bgpadding*1.25)
-		
+		--glColor(1,1,1,ui_opacity*0.055)
+		RectRound(area[1]+bgpadding, area[2]+bgpadding, area[3]-bgpadding, area[4], bgpadding*1.25, 1,1,1,1, {1,1,1,ui_opacity*0.2},{0.15,0.15,0.15,ui_opacity*0.2})
+
 		if WG['guishader'] then
 			WG['guishader'].InsertDlist(dlistResbar[res][0], 'topbar_'..res)
 		end
-		
+
 		-- Icon
 		glColor(1,1,1,1)
-		local iconPadding = (area[4] - area[2]) / 9
+		local iconPadding = (area[4] - area[2]) / 11
 		if res == 'metal' then
-			glTexture(":l:LuaUI/images/metal.png")
+			glTexture(":l:LuaUI/Images/metal.png")
 		else
-			glTexture(":l:LuaUI/images/energy.png")
+			glTexture(":l:LuaUI/Images/energy.png")
 		end
-		glTexRect(area[1]+iconPadding, area[2]+iconPadding, area[1]+(height*widgetScale)-iconPadding, area[4]-iconPadding)
+		glTexRect(area[1]+iconPadding+(height*0.02*widgetScale), area[2]+iconPadding+(height*0.04*widgetScale), area[1]+(height*1.1*widgetScale)-iconPadding, area[4]-iconPadding+(height*0.04*widgetScale))
 		glTexture(false)
-		
+
 		-- Bar background
-		if res == 'metal' then
-			glColor(0.5,0.5,0.5,0.33)
-		else
-			glColor(0.5,0.5,0,0.33)
-		end
-		glTexture(barbg)
-		glTexRect(barArea[1], barArea[2], barArea[3], barArea[4])
+		local addedSize = (barArea[4]-barArea[2])*0.25
+		RectRound(barArea[1]-addedSize, barArea[2]-addedSize, barArea[3]+addedSize, barArea[4]+addedSize, barHeight*0.2, 1,1,1,1, {0,0,0,0.27},{0.44,0.44,0.44,0.44})
 	end)
 
 	dlistResbar[res][2] = glCreateList( function()
@@ -785,17 +838,14 @@ local function updateResbar(res)
             value = draggingShareIndicatorValue[res]
         end
 		shareIndicatorArea[res] = {barArea[1]+(value * barWidth)-(shareSliderWidth/2), barArea[2]-sliderHeightAdd, barArea[1]+(value * barWidth)+(shareSliderWidth/2), barArea[4]+sliderHeightAdd}
-		glTexture(barbg)
+		local cornerSize
 		if not showQuitscreen and resbarHover ~= nil and resbarHover == res then
-			local padding = shareSliderWidth/8
-			glColor(0.66, 0, 0, 1)
-			RectRound(shareIndicatorArea[res][1], shareIndicatorArea[res][2], shareIndicatorArea[res][3], shareIndicatorArea[res][4],2.5*widgetScale)
-			glColor(0.6, 0, 0, 1)
-			RectRound(shareIndicatorArea[res][1]+padding, shareIndicatorArea[res][2]+padding, shareIndicatorArea[res][3]-padding, shareIndicatorArea[res][4]-padding,2.5*widgetScale)
+			cornerSize = 2.2*widgetScale
 		else
-			glColor(0.8, 0, 0, 1)
-			glTexRect(shareIndicatorArea[res][1], shareIndicatorArea[res][2], shareIndicatorArea[res][3], shareIndicatorArea[res][4])
+			cornerSize = 1.5*widgetScale
 		end
+		RectRound(shareIndicatorArea[res][1], shareIndicatorArea[res][2], shareIndicatorArea[res][3], shareIndicatorArea[res][4],cornerSize, 1,1,1,1, {0.4, 0, 0, 1}, {0.8, 0, 0, 1})
+
 		glTexture(false)
 	end)
 	
@@ -803,7 +853,7 @@ local function updateResbar(res)
 	if WG['tooltip'] ~= nil and conversionIndicatorArea then
 		if res == 'energy' then
 			WG['tooltip'].AddTooltip(res..'_share_slider', {resbarDrawinfo[res].barArea[1], shareIndicatorArea[res][2], conversionIndicatorArea[1], shareIndicatorArea[res][4]}, "\255\215\255\215  Share Slider\n\255\240\240\240Overflowing to your team when \n material goes beyond this point")
-			WG['tooltip'].AddTooltip(res..'_share_slider2', {conversionIndicatorArea[3], shareIndicatorArea[res][2], resbarDrawinfo[res].barArea[3], shareIndicatorArea[res][4]}, "\255\215\255\215"..res:sub(1,1):upper()..res:sub(2).." Share Slider\n\255\240\240\240Overflowing to your team when \n MOSAICmaterial goes beyond this point")
+			WG['tooltip'].AddTooltip(res..'_share_slider2', {conversionIndicatorArea[3], shareIndicatorArea[res][2], resbarDrawinfo[res].barArea[3], shareIndicatorArea[res][4]}, "\255\215\255\215"..res:sub(1,1):upper()..res:sub(2).." Share Slider\n\255\240\240\240Overflowing to your team when \n MOSAIC-material goes beyond this point")
 
 			WG['tooltip'].AddTooltip(res..'_metalmaker_slider', conversionIndicatorArea, "\255\215\255\215Material Funds Conversion slider\n\255\240\240\240Excess material beyond this point will be\nconverted to funds\n")
 		else
@@ -920,15 +970,6 @@ function widget:Update(dt)
 
 	local mx,my = spGetMouseState()
 
-	uiOpacitySec = uiOpacitySec + dt
-	if uiOpacitySec>0.5 then
-		uiOpacitySec = 0
-		if ui_opacity ~= Spring.GetConfigFloat("ui_opacity",0.66) then
-			ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66)
-			init()
-		end
-	end
-
 	if blinkDirection then
 		blinkProgress = blinkProgress + (dt*9)
 		if blinkProgress > 1 then
@@ -1023,11 +1064,27 @@ function widget:Update(dt)
 			end
 		end
 	end
+
+	uiOpacitySec = uiOpacitySec + dt
+	if uiOpacitySec > 0.5 then
+		uiOpacitySec = 0
+		if ui_opacity ~= Spring.GetConfigFloat("ui_opacity",0.66) then
+			ui_opacity = Spring.GetConfigFloat("ui_opacity",0.66)
+			init()
+		end
+		if ui_scale ~= Spring.GetConfigFloat("ui_scale",1) then
+			ui_scale = Spring.GetConfigFloat("ui_scale",1)
+			height = orgHeight * (1+(ui_scale-1)/1.7)
+			shutdown()
+			widget:ViewResize(vsx,vsy)
+		end
+	end
 end
 
 function drawResbarValues(res)
+	local barHeight = resbarDrawinfo[res].barArea[4] - resbarDrawinfo[res].barArea[2]
 	local barWidth = resbarDrawinfo[res].barArea[3] - resbarDrawinfo[res].barArea[1]
-	local glowSize = (resbarDrawinfo[res].barArea[4] - resbarDrawinfo[res].barArea[2]) * 5.5
+	local glowSize = (resbarDrawinfo[res].barArea[4] - resbarDrawinfo[res].barArea[2]) * 7
 
 	local cappedCurRes = r[res][1]	-- limit so when production dies the value wont be much larger than what you can store
 	if r[res][1] > r[res][2]*1.07 then
@@ -1038,20 +1095,41 @@ function drawResbarValues(res)
 		glTexture(glowTexture)
 		local iconPadding = (resbarArea[res][4] - resbarArea[res][2])
 		glTexRect(resbarArea[res][1]+iconPadding, resbarArea[res][2]+iconPadding, resbarArea[res][1]+(height*widgetScale)-iconPadding, resbarArea[res][4]-iconPadding)
+		glTexture(false)
 	end
 
 	-- Bar value
-	glColor(resbarDrawinfo[res].barColor)
-	glTexture(barbg)
-	glTexRect(resbarDrawinfo[res].barTexRect[1], resbarDrawinfo[res].barTexRect[2], resbarDrawinfo[res].barTexRect[1]+((cappedCurRes/r[res][2]) * barWidth), resbarDrawinfo[res].barTexRect[4])
+	local valueWidth = ((cappedCurRes/r[res][2]) * barWidth)
+	local color1,color2
+	if res == 'metal' then
+		color1 = {0.56,0.56,0.55,1}
+		color2 = {1,1,1,1}
+	else
+		color1 = {0.7,0.66,0,1}
+		color2 = {1,0.99,0.33,1}
+	end
+	RectRound(resbarDrawinfo[res].barTexRect[1], resbarDrawinfo[res].barTexRect[2], resbarDrawinfo[res].barTexRect[1]+valueWidth, resbarDrawinfo[res].barTexRect[4], barHeight*0.2, 1,1,1,1, color1,color2)
 
 	-- Bar value glow
+	glBlending(GL_SRC_ALPHA, GL_ONE)
 	glColor(resbarDrawinfo[res].barColor[1], resbarDrawinfo[res].barColor[2], resbarDrawinfo[res].barColor[3], 0.09)
 	glTexture(barGlowCenterTexture)
-	glTexRect(resbarDrawinfo[res].barGlowMiddleTexRect[1], resbarDrawinfo[res].barGlowMiddleTexRect[2], resbarDrawinfo[res].barGlowMiddleTexRect[1] + ((cappedCurRes/r[res][2]) * barWidth), resbarDrawinfo[res].barGlowMiddleTexRect[4])
+	glTexRect(
+		resbarDrawinfo[res].barGlowMiddleTexRect[1],
+		resbarDrawinfo[res].barGlowMiddleTexRect[2],
+		resbarDrawinfo[res].barGlowMiddleTexRect[1] + valueWidth,
+		resbarDrawinfo[res].barGlowMiddleTexRect[4]
+	)
 	glTexture(barGlowEdgeTexture)
-	glTexRect(resbarDrawinfo[res].barGlowLeftTexRect[1], resbarDrawinfo[res].barGlowLeftTexRect[2], resbarDrawinfo[res].barGlowLeftTexRect[3], resbarDrawinfo[res].barGlowLeftTexRect[4])
-	glTexRect((resbarDrawinfo[res].barGlowMiddleTexRect[1]+((cappedCurRes/r[res][2]) * barWidth))+(glowSize*2), resbarDrawinfo[res].barGlowRightTexRect[2], resbarDrawinfo[res].barGlowMiddleTexRect[1]+((cappedCurRes/r[res][2]) * barWidth), resbarDrawinfo[res].barGlowRightTexRect[4])
+	glTexRect(
+		resbarDrawinfo[res].barGlowLeftTexRect[1],
+		resbarDrawinfo[res].barGlowLeftTexRect[2],
+		resbarDrawinfo[res].barGlowLeftTexRect[3],
+		resbarDrawinfo[res].barGlowLeftTexRect[4]
+	)
+	glTexRect((resbarDrawinfo[res].barGlowMiddleTexRect[1]+valueWidth)+(glowSize*3), resbarDrawinfo[res].barGlowRightTexRect[2], resbarDrawinfo[res].barGlowMiddleTexRect[1]+valueWidth, resbarDrawinfo[res].barGlowRightTexRect[4])
+	glTexture(false)
+	glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 	currentResValue[res] = short(cappedCurRes)
 	if not dlistResValues[res][currentResValue[res]] then
@@ -1240,12 +1318,12 @@ function widget:DrawScreen()
 			buttonsAreaHovered = nil
 			for button, pos in pairs(buttonsArea['buttons']) do
 				if IsOnRect(x, y, pos[1], pos[2], pos[3], pos[4]) then
-					if b then
-						glColor(1,1,1,0.32)
-					else
-						glColor(1,1,1,0.25)
-					end
-					RectRound(buttonsArea['buttons'][button][1], buttonsArea['buttons'][button][2], buttonsArea['buttons'][button][3], buttonsArea['buttons'][button][4], 3.5*widgetScale)
+					glBlending(GL_SRC_ALPHA, GL_ONE)
+					RectRound(buttonsArea['buttons'][button][1], buttonsArea['buttons'][button][2], buttonsArea['buttons'][button][3], buttonsArea['buttons'][button][4], 3.5*widgetScale, 0,0,1,1, {1,1,1,b and 0.15 or 0.055}, {0.44,0.44,0.44,b and 0.45 or 0.22})
+					local mult = 1
+					RectRound(buttonsArea['buttons'][button][1], buttonsArea['buttons'][button][4]-((buttonsArea['buttons'][button][4]-buttonsArea['buttons'][button][2])*0.5), buttonsArea['buttons'][button][3], buttonsArea['buttons'][button][4], 3.3*widgetScale, 0,0,0,0, {1,1,1,0.05*mult}, {1,1,1,0.18*mult})
+					RectRound(buttonsArea['buttons'][button][1], buttonsArea['buttons'][button][2], buttonsArea['buttons'][button][3], buttonsArea['buttons'][button][2]+((buttonsArea['buttons'][button][4]-buttonsArea['buttons'][button][2])*0.35), 3.3*widgetScale, 0,0,2,2, {1,1,1,0.07*mult}, {1,1,1,0})
+					glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 					break
 				end
 			end
@@ -1278,24 +1356,23 @@ function widget:DrawScreen()
 
             if hideQuitWindow == nil then	-- when terminating spring, keep the faded screen
 
-                local width = 320*widgetScale
-                local height = width/3.5
-                local padding = width/70
-                local buttonPadding = width/90
-                local buttonMargin = width/30
-                local buttonHeight = height*0.55
+                local w = 335*widgetScale
+                local h = w/3.5
+                local padding = w/70
+                local buttonPadding = w/90
+                local buttonMargin = w/30
+                local buttonHeight = h*0.55
 
-                quitscreenArea = {(vsx/2)-(width/2), (vsy/1.8)-(height/2), (vsx/2)+(width/2), (vsy/1.8)+(height/2)}
-                quitscreenResignArea = {(vsx/2)-(width/2)+buttonMargin, (vsy/1.8)-(height/2)+buttonMargin, (vsx/2)-(buttonMargin/2), (vsy/1.8)-(height/2)+buttonHeight-buttonMargin}
-                quitscreenQuitArea = {(vsx/2)+(buttonMargin/2), (vsy/1.8)-(height/2)+buttonMargin, (vsx/2)+(width/2)-buttonMargin, (vsy/1.8)-(height/2)+buttonHeight-buttonMargin}
+                quitscreenArea = {(vsx/2)-(w/2), (vsy/1.8)-(h/2), (vsx/2)+(w/2), (vsy/1.8)+(h/2)}
+                quitscreenResignArea = {(vsx/2)-(w/2)+buttonMargin, (vsy/1.8)-(h/2)+buttonMargin, (vsx/2)-(buttonMargin/2), (vsy/1.8)-(h/2)+buttonHeight-buttonMargin}
+                quitscreenQuitArea = {(vsx/2)+(buttonMargin/2), (vsy/1.8)-(h/2)+buttonMargin, (vsx/2)+(w/2)-buttonMargin, (vsy/1.8)-(h/2)+buttonHeight-buttonMargin}
 
                 -- window
-                glColor(1,1,1,0.5+(0.36*fadeProgress))
+                glColor(1,1,1,0.6+(0.34*fadeProgress))
                 RectRound(quitscreenArea[1], quitscreenArea[2], quitscreenArea[3], quitscreenArea[4], 5.5*widgetScale)
-                glColor(0,0,0,0.035+(0.035*fadeProgress))
-                RectRound(quitscreenArea[1]+padding, quitscreenArea[2]+padding, quitscreenArea[3]-padding, quitscreenArea[4]-padding, padding)
+                RectRound(quitscreenArea[1]+padding, quitscreenArea[2]+padding, quitscreenArea[3]-padding, quitscreenArea[4]-padding, padding*0.8, 1,1,1,1, {0.55,0.55,0.5,0.025+(0.025*fadeProgress)}, {0.2,0.2,0.2,0.025+(0.025*fadeProgress)})
 
-                local fontSize = height/6
+                local fontSize = h/6
                 font:Begin()
                 font:SetTextColor(0,0,0,1)
                 if not spec then
@@ -1305,14 +1382,22 @@ function widget:DrawScreen()
                 end
 
                 -- quit button
+				local color1,color2
+				local mult = 0.85
                 if IsOnRect(x, y, quitscreenQuitArea[1], quitscreenQuitArea[2], quitscreenQuitArea[3], quitscreenQuitArea[4]) then
-                    glColor(0.66,0.05,0.05,0.4+(0.5*fadeProgress))
+					color1 = {0.4,0,0,0.4+(0.5*fadeProgress)}
+					color2 = {0.6,0.05,0.05,0.4+(0.5*fadeProgress)}
+					mult = 1.4
                 else
-                    glColor(0.45,0,0,0.35+(0.4*fadeProgress))
+					color1 = {0.25,0,0,0.35+(0.5*fadeProgress)}
+					color2 = {0.5,0,0,0.35+(0.5*fadeProgress)}
                 end
-                RectRound(quitscreenQuitArea[1], quitscreenQuitArea[2], quitscreenQuitArea[3], quitscreenQuitArea[4], 3.5*widgetScale)
-                glColor(0,0,0,0.07+(0.05*fadeProgress))
-                RectRound(quitscreenQuitArea[1]+buttonPadding, quitscreenQuitArea[2]+buttonPadding, quitscreenQuitArea[3]-buttonPadding, quitscreenQuitArea[4]-buttonPadding, 2.8*widgetScale)
+				RectRound(quitscreenQuitArea[1], quitscreenQuitArea[2], quitscreenQuitArea[3], quitscreenQuitArea[4], 3.3*widgetScale, 1,1,1,1, color1,color2)
+
+				glBlending(GL_SRC_ALPHA, GL_ONE)
+				RectRound(quitscreenQuitArea[1], quitscreenQuitArea[4]-((quitscreenQuitArea[4]-quitscreenQuitArea[2])*0.5), quitscreenQuitArea[3], quitscreenQuitArea[4], 3.3*widgetScale, 2,2,0,0, {1,1,1,0.06*mult}, {1,1,1,0.2*mult})
+				RectRound(quitscreenQuitArea[1], quitscreenQuitArea[2], quitscreenQuitArea[3], quitscreenQuitArea[2]+((quitscreenQuitArea[4]-quitscreenQuitArea[2])*0.35), 3.3*widgetScale, 0,0,2,2, {1,1,1,0.16*mult}, {1,1,1,0})
+				glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 				font:End()
 
                 fontSize = fontSize*0.92
@@ -1322,15 +1407,22 @@ function widget:DrawScreen()
                 font2:Print("Quit", quitscreenQuitArea[1]+((quitscreenQuitArea[3]-quitscreenQuitArea[1])/2), quitscreenQuitArea[2]+((quitscreenQuitArea[4]-quitscreenQuitArea[2])/2)-(fontSize/3), fontSize, "con")
 
                 -- resign button
+				mult = 0.85
                 if not spec then
                     if IsOnRect(x, y, quitscreenResignArea[1], quitscreenResignArea[2], quitscreenResignArea[3], quitscreenResignArea[4]) then
-                        glColor(0.55,0.55,0.55,0.4+(0.5*fadeProgress))
-                    else
-                        glColor(0.3,0.3,0.3,0.4+(0.4*fadeProgress))
-                    end
-                    RectRound(quitscreenResignArea[1], quitscreenResignArea[2], quitscreenResignArea[3], quitscreenResignArea[4], 3.5*widgetScale)
-                    glColor(0,0,0,0.07+(0.05*fadeProgress))
-                    RectRound(quitscreenResignArea[1]+buttonPadding, quitscreenResignArea[2]+buttonPadding, quitscreenResignArea[3]-buttonPadding, quitscreenResignArea[4]-buttonPadding, 2.8*widgetScale)
+						color1 = {0.28,0.28,0.28,0.4+(0.5*fadeProgress)}
+						color2 = {0.45,0.45,0.45,0.4+(0.5*fadeProgress)}
+						mult = 1.3
+					else
+						color1 = {0.18,0.18,0.18,0.4+(0.5*fadeProgress)}
+						color2 = {0.33,0.33,0.33,0.4+(0.5*fadeProgress)}
+					end
+					RectRound(quitscreenResignArea[1], quitscreenResignArea[2], quitscreenResignArea[3], quitscreenResignArea[4], 3.3*widgetScale, 1,1,1,1, color1,color2)
+
+					glBlending(GL_SRC_ALPHA, GL_ONE)
+					RectRound(quitscreenResignArea[1], quitscreenResignArea[4]-((quitscreenResignArea[4]-quitscreenResignArea[2])*0.5), quitscreenResignArea[3], quitscreenResignArea[4], 3.3*widgetScale, 2,2,0,0, {1,1,1,0.06*mult}, {1,1,1,0.2*mult})
+					RectRound(quitscreenResignArea[1], quitscreenResignArea[2], quitscreenResignArea[3], quitscreenResignArea[2]+((quitscreenResignArea[4]-quitscreenResignArea[2])*0.35), 3.3*widgetScale, 0,0,2,2, {1,1,1,0.16*mult}, {1,1,1,0})
+					glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
                     font2:Print("Resign", quitscreenResignArea[1]+((quitscreenResignArea[3]-quitscreenResignArea[1])/2), quitscreenResignArea[2]+((quitscreenResignArea[4]-quitscreenResignArea[2])/2)-(fontSize/3), fontSize, "con")
                 end
@@ -1654,6 +1746,7 @@ function widget:Initialize()
 	end
 
 	init()
+	widget:ViewResize(vsx,vsy)
 
 	if gameFrame > 0 then
 		widget:GameStart()
@@ -1664,34 +1757,37 @@ end
 function widget:Shutdown()
 	Spring.SendCommands("resbar 1")
 	if dlistBackground ~= nil then
-		glDeleteList(dlistWindGuishader)
-		glDeleteList(dlistWind1)
-		glDeleteList(dlistWind2)
-		glDeleteList(dlistButtonsGuishader)
-		glDeleteList(dlistButtons1)
-		glDeleteList(dlistButtons2)
-		glDeleteList(dlistRejoinGuishader)
-		glDeleteList(dlistRejoin)
-        glDeleteList(dlistQuit)
+		dlistWindGuishader = glDeleteList(dlistWindGuishader)
+		dlistWind1 = glDeleteList(dlistWind1)
+		dlistWind2 = glDeleteList(dlistWind2)
+		dlistComsGuishader = glDeleteList(dlistComsGuishader)
+		dlistButtonsGuishader = glDeleteList(dlistButtonsGuishader)
+		dlistButtons1 = glDeleteList(dlistButtons1)
+		dlistButtons2 = glDeleteList(dlistButtons2)
+		dlistRejoinGuishader = glDeleteList(dlistRejoinGuishader)
+		dlistRejoin = glDeleteList(dlistRejoin)
+		dlistQuit = glDeleteList(dlistQuit)
 
 		for n,_ in pairs(dlistWindText) do
-			glDeleteList(dlistWindText[n])
+			dlistWindText[n] = glDeleteList(dlistWindText[n])
 		end
 		for n,_ in pairs(dlistResbar['metal']) do
-			glDeleteList(dlistResbar['metal'][n])
+			dlistResbar['metal'][n] = glDeleteList(dlistResbar['metal'][n])
 		end
 		for n,_ in pairs(dlistResbar['energy']) do
-			glDeleteList(dlistResbar['energy'][n])
+			dlistResbar['energy'][n] = glDeleteList(dlistResbar['energy'][n])
 		end
 		for n,_ in pairs(dlistResValues['metal']) do
-			glDeleteList(dlistResValues['metal'][n])
+			dlistResValues['metal'][n] = glDeleteList(dlistResValues['metal'][n])
 		end
 		for n,_ in pairs(dlistResValues['energy']) do
-			glDeleteList(dlistResValues['energy'][n])
+			dlistResValues['energy'][n] = glDeleteList(dlistResValues['energy'][n])
 		end
 	end
-	gl.DeleteFont(font)
-	gl.DeleteFont(font2)
+	--gl.DeleteFont(font)
+	--gl.DeleteFont(font2)
+	--font = nil
+	--font2 = nil
 	if WG['guishader'] then
 		WG['guishader'].RemoveDlist('topbar_energy')
 		WG['guishader'].RemoveDlist('topbar_metal')
@@ -1702,21 +1798,27 @@ function widget:Shutdown()
 	if WG['tooltip'] ~= nil then
 		WG['tooltip'].RemoveTooltip('wind')
 		WG['tooltip'].RemoveTooltip('rejoin')
-		local res = 'energy'
-		WG['tooltip'].RemoveTooltip(res..'_share_slider')
-		WG['tooltip'].RemoveTooltip(res..'_share_slider2')
-		WG['tooltip'].RemoveTooltip(res..'_metalmaker_slider')
-		WG['tooltip'].RemoveTooltip(res..'_pull')
-		WG['tooltip'].RemoveTooltip(res..'_income')
-		WG['tooltip'].RemoveTooltip(res..'_storage')
-		WG['tooltip'].RemoveTooltip(res..'_curent')
-		res = 'metal'
-		WG['tooltip'].RemoveTooltip(res..'_share_slider')
-		WG['tooltip'].RemoveTooltip(res..'_share_slider2')
-		WG['tooltip'].RemoveTooltip(res..'_pull')
-		WG['tooltip'].RemoveTooltip(res..'_income')
-		WG['tooltip'].RemoveTooltip(res..'_storage')
-		WG['tooltip'].RemoveTooltip(res..'_curent')
+		local res ={'metal', 'energy'}
+	
+		
+		for i=1,2 do
+		WG['tooltip'].RemoveTooltip(res[i]..'_share_slider')
+		WG['tooltip'].RemoveTooltip(res[i]..'_share_slider2')		
+		WG['tooltip'].RemoveTooltip(res[i]..'_pull')
+		WG['tooltip'].RemoveTooltip(res[i]..'_income')
+		WG['tooltip'].RemoveTooltip(res[i]..'_storage')
+		WG['tooltip'].RemoveTooltip(res[i]..'_curent')
+		end
+		WG['tooltip'].RemoveTooltip(res[1]..'_metalmaker_slider')
 	end
+end
+
+function widget:Shutdown()
+	Spring.SendCommands("resbar 1")
+	shutdown()
+	gl.DeleteFont(font)
+	gl.DeleteFont(font2)
+	font = nil
+	font2 = nil
 	WG['topbar'] = nil
 end

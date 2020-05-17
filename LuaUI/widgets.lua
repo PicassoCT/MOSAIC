@@ -13,7 +13,7 @@
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-Spring.Echo("Widgethandler starts loading")
+Spring.Echo("widgets.lua::Custom Widgethandler starts loading")
 
 function pwl() -- ???  (print widget list)
   for k,v in ipairs(widgetHandler.widgets) do
@@ -27,7 +27,6 @@ Spring.Utilities = {}
 VFS.Include("LuaRules/Utilities/tablefunctions.lua")
 VFS.Include("LuaRules/Utilities/versionCompare.lua")
 local reverseCompat = not Spring.Utilities.IsCurrentVersionNewerThan(100, 0)
-
 
 if (select == nil) then
   select = function(n,...) 
@@ -43,11 +42,10 @@ include("system.lua")
 include("callins.lua")
 include("savetable.lua")
 
-
 local gl = gl
 local modShortUpper = Game.modShortName:upper()
-local ORDER_FILENAME     = LUAUI_DIRNAME .. 'Config/' .. modShortUpper .. '_order.lua'
-local CONFIG_FILENAME    = LUAUI_DIRNAME .. 'Config/' .. modShortUpper .. '_data.lua'
+local ORDER_FILENAME     = LUAUI_DIRNAME .. 'configs/' .. modShortUpper .. '_order.lua'
+local CONFIG_FILENAME    = LUAUI_DIRNAME .. 'configs/' .. modShortUpper .. '_data.lua'
 local WIDGET_DIRNAME     = LUAUI_DIRNAME .. 'Widgets/'
 local WIDGET_DIRNAME_MAP = LUAUI_DIRNAME .. 'Widgets_Map/'
 
@@ -64,8 +62,6 @@ local glPopAttrib  = gl.PopAttrib
 local glPushAttrib = gl.PushAttrib
 local pairs = pairs
 local ipairs = ipairs
-
-
 
 -- read local widgets config
 local localWidgetsFirst = false
@@ -2158,6 +2154,8 @@ end
 
 function widgetHandler:UnitCommand(unitID, unitDefID, unitTeam,
                                    cmdId, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua) --cmdTag available in Spring 95
+  assert(cmdId)
+  Spring.Echo("widgets.lua::Routing Unit Command"
   if reverseCompat then
     cmdOpts, cmdParams = cmdParams, cmdOpts
   end
@@ -2173,6 +2171,7 @@ function widgetHandler:UnitCmdDone(unitID, unitDefID, unitTeam, cmdID, cmdParams
   if reverseCompat then
     cmdOptions, cmdParams = cmdParams, cmdOptions
   end
+  
   for _,w in ipairs(self.UnitCmdDoneList) do
     w:UnitCmdDone(unitID, unitDefID, unitTeam, cmdID, cmdParams, cmdOptions, cmdTag)
   end
@@ -2419,7 +2418,7 @@ widgetHandler:Initialize()
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-Spring.Echo("Widgethandler completes loading")
+Spring.Echo("widgets.lua: Custom Widgethandler completes loading")
 
 
 

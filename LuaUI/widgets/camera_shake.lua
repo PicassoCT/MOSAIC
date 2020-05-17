@@ -19,7 +19,7 @@ function widget:GetInfo()
     date      = "Jun 15, 2007",
     license   = "GNU GPL, v2 or later",
     layer     = 0,
-    enabled   = false  --  loaded by default?
+    enabled   = true  --  loaded by default?
   }
 end
 
@@ -30,7 +30,7 @@ end
 
 local spSetCameraOffset      = Spring.SetCameraOffset
 local spSetShockFrontFactors = Spring.SetShockFrontFactors
-
+local math_random = math.random
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ local spSetShockFrontFactors = Spring.SetShockFrontFactors
 local exps = 0
 local shake = 0
 
-local powerScale = 200
+local powerScale = 130
 
 local decayFactor = 5
 
@@ -55,6 +55,15 @@ function widget:Initialize()
   -- required for ShockFront() call-ins
   -- (threshold uses the 1/d^2 power)
   spSetShockFrontFactors(minArea, minPower, distAdj)
+
+  WG['camerashake'] = {}
+  WG['camerashake'].getStrength = function()
+    return powerScale
+  end
+  WG['camerashake'].setStrength = function(value)
+    powerScale = value
+    minPower = (0.02 / powerScale)
+  end
 end
 
 
@@ -64,6 +73,7 @@ end
 
 
 function widget:ShockFront(power, dx, dy, dz)
+  if powerScale <= 0 then return end
   exps = exps + 1
   power = power * powerScale
   if (power > 10) then
@@ -74,11 +84,12 @@ end
 
 
 local function birand(val)
-  return val * (1.0 - (0.002 * math.random(1000)))
+  return val * (1.0 - (0.002 * math_random(1000)))
 end
 
 
 function widget:Update(dt)
+  if powerScale <= 0 then return end
   local t = widgetHandler:GetHourTimer()
   local pShake = shake * 0.1
   local tShake = shake * 0.025
@@ -97,6 +108,19 @@ function widget:Update(dt)
   shake = shake * decay
 end
 
+
+function widget:GetConfigData(data)
+  savedTable = {}
+  savedTable.powerScale = powerScale
+  return savedTable
+end
+
+function widget:SetConfigData(data)
+  if data.powerScale ~= nil then
+    powerScale = data.powerScale
+    minPower = (0.02 / powerScale)
+  end
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
