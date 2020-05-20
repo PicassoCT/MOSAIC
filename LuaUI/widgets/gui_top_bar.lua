@@ -24,6 +24,8 @@ local fontfile2 = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font2
 local font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 
 local orgHeight = 46
+local ui_scale = tonumber(Spring.GetConfigFloat("ui_scale",1) or 1)
+
 local height = orgHeight * (1+(ui_scale-1)/1.7)
 
 local relXpos = 0.3

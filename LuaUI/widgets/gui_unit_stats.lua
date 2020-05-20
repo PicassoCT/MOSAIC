@@ -60,6 +60,7 @@ local fontfileOutlineStrength = 1.1
 local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 
 local customFontSize = 15.5
+local ui_scale = tonumber(Spring.GetConfigFloat("ui_scale",1) or 1)
 
 local bgcornerSize = fontSize*0.35
 local bgpadding = fontSize*1.15
