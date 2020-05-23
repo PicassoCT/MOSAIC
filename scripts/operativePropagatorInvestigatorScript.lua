@@ -38,7 +38,7 @@ Icon = piece("Icon")
 Shell1 = piece("Shell1")
 FoldtopUnfolded = piece'FoldtopUnfolded'
 FoldtopFolded= piece'FoldtopFolded'
-
+local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 local disguiseDefID = randT(civilianWalkingTypeTable) 
@@ -778,6 +778,21 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
+
+	if not targetType or  (not validTargetType[targetType])  then
+			-- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
+			return false 
+	end
+	
+	--Do not aim at your own disguise civilian
+		if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
+			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
+				return false
+			end
+	end
+		
+
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
