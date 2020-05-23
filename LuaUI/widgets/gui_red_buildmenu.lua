@@ -8,8 +8,8 @@ function widget:GetInfo()
 	date      = "29 may 2015", --modified by CommonPlayer, Oct 2016
 	license   = "GNU GPL, v2 or later",
 	layer     = -10,
-	enabled   = true, --enabled by default
-	handler   = true, --can use widgetHandler:x()
+	enabled   = false, --enabled by default
+	handler   = false, --can use widgetHandler:x()
 	}
 end
 
@@ -994,6 +994,7 @@ end
 local hijackedlayout = false
 function widget:Shutdown()
 	if hijackedlayout and not WG['buildmenu'] then
+		Spring.Echo("ConfingLayoutHandler_1")
 		widgetHandler:ConfigLayoutHandler(true)
 		Spring.ForceLayoutUpdate()
 	end
@@ -1077,6 +1078,8 @@ local function hijacklayout()
 		local custom_cmdz = widgetHandler.customCommands
 		return "", xIcons, yIcons, {}, custom_cmdz, {}, {}, {}, {}, {}, iconList
 	end
+	Spring.Echo("ConfingLayoutHandler_2")
+
 	widgetHandler:ConfigLayoutHandler(dummylayouthandler) --override default build/ordermenu layout
 	Spring.ForceLayoutUpdate()
 	hijackedlayout = true
@@ -1088,7 +1091,7 @@ local updatehax2 = true
 local firstupdate = true
 local function haxlayout()
 	if (WG.layoutpinghax~=layoutping) then
-		hijacklayout()
+	--	hijacklayout()
 	end
 	WG.layoutpinghax = nil
 	updatehax = true
