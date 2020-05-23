@@ -767,6 +767,7 @@ function widgetHandler:NewWidget()
     return self:SetGlobal(widget, name, value)
   end
 
+  Spring.Echo("ConfingLayoutHandler_3")
   wh.ConfigLayoutHandler = function(_, d) self:ConfigLayoutHandler(d) end
 
   return widget
@@ -1302,6 +1303,7 @@ end
 
 
 function widgetHandler:ConfigLayoutHandler(data)
+  Spring.Echo("ConfingLayoutHandler_4")
   ConfigLayoutHandler(data)
 end
 

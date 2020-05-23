@@ -11,7 +11,7 @@
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-Spring.Echo("◘ mosaicmain.lua :: Start Loading")
+Spring.Echo("◘◘◘◘ mosaicmain.lua :: Start Loading ◘◘◘◘")
 Spring.SendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
 
 VFS.Include(LUAUI_DIRNAME .. 'utils.lua', utilFile)
@@ -160,4 +160,4 @@ end
 
 --------------------------------------------------------------------------------
 
-Spring.Echo("mosaicmain.lua :: End Loading")
+Spring.Echo("◘◘◘◘ mosaicmain.lua :: End Loading ◘◘◘◘")

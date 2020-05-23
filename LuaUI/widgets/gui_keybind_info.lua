@@ -188,7 +188,7 @@ end
 
 -- keybind info
 
-include("configs/BAR_HotkeyInfo.lua")
+include("configs/MOSAIC_HotkeyInfo.lua")
 local bindColor			= "\255\235\185\070"
 local titleColor		= "\255\254\254\254"
 local descriptionColor	= "\255\192\190\180"

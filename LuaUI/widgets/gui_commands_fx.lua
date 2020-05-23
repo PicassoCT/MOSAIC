@@ -93,8 +93,8 @@ local maxTotalCommandCount		= 850		-- dont add more commands above this amount
 local maxGroundGlowCount		= 50
 local drawUnitHightlightMaxUnits = 70
 
-local glowImg			= ":n:LuaUI/Images/commandsfx/glow.dds"
-local lineImg			= ":n:LuaUI/Images/commandsfx/line.dds"
+local glowImg			= ":n:LuaUI/images/commandsfx/glow.dds"
+local lineImg			= ":n:LuaUI/images/commandsfx/line.dds"
 
 local ignoreUnits = {}
 for udefID,def in ipairs(UnitDefs) do
@@ -504,7 +504,7 @@ function widget:UnitCommand(unitID, unitDefID, teamID, cmdID, cmdParams, cmdOpts
 	if enabledTeams[teamID] ~= nil then
 		if teamID ~= GaiaTeamID or not isCritter[unitDefID] then
 			if ignoreUnits[unitDefID] == nil then
-				if newUnitCommands[unitID] == nil then		-- only process the first in queue, else when super large queue order is given widget will hog memory and crash
+				if cmdID and newUnitCommands[unitID] == nil then		-- only process the first in queue, else when super large queue order is given widget will hog memory and crash
 					assert(cmdID)
 					addUnitCommand(unitID, unitDefID, cmdID)
 					newUnitCommands[unitID] = true
