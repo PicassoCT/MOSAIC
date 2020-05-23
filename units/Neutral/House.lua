@@ -14,9 +14,7 @@ local House = Building:New{
 	FootprintZ = 8,
 	script 					= "Housescript.lua",
 	objectName       	= "house.dae",
-			customParams        = {
-		normaltex = "unittextures/house_arab_normal.dds",
-	},
+
 	
 	
 	YardMap = 	[[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
@@ -49,6 +47,7 @@ local House = Building:New{
 	
 
 	customparams = {	
+		normaltex = "unittextures/house_arab_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },
