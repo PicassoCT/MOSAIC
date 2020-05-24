@@ -777,6 +777,11 @@ function script.QueryWeapon(weaponID)
     end
 end
 
+local validTargetType={
+	[1]=true,
+	[2]=true,
+}
+
 function script.AimWeapon(weaponID, heading, pitch)
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 

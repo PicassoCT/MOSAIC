@@ -1077,7 +1077,7 @@ function widget:Update(dt)
 		if ui_scale ~= Spring.GetConfigFloat("ui_scale",1) then
 			ui_scale = Spring.GetConfigFloat("ui_scale",1)
 			height = orgHeight * (1+(ui_scale-1)/1.7)
-			shutdown()
+			Shutdown()
 			widget:ViewResize(vsx,vsy)
 		end
 	end
@@ -1756,7 +1756,7 @@ function widget:Initialize()
 end
 
 
-function widget:Shutdown()
+function Shutdown()
 	Spring.SendCommands("resbar 1")
 	if dlistBackground ~= nil then
 		dlistWindGuishader = glDeleteList(dlistWindGuishader)
@@ -1800,7 +1800,7 @@ function widget:Shutdown()
 	if WG['tooltip'] ~= nil then
 		WG['tooltip'].RemoveTooltip('wind')
 		WG['tooltip'].RemoveTooltip('rejoin')
-		local res ={'metal', 'energy'}
+		local res ={'metal', 'energy'} 
 	
 		
 		for i=1,2 do
@@ -1817,7 +1817,7 @@ end
 
 function widget:Shutdown()
 	Spring.SendCommands("resbar 1")
-	shutdown()
+	Shutdown()
 	gl.DeleteFont(font)
 	gl.DeleteFont(font2)
 	font = nil

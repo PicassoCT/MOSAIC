@@ -363,6 +363,7 @@ function widget:DrawWorldPreUnit()
     if (radius) then
       if (trackSlope and (not UnitDefs[udid].canFly)) then
         local x, y, z = spGetUnitBasePosition(unitID)
+		assert(x,z, UnitDefs[udid].name.." has no valid base position")
         local gx, gy, gz = spGetGroundNormal(x, z)
         local degrot = math.acos(gy) * 180 / math.pi
         glDrawListAtUnit(unitID, circlePolys, false,
