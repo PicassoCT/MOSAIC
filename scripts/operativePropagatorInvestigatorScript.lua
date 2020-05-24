@@ -43,6 +43,7 @@ GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 local disguiseDefID = randT(civilianWalkingTypeTable) 
 mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
+myTeamID= Spring.GetUnitTeam(unitID)
 
 local scriptEnv = {
 	center = center,
@@ -101,7 +102,7 @@ boolAiming = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
-
+	StartThread(firstToDieOfThirst)
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
@@ -123,6 +124,18 @@ function script.Create()
 	StartThread(breathing)
 	StartThread(raidReactor)
 -- echo("Create complted")
+end
+
+
+--gives the first unit of this type a parachut and drops it
+function firstToDieOfThirst()
+	if not GG.FirstUnitperTeamTable then GG.FirstUnitperTeamTable ={} end
+	if not GG.FirstUnitperTeamTable[myTeamID]  then GG.FirstUnitperTeamTable[myTeamID] = unitID else return end
+
+	x,y,z= Spring.GetUnitPosition(unitID)
+	Sleep(200)
+	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
+	
 end
 
 function breathing()
@@ -676,14 +689,21 @@ end
 function script.QueryBuildInfo()
     return center
 end
-
+boolOldCloakValue = false
 function script.StopBuilding()
-	SetUnitValue(COB.CLOAKED, 1)
+	reCloakAfterBuildStop= 1
+	if boolOldCloakValue == false then 
+		reCloakAfterBuildStop = 0
+	end
+	
+	SetUnitValue(COB.CLOAKED, reCloakAfterBuildStop)
+	
 	boolIsBuilding = false
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 
 function script.StartBuilding(heading, pitch)
+	boolOldCloakValue = boolCloaked
 	SetUnitValue(COB.CLOAKED, 0)
 	boolIsBuilding = true
 	SetUnitValue(COB.INBUILDSTANCE, 1)
