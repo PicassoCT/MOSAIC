@@ -1,1 +1,3 @@
--Truck Tires Normal Texture?
+- Grid in Game with Numbers in Information
+- More weapons, (rocket, grenade launch walker/ turret)
+- test game mechanics

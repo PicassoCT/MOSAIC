@@ -163,6 +163,7 @@ local function createMapinfoList(opacityMultiplier)
 		font:Begin()
 		local text = Game.mapName
 		font:SetTextColor(1,1,1,(textOpacity*1.12)*opacityMultiplier)
+
 		font:Print(text, textOffsetX,-usedTextOffsetY,14,"n")
 		font:SetTextColor(0,0,0,textOpacity*0.12*opacityMultiplier)
 		font:Print(text, textOffsetX+0.5,-usedTextOffsetY-0.9,14,"n")
