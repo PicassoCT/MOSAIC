@@ -561,6 +561,7 @@ function showFoldTop()
 end
 
 function script.StartMoving()
+	echo("Start Moving")
 	boolWalking = true
 	if  boolCloaked == false then
 		Hide(FoldtopUnfolded)
@@ -574,6 +575,7 @@ function script.StartMoving()
 end
 
 function script.StopMoving()
+		echo("Stop Moving")
 	StartThread(delayedStop)
 	StartThread(showFoldTop)
 end
@@ -634,7 +636,7 @@ end
 boolCloaked= false
 boolIsBuilding = false
 function cloakLoop()
-	local spGetUnitIsActive = Spring.GetUnitIsActive
+
 	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 	Sleep(100)
 	waitTillComplete(unitID)
@@ -645,7 +647,7 @@ function cloakLoop()
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	SetUnitValue(COB.WANT_CLOAK, 1)
 	SetUnitValue(COB.CLOAKED, 1)
-	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+
 	StartThread(spawnDecoyCivilian)	
 	showHideIcon(true)
 	boolOldStateCloaked = true	
@@ -658,7 +660,7 @@ function cloakLoop()
 		if  needsCloak(boolCloaked,  boolOldStateCloaked, boolIsBuilding,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, mySpeedReductionCloaked)
 			boolOldStateCloaked=true
-			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+
 			StartThread(spawnDecoyCivilian)
 		end
 		
@@ -666,7 +668,7 @@ function cloakLoop()
 		if needsToUncloak(boolCloaked, boolOldStateCloaked, boolIsBuilding, GG.OperativesDiscovered[unitID])== true then	
 			setSpeedEnv(unitID, 1.0)
 			boolOldStateCloaked= false
-			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
+
 			if civilianID and doesUnitExistAlive(civilianID) == true then
 				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
@@ -677,12 +679,14 @@ function cloakLoop()
 end
 
 function script.Activate()
-	SetUnitValue(COB.WANT_CLOAK, 1)
+	-- echo("Activate")
+	-- SetUnitValue(COB.WANT_CLOAK, 1)
 	return 1
 end
 
 function script.Deactivate()
-	SetUnitValue(COB.WANT_CLOAK, 0)
+-- echo("Dectivate")
+	-- SetUnitValue(COB.WANT_CLOAK, 0)
     return 0
 end
 
@@ -691,6 +695,19 @@ function script.QueryBuildInfo()
 end
 boolOldCloakValue = false
 function script.StopBuilding()
+	boolIsBuilding = false
+	SetUnitValue(COB.INBUILDSTANCE, 0)
+end
+
+function restoreCloak()
+
+buildID = Spring.GetUnitIsBuilding(unitID)
+if not buildID then return end
+
+while buildID do
+buildID= Spring.GetUnitIsBuilding(unitID)
+Sleep(250)
+end
 	reCloakAfterBuildStop= 1
 	if boolOldCloakValue == false then 
 		reCloakAfterBuildStop = 0
@@ -698,13 +715,13 @@ function script.StopBuilding()
 	
 	SetUnitValue(COB.CLOAKED, reCloakAfterBuildStop)
 	
-	boolIsBuilding = false
-	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
+
 
 function script.StartBuilding(heading, pitch)
 	boolOldCloakValue = boolCloaked
-	SetUnitValue(COB.CLOAKED, 0)
+		StartThread(restoreCloak)
+
 	boolIsBuilding = true
 	SetUnitValue(COB.INBUILDSTANCE, 1)
 end

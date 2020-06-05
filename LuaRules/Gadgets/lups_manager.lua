@@ -210,7 +210,6 @@ local function UnitDecloaked(_,unitID,unitDefID,teamID)
     return
   end
 
-  Spring.Echo("Decloaking Unit")
   local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
   local LocalAllyTeamID

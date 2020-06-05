@@ -37,16 +37,17 @@ local OperativePropagator = Human:New{
 	buildDistance = 120,
 	terraformSpeed = 350,
 	showNanoFrame= true,
-	
-	canCloak =true,
-	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
-	cloakCostMoving =0.0001,
-	minCloakDistance = 0,
-	onoffable=true,
-	kamikaze = true,
-	kamikazeDistance  = 10,
-	kamikazeUseLOS = false,
+		
+	--cloaking behaviour
+	canCloak =true,
+	decloakSpherical = true,
+	decloakOnFire = true,
+	cloakCostMoving = 0,
+	minCloakDistance = -1.0,
+	
+	
+	onoffable=false,
 
 	buildoptions = 
 	{

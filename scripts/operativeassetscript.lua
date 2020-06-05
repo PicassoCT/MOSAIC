@@ -597,7 +597,7 @@ function cloakLoop()
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	SetUnitValue(COB.WANT_CLOAK, 1)
 	SetUnitValue(COB.CLOAKED, 1)
-	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+
 	StartThread(spawnDecoyCivilian)	
 	showHideIcon(true)
 	boolOldStateCloaked = true	
@@ -610,7 +610,7 @@ function cloakLoop()
 		if  needsCloak(boolCloaked,  boolOldStateCloaked, boolIsBuilding,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, mySpeedReductionCloaked)
 			boolOldStateCloaked=true
-			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+
 			StartThread(spawnDecoyCivilian)
 		end
 		
@@ -618,7 +618,7 @@ function cloakLoop()
 		if needsToUncloak(boolCloaked, boolOldStateCloaked, boolIsBuilding, GG.OperativesDiscovered[unitID])== true then	
 			setSpeedEnv(unitID, 1.0)
 			boolOldStateCloaked= false
-			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
+	
 			if civilianID and doesUnitExistAlive(civilianID) == true then
 				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
@@ -629,12 +629,12 @@ function cloakLoop()
 end
 
 function script.Activate()
-	SetUnitValue(COB.WANT_CLOAK, 1)
+	
 	return 1
 end
 
 function script.Deactivate()
-	SetUnitValue(COB.WANT_CLOAK, 0)
+	
     return 0
 end
 

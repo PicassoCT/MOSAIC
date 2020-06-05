@@ -31,16 +31,16 @@ local OperativeInvestigator = Human:New{
 		buildPic = "operativeinvestigator.png",
 
 	showNanoFrame= true,
-	canCloak =true,
-	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
-	cloakCostMoving =0.0001,
-	minCloakDistance = 0,
-	onoffable=true,
-	initCloaked = true,
-	decloakOnFire = true,
-	cloakTimeout = 5,
 	
+--cloaking behaviour
+	canCloak =true,
+	decloakSpherical = true,
+	decloakOnFire = true,
+	cloakCostMoving = 0,
+	minCloakDistance = -1.0,
+	
+	onoffable= false,
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
