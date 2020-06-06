@@ -299,7 +299,7 @@ local ground_turret_rocket =  Turret:New{
 	Description = "Deployed Anti Armor Projectile ",
 	
 	objectName = "ground_turret_missile.dae",
-	script = "groundturretantitankscript.lua",
+	script = "ground_turret_rocketscript.lua",
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
