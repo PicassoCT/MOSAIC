@@ -5,12 +5,12 @@ local weaponDef = {
     weaponType = [[MissileLauncher]],
 
     damage = {
-        default = 1500
+        default = 250
     },
 	range = 1024,
 	impulseBoost            = 0,
 	impulseFactor = 0.4,
-	reloadtime = 10,
+	reloadtime = 2,
     areaOfEffect = 256,
 	 noSelfDamage = true,
 	trajectoryHeight = 1.0 ,
@@ -24,11 +24,11 @@ local weaponDef = {
 	tracks = false,
 	flightTime = 5.5 ,
 	turret = true,
-	model = "air_copter_antiarmor_projectile.s3o",
+	model = "unaimedRocketProjectile.s3o",
 	explosionScar = true, 
     explosionGenerator = "custom:missile_explosion",
-    cegTag = "gunprojectile",
-    texture1 = "gunshot",
+    -- cegTag = "gunprojectile",
+    -- texture1 = "gunshot",
 	fireStarter  = 50.0,
 	cameraShake = 0.5
 	
