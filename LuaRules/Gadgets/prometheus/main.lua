@@ -198,7 +198,7 @@ local function CreateTeams()
 				local units = Spring.GetTeamUnits(t)
 				-- Figure out the side we're on by searching for our
 				-- startUnit in Spring's sidedata.
-				local side
+				local side = "antagon"
 				for _,u in ipairs(units) do
 					if (not Spring.GetUnitIsDead(u)) then
 						local unit = UnitDefs[Spring.GetUnitDefID(u)].name

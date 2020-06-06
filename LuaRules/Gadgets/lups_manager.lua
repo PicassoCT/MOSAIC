@@ -57,7 +57,7 @@ if (gadgetHandler:IsSyncedCode()) then
     SendToUnsynced("lups_unit_cloaked", unitID,unitDefID,teamID)
   end
   function gadget:UnitDecloaked(unitID,unitDefID,teamID)
-    	Spring.Echo("  lups_unit_decloaked")
+    	-- Spring.Echo("  lups_unit_decloaked")
     SendToUnsynced("lups_unit_decloaked", unitID,unitDefID,teamID)
   end
 

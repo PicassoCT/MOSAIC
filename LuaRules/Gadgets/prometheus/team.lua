@@ -212,7 +212,11 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})
 				
 				else
+					assert(unitDefID)
+					assert(unitBuildOrder)
+					assert(unitBuildOrder[unitDefID])
 					local shuffledBuildOrder = shuffleT(unitBuildOrder[unitDefID])
+					assert(shuffledBuildOrder)
 					
 					for bo,nr in ipairs(shuffledBuildOrder) do
 						if bo and UnitDefs[bo]  then

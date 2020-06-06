@@ -8,7 +8,7 @@ local sidedata = {
 	[2] = {
 		name = "Protagon",
 		shortName = "PT",
-		startUnit = "operativeinterrigator",
+		startUnit = "operativeinvestigator",
 	}
 }
 return sidedata

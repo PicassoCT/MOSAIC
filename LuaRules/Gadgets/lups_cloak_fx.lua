@@ -54,7 +54,7 @@ local tryloading = 1 --// try to activate lups if it isn't found
 
 local supportedFxs = {}
 local function fxSupported(fxclass)
-    if (supportedFxs[fxclass] ~= nil) then
+    if (supportedFxs[fxclass] ~= nil) then 
         return supportedFxs[fxclass]
     else
         supportedFxs[fxclass] = Lups.HasParticleClass(fxclass)
