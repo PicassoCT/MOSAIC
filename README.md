@@ -2,8 +2,7 @@
 
 Modular Ordanance Standardization Adaptive Artifacts Intelligence Combat
 
-![](https://springrts.com/phpbb/download/file.php?mode=view&id=11053 "")
-
+![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11053/Example_Screen.png)
 
 This is an RTS game for the spring engine (www.springrts.com). 
 
