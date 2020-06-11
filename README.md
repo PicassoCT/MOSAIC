@@ -1,6 +1,6 @@
 # MOSAIC
 
-Modular Ordanance Standardization Advanced Intelligence Combat
+Modular Ordanance Standardization Adaptive Artifacts Intelligence Combat
 
 
 This is an RTS game for the spring engine (www.springrts.com). 
