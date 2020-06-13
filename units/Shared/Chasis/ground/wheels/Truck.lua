@@ -33,8 +33,13 @@ local ground_truck_mg = Truck:New{
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
-	
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[NIL]],
+				},
+			},	
 	LeaveTracks = true,
+		canAttack = true,
 	trackType ="armst_tracks",
 	trackStrength=12,
 	trackWidth =28,
@@ -75,7 +80,13 @@ local ground_truck_ssied = Truck:New{
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[NIL]],
+				},
+			},	
 	
+		canAttack = true,
 	LeaveTracks = true,
 	trackType ="armst_tracks",
 	trackStrength=12,
@@ -113,11 +124,16 @@ local ground_truck_antiarmor = Truck:New{
 	isFirePlatform  = true,
 	fireState= 0,
 	canCloak= false,
+		canAttack = true,
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
-	
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[NIL]],
+				},
+			},	
 	LeaveTracks = true,
 	trackType ="armst_tracks",
 	trackStrength=12,
@@ -147,22 +163,29 @@ local ground_truck_rocket = Truck:New{
 	objectName 	= "apc.dae",
 	movementClass   	= "VEHICLE",
 	collisionVolumeType = "box",
-	collisionvolumescales = "40 50 70",
+	collisionvolumescales = "40 40 70",
 	category = [[GROUND]],
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
 	fireState= 0,
-	canCloak= false,
+	
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
 	},
-	
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[NIL]],
+				},
+			},	
 	LeaveTracks = true,
 	trackType ="armst_tracks",
 	trackStrength=12,
 	trackWidth =28,	
+	
+	canCloak= false,
+	canAttack = true
 }
 
 local CivilianTruck = Truck:New{
@@ -198,11 +221,11 @@ local CivilianTruck = Truck:New{
 	script 			= "Truckscript.lua",
 
 	-- objectName 	= "Truck.s3o",
-		weapons = {
-				[1]={name  = "pistol",
-					onlyTargetCategory = [[NIL]],
-					},
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[NIL]],
 				},
+			},
 
 	category = [[GROUND]],
 	
@@ -210,6 +233,8 @@ local CivilianTruck = Truck:New{
 		helptext		= "Transportation Truck",
 		baseclass		= "Truck", -- TODO: hacks
 	},
+	
+
 	
 	LeaveTracks = true,
 	trackType ="armst_tracks",

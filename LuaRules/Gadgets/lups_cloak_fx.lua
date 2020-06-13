@@ -17,7 +17,7 @@ function gadget:GetInfo()
         date = "008-2014",
         license = "GNU GPL, v2 or later",
         layer = 10,
-        enabled = false,
+        enabled = true,
     }
 end
 
@@ -75,7 +75,7 @@ local CloakedHitEffect = {
 }
 local CloakEffect = {
     { class = 'UnitCloaker', options = { life = 50 } },
-    { class = 'UnitJitter', options = { delay = 24, life = math.huge } },
+    { class = 'UnitJitter', options = { delay = 24, life = 90 } },
     { class = 'Sound', options = { file = "sounds/cloak.wav", volume = 0.9 } },
 }
 local EnemyCloakEffect = {

@@ -61,6 +61,7 @@ showNanoFrame= true,
 	"nimrod",
 	"propagandaserver",
 	"assembly",
+	"hivemind",
 	"launcher"
 	},
 	category = [[GROUND BUILDING RAIDABLE]],

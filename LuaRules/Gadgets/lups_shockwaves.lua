@@ -87,6 +87,7 @@ else
   local function SpawnShockwave(_,px,py,pz, growth, life, strength, desintergrator)
     local Lups = GG['Lups']
     if (desintergrator) then
+		Spring.Echo("Shockwave spawned: Living for :"..life)
       Lups.AddParticles('SphereDistortion',{pos={px,py,pz}, life=life, strength=strength, growth=growth})
     else
       Lups.AddParticles('ShockWave',{pos={px,py,pz}, growth=growth, life=life})

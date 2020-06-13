@@ -124,6 +124,10 @@ function getGameConfig()
 	
 	--Operativedrop HeightOffset
 	OperativeDropHeigthOffset = 400,
+	
+	--Hiveminds & AiCores
+	integrationRadius = 200,
+	maxTimeForSlowMotionRealTimeSeconds = 60
 	}
 end
 

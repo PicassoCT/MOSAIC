@@ -51,7 +51,10 @@ function script.Create()
 
 end
 
+allOrderTypes={
+[UnitDefNames["ground_truck_rocket"].id]= true
 
+}
 
 function loadLoadOutLoop()
 	waitTillComplete(unitID)
@@ -73,7 +76,11 @@ function loadLoadOutLoop()
 			Spring.SetUnitNoSelect(loadOutUnitID, true)
 			Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
 		else
-			transferAttackOrder(unitID, loadOutUnitID)
+			if allOrderTypes[myLoadOutType] then
+				transferOrders(unitID, loadOutUnitID)
+			else
+				transferAttackOrder(unitID, loadOutUnitID)
+			end
 			transferStates(unitID, loadOutUnitID)
 
 		end

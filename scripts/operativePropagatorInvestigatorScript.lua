@@ -43,7 +43,8 @@ GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 local disguiseDefID = randT(civilianWalkingTypeTable) 
 mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
-myTeamID= Spring.GetUnitTeam(unitID)
+local spGetUnitTeam = Spring.GetUnitTeam
+myTeamID= spGetUnitTeam(unitID)
 
 local scriptEnv = {
 	center = center,

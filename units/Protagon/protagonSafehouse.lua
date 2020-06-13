@@ -60,8 +60,9 @@ showNanoFrame= true,
 
     "nimrod",
     "propagandaserver",
-    -- "blacksite",
+	"aicore",
     "assembly",
+	"blacksite"
   },
 
   category =  [[GROUND BUILDING RAIDABLE]],

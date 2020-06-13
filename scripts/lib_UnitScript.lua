@@ -2388,7 +2388,15 @@ end
 --> randomizes Table Entrys
 function shuffleT(T)
 	local	randT= {}
-	size = count(T)
+	if not T then 
+		if GG.BoolDebug == true then
+			echo("Shuffle called on empty table")
+			assert(T)
+		end
+	return T or {}
+	end
+	
+	size = count(T) or 0 
 	allreadyInserted={}
 	
 	for i = 1, size do
