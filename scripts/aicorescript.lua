@@ -5,14 +5,17 @@ include "lib_Build.lua"
 include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
+GameConfig = getGameConfig()
+
+
+IntegrationRadius= GameConfig.integrationRadius
+TIME_MAX = GameConfig.maxTimeForSlowMotionRealTimeSeconds * 1000
 
 
 
-IntegrationRadius= 125
 
 center = piece "center"
-
-TIME_MAX = 1000 *10
+ 
 teamID = Spring.GetUnitTeam(unitID)
 function instanciate()
 	if not GG.HiveMind then GG. HiveMind = {} end
@@ -25,9 +28,8 @@ function script.Create()
 
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	hideT(TablesOfPiecesGroups["body"])
 	StartThread(integrateNewMembers)
-	StartThread(showState)
+	
 end
 
 function script.Killed(recentDamage, _)
@@ -47,7 +49,7 @@ function integrateNewMembers()
 		function(id)
 			defID = Spring.GetUnitDefID(id)
 			if integrateAbleUnits[defID] and GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX then
-				GG.HiveMind[teamID][unitID].rewindMilliSeconds = GG.HiveMind[teamID][unitID].rewindMilliSeconds + 100
+				GG.HiveMind[teamID][unitID].rewindMilliSeconds = GG.HiveMind[teamID][unitID].rewindMilliSeconds + GameConfig.addSlowMoTimeInMsPerCitizen
 				Spring.SetUnitPosition(id,px,py,pz)
 				Spring.DestroyUnit(id, false, true)
 			end
@@ -59,16 +61,6 @@ function integrateNewMembers()
 end
 
 
-heigthPagode=369
-maxTurn= 6*90
-function showState()
-	instanciate()
-	while true do
-		level = math.ceil(GG.HiveMind[teamID][unitID].rewindMilliSeconds / 1000)/10
-		showT(TablesOfPiecesGroups["body"],1, level)
-		Sleep(100)
-	end
-end
 
 SIG_SLOWMO = 2
 function slowMo()
@@ -81,11 +73,6 @@ function slowMo()
 
 	while GG.HiveMind[teamID][unitID].rewindMilliSeconds > 0 do
 		Sleep(100)
-		modulator = inc(modulator)
-		if modulator % 3 == 0 then 	
-			selectbody=TablesOfPiecesGroups["body"][math.random(1,#TablesOfPiecesGroups["body"])]
-			Hide(selectbody)
-		end
 		GG.HiveMind[teamID][unitID].rewindMilliSeconds =math.max(0,GG.HiveMind[teamID][unitID].rewindMilliSeconds - 100)
 	end
 	

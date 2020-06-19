@@ -10,6 +10,8 @@ GameConfig = getGameConfig()
 
 IntegrationRadius= GameConfig.integrationRadius
 TIME_MAX = GameConfig.maxTimeForSlowMotionRealTimeSeconds * 1000
+bodyMax= 128
+innerLimit= 96
 
 teamID = Spring.GetUnitTeam(unitID)
 function instanciate()
@@ -20,11 +22,17 @@ end
 
 function script.Create()
 
-
+	
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["body"])
 	StartThread(integrateNewMembers)
+	process(TablesOfPiecesGroups["cable"],
+			function(id)
+				val = math.random(0,360)
+				Turn(id,y_axis, math.rad(val),0)
+			end
+			)
 	StartThread(showState)
 end
 
@@ -42,8 +50,8 @@ function integrateNewMembers()
 		process(getAllInCircle(x,z, IntegrationRadius),
 		function(id)
 			defID = Spring.GetUnitDefID(id)
-			if integrateAbleUnits[defID] and GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX then
-				GG.HiveMind[teamID][unitID].rewindMilliSeconds = GG.HiveMind[teamID][unitID].rewindMilliSeconds + 100
+			if integrateAbleUnits[defID] and GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX  or true then
+				GG.HiveMind[teamID][unitID].rewindMilliSeconds = GG.HiveMind[teamID][unitID].rewindMilliSeconds + GameConfig.addSlowMoTimeInMsPerCitizen
 				Spring.SetUnitPosition(id,px,py,pz)
 				Spring.DestroyUnit(id, false, true)
 			end
@@ -58,9 +66,20 @@ end
 heigthPagode=369
 maxTurn= 6*90
 function showState()
+	for i=1, innerLimit, 1 do
+		degIndex = (i % 32)* (360 /32)
+		Turn(TablesOfPiecesGroups["body"][i],y_axis, math.rad( 10* degIndex),0)
+	end
+	
+	for i=innerLimit, #TablesOfPiecesGroups["body"], 1 do
+		degIndex = ((i % 96)%16)* (360 /16)
+		Turn(TablesOfPiecesGroups["body"][i],y_axis, math.rad( 10* degIndex),0)
+	end
+	
 	instanciate()
 	while true do
-		level = math.ceil(GG.HiveMind[teamID][unitID].rewindMilliSeconds / MAX )/(#TablesOfPiecesGroups["body"] or 1)
+
+		level = math.ceil(GG.HiveMind[teamID][unitID].rewindMilliSeconds / TIME_MAX )/(#TablesOfPiecesGroups["body"] or 1)
 		showT(TablesOfPiecesGroups["body"],1, level)
 		Sleep(100)
 	end

@@ -127,7 +127,8 @@ function getGameConfig()
 	
 	--Hiveminds & AiCores
 	integrationRadius = 200,
-	maxTimeForSlowMotionRealTimeSeconds = 60
+	maxTimeForSlowMotionRealTimeSeconds = 60,
+	addSlowMoTimeInMsPerCitizen = 100,
 	}
 end
 
