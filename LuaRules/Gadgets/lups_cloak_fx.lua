@@ -17,7 +17,7 @@ function gadget:GetInfo()
         date = "008-2014",
         license = "GNU GPL, v2 or later",
         layer = 10,
-        enabled = true,
+        enabled = false,
     }
 end
 
@@ -277,6 +277,7 @@ function gadget:Update()
 
     gadget.Update = ReinitializeUnitFX
     gadgetHandler:UpdateCallIn("Update")
+	
 end
 
 --------------------------------------------------------------------------------
