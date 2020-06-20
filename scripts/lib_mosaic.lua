@@ -126,9 +126,9 @@ function getGameConfig()
 	OperativeDropHeigthOffset = 400,
 	
 	--Hiveminds & AiCores
-	integrationRadius = 200,
+	integrationRadius = 75,
 	maxTimeForSlowMotionRealTimeSeconds = 60,
-	addSlowMoTimeInMsPerCitizen = 100,
+	addSlowMoTimeInMsPerCitizen = 300,
 	}
 end
 
