@@ -12,6 +12,9 @@ IntegrationRadius= GameConfig.integrationRadius
 TIME_MAX = GameConfig.maxTimeForSlowMotionRealTimeSeconds * 1000
 bodyMax= 128
 innerLimit= 96
+center = piece "center"
+Icon = piece "Icon"
+y_rotationAxis= y_axis
 
 teamID = Spring.GetUnitTeam(unitID)
 function instanciate()
@@ -20,19 +23,23 @@ function instanciate()
 	if not GG.HiveMind[teamID][unitID] then GG.HiveMind[teamID][unitID] = { rewindMilliSeconds = 0, boolActive= false} end
 end
 
-function script.Create()
-
-	
+function script.Create()	
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["body"])
 	StartThread(integrateNewMembers)
+
+	intI= 0
+	if TablesOfPiecesGroups["cable"] then
 	process(TablesOfPiecesGroups["cable"],
 			function(id)
-				val = math.random(0,360)
-				Turn(id,y_axis, math.rad(val),0)
+				randoVal= math.random(-10,10)/5
+				val =intI *  ((360/ 8)+ math.pi*randoVal)
+				Turn(id,y_rotationAxis, math.rad(val),0)
+				intI= intI +1
 			end
 			)
+	end
 	StartThread(showState)
 end
 
@@ -43,15 +50,16 @@ end
 function integrateNewMembers()
 	instanciate()
 	x,y,z= Spring.GetUnitPosition(unitID)
-	local integrateAbleUnits= getCivilianTypeTable()
+	local integrateAbleUnits= getMobileCivilianDefIDTypeTable(UnitDefs)
 	px,py,pz= Spring.GetUnitPosition(unitID)
-	
+	members={}
 	while true do
 		process(getAllInCircle(x,z, IntegrationRadius),
 		function(id)
 			defID = Spring.GetUnitDefID(id)
-			if integrateAbleUnits[defID] and GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX  or true then
+			if integrateAbleUnits[defID] and GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX and  members[id] == nil then
 				GG.HiveMind[teamID][unitID].rewindMilliSeconds = GG.HiveMind[teamID][unitID].rewindMilliSeconds + GameConfig.addSlowMoTimeInMsPerCitizen
+				members[id]= true
 				Spring.SetUnitPosition(id,px,py,pz)
 				Spring.DestroyUnit(id, false, true)
 			end
@@ -66,21 +74,28 @@ end
 heigthPagode=369
 maxTurn= 6*90
 function showState()
+	bodyCount = count(TablesOfPiecesGroups["body"])
 	for i=1, innerLimit, 1 do
-		degIndex = (i % 32)* (360 /32)
-		Turn(TablesOfPiecesGroups["body"][i],y_axis, math.rad( 10* degIndex),0)
+		degIndex = (i % 64)* (360 /64)
+				randOffset = (math.random(-4,4)/2)	*math.pi
+		Turn(TablesOfPiecesGroups["body"][i],y_rotationAxis, math.rad( 10* degIndex + randOffset),0)
 	end
 	
 	for i=innerLimit, #TablesOfPiecesGroups["body"], 1 do
 		degIndex = ((i % 96)%16)* (360 /16)
-		Turn(TablesOfPiecesGroups["body"][i],y_axis, math.rad( 10* degIndex),0)
+		randOffset = (math.random(-4,4)/8)*math.pi
+		Turn(TablesOfPiecesGroups["body"][i],y_rotationAxis, math.rad( 10* degIndex + randOffset),0)
 	end
 	
 	instanciate()
 	while true do
-
-		level = math.ceil(GG.HiveMind[teamID][unitID].rewindMilliSeconds / TIME_MAX )/(#TablesOfPiecesGroups["body"] or 1)
+		
+		level = (GG.HiveMind[teamID][unitID].rewindMilliSeconds / TIME_MAX )*(bodyCount )
+		Spring.Echo("hivemind: level:"..level)
+		hideT(TablesOfPiecesGroups["body"])
+		if level > 1 then
 		showT(TablesOfPiecesGroups["body"],1, level)
+		end
 		Sleep(100)
 	end
 end
@@ -144,3 +159,22 @@ function script.Deactivate()
 	
 	return 0
 end
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if  boolCloaked == true then
+
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+		if TablesOfPiecesGroups then
+		hideT(TablesOfPiecesGroups["body"])
+		end
+        Hide(Icon)
+    end
+
+
+end
+
