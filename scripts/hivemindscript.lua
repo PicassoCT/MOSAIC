@@ -24,6 +24,7 @@ function instanciate()
 end
 
 function script.Create()	
+	instanciate()
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["body"])
@@ -91,7 +92,7 @@ function showState()
 	while true do
 		
 		level = (GG.HiveMind[teamID][unitID].rewindMilliSeconds / TIME_MAX )*(bodyCount )
-		Spring.Echo("hivemind: level:"..level)
+	
 		hideT(TablesOfPiecesGroups["body"])
 		if level > 1 then
 		showT(TablesOfPiecesGroups["body"],1, level)

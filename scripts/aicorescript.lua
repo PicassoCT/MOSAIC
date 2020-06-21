@@ -23,8 +23,8 @@ function instanciate()
 end
 
 function script.Create()
-
 	
+	instanciate()
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideT(TablesOfPiecesGroups["body"])
