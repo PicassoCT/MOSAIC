@@ -14,7 +14,7 @@ local Propagandaserver = Building:New{
 
 	EnergyMake = 2.5, 
 	MakesMetal = 5, 
-	MetalMake = 0,	
+	MetalMake = 0,	 
 	
 	acceleration = 0,
 	
