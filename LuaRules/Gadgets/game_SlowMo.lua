@@ -1,7 +1,7 @@
 function gadget:GetInfo()
 	return {
 		name = "Slowmotion gadget",
-		desc = "This gadget coordinates gamespeed sets by hiveMinds and AI-Nodes",
+		desc = "This gadget coordinates gamespeed sets by hiveMinds and AI-Cores",
 		author = "PicassoCT",
 		date = "Juli. 2017",
 		license = "GNU GPL, v2 or later",

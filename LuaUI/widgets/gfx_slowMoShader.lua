@@ -10,9 +10,9 @@ function widget:GetInfo()
                 date      = "21 12 2012",
                 license   = "xxx",
                 layer     = math.huge,
-                --handler   = true, -- used widget handlers
-                enabled   = true  -- loaded by default,
-				--hidden 	  = true
+                handler   = true, -- used widget handlers
+                enabled   = true, -- loaded by default,
+				-- hidden 	  = true
         }
 end
 ----------------------------------------------------------------------------------------------------
@@ -208,14 +208,15 @@ function widget:Initialize()
 
   vsx, vsy = widgetHandler:GetViewSizes()
   widget:ViewResize(vsx, vsy)
-  
+	if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
+	
 	if gl.CreateShader then
 	playerID = Spring.GetMyPlayerID()
 	tname,_, tspec, tteam, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
 	local _,_,_,_, side, _                               = Spring.GetTeamInfo(tteam)
 
 	if  side and side == "antagon" then
-			shaderTable.fragment=  tacVision
+		shaderTable.fragment=  tacVision
 	else
 		shaderTable.fragment= 	nightvision
 	end
@@ -249,7 +250,7 @@ screencopy = gl.CreateTexture(vsx, vsy, {
     mag_filter = GL.NEAREST,
 	})
 end
-boolShaderActive= false
+boolShaderActive= true
 
 function ActivateSlowMoShader(boolActive)
 	boolShaderActive = boolActive
