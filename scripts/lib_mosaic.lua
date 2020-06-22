@@ -127,8 +127,8 @@ function getGameConfig()
 	
 	--Hiveminds & AiCores
 	integrationRadius = 75,
-	maxTimeForSlowMotionRealTimeSeconds = 60,
-	addSlowMoTimeInMsPerCitizen = 300,
+	maxTimeForSlowMotionRealTimeSeconds = 10,
+	addSlowMoTimeInMsPerCitizen = 150,
 	}
 end
 
@@ -383,14 +383,16 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 			"nimrod",
 			"propagandaserver",
 			"assembly",
-			"launcher"
+			"launcher",
+			"hivemind"
 			}
 		else
 		typeTable={
 			"nimrod",
 			"blacksite",
 			"propagandaserver",
-			"assembly"
+			"assembly",
+			"aicore"
 			}
 		end
 	end
@@ -423,7 +425,9 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 		"protagonsafehouse",
 		"propagandaserver",
 		"assembly",
-		"launcher"
+		"launcher",
+		"hivemind",
+		"aicore"
 	}
 	
 	typeTable = mergeTables(typeTable, getTypeUnitNameTable(GameConfig.instance.culture, "civilian", UnitDefs))	
