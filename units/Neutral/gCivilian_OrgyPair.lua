@@ -11,13 +11,13 @@ local OrgyPair = Civilian:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 10 10",
 	buildPic = "civilian.png",
-	--orders
+	--orders	
 	canAttack= false,
 	canMove= false,
 	canGuard=false,
 	
 	
-	script = civilianOrgyPairScript.lua,
+	script = "civilianOrgyPairScript.lua",
 	
 	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks

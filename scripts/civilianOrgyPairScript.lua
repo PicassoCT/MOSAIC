@@ -5,6 +5,35 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
+local Animations = include('orgy_couple_ref_movement.lua')
+
+ local orgy_pair = piece("orgy_pair")
+ local center = piece("center")
+ local p1_l_body = piece("p1_l_body")
+ local p1_right_u_leg = piece("p1_right_u_leg")
+ local p1_right_l_leg = piece("p1_right_l_leg")
+ local p1_left_u_leg = piece("p1_left_u_leg")
+ local p1_left_l_leg = piece("p1_left_l_leg")
+ local p1_penis = piece("p1_penis")
+ local p1_u_body = piece("p1_u_body")
+ local p1_right_arm = piece("p1_right_arm")
+ local p1_right_l_arm = piece("p1_right_l_arm")
+ local p1_left_u_arm = piece("p1_left_u_arm")
+ local p1_left_l_arm = piece("p1_left_l_arm")
+ local p1_head = piece("p1_head")
+ local p2_l_body = piece("p2_l_body")
+ local p2_u_body001 = piece("p2_u_body001")
+ local p2_right_u_arm = piece("p2_right_u_arm")
+ local p2_right_l_arm = piece("p2_right_l_arm")
+ local p2_head = piece("p2_head")
+ local eye_L001 = piece("eye_L001")
+ local eye_L = piece("eye_L")
+ local p2_left_u_arm = piece("p2_left_u_arm")
+ local p2_left_l_arm = piece("p2_left_l_arm")
+ local p2_right_u_leg001 = piece("p2_right_u_leg001")
+ local p2_right_l_leg001 = piece("p2_right_l_leg001")
+ local p2_right_u_leg = piece("p2_right_u_leg")
+ local p2_right_l_leg = piece("p2_right_l_leg")
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -13,11 +42,10 @@ end
 -- left = piece "left"
 -- right = piece "right"
 -- aimpiece = piece "aimpiece"
-if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function script.Create()
-    -- generatepiecesTableAndArrayCode(unitID)
+    generatepiecesTableAndArrayCode(unitID, true)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	
 	setupAnimation()

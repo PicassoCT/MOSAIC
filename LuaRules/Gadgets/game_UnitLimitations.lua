@@ -1,6 +1,6 @@
 function gadget:GetInfo()
 	return {
-		name = "Slowmotion gadget",
+		name = "Unit Limitations",
 		desc = "Implements a limitation of units",
 		author = "PicassoCT",
 		date = "Juli. 2017",
