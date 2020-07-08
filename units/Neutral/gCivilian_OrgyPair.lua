@@ -1,4 +1,4 @@
-local OrgyPair = Civilian:New{
+local OrgyPair = {
 	--This class inherits alot from its 
 	name = "A Orgy",
 	description = " engaged in intercourse",
@@ -20,10 +20,7 @@ local OrgyPair = Civilian:New{
 	script = "civilianOrgyPairScript.lua",
 	
 	customparams = {
-		baseclass		= "Civilian", -- TODO: hacks
     },
-
-	
 
 	category = [[NOTARGET]],
 }
@@ -31,5 +28,5 @@ local OrgyPair = Civilian:New{
 
 return lowerkeys({
 	--Temp
-	["civilian_orgy_pair"] = OrgyPair:New(),
+	["civilian_orgy_pair"] = OrgyPair
 })

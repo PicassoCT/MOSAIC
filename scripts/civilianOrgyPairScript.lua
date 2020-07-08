@@ -7,7 +7,7 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 local Animations = include('orgy_couple_ref_movement.lua')
 
- local orgy_pair = piece("orgy_pair")
+ --local orgy_pair = piece("orgy_pair")
  local center = piece("center")
  local p1_l_body = piece("p1_l_body")
  local p1_right_u_leg = piece("p1_right_u_leg")
@@ -35,9 +35,6 @@ local Animations = include('orgy_couple_ref_movement.lua')
  local p2_right_u_leg = piece("p2_right_u_leg")
  local p2_right_l_leg = piece("p2_right_l_leg")
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-
 -- center = piece "center"
 -- left = piece "left"
 -- right = piece "right"
@@ -45,15 +42,15 @@ end
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function script.Create()
-    generatepiecesTableAndArrayCode(unitID, true)
+    -- generatepiecesTableAndArrayCode(unitID, true)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	
-	setupAnimation()
+	-- setupAnimation()
 
 	-- Spring.MoveCtrl.Enable(unitID,true)
 	-- x,y,z =Spring.GetUnitPosition(unitID)
 	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-	-- StartThread(AnimationTest)
+	StartThread(AnimationTest)
 end
 
 function setupAnimation()
@@ -67,9 +64,11 @@ function setupAnimation()
     local offsets = constructSkeleton(unitID, map.center, {0,0,0});
     
     for a,anim in pairs(Animations) do
+	if type(anim) == "table" then
         for i,keyframe in pairs(anim) do
             local commands = keyframe.commands;
             for k,command in pairs(commands) do
+				assert(command.p)
 				if command.p and type(command.p)== "string" then
 					command.p = map[command.p]
 				end
@@ -80,9 +79,10 @@ function setupAnimation()
                     Animations[a][i]['commands'][k].t = command.t - (offsets[command.p][command.a]);
                 end
 				
-			   Animations[a][i]['commands'][k].a = switchAxis(command.a)	
+			   -- Animations[a][i]['commands'][k].a = switchAxis(command.a)	
             end
         end
+    end
     end
 end
 
@@ -120,7 +120,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 				randoffset = math.random(randLowVal, randUpVal)/100
 			end
 			
-			if  not piecesToFilterOutTable[cmd.p] then	
+			if cmd.p and not piecesToFilterOutTable[cmd.p] then	
 				animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset) ,cmd.s*speedFactor)
 				
 			end
@@ -161,20 +161,16 @@ function constructSkeleton(unit, piece, offset)
     return bones;
 end
 
--- function AnimationTest()
--- while true do
-	-- resetAll(unitID)
-	-- Sleep(3000)
-		-- WTurn(right,z_axis,math.rad(-89),math.pi)
-		-- WTurn(left,z_axis,math.rad(89),math.pi)
-	-- Sleep(3000)
-	-- Turn(left,y_axis,math.rad(-89),math.pi)
-	-- WTurn(right,y_axis,math.rad(89),math.pi)
-	
-	-- Turn(left,y_axis,math.rad(89),math.pi)	
-	-- WTurn(right,y_axis,math.rad(-89),math.pi)
-	-- end
--- end
+function AnimationTest()
+setupAnimation()
+while true do
+	resetAll(unitID)
+	Sleep(1000)
+	PlayAnimation("REF_MOVEMENT",10)
+	Sleep(9000)
+	echo("Animation Test loop")
+	end
+end
 
 function script.Killed(recentDamage, _)
 
