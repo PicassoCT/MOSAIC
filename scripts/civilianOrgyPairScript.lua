@@ -64,16 +64,6 @@ local scriptEnv = {
 }
 
 local Animations = include('orgy_couple_ref_movement.lua')
-assert(Animations["REF_MOVEMENT"])
-assert(Animations["REF_MOVEMENT"][1])
-assert(Animations["REF_MOVEMENT"][1].time)
-assert(Animations["REF_MOVEMENT"][1].time == 1)
-assert(Animations["REF_MOVEMENT"][1].commands)
-assert(Animations["REF_MOVEMENT"][1].commands[1].c)
-assert(Animations["REF_MOVEMENT"][1].commands[1].p)
-assert(Animations["REF_MOVEMENT"][1].commands[1].a)
-assert(Animations["REF_MOVEMENT"][1].commands[1].t)
-assert(Animations["REF_MOVEMENT"][1].commands[1].s)
 
 
 -- center = piece "center"
@@ -86,12 +76,11 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID, true)
 
 	setupAnimation()
-	Hide(p1_penis)
 
 	-- Spring.MoveCtrl.Enable(unitID,true)
 	-- x,y,z =Spring.GetUnitPosition(unitID)
 	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-	StartThread(AnimationTest)
+	StartThread(FuckFest)
 end
 
 
@@ -154,6 +143,10 @@ function setupAnimation()
 			assert(commands)
             for k,command in pairs(commands) do
 			if command.p then
+				if type(command.p) == "string" then 
+				command.p = piece(command.p) 
+				Animations[a][i]['commands'][k].p = command.p
+				end
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
                 -- the t attribute needs to be adjusted for move commands from blender's absolute values
                 if (command.c == "move") then
@@ -175,25 +168,28 @@ function setupAnimation()
 end
             
 local animCmd = {['turn']=Spring.UnitScript.Turn,['move']= Spring.UnitScript.Move};
-function PlayAnimation(animname)
+function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local anim = Animations[animname];
 	assert(anim)
 	assert(#anim>0)
+	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
+	local speedFactor = speed or 1.0
+	
     for i = 1, #anim do
         local commands = anim[i].commands;
 		assert(commands)
         for j = 1,#commands do
             local cmd = commands[j];
 			assert(cmd)
-			if cmd.c and cmd.p then
+			if cmd.c and cmd.p and not piecesToFilterOutTable[cmd.p] then
 				echo("Playing Animation")
 				if not animCmd[cmd.c] then echo("Animation has no command "..cmd.c) end
-				animCmd[cmd.c](cmd.p,cmd.a,cmd.t,cmd.s);
+				animCmd[cmd.c](cmd.p,cmd.a,cmd.t,cmd.s*speedFactor);
 			end
         end
         if(i < #anim) then
             local t = anim[i+1]['time'] - anim[i]['time'];
-            Sleep(t*33); -- sleep works on milliseconds
+            Sleep(t*33* math.abs(1/speedFactor)); -- sleep works on milliseconds
         end
     end
 end
@@ -202,20 +198,22 @@ end
         
 function FuckFest()
 resetAll(unitID)
-allKeys = {}
+local allKeys = {}
 for k,v in pairs(Animations) do
 	allKeys[#allKeys+1] = k
 end
 
-
-while true do
+	Hide(center)
+	while true do
 	randTime = math.random(5,150)
 	Sleep(randTime)
-	Hide(center)
-	
-	PlayAnimation(allKeys[random(1,#allKeys)])
-	WaitForTurns(scriptEnv)
-	echo("Animation Test loop")
+	randoKey=allKeys[math.random(1,#allKeys)]
+	iterration = math.random(3,15)
+		for i=1,iterration do
+			speed= i/3
+			PlayAnimation("DOGGY_HEAP",{}, speed)
+			WaitForTurns(scriptEnv)
+		end
 	end
 end
 
