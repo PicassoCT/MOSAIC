@@ -3,241 +3,479 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
-
 include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 
-local Scene = piece('Scene');
-local center = piece('center');
-local p1_head = piece('p1_head');
-local p1_l_body = piece('p1_l_body');
-local p1_left_l_arm = piece('p1_left_l_arm');
-local p1_left_l_leg = piece('p1_left_l_leg');
-local p1_left_u_arm = piece('p1_left_u_arm');
-local p1_left_u_leg = piece('p1_left_u_leg');
-local p1_penis = piece('p1_penis');
-local p1_right_l_arm = piece('p1_right_l_arm');
-local p1_right_l_leg = piece('p1_right_l_leg');
-local p1_right_u_arm = piece('p1_right_u_arm');
-local p1_right_u_leg = piece('p1_right_u_leg');
-local p1_u_body = piece('p1_u_body');
-local p2_head = piece('p2_head');
-local p2_l_body = piece('p2_l_body');
-local p2_left_l_arm = piece('p2_left_l_arm');
-local p2_left_l_leg = piece('p2_left_l_leg');
-local p2_left_u_arm = piece('p2_left_u_arm');
-local p2_left_u_leg = piece('p2_left_u_leg');
-local p2_right_l_arm = piece('p2_right_l_arm');
-local p2_right_l_leg = piece('p2_right_l_leg');
-local p2_right_u_arm = piece('p2_right_u_arm');
-local p2_right_u_leg = piece('p2_right_u_leg');
-local p2_u_body = piece('p2_u_body');
-local scriptEnv = {	
-	Scene = Scene,
-	center = center,
-	p1_head = p1_head,
-	p1_l_body = p1_l_body,
-	p1_left_l_arm = p1_left_l_arm,
-	p1_left_l_leg = p1_left_l_leg,
-	p1_left_u_arm = p1_left_u_arm,
-	p1_left_u_leg = p1_left_u_leg,
-	p1_penis = p1_penis,
-	p1_right_l_arm = p1_right_l_arm,
-	p1_right_l_leg = p1_right_l_leg,
-	p1_right_u_arm = p1_right_u_arm,
-	p1_right_u_leg = p1_right_u_leg,
-	p1_u_body = p1_u_body,
-	p2_head = p2_head,
-	p2_l_body = p2_l_body,
-	p2_left_l_arm = p2_left_l_arm,
-	p2_left_l_leg = p2_left_l_leg,
-	p2_left_u_arm = p2_left_u_arm,
-	p2_left_u_leg = p2_left_u_leg,
-	p2_right_l_arm = p2_right_l_arm,
-	p2_right_l_leg = p2_right_l_leg,
-	p2_right_u_arm = p2_right_u_arm,
-	p2_right_u_leg = p2_right_u_leg,
-	p2_u_body = p2_u_body,
-	x_axis = x_axis,
-	y_axis = y_axis,
-	z_axis = z_axis,
+-- local Scene = piece("Scene")
+local center = piece("center")
+local p1_head = piece("p1_head")
+local p1_l_body = piece("p1_l_body")
+local p1_left_l_arm = piece("p1_left_l_arm")
+local p1_left_l_leg = piece("p1_left_l_leg")
+local p1_left_u_arm = piece("p1_left_u_arm")
+local p1_left_u_leg = piece("p1_left_u_leg")
+local p1_penis = piece("p1_penis")
+local p1_right_l_arm = piece("p1_right_l_arm")
+local p1_right_l_leg = piece("p1_right_l_leg")
+local p1_right_u_arm = piece("p1_right_u_arm")
+local p1_right_u_leg = piece("p1_right_u_leg")
+local p1_u_body = piece("p1_u_body")
+local p2_head = piece("p2_head")
+local p2_l_body = piece("p2_l_body")
+local p2_left_l_arm = piece("p2_left_l_arm")
+local p2_left_l_leg = piece("p2_left_l_leg")
+local p2_left_u_arm = piece("p2_left_u_arm")
+local p2_left_u_leg = piece("p2_left_u_leg")
+local p2_right_l_arm = piece("p2_right_l_arm")
+local p2_right_l_leg = piece("p2_right_l_leg")
+local p2_right_u_arm = piece("p2_right_u_arm")
+local p2_right_u_leg = piece("p2_right_u_leg")
+local p2_u_body = piece("p2_u_body")
+local scriptEnv = {
+    -- Scene = Scene,
+    center = center,
+    p1_head = p1_head,
+    p1_l_body = p1_l_body,
+    p1_left_l_arm = p1_left_l_arm,
+    p1_left_l_leg = p1_left_l_leg,
+    p1_left_u_arm = p1_left_u_arm,
+    p1_left_u_leg = p1_left_u_leg,
+    p1_penis = p1_penis,
+    p1_right_l_arm = p1_right_l_arm,
+    p1_right_l_leg = p1_right_l_leg,
+    p1_right_u_arm = p1_right_u_arm,
+    p1_right_u_leg = p1_right_u_leg,
+    p1_u_body = p1_u_body,
+    p2_head = p2_head,
+    p2_l_body = p2_l_body,
+    p2_left_l_arm = p2_left_l_arm,
+    p2_left_l_leg = p2_left_l_leg,
+    p2_left_u_arm = p2_left_u_arm,
+    p2_left_u_leg = p2_left_u_leg,
+    p2_right_l_arm = p2_right_l_arm,
+    p2_right_l_leg = p2_right_l_leg,
+    p2_right_u_arm = p2_right_u_arm,
+    p2_right_u_leg = p2_right_u_leg,
+    p2_u_body = p2_u_body,
+    x_axis = x_axis,
+    y_axis = y_axis,
+    z_axis = z_axis
 }
 
-local Animations = include('orgy_couple_ref_movement.lua')
+local allPieces = {
+    -- Scene = Scene,
+    p1_head = p1_head,
+    p1_l_body = p1_l_body,
+    p1_left_l_arm = p1_left_l_arm,
+    p1_left_l_leg = p1_left_l_leg,
+    p1_left_u_arm = p1_left_u_arm,
+    p1_left_u_leg = p1_left_u_leg,
+    p1_penis = p1_penis,
+    p1_right_l_arm = p1_right_l_arm,
+    p1_right_l_leg = p1_right_l_leg,
+    p1_right_u_arm = p1_right_u_arm,
+    p1_right_u_leg = p1_right_u_leg,
+    p1_u_body = p1_u_body,
+    p2_head = p2_head,
+    p2_l_body = p2_l_body,
+    p2_left_l_arm = p2_left_l_arm,
+    p2_left_l_leg = p2_left_l_leg,
+    p2_left_u_arm = p2_left_u_arm,
+    p2_left_u_leg = p2_left_u_leg,
+    p2_right_l_arm = p2_right_l_arm,
+    p2_right_l_leg = p2_right_l_leg,
+    p2_right_u_arm = p2_right_u_arm,
+    p2_right_u_leg = p2_right_u_leg,
+    p2_u_body = p2_u_body,
+}
 
-
--- center = piece "center"
--- left = piece "left"
--- right = piece "right"
--- aimpiece = piece "aimpiece"
-if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
-
-function script.Create()
-    -- generatepiecesTableAndArrayCode(unitID, true)
-
-	setupAnimation()
-
-	-- Spring.MoveCtrl.Enable(unitID,true)
-	-- x,y,z =Spring.GetUnitPosition(unitID)
-	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-	StartThread(FuckFest)
+-->Moves a Piece to a Position on the Ground in UnitSpace
+function moveUnitPieceToGroundPose(unitID, piecename, X, Z, speed, offset)
+    if not piecename then  error("No piecename given by "..UnitDefNames[Spring.GetUnitDefID(unitID)].name); return end
+    if not X or not Z then return end
+    loffset = offset or 0
+    x, globalHeightUnit, z = Spring.GetUnitPosition(unitID)
+    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, piecename)
+    if not x then return end
+    myHeight = Spring.GetGroundHeight(x, z)
+    heightdifference = math.abs(globalHeightUnit - myHeight)
+    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
+    Move(piecename, z_axis, heightdifference + loffset, speed, true)
 end
 
 
-local animCmd = {['turn']=Turn,['move']=Move};
-
-local axisSign ={
-	[x_axis]=1,
-	[y_axis]=1,
-	[z_axis]=1,
-}
-
-
-function constructSkeleton(unit, piece, offset)
-	echo("Enter constructSkeleton")
-    if (offset == nil) then
-        offset = {0,0,0};
-    end
-
-    local bones = {};
-    local info = Spring.GetUnitPieceInfo(unit,piece);
-
-    for i=1,3 do
-        info.offset[i] = offset[i]+info.offset[i];
-    end 
-
-    bones[piece] = info.offset;
-    local map = Spring.GetUnitPieceMap(unit);
-    local children = info.children;
-
-    if (children) then
-        for i, childName in pairs(children) do
-            local childId = map[childName];
-            local childBones = constructSkeleton(unit, childId, info.offset);
-            for cid, cinfo in pairs(childBones) do
-                bones[cid] = cinfo;
-            end
-        end
-    end        
-	echo("Leave constructSkeleton")
-    return bones;
+function getRotation(piecename)
+x,y,z=Spring.UnitScript.GetPieceRotation(piecename)
+return {x=x,y=y,z=z}
 end
+function getLowestPiecePoint()
+lowest = math.huge
 
-function setupAnimation()
-	echo("setupAnimation")
-	
-	local switchAxis = function(axis) 
-		if axis == z_axis then return y_axis end
-		if axis == y_axis then return z_axis end
-		return axis
+	for k,v in pairs(allPieces) do
+	x,y,z  = Spring.GetUnitPiecePosDir(unitID, v)
+	if y < lowest then lowest = y end
+
 	end
-	
-	assert(Spring.GetUnitPieceMap)
-    local map = Spring.GetUnitPieceMap(unitID);
-	assert(map)
-    local offsets = constructSkeleton(unitID, map.Scene, {0,0,0});
-    
-    for a,anim in pairs(Animations) do
-        for i,keyframe in pairs(anim) do
-            local commands = keyframe.commands;
-			assert(commands)
-            for k,command in pairs(commands) do
-			if command.p then
-				if type(command.p) == "string" then 
-				command.p = piece(command.p) 
-				Animations[a][i]['commands'][k].p = command.p
-				end
-                -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
-                -- the t attribute needs to be adjusted for move commands from blender's absolute values
-                if (command.c == "move") then
-                    local adjusted =  command.t - (offsets[command.p][command.a]);
-                    Animations[a][i]['commands'][k].t = command.t - (offsets[command.p][command.a]);
-                end
-				
-				if type(command.p) == "string" then
-				 Animations[a][i]['commands'][k].p = piece(command.p)
-				end
-				
-				Animations[a][i]['commands'][k].a = switchAxis(command.a)	
-				
-            end
-            end
-        end
-   end
-   echo("Leave setupAnimation")
-end
-            
-local animCmd = {['turn']=Spring.UnitScript.Turn,['move']= Spring.UnitScript.Move};
-function PlayAnimation(animname, piecesToFilterOutTable, speed)
-    local anim = Animations[animname];
-	assert(anim)
-	assert(#anim>0)
-	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
-	local speedFactor = speed or 1.0
-	
-    for i = 1, #anim do
-        local commands = anim[i].commands;
-		assert(commands)
-        for j = 1,#commands do
-            local cmd = commands[j];
-			assert(cmd)
-			if cmd.c and cmd.p and not piecesToFilterOutTable[cmd.p] then
-				echo("Playing Animation")
-				if not animCmd[cmd.c] then echo("Animation has no command "..cmd.c) end
-				animCmd[cmd.c](cmd.p,cmd.a,cmd.t,cmd.s*speedFactor);
-			end
-        end
-        if(i < #anim) then
-            local t = anim[i+1]['time'] - anim[i]['time'];
-            Sleep(t*33* math.abs(1/speedFactor)); -- sleep works on milliseconds
-        end
-    end
-end
---doggy
---doggystanding
-        
-function FuckFest()
-resetAll(unitID)
-local allKeys = {}
-for k,v in pairs(Animations) do
-	allKeys[#allKeys+1] = k
+
+return lowest - getUnitGroundHeigth(unitID)
 end
 
-	Hide(center)
-	while true do
-	randTime = math.random(5,150)
-	Sleep(randTime)
-	randoKey=allKeys[math.random(1,#allKeys)]
-	iterration = math.random(3,15)
-		for i=1,iterration do
-			speed= i/3
-			PlayAnimation("DOGGY_HEAP",{}, speed)
-			WaitForTurns(scriptEnv)
+local Tieferlegen = 0
+function allTheWayDown()
+while true do
+	h = getLowestPiecePoint(allPieces)
+	moveUnitPieceToGroundPose(unitID, center, 0, 0, math.abs(h) + 1, -h -Tieferlegen)
+	Sleep(250)
+end
+
+end
+function recursiveTurn(element, timeInMs)
+	if element.pId then 
+	 tSyncIn(element.pId, element.xr, element.yr, element.zr ,timeInMs, Spring.UnitScript)
+	else
+		for k,v in pairs(element) do
+			if type(v)== "table" then
+			recursiveTurn(v, timeInMs)
+			end
 		end
 	end
 end
 
-function script.Killed(recentDamage, _)
+function recursiveHideShow(element, boolShow)
+	if element.pId then 
+		if boolShow == true then
+			Show(element.pId)
+		else
+			Hide(element.pId)
+		end
+	else
+		for k,v in pairs(element) do
+			if type(v)== "table" then
+			recursiveHideShow(v)
+			end
+		end
+	end
+end
 
+function limitLowLeg(val)
+return math.max(-175,math.min(0, val))
+end
+
+--The things we do for love
+ function genericSexPos() 
+	itterationMax = 25
+	iterrations = math.random(5,itterationMax)
+	grindDir =  math.random(0,1)*180	
+	grindPos = 0;if math.random(1,4) > 3 then 	grindPos = 180	end
+	sideLines = 0;	if math.random(1,4) > 3 then sideLines = 90*randSign() end
+	
+
+	sidesign=-1
+	grindSign= 1;	if grindDir == 180 then grindSign= -1 end
+	hisArm= math.random(15,	45)
+	hisLeg= math.random(5,45)
+	
+	herArmValue = math.random(35,	60)
+	herLegAngleOrg =  math.random(0,120)
+	herLegInwardRot=  math.random(-70,70) 
+	if herLegAngleOrg > 70 then herLegInwardRot = math.random(-30,30) end
+	orgPos=
+	{
+	she ={
+	head ={
+		pId= p2_head,
+		xr = math.random(-25,-10),
+		yr = 0,
+		zr = 0,
+	},
+	up_body={
+		pId= p2_u_body,
+		xr=  math.random(-15,-5),
+		yr=0,
+		zr=0	
+	},
+arm={
+		left={
+			up={
+				pId= p2_left_u_arm,
+				xr=0,
+				yr=math.random(35,90),
+				zr=25 + herArmValue,
+			},
+			low={
+				pId= p2_left_l_arm,
+				xr=0,
+				yr=0,
+				zr=herArmValue*-3,
+			}	
+		},
+		right={
+			up={
+				pId= p2_right_u_arm,
+				xr=0,
+				yr= math.random(35,90)*sidesign,
+				zr=25 + herArmValue *sidesign
+			},
+			low={
+				pId= p2_right_l_arm,
+				xr=0,
+				yr=0,
+				zr=herArmValue*-3*sidesign
+			}	
+		},	
+	},
+	low_body = {
+		pId= p2_l_body,
+		xr =  math.random(-10,10),
+		yr = grindPos + math.random(-10,10),
+		zr = grindDir,
+	},
+	
+	leg={
+		left={
+			up={
+				pId= p2_left_u_leg,
+				xr = herLegAngleOrg*-1,
+				yr = math.random(-60,-5),
+				zr = herLegInwardRot
+			},
+			low={
+				pId= p2_left_l_leg,
+				xr = math.min( herLegAngleOrg* -2, 0) ,
+				yr = 0,
+				zr = 0,
+			}		
+		},
+		right={
+			up={
+				pId= p2_right_u_leg,
+				xr = herLegAngleOrg*-1,
+				yr =  math.random(-60,-5) *sidesign,
+				zr = herLegInwardRot*sidesign
+			},
+			low={
+				pId= p2_right_l_leg,
+				xr = math.random(0,70),
+				yr = 0,
+				zr = 0,
+			}		
+		},
+	}	
+	},
+	he={
+	
+	head ={
+		pId= p1_head,
+		xr = math.random(-15,-5),
+		yr = 0,
+		zr = 0,
+	},
+	up_body={
+		pId= p1_u_body,
+		xr=  math.random(-10,10),
+		yr=0,
+		zr=0	
+	},
+	arm={
+		left={
+			up={
+				pId= p1_left_u_arm,
+				xr=0,
+				yr=81.5,
+				zr=25 - hisArm,
+			},
+			low={
+				pId= p1_left_l_arm,
+				xr=0,
+				yr=0,
+				zr=hisArm*-3,
+			}	
+		},
+		right={
+			up={
+				pId= p1_right_u_arm,
+				xr=0,
+				yr=81.5*sidesign,
+				zr=25 + hisArm*sidesign
+			},
+			low={
+				pId= p1_right_l_arm,
+				xr=0,
+				yr=0,
+				zr=hisArm*-3*sidesign
+			}	
+		},	
+	},
+	leg={
+		left={
+			up={
+				pId= p1_left_u_leg,
+				xr =hisLeg*-1,
+				yr = 0,
+				zr = 0
+			},
+			low={
+				pId= p1_left_l_leg,
+				xr = hisLeg*2 +math.random(-10,10),
+				yr = 0,
+				zr = 0,
+			}		
+		},
+		right={
+			up={
+				pId= p1_right_u_leg,
+				xr = 0 ,
+				yr = 0,
+				zr = 0
+			},
+			low={
+				pId= p1_right_l_leg,
+				xr = 0, 
+				yr = 0,
+				zr = 0,
+			}		
+		},
+		},
+	low_body={
+		pId=p1_l_body,
+		xr = math.random(-100,80),
+		yr =  sideLines,
+		zr = 0, --math.random(-1,1)*90,
+		
+		}
+	}
+	}
+	
+	--She
+	--mirror arms	
+	if maRa()==true then
+		orgPos.she.arm.right.up.xr= orgPos.she.arm.left.up.xr
+		orgPos.she.arm.right.up.yr= orgPos.she.arm.left.up.yr
+		orgPos.she.arm.right.up.zr= orgPos.she.arm.left.up.zr*sidesign 	
+		
+		orgPos.she.arm.right.low.xr= orgPos.she.arm.left.low.xr
+		orgPos.she.arm.right.low.yr= orgPos.she.arm.left.low.yr
+		orgPos.she.arm.right.low.zr= orgPos.she.arm.left.low.zr*sidesign 		
+	end
+	
+	
+	orgPos.she.leg.left.low.xr = math.min(150, -2*orgPos.she.leg.left.up.xr)
+	
+	--mirror legs
+	if math.random(1,4) < 4  then
+		orgPos.she.leg.right.up.xr= orgPos.she.leg.left.up.xr
+		orgPos.she.leg.right.up.yr= orgPos.she.leg.left.up.yr* sidesign
+		orgPos.she.leg.right.up.zr= orgPos.she.leg.left.up.zr 	*sidesign	
+
+		orgPos.she.leg.right.low.xr=  orgPos.she.leg.left.low.xr
+		orgPos.she.leg.right.low.yr= orgPos.she.leg.left.low.yr
+		orgPos.she.leg.right.low.zr= orgPos.she.leg.left.low.zr 
+	end
+	
+	local poundPos = deepcopy(orgPos)
+	--she
+	poundPos.she.up_body.xr =  math.random(10,40)
+	poundPos.she.low_body.xr = poundPos.she.low_body.xr +  math.random(0,5)*randSign() 
+	poundPos.she.head.xr =  math.random(0,30)
+		
+	armOffset= math.random(-10,10)
+	poundPos.she.arm.right.up.zr = poundPos.she.arm.right.up.zr + armOffset
+	poundPos.she.arm.left.up.zr = poundPos.she.arm.left.up.zr + armOffset
+	
+	poundPos.she.arm.right.low.zr = poundPos.she.arm.right.low.zr - armOffset
+	poundPos.she.arm.left.low.zr = poundPos.she.arm.left.low.zr - armOffset
+	
+	--he
+	if math.random(1,4)>3 then
+		orgPos.he.leg.right.up.xr= orgPos.he.leg.left.up.xr
+		orgPos.he.leg.right.up.yr= orgPos.he.leg.left.up.yr* sidesign
+		orgPos.he.leg.right.up.zr= orgPos.he.leg.left.up.zr 	*sidesign	
+										  
+		orgPos.he.leg.right.low.xr=  orgPos.he.leg.left.low.xr
+		orgPos.he.leg.right.low.yr= orgPos.he.leg.left.low.yr
+		orgPos.he.leg.right.low.zr= orgPos.he.leg.left.low.zr 
+	end
+	
+	poundPos.he.up_body.xr = poundPos.he.up_body.xr  + math.random(-10,10)
+	poundPos.he.head.xr =  math.random(15,35)
+
+	legOffset = math.random(-25,-15)
+	poundPos.he.leg.right.up.xr = 	poundPos.he.leg.right.up.xr + legOffset
+	poundPos.he.leg.left.up.xr = 	poundPos.he.leg.left.up.xr + legOffset
+	poundPos.he.leg.right.low.xr = 	poundPos.he.leg.right.low.xr - 2* legOffset
+	poundPos.he.leg.left.low.xr = 	poundPos.he.leg.left.low.xr - 2* legOffset
+	
+
+ 
+	recursiveHideShow(orgPos.he, false)
+	for i=1, iterrations do
+		--contionous change
+		orgPos.she.up_body.xr = orgPos.she.up_body.xr + math.random(-2,2)
+			
+		legOffset = math.random(5,20)
+		poundPos.she.leg.right.up.xr = 	orgPos.she.leg.right.up.xr - legOffset
+		poundPos.she.leg.left.up.xr = 	orgPos.she.leg.left.up.xr - legOffset
+		
+		poundPos.she.leg.right.low.xr =  limitLowLeg(orgPos.she.leg.right.low.xr + (2* legOffset)*randSign())
+		poundPos.she.leg.left.low.xr = 	 limitLowLeg(orgPos.she.leg.left.low.xr + (2* legOffset)*randSign())
+		
+		--he
+		armOffset = math.random(-20,20)		
+		poundPos.he.arm.left.up.zr = orgPos.he.arm.left.up.zr + (armOffset*3)
+		poundPos.he.arm.left.low.zr = orgPos.he.arm.left.low.zr - armOffset	
+		poundPos.he.arm.left.low.xr = math.random(0,10)*sidesign
+				
+		armOffset = math.random(-20,20)		
+		poundPos.he.arm.right.up.zr = orgPos.he.arm.right.up.zr + (armOffset*sidesign*3)
+		poundPos.he.arm.right.low.zr = orgPos.he.arm.right.low.zr - armOffset*sidesign
+		
+		poundPos.he.arm.left.low.xr = math.random(0,10)
+		
+	
+		--Transfer to orgPos
+		speed= math.max(15, ((2*itterationMax)/iterrations)*i)
+		timeInterval = math.ceil(25/ speed)*1000
+		-- recursiveTurn(orgPos.she.leg, timeInterval)
+		recursiveTurn(orgPos.she.arm, timeInterval)
+		Move(p2_l_body,y_axis,0, speed)
+		WaitForTurns(allPieces)
+		WaitForMove(p2_l_body,y_axis)
+		 
+		
+	 
+		-- recursiveTurn(poundPos.she.leg, timeInterval)
+		recursiveTurn(poundPos.she.arm, timeInterval)
+		
+		--transfer to poundPos
+		Move(p2_l_body,y_axis,25*grindSign, speed)
+		WaitForTurns(allPieces)
+		WaitForMove(p2_l_body, y_axis) 
+	 		 
+		
+	end
+end
+
+
+
+function script.Create()
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	StartThread(FuckFest)
+end
+
+function FuckFest()
+	resetAll(unitID)
+	Hide(center)
+	StartThread(allTheWayDown)
+	while true do
+
+		genericSexPos()
+
+		Sleep(100)
+	end
+end
+
+
+function script.Killed(recentDamage, _)
     --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
-
-
-function script.Activate()
-
-    return 1
-end
-
-function script.Deactivate()
-
-    return 0
-end
-
--- function script.QueryBuildInfo()
-    -- return center
--- end
-
--- Spring.SetUnitNanoPieces(unitID, { center })
-

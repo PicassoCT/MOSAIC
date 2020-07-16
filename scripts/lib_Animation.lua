@@ -523,6 +523,11 @@ function minimalAbsoluteDistance(goalDeg, startDeg)
 	return absDist
 end
 
+function tInTime(piecename, taxis, goalDeg, timeInMs, rot)
+assert(type(rot)=="table")
+turnInTime(piecename, taxis, goalDeg, timeInMs, math.deg(rot.x), math.deg(rot.y), math.deg(rot.z))
+end
+
 -->Turns a piece in the speed necessary to arrive after x Milliseconds 
 --> overrirdes the spring shortes path turns
 function turnInTime(piecename, taxis, goalDeg, timeInMs, x_startdeg, y_startdeg, z_startdeg, boolWait)
