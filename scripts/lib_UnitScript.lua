@@ -264,7 +264,7 @@ function setSpeedEnv(k, val)
 	end
 end
 
-function isUnitFlying(unitID)
+function isUnitFlying(unitID) 
 x,y,z = Spring.GetUnitPosition(unitID)
 h= Spring.GetGroundHeight(x,z)
 return y - 15 > h 
