@@ -4,6 +4,8 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 include "lib_mosaic.lua"
+
+
 TablesOfPiecesGroups = {}
 
 -- local Scene = piece("Scene")
@@ -120,7 +122,7 @@ lowest = math.huge
 return lowest - getUnitGroundHeigth(unitID)
 end
 
-local Tieferlegen = 0
+local Tieferlegen = 50
 function allTheWayDown()
 while true do
 	h = getLowestPiecePoint(allPieces)
@@ -163,23 +165,43 @@ end
 
 --The things we do for love
  function genericSexPos() 
-	itterationMax = 25
-	iterrations = math.random(5,itterationMax)
-	grindDir =  math.random(0,1)*180	
-	grindPos = 0;if math.random(1,4) > 3 then 	grindPos = 180	end
-	sideLines = 0;	if math.random(1,4) > 3 then sideLines = 90*randSign() end
-	
+	local itterationMax = 25
+	local iterrations = math.random(5,itterationMax)
+	local grindDir =  math.random(0,1)*180	
+	local grindPos = 0;if math.random(1,4) > 3 then 	grindPos = 180	end
+	local sideLines = 0;	if math.random(1,4) > 3 then sideLines = 90*randSign() end
+	rVal= math.random(-50,50)/15
+	Spin(center,y_axis, math.rad(rVal), 0.1)
+	local hisPosition = math.random(-90,130)
+	if maRa()==true then 
+		hisPosition = math.max(-90, math.random(-200,0))
+	else
+		hisPosition = math.min(110, math.random(0,200))
+	end
 
-	sidesign=-1
-	grindSign= 1;	if grindDir == 180 then grindSign= -1 end
-	hisArm= math.random(15,	45)
-	hisLeg= math.random(5,45)
+
+	if sideLines ~=0 then
+		downValue = -500
+	else
+		xs= math.min(1.0, math.abs(hisPosition/100))		 
+		downValue= xs*-420
+	end		
 	
-	herArmValue = math.random(35,	60)
-	herLegAngleOrg =  math.random(0,120)
-	herLegInwardRot=  math.random(-70,70) 
+	Move(center,z_axis, downValue, math.abs(downValue*2))
+
+	local sidesign=-1
+	local grindSign= 1;	if grindDir == 180 then grindSign= -1 end
+	local hisArm= math.random(15,	45)
+	local hisLeg= math.random(5,45)
+	
+	local herArmValue = math.random(35,	60)
+	local herLegAngleOrg =  math.random(0,120)
+	local herLegInwardRot=  math.random(-70,70) 
+	if sideLines ~=0 then herLegAngleOrg= math.random(0,20); herLegInwardRot = math.random(-20,20) end
 	if herLegAngleOrg > 70 then herLegInwardRot = math.random(-30,30) end
-	orgPos=
+	
+	
+local orgPos=
 	{
 	she ={
 	head ={
@@ -198,13 +220,13 @@ arm={
 		left={
 			up={
 				pId= p2_left_u_arm,
-				xr=0,
-				yr=math.random(35,90),
+				xr=math.random(15,45),
+				yr=math.random(35,80),
 				zr=25 + herArmValue,
 			},
 			low={
 				pId= p2_left_l_arm,
-				xr=0,
+				xr=math.random(-15,45),
 				yr=0,
 				zr=herArmValue*-3,
 			}	
@@ -213,7 +235,7 @@ arm={
 			up={
 				pId= p2_right_u_arm,
 				xr=0,
-				yr= math.random(35,90)*sidesign,
+				yr= math.random(35,85)*sidesign*-1,
 				zr=25 + herArmValue *sidesign
 			},
 			low={
@@ -338,7 +360,7 @@ arm={
 		},
 	low_body={
 		pId=p1_l_body,
-		xr = math.random(-100,80),
+		xr = hisPosition,
 		yr =  sideLines,
 		zr = 0, --math.random(-1,1)*90,
 		
@@ -348,14 +370,23 @@ arm={
 	
 	--She
 	--mirror arms	
-	if maRa()==true then
+	if math.random(1,4) < 3  then
 		orgPos.she.arm.right.up.xr= orgPos.she.arm.left.up.xr
-		orgPos.she.arm.right.up.yr= orgPos.she.arm.left.up.yr
+		orgPos.she.arm.right.up.yr= orgPos.she.arm.left.up.yr*sidesign
 		orgPos.she.arm.right.up.zr= orgPos.she.arm.left.up.zr*sidesign 	
 		
 		orgPos.she.arm.right.low.xr= orgPos.she.arm.left.low.xr
 		orgPos.she.arm.right.low.yr= orgPos.she.arm.left.low.yr
 		orgPos.she.arm.right.low.zr= orgPos.she.arm.left.low.zr*sidesign 		
+	else -- random flailing arm
+	
+		orgPos.she.arm.right.up.xr=0
+		orgPos.she.arm.right.up.yr= math.random(35,85)*sidesign
+		orgPos.she.arm.right.up.zr=25 + math.random(-60,	60) *sidesign
+	
+		orgPos.she.arm.right.low.xrxr=math.random(-10,30)
+		orgPos.she.arm.right.low.yryr=0
+		orgPos.she.arm.right.low.zrzr= math.random(-60,	60)*-3*sidesign	
 	end
 	
 	
@@ -378,18 +409,13 @@ arm={
 	poundPos.she.low_body.xr = poundPos.she.low_body.xr +  math.random(0,5)*randSign() 
 	poundPos.she.head.xr =  math.random(0,30)
 		
-	armOffset= math.random(-10,10)
-	poundPos.she.arm.right.up.zr = poundPos.she.arm.right.up.zr + armOffset
-	poundPos.she.arm.left.up.zr = poundPos.she.arm.left.up.zr + armOffset
-	
-	poundPos.she.arm.right.low.zr = poundPos.she.arm.right.low.zr - armOffset
-	poundPos.she.arm.left.low.zr = poundPos.she.arm.left.low.zr - armOffset
+
 	
 	--he
 	if math.random(1,4)>3 then
 		orgPos.he.leg.right.up.xr= orgPos.he.leg.left.up.xr
 		orgPos.he.leg.right.up.yr= orgPos.he.leg.left.up.yr* sidesign
-		orgPos.he.leg.right.up.zr= orgPos.he.leg.left.up.zr 	*sidesign	
+		orgPos.he.leg.right.up.zr= orgPos.he.leg.left.up.zr* sidesign	
 										  
 		orgPos.he.leg.right.low.xr=  orgPos.he.leg.left.low.xr
 		orgPos.he.leg.right.low.yr= orgPos.he.leg.left.low.yr
@@ -404,19 +430,17 @@ arm={
 	poundPos.he.leg.left.up.xr = 	poundPos.he.leg.left.up.xr + legOffset
 	poundPos.he.leg.right.low.xr = 	poundPos.he.leg.right.low.xr - 2* legOffset
 	poundPos.he.leg.left.low.xr = 	poundPos.he.leg.left.low.xr - 2* legOffset
-	
 
- 
-	recursiveHideShow(orgPos.he, false)
 	for i=1, iterrations do
 		--contionous change
 		orgPos.she.up_body.xr = orgPos.she.up_body.xr + math.random(-2,2)
 			
 		legOffset = math.random(5,20)
 		poundPos.she.leg.right.up.xr = 	orgPos.she.leg.right.up.xr - legOffset
-		poundPos.she.leg.left.up.xr = 	orgPos.she.leg.left.up.xr - legOffset
-		
 		poundPos.she.leg.right.low.xr =  limitLowLeg(orgPos.she.leg.right.low.xr + (2* legOffset)*randSign())
+
+		legOffset = math.random(5,20)
+		poundPos.she.leg.left.up.xr = 	orgPos.she.leg.left.up.xr - legOffset		
 		poundPos.she.leg.left.low.xr = 	 limitLowLeg(orgPos.she.leg.left.low.xr + (2* legOffset)*randSign())
 		
 		--he
@@ -431,27 +455,31 @@ arm={
 		
 		poundPos.he.arm.left.low.xr = math.random(0,10)
 		
+		--she
+		armOffset= math.random(5,20)
+		poundPos.she.arm.right.up.zr = orgPos.she.arm.right.up.zr - armOffset
+		poundPos.she.arm.right.low.zr = orgPos.she.arm.right.low.zr - armOffset
+		
+		armOffset= math.random(5,20)
+		poundPos.she.arm.left.up.zr = orgPos.she.arm.left.up.zr + (armOffset)
+		poundPos.she.arm.left.low.zr = orgPos.she.arm.left.low.zr - armOffset
+		
 	
 		--Transfer to orgPos
-		speed= math.max(15, ((2*itterationMax)/iterrations)*i)
+		speed= math.max(25, ((2*itterationMax)/iterrations)*i)
 		timeInterval = math.ceil(25/ speed)*1000
-		-- recursiveTurn(orgPos.she.leg, timeInterval)
-		recursiveTurn(orgPos.she.arm, timeInterval)
+		recursiveTurn(orgPos.she, timeInterval)
+		recursiveTurn(orgPos.he, timeInterval)
 		Move(p2_l_body,y_axis,0, speed)
 		WaitForTurns(allPieces)
-		WaitForMove(p2_l_body,y_axis)
-		 
-		
+		WaitForMove(p2_l_body,y_axis)		
 	 
-		-- recursiveTurn(poundPos.she.leg, timeInterval)
-		recursiveTurn(poundPos.she.arm, timeInterval)
-		
+		recursiveTurn(poundPos.she, timeInterval)
+		recursiveTurn(poundPos.he, timeInterval)
 		--transfer to poundPos
 		Move(p2_l_body,y_axis,25*grindSign, speed)
 		WaitForTurns(allPieces)
-		WaitForMove(p2_l_body, y_axis) 
-	 		 
-		
+		WaitForMove(p2_l_body, y_axis) 		
 	end
 end
 
@@ -459,18 +487,21 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+	_,maxHealth = Spring.GetUnitHealth(unitID)
+	Spring.SetUnitHealth(unitID, {health= maxHealth})
 	StartThread(FuckFest)
+	StartThread(lifeTime,unitID, GG.GameConfig.Aerosols.orgyanyl.VictimLifetime, false, true)
+	Spring.SetUnitNeutral(unitID,true)
+	Spring.SetUnitNoSelect(unitID,true)
 end
 
 function FuckFest()
 	resetAll(unitID)
 	Hide(center)
-	StartThread(allTheWayDown)
+	-- StartThread(allTheWayDown)
 	while true do
 
 		genericSexPos()
-
-		Sleep(100)
 	end
 end
 

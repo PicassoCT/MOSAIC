@@ -129,7 +129,18 @@ function getGameConfig()
 	integrationRadius = 75,
 	maxTimeForSlowMotionRealTimeSeconds = 10,
 	addSlowMoTimeInMsPerCitizen = 150,
-	}
+	
+	--Aerosols
+	Aerosols={
+	orgyanyl={
+	sprayTimePerUnitInMs = 2*60*1000, --2mins
+	VictimLifetime = 60000,
+	},
+	wanderlost={sprayTimePerUnitInMs = 2*60*1000, --2mins},
+	tollwutox={sprayTimePerUnitInMs = 2*60*1000, --2mins},
+	depressol={sprayTimePerUnitInMs = 2*60*1000, --2mins},
+	},
+}
 end
 
 GG.GameConfig = getGameConfig()

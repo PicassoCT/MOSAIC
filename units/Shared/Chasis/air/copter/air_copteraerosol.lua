@@ -49,7 +49,7 @@ nanocolor=[[0.20 0.411 0.611]],
 	LeaveTracks = false, 
 	cruiseAlt= 128,
 
-	ActivateWhenBuilt=1,
+	ActivateWhenBuilt=0,
 	maxBank=0.4,
 	myGravity =0.5,
 	mass                = 250,
@@ -67,7 +67,11 @@ nanocolor=[[0.20 0.411 0.611]],
 	  
 	 sfxtypes = {
 		explosiongenerators = {
-							"custom:bigbulletimpact"
+							"custom:depressol" ,
+							"custom:tollwutox" ,
+							"custom:orgyanyl"  ,
+							"custom:wanderlost",
+							
 							  },
 				},
 				
