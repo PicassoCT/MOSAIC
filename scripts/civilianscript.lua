@@ -638,17 +638,8 @@ normalBehavourStateMachine = {
 									end,
 }
 
-AerosolTypes = getChemTrailTypes()
-influencedStateMachine ={
-	[AerosolTypes.orgyanyl] = function (lastState, currentState)
-							 end,
-	[AerosolTypes.wanderlost] = function (lastState, currentState)
-							 end,
-	[AerosolTypes.tollwutox] = function (lastState, currentState)
-							 end,
-	[AerosolTypes.depressol] = function (lastState, currentState)
-							 end
-}
+
+influencedStateMachine = getInfluencedStateMachine(UnitId, UnitDefs)
 
 oldBehaviourState =  ""
 function beeHaviourStateMachine(newState)
@@ -660,7 +651,7 @@ SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
 	end
 	
 	while true do
-		if influencedStateMachine[newState] then influencedStateMachine[newState](oldBehaviourState, newState) end
+		if influencedStateMachine[newState] then influencedStateMachine[newState](oldBehaviourState, newState, unitID) end
 		if normalBehavourStateMachine[newState] then normalBehavourStateMachine[newState](oldBehaviourState, newState) end
 		-- Verschiedene States
 		Sleep(250)

@@ -264,6 +264,14 @@ function setSpeedEnv(k, val)
 	end
 end
 
+function isUnitFlying(unitID)
+x,y,z = Spring.GetUnitPosition(unitID)
+h= Spring.GetGroundHeight(x,z)
+return y - 15 > h 
+
+end
+
+
 --> Sets the Speed of a Unit
 function setUnitValueExternal(k, cobArgh, val)
 	env = Spring.UnitScript.GetScriptEnv(k)

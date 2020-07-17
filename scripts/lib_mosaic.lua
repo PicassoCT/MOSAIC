@@ -132,13 +132,15 @@ function getGameConfig()
 	
 	--Aerosols
 	Aerosols={
+	sprayRange = 200,
 	orgyanyl={
+	
 	sprayTimePerUnitInMs = 2*60*1000, --2mins
 	VictimLifetime = 60000,
 	},
-	wanderlost={sprayTimePerUnitInMs = 2*60*1000, --2mins},
-	tollwutox={sprayTimePerUnitInMs = 2*60*1000, --2mins},
-	depressol={sprayTimePerUnitInMs = 2*60*1000, --2mins},
+	wanderlost={sprayTimePerUnitInMs = 2*60*1000 },--2mins
+	tollwutox={sprayTimePerUnitInMs = 2*60*1000,}, --2mins
+	depressol={sprayTimePerUnitInMs = 2*60*1000,}, --2mins
 	},
 }
 end
@@ -158,6 +160,17 @@ return {
 	["tollwutox"] = "tollwutox",
 	["depressol"] = "depressol"
 }
+end
+
+function getChemTrailInfluencedTypes(UnitDefs)
+	assert(UnitDefs)
+	local UnitDefNames =  getUnitDefNames(UnitDefs)
+
+	typeTable = {"civilianagent"}
+	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
+	
+	return getTypeTable(UnitDefNames, typeTable)
+
 end
 
 function getScrapheapTypeTable(UnitDefs)
@@ -1112,4 +1125,35 @@ function showHideIconEnv( unitID, arg)
 		Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, arg)
     end
 end
+
+function getInfluencedStateMachine(unitID, UnitDefs)
+AerosolTypes = getChemTrailTypes()
+
+
+return{
+	[AerosolTypes.orgyanyl] = function (lastState, currentState, unitID)
+								Spring.Echo("Wee, im under influence of "..AerosolTypes.orgyanyl)
+								createUnitAtUnit(Spring.GetGaiaTeamID(), "civilian_orgy_pair", unitID, 0, 0, 0)
+								Spring.DestroyUnit(unitID, false, true)
+								return currentState
+							end,
+	[AerosolTypes.wanderlost] = function (lastState, currentState, unitID)
+		Spring.Echo("Wee, im under influence of "..AerosolTypes.wanderlost)
+										return currentState
+
+							 end,
+	[AerosolTypes.tollwutox] = function (lastState, currentState, unitID)
+		Spring.Echo("Wee, im under influence of "..AerosolTypes.tollwutox)
+										return currentState
+
+							 end,
+	[AerosolTypes.depressol] = function (lastState, currentState, unitID)
+		Spring.Echo("Wee, im under influence of "..AerosolTypes.depressol)
+										return currentState
+
+							 end
+}
+
+end
+
    
