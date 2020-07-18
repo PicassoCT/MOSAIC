@@ -1150,17 +1150,14 @@ InfluenceStateMachines = {
 								--Init 
 								if currentState == InfStates.Init then
 									val= math.random(10, 60)/1000
-									for i=1,3 do
-										spinT(Spring.GetUnitPieceMap(unitID), i, val*randSign(), 0000015)
-									end
+									spinT(Spring.GetUnitPieceMap(unitID), z_axis, val*randSign(), 0000015)
 									currentState = InfStates.PreOutbreak
 								end
 								
 								if currentState == InfStates.PreOutbreak then
 									val= math.random(10, 60)/1000
-									for i=1,3 do
-										spinT(Spring.GetUnitPieceMap(unitID), i, val*randSign(), 0000015)
-									end
+									spinT(Spring.GetUnitPieceMap(unitID), z_axis, val*randSign(), 0000015)
+
 									al = Spring.GetUnitNearestAlly(unitID)
 									if al and civilianTypes[Spring.GetUnitDefID(al)] then
 										x,y,z = Spring.GetUnitPosition(al)
@@ -1238,7 +1235,7 @@ InfluenceStateMachines = {
 								gf =Spring.GetGameFrame()
 								if  gf % 27 == 0 then
 									for i=1,3 do
-										spinT(Spring.GetUnitPieceMap(unitID), i, val*-1, val, 0.5)
+										spinT(Spring.GetUnitPieceMap(unitID), i, val*-1, val, 0.125)
 									end											
 								end
 								
