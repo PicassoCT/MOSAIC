@@ -24,6 +24,7 @@ function instanciate()
 end
 
 function script.Create()	
+    Spring.SetUnitBlocking(unitID, false, false, false)
 	instanciate()
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -50,6 +51,7 @@ end
 
 function integrateNewMembers()
 	instanciate()
+	waitTillComplete(unitID)
 	x,y,z= Spring.GetUnitPosition(unitID)
 	local integrateAbleUnits= getMobileCivilianDefIDTypeTable(UnitDefs)
 	px,py,pz= Spring.GetUnitPosition(unitID)

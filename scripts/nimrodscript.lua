@@ -18,6 +18,7 @@ if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 
 boolBuilding = false
 function script.Create()
+    Spring.SetUnitBlocking(unitID, false, false, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	Hide(projectile)
 	Move(projectile,z_axis, -210,0)

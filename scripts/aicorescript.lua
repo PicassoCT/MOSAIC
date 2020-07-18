@@ -23,7 +23,8 @@ function instanciate()
 end
 
 function script.Create()
-	
+	Spring.SetUnitBlocking(unitID, false, false, false)
+
 	instanciate()
 	generatepiecesTableAndArrayCode(unitID)
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

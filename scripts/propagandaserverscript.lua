@@ -13,6 +13,7 @@ GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	
 function script.Create()
+    Spring.SetUnitBlocking(unitID, false, false, false)
     team = Spring.GetUnitTeam(unitID)
     if not GG.Propgandaservers then  GG.Propgandaservers ={} end
     if not GG.Propgandaservers[team] then  GG.Propgandaservers[team]  =0 end

@@ -700,7 +700,9 @@ end
 function stopSpinT(Table, axis, speed)
 	if not Table then return end
     for i = 1, #Table do
+		if Table[i] then
         StopSpin(Table[i], axis, speed)
+		end
     end
 end
 

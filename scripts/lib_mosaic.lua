@@ -546,7 +546,7 @@ end
 function setCivilianBehaviourMode(unitID, boolStartUnitBehaviourState, TypeOfBehaviour )
 	env = Spring.UnitScript.GetScriptEnv(unitID)
        if env and env.setBehaviourStateMachineExternal then
-		Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, boolStartUnitBehaviourState, TypeOfBehaviour)
+		Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, boolStartUnitBehaviourState, TypeOfBehaviour, true)
        end
 
 end
@@ -1149,18 +1149,22 @@ InfluenceStateMachines = {
 								
 								--Init 
 								if currentState == InfStates.Init then
-									val= math.random(10, 60)
-									spinT(piecesTable, val*-1, val, 0.5)
+									val= math.random(10, 60)/1000
+									for i=1,3 do
+										spinT(Spring.GetUnitPieceMap(unitID), i, val*randSign(), 0000015)
+									end
 									currentState = InfStates.PreOutbreak
 								end
 								
 								if currentState == InfStates.PreOutbreak then
-									val= math.random(10, 60)
-									spinT(piecesTable, val*-1, val, 0.5)
+									val= math.random(10, 60)/1000
+									for i=1,3 do
+										spinT(Spring.GetUnitPieceMap(unitID), i, val*randSign(), 0000015)
+									end
 									al = Spring.GetUnitNearestAlly(unitID)
-									if al then
+									if al and civilianTypes[Spring.GetUnitDefID(al)] then
 										x,y,z = Spring.GetUnitPosition(al)
-										Command(id, "go", { x= x, y= y, z = z}, {})
+										Command(unitID, "go", { x= x, y= y, z = z}, {})
 										if distanceUnitToUnit(unitID, al) < 50 then
 											currentState = InfStates.Outbreak
 										end
@@ -1171,6 +1175,10 @@ InfluenceStateMachines = {
 								end
 								
 								if currentState == InfStates.Outbreak then
+									for i=1,3 do
+										stopSpinT(Spring.GetUnitPieceMap(unitID),i)
+									end
+
 								showID = createUnitAtUnit(Spring.GetGaiaTeamID(), "civilian_orgy_pair", unitID, 0, 0, 0)
 								process(getAllNearUnit(showID,100),
 										function(id)	--get Bystanders
@@ -1197,6 +1205,22 @@ InfluenceStateMachines = {
 							end
 							
 							if currentState == InfStates.Outbreak then
+							gf =Spring.GetGameFrame()
+							
+								if  gf % 27 == 0 then
+									randPiece= Spring.GetUnitPieceMap(unitID)
+									for i=1,3 do
+										spinT(, i, val*-1, val, 0.0000015)
+									end											
+								end
+								
+								if  gf % 81 == 0 then
+									for i=1,3 do
+										stopSpinT(Spring.GetUnitPieceMap(unitID),i)
+									end										
+								end
+							
+							
 								x = (unitID * 65533) % Game.mapSizeX
 								z = (unitID * 65533) % Game.mapSizeZ
 								f = (Spring.GetGameFrame()% GG.GameConfig.Aerosols.wanderlost.VictimLiftime)/GG.GameConfig.Aerosols.wanderlost.VictimLiftime
@@ -1211,6 +1235,20 @@ InfluenceStateMachines = {
 							return currentState
 							end,
 	[AerosolTypes.tollwutox] = function (lastState, currentState, unitID)
+								gf =Spring.GetGameFrame()
+								if  gf % 27 == 0 then
+									for i=1,3 do
+										spinT(Spring.GetUnitPieceMap(unitID), i, val*-1, val, 0.5)
+									end											
+								end
+								
+								if  gf % 36 == 0 then
+									for i=1,3 do
+										stopSpinT(Spring.GetUnitPieceMap(unitID),i)
+									end										
+								end
+								
+	
 								ad= Spring.GetUnitNearestAlly(unitID)
 								ed= Spring.GetUnitNearestEnemy(unitID)
 								Spring.SetUnitNeutral(unitID, false)

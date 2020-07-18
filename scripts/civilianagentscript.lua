@@ -487,8 +487,7 @@ function setBehaviourStateMachineExternal( boolStartStateMachine, State, boolInf
 	if boolStartStateMachine == true then
 		StartThread(beeHaviourStateMachine, State, boolInfluenced)
 	else
-		if bodyConfig.boolInfluenced == true then return end
-		
+
 		Signal(SIG_BEHAVIOUR_STATE_MACHINE)
 		if bodyConfig.boolArmed == true then
 			Hide(ak47)
@@ -516,7 +515,7 @@ SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
 
 	while true do
 		if bodyConfig.boolInfluenced == true then
-			newState = influencedStateMachine[newState](oldBehaviourState, newState, unitID) 
+			newState = influencedStateMachine(oldBehaviourState, newState, unitID) 
 		else
 			newState = normalBehavourStateMachine[newState](oldBehaviourState, newState, unitID) 
 		end		

@@ -141,7 +141,7 @@ process(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange),
 			 env = Spring.UnitScript.GetScriptEnv(id)
 			if env and env.setBehaviourStateMachineExternal then
 
-				Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, true, AerosolUnitDefIDMap[myDefID])
+				Spring.UnitScript.CallAsUnit(unitID, env.setBehaviourStateMachineExternal, true, AerosolUnitDefIDMap[myDefID], true)
 			end
 		end
 	)

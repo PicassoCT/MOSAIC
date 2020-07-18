@@ -655,7 +655,7 @@ SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
 
 	while true do
 		if bodyConfig.boolInfluenced == true then
-			newState = influencedStateMachine[newState](oldBehaviourState, newState, unitID) 
+			newState = influencedStateMachine(oldBehaviourState, newState, unitID) 
 		else
 			newState = normalBehavourStateMachine[newState](oldBehaviourState, newState, unitID) 
 		end
