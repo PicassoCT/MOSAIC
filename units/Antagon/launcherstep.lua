@@ -9,11 +9,12 @@ local BuildLauncherStep = Abstract:New{
 	explodeAs				  = "none",
 	script 				= "placeholder.lua",
 	objectName        	= "launcherstep.s3o",
+	buildPic = "launcherstep.png",
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
-	
+	iconType = "launcher",
 	name = "Build Launcherstage",
 	description = " n stages must be built to complete the Hyperfast ICBM",
 	canCloak =true,

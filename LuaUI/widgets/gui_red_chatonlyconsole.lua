@@ -832,7 +832,7 @@ function widget:Initialize()
 	if (not PassedStartupCheck) then return end
 	
 	console = createconsole(Config.console)
-	Spring.SendCommands("console 0")
+	-- Spring.SendCommands("console 0") --Deactivate console deactivation
 	Spring.SendCommands('inputtextgeo 0.26 0.73 0.02 0.028')
 	AutoResizeObjects()
 

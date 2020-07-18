@@ -48,11 +48,11 @@ end
 
 local icons = {
     -- ID,   icon png file,   scale
-	{"satellitegodrod", "satellite", 0.75},
-	{"satelliteanti", "satellite", 0.75},
-	{"satellitescan", "satellite", 0.75},
+	{"satellitegodrod", "orbitalstrike_sat", 0.75},
+	{"satelliteanti", "antisattelit_sat", 0.75},
+	{"satellitescan", "surveilance_sat", 0.75},
 	{"house_arab0", "house", 0.75},
-	{"policetruck", "truck", 1.0},
+	{"policetruck", "truck_police", 1.0},
 	{"assembly", "assembly", 1.0},
 	{"nimrod", "nimrod", 1.0},
 	{"doubleagent", "doubleagent", 1.0},
@@ -70,7 +70,22 @@ local icons = {
 	{"operativeinvestigator", "operativeinvestigator", 1.0},
 	{"civilianagent", "civilianagent", 1.0},
 	{"ground_truck_mg", "truck_mg", 1.0},
+	{"blacksite", "blacksite", 1.0},
 	{"ground_walker_mg", "ground_walker_mg", 1.0},
+	{"truck_assembly", "truck_assembly", 1.0},
+	{"air_antiarmour", "air_antiarmour", 1.0},
+	{"air_gun", "air_gun", 1.0},
+	{"air_sniper", "air_sniper", 1.0},
+	{"air_iied", "air_iied", 1.0},
+	{"AeroSolDrone", "AeroSolDrone", 1.0},
+	{"ground_turret_spyder", "ground_turret_spyder", 1.0},
+	{"ground_turret_iied", "ground_turret_iied", 1.0},
+	{"ground_turret_mg", "ground_turret_mg", 1.0},
+	{"ground_turret_rocket", "ground_turret_rocket", 1.0},
+	{"ground_turret_cm", "ground_turret_cm", 1.0},
+	{"ai", "ai", 1.0},
+	{"hivemind", "hivemind", 1.0},
+
 	
 }
 

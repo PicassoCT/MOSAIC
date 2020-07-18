@@ -4,7 +4,8 @@ local groundturretspyder =  Turret:New{
 	
 	objectName = "ground_turret_spyder.dae",
 	script = "placeholderscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "ground_turret_spyder.png",
+	iconType = "ground_turret_spyder",
 	--floater = true,
 	--cost
 	buildCostEnergy = 50,
@@ -80,7 +81,8 @@ local groundturretssied =  Turret:New{
 	
 	objectName = "ground_turret_sied.dae",
 	script = "ground_turret_sied.lua",
-	buildPic = "placeholder.png",
+	buildPic = "ground_turret_iied.png",
+	iconType = "ground_turret_iied",
 	--floater = true,
 	--cost
 	buildCostEnergy = 50,
@@ -158,7 +160,8 @@ local groundturretmg =  Turret:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "ground_turretscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "ground_turret_mg.png",
+	iconType = "ground_turret_mg",
 	--floater = true,
 	--cost
 	buildCostEnergy  = 50,
@@ -221,7 +224,7 @@ local ground_turret_antiarmor =  Turret:New{
 	
 	objectName = "ground_turret_sied.dae",
 	script = "groundturretantitankscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "ground_turret_rocket.png",
 	--floater = true,
 	--cost
 	buildCostEnergy  = 50,
@@ -300,7 +303,8 @@ local ground_turret_rocket =  Turret:New{
 	
 	objectName = "ground_turret_missile.dae",
 	script = "ground_turret_rocketscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "ground_turret_rocket.png",
+	iconType = "ground_turret_rocket",
 	--floater = true,
 	--cost
 	buildCostEnergy  = 50,
@@ -375,7 +379,8 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	
 	objectName = "ground_turret_cruisemissilepod.dae",
 	script = "ground_turret_cruisemissilepod_script.lua",
-	buildPic = "placeholder.png",
+	buildPic = "ground_turret_cm.png",
+	iconType = "ground_turret_cm",
 	--floater = true,
 	--cost
 	buildCostEnergy = 50,

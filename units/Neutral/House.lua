@@ -8,6 +8,7 @@ local House = Building:New{
 	name = "Housing Block",
 	description = "houses civilians",
 	buildPic = "house.png",
+	iconType = "house",
 	Builder					= true,
 	levelground				= true,
 	FootprintX = 8,

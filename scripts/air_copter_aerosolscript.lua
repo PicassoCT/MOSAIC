@@ -109,7 +109,7 @@ local lisUnitFlying = isUnitFlying
 			EmitSfx(emitor, 1023 + defIDTypeTankMap[myDefID])
 			Sleep(100)
 			spinRand(emitor, -90, 90, 0.5)
-			-- timeTank= timeTank -100
+			timeTank= timeTank -100
 			sprayTank()
 		end
 	if timeTank <= 0 then

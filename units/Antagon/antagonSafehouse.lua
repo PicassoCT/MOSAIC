@@ -9,6 +9,7 @@ local AntagonSafeHouse = Building:New{
 	NoWeapon=true,
 	name = "Safehouse",
 	buildPic = "antagonsafehouse.png",
+	iconType					= "antagonsafehouse",
 	description= " base of operation <recruits Agents/ builds upgrades>",
 	
 	Builder = true,
@@ -43,6 +44,7 @@ showNanoFrame= true,
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
+
 	
 	script 			= "safehousescript.lua",
 	objectName        	= "safehouse.dae",

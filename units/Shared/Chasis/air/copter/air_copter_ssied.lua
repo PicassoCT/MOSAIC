@@ -10,6 +10,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	
 	script = "airssiedscript.lua",
 	buildPic = "air_iied.png",
+	iconType = "air_iied",
 	--floater = true,
 	--cost
 	buildCostMetal = 50,

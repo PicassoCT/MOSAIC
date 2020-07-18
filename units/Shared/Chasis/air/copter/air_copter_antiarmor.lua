@@ -8,7 +8,8 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "airantiarmorscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "air_antiarmour.png",
+	iconType = "air_antiarmour",
 	--floater = true,
 	--cost
 	buildCostMetal = 50,

@@ -478,11 +478,11 @@ local	locConditionFunction
 local	boolStartThread = false
 
 -- allow external behaviour statemachine to be started and stopped, and set
-function setBehaviourStateMachineExternal( boolStartStateMachine, State)
+function setBehaviourStateMachineExternal( boolStartStateMachine, State, boolInfluenced)
 	if bodyConfig.boolInfluenced == true then return end
 	
 	if boolStartStateMachine == true then
-		StartThread(beeHaviourStateMachine, State)
+		StartThread(beeHaviourStateMachine, State, boolInfluenced)
 	else
 		
 		Signal(SIG_BEHAVIOUR_STATE_MACHINE)
@@ -639,20 +639,26 @@ normalBehavourStateMachine = {
 }
 
 
-influencedStateMachine = getInfluencedStateMachine(UnitId, UnitDefs)
+influencedStateMachine = {}
+
 
 oldBehaviourState =  ""
-function beeHaviourStateMachine(newState)
+function beeHaviourStateMachine(startState, boolInfluenced)
+newState= startState
+if boolInfluenced == true then
+	influencedStateMachine =getInfluencedStateMachine(UnitID, UnitDefs, startState)
+end
+bodyConfig.boolInfluenced = boolInfluenced
 Signal(SIG_BEHAVIOUR_STATE_MACHINE)
 SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
 
-	if influencedStateMachine[newState] then
-		bodyConfig.boolInfluenced = true
-	end
-	
+
 	while true do
-		if influencedStateMachine[newState] then influencedStateMachine[newState](oldBehaviourState, newState, unitID) end
-		if normalBehavourStateMachine[newState] then normalBehavourStateMachine[newState](oldBehaviourState, newState) end
+		if bodyConfig.boolInfluenced == true then
+			newState = influencedStateMachine[newState](oldBehaviourState, newState, unitID) 
+		else
+			newState = normalBehavourStateMachine[newState](oldBehaviourState, newState, unitID) 
+		end
 		-- Verschiedene States
 		Sleep(250)
 		oldBehaviourState = newState

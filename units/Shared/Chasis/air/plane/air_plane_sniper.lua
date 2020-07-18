@@ -7,7 +7,8 @@ local AIR_SNIPER = AIRCRAFT:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "airplanesniperscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "air_sniper.png",
+	iconType = "air_sniper",
 	--floater = true,
 	--cost
 	buildCostMetal = 50,

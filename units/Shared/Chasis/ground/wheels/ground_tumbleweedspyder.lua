@@ -26,7 +26,8 @@ local ground_tumbleweedspyder = Walker:New{
 	footprintZ = 2,
 	script 			= "placeholderscript.lua",
 	objectName 	= "ground_turret_spyder.dae",
-	
+	buildPic = "ground_turret_spyder.png",
+	iconType ="ground_turret_spyder",
 	customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},

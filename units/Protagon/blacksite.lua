@@ -24,7 +24,8 @@ local BlackSite = Building:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
-			buildPic = "blacksite.png",
+	buildPic = "blacksite.png",
+	iconType = "blacksite",
 	name = "BlackSite",
 	description = "creates aerosol drones",
 

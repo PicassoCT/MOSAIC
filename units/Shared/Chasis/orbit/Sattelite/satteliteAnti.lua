@@ -24,7 +24,7 @@ local AntiSat = Satellite:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
-	buildPic = "satellite.png",
+	buildPic = "antisattelit_sat.png",
 	usePieceCollisionVolumes 	= false,
 	upright= true,
 	collisionVolumeType = "box",

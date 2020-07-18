@@ -11,6 +11,7 @@ local unitDef = {
 	script = "transportedassemblyscript.lua",
 	
 				buildPic = "truck_assembly.png",
+				iconType = "truck_assembly",
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 200,

@@ -26,6 +26,8 @@ local ground_walker_mg = Walker:New{
 	footprintZ = 2,
 	script 			= "groundwalkerscript.lua",
 	objectName 	= "ground_walker_mg.dae",
+	buildPic = "ground_walker_mg.png",
+	iconType ="ground_walker_mg",
 	
 	customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",

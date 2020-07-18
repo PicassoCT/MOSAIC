@@ -9,7 +9,8 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 	
 	description = "sprays arerosols to influence people",
 	script = "air_copter_aerosolscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "AeroSolDrone.png",
+	iconType = "AeroSolDrone",
 	--floater = true,
 	--cost
 	buildCostMetal = 5000,

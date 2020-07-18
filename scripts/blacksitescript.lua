@@ -19,6 +19,7 @@ if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].na
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	
 function script.Create()
+   Spring.SetUnitBlocking(unitID, false, false, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	spinT(TablesOfPiecesGroups["SignalLight"],y_axis, math.random(42,420)*randSign(), 42)
 	Spring.SetUnitNanoPieces(unitID, TablesOfPiecesGroups["SignalLight"] )

@@ -8,6 +8,7 @@ local Launcher = Building:New{
 
 	buildtime			 = 2*60,
 	buildPic = "launcher.png",
+	iconType = "launcher",
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	

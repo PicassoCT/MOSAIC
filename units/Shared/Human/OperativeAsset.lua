@@ -23,6 +23,7 @@ local OperativeAsset = Human:New{
 	CanGuard = true,
 showNanoFrame= true,
 		buildPic = "operativeasset.png",
+		iconType = "operativeasset",
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,

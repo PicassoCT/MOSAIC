@@ -22,7 +22,8 @@ local TruckAssembly = Truck:New{
 	script 			= "Truckassemblyscript.lua",
 	objectName 	= "truck_arab6.dae",
 	movementClass   	= "VEHICLE",
-	
+	buildPic ="truck_assembly.png",
+	iconType ="truck_assembly",
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks

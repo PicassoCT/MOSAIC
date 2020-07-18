@@ -22,7 +22,7 @@ local ScanSat = Satellite:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
-	buildPic = "satellite.png",
+	buildPic = "surveilance_sat.png",
 	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
 		upright= true,	
 	customparams = {

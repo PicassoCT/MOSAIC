@@ -133,12 +133,14 @@ function getGameConfig()
 	--Aerosols
 	Aerosols={
 	sprayRange = 200,
-	orgyanyl={
-	
+	orgyanyl={	
 	sprayTimePerUnitInMs = 2*60*1000, --2mins
 	VictimLifetime = 60000,
 	},
-	wanderlost={sprayTimePerUnitInMs = 2*60*1000 },--2mins
+	wanderlost={
+	sprayTimePerUnitInMs = 2*60*1000 ,
+	VictimLiftime = 3*60*1000
+	},--2mins
 	tollwutox={sprayTimePerUnitInMs = 2*60*1000,}, --2mins
 	depressol={sprayTimePerUnitInMs = 2*60*1000,}, --2mins
 	},
@@ -1126,34 +1128,113 @@ function showHideIconEnv( unitID, arg)
     end
 end
 
-function getInfluencedStateMachine(unitID, UnitDefs)
+function getInfluencedStates()
+return {
+["Init"]="Init",
+["PreOutbreak"]="PreOutbreak",
+["Outbreak"]="Outbreak",
+["Dieing"]="Dieing",
+
+
+}
+end
+
+function getInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence )
 AerosolTypes = getChemTrailTypes()
-
-
-return{
+InfStates = getInfluencedStates()
+CivilianTypes = getCivilianTypeTable(UnitDefs)
+InfluenceStateMachines = {
 	[AerosolTypes.orgyanyl] = function (lastState, currentState, unitID)
-								Spring.Echo("Wee, im under influence of "..AerosolTypes.orgyanyl)
-								createUnitAtUnit(Spring.GetGaiaTeamID(), "civilian_orgy_pair", unitID, 0, 0, 0)
-								Spring.DestroyUnit(unitID, false, true)
+								if currentState == AerosolTypes.orgyanyl then currentState = InfStates.Init end
+								
+								--Init 
+								if currentState == InfStates.Init then
+									val= math.random(10, 60)
+									spinT(piecesTable, val*-1, val, 0.5)
+									currentState = InfStates.PreOutbreak
+								end
+								
+								if currentState == InfStates.PreOutbreak then
+									val= math.random(10, 60)
+									spinT(piecesTable, val*-1, val, 0.5)
+									al = Spring.GetUnitNearestAlly(unitID)
+									if al then
+										x,y,z = Spring.GetUnitPosition(al)
+										Command(id, "go", { x= x, y= y, z = z}, {})
+										if distanceUnitToUnit(unitID, al) < 50 then
+											currentState = InfStates.Outbreak
+										end
+									else
+										currentState = InfStates.Outbreak
+									end	
+									setOverrideAnimationState(eAnimState.walking, eAnimState.walking,  true, nil, true)							
+								end
+								
+								if currentState == InfStates.Outbreak then
+								showID = createUnitAtUnit(Spring.GetGaiaTeamID(), "civilian_orgy_pair", unitID, 0, 0, 0)
+								process(getAllNearUnit(showID,100),
+										function(id)	--get Bystanders
+											if CivilianTypes[Spring.GetUnitDefID(id)] then
+												x,y,z = Spring.GetUnitPosition(al)
+												Command(id, "go", { x= x+math.random(-10,10), y= y, z = z+math.random(-10,10)}, {})	
+											end
+										end
+										)									
+									Spring.DestroyUnit(unitID, false, true)
+								end
+								
 								return currentState
 							end,
+							
 	[AerosolTypes.wanderlost] = function (lastState, currentState, unitID)
-		Spring.Echo("Wee, im under influence of "..AerosolTypes.wanderlost)
-										return currentState
+							if currentState == AerosolTypes.wanderlost then
+								StartThread(lifeTime, unitID, GG.GameConfig.Aerosols.wanderlost.VictimLiftime, false, true)
+								currentState = InfStates.Init
+							end
+							
+							if currentState == InfStates.Init then
+								currentState = InfStates.Outbreak
+							end
+							
+							if currentState == InfStates.Outbreak then
+								x = (unitID * 65533) % Game.mapSizeX
+								z = (unitID * 65533) % Game.mapSizeZ
+								f = (Spring.GetGameFrame()% GG.GameConfig.Aerosols.wanderlost.VictimLiftime)/GG.GameConfig.Aerosols.wanderlost.VictimLiftime
+								--spiraling in towards nowhere
+								totaldistance= 900*math.sin(f*2*math.pi)
+								tx,tz= Rotate(totaldistance, 0, f*math.pi*9)
+								x = x+tx
+								z = z+tz										
+								Command(unitID, "go", { x=x,y=0, z=z}, {})								
+							end
 
-							 end,
+							return currentState
+							end,
 	[AerosolTypes.tollwutox] = function (lastState, currentState, unitID)
-		Spring.Echo("Wee, im under influence of "..AerosolTypes.tollwutox)
-										return currentState
-
+								ad= Spring.GetUnitNearestAlly(unitID)
+								ed= Spring.GetUnitNearestEnemy(unitID)
+								Spring.SetUnitNeutral(unitID, false)
+								if distanceUnitToUnit(unitID,ad) < distanceUnitToUnit(unitID,ed) then								
+									Command(unitID, "attack",  ad, {})
+								else
+									Command(unitID, "attack",  ed, {})
+								end		
+		
+								return currentState							
 							 end,
 	[AerosolTypes.depressol] = function (lastState, currentState, unitID)
-		Spring.Echo("Wee, im under influence of "..AerosolTypes.depressol)
-										return currentState
-
+								if currentState == AerosolTypes.depressol then
+									StartThread(lifeTime, unitID, GG.GameConfig.Aerosols.depressol.VictimLiftime, false, true)
+									currentState = InfStates.Init
+								end
+								stunUnit(unitID, 2)
+								setOverrideAnimationState(eAnimState.standing, eAnimState.catatonic,  true, nil, true)							
+										
+								return currentState
 							 end
 }
 
+	return InfluenceStateMachines[typeOfInfluence]
 end
 
    

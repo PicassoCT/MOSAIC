@@ -16,7 +16,7 @@ local LaunchedICBM = Rocket:New{
 	objectName        	= "launchedICBM.s3o",
 	name = "MOSAICBM",
 	description = " the end",
-
+	iconType = "launcher",
 	ActivateWhenBuilt=1,
 
 	

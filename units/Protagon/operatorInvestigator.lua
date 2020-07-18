@@ -29,7 +29,7 @@ local OperativeInvestigator = Human:New{
 		normaltex = "unittextures/operative_investigator_normal.dds",
 	},
 		buildPic = "operativeinvestigator.png",
-
+	iconType ="operativeinvestigator",
 	showNanoFrame= true,
 	ActivateWhenBuilt=1,
 	

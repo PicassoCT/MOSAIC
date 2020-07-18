@@ -28,7 +28,7 @@ local satteliteGodrod = Satellite:New{
 		baseclass		= "Satellite", -- TODO: hacks
     },
 	category = [[ORBIT]],
-	buildPic = "satellite.png",
+	buildPic = "orbitalstrike_sat.png",
 	weapons = {
 		[1]={
 			name  = "godrod",   

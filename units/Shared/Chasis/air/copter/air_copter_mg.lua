@@ -7,7 +7,8 @@ local AIRC_COPTER_MG = VTOL:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "air_copter_mg_script.lua",
-	buildPic = "placeholder.png",
+	buildPic = "air_gun.png",
+	iconType = "air_gun",
 	--floater = true,
 	--cost
 	buildCostMetal = 50,

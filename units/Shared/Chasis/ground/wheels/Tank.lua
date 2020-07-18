@@ -25,6 +25,7 @@ local ground_tank_day = Tank:New{
 	script 			= "tankscript.lua",
 	objectName 	= "ground_tank_day.dae",
 	buildPic = "tank.png",
+	iconType ="ground_tank_day",
 	collisionVolumeType = "box",
 	collisionvolumescales = "70 50 70",
 	
@@ -34,7 +35,7 @@ local ground_tank_day = Tank:New{
 		baseclass		= "Tank", -- TODO: hacks
 	},
 	
-				weapons = {
+	weapons = {
 				[1]={name  = "tankcannon",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
@@ -70,6 +71,7 @@ local ground_tank_night = Tank:New{
 	script 			= "tankscript.lua",
 	objectName 	= "ground_tank_night.dae",
 	buildPic = "tank.png",
+	iconType = "ground_tank_night",
 	
 	collisionVolumeType = "box",
 	collisionvolumescales = "70 50 70",
