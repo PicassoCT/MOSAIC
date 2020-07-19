@@ -1,6 +1,6 @@
 local ground_walker_mg = Walker:New{
 	name = "Weevil",
-	description = "Walker <spot-class>",
+	description = "Walker Machine Gun<spot-class>",
 	
 	corpse				= "",
 	maxDamage = 800,
@@ -40,9 +40,11 @@ local ground_walker_mg = Walker:New{
 	},
 	
 				weapons = {
-				[1]={name  = "tankcannon",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},
+				[1]={name  = "submachingegun",
+				onlyTargetCategory = [[BUILDING GROUND]],
+				},
+				
+				
 					
 		},	
 }
