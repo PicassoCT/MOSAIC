@@ -1164,7 +1164,7 @@ InfluenceStateMachines = {
 									spinT(Spring.GetUnitPieceMap(unitID), z_axis, val*randSign(), 0000015)
 
 									al = Spring.GetUnitNearestAlly(unitID)
-									if al and civilianTypes[Spring.GetUnitDefID(al)] then
+									if al and CivilianTypes[Spring.GetUnitDefID(al)] then
 										x,y,z = Spring.GetUnitPosition(al)
 										Command(unitID, "go", { x= x, y= y, z = z}, {})
 										if distanceUnitToUnit(unitID, al) < 50 then
