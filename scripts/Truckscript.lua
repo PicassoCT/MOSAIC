@@ -124,7 +124,7 @@ end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(loadOutUnitID) then Spring.DestroyUnit(loadOutUnitID,true,true) end
 
-    --createCorpseCUnitGeneric(recentDamage)
+    createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 

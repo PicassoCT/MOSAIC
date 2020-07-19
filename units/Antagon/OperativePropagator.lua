@@ -1,5 +1,4 @@
 local OperativePropagator = Human:New{
-	corpse					  = "",
 	maxDamage         	  = 500,
 	mass                = 500,
 	buildCostEnergy    	  = 5,
@@ -8,6 +7,7 @@ local OperativePropagator = Human:New{
 	iconType ="operativepropagator",
 	explodeAs				  = "none",
 	name = "Propagator",
+	corpse = "bodybag",
 	description= "Propaganda Operative <recruits Agents/ builds Safehouses / interrogates Intruders>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,

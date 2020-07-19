@@ -56,7 +56,7 @@ function createCorpseCUnitSmall(recentDamage)
 
 
        GG.UnitsToSpawn:PushCreateUnit("gCVehicCorpseMini", spx, spy, spz, 1, teamID)
-  GG.UnitsToSpawn:PushCreateFeature("bodybag", spx, spy, spz, 1, teamID)
+		GG.UnitsToSpawn:PushCreateFeature("bodybag", spx, spy, spz, 1, teamID)
 
     end
 end
@@ -72,8 +72,8 @@ function createCorpseCUnitGeneric(recentDamage)
         --dirx,diry,dirz=Spring.GetUnitDirection(unitID)
 
 
-        GG.UnitsToSpawn:PushCreateUnit("gCVehicCorpse", spx, spy, spz, 1, teamID)
-        --Spring.SetUnitDirection(heapID,dirx,diry,dirz)
+        heapID= Spring.CreateUnit("VehicleCorpse", spx, spy, spz, 1, teamID)
+        Spring.SetUnitDirection(heapID,dirx,diry,dirz)
        -- Spring.SetUnitNeutral(heapID, true)
     end
 end

@@ -1,5 +1,5 @@
 local Civilian = Human:New{
-	corpse					  = "",
+	corpse = "bodybag",
 	maxDamage         	  = 500,
 	mass                = 500,
 	buildCostEnergy    	  = 5,

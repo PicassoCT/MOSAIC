@@ -87,6 +87,10 @@ function getGameConfig()
 	 assetCloakedSpeedReduction = 0.175,
 	 assetShotFiredWaitTimeToRecloak = 12000,
 	 
+	 Wreckage ={
+	 lifeTime = 3*60*1000,
+	 },
+	 
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
 	 LaunchReadySteps = 7,
@@ -170,6 +174,7 @@ function getChemTrailInfluencedTypes(UnitDefs)
 
 	typeTable = {"civilianagent"}
 	typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(), "civilian", UnitDefs))
+	typeTable = mergeTables({}, getTypeUnitNameTable(getCultureName(), "truck", UnitDefs))
 	
 	return getTypeTable(UnitDefNames, typeTable)
 
@@ -1207,7 +1212,8 @@ InfluenceStateMachines = {
 								if  gf % 27 == 0 then
 									randPiece= Spring.GetUnitPieceMap(unitID)
 									for i=1,3 do
-										spinT(, i, val*-1, val, 0.0000015)
+										val = math.random(5, 35)/100
+										spinT(Spring.GetUnitPieceMap(unitID), i, val*-1, val, 0.0015)
 									end											
 								end
 								
@@ -1222,7 +1228,7 @@ InfluenceStateMachines = {
 								z = (unitID * 65533) % Game.mapSizeZ
 								f = (Spring.GetGameFrame()% GG.GameConfig.Aerosols.wanderlost.VictimLiftime)/GG.GameConfig.Aerosols.wanderlost.VictimLiftime
 								--spiraling in towards nowhere
-								totaldistance= 900*math.sin(f*2*math.pi)
+								totaldistance= math.max(128, unitID%900)*math.sin(f*2*math.pi)
 								tx,tz= Rotate(totaldistance, 0, f*math.pi*9)
 								x = x+tx
 								z = z+tz										
@@ -1270,6 +1276,27 @@ InfluenceStateMachines = {
 }
 
 	return InfluenceStateMachines[typeOfInfluence]
+end
+
+-->StartThread(dustCloudPostExplosion,unitID,1,600,50,0,1,0)
+--Draws a long lasting DustCloud
+function dustCloudPostExplosion(unitID, Density, totalTime, SpawnDelay, dirx, diry, dirz)
+	x, y, z = Spring.GetUnitPosition(unitID)
+	y = y + 15
+	firstTime = true
+	for j = 1, totalTime, SpawnDelay do
+		for i = 1, Density do
+			Spring.SpawnCEG("lightuponsmoke", x, y, z, dirx, diry, dirz)
+		end
+		
+		
+		Sleep(SpawnDelay)
+	end
+	Sleep(550 - totalTime)
+	
+	if math.random(0, 1) == 1 then
+		Spring.SpawnCEG("earcexplosion", x, y + 30, z, 0, -1, 0)
+	end
 end
 
    

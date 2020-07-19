@@ -1,6 +1,7 @@
 local Civil = Civilian:New{
 	--This class inherits alot from its 
 	name = "Civilian",
+	corpse = "bodybag",
 	description = " innocent bystander <colateral>",
 	objectName        	= "civilian0_arab.dae",
 		customParams        = {

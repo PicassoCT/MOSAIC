@@ -2,7 +2,7 @@ local CivilianAgent = Human:New{
 	name = "Civilian Asset",
 	Description = " recruited Civilian <spies/ militia> ",
 
-	corpse					  = "",
+	corpse = "bodybag",
 	maxDamage         	  = 500,
 	mass                = 500,
 	buildCostEnergy    	  = 5,
