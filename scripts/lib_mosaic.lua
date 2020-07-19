@@ -1269,7 +1269,7 @@ InfluenceStateMachines = {
 									currentState = InfStates.Init
 								end
 								stunUnit(unitID, 2)
-								setOverrideAnimationState(eAnimState.standing, eAnimState.catatonic,  true, nil, true)							
+								setOverrideAnimationState(eAnimState.standing, eAnimState.wailing,  true, nil, true)							
 										
 								return currentState
 							 end
