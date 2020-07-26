@@ -49,6 +49,9 @@ end
 --------------------------------------------------------------------------------
 
 VFS.Include("luarules/utilities/unitrendering.lua", nil, VFS.ZIP)
+VFS.Include("scripts/lib_UnitScript.lua")
+VFS.Include("scripts/lib_Build.lua")
+VFS.Include("scripts/lib_mosaic.lua")
 
 local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
 
@@ -440,6 +443,22 @@ function ObjectFinished(rendering, objectID, objectDefID)
   end
 end
 
+iconTypeTable = getIconTypes(UnitDefs)
+iconUnit={}
+function gadget:UnitCreated(unitID, unitDefID)
+	if iconTypeTable[unitDefID] then
+			iconUnit[unitID] = unitDefID
+			spSetObjectLuaDraw(unitID, true)
+	end
+end
+
+function gadget:UnitDestroyed(unitID, unitDefID)
+	if iconUnit[unitID] then
+	   iconUnit[unitID] = nil
+	   spSetObjectLuaDraw(unitID, true)
+	end
+end
+
 function gadget:UnitFinished(unitID, unitDefID)
 	idToDefID[unitID] = unitDefID
 	ObjectFinished(unitRendering, unitID, unitDefID)
@@ -510,6 +529,10 @@ function gadget:DrawGenesis()
 end
 
 local function DrawObject(rendering, objectID, objectDefID, drawMode)
+	if iconUnit[objectID] and drawMode ==  shadowDraw  then
+		return false
+	end
+
 	local mat = rendering.drawList[objectID]
 	if not mat then
 		return

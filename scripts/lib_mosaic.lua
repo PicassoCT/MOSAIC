@@ -197,6 +197,17 @@ return {
 		}
 
 end
+
+function getIconTypes(UnitDefs)
+local UnitDefNames= getUnitDefNames(UnitDefs)
+return {
+ 			[UnitDefNames["raidicon"].id		]= true,
+			[UnitDefNames["doubleagent"].id		]= true,
+			[UnitDefNames["interrogationicon"].id		]= true,
+			[UnitDefNames["recruitcivilian"].id		]= true
+		}
+
+end
 --Mosaic specific functions 
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)

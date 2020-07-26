@@ -103,7 +103,10 @@ local RaidIcon = Abstract:New{
     BrakeRate = 0,
     TurnRate = 0,
     MaxVelocity = 0,
-    --
+	customparams = {
+	normaltex= "unittextures/component_atlas_normal.dds"
+	},
+
 	name = "Raid Location",
     description = "a raid of a location is in Progress",
 
@@ -117,15 +120,7 @@ local RaidIcon = Abstract:New{
     objectName        	= "RaidIcon.dae",
 	buildPic = "raidicon.png",
 	iconType = "raidicon",
-    canCloak =true,
-    cloakCost=0.0001,
     ActivateWhenBuilt=1,
-    cloakCostMoving =0.0001,
-    minCloakDistance = 0,
-    onoffable=true,
-    initCloaked = true,
-    decloakOnFire = true,
-    cloakTimeout = 5,
 
     onoffable=true,
     activatewhenbuilt = true,
