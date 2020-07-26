@@ -21,6 +21,7 @@
 ----------------------------------------------------------------------------
 local HANDLER_BASENAME = "gadgets.lua"
 -- local isMission = VFS.FileExists("mission.lua")	-- or Game.gameName:find("Scenario Editor")
+Spring.Echo("Start loading gadgets.lua")
 
 local DepthMod = 10
 local DepthValue = -1
@@ -2217,6 +2218,7 @@ end
 
 ----------------------------------------------------------------------------
 ----------------------------------------------------------------------------
+Spring.Echo("End loading gadgets.lua")
 
 gadgetHandler:Initialize()
 

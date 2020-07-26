@@ -1321,7 +1321,7 @@ end
 function script.Killed(recentDamage, _)
 	PlayAnimation("UPRIGHT",nil, math.pi)
 	for k,v in pairs(TablesOfPiecesGroups) do
-		explodeT(v, SFX.FALL+SFX.FIRE+SFX.EXPLODE_ON_HIT)
+		explodeT(v, SFX.SHATTER)
 		hideT(v)
 	end
     return 1

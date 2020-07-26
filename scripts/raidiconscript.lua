@@ -15,7 +15,7 @@ whirl= 		{}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
+
 Progresscenter = piece "Progresscenter"
 
 protagon_talk ={
@@ -74,6 +74,7 @@ function script.Create()
 	Black= TablesOfPiecesGroups["Black"]
 	step= TablesOfPiecesGroups["Step"]
 	PlayPos= TablesOfPiecesGroups["PlayPos"]
+	hideT(PlayPos)
 	hideT(White)
 	hideT(Black)
 end
@@ -84,7 +85,7 @@ black = "black",
 white = "white", 
 }
 
-gameTable= makeTable({ figure= figures.empty}, 3,3, 3)
+gameTable= makeTable({ figure= figures.empty}, 3,3)
 
 orderMap={
 [1]=1,
@@ -104,13 +105,18 @@ reversePieceMap[v] = k
 end
 
 function mapPieceNumberToGridPos(nr)
-	if nr >0 and nr < 4 then x = 1 end
-	if nr == 4 or nr == 8 then x = 2 end
-	if nr > 4  and nr < 8 then x = 3 end
-	z = orderMap[nr]
+	x= math.ceil(nr/3)
+	z= ( (nr-1) %3)+1
+	
+	return x,z
 end
 
 teams={}
+pieceIndex={
+[figures.white]= 1, 
+[figures.black]= 1, 
+}
+
 function mapTeamToSide(teamID)
 	if teams[teamID] then return  teams[teamID] end
 
@@ -129,91 +135,34 @@ lastChangedPiece= nil
 
 function addPiece(playerID, clickedOnPiece, team)
 	
-	 indexGrid,indexPosX,indexPosZ = getField(clickedOnPiece)
-	 setField(indexGrid,indexPosX,indexPosZ, mapTeamToSide(team))
-	 lastChangedPiece = clickedOnPiece
+	 indexPosX,indexPosZ, field = getField(clickedOnPiece)
+	 if field.figure ~= figures.empty then return false end
+	 
+	 setField(indexPosX,indexPosZ, mapTeamToSide(team))
+	 movePieceToPiece(unitID, Black[pieceIndex[ mapTeamToSide(team)]], clickedOnPiece)
+	 Show(pieceIndex[ mapTeamToSide(team)])
+	 pieceIndex[ mapTeamToSide(team)] = pieceIndex[ mapTeamToSide(team)] +1
+	 return true
 end
 
 function getField(clickedOnPiece)
 	pieceNumber = string.tonumber(reversePieceMap[clickedOnPiece]:gsub("PlayPos",""))
 	indexGrid = math.ceil(pieceNumber/8)
 	indexPosX, indexPosZ = mapPieceNumberToGridPos((pieceNumber%8)+1)
-	return indexGrid,indexPosX,indexPosZ, gameTable[indexGrid][indexPosX][indexPosZ]
+	return indexPosX,indexPosZ, gameTable[indexPosX][indexPosZ]
 end
 
 function setField(indexGrid,indexPosX,indexPosZ, typeToSet)
-	gameTable[indexGrid][indexPosX][indexPosZ] = {figure = typeToSet}
+	gameTable[indexPosX][indexPosZ] = {figure = typeToSet}
 end
 
-function selectPieceInteractPiece(playerID, firstPiece, targetPiece)
-	--check if piece contains player piece
-	x,y,z, field = getField(firstPiece)
-	assert(field)
 
-	if field.figure == mapTeamToSide(Spring.GetPlayerTeamID(playerID)) then
-	--check if piece position is empty
-	tx,ty,tz, tfield = getField(targetPiece)
-	assert(tfield)
-
-	if tfield.figure== figures.empty then
-		setField(tx,ty,tz, field.figure)
-		setField(x,y,z, field.empty)
-		lastChangedPiece = targetPiece
-	end
-
-	end
-end
-
-function getOffset(index)
-if index == 1 then
-return -1, -1
-end
-
-if index == 2 then
-return 0, -1
-end
-
-if index == 3 then
-return 1, -1
-end
-
-if index == 4 then
-return 1, 0
-end
-
-if index == 5 then
-return 1, 1
-end
-
-if index == 6 then
-return 0, 1
-end
-
-if index == 7 then
-return -1, 1
-end
-
-if index == 8 then
-return -1, 0
-end
-
-end
 
 
 function roundEndCheck()
-boolMillClosed = false
+boolGameEnd = false
 -- check around lastChangedPiece,
-	if lastChangedPiece then
-		x, y, z, field = getField(lastChangedPiece)
-		for i=1, 8 do
-		ox, oz = getOffset(i)
-		-- if gameTable[][][]
-		
-		-- end
 	
-		
-		end
-	end
 	return boolMillClosed
 end
 

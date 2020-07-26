@@ -20,13 +20,17 @@ function widget:GameStart()
 
 end
 
-
+local raidIconDefID = nil
 
 function widget:Initialize()
  
 end
+for k,v in pairs(UnitDefs) do
+	if v.name == "raidicon" then
+	raidIconDefID = k
+	end
+end
 
-local raidIconDefID = UnitDefNames["raidicon"].id
 raidIcons ={}
 
 function widget:UnitCreated(unitID, unitDefID)
@@ -41,6 +45,16 @@ function widget:UnitDestroyed(unitID, unitDefID)
 	end
 end
 
-function widget:MousePress(x,y,button)
+local raidIcon = UnitDefNames["raidicon"].id
 
+function widget:MousePress(x,y,button)
+ local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
+ Spring.Echo(targType.." - > "..targID)
+        if targType == 'unit' then
+            defID = Spring.GetUnitDefID(targID)
+			if defID == raidIcon then
+			Spring.Echo("Clicked on raid icon")
+			
+			end
+		end
 end
