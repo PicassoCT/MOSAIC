@@ -7,8 +7,8 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 whirl= 		{}
 	ring= 	{}
-	White= 	{}
-	Black= 	{}
+	Blue= 	{}
+	Red= 	{}
 	step=	{}
 	PlayPos=	{}
 	
@@ -70,101 +70,48 @@ function script.Create()
 	-- StartThread(raidPercentage)	
 	whirl= TablesOfPiecesGroups["Whirl"]
 	ring= TablesOfPiecesGroups["Ring"]
-	White= TablesOfPiecesGroups["White"]
-	Black= TablesOfPiecesGroups["Black"]
+	Blue= TablesOfPiecesGroups["Blue"]
+	Red= TablesOfPiecesGroups["Red"]
 	step= TablesOfPiecesGroups["Step"]
-	PlayPos= TablesOfPiecesGroups["PlayPos"]
-	hideT(PlayPos)
-	hideT(White)
-	hideT(Black)
+	
+
+	showT(Blue)
+	showT(Red)
 end
 
 figures={
-empty = "empty", 
-black = "black", 
-white = "white", 
+	Red = "red", 
+	Blue = "blue", 
+}
+function newRoundTable()
+ return {
+[figure.Red] = { 
+PlacedFigures = {},
+},
+[figure.Blue] = {
+PlacedFigures = {},
+},
+
+
 }
 
-gameTable= makeTable({ figure= figures.empty}, 3,3)
-
-orderMap={
-[1]=1,
-[2]=2,
-[3]=3,
-[4]=6,
-[5]=9,
-[6]=8,
-[7]=7,
-[8]=4
-}
-
-reversePieceMap ={}
-pieceMap = Spring.GetUnitPieceMap(unitID)
-for k,v in pairs(pieceMap) do
-reversePieceMap[v] = k
 end
+roundTable=  newRoundTable()
 
-function mapPieceNumberToGridPos(nr)
-	x= math.ceil(nr/3)
-	z= ( (nr-1) %3)+1
-	
-	return x,z
+function revealAndEliminate()
+	for team, PlacedFigures in pairs (roundtable) do
+		for nr, figureTable in pairs(PlacedFigures) do
+			
+		end
+	end
 end
 
 teams={}
 pieceIndex={
-[figures.white]= 1, 
-[figures.black]= 1, 
+[figures.Blue]= 3, --defender
+[figures.Red]= 3, --agressor
 }
 
-function mapTeamToSide(teamID)
-	if teams[teamID] then return  teams[teamID] end
-
-	if #teams == 1 then 
-	teams[teamID] = figures.white
-	end
-
-	if #teams == 0 then 
-	teams[teamID] = figures.black
-	end
-
-	return  teams[teamID]
-
-end
-lastChangedPiece= nil
-
-function addPiece(playerID, clickedOnPiece, team)
-	
-	 indexPosX,indexPosZ, field = getField(clickedOnPiece)
-	 if field.figure ~= figures.empty then return false end
-	 
-	 setField(indexPosX,indexPosZ, mapTeamToSide(team))
-	 movePieceToPiece(unitID, Black[pieceIndex[ mapTeamToSide(team)]], clickedOnPiece)
-	 Show(pieceIndex[ mapTeamToSide(team)])
-	 pieceIndex[ mapTeamToSide(team)] = pieceIndex[ mapTeamToSide(team)] +1
-	 return true
-end
-
-function getField(clickedOnPiece)
-	pieceNumber = string.tonumber(reversePieceMap[clickedOnPiece]:gsub("PlayPos",""))
-	indexGrid = math.ceil(pieceNumber/8)
-	indexPosX, indexPosZ = mapPieceNumberToGridPos((pieceNumber%8)+1)
-	return indexPosX,indexPosZ, gameTable[indexPosX][indexPosZ]
-end
-
-function setField(indexGrid,indexPosX,indexPosZ, typeToSet)
-	gameTable[indexPosX][indexPosZ] = {figure = typeToSet}
-end
-
-
-
-
-function roundEndCheck()
-boolGameEnd = false
--- check around lastChangedPiece,
-	
-	return boolMillClosed
-end
 
 function showPercent(percent)
 	percent=math.ceil(math.max(1,percent)/100*#step)
@@ -174,6 +121,11 @@ function showPercent(percent)
 end
 
 
+function registerSnipeIcon(team, id, position)
+	teamType= "empty"
+	if team == myTeamID then teamType = figures.Red else teamType =  figures.Blue  end
+	roundTable[teamType].PlacedFigures[#roundTable[teamType].PlacedFigures + 1 ]=    {id = id, position = position}
+end
 
 function raidAnimationLoop()
 	Sleep(100)
@@ -196,14 +148,39 @@ function raidAnimationLoop()
 		end
 	)
 	local counter = 1
+	roundStep = math.ceil(GameConfig.raid.maxRoundLength/100)
 	hideT(step)
-	while true do
+	while counter < 100 or totalTime > GameConfig.raid.maxTimeToWait do
 		counter =(counter +1) 
-			showPercent( counter )
-			if counter == 100 then counter = 0 end
-		Sleep(100)
+		showPercent( counter )
+		
+		-- roundHasEnded
+		if (counter == 100) or allStonesPlaced(teams) == true and  then
+			revealAndEliminate()
+			winningTeam =onePartIsOutOfStones(teams)
+			if winningTeam then
+				winnerBehaviour(winningTeam)
+			
+			end
+		end
+		
+		totalTime= totalTime + roundStep
+		Sleep(roundStep)
 	end
 end
+
+
+
+function winnerBehaviour(winningTeam)
+if winningTeam == myTeamID then
+ GG.raidIconPercentage[unitID]  = 100
+ else
+ 	roundTable = newRoundTable()
+ end
+
+end
+
+
 
 function waveSpin(id, val, speed, randoHide)
 	if val < 1 then val = 1 end
