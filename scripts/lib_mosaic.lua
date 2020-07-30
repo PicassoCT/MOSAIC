@@ -79,9 +79,15 @@ function getGameConfig()
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
 	 InterrogationDistance= 200,
+	 
 	 RaidInterrogationPropgandaPrice = 50,
 	 investigatorCloakedSpeedReduction = 0.35,
 	 raidWaitTimeToRecloak = 5000,
+	 
+	 raid={
+	 maxTimeToWait = 3*60*1000,
+	 maxRoundLength= 20*1000,
+	 }
 	 
 	 --asset
 	 assetCloakedSpeedReduction = 0.175,
@@ -90,6 +96,8 @@ function getGameConfig()
 	 Wreckage ={
 	 lifeTime = 3*60*1000,
 	 },
+
+	 
 	 
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
