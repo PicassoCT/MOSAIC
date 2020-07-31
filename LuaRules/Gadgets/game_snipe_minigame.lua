@@ -28,7 +28,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
 	end
 	
-	function newRoundTable(unitID, attackerteam)
+	function newRoundTable(unitID, attackerteam, oldRound)
 		enemyID= Spring.GetUnitNearestEnemy(unitID)
 		enemyTeamID = Spring.GetUnitTeam(enemyID)
 			 return 
@@ -36,13 +36,57 @@ if (gadgetHandler:IsSyncedCode()) then
 				 attacker = attackerteam,
 				 defender = enemyTeamID, 
 				[figure.Red] = { 
+					Points = oldRound[figure.Red].Points or 3,
 					PlacedFigures = {},
 					},
 				[figure.Blue] = {
+					Points = oldRound[figure.Blue].Points or 3,
 					PlacedFigures = {},
 					},
 			}
 	end
+	
+	
+ local function RegisterSniperIcon(self, unitID, unitTeam, raidParentID)
+		if not raidParentID then raidParentID = randdict(allRunningRaidRounds) end --TODO Testcode remove
+		teamSelected = figure.Blue --defender as default
+		if Spring.GetUnitTeamID(raidParentID) == Spring.GetUnitTeamID(unitID)  then --aggressors
+			teamSelected = figure.Red
+		end
+		
+			if allRunningRaidRounds[raidParentID][teamSelected] > 0 then
+			allRunningRaidRounds[raidParentID][teamSelected].PlacedFigures[#allRunningRaidRounds[raidParentID][teamSelected].PlacedFigures  + 1 ] = unitID
+			allRunningRaidRounds[raidParentID][teamSelected].Points = 	allRunningRaidRounds[raidParentID][teamSelected].Points -1
+				--reach Into Icon and update Points
+			else
+				 GG.UnitsToKill:PushKillUnit(unitID)
+			end
+
+    end
+   if GG.SniperIcon == nil then GG.SniperIcon = { Register = RegisterSniperIcon} end
+
+	function 
+	function checkRoundEnds()
+		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do
+		
+			--Round has ended
+			if getRaidIconProgressbar(raidIcon) >= 100 or ( roundRunning[figures.Red].Points == 0 and roundRunning[figures.Blue].Points == 0 ) then
+				winningTeam = evaluateRound(roundRunning)
+				if winningTeam then -- one side has won
+					if winningTeam == 
+				
+					end
+				end
+			end
+		
+		end
+	
+	end
+	 function gadget:GameFrame(frame)
+		if frame % 30 == 0 then
+			 checkRoundEnds()
+		end
+     end
 	
 	
 	end --gadgetend

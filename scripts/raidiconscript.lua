@@ -11,6 +11,8 @@ whirl= 		{}
 	Red= 	{}
 	step=	{}
 	PlayPos=	{}
+	BluePoints ={}
+	RedPoints ={}
 	
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -73,30 +75,28 @@ function script.Create()
 	Blue= TablesOfPiecesGroups["Blue"]
 	Red= TablesOfPiecesGroups["Red"]
 	step= TablesOfPiecesGroups["Step"]
+	BluePoints= TablesOfPiecesGroups["BluePoints"]
+	RedPoints= TablesOfPiecesGroups["RedPoints "]
 	
 
 	showT(Blue)
+	hideT(BluePoints)
+	showT(BluePoints, 1, #RedPoints/2)
 	showT(Red)
+	hideT(RedPoints)
+	showT(RedPoints, 1, #RedPoints/2)
 end
 
 figures={
 	Red = "red", 
 	Blue = "blue", 
 }
-function newRoundTable()
- return {
-[figure.Red] = { 
-PlacedFigures = {},
-},
-[figure.Blue] = {
-PlacedFigures = {},
-},
 
+function updateShownPoints(redPoints, bluePoints)
 
-}
 
 end
-roundTable=  newRoundTable()
+
 
 function revealAndEliminate()
 	for team, PlacedFigures in pairs (roundtable) do
@@ -173,7 +173,7 @@ end
 
 function winnerBehaviour(winningTeam)
 if winningTeam == myTeamID then
- GG.raidIconPercentage[unitID]  = 100
+	GG.raidIconPercentage[unitID]  = 100
  else
  	roundTable = newRoundTable()
  end

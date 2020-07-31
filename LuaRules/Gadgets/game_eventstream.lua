@@ -63,9 +63,6 @@ if (gadgetHandler:IsSyncedCode()) then
         return myID
     end
 
-    local function InjectCommand(self, ...)
-        self[#self + 1] = { ... }
-    end
 
     if GG.EventStream == nil then GG.EventStream = { CreateEvent = CreateEvent, DeactivateEvent = DeactivateEvent } end
     if GG.EventStreamDeactivate == nil then GG.EventStreamDeactivate = {} end
