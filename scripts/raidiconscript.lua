@@ -10,7 +10,7 @@ whirl= 		{}
 	Blue= 	{}
 	Red= 	{}
 	step=	{}
-	PlayPos=	{}
+
 	BluePoints ={}
 	RedPoints ={}
 	
@@ -78,13 +78,7 @@ function script.Create()
 	BluePoints= TablesOfPiecesGroups["BluePoints"]
 	RedPoints= TablesOfPiecesGroups["RedPoints "]
 	
-
-	showT(Blue)
-	hideT(BluePoints)
-	showT(BluePoints, 1, #RedPoints/2)
-	showT(Red)
-	hideT(RedPoints)
-	showT(RedPoints, 1, #RedPoints/2)
+	updateShownPoints(3,3)
 end
 
 figures={
@@ -92,27 +86,23 @@ figures={
 	Blue = "blue", 
 }
 
+-- Exposed Functions
+
 function updateShownPoints(redPoints, bluePoints)
-
-
+	hideT(RedPoints)
+	hideT(BluePoints)
+	showT(RedPoints, 1, redPoints)
+	showT(BluePoints, 1, bluePoints)
 end
 
-
-function revealAndEliminate()
-	for team, PlacedFigures in pairs (roundtable) do
-		for nr, figureTable in pairs(PlacedFigures) do
-			
-		end
-	end
+function createSnipeIcon(x,y,z, teamID)
+	id = Spring.CreateUnit("snipeicon", x,y,z, math.random(1,4), teamID)
+	Spring.MoveCtrl.Enable(id, true)
+	if not  GG.SnipeIconCreator then  GG.SnipeIconCreator = {} end
+	GG.SnipeIconCreator[id] = unitID
 end
 
-teams={}
-pieceIndex={
-[figures.Blue]= 3, --defender
-[figures.Red]= 3, --agressor
-}
-
-
+--//not exposed functions
 function showPercent(percent)
 	percent=math.ceil(math.max(1,percent)/100*#step)
 
@@ -121,11 +111,6 @@ function showPercent(percent)
 end
 
 
-function registerSnipeIcon(team, id, position)
-	teamType= "empty"
-	if team == myTeamID then teamType = figures.Red else teamType =  figures.Blue  end
-	roundTable[teamType].PlacedFigures[#roundTable[teamType].PlacedFigures + 1 ]=    {id = id, position = position}
-end
 
 function raidAnimationLoop()
 	Sleep(100)
@@ -150,36 +135,15 @@ function raidAnimationLoop()
 	local counter = 1
 	roundStep = math.ceil(GameConfig.raid.maxRoundLength/100)
 	hideT(step)
-	while counter < 100 or totalTime > GameConfig.raid.maxTimeToWait do
+	while true do
+	-- while counter < 100 or totalTime > GameConfig.raid.maxTimeToWait do
 		counter =(counter +1) 
 		showPercent( counter )
-		
-		-- roundHasEnded
-		if (counter == 100) or allStonesPlaced(teams) == true and  then
-			revealAndEliminate()
-			winningTeam =onePartIsOutOfStones(teams)
-			if winningTeam then
-				winnerBehaviour(winningTeam)
-			
-			end
-		end
 		
 		totalTime= totalTime + roundStep
 		Sleep(roundStep)
 	end
 end
-
-
-
-function winnerBehaviour(winningTeam)
-if winningTeam == myTeamID then
-	GG.raidIconPercentage[unitID]  = 100
- else
- 	roundTable = newRoundTable()
- end
-
-end
-
 
 
 function waveSpin(id, val, speed, randoHide)

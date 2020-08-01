@@ -2479,7 +2479,7 @@ end
 function DestroyTable(T, boolSelfd, boolReclaimed, condFunction, unitID)
 	if T then
 		for i = 1, #T, 1 do
-			if condFunction(T[i]) == true then
+			if condFunction(T[i]) == true or not condFunction then
 				Spring.DestroyUnit(T[i], boolSelfd, boolReclaimed, unitID)
 			end
 		end
@@ -3367,6 +3367,12 @@ function distanceUnitToPoint(ed, x, y, z)
 	
 end
 
+--> distance piece to piece in a unit
+function distancePieceToPiece(unitID, pieceA, pieceB)
+	ax,ay,az = Spring.GetUnitPiecePosDir(unitID, pieceA)
+	ex,ey,ez = Spring.GetUnitPiecePosDir(unitID, pieceB)
+	return distance(ex,ey, ez, ax,ay,az)
+end
 
 --> distance from a UnitPiece to another Units Center
 function distancePieceToUnit(unitID, Piece, targetID)
