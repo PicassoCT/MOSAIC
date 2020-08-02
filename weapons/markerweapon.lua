@@ -13,7 +13,7 @@ local weaponDef = {
     weaponVelocity = 1,
     reloadtime = 9000,
     range = 1024,
-   
+    turret = true,
     --  soundStart         = "",
     --  soundtrigger=1,
 
