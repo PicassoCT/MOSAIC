@@ -135,6 +135,7 @@ function raidAnimationLoop()
 	local counter = 1
 	roundStep = math.ceil(GameConfig.raid.maxRoundLength/100)
 	hideT(step)
+	totalTime = 0
 	while true do
 	-- while counter < 100 or totalTime > GameConfig.raid.maxTimeToWait do
 		counter =(counter +1) 
