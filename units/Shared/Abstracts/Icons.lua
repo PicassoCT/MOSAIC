@@ -105,6 +105,9 @@ local RaidIcon = Abstract:New{
 	normaltex= "unittextures/component_atlas_normal.dds"
 	},
 
+	collisionVolumeType = "box",
+	collisionvolumescales = "80 80 80",
+
 	name = "Raid Location",
     description = "a raid of a location is in Progress",
 
@@ -187,8 +190,8 @@ local SnipeIcon = Abstract:New{
     buildCostEnergy    	  = 5,
     buildCostMetal     	  = 5,
     canMove					  = true,
-buildPic = "interrogationicon.png",
-iconType = "interrogationicon",
+buildPic = "",
+iconType = "",
     explodeAs				  = "none",
     Acceleration = 0,
     BrakeRate = 0,
@@ -197,7 +200,7 @@ iconType = "interrogationicon",
     --
     description = "A raid unit/drone ",
 	levelGround = false,
-    CanAttack = false,
+    CanAttack = true,
     CanGuard = false,
 	name = "Raidunit",
 
@@ -207,26 +210,32 @@ iconType = "interrogationicon",
     script 					= "snipeIconscript.lua",
     objectName        	= "snipeIcon.dae",
 
-    canCloak =true,
-    cloakCost=0.0001,
-    ActivateWhenBuilt=1,
-    cloakCostMoving =0.0001,
-    minCloakDistance = 0,
-    onoffable=true,
-    initCloaked = true,
-    decloakOnFire = false,
-    cloakTimeout = 5,
+    -- canCloak =true,
+    -- cloakCost=0.0001,
+    -- ActivateWhenBuilt=1,
+    -- cloakCostMoving =0.0001,
+    -- minCloakDistance = 0,
+    -- onoffable=true,
+    -- initCloaked = true,
+    -- decloakOnFire = false,
+    -- cloakTimeout = 5,
 
     onoffable=true,
     activatewhenbuilt = true,
 
 
+	weapons ={
+		[1]={name  = "marker",
+				onlyTargetCategory = [[ABSTRACT]],
+			},
+	
+	},
 
     customparams = {
         helptext		= "Sniper/Raid Icon",
         baseclass		= "Abstract", -- TODO: hacks
     },
-    category = "NOTARGET",
+    category = "NOTARGET ABSTRACT",
 }
 
 local ObjectiveIcon = Abstract:New{
@@ -236,7 +245,7 @@ local ObjectiveIcon = Abstract:New{
     buildCostEnergy    	  = 5,
     buildCostMetal     	  = 5,
     canMove					  = true,
-buildPic = "interrogationicon.png",
+buildPic = "",
 iconType = "interrogationicon",
     explodeAs				  = "none",
     Acceleration = 0,
@@ -253,18 +262,10 @@ iconType = "interrogationicon",
     CanMove = true,
     CanPatrol = true,
     CanStop = true,
-    script 					= "snipeIconscript.lua",
-    objectName        	= "snipeIcon.dae",
+    script 					= "objectiveIconScript.lua",
+    objectName        	= "objectiveIcon.dae",
 
-    canCloak =true,
-    cloakCost=0.0001,
-    ActivateWhenBuilt=1,
-    cloakCostMoving =0.0001,
-    minCloakDistance = 0,
-    onoffable=true,
-    initCloaked = true,
-    decloakOnFire = false,
-    cloakTimeout = 5,
+    
 
     onoffable=true,
     activatewhenbuilt = true,
@@ -275,7 +276,7 @@ iconType = "interrogationicon",
         helptext		= "Sniper/Raid Icon",
         baseclass		= "Abstract", -- TODO: hacks
     },
-    category = "NOTARGET",
+    category = "NOTARGET ABSTRACT" ,
 }
 
 return lowerkeys({
@@ -285,4 +286,5 @@ return lowerkeys({
     ["raidicon"] = RaidIcon:New(),
     ["recruitcivilian"] = RecruitCivilian:New(),
     ["snipeicon"] = SnipeIcon:New(),
+    ["objectiveIcon"] = ObjectiveIcon:New(),
 })
