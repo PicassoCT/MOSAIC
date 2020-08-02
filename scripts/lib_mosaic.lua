@@ -87,7 +87,7 @@ function getGameConfig()
 	 raid={
 	 maxTimeToWait = 3*60*1000,
 	 maxRoundLength= 20*1000,
-	 }
+	 },
 	 
 	 --asset
 	 assetCloakedSpeedReduction = 0.175,
