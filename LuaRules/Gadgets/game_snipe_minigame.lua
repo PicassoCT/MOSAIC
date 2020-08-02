@@ -36,12 +36,12 @@ if (gadgetHandler:IsSyncedCode()) then
 			 return 
 			 {	Objectives ={},
 				Aggressor = { 
-					team =attackerteam
+					team =attackerteam,
 					Points = oldRound.Aggressor.Points or 3,
 					PlacedFigures = {},
 					},
 				Defender  = {
-					team = enemyTeamID
+					team = enemyTeamID,
 					Points = oldRound.Defender.Points or 3,
 					PlacedFigures = {},
 					},
@@ -244,6 +244,7 @@ if (gadgetHandler:IsSyncedCode()) then
 						end
 					end
 				end
+				)
 		
 	end
 	
