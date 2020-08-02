@@ -3265,35 +3265,31 @@ end
 
 -->Checks wether a point is within a triangle
 function pointWithinTriangle(x1, y1, x2, y2, x3, y3, xt, yt)
+	polygon={
+	[1]={x=x1,y=y1},
+	[2]={x=x2,y=y2},
+	[3]={x=x3,y=y3},
+	}
 	
-	--triAngleDeterminates
-	x1x2 = 0.5 * (x1 * y2 - x2 * y1)
-	x2x3 = 0.5 * (x2 * y3 - x3 * y2)
-	x3x1 = 0.5 * (x3 * y1 - x1 * y3)
-	--pointAngleDeterminates
-	x1xt = 0.5 * (x1 * yt + xt * y1)
-	x2xt = 0.5 * (x2 * yt + xt * y2)
-	x3xt = 0.5 * (x3 * yt + xt * y3)
+	point ={x=xt, y= yt}
 	
-	det1 = x1x2 + x1xt + x2xt --x1x2xt
-	det2 = x2xt + x3xt + x2x3 --x3x2xt
-	det1 = x3xt + x3x1 + x1xt --x1x3xt
-	detSum = det1 + det2 + det3
-	if detSum < 0 then
-		--Point is outside of triAngle
-		return true
-	end
+    local oddNodes = false
+    local j = #polygon
+    for i = 1, #polygon do
+        if (polygon[i].y < point.y and polygon[j].y >= point.y or polygon[j].y < point.y and polygon[i].y >= point.y) then
+            if (polygon[i].x + ( point.y - polygon[i].y ) / (polygon[j].y - polygon[i].y) * (polygon[j].x - polygon[i].x) < point.x) then
+                oddNodes = not oddNodes;
+            end
+        end
+        j = i;
+    end
 	
-	if detSum >= 0 then
-		--Point is inside of triAngle
-		return false
-	end
+    return oddNodes 
+
 end
 function distanceToLine(P1, P2, APos)
 	return math.abs((P2.y -P1.y)*APos.x - (P2.x -P1.x)*APos.y +(P2.x *P1.y) - (P2.y*P1.x))/
 	math.sqrt( (P2.y -P1.y)*(P2.y -P1.y) + (P2.x -P1.x)*(P2.x -P1.x));
-	
-	
 end
 -->returns the absolute distance on negative and positive values
 function absDistance(valA, valB) 
