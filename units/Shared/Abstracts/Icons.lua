@@ -108,8 +108,8 @@ local RaidIcon = Abstract:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "80 80 80",
 
-	name = "Raid Location",
-    description = "a raid of a location is in Progress",
+	-- name = "Raid Location",
+    -- description = "a raid of a location is in Progress",
 
     CanAttack = false,
     CanGuard = false,
