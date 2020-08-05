@@ -26,7 +26,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function gadget:UnitCreated(unitID, unitDefID, unitTeam)
 		if unitDefID == raidIconDefID then
-			allRunningRaidRounds[unitID] = newRoundTable(unitID, unitTeam)		
+			allRunningRaidRounds[unitID] = newRoundTable(unitID, unitTeam, {Aggressor={},Defender ={}})		
 		end
 	end
 	
@@ -86,6 +86,14 @@ if (gadgetHandler:IsSyncedCode()) then
 			Spring.Echo("Unit "..id.. " is not a snipeIcon")
 		end
 	return {}
+	end
+	
+	function getRaidIconProgressbar(icon)
+	 env = Spring.UnitScript.GetScriptEnv(id)
+        if env and env.getRoundProgressBar then
+			return Spring.UnitScript.CallAsUnit(id, env.getRoundProgressBar)
+		end
+	return 0
 	end
 	
 	allAllreadyExploredNodes={}
@@ -266,20 +274,46 @@ if (gadgetHandler:IsSyncedCode()) then
 					--kill all the old icons
 					process(roundRunning.Aggressor, function(id) Spring.DestroyUnit(id, true, false) end )
 					process(roundRunning.Defender, function(id) Spring.DestroyUnit(id, true, false) end )
-					allRunningRaidRounds[raidIcon] = newRoundTable(roundRunning)
+					allRunningRaidRounds[raidIcon] = newRoundTable(roundRunning, roundRunning.Aggressor.team, roundRunning)
 				
 					end
 				end
 			end
 		
-		end
-	
+		end	
 	end
+	
+	local lastSniperIconID
+	function gadget:RecvLuaMsg(msg, playerID)
+		
+        if msg and string.find(msg,"SPWN") then
+		
+			t= split(msg, "|")
+
+                name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ = Spring.GetPlayerInfo(playerID)
+				uType =  t[2]
+				Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+				lastSniperIconID= Spring.CreateUnit(uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+				if uType == "snipeicon" then
+					GG.SniperIcon:Register( lastSniperIconID, teamID, tonumber(t[6]))
+				end
+       
+		end
+		
+		if lastSniperIconID and msg and string.find(msg, "POSROT") then
+		Spring.Echo("SpawnMessage:"..msg)
+			t= split(msg, "|")
+			Command(lastSniperIconID, "attack", {tonumber(t[3]),tonumber(t[4]),tonumber(t[5])}, {"shift"})
+		end
+    end
+
+	
+	
 	 function gadget:GameFrame(frame)
 		if frame % 30 == 0 then
-			 checkRoundEnds()
+			 -- checkRoundEnds()
 		end
      end
 	
 	
-	end --gadgetend
+end --gadgetend
