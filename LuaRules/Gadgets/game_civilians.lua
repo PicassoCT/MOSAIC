@@ -419,7 +419,7 @@ end
 		
 		if counter < GameConfig.numberOfPersons then
 		local stepSpawn = math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax)
-		echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
+		-- echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
 		
 			for i=1, stepSpawn do
 				x,_,z, startNode = getRandomSpawnNode()
@@ -457,7 +457,7 @@ end
 		
 		if counter < GameConfig.numberOfVehicles then
 		local stepSpawn = math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter)
-			echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
+			-- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
 			for i=1,stepSpawn  do
 				x,_,z, startNode = getRandomSpawnNode()
 				
