@@ -2138,18 +2138,17 @@ function safeAccessTable(T, a, b, c)
 end
 
 
-function split(str, pattern)
-	pattern = pattern or "[^%s]+"
-	if pattern:len() == 0 then
-		pattern = "[^%s]+"
-	end
-	local parts = {__index = table.insert}
-	setmetatable(parts, parts)
-	str:gsub(pattern, parts)
-	setmetatable(parts, nil)
-	parts.__index = nil
-	return parts
+function split (inputstr, sep)
+        if sep == nil then
+                sep = "%s"
+        end
+        local t={}
+        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+                table.insert(t, str)
+        end
+        return t
 end
+
 
 function stringSplit(String, Seperator)
 	if Seperator == nil then sep = "%s" end

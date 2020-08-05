@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+
 TablesOfPiecesGroups = {}
 whirl= 		{}
 	ring= 	{}
@@ -61,7 +62,7 @@ antagon_talk ={
 function script.Create()
 	Spring.SetUnitAlwaysVisible(unitID,true)
 	Spring.SetUnitNeutral(unitID,true)
-	Spring.SetUnitNoSelect(unitID,true)
+	-- Spring.SetUnitNoSelect(unitID,true)
 	Spring.MoveCtrl.Enable(unitID)
 	ox,oy,oz = Spring.GetUnitPosition(unitID)
 	Spring.SetUnitPosition(unitID, ox,oy + 125, oz)
@@ -77,7 +78,7 @@ function script.Create()
 	step= TablesOfPiecesGroups["Step"]
 	BluePoints= TablesOfPiecesGroups["BluePoints"]
 	RedPoints= TablesOfPiecesGroups["RedPoints "]
-	
+
 	updateShownPoints(3,3)
 end
 
@@ -109,7 +110,12 @@ function showPercent(percent)
 	hideT(step)
 	showT(step,1, percent)
 end
+local counter = 1
+function getRoundProgressBar()
+return counter
 
+
+end
 
 
 function raidAnimationLoop()
@@ -132,7 +138,7 @@ function raidAnimationLoop()
 			StartThread(waveSpin, id, math.random(4,24)*50, math.random(4,800), true)
 		end
 	)
-	local counter = 1
+
 	roundStep = math.ceil(GameConfig.raid.maxRoundLength/100)
 	hideT(step)
 	totalTime = 0
