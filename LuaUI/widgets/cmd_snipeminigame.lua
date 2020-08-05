@@ -14,10 +14,11 @@ function widget:GetInfo()
 end
 
 function widget:Update(dt)
-
 end
 
 local raidIconDefID = nil
+local spTraceScreenRay = Spring.TraceScreenRay
+local spIsAboveMiniMap = Spring.IsAboveMiniMap
 
 function widget:Initialize()
 
@@ -49,25 +50,57 @@ function widget:UnitDestroyed(unitID, unitDefID)
 	end
 end
 
-local raidIcon = UnitDefNames["raidicon"].id
+local raidIcon 
 
+for id, def in pairs(UnitDefs) do
+	if def.name == "raidicon" then
+	raidIcon = id
+	end
+end
+
+
+lastPos={}
 boolPlacementActive= false
 function widget:MousePress(x,y,button)
-	if (mButton ~= 1) then return false end
+	inMinimap = spIsAboveMiniMap(x, y)
+	if (button ~= 1) then return false end
 
- local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
- Spring.Echo(targType.." - > "..targID)
-        if targType == 'unit' and raidIcons[targID] then
+	local targType, unitID = spTraceScreenRay(x, y)
+	Spring.Echo(targType, unitID)
+	if targType == "unit" and Spring.GetUnitDefID(unitID) == raidIconDefID then
+
+		local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
+		-- Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
+        if targType and targType == 'ground'then
+			if boolPlacementActive== false then
+				Spring.Echo("Placement started")
+				lastPos = targID
+				Spring.SendLuaRulesMsg("SPWN|snipeicon|"..targID[1].."|"..targID[2].."|"..targID[3].."|"..unitID);
+			end
 			boolPlacementActive = true
-			Spring.Echo("Clicked on raid icon")
+
+			--create Unit at Location
+			--set
+
 			return true 
 		end
+	end
 end
 
  function widget:MouseMove(mx, my, dx, dy, mButton)
  
  end
 
-function widget:MouseRelease(mx, my, mButton)
-
+function widget:MouseRelease(x, y, mButton)
+	if (mButton ~= 1) then return false end
+	
+	if boolPlacementActive == true then 
+	Spring.Echo("Placement ended")
+	inMinimap = spIsAboveMiniMap(x, y)
+	local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
+	Spring.SendLuaRulesMsg("POSROT|snipeicon|"..targID[1].."|"..targID[2].."|"..targID[3])
+	--Set Direction
+	boolPlacementActive = false
+	return true
+	end
 end
