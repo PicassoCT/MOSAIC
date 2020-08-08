@@ -23,58 +23,90 @@ if (gadgetHandler:IsSyncedCode()) then
 	local allRunningRaidRounds = {}
 	Aggressor = "Aggressor"
 	Defender = "Defender"
+	raidStates = getRaidStates()
 	
 	function gadget:UnitCreated(unitID, unitDefID, unitTeam)
 		if unitDefID == raidIconDefID then
-			allRunningRaidRounds[unitID] = newRoundTable(unitID, unitTeam, {Aggressor={},Defender ={}})		
-		end
+			allRunningRaidRounds[unitID] = newRound(unitID, unitTeam, true)	
+			assert(allRunningRaidRounds[unitID].Aggressor.Points > 0)
+			assert(allRunningRaidRounds[unitID].Defender.Points > 0)			
+		end	
+	end
+		
+	function setPublicRaidState(unitID, state)			
+		if not GG.RaidState then GG.RaidState ={} end
+		GG.RaidState[unitID] = state
 	end
 	
-	function newRoundTable(unitID, attackerteam, oldRound)
-		enemyID= Spring.GetUnitNearestEnemy(unitID)
+	function newRound(raidIconID, attackerteam, boolGameStart, oldRound)
+		setRaidIconProgress(raidIconID, 0)
+		enemyID= Spring.GetUnitNearestEnemy(raidIconID)
 		enemyTeamID = Spring.GetUnitTeam(enemyID)
-			 return 
-			 {	Objectives ={},
-				Aggressor = { 
-					team =attackerteam,
-					Points = oldRound.Aggressor.Points or 3,
-					PlacedFigures = {},
-					},
-				Defender  = {
-					team = enemyTeamID,
-					Points = oldRound.Defender.Points or 3,
-					PlacedFigures = {},
-					},
-			}
+		setPublicRaidState(raidIconID, raidStates.OnGoing)
+		local returnTable = oldRound	
+		
+		if boolGameStart== true then
+			returnTable=  {	
+					Objectives ={},
+					Aggressor = { 
+						team =attackerteam,
+						Points =  3,
+						PlacedFigures = {},
+						},
+					Defender  = {
+						team = enemyTeamID,
+						Points = 3,
+						PlacedFigures = {},
+						},
+				}					
+		else
+			returnTable.Objectives ={}
+			returnTable.Aggressor.PlacedFigures ={}
+			returnTable.Defender.PlacedFigures ={}
+
+		end
+			
+		return returnTable
 	end
 
- local function RegisterObjective(self, unitID, raidParentID)	
- 	if not raidParentID then raidParentID = randdict(allRunningRaidRounds) end --TODO Testcode remove
-	Spring.SetUnitAlwaysVisible(unitID, true)
-	allRunningRaidRounds[raidParentID].Objectives[unitID] = unitID
- 
- end
+	function registerPlaceUnit(parentID, unitID, roundRunning, boolObjective)
+	env = Spring.UnitScript.GetScriptEnv(parentID)
+		if env and env.registerPlaceUnit then
+			Spring.UnitScript.CallAsUnit(parentID, env.registerPlaceUnit, unitID, boolObjective)
+			
+			if boolObjective == false then
+			Spring.UnitScript.CallAsUnit(parentID, env.updateShownPoints, roundRunning.Aggressor.Points, roundRunning.Defender.Points)
+			end
+		end
+	end
+
+	local function RegisterObjective(self, unitID, raidParentID)	
+		assert(raidParentID)
+		Spring.SetUnitAlwaysVisible(unitID, true)
+		allRunningRaidRounds[raidParentID].Objectives[unitID] = unitID 
+		registerPlaceUnit(raidParentID, unitID, allRunningRaidRounds[raidParentID], true)
+	end
 	
- local function RegisterSniperIcon(self, unitID, unitTeam, raidParentID)
-		if not raidParentID then raidParentID = randdict(allRunningRaidRounds) end --TODO Testcode remove
+	local function RegisterSniperIcon(self, unitID, unitTeam, raidParentID)
+		assert(raidParentID)
 		teamSelected = Defender --defender as default
 		if Spring.GetUnitTeam(raidParentID) == Spring.GetUnitTeam(unitID)  then --aggressors
 			teamSelected = Aggressor
 		end
 		
-			if allRunningRaidRounds[raidParentID][teamSelected] > 0 then
-				allRunningRaidRounds[raidParentID][teamSelected].PlacedFigures[#allRunningRaidRounds[raidParentID][teamSelected].PlacedFigures  + 1 ] = unitID
-				allRunningRaidRounds[raidParentID][teamSelected].Points = 	allRunningRaidRounds[raidParentID][teamSelected].Points -1
-				--reach Into Icon and update Points
-			else
-				 GG.UnitsToKill:PushKillUnit(unitID)
-			end
-
+		if allRunningRaidRounds[raidParentID][teamSelected].Points > 0 then
+			allRunningRaidRounds[raidParentID][teamSelected].PlacedFigures[#allRunningRaidRounds[raidParentID][teamSelected].PlacedFigures  + 1 ] = unitID
+			allRunningRaidRounds[raidParentID][teamSelected].Points = 	allRunningRaidRounds[raidParentID][teamSelected].Points -1
+			registerPlaceUnit(raidParentID, unitID, allRunningRaidRounds[raidParentID], false)	--reach Into Icon and update Points
+		else
+			Spring.Echo("Points that lead to unit Killed:"..allRunningRaidRounds[raidParentID][teamSelected].Points)
+			GG.UnitsToKill:PushKillUnit(unitID)
+		end
     end
-   if GG.SniperIcon == nil then GG.SniperIcon = { Register = RegisterSniperIcon} end
+	if GG.SniperIcon == nil then GG.SniperIcon = { Register = RegisterSniperIcon} end
 
-   Graph= {}
-   function addEdege(a, b)
+	Graph= {}
+	function addEdege(a, b)
 		Graph[#Graph + 1] = {from = a, to = b}
 	end
 	
@@ -88,10 +120,18 @@ if (gadgetHandler:IsSyncedCode()) then
 	return {}
 	end
 	
-	function getRaidIconProgressbar(icon)
+	function getRaidIconProgress(id)
 	 env = Spring.UnitScript.GetScriptEnv(id)
         if env and env.getRoundProgressBar then
 			return Spring.UnitScript.CallAsUnit(id, env.getRoundProgressBar)
+		end
+	return 0
+	end
+	
+	function setRaidIconProgress(id, value)
+	 env = Spring.UnitScript.GetScriptEnv(id)
+        if env and env.setRoundProgressBar then
+			return Spring.UnitScript.CallAsUnit(id, env.setRoundProgressBar, value )
 		end
 	return 0
 	end
@@ -152,14 +192,35 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
 	end
 	
-	
-	function evaluateRound( roundRunning)
+	function evaluateRound( raidIcon, roundRunning)
 		winningTeam = nil
 		Graph= {}
 		local OriginalGraph = {}
+		
+		--early out -if one side has not placed at all 
+		if #roundRunning.Defender.PlacedFigures == 0 or #roundRunning.Aggressor.PlacedFigures == 0 then		
+			--defenders did not play 
+			if #roundRunning.Defender.PlacedFigures == 0 and #roundRunning.Aggressor.PlacedFigures ~= 0 then	
+				setPublicRaidState(raidIcon, raidStates.AggressorWins)
+				return roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins
+			end	
+			
+			--aggressors did not play 
+			if #roundRunning.Defender.PlacedFigures == 0 and #roundRunning.Aggressor.PlacedFigures ~= 0 then	
+				setPublicRaidState(raidIcon, raidStates.DefenderWins)
+				return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
+			end
+			
+			--bot did not play
+			if #roundRunning.Defender.PlacedFigures == 0 and #roundRunning.Aggressor.PlacedFigures == 0 then		
+				setPublicRaidState(raidIcon, raidStates.DefenderWins)
+				return  nil, roundRunning, raidStates.Aborted
+			end
+		end
 
+	repeat 
 		--find out who aims at who - defenders
-			process(roundRunning.Defender,
+			process(roundRunning.Defender.PlacedFigures,
 				function (id)
 					process(getUnitsInTriangle(id ),			
 							function(ad) 					--add those edges to the graph
@@ -171,7 +232,7 @@ if (gadgetHandler:IsSyncedCode()) then
 				end
 				)
 		
-			process(roundRunning.Aggressor,
+			process(roundRunning.Aggressor.PlacedFigures,
 				function (id)
 					process(getUnitsInTriangle(id ),		
 							function(ad) 					--add those edges to the graph
@@ -184,11 +245,15 @@ if (gadgetHandler:IsSyncedCode()) then
 				)
 		
 		OriginalGraph = Graph
+		assert(#Graph > 0)
 		
-		--we now have a graph of only valid hits
+		--we now have a graph of only valid hits - filtered for team on team hits
+		--get a list of edges who nobody aims at
 		SolitaryEdges = getListOfSolitaryEdges()
+		
+		
 		while #SolitaryEdges > 0 do
-			deadList ={}
+		deadList ={}
 			for edge, state in pairs(SolitaryEdges) do
 				for i=1,#Graph do
 					node = Graph[i]
@@ -205,7 +270,7 @@ if (gadgetHandler:IsSyncedCode()) then
 				end
 			end
 			
-		--eliminate from the solitary edges inwards		
+		--eliminate from the solitary edges inwards	from the graph	
 		SolitaryEdges = getListOfSolitaryEdges()
 		end
 		
@@ -218,19 +283,18 @@ if (gadgetHandler:IsSyncedCode()) then
 			
 			end
 		end
-
+	
+	until #Graph == 0
 	--Auswertung
 	
-	if #Graph == 0 then Spring.Echo("No survivors"); return end --No Survivors - WTF
+	if #Graph == 0 then Spring.Echo("No survivors");  end -- No valid aiming pairs
 		
 	eliminatedUnits = findEliminatedUnits(OriginalGraph, Graph)
+	Survivors  = findSurvivors (roundRunning, eliminatedUnits)
 	DestroyTable(eliminatedUnits, false, true)
 	
 	--condense Survivors Back to Points
-	Survivors ={}
-	for i=#Graph, 1, -1 do 
-		Survivors[Graph[i].from] = Graph[i].from
-	end
+
 	
 	for k,v in pairs (Survivors) do
 		if Spring.GetUnitTeam(k) == roundRunning.Aggressors.team then
@@ -239,7 +303,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			roundRunning.Defender.Points = roundRunning.Defender.Points + 1
 		end
 	end
-	
+
 	--Objective Evaluation 
 	for objective in pairs(roundRunning.Objectives) do
 		process(Survivors,
@@ -252,52 +316,80 @@ if (gadgetHandler:IsSyncedCode()) then
 						end
 					end
 				end
-				)
-		
+				)		
 	end
 	
+	DestroyTable(Survivors, false, true)
 	DestroyTable(roundRunning.Objectives, false, true)
-	return winningTeam
+		return winningTeam, roundRunning, raidStates.DefenderWins
+	
+	end
+	
+	function findEliminatedUnits(OriginalGraph, Graph)
+		eliminatedUnits ={}
+		for n,v in (Graph) do
+			eliminatedUnits[v.to] = true		
+		end
+		
+		return eliminatedUnits
+	end
+	
+	function 	findSurvivors (roundRunning, eliminatedUnits)
+		survivor={} -- not the_Band
+		for nr, id in pairs(roundRunning.Aggressor.PlacedFigures) do
+			if not eliminatedUnits[id] then
+				survivor[id] = true
+			end
+		end
+		return survivor
 	end
 	
 	function checkRoundEnds()
 		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do
 		
 			--Round has ended
-			if getRaidIconProgressbar(raidIcon) >= 100 or ( roundRunning[figures.Red].Points == 0 and roundRunning[figures.Blue].Points == 0 ) then
+			if getRaidIconProgress(raidIcon) >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
 				--find out who died, who survived, who collected objectives and if there is a new round
 				winningTeam, roundRunning = evaluateRound(roundRunning)
 				if winningTeam then -- one side has won
 					if winningTeam == Aggressor then --agressor won, game over
+						Spring.Echo("Aggressor won")
 					
 					else
-					--kill all the old icons
-					process(roundRunning.Aggressor, function(id) Spring.DestroyUnit(id, true, false) end )
-					process(roundRunning.Defender, function(id) Spring.DestroyUnit(id, true, false) end )
-					allRunningRaidRounds[raidIcon] = newRoundTable(roundRunning, roundRunning.Aggressor.team, roundRunning)
-				
+						Spring.Echo("Defender won")
+						--kill all the old icons
+						process(roundRunning.Aggressor.PlacedFigures, function(id) Spring.DestroyUnit(id, true, false) end )
+						process(roundRunning.Defender.PlacedFigures, function(id) Spring.DestroyUnit(id, true, false) end )
+						allRunningRaidRounds[raidIcon] = newRound(roundRunning, roundRunning.Aggressor.team, false, roundRunning)
+					
 					end
 				end
-			end
-		
+			end		
 		end	
 	end
 	
+	GG.DisplayedSniperIconParent={}
 	local lastSniperIconID
 	function gadget:RecvLuaMsg(msg, playerID)
 		
-        if msg and string.find(msg,"SPWN") then
-		
+        if msg and string.find(msg,"SPWN") then		
 			t= split(msg, "|")
 
-                name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ = Spring.GetPlayerInfo(playerID)
-				uType =  t[2]
-				Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+            name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ = Spring.GetPlayerInfo(playerID)
+			uType =  t[2]
+			raidIconID= tonumber(t[6])
+			lastSniperIconID = nil
+
+			if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and allRunningRaidRounds[raidIconID].Aggressor.Points > 0 or
+			   allRunningRaidRounds[raidIconID].Defender.team == teamID and allRunningRaidRounds[raidIconID].Defender.Points > 0
+			then
+				-- Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
 				lastSniperIconID= Spring.CreateUnit(uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
 				if uType == "snipeicon" then
-					GG.SniperIcon:Register( lastSniperIconID, teamID, tonumber(t[6]))
+				    GG.DisplayedSniperIconParent[lastSniperIconID] = raidIconID
+					GG.SniperIcon:Register( lastSniperIconID, teamID, raidIconID)
 				end
-       
+			end       
 		end
 		
 		if lastSniperIconID and msg and string.find(msg, "POSROT") then
@@ -307,13 +399,10 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
     end
 
-	
-	
-	 function gadget:GameFrame(frame)
+	function gadget:GameFrame(frame)
 		if frame % 30 == 0 then
-			 -- checkRoundEnds()
+			checkRoundEnds()
 		end
      end
-	
 	
 end --gadgetend

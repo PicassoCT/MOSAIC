@@ -1,12 +1,12 @@
 model = {
-	radius = 50.0,
+	radius = 75.0,
 	height = 80,
 	--tex1 = "Jeffy_Diffuse+TeamColor.dds",
 	tex1 = "component_atlas_diffuse.dds",
 	tex2 = "testtex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
-	midpos = {0, 50, 0},
+	midpos = {0, 5, 0},
 	--rotAxisSigns = {-1, -1, -1}
 	--[[
 	pbr = {

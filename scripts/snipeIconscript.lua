@@ -21,17 +21,12 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	--setSpeedToZero, allow for rotation
-	
+	hideAll(unitID)
 	triangle = TablesOfPiecesGroups["Tris"]
 	Turrets = TablesOfPiecesGroups["Turret"]
-	hideT(Turrets)
-	hideT(triangle)
-	Show(Turrets[math.random(1,#Turrets)])
-	
+
 	turretTriangle  = triangle[1]
 	setSpeedEnv(unitID, 0.0)
-	-- x,y,z =Spring.GetUnitPosition(unitID)
-	-- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
 	StartThread(TriangleTest)
 	StartThread(DelayedRegister)
 	
@@ -39,13 +34,17 @@ end
 
 
 function DelayedRegister()
-	while not GG.SnipeIconCreator or not GG.SnipeIconCreator[unitID]  do
+	while not  GG.DisplayedSniperIconParent or not GG.DisplayedSniperIconParent[unitID] do
 		Sleep(100)
 	end
-
-   GG.SniperIcon:Register( unitID, myTeam, GG.SnipeIconCreator[unitID] )
-   myParent = GG.SnipeIconCreator[unitID]
-   GG.SnipeIconCreator[unitID] = nil
+	myParent =GG.DisplayedSniperIconParent[unitID]
+	
+	if Spring.GetUnitDefID(GG.DisplayedSniperIconParent[unitID]) == Spring.GetUnitDefID(unitID) then
+		Show(Turrets[2])
+	else
+		Show(Turrets[1])
+	end
+	
 end
 
 function TriangleTest()
@@ -53,7 +52,7 @@ function TriangleTest()
 	Sleep(1000)
 	process(getUnitsInTriangle(),
 		function (id)
-			Spring.Echo("Unit "..id.. " is in triangle")
+			-- Spring.Echo("Unit "..id.. " is in triangle")
 		end
 	)
 	end
@@ -77,13 +76,11 @@ function getUnitsInTriangle()
 			function(id) -- all Units In Triangle
 				px,py,pz =Spring.GetUnitPosition(id)
 				if pointWithinTriangle(worldPos[1].x,worldPos[1].z, worldPos[2].x, worldPos[2].z, worldPos[3].x, worldPos[3].z, px,pz) then
-					Spring.Echo("Unit in circle "..id)
+					-- Spring.Echo("Unit in circle "..id)
 					return id
 				end
 			end
 			)
-
-
 end
 
 

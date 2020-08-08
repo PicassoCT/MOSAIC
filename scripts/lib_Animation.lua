@@ -1629,25 +1629,19 @@ function TurnPieceList(ScriptEnviroment, PieceList, boolTurnInOrder, boolWaitFor
 end
 
 --> Turn a Table towards local T
-function moveT(t, axis, dist, speed, boolInstantUpdate)
-    if boolInstantUpdate then
-        for i = 1, #t, 1 do
-            Move(t[i], axis, dist, 0, true)
-        end
-        return
-    end
+function moveT(t, axis, dist, speed, boolInstantUpdate, start, endindex)
+		start = start or 1 
+		endindex = endindex or #t
+		speed = speed or 0
+		boolInstantUpdate = boolInstantUpdate or false
 
-    if not speed or speed == 0 then
-        for i = 1, #t, 1 do
-            Move(t[i], axis, dist, 0)
+        for i = start, endindex, 1 do
+            Move(t[i], axis, dist, speed, boolInstantUpdate)
         end
-    else
-        for i = 1, #t, 1 do
-            Move(t[i], axis, dist, speed)
-        end
-    end
-    return
+		
 end
+
+
 
 function turnTableRand(t, taxis, uparg, downarg, speed, boolInstantUpdate)
     axis = taxis or 2 --y_axis as default

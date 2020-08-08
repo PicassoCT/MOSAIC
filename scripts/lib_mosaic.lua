@@ -365,6 +365,17 @@ function getBaseTypeName(name)
 
 end
 
+function getRaidStates()
+	return {
+			["Aborted"] = 0,
+			["OnGoing"] = 1,
+			["DefenderWins"] = 2,
+			["AggressorWins"] = 3,
+			["Tied"] = 3,
+			}
+
+end
+
 function getTruckLoadOutTypeTable()
 	mapping = {
 	["ground_truck_mg"] = "ground_turret_mg",

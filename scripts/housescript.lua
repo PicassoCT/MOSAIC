@@ -814,6 +814,14 @@ end
 
 boolDoneShowing= false
 
+function showHouse()
+		showT(ToShowTable)
+end
+
+function hideHouse()
+		hideT(ToShowTable)
+end
+
 function buildAnimation()
 	local builT= TablesOfPiecesGroups["Build"]
 	axis = _y_axis
