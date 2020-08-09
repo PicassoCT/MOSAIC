@@ -490,8 +490,7 @@ end
 local unprocessedCommands = {}
 local unprocessedCommandsNum = 0
 function addUnitCommand(unitID, unitDefID, cmdID)
-	-- record that a command was given (note: cmdID is not used, but useful to record for debugging)
-	
+	if not cmdID then return end
 	if unitID and (CONFIG[cmdID] or cmdID==CMD_INSERT or cmdID<0) then
 		unprocessedCommandsNum = unprocessedCommandsNum + 1
 		unprocessedCommands[unprocessedCommandsNum] = {ID=cmdID,time=os_clock(),unitID=unitID,draw=false,selected=spIsUnitSelected(unitID),udid=unitDefID} -- command queue is not updated until next gameframe

@@ -6,8 +6,8 @@ function widget:GetInfo()
 		date      = "09/24/18",
 		license   = "CC0",
 		layer     = 5,
-		enabled   = true,
-		alwaysStart = true,
+		enabled   = false,
+		alwaysStart = false,
 		handler = true,
 	}
 end

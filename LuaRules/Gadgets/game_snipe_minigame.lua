@@ -21,9 +21,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	local raidIconDefID = UnitDefNames["raidicon"].id
 	local snipeIconDefID = UnitDefNames["snipeicon"].id
 	local allRunningRaidRounds = {}
-	Aggressor = "Aggressor"
-	Defender = "Defender"
-	raidStates = getRaidStates()
+	local Aggressor = "Aggressor"
+	local Defender = "Defender"
+	local raidStates = getRaidStates()
+	local gaiaTeamID = Spring.GetGaiaTeamID()
 	
 	function gadget:UnitCreated(unitID, unitDefID, unitTeam)
 		if unitDefID == raidIconDefID then
@@ -322,7 +323,6 @@ if (gadgetHandler:IsSyncedCode()) then
 	DestroyTable(Survivors, false, true)
 	DestroyTable(roundRunning.Objectives, false, true)
 	
-	
 	if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then		
 			--defenders dead
 			if roundRunning.Aggressor.Points  <= 0 and roundRunning.Defender.Points  ~= 0 then	
@@ -331,7 +331,8 @@ if (gadgetHandler:IsSyncedCode()) then
 			end	
 			
 			--aggressors dead
-			if roundRunning.Aggressor.Points  ~= 0 and roundRunning.Defender.Points  <= 0 then			setPublicRaidState(raidIcon, raidStates.DefenderWins)
+			if roundRunning.Aggressor.Points  ~= 0 and roundRunning.Defender.Points  <= 0 then		
+				setPublicRaidState(raidIcon, raidStates.DefenderWins)
 				return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
 			end
 			
@@ -362,11 +363,33 @@ if (gadgetHandler:IsSyncedCode()) then
 		return survivor
 	end
 	
-	function checkRoundEnds()
-		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do
+	function checkAIPlace(roundRunning, raidIconID)
+		local aggTeam = roundRunning.Aggressor.team
+		local defTeam = roundRunning.Defender.team
+		x,y,z = Spring.GetUnitPosition(raidIconID)
 		
+		if select( 4 ,Spring.GetTeamInfo(aggTeam)) == true or  aggTeam ~= gaiaTeamID then
+			for i=1, roundRunning.Aggressor.Points then
+			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), aggTeam)
+			 registersniperIconAttributes("snipeIcon", aggTeam, lastSniperIconID, raidIconID)
+			end
+		end
+		
+		if select( 4 ,Spring.GetTeamInfo(defTeam)) == true or defTeam ~= gaiaTeamID  then		
+			for i=1, roundRunning.Defender.Points then
+			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), aggTeam)
+			 registersniperIconAttributes("snipeIcon", aggTeam, lastSniperIconID, raidIconID)
+			end
+		end
+	end
+	
+	function checkRoundEnds()
+		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do	
 			--Round has ended
 			if getRaidIconProgress(raidIcon) >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
+				-- check if a side was AI, if it was AI - do a random placement
+				checkAIPlace(roundRunning)		
+				
 				--find out who died, who survived, who collected objectives and if there is a new round
 				winningTeam, roundRunning, state = evaluateEndedRound(roundRunning)
 				
@@ -387,6 +410,13 @@ if (gadgetHandler:IsSyncedCode()) then
 		end	
 	end
 	
+	function registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
+		if uType == "snipeicon" then
+		    GG.DisplayedSniperIconParent[lastSniperIconID] = raidIconID
+			GG.SniperIcon:Register( lastSniperIconID, teamID, raidIconID)
+		end
+	end
+	
 	GG.DisplayedSniperIconParent={}
 	local lastSniperIconID
 	function gadget:RecvLuaMsg(msg, playerID)
@@ -403,16 +433,12 @@ if (gadgetHandler:IsSyncedCode()) then
 			   allRunningRaidRounds[raidIconID].Defender.team == teamID and allRunningRaidRounds[raidIconID].Defender.Points > 0
 			then
 				-- Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
-				lastSniperIconID= Spring.CreateUnit(uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
-				if uType == "snipeicon" then
-				    GG.DisplayedSniperIconParent[lastSniperIconID] = raidIconID
-					GG.SniperIcon:Register( lastSniperIconID, teamID, raidIconID)
-				end
+			lastSniperIconID= Spring.CreateUnit(uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+			 registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
 			end       
 		end
 		
 		if lastSniperIconID and msg and string.find(msg, "POSROT") then
-		Spring.Echo("SpawnMessage:"..msg)
 			t= split(msg, "|")
 			Command(lastSniperIconID, "attack", {tonumber(t[3]),tonumber(t[4]),tonumber(t[5])}, {"shift"})
 		end

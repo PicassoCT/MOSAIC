@@ -243,10 +243,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 return false, persPack
             end
 
-            Spring.Echo("Starting Interrogation Event Stream")
+            Spring.Echo("Starting Raid Event Stream")
             createStreamEvent(
                 unitID,
-                interrogationFunction,
+                raidEventStreamFunction,
                 31,
                 {
                     interrogatorID = attackerID,
@@ -374,6 +374,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             persPack.attackerTeam,
                             persPack.attackerID
                         )
+						
                         for i = 1, #allTeams, 1 do
                             if allTeams[i] ~= persPack.attackerTeam then
                                 GG.Bank:TransferToTeam(
