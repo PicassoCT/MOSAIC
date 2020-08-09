@@ -65,7 +65,7 @@ function widget:MousePress(x, y, button)
     end
 
     local targType, unitID = spTraceScreenRay(x, y)
-    Spring.Echo(targType, unitID)
+    -- Spring.Echo(targType, unitID)
     if targType == "unit" and Spring.GetUnitDefID(unitID) == raidIconDefID then
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
         -- Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])

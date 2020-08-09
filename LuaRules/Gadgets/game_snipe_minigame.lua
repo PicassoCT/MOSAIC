@@ -192,7 +192,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
 	end
 	
-	function evaluateRound( raidIcon, roundRunning)
+	function evaluateEndedRound( raidIcon, roundRunning)
 		winningTeam = nil
 		Graph= {}
 		local OriginalGraph = {}
@@ -321,8 +321,26 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	DestroyTable(Survivors, false, true)
 	DestroyTable(roundRunning.Objectives, false, true)
-		return winningTeam, roundRunning, raidStates.DefenderWins
 	
+	
+	if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then		
+			--defenders dead
+			if roundRunning.Aggressor.Points  <= 0 and roundRunning.Defender.Points  ~= 0 then	
+				setPublicRaidState(raidIcon, raidStates.AggressorWins)
+				return roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins
+			end	
+			
+			--aggressors dead
+			if roundRunning.Aggressor.Points  ~= 0 and roundRunning.Defender.Points  <= 0 then			setPublicRaidState(raidIcon, raidStates.DefenderWins)
+				return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
+			end
+			
+			--both died
+			if #roundRunning.Defender.PlacedFigures <= 0 and #roundRunning.Aggressor.PlacedFigures <= 0 then		
+				setPublicRaidState(raidIcon, raidStates.DefenderWins)
+				return  nil, roundRunning, raidStates.Aborted
+			end
+		end		
 	end
 	
 	function findEliminatedUnits(OriginalGraph, Graph)
@@ -350,7 +368,9 @@ if (gadgetHandler:IsSyncedCode()) then
 			--Round has ended
 			if getRaidIconProgress(raidIcon) >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
 				--find out who died, who survived, who collected objectives and if there is a new round
-				winningTeam, roundRunning = evaluateRound(roundRunning)
+				winningTeam, roundRunning, state = evaluateEndedRound(roundRunning)
+				
+				if state == raidStates.
 				if winningTeam then -- one side has won
 					if winningTeam == Aggressor then --agressor won, game over
 						Spring.Echo("Aggressor won")
@@ -360,8 +380,7 @@ if (gadgetHandler:IsSyncedCode()) then
 						--kill all the old icons
 						process(roundRunning.Aggressor.PlacedFigures, function(id) Spring.DestroyUnit(id, true, false) end )
 						process(roundRunning.Defender.PlacedFigures, function(id) Spring.DestroyUnit(id, true, false) end )
-						allRunningRaidRounds[raidIcon] = newRound(roundRunning, roundRunning.Aggressor.team, false, roundRunning)
-					
+						allRunningRaidRounds[raidIcon] = newRound(roundRunning, roundRunning.Aggressor.team, false, roundRunning)				
 					end
 				end
 			end		
