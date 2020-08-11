@@ -72,11 +72,11 @@ function script.Create()
     Blue = TablesOfPiecesGroups["Blue"]
     Red = TablesOfPiecesGroups["Red"]
     step = TablesOfPiecesGroups["Step"]
-
+	
     StartThread(setAffiliatedHouseInvisible)
     StartThread(ringringUpOffset)
     updateShownPoints(3, 3)
-    hideT(TablesOfPiecesGroups["corner"])
+    hideT(TablesOfPiecesGroups["Corner"])
 end
 
 myHouseID = nil

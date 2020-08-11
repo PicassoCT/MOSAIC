@@ -30,7 +30,13 @@ function getGameConfig()
 		raidComRange= 1200,
 		raidBonusFactorSatellite = 2.5,
 	 },
-	 
+	SnipeMiniGame ={
+	
+	Aggressor ={
+	StartPoints =5},
+	Defender ={
+	StartPoints =4},
+	},
 	 --civilianbehaviour
 	 civilianGatheringBehaviourIntervalFrames = 3*60*30,
 	 
@@ -370,8 +376,7 @@ function getRaidStates()
 			["Aborted"] = 0,
 			["OnGoing"] = 1,
 			["DefenderWins"] = 2,
-			["AggressorWins"] = 3,
-			["Tied"] = 3,
+			["AggressorWins"] = 3
 			}
 
 end

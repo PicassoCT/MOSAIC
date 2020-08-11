@@ -680,6 +680,12 @@ function removeFromWorld(unit, offx, offy, offz)
 	end
 end
 
+function getKeyFromValue(t, value)
+for k, v in pairs(t) do
+if v== t then return k end
+end
+end
+
 -->Removes a Unit from the Game without killing it
 function returnToWorld(unit, px, py, pz)
 	showUnit(unit)

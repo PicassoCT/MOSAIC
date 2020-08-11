@@ -25,6 +25,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local Defender = "Defender"
 	local raidStates = getRaidStates()
 	local gaiaTeamID = Spring.GetGaiaTeamID()
+	GameConfig = getGameConfig()
 	
 	function gadget:UnitCreated(unitID, unitDefID, unitTeam)
 		if unitDefID == raidIconDefID then
@@ -51,12 +52,12 @@ if (gadgetHandler:IsSyncedCode()) then
 					Objectives ={},
 					Aggressor = { 
 						team =attackerteam,
-						Points =  3,
+						Points =  GameConfig.SnipeMiniGame.Aggressor.StartPoints,
 						PlacedFigures = {},
 						},
 					Defender  = {
 						team = enemyTeamID,
-						Points = 3,
+						Points = GameConfig.SnipeMiniGame.Defender.StartPoints,
 						PlacedFigures = {},
 						},
 				}					
@@ -212,7 +213,7 @@ if (gadgetHandler:IsSyncedCode()) then
 				return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
 			end
 			
-			--bot did not play
+			--both did not play
 			if #roundRunning.Defender.PlacedFigures == 0 and #roundRunning.Aggressor.PlacedFigures == 0 then		
 				setPublicRaidState(raidIcon, raidStates.DefenderWins)
 				return  nil, roundRunning, raidStates.Aborted
@@ -287,9 +288,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	until #Graph == 0
 	--Auswertung
-	
-	if #Graph == 0 then Spring.Echo("No survivors");  end -- No valid aiming pairs
-		
+			
 	eliminatedUnits = findEliminatedUnits(OriginalGraph, Graph)
 	Survivors  = findSurvivors (roundRunning, eliminatedUnits)
 	DestroyTable(eliminatedUnits, false, true)
@@ -369,16 +368,16 @@ if (gadgetHandler:IsSyncedCode()) then
 		x,y,z = Spring.GetUnitPosition(raidIconID)
 		
 		if select( 4 ,Spring.GetTeamInfo(aggTeam)) == true or  aggTeam ~= gaiaTeamID then
-			for i=1, roundRunning.Aggressor.Points then
+			for i=1, roundRunning.Aggressor.Points do
 			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), aggTeam)
 			 registersniperIconAttributes("snipeIcon", aggTeam, lastSniperIconID, raidIconID)
 			end
 		end
 		
-		if select( 4 ,Spring.GetTeamInfo(defTeam)) == true or defTeam ~= gaiaTeamID  then		
-			for i=1, roundRunning.Defender.Points then
-			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), aggTeam)
-			 registersniperIconAttributes("snipeIcon", aggTeam, lastSniperIconID, raidIconID)
+		if not defTeam or select( 4 ,Spring.GetTeamInfo(defTeam)) == true or defTeam ~= gaiaTeamID  then		
+			for i=1, roundRunning.Defender.Points do
+			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), defTeam)
+			 registersniperIconAttributes("snipeIcon", defTeam, lastSniperIconID, raidIconID)
 			end
 		end
 	end
@@ -386,28 +385,34 @@ if (gadgetHandler:IsSyncedCode()) then
 	function checkRoundEnds()
 		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do	
 			--Round has ended
-			if getRaidIconProgress(raidIcon) >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
+			if roundRunning and getRaidIconProgress(raidIcon) >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
 				-- check if a side was AI, if it was AI - do a random placement
-				checkAIPlace(roundRunning)		
-				
+				checkAIPlace(roundRunning, raidIcon)		
+							
+				process(roundRunning.Defender.PlacedFigures,function(id) Spring.SetUnitAlwaysVisible(id, false) end)
+				process(roundRunning.Aggressor.PlacedFigures,function(id) Spring.SetUnitAlwaysVisible(id, false) end)
+								
 				--find out who died, who survived, who collected objectives and if there is a new round
-				winningTeam, roundRunning, state = evaluateEndedRound(roundRunning)
-				
-				if state == raidStates.
-				if winningTeam then -- one side has won
-					if winningTeam == Aggressor then --agressor won, game over
-						Spring.Echo("Aggressor won")
-					
-					else
-						Spring.Echo("Defender won")
-						--kill all the old icons
-						process(roundRunning.Aggressor.PlacedFigures, function(id) Spring.DestroyUnit(id, true, false) end )
-						process(roundRunning.Defender.PlacedFigures, function(id) Spring.DestroyUnit(id, true, false) end )
-						allRunningRaidRounds[raidIcon] = newRound(roundRunning, roundRunning.Aggressor.team, false, roundRunning)				
-					end
+				winningTeam, roundRunning, state = evaluateEndedRound(raidIcon, roundRunning)
+				Spring.Echo("Round Ended: Winner->"..toString(winningTeam).." with "..getKeyFromValue(raidStates, state))
+				if state == raidStates.Aborted then			
+					Spring.DestroyUnit(raidIcon,false, true)
+					allRunningRaidRounds[raidIcon] = nil				
 				end
-			end		
-		end	
+				
+				--new round
+				if state == raidStates.DefenderWins and roundRunning.Defender.Points > 0 then
+					allRunningRaidRounds[raidIcon] = newRound(raidIcon, roundRunning.Aggressor.team, false, roundRunning)
+				end
+				
+				--rounds end- defenders still have points
+				if state == raidStates.AggressorWins and roundRunning.Defender.Points - 1 > 0  then 
+					roundRunning.Defender.Points = roundRunning.Defender.Points  -1
+					allRunningRaidRounds[raidIcon] = newRound(raidIcon, roundRunning.Aggressor.team, false, roundRunning)
+				end
+				
+			end	
+		end
 	end
 	
 	function registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
@@ -432,7 +437,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and allRunningRaidRounds[raidIconID].Aggressor.Points > 0 or
 			   allRunningRaidRounds[raidIconID].Defender.team == teamID and allRunningRaidRounds[raidIconID].Defender.Points > 0
 			then
-				-- Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+				Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
 			lastSniperIconID= Spring.CreateUnit(uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
 			 registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
 			end       
