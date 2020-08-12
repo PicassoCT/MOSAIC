@@ -322,25 +322,27 @@ if (gadgetHandler:IsSyncedCode()) then
 	DestroyTable(Survivors, false, true)
 	DestroyTable(roundRunning.Objectives, false, true)
 	
-	if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then		
-			--defenders dead
-			if roundRunning.Aggressor.Points  <= 0 and roundRunning.Defender.Points  ~= 0 then	
-				setPublicRaidState(raidIcon, raidStates.AggressorWins)
-				return roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins
-			end	
-			
-			--aggressors dead
-			if roundRunning.Aggressor.Points  ~= 0 and roundRunning.Defender.Points  <= 0 then		
-				setPublicRaidState(raidIcon, raidStates.DefenderWins)
-				return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
-			end
-			
-			--both died
-			if #roundRunning.Defender.PlacedFigures <= 0 and #roundRunning.Aggressor.PlacedFigures <= 0 then		
-				setPublicRaidState(raidIcon, raidStates.DefenderWins)
-				return  nil, roundRunning, raidStates.Aborted
-			end
-		end		
+		if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then		
+				--defenders dead
+				if roundRunning.Aggressor.Points  <= 0 and roundRunning.Defender.Points  ~= 0 then	
+					setPublicRaidState(raidIcon, raidStates.AggressorWins)
+					return roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins
+				end	
+				
+				--aggressors dead
+				if roundRunning.Aggressor.Points  ~= 0 and roundRunning.Defender.Points  <= 0 then		
+					setPublicRaidState(raidIcon, raidStates.DefenderWins)
+					return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
+				end
+				
+				--both died
+				if #roundRunning.Defender.PlacedFigures <= 0 and #roundRunning.Aggressor.PlacedFigures <= 0 then		
+					setPublicRaidState(raidIcon, raidStates.DefenderWins)
+					return  nil, roundRunning, raidStates.Aborted
+				end
+		end	
+	
+	return  roundRunning.Defender.team, roundRunning, raidStates.OnGoing		
 	end
 	
 	function findEliminatedUnits(OriginalGraph, Graph)
@@ -362,41 +364,73 @@ if (gadgetHandler:IsSyncedCode()) then
 		return survivor
 	end
 	
+	function aiPlacementNeededForTeam(roundRunningTeam, teamID)
+	
+		if #roundRunningTeam.PlacedFigures > 0 then echo(teamID.." needs no aiplace");return false end
+		if roundRunningTeam.Points < 1 then echo(teamID.." has no Points left");return false end
+
+		nteamID,    leader,    isDead,    isAiTeam, side,   allyTeam,    incomeMultiplier,    customTeamKeys = 	Spring.GetTeamInfo(teamID)
+		
+		--no teaminfo
+		if isDead== nil or  nTeamID == nil or isAiTeam == nil or side == nil then echo("No team info - ai placement"); return true end
+		
+		if isDead == true then return false end
+		
+		if isAiTeam == true then return true end
+			
+		return false
+	end
+	
 	function checkAIPlace(roundRunning, raidIconID)
 		local aggTeam = roundRunning.Aggressor.team
 		local defTeam = roundRunning.Defender.team
 		x,y,z = Spring.GetUnitPosition(raidIconID)
+
 		
-		if select( 4 ,Spring.GetTeamInfo(aggTeam)) == true or  aggTeam ~= gaiaTeamID then
-			for i=1, roundRunning.Aggressor.Points do
-			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), aggTeam)
-			 registersniperIconAttributes("snipeIcon", aggTeam, lastSniperIconID, raidIconID)
+		if aiPlacementNeededForTeam(roundRunning.Aggressor, aggTeam) == true then
+			for i = 1, math.random(1,roundRunning.Aggressor.Points) do
+			  tx, ty, tz = x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign()
+			  randDirs = math.random(1,4)
+			 lastSniperIconID= Spring.CreateUnit("snipeicon",tx,ty,tz, randDirs, aggTeam)
+			 registersniperIconAttributes("snipeicon", aggTeam, lastSniperIconID, raidIconID)
+			 Spring.SetUnitAlwaysVisible(lastSniperIconID, true)
 			end
 		end
 		
-		if not defTeam or select( 4 ,Spring.GetTeamInfo(defTeam)) == true or defTeam ~= gaiaTeamID  then		
-			for i=1, roundRunning.Defender.Points do
-			 lastSniperIconID= Spring.CreateUnit("snipeIcon", x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign(),math.random(1,4), defTeam)
-			 registersniperIconAttributes("snipeIcon", defTeam, lastSniperIconID, raidIconID)
+		if  aiPlacementNeededForTeam(roundRunning.Defender, defTeam) == true then		
+			for i = 1, roundRunning.Defender.Points do			  
+			  tx, ty, tz = x+math.random(0,50)*randSign(), y, z+math.random(0,50)*randSign()
+			  randDirs = math.random(1,4)
+			 lastSniperIconID= Spring.CreateUnit("snipeicon",tx,ty,tz, randDirs, defTeam)
+			 registersniperIconAttributes("snipeicon", defTeam, lastSniperIconID, raidIconID)
+			 Spring.SetUnitAlwaysVisible(lastSniperIconID, true)
 			end
+			roundRunning.Defender.Points = 0
 		end
 	end
 	
 	function checkRoundEnds()
 		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do	
 			--Round has ended
-			if roundRunning and getRaidIconProgress(raidIcon) >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
+			raidPercentage = getRaidIconProgress(raidIcon)
+			
+			if raidPercentage > 97 and raidPercentage < 100 then
+				checkAIPlace(roundRunning, raidIcon)					
+			end
+			
+			if roundRunning and raidPercentage >= 100 or ( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then
 				-- check if a side was AI, if it was AI - do a random placement
-				checkAIPlace(roundRunning, raidIcon)		
 							
 				process(roundRunning.Defender.PlacedFigures,function(id) Spring.SetUnitAlwaysVisible(id, false) end)
 				process(roundRunning.Aggressor.PlacedFigures,function(id) Spring.SetUnitAlwaysVisible(id, false) end)
 								
 				--find out who died, who survived, who collected objectives and if there is a new round
 				winningTeam, roundRunning, state = evaluateEndedRound(raidIcon, roundRunning)
-				Spring.Echo("Round Ended: Winner->"..toString(winningTeam).." with "..getKeyFromValue(raidStates, state))
-				if state == raidStates.Aborted then			
-					Spring.DestroyUnit(raidIcon,false, true)
+				Spring.Echo("Round Ended: Winner->"..toString(winningTeam).." with ".. toString(getKeyFromValue(raidStates, state)))
+				if state == raidStates.Aborted then		
+					process(roundRunning.Defender.PlacedFigures,function(id) Spring.DestroyUnit(id, true,false) end)
+					process(roundRunning.Aggressor.PlacedFigures,function(id) Spring.DestroyUnit(id, true,false) end)
+					Spring.DestroyUnit(raidIcon,false, false)
 					allRunningRaidRounds[raidIcon] = nil				
 				end
 				
@@ -416,7 +450,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	end
 	
 	function registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
-		if uType == "snipeicon" then
+		if string.lower(uType) == "snipeicon" then
 		    GG.DisplayedSniperIconParent[lastSniperIconID] = raidIconID
 			GG.SniperIcon:Register( lastSniperIconID, teamID, raidIconID)
 		end
@@ -437,7 +471,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and allRunningRaidRounds[raidIconID].Aggressor.Points > 0 or
 			   allRunningRaidRounds[raidIconID].Defender.team == teamID and allRunningRaidRounds[raidIconID].Defender.Points > 0
 			then
-				Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+				-- Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
 			lastSniperIconID= Spring.CreateUnit(uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
 			 registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
 			end       

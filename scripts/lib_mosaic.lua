@@ -11,9 +11,9 @@ function getGameConfig()
 	Version = "Alpha: 0.680",
 	},
 		
-	numberOfBuildings 	= 75 *unitFactor,  --not related to the hangdetector bug
-    numberOfVehicles 	= 100 *unitFactor, --not related to the hangdetector bug
-    numberOfPersons		= 150 *unitFactor, --not related to the hangdetector bug
+	numberOfBuildings 	= math.ceil(75 *unitFactor	),  --not related to the hangdetector bug
+    numberOfVehicles 	= math.ceil(100 *unitFactor	), --not related to the hangdetector bug
+    numberOfPersons		= math.ceil(150 *unitFactor	), --not related to the hangdetector bug
 	LoadDistributionMax = 5,
 	
 	 houseSizeX			= 256, 
