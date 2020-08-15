@@ -128,7 +128,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	Graph= {}
 	function addEdege(from, to)
 		if not Graph[from] then	Graph[from] ={ } end
-		Graph[from] [to]
+		Graph[from][to] = to
 	end
 	
 	function getUnitsInTriangle(id)
@@ -175,7 +175,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		if boolFoundCycle == true then
 		
 			for k, v in pairs(allAllreadyExploredNodes) do
-				if v > 1 then filteredTable[k] end
+				if v > 1 then filteredTable[k]=k end
 			end
 		end
 
@@ -242,12 +242,12 @@ if (gadgetHandler:IsSyncedCode()) then
 		Graph= {}
 		
 			--find out who aims at who - add it to the graph (as pairs of from to)
-				process(mergeDict(roundRunning.Defender.PlacedFigures,roundRunning.Aggressor.PlacedFigures)
+				process(mergeDict(roundRunning.Defender.PlacedFigures,roundRunning.Aggressor.PlacedFigures),
 					function (id)
-						if not TheGloriousDead[id] then
+						if TheGloriousDead[id] ~= nil then
 							process(getUnitsInTriangle(id ),			
 									function(ad) 					--add those edges to the graph
-										if not  TheGloriousDead[ad]  and ad ~= id and spGetUnitTeam(ad) ~= roundRunning.Aggressor then
+										if  TheGloriousDead[ad] ~= nil  and ad ~= id and spGetUnitTeam(ad) ~= roundRunning.Aggressor then
 											Graph[id] = ad
 										end
 									end
