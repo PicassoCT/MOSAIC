@@ -256,6 +256,6 @@ return lowerkeys(
         ["raidicon"] = RaidIcon:New(),
         ["recruitcivilian"] = RecruitCivilian:New(),
         ["snipeicon"] = SnipeIcon:New(),
-        ["objectiveIcon"] = ObjectiveIcon:New()
+        ["objectiveicon"] = ObjectiveIcon:New()
     }
 )

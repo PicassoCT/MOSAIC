@@ -78,7 +78,7 @@ local upgradeTypeTable = {
 --
 
 function Team.GameStart()
-	Spring.Echo("Prometheus: GameStart")
+	-- Spring.Echo("Prometheus: GameStart")
 	-- Can not run this in the initialization code at the end of this file,
 	-- because at that time Spring.GetTeamStartPosition seems to always return 0,0,0.
 	for _,t in ipairs(Spring.GetTeamList()) do
@@ -149,7 +149,7 @@ Team.UnitCreated = baseMgr.UnitCreated
 
 
 function Team.minBuildOrderFullfilled(unitTeam)
-	Spring.Echo("Prometheus: Checking Min Buildorder fullfilled")
+	-- Spring.Echo("Prometheus: Checking Min Buildorder fullfilled")
 local _,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
 
 local checkTable={}
@@ -167,7 +167,7 @@ local unitsToBuild = {}
 		if Nr and  unitDefID and unitCounts[unitDefID] and  Nr > unitCounts[unitDefID] then
 			boolMinBuildFullfilled = false
 			unitsToBuild[unitDefID] = Nr - unitCounts[unitDefID] 
-			Log("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
+			-- Log("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
 		end
 	end
 	
@@ -212,16 +212,11 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})
 				
 				else
-					assert(unitDefID)
-					assert(unitBuildOrder)
-					assert(unitBuildOrder[unitDefID])
-					local shuffledBuildOrder = shuffleT(unitBuildOrder[unitDefID])
-					assert(shuffledBuildOrder)
-					
-					for bo,nr in ipairs(shuffledBuildOrder) do
-						if bo and UnitDefs[bo]  then
-							Log("Queueing: ", UnitDefs[bo].humanName)
-							Spring.Echo("Safehouse ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
+
+					for bo,nr in ipairs(unitBuildOrder[unitDefID]) do
+						if bo and UnitDefs[bo] and maRa()==true then
+							-- Log("Queueing: ", UnitDefs[bo].humanName)
+							-- Spring.Echo("Safehouse ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
 							GiveOrderToUnit(unitID, -bo, {}, {})
 						else 
 							Log("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
@@ -234,9 +229,9 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 					if bo and UnitDefs[bo]  then
 						Log("Queueing: ", UnitDefs[bo].humanName)
 						GiveOrderToUnit(unitID, -bo, {}, {})
-						Spring.Echo("Factory ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
+						-- Spring.Echo("Factory ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
 					else
-						Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
+						-- Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
 					end
 				end
 			end

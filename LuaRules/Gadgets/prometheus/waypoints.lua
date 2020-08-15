@@ -324,13 +324,13 @@ do
 local function LoadFile(filename)
 	local text = VFS.LoadFile(filename, VFS.ZIP)
 	if (text == nil) then
-		Warning("Failed to load: ", filename)
+		-- Warning("Failed to load: ", filename)
 		return nil
 	end
 	Warning("Map waypoint profile found. Loading waypoints.")
 	local chunk, err = loadstring(text, filename)
 	if (chunk == nil) then
-		Warning("Failed to load: ", filename, "  (", err, ")")
+		-- Warning("Failed to load: ", filename, "  (", err, ")")
 		return nil
 	end
 	return chunk
@@ -363,14 +363,14 @@ end
 -- load chunk
 local chunk = LoadFile("LuaRules/Configs/prometheus/maps/" .. Game.mapName .. ".lua")
 if (chunk == nil) then
-	Warning("No waypoint profile found. Will not use waypoints on this map.")
+	-- Warning("No waypoint profile found. Will not use waypoints on this map.")
 	return false
 end
 
 -- execute chunk
 setfenv(chunk, { AddWaypoint = AddWaypoint, AddConnection = AddConnection })
 chunk()
-Log(#waypoints, " waypoints succesfully loaded.")
+-- Log(#waypoints, " waypoints succesfully loaded.")
 
 -- make map of teams to allyTeams
 -- this must contain not only AI teams, but also player teams!

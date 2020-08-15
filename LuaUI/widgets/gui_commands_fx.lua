@@ -499,7 +499,7 @@ end
 
 local newUnitCommands = {}
 function widget:UnitCommand(unitID, unitDefID, teamID, cmdID, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua)
-	Spring.Echo("widget:unitCommand:InWidgetCall")
+	-- Spring.Echo("widget:unitCommand:InWidgetCall")
 	if enabledTeams[teamID] ~= nil then
 		if teamID ~= GaiaTeamID or not isCritter[unitDefID] then
 			if ignoreUnits[unitDefID] == nil then

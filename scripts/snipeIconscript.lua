@@ -39,11 +39,14 @@ function DelayedRegister()
 	end
 	myParent =GG.DisplayedSniperIconParent[unitID]
 	
-	if Spring.GetUnitDefID(GG.DisplayedSniperIconParent[unitID]) == Spring.GetUnitDefID(unitID) then
-		Show(Turrets[2])
-	else
-		Show(Turrets[1])
-	end
+	team= Spring.GetUnitTeam(unitID) or 0
+	team = (1 +team) % 2
+	Show(Turrets[team+1])
+	-- if Spring.GetUnitDefID(GG.DisplayedSniperIconParent[unitID]) == Spring.GetUnitDefID(unitID) then
+
+	-- else
+		-- Show(Turrets[1])
+	-- end
 	
 end
 
@@ -106,10 +109,21 @@ function script.QueryWeapon1()
 end
 
 function script.AimWeapon1(Heading, pitch)
-	if center then
-		WTurn(center, y_axis, -math.pi +  Heading, 0)
-	end
-    return true
+		targetType,  isUserTarget, targetID = Spring.GetUnitWeaponTarget(unitID, 1)
+	
+		if not targetType then
+			-- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
+			return false 
+		end
+
+
+
+		if targetType == 2 and center then
+			WTurn(center, y_axis, -math.pi +  Heading, 0)
+		end
+
+	
+    return false
 
 end
 

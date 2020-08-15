@@ -289,13 +289,14 @@ end
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
-	if waypointMgr then
-		if waypointMgr.UnitCreated == nil then
+		if type(waypointMgr) ~= "table" or waypointMgr.UnitCreated == nil then
 			restoreWayPointManager()		
 		end
-		
+	
+	if waypointMgr then		
 		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
+	
 	if team[unitTeam] then
 		team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
@@ -337,7 +338,7 @@ function gadget:UnitTaken(unitID, unitDefID, unitTeam, newTeam)
 end
 
 function gadget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
-	Spring.Echo("Prometheus: Unit "..unitID.." of type "..UnitDefs[unitDefID].name.." given")
+	-- Spring.Echo("Prometheus: Unit "..unitID.." of type "..UnitDefs[unitDefID].name.." given")
 	if team[unitTeam] then
 		Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." given to team "..unitTeam)
 		team[unitTeam].UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
