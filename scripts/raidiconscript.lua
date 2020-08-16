@@ -10,9 +10,9 @@ ring = {}
 Blue = {}
 Red = {}
 step = {}
-
-BluePoints = {}
-RedPoints = {}
+Wall ={}
+OutPost ={}
+DoorPost ={}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -73,6 +73,10 @@ function script.Create()
     Red = TablesOfPiecesGroups["Red"]
     step = TablesOfPiecesGroups["Step"]
 	
+	Wall = TablesOfPiecesGroups["Wall"]
+	OutPost =TablesOfPiecesGroups["OutPost"]
+	DoorPost =TablesOfPiecesGroups["DoorPost"]
+		
     StartThread(setAffiliatedHouseInvisible)
     StartThread(ringringUpOffset)
     updateShownPoints(3, 3)
