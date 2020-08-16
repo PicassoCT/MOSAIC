@@ -327,7 +327,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	for objective in pairs(roundRunning.Objectives) do
 		process(Survivors,
 				function(id)
-					if distanceUnitToUnit(objective, id) < 50 then
+					if distanceUnitToUnit(objective, id) < 5 then
 						if spGetUnitTeam(id) == roundRunning.Aggressor.team then
 							roundRunning.Aggressor.Points = roundRunning.Aggressor.Points + 1
 						else
@@ -337,10 +337,6 @@ if (gadgetHandler:IsSyncedCode()) then
 				end
 				)		
 	end
-
-	-- process(Survivors, function(id) Spring.DestroyUnit(id, false, true) end )
-
-
 	
 		if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then		
 				--defenders dead
@@ -364,9 +360,9 @@ if (gadgetHandler:IsSyncedCode()) then
 					return  nil, roundRunning, raidStates.Aborted
 				end
 		end	
-	
-	echo("7  roundRunning.Defender.team, roundRunning, raidStates.OnGoing")
-	return  roundRunning.Defender.team, roundRunning, raidStates.OnGoing		
+	echo("Defender Points:" ..roundRunning.Defender.Points.. " Agressor Points:"..roundRunning.Aggressor.Points)
+	echo("7  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
+	return  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins		
 	end
 	
 	function findEliminatedUnits(OriginalGraph, finalGraph)
@@ -445,53 +441,55 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function checkRoundEnds()
 		for raidIcon, roundRunning in pairs(allRunningRaidRounds) do	
-			--Round has ended
-			raidPercentage = getRaidIconProgress(raidIcon)
-			boolSkip= false
-			
-			if raidPercentage > 50 and count(roundRunning.Objectives) == 0 then
-				RegisterObjective(raidIcon)	
-			end
-			
-			if (roundRunning and roundRunning.boolAIChecked == true and raidPercentage >= 100+ postRoundTimeInSeconds ) or 
-				( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then			
-				--find out who died, who survived, who collected objectives and if there is a new round
-				winningTeam, roundRunning, state = evaluateEndedRound(raidIcon, roundRunning)
+			if raidIcon and doesUnitExistAlive(raidIcon)== true then
+				--Round has ended
+				raidPercentage = getRaidIconProgress(raidIcon)
+				boolSkip= false
 				
-				if state == raidStates.Aborted then		
-					killAllPlacedObjects(roundRunning)				
-					Spring.DestroyUnit(raidIcon,true, false)
-					roundRunning = nil
-					--GameOver
+				if raidPercentage > 50 and count(roundRunning.Objectives) == 0 then
+					RegisterObjective(raidIcon)	
 				end
 				
-				--new round
-				if roundRunning and (state == raidStates.DefenderWins or state == raidStates.OnGoing ) and roundRunning.Defender.Points > 0 then
-			
-					killAllPlacedObjects(roundRunning)
-					newRound(raidIcon, roundRunning.Aggressor.team, false, roundRunning)
-					roundRunning = nil
+				if (roundRunning and roundRunning.boolAIChecked == true and raidPercentage >= 100+ postRoundTimeInSeconds ) or 
+					( roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0 ) then			
+					--find out who died, who survived, who collected objectives and if there is a new round
+					winningTeam, roundRunning, state = evaluateEndedRound(raidIcon, roundRunning)
+					
+					if state == raidStates.Aborted then		
+						killAllPlacedObjects(roundRunning)				
+						Spring.DestroyUnit(raidIcon,true, false)
+						roundRunning = nil
+						--GameOver
+					end
+					
+					--new round
+					if roundRunning and (state == raidStates.DefenderWins) and roundRunning.Defender.Points > 0 then		
+						killAllPlacedObjects(roundRunning)
+						newRound(raidIcon, roundRunning.Aggressor.team, false, roundRunning)
+						roundRunning = nil
+					end
+					
+					--rounds end- defenders still have points
+					if roundRunning and state == raidStates.AggressorWins then 
+						killAllPlacedObjects(roundRunning)
+						Spring.DestroyUnit(raidIcon,true, false)
+						roundRunning = nil
+					end
+					
+					boolSkip = true
+				end	
+					
+				if roundRunning and boolSkip == false and roundRunning.boolAIChecked == false and raidPercentage >= 100 then			
+					-- check if a side was AI, if it was AI - do a random placement	
+					allRunningRaidRounds[raidIcon] = checkAIPlace(roundRunning, raidIcon)		
+					roundRunning.boolAIChecked = true
+					process(roundRunning.Defender.PlacedFigures ,function(id) spSetUnitAlwaysVisible(id, false) end)
+					process(roundRunning.Aggressor.PlacedFigures,function(id) spSetUnitAlwaysVisible(id, false) end)
+					process(roundRunning.Aggressor.Objectives,function(id) spSetUnitAlwaysVisible(id, false) end)
+					
 				end
-				
-				--rounds end- defenders still have points
-				if roundRunning and state == raidStates.AggressorWins and roundRunning.Defender.Points -1 > 0 then 
-					roundRunning.Defender.Points = roundRunning.Defender.Points  -1
-					killAllPlacedObjects(roundRunning)
-					newRound(raidIcon, roundRunning.Aggressor.team, false, roundRunning)
-					roundRunning = nil
-				end
-				
-				boolSkip = true
-			end	
-				
-			if roundRunning and boolSkip == false and roundRunning.boolAIChecked == false and raidPercentage >= 100 then			
-				-- check if a side was AI, if it was AI - do a random placement	
-				allRunningRaidRounds[raidIcon] = checkAIPlace(roundRunning, raidIcon)		
-				roundRunning.boolAIChecked = true
-				process(roundRunning.Defender.PlacedFigures ,function(id) spSetUnitAlwaysVisible(id, false) end)
-				process(roundRunning.Aggressor.PlacedFigures,function(id) spSetUnitAlwaysVisible(id, false) end)
-				process(roundRunning.Aggressor.Objectives,function(id) spSetUnitAlwaysVisible(id, false) end)
-				
+			else
+				allRunningRaidRounds[raidIcon] = nil	
 			end
 		end
 	end
