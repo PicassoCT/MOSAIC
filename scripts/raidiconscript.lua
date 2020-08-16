@@ -13,6 +13,7 @@ step = {}
 Wall ={}
 OutPost ={}
 DoorPost ={}
+Door = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -76,6 +77,11 @@ function script.Create()
 	Wall = TablesOfPiecesGroups["Wall"]
 	OutPost =TablesOfPiecesGroups["OutPost"]
 	DoorPost =TablesOfPiecesGroups["DoorPost"]
+	Door =TablesOfPiecesGroups["Door"]
+	
+	hideT(Wall)
+	hideT(OutPost)
+	hideT(DoorPost)
 		
     StartThread(setAffiliatedHouseInvisible)
     StartThread(ringringUpOffset)
@@ -180,13 +186,93 @@ function raidAnimationLoop()
     roundStep = math.ceil(GameConfig.raid.maxRoundLength / 100)
     hideT(step)
     totalTime = 0
+	
     while true do
+		if counter == 0 then placeWallAndDoors() end
         counter = (counter + 1)
         showPercent(counter)
 
         totalTime = totalTime + roundStep
         Sleep(roundStep)
     end
+end
+
+	nrDoors = 0
+	nrWalls = 0
+	
+function placeWallAndDoors()
+	hideT(Wall)
+	resetT(Wall)
+	hideT(Door)
+	resetT(Door)
+	hideT(DoorPost)
+	resetT(DoorPost)
+	hideT(OutPost)
+	resetT(OutPost)
+	
+	xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinZ()
+  
+	nrDoors = math.random(0,#Door)
+	nrWalls = math.random(0,#Wall)
+
+	for i=1,nrWalls do
+		rx, rz = math.random(xMin, xMax), math.random(zMin, zMax)
+		Move(Wall[i],x_axis, rx, 0)
+		Move(Wall[i],z_axis, rz, 0)
+		rot = math.random(0,8)*45
+		Turn(Wall[i],y_axis, math.rad(rot), 0)
+		Show(Wall[i])
+		if OutPost[(i-1)*2 + 1] then Show(OutPost[(i-1)*2 + 1]) end
+		if OutPost[(i-1)*2 + 2] then Show(OutPost[(i-1)*2 + 2]) end
+	end
+
+
+	for i=1,nrDoors do
+		Show(Door[i])
+		if DoorPost[(i-1)*2 + 1] then Show(DoorPost[(i-1)*2 + 1]) end
+		if DoorPost[(i-1)*2 + 2] then Show(DoorPost[(i-1)*2 + 2]) end
+	
+		post = DoorPost[(i-1)*2 + 1]
+		if nrWalls == 0 then
+			rx, rz = math.random(xMin, xMax), math.random(zMin, zMax)
+			Move(po,st, x_axis, rx, 0)
+			Move(post, z_axis, rz, 0)
+			rot = math.random(0,3)*90
+			Turn(post, y_axis, math.rad(rot), 0)
+		else
+			targWal= 1
+			if nrWalls > 1 then targWal = math.random(1,nrWalls) end
+			dice = math.random(1,2)
+			conPost = OutPost[(targWal-1)*2 + dice]
+			
+			movePieceToPiece(unitID, post, 0, conPost, 0)
+		end
+	end
+end
+
+--compares too world coords
+function isLineOfFireFree(x,z, tx, tz)
+ for i=1, nrWalls do
+	wall1, wall2 = OutPost[(i-1)*2 + 1] , OutPost[(i-1)*2 + 2] 
+	if wall1 and wall2 then
+	w1x,_,w1z = Spring.GetUnitPiecePosDir(unitID, wall1)
+	w2x,_,w2z = Spring.GetUnitPiecePosDir(unitID, wall2)
+	ix, iz = get_line_intersection(x,z,tx,tz, w1x,w1z,w2x,w2z)
+		if ix then return false end
+	end
+ end
+ 
+ for i=1, nrDoors do
+	door1, door2 = DoorPost[(i-1)*2 + 1] , DoorPost[(i-1)*2 + 2] 
+	if door1 and door2 then
+	w1x,_,w1z = Spring.GetUnitPiecePosDir(unitID, door1)
+	w2x,_,w2z = Spring.GetUnitPiecePosDir(unitID, door2)
+	ix, iz = get_line_intersection(x,z,tx,tz, w1x,w1z,w2x,w2z)
+		if ix then return false end
+	end 
+ end
+
+return true
 end
 
 ringUpOffset = 0
@@ -279,7 +365,7 @@ function registerPlaceUnit(idToRegister, boolIsObjctive)
     mx, my, mz = Spring.GetUnitPosition(unitID)
     rx, ry, rz = Spring.GetUnitPosition(idToRegister)
     xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinZ()
-    Spring.Echo("xMax,xMin,zMax,zMin, height", xMax, xMin, zMax, zMin, height)
+    -- Spring.Echo("xMax,xMin,zMax,zMin, height", xMax, xMin, zMax, zMin, height)
     rx = math.min(xMax, math.max(xMin, rx))
     rz = math.min(zMax, math.max(zMin, rz))
     ry = math.max(ry, height)
