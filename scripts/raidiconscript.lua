@@ -214,38 +214,41 @@ function placeWallAndDoors()
   
 	nrDoors = math.random(0,#Door)
 	nrWalls = math.random(0,#Wall)
-
-	for i=1,nrWalls do
-		rx, rz = math.random(xMin, xMax), math.random(zMin, zMax)
-		Move(Wall[i],x_axis, rx, 0)
-		Move(Wall[i],z_axis, rz, 0)
-		rot = math.random(0,8)*45
-		Turn(Wall[i],y_axis, math.rad(rot), 0)
-		Show(Wall[i])
-		if OutPost[(i-1)*2 + 1] then Show(OutPost[(i-1)*2 + 1]) end
-		if OutPost[(i-1)*2 + 2] then Show(OutPost[(i-1)*2 + 2]) end
+	if nrWalls > 0 then
+		for i=1,nrWalls do
+			rx, rz = math.random(xMax/-2, xMax/2), math.random(zMax/-2, zMax/2)
+			Move(Wall[i],x_axis, rx, 0)
+			Move(Wall[i],y_axis, rz, 0)
+			rot = math.random(0,8)*45
+			Turn(Wall[i],y_axis, math.rad(rot), 0)
+			Show(Wall[i])
+			if OutPost[(i-1)*2 + 1] then Show(OutPost[(i-1)*2 + 1]) end
+			if OutPost[(i-1)*2 + 2] then Show(OutPost[(i-1)*2 + 2]) end
+		end
 	end
 
-
-	for i=1,nrDoors do
-		Show(Door[i])
-		if DoorPost[(i-1)*2 + 1] then Show(DoorPost[(i-1)*2 + 1]) end
-		if DoorPost[(i-1)*2 + 2] then Show(DoorPost[(i-1)*2 + 2]) end
-	
-		post = DoorPost[(i-1)*2 + 1]
-		if nrWalls == 0 then
-			rx, rz = math.random(xMin, xMax), math.random(zMin, zMax)
-			Move(po,st, x_axis, rx, 0)
-			Move(post, z_axis, rz, 0)
-			rot = math.random(0,3)*90
-			Turn(post, y_axis, math.rad(rot), 0)
-		else
-			targWal= 1
-			if nrWalls > 1 then targWal = math.random(1,nrWalls) end
-			dice = math.random(1,2)
-			conPost = OutPost[(targWal-1)*2 + dice]
+	if nrDoors > 0 then
+		for i=1,nrDoors do
+			if Door[i] then
+					Show(Door[i])
+				if DoorPost[(i-1)*2 + 1] then Show(DoorPost[(i-1)*2 + 1]) end
+				if DoorPost[(i-1)*2 + 2] then Show(DoorPost[(i-1)*2 + 2]) end
 			
-			movePieceToPiece(unitID, post, 0, conPost, 0)
+				post = DoorPost[(i-1)*2 + 1]
+				if nrWalls == 0 then
+					rx, rz = math.random(xMax/-2, xMax/2), math.random(zMax/-2, zMax/2)
+					Move(post, y_axis, rx, 0)
+					Move(post, z_axis, rz, 0)
+					rot = math.random(0,3)*90
+					Turn(post, y_axis, math.rad(rot), 0)
+				else
+					targWal= 1
+					if nrWalls > 1 then targWal = math.random(1,nrWalls) end
+					dice = math.random(1,2)
+					conPost = OutPost[(targWal-1)*2 + dice]				
+					movePieceToPiece(unitID, post, conPost, 0)
+				end
+			end
 		end
 	end
 end
