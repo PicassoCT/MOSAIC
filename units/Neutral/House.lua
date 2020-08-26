@@ -44,7 +44,7 @@ local House = Building:New{
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
 				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	,
+				  oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	, 
 	
 
 	customparams = {	
