@@ -33,7 +33,7 @@ function getGameConfig()
 	SnipeMiniGame ={
 	
 	Aggressor ={
-	StartPoints =5},
+	StartPoints =4},
 	Defender ={
 	StartPoints =4},
 	},
@@ -101,9 +101,7 @@ function getGameConfig()
 	 
 	 Wreckage ={
 	 lifeTime = 3*60*1000,
-	 },
-
-	 
+	 },	 
 	 
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
@@ -516,6 +514,20 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 	
 	return getTypeTable(UnitDefNames, typeTable)
 end
+
+function getRaidIconTypeTable(UnitDefs)
+	assert(UnitDefs)
+	GameConfig = getGameConfig()
+local	UnitDefNames = getUnitDefNames(UnitDefs)
+	typeTable={
+		"raidicon",
+		"snipeicon",
+		"objectiveicon"
+	}
+		
+	return getTypeTable(UnitDefNames, typeTable)
+end
+
 
 function getRaidAbleTypeTable(UnitDefs)
 	assert(UnitDefs)
