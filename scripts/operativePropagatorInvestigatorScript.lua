@@ -562,7 +562,7 @@ function showFoldTop()
 end
 
 function script.StartMoving()
-	echo("Start Moving")
+	-- echo("Start Moving")
 	boolWalking = true
 	if  boolCloaked == false then
 		Hide(FoldtopUnfolded)
@@ -576,7 +576,7 @@ function script.StartMoving()
 end
 
 function script.StopMoving()
-		echo("Stop Moving")
+		-- echo("Stop Moving")
 	StartThread(delayedStop)
 	StartThread(showFoldTop)
 end

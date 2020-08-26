@@ -6062,5 +6062,9 @@ function getBelowPow2( value)
 	return  it, n
 end
 
+function arePlayersInSameAllyTeam(playerA, playerB)
+	_,_,_,ateamID,aallyTeamID,_,_,_,_,_ = Spring.GetPlayerInfo (playerA ) 
+	_,_,_,bteamID,ballyTeamID,_,_,_,_,_ = Spring.GetPlayerInfo (playerB ) 
 
-
+	return ateamID ~= bteamID and aallyTeamID ~= ballyTeamID 
+end

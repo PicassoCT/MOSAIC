@@ -133,3 +133,14 @@ function script.FireWeapon1()
     return true
 end
 
+
+function script.Activate()
+
+    return 1
+end
+
+function script.Deactivate()
+
+    return 0
+end
+

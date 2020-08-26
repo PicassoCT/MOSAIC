@@ -56,8 +56,11 @@ antagon_talk = {
     "And though i walk in the valley of death"
 }
 
+
+
 function script.Create()
-    Spring.SetUnitAlwaysVisible(unitID, true)
+	Spring.SetUnitAlwaysVisible(unitID, true)
+	Spring.SetUnitStealth(unitID,false)
     Spring.SetUnitNeutral(unitID, true)
     -- Spring.SetUnitNoSelect(unitID,true)
     Spring.MoveCtrl.Enable(unitID, true)
@@ -83,7 +86,9 @@ function script.Create()
 	hideT(OutPost)
 	hideT(DoorPost)
 		
+		
     StartThread(setAffiliatedHouseInvisible)
+    StartThread(shoveAllNonCombatantsOut)
     StartThread(ringringUpOffset)
     updateShownPoints(3, 3)
     hideT(TablesOfPiecesGroups["Corner"])
@@ -158,6 +163,46 @@ function setRoundProgressBar(value)
     counter = value
 end
 
+
+upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
+raidIconTypeTable = getRaidIconTypeTable(UnitDefs)
+operativeTypeTable = getOperativeTypeTable(UnitDefs)
+function shoveAllNonCombatantsOut()
+	Sleep(1000)
+	radius = 140
+	
+	while true do
+		x,y,z= Spring.GetUnitPosition(unitID)
+		process(getAllNearUnit(unitID, radius ),
+				function (id)
+					defID = Spring.GetUnitDefID(id)
+					if houseTypeTable[defID] or upgradeTypeTable[defID] or safeHouseTypeTable[defID] or raidIconTypeTable[defID] or operativeTypeTable[defID] then
+					else
+						return id
+					end
+				end,
+				function (id)
+					tx,ty,tz =Spring.GetUnitPosition(id)
+					factor= distanceUnitToUnit(id,unitID) --0
+					factor = math.min(1,(factor/radius))
+					echo(factor)
+					px, py, pz = (tx-x), 0, (tz-z)
+					norm  = math.max(math.abs(px),math.abs(pz))
+					echo(norm)
+					px,pz = px/norm, pz/norm
+					px,pz = px * factor,pz * factor
+					Spring.Echo("Add Impulse:"..px.."/"..pz)
+					
+					Spring.AddUnitImpulse(id, px, py, pz, 0.95)
+					Command( id, "go", {x = tx, y = ty, z = tz},{})
+				end				
+				)			
+		Sleep(10)
+	end
+end
+
+
 function raidAnimationLoop()
     Sleep(1)
     resetAll(unitID)
@@ -213,13 +258,13 @@ function placeWallAndDoors()
 	xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinZ()
   
 	nrDoors = math.random(0,#Door)
-	nrWalls = math.random(0,#Wall)
+	nrWalls = math.random(3,#Wall)
 	if nrWalls > 0 then
 		for i=1,nrWalls do
 			rx, rz = math.random(xMax/-2, xMax/2), math.random(zMax/-2, zMax/2)
 			Move(Wall[i],x_axis, rx, 0)
 			Move(Wall[i],y_axis, rz, 0)
-			rot = math.random(0,8)*45
+			rot = math.random(0,8)*90
 			Turn(Wall[i],y_axis, math.rad(rot), 0)
 			Show(Wall[i])
 			if OutPost[(i-1)*2 + 1] then Show(OutPost[(i-1)*2 + 1]) end
@@ -230,52 +275,51 @@ function placeWallAndDoors()
 	if nrDoors > 0 then
 		for i=1,nrDoors do
 			if Door[i] then
-					Show(Door[i])
+				Show(Door[i])
 				if DoorPost[(i-1)*2 + 1] then Show(DoorPost[(i-1)*2 + 1]) end
 				if DoorPost[(i-1)*2 + 2] then Show(DoorPost[(i-1)*2 + 2]) end
 			
 				post = DoorPost[(i-1)*2 + 1]
-				if nrWalls == 0 then
-					rx, rz = math.random(xMax/-2, xMax/2), math.random(zMax/-2, zMax/2)
-					Move(post, y_axis, rx, 0)
-					Move(post, z_axis, rz, 0)
-					rot = math.random(0,3)*90
-					Turn(post, y_axis, math.rad(rot), 0)
-				else
-					targWal= 1
-					if nrWalls > 1 then targWal = math.random(1,nrWalls) end
-					dice = math.random(1,2)
-					conPost = OutPost[(targWal-1)*2 + dice]				
-					movePieceToPiece(unitID, post, conPost, 0)
-				end
+				
+				rx, rz = math.random(xMax/-2, xMax/2), math.random(zMax/-2, zMax/2)
+				Move(post, x_axis, rx, 0)
+				Move(post,y_axis, rz, 0)
+				rot = math.random(0,360/90)*90
+				Turn(post, y_axis, math.rad(rot), 0)
+
 			end
 		end
 	end
 end
 
+function testTwoUnits(id, ad)
+	ix,iy,iz =Spring.GetUnitPosition(id)
+	ax, ay,az =Spring.GetUnitPosition(ad)
+	return isLineOfFireFree(ix,iz, ax, az)
+end
 --compares too world coords
 function isLineOfFireFree(x,z, tx, tz)
- for i=1, nrWalls do
-	wall1, wall2 = OutPost[(i-1)*2 + 1] , OutPost[(i-1)*2 + 2] 
-	if wall1 and wall2 then
-	w1x,_,w1z = Spring.GetUnitPiecePosDir(unitID, wall1)
-	w2x,_,w2z = Spring.GetUnitPiecePosDir(unitID, wall2)
-	ix, iz = get_line_intersection(x,z,tx,tz, w1x,w1z,w2x,w2z)
-		if ix then return false end
+	for i=1, nrWalls do
+		wall1, wall2 = OutPost[(i-1)*2 + 1] , OutPost[(i-1)*2 + 2] 
+		if wall1 and wall2 then
+		w1x,_,w1z = Spring.GetUnitPiecePosDir(unitID, wall1)
+		w2x,_,w2z = Spring.GetUnitPiecePosDir(unitID, wall2)
+		ix, iz = get_line_intersection(x,z,tx,tz, w1x,w1z,w2x,w2z)
+			if ix then return false end
+		end
 	end
- end
- 
- for i=1, nrDoors do
-	door1, door2 = DoorPost[(i-1)*2 + 1] , DoorPost[(i-1)*2 + 2] 
-	if door1 and door2 then
-	w1x,_,w1z = Spring.GetUnitPiecePosDir(unitID, door1)
-	w2x,_,w2z = Spring.GetUnitPiecePosDir(unitID, door2)
-	ix, iz = get_line_intersection(x,z,tx,tz, w1x,w1z,w2x,w2z)
-		if ix then return false end
-	end 
- end
+	 
+	for i=1, nrDoors do
+		door1, door2 = DoorPost[(i-1)*2 + 1] , DoorPost[(i-1)*2 + 2] 
+		if door1 and door2 then
+		w1x,_,w1z = Spring.GetUnitPiecePosDir(unitID, door1)
+		w2x,_,w2z = Spring.GetUnitPiecePosDir(unitID, door2)
+		ix, iz = get_line_intersection(x,z,tx,tz, w1x,w1z,w2x,w2z)
+			if ix then return false end
+		end 
+	end
 
-return true
+	return true
 end
 
 ringUpOffset = 0
@@ -312,8 +356,9 @@ function showIntervallRing(t, times)
     Sleep(times)
     hideT(t, 3, 7)
 end
-
+SIG_WAVE= 2
 function waveSpin(id, val, speedtime, randoffset, boolRandoHide)
+	SetSignalMask(SIG_WAVE)
     randoffset = math.abs(randoffset) or 1
     if val < 1 then
         val = 1
@@ -375,9 +420,42 @@ function registerPlaceUnit(idToRegister, boolIsObjctive)
     Spring.MoveCtrl.SetPosition(idToRegister, rx, ry, rz)
 end
 
+function playEndAnimation()
+Signal(SIG_WAVE)
+
+ process(whirl,
+		function(id)
+			runHide= function(id)
+				dest,speed = math.random(600,900),math.random(600,900)
+				WMove(id,z_axis, dest,speed )
+				Hide(id)
+			end
+			
+			StartThread(runHide,id)
+		end
+		)
+		
+ process(ring,
+		function(id)
+			runHide= function(id)
+				dest,speed = math.random(600,1200),math.random(900,2400)
+				WMove(id,z_axis, dest,speed )
+				Hide(id)
+			end
+			
+			StartThread(runHide,id)
+		end
+		)
+		
+		Sleep(1)
+		WaitForMoves(whirl)
+		WaitForMoves(ring)
+end
+
 function script.Killed(recentDamage, _)
+	playEndAnimation()
     setAffiliatedHouseVisible()
-    --createCorpseCUnitGeneric(recentDamage)
+
     return 1
 end
 
