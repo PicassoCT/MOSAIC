@@ -173,7 +173,7 @@ function shoveAllNonCombatantsOut()
 	radius = 140
 	
 	while true do
-		x,y,z= Spring.GetUnitPosition(unitID)
+		sx,sy,sz= Spring.GetUnitPosition(unitID)
 		process(getAllNearUnit(unitID, radius ),
 				function (id)
 					defID = Spring.GetUnitDefID(id)
@@ -184,15 +184,14 @@ function shoveAllNonCombatantsOut()
 				end,
 				function (id)
 					tx,ty,tz =Spring.GetUnitPosition(id)
-					factor= distanceUnitToUnit(id,unitID) --0
-					factor = math.min(1,(factor/radius))
-					echo(factor)
-					px, py, pz = (tx-x), 0, (tz-z)
-					norm  = math.max(math.abs(px),math.abs(pz))
-					echo(norm)
+					factor= distanceUnitToUnit(id,unitID)/radius --0
+					factor = math.max(0.1,math.min(2,(factor)))
+
+					px, py, pz = (tx-sx), 0, (tz-sz)
+					norm  = math.max(0.1,math.max(math.abs(px),math.abs(pz)))
+
 					px,pz = px/norm, pz/norm
 					px,pz = px * factor,pz * factor
-					Spring.Echo("Add Impulse:"..px.."/"..pz)
 					
 					Spring.AddUnitImpulse(id, px, py, pz, 0.95)
 					Command( id, "go", {x = tx, y = ty, z = tz},{})
