@@ -20,7 +20,7 @@ local Observer =
     CanMove = true,
     CanPatrol = true,
     CanStop = true,
-    script = "placeholderscript.lua",
+    script = "observerscript.lua",
     objectName = "placeholder.s3o",
 
     canCloak = true,
