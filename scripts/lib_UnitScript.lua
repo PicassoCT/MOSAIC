@@ -271,6 +271,12 @@ return y - 15 > h
 
 end
 
+function setUnitHeadingFromUnit(id, ad)
+	hd=Spring.GetUnitHeading(ad)
+	Spring.SetUnitHeading(id)
+	x,y,z= Spring.GetUnitRotation(ad)
+	Spring.SetUnitRotation(id,x,y,z)
+end
 
 --> Sets the Speed of a Unit
 function setUnitValueExternal(k, cobArgh, val)
