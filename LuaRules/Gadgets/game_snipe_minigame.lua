@@ -42,7 +42,10 @@ if (gadgetHandler:IsSyncedCode()) then
         showUnit(id)
 		if observerTeam then
 		observerID= createUnitAtUnit(observerTeam, "observer", id)
-		GG.UnitsToKill:PushKillUnit(observerID,true,true)
+		env = Spring.UnitScript.GetScriptEnv(observerID)
+			if env  then
+				spCallAsUnit(observerID, env.externAttach, id)
+			end
 		end
     end
 
