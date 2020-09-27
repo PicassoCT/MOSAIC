@@ -1,3 +1,17 @@
-- Grid in Game with Numbers in Information
-- More weapons, (rocket, grenade launch walker/ turret)
-- test game mechanics
+ProjektMain:
+
+-Test Gameplay
+
+
+
+
+Subprojekt:
+- Add Unit Transport Grid
+- Add Weapon Grenadelauncher
+- SlowMo Mechanic
+
+-European Citys
+- Add European Civilians
+- Add European Cars
+
+
