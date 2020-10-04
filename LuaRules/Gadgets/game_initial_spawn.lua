@@ -42,6 +42,7 @@ if (engineVersion < 1000 and engineVersion >= 105) or engineVersion >= 104011455
 	enabled = true
 end
 
+enabled = true --todo remove 
 Spring.Echo("gadget:InitialSpawn. Engine version is supported is "..toString(enabled))
 local unsupportedAI = false
 
