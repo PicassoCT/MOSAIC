@@ -34,10 +34,8 @@ spinYPieces ={}
 GameConfig = getGameConfig()
 
 function timeOfDay()
-
 	WholeDay = GameConfig.daylength
 		timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
-			--echo(getDayTime(timeFrame%WholeDay, WholeDay))
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
 
@@ -48,14 +46,8 @@ function script.Create()
   math.randomseed(x+y+z)
   StartThread(buildHouse)
 
-  
   spinYPieces ={
-  TablesOfPiecesGroups["StreetDeco29Sub"][1] ,
-  TablesOfPiecesGroups["RoofDeco32Sub"][1]   ,
-  TablesOfPiecesGroups["RoofDeco33Sub"][1]   ,
-  TablesOfPiecesGroups["RoofDeco38Sub"][1]   ,
-  TablesOfPiecesGroups["RoofDeco30Sub"][1]   ,
-  TablesOfPiecesGroups["RoofDeco31Sub"][1]   ,
+ 
   }
   
  pericodicRotationYPieces= {
@@ -67,18 +59,13 @@ function script.Create()
   [TablesOfPiecesGroups["StreetWallDeco3Sub"][1]]= false, 
   [TablesOfPiecesGroups["StreetWallDeco5Sub"][1]] = false 
   }
+
   windsolar= {
-  [TablesOfPiecesGroups["RoofDeco"][4]]= false, 
-  [TablesOfPiecesGroups["RoofDeco"][6]]= false, 
-  [TablesOfPiecesGroups["RoofDeco"][5]]= false
+
   }
    
-   pericodicMovingZPieces={
-   [TablesOfPiecesGroups["RoofDeco29Sub"][1]]= 5000, 
-   [TablesOfPiecesGroups["RoofDeco54Sub"][1]]= 5000, 
-   [TablesOfPiecesGroups["RoofDeco55Sub"][1]]= 5000, 
-   [TablesOfPiecesGroups["RoofDeco56Sub"][1]]= 5000, 
-   }
+   pericodicMovingZPieces={}
+  
    
   StartThread(rotations) 
 end
@@ -98,24 +85,6 @@ function rotations()
 				StartThread(periodicFunc, k)			
 	end
 	
-	windfunc= function(p) 
-		while true do 
-			Sleep(1000)
-			percentage = timeOfDay()
-			if percentage > 0.25 and percentage < 0.75 then
-				percentage = (percentage -0.25)/0.5
-				degree = (percentage * 180) +  math.random(-10,10)
-				Turn(p, _z_axis, math.rad(degree), math.pi/100)
-			else
-				TurnTowardsWind(p, math.pi/100, math.random(-10,10))
-			end
-			WaitForTurns(p)
-		end 
-	end
-	
-	for k,v in pairs(windsolar) do		
-		StartThread(windfunc, k)			
-	end
 	Sleep(500)
 	clockPiece= piece("StreetDeco06")
 	if  contains(ToShowTable, clockPiece) then
@@ -146,11 +115,7 @@ function buildHouse()
   resetAll(unitID)
   hideAll(unitID)
   Sleep(1)
-
-
-
   buildBuilding()
-  StartThread(showPowerPoles)
 end
 
 function absdiff(value, compval)
@@ -160,58 +125,6 @@ function absdiff(value, compval)
   return math.abs( value - compval)
 end
 
-function showPowerPoles()
-  Sleep(1000)
-  if chancesAre(10) < decoChances.powerpoles then return end
-  
-  --Turn till detecting another house
-	local spGetUnitDefID = Spring.GetUnitDefID
-	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
-
-  	local resultDeg 
-
-	teamID = Spring.GetUnitTeam(unitID)
-	boolBreakOuter = false
-	startHeigth= getUnitGroundHeigth(unitID)
-
-  start=math.random(0,360)
-  for i=start, start + 360, 6 do
-	WTurn(TablesOfPiecesGroups["PowerPole"][1],z_axis, math.rad(i), 0)
-	Sleep(1)
-	for p=1, #TablesOfPiecesGroups["PowerPole"], 1 do
-		x,_,z = Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["PowerPole"][p])
-		
-		if x then
-			unitsNearPole = getAllInCircle(x, z, 90, unitID, teamID)
-			boolFinishFunction = false
-			process(unitsNearPole,
-			function(id)
-				--found a 
-				if id and id ~= unitID and houseTypeTable[spGetUnitDefID(id)] then
-					for l= 1, p do	
-						pieceID = TablesOfPiecesGroups["PowerPole"][l]
-					
-						thisHeigth= getGroundHeigthAtPiece(unitID,pieceID)
-						diff  = absdiff(startHeigth , thisHeigth)
-						if diff < 100 and isPieceAboveGround(unitID, pieceID) == true then
-							Show(pieceID)
-						else
-							boolFinishFunction = true
-							break
-						end
-					end
-					boolFinishFunction= true
-				end
-			end
-			)
-			if boolFinishFunction== true then
-				return 
-			end
-		end
-	end
-  end
-  
-end
 
 function script.Killed(recentDamage, _)
   --createCorpseCUnitGeneric(recentDamage)
@@ -279,7 +192,7 @@ function removeElementFromBuildMaterial(element, buildMaterial)
 end
 
 function selectGroundBuildMaterial( )
-  diceTable ={ "", "Brown", "White", "Red"}
+  diceTable ={ "Classic", "Ghetto", "Office", "Modern"}
   x,y,z =Spring.GetUnitPosition(unitID)
   x, z = math.ceil(x/1000), math.ceil(z/1000)
   nice= ((x+z)%(#diceTable)+1)
