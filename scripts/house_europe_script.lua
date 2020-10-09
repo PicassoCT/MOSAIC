@@ -68,7 +68,7 @@ function script.Create()
   
    
   StartThread(rotations) 
-end
+end 
 
 function rotations()
 	process(spinYPieces,
@@ -743,6 +743,7 @@ function buildAnimation()
 		hideT(builT)
 		hideT(TablesOfPiecesGroups["Build01Sub"])
 		hideT(TablesOfPiecesGroups["BuildCrane"])
+    showOne(TablesOfPiecesGroups["BuildDeco"])
 		while boolDoneShowing == false do
 			Sleep(100)
 		end
@@ -800,6 +801,7 @@ function buildAnimation()
 	hideT(builT)
 	hideT(TablesOfPiecesGroups["Build01Sub"])
 	hideT(TablesOfPiecesGroups["BuildCrane"])
+  hideT(TablesOfPiecesGroups["BuildDeco"])
 end
 
 function buildBuilding()
