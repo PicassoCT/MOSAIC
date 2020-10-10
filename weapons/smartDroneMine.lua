@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "smartMineDrone" --this is the actually maschinegune of the inferno trooper
+local weaponName = "smartminedrone" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
     name = "exploding charge unit flying",
     weaponType = [[MissileLauncher]],

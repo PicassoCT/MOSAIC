@@ -288,12 +288,78 @@ local ground_turret_antiarmor =  Turret:New{
 			},
 			
 		},	
-
-			
-
-
 }
 
+local ground_turret_dronegrenades =  Turret:New{
+	name = "Self guiding drones Turret",
+	-- This is a anti-tank drone body, deployed after flight
+	--capable to one-time launch a projectile 
+	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
+	Description = "Deploy Anit Person Flying Mini-Drones",
+	
+	objectName = "ground_turret_grenadeDrone.DAE",
+	script = "placeholderscript.lua",
+	buildPic = "ground_turret_rocket.png",
+	iconType = "ground_turret_rocket",
+	--floater = true,
+	--cost
+	buildCostEnergy  = 50,
+	buildCostMetal= 0,
+	buildTime = 35,
+	--Health
+	maxDamage = 50,
+	idleAutoHeal = 0,
+	--Movement
+	
+	 fireState=1,
+	
+	FootprintX = 1,
+	FootprintZ = 1,
+	maxSlope = 50,
+	
+	MaxWaterDepth = 0,
+	MovementClass = "Default2x2",
+
+	
+	nanocolor=[[0.20 0.411 0.611]],
+	sightDistance = 250,
+	activateWhenBuilt   	= true,
+	cantBeTransported = false,
+	canSelfD = true,
+	canManualFire  = true,
+
+	--canHover=true,
+	CanAttack = true,
+	CanGuard = true,
+	CanMove = true,
+	CanPatrol = true,
+	Canstop  = true,
+	onOffable = false,
+	LeaveTracks = false, 
+	canCloak =false,
+	
+
+	minCloakDistance =  5,
+	initCloaked = false,
+
+	
+	Category = [[ARMOR GROUND BUILDING]],
+
+	  customParams = {
+	  baseclass = "turret"
+	  },
+	 sfxtypes = {
+		explosiongenerators = {
+							"custom:bigbulletimpact"
+							  },
+				},
+				
+	weapons = {
+		[1]={name  = "s16rocket",
+			onlyTargetCategory = [[GROUND]],
+			},			
+		},	
+}
 local ground_turret_rocket =  Turret:New{
 	name = "Unguided Rocket Turret",
 	-- This is a anti-tank drone body, deployed after flight
@@ -361,13 +427,8 @@ local ground_turret_rocket =  Turret:New{
 	weapons = {
 		[1]={name  = "s16rocket",
 			onlyTargetCategory = [[GROUND]],
-			},
-			
+			},			
 		},	
-
-			
-
-
 }
 
 local ground_turret_cruisemissilepod =  Turret:New{
@@ -377,7 +438,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
 	Description = "Deploys a Unit via rocketlaunch ",
 	
-	objectName = "ground_turret_cruisemissilepod.dae",
+		objectName = "ground_turret_cruisemissilepod.dae",
 	script = "ground_turret_cruisemissilepod_script.lua",
 	buildPic = "ground_turret_cm.png",
 	iconType = "ground_turret_cm",
@@ -436,10 +497,6 @@ local ground_turret_cruisemissilepod =  Turret:New{
 			},
 			
 		},	
-
-			
-
-
 }
 
 
@@ -491,5 +548,7 @@ return lowerkeys(
 	["ground_turret_mg"] = groundturretmg:New(),
 	["ground_turret_spyder"] = groundturretspyder:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New()	,
-	["ground_turret_rocket"] = ground_turret_rocket:New()	
+	["ground_turret_rocket"] = ground_turret_rocket:New(),
+	["ground_turret_dronegrenade"] = ground_turret_dronegrenades:New() 
+
 })
