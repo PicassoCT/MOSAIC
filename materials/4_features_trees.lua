@@ -36,7 +36,7 @@ local function DrawGenesis(curShaderObj)
 end
 
 
-local default_lua = VFS.Include("materials/Shaders/default.lua")
+local default_lua = VFS.Include("materials/shaders/default.lua")
 
 local materials = {
 	feature_tree_normalmap = {

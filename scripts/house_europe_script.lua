@@ -4,8 +4,13 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+function getScriptName()
+  return "house_europe_script.lua::"
+  end
+
 TablesOfPiecesGroups = {}
-local cubeDim ={length = 14.4 *1.45, heigth= 13.65 * 0.75*1.45, roofHeigth = 2}
+factor = 40
+local cubeDim ={length = factor*14.4 *1.45, heigth= factor*13.65 * 0.75*1.45, roofHeigth = 42*2}
 supriseChances={ roof = 0.5, yard = 0.6, yardwall = 0.4, street = 0.5, powerpoles = 0.5, door = 0.6, windowwall= 0.7, streetwall=0.5}
 boringChances={ roof = 0.2, yard = 0.1, yardwall = 0.4, street = 0.1, powerpoles = 0.5, door = 0.6, windowwall= 0.5, streetwall=0.1}
 decoChances = boringChances
@@ -192,7 +197,7 @@ function removeElementFromBuildMaterial(element, buildMaterial)
 end
 
 function selectGroundBuildMaterial( )
-  diceTable ={ "Classic", "Ghetto", "Office", "Modern"}
+  diceTable ={ "Classic", "Ghetto", "Office", "White"}
   x,y,z =Spring.GetUnitPosition(unitID)
   x, z = math.ceil(x/1000), math.ceil(z/1000)
   nice= ((x+z)%(#diceTable)+1)
@@ -248,12 +253,10 @@ end
 
 function getRandomBuildMaterial(buildMaterial)
   
-  if not buildMaterial then return end
-  if not type(buildMaterial)=="table" then 	return  end
+  if not buildMaterial then echo(getScriptName().."getRandomBuildMaterial: Got no table "); return end
+  if not type(buildMaterial)=="table" then echo(getScriptName().."getRandomBuildMaterial: Got not a table, got"..type(buildMaterial).."instead");	return  end
  total = count(buildMaterial)
-  if total == 0 then 
-	return 
-  end
+  if total == 0 then echo(getScriptName().."getRandomBuildMaterial: Got a empty table")	return   end
   
   dice = math.random(1,total)
   total =0
@@ -266,6 +269,7 @@ function getRandomBuildMaterial(buildMaterial)
       end
     end
   end
+  Spring.Echo(getScriptName().."getRandomBuildMaterial: No Part selected ")
 end
 
 -- x:0-6 z:0-6
@@ -461,21 +465,24 @@ function buildDecorateGroundLvl()
   materialColourName = selectGroundBuildMaterial()
   materialGroupName = materialColourName.."FloorBlock"
   buildMaterial = TablesOfPiecesGroups[materialGroupName]
-
+  assert(buildMaterial)
   countElements= 0
 	
   for i=1, 37, 1 do
 	Sleep(1)
 
     local index = i
+      echo(getScriptName().."buildDecorateGroundLvl"..i)
 	rotation = getOutsideFacingRotationOfBlockFromPlan(index)
     partOfPlan, xLoc,zLoc= getLocationInPlan(index)
 
     if partOfPlan == true then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
       local element, nr = getRandomBuildMaterial(buildMaterial)
+
       while not element do
         element, nr = getRandomBuildMaterial(buildMaterial)
+     
         Sleep(1)
       end
 
@@ -532,10 +539,13 @@ function chancesAre(outOfX)
 end
 
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
+  echo(getScriptName()..Level.."|"..materialGroupName)
   Sleep(1)
   local WindowWallMaterial = getElasticTable("Window")--getElasticTable( "Window")--"Wall",
   local yardMaterial = getElasticTable("YardWall")
   local streetWallMaterial = getElasticTable("StreetWall")
+
+  echo(getScriptName()..count(WindowWallMaterial).."|"..count(yardMaterial).."|"..count(streetWallMaterial))
 
   countElements= 0
 
@@ -550,6 +560,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     if partOfPlan == true then
       xRealLoc, zRealLoc = -centerP.x + (xLoc* cubeDim.length),  -centerP.z + (zLoc* cubeDim.length)
       local element, nr = getRandomBuildMaterial(buildMaterial)
+
       while not element do
         element, nr = getRandomBuildMaterial(buildMaterial)
         Sleep(1)
@@ -805,17 +816,21 @@ function buildAnimation()
 end
 
 function buildBuilding()
+  echo(getScriptName().."buildBuilding")
   StartThread(buildAnimation)
+  echo(getScriptName().."selectBase")
   selectBase()
+  echo(getScriptName().."selectBackYard")
   selectBackYard()
-
+ echo(getScriptName().."buildDecorateGroundLvl")
   materialColourName= buildDecorateGroundLvl()
 
   buildMaterial = TablesOfPiecesGroups[materialColourName.."WallBlock"]
   for i=1, 2 do
+      echo(getScriptName().."buildDecorateLvl")
     _, buildMaterial = buildDecorateLvl(i, materialColourName.."WallBlock", buildMaterial)
   end
-
+  echo(getScriptName().."addRoofDeocrate")
   addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName.."Roof"])
 	boolDoneShowing = true
 end

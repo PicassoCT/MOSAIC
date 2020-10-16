@@ -23,7 +23,7 @@ local function SunChanged(curShaderObj)
 end
 
 
-local default_lua = VFS.Include("materials/Shaders/default.lua")
+local default_lua = VFS.Include("materials/shaders/default.lua")
 
 local materials = {
 	feature_wreck = {
