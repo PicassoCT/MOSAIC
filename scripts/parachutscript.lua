@@ -23,6 +23,29 @@ function script.Create()
 	StartThread(AnimationTest)
 	StartThread(fallingDown)
 	Hide(center)
+	for i=1,3 do
+		turnTableRand(TablesOfPiecesGroups["Rotator"], i, 360, -360, 0, true)
+	end
+  
+	process(TablesOfPiecesGroups["Rotator"],
+		function (id)
+			spinRand(id, -42,42, 15)
+			StartThread(randShow,id)
+		end
+		)
+end
+
+function randShow(id)
+	while true do
+		rVal= math.random(200,1000)
+		Sleep(rVal)
+		if maRa() == true then
+			Show(id)
+		else 
+			Hide(id)
+		end
+
+	end
 end
 
 function fallingDown()
