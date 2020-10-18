@@ -23,7 +23,7 @@ local fontfile2 = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font2
 local font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 local loadedFontSize = fontfileSize*fontfileScale
 
-local bgcorner = ":l:LuaUI/Images/bgcorner.png"
+local bgcorner = ":l:luaui/images/bgcorner.png"
 
 local changelogFile = VFS.LoadFile("changelog.txt")
 
@@ -35,7 +35,7 @@ local screenWidth = 1050-bgMargin-bgMargin
 local textareaMinLines = 10		-- wont scroll down more, will show at least this amount of lines
 
 local playSounds = true
-local buttonclick = 'LuaUI/Sounds/buildbar_waypoint.wav'
+local buttonclick = 'luaui/sounds/buildbar_waypoint.wav'
 
 local startLine = 1
 

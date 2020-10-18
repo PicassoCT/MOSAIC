@@ -27,7 +27,7 @@ end
 -- 23/03/13 -- Attack order y-coord placement remade by Bluestone for spring 94+
 
 
-local dotImage			= "LuaUI/Images/formationDot.dds"
+local dotImage			= "luaui/images/formationDot.dds"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

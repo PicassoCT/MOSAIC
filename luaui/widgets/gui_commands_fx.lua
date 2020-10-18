@@ -93,8 +93,8 @@ local maxTotalCommandCount		= 850		-- dont add more commands above this amount
 local maxGroundGlowCount		= 50
 local drawUnitHightlightMaxUnits = 70
 
-local glowImg			= ":n:LuaUI/images/commandsfx/glow.dds"
-local lineImg			= ":n:LuaUI/images/commandsfx/line.dds"
+local glowImg			= ":n:luaui/images/commandsfx/glow.dds"
+local lineImg			= ":n:luaui/images/commandsfx/line.dds"
 
 local ignoreUnits = {}
 for udefID,def in ipairs(UnitDefs) do

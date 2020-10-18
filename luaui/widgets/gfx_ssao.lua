@@ -79,7 +79,7 @@ local presets = {
 -----------------------------------------------------------------
 -- File path Constants
 -----------------------------------------------------------------
-local baseDir = "LuaUI/widgets/"
+local baseDir = "luaui/widgets/"
 local shadersDir = baseDir.."Shaders/"
 local luaShaderDir = baseDir.."Include/"
 

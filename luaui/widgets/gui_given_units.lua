@@ -145,7 +145,7 @@ function widget:DrawWorld()
 	
 	gl.DepthMask(true)
 	gl.DepthTest(true)
-	gl.Texture('LuaUI/Images/new.dds')
+	gl.Texture('luaui/images/new.dds')
 
 	local alpha
 	for unitID, unit in pairs(givenUnits) do

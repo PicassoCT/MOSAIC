@@ -58,7 +58,7 @@ end
 function DrawIcon(text)
 	local iconSize = 0.9
 	gl.PushMatrix()
-	gl.Texture(':n:LuaUI/Images/skull.dds')
+	gl.Texture(':n:luaui/images/skull.dds')
 	gl.Translate(0.32,1,1.4)
 	gl.Billboard()
 	gl.TexRect(-(iconSize+0.085), 0, -0.08, iconSize)

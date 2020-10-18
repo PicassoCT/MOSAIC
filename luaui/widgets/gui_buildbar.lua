@@ -92,8 +92,8 @@ local useBlurShader   = false   -- it has a fallback, if the gfx don't support g
 local blured          = false
 local blurFullscreen  = function() return end
 
-local bgcorner		= "LuaUI/Images/bgcorner.png"
-local repeatPic		= ":lr64,64:LuaUI/Images/repeat.png"
+local bgcorner		= "luaui/images/bgcorner.png"
+local repeatPic		= ":lr64,64:luaui/images/repeat.png"
 
 local GL_ONE                   = GL.ONE
 local GL_ONE_MINUS_SRC_ALPHA   = GL.ONE_MINUS_SRC_ALPHA
@@ -104,11 +104,11 @@ local glBlending               = gl.Blending
 -- SOUNDS
 -------------------------------------------------------------------------------
 
-local sound_waypoint  = 'LuaUI/Sounds/buildbar_waypoint.wav'
-local sound_click     = 'LuaUI/Sounds/buildbar_click.wav'
-local sound_hover     = 'LuaUI/Sounds/buildbar_hover.wav'
-local sound_queue_add = 'LuaUI/Sounds/buildbar_add.wav'
-local sound_queue_rem = 'LuaUI/Sounds/buildbar_rem.wav'
+local sound_waypoint  = 'luaui/sounds/buildbar_waypoint.wav'
+local sound_click     = 'luaui/sounds/buildbar_click.wav'
+local sound_hover     = 'luaui/sounds/buildbar_hover.wav'
+local sound_queue_add = 'luaui/sounds/buildbar_add.wav'
+local sound_queue_rem = 'luaui/sounds/buildbar_rem.wav'
 
 -------------------------------------------------------------------------------
 -- SOME THINGS NEEDED IN DRAWINMINIMAP

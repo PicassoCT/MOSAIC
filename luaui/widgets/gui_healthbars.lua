@@ -881,7 +881,7 @@ do
   function DrawStockpile(numStockpiled,numStockpileQued)
     --// DRAW STOCKPILED MISSLES
     glColor(1,1,1,1)
-    glTexture("LuaUI/Images/nuke.png")
+    glTexture("luaui/images/nuke.png")
     local xoffset = barWidth+16
     for i=1,((numStockpiled>3) and 3) or numStockpiled do
       glTexRect(xoffset,-(11*barHeight-2)-stockpileH,xoffset-stockpileW,-(11*barHeight-2))
@@ -1300,7 +1300,7 @@ do
       glTexGen(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR)
       v = cvs.forward
       glTexGen(GL_S, GL_EYE_PLANE, v[1]*0.008,v[2]*0.008,v[3]*0.008, shift)
-      glTexture("LuaUI/Images/paralyzed.png")
+      glTexture("luaui/images/paralyzed.png")
 
       glColor(0.8,0.8,1,0.45)
       for i=1,#paraUnits do

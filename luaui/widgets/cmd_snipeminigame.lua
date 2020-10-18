@@ -4,7 +4,7 @@ function widget:GetInfo()
     return {
         name = "Snipe Mini Game",
         desc = "controlls the behaviour of raid icon minigame unitspawning",
-        author = "dizekat",
+        author = "picassoct",
         date = "Jan,2008",
         license = "GNU GPL, v2 or later",
         layer = 0,
@@ -59,6 +59,7 @@ end
 lastPos = {}
 boolPlacementActive = false
 function widget:MousePress(x, y, button)
+
     inMinimap = spIsAboveMiniMap(x, y)
     if (button ~= 1) then
         return false
@@ -73,6 +74,7 @@ function widget:MousePress(x, y, button)
             if boolPlacementActive == false then
                 -- Spring.Echo("Placement started")
                 lastPos = targID
+
                 Spring.SendLuaRulesMsg(
                     "SPWN|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3] .. "|" .. unitID
                 )

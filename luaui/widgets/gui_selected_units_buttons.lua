@@ -83,8 +83,8 @@ end
 local ui_opacityMultiplier = 0.6
 local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity",0.66) or 0.66) * ui_opacityMultiplier
 
-local bgcorner = ":l:LuaUI/Images/bgcorner.png"
-local highlightImg = ":l:LuaUI/Images/button-highlight.dds"
+local bgcorner = ":l:luaui/images/bgcorner.png"
+local highlightImg = ":l:luaui/images/button-highlight.dds"
 
 local iconsPerRow = 16		-- not functional yet, I doubt I will put this in
 
@@ -130,9 +130,9 @@ local fontSize = iconSizeY * 0.28		-- changed in ViewResize anyway
 local picList
 
 local playSounds = true
-local leftclick = 'LuaUI/Sounds/buildbar_add.wav'
-local middleclick = 'LuaUI/Sounds/buildbar_click.wav'
-local rightclick = 'LuaUI/Sounds/buildbar_rem.wav'
+local leftclick = 'luaui/sounds/buildbar_add.wav'
+local middleclick = 'luaui/sounds/buildbar_click.wav'
+local rightclick = 'luaui/sounds/buildbar_rem.wav'
 
 local guishaderDisabled = true
 if spGetSelectedUnitsCount() > 0 then

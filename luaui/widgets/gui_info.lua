@@ -34,8 +34,8 @@ local fontfile2 =  LUAUI_DIRNAME .."fonts/" .. Spring.GetConfigString("bar_font2
 local font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 local loadedFontSize = fontfileSize*fontfileScale
 
-local barGlowCenterTexture = ":l:LuaUI/Images/barglow-center.png"
-local barGlowEdgeTexture   = ":l:LuaUI/Images/barglow-edge.png"
+local barGlowCenterTexture = ":l:luaui/images/barglow-center.png"
+local barGlowEdgeTexture   = ":l:luaui/images/barglow-edge.png"
 
 local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity",0.66) or 0.66)
 local ui_scale = tonumber(Spring.GetConfigFloat("ui_scale",1) or 1)

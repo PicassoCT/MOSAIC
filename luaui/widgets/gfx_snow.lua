@@ -45,7 +45,7 @@ local textStartOpacity = 0.6
 
 local fpsDifference 			= (maxFps-minFps)/particleSteps		-- fps difference need before changing the dlist to one with fewer particles
 
-local snowTexFolder = "LuaUI/Images/snow/"
+local snowTexFolder = "luaui/images/snow/"
 
 local snowKeywords = {'snow','frozen','cold','winter','ice','icy','arctic','frost','melt','glacier','mosh_pit','blindside','northernmountains','amarante','cervino'}
 

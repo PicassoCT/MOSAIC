@@ -98,7 +98,7 @@ local prevMouseX,prevMouseY = 0
 local allycursorDrawList	= {}
 local myPlayerID            = Spring.GetMyPlayerID()
 
-local allyCursor      			    = ":n:LuaUI/Images/allycursor.dds"
+local allyCursor      			    = ":n:luaui/images/allycursor.dds"
 local cursors = {}
 local teamColors = {}
 local specList = {}
