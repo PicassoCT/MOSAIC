@@ -10,7 +10,7 @@ Its very near future, and plays out in the cities left in the world.
 You play either as antigen or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
 the unit you start with is an agent, who can hire civilians or create a safe house.
 
-![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen2.png "")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen2.png "")
 
 Slowly two parties infiltrate the city, subverting the public, advancing their goals.
 
@@ -18,7 +18,7 @@ But beware, you are always one raid, one interrogation away from failure. If one
 
 If they have the ICBM almost ready, and the information about that gets out there, chaos will break out. For somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
 
-![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen15.png "")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen15.png "")
 
 It always does leak and it always does that too late.
 
@@ -26,7 +26,7 @@ So they tell their relatives to leave the target, tell their believe brothers to
 
 Even the most hardened cells loose it near the end, the mad-idea trying to stay alive in other crazed heads.
 
-![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen8.png "")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen8.png "")
 
 Through all the delusional haze, they sense, that they will be hunted into extinction for this atrocity.
 
@@ -36,7 +36,7 @@ There is no law, no hope and no god in a city shortly before and forever after a
 
 Then it comes, a deafening roar, a noise to end all noises, out of those bells, the burning cars, already darkening the sun, a pillar of fire rises higher then all those others.
 
-![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen14.png "")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen14.png "")
 
 Then the hammer comes down- on good and evil alike.
 
@@ -46,7 +46,7 @@ So it has been, so it shall always be.
 
 Men is men a wulf, until there is no men left to be.
 
-![](https://github.com/PicassoCT/MOSAIC/blob/master/LuaUI/images/loadpictures/LoadScreen11.png "")
+![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen11.png "")
 
 Development thread:
 
