@@ -431,7 +431,7 @@ local ground_turret_rocket =  Turret:New{
 		},	
 }
 
-local ground_turret_cruisemissilepod =  Turret:New{
+local ground_turret_cruisemissilepod =  Walker:New{
 	name = "Cruise Missile Pod",
 	-- This is a anti-tank drone body, deployed after flight
 	--capable to one-time launch a projectile 
@@ -451,7 +451,11 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	
+	maxVelocity		= 0.5 , --14.3, --86kph/20
+	--maxReverseVelocity= 2.15,
+	acceleration = 0.15,
+	brakeRate = 0.1,
+	turninplace		= true,
 	 fireState=1,
 	
 	FootprintX = 1,
@@ -469,7 +473,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 
-	--canHover=true,
+	canMove =true,
 	CanAttack = true,
 	CanGuard = true,
 
@@ -482,7 +486,7 @@ local ground_turret_cruisemissilepod =  Turret:New{
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
-	  baseclass = "turret"
+	  baseclass = "tank"
 	  },
 	 sfxtypes = {
 		explosiongenerators = {

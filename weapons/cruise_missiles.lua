@@ -13,6 +13,9 @@ local weaponDef = {
 	impulseFactor = 0.4,
 	reloadtime = 1,
     areaOfEffect = 256,
+    interceptSolo= false,
+    targetable = true,
+
 	noSelfDamage = true,
 	trajectoryHeight = 2.0 ,
 	

@@ -33,6 +33,7 @@ function showDependantOnType()
 end
 
 function script.Create()
+
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	resetAll(unitID)
@@ -40,9 +41,50 @@ function script.Create()
 	Show(Pod)
 	Show(PodTop)
 	showDependantOnType()
-
+	showT(TablesOfPiecesGroups["UpLeg"])
+	showT(TablesOfPiecesGroups["LowLeg"])
 	Hide(aimpiece)
 	Turn(aimpiece,x_axis,math.rad(180),0)
+	StartThread(walkLoop)
+end
+
+
+function walkLoop()
+	while (true) do
+	
+		if boolMoving == true then 
+			while(boolMoving == true) do 
+				for i=1,4 do
+					if(i%2==1) then				
+						Turn(TablesOfPiecesGroups["UpLeg"][i], y_axis,math.rad(-42),10)
+						Turn(TablesOfPiecesGroups["LowLeg"][i], y_axis, math.rad(42),10)
+					else
+						Turn(TablesOfPiecesGroups["UpLeg"][i], x_axis,math.rad(-42),10)
+						Turn(TablesOfPiecesGroups["LowLeg"][i], x_axis, math.rad(42),10)
+					end
+				end
+				WaitForTurnT(TablesOfPiecesGroups["UpLeg"])
+				WaitForTurnT(TablesOfPiecesGroups["LowLeg"])
+				
+				for i=1,4 do
+							
+				resetT(TablesOfPiecesGroups["UpLeg"], 10)
+				resetT(TablesOfPiecesGroups["LowLeg"], 10)
+			
+				end
+				WaitForTurnT(TablesOfPiecesGroups["UpLeg"])
+				WaitForTurnT(TablesOfPiecesGroups["LowLeg"])
+			Sleep(5)
+			end
+		end
+
+		resetT(TablesOfPiecesGroups["UpLeg"], 25)
+		resetT(TablesOfPiecesGroups["LowLeg"], 25)
+		WaitForTurnT(TablesOfPiecesGroups["UpLeg"])
+		WaitForTurnT(TablesOfPiecesGroups["LowLeg"])
+	Sleep(50)
+	end
+
 end
 
 function script.Killed(recentDamage, _)
@@ -69,10 +111,14 @@ function script.FireWeapon1()
 	return true
 end
 
+boolMoving = false
+
 function script.StartMoving()
+	boolMoving= true
 end
 
 function script.StopMoving()
+	boolMoving = false
 end
 
 function script.Activate()

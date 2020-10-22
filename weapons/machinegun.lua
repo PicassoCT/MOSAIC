@@ -29,6 +29,7 @@ local weaponDef = {
     soundStart = "weapons/machinegun/salvo2.ogg",
     soundtrigger = 1,
     SweepFire = 1,
+    interceptor=1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,
