@@ -20,7 +20,8 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	Spring.MoveCtrl.Enable(unitID,true)
 	Spring.SetUnitNoSelect(unitID,true)
-	StartThread(AnimationTest)
+	--StartThread(AnimationTest)
+	hideT(TablesOfPiecesGroups["Fract"])
 	StartThread(fallingDown)
 	Hide(center)
 	for i=1,3 do
@@ -28,8 +29,7 @@ function script.Create()
 	end
   
 	process(TablesOfPiecesGroups["Rotator"],
-		function (id)
-			spinRand(id, -42,42, 15)
+		function (id)	
 			StartThread(randShow,id)
 		end
 		)
@@ -38,13 +38,24 @@ end
 function randShow(id)
 	while true do
 		rVal= math.random(200,1000)
-		Sleep(rVal)
-		if maRa() == true then
-			Show(id)
-		else 
-			Hide(id)
-		end
+		if maRa()==true then
+			if maRa()==tre then
+				spinRand(id, -42,42, 15)		
+			else
+				reset(id)
+				rotVal=math.random(-360,360)
+				Turn(id,y_axis,math.rad(rotVal),0)	
+				spinRand(id, -42,42, math.pi/10)	
+			end	
 
+			if maRa() == true then
+				Show(id)
+			else 
+				Hide(id)
+			end
+			Sleep(rVal)
+		end	
+	Sleep(10)
 	end
 end
 

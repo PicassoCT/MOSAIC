@@ -120,7 +120,7 @@ end
 
 -- needed here too, and gadget handler doesn't expose it
 
-VFS.Include('LuaRules/system.lua', nil, VFSMODE)
+VFS.Include('luarules/system.lua', nil, VFSMODE)
 VFS.Include('gamedata/VFSUtils.lua', nil, VFSMODE)
 
 --------------------------------------------------------------------------------

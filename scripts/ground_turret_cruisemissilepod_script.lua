@@ -66,12 +66,10 @@ function walkLoop()
 				WaitForTurnT(TablesOfPiecesGroups["UpLeg"])
 				WaitForTurnT(TablesOfPiecesGroups["LowLeg"])
 				
-				for i=1,4 do
-							
+
 				resetT(TablesOfPiecesGroups["UpLeg"], 10)
 				resetT(TablesOfPiecesGroups["LowLeg"], 10)
-			
-				end
+
 				WaitForTurnT(TablesOfPiecesGroups["UpLeg"])
 				WaitForTurnT(TablesOfPiecesGroups["LowLeg"])
 			Sleep(5)
@@ -84,7 +82,6 @@ function walkLoop()
 		WaitForTurnT(TablesOfPiecesGroups["LowLeg"])
 	Sleep(50)
 	end
-
 end
 
 function script.Killed(recentDamage, _)
