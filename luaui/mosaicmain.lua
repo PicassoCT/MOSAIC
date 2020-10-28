@@ -13,8 +13,8 @@
 --------------------------------------------------------------------------------
 Spring.Echo("◘◘◘◘ mosaicmain.lua :: Start Loading ◘◘◘◘")
 Spring.SendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
-assert(VFS)
-assert(VFS.Include)
+
+
 VFS.Include(LUAUI_DIRNAME .. 'utils.lua', utilFile)
 
 -- include("setupdefs.lua")
@@ -23,7 +23,7 @@ VFS.Include(LUAUI_DIRNAME .. 'utils.lua', utilFile)
 -- include("debug.lua")
 include("modfonts.lua")
 -- include("layout.lua")   -- contains a simple LayoutButtons()
- include("luaui/mosaicwidgets.lua')
+ include("luaui/mosaicwidgets.lua")
 --VFS.Include(LUAUI_DIRNAME .. 'mosaicwidgets.lua', utilFile)
 assert(widgetHandler ~= nil, "WidgetHandler was not loaded")
 -- include("widgets.lua")  -- the widget handler
