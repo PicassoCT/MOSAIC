@@ -26,6 +26,7 @@ WG = {}
 Spring.Utilities = {}
 VFS.Include("luarules/utilities/tablefunctions.lua")
 VFS.Include("luarules/utilities/versionCompare.lua")
+
 local reverseCompat = not Spring.Utilities.IsCurrentVersionNewerThan(100, 0)
 
 if (select == nil) then

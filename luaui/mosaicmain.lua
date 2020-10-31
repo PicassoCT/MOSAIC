@@ -11,22 +11,27 @@
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+
 Spring.Echo("◘◘◘◘ mosaicmain.lua :: Start Loading ◘◘◘◘")
+
+local vfsInclude = VFS.Include
+local vfsGame = VFS.GAME
+local spSendCommands = Spring.SendCommands
+
+
 Spring.SendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
 
+vfsInclude(LUAUI_DIRNAME.."utils.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."setupdefs.lua", nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."savetable.lua", nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."debug.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."modfonts.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."layout.lua"   , nil, vfsGame)   -- contains a simple LayoutButtons()
+vfsInclude(LUAUI_DIRNAME.."mosaicwidgets.lua", nil, vfsGame)  -- the widget handler
 
-VFS.Include(LUAUI_DIRNAME .. 'utils.lua', utilFile)
+spSendCommands("echo " .. LUAUI_VERSION)
 
--- include("setupdefs.lua")
--- include("savetable.lua")
-
--- include("debug.lua")
-include("modfonts.lua")
--- include("layout.lua")   -- contains a simple LayoutButtons()
- include("luaui/mosaicwidgets.lua")
---VFS.Include(LUAUI_DIRNAME .. 'mosaicwidgets.lua', utilFile)
-assert(widgetHandler ~= nil, "WidgetHandler was not loaded")
--- include("widgets.lua")  -- the widget handler
 
 --------------------------------------------------------------------------------
 --

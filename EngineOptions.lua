@@ -182,10 +182,5 @@ local options =
     type   = 'bool',
     def    = true,
 	}
-
-
- 
-
-
 }
 return options

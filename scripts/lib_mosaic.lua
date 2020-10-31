@@ -784,16 +784,17 @@ function getDecalMap(culture)
 								"house_arab_decal8",
 								"house_arab_decal7",
 								"house_arab_decal4",
-								"house_arab_decal10"
+								"house_arab_decal10",
+								"house_arab_decal11",
+								"house_arab_decal12"
 							},						
 							urban={
-							"house_arab_decal1",
-							"house_arab_decal2",
-							"house_arab_decal3",				
-							"house_arab_decal5",
-							"house_arab_decal6",
-							"house_arab_decal9",
-
+								"house_arab_decal1",
+								"house_arab_decal2",
+								"house_arab_decal3",				
+								"house_arab_decal5",
+								"house_arab_decal6",
+								"house_arab_decal9"
 							}			
 						}
 		}
