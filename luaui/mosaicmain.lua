@@ -18,9 +18,11 @@ Spring.Echo("◘◘◘◘ mosaicmain.lua :: Start Loading ◘◘◘◘")
 local vfsInclude = VFS.Include
 local vfsGame = VFS.GAME
 local spSendCommands = Spring.SendCommands
+local LUAUI_DIRNAME = LUAUI_DIRNAME or "luaui/"
+_G.LUAUI_DIRNAME= LUAUI_DIRNAME
 
-
-Spring.SendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
+spSendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})
+spSendCommands("echo " .. LUAUI_VERSION)
 
 vfsInclude(LUAUI_DIRNAME.."utils.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."setupdefs.lua", nil, vfsGame)
@@ -29,8 +31,6 @@ vfsInclude(LUAUI_DIRNAME.."debug.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."modfonts.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."layout.lua"   , nil, vfsGame)   -- contains a simple LayoutButtons()
 vfsInclude(LUAUI_DIRNAME.."mosaicwidgets.lua", nil, vfsGame)  -- the widget handler
-
-spSendCommands("echo " .. LUAUI_VERSION)
 
 
 --------------------------------------------------------------------------------

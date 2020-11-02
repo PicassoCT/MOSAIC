@@ -15,6 +15,10 @@
 --------------------------------------------------------------------------------
 Spring.Echo("widgets.lua::Custom Widgethandler starts loading")
 
+local vfsInclude = VFS.Include
+local vfsGame = VFS.GAME
+local spSendCommands = Spring.SendCommands
+
 function pwl() -- ???  (print widget list)
   for k,v in ipairs(widgetHandler.widgets) do
       print(k, v.whInfo.layer, v.whInfo.name)
@@ -37,11 +41,12 @@ if (select == nil) then
   end
 end
 
-include("keysym.h.lua")
-include("utils.lua")
-include("system.lua")
-include("callins.lua")
-include("savetable.lua")
+vfsInclude(LUAUI_DIRNAME.."keysym.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."utils.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."system.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."callins.lua"    , nil, vfsGame)
+vfsInclude(LUAUI_DIRNAME.."savetable.lua"    , nil, vfsGame)
+
 
 local gl = gl
 local modShortUpper = Game.modShortName:upper()
@@ -51,7 +56,7 @@ local WIDGET_DIRNAME     = LUAUI_DIRNAME .. 'widgets_mosaic/'
 local WIDGET_DIRNAME_MAP = LUAUI_DIRNAME .. 'Widgets_Map/'
 
 local HANDLER_BASENAME = "widgets.lua"
-local SELECTOR_BASENAME = 'selector.lua'
+local SELECTOR_BASENAME = 'widget_selector.lua'
 
 local SAFEWRAP = 1
 -- 0: disabled
@@ -1359,7 +1364,7 @@ function widgetHandler:ConfigureLayout(command)
         return true  -- there can only be one
       end
     end
-    local sw = self:LoadWidget(LUAUI_DIRNAME .. SELECTOR_BASENAME, VFS.RAW_FIRST)
+    local sw = self:LoadWidget(WIDGET_DIRNAME .. SELECTOR_BASENAME, VFS.RAW_FIRST)
     self:InsertWidget(sw)
     self:RaiseWidget(sw)
     return true
