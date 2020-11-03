@@ -15,6 +15,10 @@
 if (System == nil) then
 
   System = {
+    Commands = Commands,
+    fontHandler = fontHandler,
+    LUAUI_DIRNAME = 'luaui/',
+
     --
     --  Custom Spring tables
     --
@@ -107,6 +111,7 @@ if (System == nil) then
 
     pcall          = pcall,
     xpcall         = xpcall,
+
 
     _VERSION       = _VERSION
   }

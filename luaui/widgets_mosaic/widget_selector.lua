@@ -36,7 +36,7 @@ end
 -- relies on custom stuff in widgetHandler to implement blankOutConfig and allowUserWidgets
 
 include("keysym.h.lua")
-include("fonts.lua")
+include("modfonts.lua")
 
 local WhiteStr   = "\255\255\255\255"
 local RedStr     = "\255\255\001\001"

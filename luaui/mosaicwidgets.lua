@@ -14,7 +14,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 Spring.Echo("widgets.lua::Custom Widgethandler starts loading")
-
+local LUAUI_DIRNAME = 'luaui/'
 local vfsInclude = VFS.Include
 local vfsGame = VFS.GAME
 local spSendCommands = Spring.SendCommands
@@ -26,6 +26,7 @@ function pwl() -- ???  (print widget list)
 end
 
 WG = {}
+WG.LUAUI_DIRNAME = 'luaui/'
 
 Spring.Utilities = {}
 VFS.Include("luarules/utilities/tablefunctions.lua")
@@ -459,42 +460,6 @@ local zipOnly = {
 }
 
 
-local function GetWidgetInfo(name, mode)
-
-  do return end -- FIXME
-
-  local lines = VFS.LoadFile(name, mode)
-
-  local infoLines = {}
-
-  for line in lines:gmatch('([^\n]*)\n') do
-    if (not line:find('^%s*%-%-')) then
-      if (line:find('[^\r]')) then
-        break -- not commented, not a blank line
-      end
-    end
-    local s, e, source = line:find('^%s*%-%-%>%>(.*)')
-    if (source) then
-      table.insert(infoLines, source)
-    end
-  end
-
-  local info = {}
-  local chunk, err = loadstring(table.concat(infoLines, '\n'))
-  if (not chunk) then
-    Spring.Echo('not loading ' .. name .. ': ' .. err)
-  else
-    setfenv(chunk, info)
-    local success, err = pcall(chunk)
-    if (not success) then
-      Spring.Echo('not loading ' .. name .. ': ' .. err)
-    end
-  end
-
-  for k,v in pairs(info) do
-    Spring.Echo(name, k, 'type: ' .. type(v), '<'..tostring(v)..'>')
-  end
-end
 
 function widgetHandler:Initialize()
 	self:LoadConfigData()
