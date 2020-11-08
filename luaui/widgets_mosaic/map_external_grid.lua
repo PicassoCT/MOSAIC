@@ -18,7 +18,7 @@ end
 
 local DspLst = nil
 --local updateFrequency = 120	-- unused
-local gridTex = "luaui/images/vr_grid.png"
+local gridTex = "LuaUI/images/vr_grid.png"
 --local height = 0	-- how far above ground to draw
 
 ---magical speedups---

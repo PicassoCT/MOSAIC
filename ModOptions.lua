@@ -31,6 +31,8 @@
 
 local options = {
     -- do deployment and tactics even work?
+
+
     {
         key    = 'gamemode',
         name   = 'Game Mode Configuration',
@@ -66,7 +68,14 @@ local options = {
         section = 'startconds',
         def = false,
     },
-
+      {
+        key='allowUserWidgets',
+        name='Disable Local Widgets',
+        desc='Disable loading of local widget.',
+        type='bool',
+        section= 'experimental',
+        def=true,
+      },
 
     {
         key		= "pathfinder",

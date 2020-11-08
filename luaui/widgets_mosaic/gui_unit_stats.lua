@@ -76,7 +76,7 @@ local yOffset = -((32 - (fontSize*0.9))*widgetScale)
 -- Speedups
 ------------------------------------------------------------------------------------
 
-local bgcorner				= ":l:luaui/images/bgcorner.png"
+local bgcorner				= ":l:LuaUI/images/bgcorner.png"
 
 local white = '\255\255\255\255'
 local grey = '\255\190\190\190'

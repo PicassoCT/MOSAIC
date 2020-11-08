@@ -17,7 +17,7 @@ if (System == nil) then
   System = {
     Commands = Commands,
     fontHandler = fontHandler,
-    LUAUI_DIRNAME = 'luaui/',
+    LUAUI_DIRNAME = 'LuaUI/',
 
     --
     --  Custom Spring tables

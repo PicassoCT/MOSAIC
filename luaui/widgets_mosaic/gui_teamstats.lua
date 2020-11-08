@@ -35,7 +35,7 @@ local sortLineColour = {0.82,0.82,0.82,0.85}
 local customScale = 1
 
 local playSounds = true
-local buttonclick = 'luaui/sounds/buildbar_waypoint.wav'
+local buttonclick = 'LuaUI/sounds/buildbar_waypoint.wav'
 
 local header = {
 	"frame",

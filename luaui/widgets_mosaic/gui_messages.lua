@@ -38,7 +38,7 @@ local backgroundOpacity = 0.18
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local fontfile = "luaui/fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
+local fontfile = "LuaUI/fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local fontfileScale = (0.5 + (vsx*vsy / 5700000))
 local fontfileSize = 38
 local fontfileOutlineSize = 7

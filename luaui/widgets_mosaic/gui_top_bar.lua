@@ -34,18 +34,18 @@ local showConversionSlider = true
 local bladeSpeedMultiplier = 0.2
 
 local playSounds = true
-local leftclick = 'LuaUi/sounds/tock.wav'
-local resourceclick = 'LuaUi/sounds/buildbar_click.wav'
-local middleclick = 'LuaUi/sounds/buildbar_click.wav'
-local rightclick = 'LuaUi/sounds/buildbar_rem.wav'
+local leftclick = 'LuaUI/sounds/tock.wav'
+local resourceclick = 'LuaUI/sounds/buildbar_click.wav'
+local middleclick = 'LuaUI/sounds/buildbar_click.wav'
+local rightclick = 'LuaUI/sounds/buildbar_rem.wav'
 
-local bgcorner = ":l:LuaUi/images/bgcorner.png"
-local barbg = ":l:LuaUi/images/resbar.dds"
-local barGlowCenterTexture = ":l:LuaUi/images/barglow-center.png"
-local barGlowEdgeTexture = ":l:LuaUi/images/barglow-edge.png"
-local bladesTexture = ":l:LuaUi/images/blades.png"
-local poleTexture = ":l:LuaUi/images/pole.png"
-local glowTexture = ":l:LuaUi/images/glow.dds"
+local bgcorner = ":l:LuaUI/images/bgcorner.png"
+local barbg = ":l:LuaUI/images/resbar.dds"
+local barGlowCenterTexture = ":l:LuaUI/images/barglow-center.png"
+local barGlowEdgeTexture = ":l:LuaUI/images/barglow-edge.png"
+local bladesTexture = ":l:LuaUI/images/blades.png"
+local poleTexture = ":l:LuaUI/images/pole.png"
+local glowTexture = ":l:LuaUI/images/glow.dds"
 
 local vsx, vsy = gl.GetViewSizes()
 local widgetScale = (0.80 + (vsx*vsy / 6000000))
@@ -799,9 +799,9 @@ local function updateResbar(res)
 		glColor(1,1,1,1)
 		local iconPadding = (area[4] - area[2]) / 11
 		if res == 'metal' then
-			glTexture(":l:LuaUi/images/metal.png")
+			glTexture(":l:LuaUI/images/metal.png")
 		else
-			glTexture(":l:LuaUi/images/energy.png")
+			glTexture(":l:LuaUI/images/energy.png")
 		end
 		glTexRect(area[1]+iconPadding+(height*0.02*widgetScale), area[2]+iconPadding+(height*0.04*widgetScale), area[1]+(height*1.1*widgetScale)-iconPadding, area[4]-iconPadding+(height*0.04*widgetScale))
 		glTexture(false)

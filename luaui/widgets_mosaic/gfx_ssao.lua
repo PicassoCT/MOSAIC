@@ -79,16 +79,16 @@ local presets = {
 -----------------------------------------------------------------
 -- File path Constants
 -----------------------------------------------------------------
-local baseDir = "luaui/widgets/"
-local shadersDir = baseDir.."Shaders/"
-local luaShaderDir = baseDir.."Include/"
+local baseDir = "luaui/widgets_mosaic/"
+local shadersDir = baseDir.."shaders/"
+local luaShaderDir = baseDir.."include/"
 
 -----------------------------------------------------------------
 -- Global Variables
 -----------------------------------------------------------------
 
 local LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
-
+assert(LuaShader)
 local vsx, vsy, vpx, vpy
 local firstTime
 

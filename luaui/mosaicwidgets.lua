@@ -14,7 +14,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 Spring.Echo("widgets.lua::Custom Widgethandler starts loading")
-local LUAUI_DIRNAME = 'luaui/'
+
 local vfsInclude = VFS.Include
 local vfsGame = VFS.GAME
 local spSendCommands = Spring.SendCommands
@@ -25,8 +25,7 @@ function pwl() -- ???  (print widget list)
   end
 end
 
-WG = {}
-WG.LUAUI_DIRNAME = 'luaui/'
+
 
 Spring.Utilities = {}
 VFS.Include("luarules/utilities/tablefunctions.lua")
@@ -42,6 +41,7 @@ if (select == nil) then
   end
 end
 
+assert(LUAUI_DIRNAME)
 vfsInclude(LUAUI_DIRNAME.."keysym.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."utils.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."system.lua"    , nil, vfsGame)
@@ -113,6 +113,10 @@ local allowuserwidgets = true
 if Spring.GetModOptions and (tonumber(Spring.GetModOptions().allowuserwidgets) or 1) == 0 then
   allowuserwidgets = false
 end
+
+
+
+
 widgetHandler = {
 
   widgets = {},
@@ -249,10 +253,10 @@ local callInLists = {
   'TweakIsAbove',
   'TweakGetTooltip',
   'GameProgress',
-  'UnsyncedHeightMapUpdate',
+  --'UnsyncedHeightMapUpdate',
 -- these use mouseOwner instead of lists
---  'MouseMove',
---  'MouseRelease',
+  'MouseMove',
+  'MouseRelease',
 --  'TweakKeyPress',
 --  'TweakKeyRelease',
 --  'TweakMouseMove',
@@ -574,15 +578,21 @@ end
 
 
 function widgetHandler:LoadWidget(filename, fromZip)
-  local basename = Basename(filename)
+  fromZipTrue = "from Zip true"
+  if fromZip == false then fromZipTrue = "from Zip false"end
+
+  local basename = Basename(filename) 
+  filename = filename:gsub("LuaUI","luaui")
+  Spring.Echo("Trying to load "..filename.." -> with".. fromZipTrue)
+    
   local text = VFS.LoadFile(filename, fromZip and VFS.ZIP or VFS.RAW)
   if (text == nil) then
-    Spring.Echo('Failed to load: ' .. basename .. '  (missing file: ' .. filename ..')')
+    Spring.Echo('1 Failed to load: ' .. basename .. '  (missing file: ' .. filename ..')')
     return nil
   end
   local chunk, err = loadstring(text, filename)
   if (chunk == nil) then
-    Spring.Echo('Failed to load: ' .. basename .. '  (' .. err .. ')')
+    Spring.Echo('2: Failed to load: ' .. basename .. '  (' .. err .. ')')
     return nil
   end
   
@@ -610,7 +620,7 @@ function widgetHandler:LoadWidget(filename, fromZip)
 
   err = self:ValidateWidget(widget)
   if (err) then
-    Spring.Echo('Failed to load: ' .. basename .. '  (' .. err .. ')')
+    Spring.Echo('3: Failed to load: ' .. basename .. '  (' .. err .. ')')
     return nil
   end
 
@@ -966,12 +976,13 @@ function widgetHandler:RemoveWidget(widget)
   end
 
   local name = widget.whInfo.name
-  if (widget.GetConfigData) then
-    local ok, err = pcall(function() 
-	  self.configData[name] = widget:GetConfigData()
-	end)
-	if not ok then Spring.Log(HANDLER_BASENAME, LOG.ERROR, "Failed to GetConfigData: " .. name.." ("..err..")") end 
-  end
+    if (widget.GetConfigData) then
+
+      local ok, err = pcall(function() self.configData[name] = widget:GetConfigData()  end)
+
+  	   if not ok then Spring.Log(HANDLER_BASENAME, LOG.ERROR, "Failed to GetConfigData: " .. name.." ("..err..")") end 
+    end
+
   self.knownWidgets[name].active = false
   if (widget.Shutdown) then
     widget:Shutdown()
@@ -1052,6 +1063,7 @@ end
 function widgetHandler:IsWidgetKnown(name)
   return self.knownWidgets[name] and true or false
 end
+
 function widgetHandler:EnableWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
@@ -1073,7 +1085,6 @@ function widgetHandler:EnableWidget(name)
   return true
 end
 
-
 function widgetHandler:DisableWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
@@ -1090,7 +1101,6 @@ function widgetHandler:DisableWidget(name)
   end
   return true
 end
-
 
 function widgetHandler:ToggleWidget(name)
   local ki = self.knownWidgets[name]
@@ -1110,7 +1120,6 @@ function widgetHandler:ToggleWidget(name)
   end
   return true
 end
-
 
 --------------------------------------------------------------------------------
 

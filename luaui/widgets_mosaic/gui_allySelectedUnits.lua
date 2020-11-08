@@ -716,7 +716,7 @@ if showGui then
         RectRound(0, 0, 16*sizeMultiplier, 16*sizeMultiplier, 3*sizeMultiplier)
         glColor(1, 1, 1, 1)
         if state then
-            glTexture('luaui/images/tick.png')
+            glTexture('LuaUI/images/tick.png')
             glTexRect(0, 0, 16*sizeMultiplier, 16*sizeMultiplier)
             glTexture(false)
         end

@@ -18,8 +18,7 @@ Spring.Echo("◘◘◘◘ mosaicmain.lua :: Start Loading ◘◘◘◘")
 local vfsInclude = VFS.Include
 local vfsGame = VFS.GAME
 local spSendCommands = Spring.SendCommands
-LUAUI_DIRNAME =  "luaui/"
-local LUAUI_DIRNAME = LUAUI_DIRNAME or "luaui/"
+assert(LUAUI_DIRNAME)
 
 
 spSendCommands({"ctrlpanel " .. LUAUI_DIRNAME .. "ctrlpanel.txt"})

@@ -12,7 +12,8 @@ function widget:GetInfo()
 	}
 end
 
-LUAUI_DIRNAME =  "luaui/"
+
+assert(LUAUI_DIRNAME)
 
 local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()

@@ -27,14 +27,14 @@ local cameraPanTransitionTime = 0.03
 local widgetOptionColor = '\255\160\160\160'
 
 local playSounds = true
-local buttonclick = 'luaui/sounds/tock.wav'
-local paginatorclick = 'luaui/sounds/buildbar_waypoint.wav'
-local sliderdrag = 'luaui/sounds/buildbar_rem.wav'
-local selectclick = 'luaui/sounds/buildbar_click.wav'
-local selectunfoldclick = 'luaui/sounds/buildbar_hover.wav'
-local selecthoverclick = 'luaui/sounds/hover.wav'
-local toggleonclick = 'luaui/sounds/switchon.wav'
-local toggleoffclick = 'luaui/sounds/switchoff.wav'
+local buttonclick = 'LuaUI/sounds/tock.wav'
+local paginatorclick = 'LuaUI/sounds/buildbar_waypoint.wav'
+local sliderdrag = 'LuaUI/sounds/buildbar_rem.wav'
+local selectclick = 'LuaUI/sounds/buildbar_click.wav'
+local selectunfoldclick = 'LuaUI/sounds/buildbar_hover.wav'
+local selecthoverclick = 'LuaUI/sounds/hover.wav'
+local toggleonclick = 'LuaUI/sounds/switchon.wav'
+local toggleoffclick = 'LuaUI/sounds/switchoff.wav'
 
 local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()
@@ -47,10 +47,10 @@ local fontfileScale2 = fontfileScale * 1.2
 local fontfile2 = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font2", "Exo2-SemiBold.otf")
 local font2 = gl.LoadFont(fontfile2, fontfileSize*fontfileScale2, fontfileOutlineSize*fontfileScale2, fontfileOutlineStrength)
 
-local bgcorner = "luaui/images/bgcorner.png"
-local backwardTex = ":l:luaui/images/backward.dds"
-local forwardTex = ":l:luaui/images/forward.dds"
-local glowTex = ":l:luaui/images/glow2.dds"
+local bgcorner = "LuaUI/images/bgcorner.png"
+local backwardTex = ":l:LuaUI/images/backward.dds"
+local forwardTex = ":l:LuaUI/images/forward.dds"
+local glowTex = ":l:LuaUI/images/glow2.dds"
 
 local bgMargin = 6
 local screenHeight = 520-bgMargin-bgMargin

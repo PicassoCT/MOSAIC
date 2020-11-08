@@ -31,7 +31,7 @@ local OrangeStr  = "\255\255\190\128"
 local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity",0.66) or 0.66)
 local ui_scale = tonumber(Spring.GetConfigFloat("ui_scale",1) or 1)
 
-local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
+local fontfile = LuaUi_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()
 local fontfileScale = (0.5 + (vsx*vsy / 5700000))
 local fontfileSize = 25
@@ -92,8 +92,8 @@ local useBlurShader   = false   -- it has a fallback, if the gfx don't support g
 local blured          = false
 local blurFullscreen  = function() return end
 
-local bgcorner		= "luaui/images/bgcorner.png"
-local repeatPic		= ":lr64,64:luaui/images/repeat.png"
+local bgcorner		= "LuaUi/images/bgcorner.png"
+local repeatPic		= ":lr64,64:LuaUi/images/repeat.png"
 
 local GL_ONE                   = GL.ONE
 local GL_ONE_MINUS_SRC_ALPHA   = GL.ONE_MINUS_SRC_ALPHA
@@ -104,11 +104,11 @@ local glBlending               = gl.Blending
 -- SOUNDS
 -------------------------------------------------------------------------------
 
-local sound_waypoint  = 'luaui/sounds/buildbar_waypoint.wav'
-local sound_click     = 'luaui/sounds/buildbar_click.wav'
-local sound_hover     = 'luaui/sounds/buildbar_hover.wav'
-local sound_queue_add = 'luaui/sounds/buildbar_add.wav'
-local sound_queue_rem = 'luaui/sounds/buildbar_rem.wav'
+local sound_waypoint  = 'LuaUi/sounds/buildbar_waypoint.wav'
+local sound_click     = 'LuaUi/sounds/buildbar_click.wav'
+local sound_hover     = 'LuaUi/sounds/buildbar_hover.wav'
+local sound_queue_add = 'LuaUi/sounds/buildbar_add.wav'
+local sound_queue_rem = 'LuaUi/sounds/buildbar_rem.wav'
 
 -------------------------------------------------------------------------------
 -- SOME THINGS NEEDED IN DRAWINMINIMAP
