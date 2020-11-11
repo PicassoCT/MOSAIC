@@ -509,7 +509,7 @@ function widgetHandler:Initialize()
   end
 
   -- create the "luaui/Config" directory
-  Spring.CreateDir(LUAUI_DIRNAME .. 'Config')
+  Spring.CreateDir("LuaUI/" .. 'Config')
 
   local unsortedWidgets = {}
 
@@ -581,18 +581,20 @@ function widgetHandler:LoadWidget(filename, fromZip)
   fromZipTrue = "from Zip true"
   if fromZip == false then fromZipTrue = "from Zip false"end
 
+  fromZip = fromZip or VFSMODE
+
   local basename = Basename(filename) 
   filename = filename:gsub("LuaUI","luaui")
-  Spring.Echo("Trying to load "..filename.." -> with".. fromZipTrue)
+  --Spring.Echo("Trying to load "..filename.." -> with".. fromZipTrue)
     
   local text = VFS.LoadFile(filename, fromZip and VFS.ZIP or VFS.RAW)
   if (text == nil) then
-    Spring.Echo('1 Failed to load: ' .. basename .. '  (missing file: ' .. filename ..')')
+    Spring.Echo('Failed to load: ' .. basename .. '  (missing file: ' .. filename ..')')
     return nil
   end
   local chunk, err = loadstring(text, filename)
   if (chunk == nil) then
-    Spring.Echo('2: Failed to load: ' .. basename .. '  (' .. err .. ')')
+    Spring.Echo('Failed to load: ' .. basename .. '  (' .. err .. ')')
     return nil
   end
   
@@ -612,15 +614,17 @@ function widgetHandler:LoadWidget(filename, fromZip)
     widget.widgetHandler = self
   end
 
+ -- Spring.Echo("Finalizing Widget: "..filename)
   self:FinalizeWidget(widget, filename, basename)
   local name = widget.whInfo.name
   if (basename == SELECTOR_BASENAME) then
     self.orderList[name] = 1  --  always enabled
   end
 
+  --Spring.Echo("ValidateWidget : "..basename)
   err = self:ValidateWidget(widget)
   if (err) then
-    Spring.Echo('3: Failed to load: ' .. basename .. '  (' .. err .. ')')
+    Spring.Echo(' Failed to load: ' .. basename .. '  (' .. err .. ')')
     return nil
   end
 
@@ -748,9 +752,9 @@ function widgetHandler:NewWidget()
     return self:SetGlobal(widget, name, value)
   end
 
-  Spring.Echo("ConfingLayoutHandler_3")
-  wh.ConfigLayoutHandler = function(_, d) self:ConfigLayoutHandler(d) end
 
+  wh.ConfigLayoutHandler = function(_, d) self:ConfigLayoutHandler(d) end
+ -- Spring.Echo("Done Instantiating widget")
   return widget
 end
 
@@ -1611,7 +1615,7 @@ function widgetHandler:TextInput(utf8, ...)
   if (self.tweakMode) then
     return true
   end
-
+  
   for _,w in ipairs(self.TextInputList) do
     if (w:TextInput(utf8, ...)) then
       return true
