@@ -751,7 +751,7 @@ function widgetHandler:NewWidget()
   wh.SetGlobal = function(_, name, value)
     return self:SetGlobal(widget, name, value)
   end
-
+ 
 
   wh.ConfigLayoutHandler = function(_, d) self:ConfigLayoutHandler(d) end
  -- Spring.Echo("Done Instantiating widget")
