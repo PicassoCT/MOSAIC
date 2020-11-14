@@ -649,7 +649,7 @@ local function updateResbarText(res)
 					local bgpadding = 2.5*widgetScale
 					local text = ''
 					if res == 'metal' then
-						text = (allyteamOverflowingMetal and 'Wasting Funds' or 'Overflowing')
+						text = (allyteamOverflowingMetal and 'Wasting money' or 'Overflowing')
 						if WG['notifications'] then
 							if allyteamOverflowingMetal then
 								if numTeamsInAllyTeam > 1 then
@@ -855,11 +855,11 @@ local function updateResbar(res)
 	if WG['tooltip'] ~= nil and conversionIndicatorArea then
 		if res == 'energy' then
 			WG['tooltip'].AddTooltip(res..'_share_slider', {resbarDrawinfo[res].barArea[1], shareIndicatorArea[res][2], conversionIndicatorArea[1], shareIndicatorArea[res][4]}, "\255\215\255\215  Share Slider\n\255\240\240\240Overflowing to your team when \n material goes beyond this point")
-			WG['tooltip'].AddTooltip(res..'_share_slider2', {conversionIndicatorArea[3], shareIndicatorArea[res][2], resbarDrawinfo[res].barArea[3], shareIndicatorArea[res][4]}, "\255\215\255\215"..res:sub(1,1):upper()..res:sub(2).." Share Slider\n\255\240\240\240Overflowing to your team when \n MOSAIC-material goes beyond this point")
+			WG['tooltip'].AddTooltip(res..'_share_slider2', {conversionIndicatorArea[3], shareIndicatorArea[res][2], resbarDrawinfo[res].barArea[3], shareIndicatorArea[res][4]}, "\255\215\255\215"..res:sub(1,1):upper()..res:sub(2).." Share Slider\n\255\240\240\240Overflowing to your team when \n material goes beyond this point")
 
-			WG['tooltip'].AddTooltip(res..'_metalmaker_slider', conversionIndicatorArea, "\255\215\255\215Material Funds Conversion slider\n\255\240\240\240Excess material beyond this point will be\nconverted to funds\n")
+			WG['tooltip'].AddTooltip(res..'_metalmaker_slider', conversionIndicatorArea, "\255\215\255\215Material to Money Conversion slider\n\255\240\240\240Excess material beyond this point will be\nconverted to money\n")
 		else
-			WG['tooltip'].AddTooltip(res..'_share_slider', {resbarDrawinfo[res].barArea[1], shareIndicatorArea[res][2], resbarDrawinfo[res].barArea[3], shareIndicatorArea[res][4]}, "\255\215\255\215"..res:sub(1,1):upper()..res:sub(2).." Share Slider\n\255\240\240\240Overflowing to your team when \n funds goes beyond this point")
+			WG['tooltip'].AddTooltip(res..'_share_slider', {resbarDrawinfo[res].barArea[1], shareIndicatorArea[res][2], resbarDrawinfo[res].barArea[3], shareIndicatorArea[res][4]}, "\255\215\255\215"..res:sub(1,1):upper()..res:sub(2).." Share Slider\n\255\240\240\240Overflowing to your team when \n money goes beyond this point")
 		end
 		WG['tooltip'].AddTooltip(res..'_pull', {resbarDrawinfo[res].textPull[2]-(resbarDrawinfo[res].textPull[4]*2.5), resbarDrawinfo[res].textPull[3], resbarDrawinfo[res].textPull[2]+(resbarDrawinfo[res].textPull[4]*0.5), resbarDrawinfo[res].textPull[3]+resbarDrawinfo[res].textPull[4]}, ""..res.." pull")
 		WG['tooltip'].AddTooltip(res..'_income', {resbarDrawinfo[res].textIncome[2]-(resbarDrawinfo[res].textIncome[4]*2.5), resbarDrawinfo[res].textIncome[3], resbarDrawinfo[res].textIncome[2]+(resbarDrawinfo[res].textIncome[4]*0.5), resbarDrawinfo[res].textIncome[3]+resbarDrawinfo[res].textIncome[4]}, ""..res.." income")

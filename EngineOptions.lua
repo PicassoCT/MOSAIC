@@ -61,8 +61,8 @@ local options =
  
   {
     key    = 'StartMetal',
-    name   = 'Starting metal',
-    desc   = 'Determines amount of metal and metal storage that each player will start with',
+    name   = 'Starting Money',
+    desc   = 'Determines amount of money and money storage that each player will start with',
     type   = 'number',
     section= 'startconds',
     def    = 1000,
@@ -74,8 +74,8 @@ local options =
 
   {
     key    = 'StartEnergy',
-    name   = 'Starting energy',
-    desc   = 'Determines amount of metal and metal storage that each player will start with',
+    name   = 'Starting material',
+    desc   = 'Determines amount of material and material storage that each player will start with',
     type   = 'number',
     section= 'StartingResources',
     def    = 1000,
