@@ -114,9 +114,6 @@ if Spring.GetModOptions and (tonumber(Spring.GetModOptions().allowuserwidgets) o
   allowuserwidgets = false
 end
 
-
-
-
 widgetHandler = {
 
   widgets = {},
@@ -131,8 +128,8 @@ widgetHandler = {
   commands = {},
   customCommands = {},
   inCommandsChanged = false,
+  allowUserWidgets = true,
 
-  autoModWidgets = false,
 
   actionHandler = include("actions.lua"),
   
@@ -142,8 +139,9 @@ widgetHandler = {
 
   mouseOwner = nil,
   ownedButton = 0,
-  
+
   tweakMode = false,
+
   xViewSize    = 1,
   yViewSize    = 1,
   xViewSizeOld = 1,
@@ -158,7 +156,7 @@ local flexCallIns = {
   'GameStart',
   'GameOver',
   'GameFrame',
- 'GameProgress',
+  'GameProgress',
   'GameSetup',
   'GamePaused',
   'TeamDied',
@@ -203,7 +201,6 @@ local flexCallIns = {
   'SelectionChanged',
   'DrawGenesis',
   'DrawWorld',
-
   'DrawWorldPreUnit',
   'DrawWorldPreParticles',
   'DrawWorldShadow',
@@ -219,6 +216,7 @@ local flexCallIns = {
   'SunChanged',
   'FeatureCreated',
   'FeatureDestroyed',
+  'UnsyncedHeightMapUpdate',
 }
 local flexCallInMap = {}
 for _,ci in ipairs(flexCallIns) do
@@ -237,12 +235,13 @@ local callInLists = {
   'DrawScreen',
   'KeyPress',
   'KeyRelease',
+  'TextInput',
   'MousePress',
   'MouseWheel',
   'JoyAxis',
   'JoyHat',
   'JoyButtonDown',
-  'JoyButtonUp',  
+  'JoyButtonUp',
   'IsAbove',
   'GetTooltip',
   'GroupChanged',
@@ -255,8 +254,8 @@ local callInLists = {
   'GameProgress',
   --'UnsyncedHeightMapUpdate',
 -- these use mouseOwner instead of lists
-  'MouseMove',
-  'MouseRelease',
+--  'MouseMove',
+--  'MouseRelease',
 --  'TweakKeyPress',
 --  'TweakKeyRelease',
 --  'TweakMouseMove',
@@ -653,22 +652,29 @@ function widgetHandler:LoadWidget(filename, fromZip)
     return nil
   end
 
-  local info  = widget:GetInfo()
-  local order = self.orderList[name]
-  if (((order ~= nil) and (order > 0)) or
-      ((order == nil) and  -- unknown widget
-       (info.enabled and ((not knownInfo.fromZip) or self.autoModWidgets)))) then
-    -- this will be an active widget
-    if (order == nil) then
-      self.orderList[name] = 12345  -- back of the pack
+    -- Get widget information
+     local info  = widget:GetInfo()
+
+    -- Enabling
+    local order = self.orderList[name]
+    if order then
+        if order <= 0 then
+           order = nil
+        end
     else
-      self.orderList[name] = order
+        if info.enabled and (knownInfo.fromZip or (self.allowUserWidgets and not allowuserwidgets)) then
+            order = 12345
+        end
     end
-  else
-    self.orderList[name] = 0
-    self.knownWidgets[name].active = false
-    return nil
-  end
+
+    if order then
+        self.orderList[name] = order
+    else
+        self.orderList[name] = 0
+        self.knownWidgets[name].active = false
+        return nil
+    end
+
 
   -- load the config data  
   local config = self.configData[name]
@@ -813,6 +819,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
 local function SafeWrapFuncNoGL(func, funcName)
   local wh = widgetHandler
 
@@ -1068,6 +1075,7 @@ function widgetHandler:IsWidgetKnown(name)
   return self.knownWidgets[name] and true or false
 end
 
+
 function widgetHandler:EnableWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
@@ -1088,6 +1096,7 @@ function widgetHandler:EnableWidget(name)
   end
   return true
 end
+
 
 function widgetHandler:DisableWidget(name)
   local ki = self.knownWidgets[name]
@@ -1329,6 +1338,7 @@ end
 
 
 function widgetHandler:ConfigureLayout(command)
+  Spring.Echo("Configuring Layout "..command)
   if (command == 'tweakgui') then
     self.tweakMode = true
     Spring.Echo("LuaUI TweakMode: ON")
