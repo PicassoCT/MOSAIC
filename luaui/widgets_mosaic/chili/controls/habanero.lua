@@ -197,6 +197,13 @@ end
 
 --> generates a trianglestrip from a outline
 function convertOutlineToTriStrip(outline)
+	
+	sanitizeCoords= function(index)
+		if index > #outline then index =  index - #outline end
+		if index < 1 then index =1 end
+		return index
+	end
+
 	offset=  outline.offset or {x= 0, y= 0} 
 	scale = 1.0
 	if outline.scale then scale = outline.scale end
@@ -215,11 +222,11 @@ function convertOutlineToTriStrip(outline)
 	end
 	midPoint.x,midPoint.y= midPoint.x/#outline , midPoint.y/#outline
 	
-	ltriStrip={}
-	for i=1,#outline do
+	local ltriStrip={}
+	for i=1,#outline-1 do
 		ltriStrip[3*(i-1)+1] = {x=outline[i].x,y=outline[i].y}
 		ltriStrip[3*(i-1)+2]= {x=midPoint.x, y=midPoint.y}
-		ltriStrip[3*(i-1)+3]= {x=outline[i+1].x,y=outline[i+1].y}		
+		ltriStrip[3*(i-1)+3]= {x=outline[sanitizeCoords(i+1)].x,y=outline[sanitizeCoords(i+1)].y}		
 	end
 	--close the triangle strip
 	ltriStrip[#ltriStrip+1] = {x=outline[#outline].x,y=outline[#outline].y}

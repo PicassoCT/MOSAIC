@@ -7,7 +7,7 @@ function widget:GetInfo()
 		date = "2016-6-2",
 		license = "GNU GPL, v2 or later",
 		layer = 0,
-		enabled = true,
+		enabled = false,
 		hidden = false,
 		handler = true
 	}
@@ -43,6 +43,10 @@ VFS.Include("LuaUI/ressources/gui_helper.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
 ---------------------------------------------------------------------------------------
 
+controllCommand_window_height = "30%"
+controllCommand_window_width = "30%"
+controllCommand_window_positionX = "70%"
+controllCommand_window_positionY = "70%"
 
 ---------------------------------------------------------------------------------------
 
@@ -239,34 +243,17 @@ function formHexagonTripStrip(offx,offy, scale)
 return{
 		{x= -50, y = 0},			
 		{x= -25, y = 50},
-		{x= 0, y = 0},	
-	
-		{x= 25, y = 50},	
-		{x= 0, y = 0},	
-
-		{x= -25, y = 50},	
-
-		{x= 0, y = 0},	
-		{x= 25, y = 50},	
-		{x= 50, y = 0},	
-
-		{x= 50, y = 0},	
-		{x= 25, y = -50},	
-		{x= 0, y = 0},	
-
-		{x= -25, y = -50},	
-		{x= 25, y = -50},	
-		{x= 0, y = 0},	
-
-		{x= -50, y = 0},			
+		{x= 25, y = 50},
+		{x= 50, y = 0},			
+		{x= 25, y = -50},			
 		{x= -25, y = -50},
-		{x= 0, y = 0},	
+
 		offset= offset,
 		scale = scale,
 		}	
 end
 
-local strip = formHexagonTripStrip( 100, 100 , 1)
+local strip = formHexagonTripStrip( 10, 0 , 0.75)
 
 MainMenue[CMD.ATTACK] ={		
 	triStrip = strip,
@@ -279,16 +266,11 @@ MainMenue[CMD.ATTACK] ={
 	name= "orderbutton_attack",
 	OnMouseUp = {ActionCommand}
 }
---[[
+
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.STOP] ={
-	triStrip={	
-		{x= 0, y = 10},	
-		{x= 0, y = 70},
-		{x= 70, y = -15},				
-		{x= 80, y = -5},		
-		{x= 80, y = 80},
-		{x= 70, y = 90}
-		},
+	triStrip=strip,
+	outline = strip,
 	activeColor={58/255, 172/255, 226/255, 0.75}	,
 	backgroundColor = lowerMenueBackgroundCol,
 	caption="|STOP",	
@@ -296,14 +278,12 @@ MainMenue[CMD.STOP] ={
 	cmdID = CMD.STOP ,
 	name= "orderbutton_stop",
 	OnMouseUp = {ActionCommand}
-}			
+}	
+local strip = formHexagonTripStrip( 0, 0 , 1)
 
 MainMenue[CMD.MOVE] ={
-	triStrip={		
-		{x= 0, y = -40},			
-		{x= 80, y = -10},
-		{x= 0, y = 70},
-	{x= 80, y = 70}},
+	triStrip ={},
+	outline = strip,
 	activeColor={35/255, 124/255, 166/255, 0.75}		,
 	backgroundColor = lowerMenueBackgroundCol,
 	caption=upByRow("|MOVE",2),
@@ -312,13 +292,10 @@ MainMenue[CMD.MOVE] ={
 	name= "orderbutton_move",
 	OnMouseUp = {ActionCommand}
 }	
-
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.FIRE_STATE] ={		
-	triStrip={		
-		{x= 0, y = 0},	
-		{x= 80, y =0},
-		{x= 0, y = 70},
-	{x= 80, y = 70}},
+	triStrip ={},
+	outline = strip,
 	activeColor={52/255, 167/255, 222/255, 0.75},
 	backgroundColor = lowerMenueBackgroundCol,
 	caption=upByRow("|FIRE STATE ",3),
@@ -328,12 +305,10 @@ MainMenue[CMD.FIRE_STATE] ={
 	OnMouseUp = {StateCommand}
 }	
 
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.REPEAT] ={
-	triStrip={		
-		{x= 0, y = -15},			
-		{x= 70, y =-85},
-		{x= 0, y = 90},
-	{x= 70, y = 160}},
+	triStrip ={},
+	outline = strip,
 	activeColor={52/255, 167/255, 222/255, 0.75}	,
 	backgroundColor = lowerMenueBackgroundCol,
 	caption="|REPEAT\nCOMMAND",
@@ -344,12 +319,10 @@ MainMenue[CMD.REPEAT] ={
 	OnMouseUp = {StateCommand}
 }	
 
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.MOVE_STATE] ={
-	triStrip={		
-			{x= 0, y = -20},			
-			{x= 80, y =5},
-			{x= 0, y = 45},
-			{x= 80, y = 75}},
+	triStrip ={},
+	outline = strip,
 	activeColor={35/255, 124/255, 166/255, 0.75},
 	backgroundColor = lowerMenueBackgroundCol,
 	caption= "|MOVE MODE\nSEARCH&\nDESTROY",
@@ -360,12 +333,10 @@ MainMenue[CMD.MOVE_STATE] ={
 	OnMouseUp = {StateCommand}
 }	
 
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.REPAIR] ={
-	triStrip={		
-		{x= 0, y = 0},			
-		{x= 80, y = 0},
-		{x= 0, y = 90},
-		{x= 80, y = 60}},
+	triStrip ={},
+	outline = strip,
 	activeColor={163/255, 229/255, 243/255, 0.75},
 	backgroundColor = lowerMenueBackgroundCol,
 	caption= upByRow("|REPAIR ",4),
@@ -375,13 +346,10 @@ MainMenue[CMD.REPAIR] ={
 	OnMouseUp = {ActionCommand}
 }	
 
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.PATROL] ={
-	triStrip={		
-		{x= 0, y = 0},			
-		{x= 80, y = 20},			
-		{x= 0, y = 90},			
-		{x= 80, y = 90}		
-	},
+	triStrip ={},
+	outline = strip,
 	activeColor={52/255, 167/255, 222/255, 0.75},
 	backgroundColor = lowerMenueBackgroundCol,
 	caption=upByRow("|PATROL",4),
@@ -391,13 +359,10 @@ MainMenue[CMD.PATROL] ={
 	OnMouseUp = {ActionCommand}
 }	
 
-
+local strip = formHexagonTripStrip( 0, 0 , 1)
 MainMenue[CMD.GUARD] ={
-		triStrip={		
-		{x= 0, y = 5},			
-		{x= 80, y = -25},
-		{x= 0, y = 70},
-		{x= 80, y = 40}},
+	triStrip ={},
+	outline = strip,
 	
 	caption="|GUARD",
 	
@@ -408,20 +373,16 @@ MainMenue[CMD.GUARD] ={
 
 
 MainMenue[CMD.LOAD_UNITS] ={
-		triStrip={	{x = 160, y = 0},
-		{x = 160, y = 80},			
-	{x = 0, y = 40}	},	
+	triStrip ={},
+	outline = strip,
 	caption =	"LOAD",	
 	name = "orderbutton_load",
 	cmdID = CMD.LOAD_UNITS,
 	OnMouseUp = {ActionCommand}
 }
 MainMenue[CMD.UNLOAD_UNITS] ={
-	triStrip={
-		{x= 0, y = 0},
-		{x= 160, y = 40},			
-		{x= 0, y = 80},
-	},
+	triStrip ={},
+	outline = strip,
 	
 	caption=	"DROP",	
 	cmdID = CMD.UNLOAD_UNITS ,
@@ -431,36 +392,23 @@ MainMenue[CMD.UNLOAD_UNITS] ={
 }
 
 MainMenue[CMD.CLOAK] ={
-	triStrip={	
-		{x= 0, y = 20},
-		{x= 80, y = 0},			
-		{x= 0, y = 35},
-		{x= 80, y = 55},
-		{x= 100, y = 55},
-		
-		},
+	triStrip ={},
+	outline = strip,
 	name = "statebutton_cloak",
 	caption= "CLOAK",
 	OnMouseUp = {StateCommand}	
 }	
 
 MainMenue[CMD.OPT_SHIFT] ={
-	triStrip={	
-		{x= 0, y = 0},			
-		{x= 100, y = 25},
-		{x= 0, y = 80},
-	{x= 100, y = 50}},
-	
+	triStrip ={},
+	outline = strip,
 	caption= "QUEUE",	
 	cmdID = CMD.OPT_SHIFT ,
 	name= "statebutton_optshift",
 	OnMouseUp= {StateCommand}
-}--]]
+}
 
-controllCommand_window_height = "30%"
-controllCommand_window_width = "30%"
-controllCommand_window_positionX = "20%"
-controllCommand_window_positionY = "70%"
+
 
 function setDefaultCommandButtonAttributes()
 	
@@ -490,6 +438,7 @@ function updateAllButtonsInside()
 	updateRequired = true
 end
 
+bRelativePixelSize = false
 function widget:Initialize()
 	
 	--Spring.SendCommands("hideinterface 1")
@@ -508,10 +457,11 @@ function widget:Initialize()
 	
 	function createHabanero(HabaneroDescriptor, Parent )
 		outline ={}		
-		
-		if HabaneroDescriptor.outline then outline = HabaneroDescriptor.outline end
+		if not HabaneroDescriptor.outline then HabaneroDescriptor.outline = {}end
+
+
 		return 	Chili.HabaneroButton:New{
-			outline = outline,
+			outline = HabaneroDescriptor.outline,
 			triStrip=	HabaneroDescriptor.triStrip	,
 			name= HabaneroDescriptor.name,
 			caption= HabaneroDescriptor.caption,
@@ -552,7 +502,7 @@ function widget:Initialize()
 		draggable = false,
 		tweakDraggable = true,
 		tweakResizable = true,
-		resizable = true,
+		resizable = false,
 		dragUseGrip = false,
 		dockable = true,
 		color = {0,0,0,0},
@@ -585,7 +535,7 @@ function widget:Initialize()
 		MenueDescriptor,
 		main_menu_grid
 		)		
-		Habaneros[comandID]:Init(true)
+		Habaneros[comandID]:Init(bRelativePixelSize)
 	end
 	
 end
