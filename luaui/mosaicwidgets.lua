@@ -1900,7 +1900,7 @@ end
 
 
 function widgetHandler:PlayerAdded(playerID, reason) --when player Join Lobby
-  MessageProcessor:AddPlayer(playerID)
+ -- MessageProcessor:AddPlayer(playerID)
   --ListMutedPlayers()
   for _,w in ipairs(self.PlayerAddedList) do
     w:PlayerAdded(playerID, reason)
@@ -1910,7 +1910,7 @@ end
 
 
 function widgetHandler:PlayerChanged(playerID) --when player Change from Spectator to Player or Player to Spectator.
-  MessageProcessor:UpdatePlayer(playerID)
+ -- MessageProcessor:UpdatePlayer(playerID)
   for _,w in ipairs(self.PlayerChangedList) do
     w:PlayerChanged(playerID)
   end

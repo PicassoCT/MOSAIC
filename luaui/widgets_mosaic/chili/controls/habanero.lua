@@ -279,7 +279,7 @@ function HabaneroButton:Init(bRelativePixelSize)
 	--Handle outline
 	if bRelativePixelSize then boolRelativePixelSize = bRelativePixelSize end
 	
-	if self.outline then
+	if self.outline and #self.outline > 0 then
 		self.triStrip = convertOutlineToTriStrip(self.outline)		
 	end
 	
@@ -287,7 +287,7 @@ function HabaneroButton:Init(bRelativePixelSize)
 	offset = {x= 0, y= 0} 
 
 	assert(self.triStrip)
-	
+
 	if self.triStrip.scale  then
 		 scale = self.triStrip.scale 
 	end
