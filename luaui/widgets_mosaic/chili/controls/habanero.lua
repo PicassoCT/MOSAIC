@@ -197,6 +197,18 @@ end
 
 --> generates a trianglestrip from a outline
 function convertOutlineToTriStrip(outline)
+	offset=  outline.offset or {x= 0, y= 0} 
+	scale = 1.0
+	if outline.scale then scale = outline.scale end
+
+
+	offset = {x= 0, y= 0} 
+	if outline.offset then offset = outline.offset end
+
+	for i=1,#outline do
+		outline[i].x, outline[i].y = (outline[i].x*scale) + offset.x, (outline[i].y * scale) +offset.y
+	end
+
 	midPoint={x=0,y=0}
 	for i=1,#outline do
 		midPoint.x,midPoint.y = midPoint.x + outline[i].x,midPoint.y + outline[i].y
@@ -213,6 +225,8 @@ function convertOutlineToTriStrip(outline)
 	ltriStrip[#ltriStrip+1] = {x=outline[#outline].x,y=outline[#outline].y}
 	ltriStrip[#ltriStrip+1]= {x=midPoint.x, y=midPoint.y}
 	ltriStrip[#ltriStrip+1]= {x=outline[1].x,y=outline[1].y}		
+
+	return ltriStrip
 end
 
 function HabaneroButton:getTriStripMaxDimensions()
@@ -269,6 +283,24 @@ function HabaneroButton:Init(bRelativePixelSize)
 		self.triStrip = convertOutlineToTriStrip(self.outline)		
 	end
 	
+	scale = 1.0
+	offset = {x= 0, y= 0} 
+
+	assert(self.triStrip)
+	
+	if self.triStrip.scale  then
+		 scale = self.triStrip.scale 
+	end
+
+	if self.triStrip.offset then
+		offset = self.triStrip.offset 
+	end
+
+	for i=1,#self.triStrip do
+		self.triStrip[i].x, self.triStrip[i].y = (self.triStrip[i].x*scale) + offset.x, (self.triStrip[i].y * scale) +offset.y
+	end
+	
+
 	self.xMin ,self.xMax =0,1
 	self.yMin ,self.yMax =0,1	
 	
