@@ -788,6 +788,12 @@ UpperAnimationStateFunctions ={
 						end,
 [eAnimState.standing] = function () 
 							Sleep(30)	
+							if bodyConfig.boolInfluenced  then
+								PlayAnimation("UPBODY_STANDING_ZOMBIE")
+								return eAnimState.walking
+							end	
+
+
 							if bodyConfig.boolArmed == true then
 								PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]),lowerBodyPieces)
 								return eAnimState.standing
@@ -821,6 +827,11 @@ UpperAnimationStateFunctions ={
 							return eAnimState.standing
 						end,
 [eAnimState.walking] = 	function () 
+							if bodyConfig.boolInfluenced  then
+								PlayAnimation("UPBODY_WALK_ZOMBIE")
+								return eAnimState.walking
+							end	
+
 							if bodyConfig.boolArmed == true  then
 								PlayAnimation("UPBODY_LOADED")		
 								return eAnimState.walking									
@@ -922,6 +933,11 @@ UpperAnimationStateFunctions ={
 
 LowerAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
+						if bodyConfig.boolInfluenced  then
+							PlayAnimation("LOWBODY_STANDING_ZOMBIE")
+							return eAnimState.walking
+						end	
+
 						-- Spring.Echo("Lower Body standing")
 						WaitForTurns(lowerBodyPieces)
 						resetT(lowerBodyPieces, math.pi,false, true)
@@ -938,6 +954,10 @@ LowerAnimationStateFunctions ={
 						return eAnimState.aiming
 					end,					
 [eAnimState.walking] = function()
+						if bodyConfig.boolInfluenced  then
+							PlayAnimation("LOWBODY_WALKING_ZOMBIE")
+							return eAnimState.walking
+						end	
 									
 						if bodyConfig.boolArmed == true then	
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]), conditionalFilterOutUpperBodyTable())					
