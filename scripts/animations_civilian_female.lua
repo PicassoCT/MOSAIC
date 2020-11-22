@@ -47,9 +47,12 @@ return {
 			{['c']='turn',['p']='UpLeg2', ['a']=x_axis, ['t']=-0.291093, ['rl']=-3,['ru']=3,['s']=3.918559},
 			{['c']='turn',['p']='UpLeg2', ['a']=y_axis, ['t']=0.076399, ['s']=3.092268},
 			{['c']='turn',['p']='UpLeg2', ['a']=z_axis, ['t']=0.003685, ['s']=3.000876},
+			}
 		}
 },
 ['UPBODY_STANDING_ZOMBIE']	={
+	{
+
 	['time'] = 1,
 		['commands'] = {
 
@@ -75,6 +78,8 @@ return {
 			{['c']='turn',['p']='UpArm1', ['a']=x_axis, ['t']= 0.7853/2, ['s']=0.705598},
 			{['c']='turn',['p']='UpArm1', ['a']=y_axis, ['t']= -0.7853 , ['s']=0.74629},
 			{['c']='turn',['p']='UpArm1', ['a']=z_axis, ['t']=0, ['s']=0.77300},
+			},
+		}
 },
 ['UPBODY_WALK_ZOMBIE']	={
 	{

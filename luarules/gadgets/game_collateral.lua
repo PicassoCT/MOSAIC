@@ -39,7 +39,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 	local function TransferToTeam(self,  money, reciever, displayunit)
 		self[#self + 1] = {  Money = money, Reciever= reciever, DisplayUnit = displayunit}
 	end
-	
+	--GG.Bank:TransferToTeam(  money, reciever, displayunit)
 	if not GG.Bank then GG.Bank = {TransferToTeam = TransferToTeam}	 end
 	if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {}	 end
 	if not GG.Propgandaservers then GG.Propgandaservers ={} end
@@ -140,7 +140,11 @@ if ( gadgetHandler:IsSyncedCode()) then
 			for team, deedtable in pairs(accumulatedInSecond) do
 				for uid,v in pairs(deedtable) do
 					-- Spring.Echo("Display Update Collateral")  
-					SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
+					if type(uid)=="number" then
+						SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
+					else
+						SendToUnsynced("DisplayAtLocation", uid, team, v.damage)
+					end
 				end
 				accumulatedInSecond= {}				
 			end 
@@ -151,6 +155,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 else -- UNSYNCED
 	DrawForFrames = 1 * 30
 	Unit_StartFrame_Message={}
+	Frame_StartFrame_Message={}
 	constOffsetY= 25	
     gaiaTeamID= Spring.GetGaiaTeamID()
 	
@@ -158,6 +163,12 @@ else -- UNSYNCED
     local function DisplaytAtUnit(callname,  unitID, team, damage)
 		-- Spring.Echo("Arriving in Unsynced")
 		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
+
+    end   
+
+     local function DisplayAtLocation(callname,  locTable, team, damage)
+		-- Spring.Echo("Arriving in Unsynced")
+		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, locTable = locTable, frame=Spring.GetGameFrame()}
 
     end
 	
@@ -190,15 +201,17 @@ else -- UNSYNCED
 						 if currFrame < valueT.frame + DrawForFrames then
 							-- Spring.Echo("Drawing Prizes")
 							 x, y, z = Spring.GetUnitPosition(uid)	
-							 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
-							 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
-							 if valueT.message < 0 then 
-								gl.Color(1.0,0.0,0.0)
-							 else
-								gl.Color(0.0,1.0,0.0)
-							 end
-							 
-							 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
+							 if x then
+								 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
+								 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+								 if valueT.message < 0 then 
+									gl.Color(1.0,0.0,0.0)
+								 else
+									gl.Color(0.0,1.0,0.0)
+								 end
+								 
+								 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
+							end
 						 elseif currFrame > valueT.frame + DrawForFrames then
 							-- UnitsToNil[uid]=true
 						end
@@ -207,6 +220,29 @@ else -- UNSYNCED
 			end
 		end
 	
+	for frame ,data in ipairs(Frame_StartFrame_Message) do	
+			-- Spring.Echo("itterating over all units")
+
+			if data.team == Spring.GetMyTeam() then
+
+						 if currFrame < valueT.frame + DrawForFrames then
+	
+							 x, y, z = data.locTable.x,  data.locTable.y,  data.locTable.z
+							 if x then
+								 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
+								 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+								 if valueT.message < 0 then 
+									gl.Color(1.0,0.0,0.0)
+								 else
+									gl.Color(0.0,1.0,0.0)
+								 end
+								 
+								 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
+							end
+						end
+				end
+			end
+		end
 		
 		for id, _ in pairs(UnitsToNil) do
 			Unit_StartFrame_Message[id] = nil

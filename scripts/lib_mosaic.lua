@@ -37,6 +37,14 @@ function getGameConfig()
 	Defender ={
 	StartPoints =4},
 	},
+
+ --ObjectiveRewardRate
+
+	 
+	Objectives = {
+		RewardCyle = 90, -- /30 frames = 3 seconds
+		Reward = 5,
+	},
 	 --civilianbehaviour
 	 civilianGatheringBehaviourIntervalFrames = 3*60*30,
 	 
@@ -80,7 +88,8 @@ function getGameConfig()
 	 
 	 --Aerosoldrone
 	 aerosolDistance = 250,
-	 
+
+	
 	 -- Interrogation
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
@@ -210,6 +219,15 @@ return {
 
 end
 
+function getObjectiveTypes(UnitDefs)
+local UnitDefNames= getUnitDefNames(UnitDefs)
+return {
+ 			[UnitDefNames["objective_factoryship"].id		]= true,
+			[UnitDefNames["objective_powerplant"].id		]= true,
+		}
+
+end
+
 function getIconTypes(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
@@ -308,6 +326,7 @@ function getCultureUnitModelTypes (cultureName, typeName, UnitDefs)
 	
 	return result
 end
+
 
 
 function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
@@ -1347,4 +1366,19 @@ function dustCloudPostExplosion(unitID, Density, totalTime, SpawnDelay, dirx, di
 	end
 end
 
+
+function getAllTeamsOfType(teamType)
+gaiaTeamID= Spring.GetGaiaTeamID()
+returnT= {}
+ process(Spring.GetTeamList(),
+			function(tid)
+				teamID, leader, isDead, isAiTeam, side,  allyTeam,  incomeMultiplier =Spring.GetTeamInfo(tid)
+				if tid ~= gaiaTeamID and false== isDead and side == teamType then
+
+					returnT[tid]= tid
+				end
+			end
+			) 
+ return returnT
+end
    
