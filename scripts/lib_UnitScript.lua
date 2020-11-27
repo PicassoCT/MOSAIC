@@ -4241,7 +4241,7 @@ function echo2DMap(tmap, squareSideDimension, valueSignMap)
 	
 	valueSignMap = valueSignMap or {
 		[0] = " Ò‰ ",
-		[false] = " â—? ",
+		[false] = " ï¿½? ",
 		[true] = " "
 	}
 	
@@ -6073,4 +6073,12 @@ function arePlayersInSameAllyTeam(playerA, playerB)
 	_,_,_,bteamID,ballyTeamID,_,_,_,_,_ = Spring.GetPlayerInfo (playerB ) 
 
 	return ateamID ~= bteamID and aallyTeamID ~= ballyTeamID 
+end
+
+function getMapCenter(Game)
+	assert(Game)
+	assert(Game.mpaX)
+	assert(Game.mpaY)
+	mapCenter={x= Game.mapX/2, z = Game.mapY/2}
+	return mapCenter
 end
