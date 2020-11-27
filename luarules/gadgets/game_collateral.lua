@@ -24,15 +24,13 @@ if ( gadgetHandler:IsSyncedCode()) then
 	function addInSecond(team, uid,  rtype, damage)
 		if not accumulatedInSecond[team] then 
 			accumulatedInSecond[team] ={ }
-
 		end
 		
 		if not accumulatedInSecond[team][uid] then 
-			accumulatedInSecond[team][uid] ={  rtype = rtype, damage = 0}
+			accumulatedInSecond[team][uid] = {  rtype = rtype, damage = 0}
 		end
 		
-	accumulatedInSecond[team][uid].damage = 		accumulatedInSecond[team][uid].damage  + damage
-	
+	accumulatedInSecond[team][uid].damage = 		accumulatedInSecond[team][uid].damage  + damage	
 	end
 	
 	
@@ -192,57 +190,57 @@ else -- UNSYNCED
 
 			-- Spring.Echo("itterating over all damaged")
 				-- Check if Time has expsired
-			if id == uid and valueT then
-				--if attacker was me or i get a reward for another team attack a gaia unit
-				teamid= Spring.GetUnitTeam(id)
-				-- if teamid == myPlayerTeam then
-					-- Spring.Echo("id == uid")
-					-- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
-						 if currFrame < valueT.frame + DrawForFrames then
-							-- Spring.Echo("Drawing Prizes")
-							 x, y, z = Spring.GetUnitPosition(uid)	
-							 if x then
-								 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
-								 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
-								 if valueT.message < 0 then 
-									gl.Color(1.0,0.0,0.0)
-								 else
-									gl.Color(0.0,1.0,0.0)
-								 end
-								 
-								 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
-							end
-						 elseif currFrame > valueT.frame + DrawForFrames then
-							-- UnitsToNil[uid]=true
+				if id == uid and valueT then
+					--if attacker was me or i get a reward for another team attack a gaia unit
+					teamid= Spring.GetUnitTeam(id)
+					-- if teamid == myPlayerTeam then
+						-- Spring.Echo("id == uid")
+						-- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
+					 if currFrame < valueT.frame + DrawForFrames then
+						-- Spring.Echo("Drawing Prizes")
+						 x, y, z = Spring.GetUnitPosition(uid)	
+						 if x then
+							 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
+							 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+							 if valueT.message < 0 then 
+								gl.Color(1.0,0.0,0.0)
+							 else
+								gl.Color(0.0,1.0,0.0)
+							 end
+							 
+							 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
 						end
-					-- end
+					 elseif currFrame > valueT.frame + DrawForFrames then
+						-- UnitsToNil[uid]=true
+					end
+						-- end
 				end
 			end
 		end
 	
-	for frame ,data in ipairs(Frame_StartFrame_Message) do	
+		for frame ,data in ipairs(Frame_StartFrame_Message) do	
 			-- Spring.Echo("itterating over all units")
 
 			if data.team == Spring.GetMyTeam() then
 
-						 if currFrame < valueT.frame + DrawForFrames then
-	
-							 x, y, z = data.locTable.x,  data.locTable.y,  data.locTable.z
-							 if x then
-								 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
-								 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
-								 if valueT.message < 0 then 
-									gl.Color(1.0,0.0,0.0)
-								 else
-									gl.Color(0.0,1.0,0.0)
-								 end
-								 
-								 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
-							end
-						end
+				 if currFrame < valueT.frame + DrawForFrames then
+
+					 x, y, z = data.locTable.x,  data.locTable.y,  data.locTable.z
+					 if x then
+						 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
+						 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+						 if valueT.message < 0 then 
+							gl.Color(1.0,0.0,0.0)
+						 else
+							gl.Color(0.0,1.0,0.0)
+						 end
+						 
+						 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
+					end
 				end
 			end
 		end
+		
 		
 		for id, _ in pairs(UnitsToNil) do
 			Unit_StartFrame_Message[id] = nil
