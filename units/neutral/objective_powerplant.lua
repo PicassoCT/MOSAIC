@@ -13,7 +13,7 @@ local objective_powerplant = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "placeholderscript.lua",
+	script 					= "objectivePowerPlantScript.lua",
 	objectName       	= "objective_powerplant.dae",
 
 	

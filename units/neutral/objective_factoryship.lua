@@ -13,7 +13,7 @@ local objectiveFactoryShip = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "placeholderscript.lua",
+	script 					= "objectiveFactoryShipScript.lua",
 	objectName       	= "objective_factoryship.dae",
 
 	
