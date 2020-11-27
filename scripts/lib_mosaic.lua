@@ -42,7 +42,7 @@ function getGameConfig()
 
 	 
 	Objectives = {
-		RewardCyle = 90, -- /30 frames = 3 seconds
+		RewardCyle = 30* 30, -- /30 frames = 3 seconds
 		Reward = 5,
 	},
 	 --civilianbehaviour
@@ -222,8 +222,9 @@ end
 function getObjectiveTypes(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
- 			[UnitDefNames["objective_factoryship"].id		]= true,
-			[UnitDefNames["objective_powerplant"].id		]= true,
+ 			[UnitDefNames["objective_factoryship"].id		]= "water",
+			[UnitDefNames["objective_powerplant"].id		]= "land",
+			[UnitDefNames["objective_geoengineering"].id	]= "land",
 		}
 
 end
