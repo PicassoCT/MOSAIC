@@ -42,8 +42,8 @@ function getGameConfig()
 
 	 
 	Objectives = {
-		RewardCyle = 30* 30, -- /30 frames = 3 seconds
-		Reward = 5,
+		RewardCyle = 30* 60, -- /30 frames = 1 seconds
+		Reward = 50,
 	},
 	 --civilianbehaviour
 	 civilianGatheringBehaviourIntervalFrames = 3*60*30,
@@ -177,7 +177,7 @@ _G.GameConfig = getGameConfig()
 --===================================================================================================================
 function getCultureName()
 GameConfig = getGameConfig()
-return GameConfig.instance.culture
+	return GameConfig.instance.culture
 end
 --===================================================================================================================
 function getChemTrailTypes()
@@ -198,7 +198,6 @@ function getChemTrailInfluencedTypes(UnitDefs)
 	typeTable = mergeTables({}, getTypeUnitNameTable(getCultureName(), "truck", UnitDefs))
 	
 	return getTypeTable(UnitDefNames, typeTable)
-
 end
 
 function getScrapheapTypeTable(UnitDefs)
@@ -206,7 +205,6 @@ local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
 			[UnitDefNames["gcscrapheap"].id	]= UnitDefNames["gcscrapheap"].id	
 		}
-
 end
 
 function getPoliceTypes(UnitDefs)
@@ -216,17 +214,16 @@ return {
 			[UnitDefNames["ground_tank_night"].id		]= true,
 			[UnitDefNames["ground_tank_day"].id		]= true
 		}
-
 end
 
 function getObjectiveTypes(UnitDefs)
+assert(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
  			[UnitDefNames["objective_factoryship"].id		]= "water",
 			[UnitDefNames["objective_powerplant"].id		]= "land",
-			[UnitDefNames["objective_geoengineering"].id	]= "land",
+			[UnitDefNames["objective_geoengineering"].id	]= "land"
 		}
-
 end
 
 function getIconTypes(UnitDefs)
@@ -237,8 +234,8 @@ return {
 			[UnitDefNames["interrogationicon"].id		]= true,
 			[UnitDefNames["recruitcivilian"].id		]= true
 		}
-
 end
+
 --Mosaic specific functions 
 --> creates a table from names to check unittypes against
 function getUnitDefNames(UnitDefs)
@@ -1355,10 +1352,8 @@ function dustCloudPostExplosion(unitID, Density, totalTime, SpawnDelay, dirx, di
 	for j = 1, totalTime, SpawnDelay do
 		for i = 1, Density do
 			Spring.SpawnCEG("lightuponsmoke", x, y, z, dirx, diry, dirz)
-		end
-		
-		
-		Sleep(SpawnDelay)
+		end	
+	Sleep(SpawnDelay)
 	end
 	Sleep(550 - totalTime)
 	
@@ -1370,12 +1365,12 @@ end
 
 function getAllTeamsOfType(teamType)
 gaiaTeamID= Spring.GetGaiaTeamID()
-returnT= {}
+local returnT= {}
  process(Spring.GetTeamList(),
 			function(tid)
 				teamID, leader, isDead, isAiTeam, side,  allyTeam,  incomeMultiplier =Spring.GetTeamInfo(tid)
-				if tid ~= gaiaTeamID and false== isDead and side == teamType then
-
+				
+				if tid ~= gaiaTeamID and false== isDead and ( string.find(side, teamType) or side == "") then
 					returnT[tid]= tid
 				end
 			end

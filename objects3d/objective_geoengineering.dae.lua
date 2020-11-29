@@ -1,10 +1,9 @@
 model = {
 	radius = 25.0,
 	height = 40,
-	-- tex1 = "testtex1.dds",
-	-- tex2 = "testtex2.dds",
-	tex1 = "Factory_Ship_Diffuse.dds",
-	tex2 = "Factory_Ship_Normal.dds",
+
+	tex1 = "component_atlas_diffuse.dds",
+	tex2 = "component_atlas_normal.dds",
 
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},

@@ -23,19 +23,24 @@ DeadObjectives = {}
 --SYNCED
 if (gadgetHandler:IsSyncedCode()) then
 GameConfig = getGameConfig()
-
+boolInit=false
  function gadget:Initialize()
 
+	boolInit= true
+ end
+
+function onBoolInit()
 
  	mapCenter = {x=Game.mapSizeX/2, z= Game.mapSizeZ/2}
 
 		oz = math.min(Game.mapSizeX ,Game.mapSizeZ )- math.random(500, 1000)
 		ox= Game.mapSizeX/2
+		rval= math.random(7,20)*randSign()
 		k=1
 	for i=1, 2 do
 		x,z = ox- mapCenter.x, oz - mapCenter.z
 		if x then
-			rx, rz= Rotate(x, z, math.rad(k*180+90))
+			rx, rz= Rotate(x, z, math.rad(k*180+90+rval))
 			k=k+1
 			rx, rz = rx + mapCenter.x, rz + mapCenter.z
 			h= Spring.GetGroundHeight(rx,rz)
@@ -58,45 +63,59 @@ GameConfig = getGameConfig()
 				end		
 				key,element = randDict(filteredObjectives)
 				id = Spring.CreateUnit(element,rx, h, rz, 1, gaiaTeamID )
+				if id then
+					Spring.SetUnitAlwaysVisible(id,true)
+				end
 			end
 		end
 	end
- end
+	boolInit= false
+end
 
  function gadget:UnitCreated(UnitID, whatever)
- 	local type=Spring.GetUnitDefID(UnitID);
-	if objectiveTypes[type] and Spring.GetUnitTeam == gaiaTeamID then
+ 	local type=Spring.GetUnitDefID(UnitID)
+	if objectiveTypes[type]  and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
+
 		x,y,z=Spring.GetUnitPosition(UnitID)
 		Objectives[UnitID] = {x= x, y=y, z=z}
+
 		Spring.SetUnitAlwaysVisible(UnitID,true)
 	end
  end
 
  function gadget:UnitDestroyed(UnitID, whatever)
-	if objectiveTypes[Spring.GetUnitDefID(UnitID)] then
+	if objectiveTypes[type]  and Spring.GetUnitTeam(UnitID)  == gaiaTeamID then
 		DeadObjectives[UnitID]=Objectives[UnitID]
 		Objectives[UnitID]=nil
 	end
  end
 
  function gadget:GameFrame(f)
+ 	if boolInit == true then
+ 		onBoolInit()
+ 	end
+
 	if f % GameConfig.Objectives.RewardCyle == 0 then
 		antagonT= getAllTeamsOfType("antagon")
 		protagonT= getAllTeamsOfType("protagon")
 
+
+		--Spring.Echo("Reward Cycle called")
+
 		for id,types in pairs(Objectives) do
+			Spring.Echo("Objectives to Protagon")
 			if doesUnitExistAlive(id)== true then
 				for tid,_ in pairs(protagonT) do
 				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, id)
+
 				end
 			end
 		end
 
-		for id,types in pairs(DeadObjectives) do
-			--TODO Reward all antagon teams
-				for tid,_ in pairs(antagonT) do
-				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, id)
-				end
+		for id,location in pairs(DeadObjectives) do
+			for tid,_ in pairs(antagonT) do
+				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, location)
+			end
 		end
 	end	
   end--fn

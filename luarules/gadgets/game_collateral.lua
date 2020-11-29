@@ -21,22 +21,35 @@ if ( gadgetHandler:IsSyncedCode()) then
 	GameConfig = getGameConfig()
 	accumulatedInSecond ={}
 	
-	function addInSecond(team, uid,  rtype, damage)
+	function addInSecond(team, uid_loc,  rtype, damage)
 		if not accumulatedInSecond[team] then 
 			accumulatedInSecond[team] ={ }
 		end
 		
-		if not accumulatedInSecond[team][uid] then 
-			accumulatedInSecond[team][uid] = {  rtype = rtype, damage = 0}
+		if type(uid_loc) == "number" then
+			if not accumulatedInSecond[team][uid_loc] then 
+				accumulatedInSecond[team][uid_loc] = {  rtype = rtype, damage = 0}
+			end
+
+			accumulatedInSecond[team][uid_loc].damage = 		accumulatedInSecond[team][uid_loc].damage  + damage	
+		else
+			id = ""..uid_loc.x.."|"..uid_loc.y.."|"..uid_loc.z
+			if not accumulatedInSecond[team][id] then 
+				accumulatedInSecond[team][id] = {  rtype = rtype, damage = 0, location =uid_loc }
+			end
+			accumulatedInSecond[team][id].damage = 		accumulatedInSecond[team][uid_loc].damage  + damage	
 		end
-		
-	accumulatedInSecond[team][uid].damage = 		accumulatedInSecond[team][uid].damage  + damage	
+
 	end
 	
 	
-	local function TransferToTeam(self,  money, reciever, displayunit)
-		self[#self + 1] = {  Money = money, Reciever= reciever, DisplayUnit = displayunit}
+	local function TransferToTeam(self,  money, reciever, displayunit_location)
+		self[#self + 1] = {  
+			Money = money, 
+			Reciever= reciever, 
+			DisplayUnit_Location = displayunit_location}
 	end
+
 	--GG.Bank:TransferToTeam(  money, reciever, displayunit)
 	if not GG.Bank then GG.Bank = {TransferToTeam = TransferToTeam}	 end
 	if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {}	 end
@@ -118,30 +131,31 @@ if ( gadgetHandler:IsSyncedCode()) then
 				for i = 1, #cur, 1 do					
 					assert(cur[i].Reciever, "Reciever team missing ")
 					assert(cur[i].Money, "Money missing ")
-					assert(cur[i].DisplayUnit, "DisplayUnit missing ")
-					assert(cur[i], "DisplayUnit missing ")
-					assert(Spring.GetTeamInfo(cur[i].Reciever), "DisplayUnit missing ")
-					if  cur[i].Money < 0 then
+					--assert(cur[i].DisplayUnit, "DisplayUnit /Location missing ")
+					if cur[i].DisplayUnit_Location then
+	
+					--assert(Spring.GetTeamInfo(cur[i].Reciever), "DisplayUnit missing ")
+						if  cur[i].Money < 0 then
 
-						Spring.UseTeamResource(cur[i].Reciever, "metal", cur[i].Money)
-					else
-						Spring.AddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+							Spring.UseTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+						else
+							Spring.AddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+						end
+					addInSecond(cur[i].Reciever, cur[i].DisplayUnit_Location,  "metal", cur[i].Money)
 					end
-					addInSecond(cur[i].Reciever, cur[i].DisplayUnit,  "metal", cur[i].Money)
 				end
 				
 			end
 		end
 		
 		if frame % 30 == 0 then
-		-- Spring.Echo("GameFrame:: Display Update Collateral")  
 			for team, deedtable in pairs(accumulatedInSecond) do
 				for uid,v in pairs(deedtable) do
 					-- Spring.Echo("Display Update Collateral")  
 					if type(uid)=="number" then
 						SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
 					else
-						SendToUnsynced("DisplayAtLocation", uid, team, v.damage)
+						SendToUnsynced("DisplayAtLocation", v.location, team, v.damage)
 					end
 				end
 				accumulatedInSecond= {}				
@@ -159,14 +173,14 @@ else -- UNSYNCED
 	
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage)
-		-- Spring.Echo("Arriving in Unsynced")
+		 Spring.Echo("Display At Unit")
 		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
 
     end   
 
      local function DisplayAtLocation(callname,  locTable, team, damage)
-		-- Spring.Echo("Arriving in Unsynced")
-		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, locTable = locTable, frame=Spring.GetGameFrame()}
+		 Spring.Echo("Display at Location")
+		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, loc = locTable, frame=Spring.GetGameFrame()}
 
     end
 	
@@ -176,8 +190,6 @@ else -- UNSYNCED
         gadgetHandler:AddSyncAction("DisplaytAtUnit", DisplaytAtUnit)
 				Spring.Echo(GetInfo().name.." Initialization ended")
     end
-	
-	
 
 	function gadget:DrawScreenEffects()
 	currFrame = Spring.GetGameFrame()
@@ -218,17 +230,17 @@ else -- UNSYNCED
 			end
 		end
 	
-		for frame ,data in ipairs(Frame_StartFrame_Message) do	
+		for startframe ,data in ipairs(Frame_StartFrame_Message) do	
 			-- Spring.Echo("itterating over all units")
 
-			if data.team == Spring.GetMyTeam() then
+			if   data.team == Spring.GetMyTeam() then-
 
-				 if currFrame < valueT.frame + DrawForFrames then
+				 if currFrame < startframe + DrawForFrames then
 
 					 x, y, z = data.locTable.x,  data.locTable.y,  data.locTable.z
 					 if x then
-						 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
-						 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+						 frameOffset=  (255 -(startframe + DrawForFrames -currFrame ))*0.25
+						 local sx, sy = Spring.WorldToScreenCoords(data.loc.x, data.loc.y + frameOffset, data.loc.z)
 						 if valueT.message < 0 then 
 							gl.Color(1.0,0.0,0.0)
 						 else

@@ -1,6 +1,6 @@
 local objective_powerplant = Building:New{
 	corpse					= "",
-	maxDamage        	= 1500,
+	maxDamage        	= 15000,
 	mass           	= 500,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,

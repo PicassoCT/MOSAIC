@@ -69,7 +69,7 @@ function createCorpseCUnitGeneric(recentDamage)
         spx, spy, spz = Spring.GetUnitPosition(unitID)
         --teamID=Spring.GetUnitTeam(unitID)
         teamID = Spring.GetGaiaTeamID()
-        --dirx,diry,dirz=Spring.GetUnitDirection(unitID)
+        dirx,diry,dirz=Spring.GetUnitDirection(unitID)
 
 
         heapID= Spring.CreateUnit("VehicleCorpse", spx, spy, spz, 1, teamID)

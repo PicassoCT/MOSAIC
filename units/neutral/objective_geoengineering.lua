@@ -1,19 +1,19 @@
 local objective_geoengineering = Building:New{
 	corpse					= "",
-	maxDamage        	= 1500,
+	maxDamage        	= 15000,
 	mass           	= 500,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
 	explodeAs				= "none",
-	name = "Factory Ship",
-	description = "fully automated offshore factory",
+	name = "Geo Engineering BaseStation",
+	description = "injects sulphates into the stratosphere to avert global warming. Vital for the survival of the species.",
 	buildPic = "house.png",
 	iconType = "house",
 	Builder					= false,
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "placeholderscript.lua",
+	script 					= "objectiveGeoEngineeringScript.lua",
 	objectName       	= "objective_geoengineering.dae",
 
 	

@@ -38,13 +38,11 @@ if ( gadgetHandler:IsSyncedCode()) then
 		-- Spring.Echo("PreDamaged called Attacker is nimrod and assaulted unit is "..UnitDefs[unitDefID].name)
 			if houseTypeTables[unitDefID] then
 				if GG.UnitHeldByHouseMap[attackerID] and GG.UnitHeldByHouseMap[attackerID] == unitID then
-					-- Spring.Echo("House spared")
 					return 0,1.0
 				end
 			end
 		
 			if unitDefID == NimRodDefID and unitID == attackerID then
-			-- Spring.Echo("Nimrod spared")
 				return 0 , 1.0 
 			end
 		end
