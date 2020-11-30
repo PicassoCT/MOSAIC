@@ -21,21 +21,21 @@ if ( gadgetHandler:IsSyncedCode()) then
 	GameConfig = getGameConfig()
 	accumulatedInSecond ={}
 	
-	function addInSecond(team, uid_loc,  rtype, damage)
+	function addInSecond(team, uid_loc,  rtype, damage, colour)
 		if not accumulatedInSecond[team] then 
 			accumulatedInSecond[team] ={ }
 		end
 		
 		if type(uid_loc) == "number" then
 			if not accumulatedInSecond[team][uid_loc] then 
-				accumulatedInSecond[team][uid_loc] = {  rtype = rtype, damage = 0}
+				accumulatedInSecond[team][uid_loc] = {  rtype = rtype, damage = 0, colour = colour or colourWhite}
 			end
 
 			accumulatedInSecond[team][uid_loc].damage = 		accumulatedInSecond[team][uid_loc].damage  + damage	
 		else
 			id = ""..uid_loc.x.."|"..uid_loc.y.."|"..uid_loc.z
 			if not accumulatedInSecond[team][id] then 
-				accumulatedInSecond[team][id] = {  rtype = rtype, damage = 0, location =uid_loc }
+				accumulatedInSecond[team][id] = {  rtype = rtype, damage = 0, location =uid_loc ,colour = colour or colourWhite}
 			end
 			accumulatedInSecond[team][id].damage = 		accumulatedInSecond[team][uid_loc].damage  + damage	
 		end
@@ -119,7 +119,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 		end  
 	end
 	
-	
+	colourWhite={r=255,g=255,b=255}
 	
 	function gadget:GameFrame(frame)
 	
@@ -141,7 +141,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 						else
 							Spring.AddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
 						end
-					addInSecond(cur[i].Reciever, cur[i].DisplayUnit_Location,  "metal", cur[i].Money)
+					addInSecond(cur[i].Reciever, cur[i].DisplayUnit_Location,  "metal", cur[i].Money, colourWhite)
 					end
 				end
 				
@@ -153,9 +153,9 @@ if ( gadgetHandler:IsSyncedCode()) then
 				for uid,v in pairs(deedtable) do
 					-- Spring.Echo("Display Update Collateral")  
 					if type(uid)=="number" then
-						SendToUnsynced("DisplaytAtUnit", uid, team, v.damage)
+						SendToUnsynced("DisplaytAtUnit", uid, team, v.damage,v.colour.r,v.colour.g,v.colour.b)
 					else
-						SendToUnsynced("DisplayAtLocation", v.location, team, v.damage)
+						SendToUnsynced("DisplayAtLocation", v.location, team, v.damage, v.colour.r,v.colour.g,v.colour.b)
 					end
 				end
 				accumulatedInSecond= {}				
@@ -172,15 +172,15 @@ else -- UNSYNCED
     gaiaTeamID= Spring.GetGaiaTeamID()
 	
 	-- Display Lost /Gained Money depending on team
-    local function DisplaytAtUnit(callname,  unitID, team, damage)
+    local function DisplaytAtUnit(callname,  unitID, team, damage, r,g,b)
 		 Spring.Echo("Display At Unit")
-		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame()}
+		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame(), col= {r=r,g=g,b=b}}
 
     end   
 
-     local function DisplayAtLocation(callname,  locTable, team, damage)
+     local function DisplayAtLocation(callname,  locTable, team, damage, r,g,b)
 		 Spring.Echo("Display at Location")
-		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, loc = locTable, frame=Spring.GetGameFrame()}
+		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, loc = locTable, frame=Spring.GetGameFrame(), col = {r=r,g=g,b=b}}
 
     end
 	
@@ -233,7 +233,7 @@ else -- UNSYNCED
 		for startframe ,data in ipairs(Frame_StartFrame_Message) do	
 			-- Spring.Echo("itterating over all units")
 
-			if   data.team == Spring.GetMyTeam() then-
+			if   data.team == Spring.GetMyTeam() then
 
 				 if currFrame < startframe + DrawForFrames then
 
@@ -241,11 +241,9 @@ else -- UNSYNCED
 					 if x then
 						 frameOffset=  (255 -(startframe + DrawForFrames -currFrame ))*0.25
 						 local sx, sy = Spring.WorldToScreenCoords(data.loc.x, data.loc.y + frameOffset, data.loc.z)
-						 if valueT.message < 0 then 
-							gl.Color(1.0,0.0,0.0)
-						 else
-							gl.Color(0.0,1.0,0.0)
-						 end
+			
+							gl.Color(data.col.r,data.col.g,data.col.b)
+						 
 						 
 						 gl.Text("$ "..valueT.message, sx, sy, 16, "od")
 					end

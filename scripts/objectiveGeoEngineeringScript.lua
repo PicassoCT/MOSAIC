@@ -20,8 +20,10 @@ function turnWindSlow()
 while true do
 	dx, dy, dz = Spring.GetWind()
     headRad = math.atan2(dx, dz)
-    Turn(tether, y_axis, headRad  +math.pi, 0.001)
-    Turn(blimp, y_axis, -(headRad  +math.pi), 0.001)
+    Turn(tether, y_axis, headRad  +math.pi, 0.01)
+    Turn(blimp, y_axis, -(headRad  +math.pi), 0.01)
+    Turn(blimp,x_axis, math.rad(-2*randSign()),0.01)
+    Turn(blimp,z_axis, math.rad(-2*randSign()),0.01)
     WaitForTurns(tether,blimp)
 Sleep(100)
 end

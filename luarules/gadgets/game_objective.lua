@@ -90,6 +90,9 @@ end
 	end
  end
 
+colourRed={r=255,g=0,b=0}
+colourBlue={r=0,g=0,b=255}
+
  function gadget:GameFrame(f)
  	if boolInit == true then
  		onBoolInit()
@@ -106,7 +109,7 @@ end
 			Spring.Echo("Objectives to Protagon")
 			if doesUnitExistAlive(id)== true then
 				for tid,_ in pairs(protagonT) do
-				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, id)
+				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, id, colourBlue)
 
 				end
 			end
@@ -114,7 +117,7 @@ end
 
 		for id,location in pairs(DeadObjectives) do
 			for tid,_ in pairs(antagonT) do
-				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, location)
+				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, location, colourRed)
 			end
 		end
 	end	

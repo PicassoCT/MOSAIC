@@ -53,7 +53,8 @@ antagon_talk = {
     "we, we are your own shadow, thats what you fight",
     "you would never betray them, but they already betrayed you",
     "You shouldnt have fucked her-",
-    "And though i walk in the valley of death"
+    "And though i walk in the valley of death",
+    "Fighting your fellow men, for mindcontrolling machines and stranger things.."
 }
 
 
@@ -257,7 +258,7 @@ function placeWallAndDoors()
 	xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinZ()
   
 	nrDoors = math.random(0,#Door)
-	nrWalls = math.random(3,#Wall)
+	nrWalls = math.random(2,5)
 	if nrWalls > 0 then
 		for i=1,nrWalls do
 			rx, rz = math.random(xMax/-2, xMax/2), math.random(zMax/-2, zMax/2)
