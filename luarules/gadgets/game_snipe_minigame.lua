@@ -438,9 +438,9 @@ if (gadgetHandler:IsSyncedCode()) then
                 function(id)
                     if distanceUnitToUnit(objective, id) < 5 then
                         if spGetUnitTeam(id) == roundRunning.Aggressor.team then
-                            roundRunning.Aggressor.Points = roundRunning.Aggressor.Points + 1
+                            roundRunning.Aggressor.Points = roundRunning.Aggressor.Points + 2
                         else
-                            roundRunning.Defender.Points = roundRunning.Defender.Points + 1
+                            roundRunning.Defender.Points = roundRunning.Defender.Points + 2
                         end
                     end
                 end
