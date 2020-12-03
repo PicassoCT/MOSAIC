@@ -1306,6 +1306,7 @@ InfluenceStateMachines = {
 								gf =Spring.GetGameFrame()
 								if  gf % 27 == 0 then
 									for i=1,3 do
+										val = math.random(0,4)
 										spinT(Spring.GetUnitPieceMap(unitID), i, val*-1, val, 0.125)
 									end											
 								end
