@@ -692,3 +692,20 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range, Attac
     showT(piecesTable)
     return true
 end
+
+--> shared Computation
+function sharedComputationResult( key, func, data, frameInterval, GameConfig)
+    if not GG.SharedComputationResult then GG.SharedComputationResult=  {} end
+    if not GG.SharedComputationResult[key] then GG.SharedComputationResult[key] =  {frame = Spring.GetGameFrame(), result = func(data, GameConfig)} end
+
+    currentFrame = Spring.GetGameFrame()
+
+    --recomputate sharedResults
+    if GG.SharedComputationResult[key].frame + frameInterval < currentFrame then
+        GG.SharedComputationResult[key].result = func(data, GameConfig)
+        GG.SharedComputationResult[key].frame = currentFrame
+    end
+
+    return GG.SharedComputationResult[key].result
+
+end

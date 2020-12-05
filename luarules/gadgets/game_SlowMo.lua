@@ -15,16 +15,53 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_UnitScript.lua")
 	side= "antagon"
 	if math.random(0,1)==1 then side = "protagon" end
+
+	boolPreviouslyActive = false
+	endFrame = 0
+	startFrame = -math.huge
+	
+
+
 	
 	
 	function gadget:Initialize()
-
+		if not GG.HiveMind then GG.HiveMind = {} end
 		SendToUnsynced("Initialize")
 	end
 	
+	function gadget:GameFrame(n)
+		if frame== 1 then
+			SendToUnsynced("ActivateSlowMoShadder", false)
+		end
+
+		boolActive, activeHiveMinds = areHiveMindsActive()
+		if boolActive == true then
+			
+			if boolPreviouslyActive == false then
+				SendToUnsynced("ActivateSlowMoShadder", true)
+				boolPreviouslyActive = true
+				startFrame = n
+			end
+			
+			activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
+			deactivateCursorForNormalTeams(activeHiveMinds)
+			
+			endFrame = (n + math.ceil(MaxTimeInMs/1000) * 30)
+		elseif boolActive == false and endFrame == n then
+			SendToUnsynced("ActivateSlowMoShadder", false)
+			restoreCursorNonActiveTeams(activeHiveMinds)
+			boolPreviouslyActive = false
+		end
+
+		SendToUnsynced("frameCall", n)
+		handleSlowMoPhases(n, boolActive, startFrame, endFrame)
+	end	
+
+
 	--check for active HiveMinds and AI Nodes
 	function areHiveMindsActive()
 		if not GG.HiveMind then GG.HiveMind = {}; return false, {} end
+
 		tableTeamsActive = {}
 		boolActive = false
 		for team, uTab in pairs(GG.HiveMind) do
@@ -72,10 +109,12 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	currentSpeed= 1.0
 	
-	function slowMotion(frame, boolActive, startFrame, endFrame)
+	function handleSlowMoPhases(frame, boolActive, startFrame, endFrame)
 	GG.GameSpeed= currentSpeed
+
 	if boolActivate== false or frame > endFrame then
 			if frame % 10 == 0 and currentSpeed < oldGameSpeed - 0.1 then
+				Spring.Echo("speedup to " .. currentSpeed)
 				Spring.SendCommands("speedup ")
 			end
 	end
@@ -137,34 +176,7 @@ end
 		end)
 	end
 	
-	boolPreviouslyActive = false
-	endFrame = 0
-	startFrame = 0
-	
-	function gadget:GameFrame(n)
 
-		boolActive, activeHiveMinds = areHiveMindsActive()
-		if boolActive == true then
-			
-			if boolPreviouslyActive == false then
-				SendToUnsynced("ActivateSlowMoShadder", true)
-				boolPreviouslyActive = true
-				startFrame = n
-			end
-			
-			activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
-			deactivateCursorForNormalTeams(activeHiveMinds)
-			
-			endFrame = (n + math.ceil(MaxTimeInMs/1000) * 30)
-		elseif boolActive == false and endFrame == n then
-			SendToUnsynced("ActivateSlowMoShadder", false)
-			restoreCursorNonActiveTeams(activeHiveMinds)
-			boolPreviouslyActive = false
-		end
-
-		SendToUnsynced("frameCall", n)
-		slowMotion(n, boolActive, startFrame, endFrame)
-	end	
 	
 	 function gadget:RecvLuaMsg(msg, playerID)
 	 
@@ -195,10 +207,6 @@ else --Unsynced
 	
 	local function frameCall(_,n)
 
-		if boolLameDuck == true then
-			--Spring.SetActiveCommand(Spring.GetCmdDescIndex(CMD.WAIT), 1, left, right, alt, ctrl, meta, shift)
-		end
-		
 		if n % 5 == 0 then
 		currentGameSpeed = Spring.GetGameSpeed() or 1.0
 		Spring.SendLuaRulesMsg("CurrentGameSpeed:"..currentGameSpeed)

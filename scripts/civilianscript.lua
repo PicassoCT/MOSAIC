@@ -218,6 +218,23 @@ function bodyBuild()
 	end
 end
 
+function hideAllProps()
+
+		Hide(MilitiaMask)
+		Hide(ak47)	
+		Hide(molotow)	
+		bodyConfig.boolLoaded = false
+ 		bodyConfig.boolWounded = false 
+
+ 		hideT(TablesOfPiecesGroups["cellphone"])
+		Hide(cofee)
+		Hide(cigarett)
+		de(cellphone)	
+		Hide(ShoppingBag)	
+		Hide(SittingBaby)	
+		Hide(trolley)		
+		Hide(Handbag)
+end
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
@@ -633,8 +650,7 @@ normalBehavourStateMachine = {
 											bodyConfig.boolProtest = false
 											bodyBuild()
 										end
-										
-
+								
 									end,
 }
 
@@ -648,6 +664,7 @@ newState= startState
 if boolInfluenced == true then
 	influencedStateMachine =getInfluencedStateMachine(UnitID, UnitDefs, startState)
 end
+hideAllProps(bodyConfig)
 bodyConfig.boolInfluenced = boolInfluenced
 Signal(SIG_BEHAVIOUR_STATE_MACHINE)
 SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
@@ -954,9 +971,14 @@ LowerAnimationStateFunctions ={
 						return eAnimState.aiming
 					end,					
 [eAnimState.walking] = function()
-						if bodyConfig.boolInfluenced  then
-							PlayAnimation("LOWBODY_WALKING_ZOMBIE")
-							return eAnimState.walking
+						if bodyConfig.boolInfluenced then
+							if  maRa() == true  then
+								PlayAnimation("LOWBODY_WALKING_ZOMBIE")
+								return eAnimState.walking
+							else
+								PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],conditionalFilterOutUpperBodyTable()))
+								return eAnimState.walking
+							end
 						end	
 									
 						if bodyConfig.boolArmed == true then	

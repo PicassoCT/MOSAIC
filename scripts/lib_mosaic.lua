@@ -1247,9 +1247,11 @@ InfluenceStateMachines = {
 									end
 
 								showID = createUnitAtUnit(Spring.GetGaiaTeamID(), "civilian_orgy_pair", unitID, 0, 0, 0)
+								myDefID = Spring.GetUnitDefID(showID)
 								process(getAllNearUnit(showID,100),
 										function(id)	--get Bystanders
-											if CivilianTypes[Spring.GetUnitDefID(id)] then
+											defID = Spring.GetUnitDefID(id)
+											if CivilianTypes[defID] then
 												x,y,z = Spring.GetUnitPosition(al)
 												Command(id, "go", { x= x+math.random(-10,10), y= y, z = z+math.random(-10,10)}, {})	
 											end
@@ -1304,28 +1306,22 @@ InfluenceStateMachines = {
 							end,
 	[AerosolTypes.tollwutox] = function (lastState, currentState, unitID)
 								gf =Spring.GetGameFrame()
-								if  gf % 27 == 0 then
+								--random shivers
+								if  gf % 30 == 0 and maRa() then
 									for i=1,3 do
-										val = math.random(0,4)
-										spinT(Spring.GetUnitPieceMap(unitID), i, val*-1, val, 0.125)
+										val = (math.random(-100,100)/100) * 12
+										turnT(Spring.GetUnitPieceMap(unitID), i, math.rad(val) , 3.125)
 									end											
 								end
 								
-								if  gf % 36 == 0 then
-									for i=1,3 do
-										stopSpinT(Spring.GetUnitPieceMap(unitID),i)
-									end										
-								end
-								
-	
 								ad= Spring.GetUnitNearestAlly(unitID)
 								ed= Spring.GetUnitNearestEnemy(unitID)
 								Spring.SetUnitNeutral(unitID, false)
-								if distanceUnitToUnit(unitID,ad) < distanceUnitToUnit(unitID,ed) then								
-									Command(unitID, "attack",  ad, {})
-								else
-									Command(unitID, "attack",  ed, {})
-								end		
+									if ad and ed and  distanceUnitToUnit(unitID,ad) < distanceUnitToUnit(unitID,ed) then								
+										Command(unitID, "attack",  ad, {})
+									else
+										Command(unitID, "attack",  ed, {})
+									end		
 		
 								return currentState							
 							 end,

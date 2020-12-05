@@ -38,16 +38,14 @@ if (gadgetHandler:IsSyncedCode()) then
 
     GameConfig = getGameConfig()
     function alwaysShowUnit(id, observerTeam)
-        spSetUnitAlwaysVisible(id, true)
+        --transferUnitTeam(id, gaiaTeamID)
         showUnit(id)
-		if observerTeam then
-		observerID= createUnitAtUnit(observerTeam, "observer", id)
-		env = Spring.UnitScript.GetScriptEnv(observerID)
-			if env  then
-				spCallAsUnit(observerID, env.externAttach, id)
-			end
-		end
+        spSetUnitAlwaysVisible(id, true)
+     
+
     end
+
+
 
     function alwaysHideUnit(id)
         spSetUnitAlwaysVisible(id, false)
@@ -112,7 +110,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
 
-        Spring.Echo("Finding opossing team defaults to gaia")
+        --Spring.Echo("Finding opossing team defaults to gaia")
         return gaiaTeamID
     end
 
@@ -123,7 +121,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if oldRound and oldRound.Defender and oldRound.Defender.team then
             defenderTeamID = getDefenderTeam(raidIconID, attackerteam, oldRound.Defender.team)
         else
-            Spring.Echo("Reusing old defenderTeamID")
+            --Spring.Echo("Reusing old defenderTeamID")
             defenderTeamID = getDefenderTeam(raidIconID, attackerteam)
         end
 
@@ -194,7 +192,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 allRunningRaidRounds[raidIconID][teamSelected].Points - 1
             registerPlaceUnit(raidIconID, unitID, allRunningRaidRounds[raidIconID]) --reach Into Icon and update Points
         else
-            Spring.Echo("Points that lead to unit Killed:" .. allRunningRaidRounds[raidIconID][teamSelected].Points)
+            --Spring.Echo("Points that lead to unit Killed:" .. allRunningRaidRounds[raidIconID][teamSelected].Points)
             GG.UnitsToKill:PushKillUnit(unitID)
         end
     end
@@ -210,7 +208,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if env and env.getUnitsInTriangle then
             return spCallAsUnit(id, env.getUnitsInTriangle)
         else
-            Spring.Echo("Unit " .. id .. " is not a snipeIcon")
+            --Spring.Echo("Unit " .. id .. " is not a snipeIcon")
         end
         return {}
     end
@@ -447,6 +445,9 @@ if (gadgetHandler:IsSyncedCode()) then
             )
         end
 
+    echo("Defender Points:" .. roundRunning.Defender.Points .. " Agressor Points:" .. roundRunning.Aggressor.Points)
+
+
         if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then
             --defenders dead
             if roundRunning.Defender.Points <= 0 and roundRunning.Aggressor.Points > 0 then
@@ -469,9 +470,9 @@ if (gadgetHandler:IsSyncedCode()) then
                 return nil, roundRunning, raidStates.Aborted
             end
         end
-        echo("Defender Points:" .. roundRunning.Defender.Points .. " Agressor Points:" .. roundRunning.Aggressor.Points)
-        echo("7  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
-        return roundRunning.Defender.team, roundRunning, raidStates.DefenderWins
+    
+      echo("7  nil , roundRunning, raidStates.DefenderWins")
+        return nil, roundRunning, raidStates.OnGoing
     end
 
     function findEliminatedUnits(OriginalGraph, finalGraph)
@@ -538,29 +539,33 @@ if (gadgetHandler:IsSyncedCode()) then
         return false
     end
 
+
+    function doAIPlacement(x,y,z, Team, roundRunning, boolDefender)
+            -- for i = 1,  1 do
+            tx, ty, tz = x + math.random(0, 50) * randSign(), y, z + math.random(0, 50) * randSign()
+            randDirs = math.random(1, 4)
+            lastSniperIconID = spCreateUnit("snipeicon", tx, ty, tz, randDirs, Team)
+            registersniperIconAttributes("snipeicon", Team, lastSniperIconID, raidIconID)
+        if boolDefender == true then
+            roundRunning.Defender.Points = roundRunning.Defender.Points - 1
+        else
+            roundRunning.Aggressor.Points = roundRunning.Aggressor.Points - 1
+        end
+
+        return roundRunning
+    end
+
     function checkAIPlace(roundRunning, raidIconID)
         local aggTeam = roundRunning.Aggressor.team
         local defTeam = roundRunning.Defender.team
         x, y, z = spGetUnitPosition(raidIconID)
 
         if aiPlacementNeededForTeam(roundRunning.Aggressor, aggTeam) == true then
-            -- for i = 1, math.random(1,roundRunning.Aggressor.Points) do
-            tx, ty, tz = x + math.random(0, 50) * randSign(), y, z + math.random(0, 50) * randSign()
-            randDirs = math.random(1, 4)
-            lastSniperIconID = spCreateUnit("snipeicon", tx, ty, tz, randDirs, aggTeam)
-            registersniperIconAttributes("snipeicon", aggTeam, lastSniperIconID, raidIconID)
-            roundRunning.Aggressor.Points = roundRunning.Aggressor.Points - 1
-        -- end
+            roundRunning=    doAIPlacement(x,y,z, aggTeam, roundRunning, false)
         end
 
         if aiPlacementNeededForTeam(roundRunning.Defender, defTeam) == true then
-            -- for i = 1,  1 do
-            tx, ty, tz = x + math.random(0, 50) * randSign(), y, z + math.random(0, 50) * randSign()
-            randDirs = math.random(1, 4)
-            lastSniperIconID = spCreateUnit("snipeicon", tx, ty, tz, randDirs, defTeam)
-            registersniperIconAttributes("snipeicon", defTeam, lastSniperIconID, raidIconID)
-            roundRunning.Defender.Points = roundRunning.Defender.Points - 1
-        -- end
+            roundRunning=    doAIPlacement(x,y,z, defTeam, roundRunning, true)
         end
         return roundRunning
     end
@@ -579,12 +584,21 @@ if (gadgetHandler:IsSyncedCode()) then
                 if
                     (roundRunning and roundRunning.boolAIChecked == true and
                         raidPercentage >= 100 + postRoundTimeInSeconds) or
-                        (roundRunning.Defender.Points == 0 and roundRunning.Aggressor.Points == 0)
+                        (roundRunning.Defender.Points <= 0 and roundRunning.Aggressor.Points <= 0)
                  then
                     --find out who died, who survived, who collected objectives and if there is a new round
                     winningTeam, roundRunning, state = evaluateEndedRound(raidIconId, roundRunning)
+                
+                     if state == raidStates.OnGoing then
+                        --Spring.Echo("Raid continues in new Round")
+                        killAllPlacedObjects(roundRunning)
+                        newRound(raidIconId, roundRunning.Aggressor.team, false, roundRunning)
+                        roundRunning = nil
+                    end
+
 
                     if state == raidStates.Aborted then
+                        --Spring.Echo("Raid was aborted")
                         killAllPlacedObjects(roundRunning)
                         Spring.DestroyUnit(raidIconId, false, false)
                         roundRunning = nil
@@ -592,7 +606,8 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
 
                     --new round
-                    if roundRunning and (state == raidStates.DefenderWins) and roundRunning.Defender.Points > 0 then
+                    if roundRunning and (state == raidStates.DefenderWins) and roundRunning.Defender.Points <= 0 then
+                        --Spring.Echo("Defender won the round")
                         killAllPlacedObjects(roundRunning)
                         newRound(raidIconId, roundRunning.Aggressor.team, false, roundRunning)
                         roundRunning = nil
@@ -600,6 +615,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     --rounds end
                     if roundRunning and state == raidStates.AggressorWins then
+                        --Spring.Echo("Agressor won the round")
                         killAllPlacedObjects(roundRunning)
                         Spring.DestroyUnit(raidIconId, false, false)
                         roundRunning = nil
@@ -608,7 +624,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     boolSkip = true
                 end
 
-                if roundRunning and boolSkip == false and roundRunning.boolAIChecked == false and raidPercentage >= 100 then
+                if roundRunning and boolSkip == false and roundRunning.boolAIChecked == false and raidPercentage >= 90 then
                     -- check if a side was AI, if it was AI - do a random placement
                     allRunningRaidRounds[raidIconId] = checkAIPlace(roundRunning, raidIconId)
                     roundRunning.boolAIChecked = true
@@ -629,7 +645,9 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    function killAllPlacedObjects(roundRunning)
+    function killAllPlacedObjects(roundRunning, delayMs)
+        if not delayMs then delayMs = 0 end
+
         process(
             roundRunning.Defender.PlacedFigures,
             function(id)

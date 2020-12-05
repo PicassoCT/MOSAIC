@@ -922,11 +922,11 @@ end
 
 
 function copyUnit(id, teamID)
-ox,oy,oz= ox or 0,oy or 0,oz or 0
-copyID =  createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id,ox,oy,oz)
-transferUnitStatusToUnit(id, copyID)
-transferOrders(id, copyID)
-return copyID
+	ox,oy,oz= ox or 0,oy or 0,oz or 0
+	copyID =  createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id,ox,oy,oz)
+	transferUnitStatusToUnit(id, copyID)
+	transferOrders(id, copyID)
+	return copyID
 end
 
 function transferUnitTeam(id, targetTeam)
@@ -6040,23 +6040,7 @@ end
 
 
 --New Unsorted code
---> shared Computation
 
-function sharedComputationResult( key, func, data, frameInterval, GameConfig)
-if not GG.SharedComputationResult then GG.SharedComputationResult=  {} end
-if not GG.SharedComputationResult[key] then GG.SharedComputationResult[key] =  {frame = Spring.GetGameFrame(), result = func(data, GameConfig)} end
-
-currentFrame = Spring.GetGameFrame()
-
---recomputate sharedResults
-if GG.SharedComputationResult[key].frame + frameInterval < currentFrame then
-	GG.SharedComputationResult[key].result = func(data, GameConfig)
-	GG.SharedComputationResult[key].frame = currentFrame
-end
-
-return GG.SharedComputationResult[key].result
-
-end
 
 function getBelowPow2( value)
 	n=2
