@@ -590,7 +590,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     winningTeam, roundRunning, state = evaluateEndedRound(raidIconId, roundRunning)
                 
                      if state == raidStates.OnGoing then
-                        --Spring.Echo("Raid continues in new Round")
+                        --Spring.Echo("Raid continues in new Round") 
                         killAllPlacedObjects(roundRunning)
                         newRound(raidIconId, roundRunning.Aggressor.team, false, roundRunning)
                         roundRunning = nil
