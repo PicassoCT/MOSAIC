@@ -9,57 +9,45 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
--- center = piece "center"
--- left = piece "left"
--- right = piece "right"
--- aimpiece = piece "aimpiece"
 if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function script.Create()
-    -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
-    	resetAll(unitID)
-    	WTurn(TablesOfPiecesGroups["Solar"][4],x_axis,math.rad(-181),1)
-    	WTurn(TablesOfPiecesGroups["Solar"][4],x_axis,math.rad(-120),1)
-    	WTurn(TablesOfPiecesGroups["Solar"][3],x_axis,math.rad(181),1)
-    	WTurn(TablesOfPiecesGroups["Solar"][3],x_axis,math.rad(145),1)
-    	WTurn(TablesOfPiecesGroups["Solar"][2],z_axis,math.rad(-189),1)
-    	WTurn(TablesOfPiecesGroups["Solar"][2],z_axis,math.rad(-145),1)
-
-    	WTurn(TablesOfPiecesGroups["Solar"][1],z_axis,math.rad(181),1)
-    	WTurn(TablesOfPiecesGroups["Solar"][1],z_axis,math.rad(270),1)
-  
+    
+    resetAll(unitID)
+    crook = math.random(2, 5)
+    crookVal = math.random(1, 4) * 90
+    
+    val = math.random(-360, 360)
+    Turn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(val), 0)
+    
+    val = math.random(-360, 360)
+    Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
+    
+    for i = 1, #TablesOfPiecesGroups["HyperLoop"] do
+        upDownVal = -2 * randSign()
+        Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(upDownVal), 0)
+    end
+    
+    if crook then
+        index = crook
+        index2 = crook + 6
+        Turn(TablesOfPiecesGroups["HyperLoop"][index], y_axis, math.rad(crookVal), 0)
+        Turn(TablesOfPiecesGroups["HyperLoop"][index2], y_axis, math.rad(crookVal), 0)
+    end
+    
+    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-181), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-120), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(181), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(145), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-189), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-145), 1)
+    
+    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(181), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(230), 1)
 end
-
 
 function script.Killed(recentDamage, _)
-
-    --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
-
-function script.StartMoving()
-end
-
-function script.StopMoving()
-end
-
-function script.Activate()
-
-    return 1
-end
-
-function script.Deactivate()
-
-    return 0
-end
-
--- function script.QueryBuildInfo()
-    -- return center
--- end
-
--- Spring.SetUnitNanoPieces(unitID, { center })
-
