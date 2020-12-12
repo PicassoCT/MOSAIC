@@ -29,7 +29,7 @@ local objective_powerplant = Building:New{
 	                    
 
 	customparams = {	
-		normaltex = "unittextures/house_arab_normal.dds",
+		normaltex = "unittextures/component_atlas_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },
