@@ -223,7 +223,8 @@ return {
  			[UnitDefNames["objective_factoryship"].id		]= "water",
 			[UnitDefNames["objective_powerplant"].id		]= "land",
 			[UnitDefNames["objective_geoengineering"].id	]= "land",
-			[UnitDefNames["objective_westhemhq"].id	]= "land"
+			[UnitDefNames["objective_westhemhq"].id	]= "land",
+			[UnitDefNames["objective_artificalglacier"].id	]= "land"
 		}
 end
 
