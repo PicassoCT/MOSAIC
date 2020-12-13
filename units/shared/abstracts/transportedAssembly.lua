@@ -10,15 +10,15 @@ local unitDef = {
     buildPic = "truck_assembly.png",
     iconType = "truck_assembly",
     --cost
-    buildCostMetal = 50,
-    buildCostEnergy = 200,
+    buildCostMetal = 2500,
+    buildCostEnergy = 1250,
     buildTime = 60,
     CanReclaim = false,
     buildDistance = 200,
     onoffable = true,
     acitvateonstart = false,
     --Health
-    maxDamage = 1200,
+    maxDamage = 2500,
     idleAutoHeal = 3,
     --Movement
     MovementClass = "Default2x2",

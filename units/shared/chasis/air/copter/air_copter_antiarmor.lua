@@ -13,7 +13,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	--floater = true,
 	--cost
 	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostEnergy = 150,
 	buildTime = 1*45,
 	--Health
 	maxDamage = 50,

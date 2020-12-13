@@ -8,8 +8,8 @@ local groundturretspyder =  Turret:New{
 	iconType = "ground_turret_spyder",
 	--floater = true,
 	--cost
-	buildCostEnergy = 50,
-	buildCostMetal = 0,
+	buildCostEnergy = 500,
+	buildCostMetal = 250,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,

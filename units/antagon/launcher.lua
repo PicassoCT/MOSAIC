@@ -1,18 +1,20 @@
 local Launcher = Building:New{
 	corpse				= "",
-	maxDamage           = 500,
+	maxDamage           = 2000,
 	mass                = 500,
-	buildCostEnergy     = 5,
-	buildCostMetal      = 5,
+	buildCostEnergy     = 5000,
+	buildCostMetal      = 5000,
 	explodeAs			= "none",
 
-	buildtime			 = 2*60,
+
+
+
+	buildtime			 = 60,
 	buildPic = "launcher.png",
 	iconType = "launcher",
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
-	workerTime = 0.005,
 	YardMap ="oooo oooo oooo oooo ",
 	MaxSlope 					= 50,
 

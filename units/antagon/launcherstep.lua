@@ -3,9 +3,10 @@ local BuildLauncherStep = Abstract:New{
 	description = " build xth step out of n",
 	maxDamage         	  = 500,
 	mass                = 500,
-	buildCostEnergy    	  = 0,
-	buildtime			 = 3* 60,
+
+	buildtime			 = 3*60,
 	buildCostMetal     	  = 5000,
+	buildCostEnergy     	  = 5000,
 	explodeAs				  = "none",
 	script 				= "placeholder.lua",
 	objectName        	= "launcherstep.s3o",

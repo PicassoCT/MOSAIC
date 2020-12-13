@@ -1,26 +1,26 @@
 local Propagandaserver = Building:New{
 	corpse				= "",
-	maxDamage           = 500,
+	maxDamage           = 1000,
 	mass                = 500,
 	name = "Propagandaserver",
-	description = "earns your team money by spreading propaganda",
+	description = "earns your team money/material by spreading propaganda",
 	buildPic = "propagandaserver.png",
 	buildTime = 25,
-	buildCostMetal      = 150,
-	buildCostEnergy     = 50,
-	EnergyStorage = 0,
+	buildCostMetal      = 1000,
+	buildCostEnergy     = 1000,
+	EnergyStorage = 1000,
 	EnergyUse = 0,
-	MetalStorage = 5000,
+	MetalStorage = 2500,
 
-	EnergyMake = 2.5, 
+	EnergyMake = 5, 
 	MakesMetal = 5, 
 	MetalMake = 0,	 
 	
 	acceleration = 0,
 	
-	explodeAs			= "none",
+	explodeAs = "none",
 	buildingMask = 8,
-	MaxSlope 					= 50,
+	MaxSlope = 50,
 
 	footprintX = 1,
 	footprintZ = 1,
@@ -42,13 +42,9 @@ local Propagandaserver = Building:New{
 	decloakOnFire = true,
 	cloakTimeout = 5,
 	category = [[GROUND BUILDING RAIDABLE]],
-
-
 }
 
 
 return lowerkeys({
-	--Temp
-	["propagandaserver"] = Propagandaserver:New(),
-	
+	["propagandaserver"] = Propagandaserver:New()	
 })

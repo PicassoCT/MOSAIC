@@ -2,8 +2,8 @@ local BlackSite = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
-	buildCostEnergy     = 5,
-	buildCostMetal      = 5,
+	buildCostEnergy     = 5000,
+	buildCostMetal      = 2500,
 	explodeAs			= "none",
 
 	buildtime			 = 2*60,

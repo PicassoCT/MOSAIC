@@ -4,8 +4,8 @@ local satteliteGodrod = Satellite:New{
 
 	maxDamage          		= 500,
 	mass              		= 500,
-	buildCostEnergy    		= 5,
-	buildCostMetal      	= 5,
+	buildCostEnergy    		= 1500,
+	buildCostMetal      	= 5000,
 	explodeAs				= "none",
 	maxVelocity				= 7.15, --14.3, --86kph/20
 	acceleration   		 	= 1.7,

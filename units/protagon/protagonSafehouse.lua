@@ -1,6 +1,6 @@
 local ProtagonSafeHouse =    Building:New{
   corpse =       "",
-  maxDamage =              500,
+  maxDamage =              1000,
   mass =                   500,
 
   buildTime =    15,
@@ -21,8 +21,8 @@ local ProtagonSafeHouse =    Building:New{
   footprintX =    4,
   footprintZ =    4,
 
-  buildCostEnergy =        0,
-  buildCostMetal =         500,
+  buildCostEnergy =        2000,
+  buildCostMetal =         2000,
 
   EnergyStorage =    0,
   EnergyUse =    0,

@@ -11,8 +11,8 @@ local AIRC_COPTER_MG = VTOL:New{
 	iconType = "air_gun",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostMetal = 500,
+	buildCostEnergy = 250,
 	buildTime = 2 * 60,
 	--Health
 	maxDamage = 50,

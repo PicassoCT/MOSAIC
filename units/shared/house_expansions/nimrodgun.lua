@@ -9,8 +9,8 @@ local NimRodGun = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
-	buildCostEnergy     = 5,
-	buildCostMetal      = 5,
+	buildCostEnergy     = 3500,
+	buildCostMetal      = 1500,
 	explodeAs			= "none",
 	buildTime =    60,
 	

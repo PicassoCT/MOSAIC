@@ -5,8 +5,8 @@ local OperativeAsset = Human:New{
 	corpse = "bodybag",
 	maxDamage         	  = 1500,
 	mass                = 500,
-	buildCostEnergy    	  = 5,
-	buildCostMetal     	  = 5,
+	buildCostEnergy    	  = 2000,
+	buildCostMetal     	  = 2000,
 	MetalStorage = 1500,
 
 	explodeAs				  = "none",

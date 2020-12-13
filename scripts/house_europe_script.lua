@@ -10,7 +10,8 @@ end
 
 TablesOfPiecesGroups = {}
 factor = 40
-local cubeDim = {length = factor * 14.4 * 1.45, heigth = factor * 13.65 * 0.75 * 1.45, roofHeigth = 600}
+heightoffset = 90
+local cubeDim = {length = factor * 14.4 * 1.45, heigth = factor * 14.84 + heightoffset, roofHeigth = 600}
 supriseChances = {roof = 0.5, yard = 0.6, yardwall = 0.4, street = 0.5, powerpoles = 0.5, door = 0.6, windowwall = 0.7, streetwall = 0.5}
 decoChances = {roof = 0.2, yard = 0.1, yardwall = 0.4, street = 0.1, powerpoles = 0.5, door = 0.6, windowwall = 0.5, streetwall = 0.1}
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
@@ -197,7 +198,7 @@ function selectGroundBuildMaterial()
     if not nice then nice = 1 end
     dice = materialChoiceTable[nice]
     
-    return dice
+    return "Office" --dice
 end
 
 function getPieceGroupName(Deco)

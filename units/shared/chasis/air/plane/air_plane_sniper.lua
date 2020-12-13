@@ -11,9 +11,9 @@ local AIR_SNIPER = AIRCRAFT:New{
 	iconType = "air_sniper",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
-	buildTime = 2 * 60,
+	buildCostMetal = 750,
+	buildCostEnergy = 1000,
+	buildTime =  45,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

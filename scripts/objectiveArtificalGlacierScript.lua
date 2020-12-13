@@ -26,7 +26,7 @@ function script.Create()
     Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
     
     for i = 1, #TablesOfPiecesGroups["HyperLoop"] do
-        upDownVal = -2 * randSign()
+        upDownVal = math.random(0, -6)
         Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(upDownVal), 0)
     end
     

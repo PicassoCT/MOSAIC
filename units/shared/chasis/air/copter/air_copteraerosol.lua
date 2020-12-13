@@ -13,8 +13,8 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 	iconType = "AeroSolDrone",
 	--floater = true,
 	--cost
-	buildCostMetal = 5000,
-	buildCostEnergy = 0,
+	buildCostMetal = 250,
+	buildCostEnergy = 1500,
 	buildTime = 3*60,
 	--Health
 	maxDamage = 250,
@@ -79,7 +79,7 @@ nanocolor=[[0.20 0.411 0.611]],
 
 
 }
-
+8
 AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_ORGYANYL.name, AIR_COPTER_AEROSOL_ORGYANYL.description ="Aerosoldrone: Orgyanyl", "Makes citizens horny till death"
 

@@ -13,8 +13,8 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	iconType = "air_iied",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 0,
+	buildCostMetal = 500,
+	buildCostEnergy = 250,
 	buildTime = 3*60,
 	--Health
 	maxDamage = 50,

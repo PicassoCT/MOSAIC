@@ -1,6 +1,6 @@
 local AntagonSafeHouse = Building:New{
 	corpse				= "",
-	maxDamage           = 500,
+	maxDamage           = 1000,
 	mass                = 500,
 
 	buildTime = 15,
@@ -24,8 +24,8 @@ nanocolor=[[0.20 0.411 0.611]],
 	footprintZ = 4,
 showNanoFrame= true,
 
-	buildCostEnergy     = 0,
-	buildCostMetal      = 500,
+	buildCostEnergy     = 2000,
+	buildCostMetal      = 2000,
 	
 	EnergyStorage = 0,
 	EnergyUse = 0,
@@ -46,13 +46,13 @@ showNanoFrame= true,
 	cloakTimeout = 5,
 
 	
-	script 			= "safehousescript.lua",
-	objectName        	= "safehouse.dae",
+	script = "safehousescript.lua",
+	objectName = "safehouse.dae",
 	
 	customparams = {
 		normaltex = "unittextures/safehouse_normal.dds",
-		helptext		= "Civilian Building",
-		baseclass		= "Building", -- TODO: hacks
+		helptext = "Civilian Building",
+		baseclass = "Building", -- TODO: hacks
     },
 	
 	buildoptions={

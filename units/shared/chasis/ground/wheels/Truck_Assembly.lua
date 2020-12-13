@@ -6,8 +6,8 @@ local TruckAssembly = Truck:New{
 	
 	maxDamage = 500,
 	mass = 500,
-	buildCostEnergy = 5,
-	buildCostMetal = 5,
+    buildCostMetal = 2500,
+    buildCostEnergy = 1250,
 	buildTime = 60,
 	explodeAs			= "none",
 	--conType			= "infantry",

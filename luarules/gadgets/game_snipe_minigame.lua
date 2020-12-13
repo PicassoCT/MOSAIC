@@ -41,11 +41,7 @@ if (gadgetHandler:IsSyncedCode()) then
         --transferUnitTeam(id, gaiaTeamID)
         showUnit(id)
         spSetUnitAlwaysVisible(id, true)
-     
-
     end
-
-
 
     function alwaysHideUnit(id)
         spSetUnitAlwaysVisible(id, false)
