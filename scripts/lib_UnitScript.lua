@@ -6066,3 +6066,4 @@ function getMapCenter(Game)
 	mapCenter={x= Game.mapX/2, z = Game.mapY/2}
 	return mapCenter
 end
+

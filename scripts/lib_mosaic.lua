@@ -138,17 +138,17 @@ function getGameConfig()
 		RecruitingTruck= 500,
 	 },
 	 --startenergymetal
-	 energyStartVolume = 5000,
-	 energyStart = 2500,
-	 metalStartVolume = 5000,
-	 metalStart = 2500,
+	 energyStartVolume = 10000,
+	 energyStart = 5000,
+	 metalStartVolume = 10000,
+	 metalStart = 5000,
 	 
 	 --Icons
 	 iconGroundOffset = 50,
 	 SatelliteIconDistance = 150,
 	
 	--Operativedrop HeightOffset
-	OperativeDropHeigthOffset = 400,
+	OperativeDropHeigthOffset = 900,
 	
 	--Hiveminds & AiCores
 	integrationRadius = 75,

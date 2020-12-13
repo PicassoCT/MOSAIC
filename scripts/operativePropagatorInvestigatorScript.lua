@@ -136,7 +136,11 @@ function firstToDieOfThirst()
 	x,y,z= Spring.GetUnitPosition(unitID)
 	Sleep(200)
 	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
-	
+	while(isUnitFlying(unitID)) do
+		Sleep(100)
+		Turn(center,z_axis,math.rad(90), 20)
+	end
+	reset(center)
 end
 
 function breathing()

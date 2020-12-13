@@ -46,8 +46,8 @@ local RecruitCivilian =
     Abstract:New {
     maxDamage = 500,
     mass = 500,
-    buildCostEnergy = 5,
-    buildCostMetal = 5,
+    buildCostEnergy = 0,
+    buildCostMetal = 250,
     explodeAs = "none",
     --orders
 
@@ -81,8 +81,8 @@ local RaidIcon =
     corpse = "",
     maxDamage = 500,
     mass = 500,
-    buildCostEnergy = 5,
-    buildCostMetal = 5,
+    buildCostEnergy = 0,
+    buildCostMetal = 150,
     canMove = true,
     levelGround = false,
     explodeAs = "none",

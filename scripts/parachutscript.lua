@@ -63,12 +63,14 @@ function fallingDown()
 	while not GG.ParachutPassengers do
 		Sleep(1)
 	end
+
 	
 	while not GG.ParachutPassengers[unitID] do
 		Sleep(1)
 	end
 	--debug code
 	passengerID= GG.ParachutPassengers[unitID].id
+	showUnit(passengerID)
 	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
 
 	if not passengerID or isUnitAlive(passengerID)== false then Spring.DestroyUnit(unitID, false, true); return end
@@ -80,14 +82,16 @@ function fallingDown()
 	
 	while isPieceAboveGround(unitID, center) == true do
 		x,y,z =Spring.GetUnitPosition(unitID)
-		Spring.MoveCtrl.SetPosition(unitID, x,y - dropRate,z)
+		xOff, zOff= getComandOffset(passengerID,x,z, 1.52)
+		Turn(center,x_axis,math.rad(xOff),15)
+		Turn(center,z_axis,math.rad(zOff),15)
+		Spring.MoveCtrl.SetPosition(unitID, x+xOff, y - dropRate, z+ zOff)
 		Sleep(1)
 		
 	end
 	
 	Spring.UnitDetach ( passengerID)
 	Spring.DestroyUnit(unitID, false, true)
-
 end
 
 function pieceOrder(i)
@@ -171,3 +175,33 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+function getComandOffset(id, x, z,  speed)
+
+		 CommandTable = Spring.GetUnitCommands(id, 3)
+		 boolFirst=true
+	 	xVal, zVal= 0,0
+		 for _, cmd in pairs(CommandTable) do
+			if boolFirst == true and cmd.id == CMD.MOVE then 
+				boolFirst = false 
+			
+					if math.abs(cmd.params[1] - x)> 10 then
+						if cmd.params[1] < x then
+							xVal= speed *-1
+						elseif cmd.params[1]  > x then
+							xVal= speed
+						end
+					end
+				
+					if math.abs(cmd.params[3] - z)> 10 then
+						if cmd.params[3] < z then
+							zVal= speed *-1
+						elseif cmd.params[3]  > z then
+							zVal=  speed 
+						end
+					end				
+						
+				return xVal,zVal
+			end		 
+		 end		 
+	return xVal,zVal
+	end
