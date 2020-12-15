@@ -114,7 +114,7 @@ function theySeeMeRollin()
 		targetCopy.x, targetCopy.z = targetCopy.x + xOffset,targetCopy.z + zOffset,
 
 		Command(unitID, "go", {x=targetCopy.x, y= targetCopy.y, z= targetCopy.z},  {})	
-		echo("Patrollin officer "..unitID)	
+	--	echo("Patrollin officer "..unitID)	
 		Sleep(8000)
 	end
 end

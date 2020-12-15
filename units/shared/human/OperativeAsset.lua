@@ -47,13 +47,13 @@ showNanoFrame= true,
 	
 		weapons={
 			[1]={name  = "pistol",
-				onlyTargetCategory = [[GROUND ]],
+				onlyTargetCategory = [[GROUND AIR]],
 			},
 			[2]={name  = "submachingegun",
-				onlyTargetCategory = [[GROUND]],
+				onlyTargetCategory = [[GROUND AIR]],
 			},
 			[3]={name  = "sniperrifle",
-				onlyTargetCategory = [[GROUND ]],
+				onlyTargetCategory = [[GROUND]],
 			}
 		},
 		

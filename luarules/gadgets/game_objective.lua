@@ -106,7 +106,7 @@ colourBlue={r=0,g=0,b=255}
 		--Spring.Echo("Reward Cycle called")
 
 		for id,types in pairs(Objectives) do
-			Spring.Echo("Objectives to Protagon")
+		--	Spring.Echo("Objectives to Protagon")
 			if doesUnitExistAlive(id)== true then
 				for tid,_ in pairs(protagonT) do
 				GG.Bank:TransferToTeam(  GameConfig.Objectives.Reward, tid, id, colourBlue)

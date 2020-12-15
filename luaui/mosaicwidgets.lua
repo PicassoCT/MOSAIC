@@ -2151,7 +2151,7 @@ end
 function widgetHandler:UnitCommand(unitID, unitDefID, unitTeam,
                                    cmdId, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua) --cmdTag available in Spring 95
   assert(cmdId)
-  Spring.Echo("widgets.lua::Routing Unit Command")
+ --[[ Spring.Echo("widgets.lua::Routing Unit Command")--]]
   if reverseCompat then
     cmdOpts, cmdParams = cmdParams, cmdOpts
   end

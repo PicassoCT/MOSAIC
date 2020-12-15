@@ -713,6 +713,7 @@ end
 function sniperFireFunction(weaponID, heading, pitch)
 	boolAiming = false
 	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
+	Spring.PlaySoundFile("sounds/weapons/sniper/sniperEject.wav", 0.8)
 	return true
 end
 
