@@ -162,15 +162,12 @@ end
 			BuildingWithWaitingRespawn[id]= true
 		end	
 	end
-	
-	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, attackerID, attackerDefID, attackerTeam)
-		if MobileCivilianDefIds[unitDefID] then
-			attackerID =  Spring.GetUnitLastAttacker(unitID) 
-			if attackerID and isUnitAlive(attackerID) == true then
-				
-				officerID = nil
-				if maxNrPolice > 0 then				
+
+	function getOfficer(unitID, attackerID)
+	officerID = nil
+		if maxNrPolice > 0 then				
 					px,py,pz = getPoliceSpawnLocation(attackerID)
+					if not px then px,py,pz = Spring.GetUnitPosition(unitID) end
 					direction = math.random(1,4)
 					
 					ptype = "policetruck"
@@ -180,17 +177,38 @@ end
 					
 					officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime + math.random(1, GameConfig.policeMaxDispatchTime)	
-				else --reasign one
+		else --reasign one
 					officerID = randDict(activePoliceUnitIds_DispatchTime)		
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime	+ math.random(1, GameConfig.policeMaxDispatchTime)			
-				end
-				
-				if officerID then
+		end
+	return officerID
+	end
+	
+	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, assaulterID, attackerDefID, attackerTeam)
+		if MobileCivilianDefIds[unitDefID] then
+			attackerID =  Spring.GetUnitLastAttacker(unitID) or assaulterID
+			officerID = getOfficer(unitID, attackerID)
+			if officerID  then
+				if  attackerID and isUnitAlive(attackerID) == true then				
 					if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
 					GG.PoliceInPursuit[officerID]= attackerID 
 					Command(officerID, "attack", {attackerID},  4)	
-							
+				elseif unitID then
 
+					if isUnitAlive(unitID) == true then
+
+						Command(officerID, "guard", {unitID},  4)	
+					else
+						x,y,z = Spring.GetUnitPosition(unitID)
+						Command(officerID, "go",{x=x, y=y, z= z})
+					end
+
+				elseif projectileID then
+					px,py,pz = Spring.GetProjectilePosition(projectileID)
+					Command(officerID, "go",{x=px, y=py, z= pz})
+				else
+					rx,rz= math.random(0,Game.mapSizeX), math.random(0,Game.mapSizeZ)
+					Command(officerID, "go",{x=rx, y=0, z= rz})
 				end
 			end
 		end

@@ -16,8 +16,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     
     resetAll(unitID)
-    crook = math.random(2, 5)
-    crookVal = math.random(1, 4) * 90
+  
     
     val = math.random(-360, 360)
     Turn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(val), 0)
@@ -26,16 +25,11 @@ function script.Create()
     Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
     
     for i = 1, #TablesOfPiecesGroups["HyperLoop"] do
-        upDownVal = math.random(-6, 0)
+        upDownVal = math.random(-10, -2)
         Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(upDownVal), 0)
     end
     
-    if crook then
-        index = crook
-        index2 = crook + 6
-        Turn(TablesOfPiecesGroups["HyperLoop"][index], y_axis, math.rad(crookVal), 0)
-        Turn(TablesOfPiecesGroups["HyperLoop"][index2], y_axis, math.rad(crookVal), 0)
-    end
+
     
     WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-181), 1)
     WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-120), 1)
