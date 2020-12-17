@@ -188,28 +188,30 @@ end
 		if MobileCivilianDefIds[unitDefID] then
 			attackerID =  Spring.GetUnitLastAttacker(unitID) or assaulterID
 			officerID = getOfficer(unitID, attackerID)
+			boolFoundSomething= false
 			if officerID  then
+				Spring.AddUnitImpulse(officerID,15,0,0)
+				tx,ty,tz = math.random(0,Game.mapSizeX), 0, math.random(0,Game.mapSizeZ)
 				if  attackerID and isUnitAlive(attackerID) == true then				
 					if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
 					GG.PoliceInPursuit[officerID]= attackerID 
-					Command(officerID, "attack", {attackerID},  4)	
-				elseif unitID then
-
+					 ax,ay, az =  Spring.GetUnitPosition(attackerID)
+					 if ax then	tx,ty,tz = ax,ay,az ; boolFoundSomething = true; end
+		
+				elseif boolFoundSomething== false and unitID then
 					if isUnitAlive(unitID) == true then
-
-						Command(officerID, "guard", {unitID},  4)	
-					else
 						x,y,z = Spring.GetUnitPosition(unitID)
-						Command(officerID, "go",{x=x, y=y, z= z})
+						if x then tx,ty,tz = x,y,z; boolFoundSomething = true; 	end
 					end
-
-				elseif projectileID then
+				elseif boolFoundSomething == true and projectileID then
 					px,py,pz = Spring.GetProjectilePosition(projectileID)
-					Command(officerID, "go",{x=px, y=py, z= pz})
-				else
-					rx,rz= math.random(0,Game.mapSizeX), math.random(0,Game.mapSizeZ)
-					Command(officerID, "go",{x=rx, y=0, z= rz})
+					if px then tx,ty,tz =px,py,pz; boolFoundSomething = true;  end
 				end
+
+				Command(officerID, "go",{x= tx, y= ty, z= tz})
+				Command(officerID, "go",{x= tx, y= ty, z= tz},{"shift"})
+				Command(officerID, "go",{x= tx, y= ty, z= tz},{"shift"})
+				Command(officerID, "go",{x= tx, y= ty, z= tz})
 			end
 		end
 	end
