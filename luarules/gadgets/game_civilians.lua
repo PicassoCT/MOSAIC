@@ -126,6 +126,7 @@ end
 	
 	function gadget:UnitCreated(unitID, unitDefID, teamID)
 		if PoliceTypes[unitDefID] then
+			Spring.SetUnitNeutral(unitID,false)
 			maxNrPolice = math.max( maxNrPolice - 1, 0)
 		end
 	end
@@ -190,28 +191,24 @@ end
 			officerID = getOfficer(unitID, attackerID)
 			boolFoundSomething= false
 			if officerID  then
-				Spring.AddUnitImpulse(officerID,15,0,0)
-				tx,ty,tz = math.random(0,Game.mapSizeX), 0, math.random(0,Game.mapSizeZ)
+				--Spring.AddUnitImpulse(officerID,15,0,0)
+				tx,ty,tz = math.random(0,100)*Game.mapSizeX, 0, math.random(0,100)*Game.mapSizeZ
 				if  attackerID and isUnitAlive(attackerID) == true then				
 					if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
-					GG.PoliceInPursuit[officerID]= attackerID 
-					 ax,ay, az =  Spring.GetUnitPosition(attackerID)
-					 if ax then	tx,ty,tz = ax,ay,az ; boolFoundSomething = true; end
-		
-				elseif boolFoundSomething== false and unitID then
-					if isUnitAlive(unitID) == true then
-						x,y,z = Spring.GetUnitPosition(unitID)
-						if x then tx,ty,tz = x,y,z; boolFoundSomething = true; 	end
-					end
-				elseif boolFoundSomething == true and projectileID then
-					px,py,pz = Spring.GetProjectilePosition(projectileID)
-					if px then tx,ty,tz =px,py,pz; boolFoundSomething = true;  end
+					GG.PoliceInPursuit[officerID]= attackerID 	
+					x,y,z= Spring.GetUnitPosition(attackerID)
+					if x then tx,ty,tz = x,y,z; boolFoundSomething = true; 	end
+				elseif boolFoundSomething== false and unitID and isUnitAlive(unitID)  == true then
+					x,y,z = Spring.GetUnitPosition(unitID)
+					if x then tx,ty,tz = x,y,z; boolFoundSomething = true; 	end
 				end
 
-				Command(officerID, "go",{x= tx, y= ty, z= tz})
 				Command(officerID, "go",{x= tx, y= ty, z= tz},{"shift"})
-				Command(officerID, "go",{x= tx, y= ty, z= tz},{"shift"})
-				Command(officerID, "go",{x= tx, y= ty, z= tz})
+				if maRa()== true then
+					Command(officerID, "go",{x= tx, y= ty, z= tz})
+				else
+					Command(officerID, "attack",{attackerID}, 4)
+				end
 			end
 		end
 	end
