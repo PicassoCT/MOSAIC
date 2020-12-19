@@ -661,30 +661,37 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 function pistolAimFunction(weaponID, heading, pitch)
 	boolAiming = true
 
-	setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	if boolWalking == true then
+		setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
+	else
+		setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	end
 	WTurn(center,y_axis,heading, 22)
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
-	-- echo("Aiming Pistol finnished")
 	return  true
 end
 
 function gunAimFunction(weaponID, heading, pitch)
 	boolAiming = true
-	
-	setOverrideAnimationState( eAnimState.aiming, eAnimState.standing, true, nil, false)
+	if boolWalking == true then
+		setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
+	else
+		setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	end
 	WTurn(center,y_axis,heading, 22)
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
-	-- echo("Aiming Gun finnished")
 	return  true
 end
 
 function sniperAimFunction(weaponID, heading, pitch)
 	boolAiming = true
-
-	setOverrideAnimationState( eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	if boolWalking == true then
+		setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
+	else
+		setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+	end
 	WTurn(center,y_axis,heading, 22)
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
-	-- echo("Aiming Sniper finnished")
 	return  true
 end
 
