@@ -141,7 +141,7 @@ function script.QueryWeapon1()
 end
 
 function script.AimWeapon1(Heading, pitch)
-    return false
+    return boolIsPoliceTruck
 end
 
 
