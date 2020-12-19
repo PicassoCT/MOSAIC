@@ -19,14 +19,18 @@ function script.Create()
     Turn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(val), 0)
     Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
     
-    for i = 1, #TablesOfPiecesGroups["HyperLoop"] do
-        Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(-2), 0)
+    val= math.random(-8,-3)
+    for i = 1, 6 do
+        Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
+    end
+
+    val= math.random(-10,-3)
+    for i=7, #TablesOfPiecesGroups["HyperLoop"] do
+        Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
     end
     
 end
 
 function script.Killed(recentDamage, _)
-    
-    --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
