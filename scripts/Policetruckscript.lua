@@ -25,11 +25,9 @@ function showAndTell()
 		hideT(TablesOfPiecesGroups["Body"])
 		Show(TablesOfPiecesGroups["Body"][2])
 	end
-
 end
 
 function script.Create()
-	Move(center,y_axis,15,0)
 	Spring.SetUnitAlwaysVisible(unitID, true)
 	Spring.SetUnitNeutral(unitID, false)
     generatepiecesTableAndArrayCode(unitID)
@@ -38,9 +36,6 @@ function script.Create()
 	StartThread(delayedSirens)
 	StartThread(theySeeMeRollin)
 end
-
-
-
 
 function theySeeMeRollin()
 	oldConvictID = unitID --police will never chase itself
@@ -94,9 +89,7 @@ function theySeeMeRollin()
 						Command(unitID, "go",  {x=targetCopy.x, y= targetCopy.y, z= target.z}, {})
 
 					-- echo("Hunting hidden convict "..convictID)						
-					end
-				
-					
+					end					
 			Sleep(500)	
 			end
 		end
@@ -120,7 +113,6 @@ function theySeeMeRollin()
 	end
 end
 
-
 function delayedSirens()
 	sleeptime= math.random(1,10)
 	Sleep(sleeptime*1000)
@@ -139,6 +131,7 @@ function delayedSirens()
 		Sleep(50*1000)	
 	end
 end
+
 boolLoudnessOverrideActive = false
 function loudnessOverride()
 	Signal(SIG_LOUDNESOVERRIDE)
@@ -150,16 +143,15 @@ function loudnessOverride()
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
-StartThread(loudnessOverride)
-return damage
+	StartThread(loudnessOverride)
+	return damage
 end
+
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(loadOutUnitID) then Spring.DestroyUnit(loadOutUnitID,true,true) end
    		createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
-
 
 function script.StartMoving()
 	spinT(TablesOfPiecesGroups["wheel"], x_axis,  -160, 0.3 )
