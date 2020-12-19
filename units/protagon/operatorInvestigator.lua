@@ -6,6 +6,7 @@ local OperativeInvestigator = Human:New{
 	buildCostMetal     	  = 3000,
 	MetalStorage = 5000,
 	metalMake  = 3,
+	energyMake = 1,
 	buildtime = 60,
 	explodeAs				  = "none",
 	name = 		"Investigator",
