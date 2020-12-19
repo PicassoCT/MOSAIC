@@ -428,7 +428,11 @@ UpperAnimationStateFunctions ={
 LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
 						assert(lowerBodyAnimations[eAnimState.walking])
-						PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]))					
+						if boolAiming == true then
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)
+						else
+							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]))
+						end					
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
