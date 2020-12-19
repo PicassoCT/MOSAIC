@@ -53,9 +53,6 @@ local options =
         name = 'Kill everything',
         desc = 'The player will lose when all his units have died or a enemy team launches',
       },
-
-
-   
     },
   },
  
