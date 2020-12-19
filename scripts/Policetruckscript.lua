@@ -29,6 +29,7 @@ function showAndTell()
 end
 
 function script.Create()
+	Move(center,y_axis,15,0)
 	Spring.SetUnitAlwaysVisible(unitID, true)
 	Spring.SetUnitNeutral(unitID, false)
     generatepiecesTableAndArrayCode(unitID)
@@ -154,7 +155,7 @@ return damage
 end
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(loadOutUnitID) then Spring.DestroyUnit(loadOutUnitID,true,true) end
-
+   		createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
