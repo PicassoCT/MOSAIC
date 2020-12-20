@@ -265,6 +265,7 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Set Uncloak
     end
 
+
     interrogationEventStreamFunction = function(
         unitID,
         unitDefID,
@@ -276,7 +277,6 @@ if (gadgetHandler:IsSyncedCode()) then
         attackerDefID,
         attackerTeam,
         iconUnitTypeName)
-        Spring.Echo("caught 1")
 
         if GG.InterrogationTable[unitID] == nil then
             GG.InterrogationTable[unitID] = {}
@@ -288,18 +288,18 @@ if (gadgetHandler:IsSyncedCode()) then
         if GG.InterrogationTable[unitID][attackerID] == false then
             GG.InterrogationTable[unitID][attackerID] = true
 
-            Spring.Echo("caught 2")
+    
             --Stun
             interrogationFunction = function(persPack)
                 --check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("caught 3 ")
+                    Spring.Echo("Interrrogation: Target díed")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
                     if persPack.IconId then
-                        GG.raidIconPercentage[persPack.IconId] = nil
+                        GG.raidIconDone[persPack.IconId] = nil
                     end
                     return true, persPack
                 end
@@ -307,9 +307,9 @@ if (gadgetHandler:IsSyncedCode()) then
                 --check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("caught 4")
+                    Spring.Echo("Interrrogation End: Interrogator died")
                     if persPack.IconId then
-                        GG.raidIconPercentage[persPack.IconId] = nil
+                        GG.raidIconDone[persPack.IconId] = nil
                     end
                     return true, persPack
                 end
@@ -317,10 +317,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("caught 5 ")
+                    Spring.Echo("Interrrogation End: Interrogator distance to big ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconId then
-                        GG.raidIconPercentage[persPack.IconId] = nil
+                        GG.raidIconDone[persPack.IconId] = nil
                     end
                     return true, persPack
                 end
@@ -336,89 +336,93 @@ if (gadgetHandler:IsSyncedCode()) then
                         0,
                         0
                     )
-                    if not GG.raidIconPercentage then
-                        GG.raidIconPercentage = {}
+                    if not GG.raidIconDone then
+                        GG.raidIconDone = {}
                     end
-                    if not GG.raidIconPercentage[persPack.IconId] then
-                        GG.raidIconPercentage[persPack.IconId] = 0
+                    if not GG.raidIconDone[persPack.IconId] then
+                        GG.raidIconDone[persPack.IconId] = {
+                            boolInterogationComplete = false,
+                            winningTeam = nil                      }
                     end
                 end
 
                 --update the icons  percentage
-                GG.raidIconPercentage[persPack.IconId] =
+                GG.raidIconDone[persPack.IconId].countDown =
                     (Spring.GetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames
-                Spring.Echo(
-                    "Raid running " ..
-                        (persPack.startFrame + GameConfig.InterrogationTimeInFrames) - Spring.GetGameFrame()
-                )
+           
 
-                if persPack.startFrame + GameConfig.InterrogationTimeInFrames < Spring.GetGameFrame() then
-                    --succesfull interrogation
-                    local allTeams = Spring.GetTeamList()
-                    if not allTeams or #allTeams <= 1 then
-                        --Simulation mode
-                        Spring.Echo("Aborting because no oponnent - sandbox or simulation mode")
-                        Spring.DestroyUnit(persPack.IconId, true, true)
-                        return true, persPack
+                if GG.raidIconDone[persPack.IconId].boolInterogationComplete == true then
+
+                    if not GG.raidIconDone[persPack.IconId].winningTeam then
+                        --succesfull interrogation
+                        local allTeams = Spring.GetTeamList()
+                        if not allTeams or #allTeams <= 1 then
+                            --Simulation mode
+                            Spring.Echo("Interrogation: Aborting because no oponnent - sandbox or simulation mode")
+                            Spring.DestroyUnit(persPack.IconId, true, true)
+                            return true, persPack
+                        end
+                        
+                        --of a innocent person / innocent house
+                        if
+                            innocentCivilianTypeTable[persPack.suspectDefID] or
+                                persPack.houseTypeTable[persPack.suspectDefID]
+                         then
+                            Spring.Echo("Interrogated innocent - paying the price")
+                            -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
+                            assert(persPack.attackerTeam)
+                            GG.Bank:TransferToTeam(
+                                -GameConfig.RaidInterrogationPropgandaPrice,
+                                persPack.attackerTeam,
+                                persPack.attackerID
+                            )
+    						
+                            for i = 1, #allTeams, 1 do
+                                if allTeams[i] ~= persPack.attackerTeam then
+                                    GG.Bank:TransferToTeam(
+                                        GameConfig.RaidInterrogationPropgandaPrice,
+                                        allTeams[i],
+                                        persPack.unitID
+                                    )
+                                end
+                            end
+
+                            Spring.DestroyUnit(persPack.IconId, true, true)
+                            return true, persPack
+                        end
                     end
-                    --of a innocent person / innocent house
-                    if
-                        innocentCivilianTypeTable[persPack.suspectDefID] or
-                            persPack.houseTypeTable[persPack.suspectDefID]
-                     then
-                        Spring.Echo("Interrogated innocent civilian")
-                        -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
-                        assert(persPack.attackerTeam)
+
+                        Spring.Echo("Interrogation: Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
+                        children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
+                        parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
                         GG.Bank:TransferToTeam(
-                            -GameConfig.RaidInterrogationPropgandaPrice,
+                            GameConfig.RaidInterrogationPropgandaPrice,
                             persPack.attackerTeam,
                             persPack.attackerID
                         )
-						
-                        for i = 1, #allTeams, 1 do
-                            if allTeams[i] ~= persPack.attackerTeam then
-                                GG.Bank:TransferToTeam(
-                                    GameConfig.RaidInterrogationPropgandaPrice,
-                                    allTeams[i],
-                                    persPack.unitID
-                                )
+                     
+                        for childID, v in pairs(children) do
+                               Spring.Echo("Interrogation: Reavealing child "..childID)
+                            if doesUnitExistAlive(childID) == true then
+                                Spring.GiveOrderToUnit(childID, CMD.CLOAK, {}, {})
+                                GG.OperativesDiscovered[childID] = true
+                                Spring.SetUnitAlwaysVisible(childID, true)
                             end
                         end
 
-                        Spring.DestroyUnit(persPack.IconId, true, true)
-                        return true, persPack
-                    end
-
-                    Spring.Echo("Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
-                    children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
-                    parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
-                    GG.Bank:TransferToTeam(
-                        GameConfig.RaidInterrogationPropgandaPrice,
-                        persPack.attackerTeam,
-                        persPack.attackerID
-                    )
-                    Spring.Echo(" caught 6 ")
-                    for childID, v in pairs(children) do
-                        if doesUnitExistAlive(childID) == true then
-                            Spring.GiveOrderToUnit(childID, CMD.CLOAK, {}, {})
-                            GG.OperativesDiscovered[childID] = true
-                            Spring.SetUnitAlwaysVisible(childID, true)
+                        if doesUnitExistAlive(parent) == true then
+                            Spring.GiveOrderToUnit(parent, CMD.CLOAK, {}, {})
+                            GG.OperativesDiscovered[parent] = true
+                            Spring.SetUnitAlwaysVisible(parent, true)
                         end
-                    end
-
-                    if doesUnitExistAlive(parent) == true then
-                        Spring.GiveOrderToUnit(parent, CMD.CLOAK, {}, {})
-                        GG.OperativesDiscovered[parent] = true
-                        Spring.SetUnitAlwaysVisible(parent, true)
-                    end
 
                     --out of time to interrogate
                     Spring.DestroyUnit(persPack.unitID, false, true)
                     Spring.DestroyUnit(persPack.IconId, false, true)
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = nil
-                    Spring.Echo("Raid ended")
+                    Spring.Echo("Interrogation: Raid ended")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
-                    GG.raidIconPercentage[persPack.IconId] = nil
+                    GG.raidIconDone[persPack.IconId] = nil
                     return true, persPack
                 end
 
@@ -512,7 +516,7 @@ if (gadgetHandler:IsSyncedCode()) then
         attackerID,
         attackerDefID,
         attackerTeam)
-        Spring.Echo("Raid/Interrogatable Weapon fired upon" .. UnitDefs[unitDefID].name)
+        Spring.Echo("Raid/Interrogatable Weapon fired upon " .. UnitDefs[unitDefID].name)
 
         --stupidity edition
         if attackerID == unitID then
@@ -534,7 +538,7 @@ if (gadgetHandler:IsSyncedCode()) then
             return damage
         end
 
-        --Interrogation -- an not already Interrogated
+        --Interrogation -- and not already Interrogated
         if
             (houseTypeTable[unitDefID] or RaidAbleType[unitDefID]) and
                 currentlyInterrogationRunning(unitID, attacker) == false
