@@ -173,7 +173,7 @@ else -- UNSYNCED
 	
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage, r,g,b)
-		 Spring.Echo("Display At Unit")
+	--	 Spring.Echo("Display At Unit")
 		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame(), col= {r=r,g=g,b=b}}
 
     end   
@@ -181,7 +181,6 @@ else -- UNSYNCED
      local function DisplayAtLocation(callname,  locTable, team, damage, r,g,b)
 		 Spring.Echo("Display at Location")
 		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, loc = locTable, frame=Spring.GetGameFrame(), col = {r=r,g=g,b=b}}
-
     end
 	
 	 function gadget:Initialize()
