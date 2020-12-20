@@ -17,8 +17,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	if math.random(0,1)==1 then side = "protagon" end
 
 	boolPreviouslyActive = false
-	endFrame = 0
-	startFrame = -math.huge
+	endFrame = -math.huge
+	startFrame = Spring.GetGameFrame()
 	
 
 
@@ -112,7 +112,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	function handleSlowMoPhases(frame, boolActive, startFrame, endFrame)
 	GG.GameSpeed= currentSpeed
 
-	if boolActivate== false or frame > endFrame then
+	if boolActivate == false or frame > endFrame then
 			if frame % 10 == 0 and currentSpeed < oldGameSpeed - 0.1 then
 				Spring.Echo("speedup to " .. currentSpeed)
 				Spring.SendCommands("speedup ")
@@ -122,7 +122,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	--Slow Down
 	if frame > startFrame and frame < endFrame then			
 		if currentSpeed > targetSlowMoSpeed - 0.11 then
-			Spring.Echo("slowdown to " .. currentSpeed)
+			--Spring.Echo("slowdown to " .. currentSpeed)
 			Spring.SendCommands("slowdown")
 		end		
 	end
