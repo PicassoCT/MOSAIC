@@ -596,6 +596,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if state == raidStates.Aborted then
                         --Spring.Echo("Raid was aborted")
                         killAllPlacedObjects(roundRunning)
+                        GG.raidIconDone[raidIconId].boolInterogationComplete = true
                         Spring.DestroyUnit(raidIconId, false, false)
                         roundRunning = nil
                     --GameOver
@@ -613,6 +614,8 @@ if (gadgetHandler:IsSyncedCode()) then
                     if roundRunning and state == raidStates.AggressorWins then
                         --Spring.Echo("Agressor won the round")
                         killAllPlacedObjects(roundRunning)
+                         GG.raidIconDone[raidIconId].winningTeam = Spring.GetUnitTeam(raidIconId)
+                         GG.raidIconDone[raidIconId].boolInterogationComplete = true
                         Spring.DestroyUnit(raidIconId, false, false)
                         roundRunning = nil
                     end
