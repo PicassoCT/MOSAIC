@@ -7,6 +7,7 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 center = piece"Center"
+Rotator = piece"Rotator"
 GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -64,11 +65,10 @@ end
 function showTime()
 	showAll()
 	hideT(TablesOfPiecesGroups["Load"])	
-
-	StartThread(visualizeProgress)
-	
+	Spin(Rotator,y_axis,math.rad(42),15)
 		while true do
-			showT(TablesOfPiecesGroups["Load"], 1, 	math.max(1,getCurrentPercent()))
+			StartThread(visualizeProgress)
+			showT(TablesOfPiecesGroups["Load"], 1, 	math.max(1, #TablesOfPiecesGroups["Load"] * getCurrentPercent()))
 			Sleep(startCountDown)
 			for i=1,#TablesOfPiecesGroups["Ring"] do
 				val = math.random(2,15)*randSign()
@@ -80,7 +80,7 @@ function showTime()
 end
 
 function getCurrentPercent()
-	return (#TablesOfPiecesGroups["Load"]* (startCountDown-countDown)/OnePercent)
+	return ( startCountDown / (startCountDown-countDown))
 end
 
 countDown = (GameConfig.InterrogationTimeInFrames/30)*1000
@@ -102,12 +102,12 @@ function interrogatePercentage()
 
 	while  countDown > 0 do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
 		Sleep(OnePercent)
-		countDown = countDown - OnePercent
+		countDown = math.max(0, countDown - OnePercent)
 		Spring.Echo( "Interrogation running :" ..countDown)
 	end
 
-	GG.raidIconDone[unitID].boolInterogationComplete = true
-	Spring.DestroyUnit(unitID,false, true)
+	--GG.raidIconDone[unitID].boolInterogationComplete = true
+	--Spring.DestroyUnit(unitID,false, true)
 end
 
 function visualizeProgress()
@@ -116,7 +116,7 @@ function visualizeProgress()
 		hideT(TablesOfPiecesGroups["puzzle"])
 		Show(TablesOfPiecesGroups["puzzle"][lastIndex])
 		alreadyVisitedTable[lastIndex] = true
-		factor = math.min(20,math.max(1, (startCountDown/countDown)* 20))
+		factor = math.min(20,math.max(1, getCurrentPercent()* 20))
 		
 		while factor < 17 do
 			factor = factor +1

@@ -10,18 +10,14 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function script.Create()
-    
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    
     resetAll(unitID)
-    
     val = math.random(-360, 360)
     Turn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(val), 0)
     Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
     hideT(TablesOfPiecesGroups["HyperLoop"])
     StartThread(forInterval,1,6)
     StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"])
-   
 end
 
 function script.Killed(recentDamage, _)
@@ -35,13 +31,15 @@ function forInterval(start,stop)
         nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
         boolIsAboveGround = false
         val= 0
-            while boolIsAboveGround == false and val < 180 do
+        counter = 0
+            while boolIsAboveGround == false and counter < 25 do
                 x,y,z= Spring.GetUnitPiecePosDir(unitID, nextElement)
                 gh =Spring.GetGroundHeight(x,z)
+                counter = counter +1
 
-                if y - 15 > gh then
-                    val= val -2
-                elseif y - 15 < gh then
+                if y  > gh + 50 then
+                    val = val - 1
+                elseif y  < gh + 50 then
                     val = val + 1
                 else
                     break
@@ -55,4 +53,5 @@ function forInterval(start,stop)
          end
     end    
     showT(TablesOfPiecesGroups["HyperLoop"],start,stop)
+    showAll()
 end
