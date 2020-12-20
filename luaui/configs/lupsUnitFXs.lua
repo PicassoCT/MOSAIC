@@ -65,13 +65,7 @@ local presets = {
 }
 
 
-effectUnitDefs = {
-
-	
-	
-	
-	
-}
+effectUnitDefs = {}
 
 
 effectUnitDefsXmas = {}
