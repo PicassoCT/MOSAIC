@@ -112,7 +112,7 @@ local RaidIcon =
     activatewhenbuilt = true,
     customparams = {
         helptext = "Civilian Agent working for the opposite site",
-        baseclass = "Human" -- TODO: hacks
+        baseclass = "Human", -- TODO: hacks
     },
     category = "NOTARGET"
 }
@@ -158,7 +158,11 @@ local InterrogationIcon =
     customparams = {
         helptext = "Interrogation in Progress",
         baseclass = "Human" -- TODO: hacks
+
     },
+
+  
+       
     category = "NOTARGET"
 }
 

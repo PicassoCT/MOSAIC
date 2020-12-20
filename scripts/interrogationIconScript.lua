@@ -3,9 +3,11 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
+include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
-
+center = piece"Center"
+GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
@@ -57,31 +59,64 @@ randStart = math.random(#mapTable)
 	curCursor = i
 		if mapTable[curCursor] and mapTable[curCursor] == false then return curCursor end
 	end
-
-	
 end
+
+function showTime()
+	showAll()
+	hideT(TablesOfPiecesGroups["Load"])	
+
+	StartThread(visualizeProgress)
+	
+		while true do
+			showT(TablesOfPiecesGroups["Load"], 1, 	math.max(1,getCurrentPercent()))
+			Sleep(startCountDown)
+			for i=1,#TablesOfPiecesGroups["Ring"] do
+				val = math.random(2,15)*randSign()
+				speed= math.random(5,25)
+				Spin(TablesOfPiecesGroups["Ring"][i],y_axis, math.rad(val),speed)
+			end
+			Sleep(1)
+		end
+end
+
+function getCurrentPercent()
+	return (#TablesOfPiecesGroups["Load"]* (startCountDown-countDown)/OnePercent)
+end
+
+countDown = (GameConfig.InterrogationTimeInFrames/30)*1000
+startCountDown = countDown
+OnePercent = math.ceil(countDown /100)
 
 function interrogatePercentage()
 	timer = 0
-	
-	while not GG.raidIconPercentage or not GG.raidIconPercentage[unitID] and timer < 5000 do
+	StartThread(showTime)	
+--[[	while not GG.raidIconDone or not GG.raidIconDone[unitID]  do
 		Sleep(100)
-	end
-	
-	if timer >= 5000 then 	
-		Spring.DestroyUnit(unitID,false, true)
-	end
+		timer = timer + 100
+		if timer > 5000 then 
+			Spring.DestroyUnit(unitID,false, true)
+		end
+	end--]]
+
 	SetUnitValue(COB.WANT_CLOAK, 0)
-	showAll(unitID)
-	
-	while   GG.raidIconPercentage[unitID] do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
-	
+
+	while  countDown > 0 do --GG.raidPercentageToIcon and GG.raidPercentageToIcon[unitID] do
+		Sleep(OnePercent)
+		countDown = countDown - OnePercent
+		Spring.Echo( "Interrogation running :" ..countDown)
+	end
+
+	GG.raidIconDone[unitID].boolInterogationComplete = true
+	Spring.DestroyUnit(unitID,false, true)
+end
+
+function visualizeProgress()
 		lastIndex= math.random(1,16)
 		alreadyVisitedTable=makeTable(false, 16)	
 		hideT(TablesOfPiecesGroups["puzzle"])
 		Show(TablesOfPiecesGroups["puzzle"][lastIndex])
 		alreadyVisitedTable[lastIndex] = true
-		factor = math.min(20,math.max(1, GG.raidIconPercentage[unitID] * 20))
+		factor = math.min(20,math.max(1, (startCountDown/countDown)* 20))
 		
 		while factor < 17 do
 			factor = factor +1
@@ -93,16 +128,10 @@ function interrogatePercentage()
 				end
 
 			Sleep(1000)
-			end
-		Sleep(1000)
-	end
-	
-	Spring.DestroyUnit(unitID,false, true)
+		end
 end
 
 function script.Killed(recentDamage, _)
-
-    --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 

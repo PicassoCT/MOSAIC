@@ -93,6 +93,14 @@ function script.Create()
     StartThread(ringringUpOffset)
     updateShownPoints(3, 3)
     hideT(TablesOfPiecesGroups["Corner"])
+    StartThread(watchRaidIconTable)
+end
+
+function watchRaidIconTable()
+    while (GG.raidIconDone[unitID]  and  GG.raidIconDone[unitID].boolInterogationComplete == false) do
+        Sleep(100)
+    end
+    Spring.DestroyUnit(unitID, true, false)
 end
 
 myHouseID = nil

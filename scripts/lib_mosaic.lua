@@ -93,7 +93,7 @@ function getGameConfig()
 	 -- Interrogation
 	 InterrogationTimeInSeconds = 20,
 	 InterrogationTimeInFrames = 20*30,
-	 InterrogationDistance= 200,
+	 InterrogationDistance= 256,
 	 
 	 RaidInterrogationPropgandaPrice = 50,
 	 investigatorCloakedSpeedReduction = 0.35,

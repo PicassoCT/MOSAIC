@@ -18,19 +18,41 @@ function script.Create()
     val = math.random(-360, 360)
     Turn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(val), 0)
     Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
-    
-    val= math.random(-8,-3)
-    for i = 1, 6 do
-        Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
-    end
-
-    val= math.random(-10,-3)
-    for i=7, #TablesOfPiecesGroups["HyperLoop"] do
-        Turn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
-    end
-    
+    hideT(TablesOfPiecesGroups["HyperLoop"])
+    StartThread(forInterval,1,6)
+    StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"])
+   
 end
 
 function script.Killed(recentDamage, _)
     return 1
+end
+
+
+function forInterval(start,stop)
+ for i = start, stop do
+        if i ~= stop then
+        nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
+        boolIsAboveGround = false
+        val= 0
+            while boolIsAboveGround == false and val < 180 do
+                x,y,z= Spring.GetUnitPiecePosDir(unitID, nextElement)
+                gh =Spring.GetGroundHeight(x,z)
+
+                if y - 15 > gh then
+                    val= val -2
+                elseif y - 15 < gh then
+                    val = val + 1
+                else
+                    break
+                end
+                if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
+                    Hide(nextElement)
+                end
+               WTurn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
+               Sleep(1)
+            end
+         end
+    end    
+    showT(TablesOfPiecesGroups["HyperLoop"],start,stop)
 end

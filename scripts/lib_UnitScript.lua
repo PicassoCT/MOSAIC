@@ -6067,3 +6067,11 @@ function getMapCenter(Game)
 	return mapCenter
 end
 
+function frameToMS(frames)
+	return frameToS(frames) * 1000;
+end
+
+
+function frameToS(frames)
+return (frames / 30);
+end

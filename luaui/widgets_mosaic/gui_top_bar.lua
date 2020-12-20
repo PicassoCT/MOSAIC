@@ -662,7 +662,7 @@ local function updateResbarText(res)
 							end
 						end
 					else
-						text = (allyteamOverflowingEnergy and 'Wasting Energy' or 'Overflowing')
+						text = (allyteamOverflowingEnergy and 'Wasting Material' or 'Overflowing')
 						if WG['notifications'] then
 							if allyteamOverflowingEnergy then
 								if numTeamsInAllyTeam > 1 then
