@@ -8,7 +8,7 @@ function getGameConfig()
 	return {
 	instance = {
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
-	Version = "Alpha: 0.680",
+	Version = "Alpha: 0.695",
 	},
 		
 	numberOfBuildings 	= math.ceil(75 *unitFactor	),  --not related to the hangdetector bug

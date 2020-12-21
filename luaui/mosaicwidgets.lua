@@ -850,6 +850,10 @@ local function HandleError(widget, funcName, status, ...)
     return ...
   end
 
+  if not widet then
+    return ...
+  end
+
   if (funcName ~= 'Shutdown') then
     widgetHandler:RemoveWidget(widget)
   else
