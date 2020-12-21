@@ -17,7 +17,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	if math.random(0,1)==1 then side = "protagon" end
 
 	boolPreviouslyActive = false
-	endFrame = -math.huge
+	endFrame =  0
 	startFrame = Spring.GetGameFrame()
 	
 
