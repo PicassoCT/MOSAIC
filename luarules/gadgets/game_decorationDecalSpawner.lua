@@ -62,7 +62,7 @@ if (gadgetHandler:IsSyncedCode()) then
 						ID =defIDDecalNameMap[baseType].rural[nrElement]
 					end
 					
-					GG.UnitsToSpawn:PushCreateUnit(ID, x,y,z, 1 , gaiaTeamID)				
+					GG.UnitsToSpawn:PushCreateUnit(ID, x,y,z, math.random(1,4) , gaiaTeamID)				
 				end
 			end
 		end
