@@ -26,13 +26,15 @@ end
 
 
 function forInterval(start,stop)
+    hideT(TablesOfPiecesGroups["HyperLoop"],start,stop)
  for i = start, stop do
         if i ~= stop then
         nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
+        thisElement= TablesOfPiecesGroups["HyperLoop"][i]
         boolIsAboveGround = false
         val= 0
         counter = 0
-            while boolIsAboveGround == false and counter < 25 do
+            while boolIsAboveGround == false and counter < 10 do
                 x,y,z= Spring.GetUnitPiecePosDir(unitID, nextElement)
                 gh =Spring.GetGroundHeight(x,z)
                 counter = counter +1
@@ -45,13 +47,15 @@ function forInterval(start,stop)
                     break
                 end
                 if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
-                    Hide(nextElement)
+                    Hide(thisElement)
+                else
+                    Show(thisElement)
                 end
-               WTurn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
+               WTurn(thisElement, x_axis, math.rad(val), 0)
                Sleep(1)
             end
          end
     end    
-    showT(TablesOfPiecesGroups["HyperLoop"],start,stop)
+  
     showAll()
 end
