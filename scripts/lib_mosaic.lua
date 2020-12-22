@@ -23,6 +23,8 @@ function getGameConfig()
 	 zRandOffset		= 20,
 	 allyWaySizeX 		= 25,
 	 allyWaySizeZ		= 25,
+	 bonusFirstUnitMoney_S = 12,
+	 bonusFirstUnitMaterial_S = 8,
 	 
 	 agentConfig={
 		recruitmentRange= 60,

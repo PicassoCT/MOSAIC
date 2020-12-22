@@ -141,6 +141,12 @@ function firstToDieOfThirst()
 		Turn(center,z_axis,math.rad(90), 20)
 	end
 	reset(center)
+
+	while true do
+		Sleep(1000)
+		Spring.AddTeamResource(myTeamID, "metal",GameConfig.bonusFirstUnitMoney_S) 
+		Spring.AddTeamResource(myTeamID, "energy",GameConfig.bonusFirstUnitMaterial_S) 
+	end
 end
 
 function breathing()

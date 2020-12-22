@@ -35,7 +35,7 @@ local ground_truck_mg = Truck:New{
 	},
 	weapons = {
 			[1]={name  = "marker",
-				onlyTargetCategory = [[NIL]],
+				onlyTargetCategory = [[GROUND]],
 				},
 			},	
 	LeaveTracks = true,
@@ -81,7 +81,7 @@ local ground_truck_ssied = Truck:New{
 	},
 	weapons = {
 			[1]={name  = "marker",
-				onlyTargetCategory = [[NIL]],
+				onlyTargetCategory = [[GROUND]],
 				},
 			},	
 	
@@ -130,7 +130,7 @@ local ground_truck_antiarmor = Truck:New{
 	},
 	weapons = {
 			[1]={name  = "marker",
-				onlyTargetCategory = [[NIL]],
+				onlyTargetCategory = [[GROUND]],
 				},
 			},	
 	LeaveTracks = true,
@@ -175,7 +175,7 @@ local ground_truck_rocket = Truck:New{
 	},
 	weapons = {
 			[1]={name  = "marker",
-				onlyTargetCategory = [[NIL]],
+				onlyTargetCategory = [[GROUND]],
 				},
 			},	
 	LeaveTracks = true,
