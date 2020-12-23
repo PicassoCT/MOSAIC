@@ -73,8 +73,8 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 							transferOrders(id, ad)	
 								
 							consumeAvailableRessourceUnit(unitID, "metal", GameConfig.costs.RecruitingTruck)
-							Spring.DestroyUnit( id , false, true)
-							Spring.DestroyUnit( unitID , false, true)
+							Spring.DestroyUnit(id , false, true)
+							Spring.DestroyUnit(unitID , false, true)
 							while true do
 								Sleep(1000)
 							end	
@@ -100,10 +100,9 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 								false,	
 								nil,
 								fatherID)
-						assert(ad)
 						transferUnitStatusToUnit(id, ad)
 						transferOrders(id, ad)
-						
+						recruitedDefID = Spring.GetUnitDefID(id)
 						--if the recruitedunit was a civilianagent
 							if recruitedDefID == civilianAgentDefID then
 								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
@@ -118,6 +117,7 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 							if civilianWalkingTypeTable[recruitedDefID] then
 								Spring.DestroyUnit( id , false, true)
 							end
+
 					Spring.DestroyUnit(unitID, false, true) 
 					while true do
 						Sleep(1000)
@@ -154,7 +154,7 @@ end
 
 
 function script.Killed(recentDamage, _)
-    return 1
+    return 0
 end
 
 function animationLoop(speedfactor)
