@@ -1,6 +1,6 @@
 local CivilianAgent = Human:New{
 	name = "Civilian Asset",
-	Description = " recruited Civilian <spies/ militia> ",
+	Description = " recruited Civilian <spies/hidden militia> ",
 
 	corpse = "bodybag",
 	maxDamage         	  = 500,
@@ -33,10 +33,8 @@ local CivilianAgent = Human:New{
 	iconType = "civilianagent",
 	canCloak =true,
 	cloakCost=0.0001,
-	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
 	minCloakDistance = 0,
-	onoffable=true,
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,

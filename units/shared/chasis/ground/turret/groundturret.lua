@@ -187,7 +187,8 @@ local groundturretmg =  Turret:New{
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 
-	--canHover=true,
+	commandFire = true,
+	canAttackGround = true,
 	CanAttack = true,
 	CanGuard = true,
 	CanMove = true,

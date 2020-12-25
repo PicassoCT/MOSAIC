@@ -38,6 +38,8 @@ local objectiveFactoryShip = Building:New{
 	{
 	"civilian_arab0"
 	},
+	floater = true,
+	waterline = 25.0,
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 900 130",

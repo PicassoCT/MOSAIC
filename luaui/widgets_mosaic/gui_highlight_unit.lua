@@ -86,7 +86,7 @@ local spTraceScreenRay          = Spring.TraceScreenRay
 --------------------------------------------------------------------------------
 
 
-local texName = 'LuaUI/images/highlight_strip.png'
+local texName = 'luaui/images/highlight_strip.png'
 
 local cylDivs = 64
 local cylList = 0

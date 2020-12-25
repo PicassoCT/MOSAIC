@@ -1157,67 +1157,57 @@ function spawnDecoyCivilian()
 	return 0
 end
 
-boolCloaked = false
+boolCloaked = Spring.GetUnitIsCloaked(unitID)
+boolDeCloaked = false
 
 function cloakLoop()
-	local spGetUnitIsActive = Spring.GetUnitIsActive
-	local boolIsCurrentlyActive= spGetUnitIsActive(unitID)
+	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 	Sleep(100)
 	waitTillComplete(unitID)
 	Sleep(100)
 	
-
-	SetUnitValue(COB.WANT_CLOAK, 1)
 	Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
-	boolCloaked=true
-	StartThread(spawnDecoyCivilian)
-	
-	while true do 
-	
-		boolIsCurrentlyActive = spGetUnitIsActive(unitID)
-
+	SetUnitValue(COB.WANT_CLOAK, 1)
+	SetUnitValue(COB.CLOAKED, 1)
+	while (spGetUnitIsCloaked(unitID)== false) do
 		Sleep(100)
-		if (boolIsCurrentlyActive == true and  GG.OperativesDiscovered[unitID] ) or  
-		 (boolIsCurrentlyActive == false and boolCloaked == true )then
-	
-	
-			SetUnitValue(COB.WANT_CLOAK, 0)
+	end
+
+	boolCloaked=spGetUnitIsCloaked(unitID)
+	StartThread(spawnDecoyCivilian)
+	echoOverload("invisible")
+	while true do 
+		boolCloaked=spGetUnitIsCloaked(unitID)
+		Sleep(100)
+
+		if boolCloaked == false and boolDeCloaked == false then
+			echoOverload("revealed")
+			boolDeCloaked = true
+			Spring.SetUnitTooltip(unitID, "Militia : Cover blown")
+			boolArmed = true
+			Show(ak47)
 			Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {}) 
-			boolCloaked= false
+
 			if civilianID and doesUnitExistAlive(civilianID) == true then
 				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
 			end
 		end
+
+		if boolCloaked == true and boolDeCloaked == true then 
+			echoOverload("recloak prevented")
+			SetUnitValue(COB.WANT_CLOAK, 0)
+			SetUnitValue(COB.CLOAKED, 0)
+		end
+
 		Sleep(100)
 	end
 end
 
-justOnce = 1
-function script.Activate()
-	if justOnce > 0 then
-		justOnce = justOnce  -1
 
-
-		Spring.SetUnitTooltip(unitID, "Hidden Militia")
-
-	end
-
-	return 1 
+function echoOverload(res)
+	Spring.Echo("CivilianAgent: ".. res)
 end
-
-function script.Deactivate()
-
-	Spring.SetUnitTooltip(unitID, "Militia : Cover blown")
-	boolArmed = true
-	Show(ak47)
-	
-    return 0
-end
-
-
-
-
 
 
 function akAimFunction(weaponID, heading, pitch)
@@ -1275,8 +1265,8 @@ end
 local validTargetType={
 [1]=true,
 [2]=true,
-
 }
+
 function allowTarget(weaponID)
 		targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 	
@@ -1284,8 +1274,7 @@ function allowTarget(weaponID)
 			-- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
 			return false 
 		end
-
-				
+			
 		--Do not aim at your own disguise civilian
 		if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
 			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	

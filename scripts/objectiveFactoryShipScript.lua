@@ -6,9 +6,6 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-
 length_axis = x_axis
 side_axis = z_axis
 height_axis = y_axis
@@ -22,7 +19,6 @@ function script.Create()
 	StartThread(AnimationTest)
 end
 
-
 speed= 10
 function AnimationTest()
 
@@ -32,15 +28,11 @@ function AnimationTest()
 			 TablesOfPiecesGroups["ContainerX"][1], 
 			  6 )
 
-
 	StartThread(pickPlaceJob,
 			TablesOfPiecesGroups["Slider"][2],
 			TablesOfPiecesGroups["Elevator"][2],
 			 TablesOfPiecesGroups["ContainerX"][2], 
 			  3 )
-
-
-	
 end
 
 function script.Killed(recentDamage, _)
@@ -82,5 +74,4 @@ function pickPlaceJob(SliderPart,CranePart, Container, range)
 		end
 		Sleep(500)
 	end
-
 end

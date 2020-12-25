@@ -222,10 +222,12 @@ function getObjectiveTypes(UnitDefs)
 assert(UnitDefs)
 local UnitDefNames= getUnitDefNames(UnitDefs)
 return {
- 			[UnitDefNames["objective_factoryship"].id		]= "water",
-			[UnitDefNames["objective_powerplant"].id		]= "land",
-			[UnitDefNames["objective_geoengineering"].id	]= "land",
-			[UnitDefNames["objective_westhemhq"].id	]= "land",
+ 			[UnitDefNames["objective_refugeegyland"].id]	= "water",
+ 			[UnitDefNames["objective_factoryship"].id]		= "water",
+			[UnitDefNames["objective_refugeecamp"].id]		= "land",
+			[UnitDefNames["objective_powerplant"].id]		= "land",
+			[UnitDefNames["objective_geoengineering"].id]	= "land",
+			[UnitDefNames["objective_westhemhq"].id	]		= "land",
 			[UnitDefNames["objective_artificialglacier"].id	]= "land"
 		}
 end

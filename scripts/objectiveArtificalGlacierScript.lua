@@ -8,33 +8,13 @@ TablesOfPiecesGroups = {}
 Irrigation1 = piece"Irrigation1"
 Irrigation2 = piece"Irrigation002"
 
-
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-
-if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
-if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
-
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
     resetAll(unitID)
     Spin(piece("Logo"),z_axis,math.rad(42),0) 
 
-    firstVal = math.random(-8, 8)*45
-    while(outsideMap(Irrigation1)) do
-       WTurn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(firstVal), 0)
-       firstVal= firstVal + 45
-    end
-
-    val = firstVal +45
-    while(outsideMap(Irrigation2) or val == firstVal) do
-        WTurn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
-       val= val + 45
-    end
-      
-    StartThread(forInterval,1,6,Irrigation1)
-    StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"],Irrigation2)
+    StartThread(deployPipes)
     
     WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-181), 1)
     WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-120), 1)
@@ -45,8 +25,7 @@ function script.Create()
     
     WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(181), 1)
     WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(230), 1)
-    spawnDecalAtPiece("Irrigation1")
-    spawnDecalAtPiece("Irrigation002")
+   
 end
 
 function spawnDecalAtPiece(pieceName)
@@ -67,22 +46,41 @@ end
 return false
 end
 
-function forInterval(start,stop, endElement)
+function deployPipes()
+    StartThread(forInterval,1,6, Irrigation1)
+    StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"], Irrigation2)
+    spawnDecalAtPiece("Irrigation1")
+    spawnDecalAtPiece("Irrigation002")
+end
+
+function forInterval(start,stop, endElement, irrigation)
+    discoverSign= randSign()
+    firstVal = math.random(-8, 8)*45
+    while(outsideMap(irrigation)== true) do
+       WTurn(TablesOfPiecesGroups["HyperLoop"][start], y_axis, math.rad(firstVal), 0)
+       firstVal= firstVal + 45*discoverSign
+    end
+
+ accumulateddeg= 0
  for i = start, stop do
         if i ~= stop then
         nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
+        if i == stop then nextElement = endElement end
+
         boolIsAboveGround = false
         val= 0
         counter = 0
             while boolIsAboveGround == false and counter < 25 do
-                x,y,z= Spring.GetUnitPiecePosDir(unitID, endElement)
+                x,y,z= Spring.GetUnitPiecePosDir(unitID, nextElement)
                 gh =Spring.GetGroundHeight(x,z)
                 counter = counter +1
 
                 if y  > gh  +20 then
                     val = val - 1
+                    accumulateddeg= accumulateddeg -1
                 elseif y  < gh   +20  then
                     val = val + 1
+                    accumulateddeg= accumulateddeg +1
                 else
                     break
                 end
@@ -94,5 +92,7 @@ function forInterval(start,stop, endElement)
             end
          end
     end    
+    accumulateddeg= accumulateddeg*-1
+    WTurn(endElement, x_axis, math.rad(accumulateddeg), 0)
     showT(TablesOfPiecesGroups["HyperLoop"],start,stop)
 end

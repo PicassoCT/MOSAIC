@@ -6,15 +6,13 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
     val = math.random(-360, 360)
-    Turn(TablesOfPiecesGroups["HyperLoop"][1], y_axis, math.rad(val), 0)
-    Turn(TablesOfPiecesGroups["HyperLoop"][6], y_axis, math.rad(val), 0)
+    StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][1], 1, 5)
+    StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][6], 6, #TablesOfPiecesGroups["HyperLoop"])     
     hideT(TablesOfPiecesGroups["HyperLoop"])
     StartThread(forInterval,1,6)
     StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"])
@@ -24,6 +22,29 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+
+function sensorTurn(tower, starts,ends)
+    for k= starts, ends do
+        radStart=math.random(2,359)
+        for i=radStart,360,10 do
+            WTurn(tower, y_axis,math.rad(i),0)
+            x,y,z =Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["HyperLoop"][k])
+
+            if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
+                return
+            end
+        end
+
+        for i=1,radStart,10 do
+            WTurn(tower, y_axis,math.rad(i),0)
+            x,y,z =Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["HyperLoop"][k])
+
+            if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
+                return
+            end
+        end
+    end
+end
 
 function forInterval(start,stop)
     hideT(TablesOfPiecesGroups["HyperLoop"],start,stop)

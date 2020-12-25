@@ -52,7 +52,6 @@ if (gadgetHandler:IsSyncedCode()) then
 								end
 								)
 					
-					
 					ID = 0
 					if T and count(T) > 2 then
 						nrElement= math.random(1,#defIDDecalNameMap[baseType].urban)
@@ -75,6 +74,5 @@ if (gadgetHandler:IsSyncedCode()) then
 		if not SpawnedUnits [frame] then SpawnedUnits [frame] = {} end
 			set = {id= unitID, defID= unitDefID, teamID= teamID}
 			table.insert(SpawnedUnits[frame], set)				
-		end
-			
-end
+		end			
+	end
