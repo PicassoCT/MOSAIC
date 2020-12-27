@@ -6,9 +6,6 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 

@@ -138,7 +138,7 @@ function firstToDieOfThirst()
 	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
 	while(isUnitFlying(unitID)) do
 		Sleep(100)
-		Turn(center,z_axis,math.rad(90), 20)
+		Turn(center,x_axis,math.rad(45), 0)
 	end
 	reset(center)
 

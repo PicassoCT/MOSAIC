@@ -11,7 +11,6 @@ function gadget:GetInfo()
 	}
 end
 
-
 if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_OS.lua")
 	VFS.Include("scripts/lib_UnitScript.lua")
@@ -19,41 +18,32 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_Build.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	iconTypeTable = getIconTypes(UnitDefs)
-		local GameConfig = getGameConfig()
+	local GameConfig = getGameConfig()
 	
-
 	iconUnit={}
 	
 	function gadget:UnitCreated(unitID, unitDefID)
 		if iconTypeTable[unitDefID] then
-				Spring.Echo("Icon Type Unit created")
+				Spring.Echo("Icon Type "..UnitDefs[unitDefID].name.. " created")
 				iconUnit[unitID] = unitDefID
 				SendToUnsynced("SetUnitLuaDraw", unitID, unitDefID)
 		end
 	end
 
-
-
-
 else -- unsynced
-
-
     local iconTables = {}
 	
-
     local function setUnitLuaDraw(callname, unitID,typeDefID)
 		iconTables[unitID]=typeDefID
 	    Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
     end
 
     function gadget:Initialize()
-			Spring.Echo(GetInfo().name.." Initialization started")
-			gadgetHandler:AddSyncAction("SetUnitLuaDraw", setUnitLuaDraw)
-				Spring.Echo(GetInfo().name.." Initialization ended")
+		Spring.Echo(GetInfo().name.." Initialization started")
+		gadgetHandler:AddSyncAction("SetUnitLuaDraw", setUnitLuaDraw)
+		Spring.Echo(GetInfo().name.." Initialization ended")
     end
 	
-
-
 	local glScale = gl.Scale
 	local glUnitRaw = gl.UnitRaw
 	

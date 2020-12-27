@@ -6,7 +6,6 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
@@ -16,12 +15,17 @@ function script.Create()
     hideT(TablesOfPiecesGroups["HyperLoop"])
     StartThread(forInterval,1,6)
     StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"])
+    StartThread(delayShowAllElements)
 end
-
+function delayShowAllElements()
+    Sleep(12000)
+    for i=1,#elementsToShow do
+        Show(elementsToShow[i])
+    end
+end
 function script.Killed(recentDamage, _)
     return 1
 end
-
 
 function sensorTurn(tower, starts,ends)
     for k= starts, ends do
@@ -46,6 +50,7 @@ function sensorTurn(tower, starts,ends)
     end
 end
 
+elementsToShow={}
 function forInterval(start,stop)
     hideT(TablesOfPiecesGroups["HyperLoop"],start,stop)
  for i = start, stop do
@@ -70,13 +75,11 @@ function forInterval(start,stop)
                 if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
                     Hide(thisElement)
                 else
-                    Show(thisElement)
+                    elementsToShow[#elementsToShow+1]= thisElement
                 end
                WTurn(thisElement, x_axis, math.rad(val), 0)
                Sleep(1)
             end
          end
     end    
-  
-    showAll()
 end

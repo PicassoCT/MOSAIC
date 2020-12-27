@@ -226,9 +226,10 @@ function AttachUnitToPieceNearImpact(toAttachUnitID, AttackerID, px, py, pz, ran
 end
 
 --> is a Unit Piece above ground
-function isPieceAboveGround(unitID,pieceName)
+function isPieceAboveGround(unitID,pieceName,offset)
+	offset = offset or 0
 	x,y,z =Spring.GetUnitPiecePosDir(unitID,pieceName)
-	gh= Spring.GetGroundHeight(x,z)
+	gh= Spring.GetGroundHeight(x,z) + offset
 	if gh < y then 
 		return true 
 	end
@@ -426,8 +427,8 @@ function unitDescriptionGenerator(Unit, UnitDefNames)
 	..cStr(ud.myGravity, "As a aircraft-unit the "..ud.name.." has a custom gravity of "..ud.myGravity)
 	..cStr(ud.blocking, "The "..ud.Uname.." blocks the movement of other Units.")
 	..cStr(ud.Flanking, "When Flanking the "..ud.name.."s bonus is "..ud.selStr(Flanking, {"no flanking bonus","a build up of the ability to move over time, and swings to face attacks","also can swing, but moves with the unit as it turns", "stays with the unit as it turns and otherwise doesn't move"}))
-	..cStr(ud.flankingBonusMax, "The Bonus applied to the armour main direction is "..ud.flankingBonusMax)
-	..cStr(ud.flankingBonusMin, "The Bonus applied to the armour minimal directions is "..ud.flankingBonusMin)
+	..cStr(ud.flankingBonusMax, "The Bonus applied to the armor main direction is "..ud.flankingBonusMax)
+	..cStr(ud.flankingBonusMin, "The Bonus applied to the armor minimal directions is "..ud.flankingBonusMin)
 	..cStr(ud.canFly, ud.Uname.." is a aircraft.")
 	..cStr(ud.canSubmerge, ud.Uname.." can submerge itself beneath water.")
 	..cStr(ud.factoryHeadingTakeoff, ud.Uname.." will lift off from a runway.",Uname.." will lift off straigth up - VTOL style.")

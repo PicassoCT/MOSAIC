@@ -81,17 +81,23 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 					
 					end
 					
-					if civilianWalkingTypeTable[spGetUnitDefID(id)] and  not GG.DisguiseCivilianFor[id]	or 		boolIsDisguiseCivilian == true			
+					if civilianWalkingTypeTable[spGetUnitDefID(id)] and  not GG.DisguiseCivilianFor[id]	or  boolIsDisguiseCivilian == true			
 					then
-						return id
+						Spring.Echo("Found attachable unit")
+						if boolIsDisguiseCivilian == true then -- make Unit transparent
+							return GG.DisguiseCivilianFor[id]
+						else
+							return id
+						end
 					end
 				end,
 				function(id)
 					if id then
 						--create a civilian agent
-						teamID =Spring.GetUnitTeam(unitID)
-			
+						teamID =Spring.GetUnitTeam(unitID)			
 						x,y,z,_,_,_ =Spring.GetUnitPosition(id)
+						recruitedDefID = Spring.GetUnitDefID(id)
+						
 						ad = Spring.CreateUnit("civilianagent",			
 								x,y,z, 			
 								1,		
@@ -102,16 +108,18 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 								fatherID)
 						transferUnitStatusToUnit(id, ad)
 						transferOrders(id, ad)
-						recruitedDefID = Spring.GetUnitDefID(id)
+					
 						--if the recruitedunit was a civilianagent
 							if recruitedDefID == civilianAgentDefID then
+								echo("Attach Double-Agent")
 								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
 								Spring.DestroyUnit( id , false, true)
 							elseif operativeTypeTable[recruitedDefID] and recruitedDefID ~= civilianAgentDefID then
+								echo("Attach Double-Agent")
 								--if the recruited unit was a operative
-								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
-								beamOperativeToNearestHouse(GG.DisguiseCivilianFor[id])
-								MoveUnitToUnit(id, GG.DisguiseCivilianFor[id])
+								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(id))
+								beamOperativeToNearestHouse(id)
+								MoveUnitToUnit(id, ad)
 							end
 							
 							if civilianWalkingTypeTable[recruitedDefID] then
@@ -125,7 +133,6 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 					end
 				end
 			)				
-	
 		end
 end
 

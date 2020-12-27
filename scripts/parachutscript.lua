@@ -23,7 +23,7 @@ function script.Create()
 	--StartThread(AnimationTest)
 	hideT(TablesOfPiecesGroups["Fract"])
 	StartThread(fallingDown)
-	Hide(center)
+	Show(center)
 	for i=1,3 do
 		turnTableRand(TablesOfPiecesGroups["Rotator"], i, 360, -360, 0, true)
 	end
@@ -58,7 +58,7 @@ function randShow(id)
 	Sleep(10)
 	end
 end
-
+operativeTypeTable = getOperativeTypeTable(Unitdefs)
 function fallingDown()
 	while not GG.ParachutPassengers do
 		Sleep(1)
@@ -70,6 +70,7 @@ function fallingDown()
 	end
 	--debug code
 	passengerID= GG.ParachutPassengers[unitID].id
+	passengerDefID= Spring.GetUnitDefID(passengerID)
 	showUnit(passengerID)
 	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
 
@@ -79,12 +80,16 @@ function fallingDown()
 	Spring.UnitAttach(unitID, passengerID, center)
 	Spring.MoveCtrl.SetPosition(unitID, x,y,z)
 
-	
-	while isPieceAboveGround(unitID, center) == true do
+
+	while isPieceAboveGround(unitID, center, 15) == true do
 		x,y,z =Spring.GetUnitPosition(unitID)
 		xOff, zOff= getComandOffset(passengerID,x,z, 1.52)
-		Turn(center,x_axis,math.rad(xOff),15)
-		Turn(center,z_axis,math.rad(zOff),15)
+		if operativeTypeTable[passengerID] then
+			Turn(center,x_axis,math.rad(60),15)
+			Turn(center,z_axis,math.rad(60),15)
+		end
+
+	
 		Spring.MoveCtrl.SetPosition(unitID, x+xOff, y - dropRate, z+ zOff)
 		Sleep(1)
 		
