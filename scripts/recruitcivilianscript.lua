@@ -8,42 +8,45 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-
-
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 gaiaTeamID = Spring.GetGaiaTeamID()
+local spGetUnitDefID = Spring.GetUnitDefID
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 
 function script.Create()
-		Spring.MoveCtrl.Enable(unitID,true)
-       TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	   StartThread(recruiteLoop)
-	   x,y,z= Spring.GetUnitPosition(unitID)
+   Spring.MoveCtrl.Enable(unitID,true)
+   TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+   StartThread(recruiteLoop)
+   x,y,z= Spring.GetUnitPosition(unitID)
 
-	   Spring.MoveCtrl.SetPosition(unitID, x,y+ GameConfig.iconGroundOffset,z)
-	   StartThread(lifeTime, unitID, 15000, true, false)
-	   StartThread(animationLoop, 2)
+   Spring.MoveCtrl.SetPosition(unitID, x,y+ GameConfig.iconGroundOffset,z)
 
+   StartThread(animationLoop, 2)
 end
 
 boolKillParent= false
 overWriteIDOnCreation= nil
 boolSetVelocity= true
+myTeam = Spring.GetUnitTeam(unitID)  
 
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
 civilianAgentDefID = UnitDefNames["civilianagent"].id
 TruckTypeTable = getTruckTypeTable(UnitDefs)
 
+function isDisguisedCivilian(id, myTeam)
+return (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivilianFor[id] ~= fatherID) and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= myTeam
+end
+
+function isNormalCivilian(id)
+	return civilianWalkingTypeTable[spGetUnitDefID(id)] and  not GG.DisguiseCivilianFor[id]
+end
+
 function recruiteLoop()
 	local recruitmentRange = GameConfig.agentConfig.recruitmentRange
-	
-	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
-
-	local spGetUnitDefID =Spring.GetUnitDefID
 	local spGetUnitTeam = Spring.GetUnitTeam
-	Sleep(100)
+	waitTillComplete(unitID)
+    StartThread(lifeTime, unitID, 15000, true, false)
 
 	while true do
 		Sleep(100)
@@ -55,8 +58,6 @@ function recruiteLoop()
 					end
 				end,	
 				function(id) --filter out disguise units
-boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivilianFor[id] ~= fatherID) and Spring.GetUnitTeam( GG.DisguiseCivilianFor[id]) ~= Spring.GetUnitTeam(unitID)  
-
 					defID = spGetUnitDefID(id)
 					if TruckTypeTable[defID] then
 					
@@ -64,7 +65,7 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 								ad = Spring.CreateUnit(randT(TruckTypeTable),			
 								x,y,z, 			
 								1,		
-								teamID,	
+								myTeam,	
 								false,				
 								false,	
 								nil,
@@ -78,61 +79,45 @@ boolIsDisguiseCivilian = (GG.DisguiseCivilianFor[id] ~= nil and GG.DisguiseCivil
 							while true do
 								Sleep(1000)
 							end	
-					
 					end
 					
-					if civilianWalkingTypeTable[spGetUnitDefID(id)] and  not GG.DisguiseCivilianFor[id]	or  boolIsDisguiseCivilian == true			
-					then
-						Spring.Echo("Found attachable unit")
+					local boolIsDisguiseCivilian =  isDisguisedCivilian(id, myTeam) 
+					if isNormalCivilian(id) == true	or boolIsDisguiseCivilian == true	then
+
 						if boolIsDisguiseCivilian == true then -- make Unit transparent
-							return GG.DisguiseCivilianFor[id]
-						else
-							return id
-						end
-					end
-				end,
-				function(id)
-					if id then
-						--create a civilian agent
-						teamID =Spring.GetUnitTeam(unitID)			
-						x,y,z,_,_,_ =Spring.GetUnitPosition(id)
+							id = GG.DisguiseCivilianFor[id]
+						end 
+
+						x,y,z = Spring.GetUnitPosition(id)
 						recruitedDefID = Spring.GetUnitDefID(id)
-						
 						ad = Spring.CreateUnit("civilianagent",			
-								x,y,z, 			
-								1,		
-								teamID,	
-								false,				
-								false,	
-								nil,
-								fatherID)
+														x,y,z, 			
+														1,		
+														myTeam,	
+														false,				
+														false,	
+														nil,
+														fatherID)
 						transferUnitStatusToUnit(id, ad)
 						transferOrders(id, ad)
-					
-						--if the recruitedunit was a civilianagent
+						echo("Attach Double-Agent")
+						if boolIsDisguiseCivilian == true then -- make Unit transparent
+								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(id)) 
 							if recruitedDefID == civilianAgentDefID then
-								echo("Attach Double-Agent")
-								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]))
 								Spring.DestroyUnit( id , false, true)
-							elseif operativeTypeTable[recruitedDefID] and recruitedDefID ~= civilianAgentDefID then
-								echo("Attach Double-Agent")
-								--if the recruited unit was a operative
-								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(id))
+							elseif operativeTypeTable[recruitedDefID] then
 								beamOperativeToNearestHouse(id)
-								MoveUnitToUnit(id, ad)
 							end
-							
-							if civilianWalkingTypeTable[recruitedDefID] then
-								Spring.DestroyUnit( id , false, true)
-							end
-
-					Spring.DestroyUnit(unitID, false, true) 
-					while true do
-						Sleep(1000)
-					end
+						else -- create a civilian agent instead of the unit
+							Spring.DestroyUnit(id , false, true)
+							Spring.DestroyUnit(unitID , false, true)
+							while true do
+								Sleep(1000)
+							end	
+						end
 					end
 				end
-			)				
+			)						
 		end
 end
 

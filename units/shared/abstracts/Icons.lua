@@ -21,23 +21,22 @@ local DoubleAgent =
     CanPatrol = true,
     CanStop = true,
     script = "doubleagentscript.lua",
-    objectName = "doubleagent.s3o",
+    objectName = "doubleagent.dae",
     buildPic = "doubleagent.png",
     iconType = "doubleagent",
     canCloak = true,
     cloakCost = 0.0001,
-    ActivateWhenBuilt = 1,
     cloakCostMoving = 0.0001,
     minCloakDistance = 0,
     onoffable = true,
     initCloaked = true,
-    decloakOnFire = true,
+    decloakOnFire = false,
     cloakTimeout = 5,
-    onoffable = true,
-    activatewhenbuilt = true,
+
     customparams = {
         helptext = "Civilian Agent working for the opposite site",
-        baseclass = "Human" -- TODO: hacks
+        baseclass = "Human" ,-- TODO: hacks
+        normaltex = "unittextures/component_atlas_normal.dds",
     },
     category = "NOTARGET"
 }

@@ -901,8 +901,8 @@ hoverAboveFunc = function( persPack)
 					end					
 					
 					Spring.MoveCtrl.SetPosition(persPack.unitID, x,y + persPack.heightAbove,z)	
-					boolUnitIsCloaked =	Spring.GetUnitIsCloaked (persPack.unitID)					
-					
+					boolUnitIsCloaked =	Spring.GetUnitIsCloaked (persPack.unitID)	
+
 					if persPack.startFrame + 30 < Spring.GetGameFrame()  and  boolUnitIsCloaked == false then
 						copyUnit(persPack.toTrackID, persPack.myTeam)
 						Spring.DestroyUnit(persPack.toTrackID,true,true)
