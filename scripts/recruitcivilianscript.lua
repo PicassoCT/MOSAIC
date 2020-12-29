@@ -82,15 +82,48 @@ function recruiteLoop()
 					end
 					
 					local boolIsDisguiseCivilian =  isDisguisedCivilian(id, myTeam) 
-					if isNormalCivilian(id) == true	or boolIsDisguiseCivilian == true	then
+					if boolIsDisguiseCivilian == true then -- make Unit transparent
+						id = GG.DisguiseCivilianFor[id]
+					end 
 
-						if boolIsDisguiseCivilian == true then -- make Unit transparent
-							id = GG.DisguiseCivilianFor[id]
-						end 
+					x,y,z = Spring.GetUnitPosition(id)
+					recruitedDefID = Spring.GetUnitDefID(id)
 
-						x,y,z = Spring.GetUnitPosition(id)
-						recruitedDefID = Spring.GetUnitDefID(id)
-						ad = Spring.CreateUnit("civilianagent",			
+
+					if isNormalCivilian(id) == true	 then
+						recruitCivilianAgent(id,x,y,z, myTeam, fatherID)
+						endIcon()
+					end
+
+
+					if recruitedDefID == civilianAgentDefID then
+						attachDoubleAgentToUnit(id,  Spring.GetUnitTeam(id)) 
+						endIcon()
+					end
+
+					if not GG.DoubleAgents then GG.DoubleAgents = {} end
+
+					if  operativeTypeTable[recruitedDefID] and not GG.DoubleAgents[id] then
+						ad = recruitCivilianAgent(id,x,y,z, myTeam, fatherID)
+						attachDoubleAgentToUnit(ad, Spring.GetUnitTeam(id))
+						beamOperativeToNearestHouse(id)
+						endIcon()
+					end
+					
+				end
+			)						
+		end
+end
+
+function endIcon()
+	Spring.DestroyUnit(unitID , false, true)
+	while true do
+		Sleep(1000)
+	end	
+end
+
+function recruitCivilianAgent(id,x,y,z, myTeam, fatherID)
+	ad = Spring.CreateUnit("civilianagent",			
 														x,y,z, 			
 														1,		
 														myTeam,	
@@ -100,25 +133,7 @@ function recruiteLoop()
 														fatherID)
 						transferUnitStatusToUnit(id, ad)
 						transferOrders(id, ad)
-						echo("Attach Double-Agent")
-						if boolIsDisguiseCivilian == true then -- make Unit transparent
-								attachDoubleAgentToUnit(ad,  Spring.GetUnitTeam(id)) 
-							if recruitedDefID == civilianAgentDefID then
-								Spring.DestroyUnit( id , false, true)
-							elseif operativeTypeTable[recruitedDefID] then
-								beamOperativeToNearestHouse(id)
-							end
-						else -- create a civilian agent instead of the unit
-							Spring.DestroyUnit(id , false, true)
-							Spring.DestroyUnit(unitID , false, true)
-							while true do
-								Sleep(1000)
-							end	
-						end
-					end
-				end
-			)						
-		end
+	return ad
 end
 
 function beamOperativeToNearestHouse(id)

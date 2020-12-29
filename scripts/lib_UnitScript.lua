@@ -1265,6 +1265,7 @@ function getPieceMap(unitID)
 	return List 
 end
 
+
 function waitTillComplete(id)
 	if not id then return end
 	if  doesUnitExistAlive(id) == false then return end

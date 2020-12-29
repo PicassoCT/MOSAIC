@@ -45,7 +45,7 @@ local OperativeInvestigator = Human:New{
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
-	workerTime = 0.75,
+	workerTime = 1.0,
 	buildDistance = 120,
 	terraformSpeed = 350,
 		

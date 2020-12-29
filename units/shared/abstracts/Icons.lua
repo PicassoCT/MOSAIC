@@ -49,7 +49,7 @@ local RecruitCivilian =
     buildCostMetal = 250,
     explodeAs = "none",
     --orders
-
+    buildTime = 5.0,
     script = "recruitcivilianscript.lua",
     objectName = "RecruitIcon.dae",
     buildPic = "recruitcivilian.png",

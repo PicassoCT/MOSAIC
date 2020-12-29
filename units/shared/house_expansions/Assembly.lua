@@ -7,12 +7,12 @@ local Assembly = Building:New{
 	buildCostMetal      = 2500,
 	explodeAs			= "none",
 
-
+	workerTime= 1.0,
 	buildTime =    60,
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]], --
 	CanReclaim=false,	
-	workerTime = 0.065,
+
 	YardMap ="yyyy yyyy yyyy yyyy ",
 	MaxSlope 					= 50,
 	MetalStorage = 2500,
