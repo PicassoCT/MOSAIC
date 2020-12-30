@@ -709,3 +709,35 @@ function sharedComputationResult( key, func, data, frameInterval, GameConfig)
     return GG.SharedComputationResult[key].result
 
 end
+
+function onDeCloakNeverRecloak(unitID)
+    local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
+
+    Sleep(100)
+    waitTillComplete(unitID)
+    Sleep(100)
+    
+    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+    SetUnitValue(COB.WANT_CLOAK, 1)
+    SetUnitValue(COB.CLOAKED, 1)
+    while (spGetUnitIsCloaked(unitID)== false) do
+        Sleep(100)
+    end
+
+    boolCloaked=spGetUnitIsCloaked(unitID)
+    while true do 
+        boolCloaked=spGetUnitIsCloaked(unitID)
+        Sleep(100)
+
+        if boolCloaked == false and boolDeCloaked == false then
+            boolDeCloaked = true
+        end
+
+        if boolCloaked == true and boolDeCloaked == true then 
+            SetUnitValue(COB.WANT_CLOAK, 0)
+            SetUnitValue(COB.CLOAKED, 0)
+        end
+
+        Sleep(100)
+    end
+end

@@ -28,10 +28,8 @@ local DoubleAgent =
     cloakCost = 0.0001,
     cloakCostMoving = 0.0001,
     minCloakDistance = 0,
-    onoffable = true,
     initCloaked = true,
     decloakOnFire = false,
-    cloakTimeout = 5,
 
     customparams = {
         helptext = "Civilian Agent working for the opposite site",
@@ -49,7 +47,7 @@ local RecruitCivilian =
     buildCostMetal = 250,
     explodeAs = "none",
     --orders
-    buildTime = 5.0,
+    buildTime = 3.0,
     script = "recruitcivilianscript.lua",
     objectName = "RecruitIcon.dae",
     buildPic = "recruitcivilian.png",

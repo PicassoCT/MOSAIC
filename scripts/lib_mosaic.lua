@@ -83,7 +83,7 @@ function getGameConfig()
 	 propandaServerFactor = 0.1,
 	 
 	 --doubleAgentHeight
-	 doubleAgentHeight = 128,
+	 doubleAgentHeight = 256,
 	 
 	 --Dayproperties
 	 daylength = 28800, --in frames
@@ -872,10 +872,17 @@ function createStreamEvent(unitID, func, framerate, persPack)
 	GG.EventStream:CreateEvent(eventFunction, persPack, Spring.GetGameFrame() + 1)
 end
 
+
 function attachDoubleAgentToUnit(id, teamToTurnTo)
 GameConfig = getGameConfig()
+if not GG.DoubleAgents then GG.DoubleAgents={} end
+if  GG.DoubleAgents[id] then
+--already has DoubleAgent attached- abort
+	return  GG.DoubleAgents[id] 
+ end
 
 doubleAgentID = createUnitAtUnit(teamToTurnTo, "doubleagent", id, 0, GameConfig.doubleAgentHeight , 0)
+GG.DoubleAgents[id]= doubleAgentID
 
 Spring.MoveCtrl.Enable(doubleAgentID, true)
 --set invisible
@@ -894,13 +901,13 @@ hoverAboveFunc = function( persPack)
 					x,y,z= Spring.GetUnitPosition(persPack.toTrackID)
 							
 					if doesUnitExistAlive(persPack.unitID)== false then 
-						persPack.unitID =createUnitAtUnit(persPack.myTeam, "doubleagent", persPack.toTrackID, x, y + persPack.heightAbove , z)
+						persPack.unitID =createUnitAtUnit(persPack.myTeam, "doubleagent", persPack.toTrackID, x - 10, y + persPack.heightAbove , z)
 						Spring.MoveCtrl.Enable(persPack.unitID)
 						
 						return boolContinue, persPack
 					end					
 					
-					Spring.MoveCtrl.SetPosition(persPack.unitID, x,y + persPack.heightAbove,z)	
+					Spring.MoveCtrl.SetPosition(persPack.unitID, x-10,y + persPack.heightAbove,z)	
 					boolUnitIsCloaked =	Spring.GetUnitIsCloaked(persPack.unitID)	
 
 					if not persPack.boolCloakedAtLeastOnce  then

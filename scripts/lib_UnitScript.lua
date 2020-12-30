@@ -922,7 +922,7 @@ return false
 end
 
 
-function copyUnit(id, teamID)
+function copyUnit(id, teamID, fatherID)
 	ox,oy,oz= ox or 0,oy or 0,oz or 0
 	copyID =  createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id,ox,oy,oz)
 	transferUnitStatusToUnit(id, copyID)
@@ -940,11 +940,11 @@ function createUnitAtPiece(id, typeID, Piece, team)
 	return Spring.CreateUnit(typeID, x, y, z, math.ceil(math.random(0, 3)), teamID)
 end
 --> Create a Unit at another Unit
-function createUnitAtUnit(teamID, typeID, otherID,ox,oy,oz)
+function createUnitAtUnit(teamID, typeID, otherID,ox,oy,oz, parentID)
 	if isUnitAlive(otherID) == false then return end
 	ox,oy,oz= ox or 0,oy or 0,oz or 0
 	x,y,z,_,_,_ =Spring.GetUnitPosition(otherID)
-	return Spring.CreateUnit(typeID, x+ox, y+oy, z+oz, math.ceil(math.random(0, 3)), teamID)
+	return Spring.CreateUnit(typeID, x+ox, y+oy, z+oz, math.ceil(math.random(0, 3)), teamID, parentID)
 end
 
 function createUnitAtFeature(teamID, typeID, featureID,ox,oy,oz)
@@ -6077,3 +6077,6 @@ end
 function frameToS(frames)
 return (frames / 30);
 end
+
+
+

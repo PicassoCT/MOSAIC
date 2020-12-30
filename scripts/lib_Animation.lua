@@ -95,6 +95,7 @@ end
 
 -->CombinedWaitTurn
 function WTurn(lib_piece, lib_axis, lib_distance, lib_speed)
+    assert(lib_piece)
     Turn(lib_piece, lib_axis, lib_distance, lib_speed)
     WaitForTurn(lib_piece, lib_axis)
 end

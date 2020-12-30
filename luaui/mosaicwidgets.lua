@@ -1867,7 +1867,7 @@ function widgetHandler:GameStart()
 			end	
 		end
 	end
-	Spring.Echo("STATS:plist"..plist)
+--	Spring.Echo("STATS:plist"..plist)
   return
 end
 

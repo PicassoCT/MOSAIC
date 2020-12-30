@@ -204,7 +204,7 @@ function gadget:UnitDecloaked(unitID,unitDefID,teamID)
             tinsert(particleIDs[unitID], Lups.AddParticles(fx.class, fx.options))
         end
     end
-	Spring.Echo("Lups unit decloaked lups cloak fx")
+	--Spring.Echo("Lups unit decloaked lups cloak fx")
 end
 
 function gadget:UnitGiven(unitID, unitDefID, teamID, oldTeamID)

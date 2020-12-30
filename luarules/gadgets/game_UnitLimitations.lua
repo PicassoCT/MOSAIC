@@ -29,7 +29,7 @@ if (gadgetHandler:IsSyncedCode()) then
 			if not UnitCount[unitTeam][unitDefID] then UnitCount[unitTeam][unitDefID] = 0 end
 		
 			if UnitCount[unitTeam][unitDefID] + 1 > UnitsLimited[unitDefID] then
-				GG:PushKill(unitID, true, true)
+				GG.UnitsToKill:PushKillUnit(unitID, true, true)
 			else
 				UnitCount[unitTeam][unitDefID]  = UnitCount[unitTeam][unitDefID] + 1 
 			end
@@ -42,7 +42,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		if UnitsLimited[unitDefID] then		
 			UnitCount[unitTeam][unitDefID]  = math.max(UnitCount[unitTeam][unitDefID] - 1,0)
 			if UnitCount[newTeam][unitDefID] + 1 > UnitsLimited[unitDefID] then
-				GG:PushKill(unitID, true, true)
+				GG.UnitsToKill:PushKillUnit(unitID, true, true)
 			else
 				UnitCount[unitTeam][unitDefID]  = UnitCount[unitTeam][unitDefID] + 1 
 			end 
