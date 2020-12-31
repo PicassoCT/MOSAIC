@@ -9,7 +9,8 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
-center = piece "center"
+center = piece "anchor"
+Infantry = piece "Infantrz"
 
 -- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 -- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
@@ -71,6 +72,7 @@ function fallingDown()
 	--debug code
 	passengerID= GG.ParachutPassengers[unitID].id
 	passengerDefID= Spring.GetUnitDefID(passengerID)
+	if operativeTypeTable[passengerID] then Show(Infantry)end
 	showUnit(passengerID)
 	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
 
@@ -191,16 +193,20 @@ function getComandOffset(id, x, z,  speed)
 			
 					if math.abs(cmd.params[1] - x)> 10 then
 						if cmd.params[1] < x then
+							Turn(Infantry,y_axis, math.rad(0), 15)
 							xVal= speed *-1
 						elseif cmd.params[1]  > x then
+								Turn(Infantry,y_axis, math.rad(180), 15)
 							xVal= speed
 						end
 					end
 				
 					if math.abs(cmd.params[3] - z)> 10 then
 						if cmd.params[3] < z then
+								Turn(Infantry,y_axis, math.rad(90), 15)
 							zVal= speed *-1
 						elseif cmd.params[3]  > z then
+								Turn(Infantry,y_axis, math.rad(270), 15)
 							zVal=  speed 
 						end
 					end				

@@ -8,11 +8,13 @@ TablesOfPiecesGroups = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    hideT(TablesOfPiecesGroups["HyperLoop"])
     resetAll(unitID)
     val = math.random(-360, 360)
+    hideT(TablesOfPiecesGroups["HyperLoop"])
     StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][1], 1, 5)
     StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][6], 6, #TablesOfPiecesGroups["HyperLoop"])     
-    hideT(TablesOfPiecesGroups["HyperLoop"])
+
     StartThread(forInterval,1,6)
     StartThread(forInterval,7,#TablesOfPiecesGroups["HyperLoop"])
     StartThread(delayShowAllElements)
@@ -22,6 +24,8 @@ function delayShowAllElements()
     for i=1,#elementsToShow do
         Show(elementsToShow[i])
     end
+    Show(TablesOfPiecesGroups["HyperLoop"][1]))
+    Show(TablesOfPiecesGroups["HyperLoop"][6]))
 end
 function script.Killed(recentDamage, _)
     return 1
@@ -50,10 +54,10 @@ function sensorTurn(tower, starts,ends)
     end
 end
 
-elementsToShow={}
 function forInterval(start,stop)
-    hideT(TablesOfPiecesGroups["HyperLoop"],start,stop)
- for i = start, stop do
+    Show(TablesOfPiecesGroups["HyperLoop"][start])
+    elementsToShow={}
+    for i = start, stop do
         if i ~= stop then
         nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
         thisElement= TablesOfPiecesGroups["HyperLoop"][i]
@@ -72,9 +76,7 @@ function forInterval(start,stop)
                 else
                     break
                 end
-                if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
-                    Hide(thisElement)
-                else
+                if (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) == false then
                     elementsToShow[#elementsToShow+1]= thisElement
                 end
                WTurn(thisElement, x_axis, math.rad(val), 0)
@@ -82,4 +84,5 @@ function forInterval(start,stop)
             end
          end
     end    
+    showT(elementsToShow)
 end
