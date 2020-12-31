@@ -48,29 +48,33 @@ return false
 end
 
 function deployPipes()
-    StartThread(forInterval,1, 5, Irrigation1)
+    StartThread(forInterval,1, 5, Irrigation1, 1)
     Sleep(100)
-    StartThread(forInterval,6 ,#TablesOfPiecesGroups["HyperLoop"], Irrigation2)
+    StartThread(forInterval,6 ,#TablesOfPiecesGroups["HyperLoop"], Irrigation2, 2)
 end
 
 takenValues={}
 
-function forInterval(start,stop, irrigation)
+function forInterval(start,stop, irrigation, nr)
+    offset = 5
     discoverSign= randSign()
     rotationValue = math.random(-8, 8)*45
     attempts= 0
     while(outsideMap(irrigation)== true or takenValues[rotationValue] and attempts < 10) do
        WTurn(TablesOfPiecesGroups["HyperLoop"][start], y_axis, math.rad(rotationValue), 0)
        rotationValue= rotationValue + 45*discoverSign
-       attempts = inc(attempts)
+       attempts = attempts + 1
     end
     takenValues[rotationValue] = true
 
  accumulateddeg= 0
+ showTable={}
  for i = start, stop do
-        if i ~= stop then
-        nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
-        if i == stop then nextElement = irrigation end
+        if i ~= stop and TablesOfPiecesGroups["HyperLoop"][i+1]then
+            nextElement= TablesOfPiecesGroups["HyperLoop"][i+1]
+        else
+            nextElement = irrigation
+        end
 
         boolIsAboveGround = false
         val= 0
@@ -80,24 +84,35 @@ function forInterval(start,stop, irrigation)
                 gh =Spring.GetGroundHeight(x,z)
                 counter = counter +1
 
-                if y  > gh  +20 then
+                if y  > gh  + offset then
                     val = val - 1
                     accumulateddeg= accumulateddeg -1
-                elseif y  < gh   +20  then
+                elseif y  < gh + offset   then
                     val = val + 1
-                    accumulateddeg= accumulateddeg +1
-                else
-                    break
+                    accumulateddeg=accumulateddeg +1
                 end
-                if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
-                    Hide(nextElement)
+
+                if (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) == false then
+                    showTable[#showTable+1] = nextElement
+
                 end
                WTurn(TablesOfPiecesGroups["HyperLoop"][i], x_axis, math.rad(val), 0)
             end
-         end
-    end    
-    accumulateddeg= accumulateddeg*-1
-    WTurn(endElement, x_axis, math.rad(accumulateddeg), 0)
-    showT(TablesOfPiecesGroups["HyperLoop"],start,stop)
+    end
+   
+    accumulateddeg = accumulateddeg*-1
+    WTurn(irrigation, x_axis, math.rad(accumulateddeg), 0)
+    showT(showTable)
     StartThread(spawnDecalAtPiece, irrigation)
+end
+
+
+function startRotation(nr)
+    Rotator = piece("Rotator"..nr)
+    while true do
+
+
+    Sleep(100)
+    end
+
 end

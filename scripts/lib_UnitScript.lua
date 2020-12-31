@@ -6075,8 +6075,5 @@ end
 
 
 function frameToS(frames)
-return (frames / 30);
+	return (frames / 30);
 end
-
-
-
