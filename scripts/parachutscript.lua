@@ -203,10 +203,10 @@ function getComandOffset(id, x, z,  speed)
 				
 					if math.abs(cmd.params[3] - z)> 10 then
 						if cmd.params[3] < z then
-								Turn(Infantry,y_axis, math.rad(90), 15)
+								Turn(Infantry,y_axis, math.rad(270), 15)
 							zVal= speed *-1
 						elseif cmd.params[3]  > z then
-								Turn(Infantry,y_axis, math.rad(270), 15)
+								Turn(Infantry,y_axis, math.rad(90), 15)
 							zVal=  speed 
 						end
 					end				
