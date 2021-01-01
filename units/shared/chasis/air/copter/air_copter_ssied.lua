@@ -15,7 +15,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	--cost
 	buildCostMetal = 500,
 	buildCostEnergy = 250,
-	buildTime = 3*60,
+	buildTime = 60,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

@@ -15,7 +15,7 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 	--cost
 	buildCostMetal = 250,
 	buildCostEnergy = 1500,
-	buildTime = 3*60,
+	buildTime = 1*60,
 	--Health
 	maxDamage = 250,
 	idleAutoHeal = 0,

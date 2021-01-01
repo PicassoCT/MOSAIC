@@ -1,7 +1,7 @@
 local satteliteGodrod = Satellite:New{
 	name = "Orbital Strike Satellite ",
 	Description = " MOSAIC Standardized Assault Satellite ",
-
+	buildTime= 45,
 	maxDamage          		= 500,
 	mass              		= 500,
 	buildCostEnergy    		= 1500,

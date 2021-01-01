@@ -13,6 +13,7 @@ local ground_truck_mg = Truck:New{
 	--maxReverseVelocity= 2.15,
 	acceleration = 1.7,
 	brakeRate = 0.1,
+	buildtime= 80,
 	turninplace		= true,
 	footprintX = 1,
 	footprintZ = 1,
@@ -47,6 +48,7 @@ local ground_truck_mg = Truck:New{
 }
 
 local ground_truck_ssied = Truck:New{
+	buildtime= 80,
 	name = "SSIED Truck",
 	description = "Selfdriving explosive truck <Assault Vehicle>",
 		buildPic = "truck_iied.png",
@@ -94,6 +96,7 @@ local ground_truck_ssied = Truck:New{
 }
 
 local ground_truck_antiarmor = Truck:New{
+	buildtime= 80,
 	name = "AntiArmor Truck",
 	description = "Selfdriving anti vehicle truck <Assault Vehicle>",
 			buildPic = "truck_antiarmour.png",
@@ -140,6 +143,7 @@ local ground_truck_antiarmor = Truck:New{
 }
 
 local ground_truck_rocket = Truck:New{
+	buildtime= 80,
 	name = "Roketlauncher Truck",
 	description = "Selfdriving rocket artillery truck <Assault Vehicle>",
 			buildPic = "truck_rocket.png",
@@ -188,6 +192,7 @@ local ground_truck_rocket = Truck:New{
 }
 
 local CivilianTruck = Truck:New{
+	buildtime= 30,
 	name = "Civilian Vehicle",
 	description = "locally assembled electric truck",
 	corpse				= "",

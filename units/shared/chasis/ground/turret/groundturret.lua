@@ -10,7 +10,7 @@ local groundturretspyder =  Turret:New{
 	--cost
 	buildCostEnergy = 500,
 	buildCostMetal = 250,
-	buildTime = 35,
+	buildTime = 30,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

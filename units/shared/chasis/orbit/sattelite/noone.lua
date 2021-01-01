@@ -18,7 +18,7 @@ local NooneLaser = Human:New{
 	acceleration   		 	= 1.7,
 	brakeRate      		 	= 0.1,
 	turninplace				= true,
-
+	buildTime= 45,
 	MaxSlope 					= 50,
 
 	footprintX = 1,

@@ -17,7 +17,7 @@ local CivilianAgent = Human:New{
 	MaxVelocity = 0.7875,
 	showNanoFrame= true,
 	
-	buildtime			 = 40,
+	buildtime			 = 25,
 	CanAttack = true,
 	CanGuard = true,
 
