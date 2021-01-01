@@ -56,6 +56,7 @@ local OperativePropagator = Human:New{
 		"recruitcivilian",
 		"antagonsafehouse",
 		"air_copter_ssied",
+		"air_parachut"
 	},
 
 	customparams = {

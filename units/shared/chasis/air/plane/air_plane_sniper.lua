@@ -13,7 +13,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	--cost
 	buildCostMetal = 750,
 	buildCostEnergy = 1000,
-	buildTime =  45,
+	buildTime =  2*60,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

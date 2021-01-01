@@ -65,7 +65,8 @@ showNanoFrame= true,
 	buildDistance = 45,
 	terraformSpeed = 1,
 	buildoptions = {
-		"ground_turret_ssied"
+		"ground_turret_ssied",
+		"air_parachut"
 	},
 	
 	customparams = {

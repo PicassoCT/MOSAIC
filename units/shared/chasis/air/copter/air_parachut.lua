@@ -7,12 +7,13 @@ local AIR_PARACHUT = VTOL:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	script = "parachutscript.lua",
-	buildPic = "placeholder.png",
+	buildPic = "parachute.png",
+
 	--floater = true,
 	--cost
 	buildCostMetal = 50,
 	buildCostEnergy = 0,
-	buildTime = 2 * 60,
+	buildTime = 5,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

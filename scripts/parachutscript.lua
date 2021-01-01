@@ -64,7 +64,11 @@ function fallingDown()
 	while not GG.ParachutPassengers do
 		Sleep(1)
 	end
-
+	if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)] then
+		x,y,z = Spring.GetUnitPosition(fatherID)
+		y = y + 15
+		GG.ParachutPassengers[unitID] = {id = fatherID, x= x, y = y, z= z}
+	end
 	
 	while not GG.ParachutPassengers[unitID] do
 		Sleep(1)
@@ -86,12 +90,7 @@ function fallingDown()
 	while isPieceAboveGround(unitID, center, 15) == true do
 		x,y,z =Spring.GetUnitPosition(unitID)
 		xOff, zOff= getComandOffset(passengerID,x,z, 1.52)
-		if operativeTypeTable[passengerID] then
-			Turn(center,x_axis,math.rad(60),15)
-			Turn(center,z_axis,math.rad(60),15)
-		end
-
-	
+		
 		Spring.MoveCtrl.SetPosition(unitID, x+xOff, y - dropRate, z+ zOff)
 		Sleep(1)
 		
@@ -190,26 +189,28 @@ function getComandOffset(id, x, z,  speed)
 		 for _, cmd in pairs(CommandTable) do
 			if boolFirst == true and cmd.id == CMD.MOVE then 
 				boolFirst = false 
-			
+				TurnVal= 0
 					if math.abs(cmd.params[1] - x)> 10 then
 						if cmd.params[1] < x then
-							Turn(Infantry,y_axis, math.rad(0), 15)
+							TurnVal = 270
 							xVal= speed *-1
 						elseif cmd.params[1]  > x then
-								Turn(Infantry,y_axis, math.rad(180), 15)
+							TurnVal= 90
 							xVal= speed
 						end
 					end
 				
 					if math.abs(cmd.params[3] - z)> 10 then
 						if cmd.params[3] < z then
-								Turn(Infantry,y_axis, math.rad(270), 15)
+							TurnVal = (TurnVal+ 180)/2	
 							zVal= speed *-1
 						elseif cmd.params[3]  > z then
-								Turn(Infantry,y_axis, math.rad(90), 15)
+							TurnVal = (TurnVal+360)/2
 							zVal=  speed 
 						end
-					end				
+					end		
+
+					Turn(Infantry,y_axis, math.rad(TurnVal), 15)		
 						
 				return xVal,zVal
 			end		 
