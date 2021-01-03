@@ -20,7 +20,7 @@ local OperativeAsset = Human:New{
 	canMove	= true,
 	CanAttack = true,
 	CanGuard = true,
-showNanoFrame= true,
+	showNanoFrame= true,
 		buildPic = "operativeasset.png",
 		iconType = "operativeasset",
 	CanMove = true,
@@ -42,6 +42,7 @@ showNanoFrame= true,
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
+
 	category = "GROUND ARRESTABLE",
 	fireState= 1,
 	

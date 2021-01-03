@@ -2,9 +2,9 @@ model = {
 	radius = 25.0,
 	height = 40,
 	--new version following https://springrts.com/wiki/Shaders:IvandPBRShader
-	tex1 = "pbr_ref_diffuse.tga",
-	tex2 = "pbr_ref_pbr.tga",
-	tex3 = "pbr_ref_normal.tga",
+	tex1 = "pbr_ref_diffuse.dds",
+	tex2 = "pbr_ref_pbr.dds",
+	tex3 = "pbr_ref_normal.dds",
 
 	
 	
