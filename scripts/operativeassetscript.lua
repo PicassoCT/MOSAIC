@@ -568,7 +568,7 @@ function spawnDecoyCivilian()
 end
 
 function needsCloak( boolCloaked, boolOldStateCloaked,  boolIsBuilding, idOperativeDiscoverd)
-	if boolOldStateCloaked == false and boolFireForcedVisible == true then return false end
+	if  boolFireForcedVisible == true then return false end
 
 	if idOperativeDiscoverd then return false end
 
@@ -577,8 +577,10 @@ function needsCloak( boolCloaked, boolOldStateCloaked,  boolIsBuilding, idOperat
 	return boolCloaked == true and boolOldStateCloaked == false
 end
 
+
+
 function needsToUncloak( boolCloaked, boolOldStateCloaked, boolIsBuilding, idOperativeDiscoverd)
-	if boolOldStateCloaked == true and boolFireForcedVisible == true then return true end
+	if  boolFireForcedVisible == true then return true end
 	
 	if idOperativeDiscoverd and boolOldStateCloaked == true then return true end
 
@@ -596,8 +598,6 @@ function cloakLoop()
 	waitTillComplete(unitID)
 	
 	--initialisation
-
-
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	SetUnitValue(COB.WANT_CLOAK, 1)
 	SetUnitValue(COB.CLOAKED, 1)
@@ -614,7 +614,6 @@ function cloakLoop()
 		if  needsCloak(boolCloaked,  boolOldStateCloaked, boolIsBuilding,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, mySpeedReductionCloaked)
 			boolOldStateCloaked=true
-
 			StartThread(spawnDecoyCivilian)
 		end
 		
@@ -701,10 +700,12 @@ end
 
 boolFireForcedVisible= false
 function visibleAfterWeaponsFireTimer()
+	boolFireForcedVisible = true
 	Signal(SIG_FIRE_VISIBLITY)
 	SetSignalMask(SIG_FIRE_VISIBLITY)
-	Sleep(GameConfig.assetShotFiredWaitTimeToRecloak)
-	boolFireForcedVisible = true
+	value= GameConfig.assetShotFiredWaitTimeToRecloak
+	Sleep(value)
+	boolFireForcedVisible = false
 end
 
 function pistolFireFunction(weaponID, heading, pitch)
