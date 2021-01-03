@@ -1,8 +1,8 @@
 model = {
 	radius = 25.0,
 	height = 40,
-	tex1 = "testtex1.dds",
-	tex2 = "testtex2.dds",
+	tex1 = "component_atlas_diffuse.dds",
+	tex2 = "component_atlas_normal.dds",
 	-- tex1 = "component_atlas_diffuse.dds",
 	-- tex2 = "component_atlas_normal.dds",
 
