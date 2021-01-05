@@ -24,8 +24,8 @@ function delayShowAllElements()
     for i=1,#elementsToShow do
         Show(elementsToShow[i])
     end
-    Show(TablesOfPiecesGroups["HyperLoop"][1]))
-    Show(TablesOfPiecesGroups["HyperLoop"][6]))
+    Show(TablesOfPiecesGroups["HyperLoop"][1])
+    Show(TablesOfPiecesGroups["HyperLoop"][6])
 end
 function script.Killed(recentDamage, _)
     return 1
