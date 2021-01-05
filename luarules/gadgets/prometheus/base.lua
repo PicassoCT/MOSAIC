@@ -101,7 +101,14 @@ local function BuildBase()
 	local builderID
 	for _,u in ipairs(builders) do
 		local _,_,inBuild = Spring.GetUnitIsStunned(u)
-		if not inBuild then builderID = u break end
+		local builtUnit = Spring.GetUnitIsBuilding(u)
+		local boolBuildingComplete = true
+		if builtUnit then
+			local hp,mhp,pd, cP, bP = Spring.GetUnitHealth(builtUnit)
+			boolBuildingComplete = (hp == mhp and bP >= 1.0)
+		end
+
+		if not inBuild and not builtUnit and boolBuildingComplete == true then builderID = u break end
 	end
 	builderID = (builderID or builders[1])
 	if not builderID then Log("internal error: no builders were found") return end
