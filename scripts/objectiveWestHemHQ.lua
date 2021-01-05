@@ -8,10 +8,10 @@ TablesOfPiecesGroups = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideT(TablesOfPiecesGroups["HyperLoop"])
+
     resetAll(unitID)
     val = math.random(-360, 360)
-    hideT(TablesOfPiecesGroups["HyperLoop"])
+
     StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][1], 1, 5)
     StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][6], 6, #TablesOfPiecesGroups["HyperLoop"])     
 
@@ -20,13 +20,16 @@ function script.Create()
     StartThread(delayShowAllElements)
 end
 function delayShowAllElements()
-    Sleep(12000)
-    for i=1,#elementsToShow do
-        Show(elementsToShow[i])
+    hideT(TablesOfPiecesGroups["HyperLoop"])
+    Sleep(30000)
+    for i=1,#TablesOfPiecesGroups["HyperLoop"] do
+        x,y,z= Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["HyperLoop"][i])
+        if (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) == false then
+              Show(TablesOfPiecesGroups["HyperLoop"][i])
+       end
     end
-    Show(TablesOfPiecesGroups["HyperLoop"][1])
-    Show(TablesOfPiecesGroups["HyperLoop"][6])
 end
+
 function script.Killed(recentDamage, _)
     return 1
 end
@@ -55,7 +58,7 @@ function sensorTurn(tower, starts,ends)
 end
 
 function forInterval(start,stop)
-    Show(TablesOfPiecesGroups["HyperLoop"][start])
+
     elementsToShow={}
     for i = start, stop do
         if i ~= stop then
@@ -84,5 +87,5 @@ function forInterval(start,stop)
             end
          end
     end    
-    showT(elementsToShow)
+
 end
