@@ -180,6 +180,8 @@ end
 
 
 function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, side)
+	if Spring.GetUnitIsBuilding(unitID) == true then return end
+	
 	if unitBuildOrder[unitDefID]   then
 		-- factory or builder?
 		if not (UnitDefs[unitDefID].speed > 0) then
@@ -209,7 +211,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 			
 			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
 				if Team.hasEnoughPropagandaservers(unitTeam) == true then
-					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})
+					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {"shift"})
 				
 				else
 

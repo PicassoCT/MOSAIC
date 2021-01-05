@@ -173,13 +173,18 @@ local function UpdateAdd(unitID, supplyInfo)
 end
 
 local function UpdateRemove(unitID, supplyInfo)
+	if not unitID then return end
+
 	local r0 = supplyInfo.r
+	assert(r0)
 	local numSegments = supplyInfo.numSegments
 	local x0, z0 = supplyInfo.x, supplyInfo.z
+	assert(x0)
+	assert(z0)
 
 	for currUnitID, currSupplyInfo in pairs(supplyInfos) do
 		--ignore self
-		if (unitID ~= currUnitID) then
+		if currUnitID and (unitID ~= currUnitID) then
 			--is there overlap?
 			local r = currSupplyInfo.r
 			local x, z = currSupplyInfo.x, currSupplyInfo.z
