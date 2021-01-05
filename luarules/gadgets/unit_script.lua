@@ -21,7 +21,10 @@ if (not gadgetHandler:IsSyncedCode()) then
         return false
 end
 
-local bool_GadgetDebug= GG.BoolDebug or false 
+local bool_GadgetDebug= true--GG.BoolDebug or false
+if bool_GadgetDebug == true then
+    Spring.Echo("unit_script.lua: bool_GadgetDebug active")
+end 
 if not GG.BoolDebug then GG.BoolDebug=bool_GadgetDebug end
 -- This lists all callins which may be wrapped in a coroutine (thread).
 -- The ones which should not be thread-wrapped are commented out.
