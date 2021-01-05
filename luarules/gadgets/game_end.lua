@@ -351,7 +351,16 @@ speaches ={
 [GameConfig.GameState.pacification..">"..GameConfig.GameState.normal]="Transition from pacification to normal",
 }
 
+
+sounds ={
+[GameConfig.GameState.normal..">"..GameConfig.GameState.launchleak]= nil,
+[GameConfig.GameState.launchleak..">"..GameConfig.GameState.anarchy]="sounds/gamestate/normal_anarchy.ogg",
+[GameConfig.GameState.anarchy..">"..GameConfig.GameState.postlaunch]=nil,
+[GameConfig.GameState.anarchy..">"..GameConfig.GameState.pacification]="sounds/gamestate/anarchy_pacification.ogg",
+[GameConfig.GameState.pacification..">"..GameConfig.GameState.normal]=nil,
+}
 if speaches[transition] then echo(speaches[transition]) end
+if sounds[transition] then   Spring.PlaySoundFile(sounds[transition], 1.0)end
 
 end
 function gadget:GameFrame(frame)
@@ -374,9 +383,7 @@ function gadget:GameFrame(frame)
             KillAllyTeamsZeroUnits()
         end
         KillResignedTeams()
-    end
-	
-	
+    end	
 end
 
 
