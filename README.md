@@ -7,7 +7,7 @@ Modular Ordanance Standardization Adaptive Artifacts Intelligence Combat
 This is an RTS game for the spring engine (www.springrts.com). 
 
 Its very near future, and plays out in the cities left in the world.
-You play either as antigen or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
+You play either as Antagon or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
 the unit you start with is an agent, who can hire civilians or create a safe house.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen2.png "")
@@ -38,7 +38,7 @@ Then it comes, a deafening roar, a noise to end all noises, out of those bells, 
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen14.png "")
 
-Then the hammer comes down- on good and evil alike.
+Then the hammer, a godrod, comes down- on good and evil alike.
 
 A eye for a eye, a city for a city.
 
