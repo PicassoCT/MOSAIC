@@ -15,6 +15,7 @@ SIG_STOP = 8
 SIG_UP = 16
 SIG_LOW = 32
 SIG_FIRE_VISIBLITY = 64
+SIG_DELAYEDRECLOAK = 128
 local Animations = include('animation_assasin_male.lua')
 
 
@@ -572,7 +573,7 @@ function needsCloak( boolCloaked, boolOldStateCloaked,  boolIsBuilding, idOperat
 
 	if idOperativeDiscoverd then return false end
 
-	if boolIsBuilding== true then return false end
+	if boolOldStateCloaked == false and boolIsBuilding == false then return true end
 
 	return boolCloaked == true and boolOldStateCloaked == false
 end
@@ -585,6 +586,8 @@ function needsToUncloak( boolCloaked, boolOldStateCloaked, boolIsBuilding, idOpe
 	if idOperativeDiscoverd and boolOldStateCloaked == true then return true end
 
 	if  boolIsBuilding== true and boolOldStateCloaked== true  then return true end
+
+	if boolOldStateCloaked == true and boolIsBuilding == true then return true end
 	
 	return boolCloaked == false and boolOldStateCloaked == true
 end
@@ -614,6 +617,7 @@ function cloakLoop()
 		if  needsCloak(boolCloaked,  boolOldStateCloaked, boolIsBuilding,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, mySpeedReductionCloaked)
 			boolOldStateCloaked=true
+			SetUnitValue(COB.WANT_CLOAK, 1)
 			StartThread(spawnDecoyCivilian)
 		end
 		
@@ -621,7 +625,7 @@ function cloakLoop()
 		if needsToUncloak(boolCloaked, boolOldStateCloaked, boolIsBuilding, GG.OperativesDiscovered[unitID])== true then	
 			setSpeedEnv(unitID, 1.0)
 			boolOldStateCloaked= false
-	
+			SetUnitValue(COB.WANT_CLOAK, 0)
 			if civilianID and doesUnitExistAlive(civilianID) == true then
 				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
@@ -645,8 +649,18 @@ function script.QueryBuildInfo()
     return center
 end
 
-function script.StopBuilding()
+
+function delayedStopBuilding()
+	Signal(SIG_DELAYEDRECLOAK)
+	SetSignalMask(SIG_DELAYEDRECLOAK)
+	Sleep(500)
 	boolIsBuilding = false
+	echo("Stopped building")
+end
+
+
+function script.StopBuilding()
+	StartThread(delayedStopBuilding)
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 

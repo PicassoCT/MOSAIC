@@ -10,6 +10,7 @@ TablesOfPiecesGroups = {}
 SIG_PISTOL = 1
 SIG_RAID = 2
 SIG_FIRE_VISIBLITY = 4
+SIG_DELAYEDRECLOAK = 8
 local boolCloaked = false
 local Animations = include('animation_assasin_female.lua')
 
@@ -624,22 +625,23 @@ end
 
 
 function needsCloak( boolCloaked, boolOldStateCloaked,  boolIsBuilding, idOperativeDiscoverd)
-	if boolOldStateCloaked == false and boolFireForcedVisible == true then return false end
+	if boolOldStateCloaked == false and boolIsBuilding == false then return true end
 
+	if boolOldStateCloaked == false and boolFireForcedVisible == true then return false end
 
 	if idOperativeDiscoverd then return false end
 
-	if boolIsBuilding== true then return false end
-
-	return boolCloaked == true and boolOldStateCloaked == false
+	return boolCloaked == true and boolOldStateCloaked == false and boolIsBuilding == false
 end
 
 function needsToUncloak( boolCloaked, boolOldStateCloaked, boolIsBuilding, idOperativeDiscoverd)
+	if boolOldStateCloaked == true and boolIsBuilding == true then return true end
+
 	if boolOldStateCloaked == true and boolFireForcedVisible == true then return true end
 	
 	if idOperativeDiscoverd and boolOldStateCloaked == true then return true end
 
-	if  boolIsBuilding== true and boolOldStateCloaked== true  then return true end
+	if  boolIsBuilding == true and boolOldStateCloaked == true  then return true end
 	
 return boolCloaked == false and boolOldStateCloaked == true
 end
@@ -651,35 +653,31 @@ function cloakLoop()
 	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 	Sleep(100)
 	waitTillComplete(unitID)
-	
-	--initialisation
-
-
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	SetUnitValue(COB.WANT_CLOAK, 1)
 	SetUnitValue(COB.CLOAKED, 1)
 
 	StartThread(spawnDecoyCivilian)	
 	showHideIcon(true)
-	boolOldStateCloaked = true	
+	boolOldStateCloaked = spGetUnitIsCloaked(unitID)	
 	boolCloaked = spGetUnitIsCloaked(unitID)
 	
 	while true do 
 
-		boolCloaked= spGetUnitIsCloaked(unitID)		
+		boolCloaked = spGetUnitIsCloaked(unitID)		
 		
 		if  needsCloak(boolCloaked,  boolOldStateCloaked, boolIsBuilding,  GG.OperativesDiscovered[unitID]) == true then
 			setSpeedEnv(unitID, mySpeedReductionCloaked)
-			boolOldStateCloaked=true
-
+			boolOldStateCloaked =true
+			SetUnitValue(COB.WANT_CLOAK, 1)
 			StartThread(spawnDecoyCivilian)
 		end
 		
 		Sleep(100)
-		if needsToUncloak(boolCloaked, boolOldStateCloaked, boolIsBuilding, GG.OperativesDiscovered[unitID])== true then	
+		if needsToUncloak(boolCloaked, boolOldStateCloaked, boolIsBuilding, GG.OperativesDiscovered[unitID]) == true then	
 			setSpeedEnv(unitID, 1.0)
-			boolOldStateCloaked= false
-
+			boolOldStateCloaked = false
+			SetUnitValue(COB.WANT_CLOAK, 0)
 			if civilianID and doesUnitExistAlive(civilianID) == true then
 				GG.DiedPeacefully[civilianID] = true
 				Spring.DestroyUnit(civilianID, true, true)
@@ -704,36 +702,25 @@ end
 function script.QueryBuildInfo()
     return center
 end
+
+function delayedStopBuilding()
+	Signal(SIG_DELAYEDRECLOAK)
+	SetSignalMask(SIG_DELAYEDRECLOAK)
+	Sleep(500)
+	boolIsBuilding = false
+	echo("Stopped building")
+end
+
 boolOldCloakValue = false
 function script.StopBuilding()
-	boolIsBuilding = false
+	StartThread(delayedStopBuilding)
 	SetUnitValue(COB.INBUILDSTANCE, 0)
-end
-
-function restoreCloak()
-
-buildID = Spring.GetUnitIsBuilding(unitID)
-if not buildID then return end
-
-while buildID do
-buildID= Spring.GetUnitIsBuilding(unitID)
-Sleep(250)
-end
-	reCloakAfterBuildStop= 1
-	if boolOldCloakValue == false then 
-		reCloakAfterBuildStop = 0
-	end
-	
-	SetUnitValue(COB.CLOAKED, reCloakAfterBuildStop)
-	
 end
 
 
 function script.StartBuilding(heading, pitch)
-	boolOldCloakValue = boolCloaked
-		StartThread(restoreCloak)
-
 	boolIsBuilding = true
+	echo("Started building")
 	SetUnitValue(COB.INBUILDSTANCE, 1)
 end
 
