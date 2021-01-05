@@ -11,7 +11,7 @@ local BlackSite = Building:New{
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
-	workerTime = 0.005,
+	workerTime = 1,
 	YardMap ="oooo oooo oooo oooo ",
 	MaxSlope 					= 50,
 

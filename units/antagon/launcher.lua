@@ -10,6 +10,7 @@ local Launcher = Building:New{
 
 
 	buildtime			 = 60,
+	workerTime = 1.0,
 	buildPic = "launcher.png",
 	iconType = "launcher",
 	Builder = true,
