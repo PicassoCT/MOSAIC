@@ -13,8 +13,8 @@ local Hivemind = Building:New{
 	EnergyUse = 0,
 	MetalStorage = 5000,
 
-	EnergyMake = 2.5, 
-	MakesMetal = 5, 
+	EnergyMake = 0, 
+	MakesMetal = 0, 
 	MetalMake = 0,	
 	
 	acceleration = 0,
@@ -46,6 +46,7 @@ local Hivemind = Building:New{
 
 
 }
+
 local AICore = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
@@ -61,8 +62,8 @@ local AICore = Building:New{
 	EnergyUse = 0,
 	MetalStorage = 5000,
 
-	EnergyMake = 2.5, 
-	MakesMetal = 5, 
+	EnergyMake = 0, 
+	MakesMetal = 0, 
 	MetalMake = 0,	
 	
 	acceleration = 0,
