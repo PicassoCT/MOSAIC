@@ -65,8 +65,9 @@ function fallingDown()
 		Sleep(1)
 	end
 	if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)] then
+		Spring.Echo("Picking up father")
 		x,y,z = Spring.GetUnitPosition(fatherID)
-		y = y + 15
+		y = y + 150
 		GG.ParachutPassengers[unitID] = {id = fatherID, x= x, y = y, z= z}
 	end
 	
