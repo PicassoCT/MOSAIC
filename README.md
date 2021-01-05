@@ -30,7 +30,7 @@ Even the most hardened cells loose it near the end, the mad-idea trying to stay 
 
 Through all the delusional haze, they sense, that they will be hunted into extinction for this atrocity.
 
-Sometimes, just some hireling realizing to late what he has assembled, for that ever absent employer.
+Sometimes, just some gig-worker realizing to late what he has assembled, for that ever absent employer that paid so well.
 
 There is no law, no hope and no god in a city shortly before and forever after a launch.
 
