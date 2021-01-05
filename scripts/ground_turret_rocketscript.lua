@@ -37,9 +37,9 @@ Sleep(5000)
 	while true do
 		if isTransported(unitID)== false then
 			target = math.random(1,360)
-			WTurn(center,y_axis, math.rad(target),math.pi*100)
+			WTurn(center,y_axis, math.rad(target),math.pi)
 			Sleep(500)
-			WTurn(center,y_axis, math.rad(target),math.pi*100)
+			WTurn(center,y_axis, math.rad(target),math.pi)
 		end
 		Sleep(500)
 	end
