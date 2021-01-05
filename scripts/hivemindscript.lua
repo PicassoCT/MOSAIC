@@ -59,6 +59,12 @@ function integrateNewMembers()
 	while true do
 		process(getAllInCircle(x,z, IntegrationRadius),
 		function(id)
+			if GG.DisguiseCivilianFor[id] then
+				return  GG.DisguiseCivilianFor[id] 
+			end
+			return id
+		end,
+		function(id)
 			defID = Spring.GetUnitDefID(id)
 			if integrateAbleUnits[defID] and GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX and  members[id] == nil then
 				GG.HiveMind[teamID][unitID].rewindMilliSeconds = GG.HiveMind[teamID][unitID].rewindMilliSeconds + GameConfig.addSlowMoTimeInMsPerCitizen
