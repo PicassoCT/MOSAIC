@@ -660,14 +660,15 @@ influencedStateMachine = {}
 
 oldBehaviourState =  ""
 function beeHaviourStateMachine(startState, boolInfluenced)
-newState= startState
-if boolInfluenced == true then
-	influencedStateMachine =getInfluencedStateMachine(UnitID, UnitDefs, startState)
-end
-hideAllProps(bodyConfig)
-bodyConfig.boolInfluenced = boolInfluenced
-Signal(SIG_BEHAVIOUR_STATE_MACHINE)
-SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
+	newState= startState
+	if boolInfluenced == true then
+		influencedStateMachine =getInfluencedStateMachine(UnitID, UnitDefs, startState)
+		assert(influencedStateMachine)
+	end
+	hideAllProps(bodyConfig)
+	bodyConfig.boolInfluenced = boolInfluenced
+	Signal(SIG_BEHAVIOUR_STATE_MACHINE)
+	SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
 
 
 	while true do

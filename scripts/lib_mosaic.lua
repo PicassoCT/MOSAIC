@@ -1231,6 +1231,7 @@ function getInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence )
 AerosolTypes = getChemTrailTypes()
 InfStates = getInfluencedStates()
 CivilianTypes = getCivilianTypeTable(UnitDefs)
+
 InfluenceStateMachines = {
 	[AerosolTypes.orgyanyl] = function (lastState, currentState, unitID)
 								if currentState == AerosolTypes.orgyanyl then currentState = InfStates.Init end
@@ -1355,6 +1356,7 @@ InfluenceStateMachines = {
 							 end
 }
 
+	assert(IInfluenceStateMachines[typeOfInfluence], typeOfInfluence )
 	return InfluenceStateMachines[typeOfInfluence]
 end
 

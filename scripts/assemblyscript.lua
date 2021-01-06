@@ -133,7 +133,9 @@ end
 
 function incShowTrayObjects(partName)
 	if not partName then return end
-	Show(TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start + trayDecoMap[partName].counter])
+	if TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start + trayDecoMap[partName].counter] then
+		Show(TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start + trayDecoMap[partName].counter])
+	end
 	trayDecoMap[partName].counter = math.min(trayDecoMap[partName].counter+1, trayDecoMap[partName].ends)
 end
 
@@ -529,7 +531,8 @@ animationSpeed= math.pi*3
 			end
 		end
 		
-		Sleep(100)
+		Sleep(100)
+
 	end
 	
 	driveHome()	
