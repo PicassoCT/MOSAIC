@@ -111,7 +111,7 @@ function workInProgress()
 		if factoryID and Spring.ValidUnitID(factoryID)== true then
 			
 			buildID=Spring.GetUnitIsBuilding(factoryID)
-			if buildID and buildID ~= buildIDofOld then
+			if buildID and buildID ~= buildIDofOld and type(buildID) == "number" then
 		
 				counter=counter+1
 				if counter >35 then 	Spring.DestroyUnit(unitID,true,false) end
