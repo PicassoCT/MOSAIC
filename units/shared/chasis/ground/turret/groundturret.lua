@@ -153,7 +153,7 @@ local groundturretssied =  Turret:New{
 
 local groundturretmg =  Turret:New{
 	name = "Stationary Machinegun",
-	Description = " MOSAIC Standardized Machine Gun Emplacement ",
+	Description = "Pillbox Emplacement ",
 	
 	objectName = "ground_turret_mg.dae",
 		customParams        = {
