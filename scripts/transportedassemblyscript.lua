@@ -152,7 +152,7 @@ function unfoldPosition(speed)
 end
 
 
-function scaraLoop(scaraCycles)
+function scaraLoop(scaraCycles, speed)
 for i=1, scaraCycles, 1 do
 scaraCycle(speed*scaraCycles)
 Show(randT(TablesOfPiecesGroups["Deco"]))
@@ -160,7 +160,7 @@ end
 end
 
 function workAnimation(speed)
-scaraLoop(5)
+scaraLoop(5, speed)
 StartThread(roboCycle,speed)
 
 end
