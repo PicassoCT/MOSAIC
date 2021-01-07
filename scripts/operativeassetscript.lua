@@ -623,8 +623,12 @@ end
 
 
 function cloakLoop()
-	cloakStateMachine = {
-	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, boolVisibleForced)
+	local cloakStateMachine = {
+	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced)
+					boolVisibleForced = false
+					if visibleForced == 1 then
+						boolVisibleForced = true
+					end
 						echo("cloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked))
 						echo( " visibleForced:"..toString(boolVisibleForced))
 
@@ -642,7 +646,12 @@ function cloakLoop()
 
 		return  "cloaked"
 		end,
-	["decloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, boolVisibleForced) 	
+	["decloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced) 
+					boolVisibleForced = false
+					if visibleForced == 1 then
+						boolVisibleForced = true
+					end
+
 					echo("decloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked))
 					echo(" visibleForced:"..toString(boolVisibleForced).."")
 					if boolVisibleForced == true then
@@ -674,7 +683,7 @@ function cloakLoop()
 				return "decloaked"
 				end
 	}
-
+	
 	Sleep(100)
 	waitTillComplete(unitID)
 	
@@ -694,19 +703,22 @@ function cloakLoop()
 		
 		boolOperativeDiscovered = OperativesDiscovered() or false
 		boolVisibleForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (boolOperativeDiscovered == true) 
+		transferValue = 0
+		if boolVisibleForced == true then
+			transferValue = 1
+		end
 		assert(boolVisibleForced ~= nil)
 		assert(type(boolVisibleForced) == "boolean")
-		assert(boolVisibleForced == false)
-
+	
 		boolWantCloakRequest = getWantCloak()
 		boolPreviouslyCloaked = (previousState == "cloaked")
 
 		assert(boolWantCloakRequest~= nil)
 		assert(boolPreviouslyCloaked~= nil)
 
-		currentState = cloakStateMachine[currentState](boolWantCloakRequest, boolPreviouslyCloaked, boolVisibleForced)
+		currentState = cloakStateMachine[currentState](boolWantCloakRequest, boolPreviouslyCloaked, transferValue)
 		previousState = currentState
-		Sleep(1000)
+		Sleep(100)
 	end
 end
 

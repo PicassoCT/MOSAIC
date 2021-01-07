@@ -303,10 +303,6 @@ function unitDescriptionGenerator(Unit, UnitDefNames)
 		return str
 	end
 	
-	function boolToString(bool)
-		if bool == false then return "not" end
-		return " "
-	end
 	
 	function reStr(val, str1, str2)
 		str2 =str2 or ""
