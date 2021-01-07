@@ -32,16 +32,17 @@ local OperativeAsset = Human:New{
 		normaltex = "unittextures/operative_asset_normalpha.tga",
 	},
 	firestate = 1,
-	
+	onoffable = false,
 	canCloak =true,
 	cloakCost=0.0001,
-	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 0,
-	onoffable=true,
-	initCloaked = true,
 	decloakOnFire = true,
-	cloakTimeout = 5,
+	minCloakDistance = 0,
+	cloakTimeout =  6*30,
+
+	initCloaked = true,
+
+
 
 	category = "GROUND ARRESTABLE",
 	fireState= 1,

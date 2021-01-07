@@ -578,6 +578,19 @@ function getWantCloak()
 	return false
 end
 
+
+boolCloaked= false
+boolIsBuilding = false
+
+function transitionToUncloaked()
+	setSpeedEnv(unitID, 1.0)
+	setWantCloak(false)
+	if civilianID and doesUnitExistAlive(civilianID) == true then
+		GG.DiedPeacefully[civilianID] = true
+		Spring.DestroyUnit(civilianID, true, true)
+	end
+end
+
 function setWantCloak(boolWantCloak)
 	if boolWantCloak == true then
 		SetUnitValue(COB.WANT_CLOAK, 1)
@@ -587,23 +600,9 @@ function setWantCloak(boolWantCloak)
 end
 
 
-boolCloaked= false
-boolIsBuilding = false
-
-function transitionToUncloaked()
-	setSpeedEnv(unitID, 1.0)
-	setWantCloak(false)
-	
-	if civilianID and doesUnitExistAlive(civilianID) == true then
-		GG.DiedPeacefully[civilianID] = true
-		Spring.DestroyUnit(civilianID, true, true)
-	end
-end
-
-
 function transitionToCloaked()
-	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	setWantCloak(true)
+	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	StartThread(spawnDecoyCivilian)
 end
 
@@ -621,64 +620,55 @@ function OperativesDiscovered()
 return false
 end
 
-
+previousState = currentState
+boolRecloakOnceDone = false
 function cloakLoop()
 	local cloakStateMachine = {
 	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced)
-					boolVisibleForced = false
-					if visibleForced == 1 then
-						boolVisibleForced = true
-					end
-						echo("cloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked))
-						echo( " visibleForced:"..toString(boolVisibleForced))
+							boolCloakRequest = getWantCloak()
+							boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
+							boolPreviouslyCloaked = (previousState == "cloaked")
 
-						if boolVisibleForced == true then
-							setWantCloak(false)
-							SetUnitValue(COB.CLOAKED, 0)
+						if not boolVisiblyForced == false then
 							transitionToUncloaked()
+							boolRecloakOnceDone= true
 							return "decloaked"
 						end	
 
-						if (boolCloakRequest == false or boolVisibleForced == true ) and (boolPreviouslyCloaked == true )then
+						if (not boolCloakRequest == true  ) then
 							transitionToUncloaked()
 							return "decloaked"
 						end				
 
 		return  "cloaked"
 		end,
-	["decloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced) 
-					boolVisibleForced = false
-					if visibleForced == 1 then
-						boolVisibleForced = true
-					end
-
-					echo("decloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked))
-					echo(" visibleForced:"..toString(boolVisibleForced).."")
-					if boolVisibleForced == true then
-						setWantCloak(false)
+	["decloaked"] = function () 
+					boolCloakRequest = getWantCloak()
+					boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
+					boolPreviouslyCloaked = (previousState == "cloaked")
+			
+					if boolVisiblyForced == true then
 						return "decloaked"
 					end
 
-					if boolCloakRequest == true and boolPreviouslyCloaked == false then 
+					if not boolVisiblyForced == true and boolRecloakOnceDone == true then
+						boolRecloakOnceDone = false
+						transitionToCloaked()
+						return "cloaked"
+					end
+
+					if not boolCloakRequest == false  then 
 						transitionToCloaked()
 						return "cloaked"
 					end
 
 					if boolPreviouslyCloaked == true and boolCloakRequest == false then
-						setWantCloak(false)
 						return "decloaked"
 					end
 
-
-					if boolCloakRequest == true and boolVisibleForced == true then
-						setWantCloak(false)
+					if boolCloakRequest == true and boolVisiblyForced == true then
 						return "decloaked"
 					end
-
-					if boolCloakRequest == true and boolPreviouslyCloaked == true then
-						transitionToCloaked()
-						return "cloaked"
-					end 
 
 				return "decloaked"
 				end
@@ -689,34 +679,13 @@ function cloakLoop()
 	
 	--initialisation
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	setWantCloak(true)
-
 	StartThread(spawnDecoyCivilian)	
 	showHideIcon(true)
 
 	currentState = "cloaked"
-	previousState = currentState
+
 	while true do  
-		assert(type(boolIsBuilding)=="boolean")
-		assert(type(boolFireForcedVisible)=="boolean")
-		assert(type(OperativesDiscovered())=="boolean")
-		
-		boolOperativeDiscovered = OperativesDiscovered() or false
-		boolVisibleForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (boolOperativeDiscovered == true) 
-		transferValue = 0
-		if boolVisibleForced == true then
-			transferValue = 1
-		end
-		assert(boolVisibleForced ~= nil)
-		assert(type(boolVisibleForced) == "boolean")
-	
-		boolWantCloakRequest = getWantCloak()
-		boolPreviouslyCloaked = (previousState == "cloaked")
-
-		assert(boolWantCloakRequest~= nil)
-		assert(boolPreviouslyCloaked~= nil)
-
-		currentState = cloakStateMachine[currentState](boolWantCloakRequest, boolPreviouslyCloaked, transferValue)
+		currentState = cloakStateMachine[currentState]()
 		previousState = currentState
 		Sleep(100)
 	end
