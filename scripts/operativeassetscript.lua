@@ -625,7 +625,8 @@ end
 function cloakLoop()
 	cloakStateMachine = {
 	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, boolVisibleForced)
-						echo("cloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked).. " visibleForced:"..toString(boolVisibleForced))
+						echo("cloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked))
+						echo( " visibleForced:"..toString(boolVisibleForced))
 
 						if boolVisibleForced == true then
 							setWantCloak(false)
@@ -692,10 +693,10 @@ function cloakLoop()
 		assert(type(OperativesDiscovered())=="boolean")
 		
 		boolOperativeDiscovered = OperativesDiscovered() or false
-		boolVisibleForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (boolOperativeDiscovered == true) then
+		boolVisibleForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (boolOperativeDiscovered == true) 
 		assert(boolVisibleForced ~= nil)
 		assert(type(boolVisibleForced) == "boolean")
-		assert(boolVisibleForced)
+		assert(boolVisibleForced == false)
 
 		boolWantCloakRequest = getWantCloak()
 		boolPreviouslyCloaked = (previousState == "cloaked")
