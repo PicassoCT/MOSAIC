@@ -569,7 +569,13 @@ function spawnDecoyCivilian()
 end	
 
 function getWantCloak()
-	return GetUnitValue(COB.WANT_CLOAK) == 1
+	wantCloak = Spring.UnitScript.GetUnitValue(COB.WANT_CLOAK) 
+	if wantCloak == 1 then
+		return true
+	else
+		return false
+	end
+	return false
 end
 
 function setWantCloak(boolWantCloak)
@@ -586,7 +592,8 @@ boolIsBuilding = false
 
 function transitionToUncloaked()
 	setSpeedEnv(unitID, 1.0)
-	SetUnitValue(COB.WANT_CLOAK, 0)
+	setWantCloak(false)
+	
 	if civilianID and doesUnitExistAlive(civilianID) == true then
 		GG.DiedPeacefully[civilianID] = true
 		Spring.DestroyUnit(civilianID, true, true)
@@ -596,16 +603,30 @@ end
 
 function transitionToCloaked()
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	SetUnitValue(COB.WANT_CLOAK, 1)
+	setWantCloak(true)
 	StartThread(spawnDecoyCivilian)
+end
+
+function OperativesDiscovered()
+	if  GG.OperativesDiscovered == nil then
+	 return false 
+	end
+
+	if  GG.OperativesDiscovered[unitID] == nil then 
+		return false 
+	elseif  type(GG.OperativesDiscovered[unitID]) == "boolean" then
+		return GG.OperativesDiscovered[unitID]
+	end
+
+return false
 end
 
 
 function cloakLoop()
-	local spGetUnitIsActive = Spring.GetUnitIsActive
-	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 	cloakStateMachine = {
 	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, boolVisibleForced)
+						echo("cloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked).. " visibleForced:"..toString(boolVisibleForced))
+
 						if boolVisibleForced == true then
 							setWantCloak(false)
 							SetUnitValue(COB.CLOAKED, 0)
@@ -621,7 +642,8 @@ function cloakLoop()
 		return  "cloaked"
 		end,
 	["decloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, boolVisibleForced) 	
-		
+					echo("decloaked: request:"..toString(boolCloakRequest).." previouslyCloaked:"..toString(boolPreviouslyCloaked))
+					echo(" visibleForced:"..toString(boolVisibleForced).."")
 					if boolVisibleForced == true then
 						setWantCloak(false)
 						return "decloaked"
@@ -650,15 +672,14 @@ function cloakLoop()
 
 				return "decloaked"
 				end
-						}
+	}
 
 	Sleep(100)
 	waitTillComplete(unitID)
 	
 	--initialisation
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	SetUnitValue(COB.WANT_CLOAK, 1)
-	SetUnitValue(COB.CLOAKED, 1)
+	setWantCloak(true)
 
 	StartThread(spawnDecoyCivilian)	
 	showHideIcon(true)
@@ -666,42 +687,39 @@ function cloakLoop()
 	currentState = "cloaked"
 	previousState = currentState
 	while true do  
-		boolForcedVisible = ((boolIsBuilding == true) or (boolFireForcedVisible == true) or OperativesDiscovered())
-		currentState = cloakStateMachine[currentState](getWantCloak(), previousState == "cloaked", boolForcedVisible)
+		assert(type(boolIsBuilding)=="boolean")
+		assert(type(boolFireForcedVisible)=="boolean")
+		assert(type(OperativesDiscovered())=="boolean")
+		
+		boolOperativeDiscovered = OperativesDiscovered() or false
+		boolVisibleForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (boolOperativeDiscovered == true) then
+		assert(boolVisibleForced ~= nil)
+		assert(type(boolVisibleForced) == "boolean")
+		assert(boolVisibleForced)
+
+		boolWantCloakRequest = getWantCloak()
+		boolPreviouslyCloaked = (previousState == "cloaked")
+
+		assert(boolWantCloakRequest~= nil)
+		assert(boolPreviouslyCloaked~= nil)
+
+		currentState = cloakStateMachine[currentState](boolWantCloakRequest, boolPreviouslyCloaked, boolVisibleForced)
 		previousState = currentState
 		Sleep(1000)
 	end
 end
 
-function OperativesDiscovered()
-	if not GG.OperativesDiscovered then
-	 return false 
-	end
-
-	if  GG.OperativesDiscovered[unitID] == nil then 
-		return false 
-	else
-		return GG.OperativesDiscovered[unitID]
-	end
-
-return false
-end
-
-
 function script.Activate()
-	
 	return 1
 end
 
 function script.Deactivate()
-	
     return 0
 end
 
 function script.QueryBuildInfo()
     return center
 end
-
 
 function delayedStopBuilding()
 	Signal(SIG_DELAYEDRECLOAK)
