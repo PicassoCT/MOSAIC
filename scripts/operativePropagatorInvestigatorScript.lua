@@ -624,69 +624,116 @@ function spawnDecoyCivilian()
 end
 
 
-function needsCloak( boolCloaked, boolOldStateCloaked,  boolIsBuilding, idOperativeDiscoverd)
-	if boolOldStateCloaked == false and boolIsBuilding == false then return true end
-
-	if boolOldStateCloaked == false and boolFireForcedVisible == true then return false end
-
-	if idOperativeDiscoverd then return false end
-
-	return boolCloaked == true and boolOldStateCloaked == false and boolIsBuilding == false
-end
-
-function needsToUncloak( boolCloaked, boolOldStateCloaked, boolIsBuilding, idOperativeDiscoverd)
-	if boolOldStateCloaked == true and boolIsBuilding == true then return true end
-
-	if boolOldStateCloaked == true and boolFireForcedVisible == true then return true end
-	
-	if idOperativeDiscoverd and boolOldStateCloaked == true then return true end
-
-	if  boolIsBuilding == true and boolOldStateCloaked == true  then return true end
-	
-return boolCloaked == false and boolOldStateCloaked == true
-end
-
-boolCloaked= false
 boolIsBuilding = false
-function cloakLoop()
 
-	local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
-	Sleep(100)
-	waitTillComplete(unitID)
-	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	SetUnitValue(COB.WANT_CLOAK, 1)
-	SetUnitValue(COB.CLOAKED, 1)
+function transitionToUncloaked()
+	setSpeedEnv(unitID, 1.0)
+	setWantCloak(false)
+	if civilianID and doesUnitExistAlive(civilianID) == true then
+		GG.DiedPeacefully[civilianID] = true
+		Spring.DestroyUnit(civilianID, true, true)
+	end
+	return "decloaked"
+end
 
-	StartThread(spawnDecoyCivilian)	
-	showHideIcon(true)
-	boolOldStateCloaked = spGetUnitIsCloaked(unitID)	
-	boolCloaked = spGetUnitIsCloaked(unitID)
-	
-	while true do 
-
-		boolCloaked = spGetUnitIsCloaked(unitID)		
-		
-		if  needsCloak(boolCloaked,  boolOldStateCloaked, boolIsBuilding,  GG.OperativesDiscovered[unitID]) == true then
-			setSpeedEnv(unitID, mySpeedReductionCloaked)
-			boolOldStateCloaked =true
-			SetUnitValue(COB.WANT_CLOAK, 1)
-			StartThread(spawnDecoyCivilian)
-		end
-		
-		Sleep(100)
-		if needsToUncloak(boolCloaked, boolOldStateCloaked, boolIsBuilding, GG.OperativesDiscovered[unitID]) == true then	
-			setSpeedEnv(unitID, 1.0)
-			boolOldStateCloaked = false
-			SetUnitValue(COB.WANT_CLOAK, 0)
-			if civilianID and doesUnitExistAlive(civilianID) == true then
-				GG.DiedPeacefully[civilianID] = true
-				Spring.DestroyUnit(civilianID, true, true)
-			end
-		end
-		Sleep(100)
+function setWantCloak(boolWantCloak)
+	if boolWantCloak == true then
+		SetUnitValue(COB.WANT_CLOAK, 1)
+	else
+		SetUnitValue(COB.WANT_CLOAK, 0)
 	end
 end
 
+
+function transitionToCloaked()
+	setWantCloak(true)
+	setSpeedEnv(unitID, mySpeedReductionCloaked)
+	StartThread(spawnDecoyCivilian)
+	return "cloaked"
+end
+
+function OperativesDiscovered()
+	if  GG.OperativesDiscovered == nil then
+	 return false 
+	end
+
+	if  GG.OperativesDiscovered[unitID] == nil then 
+		return false 
+	elseif  type(GG.OperativesDiscovered[unitID]) == "boolean" then
+		return GG.OperativesDiscovered[unitID]
+	end
+
+return false
+end
+
+currentState = "cloaked"
+previousState = currentState
+boolRecloakOnceDone = false
+function cloakLoop()
+	local cloakStateMachine = {
+	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced)
+					boolCloakRequest = getWantCloak()
+					boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
+					boolPreviouslyCloaked = (previousState == "cloaked")
+
+
+					if not boolVisiblyForced == false then
+						boolRecloakOnceDone= true
+						return transitionToUncloaked()
+					end	
+
+					if (not boolCloakRequest == true  ) then
+						return transitionToUncloaked()
+					end				
+
+		return  "cloaked"
+		end,
+	["decloaked"] = function () 
+					boolCloakRequest = getWantCloak()
+					boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
+					boolPreviouslyCloaked = (previousState == "cloaked")
+			
+					if boolVisiblyForced == true then
+						return "decloaked"
+					end
+
+					if not boolVisiblyForced == true and boolRecloakOnceDone == true then
+						boolRecloakOnceDone = false
+						return 	transitionToCloaked()
+					end
+
+					if not boolCloakRequest == false  then 
+						return transitionToCloaked()
+					end
+
+					if boolPreviouslyCloaked == true and boolCloakRequest == false then
+						return "decloaked"
+					end
+
+					if boolCloakRequest == true and boolVisiblyForced == true then
+						return "decloaked"
+					end
+
+				return "decloaked"
+				end
+	}
+	
+	Sleep(100)
+	waitTillComplete(unitID)
+	
+	--initialisation
+	setSpeedEnv(unitID, mySpeedReductionCloaked)
+	StartThread(spawnDecoyCivilian)	
+	showHideIcon(true)
+
+
+	while true do  
+		currentState = cloakStateMachine[currentState]()
+	--	if currentState ~= previousState then echoState() end
+		previousState = currentState
+		Sleep(100)
+	end
+end
 function script.Activate()
 	-- echo("Activate")
 	-- SetUnitValue(COB.WANT_CLOAK, 1)
@@ -708,7 +755,6 @@ function delayedStopBuilding()
 	SetSignalMask(SIG_DELAYEDRECLOAK)
 	Sleep(500)
 	boolIsBuilding = false
-	echo("Stopped building")
 end
 
 boolOldCloakValue = false
@@ -771,10 +817,12 @@ end
 
 boolFireForcedVisible= false
 function visibleAfterWeaponsFireTimer()
+	boolFireForcedVisible = true
 	Signal(SIG_FIRE_VISIBLITY)
 	SetSignalMask(SIG_FIRE_VISIBLITY)
-	Sleep(GameConfig.raidWaitTimeToRecloak)
-	boolFireForcedVisible = true
+	value= GameConfig.assetShotFiredWaitTimeToRecloak_MS
+	Sleep(value)
+	boolFireForcedVisible = false
 end
 
 function raidFireFunction(weaponID, heading, pitch)
@@ -786,7 +834,7 @@ end
 function pistolFireFunction(weaponID, heading, pitch)
 	StartThread(visibleAfterWeaponsFireTimer)
 	boolAiming = false
-	Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
+	--Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
 	return true
 end
 
@@ -816,6 +864,11 @@ local validTargetType={
 	[1]=true,
 	[2]=true,
 }
+
+
+function script.FireWeapon(weaponID)
+	return WeaponsTable[weaponID].firefunc(weaponID, heading, pitch)
+end
 
 function script.AimWeapon(weaponID, heading, pitch)
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)

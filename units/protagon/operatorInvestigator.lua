@@ -40,7 +40,8 @@ local OperativeInvestigator = Human:New{
 	decloakOnFire = true,
 	cloakCostMoving = 0,
 	minCloakDistance = -1.0,
-	
+	stealth= true,
+
 	onoffable= false,
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--

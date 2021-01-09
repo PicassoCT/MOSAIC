@@ -36,13 +36,11 @@ local OperativeAsset = Human:New{
 	canCloak =true,
 	cloakCost=0.0001,
 	cloakCostMoving =0.0001,
-	decloakOnFire = true,
+	--decloakOnFire = true,
 	minCloakDistance = 0,
-	cloakTimeout =  6*30,
-
+	cloakTimeout =  360,
 	initCloaked = true,
-
-
+	stealth = true,
 
 	category = "GROUND ARRESTABLE",
 	fireState= 1,

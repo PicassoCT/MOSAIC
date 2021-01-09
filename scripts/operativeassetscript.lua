@@ -579,16 +579,17 @@ function getWantCloak()
 end
 
 
-boolCloaked= false
 boolIsBuilding = false
 
 function transitionToUncloaked()
+--	echo("Decloaking")
 	setSpeedEnv(unitID, 1.0)
 	setWantCloak(false)
 	if civilianID and doesUnitExistAlive(civilianID) == true then
 		GG.DiedPeacefully[civilianID] = true
 		Spring.DestroyUnit(civilianID, true, true)
 	end
+	return "decloaked"
 end
 
 function setWantCloak(boolWantCloak)
@@ -601,9 +602,11 @@ end
 
 
 function transitionToCloaked()
+	echo("Recloaking")
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	StartThread(spawnDecoyCivilian)
+	return "cloaked"
 end
 
 function OperativesDiscovered()
@@ -620,25 +623,25 @@ function OperativesDiscovered()
 return false
 end
 
+currentState = "cloaked"
 previousState = currentState
 boolRecloakOnceDone = false
 function cloakLoop()
 	local cloakStateMachine = {
 	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced)
-							boolCloakRequest = getWantCloak()
-							boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
-							boolPreviouslyCloaked = (previousState == "cloaked")
+					boolCloakRequest = getWantCloak()
+					boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
+					boolPreviouslyCloaked = (previousState == "cloaked")
 
-						if not boolVisiblyForced == false then
-							transitionToUncloaked()
-							boolRecloakOnceDone= true
-							return "decloaked"
-						end	
 
-						if (not boolCloakRequest == true  ) then
-							transitionToUncloaked()
-							return "decloaked"
-						end				
+					if not boolVisiblyForced == false then
+						boolRecloakOnceDone= true
+						return transitionToUncloaked()
+					end	
+
+					if (not boolCloakRequest == true  ) then
+						return transitionToUncloaked()
+					end				
 
 		return  "cloaked"
 		end,
@@ -653,13 +656,11 @@ function cloakLoop()
 
 					if not boolVisiblyForced == true and boolRecloakOnceDone == true then
 						boolRecloakOnceDone = false
-						transitionToCloaked()
-						return "cloaked"
+						return 	transitionToCloaked()
 					end
 
 					if not boolCloakRequest == false  then 
-						transitionToCloaked()
-						return "cloaked"
+						return transitionToCloaked()
 					end
 
 					if boolPreviouslyCloaked == true and boolCloakRequest == false then
@@ -682,21 +683,23 @@ function cloakLoop()
 	StartThread(spawnDecoyCivilian)	
 	showHideIcon(true)
 
-	currentState = "cloaked"
 
 	while true do  
 		currentState = cloakStateMachine[currentState]()
+	--	if currentState ~= previousState then echoState() end
 		previousState = currentState
 		Sleep(100)
 	end
 end
 
-function script.Activate()
-	return 1
-end
-
-function script.Deactivate()
-    return 0
+function echoState()
+	echo("============================================")
+	echo("State: "..currentState)
+	echo("boolCloakRequest: ".. toString(getWantCloak()))
+	echo("boolIsBuilding: "..toString(boolIsBuilding))
+	echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
+	echo("boolPreviouslyCloaked: "..toString( (previousState == "cloaked")))
+	echo("============================================")
 end
 
 function script.QueryBuildInfo()
@@ -708,9 +711,8 @@ function delayedStopBuilding()
 	SetSignalMask(SIG_DELAYEDRECLOAK)
 	Sleep(500)
 	boolIsBuilding = false
-	echo("Stopped building")
+--	echo("Stopped building")
 end
-
 
 function script.StopBuilding()
 	StartThread(delayedStopBuilding)
@@ -731,7 +733,6 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 
 function pistolAimFunction(weaponID, heading, pitch)
 	boolAiming = true
-
 	if boolWalking == true then
 		setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
 	else
@@ -771,28 +772,29 @@ function visibleAfterWeaponsFireTimer()
 	boolFireForcedVisible = true
 	Signal(SIG_FIRE_VISIBLITY)
 	SetSignalMask(SIG_FIRE_VISIBLITY)
-	value= GameConfig.assetShotFiredWaitTimeToRecloak
+	value= GameConfig.assetShotFiredWaitTimeToRecloak_MS
 	Sleep(value)
 	boolFireForcedVisible = false
 end
 
-function pistolFireFunction(weaponID, heading, pitch)
+function pistolFireFunction(weaponID)
 	StartThread(visibleAfterWeaponsFireTimer)
 	boolAiming = false
-	Explode(TablesOfPiecesGroups["Shell"][1], SFX.FALL + SFX.NO_HEATCLOUD)
+	--Explode(TablesOfPiecesGroups["Shell"][1], SFX.FALL + SFX.NO_HEATCLOUD)
 	return true
 end
 
-function gunFireFunction(weaponID, heading, pitch)
+function gunFireFunction(weaponID)
 	StartThread(visibleAfterWeaponsFireTimer)
 	boolAiming = false
-	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
+	--Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
 	return true
 end
 
-function sniperFireFunction(weaponID, heading, pitch)
+function sniperFireFunction(weaponID)
+	StartThread(visibleAfterWeaponsFireTimer)
 	boolAiming = false
-	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
+--	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
 	Spring.PlaySoundFile("sounds/weapons/sniper/sniperEject.wav", 0.8)
 	return true
 end
@@ -815,7 +817,6 @@ end
 validTargetType={
 [1]=true,
 [2]=true,
-
 }
 
 function script.QueryWeapon(weaponID)
@@ -824,6 +825,10 @@ function script.QueryWeapon(weaponID)
     else
         return center
     end
+end
+
+function script.FireWeapon(weaponID)
+return WeaponsTable[weaponID].firefunc(weaponID, heading, pitch)
 end
 
 lastShownWeapon= Pistol
@@ -873,13 +878,12 @@ function script.AimWeapon(weaponID, heading, pitch)
     return false
 end
 
+
 Spring.SetUnitNanoPieces(unitID, { center })
 
 Icon = piece("Icon")
 
-boolLocalCloaked = false
 function showHideIcon(boolCloaked)
-    boolLocalCloaked = boolCloaked
     if  boolCloaked == true then
         hideAll(unitID)
         Show(Icon)

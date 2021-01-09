@@ -47,7 +47,7 @@ local OperativePropagator = Human:New{
 	decloakOnFire = true,
 	cloakCostMoving = 0,
 	minCloakDistance = -1.0,
-	
+	stealth= true,
 	
 	onoffable=false,
 

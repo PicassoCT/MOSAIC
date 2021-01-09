@@ -1175,13 +1175,13 @@ function cloakLoop()
 
 	boolCloaked=spGetUnitIsCloaked(unitID)
 	StartThread(spawnDecoyCivilian)
-	echoOverload("invisible")
+--	echoOverload("invisible")
 	while true do 
 		boolCloaked=spGetUnitIsCloaked(unitID)
 		Sleep(100)
 
 		if boolCloaked == false and boolDeCloaked == false then
-			echoOverload("revealed")
+--			echoOverload("revealed")
 			boolDeCloaked = true
 			Spring.SetUnitTooltip(unitID, "Militia : Cover blown")
 			boolArmed = true
@@ -1195,7 +1195,7 @@ function cloakLoop()
 		end
 
 		if boolCloaked == true and boolDeCloaked == true then 
-			echoOverload("recloak prevented")
+		--	echoOverload("recloak prevented")
 			SetUnitValue(COB.WANT_CLOAK, 0)
 			SetUnitValue(COB.CLOAKED, 0)
 		end
