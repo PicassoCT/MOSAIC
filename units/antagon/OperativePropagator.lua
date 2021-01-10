@@ -39,18 +39,18 @@ local OperativePropagator = Human:New{
 	buildDistance = 120,
 	terraformSpeed = 350,
 	showNanoFrame= true,
-	ActivateWhenBuilt=1,
+	onoffable = false,
 		
 	--cloaking behaviour
 	canCloak =true,
-	decloakSpherical = true,
-	decloakOnFire = true,
+	cloakCost=0.0001,
+	cloakCostMoving =0.0001,
+	cloakTimeout =  360,
 	cloakCostMoving = 0,
-	minCloakDistance = -1.0,
+	minCloakDistance = 0,
+	initCloaked = true,
 	stealth= true,
 	
-	onoffable=false,
-
 	buildoptions = 
 	{
 		"recruitcivilian",

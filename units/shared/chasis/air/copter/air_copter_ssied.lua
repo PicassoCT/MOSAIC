@@ -33,7 +33,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
-	dontLand		 	= false,
+	dontLand		 	= true,
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
@@ -54,7 +54,6 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	LeaveTracks = false, 
 	cruiseAlt= 25,
 
-	ActivateWhenBuilt=1,
 	maxBank=0.4,
 	myGravity =0.5,
 	mass                = 150,

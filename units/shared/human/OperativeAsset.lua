@@ -21,8 +21,8 @@ local OperativeAsset = Human:New{
 	CanAttack = true,
 	CanGuard = true,
 	showNanoFrame= true,
-		buildPic = "operativeasset.png",
-		iconType = "operativeasset",
+	buildPic = "operativeasset.png",
+	iconType = "operativeasset",
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
@@ -31,8 +31,9 @@ local OperativeAsset = Human:New{
 	customParams        = {
 		normaltex = "unittextures/operative_asset_normalpha.tga",
 	},
-	firestate = 1,
 	onoffable = false,
+	  
+		--cloaking behaviour
 	canCloak =true,
 	cloakCost=0.0001,
 	cloakCostMoving =0.0001,

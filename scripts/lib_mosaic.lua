@@ -100,7 +100,8 @@ function getGameConfig()
 	 RaidInterrogationPropgandaPrice = 50,
 	 investigatorCloakedSpeedReduction = 0.35,
 	 raidWaitTimeToRecloak = 5000,
-	 
+	operativeShotFiredWaitTimeToRecloak_MS = 10000,
+	
 	 raid={
 	 maxTimeToWait = 3*60*1000,
 	 maxRoundLength= 20*1000,

@@ -36,12 +36,14 @@ local OperativeInvestigator = Human:New{
 	
 --cloaking behaviour
 	canCloak =true,
-	decloakSpherical = true,
-	decloakOnFire = true,
+	cloakCost=0.0001,
+	cloakCostMoving =0.0001,
+	cloakTimeout =  360,
 	cloakCostMoving = 0,
-	minCloakDistance = -1.0,
+	minCloakDistance = 0,
+	initCloaked = true,
 	stealth= true,
-
+	
 	onoffable= false,
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--

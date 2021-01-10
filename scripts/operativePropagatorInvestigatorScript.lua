@@ -11,7 +11,7 @@ SIG_PISTOL = 1
 SIG_RAID = 2
 SIG_FIRE_VISIBLITY = 4
 SIG_DELAYEDRECLOAK = 8
-local boolCloaked = false
+
 local Animations = include('animation_assasin_female.lua')
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -100,6 +100,7 @@ boolTurnLeft = false
 boolDecoupled = false
 
 boolAiming = false
+boolIsBuilding = false
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
@@ -562,7 +563,7 @@ end
 
 function showFoldTop()
 	Sleep(2500)
-	if  boolCloaked == false then
+	if  currentState == "decloaked" then
 		Show(FoldtopUnfolded)
 		Hide(FoldtopFolded)
 	else
@@ -575,7 +576,7 @@ end
 function script.StartMoving()
 	-- echo("Start Moving")
 	boolWalking = true
-	if  boolCloaked == false then
+	if  currentState == "decloaked" then
 		Hide(FoldtopUnfolded)
 		Show(FoldtopFolded)
 	else
@@ -617,14 +618,20 @@ function spawnDecoyCivilian()
 				persPack,
 				Spring.GetGameFrame()+1
 				)
-
 			end
-
 	return 0
 end
 
+function getWantCloak()
+	wantCloak = Spring.UnitScript.GetUnitValue(COB.WANT_CLOAK) 
+	if wantCloak == 1 then
+		return true
+	else
+		return false
+	end
+	return false
+end
 
-boolIsBuilding = false
 
 function transitionToUncloaked()
 	setSpeedEnv(unitID, 1.0)
@@ -638,9 +645,9 @@ end
 
 function setWantCloak(boolWantCloak)
 	if boolWantCloak == true then
-		SetUnitValue(COB.WANT_CLOAK, 1)
+		Spring.UnitScript.SetUnitValue(COB.WANT_CLOAK, 1)
 	else
-		SetUnitValue(COB.WANT_CLOAK, 0)
+		Spring.UnitScript.SetUnitValue(COB.WANT_CLOAK, 0)
 	end
 end
 
@@ -666,7 +673,7 @@ function OperativesDiscovered()
 return false
 end
 
-currentState = "cloaked"
+local currentState = "cloaked"
 previousState = currentState
 boolRecloakOnceDone = false
 function cloakLoop()
@@ -693,7 +700,7 @@ function cloakLoop()
 					boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
 					boolPreviouslyCloaked = (previousState == "cloaked")
 			
-					if boolVisiblyForced == true then
+					if not boolVisiblyForced == false then
 						return "decloaked"
 					end
 
@@ -706,7 +713,7 @@ function cloakLoop()
 						return transitionToCloaked()
 					end
 
-					if boolPreviouslyCloaked == true and boolCloakRequest == false then
+					if boolPreviouslyCloaked  == true and boolCloakRequest == false then
 						return "decloaked"
 					end
 
@@ -729,11 +736,22 @@ function cloakLoop()
 
 	while true do  
 		currentState = cloakStateMachine[currentState]()
-	--	if currentState ~= previousState then echoState() end
+		if currentState ~= previousState then echoState() end
 		previousState = currentState
 		Sleep(100)
 	end
 end
+
+function echoState()
+	echo("============================================")
+	echo("State: "..currentState)
+	echo("boolCloakRequest: ".. toString(getWantCloak()))
+	echo("boolIsBuilding: "..toString(boolIsBuilding))
+	echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
+	echo("boolPreviouslyCloaked: "..toString( (previousState == "cloaked")))
+	echo("============================================")
+end
+
 function script.Activate()
 	-- echo("Activate")
 	-- SetUnitValue(COB.WANT_CLOAK, 1)
@@ -755,19 +773,19 @@ function delayedStopBuilding()
 	SetSignalMask(SIG_DELAYEDRECLOAK)
 	Sleep(500)
 	boolIsBuilding = false
-end
-
-boolOldCloakValue = false
-function script.StopBuilding()
-	StartThread(delayedStopBuilding)
+	echo("Stop Building")
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 
+function script.StopBuilding()
+	StartThread(delayedStopBuilding)
+
+end
 
 function script.StartBuilding(heading, pitch)
 	boolIsBuilding = true
-	echo("Started building")
 	SetUnitValue(COB.INBUILDSTANCE, 1)
+	echo("Starting Building")
 end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
@@ -787,14 +805,13 @@ function raidReactor()
 		process(getAllNearUnit(unitID, raidComRange),
 				function (id)
 					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == scanSatDefID then
-						myRaidDownTime= math.max( -100, myRaidDownTime - 100* GameConfig.agentConfig.raidBonusFactorSatellite)
+						myRaidDownTime = math.max( -100, myRaidDownTime - 100* GameConfig.agentConfig.raidBonusFactorSatellite)
 						boolComSatelliteNearby = true
 					end				
 				end
 				)
 
-		myRaidDownTime= math.max( 0, myRaidDownTime - 100)
-
+		myRaidDownTime = math.max( 0, myRaidDownTime - 100)
 	end
 end
 
@@ -803,7 +820,7 @@ function raidReloadComplete()
 end
 
 function raidAimFunction(weaponID, heading, pitch)
-	return raidReloadComplete() and boolCloaked == false
+	return raidReloadComplete() and currentState == "decloaked"
 end
 
 function pistolAimFunction(weaponID, heading, pitch)
@@ -819,8 +836,8 @@ boolFireForcedVisible= false
 function visibleAfterWeaponsFireTimer()
 	boolFireForcedVisible = true
 	Signal(SIG_FIRE_VISIBLITY)
-	SetSignalMask(SIG_FIRE_VISIBLITY)
-	value= GameConfig.assetShotFiredWaitTimeToRecloak_MS
+	SetSignalMask(SIG_FIRE_VISIBLITY)	
+	value= GameConfig.operativeShotFiredWaitTimeToRecloak_MS
 	Sleep(value)
 	boolFireForcedVisible = false
 end
@@ -879,10 +896,10 @@ function script.AimWeapon(weaponID, heading, pitch)
 	end
 	
 	--Do not aim at your own disguise civilian
-		if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
-			if GG.DisguiseCivilianFor[targetID] and spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then	
-				return false
-			end
+	if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
+		if GG.DisguiseCivilianFor[targetID] and GG.DisguiseCivilianFor[targetID]  == unitID then	
+			return false
+		end
 	end
 		
 

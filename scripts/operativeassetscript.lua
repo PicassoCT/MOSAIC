@@ -582,7 +582,6 @@ end
 boolIsBuilding = false
 
 function transitionToUncloaked()
---	echo("Decloaking")
 	setSpeedEnv(unitID, 1.0)
 	setWantCloak(false)
 	if civilianID and doesUnitExistAlive(civilianID) == true then
@@ -602,7 +601,6 @@ end
 
 
 function transitionToCloaked()
-	echo("Recloaking")
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	StartThread(spawnDecoyCivilian)
@@ -711,7 +709,6 @@ function delayedStopBuilding()
 	SetSignalMask(SIG_DELAYEDRECLOAK)
 	Sleep(500)
 	boolIsBuilding = false
---	echo("Stopped building")
 end
 
 function script.StopBuilding()

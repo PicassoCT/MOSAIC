@@ -1157,6 +1157,16 @@ function spawnDecoyCivilian()
 	return 0
 end
 
+function getWantCloak()
+	wantCloak = Spring.UnitScript.GetUnitValue(COB.WANT_CLOAK) 
+	if wantCloak == 1 then
+		return true
+	else
+		return false
+	end
+	return false
+end
+
 boolCloaked = Spring.GetUnitIsCloaked(unitID)
 boolDeCloaked = false
 

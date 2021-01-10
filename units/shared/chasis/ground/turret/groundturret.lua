@@ -164,15 +164,15 @@ local groundturretmg =  Turret:New{
 	iconType = "ground_turret_mg",
 	--floater = true,
 	--cost
-	buildCostEnergy  = 50,
-	buildCostMetal= 0,
+	buildCostEnergy  = 500,
+	buildCostMetal= 500,
 	buildTime = 35,
 	--Health
 	maxDamage = 500,
 	idleAutoHeal = 0,
 	--Movement
 	
-	 fireState=1,
+	fireState=1,
 	
 	FootprintX = 1,
 	FootprintZ = 1,
@@ -181,9 +181,8 @@ local groundturretmg =  Turret:New{
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
 
-	
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 250,
+	sightDistance = 300,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 
