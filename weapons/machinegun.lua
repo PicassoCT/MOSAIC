@@ -35,6 +35,9 @@ local weaponDef = {
     size = 1.2,
     stages = 20,
     separation = 0.2,
+
+    avoidFriendly= false,
+
 }
 
 return lowerkeys({ [weaponName] = weaponDef })
