@@ -186,7 +186,12 @@ local groundturretmg =  Turret:New{
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 
-	commandFire = true,
+
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "15 25 15",
+
+
 	canAttackGround = true,
 	CanAttack = true,
 	CanGuard = true,
@@ -196,6 +201,7 @@ local groundturretmg =  Turret:New{
 	onOffable = false,
 	LeaveTracks = false, 
 	canCloak =false,	
+	canManualFire = true,
 	
 	Category = [[GROUND]],
 
@@ -270,6 +276,9 @@ local ground_turret_antiarmor =  Turret:New{
 	decloakOnFire = true,
 	cloakTimeout = 5,
 
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "25 5 25",
 	
 	Category = [[ARMOR GROUND BUILDING]],
 
