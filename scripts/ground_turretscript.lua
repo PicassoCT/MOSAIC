@@ -22,7 +22,8 @@ function script.Create()
 	hideT(TablesOfPiecesGroups["TBase"])
 	StartThread(foldControl)
 	StartThread(guardSwivelTurret)
-
+	StartThread(debugAimLoop, 5000, 0)
+	StartThread(debugAimLoop, 5000, 1)
 end
 
 boolAiming = false
@@ -41,8 +42,6 @@ Sleep(5000)
 		end
 		Sleep(500)
 	end
-
-
 end
 
 function foldControl()
@@ -64,9 +63,49 @@ function foldControl()
 		end
 	Sleep(1000)
 	end
-
-
 end
+
+function debugAimLoop(sleepMS, weaponID)
+	restTime = sleepMS or 1
+	while true do
+		angleGood,  loaded,  reloadFrame,  salvoLeft,  numStockpiled =Spring.GetUnitWeaponState(unitID,weaponID)
+		if angleGood then
+			echo("Weapon: Anglegood->"..toString(angleGood).." Loaded->"..toString(loaded).." reloadFrame->"..toString(reloadFrame))
+		end
+
+		px,py,pz, dx,dy,dz =Spring.GetUnitWeaponVectors(unitID,weaponID)
+		if px then
+			echo("Weapon: Vector ->", {px,py,pz, dx,dy,dz})
+		end
+		commands = Spring.GetUnitCommands(unitID, weaponID)
+
+		if commands and commands[1] and commands[1].id  and commands[1].id == CMD.ATTACK then
+			attackedID = commands[1].params[1]
+			
+			boolWeaponCanFire = Spring.GetUnitWeaponCanFire(unitID, weaponID)
+			echo("Units Weapon can fire: "..toString(boolWeaponCanFire))
+
+			resultType, tID = Spring.GetUnitWeaponTarget(unitID, weaponID)
+			if resultType == 1 and uID then
+				echo("Target is Unit ->".. tID)
+			end
+
+			if attackedID then
+				bSucces = Spring.GetUnitWeaponHaveFreeLineOfFire(unitID, weaponID)
+				if bSucces then
+					echo("Raytrace reaches Goal:"..toString(bSucces))
+				end
+
+				boolTargetInRange = Spring.GetUnitWeaponTestRange(unitID, weapoNom, attackedID)
+				if boolTargetInRange then
+					echo("Target is in Range: "..toString(boolTargetInRange))
+				end
+			end
+		end
+		Sleep(restTime)
+	end
+end
+
 
 function unfold()	
 			Sleep(100)
