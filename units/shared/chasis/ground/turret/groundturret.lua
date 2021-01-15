@@ -191,7 +191,7 @@ local groundturretmg =  Turret:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "15 25 15",
 
-
+	commandFire = true,
 	canAttackGround = true,
 	CanAttack = true,
 	CanGuard = true,
@@ -217,6 +217,7 @@ local groundturretmg =  Turret:New{
 		weapons = {
 		[1]={name  = "machinegun",
 			onlyTargetCategory = [[BUILDING GROUND AIR]],
+			turret = true
 			},					
 		},	
 }
