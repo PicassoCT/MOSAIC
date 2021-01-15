@@ -21,7 +21,7 @@ local weaponDef = {
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
-    collideFirebase = false,
+   
 	
     craterMult = 0,
     burst = 15,
@@ -35,7 +35,7 @@ local weaponDef = {
     size = 1.2,
     stages = 20,
     separation = 0.2,
-
+    collideFirebase = false,
     avoidFriendly= false,
 
 }
