@@ -12,6 +12,9 @@ end
 center = piece "center"
 Turret = piece "Turret"
 aimpiece = piece "aimpiece"
+aimingFrom = Turret
+firingFrom = aimpiece
+groundFeetSensors = {}
 SIG_GUARDMODE = 1
 
 function script.Create()
@@ -19,11 +22,24 @@ function script.Create()
 	resetAll(unitID)
 	Hide(aimpiece)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    groundFeetSensors = TablesOfPiecesGroups["GroundSensor"]
+	hideT(TablesOfPiecesGroups["GroundSensor"])
 	hideT(TablesOfPiecesGroups["TBase"])
 	StartThread(foldControl)
 	StartThread(guardSwivelTurret)
-	StartThread(debugAimLoop, 5000, 0)
-	StartThread(debugAimLoop, 5000, 1)
+	--StartThread(debugAimLoop, 5000, 0)
+	--StartThread(debugAimLoop, 5000, 1)
+	StartThread(printOutWeapon, "machinegun")
+end
+
+function printOutWeapon(weaponName)
+    for i=1, #WeaponDefs do
+    	element = WeaponDefs[i]
+
+    	if weaponName == element.name then
+      		echo(element.name .."->", element)
+   		end
+    end
 end
 
 boolAiming = false
@@ -32,7 +48,7 @@ function guardSwivelTurret()
 Signal(SIG_GUARDMODE)
 SetSignalMask(SIG_GUARDMODE)
 Sleep(5000)
-
+	boolGroundAiming = false
 	while true do
 		if isTransported(unitID)== false then
 			target = math.random(1,360)
@@ -55,7 +71,6 @@ function foldControl()
 	
 	while true do
 		if isTransported(unitID)== false then
-
 			unfold()
 		else
 			
@@ -65,75 +80,86 @@ function foldControl()
 	end
 end
 
-function debugAimLoop(sleepMS, weaponID)
-	restTime = sleepMS or 1
-	while true do
-		angleGood,  loaded,  reloadFrame,  salvoLeft,  numStockpiled =Spring.GetUnitWeaponState(unitID,weaponID)
-		if angleGood then
-			echo("Weapon: Anglegood->"..toString(angleGood).." Loaded->"..toString(loaded).." reloadFrame->"..toString(reloadFrame))
-		end
 
-		px,py,pz, dx,dy,dz =Spring.GetUnitWeaponVectors(unitID,weaponID)
-		if px then
-			echo("Weapon: Vector ->", {px,py,pz, dx,dy,dz})
-		end
-		commands = Spring.GetUnitCommands(unitID, weaponID)
+currentDeg={
+	[1]= {val=50, dirUp =  1, lastDir = 1, countSwitches = 0},
+	[2]= {val=50, dirUp =  1, lastDir = 1, countSwitches = 0},
+	[3]= {val=-50, dirUp =  -1, lastDir = -1, countSwitches = 0},
+	[4]= {val=-50, dirUp =  -1, lastDir = -1, countSwitches = 0},
+}
 
-		if commands and commands[1] and commands[1].id  and commands[1].id == CMD.ATTACK then
-			attackedID = commands[1].params[1]
-			
-			boolWeaponCanFire = Spring.GetUnitWeaponCanFire(unitID, weaponID)
-			echo("Units Weapon can fire: "..toString(boolWeaponCanFire))
+function turnFeedToGround(nr)
 
-			resultType, tID = Spring.GetUnitWeaponTarget(unitID, weaponID)
-			if resultType == 1 and uID then
-				echo("Target is Unit ->".. tID)
-			end
+	local direction = currentDeg[nr].dirUp
 
-			if attackedID then
-				bSucces = Spring.GetUnitWeaponHaveFreeLineOfFire(unitID, weaponID)
-				if bSucces then
-					echo("Raytrace reaches Goal:"..toString(bSucces))
-				end
+	x,y,z = Spring.GetUnitPiecePosDir(unitID, groundFeetSensors[nr])
+	gh = Spring.GetGroundHeight(x,z)
+	if y > gh then -- we are underground
+		currentDeg[nr].val = currentDeg[nr].val + direction
+	else -- aboveground
+		direction = direction*-1
+		currentDeg[nr].val = currentDeg[nr].val + direction
+	end	
+	Turn(TablesOfPiecesGroups["UpLeg"][nr],x_axis,math.rad(currentDeg[nr].val),math.pi)
 
-				boolTargetInRange = Spring.GetUnitWeaponTestRange(unitID, weapoNom, attackedID)
-				if boolTargetInRange then
-					echo("Target is in Range: "..toString(boolTargetInRange))
-				end
-			end
-		end
-		Sleep(restTime)
+	--check for directional change
+	if direction ~= currentDeg[nr].lastDir then
+		currentDeg[nr].countSwitches = currentDeg[nr].countSwitches + 1
+		currentDeg[nr].lastDir = direction
+	end
+
+	return boolDone
+end
+
+function isDone()
+	boolDone = true
+	for i=1, 4 do
+		boolDone = boolDone and currentDeg[i].countSwitches > 2
+	end
+	return boolDone
+end
+
+function setNotDone()
+	boolDone = true
+	for i=1, 4 do
+		currentDeg[i].countSwitches = 0
 	end
 end
 
-
 function unfold()	
-			Sleep(100)
-			WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
-			for i=1,2 do
-				Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(50),math.pi)
-				Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(-90),math.pi)	
-			end	
-			for i=3,4 do
-				Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(-50),math.pi)
-				Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(90),math.pi)	
-			end
-			WaitForTurns(TablesOfPiecesGroups["LowLeg"])
-			WaitForTurns(TablesOfPiecesGroups["UpLeg"])
+	boolDone = isDone()
+	Sleep(10)
+	while boolDone == false do
+		Sleep(10)
+		WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
+		
+		for i=1,2 do
+			turnFeedToGround(i)
+			Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(-90),math.pi)	
+		end	
+		for i=3,4 do
+			turnFeedToGround(i)
+			Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(90),math.pi)	
+		end
+		WaitForTurns(TablesOfPiecesGroups["LowLeg"])
+		WaitForTurns(TablesOfPiecesGroups["UpLeg"])
+		boolDone = isDone()
+	end
 end
 
 function fold()
-			WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
-				for i=1,2 do
-					Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(0),math.pi)
-					Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(0),math.pi)	
-				end	
-				for i=3,4 do
-					Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(0),math.pi)
-					Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(0),math.pi)	
-				end
-			WaitForTurns(TablesOfPiecesGroups["LowLeg"])
-			WaitForTurns(TablesOfPiecesGroups["UpLeg"])
+	WaitForTurns(TablesOfPiecesGroups["UpLeg"])	
+		for i=1,2 do
+			Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(0),math.pi)
+			Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(0),math.pi)	
+		end	
+		for i=3,4 do
+			Turn(TablesOfPiecesGroups["UpLeg"][i],x_axis,math.rad(0),math.pi)
+			Turn(TablesOfPiecesGroups["LowLeg"][i],x_axis,math.rad(0),math.pi)	
+		end
+	WaitForTurns(TablesOfPiecesGroups["LowLeg"])
+	WaitForTurns(TablesOfPiecesGroups["UpLeg"])
+	setNotDone()
 
 end
 
@@ -146,30 +172,53 @@ end
 
 --- -aimining & fire weapon
 function script.AimFromWeapon1()
-    return Turret
+    return aimingFrom
 end
-
-
 
 function script.QueryWeapon1()
-    return Turret
+    return firingFrom
 end
 
+boolGroundAiming = false
 function script.AimWeapon1(Heading, pitch)
+	echo("Aiming weapon 1")
 	Signal(SIG_GUARDMODE)
     --aiming animation: instantly turn the gun towards the enemy
-
+    boolGroundAiming = true
 	Turn(center,y_axis, Heading, math.pi)
 	Turn(Turret,x_axis, -pitch, math.pi)
 	WaitForTurns(center, Turret)
-
-	
+	boolGroundAiming = false
     return true
 end
 
-
-
 function script.FireWeapon1()
+	boolGroundAiming = false
+	StartThread(guardSwivelTurret)
+    return true
+end
+
+function script.AimFromWeapon2()
+    return aimingFrom
+end
+
+function script.QueryWeapon2()
+    return firingFrom
+end
+
+function script.AimWeapon2(Heading, pitch)
+	Signal(SIG_GUARDMODE)
+	if 	boolGroundAiming == false then
+	    --aiming animation: instantly turn the gun towards the enemy
+
+		Turn(center,y_axis, Heading, math.pi)
+		Turn(Turret,x_axis, -pitch, math.pi)
+		WaitForTurns(center, Turret)
+	    return true
+	end
+end
+
+function script.FireWeapon2()
 	StartThread(guardSwivelTurret)
     return true
 end
