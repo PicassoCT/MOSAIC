@@ -159,6 +159,7 @@ local groundturretmg =  Turret:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
+	
 	script = "ground_turretscript.lua",
 	buildPic = "ground_turret_mg.png",
 	iconType = "ground_turret_mg",
@@ -171,7 +172,7 @@ local groundturretmg =  Turret:New{
 	maxDamage = 500,
 	idleAutoHeal = 0,
 	--Movement
-	
+	alwaysUpright=false,
 	fireState=1,
 	
 	FootprintX = 1,
@@ -185,11 +186,7 @@ local groundturretmg =  Turret:New{
 	sightDistance = 300,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
-
-
-	usepiececollisionvolumes = false,
-	collisionVolumeType = "box",
-	collisionvolumescales = "15 25 15",
+	usepiececollisionvolumes = true,
 
 	commandFire = true,
 	canAttackGround = true,
@@ -201,13 +198,14 @@ local groundturretmg =  Turret:New{
 	onOffable = false,
 	LeaveTracks = false, 
 	canCloak =false,	
-	canManualFire = true,
+	canManualFire = true, 
 	
 	Category = [[GROUND]],
 
 	  customParams = {
-	  baseclass = "turret"
+	 	 baseclass = "turret"
 	  },
+
 	 sfxtypes = {
 		explosiongenerators = {
 								"custom:bigbulletimpact"
@@ -216,8 +214,12 @@ local groundturretmg =  Turret:New{
 				
 		weapons = {
 		[1]={name  = "machinegun",
-			onlyTargetCategory = [[BUILDING GROUND AIR]],
-			turret = true
+			onlyTargetCategory = [[GROUND BUILDING]],
+			turret = false
+			},	
+		[2]={name  = "aamachinegun",
+			onlyTargetCategory = [[AIR]],
+			turret = false
 			},					
 		},	
 }
@@ -247,7 +249,7 @@ local ground_turret_antiarmor =  Turret:New{
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
-	
+	levelground = false,
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
 
