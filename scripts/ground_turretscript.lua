@@ -204,7 +204,7 @@ function script.AimFromWeapon2()
     return aimingFrom
 end
 
-function script.QueryWeapon2()
+function script.QueryWeapon2() 
     return firingFrom
 end
 
