@@ -14,7 +14,7 @@ local weaponDef = {
 	reloadtime = 1,
     areaOfEffect = 256,
     interceptSolo= false,
-    targetable = true,
+    targetable = 1,
 
 	noSelfDamage = true,
 	trajectoryHeight = 2.0 ,

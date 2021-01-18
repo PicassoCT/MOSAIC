@@ -1,11 +1,11 @@
 
 local weaponName = "aamachinegun" 
 local weaponDef = {
-    name = "M27-64",
+       name = "M27-64",
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 4,
+        default = 2,
         HeavyArmor = 1,
     },
     areaOfEffect = 8,
@@ -16,27 +16,24 @@ local weaponDef = {
     --physics
     weaponVelocity = 850,
     reloadtime = 5,
-    range = 700,
+    range = 800,
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
+    interceptor = 1,
    
-	
+    
     craterMult = 0,
-    burst = 15,
+    burst = 20,
     burstrate = 0.2,
-    soundStart = "weapons/machinegun/salvo2.ogg",
     soundtrigger = 1,
     SweepFire = 1,
-    interceptor=1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,
     stages = 20,
-    separation = 0.2,
-    collideFirebase = false,
-    avoidFriendly= false,
+    separation = 0.2
 
 }
 

@@ -3,11 +3,11 @@ local OperativeAsset = Human:New{
 	name = "Operative Assset",
 	description= "Assasination Operative <stealth Assasin>",
 	corpse = "bodybag",
-	maxDamage         	  = 1500,
-	mass                = 500,
-	buildCostEnergy    	  = 2000,
-	buildCostMetal     	  = 2000,
-	MetalStorage = 1500,
+	maxDamage         	  	 = 1500,
+	mass               		 = 500,
+	buildCostEnergy    	 	 = 2000,
+	buildCostMetal     	 	 = 2000,
+	MetalStorage 			 = 1500,
 
 	explodeAs				  = "none",
 

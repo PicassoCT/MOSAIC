@@ -213,13 +213,13 @@ local groundturretmg =  Turret:New{
 				},
 				
 		weapons = {
-		[1]={name  = "machinegun",
+		[1]={name  = "machingegun",
 			onlyTargetCategory = [[GROUND BUILDING]],
-			turret = false
+			turret = true
 			},	
 		[2]={name  = "aamachinegun",
 			onlyTargetCategory = [[AIR]],
-			turret = false
+			turret = true
 			},					
 		},	
 }

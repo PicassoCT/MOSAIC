@@ -8,6 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
+myDefID =Spring.GetUnitDefID(unitID)
 
 center = piece "center"
 Turret = piece "Turret"
@@ -193,6 +194,7 @@ function script.AimWeapon1(Heading, pitch)
 end
 
 function script.FireWeapon1()
+	StartThread( PlaySoundByUnitDefID , myDefID, "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 1)
 	boolGroundAiming = false
 	StartThread(guardSwivelTurret)
     return true
@@ -207,6 +209,7 @@ function script.QueryWeapon2()
 end
 
 function script.AimWeapon2(Heading, pitch)
+
 	Signal(SIG_GUARDMODE)
 	if 	boolGroundAiming == false then
 	    --aiming animation: instantly turn the gun towards the enemy
@@ -219,6 +222,7 @@ function script.AimWeapon2(Heading, pitch)
 end
 
 function script.FireWeapon2()
+	StartThread( PlaySoundByUnitDefID , myDefID, "sounds/weapons/machinegun/salvo2.ogg", 1.0, 5000, 1)
 	StartThread(guardSwivelTurret)
     return true
 end

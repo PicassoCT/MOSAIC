@@ -15,8 +15,8 @@ local weaponDef = {
 
     --physics
     weaponVelocity = 850,
-    reloadtime = 5,
-    range = 350,
+    reloadtime = 3,
+    range = 450,
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
@@ -25,18 +25,14 @@ local weaponDef = {
 	
     craterMult = 0,
     burst = 15,
-    burstrate = 0.2,
-    soundStart = "weapons/machinegun/salvo2.ogg",
+    burstrate = 0.1,
     soundtrigger = 1,
-    SweepFire = 1,
-    interceptor=1,
+    SweepFire = 1
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,
     stages = 20,
-    separation = 0.2,
-    collideFirebase = false,
-    avoidFriendly= false,
+    separation = 0.2
 
 }
 
