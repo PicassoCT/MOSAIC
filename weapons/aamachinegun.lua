@@ -21,7 +21,7 @@ local weaponDef = {
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
-    interceptor = 1,
+   --interceptor = 1,
    
     
     craterMult = 0,
