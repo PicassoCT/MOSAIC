@@ -736,7 +736,7 @@ function cloakLoop()
 
 	while true do  
 		currentState = cloakStateMachine[currentState]()
-		if currentState ~= previousState then echoState() end
+		--if currentState ~= previousState then echoState() end
 		previousState = currentState
 		Sleep(100)
 	end
