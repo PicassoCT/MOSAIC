@@ -43,9 +43,6 @@ local ground_walker_mg = Walker:New{
 				[1]={name  = "submachingegun",
 				onlyTargetCategory = [[BUILDING GROUND]],
 				},
-				
-				
-					
 		},	
 }
 
@@ -53,5 +50,4 @@ local ground_walker_mg = Walker:New{
 return lowerkeys({
 	["ground_walker_mg"]	= ground_walker_mg:New(),
 
-	
 })

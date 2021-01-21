@@ -38,7 +38,6 @@ local AIR_PARACHUT = VTOL:New{
 	CanFly   = true,
 	activateWhenBuilt   	= true,
 	MaxSlope 					= 75,
-	holdSteady = true,
 	releaseHeld = true,
 	--canHover=true,
 	CanAttack = true,

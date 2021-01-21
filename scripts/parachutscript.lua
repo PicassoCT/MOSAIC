@@ -10,7 +10,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 center = piece "anchor"
-Infantry = piece "Infantrz"
+infantry = piece "Infantrz"
 
 -- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 -- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
@@ -25,6 +25,8 @@ function script.Create()
 	hideT(TablesOfPiecesGroups["Fract"])
 	StartThread(fallingDown)
 	Show(center)
+	assert(infantry)
+	Hide(infantry)
 	for i=1,3 do
 		turnTableRand(TablesOfPiecesGroups["Rotator"], i, 360, -360, 0, true)
 	end
@@ -62,31 +64,38 @@ end
 operativeTypeTable = getOperativeTypeTable(Unitdefs)
 function fallingDown()
 	while not GG.ParachutPassengers do
-		Sleep(1)
+		Sleep(10)
 	end
-	if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)] then
-		Spring.Echo("Picking up father")
-		x,y,z = Spring.GetUnitPosition(fatherID)
-		y = y + 150
-		GG.ParachutPassengers[unitID] = {id = fatherID, x= x, y = y, z= z}
+
+	local passengerID = unitID
+	transporting = Spring.GetUnitIsTransporting(unitID)
+	if not GG.ParachutPassengers[unitID] then
+		if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)] and not GG.ParachutPassengers[unitID] then
+			Spring.Echo("Picking up father")
+			x,y,z = Spring.GetUnitPosition(fatherID)
+			y = y + 150
+			GG.ParachutPassengers[unitID] = {id = fatherID, x= x, y = y, z= z}
+		else
+			if transporting and #transporting > 0 then
+			x,y,z = Spring.GetUnitPosition(transporting[1])
+			GG.ParachutPassengers[unitID] = {id = transporting[1], x= x, y = y, z= z}
+			end
+		end
 	end
 	
 	while not GG.ParachutPassengers[unitID] do
-		Sleep(1)
+		Sleep(10)
 	end
 	--debug code
 	passengerID= GG.ParachutPassengers[unitID].id
 	passengerDefID= Spring.GetUnitDefID(passengerID)
-	if operativeTypeTable[passengerID] then Show(Infantry)end
-	showUnit(passengerID)
-	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
+	if operativeTypeTable[passengerDefID] then Show(infantry)end
 
+	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
 	if not passengerID or isUnitAlive(passengerID)== false then Spring.DestroyUnit(unitID, false, true); return end
-	GG.ParachutPassengers[unitID] = nil
 	
 	Spring.UnitAttach(unitID, passengerID, center)
 	Spring.MoveCtrl.SetPosition(unitID, x,y,z)
-
 
 	while isPieceAboveGround(unitID, center, 15) == true do
 		x,y,z =Spring.GetUnitPosition(unitID)
@@ -211,7 +220,7 @@ function getComandOffset(id, x, z,  speed)
 						end
 					end		
 
-					Turn(Infantry,y_axis, math.rad(TurnVal), 15)		
+					Turn(infantry,y_axis, math.rad(TurnVal), 15)		
 						
 				return xVal,zVal
 			end		 

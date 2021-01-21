@@ -21,13 +21,12 @@ local weaponDef = {
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
-   
 	
     craterMult = 0,
     burst = 15,
     burstrate = 0.1,
     soundtrigger = 1,
-    SweepFire = 1
+    SweepFire = 1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,
