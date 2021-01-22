@@ -6,10 +6,6 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-
-
-
-
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -38,8 +34,6 @@ function launchMotion()
 end
 
 function script.Killed(recentDamage, _)
-
-   
     return 1
 end
 
