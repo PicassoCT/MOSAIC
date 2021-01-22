@@ -5,10 +5,10 @@ local weaponDef = {
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 350,
-        HeavyArmor = 120,
+        default = 500,
+        HeavyArmor = 500,
     },
-    areaOfEffect = 8,
+    areaOfEffect = 12,
     --physics
     weaponVelocity = 900,
     reloadtime = 1.2,
@@ -19,8 +19,8 @@ local weaponDef = {
     turret = true,
     craterMult = 0,
     explosionGenerator = "custom:missile_explosion",
-    -- soundHit = "sounds/cRes/resplasma.wav",
-    -- soundStart = "sounds/cRes/plasmafire.ogg",
+    soundHit = "sounds/tank/impact.ogg",
+    soundStart = "sounds/tank/Fire.ogg",
 	targetable=1,
     --apperance
     rgbColor = [[0.86 0.49 0.49]],
