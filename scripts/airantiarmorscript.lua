@@ -6,8 +6,7 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
+function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 firepiece = piece "firepiece"
 center = piece "MosaicJavelin"
@@ -16,60 +15,42 @@ gun = piece "MosaicJavelin"
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	--Hide(firepiece)
+    -- Hide(firepiece)
 end
 
 function script.Killed(recentDamage, _)
 
-    --createCorpseCUnitGeneric(recentDamage)
+    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
-
 --- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return firepiece
-end
+function script.AimFromWeapon1() return firepiece end
 
-
-
-function script.QueryWeapon1()
-    return firepiece
-end
+function script.QueryWeapon1() return firepiece end
 
 function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
+    -- aiming animation: instantly turn the gun towards the enemy
 
     return true
 end
-
 
 function script.FireWeapon1()
-	destroyUnitConditional(unitID, false, true)
+    destroyUnitConditional(unitID, false, true)
     return true
 end
 
-
-
 function script.StartMoving()
-spinT(TablesOfPiecesGroups["uprotor"],y_axis,9500,350)
-spinT(TablesOfPiecesGroups["lowrotor"],y_axis,-9500,350)
+    spinT(TablesOfPiecesGroups["uprotor"], y_axis, 9500, 350)
+    spinT(TablesOfPiecesGroups["lowrotor"], y_axis, -9500, 350)
 end
 
 function script.StopMoving()
-stopSpinT(TablesOfPiecesGroups["uprotor"],y_axis,1)
-stopSpinT(TablesOfPiecesGroups["lowrotor"],y_axis,1)
+    stopSpinT(TablesOfPiecesGroups["uprotor"], y_axis, 1)
+    stopSpinT(TablesOfPiecesGroups["lowrotor"], y_axis, 1)
 end
 
-function script.Activate()
+function script.Activate() return 1 end
 
-    return 1
-end
-
-function script.Deactivate()
-
-    return 0
-end
-
-
+function script.Deactivate() return 0 end
 

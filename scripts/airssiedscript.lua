@@ -7,8 +7,7 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
+function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 center = piece "center"
 aimpiece = center
@@ -17,73 +16,52 @@ function script.Create()
 
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-	
-	StartThread(unfold)
+
+    StartThread(unfold)
 end
 function unfold()
-	turnT(TablesOfPiecesGroups["Arm"],y_axis, 180, 0)
-	Sleep(100)
-	turnT(TablesOfPiecesGroups["Arm"],y_axis, 0, 15)
+    turnT(TablesOfPiecesGroups["Arm"], y_axis, 180, 0)
+    Sleep(100)
+    turnT(TablesOfPiecesGroups["Arm"], y_axis, 0, 15)
 end
 function script.Killed(recentDamage, _)
 
-    --createCorpseCUnitGeneric(recentDamage)
+    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
-
 --- -aimining & fire weapon
-function script.AimFromWeapon1()
-    return aimpiece
-end
+function script.AimFromWeapon1() return aimpiece end
 
-
-
-function script.QueryWeapon1()
-    return aimpiece
-end
+function script.QueryWeapon1() return aimpiece end
 
 function script.AimWeapon1(Heading, pitch)
-    --aiming animation: instantly turn the gun towards the enemy
+    -- aiming animation: instantly turn the gun towards the enemy
 
     return true
 end
 
-
-function script.FireWeapon1()
-
-    return true
-end
-
-
+function script.FireWeapon1() return true end
 
 function script.StartMoving()
-	Turn(center,x_axis,math.rad(40),0)
-	spinT(TablesOfPiecesGroups["uprotor"],y_axis,9500,350)
-	spinT(TablesOfPiecesGroups["downrotor"],y_axis,-8500,350)
-	turnT(TablesOfPiecesGroups["Arm"],y_axis, 0, 15)
+    Turn(center, x_axis, math.rad(40), 0)
+    spinT(TablesOfPiecesGroups["uprotor"], y_axis, 9500, 350)
+    spinT(TablesOfPiecesGroups["downrotor"], y_axis, -8500, 350)
+    turnT(TablesOfPiecesGroups["Arm"], y_axis, 0, 15)
 end
 
 function script.StopMoving()
-	Turn(center,x_axis,math.rad(0),0)
-	stopSpinT(TablesOfPiecesGroups["uprotor"],y_axis,math.pi)
-	stopSpinT(TablesOfPiecesGroups["downrotor"],y_axis,math.pi)
-	turnT(TablesOfPiecesGroups["Arm"],y_axis, 180, 1)
+    Turn(center, x_axis, math.rad(0), 0)
+    stopSpinT(TablesOfPiecesGroups["uprotor"], y_axis, math.pi)
+    stopSpinT(TablesOfPiecesGroups["downrotor"], y_axis, math.pi)
+    turnT(TablesOfPiecesGroups["Arm"], y_axis, 180, 1)
 end
 
-function script.Activate()
+function script.Activate() return 1 end
 
-    return 1
-end
+function script.Deactivate() return 0 end
 
-function script.Deactivate()
+function script.QueryBuildInfo() return center end
 
-    return 0
-end
-
-function script.QueryBuildInfo()
-    return center
-end
-
-Spring.SetUnitNanoPieces( unitID, { center })
+Spring.SetUnitNanoPieces(unitID, {center})
 
