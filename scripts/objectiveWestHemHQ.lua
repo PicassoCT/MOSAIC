@@ -24,7 +24,7 @@ function delayShowAllElements()
     Sleep(30000)
     for i=1,#TablesOfPiecesGroups["HyperLoop"] do
         x,y,z= Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["HyperLoop"][i])
-        if (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) == false then
+        if not (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ ) then
               Show(TablesOfPiecesGroups["HyperLoop"][i])
        end
     end

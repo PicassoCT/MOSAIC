@@ -26,6 +26,13 @@ local ground_tank_day = Tank:New{
 	script 			= "tankscript.lua",
 	objectName 	= "ground_tank_day.dae",
 	buildPic = "tank.png",
+
+	LeaveTracks = true,
+	trackType ="arm_acv_tracks",
+	trackStrength=32,
+	trackWidth =64,
+	trackOffset =0,
+
 	iconType ="ground_tank_day",
 	collisionVolumeType = "box",
 	collisionvolumescales = "70 50 70",
@@ -72,6 +79,13 @@ ocal ground_tank_night = Tank:New{
 	script 			= "tankscript.lua",
 	objectName 	= "ground_tank_night.dae",
 	buildPic = "tank.png",
+
+	LeaveTracks = true,
+	trackType ="arm_acv_tracks",
+	trackStrength=32,
+	trackWidth =64,
+	trackOffset =0,
+
 	iconType = "ground_tank_night",
 	
 	collisionVolumeType = "box",

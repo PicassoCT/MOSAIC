@@ -44,14 +44,14 @@ SetSignalMask(SIG_RESETAIM)
 boolNoLongerAiming= false
 Sleep(5000)
 	boolNoLongerAiming= true
-    StartThread( PlaySoundByUnitDefID , myDefID, "sounds/tank/rotate.ogg", 1.0, 1000, 1)
+    StartThread( PlaySoundByUnitDefID , myDefID, "sounds/tank/rotate.ogg", 0.8, 1000, 1)
 	WTurn(aimpiece,2 ,0, 0.5)
 	WTurn(Cannon1,1,0,0.5)
 
 end
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
-    StartThread( PlaySoundByUnitDefID , myDefID, "sounds/tank/rotate.ogg", 0.5, 1000, 1)
+    StartThread( PlaySoundByUnitDefID , myDefID, "sounds/tank/rotate.ogg", 1.0, 1000, 1)
 	StartThread(noLongerAiming)
 	WTurn(aimpiece,2 ,Heading, 0.7)
 	WTurn(Cannon1,1,-pitch,0.7)
@@ -66,7 +66,7 @@ end
 
 
 function script.StartMoving()
-
+    StartThread( PlaySoundByUnitDefID , myDefID, "sounds/tank/drive_4_30.ogg", 1.0, 4500, 1)
 end
 
 function script.StopMoving()

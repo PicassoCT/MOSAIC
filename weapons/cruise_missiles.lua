@@ -36,6 +36,8 @@ local weaponDef = {
 
 	turret = true,
 	explosionScar = true, 
+	soundStart = "weapons/cruisemissile/launch.ogg",
+	soundHit = "weapons/cruisemissile/bombblast.ogg",
     explosionGenerator = "custom:missile_explosion",
 	fireStarter  = 50.0,
 	cameraShake =1.0
