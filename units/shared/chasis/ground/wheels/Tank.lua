@@ -7,16 +7,17 @@ local ground_tank_day = Tank:New{
 	mass = 5000,
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
-	explodeAs			= "none",
 	buildTime = 5*60,
+	
 	canMove = true,
 	canAttack = true,
 	canGuard = true,
 	canStop = true,
-
 	fireState= 1,
 	
-	--maxReverseVelocity= 2.15,
+	explodeAs			= "none",
+	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
+	maxReverseVelocity=  1.15,
 	acceleration = 0.7,
 	brakeRate = 0.1,
 	turninplace		= true,
@@ -43,14 +44,14 @@ local ground_tank_day = Tank:New{
 		},	
 }
 
-local ground_tank_night = Tank:New{
+ocal ground_tank_night = Tank:New{
 		name = "Tank",
 	description = "Heavily Armoured <Redundant Vehicle>",
 	
 	corpse				= "",
 	maxDamage = 1500,
 	mass = 5000,
-	buildCostEnergy = 0,
+	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
 	buildTime = 5*60,
 	
@@ -62,7 +63,7 @@ local ground_tank_night = Tank:New{
 
 	explodeAs			= "none",
 	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
-	--maxReverseVelocity= 2.15,
+	maxReverseVelocity=  1.15,
 	acceleration = 0.7,
 	brakeRate = 0.1,
 	turninplace		= true,
@@ -89,6 +90,7 @@ local ground_tank_night = Tank:New{
 					
 		},	
 }
+
 
 return lowerkeys({
 	["ground_tank_night"]	= ground_tank_night:New(),

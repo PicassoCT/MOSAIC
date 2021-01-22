@@ -1091,7 +1091,6 @@ function giveParachutToUnit(id,x,y, z)
 		GG.ParachutPassengers[parachutID]={id=persPack.id, x= persPack.x, y=persPack.y, z= persPack.z}
 		Spring.SetUnitTooltip(parachutID,persPack.id.."")
 		setUnitValueExternal(persPack.id, 'WANT_CLOAK' , 0)
-		setUnitValueExternal(persPack.id, 'CLOAKED' , 0)
 		return nil, nil
 		end
 				
@@ -1108,13 +1107,10 @@ function giveParachutToUnit(id,x,y, z)
 	
 	else
 		parachutID = createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
-		
-
 
 		GG.ParachutPassengers[parachutID]={id=id, x= x, y=y, z= z}
 		Spring.SetUnitTooltip(parachutID,id.."")
 		setUnitValueExternal(id, 'WANT_CLOAK' , 0)
-		setUnitValueExternal(id, 'CLOAKED' , 0)
 	end
 end
 
