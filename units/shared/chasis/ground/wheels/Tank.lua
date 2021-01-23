@@ -51,7 +51,7 @@ local ground_tank_day = Tank:New{
 		},	
 }
 
-ocal ground_tank_night = Tank:New{
+ ground_tank_night = Tank:New{
 		name = "Tank",
 	description = "Heavily Armoured <Redundant Vehicle>",
 	
