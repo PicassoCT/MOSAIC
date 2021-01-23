@@ -14,6 +14,7 @@ local LaunchedICBM = Rocket:New{
 	
 	script 				= "launchedicbmscript.lua",
 	objectName        	= "launcherICBM.dae",
+		--objectName        	= "launcherICBM.s3o",
 	name = "MOSAICBM",
 	description = " the end",
 	iconType = "launcher",
