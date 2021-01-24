@@ -62,7 +62,7 @@ function getGameConfig()
 	 mainStreetModulo	= 4,
 	 maxIterationSteps = 2048,
 	 chanceCivilianArmsItselfInHundred = 50,
-	demonstrationMarchRadius = 50,
+	 demonstrationMarchRadius = 50,
 	 
 	 maxNrPolice = 6,
 	 policeMaxDispatchTime = 2000,
@@ -118,6 +118,7 @@ function getGameConfig()
 	 --Launcher
 	 PreLaunchLeakSteps = 3,
 	 LaunchReadySteps = 7,
+	 LauncherInterceptTimeSeconds= 20,
 	 
 	 --CruiseMissiles
 	 CruiseMissilesHeightOverGround=  22,

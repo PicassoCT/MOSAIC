@@ -31,9 +31,11 @@ local weaponDef = {
 	Turnrate = 1066*30, --degrees per second
 	weaponVelocity = 800,
 	tracks = true,
+	AlwaysVisible = true,
 	flightTime = 2500 ,
 	-- uselos = false,
-
+    explosionGenerator = "custom:bigbulletimpact",
+   --	CegTag = "lightuponsmoke",
 	turret = true,
 	explosionScar = true, 
 	soundStart = "weapons/cruisemissile/launch.ogg",

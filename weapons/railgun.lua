@@ -20,6 +20,7 @@ local weaponDef = {
  
     impactOnly = true,
 	avoidFriendly = false,
+    avoidNeutral = false,
 	avoidGround  = true,
 	collideNeutral = false,
 	-- noFirebaseCollide  = false,
@@ -40,6 +41,7 @@ local weaponDef = {
     separation = 0.5,
     size = 0.8,
     sizeDecay = -0.1,
+    soundFire = "sounds/weapons/sniper/sniperFire.ogg",
     soundHit = "sounds/weapons/sniper/sniperFire.ogg",
     sprayangle = 800,
     stages = 32,

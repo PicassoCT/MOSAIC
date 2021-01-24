@@ -6,6 +6,7 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
@@ -21,9 +22,9 @@ function script.Create()
 end
 function delayShowAllElements()
     hideT(TablesOfPiecesGroups["HyperLoop"])
-    Sleep(30000)
+    Sleep(10000)
     for i=1,#TablesOfPiecesGroups["HyperLoop"] do
-        x,y,z= Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["HyperLoop"][i])
+        x,y,z= Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["HyperLoop"][math.max(1,i-1)])
         if not (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ ) then
               Show(TablesOfPiecesGroups["HyperLoop"][i])
        end

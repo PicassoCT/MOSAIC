@@ -469,7 +469,7 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	brakeRate = 0.1,
 	turninplace		= true,
 	 fireState=1,
-	
+	alwaysUpright = true,
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
@@ -494,7 +494,6 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	LeaveTracks = false, 
 	canCloak =true,
 	
-	
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
@@ -502,10 +501,9 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	  },
 	 sfxtypes = {
 		explosiongenerators = {
-							"custom:bigbulletimpact"
+							"custom:lightuponsmoke"
 							  },
 				},
-
 				
 	weapons = {
 		[1]={name  = "javelinrocket",

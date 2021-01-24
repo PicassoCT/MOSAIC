@@ -13,8 +13,8 @@ local LaunchedICBM = Rocket:New{
 	footprintZ = 1,
 	
 	script 				= "launchedicbmscript.lua",
-	--objectName        	= "launcherICBM.dae",
-	objectName        	= "launcherICBM.s3o",
+	objectName        	= "launcherICBM.dae",
+	--objectName        	= "launcherICBM.s3o",
 	name = "MOSAICBM",
 	description = " the end",
 	iconType = "launcher",
@@ -25,6 +25,12 @@ local LaunchedICBM = Rocket:New{
 		helptext		= "Flying Rocket",
 		baseclass		= "Rocket", -- TODO: hacks
     },
+
+     sfxtypes = {
+		explosiongenerators = {
+							"custom:lightuponsmoke"
+							  },
+				},
 	
 
 	category = [[ORBIT AIR]],

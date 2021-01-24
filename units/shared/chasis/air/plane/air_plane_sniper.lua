@@ -15,7 +15,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	buildCostEnergy = 1000,
 	buildTime =  2*60,
 	--Health
-	maxDamage = 50,
+	maxDamage = 500,
 	idleAutoHeal = 0,
 	--Movement
 	
@@ -27,11 +27,11 @@ local AIR_SNIPER = AIRCRAFT:New{
 	maxBank=0.4,
 	myGravity =0.5,
 	mass = 1225,
-	
+	cruiseAlt = 512,
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
-	dontLand		 	= false,
+	dontLand		 	= true,
 	Acceleration = 0.5,
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
@@ -48,7 +48,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	CanGuard = true,
 	CanMove = true,
 	CanPatrol = true,
-	Canstop  = true,
+	Canstop  = false,
 	onOffable = false,
 	LeaveTracks = false, 
 
@@ -66,11 +66,12 @@ local AIR_SNIPER = AIRCRAFT:New{
 
 	weapons={	
 			[1]={name  = "sniperrifle",
-				onlyTargetCategory = [[GROUND ]],
+				onlyTargetCategory = [[GROUND BUILDING]],
+				turret= false
 			},
 			[2]={name  = "sniperrifle",
-				onlyTargetCategory = [[GROUND ]],
-			}
+				onlyTargetCategory = [[GROUND ]],			
+				turret= false			}
 		},
 		
 			
