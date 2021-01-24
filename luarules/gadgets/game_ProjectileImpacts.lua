@@ -32,6 +32,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	Script.SetWatchWeapon(raidWeaponDefID, true)
     local stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
     Script.SetWatchWeapon(stunpistoldWeaponDefID, true)
+    nimrodRailungDefID = WeaponDefNames["railgun"].id
+    Script.SetWatchWeapon(nimrodRailungDefID, true)
 	
     function getWeapondefByName(name)
         return WeaponDefs[WeaponDefNames[name].id]
@@ -561,6 +563,13 @@ if (gadgetHandler:IsSyncedCode()) then
             return damage
         end
     end
+
+UnitDamageFuncT[nimrodRailungDefID] = function(unitID, unitDefID)
+    if houseTypeTable[unitDefID] then
+        return 0
+    end    
+end
+
 
     function gadget:UnitDamaged(
         unitID,
