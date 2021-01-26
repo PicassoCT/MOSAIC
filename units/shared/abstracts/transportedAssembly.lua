@@ -59,7 +59,8 @@ local unitDef = {
         "ground_walker_grenade",
         "ground_turret_cm_airdrop",
         "ground_turret_cm_walker",
-        "ground_turret_cm_ssied"
+        "ground_turret_cm_ssied",
+        "brehmerwall"
     },
     usebuildinggrounddecal = false,
     Category = [[NOTARGET]],
