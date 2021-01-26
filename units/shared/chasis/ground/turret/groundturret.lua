@@ -499,9 +499,10 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	  customParams = {
 	  baseclass = "tank"
 	  },
+
 	 sfxtypes = {
 		explosiongenerators = {
-							"custom:lightuponsmoke"
+							"custom:cruisemissiletrail"
 							  },
 				},
 				
