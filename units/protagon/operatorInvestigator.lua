@@ -58,7 +58,8 @@ local OperativeInvestigator = Human:New{
 		"recruitcivilian",
 		"protagonsafehouse",
 		"air_copter_ssied",
-		"air_parachut"
+		"air_parachut",
+		"checkpoint"
 	},
 
 	customparams = {
