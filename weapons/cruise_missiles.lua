@@ -35,7 +35,7 @@ local weaponDef = {
 	flightTime = 2500 ,
 	-- uselos = false,
     explosionGenerator = "custom:bigbulletimpact",
-   --	CegTag = "lightuponsmoke",
+
 	turret = true,
 	explosionScar = true, 
 	soundStart = "weapons/cruisemissile/launch.ogg",
