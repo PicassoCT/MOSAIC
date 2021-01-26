@@ -100,8 +100,12 @@ function getGameConfig()
 	 RaidInterrogationPropgandaPrice = 50,
 	 investigatorCloakedSpeedReduction = 0.35,
 	 raidWaitTimeToRecloak = 5000,
-	operativeShotFiredWaitTimeToRecloak_MS = 10000,
-	
+	 operativeShotFiredWaitTimeToRecloak_MS = 10000,
+
+	--checkpoint
+	checkPointRevealRange = 125,
+	checkPointPropagandaCost= 50,
+
 	 raid={
 	 maxTimeToWait = 3*60*1000,
 	 maxRoundLength= 20*1000,
@@ -1220,9 +1224,7 @@ return {
 ["Init"]="Init",
 ["PreOutbreak"]="PreOutbreak",
 ["Outbreak"]="Outbreak",
-["Dieing"]="Dieing",
-
-
+["Dieing"]="Dieing"
 }
 end
 
@@ -1394,3 +1396,27 @@ local returnT= {}
  return returnT
 end
    
+
+function transferFromTeamToAllTeamsExceptAtUnit(unit, teamToWithdrawFrom, amount, teamsToIgnore)
+  	local allTeams = Spring.GetTeamList()
+  	if not unit or not  GG.Bank or not allTeams or #allTeams <= 1 then
+		return false
+	end
+                     
+    GG.Bank:TransferToTeam(
+                       -amount,
+                       teamToWithdrawFrom,
+                       unit
+                    )
+
+    for i = 1, #allTeams, 1 do
+    	teamID = allTeams[i] 
+        if teamID ~= teamToWithdrawFrom and not teamsToIgnore[teamID] then
+            GG.Bank:TransferToTeam(
+                amount,
+                teamID,
+                unit
+            )
+        end
+    end
+end
