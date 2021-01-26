@@ -28,7 +28,7 @@ local LaunchedICBM = Rocket:New{
 
      sfxtypes = {
 		explosiongenerators = {
-							"custom:lightuponsmoke"
+							"custom:cruisemissiletrail"
 							  },
 				},
 	
