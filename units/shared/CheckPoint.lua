@@ -3,8 +3,8 @@ local Checkpoint = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 500,
-	buildCostEnergy     = 5,
-	buildCostMetal      = 5,
+	buildCostEnergy     = 500,
+	buildCostMetal      = 100,
 	explodeAs			= "none",
 
 
@@ -13,21 +13,22 @@ local Checkpoint = Building:New{
 	nanocolor=[[0.20 0.411 0.611]], --
 	CanReclaim=false,	
 	workerTime = 0.0,
-	YardMap = [[yooooooy
-				yyyooyyy
+	YardMap = [[oooooooo
 				yyyyyyyy
 				yyyyyyyy
 				yyyyyyyy
 				yyyyyyyy
-				yyyooyyy
-				yooooooy]],
+				yyyyyyyy
+				yyyyyyyy
+				oooooooo
+				]],
 
-	MaxSlope 					= 50,
+	MaxSlope = 50,
 	MetalStorage = 2500,
 	buildingMask = 8,
 	footprintX = 8,
 	footprintZ = 8,
-	showNanoFrame= true,
+	showNanoFrame = true,
 	script 					= "checkpointscript.lua",
 	objectName        	= "CheckPoint.dae",
 		customParams        = {
@@ -45,7 +46,10 @@ local Checkpoint = Building:New{
 	
 	
 	category = [[GROUND BUILDING]],
-	}
+	},
+
+	onoffable = true,
+	activatewhenbuilt = true,
 
 
 
