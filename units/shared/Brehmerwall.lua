@@ -3,7 +3,7 @@ local Brehmerwall = Building:New{
 	corpse				= "",
 	maxDamage           = 10000,
 	mass                = 500,
-	buildCostEnergy     = 500,
+	buildCostEnergy     = 100,
 	buildCostMetal      = 50,
 	explodeAs			= "none",
 
