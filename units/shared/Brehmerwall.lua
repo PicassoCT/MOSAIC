@@ -18,8 +18,7 @@ local Brehmerwall = Building:New{
 				   oo
 				   oo]],
 
-
-	MaxSlope 					= 50,
+	MaxSlope = 50,
 	MetalStorage = 2500,
 	buildingMask = 8,
 	footprintX = 2,
@@ -31,7 +30,6 @@ local Brehmerwall = Building:New{
 	name = "Wall",
 	description = " divides & conquers",
 	buildPic = "placeholder.png",
-	
 	
 	customparams = {
 		helptext		= "MOSAIC Checkpoint",

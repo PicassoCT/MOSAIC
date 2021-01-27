@@ -73,7 +73,6 @@ function foldControl()
         if isTransported(unitID) == false then
             unfold()
         else
-
             fold()
         end
         Sleep(1000)
