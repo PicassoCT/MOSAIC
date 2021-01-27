@@ -3,9 +3,9 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
+include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
-
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
@@ -25,13 +25,14 @@ function hideShowLamps(stage)
 	if stage == "off" then
 		Show(TablesOfPiecesGroups["Lamp"][1])	
 		Show(TablesOfPiecesGroups["Lamp"][4])	
-	elseif stage = "good" then
+	elseif stage == "good" then
 		Show(TablesOfPiecesGroups["Lamp"][2])	
 		Show(TablesOfPiecesGroups["Lamp"][5])	
 	elseif stage == "bad" then
 		Show(TablesOfPiecesGroups["Lamp"][3])	
 		Show(TablesOfPiecesGroups["Lamp"][6])	
 	end
+
 	Sleep(3000)
 	hideT(TablesOfPiecesGroups["Lamp"])
 	Show(TablesOfPiecesGroups["Lamp"][1])	
@@ -39,29 +40,36 @@ function hideShowLamps(stage)
 end
 
 function script.Create()
+	Spring.SetUnitBlocking(unitID, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    StartThread(hideShowLamps,"off")
     StartThread(revelioThread)
 end
 
 boolActive = true
 function revelioThread()
- StartThread(hideShowLamps,"off")
+local spGetUnitTeam = Spring.GetUnitTeam
+local spGetUnitDefID = Spring.GetUnitDefID
 local cachedNonInterest={}
+local gameConfig = getGameConfig()
+
 gaiaTeamID = Spring.GetGaiaTeamID()
-if not GGG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
+if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 
 	while true do
 			if boolActive == true then
 			process(
 				 getAllNearUnit(unitID, gameConfig.checkPointRevealRange),
 				 function(id)
-				 	if not cachedNonInterest[id] then return id end
+				 	if not cachedNonInterest[id] or cachedNonInterest[id] + 3*60*30 < Spring.GetGameFrame() then 
+				 		return id 
+				 	end
 				 end,
 				 function(id)
 				 	if spGetUnitTeam(id) ~= myTeamID then
 				 		return id
 				 	else
-						cachedNonInterest[id] = true
+						cachedNonInterest[id] = Spring.GetGameFrame()
 				 	end
 				 end,
 				 function(id)
@@ -73,6 +81,7 @@ if not GGG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
  							if not GG.OperativesDiscovered then  GG.OperativesDiscovered = {} end
  							 GG.OperativesDiscovered[disguisedUnitID] = true
  							 StartThread(hideShowLamps,"good")
+ 							 cachedNonInterest[id] = Spring.GetGameFrame()
 				 		else --pay a annoyanceFine
 							transferFromTeamToAllTeamsExceptAtUnit(id, 
 								 myTeamID,
@@ -82,6 +91,7 @@ if not GGG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 								 }
 								 )
 							 StartThread(hideShowLamps,"bad")
+							 cachedNonInterest[id] = Spring.GetGameFrame()
 				 		end
 				 	end
 				 end

@@ -14,12 +14,12 @@ local Checkpoint = Building:New{
 	CanReclaim=false,	
 	workerTime = 0.0,
 	YardMap = [[yooooooy
-				yyyoooyy
+				yyyooyyy
 				yyyyyyyy
-				yyyyyyyo
-				oyyyyyyy
 				yyyyyyyy
-				yyoooyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyooyyy
 				yooooooy]],
 
 	MaxSlope 					= 50,
@@ -36,7 +36,7 @@ local Checkpoint = Building:New{
 	name = "Checkpoint",
 	description = " reveals any disguised unit",
 	buildPic = "placeholder.png",
-
+	usepiececollisionvolumes = false,
 	
 	customparams = {
 		helptext		= "MOSAIC Checkpoint",
