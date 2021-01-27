@@ -136,8 +136,7 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 					--assert(Spring.GetTeamInfo(cur[i].Reciever), "DisplayUnit missing ")
 						if  cur[i].Money < 0 then
-
-							Spring.UseTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+							Spring.UseTeamResource(cur[i].Reciever, "metal", math.abs(cur[i].Money))
 						else
 							Spring.AddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
 						end
