@@ -31,7 +31,7 @@ end
 	
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
-	local _,AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
+	local AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
 	local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 	local activePoliceUnitIds_Dispatchtime ={}
 	local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)

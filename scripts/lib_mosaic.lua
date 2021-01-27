@@ -612,7 +612,7 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 		end
 	end
 	
-	return retTable, getTypeTable(UnitDefNames, typeTable)
+	return getTypeTable(UnitDefNames, typeTable), retTable
 end
 
 function getAersolAffectableUnits(UnitDefs)
@@ -1419,4 +1419,26 @@ function transferFromTeamToAllTeamsExceptAtUnit(unit, teamToWithdrawFrom, amount
             )
         end
     end
+end
+
+function unitTest(UnitDefs, UnitDefNames)
+	unitTestTypeTables(UnitDefs, UnitDefNames)
+
+end
+
+function unitTestTypeTables( UnitDefs, UnitDefNames)
+	 civilianTypeTable = getCivilianTypeTable(UnitDefs)
+	 for id,v in pairs(civilianTypeTable) do
+	 	if UnitDefs[id] then
+	 	echo("CivilianTypeDef: "..id.." -> "..UnitDefs[id].name)
+		 end
+	 end
+	assert(civilianTypeTable)
+	for i=0,3 do
+		assert(civilianTypeTable[UnitDefNames["civilian_arab"..i].id], i)
+	end
+
+	for i=1,8 do
+		assert(civilianTypeTable[UnitDefNames["arab_truck"..i].id])
+	end
 end
