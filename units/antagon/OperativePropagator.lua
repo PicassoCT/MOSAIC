@@ -57,7 +57,8 @@ local OperativePropagator = Human:New{
 		"antagonsafehouse",
 		"air_copter_ssied",
 		"air_parachut",
-		"checkpoint"
+		"checkpoint",
+		"brehmerwall"
 	},
 
 	customparams = {
