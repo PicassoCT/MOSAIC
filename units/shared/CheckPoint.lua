@@ -14,12 +14,12 @@ local Checkpoint = Building:New{
 	CanReclaim=false,	
 	workerTime = 0.0,
 	YardMap = [[yooooooy
-				yyooooyy
+				yyyoooyy
 				yyyyyyyy
 				yyyyyyyo
 				oyyyyyyy
 				yyyyyyyy
-				yyooooyy
+				yyoooyyy
 				yooooooy]],
 
 	MaxSlope 					= 50,
