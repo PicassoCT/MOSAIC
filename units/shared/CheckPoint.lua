@@ -22,10 +22,9 @@ local Checkpoint = Building:New{
 				yyyyyyyy
 				oooooooo
 				]],
-
+	buildingMask = 1,			
 	MaxSlope = 50,
 	MetalStorage = 2500,
-	buildingMask = 8,
 	footprintX = 8,
 	footprintZ = 8,
 	showNanoFrame = true,
@@ -44,12 +43,12 @@ local Checkpoint = Building:New{
 		baseclass		= "Building",
     },
 	
-	
-	category = [[GROUND BUILDING]],
-	},
-
 	onoffable = true,
 	activatewhenbuilt = true,
+
+	
+	category = [[GROUND BUILDING]],
+	}
 
 
 

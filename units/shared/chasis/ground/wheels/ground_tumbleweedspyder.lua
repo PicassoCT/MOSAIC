@@ -1,6 +1,6 @@
 local ground_tumbleweedspyder = Walker:New{
 	name = "TumbleWeedSpyder",
-	description = "2 mines in rolling configuration <spot-class>",
+	description = "2 mines in rolling configuration",
 	
 	corpse				= "",
 	maxDamage = 800,
@@ -13,7 +13,7 @@ local ground_tumbleweedspyder = Walker:New{
 	--maxReverseVelocity= 2.15,
 	acceleration = 0.7,
 	brakeRate = 0.1,
-	turninplace		= true,
+	turninplace		= false,
 	reclaimable=false,
 	Builder = false,
 	CanAttack = true,
@@ -21,10 +21,12 @@ local ground_tumbleweedspyder = Walker:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
+	onoffable = true,
+	activateWhenbuilt = false,
 
 	footprintX = 2,
 	footprintZ = 2,
-	script 			= "placeholderscript.lua",
+	script 			= "tubleweedspyderscript.lua",
 	objectName 	= "ground_turret_spyder.dae",
 	buildPic = "ground_turret_spyder.png",
 	iconType ="ground_turret_spyder",
@@ -38,7 +40,13 @@ local ground_tumbleweedspyder = Walker:New{
 	},
 	
 				weapons = {
-				[1]={name  = "tankcannon",
+				[1]={name  = "ssied",
+					onlyTargetCategory = [[BUILDING GROUND]],
+					},
+				[2]={name  = "s16rocket",
+					onlyTargetCategory = [[BUILDING GROUND]],
+					},
+				[3]={name  = "s16rocket",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					

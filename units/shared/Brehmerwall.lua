@@ -17,10 +17,10 @@ local Brehmerwall = Building:New{
 				   oo
 				   oo
 				   oo]],
-
+	buildingMask = 1,
 	MaxSlope = 50,
 	MetalStorage = 2500,
-	buildingMask = 8,
+
 	footprintX = 2,
 	footprintZ = 4,
 	showNanoFrame= true,

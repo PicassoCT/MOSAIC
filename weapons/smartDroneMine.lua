@@ -1,34 +1,56 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "smartminedrone" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
-    name = "exploding charge unit flying",
+  name = "Mine Drone",
     weaponType = [[MissileLauncher]],
+    Accuracy = 1000,
 
+    --Physic/flight path
+    range = 1200,
+    reloadtime = 3,
+    weaponVelocity = 250,
+    startVelocity = 50,
+    weaponAcceleration = 50,
+    flightTime = 18.5,
+    BurnBlow = 0,
+    FixedLauncher = false,
+    dance = 60,
+    wobble = 1,
+    turnrate = 12200,
+    tolerance = 16000,
+    tracks = true,
+    Turnrate = 32000,
+    avoidGround = false,
+
+    --- -APPEARANCE
+    model = "DroneMineLaunchProj.s3o",
+    smokeTrail = false,
+    --explosionGenerator="custom:redsmoke",
+    --CegTag = "ccitdronetail",
+
+    --- -TARGETING
+    turret = true,
+    CylinderTargeting = 0.0,
+    avoidFeature = true,
+    avoidFriendly = true,
+    collideFriendly = false,
+    heightMod = 0.5,
+
+    --commandfire=true,
+
+    --- -DAMAGE
     damage = {
-        default = 1500
+        default = 450,
+        heavyarmor = 350,
     },
-	range = 1024,
-	impulseBoost            = 0,
-	impulseFactor = 0.4,
-	reloadtime = 10,
-    areaOfEffect = 256,
-	 noSelfDamage = true,
-	trajectoryHeight = 2.1 ,
-	avoidFeature            = false,
-	avoidGround = false,
-	smokeTrail = true,
-	startVelocity  = 380,
-	weaponAcceleration = 100,
-	turnRate = 150,
-	weaponVelocity = 450,
-	tracks = true,
-	flightTime = 14.5 ,
-	turret = true,
-	model = "DroneMineLaunchProj.s3o",
-	explosionScar = true, 
-    explosionGenerator = "custom:missile_explosion",
-    cegTag = "gunprojectile",
-    texture1 = "gunshot",
+    areaOfEffect = 100,
+    craterMult = 0,
+
+    noSelfDamage = true,
+
+    --sound
+    --soundHit="null",
+    --soundStart = "citadell/dronelaunch",
 	fireStarter  = 50.0,
 	cameraShake =1.0
 	

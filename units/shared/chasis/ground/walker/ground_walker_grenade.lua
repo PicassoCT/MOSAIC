@@ -40,7 +40,7 @@ local ground_walker_grenade = Walker:New{
 	},
 	
 				weapons = {
-				[1]={name  = "submachingegun",
+				[1]={name  = "smartminedrone",
 				onlyTargetCategory = [[BUILDING GROUND]],
 				},
 				
