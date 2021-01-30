@@ -3,10 +3,12 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
+include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 Irrigation1 = piece"Irrigation1"
-Irrigation2 = piece"Irrigation002"
+GameConfig = getGameConfig()
+local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -48,8 +50,7 @@ function outsideMap(pieces)
 end
 
 function deployPipes()
-    forInterval(1, 5, Irrigation1, 1)  
-    forInterval(6 ,#TablesOfPiecesGroups["HyperLoop"], Irrigation2, 2)
+    forInterval(1, #TablesOfPiecesGroups["HyperLoop"], Irrigation1, 1)  
 end
 
 takenValues={}
@@ -65,8 +66,18 @@ function forInterval(start,stop, irrigation, nr)
        rotationValue= rotationValue + 45 * discoverSign
        attempts = attempts + 1
        Sleep(1)
-       boolAtLeastOnce= true
+       x,y,z = Spring.GetUnitPiecePosDir(unitID, irrigation)
+        Result=	process(getAllInCircle(x, z, 700),
+     			 function(id)
+		       		if houseTypeTable[Spring.GetUnitDefID(id)] then
+		       			return id
+		       		end
+      		 	end
+       			)
+
+     boolAtLeastOnce= #Result == 0 
     end
+    
     takenValues[rotationValue] = true
 
      accumulateddeg= 0
