@@ -176,19 +176,21 @@ local function UpdateRemove(unitID, supplyInfo)
 	if not unitID then return end
 
 	local r0 = supplyInfo.r
-	assert(r0)
+	--assert(r0)
 	local numSegments = supplyInfo.numSegments
 	local x0, z0 = supplyInfo.x, supplyInfo.z
-	assert(x0)
-	assert(z0)
+	--assert(x0)
+	--assert(z0)
 
 	for currUnitID, currSupplyInfo in pairs(supplyInfos) do
 		--ignore self
 		if currUnitID and (unitID ~= currUnitID) then
 			--is there overlap?
 			local r = currSupplyInfo.r
+			assert(r, toString(currSupplyInfo))
 			local x, z = currSupplyInfo.x, currSupplyInfo.z
 			local dist = GetUnitSeparation(unitID, currUnitID, true)
+			assert(dist,unitID.." currUnitID: "..currUnitID)
 			if (dist < r0 + r) then
 				UpdatePoints(currUnitID, currSupplyInfo, x0, z0, r0)
 			end

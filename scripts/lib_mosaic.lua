@@ -1,19 +1,20 @@
 --===================================================================================================================
 -- Game Configuration
 
-unitFactor= 0.5 --0.5
+unitFactor= 0.725 --0.5
 
 
 function getGameConfig()
 	return {
 	instance = {
 	culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
-	Version = "Alpha: 0.699",
+	Version = "Alpha: 0.706",
 	},
 		
-	numberOfBuildings 	= math.ceil(75 *unitFactor	),  --not related to the hangdetector bug
-    numberOfVehicles 	= math.ceil(100 *unitFactor	), --not related to the hangdetector bug
-    numberOfPersons		= math.ceil(150 *unitFactor	), --not related to the hangdetector bug
+	numberOfBuildings 	= math.ceil(75 *unitFactor	),  
+    numberOfVehicles 	= math.ceil(100 *unitFactor	), 
+    numberOfPersons		= math.ceil(150 *unitFactor	), 
+    nightCivilianReductionFactor = 0.25,
 	LoadDistributionMax = 5,
 	
 	 houseSizeX			= 256, 
@@ -104,7 +105,7 @@ function getGameConfig()
 
 	--checkpoint
 	checkPointRevealRange = 125,
-	checkPointPropagandaCost= 50,
+	checkPointPropagandaCost= 75,
 
 	 raid={
 	 maxTimeToWait = 3*60*1000,
@@ -832,13 +833,14 @@ function getDecalMap(culture)
 end
 
 function getDayTime()
-	DAYLENGTH = 28800
-	Frame = (Spring.GetGameFrame() + (DAYLENGTH / 2)) % DAYLENGTH
-	
+	local DAYLENGTH = GG.GameConfig.daylength
+	morningOffset = (DAYLENGTH / 2)
+	Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+	percent = Frame / DAYLENGTH
 	hours = math.floor((Frame / DAYLENGTH) * 24)
 	minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
 	seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
-	return hours, minutes, seconds
+	return hours, minutes, seconds, percent
 end
 
 --> Creates a Eventstream Event bound to a Unit

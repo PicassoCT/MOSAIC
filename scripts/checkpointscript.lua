@@ -49,17 +49,20 @@ end
 
 boolActive = true
 function revelioThread()
-local spGetUnitTeam = Spring.GetUnitTeam
-local spGetUnitDefID = Spring.GetUnitDefID
-local cachedNonInterest={}
-local gameConfig = getGameConfig()
-local civilianTypeTable = getCivilianTypeTable(UnitDefs)
+	Sleep(100)
+	waitTillComplete(unitID)
 
-local gaiaTeamID = Spring.GetGaiaTeamID()
-local houseTypeTable = getHouseTypeTable(UnitDefs, getCultureName())
+	local spGetUnitTeam = Spring.GetUnitTeam
+	local spGetUnitDefID = Spring.GetUnitDefID
+	local cachedNonInterest={}
+	local gameConfig = getGameConfig()
+	local civilianTypeTable = getCivilianTypeTable(UnitDefs)
 
-local spGetGameFrame = Spring.GetGameFrame
-if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
+	local gaiaTeamID = Spring.GetGaiaTeamID()
+	local houseTypeTable = getHouseTypeTable(UnitDefs, getCultureName())
+
+	local spGetGameFrame = Spring.GetGameFrame
+	if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 
 	while true do
 			if boolActive == true then
@@ -80,13 +83,20 @@ if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 				 	return id
 				 end,
 				 function(id)
+				 	if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
+					 if GG.DisguiseCivilianFor[id] and spGetUnitTeam(GG.DisguiseCivilianFor[id]) == myTeamID then
+					 	return
+					 end
+					return id
+				 end,
+				 function(id)
 				 	defID = spGetUnitDefID(id)
 
 				 	if houseTypeTable[defID] then return end
-				 	if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
+				 
 				 	if defID and civilianTypeTable[defID] then
 				 		--if DisguiseCivilianFor	
-				 		if GG.DisguiseCivilianFor[id] then -- Disguised Unit
+				 		if GG.DisguiseCivilianFor[id]  then -- Disguised Unit
    							StartThread(hideShowLamps,"bad")
 				 			disguisedUnitID = GG.DisguiseCivilianFor[id] --make transparent
  							if not GG.OperativesDiscovered then  GG.OperativesDiscovered = {} end

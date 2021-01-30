@@ -434,7 +434,7 @@ end
 			GG.CivilianTable[id]= nil
 		end
 		
-		if counter < GameConfig.numberOfPersons then
+		if counter < getUnitNumberAtTime(GameConfig.numberOfPersons) then
 		local stepSpawn = math.min(GameConfig.numberOfPersons - counter, GameConfig.LoadDistributionMax)
 		-- echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
 		
@@ -452,8 +452,12 @@ end
 				end
 			end
 		
+		else -- decimate arrived cvilians who are not DisguiseCivilianFor
+			decimateArrivedCivilians(absDistance(getUnitNumberAtTime(GameConfig.numberOfPersons), counter), civilianWalkingTypeTable)
 		end	
 	end
+
+
 	
 	function checkReSpawnTraffic()
 		counter = 0
@@ -472,7 +476,7 @@ end
 			GG.CivilianTable[id]= nil
 		end
 		
-		if counter < GameConfig.numberOfVehicles then
+		if counter < getUnitNumberAtTime(GameConfig.numberOfVehicles) then
 		local stepSpawn = math.min(GameConfig.LoadDistributionMax, GameConfig.numberOfVehicles - counter)
 			-- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
 			for i=1,stepSpawn  do
@@ -486,7 +490,19 @@ end
 					GG.UnitArrivedAtTarget[id] = true
 				end
 			end
+		else
+			decimateArrivedCivilians(absDistance(getUnitNumberAtTime(GameConfig.numberOfVehicles), counter), 
+									TruckTypeTable)
 		end	
+	end
+
+	function getUnitNumberAtTime(value)
+		h,m,_, pTime = getDayTime()
+
+		mixValue = math.sin(math.pi* pTime)
+		blendedFactor = mix(1, GameConfig.nightCivilianReductionFactor, mixValue)
+--		echo("Time:"..h..":"..m.." %:"..pTime.."->"..blendedFactor)
+		return value * blendedFactor
 	end
 	
 	function getRandomSpawnNode()
@@ -591,14 +607,12 @@ end
 	
 	-- truck or Person
 	function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
-	
-		--offx, offz = randSign()*(GameConfig.houseSizeX/2),randSign()*(GameConfig.houseSizeZ/2)
 		id = spawnUnit(defID,x ,z)
 		if id then 
 			--assert(goalID)
 			--assert(startID)
 			GG.CivilianTable [id] = {defID = defID, startID =startID, goalID = goalID}
-			GG.UnitArrivedAtTarget[id]= defID
+			GG.UnitArrivedAtTarget[id]= true
 		end
 	end
 	
@@ -797,15 +811,38 @@ end
 	end
 
 	function sendArrivedUnitsCommands()
-		for id, uType in pairs(GG.UnitArrivedAtTarget) do
+		for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
 			if GG.CivilianTable[id] and doesUnitExistAlive(GG.CivilianTable[id].startID) == true and doesUnitExistAlive(id) then
-				giveWaypointsToUnit(id, uType, GG.CivilianTable[id].startID)
+				giveWaypointsToUnit(id, GG.CivilianTable[id].defID, GG.CivilianTable[id].startID)
 			end
 		end
 		
 		GG.UnitArrivedAtTarget = {}
 	end
-	
+
+	function decimateArrivedCivilians(nrToDecimate, typeTable)
+		nrToDecimate = math.floor(nrToDecimate)
+		--echo("Decimation called"..nrToDecimate)
+		if nrToDecimate <= 0 then return end
+		if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
+
+		for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
+			if  id and 
+				GG.CivilianTable[id] and
+				doesUnitExistAlive(GG.CivilianTable[id].startID) == true and 
+				doesUnitExistAlive(id) == true and 
+				 GG.DisguiseCivilianFor[id] == nil and
+				typeTable[GG.CivilianTable[id].defID]
+				then
+				--echo("Decimating:"..id.." a "..UnitDefs[GG.CivilianTable[id].defID].name)
+				Spring.DestroyUnit(id, false, true)
+				GG.UnitArrivedAtTarget[id] = nil
+				nrToDecimate = nrToDecimate -1
+				if nrToDecimate <= 0 then return end
+			end
+		end
+	end
+
 	function countDownRespawnHouses(framesToSubstract)
 	 for rubbleHeapID, tables in pairs( TimeDelayedRespawn) do
 		TimeDelayedRespawn[rubbleHeapID].frame = TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract

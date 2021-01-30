@@ -3294,8 +3294,8 @@ function pointWithinTriangle(x1, y1, x2, y2, x3, y3, xt, yt)
     end
 	
     return oddNodes 
-
 end
+
 function distanceToLine(P1, P2, APos)
 	return math.abs((P2.y -P1.y)*APos.x - (P2.x -P1.x)*APos.y +(P2.x *P1.y) - (P2.y*P1.x))/
 	math.sqrt( (P2.y -P1.y)*(P2.y -P1.y) + (P2.x -P1.x)*(P2.x -P1.x));
@@ -6037,7 +6037,7 @@ function cegDevil(cegname, x, y, z, rate, lifetimefunc, endofLifeFunc, boolStrob
 end
 
 
---New Unsorted code
+--New Unsorted code TODO Sortme
 
 
 function getBelowPow2( value)
@@ -6072,4 +6072,30 @@ end
 
 function frameToS(frames)
 	return (frames / 30);
+end
+
+function assertArguments(...)
+	local arg = { ... }
+	arg.n = #arg
+	
+	for i=1, arg.n, 2 do
+		local expected = arg[i]
+		local actual = arg[i+1]
+		assert((type(expected) == type(actual)), "Arg:"..i.." :Types not compatible, expected "..type(expected).." got "..type(actual))
+		assert((type(expected) == type(actual)), "Arg:"..i.." :Value not as expected"..toString(expected).." got "..toString(actual))
+		assert(expected == actual)
+	end
+end
+
+function assertArgumentsExistOfType(...)
+	local arg = { ... }
+	arg.n = #arg
+
+	for i=1, arg.n, 2 do
+		local expected = arg[i]
+		local actual = arg[i+1]
+		assert(actual ~= nil, "Arg:"..i.." :Value is nil")
+		assert((type(expected) == type(actual)), "Arg:"..i.." :Types not compatible, expected "..type(expected).." got "..type(actual))
+
+	end
 end
