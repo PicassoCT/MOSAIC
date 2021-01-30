@@ -35,7 +35,7 @@ local Checkpoint = Building:New{
 	},
 	name = "Checkpoint",
 	description = " reveals any disguised unit",
-	buildPic = "placeholder.png",
+	buildPic = "CheckPoint.png",
 	usepiececollisionvolumes = false,
 	
 	customparams = {

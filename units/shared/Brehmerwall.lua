@@ -29,7 +29,7 @@ local Brehmerwall = Building:New{
 
 	name = "Wall",
 	description = " divides & conquers",
-	buildPic = "placeholder.png",
+	buildPic = "Brehmerwall.png",
 	
 	customparams = {
 		helptext		= "MOSAIC Checkpoint",
