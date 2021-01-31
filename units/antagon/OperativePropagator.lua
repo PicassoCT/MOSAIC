@@ -54,9 +54,10 @@ local OperativePropagator = Human:New{
 	buildoptions = 
 	{
 		"recruitcivilian",
-		"antagonsafehouse",
-		"air_copter_ssied",
 		"air_parachut",
+		"antagonsafehouse",
+		"ground_stickybomb",
+		"air_copter_ssied",	
 		"checkpoint",
 		"brehmerwall"
 	},
