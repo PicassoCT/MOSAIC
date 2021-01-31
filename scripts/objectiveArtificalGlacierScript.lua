@@ -99,10 +99,10 @@ function forInterval(start,stop, irrigation, nr)
 
                     if y  > gh  + offset then
                         val = val - 1
-                        accumulateddeg= accumulateddeg -1
+                        accumulateddeg = accumulateddeg -1
                     elseif y  < gh + offset   then
                         val = val + 1
-                        accumulateddeg=accumulateddeg +1
+                        accumulateddeg = accumulateddeg + 1
                     end
 
                     if (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) == false then
@@ -113,7 +113,7 @@ function forInterval(start,stop, irrigation, nr)
                 end
         end
    
-    accumulateddeg = accumulateddeg*-1
+    accumulateddeg = accumulateddeg *-1
     WTurn(irrigation, x_axis, math.rad(accumulateddeg), 0)
     showT(showTable)
     StartThread(spawnDecalAtPiece, irrigation)

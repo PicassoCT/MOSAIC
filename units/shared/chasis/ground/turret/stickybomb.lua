@@ -2,15 +2,15 @@ local stickybomb =  Turret:New{
 	name = "Explosive Charge",
 	Description = "sticks to vehicles/buildings/units closest explodes after 5 seconds",
 	
-	objectName = "ground_turret_sied.dae",
+	objectName = "ground_stickybomb.dae",
 	script = "ground_stickybombscript.lua",
 	buildPic = "StickyBomb.png",
 	iconType = "ground_turret_iied",
 	--floater = true,
 	--cost
-	buildCostEnergy = 200,
-	buildCostMetal= 200,
-	buildTime = 3,
+	buildCostEnergy = 300,
+	buildCostMetal= 300,
+	buildTime = 1,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

@@ -7,12 +7,15 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 stickyBombTimeMs = 5000
 maxDamagePerUnit = 800
-maxDamageDistance= 120
-stickyCircle = 50
-myTeamID = Spring.GetUnitTeamID(unitID)
+maxDamageDistance = 150
+stickyCircle = 150
+
+blink = piece"BLINK"
+center = piece"center"
+myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 
-center = piece"center"
+
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function script.Create()
@@ -45,8 +48,9 @@ function attachAndBlow()
 		)
 
 	if victimID then
-		map = Spring.GetUnitPieceMap(victimID)
-		Spring.UnitAttach(unitID, victimID, randDict(map))
+		map= Spring.GetUnitPieceMap(victimID)
+		name,nr = randDict(map)
+		Spring.UnitAttach(victimID, unitID, nr)
 	end
 	
 	it = true
@@ -59,19 +63,26 @@ function attachAndBlow()
 
         if it == true then
             it = false
-            --Show(blink)
+            Show(blink)
             for i = 1, 8, 1 do
                 EmitSfx(center, 1025)
                 Sleep(64)
             end
         else
             it = true
-            --Hide(blink)
+            Hide(blink)
             Sleep(period)
         end
     end
 
     x, y, z = Spring.GetUnitPosition(unitID)
+
+    Spring.SpawnCEG("bigbulletimpact", x, y + 25, z, 0, 1, 0, 50, 0)
+    EmitSfx(center, 1024)
+
+    if doesUnitExistAlive(victimID)== true then
+    Spring.AddUnitDamage(victimID, maxDamagePerUnit)
+	else
     process(getAllInCircle(x, z, maxDamageDistance, unitID),
     	function(id)
     		if id ~= unitID then
@@ -79,10 +90,11 @@ function attachAndBlow()
        		 	Spring.AddUnitDamage(id, maxDamagePerUnit * factor)
     		end
     end)
- 	EmitSfx(center, 1024)
- 	Spring.SpawnCEG("bigbulletimpact", x, y + 25, z, 0, 1, 0, 50, 0)
+	end
+
     Spring.DestroyUnit(unitID, false, true)
 end
+
 function script.Killed(recentDamage, _)
 
     return 1
