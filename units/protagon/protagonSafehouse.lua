@@ -42,10 +42,10 @@ local ProtagonSafeHouse =    Building:New{
   initCloaked =    true,
   decloakOnFire =    true,
   cloakTimeout =    5,
-showNanoFrame= true,
+  showNanoFrame= true,
   script =       "safehousescript.lua",
   objectName =            "safehouse.dae",
-
+  fireState=1,
 
 
   customparams =    {
@@ -61,9 +61,9 @@ showNanoFrame= true,
 
     "nimrod",
     "propagandaserver",
-	"aicore",
+	 "aicore",
     "assembly",
-	"blacksite"
+	 "blacksite"
   },
 
   category =  [[GROUND BUILDING RAIDABLE]],

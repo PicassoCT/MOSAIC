@@ -2528,9 +2528,9 @@ function echoT(T, layer)
 				echoT(T[k], l + string.len(k)+2)
 			end
 		else
-			Concated = stringBuilder( math.max(1, l) - 1, " ") .. "|-►"
+			local Concated = stringBuilder( math.max(1, l) - 1, " ") .. "|-►"
 			
-			typus = type(T)
+			local typus = type(T)
 			if typus == "number" or typus == "string" then
 				Spring.Echo(Concated .. T)
 			elseif typus == "boolean" then
@@ -2553,7 +2553,7 @@ end
 -->Generic to String
 function toString(element)
 	if not element then return "nil" end
-	typeE = type(element)
+	local typeE = type(element)
 	
 	if typeE == "nil" then return "nil" end
 	if typeE == "boolean" then return boolToString(element) end
@@ -2575,9 +2575,9 @@ end
 
 function tableToString(tab)
 	if not tab then return "nil" end
-	PostFix = "}"
-	PreFix = "{"
-	conCat=""..PreFix
+	local PostFix = "}"
+	local PreFix = "{"
+	local conCat=""..PreFix
 	for key, value in pairs(tab) do
 		if key and value then
 			conCat= conCat.."["..toString(key).."] ="..toString(value)..","
@@ -2589,7 +2589,7 @@ end
 
 --> Converts a stringserialized table back into a data table
 function stringToTable(stringT)
-	foonction = "function() return "..stringT.." end"
+	local foonction = "function() return "..stringT.." end"
 	return loadstring(foonction)
 end
 

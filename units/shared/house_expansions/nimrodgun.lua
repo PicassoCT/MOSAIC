@@ -30,6 +30,7 @@ showNanoFrame= true,
 	buildingMask = 8,
 	footprintX = 4,
 	footprintZ = 4,
+
 	
 	script 					= "nimrodscript.lua",
 	objectName        	= "nimrod.dae",

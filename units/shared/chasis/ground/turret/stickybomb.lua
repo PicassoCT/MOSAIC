@@ -10,7 +10,7 @@ local stickybomb =  Turret:New{
 	--cost
 	buildCostEnergy = 300,
 	buildCostMetal= 300,
-	buildTime = 1,
+	buildTime = 0.5,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

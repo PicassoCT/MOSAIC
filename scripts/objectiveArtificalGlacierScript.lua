@@ -8,6 +8,7 @@ include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 Irrigation1 = piece"Irrigation1"
 GameConfig = getGameConfig()
+gaiaTeamID = Spring.GetGaiaTeamID()
 local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
 
 function script.Create()
@@ -29,12 +30,7 @@ function script.Create()
     WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(230), 1)  
 end
 
-function spawnDecalAtPiece(pieceName)
-    Sleep(500)
-    px,py,pz = Spring.GetUnitPiecePosDir(unitID, pieceName)
-    dir =  math.random(1,4)
-    Spring.CreateUnit("agriculture_decal01",  px, py, pz,dir, Spring.GetGaiaTeamID())
-end
+
 
 function script.Killed(recentDamage, _)
     return 1
@@ -116,27 +112,17 @@ function forInterval(start,stop, irrigation, nr)
     accumulateddeg = accumulateddeg *-1
     WTurn(irrigation, x_axis, math.rad(accumulateddeg), 0)
     showT(showTable)
-    StartThread(spawnDecalAtPiece, irrigation)
-    StartThread(startRotation, nr)
+    x,y,z = Spring.GetUnitPiecePosDir(unitID, Irrigation1)
+    GG.UnitsToSpawn:PushCreateUnit("objective_irrigationfarming", x,y,z, math.random(1,4) , gaiaTeamID)    
+    hideSensors(1)
 end
 
-
-function startRotation(nr)
+function hideSensors(nr)
     Rotator = piece("Rotator"..nr)
     Sprinkler = piece("Sprinkler"..nr)
     Sensor = piece("Sensor"..nr)
-    Spin(Rotator,y_axis, math.rad(4.2),0)
-    val= 0
-    while true do
-        x,y,z = Spring.GetUnitPiecePosDir(unitID, Sensor)
-        groundHeight = Spring.GetGroundHeight(x,z)
-        if y > groundHeight then
-            val= val - 1
-        else
-            val= val + 1
-        end
-    Turn(Sprinkler, x_axis, math.rad(val), 0.0125)
-    Sleep(100)
-    end
-
+    Hide(Rotator)
+    Hide(Sprinkler)
+    Hide(Sensor)
+    Hide(Irrigation1)
 end

@@ -38,7 +38,7 @@ local Assembly = Building:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
-
+	fireState = 1,
 	
 	customparams = {
 		helptext		= "MOSAIC Assembly",

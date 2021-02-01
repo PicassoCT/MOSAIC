@@ -1,4 +1,4 @@
-include "createCorpse.lua"
+  include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -51,41 +51,6 @@ function script.FireWeapon1()
     return boolDeployed == false
 end
 
-function script.AimFromWeapon2()
-    return Deployed1
-end
-
-function script.QueryWeapon2()
-    return Deployed1
-end
-
-function script.AimWeapon2(Heading, pitch)
-    return boolDeployed and Salvos1 >= 0
-end
-
-function script.FireWeapon2()
-	Salvos1 = Salvos1 -1
-	if Salvos2 < 0 and Salvos1 < 0 then Spring.DestroyUnit(unitID,true,false) end
-    return boolDeployed
-end
-
-function script.AimFromWeapon3()
-    return Deployed2
-end
-
-function script.QueryWeapon3()
-    return Deployed2
-end
-
-function script.AimWeapon3(Heading, pitch)
-    return boolDeployed and Salvos2 >= 0 
-end
-
-function script.FireWeapon3()
-	Salvos2 = Salvos2 -1
-	if Salvos2 < 0 and Salvos1 < 0 then Spring.DestroyUnit(unitID,true,false) end
-    return boolDeployed
-end
 
 function script.StartMoving()
 	if not boolDeployed then
@@ -107,10 +72,12 @@ end
 boolDeployed= false
 function deploy()
 	boolDeployed = true
-	setSpeedEnv(unitID, 0.0)
+	createUnitAtUnit(Spring.GetUnitTeam(unitID),
+                    "ground_tumbleweed_deployed",
+                    unitID, 0, 0, 0, unitID)
+ Spring.DestroyUnit(unitID, false, true)
 
-	Hide(center)
-    showT(TablesOfPiecesGroups["Deployed"])
+	
 end
 
 function script.Deactivate()

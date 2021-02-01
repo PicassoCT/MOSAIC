@@ -58,7 +58,6 @@ local OperativeInvestigator = Human:New{
 		"recruitcivilian",
 		"air_parachut",
 		"protagonsafehouse",
-		"ground_stickybomb",
 		"air_copter_ssied",
 		"checkpoint",
 		"brehmerwall"

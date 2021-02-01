@@ -21,7 +21,7 @@ local ground_walker_mg = Walker:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-
+	 fireState=1,
 	footprintX = 2,
 	footprintZ = 2,
 	script 			= "groundwalkerscript.lua",

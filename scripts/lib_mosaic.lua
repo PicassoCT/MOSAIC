@@ -1382,6 +1382,15 @@ function dustCloudPostExplosion(unitID, Density, totalTime, SpawnDelay, dirx, di
 	end
 end
 
+function fireState()
+return {
+	InheritFromFactory= -1,
+	HoldFire = 0,
+	ReturnFire = 1,
+	FireAtWill = 2,
+	OpenUp	   = 3
+	}
+end
 
 function getAllTeamsOfType(teamType)
 gaiaTeamID= Spring.GetGaiaTeamID()

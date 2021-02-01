@@ -28,6 +28,7 @@ local AntiSat = Satellite:New{
 	buildPic = "antisattelit_sat.png",
 	usePieceCollisionVolumes 	= false,
 	upright= true,
+	fireState = 2,
 	collisionVolumeType = "box",
 	collisionVolumeScales = {1.0,1.0,1.0},
 	collisionVolumeOffsets  ={0.0,0.0,0.0},

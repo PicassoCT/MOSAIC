@@ -15,7 +15,8 @@ local OperativeAsset = Human:New{
 	BrakeRate = 0.6,
 	TurnRate = 1200,
 	MaxVelocity = 4.4,
-	buildtime			 = 2 * 60,
+	buildtime	= 2 * 60,
+	workerTime = 0.5,
 	--orders
 	canMove	= true,
 	CanAttack = true,
@@ -62,12 +63,13 @@ local OperativeAsset = Human:New{
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
-	workerTime = 0.25,
+
 	buildDistance = 45,
 	terraformSpeed = 1,
 	buildoptions = {
 		"ground_turret_ssied",
-		"air_parachut"
+		"air_parachut",
+		"ground_stickybomb",
 	},
 	
 	customparams = {

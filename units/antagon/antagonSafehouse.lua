@@ -54,18 +54,20 @@ local AntagonSafeHouse = Building:New{
 		helptext = "Civilian Building",
 		baseclass = "Building", -- TODO: hacks
     },
+
+    fireState = 1,
 	
 	buildoptions={
-	"operativeasset",
-	"operativepropagator",
-	"civilianagent",
-	
-	"nimrod",
-	"propagandaserver",
-	"assembly",
-	"hivemind",
-	"launcher"
-	},
+		"operativeasset",
+		"operativepropagator",
+		"civilianagent",
+		
+		"nimrod",
+		"propagandaserver",
+		"assembly",
+		"hivemind",
+		"launcher"
+		},
 	category = [[GROUND BUILDING RAIDABLE]],
 
 }

@@ -7,7 +7,7 @@ local Turret = Unit:New{
 	
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
-
+	fireState=1,
 	
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,

@@ -21,7 +21,7 @@ local ground_walker_grenade = Walker:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-
+	fireState=1,
 	footprintX = 2,
 	footprintZ = 2,
 	script 			= "groundwalkerscript.lua",
@@ -41,7 +41,7 @@ local ground_walker_grenade = Walker:New{
 	
 				weapons = {
 				[1]={name  = "smartminedrone",
-				onlyTargetCategory = [[BUILDING GROUND]],
+				onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 				},
 				
 				

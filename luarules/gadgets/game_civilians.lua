@@ -58,6 +58,7 @@ end
 	
 
 	function getPoliceSpawnLocation(suspect)
+		assert(type(suspect) == "number")
 		sx,sy,sz = spGetUnitPosition(suspect)
 		Tmax = getAllNearUnit(suspect, GameConfig.policeSpawnMinDistance)
 		Tmin = getAllNearUnit(suspect, GameConfig.policeSpawnMaxDistance)
@@ -185,9 +186,12 @@ end
 	return officerID
 	end
 	
-	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, assaulterID, attackerDefID, attackerTeam)
+	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponID, projectileID, attackerID, attackerDefID, attackerTeam)
 		if MobileCivilianDefIds[unitDefID] then
-			attackerID =  Spring.GetUnitLastAttacker(unitID) or assaulterID
+			attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
+
+			if not attackerID then return end
+			
 			officerID = getOfficer(unitID, attackerID)
 			boolFoundSomething= false
 			if officerID  then

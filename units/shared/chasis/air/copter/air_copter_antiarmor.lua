@@ -54,10 +54,10 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	myGravity =0.5,
 	mass                = 150,
 	canSubmerge         = false,
-	useSmoothMesh 		=true,
+	useSmoothMesh 		= true,
 	collide             = true,
-	crashDrag =0.035,
-
+	crashDrag = 0.035,
+	fireState = 1,
 
 	Category = [[AIR]],
 

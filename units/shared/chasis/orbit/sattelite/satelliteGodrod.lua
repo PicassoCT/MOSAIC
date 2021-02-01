@@ -19,7 +19,7 @@ local satteliteGodrod = Satellite:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
-	fireState				=0,
+
 	alwaysupright			= true,
 		upright= true,
 	canManualFire = true,
@@ -29,6 +29,8 @@ local satteliteGodrod = Satellite:New{
     },
 	category = [[ORBIT]],
 	buildPic = "orbitalstrike_sat.png",
+
+	fireState = 0,
 	weapons = {
 		[1]={
 			name  = "godrod",   

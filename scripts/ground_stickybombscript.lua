@@ -14,6 +14,7 @@ blink = piece"BLINK"
 center = piece"center"
 myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
+operativeTypeTable = getOperativeTypeTable(UnitDefs)
 
 
 if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
@@ -34,9 +35,23 @@ function attachAndBlow()
 	victims= process(getAllInCircle(x,z, stickyCircle),
 		function(id)
 			teamID= Spring.GetUnitTeam(id)
-			if teamID ~= myTeamID and teamID ~= gaiaTeamID then
+			if teamID ~= myTeamID then -- teamID ~= gaiaTeamID
 				return id
 			end
+		end,
+		function(id)
+			defID = Spring.GetUnitDefID(id)
+			if not operativeTypeTable[defID] then
+				return id
+			end
+		end,
+		function(id)
+			if GG.DisguiseCivilianFor and 
+				GG.DisguiseCivilianFor[id] and
+				GG.DisguiseCivilianFor[id] == unitID then
+					return 
+			end
+			return id
 		end,
 		function(id)
 			distances = distanceUnitToUnit(unitID, id)

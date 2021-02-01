@@ -29,7 +29,7 @@ local ground_truck_mg = Truck:New{
 	canCloak= false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "40 50 70",
-	
+	fireState = 1,
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
@@ -76,7 +76,7 @@ local ground_truck_ssied = Truck:New{
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
-	
+	fireState = 1,
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
@@ -124,9 +124,9 @@ local ground_truck_antiarmor = Truck:New{
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
-	fireState= 0,
 	canCloak= false,
 		canAttack = true,
+			fireState = 1
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
@@ -171,7 +171,7 @@ local ground_truck_rocket = Truck:New{
 	transportSize = 16,
 	transportCapacity = 2,
 	isFirePlatform  = true,
-	fireState= 0,
+	fireState= 1,
 	
 	customparams = {
 		helptext		= "Military Truck/Technical",
@@ -277,7 +277,7 @@ local PoliceTruck = Truck:New{
 	footprintZ = 1,
 	script 			= "Policetruckscript.lua",
 	objectName 	= "apc.dae",
-
+	fireState = 2,
 	weapons = {
 				[1]={name  = "pistol",
 					onlyTargetCategory = [[GROUND]],

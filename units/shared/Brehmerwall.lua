@@ -8,10 +8,11 @@ local Brehmerwall = Building:New{
 	explodeAs			= "none",
 
 
-	buildTime =    60,
+	buildTime =    20,
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]], --
 	CanReclaim=false,	
+
 	workerTime = 0.065,
 	YardMap =    [[oo
 				   oo

@@ -56,7 +56,6 @@ local OperativePropagator = Human:New{
 		"recruitcivilian",
 		"air_parachut",
 		"antagonsafehouse",
-		"ground_stickybomb",
 		"air_copter_ssied",	
 		"checkpoint",
 		"brehmerwall"

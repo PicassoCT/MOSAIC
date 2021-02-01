@@ -32,7 +32,7 @@ local NooneLaser = Human:New{
 	MakesMetal = 0, 
 	MetalMake = 0,	
 	
-	
+	fireState = 2,
 	script 					= "noonescript.lua",
 	objectName        	= "orbit_turret_noone.dae",
 		customParams        = {

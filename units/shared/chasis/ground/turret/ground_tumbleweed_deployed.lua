@@ -1,6 +1,6 @@
-local ground_tumbleweedspyder = Walker:New{
+local ground_tumbleweed_deployed = Turret:New{
 	name = "TumbleWeedSpyder",
-	description = "2 mines in rolling configuration",
+	description = "2 mines deployed",
 	
 	corpse				= "",
 	maxDamage = 800,
@@ -9,24 +9,16 @@ local ground_tumbleweedspyder = Walker:New{
 	buildCostMetal = 250,
 	buildTime = 15,
 	explodeAs			= "none",
-	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
-	--maxReverseVelocity= 2.15,
-	acceleration = 0.7,
-	brakeRate = 0.1,
-	turninplace		= false,
+
+	
 	reclaimable=false,
 	Builder = false,
 	CanAttack = true,
 	CanGuard = true,
-	CanMove = true,
-	CanPatrol = true,
-	CanStop = true,
-	onoffable = true,
-	activateWhenbuilt = false,
 
 	footprintX = 2,
 	footprintZ = 2,
-	script 			= "tumbleweedspyderscript.lua",
+	script 			= "tumbleweedspyder_deployedscript.lua",
 	objectName 	= "ground_turret_spyder.dae",
 	buildPic = "ground_turret_spyder.png",
 	iconType ="ground_turret_spyder",
@@ -40,13 +32,11 @@ local ground_tumbleweedspyder = Walker:New{
 	},
 	
 				weapons = {
-				[1]={name  = "ssied",
+			
+				[1]={name  = "s16rocket",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 				[2]={name  = "s16rocket",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-				[3]={name  = "s16rocket",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
@@ -55,7 +45,7 @@ local ground_tumbleweedspyder = Walker:New{
 
 
 return lowerkeys({
-	["ground_tumbleweedspyder"]	= ground_tumbleweedspyder:New(),
+	["ground_tumbleweed_deployed"]	= ground_tumbleweed_deployed:New(),
 
 	
 })
