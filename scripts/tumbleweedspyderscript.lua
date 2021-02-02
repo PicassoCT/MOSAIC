@@ -74,10 +74,8 @@ function deploy()
 	boolDeployed = true
 	createUnitAtUnit(Spring.GetUnitTeam(unitID),
                     "ground_tumbleweed_deployed",
-                    unitID, 0, 0, 0, unitID)
+                    unitID)
  Spring.DestroyUnit(unitID, false, true)
-
-	
 end
 
 function script.Deactivate()
