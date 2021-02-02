@@ -71,7 +71,6 @@ function fallingDown()
 	transporting = Spring.GetUnitIsTransporting(unitID)
 	if not GG.ParachutPassengers[unitID] then
 		if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)] and not GG.ParachutPassengers[unitID] then
-			Spring.Echo("Picking up father")
 			x,y,z = Spring.GetUnitPosition(fatherID)
 			y = y + 150
 			GG.ParachutPassengers[unitID] = {id = fatherID, x= x, y = y, z= z}
