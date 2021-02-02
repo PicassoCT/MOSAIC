@@ -726,6 +726,7 @@ function cloakLoop()
 	}
 	
 	Sleep(100)
+	setSpeedEnv(unitID, mySpeedReductionCloaked)
 	waitTillComplete(unitID)
 	
 	--initialisation
