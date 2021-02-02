@@ -12,7 +12,7 @@ local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "ho
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+    Spring.SetUnitAlwaysVisible(unitID,true)
     resetAll(unitID)
     StartThread(spawnDecalAtPiece,Irrigation1)
     StartThread(startRotation, 1)
