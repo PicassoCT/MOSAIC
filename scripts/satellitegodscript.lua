@@ -12,7 +12,8 @@ end
 GameConfig = getGameConfig()
 center = piece "center"
 Icon = piece "Icon"
-	Packed = piece "Packed"
+Packed = piece "Packed"
+GodRod = piece "GodRod"
 NumberOfRods = 3
 function script.Create()
 	
@@ -21,6 +22,7 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	StartThread(delayedShow)
+	Hide(GodRod)
 end
 
 function delayedShow()
@@ -31,7 +33,7 @@ function delayedShow()
 	Explode(Packed, SFX.SHATTER)
 	showAll(unitID)
 	Hide(Packed)
-
+	Hide(GodRod)
 end
 
 
@@ -41,11 +43,11 @@ function script.Killed(recentDamage, _)
 end
 
 function script.AimFromWeapon1()
-    return center
+    return GodRod
 end
 
 function script.QueryWeapon1()
-    return center
+    return GodRod
 end
 
 function script.AimWeapon1(Heading, pitch)
