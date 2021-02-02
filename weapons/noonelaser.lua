@@ -11,7 +11,7 @@ local weaponDef = {
     movingaccuracy = 2500,
     predictBoost = 1.5,
     areaOfEffect = 1,
-
+    avoidFriendly = false,
     soundtrigger = false,
     collideFriendly = false,
     beamtime = 0.02, --0.01

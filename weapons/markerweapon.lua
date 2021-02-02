@@ -8,7 +8,7 @@ local weaponDef = {
         default = 1,
         HeavyArmor = 0,
     },
-
+    avoidFriendly = false,
     --physics
     weaponVelocity = 1,
     reloadtime = 9000,

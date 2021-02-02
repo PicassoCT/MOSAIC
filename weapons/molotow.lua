@@ -12,7 +12,7 @@ local weaponDef = {
 	impulseFactor = 3.0,
 	model = "molotow.dae",
 	--physics
-	
+	avoidFriendly = false,
 	weaponVelocity = 50,
 	reloadtime = 3.42,
 	range = 200,

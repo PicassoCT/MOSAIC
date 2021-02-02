@@ -31,7 +31,7 @@ local weaponDef = {
 	
 	reloadtime = 3, -- seconds
 	smokeTrail = true,
-	model = "GodRod.dae",
+	model = "GodRod.s3o",
 	explosionScar = true, 
     explosionGenerator = "custom:missile_explosion",
     cegTag = "gunprojectile",

@@ -14,14 +14,14 @@ local weaponDef = {
     flightTime = 18.5,
     BurnBlow = 0,
     FixedLauncher = false,
-    dance = 60,
+    dance = 30,
     wobble = 1,
     turnrate = 12200,
     tolerance = 16000,
     tracks = true,
     Turnrate = 32000,
     avoidGround = false,
-
+    avoidFriendly = false,
     --- -APPEARANCE
     model = "DroneMineLaunchProj.s3o",
     smokeTrail = false,
