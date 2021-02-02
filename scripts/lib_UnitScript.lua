@@ -783,11 +783,11 @@ function getNearestGroundEnemy(id, UnitDefs)
 		eType = Spring.GetUnitDefID(ed)
 		
 		if UnitDefs[eType].isAirUnit == false then return ed end
-		eTeam = Spring.GetUnitTeam()
+		eTeam = Spring.GetUnitTeam(ed)
 		allUnitsOfTeam = Spring.GetTeamUnits(eTeam)
 		mindist = math.huge
 		foundUnit = nil
-		if Spring.GetUnitIsDead(id) == true or Spring.GetUnitIsDead(ied) == true then return nil end 
+		if Spring.GetUnitIsDead(id) == true or Spring.GetUnitIsDead(ed) == true then return nil end 
 		
 		process(allUnitsOfTeam,
 		function(ied)					
@@ -807,7 +807,6 @@ end
 
 --> return the Name of a UnitPiece as String
 function getUnitPieceName(unitID,pieceNum)
-	
 	pieceList= Spring.GetUnitPieceList(unitID)
 	return pieceList[pieceNum]
 end
