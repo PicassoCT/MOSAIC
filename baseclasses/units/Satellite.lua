@@ -9,9 +9,9 @@ local Satellite = Unit:New{
 	moveState					= 0, -- Hold Position
 	script						= "satellitescript.lua",
 	usepiececollisionvolumes 	= true,
-	cruiseAlt					= 1500,
+	cruiseAlt					= 2000,
 	myGravity 					= 0,
-	wantedHeight				= 1500,
+	wantedHeight				= 2000,
 	maxElevator 				= 0,
 
 	
