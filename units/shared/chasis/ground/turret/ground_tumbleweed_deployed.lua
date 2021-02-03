@@ -33,10 +33,10 @@ local ground_tumbleweed_deployed = Turret:New{
 	
 				weapons = {
 			
-				[1]={name  = "s16rocket",
+				[1]={name  = "spydermine",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
-				[2]={name  = "s16rocket",
+				[2]={name  = "spydermine",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					

@@ -21,8 +21,9 @@ local satteliteGodrod = Satellite:New{
 	
 
 	alwaysupright			= true,
-		upright= true,
+	upright= true,
 	canManualFire = true,
+	canAttack = true,
 	customparams			= {
 		helptext		= "Nuklear Option",
 		baseclass		= "Satellite", -- TODO: hacks
@@ -37,7 +38,7 @@ local satteliteGodrod = Satellite:New{
 			-- mainDir = "0 1 0",
 			-- maxAngleDif = 90,
 			onlyTargetCategory = [[GROUND BUILDING]],
-			turret= true,
+			turret = true,
 			},
 					
 		},	

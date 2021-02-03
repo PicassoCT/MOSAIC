@@ -42,14 +42,8 @@ local ground_tumbleweedspyder = Walker:New{
 				weapons = {
 				[1]={name  = "ssied",
 					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-				[2]={name  = "s16rocket",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-				[3]={name  = "s16rocket",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-					
+					}
+						
 		},	
 }
 
