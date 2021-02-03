@@ -13,6 +13,7 @@ center = piece "TumbleConfig"
 aimpiece = center
 Deployed1 = piece "Deployed1"
 Deployed2 = piece "Deployed2"
+boolDeployed = true
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)

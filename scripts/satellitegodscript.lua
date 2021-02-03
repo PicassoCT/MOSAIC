@@ -38,7 +38,7 @@ end
 
 
 function script.Killed(recentDamage, _)
-	explodeD(Spring.GetUnitPieceMap(unitID), SFX.SHATTER + SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
+	shatterUnit(unitID, Icon, UnitScript)
     return 1
 end
 
