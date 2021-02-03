@@ -1,21 +1,21 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "godrod" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
-    name = "Mjoelnir Project",
+    name = "Mjoelnir Impactor",
     weaponType = [[MissileLauncher]],
 	--aiming behaviour
 		turret = true,
-		tracks = true,
+		tracks = false,
 		noSelfDamage = true,
 		avoidFeature            = false,
 		avoidGround = false,
 		range = 3000,
-		commandFire  = true,
+
 		trajectoryHeight = 0 ,
 		flightTime = 14.5 ,	
 		fixedLauncher  			= true,
 		canAttackGround = true,
-		
+		commandFire  = true,
 		--projectile physics
 		turnRate = 190000,
 		weaponVelocity = 9000,
