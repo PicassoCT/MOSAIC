@@ -5858,6 +5858,16 @@ function getUnitValueEnv(unitID, ValueName)
 
 end
 
+function setUnitValueEnv(unitID, ValueName, value)
+	env = Spring.UnitScript.GetScriptEnv(unitID)
+
+	if env and env.UnitScript.GetUnitValue then
+		local cob = env.UnitScript.COB
+		return Spring.UnitScript.CallAsUnit(unitID, Spring.UnitScript.SetUnitValue, cob[ValueName], value)
+	end
+
+end
+
 function setFireState(unitID, fireState)
 if type(fireState)=="string" then
 
