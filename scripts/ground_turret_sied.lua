@@ -30,6 +30,8 @@ function uncloakWhenTransported()
 end
 
 function script.Killed(recentDamage, _)
+    EmitSfx(center,1024)
+    EmitSfx(center,1025)
     transporterID = Spring.GetUnitTransporter(unitID)
     if transporterID and doesUnitExistAlive(transporterID) == true then
         Spring.DestroyUnit(transporterID, false, true)
