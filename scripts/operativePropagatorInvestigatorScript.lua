@@ -138,6 +138,7 @@ function firstToDieOfThirst()
 	x,y,z= Spring.GetUnitPosition(unitID)
 	Sleep(200)
 	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
+	setWantCloak(false)
 	while(isUnitFlying(unitID)) do
 		Sleep(100)
 		Turn(center,x_axis,math.rad(45), 0)
@@ -673,7 +674,7 @@ function OperativesDiscovered()
 return false
 end
 
-local currentState = "cloaked"
+local currentState = "decloaked"
 previousState = currentState
 boolRecloakOnceDone = false
 function cloakLoop()
@@ -726,13 +727,12 @@ function cloakLoop()
 	}
 	
 	Sleep(100)
-	setSpeedEnv(unitID, mySpeedReductionCloaked)
+	setSpeedEnv(unitID, 1.0)
 	waitTillComplete(unitID)
 	
 	--initialisation
-	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	StartThread(spawnDecoyCivilian)	
-	showHideIcon(true)
+
+	showHideIcon(false)
 
 
 	while true do  

@@ -48,7 +48,7 @@ local OperativePropagator = Human:New{
 	cloakTimeout =  360,
 	cloakCostMoving = 0,
 	minCloakDistance = 0,
-	initCloaked = true,
+	initCloaked = false,
 	stealth= true,
 	
 	buildoptions = 
