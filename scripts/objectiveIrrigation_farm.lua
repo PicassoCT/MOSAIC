@@ -29,7 +29,6 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
-
 function startRotation(nr)
     Rotator = piece("Rotator"..nr)
     Sprinkler = piece("Sprinkler"..nr)
@@ -44,8 +43,7 @@ function startRotation(nr)
         else
             val= val + 1
         end
-    Turn(Sprinkler, x_axis, math.rad(val), 0.0125)
-    Sleep(100)
+        WTurn(Sprinkler, x_axis, math.rad(val), 0.0250)
+        Sleep(10)
     end
-
 end
