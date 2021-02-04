@@ -22,7 +22,6 @@ local satteliteGodrod = Satellite:New{
 
 	alwaysupright			= true,
 	upright= true,
-	canManualFire = true,
 	canAttack = true,
 	customparams			= {
 		helptext		= "Nuklear Option",
@@ -31,14 +30,13 @@ local satteliteGodrod = Satellite:New{
 	category = [[ORBIT]],
 	buildPic = "orbitalstrike_sat.png",
 
-	fireState = 0,
+	fireState = 1,
 	weapons = {
 		[1]={
 			name  = "godrod",   
-			-- mainDir = "0 1 0",
-			-- maxAngleDif = 90,
-			onlyTargetCategory = [[GROUND BUILDING]],
-			turret = true,
+			--mainDir = "0 1 0",
+			--maxAngleDif = 90,
+			onlyTargetCategory = [[GROUND]]
 			},
 					
 		},	

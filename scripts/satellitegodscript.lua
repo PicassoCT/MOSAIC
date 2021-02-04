@@ -43,7 +43,7 @@ function script.Killed(recentDamage, _)
 end
 
 function script.AimFromWeapon1()
-    return GodRod
+    return center
 end
 
 function script.QueryWeapon1()
