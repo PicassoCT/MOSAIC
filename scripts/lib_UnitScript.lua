@@ -807,8 +807,8 @@ end
 
 function shatterUnit(unitID, Icon, UnitScript)
 	for part,nr in pairs(Spring.GetUnitPieceMap(unitID)) do
-		if part ~= Icon then
-			UnitScript.Explode(part, SFX.SHATTER + SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
+		if nr ~= Icon then
+			UnitScript.Explode(nr, SFX.SHATTER + SFX.FALL + SFX.FIRE + SFX.EXPLODE_ON_HIT)
 		end
 	end
 end
