@@ -364,7 +364,8 @@ local ground_turret_rocket =  Turret:New{
 				},
 				
 	weapons = {
-		[1]={name  = "s16rocket",
+		[1]={
+			name  = "s16rocket",
 			onlyTargetCategory = [[GROUND]],
 			},			
 		},	
