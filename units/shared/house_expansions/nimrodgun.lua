@@ -57,7 +57,7 @@ showNanoFrame= true,
 	{
 		"satellitescan",
 		"satelliteanti",
-		"satellitegodrod",
+		"satellitegodrod"
 	},
 	
 	fireState= 1,
@@ -65,7 +65,7 @@ showNanoFrame= true,
 
 	weapons={
 			[1]={name  = "railgun",
-				onlyTargetCategory = [[ORBIT]], --GROUND BUILDING 
+				onlyTargetCategory = [[GROUND ORBIT]], --GROUND BUILDING 
 			},
 			
 		},	

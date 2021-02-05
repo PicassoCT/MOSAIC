@@ -6,7 +6,8 @@ local weaponDef = {
 	--aiming
 	accuracy = 0.0,
 	predictBoost  = 1.0,
-	
+	metalPerShot = 250,
+    energyPerShot = 250,
     burst = 2,
     burstrate = 0.4,
     cegTag = [[railGunCeg]],

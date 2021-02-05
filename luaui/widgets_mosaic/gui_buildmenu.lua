@@ -217,6 +217,7 @@ local antagonToProtagon = {
 	[UnitDefNames["satellitegodrod"].id] = UnitDefNames["satellitegodrod"].id,
 	[UnitDefNames["satellitescan"].id] = UnitDefNames["satellitescan"].id,
 	[UnitDefNames["satelliteanti"].id] = UnitDefNames["satelliteanti"].id,
+	[UnitDefNames["satelliteshrapnell"].id] = UnitDefNames["satelliteshrapnell"].id,
 	[UnitDefNames["assembly"].id] = UnitDefNames["assembly"].id,
 	[UnitDefNames["checkpoint"].id] = UnitDefNames["checkpoint"].id,
 	[UnitDefNames["civilianagent"].id] = UnitDefNames["civilianagent"].id,

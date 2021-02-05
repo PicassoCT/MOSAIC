@@ -33,8 +33,10 @@ local weaponDef = {
 	tracks = true,
 	AlwaysVisible = true,
 	flightTime = 2500 ,
-	-- uselos = false,
+	
+	uselos = false,
     explosionGenerator = "custom:bigbulletimpact",
+ 	cegTag = "impactor",
 
 	turret = true,
 	explosionScar = true, 

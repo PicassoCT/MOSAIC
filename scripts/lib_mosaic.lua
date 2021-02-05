@@ -155,7 +155,9 @@ function getGameConfig()
 	 --Icons
 	 iconGroundOffset = 50,
 	 SatelliteIconDistance = 150,
-	
+	SatelliteShrapnellDistance = 250,
+	SatelliteShrapnellLifeTime = 20000,
+	SatelliteShrapnellDamagePerSecond = 1000,
 	--Operativedrop HeightOffset
 	OperativeDropHeigthOffset = 900,
 	
@@ -300,7 +302,8 @@ local	UnitDefNames = getUnitDefNames(UnitDefs)
 	typeTable={
 		"satelliteanti",
 		"satellitescan",
-		"satellitegodrod"		
+		"satellitegodrod",
+		"satelliteshrapnell"		
 	}
 	return getTypeTable(UnitDefNames, typeTable)
 end
@@ -669,7 +672,8 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
 	valuetable={
 		[UnitDefNames["satelliteanti"].id] = 2*90 * framesPerSecond,
 		[UnitDefNames["satellitegodrod"].id] = 3*90 * framesPerSecond,
-		[UnitDefNames["satellitescan"].id] = 90 * framesPerSecond
+		[UnitDefNames["satellitescan"].id] = 90 * framesPerSecond,
+		[UnitDefNames["satelliteshrapnell"].id] = 30 * framesPerSecond
 	}
 	
 	return valuetable
@@ -681,7 +685,8 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
 	valuetable={
 		[UnitDefNames["satellitegodrod"].id] = 30/framesPerSecond,
 		[UnitDefNames["satelliteanti"].id] = 30/framesPerSecond,
-		[UnitDefNames["satellitescan"].id] = 90/framesPerSecond
+		[UnitDefNames["satellitescan"].id] = 90/framesPerSecond,
+		[UnitDefNames["satelliteshrapnell"].id] = 120/framesPerSecond
 	}
 	
 	return valuetable
@@ -693,7 +698,8 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
 	valuetable={
 		[UnitDefNames["satellitegodrod"].id] = 1450,
 		[UnitDefNames["satelliteanti"].id] = 1550,
-		[UnitDefNames["satellitescan"].id] = 1500
+		[UnitDefNames["satellitescan"].id] = 1500,
+		[UnitDefNames["satelliteshrapnell"].id] = 1500
 	}
 	
 	return valuetable

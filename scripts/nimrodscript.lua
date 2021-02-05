@@ -84,10 +84,9 @@ end
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 	if boolBuilding == true then return false end
-	
-        WTurn(center, y_axis, Heading, 0.4)
-        WTurn(turret, x_axis, -pitch, 0.7)
-		
+    
+    WTurn(center, y_axis, Heading, 0.4)
+    WTurn(turret, x_axis, -pitch, 0.7)	
     return true
 end
 

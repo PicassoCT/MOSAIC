@@ -8,7 +8,7 @@ local weaponDef = {
 	default = 3500
 	},
 	noSelfDamage = true,
-	reloadtime = 3, -- seconds
+	reloadtime = 10, -- seconds
 
 	--orders behaviour
 	--commandFire  = true,	
@@ -16,17 +16,17 @@ local weaponDef = {
 
 	--aiming behaviour
 	range = 3000,
-	turnRate = 190000,
+	turnRate = 9990000,
 	turret = true,
-	tracks = true,
-
+	tracks = false,
+	--commandFire = true,
 	avoidFeature = true,
 	avoidGround = true,
 
 	--flight behaviour
 	startVelocity  = 100,
-	trajectoryHeight = 0.1 ,
-	flightTime = 14.5 ,	
+	
+	flightTime = 25.5 ,	
 	weaponVelocity = 2000,
 	weaponAcceleration = 100,
 
@@ -37,6 +37,7 @@ local weaponDef = {
 	fireStarter  = 100.0,
 
 	--visuals
+	uselos = false,
 	smokeTrail = false,
 	model = "GodRod.s3o",
 	explosionScar = true, 

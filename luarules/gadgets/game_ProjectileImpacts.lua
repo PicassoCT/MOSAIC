@@ -86,6 +86,61 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+     startSatelliteProjectileEventStream = function(
+        projectileID,
+        targetID)
+    
+            --Stun
+            railGunProjectileFunction = function(persPack)
+                  if not Spring.GetProjectileTimeToLive(persPack.projectileID) then  
+                    return true, nil
+                end
+
+    
+                x,y,z = Spring.GetProjectilePosition(persPack.projectileID)
+
+                if not x then 
+                    return true, nil
+                end
+
+                tx,ty,tz = Spring.GetUnitPosition(persPack.targetID)
+
+                if y > ty then
+                    teamID = Spring.GetProjectileTeamID(persPack.projectileID)
+                    GG.UnitsToSpawn:PushCreateUnit("satelliteshrapnell", x,y,z, math.random(1,4) , teamID)    
+                    Spring.DeleteProjectile(persPack.projectileID)
+                    return true, nil
+                end
+
+                return false, persPack
+            end
+
+        createStreamEvent(
+                targetID,
+                railGunProjectileFunction,
+                2,
+                {
+                    targetID = targetID,
+                    projectileID = projectileID
+                }
+            )
+        end
+    end
+
+    satelliteTypeTable = getSatteliteTypes(UnitDefs)
+    --===========ProjectileCreated Functions ====================================================
+   function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
+        if nimrodRailungDefID == proWeaponDefID then
+           targetTypeInt,  targetID = Spring.GetProjectileTarget(proID)
+           if targetTypeInt and targetTypeInt == UNIT then
+             defID = Spring.GetUnitDefID(targetID)
+             if defID and satelliteTypeTable[defID] then
+                startSatelliteProjectileEventStream(proID, targetID)
+             end
+           end
+        end
+   end
+
     --===========UnitDamaged Functions ====================================================
     function currentlyInterrogationRunning(suspectID, interrogatorID)
         if not GG.InterrogationTable[suspectID] or not GG.InterrogationTable[suspectID][interrogatorID] then

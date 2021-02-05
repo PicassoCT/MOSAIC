@@ -20,6 +20,7 @@ zeppelins={
 		[UnitDefNames["satellitescan"].id]=true,	
 		[UnitDefNames["satellitegodrod"].id]=true,	
 		[UnitDefNames["satelliteanti"].id]=true,	
+		[UnitDefNames["satelliteshrapnell"].id]=true,	
 		}
 zeppelin={}
 zeppelin_waiting = {}

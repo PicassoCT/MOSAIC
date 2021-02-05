@@ -13,6 +13,7 @@ return {
       ground             = true,
       underwater         = 1,
       water              = true,
+      alwaysvisible = true,
       properties = {
         colormap           = [[
         0.9 0.9 0.42  0.01 

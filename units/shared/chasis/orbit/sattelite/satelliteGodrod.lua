@@ -1,6 +1,6 @@
 local satteliteGodrod = Satellite:New{
 	name = "Orbital Strike Satellite ",
-	Description = " MOSAIC Standardized Assault Satellite ",
+	Description = " Cinetic orbital bomardment plattform ",
 	buildTime= 45,
 	maxDamage          		= 500,
 	mass              		= 500,
@@ -23,12 +23,19 @@ local satteliteGodrod = Satellite:New{
 	alwaysupright			= true,
 	upright= true,
 	canAttack = true,
+	canLand = false,
+	--canManualFire = true,
+
 	customparams			= {
 		helptext		= "Nuklear Option",
 		baseclass		= "Satellite", -- TODO: hacks
     },
 	category = [[ORBIT]],
 	buildPic = "orbitalstrike_sat.png",
+	
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "5 25 5",
 
 	fireState = 1,
 	weapons = {
