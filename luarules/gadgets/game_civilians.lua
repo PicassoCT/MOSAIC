@@ -371,19 +371,11 @@ end
 		-- create Grid of all placeable Positions
 		-- great Grid of placeable Positions 
 		if distributedPathValidationComplete(frame, 10) == true then
-			
-			
+					
 			-- spawn Buildings from MapCenter Outwards
 			fromMapCenterOutwards(BuildingPlaceTable, math.ceil((Game.mapSizeX/uDim.x)*0.5), math.ceil((Game.mapSizeZ/uDim.z)*0.5))
 			
-		--	echo("regenerateRoutesTable()")
 			regenerateRoutesTable()
-			
-			-- spawn Population at Buildings
-		--	echo("checkReSpawnPopulation()")
-			-- checkReSpawnPopulation()
-			
-			-- checkReSpawnTraffic()
 			
 			-- give Arrived Units Commands
 			sendArrivedUnitsCommands()
@@ -399,8 +391,6 @@ end
 			GG.BuildingTable[id] = dataToAdd[id]
 
 	end
-	
-	
 	
 	function checkReSpawnHouses()
 		dataToAdd= {}
@@ -444,15 +434,16 @@ end
 		
 			for i=1, stepSpawn do
 				x,_,z, startNode = getRandomSpawnNode()
-				--assert(z)
-				--assert(x)
+				
 				--assert(startNode)
 				--assert(RouteTabel[startNode])
-				goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
-				civilianType = randDict(civilianWalkingTypeTable)
-				id = spawnAMobileCivilianUnit(civilianType, x,z, startNode, goalNode )	
-				if id then
-					GG.UnitArrivedAtTarget[id] = true
+				if  x  and startNode then
+					goalNode = RouteTabel[startNode][math.random(1,#RouteTabel[startNode])]
+					civilianType = randDict(civilianWalkingTypeTable)
+					id = spawnAMobileCivilianUnit(civilianType, x,z, startNode, goalNode )	
+					if id then
+						GG.UnitArrivedAtTarget[id] = true
+					end
 				end
 			end
 		
@@ -461,8 +452,6 @@ end
 		end	
 	end
 
-
-	
 	function checkReSpawnTraffic()
 		counter = 0
 		nilTable={}
@@ -511,6 +500,11 @@ end
 	
 	function getRandomSpawnNode()
 		startNode = randT(RouteTabel)
+		attempts=0
+		while not doesUnitExistAlive(startNode) or attempts > 5 do
+			startNode = randT(RouteTabel)
+			attempts = attempts +1
+		end
 		--assert(doesUnitExistAlive(startNode) == true)
 		--assert(startNode)
 		x,y,z= spGetUnitPosition(startNode)
@@ -594,6 +588,8 @@ end
 	end
 	
 	function spawnUnit(defID, x,z)	
+		assert(x)
+		assert(z)
 		dir = math.max(1, math.floor(math.random(1, 3)))
 			if not x then echo("Spawning unit of typ "..UnitDefs[defID].name .." with no coords") end
 		h = Spring.GetGroundHeight(x,z)
