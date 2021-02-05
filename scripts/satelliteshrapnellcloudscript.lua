@@ -19,11 +19,13 @@ function script.Create()
 	 if Icon then  Move(Icon,y_axis, GameConfig.SatelliteIconDistance, 0);	Show(Icon) end
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Particle"])
+    StartThread(dealDamageAnimate)
 end
 
-
 function script.Killed(recentDamage, _)
-	shatterUnit(unitID, Icon, UnitScript)
+    for i=1,#TablesOfPiecesGroups["Particle"] do
+        Explode(TablesOfPiecesGroups["Particle"][i], SFX.FIRE + SFX.FALL)
+    end
     return 1
 end
 
@@ -79,26 +81,3 @@ local SatelliteShrapnellDistance = GameConfig.SatelliteShrapnellDistance
     end
     Spring.DestroyUnit(unitID, false,true)
 end
-
---- -aimining & fire weapon
-function script.AimFromWeapon1() return firepiece end
-
-function script.QueryWeapon1() return firepiece end
-
-function script.AimWeapon1(Heading, pitch)
-    -- aiming animation: instantly turn the gun towards the enemy
-
-    return boolOnlyOnce
-end
-boolOnlyOnce = true
-
-function script.FireWeapon1()
-    if boolOnlyOnce== true then
-        boolOnlyOnce = false
-        StartThread(dealDamageAnimate)
-    end
-
-    return true
-end
-
-      

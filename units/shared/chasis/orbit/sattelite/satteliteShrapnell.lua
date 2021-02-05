@@ -17,7 +17,7 @@ local SatelliteShrapnell = Satellite:New{
 
 	footprintX 			= 1,
 	footprintZ 			= 1,
-	script 				= "satelliteshrapnellcloud.lua",
+	script 				= "satelliteshrapnellcloudscript.lua",
 	objectName 			= "satShrapnell.dae",
 	
 		customParams        = {
