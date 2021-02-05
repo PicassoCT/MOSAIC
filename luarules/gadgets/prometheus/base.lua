@@ -110,8 +110,11 @@ local function BuildBase()
 
 		if not inBuild and not builtUnit and boolBuildingComplete == true then builderID = u break end
 	end
-	builderID = (builderID or builders[1])
-	if not builderID then Log("internal error: no builders were found") return end
+
+	if not builderID then 
+		Log("internal error: no builders were found") 
+		return 
+	end
 
 	-- give the order to the builder, iff we can find a buildsite
 	local x,y,z,facing = buildsiteFinder.FindBuildsite(builderID, unitDefID, bUseClosestBuildSite)
