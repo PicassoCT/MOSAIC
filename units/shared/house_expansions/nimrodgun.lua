@@ -65,11 +65,12 @@ showNanoFrame= true,
 
 	weapons={
 			[1]={name  = "railgun",
-				onlyTargetCategory = [[GROUND ORBIT]], --GROUND BUILDING 
+				onlyTargetCategory = [[GROUND]], --GROUND BUILDING 
 			},
-			
+			[2]={name  = "orbitalrailgun",
+				onlyTargetCategory = [[ORBIT]], --GROUND BUILDING 
+			},			
 		},	
-
 	}
 
 
