@@ -13,6 +13,7 @@ GameConfig = getGameConfig()
 
 center = piece "center"
 Icon = piece "Icon"
+Packed = piece"Packed"
 
 function script.Create()
 	Spin(center,y_axis,math.rad(1),0.5)
@@ -20,6 +21,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Particle"])
     StartThread(dealDamageAnimate)
+    Spring.SetUnitAlwaysVisible(unitID, true)
 end
 
 function script.Killed(recentDamage, _)
@@ -31,36 +33,41 @@ end
 
 
 function getRandShrapMoveVal()
-    return math.random(-GameConfig.SatelliteShrapnellDistance, GameConfig.SatelliteShrapnellDistance)
+    factor = 10
+    return math.random(-GameConfig.SatelliteShrapnellDistance* factor, GameConfig.SatelliteShrapnellDistance* factor)
 end
 
 function dealDamageAnimate()
 Explode(center, SFX.SHATTER)
 Hide(center)
+Hide(Icon)
+Hide(Packed)
 spinRand(center, -42, 42, 42)
   process(TablesOfPiecesGroups["Particle"],
         function(id)
             spinRand(id, -42, 42, 42)
         end)
 StartThread(doDamageCyclic)
-while true do
+
+
   process(TablesOfPiecesGroups["Particle"],
     function(id)
     StartThread(
         function(id)
+            while true do
             Show(id)
-            mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(), getRandShrapMoveVal(), 42)
+            mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(), getRandShrapMoveVal(), 2048)
             WaitForMoves(id)
-            Explode(id,SFX.SHATTER)
             Hide(id)
             mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(), getRandShrapMoveVal(), 0)
+            Sleep(100)
+            end
         end,
         id)
     end)
-    WaitForMoves(TablesOfPiecesGroups["Particle"])
-    Sleep(10)
+while true do
+Sleep(1000)
 end
-
 end
 
 function doDamageCyclic()
@@ -70,8 +77,11 @@ local SatelliteShrapnellDistance = GameConfig.SatelliteShrapnellDistance
 
     Spring.SetUnitNoSelect(unitID, true)
     while LifeTime > 0 do
-        process(
+        process(     
                 getAllNearUnit(unitID, SatelliteShrapnellDistance),
+                function(id)
+                    if id ~= unitID then return id end
+                end,           
                function(id)
                     Spring.AddUnitDamage(id, DamagePerSecondTenth)
                end
