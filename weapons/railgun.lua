@@ -26,18 +26,18 @@ local weaponDef = {
 	collideNeutral = false,
 	-- noFirebaseCollide  = false,
 	collideGround = true,
-	
+	noSelfDamage  = true,
 	--command
 	canAttackGround  = true,
 	
     impulseBoost = 0,
     impulseFactor = 0,
     interceptedByShieldType = 0,
-    tolerance = 3000,
+    tolerance = 500,
     noExplode = true,
 
-    range = 2048,
-    reloadtime = 12,
+    range = 3048,
+    reloadtime = 20,
     rgbColor = [[0.5 1 1]],
     separation = 0.5,
     size = 0.8,
