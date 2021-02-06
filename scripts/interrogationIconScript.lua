@@ -97,7 +97,9 @@ function interrogatePercentage()
     end
     WaitForMoves(TablesOfPiecesGroups["Ring"])
 
-    GG.raidIconDone[unitID].boolInterogationComplete = true
+    if GG.raidIconDone and GG.raidIconDone[unitID] then
+         GG.raidIconDone[unitID].boolInterogationComplete = true
+    end
     Spring.DestroyUnit(unitID, false, true)
 end
 
