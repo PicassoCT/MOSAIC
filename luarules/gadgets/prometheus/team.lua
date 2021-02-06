@@ -183,7 +183,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 
 	if unitBuildOrder[unitDefID]   then
 		-- factory or builder?
-		if not (UnitDefs[unitDefID].speed > 0) then
+		if not (UnitDefs[unitDefID].speed > 0) then --factory
 			-- If there are no enemies, don't bother lagging Spring to death:
 			-- just go through the build queue exactly once, instead of repeating it.
 			if (enemyBaseCount > 0 or Spring.GetGameSeconds() < 0.1) then
