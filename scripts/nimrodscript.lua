@@ -10,7 +10,8 @@ base = piece "base"
 slider = piece "slider"
 turret = piece "turret"
 projectile = piece "projectile"
-
+Icon2 = piece"Icon2"
+local SIG_AIM_ORBITAL = 1
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 
@@ -58,7 +59,6 @@ function modeChangeOS()
 		end
 	Sleep(100)
 	end
-
 end
 
 function goToSpaceMode()
@@ -81,13 +81,16 @@ function script.QueryWeapon1()
     return projectile
 end
 
+boolOrbitalRailGunAiming= false
 function script.AimWeapon1(Heading, pitch)
     --aiming animation: instantly turn the gun towards the enemy
 	if boolBuilding == true then return false end
-    
-    WTurn(center, y_axis, Heading, 0.4)
-    WTurn(turret, x_axis, -pitch, 0.7)	
-    return true
+	if boolOrbitalRailGunAiming == true then return false end
+
+    Turn(center, y_axis, Heading, 0.4)
+    Turn(turret, x_axis, -pitch, 0.8)	
+    WaitForTurns(center, turret)
+    return false
 end
 
 
@@ -96,6 +99,37 @@ function script.FireWeapon1()
     return true
 end
 
+--- -aimining & fire weapon
+function script.AimFromWeapon2()
+    return Icon2
+end
+
+function script.QueryWeapon2()
+    return Icon2
+end
+
+function aimOrbital()
+	Signal(SIG_AIM_ORBITAL)
+	SetSignalMask(SIG_AIM_ORBITAL)
+	boolOrbitalRailGunAiming= true
+	Sleep(2000)
+	boolOrbitalRailGunAiming= false
+end
+
+function script.AimWeapon2(Heading, pitch)
+    --aiming animation: instantly turn the gun towards the enemy
+	if boolBuilding == true then return false end
+    StartThread(aimOrbital)
+    Turn(center, y_axis, Heading, 0.4)
+    Turn(turret, x_axis, -pitch, 0.8)	
+    WaitForTurns(center, turret)
+    return true
+end
+
+
+function script.FireWeapon2()
+    return true
+end
 
 
 function script.StartBuilding()
@@ -128,8 +162,6 @@ function script.Killed(recentDamage, _)
     --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
-
 
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
