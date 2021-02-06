@@ -37,7 +37,7 @@ local weaponDef = {
     noExplode = true,
 
     range = 3048,
-    reloadtime = 20,
+    reloadtime = 10,
     rgbColor = [[0.5 1 1]],
     separation = 0.5,
     size = 0.8,
