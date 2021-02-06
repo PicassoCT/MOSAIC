@@ -31,15 +31,6 @@ local SatelliteShrapnell = Satellite:New{
 		baseclass		= "Satellite", -- TODO: hacks
 	},
 	category = [[ORBIT]],
-
-	fireState = 3,
-	weapons = {
-		[1]={
-			name  = "shrapnellmarker",   
-			onlyTargetCategory = [[ORBIT]]
-			},
-					
-		},
 }
 
 return lowerkeys({
