@@ -27,6 +27,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
 	SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
 	SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)
+	local ShrapnellCloudSatDefID = UnitDefNames["satelliteshrapnell"].id
+	assert(ShrapnellCloudSatDefID)
 	local directionalSwitchValue = 50
 	
 	Satellites ={} --utype --direction
@@ -34,10 +36,13 @@ if (gadgetHandler:IsSyncedCode()) then
 		if Satellites[unitID] then
 			Satellites[unitID] = nil
 		end
-	
+
+		if SatelliteTypes[unitDefID] and unitDefID ~= ShrapnellCloudSatDefID then
+			id = createUnitAtUnit(gaiaTeamID, "satelliteshrapnell", unitID, unitID)
+			Spring.SetUnitAlwaysVisible(id,true)
+		end
 	end
 
-	
 	function gadget:UnitCreated(unitID, unitDefID)
 		if SatelliteTypes[unitDefID] then
 			showHideIconEnv(unitID, false)
