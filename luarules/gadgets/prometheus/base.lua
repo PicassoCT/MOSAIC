@@ -112,7 +112,7 @@ local function BuildBase()
 	end
 
 	if not builderID then 
-		Log("internal error: no builders were found") 
+	--	Log("internal error: no builders were found") 
 		return 
 	end
 
