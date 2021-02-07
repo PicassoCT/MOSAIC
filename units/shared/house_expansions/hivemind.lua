@@ -1,6 +1,6 @@
 local Hivemind = Building:New{
 	corpse				= "",
-	maxDamage           = 500,
+	maxDamage           = 1500,
 	mass                = 500,
 	name = "Hivemind",
 	description = " humans linked together into a supra-intelligence <Allows use of SlowMotion>",
@@ -9,9 +9,9 @@ local Hivemind = Building:New{
 	buildTime = 3*60,
 	buildCostMetal      = 2500,
 	buildCostEnergy     = 500,
-	EnergyStorage = 0,
-	EnergyUse = 0,
-	MetalStorage = 5000,
+
+	EnergyUse = 10,
+	MetalStorage = 0,
 
 	EnergyMake = 0, 
 	MakesMetal = 0, 
@@ -23,8 +23,8 @@ local Hivemind = Building:New{
 	buildingMask = 8,
 	MaxSlope 					= 50,
 
-	footprintX = 1,
-	footprintZ = 1,
+	footprintX = 8,
+	footprintZ = 8,
 	script 			= "hivemindscript.lua",
 	objectName        	= "hivemind.dae",
 		customParams        = {
@@ -49,18 +49,18 @@ local Hivemind = Building:New{
 
 local AICore = Building:New{
 	corpse				= "",
-	maxDamage           = 500,
+	maxDamage           = 1500,
 	mass                = 500,
 	name = "AI",
 	description = " supra intelligent machine <Allows use of SlowMotion>",
 	buildPic = "ai.png",
 	iconType ="ai",
 	buildTime = 25,
-	buildCostMetal      = 150,
-	buildCostEnergy     = 50,
-	EnergyStorage = 0,
-	EnergyUse = 0,
-	MetalStorage = 5000,
+	buildCostMetal      = 2500,
+	buildCostEnergy     = 500,
+
+	EnergyUse = 10,
+	MetalStorage = 0,
 
 	EnergyMake = 0, 
 	MakesMetal = 0, 
@@ -72,8 +72,8 @@ local AICore = Building:New{
 	buildingMask = 8,
 	MaxSlope 					= 50,
 
-	footprintX = 1,
-	footprintZ = 1,
+	footprintX = 8,
+	footprintZ = 8,
 	script 			= "aicorescript.lua",
 	objectName        	= "aicore.dae",
 		customParams        = {

@@ -28,8 +28,8 @@ showNanoFrame= true,
 	YardMap ="oooo oooo oooo oooo ",
 	MaxSlope 					= 50,
 	buildingMask = 8,
-	footprintX = 4,
-	footprintZ = 4,
+	footprintX = 8,
+	footprintZ = 8,
 
 	
 	script 					= "nimrodscript.lua",

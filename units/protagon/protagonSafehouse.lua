@@ -18,15 +18,15 @@ local ProtagonSafeHouse =    Building:New{
   YardMap =   "oooo oooo oooo oooo ",
   MaxSlope =         50,
   buildingMask =    8,
-  footprintX =    4,
-  footprintZ =    4,
+  footprintX =    8,
+  footprintZ =    8,
 
   buildCostEnergy =        2000,
   buildCostMetal =         2000,
 
-  EnergyStorage =    0,
+  EnergyStorage = 1000,
   EnergyUse =    0,
-  MetalStorage =    2500,
+  MetalStorage =    1000,
 
   MetalUse =    1,
   EnergyMake =    0,
