@@ -88,7 +88,7 @@ function fallingDown()
 	--debug code
 	passengerID= GG.ParachutPassengers[unitID].id
 	passengerDefID= Spring.GetUnitDefID(passengerID)
-	if operativeTypeTable[passengerDefID] then Show(infantry)end
+	if operativeTypeTable[passengerDefID] and Spring.GetUnitIsCloaked(passengerID) then Show(infantry)end
 
 	x,y,z =   GG.ParachutPassengers[unitID].x,  GG.ParachutPassengers[unitID].y,  GG.ParachutPassengers[unitID].z
 	if not passengerID or isUnitAlive(passengerID)== false then Spring.DestroyUnit(unitID, false, true); return end
