@@ -33,7 +33,9 @@ function CreateBuildsiteFinder(myTeamID)
 
 -- keeping the original name may be easier
 -- when backporting fixes from the widget
-local widget = {}
+local widget = {
+	buildLocation = {}
+}
 
 ------------------------------------------------
 --config
@@ -320,6 +322,22 @@ local function FindFacing(x, y, z)
 	return dir
 end
 
+
+local function unitOfTypeAliveAt( expectedTypeDefID, x,y, z, teamID)
+	local boolUnitExistsAliveAtLocation = false
+
+	local t = Spring.GetUnitsInSphere(x,y,z, 10, teamID)
+		if t and #t > 0 then
+			for i= 1, #t do
+				if expectedTypeDefID == Spring.GetUnitDefID(t[i]) then
+					boolUnitExistsAliveAtLocation = true
+				end
+			end
+		end
+
+	return boolUnitExistsAliveAtLocation
+end
+
 -- Wee, the first function in this file written by myself!
 -- This is main public method; it finds good buildsites.
 -- returns x,y,z,facing, or nil if it can not find any build position
@@ -332,6 +350,7 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 	-- assume builder position is representative for base position
 	local x,y,z = GetUnitPosition(builderID)
 	local facing = FindFacing(x,y,z)
+	local teamID = Spring.GetUnitTeam(builderID)
 
 	-- only use the "advanced" algorithm for buildings,
 	-- and when there is already at least one building.
@@ -342,9 +361,17 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 				v.sqdist = dx*dx + dz*dz
 			end
 			table.sort(vertices, function (a, b) return a.sqdist < b.sqdist end)
+		
 			for _,v in ipairs(vertices) do
-				if TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 then
-					return v[1],v[2],v[3],facing
+				if v and  not ( widget.buildLocation[v[1]] and widget.buildLocation[v[1]][v[2]] and
+				 not unitOfTypeAliveAt( widget.buildLocation[v[1]][v[2]], v[1], v[2], v[3],teamID)) then
+
+					if not widget.buildLocation[v[1]] then widget.buildLocation[v[1]] = {}; end
+					if not widget.buildLocation[v[1]][v[2]] then widget.buildLocation[v[1]][v[2]] = unitDefID; end
+					
+					if TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 then
+						return v[1],v[2],v[3],facing
+					end
 				end
 			end
 		else
@@ -357,9 +384,18 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 				local v = vertices[i]
 				-- don't call TestBuildOrder multiple times for the same vertex
 				vertices[i] = nil
-				if v and TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 then
-					return v[1],v[2],v[3],facing
+
+				if v and not ( widget.buildLocation[v[1]] and widget.buildLocation[v[1]][v[2]] and
+				 not unitOfTypeAliveAt( widget.buildLocation[v[1]][v[2]],v[1], v[2], v[3],teamID)) then
+
+					if not widget.buildLocation[v[1]] then widget.buildLocation[v[1]] = {}; end
+					if not widget.buildLocation[v[1]][v[2]] then widget.buildLocation[v[1]][v[2]] = unitDefID; end
+					
+					if TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 then
+						return v[1],v[2],v[3],facing
+					end
 				end
+
 				watchdog = watchdog + 1
 			until watchdog >= count
 			-- TODO: as last resort, do an exhaustive search over all vertices?
