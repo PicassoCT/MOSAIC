@@ -121,7 +121,7 @@ function workInProgress()
 				buildProgress=0
 	
 				while buildProgress and buildProgress < 1 do
-					health,maxHealth,paralyzeDamage,captureProgress,buildProgress=Spring.GetUnitHealth(buildID)	
+					health,maxHealth,paralyzeDamage,captureProgress,buildProgress= Spring.GetUnitHealth(buildID)	
 					Sleep(150)
 				end
 				
