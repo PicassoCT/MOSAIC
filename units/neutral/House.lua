@@ -18,9 +18,7 @@ local house_arab = Building:New{
 
 	
 	
-	YardMap =  [[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
+	YardMap =  [[hyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
@@ -42,9 +40,11 @@ local house_arab = Building:New{
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	, 
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy]]	, 
 	
 
 	customparams = {	

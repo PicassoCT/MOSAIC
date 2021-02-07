@@ -137,8 +137,8 @@ function parachutePosition(id)
 end
 --gives the first unit of this type a parachut and drops it
 function firstToDieOfThirst()
-	--if not GG.FirstUnitperTeamTable then GG.FirstUnitperTeamTable ={} end
-	--if not GG.FirstUnitperTeamTable[myTeamID]  then GG.FirstUnitperTeamTable[myTeamID] = unitID else return end
+	if not GG.FirstUnitperTeamTable then GG.FirstUnitperTeamTable ={} end
+	if not GG.FirstUnitperTeamTable[myTeamID]  then GG.FirstUnitperTeamTable[myTeamID] = unitID else return end
 
 	x,y,z= Spring.GetUnitPosition(unitID)
 	Sleep(200)
@@ -182,15 +182,12 @@ function script.Killed(recentDamage, _)
    return 1
 end
 
-
 local	locAnimationstateUpperOverride 
 local	locAnimationstateLowerOverride
 local	locBoolInstantOverride 
 local	locConditionFunction
 local	boolStartThread = false
 boolPistol = true
-
-
 
 uppperBodyAnimations = {
 	[eAnimState.idle] = { 	

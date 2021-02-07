@@ -123,6 +123,9 @@ function workInProgress()
 				while buildProgress and buildProgress < 1 do
 					health,maxHealth,paralyzeDamage,captureProgress,buildProgress= Spring.GetUnitHealth(buildID)	
 					Sleep(150)
+					if not doesUnitExistAlive(buildID) then
+						break
+					end
 				end
 				
 				if buildID ~=nil then
@@ -130,7 +133,7 @@ function workInProgress()
 					buildID=nil
 				end	
 				
-				if buildID == nil and buildIDofOld ~= nil and Spring.ValidUnitID(buildIDofOld)==true then		
+				if buildID == nil and buildIDofOld ~= nil and doesUnitExistAlive(buildIDofOld) == true then		
 					Spring.SetUnitNoDraw(buildIDofOld,false)
 					buildIDofOld=nil					
 				end		

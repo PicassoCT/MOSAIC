@@ -58,23 +58,25 @@ gadget.unitBuildOrder = UnitBag{
 		"launcherstep",
 		"launcherstep",
 		"launcherstep"
+	},	
+	nimrod = UnitArray{
+		"satellitescan",
+		"satelliteanti"		
 	},
-	operativeinvestigator =UnitArray{
-	"protagonsafehouse"
-	},
+	operativeinvestigator =UnitArray{"protagonsafehouse"},
 	protagonsafehouse = UnitArray{
-		"operativepropagator", 
-		"operativepropagator", 
+		"operativeinvestigator", 
+		"operativeinvestigator", 
 		"civilianagent",
 		"propagandaserver",
 		"propagandaserver",
-		"operativepropagator",
+		"operativeinvestigator",
 		"propagandaserver",
 		"propagandaserver",
 		"assembly",
 		"nimrod",
 		"propagandaserver",
-		"launcher",
+		"blacksite",
 	},
 	transportedassembly = UnitArray{
 		"ground_turret_ssied",	
@@ -116,6 +118,7 @@ gadget.flags = UnitSet{
 
 -- This lists all the units (of all sides) that may be used to cap flags.
 gadget.flagCappers = UnitSet{
+	"operativepropagator",
 	"operativeinvestigator",
 	"civilianagent",
 	"operativeasset",

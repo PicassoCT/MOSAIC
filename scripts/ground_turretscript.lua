@@ -68,7 +68,7 @@ function foldControl()
     Turn(TablesOfPiecesGroups["TBase"][3], 2, math.rad(-30), 0)
     Turn(TablesOfPiecesGroups["TBase"][4], 2, math.rad(30), 0)
     WTurn(Turret, x_axis, math.rad(0), math.pi)
-
+    waitTillComplete(unitID)
     while true do
         if isTransported(unitID) == false then
             unfold()
