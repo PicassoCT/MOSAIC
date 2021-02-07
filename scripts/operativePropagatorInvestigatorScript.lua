@@ -129,15 +129,22 @@ function script.Create()
 -- echo("Create complted")
 end
 
+function parachutePosition(id)
+	Turn(UpArm1, z_axis, math.rad(-40),0)
+	Turn(UpArm2, z_axis, math.rad(40),0)
+	Turn(center, x_axis, math.rad(65),0)
 
+end
 --gives the first unit of this type a parachut and drops it
 function firstToDieOfThirst()
-	if not GG.FirstUnitperTeamTable then GG.FirstUnitperTeamTable ={} end
-	if not GG.FirstUnitperTeamTable[myTeamID]  then GG.FirstUnitperTeamTable[myTeamID] = unitID else return end
+	--if not GG.FirstUnitperTeamTable then GG.FirstUnitperTeamTable ={} end
+	--if not GG.FirstUnitperTeamTable[myTeamID]  then GG.FirstUnitperTeamTable[myTeamID] = unitID else return end
 
 	x,y,z= Spring.GetUnitPosition(unitID)
 	Sleep(200)
 	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
+	parachutePosition(unitID)
+
 	setWantCloak(false)
 	while(isUnitFlying(unitID)) do
 		Sleep(100)
