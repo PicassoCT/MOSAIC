@@ -23,15 +23,28 @@ if (gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_Build.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	
-	SatelliteTypes = getSatteliteTypes(UnitDefs)
-	SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
-	SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
-	SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)
+	local SatelliteTypes = getSatteliteTypes(UnitDefs)
+	local SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
+	local SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
+	local SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)
 	local ShrapnellCloudSatDefID = UnitDefNames["satelliteshrapnell"].id
 	assert(ShrapnellCloudSatDefID)
 	local directionalSwitchValue = 50
 	
-	Satellites ={} --utype --direction
+	local Satellites ={} --utype --direction
+	local SatellitesWaiting ={} --utype --direction
+	local spGetUnitHealth = Spring.spGetUnitHealth
+	local spGetUnitPosition = Spring.GetUnitPosition
+	local spMoveCtrlSetPosition = Spring.MoveCtrl.SetPosition
+	local spMoveCtrlEnable = Spring.MoveCtrl.Enable
+	local spGetUnitCommands= Spring.GetUnitCommands
+	local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
+	local spSetUnitNeutral = Spring.SetUnitNeutral
+	local spSetUnitBlocking = Spring.SetUnitBlocking
+	local timeOutTable={}
+	local directionalChangeTable={}
+	local satteliteStateTable={}
+
 	function gadget:UnitDestroyed(unitID, unitDefID)
 		if Satellites[unitID] then
 			Satellites[unitID] = nil
@@ -39,24 +52,28 @@ if (gadgetHandler:IsSyncedCode()) then
 
 		if SatelliteTypes[unitDefID] and unitDefID ~= ShrapnellCloudSatDefID then
 			id = createUnitAtUnit(gaiaTeamID, "satelliteshrapnell", unitID, unitID)
-			Spring.SetUnitAlwaysVisible(id,true)
+			spSetUnitAlwaysVisible(id,true)
 		end
 	end
 
 	function gadget:UnitCreated(unitID, unitDefID)
 		if SatelliteTypes[unitDefID] then
 			showHideIconEnv(unitID, false)
-			satteliteStateTable[unitID] = "flying"
-			Spring.MoveCtrl.Enable(unitID,true)
-			Satellites[unitID] = {utype =unitDefID, direction = "vertical"}
+			SatellitesWaiting[unitID] = {utype =unitDefID, direction = "vertical"}
 		end		
+	end
+
+	function sendFlying(unitID, DataTable)
+		showHideIconEnv(unitID, true)
+		satteliteStateTable[unitID] = "flying"
+		spMoveCtrlEnable(unitID,true)
+		Satellites[unitID] = DataTable
 	end
 	
 	local mapSizeX = Game.mapSizeX
 	local mapSizeZ = Game.mapSizeZ
-	echo("MapsizeX:"..mapSizeX.."/".."MapsizeZ:".. mapSizeZ)
 	
-	function circularClamp(x,y,z, direction)
+local function circularClamp(x,y,z, direction)
 		if direction == "horizontal" then
 			if (x >= mapSizeX) then x = 2 end
 			if (x <= 1) then x = mapSizeX-1 end
@@ -71,7 +88,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	
 	function getComandOffset(id, x, z, direction, speed)
 
-		 CommandTable = Spring.GetUnitCommands(id, 3)
+		 CommandTable = spGetUnitCommands(id, 3)
 		 boolFirst=true
 	 
 		 for _, cmd in pairs(CommandTable) do
@@ -99,9 +116,7 @@ if (gadgetHandler:IsSyncedCode()) then
 		 end		 
 	return 0, 0
 	end
-	timeOutTable={}
-	directionalChangeTable={}
-	satteliteStateTable={}
+
 
 function directionalArrestTimeOut(x,y,z, direction)
 	if direction == "vertical" then
@@ -129,7 +144,7 @@ function directionalArrest(x,y,z, direction)
 		return 1, y, z
 	end
 	
-	echo("directionalArrest Error")
+	echo("Error: directionalArrest Error")
 	return x,y,z
 end	
 	
@@ -138,7 +153,7 @@ function dectectDirectionalChange(id, direction)
 	-- only one directional change per waiting period -- prevents pendulum behaviour
 	if directionalChangeTable[id] then return direction end
 	--data preparation
-	CommandTable = Spring.GetUnitCommands(id, 3)
+	CommandTable = spGetUnitCommands(id, 3)
 	boolFirst=true
 	tx, tz = 0, 0
 	for _, cmd in pairs(CommandTable) do
@@ -148,18 +163,16 @@ function dectectDirectionalChange(id, direction)
 		end
 	end
 
-	 mx,my,mz = Spring.GetUnitPosition(id)
+	 mx,my,mz = spGetUnitPosition(id)
 	 
 	-- directional change 
 	if tx < directionalSwitchValue and tz < directionalSwitchValue then return direction end
 	
 	if tx < directionalSwitchValue and direction == "vertical" then 
-		echo("Satellite new direction horizontal")
 		return  "horizontal"
 	end
 	
 	if tz < directionalSwitchValue and direction == "horizontal" then
-		echo("Satellite new direction vertical")
 		return "vertical"
 	end
 	
@@ -167,8 +180,8 @@ function dectectDirectionalChange(id, direction)
 end
 
 function deactivateSatellite(id)
-	Spring.SetUnitNeutral(id, true)	
-	Spring.SetUnitBlocking(id , false, false, false)
+	spSetUnitNeutral(id, true)	
+	spSetUnitBlocking(id , false, false, false)
 	showHideIconEnv(id, true)
 	-- setUnitValueExternal(id, "VIEWRADIUS", 0)
 end
@@ -176,7 +189,7 @@ end
 function reactivateSatellite(id)
 	showHideIconEnv(id, false)
 	if directionalChangeTable[id] then directionalChangeTable[id] = nil end
-	Spring.SetUnitNeutral(id, false)
+	spSetUnitNeutral(id, false)
  	-- setUnitValueExternal(id, "VIEWRADIUS", 1)
 end
 	
@@ -209,7 +222,7 @@ local	satelliteStates={
 					end	
 	}
 	
-	function getDirectionalTypeTravelSpeed(utype, direction)
+local function getDirectionalTypeTravelSpeed(utype, direction)
 	ox, oz = 0,0
 		if direction == "vertical" then
 			 oz =  SatelliteTypesSpeedTable[utype]
@@ -218,20 +231,31 @@ local	satelliteStates={
 		end
 	return ox, oz
 	end
-	
+
+
 	function gadget:GameFrame(n)
+		for id, tables in pairs(SatellitesWaiting) do
+			if doesUnitExistAlive(id)== true then
+				hp, mHp, pD, cP, buildProgress = spGetUnitHealth(id)
+				if buildProgress and buildProgress >= 1.0 then
+					sendFlying(id, tables)
+					SatellitesWaiting[id] = nil
+				end
+			else
+				SatellitesWaiting[id] = nil
+			end
+		end
+
 		for id, tables in pairs(Satellites) do
 			utype = tables.utype
-			sx,sy,sz = Spring.GetUnitPosition(id)
+			sx,sy,sz = spGetUnitPosition(id)
 			ox, oz = getDirectionalTypeTravelSpeed(utype, tables.direction)
 			speedx, speedz= getComandOffset(id, sx, sz, tables.direction, SatelliteTypesSpeedTable[utype])
 			x,y,z = circularClamp(sx + ox+ speedx , sy , sz+oz +speedz)
 			
 			satteliteStateTable[id],x,y,z = satelliteStates[satteliteStateTable[id]](id, x, y, z, utype, tables.direction)
 			
-			Spring.MoveCtrl.SetPosition(id, x, SatelliteAltitudeTable[utype], z )
-
-
+			spMoveCtrlSetPosition(id, x, SatelliteAltitudeTable[utype], z )
 		end
 	end
 end
