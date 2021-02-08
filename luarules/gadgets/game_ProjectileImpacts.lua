@@ -390,7 +390,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                         persPack.unitID
                                     )
                                 end
-                            end
+                            end moveUnitToUnit()
 
                            spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack

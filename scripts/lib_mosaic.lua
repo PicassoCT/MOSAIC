@@ -1019,6 +1019,11 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 				if not persPack.oldSyncedPos then persPack.oldSyncedPos ={x=x,y=y,z=z} end
 				-- Test Synced Unit Stopped
 				
+				if  Spring.GetUnitTransporter(persPack.myID) ~= nil then
+					moveCtrlUnitToUnit( persPack.syncedID,PersPack.myID )
+					return frame + 5 , persPack	
+				end
+
 				if distance ( persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,persPack.oldSyncedPos.z, x,y, z) < 5 then
 					-- Unit has stopped, test wether we are near it
 					if distance(mx,my,mz,x, y, z) < 25 then
@@ -1026,6 +1031,7 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 						return frame + 30, persPack 
 					end
 				end
+
 				--update old Pos
 				persPack.oldSyncedPos ={x=x,y=y,z=z}
 				
