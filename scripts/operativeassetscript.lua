@@ -143,7 +143,6 @@ function testAnimationLoop()
 	end
 end
 
-
 uppperBodyAnimations = {
 	[eAnimState.idle] = { 	
 		[1] = "UPBODY_STANDING_GUN",
