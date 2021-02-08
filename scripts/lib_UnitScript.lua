@@ -898,6 +898,17 @@ x,y,z = Spring.GetUnitPosition(target)
 return false
 end
 
+function moveCtrlUnitToUnit(id , target)
+	Spring.MoveCtrl.Enable(id, true)
+	x,y,z = Spring.GetUnitPosition(target)
+
+	if x then
+		Spring.MoveCtrl.SetPosition(id, x ,y  ,z  )
+	return true
+	end
+return false
+end
+
 function moveUnitToUnitGrounded(id , target, ox, oy, oz)
 ox, oy, oz= ox or 0, oy or 0, oz or 0
 x,y,z = Spring.GetUnitPosition(target)
