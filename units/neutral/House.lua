@@ -18,33 +18,14 @@ local house_arab = Building:New{
 
 	
 	
-	YardMap =  [[hyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy]]	, 
+	YardMap =  [[yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy]]	, 
 	
 
 	customparams = {	
@@ -84,33 +65,15 @@ local house_europe = Building:New{
 
 	
 	
-	YardMap =  [[hoooyyyyyyyyyyyyyyyyyyyyyyyyyooo
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo
-				  oooyyyyyyyyyyyyyyyyyyyyyyyyyooo]]	, 
+		
+	YardMap =  [[yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy
+				yyyyyyyy]]	,  
 	
 
 	customparams = {	

@@ -15,7 +15,14 @@ local ProtagonSafeHouse =    Building:New{
   workerTime =    1,
   buildDistance =    1,
   terraformSpeed =    1,
-  YardMap =   "oooo oooo oooo oooo ",
+  YardMap =[[ oooooooo
+        oooooooo
+        oooooooo
+        oooooooo
+        oooooooo
+        oooooooo
+        oooooooo
+        oooooooo]],
   MaxSlope =         50,
   buildingMask =    8,
   footprintX =    8,
