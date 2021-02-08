@@ -26,13 +26,28 @@ if (gadgetHandler:IsSyncedCode()) then
     local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
     local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 
-    GaiaTeamID = Spring.GetGaiaTeamID()
+    local spGetGameFrame = Spring.GetGameFrame
+    local spGetUnitIsDead = Spring.GetUnitIsDead
+    local spGetUnitDefID = Spring.GetUnitDefID
+    local spGetUnitTeam = Spring.GetUnitTeam
+    local spGetProjectileTeamID = Spring.GetProjectileTeamID
+    local spGetProjectileDefID = Spring.GetProjectileDefID
+    local spDestroyUnit = Spring.DestroyUnit
+    local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
+    local spGiveOrderToUnit = Spring.GiveOrderToUnit
+    local spGetTeamList = Spring.GetTeamList
+    local spEcho = Spring.Echo
+
+
+    local GaiaTeamID = Spring.GetGaiaTeamID()
+   local MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
+    local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
     local raidWeaponDefID = WeaponDefNames["raidarrest"].id
 	Script.SetWatchWeapon(raidWeaponDefID, true)
     local stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
     Script.SetWatchWeapon(stunpistoldWeaponDefID, true)
-    nimrodRailungDefID = WeaponDefNames["railgun"].id
+    local nimrodRailungDefID = WeaponDefNames["railgun"].id
     Script.SetWatchWeapon(nimrodRailungDefID, true)
 	
     function getWeapondefByName(name)
@@ -46,18 +61,17 @@ if (gadgetHandler:IsSyncedCode()) then
     railgun_Def = getWeapondefByName("railgun")
     local stunContainerUnitTimePeriodInSeconds = 10.0
 
-    if not GG.houseHasSafeHouseTable then
-        GG.houseHasSafeHouseTable = {}
-    end
+    if not GG.houseHasSafeHouseTable then GG.houseHasSafeHouseTable = {} end
+
     function gadget:Initialize()
-        Spring.Echo(GetInfo().name .. " Initialization started")
+        spEcho(GetInfo().name .. " Initialization started")
         if not GG.houseHasSafeHouseTable then
             GG.houseHasSafeHouseTable = {}
         end
-        Spring.Echo(GetInfo().name .. " Initialization ended")
+        spEcho(GetInfo().name .. " Initialization ended")
     end
 
-    panicWeapons = {
+    local panicWeapons = {
         [WeaponDefNames["ssied"].id] = {damage = 500, range = SSied_Def.range},
         [WeaponDefNames["ak47"].id] = {damage = 100, range = ak47_Def.range},
         [WeaponDefNames["pistol"].id] = {damage = 75, range = pistol_Def.range},
@@ -71,22 +85,8 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
 
-
-    exampleDefID = -1
-    MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
-    RaidAbleType = getRaidAbleTypeTable(UnitDefs)
+ 
     --units To be exempted from instantly lethal force
-
-    local explosionFunc = {}
-
-    function gadget:Explosion(weaponDefID, px, py, pz, AttackerID)
-        if explosionFunc[weaponDefID] then
-            explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID)
-            return true
-        end
-    end
-
-    
 
     --===========UnitDamaged Functions ====================================================
     function currentlyInterrogationRunning(suspectID, interrogatorID)
@@ -126,7 +126,7 @@ if (gadgetHandler:IsSyncedCode()) then
         attackerDefID,
         attackerTeam,
         iconUnitTypeName)
-        Spring.Echo("caught 1")
+        spEcho("caught 1")
 
         if GG.InterrogationTable[unitID] == nil then
             GG.InterrogationTable[unitID] = {}
@@ -138,13 +138,13 @@ if (gadgetHandler:IsSyncedCode()) then
         if GG.InterrogationTable[unitID][attackerID] == false then
             GG.InterrogationTable[unitID][attackerID] = true
 
-            Spring.Echo("caught 2")
+            spEcho("caught 2")
             --Stun
             interrogationFunction = function(persPack)
                 --check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("caught 3 ")
+                    spEcho("caught 3 ")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
@@ -155,7 +155,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 --check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("caught 4")
+                    spEcho("caught 4")
 
                     return true, persPack
                 end
@@ -163,7 +163,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("caught 5 ")
+                    spEcho("caught 5 ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
 
                     return true, persPack
@@ -173,7 +173,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 if not persPack.IconId then
                     persPack.IconId =
                         createUnitAtUnit(
-                        Spring.GetUnitTeam(persPack.interrogatorID),
+                        spGetUnitTeam(persPack.interrogatorID),
                         iconUnitTypeName,
                         persPack.unitID,
                         0,
@@ -185,11 +185,11 @@ if (gadgetHandler:IsSyncedCode()) then
                 if GG.RaidState and GG.RaidState[persPack.IconId] and GG.RaidState[persPack.IconId] ~= raidstate.OnGoing then
                     if GG.RaidState[persPack.IconId] == raidstate.AggressorWins then
                         --succesfull interrogation
-                        local allTeams = Spring.GetTeamList()
+                        local allTeams = spGetTeamList()
                         if not allTeams or #allTeams <= 1 then
                             --Simulation mode
-                            Spring.Echo("Aborting because no oponnent - sandbox or simulation mode")
-                            Spring.DestroyUnit(persPack.IconId, true, true)
+                            spEcho("Aborting because no oponnent - sandbox or simulation mode")
+                            spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
                         end
                         --of a innocent person / innocent house
@@ -197,7 +197,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             innocentCivilianTypeTable[persPack.suspectDefID] or
                                 persPack.houseTypeTable[persPack.suspectDefID]
                          then
-                            Spring.Echo("Interrogated innocent civilian")
+                            spEcho("Interrogated innocent civilian")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
@@ -215,31 +215,32 @@ if (gadgetHandler:IsSyncedCode()) then
                                 end
                             end
 
-                            Spring.DestroyUnit(persPack.IconId, true, true)
+                            spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
                         end
 
-                        Spring.Echo("Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
-                        children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
-                        parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
+                        spEcho("Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
+                        unitTeam = spGetUnitTeam(persPack.unitID)
+                        children = getChildrenOfUnit(unitTeam, persPack.unitID)
+                        parent = getParentOfUnit(unitTeam, persPack.unitID)
                         GG.Bank:TransferToTeam(
                             GameConfig.RaidInterrogationPropgandaPrice,
                             persPack.attackerTeam,
                             persPack.attackerID
                         )
-                        Spring.Echo(" caught 6 ")
+                        spEcho(" caught 6 ")
                         for childID, v in pairs(children) do
                             if doesUnitExistAlive(childID) == true then
-                                Spring.GiveOrderToUnit(childID, CMD.CLOAK, {}, {})
+                                spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
                                 GG.OperativesDiscovered[childID] = true
-                                Spring.SetUnitAlwaysVisible(childID, true)
+                                spSetUnitAlwaysVisible(childID, true)
                             end
                         end
 
                         if doesUnitExistAlive(parent) == true then
-                            Spring.GiveOrderToUnit(parent, CMD.CLOAK, {}, {})
+                            spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
                             GG.OperativesDiscovered[parent] = true
-                            Spring.SetUnitAlwaysVisible(parent, true)
+                            spSetUnitAlwaysVisible(parent, true)
                         end
                     end
                 end
@@ -247,7 +248,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 return false, persPack
             end
 
-            Spring.Echo("Starting Raid Event Stream")
+            spEcho("Starting Raid Event Stream")
             createStreamEvent(
                 unitID,
                 raidEventStreamFunction,
@@ -298,7 +299,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 --check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("Interrrogation: Target díed")
+                    spEcho("Interrrogation: Target díed")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
@@ -311,7 +312,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 --check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("Interrrogation End: Interrogator died")
+                    spEcho("Interrrogation End: Interrogator died")
                     if persPack.IconId then
                         GG.raidIconDone[persPack.IconId] = nil
                     end
@@ -321,7 +322,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = false
-                    Spring.Echo("Interrrogation End: Interrogator distance to big ")
+                    spEcho("Interrrogation End: Interrogator distance to big ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconId then
                         GG.raidIconDone[persPack.IconId] = nil
@@ -333,7 +334,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 if not persPack.IconId then
                     persPack.IconId =
                         createUnitAtUnit(
-                        Spring.GetUnitTeam(persPack.interrogatorID),
+                        spGetUnitTeam(persPack.interrogatorID),
                         iconUnitTypeName,
                         persPack.unitID,
                         0,
@@ -352,18 +353,18 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 --update the icons  percentage
                 GG.raidIconDone[persPack.IconId].countDown =
-                    (Spring.GetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames
+                    (spGetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames
            
 
                 if GG.raidIconDone[persPack.IconId].boolInterogationComplete == true then
 
                     if not GG.raidIconDone[persPack.IconId].winningTeam then
                         --succesfull interrogation
-                        local allTeams = Spring.GetTeamList()
+                        local allTeams = spGetTeamList()
                         if not allTeams or #allTeams <= 1 then
                             --Simulation mode
-                            Spring.Echo("Interrogation: Aborting because no oponnent - sandbox or simulation mode")
-                            Spring.DestroyUnit(persPack.IconId, true, true)
+                            spEcho("Interrogation: Aborting because no oponnent - sandbox or simulation mode")
+                            spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
                         end
                         
@@ -372,7 +373,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             innocentCivilianTypeTable[persPack.suspectDefID] or
                                 persPack.houseTypeTable[persPack.suspectDefID]
                          then
-                            Spring.Echo("Interrogated innocent - paying the price")
+                            spEcho("Interrogated innocent - paying the price")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
@@ -391,14 +392,15 @@ if (gadgetHandler:IsSyncedCode()) then
                                 end
                             end
 
-                            Spring.DestroyUnit(persPack.IconId, true, true)
+                           spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
                         end
                     end
 
-                        Spring.Echo("Interrogation: Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
-                        children = getChildrenOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
-                        parent = getParentOfUnit(Spring.GetUnitTeam(persPack.unitID), persPack.unitID)
+                        spEcho("Interrogation: Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
+                        unitTeam= spGetUnitTeam(persPack.unitID)
+                        children = getChildrenOfUnit(unitTeam , persPack.unitID)
+                        parent = getParentOfUnit(unitTeam, persPack.unitID)
                         GG.Bank:TransferToTeam(
                             GameConfig.RaidInterrogationPropgandaPrice,
                             persPack.attackerTeam,
@@ -406,25 +408,25 @@ if (gadgetHandler:IsSyncedCode()) then
                         )
                      
                         for childID, v in pairs(children) do
-                               Spring.Echo("Interrogation: Reavealing child "..childID)
+                               spEcho("Interrogation: Reavealing child "..childID)
                             if doesUnitExistAlive(childID) == true then
-                                Spring.GiveOrderToUnit(childID, CMD.CLOAK, {}, {})
+                                spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
                                 GG.OperativesDiscovered[childID] = true
-                                Spring.SetUnitAlwaysVisible(childID, true)
+                                spSetUnitAlwaysVisible(childID, true)
                             end
                         end
 
                         if doesUnitExistAlive(parent) == true then
-                            Spring.GiveOrderToUnit(parent, CMD.CLOAK, {}, {})
+                            spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
                             GG.OperativesDiscovered[parent] = true
-                            Spring.SetUnitAlwaysVisible(parent, true)
+                            spSetUnitAlwaysVisible(parent, true)
                         end
 
                     --out of time to interrogate
-                    Spring.DestroyUnit(persPack.unitID, false, true)
-                    Spring.DestroyUnit(persPack.IconId, false, true)
+                    spDestroyUnit(persPack.unitID, false, true)
+                    spDestroyUnit(persPack.IconId, false, true)
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] = nil
-                    Spring.Echo("Interrogation: Raid ended")
+                    spEcho("Interrogation: Raid ended")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     GG.raidIconDone[persPack.IconId] = nil
                     return true, persPack
@@ -433,7 +435,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 return false, persPack
             end
 
-            Spring.Echo("Starting Interrogation Event Stream")
+            spEcho("Starting Interrogation Event Stream")
             createStreamEvent(
                 unitID,
                 interrogationFunction,
@@ -467,11 +469,11 @@ if (gadgetHandler:IsSyncedCode()) then
         attackerTeam)
         --stupidity edition
         if attackerID == unitID then
-            Spring.Echo("Interrogation:Aborted: attackerID == unitID")
+            spEcho("Interrogation:Aborted: attackerID == unitID")
             return damage
         end
 
-        Spring.Echo("Stunning unit" .. unitID)
+        spEcho("Stunning unit" .. unitID)
         if unitID ~= attackerID then
             stunUnit(unitID, 2.0)
         end
@@ -480,12 +482,12 @@ if (gadgetHandler:IsSyncedCode()) then
         if civilianWalkingTypeTable[unitDefID] and GG.DisguiseCivilianFor[unitID] then
             stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
             unitID = GG.DisguiseCivilianFor[unitID]
-            unitDefID = Spring.GetUnitDefID(unitID)
-            unitTeam = Spring.GetUnitTeam(unitID)
+            unitDefID = spGetUnitDefID(unitID)
+            unitTeam = spGetUnitTeam(unitID)
         end
 
         if MobileInterrogateAbleType[unitDefID] and currentlyInterrogationRunning(unitID, attacker) == false then
-            Spring.Echo("Interrogation: Start with " .. UnitDefs[unitDefID].name)
+            spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name)
             stunUnit(unitID, 2.0)
             setSpeedEnv(attackerID, 0.0)
             interrogationEventStreamFunction(
@@ -520,11 +522,11 @@ if (gadgetHandler:IsSyncedCode()) then
         attackerID,
         attackerDefID,
         attackerTeam)
-        Spring.Echo("Raid/Interrogatable Weapon fired upon " .. UnitDefs[unitDefID].name)
+        spEcho("Raid/Interrogatable Weapon fired upon " .. UnitDefs[unitDefID].name)
 
         --stupidity edition
         if attackerID == unitID then
-            Spring.Echo("Raid Aborted")
+            spEcho("Raid Aborted")
             return damage
         end
 
@@ -533,8 +535,8 @@ if (gadgetHandler:IsSyncedCode()) then
             stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
             unitID = GG.houseHasSafeHouseTable[unitID]
             stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
-            unitDefID = Spring.GetUnitDefID(unitID)
-            unitTeam = Spring.GetUnitTeam(unitID)
+            unitDefID = spGetUnitDefID(unitID)
+            unitTeam = spGetUnitTeam(unitID)
         end
 
         --stupidity edition
@@ -547,7 +549,7 @@ if (gadgetHandler:IsSyncedCode()) then
             (houseTypeTable[unitDefID] or RaidAbleType[unitDefID]) and
                 currentlyInterrogationRunning(unitID, attacker) == false
          then
-            Spring.Echo("Raid of " .. UnitDefs[unitDefID].name)
+            spEcho("Raid of " .. UnitDefs[unitDefID].name)
             stunUnit(unitID, 2.0)
             setSpeedEnv(attackerID, 0.0)
             interrogationEventStreamFunction(
@@ -607,26 +609,22 @@ end
     local NewUnitsInPanic = {}
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
         if panicWeapons[projWeaponDefID] then
-            T =
                 process(
                 getAllNearUnit(proOwnerID, panicWeapons[projWeaponDefID].range),
                 function(id)
-                    if
-                        Spring.GetUnitTeam(id) == GaiaTeamID and not GG.DisguiseCivilianFor[id] and
-                            civilianWalkingTypeTable[Spring.GetUnitDefID(id)]
+                    if spGetUnitTeam(id) == GaiaTeamID and 
+                        not GG.DisguiseCivilianFor[id] and
+                        civilianWalkingTypeTable[spGetUnitDefID(id)] and
+                        not GG.AerosolAffectedCivilians[id]
                      then
-                        if
-                            civilianWalkingTypeTable[Spring.GetUnitDefID(id)] and not GG.DisguiseCivilianFor[id] and
-                                not GG.AerosolAffectedCivilians[id]
-                         then
+                      
                             NewUnitsInPanic[id] = {
                                 proOwnerID = proOwnerID,
                                 flighttime = (panicWeapons[projWeaponDefID].damage * panicWeapons[projWeaponDefID].range) /
                                     30,
                                 updateIntervall = 33
                             }
-                            return id
-                        end
+                      return id
                     end
                 end
             )
@@ -635,28 +633,33 @@ end
 
     function gadget:GameFrame(n)
         if n % 33 == 0 and count(NewUnitsInPanic) > 0 then
-            flightFunction = function(evtID, frame, persPack, startFrame)
+           handleFleeingCivilians(n)
+        end
+    end
+
+    function handleFleeingCivilians(n)
+        flightFunction = function(evtID, frame, persPack, startFrame)
                 --Setup
                 if not GG.FleeingCivilians then
                     GG.FleeingCivilians = {}
                 end
                 if not persPack.startFrame then
-                    persPack.startFrame = Spring.GetGameFrame()
+                    persPack.startFrame = spGetGameFrame()
                 end
                 myID = persPack.unitID
                 attackerID = persPack.attackerID
-                boolIsDead = Spring.GetUnitIsDead(myID)
+                boolIsDead = spGetUnitIsDead(myID)
                 if not boolIsDead or boolIsDead == true then
                     GG.FleeingCivilians[myID] = nil
                     return nil, persPack
                 end
 
-                if Spring.GetUnitIsDead(attackerID) == true then
+                if spGetUnitIsDead(attackerID) == true then
                     return nil, persPack
                 end
 
                 if not GG.FleeingCivilians[myID] then
-                    GG.FleeingCivilians[myID] = {flighttime = persPack.flighttime, startFrame = Spring.GetGameFrame()}
+                    GG.FleeingCivilians[myID] = {flighttime = persPack.flighttime, startFrame = spGetGameFrame()}
                 end
 
                 GG.FleeingCivilians[myID].flighttime = GG.FleeingCivilians[myID].flighttime - persPack.updateIntervall
@@ -686,61 +689,46 @@ end
                             flighttime = data.flighttime,
                             updateIntervall = data.updateIntervall
                         },
-                        Spring.GetGameFrame() + (id % 10)
+                        spGetGameFrame() + (id % 10)
                     )
                 end
             end
             NewUnitsInPanic = {}
         end
-    end
 
-    GROUND = string.byte("g")
-    UNIT = string.byte("u")
-    FEATURE = string.byte("f")
-    PROJECTILE = string.byte("p")
-
-    projectileDestroyedFunctions = {}
+  
+    local projectileDestroyedFunctions = {}
 
     function gadget:ProjectileDestroyed(proID)
-        defid = Spring.GetProjectileDefID(proID)
+        defid = spGetProjectileDefID(proID)
         if projectileDestroyedFunctions[defID] then
-            return projectileDestroyedFunctions[defID](proID, defID, Spring.GetProjectileTeamID(proID))
+            return projectileDestroyedFunctions[defID](proID, defID, spGetProjectileTeamID(proID))
         end
     end
+
+    local GROUND = string.byte("g")
+    local UNIT = string.byte("u")
+    local FEATURE = string.byte("f")
+    local PROJECTILE = string.byte("p")
 
     function getProjectileTargetXYZ(proID)
         targetTypeInt, target = Spring.GetProjectileTarget(proID)
 
         if targetTypeInt == GROUND then
             echo("ProjectileTarget:", target[1], target[2], target[3])
-            return target[1], target[2], target[3]
+            return target[1], target[2], target[3],  targetTypeInt, target
         end
         if targetTypeInt == UNIT then
             ux, uy, uz = Spring.GetUnitPosition(target)
-            return ux, uy, uz
+            return ux, uy, uz,  targetTypeInt, target
         end
         if targetTypeInt == FEATURE then
             fx, fy, fz = Spring.GetFeaturePosition(target)
-            return fx, fy, fz
+            return fx, fy, fz,  targetTypeInt, target
         end
         if targetTypeInt == PROJECTILE then
             px, py, pz = Spring.GetProjectilePosition(target)
-            return px, py, pz
+            return px, py, pz, targetTypeInt, target
         end
-    end
-
-    function gadget:ShieldPreDamaged(
-        proID,
-        proOwnerID,
-        shieldEmitterWeaponNum,
-        shieldCarrierUnitID,
-        bounceProjectile,
-        startx,
-        starty,
-        startz,
-        hitx,
-        hity,
-        hitz)
-        return false
     end
 end
