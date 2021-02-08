@@ -68,7 +68,7 @@ local killedAllyTeams = {}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 
 GG.GlobalGameState = GameConfig.GameState.normal
 
@@ -112,7 +112,7 @@ end
 	
 	
 
-GameStateMachine =
+local GameStateMachine =
 	 { 
 		Timer =Spring.GetGameFrame(),
 	 
