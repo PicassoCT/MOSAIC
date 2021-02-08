@@ -18,8 +18,16 @@ if ( gadgetHandler:IsSyncedCode()) then
 	VFS.Include("scripts/lib_UnitScript.lua")
 	VFS.Include("scripts/lib_mosaic.lua")
 	local gaiaTeamID= Spring.GetGaiaTeamID()
-	GameConfig = getGameConfig()
-	accumulatedInSecond ={}
+	local spUseTeamResource = Spring.UseTeamResource
+	local spAddTeamResource = Spring.AddTeamResource
+	local spGetUnitTeam = Spring.GetUnitTeam
+	local spGetGameFrame = Spring.GetGameFrame
+	local spGetUnitPosition = Spring.GetUnitPosition
+	local spGetAllUnits = Spring.GetAllUnits
+	
+	
+	local GameConfig = getGameConfig()
+	local accumulatedInSecond ={}
 	
 	function addInSecond(team, uid_loc,  rtype, damage, colour)
 		if not accumulatedInSecond[team] then 
@@ -31,23 +39,22 @@ if ( gadgetHandler:IsSyncedCode()) then
 				accumulatedInSecond[team][uid_loc] = {  rtype = rtype, damage = 0, colour = colour or colourWhite}
 			end
 
-			accumulatedInSecond[team][uid_loc].damage = 		accumulatedInSecond[team][uid_loc].damage  + damage	
+			accumulatedInSecond[team][uid_loc].damage = accumulatedInSecond[team][uid_loc].damage  + damage	
 		else
 			id = ""..uid_loc.x.."|"..uid_loc.y.."|"..uid_loc.z
 			if not accumulatedInSecond[team][id] then 
 				accumulatedInSecond[team][id] = {  rtype = rtype, damage = 0, location =uid_loc ,colour = colour or colourWhite}
 			end
-			accumulatedInSecond[team][id].damage = 		accumulatedInSecond[team][uid_loc].damage  + damage	
+			accumulatedInSecond[team][id].damage = 	accumulatedInSecond[team][uid_loc].damage + damage	
 		end
-
 	end
-	
 	
 	local function TransferToTeam(self,  money, reciever, displayunit_location)
 		self[#self + 1] = {  
 			Money = money, 
 			Reciever= reciever, 
-			DisplayUnit_Location = displayunit_location}
+			DisplayUnit_Location = displayunit_location
+		}
 	end
 
 	--GG.Bank:TransferToTeam(  money, reciever, displayunit)
@@ -69,7 +76,6 @@ if ( gadgetHandler:IsSyncedCode()) then
 	
 	
 	function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-
 		if attackerID and ( GG.DisguiseCivilianFor[unitID] ) and teamID ~= Spring.GetUnitTeam(attackerID) then
 			maxhp = UnitDefs[unitDefID].health or UnitDefs[unitDefID].maxDamage
 			if maxhp then	
@@ -77,14 +83,13 @@ if ( gadgetHandler:IsSyncedCode()) then
 				if GG.Propgandaservers and GG.Propgandaservers[teamID] then
 					factor = factor + (GG.Propgandaservers[teamID]* GameConfig.propandaServerFactor)
 				end
-				Spring.AddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
+				spAddTeamResource(Spring.GetUnitTeam(attackerID), "metal", math.ceil(math.abs(maxhp * factor)))
 				addInSecond(teamID, attackerID, "metal",   math.ceil((maxhp * factor)))
 			end
 		end 
 	end
 	
 	function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-
 		if not attackerID and weaponDefID then
 			if WeaponDefs[weaponDefID] then
 				echo("Unit "..unitID .. " was damaged without perpetrator with weapon ".. WeaponDefs[weaponDefID].name )
@@ -105,11 +110,11 @@ if ( gadgetHandler:IsSyncedCode()) then
 					
 					boolTeamsAreAllied = Spring.AreTeamsAllied(attackerTeam, team)					
 					if  boolTeamsAreAllied == true then	
-						 Spring.UseTeamResource(team, "metal", damage)
+						 spUseTeamResource(team, "metal", damage)
 						 addInSecond(team, unitID, "metal",  -1 *math.ceil( damage))
 					else  -- get enemy Teams -- tranfer damage as budget to them
 						factor = 1 + (GG.Propgandaservers[team]* GameConfig.propandaServerFactor)
-						Spring.AddTeamResource(team, "metal", math.ceil(math.abs(damage * factor)))
+						spAddTeamResource(team, "metal", math.ceil(math.abs(damage * factor)))
 						addInSecond(team, unitID, "metal",   math.ceil((damage * factor)))
 
 					end
@@ -119,26 +124,25 @@ if ( gadgetHandler:IsSyncedCode()) then
 		end  
 	end
 	
-	colourWhite={r=255,g=255,b=255}
+	local colourWhite={r=255,g=255,b=255}
 	
 	function gadget:GameFrame(frame)
-	
 		if frame % 10 == 0 then
 			if GG.Bank and GG.Bank[1] then
 				local cur = GG.Bank
 				GG.Bank = { TransferToTeam = TransferToTeam }
 
 				for i = 1, #cur, 1 do					
-					assert(cur[i].Reciever, "Reciever team missing ")
-					assert(cur[i].Money, "Money missing ")
+					--assert(cur[i].Reciever, "Reciever team missing ")
+					--assert(cur[i].Money, "Money missing ")
 					--assert(cur[i].DisplayUnit, "DisplayUnit /Location missing ")
 					if cur[i].DisplayUnit_Location then
 	
 					--assert(Spring.GetTeamInfo(cur[i].Reciever), "DisplayUnit missing ")
 						if  cur[i].Money < 0 then
-							Spring.UseTeamResource(cur[i].Reciever, "metal", math.abs(cur[i].Money))
+							spUseTeamResource(cur[i].Reciever, "metal", math.abs(cur[i].Money))
 						else
-							Spring.AddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
+							spAddTeamResource(cur[i].Reciever, "metal", cur[i].Money)
 						end
 					addInSecond(cur[i].Reciever, cur[i].DisplayUnit_Location,  "metal", cur[i].Money, colourWhite)
 					end
@@ -164,37 +168,45 @@ if ( gadgetHandler:IsSyncedCode()) then
 	end
 
 else -- UNSYNCED
-	DrawForFrames = 1 * 30
-	Unit_StartFrame_Message={}
-	Frame_StartFrame_Message={}
-	constOffsetY= 25	
-    gaiaTeamID= Spring.GetGaiaTeamID()
+	local spGetGameFrame = Spring.GetGameFrame
+	local spGetLocalTeamID = Spring.GetLocalTeamID
+	local spGetMyTeam = Spring.GetMyTeam
+	local spGetAllUnits = Spring.GetAllUnits
+	local spGetUnitTeam = Spring.GetUnitTeam
+	local spGetUnitPosition = Spring.GetUnitPosition
+	local spWorldToScreenCoords = Spring.WorldToScreenCoords
+	local glText = gl.Text
+	local glColor = gl.Color
+	local DrawForFrames = 1 * 30
+	local Unit_StartFrame_Message={}
+	local Frame_StartFrame_Message={}
+    local gaiaTeamID= Spring.GetGaiaTeamID()
 	
 	-- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname,  unitID, team, damage, r,g,b)
 	--	 Spring.Echo("Display At Unit")
-		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=Spring.GetGameFrame(), col= {r=r,g=g,b=b}}
+		Unit_StartFrame_Message[unitID]={team= team, message= damage, frame=spGetGameFrame(), col= {r=r,g=g,b=b}}
 
     end   
 
      local function DisplayAtLocation(callname,  locTable, team, damage, r,g,b)
-		 Spring.Echo("Display at Location")
-		Frame_StartFrame_Message[Spring.GetGameFrame()]={team= team, message= damage, loc = locTable, frame=Spring.GetGameFrame(), col = {r=r,g=g,b=b}}
+		-- Spring.Echo("Display at Location")
+		Frame_StartFrame_Message[spGetGameFrame()]={team= team, message= damage, loc = locTable, frame=spGetGameFrame(), col = {r=r,g=g,b=b}}
     end
 	
 	 function gadget:Initialize()
 	 		Spring.Echo(GetInfo().name.." Initialization started")
         -- This associate the messages with the functions
         gadgetHandler:AddSyncAction("DisplaytAtUnit", DisplaytAtUnit)
-				Spring.Echo(GetInfo().name.." Initialization ended")
+		--	Spring.Echo(GetInfo().name.." Initialization ended")
     end
 
 	function gadget:DrawScreenEffects()
-	currFrame = Spring.GetGameFrame()
+		currFrame =spGetGameFrame()
 		UnitsToNil={}
-		myPlayerTeam = Spring.GetLocalTeamID()
+		myPlayerTeam = spGetLocalTeamID()
 	
-		for _,id in ipairs(Spring.GetAllUnits()) do	
+		for _,id in ipairs(spGetAllUnits()) do	
 			-- Spring.Echo("itterating over all units")
 			for uid, valueT in pairs(Unit_StartFrame_Message) do
 
@@ -202,16 +214,16 @@ else -- UNSYNCED
 				-- Check if Time has expsired
 				if id == uid and valueT then
 					--if attacker was me or i get a reward for another team attack a gaia unit
-					teamid= Spring.GetUnitTeam(id)
+					teamid= spGetUnitTeam(id)
 					-- if teamid == myPlayerTeam then
 						-- Spring.Echo("id == uid")
 						-- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
 					 if currFrame < valueT.frame + DrawForFrames then
 						-- Spring.Echo("Drawing Prizes")
-						 x, y, z = Spring.GetUnitPosition(uid)	
+						 x, y, z = spGetUnitPosition(uid)	
 						 if x then
 							 frameOffset=  (255 -( valueT.frame + DrawForFrames -currFrame ))*0.25
-							 local sx, sy = Spring.WorldToScreenCoords(x, y + frameOffset, z)
+							 local sx, sy = spWorldToScreenCoords(x, y + frameOffset, z)
 							 if valueT.message < 0 then 
 								gl.Color(1.0,0.0,0.0)
 							 else
@@ -231,14 +243,14 @@ else -- UNSYNCED
 		for startframe ,data in ipairs(Frame_StartFrame_Message) do	
 			-- Spring.Echo("itterating over all units")
 
-			if   data.team == Spring.GetMyTeam() then
+			if   data.team == spGetMyTeam() then
 
 				 if currFrame < startframe + DrawForFrames then
 
 					 x, y, z = data.locTable.x,  data.locTable.y,  data.locTable.z
 					 if x then
 						 frameOffset=  (255 -(startframe + DrawForFrames -currFrame ))*0.25
-						 local sx, sy = Spring.WorldToScreenCoords(data.loc.x, data.loc.y + frameOffset, data.loc.z)
+						 local sx, sy = spWorldToScreenCoords(data.loc.x, data.loc.y + frameOffset, data.loc.z)
 			
 							gl.Color(data.col.r,data.col.g,data.col.b)
 						 
