@@ -25,9 +25,28 @@ end
 	local GameConfig = getGameConfig()
 	local spGetUnitPosition = Spring.GetUnitPosition
 	local spGetUnitDefID = Spring.GetUnitDefID
+	local spGetUnitTeam = Spring.GetUnitTeam
+	local spGetUnitIsDead = Spring.GetUnitIsDead
+	local spGetUnitHealth = Spring.GetUnitHealth
+	local spGetGameFrame = Spring.GetGameFrame
+	local spGetGroundHeight = Spring.GetGroundHeight
+	local spGetGroundNormal = Spring.GetGroundNormal
+	local spGetUnitLastAttacker = Spring.GetUnitLastAttacker
+	local spGetUnitNearestAlly = Spring.GetUnitNearestAlly
+	local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
+
+	local spSetUnitBlocking = Spring.SetUnitBlocking
+	local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
+	local spSetUnitNeutral = Spring.SetUnitNeutral
+	local spSetUnitNoSelect = Spring.SetUnitNoSelect
+	local spRequestPath	= Spring.RequestPath
+	local spCreateUnit = Spring.CreateUnit
+	local spDestroyUnit = Spring.DestroyUnit
+
 	local currentGlobalGameState = GG.GlobalGameState or  GameConfig.GameState.normal
 	local UnitDefNames = getUnitDefNames(UnitDefs)
 	local PoliceTypes = getPoliceTypes(UnitDefs)
+
 	
 	local 	activePoliceUnitIds_DispatchTime = {}
 	local maxNrPolice = GameConfig.maxNrPolice
@@ -48,10 +67,9 @@ end
 	uDim.x,uDim.y,uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ+ GameConfig.allyWaySizeZ	
 	numberTileX, numberTileZ = Game.mapSizeX/uDim.x, Game.mapSizeZ/uDim.z
 	local RouteTabel = {} --Every start has a subtable of reachable nodes 	
-	boolInitialized = false
+	local boolInitialized = false
 
 	local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
-	assert(TruckTypeTable[UnitDefNames["truck_arab0"].id]==UnitDefNames["truck_arab0"].id)
 	local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 	local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 	local gaiaTeamID = Spring.GetGaiaTeamID()
@@ -83,14 +101,12 @@ end
 			end
 		end
 		
-
 	return px,0,pz
 	end
 	
 	function UnitSetAnimationState(unitID, AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride, boolDeCoupled)
 	  env = Spring.UnitScript.GetScriptEnv(unitID)
         if env and env.setOverrideAnimationState then
-
 			Spring.UnitScript.CallAsUnit(unitID, env.setOverrideAnimationState,  AnimationstateUpperOverride, AnimationstateLowerOverride, boolInstantOverride or false, conditionFunction or nil, boolDeCoupled)
         end
 	end
@@ -127,7 +143,7 @@ end
 	
 	function gadget:UnitCreated(unitID, unitDefID, teamID)
 		if PoliceTypes[unitDefID] then
-			Spring.SetUnitNeutral(unitID,false)
+			spSetUnitNeutral(unitID,false)
 			maxNrPolice = math.max( maxNrPolice - 1, 0)
 		end
 	end
@@ -157,7 +173,7 @@ end
 		x,y,z = spGetUnitPosition(id)
 		if x then
 		
-			rubbleHeapID= Spring.CreateUnit(randDict(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
+			rubbleHeapID= spCreateUnit(randDict(scrapHeapTypeTable),x,y,z, 1, gaiaTeamID)
 			TimeDelayedRespawn[rubbleHeapID] ={
 			frame= GameConfig.TimeForScrapHeapDisappearanceInMs,
 			x= x, z= z, bID = id}
@@ -169,7 +185,7 @@ end
 	officerID = nil
 		if maxNrPolice > 0 then				
 					px,py,pz = getPoliceSpawnLocation(attackerID)
-					if not px then px,py,pz = Spring.GetUnitPosition(unitID) end
+					if not px then px,py,pz = spGetUnitPosition(unitID) end
 					direction = math.random(1,4)
 					
 					ptype = "policetruck"
@@ -177,7 +193,7 @@ end
 						ptype = randT(PoliceTypes)
 					end
 					
-					officerID = Spring.CreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
+					officerID = spCreateUnit("policetruck",px,py,pz, direction, gaiaTeamID)
 					activePoliceUnitIds_DispatchTime[officerID] = GameConfig.policeMaxDispatchTime + math.random(1, GameConfig.policeMaxDispatchTime)	
 		else --reasign one
 					officerID = randDict(activePoliceUnitIds_DispatchTime)		
@@ -200,10 +216,10 @@ end
 				if  attackerID and isUnitAlive(attackerID) == true then				
 					if not GG.PoliceInPursuit then GG.PoliceInPursuit={} end
 					GG.PoliceInPursuit[officerID]= attackerID 	
-					x,y,z= Spring.GetUnitPosition(attackerID)
+					x,y,z= spGetUnitPosition(attackerID)
 					if x then tx,ty,tz = x,y,z; boolFoundSomething = true; 	end
 				elseif boolFoundSomething== false and unitID and isUnitAlive(unitID)  == true then
-					x,y,z = Spring.GetUnitPosition(unitID)
+					x,y,z = spGetUnitPosition(unitID)
 					if x then tx,ty,tz = x,y,z; boolFoundSomething = true; 	end
 				end
 
@@ -245,12 +261,12 @@ end
 						if xi~= x or zi~= z then
 							endx, endz = xi*tileX, zi*tileZ
 							
-							if Spring.RequestPath(UnitDefNames["truck_arab0"].moveDef.name , startx,0,startz,endx,0,endz) then
+							if spRequestPath(UnitDefNames["truck_arab0"].moveDef.name , startx,0,startz,endx,0,endz) then
 								PlacesReachableFromPosition = PlacesReachableFromPosition + 1
 								if PlacesReachableFromPosition > 5 then
-									dx, dy, dz, slope =Spring.GetGroundNormal(x*tileX,z*tileZ)
+									dx, dy, dz, slope =spGetGroundNormal(x*tileX,z*tileZ)
 									
-									BuildingPlaceTable[x][z] = Spring.GetGroundHeight(x*tileX,z*tileZ) > 5 and slope < 0.2
+									BuildingPlaceTable[x][z] = spGetGroundHeight(x*tileX,z*tileZ) > 5 and slope < 0.2
 									boolEarlyOut = true
 									break;
 								end
@@ -290,8 +306,8 @@ end
 	function fromMapCenterOutwards(BuildingPlaceT,startx, startz)
 		
 		local finiteSteps= GameConfig.maxIterationSteps
-		cursor ={x=startx, z=startz}
-		mirror = {x=startx, z=startz}
+		local cursor ={x=startx, z=startz}
+		local mirror = {x=startx, z=startz}
 		local numberOfBuildings = GameConfig.numberOfBuildings -1
 		
 		while finiteSteps > 0 and numberOfBuildings > 0 do
@@ -392,7 +408,7 @@ end
 
 	end
 	
-	function checkReSpawnHouses()
+  function checkReSpawnHouses ()
 		dataToAdd= {}
 		for bID, routeData in pairs(GG.BuildingTable) do
 			local routeDataCopy = routeData
@@ -532,9 +548,7 @@ end
 		boolLongWay = distance(x1,y1,z1,x2,y2,z2) > 2048 
 		
 		if boolLongWay == false then				
-			
-			
-			if Spring.GetGroundHeight(x1, z2) > 5 then
+			if spGetGroundHeight(x1, z2) > 5 then
 				Route[index].x = x1
 				Route[index].z = z2
 				index = index + 1
@@ -548,7 +562,7 @@ end
 		Route[index]= {}
 		
 		if boolLongWay == false then
-			if Spring.GetGroundHeight(x2, z1) > 5 then
+			if spGetGroundHeight(x2, z1) > 5 then
 				Route[index].x = x2
 				Route[index].z = z1
 				index = index + 1
@@ -580,7 +594,7 @@ end
 		vA = getUnitPositionV(unitA)
 		vB = getUnitPositionV(unitB)
 		
-		path = 	Spring.RequestPath(UnitDefNames["truck_arab0"].moveDef.id ,
+		path = 	spRequestPath(UnitDefNames["truck_arab0"].moveDef.id ,
 		vA.x,vA.y,vA.z,
 		vB.x,vB.y,vB.z)
 		
@@ -588,19 +602,17 @@ end
 	end
 	
 	function spawnUnit(defID, x,z)	
-		assert(x)
-		assert(z)
+		if not x then echo("Spawning unit of typ "..UnitDefs[defID].name .." with no coords") end
 		dir = math.max(1, math.floor(math.random(1, 3)))
-			if not x then echo("Spawning unit of typ "..UnitDefs[defID].name .." with no coords") end
-		h = Spring.GetGroundHeight(x,z)
-		id = Spring.CreateUnit(defID, x, h, z, dir, gaiaTeamID)
+		h = spGetGroundHeight(x,z)
+		id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 		
 		if not statistics[defID] then statistics[defID]= 0 end
 		statistics[defID] = statistics[defID]+1
 		
 		if id then
-			Spring.SetUnitNoSelect(id, true)
-			Spring.SetUnitAlwaysVisible(id, true)
+			spSetUnitNoSelect(id, true)
+			spSetUnitAlwaysVisible(id, true)
 			return id
 		end
 	end
@@ -616,8 +628,7 @@ end
 		end
 	end
 	
-	function spawnBuilding(defID, x, z)
-		
+	function spawnBuilding(defID, x, z)		
 		id = spawnUnit(
 		defID,
 		x + math.random(-1* GameConfig.xRandOffset,GameConfig.xRandOffset),
@@ -625,8 +636,8 @@ end
 		)
 		
 		if id then 
-			Spring.SetUnitAlwaysVisible(id, true)
-			Spring.SetUnitBlocking(id, false)
+			spSetUnitAlwaysVisible(id, true)
+			spSetUnitBlocking(id, false)
 			GG.BuildingTable[id] = {x=x, z=z}
 			return id
 		end
@@ -634,23 +645,20 @@ end
 	
 	function gadget:Initialize()
 	--Initialize global tables
-	GG.DisguiseCivilianFor={}
-	 GG.DiedPeacefully = {}
+		GG.DisguiseCivilianFor={}
+	 	GG.DiedPeacefully = {}
 
-
-	--	Spring.Echo("gadget:Initialize")
 		process(Spring.GetAllUnits(),
 		function(id)
 			Spring.DestroyUnit(id,true,true)
 		end
 		)
-		
 	end
 	
-	travellFunction = function(evtID, frame, persPack, startFrame)
+	function travellFunction (evtID, frame, persPack, startFrame)
 		--	only apply if Unit is still alive
-		myID = persPack.unitID
-		if Spring.GetUnitIsDead(myID) == true then
+		local myID = persPack.unitID
+		if spGetUnitIsDead(myID) == true then
 			return nil, persPack
 		end
 		
@@ -674,7 +682,7 @@ end
 		end			
 		-- </External GameState Handling>
 		
-		hp = Spring.GetUnitHealth(myID)
+		hp = spGetUnitHealth(myID)
 		if not persPack.myHP then persPack.myHP = hp end
 		
 		x,y,z = spGetUnitPosition(myID)
@@ -701,12 +709,12 @@ end
 		end
 		
 		if persPack.stuckCounter > 5 then
-			Spring.DestroyUnit(myID,true,true)
+			spDestroyUnit(myID,true,true)
 			return nil, nil
 		end
 		--we where obviously attacked - flee from attacker
 		if persPack.myHP < hp then
-			attackerID = Spring.GetUnitLastAttacker(myID)
+			attackerID = spGetUnitLastAttacker(myID)
 			if attackerID and isUnitAlive(attackerID)== true then
 				--panic ends with distance
 				if distanceUnitToUnit (id, attackerID) > GameConfig.civilianPanicRadius then persPack.myHP = hp end
@@ -721,9 +729,9 @@ end
 			local partnerID
 			
 			if math.random(0,1)==1 then
-				partnerID = Spring.GetUnitNearestAlly(myID)
+				partnerID = spGetUnitNearestAlly(myID)
 			else
-				partnerID = Spring.GetUnitNearestEnemy(myID)
+				partnerID = spGetUnitNearestEnemy(myID)
 			end
 			
 			if partnerID and distanceUnitToUnit(myID, partnerID) < GameConfig.generalInteractionDistance then
@@ -736,7 +744,7 @@ end
 	
 					T= process(getAllNearUnit(myID, GameConfig.groupChatDistance),
 					function (id)
-						if Spring.GetUnitTeam(id) == persPack.myTeam and civilianWalkingTypeTable[spGetUnitDefID(id)] then 
+						if spGetUnitTeam(id) == persPack.myTeam and civilianWalkingTypeTable[spGetUnitDefID(id)] then 
 							return id
 						end
 					end,
@@ -790,23 +798,22 @@ end
 
 		mydefID = spGetUnitDefID(uID)
 		
-		assert(not Spring.GetUnitIsDead(startNodeID) )
-		assert(not Spring.GetUnitIsDead(RouteTabel[startNodeID][targetNodeID]) )
+		assert(not spGetUnitIsDead(startNodeID) )
+		assert(not spGetUnitIsDead(RouteTabel[startNodeID][targetNodeID]) )
 		GG.EventStream:CreateEvent(
 		travellFunction,
 		{--persistance Pack
 			mydefID = mydefID ,
-			myTeam = Spring.GetUnitTeam(uID),
+			myTeam = spGetUnitTeam(uID),
 			unitID = uID ,
 			goalIndex = 1,
 			goalList = buildRouteSquareFromTwoUnits(startNodeID, RouteTabel[startNodeID][targetNodeID], mydefID )
 		},
-		Spring.GetGameFrame() + (uID % 100)
+		spGetGameFrame() + (uID % 100)
 		)
 	end
 	
-	function testClampRoute(Route, defID)
-		
+	function testClampRoute(Route, defID)	
 		return Route
 	end
 
@@ -816,7 +823,6 @@ end
 				giveWaypointsToUnit(id, GG.CivilianTable[id].defID, GG.CivilianTable[id].startID)
 			end
 		end
-		
 		GG.UnitArrivedAtTarget = {}
 	end
 
@@ -835,7 +841,7 @@ end
 				typeTable[GG.CivilianTable[id].defID]
 				then
 				--echo("Decimating:"..id.." a "..UnitDefs[GG.CivilianTable[id].defID].name)
-				Spring.DestroyUnit(id, false, true)
+				spDestroyUnit(id, false, true)
 				GG.UnitArrivedAtTarget[id] = nil
 				nrToDecimate = nrToDecimate -1
 				if nrToDecimate <= 0 then return end
@@ -848,7 +854,7 @@ end
 		TimeDelayedRespawn[rubbleHeapID].frame = TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
 
 		if TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
-			if isUnitAlive(rubbleHeapID) == true then Spring.DestroyUnit(rubbleHeapID, false, true) end	
+			if isUnitAlive(rubbleHeapID) == true then spDestroyUnit(rubbleHeapID, false, true) end	
 			regenerateRoutesTable()
 			BuildingWithWaitingRespawn[tables.bID]= nil
 			TimeDelayedRespawn[rubbleHeapID] = nil			
@@ -887,7 +893,7 @@ end
 					if activePoliceUnitIds_DispatchTime[id] <= 0 then
 						checkReSpawnHouses()
 						regenerateRoutesTable()
-						Spring.DestroyUnit(id, false,true)
+						spDestroyUnit(id, false,true)
 					end
 				end
 			end
