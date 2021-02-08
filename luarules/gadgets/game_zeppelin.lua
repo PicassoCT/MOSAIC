@@ -45,9 +45,9 @@ if (gadgetHandler:IsSyncedCode()) then
  end
 
  function gadget:UnitCreated(UnitID, whatever)
- 	local type=Spring.GetUnitDefID(UnitID);
+ 	local types=Spring.GetUnitDefID(UnitID);
 	if zeppelins[type] then
-		zeppelin_waiting[UnitID] = type
+		zeppelin_waiting[UnitID] = types
 	end
  end
 
@@ -62,6 +62,14 @@ if (gadgetHandler:IsSyncedCode()) then
  if num < 0 then return -1 end
  return 1
  end
+
+ local spGetUnitVector = Spring.GetUnitVectors
+ local spGetUnitPosition = Spring.GetUnitPosition
+ local spGetUnitVelocity = Spring.GetUnitVelocity
+ local spGetUnitDirection = Spring.GetUnitDirection
+ local spGetGroundHeight = Spring.GetGroundHeight
+ local spSetUnitVelocity = Spring.SetUnitVelocity
+ local spSetUnitRotation = Spring.SetUnitRotation
 
  function gadget:GameFrame(f)
 	if f % 30 == 0 then
@@ -80,19 +88,19 @@ if (gadgetHandler:IsSyncedCode()) then
  
 	if f%20<1 then
 		for zid,zepp in pairs(zeppelin) do
-			local x,y,z=Spring.GetUnitVectors(zid)
-			local ux, uy, uz= Spring.GetUnitPosition(zid)
-			local vx, vy, vz= Spring.GetUnitVelocity(zid)
-			local dx, dy, dz=Spring.GetUnitDirection(zid)
-			local altitude=uy-Spring.GetGroundHeight(ux,uz)
+			local x,y,z= spGetUnitVectors(zid)
+			local ux, uy, uz= spGetUnitPosition(zid)
+			local vx, vy, vz= spGetUnitVelocity(zid)
+			local dx, dy, dz= spGetUnitDirection(zid)
+			local altitude=uy- spGetGroundHeight(ux,uz)
 			local wanted=zeppelins[zepp].alt
 			if math.abs(altitude-wanted)>10 then
-				Spring.SetUnitVelocity(zid,vx,vy+sign(wanted-altitude),vz)
+				spSetUnitVelocity(zid,vx,vy+sign(wanted-altitude),vz)
 			end
 
 			if dy>0 then
 				local h=math.asin(-dx/math.sqrt(dx*dx+dz*dz))
-				Spring.SetUnitRotation(zid,0,h,0)
+				spSetUnitRotation(zid,0,h,0)
 			end
 		end--for
 	end--iff
