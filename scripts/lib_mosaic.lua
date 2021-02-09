@@ -1019,9 +1019,14 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
 				if not persPack.oldSyncedPos then persPack.oldSyncedPos ={x=x,y=y,z=z} end
 				-- Test Synced Unit Stopped
 				
+				--Transported
 				if  Spring.GetUnitTransporter(persPack.myID) ~= nil then
+					persPack.boolTransported = true
 					moveCtrlUnitToUnit( persPack.syncedID,PersPack.myID )
 					return frame + 5 , persPack	
+				elseif persPack.boolTransported == true then
+					Spring.MoveCtrl.Enable(persPack.syncedID, false)
+					persPack.boolTransported = false
 				end
 
 				if distance ( persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,persPack.oldSyncedPos.z, x,y, z) < 5 then

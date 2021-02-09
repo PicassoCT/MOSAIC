@@ -116,6 +116,7 @@ function script.Create()
 	hideT(TablesOfPiecesGroups["SoftRobot"])
 	showT(upperBodyPieces)
 	showT(lowerBodyPieces)
+	Show(FoldtopFolded)
 	setupAnimation()
 	-- StartThread(turnDetector)
 	
@@ -123,10 +124,19 @@ function script.Create()
 
 	StartThread(threadStarter)
 	StartThread(cloakLoop)
-	-- StartThread(testAnimationLoop)
+	StartThread(testAnimationLoop)
 	StartThread(breathing)
 	StartThread(raidReactor)
 -- echo("Create complted")
+end
+
+function testAnimationLoop()
+	while true do
+		reset(unitID)
+		Sleep(1000)
+			PlayAnimation("FULLBODY_PARACHUTE_POSE")
+		Sleep(5000)
+	end
 end
 
 function parachutePosition(id)
@@ -146,11 +156,16 @@ function firstToDieOfThirst()
 	parachutePosition(unitID)
 
 	setWantCloak(false)
-	while(isUnitFlying(unitID)) do
+	boolFlying, posH, groundH = isUnitFlying(unitID)
+	while(boolFlying == true) do
 		Sleep(100)
-		Turn(center,x_axis,math.rad(45), 0)
+		boolFlying, posH, groundH = isUnitFlying(unitID)
+		if (posH  < groundH + 150 ) then
+			PlayAnimation("FULLBODY_PARACHUTE_POSE", {}, 20)
+		end
 	end
 	reset(center)
+
 
 	while true do
 		Sleep(1000)

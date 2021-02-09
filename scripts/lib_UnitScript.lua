@@ -268,7 +268,7 @@ end
 function isUnitFlying(unitID) 
 x,y,z = Spring.GetUnitPosition(unitID)
 h= Spring.GetGroundHeight(x,z)
-return y - 15 > h 
+return y - 15 > h ,  y , h
 
 end
 
