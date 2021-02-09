@@ -1,20 +1,20 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 function gadget:GetInfo()
-	return {
-		name = "Projectile Lups",
-		desc = "Attaches Lups FX to projectiles",
-		author = "KingRaptor (L.J. Lim)",
-		date = "2013-06-28",
-		license = "GNU GPL, v2 or later",
-		layer = 1,
-		enabled = true
-	}
+    return {
+        name = "Projectile Lups",
+        desc = "Attaches Lups FX to projectiles",
+        author = "KingRaptor (L.J. Lim)",
+        date = "2013-06-28",
+        license = "GNU GPL, v2 or later",
+        layer = 1,
+        enabled = true
+    }
 end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local weapons = include("LuaRules/Configs/lups_projectile_fxs.lua")	--{}
+local weapons = include("LuaRules/Configs/lups_projectile_fxs.lua") -- {}
 
 --[[
 for i=1,#WeaponDefs do
@@ -46,7 +46,8 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:ProjectileCreated(proID, proOwnerID, weaponID)
         if weapons[weaponID] then
             projectiles[proID] = true;
-            SendToUnsynced("lupsProjectiles_AddProjectile", proID, proOwnerID, weaponID)
+            SendToUnsynced("lupsProjectiles_AddProjectile", proID, proOwnerID,
+                           weaponID)
         end
     end
 
@@ -84,21 +85,22 @@ else
     local projectiles = {}
 
     local function AddProjectile(_, proID, proOwnerID, weaponID)
-        if (not Lups) then Lups = GG['Lups']; LupsAddParticles = Lups.AddParticles end
+        if (not Lups) then
+            Lups = GG['Lups'];
+            LupsAddParticles = Lups.AddParticles
+        end
         projectiles[proID] = {}
         local def = weapons[weaponID]
         for i = 1, #def do
             local fxTable = projectiles[proID]
             local fx = def[i]
             local options = Spring.Utilities.CopyTable(fx.options)
-            --options.unit = proOwnerID
+            -- options.unit = proOwnerID
             options.projectile = proID
             options.weapon = weaponID
-            --options.worldspace = true
+            -- options.worldspace = true
             local fxID = LupsAddParticles(fx.class, options)
-            if fxID ~= -1 then
-                fxTable[#fxTable + 1] = fxID
-            end
+            if fxID ~= -1 then fxTable[#fxTable + 1] = fxID end
         end
     end
 
@@ -118,10 +120,11 @@ else
     end
 
     function gadget:Initialize()
-        gadgetHandler:AddSyncAction("lupsProjectiles_AddProjectile", AddProjectile)
-        gadgetHandler:AddSyncAction("lupsProjectiles_RemoveProjectile", RemoveProjectile)
+        gadgetHandler:AddSyncAction("lupsProjectiles_AddProjectile",
+                                    AddProjectile)
+        gadgetHandler:AddSyncAction("lupsProjectiles_RemoveProjectile",
+                                    RemoveProjectile)
     end
-
 
     function gadget:Shutdown()
         gadgetHandler:RemoveSyncAction("lupsProjectiles_AddProjectile")

@@ -6,7 +6,7 @@ function gadget:GetInfo()
         date = "Mar 2014",
         license = "later horses dont be mean.",
         layer = 0,
-        enabled = false, --      loaded by default?
+        enabled = false --      loaded by default?
     }
 end
 
@@ -15,24 +15,23 @@ if (not gadgetHandler:IsSyncedCode()) then return end
 local redirectProjectiles = {} -- [frame][projectileID] = table with .targetType .targetX .targetY .targetZ .targetID
 local spGetProjectileType = Spring.GetProjectileType
 function gadget:GameFrame(frame)
-  
+
     if redirectProjectiles[frame] then
         for projectileID, _ in pairs(redirectProjectiles[frame]) do
             if (spGetProjectileType(projectileID)) then
-                setTargetTable(projectileID, redirectProjectiles[frame][projectileID])
+                setTargetTable(projectileID,
+                               redirectProjectiles[frame][projectileID])
             end
         end
         redirectProjectiles[frame] = nil
     end
 end
 
---makes the projectile go ninja style - jumping from place to place 
+-- makes the projectile go ninja style - jumping from place to place 
 
 function getProjectileTargetXYZ(proID)
     local targetTypeInt, target = Spring.GetProjectileTarget(proID)
-    if targetTypeInt == GROUND then
-        return target[1], target[2], target[3]
-    end
+    if targetTypeInt == GROUND then return target[1], target[2], target[3] end
     if targetTypeInt == string.byte('u') then
         return Spring.GetUnitPosition(target)
     end
@@ -56,7 +55,7 @@ function addProjectileRedirect(proID, targetTable, delay)
 end
 
 function makeTargetTable(x, y, z)
-    return { targetType = GROUND, targetX = x, targetY = y, targetZ = z }
+    return {targetType = GROUND, targetX = x, targetY = y, targetZ = z}
 end
 
 local GROUND = string.byte('g')
@@ -64,10 +63,15 @@ local spGetProjectileTarget = Spring.GetProjectileTarget
 function getTargetTable(proID)
     local targetTable = {}
     local targetTypeInt, target = spGetProjectileTarget(proID)
-    if targetTypeInt == GROUND then --target is position on ground
-        targetTable = { targetType = targetTypeInt, targetX = target[1], targetY = target[2], targetZ = target[3], }
-    else --target is unit,feature or projectile
-        targetTable = { targetType = targetTypeInt, targetID = target, }
+    if targetTypeInt == GROUND then -- target is position on ground
+        targetTable = {
+            targetType = targetTypeInt,
+            targetX = target[1],
+            targetY = target[2],
+            targetZ = target[3]
+        }
+    else -- target is unit,feature or projectile
+        targetTable = {targetType = targetTypeInt, targetID = target}
     end
     return targetTable
 end
@@ -77,8 +81,10 @@ function setTargetTable(proID, targetTable)
     if targetTable.bar and targetTable.bar == true then
         targetTable.foo(proID)
     elseif targetTable.targetType == GROUND then
-       spSetProjectileTarget(proID, targetTable.targetX, targetTable.targetY, targetTable.targetZ)
+        spSetProjectileTarget(proID, targetTable.targetX, targetTable.targetY,
+                              targetTable.targetZ)
     else
-        spSetProjectileTarget(proID, targetTable.targetID, targetTable.targetType)
+        spSetProjectileTarget(proID, targetTable.targetID,
+                              targetTable.targetType)
     end
 end

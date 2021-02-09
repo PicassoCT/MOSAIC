@@ -24,9 +24,7 @@ end
 --------------------------------------------------------------------------------
 
 -- synced only
-if (not gadgetHandler:IsSyncedCode()) then
-    return false
-end
+if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
@@ -37,7 +35,9 @@ local modOptions = Spring.GetModOptions()
 local teamDeathMode = modOptions.teamdeathmode or "teamzerounits"
 
 -- sharedDynamicAllianceVictory is a C-like bool
-local sharedDynamicAllianceVictory = tonumber(modOptions.shareddynamicalliancevictory) or 0
+local sharedDynamicAllianceVictory = tonumber(
+                                         modOptions.shareddynamicalliancevictory) or
+                                         0
 
 -- ignoreGaia is a C-like bool
 local ignoreGaia = true
@@ -73,18 +73,18 @@ local GameConfig = getGameConfig()
 GG.GlobalGameState = GameConfig.GameState.normal
 
 function setGlobalGameState(state)
-GG.GlobalGameState= state
-Spring.SetGameRulesParam("GlobalGameState:", state)
+    GG.GlobalGameState = state
+    Spring.SetGameRulesParam("GlobalGameState:", state)
 end
 
 function gadget:Initialize()
-	Spring.Echo(GetInfo().name.." Initialization started")
-	setGlobalGameState(GameConfig.GameState.normal)
-	
-	GG.Launchers ={}
-	
+    Spring.Echo(GetInfo().name .. " Initialization started")
+    setGlobalGameState(GameConfig.GameState.normal)
+
+    GG.Launchers = {}
+
     if teamDeathMode == "none" then
-			Spring.Echo("GameEndGadget: No teamDeathMode specified")
+        Spring.Echo("GameEndGadget: No teamDeathMode specified")
         gadgetHandler:RemoveGadget()
     end
 
@@ -101,104 +101,96 @@ function gadget:Initialize()
             end
         end
         allyTeamAliveTeamsCount[allyTeamID] = teamCount
-        if teamCount > 0 then
-            aliveAllyTeamCount = aliveAllyTeamCount + 1
-        end
+        if teamCount > 0 then aliveAllyTeamCount = aliveAllyTeamCount + 1 end
     end
-			Spring.Echo(GetInfo().name.." Initialization ended")
+    Spring.Echo(GetInfo().name .. " Initialization ended")
 end
-	
-	
-	
-	
 
-local GameStateMachine =
-	 { 
-		Timer =Spring.GetGameFrame(),
-	 
-		["normal"]			= function(frame) 
-		if GG.Launchers then						
-							
-			for teamID, launchersT in pairs(GG.Launchers) do	
-				if teamID and launchersT then
-					for launcherID, step  in pairs(launchersT) do	
-						if launcherID and step > GameConfig.PreLaunchLeakSteps then
-							GameStateMachine.Timer = frame
-							return GameConfig.GameState.launchleak
-						end		
-					end		
-				end
-			end
-		end		
-			return GameConfig.GameState.normal
-		end,
-		
-		["launchleak"]     = function(frame) 
-			if GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames < frame then
-				GameStateMachine.Timer = frame
-				return GameConfig.GameState.anarchy
-			end
-		
-			return GameConfig.GameState.launchleak
-		end,
-		
-		["postlaunch"]        = function(frame)
-			if LaunchedRockets then
-				for teamID, launchedT in pairs(LaunchedRockets) do		
-					for id, launchedFrame in pairs(launchedT) do
-						if  id and doesUnitExistAlive(id) == true and launchedFrame + GameConfig.TimeForInterceptionInFrames < frame then
-							winners = {teamID}
-							spGameOver(winners)
-							return GameConfig.GameState.gameover
-						end
-					end
-				end	
-			end	
-		
-			return GameConfig.GameState.postlaunch
-		end,
-		
-		["anarchy"]        = function(frame)
-			
-			if GG.Launchers then
-				boolNoReadyLaunchers= true
-					for teamID, launchersT in pairs(GG.Launchers) do	
-						if teamID and launchersT then
-							for launcherID, step  in pairs(launchersT) do	
-								if launcherID and step >= GameConfig.PreLaunchLeakSteps then
-									boolNoReadyLaunchers = false
-								end		
-							end		
-						end
-					end
-					
-				if boolNoReadyLaunchers == true then
-					GameStateMachine.Timer = frame
-					return GameConfig.GameState.pacification				
-				end
-			end		
-				
-			return GameConfig.GameState.anarchy
-		end,
-		
-		["gameover"]       = function(frame) 
-			return GameConfig.GameState.gameover
-		end,
-		
-		["pacification"]   = function(frame) 
-			
-			if GameStateMachine.Timer + GameConfig.TimeForPacification < frame then 
-				GameStateMachine.Timer = frame
-				return GameConfig.GameState.normal
-			end
-			
-			return GameConfig.GameState.pacification
-		end,	
-	}
-	
-	LaunchedRockets={}
+local GameStateMachine = {
+    Timer = Spring.GetGameFrame(),
 
-	
+    ["normal"] = function(frame)
+        if GG.Launchers then
+
+            for teamID, launchersT in pairs(GG.Launchers) do
+                if teamID and launchersT then
+                    for launcherID, step in pairs(launchersT) do
+                        if launcherID and step > GameConfig.PreLaunchLeakSteps then
+                            GameStateMachine.Timer = frame
+                            return GameConfig.GameState.launchleak
+                        end
+                    end
+                end
+            end
+        end
+        return GameConfig.GameState.normal
+    end,
+
+    ["launchleak"] = function(frame)
+        if GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames <
+            frame then
+            GameStateMachine.Timer = frame
+            return GameConfig.GameState.anarchy
+        end
+
+        return GameConfig.GameState.launchleak
+    end,
+
+    ["postlaunch"] = function(frame)
+        if LaunchedRockets then
+            for teamID, launchedT in pairs(LaunchedRockets) do
+                for id, launchedFrame in pairs(launchedT) do
+                    if id and doesUnitExistAlive(id) == true and launchedFrame +
+                        GameConfig.TimeForInterceptionInFrames < frame then
+                        winners = {teamID}
+                        spGameOver(winners)
+                        return GameConfig.GameState.gameover
+                    end
+                end
+            end
+        end
+
+        return GameConfig.GameState.postlaunch
+    end,
+
+    ["anarchy"] = function(frame)
+
+        if GG.Launchers then
+            boolNoReadyLaunchers = true
+            for teamID, launchersT in pairs(GG.Launchers) do
+                if teamID and launchersT then
+                    for launcherID, step in pairs(launchersT) do
+                        if launcherID and step >= GameConfig.PreLaunchLeakSteps then
+                            boolNoReadyLaunchers = false
+                        end
+                    end
+                end
+            end
+
+            if boolNoReadyLaunchers == true then
+                GameStateMachine.Timer = frame
+                return GameConfig.GameState.pacification
+            end
+        end
+
+        return GameConfig.GameState.anarchy
+    end,
+
+    ["gameover"] = function(frame) return GameConfig.GameState.gameover end,
+
+    ["pacification"] = function(frame)
+
+        if GameStateMachine.Timer + GameConfig.TimeForPacification < frame then
+            GameStateMachine.Timer = frame
+            return GameConfig.GameState.normal
+        end
+
+        return GameConfig.GameState.pacification
+    end
+}
+
+LaunchedRockets = {}
+
 function gadget:GameOver()
 
     -- remove ourself after successful game over
@@ -212,14 +204,12 @@ local function IsCandidateWinner(allyTeamID)
 end
 
 local function CheckSingleAllyVictoryEnd()
-    if aliveAllyTeamCount ~= 1 then
-        return false
-    end
+    if aliveAllyTeamCount ~= 1 then return false end
 
     -- find the last remaining allyteam
     for _, candidateWinner in ipairs(allyTeams) do
         if IsCandidateWinner(candidateWinner) then
-            return { candidateWinner }
+            return {candidateWinner}
         end
     end
 
@@ -228,7 +218,8 @@ end
 
 local function AreAllyTeamsDoubleAllied(firstAllyTeamID, secondAllyTeamID)
     -- we need to check for both directions of alliance
-    return spAreTeamsAllied(firstAllyTeamID, secondAllyTeamID) and spAreTeamsAllied(secondAllyTeamID, firstAllyTeamID)
+    return spAreTeamsAllied(firstAllyTeamID, secondAllyTeamID) and
+               spAreTeamsAllied(secondAllyTeamID, firstAllyTeamID)
 end
 
 local function CheckSharedAllyVictoryEnd()
@@ -238,7 +229,8 @@ local function CheckSharedAllyVictoryEnd()
     for _, firstAllyTeamID in ipairs(allyTeams) do
         if IsCandidateWinner(firstAllyTeamID) then
             for _, secondAllyTeamID in ipairs(allyTeams) do
-                if IsCandidateWinner(secondAllyTeamID) and AreAllyTeamsDoubleAllied(firstAllyTeamID, secondAllyTeamID) then
+                if IsCandidateWinner(secondAllyTeamID) and
+                    AreAllyTeamsDoubleAllied(firstAllyTeamID, secondAllyTeamID) then
                     -- store both check directions
                     -- since we're gonna check if we're allied against ourself, only secondAllyTeamID needs to be stored
                     candidateWinners[secondAllyTeamID] = true
@@ -269,9 +261,7 @@ local function CheckGameOver()
         winners = CheckSharedAllyVictoryEnd()
     end
 
-    if winners then
-        spGameOver(winners)
-    end
+    if winners then spGameOver(winners) end
 end
 
 local function KillTeamsZeroUnits()
@@ -282,7 +272,9 @@ local function KillTeamsZeroUnits()
             Stratss = {}
             Stratss = spGetTeamStats(teamID, max, max)
 
-            if unitCount == 0 and (Stratss[1].unitsDied >= (Stratss[1].unitsCaptured + Stratss[1].unitsReceived + Stratss[1].unitsProduced)) then
+            if unitCount == 0 and (Stratss[1].unitsDied >=
+                (Stratss[1].unitsCaptured + Stratss[1].unitsReceived +
+                    Stratss[1].unitsProduced)) then
                 spKillTeam(teamID)
             end
         end
@@ -296,8 +288,8 @@ local function KillAllyTeamsZeroUnits()
             -- kill all the teams in the allyteam
             local teamList = spGetTeamList(allyTeamID)
             for _, teamID in ipairs(teamList) do
-                --DelME
-                spKillTeam( teamID )
+                -- DelME
+                spKillTeam(teamID)
             end
         end
     end
@@ -311,71 +303,71 @@ local function KillResignedTeams()
     for i = 1, #teamList do
         local teamID = teamList[i]
         local leaderID = select(2, spGetTeamInfo(teamID))
-        if (leaderID < 0) then
-            spKillTeam(teamID)
-        end
+        if (leaderID < 0) then spKillTeam(teamID) end
     end
 end
 
 function constantCheck(frame)
-		if GG.Launchers then		
-			for teamID, launchersT in pairs(GG.Launchers) do	
-				if teamID and launchersT then
-					for launcherID, step  in pairs(launchersT) do	
-						-- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
-						if launcherID and step >= GameConfig.LaunchReadySteps then
-								id = createUnitAtUnit(teamID, "launchedicbm", launcherID, 0, 70, 0)
-								if not LaunchedRockets[teamID] then 
-									LaunchedRockets[teamID]={}
-								end
-								LaunchedRockets[teamID][id] = frame
-								Spring.DestroyUnit(launcherID, false, true)
-								GG.Launchers[teamID][launcherID] = nil
+    if GG.Launchers then
+        for teamID, launchersT in pairs(GG.Launchers) do
+            if teamID and launchersT then
+                for launcherID, step in pairs(launchersT) do
+                    -- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
+                    if launcherID and step >= GameConfig.LaunchReadySteps then
+                        id = createUnitAtUnit(teamID, "launchedicbm",
+                                              launcherID, 0, 70, 0)
+                        if not LaunchedRockets[teamID] then
+                            LaunchedRockets[teamID] = {}
+                        end
+                        LaunchedRockets[teamID][id] = frame
+                        Spring.DestroyUnit(launcherID, false, true)
+                        GG.Launchers[teamID][launcherID] = nil
 
-								GameStateMachine.Timer = frame
-								setGlobalGameState(GameConfig.GameState.postlaunch)
-						end	
-					end
-				end
-			end
-		end
-	end
+                        GameStateMachine.Timer = frame
+                        setGlobalGameState(GameConfig.GameState.postlaunch)
+                    end
+                end
+            end
+        end
+    end
+end
 
-oldState="normal"
+oldState = "normal"
 function holdSpeach(transition)
-speaches ={
-[GameConfig.GameState.normal..">"..GameConfig.GameState.launchleak]="Transition from normal to launchleakpanic",
-[GameConfig.GameState.launchleak..">"..GameConfig.GameState.anarchy]="Transition from launchleak to anarchy",
-[GameConfig.GameState.anarchy..">"..GameConfig.GameState.postlaunch]="Transition from anarchy to postlaunch",
-[GameConfig.GameState.anarchy..">"..GameConfig.GameState.pacification]="Transition from anarchy to pacification",
-[GameConfig.GameState.pacification..">"..GameConfig.GameState.normal]="Transition from pacification to normal",
-}
+    speaches = {
+        [GameConfig.GameState.normal .. ">" .. GameConfig.GameState.launchleak] = "Transition from normal to launchleakpanic",
+        [GameConfig.GameState.launchleak .. ">" .. GameConfig.GameState.anarchy] = "Transition from launchleak to anarchy",
+        [GameConfig.GameState.anarchy .. ">" .. GameConfig.GameState.postlaunch] = "Transition from anarchy to postlaunch",
+        [GameConfig.GameState.anarchy .. ">" ..
+            GameConfig.GameState.pacification] = "Transition from anarchy to pacification",
+        [GameConfig.GameState.pacification .. ">" .. GameConfig.GameState.normal] = "Transition from pacification to normal"
+    }
 
-
-sounds ={
-[GameConfig.GameState.normal..">"..GameConfig.GameState.launchleak]= nil,
-[GameConfig.GameState.launchleak..">"..GameConfig.GameState.anarchy]="sounds/gamestate/normal_anarchy.ogg",
-[GameConfig.GameState.anarchy..">"..GameConfig.GameState.postlaunch]=nil,
-[GameConfig.GameState.anarchy..">"..GameConfig.GameState.pacification]="sounds/gamestate/anarchy_pacification.ogg",
-[GameConfig.GameState.pacification..">"..GameConfig.GameState.normal]=nil,
-}
-if speaches[transition] then echo(speaches[transition]) end
-if sounds[transition] then   Spring.PlaySoundFile(sounds[transition], 1.0)end
+    sounds = {
+        [GameConfig.GameState.normal .. ">" .. GameConfig.GameState.launchleak] = nil,
+        [GameConfig.GameState.launchleak .. ">" .. GameConfig.GameState.anarchy] = "sounds/gamestate/normal_anarchy.ogg",
+        [GameConfig.GameState.anarchy .. ">" .. GameConfig.GameState.postlaunch] = nil,
+        [GameConfig.GameState.anarchy .. ">" ..
+            GameConfig.GameState.pacification] = "sounds/gamestate/anarchy_pacification.ogg",
+        [GameConfig.GameState.pacification .. ">" .. GameConfig.GameState.normal] = nil
+    }
+    if speaches[transition] then echo(speaches[transition]) end
+    if sounds[transition] then Spring.PlaySoundFile(sounds[transition], 1.0) end
 
 end
 function gadget:GameFrame(frame)
     -- only do a check in slowupdate
-    if frame > 1 and (frame % 16) == 0  then
- 
-		constantCheck(frame)
-		setGlobalGameState(GameStateMachine[GG.GlobalGameState](frame))
+    if frame > 1 and (frame % 16) == 0 then
 
-		if  GG.GlobalGameState and oldState ~= GG.GlobalGameState then
-			holdSpeach(oldState..">"..GG.GlobalGameState)		
-			oldState = GG.GlobalGameState
-		end
-	
-		CheckGameOver()
+        constantCheck(frame)
+        setGlobalGameState(GameStateMachine[GG.GlobalGameState](frame))
+
+        if GG.GlobalGameState and oldState ~= GG.GlobalGameState then
+            holdSpeach(oldState .. ">" .. GG.GlobalGameState)
+            oldState = GG.GlobalGameState
+        end
+
+        CheckGameOver()
         -- kill teams after checking for gameover to avoid to trigger instantly gameover
         if teamDeathMode == "teamzerounits" then
             KillTeamsZeroUnits()
@@ -383,10 +375,8 @@ function gadget:GameFrame(frame)
             KillAllyTeamsZeroUnits()
         end
         KillResignedTeams()
-    end	
+    end
 end
-
-
 
 function gadget:TeamDied(teamID)
     teamsUnitCount[teamID] = nil
@@ -396,8 +386,8 @@ function gadget:TeamDied(teamID)
         aliveTeamCount = aliveTeamCount - 1
         allyTeamAliveTeamsCount[allyTeamID] = aliveTeamCount
         if aliveAllyTeamCount == 1 then
-			Spring.Echo("Team won")
-		elseif aliveTeamCount <= 0 then
+            Spring.Echo("Team won")
+        elseif aliveTeamCount <= 0 then
             -- one allyteam just died
             aliveAllyTeamCount = aliveAllyTeamCount - 1
             allyTeamUnitCount[allyTeamID] = nil
@@ -405,8 +395,6 @@ function gadget:TeamDied(teamID)
         end
     end
 end
-
-
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeamID)
     local teamUnitCount = teamsUnitCount[unitTeamID] or 0
@@ -422,7 +410,7 @@ gadget.UnitGiven = gadget.UnitCreated
 gadget.UnitCaptured = gadget.UnitCreated
 
 function gadget:UnitDestroyed(unitID, unitDefID, unitTeamID)
-	if unitTeamID == gaiaTeamID and ignoreGaia ~= 0 then
+    if unitTeamID == gaiaTeamID and ignoreGaia ~= 0 then
         -- skip gaia
         return
     end

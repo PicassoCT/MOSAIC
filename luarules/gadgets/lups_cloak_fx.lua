@@ -17,13 +17,11 @@ function gadget:GetInfo()
         date = "008-2014",
         license = "GNU GPL, v2 or later",
         layer = 10,
-        enabled = true,
+        enabled = true
     }
 end
 
-if (gadgetHandler:IsSyncedCode()) then
-    return
-end
+if (gadgetHandler:IsSyncedCode()) then return end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -31,9 +29,7 @@ end
 -- speed ups + some table functions
 --
 
-local tinsert = function(tab, insert)
-    tab[#tab + 1] = insert
-end
+local tinsert = function(tab, insert) tab[#tab + 1] = insert end
 
 local type = type
 local pairs = pairs
@@ -41,10 +37,10 @@ local pairs = pairs
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-local Lups --// Lua Particle System
+local Lups -- // Lua Particle System
 local particleIDs = {}
-local initialized = false --// if LUPS isn't started yet, we try it once a gameframe later
-local tryloading = 1 --// try to activate lups if it isn't found
+local initialized = false -- // if LUPS isn't started yet, we try it once a gameframe later
+local tryloading = 1 -- // try to activate lups if it isn't found
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -54,14 +50,13 @@ local tryloading = 1 --// try to activate lups if it isn't found
 
 local supportedFxs = {}
 local function fxSupported(fxclass)
-    if (supportedFxs[fxclass] ~= nil) then 
+    if (supportedFxs[fxclass] ~= nil) then
         return supportedFxs[fxclass]
     else
         supportedFxs[fxclass] = Lups.HasParticleClass(fxclass)
         return supportedFxs[fxclass]
     end
 end
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -71,33 +66,35 @@ end
 
 local CloakedHitEffect = {
     class = 'UnitJitter',
-    options = { life = 50, pos = { 0, 0, 0 }, enemyHit = true, repeatEffect = false },
+    options = {
+        life = 50,
+        pos = {0, 0, 0},
+        enemyHit = true,
+        repeatEffect = false
+    }
 }
 local CloakEffect = {
-    { class = 'UnitCloaker', options = { life = 50 } },
-    { class = 'UnitJitter', options = { delay = 24, life = 90 } },
-    { class = 'Sound', options = { file = "sounds/cloak.wav", volume = 0.9 } },
+    {class = 'UnitCloaker', options = {life = 50}},
+    {class = 'UnitJitter', options = {delay = 24, life = 90}},
+    {class = 'Sound', options = {file = "sounds/cloak.wav", volume = 0.9}}
 }
 local EnemyCloakEffect = {
-    { class = 'UnitCloaker', options = { life = 20 } },
-    { class = 'Sound', options = { file = "sounds/cloak.wav", volume = 0.9 } },
+    {class = 'UnitCloaker', options = {life = 20}},
+    {class = 'Sound', options = {file = "sounds/cloak.wav", volume = 0.9}}
 }
 
 local DecloakEffect = {
-    { class = 'UnitCloaker', options = { inverse = true, life = 50 } },
-    { class = 'UnitJitter', options = { life = 24 } },
-    { class = 'Sound', options = { file = "sounds/cloak.wav", volume = 0.9 } },
+    {class = 'UnitCloaker', options = {inverse = true, life = 50}},
+    {class = 'UnitJitter', options = {life = 24}},
+    {class = 'Sound', options = {file = "sounds/cloak.wav", volume = 0.9}}
 }
 local EnemyDecloakEffect = {
-    { class = 'UnitCloaker', options = { inverse = true, life = 60 } },
-    { class = 'Sound', options = { file = "sounds/cloak.wav", volume = 0.9 } },
+    {class = 'UnitCloaker', options = {inverse = true, life = 60}},
+    {class = 'Sound', options = {file = "sounds/cloak.wav", volume = 0.9}}
 }
 
-
 function gadget:UnitDamaged(unitID, unitDefID, teamID)
-    if (not Spring.GetUnitIsCloaked(unitID)) then
-        return
-    end
+    if (not Spring.GetUnitIsCloaked(unitID)) then return end
 
     local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
@@ -109,9 +106,7 @@ function gadget:UnitDamaged(unitID, unitDefID, teamID)
         LocalAllyTeamID = Spring.GetLocalAllyTeamID()
     end
 
-    if (allyTeamID == LocalAllyTeamID) then
-        return
-    end
+    if (allyTeamID == LocalAllyTeamID) then return end
 
     if (particleIDs[unitID]) then
         for _, fxID in ipairs(particleIDs[unitID]) do
@@ -123,13 +118,12 @@ function gadget:UnitDamaged(unitID, unitDefID, teamID)
     CloakedHitEffect.options.unit = unitID
     CloakedHitEffect.options.team = teamID
     CloakedHitEffect.options.unitDefID = unitDefID
-    tinsert(particleIDs[unitID], Lups.AddParticles(CloakedHitEffect.class, CloakedHitEffect.options))
+    tinsert(particleIDs[unitID],
+            Lups.AddParticles(CloakedHitEffect.class, CloakedHitEffect.options))
 end
 
-
-
 function gadget:UnitCloaked(unitID, unitDefID, teamID)
-	if not Lups then return end
+    if not Lups then return end
     local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
     local LocalAllyTeamID
@@ -167,9 +161,9 @@ function gadget:UnitCloaked(unitID, unitDefID, teamID)
     end
 end
 
-function gadget:UnitDecloaked(unitID,unitDefID,teamID)
-  if not initialized then return end
-  local allyTeamID = Spring.GetUnitAllyTeam(unitID)
+function gadget:UnitDecloaked(unitID, unitDefID, teamID)
+    if not initialized then return end
+    local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
     local LocalAllyTeamID
     local _, specFullView = Spring.GetSpectatingState()
@@ -204,13 +198,13 @@ function gadget:UnitDecloaked(unitID,unitDefID,teamID)
             tinsert(particleIDs[unitID], Lups.AddParticles(fx.class, fx.options))
         end
     end
-	--Spring.Echo("Lups unit decloaked lups cloak fx")
+    -- Spring.Echo("Lups unit decloaked lups cloak fx")
 end
 
 function gadget:UnitGiven(unitID, unitDefID, teamID, oldTeamID)
-	if (Spring.GetUnitIsCloaked(unitID)) then
-		gadget:UnitCloaked(unitID,unitDefID,teamID)
-	end
+    if (Spring.GetUnitIsCloaked(unitID)) then
+        gadget:UnitCloaked(unitID, unitDefID, teamID)
+    end
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -220,9 +214,7 @@ end
 function gadget:UnitDestroyed(unitID, unitDefID)
     if (particleIDs[unitID]) then
         local effects = particleIDs[unitID]
-        for i = 1, #effects do
-            Lups.RemoveParticles(effects[i])
-        end
+        for i = 1, #effects do Lups.RemoveParticles(effects[i]) end
         particleIDs[unitID] = nil
     end
 end
@@ -231,29 +223,27 @@ end
 --------------------------------------------------------------------------------
 function gadget:PlayerChanged(playerID)
     if (playerID == Spring.GetMyPlayerID()) then
-        --// this should reset the cloak fx when becoming a spec
-        --gadget.Update = ReinitializeUnitFX
+        -- // this should reset the cloak fx when becoming a spec
+        -- gadget.Update = ReinitializeUnitFX
         gadgetHandler:UpdateCallIn("Update")
     end
 end
 
 local function ReinitializeUnitFX()
-    --// clear old FXs
+    -- // clear old FXs
     for _, unitFxIDs in pairs(particleIDs) do
-        for i = 1, #unitFxIDs do
-            Lups.RemoveParticles(unitFxIDs[i])
-        end
+        for i = 1, #unitFxIDs do Lups.RemoveParticles(unitFxIDs[i]) end
     end
     particleIDs = {}
 
-    --// initialize effects for existing units
+    -- // initialize effects for existing units
     local allUnits = Spring.GetAllUnits();
     for i = 1, #allUnits do
         local unitID = allUnits[i]
         if (Spring.GetUnitIsCloaked(unitID)) then
             local unitDefID = Spring.GetUnitDefID(unitID)
             local teamID = Spring.GetUnitTeam(unitID)
-      		gadget:UnitCloaked(unitID,unitDefID,teamID)
+            gadget:UnitCloaked(unitID, unitDefID, teamID)
         end
     end
 
@@ -263,9 +253,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 function gadget:Update()
-    if (Spring.GetGameFrame() < 1) then
-        return
-    end
+    if (Spring.GetGameFrame() < 1) then return end
 
     Lups = GG['Lups']
 
@@ -277,7 +265,7 @@ function gadget:Update()
 
     gadget.Update = ReinitializeUnitFX
     gadgetHandler:UpdateCallIn("Update")
-	
+
 end
 
 --------------------------------------------------------------------------------

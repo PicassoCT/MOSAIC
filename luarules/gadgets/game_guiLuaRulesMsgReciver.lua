@@ -11,32 +11,29 @@ function gadget:GetInfo()
     }
 end
 
-	VFS.Include("scripts/lib_OS.lua")
-	VFS.Include("scripts/lib_UnitScript.lua")
-	VFS.Include("scripts/lib_Animation.lua")
-	VFS.Include("scripts/lib_Build.lua")
-	VFS.Include("scripts/lib_mosaic.lua")
-	
-	
+VFS.Include("scripts/lib_OS.lua")
+VFS.Include("scripts/lib_UnitScript.lua")
+VFS.Include("scripts/lib_Animation.lua")
+VFS.Include("scripts/lib_Build.lua")
+VFS.Include("scripts/lib_mosaic.lua")
+
 -- modified the script: only corpses with the customParam "featuredecaytime" will disappear
 
 if (gadgetHandler:IsSyncedCode()) then
-local GameConfig = getGameConfig()
-
+    local GameConfig = getGameConfig()
 
     function gadget:RecvLuaMsg(msg, playerID)
         if msg then
             -- Spring.Echo("RecvLuaMsg"..msg)
-			
-			if string.find(msg,"SetGameState:") then
-			msg = msg:gsub("SetGameState:","")
-				if msg and GameConfig.GameState[msg] then
-					GG.GlobalGameState= msg
-					Spring.SetGameRulesParam("GlobalGameState", msg)
-				end
-			end
-	
-	
+
+            if string.find(msg, "SetGameState:") then
+                msg = msg:gsub("SetGameState:", "")
+                if msg and GameConfig.GameState[msg] then
+                    GG.GlobalGameState = msg
+                    Spring.SetGameRulesParam("GlobalGameState", msg)
+                end
+            end
+
         end
     end
 end

@@ -6,11 +6,11 @@ function gadget:GetInfo()
         date = "Sep. 2014",
         license = "GNU GPL, v2 or later",
         layer = 0,
-        enabled = true,
+        enabled = true
     }
 end
 
---A Explanation:
+-- A Explanation:
 --[[
 Eventstreams are a attempt to optimize the number of necessary lua calls. Without the resorting to cumbersome if frame % magicnumber comparisons.
 The Idea is simply- in every interesting case, there is a event that started it. And it knows best how to handle itself, 
@@ -49,21 +49,29 @@ if (gadgetHandler:IsSyncedCode()) then
         return boolRemovedFunction
     end
 
-
     local function CreateEvent(self, action, persPack, startFrame)
         startFrame = math.max(startFrame, Spring.GetGameFrame())
         --	Spring.Echo("Create event "..(GG.EventStreamID+1).. "waiting for frame  "..startFrame)
         myID = GG.EventStreamID
         GG.EventStreamID = GG.EventStreamID + 1
-        self[myID] = { id = myID, action = action, persPack = persPack, startFrame = startFrame }
+        self[myID] = {
+            id = myID,
+            action = action,
+            persPack = persPack,
+            startFrame = startFrame
+        }
         if not Events[startFrame] then Events[startFrame] = {} end
         Events[startFrame][#Events[startFrame] + 1] = myID
 
         return myID
     end
 
-
-    if GG.EventStream == nil then GG.EventStream = { CreateEvent = CreateEvent, DeactivateEvent = DeactivateEvent } end
+    if GG.EventStream == nil then
+        GG.EventStream = {
+            CreateEvent = CreateEvent,
+            DeactivateEvent = DeactivateEvent
+        }
+    end
     if GG.EventStreamDeactivate == nil then GG.EventStreamDeactivate = {} end
 
     function gadget:GameFrame(frame)
@@ -73,10 +81,17 @@ if (gadgetHandler:IsSyncedCode()) then
                 evtID = Events[frame][i]
 
                 if GG.EventStream[evtID] then
-                    nextFrame, GG.EventStream[evtID].persPack = GG.EventStream[evtID].action(evtID, frame, GG.EventStream[evtID].persPack, GG.EventStream[evtID].startFrame)
+                    nextFrame, GG.EventStream[evtID].persPack =
+                        GG.EventStream[evtID].action(evtID, frame,
+                                                     GG.EventStream[evtID]
+                                                         .persPack,
+                                                     GG.EventStream[evtID]
+                                                         .startFrame)
 
                     if nextFrame then
-                        if not Events[nextFrame] then Events[nextFrame] = {} end
+                        if not Events[nextFrame] then
+                            Events[nextFrame] = {}
+                        end
                         Events[nextFrame][#Events[nextFrame] + 1] = evtID
                     else
                         GG.EventStream[evtID] = nil
@@ -85,7 +100,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
 
-        --handle EventStream
+        -- handle EventStream
         Events[frame] = nil
     end
 end

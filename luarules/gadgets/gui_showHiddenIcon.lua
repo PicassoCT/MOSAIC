@@ -18,17 +18,16 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
-
-    function gadget:UnitCloaked( unitID, unitDefID, teamID)
+    function gadget:UnitCloaked(unitID, unitDefID, teamID)
         env = Spring.UnitScript.GetScriptEnv(unitID)
         if env and env.showHideIcon then
-			Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, true)
+            Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, true)
         end
     end
-    function gadget:UnitDecloaked( unitID, unitDefID, teamID)
+    function gadget:UnitDecloaked(unitID, unitDefID, teamID)
         env = Spring.UnitScript.GetScriptEnv(unitID)
-          if env and env.showHideIcon then
-			Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, false)
+        if env and env.showHideIcon then
+            Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, false)
         end
     end
 end
