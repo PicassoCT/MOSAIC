@@ -45,7 +45,7 @@ function gadget:GameFrame(frame)
         if GG.UnitsToKill and GG.UnitsToKill[1] then
             local cur = GG.UnitsToKill
             GG.UnitsToKill = {PushKillUnit = PushKillUnit}
-            Spring.Echo("Destroy Unit")
+
             for i = 1, #cur, 1 do Spring.DestroyUnit(unpack(cur[i])) end
         end
     end

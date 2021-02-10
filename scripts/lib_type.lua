@@ -15,90 +15,79 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-]]
-Vector = {}
+]] Vector = {}
 Vector.__index = Vector
 
 function Vector.new(ix, iy, iz)
     if ix and type(ix) == "number" then
-        return setmetatable({
-            x = ix,
-            y = iy,
-            z = iz
-        }, Vector)
+        return setmetatable({x = ix, y = iy, z = iz}, Vector)
     else
 
-    return setmetatable({
-        x = 0,
-        y = 0,
-        z = 0
-    }, Vector)
-	end
+        return setmetatable({x = 0, y = 0, z = 0}, Vector)
+    end
 end
 
-
---Comparisons
+-- Comparisons
 
 function Vector.__eq(lhs, rhs)
-    --Equal To operator for Vector3Ds
+    -- Equal To operator for Vector3Ds
     return (self.x == rhs.x) and (self.y == rhs.y) and (self.z == rhs.z)
 end
 
 function Vector.__lt(lhs, rhs)
-    --Less Than operator for Vector3Ds
-    return sqrt((self.x ^ 2) + (self.y ^ 2) + (self.z ^ 2)) < sqrt((rhs.x ^ 2) + (rhs.y ^ 2) + (self.z ^ 2)) --We do this to compute the linear value of the vector so that, for example, (a % b) < (c % d) will not be broken.
+    -- Less Than operator for Vector3Ds
+    return sqrt((self.x ^ 2) + (self.y ^ 2) + (self.z ^ 2)) <
+               sqrt((rhs.x ^ 2) + (rhs.y ^ 2) + (self.z ^ 2)) -- We do this to compute the linear value of the vector so that, for example, (a % b) < (c % d) will not be broken.
 end
 
 function Vector.__le(lhs, rhs)
-    --Less Than Or Equal To operator for Vector3Ds
-    return sqrt((self.x ^ 2) + (self.y ^ 2) + (self.z ^ 2)) <= sqrt((rhs.x ^ 2) + (rhs.y ^ 2) + (self.z ^ 2)) --We do this to compute the linear value of the vector so that, for example, (a % b) < (c % d) will not be broken.
+    -- Less Than Or Equal To operator for Vector3Ds
+    return sqrt((self.x ^ 2) + (self.y ^ 2) + (self.z ^ 2)) <=
+               sqrt((rhs.x ^ 2) + (rhs.y ^ 2) + (self.z ^ 2)) -- We do this to compute the linear value of the vector so that, for example, (a % b) < (c % d) will not be broken.
 end
 
---Operations
-
+-- Operations
 
 function Vector.__unm(rhs)
-    --Unary Minus (negation) operator for Vector3Ds
+    -- Unary Minus (negation) operator for Vector3Ds
     out = Vector:new()
-    out.x = (-rhs.x) --Operate on the X property
-    out.y = (-rhs.y) --Operate on the Y property
-    out.y = (-rhs.z) --Operate on the Z property
-    return Vector:new(-rhs.x,
-        -rhs.y,
-        -rhs.z)
+    out.x = (-rhs.x) -- Operate on the X property
+    out.y = (-rhs.y) -- Operate on the Y property
+    out.y = (-rhs.z) -- Operate on the Z property
+    return Vector:new(-rhs.x, -rhs.y, -rhs.z)
 end
 
 function Vector.__add(lhs, rhs)
-    --assert(rhs)
-    --assert(lhs)
-    --Addition operator for Vector3Ds
-    out = Vector:new() --Copy the operand for the output (else the output won't have metamethods)
+    -- assert(rhs)
+    -- assert(lhs)
+    -- Addition operator for Vector3Ds
+    out = Vector:new() -- Copy the operand for the output (else the output won't have metamethods)
     if type(rhs) == "number" then
-        out.x = (lhs.x + rhs) --Operate on the X property
-        out.y = (lhs.y + rhs) --Operate on the Y property
-        out.z = (lhs.z + rhs) --Operate on the Z property
+        out.x = (lhs.x + rhs) -- Operate on the X property
+        out.y = (lhs.y + rhs) -- Operate on the Y property
+        out.z = (lhs.z + rhs) -- Operate on the Z property
     else
-        out.x = (lhs.x + rhs.x) --Operate on the X property
-        out.y = (lhs.y + rhs.y) --Operate on the Y property
-        out.z = (lhs.z + rhs.z) --Operate on the Z property
+        out.x = (lhs.x + rhs.x) -- Operate on the X property
+        out.y = (lhs.y + rhs.y) -- Operate on the Y property
+        out.z = (lhs.z + rhs.z) -- Operate on the Z property
     end
 
     return out
 end
 
 function Vector.__sub(lhs, rhs)
-    --assert(rhs)
-    --assert(lhs)
-    --Subtraction operator for Vector3Ds
+    -- assert(rhs)
+    -- assert(lhs)
+    -- Subtraction operator for Vector3Ds
     out = Vector:new()
     if type(rhs) == "number" then
-        out.x = (lhs.x - rhs) --Operate on the X property
-        out.y = (lhs.y - rhs) --Operate on the Y property
-        out.z = (lhs.z - rhs) --Operate on the Z property
+        out.x = (lhs.x - rhs) -- Operate on the X property
+        out.y = (lhs.y - rhs) -- Operate on the Y property
+        out.z = (lhs.z - rhs) -- Operate on the Z property
     else
-        out.x = (lhs.x - rhs.x) --Operate on the X property
-        out.y = (lhs.y - rhs.y) --Operate on the Y property
-        out.z = (lhs.z - rhs.z) --Operate on the Z property
+        out.x = (lhs.x - rhs.x) -- Operate on the X property
+        out.y = (lhs.y - rhs.y) -- Operate on the Y property
+        out.z = (lhs.z - rhs.z) -- Operate on the Z property
     end
     return out
 end
@@ -109,60 +98,55 @@ function Vector.__mul(lhs, rhs)
 
     if type(lhs) == "number" then
 
-        return Vector:new(rhs.x * lhs,
-            rhs.y * lhs,
-            rhs.z * lhs)
+        return Vector:new(rhs.x * lhs, rhs.y * lhs, rhs.z * lhs)
     end
 
     if type(rhs) == "number" then
 
-        return Vector:new(lhs.x * rhs,
-            lhs.y * rhs,
-            lhs.z * rhs)
+        return Vector:new(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs)
     end
 
-    --Multiplication operator for Vector3Ds
-    return Vector:new(lhs.x * rhs.x,
-        lhs.y * rhs.y,
-        lhs.z * rhs.z)
+    -- Multiplication operator for Vector3Ds
+    return Vector:new(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z)
 end
 
 function Vector.__div(lhs, rhs)
     out = Vector:new()
 
     if type(rhs) == "number" then
-        --Division operator for Vector3Ds
-        out.x = (lhs.x / rhs) --Operate on the X property
-        out.y = (lhs.y / rhs) --Operate on the Y property
-        out.z = (lhs.z / rhs) --Operate on the Z property
+        -- Division operator for Vector3Ds
+        out.x = (lhs.x / rhs) -- Operate on the X property
+        out.y = (lhs.y / rhs) -- Operate on the Y property
+        out.z = (lhs.z / rhs) -- Operate on the Z property
     else
-        --Division operator for Vector3Ds
-        out.x = (lhs.x / rhs.x) --Operate on the X property
-        out.y = (lhs.y / rhs.y) --Operate on the Y property
-        out.z = (lhs.z / rhs.z) --Operate on the Z property
+        -- Division operator for Vector3Ds
+        out.x = (lhs.x / rhs.x) -- Operate on the X property
+        out.y = (lhs.y / rhs.y) -- Operate on the Y property
+        out.z = (lhs.z / rhs.z) -- Operate on the Z property
     end
     return out
 end
 
 function Vector.__mod(lhs, rhs)
-    --Vector distance operator for Vector3Ds. Denoted by modulo (%)
+    -- Vector distance operator for Vector3Ds. Denoted by modulo (%)
     out = Vector:new()
-    out.x = (math.abs(rhs.x - lhs.x)) --Operate on the X property
-    out.y = (math.abs(rhs.y - lhs.y)) --Operate on the Y property
-    out.z = (math.abs(rhs.z - lhs.z)) --Operate on the Z property
+    out.x = (math.abs(rhs.x - lhs.x)) -- Operate on the X property
+    out.y = (math.abs(rhs.y - lhs.y)) -- Operate on the Y property
+    out.z = (math.abs(rhs.z - lhs.z)) -- Operate on the Z property
     return out
 end
 
 function Vector.__concat(lhs, rhs)
-    --Linear distance operator for Vector3Ds. Denoted by concat (..)
-    out = 0 --This is a linear operation, so no deepcopy. 
-    out = math.sqrt(((rhs.x - lhs.x) ^ 2) + (((rhs.y - lhs.y) ^ 2) + ((rhs.z - lhs.z) ^ 2))) --Distance formula
+    -- Linear distance operator for Vector3Ds. Denoted by concat (..)
+    out = 0 -- This is a linear operation, so no deepcopy. 
+    out = math.sqrt(((rhs.x - lhs.x) ^ 2) +
+                        (((rhs.y - lhs.y) ^ 2) + ((rhs.z - lhs.z) ^ 2))) -- Distance formula
     return out
 end
 
 function Vector.__tostring(s)
-    --tostring handler for Vector3D
-    out = "" --This is a string operation, so no deepcopy.
+    -- tostring handler for Vector3D
+    out = "" -- This is a string operation, so no deepcopy.
     out = "[(X:"
     out = out .. s.x
     out = out .. "),(Y:"
@@ -173,37 +157,34 @@ function Vector.__tostring(s)
     return out
 end
 
---Vector Specific Math
+-- Vector Specific Math
 
-function Vector:getAngle() --Return the 3D angle (heading, carom) of the vector IN RADIANS!.
+function Vector:getAngle() -- Return the 3D angle (heading, carom) of the vector IN RADIANS!.
     hdg = math.atan2(self.y, self.x)
     crm = math.atan2(self.z, 0)
     return hdg, crm
 end
 
-function Vector:length() --Return the length of the vector (i.e. the distance from (0,0), see README.md for examples of using this)
+function Vector:length() -- Return the length of the vector (i.e. the distance from (0,0), see README.md for examples of using this)
     return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 end
 
 function Vector:cross(rhs)
-    --Vector cross product 
+    -- Vector cross product 
     out = Vector:new()
-    out.x = (self.y * rhs.z - self.z * rhs.y) --Operate on the X property
-    out.y = (self.z * rhs.y - self.x * rhs.z) --Operate on the Y property
-    out.z = (self.x * rhs.y - self.y * rhs.x) --Operate on the Z property
+    out.x = (self.y * rhs.z - self.z * rhs.y) -- Operate on the X property
+    out.y = (self.z * rhs.y - self.x * rhs.z) -- Operate on the Y property
+    out.z = (self.x * rhs.y - self.y * rhs.x) -- Operate on the Z property
     return out
 end
 
-function Vector:normalized()
-    return self / self.length()
-end
+function Vector:normalized() return self / self.length() end
 
 function Vector:norm()
     return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 end
 
-
-setmetatable(Vector, { __call = function(_, ...) return Vector.new(...) end })
+setmetatable(Vector, {__call = function(_, ...) return Vector.new(...) end})
 ---------------------------------------------------------------------------------
 -- AngleAxis Type
 ---------------------------------------------------------------------------------
@@ -212,31 +193,33 @@ AngleAxis.__index = AngleAxis
 
 function AngleAxis.new(Angle, Axis)
 
-    return setmetatable({
-        angle = Angle,
-        axis = Axis
-    }, AngleAxis)
+    return setmetatable({angle = Angle, axis = Axis}, AngleAxis)
 end
 
-setmetatable(AngleAxis, { __call = function(_, ...) return AngleAxis.new(...) end })
+setmetatable(AngleAxis,
+             {__call = function(_, ...) return AngleAxis.new(...) end})
 ---------------------------------------------------------------------------------
 -- Matrice Type
 ---------------------------------------------------------------------------------
 
---////////////
---// matrix //
---////////////
+-- ////////////
+-- // matrix //
+-- ////////////
 
-local matrix = { _TYPE = 'module', _NAME = 'matrix', _VERSION = '0.2.11.20120416' }
+local matrix = {
+    _TYPE = 'module',
+    _NAME = 'matrix',
+    _VERSION = '0.2.11.20120416'
+}
 
 -- access to the metatable we set at the end of the file
 local matrix_meta = {}
 
---/////////////////////////////
---// Get 'new' matrix object //
---/////////////////////////////
+-- /////////////////////////////
+-- // Get 'new' matrix object //
+-- /////////////////////////////
 
---// matrix:new ( rows [, columns [, value]] )
+-- // matrix:new ( rows [, columns [, value]] )
 -- if rows is a table then sets rows as matrix
 -- if rows is a table of structure {1,2,3} then it sets it as a vector matrix
 -- if rows and columns are given and are numbers, returns a matrix with size rowsxcolumns
@@ -247,7 +230,7 @@ function matrix:new(rows, columns, value)
     if type(rows) == "table" then
         -- check for vector
         if type(rows[1]) ~= "table" then -- expect a vector
-            return setmetatable({ { rows[1] }, { rows[2] }, { rows[3] } }, matrix_meta)
+            return setmetatable({{rows[1]}, {rows[2]}, {rows[3]}}, matrix_meta)
         end
         return setmetatable(rows, matrix_meta)
     end
@@ -270,20 +253,17 @@ function matrix:new(rows, columns, value)
     else
         for i = 1, rows do
             mtx[i] = {}
-            for j = 1, columns do
-                mtx[i][j] = value
-            end
+            for j = 1, columns do mtx[i][j] = value end
         end
     end
     -- return matrix with shared metatable
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix ( rows [, comlumns [, value]] )
+-- // matrix ( rows [, comlumns [, value]] )
 -- set __call behaviour of matrix
 -- for matrix( ... ) as matrix.new( ... )
-setmetatable(matrix, { __call = function(...) return matrix.new(...) end })
-
+setmetatable(matrix, {__call = function(...) return matrix.new(...) end})
 
 -- functions are designed to be light on checks
 -- so we get Lua errors instead on wrong input
@@ -291,46 +271,42 @@ setmetatable(matrix, { __call = function(...) return matrix.new(...) end })
 -- we always return a matrix with scripts metatable
 -- cause its faster than setmetatable( mtx, getmetatable( input matrix ) )
 
---///////////////////////////////
---// matrix 'matrix' functions //
---///////////////////////////////
+-- ///////////////////////////////
+-- // matrix 'matrix' functions //
+-- ///////////////////////////////
 
---// for real, complex and symbolic matrices //--
+-- // for real, complex and symbolic matrices //--
 
 -- note: real and complex matrices may be added, subtracted, etc.
 --		real and symbolic matrices may also be added, subtracted, etc.
 --		but one should avoid using symbolic matrices with complex ones
 --		since it is not clear which metatable then is used
 
---// matrix.add ( m1, m2 )
+-- // matrix.add ( m1, m2 )
 -- Add two matrices; m2 may be of bigger size than m1
 function matrix.add(m1, m2)
     local mtx = {}
     for i = 1, #m1 do
         local m3i = {}
         mtx[i] = m3i
-        for j = 1, #m1[1] do
-            m3i[j] = m1[i][j] + m2[i][j]
-        end
+        for j = 1, #m1[1] do m3i[j] = m1[i][j] + m2[i][j] end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.sub ( m1 ,m2 )
+-- // matrix.sub ( m1 ,m2 )
 -- Subtract two matrices; m2 may be of bigger size than m1
 function matrix.sub(m1, m2)
     local mtx = {}
     for i = 1, #m1 do
         local m3i = {}
         mtx[i] = m3i
-        for j = 1, #m1[1] do
-            m3i[j] = m1[i][j] - m2[i][j]
-        end
+        for j = 1, #m1[1] do m3i[j] = m1[i][j] - m2[i][j] end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.mul ( m1, m2 )
+-- // matrix.mul ( m1, m2 )
 -- Multiply two matrices; m1 columns must be equal to m2 rows
 -- e.g. #m1[1] == #m2
 function matrix.mul(m1, m2)
@@ -340,27 +316,26 @@ function matrix.mul(m1, m2)
         mtx[i] = {}
         for j = 1, #m2[1] do
             local num = m1[i][1] * m2[1][j]
-            for n = 2, #m1[1] do
-                num = num + m1[i][n] * m2[n][j]
-            end
+            for n = 2, #m1[1] do num = num + m1[i][n] * m2[n][j] end
             mtx[i][j] = num
         end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---//  matrix.div ( m1, m2 )
+-- //  matrix.div ( m1, m2 )
 -- Divide two matrices; m1 columns must be equal to m2 rows
 -- m2 must be square, to be inverted,
 -- if that fails returns the rank of m2 as second argument
 -- e.g. #m1[1] == #m2; #m2 == #m2[1]
 function matrix.div(m1, m2)
-    local rank; m2, rank = matrix.invert(m2)
+    local rank;
+    m2, rank = matrix.invert(m2)
     if not m2 then return m2, rank end -- singular
     return matrix.mul(m1, m2)
 end
 
---// matrix.mulnum ( m1, num )
+-- // matrix.mulnum ( m1, num )
 -- Multiply matrix with a number
 -- num may be of type 'number' or 'complex number'
 -- strings get converted to complex number, if that fails then to symbol
@@ -369,14 +344,12 @@ function matrix.mulnum(m1, num)
     -- multiply elements with number
     for i = 1, #m1 do
         mtx[i] = {}
-        for j = 1, #m1[1] do
-            mtx[i][j] = m1[i][j] * num
-        end
+        for j = 1, #m1[1] do mtx[i][j] = m1[i][j] * num end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.divnum ( m1, num )
+-- // matrix.divnum ( m1, num )
 -- Divide matrix by a number
 -- num may be of type 'number' or 'complex number'
 -- strings get converted to complex number, if that fails then to symbol
@@ -386,17 +359,14 @@ function matrix.divnum(m1, num)
     for i = 1, #m1 do
         local mtxi = {}
         mtx[i] = mtxi
-        for j = 1, #m1[1] do
-            mtxi[j] = m1[i][j] / num
-        end
+        for j = 1, #m1[1] do mtxi[j] = m1[i][j] / num end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
+-- // for real and complex matrices only //--
 
---// for real and complex matrices only //--
-
---// matrix.pow ( m1, num )
+-- // matrix.pow ( m1, num )
 -- Power of matrix; mtx^(num)
 -- num is an integer and may be negative
 -- m1 has to be square
@@ -404,26 +374,21 @@ end
 -- returns the rank of matrix m1 as second argument
 function matrix.pow(m1, num)
     assert(num == math.floor(num), "exponent not an integer")
-    if num == 0 then
-        return matrix:new(#m1, "I")
-    end
+    if num == 0 then return matrix:new(#m1, "I") end
     if num < 0 then
-        local rank; m1, rank = matrix.invert(m1)
+        local rank;
+        m1, rank = matrix.invert(m1)
         if not m1 then return m1, rank end -- singular
         num = -num
     end
     local mtx = matrix.copy(m1)
-    for i = 2, num do
-        mtx = matrix.mul(mtx, m1)
-    end
+    for i = 2, num do mtx = matrix.mul(mtx, m1) end
     return mtx
 end
 
-local function number_norm2(x)
-    return x * x
-end
+local function number_norm2(x) return x * x end
 
---// matrix.det ( m1 )
+-- // matrix.det ( m1 )
 -- Calculate the determinant of a matrix
 -- m1 needs to be square
 -- Can calc the det for symbolic matrices up to 3x3 too
@@ -440,25 +405,23 @@ function matrix.det(m1)
 
     local size = #m1
 
-    if size == 1 then
-        return m1[1][1]
-    end
+    if size == 1 then return m1[1][1] end
 
-    if size == 2 then
-        return m1[1][1] * m1[2][2] - m1[2][1] * m1[1][2]
-    end
+    if size == 2 then return m1[1][1] * m1[2][2] - m1[2][1] * m1[1][2] end
 
     if size == 3 then
-        return (m1[1][1] * m1[2][2] * m1[3][3] + m1[1][2] * m1[2][3] * m1[3][1] + m1[1][3] * m1[2][1] * m1[3][2]
-                - m1[1][3] * m1[2][2] * m1[3][1] - m1[1][1] * m1[2][3] * m1[3][2] - m1[1][2] * m1[2][1] * m1[3][3])
+        return
+            (m1[1][1] * m1[2][2] * m1[3][3] + m1[1][2] * m1[2][3] * m1[3][1] +
+                m1[1][3] * m1[2][1] * m1[3][2] - m1[1][3] * m1[2][2] * m1[3][1] -
+                m1[1][1] * m1[2][3] * m1[3][2] - m1[1][2] * m1[2][1] * m1[3][3])
     end
 
-    --// no symbolic matrix supported below here
+    -- // no symbolic matrix supported below here
     local e = m1[1][1]
     local zero = type(e) == "table" and e.zero or 0
     local norm2 = type(e) == "table" and e.norm2 or number_norm2
 
-    --// matrix is bigger than 3x3
+    -- // matrix is bigger than 3x3
     -- get determinant
     -- using Gauss elimination and Laplace
     -- start eliminating from below better for removals
@@ -482,7 +445,8 @@ function matrix.det(m1)
                     subdet, xrow = e, i
                 end
                 -- check for elements nearest to 1 or -1
-            elseif e ~= zero and math.abs(norm2(e) - 1) < math.abs(norm2(subdet) - 1) then
+            elseif e ~= zero and math.abs(norm2(e) - 1) <
+                math.abs(norm2(subdet) - 1) then
                 subdet, xrow = e, i
             end
         end
@@ -508,9 +472,7 @@ function matrix.det(m1)
                 end
             end
             -- update determinant and remove row
-            if math.fmod(rows, 2) == 0 then
-                det = -det
-            end
+            if math.fmod(rows, 2) == 0 then det = -det end
             det = det * subdet
             table.remove(mtx)
         else
@@ -522,7 +484,7 @@ function matrix.det(m1)
     return det
 end
 
---// matrix.dogauss ( mtx )
+-- // matrix.dogauss ( mtx )
 -- Gauss elimination, Gauss-Jordan Method
 -- this function changes the matrix itself
 -- returns on success: true,
@@ -546,17 +508,13 @@ local pivotOk = function(mtx, i, j, norm2)
     end
     if iMin then
         -- switch lines if not in position.
-        if iMin ~= i then
-            mtx[i], mtx[iMin] = mtx[iMin], mtx[i]
-        end
+        if iMin ~= i then mtx[i], mtx[iMin] = mtx[iMin], mtx[i] end
         return true
     end
     return false
 end
 
-local function copy(x)
-    return type(x) == "table" and x.copy(x) or x
-end
+local function copy(x) return type(x) == "table" and x.copy(x) or x end
 
 -- note: in --// ... //-- we have a way that does no divison,
 -- however with big number and matrices we get problems since we do no reducing
@@ -578,13 +536,13 @@ function matrix.dogauss(mtx)
                     -- we may add x*otherline row, to set element to zero
                     -- tozero - x*mtx[j][j] = 0; x = tozero/mtx[j][j]
                     local factor = mtx[i][j] / mtx[j][j]
-                    --// this should not be used although it does no division,
+                    -- // this should not be used although it does no division,
                     -- yet with big matrices (since we do no reducing and other things)
                     -- we get too big numbers
-                    --local factor1,factor2 = mtx[i][j],mtx[j][j] //--
+                    -- local factor1,factor2 = mtx[i][j],mtx[j][j] //--
                     mtx[i][j] = copy(zero)
                     for _j = j + 1, columns do
-                        --// mtx[i][_j] = mtx[i][_j] * factor2 - factor1 * mtx[j][_j] //--
+                        -- // mtx[i][_j] = mtx[i][_j] * factor2 - factor1 * mtx[j][_j] //--
                         mtx[i][_j] = mtx[i][_j] - factor * mtx[j][_j]
                     end
                 end
@@ -599,9 +557,7 @@ function matrix.dogauss(mtx)
         -- set element to one
         -- do division here
         local div = mtx[j][j]
-        for _j = j + 1, columns do
-            mtx[j][_j] = mtx[j][_j] / div
-        end
+        for _j = j + 1, columns do mtx[j][_j] = mtx[j][_j] / div end
         -- start parsing rows
         for i = j - 1, 1, -1 do
             -- check if element is not already zero			
@@ -618,7 +574,7 @@ function matrix.dogauss(mtx)
     return true
 end
 
---// matrix.invert ( m1 )
+-- // matrix.invert ( m1 )
 -- Get the inverted matrix or m1
 -- matrix must be square and not singular
 -- on success: returns inverted matrix
@@ -633,9 +589,7 @@ function matrix.invert(m1)
     for i = 1, #m1 do
         local identi = {}
         ident[i] = identi
-        for j = 1, #m1 do
-            identi[j] = copy((i == j) and one or zero)
-        end
+        for j = 1, #m1 do identi[j] = copy((i == j) and one or zero) end
     end
     mtx = matrix.concath(mtx, ident)
     local done, rank = matrix.dogauss(mtx)
@@ -646,7 +600,7 @@ function matrix.invert(m1)
     end
 end
 
---// matrix.sqrt ( m1 [,iters] )
+-- // matrix.sqrt ( m1 [,iters] )
 -- calculate the square root of a matrix using "Denman Beavers square root iteration"
 -- condition: matrix rows == matrix columns; must have a invers matrix and a square root
 -- if called without additional arguments, the function finds the first nearest square root to
@@ -663,9 +617,7 @@ local function get_abs_avg(m1, m2)
     local e = m1[1][1]
     local abs = type(e) == "table" and e.abs or math.abs
     for i = 1, #m1 do
-        for j = 1, #m1[1] do
-            dist = dist + abs(m1[i][j] - m2[i][j])
-        end
+        for j = 1, #m1[1] do dist = dist + abs(m1[i][j] - m2[i][j]) end
     end
     -- norm by numbers of entries
     return dist / (#m1 * 2)
@@ -684,7 +636,7 @@ function matrix.sqrt(m1, iters)
         -- calc square root
         -- y, z = (1/2)*(y + z^-1), (1/2)*(z + y^-1)
         y, z = matrix.divnum((matrix.add(y, matrix.invert(z))), 2),
-        matrix.divnum((matrix.add(z, matrix.invert(y))), 2)
+               matrix.divnum((matrix.add(z, matrix.invert(y))), 2)
         local dist1 = get_abs_avg(y, lasty)
         if iters == math.huge then
             if dist1 >= dist then
@@ -696,7 +648,7 @@ function matrix.sqrt(m1, iters)
     return y, z, get_abs_avg(matrix.mul(y, y), m1)
 end
 
---// matrix.root ( m1, root [,iters] )
+-- // matrix.root ( m1, root [,iters] )
 -- calculate any root of a matrix
 -- source: http://www.dm.unipi.it/~cortona04/slides/bruno.pdf
 -- m1 and root have to be given;(m1 = matrix, root = number)
@@ -712,11 +664,13 @@ function matrix.root(m1, root, iters)
     for n = 1, iters do
         local lastx, lasty = mx, my
         -- calc root of matrix
-        --mx,my = ((p-1)*mx + my^-1)/p,
+        -- mx,my = ((p-1)*mx + my^-1)/p,
         --	((((p-1)*my + mx^-1)/p)*my^-1)^(p-2) *
         --	((p-1)*my + mx^-1)/p
         mx, my = mx:mulnum(root - 1):add(my:invert()):divnum(root),
-        my:mulnum(root - 1):add(mx:invert()):divnum(root):mul(my:invert():pow(root - 2)):mul(my:mulnum(root - 1):add(mx:invert())):divnum(root)
+                 my:mulnum(root - 1):add(mx:invert()):divnum(root):mul(
+                     my:invert():pow(root - 2)):mul(
+                     my:mulnum(root - 1):add(mx:invert())):divnum(root)
         local dist1 = get_abs_avg(mx, lastx)
         if iters == math.huge then
             if dist1 >= dist then
@@ -728,10 +682,9 @@ function matrix.root(m1, root, iters)
     return mx, my, get_abs_avg(matrix.pow(mx, root), m1)
 end
 
+-- // Norm functions //--
 
---// Norm functions //--
-
---// matrix.normf ( mtx )
+-- // matrix.normf ( mtx )
 -- calculates the Frobenius norm of the matrix.
 --   ||mtx||_F = sqrt(SUM_{i,j} |a_{i,j}|^2)
 -- http://en.wikipedia.org/wiki/Frobenius_norm#Frobenius_norm
@@ -749,7 +702,7 @@ function matrix.normf(mtx)
     return sqrt(result)
 end
 
---// matrix.normmax ( mtx )
+-- // matrix.normmax ( mtx )
 -- calculates the max norm of the matrix.
 --   ||mtx||_{max} = max{|a_{i,j}|}
 -- Does not work with symbolic matrices
@@ -766,41 +719,33 @@ function matrix.normmax(mtx)
     return result
 end
 
-
---// only for number and complex type //--
+-- // only for number and complex type //--
 -- Functions changing the matrix itself
 
---// matrix.round ( mtx [, idp] )
+-- // matrix.round ( mtx [, idp] )
 -- perform round on elements
-local numround = function(num, mult)
-    return math.floor(num * mult + 0.5) / mult
-end
+local numround =
+    function(num, mult) return math.floor(num * mult + 0.5) / mult end
 local tround = function(t, mult)
-    for i, v in ipairs(t) do
-        t[i] = math.floor(v * mult + 0.5) / mult
-    end
+    for i, v in ipairs(t) do t[i] = math.floor(v * mult + 0.5) / mult end
     return t
 end
 function matrix.round(mtx, idp)
     local mult = 10 ^ (idp or 0)
     local fround = matrix.type(mtx) == "number" and numround or tround
     for i = 1, #mtx do
-        for j = 1, #mtx[1] do
-            mtx[i][j] = fround(mtx[i][j], mult)
-        end
+        for j = 1, #mtx[1] do mtx[i][j] = fround(mtx[i][j], mult) end
     end
     return mtx
 end
 
---// matrix.random( mtx [,start] [, stop] [, idip] )
+-- // matrix.random( mtx [,start] [, stop] [, idip] )
 -- fillmatrix with random values
 local numfill = function(_, start, stop, idp)
     return math.random(start, stop) / idp
 end
 local tfill = function(t, start, stop, idp)
-    for i in ipairs(t) do
-        t[i] = math.random(start, stop) / idp
-    end
+    for i in ipairs(t) do t[i] = math.random(start, stop) / idp end
     return t
 end
 function matrix.random(mtx, start, stop, idp)
@@ -814,39 +759,32 @@ function matrix.random(mtx, start, stop, idp)
     return mtx
 end
 
+-- //////////////////////////////
+-- // Object Utility Functions //
+-- //////////////////////////////
 
---//////////////////////////////
---// Object Utility Functions //
---//////////////////////////////
+-- // for all types and matrices //--
 
---// for all types and matrices //--
-
---// matrix.type ( mtx )
+-- // matrix.type ( mtx )
 -- get type of matrix, normal/complex/symbol or tensor
 function matrix.type(mtx)
     local e = mtx[1][1]
     if type(e) == "table" then
-        if e.type then
-            return e:type()
-        end
+        if e.type then return e:type() end
         return "tensor"
     end
     return "number"
 end
 
 -- local functions to copy matrix values
-local num_copy = function(num)
-    return num
-end
+local num_copy = function(num) return num end
 local t_copy = function(t)
     local newt = setmetatable({}, getmetatable(t))
-    for i, v in ipairs(t) do
-        newt[i] = v
-    end
+    for i, v in ipairs(t) do newt[i] = v end
     return newt
 end
 
---// matrix.copy ( m1 )
+-- // matrix.copy ( m1 )
 -- Copy a matrix
 -- simple copy, one can write other functions oneself
 function matrix.copy(m1)
@@ -854,14 +792,12 @@ function matrix.copy(m1)
     local mtx = {}
     for i = 1, #m1[1] do
         mtx[i] = {}
-        for j = 1, #m1 do
-            mtx[i][j] = docopy(m1[i][j])
-        end
+        for j = 1, #m1 do mtx[i][j] = docopy(m1[i][j]) end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.transpose ( m1 )
+-- // matrix.transpose ( m1 )
 -- Transpose a matrix
 -- switch rows and columns
 function matrix.transpose(m1)
@@ -869,14 +805,12 @@ function matrix.transpose(m1)
     local mtx = {}
     for i = 1, #m1[1] do
         mtx[i] = {}
-        for j = 1, #m1 do
-            mtx[i][j] = docopy(m1[j][i])
-        end
+        for j = 1, #m1 do mtx[i][j] = docopy(m1[j][i]) end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.subm ( m1, i1, j1, i2, j2 )
+-- // matrix.subm ( m1, i1, j1, i2, j2 )
 -- Submatrix out of a matrix
 -- input: i1,j1,i2,j2
 -- i1,j1 are the start element
@@ -896,7 +830,7 @@ function matrix.subm(m1, i1, j1, i2, j2)
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.concath( m1, m2 )
+-- // matrix.concath( m1, m2 )
 -- Concatenate two matrices, horizontal
 -- will return m1m2; rows have to be the same
 -- e.g.: #m1 == #m2
@@ -907,17 +841,13 @@ function matrix.concath(m1, m2)
     local offset = #m1[1]
     for i = 1, #m1 do
         mtx[i] = {}
-        for j = 1, offset do
-            mtx[i][j] = docopy(m1[i][j])
-        end
-        for j = 1, #m2[1] do
-            mtx[i][j + offset] = docopy(m2[i][j])
-        end
+        for j = 1, offset do mtx[i][j] = docopy(m1[i][j]) end
+        for j = 1, #m2[1] do mtx[i][j + offset] = docopy(m2[i][j]) end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.concatv ( m1, m2 )
+-- // matrix.concatv ( m1, m2 )
 -- Concatenate two matrices, vertical
 -- will return	m1
 --					m2
@@ -928,43 +858,35 @@ function matrix.concatv(m1, m2)
     local mtx = {}
     for i = 1, #m1 do
         mtx[i] = {}
-        for j = 1, #m1[1] do
-            mtx[i][j] = docopy(m1[i][j])
-        end
+        for j = 1, #m1[1] do mtx[i][j] = docopy(m1[i][j]) end
     end
     local offset = #mtx
     for i = 1, #m2 do
         local _i = i + offset
         mtx[_i] = {}
-        for j = 1, #m2[1] do
-            mtx[_i][j] = docopy(m2[i][j])
-        end
+        for j = 1, #m2[1] do mtx[_i][j] = docopy(m2[i][j]) end
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.rotl ( m1 )
+-- // matrix.rotl ( m1 )
 -- Rotate Left, 90 degrees
 function matrix.rotl(m1)
     local mtx = matrix:new(#m1[1], #m1)
     local docopy = matrix.type(m1) == "number" and num_copy or t_copy
     for i = 1, #m1 do
-        for j = 1, #m1[1] do
-            mtx[#m1[1] - j + 1][i] = docopy(m1[i][j])
-        end
+        for j = 1, #m1[1] do mtx[#m1[1] - j + 1][i] = docopy(m1[i][j]) end
     end
     return mtx
 end
 
---// matrix.rotr ( m1 )
+-- // matrix.rotr ( m1 )
 -- Rotate Right, 90 degrees
 function matrix.rotr(m1)
     local mtx = matrix:new(#m1[1], #m1)
     local docopy = matrix.type(m1) == "number" and num_copy or t_copy
     for i = 1, #m1 do
-        for j = 1, #m1[1] do
-            mtx[j][#m1 - i + 1] = docopy(m1[i][j])
-        end
+        for j = 1, #m1[1] do mtx[j][#m1 - i + 1] = docopy(m1[i][j]) end
     end
     return mtx
 end
@@ -972,9 +894,7 @@ end
 local function tensor_tostring(t, fstr)
     if not fstr then return "[" .. table.concat(t, ",") .. "]" end
     local tval = {}
-    for i, v in ipairs(t) do
-        tval[i] = string.format(fstr, v)
-    end
+    for i, v in ipairs(t) do tval[i] = string.format(fstr, v) end
     return "[" .. table.concat(tval, ",") .. "]"
 end
 
@@ -982,44 +902,41 @@ local function number_tostring(e, fstr)
     return fstr and string.format(fstr, e) or e
 end
 
---// matrix.tostring ( mtx, formatstr )
+-- // matrix.tostring ( mtx, formatstr )
 -- tostring function
 function matrix.tostring(mtx, formatstr)
     local ts = {}
     local mtype = matrix.type(mtx)
     local e = mtx[1][1]
-    local tostring = mtype == "tensor" and tensor_tostring or
-            type(e) == "table" and e.tostring or number_tostring
+    local tostring =
+        mtype == "tensor" and tensor_tostring or type(e) == "table" and
+            e.tostring or number_tostring
     for i = 1, #mtx do
         local tstr = {}
-        for j = 1, #mtx[1] do
-            tstr[j] = tostring(mtx[i][j], formatstr)
-        end
+        for j = 1, #mtx[1] do tstr[j] = tostring(mtx[i][j], formatstr) end
         ts[i] = table.concat(tstr, "\t")
     end
     return table.concat(ts, "\n")
 end
 
---// matrix.print ( mtx [, formatstr] )
+-- // matrix.print ( mtx [, formatstr] )
 -- print out the matrix, just calls tostring
-function matrix.print(...)
-    print(matrix.tostring(...))
-end
+function matrix.print(...) print(matrix.tostring(...)) end
 
---// matrix.latex ( mtx [, align] )
+-- // matrix.latex ( mtx [, align] )
 -- LaTeX output
 function matrix.latex(mtx, align)
     -- align : option to align the elements
     --		c = center; l = left; r = right
     --		\usepackage{dcolumn}; D{.}{,}{-1}; aligns number by . replaces it with ,
     local align = align or "c"
-    local str = "$\\left( \\begin{array}{" .. string.rep(align, #mtx[1]) .. "}\n"
-    local getstr = matrix.type(mtx) == "tensor" and tensor_tostring or number_tostring
+    local str = "$\\left( \\begin{array}{" .. string.rep(align, #mtx[1]) ..
+                    "}\n"
+    local getstr = matrix.type(mtx) == "tensor" and tensor_tostring or
+                       number_tostring
     for i = 1, #mtx do
         str = str .. "\t" .. getstr(mtx[i][1])
-        for j = 2, #mtx[1] do
-            str = str .. " & " .. getstr(mtx[i][j])
-        end
+        for j = 2, #mtx[1] do str = str .. " & " .. getstr(mtx[i][j]) end
         -- close line
         if i == #mtx then
             str = str .. "\n"
@@ -1030,40 +947,31 @@ function matrix.latex(mtx, align)
     return str .. "\\end{array} \\right)$"
 end
 
+-- // Functions not changing the matrix
 
---// Functions not changing the matrix
-
---// matrix.rows ( mtx )
+-- // matrix.rows ( mtx )
 -- return number of rows
-function matrix.rows(mtx)
-    return #mtx
-end
+function matrix.rows(mtx) return #mtx end
 
---// matrix.columns ( mtx )
+-- // matrix.columns ( mtx )
 -- return number of columns
-function matrix.columns(mtx)
-    return #mtx[1]
-end
+function matrix.columns(mtx) return #mtx[1] end
 
---//  matrix.size ( mtx )
+-- //  matrix.size ( mtx )
 -- get matrix size as string rows,columns
 function matrix.size(mtx)
-    if matrix.type(mtx) == "tensor" then
-        return #mtx, #mtx[1], #mtx[1][1]
-    end
+    if matrix.type(mtx) == "tensor" then return #mtx, #mtx[1], #mtx[1][1] end
     return #mtx, #mtx[1]
 end
 
---// matrix.getelement ( mtx, i, j )
+-- // matrix.getelement ( mtx, i, j )
 -- return specific element ( row,column )
 -- returns element on success and nil on failure
 function matrix.getelement(mtx, i, j)
-    if mtx[i] and mtx[i][j] then
-        return mtx[i][j]
-    end
+    if mtx[i] and mtx[i][j] then return mtx[i][j] end
 end
 
---// matrix.setelement( mtx, i, j, value )
+-- // matrix.setelement( mtx, i, j, value )
 -- set an element ( i, j, value )
 -- returns 1 on success and nil on failure
 function matrix.setelement(mtx, i, j, value)
@@ -1074,7 +982,7 @@ function matrix.setelement(mtx, i, j, value)
     end
 end
 
---// matrix.setelement( mtx, i, j, value )
+-- // matrix.setelement( mtx, i, j, value )
 -- set an element ( i, j, value )
 -- returns 1 on success and nil on failure
 function matrix.setRow(mtx, i, row)
@@ -1087,7 +995,7 @@ function matrix.setRow(mtx, i, row)
     return 1
 end
 
---// matrix.setelement( mtx, i, j, value )
+-- // matrix.setelement( mtx, i, j, value )
 -- set an element ( i, j, value )
 -- returns 1 on success and nil on failure
 function matrix.setColumn(mtx, i, Column)
@@ -1100,8 +1008,7 @@ function matrix.setColumn(mtx, i, Column)
     return 1
 end
 
-
---// matrix.ipairs ( mtx )
+-- // matrix.ipairs ( mtx )
 -- iteration, same for complex
 function matrix.ipairs(mtx)
     local i, j, rows, columns = 1, 0, #mtx, #mtx[1]
@@ -1110,60 +1017,55 @@ function matrix.ipairs(mtx)
         if j > columns then -- return first element from next row
             i, j = i + 1, 1
         end
-        if i <= rows then
-            return i, j
-        end
+        if i <= rows then return i, j end
     end
 
     return iter
 end
 
---///////////////////////////////
---// matrix 'vector' functions //
---///////////////////////////////
+-- ///////////////////////////////
+-- // matrix 'vector' functions //
+-- ///////////////////////////////
 
 -- a vector is defined as a 3x1 matrix
 -- get a vector; vec = matrix{{ 1,2,3 }}^'T'
 
---// matrix.scalar ( m1, m2 )
+-- // matrix.scalar ( m1, m2 )
 -- returns the Scalar Product of two 3x1 matrices (vectors)
 function matrix.scalar(m1, m2)
     return m1[1][1] * m2[1][1] + m1[2][1] * m2[2][1] + m1[3][1] * m2[3][1]
 end
 
---// matrix.cross ( m1, m2 )
+-- // matrix.cross ( m1, m2 )
 -- returns the Cross Product of two 3x1 matrices (vectors)
 function matrix.cross(m1, m2)
     local mtx = {}
-    mtx[1] = { m1[2][1] * m2[3][1] - m1[3][1] * m2[2][1] }
-    mtx[2] = { m1[3][1] * m2[1][1] - m1[1][1] * m2[3][1] }
-    mtx[3] = { m1[1][1] * m2[2][1] - m1[2][1] * m2[1][1] }
+    mtx[1] = {m1[2][1] * m2[3][1] - m1[3][1] * m2[2][1]}
+    mtx[2] = {m1[3][1] * m2[1][1] - m1[1][1] * m2[3][1]}
+    mtx[3] = {m1[1][1] * m2[2][1] - m1[2][1] * m2[1][1]}
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.len ( m1 )
+-- // matrix.len ( m1 )
 -- returns the Length of a 3x1 matrix (vector)
 function matrix.len(m1)
     return math.sqrt(m1[1][1] ^ 2 + m1[2][1] ^ 2 + m1[3][1] ^ 2)
 end
 
-
---// matrix.replace (mtx, func, ...)
+-- // matrix.replace (mtx, func, ...)
 -- for each element e in the matrix mtx, replace it with func(mtx, ...).
 function matrix.replace(m1, func, ...)
     local mtx = {}
     for i = 1, #m1 do
         local m1i = m1[i]
         local mtxi = {}
-        for j = 1, #m1i do
-            mtxi[j] = func(m1i[j], ...)
-        end
+        for j = 1, #m1i do mtxi[j] = func(m1i[j], ...) end
         mtx[i] = mtxi
     end
     return setmetatable(mtx, matrix_meta)
 end
 
---// matrix.remcomplex ( mtx )
+-- // matrix.remcomplex ( mtx )
 -- set the matrix elements to strings
 -- IMPROVE: tostring v.s. tostringelements confusing
 function matrix.elementstostrings(mtx)
@@ -1172,7 +1074,7 @@ function matrix.elementstostrings(mtx)
     return matrix.replace(mtx, tostring)
 end
 
---// matrix.solve ( m1 )
+-- // matrix.solve ( m1 )
 -- solve; tries to solve a symbolic matrix to a number
 function matrix.solve(m1)
     assert(matrix.type(m1) == "symbol", "matrix not of type 'symbol'")
@@ -1186,11 +1088,11 @@ function matrix.solve(m1)
     return setmetatable(mtx, matrix_meta)
 end
 
---////////////////////////--
---// METATABLE HANDLING //--
---////////////////////////--
+-- ////////////////////////--
+-- // METATABLE HANDLING //--
+-- ////////////////////////--
 
---// MetaTable
+-- // MetaTable
 -- as we declaired on top of the page
 -- local/shared metatable
 -- matrix_meta
@@ -1198,14 +1100,10 @@ end
 -- note '...' is always faster than 'arg1,arg2,...' if it can be used
 
 -- Set add "+" behaviour
-matrix_meta.__add = function(...)
-    return matrix.add(...)
-end
+matrix_meta.__add = function(...) return matrix.add(...) end
 
 -- Set subtract "-" behaviour
-matrix_meta.__sub = function(...)
-    return matrix.sub(...)
-end
+matrix_meta.__sub = function(...) return matrix.sub(...) end
 
 -- Set multiply "*" behaviour
 matrix_meta.__mul = function(m1, m2)
@@ -1228,9 +1126,7 @@ matrix_meta.__div = function(m1, m2)
 end
 
 -- Set unary minus "-" behavior
-matrix_meta.__unm = function(mtx)
-    return matrix.mulnum(mtx, -1)
-end
+matrix_meta.__unm = function(mtx) return matrix.mulnum(mtx, -1) end
 
 -- Set power "^" behaviour
 -- if opt is any integer number will do mtx^opt
@@ -1242,7 +1138,7 @@ local option = {
     -- only for complex
     ["*"] = function(m1) return matrix.conjugate(m1) end,
     -- for both
-    ["T"] = function(m1) return matrix.transpose(m1) end,
+    ["T"] = function(m1) return matrix.transpose(m1) end
 }
 matrix_meta.__pow = function(m1, opt)
     return option[opt] and option[opt](m1) or matrix.pow(m1, opt)
@@ -1251,71 +1147,52 @@ end
 -- Set equal "==" behaviour
 matrix_meta.__eq = function(m1, m2)
     -- check same type
-    if matrix.type(m1) ~= matrix.type(m2) then
-        return false
-    end
+    if matrix.type(m1) ~= matrix.type(m2) then return false end
     -- check same size
-    if #m1 ~= #m2 or #m1[1] ~= #m2[1] then
-        return false
-    end
+    if #m1 ~= #m2 or #m1[1] ~= #m2[1] then return false end
     -- check elements equal
     for i = 1, #m1 do
         for j = 1, #m1[1] do
-            if m1[i][j] ~= m2[i][j] then
-                return false
-            end
+            if m1[i][j] ~= m2[i][j] then return false end
         end
     end
     return true
 end
 
 -- Set tostring "tostring( mtx )" behaviour
-matrix_meta.__tostring = function(...)
-    return matrix.tostring(...)
-end
+matrix_meta.__tostring = function(...) return matrix.tostring(...) end
 
 -- set __call "mtx( [formatstr] )" behaviour, mtx [, formatstr]
-matrix_meta.__call = function(...)
-    matrix.print(...)
-end
+matrix_meta.__call = function(...) matrix.print(...) end
 
---// __index handling
+-- // __index handling
 matrix_meta.__index = {}
-for k, v in pairs(matrix) do
-    matrix_meta.__index[k] = v
-end
+for k, v in pairs(matrix) do matrix_meta.__index[k] = v end
 
-
---/////////////////////////////////
---// symbol class implementation
---/////////////////////////////////
+-- /////////////////////////////////
+-- // symbol class implementation
+-- /////////////////////////////////
 
 -- access to the symbolic metatable
-local symbol_meta = {}; symbol_meta.__index = symbol_meta
+local symbol_meta = {};
+symbol_meta.__index = symbol_meta
 local symbol = symbol_meta
 
-function symbol_meta.new(o)
-    return setmetatable({ tostring(o) }, symbol_meta)
-end
+function symbol_meta.new(o) return setmetatable({tostring(o)}, symbol_meta) end
 
 symbol_meta.to = symbol_meta.new
 
 -- symbol( arg )
 -- same as symbol.to( arg )
 -- set __call behaviour of symbol
-setmetatable(symbol_meta, { __call = function(_, s) return symbol_meta.to(s) end })
-
+setmetatable(symbol_meta, {__call = function(_, s) return symbol_meta.to(s) end})
 
 -- Converts object to string, optionally with formatting.
-function symbol_meta.tostring(e, fstr)
-    return string.format(fstr, e[1])
-end
+function symbol_meta.tostring(e, fstr) return string.format(fstr, e[1]) end
 
 -- Returns "symbol" if object is a symbol type, else nothing.
 function symbol_meta:type()
-    if getmetatable(self) == symbol_meta then
-        return "symbol"
-    end
+    if getmetatable(self) == symbol_meta then return "symbol" end
 end
 
 -- Performs string.gsub on symbol.
@@ -1330,149 +1207,114 @@ end
 -- for use in matrix.replace
 function symbol_meta.makereplacer(...)
     local tosub = {}
-    local args = { ... }
-    for i = 1, #args, 2 do
-        tosub[args[i]] = args[i + 1]
-    end
+    local args = {...}
+    for i = 1, #args, 2 do tosub[args[i]] = args[i + 1] end
     local function func(a) return tosub[a] or a end
 
-    return function(sym)
-        return symbol.to(string.gsub(sym[1], "%a", func))
-    end
+    return function(sym) return symbol.to(string.gsub(sym[1], "%a", func)) end
 end
 
 -- applies abs function to symbol
-function symbol_meta.abs(a)
-    return symbol.to("(" .. a[1] .. "):abs()")
-end
+function symbol_meta.abs(a) return symbol.to("(" .. a[1] .. "):abs()") end
 
 -- applies sqrt function to symbol
-function symbol_meta.sqrt(a)
-    return symbol.to("(" .. a[1] .. "):sqrt()")
-end
+function symbol_meta.sqrt(a) return symbol.to("(" .. a[1] .. "):sqrt()") end
 
-function symbol_meta.__add(a, b)
-    return symbol.to(a .. "+" .. b)
-end
+function symbol_meta.__add(a, b) return symbol.to(a .. "+" .. b) end
 
-function symbol_meta.__sub(a, b)
-    return symbol.to(a .. "-" .. b)
-end
+function symbol_meta.__sub(a, b) return symbol.to(a .. "-" .. b) end
 
-function symbol_meta.__mul(a, b)
-    return symbol.to("(" .. a .. ")*(" .. b .. ")")
-end
+function symbol_meta.__mul(a, b) return symbol.to("(" .. a .. ")*(" .. b .. ")") end
 
-function symbol_meta.__div(a, b)
-    return symbol.to("(" .. a .. ")/(" .. b .. ")")
-end
+function symbol_meta.__div(a, b) return symbol.to("(" .. a .. ")/(" .. b .. ")") end
 
-function symbol_meta.__pow(a, b)
-    return symbol.to("(" .. a .. ")^(" .. b .. ")")
-end
+function symbol_meta.__pow(a, b) return symbol.to("(" .. a .. ")^(" .. b .. ")") end
 
-function symbol_meta.__eq(a, b)
-    return a[1] == b[1]
-end
+function symbol_meta.__eq(a, b) return a[1] == b[1] end
 
-function symbol_meta.__tostring(a)
-    return a[1]
-end
+function symbol_meta.__tostring(a) return a[1] end
 
-function symbol_meta.__concat(a, b)
-    return tostring(a) .. tostring(b)
-end
+function symbol_meta.__concat(a, b) return tostring(a) .. tostring(b) end
 
 matrix.symbol = symbol
 
 MetaMapObject = {}
 MetaMapObject = {
-			posX = 0,
-			posY = 0,
-			rot	= 0, --in Deg
-			
-			tX = 0,
-			tY = 0, 
-			moveFrames = 0,
-			rot	= 0, --in Deg
-			tRot= 0,
-			rotFrames = 0,
-			
-			pid=0,
-			OriginalHeightmap = {}
-		  }
-		  
-function MetaMapObject.new ( posX, posY, heightmap)
-	OriginalHeightmap = heightmap
-	posX= posX
-	posY= posY
-end
+    posX = 0,
+    posY = 0,
+    rot = 0, -- in Deg
 
+    tX = 0,
+    tY = 0,
+    moveFrames = 0,
+    rot = 0, -- in Deg
+    tRot = 0,
+    rotFrames = 0,
+
+    pid = 0,
+    OriginalHeightmap = {}
+}
+
+function MetaMapObject.new(posX, posY, heightmap)
+    OriginalHeightmap = heightmap
+    posX = posX
+    posY = posY
+end
 
 function MetaMapObject.move(tarX, targY, Time) end
 
-function MetaMapObject.rotate(rotation,  Time) end
+function MetaMapObject.rotate(rotation, Time) end
 function MetaMapObject.Collide(other) end
 
-	
-function MetaMapObject.Update(AllUnitsOnObject, AllFeaturesOnObject, TimeInFrames)
+function MetaMapObject.Update(AllUnitsOnObject, AllFeaturesOnObject,
+                              TimeInFrames)
 
-AllUnits=process(AllUnitsOnObject,
-					function(id) end
-                --filter out all in the Air
-                --filter out all AirUnits
-                )
+    AllUnits =
+        process(AllUnitsOnObject, function(id) end -- filter out all in the Air
+        -- filter out all AirUnits
+        )
 
-AllFeatures = process(AllFeaturesOnObject,
-					function(id) end
-                --filter out all in the Air
-                )
-               
+    AllFeatures =
+        process(AllFeaturesOnObject, function(id) end -- filter out all in the Air
+        )
 
-local MovCorrect = {x=0,z=0}
-local Targetrot = {rot=0}
-local Pivot = Iceberg.Pos
-local spGetUnitPosition = Spring.GetUnitPosition
-local spGetFeaturePosition = Spring.GetFeaturePosition
+    local MovCorrect = {x = 0, z = 0}
+    local Targetrot = {rot = 0}
+    local Pivot = Iceberg.Pos
+    local spGetUnitPosition = Spring.GetUnitPosition
+    local spGetFeaturePosition = Spring.GetFeaturePosition
 
-AllUnits = process(AllUnits,
-                 function(id)
-                 px,py,pz = spGetUnitPosition(id)
-                 tx,ty,tz= px + MovCorrect.x, py, pz + MovCorrect.z
-                 
-                     if px then
-                        --correct Position
-                        --correct Orientation relative to Island
-                        tx, tz = RotateAroundPoint(tx, tz, Targetrot.rot, Iceberg.pos.x,Iceberg.pos.z)
-                        --correct Position relative to Island
-                        Spring.SetUnitPosition(id, tx, ty, tz)
-                        --correct Unit Orientation
-                       
-                        --correct Unit Physics
-                     end
-                 end
+    AllUnits = process(AllUnits, function(id)
+        px, py, pz = spGetUnitPosition(id)
+        tx, ty, tz = px + MovCorrect.x, py, pz + MovCorrect.z
 
-                )
+        if px then
+            -- correct Position
+            -- correct Orientation relative to Island
+            tx, tz = RotateAroundPoint(tx, tz, Targetrot.rot, Iceberg.pos.x,
+                                       Iceberg.pos.z)
+            -- correct Position relative to Island
+            Spring.SetUnitPosition(id, tx, ty, tz)
+            -- correct Unit Orientation
 
-AllFeatures = process(
-                AllFeatures,
-                function(id)
-                px,py,pz = spGetFeaturePosition(id)
-                    if px then
-                        --correct Orientation relative to Island
-                            px, pz = RotateAroundPoint(px, pz, Targetrot.rot, Iceberg.pos.x,Iceberg.pos.z)
-                            --correct Position relative to Island
-                            Spring.SetUnitPosition(id, px, py, pz)
-                            --correct Feature Direction
-                            --correct Feature Physics
+            -- correct Unit Physics
+        end
+    end)
 
-                    end
-                end
-                )
+    AllFeatures = process(AllFeatures, function(id)
+        px, py, pz = spGetFeaturePosition(id)
+        if px then
+            -- correct Orientation relative to Island
+            px, pz = RotateAroundPoint(px, pz, Targetrot.rot, Iceberg.pos.x,
+                                       Iceberg.pos.z)
+            -- correct Position relative to Island
+            Spring.SetUnitPosition(id, px, py, pz)
+            -- correct Feature Direction
+            -- correct Feature Physics
 
+        end
+    end)
 
--- Shift all Buildplans and Commands
-
-
+    -- Shift all Buildplans and Commands
 
 end

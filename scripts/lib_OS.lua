@@ -15,90 +15,103 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 MA 02110-1301, USA.
 
 ]] --
-
-
--->Plays a Soundscape
---> Expects: a path, a table containing :
+-- >Plays a Soundscape
+-- > Expects: a path, a table containing :
 -- a Table of openers, containing "Name"
 -- Numbers and Time to play
-
 -- a similar table for the backgrounds
 -- a similar table for the single sound solos
 -- a Table of closers, containing "Name"
 -- Numbers and Time to play
-function playSoundScape_OS(path, dataTable, restIntervallMin, restIntervallMax, loudness, unitID)
+function playSoundScape_OS(path, dataTable, restIntervallMin, restIntervallMax,
+                           loudness, unitID)
     unitdef = Spring.GetUnitDefID(unitID)
 
     if GG.UnitDefSoundLock == nil then GG.UnitDefSoundLock = {} end
-    if GG.UnitDefSoundLock[unitdef] == nil then GG.UnitDefSoundLock[unitdef] = 0 end
-    timeTable = { soloGo = 0, backgroundGo = 0 }
+    if GG.UnitDefSoundLock[unitdef] == nil then
+        GG.UnitDefSoundLock[unitdef] = 0
+    end
+    timeTable = {soloGo = 0, backgroundGo = 0}
 
     while true do
-		T= Spring.GetSelectedUnits()
-		boolSelected= false
-		process(T, function(id) if id == unitID then boolSelected = true end end)
-		
-		if boolSelected == true then 
-        if GG.UnitDefSoundLock[unitdef] <= 0 then
-            GG.UnitDefSoundLock[unitdef] = 1
-            openerIndex = iRand(1, #dataTable.opener)
-            otime = dataTable.opener[openerIndex]
-            --opening
-            Spring.PlaySoundFile(path .. "opener/opener" .. openerIndex .. ".ogg", loudness)
-            Sleep(otime)
-            --work out solos
+        T = Spring.GetSelectedUnits()
+        boolSelected = false
+        process(T, function(id)
+            if id == unitID then boolSelected = true end
+        end)
 
-            soloNumber = iRand(1, dataTable.soloNumber)
-            if dataTable.storyBoard then
-                storyBoardIndex = dataTable.storyBoard.Index + 1
-                soloNumber = dataTable.storyBoard[storyBoardIndex]
-            end
-            while soloNumber > 0 do
-                if timeTable.backgroundGo <= 0 then
-                    backgroundIndx = iRand(1, #dataTable.background)
-                    Spring.PlaySoundFile(path .. "background/background" .. backgroundIndx .. ".ogg", loudness)
-                    timeTable.backgroundGo = dataTable.background[backgroundIndx]
-                end
-                -- if there is no storyboard randomize
-                currentSolo = iRand(1, #dataTable.solo)
+        if boolSelected == true then
+            if GG.UnitDefSoundLock[unitdef] <= 0 then
+                GG.UnitDefSoundLock[unitdef] = 1
+                openerIndex = iRand(1, #dataTable.opener)
+                otime = dataTable.opener[openerIndex]
+                -- opening
+                Spring.PlaySoundFile(path .. "opener/opener" .. openerIndex ..
+                                         ".ogg", loudness)
+                Sleep(otime)
+                -- work out solos
+
+                soloNumber = iRand(1, dataTable.soloNumber)
                 if dataTable.storyBoard then
-                    currentSolo = dataTable.storyBoard[dataTable.storyBoard.index]
-                    dataTable.storyBoard.index = dataTable.storyBoard.index + 1
+                    storyBoardIndex = dataTable.storyBoard.Index + 1
+                    soloNumber = dataTable.storyBoard[storyBoardIndex]
                 end
+                while soloNumber > 0 do
+                    if timeTable.backgroundGo <= 0 then
+                        backgroundIndx = iRand(1, #dataTable.background)
+                        Spring.PlaySoundFile(
+                            path .. "background/background" .. backgroundIndx ..
+                                ".ogg", loudness)
+                        timeTable.backgroundGo =
+                            dataTable.background[backgroundIndx]
+                    end
+                    -- if there is no storyboard randomize
+                    currentSolo = iRand(1, #dataTable.solo)
+                    if dataTable.storyBoard then
+                        currentSolo = dataTable.storyBoard[dataTable.storyBoard
+                                          .index]
+                        dataTable.storyBoard.index =
+                            dataTable.storyBoard.index + 1
+                    end
 
-                if timeTable.soloGo <= 0 then
-                    soloIndx = iRand(1, #dataTable.solo)
-                    Spring.PlaySoundFile(path .. "single/single" .. soloIndx .. ".ogg", loudness)
-                    timeTable.soloGo = dataTable.solo[soloIndx]
+                    if timeTable.soloGo <= 0 then
+                        soloIndx = iRand(1, #dataTable.solo)
+                        Spring.PlaySoundFile(
+                            path .. "single/single" .. soloIndx .. ".ogg",
+                            loudness)
+                        timeTable.soloGo = dataTable.solo[soloIndx]
+                    end
+                    maxRestTime = math.min(timeTable.soloGo,
+                                           timeTable.backgroundGo)
+                    Sleep(maxRestTime)
+                    timeTable.soloGo, timeTable.backgroundGo =
+                        timeTable.soloGo - maxRestTime,
+                        timeTable.backgroundGo - maxRestTime
+
+                    soloNumber = soloNumber - 1
                 end
-                maxRestTime = math.min(timeTable.soloGo, timeTable.backgroundGo)
-                Sleep(maxRestTime)
-                timeTable.soloGo, timeTable.backgroundGo = timeTable.soloGo - maxRestTime, timeTable.backgroundGo - maxRestTime
+                remainTime = math.max(math.abs(timeTable.backgroundGo) - 500, 1)
+                Sleep(remainTime)
+                -- play Closer
+                currentCloser = iRand(1, #dataTable.closer)
+                Spring.PlaySoundFile(
+                    path .. "closer/closer" .. currentCloser .. ".ogg", loudness)
+                Sleep(dataTable.closer[currentCloser])
 
-                soloNumber = soloNumber - 1
+                -- release lock
+                GG.UnitDefSoundLock[unitdef] = 0
+            else
+                Sleep(500)
             end
-            remainTime = math.max(math.abs(timeTable.backgroundGo) - 500, 1)
-            Sleep(remainTime)
-            --play Closer
-            currentCloser = iRand(1, #dataTable.closer)
-            Spring.PlaySoundFile(path .. "closer/closer" .. currentCloser .. ".ogg", loudness)
-            Sleep(dataTable.closer[currentCloser])
-
-
-            --release lock
-            GG.UnitDefSoundLock[unitdef] = 0
-        else
-            Sleep(500)
         end
-     end
 
         rest = iRand(restIntervallMin, restIntervallMax)
         Sleep(rest)
     end
 end
 
--->pulsates a UnitsSpeed
--->Gets a CurveFunction, a UnitID, and a Maxtime
+-- >pulsates a UnitsSpeed
+-- >Gets a CurveFunction, a UnitID, and a Maxtime
 function pulsateMovement(unitID, Maxtime, curveFunction, resolution)
     resolution = resolution or 1000
     times = 0
@@ -113,31 +126,32 @@ function pulsateMovement(unitID, Maxtime, curveFunction, resolution)
     return true
 end
 
-function luaAttach(transporteeID, transporterID,offx,offy,offz, resolution)
-ux,uy,uz= Spring.GetUnitPosition(transporterID)
-tx,ty,tz= Spring.GetUnitPosition(transporteeID)
-tx,ty,tz= tx-ux,ty-uz,tz-uz 
-tx,ty,tz= tx+ox,ty+oy,tz+oz
-rX,rY,rZ = Spring.GetUnitDirection(transporterID)
-Spring.MoveCtrl.Enable(transporteeID,true)
+function luaAttach(transporteeID, transporterID, offx, offy, offz, resolution)
+    ux, uy, uz = Spring.GetUnitPosition(transporterID)
+    tx, ty, tz = Spring.GetUnitPosition(transporteeID)
+    tx, ty, tz = tx - ux, ty - uz, tz - uz
+    tx, ty, tz = tx + ox, ty + oy, tz + oz
+    rX, rY, rZ = Spring.GetUnitDirection(transporterID)
+    Spring.MoveCtrl.Enable(transporteeID, true)
 
+    while (Spring.GetUnitIsDead(transporteeID) == false and
+        Spring.GetUnitIsDead(transporterID) == false) do
+        -- Transformation
+        ox, oy, oz = Spring.GetUnitPosition(transporterID)
+        ox, oy, oz = ux - ox, uy - oy, uz - oz
+        NewPosition = {tx + ox, ty + oy, tz + oz}
 
-	while (Spring.GetUnitIsDead(transporteeID) == false and Spring.GetUnitIsDead(transporterID)== false) do
-	--Transformation
-	ox,oy,oz= Spring.GetUnitPosition(transporterID)
-	ox,oy,oz= ux-ox,uy-oy,uz-oz 
-	NewPosition = {tx+ox,ty+oy,tz+oz}
-	
-	--Rotation
-	nX,nY,nZ = Spring.GetUnitDirection(transporterID)
-	dX,dY,dZ = rX-nX,rY-nZ,rZ-nZ
-	Spring.Echo("TODO- Apply Rotation")
-	MoveCtrl.SetPosition(transporteeID,NewPosition.x + offx, NewPosition.y + offy, NewPosition.z + offz)
-	--
-	Sleep(resolution)
-	end
+        -- Rotation
+        nX, nY, nZ = Spring.GetUnitDirection(transporterID)
+        dX, dY, dZ = rX - nX, rY - nZ, rZ - nZ
+        Spring.Echo("TODO- Apply Rotation")
+        MoveCtrl.SetPosition(transporteeID, NewPosition.x + offx,
+                             NewPosition.y + offy, NewPosition.z + offz)
+        --
+        Sleep(resolution)
+    end
 
-Spring.MoveCtrl.Disable(transporteeID,true)
+    Spring.MoveCtrl.Disable(transporteeID, true)
 end
 
 function delayTillComplete(unitID)
@@ -150,31 +164,47 @@ function delayTillComplete(unitID)
     return true
 end
 
---> Plays a DescriptorTable in Order reciving Signals for a global soundOrderTable	
+-- > Plays a DescriptorTable in Order reciving Signals for a global soundOrderTable	
 function playSoundInOrder(soundInOrderTable, name)
 
     for i = 1, #soundInOrderTable, 1 do
         if soundInOrderTable[i].boolOnce == true then
-            if soundInOrderTable[i].predelay then Sleep(soundInOrderTable[i].predelay) end
+            if soundInOrderTable[i].predelay then
+                Sleep(soundInOrderTable[i].predelay)
+            end
             Spring.PlaySoundFile(soundInOrderTable[i].sound, 1.0)
-            if soundInOrderTable[i].postdelay then Sleep(soundInOrderTable[i].postdelay) end
+            if soundInOrderTable[i].postdelay then
+                Sleep(soundInOrderTable[i].postdelay)
+            end
 
         else
             if name then
-                if GG.soundInOrderTable == nil then GG.soundInOrderTable = {} end
+                if GG.soundInOrderTable == nil then
+                    GG.soundInOrderTable = {}
+                end
 
-                if GG.soundInOrderTable[name] == nil then GG.soundInOrderTable[name] = {} end
-                if GG.soundInOrderTable[name].signal == nil then GG.soundInOrderTable[name].signal = true end
+                if GG.soundInOrderTable[name] == nil then
+                    GG.soundInOrderTable[name] = {}
+                end
+                if GG.soundInOrderTable[name].signal == nil then
+                    GG.soundInOrderTable[name].signal = true
+                end
 
                 while GG.soundInOrderTable[name].signal == true do
-                    if soundInOrderTable[i].predelay then Sleep(soundInOrderTable[i].predelay) end
+                    if soundInOrderTable[i].predelay then
+                        Sleep(soundInOrderTable[i].predelay)
+                    end
                     if type(soundInOrderTable[i].sound) == "table" then
-                        dice = math.floor(math.random(1, #soundInOrderTable[i].sound))
-                        Spring.PlaySoundFile(soundInOrderTable[i].sound[dice], 1.0)
+                        dice = math.floor(
+                                   math.random(1, #soundInOrderTable[i].sound))
+                        Spring.PlaySoundFile(soundInOrderTable[i].sound[dice],
+                                             1.0)
                     else
                         Spring.PlaySoundFile(soundInOrderTable[i].sound, 1.0)
                     end
-                    if soundInOrderTable[i].postdelay then Sleep(soundInOrderTable[i].postdelay) end
+                    if soundInOrderTable[i].postdelay then
+                        Sleep(soundInOrderTable[i].postdelay)
+                    end
                 end
 
                 GG.soundInOrderTable[name].signal = true
@@ -183,11 +213,10 @@ function playSoundInOrder(soundInOrderTable, name)
     end
 end
 
+-- This Section contains standalone functions to be executed as independent systems monitoring and handling lua-stuff
+-- mini OS Threads
 
---This Section contains standalone functions to be executed as independent systems monitoring and handling lua-stuff
---mini OS Threads
-
---> Unit Statemachine
+-- > Unit Statemachine
 function stateMachine(unitid, sleepTime, State, stateT)
     local Time = 0
     local StateMachine = stateT
@@ -202,18 +231,17 @@ function stateMachine(unitid, sleepTime, State, stateT)
     end
 end
 
-
---> Gadget:missionScript expects frame, the missionTable, which contains per missionstep the following functions
+-- > Gadget:missionScript expects frame, the missionTable, which contains per missionstep the following functions
 -- e.g. [1]= {situationFunction(frame,TABLE,nr), continuecondtion(frame,TABLE,nr,boolsuccess), continuecondtion(frame,TABLE,nr,boolsuccess)}
 -- in Addition every Functions Table contains a MissionMap which consists basically of a statediagramm starting at one
 -- MissionMap={[1]=> {2,5},[2] => {1,5},[3]=>{5},[4]=>{5},[5]=>{1,5}}
 function missionHandler(frame, TABLE, nr)
-    --wethere the mission is continuing to the next nr
+    -- wethere the mission is continuing to the next nr
     boolContinue = false
-    --wether the mission has a Outcome at all
+    -- wether the mission has a Outcome at all
     boolSituationOutcome = TABLE[nr].situationFunction(frame, TABLE, nr)
 
-    --we return nil if the situation has no defined outcome
+    -- we return nil if the situation has no defined outcome
     if not boolSituationOutcome then return end
 
     if not TABLE[nr].continuecondtion then
@@ -231,7 +259,7 @@ function missionHandler(frame, TABLE, nr)
     end
 end
 
---> jobfunc header jobFunction(unitID,x,y,z, Previousoutcome) --> checkFuncHeader checkFunction(unitID,x,y,z,outcome)
+-- > jobfunc header jobFunction(unitID,x,y,z, Previousoutcome) --> checkFuncHeader checkFunction(unitID,x,y,z,outcome)
 function getJobDone(unitID, dataTable, jobFunction, checkFunction, rest)
     local dataT = dataTable
     local spGetUnitPosition = Spring.GetUnitPosition
@@ -245,8 +273,9 @@ function getJobDone(unitID, dataTable, jobFunction, checkFunction, rest)
     end
 end
 
--->pumpOS shows a circularMovingObject
-function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, osKey)
+-- >pumpOS shows a circularMovingObject
+function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd,
+                  osKey)
     if not GG.OsKeys then GG.OsKeys = {} end
     if not GG.OsKeys[osKey] then GG.OsKeys[osKey] = true end
 
@@ -254,7 +283,6 @@ function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, os
 
     hideT(TableOfPieces)
     PieceLength = (2 * math.pi) / #TableOfPieces
-
 
     dirSign = -1
     if speed <= 0 then dirSign = 1 end
@@ -270,8 +298,6 @@ function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, os
         if i > #TableOfPieces then i = 1 end
         if i < 1 then i = #TableOfPieces end
 
-
-
         while i ~= ending do
 
             Show(TableOfPieces[i])
@@ -281,7 +307,6 @@ function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, os
             if i > #TableOfPieces then i = 1 end
             if i < 1 then i = #TableOfPieces end
         end
-
 
         if math.abs(modulatedTurn - math.abs(accumulatedTurn)) > PieceLength then
             start = start + dirSign
@@ -304,8 +329,6 @@ function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, os
         if i > #TableOfPieces then i = 1 end
         if i < 1 then i = #TableOfPieces end
 
-
-
         while i ~= ending do
 
             Show(TableOfPieces[i])
@@ -316,12 +339,10 @@ function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, os
             if i < 1 then i = #TableOfPieces end
         end
 
-
         if math.abs(modulatedTurn - math.abs(accumulatedTurn)) > PieceLength then
             start = start + dirSign
             if start > #TableOfPieces then start = 1 end
             if start < 1 then start = #TableOfPieces end
-
 
             modulatedTurn = modulatedTurn + PieceLength
         end
@@ -333,7 +354,8 @@ function circulOS(TableOfPieces, CircleCenter, axis, speed, arcStart, arcEnd, os
     GG.OsKeys[osKey] = nil
 end
 
-function portalOS(piecesTable, center, pieceLength, axis, moveDistance, speed, prePostShow, SleepTime)
+function portalOS(piecesTable, center, pieceLength, axis, moveDistance, speed,
+                  prePostShow, SleepTime)
     while true do
         hideT(piecesTable)
         Move(center, axis, 0, 0)
@@ -347,7 +369,7 @@ function portalOS(piecesTable, center, pieceLength, axis, moveDistance, speed, p
     end
 end
 
---> genericOS 
+-- > genericOS 
 function genericOS(unitID, dataTable, jobFunctionTable, checkFunctionTable, rest)
     local checkFunctionT = checkFunctionTable
     local jobFunctionT = jobFunctionTable
@@ -356,23 +378,26 @@ function genericOS(unitID, dataTable, jobFunctionTable, checkFunctionTable, rest
 
     x, y, z = spGetUnitPosition(unitID)
 
-	outcomeTable = makeTable(false,#jobFunctionT)
+    outcomeTable = makeTable(false, #jobFunctionT)
     boolAtLeastOneNotDone = true
     while boolAtLeastOneNotDone == true do
         x, y, z = spGetUnitPosition(unitID)
         for i = 1, #jobFunctionT do
-            outcomeTable[i] = jobFunctionT[i](unitID, x, y, z, outcomeTable[i], dataT)
+            outcomeTable[i] = jobFunctionT[i](unitID, x, y, z, outcomeTable[i],
+                                              dataT)
             Sleep(rest)
         end
         boolAtLeastOneNotDone = true
         for i = 1, #checkFunctionT do
-            boolAtLeastOneNotDone = checkFunction(unitID, x, y, z, outcomeTable[i]) and boolAtLeastOneNotDone
+            boolAtLeastOneNotDone = checkFunction(unitID, x, y, z,
+                                                  outcomeTable[i]) and
+                                        boolAtLeastOneNotDone
             Sleep(rest)
         end
     end
 end
 
--->encapsulates a function, stores arguments given, chooses upon returned nil, 
+-- >encapsulates a function, stores arguments given, chooses upon returned nil, 
 --	the most often chosen argument
 function heuristicDefault(fooNction, fname, teamID, ...)
 
@@ -382,22 +407,28 @@ function heuristicDefault(fooNction, fname, teamID, ...)
     local heuraTable = GG[fname][teamID]
     ArgumentCounter = 1
     for k, v in pairs(arg) do
-        if not heuraTable[ArgumentCounter] then heuraTable[ArgumentCounter] = {} end
-        if not heuraTable[ArgumentCounter][v] then heuraTable[ArgumentCounter][v] = 1 else heuraTable[v] = heuraTable[ArgumentCounter][v] + 1 end
+        if not heuraTable[ArgumentCounter] then
+            heuraTable[ArgumentCounter] = {}
+        end
+        if not heuraTable[ArgumentCounter][v] then
+            heuraTable[ArgumentCounter][v] = 1
+        else
+            heuraTable[v] = heuraTable[ArgumentCounter][v] + 1
+        end
         ArgumentCounter = ArgumentCounter + 1
     end
 
     results = fooNction(args)
 
     if not results then
-        --devalue current Arguments
+        -- devalue current Arguments
         ArgumentCounter = 1
         for k, v in pairs(arg) do
             heuraTable[ArgumentCounter][v] = heuraTable[ArgumentCounter][v] - 1
             ArgumentCounter = ArgumentCounter + 1
         end
 
-        --call the function with the most likely arguments
+        -- call the function with the most likely arguments
         newWorkingSet = {}
         ArgumentCounter = 1
         for k, v in pairs(arg) do
@@ -413,7 +444,8 @@ function heuristicDefault(fooNction, fname, teamID, ...)
         end
         results = fooNction(newWorkingSet)
         Spring.Echo("FallBack::Heuristic Default")
-        assert(results, "Heuristic Default has inssuficient working samples.Returns Nil")
+        assert(results,
+               "Heuristic Default has inssuficient working samples.Returns Nil")
         GG[fname][teamID] = heuraTable
         return results
     else
@@ -422,57 +454,55 @@ function heuristicDefault(fooNction, fname, teamID, ...)
     end
 end
 
-function scaleOfChange(a, b, trigger)
-    val = math.abs(a - b)
-end
+function scaleOfChange(a, b, trigger) val = math.abs(a - b) end
 
---==============================================Eventstream Jobs
+-- ==============================================Eventstream Jobs
 -- action(id,frame, StreamUnits[id].persPack)
 
--->Expects in the Package {updaterate, Pos, DefID, hitpoints, assignedSubAI, buildid}
+-- >Expects in the Package {updaterate, Pos, DefID, hitpoints, assignedSubAI, buildid}
 function buildJob(id, frame, Package)
 
-    --check if we are there yet
+    -- check if we are there yet
 
-    --if we are grab for the building
+    -- if we are grab for the building
 
-    --else move it
+    -- else move it
 
-    --if the job is completed return yourself to the unitpool
+    -- if the job is completed return yourself to the unitpool
     -- GG.UnitPool:Return(id,teamid,assignedSubAI,father)
     return nextFrame, Package
 end
 
--->Expects in the Package {updaterate, Pos, DefID, hitpoints, assignedSubAI, guardid}
+-- >Expects in the Package {updaterate, Pos, DefID, hitpoints, assignedSubAI, guardid}
 function guardJob(id, frame, Package)
 
-    --check if we are there yet
+    -- check if we are there yet
 
-    --if we are grab for the building
+    -- if we are grab for the building
 
-    --else move it
+    -- else move it
 
-    --if the job is completed return yourself to the unitpool
+    -- if the job is completed return yourself to the unitpool
     -- GG.UnitPool:Return(id,teamid,assignedSubAI,father)
 
     return nextFrame, Package
 end
 
--->Expects in the Package {updaterate, Pos, DefID, hitpoints, assignedSubAI, teamMembers}
+-- >Expects in the Package {updaterate, Pos, DefID, hitpoints, assignedSubAI, teamMembers}
 function exploreJob(id, frame, Package)
 
-    --check if we are there yet
+    -- check if we are there yet
 
-    --if we are grab for the building
+    -- if we are grab for the building
 
-    --else move it
+    -- else move it
 
-    --if the job is completed return yourself to the unitpool
+    -- if the job is completed return yourself to the unitpool
     -- GG.UnitPool:Return(id,teamid,assignedSubAI,father)
     return nextFrame, Package
 end
 
--->Turn Piece into various diretions within range
+-- >Turn Piece into various diretions within range
 function randomRotate(Piecename, axis, speed, rangeStart, rangeEnd)
     while true do
         Turn(Piecename, axis, math.rad(math.random(rangeStart, rangeEnd)), speed)
@@ -481,34 +511,33 @@ function randomRotate(Piecename, axis, speed, rangeStart, rangeEnd)
     end
 end
 
-function wiggleOS(piecename,xDown, xUp, yDown, yUp, zDown, zUp, speed)
-	while true do
-		  tP(piecename,
-						math.random(xDown,xUp), math.random(yDown,yUp), math.random(zDown,zUp), speed)
-			WaitForTurns(piecename)
-	end
+function wiggleOS(piecename, xDown, xUp, yDown, yUp, zDown, zUp, speed)
+    while true do
+        tP(piecename, math.random(xDown, xUp), math.random(yDown, yUp),
+           math.random(zDown, zUp), speed)
+        WaitForTurns(piecename)
+    end
 
 end
 
-function shiverOS(piecename,xDown, xUp, yDown, yUp, zDown, zUp, speed)
-	while true do
-		  mP(piecename,
-						math.random(xDown,xUp), math.random(yDown,yUp), math.random(zDown,zUp), speed)
-			WaitForMoves(piecename)
-	end
+function shiverOS(piecename, xDown, xUp, yDown, yUp, zDown, zUp, speed)
+    while true do
+        mP(piecename, math.random(xDown, xUp), math.random(yDown, yUp),
+           math.random(zDown, zUp), speed)
+        WaitForMoves(piecename)
+    end
 
 end
 
---> breath 
-function breathOS(body, lowDist, upDist, LegTable, LegNumber, degree, Time, count)
+-- > breath 
+function breathOS(body, lowDist, upDist, LegTable, LegNumber, degree, Time,
+                  count)
     leglength = upDist / 2
 
     bLoop = true
     frames = 30
     lcount = count or 1
-    if count and count > 0 then
-        bLoop = false
-    end
+    if count and count > 0 then bLoop = false end
 
     if lowDist > upDist then return end
 
@@ -516,31 +545,29 @@ function breathOS(body, lowDist, upDist, LegTable, LegNumber, degree, Time, coun
 
         dist = math.random(lowDist, upDist)
         percentage = dist / upDist
-      
+
         degreeC = percentage * degree
-        --downDeg=math.asin(leglength*dist)
-        --upDeg= math.asin()
+        -- downDeg=math.asin(leglength*dist)
+        -- upDeg= math.asin()
 
-
-       
-        --speedDeg= 0.5
+        -- speedDeg= 0.5
         degHalf = degreeC / 9 + 0.001
         degHalfMins = degHalf * -1.3
         degreeMinus = degreeC * -1.7
 
-        mSyncIn(body, 0, -dist,0,Time)
+        mSyncIn(body, 0, -dist, 0, Time)
         for i = 1, LegNumber, 1 do
-			tSyncIn(LegTable[i].up,degreeC,0,0,Time)
-			tSyncIn(LegTable[i].down,degreeMinus,0,0,Time)
-   
+            tSyncIn(LegTable[i].up, degreeC, 0, 0, Time)
+            tSyncIn(LegTable[i].down, degreeMinus, 0, 0, Time)
+
         end
 
         WaitForMove(body, y_axis)
         Sleep(100)
-        mSyncIn(body, 0, 0,0,Time)
+        mSyncIn(body, 0, 0, 0, Time)
         for i = 1, LegNumber do
-			tSyncIn(LegTable[i].up,degHalf,0,0,Time)
-			tSyncIn(LegTable[i].down,degHalfMins,0,0,Time)           
+            tSyncIn(LegTable[i].up, degHalf, 0, 0, Time)
+            tSyncIn(LegTable[i].down, degHalfMins, 0, 0, Time)
         end
         WaitForMove(body, y_axis)
         Sleep(100)
@@ -548,15 +575,16 @@ function breathOS(body, lowDist, upDist, LegTable, LegNumber, degree, Time, coun
     end
 end
 
-function mortallyDependant(id, LiveGiver, checkTime, boolSelfDestruct, boolReclaimed)
+function mortallyDependant(id, LiveGiver, checkTime, boolSelfDestruct,
+                           boolReclaimed)
 
-	while LiveGiver ~= nil and not Spring.GetUnitIsDead(LiveGiver) do
-		Sleep(checkTime)
-	end
-Spring.DestroyUnit(id,boolSelfDestruct, boolReclaimed)
+    while LiveGiver ~= nil and not Spring.GetUnitIsDead(LiveGiver) do
+        Sleep(checkTime)
+    end
+    Spring.DestroyUnit(id, boolSelfDestruct, boolReclaimed)
 end
 
--->plays the sounds handed over in a table 
+-- >plays the sounds handed over in a table 
 function playSoundByUnitTypOS(unitID, loudness, SoundNameTimeT)
     local SoundNameTimeTable = SoundNameTimeT
     unitdef = Spring.GetUnitDefID(unitID)
@@ -564,21 +592,23 @@ function playSoundByUnitTypOS(unitID, loudness, SoundNameTimeT)
     while true do
         dice = math.random(1, #SoundNameTimeTable)
 
-        PlaySoundByUnitDefID(unitdef, SoundNameTimeTable[dice].name, loudness, SoundNameTimeTable[dice].Time, 1)
+        PlaySoundByUnitDefID(unitdef, SoundNameTimeTable[dice].name, loudness,
+                             SoundNameTimeTable[dice].Time, 1)
         Sleep(1000)
     end
 end
 
--->partOfShipPartOfCrew binds a creature to a piece
+-- >partOfShipPartOfCrew binds a creature to a piece
 function partOfShipPartOfCrew(point, VaryFooID, motherID)
     Spring.SetUnitNeutral(VaryFooID, true)
     Spring.UnitScript.AttachUnit(point, VaryFooID)
     Spring.MoveCtrl.Enable(VaryFooID, true)
 
-
     while GG.BuildCompleteAvatara[motherID] == false do
         tx, ty, tz = spGetUnitPiecePosDir(unitID, VaryFooID)
-        roX, roY, roZ = roX + math.random(-100, 100) / 1000, roY + math.random(-100, 100) / 1000, roZ + math.random(-100, 100) / 1000
+        roX, roY, roZ = roX + math.random(-100, 100) / 1000,
+                        roY + math.random(-100, 100) / 1000,
+                        roZ + math.random(-100, 100) / 1000
         Spring.MoveCtrl.SetRotation(VaryFooID, roX, roY, roZ)
         Sleep(500)
     end
@@ -592,11 +622,10 @@ function partOfShipPartOfCrew(point, VaryFooID, motherID)
     end
 end
 
---================================================================================================================
---OS Support Functionality
+-- ================================================================================================================
+-- OS Support Functionality
 
-
---> Sorts Pieces By Height in Model
+-- > Sorts Pieces By Height in Model
 function sortPiecesByHeight(listOfPieces)
     local bucketSortList = {}
     pieceHeigthMap = {}
@@ -618,18 +647,16 @@ function sortPiecesByHeight(listOfPieces)
     return bucketSortList, lowestValue, heighestValue
 end
 
+-- >Transformer OS: Assembles from SubUnits in Team a bigger Unit
+function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range,
+                  AttachPoints)
+    -- Move UnderGround
 
-
--->Transformer OS: Assembles from SubUnits in Team a bigger Unit
-function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range, AttachPoints)
-    --Move UnderGround
-
-    createGlobalTableFromAcessString("InfoTable[" .. unitid "].boolBuildEnded", true)
+    createGlobalTableFromAcessString("InfoTable[" .. unitid "].boolBuildEnded",
+                                     true)
 
     piecesTable = Spring.GetUnitPieceList(unitid)
-    for i = 1, #piecesTable do
-        piecesTable[i] = piece(piecesTable[i])
-    end
+    for i = 1, #piecesTable do piecesTable[i] = piece(piecesTable[i]) end
     hideT(piecesTable)
     if AttachPoints then
         AttachPoints = sortPiecesByHeight(AttachPoints)
@@ -649,14 +676,14 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range, Attac
 
     while nrAdded < nrNeeded and Spring.GetUnitIsDead(unitid) == false do
         Move(center, y_axis, DistanceDown * (nrAdded / nrNeeded), 1.5)
-        --check VaryFoos around you
+        -- check VaryFoos around you
         allSub = {}
-        --check wether we are under Siege and send the Underlings not allready buildin
+        -- check wether we are under Siege and send the Underlings not allready buildin
         newHP = Spring.GetUnitHealth(unitid)
         boolUnderAttack = oldHP > newHP
         oldHP = newHP
         if GG.InfoTable[unitid].boolUnderAttack == true then
-            --defend moma
+            -- defend moma
             ax, ay, az = Spring.GetUnitNearestEnemy(untid)
             for i = 1, #allSub do
                 if not GG.BoundToThee[allSub[i]] then
@@ -664,8 +691,8 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range, Attac
                 end
             end
 
-        else --build on
-            --get nextPiece above ground
+        else -- build on
+            -- get nextPiece above ground
             attachP = AttachPoints[math.min(indexP, #AttachPoints)]
             indexP = indexP + 1
 
@@ -673,9 +700,10 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range, Attac
             for i = 1, #allSub do
 
                 ux, uy, uz = Spring.GetUnitPosition(allSub[i])
-                if (ux - x) * (uy - y) * (uz - z) < 50 then --integrate it into the Avatara
+                if (ux - x) * (uy - y) * (uz - z) < 50 then -- integrate it into the Avatara
                     if not GG.BoundToThee[allSub[i]] then
-                        StartThread(partOfShipPartOfCrew, attachP, allSub[i], unitid)
+                        StartThread(partOfShipPartOfCrew, attachP, allSub[i],
+                                    unitid)
                     end
                 else
                     Spring.SetUnitMoveGoal(allSub[i], x, y, z)
@@ -693,14 +721,17 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range, Attac
     return true
 end
 
---> shared Computation
-function sharedComputationResult( key, func, data, frameInterval, GameConfig)
-    if not GG.SharedComputationResult then GG.SharedComputationResult=  {} end
-    if not GG.SharedComputationResult[key] then GG.SharedComputationResult[key] =  {frame = Spring.GetGameFrame(), result = func(data, GameConfig)} end
+-- > shared Computation
+function sharedComputationResult(key, func, data, frameInterval, GameConfig)
+    if not GG.SharedComputationResult then GG.SharedComputationResult = {} end
+    if not GG.SharedComputationResult[key] then
+        GG.SharedComputationResult[key] =
+            {frame = Spring.GetGameFrame(), result = func(data, GameConfig)}
+    end
 
     currentFrame = Spring.GetGameFrame()
 
-    --recomputate sharedResults
+    -- recomputate sharedResults
     if GG.SharedComputationResult[key].frame + frameInterval < currentFrame then
         GG.SharedComputationResult[key].result = func(data, GameConfig)
         GG.SharedComputationResult[key].frame = currentFrame
@@ -716,24 +747,22 @@ function onDeCloakNeverRecloak(unitID)
     Sleep(100)
     waitTillComplete(unitID)
     Sleep(100)
-    
-    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {}) 
+
+    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {})
     SetUnitValue(COB.WANT_CLOAK, 1)
     SetUnitValue(COB.CLOAKED, 1)
-    while (spGetUnitIsCloaked(unitID)== false) do
-        Sleep(100)
-    end
+    while (spGetUnitIsCloaked(unitID) == false) do Sleep(100) end
 
-    boolCloaked=spGetUnitIsCloaked(unitID)
-    while true do 
-        boolCloaked=spGetUnitIsCloaked(unitID)
+    boolCloaked = spGetUnitIsCloaked(unitID)
+    while true do
+        boolCloaked = spGetUnitIsCloaked(unitID)
         Sleep(100)
 
         if boolCloaked == false and boolDeCloaked == false then
             boolDeCloaked = true
         end
 
-        if boolCloaked == true and boolDeCloaked == true then 
+        if boolCloaked == true and boolDeCloaked == true then
             SetUnitValue(COB.WANT_CLOAK, 0)
             SetUnitValue(COB.CLOAKED, 0)
         end
@@ -745,37 +774,42 @@ end
 function debugAimLoop(sleepMS, weaponID)
     restTime = sleepMS or 1
     while true do
-        angleGood,  loaded,  reloadFrame,  salvoLeft,  numStockpiled =Spring.GetUnitWeaponState(unitID,weaponID)
+        angleGood, loaded, reloadFrame, salvoLeft, numStockpiled =
+            Spring.GetUnitWeaponState(unitID, weaponID)
         if angleGood then
-            echo("Weapon: Anglegood->"..toString(angleGood).." Loaded->"..toString(loaded).." reloadFrame->"..toString(reloadFrame))
+            echo("Weapon: Anglegood->" .. toString(angleGood) .. " Loaded->" ..
+                     toString(loaded) .. " reloadFrame->" ..
+                     toString(reloadFrame))
         end
 
-        px,py,pz, dx,dy,dz =Spring.GetUnitWeaponVectors(unitID,weaponID)
-        if px then
-            echo("Weapon: Vector ->", {px,py,pz, dx,dy,dz})
-        end
+        px, py, pz, dx, dy, dz = Spring.GetUnitWeaponVectors(unitID, weaponID)
+        if px then echo("Weapon: Vector ->", {px, py, pz, dx, dy, dz}) end
         commands = Spring.GetUnitCommands(unitID, weaponID)
 
-        if commands and type(commands) =="table" and commands[1] and commands[1].id  and commands[1].id == CMD.ATTACK then
+        if commands and type(commands) == "table" and commands[1] and
+            commands[1].id and commands[1].id == CMD.ATTACK then
             attackedID = commands[1].params[1]
-            
+
             boolWeaponCanFire = Spring.GetUnitWeaponCanFire(unitID, weaponID)
-            echo("Units Weapon can fire: "..toString(boolWeaponCanFire))
+            echo("Units Weapon can fire: " .. toString(boolWeaponCanFire))
 
             resultType, tID = Spring.GetUnitWeaponTarget(unitID, weaponID)
             if resultType == 1 and uID then
-                echo("Target is Unit ->".. tID)
+                echo("Target is Unit ->" .. tID)
             end
 
             if attackedID then
-                bSucces = Spring.GetUnitWeaponHaveFreeLineOfFire(unitID, weaponID)
+                bSucces = Spring.GetUnitWeaponHaveFreeLineOfFire(unitID,
+                                                                 weaponID)
                 if bSucces then
-                    echo("Raytrace reaches Goal:"..toString(bSucces))
+                    echo("Raytrace reaches Goal:" .. toString(bSucces))
                 end
 
-                boolTargetInRange = Spring.GetUnitWeaponTestRange(unitID, weaponID, attackedID)
+                boolTargetInRange = Spring.GetUnitWeaponTestRange(unitID,
+                                                                  weaponID,
+                                                                  attackedID)
                 if boolTargetInRange then
-                    echo("Target is in Range: "..toString(boolTargetInRange))
+                    echo("Target is in Range: " .. toString(boolTargetInRange))
                 end
             end
         end

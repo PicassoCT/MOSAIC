@@ -124,7 +124,7 @@ function script.Create()
 
 	StartThread(threadStarter)
 	StartThread(cloakLoop)
-	StartThread(testAnimationLoop)
+	--StartThread(testAnimationLoop)
 	StartThread(breathing)
 	StartThread(raidReactor)
 -- echo("Create complted")
@@ -576,33 +576,29 @@ function delayedStop()
 	boolWalking = false
 	-- Spring.Echo("Stopping")
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
-	
+	showFoldLaptop(true)
 
 
 end
 
-function showFoldTop()
-	Sleep(2500)
-	if  currentState == "decloaked" then
-		Show(FoldtopUnfolded)
-		Hide(FoldtopFolded)
-	else
-		Hide(FoldtopUnfolded)
-		Hide(FoldtopFolded)
-	end
+function showFoldLaptop(boolUnfold)
 
+	Hide(FoldtopUnfolded)
+	Hide(FoldtopFolded)
+	if  currentState == "decloaked" then
+		if boolUnfold == true then
+			Sleep(2500)
+			Show(FoldtopUnfolded)
+		else
+			Show(FoldtopFolded)
+		end
+	end
 end
 
 function script.StartMoving()
 	-- echo("Start Moving")
 	boolWalking = true
-	if  currentState == "decloaked" then
-		Hide(FoldtopUnfolded)
-		Show(FoldtopFolded)
-	else
-		Hide(FoldtopUnfolded)
-		Hide(FoldtopFolded)
-	end
+	showFoldLaptop(false)
 	Turn(center,y_axis, math.rad(0), 12)
 	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
@@ -610,7 +606,6 @@ end
 function script.StopMoving()
 		-- echo("Stop Moving")
 	StartThread(delayedStop)
-	StartThread(showFoldTop)
 end
 
 local civilianID 
