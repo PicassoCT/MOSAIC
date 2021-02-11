@@ -60,7 +60,7 @@ function getGameConfig()
         chanceCivilianArmsItselfInHundred = 50,
         demonstrationMarchRadius = 50,
 
-        maxNrPolice = 6,
+        maxNrPolice = math.ceil(10 *unitFactor),
         policeMaxDispatchTime = 2000,
         policeSpawnMinDistance = 800, -- preferably at houses
         policeSpawnMaxDistance = 2500,
@@ -77,7 +77,8 @@ function getGameConfig()
 
         -- propagandaserver 
         propandaServerFactor = 0.1,
-
+		--Parachute
+		parachuteHeight = 150,
         -- doubleAgentHeight
         doubleAgentHeight = 256,
 
@@ -132,7 +133,10 @@ function getGameConfig()
         TimeForPacification = 30 * 90,
         TimeForScrapHeapDisappearanceInMs = 3 * 60 * 30, -- 3 Minutes off line
 
-        costs = {RecruitingTruck = 500},
+        costs = {
+        DestroyedHousePropanda = 3500,
+        RecruitingTruck = 500},
+
         -- startenergymetal
         energyStartVolume = 10000,
         energyStart = 5000,
