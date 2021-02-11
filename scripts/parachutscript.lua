@@ -59,15 +59,15 @@ function randShow(id)
 end
 operativeTypeTable = getOperativeTypeTable(Unitdefs)
 function fallingDown()
-    while not GG.ParachutPassengers do Sleep(10) end
+    Sleep(1)
+    if not GG.ParachutPassengers then GG.ParachutPassengers = {} end 
 
     local passengerID = unitID
     transporting = Spring.GetUnitIsTransporting(unitID)
     if not GG.ParachutPassengers[unitID] then
-        if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)] and
-            not GG.ParachutPassengers[unitID] then
+        if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)]  then
             x, y, z = Spring.GetUnitPosition(fatherID)
-            y = y + 150
+            y = y + GG.GameConfig.parachuteHeight
             GG.ParachutPassengers[unitID] = {id = fatherID, x = x, y = y, z = z}
         else
             if transporting and #transporting > 0 then
