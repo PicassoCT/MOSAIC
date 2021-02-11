@@ -14,6 +14,283 @@ SIG_DELAYEDRECLOAK = 8
 
 local Animations = include('animation_assasin_female.lua')
 
+
+deg_1 = 3.141592653589793 / 180.0
+Animations.PARACHUTE_POSE = {
+        {
+            ['time'] = 1,
+            ['commands'] = {
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'center',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'center',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'center',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpArm1',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpArm1',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpArm1',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpArm2',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpArm2',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpArm2',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowArm1',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowArm1',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowArm1',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowArm2',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowArm2',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowArm2',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Hand1',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Hand1',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Hand1',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Hand2',
+                    ['a'] = x_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Hand2',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Hand2',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }, {
+                    ['c'] = 'turn',
+                    ['p'] = 'center',
+                    ['a'] = x_axis,
+                    ['t'] = deg_1 * 40.0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'center',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'center',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }, {
+                    ['c'] = 'turn',
+                    ['p'] = 'Head',
+                    ['a'] = x_axis,
+                    ['t'] = deg_1 * -34.0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Head',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'Head',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }, {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpLeg1',
+                    ['a'] = x_axis,
+                    ['t'] = deg_1 * -132.0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpLeg1',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpLeg1',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }, {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowLeg1',
+                    ['a'] = x_axis,
+                    ['t'] = deg_1 * 149.0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowLeg1',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowLeg1',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }, {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpLeg2',
+                    ['a'] = x_axis,
+                    ['t'] = deg_1 * -78.0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpLeg2',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'UpLeg2',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }, {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowLeg2',
+                    ['a'] = x_axis,
+                    ['t'] = deg_1 * 144.0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowLeg2',
+                    ['a'] = y_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                },
+                {
+                    ['c'] = 'turn',
+                    ['p'] = 'LowLeg2',
+                    ['a'] = z_axis,
+                    ['t'] = 0,
+                    ['s'] = 0.3141
+                }
+            }
+        }, {['time'] = 30, ['commands'] = {}}
+    }
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
 return damage
 end
@@ -46,6 +323,7 @@ local disguiseDefID = randT(civilianWalkingTypeTable)
 mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam
 myTeamID= spGetUnitTeam(unitID)
+boolFlying = false
 
 local scriptEnv = {
 	center = center,
@@ -105,67 +383,69 @@ boolIsBuilding = false
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 
 function script.Create()
-	StartThread(firstToDieOfThirst)
+	
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
 -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideAll(unitID)
-
 	hideT(TablesOfPiecesGroups["SoftRobot"])
 	showT(upperBodyPieces)
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	setupAnimation()
-	-- StartThread(turnDetector)
+
+	StartThread(flyingMonitored)
+	StartThread(turnDetector)
 	
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.standing,  true, nil, false)
 
-	StartThread(threadStarter)
+    StartThread(threadStarter)
 	StartThread(cloakLoop)
 	--StartThread(testAnimationLoop)
-	StartThread(breathing)
-	StartThread(raidReactor)
+    StartThread(breathing)
+    StartThread(raidReactor)
 -- echo("Create complted")
 end
 
 function testAnimationLoop()
+	Sleep(100)
+			resetAll(unitID)
 	while true do
-		reset(unitID)
+		Spring.Echo()
+
 		Sleep(1000)
-			PlayAnimation("FULLBODY_PARACHUTE_POSE")
+			PlayAnimation("PARACHUTE_POSE")
+		for groupname, group in pairs(TablesOfPiecesGroups) do
+			WaitForTurns(TablesOfPiecesGroups[groupname])
+		end
 		Sleep(5000)
+		flyingPosition(unitID)
+		Sleep(10000)
 	end
 end
 
-function parachutePosition(id)
+function flyingPosition(id)
+	Turn(center, x_axis, math.rad(45),0)
 	Turn(UpArm1, z_axis, math.rad(-40),0)
 	Turn(UpArm2, z_axis, math.rad(40),0)
 	Turn(center, x_axis, math.rad(65),0)
-
+	Turn(center, x_axis, math.rad(65),0)
+	reset(UpLeg1, 15)	
+	reset(UpLeg2, 15)	
+	reset(LowLeg2, 15)	
+	reset(LowLeg1, 15)	
 end
---gives the first unit of this type a parachut and drops it
-function firstToDieOfThirst()
+
+function checkFirstUnit()
 	if not GG.FirstUnitperTeamTable then GG.FirstUnitperTeamTable ={} end
 	if not GG.FirstUnitperTeamTable[myTeamID]  then GG.FirstUnitperTeamTable[myTeamID] = unitID else return end
 
 	x,y,z= Spring.GetUnitPosition(unitID)
-	Sleep(200)
+	Sleep(1)
 	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
-	parachutePosition(unitID)
-
 	setWantCloak(false)
-	boolFlying, posH, groundH = isUnitFlying(unitID)
-	while(boolFlying == true) do
-		Sleep(100)
-		boolFlying, posH, groundH = isUnitFlying(unitID)
-		if (posH  < groundH + 150 ) then
-			PlayAnimation("FULLBODY_PARACHUTE_POSE", {}, 20)
-		end
-	end
-	reset(center)
-
 
 	while true do
 		Sleep(1000)
@@ -174,10 +454,35 @@ function firstToDieOfThirst()
 	end
 end
 
+--gives the first unit of this type a parachut and drops it
+function flyingMonitored()
+
+	StartThread(checkFirstUnit)
+
+	while true do
+		boolFlying, posH, groundH = isUnitFlying(unitID)
+		if boolFlying == true then
+		
+			while(boolFlying == true) do
+				Sleep(100)
+				boolFlying, posH, groundH = isUnitFlying(unitID)
+				if (posH  < groundH + 150 ) then
+					PlayAnimation("PARACHUTE_POSE", {}, 5.0)
+				else
+					flyingPosition(unitID)
+				end
+			end
+			WaitForTurns(TablesOfPiecesGroups)
+			reset(center)
+		end
+		Sleep(100)
+	end
+end
+
 function breathing()
 	local breathSpeed= 0.1/3
 	while true do
-		if boolAiming == false and boolWalking == false then
+		if boolAiming == false and boolWalking == false and boolFlying == false then
 			Turn(Head,x_axis,math.rad(-1),breathSpeed)
 			WTurn(Torso,x_axis, math.rad(1), breathSpeed)
 			Turn(Head,x_axis,math.rad(0),breathSpeed)
@@ -185,7 +490,6 @@ function breathing()
 		end
 		Sleep(250)
 	end
-
 end
 
 
@@ -439,6 +743,8 @@ end
 
 UpperAnimationStateFunctions ={
 [eAnimState.standing] = 	function () 
+							if boolFlying == true then  return eAnimState.standing end
+
 							resetT(lowerBodyPieces, 10)
 							if boolPistol== true then							
 								PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)
@@ -451,11 +757,12 @@ UpperAnimationStateFunctions ={
 										playUpperBodyIdleAnimation()							
 										end
 							 end
+
 								Sleep(30)	
 								return eAnimState.standing
 							end,
 [eAnimState.walking] = 	function () 
-							
+								if boolFlying == true then return eAnimState.walking end
 								boolDecoupled = true
 									playUpperBodyIdleAnimation()
 								boolDecoupled = false
@@ -481,12 +788,15 @@ UpperAnimationStateFunctions ={
 
 LowerAnimationStateFunctions ={
 [eAnimState.walking] = function()
-						assert(lowerBodyAnimations[eAnimState.walking])
+						if boolFlying == true then return eAnimState.walking end
+
 						PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]))					
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
 						-- Spring.Echo("Lower Body standing")
+						if boolFlying == true then return eAnimState.standing end
+
 						resetT(lowerBodyPieces, 12)
 						Sleep(100)
 						return eAnimState.standing
@@ -585,7 +895,7 @@ function showFoldLaptop(boolUnfold)
 
 	Hide(FoldtopUnfolded)
 	Hide(FoldtopFolded)
-	if  currentState == "decloaked" then
+	if  GetUnitValue(COB.CLOAKED) == 0 then
 		if boolUnfold == true then
 			Sleep(2500)
 			Show(FoldtopUnfolded)
