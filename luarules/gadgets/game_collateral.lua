@@ -22,9 +22,11 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetGameFrame = Spring.GetGameFrame
     local spGetUnitPosition = Spring.GetUnitPosition
     local spGetAllUnits = Spring.GetAllUnits
-
     local GameConfig = getGameConfig()
+    local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
+                                                "house", UnitDefs)
     local accumulatedInSecond = {}
+    local colourWhite = {r = 255, g = 255, b = 255}
 
     function addInSecond(team, uid_loc, rtype, damage, colour)
         if not accumulatedInSecond[team] then
@@ -78,20 +80,55 @@ if (gadgetHandler:IsSyncedCode()) then
     for i = 1, #allTeams do GG.Propgandaservers[allTeams[i]] = 0 end
 
     function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-        if attackerID and (GG.DisguiseCivilianFor[unitID]) and teamID ~=
-            Spring.GetUnitTeam(attackerID) then
-            maxhp = UnitDefs[unitDefID].health or UnitDefs[unitDefID].maxDamage
-            if maxhp then
-                factor = 1.0
-                if GG.Propgandaservers and GG.Propgandaservers[teamID] then
-                    factor = factor +
-                                 (GG.Propgandaservers[teamID] *
-                                     GameConfig.propandaServerFactor)
+        if attackerID  then
+            attackerTeamID = Spring.GetUnitTeam(attackerID) 
+
+            if(GG.DisguiseCivilianFor[unitID]) and
+              teamID ~= attackerTeamID then
+                maxhp = UnitDefs[unitDefID].health or UnitDefs[unitDefID].maxDamage
+                if maxhp then
+
+                    factor = 1.0
+                    if GG.Propgandaservers and GG.Propgandaservers[teamID] then
+                        factor = factor +
+                                     (GG.Propgandaservers[teamID] *
+                                         GameConfig.propandaServerFactor)
+                    end
+                    spAddTeamResource(attackerTeamID, "metal",
+                                      math.ceil(math.abs(maxhp * factor)))
+                    addInSecond(teamID, attackerID, "metal",
+                                math.ceil((maxhp * factor)))
                 end
-                spAddTeamResource(Spring.GetUnitTeam(attackerID), "metal",
-                                  math.ceil(math.abs(maxhp * factor)))
-                addInSecond(teamID, attackerID, "metal",
-                            math.ceil((maxhp * factor)))
+            end
+
+            if  houseTypeTable[unitDefID] then
+                Spring.Echo("Destroyed house")
+                for _, team in pairs(Spring.GetTeamList()) do
+
+                    if team ~= gaiaTeamID and team ~=attackerTeam then                    
+                        if not GG.Propgandaservers[team] then
+                            GG.Propgandaservers[team] = 0
+                        end
+
+                        factor = 1.0
+                        if GG.Propgandaservers and GG.Propgandaservers[teamID] then
+                            factor = factor +
+                                         (GG.Propgandaservers[teamID] *
+                                             GameConfig.propandaServerFactor)
+                        end
+                        spAddTeamResource(team, "metal",
+                                          math.ceil(math.abs(GameConfig.costs.DestroyedHousePropanda * factor)))
+                        addInSecond(team, unitID, "metal",
+                                    math.ceil((GameConfig.costs.DestroyedHousePropanda * factor)))
+
+                    end
+                end
+
+                   spUseTeamResource(attackerTeamID, "metal",
+                                              GameConfig.costs.DestroyedHousePropanda)
+                   addInSecond(attackerTeamID, untiID, "metal",
+                                    -1*math.ceil((GameConfig.costs.DestroyedHousePropanda)))
+
             end
         end
     end
@@ -143,7 +180,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local colourWhite = {r = 255, g = 255, b = 255}
 
     function gadget:GameFrame(frame)
         if frame % 10 == 0 then
@@ -207,7 +243,8 @@ else -- UNSYNCED
     local Unit_StartFrame_Message = {}
     local Frame_StartFrame_Message = {}
     local gaiaTeamID = Spring.GetGaiaTeamID()
-
+    local colourWhite = {r = 255, g = 255, b = 255}
+    
     -- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname, unitID, team, damage, r, g, b)
         --	 Spring.Echo("Display At Unit")
