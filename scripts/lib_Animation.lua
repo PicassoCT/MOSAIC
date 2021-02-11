@@ -307,24 +307,6 @@ function whileMovingDo(PIECE, axis, times, fuoonction)
     end
 end
 
--- >Reset a Piece at speed
-function reset(piecename, lspeed, boolWaitForIT)
-    if not piecename then return end
-    speed = lspeed or 0
-
-    Turn(piecename, x_axis, 0, speed)
-    Turn(piecename, y_axis, 0, speed)
-    Turn(piecename, z_axis, 0, speed)
-
-    Move(piecename, x_axis, 0, speed)
-    Move(piecename, y_axis, 0, speed)
-    Move(piecename, z_axis, 0, speed, true)
-    if boolWaitForIT and boolWaitForIT == true then
-        WaitForTurn(piecename, x_axis)
-        WaitForTurn(piecename, y_axis)
-        WaitForTurn(piecename, z_axis)
-    end
-end
 
 -- >idle Animation Loop
 function idleLoop(Body, axis, FrontLeg, RearLeg, degree, BodyBackDeg, speed,
