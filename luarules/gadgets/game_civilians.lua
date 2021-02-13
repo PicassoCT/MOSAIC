@@ -853,7 +853,9 @@ function travellFunction(evtID, frame, persPack, startFrame)
             y = 0,
             z = persPack.goalList[persPack.goalIndex].z
         }, {})
+    persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames  + 5
     end
+    
     return frame + math.random(60, 90), persPack
 end
 
