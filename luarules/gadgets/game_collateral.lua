@@ -126,7 +126,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                    spUseTeamResource(attackerTeamID, "metal",
                                               GameConfig.costs.DestroyedHousePropanda)
-                   addInSecond(attackerTeamID, untiID, "metal",
+                   addInSecond(attackerTeamID, unitID, "metal",
                                     -1*math.ceil((GameConfig.costs.DestroyedHousePropanda)))
 
             end
