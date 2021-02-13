@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 include "lib_mosaic.lua"
-myDefID=Spring.GetUnitDefID(unitID)
+local myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
 SIG_PISTOL = 1
@@ -306,16 +306,22 @@ local UpLeg1 = piece('UpLeg1');
 local LowLeg1 = piece('LowLeg1');
 local UpArm2 = piece('UpArm2');
 local LowArm2 = piece('LowArm2');
+local Hand2 = piece('Hand2');
 local UpArm1 = piece('UpArm1');
 local LowArm1 = piece('LowArm1');
+local Hand1 = piece('Hand1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
 local Drone = piece("Drone")
+local RayBan = piece("Line004")
+local Micro = piece("Micro")
+local Ponytail = piece("Ponytail")
 Icon = piece("Icon")
 Shell1 = piece("Shell1")
 FoldtopUnfolded = piece'FoldtopUnfolded'
 FoldtopFolded= piece'FoldtopFolded'
+
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
@@ -323,7 +329,7 @@ local disguiseDefID = randT(civilianWalkingTypeTable)
 mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam
 myTeamID= spGetUnitTeam(unitID)
-boolFlying = false
+
 
 local scriptEnv = {
 	center = center,
@@ -353,6 +359,8 @@ upperBodyPieces =
 	[Head	]  = Head,
 	[Pistol]= Pistol,
 	[UpArm1 ] = UpArm1,
+	[Hand1]  = Hand1,
+	[Hand2]  = Hand2,
 	[UpArm2]  = UpArm2,
 	[LowArm1 ] = LowArm1,
 	[LowArm2]  = LowArm2,
@@ -376,24 +384,31 @@ boolWalking = false
 boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
-
+boolFlying = false
 boolAiming = false
 boolIsBuilding = false
+if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
+
+function showBody()
+	showT(upperBodyPieces)
+	showT(lowerBodyPieces)
+	Show(FoldtopFolded)
+	showT(shownPieces)
+end
 
 if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
+shownPieces={}
 
 function script.Create()
 	
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
--- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideAll(unitID)
-	hideT(TablesOfPiecesGroups["SoftRobot"])
-	showT(upperBodyPieces)
-	showT(lowerBodyPieces)
-	Show(FoldtopFolded)
+	hideT(TablesOfPiecesGroups["SoftRobot"])	
+	shownPieces = randShowHide(RayBan, Micro, Ponytail)
+	showBody()
 	setupAnimation()
 
 	StartThread(flyingMonitored)
@@ -413,7 +428,6 @@ function testAnimationLoop()
 	Sleep(100)
 			resetAll(unitID)
 	while true do
-		Spring.Echo()
 
 		Sleep(1000)
 			PlayAnimation("PARACHUTE_POSE")
@@ -421,12 +435,12 @@ function testAnimationLoop()
 			WaitForTurns(TablesOfPiecesGroups[groupname])
 		end
 		Sleep(5000)
-		flyingPosition(unitID)
+		flyingPose(unitID)
 		Sleep(10000)
 	end
 end
 
-function flyingPosition(id)
+function flyingPose(id)
 	Turn(center, x_axis, math.rad(45),0)
 	Turn(UpArm1, z_axis, math.rad(-40),0)
 	Turn(UpArm2, z_axis, math.rad(40),0)
@@ -469,7 +483,7 @@ function flyingMonitored()
 				if (posH  < groundH + 150 ) then
 					PlayAnimation("PARACHUTE_POSE", {}, 5.0)
 				else
-					flyingPosition(unitID)
+					flyingPose(unitID)
 				end
 			end
 			WaitForTurns(TablesOfPiecesGroups)
@@ -487,6 +501,9 @@ function breathing()
 			WTurn(Torso,x_axis, math.rad(1), breathSpeed)
 			Turn(Head,x_axis,math.rad(0),breathSpeed)
 			WTurn(Torso,x_axis, math.rad(0), breathSpeed)
+			rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
+			tP(Eye1,rx,ry,rz, 16)
+			tP(Eye2,rx,ry,rz, 16)
 		end
 		Sleep(250)
 	end
@@ -731,13 +748,62 @@ function conditionalFilterOutUpperBodyTable()
 	end
 end
 
+leftArmPosesT ={
+{
+	UpArm2 ={0,0, 35},
+	LowArm2 ={0,0, 0},
+	Hand2 ={0,0, 0},
+},
+{
+	UpArm2 ={0,0, 35},
+	LowArm2 ={math.random(10,35), 0, 0},
+	Hand2 ={0,0, 0},
+},
+{
+	UpArm2 ={25,0, 40},
+	LowArm2 ={160, 0, 0},
+	Hand2 ={0,0, 0},
+},
+{
+	UpArm2 ={-130	,220, 140},
+	LowArm2 ={90, 0	, 180},
+	Hand2 ={0,0, 0},
+},
+{
+	UpArm2 ={-45,0, 40},
+	LowArm2 ={0, 180	, 0},
+	Hand2 ={0,0, 0},
+}
+
+
+
+}
+
+
+function leftArmPoses()
+
+	pose= leftArmPosesT[math.random(1,#leftArmPosesT)]
+
+	Turn(UpArm2, x_axis, math.rad(pose.UpArm2[1]),10)
+	Turn(UpArm2, y_axis, math.rad(pose.UpArm2[2]),10)
+	Turn(UpArm2, z_axis, math.rad(pose.UpArm2[3]),10)
+
+	Turn(LowArm2, x_axis, math.rad(pose.LowArm2[1]),10)
+	Turn(LowArm2, y_axis, math.rad(pose.LowArm2[2]),10)
+	Turn(LowArm2, z_axis, math.rad(pose.LowArm2[3]),10)
+
+	Turn(Hand2, x_axis, math.rad(pose.Hand2[1]),10)
+	Turn(Hand2, y_axis, math.rad(pose.Hand2[2]),10)
+	Turn(Hand2, z_axis, math.rad(pose.Hand2[3]),10)
+
+	WaitForTurns(UpArm2,LowArm2, Hand2)
+end
+
 function playUpperBodyIdleAnimation()
-	
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
 		if selectedIdleFunction and uppperBodyAnimations[eAnimState.idle] and uppperBodyAnimations[eAnimState.idle][selectedIdleFunction] then
 			PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		end	
-	
 end
 
 
@@ -746,10 +812,13 @@ UpperAnimationStateFunctions ={
 							if boolFlying == true then  return eAnimState.standing end
 
 							resetT(lowerBodyPieces, 10)
+
 							if boolPistol== true then							
 								PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)
+								if maRa()== true then leftArmPoses() end
 							else
 								PlayAnimation("UPBODY_STANDING_GUN", lowerBodyPieces, 3.0)
+								if maRa()== true then leftArmPoses() end
 							end
 								-- echo("UpperBody Standing")
 							if boolDecoupled == true then
@@ -794,7 +863,6 @@ LowerAnimationStateFunctions ={
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function () 
-						-- Spring.Echo("Lower Body standing")
 						if boolFlying == true then return eAnimState.standing end
 
 						resetT(lowerBodyPieces, 12)
@@ -887,12 +955,9 @@ function delayedStop()
 	-- Spring.Echo("Stopping")
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 	showFoldLaptop(true)
-
-
 end
 
 function showFoldLaptop(boolUnfold)
-
 	Hide(FoldtopUnfolded)
 	Hide(FoldtopFolded)
 	if  GetUnitValue(COB.CLOAKED) == 0 then
@@ -906,7 +971,6 @@ function showFoldLaptop(boolUnfold)
 end
 
 function script.StartMoving()
-	-- echo("Start Moving")
 	boolWalking = true
 	showFoldLaptop(false)
 	Turn(center,y_axis, math.rad(0), 12)
@@ -914,7 +978,6 @@ function script.StartMoving()
 end
 
 function script.StopMoving()
-		-- echo("Stop Moving")
 	StartThread(delayedStop)
 end
 
@@ -1098,7 +1161,7 @@ function delayedStopBuilding()
 	SetSignalMask(SIG_DELAYEDRECLOAK)
 	Sleep(500)
 	boolIsBuilding = false
-	echo("Stop Building")
+	--echo("Stop Building")
 	SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 
@@ -1110,7 +1173,7 @@ end
 function script.StartBuilding(heading, pitch)
 	boolIsBuilding = true
 	SetUnitValue(COB.INBUILDSTANCE, 1)
-	echo("Starting Building")
+--	echo("Starting Building")
 end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
@@ -1247,13 +1310,12 @@ function showHideIcon(boolShowIcon)
         hideAll(unitID)
         Show(Icon)
     else
-        showAll(unitID)
+    	showBody()
 		Hide(Drone)
 		hideT(TablesOfPiecesGroups["SoftRobot"])
 		hideT(TablesOfPiecesGroups["Shell"])			
 		Show(FoldtopUnfolded)
 		Hide(FoldtopFolded)
-		
         Hide(Icon)
     end
 end

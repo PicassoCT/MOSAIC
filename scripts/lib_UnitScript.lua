@@ -2487,6 +2487,26 @@ function echoUnitDefT(l_defT)
     for k, v in pairs(l_defT) do echo(UnitDefs[v].name) end
 end
 
+function randShowHide(...)
+    local arg;
+    if (not arg) then
+        arg = {...};
+        arg.n = #arg
+    end
+    shownPieces = {}
+
+    for nr, pieces in pairs(arg) do
+      if maRa()== true then
+        Show(pieces)
+        shownPieces[#shownPieces + 1] = pieces
+      else
+        Hide(pieces)
+      end
+    end
+
+    return shownPieces
+end
+
 -- > Hides a PiecesTable, 
 function hideT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then return end
@@ -2533,6 +2553,10 @@ function showT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     else
         for i = 1, table.getn(l_tableName), 1 do
             if l_tableName[i] then Show(l_tableName[i]) end
+        end
+
+        for k,v in pairs(l_tableName)do
+          Show(v)
         end
     end
 end

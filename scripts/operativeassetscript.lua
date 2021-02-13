@@ -88,7 +88,7 @@ boolWalking = false
 boolTurning = false
 boolTurnLeft = false
 boolDecoupled = false
-
+boolFlying = false
 boolAiming = false
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 
@@ -97,12 +97,11 @@ function script.Create()
     GG.OperativesDiscovered[unitID] = nil
     Hide(Gun)
 
-    -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Shell"])
     setupAnimation()
-    -- StartThread(turnDetector)
-
+    --StartThread(turnDetector)
+    StartThread(flyingMonitored)
     setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil,
                               false)
 
@@ -115,6 +114,20 @@ end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
 
+
+function flyingPose(id)
+	Turn(center, x_axis, math.rad(45),0)
+	Turn(UpArm1, z_axis, math.rad(-40),0)
+	Turn(UpArm2, z_axis, math.rad(40),0)
+	Turn(center, x_axis, math.rad(65),0)
+	Turn(center, x_axis, math.rad(65),0)
+	reset(UpLeg1, 15)	
+	reset(UpLeg2, 15)	
+	reset(LowLeg2, 15)	
+	reset(LowLeg1, 15)	
+end
+
+
 function breathing()
     local breathSpeed = 0.1 / 3
     while true do
@@ -123,11 +136,17 @@ function breathing()
             WTurn(Torso, x_axis, math.rad(1), breathSpeed)
             Turn(Head, x_axis, math.rad(0), breathSpeed)
             WTurn(Torso, x_axis, math.rad(0), breathSpeed)
+	    rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
+            tP(Eye1,rx,ry,rz, 16)
+	    tP(Eye2,rx,ry,rz, 16)
         end
         Sleep(250)
     end
 
 end
+
+
+
 
 function testAnimationLoop()
     Sleep(500)
@@ -136,6 +155,26 @@ function testAnimationLoop()
         Sleep(100)
 
     end
+end
+
+
+--gives the first unit of this type a parachut and drops it
+function flyingMonitored()
+	while true do
+		boolFlying, posH, groundH = isUnitFlying(unitID)
+		if boolFlying == true then
+		
+			while(boolFlying == true) do
+				Sleep(100)
+				boolFlying, posH, groundH = isUnitFlying(unitID)
+				flyingPose(unitID)
+
+			end
+			WaitForTurns(TablesOfPiecesGroups)
+			reset(center)
+		end
+		Sleep(100)
+	end
 end
 
 uppperBodyAnimations = {
@@ -248,6 +287,7 @@ function constructSkeleton(unit, piece, offset)
 
     if (children) then
         for i, childName in pairs(children) do
+			if not map[childName] then assert(false, childName) end
             local childId = map[childName];
             local childBones = constructSkeleton(unit, childId, info.offset);
             for cid, cinfo in pairs(childBones) do
@@ -257,6 +297,8 @@ function constructSkeleton(unit, piece, offset)
     end
     return bones;
 end
+
+
 
 function script.Killed(recentDamage, _)
     if doesUnitExistAlive(civilianID) == true then
@@ -382,6 +424,7 @@ end
 
 UpperAnimationStateFunctions = {
     [eAnimState.standing] = function()
+	if boolFlying == true then  return eAnimState.standing end
         resetT(lowerBodyPieces, 10)
         if boolPistol == true then
             PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)
@@ -398,7 +441,7 @@ UpperAnimationStateFunctions = {
         return eAnimState.standing
     end,
     [eAnimState.walking] = function()
-
+	if boolFlying == true then return eAnimState.walking end
         boolDecoupled = true
         playUpperBodyIdleAnimation()
         boolDecoupled = false
@@ -422,7 +465,8 @@ UpperAnimationStateFunctions = {
 
 LowerAnimationStateFunctions = {
     [eAnimState.walking] = function()
-        assert(lowerBodyAnimations[eAnimState.walking])
+	if boolFlying == true then return eAnimState.walking end
+
         if boolAiming == true then
             PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),
                           upperBodyPieces)
@@ -432,7 +476,7 @@ LowerAnimationStateFunctions = {
         return eAnimState.walking
     end,
     [eAnimState.standing] = function()
-        -- Spring.Echo("Lower Body standing")
+	if boolFlying == true then return eAnimState.standing end
         resetT(lowerBodyPieces, 12)
         Sleep(100)
         return eAnimState.standing

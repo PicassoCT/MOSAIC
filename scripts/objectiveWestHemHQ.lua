@@ -23,13 +23,22 @@ end
 function delayShowAllElements()
     hideT(TablesOfPiecesGroups["HyperLoop"])
     Sleep(10000)
-    for i = 1, #TablesOfPiecesGroups["HyperLoop"] do
-        x, y, z = Spring.GetUnitPiecePosDir(unitID,
-                                            TablesOfPiecesGroups["HyperLoop"][math.max(
-                                                1, i - 1)])
+    nrsShown={}
+    for nr, piecenr in pairs(TablesOfPiecesGroups["HyperLoop"]) do
+        x, y, z = Spring.GetUnitPiecePosDir(unitID, piecenr)
+        nrsShown[nr] = false
         if not (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) then
-            Show(TablesOfPiecesGroups["HyperLoop"][i])
+            Show(piecenr)
+            nrsShown[nr] = true
         end
+    end
+
+    for i=1, #nrsShown do
+        if nrsShown[i]  ~= nil and nrsShown[i + 1] ~= nil  then
+            if nrsShown[i] == true and nrsShown[i + 1] == false then
+                Show(TablesOfPiecesGroups["HyperLoop"][i+1])
+            end
+        end 
     end
 end
 
