@@ -703,6 +703,8 @@ function travellFunction(evtID, frame, persPack, startFrame)
     local myID = persPack.unitID
     if spGetUnitIsDead(myID) == true then return nil, persPack end
 
+    if not persPack.maxTimeChattingInFrames  then persPack.maxTimeChattingInFrames  = 20 * 30 end
+
     -- <External GameState Handling>
     -- abort if aerosol afflicted
     if GG.AerosolAffectedCivilians and GG.AerosolAffectedCivilians[myID] then
@@ -771,7 +773,7 @@ function travellFunction(evtID, frame, persPack, startFrame)
     end
 
     ---ocassionally detour toward the nearest ally or enemy
-    if math.random(0, 42) > 35 and civilianWalkingTypeTable[persPack.mydefID] then
+    if math.random(0, 42) > 35 and civilianWalkingTypeTable[persPack.mydefID] and persPack.maxTimeChattingInFrames > 0  then
         local partnerID
 
         if math.random(0, 1) == 1 then
@@ -818,12 +820,17 @@ function travellFunction(evtID, frame, persPack, startFrame)
 
                     return id
                 end)
-
             end
 
-            return frame + math.random(GameConfig.minConversationLengthFrames,
-                                       GameConfig.maxConversationLengthFrames),
-                   persPack
+			timeChattingInFrames =math.random(GameConfig.minConversationLengthFrames,
+                                       GameConfig.maxConversationLengthFrames)
+                                       
+            persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames - timeChattingInFrames
+            if persPack.maxTimeChattingInFrames <= 0 then
+   				return frame + 5, persPack
+            end
+            
+            return frame + timeChattingInFrames, persPack
         end
     end
 
@@ -858,8 +865,6 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
 
     mydefID = spGetUnitDefID(uID)
 
-    assert(not spGetUnitIsDead(startNodeID))
-    assert(not spGetUnitIsDead(RouteTabel[startNodeID][targetNodeID]))
     GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
         mydefID = mydefID,
         myTeam = spGetUnitTeam(uID),
