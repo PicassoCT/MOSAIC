@@ -2241,53 +2241,6 @@ function showAllPieces(unitID)
     for k, v in pairs(List) do Show(v) end
 end
 
--- >Shows a Pieces Table
-function showT(tablename, lowLimit, upLimit, delay)
-    if not tablename then
-        Spring.Echo("No table given as argument for showT")
-        return
-    end
-
-    if lowLimit and upLimit then
-        for i = lowLimit, upLimit, 1 do
-            if tablename[i] then Show(tablename[i]) end
-            if delay and delay > 0 then Sleep(delay) end
-        end
-
-    else
-        for i = 1, table.getn(tablename), 1 do
-            if tablename[i] then Show(tablename[i]) end
-        end
-    end
-end
-
--- > Hides a PiecesTable, 
-function hideT(tablename, lowLimit, upLimit, delay)
-    if not tablename then return end
-    boolDebugActive = (lib_boolDebug == true and lowLimit and type(lowLimit) ~=
-                          "string")
-
-    if lowLimit and upLimit then
-        for i = upLimit, lowLimit, -1 do
-            if tablename[i] then
-                Hide(tablename[i])
-            elseif boolDebugActive == true then
-                echo("In HideT, table " .. lowLimit .. " contains a empty entry")
-            end
-
-            if delay and delay > 0 then Sleep(delay) end
-        end
-
-    else
-        for i = 1, table.getn(tablename), 1 do
-            if tablename[i] then
-                Hide(tablename[i])
-            elseif boolDebugActive == true then
-                echo("In HideT, table " .. lowLimit .. " contains a empty entry")
-            end
-        end
-    end
-end
 
 function objectFalling(objectname, weight, step, OVect, term)
     Terminal = term or -9.81
