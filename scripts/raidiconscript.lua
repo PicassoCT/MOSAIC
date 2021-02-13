@@ -79,6 +79,8 @@ function script.Create()
 end
 
 function watchRaidIconTable()
+    if not GG.raidIconDone then GG.raidIconDone = {} end
+    
     while (GG.raidIconDone[unitID] and
         GG.raidIconDone[unitID].boolInterogationComplete == false) do
         Sleep(100)
