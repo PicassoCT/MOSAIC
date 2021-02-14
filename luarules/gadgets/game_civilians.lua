@@ -773,7 +773,10 @@ function travellFunction(evtID, frame, persPack, startFrame)
     end
 
     ---ocassionally detour toward the nearest ally or enemy
-    if math.random(0, 42) > 35 and civilianWalkingTypeTable[persPack.mydefID] and persPack.maxTimeChattingInFrames > 0  then
+    if  math.random(0, 42) > 35 and
+        civilianWalkingTypeTable[persPack.mydefID] and 
+        persPack.maxTimeChattingInFrames > 0  then
+
         local partnerID
 
         if math.random(0, 1) == 1 then
@@ -801,7 +804,8 @@ function travellFunction(evtID, frame, persPack, startFrame)
                         civilianWalkingTypeTable[spGetUnitDefID(id)] then
                         return id
                     end
-                end, function(id)
+                end, 
+                function(id)
                     if distanceUnitToPoint(id, myID) >
                         GameConfig.groupChatDistance / 2 then
                         Command(id, "go", {
@@ -815,7 +819,6 @@ function travellFunction(evtID, frame, persPack, startFrame)
                         Command(id, "stop")
                         UnitSetAnimationState(id, CivAnimStates.Talking,
                                               CivAnimStates.stop, true, true)
-
                     end
 
                     return id

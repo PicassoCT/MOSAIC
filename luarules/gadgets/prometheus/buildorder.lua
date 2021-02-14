@@ -62,10 +62,12 @@ end
 
 
 gadget.minBuildRequirementProtagon = convertTableToDefIDNumberTable(gadget.minBuildRequirementProtagon)
+assert(gadget.minBuildRequirementProtagon)
 gadget.minBuildRequirementAntagon = convertTableToDefIDNumberTable(gadget.minBuildRequirementAntagon)
-
+assert(gadget.minBuildRequirementAntagon)
 
 gadget.baseBuilders = NameArrayToIdSet(gadget.baseBuilders)
+assert(gadget.baseBuilders)
 gadget.flags = NameArrayToIdSet(gadget.flags)
 gadget.flagCappers = NameArrayToIdSet(gadget.flagCappers)
 gadget.reservedFlagCappers = gadget.reservedFlagCappers or {}

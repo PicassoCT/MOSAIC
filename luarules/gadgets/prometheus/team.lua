@@ -179,8 +179,7 @@ local	boolString= "true"
 end
 
 
-function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, side)
-
+function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, side) 
 	if unitBuildOrder[unitDefID]   then
 		-- factory or builder?
 		if not (UnitDefs[unitDefID].speed > 0) then --factory
@@ -210,34 +209,30 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 			
 			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
 				if Team.hasEnoughPropagandaservers(unitTeam) == true then
-					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})
-				
+					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})	
 				else
-
-					for bo,nr in ipairs(unitBuildOrder[unitDefID]) do
-						if bo and UnitDefs[bo] and maRa()==true then
-							-- Log("Queueing: ", UnitDefs[bo].humanName)
-							-- Spring.Echo("Safehouse ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
-							GiveOrderToUnit(unitID, -bo, {}, {})
+					for bo,defID in ipairs(unitBuildOrder[unitDefID]) do
+						if defID and UnitDefs[defID] then
+							if maRa()==true then
+								GiveOrderToUnit(unitID, -defID, {}, {})
+							end
 						else 
-							Log("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
+							Spring.Echo("Invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[defID].humanName or 'nil'))
 						end
 					end
 				end
-
 			else		
-				for _,bo in ipairs(unitBuildOrder[unitDefID]) do
-					if bo and UnitDefs[bo]  then
-						Log("Queueing: ", UnitDefs[bo].humanName)
-						GiveOrderToUnit(unitID, -bo, {}, {})
+				for _,defID in ipairs(unitBuildOrder[unitDefID]) do
+					if defID and UnitDefs[defID]  then
+						Spring.Echo("Prometheus: Queueing: ", UnitDefs[defID].humanName)
+						GiveOrderToUnit(unitID, -defID, {}, {})
 						-- Spring.Echo("Factory ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
 					else
-						-- Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[bo].humanName or 'nil'))
+						 Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[defID].humanName or 'nil'))
 					end
 				end
 			end
 		else
-			-- TODO Go near houses
 			Log("Warning: unitBuildOrder can only be used to control factories")
 		end
 	end
