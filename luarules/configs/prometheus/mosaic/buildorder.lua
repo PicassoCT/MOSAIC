@@ -28,18 +28,8 @@ gadget.minBuildRequirementAntagon = {
 gadget.unitBuildOrder = UnitBag{
 	-- Antagon
 	operativepropagator = UnitArray{"antagonsafehouse"},
-	antagonsafehouse = UnitArray{
-		"operativepropagator", 
-		"civilianagent",
-		"propagandaserver",
-		"propagandaserver",
-		"operativepropagator",
-		"propagandaserver",
-		"assembly",
-		"nimrod",
-		"propagandaserver",
-		"launcher",
-	},
+	operativeinvestigator =UnitArray{"protagonsafehouse"},
+	
 	assembly = UnitArray{
 			"ground_truck_mg", 
 			"ground_truck_ssied",
@@ -63,7 +53,19 @@ gadget.unitBuildOrder = UnitBag{
 		"satellitescan",
 		"satelliteanti"		
 	},
-	operativeinvestigator =UnitArray{"protagonsafehouse"},
+
+	antagonsafehouse = UnitArray{
+		"operativepropagator", 
+		"civilianagent",
+		"propagandaserver",
+		"propagandaserver",
+		"operativepropagator",
+		"propagandaserver",
+		"assembly",
+		"nimrod",
+		"propagandaserver",
+		"launcher",
+	},
 	protagonsafehouse = UnitArray{
 		"operativeinvestigator", 
 		"operativeinvestigator", 
