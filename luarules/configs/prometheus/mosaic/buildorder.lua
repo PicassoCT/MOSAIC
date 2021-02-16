@@ -81,8 +81,9 @@ gadget.unitBuildOrder = UnitBag{
 		"blacksite",
 	},
 	transportedassembly = UnitArray{
-		"ground_turret_ssied",	
 		"ground_turret_mg",
+		"air_copter_mg",
+		"air_copter_ssied"
 	},
 }
 
