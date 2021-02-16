@@ -192,7 +192,7 @@ local function UpdateRemove(unitID, supplyInfo)
 			assert(r, toString(currSupplyInfo))
 			local x, z = currSupplyInfo.x, currSupplyInfo.z
 			local dist = GetUnitSeparation(unitID, currUnitID, true)
-			assert(dist,unitID.." currUnitID: "..currUnitID)
+			assert(dist, unitID.." currUnitID: "..currUnitID)
 			if (dist < r0 + r) then
 				UpdatePoints(currUnitID, currSupplyInfo, x0, z0, r0)
 			end
