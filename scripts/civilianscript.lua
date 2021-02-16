@@ -115,14 +115,12 @@ local bodyConfig = {}
 
 iShoppingConfig = math.random(0, 8)
 function variousBodyConfigs()
-
     bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
     bodyConfig.boolTrolley = (iShoppingConfig == 3)
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy
-
 end
 
 orgHousePosTable = {}
@@ -146,7 +144,7 @@ function script.Create()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
                               nil, false)
-
+    setIndividualCivilianName(unitID)
     StartThread(threadStarter)
 
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
