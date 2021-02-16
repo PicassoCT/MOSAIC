@@ -32,7 +32,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local Satellites = {} -- utype --direction
     local SatellitesWaiting = {} -- utype --direction
-    local spGetUnitHealth = Spring.spGetUnitHealth
+    local spGetUnitHealth = Spring.GetUnitHealth
     local spGetUnitPosition = Spring.GetUnitPosition
     local spMoveCtrlSetPosition = Spring.MoveCtrl.SetPosition
     local spMoveCtrlEnable = Spring.MoveCtrl.Enable
