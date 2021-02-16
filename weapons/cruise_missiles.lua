@@ -34,7 +34,6 @@ local weaponDef = {
 	AlwaysVisible = true,
 	flightTime = 2500 ,
 	
-	uselos = false,
     explosionGenerator = "custom:bigbulletimpact",
  	cegTag = "impactor",
 

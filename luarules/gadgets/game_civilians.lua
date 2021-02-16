@@ -653,7 +653,7 @@ function spawnUnit(defID, x, z)
     statistics[defID] = statistics[defID] + 1
 
     if id then
-        spSetUnitNoSelect(id, true)
+        --spSetUnitNoSelect(id, true)
         spSetUnitAlwaysVisible(id, true)
         return id
     end

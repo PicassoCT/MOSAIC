@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
-            Version = "Alpha: 0.710"
+            Version = "Alpha: 0.711"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
