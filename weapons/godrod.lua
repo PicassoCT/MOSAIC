@@ -37,7 +37,7 @@ local weaponDef = {
 	fireStarter  = 100.0,
 
 	--visuals
-	uselos = false,
+	alwaysVisible = true,
 	smokeTrail = false,
 	model = "GodRod.s3o",
 	explosionScar = true, 
