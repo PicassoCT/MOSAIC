@@ -42,13 +42,13 @@ local weaponDef = {
     separation = 0.5,
     size = 0.8,
     sizeDecay = -0.1,
-    soundFire = "sounds/weapons/sniper/sniperFire.ogg",
+    soundStart = "sounds/weapons/sniper/sniperFire.ogg",
     soundHit = "sounds/weapons/sniper/sniperFire.ogg",
     sprayangle = 800,
     stages = 32,
     fireStarter = 35,
     turret = true,
-
+    alwaysVisible  = true,
     weaponType = [[Cannon]],
     weaponVelocity = 2400,
 }
