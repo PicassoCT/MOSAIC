@@ -1444,3 +1444,46 @@ function unitTestTypeTables(UnitDefs, UnitDefNames)
         assert(civilianTypeTable[UnitDefNames["arab_truck" .. i].id])
     end
 end
+
+function setIndividualCivilianName(id)
+    description = "Civilian : "..getRandomCultureNames(GG.GameConfig.instance.culture).. " <colateral>"
+    Spring.SetUnitTooltip(id, description)
+   return description
+end
+
+
+function getRandomCultureNames(culture)
+names ={
+    arabic = {
+        sur ={
+            "Jalal","Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah","Ahmad","Omran", "Fateha",
+"Nada","Um","Sahar","Khowla","Samad","Faris","Saif","Marwa","Tabarek","Safia","Qassem","Thamer","Nujah",
+    "Najia","Haytham","Arkan","Walid", "Hilal","Manal","Mahroosa","Valentina","Samar","Mohammad","Nadia",
+    "Zeena","Mustafa","Zain","Zainab","Hassan","Ammar","Noor","Wissam","Dr.Ihab","Khairiah","Kamaran","Duaa",
+    "Sa'la","Alaa-eddin","Wadhar","Bashir","Safa","Sena","Rana","Maria","Salma","Lana","Miriam","Lava","Salma",
+    "Mohammed","Said","Shams","Sami","Tareq","Taras","Jose","Vatche","Hanna","James","Nicolas","Edmund","Wael",
+    "Noor","Abdul","Hamsa","Ali","Abu","Rowand","Haithem","Nora","Arkan","Khansa","Muhammed","Rashid","Ghassan",
+    "Arkan","Uday","Dana","Lamiya","Abdullah","Salman","Waleed","Tuamer","Hussein","Sa'aleh","Ghanam","Raeed","Daoud"
+                },
+        family = {"al Yussuf", "Kamel Radi","al Rahal","al Batayneh","al Ababneh"," al Enezi", "al Serihaine",
+                "Ghazzi","Abdallah","Aqeel-Khalil","Khalil","Abdel-Fattah","Rabai","El Baur","Abbas","Moussa","Abdel-Wahid", 
+                "Abdel-Ridda","Hussein","Rafi","Daif","Abu Shaker ","Faraj Silo","SaadAllah Matti ","Jarjis ","Bashar Faraj ",
+                " Hussein ","Ahmed ","Kalaf ","Akram Hamoodi "," Akram Hamoodi ","El Abideen Akram Hammodi ",
+                "Akram Hamoody Hamoodi ","Iyad Hamoodi ","Muhammad Hamoodi","Elhuda Saad Hamoodi ","Abed Hamoodi ",
+                "Abed ","Mahmoud  ","Abdurazaq Muhamed ","Raheem ","al-Mousai "," Khazal ","Handi","Handi ","Karim ",
+                "Hassad ","Hassad "," Hassa","Sami ","Sami ","Sami ","Sami ","Amin ","Amin ","Amin ","Amin ","Osama  ",
+                "Ayoub "," Protsyuk"," Couso"," Arslanian "," Fatah "," Kachadoorian "," Kachadoorian "," Kachadoorian ",
+                " Sabah ","Sabah "," Khader "," Mohammed Omar "," Ramzi "," Salam Abdul Gafir "," Mohammed Suleiman ",
+                " Tamini ","Tamini "," David Belu "," a Thaib "," al-Barheini "," Majid "," Majid ","Majid ","al Shimarey ",
+                "Ali "," Ali ","Abdul-Majeed al-Sa'doon"," Abu al-Heel ","Saleh Abdel-Latif"," Abdel Hamid "," Rashid ",
+                " al Jumaili ","Amar "," Qais ","al Rifaai" 
+            }
+    },
+    european = {
+        sur ={},
+        family = {}
+    },
+}
+
+return names[culture].sur[math.random(1,#names[culture].sur)].." "..names[culture].family[math.random(1,#names[culture].family)]
+end
