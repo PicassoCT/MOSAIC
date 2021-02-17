@@ -15,6 +15,7 @@ Section: Physics
 Section: Sound
 Section: Ressources
 Section: Unit Commands
+Section: Conversions
 Section: Sfx Operations
 ]]
 --[[
@@ -54,7 +55,13 @@ function getAllEnemyTeams(teamID, boolIncludeGaia)
             return tid
         end
     end) or {}
+end
 
+function arePlayersInSameAllyTeam(playerA, playerB)
+    _, _, _, ateamID, aallyTeamID, _, _, _, _, _ = Spring.GetPlayerInfo(playerA)
+    _, _, _, bteamID, ballyTeamID, _, _, _, _, _ = Spring.GetPlayerInfo(playerB)
+
+    return ateamID ~= bteamID and aallyTeamID ~= ballyTeamID
 end
 
 function getRandomPlayerName()
@@ -2079,6 +2086,15 @@ function doForMapPos(Resolution, ...)
     return ReT
 end
 
+--> Computate the center of the map
+function getMapCenter(Game)
+    assert(Game)
+    assert(Game.mpaX)
+    assert(Game.mpaY)
+    mapCenter = {x = Game.mapX / 2, z = Game.mapY / 2}
+    return mapCenter
+end
+
 -- ======================================================================================
 -- Section: Syntax additions and Tableoperations
 -- ======================================================================================
@@ -3256,6 +3272,7 @@ function computateBendLimits(piecename, parent)
     -- defaulting to a maxturn
     return {ux = -15, x = 15, uy = -180, y = 180, uz = -15, z = 15}
 end
+
 function get2DSquareFormationPosition(nr, size, unitsInRow)
 
     row = math.floor(nr / unitsInRow)
@@ -3318,7 +3335,17 @@ function middleSquareWeylSequence(itterations)
         x = math.bit_or((x / 2 ^ 5), (x * 2 ^ 5));
 
     end
+end
 
+--> computes the nearest power of 2 beneath a value
+function getBelowPow2(value)
+    n = 2
+    it = 1
+    while n < value do
+        it = inc(it)
+        n = 2 ^ it
+    end
+    return it, n
 end
 
 -- > returns a Unique ID - upper limit is 565939020162275221
@@ -4485,6 +4512,42 @@ function ShowWrap(piecenr)
         end
     else
         Hide(piecenr)
+    end
+end
+
+--> Checks wether Arguments of type exist, expetcts pairs of expected type, actual value
+--> Does   check value
+function assertArguments(...)
+    local arg = {...}
+    arg.n = #arg
+
+    for i = 1, arg.n, 2 do
+        local expected = arg[i]
+        local actual = arg[i + 1]
+        assert((type(expected) == type(actual)),
+               "Arg:" .. i .. " :Types not compatible, expected " ..
+                   type(expected) .. " got " .. type(actual))
+        assert((type(expected) == type(actual)),
+               "Arg:" .. i .. " :Value not as expected" .. toString(expected) ..
+                   " got " .. toString(actual))
+        assert(expected == actual)
+    end
+end
+
+--> Checks wether Arguments of type exist, expetcts pairs of expected type, actual value
+--> Does not  check value
+function assertArgumentsExistOfType(...)
+    local arg = {...}
+    arg.n = #arg
+
+    for i = 1, arg.n, 2 do
+        local expected = arg[i]
+        local actual = arg[i + 1]
+        assert(actual ~= nil, "Arg:" .. i .. " :Value is nil")
+        assert((type(expected) == type(actual)),
+               "Arg:" .. i .. " :Types not compatible, expected " ..
+                   type(expected) .. " got " .. type(actual))
+
     end
 end
 
@@ -6424,6 +6487,12 @@ function setMoveState(unitID, moveState)
 end
 
 -- ======================================================================================
+-- Section: Conversions
+-- ======================================================================================
+function frameToMS(frames) return frameToS(frames) * 1000; end
+
+function frameToS(frames) return (frames / 30); end
+-- ======================================================================================
 -- Section: Sfx Operations
 -- ======================================================================================
 
@@ -6605,63 +6674,7 @@ end
 
 -- New Unsorted code TODO Sortme
 
-function getBelowPow2(value)
-    n = 2
-    it = 1
-    while n < value do
-        it = inc(it)
-        n = 2 ^ it
-    end
-    return it, n
-end
 
-function arePlayersInSameAllyTeam(playerA, playerB)
-    _, _, _, ateamID, aallyTeamID, _, _, _, _, _ = Spring.GetPlayerInfo(playerA)
-    _, _, _, bteamID, ballyTeamID, _, _, _, _, _ = Spring.GetPlayerInfo(playerB)
 
-    return ateamID ~= bteamID and aallyTeamID ~= ballyTeamID
-end
 
-function getMapCenter(Game)
-    assert(Game)
-    assert(Game.mpaX)
-    assert(Game.mpaY)
-    mapCenter = {x = Game.mapX / 2, z = Game.mapY / 2}
-    return mapCenter
-end
 
-function frameToMS(frames) return frameToS(frames) * 1000; end
-
-function frameToS(frames) return (frames / 30); end
-
-function assertArguments(...)
-    local arg = {...}
-    arg.n = #arg
-
-    for i = 1, arg.n, 2 do
-        local expected = arg[i]
-        local actual = arg[i + 1]
-        assert((type(expected) == type(actual)),
-               "Arg:" .. i .. " :Types not compatible, expected " ..
-                   type(expected) .. " got " .. type(actual))
-        assert((type(expected) == type(actual)),
-               "Arg:" .. i .. " :Value not as expected" .. toString(expected) ..
-                   " got " .. toString(actual))
-        assert(expected == actual)
-    end
-end
-
-function assertArgumentsExistOfType(...)
-    local arg = {...}
-    arg.n = #arg
-
-    for i = 1, arg.n, 2 do
-        local expected = arg[i]
-        local actual = arg[i + 1]
-        assert(actual ~= nil, "Arg:" .. i .. " :Value is nil")
-        assert((type(expected) == type(actual)),
-               "Arg:" .. i .. " :Types not compatible, expected " ..
-                   type(expected) .. " got " .. type(actual))
-
-    end
-end
