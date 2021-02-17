@@ -28,8 +28,8 @@ local weaponDef = {
     reloadtime = 0.02,
     renderType = 0,
     turret = true,
-    	-- soundHit = "sounds/jEliah/jEliahLaserLoop.ogg",
-    -- soundStart = "sounds/jEliah/jEliahLaserStart.ogg",
+    alwaysVisible= true,
+    soundStart = "sounds/weapons/laser/laser.ogg",
 
     coreThickness = 1.3,
     thickness = 9.5,

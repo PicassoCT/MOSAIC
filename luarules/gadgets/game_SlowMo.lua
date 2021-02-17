@@ -13,39 +13,63 @@ end
 
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
-    side = "antagon"
+    local side = "antagon"
     if math.random(0, 1) == 1 then side = "protagon" end
 
-    boolPreviouslyActive = false
-    endFrame = 0
-    startFrame = Spring.GetGameFrame()
+    local boolPreviouslyActive = false
+    function detectRisingEdge(boolActive)
+        boolResult = false
+        if boolPreviouslyActive == false and boolActive == true then
+            boolResult = true
+        end
 
+        return boolResult
+    end
+
+    function detectFallingEdge(boolActive)
+        boolResult = false
+        if boolPreviouslyActive == true and boolActive == false then
+            boolResult = true
+        end
+
+        return boolResult
+    end
+
+    local startFrame = Spring.GetGameFrame()
+    local endFrame = startFrame + 1
+    local InitialFrame = Spring.GetGameFrame()
+ 
     function gadget:Initialize()
         if not GG.HiveMind then GG.HiveMind = {} end
         SendToUnsynced("Initialize")
+        InitialFrame = Spring.GetGameFrame()
+        startFrame = Spring.GetGameFrame()
+        endFrame = startFrame + 1
     end
 
     function gadget:GameFrame(n)
-        if frame == 1 then SendToUnsynced("ActivateSlowMoShadder", false) end
 
-        boolActive, activeHiveMinds = areHiveMindsActive()
-        if boolActive == true then
-
-            if boolPreviouslyActive == false then
-                SendToUnsynced("ActivateSlowMoShadder", true)
-                boolPreviouslyActive = true
-                startFrame = n
+        if frame == InitialFrame then 
+            SendToUnsynced("ActivateSlowMoShadder", false) 
+        else
+            boolActive, activeHiveMinds = areHiveMindsActive()
+            if frame == endFrame then 
+                boolActive = false
             end
 
-            activeHiveMinds, MaxTimeInMs =
-                activateOtherHiveminds(activeHiveMinds)
-            deactivateCursorForNormalTeams(activeHiveMinds)
+            if detectRisingEdge(boolActive) == true then
+                SendToUnsynced("ActivateSlowMoShadder", true)
+                startFrame = n + 1
+                activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
+                deactivateCursorForNormalTeams(activeHiveMinds)
+                endFrame = (n + math.ceil(MaxTimeInMs / 1000) * 30)
+            elseif detectFallingEdge(boolActive) == true then
+                SendToUnsynced("ActivateSlowMoShadder", false)
+                restoreCursorNonActiveTeams(activeHiveMinds)
+                endFrame= Spring.GetGameFrame()
+            end
 
-            endFrame = (n + math.ceil(MaxTimeInMs / 1000) * 30)
-        elseif boolActive == false and endFrame == n then
-            SendToUnsynced("ActivateSlowMoShadder", false)
-            restoreCursorNonActiveTeams(activeHiveMinds)
-            boolPreviouslyActive = false
+            boolPreviouslyActive = boolActive
         end
 
         SendToUnsynced("frameCall", n)

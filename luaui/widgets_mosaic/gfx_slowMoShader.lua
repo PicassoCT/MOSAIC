@@ -203,9 +203,10 @@ ColourTable={
 	  uniformInt = uniformInt
 	}
 
+boolShaderActive= false
 function widget:Initialize()
 	widgetHandler:RegisterGlobal("ActivateSlowMoShader", ActivateSlowMoShader)
-
+	boolShaderActive = false
   vsx, vsy = widgetHandler:GetViewSizes()
   widget:ViewResize(vsx, vsy)
 	if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
@@ -250,7 +251,8 @@ screencopy = gl.CreateTexture(vsx, vsy, {
     mag_filter = GL.NEAREST,
 	})
 end
-boolShaderActive= true
+
+
 
 function ActivateSlowMoShader(boolActive)
 	boolShaderActive = boolActive

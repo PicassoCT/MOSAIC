@@ -44,6 +44,8 @@ if (gadgetHandler:IsSyncedCode()) then
         getMobileInterrogateAbleTypeTable(UnitDefs)
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
+    local impactorWeaponDefID = WeaponDefNames["impactor"].id
+    Script.SetWatchWeapon(impactorWeaponDefID, true)
     local raidWeaponDefID = WeaponDefNames["raidarrest"].id
     Script.SetWatchWeapon(raidWeaponDefID, true)
     local stunpistoldWeaponDefID = WeaponDefNames["stunpistol"].id
@@ -93,6 +95,20 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- units To be exempted from instantly lethal force
 
+    -- ===========Explosion Functions ====================================================
+  local explosionFunc = {
+    [impactorWeaponDefID] =  function(weaponDefID, px, py, pz, AttackerID)
+            attackerTeam = Spring.GetUnitTeam(AttackerID)
+            id = Spring.CreateUnit("impactor", px, py, pz, 1, attackerTeam)
+            Spring.SetUnitBlocking(id, false)
+    end
+  }
+
+    function gadget:Explosion(weaponDefID, px, py, pz, AttackerID)
+        if explosionFunc[weaponDefID] then explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID) 
+            return true
+        end
+    end
     -- ===========UnitDamaged Functions ====================================================
     function currentlyInterrogationRunning(suspectID, interrogatorID)
         if not GG.InterrogationTable[suspectID] or
@@ -551,6 +567,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
             end)
         end
+
     end
 
     function gadget:GameFrame(n)

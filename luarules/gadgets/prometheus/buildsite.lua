@@ -186,7 +186,7 @@ local function UpdateRemove(unitID, supplyInfo)
 
 	for currUnitID, currSupplyInfo in pairs(supplyInfos) do
 		--ignore self
-		if currUnitID and (unitID ~= currUnitID) then
+		if currUnitID and (unitID ~= currUnitID) and doesUnitExistAlive(currUnitID) then
 			--is there overlap?
 			local r = currSupplyInfo.r
 			assert(r, toString(currSupplyInfo))

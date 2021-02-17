@@ -8,7 +8,7 @@ local weaponDef = {
 	default = 3500
 	},
 	noSelfDamage = true,
-	reloadtime = 10, -- seconds
+	reloadtime = 30, -- seconds
 
 	--orders behaviour
 	--commandFire  = true,	
@@ -24,10 +24,10 @@ local weaponDef = {
 	avoidGround = true,
 
 	--flight behaviour
-	startVelocity  = 100,
+	startVelocity  = 500,
 	
 	flightTime = 25.5 ,	
-	weaponVelocity = 2000,
+	weaponVelocity = 4000,
 	weaponAcceleration = 100,
 
 	--impact behaviour
@@ -44,6 +44,8 @@ local weaponDef = {
  	cegTag = "impactor",
 	cameraShake =1.0,
     explosionGenerator = "custom:missile_explosion"
+    soundStart = "weapons/godrod/impactor.ogg",
+
 }
   
 return lowerkeys({ [weaponName] = weaponDef })

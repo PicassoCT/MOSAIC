@@ -52,6 +52,9 @@ local weaponDef = {
 	turret = true,
 	canAttackGround  = true,
 	proximityPriority = -1,
+
+	soundStart = "sounds/weapons/molotow/throw.wav",
+    soundHit = "sounds/weapons/molotow/impact.ogg",
 }
 
 return lowerkeys({ [weaponName] = weaponDef })

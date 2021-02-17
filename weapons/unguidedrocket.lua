@@ -41,7 +41,10 @@ local weaponDef = {
 	model = "unaimedRocketProjectile.s3o",
 	explosionScar = true, 
 	cameraShake = 0.5,
-    explosionGenerator = "custom:missile_explosion"
+    explosionGenerator = "custom:missile_explosion",
+    soundStart = "sounds/weapons/rocket/launch.wav",
+    soundHit = "sounds/weapons/rocket/impact.wave",
+
 }
 
 return lowerkeys({ [weaponName] = weaponDef })
