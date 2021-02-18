@@ -1416,7 +1416,8 @@ end
 
 -- > Get Unit Target if a Move.Cmd was issued
 function getUnitMoveGoal(unitID)
-    cmds = Spring.GetCommandQueue(unitID, 4)
+    local cmds = Spring.GetCommandQueue(unitID, 4)
+    local i = #cmds
     for i = #cmds, 1, -1 do
         if cmds[i].id and cmds[i].id == CMD.MOVE and cmds[i].params then
             return cmds[i].params[1], cmds[i].params[2], cmds[i].params[3]
@@ -1431,13 +1432,13 @@ function destroyUnitConditional(id, selfd, reclaimed)
 end
 
 function doesUnitExistAlive(id)
-    valid = Spring.ValidUnitID(id)
+    local valid = Spring.ValidUnitID(id)
     if valid == nil or valid == false then
         -- echo("doesUnitExistAlive::Invalid ID")
         return false
     end
 
-    dead = Spring.GetUnitIsDead(id)
+    local dead = Spring.GetUnitIsDead(id)
     if dead == nil or dead == true then
         -- echo("doesUnitExistAlive::Dead Unit")
         return false

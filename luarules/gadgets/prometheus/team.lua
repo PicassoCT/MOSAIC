@@ -147,6 +147,10 @@ Team.AllowUnitCreation = unitLimitsMgr.AllowUnitCreation
 -- Short circuit callin which would otherwise only forward the call..
 Team.UnitCreated = baseMgr.UnitCreated
 
+local function unitIsBusyBuilding( unitID )
+	local queue = Spring.GetFullBuildQueue(unitID)
+	return queue and #queue > 0
+end
 
 function Team.minBuildOrderFullfilled(unitTeam)
 	-- Spring.Echo("Prometheus: Checking Min Buildorder fullfilled")
@@ -222,13 +226,15 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 					end
 				end
 			else		
-				for _,defID in ipairs(unitBuildOrder[unitDefID]) do
-					if defID and UnitDefs[defID]  then
-						Spring.Echo("Prometheus: Queueing: ", UnitDefs[defID].humanName)
-						GiveOrderToUnit(unitID, -defID, {}, {})
-						-- Spring.Echo("Factory ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
-					else
-						 Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[defID].humanName or 'nil'))
+				if  unitIsBusyBuilding(unitID) == false then
+					for _,defID in ipairs(unitBuildOrder[unitDefID]) do
+						if defID and UnitDefs[defID]  then
+							Spring.Echo("Prometheus: Queueing: ", UnitDefs[defID].humanName)
+							GiveOrderToUnit(unitID, -defID, {}, {})
+							-- Spring.Echo("Factory ".. unitID.." ordered to build ".. UnitDefs[bo].humanName)
+						else
+							 Spring.Echo("Prometheus: invalid buildorder found: " .. UnitDefs[unitDefID].humanName .. " -> " .. (UnitDefs[defID].humanName or 'nil'))
+						end
 					end
 				end
 			end

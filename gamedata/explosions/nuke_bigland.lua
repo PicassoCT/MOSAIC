@@ -103,6 +103,7 @@ return {
 			
 			
 			properties = {
+				alwaysvisible = true,
 				alpha = 0.9,
 				alphadecay = 0.02,
 				color = [[1,0.8,0.5]],
@@ -161,6 +162,7 @@ return {
 			ground = true,
 			air = true,
 			properties = {
+				alwaysvisible = true,
 				colormap = [[ 
 				0.9 0.2 0 	0.025
 				0.8 0.2 0 0.5	
@@ -195,6 +197,7 @@ return {
 			ground = true,
 			air = true,
 			properties = {
+				alwaysvisible = true,
 				colormap = [[ 
 				0.9 0.2 0 	0.02
 				0.8 0.2 0 	0.02	
@@ -221,6 +224,7 @@ return {
 			count = 12,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -255,6 +259,7 @@ return {
 			count = 22,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -289,6 +294,7 @@ return {
 			count = 4,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -321,6 +327,7 @@ return {
 			count = 4,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -355,6 +362,7 @@ return {
 			count = 8,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -398,6 +406,7 @@ return {
 			count = 8,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -440,6 +449,7 @@ return {
 			count = 8,
 			ground = true,
 			properties = {
+				alwaysvisible = true,
 				emitrot = 0,
 				emitrotspread = 3,
 				airdrag = 0.8,
@@ -488,6 +498,7 @@ return {
 			ground = true,
 			air = true,
 			properties = {
+				alwaysvisible = true,
 				colormap = [[ 
 				0 0 0 0
 				0 0 0 0

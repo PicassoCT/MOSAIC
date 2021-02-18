@@ -5,7 +5,7 @@ unitFactor = 0.725 -- 0.5
 function getGameConfig()
     return {
         instance = {
-            culture = "arabic", -- "international", "european", "chinese", "russia", "northamerica", "southamerica"
+            culture = "arabic", -- "international", "western", "asia"
             Version = "Alpha: 0.712"
         },
 

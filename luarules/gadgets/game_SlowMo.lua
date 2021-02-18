@@ -50,7 +50,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:GameFrame(n)
 
         if frame == InitialFrame then 
-            SendToUnsynced("ActivateSlowMoShadder", false) 
+            SendToUnsynced("setSlowMoShaderActive", false) 
         else
             boolActive, activeHiveMinds = areHiveMindsActive()
             if frame == endFrame then 
@@ -58,13 +58,13 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
             if detectRisingEdge(boolActive) == true then
-                SendToUnsynced("ActivateSlowMoShadder", true)
+                SendToUnsynced("setSlowMoShaderActive", true)
                 startFrame = n + 1
                 activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
                 deactivateCursorForNormalTeams(activeHiveMinds)
                 endFrame = (n + math.ceil(MaxTimeInMs / 1000) * 30)
             elseif detectFallingEdge(boolActive) == true then
-                SendToUnsynced("ActivateSlowMoShadder", false)
+                SendToUnsynced("setSlowMoShaderActive", false)
                 restoreCursorNonActiveTeams(activeHiveMinds)
                 endFrame= Spring.GetGameFrame()
             end
@@ -74,6 +74,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         SendToUnsynced("frameCall", n)
         handleSlowMoPhases(n, boolActive, startFrame, endFrame)
+
     end
 
     -- check for active HiveMinds and AI Nodes
@@ -135,7 +136,7 @@ if (gadgetHandler:IsSyncedCode()) then
         GG.GameSpeed = currentSpeed
 
         if boolActivate == false or frame > endFrame then
-            if frame % 10 == 0 and currentSpeed < oldGameSpeed - 0.1 then
+            if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
                 Spring.Echo("speedup to " .. currentSpeed)
                 Spring.SendCommands("speedup ")
             end
@@ -150,7 +151,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         if frame == startFrame then
-            oldGameSpeed = currentSpeed
             Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
             return
         end
@@ -206,15 +206,15 @@ if (gadgetHandler:IsSyncedCode()) then
 
 else -- Unsynced
     local formerCommandTable = {}
-    alt, ctrl, meta, shift, left, right = 0, 0, 0, 0, 0, 0
+    local alt, ctrl, meta, shift, left, right = 0, 0, 0, 0, 0, 0
     -- deactivate mouse icon
-    local boolLameDuck = false
-    local boolDraw = false
+
+    local boolShaderActive = false
 
     local function restoreCursor(_, team)
         myTeam = Spring.GetMyTeamID()
         if myTeam == team then
-            boolLameDuck = true
+
             oldCommand = Spring.GetActiveCommand()
             formerCommandTable[team] = oldCommand
 
@@ -234,22 +234,22 @@ else -- Unsynced
     local function hideCursor(_, team)
         myTeam = Spring.GetMyTeamID()
         if myTeam == team then
-            boolLameDuck = false
             Spring.SetActiveCommand(formerCommandTable[team], 1, left, right,
                                     alt, ctrl, meta, shift)
         end
     end
 
-    local function ActivateSlowMoShadder(_, boolActivate)
-        if Script.LuaUI('ActivateSlowMoShader') then
-            Script.LuaUI.ActivateSlowMoShader(boolActivate)
+    local function setSlowMoShaderActive(_, boolActivate)
+            if boolActivate == true then
+                Spring.SendLuaUIMsg("SlowMoShader_Active","a")
+            else
+                Spring.SendLuaUIMsg("SlowMoShader_Deactivated","a")
+            end
         end
-    end
 
     function gadget:Initialize()
         gadgetHandler:AddSyncAction("Initialize", Initialize)
-        gadgetHandler:AddSyncAction("ActivateSlowMoShadder",
-                                    ActivateSlowMoShadder)
+        gadgetHandler:AddSyncAction("setSlowMoShaderActive",setSlowMoShaderActive)
         gadgetHandler:AddSyncAction("restoreCursor", restoreCursor)
         gadgetHandler:AddSyncAction("hideCursor", hideCursor)
         gadgetHandler:AddSyncAction("frameCall", frameCall)

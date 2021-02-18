@@ -20,6 +20,8 @@ end
 local vsx, vsy
 local screencopy
 local shaderProgram
+local boolShaderActive = false
+local boolShaderActivePreviously = false
 
 local glUseShader = gl.UseShader
 local glCopyToTexture = gl.CopyToTexture
@@ -203,35 +205,33 @@ ColourTable={
 	  uniformInt = uniformInt
 	}
 
-boolShaderActive= false
 function widget:Initialize()
-	widgetHandler:RegisterGlobal("ActivateSlowMoShader", ActivateSlowMoShader)
 	boolShaderActive = false
-  vsx, vsy = widgetHandler:GetViewSizes()
-  widget:ViewResize(vsx, vsy)
+  	vsx, vsy = widgetHandler:GetViewSizes()
+  	widget:ViewResize(vsx, vsy)
+  	
 	if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
 	
 	if gl.CreateShader then
-	playerID = Spring.GetMyPlayerID()
-	tname,_, tspec, tteam, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
-	local _,_,_,_, side, _                               = Spring.GetTeamInfo(tteam)
+		playerID = Spring.GetMyPlayerID()
+		tname,_, tspec, tteam, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
+		local _,_,_,_, side, _                               = Spring.GetTeamInfo(tteam)
 
-	if  side and side == "antagon" then
-		shaderTable.fragment=  tacVision
-	else
-		shaderTable.fragment= 	nightvision
-	end
-	
-	
+		shaderTable.fragment= nightvision
+		if  side == "antagon" then
+			shaderTable.fragment= nightvision
+		elseif side == "protagon" then
+			shaderTable.fragment= tacVision 
+		end		
+		
 		shaderProgram = gl.CreateShader(shaderTable)
 	else
 		Spring.Echo("<Night Vision Shader>: GLSL not supported.")
 	end
   
 	if not shaderProgram and gl and gl.GetShaderLog then
-	 Spring.Echo(tacVision)
-    Spring.Log(widget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
-    widgetHandler:RemoveWidget()
+    	Spring.Log(widget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
+   		widgetHandler:RemoveWidget()
 	end	
 
 end
@@ -252,14 +252,23 @@ screencopy = gl.CreateTexture(vsx, vsy, {
 	})
 end
 
+function widget:RecvLuaMsg(msg, playerID)
 
-
-function ActivateSlowMoShader(boolActive)
-	boolShaderActive = boolActive
+	if string.find(msg, "SlowMoShader") then
+		if msg == "SlowMoShader_Active" then
+			boolShaderActive = true
+			if not boolShaderActivePreviously then
+ 				widget:ViewResize(vsx,vsy)
+			end
+			
+		elseif msg == "SlowMoShader_Deactivated" then
+			boolShaderActive = false			
+		end
+	end
 end
 
 function widget:DrawScreenEffects()
-	if boolShaderActive == true then
+	if  boolShaderActive == true then
 	  glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
 	  glTexture(0, screencopy)
 	  glUseShader(shaderProgram)
@@ -267,5 +276,6 @@ function widget:DrawScreenEffects()
 	  glTexture(0, false)
 	  glUseShader(0)
 	end
+	boolShaderActivePreviously = boolShaderActive
 end
 	
