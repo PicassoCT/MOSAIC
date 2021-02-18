@@ -21,10 +21,10 @@ local weaponDef = {
 	tracks = false,
 	--commandFire = true,
 	avoidFeature = true,
-	avoidGround = true,
+
 
 	--flight behaviour
-	startVelocity  = 500,
+	startVelocity  = 50,
 	
 	flightTime = 25.5 ,	
 	weaponVelocity = 4000,
