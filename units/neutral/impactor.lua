@@ -8,6 +8,7 @@ local unitDef = {
 	buildPic = "placeholder.png",
 	--floater = true,
 	--cost
+		--cost
 	buildCostMetal = 0,
 	buildCostEnergy = 0,
 	buildTime =1,
@@ -30,9 +31,6 @@ local unitDef = {
 	
 	Category = [[NOTARGET]],
 	
-	
-	
-	
 	customParams = {},
 	sfxtypes = {
 		explosiongenerators = {
@@ -54,10 +52,8 @@ local unitDef = {
 			"custom:firecloudnuke",--1034
 			"custom:permacloudnuke",--1035
 			"custom:nukeshroom",--1036
-		},
-		
-	},
-	
+		},		
+	},	
 }
 
 return lowerkeys({ [unitName] = unitDef })
