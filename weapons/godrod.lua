@@ -43,9 +43,8 @@ local weaponDef = {
 	explosionScar = true, 
  	cegTag = "impactor",
 	cameraShake =1.0,
-    explosionGenerator = "custom:missile_explosion"
-    soundStart = "weapons/godrod/impactor.ogg",
-
+    explosionGenerator = "custom:missile_explosion",
+    soundStart = "weapons/godrod/impactor.ogg"
 }
   
 return lowerkeys({ [weaponName] = weaponDef })
