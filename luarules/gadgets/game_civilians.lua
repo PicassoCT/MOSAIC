@@ -904,7 +904,6 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     nrToDecimate = math.floor(nrToDecimate)
     -- echo("Decimation called"..nrToDecimate)
     if nrToDecimate <= 0 then return end
-    if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
 
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
