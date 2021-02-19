@@ -227,7 +227,7 @@ local CivilianTruck = Truck:New{
 	-- objectName 	= "Truck.s3o",
 	weapons = {
 			[1]={name  = "marker",
-				onlyTargetCategory = [[NIL]],
+				onlyTargetCategory = [[NOTARGET]],
 				},
 			},
 
