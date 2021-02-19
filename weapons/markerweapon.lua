@@ -11,6 +11,8 @@ local weaponDef = {
     avoidFriendly = false,
     --physics
     weaponVelocity = 1,
+    canattackground= true,
+    
     reloadtime = 9000,
     range = 1024,
     turret = true,
