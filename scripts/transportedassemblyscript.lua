@@ -20,7 +20,6 @@ function getDistance(cmd, x, z)
 end
 
 function transferCommands()
-
     while true do
         Sleep(150)
         if GG.Factorys and GG.Factorys[unitID] and GG.Factorys[unitID][1] then
@@ -54,7 +53,6 @@ function transferCommands()
                 end
             end
         end
-
     end
 end
 
