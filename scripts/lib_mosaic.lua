@@ -146,7 +146,7 @@ function getGameConfig()
         -- Icons
         iconGroundOffset = 50,
         SatelliteIconDistance = 150,
-        SatelliteShrapnellDistance = 250,
+        SatelliteShrapnellDistance = 450,
         SatelliteShrapnellLifeTime = 2 * 60 * 1000,
         SatelliteShrapnellDamagePerSecond = 1000,
         -- Operativedrop HeightOffset

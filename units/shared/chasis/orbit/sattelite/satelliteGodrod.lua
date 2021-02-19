@@ -20,11 +20,11 @@ local satteliteGodrod = Satellite:New{
 	},
 	
 
-	alwaysupright			= true,
+	alwaysupright = true,
 	upright= true,
 	canAttack = true,
 	canLand = false,
-	--canManualFire = true,
+	canManualFire = true,
 
 	customparams			= {
 		helptext		= "Nuklear Option",
@@ -36,6 +36,7 @@ local satteliteGodrod = Satellite:New{
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "5 25 5",
+	sightDistance		= 	125, 
 
 	fireState = 1,
 	weapons = {
@@ -43,7 +44,7 @@ local satteliteGodrod = Satellite:New{
 			name  = "godrod",   
 			--mainDir = "0 1 0",
 			--maxAngleDif = 90,
-			onlyTargetCategory = [[GROUND]]
+			onlyTargetCategory = [[GROUND BUILDING]]
 			},
 					
 		},	

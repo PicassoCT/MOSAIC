@@ -450,8 +450,7 @@ function checkReSpawnHouses()
     dataToAdd = {}
     for bID, routeData in pairs(GG.BuildingTable) do
         local routeDataCopy = routeData
-        if doesUnitExistAlive(bID) ~= true and BuildingWithWaitingRespawn[bID] ==
-            nil then
+        if bID and doesUnitExistAlive(bID) ~= true and not BuildingWithWaitingRespawn[bID] then
             GG.BuildingTable[bID] = nil
 
             x, z = routeDataCopy.x, routeDataCopy.z
@@ -572,6 +571,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     -- assert(unitOne)
     -- assert(unitTwo)
 
+
     local Route = {}
 
     x1, y1, z1 = spGetUnitPosition(unitOne)
@@ -691,8 +691,12 @@ end
 
 function gadget:Initialize()
     -- Initialize global tables
+    GG.CivilianTable = {}
     GG.DisguiseCivilianFor = {}
     GG.DiedPeacefully = {}
+    GG.BuildingTable = {}
+    GG.AerosolAffectedCivilians = {}
+    GG.UnitArrivedAtTarget = {}
 
     process(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)
@@ -869,16 +873,17 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
     targetNodeID = math.random(2, #RouteTabel[startNodeID])
 
     mydefID = spGetUnitDefID(uID)
-
-    GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
-        mydefID = mydefID,
-        myTeam = spGetUnitTeam(uID),
-        unitID = uID,
-        goalIndex = 1,
-        goalList = buildRouteSquareFromTwoUnits(startNodeID,
-                                                RouteTabel[startNodeID][targetNodeID],
-                                                mydefID)
-    }, spGetGameFrame() + (uID % 100))
+    if startNodeID and targetNodeID then
+        GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
+            mydefID = mydefID,
+            myTeam = spGetUnitTeam(uID),
+            unitID = uID,
+            goalIndex = 1,
+            goalList = buildRouteSquareFromTwoUnits(startNodeID,
+                                                    RouteTabel[startNodeID][targetNodeID],
+                                                    mydefID)
+        }, spGetGameFrame() + (uID % 100))
+    end
 end
 
 function testClampRoute(Route, defID) return Route end
@@ -908,8 +913,10 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             typeTable[GG.CivilianTable[id].defID] then
             -- echo("Decimating:"..id.." a "..UnitDefs[GG.CivilianTable[id].defID].name)
             spDestroyUnit(id, false, true)
-            GG.UnitArrivedAtTarget[id] = nil
-            nrToDecimate = nrToDecimate - 1
+            if doesUnitExistAlive(id) == false then
+                GG.UnitArrivedAtTarget[id] = nil
+                nrToDecimate = nrToDecimate - 1
+            end
             if nrToDecimate <= 0 then return end
         end
     end

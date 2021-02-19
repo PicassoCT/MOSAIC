@@ -48,9 +48,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if Satellites[unitID] then Satellites[unitID] = nil end
 
         if SatelliteTypes[unitDefID] and unitDefID ~= ShrapnellCloudSatDefID then
-            id = createUnitAtUnit(gaiaTeamID, "satelliteshrapnell", unitID,
-                                  unitID)
-            spSetUnitAlwaysVisible(id, true)
+           GG.UnitsToSpawn:PushCreateUnit("satelliteshrapnell", x, y, z, math.random(1, 4), gaiaTeamID)         
         end
     end
 

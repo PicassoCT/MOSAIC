@@ -15,6 +15,7 @@ return {
       water              = true,
       alwaysvisible = true,
       properties = {
+         alwaysvisible      = true,
         colormap           = [[
         0.9 0.9 0.42  0.01 
         0.9 0.49 0.21 0.01  

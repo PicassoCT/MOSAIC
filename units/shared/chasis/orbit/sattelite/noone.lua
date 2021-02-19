@@ -6,6 +6,9 @@
 
 
 local NooneLaser = Human:New{
+	name = "Noone",
+	description = "Satellite Destroying Laser",
+
 	corpse				= "",
 	maxDamage           = 500,
 	mass                = 1,
@@ -38,9 +41,7 @@ local NooneLaser = Human:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
-	name = "Noone",
-	description = "Satellite Destroying Laser",
-
+	
 
 	cantBeTransported  = false,
 	canAttack = true,

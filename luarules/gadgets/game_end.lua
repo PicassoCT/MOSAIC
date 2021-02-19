@@ -70,8 +70,8 @@ local killedAllyTeams = {}
 --------------------------------------------------------------------------------
 local GameConfig = getGameConfig()
 
-GG.GlobalGameState = GameConfig.GameState.normal
-
+ GG.GlobalGameState = GameConfig.GameState.normal
+ 
 function setGlobalGameState(state)
     GG.GlobalGameState = state
     Spring.SetGameRulesParam("GlobalGameState:", state)

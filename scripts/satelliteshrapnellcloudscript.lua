@@ -24,6 +24,7 @@ function script.Create()
     hideT(TablesOfPiecesGroups["Particle"])
     StartThread(dealDamageAnimate)
     Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitNoSelect(unitID,true)
 end
 
 function script.Killed(recentDamage, _)

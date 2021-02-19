@@ -51,7 +51,7 @@ function script.AimWeapon1(Heading, pitch)
     -- aiming animation: instantly turn the gun towards the enemy
     -- WTurn(base, z_axis, Heading, math.pi)
     -- WTurn(aimpiece, x_axis, -pitch, math.pi)
-    return NumberOfRods > 0
+    return NumberOfRods > 0 and boolParked == false
 end
 
 function script.FireWeapon1()
@@ -72,6 +72,7 @@ function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
 
+boolParked= false
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
@@ -79,8 +80,10 @@ function showHideIcon(boolCloaked)
 
         hideAll(unitID)
         Show(Icon)
+        boolParked = true
     else
         showAll(unitID)
         Hide(Icon)
+        boolParked = false
     end
 end

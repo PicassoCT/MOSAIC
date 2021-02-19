@@ -3,6 +3,8 @@ local weaponName = "godrod" --this is the actually maschinegune of the inferno t
 local weaponDef = {
     name = "Mjoelnir Impactor",
     weaponType = [[MissileLauncher]],
+    cylinderTargeting = 1.0,
+
 	--damage
 	damage = {
 	default = 3500
@@ -16,12 +18,12 @@ local weaponDef = {
 
 	--aiming behaviour
 	range = 3000,
-	turnRate = 9990000,
+	turnRate = 999000000,
 	turret = true,
-	tracks = false,
-	--commandFire = true,
-	avoidFeature = true,
+	tracks = true,
 
+	avoidFeature = true,
+	avoidGround = true,
 
 	--flight behaviour
 	startVelocity  = 50,

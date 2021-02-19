@@ -44,7 +44,7 @@ if (gadgetHandler:IsSyncedCode()) then
         getMobileInterrogateAbleTypeTable(UnitDefs)
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
-    local impactorWeaponDefID = WeaponDefNames["impactor"].id
+    local impactorWeaponDefID = WeaponDefNames["godrod"].id
     Script.SetWatchWeapon(impactorWeaponDefID, true)
     local raidWeaponDefID = WeaponDefNames["raidarrest"].id
     Script.SetWatchWeapon(raidWeaponDefID, true)
@@ -98,8 +98,7 @@ if (gadgetHandler:IsSyncedCode()) then
     -- ===========Explosion Functions ====================================================
   local explosionFunc = {
     [impactorWeaponDefID] =  function(weaponDefID, px, py, pz, AttackerID)
-            attackerTeam = Spring.GetUnitTeam(AttackerID)
-            id = Spring.CreateUnit("impactor", px, py, pz, 1, attackerTeam)
+            id = Spring.CreateUnit("impactor", px, py, pz, 1, GaiaTeamID)
             Spring.SetUnitBlocking(id, false)
     end
   }
