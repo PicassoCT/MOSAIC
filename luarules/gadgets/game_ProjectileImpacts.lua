@@ -44,6 +44,8 @@ if (gadgetHandler:IsSyncedCode()) then
         getMobileInterrogateAbleTypeTable(UnitDefs)
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
+    local godRodMarkerWeaponDefID = WeaponDefNames["godrodmarkerweapon"].id
+    Script.SetWatchWeapon(godRodMarkerWeaponDefID, true)  
     local impactorWeaponDefID = WeaponDefNames["godrod"].id
     Script.SetWatchWeapon(impactorWeaponDefID, true)
     local raidWeaponDefID = WeaponDefNames["raidarrest"].id
@@ -75,6 +77,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     local panicWeapons = {
+        [WeaponDefNames["godrod"].id] = {damage = 1000, range = 2000},
         [WeaponDefNames["ssied"].id] = {damage = 500, range = SSied_Def.range},
         [WeaponDefNames["ak47"].id] = {damage = 100, range = ak47_Def.range},
         [WeaponDefNames["pistol"].id] = {damage = 75, range = pistol_Def.range},
@@ -444,6 +447,8 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Set Uncloak
     end
 
+
+
     UnitDamageFuncT[stunpistoldWeaponDefID] =
         function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID,
                  attackerID, attackerDefID, attackerTeam)
@@ -529,6 +534,40 @@ if (gadgetHandler:IsSyncedCode()) then
             if houseTypeTable[unitDefID] then return 0 end
         end
 
+    UnitDamageFuncT[godRodMarkerWeaponDefID] =   function(unitID, unitDefID, unitTeam,
+                                                damage, paralyzer, weaponDefID,
+                                                attackerID, attackerDefID,
+                                                attackerTeam)
+
+      
+        gx,gy, gz = Spring.GetUnitPosition(attackerID)
+        tx,ty, tz = Spring.GetUnitPosition(unitID)
+        v = makeVector(tx - gx, ty - gy, tz - gz)
+        v = normVector(v)
+        
+            local ImpactorParameter = {
+                                pos = { gx, gy - 50, gz },
+                               ["end"] = { tx, ty + 10, tz },
+                                speed = { v.x, v.y, v.z },
+                                owner = attackerID,
+                                team = attackerTeam,
+                                spread = { math.random(-5, 5), math.random(-5, 5), math.random(-5, 5) },
+                                ttl = 4000,
+                                error = { 0, 0, 0 },
+                                maxRange = 600,
+                                gravity = Game.gravity,
+                                startAlpha = 1,
+                                endAlpha = 1,
+                                model = "GodRod.s3o",
+                                cegTag = "impactor"
+                            }
+
+       projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
+        if projectileID then
+            Spring.SetProjectileTarget(attackerID, "u")
+        end
+    end
+
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
@@ -544,8 +583,15 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     -- ===========Projectile Persistence Functions ====================================================
+    local ProjectileCreatedFunc={}
+
+
     local NewUnitsInPanic = {}
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
+        if ProjectileCreatedFunc[projWeaponDefID] then 
+            ProjectileCreatedFunc[projWeaponDefID](proID, proOwnerID, projWeaponDefID) 
+        end
+
         if panicWeapons[projWeaponDefID] then
             process(getAllNearUnit(proOwnerID,
                                    panicWeapons[projWeaponDefID].range),
@@ -585,7 +631,7 @@ if (gadgetHandler:IsSyncedCode()) then
             myID = persPack.unitID
             attackerID = persPack.attackerID
             boolIsDead = spGetUnitIsDead(myID)
-            if not boolIsDead or boolIsDead == true then
+            if boolIsDead  ~= nil or boolIsDead == true then
                 GG.FleeingCivilians[myID] = nil
                 return nil, persPack
             end
