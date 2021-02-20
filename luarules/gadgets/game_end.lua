@@ -77,34 +77,6 @@ function setGlobalGameState(state)
     Spring.SetGameRulesParam("GlobalGameState:", state)
 end
 
-function gadget:Initialize()
-    Spring.Echo(GetInfo().name .. " Initialization started")
-    setGlobalGameState(GameConfig.GameState.normal)
-
-    GG.Launchers = {}
-
-    if teamDeathMode == "none" then
-        Spring.Echo("GameEndGadget: No teamDeathMode specified")
-        gadgetHandler:RemoveGadget()
-    end
-
-    gaiaAllyTeamID = select(6, spGetTeamInfo(gaiaTeamID))
-
-    -- at start, fill in the table of all alive allyteams
-    for _, allyTeamID in ipairs(allyTeams) do
-        local teamList = spGetTeamList(allyTeamID)
-        local teamCount = 0
-        for _, teamID in ipairs(teamList) do
-            teamToAllyTeam[teamID] = allyTeamID
-            if (ignoreGaia == 0) or (teamID ~= gaiaTeamID) then
-                teamCount = teamCount + 1
-            end
-        end
-        allyTeamAliveTeamsCount[allyTeamID] = teamCount
-        if teamCount > 0 then aliveAllyTeamCount = aliveAllyTeamCount + 1 end
-    end
-    Spring.Echo(GetInfo().name .. " Initialization ended")
-end
 
 local GameStateMachine = {
     Timer = Spring.GetGameFrame(),
@@ -116,7 +88,7 @@ local GameStateMachine = {
                 if teamID and launchersT then
                     for launcherID, step in pairs(launchersT) do
                         if launcherID and step > GameConfig.PreLaunchLeakSteps then
-                            GameStateMachine.Timer = frame
+                            GG.GameStateMachine.Timer = frame
                             return GameConfig.GameState.launchleak
                         end
                     end
@@ -127,9 +99,9 @@ local GameStateMachine = {
     end,
 
     ["launchleak"] = function(frame)
-        if GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames <
+        if GG.GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames <
             frame then
-            GameStateMachine.Timer = frame
+            GG.GameStateMachine.Timer = frame
             return GameConfig.GameState.anarchy
         end
 
@@ -168,7 +140,7 @@ local GameStateMachine = {
             end
 
             if boolNoReadyLaunchers == true then
-                GameStateMachine.Timer = frame
+                GG.GameStateMachine.Timer = frame
                 return GameConfig.GameState.pacification
             end
         end
@@ -180,14 +152,44 @@ local GameStateMachine = {
 
     ["pacification"] = function(frame)
 
-        if GameStateMachine.Timer + GameConfig.TimeForPacification < frame then
-            GameStateMachine.Timer = frame
+        if GG.GameStateMachine.Timer + GameConfig.TimeForPacification < frame then
+            GG.GameStateMachine.Timer = frame
             return GameConfig.GameState.normal
         end
 
         return GameConfig.GameState.pacification
     end
 }
+
+function gadget:Initialize()
+    Spring.Echo(GetInfo().name .. " Initialization started")
+    setGlobalGameState(GameConfig.GameState.normal)
+
+    GG.Launchers = {}
+    GG.GameStateMachine = GameStateMachine
+
+    if teamDeathMode == "none" then
+        Spring.Echo("GameEndGadget: No teamDeathMode specified")
+        gadgetHandler:RemoveGadget()
+    end
+
+    gaiaAllyTeamID = select(6, spGetTeamInfo(gaiaTeamID))
+
+    -- at start, fill in the table of all alive allyteams
+    for _, allyTeamID in ipairs(allyTeams) do
+        local teamList = spGetTeamList(allyTeamID)
+        local teamCount = 0
+        for _, teamID in ipairs(teamList) do
+            teamToAllyTeam[teamID] = allyTeamID
+            if (ignoreGaia == 0) or (teamID ~= gaiaTeamID) then
+                teamCount = teamCount + 1
+            end
+        end
+        allyTeamAliveTeamsCount[allyTeamID] = teamCount
+        if teamCount > 0 then aliveAllyTeamCount = aliveAllyTeamCount + 1 end
+    end
+    Spring.Echo(GetInfo().name .. " Initialization ended")
+end
 
 LaunchedRockets = {}
 
@@ -323,7 +325,7 @@ function constantCheck(frame)
                         Spring.DestroyUnit(launcherID, false, true)
                         GG.Launchers[teamID][launcherID] = nil
 
-                        GameStateMachine.Timer = frame
+                        GG.GameStateMachine.Timer = frame
                         setGlobalGameState(GameConfig.GameState.postlaunch)
                     end
                 end
@@ -360,7 +362,7 @@ function gadget:GameFrame(frame)
     if frame > 1 and (frame % 16) == 0 then
 
         constantCheck(frame)
-        setGlobalGameState(GameStateMachine[GG.GlobalGameState](frame))
+        setGlobalGameState(GG.GameStateMachine[GG.GlobalGameState](frame))
 
         if GG.GlobalGameState and oldState ~= GG.GlobalGameState then
             holdSpeach(oldState .. ">" .. GG.GlobalGameState)
