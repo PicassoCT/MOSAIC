@@ -1,12 +1,12 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.725 -- 0.5
+unitFactor = 0.8 -- 0.5
 
 function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.713"
+            Version = "Alpha: 0.714"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
