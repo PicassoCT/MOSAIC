@@ -188,6 +188,12 @@ function getAllNearUnit(unitID, Range)
     px, py, pz = Spring.GetUnitPosition(unitID)
     return getAllInCircle(px, pz, Range, unitID)
 end
+
+-- > Grabs every Unit in a circle, filters out the unitid
+function getAllNearUnitSpherical(unitID, Range)
+    px, py, pz = Spring.GetUnitPosition(unitID)
+    return getAllInSphere(px, py, pz, Range, unitID)
+end
 -- ======================================================================================
 -- Section: Unit Information Getters/Setters 
 -- ======================================================================================
@@ -6248,8 +6254,7 @@ end
 
 -- > transfers Order from one Unit to another
 function transferAttackOrder(originID, targetID)
-
-    CommandTable = Spring.GetUnitCommands(originID, 1)
+    CommandTable = Spring.GetUnitCommands(originID, 2)
     if CommandTable and CommandTable[1] then
         cmd = CommandTable[1]
         if cmd.id == CMD.ATTACK or cmd.id == CMD.FIGHT then
@@ -6257,8 +6262,9 @@ function transferAttackOrder(originID, targetID)
         elseif cmd.id == CMD.STOP then
             Spring.GiveOrderToUnit(targetID, CMD.STOP, {}, {})
         end
+    else
+        Spring.GiveOrderToUnit(targetID, CMD.STOP, {}, {})
     end
-
 end
 
 -- > move away from another unit by distance*scalingfactor

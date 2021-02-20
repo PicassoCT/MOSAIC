@@ -75,7 +75,7 @@ function doDamageCyclic()
 
     Spring.SetUnitNoSelect(unitID, true)
     while LifeTime > 0 do
-        process(getAllNearUnit(unitID, SatelliteShrapnellDistance),
+        process(getAllNearUnitSpherical(unitID, SatelliteShrapnellDistance),
                 function(id) if id ~= unitID then return id end end,
                 function(id)
             Spring.AddUnitDamage(id, DamagePerSecondTenth)

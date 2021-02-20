@@ -339,7 +339,6 @@ end
 
 -- spawns intial buildings
 function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
-
     local finiteSteps = GameConfig.maxIterationSteps
     local cursor = {x = startx, z = startz}
     local mirror = {x = startx, z = startz}
@@ -890,7 +889,7 @@ function testClampRoute(Route, defID) return Route end
 
 function sendArrivedUnitsCommands()
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
-        if GG.CivilianTable[id] and
+        if id and GG.CivilianTable[id] and
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
             doesUnitExistAlive(id) then
             giveWaypointsToUnit(id, GG.CivilianTable[id].defID,
@@ -912,6 +911,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             typeTable[GG.CivilianTable[id].defID] then
             -- echo("Decimating:"..id.." a "..UnitDefs[GG.CivilianTable[id].defID].name)
             spDestroyUnit(id, false, true)
+            --echo("Killing Unit:"..id)
             if doesUnitExistAlive(id) == false then
                 GG.UnitArrivedAtTarget[id] = nil
                 nrToDecimate = nrToDecimate - 1
@@ -937,6 +937,19 @@ function countDownRespawnHouses(framesToSubstract)
     end
 end
 
+function policeActionTimeSurveilance(frame)
+    for id, times in pairs(activePoliceUnitIds_DispatchTime) do
+            if times then
+                activePoliceUnitIds_DispatchTime[id] = times - 5
+                if activePoliceUnitIds_DispatchTime[id] <= 0 then
+                    checkReSpawnHouses()
+                    regenerateRoutesTable()
+                    spDestroyUnit(id, false, true)
+                end
+            end
+        end
+end
+
 function gadget:GameFrame(frame)
     if boolInitialized == false then
         spawnInitialPopulation(frame)
@@ -958,15 +971,7 @@ function gadget:GameFrame(frame)
         -- give new Target
         sendArrivedUnitsCommands()
         -- echoT(statistics)
-        for id, times in pairs(activePoliceUnitIds_DispatchTime) do
-            if times then
-                activePoliceUnitIds_DispatchTime[id] = times - 5
-                if activePoliceUnitIds_DispatchTime[id] <= 0 then
-                    checkReSpawnHouses()
-                    regenerateRoutesTable()
-                    spDestroyUnit(id, false, true)
-                end
-            end
-        end
+        policeActionTimeSurveilance(frame)
+       
     end
 end

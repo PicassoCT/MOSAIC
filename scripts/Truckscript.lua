@@ -50,7 +50,7 @@ function script.Create()
 
 end
 
-allOrderTypes = {[UnitDefNames["ground_truck_rocket"].id] = true}
+allOrderTypes = {}
 
 function loadLoadOutLoop()
     waitTillComplete(unitID)
@@ -79,7 +79,6 @@ function loadLoadOutLoop()
                 transferAttackOrder(unitID, loadOutUnitID)
             end
             transferStates(unitID, loadOutUnitID)
-
         end
     end
 end

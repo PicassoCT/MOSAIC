@@ -27,17 +27,10 @@ cruiseMissileWeapons[WeaponDefNames["cm_turret_ssied"].id] = true
 
 onImpact = {
     [WeaponDefNames["cm_airstrike"].id] = function(projID, tx, ty, tz)
-        px, py, pz = Spring.GetProjectilePosition(projID)
-        teamID = Spring.GetProjectileTeamID(projID)
-
-        for i = 1, 4 do
-            GG.UnitsToSpawn:PushCreateUnit("air_copter_ssied", px, py, pz, 1,
-                                           teamID)
-        end
-
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),
                                    tz)
     end,
+
     [WeaponDefNames["cm_walker"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
         teamID = Spring.GetProjectileTeamID(projID)
@@ -48,6 +41,7 @@ onImpact = {
         end
         Spring.DeleteProjectile(projID)
     end,
+
     [WeaponDefNames["cm_antiarmor"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
         teamID = Spring.GetProjectileTeamID(projID)
@@ -72,11 +66,14 @@ onImpact = {
                 model = "air_copter_antiarmor_projectile.s3o"
             })
         end
-        Spring.DeleteProjectile(projID, tx, ty, tz)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),
+                                   tz)
     end,
     [WeaponDefNames["cm_turret_ssied"].id] = function(projID)
         px, py, pz = Spring.GetProjectilePosition(projID)
         teamID = Spring.GetProjectileTeamID(projID)
+         Spring.CreateUnit("air_copter_ssied", px, py, pz, 1, teamID)
+         Spring.CreateUnit("air_copter_ssied", px, py, pz, 1, teamID)
         unitID = Spring.CreateUnit("ground_turret_mg", px, py, pz, 1, teamID)
         giveParachutToUnit(unitID, px, py, pz)
 

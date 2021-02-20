@@ -25,6 +25,7 @@ upleg01 = piece "upleg01"
 upleg002 = piece "upleg002"
 upleg003 = piece "upleg003"
 upleg004 = piece "upleg004"
+local myDefID = Spring.GetUnitDefID(unitID)
 
 local scriptEnv = {
     center = center,
@@ -4931,7 +4932,10 @@ function script.FireWeapon1()
 end
 
 boolWalking = false
-function script.StartMoving() boolWalking = true end
+function script.StartMoving() 
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/walker/servo"..math.random(1,7)..".ogg", 0.75, 3000, 2)
+    boolWalking = true 
+end
 
 function script.StopMoving() boolWalking = false end
 
