@@ -12,8 +12,7 @@ local weaponDef = {
 	noSelfDamage = true,
 	reloadtime = 30, -- seconds
 
-	--orders behaviour
-	--commandFire  = true,	
+	--orders behaviour	
 	canAttackGround = true,
 
 	--aiming behaviour

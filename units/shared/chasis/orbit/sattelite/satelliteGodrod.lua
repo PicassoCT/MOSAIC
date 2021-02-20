@@ -24,7 +24,7 @@ local satteliteGodrod = Satellite:New{
 	upright= true,
 	canAttack = true,
 	canLand = false,
-	canManualFire = true,
+    --canManualFire = true,
 
 	customparams			= {
 		helptext		= "Nuklear Option",
@@ -41,7 +41,7 @@ local satteliteGodrod = Satellite:New{
 	fireState = 1,
 	weapons = {
 		[1]={
-			name  = "godrod",   
+			name  = "godrodmarkerweapon",   
 			--mainDir = "0 1 0",
 			--maxAngleDif = 90,
 			onlyTargetCategory = [[GROUND BUILDING]]

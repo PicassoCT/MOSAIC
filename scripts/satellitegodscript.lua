@@ -16,7 +16,7 @@ GodRod = piece "GodRod"
 NumberOfRods = 3
 function script.Create()
 
-    -- Spin(center,y_axis,math.rad(1),0.5)
+    --Spin(center,y_axis,math.rad(5),0.5)
     if Icon then
         Move(Icon, y_axis, GameConfig.SatelliteIconDistance, 0);
         Hide(Icon)
@@ -28,7 +28,6 @@ function script.Create()
 end
 
 function delayedShow()
-
     hideAll(unitID)
     Show(Packed)
     waitTillComplete(unitID)
@@ -48,10 +47,10 @@ function script.AimFromWeapon1() return center end
 function script.QueryWeapon1() return GodRod end
 
 function script.AimWeapon1(Heading, pitch)
-    -- aiming animation: instantly turn the gun towards the enemy
-    -- WTurn(base, z_axis, Heading, math.pi)
-    -- WTurn(aimpiece, x_axis, -pitch, math.pi)
-    return NumberOfRods > 0 and boolParked == false
+    boolCanAim = (NumberOfRods > 0)
+    Spring.Echo("AimWeapon1 Sat GodRod".. toString(boolCanAim))
+
+    return boolCanAim
 end
 
 function script.FireWeapon1()
@@ -84,6 +83,8 @@ function showHideIcon(boolCloaked)
     else
         showAll(unitID)
         Hide(Icon)
+        Hide(Packed)
+        Hide(GodRod)
         boolParked = false
     end
 end
