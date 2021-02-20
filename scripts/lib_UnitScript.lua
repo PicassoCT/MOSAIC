@@ -2972,7 +2972,7 @@ end
 
 -- >Generic to String
 function toString(element)
-    if not element then return "nil" end
+    if  element == nil then return "nil" end
     local typeE = type(element)
 
     if typeE == "nil" then return "nil" end
@@ -6276,12 +6276,13 @@ function runAwayFrom(id, horrorID, distanceToRun)
     hx, hz = (x - hx), (z - hz)
     maX = math.max(math.abs(hx), math.max(hz))
     hx, hz = hx / maX, hz / maX
-    hx, hz = hx * distanceToRun, hz * distanceToRun
+    hx, hz = math.ceil(hx * distanceToRun), math.ceil( hz * distanceToRun)
     hx, hz = x + hx, z + hz
+
+    --Spring.SetUnitMoveGoal(id, hx, y, hz)
     Command(id, "stop", {}, {})
-    Spring.SetUnitMoveGoal(id, hx, y, z)
-    -- Command( id, "go", {x = hx, y= y, z = hz},{})
-    -- Command( id, "go", {x = hx, y= y, z = hz},{"shift"})
+    Command( id, "go", {x = hx, y= y, z = hz},{})
+    Command( id, "go", {x = hx, y= y, z = hz},{"shift"})
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)
