@@ -167,6 +167,8 @@ end
 --  gadget:GamePreload
 --  gadget:UnitCreated (for each HQ / comm)
 --  gadget:GameStart
+local side = "antagon"
+local firstFrame = Spring.GetGameFrame()
 
 function gadget:Initialize()
 	Spring.Echo("Prometheus Initialise: Debugomode is "..prometheus_Debug_Mode)
@@ -175,6 +177,7 @@ function gadget:Initialize()
 		__newindex = function() error("Prometheus: Attempt to write undeclared global variable", 2) end,
 	})
 	SetupCmdChangeAIDebugVerbosity()
+	firstFrame = Spring.GetGameFrame()
 end
 
 function gadget:GamePreload()
@@ -198,15 +201,26 @@ local function CreateTeams()
 				local units = Spring.GetTeamUnits(t)
 				-- Figure out the side we're on by searching for our
 				-- startUnit in Spring's sidedata.
-				local side = "antagon"
+				local tteam = select(4,Spring.GetPlayerInfo(leader))
+				local side    = select(5,Spring.GetTeamInfo(tteam)) or "antagon"
+	
 				for _,u in ipairs(units) do
 					if (not Spring.GetUnitIsDead(u)) then
 						local unit = UnitDefs[Spring.GetUnitDefID(u)].name
 						for _,s in ipairs(sidedata) do
-							if (s.startUnit == unit) then side = s.sideName end
+							if (s.startUnit == unit) then
+							 Spring.Echo("Found start unit for side".. s.sideName)		
+							 side = s.sideName 
+							end
 						end
 					end
 				end
+
+				if not (side == "protagon" or side =="antagon") then
+					Spring.Echo("Found uknown side: Defaulting to Antagon")
+					side = "antagon"
+				end
+				
 				if (side) then
 					team[t] = CreateTeam(t, at, side)
 					team[t].GameStart()
@@ -227,11 +241,13 @@ local function CreateTeams()
 	end
 end
 
+
+
 function gadget:GameFrame(f)
 	-- Log("gadget:GameFrame"..f)
-	if f == 1 then
+	if firstFrame and firstFrame + 1 < f then
 		-- This is executed AFTER headquarters / commander is spawned
-		Log("Prometheus :GameFrame 1")
+		Log("Prometheus : First Frame ")
 		if waypointMgr then
 			waypointMgr.GameStart()
 		end
@@ -240,7 +256,9 @@ function gadget:GameFrame(f)
 		-- in the team, to support random faction (implemented by swapping out HQ
 		-- in GameStart of that gadget.)
 		CreateTeams()
+		firstFrame = nil
 	end
+
 	-- waypointMgr update
 	if waypointMgr and f % waypointMgrGameFrameRate < .1 then
 		waypointMgr.GameFrame(f)

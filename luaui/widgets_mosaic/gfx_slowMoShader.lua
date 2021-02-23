@@ -204,6 +204,7 @@ ColourTable={
 	  fragment = "",
 	  uniformInt = uniformInt
 	}
+local  side  = "antagon"
 
 function widget:Initialize()
 	boolShaderActive = false
@@ -215,7 +216,7 @@ function widget:Initialize()
 	if gl.CreateShader then
 		playerID = Spring.GetMyPlayerID()
 		tname,_, tspec, tteam, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
-		local _,_,_,_, side, _                               = Spring.GetTeamInfo(tteam)
+		side    = select(5,Spring.GetTeamInfo(tteam))
 
 		shaderTable.fragment= nightvision
 		if  side == "antagon" then

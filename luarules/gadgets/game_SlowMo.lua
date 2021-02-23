@@ -13,8 +13,6 @@ end
 
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
-    local side = "antagon"
-    if math.random(0, 1) == 1 then side = "protagon" end
 
     local boolPreviouslyActive = false
     function detectRisingEdge(boolActive)
@@ -45,6 +43,7 @@ if (gadgetHandler:IsSyncedCode()) then
         InitialFrame = Spring.GetGameFrame()
         startFrame = Spring.GetGameFrame()
         endFrame = startFrame + 1
+  
     end
 
     function gadget:GameFrame(n)
@@ -176,11 +175,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- for teams without a active node or no node at all - hide the cursor during the slowMotionPhase
     function deactivateCursorForNormalTeams(tableTeamsActive)
-        deactivatedTeams = {}
-        allTeams = Spring.GetTeamList()
-        process(allTeams, function(team)
+        process(Spring.GetTeamList(), function(team)
             if not tableTeamsActive[team] then
-                deactivatedTeams[team] = true
                 SendToUnsynced("hideCursor", team)
             end
         end)
@@ -188,8 +184,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- restore Cursor for non-active teams
     function restoreCursorNonActiveTeams(tableTeamsActive)
-        allTeams = Spring.GetTeamList()
-        process(allTeams, function(team)
+        process(Spring.GetTeamList(), function(team)
             if not tableTeamsActive[team] then
                 SendToUnsynced("restoreCursor", team)
             end
@@ -207,6 +202,7 @@ if (gadgetHandler:IsSyncedCode()) then
 else -- Unsynced
     local formerCommandTable = {}
     local alt, ctrl, meta, shift, left, right = 0, 0, 0, 0, 0, 0
+    local side
     -- deactivate mouse icon
 
     local boolShaderActive = false
@@ -253,5 +249,11 @@ else -- Unsynced
         gadgetHandler:AddSyncAction("restoreCursor", restoreCursor)
         gadgetHandler:AddSyncAction("hideCursor", hideCursor)
         gadgetHandler:AddSyncAction("frameCall", frameCall)
+
+
+        local playerID = Spring.GetMyPlayerID()
+        local tteam = select(4,Spring.GetPlayerInfo(playerID))
+        side    = select(5,Spring.GetTeamInfo(tteam)) or "antagon"
+
     end
 end
