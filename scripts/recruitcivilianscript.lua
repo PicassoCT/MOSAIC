@@ -35,6 +35,10 @@ myTeam = Spring.GetUnitTeam(unitID)
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
 civilianAgentDefID = UnitDefNames["civilianagent"].id
 TruckTypeTable = getTruckTypeTable(UnitDefs)
+--assert(type(TruckTypeTable)=="table")
+--assert(#TruckTypeTable >0)
+
+echo("TruckTypeTable",TruckTypeTable)
 
 function isDisguisedRecruitableCivilian(id)
     return (GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id] ~=
@@ -49,16 +53,21 @@ function recruiteLoop()
     local recruitmentRange = GameConfig.agentConfig.recruitmentRange
     local spGetUnitTeam = Spring.GetUnitTeam
     local spGetUnitDefID = Spring.GetUnitDefID
+    local spGetUnitPosition = Spring.GetUnitPosition
+    local spDestroyUnit = Spring.DestroyUnit
     waitTillComplete(unitID)
     StartThread(lifeTime, unitID, 15000, true, false)
 
     while true do
         Sleep(100)
-        process(getAllNearUnit(unitID, recruitmentRange), function(id)
+        process(getAllNearUnit(unitID, recruitmentRange), 
+        function(id)
+
             if spGetUnitTeam(id) == gaiaTeamID then return id end
-        end, function(id)
+        end, 
+        function(id)
             if isDisguisedRecruitableCivilian(id) == true then
-                if Spring.GetUnitTeam(GG.DisguiseCivilianFor[id]) ~=
+                if spGetUnitTeam(GG.DisguiseCivilianFor[id]) ~=
                     recruitingTeam then
                     return GG.DisguiseCivilianFor[id] -- make unit transparent
                 else
@@ -66,22 +75,24 @@ function recruiteLoop()
                 end
             end
             return id -- push all others through unaltered
-        end, function(id)
+        end, 
+        function(id)
             recruitedDefID = spGetUnitDefID(id)
-            x, y, z = Spring.GetUnitPosition(id)
+            x, y, z = spGetUnitPosition(id)
 
             if TruckTypeTable[recruitedDefID] then
                 echo("Recruited truck")
                 ad = copyUnit(id, teamID, fatherID)
                 consumeAvailableRessourceUnit(unitID, "metal",
                                               GameConfig.costs.RecruitingTruck)
-                Spring.DestroyUnit(id, false, true)
+                spDestroyUnit(id, false, true)
                 endIcon()
             end
 
             if isNormalCivilian(id, recruitedDefID) == true then
                 echo("Recruited normal civilian")
                 recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
+                spDestroyUnit(id, false, true)
                 endIcon()
             end
 
@@ -90,7 +101,7 @@ function recruiteLoop()
                 oldTeam = Spring.GetUnitTeam(id)
                 ad = copyUnit(id, teamID)
                 attachDoubleAgentToUnit(ad, oldTeam)
-                Spring.DestroyUnit(id, false, true)
+                spDestroyUnit(id, false, true)
                 endIcon()
             end
 

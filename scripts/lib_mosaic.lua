@@ -256,6 +256,7 @@ function getTypeTable(UnitDefNames, StringTable)
     local Stringtable = StringTable
     retVal = {}
     for i = 1, #Stringtable do
+        Spring.Echo("Get TypeTable for "..Stringtable[i] )
         if not UnitDefNames[Stringtable[i]] then
             Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] ..
                             " does not exists")
@@ -426,7 +427,7 @@ function getTruckTypeTable(UnitDefs)
 
     typeTable = getCultureUnitModelNames(GameConfig.instance.culture, "truck",
                                          UnitDefs)
-
+    Spring.Echo(getTruckTypeTable, typeTable)
     return getTypeTable(UnitDefNames, typeTable)
 end
 

@@ -77,7 +77,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n They can be deactivated in the Widgetmanager (Press F11)"
 
-	}
+	},
 	----BuildUnits
 	[UnitDefNames["operativepropgator"].id] = 
 	{
@@ -184,6 +184,16 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		-- 
 		Time = 3000,
 		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
+	},	[UnitDefNames["raidicon"].id] = 
+	{	--This is the Raid Interface
+		--Both sides place there teams, the round ends and who aims at who, decides who is stills standing.
+		--Capturing the objective gives your team another member in the next round
+		--The raid  defends when the attackers are victorious or give up
+
+		speach= "sounds/tutorial/raidIcon.ogg",
+		-- 
+		Time = 3000,
+		text =  "\a|Raid\n Storm | Defend a Safehouse Minigame \n Click & Drag to place your units before round ends"
 	},
 }
 
@@ -243,6 +253,12 @@ function widget:GameFrame(t)
 				end
 			end	
 		end
+	end
+end
+
+function widget:UnitCreated(unitID, unitDefID)
+	if unitDefID == raidIconDefID and TutorialInfoTable[raidIconDefID].active == true then
+		PlaySoundAndMarkUnit(unitDefID, unitID)
 	end
 end
 
