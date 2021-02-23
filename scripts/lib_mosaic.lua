@@ -1,6 +1,6 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.8 -- 0.5
+unitFactor = 0.9 -- 0.5
 
 function getGameConfig()
     return {
@@ -10,8 +10,8 @@ function getGameConfig()
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
-        numberOfVehicles = math.ceil(100 * unitFactor),
-        numberOfPersons = math.ceil(150 * unitFactor),
+        numberOfVehicles = math.ceil(75 * unitFactor),
+        numberOfPersons = math.ceil(100 * unitFactor),
         nightCivilianReductionFactor = 0.25,
         LoadDistributionMax = 5,
 
