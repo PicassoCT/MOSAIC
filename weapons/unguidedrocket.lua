@@ -18,7 +18,7 @@ local weaponDef = {
 	range = 1024,
 	turnRate = 150,
 	turret = true,
-	tracks = false,
+	tracks = true,
 
 	avoidFeature = true,
 	avoidGround = true,
@@ -43,7 +43,7 @@ local weaponDef = {
 	cameraShake = 0.5,
     explosionGenerator = "custom:missile_explosion",
     soundStart = "sounds/weapons/rocket/launch.wav",
-    soundHit = "sounds/weapons/rocket/impact.wave",
+    soundHit = "sounds/weapons/rocket/impact.wav",
 
 }
 
