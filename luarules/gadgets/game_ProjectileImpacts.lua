@@ -385,7 +385,6 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-                            moveUnitToUnit()
 
                             spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
