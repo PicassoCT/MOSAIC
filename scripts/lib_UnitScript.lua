@@ -3750,8 +3750,7 @@ function distanceToLine(P1, P2, APos)
                              (P2.x - P1.x));
 end
 -- >returns the absolute distance on negative and positive values
-function absDistance(valA, valB)
-
+function absDistance(valA, valB) 
     if Signum(valA) == Signum(valB) then
         return math.abs(math.abs(valA) - math.abs(valB))
     else
