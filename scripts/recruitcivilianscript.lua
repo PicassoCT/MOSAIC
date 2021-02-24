@@ -34,11 +34,11 @@ myTeam = Spring.GetUnitTeam(unitID)
 
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
 civilianAgentDefID = UnitDefNames["civilianagent"].id
+
 TruckTypeTable = getTruckTypeTable(UnitDefs)
 --assert(type(TruckTypeTable)=="table")
 --assert(#TruckTypeTable >0)
 
-echo("TruckTypeTable",TruckTypeTable)
 
 function isDisguisedRecruitableCivilian(id)
     return (GG.DisguiseCivilianFor[id] and GG.DisguiseCivilianFor[id] ~=
