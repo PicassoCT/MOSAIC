@@ -57,7 +57,6 @@ local AIR_SNIPER = AIRCRAFT:New{
 	collide             = true,
 	crashDrag =0.035,
 
-
 	Category = [[AIR]],
 
 	  customParams = {
@@ -73,10 +72,13 @@ local AIR_SNIPER = AIRCRAFT:New{
 				onlyTargetCategory = [[GROUND ]],			
 				turret= false			}
 		},
-		
-			
 
+	sounds = {
+	  ok = {
+	    { file = 'plane/drone1.ogg', volume = 1.0 }
 
+	 	 },
+		}		
 }
 
 return lowerkeys({
