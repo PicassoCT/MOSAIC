@@ -3,7 +3,9 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
+include "lib_mosaic.lua"
 
+local myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -18,7 +20,28 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["FireEmit"])
+    StartThread(headingSoundSurveilance)
 end
+
+function headingSoundSurveilance()
+    local oldHeading = 0
+    accumulator = 0
+    while true do
+        heading = Spring.GetUnitHeading(unitID)
+
+        Sleep(100)
+        if absDistance(heading,oldHeading) > 160 then
+            accumulator = accumulator+1
+        else
+            accumulator = math.max(0,accumulator -1)
+        end
+
+        if accumulator > 4 then
+            StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/drone.ogg", 1.0, 5000, 1)
+        end
+        oldHeading = heading
+    end
+  end
 
 function script.Killed(recentDamage, _)
 
@@ -52,7 +75,10 @@ end
 
 function script.FireWeapon2() return true end
 
-function script.StartMoving() end
+function script.StartMoving() 
+     
+
+end
 
 function script.StopMoving() end
 
