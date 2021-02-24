@@ -50,7 +50,9 @@ local weaponDef = {
 
     --sound
     --soundHit="null",
-    --soundStart = "citadell/dronelaunch",
+    soundStart = "sounds/plane/drone2.ogg",
+    soundHit = "sounds/weapons/drone/Explosion.wav",
+
 	fireStarter  = 50.0,
 	cameraShake =1.0
 	
