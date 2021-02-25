@@ -72,13 +72,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 				onlyTargetCategory = [[GROUND ]],			
 				turret= false			}
 		},
-
-	sounds = {
-	  ok = {
-	    { file = 'plane/drone1.ogg', volume = 1.0 }
-
-	 	 },
-		}		
+	
 }
 
 return lowerkeys({

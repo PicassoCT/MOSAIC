@@ -95,7 +95,8 @@ function setAffiliatedHouseInvisible()
     Sleep(100)
 
     houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
-    process(getAllNearUnit(unitID, 200), function(id)
+    process(getAllNearUnit(unitID, 200), 
+        function(id)
         if houseTypeTable[Spring.GetUnitDefID(id)] then
             myHouseID = id
             StartThread(mortallyDependant, unitID, myHouseID, 15, false, true)

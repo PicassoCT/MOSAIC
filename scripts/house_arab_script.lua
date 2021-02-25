@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+local myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 local cubeDim = {
     length = 14.4 * 1.45,
@@ -99,6 +100,7 @@ function script.Create()
     }
 
     StartThread(rotations)
+    StartThread(decorateCity)
 end
 
 function rotations()
@@ -292,6 +294,49 @@ function selectGroundBuildMaterial()
 
     return dice
 end
+
+function decorateCity()
+    Sleep(1000)
+    marketResearch()
+
+end
+
+local gaiaTeamID = Spring.GetGaiaTeamID()
+function marketResearch()
+    if not GG.HouseDecoration_Arab_MarketCounter then  GG.HouseDecoration_Arab_MarketCounter = 0 end
+
+    if  GG.HouseDecoration_Arab_MarketCounter > 2 then return end
+    x,y,z = Spring.GetUnitPosition(unitID)
+    housesNearby = 0
+    process(getAllInCircle(x,z, 400),
+        function(id)
+            if Spring.GetUnitDefID(id) == myDefID and id ~= unitID then
+                housesNearby = housesNearby +1
+            end
+        end
+        )
+
+    if housesNearby > 4 then
+         GG.HouseDecoration_Arab_MarketCounter =  GG.HouseDecoration_Arab_MarketCounter +1
+         minDeg =math.random (0,360)
+         maxDeg = minDeg + 120
+        for i=1, math.random(3,6) do
+            createUnitInCircleAroundUnit(unitID,"marketstand_arab", math.random(200,500), minDeg, maxDeg)
+        end
+    end
+end
+
+    function createUnitInCircleAroundUnit(id, typeToCreateDefID, distanceToMove,  minDeg, maxDeg)
+        px,py,pz = Spring.GetUnitPosition(id)
+        degs= math.random(minDeg, maxDeg)
+        rx,rz = Rotate(0,distanceToMove, math.rad(degs))
+
+        px, pz = px + rx, pz +rz
+        gh= Spring.GetGroundHeight(px,pz)
+        if gh > 10 and absDistance(gh,py)  < 30 then
+            GG.UnitsToSpawn:PushCreateUnit(typeToCreateDefID, px, gh, pz, math.random(0,4), gaiaTeamID)
+        end
+    end
 
 function getPieceGroupName(Deco)
     t = Spring.GetUnitPieceInfo(unitID, Deco)

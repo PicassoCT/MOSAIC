@@ -245,7 +245,7 @@ end
 
 function gadget:GameFrame(f)
 	-- Log("gadget:GameFrame"..f)
-	if firstFrame and firstFrame + 1 < f then
+	if firstFrame == f then
 		-- This is executed AFTER headquarters / commander is spawned
 		Log("Prometheus : First Frame ")
 		if waypointMgr then
@@ -256,7 +256,6 @@ function gadget:GameFrame(f)
 		-- in the team, to support random faction (implemented by swapping out HQ
 		-- in GameStart of that gadget.)
 		CreateTeams()
-		firstFrame = nil
 	end
 
 	-- waypointMgr update
