@@ -43,6 +43,7 @@ if (gadgetHandler:IsSyncedCode()) then
 -- globals
 local unitLimits = {}
 
+
 -- include code
 include("LuaRules/Gadgets/prometheus/unitlimits.lua")
 
@@ -116,7 +117,9 @@ include("LuaRules/Gadgets/prometheus/waypoints.lua")
 local prometheus_Debug_Mode =  0 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
-
+local side = "antagon"
+local firstFrame = Spring.GetGameFrame()
+local lastFrame = 0 -- To avoid repeated calls to GameFrame()
 --------------------------------------------------------------------------------
 
 local function ChangeAIDebugVerbosity(cmd,line,words,player)
@@ -167,8 +170,7 @@ end
 --  gadget:GamePreload
 --  gadget:UnitCreated (for each HQ / comm)
 --  gadget:GameStart
-local side = "antagon"
-local firstFrame = Spring.GetGameFrame()
+
 
 function gadget:Initialize()
 	Spring.Echo("Prometheus Initialise: Debugomode is "..prometheus_Debug_Mode)
@@ -209,7 +211,7 @@ local function CreateTeams()
 						local unit = UnitDefs[Spring.GetUnitDefID(u)].name
 						for _,s in ipairs(sidedata) do
 							if (s.startUnit == unit) then
-							 Spring.Echo("Found start unit for side".. s.sideName)		
+							 Spring.Echo("Found start unit for side ".. s.sideName)		
 							 side = s.sideName 
 							end
 						end
@@ -244,9 +246,14 @@ end
 
 
 function gadget:GameFrame(f)
-	-- Log("gadget:GameFrame"..f)
-	if firstFrame == f then
-		-- This is executed AFTER headquarters / commander is spawned
+	--Spring.Echo("gadget:GameFrame"..f)
+
+	if (f < 1) or (f == lastFrame) then
+        return
+    end
+    lastFrame = f
+
+	if f == 1 then
 		Log("Prometheus : First Frame ")
 		if waypointMgr then
 			waypointMgr.GameStart()
@@ -306,9 +313,9 @@ end
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
-		if type(waypointMgr) ~= "table" or waypointMgr.UnitCreated == nil then
+		--[[if type(waypointMgr) ~= "table" or waypointMgr.UnitCreated == nil then
 			restoreWayPointManager()		
-		end
+		end--]]
 	
 	if waypointMgr then		
 		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
@@ -318,7 +325,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 		team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
 end
-
+--[[
 function restoreWayPointManager()
 		waypointMgr = CreateWaypointMgr()
 					if waypointMgr then
@@ -326,7 +333,7 @@ function restoreWayPointManager()
 					end
 					CreateTeams()
 end
-
+--]]
 function gadget:UnitFinished(unitID, unitDefID, unitTeam)
 	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." finnished")
 	if team[unitTeam] then
