@@ -23,7 +23,10 @@ function bodyBuilder()
 			end
 			)
 end
-
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+Explode(TablesOfPiecesGroups["Prop"][math.random(1,#TablesOfPiecesGroups["Prop"])], SFX.FALL + SFX.NO_HEATCLOUD)
+return damage
+end
 function script.Killed(recentDamage, maxHealth)
 	
 end
