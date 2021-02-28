@@ -596,6 +596,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     if boolLongWay == false then
         if spGetGroundHeight(x1, z2) > 5 then
             Route[index].x = x1
+            Route[index].y = y2
             Route[index].z = z2
             index = index + 1
             Route[index] = {}
@@ -603,6 +604,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     end
 
     Route[index].x = x2
+    Route[index].y = y2
     Route[index].z = z2
     index = index + 1
     Route[index] = {}
@@ -610,6 +612,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     if boolLongWay == false then
         if spGetGroundHeight(x2, z1) > 5 then
             Route[index].x = x2
+            Route[index].y = y1
             Route[index].z = z1
             index = index + 1
             Route[index] = {}
@@ -617,6 +620,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     end
 
     Route[index].x = x1
+    Route[index].y = y1
     Route[index].z = z1
 
     return testClampRoute(Route, uType)
@@ -728,9 +732,21 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
         return boolDone, nil, persPack
     end
 
+    --update information
+    hp = spGetUnitHealth(myID)
+    if not persPack.myHP then persPack.myHP = hp end
+
+    x, y, z = spGetUnitPosition(myID)
+    if not x then return nil, persPack end
+
+    if not persPack.currPos then
+        persPack.currPos = {x = x, y = y, z = z}
+    end
+
 
     if not persPack.maxTimeChattingInFrames  then persPack.maxTimeChattingInFrames  = 20 * 30 end
     if not persPack.arrivedDistance  then persPack.arrivedDistance = 300 end
+    if not persPack.stuckCounter  then persPack.stuckCounter = 0 end
 
     --make sure only one instance of this function exists per UnitDefs - newer Ones prefered
     if not GG.TravelFunctionRegistry[myID] then GG.TravelFunctionRegistry[myID] = startFrame end
@@ -738,7 +754,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if GG.TravelFunctionRegistry[myID] > startFrame then
         boolDone = true
         endEchoTravelFunction("newer Function registered", myID)
-        return boolDone, nil, persPack
+        return boolDone, nil, persPack, x,y,z, hp
     else
         GG.TravelFunctionRegistry[myID] = startFrame
     end
@@ -750,7 +766,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if GG.AerosolAffectedCivilians and GG.AerosolAffectedCivilians[myID] then
         boolDone = true
         endEchoTravelFunction("abort if aerosol afflicted", myID)
-        return boolDone, nil, persPack
+        return boolDone, nil, persPack, x,y,z, hp
     end
 
 
@@ -764,18 +780,20 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
         setCivilianBehaviourMode(myID, true, GG.GlobalGameState)
         persPack.boolAnarchy = true
         boolDone = true
-        return boolDone, frame + math.random(30 * 5, 30 * 25), persPack
+        return boolDone, frame + math.random(30 * 5, 30 * 25), persPack, x,y,z, hp
     end
     -- </External GameState Handling>
 
     --first move order
     if not persPack.firstTime then 
         persPack.firstTime = true 
+        --Command(myID,"stop")
+        
         persPack = moveToLocation(myID, persPack, {})
     end
     
 
-return boolDone, nil, persPack
+return boolDone, nil, persPack, x,y,z, hp
 end
 
 --1 (x 0, y n)
@@ -840,7 +858,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     boolDone = false
 
     if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < persPack.arrivedDistance then
-        Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
+       -- Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
     else
         persPack.currPos = {x = x, y = y, z = z}
@@ -848,7 +866,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end
 
     -- if stuck move towards the next goal
-    if persPack.stuckCounter == 4 and persPack.goalIndex ~= #persPack.goalList then
+    if persPack.stuckCounter >= 4 then
         persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
         persPack.stuckCounter = 0
         persPack = moveToLocation(myID, persPack, {"shift"})
@@ -862,11 +880,12 @@ function moveToLocation(myID, persPack, param)
  -- only re-issue commands if not moving for a time - prevents repathing frame drop of 15 fps
     if persPack.stuckCounter > 1 then
         echo("Givin go Command to "..myID)
+        local params = param or {}
         Command(myID, "go", {
             x = persPack.goalList[persPack.goalIndex].x,
             y = persPack.goalList[persPack.goalIndex].y,
             z = persPack.goalList[persPack.goalIndex].z
-        }, param)
+        }, params)
     end
     return persPack
 end
@@ -915,7 +934,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
 
     end
 
-    if persPack.maxTimeChattingInFrames <= 0 or not persPack.chatPartnerID or doesUnitEsitAlive(persPack.chatPartnerID) == false then
+    if persPack.maxTimeChattingInFrames <= 0 or not persPack.chatPartnerID or doesUnitExistAlive(persPack.chatPartnerID) == false then
         persPack.boolStartAChat = false
     end
 
@@ -998,21 +1017,10 @@ function travellFunction(evtID, frame, persPack, startFrame)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 
-    boolDone, retFrame, persPack = travelInitialization(evtID, frame, persPack, startFrame, myID)
+    boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
-    --update information
-    hp = spGetUnitHealth(myID)
-    if not persPack.myHP then persPack.myHP = hp end
-
-    x, y, z = spGetUnitPosition(myID)
-    if not x then return nil, persPack end
-
-    if not persPack.currPos then
-        persPack.currPos = {x = x, y = y, z = z}
-        persPack.stuckCounter = 0
-    end
-
+    --[[
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
@@ -1026,7 +1034,7 @@ function travellFunction(evtID, frame, persPack, startFrame)
         boolDone, retFrame, persPack = travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         if boolDone == true then return retFrame,persPack end
     end
-
+--]]
     return frame + math.random(60, 90), persPack
 end
 
