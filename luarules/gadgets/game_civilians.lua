@@ -149,7 +149,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
         maxNrPolice = math.max(maxNrPolice - 1, 0)
     end
     if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
-        Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
+        --Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
     end
 end
 
@@ -170,7 +170,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     end
 
     if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
-        Spring.Echo("game_civilians:UnitDestroyed:"..unitID.." of type "..UnitDefs[unitDefID].name)
+      --  Spring.Echo("game_civilians:UnitDestroyed:"..unitID.." of type "..UnitDefs[unitDefID].name)
     end
 end
 
@@ -881,7 +881,7 @@ end
 function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
  -- only re-issue commands if not moving for a time - prevents repathing frame drop of 15 fps
     if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
-        echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
+        --echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
         Command(myID, "go", {
             x = persPack.goalList[persPack.goalIndex].x,
@@ -1010,7 +1010,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         persPack.goalIndex = persPack.goalIndex + 1
         if persPack.goalIndex > #persPack.goalList then
             GG.UnitArrivedAtTarget[myID] = true
-            endEchoTravelFunction("arrived at target", myID)
+         --   endEchoTravelFunction("arrived at target", myID)
             return true, nil, persPack
         else
             persPack = moveToLocation(myID, persPack, {}, true)
@@ -1055,7 +1055,7 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
 
     mydefID = spGetUnitDefID(uID)
     if startNodeID and targetNodeID then
-        Spring.Echo("game_civilians:giveWaypointsToUnit:".. uID)
+   --     Spring.Echo("game_civilians:giveWaypointsToUnit:".. uID)
         GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
             mydefID = mydefID,
             myTeam = spGetUnitTeam(uID),
@@ -1093,7 +1093,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             doesUnitExistAlive(id) == true and GG.DisguiseCivilianFor[id] == nil and
             typeTable[GG.CivilianTable[id].defID] then
             -- echo("Decimating:"..id.." a "..UnitDefs[GG.CivilianTable[id].defID].name)
-           Spring.Echo("game_civilians:decimateArrivedCivilians:".. id)
+           --Spring.Echo("game_civilians:decimateArrivedCivilians:".. id)
             spDestroyUnit(id, false, true)
             --echo("Killing Unit:"..id)
             if doesUnitExistAlive(id) == false then
