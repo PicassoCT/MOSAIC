@@ -587,6 +587,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     index = 1
     Route[index] = {}
     Route[index].x = x1
+    Route[index].y = y1
     Route[index].z = z1
     index = index + 1
     Route[index] = {}
@@ -787,9 +788,8 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     --first move order
     if not persPack.firstTime then 
         persPack.firstTime = true 
-        --Command(myID,"stop")
-        
-        persPack = moveToLocation(myID, persPack, {})
+        persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
+        persPack = moveToLocation(myID, persPack, {} , true)
     end
     
 
@@ -866,20 +866,22 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end
 
     -- if stuck move towards the next goal
-    if persPack.stuckCounter >= 4 then
-        persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
-        persPack.stuckCounter = 0
-        persPack = moveToLocation(myID, persPack, {"shift"})
-        return true, frame + math.random(15,35), persPack
+    if persPack.stuckCounter > 4 then
+        if persPack.goalIndex ~=  #persPack.goalList then
+            persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
+            persPack.stuckCounter = 0
+            persPack = moveToLocation(myID, persPack, {})
+            return true, frame + math.random(15,35), persPack
+        end
     end
 
 return boolDone, nil, persPack
 end
 
-function moveToLocation(myID, persPack, param)
+function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
  -- only re-issue commands if not moving for a time - prevents repathing frame drop of 15 fps
-    if persPack.stuckCounter > 1 then
-        echo("Givin go Command to "..myID)
+    if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
+        echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
         Command(myID, "go", {
             x = persPack.goalList[persPack.goalIndex].x,
@@ -926,16 +928,20 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         persPack.maxTimeChattingInFrames > 0  then
 
         persPack.boolStartAChat = true
-        if math.random(0, 1) == 1 then
-            persPack.chatPartnerID = spGetUnitNearestAlly(myID)
-        else
+
+        persPack.chatPartnerID = spGetUnitNearestAlly(myID)
+        if maRa()==true or not persPack.chatPartnerID or not doesUnitExistAlive(persPack.chatPartnerID) then
             persPack.chatPartnerID = spGetUnitNearestEnemy(myID)
         end
-
     end
 
-    if persPack.maxTimeChattingInFrames <= 0 or not persPack.chatPartnerID or doesUnitExistAlive(persPack.chatPartnerID) == false then
-        persPack.boolStartAChat = false
+    if (persPack.maxTimeChattingInFrames <= 0 and  persPack.boolStartAChat == true ) or 
+        ((persPack.maxTimeChattingInFrames > 0) and
+        persPack.chatPartnerID and
+        not doesUnitExistAlive(persPack.chatPartnerID)) then
+            persPack.boolStartAChat = false
+            persPack = moveToLocation(myID, persPack, {}, true)
+        return true, frame + math.random(15,30), persPack
     end
 
     if  persPack.boolStartAChat == false then
@@ -998,15 +1004,16 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
    
 
     -- if near Destination increase goalIndex
-    if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, 0,
+    if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 150 then
         
         persPack.goalIndex = persPack.goalIndex + 1
-
         if persPack.goalIndex > #persPack.goalList then
             GG.UnitArrivedAtTarget[myID] = true
             endEchoTravelFunction("arrived at target", myID)
             return true, nil, persPack
+        else
+            persPack = moveToLocation(myID, persPack, {}, true)
         end
     end
 
@@ -1020,21 +1027,20 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
-    --[[
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
     boolDone, retFrame, persPack = detectFleeAttacker(evtID, frame, persPack, startFrame, myID, hp)
     if boolDone == true then return retFrame,persPack end
 
-    if persPack.boolAnarchy == true then
+    if GG.GlobalGameState ~= GameConfig.GameState.normal then
         boolDone, retFrame, persPack = travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if boolDone == true then return retFrame,persPack end
     else
         boolDone, retFrame, persPack = travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         if boolDone == true then return retFrame,persPack end
     end
---]]
+
     return frame + math.random(60, 90), persPack
 end
 
