@@ -106,7 +106,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		-- This is our Investigation Operative in this theater
 		-- He will do whatever it takes, to track the Cells down. We are the defensive team. We only need to fail once. 
 		-- The others have all the shots. Taking them down can not be accomplished with military action.
-.		-- S/he can create safehouses and recruit civilians as spys.
+		-- S/he can create safehouses and recruit civilians as spys.
 		-- S/he can interrogate civilans suspected of aiding the enemy.
 		-- S/he can raid houses suspected of being safehouses. 
 		-- Build a safehouse inside the city. Upon creation, you will recieve further instructions.

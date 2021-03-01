@@ -101,7 +101,7 @@ else
 local MY_PLAYER_ID = Spring.GetMyPlayerID()
 
 -- globals
-waypointMgr = {}
+local waypointMgr = {}
 
 -- include code
 include("LuaRules/Gadgets/prometheus/buildsite.lua")
@@ -243,8 +243,6 @@ local function CreateTeams()
 	end
 end
 
-
-
 function gadget:GameFrame(f)
 	--Spring.Echo("gadget:GameFrame"..f)
 
@@ -277,7 +275,6 @@ function gadget:GameFrame(f)
 		end
 	end
 end
-
 --------------------------------------------------------------------------------
 --
 --  Game call-ins
@@ -310,22 +307,6 @@ end
 --
 --  Unit call-ins
 --
-
-function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
-		--[[if type(waypointMgr) ~= "table" or waypointMgr.UnitCreated == nil then
-			restoreWayPointManager()		
-		end--]]
-	
-	if waypointMgr then		
-		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	end
-	
-	if team[unitTeam] then
-		team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	end
-end
---[[
 function restoreWayPointManager()
 		waypointMgr = CreateWaypointMgr()
 					if waypointMgr then
@@ -333,7 +314,27 @@ function restoreWayPointManager()
 					end
 					CreateTeams()
 end
---]]
+
+function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
+	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
+		--[[if type(waypointMgr) ~= "table" or waypointMgr.UnitCreated == nil then
+			restoreWayPointManager()		
+		end--]]
+	
+	if waypointMgr  then	
+		if not waypointMgr.UnitCreated then
+			restoreWayPointManager()
+		end
+		if  waypointMgr.UnitCreated then
+			waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
+		end
+	end
+	
+	if team[unitTeam] then
+		team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
+	end
+end
+
 function gadget:UnitFinished(unitID, unitDefID, unitTeam)
 	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." finnished")
 	if team[unitTeam] then

@@ -149,7 +149,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
         maxNrPolice = math.max(maxNrPolice - 1, 0)
     end
     if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
-        --Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
+        Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
     end
 end
 
@@ -502,7 +502,6 @@ function checkReSpawnPopulation()
                 end
             end
         end
-
     else -- decimate arrived cvilians who are not DisguiseCivilianFor
         decimateArrivedCivilians(absDistance(
                                      getUnitNumberAtTime(
@@ -567,19 +566,13 @@ function getRandomSpawnNode()
         startNode = randT(RouteTabel)
         attempts = attempts + 1
     end
-    -- assert(doesUnitExistAlive(startNode) == true)
-    -- assert(startNode)
+
     x, y, z = spGetUnitPosition(startNode)
-    -- assert(x)
-    -- assert(z)
+
     return x, y, z, startNode
 end
 
 function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
-    -- assert(unitOne)
-    -- assert(unitTwo)
-
-
     local Route = {}
 
     x1, y1, z1 = spGetUnitPosition(unitOne)
@@ -592,12 +585,12 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     index = index + 1
     Route[index] = {}
 
-    boolLongWay = distance(x1, y1, z1, x2, y2, z2) > 2048
+    boolLongWay = (distance(x1, y1, z1, x2, y2, z2) > 2048) or maRa()
 
     if boolLongWay == false then
         if spGetGroundHeight(x1, z2) > 5 then
             Route[index].x = x1
-            Route[index].y = y2
+            Route[index].y = spGetGroundHeight(x1,z2)
             Route[index].z = z2
             index = index + 1
             Route[index] = {}
@@ -613,7 +606,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     if boolLongWay == false then
         if spGetGroundHeight(x2, z1) > 5 then
             Route[index].x = x2
-            Route[index].y = y1
+            Route[index].y = spGetGroundHeight(x2,z1)
             Route[index].z = z1
             index = index + 1
             Route[index] = {}
@@ -738,9 +731,8 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if not persPack.myHP then persPack.myHP = hp end
 
     x, y, z = spGetUnitPosition(myID)
-    if not x then return nil, persPack end
 
-    if not persPack.currPos then
+    if x and not persPack.currPos then
         persPack.currPos = {x = x, y = y, z = z}
     end
 
@@ -765,9 +757,8 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
 
     -- <External GameState Handling>
     if GG.AerosolAffectedCivilians and GG.AerosolAffectedCivilians[myID] then
-        boolDone = true
         endEchoTravelFunction("abort if aerosol afflicted", myID)
-        return boolDone, nil, persPack, x,y,z, hp
+        return true, nil, persPack, x,y,z, hp
     end
 
 
@@ -780,8 +771,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if GG.GlobalGameState and GG.GlobalGameState ~= GameConfig.GameState.normal then
         setCivilianBehaviourMode(myID, true, GG.GlobalGameState)
         persPack.boolAnarchy = true
-        boolDone = true
-        return boolDone, frame + math.random(30 * 5, 30 * 25), persPack, x,y,z, hp
+        return true, frame + math.random(30 * 5, 30 * 25), persPack, x,y,z, hp
     end
     -- </External GameState Handling>
 
@@ -857,6 +847,10 @@ end
 function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     boolDone = false
 
+    if persPack.boolStartAChat and persPack.boolStartAChat == true then 
+    return boolDone, nil, persPack
+    end 
+
     if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < persPack.arrivedDistance then
        -- Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
@@ -867,11 +861,14 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
 
     -- if stuck move towards the next goal
     if persPack.stuckCounter > 4 then
-        if persPack.goalIndex ~=  #persPack.goalList then
+        if persPack.goalIndex <=  #persPack.goalList then
             persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
-            persPack.stuckCounter = 0
             persPack = moveToLocation(myID, persPack, {})
+            persPack.stuckCounter = 0
             return true, frame + math.random(15,35), persPack
+        else --reassign new route
+            GG.UnitArrivedAtTarget[myID] = true
+            return true, nil, persPack
         end
     end
 
@@ -881,12 +878,12 @@ end
 function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
  -- only re-issue commands if not moving for a time - prevents repathing frame drop of 15 fps
     if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
-        --echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
+        echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
         Command(myID, "go", {
-            x = persPack.goalList[persPack.goalIndex].x,
-            y = persPack.goalList[persPack.goalIndex].y,
-            z = persPack.goalList[persPack.goalIndex].z
+            x = math.ceil(persPack.goalList[persPack.goalIndex].x),
+            y = math.ceil(persPack.goalList[persPack.goalIndex].y),
+            z = math.ceil(persPack.goalList[persPack.goalIndex].z)
         }, params)
     end
     return persPack
@@ -923,7 +920,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
 
     ---ocassionally detour toward the nearest ally or enemy
-    if  math.random(0, 42) > 35 and
+  --[[  if  math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
         persPack.maxTimeChattingInFrames > 0  then
 
@@ -935,13 +932,14 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         end
     end
 
-    if (persPack.maxTimeChattingInFrames <= 0 and  persPack.boolStartAChat == true ) or 
-        ((persPack.maxTimeChattingInFrames > 0) and
-        persPack.chatPartnerID and
-        not doesUnitExistAlive(persPack.chatPartnerID)) then
-            persPack.boolStartAChat = false
-            persPack = moveToLocation(myID, persPack, {}, true)
-        return true, frame + math.random(15,30), persPack
+    if persPack.boolStartAChat == true then
+        if (persPack.maxTimeChattingInFrames <= 0 ) or 
+            not persPack.chatPartnerID or
+             not doesUnitExistAlive(persPack.chatPartnerID) then
+                persPack.boolStartAChat = false
+                persPack = moveToLocation(myID, persPack, {}, true)
+            return true, frame + math.random(15,30), persPack
+        end
     end
 
     if  persPack.boolStartAChat == false then
@@ -950,7 +948,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
 
     if persPack.boolStartAChat == true then
         local partnerID = persPack.chatPartnerID
-        if distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
+        if  distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
             Command(partnerID, "go", {
@@ -959,9 +957,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
                             z = pz + math.random(-20, 20)
                         }, {})
 
-
             return true, frame + 30 , persPack        
-
         else 
             --groupChat?
              if math.random(0, 1) == 1 then
@@ -993,6 +989,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
             end
 
             --stop and chat 
+            UnitSetAnimationState(myID, CivAnimStates.Talking, CivAnimStates.stop, true, true)
             Command(myID, "stop")
             Command(partnerID, "stop")
             timeChattingInFrames =math.random(GameConfig.minConversationLengthFrames,
@@ -1000,17 +997,17 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
             persPack.maxTimeChattingInFrames  = 0
             return true, frame + timeChattingInFrames, persPack
         end
-    end  
+    end  --]]
    
 
     -- if near Destination increase goalIndex
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
-                           persPack.goalList[persPack.goalIndex].z) < 150 then
+                           persPack.goalList[persPack.goalIndex].z) < 100 then
         
         persPack.goalIndex = persPack.goalIndex + 1
         if persPack.goalIndex > #persPack.goalList then
             GG.UnitArrivedAtTarget[myID] = true
-         --   endEchoTravelFunction("arrived at target", myID)
+            endEchoTravelFunction("arrived at target", myID)
             return true, nil, persPack
         else
             persPack = moveToLocation(myID, persPack, {}, true)
@@ -1048,22 +1045,19 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 
 function giveWaypointsToUnit(uID, uType, startNodeID)
-    boolIsCivilian = (civilianWalkingTypeTable[uType] ~= nil)
-    boolShortestPath = (math.random(0, 1) == 1 and TruckTypeTable[uType] == nil) -- direct route to target
+    boolShortestPath = maRa() or not TruckTypeTable[uType]  -- direct route to target
 
     targetNodeID = math.random(2, #RouteTabel[startNodeID])
-
-    mydefID = spGetUnitDefID(uID)
     if startNodeID and targetNodeID then
    --     Spring.Echo("game_civilians:giveWaypointsToUnit:".. uID)
         GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
-            mydefID = mydefID,
+            mydefID = uType,
             myTeam = spGetUnitTeam(uID),
             unitID = uID,
             goalIndex = 1,
             goalList = buildRouteSquareFromTwoUnits(startNodeID,
                                                     RouteTabel[startNodeID][targetNodeID],
-                                                    mydefID)
+                                                    uType)
         }, spGetGameFrame() + (uID % 100))
     end
 end
@@ -1090,10 +1084,9 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
-            doesUnitExistAlive(id) == true and GG.DisguiseCivilianFor[id] == nil and
+            doesUnitExistAlive(id) == true and 
+            GG.DisguiseCivilianFor[id] == nil and
             typeTable[GG.CivilianTable[id].defID] then
-            -- echo("Decimating:"..id.." a "..UnitDefs[GG.CivilianTable[id].defID].name)
-           --Spring.Echo("game_civilians:decimateArrivedCivilians:".. id)
             spDestroyUnit(id, false, true)
             --echo("Killing Unit:"..id)
             if doesUnitExistAlive(id) == false then
@@ -1123,15 +1116,15 @@ end
 
 function policeActionTimeSurveilance(frame)
     for id, times in pairs(activePoliceUnitIds_DispatchTime) do
-            if times then
-                activePoliceUnitIds_DispatchTime[id] = times - 5
-                if activePoliceUnitIds_DispatchTime[id] <= 0 then
-                    checkReSpawnHouses()
-                    regenerateRoutesTable()
-                    spDestroyUnit(id, false, true)
-                end
+        if times then
+            activePoliceUnitIds_DispatchTime[id] = times - 5
+            if activePoliceUnitIds_DispatchTime[id] <= 0 then
+                checkReSpawnHouses()
+                regenerateRoutesTable()
+                spDestroyUnit(id, false, true)
             end
         end
+    end
 end
 
 function gadget:GameFrame(frame)
