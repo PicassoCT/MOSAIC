@@ -17,6 +17,7 @@ SIG_COVER_WALK = 8
 SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
 SIG_MOLOTOW = 64
+SIG_INTERNAL = 128
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -74,8 +75,10 @@ local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local loc_doesUnitExistAlive = doesUnitExistAlive
-
 GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelTypes(
+                                     GameConfig.instance.culture, "civilian",
+                                     UnitDefs)
 
 eAnimState = getCivilianAnimationStates()
 upperBodyPieces = {
@@ -146,6 +149,7 @@ function script.Create()
                               nil, false)
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
+    StartThread(threadStateStarter)
 
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
@@ -316,6 +320,93 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
+    if damage > 1 then
+        attacker= spGetUnitLastAttacker(unitID)
+        StartThread(fleeEnemy, attacker)
+    end
+end
+
+STATE_STARTED = "STARTED"
+STATE_ENDED = "ENDED"
+function setCivilianUnitInternalStateMode(State)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     
+     GG.CivilianUnitInternalLogicActive[myID] = State 
+ end
+
+filmLocation = {}
+boolStartFilming = false
+function startFilmLocation(ux, uy, uz, time)
+GG.CivilianUnitInternalLogicActive[unitID] = "STARTED"
+filmLocation.x=ux
+filmLocation.y=uy
+filmLocation.z=uz
+filmLocation.time = time
+boolStartFilming = true
+end
+
+wailingTime = 0
+boolStartWailing = false
+function startWailing(time)
+GG.CivilianUnitInternalLogicActive[unitID] = "STARTED"
+wailingTime = time
+boolStartWailing = true
+end
+
+chattingTime = 0
+boolStartChatting = false
+function startChatting(time)
+GG.CivilianUnitInternalLogicActive[unitID] = "STARTED"
+chattingTime = time
+boolStartChatting = true
+end
+
+function wailing()
+    while wailingTime > 0 do
+        PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
+       wailingTime = wailingTime - 1500
+        Sleep(100)
+    end
+    GG.CivilianUnitInternalLogicActive[unitID] = "ENDED"
+end
+
+function chatting()
+    while chattingTime > 0 do
+        if maRa() == true then
+        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, 1.0)
+        else
+        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, 1.0)
+       end
+       chattingTime = chattingTime - 1500
+        Sleep(100)
+    end
+    GG.CivilianUnitInternalLogicActive[unitID] = "ENDED"
+end
+
+function filmingLocation()
+    while filmLocation.time > 0 do
+        PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
+        filmLocation.time = filmLocation.time - 2000
+        Sleep(100)
+    end
+    GG.CivilianUnitInternalLogicActive[unitID] = "ENDED"
+end
+
+function fleeEnemy(enemyID)
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    if not enemyID then 
+        setCivilianUnitInternalStateMode(STATE_ENDED)
+        return 
+    end
+
+    while distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
+        Sleep(500)
+    end
+
+    setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)
@@ -680,6 +771,28 @@ function threadStarter()
         Sleep(33)
     end
 end
+
+
+function threadStateStarter()
+    Sleep(100)
+    while true do
+        if boolStartFilming == true then
+            boolStartFilming = false
+            StartThread(filmingLocation)
+        end
+        if boolStartWailing == true then
+            boolStartWailing = false
+            StartThread(wailing)
+        end
+
+        if boolStartChatting == true then
+            boolStartChatting = false
+            StartThread(chatting)
+        end
+        Sleep(250)   
+    end
+end
+
 
 function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,

@@ -100,16 +100,22 @@ function getPoliceSpawnLocation(suspect)
     return px, 0, pz
 end
 
-function UnitSetAnimationState(unitID, AnimationstateUpperOverride,
-                               AnimationstateLowerOverride, boolInstantOverride,
-                               boolDeCoupled)
+function startInternalBehaviourOfState(unitID, name, ...)
+    local arg = arg;
+    if (not arg) then
+        arg = {...};
+        arg.n = #arg
+    end
+
     env = Spring.UnitScript.GetScriptEnv(unitID)
     if env and env.setOverrideAnimationState then
-        Spring.UnitScript.CallAsUnit(unitID, env.setOverrideAnimationState,
-                                     AnimationstateUpperOverride,
-                                     AnimationstateLowerOverride,
-                                     boolInstantOverride or false,
-                                     conditionFunction or nil, boolDeCoupled)
+        Spring.UnitScript.CallAsUnit(unitID, 
+                                     env[name],
+                                     arg[1] or nil,
+                                     arg[2] or nil,
+                                     arg[3] or nil,
+                                     arg[4] or nil
+                                     )
     end
 end
 
@@ -128,17 +134,14 @@ function makePasserBysLook(unitID)
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             -- TODO Set Behaviour filming
-            UnitSetAnimationState(id, CivAnimStates.filming,
-                                  CivAnimStates.walking, true, true)
+            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, math.random(5000,15000))
 
         elseif math.random(0, 100) > GameConfig.inHundredChanceOfDisasterWailing then
             offx, offz = math.random(0, 10) * randSign(),
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
-            UnitSetAnimationState(id, CivAnimStates.wailing,
-                                  CivAnimStates.walking, true, true)
-
-        end
+            startInternalBehaviourOfState(id, "startWailing", math.random(5000,25000))
+       end
     end)
 
 end
@@ -844,6 +847,66 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
   return boolDone, frame + 30, persPack
 end
 
+
+function sozialize(evtID, frame, persPack, startFrame, myID)
+boolDone = false
+
+  ---ocassionally detour toward the nearest ally or enemy
+    if  math.random(0, 42) > 35 and
+        civilianWalkingTypeTable[persPack.mydefID] and 
+        persPack.maxTimeChattingInFrames > 0  then
+
+        persPack.boolStartAChat = true
+
+        persPack.chatPartnerID = spGetUnitNearestAlly(myID)
+        if maRa()==true or not persPack.chatPartnerID or not doesUnitExistAlive(persPack.chatPartnerID) then
+            persPack.chatPartnerID = spGetUnitNearestEnemy(myID)
+        end
+    end
+
+    if persPack.boolStartAChat == true then
+        if (persPack.maxTimeChattingInFrames <= 0 ) or 
+            not persPack.chatPartnerID or
+             not doesUnitExistAlive(persPack.chatPartnerID) then
+                persPack.boolStartAChat = false
+                persPack = moveToLocation(myID, persPack, {}, true)
+            return true, frame + math.random(15,30), persPack
+        end
+    end
+
+    if  persPack.boolStartAChat == false then
+        persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames + 5
+    end
+
+    if persPack.boolStartAChat == true then
+        local partnerID = persPack.chatPartnerID
+        if  distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
+             px, py, pz = spGetUnitPosition(partnerID)
+            Command(myID, "go", {x = px, y = py, z = pz}, {})
+            Command(partnerID, "go", {
+                            x = px + math.random(-20, 20),
+                            y = py,
+                            z = pz + math.random(-20, 20)
+                        }, {})
+
+            return true, frame + 30 , persPack        
+        else 
+            --stop and chat 
+            Command(myID, "stop")
+            Command(partnerID, "stop")
+
+            timeChattingInFrames =math.random(GameConfig.minConversationLengthFrames,
+                                       GameConfig.maxConversationLengthFrames)
+            startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33)
+            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33)
+            persPack.maxTimeChattingInFrames  = 0
+            return true, frame + timeChattingInFrames, persPack
+        end
+    end  
+    return boolDone, nil, persPack
+end  
+
+
 function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     boolDone = false
 
@@ -889,117 +952,8 @@ function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
     return persPack
 end
 
-
-function detectFleeAttacker(evtID, frame, persPack, startFrame, myID, hp)
-    boolDone = false
-
-    if persPack.boolFlight == true then
-        --check if condition still applies
-        if isUnitAlive(persPack.attackerID) and  distanceUnitToUnit(myID, persPack.attackerID) < GG.GameConfig.civilianPanicRadius then
-            runAwayFrom(myID, persPack.attackerID, GG.GameConfig.civilianFleeDistance)
-            UnitSetAnimationState(id, CivAnimStates.slaved, CivAnimStates.coverwalk, true, false)
-            return true, frame + math.random(30,90), persPack
-         else
-            persPack.boolFlight = false
-            persPack.myHP = hp
-        end
-    end
-
-    --detect new Damage
-    if persPack.myHP < hp then
-        persPack.boolFlight = true
-        persPack.attackerID = spGetUnitLastAttacker(myID)
-        persPack.myHP = hp
-        return true, frame + 1, persPack
-    end
-
-    return boolDone, nil, persPack
-end
-
 function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
-
-    ---ocassionally detour toward the nearest ally or enemy
-  --[[  if  math.random(0, 42) > 35 and
-        civilianWalkingTypeTable[persPack.mydefID] and 
-        persPack.maxTimeChattingInFrames > 0  then
-
-        persPack.boolStartAChat = true
-
-        persPack.chatPartnerID = spGetUnitNearestAlly(myID)
-        if maRa()==true or not persPack.chatPartnerID or not doesUnitExistAlive(persPack.chatPartnerID) then
-            persPack.chatPartnerID = spGetUnitNearestEnemy(myID)
-        end
-    end
-
-    if persPack.boolStartAChat == true then
-        if (persPack.maxTimeChattingInFrames <= 0 ) or 
-            not persPack.chatPartnerID or
-             not doesUnitExistAlive(persPack.chatPartnerID) then
-                persPack.boolStartAChat = false
-                persPack = moveToLocation(myID, persPack, {}, true)
-            return true, frame + math.random(15,30), persPack
-        end
-    end
-
-    if  persPack.boolStartAChat == false then
-        persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames + 5
-    end
-
-    if persPack.boolStartAChat == true then
-        local partnerID = persPack.chatPartnerID
-        if  distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
-             px, py, pz = spGetUnitPosition(partnerID)
-            Command(myID, "go", {x = px, y = py, z = pz}, {})
-            Command(partnerID, "go", {
-                            x = px + math.random(-20, 20),
-                            y = py,
-                            z = pz + math.random(-20, 20)
-                        }, {})
-
-            return true, frame + 30 , persPack        
-        else 
-            --groupChat?
-             if math.random(0, 1) == 1 then
-                T = process(getAllNearUnit(myID, GameConfig.groupChatDistance),
-                            function(id)
-                    if spGetUnitTeam(id) == persPack.myTeam and
-                        civilianWalkingTypeTable[spGetUnitDefID(id)] then
-                        return id
-                    end
-                end, 
-                function(id)
-                    if distanceUnitToPoint(id, myID) >
-                        GameConfig.groupChatDistance / 2 then
-                        Command(id, "go", {
-                            x = px + math.random(-20, 20),
-                            y = py,
-                            z = pz + math.random(-20, 20)
-                        }, {})
-                        UnitSetAnimationState(id, CivAnimStates.Talking,
-                                              CivAnimStates.walking, true, true)
-                    else
-                        Command(id, "stop")
-                        UnitSetAnimationState(id, CivAnimStates.Talking,
-                                              CivAnimStates.stop, true, true)
-                    end
-
-                    return id
-                end)
-            end
-
-            --stop and chat 
-            UnitSetAnimationState(myID, CivAnimStates.Talking, CivAnimStates.stop, true, true)
-            Command(myID, "stop")
-            Command(partnerID, "stop")
-            timeChattingInFrames =math.random(GameConfig.minConversationLengthFrames,
-                                       GameConfig.maxConversationLengthFrames)
-            persPack.maxTimeChattingInFrames  = 0
-            return true, frame + timeChattingInFrames, persPack
-        end
-    end  --]]
-   
-
     -- if near Destination increase goalIndex
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 100 then
@@ -1017,6 +971,29 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     return boolDone, nil, persPack
 end
 
+function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
+    if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+
+    if GG.CivilianUnitInternalLogicActive[myID] then
+        if GG.CivilianUnitInternalLogicActive[myID] == "STARTED" then
+            return true, frame + 15, persPack
+        end
+
+        if GG.CivilianUnitInternalLogicActive[myID] == "ENDED" then
+            Command(myID, "go", {
+                x = math.ceil(persPack.goalList[persPack.goalIndex].x),
+                y = math.ceil(persPack.goalList[persPack.goalIndex].y),
+                z = math.ceil(persPack.goalList[persPack.goalIndex].z)
+            }, {})
+
+            GG.CivilianUnitInternalLogicActive[myID] = nil
+            return true, frame + 15, persPack
+        end
+    end
+
+    return false, nil, persPack
+end
+
 function travellFunction(evtID, frame, persPack, startFrame)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
@@ -1024,10 +1001,13 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
+    boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
+    if boolDone == true then return retFrame,persPack end
+
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
-    boolDone, retFrame, persPack = detectFleeAttacker(evtID, frame, persPack, startFrame, myID, hp)
+    boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
     if GG.GlobalGameState ~= GameConfig.GameState.normal then

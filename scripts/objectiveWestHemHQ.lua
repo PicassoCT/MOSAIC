@@ -20,9 +20,16 @@ function script.Create()
     StartThread(forInterval, 7, #TablesOfPiecesGroups["HyperLoop"])
     StartThread(delayShowAllElements)
 end
+
 function delayShowAllElements()
+
     hideT(TablesOfPiecesGroups["HyperLoop"])
     Sleep(10000)
+    rSign = randSign()*math.random(1,9)
+    for i=1,#TablesOfPiecesGroups.HyperLoop do
+        Turn(TablesOfPiecesGroups.HyperLoop[i],y_axis, math.rad(rSign),0)
+    end
+
     nrsShown={}
     for nr, piecenr in pairs(TablesOfPiecesGroups["HyperLoop"]) do
         x, y, z = Spring.GetUnitPiecePosDir(unitID, piecenr)
