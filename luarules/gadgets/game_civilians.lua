@@ -912,14 +912,16 @@ boolDone = false
     return boolDone, nil, persPack
 end  
 
+
+
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
---[[boolDone = false
---]]
---[[if math.random then
-    Command(myID, "stop")
-     startInternalBehaviourOfState(myID, "startPraying")
-    return true, frame + 900, persPack   
-end  --]]
+    if  maRa()==true and isPrayerTime() then
+        Command(myID, "stop")
+        startInternalBehaviourOfState(myID, "startPraying")
+        return true, frame + 30, persPack   
+    end  
+    
+    return false, nil, persPack
 end  
 
 
@@ -1023,9 +1025,9 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
---[[    boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
+   boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end    
---]]
+
     boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 

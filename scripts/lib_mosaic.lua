@@ -794,6 +794,11 @@ function getDecalMap(culture)
 
 end
 
+function isPrayerTime()
+hours, minutes, seconds, percent = getDayTime()
+return GG.GameConfig.instance.culture == "arabic" and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025) 
+end
+
 function getDayTime()
     local DAYLENGTH = GG.GameConfig.daylength
     morningOffset = (DAYLENGTH / 2)

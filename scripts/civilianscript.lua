@@ -352,16 +352,24 @@ function startPraying()
 end
 
 function pray()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
     prayTime= 12000
+    Spring.Echo(unitID.." starts praying")
     while prayTime > 0 do
+       resetT(upperBodyPieces,1.0, false, true)
+        Sleep(500)
         PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
-       prayTime = prayTime - 1500
-        Sleep(100)
+        WaitForTurns(upperBodyPieces)
+       prayTime = prayTime - 3500
+        Sleep(1000)
     end
     setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
 function wailing()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
     while wailingTime > 0 do
         PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
         PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
@@ -372,6 +380,8 @@ function wailing()
 end
 
 function chatting()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
     while chattingTime > 0 do
         if maRa() == true then
         PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, 1.0)
@@ -385,6 +395,8 @@ function chatting()
 end
 
 function filmingLocation()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
     Show(cellphone1)
     while filmLocation.time > 0 do
         PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
@@ -798,7 +810,7 @@ function threadStateStarter()
         end
 
         if boolStartPraying == true then
-            boolStartFleeing = false
+            boolStartPraying = false
             StartThread(pray)
         end
         Sleep(250)   
