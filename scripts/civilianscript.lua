@@ -150,34 +150,13 @@ function script.Create()
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
-
+  
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-
-end
-
-function testAnimationLoop()
-    Sleep(500)
-    while true do
-
-        -- makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)], "RAPHI")
-        -- Show(TablesOfPiecesGroups["cellphone"][1])
-        -- Show(cigarett)
-        -- Show(ShoppingBag)
-        -- Show(Handbag)
-        -- Show(cofee)
-        -- Show(SittingBaby)
-        -- Show(ak47)
-
-        PlayAnimation("UPBODY_LOADED", nil, 1.0)
-
-        Sleep(100)
-    end
 end
 
 function bodyBuild()
-
     hideAll(unitID)
     Show(UpBody)
     Show(center)
@@ -320,10 +299,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
-    if damage > 1 then
-        attacker= spGetUnitLastAttacker(unitID)
-        StartThread(fleeEnemy, attacker)
-    end
+    
 end
 
 STATE_STARTED = "STARTED"
@@ -331,43 +307,68 @@ STATE_ENDED = "ENDED"
 function setCivilianUnitInternalStateMode(State)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
      
-     GG.CivilianUnitInternalLogicActive[myID] = State 
+     GG.CivilianUnitInternalLogicActive[unitID] = State 
  end
 
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-GG.CivilianUnitInternalLogicActive[unitID] = "STARTED"
-filmLocation.x=ux
-filmLocation.y=uy
-filmLocation.z=uz
-filmLocation.time = time
-boolStartFilming = true
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    filmLocation.x=ux
+    filmLocation.y=uy
+    filmLocation.z=uz
+    filmLocation.time = time
+    boolStartFilming = true
 end
 
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-GG.CivilianUnitInternalLogicActive[unitID] = "STARTED"
-wailingTime = time
-boolStartWailing = true
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    wailingTime = time
+    boolStartWailing = true
 end
 
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-GG.CivilianUnitInternalLogicActive[unitID] = "STARTED"
-chattingTime = time
-boolStartChatting = true
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    chattingTime = time
+    boolStartChatting = true
+end
+
+attackerID = 0
+boolStartFleeing = false
+function startFleeing(attackerID)
+    if not attackerID then return end
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    boolStartFleeing = true
+end
+
+boolStartPraying = false
+function startPraying()
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    boolStartPraying = true
+end
+
+function pray()
+    prayTime= 12000
+    while prayTime > 0 do
+        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
+       prayTime = prayTime - 1500
+        Sleep(100)
+    end
+    setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
 function wailing()
     while wailingTime > 0 do
+        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
         PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
        wailingTime = wailingTime - 1500
         Sleep(100)
     end
-    GG.CivilianUnitInternalLogicActive[unitID] = "ENDED"
+    setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
 function chatting()
@@ -380,28 +381,29 @@ function chatting()
        chattingTime = chattingTime - 1500
         Sleep(100)
     end
-    GG.CivilianUnitInternalLogicActive[unitID] = "ENDED"
+    setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
 function filmingLocation()
+    Show(cellphone1)
     while filmLocation.time > 0 do
         PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
         filmLocation.time = filmLocation.time - 2000
+        setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
-    GG.CivilianUnitInternalLogicActive[unitID] = "ENDED"
+    setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    setCivilianUnitInternalStateMode(STATE_STARTED)
     if not enemyID then 
         setCivilianUnitInternalStateMode(STATE_ENDED)
         return 
     end
 
-    while distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
         Sleep(500)
     end
@@ -789,6 +791,16 @@ function threadStateStarter()
             boolStartChatting = false
             StartThread(chatting)
         end
+
+        if boolStartFleeing == true then
+            boolStartFleeing = false
+            StartThread(fleeEnemy, attackerID)
+        end
+
+        if boolStartPraying == true then
+            boolStartFleeing = false
+            StartThread(pray)
+        end
         Sleep(250)   
     end
 end
@@ -1124,7 +1136,7 @@ LowerAnimationStateFunctions = {
         return eAnimState.walking
     end,
     [eAnimState.transported] = function()
-        echo("TODO: Civilian State transported")
+        --echo("TODO: Civilian State transported")
         return eAnimState.transported
     end,
     [eAnimState.slaved] = function()

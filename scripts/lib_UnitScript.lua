@@ -261,9 +261,18 @@ function isUnitFlying(unitID)
 
 end
 
+
+function setUnitRotationToPoint(id, x,y,z)
+    ux,uy,uz=Spring.GetUnitPosition(id)
+    ux, uy, uz = ux- x, uy-y, uz-z
+    norm = absNormMax(ux,uz)
+   degRot = math.deg(math.atan2(ux/norm, uz/norm)+math.pi)  
+    Spring.SetUnitRotation(id, 0, degRot, 0)
+end
+
 function setUnitHeadingFromUnit(id, ad)
     hd = Spring.GetUnitHeading(ad)
-    Spring.SetUnitHeading(id)
+    Spring.SetUnitHeading(id, hd)
     x, y, z = Spring.GetUnitRotation(ad)
     Spring.SetUnitRotation(id, x, y, z)
 end
@@ -271,7 +280,6 @@ end
 -- > Sets the Speed of a Unit
 function setUnitValueExternal(k, cobArgh, val)
     env = Spring.UnitScript.GetScriptEnv(k)
-
     if env then
         Spring.UnitScript.CallAsUnit(k, Spring.UnitScript.SetUnitValue,
                                      COB[cobArgh], val)
@@ -5394,7 +5402,7 @@ function mulVector(vl, value)
     return nil
 end
 
-function normN(...)
+function absNormMax(...)
     local arg = arg;
     if (not arg) then
         arg = {...};
@@ -5405,8 +5413,7 @@ function normN(...)
         if math.abs(v) > maxVal then maxVal = math.abs(v) end
     end
 
-    for k, v in pairs(arg) do arg[k] = v / maxVal end
-    return arg
+    return maxVal
 end
 
 function norm2Vector(v1, v2)

@@ -584,6 +584,24 @@ if (gadgetHandler:IsSyncedCode()) then
     -- ===========Projectile Persistence Functions ====================================================
     local ProjectileCreatedFunc={}
 
+    function startInternalBehaviourOfState(unitID, name, ...)
+    local arg = arg;
+    if (not arg) then
+        arg = {...};
+        arg.n = #arg
+    end
+
+    env = Spring.UnitScript.GetScriptEnv(unitID)
+    if env and env.setOverrideAnimationState then
+        Spring.UnitScript.CallAsUnit(unitID, 
+                                     env[name],
+                                     arg[1] or nil,
+                                     arg[2] or nil,
+                                     arg[3] or nil,
+                                     arg[4] or nil
+                                     )
+    end
+    end
 
     local NewUnitsInPanic = {}
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
@@ -599,14 +617,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     not GG.DisguiseCivilianFor[id] and
                     civilianWalkingTypeTable[spGetUnitDefID(id)] and
                     not GG.AerosolAffectedCivilians[id] then
-
-                    NewUnitsInPanic[id] =
-                        {
-                            proOwnerID = proOwnerID,
-                            flighttime = (panicWeapons[projWeaponDefID].damage *
-                                panicWeapons[projWeaponDefID].range) / 30,
-                            updateIntervall = 33
-                        }
+                        startInternalBehaviourOfState(id,"fleeEnemy", proOwnerID)
                     return id
                 end
             end)
@@ -614,11 +625,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     end
 
-    function gadget:GameFrame(n)
-        if n % 33 == 0 and count(NewUnitsInPanic) > 0 then
-            handleFleeingCivilians(n)
-        end
-    end
 
     function handleFleeingCivilians(n)
         flightFunction = function(evtID, frame, persPack, startFrame)
@@ -655,7 +661,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 return nil, persPack
             end
 
-            if GG.FleeingCivilians[myID] < 0 then
+            if GG.FleeingCivilians[myID].flighttime < 0 then
                 return nil, persPack
             end
 

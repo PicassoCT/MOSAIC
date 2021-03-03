@@ -48,8 +48,8 @@ function getGameConfig()
 
         civilianPanicRadius = 350,
         civilianFleeDistance = 500,
-        civilianInterestRadius = 150,
-        generalInteractionDistance = 250,
+        civilianInterestRadius = 350,
+        generalInteractionDistance = 35,
         minConversationLengthFrames = 3 * 30,
         maxConversationLengthFrames = 25 * 30,
         groupChatDistance = 150,

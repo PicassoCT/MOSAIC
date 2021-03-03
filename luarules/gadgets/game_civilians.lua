@@ -130,17 +130,18 @@ function makePasserBysLook(unitID)
         end
     end, function(id)
         if math.random(0, 100) > GameConfig.inHundredChanceOfInterestInDisaster then
-            offx, offz = math.random(0, 10) * randSign(),
-                         math.random(0, 10) * randSign()
+            offx, offz = math.random(25, 50) * randSign(),
+                         math.random(25, 50) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             -- TODO Set Behaviour filming
             startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, math.random(5000,15000))
-
+           -- Spring.Echo("Unit "..id.." is now filming")
         elseif math.random(0, 100) > GameConfig.inHundredChanceOfDisasterWailing then
             offx, offz = math.random(0, 10) * randSign(),
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             startInternalBehaviourOfState(id, "startWailing", math.random(5000,25000))
+           -- Spring.Echo("Unit "..id.." is now wailing")
        end
     end)
 
@@ -161,7 +162,6 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
         activePoliceUnitIds_DispatchTime[unitID] = nil
         maxNrPolice = math.min(maxNrPolice + 1, GameConfig.maxNrPolice)
     end
-
     -- Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
@@ -172,9 +172,9 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
         end
     end
 
-    if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
+   -- if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
       --  Spring.Echo("game_civilians:UnitDestroyed:"..unitID.." of type "..UnitDefs[unitDefID].name)
-    end
+   -- end
 end
 
 function spawnRubbleHeapAt(id)
@@ -232,6 +232,8 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
         officerID = getOfficer(unitID, attackerID)
         boolFoundSomething = false
         if officerID then
+             setFireState(officerID, 2)
+             setMoveState(officerID, 2)
             -- Spring.AddUnitImpulse(officerID,15,0,0)
             tx, ty, tz = math.random(0, 100) * Game.mapSizeX, 0,
                          math.random(0, 100) * Game.mapSizeZ
@@ -801,11 +803,15 @@ function getEscapePoint(index)
     if index == 4 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, Game.mapSizeZ end
 end
 
+function goalIsWarZone(persPack)
+    dangerNormalized= GG.DamageHeatMap:getDangerAtLocation(persPack.goalList[persPack.goalIndex].x,persPack.goalList[persPack.goalIndex].z)
+    return dangerNormalized > 0.5 and GG.DamageHeatMap.normalizationValue > 5000
+end
 
 function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
  -- avoid combat zones
-     if math.random(1,100) > 85 then   persPack.boolRefugee = true end
+     if maRa() and goalIsWarZone(persPack) then persPack.boolRefugee = true end
 
      if persPack.boolRefugee then
         if not GG.CivilianEscapePointTable then 
@@ -854,13 +860,13 @@ boolDone = false
   ---ocassionally detour toward the nearest ally or enemy
     if  math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
-        persPack.maxTimeChattingInFrames > 0  then
+        persPack.maxTimeChattingInFrames > 150  then
 
-        persPack.boolStartAChat = true
+       
 
         persPack.chatPartnerID = spGetUnitNearestAlly(myID)
-        if maRa()==true or not persPack.chatPartnerID or not doesUnitExistAlive(persPack.chatPartnerID) then
-            persPack.chatPartnerID = spGetUnitNearestEnemy(myID)
+        if persPack.chatPartnerID and civilianWalkingTypeTable[spGetUnitDefID(persPack.chatPartnerID)] then 
+            persPack.boolStartAChat = true
         end
     end
 
@@ -875,7 +881,7 @@ boolDone = false
     end
 
     if  persPack.boolStartAChat == false then
-        persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames + 5
+        persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames + 10
     end
 
     if persPack.boolStartAChat == true then
@@ -904,6 +910,16 @@ boolDone = false
         end
     end  
     return boolDone, nil, persPack
+end  
+
+function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
+--[[boolDone = false
+--]]
+--[[if math.random then
+    Command(myID, "stop")
+     startInternalBehaviourOfState(myID, "startPraying")
+    return true, frame + 900, persPack   
+end  --]]
 end  
 
 
@@ -941,7 +957,7 @@ end
 function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
  -- only re-issue commands if not moving for a time - prevents repathing frame drop of 15 fps
     if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
-        echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
+        --echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
         Command(myID, "go", {
             x = math.ceil(persPack.goalList[persPack.goalIndex].x),
@@ -1007,6 +1023,9 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
+--[[    boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
+    if boolDone == true then return retFrame,persPack end    
+--]]
     boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
