@@ -18,7 +18,6 @@ function gadget:GetInfo()
 	}
 end
 
-
 -- Read mod options, we need this in both synced and unsynced code!
 if (Spring.GetModOptions) then
 	local modOptions = Spring.GetModOptions()
@@ -31,7 +30,6 @@ end
 -- include configuration
 include("LuaRules/Configs/prometheus/config.lua")
 
-
 if (gadgetHandler:IsSyncedCode()) then
 
 --------------------------------------------------------------------------------
@@ -39,10 +37,9 @@ if (gadgetHandler:IsSyncedCode()) then
 --
 --  SYNCED
 --
-
 -- globals
 local unitLimits = {}
-
+local waypointMgr = {}
 
 -- include code
 include("LuaRules/Gadgets/prometheus/unitlimits.lua")
@@ -243,6 +240,19 @@ local function CreateTeams()
 	end
 end
 
+function gadget:GameStart()
+	-- This is executed AFTER headquarters / commander is spawned
+	Log("gadget:GameStart")
+	if waypointMgr then
+		waypointMgr.GameStart()
+	end
+
+	-- We perform this only this late, and then fake UnitFinished for all units
+	-- in the team, to support random faction (implemented by swapping out HQ
+	-- in GameStart of that gadget.)
+	CreateTeams()
+end
+
 function gadget:GameFrame(f)
 	--Spring.Echo("gadget:GameFrame"..f)
 
@@ -307,23 +317,19 @@ end
 --
 --  Unit call-ins
 --
-function restoreWayPointManager()
+function gadget:RestoreWayPointManager()
 		waypointMgr = CreateWaypointMgr()
 					if waypointMgr then
 						waypointMgr.GameStart()
 					end
 					CreateTeams()
+		return waypointMgr
 end
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." created")
-		--[[if type(waypointMgr) ~= "table" or waypointMgr.UnitCreated == nil then
-			restoreWayPointManager()		
-		end--]]
-	
 	if waypointMgr  then	
 		if not waypointMgr.UnitCreated then
-			restoreWayPointManager()
+			waypointMgr = gadget:RestoreWayPointManager()
 		end
 		if  waypointMgr.UnitCreated then
 			waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
@@ -346,7 +352,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerD
 	if waypointMgr then
 		--restore the wayPointManager
 		if  waypointMgr.UnitDestroyed == nil then 
-			restoreWayPointManager()
+			waypointMgr= gadet:RestoreWayPointManager()
 		end	
 		waypointMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	end
@@ -381,11 +387,10 @@ end
 
 end
 
-
 -- Set up LUA AI framework.
 callInList = {
 	"GamePreload",
-	--"GameStart",
+	"GameStart",
 	"GameFrame",
 	"TeamDied",
 	"UnitCreated",
@@ -395,4 +400,5 @@ callInList = {
 	"UnitGiven",
 	"UnitIdle",
 }
+
 return include("LuaRules/Gadgets/prometheus/framework.lua")

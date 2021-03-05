@@ -11,7 +11,10 @@ function script.Create()
 
     resetAll(unitID)
     val = math.random(-360, 360)
-
+    rSign = randSign()*math.random(1,9)
+    for i=1,#TablesOfPiecesGroups.HyperLoop do
+        Turn(TablesOfPiecesGroups.HyperLoop[i],y_axis, math.rad(rSign),0)
+    end
     StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][1], 1, 5)
     StartThread(sensorTurn, TablesOfPiecesGroups["HyperLoop"][6], 6,
                 #TablesOfPiecesGroups["HyperLoop"])
@@ -25,10 +28,7 @@ function delayShowAllElements()
 
     hideT(TablesOfPiecesGroups["HyperLoop"])
     Sleep(10000)
-    rSign = randSign()*math.random(1,9)
-    for i=1,#TablesOfPiecesGroups.HyperLoop do
-        Turn(TablesOfPiecesGroups.HyperLoop[i],y_axis, math.rad(rSign),0)
-    end
+
 
     nrsShown={}
     for nr, piecenr in pairs(TablesOfPiecesGroups["HyperLoop"]) do

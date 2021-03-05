@@ -266,8 +266,8 @@ function setUnitRotationToPoint(id, x,y,z)
     ux,uy,uz=Spring.GetUnitPosition(id)
     ux, uy, uz = ux- x, uy-y, uz-z
     norm = absNormMax(ux,uz)
-   degRot = math.deg(math.atan2(ux/norm, uz/norm)+math.pi)  
-    Spring.SetUnitRotation(id, 0, degRot, 0)
+    radresult = math.atan2(ux/norm, uz/norm) 
+    Spring.SetUnitRotation(id, 0, radresult, 0)
 end
 
 function setUnitHeadingFromUnit(id, ad)
@@ -1701,14 +1701,6 @@ end
 -- ======================================================================================
 -- Section: Initializing Functions
 -- ======================================================================================
-function lifeTime(unitID, lifeTime, boolReclaimed, boolSelfdestroyed,
-                  finalizeFunction)
-    boolReclaimed, boolSelfdestroyed = boolReclaimed or false,
-                                       boolSelfdestroyed or false
-    Sleep(lifeTime)
-    if finalizeFunction then finalizeFunction() end
-    Spring.DestroyUnit(unitID, boolReclaimed, boolSelfdestroyed)
-end
 
 function getPieceMap(unitID)
     List = Spring.GetUnitPieceMap(unitID)
@@ -3918,7 +3910,7 @@ function inc(value) return value + 1 end
 function dec(value) return value - 1 end
 
 function equal(valA, valB, treshold)
-    return valA > valB - treshold and valA < valB + treshold
+    return valA < (valB + treshold) and valA > (valB - treshold)
 end
 -- ======================================================================================
 -- Section : Code Generation 

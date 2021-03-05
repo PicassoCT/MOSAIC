@@ -622,6 +622,16 @@ function partOfShipPartOfCrew(point, VaryFooID, motherID)
     end
 end
 
+function lifeTime(unitID, lifeTime, boolReclaimed, boolSelfdestroyed,
+                  finalizeFunction)
+    boolReclaimed, boolSelfdestroyed = boolReclaimed or false,
+                                       boolSelfdestroyed or false
+    Sleep(lifeTime)
+    if finalizeFunction then finalizeFunction() end
+    Spring.DestroyUnit(unitID, boolReclaimed, boolSelfdestroyed)
+end
+
+
 -- ================================================================================================================
 -- OS Support Functionality
 

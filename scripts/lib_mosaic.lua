@@ -31,7 +31,7 @@ function getGameConfig()
             raidComRange = 1200,
             raidBonusFactorSatellite = 2.5
         },
-        SnipeMiniGame = {
+        SnipeMiniGcivilianInterestame = {
 
             Aggressor = {StartPoints = 4},
             Defender = {StartPoints = 4}
@@ -145,10 +145,12 @@ function getGameConfig()
 
         -- Icons
         iconGroundOffset = 50,
+        iconHoverGroundOffset = 125,
         SatelliteIconDistance = 150,
         SatelliteShrapnellDistance = 450,
         SatelliteShrapnellLifeTime = 2 * 60 * 1000,
         SatelliteShrapnellDamagePerSecond = 1000,
+        LifeTimeBribeIcon = 60 *1000,
         -- Operativedrop HeightOffset
         OperativeDropHeigthOffset = 900,
 
@@ -295,6 +297,15 @@ function getSatteliteTypes(UnitDefs)
     typeTable = {
         "satelliteanti", "satellitescan", "satellitegodrod",
         "satelliteshrapnell"
+    }
+    return getTypeTable(UnitDefNames, typeTable)
+end
+
+function getAgrarianAreaFeatureUnits(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    typeTable = {
+        "tree_arab0", 
+        "tree_arab1"
     }
     return getTypeTable(UnitDefNames, typeTable)
 end
@@ -795,8 +806,8 @@ function getDecalMap(culture)
 end
 
 function isPrayerTime()
-hours, minutes, seconds, percent = getDayTime()
-return GG.GameConfig.instance.culture == "arabic" and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025) 
+    hours, minutes, seconds, percent = getDayTime()
+    return GG.GameConfig.instance.culture == "arabic" and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025) 
 end
 
 function getDayTime()
@@ -1207,6 +1218,10 @@ function getInfluencedStates()
         ["Outbreak"] = "Outbreak",
         ["Dieing"] = "Dieing"
     }
+end
+
+function isBribe(defID)
+    return UnitDefs[defID].name == "bribeicon"
 end
 
 function getInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)

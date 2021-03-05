@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
+include "lib_mosaic.lua"
 
 local myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
@@ -31,6 +32,8 @@ boringChances = {
     windowwall = 0.5,
     streetwall = 0.1
 }
+
+agrarianFeatureTypeTable = getAgrarianAreaFeatureUnits(UnitDefs)
 decoChances = boringChances
 x, y, z = Spring.GetUnitPosition(unitID)
 geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
@@ -304,8 +307,8 @@ end
 local gaiaTeamID = Spring.GetGaiaTeamID()
 function marketResearch()
     if not GG.HouseDecoration_Arab_MarketCounter then  GG.HouseDecoration_Arab_MarketCounter = 0 end
-
     if  GG.HouseDecoration_Arab_MarketCounter > 2 then return end
+   
     x,y,z = Spring.GetUnitPosition(unitID)
     housesNearby = 0
     process(getAllInCircle(x,z, 400),
@@ -322,6 +325,22 @@ function marketResearch()
          maxDeg = minDeg + 120
         for i=1, math.random(3,6) do
             createUnitInCircleAroundUnit(unitID,"marketstand_arab", math.random(200,500), minDeg, maxDeg)
+        end
+    end
+
+    if not GG.HouseDecoration_Arab_FarmDecoration then  GG.HouseDecoration_Arab_FarmDecoration = 0 end
+    if  GG.HouseDecoration_Arab_MarketCounter > 5 then return end
+
+    if housesNearby < 2 then
+    GG.HouseDecoration_Arab_FarmDecoration =  GG.HouseDecoration_Arab_FarmDecoration +1
+         minDeg =math.random (0,360)
+         maxDeg = minDeg + 120
+        for i=1, math.random(2,5) do
+            if maRa()== true then
+             createUnitInCircleAroundUnit(unitID,"tree_arab0", math.random(200,500), minDeg, maxDeg)
+            else
+             createUnitInCircleAroundUnit(unitID,"tree_arab1", math.random(200,500), minDeg, maxDeg)
+            end
         end
     end
 end

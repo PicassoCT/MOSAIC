@@ -110,7 +110,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		-- S/he can interrogate civilans suspected of aiding the enemy.
 		-- S/he can raid houses suspected of being safehouses. 
 		-- Build a safehouse inside the city. Upon creation, you will recieve further instructions.
-		speach= "sounds/tutorial/operativeinvestigator.ogg"
+		speach= "sounds/tutorial/operativeinvestigator.ogg",
 		Time = 3000,
 		text =  "\a|Investigator Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},

@@ -338,8 +338,7 @@ function startChatting(time)
 end
 
 attackerID = 0
-boolStartFleeing = false
-function startFleeing(attackerID)
+boolStartFleeing = false function startFleeing(attackerID)
     if not attackerID then return end
     setCivilianUnitInternalStateMode(STATE_STARTED)
     boolStartFleeing = true
@@ -350,20 +349,23 @@ function startPraying()
     setCivilianUnitInternalStateMode(STATE_STARTED)
     boolStartPraying = true
 end
-
+--
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     prayTime= 12000
-    Spring.Echo(unitID.." starts praying")
     while prayTime > 0 do
        resetT(upperBodyPieces,1.0, false, true)
+       WaitForTurns(upperBodyPieces)
         Sleep(500)
         PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
         WaitForTurns(upperBodyPieces)
+        if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
+         Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
        prayTime = prayTime - 3500
-        Sleep(1000)
+        Sleep(500)
     end
+     resetT(upperBodyPieces,2.0, false, true)
     setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
@@ -388,6 +390,15 @@ function chatting()
         else
         PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, 1.0)
        end
+       Result= process(
+        getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
+        function(id)
+            if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
+        end
+        )
+       if #Result < 1 then break end
+       ix,iy,iz = Spring.GetUnitPosition(Result[1])
+       setUnitRotationToPoint(unitID, ix,iy,iz)
        chattingTime = chattingTime - 1500
         Sleep(100)
     end
@@ -786,7 +797,6 @@ function threadStarter()
     end
 end
 
-
 function threadStateStarter()
     Sleep(100)
     while true do
@@ -816,7 +826,6 @@ function threadStateStarter()
         Sleep(250)   
     end
 end
-
 
 function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,
@@ -1045,7 +1054,6 @@ UpperAnimationStateFunctions = {
         return eAnimState.slaved
     end,
     [eAnimState.coverwalk] = function()
-
         Hide(ShoppingBag);
         Hide(SittingBaby);
         Hide(trolley);
@@ -1252,7 +1260,6 @@ function animationStateMachineUpper(AnimationTable)
         end
         Sleep(33)
     end
-
 end
 
 function delayedStop()
@@ -1274,8 +1281,7 @@ end
 
 function script.StartMoving()
     boolWalking = true
-    setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil,
-                              true)
+    setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end
 
 function script.StopMoving() StartThread(delayedStop) end

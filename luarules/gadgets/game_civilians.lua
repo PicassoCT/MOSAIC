@@ -75,7 +75,7 @@ local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
-local gaiaTeamID = Spring.GetGaiaTeamID()
+local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 function getPoliceSpawnLocation(suspect)
     assert(type(suspect) == "number")
@@ -141,10 +141,8 @@ function makePasserBysLook(unitID)
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             startInternalBehaviourOfState(id, "startWailing", math.random(5000,25000))
-           -- Spring.Echo("Unit "..id.." is now wailing")
        end
     end)
-
 end
 
 function gadget:UnitCreated(unitID, unitDefID, teamID)
@@ -153,7 +151,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
         maxNrPolice = math.max(maxNrPolice - 1, 0)
     end
     if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
-        Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
+       -- Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
     end
 end
 
@@ -714,10 +712,6 @@ function gadget:Initialize()
             function(id) Spring.DestroyUnit(id, true, true) end)
 end
 
-function endEchoTravelFunction(message, id)
-    Spring.Echo("TravelFunction ended "..message.." for "..id)
-end
-
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------  Civilian Behaviour Part  ---------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
@@ -751,7 +745,6 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
 
     if GG.TravelFunctionRegistry[myID] > startFrame then
         boolDone = true
-        endEchoTravelFunction("newer Function registered", myID)
         return boolDone, nil, persPack, x,y,z, hp
     else
         GG.TravelFunctionRegistry[myID] = startFrame
@@ -762,7 +755,6 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
 
     -- <External GameState Handling>
     if GG.AerosolAffectedCivilians and GG.AerosolAffectedCivilians[myID] then
-        endEchoTravelFunction("abort if aerosol afflicted", myID)
         return true, nil, persPack, x,y,z, hp
     end
 
@@ -979,7 +971,6 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         persPack.goalIndex = persPack.goalIndex + 1
         if persPack.goalIndex > #persPack.goalList then
             GG.UnitArrivedAtTarget[myID] = true
-            endEchoTravelFunction("arrived at target", myID)
             return true, nil, persPack
         else
             persPack = moveToLocation(myID, persPack, {}, true)

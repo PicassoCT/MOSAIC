@@ -70,6 +70,7 @@ local OperativeAsset = Human:New{
 		"ground_turret_ssied",
 		"air_parachut",
 		"ground_stickybomb",
+		"bribeicon"
 	},
 	
 	customparams = {

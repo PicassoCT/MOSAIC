@@ -58,7 +58,8 @@ local OperativePropagator = Human:New{
 		"antagonsafehouse",
 		"air_copter_ssied",	
 		"checkpoint",
-		"brehmerwall"
+		"brehmerwall",
+		"bribeicon"
 	},
 
 	customparams = {
