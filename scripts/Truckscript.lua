@@ -9,6 +9,7 @@ TablesOfPiecesGroups = {}
 LoadOutTypes = getTruckLoadOutTypeTable()
 
 SIG_ORDERTRANFER = 1
+SIG_HONK = 2
 
 center = piece "center"
 attachPoint = piece "attachPoint"
@@ -134,6 +135,7 @@ function script.AimWeapon1(Heading, pitch) return boolIsPoliceTruck end
 function script.FireWeapon1() return true end
 
 function script.StartMoving()
+    Signal(SIG_HONK)
     if boolIsPoliceTruck == true then
         spinT(TablesOfPiecesGroups["wheel"], x_axis, -260, 0.3)
     else
@@ -141,7 +143,19 @@ function script.StartMoving()
     end
 end
 
-function script.StopMoving() stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3) end
+function honkIfHorny()
+    Signal(SIG_HONK)
+    SetSignalMask(SIG_HONK)
+    Sleep(250)
+    if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", 1.0, 1000, 1)
+    end
+end
+
+function script.StopMoving() 
+    stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3) 
+    StartThread(honkIfHorny)
+end
 
 function script.Activate() return 1 end
 

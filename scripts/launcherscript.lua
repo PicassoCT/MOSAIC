@@ -20,14 +20,20 @@ teamID = Spring.GetUnitTeam(unitID)
 stepIndex = 0
 rocketHeigth = 3400
 stepHeight = rocketHeigth / GameConfig.LaunchReadySteps
+rocket= piece"Step1"
+
+function moveRocketToPos(height,speed)
+    Move(RocketAttach, upaxis, height, speed)
+    Move(Elevator, upaxis, height, speed)
+    Move(rocket, z_axis, height, speed)
+end
 
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
     if not GG.Launchers then GG.Launchers = {} end
     if not GG.Launchers[teamID] then GG.Launchers[teamID] = {} end
     GG.Launchers[teamID][unitID] = 0
-    Move(RocketAttach, upaxis, -rocketHeigth, 0)
-    Move(Elevator, upaxis, -rocketHeigth, 0)
+    moveRocketToPos(-rocketHeigth, 0)
     Hide(RocketAttach)
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -37,8 +43,10 @@ function script.Create()
     hideT(TablesOfPiecesGroups["Gantry"])
     StartThread(accountForBuiltLauncherSteps)
     StartThread(workCycle)
-    Spin(Craddle, y_axis, math.rad(1), 0.1)
-    Spin(RocketAttach, y_axis, math.rad(1), 0.1)
+    Spin(Craddle, y_axis, math.rad(-1), 0.1)
+    Spin(RocketAttach, y_axis, math.rad(-1), 0.1)
+    Spin(rocket, y_axis, math.rad(-1), 0.1)
+    Hide(Icon)
 end
 
 launcherStepDefID = UnitDefNames["launcherstep"].id
@@ -50,18 +58,16 @@ function accountForBuiltLauncherSteps()
             if boolLaunchReady == false then
                 buildDefID = Spring.GetUnitDefID(buildID)
                 if buildDefID == launcherStepDefID then
-                    waitTillComplete(buildID)
                     stepIndex = stepIndex + 1
-                    Move(RocketAttach, upaxis,
-                         math.min(-rocketHeigth + stepIndex * stepHeight, 0), 10)
-                    Move(Elevator, upaxis,
-                         math.min(-rocketHeigth + stepIndex * stepHeight, 0), 10)
-                    showT(TablesOfPiecesGroups["Step"], 0, stepIndex)
+                    moveRocketToPos(-rocketHeigth + stepIndex * stepHeight, 100)
+                   
                     Hide(TablesOfPiecesGroups["WIP"][stepIndex])
                     Show(TablesOfPiecesGroups["WIP"][math.min(
                              #TablesOfPiecesGroups["WIP"], stepIndex + 1)])
                     showT(TablesOfPiecesGroups["Gantry"], 0, math.min(
                               #TablesOfPiecesGroups["Gantry"], stepIndex * 2))
+                    waitTillComplete(buildID)
+                    showT(TablesOfPiecesGroups["Step"], 1, math.min(#TablesOfPiecesGroups["Step"],stepIndex + 1))
 
                     GG.Launchers[teamID][unitID] =
                         GG.Launchers[teamID][unitID] + 1
@@ -88,8 +94,9 @@ function prePareForLaunch()
 
     StopSpin(Craddle, y_axis, 0.1)
     StopSpin(RocketAttach, y_axis, 0.1)
-    Move(RocketAttach, upaxis, 0, 25)
-    Move(Elevator, upaxis, 0, 25)
+    StopSpin(rocket, y_axis, 0.1)
+    moveRocketToPos(0, 25)
+    WaitForTurns(RocketAttach, Elevator, rocket)
     Sleep(2500)
     WTurn(Crane, y_axis, math.rad(95), 5)
 

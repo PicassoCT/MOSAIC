@@ -28,7 +28,7 @@ else
 end
 
 -- include configuration
-include("LuaRules/Configs/prometheus/config.lua")
+include("LuaRules/configs/prometheus/config.lua")
 
 if (gadgetHandler:IsSyncedCode()) then
 
@@ -46,6 +46,7 @@ include("LuaRules/Gadgets/prometheus/unitlimits.lua")
 
 function gadget:GamePreload()
 	-- Initialise unit limit for all AI teams.
+	waypointMgr =  gadget:RestoreWayPointManager()
 	local name = gadget:GetInfo().name
 	for _,t in ipairs(Spring.GetTeamList()) do
 		if Spring.GetTeamLuaAI(t) ==  name then
@@ -96,7 +97,8 @@ else
 
 --constants
 local MY_PLAYER_ID = Spring.GetMyPlayerID()
-
+local FIX_CONFIG_FOLDER = "luarules/configs/prometheus"
+local CONFIG_FOLDER = "luarules/configs/prometheus"
 -- globals
 local waypointMgr = {}
 
@@ -156,6 +158,20 @@ function gadget.Warning(...)
 	Spring.Echo("Prometheus: " .. table.concat{...})
 end
 
+
+-- To read/save data, they replace widgets GetConfigData() and SetConfigData()
+-- callins
+function SetConfigData()
+    local data = {}
+    if VFS.FileExists(CONFIG_FOLDER .. "/prometheus.lua") then
+        Log("Found config file: ",
+            VFS.GetFileAbsolutePath(CONFIG_FOLDER .. "/prometheus.lua"))
+        data = VFS.Include(CONFIG_FOLDER .. "/prometheus.lua")
+    elseif VFS.FileExists(FIX_CONFIG_FOLDER .. "/prometheus.lua") then
+        data = VFS.Include(FIX_CONFIG_FOLDER .. "/prometheus.lua")
+    end
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -177,6 +193,7 @@ function gadget:Initialize()
 	})
 	SetupCmdChangeAIDebugVerbosity()
 	firstFrame = Spring.GetGameFrame()
+    SetConfigData()
 end
 
 function gadget:GamePreload()
@@ -401,4 +418,5 @@ callInList = {
 	"UnitIdle",
 }
 
-return include("LuaRules/Gadgets/prometheus/framework.lua")
+--VFS.Include("luarules/gadgets/prometheus/framework.lua", nil, VFS.ZIP)
+return include("luarules/gadgets/prometheus/framework.lua")

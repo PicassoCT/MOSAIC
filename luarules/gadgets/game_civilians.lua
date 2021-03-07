@@ -41,7 +41,6 @@ local spRequestPath = Spring.RequestPath
 local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
 
-local currentGlobalGameState = GG.GlobalGameState or GameConfig.GameState.normal
 local UnitDefNames = getUnitDefNames(UnitDefs)
 local PoliceTypes = getPoliceTypes(UnitDefs)
 
@@ -153,6 +152,10 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
     if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
        -- Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
     end
+
+    if isBribeIcon(UnitDefs, unitDefID) then
+        dispatchOfficer(unitID, unitID)
+    end
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
@@ -219,12 +222,7 @@ function getOfficer(unitID, attackerID)
     return officerID
 end
 
-function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
-                            weaponID, projectileID, attackerID, attackerDefID,
-                            attackerTeam)
-    if MobileCivilianDefIds[unitDefID] then
-        attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
-
+function dispatchOfficer(unitID, attackerID)
         if not attackerID then return end
 
         officerID = getOfficer(unitID, attackerID)
@@ -261,6 +259,14 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                 Command(officerID, "attack", {attackerID}, 4)
             end
         end
+end
+
+function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
+                            weaponID, projectileID, attackerID, attackerDefID,
+                            attackerTeam)
+    if MobileCivilianDefIds[unitDefID] then
+        attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
+        dispatchOfficer(unitID, attackerID)
     end
 end
 
@@ -758,15 +764,17 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
         return true, nil, persPack, x,y,z, hp
     end
 
-
-    if GG.GlobalGameState and GG.GlobalGameState == GameConfig.GameState.normal and
+    if GG.GlobalGameState and 
+        GG.GlobalGameState == GameConfig.GameState.normal and
         persPack.boolAnarchy == true then
-        setCivilianBehaviourMode(myID, false)
+        setCivilianBehaviourMode(myID, false, GG.GlobalGameState, false)
         persPack.boolAnarchy = false
     end
 
-    if GG.GlobalGameState and GG.GlobalGameState ~= GameConfig.GameState.normal then
-        setCivilianBehaviourMode(myID, true, GG.GlobalGameState)
+    if GG.GlobalGameState and 
+        GG.GlobalGameState ~= GameConfig.GameState.normal and 
+        not persPack.boolAnarchy  then
+        setCivilianBehaviourMode(myID, true, GG.GlobalGameState, false)
         persPack.boolAnarchy = true
         return true, frame + math.random(30 * 5, 30 * 25), persPack, x,y,z, hp
     end

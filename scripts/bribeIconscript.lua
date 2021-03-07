@@ -23,14 +23,13 @@ function script.Create()
         ox, oy, oz = Spring.GetUnitPosition(unitID)
         Spring.SetUnitPosition(unitID, ox, oy + GameConfig.iconHoverGroundOffset, oz)
         value =42*randSign()
-        Spin(DollarSign,z_axis,math.rad(value),0)
-        Spin(Rotator1,z_axis,math.rad(value*-1),0)
+        Spin(DollarSign,y_axis,math.rad(value),0)
+        Spin(Rotator1,y_axis,math.rad(value*-1),0)
         process(TablesOfPiecesGroups["Base"],
-            function()
-                Spin(id,z_axis,math.rad(value*randSign()),0)
+            function(id)
+                Spin(id,y_axis,math.rad(value*randSign()),0)
             end
             )
-        Spin(Base,z_axis,math.rad(value),0)
         StartThread(lifeTime, unitID, gameConfig.LifeTimeBribeIcon, true, false)
 end
 

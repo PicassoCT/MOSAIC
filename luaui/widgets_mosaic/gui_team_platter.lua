@@ -88,6 +88,17 @@ local circleDivs   = 32
 local circleOffset = 0
 
 local startTimer = spGetTimer()
+local ignoredUnitDefs = {
+[UnitDefNames["tree_arab0"].id]= true,
+[UnitDefNames["tree_arab1"].id]= true,
+[UnitDefNames["marketstand_arab"].id]= true,
+[UnitDefNames["doubleagent"].id]= true,
+[UnitDefNames["interrogationicon"].id]= true,
+[UnitDefNames["raidicon"].id]= true,
+[UnitDefNames["snipeicon"].id]= true,
+[UnitDefNames["objectiveicon"].id]= true,
+[UnitDefNames["bribeicon"].id]= true,
+}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -294,6 +305,7 @@ function widget:DrawWorldPreUnit()
 			unitCache[unitID].defID=udid
 		end
 
+    if not ignoredUnitDefs[udid] then
 	
         local radius = GetUnitDefRealRadius(udid)
         if (radius) then
@@ -335,6 +347,7 @@ function widget:DrawWorldPreUnit()
                              radius, 1.0, radius)
           end
         end
+      end
       end
     end
   end

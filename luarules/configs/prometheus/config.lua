@@ -1,6 +1,10 @@
 -- Author: Tobi Vollebregt
 -- License: GNU General Public License v2
 
+-- Misc config
+FLAG_RADIUS = 230 --from S44 game_flagManager.lua
+SQUAD_SIZE = 10
+
 --------------------------------------------------------------------------------
 --
 --  Data structures (constructor syntax)
@@ -44,12 +48,24 @@ function UnitBag(t)
 	return newBag
 end
 
+gadget.reservedFlagCappers = {
+antagon = SQUAD_SIZE,
+protagon = SQUAD_SIZE
+}
+
+gadget.flagCappers = UnitSet{
+"operativeasset",
+"operativepropagator",
+"operativeinvestigator"
+}
+
+
 --------------------------------------------------------------------------------
 --
 --  Include configuration
 --
 
-local dir = "LuaRules/Configs/prometheus/mosaic/"
+local dir = "luarules/configs/prometheus/mosaic/"
 
 if (gadgetHandler:IsSyncedCode()) then
 	-- SYNCED

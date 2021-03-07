@@ -821,6 +821,17 @@ function getDayTime()
     return hours, minutes, seconds, percent
 end
 
+
+function isRushHour()
+   hours, minutes, seconds, percent = getDayTime()
+   
+   if hours > 6 and hours < 9 or
+      hours > 12 and hours < 14 or
+      hours > 16 and hours < 20 then
+        return true
+    end
+end 
+
 -- > Creates a Eventstream Event bound to a Unit
 function createStreamEvent(unitID, func, framerate, persPack)
     persPack.unitID = unitID
@@ -1220,7 +1231,7 @@ function getInfluencedStates()
     }
 end
 
-function isBribe(defID)
+function isBribeIcon(UnitDefs, defID)
     return UnitDefs[defID].name == "bribeicon"
 end
 
@@ -1372,7 +1383,7 @@ function getInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
         end
     }
 
-    assert(IInfluenceStateMachines[typeOfInfluence], typeOfInfluence)
+    assert(InfluenceStateMachines[typeOfInfluence], typeOfInfluence)
     return InfluenceStateMachines[typeOfInfluence]
 end
 

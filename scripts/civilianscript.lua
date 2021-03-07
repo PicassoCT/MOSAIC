@@ -759,7 +759,7 @@ oldBehaviourState = ""
 function beeHaviourStateMachine(startState, boolInfluenced)
     newState = startState
     if boolInfluenced == true then
-        influencedStateMachine = getInfluencedStateMachine(UnitID, UnitDefs,
+        influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs,
                                                            startState)
         assert(influencedStateMachine)
     end
@@ -776,7 +776,7 @@ function beeHaviourStateMachine(startState, boolInfluenced)
             newState = normalBehavourStateMachine[newState](oldBehaviourState,
                                                             newState, unitID)
         end
-        -- Verschiedene States
+
         Sleep(250)
         oldBehaviourState = newState
     end
@@ -821,6 +821,11 @@ function threadStateStarter()
 
         if boolStartPraying == true then
             boolStartPraying = false
+            StartThread(pray)
+        end
+
+        if boolAnarchyStart == true then
+            boolAnarchyStart = false
             StartThread(pray)
         end
         Sleep(250)   

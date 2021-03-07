@@ -67,7 +67,7 @@ function gadget:GameFrame(n)
                                         " is now under the influence of " ..
                                         aerosolTypeOfUnit)
                                 setCivilianBehaviourMode(id, true,
-                                                         aerosolTypeOfUnit)
+                                                         aerosolTypeOfUnit, true)
 
                                 GG.AerosolAffectedCivilians[id] =
                                     aerosolTypeOfUnit
