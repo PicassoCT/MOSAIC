@@ -116,32 +116,31 @@ function aerosolDeployCegs()
 end
 
 local GameConfig = getGameConfig()
-if not GG.AlreadyInfluenced then GG.AlreadyInfluenced = {} end
-suspectableTypes = getChemTrailInfluencedTypes(UnitDefs)
-alreadyChecked = {}
+
+aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
+local alreadyChecked = {}
+if not GG.AerosolAffectedCivilians then    GG.AerosolAffectedCivilians = {}    end
+aerosolTypeOfUnit = AerosolUnitDefIDMap[myDefID]
 
 function sprayTank()
-    process(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange),
-            function(id)
-        if alreadyChecked[id] then return end
+            process(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange), 
+                        function(id)
+                            if alreadyChecked[id] then return end
 
-        if not GG.AlreadyInfluenced[id] and
-            suspectableTypes[Spring.GetUnitDefID(id)] then
-            return id
-        else
-            alreadyChecked[id] = id
-        end
-    end, function(id)
-        GG.AlreadyInfluenced[id] = true
-        env = Spring.UnitScript.GetScriptEnv(id)
-        if env and env.setBehaviourStateMachineExternal then
+                             if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
+                                    not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
+                                  Spring.Echo(
+                                    "Unit " .. id ..
+                                        " is now under the influence of " ..
+                                        aerosolTypeOfUnit)
+                                setAerosolCivilianBehaviour(id, true,
+                                                         aerosolTypeOfUnit, true)
+                                 alreadyChecked[id] = id
+                                GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit
+                            end
 
-            Spring.UnitScript.CallAsUnit(unitID,
-                                         env.setBehaviourStateMachineExternal,
-                                         true, AerosolUnitDefIDMap[myDefID],
-                                         true)
-        end
-    end)
+                        end)
+
 end
 
 function script.Activate() return 1 end

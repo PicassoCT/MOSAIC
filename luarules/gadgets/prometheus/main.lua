@@ -46,7 +46,7 @@ include("LuaRules/Gadgets/prometheus/unitlimits.lua")
 
 function gadget:GamePreload()
 	-- Initialise unit limit for all AI teams.
-	waypointMgr =  gadget:RestoreWayPointManager()
+
 	local name = gadget:GetInfo().name
 	for _,t in ipairs(Spring.GetTeamList()) do
 		if Spring.GetTeamLuaAI(t) ==  name then
@@ -103,14 +103,14 @@ local CONFIG_FOLDER = "luarules/configs/prometheus"
 local waypointMgr = {}
 
 -- include code
-include("LuaRules/Gadgets/prometheus/buildsite.lua")
-include("LuaRules/Gadgets/prometheus/base.lua")
-include("LuaRules/Gadgets/prometheus/combat.lua")
-include("LuaRules/Gadgets/prometheus/flags.lua")
-include("LuaRules/Gadgets/prometheus/pathfinder.lua")
-include("LuaRules/Gadgets/prometheus/unitlimits.lua")
-include("LuaRules/Gadgets/prometheus/team.lua")
-include("LuaRules/Gadgets/prometheus/waypoints.lua")
+include("luarules/gadgets/prometheus/buildsite.lua")
+include("luarules/gadgets/prometheus/base.lua")
+include("luarules/gadgets/prometheus/combat.lua")
+include("luarules/gadgets/prometheus/flags.lua")
+include("luarules/gadgets/prometheus/pathfinder.lua")
+include("luarules/gadgets/prometheus/unitlimits.lua")
+include("luarules/gadgets/prometheus/team.lua")
+include("luarules/gadgets/prometheus/waypoints.lua")
 
 -- locals
 local prometheus_Debug_Mode =  0 -- Must be 0 or 1
@@ -267,7 +267,7 @@ function gadget:GameStart()
 	-- We perform this only this late, and then fake UnitFinished for all units
 	-- in the team, to support random faction (implemented by swapping out HQ
 	-- in GameStart of that gadget.)
-	CreateTeams()
+	--CreateTeams()
 end
 
 function gadget:GameFrame(f)
@@ -339,7 +339,7 @@ function gadget:RestoreWayPointManager()
 					if waypointMgr then
 						waypointMgr.GameStart()
 					end
-					CreateTeams()
+					--CreateTeams()
 		return waypointMgr
 end
 

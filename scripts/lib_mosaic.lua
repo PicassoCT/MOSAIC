@@ -85,8 +85,7 @@ function getGameConfig()
         -- Dayproperties
         daylength = 28800, -- in frames
 
-        -- Aerosoldrone
-        aerosolDistance = 250,
+
 
         -- Interrogation
         InterrogationTimeInSeconds = 20,
@@ -161,7 +160,7 @@ function getGameConfig()
 
         -- Aerosols
         Aerosols = {
-            sprayRange = 200,
+            sprayRange = 250,
             orgyanyl = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000, -- 2mins
                 VictimLifetime = 60000
@@ -599,14 +598,12 @@ function getAersolAffectableUnits(UnitDefs)
     return getTypeTable(UnitDefNames, typeTable)
 end
 
-function setCivilianBehaviourMode(unitID, boolStartUnitBehaviourState,
-                                  TypeOfBehaviour)
+function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
     env = Spring.UnitScript.GetScriptEnv(unitID)
-    if env and env.setBehaviourStateMachineExternal then
+    if env and env.startAerosolBehaviour then
         Spring.UnitScript.CallAsUnit(unitID,
-                                     env.setBehaviourStateMachineExternal,
-                                     boolStartUnitBehaviourState,
-                                     TypeOfBehaviour, true)
+                                     env.startAerosolBehaviour,
+                                    TypeOfBehaviour)
     end
 
 end
@@ -1235,7 +1232,7 @@ function isBribeIcon(UnitDefs, defID)
     return UnitDefs[defID].name == "bribeicon"
 end
 
-function getInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
+function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
     AerosolTypes = getChemTrailTypes()
     InfStates = getInfluencedStates()
     CivilianTypes = getCivilianTypeTable(UnitDefs)

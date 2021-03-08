@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 local Animations = include('animations_civilian_female.lua')
+local signMessages = include('protestSignMessages.lua')
 include "lib_mosaic.lua"
 myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
@@ -128,10 +129,12 @@ function variousBodyConfigs()
     bodyConfig.boolTrolley = (iShoppingConfig == 3)
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
-    bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy
+    bodyConfig.boolProtest =  GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
 end
 
 boolStarted = false
+orgHousePosTable = {}
+
 function script.Create()
     makeWeaponsTable()
     Move(root, y_axis, -3, 0)
@@ -153,11 +156,16 @@ function script.Create()
                               false)
 
     StartThread(threadStarter)
+    StartThread(threadStateStarter)
     StartThread(cloakLoop)
+
+    orgHousePosTable = sharedComputationResult("orgHousePosTable",
+                                               computeOrgHouseTable, UnitDefs,
+                                               math.huge, GameConfig)
 end
 
 function bodyBuild()
-
+    hideAll(unitID)
     Show(UpBody)
     Show(center)
     showT(TablesOfPiecesGroups["UpLeg"])
@@ -166,9 +174,11 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["UpArm"])
     showT(TablesOfPiecesGroups["Head"])
     showT(TablesOfPiecesGroups["Feet"])
+    if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
 
     if bodyConfig.boolArmed == true then
         Show(ak47)
+	Show(molotow)
         return
     end
 
@@ -196,6 +206,23 @@ function bodyBuild()
     end
 end
 
+function hideAllProps()
+
+    Hide(MilitiaMask)
+    Hide(ak47)
+    Hide(molotow)
+    bodyConfig.boolLoaded = false
+    bodyConfig.boolWounded = false
+
+    hideT(TablesOfPiecesGroups["cellphone"])
+    Hide(cofee)
+    Hide(cigarett)
+    Hide(cellphone)
+    Hide(ShoppingBag)
+    Hide(SittingBaby)
+    Hide(trolley)
+    Hide(Handbag)
+end
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
@@ -269,16 +296,6 @@ lowerBodyAnimations = {
 
 accumulatedTimeInSeconds = 0
 function script.HitByWeapon(x, z, weaponDefID, damage)
-    attackerID = Spring.GetUnitLastAttacker(unitID)
-    if attackerID and confirmUnit(attackerID) then
-        process(getAllNearUnit(unitID, GameConfig.civilianPanicRadius),
-                function(id)
-            if Spring.GetUnitDefID(id) == myDefID and
-                not GG.DisguiseCivilianFor[unitID] then
-                runAwayFrom(id, attackerID, 500)
-            end
-        end)
-    end
 
     clampedDamage = math.max(math.min(damage, 10), 35)
     StartThread(delayedWoundedWalkAfterCover, clampedDamage)
@@ -288,8 +305,180 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
+    
 end
 
+STATE_STARTED = "STARTED"
+STATE_ENDED = "ENDED"
+function setCivilianUnitInternalStateMode(State)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     
+     GG.CivilianUnitInternalLogicActive[unitID] = State 
+ end
+
+filmLocation = {}
+boolStartFilming = false
+function startFilmLocation(ux, uy, uz, time)
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    filmLocation.x=ux
+    filmLocation.y=uy
+    filmLocation.z=uz
+    filmLocation.time = time
+    boolStartFilming = true
+end
+
+wailingTime = 0
+boolStartWailing = false
+function startWailing(time)
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    wailingTime = time
+    boolStartWailing = true
+end
+
+chattingTime = 0
+boolStartChatting = false
+function startChatting(time)
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    chattingTime = time
+    boolStartChatting = true
+end
+
+attackerID = 0
+boolStartFleeing = false function startFleeing(attackerID)
+    if not attackerID then return end
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    boolStartFleeing = true
+end
+
+boolStartPraying = false
+function startPraying()
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    boolStartPraying = true
+end
+
+--
+function pray()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    prayTime= 12000
+    while prayTime > 0 do
+       resetT(upperBodyPieces,1.0, false, true)
+       WaitForTurns(upperBodyPieces)
+        Sleep(500)
+        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
+        WaitForTurns(upperBodyPieces)
+        if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
+         Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
+       prayTime = prayTime - 3500
+        Sleep(500)
+    end
+     resetT(upperBodyPieces,2.0, false, true)
+    setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+boolStartAnarchyBehaviour = false
+function startAnarchyBehaviour()
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    boolStartAnarchyBehaviour = true
+end
+
+function anarchyBehaviour()   
+    oldBehaviourState = ""
+    while GG.GlobalGameState ~= GameConfig.GameState.normal do
+         newState = GG.GlobalGameState
+         normalBehavourStateMachine[newState](oldBehaviourState,
+                                                            newState, unitID)
+        oldBehaviourState = newState
+        Sleep(250)
+    end
+
+ setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+boolStartAerosolBehaviour = false
+AeroSolState = nil
+function startAerosolBehaviour(extAerosolStateToSet)
+    boolStartAerosolBehaviour= true
+    AerosolState = extAerosolStateToSet
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+end
+
+function aeroSolStateBehaviour(aeroSolState)
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolState)
+    assert(influencedStateMachine)
+    hideAllProps(bodyConfig)
+    bodyConfig.boolInfluenced = true
+    while true do
+        influencedStateMachine(oldBehaviourState, newState, unitID)
+    Sleep(250)
+    end
+
+end
+
+function wailing()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    while wailingTime > 0 do
+        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
+        PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
+       wailingTime = wailingTime - 1500
+        Sleep(100)
+    end
+    setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+function chatting()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    while chattingTime > 0 do
+        if maRa() == true then
+        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, 1.0)
+        else
+        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, 1.0)
+       end
+       Result= process(
+        getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
+        function(id)
+            if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
+        end
+        )
+       if #Result < 1 then break end
+       ix,iy,iz = Spring.GetUnitPosition(Result[1])
+       setUnitRotationToPoint(unitID, ix,iy,iz)
+       chattingTime = chattingTime - 1500
+        Sleep(100)
+    end
+    setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+function filmingLocation()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    Show(cellphone1)
+    while filmLocation.time > 0 do
+        PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
+        filmLocation.time = filmLocation.time - 2000
+        setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
+        Sleep(100)
+    end
+    setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+function fleeEnemy(enemyID)
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    if not enemyID then 
+        setCivilianUnitInternalStateMode(STATE_ENDED)
+        return 
+    end
+
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
+        Sleep(500)
+    end
+
+    setCivilianUnitInternalStateMode(STATE_ENDED)
+end
 function delayedWoundedWalkAfterCover(timeInSeconds)
     Signal(SIG_COVER_WALK)
     SetSignalMask(SIG_COVER_WALK)
@@ -348,11 +537,9 @@ function setupAnimation()
         for i, keyframe in pairs(anim) do
             local commands = keyframe.commands;
             for k, command in pairs(commands) do
-
                 if command.p and type(command.p) == "string" then
                     command.p = map[command.p]
                 end
-
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
                 -- the t attribute needs to be adjusted for move commands from blender's absolute values
                 if (command.c == "move") then
@@ -441,54 +628,160 @@ local locBoolInstantOverride
 local locConditionFunction
 local boolStartThread = false
 
--- allow external behaviour statemachine to be started and stopped, and set
-function setBehaviourStateMachineExternal(boolStartStateMachine, State,
-                                          boolInfluenced)
-    if bodyConfig.boolInfluenced == true then return end
 
-    if boolStartStateMachine == true then
-        StartThread(beeHaviourStateMachine, State, boolInfluenced)
-    else
+function tacticalAnarchy()
 
-        Signal(SIG_BEHAVIOUR_STATE_MACHINE)
-        if bodyConfig.boolArmed == true then
-            Hide(ak47)
-            Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
+    currentPositionClusters = sharedComputationResult(
+                                  "civilianAnarchyPositionClusters",
+                                  computateClusterNodes, orgHousePosTable, 15,
+                                  GameConfig)
+
+    myPos = {}
+    myPos.x, myPos.y, myPos.z = Spring.GetUnitPosition(unitID)
+    nearestClusterNode = {}
+    smallestDistance = math.huge
+    process(currentPositionClusters, -- get nearest cluster
+    function(cluster)
+        if distance(myPos, cluster) < smallestDistance then
+            smallestDistance = distance(myPos, cluster)
+            nearestClusterNode = cluster
+        end
+    end)
+    nearestClusterNode.x, nearestClusterNode.z =
+        nearestClusterNode.x +
+            math.random(-1 * GameConfig.demonstrationMarchRadius,
+                        GameConfig.demonstrationMarchRadius),
+        nearestClusterNode.z +
+            math.random(-1 * GameConfig.demonstrationMarchRadius,
+                        GameConfig.demonstrationMarchRadius)
+    Command(unitID, "go", nearestClusterNode, {})
+
+    Sleep(1000)
+
+    if bodyConfig.boolArmed == true then
+
+        T = process(getAllNearUnit(unitID, 512), function(id)
+            if isUnitEnemy(myTeamID, id) == true and Spring.GetUnitIsCloaked(id) ==
+                false then return id end
+        end)
+
+        if T and #T > 0 then
+            ed = randT(T) or Spring.GetUnitNearestEnemy(unitID)
+            if ed then Command(unitID, "attack", ed, {}) end
+        end
+    end
+
+end
+
+normalBehavourStateMachine = {
+    [GameConfig.GameState.launchleak] = function(lastState, currentState)
+        -- init clause
+        if lastState ~= currentState then
+            if bodyConfig.boolLoaded == false then
+                PlayAnimation("UPBODY_PHONE", lowerBodyPieces)
+            end
+        end
+
+        -- Going home	
+        Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {})
+        Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {"shift"})
+
+    end,
+    [GameConfig.GameState.anarchy] = function(lastState, currentState)
+        -- init clause
+        if lastState ~= currentState then
+            -- Spring.Echo("Civilian entering gamestate anarchy")
+            Spring.SetUnitNeutral(unitID, false)
+            Spring.SetUnitNoSelect(unitID, true)
+
+            bodyConfig.boolArmed = (math.random(1, 100) >
+                                       GameConfig.chanceCivilianArmsItselfInHundred)
+
+            if bodyConfig.boolArmed == true then
+                Show(ak47)
+                Hide(ShoppingBag)
+            else
+                bodyConfig.boolProtest = (math.random(1, 10) > 5)
+                if bodyConfig.boolProtest == true then
+                    playerName = getRandomPlayerName()
+                    makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,
+                                                                           #signMessages)],
+                                    playerName)
+                    Show(MilitiaMask)
+                    Show(molotow)
+                    Hide(ShoppingBag)
+                    setOverrideAnimationState(eAnimState.protest,
+                                              eAnimState.walking, false)
+                end
+            end
+
+            -- pick a side - depending on the money
+            if fairRandom("JoinASide", 5) == true then
+                enemy = Spring.GetUnitNearestEnemy(unitID)
+                if enemy then
+                    targetTeamID = Spring.GetUnitTeam(enemy)
+                    if targetTeamID then
+                        Spring.TransferUnit(unitID, targetTeamID)
+                    end
+                end
+            end
+        end
+        tacticalAnarchy()
+        Sleep(500)
+
+    end,
+    [GameConfig.GameState.postlaunch] = function(lastState, currentState)
+        Spring.SetUnitNeutral(unitID, true)
+        Spring.TransferUnit(unitID, gaiaTeamID)
+
+        if unitID % 2 == 1 then -- cower catatonic
+            setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved,
+                                      true, nil, false)
+            setSpeedEnv(unitID, 0)
+        else -- run around wailing
+            setOverrideAnimationState(eAnimState.wailing, eAnimState.walking,
+                                      true, nil, true)
+            x, y, z = Spring.GetUnitPosition(unitID)
+            Command(unitID, "go", {
+                x = x + math.random(-100, 100),
+                y = y,
+                z = z + math.random(-100, 100)
+            })
+        end
+    end,
+    [GameConfig.GameState.gameover] = function(lastState, currentState)
+        setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true,
+                                  nil, false)
+        setSpeedEnv(unitID, 0)
+    end,
+    [GameConfig.GameState.pacification] = function(lastState, currentState)
+        if lastState ~= currentState then
+            Spring.TransferUnit(unitID, gaiaTeamID)
+            Spring.SetUnitNeutral(unitID, true)
+            if bodyConfig.boolArmed == true then
+                Hide(ak47)
+                Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
+                bodyConfig.boolArmed = false
+            end
+
+            if bodyConfig.boolProtest == true then
+                Explode(ProtestSign, SFX.FALL + SFX.SHATTER + SFX.NO_HEATCLOUD)
+            end
+            reset(UpBody, 60)
+            reset(center, 45)
+            Move(center, y_axis, 0, 60)
+
+            PlayAnimation("UPBODY_HANDSUP")
+            setSpeedEnv(unitID, 1.0)
+           
             bodyConfig.boolArmed = false
+            bodyConfig.boolProtest = false
+            bodyBuild(bodyConfig)
+            Command(unitID, "stop")
         end
-        bodyBuild(bodyConfig)
-        Command(unitID, "stop")
-    end
-end
 
-AerosolTypes = getChemTrailTypes()
-influencedStateMachine = {}
--- getInfluencedStateMachine(UnitID, UnitDefs)
-
-oldBehaviourState = ""
-function beeHaviourStateMachine(startState, boolInfluenced)
-    newState = startState
-    if boolInfluenced == true then
-        influencedStateMachine = getInfluencedStateMachine(UnitID, UnitDefs,
-                                                           startState)
     end
-    bodyConfig.boolInfluenced = boolInfluenced
-    Signal(SIG_BEHAVIOUR_STATE_MACHINE)
-    SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
-
-    while true do
-        if bodyConfig.boolInfluenced == true then
-            newState = influencedStateMachine(oldBehaviourState, newState,
-                                              unitID)
-        else
-            newState = normalBehavourStateMachine[newState](oldBehaviourState,
-                                                            newState, unitID)
-        end
-        -- Verschiedene States
-        Sleep(250)
-        oldBehaviourState = newState
-    end
-end
+}
 
 function threadStarter()
     Sleep(100)
@@ -504,6 +797,48 @@ function threadStarter()
         Sleep(33)
     end
 end
+
+function threadStateStarter()
+    Sleep(100)
+    while true do
+        if boolStartFilming == true then
+            boolStartFilming = false
+            StartThread(filmingLocation)
+        end
+        if boolStartWailing == true then
+            boolStartWailing = false
+            StartThread(wailing)
+        end
+
+        if boolStartChatting == true then
+            boolStartChatting = false
+            StartThread(chatting)
+        end
+
+        if boolStartFleeing == true then
+            boolStartFleeing = false
+            StartThread(fleeEnemy, attackerID)
+        end
+
+        if boolStartPraying == true then
+            boolStartPraying = false
+            StartThread(pray)
+        end
+
+        if boolStartAnarchyBehaviour == true then
+            boolStartAnarchyBehaviour = false
+            StartThread(anarchyBehaviour)
+        end
+
+         if boolStartAerosolBehaviour == true then
+            boolStartAerosolBehaviour = false
+             StartThread(aeroSolStateBehaviour, AeroSolState)
+             while true do Sleep(10000); end
+        end
+        Sleep(250)   
+    end
+end
+
 
 function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,
@@ -619,8 +954,6 @@ UpperAnimationStateFunctions = {
     [eAnimState.catatonic] = function()
         PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),
                       catatonicBodyPieces)
-        Turn(UpBody, x_axis, math.rad(126.2), 60)
-        Turn(center, x_axis, math.rad(-91.2), 45)
         return eAnimState.talking
     end,
     [eAnimState.talking] = function()
@@ -631,6 +964,11 @@ UpperAnimationStateFunctions = {
     end,
     [eAnimState.standing] = function()
         Sleep(30)
+        if bodyConfig.boolInfluenced then
+            PlayAnimation("UPBODY_STANDING_ZOMBIE")
+            return eAnimState.walking
+        end
+
         if bodyConfig.boolArmed == true then
             PlayAnimation(randT(uppperBodyAnimations[eAnimState.aiming]),
                           lowerBodyPieces)
@@ -658,10 +996,14 @@ UpperAnimationStateFunctions = {
             end
         end
 
-        Sleep(30)
         return eAnimState.standing
     end,
     [eAnimState.walking] = function()
+        if bodyConfig.boolInfluenced then
+            PlayAnimation("UPBODY_WALK_ZOMBIE")
+            return eAnimState.walking
+        end
+
         if bodyConfig.boolArmed == true then
             PlayAnimation("UPBODY_LOADED")
             return eAnimState.walking
@@ -674,12 +1016,26 @@ UpperAnimationStateFunctions = {
             return eAnimState.walking
         end
 
-        if bodyConfig.boolLoaded == false and math.random(1, 100) > 50 then
-            boolDecoupled = true
-            playUpperBodyIdleAnimation()
-            WaitForTurns(upperBodyPieces)
-            resetT(upperBodyPieces, math.pi, false, true)
-            return eAnimState.walking
+        if bodyConfig.boolLoaded == false then
+
+            if math.random(1, 100) > 75 then
+                playUpperBodyIdleAnimation()
+                WaitForTurns(upperBodyPieces)
+                -- resetT(upperBodyPieces, math.pi,false, true)
+                return eAnimState.walking
+            else
+                GameFrame = Spring.GetGameFrame()
+                Turn(UpArm1, z_axis, math.rad(-25), math.pi)
+                Turn(UpArm2, z_axis, math.rad(25), math.pi)
+                Turn(UpArm1, x_axis,
+                     math.rad(25 * math.sin(unitID + GameFrame / 15)),
+                     math.pi * 2)
+                Turn(UpArm2, x_axis,
+                     math.rad(25 * math.cos(unitID + GameFrame / 15)),
+                     math.pi * 2)
+                WaitForTurns(upperBodyPieces)
+                return eAnimState.walking
+            end
         end
 
         return eAnimState.walking
@@ -752,6 +1108,11 @@ UpperAnimationStateFunctions = {
 
 LowerAnimationStateFunctions = {
     [eAnimState.standing] = function()
+        if bodyConfig.boolInfluenced then
+            PlayAnimation("LOWBODY_STANDING_ZOMBIE")
+            return eAnimState.walking
+        end
+
         -- Spring.Echo("Lower Body standing")
         WaitForTurns(lowerBodyPieces)
         resetT(lowerBodyPiecesNoCenter, math.pi, false, true)
@@ -761,6 +1122,16 @@ LowerAnimationStateFunctions = {
     end,
 
     [eAnimState.walking] = function()
+        if bodyConfig.boolInfluenced then
+            if maRa() == true then
+                PlayAnimation("LOWBODY_WALKING_ZOMBIE")
+                return eAnimState.walking
+            else
+                PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],
+                                    conditionalFilterOutUpperBodyTable()))
+                return eAnimState.walking
+            end
+        end
 
         if bodyConfig.boolArmed == true then
             PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),
@@ -793,7 +1164,7 @@ LowerAnimationStateFunctions = {
         return eAnimState.walking
     end,
     [eAnimState.transported] = function()
-        echo("TODO: Civilian State transported")
+        --echo("TODO: Civilian State transported")
         return eAnimState.transported
     end,
     [eAnimState.slaved] = function()
@@ -931,41 +1302,7 @@ function script.Deactivate() return 0 end
 
 function script.QueryBuildInfo() return center end
 
-signMessages = {
-    -- Denial
-    "JUST&NUKE&THEM", " SHAME ", "THEY &ARE NOT& US", "INOCENT", "NOT&GUILTY",
-    "COULD&BE&WORSER", "CONSPIRACY", "CHEMTRAJLS DID THIS", "GOD SAVE US",
 
-    " CITY &FOR AN &CITY", " BROTHFRS& KEEPFRS", "WE WILL &NOT DIE",
-    "VENGANCE IS MURDFR", "  IT &CANT BE& US", "PUNISH&GROUPS ",
-    "VIVE&LA RESISTANCE ", "LIES ANDWAR&CRIMES", "THE END&IS& NIGH",
-    "PHOENIX &FACTION", "FOR MAN&KIND", "THATS&LIFE", "AND LET LIFE",
-
-    "ALWAYS&LCOK ON&BRIGHTSIDE", -- Anger
-    "ANTIFA", "ROCKET&IS&RAPE", "HICBM& UP YOUR ASS", "RISE &UP", "UNDEFEATED",
-    " BURN& THE& BRIDGE", " BURN&THEM& ALL", " ANARCHY", " FUCK& YOU& ALL",
-    " HOPE&  IT&HURTS", "VENGANCE IS& OURS", "MAD&IS&MURDER",
-    "WE& SHALL& REBUILD", -- Bargaining
-    " SPARE& US", " SPARE& OUR&CHILDREN", "ANYTHINGFOR LIFE", "NO ISM&WORTH IT",
-    "ANARCHY", "KILL THE GODS", "NO GODS&JUST MEN", " SEX&SAVES", " MERCY",
-
-    -- DEPRESSION
-    "HIROSHIMA&ALL OVER", " SEX& KILLS", " GOD& IS& DEATH", "TEARS& IN& RAIN",
-    "NEVR &FORGET& LA", "REMBR&HONG&KONG", "NEVR &FORGET& SA",
-    "REMEMBR PALO& ALTO", "REMEBR  LAGOS", "REMEBR  DUBAI",
-    "HITLER&WOULD&BE PROUD", "NEVER &AGAIN", "  HOLO&  CAUST",
-    "IN DUBIO&PRU REO", -- Accepting
-    "NO&CITYCIDE", " REPENT& YOUR& SINS", "DUST&IN THE&WIND",
-    "MAN IS& MEN A& WULF", "POMPEJ  ALLOVER", "AVENGE&US", "SHIT&HAPPENS",
-    "FOR WHOM&THE BELL", "IS TOLLS&FOR THEE", "MEMENTO", "MORI", "CARPE&DIEM",
-
-    -- Personification
-    "Ü&HAS SMALL&DICK", "I&LOVE&Ü", "Ü&U HAVE A&SON", "Ü&MARRY&ME",
-    " DEATH&TO&Ü", "  I& BLAME&Ü", "WHAT DO&YOU DESIRE?Ü", "MUMS&AGAINST&Ü",
-    "HATE Ü", "FUCK Ü", "Ü IS&EVIL", -- Humor
-    " PRO&TEST&ICLES", "NO MORE&TAXES", "PRO&TAXES", "NO&PROTEST",
-    "NEVER GONNA GIVE", "YOU UP", "NEVER GONNA LET", "YOU DOWN"
-}
 
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
                          sentence, personification)
@@ -1119,8 +1456,9 @@ end
 function echoOverload(res) Spring.Echo("CivilianAgent: " .. res) end
 
 function akAimFunction(weaponID, heading, pitch)
-    boolAiming = true
 
+    boolAiming = true
+	
     setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,
                               false)
     WTurn(center, y_axis, heading, 22)

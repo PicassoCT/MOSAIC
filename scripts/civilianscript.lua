@@ -123,7 +123,7 @@ function variousBodyConfigs()
     bodyConfig.boolTrolley = (iShoppingConfig == 3)
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
-    bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy
+    bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
 end
 
 orgHousePosTable = {}
@@ -349,6 +349,7 @@ function startPraying()
     setCivilianUnitInternalStateMode(STATE_STARTED)
     boolStartPraying = true
 end
+
 --
 function pray()
     Signal(SIG_INTERNAL)
@@ -367,6 +368,45 @@ function pray()
     end
      resetT(upperBodyPieces,2.0, false, true)
     setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+boolStartAnarchyBehaviour = false
+function startAnarchyBehaviour()
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+    boolStartAnarchyBehaviour = true
+end
+
+function anarchyBehaviour()   
+    oldBehaviourState = ""
+    while GG.GlobalGameState ~= GameConfig.GameState.normal do
+         newState = GG.GlobalGameState
+         normalBehavourStateMachine[newState](oldBehaviourState,
+                                                            newState, unitID)
+        oldBehaviourState = newState
+        Sleep(250)
+    end
+
+ setCivilianUnitInternalStateMode(STATE_ENDED)
+end
+
+boolStartAerosolBehaviour = false
+AeroSolState = nil
+function startAerosolBehaviour(extAerosolStateToSet)
+    boolStartAerosolBehaviour= true
+    AerosolState = extAerosolStateToSet
+    setCivilianUnitInternalStateMode(STATE_STARTED)
+end
+
+function aeroSolStateBehaviour(aeroSolState)
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolState)
+    assert(influencedStateMachine)
+    hideAllProps(bodyConfig)
+    bodyConfig.boolInfluenced = true
+    while true do
+        influencedStateMachine(oldBehaviourState, newState, unitID)
+    Sleep(250)
+    end
+
 end
 
 function wailing()
@@ -584,32 +624,8 @@ local locBoolInstantOverride
 local locConditionFunction
 local boolStartThread = false
 
--- allow external behaviour statemachine to be started and stopped, and set
-function setBehaviourStateMachineExternal(boolStartStateMachine, State,
-                                          boolInfluenced)
-    if bodyConfig.boolInfluenced == true then return end
 
-    if boolStartStateMachine == true then
-        StartThread(beeHaviourStateMachine, State, boolInfluenced)
-    else
-
-        Signal(SIG_BEHAVIOUR_STATE_MACHINE)
-        if bodyConfig.boolArmed == true then
-            Hide(ak47)
-            Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
-            bodyConfig.boolArmed = false
-        end
-
-        if bodyConfig.boolProtest == true then
-            Explode(ProtestSign, SFX.FALL + SFX.SHATTER + SFX.NO_HEATCLOUD)
-        end
-
-        bodyBuild(bodyConfig)
-        Command(unitID, "stop")
-    end
-end
-
-function anarchyBehaviour()
+function tacticalAnarchy()
 
     currentPositionClusters = sharedComputationResult(
                                   "civilianAnarchyPositionClusters",
@@ -706,9 +722,7 @@ normalBehavourStateMachine = {
                 end
             end
         end
-
-        anarchyBehaviour()
-
+        tacticalAnarchy()
         Sleep(500)
 
     end,
@@ -740,47 +754,30 @@ normalBehavourStateMachine = {
         if lastState ~= currentState then
             Spring.TransferUnit(unitID, gaiaTeamID)
             Spring.SetUnitNeutral(unitID, true)
+            if bodyConfig.boolArmed == true then
+                Hide(ak47)
+                Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
+                bodyConfig.boolArmed = false
+            end
+
+            if bodyConfig.boolProtest == true then
+                Explode(ProtestSign, SFX.FALL + SFX.SHATTER + SFX.NO_HEATCLOUD)
+            end
+            reset(UpBody, 60)
+            reset(center, 45)
+            Move(center, y_axis, 0, 60)
+
             PlayAnimation("UPBODY_HANDSUP")
             setSpeedEnv(unitID, 1.0)
-            Turn(UpBody, x_axis, math.rad(0), 60)
-            Turn(center, x_axis, math.rad(0), 45)
-            Move(center, y_axis, 0, 60)
+           
             bodyConfig.boolArmed = false
             bodyConfig.boolProtest = false
-            bodyBuild()
+            bodyBuild(bodyConfig)
+            Command(unitID, "stop")
         end
 
     end
 }
-
-influencedStateMachine = {}
-
-oldBehaviourState = ""
-function beeHaviourStateMachine(startState, boolInfluenced)
-    newState = startState
-    if boolInfluenced == true then
-        influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs,
-                                                           startState)
-        assert(influencedStateMachine)
-    end
-    hideAllProps(bodyConfig)
-    bodyConfig.boolInfluenced = boolInfluenced
-    Signal(SIG_BEHAVIOUR_STATE_MACHINE)
-    SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
-
-    while true do
-        if bodyConfig.boolInfluenced == true then
-            newState = influencedStateMachine(oldBehaviourState, newState,
-                                              unitID)
-        else
-            newState = normalBehavourStateMachine[newState](oldBehaviourState,
-                                                            newState, unitID)
-        end
-
-        Sleep(250)
-        oldBehaviourState = newState
-    end
-end
 
 function threadStarter()
     Sleep(100)
@@ -824,13 +821,20 @@ function threadStateStarter()
             StartThread(pray)
         end
 
-        if boolAnarchyStart == true then
-            boolAnarchyStart = false
-            StartThread(pray)
+        if boolStartAnarchyBehaviour == true then
+            boolStartAnarchyBehaviour = false
+            StartThread(anarchyBehaviour)
+        end
+
+         if boolStartAerosolBehaviour == true then
+            boolStartAerosolBehaviour = false
+             StartThread(aeroSolStateBehaviour, AeroSolState)
+             while true do Sleep(10000); end
         end
         Sleep(250)   
     end
 end
+
 
 function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,
@@ -1361,6 +1365,7 @@ function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
 end
 
 function akAimFunction(weaponID, heading, pitch)
+    
     if bodyConfig.boolArmed == false or oldBehaviourState ~=
         GameConfig.GameState.anarchy then return false end
 

@@ -52,7 +52,7 @@ local minBuildOrderProtagon = gadget.minBuildRequirementProtagon
 local unitLimitsMgr = CreateUnitLimitsMgr(myTeamID)
 
 -- Combat management
-local waypointMgr = gadget.waypointMgr or gadget.RestoreWayPointManager()
+local waypointMgr = RestoreWayPointManager()
 local lastWaypoint = 0
 local combatMgr = CreateCombatMgr(myTeamID, myAllyTeamID, Log)
 
