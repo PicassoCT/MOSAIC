@@ -338,7 +338,8 @@ function startChatting(time)
 end
 
 attackerID = 0
-boolStartFleeing = false function startFleeing(attackerID)
+boolStartFleeing = false 
+function startFleeing(attackerID)
     if not attackerID then return end
     setCivilianUnitInternalStateMode(STATE_STARTED)
     boolStartFleeing = true

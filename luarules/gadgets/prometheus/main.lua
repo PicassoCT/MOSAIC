@@ -18,6 +18,7 @@ function gadget:GetInfo()
 	}
 end
 
+
 -- Read mod options, we need this in both synced and unsynced code!
 if (Spring.GetModOptions) then
 	local modOptions = Spring.GetModOptions()
@@ -28,7 +29,8 @@ else
 end
 
 -- include configuration
-include("LuaRules/configs/prometheus/config.lua")
+include("LuaRules/Configs/prometheus/config.lua")
+
 
 if (gadgetHandler:IsSyncedCode()) then
 
@@ -37,16 +39,15 @@ if (gadgetHandler:IsSyncedCode()) then
 --
 --  SYNCED
 --
+
 -- globals
 local unitLimits = {}
-local waypointMgr = {}
 
 -- include code
 include("LuaRules/Gadgets/prometheus/unitlimits.lua")
 
 function gadget:GamePreload()
 	-- Initialise unit limit for all AI teams.
-
 	local name = gadget:GetInfo().name
 	for _,t in ipairs(Spring.GetTeamList()) do
 		if Spring.GetTeamLuaAI(t) ==  name then
@@ -97,27 +98,26 @@ else
 
 --constants
 local MY_PLAYER_ID = Spring.GetMyPlayerID()
-local FIX_CONFIG_FOLDER = "luarules/configs/prometheus"
-local CONFIG_FOLDER = "luarules/configs/prometheus"
+
 -- globals
-local waypointMgr = {}
+waypointMgr = {}
 
 -- include code
-include("luarules/gadgets/prometheus/buildsite.lua")
-include("luarules/gadgets/prometheus/base.lua")
-include("luarules/gadgets/prometheus/combat.lua")
-include("luarules/gadgets/prometheus/flags.lua")
-include("luarules/gadgets/prometheus/pathfinder.lua")
-include("luarules/gadgets/prometheus/unitlimits.lua")
-include("luarules/gadgets/prometheus/team.lua")
-include("luarules/gadgets/prometheus/waypoints.lua")
+include("LuaRules/Gadgets/prometheus/buildsite.lua")
+include("LuaRules/Gadgets/prometheus/base.lua")
+include("LuaRules/Gadgets/prometheus/combat.lua")
+include("LuaRules/Gadgets/prometheus/flags.lua")
+include("LuaRules/Gadgets/prometheus/pathfinder.lua")
+include("LuaRules/Gadgets/prometheus/unitlimits.lua")
+include("LuaRules/Gadgets/prometheus/team.lua")
+include("LuaRules/Gadgets/prometheus/waypoints.lua")
 
 -- locals
 local prometheus_Debug_Mode =  0 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
 local side = "antagon"
-local firstFrame = Spring.GetGameFrame()
+local firstFrame = math.max(1,Spring.GetGameFrame())
 local lastFrame = 0 -- To avoid repeated calls to GameFrame()
 --------------------------------------------------------------------------------
 
@@ -158,20 +158,6 @@ function gadget.Warning(...)
 	Spring.Echo("Prometheus: " .. table.concat{...})
 end
 
-
--- To read/save data, they replace widgets GetConfigData() and SetConfigData()
--- callins
-function SetConfigData()
-    local data = {}
-    if VFS.FileExists(CONFIG_FOLDER .. "/prometheus.lua") then
-        Log("Found config file: ",
-            VFS.GetFileAbsolutePath(CONFIG_FOLDER .. "/prometheus.lua"))
-        data = VFS.Include(CONFIG_FOLDER .. "/prometheus.lua")
-    elseif VFS.FileExists(FIX_CONFIG_FOLDER .. "/prometheus.lua") then
-        data = VFS.Include(FIX_CONFIG_FOLDER .. "/prometheus.lua")
-    end
-end
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -184,7 +170,6 @@ end
 --  gadget:UnitCreated (for each HQ / comm)
 --  gadget:GameStart
 
-
 function gadget:Initialize()
 	Spring.Echo("Prometheus Initialise: Debugomode is "..prometheus_Debug_Mode)
 	setmetatable(gadget, {
@@ -192,8 +177,7 @@ function gadget:Initialize()
 		__newindex = function() error("Prometheus: Attempt to write undeclared global variable", 2) end,
 	})
 	SetupCmdChangeAIDebugVerbosity()
-	firstFrame = Spring.GetGameFrame()
-    SetConfigData()
+	firstFrame = math.max(1,Spring.GetGameFrame())
 end
 
 function gadget:GamePreload()
@@ -236,7 +220,6 @@ local function CreateTeams()
 					Spring.Echo("Found uknown side: Defaulting to Antagon")
 					side = "antagon"
 				end
-				
 				if (side) then
 					team[t] = CreateTeam(t, at, side)
 					team[t].GameStart()
@@ -257,19 +240,6 @@ local function CreateTeams()
 	end
 end
 
-function gadget:GameStart()
-	-- This is executed AFTER headquarters / commander is spawned
-	Log("gadget:GameStart")
-	if waypointMgr then
-		waypointMgr.GameStart()
-	end
-
-	-- We perform this only this late, and then fake UnitFinished for all units
-	-- in the team, to support random faction (implemented by swapping out HQ
-	-- in GameStart of that gadget.)
-	--CreateTeams()
-end
-
 function gadget:GameFrame(f)
 	--Spring.Echo("gadget:GameFrame"..f)
 
@@ -278,8 +248,9 @@ function gadget:GameFrame(f)
     end
     lastFrame = f
 
-	if f == 1 then
-		Log("Prometheus : First Frame ")
+	if  f == firstFrame then
+		-- This is executed AFTER headquarters / commander is spawned
+		Log("Prometheus :GameFrame 1")
 		if waypointMgr then
 			waypointMgr.GameStart()
 		end
@@ -289,7 +260,6 @@ function gadget:GameFrame(f)
 		-- in GameStart of that gadget.)
 		CreateTeams()
 	end
-
 	-- waypointMgr update
 	if waypointMgr and f % waypointMgrGameFrameRate < .1 then
 		waypointMgr.GameFrame(f)
@@ -302,6 +272,7 @@ function gadget:GameFrame(f)
 		end
 	end
 end
+
 --------------------------------------------------------------------------------
 --
 --  Game call-ins
@@ -346,7 +317,7 @@ end
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	if waypointMgr  then	
 		if not waypointMgr.UnitCreated then
-			waypointMgr = gadget:RestoreWayPointManager()
+			waypointMgr = restoreWayPointManager()
 		end
 		if  waypointMgr.UnitCreated then
 			waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
@@ -356,6 +327,15 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	if team[unitTeam] then
 		team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
+end
+
+function restoreWayPointManager()
+		waypointMgr = CreateWaypointMgr()
+					if waypointMgr then
+						waypointMgr.GameStart()
+					end
+					CreateTeams()
+		return waypointMgr
 end
 
 function gadget:UnitFinished(unitID, unitDefID, unitTeam)
@@ -369,7 +349,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerD
 	if waypointMgr then
 		--restore the wayPointManager
 		if  waypointMgr.UnitDestroyed == nil then 
-			waypointMgr= gadet:RestoreWayPointManager()
+			restoreWayPointManager()
 		end	
 		waypointMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	end
@@ -404,10 +384,11 @@ end
 
 end
 
+
 -- Set up LUA AI framework.
 callInList = {
 	"GamePreload",
-	"GameStart",
+	--"GameStart",
 	"GameFrame",
 	"TeamDied",
 	"UnitCreated",
@@ -417,6 +398,4 @@ callInList = {
 	"UnitGiven",
 	"UnitIdle",
 }
-
---VFS.Include("luarules/gadgets/prometheus/framework.lua", nil, VFS.ZIP)
-return include("luarules/gadgets/prometheus/framework.lua")
+return include("LuaRules/Gadgets/prometheus/framework.lua")

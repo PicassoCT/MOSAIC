@@ -617,7 +617,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     not GG.DisguiseCivilianFor[id] and
                     civilianWalkingTypeTable[spGetUnitDefID(id)] and
                     not GG.AerosolAffectedCivilians[id] then
-                        startInternalBehaviourOfState(id,"fleeEnemy", proOwnerID)
+                        startInternalBehaviourOfState(id,"startFleeing", proOwnerID)
                     return id
                 end
             end)

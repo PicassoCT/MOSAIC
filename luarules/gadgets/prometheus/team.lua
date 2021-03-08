@@ -52,7 +52,7 @@ local minBuildOrderProtagon = gadget.minBuildRequirementProtagon
 local unitLimitsMgr = CreateUnitLimitsMgr(myTeamID)
 
 -- Combat management
-local waypointMgr = RestoreWayPointManager()
+local waypointMgr = gadget.waypointMgr
 local lastWaypoint = 0
 local combatMgr = CreateCombatMgr(myTeamID, myAllyTeamID, Log)
 
@@ -110,6 +110,7 @@ function Team.GameFrame(f)
 	end
 end
 
+
 function Team.hasEnoughPropagandaservers(teamID)
 	local teamIDCount = Spring.GetTeamUnitsCounts(teamID)
 	local allOthersCounted = 0 
@@ -121,6 +122,7 @@ function Team.hasEnoughPropagandaservers(teamID)
 		end
 	end
 	
+
 	if teamIDCount[PROPAGANDASERVER] then 
 		propagandaserverCount = teamIDCount[PROPAGANDASERVER]
 	end

@@ -386,6 +386,5 @@ local _,_,_,_,_,at = Spring.GetTeamInfo(GAIA_TEAM_ID)
 GAIA_ALLYTEAM_ID = at
 
 end
-
 return WaypointMgr
 end

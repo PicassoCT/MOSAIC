@@ -11,6 +11,10 @@ GameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
 local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
                                                 "house", UnitDefs)
+assert(houseTypeTable)
+--[[assert(#houseTypeTable)
+assert(#houseTypeTable > 0)--]]
+assert(houseTypeTable[UnitDefNames["house_arab0"].id])
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -27,8 +31,8 @@ function script.Create()
     WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-189), 1)
     WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-145), 1)
 
-    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(181), 1)
-    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(230), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(145), 1)
+   -- WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(230), 1)
 end
 
 function script.Killed(recentDamage, _) return 1 end
@@ -43,33 +47,88 @@ function outsideMap(pieces)
 end
 
 function deployPipes()
+    Sleep(5000)
     forInterval(1, #TablesOfPiecesGroups["HyperLoop"], Irrigation1, 1)
 end
 
-takenValues = {}
+function isLevel(x,y,z)
+    offSet ={}
+    total =0
+    for o=1,3 do
+        for i=1,3 do
+            total= total+1
+            offSet[total] ={}
+            if o== 1 then
+                offSet[total].x = 1
+            elseif o == 2 then
+                offSet[total].x = 0
+            elseif o == 3 then
+                offSet[total].x = -1
+            end
+
+             if i == 1 then
+                offSet[total].z = 1
+            elseif i == 2 then
+                offSet[total].z = 0
+            elseif i == 3 then
+                offSet[total].z = -1
+            end
+        end
+    end
+
+    minHeight = math.huge
+    maxHeight = -math.huge
+    for i=1, #offSet do
+        height = Spring.GetGroundHeight(x + offSet[i].x * 300, y, z+ offSet[i].z * 300)
+        minHeight = math.min(minHeight,height)
+        maxHeight = math.max(maxHeight,height)
+    end
+
+    difference = math.abs(maxHeight - minHeight)
+
+    return difference < 50, difference
+end
+
 
 function forInterval(start, stop, irrigation, nr)
     offset = 5
     discoverSign = randSign()
     rotationValue = (math.random(-8 * nr, 8 * nr) + nr) * 45
     attempts = 0
-    boolAtLeastOnce = false
-    while (boolAtLeastOnce == false or outsideMap(irrigation) == true or
-        takenValues[rotationValue] and attempts < 10) do
-        WTurn(TablesOfPiecesGroups["HyperLoop"][start], y_axis,
-              math.rad(rotationValue), 0)
+    goodPlaceToFarm = false
+    mostLevel = {}
+    while (goodPlaceToFarm == false and attempts < 10) do
+        WTurn(TablesOfPiecesGroups["HyperLoop"][start], y_axis, math.rad(rotationValue), 0)
         rotationValue = rotationValue + 45 * discoverSign
         attempts = attempts + 1
         Sleep(1)
-        x, y, z = Spring.GetUnitPiecePosDir(unitID, irrigation)
-        Result = process(getAllInCircle(x, z, 700), function(id)
-            if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
-        end)
 
-        boolAtLeastOnce = #Result == 0
+        x, y, z = Spring.GetUnitPiecePosDir(unitID, irrigation)
+        echo("houseTypeTable", houseTypeTable)
+        HousesHousesHouses = process(
+                getAllInCircle(x, z, 300), 
+            function(id)
+            if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
+            end
+            )
+        boolIsLevel, levelValue = isLevel(x,y,z)
+        mostLevel[rotationValue] =levelValue
+        goodPlaceToFarm = outsideMap(irrigation) == false and #HousesHousesHouses == 0 and boolIsLevel == true
     end
 
-    takenValues[rotationValue] = true
+    if attempts == 10 then
+        smallestDiff = math.huge
+        rotations = math.random(1,360)
+        for rot, val in pairs(mostLevel) do
+            if val < smallestDiff then 
+                smallestDiff = val
+                rotations = rot
+            end 
+        end
+         WTurn(TablesOfPiecesGroups["HyperLoop"][start], y_axis, math.rad(rotations), 0)
+    end
+
+    
 
     accumulateddeg = 0
     showTable = {}

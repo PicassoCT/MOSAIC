@@ -343,8 +343,15 @@ function getCultureUnitModelTypes(cultureName, typeName, UnitDefs)
 end
 
 function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
-    assert(UnitDefs)
-    translation = getTranslation(cultureName)
+--[[    assert(UnitDefs)
+    assert(cultureName)
+    assert(cultureName == "arabic")--]]
+    local translation = getTranslation(cultureName)
+--[[    assert(translation)
+    assert(type(translation)=="table")
+    assert(translation[typeName])
+--]]
+
     return expandNameSubSetTable(translation[typeName], UnitDefs)
 end
 
@@ -361,14 +368,37 @@ end
 
 function expandNameSubSetTable(SubsetTable, UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
-    expandedDictId_Name = {}
-    for i = 0, SubsetTable.range do
-        if UnitDefNames[SubsetTable.name .. i] then
-            expandedDictId_Name[UnitDefNames[SubsetTable.name .. i].id] =
-                SubsetTable.name .. i
+--[[    assert(UnitDefNames)
+    assert(type(UnitDefNames)=="table")
+    assert(UnitDefNames["house_arab0"].id)
+    assert(UnitDefNames["civilian_arab0"])
+    assert(UnitDefNames["civilian_arab0"].id)
+    assert(SubsetTable)
+    assert(SubsetTable.range)
+    assert(SubsetTable.range >= 0)--]]
+    local  expandedDictIdName = {}
+    local i = 0
+    while i <= SubsetTable.range do
+        local key = SubsetTable.name..i
+        if UnitDefNames[key] then
+           -- echo("adding "..SubsetTable.name..i)
+          --  assert(UnitDefNames[key].id)
+            expandedDictIdName[UnitDefNames[key].id] =  key
         end
+        i = i + 1
     end
-    return expandedDictId_Name
+--[[
+    assert(expandedDictIdName)
+    assert(type(expandedDictIdName)=="table")
+    if SubsetTable.name == "house_arab" then
+        assert(expandedDictIdName[UnitDefNames["house_arab0"].id] == "house_arab0")
+    end
+
+     if SubsetTable.name == "civilian_arab" then
+        assert(expandedDictIdName[UnitDefNames["civilian_arab0"].id] == "civilian_arab0")
+    end--]]
+
+    return expandedDictIdName
 end
 
 function getUnitType_BaseTypeMap(UnitDefs, culture)
