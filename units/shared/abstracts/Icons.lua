@@ -277,6 +277,8 @@ local BribeIcon =
     objectName = "bribeIcon.dae",
     onoffable = true,
     activatewhenbuilt = true,
+    MaxSlope = 100,
+
     customparams = {
         helptext = "Sniper/Raid Icon",
         baseclass = "Abstract" -- TODO: hacks
