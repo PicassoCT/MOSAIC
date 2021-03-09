@@ -31,7 +31,7 @@ function getGameConfig()
             raidComRange = 1200,
             raidBonusFactorSatellite = 2.5
         },
-        SnipeMiniGcivilianInterestame = {
+        SnipeMiniGame = {
 
             Aggressor = {StartPoints = 4},
             Defender = {StartPoints = 4}
@@ -1259,6 +1259,7 @@ function getInfluencedStates()
 end
 
 function isBribeIcon(UnitDefs, defID)
+    assert(UnitDefs)
     return UnitDefs[defID].name == "bribeicon"
 end
 
