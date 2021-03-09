@@ -11,10 +11,10 @@ GameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
 local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
                                                 "house", UnitDefs)
-assert(houseTypeTable)
+--assert(houseTypeTable)
 --[[assert(#houseTypeTable)
 assert(#houseTypeTable > 0)--]]
-assert(houseTypeTable[UnitDefNames["house_arab0"].id])
+--assert(houseTypeTable[UnitDefNames["house_arab0"].id])
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -104,7 +104,6 @@ function forInterval(start, stop, irrigation, nr)
         Sleep(1)
 
         x, y, z = Spring.GetUnitPiecePosDir(unitID, irrigation)
-        echo("houseTypeTable", houseTypeTable)
         HousesHousesHouses = process(
                 getAllInCircle(x, z, 300), 
             function(id)
@@ -112,7 +111,7 @@ function forInterval(start, stop, irrigation, nr)
             end
             )
         boolIsLevel, levelValue = isLevel(x,y,z)
-        mostLevel[rotationValue] =levelValue
+        mostLevel[rotationValue] = levelValue
         goodPlaceToFarm = outsideMap(irrigation) == false and #HousesHousesHouses == 0 and boolIsLevel == true
     end
 
@@ -127,8 +126,6 @@ function forInterval(start, stop, irrigation, nr)
         end
          WTurn(TablesOfPiecesGroups["HyperLoop"][start], y_axis, math.rad(rotations), 0)
     end
-
-    
 
     accumulateddeg = 0
     showTable = {}

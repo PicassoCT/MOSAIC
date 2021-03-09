@@ -357,11 +357,9 @@ function pray()
     SetSignalMask(SIG_INTERNAL)
     prayTime= 12000
     while prayTime > 0 do
-       resetT(upperBodyPieces,1.0, false, true)
        WaitForTurns(upperBodyPieces)
         Sleep(500)
-        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
-        WaitForTurns(upperBodyPieces)
+        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
          Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
        prayTime = prayTime - 3500
