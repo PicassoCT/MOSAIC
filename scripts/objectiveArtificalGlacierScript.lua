@@ -12,6 +12,19 @@ gaiaTeamID = Spring.GetGaiaTeamID()
 local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 --assert(houseTypeTable)
+Piston = piece"Piston"
+PistonHeigth = 6500
+
+function trackEnergyConsumption()
+    while true do
+            hours, minutes, seconds, percent = getDayTime()
+            if percent < 0.5 then percent = 1-0.5 end
+            result = (1.0 - percent)*-1
+            result = result*PistonHeigth
+            WMove(Piston,z_axis, result, 100.1)
+        Sleep(1000)
+    end
+end
 --[[assert(#houseTypeTable)
 assert(#houseTypeTable > 0)--]]
 --assert(houseTypeTable[UnitDefNames["house_arab0"].id])
@@ -23,16 +36,23 @@ function script.Create()
     Spin(piece("Logo"), z_axis, math.rad(42), 0)
 
     StartThread(deployPipes)
+    StartThread(unfold)
+    StartThread(trackEnergyConsumption)
+end
 
-    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-181), 1)
-    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-120), 1)
+function unfold()
+    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-181 ), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(-181 + 45), 1)
     WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(181), 1)
-    WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(145), 1)
-    WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-189), 1)
-    WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-145), 1)
-
-    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(145), 1)
-   -- WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(230), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(181 + 45), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(-181), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(181), 1)
+    Turn(TablesOfPiecesGroups["Solar3Ext"][1], z_axis, math.rad(179), 1)
+    Turn(TablesOfPiecesGroups["Solar4Ext"][1], z_axis, math.rad(179), 1)
+    WaitForTurns(TablesOfPiecesGroups["Solar3Ext"][1], TablesOfPiecesGroups["Solar4Ext"][1])
+    Turn(TablesOfPiecesGroups["Solar3Ext"][2], z_axis, math.rad(-179), 1)
+    Turn(TablesOfPiecesGroups["Solar4Ext"][2], z_axis, math.rad(-179), 1)
+    WaitForTurns(TablesOfPiecesGroups["Solar3Ext"][2], TablesOfPiecesGroups["Solar4Ext"][2])
 end
 
 function script.Killed(recentDamage, _) return 1 end
@@ -169,11 +189,5 @@ function forInterval(start, stop, irrigation, nr)
 end
 
 function hideSensors(nr)
-    Rotator = piece("Rotator" .. nr)
-    Sprinkler = piece("Sprinkler" .. nr)
-    Sensor = piece("Sensor" .. nr)
-    Hide(Rotator)
-    Hide(Sprinkler)
-    Hide(Sensor)
     Hide(Irrigation1)
 end
