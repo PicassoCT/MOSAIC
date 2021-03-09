@@ -156,19 +156,20 @@ local function UpdateAdd(unitID, supplyInfo)
 
 	for currUnitID, currSupplyInfo in pairs(supplyInfos) do
 		--ignore self
-		if (unitID ~= currUnitID) then
-			--is there overlap?
-			local r = currSupplyInfo.r
-			local x, z = currSupplyInfo.x, currSupplyInfo.z
-			assert(unitID)
-			assert(currUnitID)
-			local dist = GetUnitSeparation(unitID, currUnitID, true)
-			assert(r0)
-			assert(dist)
-			assert(r)
-			if (dist < r0 + r) then
-				RemovePoints(supplyInfo, x, z, r)
-				RemovePoints(currSupplyInfo, x0, z0, r0)
+		if ( unitID ~= currUnitID) then
+			if   Spring.GetUnitIsDead(currUnitID) == false then 
+				--is there overlap?
+				local r = currSupplyInfo.r
+				local x, z = currSupplyInfo.x, currSupplyInfo.z
+		
+				local dist = GetUnitSeparation(unitID, currUnitID, true)
+				assert(r0)
+				assert(dist)
+				assert(r)
+				if (dist < r0 + r) then
+					RemovePoints(supplyInfo, x, z, r)
+					RemovePoints(currSupplyInfo, x0, z0, r0)
+				end
 			end
 		end
 	end
