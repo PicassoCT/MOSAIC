@@ -125,14 +125,14 @@ function forInterval(start, stop, irrigation, nr)
 
         x, y, z = Spring.GetUnitPiecePosDir(unitID, irrigation)
         HousesHousesHouses = process(
-                getAllInCircle(x, z, 300), 
+                getAllInCircle(x, z, 450), 
             function(id)
             if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
             end
             )
         boolIsLevel, levelValue = isLevel(x,y,z)
         mostLevel[rotationValue] = levelValue
-        goodPlaceToFarm = outsideMap(irrigation) == false and #HousesHousesHouses == 0 and boolIsLevel == true
+        goodPlaceToFarm = outsideMap(irrigation) == false and count(HousesHousesHouses) == 0 and boolIsLevel == true
     end
 
     if attempts == 10 then
