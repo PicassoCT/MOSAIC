@@ -191,6 +191,7 @@ function gadget:GamePreload()
 end
 
 local function CreateTeams()
+	Spring.Echo("Prometheus:CreateTeams")
 	-- Initialise AI for all team that are set to use it
 	local sidedata = Spring.GetSideData()
 	local name = gadget:GetInfo().name
@@ -250,8 +251,9 @@ function gadget:GameFrame(f)
 
 	if  f == firstFrame then
 		-- This is executed AFTER headquarters / commander is spawned
-		Log("Prometheus :GameFrame 1")
+		Spring.Echo("Prometheus :Firstframe")
 		if waypointMgr then
+			Spring.Echo("Prometheus:waypointMgr.GameStart")
 			waypointMgr.GameStart()
 		end
 
@@ -305,14 +307,6 @@ end
 --
 --  Unit call-ins
 --
-function gadget:RestoreWayPointManager()
-		waypointMgr = CreateWaypointMgr()
-					if waypointMgr then
-						waypointMgr.GameStart()
-					end
-					--CreateTeams()
-		return waypointMgr
-end
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	if waypointMgr  then	
@@ -320,6 +314,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 			waypointMgr = restoreWayPointManager()
 		end
 		if  waypointMgr.UnitCreated then
+			Spring.Echo("Prometheus:UnitCreated")
 			waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 		end
 	end
@@ -330,6 +325,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 end
 
 function restoreWayPointManager()
+		Spring.Echo("Prometheus:restoreWayPointManager")
 		waypointMgr = CreateWaypointMgr()
 					if waypointMgr then
 						waypointMgr.GameStart()
@@ -348,8 +344,8 @@ end
 function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	if waypointMgr then
 		--restore the wayPointManager
-		if  waypointMgr.UnitDestroyed == nil then 
-			restoreWayPointManager()
+		if  not waypointMgr.UnitDestroyed then 
+			waypointMgr = restoreWayPointManager()
 		end	
 		waypointMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	end
