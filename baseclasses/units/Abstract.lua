@@ -5,7 +5,7 @@ local Abstract = Unit:New{
 	iconType			= "none",
 	moveState			= 0, -- Hold Position
 	onoffable           = true,
-	
+	cantBeTransported 	= true,
 	customparams = {
 		baseclass		= "Abstract",
     },
