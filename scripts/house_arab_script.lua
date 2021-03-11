@@ -300,14 +300,18 @@ end
 
 function decorateCity()
     Sleep(1000)
-    marketResearch()
+    decorateCity()
 
 end
 
 local gaiaTeamID = Spring.GetGaiaTeamID()
-function marketResearch()
+function decorateCity()
+
     if not GG.HouseDecoration_Arab_MarketCounter then  GG.HouseDecoration_Arab_MarketCounter = 0 end
-    if  GG.HouseDecoration_Arab_MarketCounter > 2 then return end
+    if not GG.InnerCity_internationalDecoration then  GG.InnerCity_internationalDecoration = 0 end
+    if not GG.HouseDecoration_Arab_FarmDecoration then  GG.HouseDecoration_Arab_FarmDecoration = 0 end
+  
+ 
    
     x,y,z = Spring.GetUnitPosition(unitID)
     housesNearby = 0
@@ -319,19 +323,28 @@ function marketResearch()
         end
         )
 
-    if housesNearby > 4 then
-         GG.HouseDecoration_Arab_MarketCounter =  GG.HouseDecoration_Arab_MarketCounter +1
-         minDeg =math.random (0,360)
-         maxDeg = minDeg + 120
-        for i=1, math.random(3,6) do
-            createUnitInCircleAroundUnit(unitID,"marketstand_arab", math.random(200,500), minDeg, maxDeg)
+    if housesNearby > 3 then --city
+
+        if  GG.HouseDecoration_Arab_MarketCounter < 3 and maRa() then
+             GG.HouseDecoration_Arab_MarketCounter =  GG.HouseDecoration_Arab_MarketCounter +1
+             minDeg =math.random (0,360)
+             maxDeg = minDeg + 120
+            for i=1, math.random(3,6) do
+                createUnitInCircleAroundUnit(unitID,"marketstand_arab", math.random(200,500), minDeg, maxDeg)
+            end
+        end
+
+        if  GG.InnerCity_internationalDecoration  < 4 and maRa() then
+            internationalDecorationTypes = getInternationalCityDecorationTypes(UnitDefs)
+            decoration = randDict(internationalDecorationTypes)
+            ox, oz = randSign()* math.random (200,250),randSign()* math.random (200,250)
+            nx,ny,nz= Spring.GetUnitPosition(unitID)
+            GG.UnitsToSpawn:PushCreateUnit(decoration, nx +ox , 0, nz+oz, 1, gaiaTeamID)
+            GG.InnerCity_internationalDecoration = GG.InnerCity_internationalDecoration  +1
         end
     end
 
-    if not GG.HouseDecoration_Arab_FarmDecoration then  GG.HouseDecoration_Arab_FarmDecoration = 0 end
-    if  GG.HouseDecoration_Arab_MarketCounter > 5 then return end
-
-    if housesNearby < 2 then
+    if housesNearby < 2 and GG.HouseDecoration_Arab_FarmDecoration < 6 then -- countryside
     GG.HouseDecoration_Arab_FarmDecoration =  GG.HouseDecoration_Arab_FarmDecoration +1
          minDeg =math.random (0,360)
          maxDeg = minDeg + 120

@@ -712,6 +712,13 @@ function getSatelliteAltitudeTable(UnitDefs) -- per Frame
     return valuetable
 end
 
+function getInternationalCityDecorationTypes(UnitDefs)
+ local UnitDefNames = getUnitDefNames(UnitDefs)
+    return {
+        [UnitDefNames["propagandapole_inter1"].id] = true,
+    }
+end
+
 function getUnitScaleTable(UnitDefNames)
     local defaultScaleTable = {}
     realScaleTable = {
@@ -1123,7 +1130,7 @@ end
 
 
 
-function registerLocation(unitID)
+function registerRevealedUnitLocation(unitID)
     local Location = {}
     Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
     Location.teamID = Spring.GetUnitTeam(unitID)

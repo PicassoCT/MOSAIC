@@ -239,6 +239,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         GG.Bank:TransferToTeam(
                             GameConfig.RaidInterrogationPropgandaPrice,
                             persPack.attackerTeam, persPack.attackerID)
+                        registerRevealedUnitLocation(persPack.unitID)
                         spEcho(" caught 6 ")
                         for childID, v in pairs(children) do
                             if doesUnitExistAlive(childID) == true then
@@ -399,7 +400,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     GG.Bank:TransferToTeam(
                         GameConfig.RaidInterrogationPropgandaPrice,
                         persPack.attackerTeam, persPack.attackerID)
-
+                        registerRevealedUnitLocation(persPack.unitID)
                     for childID, v in pairs(children) do
                         spEcho("Interrogation: Reavealing child " .. childID)
                         if doesUnitExistAlive(childID) == true then

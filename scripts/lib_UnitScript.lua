@@ -2839,7 +2839,8 @@ function randDict(Dict)
         if index == randElement and k and v then return k, v end
         index = inc(index)
     end
-    return anyElement, Dict[anyKey]
+    
+    return anyKey, Dict[anyKey]
 end
 
 -- > randomizes Table Entrys

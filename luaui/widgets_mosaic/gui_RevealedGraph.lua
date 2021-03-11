@@ -19,7 +19,8 @@ function widget:GetInfo()
     date      = "Year 2021 after Spring Died (A.S.D)",
     license   = "GNU GPL, v2 or later",
     layer     = 5,
-    enabled   = true  --  loaded by default?
+    enabled   = true,  --  loaded by default?
+    hidden = true
   }
 end
 
@@ -90,16 +91,16 @@ local startTimer = spGetTimer()
 --------------------------------------------------------------------------------
 
 function widget:Initialize()
-    Triangle={
-    [1]={x=-1,y=0},
-    [2]={x=0,y=1},
-    [3]={x=1,y=0},
+
   locationLines = glCreateList(function()
     glBeginEnd(GL_LINE_LOOP, function()
-      local radstep = (2.0 * math.pi) / circleDivs
-      for i = 1, circleDivs do
-        local a = (i * radstep)
-        glVertex(math.sin(a), circleOffset, math.cos(a))
+      local Triangle={
+              [1]={x=-1,y=0},
+              [2]={x=0,y=1},
+              [3]={x=1,y=0},
+            }
+      for i = 1, 3 do
+       glVertex(Triangle[1].x, revealedHeighthOffset,Triangle[1].y)
       end
     end)
   end)
@@ -107,23 +108,28 @@ function widget:Initialize()
   --TODO Replace with Quadrants(Locations) and Triangles (Revealed Units)
   locationPolys = glCreateList(function()
     glBeginEnd(GL_TRIANGLE_FAN, function()
-      local radstep = (2.0 * math.pi) / circleDivs
-      for i = 1, circleDivs do
-        local a = (i * radstep)
-        glVertex(math.sin(a), circleOffset, math.cos(a))
+   local     Triangle={
+              [1]={x=-1,y=0},
+              [2]={x=0,y=1},
+              [3]={x=1,y=0},
+            }
+
+      for i = 1, 3 do
+        glVertex(Triangle[1].x, revealedHeighthOffset,Triangle[1].y)
       end
     end)
   end)
 
-  Quad={
-    [1]={x=-1,y=0},
-    [2]={x=0,y=1},
-    [3]={x=1,y=0},
-    [4]={x=0,y=-1},
-}
+
   revealedLines = glCreateList(function()
     glBeginEnd(GL_LINE_LOOP, function()
-      for i = 1, 4 do
+       local  Quad={
+              [1]={x=-1,y=0},
+              [2]={x=0,y=1},
+              [3]={x=1,y=0},
+              [4]={x=0,y=-1},
+          }
+    for i = 1, 4 do
         glVertex(Quad[1].x, revealedHeighthOffset,Quad[1].y)
       end
     end)
@@ -132,13 +138,17 @@ function widget:Initialize()
   --TODO Replace with Quadrants(Locations) and Triangles (Revealed Units)
   revealedPolys = glCreateList(function()
     glBeginEnd(GL_TRIANGLE_FAN, function()
+ local       Quad={
+    [1]={x=-1,y=0},
+    [2]={x=0,y=1},
+    [3]={x=1,y=0},
+    [4]={x=0,y=-1},
+}
       for i = 1, 4 do
         glVertex(Quad[1].x, revealedHeighthOffset,Quad[1].y)
       end
     end)
   end)
-
-
 end
 
 
@@ -146,8 +156,8 @@ function widget:Shutdown()
   glDeleteList(locationLines)
   glDeleteList(locationPolys) 
 
---[[  glDeleteList(revealedLines)
-  glDeleteList(revealedPolys)--]]
+  glDeleteList(revealedLines)
+  glDeleteList(revealedPolys)
 end
 
 
