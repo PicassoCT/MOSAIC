@@ -37,7 +37,7 @@ defIDTypeTankMap = {
     [UnitDefNames["air_copter_aerosol_wanderlost"].id] = 4
 }
 
-AerosolUnitDefIDMap = getAerosolUnitDefIDs(UnitDefNames)
+AerosolUnitDefIDMap = getAerosolUnitDefIDs(UnitDefs)
 
 function colCode(searchstr)
     for name, num in pairs(typeTankMap) do
@@ -54,6 +54,7 @@ function script.Create()
     timeTank = GG.GameConfig.Aerosols[AerosolUnitDefIDMap[myDefID]]
                    .sprayTimePerUnitInMs
     StartThread(aerosolDeployCegs)
+    Hide(emitor)
 end
 
 function script.Killed(recentDamage, _) return 1 end
@@ -121,6 +122,8 @@ aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local alreadyChecked = {}
 if not GG.AerosolAffectedCivilians then    GG.AerosolAffectedCivilians = {}    end
 aerosolTypeOfUnit = AerosolUnitDefIDMap[myDefID]
+assert(aerosolTypeOfUnit)
+assert(type(aerosolTypeOfUnit)=="string")
 
 function sprayTank()
             process(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange), 
@@ -129,16 +132,17 @@ function sprayTank()
 
                              if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
                                     not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
-                                  Spring.Echo(
+                                if setAerosolCivilianBehaviour(id,  aerosolTypeOfUnit) == true then
+                                               Spring.Echo(
                                     "Unit " .. id ..
                                         " is now under the influence of " ..
                                         aerosolTypeOfUnit)
-                                setAerosolCivilianBehaviour(id, true,
-                                                         aerosolTypeOfUnit, true)
-                                 alreadyChecked[id] = id
                                 GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit
+                                alreadyChecked[id] = id
+                                return id
+                              end
                             end
-
+                            alreadyChecked[id] = id
                         end)
 
 end

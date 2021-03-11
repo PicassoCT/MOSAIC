@@ -6300,6 +6300,11 @@ function delayedCommand(id, command, target, option, framesToDelay)
 
 end
 
+function getUnitPosAsTargetTable(id)
+  x,y,z = Spring.GetUnitPosition(id)
+  return {x=x, y=y, z= z}
+end
+
 function isTransported(unitID)
     transporterID = Spring.GetUnitTransporter(unitID)
     return (transporterID ~= nil)

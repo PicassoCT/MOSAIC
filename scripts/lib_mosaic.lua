@@ -163,14 +163,21 @@ function getGameConfig()
             sprayRange = 250,
             orgyanyl = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000, -- 2mins
-                VictimLifetime = 60000
+                VictimLifetime = 1*60 *1000
             },
             wanderlost = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
                 VictimLiftime = 3 * 60 * 1000
             }, -- 2mins
-            tollwutox = {sprayTimePerUnitInMs = 2 * 60 * 1000}, -- 2mins
-            depressol = {sprayTimePerUnitInMs = 2 * 60 * 1000} -- 2mins
+            tollwutox = {
+                sprayTimePerUnitInMs = 2 * 60 * 1000,
+                VictimLiftime = 7 * 60 * 1000
+            }, -- 2mins
+            depressol = {
+                sprayTimePerUnitInMs = 2 * 60 * 1000,
+                VictimLiftime = 3 * 60 * 1000
+            } -- 2mins
+
         }
     }
 end
@@ -199,8 +206,6 @@ function getChemTrailInfluencedTypes(UnitDefs)
     typeTable = {"civilianagent"}
     typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
                                                             "civilian", UnitDefs))
-    typeTable = mergeTables({}, getTypeUnitNameTable(getCultureName(), "truck",
-                                                     UnitDefs))
 
     return getTypeTable(UnitDefNames, typeTable)
 end
@@ -214,8 +219,7 @@ function getPoliceTypes(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
     return {
         [UnitDefNames["policetruck"].id] = true,
-        [UnitDefNames["ground_tank_night"].id] = true,
-        [UnitDefNames["ground_tank_day"].id] = true
+        [UnitDefNames["ground_tank_night"].id] = true
     }
 end
 
@@ -267,7 +271,7 @@ function getTypeTable(UnitDefNames, StringTable)
     return retVal
 end
 
-function getAerosolUnitDefIDs(UnitDefNames)
+function getAerosolUnitDefIDs(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
     AerosolTypes = getChemTrailTypes()
     return {
@@ -634,8 +638,9 @@ function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
         Spring.UnitScript.CallAsUnit(unitID,
                                      env.startAerosolBehaviour,
                                     TypeOfBehaviour)
+        return true
     end
-
+return false
 end
 
 function getCivilianAnimationStates()
@@ -1116,6 +1121,36 @@ function getParentOfUnit(teamID, unit)
     end
 end
 
+
+
+function registerLocation(unitID)
+    local Location = {}
+    Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
+    Location.teamID = Spring.GetUnitTeam(unitID)
+    Location.radius = GetUnitDefRealRadius(unitID)
+
+    local revealedUnits={}
+    parent = getParentOfUnit(Location.teamID, unitID)
+    if parent and doesUnitExistAlive(parent) then
+        revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
+    end
+
+    children = getChildrenOfUnit(Location.teamID, unitID)
+
+    if children and count(children) > 0 then
+        for childID,_ in pairs(children) do
+            if childID and doesUnitExistAlive(childID) then
+                revealedUnits[childID] = {defID = Spring.GetUnitDefID(childID), boolIsParent = false}
+            end
+        end
+    end
+    Location.revealedUnits = revealedUnits
+    
+    if not GG.RevealedLocations then GG.RevealedLocations = {} end
+    GG.RevealedLocations[unitID] = Location
+end
+
+
 function giveParachutToUnit(id, x, y, z)
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
 
@@ -1254,6 +1289,7 @@ function getInfluencedStates()
         ["Init"] = "Init",
         ["PreOutbreak"] = "PreOutbreak",
         ["Outbreak"] = "Outbreak",
+        ["Standalone"] = "Standalone",
         ["Dieing"] = "Dieing"
     }
 end
@@ -1264,7 +1300,10 @@ function isBribeIcon(UnitDefs, defID)
 end
 
 function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
+    assert(typeOfInfluence)
     AerosolTypes = getChemTrailTypes()
+    assert(AerosolTypes[typeOfInfluence])
+
     InfStates = getInfluencedStates()
     CivilianTypes = getCivilianTypeTable(UnitDefs)
 
@@ -1374,25 +1413,89 @@ function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
             return currentState
         end,
         [AerosolTypes.tollwutox] = function(lastState, currentState, unitID)
+                if currentState == AerosolTypes.tollwutox then
+                StartThread(lifeTime, unitID,
+                            GG.GameConfig.Aerosols.tollwutox.VictimLiftime,
+                            false, true)
+                    currentState = InfStates.Init
+                     if math.random(0,10) > 7 then 
+                         currentState = InfStates.Standalone
+                    end
+                 end
+
+
             gf = Spring.GetGameFrame()
+            attackDistance = 35
             -- random shivers
             if gf % 30 == 0 and maRa() then
                 for i = 1, 3 do
                     val = (math.random(-100, 100) / 100) * 12
                     turnT(Spring.GetUnitPieceMap(unitID), i, math.rad(val),
-                          3.125)
+                          30.125)
                 end
             end
 
+            enemyDistance = math.huge
+            allyDistance = math.huge
+
+            local afflicted = GG.AerosolAffectedCivilians or {}
+            T= process(getAllNearUnit(unitID, 750),
+                function(id)
+                    if afflicted[id] then 
+                        return id
+                         end
+                    end
+                    )
+            
             ad = Spring.GetUnitNearestAlly(unitID)
-            ed = Spring.GetUnitNearestEnemy(unitID)
-            Spring.SetUnitNeutral(unitID, false)
-            if ad and ed and distanceUnitToUnit(unitID, ad) <
-                distanceUnitToUnit(unitID, ed) then
-                Command(unitID, "attack", ad, {})
-            else
-                Command(unitID, "attack", ed, {})
+            if T and #T > 1 then
+                ad = T[ math.random(1,#T)]
             end
+
+            if ad then
+                allyDistance = distanceUnitToUnit(unitID, ad)
+            end
+            ed = Spring.GetUnitNearestEnemy(unitID)
+            if ed  then
+                enemyDistance = distanceUnitToUnit(unitID, ed)
+            end
+            Spring.SetUnitNeutral(unitID, false)
+          
+            if ed and (not ad or currentState == InfStates.Standalone) then 
+                 Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
+                 if enemyDistance and enemyDistance < 20 then
+                    process(getAllNearUnit(unitID, attackDistance),
+                        function(id) 
+                            Spring.AddUnitDamage(id, 30)
+                        end
+                        )
+                 end
+                 return currentState
+            end
+
+            if ad and not ed then
+                Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
+                if enemyDistance and enemyDistance < 20 then
+                    process(getAllNearUnit(unitID, attackDistance),
+                        function(id) 
+                            Spring.AddUnitDamage(id, 30)
+                        end
+                        )
+                 end
+                 return currentState
+            end
+
+            if ad and ed then
+                if enemyDistance > allyDistance or maRa() == true then
+                     Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
+                     if distance(unitID, ed) < attackDistance then
+                        Spring.AddUnitDamage(ed, 30)
+                     end
+
+                else
+                    Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
+                end
+             end
 
             return currentState
         end,

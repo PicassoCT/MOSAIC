@@ -409,15 +409,17 @@ function anarchyBehaviour()
 end
 
 boolStartAerosolBehaviour = false
-AeroSolState = nil
+aeroSolType =""
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
-    AerosolState = extAerosolStateToSet
+    aeroSolType = extAerosolStateToSet
     setCivilianUnitInternalStateMode(STATE_STARTED)
 end
 
-function aeroSolStateBehaviour(aeroSolState)
-    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolState)
+function aeroSolStateBehaviour()
+    AerosolTypes = getChemTrailTypes()
+    assert(AerosolTypes[aeroSolType], aeroSolType)
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true
@@ -845,7 +847,7 @@ function threadStateStarter()
 
          if boolStartAerosolBehaviour == true then
             boolStartAerosolBehaviour = false
-             StartThread(aeroSolStateBehaviour, AeroSolState)
+             StartThread(aeroSolStateBehaviour)
              while true do Sleep(10000); end
         end
         Sleep(250)   

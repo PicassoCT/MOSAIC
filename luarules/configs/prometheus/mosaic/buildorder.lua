@@ -38,7 +38,7 @@ gadget.unitBuildOrder = UnitBag{
 			"air_copter_mg",
 			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
-			"ground_tank_night",
+			"ground_tank_day",
 			"ground_turret_cm_walker"
 	},
 	launcher = UnitArray{

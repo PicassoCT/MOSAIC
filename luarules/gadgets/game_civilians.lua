@@ -43,6 +43,7 @@ local spDestroyUnit = Spring.DestroyUnit
 
 local UnitDefNames = getUnitDefNames(UnitDefs)
 local PoliceTypes = getPoliceTypes(UnitDefs)
+local PoliceDamageCounter = 0
 
 local activePoliceUnitIds_DispatchTime = {}
 local maxNrPolice = GameConfig.maxNrPolice
@@ -148,6 +149,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
     if PoliceTypes[unitDefID] then
         spSetUnitNeutral(unitID, false)
         maxNrPolice = math.max(maxNrPolice - 1, 0)
+
     end
     if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
        -- Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
@@ -162,6 +164,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     if PoliceTypes[unitDefID] then
         activePoliceUnitIds_DispatchTime[unitID] = nil
         maxNrPolice = math.min(maxNrPolice + 1, GameConfig.maxNrPolice)
+        PoliceDamageCounter= PoliceDamageCounter + 500
     end
     -- Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
@@ -204,11 +207,14 @@ function getOfficer(unitID, attackerID)
 
         ptype = "policetruck"
         if GG.GlobalGameState == GameConfig.GameState.anarchy or
-            GG.GlobalGameState == GameConfig.GameState.pacification then
+            GG.GlobalGameState == GameConfig.GameState.pacification or 
+            PoliceDamageCounter > 2500
+            then
             ptype = randT(PoliceTypes)
+            PoliceDamageCounter = PoliceDamageCounter - 2500
         end
 
-        officerID = spCreateUnit("policetruck", px, py, pz, direction,
+        officerID = spCreateUnit(ptype, px, py, pz, direction,
                                  gaiaTeamID)
         activePoliceUnitIds_DispatchTime[officerID] =
             GameConfig.policeMaxDispatchTime +
@@ -787,7 +793,6 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
         persPack = moveToLocation(myID, persPack, {} , true)
     end
     
-
 return boolDone, nil, persPack, x,y,z, hp
 end
 

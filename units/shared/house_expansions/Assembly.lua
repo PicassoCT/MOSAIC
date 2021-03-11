@@ -66,7 +66,7 @@ local Assembly = Building:New{
 			 "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor",
 			 "ground_truck_rocket", "ground_truck_assembly", "truck_arab6", 
 			--tank 
-			"ground_tank_night"
+			"ground_tank_day"
 	--weapon
 			
 	 --ssied --rocket --gattling --sniperrifle --mortar --anit-projectile -- anti-launch 

@@ -212,7 +212,6 @@ function hideAllProps()
     hideT(TablesOfPiecesGroups["cellphone"])
     Hide(cofee)
     Hide(cigarett)
-    Hide(cellphone)
     Hide(ShoppingBag)
     Hide(SittingBaby)
     Hide(trolley)
@@ -376,12 +375,11 @@ function startAnarchyBehaviour()
 end
 
 function anarchyBehaviour()   
-    oldBehaviourState = ""
+    oldBehaviourState = GG.GlobalGameState
+
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
-         newState = GG.GlobalGameState
-         normalBehavourStateMachine[newState](oldBehaviourState,
-                                                            newState, unitID)
-        oldBehaviourState = newState
+         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
+        oldBehaviourState = GG.GlobalGameState
         Sleep(250)
     end
 
@@ -389,23 +387,27 @@ function anarchyBehaviour()
 end
 
 boolStartAerosolBehaviour = false
-AeroSolState = nil
+aeroSolType = ""
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
-    AerosolState = extAerosolStateToSet
+    aeroSolType = extAerosolStateToSet
     setCivilianUnitInternalStateMode(STATE_STARTED)
 end
 
-function aeroSolStateBehaviour(aeroSolState)
-    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolState)
+function aeroSolStateBehaviour()
+    Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true
+    newState = aeroSolType
+    oldBehaviourState = aeroSolType
     while true do
-        influencedStateMachine(oldBehaviourState, newState, unitID)
-    Sleep(250)
+        newState = influencedStateMachine(oldBehaviourState, newState, unitID)
+        Sleep(250)
+        oldBehaviourState = newState
     end
-
+    Spring.DestroyUnit(unitID, true, false)
 end
 
 function wailing()
@@ -827,7 +829,7 @@ function threadStateStarter()
 
          if boolStartAerosolBehaviour == true then
             boolStartAerosolBehaviour = false
-             StartThread(aeroSolStateBehaviour, AeroSolState)
+             StartThread(aeroSolStateBehaviour)
              while true do Sleep(10000); end
         end
         Sleep(250)   
