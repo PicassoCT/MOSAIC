@@ -890,8 +890,8 @@ boolDone = false
     end
 
     if persPack.boolStartAChat == true then
-        local partnerID = persPack.chatPartnerID
-        if  distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
+        local partnerID = persPack.chatPartnerID 
+        if partnerID and distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
             Command(partnerID, "go", {
