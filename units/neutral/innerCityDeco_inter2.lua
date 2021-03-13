@@ -1,10 +1,10 @@
-local unitName = "propagandapole_inter1"
+local unitName = "innerCityDeco_inter2"
 
 	local unitDef = {
 	name = "",
-	Description = "Marketstand",
-	objectName = "propagandaPole_inter1.dae",
-	script = "propagandapole_script.lua",
+	Description = "Well",
+	objectName = "innerCityDeco_inter2.dae",
+	script = "innerCityDeco_inter2script.lua",
 	buildPic = "placeholder.png",
 	levelGround =false,
 	--cost

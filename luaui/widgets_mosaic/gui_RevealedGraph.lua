@@ -19,8 +19,7 @@ function widget:GetInfo()
     date      = "Year 2021 after Spring Died (A.S.D)",
     license   = "GNU GPL, v2 or later",
     layer     = 5,
-    enabled   = true,  --  loaded by default?
-    hidden = true
+    enabled   = true
   }
 end
 
@@ -70,6 +69,59 @@ local Locations = {
   --if all revealed Units are no more, a location ceases to be relevant
 }
 
+-- > Counts the number of elements in a dictionary
+function count(T)
+    if not T then return 0 end
+    local index = 0
+    for k, v in pairs(T) do if v then index = index + 1 end end
+    return index
+end 
+
+-- >Retrieves a random element from a Dictionary
+function randDict(Dict)
+    if not Dict then return end
+    if lib_boolDebug == true then assert(type(Dict) == "table") end
+
+    countDict = count(Dict)
+    randElement = 1
+    if countDict > 1 then randElement = math.random(1, count(Dict)) end
+
+    index = 1
+    anyKey = 1
+    for k, v in pairs(Dict) do
+        anyKey = k
+        if index == randElement and k and v then return k, v end
+        index = inc(index)
+    end
+    
+    return anyKey, Dict[anyKey]
+end
+
+
+function addTestLocation()
+  local allUnits = Spring.GetAllUnits()
+  local locationID = allUnits[math.random(1,#allUnits)]
+  local x,y,z = spGetUnitBasePosition(locationID)
+  local revealedUnits = {}
+  
+  for i=1, i < math.random(3,6) do
+    dependent = randDict(allUnits)
+    revealedUnits[dependent]={
+    defID = spGetUnitDefID(dependent),
+    boolIsParent = math.random(0,1)==1
+    }
+  end
+
+  Locations[locationID]  = {
+    x=x,
+    y=y,
+    z=z,
+    teamID = spGetUnitTeam(locationID),
+    revealedUnits = revealedUnits
+  }
+
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -80,18 +132,76 @@ local locationLines  = 0
 local locationPolys  = 0
 local circleDivs   = 32
 local circleOffset = 0
-local revealedHeighthOffset = 50
+local heightOffset = 50
 
 local revealedLines = 0
 local revealedPolys = 0
 
 local startTimer = spGetTimer()
-
+local Polygon = { }
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+function newPolygon(x,y,z)
+ local Polygon = {}
+ addLineSegment(x,y,z)
+end
+
+function addLineSegment(x,y,z)
+  local pos = {[1]=x,[2]=y,[3]=z}
+  Polygon[#Polygon+1] = pos
+end
+
+local polygonToDraw = {}
+
+
+local function DrawLine(offsetY)
+  for i = 1, #polygonToDraw do
+    local x = polygonToDraw[i][1]
+    local z = polygonToDraw[i][3]
+    local y = Spring.GetGroundHeight(x, z) + offsetY
+    gl.Vertex(x,y,z)
+  end
+end
+
+local function DrawRectangle( Locx, Locz, radius, offsetY)
+  local x = Locx - radius
+  local z = Locz + radius
+  local gh = Spring.GetGroundHeight(x, z) + offsetY
+  gl.Vertex(x,gh,z)
+
+  local x = Locx + radius
+  local z = Locz + radius
+  local gh = Spring.GetGroundHeight(x, z) + offsetY
+  gl.Vertex(x,gh,z)
+
+  local x = Locx + radius
+  local z = Locz - radius
+  local gh = Spring.GetGroundHeight(x, z) + offsetY
+  gl.Vertex(x,gh,z)
+
+  local x = Locx - radius
+  local z = Locz - radius
+  local gh = Spring.GetGroundHeight(x, z) + offsetY
+  gl.Vertex(x,gh,z)
+end
+
+function widget:GameFrame(n)
+    if n == startFrame + 60 then
+      for id,_ in pairs(Spring.GetAllUnits()) do
+          if math.random(0,1)== 1 then
+
+
+          end
+
+      end
+
+    end
+  end
+
+local startFrame  = Spring.GetGameFrame()
 function widget:Initialize()
-
+  startFrame  = Spring.GetGameFrame()
   locationLines = glCreateList(function()
     glBeginEnd(GL_LINE_LOOP, function()
       local Triangle={
@@ -100,7 +210,7 @@ function widget:Initialize()
               [3]={x=1,y=0},
             }
       for i = 1, 3 do
-       glVertex(Triangle[1].x, revealedHeighthOffset,Triangle[1].y)
+       glVertex(Triangle[1].x, heightOffset, Triangle[1].y)
       end
     end)
   end)
@@ -115,7 +225,7 @@ function widget:Initialize()
             }
 
       for i = 1, 3 do
-        glVertex(Triangle[1].x, revealedHeighthOffset,Triangle[1].y)
+        glVertex(Triangle[1].x, heightOffset,Triangle[1].y)
       end
     end)
   end)
@@ -130,7 +240,7 @@ function widget:Initialize()
               [4]={x=0,y=-1},
           }
     for i = 1, 4 do
-        glVertex(Quad[1].x, revealedHeighthOffset,Quad[1].y)
+        glVertex(Quad[1].x, heightOffset , Quad[1].y)
       end
     end)
   end)
@@ -145,7 +255,7 @@ function widget:Initialize()
     [4]={x=0,y=-1},
 }
       for i = 1, 4 do
-        glVertex(Quad[1].x, revealedHeighthOffset,Quad[1].y)
+        glVertex(Quad[1].x, heightOffset, Quad[1].y)
       end
     end)
   end)
@@ -287,13 +397,13 @@ end
 local unitCache={}
 local colorCache={}
 
+
+
 function widget:DrawWorld()
   glLineWidth(3.0)
   glDepthTest(true)
   glPolygonOffset(-50, -2)
 
-  local selectedUnits=spGetSelectedUnits()
-  
   --local Locations = {
   --contains with key unitID (x,y,z, teamID, radius and  revealedUnits as table[unitID] -> unitDefID
   for unitID, LocationData in ipairs(Locations) do
@@ -311,12 +421,12 @@ function widget:DrawWorld()
         if not teamColorPlayers[teamID] then
           computeTeamColorOffsetByPlayer(teamID,25)
         end
-      
-       --[[ glColor(colorSet[1])
-        glDrawAtLocation(Loc.x, Loc.y + IconOffSet, Loc.z, locationPolys, false, radius, 1.0, radius)
-        glColor(colorSet[2])
-        glDrawAtLocation(Loc.x, Loc.y + IconOffSet, Loc.z, locationLines, false, radius, 1.0, radius)
-        --]]
+
+        glColor(colorSet[1])
+        gl.LineWidth(6.0)
+        gl.BeginEnd(GL.LINE_STRIP, DrawRectangle, Loc.x, Loc.z, radius, heightOffset)
+        gl.LineWidth(1.0)
+        gl.Color(1, 1, 1, 1)
 
         for id, defID in ipairs(Loc.revealedUnits) do
         local radius = GetUnitDefRealRadius(id)
@@ -326,6 +436,16 @@ function widget:DrawWorld()
           glDrawListAtUnit(id, revealedLines, false, radius, 1.0, radius)
           
           --drawStripe from Location to Unit
+          newPolygon(Loc.x, Loc.y, Loc.z)
+          ux,uy,uz = spGetUnitBasePosition(id)
+          addLineSegment(ux,uy,uz)
+          gl.LineWidth(3.0)
+          gl.Color(colorSet[1].r,colorSet[1].g, colorSet[1].b, 0.25)
+          gl.BeginEnd(GL.LINE_STRIP, DrawLine, heightOffset)
+          --reset
+          gl.LineWidth(1.0)
+          gl.Color(1, 1, 1, 1)
+
         end
       
       end
@@ -340,10 +460,12 @@ function widget:DrawWorld()
 end
 
 function widget:GameFrame(n)
-    if frame % 10 == 0 then
+    if n % 10 == 0 then
+       addTestLocation()
         if GG.RevealedLocations then
-        Locations = GG.RevealedLocations
+          -- Locations = GG.RevealedLocations
         end 
     end
+
 end
 

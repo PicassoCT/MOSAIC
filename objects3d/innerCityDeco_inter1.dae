@@ -2441,7 +2441,7 @@
     </geometry>
   </library_geometries>
   <library_visual_scenes>
-    <visual_scene id="propagandaPole_inter1" name="propagandaPole_inter1">
+    <visual_scene id="innerCityDeco_inter1" name="innerCityDeco_inter1">
       <node name="Pole" id="Pole" sid="Pole"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.211852 0.000000 0.000000 1.000000 -57.691368 0.000000 -1.000000 0.000000 -0.448553 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Pole-lib"><bind_material><technique_common><instance_material symbol="tent" target="#tent"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Add2" id="Add2" sid="Add2"><matrix sid="matrix">1.000000 0.000000 0.000000 683.643127 0.000000 0.000000 1.000000 5535.685059 0.000000 -1.000000 0.000000 35.681732 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Add2-lib"><bind_material><technique_common><instance_material symbol="tent" target="#tent"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Add1" id="Add1" sid="Add1"><matrix sid="matrix">1.000000 0.000000 0.000000 -678.274231 0.000000 0.000000 1.000000 5535.685059 0.000000 -1.000000 0.000000 50.298401 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Add1-lib"><bind_material><technique_common><instance_material symbol="tent" target="#tent"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
@@ -2449,6 +2449,6 @@
     </visual_scene>
   </library_visual_scenes>
   <scene>
-    <instance_visual_scene url="#propagandaPole_inter1"></instance_visual_scene>
+    <instance_visual_scene url="#innerCityDeco_inter1"></instance_visual_scene>
   </scene>
 </COLLADA>

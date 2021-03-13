@@ -98,7 +98,8 @@ local ignoredUnitDefs = {
 [UnitDefNames["snipeicon"].id]= true,
 [UnitDefNames["objectiveicon"].id]= true,
 [UnitDefNames["bribeicon"].id]= true,
-[UnitDefNames["propagandapole_inter1"].id]= true,
+[UnitDefNames["innercitydeco_inter1"].id]= true,
+[UnitDefNames["innercitydeco_inter2"].id]= true,
 }
 
 --------------------------------------------------------------------------------

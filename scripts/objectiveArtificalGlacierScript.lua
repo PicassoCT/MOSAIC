@@ -30,6 +30,7 @@ assert(#houseTypeTable > 0)--]]
 --assert(houseTypeTable[UnitDefNames["house_arab0"].id])
 
 function script.Create()
+    Spring.SetUnitBlocking(unitID,false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
     resetAll(unitID)

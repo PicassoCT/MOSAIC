@@ -714,9 +714,10 @@ end
 
 function getInternationalCityDecorationTypes(UnitDefs)
  local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {
-        [UnitDefNames["propagandapole_inter1"].id] = true,
-    }
+ return {
+        [UnitDefNames["innercitydeco_inter1"].id] = true,
+        [UnitDefNames["innercitydeco_inter2"].id] = true,
+        }
 end
 
 function getUnitScaleTable(UnitDefNames)

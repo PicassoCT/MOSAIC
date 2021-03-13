@@ -2,7 +2,7 @@ model = {
 	radius = 25.0,
 	height = 40,
 
-	tex1 = "propagandapole_inter1_diffuse.png",
+	tex1 = "innerCityDeco_inter1_diffuse.png",
 	tex2 = "testtex2.dds",
 
 	--tex2 = "armtech_tex2.dds", 

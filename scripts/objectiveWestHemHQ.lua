@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+    Spring.SetUnitBlocking(unitID,false)
     resetAll(unitID)
     val = math.random(-360, 360)
     rSign = randSign()*math.random(1,9)

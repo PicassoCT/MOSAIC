@@ -41,7 +41,7 @@ local Tutorial={}
 ---------------------------------------------------------------------------
 local teamID=spGetMyTeamID()
 local spPlaySoundFile=Spring.PlaySoundFile
-local mySide = "antagon"
+
 
 silentPlaceHolder=""
 
@@ -79,9 +79,9 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 
 	},
 	----BuildUnits
-	[UnitDefNames["operativepropgator"].id] = 
+	[UnitDefNames["operativepropagator"].id] = 
 	{
-		speach= "sounds/tutorial/operativepropgator.ogg",
+		speach= "sounds/tutorial/operativepropagator.ogg",
 		-- This operative, is our way to take hold in this city, form cells and forward the CAUSE. 
 		-- S/he can create safehouses and recruit civilians to our cause.
 		-- S/he can interrogate civilans suspected of aiding the enemy.
@@ -205,12 +205,31 @@ function preProcesTutorialInfoTable()
 	end
 end
 
+function validSide(side)
+	return side ~= nil and (side == "antagon" or side == "protagon")
+end
 startFrame = Spring.GetGameFrame()
 function widget:Initialize()	
 		playerID = Spring.GetMyPlayerID()
-		tname,_, tspec, tteam, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
-		side    = select(5,Spring.GetTeamInfo(tteam))
-	
+		tname,_, tspec, teamID, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
+		mySide     = select(5, Spring.GetTeamInfo(teamID))
+
+		if not validSide(mySide) then
+			allUnitsOfTeam = Spring.GetTeamUnitsSorted(teamID)
+
+			if #allUnitsOfTeam[UnitDefNames["operativepropagator"].id] > 0 then
+				mySide = "antagon"
+			end
+
+			if #allUnitsOfTeam[UnitDefNames["operativeinvestigator"].id] > 0 then
+				mySide = "protagon"
+			end
+
+			if not validSide(mySide) then
+				mySide = "antagon"
+			end
+		end
+
 		startFrame = Spring.GetGameFrame()
 		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
 		preProcesTutorialInfoTable()
@@ -233,7 +252,7 @@ boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3
 function widget:GameFrame(t)
 	if boolTutorial== true and  t % 5 == 0 then
 		if (startFrame + (startFrame % 5) + 300) == t then
-			if mySide == antagon then
+			if mySide == "antagon" then
 				spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
 			else
 				spPlaySoundFile(TutorialInfoTable.welcome.speachProtagon,1)

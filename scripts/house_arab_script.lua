@@ -311,11 +311,9 @@ function decorateCity()
     if not GG.InnerCity_internationalDecoration then  GG.InnerCity_internationalDecoration = 0 end
     if not GG.HouseDecoration_Arab_FarmDecoration then  GG.HouseDecoration_Arab_FarmDecoration = 0 end
   
- 
-   
     x,y,z = Spring.GetUnitPosition(unitID)
     housesNearby = 0
-    process(getAllInCircle(x,z, 400),
+    process(getAllInCircle(x,z, 560), --400 * 1.4
         function(id)
             if Spring.GetUnitDefID(id) == myDefID and id ~= unitID then
                 housesNearby = housesNearby +1
@@ -323,52 +321,52 @@ function decorateCity()
         end
         )
 
-    if housesNearby > 3 then --city
-
-        if  GG.HouseDecoration_Arab_MarketCounter < 3 and maRa() then
-             GG.HouseDecoration_Arab_MarketCounter =  GG.HouseDecoration_Arab_MarketCounter +1
-             minDeg =math.random (0,360)
-             maxDeg = minDeg + 120
-            for i=1, math.random(3,6) do
-                createUnitInCircleAroundUnit(unitID,"marketstand_arab", math.random(200,500), minDeg, maxDeg)
-            end
-        end
-
-        if  GG.InnerCity_internationalDecoration  < 4 and maRa() then
-            internationalDecorationTypes = getInternationalCityDecorationTypes(UnitDefs)
-            decoration = randDict(internationalDecorationTypes)
-            ox, oz = randSign()* math.random (200,250),randSign()* math.random (200,250)
-            nx,ny,nz= Spring.GetUnitPosition(unitID)
-            GG.UnitsToSpawn:PushCreateUnit(decoration, nx +ox , 0, nz+oz, 1, gaiaTeamID)
-            GG.InnerCity_internationalDecoration = GG.InnerCity_internationalDecoration  +1
+    --city
+    if housesNearby > 3 and  GG.HouseDecoration_Arab_MarketCounter < 4  then--and maRa()
+         GG.HouseDecoration_Arab_MarketCounter =  GG.HouseDecoration_Arab_MarketCounter +1
+         minDeg =math.random (0,360)
+         maxDeg = minDeg + 120
+        for i=1, math.random(3,6) do
+            createUnitInCircleAroundUnit(unitID,"marketstand_arab", math.random(80,250), minDeg, maxDeg, 0.3, 30)
         end
     end
 
-    if housesNearby < 2 and GG.HouseDecoration_Arab_FarmDecoration < 6 then -- countryside
-    GG.HouseDecoration_Arab_FarmDecoration =  GG.HouseDecoration_Arab_FarmDecoration +1
+    if housesNearby > 3 and GG.InnerCity_internationalDecoration  < 6  then --and maRa()
+        internationalDecorationTypes = getInternationalCityDecorationTypes(UnitDefs)
+        decoration = randDict(internationalDecorationTypes)
+        ox, oz = randSign()* math.random (200,250),randSign()* math.random (100,150)
+        nx,ny,nz= Spring.GetUnitPosition(unitID)
+        GG.UnitsToSpawn:PushCreateUnit(decoration, nx + ox , 0, nz+oz, 1, gaiaTeamID)
+        GG.InnerCity_internationalDecoration = GG.InnerCity_internationalDecoration  + 1
+    end
+    
+    if housesNearby < 3 and GG.HouseDecoration_Arab_FarmDecoration < 10 and maRa()  then -- countryside
+    GG.HouseDecoration_Arab_FarmDecoration =  GG.HouseDecoration_Arab_FarmDecoration + 1
          minDeg =math.random (0,360)
          maxDeg = minDeg + 120
         for i=1, math.random(2,5) do
             if maRa()== true then
-             createUnitInCircleAroundUnit(unitID,"tree_arab0", math.random(200,500), minDeg, maxDeg)
+             createUnitInCircleAroundUnit(unitID,"tree_arab0", math.random(200,400), minDeg, maxDeg, 0.4, 40)
             else
-             createUnitInCircleAroundUnit(unitID,"tree_arab1", math.random(200,500), minDeg, maxDeg)
+             createUnitInCircleAroundUnit(unitID,"tree_arab1", math.random(200,400), minDeg, maxDeg, 0.4, 40)
             end
         end
     end
 end
 
-    function createUnitInCircleAroundUnit(id, typeToCreateDefID, distanceToMove,  minDeg, maxDeg)
-        px,py,pz = Spring.GetUnitPosition(id)
-        degs= math.random(minDeg, maxDeg)
-        rx,rz = Rotate(0,distanceToMove, math.rad(degs))
+function createUnitInCircleAroundUnit(id, typeToCreateDefID, distanceToMove,  minDeg, maxDeg, maxSlope, maxHeigthDiff)
+    px,py,pz = Spring.GetUnitPosition(id)
+    degs= math.random(minDeg, maxDeg)
+    maxHeigthDiff = maxHeigthDiff or 30
+    maxSlope = maxSlope or 0.5
+    rx,rz = Rotate(0,distanceToMove, math.rad(degs))
 
-        px, pz = px + rx, pz +rz
-        gh= Spring.GetGroundHeight(px,pz)
-        if gh > 10 and absDistance(gh,py)  < 30 then
-            GG.UnitsToSpawn:PushCreateUnit(typeToCreateDefID, px, gh, pz, math.random(0,4), gaiaTeamID)
-        end
+    px, pz = px + rx, pz +rz
+    gh= Spring.GetGroundHeight(px,pz)
+    if gh > 10 and absDistance(gh,py)  < maxHeigthDiff and select(4, Spring.GetGroundNormal(px,pz)) <  maxSlope then
+        GG.UnitsToSpawn:PushCreateUnit(typeToCreateDefID, px, gh, pz, math.random(0,4), gaiaTeamID)
     end
+end
 
 function getPieceGroupName(Deco)
     t = Spring.GetUnitPieceInfo(unitID, Deco)

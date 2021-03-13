@@ -7,6 +7,7 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 
 function script.Create()
+    Spring.SetUnitBlocking(unitID,false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Mirror"])
     Show(TablesOfPiecesGroups["Mirror"][math.random(1,
