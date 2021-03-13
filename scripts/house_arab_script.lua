@@ -346,9 +346,9 @@ function decorateCity()
          maxDeg = minDeg + 120
         for i=1, math.random(2,5) do
             if maRa()== true then
-             createUnitInCircleAroundUnit(unitID,"tree_arab0", math.random(200,400), minDeg, maxDeg, 0.4, 40)
+             createUnitInCircleAroundUnit(unitID,"tree_arab0", math.random(250,500), minDeg, maxDeg, 0.4, 40)
             else
-             createUnitInCircleAroundUnit(unitID,"tree_arab1", math.random(200,400), minDeg, maxDeg, 0.4, 40)
+             createUnitInCircleAroundUnit(unitID,"tree_arab1", math.random(250,500), minDeg, maxDeg, 0.4, 40)
             end
         end
     end
