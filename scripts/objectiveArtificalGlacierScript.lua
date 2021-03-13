@@ -25,9 +25,6 @@ function trackEnergyConsumption()
         Sleep(1000)
     end
 end
---[[assert(#houseTypeTable)
-assert(#houseTypeTable > 0)--]]
---assert(houseTypeTable[UnitDefNames["house_arab0"].id])
 
 function script.Create()
     Spring.SetUnitBlocking(unitID,false)
@@ -35,6 +32,8 @@ function script.Create()
 
     resetAll(unitID)
     Spin(piece("Logo"), z_axis, math.rad(42), 0)
+    hideT(TablesOfPiecesGroups["HyperLoop"])
+    hideT(Irrigation1)
 
     StartThread(deployPipes)
     StartThread(unfold)
@@ -136,7 +135,8 @@ function forInterval(start, stop, irrigation, nr)
         goodPlaceToFarm = outsideMap(irrigation) == false and count(HousesHousesHouses) == 0 and boolIsLevel == true
     end
 
-    if attempts == 10 then
+    if attempts >= 10 then
+        echo("objectiveArtificalGlacierScript.lua:: Over 10 Attempts")
         smallestDiff = math.huge
         rotations = math.random(1,360)
         for rot, val in pairs(mostLevel) do
