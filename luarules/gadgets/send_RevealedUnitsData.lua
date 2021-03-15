@@ -20,7 +20,7 @@ VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 function gadget:Initialize()
-
+    if not GG.RevealedLocations then GG.RevealedLocations = {} end
 end
 
 function updateLocationData()
