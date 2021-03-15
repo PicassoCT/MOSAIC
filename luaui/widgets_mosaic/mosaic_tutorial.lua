@@ -42,7 +42,6 @@ local Tutorial={}
 local teamID=spGetMyTeamID()
 local spPlaySoundFile=Spring.PlaySoundFile
 
-
 silentPlaceHolder=""
 
 TutorialInfoTable= {
@@ -208,6 +207,7 @@ end
 function validSide(side)
 	return side ~= nil and (side == "antagon" or side == "protagon")
 end
+
 startFrame = Spring.GetGameFrame()
 function widget:Initialize()	
 		playerID = Spring.GetMyPlayerID()
@@ -233,9 +233,7 @@ function widget:Initialize()
 		startFrame = Spring.GetGameFrame()
 		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
 		preProcesTutorialInfoTable()
-		PlayWelcome()
-		TutorialInfoTable.welcome.active = false
-
+		
 end
 
 
@@ -250,8 +248,10 @@ boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3
 
 
 function widget:GameFrame(t)
-	if boolTutorial== true and  t % 5 == 0 then
-		if (startFrame + (startFrame % 5) + 300) == t then
+	if boolTutorial == true and  t % 5 == 0 then
+		PlayWelcomeConditional()	
+		
+		if (startFrame + 250) == t then
 			if mySide == "antagon" then
 				spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
 			else
@@ -259,10 +259,7 @@ function widget:GameFrame(t)
 			end
 		end 
 
-
-
 		selectedUnits =Spring.GetSelectedUnits()
-
 		for num, id in pairs(selectedUnits) do
 		defID =Spring.GetUnitDefID(id)
 			if defID then
@@ -292,12 +289,15 @@ function PlaySoundAndMarkUnit(defID, exampleUnit)
 	end
 end
 
-function PlayWelcome()	
+function PlayWelcomeConditional()	
+	if TutorialInfoTable.welcome.active == true then 
 	mouseX,mouseY=Spring.GetMouseState()
 	types,tables=spTraceScreenRay(mouseX,mouseY)
 	if types == "ground" then
 		Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable.welcome.text, true)
 	end
 	spPlaySoundFile(TutorialInfoTable.welcome.speachGeneral,1)
+	TutorialInfoTable.welcome.active = false
+	end
 end
 
