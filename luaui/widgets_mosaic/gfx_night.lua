@@ -250,11 +250,6 @@ local function DrawSearchlights()
         heading = searchlightBuildingAngle * (0.5 + ((unitID * 137) % 256) / 512)
         leadDistance = unitRadius * 2
         radius = unitRadius
-      elseif (unitDef.type == "Bomber" or unitDef.type == "Fighter") then
-        local vx, _, vz = GetUnitVelocity(unitID)
-        heading = math.atan2(vz, vx)
-        leadDistance = searchlightAirLeadTime * math.sqrt(vx * vx + vz * vz) * 30
-        radius = unitRadius * 2
       elseif (unitDef.canFly) then
         heading = -GetUnitHeading(unitID) * RADIANS_PER_COBANGLE + math.pi / 2
         local range = math.max(unitDef.buildDistance, unitDef.maxWeaponRange)
