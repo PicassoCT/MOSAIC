@@ -432,7 +432,6 @@ function widget:DrawWorld()
         if not teamColorPlayers[teamID] then
           computeTeamColorOffsetByPlayer(teamID, 25)
         end
-      --  Spring.Echo("gui_RevealedGraph:DrawWorld.glColor")
 
       local dayTimeDependentColorSet = getDayTimeDependentColor(colorSet)
         glColor(dayTimeDependentColorSet[1])
@@ -462,7 +461,6 @@ function widget:DrawWorld()
           gl.LineWidth(1.0)
           gl.Color(1, 1, 1, 1)
         end
-
         
           --drawStripe from Location to Unit
           newPolygon(Loc.x, Loc.y, Loc.z)
@@ -483,17 +481,13 @@ function widget:DrawWorld()
   local alpha = 0.3
   glColor(1, 1, 1, alpha)
   glLineWidth(1.0)
-  -- Spring.Echo("gui_RevealedGraph:EndDrawWorld")
 end
 
 function widget:GameFrame(n)
-    if n % (150*3) == 0 then
-        Locations = addTestLocation()
+    if n % 15 == 0 then
         if GG.RevealedLocations then
-         Locations = GG.RevealedLocations
-         
+         Locations = GG.RevealedLocations    
         end
     end
-
 end
 
