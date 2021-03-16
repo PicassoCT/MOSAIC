@@ -10,6 +10,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 center = piece "anchor"
 infantry = piece "Infantrz"
+step = piece "step"
 
 -- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 -- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
@@ -26,6 +27,7 @@ function script.Create()
     Show(center)
     assert(infantry)
     Hide(infantry)
+    Hide(step)
     for i = 1, 3 do
         turnTableRand(TablesOfPiecesGroups["Rotator"], i, 360, -360, 0, true)
     end
@@ -59,6 +61,7 @@ function randShow(id)
 end
 operativeTypeTable = getOperativeTypeTable(Unitdefs)
 function fallingDown()
+    waitTillComplete(unitID)
     Sleep(1)
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end 
 
@@ -92,7 +95,7 @@ function fallingDown()
         return
     end
 
-    Spring.UnitAttach(unitID, passengerID, center)
+    Spring.UnitAttach(unitID, passengerID, step)
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
 
     while isPieceAboveGround(unitID, center, 15) == true do
