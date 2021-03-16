@@ -42,6 +42,7 @@ if (select == nil) then
 end
 
 assert(LUAUI_DIRNAME)
+local ignorelist = {count = 0, ignorees = {} } -- Ignore workaround for WG table.
 vfsInclude(LUAUI_DIRNAME.."keysym.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."utils.lua"    , nil, vfsGame)
 vfsInclude(LUAUI_DIRNAME.."system.lua"    , nil, vfsGame)
@@ -2027,7 +2028,7 @@ end
 
 function widgetHandler:MapDrawCmd(playerID, cmdType, px, py, pz, ...)
   local customkeys = select(10, Spring.GetPlayerInfo(playerID))
-  if ignorelist.ignorees[select(1,Spring.GetPlayerInfo(playerID))] or (customkeys and customkeys.muted) then
+  if (ignorelist.ignorees and ignorelist.ignorees[select(1,Spring.GetPlayerInfo(playerID))]) or (customkeys and customkeys.muted) then
     return true
   end
   
