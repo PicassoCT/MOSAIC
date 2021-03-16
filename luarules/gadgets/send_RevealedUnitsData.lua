@@ -25,15 +25,23 @@ end
 
 function updateLocationData()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
-    for unitID, LocationData in pairs(GG.RevealedLocations) do
+    for nr, LocationData in pairs(GG.RevealedLocations) do
+        boolAtLeastOneAlive = false
          for id, data in pairs(LocationData.revealedUnits) do
             if doesUnitExistAlive(id) == false then
-                GG.RevealedLocations[unitID].revealedUnits[id] = nil
+                GG.RevealedLocations[nr].revealedUnits[id] = nil
+            else
+                boolAtLeastOneAlive = true
             end
+         end
+         if not boolAtLeastOneAlive then
+            GG.RevealedLocations[nr] = nil
          end
     end
 end
 
 function gadget:GameFrame(frame)
-   updateLocationData()
+    if frame % 5 == 0 then
+        updateLocationData()
+    end
 end
