@@ -31,7 +31,7 @@ function bodyBuilder()
 end
 
 function  blinkerFountain(pieceName )
-	Spring.Echo("blinkerFountain started")
+--	Spring.Echo("blinkerFountain started")
 	Show(pieceName)
 	while true do
 			val = math.random(0,1)*180 
