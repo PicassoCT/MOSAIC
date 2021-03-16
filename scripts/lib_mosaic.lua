@@ -832,7 +832,9 @@ function getDecalMap(culture)
                 rural = {
                     "house_arab_decal8", "house_arab_decal7",
                     "house_arab_decal4", "house_arab_decal10",
-                    "house_arab_decal11", "house_arab_decal12"
+                    "house_arab_decal11", "house_arab_decal12",
+                     "house_arab_decal13",  "house_arab_decal14",
+                     "house_arab_decal15"
                 },
                 urban = {
                     "house_arab_decal1", "house_arab_decal2",
@@ -842,7 +844,6 @@ function getDecalMap(culture)
             }
         }
     end
-
 end
 
 function isPrayerTime()
@@ -1129,8 +1130,6 @@ function getParentOfUnit(teamID, unit)
     end
 end
 
-
-
 function registerRevealedUnitLocation(unitID)
     local Location = {}
     Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
@@ -1155,9 +1154,8 @@ function registerRevealedUnitLocation(unitID)
     Location.revealedUnits = revealedUnits
     
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
-    GG.RevealedLocations[unitID] = Location
+    GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
 end
-
 
 function giveParachutToUnit(id, x, y, z)
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
