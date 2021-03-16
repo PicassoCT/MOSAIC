@@ -36,6 +36,9 @@ local unitName = "innerCityDeco_inter2"
 	LeaveTracks = false,
 	useSmoothMesh = false,
 
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "cylinder",
+	collisionvolumescales = "10 25 10",
 	 
 	  customParams = {},
 	 sfxtypes = {

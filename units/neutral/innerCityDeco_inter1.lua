@@ -23,6 +23,9 @@ local unitName = "innerCityDeco_inter1"
 	FootprintX = 2,
 	FootprintZ = 2,
 
+	usepiececollisionvolumes = false,
+	collisionVolumeType = "cylinder",
+	collisionvolumescales = "10 25 10",
 
 	sightDistance = 80,
 
