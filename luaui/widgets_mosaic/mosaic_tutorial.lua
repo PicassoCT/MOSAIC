@@ -49,15 +49,19 @@ local function getDefID(name)
 	assert(true==false, name.." not found in UnitDefs")
 end
 
-local teamID=spGetMyTeamID()
-local silentPlaceHolder=""
+
+local mySide = "No valid side assigned"
+local silentPlaceHolder="Placeholder"
 local boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3 or boolDebug
 local OperativePropagatorDefID = getDefID("operativepropagator")
 local OperativeInvestigatorDefID = getDefID("operativeinvestigator")
+local raidIconDefID = getDefID("raidicon")
+
 
 local TutorialInfoTable= {
 	welcome = {
 		speach= "sounds/tutorial/welcomeGeneral.ogg",	
+		active = true,
 		-- Connection: Established
 		-- Channel: Secure: 
 		-- Auto-Information Censoring: Enabled 
@@ -67,6 +71,7 @@ local TutorialInfoTable= {
 	welcomeAntagon = {
 
 		speach= "sounds/tutorial/welcomeAntagon.ogg",
+		active = true,
 		-- Antagon:
 		-- Welcome to MOSAIC. Modular Ordanance Stealth Autonomous Insurgency Cells
 		-- You are our only hope in this battlefield of the mind.
@@ -80,6 +85,7 @@ local TutorialInfoTable= {
 	},
 	welcomeProtagon = {
 		speach= "sounds/tutorial/welcomeProtagon.ogg",
+		active = true,
 				--Protagon: 
 				-- Welcome to MOSAIC. Mobile Orbital Strategic AI Counter-Terrorism
 				-- Welcome to Protagon-agent Level 5 or higher. This Personalized Overview will accompany on your first mission in the region.
@@ -209,34 +215,37 @@ local TutorialInfoTable= {
 		text =  "\a|Raid\n Storm | Defend a Safehouse Minigame \n Click & Drag to place your units before round ends"
 	},
 }
+Spring.Echo("TutorialInfoTable:", TutorialInfoTable)
 
 local function PlayWelcomeConditional(t)	
-	if TutorialInfoTable.welcome.active then 
-
+	local TutoInfoTable = TutorialInfoTable
+	if TutoInfoTable.welcome.active == true then 
 		local mouseX,mouseY=Spring.GetMouseState()
 		local types,tables=spTraceScreenRay(mouseX,mouseY)
 		if types == "ground" then
-			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable.welcome.text, true)
+			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutoInfoTable.welcome.text, true)
 		end
 		spPlaySoundFile(TutorialInfoTable.welcome.speachGeneral,1)
-		TutorialInfoTable.welcome.active = false
-		return true, TutorialInfoTable.welcome.time
+		TutoInfoTable.welcome.active = false
+		TutorialInfoTable = TutoInfoTable
+		return true, TutoInfoTable.welcome.time
 	end
 
-
-	if mySide == "antagon" and TutorialInfoTable.welcomeAntagon.active then
-		spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
-		TutorialInfoTable.welcomeAntagon.active = false
-		return true, TutorialInfoTable.welcomeAntagon.time
+	if mySide == "antagon" and TutoInfoTable.welcomeAntagon.active == true then
+		spPlaySoundFile(TutoInfoTable.welcome.speachAntagon,1)
+		TutoInfoTable.welcomeAntagon.active = false
+		TutorialInfoTable = TutoInfoTable
+		return true, TutoInfoTable.welcomeAntagon.time
 	end	
 
-	if mySide == "protagon" and TutorialInfoTable.welcomeProtagon.active then
-		spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
-		TutorialInfoTable.welcomeAntagon.active = false
-		return true, TutorialInfoTable.welcomeProtagon.time
+	if mySide == "protagon" and TutoInfoTable.welcomeProtagon.active == true then
+		spPlaySoundFile(TutoInfoTable.welcome.speachAntagon,1)
+		TutoInfoTable.welcomeAntagon.active = false
+		TutorialInfoTable = TutoInfoTable
+		return true, TutoInfoTable.welcomeProtagon.time
 	end
-	
-	return false
+
+	return false, 0
 end
 
 local function PlaySoundAndMarkUnit(defID, exampleUnit)	
@@ -250,89 +259,95 @@ local function PlaySoundAndMarkUnit(defID, exampleUnit)
 end
 
 local function preProcesTutorialInfoTable()
-	for k,v in pairs(TutorialInfoTable) do
-		if not TutorialInfoTable[k].active then TutorialInfoTable[k].active = true end
-		if not TutorialInfoTable[k].Time then TutorialInfoTable[k].time = 4000 end
-		if not TutorialInfoTable[k].speach then TutorialInfoTable[k].speach = silentPlaceHolder end
-
+	local TutInfT = TutorialInfoTable
+	for k,v in ipairs(TutInfT) do
+		Spring.Echo("Preprocessing "..k.." -> "..v)
+		if  TutInfT[k].active == nil then TutInfT[k].active =  true end
+		if not TutInfT[k].time then TutInfT[k].time = 4000 end
+		if not TutInfT[k].speach then TutInfT[k].speach = silentPlaceHolder end
 	end
+
+return TutInfT
 end
 
-local function validSide(side)
-	return side ~= nil and (side == "antagon" or side == "protagon")
-end
+TutorialInfoTable =	preProcesTutorialInfoTable()
 
+local spGetTeamUnitsCounts = Spring.GetTeamUnitsCounts
+local spGetPlayerInfo = Spring.GetPlayerInfo
+local spGetTeamInfo = Spring.GetTeamInfo
+local spGetMyPlayerID = Spring.GetMyPlayerID
 local startFrame = Spring.GetGameFrame()
 
 function widget:Initialize()	
-		local playerID = Spring.GetMyPlayerID()
-		local tname,_, tspec, teamID, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
-		local mySide     = select(5, Spring.GetTeamInfo(teamID))
+		Spring.Echo("mosaic_tutorial:StartInitialize")
+		local myTeamID= spGetMyTeamID()
+		local playerID = spGetMyPlayerID()
+		local tname,_, tspec, myTeamID, tallyteam, tping, tcpu, tcountry, trank = spGetPlayerInfo(playerID)
+		mySide     = select(5, spGetTeamInfo(myTeamID)) 
 
-		if not validSide(mySide) then
-			allUnitsOfTeam = Spring.GetTeamUnitsCounts(teamID)
+		if (mySide ~= nil and (mySide == "antagon" or mySide == "protagon")) == false then
 
-			if allUnitsOfTeam[OperativePropagatorDefID] > 0 then
+			if Spring.GetTeamUnitsByDefs(myTeamID, OperativePropagatorDefID) then
 				mySide = "antagon"
 			end
-
-			if allUnitsOfTeam[OperativeInvestigatorDefID] > 0 then
+			if Spring.GetTeamUnitsByDefs(myTeamID, OperativeInvestigatorDefID) then
 				mySide = "protagon"
 			end
 
-			if not validSide(mySide) then
+			if  (mySide ~= nil and (mySide == "antagon" or mySide == "protagon"))== false  then
 				mySide = "antagon"
 			end
 		end
-
+		TutorialInfoTable =	preProcesTutorialInfoTable()
 		startFrame = Spring.GetGameFrame()
 		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
-		preProcesTutorialInfoTable()
-		
 end
 
 
 function widget:Shutdown()
 	Spring.Echo("Deactivated Tutorial - you can reactivate via the Widget-Manager (Press F11)")
-	--set Tutorial once activated Variable
-	
 end
 
 local function playUnitExplaination()
-	selectedUnits = Spring.GetSelectedUnits()
+	local selectedUnits = Spring.GetSelectedUnits()
+	local TutoInfoTable = TutorialInfoTable
 		for num, id in pairs(selectedUnits) do
-		defID =Spring.GetUnitDefID(id)
+		local defID =spGetUnitDefID(id)
 			if defID then
-				if TutorialInfoTable[defID] and TutorialInfoTable[defID].active  then		
+				if TutoInfoTable[defID] and TutoInfoTable[defID].active == true then		
 					PlaySoundAndMarkUnit(defID, id)
-					TutorialInfoTable[defID].active = false
+					TutoInfoTable[defID].active = false
+					TutorialInfoTable = TutoInfoTable
 					return true, TutorialInfoTable[defID].time
 				end
 			end	
 		end
-		return false
+		return false, 0
 	end
-
 
 local OnAirTillTimeFrame = 0
 local boolOnAir = false
 
 function widget:GameFrame(t)
-local timeOnAirMS = 0
-	if t > OnAirTillTimeFrame then
+	local timeOnAirMS = 0
+	if t > startFrame + 90 and t > OnAirTillTimeFrame then
 		boolOnAir = false 
 
-	if boolTutorial == true and  t % 5 == 0   then
-		 boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
+		if boolTutorial == true and  t % 10 == 0   then
 
-		if boolOnAir == true then
-			OnAirTillTimeFrame = t + (timeOnAirMS * 0.03)
-		end
+			 boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
+			if boolOnAir == true then
+				OnAirTillTimeFrame = t + (timeOnAirMS /1000 *30)
+				return
+			end
 
-	if not boolOnAir then 
-		boolOnAir, timeOnAirMS = playUnitExplaination()
-		if boolOnAir == true then
-			OnAirTillTimeFrame = t + (timeOnAirMS * 0.03)
+			if  boolOnAir == false then 
+				boolOnAir, timeOnAirMS = playUnitExplaination()
+				if boolOnAir == true then
+					OnAirTillTimeFrame = t + (timeOnAirMS  /1000 *30)
+					return
+				end
+			end
 		end
 	end
 end
@@ -340,8 +355,8 @@ end
 function widget:UnitCreated(unitID, unitDefID)
 	if unitDefID == raidIconDefID and TutorialInfoTable[raidIconDefID].active == true then
 		PlaySoundAndMarkUnit(unitDefID, unitID)
-		boolOnAir == true 
-		OnAirTillTimeFrame = t + (TutorialInfoTable[raidIconDefID].time * 0.03)
+		boolOnAir = true 
+		OnAirTillTimeFrame = t + (TutorialInfoTable[raidIconDefID].time  /1000 *30)
 		TutorialInfoTable[raidIconDefID].active = false
 	end
 end
