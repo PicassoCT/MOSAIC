@@ -1,3 +1,4 @@
+local boolDebug = true
 
 function widget:GetInfo()
 	return {
@@ -12,7 +13,6 @@ function widget:GetInfo()
 	}
 end
 
---Text
 
 
 
@@ -34,35 +34,39 @@ local spTraceScreenRay = Spring.TraceScreenRay
 local spGetSelUnits = Spring.GetSelectedUnitsSorted
 local spSelUnitArray = Spring.SelectUnitArray
 local spGetUnitDefID = Spring.GetUnitDefID
+local spPlaySoundFile=Spring.PlaySoundFile
+local boolOnAir = false
 
-local Tutorial={}
 ---------------------------------------------------------------------------
 -- Code
 ---------------------------------------------------------------------------
+local function getDefID(name)
+	   for udid, ud in pairs(UnitDefs) do
+		   	if ud.name == name then
+		   		return udid
+		   	end
+		end
+	assert(true==false, name.." not found in UnitDefs")
+end
+
 local teamID=spGetMyTeamID()
-local spPlaySoundFile=Spring.PlaySoundFile
+local silentPlaceHolder=""
+local boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3 or boolDebug
+local OperativePropagatorDefID = getDefID("operativepropagator")
+local OperativeInvestigatorDefID = getDefID("operativeinvestigator")
 
-silentPlaceHolder=""
-
-TutorialInfoTable= {
+local TutorialInfoTable= {
 	welcome = {
-speachGeneral= "sounds/tutorial/welcomeGeneral.ogg",	
+		speach= "sounds/tutorial/welcomeGeneral.ogg",	
 		-- Connection: Established
 		-- Channel: Secure: 
 		-- Auto-Information Censoring: Enabled 
 		-- Location: LOCATION
+		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n They can be deactivated in the Widgetmanager (Press F11)",
+	},
+	welcomeAntagon = {
 
-speachProtagon= "sounds/tutorial/welcomeProtagon.ogg",
-		--Protagon: 
-		-- Welcome to MOSAIC. Mobile Orbital Strategic AI Counter-Terrorism
-		-- Welcome to Protagon-agent Level 5 or higher. This Personalized Overview will accompany on your first mission in the region.
-		-- SigInt intercepted data, indicating with 95 % certainty a infilitration in this city.
-		-- Local Sec has detected unusually high number of rogue cells with 72 % certainty
-		-- Threat Classification is above discrete with 69 % certainty.
-		-- Nobody wastes this level of awareness for just another dirty bomb or rogue nuke.
-		--So whats left is dark, civilization ending stuff.
-		--Time to save the day - and if we can this city.
-speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
+		speach= "sounds/tutorial/welcomeAntagon.ogg",
 		-- Antagon:
 		-- Welcome to MOSAIC. Modular Ordanance Stealth Autonomous Insurgency Cells
 		-- You are our only hope in this battlefield of the mind.
@@ -73,12 +77,22 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		-- We are going to make them pay, we are going to put a end to this.
 		-- This will be our final stand, and our name, the last thing on theire lips.
 		-- For to die free, is better then having immortality in slavery.
-
-		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n They can be deactivated in the Widgetmanager (Press F11)"
-
 	},
+	welcomeProtagon = {
+		speach= "sounds/tutorial/welcomeProtagon.ogg",
+				--Protagon: 
+				-- Welcome to MOSAIC. Mobile Orbital Strategic AI Counter-Terrorism
+				-- Welcome to Protagon-agent Level 5 or higher. This Personalized Overview will accompany on your first mission in the region.
+				-- SigInt intercepted data, indicating with 95 % certainty a infilitration in this city.
+				-- Local Sec has detected unusually high number of rogue cells with 72 % certainty
+				-- Threat Classification is above discrete with 69 % certainty.
+				-- Nobody wastes this level of awareness for just another dirty bomb or rogue nuke.
+				--So whats left is dark, civilization ending stuff.
+				--Time to save the day - and if we can this city.
+
+		},
 	----BuildUnits
-	[UnitDefNames["operativepropagator"].id] = 
+	[OperativePropagatorDefID] = 
 	{
 		speach= "sounds/tutorial/operativepropagator.ogg",
 		-- This operative, is our way to take hold in this city, form cells and forward the CAUSE. 
@@ -89,7 +103,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Propaganda Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
-	[UnitDefNames["antagonsafehouse"].id] = 
+	[getDefID("antagonsafehouse")] = 
 	{	--We established our first cell in this city. Well hidden, dont leed them too it.
 		--In this cell we can train new members, and if needed we can upgrade it to anything needed.
 		--A safehouse can even become the location were we perfect the CAUSE.
@@ -100,7 +114,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
 	},		
-	[UnitDefNames["operativeinvestigator"].id] = 
+	[OperativeInvestigatorDefID] = 
 	{
 		-- This is our Investigation Operative in this theater
 		-- He will do whatever it takes, to track the Cells down. We are the defensive team. We only need to fail once. 
@@ -113,7 +127,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Investigator Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
-	[UnitDefNames["protagonsafehouse"].id] = 
+	[getDefID("protagonsafehouse")] = 
 	{	--Home is were the safehouse is
 		--No more glassy skyscrapers, no more centralization, no more banquets, glamour and partys. This is is all that remains.
 		--No more lavish monetary support from outside, this game is played in nearly every place of the planet.
@@ -126,7 +140,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
 	},	
-	[UnitDefNames["propagandaserver"].id] = 
+	[getDefID("propagandaserver")] = 
 	{	--This is a propagandaserverfarm
 		--It helps to sway public opinion towards us, it also allows us to mine cryptocurrency and buy material.
 		--Any propagandaserver amplifys what we gain or loose.
@@ -136,7 +150,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Propagandaserver \n Creates money & material \n by swaying public opinion"
 	},
-	[UnitDefNames["assembly"].id] = 
+	[getDefID("assembly")] = 
 	{	--A assembly is a factory creating automated warmachines
 		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
 		--It can easily be lost through those though.
@@ -145,7 +159,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
 	},
-	[UnitDefNames["nimrod"].id] = 
+	[getDefID("nimrod")] = 
 	{	-- The nimrod is a cheap to build, reliable enough railgun
 		-- Used to launch low-weight microsats into super-fast orbits.
 		-- Can be used in desperation to fire on other parts of the city.
@@ -154,7 +168,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Nimrod \n Orbital Railgun and satellite factory"
 	},
-	[UnitDefNames["operativeasset"].id] = 
+	[getDefID("operativeasset")] = 
 	{	--A well trained assasin
 		--To deal out death, not indiscriminate, but like a surgeon, that takes somebody trained like a surgeon.
 
@@ -163,7 +177,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		Time = 3000,
 		text =  "\a|Operative Asset \n Trained Assasin & Stealh operator"
 	},
-	[UnitDefNames["civilianagent"].id] = 
+	[getDefID("civilianagent")] = 
 	{	--A civilian recruited for our side
 		--Activate him to turn this unit into a armed milita. More useful as observer then military asset though.
 		--Can reveal his recruiter on capture
@@ -172,7 +186,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		-- 
 		Time = 3000,
 		text =  "\a|Civilian Agent \n A recruited civilian spy"
-	},	[UnitDefNames["launcher"].id] = 
+	},[getDefID("launcher")] = 
 	{	--Rejoice, victory is at hand brothers & sisters
 		--They never expected this, that there toys and devices could turn on them 
 		--This is a world, were the right small push to a peeble, can cause an avalanch that topples empires.
@@ -183,7 +197,7 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 		-- 
 		Time = 3000,
 		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
-	},	[UnitDefNames["raidicon"].id] = 
+	},[getDefID("raidicon")] = 
 	{	--This is the Raid Interface
 		--Both sides place there teams, the round ends and who aims at who, decides who is stills standing.
 		--Capturing the objective gives your team another member in the next round
@@ -196,32 +210,73 @@ speachAntagon= "sounds/tutorial/welcomeAntagon.ogg",
 	},
 }
 
-function preProcesTutorialInfoTable()
-	for k,v in pairs(TutorialInfoTable) do
-		if not TutorialInfoTable[k].active then TutorialInfoTable[k].active = true end
-		if not TutorialInfoTable[k].Time then TutorialInfoTable[k].Time = 100 end
-		if not TutorialInfoTable[k].speach then TutorialInfoTable[k].speach = silentPlaceHolder end
+local function PlayWelcomeConditional(t)	
+	if TutorialInfoTable.welcome.active then 
+
+		local mouseX,mouseY=Spring.GetMouseState()
+		local types,tables=spTraceScreenRay(mouseX,mouseY)
+		if types == "ground" then
+			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable.welcome.text, true)
+		end
+		spPlaySoundFile(TutorialInfoTable.welcome.speachGeneral,1)
+		TutorialInfoTable.welcome.active = false
+		return true, TutorialInfoTable.welcome.time
+	end
+
+
+	if mySide == "antagon" and TutorialInfoTable.welcomeAntagon.active then
+		spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
+		TutorialInfoTable.welcomeAntagon.active = false
+		return true, TutorialInfoTable.welcomeAntagon.time
+	end	
+
+	if mySide == "protagon" and TutorialInfoTable.welcomeProtagon.active then
+		spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
+		TutorialInfoTable.welcomeAntagon.active = false
+		return true, TutorialInfoTable.welcomeProtagon.time
+	end
+	
+	return false
+end
+
+local function PlaySoundAndMarkUnit(defID, exampleUnit)	
+	x,y,z=spGetUnitPos(exampleUnit)
+	if x then
+		Spring.MarkerAddPoint( x, y, z, TutorialInfoTable[defID].text, true)
+		if TutorialInfoTable[defID].speach then
+			Spring.PlaySoundFile(TutorialInfoTable[defID].speach,1)
+		end
 	end
 end
 
-function validSide(side)
+local function preProcesTutorialInfoTable()
+	for k,v in pairs(TutorialInfoTable) do
+		if not TutorialInfoTable[k].active then TutorialInfoTable[k].active = true end
+		if not TutorialInfoTable[k].Time then TutorialInfoTable[k].time = 4000 end
+		if not TutorialInfoTable[k].speach then TutorialInfoTable[k].speach = silentPlaceHolder end
+
+	end
+end
+
+local function validSide(side)
 	return side ~= nil and (side == "antagon" or side == "protagon")
 end
 
-startFrame = Spring.GetGameFrame()
+local startFrame = Spring.GetGameFrame()
+
 function widget:Initialize()	
-		playerID = Spring.GetMyPlayerID()
-		tname,_, tspec, teamID, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
-		mySide     = select(5, Spring.GetTeamInfo(teamID))
+		local playerID = Spring.GetMyPlayerID()
+		local tname,_, tspec, teamID, tallyteam, tping, tcpu, tcountry, trank = Spring.GetPlayerInfo(playerID)
+		local mySide     = select(5, Spring.GetTeamInfo(teamID))
 
 		if not validSide(mySide) then
-			allUnitsOfTeam = Spring.GetTeamUnitsSorted(teamID)
+			allUnitsOfTeam = Spring.GetTeamUnitsCounts(teamID)
 
-			if #allUnitsOfTeam[UnitDefNames["operativepropagator"].id] > 0 then
+			if allUnitsOfTeam[OperativePropagatorDefID] > 0 then
 				mySide = "antagon"
 			end
 
-			if #allUnitsOfTeam[UnitDefNames["operativeinvestigator"].id] > 0 then
+			if allUnitsOfTeam[OperativeInvestigatorDefID] > 0 then
 				mySide = "protagon"
 			end
 
@@ -243,31 +298,41 @@ function widget:Shutdown()
 	
 end
 
-boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3
-
-
-
-function widget:GameFrame(t)
-	if boolTutorial == true and  t % 5 == 0 then
-		PlayWelcomeConditional()	
-		
-		if (startFrame + 250) == t then
-			if mySide == "antagon" then
-				spPlaySoundFile(TutorialInfoTable.welcome.speachAntagon,1)
-			else
-				spPlaySoundFile(TutorialInfoTable.welcome.speachProtagon,1)
-			end
-		end 
-
-		selectedUnits =Spring.GetSelectedUnits()
+local function playUnitExplaination()
+	selectedUnits = Spring.GetSelectedUnits()
 		for num, id in pairs(selectedUnits) do
 		defID =Spring.GetUnitDefID(id)
 			if defID then
-				if TutorialInfoTable[defID] and TutorialInfoTable[defID].active and TutorialInfoTable[defID].active == true then		
+				if TutorialInfoTable[defID] and TutorialInfoTable[defID].active  then		
 					PlaySoundAndMarkUnit(defID, id)
 					TutorialInfoTable[defID].active = false
+					return true, TutorialInfoTable[defID].time
 				end
 			end	
+		end
+		return false
+	end
+
+
+local OnAirTillTimeFrame = 0
+local boolOnAir = false
+
+function widget:GameFrame(t)
+local timeOnAirMS = 0
+	if t > OnAirTillTimeFrame then
+		boolOnAir = false 
+
+	if boolTutorial == true and  t % 5 == 0   then
+		 boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
+
+		if boolOnAir == true then
+			OnAirTillTimeFrame = t + (timeOnAirMS * 0.03)
+		end
+
+	if not boolOnAir then 
+		boolOnAir, timeOnAirMS = playUnitExplaination()
+		if boolOnAir == true then
+			OnAirTillTimeFrame = t + (timeOnAirMS * 0.03)
 		end
 	end
 end
@@ -275,29 +340,9 @@ end
 function widget:UnitCreated(unitID, unitDefID)
 	if unitDefID == raidIconDefID and TutorialInfoTable[raidIconDefID].active == true then
 		PlaySoundAndMarkUnit(unitDefID, unitID)
-	end
-end
-
-
-function PlaySoundAndMarkUnit(defID, exampleUnit)	
-	x,y,z=spGetUnitPos(exampleUnit)
-	if x then
-		Spring.MarkerAddPoint( x, y, z, TutorialInfoTable[defID].text, true)
-		if TutorialInfoTable[defID].speach then
-			Spring.PlaySoundFile(TutorialInfoTable[defID].speach,1)
-		end
-	end
-end
-
-function PlayWelcomeConditional()	
-	if TutorialInfoTable.welcome.active == true then 
-	mouseX,mouseY=Spring.GetMouseState()
-	types,tables=spTraceScreenRay(mouseX,mouseY)
-	if types == "ground" then
-		Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable.welcome.text, true)
-	end
-	spPlaySoundFile(TutorialInfoTable.welcome.speachGeneral,1)
-	TutorialInfoTable.welcome.active = false
+		boolOnAir == true 
+		OnAirTillTimeFrame = t + (TutorialInfoTable[raidIconDefID].time * 0.03)
+		TutorialInfoTable[raidIconDefID].active = false
 	end
 end
 
