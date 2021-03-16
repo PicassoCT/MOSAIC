@@ -33,7 +33,7 @@ function script.Create()
     resetAll(unitID)
     Spin(piece("Logo"), z_axis, math.rad(42), 0)
     hideT(TablesOfPiecesGroups["HyperLoop"])
-    hideT(Irrigation1)
+    Hide(Irrigation1)
 
     StartThread(deployPipes)
     StartThread(unfold)
