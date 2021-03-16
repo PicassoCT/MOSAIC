@@ -2517,8 +2517,9 @@ end
 -- > Hides a PiecesTable, 
 function hideT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then return end
-    boolDebugActive =
-        (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
+    assert( type(l_tableName) == "table" , UnitDefs[Spring.GetUnitDefID(unitID)].name.." has invalid hideT")
+    boolDebugActive =  (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
+
 
     if l_lowLimit and l_upLimit then
         for i = l_upLimit, l_lowLimit, -1 do
@@ -2830,7 +2831,7 @@ function randDict(Dict)
 
     countDict = count(Dict)
     randElement = 1
-    if countDict > 1 then randElement = math.random(1, count(Dict)) end
+    if countDict > 1 then randElement = math.random(1, countDict) end
 
     index = 1
     anyKey = 1
