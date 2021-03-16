@@ -69,6 +69,7 @@ function script.Create()
     hideT(Wall)
     hideT(OutPost)
     hideT(DoorPost)
+    hideT(Door)
 
     StartThread(setAffiliatedHouseInvisible)
     StartThread(shoveAllNonCombatantsOut)
