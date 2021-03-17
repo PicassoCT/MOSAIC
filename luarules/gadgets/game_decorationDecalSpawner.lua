@@ -17,17 +17,19 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_Animation.lua")
     VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
-    GameConfig = getGameConfig()
-    Type_BaseTypeMap = getUnitType_BaseTypeMap(UnitDefs,
+    local GameConfig = getGameConfig()
+    local Type_BaseTypeMap = getUnitType_BaseTypeMap(UnitDefs,
                                                GameConfig.instance.culture)
 
-    defIDDecalNameMap = getDecalMap(GameConfig.instance.culture)
-    gaiaTeamID = Spring.GetGaiaTeamID()
-    houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+    local defIDDecalNameMap = getDecalMap(GameConfig.instance.culture)
+    local gaiaTeamID = Spring.GetGaiaTeamID()
+    local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                               "house", UnitDefs)
+    local objectiveTypeTable = getObjectiveTypes(UnitDefs)
+
     function gadget:GameFrame(n) frameDelayedAction(n) end
 
-    SpawnedUnits = {}
+    local SpawnedUnits = {}
 
     function frameDelayedAction(frame)
         if SpawnedUnits[frame] then
@@ -39,6 +41,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 local teamID = SpawnedUnits[frame][i].teamID
                 local baseType = Type_BaseTypeMap[UnitDefs[unitDefID].name]
 
+                if objectiveTypeTable[unitDefID] then
+                    baseType = "house"
+                end
+
                 if baseType and defIDDecalNameMap[baseType] and teamID ==
                     gaiaTeamID then
 
@@ -46,8 +52,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     T = getAllNearUnit(unitID, 725)
                     T = process(T, function(id)
+                        defID = Spring.GetUnitDefID(id)
                         if Spring.GetUnitTeam(id) == gaiaTeamID and
-                            houseTypeTable[Spring.GetUnitDefID(id)] then
+                            houseTypeTable[defID] or objectiveTypeTable[defID] then
                             return id
                         end
                     end)
