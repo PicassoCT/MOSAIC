@@ -66,6 +66,7 @@ local TutorialInfoTable= {
 		-- Channel: Secure: 
 		-- Auto-Information Censoring: Enabled 
 		-- Location: LOCATION
+		time = 10000,
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n They can be deactivated in the Widgetmanager (Press F11)",
 	},
 	welcomeAntagon = {
@@ -82,6 +83,7 @@ local TutorialInfoTable= {
 		-- We are going to make them pay, we are going to put a end to this.
 		-- This will be our final stand, and our name, the last thing on theire lips.
 		-- For to die free, is better then having immortality in slavery.
+			time = 9000,
 	},
 	welcomeProtagon = {
 		speach= "sounds/tutorial/welcomeProtagon.ogg",
@@ -95,6 +97,7 @@ local TutorialInfoTable= {
 				-- Nobody wastes this level of awareness for just another dirty bomb or rogue nuke.
 				--So whats left is dark, civilization ending stuff.
 				--Time to save the day - and if we can this city.
+			time = 9000,
 
 		},
 	----BuildUnits
@@ -106,7 +109,7 @@ local TutorialInfoTable= {
 		-- S/he can interrogate civilans suspected of aiding the enemy.
 		-- S/he can raid houses suspected of being safehouses. 
 		-- Build a safehouse inside the city. Upon creation, you will recieve further instructions.
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Propaganda Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
 	[getDefID("antagonsafehouse")] = 
@@ -117,7 +120,7 @@ local TutorialInfoTable= {
 		--Train another operative and then build a propagandasever. It will help us get more funds, more supporters.
 		speach= "sounds/tutorial/antagonsafehouse.ogg",
 		-- 
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
 	},		
 	[OperativeInvestigatorDefID] = 
@@ -130,7 +133,7 @@ local TutorialInfoTable= {
 		-- S/he can raid houses suspected of being safehouses. 
 		-- Build a safehouse inside the city. Upon creation, you will recieve further instructions.
 		speach= "sounds/tutorial/operativeinvestigator.ogg",
-		Time = 3000,
+		time = 5000,
 		text =  "\a|Investigator Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
 	[getDefID("protagonsafehouse")] = 
@@ -143,7 +146,7 @@ local TutorialInfoTable= {
 		--A word of warning: If the enemy ever raids a safehouse, all personal trained within will be revealed
 		speach= "sounds/tutorial/protagonsafehouse.ogg",
 		-- 
-		Time = 3000,
+		time = 5000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
 	},	
 	[getDefID("propagandaserver")] = 
@@ -153,7 +156,7 @@ local TutorialInfoTable= {
 		--If the enemy kills somebody innocent or raids the wrong house, we reap what they saw.
 		speach= "sounds/tutorial/propagandaserver.ogg",
 		-- 
-		Time = 3000,
+		time = 5000,
 		text =  "\a|Propagandaserver \n Creates money & material \n by swaying public opinion"
 	},
 	[getDefID("assembly")] = 
@@ -162,7 +165,7 @@ local TutorialInfoTable= {
 		--It can easily be lost through those though.
 		speach= "sounds/tutorial/assembly.ogg",
 		-- 
-		Time = 3000,
+		time = 5000,
 		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
 	},
 	[getDefID("nimrod")] = 
@@ -171,7 +174,7 @@ local TutorialInfoTable= {
 		-- Can be used in desperation to fire on other parts of the city.
 		speach= "sounds/tutorial/nimrod.ogg",
 		-- 
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Nimrod \n Orbital Railgun and satellite factory"
 	},
 	[getDefID("operativeasset")] = 
@@ -180,7 +183,7 @@ local TutorialInfoTable= {
 
 		speach= "sounds/tutorial/operativeasset.ogg",
 		-- 
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Operative Asset \n Trained Assasin & Stealh operator"
 	},
 	[getDefID("civilianagent")] = 
@@ -190,7 +193,7 @@ local TutorialInfoTable= {
 
 		speach= "sounds/tutorial/civilianagent.ogg",
 		-- 
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Civilian Agent \n A recruited civilian spy"
 	},[getDefID("launcher")] = 
 	{	--Rejoice, victory is at hand brothers & sisters
@@ -201,7 +204,7 @@ local TutorialInfoTable= {
 
 		speach= "sounds/tutorial/launcher.ogg",
 		-- 
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
 	},[getDefID("raidicon")] = 
 	{	--This is the Raid Interface
@@ -211,38 +214,36 @@ local TutorialInfoTable= {
 
 		speach= "sounds/tutorial/raidIcon.ogg",
 		-- 
-		Time = 3000,
+		time = 3000,
 		text =  "\a|Raid\n Storm | Defend a Safehouse Minigame \n Click & Drag to place your units before round ends"
 	},
 }
 Spring.Echo("TutorialInfoTable:", TutorialInfoTable)
 
 local function PlayWelcomeConditional(t)	
-	local TutoInfoTable = TutorialInfoTable
-	if TutoInfoTable.welcome.active == true then 
+
+	if TutorialInfoTable.welcome.active == true then 
 		local mouseX,mouseY=Spring.GetMouseState()
 		local types,tables=spTraceScreenRay(mouseX,mouseY)
 		if types == "ground" then
-			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutoInfoTable.welcome.text, true)
+			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable.welcome.text, true)
 		end
-		spPlaySoundFile(TutorialInfoTable.welcome.speachGeneral,1)
-		TutoInfoTable.welcome.active = false
-		TutorialInfoTable = TutoInfoTable
-		return true, TutoInfoTable.welcome.time
+		spPlaySoundFile(TutorialInfoTable.welcome.speach,1)
+		TutorialInfoTable.welcome.active = false
+		return true, TutorialInfoTable.welcome.time
 	end
 
-	if mySide == "antagon" and TutoInfoTable.welcomeAntagon.active == true then
-		spPlaySoundFile(TutoInfoTable.welcome.speachAntagon,1)
-		TutoInfoTable.welcomeAntagon.active = false
-		TutorialInfoTable = TutoInfoTable
-		return true, TutoInfoTable.welcomeAntagon.time
+	if mySide == "antagon" and TutorialInfoTable.welcomeAntagon.active == true then
+		spPlaySoundFile(TutorialInfoTable.welcomeAntagon.speach,1)
+		TutorialInfoTable.welcomeAntagon.active = false
+
+		return true, TutorialInfoTable.welcomeAntagon.time
 	end	
 
-	if mySide == "protagon" and TutoInfoTable.welcomeProtagon.active == true then
-		spPlaySoundFile(TutoInfoTable.welcome.speachAntagon,1)
-		TutoInfoTable.welcomeAntagon.active = false
-		TutorialInfoTable = TutoInfoTable
-		return true, TutoInfoTable.welcomeProtagon.time
+	if mySide == "protagon" and TutorialInfoTable.welcomeProtagon.active == true then
+		spPlaySoundFile(TutorialInfoTable.welcomeProtagon.speach,1)
+		TutorialInfoTable.welcomeProtagon.active = false
+		return true, TutorialInfoTable.welcomeProtagon.time
 	end
 
 	return false, 0
@@ -332,21 +333,14 @@ function widget:GameFrame(t)
 	local timeOnAirMS = 0
 	if t > startFrame + 90 and t > OnAirTillTimeFrame then
 		boolOnAir = false 
-
 		if boolTutorial == true and  t % 10 == 0   then
 
-			 boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
-			if boolOnAir == true then
-				OnAirTillTimeFrame = t + (timeOnAirMS /1000 *30)
-				return
-			end
-
-			if  boolOnAir == false then 
+			boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
+			if boolOnAir == false then 
 				boolOnAir, timeOnAirMS = playUnitExplaination()
-				if boolOnAir == true then
-					OnAirTillTimeFrame = t + (timeOnAirMS  /1000 *30)
-					return
-				end
+			end
+			if boolOnAir == true then
+				OnAirTillTimeFrame = math.max(OnAirTillTimeFrame, t) + (math.ceil(timeOnAirMS  /1000) *30)
 			end
 		end
 	end
@@ -356,7 +350,7 @@ function widget:UnitCreated(unitID, unitDefID)
 	if unitDefID == raidIconDefID and TutorialInfoTable[raidIconDefID].active == true then
 		PlaySoundAndMarkUnit(unitDefID, unitID)
 		boolOnAir = true 
-		OnAirTillTimeFrame = t + (TutorialInfoTable[raidIconDefID].time  /1000 *30)
+		OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
 		TutorialInfoTable[raidIconDefID].active = false
 	end
 end

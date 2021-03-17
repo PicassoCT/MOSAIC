@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.718"
+            Version = "Alpha: 0.719"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
@@ -833,7 +833,7 @@ function getDecalMap(culture)
                     "house_arab_decal8", "house_arab_decal7",
                     "house_arab_decal4", "house_arab_decal10",
                     "house_arab_decal11", "house_arab_decal12",
-                     "house_arab_decal13",  "house_arab_decal14",
+                     "house_arab_decal13", "house_arab_decal14",
                      "house_arab_decal15"
                 },
                 urban = {
