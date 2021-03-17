@@ -9,18 +9,13 @@ function widget:GetInfo()
 		date = "Jul 18, 2009",
 		license = "GNU GPL, v2 or later",
 		layer = 3,
-		enabled = (Spring.GetConfigInt("mosaic_startupcounter",1)	< 3) or true-- loaded by default?
+		enabled = (Spring.GetConfigInt("mosaic_startupcounter",1) < 3 ) or true-- loaded by default?
 	}
 end
-
-
-
-
 
 ---------------------------------------------------------------------------
 -- Speedups
 ---------------------------------------------------------------------------
-
 
 local spGetMouseState = Spring.GetMouseState
 local spGetActiveCommand = Spring.GetActiveCommand
@@ -31,31 +26,31 @@ local spGetMyTeamID = Spring.GetMyTeamID
 local spGetVisibleUnits = Spring.GetVisibleUnits
 local spGetUnitPos = Spring.GetUnitPosition
 local spTraceScreenRay = Spring.TraceScreenRay
+local spGetSelectedUnits = Spring.GetSelectedUnits
 local spGetSelUnits = Spring.GetSelectedUnitsSorted
 local spSelUnitArray = Spring.SelectUnitArray
 local spGetUnitDefID = Spring.GetUnitDefID
 local spPlaySoundFile=Spring.PlaySoundFile
-local boolOnAir = false
 
----------------------------------------------------------------------------
--- Code
----------------------------------------------------------------------------
 local function getDefID(name)
 	   for udid, ud in pairs(UnitDefs) do
 		   	if ud.name == name then
 		   		return udid
 		   	end
 		end
-	assert(true==false, name.." not found in UnitDefs")
+	Spring.Echo("tutorial:"..name.." not found in UnitDefs")
 end
-
-
-local mySide = "No valid side assigned"
+---------------------------------------------------------------------------
+-- Data
+---------------------------------------------------------------------------
+local boolOnAir = false
 local silentPlaceHolder="Placeholder"
 local boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3 or boolDebug
 local OperativePropagatorDefID = getDefID("operativepropagator")
 local OperativeInvestigatorDefID = getDefID("operativeinvestigator")
 local raidIconDefID = getDefID("raidicon")
+local mySide = "No valid side assigned"
+local operativeAssetDefID = getDefID("operativeasset")
 
 
 local TutorialInfoTable= {
@@ -66,7 +61,7 @@ local TutorialInfoTable= {
 		-- Channel: Secure: 
 		-- Auto-Information Censoring: Enabled 
 		-- Location: LOCATION
-		time = 10000,
+		time = 8000,
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n They can be deactivated in the Widgetmanager (Press F11)",
 	},
 	welcomeAntagon = {
@@ -83,7 +78,7 @@ local TutorialInfoTable= {
 		-- We are going to make them pay, we are going to put a end to this.
 		-- This will be our final stand, and our name, the last thing on theire lips.
 		-- For to die free, is better then having immortality in slavery.
-			time = 9000,
+			time = 26000,
 	},
 	welcomeProtagon = {
 		speach= "sounds/tutorial/welcomeProtagon.ogg",
@@ -97,13 +92,14 @@ local TutorialInfoTable= {
 				-- Nobody wastes this level of awareness for just another dirty bomb or rogue nuke.
 				--So whats left is dark, civilization ending stuff.
 				--Time to save the day - and if we can this city.
-			time = 9000,
+			time = 44000,
 
 		},
 	----BuildUnits
-	[OperativePropagatorDefID] = 
+	[getDefID("operativepropagator")] = 
 	{
 		speach= "sounds/tutorial/operativepropagator.ogg",
+		active = true,
 		-- This operative, is our way to take hold in this city, form cells and forward the CAUSE. 
 		-- S/he can create safehouses and recruit civilians to our cause.
 		-- S/he can interrogate civilans suspected of aiding the enemy.
@@ -119,21 +115,24 @@ local TutorialInfoTable= {
 		--But not today, not here. This here is just a start.
 		--Train another operative and then build a propagandasever. It will help us get more funds, more supporters.
 		speach= "sounds/tutorial/antagonsafehouse.ogg",
-		-- 
+		--
+		active = true,
 		time = 3000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
 	},		
-	[OperativeInvestigatorDefID] = 
+	[getDefID("operativeinvestigator")] = 
 	{
 		-- This is our Investigation Operative in this theater
 		-- He will do whatever it takes, to track the Cells down. We are the defensive team. We only need to fail once. 
 		-- The others have all the shots. Taking them down can not be accomplished with military action.
+		-- Some bloody good it would do us to have some combat outpost blasting ont he civilians who still want to life here.
 		-- S/he can create safehouses and recruit civilians as spys.
 		-- S/he can interrogate civilans suspected of aiding the enemy.
 		-- S/he can raid houses suspected of being safehouses. 
 		-- Build a safehouse inside the city. Upon creation, you will recieve further instructions.
 		speach= "sounds/tutorial/operativeinvestigator.ogg",
 		time = 5000,
+		active = true,
 		text =  "\a|Investigator Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
 	[getDefID("protagonsafehouse")] = 
@@ -145,7 +144,7 @@ local TutorialInfoTable= {
 		--It will help us to gain support in the upcoming fight against the radicals.
 		--A word of warning: If the enemy ever raids a safehouse, all personal trained within will be revealed
 		speach= "sounds/tutorial/protagonsafehouse.ogg",
-		-- 
+		active = true,
 		time = 5000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
 	},	
@@ -155,7 +154,7 @@ local TutorialInfoTable= {
 		--Any propagandaserver amplifys what we gain or loose.
 		--If the enemy kills somebody innocent or raids the wrong house, we reap what they saw.
 		speach= "sounds/tutorial/propagandaserver.ogg",
-		-- 
+		active = true,
 		time = 5000,
 		text =  "\a|Propagandaserver \n Creates money & material \n by swaying public opinion"
 	},
@@ -164,7 +163,7 @@ local TutorialInfoTable= {
 		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
 		--It can easily be lost through those though.
 		speach= "sounds/tutorial/assembly.ogg",
-		-- 
+		active = true,
 		time = 5000,
 		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
 	},
@@ -173,16 +172,16 @@ local TutorialInfoTable= {
 		-- Used to launch low-weight microsats into super-fast orbits.
 		-- Can be used in desperation to fire on other parts of the city.
 		speach= "sounds/tutorial/nimrod.ogg",
-		-- 
+		active = true,
 		time = 3000,
 		text =  "\a|Nimrod \n Orbital Railgun and satellite factory"
 	},
-	[getDefID("operativeasset")] = 
+	[operativeAssetDefID] = 
 	{	--A well trained assasin
 		--To deal out death, not indiscriminate, but like a surgeon, that takes somebody trained like a surgeon.
 
 		speach= "sounds/tutorial/operativeasset.ogg",
-		-- 
+		active = true,
 		time = 3000,
 		text =  "\a|Operative Asset \n Trained Assasin & Stealh operator"
 	},
@@ -192,7 +191,7 @@ local TutorialInfoTable= {
 		--Can reveal his recruiter on capture
 
 		speach= "sounds/tutorial/civilianagent.ogg",
-		-- 
+		active = true,
 		time = 3000,
 		text =  "\a|Civilian Agent \n A recruited civilian spy"
 	},[getDefID("launcher")] = 
@@ -203,7 +202,7 @@ local TutorialInfoTable= {
 		--to end them stepping on us. 
 
 		speach= "sounds/tutorial/launcher.ogg",
-		-- 
+		active = true,
 		time = 3000,
 		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
 	},[getDefID("raidicon")] = 
@@ -213,13 +212,15 @@ local TutorialInfoTable= {
 		--The raid  defends when the attackers are victorious or give up
 
 		speach= "sounds/tutorial/raidIcon.ogg",
-		-- 
+		active = true,
 		time = 3000,
 		text =  "\a|Raid\n Storm | Defend a Safehouse Minigame \n Click & Drag to place your units before round ends"
 	},
 }
-Spring.Echo("TutorialInfoTable:", TutorialInfoTable)
 
+---------------------------------------------------------------------------
+-- Code
+---------------------------------------------------------------------------
 local function PlayWelcomeConditional(t)	
 
 	if TutorialInfoTable.welcome.active == true then 
@@ -252,6 +253,7 @@ end
 local function PlaySoundAndMarkUnit(defID, exampleUnit)	
 	x,y,z=spGetUnitPos(exampleUnit)
 	if x then
+		Spring.SendCommands({"clearmapmarks"})
 		Spring.MarkerAddPoint( x, y, z, TutorialInfoTable[defID].text, true)
 		if TutorialInfoTable[defID].speach then
 			Spring.PlaySoundFile(TutorialInfoTable[defID].speach,1)
@@ -262,7 +264,7 @@ end
 local function preProcesTutorialInfoTable()
 	local TutInfT = TutorialInfoTable
 	for k,v in ipairs(TutInfT) do
-		Spring.Echo("Preprocessing "..k.." -> "..v)
+	--	Spring.Echo("Preprocessing "..k.." -> "..v)
 		if  TutInfT[k].active == nil then TutInfT[k].active =  true end
 		if not TutInfT[k].time then TutInfT[k].time = 4000 end
 		if not TutInfT[k].speach then TutInfT[k].speach = silentPlaceHolder end
@@ -280,7 +282,7 @@ local spGetMyPlayerID = Spring.GetMyPlayerID
 local startFrame = Spring.GetGameFrame()
 
 function widget:Initialize()	
-		Spring.Echo("mosaic_tutorial:StartInitialize")
+	--	Spring.Echo("mosaic_tutorial:StartInitialize")
 		local myTeamID= spGetMyTeamID()
 		local playerID = spGetMyPlayerID()
 		local tname,_, tspec, myTeamID, tallyteam, tping, tcpu, tcountry, trank = spGetPlayerInfo(playerID)
@@ -309,21 +311,28 @@ function widget:Shutdown()
 	Spring.Echo("Deactivated Tutorial - you can reactivate via the Widget-Manager (Press F11)")
 end
 
+local quedInUnits = {}
+
 local function playUnitExplaination()
-	local selectedUnits = Spring.GetSelectedUnits()
-	local TutoInfoTable = TutorialInfoTable
+	local selectedUnits = spGetSelectedUnits()
+
+	for uid, defID in pairs(quedInUnits) do
+		selectedUnits[#selectedUnits+1] = uid
+	end
+	quedInUnits = {}
+
+	if selectedUnits then
 		for num, id in pairs(selectedUnits) do
-		local defID =spGetUnitDefID(id)
-			if defID then
-				if TutoInfoTable[defID] and TutoInfoTable[defID].active == true then		
-					PlaySoundAndMarkUnit(defID, id)
-					TutoInfoTable[defID].active = false
-					TutorialInfoTable = TutoInfoTable
-					return true, TutorialInfoTable[defID].time
-				end
+		local defID = spGetUnitDefID(id)
+			if defID and  TutorialInfoTable[defID] and TutorialInfoTable[defID].active == true then
+				PlaySoundAndMarkUnit(defID, id)
+				TutorialInfoTable[defID].active = false
+				return true, TutorialInfoTable[defID].time
 			end	
 		end
-		return false, 0
+	end
+
+	return false, 0
 	end
 
 local OnAirTillTimeFrame = 0
@@ -339,6 +348,7 @@ function widget:GameFrame(t)
 			if boolOnAir == false then 
 				boolOnAir, timeOnAirMS = playUnitExplaination()
 			end
+
 			if boolOnAir == true then
 				OnAirTillTimeFrame = math.max(OnAirTillTimeFrame, t) + (math.ceil(timeOnAirMS  /1000) *30)
 			end
@@ -347,11 +357,15 @@ function widget:GameFrame(t)
 end
 
 function widget:UnitCreated(unitID, unitDefID)
-	if unitDefID == raidIconDefID and TutorialInfoTable[raidIconDefID].active == true then
-		PlaySoundAndMarkUnit(unitDefID, unitID)
-		boolOnAir = true 
-		OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
-		TutorialInfoTable[raidIconDefID].active = false
+	if TutorialInfoTable[raidIconDefID].active == true then
+		if Spring.GetGameFrame() > OnAirTillTimeFrame then
+			PlaySoundAndMarkUnit(unitDefID, unitID)
+			boolOnAir = true 
+			OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
+			TutorialInfoTable[raidIconDefID].active = false
+		else --queue it in
+			quedInUnits[unitID] = unitDefID
+		end
 	end
 end
 
