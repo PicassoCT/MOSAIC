@@ -16,7 +16,6 @@ end
 ---------------------------------------------------------------------------
 -- Speedups
 ---------------------------------------------------------------------------
-
 local spGetMouseState = Spring.GetMouseState
 local spGetActiveCommand = Spring.GetActiveCommand
 local spGetDefaultCommand = Spring.GetDefaultCommand
@@ -52,7 +51,6 @@ local raidIconDefID = getDefID("raidicon")
 local mySide = "No valid side assigned"
 local operativeAssetDefID = getDefID("operativeasset")
 
-
 local TutorialInfoTable= {
 	welcome = {
 		speach= "sounds/tutorial/welcomeGeneral.ogg",	
@@ -62,7 +60,7 @@ local TutorialInfoTable= {
 		-- Auto-Information Censoring: Enabled 
 		-- Location: LOCATION
 		time = 8000,
-		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n They can be deactivated in the Widgetmanager (Press F11)",
+		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n The tutorial can be deactivated in the Widgetmanager (Press F11)",
 	},
 	welcomeAntagon = {
 
