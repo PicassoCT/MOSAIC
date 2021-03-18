@@ -18,6 +18,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 gaiaTeamID = Spring.GetGaiaTeamID()
 objectiveTypes = getObjectiveTypes(UnitDefs)
+invertedObjectiveTypes = getInvertedObjectiveTypes(UnitDefs)
 Objectives = {}
 DeadObjectives = {}
 -- SYNCED
@@ -68,12 +69,12 @@ if (gadgetHandler:IsSyncedCode()) then
         boolInit = false
     end
 
-    function gadget:UnitCreated(UnitID, whatever)
+    function gadget:UnitCreated(UnitID, unitDefID)
         local type = Spring.GetUnitDefID(UnitID)
         if objectiveTypes[type] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
 
             x, y, z = Spring.GetUnitPosition(UnitID)
-            Objectives[UnitID] = {x = x, y = y, z = z}
+            Objectives[UnitID] = {x = x, y = y, z = z, defID = unitDefID}
 
             Spring.SetUnitAlwaysVisible(UnitID, true)
         end
@@ -99,20 +100,33 @@ if (gadgetHandler:IsSyncedCode()) then
             -- Spring.Echo("Reward Cycle called")
 
             for id, types in pairs(Objectives) do
-                --	Spring.Echo("Objectives to Protagon")
-                if doesUnitExistAlive(id) == true then
-                    for tid, _ in pairs(protagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
-                                               tid, id, colourBlue)
-
+                if not invertedObjectiveTypes[types.defID] then
+                    --	Spring.Echo("Objectives to Protagon")
+                    if doesUnitExistAlive(id) == true then
+                        for tid, _ in pairs(protagonT) do
+                            GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
+                                                   tid, id, colourBlue)
+                        end
+                    end
+                else
+                    for tid, _ in pairs(antagonT) do
+                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
+                                               tid, colourBlue)
                     end
                 end
             end
 
             for id, location in pairs(DeadObjectives) do
-                for tid, _ in pairs(antagonT) do
-                    GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
-                                           location, colourRed)
+                if not invertedObjectiveTypes[types.defID] then
+                    for tid, _ in pairs(antagonT) do
+                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
+                                               location, colourRed)
+                    end
+                else
+                    for tid, _ in pairs(protagonT) do
+                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
+                                                   location, id, colourBlue)
+                    end
                 end
             end
         end
