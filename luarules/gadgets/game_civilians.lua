@@ -733,8 +733,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     boolDone = false
 
     if spGetUnitIsDead(myID) == true then 
-        boolDone = true
-        return boolDone, nil, persPack
+        return true, nil, persPack
     end
 
     --update information
@@ -742,6 +741,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if not persPack.myHP then persPack.myHP = hp end
 
     x, y, z = spGetUnitPosition(myID)
+    assert(x)
 
     if x and not persPack.currPos then
         persPack.currPos = {x = x, y = y, z = z}
@@ -756,8 +756,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if not GG.TravelFunctionRegistry[myID] then GG.TravelFunctionRegistry[myID] = startFrame end
 
     if GG.TravelFunctionRegistry[myID] > startFrame then
-        boolDone = true
-        return boolDone, nil, persPack, x,y,z, hp
+        return true, nil, persPack, x,y,z, hp
     else
         GG.TravelFunctionRegistry[myID] = startFrame
     end
@@ -931,6 +930,7 @@ end
 
 
 function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
+
     boolDone = false
 
     if persPack.boolStartAChat and persPack.boolStartAChat == true then 
@@ -1021,6 +1021,7 @@ function travellFunction(evtID, frame, persPack, startFrame)
     local myID = persPack.unitID
 
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
+    assert(x)
     if boolDone == true then return retFrame,persPack end
 
     boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)

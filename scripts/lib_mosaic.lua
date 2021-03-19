@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.719"
+            Version = "Alpha: 0.720"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
@@ -1616,6 +1616,20 @@ function unitTestTypeTables(UnitDefs, UnitDefNames)
     for i = 1, 8 do
         assert(civilianTypeTable[UnitDefNames["arab_truck" .. i].id])
     end
+end
+
+function getObjectiveAboveGroundOffset(id)
+    xb,yb,zb= Spring.GetUnitPosition(id)
+    ghb = Spring.GetGroundHeight(xb,zb)
+    probeDist = 150
+    heighestPoint = ghb
+    for x=-1,1 do
+      for z=-1,1 do
+        heighestPoint = math.max(heighestPoint, Spring.GetGroundHeight(xb + x*probeDist, zb + z*probeDist))
+      end
+    end
+
+    return heighestPoint - ghb
 end
 
 function setIndividualCivilianName(id)

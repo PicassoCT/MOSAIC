@@ -5,15 +5,19 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
+center=piece"center"
+tether = piece "Umbilical"
+blimp = piece "Capsule021"
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-tether = piece "Object002"
-blimp = piece "Capsule021"
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(blinkLights)
     StartThread(turnWindSlow)
+      heightOfsset= getObjectiveAboveGroundOffset(unitID)
+    Move(center,y_axis, heightOfsset + 30, 0)
 end
 function turnWindSlow()
     while true do

@@ -114,6 +114,7 @@ local TutorialInfoTable= {
 		--Train another operative and then build a propagandasever. It will help us get more funds, more supporters.
 		speach= "sounds/tutorial/antagonsafehouse.ogg",
 		--
+		boolUponCreation = true,
 		active = true,
 		time = 3000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
@@ -142,6 +143,7 @@ local TutorialInfoTable= {
 		--It will help us to gain support in the upcoming fight against the radicals.
 		--A word of warning: If the enemy ever raids a safehouse, all personal trained within will be revealed
 		speach= "sounds/tutorial/protagonsafehouse.ogg",
+		boolUponCreation = true,
 		active = true,
 		time = 5000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
@@ -152,6 +154,7 @@ local TutorialInfoTable= {
 		--Any propagandaserver amplifys what we gain or loose.
 		--If the enemy kills somebody innocent or raids the wrong house, we reap what they saw.
 		speach= "sounds/tutorial/propagandaserver.ogg",
+		boolUponCreation = true,
 		active = true,
 		time = 5000,
 		text =  "\a|Propagandaserver \n Creates money & material \n by swaying public opinion"
@@ -161,6 +164,7 @@ local TutorialInfoTable= {
 		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
 		--It can easily be lost through those though.
 		speach= "sounds/tutorial/assembly.ogg",
+		boolUponCreation = true,
 		active = true,
 		time = 5000,
 		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
@@ -189,6 +193,7 @@ local TutorialInfoTable= {
 		--Can reveal his recruiter on capture
 
 		speach= "sounds/tutorial/civilianagent.ogg",
+		boolUponCreation = true,
 		active = true,
 		time = 3000,
 		text =  "\a|Civilian Agent \n A recruited civilian spy"
@@ -280,7 +285,13 @@ local spGetMyPlayerID = Spring.GetMyPlayerID
 local startFrame = Spring.GetGameFrame()
 
 function widget:Initialize()	
-	--	Spring.Echo("mosaic_tutorial:StartInitialize")
+	
+		if Spring.GetConfigInt("mosaic_startupcounter",1) > 2 and true == false then
+			widgetHandler:RemoveWidget(widget)
+		end
+
+		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
+
 		local myTeamID= spGetMyTeamID()
 		local playerID = spGetMyPlayerID()
 		local tname,_, tspec, myTeamID, tallyteam, tping, tcpu, tcountry, trank = spGetPlayerInfo(playerID)
@@ -301,7 +312,7 @@ function widget:Initialize()
 		end
 		TutorialInfoTable =	preProcesTutorialInfoTable()
 		startFrame = Spring.GetGameFrame()
-		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
+
 end
 
 
@@ -313,11 +324,6 @@ local quedInUnits = {}
 
 local function playUnitExplaination()
 	local selectedUnits = spGetSelectedUnits()
-
-	for uid, defID in pairs(quedInUnits) do
-		selectedUnits[#selectedUnits+1] = uid
-	end
-	quedInUnits = {}
 
 	if selectedUnits then
 		for num, id in pairs(selectedUnits) do
@@ -341,7 +347,6 @@ function widget:GameFrame(t)
 	if t > startFrame + 90 and t > OnAirTillTimeFrame then
 		boolOnAir = false 
 		if boolTutorial == true and  t % 10 == 0   then
-
 			boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
 			if boolOnAir == false then 
 				boolOnAir, timeOnAirMS = playUnitExplaination()
@@ -355,15 +360,10 @@ function widget:GameFrame(t)
 end
 
 function widget:UnitCreated(unitID, unitDefID)
-	if TutorialInfoTable[raidIconDefID].active == true then
-		if Spring.GetGameFrame() > OnAirTillTimeFrame then
+	if TutorialInfoTable[raidIconDefID].active == true and TutorialInfoTable[raidIconDefID].boolUponCreation  then
 			PlaySoundAndMarkUnit(unitDefID, unitID)
-			boolOnAir = true 
 			OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
 			TutorialInfoTable[raidIconDefID].active = false
-		else --queue it in
-			quedInUnits[unitID] = unitDefID
-		end
 	end
 end
 

@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-
+center= piece"PowerPlant"
 function script.Create()
     Spring.SetUnitBlocking(unitID,false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -20,6 +20,8 @@ function script.Create()
     end
 
     StartThread(camAnimation)
+    heightOfsset= getObjectiveAboveGroundOffset(unitID)
+    Move(center,y_axis, heightOfsset, 0)
 end
 
 function sensorTurn(tower)

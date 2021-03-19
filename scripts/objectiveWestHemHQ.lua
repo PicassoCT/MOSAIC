@@ -40,12 +40,10 @@ function showHidePlane(boolShow, plane, rotor1, rotor2 )
         end
     end
 
-
-
-    function movePlaneRandomLocationInTime(plane, rotor1, rotor2, time)
-        rx,ry, rz = randSign()* math.random(3000,7000), 9000, randSign()* math.random(3000,7000)
-        mSyncIn(plane, rx,ry,rz, time)
-    end
+function movePlaneRandomLocationInTime(plane, rotor1, rotor2, time)
+    rx,ry, rz = randSign()* math.random(3000,7000), 19000, randSign() * math.random(3000,7000)
+    mSyncIn(plane, rx,ry,rz, time)
+end
 
 
 function vtolStartLanding(plane, rotor1, rotor2)
@@ -65,7 +63,7 @@ function vtolStartLanding(plane, rotor1, rotor2)
             Spin(rotor2, y_axis, math.rad(666),0)
             showHidePlane(true, plane, rotor1, rotor2)
             lastValue =math.random(-180,180)
-            StartThread(turnInTime, plane, y_axis,7000, 0,lastValue,0 )
+            StartThread(turnInTime, plane, y_axis, math.random(0,180)*randSign(), 7000, 0,lastValue,0 )
             syncMoveInTime(plane, 0, 0, 0, 7000)
              Sleep(7000)
             WaitForMoves(plane)
@@ -83,6 +81,9 @@ function vtolStartLanding(plane, rotor1, rotor2)
             Sleep(200)
             lastValue =math.random(-180,180)
             Turn(plane, y_axis, math.rad(lastValue),0.5)
+            WaitForMoves(plane)
+            rx,rz = math.random(1,Game.mapSizeX)*randSign(), math.random(1,Game.mapSizeZ)*randSign()
+            syncMoveInTime(plane, rx, 19000, rz, 10000)
             WaitForMoves(plane)
             showHidePlane(false, plane, rotor1, rotor2)
             boolInAir = true
