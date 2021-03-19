@@ -9,7 +9,7 @@ function widget:GetInfo()
 		date = "Jul 18, 2009",
 		license = "GNU GPL, v2 or later",
 		layer = 3,
-		enabled = (Spring.GetConfigInt("mosaic_startupcounter",1) < 3 ) or true-- loaded by default?
+		enabled = (Spring.GetConfigInt("mosaic_startupcounter",1) < 3 )-- loaded by default?
 	}
 end
 
@@ -286,7 +286,7 @@ local startFrame = Spring.GetGameFrame()
 
 function widget:Initialize()	
 	
-		if Spring.GetConfigInt("mosaic_startupcounter",1) > 2 and true == false then
+		if Spring.GetConfigInt("mosaic_startupcounter",1) > 2 then
 			widgetHandler:RemoveWidget(widget)
 		end
 
