@@ -22,6 +22,93 @@ function script.Create()
     StartThread(forInterval, 1, 6)
     StartThread(forInterval, 7, #TablesOfPiecesGroups["HyperLoop"])
     StartThread(delayShowAllElements)
+    StartThread(blinkLights)
+    for i=1,#TablesOfPiecesGroups["Plane"] do
+        StartThread(vtolStartLanding,TablesOfPiecesGroups["Plane"][i], TablesOfPiecesGroups["Plane"..i.."Sub"][1], TablesOfPiecesGroups["Plane"..i.."Sub"][2] )
+    end
+end
+
+function showHidePlane(boolShow, plane, rotor1, rotor2 )
+        if boolShow == true then
+            Show(plane)
+            Show(rotor1)
+            Show(rotor2)
+        else
+            Hide(plane)
+            Hide(rotor1)
+            Hide(rotor2)
+        end
+    end
+
+
+
+    function movePlaneRandomLocationInTime(plane, rotor1, rotor2, time)
+        rx,ry, rz = randSign()* math.random(3000,7000), 9000, randSign()* math.random(3000,7000)
+        mSyncIn(plane, rx,ry,rz, time)
+    end
+
+
+function vtolStartLanding(plane, rotor1, rotor2)
+    boolInAir = maRa()
+    if boolInAir == true then 
+        showHidePlane(false, plane, rotor1, rotor2)
+    end
+    lastValue = 0
+
+    while true do
+        if boolInAir == true then
+            randSleep= math.random(1,12)
+            Sleep(randSleep*1000)
+            movePlaneRandomLocationInTime(plane, rotor1, rotor2, 100)
+            WaitForMoves(plane)
+            Spin(rotor1, y_axis, math.rad(666),0)
+            Spin(rotor2, y_axis, math.rad(666),0)
+            showHidePlane(true, plane, rotor1, rotor2)
+            lastValue =math.random(-180,180)
+            StartThread(turnInTime, plane, y_axis,7000, 0,lastValue,0 )
+            syncMoveInTime(plane, 0, 0, 0, 7000)
+             Sleep(7000)
+            WaitForMoves(plane)
+            StopSpin(rotor1, y_axis, 0.1)
+            StopSpin(rotor2, y_axis, 0.1)
+         
+            boolInAir = false
+             randSleep= math.random(20,40)
+            Sleep(randSleep*1000)
+        else
+            Spin(rotor1, y_axis, math.rad(666),0.1)
+            Spin(rotor2, y_axis, math.rad(666),0.1)
+            Sleep(3000)
+            movePlaneRandomLocationInTime(plane, rotor1, rotor2, 5000)
+            Sleep(200)
+            lastValue =math.random(-180,180)
+            Turn(plane, y_axis, math.rad(lastValue),0.5)
+            WaitForMoves(plane)
+            showHidePlane(false, plane, rotor1, rotor2)
+            boolInAir = true
+            randSleep= math.random(1,12)
+            Sleep(randSleep*1000)
+        end
+    end
+end
+
+function blinkLights()
+    for i=1, #TablesOfPiecesGroups["LightOn"] do
+        StartThread(howToBlinky, TablesOfPiecesGroups["LightOn"][i],TablesOfPiecesGroups["LightOff"][i] )
+    end
+end
+
+function howToBlinky(showOn, showOff)
+    while true do
+            Show(showOn)
+            Hide(showOff)
+            Sleeptime = math.random(500,2000)
+            Sleep(Sleeptime)
+            Show(showOff)
+            Hide(showOn)
+            Sleeptime = math.random(500,2000)
+            Sleep(Sleeptime)
+    end
 end
 
 function delayShowAllElements()

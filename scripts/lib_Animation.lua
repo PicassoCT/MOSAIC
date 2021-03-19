@@ -184,13 +184,11 @@ function WaitForMoves(...)
     end
 end
 
--- >Waits for anyTurnToComplete
+-- >Waits for any Move ToComplete
 function WaitForMoveAllAxis(arg)
-
     WaitForMove(arg, x_axis)
     WaitForMove(arg, y_axis)
     WaitForMove(arg, z_axis)
-
 end
 
 function movePieceToPieceWorld(unitID, name, pieceheigth, target, speed)
@@ -629,14 +627,16 @@ function syncMoveInTime(piecename, x_val, y_val, z_val, times)
     xd, yd, zd = absDistance(mx, x_val), absDistance(my, y_val),
                  absDistance(mz, z_val)
 
-    Move(piecename, 1, x_val, xd / times)
-    Move(piecename, 2, y_val, yd / times)
-    Move(piecename, 3, z_val, zd / times)
+    Move(piecename, x_axis, x_val, xd / times)
+    Move(piecename, y_axis, y_val, yd / times)
+    Move(piecename, z_axis, z_val, zd / times)
 end
 
 -- > Move a piece so that it arrives at all axis on the given times
 function moveSyncInTimeT(T, x_val, y_val, z_val, times)
-    for k, v in pairs(T) do syncMoveInTime(v, x_val, y_val, z_val, times) end
+    for k, v in pairs(T) do 
+      syncMoveInTime( v, x_val, y_val, z_val, times) 
+    end
 
 end
 

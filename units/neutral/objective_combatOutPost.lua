@@ -13,7 +13,7 @@ local objective_combatoutpost = Building:New{
     levelground = true,
     FootprintX = 8,
     FootprintZ = 8,
-    script = "placeholder.lua",
+    script = "objectivecombatoutpostscript.lua",
     objectName = "objective_combatOutpost.dae",
     
     YardMap = [[oooooooo
@@ -30,7 +30,26 @@ local objective_combatoutpost = Building:New{
         helptext = "Civilian Building",
         baseclass = "Building", -- TODO: hacks
     },
-    
+
+    weapons = {
+        [1]={name  = "ak47",
+            onlyTargetCategory = [[GROUND BUILDING]],
+            turret = true
+            },  
+        [2]={name  = "ak47",
+            onlyTargetCategory = [[GROUND BUILDING]],
+            turret = true
+            },  
+        [3]={name  = "ak47",
+            onlyTargetCategory = [[GROUND BUILDING]],
+            turret = true
+            },  
+        [4]={name  = "ak47",
+            onlyTargetCategory = [[GROUND BUILDING]],
+            turret = true
+            },  
+        },
+
     buildoptions =
     {
         "civilian_arab0"
