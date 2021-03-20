@@ -1581,7 +1581,7 @@ end
 
 function unitTest(UnitDefs, UnitDefNames)
     unitTestTypeTables(UnitDefs, UnitDefNames)
-
+    --TODO 
 end
 
 function unitTestTypeTables(UnitDefs, UnitDefNames)
@@ -1603,6 +1603,13 @@ end
 
 --> Sets A Unit on Fire
 function setUnitOnFire(id, timeOnFire)
+    local civilianWalkingTypeTable = getCultureUnitModelTypes(
+                                     GameConfig.instance.culture, "civilian",
+                                     UnitDefs)
+    if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
+         setCivilianUnitInternalStateMode("STARTED")
+    end
+
     if GG.OnFire == nil then GG.OnFire = {} end
     boolInsertIt = true
     --very bad sollution n-times
@@ -1635,8 +1642,7 @@ function getObjectiveAboveGroundOffset(id)
     return heighestPoint - ghb
 end
 
-STATE_STARTED = "STARTED"
-STATE_ENDED = "ENDED"
+
 function setCivilianUnitInternalStateMode(State)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
      
