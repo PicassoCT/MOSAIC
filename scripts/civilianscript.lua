@@ -136,7 +136,7 @@ function script.Create()
 
     variousBodyConfigs()
 
-    bodyConfig.boolArmed = false
+    bodyConfig.boolArmed = true --false --DELME
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false

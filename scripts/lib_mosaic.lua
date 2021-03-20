@@ -381,14 +381,7 @@ end
 
 function expandNameSubSetTable(SubsetTable, UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
---[[    assert(UnitDefNames)
-    assert(type(UnitDefNames)=="table")
-    assert(UnitDefNames["house_arab0"].id)
-    assert(UnitDefNames["civilian_arab0"])
-    assert(UnitDefNames["civilian_arab0"].id)
-    assert(SubsetTable)
-    assert(SubsetTable.range)
-    assert(SubsetTable.range >= 0)--]]
+
     local  expandedDictIdName = {}
     local i = 0
     while i <= SubsetTable.range do
@@ -400,16 +393,6 @@ function expandNameSubSetTable(SubsetTable, UnitDefs)
         end
         i = i + 1
     end
---[[
-    assert(expandedDictIdName)
-    assert(type(expandedDictIdName)=="table")
-    if SubsetTable.name == "house_arab" then
-        assert(expandedDictIdName[UnitDefNames["house_arab0"].id] == "house_arab0")
-    end
-
-     if SubsetTable.name == "civilian_arab" then
-        assert(expandedDictIdName[UnitDefNames["civilian_arab0"].id] == "civilian_arab0")
-    end--]]
 
     return expandedDictIdName
 end
@@ -1618,6 +1601,26 @@ function unitTestTypeTables(UnitDefs, UnitDefNames)
     end
 end
 
+--> Sets A Unit on Fire
+function setUnitOnFire(id, timeOnFire)
+    if GG.OnFire == nil then GG.OnFire = {} end
+    boolInsertIt = true
+    --very bad sollution n-times
+    
+    for i = 1, table.getn(GG.OnFire), 1 do
+        if GG.OnFire[i][1] ~= nil and GG.OnFire[i][1] == id then
+            GG.OnFire[i][2] = GG.OnFire[i][2] + math.ceil(timeOnFire)
+            boolInsertIt = false
+        end
+    end
+    
+    if boolInsertIt == true then
+        GG.OnFire[#GG.OnFire + 1] = {}
+        GG.OnFire[#GG.OnFire][1] = id
+        GG.OnFire[#GG.OnFire][2] = math.ceil(timeOnFire)
+    end
+end
+
 function getObjectiveAboveGroundOffset(id)
     xb,yb,zb= Spring.GetUnitPosition(id)
     ghb = Spring.GetGroundHeight(xb,zb)
@@ -1632,11 +1635,21 @@ function getObjectiveAboveGroundOffset(id)
     return heighestPoint - ghb
 end
 
+STATE_STARTED = "STARTED"
+STATE_ENDED = "ENDED"
+function setCivilianUnitInternalStateMode(State)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     
+     GG.CivilianUnitInternalLogicActive[unitID] = State 
+ end
+
 function setIndividualCivilianName(id)
     description = "Civilian : "..getRandomCultureNames(GG.GameConfig.instance.culture).. " <colateral>"
     Spring.SetUnitTooltip(id, description)
    return description
 end
+
+
 
 
 function getRandomCultureNames(culture)

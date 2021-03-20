@@ -54,6 +54,12 @@ if (gadgetHandler:IsSyncedCode()) then
     Script.SetWatchWeapon(stunpistoldWeaponDefID, true)
     local nimrodRailungDefID = WeaponDefNames["railgun"].id
     Script.SetWatchWeapon(nimrodRailungDefID, true)
+    local molotowDefID = WeaponDefNames["molotow"].id
+    Script.SetWatchWeapon(molotowDefID, true)
+
+    local FireWeapons = {
+        [molotowDefID] = true
+    }
 
     function getWeapondefByName(name)
         return WeaponDefs[WeaponDefNames[name].id]
@@ -579,6 +585,10 @@ if (gadgetHandler:IsSyncedCode()) then
                                                         attackerDefID,
                                                         attackerTeam)
             if resultDamage then return resultDamage end
+        end
+
+        if FireWeapons[weaponDefID] then
+            setUnitOnFire(unitID, math.random(190, 1500))
         end
     end
 

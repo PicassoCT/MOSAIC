@@ -285,7 +285,6 @@ local spGetMyPlayerID = Spring.GetMyPlayerID
 local startFrame = Spring.GetGameFrame()
 
 function widget:Initialize()	
-	
 		if Spring.GetConfigInt("mosaic_startupcounter",1) > 2 then
 			widgetHandler:RemoveWidget(widget)
 		end
@@ -312,7 +311,6 @@ function widget:Initialize()
 		end
 		TutorialInfoTable =	preProcesTutorialInfoTable()
 		startFrame = Spring.GetGameFrame()
-
 end
 
 

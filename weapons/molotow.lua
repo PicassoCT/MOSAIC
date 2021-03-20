@@ -2,7 +2,41 @@ local weaponName = "molotow" --this is the actually maschinegune of the inferno 
 local weaponDef = {
 	name = "molotow cocktail",
 	weaponType = [[Cannon]],
-	--damage
+
+--------------------------------------------------------------
+    --Physic/flight path
+	range = 200,
+    reloadtime = 9,
+    weaponVelocity = 320,
+    startVelocity = 50,
+    weaponAcceleration = 50,
+    flightTime = 12,
+    cameraShake = 12;
+    FixedLauncher = true,
+    accuracy = 1200,
+    tolerance = 3000,
+    tracks = false,
+    Turnrate = 16000,
+    collideFriendly = true,
+    WeaponTimer = 4,
+    BurnBlow = 0.1,
+    highTrajectory = 1,
+
+    --- -APPEARANCE
+ 	model = "molotow.s3o",
+
+    explosionGenerator="fireball",
+    CegTag="firesparks",
+
+    --- -TARGETING
+    turret = true,
+    --CylinderTargetting=true,
+    avoidFeature = false,
+    avoidFriendly = false,
+	soundtrigger = 1,
+	fireStarter = 100,
+
+ 	--damage
 	damage = {
 		default = 50,
 		heavyarmor = 75,
@@ -10,51 +44,13 @@ local weaponDef = {
 	areaOfEffect = 50,
 	craterMult = 1,
 	impulseFactor = 3.0,
-	model = "molotow.dae",
-	--physics
-	avoidFriendly = false,
-	weaponVelocity = 50,
-	reloadtime = 3.42,
-	range = 200,
-	sprayAngle = 150,
-	accuracy = 0.2,
-	tolerance = 5000,
-	lineOfSight = false,
-	groundbounce = false,
-	WaterBounce = false,
 
-	flighttime = 20,
+    --?FIXME***
+    lineOfSight = false,
 
-	soundtrigger = 1,
-	--apperance
-	
-	size = 1,
-
-	craterBoost = 3,
-	cylinderTargeting = 17.0,
-	edgeEffectiveness = 0.2,
-	fireStarter = 100,
-
-	
-	myGravity = 1,
-	targetBorder = 0,
-
-	--targeting
-	collideFriendly = false,
-	avoidGround = false,
-	avoidFeature  = false,
-	avoidNeutral =false,
-	collideEnemy  = true,
-
-	collideFeature  = false,
-	collideNeutral = false,
-	collideGround  = true,
-	turret = true,
-	canAttackGround  = true,
-	proximityPriority = -1,
-
-	soundStart = "sounds/weapons/molotow/throw.wav",
+	soundStart = "sounds/weapons/molotow/throw.ogg",
     soundHit = "sounds/weapons/molotow/impact.ogg",
+
 }
 
 return lowerkeys({ [weaponName] = weaponDef })
