@@ -52,7 +52,8 @@ local mySide = "No valid side assigned"
 local operativeAssetDefID = getDefID("operativeasset")
 
 local TutorialInfoTable= {
-	welcome = {
+	antagon = {
+	intro = {
 		speach= "sounds/tutorial/welcomeGeneral.ogg",	
 		active = true,
 		-- Connection: Established
@@ -62,37 +63,21 @@ local TutorialInfoTable= {
 		time = 8000,
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n The tutorial can be deactivated in the Widgetmanager (Press F11)",
 	},
-	welcomeAntagon = {
+
+	welcome = {
 
 		speach= "sounds/tutorial/welcomeAntagon.ogg",
 		active = true,
 		-- Antagon:
-		-- Welcome to MOSAIC. Modular Ordanance Stealth Autonomous Insurgency Cells
-		-- You are our only hope in this battlefield of the mind.
-		-- Our fight eternal, to remove these shackles on humanity. 
-		-- We need to regroup, Lay low for a while, ralley our strength for a final push for the CAUSE.
-		-- Remember how they murdered millions for a little comfort. Sacrficed the innocent to theire money making maschines.
-		-- How they endlessly brainwashed even our children, to cheer on there own destruction.
-		-- We are going to make them pay, we are going to put a end to this.
-		-- This will be our final stand, and our name, the last thing on theire lips.
-		-- For to die free, is better then having immortality in slavery.
+		-- This is it. The City. The arena
+		-- Filled with wulves, hyenas, tigers and bears- the chance to learn about human nature.
+		-- In the waning days of the ampire, they used to shell cities like this, if one soldier was killed, for weeks.
+		-- San Francisco brought a end to that.
+		-- This is why we are here. 
+		-- Build a safehouse and wait for further instructions
+
 			time = 26000,
 	},
-	welcomeProtagon = {
-		speach= "sounds/tutorial/welcomeProtagon.ogg",
-		active = true,
-				--Protagon: 
-				-- Welcome to MOSAIC. Mobile Orbital Strategic AI Counter-Terrorism
-				-- Welcome to Protagon-agent Level 5 or higher. This Personalized Overview will accompany on your first mission in the region.
-				-- SigInt intercepted data, indicating with 95 % certainty a infilitration in this city.
-				-- Local Sec has detected unusually high number of rogue cells with 72 % certainty
-				-- Threat Classification is above discrete with 69 % certainty.
-				-- Nobody wastes this level of awareness for just another dirty bomb or rogue nuke.
-				--So whats left is dark, civilization ending stuff.
-				--Time to save the day - and if we can this city.
-			time = 44000,
-
-		},
 	----BuildUnits
 	[getDefID("operativepropagator")] = 
 	{
@@ -118,7 +103,80 @@ local TutorialInfoTable= {
 		active = true,
 		time = 3000,
 		text =  "\a|Safehouse \n Trains Operators\n Transforms into  facilitys \n Knows about all trained there"
-	},		
+	},
+	[getDefID("propagandaserver")] = 
+	{	--This is a propagandaserver
+		--The god we thought ourselves is dead, and the enlightment killed it as its last act.
+		--The networks searched us, simulated us, quantified us. Now they know all there is to know.
+		--We are animals, easy to herd, milk and train to fight one another.
+		--Just connect our goal to the tales in there head and they will donate, march and die for us.
+		--If the enemy kills produces collateral, this will amplify what we reap.
+		speach= "sounds/tutorial/propagandaserver.ogg",
+		boolUponCreation = true,
+		active = true,
+		time = 5000,
+		text =  "\a|Propagandaserver \n Creates money & material \n by swaying public opinion"
+	},
+	
+	[operativeAssetDefID] = 
+	{	--A well trained assasin
+		--To deal out death, not indiscriminate, but like a surgeon, that takes somebody trained like a surgeon.
+
+		speach= "sounds/tutorial/operativeasset.ogg",
+		active = true,
+		time = 3000,
+		text =  "\a|Operative Asset \n Trained Assasin & Stealh operator"
+	},
+	[getDefID("civilianagent")] = 
+	{	--A civilian recruited for our side
+		--Activate him to turn this unit into a armed milita. More useful as observer then military asset though.
+		--Can reveal his recruiter on capture
+
+		speach= "sounds/tutorial/civilianagent.ogg",
+		boolUponCreation = true,
+		active = true,
+		time = 3000,
+		text =  "\a|Civilian Agent \n A recruited civilian spy"
+	},[getDefID("launcher")] = 
+	{	--Rejoice, victory is at hand brothers & sisters
+		--They never expected this, that there toys and devices could turn on them 
+		--This is a world, were the right small push to a peeble, can cause an avalanch that topples empires.
+		--Rejoice for this is the moment of reckoning. For all they have murdered,
+		--to end them stepping on us. 
+
+		speach= "sounds/tutorial/launcher.ogg",
+		active = true,
+		time = 3000,
+		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
+	},
+},
+protagon = {
+		intro = {
+		speach= "sounds/tutorial/welcomeGeneral.ogg",	
+		active = true,
+		-- Connection: Established
+		-- Channel: Secure: 
+		-- Auto-Information Censoring: Enabled 
+		-- Location: LOCATION
+		time = 8000,
+		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n The tutorial can be deactivated in the Widgetmanager (Press F11)",
+	},
+	welcome = {
+		speach= "sounds/tutorial/welcomeProtagon.ogg",
+		active = true,
+				--Protagon: 
+				-- Welcome to MOSAIC. Mobile Orbital Strategic AI Counter-Terrorism
+				-- Welcome to Protagon-agent Level 5 or higher. This Personalized Overview will accompany on your first mission in the region.
+				-- SigInt intercepted data, indicating with 95 % certainty a infilitration in this city.
+				-- Local Sec has detected unusually high number of rogue cells with 72 % certainty
+				-- Threat Classification is above discrete with 69 % certainty.
+				-- Nobody wastes this level of awareness for just another dirty bomb or rogue nuke.
+				--So whats left is dark, civilization ending stuff.
+				--Time to save the day - and if we can this city.
+			time = 44000,
+
+		},
+	----BuildUnits
 	[getDefID("operativeinvestigator")] = 
 	{
 		-- This is our Investigation Operative in this theater
@@ -159,6 +217,15 @@ local TutorialInfoTable= {
 		time = 5000,
 		text =  "\a|Propagandaserver \n Creates money & material \n by swaying public opinion"
 	},
+	[getDefID("blacksite")] = 
+	{	
+		speach= "sounds/tutorial/protagonblacksite.ogg",
+		active = true,
+		time = 3000,
+		text =  "\a|Blacksite\n Builds ▀▀▀▀▀ which can manipulate \nthe beehiveour of civilians.\n Usage of ▀▀▀▀▀▀ is a warcrime.\n Sometimes life without parole may \n be preferable to no life at all."
+	},
+},
+general = {
 	[getDefID("assembly")] = 
 	{	--A assembly is a factory creating automated warmachines
 		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
@@ -177,6 +244,17 @@ local TutorialInfoTable= {
 		active = true,
 		time = 3000,
 		text =  "\a|Nimrod \n Orbital Railgun and satellite factory"
+	},
+	[getDefID("raidicon")] = 
+	{	--This is the Raid Interface
+		--Both sides place there teams, the round ends and who aims at who, decides who is stills standing.
+		--Capturing the objective gives your team another member in the next round
+		--The raid  defends when the attackers are victorious or give up
+
+		speach= "sounds/tutorial/raidIcon.ogg",
+		active = true,
+		time = 3000,
+		text =  "\a|Raid\n Storm | Defend a Safehouse Minigame \n Click & Drag to place your units before round ends"
 	},
 	[operativeAssetDefID] = 
 	{	--A well trained assasin
@@ -197,28 +275,28 @@ local TutorialInfoTable= {
 		active = true,
 		time = 3000,
 		text =  "\a|Civilian Agent \n A recruited civilian spy"
-	},[getDefID("launcher")] = 
-	{	--Rejoice, victory is at hand brothers & sisters
-		--They never expected this, that there toys and devices could turn on them 
-		--This is a world, were the right small push to a peeble, can cause an avalanch that topples empires.
-		--Rejoice for this is the moment of reckoning. For all they have murdered,
-		--to end them stepping on us. 
-
-		speach= "sounds/tutorial/launcher.ogg",
-		active = true,
-		time = 3000,
-		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
-	},[getDefID("raidicon")] = 
-	{	--This is the Raid Interface
-		--Both sides place there teams, the round ends and who aims at who, decides who is stills standing.
-		--Capturing the objective gives your team another member in the next round
-		--The raid  defends when the attackers are victorious or give up
-
-		speach= "sounds/tutorial/raidIcon.ogg",
-		active = true,
-		time = 3000,
-		text =  "\a|Raid\n Storm | Defend a Safehouse Minigame \n Click & Drag to place your units before round ends"
 	},
+	[getDefID("assembly")] = 
+	{	--A assembly is a factory creating automated warmachines
+		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
+		--It can easily be lost through those though.
+		speach= "sounds/tutorial/assembly.ogg",
+		boolUponCreation = true,
+		active = true,
+		time = 5000,
+		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
+	},
+	[getDefID("nimrod")] = 
+	{	-- The nimrod is a cheap to build, reliable enough railgun
+		-- Used to launch low-weight microsats into super-fast orbits.
+		-- Can be used in desperation to fire on other parts of the city.
+		speach= "sounds/tutorial/nimrod.ogg",
+		active = true,
+		time = 3000,
+		text =  "\a|Nimrod \n Orbital Railgun and satellite factory"
+	},
+}
+
 }
 
 ---------------------------------------------------------------------------
@@ -230,25 +308,19 @@ local function PlayWelcomeConditional(t)
 		local mouseX,mouseY=Spring.GetMouseState()
 		local types,tables=spTraceScreenRay(mouseX,mouseY)
 		if types == "ground" then
-			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable.welcome.text, true)
+			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable[mySide]intro.text, true)
 		end
-		spPlaySoundFile(TutorialInfoTable.welcome.speach,1)
-		TutorialInfoTable.welcome.active = false
-		return true, TutorialInfoTable.welcome.time
+		spPlaySoundFile(TutorialInfoTable[mySide].intro.speach,1)
+		TutorialInfoTable[mySide].intro.active = false
+		return true, TutorialInfoTable[mySide].intro.time
 	end
 
-	if mySide == "antagon" and TutorialInfoTable.welcomeAntagon.active == true then
-		spPlaySoundFile(TutorialInfoTable.welcomeAntagon.speach,1)
-		TutorialInfoTable.welcomeAntagon.active = false
+	if TutorialInfoTable[mySide].welcome.active == true then
+		spPlaySoundFile(TutorialInfoTable[mySide].welcome.speach,1)
+		TutorialInfoTable[mySide].welcome.active = false
 
-		return true, TutorialInfoTable.welcomeAntagon.time
+		return true, TutorialInfoTable[mySide].welcome.time
 	end	
-
-	if mySide == "protagon" and TutorialInfoTable.welcomeProtagon.active == true then
-		spPlaySoundFile(TutorialInfoTable.welcomeProtagon.speach,1)
-		TutorialInfoTable.welcomeProtagon.active = false
-		return true, TutorialInfoTable.welcomeProtagon.time
-	end
 
 	return false, 0
 end
@@ -257,20 +329,39 @@ local function PlaySoundAndMarkUnit(defID, exampleUnit)
 	x,y,z=spGetUnitPos(exampleUnit)
 	if x then
 		Spring.SendCommands({"clearmapmarks"})
-		Spring.MarkerAddPoint( x, y, z, TutorialInfoTable[defID].text, true)
-		if TutorialInfoTable[defID].speach then
-			Spring.PlaySoundFile(TutorialInfoTable[defID].speach,1)
+		if TutorialInfoTable[mySide][defID].text then
+			Spring.MarkerAddPoint( x, y, z, TutorialInfoTable[mySide][defID].text, true)
+		elseif TutorialInfoTable.general.[defID].text then
+			Spring.MarkerAddPoint( x, y, z, TutorialInfoTable.general.[defID].text, true)
+		end
+
+		if TutorialInfoTable[mySide][defID].speach then
+			Spring.PlaySoundFile(TutorialInfoTable[mySide][defID].speach,1)
+		elseif TutorialInfoTable.general.[defID].speach then
+			Spring.PlaySoundFile(TutorialInfoTable.general.defID].speach,1)
 		end
 	end
 end
 
 local function preProcesTutorialInfoTable()
 	local TutInfT = TutorialInfoTable
-	for k,v in ipairs(TutInfT) do
+	for k,v in ipairs(TutInfT.general) do
 	--	Spring.Echo("Preprocessing "..k.." -> "..v)
-		if  TutInfT[k].active == nil then TutInfT[k].active =  true end
-		if not TutInfT[k].time then TutInfT[k].time = 4000 end
-		if not TutInfT[k].speach then TutInfT[k].speach = silentPlaceHolder end
+		if  TutInfT.general[k].active == nil then TutInfT.general[k].active =  true end
+		if not TutInfT.general[k].time then TutInfT.general[k].time = 4000 end
+		if not TutInfT.general[k].speach then TutInfT.general[k].speach = silentPlaceHolder end
+	end	
+	for k,v in ipairs(TutInfT.protagon) do
+	--	Spring.Echo("Preprocessing "..k.." -> "..v)
+		if  TutInfT.protagon[k].active == nil then TutInfT.protagon[k].active =  true end
+		if not TutInfT.protagon[k].time then TutInfT.protagon[k].time = 4000 end
+		if not TutInfT.protagon[k].speach then TutInfT.protagon[k].speach = silentPlaceHolder end
+	end
+	for k,v in ipairs(TutInfT.antagon) do
+	--	Spring.Echo("Preprocessing "..k.." -> "..v)
+		if  TutInfT.antagon[k].active == nil then TutInfT.antagon[k].active =  true end
+		if not TutInfT.antagon[k].time then TutInfT.antagon[k].time = 4000 end
+		if not TutInfT.antagon[k].speach then TutInfT.antagon[k].speach = silentPlaceHolder end
 	end
 
 return TutInfT
@@ -326,7 +417,10 @@ local function playUnitExplaination()
 	if selectedUnits then
 		for num, id in pairs(selectedUnits) do
 		local defID = spGetUnitDefID(id)
-			if defID and  TutorialInfoTable[defID] and TutorialInfoTable[defID].active == true then
+			if defID and 
+			(TutorialInfoTable[mySide][defID].active and TutorialInfoTable[mySide][defID].active == true) or
+ 			(TutorialInfoTable.general[defID].active and TutorialInfoTable.general[defID].active == true)
+			 then
 				PlaySoundAndMarkUnit(defID, id)
 				TutorialInfoTable[defID].active = false
 				return true, TutorialInfoTable[defID].time

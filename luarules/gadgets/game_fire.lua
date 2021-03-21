@@ -30,11 +30,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local disDance = 7
     local STATE_STARTED = "STARTED"
     local STATE_ENDED = "ENDED"
-
-    local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
-                                     UnitDefs)
-
+    local GameConfig = getGameConfig()
     local isPanicAble = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
@@ -66,7 +62,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                 zd = math.random(-1, 1)
 
                                 dx,dy,dz= spGetGroundNormal(x + addx * xd, z + addz * zd, true)
-                                spSpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
+                                    spSpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
                                 if frame % 3 == 0 then
                                     spSpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
                                 end

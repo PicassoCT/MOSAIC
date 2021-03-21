@@ -112,11 +112,60 @@ if (gadgetHandler:IsSyncedCode()) then
     end
   }
 
+    function molotowEventStream(weaponDefID, x, y, z)
+
+            fireFunction = function(evtID, frame, persPack, startFrame)
+            -- Setup
+            if not persPack.startFrame then
+                persPack.startFrame = spGetGameFrame()
+            end
+
+            if persPack.lifetimeFrames <= 0 then
+                return 
+            end
+
+            additional = math.random(3, 9)
+            addx = math.random(0, 4)
+            addz = math.random(0, 4)
+            local x,y,z = persPack.px, persPack.py, persPack.p.z
+            dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.py, persPack.p.z, true)
+            Spring.SpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
+            if frame % 3 == 0 then
+                 Spring.SpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
+            end
+
+            process(getAllInCircle(persPack.px, persPack.pz, persPack.range),
+                    function(id)
+                        setUnitOnFire(id, math.random(7500, 10000))
+                    end
+                    )
+
+            persPack.lifetimeFrames = persPack.lifetimeFrames - persPack.updateIntervall
+            return frame + persPack.updateIntervall, persPack
+        end
+
+        GG.EventStream:CreateEvent(fireFunction, {
+                            -- persistance Pack
+                            weaponDefID = weaponDefID,
+                            updateIntervall = 30,
+                            px = x,
+                            py = y,
+                            pz = z,
+                            lifetimeFrames = 15*30,
+                            range=50
+                        }, Spring.GetGameFrame() + (math.random(1,5) % 10))
+    end
+
     function gadget:Explosion(weaponDefID, px, py, pz, AttackerID)
         if explosionFunc[weaponDefID] then explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID) 
             return true
         end
+
+        if FireWeapons[weaponDefID] then
+            molotowEventStream(weaponDefID, px, py, pz)
+        end
     end
+
     -- ===========UnitDamaged Functions ====================================================
     function currentlyInterrogationRunning(suspectID, interrogatorID)
         if not GG.InterrogationTable[suspectID] or

@@ -29,7 +29,7 @@ local weaponDef = {
     explosionGenerator = "custom:missile_explosion",
     soundStart = "sounds/weapons/javelin/launch.ogg",
     soundHit = "sounds/weapons/javelin/impact.ogg",
-    cegTag = "gunprojectile",
+   
     texture1 = "gunshot",
 	fireStarter  = 50.0,
 	cameraShake =1.0
