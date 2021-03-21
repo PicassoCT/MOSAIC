@@ -826,7 +826,7 @@ function getDecalMap(culture)
                     "house_arab_decal4", "house_arab_decal10",
                     "house_arab_decal11", "house_arab_decal12",
                      "house_arab_decal13", "house_arab_decal14",
-                     "house_arab_decal15"
+                     "house_arab_decal15", "house_arab_decal18"
                 },
                 urban = {
                     "house_arab_decal1", "house_arab_decal2",
@@ -1607,7 +1607,12 @@ function setUnitOnFire(id, timeOnFire)
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
     if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
-         setCivilianUnitInternalStateMode("STARTED")
+        env = Spring.UnitScript.GetScriptEnv(id)
+        if env and env.setCivilianUnitInternalStateMode then
+            Spring.UnitScript.CallAsUnit(id,
+                                         env.setCivilianUnitInternalStateMode,
+                                        "STARTED")
+        end
     end
 
     if GG.OnFire == nil then GG.OnFire = {} end

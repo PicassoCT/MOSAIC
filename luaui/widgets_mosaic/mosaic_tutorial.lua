@@ -106,12 +106,12 @@ local TutorialInfoTable= {
 	},
 	[getDefID("propagandaserver")] = 
 	{	--This is a propagandaserver
-		--The god we thought ourselves is dead, and the enlightment killed it as its last act.
-		--The networks searched us, simulated us, quantified us. Now they know all there is to know.
+		--The god we thought ourselves is dead, and the enlightment killed it as its final act.
+		--The networks searched us, naked as we were & quantified us. Now they know all there is to know.
 		--We are animals, easy to herd, milk and train to fight one another.
 		--Just connect our goal to the tales in there head and they will donate, march and die for us.
 		--If the enemy kills produces collateral, this will amplify what we reap.
-		speach= "sounds/tutorial/propagandaserver.ogg",
+		speach= "sounds/tutorial/antagonpropagandaserver.ogg",
 		boolUponCreation = true,
 		active = true,
 		time = 5000,
@@ -308,7 +308,7 @@ local function PlayWelcomeConditional(t)
 		local mouseX,mouseY=Spring.GetMouseState()
 		local types,tables=spTraceScreenRay(mouseX,mouseY)
 		if types == "ground" then
-			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable[mySide]intro.text, true)
+			Spring.MarkerAddPoint(  tables[1], tables[2], tables[3], TutorialInfoTable[mySide].intro.text, true)
 		end
 		spPlaySoundFile(TutorialInfoTable[mySide].intro.speach,1)
 		TutorialInfoTable[mySide].intro.active = false
@@ -331,14 +331,14 @@ local function PlaySoundAndMarkUnit(defID, exampleUnit)
 		Spring.SendCommands({"clearmapmarks"})
 		if TutorialInfoTable[mySide][defID].text then
 			Spring.MarkerAddPoint( x, y, z, TutorialInfoTable[mySide][defID].text, true)
-		elseif TutorialInfoTable.general.[defID].text then
-			Spring.MarkerAddPoint( x, y, z, TutorialInfoTable.general.[defID].text, true)
+		elseif TutorialInfoTable.general[defID].text then
+			Spring.MarkerAddPoint( x, y, z, TutorialInfoTable.general[defID].text, true)
 		end
 
 		if TutorialInfoTable[mySide][defID].speach then
 			Spring.PlaySoundFile(TutorialInfoTable[mySide][defID].speach,1)
-		elseif TutorialInfoTable.general.[defID].speach then
-			Spring.PlaySoundFile(TutorialInfoTable.general.defID].speach,1)
+		elseif TutorialInfoTable.general[defID].speach then
+			Spring.PlaySoundFile(TutorialInfoTable.general[defID].speach,1)
 		end
 	end
 end

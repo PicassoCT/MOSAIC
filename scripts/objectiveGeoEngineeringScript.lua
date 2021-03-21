@@ -7,7 +7,7 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 center=piece"center"
 tether = piece "Umbilical"
-blimp = piece "Capsule021"
+blimp = piece "Blimp"
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 

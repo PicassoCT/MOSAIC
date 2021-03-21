@@ -22,6 +22,7 @@ function script.Create()
     StartThread(camAnimation)
     heightOfsset= getObjectiveAboveGroundOffset(unitID)
     Move(center,y_axis, heightOfsset, 0)
+    Move(TablesOfPiecesGroups["PowerPillar"] [1],y_axis, -heightOfsset, 0)
 end
 
 function sensorTurn(tower)
@@ -50,9 +51,9 @@ function camAnimation()
             local cam = TablesOfPiecesGroups["Cam"][i]
 
             if i ~= 3 and i ~= 5 then
-                Move(cam, z_axis, math.random(0, 50), math.random(3, 12))
+                Move(cam, z_axis, math.random(0, 250), math.random(3, 12))
             else
-                Move(cam, x_axis, math.random(-200, 0), math.random(3, 25))
+                Move(cam, x_axis, math.random(-750, 0), math.random(3, 25))
             end
         end
         WaitForMoves(TablesOfPiecesGroups["Cam"])

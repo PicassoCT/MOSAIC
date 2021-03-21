@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "Free",
         layer = 0,
         version = 1,
-        enabled = true,
+        enabled = false,
         hidden = true
     }
 end
@@ -36,7 +36,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                      UnitDefs)
 
     function gadget:GameFrame(frame)
-        if frame % disDance == 0 and GG.OnFire ~= nil then
+        if frame % disDance == 0 and GG.OnFire ~= nil and #GG.OnFire > 0 then
             local onFireUpInHere = GG.OnFire
             --- -Spring.Echo("Gfire:Test")
             -- disDance=math.ceil(math.random(60,170))

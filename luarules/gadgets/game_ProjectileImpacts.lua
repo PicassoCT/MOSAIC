@@ -126,9 +126,11 @@ if (gadgetHandler:IsSyncedCode()) then
 
             additional = math.random(3, 9)
             addx = math.random(0, 4)
+            xd = randSign()
+            zd = randSign()
             addz = math.random(0, 4)
-            local x,y,z = persPack.px, persPack.py, persPack.p.z
-            dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.py, persPack.p.z, true)
+            local x,y,z = persPack.px, persPack.py, persPack.pz
+            dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.pz, true)
             Spring.SpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
             if frame % 3 == 0 then
                  Spring.SpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
@@ -136,7 +138,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
             process(getAllInCircle(persPack.px, persPack.pz, persPack.range),
                     function(id)
-                        setUnitOnFire(id, math.random(7500, 10000))
+                        if id then
+                            setUnitOnFire(id, math.random(7500, 10000))
+                        end
                     end
                     )
 
@@ -147,13 +151,13 @@ if (gadgetHandler:IsSyncedCode()) then
         GG.EventStream:CreateEvent(fireFunction, {
                             -- persistance Pack
                             weaponDefID = weaponDefID,
-                            updateIntervall = 30,
+                            updateIntervall = 7,
                             px = x,
                             py = y,
                             pz = z,
                             lifetimeFrames = 15*30,
                             range=50
-                        }, Spring.GetGameFrame() + (math.random(1,5) % 10))
+                        }, Spring.GetGameFrame() + math.random(1,5) )
     end
 
     function gadget:Explosion(weaponDefID, px, py, pz, AttackerID)
