@@ -1603,17 +1603,7 @@ end
 
 --> Sets A Unit on Fire
 function setUnitOnFire(id, timeOnFire)
-    local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
-                                     UnitDefs)
-    if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
-        env = Spring.UnitScript.GetScriptEnv(id)
-        if env and env.setCivilianUnitInternalStateMode then
-            Spring.UnitScript.CallAsUnit(id,
-                                         env.setCivilianUnitInternalStateMode,
-                                        "STARTED")
-        end
-    end
+
 
     if GG.OnFire == nil then GG.OnFire = {} end
     boolInsertIt = true

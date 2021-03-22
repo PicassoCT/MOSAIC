@@ -123,7 +123,18 @@ if (gadgetHandler:IsSyncedCode()) then
             if persPack.lifetimeFrames <= 0 then
                 return 
             end
-
+			
+			function setInternalStateMachineToStarted(id)
+				if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
+					env = Spring.UnitScript.GetScriptEnv(id)
+					if env and env.setCivilianUnitInternalStateMode then
+						Spring.UnitScript.CallAsUnit(id,
+													 env.setCivilianUnitInternalStateMode,
+													"STARTED")
+					end
+				end
+			end
+			
             additional = math.random(3, 9)
             addx = math.random(0, 4)
             xd = randSign()
@@ -132,13 +143,14 @@ if (gadgetHandler:IsSyncedCode()) then
             local x,y,z = persPack.px, persPack.py, persPack.pz
             dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.pz, true)
             Spring.SpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
-            if frame % 3 == 0 then
+            if maRa()== true then
                  Spring.SpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
             end
 
             process(getAllInCircle(persPack.px, persPack.pz, persPack.range),
                     function(id)
                         if id then
+							setInternalStateMachineToStarted(id)
                             setUnitOnFire(id, math.random(7500, 10000))
                         end
                     end
@@ -151,13 +163,13 @@ if (gadgetHandler:IsSyncedCode()) then
         GG.EventStream:CreateEvent(fireFunction, {
                             -- persistance Pack
                             weaponDefID = weaponDefID,
-                            updateIntervall = 7,
+                            updateIntervall = 9,
                             px = x,
                             py = y,
                             pz = z,
                             lifetimeFrames = 15*30,
                             range=50
-                        }, Spring.GetGameFrame() + math.random(1,5) )
+                        }, Spring.GetGameFrame() + math.random(1,18)% 3 )
     end
 
     function gadget:Explosion(weaponDefID, px, py, pz, AttackerID)
