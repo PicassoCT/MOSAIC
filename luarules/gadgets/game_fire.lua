@@ -42,7 +42,7 @@ if (gadgetHandler:IsSyncedCode()) then
             -- disDance=math.ceil(math.random(60,170))
             for i = 1, table.getn(GG.OnFire), 1 do
                 --check if not nil
-                if GG.OnFire[i] ~= nil then
+                if GG.OnFire[i] then
                     if GG.OnFire[i][UnitID] then
                         if GG.OnFire[i][Heat] >= 0 then
                             GG.OnFire[i][Heat] = GG.OnFire[i][Heat] - disDance
