@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "Free",
         layer = 0,
         version = 1,
-        enabled = false,
+        enabled = true,
         hidden = true
     }
 end

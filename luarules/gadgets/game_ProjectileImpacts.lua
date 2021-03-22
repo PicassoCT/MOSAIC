@@ -143,7 +143,7 @@ if (gadgetHandler:IsSyncedCode()) then
             local x,y,z = persPack.px, persPack.py, persPack.pz
             dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.pz, true)
             Spring.SpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
-            if maRa()== true then
+            if maRa() == true then
                  Spring.SpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
             end
 

@@ -732,6 +732,11 @@ end
 function travelInitialization(evtID, frame, persPack, startFrame, myID)
     boolDone = false
 
+    if not myID then
+        Spring.Echo("Civilian function has no myID")
+        return true, nil, persPack
+    end
+
     if spGetUnitIsDead(myID) == true then 
         return true, nil, persPack
     end
@@ -747,7 +752,6 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
         persPack.currPos = {x = x, y = y, z = z}
     end
 
-
     if not persPack.maxTimeChattingInFrames  then persPack.maxTimeChattingInFrames  = 20 * 30 end
     if not persPack.arrivedDistance  then persPack.arrivedDistance = 300 end
     if not persPack.stuckCounter  then persPack.stuckCounter = 0 end
@@ -760,7 +764,6 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     else
         GG.TravelFunctionRegistry[myID] = startFrame
     end
-
 
     if not persPack.boolAnarchy then persPack.boolAnarchy = false end
 
@@ -1017,6 +1020,7 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
 end
 
 function travellFunction(evtID, frame, persPack, startFrame)
+    assert(persPack)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 

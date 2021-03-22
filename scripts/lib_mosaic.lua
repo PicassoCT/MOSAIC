@@ -1637,7 +1637,6 @@ function getObjectiveAboveGroundOffset(id)
     return heighestPoint - ghb
 end
 
-
 function setCivilianUnitInternalStateMode(State)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
      
@@ -1649,9 +1648,6 @@ function setIndividualCivilianName(id)
     Spring.SetUnitTooltip(id, description)
    return description
 end
-
-
-
 
 function getRandomCultureNames(culture)
 names ={
