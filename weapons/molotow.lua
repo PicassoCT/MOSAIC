@@ -10,16 +10,16 @@ local weaponDef = {
     weaponVelocity = 320,
     startVelocity = 50,
     weaponAcceleration = 50,
-    flightTime = 12,
+    flightTime = 6,
     cameraShake = 12;
     FixedLauncher = true,
-    accuracy = 1200,
-    tolerance = 3000,
+    accuracy = 600,
+    tolerance = 150,
     tracks = false,
     Turnrate = 16000,
     collideFriendly = true,
     WeaponTimer = 4,
-    BurnBlow = 0.1,
+    BurnBlow = 0.001,
     highTrajectory = 1,
 
     --- -APPEARANCE
