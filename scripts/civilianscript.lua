@@ -1,3 +1,4 @@
+
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -16,8 +17,6 @@ SIG_LOW = 4
 SIG_COVER_WALK = 8
 SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
-SIG_MOLOTOW = 64
-SIG_INTERNAL = 128
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -100,6 +99,14 @@ lowerBodyPieces = {
     [Feet2] = Feet2
 }
 
+lowerBodyPiecesNoCenter = {
+    [UpLeg1] = UpLeg1,
+    [UpLeg2] = UpLeg2,
+    [LowLeg1] = LowLeg1,
+    [LowLeg2] = LowLeg2,
+    [Feet1] = Feet1,
+    [Feet2] = Feet2
+}
 catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
@@ -212,6 +219,7 @@ function hideAllProps()
     hideT(TablesOfPiecesGroups["cellphone"])
     Hide(cofee)
     Hide(cigarett)
+    Hide(cellphone)
     Hide(ShoppingBag)
     Hide(SittingBaby)
     Hide(trolley)
@@ -233,10 +241,10 @@ end
 -- |           |    |          +----------------------------+ |    +----------------------------+
 -- |           |    |          +----------------------------+ |
 -- |           |    |          |   ReactionAnimation:       | |    +----------------------------+
--- |           |    |          |		   Catastrophe:     | |    | Hit-Animation              |
--- |           |    |          |		     filming        | |    |touch Wound/ hold wound		|
--- |           |    +--------->+		     whailing       | |    |	                        |
--- |           |    |          |		     Protesting     | |    |                            |
+-- |           |    |          |           Catastrophe:     | |    | Hit-Animation              |
+-- |           |    |          |             filming        | |    |touch Wound/ hold wound     |
+-- |           |    +--------->+             whailing       | |    |                            |
+-- |           |    |          |             Protesting     | |    |                            |
 -- |           |    |          +----------------------------+ |    |                            |
 -- |           |    |          +-------------------------+    |    |                            |
 -- |           |    +----------> Hit Animation           |    |    |                            |
@@ -379,7 +387,7 @@ function anarchyBehaviour()
 
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
          normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
-        oldBehaviourState = GG.GlobalGameState
+        oldBehaviourState = newState
         Sleep(250)
     end
 
@@ -387,7 +395,7 @@ function anarchyBehaviour()
 end
 
 boolStartAerosolBehaviour = false
-aeroSolType = ""
+aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     aeroSolType = extAerosolStateToSet
@@ -679,7 +687,7 @@ normalBehavourStateMachine = {
             end
         end
 
-        -- Going home	
+        -- Going home   
         Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {})
         Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {"shift"})
 
@@ -1110,8 +1118,8 @@ LowerAnimationStateFunctions = {
 
         -- Spring.Echo("Lower Body standing")
         WaitForTurns(lowerBodyPieces)
-        resetT(lowerBodyPieces, math.pi, false, true)
-        WaitForTurns(lowerBodyPieces)
+        resetT(lowerBodyPiecesNoCenter, math.pi, false, true)
+        WaitForTurns(lowerBodyPiecesNoCenter)
         Sleep(10)
         return eAnimState.standing
     end,
@@ -1401,6 +1409,7 @@ function makeWeaponsTable()
         firefunc = akFireFunction,
         signal = SIG_PISTOL
     }
+    
     WeaponsTable[2] = {
         aimpiece = Head1,
         emitpiece = cellphone1,
@@ -1439,9 +1448,11 @@ function script.AimWeapon(weaponID, heading, pitch)
     return false
 end
 
-function allowTarget(weaponID) return true end
+function allowTarget(weaponID) 
+    return true 
+end
+
 function script.Killed(recentDamage, _)
-    -- TODO Test
-    --   --createCorpseCUnitGeneric(recentDamage)
+    createCorpseCUnitGeneric(recentDamage)
     return 1
 end

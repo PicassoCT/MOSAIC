@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
+
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 include "lib_mosaic.lua"
@@ -14,12 +15,15 @@ SIG_UP = 2
 SIG_LOW = 4
 SIG_COVER_WALK = 8
 SIG_BEHAVIOUR_STATE_MACHINE = 16
-
 SIG_PISTOL = 32
+SIG_MOLOTOW = 64
+SIG_INTERNAL = 128
+
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
 local Head1 = piece('Head1');
+local MilitiaMask = piece('MilitiaMask');
 local LowArm1 = piece('LowArm1');
 local LowArm2 = piece('LowArm2');
 local LowLeg1 = piece('LowLeg1');
@@ -72,7 +76,6 @@ local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local loc_doesUnitExistAlive = doesUnitExistAlive
-
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
@@ -106,7 +109,6 @@ lowerBodyPiecesNoCenter = {
     [Feet1] = Feet1,
     [Feet2] = Feet2
 }
-
 catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
@@ -117,22 +119,22 @@ boolTurnLeft = false
 boolDecoupled = false
 boolAiming = false
 
+home = {}
+
 loadMax = 8
 
 local bodyConfig = {}
 
 iShoppingConfig = math.random(0, 8)
 function variousBodyConfigs()
-
     bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
     bodyConfig.boolTrolley = (iShoppingConfig == 3)
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
-    bodyConfig.boolProtest =  GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
+    bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
 end
 
-boolStarted = false
 orgHousePosTable = {}
 
 function script.Create()
@@ -140,43 +142,27 @@ function script.Create()
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(turnDetector)
-    hideAll(unitID)
+
     variousBodyConfigs()
 
-    bodyConfig.boolArmed = false
+    bodyConfig.boolArmed = true --false --DELME
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
-
+    home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
     bodyBuild()
 
     setupAnimation()
 
-    setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil,
-                              false)
-
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
+                              nil, false)
+    setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
-    StartThread(cloakLoop)
-
+  
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-
-    StartThread(testAnimation)
-end
-
-function testAnimation()
-      --DelMe
-    Sleep(500)
-  
-    while true do
-        PlayAnimation("UPBODY_WALK_ZOMBIE", lowerBodyPieces, 1.0)
-        WaitForTurns(upperBodyPieces)
-
-    Sleep(100)
-    end
-
 end
 
 function bodyBuild()
@@ -191,10 +177,13 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
 
+    if math.random(0, 4) > 3 then Show(MilitiaMask) end
+
     if bodyConfig.boolArmed == true then
-       Show(ak47)
-	   Show(molotow)
-       return
+        Show(MilitiaMask)
+        Show(ak47)
+        Show(molotow)
+        return
     end
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
@@ -239,7 +228,6 @@ function hideAllProps()
     Hide(Handbag)
 end
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
-
 ---------------------------------------------------------------------ANIMATIONLIB-------------------------------------
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
 -- +STOPED+---------------------------------------------------+    +----------------------------+
@@ -255,10 +243,10 @@ end
 -- |           |    |          +----------------------------+ |    +----------------------------+
 -- |           |    |          +----------------------------+ |
 -- |           |    |          |   ReactionAnimation:       | |    +----------------------------+
--- |           |    |          |		   Catastrophe:     | |    | Hit-Animation              |
--- |           |    |          |		     filming        | |    |touch Wound/ hold wound		|
--- |           |    +--------->+		     whailing       | |    |	                        |
--- |           |    |          |		     Protesting     | |    |                            |
+-- |           |    |          |           Catastrophe:     | |    | Hit-Animation              |
+-- |           |    |          |             filming        | |    |touch Wound/ hold wound     |
+-- |           |    +--------->+             whailing       | |    |                            |
+-- |           |    |          |             Protesting     | |    |                            |
 -- |           |    |          +----------------------------+ |    |                            |
 -- |           |    |          +-------------------------+    |    |                            |
 -- |           |    +----------> Hit Animation           |    |    |                            |
@@ -359,7 +347,8 @@ function startChatting(time)
 end
 
 attackerID = 0
-boolStartFleeing = false function startFleeing(attackerID)
+boolStartFleeing = false 
+function startFleeing(attackerID)
     if not attackerID then return end
     setCivilianUnitInternalStateMode(STATE_STARTED)
     boolStartFleeing = true
@@ -379,7 +368,7 @@ function pray()
     while prayTime > 0 do
        WaitForTurns(upperBodyPieces)
         Sleep(500)
-        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)    WaitForTurns(upperBodyPieces)
+        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
          Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
        prayTime = prayTime - 3500
@@ -396,11 +385,10 @@ function startAnarchyBehaviour()
 end
 
 function anarchyBehaviour()   
-    oldBehaviourState = ""
+    oldBehaviourState = GG.GlobalGameState
+
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
-         newState = GG.GlobalGameState
-         normalBehavourStateMachine[newState](oldBehaviourState,
-                                                            newState, unitID)
+         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
         oldBehaviourState = newState
         Sleep(250)
     end
@@ -409,7 +397,7 @@ function anarchyBehaviour()
 end
 
 boolStartAerosolBehaviour = false
-aeroSolType =""
+aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     aeroSolType = extAerosolStateToSet
@@ -417,17 +405,19 @@ function startAerosolBehaviour(extAerosolStateToSet)
 end
 
 function aeroSolStateBehaviour()
-    AerosolTypes = getChemTrailTypes()
-    assert(AerosolTypes[aeroSolType], aeroSolType)
+    Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
     influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true
+    newState = aeroSolType
+    oldBehaviourState = aeroSolType
     while true do
-        influencedStateMachine(oldBehaviourState, newState, unitID)
-    Sleep(250)
+        newState = influencedStateMachine(oldBehaviourState, newState, unitID)
+        Sleep(250)
+        oldBehaviourState = newState
     end
-
+    Spring.DestroyUnit(unitID, true, false)
 end
 
 function wailing()
@@ -494,6 +484,7 @@ function fleeEnemy(enemyID)
 
     setCivilianUnitInternalStateMode(STATE_ENDED)
 end
+
 function delayedWoundedWalkAfterCover(timeInSeconds)
     Signal(SIG_COVER_WALK)
     SetSignalMask(SIG_COVER_WALK)
@@ -580,6 +571,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(type(animname) == "string",
            "Animname is not string " .. toString(animname))
     assert(Animations[animname], "No animation with name ")
+
     local anim = Animations[animname];
     local randoffset
     for i = 1, #anim do
@@ -697,7 +689,7 @@ normalBehavourStateMachine = {
             end
         end
 
-        -- Going home	
+        -- Going home   
         Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {})
         Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {"shift"})
 
@@ -916,7 +908,6 @@ function setAnimationState(AnimationstateUpperOverride,
 end
 
 -- <Exposed Function>
-
 function setOverrideAnimationState(AnimationstateUpperOverride,
                                    AnimationstateLowerOverride,
                                    boolInstantOverride, conditionFunction,
@@ -1083,7 +1074,6 @@ UpperAnimationStateFunctions = {
         return eAnimState.slaved
     end,
     [eAnimState.coverwalk] = function()
-
         Hide(ShoppingBag);
         Hide(SittingBaby);
         Hide(trolley);
@@ -1135,7 +1125,14 @@ LowerAnimationStateFunctions = {
         Sleep(10)
         return eAnimState.standing
     end,
+    [eAnimState.aiming] = function()
 
+        WaitForTurns(lowerBodyPieces)
+        resetT(lowerBodyPieces, math.pi, false, true)
+        WaitForTurns(lowerBodyPieces)
+        Sleep(10)
+        return eAnimState.aiming
+    end,
     [eAnimState.walking] = function()
         if bodyConfig.boolInfluenced then
             if maRa() == true then
@@ -1283,7 +1280,6 @@ function animationStateMachineUpper(AnimationTable)
         end
         Sleep(33)
     end
-
 end
 
 function delayedStop()
@@ -1305,8 +1301,7 @@ end
 
 function script.StartMoving()
     boolWalking = true
-    setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil,
-                              true)
+    setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end
 
 function script.StopMoving() StartThread(delayedStop) end
@@ -1316,8 +1311,6 @@ function script.Activate() return 1 end
 function script.Deactivate() return 0 end
 
 function script.QueryBuildInfo() return center end
-
-
 
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
                          sentence, personification)
@@ -1382,98 +1375,12 @@ function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
 
 end
 
-local civilianID
-
-function spawnDecoyCivilian()
-    -- spawnDecoyCivilian
-    Sleep(10)
-    x, y, z = Spring.GetUnitPosition(unitID)
-
-    civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable),
-                                   x + randSign() * 5, y, z + randSign() * 5, 1,
-                                   Spring.GetGaiaTeamID())
-    transferUnitStatusToUnit(unitID, civilianID)
-    Spring.SetUnitNoSelect(civilianID, true)
-    Spring.SetUnitAlwaysVisible(civilianID, true)
-
-    persPack = {
-        myID = civilianID,
-        syncedID = unitID,
-        startFrame = Spring.GetGameFrame() + 1
-    }
-
-    GG.DisguiseCivilianFor[civilianID] = unitID
-    GG.DiedPeacefully[civilianID] = false
-
-    if civilianID then
-        GG.EventStream:CreateEvent(syncDecoyToAgent, persPack,
-                                   Spring.GetGameFrame() + 1)
-    end
-
-    return 0
-end
-
-function getWantCloak()
-    wantCloak = Spring.UnitScript.GetUnitValue(COB.WANT_CLOAK)
-    if wantCloak == 1 then
-        return true
-    else
-        return false
-    end
-    return false
-end
-
-boolCloaked = Spring.GetUnitIsCloaked(unitID)
-boolDeCloaked = false
-
-function cloakLoop()
-    local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
-    Sleep(100)
-    waitTillComplete(unitID)
-    Sleep(100)
-
-    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {})
-    SetUnitValue(COB.WANT_CLOAK, 1)
-    SetUnitValue(COB.CLOAKED, 1)
-    while (spGetUnitIsCloaked(unitID) == false) do Sleep(100) end
-
-    boolCloaked = spGetUnitIsCloaked(unitID)
-    StartThread(spawnDecoyCivilian)
-    --	echoOverload("invisible")
-    while true do
-        boolCloaked = spGetUnitIsCloaked(unitID)
-        Sleep(100)
-
-        if boolCloaked == false and boolDeCloaked == false then
-            --			echoOverload("revealed")
-            boolDeCloaked = true
-            Spring.SetUnitTooltip(unitID, "Militia : Cover blown")
-            boolArmed = true
-            Show(ak47)
-            Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {})
-
-            if civilianID and doesUnitExistAlive(civilianID) == true then
-                GG.DiedPeacefully[civilianID] = true
-                Spring.DestroyUnit(civilianID, true, true)
-            end
-        end
-
-        if boolCloaked == true and boolDeCloaked == true then
-            --	echoOverload("recloak prevented")
-            SetUnitValue(COB.WANT_CLOAK, 0)
-            SetUnitValue(COB.CLOAKED, 0)
-        end
-
-        Sleep(100)
-    end
-end
-
-function echoOverload(res) Spring.Echo("CivilianAgent: " .. res) end
-
 function akAimFunction(weaponID, heading, pitch)
+    
+    if bodyConfig.boolArmed == false or oldBehaviourState ~=
+        GameConfig.GameState.anarchy then return false end
 
     boolAiming = true
-	
     setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,
                               false)
     WTurn(center, y_axis, heading, 22)
@@ -1482,11 +1389,18 @@ function akAimFunction(weaponID, heading, pitch)
     return allowTarget(weaponID)
 end
 
+function molotowAimFunction(weaponID, heading, pitch)
+    -- if true == true then return true end
+    -- Aim Animation
+    return allowTarget(weaponID)
+end
+
 function akFireFunction(weaponID, heading, pitch)
     boolAiming = false
-
     return true
 end
+
+function molotowFireFunction(weaponID, heading, pitch) return true end
 
 WeaponsTable = {}
 function makeWeaponsTable()
@@ -1496,6 +1410,14 @@ function makeWeaponsTable()
         aimfunc = akAimFunction,
         firefunc = akFireFunction,
         signal = SIG_PISTOL
+    }
+    
+    WeaponsTable[2] = {
+        aimpiece = Head1,
+        emitpiece = cellphone1,
+        aimfunc = molotowAimFunction,
+        firefunc = molotowFireFunction,
+        signal = SIG_MOLOTOW
     }
 end
 
@@ -1528,30 +1450,12 @@ function script.AimWeapon(weaponID, heading, pitch)
     return false
 end
 
-local validTargetType = {[1] = true, [2] = true}
-
-function allowTarget(weaponID)
-    targetType, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
-
-    if not targetType or (not validTargetType[targetType]) then
-        -- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
-        return false
-    end
-
-    -- Do not aim at your own disguise civilian
-    if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then
-        if GG.DisguiseCivilianFor[targetID] and
-            spGetUnitTeam(GG.DisguiseCivilianFor[targetID]) == myTeamID then
-            return false
-        end
-    end
-
-    return boolCloaked == false
+function allowTarget(weaponID) 
+    return true 
 end
+
 function script.Killed(recentDamage, _)
-    if doesUnitExistAlive(civilianID) == true then
-        Spring.DestroyUnit(civilianID, true, true)
-    end
+    createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
+    
