@@ -163,6 +163,7 @@ function script.Create()
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
+    StartThread(cloakLoop)
 end
 
 function bodyBuild()
@@ -365,6 +366,7 @@ function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     prayTime= 12000
+    setSpeedEnv(unitID, 0.0)
     while prayTime > 0 do
        WaitForTurns(upperBodyPieces)
         Sleep(500)
@@ -372,9 +374,13 @@ function pray()
         if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
          Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
        prayTime = prayTime - 3500
+        WaitForTurns(upperBodyPieces)
+        WaitForTurns(lowerBodyPieces)
         Sleep(500)
     end
-     resetT(upperBodyPieces,2.0, false, true)
+    setSpeedEnv(unitID, 1.0)
+    resetT(upperBodyPieces,2.0, false, true)
+    Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
@@ -1458,4 +1464,94 @@ function script.Killed(recentDamage, _)
     createCorpseCUnitGeneric(recentDamage)
     return 1
 end
+
+
+local civilianID
+
+function spawnDecoyCivilian()
+    -- spawnDecoyCivilian
+    Sleep(10)
+    x, y, z = Spring.GetUnitPosition(unitID)
+
+    civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable),
+                                   x + randSign() * 5, y, z + randSign() * 5, 1,
+                                   Spring.GetGaiaTeamID())
+    transferUnitStatusToUnit(unitID, civilianID)
+    Spring.SetUnitNoSelect(civilianID, true)
+    Spring.SetUnitAlwaysVisible(civilianID, true)
+
+    persPack = {
+        myID = civilianID,
+        syncedID = unitID,
+        startFrame = Spring.GetGameFrame() + 1
+    }
+
+    GG.DisguiseCivilianFor[civilianID] = unitID
+    GG.DiedPeacefully[civilianID] = false
+
+    if civilianID then
+        GG.EventStream:CreateEvent(syncDecoyToAgent, persPack,
+                                   Spring.GetGameFrame() + 1)
+    end
+
+    return 0
+end
+
+function getWantCloak()
+    wantCloak = Spring.UnitScript.GetUnitValue(COB.WANT_CLOAK)
+    if wantCloak == 1 then
+        return true
+    else
+        return false
+    end
+    return false
+end
+
+boolCloaked = Spring.GetUnitIsCloaked(unitID)
+boolDeCloaked = false
+
+function cloakLoop()
+    local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
+    Sleep(100)
+    waitTillComplete(unitID)
+    Sleep(100)
+
+    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {})
+    SetUnitValue(COB.WANT_CLOAK, 1)
+    SetUnitValue(COB.CLOAKED, 1)
+    while (spGetUnitIsCloaked(unitID) == false) do Sleep(100) end
+
+    boolCloaked = spGetUnitIsCloaked(unitID)
+    StartThread(spawnDecoyCivilian)
+    --	echoOverload("invisible")
+    while true do
+        boolCloaked = spGetUnitIsCloaked(unitID)
+        Sleep(100)
+
+        if boolCloaked == false and boolDeCloaked == false then
+            --			echoOverload("revealed")
+            boolDeCloaked = true
+            Spring.SetUnitTooltip(unitID, "Militia : Cover blown")
+            boolArmed = true
+            Show(ak47)
+            Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {1}, {})
+
+            if civilianID and doesUnitExistAlive(civilianID) == true then
+                GG.DiedPeacefully[civilianID] = true
+                Spring.DestroyUnit(civilianID, true, true)
+            end
+        end
+
+        if boolCloaked == true and boolDeCloaked == true then
+            --	echoOverload("recloak prevented")
+            SetUnitValue(COB.WANT_CLOAK, 0)
+            SetUnitValue(COB.CLOAKED, 0)
+        end
+
+        Sleep(100)
+    end
+end
+
+function echoOverload(res) Spring.Echo("CivilianAgent: " .. res) end
+
     

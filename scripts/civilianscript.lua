@@ -17,6 +17,9 @@ SIG_LOW = 4
 SIG_COVER_WALK = 8
 SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
+SIG_MOLOTOW = 64
+SIG_INTERNAL = 128
+
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
