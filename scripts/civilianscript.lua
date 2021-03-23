@@ -152,8 +152,8 @@ function script.Create()
 
     setupAnimation()
 
-    --setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-    --                          nil, false)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
+                             nil, false)
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
@@ -161,7 +161,7 @@ function script.Create()
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-  StartThread(testAnimation)
+
 end
 
 function testAnimation()
@@ -377,15 +377,17 @@ function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     prayTime= 12000
+    setSpeedEnv(unitID, 0.0)
     while prayTime > 0 do
-       WaitForTurns(upperBodyPieces)
-        Sleep(500)
         PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
          Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
        prayTime = prayTime - 3500
+        WaitForTurns(upperBodyPieces)
+        WaitForTurns(lowerBodyPieces)
         Sleep(500)
     end
+    setSpeedEnv(unitID, 1.0)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(STATE_ENDED)
