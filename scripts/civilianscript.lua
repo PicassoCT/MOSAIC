@@ -143,7 +143,7 @@ function script.Create()
 
     variousBodyConfigs()
 
-    bodyConfig.boolArmed = true --false --DELME
+    bodyConfig.boolArmed = false --DELME
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
@@ -152,8 +152,8 @@ function script.Create()
 
     setupAnimation()
 
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                              nil, false)
+    --setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
+    --                          nil, false)
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
@@ -161,8 +161,22 @@ function script.Create()
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
+  StartThread(testAnimation)
 end
 
+function testAnimation()
+      --DelMe
+    Sleep(500)
+  
+    while true do
+        PlayAnimation("UPBODY_PRAY", {}, 1.0)
+        WaitForTurns(upperBodyPieces)
+        WaitForTurns(lowerBodyPieces)
+
+    Sleep(2000)
+    end
+
+end
 function bodyBuild()
     hideAll(unitID)
     Show(UpBody)
@@ -372,7 +386,8 @@ function pray()
        prayTime = prayTime - 3500
         Sleep(500)
     end
-     resetT(upperBodyPieces,2.0, false, true)
+    resetT(upperBodyPieces,2.0, false, true)
+    Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(STATE_ENDED)
 end
 
