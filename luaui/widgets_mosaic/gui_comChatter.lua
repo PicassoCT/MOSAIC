@@ -124,16 +124,7 @@ function widget:Shutdown()
 end
 
 
-
-function widget:CommandsChanged( id, params, options )
-
-end
-
-function widget:UnitDestroyed(unitID)
-	
-end
-
-
+selectedUnits= {}
 
 function widget:ViewResize(n_vsx,n_vsy)
 	vsx,vsy = Spring.GetViewGeometry()
@@ -149,16 +140,93 @@ function widget:ViewResize(n_vsx,n_vsy)
 	sizeMultiplier = 0.55 + (vsx*vsy / 8000000)
 end
 
-function selectPlayerSelectedUnits(playerID)
-	local units = {}
-	local count = 0
-	for pID, selUnits in pairs( playerSelectedUnits ) do
-		if pID == playerID then
-			for unitId, _ in pairs( selUnits["units"] ) do
-				count = count + 1
-				units[count] = unitId
-			end
-		end
-	end
-	Spring.SelectUnitArray(units)
+
+function widget:CommandsChanged( id, params, options )
+	selectedUnits= Spring.GetSelectedUnits()
 end
+
+function createIdentifierFromID(id, defID)
+
+end
+
+function getCommandStringFromDefID(defID)
+
+end
+
+local soundFilesLengthInFrames = {}
+function addSoundPath(baseString)
+	return "/sounds/comchat/"..baseString..".ogg", soundFilesLengthInFrames[soundLength]
+end
+
+function getCommandTarget(x,y)
+	return Spring.TraceScreenRay(x,y)
+end
+
+
+
+function getHighestOrderUnit(units)
+
+end
+
+ function getObjectSounds(location)
+ 	--Unit getCommandStringFromDefID
+
+ 	--Grid
+
+ end
+
+function buildSoundCommand(units, location)
+	if not units or #units < 1 then return end
+
+--highest priority unit
+local higestOrderDefID, id = getHighestOrderUnit(units)
+
+--command type
+local commandName, commandTime = addSoundPath(getCommandStringFromDefID(higestOrderDefID))
+local commandIdentifier = createIdentifierFromID(id, higestOrderDefID)
+
+local actionSound, actionTime = addSoundPath(getActionSound(id))
+
+--object
+local objectSounds, objectTimes = getObjectSounds(location)
+end
+
+function createSubject(sound, identifier, time)
+	return {sound = sound, identifier = identifier, time = time}
+end
+
+function createAction(sound, time)
+	return {sound = sound, time = time}
+end
+
+function createObject(sounds, times)
+	local result={}
+	for i=1,#sounds do
+		result[#result+1] = {sound = sounds[i], time = times[i]}
+	end
+	return result
+end
+
+
+commandStack ={
+--[[	[1]={ subject = {sound ="", identifier = 1 time=2000},
+		  action = {sound ="", time=2000},
+		  object = {
+		  		soundList={sound ="", time=2000}
+		  		..-
+		  }
+--]]
+}
+
+function widget:MouseRelease(x, y, mButton)
+		-- Only left click
+		Spring.Echo(mButton)
+	if (mButton == 1) then 	
+		location =getCommandTarget(x,y)
+		Spring.Echo("Left clicked on location", location )
+		buildSoundCommand(selctedUnits, location)
+	end
+	
+end
+
+
