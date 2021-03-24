@@ -42,9 +42,12 @@ function script.FireWeapon1()
 end
 
 function script.StartMoving()
+    Signal(SIG_SCOUTLET)
     spinT(TablesOfPiecesGroups["uprotor"], y_axis, 9500, 350)
     spinT(TablesOfPiecesGroups["lowrotor"], y_axis, -9500, 350)
-    boolRestart = true
+    for i=1,4 do
+        reset(TablesOfPiecesGroups["Scoutlett"][i], 44000)
+    end
 end
 
 boolRestart = true
@@ -52,7 +55,6 @@ function detachScouletts()
     x,y,z = Spring.GetUnitPosition(unitID)
     gh = Spring.GetGroundHeight(x,z)
     if y - gh < 5 then
-        boolRestart = false
         for i=1,4 do
             if math.random(0,4) == 2 then
                 StartThread(deployScoutletts,TablesOfPiecesGroups["Scoutlett"][i],i)
@@ -61,22 +63,17 @@ function detachScouletts()
     end
 end
 
-function deployScoutletts(pieces, nr)
-    Signal(SIG_SCOUTLET)
+function deployScoutletts(pname, nr)
     SetSignalMask(SIG_SCOUTLET)
-    spinT(TablesOfPiecesGroups["uprotor"][nr], y_axis, 9500, 350)
-    spinT(TablesOfPiecesGroups["lowrotor"][nr], y_axis, -9500, 350)
-    while boolRestart == false do
-        ry= math.random(30, 100)
-        rx,rz = math.random(50,250) * randSign(), math.random(50,250) * randSign()
-        mSyncIn(piecename, rx,ry,rz, 3000)
+    Sleep(1000)
+    Spin(TablesOfPiecesGroups["uprotor"][nr], y_axis, 9500, 350)
+    Spin(TablesOfPiecesGroups["lowrotor"][nr], y_axis, -9500, 350)
+          rx,rz = math.random(1000,5000) * randSign(), math.random(1000,5000) * randSign()
+    while true do
+        rx,rz = rx + math.random(1000,5000) * randSign(), rz+ math.random(1000,5000) * randSign()
+        mSyncIn(pname,rz, rx, Spring.GetGroundHeight(rx,rz)+ 250 + math.random(0,100), 500)
         Sleep(500)
-        while boolRestart == false and true == Spring.UnitScript.IsInMove(pname, x_axis) do
-            Sleep(33)
-        end
-
     end
-    mSyncIn(piecename, 0,0,0, 1000)
 end
 
 function script.StopMoving()
