@@ -43,24 +43,6 @@ local spIsSphereInView  	= Spring.IsSphereInView
 local spGetSpectatingState	= Spring.GetSpectatingState
 local spGetGameSeconds		= Spring.GetGameSeconds
 local spIsGUIHidden			= Spring.IsGUIHidden
-local glColor               = gl.Color
-local glDepthTest           = gl.DepthTest
-local glUnitShape			= gl.UnitShape
-local glPopMatrix           = gl.PopMatrix
-local glPushMatrix          = gl.PushMatrix
-local glTranslate           = gl.Translate
-local glText                = gl.Text
-local glTexture             = gl.Texture
-local glTexRect             = gl.TexRect
-local glBillboard           = gl.Billboard
-local glLineWidth 			= gl.LineWidth
-local glBeginEnd			= gl.BeginEnd
-local glScale				= gl.Scale
-local glVertex              = gl.Vertex
-local glCallList   			= gl.CallList
-local glDrawListAtUnit      = gl.DrawListAtUnit
-
-local GL_LINE_LOOP			= GL.LINE_LOOP
 
 local spec = false
 local showGui = false
@@ -68,28 +50,6 @@ local playerIsSpec = {}
 
 ----------------------------------------------------------------
 
-local scaleMultiplier			= 1.05
-local maxAlpha					= 0.45
-local hotFadeTime				= 0.25
-local lockTeamUnits				= false --disallow selection of units selected by teammates
-local showAlly					= true 		--also show allies (besides coop)
-local useHotColor				= false --use RED for all hot units, if false use playerColor starting with transparency
-local showAsSpectator			= true
-local circleDivsCoop			= 32  --nice circle
-local circleDivsAlly			= 5  --aka pentagon
-local selectPlayerUnits			= true
-
-local hotColor = { 1.0, 0.0, 0.0, 1.0 }
-
-local playerColorPool = {}
-playerColorPool[1] = { 0.0, 1.0, 0.0 }
-playerColorPool[2] = { 1.0, 1.0, 0.0 }
-playerColorPool[3] = { 0.0, 0.0, 1.0 }
-playerColorPool[4] = { 0.6, 0.0, 0.0 } --reserve full-red for hot units
-playerColorPool[5] = { 0.0, 1.0, 1.0 }
-playerColorPool[6] = { 1.0, 0.0, 1.0 }
-playerColorPool[7] = { 1.0, 0.0, 0.0 }
-playerColorPool[8] = { 1.0, 0.0, 0.0 }
 
 local xRelPos, yRelPos		= 0.835, 0.88	-- (only used here for now)
 local vsx, vsy				= gl.GetViewSizes()
@@ -101,7 +61,6 @@ local panelHeight = 55;
 local sizeMultiplier = 1
 
 --Internals------------------------------------------------------
-local playerColors = {}
 local nextPlayerPoolId = 1
 local myTeamID = Spring.GetMyTeamID()
 local myPlayerID = Spring.GetMyPlayerID()
@@ -124,7 +83,7 @@ function widget:Shutdown()
 end
 
 
-selectedUnits= {}
+local selectedUnits= {}
 
 function widget:ViewResize(n_vsx,n_vsy)
 	vsx,vsy = Spring.GetViewGeometry()
@@ -165,6 +124,9 @@ end
 
 
 function getHighestOrderUnit(units)
+	for i=1, #units do
+		local defID  = Spring.GetUnitDefID(units[i])
+	end
 
 end
 
@@ -227,6 +189,60 @@ function widget:MouseRelease(x, y, mButton)
 		buildSoundCommand(selctedUnits, location)
 	end
 	
+end
+
+local function playCurrentComset(frame, currentComSetIndex)
+	if not currentComSetIndex then return end
+	local boolComSetActive = false
+
+	local currentComSet = commandStack[currentComSetIndex]
+
+	--play subject
+	if currentComSet.subject.time > 0 then
+		Spring.Echo("ComChatter:".. currentComSet.subject.sound.." -> ".. currentComSet.subject.identifier )
+		local totalTime = currentComSet.subject.time 
+		commandStack[currentComSetIndex].subject.time = 0
+		return true, frame + totalTime
+	end
+
+	if currentComSet.action.time > 0 then
+	Spring.Echo("ComChatter:".. currentComSet.action.sound )
+		local totalTime = currentComSet.action.time 
+		commandStack[currentComSetIndex].action.time = 0
+		return true, frame + totalTime
+	end
+
+	for i=1, #currentComSet.object.soundList do
+			if currentComSet.object.soundList[i].time > 0 then
+				Spring.Echo("ComChatter:"..currentComSet.object.soundList[i].sound)
+				local totalTime = commandStack[currentComSetIndex].object.soundList[i].time
+				commandStack[currentComSetIndex].object.soundList[i].time = 0
+				return true, frame + totalTime
+			end
+	end
+
+	commandStack[currentComSetIndex] = nil
+	return false, frame
+end
+
+local currentComSetIndex =0
+local boolComSetActive = false
+function widget:GameFrame(n)
+	if n % 5 == 0 and n > nextComFrame then
+		if not boolComSetActive then
+		if commandStack and #commandStack > 0 then
+			for nr, comSet in pairs(commandStack) do
+				if comSet then
+					boolComSetActive = true
+					currentComSetIndex = nr
+					break
+				end
+			end
+		end
+		else
+			boolComSetActive, nextComFrame = playCurrentComset(n, currentComSetIndex)
+		end
+	end
 end
 
 
