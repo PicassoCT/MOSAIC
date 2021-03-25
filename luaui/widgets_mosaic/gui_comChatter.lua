@@ -1,6 +1,3 @@
-include("keysym.h.lua")
-local versionNumber = "2.03"
-
 function widget:GetInfo()
 	return {
 		name      = "ComChatter",
@@ -8,18 +5,10 @@ function widget:GetInfo()
 		author    = "pica",
 		date      = "1 1, 2021",
 		license   = "GNU GPL v2",
-		layer     = -10,
-		enabled   = false
+		layer     = 155,
+		enabled   = true
 	}
 end
-
-local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
-local vsx,vsy = Spring.GetViewGeometry()
-local fontfileScale = (0.5 + (vsx*vsy / 5700000))
-local fontfileSize = 25
-local fontfileOutlineSize = 5
-local fontfileOutlineStrength = 1.3
-local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 
 --callin driven
 --"hot" units
@@ -27,7 +16,7 @@ local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSi
 local floor                 = math.floor
 local abs					= math.abs
 
-local udefTab				= UnitDefs
+local udefs					= UnitDefs
 local spGetUnitDefID        = Spring.GetUnitDefID
 local spEcho                = Spring.Echo
 local spGetUnitPosition     = Spring.GetUnitPosition
@@ -75,33 +64,17 @@ local unitConf ={}
 
 
 function widget:Initialize()
-
 end
 
 function widget:Shutdown()
-	
 end
 
 
 local selectedUnits= {}
 
-function widget:ViewResize(n_vsx,n_vsy)
-	vsx,vsy = Spring.GetViewGeometry()
-	widgetScale = (0.5 + (vsx*vsy / 5700000))
-  local newFontfileScale = (0.5 + (vsx*vsy / 5700000))
-  if (fontfileScale ~= newFontfileScale) then
-    fontfileScale = newFontfileScale
-    gl.DeleteFont(font)
-    font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
-  end
-
-	xPos, yPos            = xRelPos*vsx, yRelPos*vsy
-	sizeMultiplier = 0.55 + (vsx*vsy / 8000000)
-end
-
 
 function widget:CommandsChanged( id, params, options )
-	selectedUnits= Spring.GetSelectedUnits()
+	selectedUnits = Spring.GetSelectedUnits()
 end
 
 function createIdentifierFromID(id, defID)
@@ -109,6 +82,12 @@ function createIdentifierFromID(id, defID)
 end
 
 function getCommandStringFromDefID(defID)
+
+	--civilian <neutral>
+	--agents <mobile>
+	--operative <operative>
+	--asset
+	--military <strike> 
 
 end
 
@@ -122,8 +101,8 @@ function getCommandTarget(x,y)
 	return typestring, result
 end
 
-function getNatoPhoneticsTime(letter)
-	NatoPhoneticAlphabet ={
+local function getNatoPhoneticsTime(letter)
+	local NatoPhoneticAlphabet = {
     a="alpha",
     b="bravo",
     c="charlie",
@@ -164,15 +143,15 @@ function getNatoPhoneticsTime(letter)
 return NatoPhoneticAlphabet[string.lower(letter)], 2 *30
 end
 
-function getHighestOrderUnit(units)
+local function getHighestOrderUnit(units)
 	local maxHP = math.huge*-1
 	local resultID, resultDefID
 
 	for i=1, #units do
 		local defID  = Spring.GetUnitDefID(units[i])
 		if defID then
-			if UnitDefs[defID].maxDamage > maxHP then
-				maxHP = UnitDefs[defID].maxDamage
+			if udefs[defID].maxDamage > maxHP then
+				maxHP = udefs[defID].maxDamage
 				resultID = units[i]
 				resultDefID = defID
 			end
@@ -182,13 +161,12 @@ function getHighestOrderUnit(units)
 end
 
 local QuadrantSize = 512
-function getQuadrant(x,z)
+local function getQuadrant(x,z)
 	return x/QuadrantSize, z/QuadrantSize
 end
 
-function dec2hex(num)
-
-    local hexstr = '0123456789ABCDEF'
+local function dec2hex(num)
+    local hexstr = '0123456789abcdef'
     local s = ''
 
     while num > 0 do
@@ -201,7 +179,7 @@ function dec2hex(num)
 
 end
 
- function getObjectSounds(x,y)
+local function getObjectSounds(x,y)
  	--Unit getCommandStringFromDefID
 	goalType, goalLocation = getCommandTarget(x,y)
 	local objectData ={ sounds={}, times = {}}
@@ -245,7 +223,7 @@ end
  	return objectData
  end
 
-function buildSoundCommand(units, x, y)
+local function buildSoundCommand(units, x, y)
 	if not units or #units < 1 then return end
 	if not x or not y then return end
 
