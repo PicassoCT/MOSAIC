@@ -376,10 +376,7 @@ local spGetMyPlayerID = Spring.GetMyPlayerID
 local startFrame = Spring.GetGameFrame()
 
 function widget:Initialize()	
-		if Spring.GetConfigInt("mosaic_startupcounter",1) > 2 then
-			widgetHandler:RemoveWidget(widget)
-		end
-
+	
 		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
 
 		local myTeamID= spGetMyTeamID()
