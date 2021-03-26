@@ -5,7 +5,8 @@ function widget:GetInfo()
 		author    = "pica",
 		date      = "1 1, 2021",
 		license   = "GNU GPL v2",
-		layer     = 155,
+		layer     = -15,
+		handler   = true,
 		enabled   = true
 	}
 end
@@ -62,8 +63,10 @@ local lockPlayerID
 local unitConf ={}
 ------------------------------------------------------------------
 
-
+local nextComFrame = Spring.GetGameFrame()
 function widget:Initialize()
+	Spring.Echo("Initialize Comm Chatter")
+	nextComFrame = Spring.GetGameFrame()
 end
 
 function widget:Shutdown()
@@ -71,8 +74,6 @@ end
 
 
 local selectedUnits= {}
-
-
 function widget:CommandsChanged( id, params, options )
 	selectedUnits = Spring.GetSelectedUnits()
 end
@@ -81,14 +82,47 @@ function createIdentifierFromID(id, defID)
 
 end
 
+local function getDefIDFromName(name)
+	for i=1,#UnitDefs do
+		if UnitDefs[i].name == name then
+			return UnitDefs[i].id
+		end
+	end
+end
+
+local assetDefID = getDefIDFromName("operative_asset")
+local civilianAgentDefID = getDefIDFromName("civilian_agent")
+local operativeTypeTable = {
+	[getDefIDFromName("operativeinvestigator")] = true,
+	[getDefIDFromName("operativepropagator")] = true
+	}
+
 function getCommandStringFromDefID(defID)
+	if civilianWalkingTypeTable[defID] then
+		return "_neutral"
+	end
 
-	--civilian <neutral>
-	--agents <mobile>
-	--operative <operative>
-	--asset
-	--military <strike> 
+	if civilianAgentDefID ==  defID then
+		return "_mobile"
+	end
 
+	if operativeTypeTable[defID] then
+		return "_operative"
+	end
+
+	if UnitDefs[defID].isbuilding then
+		return "_safehouse"
+	end
+
+	if assetDefID == defID then
+		return "_asset"
+	end
+
+	if UnitDefs[defID].canattack == true then
+		return "_strike"
+	end
+
+	return "_mobile"
 end
 
 local soundFilesLengthInFrames = {}
@@ -176,6 +210,10 @@ local function dec2hex(num)
     end
     if s == '' then s = '0' end
     return s
+end
+
+function getIdentifierFromID(id)
+		local idStr = (id % 100)..""
 
 end
 
@@ -189,14 +227,14 @@ local function getObjectSounds(x,y)
 	end
 
 	if goalType == "unit" then
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "at" , 15
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "_at" , 15
 		local objectName, objectTime = getCommandStringFromDefID(Spring.GetUnitDefID(goalLocation))
 		objectData.sounds[#objectData.sounds + 1] = objectName
 		objectData.times[#objectData.times + 1] = objectTime
 	end
 
 	if goalType == "feature" then
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "near" , 30
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "_near" , 30
 		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = getNatoPhoneticsTime("F")
 		
 		local FeatureName = FeatureDefs[Spring.GetFeatureDefID(goalLocation)].name
@@ -204,8 +242,8 @@ local function getObjectSounds(x,y)
 	end
 
 	if goalType == "ground" then
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "to" , 15
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "sector" , 30
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "_to" , 15
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = "_sector" , 30
 
 		local x,z = goalLocation[1],goalLocation[3]
 		x,z = getQuadrant(x,z)

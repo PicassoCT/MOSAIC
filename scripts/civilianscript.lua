@@ -328,7 +328,7 @@ end
 
 STATE_STARTED = "STARTED"
 STATE_ENDED = "ENDED"
-function setCivilianUnitInternalStateMode(State)
+function setCivilianUnitInternalStateMode(unitID, State)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
      
      GG.CivilianUnitInternalLogicActive[unitID] = State 
@@ -337,7 +337,7 @@ function setCivilianUnitInternalStateMode(State)
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     filmLocation.x=ux
     filmLocation.y=uy
     filmLocation.z=uz
@@ -348,7 +348,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     wailingTime = time
     boolStartWailing = true
 end
@@ -356,7 +356,7 @@ end
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     chattingTime = time
     boolStartChatting = true
 end
@@ -365,13 +365,13 @@ attackerID = 0
 boolStartFleeing = false 
 function startFleeing(attackerID)
     if not attackerID then return end
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
 end
 
 boolStartPraying = false
 function startPraying()
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartPraying = true
 end
 
@@ -393,12 +393,12 @@ function pray()
     setSpeedEnv(unitID, 1.0)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
-    setCivilianUnitInternalStateMode(STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartAnarchyBehaviour = true
 end
 
@@ -411,7 +411,7 @@ function anarchyBehaviour()
         Sleep(250)
     end
 
- setCivilianUnitInternalStateMode(STATE_ENDED)
+ setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 boolStartAerosolBehaviour = false
@@ -419,7 +419,7 @@ aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     aeroSolType = extAerosolStateToSet
-    setCivilianUnitInternalStateMode(STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
 end
 
 function aeroSolStateBehaviour()
@@ -447,7 +447,7 @@ function wailing()
        wailingTime = wailingTime - 1500
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 function chatting()
@@ -471,7 +471,7 @@ function chatting()
        chattingTime = chattingTime - 1500
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 function filmingLocation()
@@ -484,14 +484,14 @@ function filmingLocation()
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     if not enemyID then 
-        setCivilianUnitInternalStateMode(STATE_ENDED)
+        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
     end
 
@@ -500,7 +500,7 @@ function fleeEnemy(enemyID)
         Sleep(500)
     end
 
-    setCivilianUnitInternalStateMode(STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)

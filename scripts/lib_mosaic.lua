@@ -1603,8 +1603,6 @@ end
 
 --> Sets A Unit on Fire
 function setUnitOnFire(id, timeOnFire)
-
-
     if GG.OnFire == nil then GG.OnFire = {} end
     boolInsertIt = true
     --very bad sollution n-times
@@ -1637,9 +1635,8 @@ function getObjectiveAboveGroundOffset(id)
     return heighestPoint - ghb
 end
 
-function setCivilianUnitInternalStateMode(State)
+function setCivilianUnitInternalStateMode(unitID, State)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     
      GG.CivilianUnitInternalLogicActive[unitID] = State 
  end
 

@@ -1447,6 +1447,11 @@ function mouseEvent(x, y, button, release)
             if show and groupRect ~= nil then
                 for id,group in pairs(optionGroups) do
 					if advSettings or group.id ~= 'dev' then
+						assert(groupRect[id])
+						assert(groupRect[id][1])
+						assert(groupRect[id][2])
+						assert(groupRect[id][3])
+						assert(groupRect[id][4])
 						if IsOnRect(cx, cy, groupRect[id][1], groupRect[id][2], groupRect[id][3], groupRect[id][4]) then
 							if not release then
 								currentGroupTab = group.id
@@ -1637,7 +1642,9 @@ function applyOptionValue(i, skipRedrawWindow)
 			Spring.SendCommands("luarules reloadluaui")	-- cause several widgets are still using old colors
 		end
 	end
-
+	assert(options[i])
+	assert(options[i].onchange)
+	assert(options[i].value)
 	if options[i].onchange then
 		options[i].onchange(i, options[i].value)
 	end

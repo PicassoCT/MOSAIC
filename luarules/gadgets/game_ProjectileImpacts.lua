@@ -130,6 +130,7 @@ if (gadgetHandler:IsSyncedCode()) then
 					if env and env.setCivilianUnitInternalStateMode then
 						Spring.UnitScript.CallAsUnit(id,
 													 env.setCivilianUnitInternalStateMode,
+                                                     id,
 													"STARTED")
 					end
 				end
