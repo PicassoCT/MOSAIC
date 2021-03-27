@@ -437,6 +437,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Simulation mode
                             spEcho(
                                 "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
+                            setSpeedEnv(persPack.interrogatorID, 1.0)
                             spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
                         end
@@ -458,7 +459,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-
+                            setSpeedEnv(persPack.interrogatorID, 1.0)
                             spDestroyUnit(persPack.IconId, true, true)
                             return true, persPack
                         end
