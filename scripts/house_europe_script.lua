@@ -215,16 +215,17 @@ function getPieceGroupName(Deco)
     return t.name:gsub('%d+', '')
 end
 
-function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset)
+function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, materialGroupName)
     countedElements = count(DecoMaterial)
     piecename = ""
+    materialGroupName = materialGroupName or "GroupNameUndefined"
     if countedElements <= 0 then return DecoMaterial end
 
     y_offset = yoffset or 0
     attempts = 0
-    local Deco, nr = getRandomBuildMaterial(DecoMaterial)
+    local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
     while not Deco and attempts < countedElements do
-        Deco, nr = getRandomBuildMaterial(DecoMaterial)
+        Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
         Sleep(1)
         attempts = attempts + 1
     end
@@ -248,10 +249,10 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset)
     return DecoMaterial, Deco
 end
 
-function getRandomBuildMaterial(buildMaterial)
+function getRandomBuildMaterial(buildMaterial, name)
 
     if not buildMaterial then
-        echo(getScriptName() .. "getRandomBuildMaterial: Got no table ");
+        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
     end
     if not type(buildMaterial) == "table" then
@@ -261,8 +262,8 @@ function getRandomBuildMaterial(buildMaterial)
         return
     end
     total = count(buildMaterial)
-    if total == 0 then
-        echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table")
+    if total == 0 and #buildMaterial == 0 then
+        echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
         return
     end
 
@@ -441,6 +442,7 @@ function buildDecorateGroundLvl()
     local yardMaterial = getElasticTable("Yard")
 
     materialColourName = selectGroundBuildMaterial()
+    echo("House_europe_Colour:"..materialColourName)
     materialGroupName = materialColourName .. "FloorBlock"
     buildMaterial = TablesOfPiecesGroups[materialGroupName]
     assert(buildMaterial)
@@ -457,10 +459,10 @@ function buildDecorateGroundLvl()
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName )
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName)
 
                 Sleep(1)
             end
@@ -482,7 +484,7 @@ function buildDecorateGroundLvl()
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     StreetDecoMaterial, StreetDeco =
                         DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                          StreetDecoMaterial, 0)
+                                          StreetDecoMaterial, 0, materialColourName)
                     Turn(StreetDeco, 3, math.rad(rotation), 0)
 
                 end
@@ -490,12 +492,12 @@ function buildDecorateGroundLvl()
                 if chancesAre(10) < decoChances.door then
                     axis = _z_axis
                     DoorMaterial, Door =
-                        DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0)
+                        DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0 , materialColourName)
                     Turn(Door, axis, math.rad(rotation), 0)
                     if chancesAre(10) < decoChances.door then
                         DoorDecoMaterial, DoorDeco =
                             DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                              DoorDecoMaterial)
+                                              DoorDecoMaterial, 0, materialColourName)
                         if DoorDeco then
                             Turn(DoorDeco, axis, math.rad(rotation), 0)
                         end
@@ -546,10 +548,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName)
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName)
                 Sleep(1)
             end
 
@@ -571,7 +573,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     -- echo("Adding Window decoration to"..Level)
                     WindowWallMaterial, WindowDeco =
                         DecorateBlockWall(xRealLoc, zRealLoc, Level,
-                                          WindowWallMaterial, 0)
+                                          WindowWallMaterial, 0, materialGroupName)
                     Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
                 end
 
@@ -592,7 +594,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
                 streetWallMaterial, streetWallDeco =
                     DecorateBlockWall(xRealLoc, zRealLoc, Level,
-                                      streetWallMaterial, 0)
+                                      streetWallMaterial, 0, materialGroupName)
 
                 if streetWallDeco then
                     rotation = getStreetWallDecoRotation(index)
@@ -633,10 +635,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial)
+    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard")
     attempts = 0
     while not element and attempts < countedElements do
-        element, nr = getRandomBuildMaterial(buildMaterial)
+        element, nr = getRandomBuildMaterial(buildMaterial, "backyard")
         Sleep(1)
         attempts = attempts + 1
     end
@@ -663,7 +665,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     return buildMaterial, element
 end
 
-function addRoofDeocrate(Level, buildMaterial)
+function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -672,9 +674,9 @@ function addRoofDeocrate(Level, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof")
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof")
                 Sleep(1)
             end
 
@@ -701,9 +703,9 @@ function addRoofDeocrate(Level, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial)
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco")
             while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial)
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco")
                 Sleep(1)
             end
 
@@ -817,7 +819,7 @@ function buildBuilding()
                                             buildMaterial)
     end
     echo(getScriptName() .. "addRoofDeocrate")
-    addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
+    addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"], materialColourName)
     boolDoneShowing = true
 end
 
