@@ -12,7 +12,7 @@ heightoffset = 90
 local cubeDim = {
     length = factor * 14.4 * 1.45,
     heigth = factor * 14.84 + heightoffset,
-    roofHeigth = 600
+    roofHeigth = 700
 }
 supriseChances = {
     roof = 0.5,
