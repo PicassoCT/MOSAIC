@@ -737,7 +737,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
         return true, nil, persPack
     end
 
-    if spGetUnitIsDead(myID) == true then 
+    if doesUnitExistAlive(myID) == false then 
         return true, nil, persPack
     end
 
