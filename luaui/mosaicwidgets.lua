@@ -386,8 +386,6 @@ function widgetHandler:LoadConfigData()
 
 
 
-
-
 function widgetHandler:SaveConfigData()
   self:LoadConfigData()
   local filetable = {}
