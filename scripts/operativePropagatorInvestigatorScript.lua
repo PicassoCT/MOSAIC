@@ -317,10 +317,10 @@ local Drone = piece("Drone")
 local RayBan = piece("Line004")
 local Micro = piece("Micro")
 local Ponytail = piece("Ponytail")
-Icon = piece("Icon")
-Shell1 = piece("Shell1")
-FoldtopUnfolded = piece'FoldtopUnfolded'
-FoldtopFolded= piece'FoldtopFolded'
+local Icon = piece("Icon")
+local Shell1 = piece("Shell1")
+local FoldtopUnfolded = piece'FoldtopUnfolded'
+local FoldtopFolded= piece'FoldtopFolded'
 
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 GameConfig = getGameConfig()
@@ -418,10 +418,10 @@ function script.Create()
 
     StartThread(threadStarter)
 	StartThread(cloakLoop)
-	--StartThread(testAnimationLoop)
+    Show(FoldtopUnfolded)
     StartThread(breathing)
     StartThread(raidReactor)
--- echo("Create complted")
+
 end
 
 function testAnimationLoop()
@@ -504,6 +504,7 @@ function breathing()
 			rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
 			tP(Eye1,rx,ry,rz, 16)
 			tP(Eye2,rx,ry,rz, 16)
+            tP(Head,0,math.random(-20,20),0, 2)
 		end
 		Sleep(250)
 	end

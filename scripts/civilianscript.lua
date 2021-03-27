@@ -146,7 +146,7 @@ function script.Create()
 
     variousBodyConfigs()
 
-    bodyConfig.boolArmed = false --DELME
+    bodyConfig.boolArmed = false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
@@ -160,11 +160,24 @@ function script.Create()
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
+    StartThread(breathing)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
 
+end
+function breathing()
+    while true do
+        if boolAiming == false then
+            WaitForTurns(Head1)
+            headTurnValue = math.random(-10,10)
+            Turn(Head1,y_axis, math.rad(headTurnValue), 1)
+            WaitForTurns(Head1)
+        end
+    interval = math.random(500, 5000)
+    Sleep(interval)
+    end
 end
 
 function testAnimation()
@@ -465,12 +478,18 @@ function chatting()
             if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
         end
         )
+
        if #Result < 1 then break end
+       headVal = math.random(-20,20)
+       Turn(Head1,y_axis,math.rad(headVal),1.5)
+       WaitForTurns(Head1)
        ix,iy,iz = Spring.GetUnitPosition(Result[1])
        setUnitRotationToPoint(unitID, ix,iy,iz)
        chattingTime = chattingTime - 1500
         Sleep(100)
     end
+        playUpperBodyIdleAnimation()
+        resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
@@ -1395,7 +1414,7 @@ end
 
 function akAimFunction(weaponID, heading, pitch)
     
-    if bodyConfig.boolArmed == false or oldBehaviourState ~=
+    if bodyConfig.boolArmed == false or GG.GlobalGameState ~=
         GameConfig.GameState.anarchy then return false end
 
     boolAiming = true
@@ -1408,8 +1427,9 @@ function akAimFunction(weaponID, heading, pitch)
 end
 
 function molotowAimFunction(weaponID, heading, pitch)
-    -- if true == true then return true end
-    -- Aim Animation
+   if bodyConfig.boolArmed == false or GG.GlobalGameState ~=
+        GameConfig.GameState.anarchy then return false end
+        
     return allowTarget(weaponID)
 end
 

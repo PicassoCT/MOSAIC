@@ -136,9 +136,10 @@ function breathing()
             WTurn(Torso, x_axis, math.rad(1), breathSpeed)
             Turn(Head, x_axis, math.rad(0), breathSpeed)
             WTurn(Torso, x_axis, math.rad(0), breathSpeed)
-	    rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
+	       rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
             tP(Eye1,rx,ry,rz, 16)
-	    tP(Eye2,rx,ry,rz, 16)
+    	    tP(Eye2,rx,ry,rz, 16)
+            tP(Head,0,math.random(-25,25),0, 2)
         end
         Sleep(250)
     end
