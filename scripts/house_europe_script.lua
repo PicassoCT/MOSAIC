@@ -720,7 +720,7 @@ end
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     if materialColourName == "Office" then
-        decoChances.roof = 0.65
+        decoChances.roof = 0.65 
     end
 
     for i = 1, 37, 1 do
