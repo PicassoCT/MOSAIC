@@ -69,10 +69,16 @@ function script.Create()
     math.randomseed(x + y + z)
     StartThread(buildHouse)
 
-    spinYPieces = {}
+    for i=1, #TablesOfPiecesGroups["OfficeRoofDeco1Sub"] do
+     spinYPieces[TablesOfPiecesGroups["OfficeRoofDeco1Sub"][i]]= true
+    end
+
+    for i=1,#TablesOfPiecesGroups["RoofDeco58Sub"] do
+        spinYPieces[TablesOfPiecesGroups["RoofDeco58Sub"][i]] = true
+    end
 
     pericodicRotationYPieces = {
-        [TablesOfPiecesGroups["StreetWallDeco4Sub"][1]] = false,
+        [TablesOfPiecesGroups["OfficeRoofDeco1"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco13Sub"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco12Sub"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco10Sub"][1]] = false,
@@ -80,6 +86,8 @@ function script.Create()
         [TablesOfPiecesGroups["StreetWallDeco3Sub"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco5Sub"][1]] = false
     }
+
+    pericodicMovingZPieces[#pericodicMovingZPieces+1] = TablesOfPiecesGroups["RoofDeco54Sub"][1]
     BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     windsolar = {}
@@ -183,7 +191,9 @@ function showOneOrAll(T)
     if chancesAre(10) > 0.5 then
         return showOne(T)
     else
-        for num, val in pairs(T) do ToShowTable[#ToShowTable + 1] = val end
+        for num, val in pairs(T) do 
+
+            ToShowTable[#ToShowTable + 1] = val end
         return
     end
 end
@@ -405,6 +415,36 @@ function getElasticTable(...)
     return resulT
 end
 
+function searchElasticWithoutMaterial(forbiddenMaterial, ...)
+    local arg = arg;
+    if (not arg) then arg = {...} end
+    resulT = {}
+    for _, searchterm in pairs(arg) do
+        for k, v in pairs(TablesOfPiecesGroups) do
+            if string.find(string.lower(k), string.lower(searchterm)) and
+                string.find(string.lower(k), "sub") == nil and
+                string.find(string.lower(k), "_ncl1_") == nil then
+                boolContainsForbiddenWords = false
+                for nr, term in pairs(forbiddenMaterial) do
+                    if string.find(string.lower(k), string.lower(term)) then
+                        boolContainsForbiddenWords = true
+                    end              
+                end
+
+                if boolContainsForbiddenWords == true then break end
+
+                if TablesOfPiecesGroups[k] then
+                    for num, piecenum in pairs(TablesOfPiecesGroups[k]) do
+                        resulT[#resulT + 1] = piecenum
+                    end
+                end
+            end
+        end
+    end
+
+    return resulT
+end
+
 function getElasticTableDebugCopy(...)
     local arg = arg;
     if (not arg) then arg = {...} end
@@ -442,6 +482,12 @@ function buildDecorateGroundLvl()
     local yardMaterial = getElasticTable("Yard")
 
     materialColourName = selectGroundBuildMaterial()
+    if materialColourName == "Office" then
+        yardMaterial = searchElasticWithoutMaterial({"Ghetto"}, "Yard")
+        StreetDecoMaterial = searchElasticWithoutMaterial({"Ghetto"},"Street")
+        DoorDecoMaterial= {}
+    end
+
     echo("House_europe_Colour:"..materialColourName)
     materialGroupName = materialColourName .. "FloorBlock"
     buildMaterial = TablesOfPiecesGroups[materialGroupName]
@@ -532,6 +578,12 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     local WindowWallMaterial = getElasticTable("Window") -- getElasticTable( "Window")--"Wall",
     local yardMaterial = getElasticTable("YardWall")
     local streetWallMaterial = getElasticTable("StreetWall")
+
+    if buildMaterial == "office" then
+        WindowWallMaterial = getElasticTable("OfficeWallDeco")
+        yardMaterial = {}
+    end
+
 
     echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
              count(yardMaterial) .. "|" .. count(streetWallMaterial))
@@ -667,6 +719,9 @@ end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
+    if materialColourName == "Office" then
+        decoChances.roof = 0.65
+    end
 
     for i = 1, 37, 1 do
         local index = i
@@ -698,6 +753,12 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
     countElements = 0
     local decoMaterial = TablesOfPiecesGroups["RoofDeco"]
+    if TablesOfPiecesGroups[materialColourName.."RoofDeco"] then
+        for k,v in pairs(TablesOfPiecesGroups[materialColourName.."RoofDeco"] ) do
+            decoMaterial[#decoMaterial+1] = v
+        end
+    end
+
     for i = 1, 37, 1 do
         partOfPlan, xLoc, zLoc = getLocationInPlan(i)
         if partOfPlan == true then
@@ -740,7 +801,12 @@ function showHouse() showT(ToShowTable) end
 function hideHouse() hideT(ToShowTable) end
 
 function buildAnimation()
-    showOneOrAll(TablesOfPiecesGroups["BuildDeco"])
+    for i=1, #TablesOfPiecesGroups["BuildDeco"] do
+        if maRa() == true then
+            Show(TablesOfPiecesGroups["BuildDeco"][i])
+        end
+    end
+
     local builT = TablesOfPiecesGroups["Build"]
     axis = y_axis
 
@@ -788,8 +854,8 @@ function buildAnimation()
     for i = 1, 3 do
         Move(builT[i], axis, i * -cubeDim.heigth * 10, 3 * math.pi)
     end
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, -1000, 8000)
-    moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, 0, -1000, 8000)
+    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -10000, 0, 8000)
+    moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, -10000, 0, 8000)
     Sleep(1000)
     hideT(TablesOfPiecesGroups["BuildCrane"])
     Sleep(7000)
