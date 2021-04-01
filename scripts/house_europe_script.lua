@@ -78,7 +78,7 @@ function script.Create()
     end
 
     pericodicRotationYPieces = {
-        [TablesOfPiecesGroups["OfficeRoofDeco1"][1]] = false,
+        [TablesOfPiecesGroups["OfficeRoofDeco1Sub"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco13Sub"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco12Sub"][1]] = false,
         [TablesOfPiecesGroups["StreetWallDeco10Sub"][1]] = false,
@@ -91,8 +91,6 @@ function script.Create()
     BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     windsolar = {}
-
-    pericodicMovingZPieces = {}
 
     StartThread(rotations)
 end
@@ -188,6 +186,7 @@ end
 
 function showOneOrAll(T)
     if not T then return end
+    
     if chancesAre(10) > 0.5 then
         return showOne(T)
     else
@@ -216,7 +215,7 @@ function selectGroundBuildMaterial()
     if not nice then nice = 1 end
     dice = materialChoiceTable[nice]
 
-    return "Office" -- dice
+    return  dice
 end
 
 function getPieceGroupName(Deco)
@@ -528,11 +527,11 @@ function buildDecorateGroundLvl()
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-                    StreetDecoMaterial, StreetDeco =
-                        DecorateBlockWall(xRealLoc, zRealLoc, 0,
+                    StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0,
                                           StreetDecoMaterial, 0, materialColourName)
-                    Turn(StreetDeco, 3, math.rad(rotation), 0)
-
+                        if StreetDeco then
+                            Turn(StreetDeco, 3, math.rad(rotation), 0)
+                        end
                 end
 
                 if chancesAre(10) < decoChances.door then
@@ -710,6 +709,8 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 
     if TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"] then
         showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"])
+    else
+        echo(pieceGroupName..nr.." has no subs")
     end
 
     ToShowTable[#ToShowTable + 1] = element
@@ -817,13 +818,16 @@ function buildAnimation()
 
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
-
+        hideT(TablesOfPiecesGroups["BuildDeco"])
         return
     end
 
     local builT = TablesOfPiecesGroups["Build"]
 
-    for i = 1, 3 do WMove(builT[i], axis, i * -cubeDim.heigth * 2, 0) end
+    for i = 1, 3 do 
+        WMove(builT[i], axis, i * -cubeDim.heigth * 2, 0) 
+    end
+
     moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
 
     WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
