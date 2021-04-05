@@ -9,6 +9,7 @@ function getScriptName() return "house_europe_script.lua::" end
 TablesOfPiecesGroups = {}
 factor = 40
 heightoffset = 90
+local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local cubeDim = {
     length = factor * 14.4 * 1.45,
     heigth = factor * 14.84 + heightoffset,
@@ -22,7 +23,9 @@ supriseChances = {
     powerpoles = 0.5,
     door = 0.6,
     windowwall = 0.7,
-    streetwall = 0.5
+    streetwall = 0.5,
+    grafiti = 0.1
+
 }
 decoChances = {
     roof = 0.2,
@@ -32,9 +35,12 @@ decoChances = {
     powerpoles = 0.5,
     door = 0.6,
     windowwall = 0.5,
-    streetwall = 0.1
+    streetwall = 0.1,
+    grafiti = 0.3
 }
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
+
+vtolDeco= {}
 x, y, z = Spring.GetUnitPosition(unitID)
 geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
               (z - (z - math.floor(z)))
@@ -54,7 +60,7 @@ center = piece "center"
 
 pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
-spinYPieces = {}
+
 GameConfig = getGameConfig()
 
 function timeOfDay()
@@ -62,32 +68,34 @@ function timeOfDay()
     timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
+
 BuildDeco = {}
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     x, y, z = Spring.GetUnitPosition(unitID)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
 
-    for i=1, #TablesOfPiecesGroups["OfficeRoofDeco1Sub"] do
-     spinYPieces[TablesOfPiecesGroups["OfficeRoofDeco1Sub"][i]]= true
-    end
-
-    for i=1,#TablesOfPiecesGroups["RoofDeco58Sub"] do
-        spinYPieces[TablesOfPiecesGroups["RoofDeco58Sub"][i]] = true
-    end
+   
 
     pericodicRotationYPieces = {
-        [TablesOfPiecesGroups["OfficeRoofDeco1Sub"][1]] = false,
-        [TablesOfPiecesGroups["StreetWallDeco13Sub"][1]] = false,
-        [TablesOfPiecesGroups["StreetWallDeco12Sub"][1]] = false,
-        [TablesOfPiecesGroups["StreetWallDeco10Sub"][1]] = false,
-        [TablesOfPiecesGroups["StreetWallDeco11Sub"][1]] = false,
-        [TablesOfPiecesGroups["StreetWallDeco3Sub"][1]] = false,
-        [TablesOfPiecesGroups["StreetWallDeco5Sub"][1]] = false
+        [TablesOfPiecesGroups["OfficeRoofDeco1Sub"][1]] = 42,
+        [TablesOfPiecesGroups["StreetWallDeco13Sub"][1]] = 42,
+        [TablesOfPiecesGroups["StreetWallDeco12Sub"][1]] = 42,
+        [TablesOfPiecesGroups["StreetWallDeco10Sub"][1]] = 42,
+        [TablesOfPiecesGroups["StreetWallDeco11Sub"][1]] = 42,
+        [TablesOfPiecesGroups["StreetWallDeco3Sub"][1]] = -42,
+        [TablesOfPiecesGroups["StreetWallDeco5Sub"][1]] = -42
     }
 
-    pericodicMovingZPieces[#pericodicMovingZPieces+1] = TablesOfPiecesGroups["RoofDeco54Sub"][1]
+    vtolDeco = {
+      --  [TablesOfPiecesGroups["RoofDeco"][59]]=TablesOfPiecesGroups["RoofDeco59Sub"][1],
+        [TablesOfPiecesGroups["RoofDeco"][65]]=TablesOfPiecesGroups["RoofDeco65Sub"][1],
+        [TablesOfPiecesGroups["RoofDeco"][52]]=TablesOfPiecesGroups["RoofDeco52Sub"][1],
+    }
+
+    pericodicMovingZPieces[TablesOfPiecesGroups["RoofDeco54Sub"][1]] = 160
     BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     windsolar = {}
@@ -96,22 +104,18 @@ function script.Create()
 end
 
 function rotations()
-    process(spinYPieces, function(id)
-        direction = 42 * randSign()
-        Spin(id, y_axis, math.rad(direction), math.pi)
 
-    end)
 
-    periodicFunc = function(p)
+    periodicFunc = function(p, v)
         while true do
             Sleep(500);
-            dir = math.random(-45, 45);
+            dir = (v*randSign() ) or math.random(-45, 45);
             WTurn(p, _y_axis, math.rad(dir), math.pi / 250);
         end
     end
     for k, v in pairs(pericodicRotationYPieces) do
 
-        StartThread(periodicFunc, k)
+        StartThread(periodicFunc, k,v)
     end
 
     Sleep(500)
@@ -136,7 +140,6 @@ function rotations()
 
     for k, v in pairs(pericodicMovingZPieces) do
         StartThread(periodicMovementFunc, k, v)
-
     end
 
 end
@@ -213,14 +216,11 @@ function selectGroundBuildMaterial()
     x, z = math.ceil(x / 1000), math.ceil(z / 1000)
     nice = ((x + z) % (#materialChoiceTable) + 1)
     if not nice then nice = 1 end
-    dice = materialChoiceTable[nice]
-
-    return  dice
+    return  materialChoiceTable[nice]
 end
 
 function getPieceGroupName(Deco)
     t = Spring.GetUnitPieceInfo(unitID, Deco)
-
     return t.name:gsub('%d+', '')
 end
 
@@ -414,6 +414,74 @@ function getElasticTable(...)
     return resulT
 end
 
+function getSetOfMaterialNamesExcept(Exception)
+    retVal ={
+        Office = true,
+        White = true,
+        Classic = true,
+        Ghetto = true
+    }
+
+    retVal[Exception] = nil
+
+return retVal
+end
+
+
+function nameContainsMaterial(name, materialColourName)
+    if string.find(name, materialColourName) then return true end
+    local matColour = getSetOfMaterialNamesExcept(materialColourName)
+    boolContainsAtLeastOne = false
+    for k,v in pairs(matColour) do
+        if v then
+         if string.find(name, k) then return false end
+        end
+    end
+
+return true
+end
+
+function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
+    local resultTable = {}
+    for nameUp,data in pairs(TablesOfPiecesGroups) do
+        local name = string.lower(nameUp)
+        if   not string.find(name, "sub") and
+             not string.find(name, "spin") then
+                boolFullfilledConditions= true
+
+                if not materialColourName or nameContainsMaterial(name, materialColourName) then
+
+                for i=1, #mustContainTable do
+                    if not string.find(name, mustContainTable[i]) then
+                        boolFullfilledConditions = false
+                        break
+                    end  
+                end
+
+                if boolFullfilledConditions == true then
+                    for j=1, #mustNotContainTable do
+                        if string.find(name, mustNotContainTable[i]) then
+                        boolFullfilledConditions = false
+                        break
+                        end
+                    end
+
+                    if boolFullfilledConditions == true then
+                        if type(TablesOfPiecesGroups[nameUp]) == "table" then
+                            for h=1, #TablesOfPiecesGroups[nameUp] do
+                                resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp][h]
+                            end
+                        else
+                          resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
+                        end
+                    end
+                end
+                end
+        end
+    end
+    return resultTable
+end
+
 function searchElasticWithoutMaterial(forbiddenMaterial, ...)
     local arg = arg;
     if (not arg) then arg = {...} end
@@ -444,53 +512,22 @@ function searchElasticWithoutMaterial(forbiddenMaterial, ...)
     return resulT
 end
 
-function getElasticTableDebugCopy(...)
-    local arg = arg;
-    if (not arg) then arg = {...} end
-    resulT = {}
-    for k, searchterm in pairs(arg) do
-        if type(searchterm) == "string" then
-            for k, v in pairs(TablesOfPiecesGroups) do
-                s = "Searching for " .. string.lower(searchterm) .. " in " ..
-                        string.lower(k)
-                if string.find(string.lower(k), string.lower(searchterm)) and
-                    string.find(string.lower(k), "sub") == nil and
-                    string.find(string.lower(k), "_ncl1_") == nil then
-                    -- Spring.Echo (s.." with succes")
-                    if TablesOfPiecesGroups[k] then
-                        for num, piecenum in pairs(TablesOfPiecesGroups[k]) do
-                            -- Spring.Echo("Adding "..k.." "..num)
-                            resulT[#resulT + 1] = piecenum
-                        end
-                    end
-                else
-                    Spring.Echo(s .. " failing")
-                end
-            end
-        end
-    end
-    return resulT
-end
 
 function buildDecorateGroundLvl()
     Sleep(1)
+    local materialColourName = selectGroundBuildMaterial()
+    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor"}, {"Deco"})
+    local DoorMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Door"}, {"Deco"})
+    local DoorDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Door","Deco"}, {})
+    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard", "Floor"}, {})
 
-    local StreetDecoMaterial = getElasticTable("Street")
-    local DoorMaterial = TablesOfPiecesGroups["Door"]
-    local DoorDecoMaterial = TablesOfPiecesGroups["DoorDeco"]
-    local yardMaterial = getElasticTable("Yard")
 
-    materialColourName = selectGroundBuildMaterial()
-    if materialColourName == "Office" then
-        yardMaterial = searchElasticWithoutMaterial({"Ghetto"}, "Yard")
-        StreetDecoMaterial = searchElasticWithoutMaterial({"Ghetto"},"Street")
-        DoorDecoMaterial= {}
-    end
+    boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
 
     echo("House_europe_Colour:"..materialColourName)
-    materialGroupName = materialColourName .. "FloorBlock"
-    buildMaterial = TablesOfPiecesGroups[materialGroupName]
+    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block", "Floor"}, {}) 
     assert(buildMaterial)
+    assert(#buildMaterial > 0)
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -513,7 +550,6 @@ function buildDecorateGroundLvl()
             end
 
             if element then
-
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
                                                                buildMaterial)
@@ -525,13 +561,18 @@ function buildDecorateGroundLvl()
                     return materialColourName
                 end
 
+                if boolHasGrafiti and chancesAre(10) < 0.5 then 
+                    boolHasGrafiti = false
+                    addGrafiti(xRealLoc, zRealLoc, math.random(1,4)*90,  _x_axis)
+                end
+
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0,
                                           StreetDecoMaterial, 0, materialColourName)
-                        if StreetDeco then
-                            Turn(StreetDeco, 3, math.rad(rotation), 0)
-                        end
+                    if StreetDeco then
+                        Turn(StreetDeco, 3, math.rad(rotation), 0)
+                    end
                 end
 
                 if chancesAre(10) < decoChances.door then
@@ -549,12 +590,10 @@ function buildDecorateGroundLvl()
                     end
                 end
             end
-
         end
 
         if isBackYardWall(index) == true then
             -- BackYard
-
             if chancesAre(10) < decoChances.yard then
                 rotation = getWallBackyardDeocrationRotation(index)
                 yardMaterial, yardDeco =
@@ -574,15 +613,18 @@ function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     echo(getScriptName() .. Level .. "|" .. materialGroupName)
     Sleep(1)
-    local WindowWallMaterial = getElasticTable("Window") -- getElasticTable( "Window")--"Wall",
-    local yardMaterial = getElasticTable("YardWall")
-    local streetWallMaterial = getElasticTable("StreetWall")
+    assert(buildMaterial)
+    assert(type(buildMaterial)== "table")
+    assert(#buildMaterial >0 )
 
-    if buildMaterial == "office" then
-        WindowWallMaterial = getElasticTable("OfficeWallDeco")
-        yardMaterial = {}
+    local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
+    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard", "Wall"}, {})
+    local streetWallMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Wall"}, {})
+
+    if string.lower(materialGroupName) == string.lower("office") then
+        WindowWallMaterial = {}
+        yardMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Yard", "Wall"}, {"Ghetto"})
     end
-
 
     echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
              count(yardMaterial) .. "|" .. count(streetWallMaterial))
@@ -626,6 +668,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                         DecorateBlockWall(xRealLoc, zRealLoc, Level,
                                           WindowWallMaterial, 0, materialGroupName)
                     Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[WindowDeco])
                 end
 
                 if countElements == 24 then
@@ -650,9 +693,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if streetWallDeco then
                     rotation = getStreetWallDecoRotation(index)
                     Turn(streetWallDeco, _y_axis, math.rad(rotation), 0)
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
                 end
             end
-
         end
 
         if isBackYardWall(index) == true then
@@ -672,10 +715,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
                     Turn(yardWall, _z_axis, math.rad(rotation), 0)
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[yardWall])
                 end
             end
         end
-
     end
     -- Spring.Echo("Completed buildDecorateLvl")
 
@@ -707,15 +750,44 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 
     pieceGroupName = getPieceGroupName(element)
 
-    if TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"] then
-        showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"])
-    else
-        echo(pieceGroupName..nr.." has no subs")
-    end
+    showSubsAnimateSpins(pieceGroupName, nr)
 
     ToShowTable[#ToShowTable + 1] = element
 
     return buildMaterial, element
+end
+
+function showSubsAnimateSpinsByPiecename(piecename)
+     nr = ""
+    for i=string.len(piecename), 1, -1 do
+        character =  string.sub(piecename, i, i)
+        asciiByteValue = string.byte(character)
+        if asciiByteValue > 47 and asciiByteValue <58 then
+            nr = character..nr
+        else
+            pieceGroupName = string.sub(piecename,1, i)
+            nr = tonumber(nr)
+            if string.len(pieceGroupName) > 0 and type(nr) == "number" then
+             print(pieceGroupName, nr)
+             showSubsAnimateSpins(pieceGroupName, nr)
+            end
+
+        break
+        end
+    end
+end
+
+function showSubsAnimateSpins(pieceGroupName, nr)
+
+    if TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"] then
+        showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"])
+    end
+
+   if TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"] then
+        showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"])
+        direction = math.random(40,160) * randSign()
+        Spin(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"][1] , y_axis, math.rad(direction), math.pi)
+    end
 end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
@@ -748,6 +820,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 if countElements == 24 then break end
+
+                showSubsAnimateSpins(materialColourName.."Roof", nr)
             end
         end
     end
@@ -771,6 +845,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Sleep(1)
             end
 
+
             if element and chancesAre(10) < decoChances.roof then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
@@ -785,10 +860,17 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 piecename = getPieceGroupName(element)
                 if TablesOfPiecesGroups[piecename .. nr .. "Sub"] then
                     showOneOrAll(TablesOfPiecesGroups[piecename .. nr .. "Sub"])
+                else
+                    echo(piecename .. nr .. "Sub has not subs")
                 end
                 --
 
                 ToShowTable[#ToShowTable + 1] = element
+
+                if vtolDeco[element] then
+                    StartThread(vtolLoop, vtolDeco[element])
+                end
+
                 if countElements == 24 then return end
             end
         end
@@ -885,8 +967,9 @@ function buildBuilding()
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl")
         _, buildMaterial = buildDecorateLvl(i,
-                                            materialColourName .. "WallBlock",
-                                            buildMaterial)
+                                            materialColourName,
+                                            getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
+                                            )
     end
     echo(getScriptName() .. "addRoofDeocrate")
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"], materialColourName)
@@ -905,3 +988,48 @@ function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
 
+grafitiMessages={
+    "ACAB",
+    "FUK DA POLICE",
+    "DICKBUT",
+    "CRIBS",
+    "BLOODS",
+    "DRUGS",
+    "NO SPRAYERS",
+    "SPRING IS DEAD",
+    "NO GODS",
+    "RACYSSM",
+    "ULTRAS",
+    "PEACE",
+    "LOVE",
+    "ANNA",
+    "ALLAH",
+    "VHITE POWDER",
+    "NO SEX",
+    "RAPES OF WRATH",
+    "BUGS",
+    "DO UR PART",
+    "ENCRASZ LE INFAM"
+}
+
+function addGrafiti(x,z, turnV,  axis)
+    mP(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],x,0,z, 0)
+    turnValue = turnV + 180*randSign() + 180*randSign()
+    Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],y_axis, math.rad(turnValue),0)
+
+    myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
+    counter={}
+    for i=1,#myMessage do
+        local letter = myMessage[i]
+        if letter ~= " " then
+            if not counter[letter] then counter[letter] = 1 else counter[letter] = counter[letter] + 1 end
+                if TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
+                pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
+                if pieceName then
+                    Show(pieceName)
+                    Move(pieceName,axis, 50*(i-1), 0)
+                end
+            end
+        end
+    end
+end

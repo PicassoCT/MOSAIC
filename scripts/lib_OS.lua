@@ -826,3 +826,59 @@ function debugAimLoop(sleepMS, weaponID)
         Sleep(restTime)
     end
 end
+
+function vtolLoop(plane)
+
+    function showHidePlane(boolShow, plane)
+            if boolShow == true then
+                Show(plane)
+            else
+                Hide(plane)
+            end
+        end
+
+    function movePlaneRandomLocationInTime(plane,  time)
+        rx,ry, rz = randSign()* math.random(3000,7000), 19000, randSign() * math.random(3000,7000)
+        mSyncIn(plane, rx,ry,rz, time)
+    end
+
+    boolInAir = maRa()
+    if boolInAir == true then 
+        showHidePlane(false, plane)
+    end
+    lastValue = 0
+    Sleep(15000)
+
+    while true do
+        if boolInAir == true then
+            randSleep= math.random(1,12)
+            Sleep(randSleep*1000)
+            movePlaneRandomLocationInTime(plane, 100)
+            WaitForMoves(plane)
+            showHidePlane(true, plane)
+            lastValue =math.random(-180,180)
+            StartThread(turnInTime, plane, y_axis, math.random(0,180)*randSign(), 7000, 0,lastValue,0 )
+            syncMoveInTime(plane, 0, 0, 0, 7000)
+             Sleep(7000)
+            WaitForMoves(plane)
+         
+            boolInAir = false
+             randSleep= math.random(20,40)
+            Sleep(randSleep*1000)
+        else
+            Sleep(3000)
+            movePlaneRandomLocationInTime(plane, 5000)
+            Sleep(200)
+            lastValue =math.random(-180,180)
+            Turn(plane, y_axis, math.rad(lastValue),0.5)
+            WaitForMoves(plane)
+            rx,rz = math.random(1,Game.mapSizeX)*randSign(), math.random(1,Game.mapSizeZ)*randSign()
+            syncMoveInTime(plane, rx, 19000, rz, 10000)
+            WaitForMoves(plane)
+            showHidePlane(false, plane)
+            boolInAir = true
+            randSleep= math.random(1,12)
+            Sleep(randSleep*1000)
+        end
+    end
+end

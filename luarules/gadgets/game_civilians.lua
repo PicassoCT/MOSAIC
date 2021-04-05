@@ -682,6 +682,16 @@ end
 
 -- truck or Person
 function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
+    --ocassionally spawn from arrived car
+    if math.random(0,100) > 95 and civilianWalkingTypeTable[defID] and  GG.UnitArrivedAtTarget and # GG.UnitArrivedAtTarget > 0 then
+        for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
+            if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
+                x,_,z = spGetUnitPosition(id)
+                break
+            end
+        end
+    end
+
     id = spawnUnit(defID, x, z)
     if id then
         -- assert(goalID)
@@ -727,7 +737,6 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------  Civilian Behaviour Part  ---------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
-
 
 function travelInitialization(evtID, frame, persPack, startFrame, myID)
     boolDone = false
