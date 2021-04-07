@@ -38,6 +38,8 @@ decoChances = {
     streetwall = 0.1,
     grafiti = 0.3
 }
+
+logoPiece = piece("Office_Roof_Deco07")
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
 
 vtolDeco= {}
@@ -77,28 +79,21 @@ function script.Create()
     math.randomseed(x + y + z)
     StartThread(buildHouse)
 
-   
+        for i=1,5 do
+            pericodicRotationYPieces[TablesOfPiecesGroups["_Street_Wall_Deco"..i.."Sub"][1]] = 42
+        end
 
-    pericodicRotationYPieces = {
-        [TablesOfPiecesGroups["OfficeRoofDeco1Sub"][1]] = 42,
-        [TablesOfPiecesGroups["StreetWallDeco13Sub"][1]] = 42,
-        [TablesOfPiecesGroups["StreetWallDeco12Sub"][1]] = 42,
-        [TablesOfPiecesGroups["StreetWallDeco10Sub"][1]] = 42,
-        [TablesOfPiecesGroups["StreetWallDeco11Sub"][1]] = 42,
-        [TablesOfPiecesGroups["StreetWallDeco3Sub"][1]] = -42,
-        [TablesOfPiecesGroups["StreetWallDeco5Sub"][1]] = -42
-    }
+        for i=1,3 do
+            pericodicRotationYPieces[TablesOfPiecesGroups["_StreetYard_Wall_Deco"..i.."Sub"][1]] = 42
+        end
 
     vtolDeco = {
-      --  [TablesOfPiecesGroups["RoofDeco"][59]]=TablesOfPiecesGroups["RoofDeco59Sub"][1],
-        [TablesOfPiecesGroups["RoofDeco"][65]]=TablesOfPiecesGroups["RoofDeco65Sub"][1],
-        [TablesOfPiecesGroups["RoofDeco"][52]]=TablesOfPiecesGroups["RoofDeco52Sub"][1],
+        [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][1]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco1Sub"][1],
+        [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][3]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco3Sub"][1],
+        [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][5]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco5Sub"][1]
     }
 
-    pericodicMovingZPieces[TablesOfPiecesGroups["RoofDeco54Sub"][1]] = 160
     BuildDeco = TablesOfPiecesGroups["BuildDeco"]
-
-    windsolar = {}
 
     StartThread(rotations)
 end
@@ -414,45 +409,40 @@ function getElasticTable(...)
     return resulT
 end
 
-function getSetOfMaterialNamesExcept(Exception)
-    retVal ={
-        Office = true,
-        White = true,
-        Classic = true,
-        Ghetto = true
-    }
-
-    retVal[Exception] = nil
-
-return retVal
-end
-
-
 function nameContainsMaterial(name, materialColourName)
-    if string.find(name, materialColourName) then return true end
-    local matColour = getSetOfMaterialNamesExcept(materialColourName)
-    boolContainsAtLeastOne = false
+    if not name or name == "" then return true, true end
+    boolContainsMaterialName =  (string.find(name, materialColourName) ~= nil)
+    boolContainsNoOtherName = true
+    local matColour ={
+            ["office"]  = true,
+            ["white"]   = true,
+            ["classic"] = true,
+            ["ghetto"]  = true
+        }
+
+    matColour[string.lower(materialColourName)] = false
     for k,v in pairs(matColour) do
-        if v then
-         if string.find(name, k) then return false end
+        if v == true then
+         if string.find(name, k) then boolContainsNoOtherName = false end
         end
     end
-
-return true
+ 
+    return boolContainsMaterialName, boolContainsNoOtherName
 end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
     local resultTable = {}
     for nameUp,data in pairs(TablesOfPiecesGroups) do
         local name = string.lower(nameUp)
-        if   not string.find(name, "sub") and
-             not string.find(name, "spin") then
+        if   string.find(name, "sub") == nil and
+              string.find(name, "spin")  == nil  then
                 boolFullfilledConditions= true
+                boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
-                if not materialColourName or nameContainsMaterial(name, materialColourName) then
+                if boolContainsMaterialName or boolContainsNoOtherName then
 
                 for i=1, #mustContainTable do
-                    if not string.find(name, mustContainTable[i]) then
+                    if not string.find(name, string.lower(mustContainTable[i])) then
                         boolFullfilledConditions = false
                         break
                     end  
@@ -460,7 +450,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
 
                 if boolFullfilledConditions == true then
                     for j=1, #mustNotContainTable do
-                        if string.find(name, mustNotContainTable[i]) then
+                        if string.find(name, string.lower(mustNotContainTable[j])) then
                         boolFullfilledConditions = false
                         break
                         end
@@ -516,16 +506,16 @@ end
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
-    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor"}, {"Deco"})
+    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Door"})
     local DoorMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Door"}, {"Deco"})
     local DoorDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Door","Deco"}, {})
-    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard", "Floor"}, {})
+    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Door"})
 
 
     boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
 
     echo("House_europe_Colour:"..materialColourName)
-    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block", "Floor"}, {}) 
+    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block"}, {"Wall"}) 
     assert(buildMaterial)
     assert(#buildMaterial > 0)
     countElements = 0
@@ -563,7 +553,7 @@ function buildDecorateGroundLvl()
 
                 if boolHasGrafiti and chancesAre(10) < 0.5 then 
                     boolHasGrafiti = false
-                    addGrafiti(xRealLoc, zRealLoc, math.random(1,4)*90,  _x_axis)
+                    addGrafiti(xRealLoc, zRealLoc, math.random(1,4)*90,  _y_axis)
                 end
 
                 if chancesAre(10) < decoChances.street then
@@ -577,8 +567,7 @@ function buildDecorateGroundLvl()
 
                 if chancesAre(10) < decoChances.door then
                     axis = _z_axis
-                    DoorMaterial, Door =
-                        DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0 , materialColourName)
+                    DoorMaterial, Door = DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0 , materialColourName)
                     Turn(Door, axis, math.rad(rotation), 0)
                     if chancesAre(10) < decoChances.door then
                         DoorDecoMaterial, DoorDeco =
@@ -605,25 +594,26 @@ function buildDecorateGroundLvl()
         end
     end
 
+
     return materialColourName
 end
 
 function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
 
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
-    echo(getScriptName() .. Level .. "|" .. materialGroupName)
     Sleep(1)
     assert(buildMaterial)
     assert(type(buildMaterial)== "table")
-    assert(#buildMaterial >0 )
+    --assert(#buildMaterial >0 )
 
-    local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
-    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard", "Wall"}, {})
-    local streetWallMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Wall"}, {})
+    local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Wall"}, {"Deco"})  
+    local WindowDecoMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
+    local yardMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {})
+    local streetWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Street", "Wall"}, {})
 
     if string.lower(materialGroupName) == string.lower("office") then
         WindowWallMaterial = {}
-        yardMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Yard", "Wall"}, {"Ghetto"})
+        yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Ghetto"})
     end
 
     echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
@@ -664,11 +654,20 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     -- echo("Adding Window decoration to"..Level)
-                    WindowWallMaterial, WindowDeco =
-                        DecorateBlockWall(xRealLoc, zRealLoc, Level,
-                                          WindowWallMaterial, 0, materialGroupName)
-                    Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
-                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[WindowDeco])
+ WindowWallMaterial, Window =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowWallMaterial, 0, materialGroupName)
+                    if Window then
+                        Turn(Window, _z_axis, math.rad(rotation), 0)
+                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[Window])
+                    end
+                if chancesAre(10) < decoChances.windowwall then
+ WindowDecoMaterial, WindowDeco =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowDecoMaterial, 0, materialGroupName)
+                    if WindowDeco then
+                      Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
+                      showSubsAnimateSpinsByPiecename(pieceNr_pieceName[WindowDeco])
+                    end
+
+                end
+
                 end
 
                 if countElements == 24 then
@@ -721,11 +720,12 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         end
     end
     -- Spring.Echo("Completed buildDecorateLvl")
-
+   
     return materialGroupName, buildMaterial
 end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
+
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
@@ -791,6 +791,7 @@ function showSubsAnimateSpins(pieceGroupName, nr)
 end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
+    ----echo(">>>>>>>>>>>>>>>> addRoofDeocrate START ")
     countElements = 0
     if materialColourName == "Office" then
         decoChances.roof = 0.65 
@@ -827,12 +828,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     countElements = 0
-    local decoMaterial = TablesOfPiecesGroups["RoofDeco"]
-    if TablesOfPiecesGroups[materialColourName.."RoofDeco"] then
-        for k,v in pairs(TablesOfPiecesGroups[materialColourName.."RoofDeco"] ) do
-            decoMaterial[#decoMaterial+1] = v
-        end
-    end
+    local decoMaterial =   getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
 
     for i = 1, 37, 1 do
         partOfPlan, xLoc, zLoc = getLocationInPlan(i)
@@ -857,14 +853,14 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
-                piecename = getPieceGroupName(element)
-                if TablesOfPiecesGroups[piecename .. nr .. "Sub"] then
-                    showOneOrAll(TablesOfPiecesGroups[piecename .. nr .. "Sub"])
-                else
-                    echo(piecename .. nr .. "Sub has not subs")
-                end
-                --
 
+                if element ~= logoPiece then
+                    showSubsAnimateSpins(getPieceGroupName(element), nr)
+                else
+                    logo = showOne(TablesOfPiecesGroups["Office_Roof_Deco7Spin"])
+                    Spin(logo,_z_axis, math.rad(5),0)
+                end
+            
                 ToShowTable[#ToShowTable + 1] = element
 
                 if vtolDeco[element] then
@@ -875,6 +871,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             end
         end
     end
+   -- --echo(">>>>>>>>>>>>>>>> addRoofDeocrate END ")
 end
 
 boolDoneShowing = false
@@ -883,7 +880,34 @@ function showHouse() showT(ToShowTable) end
 
 function hideHouse() hideT(ToShowTable) end
 
+Bucket1= piece("Bucket1")
+function ropeLoop()
+Sleep(10)
+
+hideT(TablesOfPiecesGroups["Rope"])
+Show(Bucket1)
+    while boolDoneShowing == false do
+        for i=1,#TablesOfPiecesGroups["Rope"] do
+            Show(TablesOfPiecesGroups["Rope"][i])
+            WMove(Bucket1,_z_axis, -450*i, 200)
+        end
+
+        Sleep(500)
+        for i=#TablesOfPiecesGroups["Rope"], 0, -1 do
+            if TablesOfPiecesGroups["Rope"][i] then
+                Show(TablesOfPiecesGroups["Rope"][i])
+            end
+            WMove(Bucket1,_z_axis, -450*i, 200)
+        end
+    Sleep(500)
+    end
+Hide(Bucket1)
+hideT(TablesOfPiecesGroups["Rope"])
+end
+
 function buildAnimation()
+    StartThread(ropeLoop)
+
     for i=1, #TablesOfPiecesGroups["BuildDeco"] do
         if maRa() == true then
             Show(TablesOfPiecesGroups["BuildDeco"][i])
@@ -891,7 +915,7 @@ function buildAnimation()
     end
 
     local builT = TablesOfPiecesGroups["Build"]
-    axis = y_axis
+    axis = _z_axis
 
     if Spring.GetGameSeconds() < 10 then
         hideT(builT)
@@ -901,13 +925,15 @@ function buildAnimation()
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
         hideT(TablesOfPiecesGroups["BuildDeco"])
+        Hide(Bucket1)
+        hideT(TablesOfPiecesGroups["Rope"])
         return
     end
 
     local builT = TablesOfPiecesGroups["Build"]
 
     for i = 1, 3 do 
-        WMove(builT[i], axis, i * -cubeDim.heigth * 2, 0) 
+        WMove(builT[i], axis, i * -2000/3, 0) 
     end
 
     moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
@@ -920,7 +946,7 @@ function buildAnimation()
 
     moveSyncInTimeT(builT, 0, 0, 0, 5000)
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
-
+    
     process(TablesOfPiecesGroups["BuildCrane"], function(id)
         craneFunction = function(id)
             while true do
@@ -940,10 +966,13 @@ function buildAnimation()
     for i = 1, 3 do
         Move(builT[i], axis, i * -cubeDim.heigth * 10, 3 * math.pi)
     end
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -10000, 0, 8000)
-    moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, -10000, 0, 8000)
+
+    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -3200, 0, 8000)
+    moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, -3200, 0, 8000)
     Sleep(1000)
     hideT(TablesOfPiecesGroups["BuildCrane"])
+     Hide(Bucket1)
+     hideT(TablesOfPiecesGroups["Rope"])
     Sleep(7000)
     WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
     WaitForMoves(builT)
@@ -960,25 +989,27 @@ function buildBuilding()
     selectBase()
     echo(getScriptName() .. "selectBackYard")
     selectBackYard()
-    echo(getScriptName() .. "buildDecorateGroundLvl")
+    echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
+    echo(getScriptName() .. "buildDecorateGroundLvl ended")
 
-    buildMaterial = TablesOfPiecesGroups[materialColourName .. "WallBlock"]
+    local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
-        echo(getScriptName() .. "buildDecorateLvl")
+        echo(getScriptName() .. "buildDecorateLvl start")
         _, buildMaterial = buildDecorateLvl(i,
                                             materialColourName,
-                                            getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
+                                            buildMaterial
                                             )
+         echo(getScriptName() .. "buildDecorateLvl ended")
     end
-    echo(getScriptName() .. "addRoofDeocrate")
-    addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"], materialColourName)
+    echo(getScriptName() .. "addRoofDeocrate started")
+    addRoofDeocrate(3, 
+        getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),
+         materialColourName)
+        echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
 
-function script.StartMoving() end
-
-function script.StopMoving() end
 
 function script.Activate() return 1 end
 
@@ -1009,7 +1040,20 @@ grafitiMessages={
     "RAPES OF WRATH",
     "BUGS",
     "DO UR PART",
-    "ENCRASZ LE INFAM"
+    "ENCRASZ LE INFAM",
+    "LA PUTA",
+    "PLAYERZ SUCK",
+    "PIG FUCKERS",
+    "GIB SNITCHES",
+    "VIVA LA REVOLUTION",
+    "PROTAGON SUX",
+    "ANTAGON WINS",
+    "ENDS",
+    "BEAST",
+    "VR FLIGHT",
+    "A CITY FOR A",
+    "PENIS",
+
 }
 
 function addGrafiti(x,z, turnV,  axis)
@@ -1019,15 +1063,22 @@ function addGrafiti(x,z, turnV,  axis)
 
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
     counter={}
-    for i=1,#myMessage do
-        local letter = myMessage[i]
+    for i=1, string.len(myMessage) do
+        local letter = string.sub(myMessage,i,i)
         if letter ~= " " then
-            if not counter[letter] then counter[letter] = 1 else counter[letter] = counter[letter] + 1 end
+            if not counter[letter] then 
+                counter[letter] = 0 
+            end            
+            counter[letter] = counter[letter] + 1 
+
+            if counter[letter] < 3 then 
+
                 if TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
                 pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
                 if pieceName then
                     Show(pieceName)
                     Move(pieceName,axis, 50*(i-1), 0)
+                end
                 end
             end
         end
