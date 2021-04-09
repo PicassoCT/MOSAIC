@@ -502,11 +502,11 @@ function searchElasticWithoutMaterial(forbiddenMaterial, ...)
     return resulT
 end
 
-
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Door"})
+
     local DoorMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Door"}, {"Deco"})
     local DoorDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Door","Deco"}, {})
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Door"})
@@ -535,7 +535,6 @@ function buildDecorateGroundLvl()
 
             while not element do
                 element, nr = getRandomBuildMaterial(buildMaterial, materialColourName)
-
                 Sleep(1)
             end
 
@@ -691,7 +690,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
                 if streetWallDeco then
                     rotation = getStreetWallDecoRotation(index)
-                    Turn(streetWallDeco, _y_axis, math.rad(rotation), 0)
+                    Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
                 end
             end
@@ -887,19 +886,20 @@ Sleep(10)
 hideT(TablesOfPiecesGroups["Rope"])
 Show(Bucket1)
     while boolDoneShowing == false do
+         WaitForTurns(TablesOfPiecesGroups["BuildCrane"][1])
         for i=1,#TablesOfPiecesGroups["Rope"] do
             Show(TablesOfPiecesGroups["Rope"][i])
             WMove(Bucket1,_z_axis, -450*i, 200)
         end
+        WaitForTurns(TablesOfPiecesGroups["BuildCrane"][1])
 
-        Sleep(500)
         for i=#TablesOfPiecesGroups["Rope"], 0, -1 do
             if TablesOfPiecesGroups["Rope"][i] then
                 Show(TablesOfPiecesGroups["Rope"][i])
             end
             WMove(Bucket1,_z_axis, -450*i, 200)
         end
-    Sleep(500)
+     Sleep(50)
     end
 Hide(Bucket1)
 hideT(TablesOfPiecesGroups["Rope"])
@@ -952,7 +952,8 @@ function buildAnimation()
             while true do
                 target = math.random(-120, 120)
                 WTurn(id, y_axis, math.rad(target), math.pi / 10)
-                Sleep(1000)
+                WaitForMoves(Bucket1)
+                Sleep(500)
             end
         end
 
@@ -1027,7 +1028,7 @@ grafitiMessages={
     "BLOODS",
     "DRUGS",
     "NO SPRAYERS",
-    "SPRING IS DEAD",
+    "SPRING IZ DEATH",
     "NO GODS",
     "RACYSSM",
     "ULTRAS",
@@ -1053,7 +1054,11 @@ grafitiMessages={
     "VR FLIGHT",
     "A CITY FOR A",
     "PENIS",
-
+    "SUCK ON IT",
+    "BAR",
+    "MOSAIC",
+    "X GONA JIVE ITO U",
+    "KIDS THESE DAYZ"
 }
 
 function addGrafiti(x,z, turnV,  axis)
@@ -1077,7 +1082,7 @@ function addGrafiti(x,z, turnV,  axis)
                 pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
                 if pieceName then
                     Show(pieceName)
-                    Move(pieceName,axis, 50*(i-1), 0)
+                    Move(pieceName,axis, 70*(i-1), 0)
                 end
                 end
             end
