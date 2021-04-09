@@ -75,6 +75,12 @@ BuildDeco = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    assertTableExpectated(TablesOfPiecesGroups, "WhiteOffice_Roof_Deco", 18)
+    assertTableExpectated(TablesOfPiecesGroups, "Roof_Deco", 20)
+    assertTableExpectated(TablesOfPiecesGroups, "Office_Roof_Deco", 8)
+    assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteOffice_Roof_Deco", 6)
+    assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteGhetto_Roof_Deco", 16)
+    assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
     x, y, z = Spring.GetUnitPosition(unitID)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
@@ -411,7 +417,7 @@ end
 
 function nameContainsMaterial(name, materialColourName)
     if not name or name == "" then return true, true end
-    boolContainsMaterialName =  (string.find(name, materialColourName) ~= nil)
+    boolContainsMaterialName =  (string.find(string.lower(name), materialColourName) ~= nil)
     boolContainsNoOtherName = true
     local matColour ={
             ["office"]  = true,
@@ -423,7 +429,7 @@ function nameContainsMaterial(name, materialColourName)
     matColour[string.lower(materialColourName)] = false
     for k,v in pairs(matColour) do
         if v == true then
-         if string.find(name, k) then boolContainsNoOtherName = false end
+         if string.find(string.lower(name), k) then boolContainsNoOtherName = false end
         end
     end
  
@@ -439,10 +445,10 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                 boolFullfilledConditions= true
                 boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
-                if boolContainsMaterialName or boolContainsNoOtherName then
+                if boolContainsMaterialName == true or boolContainsNoOtherName == true then
 
                 for i=1, #mustContainTable do
-                    if not string.find(name, string.lower(mustContainTable[i])) then
+                    if string.find(name, string.lower(mustContainTable[i])) == nil then
                         boolFullfilledConditions = false
                         break
                     end  
@@ -592,7 +598,6 @@ function buildDecorateGroundLvl()
             end
         end
     end
-
 
     return materialColourName
 end
@@ -792,7 +797,7 @@ end
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     ----echo(">>>>>>>>>>>>>>>> addRoofDeocrate START ")
     countElements = 0
-    if materialColourName == "Office" then
+    if materialColourName == "Office" and maRa() then
         decoChances.roof = 0.65 
     end
 
@@ -828,6 +833,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
     countElements = 0
     local decoMaterial =   getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
+    echo("addRoofDecorate:", process(decoMaterial, function(id) return pieceNr_pieceName[id] end))
+
 
     for i = 1, 37, 1 do
         partOfPlan, xLoc, zLoc = getLocationInPlan(i)
@@ -895,6 +902,7 @@ Show(Bucket1)
 
         for i=#TablesOfPiecesGroups["Rope"], 0, -1 do
             if TablesOfPiecesGroups["Rope"][i] then
+                hideT(TablesOfPiecesGroups["Rope"])
                 Show(TablesOfPiecesGroups["Rope"][i])
             end
             WMove(Bucket1,_z_axis, -450*i, 200)
@@ -1058,7 +1066,17 @@ grafitiMessages={
     "BAR",
     "MOSAIC",
     "X GONA JIVE ITO U",
-    "KIDS THESE DAYZ"
+    "KIDS THESE DAYZ",
+    "IRA",
+    "EL QUAIDA",
+    "ISIS",
+    "HITLER",
+    "SCIENTOLOGY",
+    "SINGULARITY",
+    "AI IS GOD",
+    "SIMULATION",
+    "ALGO BANKSY",
+    "CARPET BOOM DIEM"
 }
 
 function addGrafiti(x,z, turnV,  axis)
