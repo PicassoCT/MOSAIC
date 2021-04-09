@@ -4366,6 +4366,13 @@ function todoAssert(object, functionToPass, todoCheckNext)
     echo("Error:Todo:" .. todoCheckNext)
 end
 
+function assertTableExpectated(value, memberNameExpected, Dimension)
+  assert(value, " no  table")
+  assert(type(value) == "table", memberNameExpected.. " not a table")
+  assert(value[memberNameExpected], memberNameExpected .. " no such table")
+  assert(#value[memberNameExpected] == Dimension, memberNameExpected.. " below expected size")
+end
+
 function PieceLight(unitID, piecename, cegname, delayTime)
     delayTime = delayTime or 250
     while true do
