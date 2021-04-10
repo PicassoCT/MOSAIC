@@ -419,7 +419,7 @@ function nameContainsMaterial(name, materialColourName)
     if not name or name == "" then return true, true end
     boolContainsMaterialName =  (string.find(string.lower(name), materialColourName) ~= nil)
     boolContainsNoOtherName = true
-    local matColour ={
+    matColour ={
             ["office"]  = true,
             ["white"]   = true,
             ["classic"] = true,
@@ -833,7 +833,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
     countElements = 0
     local decoMaterial =   getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
-    echo("addRoofDecorate:", process(decoMaterial, function(id) return pieceNr_pieceName[id] end))
+    local T = process(decoMaterial, function(id) return pieceNr_pieceName[id] end)
+    echo("addRoofDecorate:", T)
 
 
     for i = 1, 37, 1 do
@@ -1076,7 +1077,8 @@ grafitiMessages={
     "AI IS GOD",
     "SIMULATION",
     "ALGO BANKSY",
-    "CARPET BOOM DIEM"
+    "CARPET BOOM DIEM",
+    "PICAZOO"
 }
 
 function addGrafiti(x,z, turnV,  axis)
