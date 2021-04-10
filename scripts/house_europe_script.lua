@@ -81,6 +81,7 @@ function script.Create()
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteOffice_Roof_Deco", 6)
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteGhetto_Roof_Deco", 16)
     assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
+    assert(TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][5])
     x, y, z = Spring.GetUnitPosition(unitID)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
@@ -416,23 +417,25 @@ function getElasticTable(...)
 end
 
 function nameContainsMaterial(name, materialColourName)
-    if not name or name == "" then return true, true end
-    boolContainsMaterialName =  (string.find(string.lower(name), materialColourName) ~= nil)
-    boolContainsNoOtherName = true
-    matColour ={
-            ["office"]  = true,
-            ["white"]   = true,
-            ["classic"] = true,
-            ["ghetto"]  = true
-        }
-
-    matColour[string.lower(materialColourName)] = false
-    for k,v in pairs(matColour) do
-        if v == true then
-         if string.find(string.lower(name), k) then boolContainsNoOtherName = false end
-        end
+    if not name or name == "" then
+        return true, true 
     end
- 
+    
+    name = string.lower(name)
+    materialColourName = string.lower(materialColourName)
+    print(name)
+    
+    boolContainsMaterialName =  (string.find(name, materialColourName) ~= nil)
+    boolContainsNoOtherName = true
+    matColour ={"office", "ghetto", "classic", "white"}
+
+    for i=1,#matColour do
+        if not (matColour[i] == materialColourName) and string.find(name, matColour[i]) ~= nil then
+          boolContainsNoOtherName = false
+          break
+         end
+    end
+
     return boolContainsMaterialName, boolContainsNoOtherName
 end
 
@@ -914,9 +917,11 @@ Hide(Bucket1)
 hideT(TablesOfPiecesGroups["Rope"])
 end
 
+Icon = piece("Icon")
+
 function buildAnimation()
     StartThread(ropeLoop)
-
+    Show(Icon)
     for i=1, #TablesOfPiecesGroups["BuildDeco"] do
         if maRa() == true then
             Show(TablesOfPiecesGroups["BuildDeco"][i])
@@ -936,8 +941,10 @@ function buildAnimation()
         hideT(TablesOfPiecesGroups["BuildDeco"])
         Hide(Bucket1)
         hideT(TablesOfPiecesGroups["Rope"])
+        Hide(Icon)
         return
     end
+    Hide(Icon)
 
     local builT = TablesOfPiecesGroups["Build"]
 
