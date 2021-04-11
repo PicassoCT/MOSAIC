@@ -87,11 +87,11 @@ function script.Create()
     StartThread(buildHouse)
 
         for i=1,5 do
-            pericodicRotationYPieces[TablesOfPiecesGroups["_Street_Wall_Deco"..i.."Sub"][1]] = 42
+            pericodicRotationYPieces[TablesOfPiecesGroups["_Street_Wall_Deco"..i.."Sub"][1]] = 42 *randSign()
         end
 
         for i=1,3 do
-            pericodicRotationYPieces[TablesOfPiecesGroups["_StreetYard_Wall_Deco"..i.."Sub"][1]] = 42
+            pericodicRotationYPieces[TablesOfPiecesGroups["_StreetYard_Wall_Deco"..i.."Sub"][1]] = 42*randSign()
         end
 
     vtolDeco = {
@@ -112,7 +112,7 @@ function rotations()
         while true do
             Sleep(500);
             dir = (v*randSign() ) or math.random(-45, 45);
-            WTurn(p, _y_axis, math.rad(dir), math.pi / 250);
+            WTurn(p, y_axis, math.rad(dir), math.pi / 250);
         end
     end
     for k, v in pairs(pericodicRotationYPieces) do
@@ -121,13 +121,13 @@ function rotations()
     end
 
     Sleep(500)
-    clockPiece = piece("StreetDeco06")
+    clockPiece = piece("WhiteClassic_Street_Floor_Deco2")
     if contains(ToShowTable, clockPiece) then
-        WTurn(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(180),
+        WTurn(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(180),
               0)
-        showT(TablesOfPiecesGroups["StreetDeco6Sub"])
-        Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(3), 10)
-        Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2], z_axis, math.rad(36), 10)
+        showT(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"])
+        Spin(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(3), 10)
+        Spin(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][2], z_axis, math.rad(36), 10)
     end
 
     periodicMovementFunc = function(p, value)
@@ -793,7 +793,9 @@ function showSubsAnimateSpins(pieceGroupName, nr)
    if TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"] then
         showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"])
         direction = math.random(40,160) * randSign()
-        Spin(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"][1] , y_axis, math.rad(direction), math.pi)
+        for i=1,#TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"] do
+            Spin(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"][i] , y_axis, math.rad(direction), math.pi)
+        end
     end
 end
 
@@ -1085,15 +1087,19 @@ grafitiMessages={
     "SIMULATION",
     "ALGO BANKSY",
     "CARPET BOOM DIEM",
-    "PICAZOO"
+    "PICAZOO",
+    "PANCAKE",
+
 }
 
 function addGrafiti(x,z, turnV,  axis)
+
     mP(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],x,0,z, 0)
     turnValue = turnV + 180*randSign() + 180*randSign()
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],y_axis, math.rad(turnValue),0)
 
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
+    echo("Adding Graifiti with message:" ..myMessage)
     counter={}
     for i=1, string.len(myMessage) do
         local letter = string.sub(myMessage,i,i)
@@ -1108,7 +1114,7 @@ function addGrafiti(x,z, turnV,  axis)
                 if TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
                 pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
                 if pieceName then
-                    Show(pieceName)
+                    ToShowTable[#ToShowTable + 1] = pieceName
                     Move(pieceName,axis, 70*(i-1), 0)
                 end
                 end
