@@ -10,6 +10,7 @@ TablesOfPiecesGroups = {}
 factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
+local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 local cubeDim = {
     length = factor * 14.4 * 1.45,
     heigth = factor * 14.84 + heightoffset,
@@ -620,6 +621,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
     if string.lower(materialGroupName) == string.lower("office") then
         WindowWallMaterial = {}
+        WindowDecoMaterial = {}
         yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Ghetto"})
     end
 
@@ -773,29 +775,36 @@ function showSubsAnimateSpinsByPiecename(piecename)
             nr = character..nr
         else
             pieceGroupName = string.sub(piecename,1, i)
-            nr = tonumber(nr)
+            nr = tonumber(nr, 10)
             if string.len(pieceGroupName) > 0 and type(nr) == "number" then
              print(pieceGroupName, nr)
+             echo("Spinning "..pieceGroupName..nr)
              showSubsAnimateSpins(pieceGroupName, nr)
             end
-
         break
         end
     end
 end
 
 function showSubsAnimateSpins(pieceGroupName, nr)
-
-    if TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"] then
-        showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Sub"])
+    local subName = pieceGroupName .. nr .. "Sub"
+    if TablesOfPiecesGroups[subName] then
+        showOneOrAll(TablesOfPiecesGroups[subName])
+    elseif pieceName_pieceNr[subName..1] then
+        Show(pieceName_pieceNr[subName..1])
     end
 
-   if TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"] then
-        showOneOrAll(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"])
-        direction = math.random(40,160) * randSign()
-        for i=1,#TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"] do
-            Spin(TablesOfPiecesGroups[pieceGroupName .. nr .. "Spin"][i] , y_axis, math.rad(direction), math.pi)
+    local spinName = pieceGroupName .. nr .. "Spin"
+    direction = math.random(40,160) * randSign()
+   if TablesOfPiecesGroups[spinName] then
+        showOneOrAll(TablesOfPiecesGroups[spinName])
+        for i=1,#TablesOfPiecesGroups[spinName] do
+            Spin(TablesOfPiecesGroups[spinName][i] , y_axis, math.rad(direction), math.pi)
         end
+    elseif pieceName_pieceNr[spinName..1]  then
+        spinName= spinName..1
+        Show(pieceName_pieceNr[spinName])
+        Spin(pieceName_pieceNr[spinName] , y_axis, math.rad(direction), math.pi)
     end
 end
 
