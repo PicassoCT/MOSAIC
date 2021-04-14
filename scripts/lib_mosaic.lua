@@ -869,7 +869,7 @@ end
 -- > Creates a Eventstream Event bound to a Unit
 function createStreamEvent(unitID, func, framerate, persPack)
     persPack.unitID = unitID
-    persPack.startFrame = Spring.GetGameFrame()
+    persPack.startFrame = Spring.GetGameFrame() + 1
     persPack.functionToCall = func
 
     eventFunction = function(id, frame, persPack)
@@ -880,11 +880,12 @@ function createStreamEvent(unitID, func, framerate, persPack)
                 boolDead = Spring.GetUnitIsDead(persPack.unitID)
 
                 if boolDead and boolDead == true then
+                    echo("Aborting eventstream cause unit has died")
                     return nil, nil
                 end
 
                 if not persPack.startFrame then
-                    persPack.startFrame = frame
+                    persPack.startFrame = frame + 1
 
                 end
 
@@ -893,7 +894,10 @@ function createStreamEvent(unitID, func, framerate, persPack)
         end
 
         boolDoneFor, persPack = persPack.functionToCall(persPack)
-        if boolDoneFor and boolDoneFor == true then return nil end
+        if boolDoneFor and boolDoneFor == true then 
+             echo("Aborting eventstream cause function to call has returned its done for")
+            return nil 
+        end
 
         return nextFrame, persPack
     end

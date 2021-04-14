@@ -73,8 +73,7 @@ function buildWatcher()
             boolBuilding = true
             while buildProgress and buildProgress + laststep < 0.95 do
                 Sleep(10)
-                hp, mhp, pd, captProg, tbuildProgress =
-                    Spring.GetUnitHealth(buildID)
+                hp, mhp, pd, captProg, tbuildProgress =    Spring.GetUnitHealth(buildID)
                 laststep = buildProgress - tbuildProgress
                 buildProgress = tbuildProgress
             end

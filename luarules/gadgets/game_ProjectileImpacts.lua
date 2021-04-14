@@ -37,7 +37,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
     local spGiveOrderToUnit = Spring.GiveOrderToUnit
     local spGetTeamList = Spring.GetTeamList
-    local spEcho = Spring.Echo
+    local spEcho = echo
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
     local MobileInterrogateAbleType =
@@ -406,6 +406,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check if the icon is still there
                 if not persPack.IconId then
+                    spEcho("Creating RaidIcon")
                     persPack.IconId = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, persPack.unitID, 0,
@@ -429,6 +430,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 if GG.raidIconDone[persPack.IconId].boolInterogationComplete ==
                     true then
+                    spEcho("boolInterogationCompleted")
 
                     if not GG.raidIconDone[persPack.IconId].winningTeam then
                         -- succesfull interrogation
@@ -572,7 +574,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         -- stupidity edition
         if attackerID == unitID then
-            spEcho("Raid Aborted")
+            spEcho("Raid:Aborted: attackerID == unitID")
             return damage
         end
 
@@ -584,9 +586,6 @@ if (gadgetHandler:IsSyncedCode()) then
             unitDefID = spGetUnitDefID(unitID)
             unitTeam = spGetUnitTeam(unitID)
         end
-
-        -- stupidity edition
-        if attackerID == unitID then return damage end
 
         -- Interrogation -- and not already Interrogated
         if (houseTypeTable[unitDefID] or RaidAbleType[unitDefID]) and

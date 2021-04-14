@@ -71,8 +71,10 @@ function loadLoadOutLoop()
             myTeam = Spring.GetUnitTeam(unitID)
             loadOutUnitID = createUnitAtUnit(myTeam, myLoadOutType, unitID, 0,
                                              10, 0)
-            Spring.SetUnitNoSelect(loadOutUnitID, true)
-            Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
+            if loadOutUnitID then
+                Spring.SetUnitNoSelect(loadOutUnitID, true)
+                Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
+            end
         else
             if allOrderTypes[myLoadOutType] then
                 transferOrders(unitID, loadOutUnitID)

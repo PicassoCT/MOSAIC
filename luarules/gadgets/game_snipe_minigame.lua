@@ -492,6 +492,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function aiPlacementNeededForTeam(roundRunningTeam, teamID)
+        if teamID == gaiaTeamID then
+            return true
+        end
+
         if count(roundRunningTeam.PlacedFigures) == 0 then
             echo(teamID .. " needs  aiplace")
             return true
@@ -574,7 +578,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         evaluateEndedRound(raidIconId, roundRunning)
 
                     if state == raidStates.OnGoing then
-                        -- Spring.Echo("Raid continues in new Round") 
+                        Spring.Echo("Raid continues in new Round") 
                         killAllPlacedObjects(roundRunning)
                         newRound(raidIconId, roundRunning.Aggressor.team, false,
                                  roundRunning)
@@ -582,7 +586,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
 
                     if state == raidStates.Aborted then
-                        -- Spring.Echo("Raid was aborted")
+                        Spring.Echo("Raid was aborted")
                         killAllPlacedObjects(roundRunning)
                         GG.raidIconDone[raidIconId].boolInterogationComplete =
                             true
@@ -594,7 +598,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     -- new round
                     if roundRunning and (state == raidStates.DefenderWins) and
                         roundRunning.Defender.Points <= 0 then
-                        -- Spring.Echo("Defender won the round")
+                        Spring.Echo("Defender won the round")
                         killAllPlacedObjects(roundRunning)
                         newRound(raidIconId, roundRunning.Aggressor.team, false,
                                  roundRunning)
@@ -603,7 +607,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     -- rounds end
                     if roundRunning and state == raidStates.AggressorWins then
-                        -- Spring.Echo("Agressor won the round")
+                        Spring.Echo("Agressor won the round")
                         killAllPlacedObjects(roundRunning)
                         GG.raidIconDone[raidIconId].winningTeam =
                             Spring.GetUnitTeam(raidIconId)
@@ -637,6 +641,7 @@ if (gadgetHandler:IsSyncedCode()) then
             else
                 killAllPlacedObjects(roundRunning)
                 allRunningRaidRounds[raidIconId] = nil
+                Spring.Echo("Icon was killed")
             end
         end
     end

@@ -5,7 +5,7 @@ local weaponDef = {
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 10,
+        default = 5,
         HeavyArmor = 1,
     },
     areaOfEffect = 8,
@@ -15,7 +15,7 @@ local weaponDef = {
 
     --physics
     weaponVelocity = 850,
-    reloadtime = 15,
+    reloadtime = 7,
     range = 350,
     sprayAngle = 300,
     tolerance = 8000,
@@ -24,8 +24,8 @@ local weaponDef = {
 	-- noFirebaseCollide  = false,
 	avoidFriendly = false,
     craterMult = 0,
-    burst = 15,
-    burstrate = 0.1,
+    burst = 30,
+    burstrate = 0.2,
     soundStart = "weapons/machinegun/salvo.ogg",
     soundtrigger = 1,
     SweepFire = 1,

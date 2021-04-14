@@ -214,11 +214,15 @@ function getOfficer(unitID, attackerID)
             PoliceDamageCounter = PoliceDamageCounter - 2500
         end
 
-        officerID = spCreateUnit(ptype, px, py, pz, direction,
+        GG:PushCreateUnit(ptype, px, py, pz, direction,
                                  gaiaTeamID)
-        activePoliceUnitIds_DispatchTime[officerID] =
+        
+        if count(activePoliceUnitIds_DispatchTime) > 0 then
+            officerID = randDict(activePoliceUnitIds_DispatchTime)
+            activePoliceUnitIds_DispatchTime[officerID] =
             GameConfig.policeMaxDispatchTime +
                 math.random(1, GameConfig.policeMaxDispatchTime)
+            end
     else -- reasign one
         officerID = randDict(activePoliceUnitIds_DispatchTime)
         activePoliceUnitIds_DispatchTime[officerID] =
@@ -597,6 +601,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     Route[index].x = x1
     Route[index].y = y1
     Route[index].z = z1
+
     index = index + 1
     Route[index] = {}
 
@@ -607,6 +612,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
             Route[index].x = x1
             Route[index].y = spGetGroundHeight(x1,z2)
             Route[index].z = z2
+
             index = index + 1
             Route[index] = {}
         end
@@ -615,6 +621,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     Route[index].x = x2
     Route[index].y = y2
     Route[index].z = z2
+
     index = index + 1
     Route[index] = {}
 
@@ -623,6 +630,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
             Route[index].x = x2
             Route[index].y = spGetGroundHeight(x2,z1)
             Route[index].z = z1
+
             index = index + 1
             Route[index] = {}
         end
@@ -632,6 +640,10 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     Route[index].y = y1
     Route[index].z = z1
 
+    assert(#Route >= 3)
+    assert(Route[1].x)
+    assert(Route[2].x)
+    assert(Route[3].x)
     return testClampRoute(Route, uType)
 end
 
@@ -978,6 +990,18 @@ function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
     if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
         --echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
+
+        --debugCode
+        defStr= "Unit "..myID.." a "..UnitDefs[spGetUnitDefID(myID)].name.." has no "
+        assert(persPack.goalList, defStr.. "goalList")
+        assert(persPack.goalIndex, defStr.. "goalIndex")
+        assert(persPack.goalIndex > 0 and persPack.goalIndex <= #persPack.goalList, defStr.. "goalIndex not violating limits "..persPack.goalIndex)
+        assert(#persPack.goalList > 0, defStr.."goalList ")
+
+        assert(persPack.goalList[persPack.goalIndex].x,defStr.."x component")
+        assert(persPack.goalList[persPack.goalIndex].y,defStr.."y component")
+        assert(persPack.goalList[persPack.goalIndex].z,defStr.."z component")
+
         Command(myID, "go", {
             x = math.ceil(persPack.goalList[persPack.goalIndex].x),
             y = math.ceil(persPack.goalList[persPack.goalIndex].y),
@@ -1034,12 +1058,12 @@ function travellFunction(evtID, frame, persPack, startFrame)
     local myID = persPack.unitID
 
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
-    assert(x)
     if boolDone == true then return retFrame,persPack end
 
     boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
+    assert(x)
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
