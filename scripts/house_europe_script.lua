@@ -227,6 +227,10 @@ function getPieceGroupName(Deco)
     return t.name:gsub('%d+', '')
 end
 
+function trimZero(Deco)
+    return Deco:gsub('0', '')
+end
+
 function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, materialGroupName)
     countedElements = count(DecoMaterial)
     piecename = ""
@@ -560,7 +564,7 @@ function buildDecorateGroundLvl()
                     return materialColourName
                 end
 
-                if boolHasGrafiti and chancesAre(10) < 0.5 then 
+                if boolHasGrafiti == true then 
                     boolHasGrafiti = false
                     addGrafiti(xRealLoc, zRealLoc, math.random(1,4)*90,  _y_axis)
                 end
@@ -571,6 +575,7 @@ function buildDecorateGroundLvl()
                                           StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
+                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
                     end
                 end
 
@@ -578,12 +583,17 @@ function buildDecorateGroundLvl()
                     axis = _z_axis
                     DoorMaterial, Door = DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0 , materialColourName)
                     Turn(Door, axis, math.rad(rotation), 0)
+                    if Door then
+                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[Door])
+                    end
+
                     if chancesAre(10) < decoChances.door then
                         DoorDecoMaterial, DoorDeco =
                             DecorateBlockWall(xRealLoc, zRealLoc, 0,
                                               DoorDecoMaterial, 0, materialColourName)
                         if DoorDeco then
                             Turn(DoorDeco, axis, math.rad(rotation), 0)
+                            showSubsAnimateSpinsByPiecename(pieceName_pieceNr[DoorDeco]) 
                         end
                     end
                 end
@@ -767,6 +777,9 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 end
 
 function showSubsAnimateSpinsByPiecename(piecename)
+    if not piecename then return end
+    piecename = trimZero(piecename)
+
      nr = ""
     for i=string.len(piecename), 1, -1 do
         character =  string.sub(piecename, i, i)
@@ -902,6 +915,7 @@ function showHouse() showT(ToShowTable) end
 function hideHouse() hideT(ToShowTable) end
 
 Bucket1= piece("Bucket1")
+
 function ropeLoop()
 Sleep(10)
 
@@ -931,7 +945,7 @@ end
 Icon = piece("Icon")
 
 function buildAnimation()
-    StartThread(ropeLoop)
+   
     Show(Icon)
     for i=1, #TablesOfPiecesGroups["BuildDeco"] do
         if maRa() == true then
@@ -956,7 +970,7 @@ function buildAnimation()
         return
     end
     Hide(Icon)
-
+    StartThread(ropeLoop)
     local builT = TablesOfPiecesGroups["Build"]
 
     for i = 1, 3 do 
@@ -1098,6 +1112,8 @@ grafitiMessages={
     "CARPET BOOM DIEM",
     "PICAZOO",
     "PANCAKE",
+    "VAGINAS",
+    "SUX TO BE U"
 
 }
 

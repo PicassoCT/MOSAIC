@@ -38,6 +38,10 @@ function updateLocationData()
             GG.RevealedLocations[nr] = nil
          end
     end
+
+    if GG.RevealedLocations then
+        Spring.SetGameRulesParam("revealedlocations", serializeTableToString(GG.RevealedLocations))
+    end
 end
 
 function gadget:GameFrame(frame)

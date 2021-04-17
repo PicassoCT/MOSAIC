@@ -42,6 +42,7 @@ function widget:UnitCreated(unitID, unitDefID)
         raidIcons[unitID] = unitID
     end
 end
+/
 
 function widget:UnitDestroyed(unitID, unitDefID)
     if raidIcons[unitID] then
@@ -60,15 +61,15 @@ end
 lastPos = {}
 boolPlacementActive = false
 function widget:MousePress(x, y, button)
-
     inMinimap = spIsAboveMiniMap(x, y)
     if (button ~= 1) then
         return false
     end
-
+        Spring.Echo("Mouse Press on MiniGameBoard")
     local targType, unitID = spTraceScreenRay(x, y)
     -- Spring.Echo(targType, unitID)
     if targType == "unit" and Spring.GetUnitDefID(unitID) == raidIconDefID then
+        Spring.Echo("Mouse Press on MiniGameBoard")
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
         -- Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
         if targType and targType == "ground" then

@@ -849,7 +849,7 @@ local function HandleError(widget, funcName, status, ...)
     return ...
   end
 
-  if not widet then
+  if not widget then
     return ...
   end
 
@@ -1681,8 +1681,8 @@ do
   end
 end
 
-
 function widgetHandler:MousePress(x, y, button)
+ -- Spring.Echo("widgetHandler:MousePress:MousePress")
   local mo = self.mouseOwner
   if (not self.tweakMode) then
     if (mo) then
@@ -1691,7 +1691,9 @@ function widgetHandler:MousePress(x, y, button)
     end
     for _,w in ipairs(self.MousePressList) do
       if (w:MousePress(x, y, button)) then
-        self.mouseOwner = w
+        if (not mo) then
+          self.mouseOwner = w
+        end
         return true
       end
     end

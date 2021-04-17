@@ -176,7 +176,11 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     local function RegisterSniperIcon(self, unitID, unitTeam, raidIconID)
-
+        assert(unitID)
+        assert(raidIconID)
+        assert(type(unitID) == "number")
+        assert(type(raidIconID) == "number")
+        
         teamSelected = Defender -- defender as default
         if spGetUnitTeam(raidIconID) == spGetUnitTeam(unitID) then -- Aggressor
             teamSelected = Aggressor
@@ -526,7 +530,7 @@ if (gadgetHandler:IsSyncedCode()) then
         return false
     end
 
-    function doAIPlacement(x, y, z, Team, roundRunning, boolDefender)
+    function doAIPlacement(x, y, z, Team, roundRunning, boolDefender, raidIconID)
         -- for i = 1,  1 do
         tx, ty, tz = x + math.random(0, 50) * randSign(), y,
                      z + math.random(0, 50) * randSign()
@@ -549,11 +553,11 @@ if (gadgetHandler:IsSyncedCode()) then
         x, y, z = spGetUnitPosition(raidIconID)
 
         if aiPlacementNeededForTeam(roundRunning.Aggressor, aggTeam) == true then
-            roundRunning = doAIPlacement(x, y, z, aggTeam, roundRunning, false)
+            roundRunning = doAIPlacement(x, y, z, aggTeam, roundRunning, false, raidIconID)
         end
 
         if aiPlacementNeededForTeam(roundRunning.Defender, defTeam) == true then
-            roundRunning = doAIPlacement(x, y, z, defTeam, roundRunning, true)
+            roundRunning = doAIPlacement(x, y, z, defTeam, roundRunning, true, raidIconID)
         end
         return roundRunning
     end

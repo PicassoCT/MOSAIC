@@ -214,7 +214,7 @@ function getOfficer(unitID, attackerID)
             PoliceDamageCounter = PoliceDamageCounter - 2500
         end
 
-        GG:PushCreateUnit(ptype, px, py, pz, direction,
+        GG.UnitsToSpawn:PushCreateUnit(ptype, px, py, pz, direction,
                                  gaiaTeamID)
         
         if count(activePoliceUnitIds_DispatchTime) > 0 then

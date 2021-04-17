@@ -46,7 +46,7 @@ function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitStealth(unitID, false)
     Spring.SetUnitNeutral(unitID, true)
-    -- Spring.SetUnitNoSelect(unitID,true)
+    Spring.SetUnitNoSelect(unitID,true)
     Spring.MoveCtrl.Enable(unitID, true)
     ox, oy, oz = Spring.GetUnitPosition(unitID)
     -- Spring.SetUnitPosition(unitID, ox,oy + 125, oz)
@@ -81,9 +81,12 @@ end
 
 function watchRaidIconTable()
     if not GG.raidIconDone then GG.raidIconDone = {} end
+
+    while GG.raidIconDone[unitID] == nil do 
+        Sleep(10)
+    end 
     
-    while (GG.raidIconDone[unitID] and
-        GG.raidIconDone[unitID].boolInterogationComplete == false) do
+    while (GG.raidIconDone[unitID] and  GG.raidIconDone[unitID].boolInterogationComplete == false) do
         Sleep(100)
     end
     Spring.DestroyUnit(unitID, true, false)

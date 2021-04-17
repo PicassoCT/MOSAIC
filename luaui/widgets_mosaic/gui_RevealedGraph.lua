@@ -483,10 +483,17 @@ function widget:DrawWorld()
   glLineWidth(1.0)
 end
 
+function deserializeStringToTable(str)
+  local f = loadstring(str)
+  return f()
+end
+
+
 function widget:GameFrame(n)
     if n % 15 == 0 then
-        if GG.RevealedLocations then
-         Locations = GG.RevealedLocations    
+        local serializedStringTable = Spring.GetGameRulesParam("revealedlocations")
+        if serializedStringTable then
+         Locations = deserializeStringToTable(serializedStringTable) or {}
         end
     end
 end
