@@ -23,16 +23,19 @@ local weaponDef = {
     tolerance = 16000,
     tracks = true,
     Turnrate = 8000,
-    collideFriendly = true,
 
+    --collision
+    collideFriendly = false,
+    collideFirebase  = false,
+    
     --- -APPEARANCE
     smokeTrail = false,
   
     --- -TARGETING
     turret = true,
     cylinderTargeting = 55.0,
-    avoidFeature = true,
-    avoidFriendly = true,
+    avoidFeature = false,
+    avoidFriendly = false,
 
 
     commandfire=true,
@@ -41,7 +44,7 @@ local weaponDef = {
     damage = {
         default = 1
     },
-    areaOfEffect = 25,
+    areaOfEffect = 35,
     craterMult = 0,
 
     lineOfSight = true,
