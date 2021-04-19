@@ -66,7 +66,10 @@ local Locations = {
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function deserializeStringToTable(str)
-  local f = loadstring(str)
+  local f
+  local msg = "no message"
+  f, msg= loadstring(str)
+  if not f then Spring.Echo(msg) end
   return f()
 end
 
@@ -234,6 +237,7 @@ end
 
 local startFrame  = 1
 function widget:Initialize()
+
   startFrame  = Spring.GetGameFrame()
   locationLines = glCreateList(function()
     glBeginEnd(GL_LINE_LOOP, function()

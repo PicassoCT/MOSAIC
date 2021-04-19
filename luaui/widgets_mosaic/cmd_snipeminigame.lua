@@ -25,9 +25,13 @@ local spIsAboveMiniMap = Spring.IsAboveMiniMap
 local raidIcons = {}
 
 local function deserializeStringToTable(str)
-  local f = loadstring(str)
+  local f
+  local msg = "No message"
+  f, msg= loadstring(str)
+  if not f then Spring.Echo(msg) end
   return f()
 end
+
 
 local function UpdateHouseRaidIconMap(newHouseRaidIconMap)
     Spring.Echo("updateHouseRaidIconMap is called")
