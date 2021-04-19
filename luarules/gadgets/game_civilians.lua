@@ -276,7 +276,11 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             attackerTeam)
     if MobileCivilianDefIds[unitDefID] then
         attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
-        dispatchOfficer(unitID, attackerID)
+        if attackerID then
+            dispatchOfficer(unitID, attackerID)
+        else
+            echo("Civilian damaged without a attackerID")
+        end
     end
 end
 

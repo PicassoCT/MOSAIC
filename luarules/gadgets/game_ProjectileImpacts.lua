@@ -60,6 +60,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local FireWeapons = {
         [molotowDefID] = true
     }
+    local HouseRaidIconMap = {}
 
     function getWeapondefByName(name)
         return WeaponDefs[WeaponDefNames[name].id]
@@ -203,7 +204,22 @@ if (gadgetHandler:IsSyncedCode()) then
     -- Interrogation
     -----------------------------------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------------
-    -- victim -- interrogator -- boolInerrogationOngoing
+    function setRaidEndState(unitID, boolDoesExistAlive)
+		GG.InterrogationTable[unitID] = nil
+		if boolDoesExistAlive and boolDoesExistAlive == true then
+		Spring.SetUnitNoSelect(unitID, false)
+		end
+		HouseRaidIconMap[unitID] = nil
+        SendToUnsynced("HandleTransferHouseRaidIconMap", serializeTableToString(HouseRaidIconMap))
+	end
+	
+	function widgetRegisterRaidIcon(houseID, iconID)
+		if not GG.HouseRaidIconMap then GG.HouseRaidIconMap = {} end
+		HouseRaidIconMap[houseID] = iconID
+        SendToUnsynced("HandleTransferHouseRaidIconMap", serializeTableToString(HouseRaidIconMap))
+	end
+	
+	-- victim -- interrogator -- boolInerrogationOngoing
     GG.InterrogationTable = {}
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
@@ -233,20 +249,18 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
-                    GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("failed check Target is still existing ")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
-
+					setRaidEndState(persPack.unitID, false)
                     return true, persPack
                 end
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("failed   check wether the interrogator is still alive")
-                    Spring.SetUnitNoSelect(persPack.unitID, false)
+					setRaidEndState(persPack.unitID, true)
                     return true, persPack
                 end
 
@@ -256,17 +270,19 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     spEcho("failed check distance is still okay5 ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
-                    GG.InterrogationTable[persPack.unitID] = nil
-                    Spring.SetUnitNoSelect(persPack.unitID, false)
+					setRaidEndState(persPack.unitID, true)
                     return true, persPack
                 end
-
+				
                 -- check if the icon is still there
                 if not persPack.IconId then
                     persPack.IconId = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, persPack.unitID, 0,
                                           0, 0)
+					if persPack.IconId then
+						widgetRegisterRaidIcon(persPack.unitID,  persPack.IconID)
+					end
                 end
 
                 if GG.RaidState and GG.RaidState[persPack.IconId] and
@@ -279,8 +295,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             spEcho(
                                 "Aborting because no oponnent - sandbox or simulation mode")
                             spDestroyUnit(persPack.IconId, true, true)
-                            GG.InterrogationTable[persPack.unitID] = nil
-                            Spring.SetUnitNoSelect(persPack.unitID, false)
+							setRaidEndState(persPack.unitID, true)
                             return true, persPack
                         end
                         -- of a innocent person / innocent house
@@ -301,8 +316,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             end
 
                             spDestroyUnit(persPack.IconId, true, true)
-                            GG.InterrogationTable[persPack.unitID] = nil
-                            Spring.SetUnitNoSelect(persPack.unitID, false)
+							setRaidEndState(persPack.unitID, true)
                             return true, persPack
                         end
 
@@ -328,14 +342,16 @@ if (gadgetHandler:IsSyncedCode()) then
                             GG.OperativesDiscovered[parent] = true
                             spSetUnitAlwaysVisible(parent, true)
                         end
-                        GG.InterrogationTable[persPack.unitID] = nil
-                        Spring.SetUnitNoSelect(persPack.unitID, false)
+						
+						setRaidEndState(persPack.unitID, true)
                         return true, persPack
                     end
                 end
 
                 return false, persPack
             end
+			
+			
             Spring.SetUnitNoSelect(unitID, true)
             spEcho("Starting Raid Event Stream")
             createStreamEvent(unitID, raidEventStreamFunction, 31, {
@@ -371,6 +387,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
             -- Stun
             interrogationFunction = function(persPack)
+            
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID] = nil
@@ -802,5 +819,24 @@ if (gadgetHandler:IsSyncedCode()) then
             px, py, pz = Spring.GetProjectilePosition(target)
             return px, py, pz, targetTypeInt, target
         end
+    end
+
+
+
+
+
+else --unsynced code
+    local function HandleTransferHouseRaidIconMap(cmd, houseRaidIconMap)
+        if Script.LuaUI('UpdateHouseRaidIconMap') then
+            Script.LuaUI.UpdateHouseRaidIconMap(houseRaidIconMap)
+        end
+    end
+
+    function gadget:Initialize()
+        gadgetHandler:AddSyncAction('HandleTransferHouseRaidIconMap', HandleTransferHouseRaidIconMap)
+    end
+
+    function gadget:Shutdown()
+        gadgetHandler:RemovesSyncAction('HandleTransferHouseRaidIconMap')
     end
 end

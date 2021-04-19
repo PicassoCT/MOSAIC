@@ -11,7 +11,7 @@ function gadget:GetInfo()
     }
 end
 
-if (not gadgetHandler:IsSyncedCode()) then return false end
+if ( gadgetHandler:IsSyncedCode()) then 
 
 VFS.Include("scripts/lib_OS.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
@@ -40,12 +40,32 @@ function updateLocationData()
     end
 
     if GG.RevealedLocations then
-        Spring.SetGameRulesParam("revealedlocations", serializeTableToString(GG.RevealedLocations))
+        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(GG.RevealedLocations))
     end
 end
+
+
 
 function gadget:GameFrame(frame)
     if frame % 5 == 0 then
         updateLocationData()
     end
+end
+
+else --unsynced
+
+    local function HandleRevealedLocationUpdates(cmd, NewRevealedLocations)
+        if Script.LuaUI('RevealedGraphChanged')then
+            Script.LuaUI.RevealedGraphChanged(NewRevealedLocations)
+        end
+    end
+
+    function gadget:Initialize()
+        gadgetHandler:AddSyncAction("HandleRevealedLocationUpdates")
+    end
+
+    function gadget:Shutdown()
+        gadgetHandler:RemoveSyncAction("HandleRevealedLocationUpdates")
+    end
+
 end

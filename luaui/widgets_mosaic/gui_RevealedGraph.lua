@@ -19,7 +19,8 @@ function widget:GetInfo()
     date      = "Year 2021 after Spring Died (A.S.D)",
     license   = "GNU GPL, v2 or later",
     layer     = 15,
-    enabled   = true
+    enabled   = true,
+    handler = true
   }
 end
 
@@ -58,19 +59,25 @@ local spIsUnitVisible        = Spring.IsUnitVisible
 local spSendCommands         = Spring.SendCommands
 local spGetGameFrame         = Spring.GetGameFrame
 
+local Locations = {
+  --contains with key unitID (x,y,z, teamID, radius and  revealedUnits as table[unitID] -> {defID = unitDefID, boolIsParent }
+  --if all revealed Units are no more, a location ceases to be relevant
+}
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+local function deserializeStringToTable(str)
+  local f = loadstring(str)
+  return f()
+end
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
+local function RevealedGraphChanged(NewLocationData)
+  Locations = NewLocationData--deserializeStringToTable(NewLocationData)
+end
 
 local gaiaTeamID = Spring.GetGaiaTeamID () --+++
 function widget:PlayerChanged() --+++
   gaiaTeamID = Spring.GetGaiaTeamID () --+++
 end --+++
-
-local Locations = {
-  --contains with key unitID (x,y,z, teamID, radius and  revealedUnits as table[unitID] -> {defID = unitDefID, boolIsParent }
-  --if all revealed Units are no more, a location ceases to be relevant
-}
 
 local function addTestLocation()
   local locations = {}
@@ -240,9 +247,11 @@ function widget:Initialize()
       end
     end)
   end)
+   widgetHandler:RegisterGlobal('RevealedGraphChanged', RevealedGraphChanged)
 end
 
 function widget:Shutdown()
+     widgetHandler:DeregisterGlobal('RevealedGraphChanged')
 end
 
 --------------------------------------------------------------------------------
@@ -481,20 +490,5 @@ function widget:DrawWorld()
   local alpha = 0.3
   glColor(1, 1, 1, alpha)
   glLineWidth(1.0)
-end
-
-local function deserializeStringToTable(str)
-  local f = loadstring(str)
-  return f()
-end
-
-
-function widget:GameFrame(n)
-    if n % 15 == 0 then
-        local serializedStringTable = Spring.GetGameRulesParam("revealedlocations")
-        if serializedStringTable then
-         Locations = deserializeStringToTable(serializedStringTable) or {}
-        end
-    end
 end
 

@@ -18,7 +18,7 @@ local weaponDef = {
     flightTime = 6.5,
     BurnBlow = 0,
     FixedLauncher = false,
-    dance = 15,
+    dance = 25,
     wobble = 30,
     tolerance = 16000,
     tracks = true,
@@ -26,10 +26,10 @@ local weaponDef = {
 
     --collision
     collideFriendly = false,
-
+    collideFirebase  = false,
     
     --- -APPEARANCE
-    smokeTrail = false,
+    smokeTrail = true,
   
     --- -TARGETING
     turret = true,

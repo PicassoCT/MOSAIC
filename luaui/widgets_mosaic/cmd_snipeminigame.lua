@@ -9,7 +9,8 @@ function widget:GetInfo()
         license = "GNU GPL, v2 or later",
         layer = 0,
         enabled = true,
-        hidden = true
+        hidden = true,
+        handler = true
     }
 end
 
@@ -17,36 +18,47 @@ function widget:Update(dt)
 end
 
 local raidIconDefID = nil
+local houseRaidIconMap = {}
 local houseTypeTable = {}
 local spTraceScreenRay = Spring.TraceScreenRay
 local spIsAboveMiniMap = Spring.IsAboveMiniMap
+local raidIcons = {}
+
+local function deserializeStringToTable(str)
+  local f = loadstring(str)
+  return f()
+end
+
+local function UpdateHouseRaidIconMap(newHouseRaidIconMap)
+    Spring.Echo("updateHouseRaidIconMap is called")
+    houseRaidIconMap = deserializeStringToTable(newHouseRaidIconMap)
+end
+
 
 function widget:Initialize()
-    WG["snipeminigame"] = {}
-    WG["snipeminigame"].testfunc = function()
-        return maxAlpha
+    widgetHandler:RegisterGlobal('UpdateHouseRaidIconMap', UpdateHouseRaidIconMap)
+    for k, v in pairs(UnitDefs) do
+        if v.name == "raidicon" then
+            raidIconDefID = k
+        end
+
+        if string.find(v.name,"house_arab0") or string.find(v.name, "house_europe0") then
+            houseTypeTable[k] = k
+        end
+    end
+
+    for k, v in pairs(UnitDefs) do
+        if v.name == "raidicon" then
+            raidIconDefID = k
+        end
     end
 
     return true
 end
 
-for k, v in pairs(UnitDefs) do
-    if v.name == "raidicon" then
-        raidIconDefID = k
-    end
-
-    if string.find(v.name,"house_arab0") or string.find(v.name, "house_europe0") then
-        houseTypeTable[k] = k
-    end
+function widget:Shutdown()
+    widgetHandler:DeregisterGlobal('UpdateHouseRaidIconMap')
 end
-
-for k, v in pairs(UnitDefs) do
-    if v.name == "raidicon" then
-        raidIconDefID = k
-    end
-end
-
-local raidIcons = {}
 
 function widget:UnitCreated(unitID, unitDefID)
     if raidIconDefID == unitDefID then
@@ -81,30 +93,37 @@ function widget:MousePress(x, y, button)
 
     if targType == "unit" then
         --does not trace down to raidicon - selects house instead.. even with house set to unselect
-        local defID = Spring.GetUnitDefID(unitID) and defID == raidIconDefID then
-        Spring.Echo("Mouse Press on MiniGameBoard")
+        local defID = Spring.GetUnitDefID(unitID) 
+
+		if houseTypeTable[defID] or  defID == raidIconDefID then
+		--make houses transparent
+		if houseTypeTable[defID]  then
+			if houseRaidIconMap[unitID] then
+			     unitID = houseRaidIconMap[unitID]
+			     defID = raidIconDefID
+			else -- not a raided house
+                Spring.Echo("not a registered raided house yet")
+				return true
+			end
+		end
+		
+		Spring.Echo("Mouse Press on MiniGameBoard")
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
-         Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
+        Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
         
         if targType and targType == "ground" then
             if boolPlacementActive == false then
-                -- Spring.Echo("Placement started")
+                Spring.Echo("Placement started")
                 lastPos = targID
                 Spring.SendLuaRulesMsg(
                     "SPWN|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3] .. "|" .. unitID
                 )
             end
             boolPlacementActive = true
-
-            --create Unit at Location
-            --set
-
-            return true
+			return true
+        end
         end
     end
-end
-
-function widget:MouseMove(mx, my, dx, dy, mButton)
 end
 
 function widget:MouseRelease(x, y, mButton)
@@ -122,3 +141,10 @@ function widget:MouseRelease(x, y, mButton)
         return true
     end
 end
+
+local function deserializeStringToTable(str)
+  local f = loadstring(str)
+  return f()
+end
+
+

@@ -1181,7 +1181,7 @@ Spring.SetUnitNanoPieces(unitID, { Pistol })
 
 raidDownTime = GameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
 local raidComRange = GameConfig.agentConfig.raidComRange
-myRaidDownTime = raidDownTime
+myRaidDownTime = 0
 local scanSatDefID = UnitDefNames["satellitescan"].id
 local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
 
@@ -1190,7 +1190,8 @@ function raidReactor()
 	while true do
 		Sleep(100)
 		--if myRaidDownTime % 500 == 0 and myRaidDownTime ~= oldRaidDownTime then Spring.Echo("raid reactor :"..myRaidDownTime); oldRaidDownTime =myRaidDownTime end
-		boolComSatelliteNearby= false
+		if myRaidDownTime > 0 then
+        boolComSatelliteNearby= false
 		process(getAllNearUnit(unitID, raidComRange),
 				function (id)
 					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == scanSatDefID then
@@ -1199,7 +1200,7 @@ function raidReactor()
 					end				
 				end
 				)
-
+    end
 		myRaidDownTime = math.max( 0, myRaidDownTime - 100)
 	end
 end
@@ -1280,13 +1281,14 @@ function script.AimWeapon(weaponID, heading, pitch)
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
 	if not targetType or  (not validTargetType[targetType])  then
-			-- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
+			 echo("Not a valid target "..weaponID)
 			return false 
 	end
 	
 	--Do not aim at your own disguise civilian
 	if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
 		if GG.DisguiseCivilianFor[targetID] and GG.DisguiseCivilianFor[targetID]  == unitID then	
+             echo("Aiming at disguised civilian ")
 			return false
 		end
 	end
