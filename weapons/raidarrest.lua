@@ -8,7 +8,7 @@ local weaponDef = {
     Accuracy = 2000,
 
     --Physic/flight path
-    range = 175,
+    range = 200,
 	burst  = 9,
 	burstRate = 1.0,
     reloadtime = 10,
@@ -26,7 +26,7 @@ local weaponDef = {
 
     --collision
     collideFriendly = false,
-    collideFirebase  = false,
+
     
     --- -APPEARANCE
     smokeTrail = false,

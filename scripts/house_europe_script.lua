@@ -1113,18 +1113,35 @@ grafitiMessages={
     "PICAZOO",
     "PANCAKE",
     "VAGINAS",
-    "SUX TO BE U"
-
+    "SUX TO BE U",
+    "MARTIN IS COOL",
+    "KEXS CRUMBLES",
+    "NO CHRIS ALOWED",
+    "KERSI OPTICX",
+    "PASCAL EMZ KING",
+    "UNIKITY WAS HERE",
+    "REBEKYZ SWOARD",
+    "I HATE U",
+    "STIL NOD LUVIN TE COPZ",
+    "IFXNOR ELSE",
+    "SJW ICZM FOR LIVE",
+    "FREE NAWIRISTAN",
+    "SYRIRANA FOREVER",
+    "TALIBAN",
+    "EL QUAIDA",
+    "CALIPHAT",
+    "I FOR ONCE WELCUM",
+    "SAVE AI",
+    "ARMAGEDON"
 }
 
 function addGrafiti(x,z, turnV,  axis)
-
     mP(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],x,0,z, 0)
     turnValue = turnV + 180*randSign() + 180*randSign()
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],y_axis, math.rad(turnValue),0)
 
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
-    echo("Adding Graifiti with message:" ..myMessage)
+    echo("Adding Grafiti with message:" ..myMessage)
     counter={}
     for i=1, string.len(myMessage) do
         local letter = string.sub(myMessage,i,i)

@@ -673,6 +673,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local lastSniperIconID
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "SPWN") then
+            echo("game_snipe_minigame.lua: Recieved SPW message")
             t = split(msg, "|")
 
             name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ =

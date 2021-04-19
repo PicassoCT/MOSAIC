@@ -483,7 +483,7 @@ function widget:DrawWorld()
   glLineWidth(1.0)
 end
 
-function deserializeStringToTable(str)
+local function deserializeStringToTable(str)
   local f = loadstring(str)
   return f()
 end

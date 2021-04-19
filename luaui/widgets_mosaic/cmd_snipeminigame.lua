@@ -17,6 +17,7 @@ function widget:Update(dt)
 end
 
 local raidIconDefID = nil
+local houseTypeTable = {}
 local spTraceScreenRay = Spring.TraceScreenRay
 local spIsAboveMiniMap = Spring.IsAboveMiniMap
 
@@ -33,16 +34,25 @@ for k, v in pairs(UnitDefs) do
     if v.name == "raidicon" then
         raidIconDefID = k
     end
+
+    if string.find(v.name,"house_arab0") or string.find(v.name, "house_europe0") then
+        houseTypeTable[k] = k
+    end
 end
 
-raidIcons = {}
+for k, v in pairs(UnitDefs) do
+    if v.name == "raidicon" then
+        raidIconDefID = k
+    end
+end
+
+local raidIcons = {}
 
 function widget:UnitCreated(unitID, unitDefID)
     if raidIconDefID == unitDefID then
         raidIcons[unitID] = unitID
     end
 end
-/
 
 function widget:UnitDestroyed(unitID, unitDefID)
     if raidIcons[unitID] then
@@ -59,24 +69,27 @@ for id, def in pairs(UnitDefs) do
 end
 
 lastPos = {}
-boolPlacementActive = false
+local boolPlacementActive = false
 function widget:MousePress(x, y, button)
-    inMinimap = spIsAboveMiniMap(x, y)
+    local inMinimap = spIsAboveMiniMap(x, y)
     if (button ~= 1) then
         return false
     end
-        Spring.Echo("Mouse Press on MiniGameBoard")
+
     local targType, unitID = spTraceScreenRay(x, y)
-    -- Spring.Echo(targType, unitID)
-    if targType == "unit" and Spring.GetUnitDefID(unitID) == raidIconDefID then
+     Spring.Echo("cmd_snipeminigame:", targType, unitID)
+
+    if targType == "unit" then
+        --does not trace down to raidicon - selects house instead.. even with house set to unselect
+        local defID = Spring.GetUnitDefID(unitID) and defID == raidIconDefID then
         Spring.Echo("Mouse Press on MiniGameBoard")
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
-        -- Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
+         Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
+        
         if targType and targType == "ground" then
             if boolPlacementActive == false then
                 -- Spring.Echo("Placement started")
                 lastPos = targID
-
                 Spring.SendLuaRulesMsg(
                     "SPWN|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3] .. "|" .. unitID
                 )

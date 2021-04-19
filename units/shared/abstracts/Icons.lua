@@ -90,6 +90,7 @@ local RaidIcon =
     customparams = {
         normaltex = "unittextures/component_atlas_normal.dds"
     },
+    usepiececollisionvolumes = false,
     collisionVolumeType = "box",
     collisionvolumescales = "110 50 110",
     -- name = "Raid Location",

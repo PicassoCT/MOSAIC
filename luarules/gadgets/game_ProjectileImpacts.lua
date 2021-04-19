@@ -215,7 +215,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                        paralyzer, weaponDefID, attackerID,
                                        attackerDefID, attackerTeam,
                                        iconUnitTypeName)
-        spEcho("caught 1")
+        spEcho("raidEventStream  Called")
 
         if GG.InterrogationTable[unitID] == nil then
             GG.InterrogationTable[unitID] = {}
@@ -227,14 +227,14 @@ if (gadgetHandler:IsSyncedCode()) then
         if GG.InterrogationTable[unitID][attackerID] == false then
             GG.InterrogationTable[unitID][attackerID] = true
 
-            spEcho("caught 2")
             -- Stun
             interrogationFunction = function(persPack)
+            spEcho("raidEventStream  Ongoing")
+
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        false
-                    spEcho("caught 3 ")
+                    GG.InterrogationTable[persPack.unitID] = nil
+                    spEcho("failed check Target is still existing ")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
@@ -244,21 +244,20 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        false
-                    spEcho("caught 4")
-
+                    GG.InterrogationTable[persPack.unitID] = nil
+                    spEcho("failed   check wether the interrogator is still alive")
+                    Spring.SetUnitNoSelect(persPack.unitID, false)
                     return true, persPack
                 end
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
                     GameConfig.InterrogationDistance then
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        false
-                    spEcho("caught 5 ")
-                    setSpeedEnv(persPack.interrogatorID, 1.0)
 
+                    spEcho("failed check distance is still okay5 ")
+                    setSpeedEnv(persPack.interrogatorID, 1.0)
+                    GG.InterrogationTable[persPack.unitID] = nil
+                    Spring.SetUnitNoSelect(persPack.unitID, false)
                     return true, persPack
                 end
 
@@ -280,6 +279,8 @@ if (gadgetHandler:IsSyncedCode()) then
                             spEcho(
                                 "Aborting because no oponnent - sandbox or simulation mode")
                             spDestroyUnit(persPack.IconId, true, true)
+                            GG.InterrogationTable[persPack.unitID] = nil
+                            Spring.SetUnitNoSelect(persPack.unitID, false)
                             return true, persPack
                         end
                         -- of a innocent person / innocent house
@@ -300,6 +301,8 @@ if (gadgetHandler:IsSyncedCode()) then
                             end
 
                             spDestroyUnit(persPack.IconId, true, true)
+                            GG.InterrogationTable[persPack.unitID] = nil
+                            Spring.SetUnitNoSelect(persPack.unitID, false)
                             return true, persPack
                         end
 
@@ -312,7 +315,6 @@ if (gadgetHandler:IsSyncedCode()) then
                             GameConfig.RaidInterrogationPropgandaPrice,
                             persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.unitID)
-                        spEcho(" caught 6 ")
                         for childID, v in pairs(children) do
                             if doesUnitExistAlive(childID) == true then
                                 spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
@@ -326,12 +328,15 @@ if (gadgetHandler:IsSyncedCode()) then
                             GG.OperativesDiscovered[parent] = true
                             spSetUnitAlwaysVisible(parent, true)
                         end
+                        GG.InterrogationTable[persPack.unitID] = nil
+                        Spring.SetUnitNoSelect(persPack.unitID, false)
+                        return true, persPack
                     end
                 end
 
                 return false, persPack
             end
-
+            Spring.SetUnitNoSelect(unitID, true)
             spEcho("Starting Raid Event Stream")
             createStreamEvent(unitID, raidEventStreamFunction, 31, {
                 interrogatorID = attackerID,
@@ -368,8 +373,7 @@ if (gadgetHandler:IsSyncedCode()) then
             interrogationFunction = function(persPack)
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        false
+                    GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("Interrrogation: Target díed")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
@@ -382,8 +386,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        false
+                   GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("Interrrogation End: Interrogator died")
                     if persPack.IconId then
                         GG.raidIconDone[persPack.IconId] = nil
@@ -394,8 +397,8 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
                     GameConfig.InterrogationDistance then
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        false
+                    GG.InterrogationTable[persPack.unitID] = nil
+
                     spEcho("Interrrogation End: Interrogator distance to big ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconId then
@@ -441,6 +444,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                 "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
                             setSpeedEnv(persPack.interrogatorID, 1.0)
                             spDestroyUnit(persPack.IconId, true, true)
+                            GG.InterrogationTable[persPack.unitID] = nil
                             return true, persPack
                         end
 
@@ -463,6 +467,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             end
                             setSpeedEnv(persPack.interrogatorID, 1.0)
                             spDestroyUnit(persPack.IconId, true, true)
+                            GG.InterrogationTable[persPack.unitID] = nil
                             return true, persPack
                         end
                     end
@@ -499,6 +504,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     spEcho("Interrogation: Raid ended")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     GG.raidIconDone[persPack.IconId] = nil
+                    GG.InterrogationTable[persPack.unitID] = nil
                     return true, persPack
                 end
 
@@ -590,7 +596,7 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Interrogation -- and not already Interrogated
         if (houseTypeTable[unitDefID] or RaidAbleType[unitDefID]) and
             currentlyInterrogationRunning(unitID, attacker) == false then
-            spEcho("Raid of " .. UnitDefs[unitDefID].name)
+            spEcho("Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
             stunUnit(unitID, 2.0)
             setSpeedEnv(attackerID, 0.0)
             interrogationEventStreamFunction(unitID, unitDefID, unitTeam,
