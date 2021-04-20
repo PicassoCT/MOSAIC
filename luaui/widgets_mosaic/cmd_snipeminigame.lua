@@ -28,8 +28,11 @@ local function deserializeStringToTable(str)
   local f
   local msg = "No message"
   f, msg= loadstring(str)
-  if not f then Spring.Echo(msg) end
-  return f()
+  if  f == nil then
+     Spring.Echo(msg) 
+  else
+    return f()
+ end
 end
 
 

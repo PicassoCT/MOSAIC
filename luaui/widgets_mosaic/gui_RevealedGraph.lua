@@ -73,8 +73,9 @@ local function deserializeStringToTable(str)
   return f()
 end
 
-local function RevealedGraphChanged(NewLocationData)
-  Locations = NewLocationData--deserializeStringToTable(NewLocationData)
+function RevealedGraphChanged(NewLocationData)
+  Spring.Echo("RevealedGraphChanged called")
+  Locations = deserializeStringToTable(NewLocationData)
 end
 
 local gaiaTeamID = Spring.GetGaiaTeamID () --+++
@@ -237,7 +238,6 @@ end
 
 local startFrame  = 1
 function widget:Initialize()
-
   startFrame  = Spring.GetGameFrame()
   locationLines = glCreateList(function()
     glBeginEnd(GL_LINE_LOOP, function()
@@ -251,7 +251,7 @@ function widget:Initialize()
       end
     end)
   end)
-   widgetHandler:RegisterGlobal('RevealedGraphChanged', RevealedGraphChanged)
+   widgetHandler:RegisterGlobal("RevealedGraphChanged", RevealedGraphChanged)
 end
 
 function widget:Shutdown()
@@ -496,3 +496,9 @@ function widget:DrawWorld()
   glLineWidth(1.0)
 end
 
+--[[function widget:GameFrame(n)
+
+if n% 60 == 0 then
+ Locations= addTestLocation()
+end
+end--]]
