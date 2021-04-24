@@ -27,6 +27,8 @@ end
 local function addTestLocation()
   local locations = {}
   local allUnits = Spring.GetAllUnits()
+  if #allUnits < 1 then return {} end
+
   local choiceIndex = math.random(1,#allUnits)
   local locationID = allUnits[choiceIndex]
   local coordinates = {}
@@ -64,7 +66,7 @@ local function addTestLocation()
   return locations
 end
 
-function updateLocationData()
+local function updateLocationData()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
 
     for nr, LocationData in pairs(GG.RevealedLocations) do
@@ -82,7 +84,12 @@ function updateLocationData()
     end
 
     if GG.RevealedLocations then
-        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(GG.RevealedLocations))
+        if Spring.GetGameFrame() > startFrame and Spring.GetGameFrame() % 60 == 0 then
+            GG.RevealedLocations = addTestLocation()
+        end
+        local copy = GG.RevealedLocations  
+
+        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(copy))
     end
 end
 
@@ -93,15 +100,16 @@ function gadget:GameFrame(frame)
         updateLocationData()
     end
 
-    if frame % 30*10 == 0 and frame > startFrame then
+    if frame % 5 == 0 then
         GG.RevealedLocations = addTestLocation()
     end
 end
 
 else --unsynced
 
-    function HandleRevealedLocationUpdates(cmd, NewRevealedLocations)
-        if Script.LuaUI('RevealedGraphChanged')then
+   local function HandleRevealedLocationUpdates(_, NewRevealedLocations)
+        if Script.LuaUI("RevealedGraphChanged")then
+            Spring.Echo("Transcieving Test Locations")
             Script.LuaUI.RevealedGraphChanged(NewRevealedLocations)
         end
     end
