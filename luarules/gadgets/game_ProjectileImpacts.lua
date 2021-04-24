@@ -827,8 +827,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
 else --unsynced code
     
-    function HandleTransferHouseRaidIconMap(_, houseRaidIconMap)
-        if Script.LuaUI('UpdateHouseRaidIconMap') then
+    local function HandleTransferHouseRaidIconMap(_, houseRaidIconMap)
+        if Script.LuaUI("UpdateHouseRaidIconMap") then
             Script.LuaUI.UpdateHouseRaidIconMap(houseRaidIconMap)
         end
     end
