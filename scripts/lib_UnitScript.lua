@@ -3327,7 +3327,6 @@ function middleSquareWeylSequence(itterations)
         x = math.bit_or((x / 2 ^ 5), (x * 2 ^ 5));
 
     end
-
 end
 
 -- > returns a Unique ID - upper limit is 565939020162275221
@@ -3553,6 +3552,19 @@ function getCircleIndex(index)
     if index == 2 then return 0, 1 end
     if index == 3 then return 1, 0 end
     if index == 4 then return 0, -1 end
+    assert(true==false)
+end
+
+function getFullCircleIndex(index)
+    if index == 1 then return -1, 0 end
+    if index == 2 then return -1, 1 end
+    if index == 3 then return 0, 1 end
+    if index == 4 then return 1, 1 end
+    if index == 5 then return 1, 0 end
+    if index == 6 then return 1, -1 end
+    if index == 7 then return 0, -1 end
+    if index == 8 then return -1, -1 end
+    assert(true==false)
 end
 
 function mirrorMatriceXAxis(x, y, z)
