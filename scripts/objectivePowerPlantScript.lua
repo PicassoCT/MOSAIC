@@ -6,12 +6,12 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 center= piece"PowerPlant"
+heightOfsset= nil
 function script.Create()
     Spring.SetUnitBlocking(unitID,false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Mirror"])
-    Show(TablesOfPiecesGroups["Mirror"][math.random(1,
-                                                    #TablesOfPiecesGroups["Mirror"])])
+    Show(TablesOfPiecesGroups["Mirror"][math.random(1,#TablesOfPiecesGroups["Mirror"])])
 
     sensorTurn(TablesOfPiecesGroups["PowerTower"][1])
     tValue = math.random(1, 10) / 10
@@ -22,11 +22,13 @@ function script.Create()
     StartThread(camAnimation)
     heightOfsset= getObjectiveAboveGroundOffset(unitID)
     Move(center,y_axis, heightOfsset, 0)
-    Move(TablesOfPiecesGroups["PowerPillar"] [1],y_axis, -heightOfsset, 0)
 end
 
+ orgUnitHeigth= getUnitGroundHeigth(unitID)
+ maxdepth= orgUnitHeigth
 function sensorTurn(tower)
     hideT(TablesOfPiecesGroups["PowerPillar"])
+   
     for k = 1, #TablesOfPiecesGroups["PowerPillar"] do
         Show(TablesOfPiecesGroups["PowerPillar"][k])
         for i = 1, 360, 10 do
@@ -34,6 +36,8 @@ function sensorTurn(tower)
 
             x, y, z = Spring.GetUnitPiecePosDir(unitID,
                                                 TablesOfPiecesGroups["PowerPillar"][k])
+
+        
 
             if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
                 return
@@ -43,6 +47,16 @@ function sensorTurn(tower)
 
     u = math.random(1, 360)
     WTurn(tower, y_axis, math.rad(u), 0)
+
+    while (heightOfsset == nil)do
+        Sleep(10)
+    end
+
+    for k = 1, #TablesOfPiecesGroups["PowerPillar"] do
+            x, y, z = Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["PowerPillar"][k])
+            gh = Spring.GetGroundHeight(x,z) -orgUnitHeigth
+            Move(TablesOfPiecesGroups["PowerPillar"][k],y_axis, -heightOfsset,0)
+    end
 end
 
 function camAnimation()
