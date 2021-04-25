@@ -821,14 +821,10 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-
-
-
-
 else --unsynced code
     
     local function HandleTransferHouseRaidIconMap(_, houseRaidIconMap)
-        if Script.LuaUI("UpdateHouseRaidIconMap") then
+        if Script.LuaUI('UpdateHouseRaidIconMap') then
             Script.LuaUI.UpdateHouseRaidIconMap(houseRaidIconMap)
         end
     end
@@ -838,6 +834,6 @@ else --unsynced code
     end
 
     function gadget:Shutdown()
-        gadgetHandler:RemovesSyncAction("HandleTransferHouseRaidIconMap")
+        gadgetHandler:RemoveSyncAction("HandleTransferHouseRaidIconMap")
     end
 end

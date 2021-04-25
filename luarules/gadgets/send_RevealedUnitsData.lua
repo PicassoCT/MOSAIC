@@ -1,11 +1,11 @@
 function gadget:GetInfo()
     return {
-        name = "Send Revealed UnitsData",
+        name = "SendRevealedUnitsData",
         desc = "Updates tables for revealed Unit Display widget",
         author = "Picasso",
         date = "3rd of May 2021",
         license = "GPL3",
-        layer = 3,
+        layer = 0,
         version = 1,
         enabled = true
     }
@@ -54,14 +54,14 @@ local function addTestLocation()
     end
   end
 
-  local n = #locations
-  locations[n + 1]  = {}
-  locations[#locations].radius = 50 --coordinates.x
-  locations[#locations].x = math.random(2000, 4000) --coordinates.x
-  locations[#locations].y = 0 --coordinates.y + 10
-  locations[#locations].z = math.random(2000, 4000) --coordinates.z
-  locations[#locations].teamID = Spring.GetUnitTeam(locationID)
-  locations[#locations].revealedUnits = revealedUnits
+  local n = #locations +1
+  locations[n]  = {}
+  locations[n].radius = 50 --coordinates.x
+  locations[n].x = math.random(2000, 4000) --coordinates.x
+  locations[n].y = 0 --coordinates.y + 10
+  locations[n].z = math.random(2000, 4000) --coordinates.z
+  locations[n].teamID = Spring.GetUnitTeam(locationID)
+  locations[n].revealedUnits = revealedUnits
 
   return locations
 end
@@ -84,12 +84,7 @@ local function updateLocationData()
     end
 
     if GG.RevealedLocations then
-        if Spring.GetGameFrame() > startFrame and Spring.GetGameFrame() % 60 == 0 then
-            GG.RevealedLocations = addTestLocation()
-        end
-        local copy = GG.RevealedLocations  
-
-        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(copy))
+        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(GG.RevealedLocations  ))
     end
 end
 
@@ -99,27 +94,22 @@ function gadget:GameFrame(frame)
     if frame % 5 == 0 then
         updateLocationData()
     end
-
-    if frame % 5 == 0 then
-        GG.RevealedLocations = addTestLocation()
-    end
 end
 
 else --unsynced
 
    local function HandleRevealedLocationUpdates(_, NewRevealedLocations)
-        if Script.LuaUI("RevealedGraphChanged")then
-            Spring.Echo("Transcieving Test Locations")
+        if Script.LuaUI('RevealedGraphChanged') then
             Script.LuaUI.RevealedGraphChanged(NewRevealedLocations)
         end
     end
 
     function gadget:Initialize()
-        gadgetHandler:AddSyncAction("HandleRevealedLocationUpdates", HandleRevealedLocationUpdates)
+        gadgetHandler:AddSyncAction('HandleRevealedLocationUpdates', HandleRevealedLocationUpdates)
     end
 
     function gadget:Shutdown()
-        gadgetHandler:RemoveSyncAction("HandleRevealedLocationUpdates")
+        gadgetHandler:RemoveSyncAction('HandleRevealedLocationUpdates', HandleRevealedLocationUpdates)
     end
 
 end

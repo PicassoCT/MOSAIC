@@ -172,6 +172,7 @@ local flexCallIns = {
   'DefaultCommand',
   'UnitCreated',
   'UnitFinished',
+  'UnitReverseBuilt',
   'UnitFromFactory',
   'UnitDestroyed',
   'UnitDestroyedByTeam',
@@ -616,7 +617,7 @@ function widgetHandler:LoadWidget(filename, fromZip)
   self:FinalizeWidget(widget, filename, basename)
   local name = widget.whInfo.name
   if (basename == SELECTOR_BASENAME) then
-    self.orderList[name] = 1  --  always enabled
+    self.orderList[name] = 1  -- always load the widget selector
   end
 
   --Spring.Echo("ValidateWidget : "..basename)
@@ -743,7 +744,7 @@ function widgetHandler:NewWidget()
     if (self.inCommandsChanged) then
       table.insert(self.customCommands, cmd)
     else
-      Spring.Log(HANDLER_BASENAME, LOG.ERROR, "AddLayoutCommand() can only be used in CommandsChanged()")
+      Spring.Echo("AddLayoutCommand() can only be used in CommandsChanged()")
     end
   end
 
@@ -856,12 +857,12 @@ local function HandleError(widget, funcName, status, ...)
   if (funcName ~= 'Shutdown') then
     widgetHandler:RemoveWidget(widget)
   else
-    Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'Error in Shutdown()')
+    Spring.Echo(HANDLER_BASENAME, LOG.ERROR, 'Error in Shutdown()')
   end
   local name = widget.whInfo.name
   local error_message = select(1,...)
-  Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'Error in ' .. funcName ..'(): ' .. tostring(error_message))
-  Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'Removed widget: ' .. name)
+  Spring.Echo(HANDLER_BASENAME, LOG.ERROR, 'Error in ' .. funcName ..'(): ' .. tostring(error_message))
+  Spring.Echo(HANDLER_BASENAME, LOG.ERROR, 'Removed widget: ' .. name)
   return nil
 end
 
@@ -888,11 +889,11 @@ local function SafeWrapFuncGL(func, funcName)
       if (funcName ~= 'Shutdown') then
         widgetHandler:RemoveWidget(w)
       else
-        Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'Error in Shutdown()')
+        Spring.Echo('Error in Shutdown()')
       end
       local name = w.whInfo.name
-      Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'Error in ' .. funcName ..'(): ' .. tostring(r[2]))
-      Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'Removed widget: ' .. name)
+      Spring.Echo('Error in ' .. funcName ..'(): ' .. tostring(r[2]))
+      Spring.Echo('Removed widget: ' .. name)
       return nil
     end
   end
@@ -917,7 +918,7 @@ local function SafeWrapWidget(widget)
     return
   elseif (SAFEWRAP == 1) then
     if (widget.GetInfo and widget.GetInfo().unsafe) then
-      Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'LuaUI: loaded unsafe widget: ' .. widget.whInfo.name)
+      Spring.Echo(HANDLER_BASENAME, LOG.ERROR, 'LuaUI: loaded unsafe widget: ' .. widget.whInfo.name)
       return
     end
   end
@@ -1048,7 +1049,7 @@ function widgetHandler:UpdateWidgetCallIn(name, w)
     end
     self:UpdateCallIn(name)
   else
-    Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'UpdateWidgetCallIn: bad name: ' .. name)
+    Spring.Echo(HANDLER_BASENAME, LOG.ERROR, 'UpdateWidgetCallIn: bad name: ' .. name)
   end
 end
 
@@ -1060,7 +1061,7 @@ function widgetHandler:RemoveWidgetCallIn(name, w)
     ArrayRemove(ciList, w)
     self:UpdateCallIn(name)
   else
-    Spring.Log(HANDLER_BASENAME, LOG.ERROR, 'RemoveWidgetCallIn: bad name: ' .. name)
+    Spring.Echo(HANDLER_BASENAME, LOG.ERROR, 'RemoveWidgetCallIn: bad name: ' .. name)
   end
 end
 
@@ -1082,7 +1083,7 @@ end
 function widgetHandler:EnableWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
-    Spring.Log(HANDLER_BASENAME, LOG.ERROR, "EnableWidget(), could not find widget: " .. tostring(name))
+    Spring.Echo(HANDLER_BASENAME, LOG.ERROR, "EnableWidget(), could not find widget: " .. tostring(name))
     return false
   end
   if (not ki.active) then
@@ -1104,7 +1105,7 @@ end
 function widgetHandler:DisableWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
-    Spring.Log(HANDLER_BASENAME, LOG.ERROR, "DisableWidget(), could not find widget: " .. tostring(name))
+    Spring.Echo(HANDLER_BASENAME, LOG.ERROR, "DisableWidget(), could not find widget: " .. tostring(name))
     return false
   end
   if (ki.active) then
@@ -1121,7 +1122,7 @@ end
 function widgetHandler:ToggleWidget(name)
   local ki = self.knownWidgets[name]
   if (not ki) then
-    Spring.Log(HANDLER_BASENAME, LOG.ERROR, "ToggleWidget(), could not find widget: " .. tostring(name))
+    Spring.Echo(HANDLER_BASENAME, LOG.ERROR, "ToggleWidget(), could not find widget: " .. tostring(name))
     return
   end
   if (ki.active) then
@@ -1231,15 +1232,27 @@ end
 --  Global var/func management
 --
 
+
+
 function widgetHandler:RegisterGlobal(owner, name, value)
   if ((name == nil)        or
       (_G[name])           or
       (self.globals[name]) or
       (CallInsMap[name])) then
+	  Spring.Echo("Error: Callin did not succesfull register for callin "..name)
     return false
   end
-  _G[name] = value
-  self.globals[name] = owner
+
+  --[[if value then--]]
+     _G[name] = value
+    self.globals[name] = owner
+--[[  else
+    _G[owner] = name
+    self.globals[owner] = self
+  end
+--]]
+
+
   return true
 end
 
@@ -1299,7 +1312,6 @@ end
 
 
 function widgetHandler:ConfigLayoutHandler(data)
-  Spring.Echo("ConfingLayoutHandler_4")
   ConfigLayoutHandler(data)
 end
 
@@ -1319,6 +1331,7 @@ function widgetHandler:Shutdown()
   Spring.Echo("Shutdown - SaveOrderList Complete")
   self:SaveConfigData()
   Spring.Echo("Shutdown - SaveConfigData Complete")
+
   for _,w in ipairs(self.ShutdownList) do
     local name = w.whInfo.name or "UNKNOWN NAME"
 	Spring.Echo("Shutdown Widget - " .. name)
@@ -1332,7 +1345,7 @@ end
 function widgetHandler:Update()
   local deltaTime = Spring.GetLastUpdateSeconds()  
   -- update the hour timer
-  hourTimer = (hourTimer + deltaTime)% 3600
+  hourTimer = (hourTimer + deltaTime) % 3600
   for _,w in ipairs(self.UpdateList) do
     w:Update(deltaTime)
   end
@@ -1341,7 +1354,6 @@ end
 
 
 function widgetHandler:ConfigureLayout(command)
-  Spring.Echo("Configuring Layout "..command)
   if (command == 'tweakgui') then
     self.tweakMode = true
     Spring.Echo("LuaUI TweakMode: ON")
@@ -1449,8 +1461,6 @@ function widgetHandler:ViewResize(vsx, vsy)
   end
   return
 end
-
-
 
 
 function widgetHandler:DrawScreen()
@@ -1682,7 +1692,6 @@ do
 end
 
 function widgetHandler:MousePress(x, y, button)
- -- Spring.Echo("widgetHandler:MousePress:MousePress")
   local mo = self.mouseOwner
   if (not self.tweakMode) then
     if (mo) then

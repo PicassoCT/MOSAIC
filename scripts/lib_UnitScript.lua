@@ -6699,13 +6699,14 @@ function assertArgumentsExistOfType(...)
 end
 
 
-function serializeTableToString(table)
-  return "return"..serializeTable(table)
-end
 
 function deserializeStringToTable(str)
   local f = loadstring(str)
   return f()
+end
+
+function serializeTableToString(table)
+  return "return "..serializeTable(table)
 end
 
 function serializeTable(val, name, skipnewlines, depth)
@@ -6716,7 +6717,7 @@ function serializeTable(val, name, skipnewlines, depth)
     if name then 
       if not string.match(name, '^[a-zA-z_][a-zA-Z0-9_]*$') then
         name = string.gsub(name, "'", "\\'")
-        name = "['".. name .. "']"
+        name = "[".. name .. "]"
       end
       tmp = tmp .. name .. " = "
      end
@@ -6737,6 +6738,7 @@ function serializeTable(val, name, skipnewlines, depth)
         tmp = tmp .. (val and "true" or "false")
     else
         tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
+        assert(true==false)
     end
 
     return tmp

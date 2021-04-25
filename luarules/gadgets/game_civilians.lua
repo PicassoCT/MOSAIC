@@ -282,7 +282,7 @@ end
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
-    if MobileCivilianDefIds[unitDefID] then
+    if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
         attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
         if attackerID then
             dispatchOfficer(unitID, attackerID)

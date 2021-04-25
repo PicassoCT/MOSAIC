@@ -2,7 +2,7 @@ local versionNumber = "2.03"
 
 function widget:GetInfo()
     return {
-        name = "Snipe Mini Game",
+        name = "snipeMiniGame",
         desc = "controlls the behaviour of raid icon minigame unitspawning",
         author = "picassoct",
         date = "Jan,2008",
@@ -35,15 +35,16 @@ local function deserializeStringToTable(str)
  end
 end
 
-
-local function UpdateHouseRaidIconMap(newHouseRaidIconMap)
+function UpdateHouseRaidIconMap(newHouseRaidIconMap)
     Spring.Echo("updateHouseRaidIconMap is called")
-    houseRaidIconMap = deserializeStringToTable(newHouseRaidIconMap)
+    if newHouseRaidIconMap then
+        houseRaidIconMap = deserializeStringToTable(newHouseRaidIconMap)
+    end
 end
 
 
 function widget:Initialize()
-    widgetHandler:RegisterGlobal('UpdateHouseRaidIconMap', UpdateHouseRaidIconMap)
+    widgetHandler:RegisterGlobal(widget, 'UpdateHouseRaidIconMap', UpdateHouseRaidIconMap)
     for k, v in pairs(UnitDefs) do
         if v.name == "raidicon" then
             raidIconDefID = k
@@ -148,10 +149,3 @@ function widget:MouseRelease(x, y, mButton)
         return true
     end
 end
-
-local function deserializeStringToTable(str)
-  local f = loadstring(str)
-  return f()
-end
-
-

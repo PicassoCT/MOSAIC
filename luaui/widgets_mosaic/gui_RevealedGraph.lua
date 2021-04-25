@@ -13,14 +13,15 @@
 
 function widget:GetInfo()
   return {
-    name      = "Revealed Units Highlighting",
+    name      = "highlightRevealedUnitGraph",
     desc      = "Highlights all revealed Units and the respective Locations",
     author    = "picasso",
     date      = "Year 2021 after Spring Died (A.S.D)",
     license   = "GNU GPL, v2 or later",
     layer     = 15,
     enabled   = true,
-    handler = true
+    handler = true,
+    hidden = true
   }
 end
 
@@ -65,18 +66,16 @@ local Locations = {
 }
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+
 local function deserializeStringToTable(str)
   local f
   local msg = "no message"
   f, msg= loadstring(str)
-  if not f then Spring.Echo(msg) end
+  if not f then Spring.Echo("Error deserializing:"..msg) end
   return f()
 end
 
-function RevealedGraphChanged(NewLocationData)
-  Spring.Echo("RevealedGraphChanged called")
-  Locations = deserializeStringToTable(NewLocationData)
-end
 
 local gaiaTeamID = Spring.GetGaiaTeamID () --+++
 function widget:PlayerChanged() --+++
@@ -111,14 +110,14 @@ local function addTestLocation()
     end
   end
 
-  local n = #locations
-  locations[n + 1]  = {}
-  locations[#locations].radius = 50 --coordinates.x
-  locations[#locations].x = math.random(2000, 4000) --coordinates.x
-  locations[#locations].y = 0 --coordinates.y + 10
-  locations[#locations].z = math.random(2000, 4000) --coordinates.z
-  locations[#locations].teamID = spGetUnitTeam(locationID)
-  locations[#locations].revealedUnits = revealedUnits
+  local n = #locations + 1
+  locations[n]  = {}
+  locations[n].radius = 50 --coordinates.x
+  locations[n].x = math.random(2000, 4000) --coordinates.x
+  locations[n].y = 0 --coordinates.y + 10
+  locations[n].z = math.random(2000, 4000) --coordinates.z
+  locations[n].teamID = spGetUnitTeam(locationID)
+  locations[n].revealedUnits = revealedUnits
   return locations
 end
 
@@ -236,8 +235,15 @@ local function DrawCircle( Locx, Locz, radius, offsetY)
   gl.Vertex(x,gh,z)
 end
 
+function RevealedGraphChanged(newLocationData)
+  if newLocationData then
+    Locations = deserializeStringToTable(newLocationData)
+  end
+end
+
 local startFrame  = 1
 function widget:Initialize()
+  widgetHandler:RegisterGlobal(widget, 'RevealedGraphChanged', RevealedGraphChanged)
   startFrame  = Spring.GetGameFrame()
   locationLines = glCreateList(function()
     glBeginEnd(GL_LINE_LOOP, function()
@@ -251,12 +257,12 @@ function widget:Initialize()
       end
     end)
   end)
-   widgetHandler:RegisterGlobal("RevealedGraphChanged", RevealedGraphChanged)
 end
 
 function widget:Shutdown()
      widgetHandler:DeregisterGlobal('RevealedGraphChanged')
 end
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -315,9 +321,9 @@ local function GetTeamColorSet(teamID)
 end
 
 function clamp(val,min,max)
-if val < min then return min end
-if val > max then return max end
-return val
+  if val < min then return min end
+  if val > max then return max end
+  return val
 end
 
 function randSign()
@@ -393,9 +399,9 @@ end
 
 local function mirrorValue(val)
     if val < 0.5 then
-        return val * 2    
+      return val * 2    
     else
-    return (0.5 - math.abs( val - 0.5))*2    
+      return (0.5 - math.abs( val - 0.5))*2    
     end
 end
 
@@ -406,16 +412,16 @@ local function getDayTimeDependentColor(colSet)
     local blendedColor = {}
     blendedColor[1]={}
 
-     blendedColor[1][1] = (1-percent)* colSet[1][1] + (percent)* colSet[3][1]
-     blendedColor[1][2] = (1-percent)* colSet[1][2] + (percent)* colSet[3][2]
-     blendedColor[1][3] = (1-percent)* colSet[1][3] + (percent)* colSet[3][3]
-     blendedColor[1][4] = 0.7 
+    blendedColor[1][1] = (1-percent)* colSet[1][1] + (percent)* colSet[3][1]
+    blendedColor[1][2] = (1-percent)* colSet[1][2] + (percent)* colSet[3][2]
+    blendedColor[1][3] = (1-percent)* colSet[1][3] + (percent)* colSet[3][3]
+    blendedColor[1][4] = 0.7 
        
-      blendedColor[2]={}  
-      blendedColor[2][1] = (1-percent)* colSet[2][1] + (percent)* colSet[4][1]
-      blendedColor[2][2] = (1-percent)* colSet[2][2] + (percent)* colSet[4][2]
-      blendedColor[2][3] = (1-percent)* colSet[2][3] + (percent)* colSet[4][3]
-      blendedColor[2][4] = 0.9
+    blendedColor[2]={}  
+    blendedColor[2][1] = (1-percent)* colSet[2][1] + (percent)* colSet[4][1]
+    blendedColor[2][2] = (1-percent)* colSet[2][2] + (percent)* colSet[4][2]
+    blendedColor[2][3] = (1-percent)* colSet[2][3] + (percent)* colSet[4][3]
+    blendedColor[2][4] = 0.9
       
   return blendedColor
 end
@@ -496,9 +502,3 @@ function widget:DrawWorld()
   glLineWidth(1.0)
 end
 
---[[function widget:GameFrame(n)
-
-if n% 60 == 0 then
- Locations= addTestLocation()
-end
-end--]]
