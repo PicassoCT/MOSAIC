@@ -376,7 +376,7 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	-- This is a anti-tank drone body, deployed after flight
 	--capable to one-time launch a projectile 
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
-	Description = "Deploys a Unit via rocketlaunch ",
+	description = "Fires a cruise missile at target",
 	
 		objectName = "ground_turret_cruisemissilepod.dae",
 	script = "ground_turret_cruisemissilepod_script.lua",
@@ -446,31 +446,31 @@ local ground_turret_cruisemissilepod =  Walker:New{
 CruiseMissilePods ={}
 
 ground_turret_cruisemissilepod.weapons  = {
-											[1] = { name =  "cm_airstrike"	,
-																							
+											[1] = { name =  "cm_airstrike"	,																							
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
 CruiseMissilePods["ground_turret_cm_airdrop"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_airdrop"].Description = " deploys air ied drones pre impact"
+CruiseMissilePods["ground_turret_cm_airdrop"].name = "Airstrike"
+CruiseMissilePods["ground_turret_cm_airdrop"].description = " fires a cruise missile"
 
 ground_turret_cruisemissilepod.weapons  = {
-											[1] = { name =  "cm_walker"	,
-											
+											[1] = { name =  "cm_walker"	,											
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
 CruiseMissilePods["ground_turret_cm_walker"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_walker"].Description = " drops 2 walkers preimpact"
+CruiseMissilePods["ground_turret_cm_walker"].name = "Walker AirDrop Cruise Missile"
+CruiseMissilePods["ground_turret_cm_walker"].description = " drops 2 walkers preimpact"
 
 ground_turret_cruisemissilepod.weapons  = {
-											[1] = { name =  "cm_antiarmor"	,
-													
+											[1] = { name =  "cm_antiarmor"	,													
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
 CruiseMissilePods["ground_turret_cm_antiarmor"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_antiarmor"].Description = " launches anti armour pods pre impact"
+CruiseMissilePods["ground_turret_cm_antiarmor"].name = "Anti-Armor Cruise Missile"
+CruiseMissilePods["ground_turret_cm_antiarmor"].description = " fire anti armour salvoes pre impact"
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_turret_ssied",
@@ -479,7 +479,8 @@ ground_turret_cruisemissilepod.weapons  = {
 											}
 										}
 CruiseMissilePods["ground_turret_cm_ssied"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_ssied"].Description = " launches a deadly cruise missile"
+CruiseMissilePods["ground_turret_cm_ssied"].name = "IED-Drone Cruise Missile"
+CruiseMissilePods["ground_turret_cm_ssied"].description = " drops IEDs and Turret into the warzone"
 
 return lowerkeys(
 {
