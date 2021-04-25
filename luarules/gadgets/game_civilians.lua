@@ -237,12 +237,19 @@ function dispatchOfficer(unitID, attackerID)
 
         officerID = getOfficer(unitID, attackerID)
         boolFoundSomething = false
-        if officerID then
+        if officerID and doesUnitExistAlive(officerID) then
              setFireState(officerID, 2)
              setMoveState(officerID, 2)
             -- Spring.AddUnitImpulse(officerID,15,0,0)
-            tx, ty, tz = math.random(0, 100) * Game.mapSizeX, 0,
-                         math.random(0, 100) * Game.mapSizeZ
+            tx, ty, tz = math.random(10, 90) * Game.mapSizeX/100, 0, math.random(10, 90) * Game.mapSizeZ/100
+            if not attackerID then attackerID = Spring.GetUnitLastAttacker(officerID) end
+            if attackerID then 
+                unitStates = Spring.GetUnitStates( unitID ) 
+                if unitStates and unitStates.cloak == true then
+                    attackerID = nil
+                end
+            end
+
             if attackerID and isUnitAlive(attackerID) == true then
                 if not GG.PoliceInPursuit then
                     GG.PoliceInPursuit = {}
@@ -257,11 +264,12 @@ function dispatchOfficer(unitID, attackerID)
                 isUnitAlive(unitID) == true then
                 x, y, z = spGetUnitPosition(unitID)
                 if x then
-                    tx, ty, tz = x, y, z;
+                    tx, ty, tz = x + math.random(-50,50)*randSign(), y, z+ math.random(-50,50)*randSign();
                     boolFoundSomething = true;
                 end
             end
 
+            Spring.Echo("Dispatching officer"..officerID.." to x:"..tx.." z:"..tz)
             Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
             if maRa() == true then
                 Command(officerID, "go", {x = tx, y = ty, z = tz})
