@@ -80,10 +80,14 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 function getPoliceSpawnLocation(suspect)
     assert(type(suspect) == "number")
     sx, sy, sz = spGetUnitPosition(suspect)
+    if not sx then
+        sx, sy, sz = Game.mapSizeX/100* math.random(10,90),0,Game.mapSizeZ/100* math.random(10,90) 
+    end
     Tmax = getAllNearUnit(suspect, GameConfig.policeSpawnMinDistance)
     Tmin = getAllNearUnit(suspect, GameConfig.policeSpawnMaxDistance)
-    T = removeDictFromDict(Tmax, Tmin)
-    T = process(T, function(id)
+ 
+    T = process(removeDictFromDict(Tmax, Tmin) , 
+        function(id)
         if houseTypeTable[spGetUnitDefID(id)] then return id end
     end)
 
@@ -149,11 +153,12 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
     if PoliceTypes[unitDefID] then
         spSetUnitNeutral(unitID, false)
         maxNrPolice = math.max(maxNrPolice - 1, 0)
+        activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.policeMaxDispatchTime 
 
     end
-    if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
+--[[    if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
        -- Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
-    end
+    end--]]
 
     if isBribeIcon(UnitDefs, unitDefID) then
         dispatchOfficer(unitID, unitID)
@@ -199,7 +204,7 @@ function spawnRubbleHeapAt(id)
 end
 
 function getOfficer(unitID, attackerID)
-    officerID = nil
+    local officerID = nil
     if maxNrPolice > 0 then
         px, py, pz = getPoliceSpawnLocation(attackerID)
         if not px then px, py, pz = spGetUnitPosition(unitID) end
@@ -216,24 +221,31 @@ function getOfficer(unitID, attackerID)
 
         GG.UnitsToSpawn:PushCreateUnit(ptype, px, py, pz, direction,
                                  gaiaTeamID)
-        
-        if count(activePoliceUnitIds_DispatchTime) > 0 then
-            officerID = randDict(activePoliceUnitIds_DispatchTime)
-            activePoliceUnitIds_DispatchTime[officerID] =
-            GameConfig.policeMaxDispatchTime +
-                math.random(1, GameConfig.policeMaxDispatchTime)
-            end
-    else -- reasign one
-        officerID = randDict(activePoliceUnitIds_DispatchTime)
-        activePoliceUnitIds_DispatchTime[officerID] =
-            GameConfig.policeMaxDispatchTime +
-                math.random(1, GameConfig.policeMaxDispatchTime)
     end
+     -- reasign one
+        totalNrPolice =  count(activePoliceUnitIds_DispatchTime)
+        if totalNrPolice > 1 then
+                officerID = randDict(activePoliceUnitIds_DispatchTime)
+
+
+        elseif totalNrPolice == 1 then
+            for k,v in pairs(activePoliceUnitIds_Dispatchtime) do
+                if v then
+                    officerID = k 
+                    break
+                end
+            end
+        end
+
+        if officerID then
+            activePoliceUnitIds_DispatchTime[officerID] =   GameConfig.policeMaxDispatchTime +  math.random(1, GameConfig.policeMaxDispatchTime)
+        end
+
     return officerID
 end
 
+
 function dispatchOfficer(unitID, attackerID)
-        if not attackerID then return end
 
         officerID = getOfficer(unitID, attackerID)
         boolFoundSomething = false
@@ -242,7 +254,7 @@ function dispatchOfficer(unitID, attackerID)
              setMoveState(officerID, 2)
             -- Spring.AddUnitImpulse(officerID,15,0,0)
             tx, ty, tz = math.random(10, 90) * Game.mapSizeX/100, 0, math.random(10, 90) * Game.mapSizeZ/100
-            if not attackerID then attackerID = Spring.GetUnitLastAttacker(officerID) end
+            if not attackerID or doesUnitExistAlive(attackerID) then attackerID = Spring.GetUnitLastAttacker(officerID) end
             if attackerID then 
                 unitStates = Spring.GetUnitStates( unitID ) 
                 if unitStates and unitStates.cloak == true then
@@ -250,7 +262,7 @@ function dispatchOfficer(unitID, attackerID)
                 end
             end
 
-            if attackerID and isUnitAlive(attackerID) == true then
+            if attackerID and doesUnitExistAlive(attackerID) == true then
                 if not GG.PoliceInPursuit then
                     GG.PoliceInPursuit = {}
                 end
@@ -264,14 +276,13 @@ function dispatchOfficer(unitID, attackerID)
                 isUnitAlive(unitID) == true then
                 x, y, z = spGetUnitPosition(unitID)
                 if x then
-                    tx, ty, tz = x + math.random(-50,50)*randSign(), y, z+ math.random(-50,50)*randSign();
+                    tx, ty, tz = x + math.random(15,50)*randSign(), y, z+ math.random(15,50)*randSign();
                     boolFoundSomething = true;
                 end
             end
 
-            Spring.Echo("Dispatching officer"..officerID.." to x:"..tx.." z:"..tz)
             Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
-            if maRa() == true then
+            if maRa() == true  or attackerID == nil then
                 Command(officerID, "go", {x = tx, y = ty, z = tz})
             else
                 Command(officerID, "attack", {attackerID}, 4)
@@ -283,12 +294,12 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
-        attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
         if attackerID then
-            dispatchOfficer(unitID, attackerID)
-        else
-            echo("Civilian damaged without a attackerID")
+            Spring.Echo(attackerID .. " attacked civilian "..unitID)
         end
+
+
+        dispatchOfficer(unitID, attackerDefID)
     end
 end
 
@@ -607,7 +618,13 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     local Route = {}
 
     x1, y1, z1 = spGetUnitPosition(unitOne)
+    if doesUnitExistAlive(unitOne) == false then
+        x1,y1,z1 = Game.mapSizeX/100 * math.random(10,90), 0, Game.mapSizeZ/100 * math.random(10,90)
+    end
+
     x2, y2, z2 = spGetUnitPosition(unitTwo)
+    if not x2 then     x2,y2,z2 = x1 + math.random(100,256)*randSign(), y1, z1 + math.random(100,256)*randSign() end
+
     index = 1
     Route[index] = {}
     Route[index].x = x1
@@ -655,7 +672,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     assert(#Route >= 3)
     assert(Route[1].x)
     assert(Route[2].x)
-    assert(Route[3].x)
+
     return testClampRoute(Route, uType)
 end
 
