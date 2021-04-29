@@ -13,7 +13,7 @@ local ground_tank_day = Tank:New{
 	canAttack = true,
 	canGuard = true,
 	canStop = true,
-	fireState= 1,
+	fireState= 2,
 	
 	explodeAs			= "none",
 	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20

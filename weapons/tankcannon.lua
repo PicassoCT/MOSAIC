@@ -5,19 +5,19 @@ local weaponDef = {
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 500,
-        HeavyArmor = 500,
+        default = 1500,
+        HeavyArmor = 1000,
     },
     areaOfEffect = 12,
     --physics
-    weaponVelocity = 900,
+    weaponVelocity = 1900,
     reloadtime = 1.2,
     range = 650,
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
     turret = true,
-    craterMult = 0,
+    craterMult = 1,
     explosionGenerator = "custom:missile_explosion",
     soundHit = "sounds/tank/impact.ogg",
     soundStart = "sounds/tank/Fire.ogg",
