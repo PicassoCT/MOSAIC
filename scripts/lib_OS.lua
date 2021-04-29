@@ -882,3 +882,27 @@ function vtolLoop(plane)
         end
     end
 end
+
+
+
+function headingChangeDetector(unitID, moveTreshold)
+    TurnCount = 0
+    headingOfOld = Spring.GetUnitHeading(unitID)
+    oldx, _, oldz = Spring.GetUnitPosition(unitID)
+    while true do
+        Sleep(500)
+ 
+        tempHead = Spring.GetUnitHeading(unitID)
+        if tempHead ~= headingOfOld then
+            TurnCount = TurnCount + 1
+            if TurnCount > 3 then
+                boolTurning = true
+            end
+        else
+            TurnCount = 0
+            boolTurning = false
+        end
+        boolTurnLeft = headingOfOld > tempHead
+        headingOfOld = tempHead
+    end
+end
