@@ -96,7 +96,7 @@ local groundturretmg =  Turret:New{
 	buildCostMetal= 500,
 	buildTime = 35,
 	--Health
-	maxDamage = 500,
+	maxDamage = 2500,
 	idleAutoHeal = 0,
 	--Movement
 	alwaysUpright=false,

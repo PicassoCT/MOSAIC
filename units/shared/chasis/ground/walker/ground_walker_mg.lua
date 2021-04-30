@@ -40,9 +40,14 @@ local ground_walker_mg = Walker:New{
 	},
 	
 				weapons = {
+
 				[1]={name  = "submachingegun",
-				onlyTargetCategory = [[BUILDING GROUND]],
+				onlyTargetCategory = [[BUILDING GROUND]], 
 				},
+				[2]={name  = "aamachinegun",
+				onlyTargetCategory = [[AIR]],
+				turret = true
+				},				
 		},	
 }
 

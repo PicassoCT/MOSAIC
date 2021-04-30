@@ -97,13 +97,13 @@ function script.Create()
     Hide(aimrot)
     Hide(emitfire)
     StartThread(walkAnimationLoop)
-   StartThread(headingChangeDetector, unitID)
-  --[[  StartThread(testAnimation)--]]
+    StartThread(headingChangeDetector, unitID)
+--[[    StartThread(testAnimation)--]]
 end
 
 function testAnimation()
     while true do
-        PlayAnimation("IDLE", nil, 2.0)
+        PlayAnimation("FIRE_HIGH", nil, 2.0)
        -- Sleep(1000)
         --PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
        -- Sleep(1000)
@@ -131,7 +131,7 @@ function walkAnimationLoop()
     while true do
         if boolAiming == false and boolWalking == true then
             while boolAiming == false and boolWalking == true do
-                PlayAnimation("RUNNING", nil, 2.0)
+                PlayAnimation("RUNNING", nil, 1.0)
             end
 
             if boolAiming == false then
@@ -301,30 +301,40 @@ boolAiming = false
 
 -- aimining & fire weapon
 function script.AimFromWeapon1() return aimpiece end
+function script.AimFromWeapon2() return aimpiece end
 
 function script.QueryWeapon1() return aimpiece end
+function script.QueryWeapon2() return aimpiece end
+
+boolPrioritizeGround = false
 
 function script.AimWeapon1(Heading, pitch)
     if boolTransported == true then return false end
 
     StartThread(delayedDeactivateAiming)
     boolAiming = true
+    boolPrioritizeGround = true
     if boolWalking == true then
         if boolTurning == true then
             if boolTurnLeft == true then
              PlayAnimation("SIDEWALK_LEFT", nil, 2.0)
-         else
-             PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
-         end
+            else
+                 PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
+            end
         else
-            PlayAnimation("RUNNING", nil, 2.0)
+            PlayAnimation("RUNNING", nil, 1.0)
         end
-        WTurn(aimrot, y_axis, Heading, math.pi)
     end
 
     WTurn(aimrot, y_axis, Heading, math.pi)
 
-    return false
+    return true
+end
+
+function script.AimWeapon2(Heading, pitch)
+    if boolPrioritizeGround == true  then return false end
+
+    return boolPrioritizeGround == false
 end
 
 function delayedDeactivateAiming()
@@ -332,11 +342,17 @@ function delayedDeactivateAiming()
     SetSignalMask(SIG_AIM)
     Sleep(500)
     boolAiming = false
+    boolPrioritizeGround = false
     Turn(aimrot, y_axis, math.rad(0), math.pi)
 end
 
 function script.FireWeapon1()
     if boolWalking == false then PlayAnimation("FIRING", nil, 2.0) end
+    return true
+end
+
+function script.FireWeapon2()
+    if boolWalking == false then PlayAnimation("FIRE_HIGH", nil, 2.0) end
     return true
 end
 
