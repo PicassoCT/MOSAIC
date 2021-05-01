@@ -146,11 +146,16 @@ function walkAnimationLoop()
                     if maRa()== true then -- idle animation
                     while(boolWalking == false and boolAiming == false) do
                         PlayAnimation("IDLE", nil, 2.0)
-                        interVal = math.random(1,25)
+                        interVal = math.random(-25,25)
                         while(boolWalking == false and boolAiming == false and interVal > 0) do
-                            Turn(center, y_axis, math.rad())
+                            heading = Spring.GetUnitHeading(unitID)
+                            heading = heading + 10
+                            Spring.SetUnitHeading(unitID, heading)
+                            if interVal % 2 == 0 then
+                             PlayAnimation("IDLE", nil, 2.0)
+                            end
                             Sleep(100)
-                            interVal = interVal -100
+                            interVal = interVal -1
                         end
                     end
                     else --shutdown
@@ -347,12 +352,13 @@ function delayedDeactivateAiming()
 end
 
 function script.FireWeapon1()
-    if boolWalking == false then PlayAnimation("FIRING", nil, 2.0) end
+    if boolWalking == false then         
+        PlayAnimation("FIRING", nil, 3.0) end
     return true
 end
 
 function script.FireWeapon2()
-    if boolWalking == false then PlayAnimation("FIRE_HIGH", nil, 2.0) end
+    if boolWalking == false then PlayAnimation("FIRE_HIGH", nil, 3.0) end
     return true
 end
 
