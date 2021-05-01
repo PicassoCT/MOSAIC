@@ -1373,7 +1373,9 @@ function copyUnit(id, teamID, fatherID)
     return copyID
 end
 
-function transferUnitTeam(id, targetTeam) Spring.TransferUnit(id, targetTeam) end
+function transferUnitTeam(id, targetTeam) 
+  Spring.TransferUnit(id, targetTeam) 
+end
 -- > Create a Unit at Piece of another Unit
 function createUnitAtPiece(id, typeID, Piece, team)
     x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(id, Piece)
