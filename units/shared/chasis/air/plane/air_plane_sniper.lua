@@ -1,7 +1,7 @@
 local AIR_SNIPER = AIRCRAFT:New{
 
-	name = "sniper drone ",
-	Description = "Electrostatic Graphene Parachut",
+	name = "Predator VII",
+	Description = "sniper drone",
 	objectName = "air_plane_sniper.dae",
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
@@ -31,6 +31,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
+	autoLand = false,
 	dontLand		 	= true,
 	Acceleration = 0.5,
 	MaxVelocity = 2.5,
@@ -42,7 +43,6 @@ local AIR_SNIPER = AIRCRAFT:New{
 	CanFly   = true,
 	activateWhenBuilt   	= true,
 	MaxSlope 					= 75,
-
 	--canHover=true,
 	CanAttack = true,
 	CanGuard = true,
