@@ -498,6 +498,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         GameConfig.RaidInterrogationPropgandaPrice,
                         persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.unitID)
+
                     for childID, v in pairs(children) do
                         spEcho("Interrogation: Reavealing child " .. childID)
                         if doesUnitExistAlive(childID) == true then
@@ -511,6 +512,11 @@ if (gadgetHandler:IsSyncedCode()) then
                         spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
                         GG.OperativesDiscovered[parent] = true
                         spSetUnitAlwaysVisible(parent, true)
+                    end
+
+                    --if unit is a assembly, tranfer all produced units to other team
+                    if spGetUnitDefID(persPack.unitID) == UnitDefNames["assembly"].id then
+                        setAssemblyProducedUnitsToTeam(assemblyID, Spring.GetUnitTeam(persPack.interrogatorID))
                     end
 
                     -- out of time to interrogate
