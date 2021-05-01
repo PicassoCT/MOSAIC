@@ -110,14 +110,14 @@ function widget:MousePress(x, y, button)
 			     unitID = houseRaidIconMap[unitID]
 			     defID = raidIconDefID
 			else -- not a raided house
-                Spring.Echo("not a registered raided house yet")
-				return true
+             --   Spring.Echo("not a registered raided house yet")
+				return false
 			end
 		end
 		
 		Spring.Echo("Mouse Press on MiniGameBoard")
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
-        Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
+        --Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
         
         if targType and targType == "ground" then
             if boolPlacementActive == false then
