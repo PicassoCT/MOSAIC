@@ -562,7 +562,9 @@ function getRaidAbleTypeTable(UnitDefs)
     GameConfig = getGameConfig()
     local UnitDefNames = getUnitDefNames(UnitDefs)
     typeTable = {
-        "civilianagent", "operativeasset", "operativepropagator",
+        "civilianagent", 
+        "operativeasset", 
+        "operativepropagator",
         "operativeinvestigator"
     }
 
@@ -635,6 +637,17 @@ function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
 return false
 end
 
+function setAssemblyProducedUnitsToTeam(assemblyID, teamToTurnOverID)
+    env = Spring.UnitScript.GetScriptEnv(assemblyID)
+    if env and env.TurnProducedUnitsOverToTeam then
+        Spring.UnitScript.CallAsUnit(assemblyID,
+                                     env.TurnProducedUnitsOverToTeam,
+                                    teamToTurnOverID)
+        return true
+    end
+return false
+end
+  
 function getCivilianAnimationStates()
     return {
         -- Upper Body States
