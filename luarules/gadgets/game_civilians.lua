@@ -824,15 +824,14 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
 
     if GG.GlobalGameState and 
         GG.GlobalGameState == GameConfig.GameState.normal and
-        persPack.boolAnarchy == true then
-        setCivilianBehaviourMode(myID, false, GG.GlobalGameState, false)
+        persPack.boolAnarchy == true then 
         persPack.boolAnarchy = false
     end
 
     if GG.GlobalGameState and 
         GG.GlobalGameState ~= GameConfig.GameState.normal and 
         not persPack.boolAnarchy  then
-        setCivilianBehaviourMode(myID, true, GG.GlobalGameState, false)
+        startInternalBehaviourOfState(myID, "startAnarchyBehaviour")
         persPack.boolAnarchy = true
         return true, frame + math.random(30 * 5, 30 * 25), persPack, x,y,z, hp
     end
@@ -902,7 +901,6 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
 
         if persPack.goalIndex > #persPack.goalList then
             GG.UnitArrivedAtTarget[myID] = true
-            endEchoTravelFunction("arrived at target", myID)
             return true, nil, persPack
         end
     end
