@@ -46,34 +46,14 @@ if (gadgetHandler:IsSyncedCode()) then
   
     end
 
-    function gadget:GameFrame(n)
+    function gadget:GameFrame(n)      
 
         if frame == InitialFrame then 
             SendToUnsynced("setSlowMoShaderActive", false) 
-        else
-            boolActive, activeHiveMinds = areHiveMindsActive()
-            if frame == endFrame then 
-                boolActive = false
-            end
-
-            if detectRisingEdge(boolActive) == true then
-                SendToUnsynced("setSlowMoShaderActive", true)
-                startFrame = n + 1
-                activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
-                deactivateCursorForNormalTeams(activeHiveMinds)
-                endFrame = (n + math.ceil(MaxTimeInMs / 1000) * 30)
-            elseif detectFallingEdge(boolActive) == true then
-                SendToUnsynced("setSlowMoShaderActive", false)
-                restoreCursorNonActiveTeams(activeHiveMinds)
-                endFrame= Spring.GetGameFrame()
-            end
-
-            boolPreviouslyActive = boolActive
+            return
         end
 
-        SendToUnsynced("frameCall", n)
-        handleSlowMoPhases(n, boolActive, startFrame, endFrame)
-
+        boolPreviouslyActive = handleSlowMoPhases(n)
     end
 
     -- check for active HiveMinds and AI Nodes
@@ -131,31 +111,49 @@ if (gadgetHandler:IsSyncedCode()) then
 
     currentSpeed = 1.0
 
-    function handleSlowMoPhases(frame, boolActive, startFrame, endFrame)
-        GG.GameSpeed = currentSpeed
+    function handleSlowMoPhases(frame)
 
-        if boolActivate == false or frame > endFrame then
+        boolSlowMoRequested, activeHiveMinds = areHiveMindsActive()
+        boolActive = frame >= startFrame and frame <= endFrame
+
+        --detect starting
+        if detectRisingEdge(boolSlowMoRequested) == true then
+            SendToUnsynced("setSlowMoShaderActive", true)
+            startFrame = frame + 1
+            Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
+            activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
+            deactivateCursorForNormalTeams(activeHiveMinds)
+            endFrame = (frame + math.ceil(MaxTimeInMs / 1000) * 30)
+            boolActive = true
+        end
+
+        if detectFallingEdge(boolSlowMoRequested) == true then
+            SendToUnsynced("setSlowMoShaderActive", false)
+            restoreCursorNonActiveTeams(activeHiveMinds)
+            endFrame= Spring.GetGameFrame()
+            SendToUnsynced("setDefaultGameSpeed", frame)
+             Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
+            boolActive = false
+        end
+
+
+        if boolActive == true then --interpolate
+             if currentSpeed > targetSlowMoSpeed - 0.11 then --SlowDown
+                Spring.Echo("slowdown to " .. currentSpeed)
+                Spring.SendCommands("slowdown")
+            end
+          
+        elseif boolActive == false  then
             if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
                 Spring.Echo("speedup to " .. currentSpeed)
                 Spring.SendCommands("speedup ")
             end
         end
 
-        -- Slow Down
-        if frame > startFrame and frame < endFrame then
-            if currentSpeed > targetSlowMoSpeed - 0.11 then
-                -- Spring.Echo("slowdown to " .. currentSpeed)
-                Spring.SendCommands("slowdown")
-            end
-        end
-
-        if frame == startFrame then
-            Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
-            return
-        end
+        GG.GameSpeed = currentSpeed
 
         -- SlowMoPhase
-        if frame >= startFrame and frame < endFrame then
+        if boolActive == true then
             if frame - startFrame % 210 == 0 then
                 if side == "antagon" then
                     Spring.PlaySoundFile("sounds/HiveMind/Antagonloop.ogg", 1.0)
@@ -163,14 +161,9 @@ if (gadgetHandler:IsSyncedCode()) then
                     Spring.PlaySoundFile("sounds/HiveMind/Protagonloop.ogg", 1.0)
                 end
             end
-            return
         end
 
-        -- Speed up phase
-        if frame == endFrame then
-            Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
-            return
-        end
+        return boolActive
     end
 
     -- for teams without a active node or no node at all - hide the cursor during the slowMotionPhase
@@ -192,7 +185,6 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:RecvLuaMsg(msg, playerID)
-
         start, ends = string.find(msg, "CurrentGameSpeed:")
         if ends then
             currentSpeed = tonumber(string.sub(msg, ends + 1, #msg))
@@ -219,8 +211,7 @@ else -- Unsynced
         end
     end
 
-    local function frameCall(_, n)
-
+    local function setDefaultGameSpeed(_, n)
         if n % 5 == 0 then
             currentGameSpeed = Spring.GetGameSpeed() or 1.0
             Spring.SendLuaRulesMsg("CurrentGameSpeed:" .. currentGameSpeed)
@@ -248,7 +239,7 @@ else -- Unsynced
         gadgetHandler:AddSyncAction("setSlowMoShaderActive",setSlowMoShaderActive)
         gadgetHandler:AddSyncAction("restoreCursor", restoreCursor)
         gadgetHandler:AddSyncAction("hideCursor", hideCursor)
-        gadgetHandler:AddSyncAction("frameCall", frameCall)
+        gadgetHandler:AddSyncAction("setDefaultGameSpeed", setDefaultGameSpeed)
 
 
         local playerID = Spring.GetMyPlayerID()
