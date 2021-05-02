@@ -110,7 +110,7 @@ function getGameConfig()
         Wreckage = {lifeTime = 3 * 60 * 1000},
 
         -- Launcher
-        PreLaunchLeakSteps = 3,
+        PreLaunchLeakSteps = 2,
         LaunchReadySteps = 7,
         LauncherInterceptTimeSeconds = 20,
 
@@ -128,7 +128,7 @@ function getGameConfig()
         },
 
         TimeForInterceptionInFrames = 30 * 10,
-        TimeForPanicSpreadInFrames = 30 * 30,
+        TimeForPanicSpreadInFrames = 15 * 30,
         TimeForPacification = 30 * 90,
         TimeForScrapHeapDisappearanceInMs = 3 * 60 * 30, -- 3 Minutes off line
 
@@ -1284,7 +1284,6 @@ function computateClusterNodes(housePosTable, GameConfig)
     goalIndexMaxDivider = getBelowPow2(GameConfig.numberOfBuildings)
     -- protect against min and max
     goalIndexDivider = math.floor(goalIndexMaxDivider * timeFactor)
-    Spring.Echo("IndexDivider : " .. goalIndexDivider)
     local result = cullPositionCluster(housePosTable, goalIndexDivider)
     return result
 end

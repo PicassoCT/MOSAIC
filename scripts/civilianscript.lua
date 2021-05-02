@@ -125,6 +125,7 @@ home = {}
 loadMax = 8
 
 local bodyConfig = {}
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 
 iShoppingConfig = math.random(0, 8)
 function variousBodyConfigs()
@@ -416,11 +417,12 @@ function startAnarchyBehaviour()
 end
 
 function anarchyBehaviour()   
-    oldBehaviourState = GG.GlobalGameState
+    oldBehaviourState = GameConfig.GameState.normal
+    newState = GG.GlobalGameState
 
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
-         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
-        oldBehaviourState = newState
+        normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
+        oldBehaviourState = GG.GlobalGameState
         Sleep(250)
     end
 
@@ -705,8 +707,9 @@ function tacticalAnarchy()
     if bodyConfig.boolArmed == true then
 
         T = process(getAllNearUnit(unitID, 512), function(id)
-            if isUnitEnemy(myTeamID, id) == true and Spring.GetUnitIsCloaked(id) ==
-                false then return id end
+            if isUnitEnemy(myTeamID, id) == true and Spring.GetUnitIsCloaked(id) ==  false then 
+                return id 
+            end
         end)
 
         if T and #T > 0 then
@@ -740,10 +743,22 @@ normalBehavourStateMachine = {
 
             bodyConfig.boolArmed = (math.random(1, 100) >
                                        GameConfig.chanceCivilianArmsItselfInHundred)
-
-            if bodyConfig.boolArmed == true then
-                Show(ak47)
                 Hide(ShoppingBag)
+                Hide(Handbag)
+                Hide(cofee)
+            if bodyConfig.boolArmed == true and maRa() then
+                Show(ak47)
+                Show(MilitiaMask)
+                T = process(getAllNearUnit(unitID, 100),
+                        function(id)
+                            if TruckTypeTable[Spring.GetUnitDefID(id)] then
+                                return id
+                            end
+                        end
+                        )
+                if T and #T > 0 then
+                    Spring.SetUnitLoadingTransport ( T[1], unitID ) 
+                end
             else
                 bodyConfig.boolProtest = (math.random(1, 10) > 5)
                 if bodyConfig.boolProtest == true then
@@ -753,9 +768,7 @@ normalBehavourStateMachine = {
                                     playerName)
                     Show(MilitiaMask)
                     Show(molotow)
-                    Hide(ShoppingBag)
-                    setOverrideAnimationState(eAnimState.protest,
-                                              eAnimState.walking, false)
+                    setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
                 end
             end
 

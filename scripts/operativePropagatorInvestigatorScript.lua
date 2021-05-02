@@ -476,7 +476,6 @@ function flyingMonitored()
 	while true do
 		boolFlying, posH, groundH = isUnitFlying(unitID)
 		if boolFlying == true then
-		
 			while(boolFlying == true) do
 				Sleep(100)
 				boolFlying, posH, groundH = isUnitFlying(unitID)
@@ -488,6 +487,7 @@ function flyingMonitored()
 			end
 			WaitForTurns(TablesOfPiecesGroups)
 			reset(center)
+            PlayAnimation("UPBODY_STANDING_PISTOL", {}, 2.0)
 		end
 		Sleep(100)
 	end
