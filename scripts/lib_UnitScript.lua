@@ -2485,6 +2485,42 @@ function capHide(l_Num)
     Hide(l_Num)
 end
 
+function showOnePiece(T)
+    if not T then return end
+    dice = math.random(1, count(T))
+    c = 0
+    for k, v in pairs(T) do
+        if k and v then c = c + 1 end
+        if c == dice then
+                Show(v)
+                return v
+        end
+    end
+end
+
+function showOneOrNonePiece(T)
+    if not T then return end
+    if math.random(1, 100) > 50 then
+        return showOne(T, true)
+    else
+        return
+    end
+end
+
+function showOneOrAllPiece(T)
+    if not T then return end
+    
+    if math.random(1,10) > 5 then
+        return showOnePiece(T)
+    else
+        for num, val in pairs(T) do 
+
+            Show(val)
+        end
+        return
+    end
+end
+
 -- > Encapsulates the hide Table function
 function capHideT(l_T)
     for k, v in pairs(l_T) do assertNum(v, v) end

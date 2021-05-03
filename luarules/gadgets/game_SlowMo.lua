@@ -33,17 +33,14 @@ if (gadgetHandler:IsSyncedCode()) then
         return boolResult
     end
 
-    local startFrame = Spring.GetGameFrame()
-    local endFrame = startFrame + 1
+    local startFrame = -1
+    local endFrame = 0
     local InitialFrame = Spring.GetGameFrame()
  
     function gadget:Initialize()
         if not GG.HiveMind then GG.HiveMind = {} end
         SendToUnsynced("Initialize")
         InitialFrame = Spring.GetGameFrame()
-        startFrame = Spring.GetGameFrame()
-        endFrame = startFrame + 1
-  
     end
 
     function gadget:GameFrame(n)      

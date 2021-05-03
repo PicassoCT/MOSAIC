@@ -313,6 +313,21 @@ function getSatteliteTypes(UnitDefs)
     return getTypeTable(UnitDefNames, typeTable)
 end
 
+function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
+    assert(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    if culture == "arabic" then
+      typeTable = {
+            "truck_arab6", 
+            "truck_arab7", 
+            "truck_arab8"
+        }
+      return getTypeTable(UnitDefNames, typeTable)
+    else
+        assert(true == false)
+    end
+end
+
 function getAgrarianAreaFeatureUnits(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
     typeTable = {

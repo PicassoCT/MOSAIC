@@ -75,6 +75,8 @@ local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
+
+local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 function getPoliceSpawnLocation(suspect)
@@ -538,10 +540,6 @@ function checkReSpawnPopulation()
                 civilianType = randDict(civilianWalkingTypeTable)
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
                                               goalNode)
-                if id then 
-                    GG.UnitArrivedAtTarget[id] = true 
-                    Spring.Echo("game_civilians:UnitArrivedAtTarget:"..id)
-                end
             end
         end
     else -- decimate arrived cvilians who are not DisguiseCivilianFor
@@ -549,6 +547,20 @@ function checkReSpawnPopulation()
                                      getUnitNumberAtTime(
                                          GameConfig.numberOfPersons), counter),
                                  civilianWalkingTypeTable)
+    end
+end
+
+function loadTruck(id)
+    if loadableTruckType[spGetUnitDefID(id)] then
+        Spring.Echo(id .. " is a loadable truck ")
+       payLoadID = createUnitAtUnit(gaiaTeamID, "truckpayload", id)
+       assert(payLoadID)
+       if payLoadID then
+           Spring.SetUnitAlwaysVisible(payLoadID,true)
+           pieceMap = Spring.GetUnitPieceMap(id)
+           assert(pieceMap["attachPoint"])
+           Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
+       end
     end
 end
 
@@ -579,9 +591,8 @@ function checkReSpawnTraffic()
                                                          #RouteTabel[startNode])]
             TruckType = randDict(TruckTypeTable)
             id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
-            if id then
-             GG.UnitArrivedAtTarget[id] = true
-             Spring.Echo("game_civilians:UnitArrivedAtTarget:"..id)
+            if id and maRa() == true then
+                loadTruck(id) 
             end
         end
     else
@@ -743,6 +754,7 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
             goalID = goalID
         }
         GG.UnitArrivedAtTarget[id] = true
+        return id
     end
 end
 
