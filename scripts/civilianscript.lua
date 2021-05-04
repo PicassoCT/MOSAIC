@@ -162,12 +162,47 @@ function script.Create()
     StartThread(threadStarter)
     StartThread(threadStateStarter)
     StartThread(breathing)
+    StartThread(speedControl)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-
 end
+
+function speedControl()
+    Sleep(100)
+    setSpeedIntern(unitID, 0.65625) 
+    while true do
+
+    if damagedCoolDown > 0 then
+        setSpeedIntern(unitID, 1.0) 
+        while damagedCoolDown > 0 do
+            Sleep(100)
+            damagedCoolDown = damagedCoolDown -100
+
+        end
+        setSpeedIntern(unitID, 0.65625) 
+    end
+
+    if GG.GlobalGameState ~= GameConfig.GameState.normal  then
+        setSpeedIntern(unitID, 0.85)
+        while GG.GlobalGameState ~= GameConfig.GameState.normal do
+            Sleep(1000)
+            if  GG.DamageHeatMap and GG.DamageHeatMap.getDangerAtLocation then
+                x,y, z = Spring.GetUnitPosition(unitID)
+                normalizedDanger =GG.DamageHeatMap:getDangerAtLocation(x,z)
+                if normalizedDanger > 0.5 then
+                    setSpeedIntern(unitID, normalizedDanger)
+                end
+            end
+        end
+        setSpeedIntern(unitID, 0.65625) 
+    end
+
+    Sleep(500)
+    end
+end
+
 function breathing()
     while true do
         if boolAiming == false then
@@ -326,9 +361,10 @@ lowerBodyAnimations = {
 
 }
 
+damagedCoolDown = 0
 accumulatedTimeInSeconds = 0
-function script.HitByWeapon(x, z, weaponDefID, damage)
 
+function script.HitByWeapon(x, z, weaponDefID, damage)
     clampedDamage = math.max(math.min(damage, 10), 35)
     StartThread(delayedWoundedWalkAfterCover, clampedDamage)
     accumulatedTimeInSeconds = accumulatedTimeInSeconds + clampedDamage
@@ -337,7 +373,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
-    
+    damagedCoolDown = damagedCoolDown + (damage * 10)
 end
 
 STATE_STARTED = "STARTED"

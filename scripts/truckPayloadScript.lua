@@ -18,17 +18,16 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.SetUnitNoSelect(unitID, true)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+    hideAll(unitID)
     if myDefID == UnitDefNames["truckpayloadrefugee"].id then
-        hideT(TablesOfPiecesGroups["container"])
         showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
-        for k,v in pairs(TablesOfPiecesGroups["RefugeeDeco"]) do
+
+        for i=1, #TablesOfPiecesGroups["RefugeeDeco"] do
             if maRa() == true then
-                Show(v)
+                Show(TablesOfPiecesGroups["RefugeeDeco"][i] )
             end
         end
     else
-        hideAll(unitID)
         showOnePiece(TablesOfPiecesGroups["container"])
     end
 

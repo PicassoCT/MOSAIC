@@ -53,8 +53,8 @@ function getGameConfig()
         minConversationLengthFrames = 3 * 30,
         maxConversationLengthFrames = 25 * 30,
         groupChatDistance = 150,
-        inHundredChanceOfInterestInDisaster = 75,
-        inHundredChanceOfDisasterWailing = 35,
+        inHundredChanceOfInterestInDisaster = 35,
+        inHundredChanceOfDisasterWailing = 75,
         mainStreetModulo = 4,
         maxIterationSteps = 2048,
         chanceCivilianArmsItselfInHundred = 50,
@@ -311,6 +311,23 @@ function getSatteliteTypes(UnitDefs)
         "satelliteshrapnell"
     }
     return getTypeTable(UnitDefNames, typeTable)
+end
+function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
+    assert(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    if culture == "arabic" then
+      typeTable = {
+            "truck_arab0", 
+            "truck_arab1", 
+            "truck_arab2",
+            "truck_arab3",
+            "truck_arab4",
+            "truck_arab5"
+        }
+      return getTypeTable(UnitDefNames, typeTable)
+    else
+        assert(true == false)
+    end
 end
 
 function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)

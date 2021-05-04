@@ -27,7 +27,7 @@ corpse					  = "",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
-	MaxVelocity = 0.7875,
+	MaxVelocity = 1.2, --old value 0.7875
 	
 
 	CanAttack = true, -- todo undo

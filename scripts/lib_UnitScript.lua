@@ -254,6 +254,14 @@ function setSpeedEnv(k, val)
     end
 end
 
+
+-- > Sets the Speed of a Unit
+function setSpeedIntern(k, val)
+    val = math.max(0.000000001, math.min(val, 1.0))
+        udef = Spring.GetUnitDefID(k)
+        SetUnitValue(COB.MAX_SPEED, math.ceil( UnitDefs[udef].speed * val * 2184.53))
+end
+
 function isUnitFlying(unitID)
     x, y, z = Spring.GetUnitPosition(unitID)
     h = Spring.GetGroundHeight(x, z)
@@ -2500,8 +2508,8 @@ end
 
 function showOneOrNonePiece(T)
     if not T then return end
-    if math.random(1, 100) > 50 then
-        return showOne(T, true)
+    if maRa() == true then
+        return showOnePiece(T, true)
     else
         return
     end

@@ -77,6 +77,7 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      UnitDefs)
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
+local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 function getPoliceSpawnLocation(suspect)
@@ -550,10 +551,10 @@ function checkReSpawnPopulation()
     end
 end
 
-function loadTruck(id)
+function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
         Spring.Echo(id .. " is a loadable truck ")
-       payLoadID = createUnitAtUnit(gaiaTeamID, "truckpayload", id)
+       payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
        assert(payLoadID)
        if payLoadID then
            Spring.SetUnitAlwaysVisible(payLoadID,true)
@@ -592,7 +593,7 @@ function checkReSpawnTraffic()
             TruckType = randDict(TruckTypeTable)
             id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
             if id and maRa() == true then
-                loadTruck(id) 
+                loadTruck(id, "truckpayload") 
             end
         end
     else
@@ -879,9 +880,15 @@ end
 function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
  -- avoid combat zones
-     if maRa() and goalIsWarZone(persPack) then persPack.boolRefugee = true end
+     if maRa() == true and goalIsWarZone(persPack) and not persPack.boolRefugee then 
+        persPack.boolRefugee = true 
+        if refugeeAbleTruckType[spGetUnitDefID(myID)] then
+            loadTruck(myID, "truckpayloadrefugee")
+        end
+    end
 
-     if persPack.boolRefugee then
+    --Refugeebehaviour
+    if persPack.boolRefugee == true then
         if not GG.CivilianEscapePointTable then 
             GG.CivilianEscapePointTable = {} 
             for i=1,4 do GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  end
@@ -896,11 +903,11 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
             spDestroyUnit(myID, false, true)
             return true, nil, persPack
         else
-        Command(myID, "go", {
-            x = ex,
-            y = ey,
-            z = ez
-        }, {})
+            Command(myID, "go", {
+                x = ex,
+                y = ey,
+                z = ez
+            }, {})
           return true, frame + math.random(15,45), persPack
         end
      end
