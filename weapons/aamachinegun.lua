@@ -5,7 +5,7 @@ local weaponDef = {
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 6,
+        default = 10,
         HeavyArmor = 1,
     },
     areaOfEffect = 8,

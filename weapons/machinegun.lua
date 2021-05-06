@@ -5,8 +5,8 @@ local weaponDef = {
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 4,
-        HeavyArmor = 1,
+        default = 5,
+        HeavyArmor = 5,
     },
     areaOfEffect = 8,
     explosionGenerator = "custom:gunimpact",
