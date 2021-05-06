@@ -86,7 +86,7 @@ function getNearestHouse(x, z)
     currentUnit = nil
 
     for id, data in pairs(locationBuildingTable) do
-        distanceToUnit = distance(x,z, data.x,data.z)
+        distanceToUnit = distance(x, z, data.x,data.z)
         if distanceToUnit < currentMinDistance then
             currentUnit = id
             currentMinDistance = distanceToUnit
@@ -99,7 +99,7 @@ end
 function getPoliceSpawnLocation(suspect)
     sx, sy, sz = spGetUnitPosition(suspect)
     if not sx then
-        sx, sy, sz = Game.mapSizeX/100* math.random(10,90),0,Game.mapSizeZ/100* math.random(10,90) 
+        sx, sy, sz = (Game.mapSizeX/100) * math.random(10,90),0,(Game.mapSizeZ/100) * math.random(10,90) 
     end
 
 
@@ -252,11 +252,6 @@ function getOfficer(unitID, attackerID)
     return officerID
 end
 
-function filterOutCloakedAttacker( attackerID)
-
-
-end
-
 function dispatchOfficer(victimID, attackerID )
     officerID = getOfficer(victimID, attackerID)
     boolFoundSomething = false
@@ -288,7 +283,7 @@ function dispatchOfficer(victimID, attackerID )
             end
         elseif boolFoundSomething == false and victimID and isUnitAlive(victimID) == true then 
             x, y, z = spGetUnitPosition(victimID)
-            Command(officerID, "guard", victimID )
+            Command(officerID, "guard", victimID, {"shift"})
             Spring.Echo("Guard victim "..victimID)
             return
         elseif boolFoundSomething == false  then 
@@ -1022,7 +1017,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end 
 
     if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < 20 then
-        Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
+      --  Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
     else
         persPack.currPos = {x = x, y = y, z = z}
@@ -1030,7 +1025,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end
 
     -- if stuck move towards the next goal
-    if persPack.stuckCounter > 4 then
+    if persPack.stuckCounter > 5 then
         if persPack.goalIndex <=  #persPack.goalList then
             persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
             persPack = moveToLocation(myID, persPack, {})
