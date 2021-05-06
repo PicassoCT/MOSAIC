@@ -80,31 +80,36 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameCo
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
+function getNearestHouse(x, z)
+    local locationBuildingTable =  GG.BuildingTable
+    currentMinDistance = math.huge
+    currentUnit = nil
+
+    for id, data in pairs(locationBuildingTable) do
+        distanceToUnit = distance(x,z, data.x,data.z)
+        if distanceToUnit < currentMinDistance then
+            currentUnit = id
+            currentMinDistance = distanceToUnit
+        end
+    end
+
+    return currentUnit, locationBuildingTable[currentUnit].x, locationBuildingTable[currentUnit].z
+end
+
 function getPoliceSpawnLocation(suspect)
-    assert(type(suspect) == "number")
     sx, sy, sz = spGetUnitPosition(suspect)
     if not sx then
         sx, sy, sz = Game.mapSizeX/100* math.random(10,90),0,Game.mapSizeZ/100* math.random(10,90) 
     end
-    Tmax = getAllNearUnit(suspect, GameConfig.policeSpawnMinDistance)
-    Tmin = getAllNearUnit(suspect, GameConfig.policeSpawnMaxDistance)
- 
-    T = process(removeDictFromDict(Tmax, Tmin) , 
-        function(id)
-        if houseTypeTable[spGetUnitDefID(id)] then return id end
-    end)
 
-    randDeg = math.random(1, 360)
-    px, pz = Rotate(0, GameConfig.policeSpawnMaxDistance, math.rad(randDeg))
-    px, pz = px + sx, pz + sz
 
-    if count(T) > 0 then
-        element = randT(T)
-        dx, py, dz = spGetUnitPosition(element)
-        if dx then px, pz = dx, dz end
+
+    houseID, x, z = getNearestHouse(sx, sz)
+    if houseID then
+      sx, sz = x,z
     end
 
-    return px, 0, pz
+    return sx, 0, sz
 end
 
 function startInternalBehaviourOfState(unitID, name, ...)
@@ -496,13 +501,10 @@ function spawnInitialPopulation(frame)
     end
 end
 function checkReSpawnHouseAt(x, z, bID)
-    dataToAdd = {}
     GG.BuildingTable[bID] = nil
     buildingType = randDict(houseTypeTable)
     id = spawnBuilding(buildingType, x, z)
-    dataToAdd[id] = {x = x, z = z}
-    GG.BuildingTable[id] = dataToAdd[id]
-
+    GG.BuildingTable[id] = {x = x, z = z}
 end
 
 function checkReSpawnHouses()
@@ -1019,8 +1021,8 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     return boolDone, nil, persPack
     end 
 
-    if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < persPack.arrivedDistance then
-       -- Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
+    if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < 20 then
+        Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
     else
         persPack.currPos = {x = x, y = y, z = z}
@@ -1035,7 +1037,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
             persPack.stuckCounter = 0
             return true, frame + math.random(15,35), persPack
         else --reassign new route
-            GG.UnitArrivedAtTarget[myID] = true
+            Spring.DestroyUnit(myID, false, true)
             return true, nil, persPack
         end
     end
