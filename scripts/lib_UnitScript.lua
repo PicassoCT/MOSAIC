@@ -6345,9 +6345,8 @@ function runAwayFrom(id, horrorID, distanceToRun)
     hx, hz = x + hx, z + hz
 
     --Spring.SetUnitMoveGoal(id, hx, y, hz)
-    Command(id, "stop", {}, {})
-    Command( id, "go", {x = hx, y= y, z = hz},{})
-    Command( id, "go", {x = hx, y= y, z = hz},{"shift"})
+    Spring.SetUnitMoveGoal ( id, hx, y, hz)
+    Spring.Echo("Running away from "..horrorID)
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)

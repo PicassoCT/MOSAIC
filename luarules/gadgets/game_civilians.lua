@@ -247,50 +247,60 @@ function getOfficer(unitID, attackerID)
     return officerID
 end
 
+function filterOutCloakedAttacker( attackerID)
 
-function dispatchOfficer(unitID, attackerID)
 
-        officerID = getOfficer(unitID, attackerID)
-        boolFoundSomething = false
-        if officerID and doesUnitExistAlive(officerID) then
-             setFireState(officerID, 2)
-             setMoveState(officerID, 2)
-            -- Spring.AddUnitImpulse(officerID,15,0,0)
-            tx, ty, tz = math.random(10, 90) * Game.mapSizeX/100, 0, math.random(10, 90) * Game.mapSizeZ/100
-            if not attackerID or doesUnitExistAlive(attackerID) then attackerID = Spring.GetUnitLastAttacker(officerID) end
-            if attackerID then 
-                unitStates = Spring.GetUnitStates( unitID ) 
-                if unitStates and unitStates.cloak == true then
-                    attackerID = nil
-                end
-            end
+end
 
-            if attackerID and doesUnitExistAlive(attackerID) == true then
-                if not GG.PoliceInPursuit then
-                    GG.PoliceInPursuit = {}
-                end
-                GG.PoliceInPursuit[officerID] = attackerID
-                x, y, z = spGetUnitPosition(attackerID)
-                if x then
-                    tx, ty, tz = x, y, z;
-                    boolFoundSomething = true;
-                end
-            elseif boolFoundSomething == false and unitID and
-                isUnitAlive(unitID) == true then
-                x, y, z = spGetUnitPosition(unitID)
-                if x then
-                    tx, ty, tz = x + math.random(15,50)*randSign(), y, z+ math.random(15,50)*randSign();
-                    boolFoundSomething = true;
-                end
-            end
-
-            Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
-            if maRa() == true  or attackerID == nil then
-                Command(officerID, "go", {x = tx, y = ty, z = tz})
-            else
-                Command(officerID, "attack", {attackerID}, 4)
+function dispatchOfficer(victimID, attackerID )
+    officerID = getOfficer(victimID, attackerID)
+    boolFoundSomething = false
+    if officerID and doesUnitExistAlive(officerID) then
+         setFireState(officerID, 2)
+         setMoveState(officerID, 2)
+        -- Spring.AddUnitImpulse(officerID,15,0,0)
+        tx, ty, tz = math.random(10, 90) * Game.mapSizeX/100, 0, math.random(10, 90) * Game.mapSizeZ/100
+        if not attackerID or doesUnitExistAlive(attackerID) then attackerID = Spring.GetUnitLastAttacker(officerID) end
+      
+        if attackerID then 
+            unitStates = Spring.GetUnitStates( victimID ) 
+            if unitStates and unitStates.cloak == true then
+                attackerID = nil
+                Spring.Echo("Attack was cloaked")
             end
         end
+
+        if attackerID and doesUnitExistAlive(attackerID) == true then
+            if not GG.PoliceInPursuit then
+                GG.PoliceInPursuit = {}
+            end
+            GG.PoliceInPursuit[officerID] = attackerID
+            x, y, z = spGetUnitPosition(attackerID)
+            if x then
+                tx, ty, tz = x, y, z;
+                boolFoundSomething = true
+                Spring.Echo("")
+            end
+        elseif boolFoundSomething == false and victimID and isUnitAlive(victimID) == true then 
+            x, y, z = spGetUnitPosition(victimID)
+            Command(officerID, "guard", victimID )
+            Spring.Echo("Guard victim "..victimID)
+            return
+        elseif boolFoundSomething == false  then 
+            x, y, z = spGetUnitPosition(officerID)
+            if x then
+                tx, ty, tz = x + math.random(500,1500)*randSign(), y, z + math.random(500,1500)*randSign();
+                 Spring.Echo("Police "..unitID.." driving around random")
+            end
+        end
+
+        Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
+        if maRa() == true  or attackerID == nil then
+            Command(officerID, "go", {x = tx, y = ty, z = tz})
+        else
+            Command(officerID, "attack", {attackerID}, 4)
+        end
+    end
 end
 
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
@@ -299,10 +309,12 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
         if attackerID then
             Spring.Echo(attackerID .. " attacked civilian "..unitID)
+            if (MobileCivilianDefIds[unitDefID] and not GG.DisguiseCivilianFor[unitID]) or TruckTypeTable[unitDefID] then
+                startInternalBehaviourOfState(unitID, "startFleeing", attackerID)
+             end
         end
 
-
-        dispatchOfficer(unitID, attackerDefID)
+        dispatchOfficer(unitID, attackerID)
     end
 end
 
@@ -592,7 +604,7 @@ function checkReSpawnTraffic()
                                                          #RouteTabel[startNode])]
             TruckType = randDict(TruckTypeTable)
             id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
-            if id and maRa() == true then
+            if id  then
                 loadTruck(id, "truckpayload") 
             end
         end

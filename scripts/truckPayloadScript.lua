@@ -16,7 +16,11 @@ myDefID = Spring.GetUnitDefID(unitID)
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
-    Spring.SetUnitNoSelect(unitID, true)
+    Spring.SetUnitNeutral(unitID,true)
+    Spring.SetUnitBlocking(unitID,false)
+    Spring.SetUnitAlwaysVisible(unitID,true)
+    Spring.SetUnitNoSelect(unitID,true)
+
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
     if myDefID == UnitDefNames["truckpayloadrefugee"].id then

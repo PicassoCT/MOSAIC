@@ -57,7 +57,8 @@ local OperativePropagator = Human:New{
 		"air_parachut",
 		"antagonsafehouse",
 		"air_copter_ssied",	
-		"bribeicon"
+		"bribeicon",
+		"barricade"
 	},
 
 	customparams = {

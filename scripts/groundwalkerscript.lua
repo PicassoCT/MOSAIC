@@ -147,10 +147,12 @@ function walkAnimationLoop()
                     while(boolWalking == false and boolAiming == false) do
                         PlayAnimation("IDLE", nil, 2.0)
                         interVal = math.random(-25,25)
+                        turnSign = randSign()
                         while(boolWalking == false and boolAiming == false and interVal > 0) do
-                            heading = Spring.GetUnitHeading(unitID)
-                            heading = heading + 10
                             Spring.SetUnitHeading(unitID, heading)
+                           rotX,  rotY,  rotZ =  Spring.GetUnitRotation( unitID ) 
+                           rotY= rotY + (math.pi/90)*turnSign
+                            Spring.SetUnitRotation ( unitID,  rotX,  rotY,  rotZ ) 
                             if interVal % 2 == 0 then
                              PlayAnimation("IDLE", nil, 2.0)
                             end
@@ -322,9 +324,9 @@ function script.AimWeapon1(Heading, pitch)
     if boolWalking == true then
         if boolTurning == true then
             if boolTurnLeft == true then
-             PlayAnimation("SIDEWALK_LEFT", nil, 2.0)
+             PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
             else
-                 PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
+                 PlayAnimation("SIDEWALK_LEFT", nil, 2.0)
             end
         else
             PlayAnimation("RUNNING", nil, 1.0)

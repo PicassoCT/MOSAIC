@@ -1,6 +1,6 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.9 -- 0.5
+unitFactor = 0.80 -- 0.5
 
 function getGameConfig()
     return {
@@ -46,8 +46,8 @@ function getGameConfig()
         -- civilianbehaviour
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
 
-        civilianPanicRadius = 350,
-        civilianFleeDistance = 500,
+        civilianPanicRadius = 500,
+        civilianFleeDistance = 700,
         civilianInterestRadius = 350,
         generalInteractionDistance = 35,
         minConversationLengthFrames = 3 * 30,

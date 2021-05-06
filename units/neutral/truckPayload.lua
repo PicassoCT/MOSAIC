@@ -19,9 +19,7 @@ local unitName = "truckpayload"
 	mass=18020,
 	upRight=true,
 	blocking=false,
-	pushResistant=true,
-	Acceleration = 0.0000001,
-	BrakeRate = 0.0001,
+
 	FootprintX = 1,
 	FootprintZ = 1,
 	cantBeTransported = false,
@@ -37,7 +35,8 @@ local unitName = "truckpayload"
 	CanStop = true,
 	LeaveTracks = false,
 	useSmoothMesh = false,
-
+	usePieceCollisionVolumes = false,
+	
 	 
 	  customParams = {},
 	 sfxtypes = {

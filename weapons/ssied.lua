@@ -11,7 +11,10 @@ local weaponDef = {
     explosionGenerator = "custom:bigbulletimpact",
     avoidFeature = false,
     avoidFriendly = false,
+    collideFireBase = false,
 	collideFriendly  = false,
+    commandFire = true,
+
     ImpulseBoost = 1.2,
     ImpulseFactor = 3,
     damage = {

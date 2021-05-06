@@ -10,6 +10,7 @@ LoadOutTypes = getTruckLoadOutTypeTable()
 
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
+SIG_INTERNAL = 4
 
 center = piece "center"
 attachPoint = piece "attachPoint"
@@ -17,6 +18,14 @@ myDefID = Spring.GetUnitDefID(unitID)
 
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
+
+STATE_STARTED = "STARTED"
+STATE_ENDED = "ENDED"
+function setCivilianUnitInternalStateMode(unitID, State)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     
+     GG.CivilianUnitInternalLogicActive[unitID] = State 
+ end
 
 boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
 boolIsPoliceTruck = myDefID == UnitDefNames["policetruck"].id
@@ -52,6 +61,7 @@ function script.Create()
 end
 
 allOrderTypes = {}
+
 
 function loadLoadOutLoop()
     waitTillComplete(unitID)
@@ -106,7 +116,41 @@ function tranferOrdersToLoadedUnit(passengerID)
         transferStates(unitID, passengerID)
         Sleep(100)
     end
+end
 
+function threadStateStarter()
+    Sleep(100)
+    while true do
+        if boolStartFleeing == true then
+            boolStartFleeing = false
+            StartThread(fleeEnemy, attackerID)
+        end
+        Sleep(250)   
+    end
+end
+
+function fleeEnemy(enemyID)
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    if not enemyID then 
+        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        return 
+    end
+
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
+        Sleep(500)
+    end
+
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+end
+
+attackerID = 0
+boolStartFleeing = false 
+function startFleeing(attackerID)
+    if not attackerID then return end
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    boolStartFleeing = true
 end
 
 function script.TransportDrop(passengerID, x, y, z)
@@ -117,7 +161,7 @@ function script.TransportDrop(passengerID, x, y, z)
     end
 end
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+
 function script.Killed(recentDamage, _)
     if doesUnitExistAlive(loadOutUnitID) then
         Spring.DestroyUnit(loadOutUnitID, true, true)

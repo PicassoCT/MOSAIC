@@ -35,6 +35,7 @@ local groundturretssied =  Turret:New{
 	cantBeTransported = false,
 	canSelfD = true,
 	canManualFire  = true,
+	canSelfDestruct = true,
 
 	--canHover=true,
 	CanAttack = true,
@@ -46,7 +47,7 @@ local groundturretssied =  Turret:New{
 	LeaveTracks = false, 
 	canCloak =true,
 	kamikaze = true,
-	kamikazeDistance  = 10,
+	kamikazeDistance  = 25,
 	kamikazeUseLOS = false,
 	
 	cloakCost=0.0001,
@@ -90,7 +91,7 @@ local groundturretmg =  Turret:New{
 	script = "ground_turretscript.lua",
 	buildPic = "ground_turret_mg.png",
 	iconType = "ground_turret_mg",
-	--floater = true,
+
 	--cost
 	buildCostEnergy  = 500,
 	buildCostMetal= 500,
@@ -111,20 +112,20 @@ local groundturretmg =  Turret:New{
 
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 300,
-	activateWhenBuilt   	= true,
-	cantBeTransported = false,
-	usepiececollisionvolumes = true,
 
-	canAttackGround = true,
+	cantBeTransported = false,
+
+	usepiececollisionvolumes = false,
+	--collisionVolumeType = "box",
+	--collisionvolumescales = "5 15 5",
+
 	CanAttack = true,
+	canFight  = true,
 	CanGuard = true,
 	CanMove = true,
 	CanPatrol = true,
 	Canstop  = true,
-	onOffable = false,
-	LeaveTracks = false, 
-	canCloak =false,	
-	canManualFire = true, 
+	canCloak = false,
 	
 	Category = [[GROUND]],
 
@@ -139,14 +140,12 @@ local groundturretmg =  Turret:New{
 				},
 				
 		weapons = {
-		[1]={name  = "machingegun",
-			onlyTargetCategory = [[GROUND BUILDING]],
-			turret = true
+		[1]={name  = "machinegun",
+			onlyTargetCategory = [[GROUND BUILDING]]
 			},	
 		[2]={name  = "aamachinegun",
-			onlyTargetCategory = [[AIR]],
-			turret = true
-			},					
+			onlyTargetCategory = [[AIR]]
+			},				
 		},	
 }
 

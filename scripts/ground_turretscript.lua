@@ -62,11 +62,12 @@ end
 
 function foldControl()
     Sleep(10)
+    foldUnfoldTurnAxis = z_axis
     Turn(Turret, x_axis, math.rad(90), 0)
-    Turn(TablesOfPiecesGroups["TBase"][1], 2, math.rad(-30), 0)
-    Turn(TablesOfPiecesGroups["TBase"][2], 2, math.rad(30), 0)
-    Turn(TablesOfPiecesGroups["TBase"][3], 2, math.rad(-30), 0)
-    Turn(TablesOfPiecesGroups["TBase"][4], 2, math.rad(30), 0)
+    Turn(TablesOfPiecesGroups["TBase"][1], foldUnfoldTurnAxis, math.rad(-30), 0)
+    Turn(TablesOfPiecesGroups["TBase"][2], foldUnfoldTurnAxis, math.rad(30), 0)
+    Turn(TablesOfPiecesGroups["TBase"][3], foldUnfoldTurnAxis, math.rad(-30), 0)
+    Turn(TablesOfPiecesGroups["TBase"][4], foldUnfoldTurnAxis, math.rad(30), 0)
     WTurn(Turret, x_axis, math.rad(0), math.pi)
     waitTillComplete(unitID)
     while true do
@@ -80,13 +81,14 @@ function foldControl()
 end
 
 currentDeg = {
-    [1] = {val = 50, dirUp = 1, lastDir = 1, countSwitches = 0},
-    [2] = {val = 50, dirUp = 1, lastDir = 1, countSwitches = 0},
-    [3] = {val = -50, dirUp = -1, lastDir = -1, countSwitches = 0},
-    [4] = {val = -50, dirUp = -1, lastDir = -1, countSwitches = 0}
+    [1] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
+    [2] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
+    [3] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0},
+    [4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}
 }
 
 function turnFeedToGround(nr)
+    axis = y_axis
 
     local direction = currentDeg[nr].dirUp
 
@@ -98,7 +100,7 @@ function turnFeedToGround(nr)
         direction = direction * -1
         currentDeg[nr].val = currentDeg[nr].val + direction
     end
-    Turn(TablesOfPiecesGroups["UpLeg"][nr], x_axis,
+    Turn(TablesOfPiecesGroups["UpLeg"][nr], axis,
          math.rad(currentDeg[nr].val), math.pi)
 
     -- check for directional change
@@ -146,14 +148,11 @@ end
 
 function fold()
     WaitForTurns(TablesOfPiecesGroups["UpLeg"])
-    for i = 1, 2 do
-        Turn(TablesOfPiecesGroups["UpLeg"][i], x_axis, math.rad(0), math.pi)
-        Turn(TablesOfPiecesGroups["LowLeg"][i], x_axis, math.rad(0), math.pi)
+    for i = 1, 4 do
+        reset(TablesOfPiecesGroups["UpLeg"][i], 2* math.pi)
+        reset(TablesOfPiecesGroups["LowLeg"][i],2*math.pi)
     end
-    for i = 3, 4 do
-        Turn(TablesOfPiecesGroups["UpLeg"][i], x_axis, math.rad(0), math.pi)
-        Turn(TablesOfPiecesGroups["LowLeg"][i], x_axis, math.rad(0), math.pi)
-    end
+
     WaitForTurns(TablesOfPiecesGroups["LowLeg"])
     WaitForTurns(TablesOfPiecesGroups["UpLeg"])
     setNotDone()
@@ -197,7 +196,7 @@ function script.AimFromWeapon2() return aimingFrom end
 function script.QueryWeapon2() return firingFrom end
 
 function script.AimWeapon2(Heading, pitch)
-
+    echo("Aiming weapon 2")
     Signal(SIG_GUARDMODE)
     if boolGroundAiming == false then
         -- aiming animation: instantly turn the gun towards the enemy

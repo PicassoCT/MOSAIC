@@ -20,7 +20,9 @@ local weaponDef = {
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
-    turret = true,
+    turret = true, 
+    canAttackGround = true,
+    collideFireBase = false,
 	
     craterMult = 0,
     burst = 15,

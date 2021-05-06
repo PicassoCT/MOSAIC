@@ -123,7 +123,7 @@ boolAiming = false
 home = {}
 
 loadMax = 8
-
+local damagedCoolDown = 0
 local bodyConfig = {}
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 
@@ -241,7 +241,7 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
 
-    if math.random(0, 4) > 3 then Show(MilitiaMask) end
+    if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
 
     if bodyConfig.boolArmed == true then
         Show(MilitiaMask)
@@ -361,7 +361,7 @@ lowerBodyAnimations = {
 
 }
 
-damagedCoolDown = 0
+
 accumulatedTimeInSeconds = 0
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -373,7 +373,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
-    damagedCoolDown = damagedCoolDown + (damage * 10)
+    damagedCoolDown = damagedCoolDown + (damage * 100)
 end
 
 STATE_STARTED = "STARTED"
@@ -414,7 +414,7 @@ end
 attackerID = 0
 boolStartFleeing = false 
 function startFleeing(attackerID)
-    if not attackerID then return end
+    assert(attackerID)
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
 end
@@ -910,6 +910,7 @@ function threadStateStarter()
 
         if boolStartFleeing == true then
             boolStartFleeing = false
+            Spring.Echo("Start Fleeing")
             StartThread(fleeEnemy, attackerID)
         end
 
