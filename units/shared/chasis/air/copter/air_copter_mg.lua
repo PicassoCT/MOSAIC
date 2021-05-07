@@ -15,7 +15,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	buildCostEnergy = 250,
 	buildTime = 30,
 	--Health
-	maxDamage = 50,
+	maxDamage = 250,
 	idleAutoHeal = 0,
 	--Movement
 	
