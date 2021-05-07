@@ -27,7 +27,7 @@ end
 function initialMove()
     waitTillComplete(unitID)
     x,y,z =Spring.GetUnitPosition(unitID)
-    x,z = x+ math.random(1,50)*randSign(), z + math.random(1,50)*randsign()
+    x,z = x+ math.random(1,50)*randSign(), z + math.random(1,50)*randSign()
     Command(unitID, "move", {x=x,y=y, z=z}, {"shift"})
 end
 
