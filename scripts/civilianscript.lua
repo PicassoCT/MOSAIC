@@ -83,7 +83,7 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      UnitDefs)
 
 eAnimState = getCivilianAnimationStates()
-upperBodyPieces = {
+local upperBodyPieces = {
     [Head1] = Head1,
     [LowArm1] = LowArm1,
     [LowArm2] = LowArm2,
@@ -92,7 +92,7 @@ upperBodyPieces = {
     [UpArm2] = UpArm2
 }
 
-lowerBodyPieces = {
+local lowerBodyPieces = {
     [center] = center,
     [UpLeg1] = UpLeg1,
     [UpLeg2] = UpLeg2,
@@ -102,7 +102,7 @@ lowerBodyPieces = {
     [Feet2] = Feet2
 }
 
-lowerBodyPiecesNoCenter = {
+local lowerBodyPiecesNoCenter = {
     [UpLeg1] = UpLeg1,
     [UpLeg2] = UpLeg2,
     [LowLeg1] = LowLeg1,
@@ -114,11 +114,11 @@ catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
-boolWalking = false
-boolTurning = false
-boolTurnLeft = false
-boolDecoupled = false
-boolAiming = false
+local boolWalking = false
+local boolTurning = false
+local boolTurnLeft = false
+local boolDecoupled = false
+local boolAiming = false
 
 home = {}
 
@@ -126,6 +126,8 @@ loadMax = 8
 local damagedCoolDown = 0
 local bodyConfig = {}
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+local NORMAL_WALK_SPEED =  0.65625
+SPRINT_SPEED = 1.0
 
 iShoppingConfig = math.random(0, 8)
 function variousBodyConfigs()
@@ -171,17 +173,17 @@ end
 
 function speedControl()
     Sleep(100)
-    setSpeedIntern(unitID, 0.65625) 
+    setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
     while true do
 
     if damagedCoolDown > 0 then
-        setSpeedIntern(unitID, 1.0) 
+        setSpeedIntern(unitID, SPRINT_SPEED) 
         while damagedCoolDown > 0 do
             Sleep(100)
-            damagedCoolDown = damagedCoolDown -100
+            damagedCoolDown = damagedCoolDown -10
 
         end
-        setSpeedIntern(unitID, 0.65625) 
+        setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
     end
 
     if GG.GlobalGameState ~= GameConfig.GameState.normal  then
@@ -196,7 +198,7 @@ function speedControl()
                 end
             end
         end
-        setSpeedIntern(unitID, 0.65625) 
+        setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
     end
 
     Sleep(500)
@@ -373,7 +375,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
-    damagedCoolDown = damagedCoolDown + (damage * 100)
+    damagedCoolDown = damagedCoolDown + (damage )
 end
 
 STATE_STARTED = "STARTED"
@@ -441,7 +443,7 @@ function pray()
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
     end
-    setSpeedEnv(unitID, 1.0)
+    setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
@@ -507,9 +509,9 @@ function chatting()
     SetSignalMask(SIG_INTERNAL)
     while chattingTime > 0 do
         if maRa() == true then
-        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, 1.0)
+        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
         else
-        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, 1.0)
+        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
        end
        Result= process(
         getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
@@ -867,7 +869,7 @@ normalBehavourStateMachine = {
             Move(center, y_axis, 0, 60)
 
             PlayAnimation("UPBODY_HANDSUP")
-            setSpeedEnv(unitID, 1.0)
+            setSpeedEnv(unitID, NORMAL_WALK_SPEED)
            
             bodyConfig.boolArmed = false
             bodyConfig.boolProtest = false
