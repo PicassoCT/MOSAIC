@@ -2,7 +2,7 @@
 local weaponName = "raidarrest"
 local weaponDef = {
     name = "Arrest Players & Raid Safehouses",
-	 weaponType = [[MissileLauncher]],
+	weaponType = [[MissileLauncher]],
 	model = "RaidDroneProjectile.dae",
 
     Accuracy = 2000,
