@@ -26,7 +26,7 @@ local Barricade = Building:New{
 	footprintZ = 4,
 	showNanoFrame= true,
 	script 					= "placeholder.lua",
-	objectName        	= "Barricade.lua.dae",
+	objectName        	= "barricade.dae",
 
 	name = "Burned Out Car",
 	description = " divides & conquers",

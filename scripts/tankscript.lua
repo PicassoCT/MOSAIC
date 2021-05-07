@@ -13,11 +13,16 @@ aimpiece = piece "Turret1"
 Cannon1 = piece "Cannon1"
 SIG_RESETAIM = 1
 myDefID = Spring.GetUnitDefID(unitID)
-
+myTeamID = Spring.GetUnitTeam(unitID)
+gaiaTeamID = Spring.GetGaiaTeamID()
 function script.Create()
+
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
+    if gaiaTeamID == myTeamID then
+        Spring.SetUnitAlwaysVisble(unitID, true)
+    end
 end
 
 function script.Killed(recentDamage, _)

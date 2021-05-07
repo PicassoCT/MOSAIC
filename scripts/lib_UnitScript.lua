@@ -6341,11 +6341,21 @@ function runAwayFrom(id, horrorID, distanceToRun)
     hx, hz = (x - hx), (z - hz)
     maX = math.max(math.abs(hx), math.max(hz))
     hx, hz = hx / maX, hz / maX
-    hx, hz = math.ceil(hx * distanceToRun), math.ceil( hz * distanceToRun)
+    hx, hz = (hx * distanceToRun), ( hz * distanceToRun)
     hx, hz = x + hx, z + hz
 
     --Spring.SetUnitMoveGoal(id, hx, y, hz)
-    Spring.SetUnitMoveGoal ( id, hx, y, hz)
+    Spring.SetUnitMoveGoal ( id, hx, hy, hz)
+    Command(id, "go", {
+                x = hx,
+                y = y,
+                z = hz
+            }, {})   
+    Command(id, "go", {
+                x = hx,
+                y = y,
+                z = hz
+            }, {"shift"})
     Spring.Echo("Running away from "..horrorID)
 end
 

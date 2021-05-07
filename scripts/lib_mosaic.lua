@@ -46,7 +46,7 @@ function getGameConfig()
         -- civilianbehaviour
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
 
-        civilianPanicRadius = 500,
+        civilianPanicRadius = 600,
         civilianFleeDistance = 700,
         civilianInterestRadius = 350,
         generalInteractionDistance = 35,
@@ -59,11 +59,11 @@ function getGameConfig()
         maxIterationSteps = 2048,
         chanceCivilianArmsItselfInHundred = 50,
         demonstrationMarchRadius = 50,
+        civilianMaxWalkingDistance = 3000,
 
         maxNrPolice = math.ceil(10 *unitFactor),
         policeMaxDispatchTime = 2000,
-        policeSpawnMinDistance = 800, -- preferably at houses
-        policeSpawnMaxDistance = 2500,
+        policeSpawnMinDistance = 2200, -- preferably at houses
         maxSirenSoundFiles = 7,
 
         -- safehouseConfig

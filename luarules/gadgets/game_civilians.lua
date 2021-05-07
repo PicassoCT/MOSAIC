@@ -79,17 +79,26 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
+local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 
-function getNearestHouse(x, z)
+function randomAfterFirstFind(boolAtLeastOne)
+if boolAtLeastOne == false then return true end
+
+    return math.random(0,1) == 1
+end
+
+function getNearestHouse(x, z, minSpawnDistance)
     local locationBuildingTable =  GG.BuildingTable
     currentMinDistance = math.huge
     currentUnit = nil
+    boolAtLeastOne = false
 
     for id, data in pairs(locationBuildingTable) do
         distanceToUnit = math.sqrt((x-data.x)^2 +  (z-data.z)^2)
-        if distanceToUnit < currentMinDistance then
+        if distanceToUnit < currentMinDistance and distanceToUnit > minSpawnDistance and randomAfterFirstFind(boolAtLeastOne) == true then
             currentUnit = id
             currentMinDistance = distanceToUnit
+            boolAtLeastOne = true
         end
     end
 
@@ -102,7 +111,7 @@ function getPoliceSpawnLocation(suspect)
         sx, sy, sz = (Game.mapSizeX/100) * math.random(10,90),0,(Game.mapSizeZ/100) * math.random(10,90) 
     end
 
-    houseID, x, z = getNearestHouse(sx, sz)
+    houseID, x, z = getNearestHouse(sx, sz, GameConfig.policeSpawnMinDistance)
     if houseID then
       sx, sz = x,z
     end
@@ -210,8 +219,10 @@ function spawnRubbleHeapAt(id)
 end
 
 function getOfficer(unitID, attackerID)
+    if activePoliceUnitIds_Dispatchtime[unitID] then return unitID end
+
     local officerID = nil
-    if maxNrPolice > 0 then
+    if maxNrPolice > 0 and math.ceil(OpimizationFleeing.accumulatedCivilianDamage/100) > count(activePoliceUnitIds_DispatchTime) then
         px, py, pz = getPoliceSpawnLocation(attackerID)
         if not px then px, py, pz = spGetUnitPosition(unitID) end
         direction = math.random(1, 4)
@@ -223,6 +234,7 @@ function getOfficer(unitID, attackerID)
             then
             ptype = randT(PoliceTypes)
             PoliceDamageCounter = PoliceDamageCounter - 2500
+
         end
 
         GG.UnitsToSpawn:PushCreateUnit(ptype, px, py, pz, direction,
@@ -251,6 +263,7 @@ function getOfficer(unitID, attackerID)
 end
 
 function dispatchOfficer(victimID, attackerID )
+
     officerID = getOfficer(victimID, attackerID)
     boolFoundSomething = false
     if officerID and doesUnitExistAlive(officerID) then
@@ -277,18 +290,17 @@ function dispatchOfficer(victimID, attackerID )
             if x then
                 tx, ty, tz = x, y, z;
                 boolFoundSomething = true
-                Spring.Echo("")
+                --Spring.Echo("")
             end
         elseif boolFoundSomething == false and victimID and isUnitAlive(victimID) == true then 
             x, y, z = spGetUnitPosition(victimID)
             Command(officerID, "guard", victimID, {"shift"})
-            Spring.Echo("Guard victim "..victimID)
+            --Spring.Echo("Guard victim "..victimID)
             return
         elseif boolFoundSomething == false  then 
             x, y, z = spGetUnitPosition(officerID)
             if x then
                 tx, ty, tz = x + math.random(500,1500)*randSign(), y, z + math.random(500,1500)*randSign();
-                 Spring.Echo("Police "..unitID.." driving around random")
             end
         end
 
@@ -301,15 +313,41 @@ function dispatchOfficer(victimID, attackerID )
     end
 end
 
+
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
-        if attackerID then
-            Spring.Echo(attackerID .. " attacked civilian "..unitID)
+        OpimizationFleeing.accumulatedCivilianDamage = OpimizationFleeing.accumulatedCivilianDamage + damage
+
+        if not OpimizationFleeing[unitID] then OpimizationFleeing[unitID] = Spring.GetGameFrame() + 30 end
+
+        if attackerID and OpimizationFleeing[unitID] > Spring.GetGameFrame() then
+            --Spring.Echo(attackerID .. " attacked civilian "..unitID)
+            T = process(getInCircle(unitID,  GameConfig.civilianPanicRadius, gaiaTeamID),
+                function(id)
+                    if id then
+                        defID = spGetUnitDefID(id)
+                        if MobileCivilianDefIds[defID] or TruckTypeTable[unitDefID] then
+                            return id
+                        end
+                    end
+                end,
+                function (id)
+                     if not OpimizationFleeing[id] then OpimizationFleeing[id] = Spring.GetGameFrame() + 30 end
+
+                     if OpimizationFleeing[id] > Spring.GetGameFrame()  then
+                        startInternalBehaviourOfState(id, "startFleeing", attackerID)
+                        OpimizationFleeing[id] = Spring.GetGameFrame() + math.random(15,35)
+                     end
+                end
+                )
+
             if (MobileCivilianDefIds[unitDefID] and not GG.DisguiseCivilianFor[unitID]) or TruckTypeTable[unitDefID] then
                 startInternalBehaviourOfState(unitID, "startFleeing", attackerID)
+                OpimizationFleeing[unitID] = Spring.GetGameFrame() + math.random(15,35)
              end
+           
         end
 
         dispatchOfficer(unitID, attackerID)
@@ -560,7 +598,7 @@ end
 
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
-        Spring.Echo(id .. " is a loadable truck ")
+        --Spring.Echo(id .. " is a loadable truck ")
        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
        assert(payLoadID)
        if payLoadID then
@@ -1140,10 +1178,40 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
 
+function getTargetNodeInWalkingDistance(startNodeID, defaultTargetNode)
+    local listOfTargetNodes = RouteTabel[startNodeID]
+    assert(#listOfTargetNodes > 0)
+    local listInRange = {}
+    if #listOfTargetNodes == 0  then return defaultTargetNode end
+    if #listOfTargetNodes == 1 then return listOfTargetNodes[1] end
+
+    for i=1, #listOfTargetNodes do
+        if distanceUnitToUnit(startNodeID, listOfTargetNodes[i]) < GameConfig.civilianMaxWalkingDistance then
+            listInRange[#listInRange + 1 ]= listOfTargetNodes[i]
+        end
+    end
+
+    nrOfTargetsInRange = #listInRange
+    if nrOfTargetsInRange == 0 then return defaultTargetNode end
+    if nrOfTargetsInRange == 1 then return listInRange[1] end
+    if nrOfTargetsInRange > 1 then 
+        index = math.random(1,#listInRange)
+        return listInRange[index] 
+    end
+
+return defaultTargetNode
+end
+
 function giveWaypointsToUnit(uID, uType, startNodeID)
     boolShortestPath = maRa() or not TruckTypeTable[uType]  -- direct route to target
 
-    targetNodeID = math.random(2, #RouteTabel[startNodeID])
+    index = math.random(2, #RouteTabel[startNodeID])
+    targetNodeID =  RouteTabel[startNodeID][index]
+
+    if civilianWalkingTypeTable[uType] then
+        targetNodeID = getTargetNodeInWalkingDistance(startNodeID, targetNodeID)
+    end
+
     if startNodeID and targetNodeID then
    --     Spring.Echo("game_civilians:giveWaypointsToUnit:".. uID)
         GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
@@ -1152,7 +1220,7 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
             unitID = uID,
             goalIndex = 1,
             goalList = buildRouteSquareFromTwoUnits(startNodeID,
-                                                    RouteTabel[startNodeID][targetNodeID],
+                                                    targetNodeID,
                                                     uType)
         }, spGetGameFrame() + (uID % 100))
     end
@@ -1247,4 +1315,6 @@ function gadget:GameFrame(frame)
         policeActionTimeSurveilance(frame)
        
     end
+
+    OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)
 end

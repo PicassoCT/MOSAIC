@@ -172,7 +172,6 @@ function script.QueryWeapon1() return firingFrom end
 
 boolGroundAiming = false
 function script.AimWeapon1(Heading, pitch)
-    echo("Aiming weapon 1")
     Signal(SIG_GUARDMODE)
     -- aiming animation: instantly turn the gun towards the enemy
     boolGroundAiming = true
@@ -196,7 +195,6 @@ function script.AimFromWeapon2() return aimingFrom end
 function script.QueryWeapon2() return firingFrom end
 
 function script.AimWeapon2(Heading, pitch)
-    echo("Aiming weapon 2")
     Signal(SIG_GUARDMODE)
     if boolGroundAiming == false then
         -- aiming animation: instantly turn the gun towards the enemy
