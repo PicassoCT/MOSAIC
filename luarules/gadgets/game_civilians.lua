@@ -86,7 +86,7 @@ function getNearestHouse(x, z)
     currentUnit = nil
 
     for id, data in pairs(locationBuildingTable) do
-        distanceToUnit = distance(x, z, data.x,data.z)
+        distanceToUnit = math.sqrt((x-data.x)^2 +  (z-data.z)^2)
         if distanceToUnit < currentMinDistance then
             currentUnit = id
             currentMinDistance = distanceToUnit
@@ -101,8 +101,6 @@ function getPoliceSpawnLocation(suspect)
     if not sx then
         sx, sy, sz = (Game.mapSizeX/100) * math.random(10,90),0,(Game.mapSizeZ/100) * math.random(10,90) 
     end
-
-
 
     houseID, x, z = getNearestHouse(sx, sz)
     if houseID then
