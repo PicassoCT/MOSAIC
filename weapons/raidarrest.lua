@@ -26,7 +26,7 @@ local weaponDef = {
 
     --collision
     collideFriendly = false,
-    noFirebaseCollide  = true,
+--[[    noFirebaseCollide = true,--]]
     
     --- -APPEARANCE
     smokeTrail = true,
