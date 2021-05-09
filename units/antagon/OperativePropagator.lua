@@ -22,6 +22,7 @@ local OperativePropagator = Human:New{
 	canMove					  = true,
 	CanAttack = true,
 	CanGuard = true,
+	canManualFire 		= true,
 
 	CanMove = true,
 	CanPatrol = true,
@@ -50,6 +51,7 @@ local OperativePropagator = Human:New{
 	minCloakDistance = 0,
 	initCloaked = false,
 	stealth= true,
+
 	
 	buildoptions = 
 	{

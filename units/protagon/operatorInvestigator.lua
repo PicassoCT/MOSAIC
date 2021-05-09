@@ -24,6 +24,8 @@ local OperativeInvestigator = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
+	canManualFire 		= true,
+
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
 		customParams        = {
