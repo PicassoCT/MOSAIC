@@ -54,7 +54,7 @@ local zMax = Game.mapSizeZ
 for i = maxDistanceTrain, -maxDistanceTrain, -50 do
 	WMove(detectionPiece,trainAxis, i, 0)
 	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece,0)
-    if x  <= 0 or x >= xMax or z <= 0 or z >= zMax then break end
+    if not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax then break end
 
 	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
 		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
