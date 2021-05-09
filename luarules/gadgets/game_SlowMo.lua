@@ -142,7 +142,7 @@ if (gadgetHandler:IsSyncedCode()) then
           
         elseif boolActive == false  then
             if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
-                Spring.Echo("speedup to " .. currentSpeed)
+                Spring.Echo("speedup to from " .. currentSpeed.. " to ".. oldGameSpeed)
                 Spring.SendCommands("speedup ")
             end
         end
