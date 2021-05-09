@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.725"
+            Version = "Alpha: 0.726"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
@@ -234,7 +234,8 @@ function getObjectiveTypes(UnitDefs)
         [UnitDefNames["objective_geoengineering"].id] = "land",
         [UnitDefNames["objective_westhemhq"].id] = "land",
         [UnitDefNames["objective_artificialglacier"].id] = "land",
-        [UnitDefNames["objective_combatoutpost"].id] = "land"
+        [UnitDefNames["objective_combatoutpost"].id] = "land",
+        [UnitDefNames["objective_transrapid"].id] = "land"
     }
 end
 

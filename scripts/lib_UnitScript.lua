@@ -221,8 +221,8 @@ function isPieceAboveGround(unitID, pieceName, offset)
     offset = offset or 0
     x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceName)
     gh = Spring.GetGroundHeight(x, z) + offset
-    if gh < y then return true end
-    return false
+    if gh < y then return true, x, z end
+    return false, x, z
 end
 
 -- > Gets the MaxSpeed Of A unit
