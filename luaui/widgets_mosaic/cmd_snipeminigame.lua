@@ -24,27 +24,8 @@ local spTraceScreenRay = Spring.TraceScreenRay
 local spIsAboveMiniMap = Spring.IsAboveMiniMap
 local raidIcons = {}
 
-local function deserializeStringToTable(str)
-  local f
-  local msg = "No message"
-  f, msg= loadstring(str)
-  if  f == nil then
-     Spring.Echo(msg) 
-  else
-    return f()
- end
-end
-
-function UpdateHouseRaidIconMap(newHouseRaidIconMap)
-    Spring.Echo("updateHouseRaidIconMap is called")
-    if newHouseRaidIconMap then
-        houseRaidIconMap = deserializeStringToTable(newHouseRaidIconMap)
-    end
-end
-
-
 function widget:Initialize()
-    widgetHandler:RegisterGlobal(widget, 'UpdateHouseRaidIconMap', UpdateHouseRaidIconMap)
+
     for k, v in pairs(UnitDefs) do
         if v.name == "raidicon" then
             raidIconDefID = k
@@ -65,7 +46,7 @@ function widget:Initialize()
 end
 
 function widget:Shutdown()
-    widgetHandler:DeregisterGlobal('UpdateHouseRaidIconMap')
+
 end
 
 function widget:UnitCreated(unitID, unitDefID)
@@ -92,6 +73,7 @@ lastPos = {}
 local boolPlacementActive = false
 function widget:MousePress(x, y, button)
     local inMinimap = spIsAboveMiniMap(x, y)
+    Spring.Echo("MousePress ".. button)
     if (button ~= 1) then
         return false
     end
@@ -106,29 +88,23 @@ function widget:MousePress(x, y, button)
 		if houseTypeTable[defID] or  defID == raidIconDefID then
 		--make houses transparent
 		if houseTypeTable[defID]  then
-			if houseRaidIconMap[unitID] then
-			     unitID = houseRaidIconMap[unitID]
-			     defID = raidIconDefID
-			else -- not a raided house
-             --   Spring.Echo("not a registered raided house yet")
-				return false
-			end
-		end
 		
-		Spring.Echo("Mouse Press on MiniGameBoard")
-        local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
-        --Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
-        
-        if targType and targType == "ground" then
-            if boolPlacementActive == false then
-                Spring.Echo("Placement started")
-                lastPos = targID
-                Spring.SendLuaRulesMsg(
-                    "SPWN|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3] .. "|" .. unitID
-                )
+		
+    		Spring.Echo("Mouse Press on MiniGameBoard of type".. UnitDefs[defID].name)
+            local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
+            --Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
+            
+            if targType and targType == "ground" then
+                if boolPlacementActive == false then
+                    Spring.Echo("Placement started")
+                    lastPos = targID
+                    Spring.SendLuaRulesMsg(
+                        "SPWN|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3] .. "|" .. unitID
+                    )
+                end
+                boolPlacementActive = true
+    			return true
             end
-            boolPlacementActive = true
-			return true
         end
         end
     end
@@ -140,7 +116,7 @@ function widget:MouseRelease(x, y, mButton)
     end
 
     if boolPlacementActive == true then
-        -- Spring.Echo("Placement ended")
+        Spring.Echo("Placement ended")
         inMinimap = spIsAboveMiniMap(x, y)
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
         Spring.SendLuaRulesMsg("POSROT|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3])

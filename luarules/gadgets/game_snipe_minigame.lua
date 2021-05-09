@@ -679,7 +679,12 @@ if (gadgetHandler:IsSyncedCode()) then
             name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ =
                 Spring.GetPlayerInfo(playerID)
             uType = t[2]
-            raidIconID = tonumber(t[6])
+            local houseID = tonumber(t[6])
+            if not GG.HouseRaidIconMap then echo("End1"); return end
+            if not GG.HouseRaidIconMap[houseID] then echo("End2");return end
+            raidIconID = GG.HouseRaidIconMap[houseID]
+            if not raidIconID then echo("End3");return end
+
             Spring.Echo("game_snipe_minigame.lua: Recived id:"..raidIconID.." of type "..UnitDefs[spGetUnitDefID(raidIconID)].name)
             lastSniperIconID = nil
 
