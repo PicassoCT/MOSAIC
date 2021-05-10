@@ -449,7 +449,7 @@ function widget:GameFrame(t)
 end
 
 function widget:UnitCreated(unitID, unitDefID)
-	if TutorialInfoTable[raidIconDefID].active == true and TutorialInfoTable[raidIconDefID].boolUponCreation  then
+	if TutorialInfoTable[raidIconDefID] and TutorialInfoTable[raidIconDefID].active == true and TutorialInfoTable[raidIconDefID].boolUponCreation  then
 			PlaySoundAndMarkUnit(unitDefID, unitID)
 			OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
 			TutorialInfoTable[raidIconDefID].active = false
