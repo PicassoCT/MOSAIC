@@ -79,7 +79,7 @@ function widget:MousePress(x, y, button)
     end
 
     local targType, unitID = spTraceScreenRay(x, y)
-     Spring.Echo("cmd_snipeminigame:", targType, unitID)
+     --Spring.Echo("cmd_snipeminigame:", targType, unitID)
 
     if targType == "unit" then
         --does not trace down to raidicon - selects house instead.. even with house set to unselect
@@ -90,13 +90,13 @@ function widget:MousePress(x, y, button)
 		if houseTypeTable[defID]  then
 		
 		
-    		Spring.Echo("Mouse Press on MiniGameBoard of type".. UnitDefs[defID].name)
+    		--Spring.Echo("Mouse Press on MiniGameBoard of type".. UnitDefs[defID].name)
             local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
             --Spring.Echo(targType.." - > ",targID[1],targID[2],targID[3])
             
             if targType and targType == "ground" then
                 if boolPlacementActive == false then
-                    Spring.Echo("Placement started")
+                    --Spring.Echo("Placement started")
                     lastPos = targID
                     Spring.SendLuaRulesMsg(
                         "SPWN|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3] .. "|" .. unitID
@@ -116,7 +116,7 @@ function widget:MouseRelease(x, y, mButton)
     end
 
     if boolPlacementActive == true then
-        Spring.Echo("Placement ended")
+        --Spring.Echo("Placement ended")
         inMinimap = spIsAboveMiniMap(x, y)
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
         Spring.SendLuaRulesMsg("POSROT|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3])
