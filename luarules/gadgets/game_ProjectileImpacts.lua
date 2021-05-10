@@ -103,7 +103,6 @@ if (gadgetHandler:IsSyncedCode()) then
         Script.SetWatchWeapon(wId, true)
     end
 
-    -- units To be exempted from instantly lethal force
 
     -- ===========Explosion Functions ====================================================
   local explosionFunc = {
@@ -607,9 +606,14 @@ if (gadgetHandler:IsSyncedCode()) then
         spEcho("Raid/Interrogatable Weapon fired upon " ..
                    UnitDefs[unitDefID].name)
 
-        -- stupidity edition
-        if attackerID == unitID then
-            spEcho("Raid:Aborted: attackerID == unitID")
+        if not attackerID then
+            attackerID = Spring.GetUnitLastAttacker(unitID)
+        end
+
+                -- stupidity edition
+        if not attackerID or attackerID == unitID then
+            if not attackerID then    spEcho("Raid: No valid attackerID derived") end
+            if attackerID == unitID then    spEcho("Raid:Aborted: attackerID == unitID") end
             return damage
         end
 
@@ -627,7 +631,7 @@ if (gadgetHandler:IsSyncedCode()) then
             currentlyInterrogationRunning(unitID, attacker) == false then
             spEcho("Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
             stunUnit(unitID, 2.0)
-            setSpeedEnv(attackerID, 0.0)
+            if attackerID then setSpeedEnv(attackerID, 0.0) end
             raidEventStreamFunction(unitID, unitDefID, unitTeam,
                                              damage, paralyzer, weaponDefID,
                                              attackerID, attackerDefID,
@@ -678,7 +682,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
-    Spring.Echo("Unit Damaged called")
+ 
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID,
                                                         unitTeam, damage,
