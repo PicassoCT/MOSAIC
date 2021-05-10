@@ -90,6 +90,7 @@ function watchRaidIconTable()
     while (GG.raidIconDone[unitID] and  GG.raidIconDone[unitID].boolInterogationComplete == false) do
         Sleep(100)
     end
+    GG.raidIconDone[unitID]  = nil
     Spring.DestroyUnit(unitID, true, false)
 end
 

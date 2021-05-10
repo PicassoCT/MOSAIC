@@ -214,8 +214,8 @@ if (gadgetHandler:IsSyncedCode()) then
     raidStates = getRaidStates()
     local innocentCivilianTypeTable = getPanicableCiviliansTypeTable(UnitDefs)
 
-   treamFunction = function(unitID, unitDefID, unitTeam, damage,
-                                       paralyzer, weaponDefID, attadckerID,
+   raidEventStreamFunction = function(unitID, unitDefID, unitTeam, damage,
+                                       paralyzer, weaponDefID, attackerID,
                                        attackerDefID, attackerTeam,
                                        iconUnitTypeName)
 
@@ -227,7 +227,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                     if boolDoesExistAlive and boolDoesExistAlive == true then
                                     Spring.SetUnitNoSelect(unitID, false)
                                     end
-                                    GG.HouseRaidIconMap[unitID] = nil
+                                    GG.HouseRaidIconMap[unitID].boolInterogationComplete = true
                                 end
                                 
 
@@ -284,6 +284,8 @@ if (gadgetHandler:IsSyncedCode()) then
                         GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
                     end
                 end
+
+                if not GG.raidIconDone[persPack.IconID] then return true, persPack end
 
       -- update the icons  percentage
                 GG.raidIconDone[persPack.IconID].countDown =

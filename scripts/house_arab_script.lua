@@ -923,8 +923,9 @@ function buildAnimation()
     for i = 1, 3 do
         Move(builT[i], _y_axis, i * -cubeDim.heigth * 10, 3 * math.pi)
     end
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, -1000, 8000)
-    moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, 0, -1000, 8000)
+    moveT(TablesOfPiecesGroups["BuildCrane"], y_axis, -3000, 8000)
+    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -1000, 0, 8000)
+
     Sleep(1000)
     hideT(TablesOfPiecesGroups["BuildCrane"])
     Sleep(7000)

@@ -14,8 +14,6 @@ function widget:GetInfo()
     }
 end
 
-function widget:Update(dt)
-end
 
 local raidIconDefID = nil
 local houseRaidIconMap = {}
@@ -23,6 +21,7 @@ local houseTypeTable = {}
 local spTraceScreenRay = Spring.TraceScreenRay
 local spIsAboveMiniMap = Spring.IsAboveMiniMap
 local raidIcons = {}
+local oldValues = {x= 0, z = 0}
 
 function widget:Initialize()
 
@@ -110,6 +109,17 @@ function widget:MousePress(x, y, button)
     end
 end
 
+function widget:Update(dt)
+    if boolPlacementActive == true then
+        local x,y = Spring.GetMouseState()
+        inMinimap = spIsAboveMiniMap(x, y)
+        local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
+        if targID then
+         Spring.SendLuaRulesMsg("ROTPOS|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3])
+        end
+    end
+end
+
 function widget:MouseRelease(x, y, mButton)
     if (mButton ~= 1) then
         return false
@@ -119,7 +129,9 @@ function widget:MouseRelease(x, y, mButton)
         --Spring.Echo("Placement ended")
         inMinimap = spIsAboveMiniMap(x, y)
         local targType, targID = spTraceScreenRay(x, y, true, inMinimap, false, false, 50)
-        Spring.SendLuaRulesMsg("POSROT|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3])
+        if targID then
+         Spring.SendLuaRulesMsg("POSROT|snipeicon|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3])
+        end
         --Set Direction
         boolPlacementActive = false
         return true

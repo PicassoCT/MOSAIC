@@ -419,7 +419,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         -- Objective Evaluation
-        for objective in pairs(roundRunning.Objectives) do
+        for nr, objective in pairs(roundRunning.Objectives) do
             process(Survivors, function(id)
                 if distanceUnitToUnit(objective, id) < 5 then
                     if spGetUnitTeam(id) == roundRunning.Aggressor.team then
@@ -592,6 +592,9 @@ if (gadgetHandler:IsSyncedCode()) then
                     if state == raidStates.Aborted then
                         Spring.Echo("Raid was aborted")
                         killAllPlacedObjects(roundRunning)
+                        assert(GG.raidIconDone)
+                        assert(GG.raidIconDone[raidIconId])
+                        assert(type(GG.raidIconDone[raidIconId])=="table")
                         GG.raidIconDone[raidIconId].boolInterogationComplete =
                             true
                         spDestroyUnit(raidIconId, false, false)
@@ -699,6 +702,12 @@ if (gadgetHandler:IsSyncedCode()) then
                 registersniperIconAttributes(uType, teamID, lastSniperIconID,
                                              raidIconID)
             end
+        end
+
+        if lastSniperIconID and msg and string.find(msg, "ROTPOS") then
+            t = split(msg, "|")
+            Command(lastSniperIconID, "attack",
+                    {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {})
         end
 
         if lastSniperIconID and msg and string.find(msg, "POSROT") then
