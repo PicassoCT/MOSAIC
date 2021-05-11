@@ -278,7 +278,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, persPack.unitID, 0,
-                                          0, 0)
+                                          0, 0, 0)
                     if persPack.IconID then
                         if not GG.HouseRaidIconMap then GG.HouseRaidIconMap = {} end
                         Spring.Echo("Raid: Registering RaidIcon to map")
