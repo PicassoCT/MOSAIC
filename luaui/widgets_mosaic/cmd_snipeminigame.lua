@@ -72,7 +72,7 @@ lastPos = {}
 local boolPlacementActive = false
 function widget:MousePress(x, y, button)
     local inMinimap = spIsAboveMiniMap(x, y)
-    Spring.Echo("MousePress ".. button)
+    --Spring.Echo("MousePress ".. button)
     if (button ~= 1) then
         return false
     end
