@@ -4,6 +4,8 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+myTeamID = Spring.GetUnitTeam(unitID)
+
 TablesOfPiecesGroups = {}
 whirl = {}
 ring = {}
@@ -81,16 +83,19 @@ function script.Create()
 end
 
 function watchRaidIconTable()
-    if not GG.raidIconDone then GG.raidIconDone = {} end
 
     while GG.raidIconDone[unitID] == nil do 
         Sleep(10)
     end 
     
     while (GG.raidIconDone[unitID] and  GG.raidIconDone[unitID].boolInterogationComplete == false) do
-        Sleep(100)
+        Sleep(1)
     end
-    GG.raidIconDone[unitID]  = nil
+    if GG.raidIconDone[unitID] and GG.raidIconDone[unitID].winningTeam then
+        winningTeam = GG.raidIconDone[unitID].winningTeam 
+        if winningTeam == myTeamID
+    end
+
     Spring.DestroyUnit(unitID, true, false)
 end
 

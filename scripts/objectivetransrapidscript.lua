@@ -8,24 +8,46 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 local trainAxis = x_axis
-local maxDistanceTrain = 1320000
+local maxDistanceTrain = 122000
 local trainspeed = 9000
 center = piece"center"
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideT(TablesOfPiecesGroups["Tunnel1_"])
+   hideT(TablesOfPiecesGroups["Tunnel1_"])
     hideT(TablesOfPiecesGroups["Tunnel2_"])
-    hideT(TablesOfPiecesGroups["TunnelDetection"])
-    hideT(TablesOfPiecesGroups["Train"])
-    hideT(TablesOfPiecesGroups["Container"])
 
-    StartThread(trainLoop, 1)
+   StartThread(setup)
+end
+
+function setup()
+    Sleep(10)
+     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
     rVal = math.random(0,360)
-    Turn(center, y_axis, math.rad(rVal),0)
+    WTurn(center, y_axis, math.rad(rVal),0)
+
     StartThread(deployTunnels, 1)
     StartThread(deployTunnels, 2)
+    StartThread(showRail)
+end
+
+function showRail()
+    Sleep(100)
+    hideT(TablesOfPiecesGroups["Rail"])
+    process(TablesOfPiecesGroups["Rail"],
+        function(id)
+        local xMax = Game.mapSizeX 
+        local zMax = Game.mapSizeZ 
+        x,_,z = Spring.GetUnitPiecePosDir(unitID, id)
+            if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
+                return id
+            end
+        end,
+        function(id)
+            Show(id)
+        end
+        )
 end
 
 local boolOldState = false
@@ -46,29 +68,38 @@ local boolOldState = false
 
         return boolResult
     end
+
 function deployTunnels(nr)
+    Sleep(1)
 detectionPiece = piece("TunnelDetection"..nr) 
-tunnelIndex = 1
+tunnelIndex = (nr-1)*6 + 1
 local xMax = Game.mapSizeX 
 local zMax = Game.mapSizeZ 
-for i = maxDistanceTrain, -maxDistanceTrain, -50 do
-	WMove(detectionPiece,trainAxis, i, 0)
-	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece,0)
-    if not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax then break end
-
-	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
-		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
-		if tunnelIndexPiece then
-		tunnelIndex = tunnelIndex + 1
-		WMove(tunnelIndexPiece, trainAxis, i, 0)
-		Show(tunnelIndexPiece)
-        if tunnelIndex == 6 then return end
-		end
-	end
+    for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -35 do
+    	WMove(detectionPiece,trainAxis, distanceTunnel, 0)
+    	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
+        if not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax then
 
 
-	boolOldState = boolAboveGround
-end
+        else
+        Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
+    	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
+    		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
+            assert(tunnelIndexPiece)
+    		if tunnelIndexPiece then
+    		tunnelIndex = tunnelIndex + 1
+    		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
+    		Show(tunnelIndexPiece)
+            if tunnelIndex == (nr)*6 then
+             return end
+    		end
+    	end
+        end
+
+
+    	boolOldState = boolAboveGround
+    end
+    if nr== 2 then     hideT(TablesOfPiecesGroups["TunnelDetection"]) end
 end
 
 function buildTrain(nr)
@@ -103,10 +134,8 @@ function hideTrain(nr)
         indexStop = 8
     end
 
-    for i=indexStart,indexStop do
-        
-            Hide(TablesOfPiecesGroups["Container"][i])
-
+    for i=indexStart,indexStop do        
+        Hide(TablesOfPiecesGroups["Container"][i])
     end
 end
 
@@ -114,9 +143,11 @@ function trainLoop(nr)
 	rSleepValue = math.random(1,100)*100
 	Sleep(rSleepValue)
 	local train = piece("Train"..nr)
-	direction = randSign()
-	
+
+
 	while true do
+        direction = randSign()
+        Spring.Echo("trainLoop"..nr.. " started")
 		WMove(train, trainAxis, maxDistanceTrain*direction, 0)
 		buildTrain(nr)
 		WMove(train, trainAxis, 0, trainspeed)
@@ -125,7 +156,7 @@ function trainLoop(nr)
         buildTrain(nr)
 		WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
 		hideTrain(nr)
-		betweenInterval = math.random(1,5)*60*1000
+		betweenInterval = math.random(0,3)*60*1000
 		Sleep(betweenInterval)
 	end
 end

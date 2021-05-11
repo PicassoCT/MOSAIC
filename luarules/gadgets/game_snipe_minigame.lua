@@ -42,6 +42,9 @@ if (gadgetHandler:IsSyncedCode()) then
         showUnit(id)
         spSetUnitAlwaysVisible(id, true)
     end
+    function gadget:Initialize()
+        if not GG.raidIconDone then GG.raidIconDone = {} end
+    end
 
     function alwaysHideUnit(id)
         spSetUnitAlwaysVisible(id, false)
@@ -215,7 +218,7 @@ if (gadgetHandler:IsSyncedCode()) then
         return {}
     end
 
-    function getRaidIconProgress(id)
+    function getIconProgress(id)
         env = Spring.UnitScript.GetScriptEnv(id)
         if env and env.getRoundProgressBar then
             return spCallAsUnit(id, env.getRoundProgressBar)
@@ -566,7 +569,7 @@ if (gadgetHandler:IsSyncedCode()) then
         for raidIconId, roundRunning in pairs(allRunningRaidRounds) do
             if raidIconId and doesUnitExistAlive(raidIconId) == true then
                 -- Round has ended
-                raidPercentage = getRaidIconProgress(raidIconId)
+                raidPercentage = getIconProgress(raidIconId)
                 boolSkip = false
 
                 if raidPercentage > 50 and count(roundRunning.Objectives) == 0 then

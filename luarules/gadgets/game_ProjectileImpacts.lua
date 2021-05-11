@@ -203,9 +203,6 @@ if (gadgetHandler:IsSyncedCode()) then
     -- Interrogation
     -----------------------------------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------------
-
-
-	
 	-- victim -- interrogator -- boolInerrogationOngoing
     GG.InterrogationTable = {}
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
@@ -221,13 +218,22 @@ if (gadgetHandler:IsSyncedCode()) then
 
         spEcho("raidEventStream  Called")
 
-        setRaidEndState =   function (unitID, boolDoesExistAlive)
+        setRaidEndState =   function (persPack, boolDoesExistAlive)
                                     Spring.Echo("Raid has ended")
-                                    GG.InterrogationTable[unitID] = nil
+                                    GG.InterrogationTable[persPack.unitID] = nil
+                                   
                                     if boolDoesExistAlive and boolDoesExistAlive == true then
-                                    Spring.SetUnitNoSelect(unitID, false)
+                                    Spring.SetUnitNoSelect(persPack.unitID, false)
                                     end
-                                    GG.HouseRaidIconMap[unitID].boolInterogationComplete = true
+
+                                    if true == doesUnitExistAlive(persPack.interrogatorID) then
+                                        setSpeedEnv(persPack.interrogatorID, 1.0)
+                                    end
+ 
+                                    GG.HouseRaidIconMap[persPack.unitID].boolInterogationComplete = true
+                                    if persPack.IconID then
+                                     GG.raidIconDone[persPack.IconID] = nil
+                                    end
                                 end
                                 
 
@@ -248,27 +254,22 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     spEcho("failed check Target is still existing ")
-                    if true == doesUnitExistAlive(persPack.interrogatorID) then
-                        setSpeedEnv(persPack.interrogatorID, 1.0)
-                    end
-                    setRaidEndState(persPack.unitID, false)
+                    setRaidEndState(persPack, false)
                     return true, persPack
                 end
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     spEcho("failed   check wether the interrogator is still alive")
-                    setRaidEndState(persPack.unitID, true)
+                    setRaidEndState(persPack, true)
                     return true, persPack
                 end
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
                     GameConfig.InterrogationDistance then
-
                     spEcho("failed check distance is still okay5 ")
-                    setSpeedEnv(persPack.interrogatorID, 1.0)
-                    setRaidEndState(persPack.unitID, true)
+                    setRaidEndState(persPack, true)
                     return true, persPack
                 end
                 
@@ -282,19 +283,21 @@ if (gadgetHandler:IsSyncedCode()) then
                         if not GG.HouseRaidIconMap then GG.HouseRaidIconMap = {} end
                         Spring.Echo("Raid: Registering RaidIcon to map")
                         GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
+                        GG.raidIconDone[persPack.IconID] = {
+                            boolInterogationComplete = false
+                        }
+                    else
+                        setRaidEndState(persPack, false)
+                        return true, persPack
                     end
                 end
 
                 if not GG.raidIconDone[persPack.IconID] then return true, persPack end
 
-      -- update the icons  percentage
-                GG.raidIconDone[persPack.IconID].countDown =
-                    (spGetGameFrame() - persPack.startFrame) /
-                        GameConfig.InterrogationTimeInFrames
 
-                if GG.raidIconDone[persPack.IconID].boolInterogationComplete ==
-                    true then
-                    spEcho("boolInterogationCompleted")
+
+                if GG.raidIconDone[persPack.IconID].boolInterogationComplete == true then
+                    spEcho("Raid: boolInterogationComplete")
 
                     if not GG.raidIconDone[persPack.IconID].winningTeam then
                         -- succesfull interrogation
@@ -303,9 +306,8 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Simulation mode
                             spEcho(
                                 "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
-                            setSpeedEnv(persPack.interrogatorID, 1.0)
-                            spDestroyUnit(persPack.IconID, true, true)
                             GG.InterrogationTable[persPack.unitID] = nil
+                            setRaidEndState(persPack, true)
                             return true, persPack
                         end
 
@@ -325,9 +327,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-                setSpeedEnv(persPack.interrogatorID, 1.0)
-                            spDestroyUnit(persPack.IconID, true, true)
-                            setRaidEndState(persPack.unitID, true)
+                            setRaidEndState(persPack, true)
                             return true, persPack
                         end
 
@@ -354,7 +354,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             spSetUnitAlwaysVisible(parent, true)
                         end
                         
-                        setRaidEndState(persPack.unitID, true)
+                        setRaidEndState(persPack, true)
                         return true, persPack
                     end
                 end
@@ -440,22 +440,18 @@ if (gadgetHandler:IsSyncedCode()) then
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, persPack.unitID, 0,
                                           0, 0)
-                    if not GG.raidIconDone then
-                        GG.raidIconDone = {}
-                    end
+            
                     if not GG.raidIconDone[persPack.IconID] then
                         GG.raidIconDone[persPack.IconID] =
                             {
+                                countDown =  (spGetGameFrame() - persPack.startFrame) /
+                        GameConfig.InterrogationTimeInFrames,
                                 boolInterogationComplete = false,
                                 winningTeam = nil
                             }
                     end
                 end
 
-                -- update the icons  percentage
-                GG.raidIconDone[persPack.IconID].countDown =
-                    (spGetGameFrame() - persPack.startFrame) /
-                        GameConfig.InterrogationTimeInFrames
 
                 if GG.raidIconDone[persPack.IconID].boolInterogationComplete ==
                     true then
