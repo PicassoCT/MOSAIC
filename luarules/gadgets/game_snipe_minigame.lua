@@ -679,7 +679,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local lastSniperIconID
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "SPWN") then
-            echo("game_snipe_minigame.lua: Recieved SPWN message")
+  --          echo("game_snipe_minigame.lua: Recieved SPWN message")
             t = split(msg, "|")
 
             name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ =
@@ -691,7 +691,7 @@ if (gadgetHandler:IsSyncedCode()) then
             raidIconID = GG.HouseRaidIconMap[houseID]
             if not raidIconID then echo("End3");return end
 
-            Spring.Echo("game_snipe_minigame.lua: Recived id:"..raidIconID.." of type "..UnitDefs[spGetUnitDefID(raidIconID)].name)
+--            Spring.Echo("game_snipe_minigame.lua: Recived id:"..raidIconID.." of type "..UnitDefs[spGetUnitDefID(raidIconID)].name)
             lastSniperIconID = nil
 
             if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and
