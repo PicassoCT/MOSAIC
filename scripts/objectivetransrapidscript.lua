@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 local trainAxis = x_axis
-local maxDistanceTrain = 122000
+local maxDistanceTrain = 126000
 local trainspeed = 9000
 center = piece"center"
 
@@ -69,20 +69,19 @@ local boolOldState = false
         return boolResult
     end
 
+    tunnelMultiple = 5
+
 function deployTunnels(nr)
     Sleep(1)
 detectionPiece = piece("TunnelDetection"..nr) 
-tunnelIndex = (nr-1)*6 + 1
+tunnelIndex = (nr-1)*tunnelMultiple + 1
 local xMax = Game.mapSizeX 
 local zMax = Game.mapSizeZ 
-    for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -35 do
+    for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -32 do
     	WMove(detectionPiece,trainAxis, distanceTunnel, 0)
     	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
-        if not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax then
-
-
-        else
-        Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
+        if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
+        --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
     	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
     		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
             assert(tunnelIndexPiece)
@@ -90,7 +89,7 @@ local zMax = Game.mapSizeZ
     		tunnelIndex = tunnelIndex + 1
     		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
     		Show(tunnelIndexPiece)
-            if tunnelIndex == (nr)*6 then
+            if tunnelIndex == (nr)*tunnelMultiple then
              return end
     		end
     	end
@@ -99,7 +98,7 @@ local zMax = Game.mapSizeZ
 
     	boolOldState = boolAboveGround
     end
-    if nr== 2 then     hideT(TablesOfPiecesGroups["TunnelDetection"]) end
+    Hide(detectionPiece)
 end
 
 function buildTrain(nr)
@@ -147,8 +146,7 @@ function trainLoop(nr)
 
 	while true do
         direction = randSign()
-        Spring.Echo("trainLoop"..nr.. " started")
-		WMove(train, trainAxis, maxDistanceTrain*direction, 0)
+        WMove(train, trainAxis, maxDistanceTrain*direction, 0)
 		buildTrain(nr)
 		WMove(train, trainAxis, 0, trainspeed)
 		breakTime = math.random(0,10)*1000
@@ -165,11 +163,3 @@ end
 function script.Killed(recentDamage, _)
     return 1
 end
-
-function script.StartMoving() end
-
-function script.StopMoving() end
-
-function script.Activate() return 1 end
-
-function script.Deactivate() return 0 end

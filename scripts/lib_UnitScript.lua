@@ -1392,12 +1392,14 @@ function createUnitAtPiece(id, typeID, Piece, team)
                              teamID)
 end
 -- > Create a Unit at another Unit
-function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID)
+function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orientation)
     if isUnitAlive(otherID) == false then return end
+    locOrientation = orientation or math.ceil(math.random(0,3))
+ 
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
     return Spring.CreateUnit(typeID, x + ox, y + oy, z + oz,
-                             math.ceil(math.random(0, 3)), teamID, parentID)
+                             locOrientation, teamID, false, false, parentID)
 end
 
 function createUnitAtFeature(teamID, typeID, featureID, ox, oy, oz)
