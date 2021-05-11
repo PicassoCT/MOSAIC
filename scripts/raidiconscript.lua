@@ -44,6 +44,11 @@ antagon_talk = {
     "Fighting your fellow men, for mindcontrolling machines and stranger things.."
 }
 
+DefenderWin = piece("DefenderWin")
+RaidSuccess = piece("RaidSuccess")
+RaidAborted = piece("RaidAborted")
+RaidEmpty = piece("RaidEmptz")
+
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitStealth(unitID, false)
@@ -54,6 +59,11 @@ function script.Create()
     ox, oy, oz = Spring.GetUnitPosition(unitID)
     -- Spring.SetUnitPosition(unitID, ox,oy + 125, oz)
     showAll(unitID)
+    Hide(DefenderWin)
+    Hide(RaidSuccess)
+    Hide(RaidAborted)
+    Hide(Empty)
+
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(raidAnimationLoop)
@@ -91,12 +101,52 @@ function watchRaidIconTable()
     while (GG.raidIconDone[unitID] and  GG.raidIconDone[unitID].boolInterogationComplete == false) do
         Sleep(1)
     end
+
     if GG.raidIconDone[unitID] and GG.raidIconDone[unitID].winningTeam then
         winningTeam = GG.raidIconDone[unitID].winningTeam 
-        if winningTeam == myTeamID
+        if winningTeam then
+            if winningTeam == myTeamID then
+                showRaidSuccesAnimation()
+            end
+            if winningTeam ~= myTeamID then
+                showDefenderSuccesAnimation()
+            end
+        else
+            showHouseEmptyAnimation()
+        end
+          
+    else
+        showRaidAbortedAnimation()
     end
 
     Spring.DestroyUnit(unitID, true, false)
+end
+
+function popPieceUp(pieceID, speed)
+    Move(pieceID, y_axis, -200, 0)
+    Show(pieceID)
+    WMove(pieceID, y_axis, 50, speed)
+    WMove(pieceID, y_axis, 0, speed)
+end
+
+function showDefenderSuccesAnimation()
+    popPieceUp(DefenderWin, 50)
+    Sleep(2000)
+end
+
+function showRaidAbortedAnimation()
+    popPieceUp(RaidAborted, 50)
+    Sleep(2000)
+end
+
+function showHouseEmptyAnimation()
+    popPieceUp(RaidEmpty, 30)
+    Sleep(2000)
+end
+
+function showRaidSuccesAnimation()
+    popPieceUp(RaidSuccess, 60)
+    Sleep(4000)
 end
 
 myHouseID = nil
@@ -189,7 +239,11 @@ function shoveAllNonCombatantsOut()
             px, pz = px * factor, pz * factor
 
             Spring.AddUnitImpulse(id, px, py, pz, 0.95)
-            Command(id, "go", {x = tx, y = ty, z = tz}, {})
+            Command(id, "go", {
+                x = tx+math.random(50,70)*randSign(), 
+                y = ty, 
+                z = tz +math.random(50,70)*randSign()}, {}
+                )
         end)
         Sleep(10)
     end
