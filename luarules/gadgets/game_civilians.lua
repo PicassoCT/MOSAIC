@@ -1052,7 +1052,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     return boolDone, nil, persPack
     end 
 
-    if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < 20 then
+    if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < 140 then
       --  Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
     else
@@ -1061,7 +1061,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end
 
     -- if stuck move towards the next goal
-    if persPack.stuckCounter > 5 then
+    if persPack.stuckCounter > 8 then
         if persPack.goalIndex <=  #persPack.goalList then
             persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
             persPack = moveToLocation(myID, persPack, {})
@@ -1154,14 +1154,13 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
-    assert(x)
-    boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
-    if boolDone == true then return retFrame,persPack end
-
    boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end    
 
     boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
+    if boolDone == true then return retFrame,persPack end
+
+    boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
     if GG.GlobalGameState ~= GameConfig.GameState.normal then

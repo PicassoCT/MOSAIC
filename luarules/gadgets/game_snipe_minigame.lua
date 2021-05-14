@@ -582,13 +582,12 @@ if (gadgetHandler:IsSyncedCode()) then
                         roundRunning.Aggressor.Points <= 0) then
                     -- find out who died, who survived, who collected objectives and if there is a new round
                     winningTeam, roundRunning, state =
-                        evaluateEndedRound(raidIconId, roundRunning)
+                    evaluateEndedRound(raidIconId, roundRunning)
 
                     if state == raidStates.OnGoing then
                         Spring.Echo("Raid continues in new Round") 
                         killAllPlacedObjects(roundRunning)
-                        newRound(raidIconId, roundRunning.Aggressor.team, false,
-                                 roundRunning)
+                        newRound(raidIconId, roundRunning.Aggressor.team, false, roundRunning)
                         roundRunning = nil
                     end
 
@@ -598,33 +597,28 @@ if (gadgetHandler:IsSyncedCode()) then
                         assert(GG.raidIconDone)
                         assert(GG.raidIconDone[raidIconId])
                         assert(type(GG.raidIconDone[raidIconId])=="table")
-                        GG.raidIconDone[raidIconId].boolInterogationComplete =
-                            true
-                        spDestroyUnit(raidIconId, false, false)
-                        roundRunning = nil
+                        GG.raidIconDone[raidIconId].boolInterogationComplete =  true
+                        GG.raidIconDone[raidIconId].winningTeam =  "aborted"
+                        allRunningRaidRounds[raidIconId] = nil
                         -- GameOver
                     end
 
-                    -- new round
                     if roundRunning and (state == raidStates.DefenderWins) and
                         roundRunning.Defender.Points <= 0 then
                         Spring.Echo("Defender won the round")
                         killAllPlacedObjects(roundRunning)
                         newRound(raidIconId, roundRunning.Aggressor.team, false,
                                  roundRunning)
-                        roundRunning = nil
+                     allRunningRaidRounds[raidIconId] = nil
                     end
 
                     -- rounds end
                     if roundRunning and state == raidStates.AggressorWins then
                         Spring.Echo("Agressor won the round")
                         killAllPlacedObjects(roundRunning)
-                        GG.raidIconDone[raidIconId].winningTeam =
-                            Spring.GetUnitTeam(raidIconId)
-                        GG.raidIconDone[raidIconId].boolInterogationComplete =
-                            true
-                        spDestroyUnit(raidIconId, false, false)
-                        roundRunning = nil
+                        GG.raidIconDone[raidIconId].winningTeam = Spring.GetUnitTeam(raidIconId)
+                        GG.raidIconDone[raidIconId].boolInterogationComplete =  true
+                        allRunningRaidRounds[raidIconId] = nil
                     end
 
                     boolSkip = true
@@ -686,10 +680,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 Spring.GetPlayerInfo(playerID)
             uType = t[2]
             local houseID = tonumber(t[6])
-            if not GG.HouseRaidIconMap then echo("End1"); return end
-            if not GG.HouseRaidIconMap[houseID] then echo("End2");return end
+            if not GG.HouseRaidIconMap then  return end
+            if not GG.HouseRaidIconMap[houseID] then return end
             raidIconID = GG.HouseRaidIconMap[houseID]
-            if not raidIconID then echo("End3");return end
+            if not raidIconID then return end
 
 --            Spring.Echo("game_snipe_minigame.lua: Recived id:"..raidIconID.." of type "..UnitDefs[spGetUnitDefID(raidIconID)].name)
             lastSniperIconID = nil

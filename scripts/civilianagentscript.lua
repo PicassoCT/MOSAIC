@@ -485,7 +485,8 @@ function fleeEnemy(enemyID)
 
     while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
-        Sleep(500)
+        value = math.random(450,550)
+        Sleep(value)
     end
 
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)

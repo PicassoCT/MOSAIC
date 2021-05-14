@@ -216,6 +216,25 @@ function AttachUnitToPieceNearImpact(toAttachUnitID, AttackerID, px, py, pz,
     end)
 end
 
+function getGroundHeigthGrid(x,z, Size)
+  avg = Spring.GetGroundHeight(x, z)
+  min = avg
+  max = avg
+
+   for i=1, 4 do
+     xOff, zOff = getCircleIndex(i)
+     xOff, zOff = xOff*Size, zOff*Size
+     gh = Spring.GetGroundHeight(x+xOff, z +zOff)
+
+     if gh < min then min = gh end
+     if gh > max then max = gh end
+     avg= avg + gh
+
+   end
+
+  return  min, avg* (1/5), max 
+end
+
 -- > is a Unit Piece above ground
 function isPieceAboveGround(unitID, pieceName, offset)
     offset = offset or 0
@@ -1394,7 +1413,10 @@ end
 -- > Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orientation)
     if isUnitAlive(otherID) == false then return end
-    locOrientation = orientation or math.ceil(math.random(0,3))
+    locOrientation = orientation 
+    if not orientation then 
+     locOrientation = math.random(0,3)
+    end
  
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
@@ -6346,7 +6368,6 @@ function runAwayFrom(id, horrorID, distanceToRun)
     hx, hz = (hx * distanceToRun), ( hz * distanceToRun)
     hx, hz = x + hx, z + hz
 
-    --Spring.SetUnitMoveGoal(id, hx, y, hz)
     Spring.SetUnitMoveGoal ( id, hx, hy, hz)
     Command(id, "go", {
                 x = hx,
@@ -6358,7 +6379,7 @@ function runAwayFrom(id, horrorID, distanceToRun)
                 y = y,
                 z = hz
             }, {"shift"})
-    Spring.Echo("Running away from "..horrorID)
+--[[    Spring.Echo("Running away from "..horrorID)--]]
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)

@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 local trainAxis = x_axis
-local maxDistanceTrain = 126000
+local maxDistanceTrain = 127000
 local trainspeed = 9000
 center = piece"center"
 
@@ -72,9 +72,10 @@ local boolOldState = false
     tunnelMultiple = 5
 
 function deployTunnels(nr)
-    Sleep(1)
+    boolOldState = false
+    Sleep(nr)
 detectionPiece = piece("TunnelDetection"..nr) 
-tunnelIndex = (nr-1)*tunnelMultiple + 1
+tunnelIndex = 1
 local xMax = Game.mapSizeX 
 local zMax = Game.mapSizeZ 
     for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -32 do
@@ -82,23 +83,22 @@ local zMax = Game.mapSizeZ
     	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
         if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
         --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
-    	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
-    		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
-            assert(tunnelIndexPiece)
-    		if tunnelIndexPiece then
-    		tunnelIndex = tunnelIndex + 1
-    		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
-    		Show(tunnelIndexPiece)
-            if tunnelIndex == (nr)*tunnelMultiple then
-             return end
-    		end
-    	end
+        	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
+        		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
+        		if tunnelIndexPiece then
+            		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
+            		Show(tunnelIndexPiece)
+                    tunnelIndex = tunnelIndex + 1
+                    if tunnelIndex >= 6 then
+                     Hide(detectionPiece)
+                     return 
+                    end
+        		end
+        	end
         end
-
-
     	boolOldState = boolAboveGround
     end
-    Hide(detectionPiece)
+   
 end
 
 function buildTrain(nr)

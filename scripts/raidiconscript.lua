@@ -56,13 +56,14 @@ function script.Create()
     --The unit must be selectable, to appear to a screen trace ray. 
     Spring.SetUnitNoSelect(unitID,false)
     Spring.MoveCtrl.Enable(unitID, true)
-    ox, oy, oz = Spring.GetUnitPosition(unitID)
-    -- Spring.SetUnitPosition(unitID, ox,oy + 125, oz)
+  
+
+
     showAll(unitID)
     Hide(DefenderWin)
     Hide(RaidSuccess)
     Hide(RaidAborted)
-    Hide(Empty)
+    Hide(RaidEmpty)
 
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -98,35 +99,38 @@ function watchRaidIconTable()
         Sleep(10)
     end 
     
-    while (GG.raidIconDone[unitID] and  GG.raidIconDone[unitID].boolInterogationComplete == false) do
+    while (GG.raidIconDone[unitID] and GG.raidIconDone[unitID].boolInterogationComplete == false) do
         Sleep(1)
     end
 
     if GG.raidIconDone[unitID] and GG.raidIconDone[unitID].winningTeam then
         winningTeam = GG.raidIconDone[unitID].winningTeam 
-        if winningTeam then
+        if type(winningTeam) == "number" then
             if winningTeam == myTeamID then
                 showRaidSuccesAnimation()
             end
             if winningTeam ~= myTeamID then
                 showDefenderSuccesAnimation()
             end
-        else
-            showHouseEmptyAnimation()
-        end
-          
+        elseif winningTeam == "aborted" then
+          showRaidAbortedAnimation()
+        end       
     else
-        showRaidAbortedAnimation()
+        showHouseEmptyAnimation()
     end
+
+    Sleep(5000)
+    GG.raidIconDone[unitID] = nil
 
     Spring.DestroyUnit(unitID, true, false)
 end
 
 function popPieceUp(pieceID, speed)
-    Move(pieceID, y_axis, -200, 0)
+    axis = z_axis
+    Move(pieceID, axis, -200, 0)
     Show(pieceID)
-    WMove(pieceID, y_axis, 50, speed)
-    WMove(pieceID, y_axis, 0, speed)
+    WMove(pieceID, axis, 50, speed)
+    WMove(pieceID, axis, 0, speed)
 end
 
 function showDefenderSuccesAnimation()
@@ -165,7 +169,10 @@ function setAffiliatedHouseInvisible()
             if env and env.hideHouse then
                 Spring.UnitScript.CallAsUnit(id, env.hideHouse)
             end
-            moveUnitToUnit(unitID, id)
+            ox, oy, oz = Spring.GetUnitPosition(id)
+            min, avg, max = getGroundHeigthGrid(ox,oz, 75) 
+
+            moveUnitToUnit(unitID, id,0, max - oy, 0)
             return
         end
     end)
@@ -187,8 +194,12 @@ figures = {Red = "red", Blue = "blue"}
 function updateShownPoints(redPoints, bluePoints)
     hideT(Red)
     hideT(Blue)
-    showT(Red, 1, redPoints)
-    showT(Blue, 1, bluePoints)
+    if redPoints > 0 then
+     showT(Red, 1, redPoints)
+    end
+    if bluePoints > 0 then
+        showT(Blue, 1, bluePoints)
+    end
 end
 
 -- //not exposed functions
