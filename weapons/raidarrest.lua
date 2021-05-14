@@ -36,9 +36,6 @@ local weaponDef = {
     avoidFeature = false,
     avoidFriendly = false,
 
-
-    commandfire=true,
-
     --- -DAMAGE
     damage = {
         default = 1
