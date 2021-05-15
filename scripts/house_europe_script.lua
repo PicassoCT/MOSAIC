@@ -4,6 +4,8 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+local grafitiMessages=  include('grafitiMessages.lua')
+
 function getScriptName() return "house_europe_script.lua::" end
 
 TablesOfPiecesGroups = {}
@@ -1061,79 +1063,6 @@ function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
 
-grafitiMessages={
-    "ACAB",
-    "FUK DA POLICE",
-    "DICKBUT",
-    "CRIBS",
-    "BLOODS",
-    "DRUGS",
-    "NO SPRAYERS",
-    "SPRING IZ DEATH",
-    "NO GODS",
-    "RACYSSM",
-    "ULTRAS",
-    "PEACE",
-    "LOVE",
-    "ANNA",
-    "ALLAH",
-    "VHITE POWDER",
-    "NO SEX",
-    "RAPES OF WRATH",
-    "BUGS",
-    "DO UR PART",
-    "ENCRASZ LE INFAM",
-    "LA PUTA",
-    "PLAYERZ SUCK",
-    "PIG FUCKERS",
-    "GIB SNITCHES",
-    "VIVA LA REVOLUTION",
-    "PROTAGON SUX",
-    "ANTAGON WINS",
-    "ENDS",
-    "BEAST",
-    "VR FLIGHT",
-    "A CITY FOR A",
-    "PENIS",
-    "SUCK ON IT",
-    "BAR",
-    "MOSAIC",
-    "X GONA JIVE ITO U",
-    "KIDS THESE DAYZ",
-    "IRA",
-    "EL QUAIDA",
-    "ISIS",
-    "HITLER",
-    "SCIENTOLOGY",
-    "SINGULARITY",
-    "AI IS GOD",
-    "SIMULATION",
-    "ALGO BANKSY",
-    "CARPET BOOM DIEM",
-    "PICAZOO",
-    "PANCAKE",
-    "VAGINAS",
-    "SUX TO BE U",
-    "MARTIN IS COOL",
-    "KEXS CRUMBLES",
-    "NO CHRIS ALOWED",
-    "KERSI OPTICX",
-    "PASCAL EMZ KING",
-    "UNIKITY WAS HERE",
-    "REBEKYZ SWOARD",
-    "I HATE U",
-    "STIL NOD LUVIN TE COPZ",
-    "IFXNOR ELSE",
-    "SJW ICZM FOR LIVE",
-    "FREE NAWIRISTAN",
-    "SYRIRANA FOREVER",
-    "TALIBAN",
-    "EL QUAIDA",
-    "CALIPHAT",
-    "I FOR ONCE WELCUM",
-    "SAVE AI",
-    "ARMAGEDON"
-}
 
 function addGrafiti(x,z, turnV,  axis)
     mP(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],x,0,z, 0)
