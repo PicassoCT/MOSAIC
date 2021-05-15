@@ -154,7 +154,7 @@ function trainLoop(nr)
         buildTrain(nr)
 		WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
 		hideTrain(nr)
-		betweenInterval = math.random(0,3)*60*1000
+		betweenInterval = math.random(0,3)*60*1000+1
 		Sleep(betweenInterval)
 	end
 end
