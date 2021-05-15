@@ -439,8 +439,7 @@ if (gadgetHandler:IsSyncedCode()) then
         echo("Defender Points:" .. roundRunning.Defender.Points ..
                  " Agressor Points:" .. roundRunning.Aggressor.Points)
 
-        if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <=
-            0 then
+        if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then
             -- defenders dead
             if roundRunning.Defender.Points <= 0 and
                 roundRunning.Aggressor.Points > 0 then
@@ -470,7 +469,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
 
-        echo("7  nil , roundRunning, raidStates.DefenderWins")
+        echo("7  nil , roundRunning, raidStates.Ongoing")
         return nil, roundRunning, raidStates.OnGoing
     end
 
@@ -581,8 +580,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     (roundRunning.Defender.Points <= 0 and
                         roundRunning.Aggressor.Points <= 0) then
                     -- find out who died, who survived, who collected objectives and if there is a new round
-                    winningTeam, roundRunning, state =
-                    evaluateEndedRound(raidIconId, roundRunning)
+                    winningTeam, roundRunning, state = evaluateEndedRound(raidIconId, roundRunning)
 
                     if state == raidStates.OnGoing then
                         Spring.Echo("Raid continues in new Round") 
