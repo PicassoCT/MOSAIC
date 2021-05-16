@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.727"
+            Version = "Alpha: 0.730"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
@@ -253,7 +253,8 @@ function getIconTypes(UnitDefs)
         [UnitDefNames["raidicon"].id] = true,
         [UnitDefNames["doubleagent"].id] = true,
         [UnitDefNames["interrogationicon"].id] = true,
-        [UnitDefNames["recruitcivilian"].id] = true
+        [UnitDefNames["recruitcivilian"].id] = true,
+        [UnitDefNames["bribeicon"].id] = true
     }
 end
 

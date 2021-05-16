@@ -20,12 +20,10 @@ if (gadgetHandler:IsSyncedCode()) then
     iconTypeTable = getIconTypes(UnitDefs)
     local GameConfig = getGameConfig()
 
-    iconUnit = {}
 
     function gadget:UnitCreated(unitID, unitDefID)
         if iconTypeTable[unitDefID] then
             Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
-            iconUnit[unitID] = unitDefID
             SendToUnsynced("setUnitLuaDraw", unitID, unitDefID)
         end
     end
@@ -40,7 +38,7 @@ else -- unsynced
 
     function gadget:Initialize()
         Spring.Echo(GetInfo().name .. " Initialization started")
-        gadgetHandler:AddSyncAction("SetUnitLuaDraw", setUnitLuaDraw)
+        gadgetHandler:AddSyncAction("setUnitLuaDraw", setUnitLuaDraw)
         Spring.Echo(GetInfo().name .. " Initialization ended")
     end
 
@@ -49,12 +47,13 @@ else -- unsynced
     local glScale = gl.Scale
     local GL_SRC_ALPHA           = GL.SRC_ALPHA
     local GL_ONE                = GL.ONE
+    local GL_ZERO               = GL.ZERO
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
         if iconTables[unitID]  then
-            Spring.Echo("DrawUnit called")
-            glBlending(GL_SRC_ALPHA, GL_ONE)
+           -- glBlending(GL_SRC_ALPHA, GL_ONE)
+            glBlending(GL_SRC_ALPHA, GL_SRC_ALPHA)
             glUnitRaw(unitID, true)
             return true
         end
