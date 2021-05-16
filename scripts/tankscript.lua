@@ -21,7 +21,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
     if gaiaTeamID == myTeamID then
-        Spring.SetUnitAlwaysVisble(unitID, true)
+        Spring.SetUnitAlwaysVisible(unitID, true)
     end
 end
 

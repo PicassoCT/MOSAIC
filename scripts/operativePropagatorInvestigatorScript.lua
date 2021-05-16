@@ -1278,6 +1278,12 @@ function script.FireWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+    if weaponID == 1 and boolWalking == false then
+        return false
+    end
+
+
+
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
 	if not targetType or  (not validTargetType[targetType])  then
@@ -1300,7 +1306,7 @@ function script.AimWeapon(weaponID, heading, pitch)
         else
             WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
             WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
-            return true
+            return true 
         end
     end
     return false
