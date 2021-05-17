@@ -1,5 +1,5 @@
 
-grafitiMessages={
+return {
     "ACAB",
     "FUK DA POLICE",
     "DICKBUT",

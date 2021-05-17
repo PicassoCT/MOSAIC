@@ -266,7 +266,7 @@ function dispatchOfficer(victimID, attackerID )
 
     officerID = getOfficer(victimID, attackerID)
     boolFoundSomething = false
-    if officerID and doesUnitExistAlive(officerID) then
+    if officerID and doesUnitExistAlive(officerID) == true then
          setFireState(officerID, 2)
          setMoveState(officerID, 2)
         -- Spring.AddUnitImpulse(officerID,15,0,0)
@@ -281,7 +281,8 @@ function dispatchOfficer(victimID, attackerID )
             end
         end
 
-        if attackerID and doesUnitExistAlive(attackerID) == true then
+        booleanDoesAttackerExistAlive = doesUnitExistAlive(attackerID) 
+        if attackerID and booleanDoesAttackerExistAlive == true then
             if not GG.PoliceInPursuit then
                 GG.PoliceInPursuit = {}
             end
@@ -305,7 +306,7 @@ function dispatchOfficer(victimID, attackerID )
         end
 
         Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
-        if maRa() == true  or attackerID == nil then
+        if maRa() == true  or booleanDoesAttackerExistAlive == false then
             Command(officerID, "go", {x = tx, y = ty, z = tz})
         else
             Command(officerID, "attack", {attackerID}, 4)

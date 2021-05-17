@@ -25,7 +25,7 @@ local Brehmerwall = Building:New{
 	footprintX = 2,
 	footprintZ = 4,
 	showNanoFrame= true,
-	script 					= "placeholder.lua",
+	script 					= "wallscript.lua",
 	objectName        	= "brehmerwall.dae",
 
 	name = "Wall",

@@ -265,6 +265,15 @@ function computeTeamColorOffsetByPlayer(teamID,hashUpper)
 		bhash	=	randSign()*accColOffset[3]%hashUpper
 		
 		local colors=teamColors[teamID]
+
+    if not colors[1].r then 
+      colors[1] = {r=255,g = 255, b=255}
+    end
+
+    if not colors[2].r then 
+      colors[2] = colors[1]
+    end
+
 		colors[1].r	=	clamp(colors[1].r+rhash,1,255)
 		colors[1].g	=	clamp(colors[1].g+ghash,1,255)
 		colors[1].b	= 	clamp(colors[1].b+bhash,1,255)
