@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
-local grafitiMessages=  include('grafitiMessages.lua')
+local grafitiMessages =  include('grafitiMessages.lua')
 
 function getScriptName() return "house_europe_script.lua::" end
 
@@ -84,7 +84,7 @@ function script.Create()
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteOffice_Roof_Deco", 6)
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteGhetto_Roof_Deco", 16)
     assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
-    assert(TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][5])
+
     x, y, z = Spring.GetUnitPosition(unitID)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
@@ -530,7 +530,7 @@ function buildDecorateGroundLvl()
 
     boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
 
-    echo("House_europe_Colour:"..materialColourName)
+    --echo("House_europe_Colour:"..materialColourName)
     local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block"}, {"Wall"}) 
     assert(buildMaterial)
     assert(#buildMaterial > 0)
@@ -540,7 +540,7 @@ function buildDecorateGroundLvl()
         Sleep(1)
 
         local index = i
-        echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
+        --echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index)
 
@@ -637,8 +637,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Ghetto"})
     end
 
-    echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
-             count(yardMaterial) .. "|" .. count(streetWallMaterial))
+   -- echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
+     --        count(yardMaterial) .. "|" .. count(streetWallMaterial))
 
     countElements = 0
 
@@ -793,7 +793,7 @@ function showSubsAnimateSpinsByPiecename(piecename)
             nr = tonumber(nr, 10)
             if string.len(pieceGroupName) > 0 and type(nr) == "number" then
              print(pieceGroupName, nr)
-             echo("Spinning "..pieceGroupName..nr)
+           --  echo("Spinning "..pieceGroupName..nr)
              showSubsAnimateSpins(pieceGroupName, nr)
             end
         break
@@ -863,7 +863,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     local decoMaterial =   getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
     local T = process(decoMaterial, function(id) return pieceNr_pieceName[id] end)
-    echo("addRoofDecorate:", T)
+    --echo("addRoofDecorate:", T)
 
 
     for i = 1, 37, 1 do
@@ -1027,30 +1027,30 @@ function buildAnimation()
 end
 
 function buildBuilding()
-    echo(getScriptName() .. "buildBuilding")
+    --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
-    echo(getScriptName() .. "selectBase")
+    --echo(getScriptName() .. "selectBase")
     selectBase()
-    echo(getScriptName() .. "selectBackYard")
+    --echo(getScriptName() .. "selectBackYard")
     selectBackYard()
-    echo(getScriptName() .. "buildDecorateGroundLvl started")
+    --echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
-    echo(getScriptName() .. "buildDecorateGroundLvl ended")
+    --echo(getScriptName() .. "buildDecorateGroundLvl ended")
 
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
-        echo(getScriptName() .. "buildDecorateLvl start")
+        --echo(getScriptName() .. "buildDecorateLvl start")
         _, buildMaterial = buildDecorateLvl(i,
                                             materialColourName,
                                             buildMaterial
                                             )
-         echo(getScriptName() .. "buildDecorateLvl ended")
+         --echo(getScriptName() .. "buildDecorateLvl ended")
     end
-    echo(getScriptName() .. "addRoofDeocrate started")
+    --echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3, 
         getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),
          materialColourName)
-        echo(getScriptName() .. "addRoofDeocrate ended")
+        --echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
 
@@ -1070,7 +1070,7 @@ function addGrafiti(x,z, turnV,  axis)
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],y_axis, math.rad(turnValue),0)
 
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
-    echo("Adding Grafiti with message:" ..myMessage)
+    --echo("Adding Grafiti with message:" ..myMessage)
     counter={}
     for i=1, string.len(myMessage) do
         local letter = string.sub(myMessage,i,i)
