@@ -17,7 +17,7 @@
 local function GetInfo()
   return {
     name      = "Lups",
-    desc      = "Lua Particle System",
+    desc      = "LUa Particles Upgrayedded System",
     author    = "jK",
     date      = "2008-2014",
     license   = "GNU GPL, v2 or later",
