@@ -101,6 +101,8 @@ function getNearestHouse(x, z, minSpawnDistance)
             boolAtLeastOne = true
         end
     end
+	
+	if not currentUnit then return nil, nil, nil end
 
     return currentUnit, locationBuildingTable[currentUnit].x, locationBuildingTable[currentUnit].z
 end
