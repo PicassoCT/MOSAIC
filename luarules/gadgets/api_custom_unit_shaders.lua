@@ -41,7 +41,7 @@ if (not gl.CreateShader) then return false end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-VFS.Include("luarules/utilities/unitrendering.lua", nil, VFS.ZIP)
+VFS.Include("luarules/utilities/UnitRendering.lua", nil, VFS.ZIP)
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
