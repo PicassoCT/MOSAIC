@@ -1062,6 +1062,9 @@ function widget:Initialize()
 	WG['buildmenu'].getSize = function()
 		return posY, posY2
 	end
+	WG['buildmenu'].getAlternativeIcons = function()
+		return false
+	end
 
 	refreshUnitIconCache()
 end
