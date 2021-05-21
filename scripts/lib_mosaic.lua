@@ -402,6 +402,20 @@ function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
     return expandNameSubSetTable(translation[typeName], UnitDefs)
 end
 
+function getRPGCarryingCivilianTypes( UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    local culturename = getCultureName()
+    if culturename == "arabic" then
+        typeTable = {
+                    "civilian_arab0", "civilian_arab2"
+        }
+
+    return getTypeTable(UnitDefNames, typeTable)
+
+    end
+
+end
+
 function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
     assert(UnitDefs)
     ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation,

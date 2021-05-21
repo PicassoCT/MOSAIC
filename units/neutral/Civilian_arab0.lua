@@ -17,7 +17,19 @@ local Civil = Civilian:New{
 	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks
     },
-
+		
+	weapons ={
+		[1]={name  = "ak47",
+				onlyTargetCategory = [[GROUND ARRESTABLE]],
+			},	
+		[2]={name  = "molotow",
+				onlyTargetCategory = [[GROUND]],
+			},
+		[3]={name  = "rgp7",
+					onlyTargetCategory = [[GROUND]],
+				},
+	
+	},
 	
 
 	category = [[GROUND ARRESTABLE]],

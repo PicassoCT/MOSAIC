@@ -19,6 +19,7 @@ SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
 SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
+SIG_RPG = 256
 
 local center = piece('center');
 local Feet1 = piece('Feet1');
@@ -46,6 +47,8 @@ local cellphone1 = piece "cellphone1"
 local cellphone2 = piece "cellphone2"
 local molotow = piece "molotow"
 local ShoppingBag = piece "ShoppingBag"
+local RPG7
+local RPG7Rocket
 
 local scriptEnv = {
     Handbag = Handbag,
@@ -140,6 +143,7 @@ function variousBodyConfigs()
 end
 
 orgHousePosTable = {}
+rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 
 function script.Create()
     makeWeaponsTable()
@@ -148,12 +152,13 @@ function script.Create()
     StartThread(turnDetector)
 
     variousBodyConfigs()
-
-    bodyConfig.boolArmed = false
+    myName = UnitDefs[myDefID].name
+    bodyConfig.boolArmed = true --false
+    bodyConfig.boolRPGArmed = true --false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
-    home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
+    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[myDefID] ~= nil 
     bodyBuild()
 
     setupAnimation()
@@ -246,9 +251,18 @@ function bodyBuild()
     if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
 
     if bodyConfig.boolArmed == true then
-        Show(MilitiaMask)
-        Show(ak47)
-        Show(molotow)
+        Show(MilitiaMask) 
+        if bodyConfig.boolRPGCarrying == true then
+            bodyConfig.boolRPGArmed = true
+            RPG7 = piece("RPG7")
+            RPG7Rocket = piece("RPG7Rocket")
+
+            Show(RPG7)
+            Show(RPG7Rocket)
+        else
+            Show(ak47)
+            Show(molotow)
+        end
         return
     end
 
@@ -1469,7 +1483,7 @@ end
 
 function akAimFunction(weaponID, heading, pitch)
     
-    if bodyConfig.boolArmed == false or GG.GlobalGameState ~=
+    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true or GG.GlobalGameState ~=
         GameConfig.GameState.anarchy then return false end
 
     boolAiming = true
@@ -1482,9 +1496,23 @@ function akAimFunction(weaponID, heading, pitch)
 end
 
 function molotowAimFunction(weaponID, heading, pitch)
-   if bodyConfig.boolArmed == false or GG.GlobalGameState ~=
+   if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true or GG.GlobalGameState ~=
         GameConfig.GameState.anarchy then return false end
         
+    return allowTarget(weaponID)
+end
+
+function rgpAimFunction(weaponID, heading, pitch)
+    
+    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == false or GG.GlobalGameState ~=
+        GameConfig.GameState.anarchy then return false end
+    Show(RPG7Rocket)
+    boolAiming = true
+    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,
+                              false)
+    WTurn(center, y_axis, heading, 22)
+    WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
+    boolAiming = false
     return allowTarget(weaponID)
 end
 
@@ -1494,6 +1522,11 @@ function akFireFunction(weaponID, heading, pitch)
 end
 
 function molotowFireFunction(weaponID, heading, pitch) return true end
+
+function rgpFireFunction(weaponID, heading, pitch) 
+    Hide(RPG7Rocket)
+    return true 
+end
 
 WeaponsTable = {}
 function makeWeaponsTable()
@@ -1511,6 +1544,14 @@ function makeWeaponsTable()
         aimfunc = molotowAimFunction,
         firefunc = molotowFireFunction,
         signal = SIG_MOLOTOW
+    }
+
+     WeaponsTable[3] = {
+        aimpiece = Head1,
+        emitpiece = cellphone1,
+        aimfunc = rgpAimFunction,
+        firefunc = rgpFireFunction,
+        signal = SIG_RPG
     }
 end
 
