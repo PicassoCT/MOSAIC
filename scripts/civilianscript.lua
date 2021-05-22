@@ -153,8 +153,8 @@ function script.Create()
 
     variousBodyConfigs()
     myName = UnitDefs[myDefID].name
-    bodyConfig.boolArmed = true --false
-    bodyConfig.boolRPGArmed = true --false
+    bodyConfig.boolArmed = false 
+    bodyConfig.boolRPGArmed = false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
