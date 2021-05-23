@@ -1384,8 +1384,10 @@ end
 
 function akAimFunction(weaponID, heading, pitch)
     
-    if bodyConfig.boolArmed == false or oldBehaviourState ~=
-        GameConfig.GameState.anarchy then return false end
+    if bodyConfig.boolArmed == false or 
+        (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+        return false 
+    end
 
     boolAiming = true
     setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,

@@ -929,7 +929,7 @@ function threadStateStarter()
 
         if boolStartFleeing == true then
             boolStartFleeing = false
-            Spring.Echo("Start Fleeing")
+        --    Spring.Echo("Start Fleeing")
             StartThread(fleeEnemy, attackerID)
         end
 
@@ -1483,8 +1483,10 @@ end
 
 function akAimFunction(weaponID, heading, pitch)
     
-    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true or GG.GlobalGameState ~=
-        GameConfig.GameState.anarchy then return false end
+    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true 
+        and (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+         return false 
+     end
 
     boolAiming = true
     setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,
@@ -1496,8 +1498,10 @@ function akAimFunction(weaponID, heading, pitch)
 end
 
 function molotowAimFunction(weaponID, heading, pitch)
-   if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true or GG.GlobalGameState ~=
-        GameConfig.GameState.anarchy then return false end
+   if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true 
+      and (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+        return false 
+    end
         
     return allowTarget(weaponID)
 end

@@ -32,6 +32,7 @@ corpse					  = "",
 
 	CanAttack = true, -- todo undo
 	CanGuard = true,
+	fireState = 0,
 
 	CanMove = true,
 	CanPatrol = true,
