@@ -21,6 +21,7 @@ local Brehmerwall = Building:New{
 	buildingMask = 1,
 	MaxSlope = 50,
 	MetalStorage = 2500,
+	upright  = false,
 
 	footprintX = 2,
 	footprintZ = 4,
