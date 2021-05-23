@@ -37,11 +37,26 @@ end
 --------------------------------------------------------------------------------
 
 if (gadgetHandler:IsSyncedCode()) then
+  VFS.Include("scripts/lib_mosaic.lua")
 
   local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
   function gadget:UnitDamaged(unitID,unitDefID,teamID)
     if (spGetUnitIsCloaked(unitID)) then
       SendToUnsynced("lups_unit_cloakeddamaged", unitID, unitDefID, teamID)
+    end
+  end
+
+  startFrame = Spring.GetGameFrame()+1
+  function gadget:Initialize()
+    startFrame = Spring.GetGameFrame()+1
+  end
+
+  function gadget:GameFrame(n)
+    if n == startFrame then
+       local notCloakedIconTypes =getCloakIconTypes(UnitDefs)
+        for defID, name in pairs(notCloakedIconTypes) do
+          SendToUnsynced("lups_unit_sendcloakiconunits", defID)
+        end
     end
   end
 
@@ -121,6 +136,10 @@ end
 --
 --  «« cloaked unit handling »»
 --
+local cloakIconUnits= {}
+local function setCloakIconUnit(_, unitDefIDToNotCloak)
+  cloakIconUnits[unitDefIDToNotCloak] = true
+end
 
 local CloakedHitEffect = { class='UnitJitter',options={ life=50, pos={0,0,0}, enemyHit=true, repeatEffect=false} }
 local CloakEffect      = {
@@ -166,6 +185,10 @@ end
 local function UnitCloaked(_,unitID,unitDefID,teamID)
   if (not Lups) then
     return
+  end
+
+  if cloakIconUnits[unitDefID] then
+    return 
   end
 
   local allyTeamID = Spring.GetUnitAllyTeam(unitID)
@@ -317,6 +340,7 @@ function gadget:Initialize()
 
   gadgetHandler:AddSyncAction("lups_luaui",               LupsLuaUI)
   gadgetHandler:AddSyncAction("lups_unit_created",        UnitCreated)
+  gadgetHandler:AddSyncAction("lups_unit_sendcloakiconunits",   setCloakIconUnit)
 
   nilDispList = gl.CreateList(function() end)
 end
@@ -329,6 +353,7 @@ function gadget:Shutdown()
 
   gadgetHandler:RemoveSyncAction("lups_luaui")
   gadgetHandler:RemoveSyncAction("lups_unit_created")
+  gadgetHandler:RemoveSyncAction("lups_unit_sendcloakiconunits")
 
   if (initialized) then
     for _,unitFxIDs in pairs(particleIDs) do

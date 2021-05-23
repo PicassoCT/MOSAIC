@@ -20,6 +20,7 @@ local houseRaidIconMap = {}
 local houseTypeTable = {}
 local spTraceScreenRay = Spring.TraceScreenRay
 local spIsAboveMiniMap = Spring.IsAboveMiniMap
+local spGetSelectedUnits = Spring.GetSelectedUnits
 local raidIcons = {}
 local oldValues = {x= 0, z = 0}
 
@@ -73,8 +74,10 @@ local boolPlacementActive = false
 function widget:MousePress(x, y, button)
     local inMinimap = spIsAboveMiniMap(x, y)
     --Spring.Echo("MousePress ".. button)
-    if (button ~= 1) then
-        return false
+    local selectedUnits = spGetSelectedUnits()
+
+    if (button ~= 1) or (not selectedUnits) or #selectedUnits > 0 then
+        return 
     end
 
     local targType, unitID = spTraceScreenRay(x, y)

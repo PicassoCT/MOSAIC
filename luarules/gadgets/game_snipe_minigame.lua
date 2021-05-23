@@ -681,10 +681,6 @@ if (gadgetHandler:IsSyncedCode()) then
             if not GG.HouseRaidIconMap then  return end
             if not GG.HouseRaidIconMap[houseID] then return end
             raidIconID = GG.HouseRaidIconMap[houseID]
-            if not raidIconID then return end
-
---            Spring.Echo("game_snipe_minigame.lua: Recived id:"..raidIconID.." of type "..UnitDefs[spGetUnitDefID(raidIconID)].name)
-            lastSniperIconID = nil
 
             if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and
                 allRunningRaidRounds[raidIconID].Aggressor.Points > 0 or

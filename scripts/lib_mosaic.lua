@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.731"
+            Version = "Alpha: 0.732"
         },
 
         numberOfBuildings = math.ceil(75 * unitFactor),
@@ -513,6 +513,7 @@ function getMobileCivilianDefIDTypeTable(UnitDefs)
     assert(UnitDefs)
     GameConfig = getGameConfig()
     local UnitDefNames = getUnitDefNames(UnitDefs)
+
     typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
                                      UnitDefs)
     typeTable = mergeTables(typeTable, getTypeUnitNameTable(
@@ -532,6 +533,20 @@ function getPanicableCiviliansTypeTable(UnitDefs)
 
     return getTypeTable(UnitDefNames, typeTable)
 end
+
+function getCloakIconTypes(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    typeTable = {
+        "antagonsafehouse",
+        "protagonsafehouse",
+        "propagandaserver",
+        "nimrod",
+        "operativepropagator",
+        "operativeinvestigator"
+    }
+
+      return getTypeTable(UnitDefNames, typeTable)
+    end
 
 function getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
     local UnitDefNames = getUnitDefNames(UnitDefs)
