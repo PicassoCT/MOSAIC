@@ -43,8 +43,7 @@ if (engineVersion < 1000 and engineVersion >= 105) or engineVersion >= 104011455
 end
 
 enabled = true -- todo remove 
-Spring.Echo("gadget:InitialSpawn. Engine version is supported is " ..
-                toString(enabled))
+
 local unsupportedAI = false
 
 -- Note: (31/03/13) coop_II deals with the extra startpoints etc needed for teamsIDs with more than one playerID.
@@ -53,6 +52,8 @@ local unsupportedAI = false
 -- Synced 
 ----------------------------------------------------------------
 if gadgetHandler:IsSyncedCode() then
+    Spring.Echo("gadget:InitialSpawn. Engine version is supported is " ..
+                toString(enabled))
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     GameConfig = getGameConfig()
@@ -298,12 +299,11 @@ if gadgetHandler:IsSyncedCode() then
         Spring.SetGameRulesParam("player_" .. playerID .. "_readyState",
                                  readyState)
 
-        --[[
-	-- for debugging
-	local name,_,_,tID = Spring.GetPlayerInfo(playerID,false)
-	Spring.Echo(name,tID,x,z,readyState, (startPointTable[tID]~=nil))
-	Spring.MarkerAddPoint(x,y,z,name .. " " .. readyState)
-	]]
+    	-- for debugging
+    	local name,_,_,tID = Spring.GetPlayerInfo(playerID,false)
+    	Spring.Echo(name,tID,x,z,readyState, (startPointTable[tID]~=nil))
+    	Spring.MarkerAddPoint(x,y,z,name .. " " .. readyState)
+	
 
         if Game.startPosType ~= 2 then return true end -- accept blindly unless we are in choose-in-game mode
         if useFFAStartPoints then return true end
