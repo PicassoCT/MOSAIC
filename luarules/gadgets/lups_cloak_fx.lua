@@ -28,6 +28,9 @@ if (gadgetHandler:IsSyncedCode()) then return end
 --
 -- speed ups + some table functions
 --
+ VFS.Include("scripts/lib_mosaic.lua")
+  local notCloakedLUPSIconTypes =getCloakIconTypes(UnitDefs)
+  assert(notCloakedLUPSIconTypes[UnitDefNames["antagonsafehouse"].id])
 
 local tinsert = function(tab, insert) tab[#tab + 1] = insert end
 
@@ -95,6 +98,8 @@ local EnemyDecloakEffect = {
 
 function gadget:UnitDamaged(unitID, unitDefID, teamID)
     if (not Spring.GetUnitIsCloaked(unitID)) then return end
+	
+	if notCloakedLUPSIconTypes[unitDefID] then return end
 
     local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
@@ -124,6 +129,8 @@ end
 
 function gadget:UnitCloaked(unitID, unitDefID, teamID)
     if not Lups then return end
+	if notCloakedLUPSIconTypes[unitDefID] then return end
+
     local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 
     local LocalAllyTeamID
@@ -163,7 +170,11 @@ end
 
 function gadget:UnitDecloaked(unitID, unitDefID, teamID)
     if not initialized then return end
+	if notCloakedLUPSIconTypes[unitDefID] then return end
+
     local allyTeamID = Spring.GetUnitAllyTeam(unitID)
+	
+	if not cloakIconTypeTable[unitDefID] then return end
 
     local LocalAllyTeamID
     local _, specFullView = Spring.GetSpectatingState()
@@ -242,8 +253,10 @@ local function ReinitializeUnitFX()
         local unitID = allUnits[i]
         if (Spring.GetUnitIsCloaked(unitID)) then
             local unitDefID = Spring.GetUnitDefID(unitID)
-            local teamID = Spring.GetUnitTeam(unitID)
-            gadget:UnitCloaked(unitID, unitDefID, teamID)
+			if not notCloakedLUPSIconTypes[unitDefID] then
+				local teamID = Spring.GetUnitTeam(unitID)
+				gadget:UnitCloaked(unitID, unitDefID, teamID)
+			end
         end
     end
 

@@ -38,7 +38,9 @@ end
 
 if (gadgetHandler:IsSyncedCode()) then
   VFS.Include("scripts/lib_mosaic.lua")
-
+  local notCloakedLUPSIconTypes =getCloakIconTypes(UnitDefs)
+  assert(notCloakedLUPSIconTypes[UnitDefNames["antagonsafehouse"].id])
+  
   local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
   function gadget:UnitDamaged(unitID,unitDefID,teamID)
     if (spGetUnitIsCloaked(unitID)) then
@@ -51,15 +53,6 @@ if (gadgetHandler:IsSyncedCode()) then
     startFrame = Spring.GetGameFrame()+1
   end
 
-  function gadget:GameFrame(n)
-    if n == startFrame then
-       local notCloakedIconTypes =getCloakIconTypes(UnitDefs)
-        for defID, name in pairs(notCloakedIconTypes) do
-          SendToUnsynced("lups_unit_sendcloakiconunits", defID)
-        end
-    end
-  end
-
   function gadget:UnitCreated(unitID,unitDefID)
     SendToUnsynced("lups_unit_created", unitID, unitDefID)
   end
@@ -69,11 +62,14 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
   function gadget:UnitCloaked(unitID,unitDefID,teamID)
+	if not notCloakedLUPSIconTypes[unitDefID] then
     SendToUnsynced("lups_unit_cloaked", unitID,unitDefID,teamID)
+	end
   end
   function gadget:UnitDecloaked(unitID,unitDefID,teamID)
-    	-- Spring.Echo("  lups_unit_decloaked")
-    SendToUnsynced("lups_unit_decloaked", unitID,unitDefID,teamID)
+	if not notCloakedLUPSIconTypes[unitDefID] then
+		SendToUnsynced("lups_unit_decloaked", unitID,unitDefID,teamID)
+	end
   end
 
   function gadget:RecvLuaMsg(msg, playerID)
@@ -136,10 +132,6 @@ end
 --
 --  «« cloaked unit handling »»
 --
-local cloakIconUnits= {}
-local function setCloakIconUnit(_, unitDefIDToNotCloak)
-  cloakIconUnits[unitDefIDToNotCloak] = true
-end
 
 local CloakedHitEffect = { class='UnitJitter',options={ life=50, pos={0,0,0}, enemyHit=true, repeatEffect=false} }
 local CloakEffect      = {
@@ -185,10 +177,6 @@ end
 local function UnitCloaked(_,unitID,unitDefID,teamID)
   if (not Lups) then
     return
-  end
-
-  if cloakIconUnits[unitDefID] then
-    return 
   end
 
   local allyTeamID = Spring.GetUnitAllyTeam(unitID)
