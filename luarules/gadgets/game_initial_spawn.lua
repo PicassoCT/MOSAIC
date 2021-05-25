@@ -301,9 +301,10 @@ if gadgetHandler:IsSyncedCode() then
 
     	-- for debugging
     	local name,_,_,tID = Spring.GetPlayerInfo(playerID,false)
+        if name then
     	Spring.Echo(name,tID,x,z,readyState, (startPointTable[tID]~=nil))
     	Spring.MarkerAddPoint(x,y,z,name .. " " .. readyState)
-	
+	    end
 
         if Game.startPosType ~= 2 then return true end -- accept blindly unless we are in choose-in-game mode
         if useFFAStartPoints then return true end
