@@ -306,7 +306,7 @@ if (gadgetHandler:IsSyncedCode()) then
             local houseSafeHouseMap = GG.houseHasSafeHouseTable 
             for  houseID, iconID in pairs(raidIconMap) do
                 --no safehouse attached to it
-                if houseID and iconID == raidIconID and then
+                if houseID and iconID == raidIconID then
                     if  not houseSafeHouseMap[houseID] then
                       return nil, roundRunning, raidStates.HouseEmpty
                     end

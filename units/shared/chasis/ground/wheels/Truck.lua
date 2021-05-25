@@ -220,6 +220,7 @@ local CivilianTruck = Truck:New{
 	canCloak= false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "40 50 70",
+	fireState = 1,
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "Truckscript.lua",

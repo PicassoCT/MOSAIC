@@ -60,8 +60,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local FireWeapons = {
         [molotowDefID] = true
     }
-    if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
-
+  
     function getWeapondefByName(name)
         return WeaponDefs[WeaponDefNames[name].id]
     end
@@ -97,6 +96,9 @@ if (gadgetHandler:IsSyncedCode()) then
             range = railgun_Def.range
         }
     }
+    --raidinitialization
+      if not GG.raidIconDone  then GG.raidIconDone = {} end
+      if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
 
     -- Watched Weapons Weapons
     for wId, wRange in pairs(panicWeapons) do
@@ -407,7 +409,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID] = nil
-                    spEcho("Interrrogation: Target díed")
+                    spEcho("Interogation: Target díed")
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
@@ -420,7 +422,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                    GG.InterrogationTable[persPack.unitID] = nil
-                    spEcho("Interrrogation End: Interrogator died")
+                    spEcho("Interrogation End: Interrogator died")
                     if persPack.IconID then
                         GG.raidIconDone[persPack.IconID] = nil
                     end
@@ -432,7 +434,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     GameConfig.InterrogationDistance then
                     GG.InterrogationTable[persPack.unitID] = nil
 
-                    spEcho("Interrrogation End: Interrogator distance to big ")
+                    spEcho("Interogation End: Interrogator distance to big ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconID then
                         GG.raidIconDone[persPack.IconID] = nil
@@ -442,14 +444,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check if the icon is still there
                 if not persPack.IconID then
-                    spEcho("Creating RaidIcon")
+                    spEcho("Creating InterrogationIcon")
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, persPack.unitID, 0,
                                           0, 0, 0,
                                           persPack.unitID,
-                                          1
-                                          )
+                                          1)
             
                     if not GG.raidIconDone[persPack.IconID] then
                         GG.raidIconDone[persPack.IconID] =
@@ -473,7 +474,6 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Simulation mode
                             spEcho(
                                 "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
-                            setSpeedEnv(persPack.interrogatorID, 1.0)
                             GG.InterrogationTable[persPack.unitID] = nil
                             return true, persPack
                         end
@@ -495,7 +495,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-                            setSpeedEnv(persPack.interrogatorID, 1.0)
+
                             GG.InterrogationTable[persPack.unitID] = nil
                             return true, persPack
                         end
@@ -537,7 +537,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
                         nil
                     spEcho("Interrogation ended")
-                    setSpeedEnv(persPack.interrogatorID, 1.0)
+
                     GG.raidIconDone[persPack.IconID] = nil
                     GG.InterrogationTable[persPack.unitID] = nil
                     return true, persPack
@@ -572,7 +572,6 @@ if (gadgetHandler:IsSyncedCode()) then
                 return damage
             end
 
-            spEcho("Stunning unit" .. unitID)
             if unitID ~= attackerID then stunUnit(unitID, 2.0) end
 
             -- make disguise civilians transparent

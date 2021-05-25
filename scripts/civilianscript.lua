@@ -452,7 +452,7 @@ function pray()
         PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
          Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
-       prayTime = prayTime - 3500
+        prayTime = prayTime - 3500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
@@ -479,7 +479,7 @@ function anarchyBehaviour()
         Sleep(250)
     end
 
- setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 boolStartAerosolBehaviour = false
@@ -561,6 +561,7 @@ function filmingLocation()
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
+
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
@@ -568,13 +569,21 @@ function fleeEnemy(enemyID)
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
     end
-
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
---        echo(unitID.." fleeing from "..enemyID)
+    
+    echo(unitID.." starts fleeing from "..enemyID)
+    flightTime = 300000
+    while doesUnitExistAlive(enemyID) == true and flightTime > 0 do
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
-        rVal = math.random(450,550)
-        Sleep(rVal)
+        distribution = math.random(1,10)
+        Sleep(500+distribution)
+        flightTime= flightTime - 500
     end
+
+    if  doesUnitExistAlive(enemyID) == false then
+        echo(unitID.." stops fleeing from "..enemyID.. " cause enemy is dead")
+    end    
+
+
 
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
@@ -929,7 +938,6 @@ function threadStateStarter()
 
         if boolStartFleeing == true then
             boolStartFleeing = false
-        --    Spring.Echo("Start Fleeing")
             StartThread(fleeEnemy, attackerID)
         end
 

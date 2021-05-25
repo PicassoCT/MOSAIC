@@ -24,16 +24,16 @@ local weaponDef = {
 	-- noFirebaseCollide  = false,
 	avoidFriendly = false,
     craterMult = 0,
-    burst = 30,
-    burstrate = 0.2,
+    burst = 14,
+    burstrate = 0.15,
     soundStart = "weapons/machinegun/salvo.ogg",
     soundtrigger = 1,
     SweepFire = 1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
-    size = 1.2,
-    stages = 20,
-    separation = 0.2,
+    size = 5.5,
+    stages = 2,
+    separation = 1
 }
 
 return lowerkeys({ [weaponName] = weaponDef })

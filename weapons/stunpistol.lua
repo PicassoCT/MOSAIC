@@ -12,7 +12,7 @@ local weaponDef = {
     explosionGenerator = "custom:gunimpact",
     cegTag = "gunprojectile",
     texture1 = "gunshot",
-
+    impactOnly =true,
     --physics
     weaponVelocity = 850,
     reloadtime = 5,

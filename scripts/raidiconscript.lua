@@ -57,8 +57,6 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID,false)
     Spring.MoveCtrl.Enable(unitID, true)
   
-
-
     showAll(unitID)
     Hide(DefenderWin)
     Hide(RaidSuccess)
@@ -95,7 +93,7 @@ end
 
 function watchRaidIconTable()
 
-    while GG.raidIconDone[unitID] == nil do 
+    while not GG.raidIconDone or GG.raidIconDone[unitID] == nil do 
         Sleep(10)
     end 
     
