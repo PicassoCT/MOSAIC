@@ -267,6 +267,11 @@ if (gadgetHandler:IsSyncedCode()) then
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
                     GameConfig.InterrogationDistance then
                     spEcho("failed check distance is still okay5 ")
+                    if doesUnitExistAlive(persPack.IconID) == true then
+                    GG.raidIconDone[persPack.IconID].winningTeam = "aborted"
+                    GG.raidIconDone[persPack.IconID].boolInterogationComplete = true
+                    persPack.boolRaidHasEnded = true 
+                    end
                     setRaidEndState(persPack)
                     return true, persPack
                 end
@@ -287,7 +292,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
 
                         GG.raidIconDone[persPack.IconID] = {
-                            boolInterogationComplete = false
+                            boolInterogationComplete = false,
                         }
                     else
                         spEcho("Raid: No IconID")
@@ -301,12 +306,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
                 if GG.raidIconDone[persPack.IconID].boolInterogationComplete == true and not persPack.boolRaidHasEnded then
-                    persPack.boolRaidHasEnded = true
+                    persPack.boolRaidHasEnded = true                                        
                     spEcho("Raid: boolInterogationComplete")
+
                     local winningTeam = GG.raidIconDone[persPack.IconID].winningTeam
                     local allTeams = spGetTeamList()
 
-                    if not winningTeam then
+                    if  not winningTeam or winningTeam == "empty" then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
                             spEcho("Raided empty house")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
@@ -321,42 +327,40 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-                            setRaidEndState(persPack)
-                            return true, persPack
+                        end
+                        setRaidEndState(persPack)
+                        return true, persPack
                     end
 
                     if (winningTeam and winningTeam == "aborted")
                         or not allTeams or #allTeams <= 1 then 
-
                             -- Simulation mode
                             spEcho("Raid: Aborted ")
                             setRaidEndState(persPack)
                             return true, persPack
                     end 
 
-
                     spEcho("Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
-                            unitTeam = spGetUnitTeam(persPack.unitID)
-                            children = getChildrenOfUnit(unitTeam, persPack.unitID)
-                            parent = getParentOfUnit(unitTeam, persPack.unitID)
-                            GG.Bank:TransferToTeam(
-                                GameConfig.RaidInterrogationPropgandaPrice,
-                                persPack.attackerTeam, persPack.attackerID)
-                            registerRevealedUnitLocation(persPack.unitID)
-                            for childID, v in pairs(children) do
-                                if doesUnitExistAlive(childID) == true then
-                                    spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
-                                    GG.OperativesDiscovered[childID] = true
-                                    spSetUnitAlwaysVisible(childID, true)
-                                end
-                            end
-
-                            if doesUnitExistAlive(parent) == true then
-                                spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
-                                GG.OperativesDiscovered[parent] = true
-                                spSetUnitAlwaysVisible(parent, true)
-                            end
+                    unitTeam = spGetUnitTeam(persPack.unitID)
+                    children = getChildrenOfUnit(unitTeam, persPack.unitID)
+                    parent = getParentOfUnit(unitTeam, persPack.unitID)
+                    GG.Bank:TransferToTeam(
+                        GameConfig.RaidInterrogationPropgandaPrice,
+                        persPack.attackerTeam, persPack.attackerID)
+                    registerRevealedUnitLocation(persPack.unitID)
+                    for childID, v in pairs(children) do
+                        if doesUnitExistAlive(childID) == true then
+                            spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
+                            GG.OperativesDiscovered[childID] = true
+                            spSetUnitAlwaysVisible(childID, true)
+                        end
                     end
+
+                    if doesUnitExistAlive(parent) == true then
+                        spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
+                        GG.OperativesDiscovered[parent] = true
+                        spSetUnitAlwaysVisible(parent, true)
+                    end                    
                      
                 setRaidEndState(persPack)
                 return true, persPack
