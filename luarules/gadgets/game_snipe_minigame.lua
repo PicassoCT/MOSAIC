@@ -300,9 +300,24 @@ if (gadgetHandler:IsSyncedCode()) then
         local OriginalGraph = {}
         boolFirstGraph = true
 
+        --check House empty
+        if GG.HouseRaidIconMap and GG.houseHasSafeHouseTable then
+            local raidIconMap =  GG.HouseRaidIconMap
+            local houseSafeHouseMap = GG.houseHasSafeHouseTable 
+            for  houseID, iconID in pairs(raidIconMap) do
+                --no safehouse attached to it
+                if houseID and iconID == raidIconID and then
+                    if  not houseSafeHouseMap[houseID] then
+                      return nil, roundRunning, raidStates.HouseEmpty
+                    end
+                end
+            end
+        end
+
+        GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
+
         -- early out -if one side has not placed at all
         -- defenders did not play
-
         if count(roundRunning.Defender.PlacedFigures) == 0 and
             count(roundRunning.Aggressor.PlacedFigures) > 0 then
             setPublicRaidState(raidIconId, raidStates.AggressorWins)
@@ -589,6 +604,13 @@ if (gadgetHandler:IsSyncedCode()) then
                         roundRunning = nil
                     end
 
+                    if state == raidStates.HouseEmpty then
+                        killAllPlacedObjects(roundRunning)
+                        GG.raidIconDone[raidIconId].boolInterogationComplete =  true
+                        GG.raidIconDone[raidIconId].winningTeam =  "empty"
+                        allRunningRaidRounds[raidIconId] = nil
+                    end
+
                     if state == raidStates.Aborted then
                         Spring.Echo("Raid was aborted")
                         killAllPlacedObjects(roundRunning)
@@ -695,16 +717,18 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
 
-        if lastSniperIconID and msg and string.find(msg, "ROTPOS") then
-            t = split(msg, "|")
-            Command(lastSniperIconID, "attack",
-                    {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {})
-        end
+        if lastSniperIconID and doesUnitExistAlive(lastSniperIconID) == true then
+            if lastSniperIconID and msg and string.find(msg, "ROTPOS") then
+                t = split(msg, "|")
+                Command(lastSniperIconID, "attack",
+                        {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {})
+            end
 
-        if lastSniperIconID and msg and string.find(msg, "POSROT") then
-            t = split(msg, "|")
-            Command(lastSniperIconID, "attack",
-                    {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {"shift"})
+            if lastSniperIconID and msg and string.find(msg, "POSROT") then
+                t = split(msg, "|")
+                Command(lastSniperIconID, "attack",
+                        {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {"shift"})
+            end
         end
     end
 
