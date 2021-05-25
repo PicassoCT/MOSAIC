@@ -114,9 +114,11 @@ function watchRaidIconTable()
             end
         elseif winningTeam == "aborted" then
           showRaidAbortedAnimation()
-        end       
+        elseif winningTeam == "empty" then
+            showHouseEmptyAnimation()
+        end      
     else
-        showHouseEmptyAnimation()
+        showRaidAbortedAnimation()
     end
 
     Sleep(5000)

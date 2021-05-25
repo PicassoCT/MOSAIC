@@ -473,7 +473,8 @@ function getRaidStates()
         ["Aborted"] = 0,
         ["OnGoing"] = 1,
         ["DefenderWins"] = 2,
-        ["AggressorWins"] = 3
+        ["AggressorWins"] = 3,
+        ["HouseEmpty"] = 4,
     }
 
 end
