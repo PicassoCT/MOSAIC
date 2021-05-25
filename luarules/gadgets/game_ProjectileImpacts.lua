@@ -271,7 +271,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     GG.raidIconDone[persPack.IconID].winningTeam = "aborted"
                     GG.raidIconDone[persPack.IconID].boolInterogationComplete = true
                     persPack.boolRaidHasEnded = true 
-                    end
+                end
                     setRaidEndState(persPack)
                     return true, persPack
                 end

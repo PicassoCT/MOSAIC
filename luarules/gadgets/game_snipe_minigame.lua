@@ -689,6 +689,10 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    function isNotEmptyHouse(houseID, raidIconID)
+        return GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[houseID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[houseID])
+    end
+
     GG.DisplayedSniperIconParent = {}
     local lastSniperIconID
     function gadget:RecvLuaMsg(msg, playerID)
@@ -706,8 +710,10 @@ if (gadgetHandler:IsSyncedCode()) then
 
             if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and
                 allRunningRaidRounds[raidIconID].Aggressor.Points > 0 or
-                allRunningRaidRounds[raidIconID].Defender.team == teamID and
-                allRunningRaidRounds[raidIconID].Defender.Points > 0 then
+                (allRunningRaidRounds[raidIconID].Defender.team == teamID and
+                allRunningRaidRounds[raidIconID].Defender.Points > 0 and
+                isNotEmptyHouse(houseID, raidIconID) == true)
+                then
                 -- Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
                 lastSniperIconID = spCreateUnit(uType, tonumber(t[3]),
                                                 tonumber(t[4]), tonumber(t[5]),

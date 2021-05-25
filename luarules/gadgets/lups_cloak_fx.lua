@@ -28,6 +28,7 @@ if (gadgetHandler:IsSyncedCode()) then return end
 --
 -- speed ups + some table functions
 --
+
  VFS.Include("scripts/lib_mosaic.lua")
   local notCloakedLUPSIconTypes =getCloakIconTypes(UnitDefs)
   assert(notCloakedLUPSIconTypes[UnitDefNames["antagonsafehouse"].id])
@@ -174,7 +175,6 @@ function gadget:UnitDecloaked(unitID, unitDefID, teamID)
 
     local allyTeamID = Spring.GetUnitAllyTeam(unitID)
 	
-	if not cloakIconTypeTable[unitDefID] then return end
 
     local LocalAllyTeamID
     local _, specFullView = Spring.GetSpectatingState()

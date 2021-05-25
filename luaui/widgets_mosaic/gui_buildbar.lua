@@ -683,7 +683,7 @@ function widget:DrawScreen()
         local options   = {}
         -- determine options -------------------------------------------------------------------
          -- building?
-          if unitDefID==unitBuildDefID then
+          if unitDefID == unitBuildDefID then
             _, _, _, _, options.progress = GetUnitHealth(unitBuildID)
           end
          -- amount

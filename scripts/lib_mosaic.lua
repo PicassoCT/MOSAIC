@@ -6,10 +6,10 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.734"
+            Version = "Alpha: 0.735"
         },
 
-        numberOfBuildings = math.ceil(75 * unitFactor),
+        numberOfBuildings = math.ceil(85 * unitFactor),
         numberOfVehicles = math.ceil(75 * unitFactor),
         numberOfPersons = math.ceil(100 * unitFactor),
         nightCivilianReductionFactor = 0.25,
