@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.736"
+            Version = "Alpha: 0.737"
         },
 
         numberOfBuildings = math.ceil(85 * unitFactor),
@@ -582,9 +582,14 @@ function getCloakIconTypes(UnitDefs)
         "antagonsafehouse",
         "protagonsafehouse",
         "propagandaserver",
+        "assembly",
+        "hivemind",
+        "launcher",
+        "launcherstep",
         "nimrod",
         "operativepropagator",
-        "operativeinvestigator"
+        "operativeinvestigator",
+        "operativeasset"
     }
 
       return getTypeTable(UnitDefNames, typeTable)
