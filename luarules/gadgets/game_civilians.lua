@@ -1181,6 +1181,8 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 
 function getTargetNodeInWalkingDistance(startNodeID, defaultTargetNode)
+    assert(startNodeID)
+    assert(doesUnitExistAlive(startNodeID)==true, "Unit is dead")
     local listOfTargetNodes = RouteTabel[startNodeID]
     assert(#listOfTargetNodes > 0)
     local listInRange = {}
