@@ -568,9 +568,8 @@ function fleeEnemy(enemyID)
     if not enemyID then 
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
-    end
-    
-    echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
+    end  
+   -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
   
     flightTime =  GameConfig.civilianMaxFlightTimeMS
     while doesUnitExistAlive(enemyID) == true and 
@@ -582,15 +581,13 @@ function fleeEnemy(enemyID)
         Sleep(125+distribution)
         flightTime= flightTime - 125
     end
-
-    if  doesUnitExistAlive(enemyID) == false then
-        echo(unitID.." stops fleeing from "..enemyID.. " cause enemy is dead")
+  --[[  if  doesUnitExistAlive(enemyID) == false then
+       echo(unitID.." stops fleeing from "..enemyID.. " cause enemy is dead")
     end   
 
     if  distanceUnitToUnit(unitID, enemyID) >= GameConfig.civilianFleeDistance  then
         echo(unitID.." stops fleeing from "..enemyID.. " cause max distance reached")
-    end    
-
+    end  --]]
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
