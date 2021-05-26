@@ -46,6 +46,7 @@ local OperativeAsset = Human:New{
 
 	category = "GROUND ARRESTABLE",
 	fireState= 1,
+	moveState = 0,
 	
 		weapons={
 			[1]={name  = "pistol",

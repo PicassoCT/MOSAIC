@@ -511,7 +511,25 @@ function getTruckTypeTable(UnitDefs)
                                                 "truck", UnitDefs)
 end
 
-function getCivlianBySex(UnitDefs, sex)
+function getOperatorSex(UnitDefs, defID)
+    local name = UnitDefs[defID].name
+
+    if name == "operativepropagator" or name =="operativeinvestigator" then
+        return "female"
+    end
+
+    if name == "operativeassset" then 
+        return "male"
+    end
+
+    if math.random(0,1) == 1 then 
+        return "male"
+    else
+        return "female"
+    end
+end
+
+function getCivlianDisguiseBySexTypeTable(UnitDefs, sex)
     GameConfig = getGameConfig()
     local UnitDefNames = getUnitDefNames(UnitDefs)
     typeTable = {}
@@ -528,9 +546,8 @@ function getCivlianBySex(UnitDefs, sex)
             "civilian_arab3"
             }
         end
-
-
     end
+
     return getTypeTable(UnitDefNames, typeTable)
 end
 

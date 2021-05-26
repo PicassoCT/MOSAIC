@@ -9,7 +9,7 @@ local bodyBagDefs =
 	upright = false,
 	category = [[GROUND]],
 	energy = 50,
-	damage = 5,
+	damage = 500,
 	metal = 0,
 	object = "bodybag.dae",
 	
