@@ -537,12 +537,12 @@ function getCivlianDisguiseBySexTypeTable(UnitDefs, sex)
     if GameConfig.instance.culture == "arabic" then
         if sex == "male" then
             typeTable = {
-            "civilan_arab1",
+            "civilian_arab1",
             "civilian_arab2"
             }
         else
             typeTable = {
-            "civilan_arab0",
+            "civilian_arab0",
             "civilian_arab3"
             }
         end
