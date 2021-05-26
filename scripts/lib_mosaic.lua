@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.735"
+            Version = "Alpha: 0.736"
         },
 
         numberOfBuildings = math.ceil(85 * unitFactor),
@@ -47,7 +47,8 @@ function getGameConfig()
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
 
         civilianPanicRadius = 600,
-        civilianFleeDistance = 700,
+        civilianFleeDistance = 1200,
+        civilianMaxFlightTimeMS = 300000,
         civilianInterestRadius = 350,
         generalInteractionDistance = 35,
         minConversationLengthFrames = 3 * 30,

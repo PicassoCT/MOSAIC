@@ -3963,18 +3963,16 @@ function distanceUnitToUnit(idA, idB)
     xb, yb, zb = Spring.GetUnitPosition(idB)
 
     if not xa then
-        def = Spring.GetUnitDefID(idA);
-        echo("distanceToUnit::Invalid Unit " .. UnitDefs[def].name ..
+        assert(doesUnitExistAlive(idA) == true, "distanceToUnit::Invalid Unit " .. UnitDefs[ Spring.GetUnitDefID(idA)].name ..
                  " - no position recived")
         return
     end
     if not xb and idB and Spring.GetUnitDefID(idB) then
-        echo("distanceToUnit::Invalid Unit " ..
-                 UnitDefs[Spring.GetUnitDefID(idB)].name ..
+        assert(doesUnitExistAlive(idB) == true, "distanceToUnit::Invalid Unit " .. UnitDefs[ Spring.GetUnitDefID(idB)].name ..
                  " - no position recived")
         return
     end
-    return distance(xa, ya, za, xb, yb, zb)
+    return math.sqrt((xa-xb)^2 + (ya-yb)^2 + (za-zb)^2)
 end
 
 -- > gives a close hunch at the distance and avoids expensive sqrt math by using herons Algo
@@ -6369,7 +6367,7 @@ function runAwayFrom(id, horrorID, distanceToRun)
     hx, hz = x + hx, z + hz
 
     Spring.SetUnitMoveGoal ( id, hx, hy, hz)
-    Command(id, "go", {
+    --[[Command(id, "go", {
                 x = hx,
                 y = y,
                 z = hz
@@ -6378,7 +6376,7 @@ function runAwayFrom(id, horrorID, distanceToRun)
                 x = hx,
                 y = y,
                 z = hz
-            }, {"shift"})
+            }, {"shift"})--]]
 --[[    Spring.Echo("Running away from "..horrorID)--]]
 end
 

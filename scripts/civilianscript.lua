@@ -378,7 +378,7 @@ lowerBodyAnimations = {
 }
 
 
-accumulatedTimeInSeconds = 0
+accumulatedTimeInSeconds = 5
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
     clampedDamage = math.max(math.min(damage, 10), 35)
@@ -570,30 +570,37 @@ function fleeEnemy(enemyID)
         return 
     end
     
-    echo(unitID.." starts fleeing from "..enemyID)
-    flightTime = 300000
-    while doesUnitExistAlive(enemyID) == true and flightTime > 0 do
+    --echo(unitID.." starts fleeing from "..enemyID)
+    flightTime =  GameConfig.civilianMaxFlightTimeMS
+    while doesUnitExistAlive(enemyID) == true and 
+        flightTime > 0 and
+         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianFleeDistance do
+
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
         distribution = math.random(1,10)
-        Sleep(500+distribution)
-        flightTime= flightTime - 500
+        Sleep(125+distribution)
+        flightTime= flightTime - 125
     end
 
     if  doesUnitExistAlive(enemyID) == false then
         echo(unitID.." stops fleeing from "..enemyID.. " cause enemy is dead")
+    end   
+
+    if  distanceUnitToUnit(unitID, enemyID) >= GameConfig.civilianFleeDistance  then
+        echo(unitID.." stops fleeing from "..enemyID.. " cause max distance reached")
     end    
-
-
 
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)
+    setSpeedEnv(unitID, SPRINT_SPEED)
     Signal(SIG_COVER_WALK)
     SetSignalMask(SIG_COVER_WALK)
     Sleep(accumulatedTimeInSeconds * 1000)
     bodyConfig.boolWounded = true
     bodyConfig.boolCoverWalk = false
+    setSpeedEnv(unitID, NORMAL_WALK_SPEED)
 end
 
 -- Civilian
