@@ -570,11 +570,12 @@ function fleeEnemy(enemyID)
         return 
     end
     
-    --echo(unitID.." starts fleeing from "..enemyID)
+    echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
+  
     flightTime =  GameConfig.civilianMaxFlightTimeMS
     while doesUnitExistAlive(enemyID) == true and 
         flightTime > 0 and
-         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianFleeDistance do
+         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
 
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
         distribution = math.random(1,10)

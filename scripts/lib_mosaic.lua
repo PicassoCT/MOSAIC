@@ -46,7 +46,7 @@ function getGameConfig()
         -- civilianbehaviour
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
 
-        civilianPanicRadius = 600,
+        civilianPanicRadius = 900,
         civilianFleeDistance = 1200,
         civilianMaxFlightTimeMS = 300000,
         civilianInterestRadius = 350,
@@ -509,6 +509,29 @@ end
 function getTruckTypeTable(UnitDefs)
     return getCultureUnitModelTypes(GG.GameConfig.instance.culture,
                                                 "truck", UnitDefs)
+end
+
+function getCivlianBySex(UnitDefs, sex)
+    GameConfig = getGameConfig()
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    typeTable = {}
+
+    if GameConfig.instance.culture == "arabic" then
+        if sex == "male" then
+            typeTable = {
+            "civilan_arab1",
+            "civilian_arab2"
+            }
+        else
+            typeTable = {
+            "civilan_arab0",
+            "civilian_arab3"
+            }
+        end
+
+
+    end
+    return getTypeTable(UnitDefNames, typeTable)
 end
 
 function getMobileCivilianDefIDTypeTable(UnitDefs)
