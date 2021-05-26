@@ -3937,10 +3937,6 @@ end
 
 -- >returns the Distance between two units
 function distanceUnitToUnit(idA, idB)
-    assert(idA)
-    assert(idB)
-    assert(type(idA) == "number")
-    assert(type(idB) == "number")
 
     if lib_boolDebug == true then
         if (not idA or type(idA) ~= "number") then
@@ -3961,18 +3957,14 @@ function distanceUnitToUnit(idA, idB)
         end
     end
 
-    xa, ya, za = Spring.GetUnitPosb
+    xa, ya, za = Spring.GetUnitPosition(idA)
     xb, yb, zb = Spring.GetUnitPosition(idB)
 
     if not xa then
-        assert(doesUnitExistAlive(idA) == true, "distanceToUnit::Invalid Unit " .. UnitDefs[ Spring.GetUnitDefID(idA)].name ..
-                 " - no position recived")
-        return
+        return math.huge
     end
     if not xb  then
-        assert(doesUnitExistAlive(idB) == true, "distanceToUnit::Invalid Unit " .. UnitDefs[ Spring.GetUnitDefID(idB)].name ..
-                 " - no position recived")
-        return
+        return math.huge
     end
     return math.sqrt((xa-xb)^2 + (ya-yb)^2 + (za-zb)^2)
 end
