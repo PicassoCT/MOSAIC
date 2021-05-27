@@ -30,10 +30,10 @@ local AntagonSafeHouse = Building:New{
 	EnergyStorage = 1000,
 	EnergyUse = 0,
 	MetalStorage = 1000,
-	MetalUse = 1,
-	EnergyMake = 0, 
+	MetalUse = 0,
+	EnergyMake = 1.0, 
 	MakesMetal = 0, 
-	MetalMake = 0,	
+	MetalMake = 1.0,	
 	
 	canCloak =true,
 	cloakCost=0.0001,

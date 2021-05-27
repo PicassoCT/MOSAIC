@@ -137,8 +137,9 @@ end
 
 safeHouseUpgradeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
                                                      Spring.GetUnitDefID(unitID))
-
+local oldBuildID 
 function detectUpgrade()
+   if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
     while true do
         Sleep(500)
         -- Spring.Echo("Detect Upgrade")
@@ -147,15 +148,10 @@ function detectUpgrade()
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTable[buildDefID] then
-                Sleep(100)
                 waitTillComplete(buildID)
-                Sleep(100)
                 if doesUnitExistAlive(buildID) == true then
 
-                    if not GG.houseHasSafeHouseTable then
-                        GG.houseHasSafeHouseTable = {}
-                    end
-                    GG.houseHasSafeHouseTable[safeHouseID] = buildID
+                      GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
                     -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
                     --   Spring.Echo("Upgrade Complete")
@@ -168,10 +164,7 @@ function detectUpgrade()
 end
 
 function script.Killed(recentDamage, _)
-
-    Spring.Echo("Safehouse killed")
     return 1
-
 end
 
 function script.Activate()

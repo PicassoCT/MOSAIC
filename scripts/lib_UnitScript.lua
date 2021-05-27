@@ -1754,9 +1754,10 @@ function waitTillComplete(id)
     if doesUnitExistAlive(id) == false then return end
 
     while buildProgress and buildProgress < 1.0 or hp < mHp do
+        if doesUnitExistAlive(id) == false then return false end
         hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
 
-        if not buildProgress then return buildProgress ~= nil end
+        if not buildProgress then return false end
         Sleep(500)
     end
 

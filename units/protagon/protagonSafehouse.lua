@@ -35,9 +35,9 @@ local ProtagonSafeHouse =    Building:New{
   EnergyUse =    0,
   MetalStorage =    1000,
 
-  MetalUse =    1,
-  EnergyMake =    0,
-  MakesMetal =    0,
+  MetalUse =    0,
+  EnergyMake =    1.00,
+  MakesMetal =    1.0,
   MetalMake =    0,
 
   canCloak =   true,
