@@ -369,7 +369,7 @@ upperBodyPieces =
 	[Eye1 ]= Eye1,
 	[Eye2 ]= Eye2,
 	[backpack]= backpack,
-	[center	]= center,
+	[center	]= center
 	}
 	
 lowerBodyPieces =
@@ -377,8 +377,7 @@ lowerBodyPieces =
 	[UpLeg1	]= UpLeg1,
 	[UpLeg2 ]= UpLeg2,
 	[LowLeg1]= LowLeg1,
-	[LowLeg2]= LowLeg2,
-
+	[LowLeg2]= LowLeg2
 }
 
 boolWalking = false
@@ -401,7 +400,6 @@ if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 shownPieces={}
 
 function script.Create()
-	
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 
@@ -422,12 +420,11 @@ function script.Create()
     Show(FoldtopUnfolded)
     StartThread(breathing)
     StartThread(raidReactor)
-
 end
 
 function testAnimationLoop()
 	Sleep(100)
-			resetAll(unitID)
+	resetAll(unitID)
 	while true do
 
 		Sleep(1000)
@@ -471,7 +468,6 @@ end
 
 --gives the first unit of this type a parachut and drops it
 function flyingMonitored()
-
 	StartThread(checkFirstUnit)
 
 	while true do
@@ -510,7 +506,6 @@ function breathing()
 		Sleep(250)
 	end
 end
-
 
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then
@@ -846,7 +841,7 @@ UpperAnimationStateFunctions ={
 					end,
 [eAnimState.aiming] = 	function () 
 						Hide(FoldtopUnfolded)
-						Hide(FoldtopFolded)
+						Show(FoldtopFolded)
 						if boolPistol == true then
 							PlayAnimation("UPBODY_AIM_PISTOL")
 						else	
@@ -962,13 +957,11 @@ end
 function showFoldLaptop(boolUnfold)
 	Hide(FoldtopUnfolded)
 	Hide(FoldtopFolded)
-	if  GetUnitValue(COB.CLOAKED) == 0 then
-		if boolUnfold == true then
-			Sleep(2500)
-			Show(FoldtopUnfolded)
-		else
-			Show(FoldtopFolded)
-		end
+	if boolUnfold == true then
+		Sleep(2500)
+		Show(FoldtopUnfolded)
+	else
+		Show(FoldtopFolded)
 	end
 end
 

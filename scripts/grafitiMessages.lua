@@ -10,7 +10,7 @@ return {
 	"HUGS",
 	"NO HUGS",
     "NO SPRAYERS",
-	"OUGHTZ & SPRAYERZ"
+	"OUGHTZ & SPRAYERZ",
     "SPRING IZ DEATH",
     "NO GODS",
     "RACYSSM",
