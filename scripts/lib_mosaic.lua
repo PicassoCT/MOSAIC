@@ -589,7 +589,8 @@ function getCloakIconTypes(UnitDefs)
         "nimrod",
         "operativepropagator",
         "operativeinvestigator",
-        "operativeasset"
+        "operativeasset",
+        "blacksite"
     }
 
       return getTypeTable(UnitDefNames, typeTable)
