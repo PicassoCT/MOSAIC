@@ -27,9 +27,9 @@ local OperativePropagator = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 	script 				= "operativePropagatorInvestigatorScript.lua",
-	objectName        	= "operative_investigator.dae",
+	objectName        	= "operative_propagator.dae",
 	customParams        = {
-		normaltex = "unittextures/operative_investigator_normal.dds",
+		normaltex = "unittextures/operative_propagator_normal.dds",
 	},
 	
 	Builder = true,

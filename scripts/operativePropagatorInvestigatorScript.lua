@@ -314,9 +314,8 @@ local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
 local Drone = piece("Drone")
-local RayBan = piece("Line004")
 local Micro = piece("Micro")
-local Ponytail = piece("Ponytail")
+
 local Icon = piece("Icon")
 local Shell1 = piece("Shell1")
 local FoldtopUnfolded = piece'FoldtopUnfolded'
@@ -406,7 +405,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideAll(unitID)
 	hideT(TablesOfPiecesGroups["SoftRobot"])	
-	shownPieces = randShowHide(RayBan, Micro, Ponytail)
+	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
 	showBody()
 	setupAnimation()
 
