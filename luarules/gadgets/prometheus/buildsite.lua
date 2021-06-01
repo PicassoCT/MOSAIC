@@ -77,6 +77,7 @@ local strSub = string.sub
 
 local MAP_SIZE_X = Game.mapSizeX
 local MAP_SIZE_Z = Game.mapSizeZ
+local gaiaTeamID = Spring.GetGaiaTeamID( ) 
 
 ------------------------------------------------
 --util
@@ -250,6 +251,7 @@ end
 ------------------------------------------------
 
 function widget.UnitCreated(unitID, unitDefID, unitTeam)
+
 	if (not AreTeamsAllied(unitTeam, myTeamID)) then
 		return
 	end
@@ -343,38 +345,42 @@ end
 -- This is main public method; it finds good buildsites.
 -- returns x,y,z,facing, or nil if it can not find any build position
 function widget.FindBuildsite(builderID, unitDefID, closest)
-	-- build list of points, similar to points shown by S44 supplyradius widget,
-	-- but with different radii (currently fixed for all buildings)
+-- 	-- build list of points, similar to points shown by S44 supplyradius widget,
+-- 	-- but with different radii (currently fixed for all buildings)
 	local vertices = DrawMain()
 	local count = vertices.vi
-
-	-- assume builder position is representative for base position
 	local x,y,z = GetUnitPosition(builderID)
 	local facing = FindFacing(x,y,z)
 	local teamID = Spring.GetUnitTeam(builderID)
 
+
 	-- only use the "advanced" algorithm for buildings,
 	-- and when there is already at least one building.
-	if UnitDefs[unitDefID].speed == 0 and count > 1.5 then
+	if UnitDefs[unitDefID].speed == 0  then
 		if closest then
-			for _,v in ipairs(vertices) do
-				local dx,dz = (x-v[1]), (z-v[3])
-				v.sqdist = dx*dx + dz*dz
-			end
-			table.sort(vertices, function (a, b) return a.sqdist < b.sqdist end)
-		
-			for _,v in ipairs(vertices) do
-				if v and  not ( widget.buildLocation[v[1]] and widget.buildLocation[v[1]][v[2]] and
-				 not unitOfTypeAliveAt( widget.buildLocation[v[1]][v[2]], v[1], v[2], v[3],teamID)) then
+		local allGaiaUnits= Spring.GetTeamUnitsSorted(gaiaTeamID) 
 
-					if not widget.buildLocation[v[1]] then widget.buildLocation[v[1]] = {}; end
-					if not widget.buildLocation[v[1]][v[2]] then widget.buildLocation[v[1]][v[2]] = unitDefID; end
-					
-					if TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 then
-						return v[1],v[2],v[3],facing
+		for defID, unitTable in pairs(allGaiaUnits) do
+		if defID and UnitDefs[defID] then
+			if string.find(UnitDefs[defID].name, "house") then
+				for i=1, #unitTable do
+					if  builderID % i == 2 then
+						local houseLocationUnit = unitTable[i]
+
+						if houseLocationUnit then
+							local xa,ya,za = Spring.GetUnitPosition(houseLocationUnit)
+							if xa  
+								and TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
+								and not unitOfTypeAliveAt( unitDefID, x, y, z,teamID) then
+								return xa, ya, za, facing
+							end
+						end
 					end
 				end
 			end
+		end
+		end
+
 		else
 			-- repeatedly try a random vertex until either we found one we can build on,
 			-- or we tried as many times as there are vertices
@@ -404,7 +410,7 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 	end
 
 	-- fallback: try to pick some random build site, preferably in range of the builder
-	local range = 0.5 * UnitDefs[GetUnitDefID(builderID)].buildDistance
+	local range = math.max(MAP_SIZE_Z, MAP_SIZE_X)
 	for _=1,10 do
 		local tx = x + math.random(-range, range)
 		local tz = z + math.random(-range, range)
@@ -417,6 +423,7 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 	-- we did our best, but to no avail... maybe we get lucky next time
 	return nil
 end
+
 
 Initialize()
 return widget
