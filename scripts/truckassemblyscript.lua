@@ -142,7 +142,7 @@ function moveFactory()
     local LUpdateUnitPosition = UpdateUnitPosition
     local spMoveCtrlSetRotation = Spring.MoveCtrl.SetRotation
     Hide(attachPoint)
-
+    waitTillComplete(unitID)
     while (true) do
         if (not spValidUnitID(factoryID)) then newFactory() end
 
