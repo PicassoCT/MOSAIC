@@ -514,7 +514,10 @@ end
 function getOperatorSex(UnitDefs, defID)
     local name = UnitDefs[defID].name
 
-    if name == "operativepropagator" or name =="operativeinvestigator" then
+    if name == "operativepropagator" then
+        return "male"
+
+    if name =="operativeinvestigator" then
         return "female"
     end
 
