@@ -20,6 +20,7 @@ local center = piece('center');
 local Torso = piece('Torso');
 local Pistol = piece('Pistol');
 local Gun = piece('Gun');
+local HolsteredGun = piece('HolsteredGun');
 local Head = piece('Head');
 local UpLeg2 = piece('UpLeg2');
 local LowLeg2 = piece('LowLeg2');
@@ -31,7 +32,7 @@ local UpArm1 = piece('UpArm1');
 local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
-local backpack = piece('backpack');
+local backpack = piece('backpack1');
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
@@ -84,6 +85,7 @@ lowerBodyPieces = {
 
 }
 
+shownPieces={}
 boolWalking = false
 boolTurning = false
 boolTurnLeft = false
@@ -96,9 +98,13 @@ function script.Create()
     makeWeaponsTable()
     GG.OperativesDiscovered[unitID] = nil
     Hide(Gun)
+    Show(HolsteredGun)
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Shell"])
+    shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
+    backpack = randT(unpack(TablesOfPiecesGroups["backpack"]))
+    Show(backpack)
     setupAnimation()
     --StartThread(turnDetector)
     StartThread(flyingMonitored)
@@ -920,6 +926,7 @@ function script.AimWeapon(weaponID, heading, pitch)
 
     if dist < 250 then
         Hide(Gun)
+        Show(HolsteredGun)
         Show(Pistol)
         lastShownWeapon = Pistol
         boolPistol = true
@@ -929,6 +936,7 @@ function script.AimWeapon(weaponID, heading, pitch)
     else
         Hide(Pistol)
         lastShownWeapon = Gun
+        Hide(HolsteredGun)
         Show(Gun)
         boolPistol = false
         if weaponID ~= 1 then
@@ -949,9 +957,12 @@ function showHideIcon(boolCloaked)
         Show(Icon)
     else
         showAll(unitID)
+        hideT(TablesOfPiecesGroups.HeadDeco)
+        showT(shownPieces)
         Hide(Gun)
         Hide(Pistol)
         Show(lastShownWeapon)
+        if lastShownWeapon == Gun then Hide(HolsteredGun)
         hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end

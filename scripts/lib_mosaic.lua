@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.739"
+            Version = "Alpha: 0.740"
         },
 
         numberOfBuildings = math.ceil(85 * unitFactor),
@@ -516,6 +516,7 @@ function getOperatorSex(UnitDefs, defID)
 
     if name == "operativepropagator" then
         return "male"
+    end
 
     if name =="operativeinvestigator" then
         return "female"
