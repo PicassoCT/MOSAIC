@@ -962,7 +962,7 @@ function showHideIcon(boolCloaked)
         Hide(Gun)
         Hide(Pistol)
         Show(lastShownWeapon)
-        if lastShownWeapon == Gun then Hide(HolsteredGun)
+        if lastShownWeapon == Gun then Hide(HolsteredGun) end
         hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end
