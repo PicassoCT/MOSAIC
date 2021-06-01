@@ -113,11 +113,11 @@ include("LuaRules/Gadgets/prometheus/team.lua")
 include("LuaRules/Gadgets/prometheus/waypoints.lua")
 
 -- locals
-local prometheus_Debug_Mode =  0 -- Must be 0 or 1
+local prometheus_Debug_Mode =  1 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
 local side = "antagon"
-local firstFrame = math.max(1,Spring.GetGameFrame())
+local firstFrame = math.max(1,Spring.GetGameFrame()) + 1
 local lastFrame = 0 -- To avoid repeated calls to GameFrame()
 --------------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ function gadget:Initialize()
 		__newindex = function() error("Prometheus: Attempt to write undeclared global variable", 2) end,
 	})
 	SetupCmdChangeAIDebugVerbosity()
-	firstFrame = math.max(1,Spring.GetGameFrame())
+	firstFrame = math.max(1,Spring.GetGameFrame()) + 1
 end
 
 function gadget:GamePreload()
