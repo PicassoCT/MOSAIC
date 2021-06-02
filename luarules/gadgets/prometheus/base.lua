@@ -88,7 +88,7 @@ local function BuildBase()
 
 	local builderDefID = baseBuildOptions[unitDefID]
 	-- nothing to do if we have no builders available yet who can build this
-	if not builderDefID then Log("No builder available for ", UnitDefs[unitDefID].humanName) return end
+	if not builderDefID then Log("No builder available for ", UnitDefs[unitDefID].name) return end
 
 	local builders = {}
 	for u,_ in pairs(myBaseBuilders) do
