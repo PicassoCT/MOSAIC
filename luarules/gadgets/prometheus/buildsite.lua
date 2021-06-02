@@ -353,32 +353,30 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 	local facing = FindFacing(x,y,z)
 	local teamID = Spring.GetUnitTeam(builderID)
 
-
 	-- only use the "advanced" algorithm for buildings,
-	-- and when there is already at least one building.
 	if UnitDefs[unitDefID].speed == 0  then
+		--Spring.Echo("FindBuildsite: for building")
 		if closest then
 		local allGaiaUnits= Spring.GetTeamUnitsSorted(gaiaTeamID) 
 
 		for defID, unitTable in pairs(allGaiaUnits) do
-		if defID and UnitDefs[defID] then
-			if string.find(UnitDefs[defID].name, "house") then
-				for i=1, #unitTable do
-					if  builderID % i == 2 then
-						local houseLocationUnit = unitTable[i]
-
-						if houseLocationUnit then
-							local xa,ya,za = Spring.GetUnitPosition(houseLocationUnit)
-							if xa  
-								and TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
-								and not unitOfTypeAliveAt( unitDefID, x, y, z,teamID) then
+			if defID and UnitDefs[defID] then
+				if unitTable and type(unitTable) == 'table' and string.find(UnitDefs[defID].name, "house") then
+				--Spring.Echo("FindBuildsite: house of type "..UnitDefs[defID].name.." found")
+					for i=1,#unitTable do
+						local id = unitTable[i]
+						if id and  math.random(0,1) ==1 then
+							--Spring.Echo("Checking house nr "..i.. " with id "..id)
+							local xa,ya,za = Spring.GetUnitPosition(id)
+							if 	xa and  TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
+							and  not unitOfTypeAliveAt( unitDefID,xa,ya,za,teamID)) then
+							--	Spring.Echo("FindBuildsite: Found a buildsite at Unit "..id)
 								return xa, ya, za, facing
-							end
-						end
+							end	
+						end	
 					end
 				end
 			end
-		end
 		end
 
 		else
