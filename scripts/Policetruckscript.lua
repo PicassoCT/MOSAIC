@@ -191,3 +191,11 @@ function script.QueryWeapon1() return center end
 function script.AimWeapon1(Heading, pitch) return true end
 
 function script.FireWeapon1() return true end
+
+function script.AimFromWeapon2() return center end
+
+function script.QueryWeapon2() return center end
+
+function script.AimWeapon2(Heading, pitch) return true end
+
+function script.FireWeapon2() return true end
