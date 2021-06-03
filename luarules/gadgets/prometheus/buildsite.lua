@@ -78,7 +78,9 @@ local strSub = string.sub
 local MAP_SIZE_X = Game.mapSizeX
 local MAP_SIZE_Z = Game.mapSizeZ
 local gaiaTeamID = Spring.GetGaiaTeamID( ) 
-
+local team_housesIndexTable = {}
+local sourceRandom = {840188,394383,783100,798441,911648,197552,335223,768230,277775,553970,477398,628871,364785,513401,952230,916196,635712,717297,141603,606969,16301,242887,137232,804177,156680,400945,129791,108809,998925,218257,512933,839113,612640,296032,637553,524288,493583,972776,292517,771358,526745,769914,400229,891530,283315,352459,807725,919027,69756,949328,525996,86056,192214,663227,890233,348893,64172,20024,457702,63096,238280,970635,902209,850920,266666,539761,375207,760249,512536,667724,531607,39281,437638,931836,930810,720953,284294,738535,639979,354049,687862,165975,440105,880076,829202,330338,228969,893373,350361,686670,956469,588641,657305,858677,439560,923970,398437,814767,684219,910973}
+local alreadyUsedHouse = {}
 ------------------------------------------------
 --util
 ------------------------------------------------
@@ -362,22 +364,28 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 		for defID, unitTable in pairs(allGaiaUnits) do
 			if defID and UnitDefs[defID] then
 				if unitTable and type(unitTable) == 'table' and string.find(UnitDefs[defID].name, "house") then
-				--Spring.Echo("FindBuildsite: house of type "..UnitDefs[defID].name.." found")
-					for i=1,#unitTable do
-						local id = unitTable[i]
-						if id and  math.random(0,1) ==1 then
-							--Spring.Echo("Checking house nr "..i.. " with id "..id)
-							local xa,ya,za = Spring.GetUnitPosition(id)
-							if 	xa and  TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
-							and  not unitOfTypeAliveAt( unitDefID,xa,ya,za,teamID)) then
-							--	Spring.Echo("FindBuildsite: Found a buildsite at Unit "..id)
-								return xa, ya, za, facing
-							end	
-						end	
+					Log("FindBuildsite: house of type "..UnitDefs[defID].name.." found")
+					if not team_housesIndexTable[teamID] then
+					 team_housesIndexTable[teamID] = sourceRandom[((math.random(1,#sourceRandom) + teamID) % #sourceRandom) +1]
 					end
-				end
+
+					team_housesIndexTable[teamID] = team_housesIndexTable[teamID] + 1
+					local index = (team_housesIndexTable[teamID] % #unitTable) + 1
+					local id = unitTable[index]
+					if id and not alreadyUsedHouse[id] then
+						local xa,ya,za = Spring.GetUnitPosition(id)
+						if 	xa and  TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
+						and not unitOfTypeAliveAt( unitDefID,xa,ya,za,teamID) then
+							alreadyUsedHouse[id] = builderID
+							Log("FindBuildsite: Found a buildsite at Unit "..id)
+							return xa, ya, za, facing
+						end	
+					end	
+				end	
 			end
 		end
+			
+		
 
 		else
 			-- repeatedly try a random vertex until either we found one we can build on,

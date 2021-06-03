@@ -54,14 +54,14 @@ function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID
                     defID = Spring.GetUnitDefID(buildID)
                     -- if not already in list make a double agent
                     if not persPack.traitorTable[buildID] and
-                        not persPack.safeHouseUpgradeTable[defID] then
+                        not persPack.safeHouseUpgradeTypeTable[defID] then
                         persPack.traitorTable[buildID] = true
                         attachDoubleAgentToUnit(buildID,
                                                 persPack.doubleAgentTeam)
                     end
 
                     -- if a upgrade then make it discovered thing
-                    if persPack.safeHouseUpgradeTable[defID] then
+                    if persPack.safeHouseUpgradeTypeTable[defID] then
                         GG.OperativesDiscovered[buildID] = true
                         Spring.SetUnitAlwaysVisible(buildID, true)
                     end
@@ -74,7 +74,7 @@ function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID
                 houseID = houseID,
                 safeHouseID = safeHouseID,
                 doubleAgentTeam = doubleAgentTeamDefID,
-                upgradeTypeTable = safeHouseUpgradeTable
+                safeHouseUpgradeTypeTable = safeHouseUpgradeTypeTable
             })
         end
 
@@ -111,6 +111,8 @@ function houseAttach()
             boolAttached = true
             -- Spring.SetUnitNoSelect(unitID, false)
             StartThread(detectUpgrade)
+
+            
             return id
         end
 
@@ -135,9 +137,8 @@ function houseAttach()
     end
 end
 
-safeHouseUpgradeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
+safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
                                                      Spring.GetUnitDefID(unitID))
-local oldBuildID 
 function detectUpgrade()
    if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
     while true do
@@ -147,7 +148,7 @@ function detectUpgrade()
         if buildID then
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
-            if safeHouseUpgradeTable[buildDefID] then
+            if safeHouseUpgradeTypeTable[buildDefID] then
                 waitTillComplete(buildID)
                 if doesUnitExistAlive(buildID) == true then
 
@@ -159,7 +160,6 @@ function detectUpgrade()
                 end
             end
         end
-
     end
 end
 

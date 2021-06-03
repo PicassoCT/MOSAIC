@@ -9,7 +9,7 @@ function getGameConfig()
             Version = "Alpha: 0.741" 
         },
 
-        numberOfBuildings = math.ceil(85 * unitFactor),
+        numberOfBuildings = math.ceil(95 * unitFactor),
         numberOfVehicles = math.ceil(75 * unitFactor),
         numberOfPersons = math.ceil(100 * unitFactor),
         nightCivilianReductionFactor = 0.25,
