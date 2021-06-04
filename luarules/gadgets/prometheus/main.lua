@@ -113,7 +113,7 @@ include("LuaRules/Gadgets/prometheus/team.lua")
 include("LuaRules/Gadgets/prometheus/waypoints.lua")
 
 -- locals
-local prometheus_Debug_Mode =  0--1 -- Must be 0 or 1
+local prometheus_Debug_Mode =  1--1 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
 local side = "antagon"
@@ -203,8 +203,8 @@ local function CreateTeams()
 				-- Figure out the side we're on by searching for our
 				-- startUnit in Spring's sidedata.
 				local tteam = select(4,Spring.GetPlayerInfo(leader))
-				local side    = select(5,Spring.GetTeamInfo(tteam)) or "antagon"
-	
+				local side    = select(5,Spring.GetTeamInfo(tteam)) or "NoSideDefined"
+
 				for _,u in ipairs(units) do
 					if (not Spring.GetUnitIsDead(u)) then
 						local unit = UnitDefs[Spring.GetUnitDefID(u)].name
@@ -216,11 +216,8 @@ local function CreateTeams()
 						end
 					end
 				end
+				
 
-				if not (side == "protagon" or side =="antagon") then
-					Spring.Echo("Found uknown side: Defaulting to Antagon")
-					side = "antagon"
-				end
 				if (side) then
 					team[t] = CreateTeam(t, at, side)
 					team[t].GameStart()
