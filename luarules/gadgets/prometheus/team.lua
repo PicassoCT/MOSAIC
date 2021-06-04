@@ -46,7 +46,13 @@ local baseMgr = CreateBaseMgr(myTeamID, myAllyTeamID, mySide, Log)
 -- Unit building (one buildOrder per factory)
 local unitBuildOrder = gadget.unitBuildOrder
 local minBuildOrderAntagon = gadget.minBuildRequirementAntagon
+for k,v in pairs(minBuildOrderAntagon) do
+	if UnitDefNames[k] then minBuildOrderAntagon[UnitDefNames[k].id] = v end
+end
 local minBuildOrderProtagon = gadget.minBuildRequirementProtagon
+for k,v in pairs(minBuildOrderProtagon)do
+	if UnitDefNames[k] then minBuildOrderProtagon[UnitDefNames[k].id] = v end
+end
 
 -- Unit limits
 local unitLimitsMgr = CreateUnitLimitsMgr(myTeamID)
@@ -58,18 +64,15 @@ local combatMgr = CreateCombatMgr(myTeamID, myAllyTeamID, Log)
 
 -- Flag capping
 local flagsMgr = CreateFlagsMgr(myTeamID, myAllyTeamID, mySide, Log)
-local ANTAGONSAFEHOUSEDFID 	= UnitDefNames["antagonsafehouse"].id
-local PROTAGONSAFEHOUSEDEFID = UnitDefNames["protagonsafehouse"].id
-local PROPAGANDASERVER = UnitDefNames["propagandaserver"].id
-
-
+local ANTAGONSAFEHOUSEDEFID 	= UnitDefNames["antagonsafehouse"].id
+local PROTAGONSAFEHOUSEDEFID 	= UnitDefNames["protagonsafehouse"].id
+local PROPAGANDASERVER 			= UnitDefNames["propagandaserver"].id
 
 local upgradeTypeTable = {
  [UnitDefNames["nimrod"] .id]=true,
- [UnitDefNames["propagandaserver" ].id]=true,
+ [PROPAGANDASERVER]=true,
  [UnitDefNames["assembly"].id]=true,
 }
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -117,11 +120,12 @@ function Team.hasEnoughPropagandaservers(teamID)
 	local propagandaserverCount= 0	
 	
 	for defID, count in ipairs(teamIDCount) do
-		if defID == ANTAGONSAFEHOUSEDFID or defID== PROTAGONSAFEHOUSEDEFID or Team.upgradeTypeTable[defID] then
+		if 	defID == ANTAGONSAFEHOUSEDEFID or 
+			defID== PROTAGONSAFEHOUSEDEFID or 
+			Team.upgradeTypeTable[defID] then
 			allOthersCounted = allOthersCounted + count
 		end
-	end
-	
+	end	
 
 	if teamIDCount[PROPAGANDASERVER] then 
 		propagandaserverCount = teamIDCount[PROPAGANDASERVER]
@@ -157,31 +161,44 @@ function Team.minBuildOrderFullfilled(unitTeam)
 local _,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
 
 local checkTable={}
-	if side and side == "protagon" then
-		checkTable = minBuildOrderProtagon
+	if side then
+		if  side == "protagon" then
+			checkTable = minBuildOrderProtagon
+		elseif side == "antagon" then
+			checkTable = minBuildOrderAntagon
+		end
 	else
-		checkTable = minBuildOrderAntagon
-	end
-local unitCounts= Spring.GetTeamUnitsCounts(unitTeam)
+		local teamUnits = Spring.GetTeamUnitsCounts(unitTeam)
+		if teamUnits[UnitDefNames["operativepropagator"].id] > 0 then
+			checkTable = minBuildOrderAntagon
+		elseif teamUnits[UnitDefNames["operativeinvestigator"].id] > 0 then
+			checkTable = minBuildOrderProtagon
+		end
 
+		if teamUnits[UnitDefNames["operativeinvestigator"].id] == 0 and 
+			teamUnits[UnitDefNames["operativepropagator"].id]  == 0 then
+				Spring.Echo("Error: No minbuildorder checktable assigned")
+		end
+	end
+
+local unitCounts= Spring.GetTeamUnitsCounts(unitTeam)
 local boolMinBuildFullfilled = true
 local unitsToBuild = {}
 
 	for unitDefID, Nr in pairs(checkTable) do
-		if Nr and  unitDefID and unitCounts[unitDefID] and  Nr > unitCounts[unitDefID] then
+		if Nr and  unitDefID and unitCounts[unitDefID] and  unitCounts[unitDefID] < Nr then
 			boolMinBuildFullfilled = false
 			unitsToBuild[unitDefID] = Nr - unitCounts[unitDefID] 
-			-- Log("Prometheus: ".. UnitDefs[unitDefID].name .." missing min amount "..unitsToBuild[unitDefID] )
+			Log(UnitDefs[unitDefID].name .." missing amount "..unitsToBuild[unitDefID] )
 		end
 	end
 	
-local	boolString= "true"
+	local	boolString= "true"
 	if boolMinBuildFullfilled == false then boolString = "false" end
 	
-	Log("Prometheus: MinBuilder is fullfiled:",boolString, " for side ".. side)
+	Log("MinBuilder is fullfiled:", boolString, " for side ".. side)
 	return boolMinBuildFullfilled, unitsToBuild, side
 end
-
 
 function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable, side) 
 	if unitBuildOrder[unitDefID]   then
@@ -211,7 +228,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 				end
 			end
 			
-			if  (unitDefID == ANTAGONSAFEHOUSEDFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
+			if  (unitDefID == ANTAGONSAFEHOUSEDEFID or unitDefID == PROTAGONSAFEHOUSEDEFID ) then
 				if Team.hasEnoughPropagandaservers(unitTeam) == true then
 					GiveOrderToUnit(unitID, -PROPAGANDASERVER, {}, {})	
 				else
@@ -239,7 +256,7 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 				end
 			end
 		else
-			Log("Warning: unitBuildOrder can only be used to control factories")
+			Log("Warning: unitBuildOrder can only be used to control factories, is used on "..UnitDefs[unitDefID].name.. " instead")
 		end
 	end
 	
@@ -254,11 +271,11 @@ function Team.UnitFinished(unitID, unitDefID, unitTeam)
 	--Spring.AddTeamResource(myTeamID, "energy", UnitDefs[unitDefID].energyCost)
 
 	-- queue unitBuildOrders if we have any for this unitDefID
-	-- if boolMinBuildOrderFullfilled == true then
-		-- Team.normalBuildOrder(unitID,unitDefID, unitTeam)	
-	-- else
-
+	if boolMinBuildOrderFullfilled == true then
+		Team.normalBuildOrder(unitID,unitDefID, unitTeam)	
+	else
 		Team.minBuildOrder(unitID,unitDefID,unitTeam, stillMissingUnitsTable, side)		
+	end
 
 	-- if any unit manager takes care of the unit, return
 	-- managers are in order of preference
