@@ -9,16 +9,15 @@ SQUAD_SIZE = 24
 --minbuild requirements for safehouses
 gadget.minBuildRequirementProtagon = {
 	["operativeinvestigator"] = 1,
-	["protagonsafehouse"] = 1,
+	["protagonsafehouse"] = 3,
 	["propagandaserver"] = 1,
 	["operativeasset"] = 1,
 	["recruitcivilian"] = 1
 }
 
-
 gadget.minBuildRequirementAntagon = {
 	["operativepropagator"] = 1,
-	["antagonsafehouse"] = 1,
+	["antagonsafehouse"] = 3,
 	["propagandaserver"] = 1,
 	["operativeasset"] = 1,
 	["recruitcivilian"] = 1
@@ -27,9 +26,9 @@ gadget.minBuildRequirementAntagon = {
 -- Format: factory = { "unit to build 1", "unit to build 2", ... }
 gadget.unitBuildOrder = UnitBag{
 	-- Antagon
-	operativepropagator = UnitArray{"antagonsafehouse"},
-	operativeinvestigator =UnitArray{"protagonsafehouse"},
-	
+--[[	operativepropagator = UnitArray{"antagonsafehouse"},
+	operativeinvestigator = UnitArray{"protagonsafehouse"},
+	--]]
 	assembly = UnitArray{
 			"ground_truck_mg", 
 			"ground_truck_ssied",
@@ -37,11 +36,13 @@ gadget.unitBuildOrder = UnitBag{
 			"air_copter_ssied",	
 			"air_copter_mg",
 			"air_copter_antiarmor",  	
+			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
 			"ground_tank_day",
 			"ground_turret_cm_walker"
 	},
 	launcher = UnitArray{
+		"launcherstep",
 		"launcherstep",
 		"launcherstep",
 		"launcherstep",
@@ -89,28 +90,29 @@ gadget.baseBuildOrder = {
 		"antagonsafehouse",	
 		"propagandaserver",	
 		"assembly",	
+		"launcher",
+		"launcherstep"
 	},
 	protagon = UnitArray{
 		"protagonsafehouse",
 		"propagandaserver",
 		"protagonsafehouse"	,	
 		"propagandaserver",		
-		"assembly"		
+		"assembly",
+		"blacksite"		
 	},
-	
 }
 
 -- This lists all the units (of all sides) that are considered "base builders"
 gadget.baseBuilders = UnitSet{
 	"operativepropagator",
-	"transportedassembly",
 	"operativeinvestigator"
-
 }
 
 -- This lists all the units that should be considered flags.
 gadget.flags = UnitSet{
 	"house_arab0",
+	"house_europe0",
 }
 
 -- This lists all the units (of all sides) that may be used to cap flags.
