@@ -149,13 +149,18 @@ function detectUpgrade()
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
-                waitTillComplete(buildID)
+                echo("Safehouse: Begin building Updgrade "..UnitDefs[buildDefID].name)
+                --waitTillComplete(buildID)
+                while doesUnitExistAlive(buildID) and buildProgress and buildProgress < 1.0 do
+                     Sleep(100)
+                     hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
+                end
+                echo("Safehouse: End building Updgrade "..UnitDefs[buildDefID].name)
                 if doesUnitExistAlive(buildID) == true then
-
-                      GG.houseHasSafeHouseTable[safeHouseID] = buildID
+                    GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
                     -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
-                    --   Spring.Echo("Upgrade Complete")
+                    Spring.Echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID, false, true)
                 end
             end
