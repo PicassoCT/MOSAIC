@@ -360,23 +360,29 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 		--Spring.Echo("FindBuildsite: for building")
 		if closest then
 		local allGaiaUnits= Spring.GetTeamUnitsSorted(gaiaTeamID) 
+		if not alreadyUsedHouse[teamID] then alreadyUsedHouse[teamID] = {}end
+		if not team_housesIndexTable[teamID] then
+			team_housesIndexTable[teamID] = sourceRandom[((math.random(1,#sourceRandom) + teamID) % #sourceRandom) +1]
+		end
 
 		for defID, unitTable in pairs(allGaiaUnits) do
 			if defID and UnitDefs[defID] then
 				if unitTable and type(unitTable) == 'table' and string.find(UnitDefs[defID].name, "house") then
 					Log("FindBuildsite: house of type "..UnitDefs[defID].name.." found")
-					if not team_housesIndexTable[teamID] then
-					 team_housesIndexTable[teamID] = sourceRandom[((math.random(1,#sourceRandom) + teamID) % #sourceRandom) +1]
-					end
+				
 
 					team_housesIndexTable[teamID] = team_housesIndexTable[teamID] + 1
 					local index = (team_housesIndexTable[teamID] % #unitTable) + 1
 					local id = unitTable[index]
-					if id and not alreadyUsedHouse[id] then
+					if id and not alreadyUsedHouse[teamID][id] then
 						local xa,ya,za = Spring.GetUnitPosition(id)
 						if 	xa and  TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
 						and not unitOfTypeAliveAt( unitDefID,xa,ya,za,teamID) then
-							alreadyUsedHouse[id] = builderID
+
+						if not widget.buildLocation[xa] then widget.buildLocation[xa] = {} end
+						if not widget.buildLocation[xa][za] then widget.buildLocation[xa][za] = unitDefID end
+							alreadyUsedHouse[teamID][id] = builderID
+
 							Log("FindBuildsite: Found a buildsite at Unit "..id)
 							return xa, ya, za, facing
 						end	
@@ -385,8 +391,6 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 			end
 		end
 			
-		
-
 		else
 			-- repeatedly try a random vertex until either we found one we can build on,
 			-- or we tried as many times as there are vertices
