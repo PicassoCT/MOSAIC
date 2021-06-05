@@ -24,7 +24,7 @@ gadget.minBuildRequirementAntagon = {
 }
 
 -- Format: factory = { "unit to build 1", "unit to build 2", ... }
-gadget.unitBuildOrder = UnitBag{
+gadget.unitBuildOrderAntagon = UnitBag{
 	-- Antagon
 --[[	operativepropagator = UnitArray{"antagonsafehouse"},
 	operativeinvestigator = UnitArray{"protagonsafehouse"},
@@ -65,6 +65,34 @@ gadget.unitBuildOrder = UnitBag{
 		"nimrod",
 		"launcher",
 	},
+	transportedassembly = UnitArray{
+		"ground_turret_mg",
+		"air_copter_mg",
+		"air_copter_ssied"
+	},
+}
+
+gadget.unitBuildOrderProtagon = UnitBag{
+	-- Antagon
+--[[	operativepropagator = UnitArray{"antagonsafehouse"},
+	operativeinvestigator = UnitArray{"protagonsafehouse"},
+	--]]
+	assembly = UnitArray{
+			"ground_truck_mg", 
+			"ground_truck_ssied",
+			"ground_truck_antiarmor",
+			"air_copter_ssied",	
+			"air_copter_mg",
+			"air_copter_antiarmor",  	
+			"air_copter_antiarmor",  	
+			"ground_truck_assembly", 
+			"ground_tank_day",
+			"ground_turret_cm_walker"
+	},
+	nimrod = UnitArray{
+		"satellitescan",
+		"satelliteanti"		
+	},
 	protagonsafehouse = UnitArray{
 		"operativeinvestigator", 
 		"operativeinvestigator",
@@ -84,7 +112,7 @@ gadget.unitBuildOrder = UnitBag{
 
 -- Format: side = { "unit to build 1", "unit to build 2", ... }
 gadget.baseBuildOrder = {
-	antagon = UnitArray{
+	["antagon"] = UnitArray{
 		"antagonsafehouse",	
 		"propagandaserver",	
 		"antagonsafehouse",	
@@ -93,7 +121,7 @@ gadget.baseBuildOrder = {
 		"launcher",
 		"launcherstep"
 	},
-	protagon = UnitArray{
+	["protagon"] = UnitArray{
 		"protagonsafehouse",
 		"propagandaserver",
 		"protagonsafehouse"	,	
@@ -113,6 +141,8 @@ gadget.baseBuilders = UnitSet{
 gadget.flags = UnitSet{
 	"house_arab0",
 	"house_europe0",
+	"raidicon",
+	"recruiticon"
 }
 
 -- This lists all the units (of all sides) that may be used to cap flags.

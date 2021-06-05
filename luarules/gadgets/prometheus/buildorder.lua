@@ -44,10 +44,18 @@ end
 
 do
 	local unitBuildOrderById = {}
-	for k,v in pairs(gadget.unitBuildOrder) do
+	for k,v in pairs(gadget.unitBuildOrderAntagon) do
 		unitBuildOrderById[NameToID(k)] = NameArrayToIdArray(v)
 	end
-	gadget.unitBuildOrder = unitBuildOrderById
+	gadget.unitBuildOrderAntagon = unitBuildOrderById
+end
+
+do
+	local unitBuildOrderById = {}
+	for k,v in pairs(gadget.unitBuildOrderProtagon) do
+		unitBuildOrderById[NameToID(k)] = NameArrayToIdArray(v)
+	end
+	gadget.unitBuildOrderProtagon = unitBuildOrderById
 end
 
 do
@@ -62,10 +70,10 @@ end
 
 
 gadget.minBuildRequirementProtagon = convertTableToDefIDNumberTable(gadget.minBuildRequirementProtagon)
-assert(gadget.minBuildRequirementProtagon)
+assert(gadget.minBuildRequirementProtagon[UnitDefNames["operativeinvestigator"].id])
 gadget.minBuildRequirementAntagon = convertTableToDefIDNumberTable(gadget.minBuildRequirementAntagon)
 assert(gadget.minBuildRequirementAntagon)
-
+assert(gadget.minBuildRequirementProtagon[UnitDefNames["operativepropagator"].id])
 gadget.baseBuilders = NameArrayToIdSet(gadget.baseBuilders)
 assert(gadget.baseBuilders)
 gadget.flags = NameArrayToIdSet(gadget.flags)

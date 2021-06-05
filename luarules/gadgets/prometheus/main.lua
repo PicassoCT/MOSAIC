@@ -46,7 +46,7 @@ local unitLimits = {}
 -- include code
 include("LuaRules/Gadgets/prometheus/unitlimits.lua")
 
-function gadget:GamePreload()
+--[[function gadget:GamePreload()
 	-- Initialise unit limit for all AI teams.
 	local name = gadget:GetInfo().name
 	for _,t in ipairs(Spring.GetTeamList()) do
@@ -54,32 +54,40 @@ function gadget:GamePreload()
 			unitLimits[t] = CreateUnitLimitsMgr(t)
 		end
 	end
-end
+end--]]
+
 
 local function Refill(myTeamID, resource)
-	if (gadget.difficulty ~= "easy") then
-		local value,storage = Spring.GetTeamResources(myTeamID, resource)
-		if (gadget.difficulty ~= "medium") then
-			-- hard: full refill
-			Spring.AddTeamResource(myTeamID, resource, storage - value)
-		else
-			-- medium: partial refill
-			-- 1000 storage / 128 * 30 = approx. +234
-			-- this means 100% cheat is bonus of +234 metal at 1k storage
-			Spring.AddTeamResource(myTeamID, resource, (storage - value) * 0.05)
-		end
-	end
+    if gadget.difficulty ~= "easy" then
+        local value,storage = Spring.GetTeamResources(myTeamID, resource)
+        if gadget.difficulty == "medium" then
+            -- medium: partial refill
+            -- 1000 storage / 128 * 30 = approx. +234
+            -- this means 100% cheat is bonus of +234 metal at 1k storage
+            Spring.AddTeamResource(myTeamID, resource, (storage - value) * 0.05)
+        else
+            -- hard: full refill
+            Spring.AddTeamResource(myTeamID, resource, storage - value)
+            if gadget.difficulty == "impossible" and resource == "energy" and storage < 1000.0 then
+                -- Grant the AI always have at least 1000 ammo storage, so
+                -- targeting the storages is not a possibility to win
+                Spring.AddTeamResource(myTeamID, "es", 1000.0)
+            end
+        end
+    end
 end
 
 function gadget:GameFrame(f)
-	-- Perform economy cheating, this must be done in synced code!
-	if f % 128 < 0.1 then
-		for t,_ in pairs(team) do
-			Refill(t, "metal")
-			Refill(t, "energy")
-		end
-	end
+    -- Perform economy cheating, this must be done in synced code!
+    if f % 128 < 0.1 then
+        for t,_ in pairs(team) do
+            Refill(t, "metal")
+            Refill(t, "energy")
+        end
+    end
 end
+
+else
 
 function gadget:AllowUnitCreation(unitDefID, builderID, builderTeam, x, y, z)
 	if unitLimits[builderTeam] then
@@ -116,7 +124,7 @@ include("LuaRules/Gadgets/prometheus/waypoints.lua")
 local prometheus_Debug_Mode =  1--1 -- Must be 0 or 1
 local team = {}
 local waypointMgrGameFrameRate = 0
-local side = "antagon"
+local side = "NoSideDefined"
 local firstFrame = math.max(1,Spring.GetGameFrame()) + 1
 local lastFrame = 0 -- To avoid repeated calls to GameFrame()
 --------------------------------------------------------------------------------
@@ -195,6 +203,7 @@ local function CreateTeams()
 	-- Initialise AI for all team that are set to use it
 	local sidedata = Spring.GetSideData()
 	local name = gadget:GetInfo().name
+
 	for _,t in ipairs(Spring.GetTeamList()) do
 		if (Spring.GetTeamLuaAI(t) == name) then
 			local _,leader,_,_,_,at = Spring.GetTeamInfo(t)
@@ -202,21 +211,9 @@ local function CreateTeams()
 				local units = Spring.GetTeamUnits(t)
 				-- Figure out the side we're on by searching for our
 				-- startUnit in Spring's sidedata.
-				local tteam = select(4,Spring.GetPlayerInfo(leader))
-				local side    = select(5,Spring.GetTeamInfo(tteam)) or "NoSideDefined"
-
-				for _,u in ipairs(units) do
-					if (not Spring.GetUnitIsDead(u)) then
-						local unit = UnitDefs[Spring.GetUnitDefID(u)].name
-						for _,s in ipairs(sidedata) do
-							if (s.startUnit == unit) then
-							 Spring.Echo("Found start unit for side ".. s.sideName)		
-							 side = s.sideName 
-							end
-						end
-					end
-				end
-				
+				--local tteam = select(4,Spring.GetPlayerInfo(leader))
+				local side    =  string.lower(select(5,Spring.GetTeamInfo(t)))
+				Log("Team "..t.. " is of side " .. side)
 
 				if (side) then
 					team[t] = CreateTeam(t, at, side)
@@ -232,7 +229,7 @@ local function CreateTeams()
 					end
 				else
 					Warning(" Startunit not found, don't know as which side I'm supposed to be playing.")
-				end
+				end			
 			end
 		end
 	end
@@ -249,16 +246,16 @@ function gadget:GameFrame(f)
 	if  f == firstFrame then
 		-- This is executed AFTER headquarters / commander is spawned
 		Spring.Echo("Prometheus :Firstframe")
-		if waypointMgr then
-			Spring.Echo("Prometheus:waypointMgr.GameStart")
-			waypointMgr.GameStart()
-		end
+
+		waypointMgr:GameStart()
+
 
 		-- We perform this only this late, and then fake UnitFinished for all units
 		-- in the team, to support random faction (implemented by swapping out HQ
 		-- in GameStart of that gadget.)
 		CreateTeams()
 	end
+
 	-- waypointMgr update
 	if waypointMgr and f % waypointMgrGameFrameRate < .1 then
 		waypointMgr.GameFrame(f)
@@ -307,13 +304,7 @@ end
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	if waypointMgr  then	
-		if not waypointMgr.UnitCreated then
-			waypointMgr = restoreWayPointManager()
-		end
-		if  waypointMgr.UnitCreated then
-			Spring.Echo("Prometheus:UnitCreated")
-			waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
-		end
+		waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
 	
 	if team[unitTeam] then
@@ -321,15 +312,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	end
 end
 
-function restoreWayPointManager()
-		Spring.Echo("Prometheus:restoreWayPointManager")
-		waypointMgr = CreateWaypointMgr()
-					if waypointMgr then
-						waypointMgr.GameStart()
-					end
-					CreateTeams()
-		return waypointMgr
-end
+
 
 function gadget:UnitFinished(unitID, unitDefID, unitTeam)
 	-- Spring.Echo("Prometheus: Unit of type "..UnitDefs[unitDefID].name.." finnished")
@@ -340,10 +323,6 @@ end
 
 function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	if waypointMgr then
-		--restore the wayPointManager
-		if  not waypointMgr.UnitDestroyed then 
-			waypointMgr = restoreWayPointManager()
-		end	
 		waypointMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 	end
 	

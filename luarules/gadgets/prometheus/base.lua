@@ -33,9 +33,12 @@ local GetUnitDefID = Spring.GetUnitDefID
 
 -- Base building (one global buildOrder)
 local buildsiteFinder = CreateBuildsiteFinder(myTeamID)
+Log("Selecting baseBuildOrder for "..mySide)
 local baseBuildOrder = gadget.baseBuildOrder[mySide]
 local baseBuildIndex = 0
 local baseBuilders = gadget.baseBuilders -- set of all unitDefIDs which are base builders
+assert(baseBuilders[UnitDefNames["operativepropagator"].id])
+assert(baseBuilders[UnitDefNames["operativeinvestigator"].id])
 local myBaseBuilders = {}   -- set of all unitIDs which are the base builders of the team
 local baseBuildOptions = {} -- map of unitDefIDs (buildOption) to unitDefIDs (builders)
 local baseBuildOptionsDirty = false
@@ -177,6 +180,10 @@ function BaseMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
 
 	if (not currentBuildID) and (unitDefID == currentBuildDefID) and (builderID == currentBuilder) then
 		currentBuildID = unitID
+	end
+
+	if baseBuilders[unitDefID] then
+		myBaseBuilders[unitID] = true
 	end
 end
 

@@ -39,20 +39,21 @@ local GAIA_TEAM_ID = Spring.GetGaiaTeamID()
 local enemyBases = {}
 local enemyBaseCount = 0
 local enemyBaseLastAttacked = 0
+local checkTeamTable = {}
 
 -- Base building (one global buildOrder)
 local baseMgr = CreateBaseMgr(myTeamID, myAllyTeamID, mySide, Log)
 
 -- Unit building (one buildOrder per factory)
-local unitBuildOrder = gadget.unitBuildOrder
+local unitBuildOrder = {}
+if mySide == "antagon"  then
+	unitBuildOrder = gadget.unitBuildOrderAntagon
+else
+	unitBuildOrder = gadget.unitBuildOrderProtagon
+end
+
 local minBuildOrderAntagon = gadget.minBuildRequirementAntagon
-for k,v in pairs(minBuildOrderAntagon) do
-	if UnitDefNames[k] then minBuildOrderAntagon[UnitDefNames[k].id] = v end
-end
 local minBuildOrderProtagon = gadget.minBuildRequirementProtagon
-for k,v in pairs(minBuildOrderProtagon)do
-	if UnitDefNames[k] then minBuildOrderProtagon[UnitDefNames[k].id] = v end
-end
 
 -- Unit limits
 local unitLimitsMgr = CreateUnitLimitsMgr(myTeamID)
@@ -156,11 +157,12 @@ local function unitIsBusyBuilding( unitID )
 	return queue and #queue > 0
 end
 
-function Team.minBuildOrderFullfilled(unitTeam)
+function Team.checkMinBuildOrderFullfilled(unitTeam)
 	-- Spring.Echo("Prometheus: Checking Min Buildorder fullfilled")
 local _,leader,isDead,isAiTeam, side =Spring.GetTeamInfo(unitTeam)
 
 local checkTable={}
+
 	if side then
 		if  side == "protagon" then
 			checkTable = minBuildOrderProtagon
@@ -181,18 +183,20 @@ local checkTable={}
 		end
 	end
 
-local unitCounts= Spring.GetTeamUnitsCounts(unitTeam)
-local boolMinBuildFullfilled = true
-local unitsToBuild = {}
-
-	for unitDefID, Nr in pairs(checkTable) do
-		if Nr and  unitDefID and unitCounts[unitDefID] and  unitCounts[unitDefID] < Nr then
-			boolMinBuildFullfilled = false
-			unitsToBuild[unitDefID] = Nr - unitCounts[unitDefID] 
-			Log(UnitDefs[unitDefID].name .." missing amount "..unitsToBuild[unitDefID] )
+	local unitCounts = Spring.GetTeamUnitsCounts(unitTeam)
+	local boolMinBuildFullfilled = true
+	local unitsToBuild = {}
+	if unitCounts then
+		for unitDefID, Nr in pairs(checkTable) do
+			if UnitDefs[unitDefID] and Nr and  unitDefID and (unitCounts[unitDefID] and unitCounts[unitDefID] < Nr) or not unitCounts[unitDefID] then
+				boolMinBuildFullfilled = false
+				local actualUnitAmount = 0
+				if  unitCounts[unitDefID] then actualUnitAmount =  unitCounts[unitDefID] end
+				unitsToBuild[unitDefID] = Nr - actualUnitAmount
+			end
 		end
 	end
-	
+		
 	local	boolString= "true"
 	if boolMinBuildFullfilled == false then boolString = "false" end
 	
@@ -264,25 +268,19 @@ end
 
 function Team.UnitFinished(unitID, unitDefID, unitTeam)
 	-- Log(" UnitFinished: ", UnitDefs[unitDefID].humanName)
-	local boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = Team.minBuildOrderFullfilled(unitTeam)
+	local boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = Team.checkMinBuildOrderFullfilled(unitTeam)
 	-- idea from BrainDamage: instead of cheating huge amounts of resources,
 	-- just cheat in the cost of the units we build.
 	--Spring.AddTeamResource(myTeamID, "metal", UnitDefs[unitDefID].metalCost)
 	--Spring.AddTeamResource(myTeamID, "energy", UnitDefs[unitDefID].energyCost)
 
 	-- queue unitBuildOrders if we have any for this unitDefID
-	if boolMinBuildOrderFullfilled == true then
-		Team.normalBuildOrder(unitID,unitDefID, unitTeam)	
-	else
+	if boolMinBuildOrderFullfilled == false then
 		Team.minBuildOrder(unitID,unitDefID,unitTeam, stillMissingUnitsTable, side)		
 	end
 
 	-- if any unit manager takes care of the unit, return
 	-- managers are in order of preference
-
-	if waypointMgr then
-		if flagsMgr.UnitFinished(unitID, unitDefID, unitTeam) then return end
-	end
 
 	if baseMgr.UnitFinished(unitID, unitDefID, unitTeam) then return end
 
