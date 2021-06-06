@@ -25,15 +25,17 @@ function CreateTeam(myTeamID, myAllyTeamID, mySide)
 local Team = {}
 
 do
-	local GadgetLog = gadget.Log
-	function Team.Log(...)
-		GadgetLog("Team[", myTeamID, "] ", ...)
-	end
+    local GadgetLog = gadget.Log
+    function Team.Log(...)
+        GadgetLog("Team[", myTeamID, "] ", ...)
+    end
 end
 local Log = Team.Log
 
 -- constants
 local GAIA_TEAM_ID = Spring.GetGaiaTeamID()
+local TEAMS_UPDATE_PERIOD = 128  -- In frames (128 ~ 4.5 seconds)
+local TEAMS_UPDATE_LAG = 16      -- In frames (16 ~ 0.5 seconds)
 
 -- Enemy start positions (assumes this are base positions)
 local enemyBases = {}
@@ -67,10 +69,10 @@ local combatMgr = CreateCombatMgr(myTeamID, myAllyTeamID, Log)
 local flagsMgr = CreateFlagsMgr(myTeamID, myAllyTeamID, mySide, Log)
 local ANTAGONSAFEHOUSEDEFID 	= UnitDefNames["antagonsafehouse"].id
 local PROTAGONSAFEHOUSEDEFID 	= UnitDefNames["protagonsafehouse"].id
-local PROPAGANDASERVER 			= UnitDefNames["propagandaserver"].id
+local PROPAGANDASERVER 		= UnitDefNames["propagandaserver"].id
 
 local upgradeTypeTable = {
- [UnitDefNames["nimrod"] .id]=true,
+ [UnitDefNames["nimrod"].id]=true,
  [PROPAGANDASERVER]=true,
  [UnitDefNames["assembly"].id]=true,
 }
@@ -82,36 +84,43 @@ local upgradeTypeTable = {
 --
 
 function Team.GameStart()
-	-- Spring.Echo("Prometheus: GameStart")
-	-- Can not run this in the initialization code at the end of this file,
-	-- because at that time Spring.GetTeamStartPosition seems to always return 0,0,0.
-	for _,t in ipairs(Spring.GetTeamList()) do
-		if (t ~= GAIA_TEAM_ID) and (not Spring.AreTeamsAllied(myTeamID, t)) then
-			local x,y,z = Spring.GetTeamStartPosition(t)
-			if x and x ~= 0 then
-				enemyBaseCount = enemyBaseCount + 1
-				enemyBases[enemyBaseCount] = {x,y,z}
-				Log("Enemy base spotted at coordinates: ", x, ", ", z)
-			else
-				Log("Oops, Spring.GetTeamStartPosition failed")
-			end
-		end
-	end
-	if waypointMgr then
-		flagsMgr.GameStart()
-	end
-	Log("Preparing to attack ", enemyBaseCount, " enemies")
+ Log("GameStart")
+    -- Can not run this in the initialization code at the end of this file,
+    -- because at that time Spring.GetTeamStartPosition seems to always return 0,0,0.
+    for _,t in ipairs(Spring.GetTeamList()) do
+        if (t ~= GAIA_TEAM_ID) and (not Spring.AreTeamsAllied(myTeamID, t)) then
+            local x,y,z = Spring.GetTeamStartPosition(t)
+            if x and x ~= 0 then
+                enemies_number = enemies_number + 1
+                Log("Enemy base spotted at coordinates: ", x, ", ", z)
+            else
+                Log("Oops, Spring.GetTeamStartPosition failed")
+            end
+        end
+    end
+    flagsMgr.GameStart()
+    heatmapMgr.GameStart()
+    Log("Preparing to attack ", enemies_number, " enemies")
 end
 
 function Team.GameFrame(f)
-	--Log("GameFrame")
-	-- Spring.Echo("Prometheus GameFrame")
-	baseMgr.GameFrame(f)
+    heatmapMgr.GameFrame(f)
 
-	if waypointMgr then
-		flagsMgr.GameFrame(f)
-		combatMgr.GameFrame(f)
-	end
+    if gadget.IsDebug(myTeamID) then
+        -- Erase the map marks the frame before updating again
+        if (f + TEAMS_UPDATE_LAG * myTeamID) % TEAMS_UPDATE_PERIOD > (TEAMS_UPDATE_PERIOD - 1.1) then
+            Spring.SendCommands({"ClearMapMarks"})
+        end
+    end
+
+    if (f + TEAMS_UPDATE_LAG * myTeamID) % TEAMS_UPDATE_PERIOD > .1 then
+        return
+    end
+
+    baseMgr.GameFrame(f)
+    flagsMgr.GameFrame(f)
+    taxiMgr.GameFrame(f)
+    combatMgr.GameFrame(f)
 end
 
 
@@ -134,13 +143,6 @@ function Team.hasEnoughPropagandaservers(teamID)
 		
 	return propagandaserverCount  > allOthersCounted
 end
---------------------------------------------------------------------------------
---
---  Game call-ins
---
-
--- Short circuit callin which would otherwise only forward the call..
-Team.AllowUnitCreation = unitLimitsMgr.AllowUnitCreation
 
 --------------------------------------------------------------------------------
 --
@@ -266,55 +268,90 @@ function Team.minBuildOrder(unitID, unitDefID, unitTeam, stillMissingUnitsTable,
 	
 end
 
+
 function Team.UnitFinished(unitID, unitDefID, unitTeam)
-	-- Log(" UnitFinished: ", UnitDefs[unitDefID].humanName)
-	local boolMinBuildOrderFullfilled, stillMissingUnitsTable, side = Team.checkMinBuildOrderFullfilled(unitTeam)
-	-- idea from BrainDamage: instead of cheating huge amounts of resources,
-	-- just cheat in the cost of the units we build.
-	--Spring.AddTeamResource(myTeamID, "metal", UnitDefs[unitDefID].metalCost)
-	--Spring.AddTeamResource(myTeamID, "energy", UnitDefs[unitDefID].energyCost)
+    local ud = UnitDefs[unitDefID]
+    Log("UnitFinished: ", ud.name)
+
+    -- idea from BrainDamage: instead of cheating huge amounts of resources,
+    -- just cheat in the cost of the units we build.
+    --Spring.AddTeamResource(myTeamID, "metal", UnitDefs[unitDefID].metalCost)
+    --Spring.AddTeamResource(myTeamID, "energy", UnitDefs[unitDefID].energyCost)
+
+
+    -- need to prefer flag capping over building to handle Russian commissars
+    if flagsMgr.UnitFinished(unitID, unitDefID, unitTeam) then
+        return
+    end
 
 	-- queue unitBuildOrders if we have any for this unitDefID
 	if boolMinBuildOrderFullfilled == false then
 		Team.minBuildOrder(unitID,unitDefID,unitTeam, stillMissingUnitsTable, side)		
 	end
-
-	-- if any unit manager takes care of the unit, return
-	-- managers are in order of preference
-
-	if baseMgr.UnitFinished(unitID, unitDefID, unitTeam) then return end
-
-	if waypointMgr then
-		if combatMgr.UnitFinished(unitID, unitDefID, unitTeam) then return end
-	end
+    if baseMgr.UnitFinished(unitID, unitDefID, unitTeam) then
+        -- Special case of static units with supply range, which shall be
+        -- considered by the combat manager (which is not controlling them by
+        -- any means)
+        if ud.speed == 0 and ud.customParams.supplyrange then
+            combatMgr.UnitFinished(unitID, unitDefID, unitTeam)
+        end
+        return
+    end
+    if taxiMgr.UnitFinished(unitID, unitDefID, unitTeam) then
+        return
+    end
+    if combatMgr.UnitFinished(unitID, unitDefID, unitTeam) then
+        return
+    end
 end
 
+
+
 function Team.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-	-- Spring.Echo("Prometheus: UnitDestroyed: ", UnitDefs[unitDefID].humanName)
+    Log("UnitDestroyed: ", UnitDefs[unitDefID].humanName)
 
-	baseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+    heatmapMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+    if unitTeam ~= myTeamID then
+        return
+    end
 
-	if waypointMgr then
-		flagsMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-		combatMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-	end
+    baseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+    flagsMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+    taxiMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+    combatMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
 end
 
 function Team.UnitTaken(unitID, unitDefID, unitTeam, newTeam)
-	Team.UnitDestroyed(unitID, unitDefID, unitTeam)
+    Team.UnitDestroyed(unitID, unitDefID, unitTeam)
 end
 
 function Team.UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
-	Team.UnitCreated(unitID, unitDefID, unitTeam, nil)
-	local _, _, inBuild = Spring.GetUnitIsStunned(unitID)
-	Log("Unit given")
-	if not inBuild then
-		Team.UnitFinished(unitID, unitDefID, unitTeam)
-	end
+    Team.UnitCreated(unitID, unitDefID, unitTeam, nil)
+    local _, _, inBuild = Spring.GetUnitIsStunned(unitID)
+    if not inBuild then
+        Team.UnitFinished(unitID, unitDefID, unitTeam)
+    end
 end
 
+function Team.UnitLoaded(unitID, unitDefID, unitTeam, transportID, transportTeam)
+    combatMgr.UnitDestroyed(unitID, unitDefID, unitTeam, transportID, Spring.GetUnitDefID(transportID), transportTeam)
+end
+
+function Team.UnitUnloaded(unitID, unitDefID, unitTeam, transportID, transportTeam)
+    combatMgr.UnitFinished(unitID, unitDefID, unitTeam)
+end
+
+
 function Team.UnitIdle(unitID, unitDefID, unitTeam)
-	Log("UnitIdle: ", UnitDefs[unitDefID].humanName)
+    Log("UnitIdle: ", UnitDefs[unitDefID].humanName)
+end
+
+function Team.UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
+    heatmapMgr.UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
+end
+
+function Team.UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+    heatmapMgr.UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
 end
 
 --------------------------------------------------------------------------------

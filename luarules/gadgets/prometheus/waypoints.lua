@@ -29,7 +29,7 @@ local GAIA_ALLYTEAM_ID      -- initialized later on..
 local FLAG_RADIUS     = FLAG_RADIUS
 local WAYPOINT_RADIUS = FLAG_RADIUS
 local WAYPOINT_HEIGHT = 100
-local REF_UNIT_DEF = UnitDefNames["gerrifle"] -- Reference unit to check paths
+local REF_UNIT_DEF = UnitDefNames["operativeasset"] -- Reference unit to check paths
 -- We enforce the map waypoints are all traversed once each 10s
 local MAP_TRAVERSING_PERIOD = 310
 -- The frontlines are updated at least once each 10s

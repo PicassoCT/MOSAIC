@@ -8,8 +8,7 @@ SQUAD_SIZE = 10
 --------------------------------------------------------------------------------
 --
 --  Data structures (constructor syntax)
---
-Spring.Echo("Prometheus loading configs")
+--anycubic photon
 
 -- Converts UnitDefName to UnitDefID, raises an error if name is not valid.
 local function NameToID(name)
@@ -21,11 +20,31 @@ local function NameToID(name)
 	end
 end
 
+-- Converts UnitDefName array to UnitDefID array, raises an error if a name is
+-- not valid.
+local function NameArrayToIdArray(array)
+	local newArray = {}
+	for i,name in ipairs(array) do
+		newArray[i] = NameToID(name)
+	end
+	return newArray
+end
+
+-- Converts UnitDefName array to UnitDefID map, raises an error if a name is
+-- not valid.
+local function NameArrayToIdSet(array)
+	local newSet = {}
+	for i,name in ipairs(array) do
+		newSet[NameToID(name)] = true
+	end
+	return newSet
+end
+
 -- Converts an array of UnitDefNames to an array of UnitDefIDs.
 function UnitArray(t)
 	local newArray = {}
 	for i,name in ipairs(t) do
-			newArray[i] = NameToID(name)
+		newArray[i] = NameToID(name)
 	end
 	return newArray
 end
@@ -48,35 +67,21 @@ function UnitBag(t)
 	return newBag
 end
 
+-- This lists all the units that should be considered flags.
+gadget.flags = UnitSet{
+	"house_arab0",
+	"house_europe0",
+}
+
+-- Number of units per side used to cap flags.
 gadget.reservedFlagCappers = {
-antagon = SQUAD_SIZE,
-protagon = SQUAD_SIZE
+	antagon = SQUAD_SIZE,
+	protagon = SQUAD_SIZE,
 }
 
+-- This lists all the units (of all sides) that may be used to cap flags.
+-- NOTE: To be removed and automatically parsed
 gadget.flagCappers = UnitSet{
-"operativeasset",
-"operativepropagator",
-"operativeinvestigator"
+	"operativeasset", "operativeinvestigator",
+	"operativepropagator", "civilianagent"
 }
-
-
---------------------------------------------------------------------------------
---
---  Include configuration
---
-
-local dir = "luarules/configs/prometheus/mosaic/"
-
-if (gadgetHandler:IsSyncedCode()) then
-	-- SYNCED
-else
-	-- UNSYNCED
-	Spring.Echo("Prometheus start buildorder loading")
-	include(dir .. "buildorder.lua")
-	Spring.Echo("Prometheus buildorder loading completed")
-end
-
--- both SYNCED and UNSYNCED
-Spring.Echo("Prometheus start unitlimits loading")
-include(dir .. "unitlimits.lua")
-Spring.Echo("Prometheus unitlimits loading completed")

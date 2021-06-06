@@ -142,7 +142,7 @@ gadget.flags = UnitSet{
 	"house_arab0",
 	"house_europe0",
 	"raidicon",
-	"recruiticon"
+	"recruitcivilian"
 }
 
 -- This lists all the units (of all sides) that may be used to cap flags.

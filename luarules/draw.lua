@@ -1,3 +1,4 @@
+VFS.Include("luarules/includes/utilities.lua", nil, VFS.ZIP)
 -- $Id: draw.lua 4534 2009-05-04 23:35:06Z licho $
 if (select == nil) then
     select = function(n, ...)

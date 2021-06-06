@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 local trainAxis = x_axis
-local maxDistanceTrain = 122000
+local maxDistanceTrain = 123500
 local trainspeed = 9000
 center = piece"center"
 
