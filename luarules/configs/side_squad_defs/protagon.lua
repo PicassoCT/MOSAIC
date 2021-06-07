@@ -69,7 +69,6 @@ local protagonDefs = {
 		"air_copter_mg",
 		"air_copter_ssied"
 	},
-		},
 		name = "Mobile Assembly",
 		description = "",
 		buildCostMetal = 1140,

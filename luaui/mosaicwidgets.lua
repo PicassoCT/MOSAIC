@@ -2037,7 +2037,7 @@ end
 
 function widgetHandler:MapDrawCmd(playerID, cmdType, px, py, pz, ...)
   local customkeys = select(10, Spring.GetPlayerInfo(playerID))
-  if (ignorelist.ignorees and ignorelist.ignorees[select(1,Spring.GetPlayerInfo(playerID))]) or (customkeys and customkeys.muted) then
+  if  (ignorelist.ignorees and ignorelist.ignorees[select(1,Spring.GetPlayerInfo(playerID))]) or (customkeys and type(customkeys)=="table" and customkeys.muted) then
     return true
   end
   

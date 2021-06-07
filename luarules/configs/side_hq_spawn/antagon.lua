@@ -2,7 +2,8 @@ local antagonData = {
 	antagonsafehouse = {
         spread = 200,
         units = {
-            "operativepropagator",        
+            "operativepropagator",   
+            "civilianaget",     
             "propagandaserver",
             "assembly",
             "nimrod",

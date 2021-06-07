@@ -86,11 +86,7 @@ end
 --
 
 function HeatmapMgr.GameStart()
-    -- Try to create a Heatmap. This operation would fail if some other allied
-    -- team already did the job
-    HeatmapMgr.hmap_name = "craig." .. tostring(myAllyTeamID) .. ".ground"
-    GG.HeatmapManager:AddHeatmap(HeatmapMgr.hmap_name, parse_unit)
-    intelligence = gadget.intelligences[myAllyTeamID]
+
 end
 
 function HeatmapMgr.GameFrame(f)
@@ -105,9 +101,12 @@ end
 --
 
 function HeatmapMgr.FirepowerGradient(x, z)
-    local heatmap = GG.HeatmapManager:GetHeatmap(HeatmapMgr.hmap_name)
-    local gx, gy = heatmap:GetGradient(x, z)
-    return gx, gy
+    if GG.DamageHeatMap then
+        local normalizedDanger =GG.DamageHeatMap:getDangerAtLocation(x,z)
+        return normalizedDanger, normalizedDanger
+    else
+    return 0, 0
+    end
 end
 
 return HeatmapMgr

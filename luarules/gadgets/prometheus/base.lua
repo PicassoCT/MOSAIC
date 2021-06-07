@@ -98,6 +98,8 @@ local function GetBuildingChains()
         end
     end
 
+    --assert(chains[UnitDefNames["ground_turret_mg"].id], "Chain does not produce a ground turret")
+
     return chains
 end
 
@@ -278,6 +280,7 @@ local function SelectNewBuildingChain()
     local selected, score = nil, MIN_INT / 2
     for target, chain in pairs(chains) do
         local chain_score = ChainScore(target, chain)
+        Spring.Echo("Evaluated chain:"..score, chain)
         if chain_score > score then
             selected = chain
             score = chain_score
@@ -341,26 +344,12 @@ local morphDefs = nil
 local legitBuildOpts = VFS.Include("gamedata/builddefs.lua")
 
 local function ResolveMorphingCmd(origDefID, destDefID)
-    morphDefs = morphDefs or GG['morphHandler'].GetMorphDefs()
-    local morphs = morphDefs[origDefID]
-    if not morphs then
-        return -destDefID
-    end
-    for _, morphDef in pairs(morphs) do
-        if morphDef.into == destDefID then
-            local origName, destName = UnitDefs[origDefID].name, UnitDefs[destDefID].name
-            if not legitBuildOpts[origName] or not legitBuildOpts[origName][destName] then
-                -- The unit can be regularly built, don't bother packing the factory
-                return morphDef.cmd
-            end
-        end
-    end
-
-    return -destDefID
+   return -destDefID
 end
 
 local function StartChain()
     local target_udef = UnitDefNames[selected_chain.units[1]]
+    assert(selected_chain.units[1])
 
     -- Let's try to use the already known builder
     local builder = selected_chain.builder
@@ -369,12 +358,14 @@ local function StartChain()
     end
 
     if builder == nil then
+            Log("StartChain: GoalUnit "..selected_chain.units[1].." has no builder")
         -- No way to fulfill the asked building chain. Let's the AI select
         -- another chain in the next GameFrame() call
         selected_chain = nil
         return
     end
 
+  Log("StartChain: GoalUnit "..selected_chain.units[1].." assigned order")
     -- Ask all the constructors to aid the builder. This is also valid for
     -- factories, so the constructors may try to repair the factory if it is
     -- damaged by artillery

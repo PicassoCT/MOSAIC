@@ -69,15 +69,13 @@ local antagonDefs = {
 		"air_copter_mg",
 		"air_copter_ssied"
 	},
-		},
 		name = "Mobile Assembly",
 		description = "1 x Enfield Sniper, 1 x Scout: Long-Range Fire Support",
 		buildCostMetal = 1140,
 		buildPic = "placeholder.png",
 	},
 
-	["launcher"] =
-	{
+	["launcher"] = {
 		members = {
 		"launcherstep",
 		"launcherstep",

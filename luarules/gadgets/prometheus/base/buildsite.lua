@@ -289,6 +289,20 @@ end
 ------------------------------------------------
 --here ends the part copied from gui_s44_supplyradius.lua
 ------------------------------------------------
+local function unitOfTypeAliveAt( expectedTypeDefID, x,y, z, teamID)
+	local boolUnitExistsAliveAtLocation = false
+
+	local t = Spring.GetUnitsInSphere(x,y,z, 10, teamID)
+		if t and #t > 0 then
+			for i= 1, #t do
+				if expectedTypeDefID == Spring.GetUnitDefID(t[i]) then
+					boolUnitExistsAliveAtLocation = true
+				end
+			end
+		end
+
+	return boolUnitExistsAliveAtLocation
+end
 
 -- The implementation of this function is copied from KP_AI_31.lua
 -- (Kernel Panic AI, KDR_11k (David Becker), modified by zwzsg)
@@ -358,6 +372,7 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 							if 	xa and  TestBuildOrder(unitDefID, xa,ya,za, facing) > 0 
 							and not unitOfTypeAliveAt( unitDefID,xa,ya,za,teamID) then
 
+							if not widget.buildLocation then widget.buildLocation = {} end
 							if not widget.buildLocation[xa] then widget.buildLocation[xa] = {} end
 							if not widget.buildLocation[xa][za] then widget.buildLocation[xa][za] = unitDefID end
 								alreadyUsedHouse[teamID][id] = builderID

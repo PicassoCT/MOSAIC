@@ -108,7 +108,7 @@ include("LuaRules/Gadgets/prometheus/waypoints.lua")
 include("LuaRules/Gadgets/prometheus/gann/gann.lua")
 
 -- locals
-local prometheus_Debug_Mode =  1--1 -- Must be 0 or 1
+local prometheus_Debug_Mode =  0--1 -- Must be 0 or 1
 local team = {}
 local firstFrame = math.max(1,Spring.GetGameFrame()) + 1
 local lastFrame = 0 -- To avoid repeated calls to GameFrame()
@@ -144,9 +144,9 @@ end
 
 function gadget.IsDebug(teamID)
     if teamID == nil then
-        return CRAIG_Debug_Team ~= nil
+        return prometheus_Debug_Mode ~= nil
     end
-    return CRAIG_Debug_Team == teamID
+    return prometheus_Debug_Mode == teamID
 end
 
 function gadget.IsTraining()

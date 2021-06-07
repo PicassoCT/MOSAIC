@@ -33,6 +33,7 @@ local waypoints = waypointMgr.GetWaypoints()
 
 local GetUnitRulesParam = Spring.GetUnitRulesParam
 local GetUnitPosition   = Spring.GetUnitPosition
+local HOUSE_PRODUCTION_VALUE = 25
 
 local Intelligence = {}
 
@@ -73,7 +74,7 @@ local last_waypoint = 0
 local function parseWaypointStrategicRelevance(waypoint)
     local relevance = 1
     for _, flag in ipairs(flags) do
-        local prod = GetUnitRulesParam(flag, "production")
+        local prod = HOUSE_PRODUCTION_VALUE
         local x, y, z = GetUnitPosition(flag)
         local dx, dz = waypoint.x - x, waypoint.z - z
         local r2 = (dx * dx + dz * dz) * DIST2_MULT

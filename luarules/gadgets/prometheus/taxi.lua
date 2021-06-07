@@ -66,29 +66,6 @@ function TaxiService.AddTransportMission(unitIDs, dest, retries)
     return missions[#missions]
 end
 
-function TaxiService.AddSupplyMission(unitID, retries)
-    retries = retries or -1  -- It will never give up
-
-    if onMission[unitID] then
-        return nil
-    end
-
-    Log("Adding supply order (", missionID + 1, ") for unit ", unitID)
-
-    local ud = UnitDefs[GetUnitDefID(unitID)]
-    missionID = missionID + 1
-    missions[#missions + 1] = {id=missionID,
-                               cmd=CMD_GUARD,
-                               targets={unitID},
-                               dest=nil,
-                               taxi=nil,
-                               retries=retries,
-                               weaponcost=tonumber(ud.customParams.weaponcost or 0),
-                               maxammo=tonumber(ud.customParams.maxammo or 0)}
-    onMission[unitID] = missionID
-    return missions[#missions]
-end
-
 local freeTaxis, freeSuppliers = nil, nil
 
 local function dispatch_taxi_mission(mission)
@@ -184,7 +161,7 @@ end
 
 local function dispatch_mission(mission)
     if mission.cmd == CMD_GUARD then
-        return dispatch_supply_mission(mission)
+        return false
     else
         return dispatch_taxi_mission(mission)
     end
@@ -242,12 +219,6 @@ function TaxiService.UnitFinished(unitID, unitDefID, unitTeam)
         Log("Unit ", unitID, " (", udef.name, ") hired as taxi")
     end
 
-    if udef.customParams.supplyrange and tonumber(udef.customParams.supplyrange) > 0 then
-        get_this_unit = true
-        ammoSupliers[unitID] = true
-        Log("Unit ", unitID, " (", udef.name, ") hired as supplier")
-    end
-
     return get_this_unit
 end
 
@@ -255,7 +226,6 @@ function TaxiService.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, atta
     onMission[unitID] = nil
     busyUnits[unitID] = nil
     taxis[unitID] = nil
-    ammoSupliers[unitID] = nil
 end
 
 return TaxiService
