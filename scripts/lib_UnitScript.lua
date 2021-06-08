@@ -2044,6 +2044,62 @@ function smoothGroundHeigthmap(size, x, z)
     end
     return T
 end
+
+function getInterpolationFactor (mins, x, maxs)
+x = math.min(maxs,math.max(x,mins))
+return x/math.abs(maxs-mins)
+end
+
+function smoothTerrainInRange(ox, oz, rangeStart, rangeEnd)
+	local refHeigth =  Spring.GetGroundHeight(ox, oz)
+	local orgOffsetMap = smoothGroundHeigthmap(ox, oz, rangeEnd)
+	local totalRange = rangeEnd - rangeStart
+	
+	startVarX, endVarX = 1, rangeEnd
+	startVarZ, endVarZ = 1, rangeEnd
+	local oxStart, ozStart = math.max(0,ox -rangeEnd), math.max(0, oz - rangeEnd)
+	
+	local spSetHeightMapFunc = Spring.SetHeightMapFunc
+	local orgTerrainMap = {}
+	for x= 1, rangeEnd do
+		orgTerrainMap[x] = {}
+		for z= 1, rangeEnd do
+			orgTerrainMap[x][z] = refHeigth
+			if (x < totalRange or x > rangeEnd- totalRange ) or
+			 (z < totalRange or z > rangeEnd- totalRange ) then
+				interpolationFactorX = 0
+				interpolationFactorZ = 0
+				if x < totalRange then interpolationFactorX = getInterpolationFactor(1, x, totalRange) end
+				if x > rangeEnd- totalRange ) then interpolationFactorX = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange) end	
+				if z < totalRange then interpolationFactorZ = getInterpolationFactor(1, z, totalRange) end
+				if z > rangeEnd- totalRange ) then interpolationFactorZ = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange) end
+				InterpolationFactor = ((interpolationFactorX + interpolationFactorZ)/2.0)
+				orgTerrainMap[x][z] = (refHeigth + orgOffsetMap[x][z])* InterpolationFactor + Spring.GetGroundHeight(x,z)*(1.0-InterpolationFactor)
+			 end
+		end
+	end
+	
+	 spSetHeightMapFunc(function()
+            local spSetHeightMap = Spring.SetHeightMap
+            --1, 127
+            for z = startVarZ, endVarZ, 8 do
+                boolPulledOff = false
+                for x = startVarX, endVarX, 8 do --changed to 8 as the wizzard zwzsg said i should ;)
+				
+                    if not orgTerrainMap[cceil(x / 8)] or not orgTerrainMap[cceil(x / 8)][cceil(z / 8)] then
+                        --Spring.Echo("JWL_orgTerrainMapUndefied at x",cceil(x/8).." and z: ",cceil(z/8))
+                    end
+
+                    if orgTerrainMap[cceil(x / 8)] and orgTerrainMap[cceil(x / 8)][cceil(z / 8)] then
+                        spSetHeightMap(oxSTart +x, ozStart+ z, orgTerrainMap[cceil(x / 8)][cceil(z / 8)] )
+                        boolPulledOff = true
+                    end
+                    --Spring.Echo("JWL_LandLord::LoadDistributor: X ",(cceil(x/8)).." | Z ",(cceil(z/8)))
+                end
+                --Spring.Echo("Stripe Terraformed Succesfull:",boolPulledOff)
+            end
+        end)
+end
 -- > This function process result of Spring.PathRequest() to say whether target is reachable or not
 function IsTargetReachable(moveID, ox, oy, oz, tx, ty, tz, radius)
     local result, lastcoordinate, waypoints
