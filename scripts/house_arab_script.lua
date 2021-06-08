@@ -104,6 +104,14 @@ function script.Create()
 
     StartThread(rotations)
     StartThread(decorateCity)
+	StartThread(delayedHeightMapTransform)
+end
+
+function delayedHeightMapTransform()
+value= math.random(1, 150) 
+Sleep(value)
+
+
 end
 
 function rotations()
