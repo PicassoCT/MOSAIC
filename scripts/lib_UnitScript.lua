@@ -2045,57 +2045,59 @@ function smoothGroundHeigthmap(size, x, z)
     return T
 end
 
-function getInterpolationFactor (mins, x, maxs)
+function getInterpolationFactor(mins, x, maxs)
 	x = math.min(maxs,math.max(x,mins))
 	return x/math.abs(maxs-mins)
 end
 
 function smoothTerrainInRange(ox, oz, rangeStart, rangeEnd)
-	assert(rangeStart < rangeEnd)
-	assert(ox <= Game.mapSizeX)
-	assert(oz <= Game.mapSizeZ)
-	
-	local refHeigth =  Spring.GetGroundHeight(ox, oz)
-	local orgOffsetMap = smoothGroundHeigthmap(ox, oz, rangeEnd)
-	local totalRange = rangeEnd - rangeStart
-	local oxStart, ozStart = math.max(0,ox -rangeEnd), math.max(0, oz - rangeEnd)
-	
-	local spSetHeightMapFunc = Spring.SetHeightMapFunc
-	local orgTerrainMap = {}
-	for x= 1, rangeEnd do
-		orgTerrainMap[x] = {}
-		for z= 1, rangeEnd do
-			orgTerrainMap[x][z] = refHeigth
-			if (x < totalRange or x > rangeEnd- totalRange ) or	(z < totalRange or z > rangeEnd - totalRange ) then
-				interpolationFactorX = 0
-				interpolationFactorZ = 0
-				if x < totalRange then interpolationFactorX = getInterpolationFactor(1, x, totalRange) end
-				if x > rangeEnd- totalRange ) then interpolationFactorX = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange) end	
-				if z < totalRange then interpolationFactorZ = getInterpolationFactor(1, z, totalRange) end
-				if z > rangeEnd- totalRange ) then interpolationFactorZ = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange) end
-				InterpolationFactor = ((interpolationFactorX + interpolationFactorZ)/2.0)
-				orgTerrainMap[x][z] = (refHeigth + orgOffsetMap[x][z])* InterpolationFactor + Spring.GetGroundHeight(x,z)*(1.0-InterpolationFactor)
-			 end
-		end
-	end
+  assert(rangeStart < rangeEnd)
+  assert(ox <= Game.mapSizeX)
+  assert(oz <= Game.mapSizeZ)
+  
+  local refHeigth =  Spring.GetGroundHeight(ox, oz)
+  local orgOffsetMap = smoothGroundHeigthmap(rangeEnd,ox, oz )
+  local totalRange = rangeEnd - rangeStart
+  local oxStart  = math.max(0,ox -rangeEnd) 
+  local ozStart = math.max(0, oz - rangeEnd)
+  
+  local orgTerrainMap = {}
+  for x = 1, rangeEnd do
+    orgTerrainMap[x] = {}
+    for z = 1, rangeEnd do
+      orgTerrainMap[x][z] = refHeigth
+      if (x < totalRange or x > rangeEnd- totalRange ) or (z < totalRange or z > rangeEnd - totalRange ) then
+        interpolationFactorX = 0
+        interpolationFactorZ = 0
+        if x < totalRange then interpolationFactorX = getInterpolationFactor(1, x, totalRange); end
+        if x > rangeEnd- totalRange  then interpolationFactorX = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange); end 
+        if z < totalRange then interpolationFactorZ = getInterpolationFactor(1, z, totalRange) ;end
+        if z > rangeEnd- totalRange then interpolationFactorZ = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange); end
+        InterpolationFactor = ((interpolationFactorX + interpolationFactorZ)/2.0)
+        orgTerrainMap[x][z] = (refHeigth + orgOffsetMap[x][z])* InterpolationFactor + Spring.GetGroundHeight(x,z)*(1.0-InterpolationFactor)
+       end
+    end
+  end
 	
 	local startVarX, endVarX = 1, rangeEnd
 	local startVarZ, endVarZ = 1, rangeEnd
 	local cceil = math.ceil
-	 spSetHeightMapFunc(
-	 function()
-            local spSetHeightMap = Spring.SetHeightMap
-            --1, 127
-            for z = startVarZ, endVarZ, 8 do
-                boolPulledOff = false
-                for x = startVarX, endVarX, 8 do --changed to 8 as the wizzard zwzsg said i should ;)
-                    if  orgTerrainMap[cceil(x / 8)] and  orgTerrainMap[cceil(x / 8)][cceil(z / 8)] then
-                        spSetHeightMap(oxSTart +x, ozStart+ z, orgTerrainMap[cceil(x / 8)][cceil(z / 8)] )
-                    end
-                end
-            end
-        end	)
-end
+
+  local spSetHeightMapFunc = Spring.SetHeightMapFunc
+	 spSetHeightMapFunc( function()
+              local spSetHeightMap = Spring.SetHeightMap
+              --1, 127
+              for z = startVarZ, endVarZ, 8 do
+                  boolPulledOff = false
+                  for x = startVarX, endVarX, 8 do --changed to 8 as the wizzard zwzsg said i should ;)
+                      if  orgTerrainMap[cceil(x / 8)] and  orgTerrainMap[cceil(x / 8)][cceil(z / 8)] then
+                          spSetHeightMap(oxSTart +x, ozStart+ z, orgTerrainMap[cceil(x / 8)][cceil(z / 8)] )
+                      end
+                  end
+              end
+          end	
+          )
+  end
 
 function smoothTerrainAtUnit(id, rangeStart, rangeEnd)
 	ox,_, oz = Spring.GetUnitPosition(id)

@@ -280,7 +280,7 @@ local function SelectNewBuildingChain()
     local selected, score = nil, MIN_INT / 2
     for target, chain in pairs(chains) do
         local chain_score = ChainScore(target, chain)
-        Spring.Echo("Evaluated chain:"..score, chain)
+       Log("Evaluated chain:"..score, chain)
         if chain_score > score then
             selected = chain
             score = chain_score

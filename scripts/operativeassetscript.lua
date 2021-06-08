@@ -948,7 +948,6 @@ function script.AimWeapon(weaponID, heading, pitch)
 end
 
 Spring.SetUnitNanoPieces(unitID, {center})
-
 Icon = piece("Icon")
 
 function showHideIcon(boolCloaked)

@@ -171,20 +171,20 @@ local current_depth = 0
 local function GetBuildChains(unitDefID, chain)
     local boolIsOpProapagator = UnitDefs[unitDefID].name == "operativepropagator"
     if (current_depth == 0) and (cached_chains[unitDefID] ~= nil) then
-        if boolIsOpProapagator == true then Spring.Echo("Aborted with 1") end
+        if boolIsOpProapagator == true then Log("Aborted GetBuildChains with 1") end
         return __deepcopy(cached_chains[unitDefID])
     end
 
     current_depth = current_depth + 1
     if current_depth > MAX_DEPTH then
         current_depth = current_depth - 1
-         if boolIsOpProapagator == true then Spring.Echo("Aborted with 2") end
+         if boolIsOpProapagator == true then Log("Aborted GetBuildChains with 2") end
         return nil
     end
 
     if not IsChainLink(unitDefID) then
         current_depth = current_depth - 1
-         if boolIsOpProapagator == true then Spring.Echo("Aborted with 3") end
+         if boolIsOpProapagator == true then Log("Aborted GetBuildChains with 3") end
         return nil
     end
 
@@ -193,7 +193,7 @@ local function GetBuildChains(unitDefID, chain)
     local children = unitDef.buildOptions
     local buildOptions = {}
     local buildOptionsIDs = {}
-    if not children or #children == 0 then Spring.Echo("Aborted with 4") end
+    if not children or #children == 0 then Log("Aborted GetBuildChains with 4") end
     for _, c in ipairs(children) do
         local name = _unit_name(c)
         local udef = UnitDefNames[name]

@@ -1,6 +1,6 @@
 local protagonDefs = {
 
-	["protagonsafehouse_defenders"] =
+	["operativeinvestigator"] =
 	{
 		members = {
 			"operativeinvestigator",
@@ -15,7 +15,7 @@ local protagonDefs = {
 		buildPic = "placeholder.png",
 	},
 
-	 ["protagon_upgrades"] =
+	 ["protagonsafehouse"] =
 	{
 		members = {
 		"propagandaserver",
@@ -23,16 +23,16 @@ local protagonDefs = {
 		"nimrod",
 		"launcher",
 		},
-		name = "Enfield Rifle Platoon",
+		name = "safehouse",
 		description = "",
 		buildCostMetal = 1926,
 		buildPic = "placeholder.png",
 	},
 
-	["assembly_assaultunits"] =
+	["ground_truck_antiarmor"] =
 	{
 		members = {
-		"ground_truck_mg", 
+			"ground_truck_mg", 
 			"ground_truck_ssied",
 			"ground_truck_antiarmor",
 			"air_copter_ssied",	
@@ -78,15 +78,8 @@ local protagonDefs = {
 	["blacksite"] =
 	{
 		members = {
-		"launcherstep",
-		"launcherstep",
-		"launcherstep",
-		"launcherstep",
-		"launcherstep",
-		"launcherstep",
-		"launcherstep"
 		},
-		name = "3-inch Mortar Team",
+		name = "blacksite",
 		description = "",
 		buildCostMetal = 2140,
 		buildPic = "placeholder.png",
