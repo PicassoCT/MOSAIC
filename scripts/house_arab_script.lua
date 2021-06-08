@@ -110,8 +110,7 @@ end
 function delayedHeightMapTransform()
 value= math.random(1, 150) 
 Sleep(value)
-
-
+StartThread(smoothTerrainAtUnit,unitID, GG.GameConfig.houseSizeX + 50,  GG.GameConfig.houseSizeX*2)
 end
 
 function rotations()

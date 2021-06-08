@@ -86,8 +86,6 @@ function getGameConfig()
         -- Dayproperties
         daylength = 28800, -- in frames
 
-
-
         -- Interrogation
         InterrogationTimeInSeconds = 20,
         InterrogationTimeInFrames = 20 * 30,
