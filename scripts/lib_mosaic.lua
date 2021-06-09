@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.743" 
+            Version = "Alpha: 0.744" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -71,7 +71,7 @@ function getGameConfig()
         buildSafeHouseRange = 80,
         safeHousePieceName = "center",
         delayTillSafeHouseEstablished = 15000,
-        safeHouseLiftimeUnattached = 15000,
+        safeHouseLiftimeUnattached = 500,
 
         -- all buildings
         buildingLiftimeUnattached = 10000,
