@@ -548,11 +548,13 @@ function widget:MouseMove(x, y)
 end
 
 function widget:MousePress(x, y, button)
-	return mouseEvent(x, y, button, false)
+	return mouseEvent(x, y, button, false) 
 end
 
 function widget:MouseRelease(x, y, button)
-	return mouseEvent(x, y, button, true)
+	Spring.Echo("Gui_gameInfo: Release called")
+	
+	return mouseEvent(x, y, button, true) 
 end
 
 function mouseEvent(x, y, button, release)

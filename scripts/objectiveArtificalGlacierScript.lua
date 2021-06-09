@@ -136,7 +136,7 @@ function forInterval(start, stop, irrigation, nr)
     end
 
     if attempts >= 10 then
-        echo("objectiveArtificalGlacierScript.lua:: Over 10 Attempts")
+       -- echo("objectiveArtificalGlacierScript.lua:: Over 10 Attempts")
         smallestDiff = math.huge
         rotations = math.random(1,360)
         for rot, val in pairs(mostLevel) do

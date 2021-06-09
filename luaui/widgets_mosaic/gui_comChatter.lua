@@ -1,4 +1,3 @@
-include("keysym.h.lua")
 local versionNumber = "2.03"
 
 function widget:GetInfo()
@@ -6,10 +5,9 @@ function widget:GetInfo()
 		name      = "ComChatter",
 		desc      = "Creates com chatter from unit commands",
 		author    = "pica",
-		date      = "1 1, 2021",
+		date      = "1.1.2021",
 		license   = "GNU GPL v2",
-		layer     = -15,
-		handler   = true,
+		layer     = 30,
 		enabled   = true
 	}
 end
@@ -176,7 +174,7 @@ local function getHighestOrderUnit(units)
 
 	for i=1, #units do
 		local defID  = Spring.GetUnitDefID(units[i])
-		if defID then
+		if defID and udefs[defID].speed > 0 then
 			if udefs[defID].maxDamage > maxHP then
 				maxHP = udefs[defID].maxDamage
 				resultID = units[i]
@@ -189,7 +187,7 @@ end
 
 local QuadrantSize = 512
 local function getQuadrant(x,z)
-	return x/QuadrantSize, z/QuadrantSize
+	return math.ceil(x/QuadrantSize), math.ceil(z/QuadrantSize)
 end
 
 local function dec2hex(num)
@@ -248,14 +246,15 @@ local function getObjectSounds(x,y)
 	--Grid
  	return objectData
  end
-local function createSubject(sound, time, identifierSounds, identifierTimes)
+ 
+local function createSubject(sound, times, identifierSounds, identifierTimes)
 	local soundList = {}
-	soundList[#soundList+1] = {sound =addSoundPath(sound) , time = time}
+	soundList[#soundList+1] = {sound =addSoundPath(sound) , times = times}
 
 	for i=1, #identifierSounds do
 		soundList[#soundList+1] = {}
 		soundList[#soundList].sound =		identifierSounds[i]
-		soundList[#soundList].time =		identifierTimes[i]
+		soundList[#soundList].times =		identifierTimes[i]
 	end
 
 	return {soundList = soundList}
@@ -289,21 +288,19 @@ local function buildSoundCommand(units, x, y)
 					)
 end
 
-
-
-local function createAction(sound, time)
-	return {sound = addSoundPath(sound), time = time}
+local function createAction(sound, times)
+	return {sound = addSoundPath(sound), times = times}
 end
 
 local function createObject(sounds, times)
 	local result={}
 	for i=1,#sounds do
-		result[#result+1] = {sound = addSoundPath(sounds[i]), time = times[i]}
+		result[#result+1] = {sound = addSoundPath(sounds[i]), times = times[i]}
 	end
 	return result
 end
 
-function addCommandStack(subject, action, object)
+local function addCommandStack(subject, action, object)
 local objectToInsert ={
 	subject = subject,
 	action = action,
@@ -320,7 +317,7 @@ end
 
 local commandStack ={
 --[[	[1]={ subject = {soundList = {}},
-		  action = {sound ="", time=2000},
+		  action = {sound ="", times=2000},
 		  object = {
 		  		soundList= {}}
 		  		
@@ -335,28 +332,28 @@ local function playCurrentComset(frame, currentComSetIndex)
 
 	--play subject
 	for i=1, #currentComSet.subject.soundList do
-		if currentComSet.subject.soundList[i].time > 0 then
+		if currentComSet.subject.soundList[i].times > 0 then
 			Spring.Echo("ComChatter:"..currentComSet.subject.soundList[i].sound)
-			local totalTime = commandStack[currentComSetIndex].subject.soundList[i].time
-			commandStack[currentComSetIndex].subject.soundList[i].time = 0
+			local totalTime = commandStack[currentComSetIndex].subject.soundList[i].times
+			commandStack[currentComSetIndex].subject.soundList[i].times = 0
 			return  frame + totalTime
 		end
 	end
 
 	--play action
-	if currentComSet.action.time > 0 then
+	if currentComSet.action.times > 0 then
 	Spring.Echo("ComChatter:".. currentComSet.action.sound )
-		local totalTime = currentComSet.action.time 
-		commandStack[currentComSetIndex].action.time = 0
+		local totalTime = currentComSet.action.times 
+		commandStack[currentComSetIndex].action.times = 0
 		return frame + totalTime
 	end
 
 	--play object list
 	for i=1, #currentComSet.object.soundList do
-		if currentComSet.object.soundList[i].time > 0 then
+		if currentComSet.object.soundList[i].times > 0 then
 			Spring.Echo("ComChatter:"..currentComSet.object.soundList[i].sound)
-			local totalTime = commandStack[currentComSetIndex].object.soundList[i].time
-			commandStack[currentComSetIndex].object.soundList[i].time = 0
+			local totalTime = commandStack[currentComSetIndex].object.soundList[i].times
+			commandStack[currentComSetIndex].object.soundList[i].times = 0
 			return frame + totalTime
 		end
 	end
@@ -365,15 +362,20 @@ local function playCurrentComset(frame, currentComSetIndex)
 	return  frame
 end
 
-function widget:MouseRelease(x, y, mButton)
+function widget:MouseRelease(x, y, button)
+	Spring.Echo("gui_options: Release called")
+	return mouseEvent(x, y, button, true)
+end
+
+function mouseEvent(mx, my, mButton)
 		-- Only left click
-		Spring.Echo(mButton)
+		Spring.Echo("Mouse Button Release called".. mButton)
 		selectedUnits = Spring.GetSelectedUnits()
 	if (mButton == 1) then 	
 		Spring.Echo("Left clicked on location", location )
 		buildSoundCommand(selctedUnits, x,y)
 	end
-	
+	return false
 end
 
 local currentComSetIndex = 1
