@@ -7,14 +7,14 @@ function widget:GetInfo()
 		author    = "pica",
 		date      = "1.1.2021",
 		license   = "GNU GPL v2",
-		layer     = 30,
+		layer     = 10000-1,
+		handler   = true,
 		enabled   = true
 	}
 end
 
 --callin driven
 --"hot" units
-
 local floor                 = math.floor
 local abs					= math.abs
 
@@ -65,7 +65,7 @@ function widget:Shutdown()
 	return true
 end
 
-local function createIdentifierFromID(id, defID)
+local function createIdentifierFromID(id)
 	local sounds, times = {}, {}
 	local idStr = (id % 99)..""
 	sounds[#sounds+1], times[#times+1] =getNatoPhoneticsTime(idStr[1])
@@ -74,9 +74,9 @@ local function createIdentifierFromID(id, defID)
 end
 
 local function getDefIDFromName(name)
-	for i=1,#UnitDefs do
-		if UnitDefs[i].name == name then
-			return UnitDefs[i].id
+	for id, udef in pairs(udefs) do
+		if udef.name == name then
+			return id
 		end
 	end
 end
@@ -88,29 +88,36 @@ local operativeTypeTable = {
 	[getDefIDFromName("operativepropagator")] = true
 	}
 
+local civilianWalkingTypeTable = {
+		[getDefIDFromName("civilian_arab0")] = true,
+		[getDefIDFromName("civilian_arab1")] = true,
+		[getDefIDFromName("civilian_arab2")] = true,
+		[getDefIDFromName("civilian_arab3")] = true,
+}
+
 local function getCommandStringFromDefID(defID)
 	if civilianWalkingTypeTable[defID] then
-		return "_neutral"
+		return "_neutral", 1000
 	end
 
 	if civilianAgentDefID ==  defID then
-		return "_mobile"
+		return "_mobile", 1000
 	end
 
 	if operativeTypeTable[defID] then
-		return "_operative"
+		return "_operative", 1000
 	end
 
-	if UnitDefs[defID].isbuilding then
-		return "_safehouse"
+	if udefs[defID].isbuilding then
+		return "_safehouse", 1000
 	end
 
 	if assetDefID == defID then
-		return "_asset"
+		return "_asset", 1000
 	end
 
-	if UnitDefs[defID].canattack == true then
-		return "_strike"
+	if udefs[defID].canattack == true then
+		return "_strike", 1000
 	end
 
 	return "_mobile"
@@ -168,22 +175,22 @@ local function getNatoPhoneticsTime(letter)
 return NatoPhoneticAlphabet[string.lower(letter)], 2 *30
 end
 
-local function getHighestOrderUnit(units)
-	local maxHP = math.huge*-1
-	local resultID, resultDefID
+local function doesUnitExistAlive(id)
+    local valid = Spring.ValidUnitID(id)
+    if valid == nil or valid == false then
+        -- echo("doesUnitExistAlive::Invalid ID")
+        return false
+    end
 
-	for i=1, #units do
-		local defID  = Spring.GetUnitDefID(units[i])
-		if defID and udefs[defID].speed > 0 then
-			if udefs[defID].maxDamage > maxHP then
-				maxHP = udefs[defID].maxDamage
-				resultID = units[i]
-				resultDefID = defID
-			end
-		end
-	end
-	return resultDefID, resultID
+    local dead = Spring.GetUnitIsDead(id)
+    if dead == nil or dead == true then
+        -- echo("doesUnitExistAlive::Dead Unit")
+        return false
+    end
+
+    return true
 end
+
 
 local QuadrantSize = 512
 local function getQuadrant(x,z)
@@ -259,28 +266,58 @@ local function createSubject(sound, times, identifierSounds, identifierTimes)
 
 	return {soundList = soundList}
 end
-local function buildSoundCommand(units, x, y)
-	if not units or #units < 1 then return end
-	if not x or not y then return end
-
+local function buildSoundCommand( x, y)
+	local units = Spring.GetSelectedUnits()
+	Spring.Echo("PrintDebug 1")
+	if not units or #units < 1 then 
+		Spring.Echo("Called it 1")
+		return 
+	end
+	Spring.Echo("PrintDebug 2")
+	if not x or not y then 
+	Spring.Echo("Called it 2")
+	return
+	end
+	Spring.Echo("PrintDebug 3")
 	--highest priority unit
-	local higestOrderDefID, id
-	higestOrderDefID, id = getHighestOrderUnit(units)
 
+	local resultID 
+	local maxHP = -1
+	local higestOrderDefID
+
+	for i=1, #units do
+		local id = units[i]
+		if id and doesUnitExistAlive(id) == true then
+			local defID  = spGetUnitDefID(id)
+			if i==1 or defID and udefs[defID] and udefs[defID].speed and udefs[defID].speed > 0 then
+				if i == 1 or udefs[defID] and udefs[defID].damage and udefs[defID].damage > maxHP then
+						maxHP = udefs[defID].damage 
+						resultID = id
+						higestOrderDefID = defID
+				end		
+			end
+		end
+	end
+
+
+	Spring.Echo("PrintDebug 4")
 	--command type
 	local subjectName, subjectTime
-	subjectName, subjectTime = getCommandStringFromDefID(higestOrderDefID)
+	local subjectName, subjectTime = getCommandStringFromDefID(higestOrderDefID)
 	local subjectIdentifier, subjectIdentifierTimes
-	subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(id, higestOrderDefID)
-
+	local subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, higestOrderDefID)
+	Spring.Echo("PrintDebug 5")
 	local actionSound, actionTime 
-	actionSound, actionTime = getActionSound(id)
+	local actionSound, actionTime = getActionSound(resultID)
 
 	--object
 	local objectData 
-	objectData = getObjectSounds(x,y)
+	local objectData = getObjectSounds(x,y)
 
-	if not subjectName or not actionSound or not objectSounds then return end
+	if not subjectName or not actionSound or not objectSounds then 
+		Spring.Echo("Called it 3")
+		return 
+	end
 
 	addCommandStack(createSubject(subjectName,subjectTime, subjectIdentifierSounds, subjectIdentifierTimes),
 					createAction(actionSound, actionTime),
@@ -301,6 +338,7 @@ local function createObject(sounds, times)
 end
 
 local function addCommandStack(subject, action, object)
+	Spring.Echo("Gui_ComChatter:addCommandStack")
 local objectToInsert ={
 	subject = subject,
 	action = action,
@@ -362,29 +400,26 @@ local function playCurrentComset(frame, currentComSetIndex)
 	return  frame
 end
 
-function widget:MouseRelease(x, y, button)
-	Spring.Echo("gui_options: Release called")
-	return mouseEvent(x, y, button, true)
-end
 
-function mouseEvent(mx, my, mButton)
-		-- Only left click
-		Spring.Echo("Mouse Button Release called".. mButton)
-		selectedUnits = Spring.GetSelectedUnits()
-	if (mButton == 1) then 	
-		Spring.Echo("Left clicked on location", location )
-		buildSoundCommand(selctedUnits, x,y)
+
+function widget:MousePress(x, y, button)
+	Spring.Echo("Gui_ComChatter:GameFrame MousePress"..button.." "..type(button))
+	if (button == 3) then 	
+
+		buildSoundCommand( x, y)
 	end
 	return false
 end
 
 local currentComSetIndex = 1
 local boolComSetActive = false
-function widget:GameFrame(n)
+local accumulatedDT = 0.0
+function widget:Update(dt)
+	accumulatedDT = accumulatedDT + dt
+	if accumulatedDT > 0.5 and Spring.GetGameFrame() > nextComFrame then
+	accumulatedDT = 0
 
-	if n % 5 == 0 and n > nextComFrame then
-
-		if boolComSetActive == false then
+		if not boolComSetActive then
 			if commandStack and #commandStack > 0 then
 				Spring.Echo("ComChatter new ComFrame")
 				for nr, comSet in ipairs(commandStack) do

@@ -162,8 +162,7 @@ local function UpdateAdd(unitID, supplyInfo)
 			local r = currSupplyInfo.r
 			assert(r)
 			local x, z = currSupplyInfo.x, currSupplyInfo.z
-			local dist = GetUnitSeparation(unitID, currUnitID, true)
-			assert(dist)
+			local dist = GetUnitSeparation(unitID, currUnitID, true) or math.huge
 		
 			if (dist < r0 + r) then
 				RemovePoints(supplyInfo, x, z, r)
@@ -175,6 +174,7 @@ end
 
 local function UpdateRemove(unitID, supplyInfo)
 	local r0 = supplyInfo.r
+		assert(r0)
 	local numSegments = supplyInfo.numSegments
 	local x0, z0 = supplyInfo.x, supplyInfo.z
 
@@ -183,8 +183,10 @@ local function UpdateRemove(unitID, supplyInfo)
 		if (unitID ~= currUnitID) then
 			--is there overlap?
 			local r = currSupplyInfo.r
+			assert(r)
 			local x, z = currSupplyInfo.x, currSupplyInfo.z
-			local dist = GetUnitSeparation(unitID, currUnitID, true)
+			local dist = GetUnitSeparation(unitID, currUnitID, true) or math.huge
+		
 			if (dist < r0 + r) then
 				UpdatePoints(currUnitID, currSupplyInfo, x0, z0, r0)
 			end
