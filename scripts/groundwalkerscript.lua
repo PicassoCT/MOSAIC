@@ -149,7 +149,6 @@ function walkAnimationLoop()
                         interVal = math.random(-25,25)
                         turnSign = randSign()
                         while(boolWalking == false and boolAiming == false and interVal > 0) do
-                            Spring.SetUnitHeading(unitID, heading)
                            rotX,  rotY,  rotZ =  Spring.GetUnitRotation( unitID ) 
                            rotY= rotY + (math.pi/90)*turnSign
                             Spring.SetUnitRotation ( unitID,  rotX,  rotY,  rotZ ) 
