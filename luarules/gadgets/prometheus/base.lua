@@ -81,7 +81,9 @@ local function GetBuildingChains()
         producers[GetUnitDefID(u)] = u
     end
     for u, _ in pairs(myFactories) do
-        producers[GetUnitDefID(u)] = u
+        if u then
+            producers[GetUnitDefID(u)] = u
+        end
     end
 
     local chains = {}
@@ -808,7 +810,7 @@ function BaseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attacker
     local factory = unitBuiltBy[unitID]
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
-        if #myFactories[factory] > 0 then
+        if myFactories[factory] and #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
         end
         IdleFactory(factory)

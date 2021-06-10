@@ -143,6 +143,8 @@ local function SetupCmdChangeAIDebugVerbosity()
 end
 
 function gadget.IsDebug(teamID)
+    if prometheus_Debug_Mode == 0 then return false end
+
     if teamID == nil then
         return prometheus_Debug_Mode ~= nil
     end
@@ -228,8 +230,9 @@ function gadget:Initialize()
         training_time = MIN_TRAINING_TIME
     end
    firstFrame = math.max(1,Spring.GetGameFrame()) + 1
-   
-	 base_gann = CreateGANN()
+   if not waypointMgr then waypointMgr = CreateWaypointMgr() end
+
+	base_gann = CreateGANN()
     local base_gann_inputs = VFS.Include("LuaRules/Gadgets/prometheus/base/gann_inputs.lua")
     for _, input in ipairs(base_gann_inputs) do
         base_gann.DeclareInput(input)
@@ -311,11 +314,13 @@ function gadget:GameFrame(f)
             intelligence.GameStart()
         end
     end
-    if f > firstFrame then
+    if f > firstFrame  then
 	    if f % SAVE_PERIOD < 0.01 then
 		GetConfigData()
 	    end
-
+        if not  waypointMgr.GameFrame then
+            waypointMgr = CreateWaypointMgr()
+        end
 	    waypointMgr.GameFrame(f)
 	    for _, intelligence in pairs(intelligences) do
 		intelligence.GameFrame(f)

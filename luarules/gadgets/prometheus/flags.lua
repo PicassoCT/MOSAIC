@@ -94,7 +94,7 @@ function FlagsMgr.GameFrame(f)
             -- Ask units close to the flag to fulfill the mission
             for _,u in ipairs(unitArray) do
                 local d = GetUnitSeparation(u, f, true)
-                if d < 2.0 * FLAG_RADIUS and d > 0.49 * FLAG_RADIUS then
+                if d and d < 2.0 * FLAG_RADIUS and d > 0.49 * FLAG_RADIUS then
                     Log("Unit ", u, " is close to flag ", f, "...")
                     local x, _, z = GetUnitPosition(f)
                     local y = GetGroundHeight(x, z)
