@@ -109,7 +109,7 @@ function getGameConfig()
         Wreckage = {lifeTime = 3 * 60 * 1000},
 
         -- Launcher
-        PreLaunchLeakSteps = 2,
+        PreLaunchLeakSteps = 3,
         LaunchReadySteps = 7,
         LauncherInterceptTimeSeconds = 20,
 

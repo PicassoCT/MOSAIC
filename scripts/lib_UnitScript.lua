@@ -1708,6 +1708,11 @@ function getNamePieceNumDict(unitID, piecefunction)
     return returnTable
 end
 
+function getUnitPieceName(unitID, nr)
+list = Spring.GetUnitPieceList(unitID)
+  return list[nr] or "NotAExistingPiece"
+end
+
 -- >Gets the Height of a Unit
 function getunitHeight(UnitId)
     _, y, _ = Spring.GetUnitPosition(unitID)
@@ -5091,9 +5096,9 @@ function randT(Table)
     if sizeOf == 0 then
         sizeOf = count(Table)
         if sizeOf > 0 then return randDict(Table) end
-
         return
     end
+    
     if sizeOf == 1 then return Table[1] end
 
     return Table[math.random(1, #Table)]
