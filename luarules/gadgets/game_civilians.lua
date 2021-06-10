@@ -220,13 +220,12 @@ function spawnRubbleHeapAt(id)
     end
 end
 
-function getOfficer(unitID, attackerID)
-    if activePoliceUnitIds_Dispatchtime[unitID] then return unitID end
-
+function getOfficer(victimID, attackerID)
     local officerID = nil
     if maxNrPolice > 0 and math.ceil(OpimizationFleeing.accumulatedCivilianDamage/100) > count(activePoliceUnitIds_DispatchTime) then
         px, py, pz = getPoliceSpawnLocation(attackerID)
-        if not px then px, py, pz = spGetUnitPosition(unitID) end
+        if not px then px, py, pz = spGetUnitPosition(randDict(GG.BuildingTable)) end
+        if not px then px,py,pz = math.random(10,90)*Game.mapSizeX/100, 0, math.random(10,90)*Game.mapSizeZ/100 end
         direction = math.random(1, 4)
 
         ptype = "policetruck"
@@ -264,6 +263,11 @@ function getOfficer(unitID, attackerID)
     return officerID
 end
 
+function getRandomHousePos()
+    id, pos = randDict(GG.BuildingTable)
+return pos.x + math.random(200,500)*randSign(), 0, pos.z+ math.random(200,500)*randSign()
+end
+
 function dispatchOfficer(victimID, attackerID )
 
     officerID = getOfficer(victimID, attackerID)
@@ -272,7 +276,7 @@ function dispatchOfficer(victimID, attackerID )
          setFireState(officerID, 2)
          setMoveState(officerID, 2)
         -- Spring.AddUnitImpulse(officerID,15,0,0)
-        tx, ty, tz = math.random(10, 90) * Game.mapSizeX/100, 0, math.random(10, 90) * Game.mapSizeZ/100
+        tx, ty, tz = getRandomHousePos()
         if not attackerID or doesUnitExistAlive(attackerID) then attackerID = Spring.GetUnitLastAttacker(officerID) end
       
         if attackerID then 
@@ -295,10 +299,8 @@ function dispatchOfficer(victimID, attackerID )
                 boolFoundSomething = true
                 --Spring.Echo("")
             end
-        elseif boolFoundSomething == false and victimID and isUnitAlive(victimID) == true then 
-            x, y, z = spGetUnitPosition(victimID)
+        elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
             Command(officerID, "guard", victimID, {"shift"})
-            --Spring.Echo("Guard victim "..victimID)
             return
         elseif boolFoundSomething == false  then 
             x, y, z = spGetUnitPosition(officerID)
