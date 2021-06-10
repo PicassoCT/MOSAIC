@@ -32,7 +32,7 @@ local UpArm1 = piece('UpArm1');
 local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
-local backpack = piece('backpack1');
+local backpack = piece('backpack');
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
@@ -103,8 +103,10 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Shell"])
     shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
-    backpack = randT(unpack(TablesOfPiecesGroups["backpack"]))
-    Show(backpack)
+    Hide(backpack)
+    hideT(TablesOfPiecesGroups["backpackX"])
+    shownPieces[#shownPieces+1] =TablesOfPiecesGroups["backpackX"][math.random(1,#TablesOfPiecesGroups["backpackX"])]
+
     setupAnimation()
     --StartThread(turnDetector)
     StartThread(flyingMonitored)
@@ -220,9 +222,13 @@ function setupAnimation()
         for i, keyframe in pairs(anim) do
             local commands = keyframe.commands;
             for k, command in pairs(commands) do
+                if command.p then
+
+                end
                 if command.p and type(command.p) == "string" then
                     command.p = map[command.p]
                 end
+                ---Spring.Echo("Piece "..command.p.." maps to "..getUnitPieceName(unitID, command.p))
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
                 -- the t attribute needs to be adjusted for move commands from blender's absolute values
                 if (command.c == "move") then
