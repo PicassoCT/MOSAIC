@@ -451,12 +451,15 @@ if (gadgetHandler:IsSyncedCode()) then
                                           0, 0, 0,
                                           persPack.unitID,
                                           1)
+                    if not persPack.IconID then
+                          spEcho("Creating InterrogationIcon failed")
+                        return true, persPack
+                    end
             
                     if not GG.raidIconDone[persPack.IconID] then
                         GG.raidIconDone[persPack.IconID] =
                             {
-                                countDown =  (spGetGameFrame() - persPack.startFrame) /
-                        GameConfig.InterrogationTimeInFrames,
+                                countDown =  (spGetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames,
                                 boolInterogationComplete = false,
                                 winningTeam = nil
                             }
