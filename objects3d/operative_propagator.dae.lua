@@ -1,5 +1,5 @@
 model = {
-	radius = 5.0,
+	radius = 15.0,
 	height = 40,
 	tex1 = "operative_propagator_diffuse.dds",
 	tex2 = "operative_propagator_normal.dds",
