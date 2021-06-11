@@ -51,6 +51,7 @@ local lockPlayerID
 
 local unitConf ={}
 local selectedUnits = {}
+local teamSex = "male"
 ------------------------------------------------------------------
 
 local nextComFrame = Spring.GetGameFrame() + 1
@@ -65,11 +66,77 @@ function widget:Shutdown()
 	return true
 end
 
+local function addSoundPath(sex, baseString)
+	return "/sounds/comchat/"..sex.."/"..baseString..".ogg"
+end
+
+
+local function getNatoPhoneticsTime(letter)
+	if not letter then return end
+
+	local NatoPhoneticAlphabet = {
+    ["a"]="alpha",
+    ["b"]="bravo",
+    ["c"]="charlie",
+    ["d"]="delta",
+    ["e"]="echo",
+    ["f"]="foxtrot",
+    ["g"]="golf",
+    ["h"]="hotel",
+    ["i"]="india",
+    ["j"]="juliet",
+    ["k"]="kilo",
+    ["l"]="lima",
+    ["m"]="mike",
+    ["n"]="november",
+    ["o"]="oscar",
+    ["p"]="papa",
+    ["q"]="quebec",
+    ["r"]="romeo",
+    ["s"]="sierra",
+    ["t"]="tango",
+    ["u"]="uniform",
+    ["v"]="victor",
+    ["w"]="whisky",
+    ["x"]="xray",
+    ["y"]="yankee",
+    ["z"]="zulu",
+    ["0"]= "zero",
+    ["1"]= "one",
+    ["2"]= "two",
+    ["3"]= "three",
+    ["4"]= "four",
+    ["5"]= "five",
+    ["6"]= "six",
+    ["7"]= "seven",
+    ["8"]= "eight",
+    ["9"]= "niner"
+    }
+    assert(NatoPhoneticAlphabet.a)
+
+if not NatoPhoneticAlphabet[letter] then Spring.Echo("Not a know letter in Nato Alphabet ".. letter) end
+
+return NatoPhoneticAlphabet[letter], 2 *30
+end
+
+
 local function createIdentifierFromID(id)
 	local sounds, times = {}, {}
-	local idStr = (id % 99)..""
-	sounds[#sounds+1], times[#times+1] =getNatoPhoneticsTime(idStr[1])
-	sounds[#sounds+1], times[#times+1] =getNatoPhoneticsTime(idStr[2])
+	assert(id)
+	assert(type(id) == "number")
+	local idStr = ((id % 99)..""):gsub("%s+", "")
+
+
+	Spring.Echo("idstr"..idStr)
+	assert(string.len(idStr)>= 2)
+	local firstLetter = idStr:sub(1,1):lower()
+	assert(firstLetter)
+	sounds[#sounds+1], times[#times+1] = getNatoPhoneticsTime(firstLetter)
+	Spring.Echo("FirstLetter"..firstLetter)
+	local secondLetter = idStr:sub(2):lower()
+	assert(secondLetter)
+		Spring.Echo("secondLetter"..secondLetter)
+	sounds[#sounds+1], times[#times+1] = getNatoPhoneticsTime(secondLetter)
 	return sounds, times
 end
 
@@ -123,57 +190,13 @@ local function getCommandStringFromDefID(defID)
 	return "_mobile"
 end
 
-local soundFilesLengthInFrames = {}
-local function addSoundPath(baseString)
-	return "/sounds/comchat/"..baseString..".ogg", soundFilesLengthInFrames[baseString]
-end
+
 
 local function getCommandTarget(x,y)
 	typestring, result = Spring.TraceScreenRay(x,y)
 	return typestring, result
 end
 
-local function getNatoPhoneticsTime(letter)
-	local NatoPhoneticAlphabet = {
-    a="alpha",
-    b="bravo",
-    c="charlie",
-    d="delta",
-    e="echo",
-    f="foxtrot",
-    g="golf",
-    h="hotel",
-    i="india",
-    j="juliet",
-    k="kilo",
-    l="lima",
-    m="mike",
-    n="november",
-    o="oscar",
-    p="papa",
-    q="quebec",
-    r="romeo",
-    s="sierra",
-    t="tango",
-    u="uniform",
-    v="victor",
-    w="whisky",
-    x="xray",
-    y="yankee",
-    z="zulu",
-    [0]= "zero",
-    [1]= "one",
-    [2]= "two",
-    [3]= "three",
-    [4]= "four",
-    [5]= "five",
-    [6]= "six",
-    [7]= "seven",
-    [8]= "eight",
-    [9]= "niner",
-    }
-return NatoPhoneticAlphabet[string.lower(letter)], 2 *30
-end
 
 local function doesUnitExistAlive(id)
     local valid = Spring.ValidUnitID(id)
@@ -210,6 +233,29 @@ local function dec2hex(num)
     return s
 end
 
+local function getActionSound()
+	local activeCmd = select(4, Spring.GetActiveCommand())
+	local default ="_establish"
+
+	local validComand = {
+		["Move"] = "_move",
+		["Stop"] = "_stop",
+		["Patrol"] = "_patrol",
+		["Attack"] = "_attack",
+		["Fight"] = "_attack",
+		["Guard"] = "_guard",
+		["Load"] = "_guard",
+		["Unload"] = "_neutral",
+
+	}
+	if validComand[activeCmd] then
+		local soundPath = addSoundPath(teamSex, validComand[activeCmd])
+		return soundPath , 45
+	end
+
+	local soundPath = addSoundPath(teamSex, default)
+	return  soundPath , 45
+end
 
 local function getObjectSounds(x,y)
  	--Unit getCommandStringFromDefID
@@ -256,7 +302,7 @@ local function getObjectSounds(x,y)
  
 local function createSubject(sound, times, identifierSounds, identifierTimes)
 	local soundList = {}
-	soundList[#soundList+1] = {sound =addSoundPath(sound) , times = times}
+	soundList[#soundList+1] = {sound =addSoundPath(teamSex, sound) , times = times}
 
 	for i=1, #identifierSounds do
 		soundList[#soundList+1] = {}
@@ -266,6 +312,48 @@ local function createSubject(sound, times, identifierSounds, identifierTimes)
 
 	return {soundList = soundList}
 end
+
+local function createAction(sound, times)
+	return {sound = addSoundPath(teamSex, sound), times = times}
+end
+
+local function createObject(sounds, times)
+	local result={}
+	for i=1,#sounds do
+		result[#result+1] = {sound = addSoundPath(teamSex, sounds[i]), times = times[i]}
+	end
+	return result
+end
+
+local commandStack ={
+--[[	[1]={ subject = {soundList = {}},
+		  action = {sound ="", times=2000},
+		  object = {
+		  		soundList= {}}
+		  		
+		  }
+--]]
+}
+
+local function addCommandStack(subject, action, object)
+	Spring.Echo("Gui_ComChatter:addCommandStack")
+local objectToInsert ={
+	subject = subject,
+	action = action,
+	object = object
+	}
+	if #commandStack == 0 then
+		commandStack[#commandStack + 1] = objectToInsert
+		return
+	end
+	--duplicate detection
+	if commandStack[#commandStack].subject ~= objectToInsert.subject and
+		commandStack[#commandStack].action ~= objectToInsert.action and
+		commandStack[#commandStack].object ~= objectToInsert.object then
+		commandStack[#commandStack + 1] = objectToInsert
+	end
+end
+
 local function buildSoundCommand( x, y)
 	local units = Spring.GetSelectedUnits()
 	Spring.Echo("PrintDebug 1")
@@ -303,19 +391,23 @@ local function buildSoundCommand( x, y)
 	Spring.Echo("PrintDebug 4")
 	--command type
 	local subjectName, subjectTime
-	local subjectName, subjectTime = getCommandStringFromDefID(higestOrderDefID)
+	subjectName, subjectTime = getCommandStringFromDefID(higestOrderDefID)
 	local subjectIdentifier, subjectIdentifierTimes
-	local subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, higestOrderDefID)
+	subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, higestOrderDefID)
 	Spring.Echo("PrintDebug 5")
 	local actionSound, actionTime 
-	local actionSound, actionTime = getActionSound(resultID)
+	actionSound, actionTime = getActionSound(resultID)
+	if  actionSound == nil then 
+		Spring.Echo("Called it 3")
+		return 
+	end
 
 	--object
 	local objectData 
-	local objectData = getObjectSounds(x,y)
+	objectData = getObjectSounds(x,y)
 
-	if not subjectName or not actionSound or not objectSounds then 
-		Spring.Echo("Called it 3")
+	if not subjectName or not actionSound or not objectData then 
+		Spring.Echo("Called it 4")
 		return 
 	end
 
@@ -325,43 +417,7 @@ local function buildSoundCommand( x, y)
 					)
 end
 
-local function createAction(sound, times)
-	return {sound = addSoundPath(sound), times = times}
-end
 
-local function createObject(sounds, times)
-	local result={}
-	for i=1,#sounds do
-		result[#result+1] = {sound = addSoundPath(sounds[i]), times = times[i]}
-	end
-	return result
-end
-
-local function addCommandStack(subject, action, object)
-	Spring.Echo("Gui_ComChatter:addCommandStack")
-local objectToInsert ={
-	subject = subject,
-	action = action,
-	object = object
-	}
-
-	--duplicate detection
-	if commandStack[#commandStack].subject ~= objectToInsert.subject and
-		commandStack[#commandStack].action ~= objectToInsert.action and
-		commandStack[#commandStack].object ~= objectToInsert.object then
-		commandStack[#commandStack + 1] = objectToInsert
-	end
-end
-
-local commandStack ={
---[[	[1]={ subject = {soundList = {}},
-		  action = {sound ="", times=2000},
-		  object = {
-		  		soundList= {}}
-		  		
-		  }
---]]
-}
 
 local function playCurrentComset(frame, currentComSetIndex)
 	if not currentComSetIndex then return end
@@ -371,7 +427,7 @@ local function playCurrentComset(frame, currentComSetIndex)
 	--play subject
 	for i=1, #currentComSet.subject.soundList do
 		if currentComSet.subject.soundList[i].times > 0 then
-			Spring.Echo("ComChatter:"..currentComSet.subject.soundList[i].sound)
+			Spring.Echo("ComChatter: Play "..currentComSet.subject.soundList[i].sound)
 			local totalTime = commandStack[currentComSetIndex].subject.soundList[i].times
 			commandStack[currentComSetIndex].subject.soundList[i].times = 0
 			return  frame + totalTime
@@ -380,7 +436,7 @@ local function playCurrentComset(frame, currentComSetIndex)
 
 	--play action
 	if currentComSet.action.times > 0 then
-	Spring.Echo("ComChatter:".. currentComSet.action.sound )
+	Spring.Echo("ComChatter: Play ".. currentComSet.action.sound )
 		local totalTime = currentComSet.action.times 
 		commandStack[currentComSetIndex].action.times = 0
 		return frame + totalTime
@@ -389,7 +445,7 @@ local function playCurrentComset(frame, currentComSetIndex)
 	--play object list
 	for i=1, #currentComSet.object.soundList do
 		if currentComSet.object.soundList[i].times > 0 then
-			Spring.Echo("ComChatter:"..currentComSet.object.soundList[i].sound)
+			Spring.Echo("ComChatter: Play"..currentComSet.object.soundList[i].sound)
 			local totalTime = commandStack[currentComSetIndex].object.soundList[i].times
 			commandStack[currentComSetIndex].object.soundList[i].times = 0
 			return frame + totalTime
@@ -404,8 +460,8 @@ end
 
 function widget:MousePress(x, y, button)
 	Spring.Echo("Gui_ComChatter:GameFrame MousePress"..button.." "..type(button))
-	if (button == 3) then 	
-
+	local selectedUnits = Spring.GetSelectedUnits()
+	if (button == 3 or (button == 1 and selectedUnits and #selectedUnits > 0)) then 	
 		buildSoundCommand( x, y)
 	end
 	return false
@@ -416,7 +472,7 @@ local boolComSetActive = false
 local accumulatedDT = 0.0
 function widget:Update(dt)
 	accumulatedDT = accumulatedDT + dt
-	if accumulatedDT > 0.5 and Spring.GetGameFrame() > nextComFrame then
+	if accumulatedDT > 0.5 and nextComFrame and Spring.GetGameFrame() > nextComFrame then
 	accumulatedDT = 0
 
 		if not boolComSetActive then
@@ -431,7 +487,7 @@ function widget:Update(dt)
 				end
 			end
 		else
-			boolComSetActive, nextComFrame = playCurrentComset(n, currentComSetIndex)
+			boolComSetActive, nextComFrame = playCurrentComset(Spring.GetGameFrame(), currentComSetIndex)
 			Spring.Echo("ComChatter Comframe worked off")
 		end
 	end
