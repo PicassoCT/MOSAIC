@@ -27,6 +27,8 @@ local weaponDef = {
 	--appearance
 	rgbColor = [[0.5 0.5 0.5]],		 	 
 	size = 12,
+
+	avoidFriendly = true,
 	
 
 	----------------------------------------------------------------

@@ -1,7 +1,7 @@
 
 local weaponName = "submachingegun" 
 local weaponDef = {
-    name = "Automatic",
+    name = "Boaz Submachingegun",
     weaponType = [[Cannon]],
     --damage
     damage = {
@@ -12,6 +12,7 @@ local weaponDef = {
     explosionGenerator = "custom:gunimpact",
     cegTag = "gunprojectile",
     texture1 = "gunshot",
+    avoidFriendly= true,
 
     --physics
     weaponVelocity = 850,
@@ -22,7 +23,7 @@ local weaponDef = {
     lineOfSight = true,
     turret = true,
 	-- noFirebaseCollide  = false,
-	avoidFriendly = false,
+
     craterMult = 0,
     burst = 14,
     burstrate = 0.15,
