@@ -33,6 +33,7 @@ local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
+local silencer = piece('Silencer');
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
@@ -94,12 +95,22 @@ boolFlying = false
 boolAiming = false
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 
+function showGun()
+    Show(Gun)
+    Show(silencer)
+    Hide(HolsteredGun)
+ end
+
+function hideGun()
+    Hide(Gun)
+    Hide(silencer)
+    Show(HolsteredGun)
+ end
+
 function script.Create()
     makeWeaponsTable()
     GG.OperativesDiscovered[unitID] = nil
-    Hide(Gun)
-    Show(HolsteredGun)
-
+    hideGun()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Shell"])
     shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
@@ -228,7 +239,7 @@ function setupAnimation()
                 if command.p and type(command.p) == "string" then
                     command.p = map[command.p]
                 end
-                ---Spring.Echo("Piece "..command.p.." maps to "..getUnitPieceName(unitID, command.p))
+                -- -Spring.Echo("Piece "..command.p.." maps to "..getUnitPieceName(unitID, command.p))
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
                 -- the t attribute needs to be adjusted for move commands from blender's absolute values
                 if (command.c == "move") then
@@ -931,8 +942,7 @@ function script.AimWeapon(weaponID, heading, pitch)
     -- if distance to target is smaller then 500 switch to pistol
 
     if dist < 250 then
-        Hide(Gun)
-        Show(HolsteredGun)
+        hideGun()
         Show(Pistol)
         lastShownWeapon = Pistol
         boolPistol = true
@@ -941,9 +951,8 @@ function script.AimWeapon(weaponID, heading, pitch)
         end
     else
         Hide(Pistol)
+        showGun()
         lastShownWeapon = Gun
-        Hide(HolsteredGun)
-        Show(Gun)
         boolPistol = false
         if weaponID ~= 1 then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
@@ -964,10 +973,12 @@ function showHideIcon(boolCloaked)
         showAll(unitID)
         hideT(TablesOfPiecesGroups.HeadDeco)
         showT(shownPieces)
-        Hide(Gun)
+        hideGun()
         Hide(Pistol)
         Show(lastShownWeapon)
-        if lastShownWeapon == Gun then Hide(HolsteredGun) end
+        if lastShownWeapon == Gun then 
+            showGun()
+        end
         hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end
