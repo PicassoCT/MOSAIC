@@ -72,10 +72,12 @@ local strategic_relevance = {}
 local last_waypoint = 0
 
 local function parseWaypointStrategicRelevance(waypoint)
+    assert(waypoint)
     local relevance = 1
     for _, flag in ipairs(flags) do
         local prod = HOUSE_PRODUCTION_VALUE
         local x, y, z = GetUnitPosition(flag)
+        assert(waypoint.x)
         local dx, dz = waypoint.x - x, waypoint.z - z
         local r2 = (dx * dx + dz * dz) * DIST2_MULT
         relevance = relevance + FLAG_RELEVANCE_MULT * prod / r2
@@ -154,6 +156,8 @@ end
 function Intelligence.GameFrame(f)
     if #waypoints > 0 then
         last_waypoint = (last_waypoint % #waypoints) + 1
+        assert(last_waypoint)
+        assert(waypoints[last_waypoint])
         parseWaypointStrategicRelevance(waypoints[last_waypoint])
     end
 
