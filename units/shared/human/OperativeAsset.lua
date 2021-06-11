@@ -43,7 +43,8 @@ local OperativeAsset = Human:New{
 	cloakTimeout =  360,
 	initCloaked = true,
 	stealth = true,
-
+	idleAutoHeal = 1500/120,
+	idleTime = 10*30,
 	category = "GROUND ARRESTABLE",
 	fireState= 1,
 	moveState = 0,
