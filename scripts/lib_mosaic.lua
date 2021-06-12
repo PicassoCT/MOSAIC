@@ -704,6 +704,20 @@ function getOperativeTypeTable(UnitDefs)
     return getTypeTable(UnitDefNames, typeTable)
 end
 
+function getStreetDecorationTypeTable(UnitDefs)
+local UnitDefNames = getUnitDefNames(UnitDefs)
+    UnitDefNames = getUnitDefNames(UnitDefs)
+    typeTable = {
+        "tree_arab0",
+         "tree_arab1", 
+         "innerCityDeco_inter1",
+        "innerCityDeco_inter2"
+    }
+
+    return getTypeTable(UnitDefNames, typeTable)
+
+end
+
 function getCivilianTypeTable(UnitDefs)
     assert(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)

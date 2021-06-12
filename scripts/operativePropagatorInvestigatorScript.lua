@@ -995,6 +995,7 @@ function spawnDecoyCivilian()
 			GG.DiedPeacefully[civilianID] = false
 				
 			if civilianID then
+                transferUnitStatusToUnit(unitID, civilianID)
 				GG.EventStream:CreateEvent(
 				syncDecoyToAgent,
 				persPack,

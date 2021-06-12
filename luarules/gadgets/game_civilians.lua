@@ -107,7 +107,22 @@ function getNearestHouse(x, z, minSpawnDistance)
     return currentUnit, locationBuildingTable[currentUnit].x, locationBuildingTable[currentUnit].z
 end
 
+function getAnyHouseLocation()
+    if GG.BuildingTable then
+         px, _, pz = spGetUnitPosition(randDict(GG.BuildingTable))
+        if px then
+            return px, 0, pz
+        end
+    end
+
+    return math.random(10,90)*game.mapSizeX/100, 0, math.random(10,90)*game.mapSizeZ/100
+end
+
 function getPoliceSpawnLocation(suspect)
+    if not suspect or type(suspect) ~= "number" TimeForScrapHeapDisappearanceInMs then
+        return getAnyHouseLocation()
+    end
+
     sx, sy, sz = spGetUnitPosition(suspect)
     if not sx then
         sx, sy, sz = (Game.mapSizeX/100) * math.random(10,90),0,(Game.mapSizeZ/100) * math.random(10,90) 
@@ -269,7 +284,7 @@ return pos.x + math.random(200,500)*randSign(), 0, pos.z+ math.random(200,500)*r
 end
 
 function dispatchOfficer(victimID, attackerID )
-
+    if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
     officerID = getOfficer(victimID, attackerID)
     boolFoundSomething = false
     if officerID and doesUnitExistAlive(officerID) == true then
