@@ -119,8 +119,9 @@ function getAnyHouseLocation()
 end
 
 function getPoliceSpawnLocation(suspect)
-    if not suspect or type(suspect) ~= "number" TimeForScrapHeapDisappearanceInMs then
-        return getAnyHouseLocation()
+    if not suspect or type(suspect) ~= "number"  then
+        x,y,z =  getAnyHouseLocation()
+       return x,y,z 
     end
 
     sx, sy, sz = spGetUnitPosition(suspect)

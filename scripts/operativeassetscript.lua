@@ -584,6 +584,7 @@ function animationStateMachineUpper(AnimationTable)
 end
 
 function delayedStop()
+    Turn(center,y_axis, math.rad(45), 120)
     Signal(SIG_STOP)
     SetSignalMask(SIG_STOP)
     Sleep(250)
@@ -591,6 +592,7 @@ function delayedStop()
     -- Spring.Echo("Stopping")
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
                               nil, true)
+    Turn(center,y_axis, math.rad(0), 360)
 end
 
 function script.StartMoving()
