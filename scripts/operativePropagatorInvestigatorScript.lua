@@ -943,6 +943,7 @@ local animationTable = AnimationTable
 end
 
 function delayedStop()
+    Turn(center,x_axis, math.rad(-10), 1)
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP) 
 	Sleep(250)
@@ -951,6 +952,7 @@ function delayedStop()
 	-- Spring.Echo("Stopping")
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 	showFoldLaptop(true)
+    Turn(center,x_axis, math.rad(0), 12)
 end
 
 function showFoldLaptop(boolUnfold)
@@ -968,6 +970,7 @@ function script.StartMoving()
 	boolWalking = true
 	showFoldLaptop(false)
 	Turn(center,y_axis, math.rad(0), 12)
+    Turn(center, y_axis, math.rad(5), 12)
 	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
 

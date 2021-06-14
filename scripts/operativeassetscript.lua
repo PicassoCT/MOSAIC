@@ -584,25 +584,28 @@ function animationStateMachineUpper(AnimationTable)
 end
 
 function delayedStop()
-    Turn(center,y_axis, math.rad(45), 120)
+    Turn(center,x_axis, math.rad(-10), 1)
     Signal(SIG_STOP)
     SetSignalMask(SIG_STOP)
     Sleep(250)
     boolWalking = false
     -- Spring.Echo("Stopping")
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                              nil, true)
-    Turn(center,y_axis, math.rad(0), 360)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, true)
+    Turn(center,x_axis, math.rad(0), 12)
 end
 
 function script.StartMoving()
     boolWalking = true
-    Turn(center, y_axis, math.rad(0), 12)
+    Turn(center, y_axis, math.rad(5), 12)
+
     setOverrideAnimationState(eAnimState.slaved, eAnimState.walking, true, nil,
                               false)
 end
 
-function script.StopMoving() StartThread(delayedStop) end
+function script.StopMoving() 
+
+    StartThread(delayedStop) 
+end
 
 local civilianID
 
