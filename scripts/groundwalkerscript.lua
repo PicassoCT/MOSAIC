@@ -97,7 +97,7 @@ function script.Create()
     Hide(aimrot)
     Hide(emitfire)
     StartThread(walkAnimationLoop)
-    StartThread(headingChangeDetector, unitID)
+    StartThread(headingChangeDetector, unitID, boolTurnLeft, boolTurning)
 --[[    StartThread(testAnimation)--]]
 end
 

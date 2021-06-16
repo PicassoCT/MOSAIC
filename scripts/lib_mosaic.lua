@@ -313,6 +313,7 @@ function getSatteliteTypes(UnitDefs)
     }
     return getTypeTable(UnitDefNames, typeTable)
 end
+
 function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
     assert(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
@@ -330,6 +331,28 @@ function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
         assert(true == false)
     end
 end
+
+function getMotorBikeLoadableTypes(UnitDefs)
+     assert(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+
+      typeTable = {
+            "operativeasset", 
+            "operativepropagator", 
+            "operativeinvestigator"
+        }
+      return getTypeTable(UnitDefNames, typeTable)
+end
+
+function getMotorBikeTypeTable(UnitDefs)
+         assert(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+
+      typeTable = {
+            "motorbike"
+        }
+      return getTypeTable(UnitDefNames, typeTable)
+  end
 
 function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
     assert(UnitDefs)
@@ -711,7 +734,8 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
         "tree_arab0",
          "tree_arab1", 
          "innerCityDeco_inter1",
-        "innerCityDeco_inter2"
+        "innerCityDeco_inter2",
+        "innerCityDeco_inter3"
     }
 
     return getTypeTable(UnitDefNames, typeTable)
@@ -799,7 +823,8 @@ function getCivilianAnimationStates()
         walking = "STATE_WALKING",
         running = "STATE_RUNNING",
         coverwalk = "STATE_COVERWALK",
-        wounded = "STATE_WOUNDED"
+        wounded = "STATE_WOUNDED",
+        riding = "STATE_RIDING"
     }
 
 end
@@ -849,6 +874,7 @@ function getInternationalCityDecorationTypes(UnitDefs)
  return {
         [UnitDefNames["innercitydeco_inter1"].id] = true,
         [UnitDefNames["innercitydeco_inter2"].id] = true,
+        [UnitDefNames["innercitydeco_inter3"].id] = true
         }
 end
 

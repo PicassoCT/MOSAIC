@@ -29,7 +29,7 @@ function script.Create()
     StartThread(guardSwivelTurret)
     -- StartThread(debugAimLoop, 5000, 0)
     -- StartThread(debugAimLoop, 5000, 1)
-    StartThread(printOutWeapon, "machinegun")
+--    StartThread(printOutWeapon, "machinegun")
 end
 
 function printOutWeapon(weaponName)

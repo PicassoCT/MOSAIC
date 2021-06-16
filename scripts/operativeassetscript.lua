@@ -128,6 +128,7 @@ function script.Create()
     StartThread(cloakLoop)
     -- StartThread(testAnimationLoop)
     StartThread(breathing)
+    StartThread(transportControl)
 
 end
 
@@ -145,6 +146,27 @@ function flyingPose(id)
 	reset(LowLeg2, 15)	
 	reset(LowLeg1, 15)	
 end
+
+boolTransportedNoFiring = false
+motorBikeTypeTable = getMotorBikeTypeTable(UnitDefs)
+function transportControl()
+    Sleep(10)
+  
+
+    waitTillComplete(unitID)
+    while true do
+        if isTransported(unitID) == true and motorBikeTypeTable[Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))] then
+            boolTransportedNoFiring = true    
+            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+            while isTransported(unitID) == true do    
+                Sleep(100)
+            end
+            boolTransportedNoFiring = false
+        end
+        Sleep(1000)
+    end
+end
+
 
 
 function breathing()
@@ -211,7 +233,8 @@ uppperBodyAnimations = {
     }
 }
 
-lowerBodyAnimations = {
+lowerBodyAnimations = {           
+    [eAnimState.riding] = {[1]= "FULLBODY_RIDING"},
     [eAnimState.walking] = {[1] = "WALKCYCLE_RUNNING"},
     [eAnimState.standing] = {[1] = "UPBODY_STANDING_GUN"},
     [eAnimState.aiming] = {[1] = "UPBODY_STANDING_GUN"}
@@ -488,6 +511,14 @@ UpperAnimationStateFunctions = {
 }
 
 LowerAnimationStateFunctions = {
+     [eAnimState.riding] = function()
+        PlayAnimation(randT(lowerBodyAnimations[eAnimState.riding]), {})
+ 
+        return eAnimState.riding
+    end,
+
+
+
     [eAnimState.walking] = function()
 	if boolFlying == true then return eAnimState.walking end
 
@@ -920,6 +951,8 @@ end
 
 lastShownWeapon = Pistol
 function script.AimWeapon(weaponID, heading, pitch)
+    if boolTransportedNoFiring == true then return false end
+
     targetType, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
     if not targetType or (not validTargetType[targetType]) then

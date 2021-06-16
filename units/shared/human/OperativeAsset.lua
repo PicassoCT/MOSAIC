@@ -30,7 +30,7 @@ local OperativeAsset = Human:New{
 	script 				= "operativeassetscript.lua",
 	objectName        	= "operative_asset.dae",
 	customParams        = {
-		normaltex = "unittextures/operative_asset_normalpha.tga",
+		normaltex = "unittextures/operative_asset_normalpha.dds",
 	},
 	onoffable = false,
 	  

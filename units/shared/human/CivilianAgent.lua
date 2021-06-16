@@ -27,7 +27,7 @@ local CivilianAgent = Human:New{
 	script 					= "civilianagentscript.lua",
 	objectName        	= "civilian0_arab.dae",
 	customParams        = {
-		normaltex = "unittextures/arab_civilian_normal.tga",
+		normaltex = "unittextures/arab_civilian_normal.dds",
 	},
 	buildPic = "civilianagent.png",
 	iconType = "civilianagent",

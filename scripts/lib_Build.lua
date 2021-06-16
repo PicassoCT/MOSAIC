@@ -19389,6 +19389,18 @@ end
 -- SoundPerson is a Function that allows to convay additional params into the sound-
 -- e.g. Out of Breath, Angry, tired, sad, by changing loudness and choosen soundsnippet
 -- its call signature is SoundPerson(translatedSoundSnippet, position in sentence, translatedTable)
+
+ function hashString(stringToHash)
+            totalValue = 0
+            for i = 1, string.len(stringToHash) do
+                local c = stringToHash:sub(i, i)
+                totalValue = totalValue + string.byte(c, 1)
+            end
+
+            return totalValue
+        end
+
+
 function speakMorkDorkUruk(LanguageTable, SymbolLenght, SoundTable, Text,
                            ScreenPos, StandardLoud, LoudRange, SoundPerson)
     LanguageTable = LanguageTable or {
@@ -19401,14 +19413,7 @@ function speakMorkDorkUruk(LanguageTable, SymbolLenght, SoundTable, Text,
         [6] = "mor",
         [7] = "hur",
         [8] = "  ",
-        Hash = function(stringToHash)
-            totalValue = 0
-            for i = 1, string.len(stringToHash) do
-                local c = stringToHash:sub(i, i)
-                totalValue = totalValue + string.byte(c, 1)
-            end
-            return (totalValue % #LanguageTable) + 1
-        end
+        Hash = hashString 
     }
     SymbolLenght = SymbolLenght or 2
     SoundTable = SoundTable or {}
@@ -19422,7 +19427,7 @@ function speakMorkDorkUruk(LanguageTable, SymbolLenght, SoundTable, Text,
         local line = Text[i]
         for k = 1, string.len(line), SymbolLenght do
             c = line:sub(k, math.min(string.len(line), k + SymbolLenght))
-            local hash = LanguageTable.Hash(c)
+            local hash = LanguageTable.Hash(c) % #LanguageTable
             translatedTable[#translatedTable + 1] =
                 string.low(LanguageTable[hash]) or LanguageTable.emptyString
             if translatedTable[#translatedTable] == LanguageTable.emptyString then
