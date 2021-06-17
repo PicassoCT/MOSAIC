@@ -133,10 +133,12 @@ local function createIdentifierFromID(id)
 	assert(string.len(idStr)>= 2)
 	local firstLetter = idStr:sub(1,1):lower()
 	assert(firstLetter)
+	assert(getNatoPhoneticsTime(firstLetter))
 	sounds[#sounds+1], times[#times+1] = addSoundPath(teamSex, getNatoPhoneticsTime(firstLetter)), 20
 --	Spring.Echo("FirstLetter"..firstLetter)
 	local secondLetter = idStr:sub(2):lower()
 	assert(secondLetter)
+	assert(getNatoPhoneticsTime(secondLetter))
 	--	Spring.Echo("secondLetter"..secondLetter)
 	sounds[#sounds+1], times[#times+1] = addSoundPath(teamSex, getNatoPhoneticsTime(secondLetter)), 20
 	return sounds, times
@@ -338,16 +340,22 @@ local commandStack ={
 }
 
 local function addCommandStack(subject, action, object)
+	asert(subject)
+	asert(action)
+	asert(object)
 --	Spring.Echo("Gui_ComChatter:addCommandStack")
+
 local objectToInsert ={
 	subject = subject,
 	action = action,
 	object = object
 	}
+
 	if #commandStack == 0 then
 		commandStack[#commandStack + 1] = objectToInsert
 		return
 	end
+	
 	--duplicate detection
 	if commandStack[#commandStack].subject ~= objectToInsert.subject and
 		commandStack[#commandStack].action ~= objectToInsert.action and

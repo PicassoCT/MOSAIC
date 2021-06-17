@@ -3,8 +3,8 @@ local AntagonSafeHouse = Building:New{
 	maxDamage           = 1000,
 	mass                = 500,
 
-	buildTime = 15,
-	MaxSlope 					= 50,
+	buildTime 			= 15,
+	MaxSlope 			= 50,
 	explodeAs			= "none",
 	NoWeapon=true,
 	name = "Safehouse",

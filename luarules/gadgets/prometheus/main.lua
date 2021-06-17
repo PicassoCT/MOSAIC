@@ -230,7 +230,7 @@ function gadget:Initialize()
         training_time = MIN_TRAINING_TIME
     end
    firstFrame = math.max(1,Spring.GetGameFrame()) + 1
-   if not waypointMgr then waypointMgr = CreateWaypointMgr() end
+   if not waypointMgr.UnitCreated then waypointMgr = CreateWaypointMgr() end
 
 	base_gann = CreateGANN()
     local base_gann_inputs = VFS.Include("LuaRules/Gadgets/prometheus/base/gann_inputs.lua")
@@ -360,8 +360,11 @@ end
 --
 --  Unit call-ins
 --
-
+storedUnitCreations = {}
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
+    if not waypointMgr.UnitCreated then
+        waypointMgr = CreateWaypointMgr()
+    end
     waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
     if team[unitTeam] then
         team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)

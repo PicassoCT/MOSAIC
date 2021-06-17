@@ -70,9 +70,10 @@ local OperativeAsset = Human:New{
 	terraformSpeed = 1,
 	buildoptions = {
 		"ground_turret_ssied",
-		"air_parachut",
 		"ground_stickybomb",
-		"bribeicon"
+		"bribeicon",
+		"stealmotorbike",
+		"air_parachut",
 	},
 	
 	customparams = {

@@ -170,9 +170,7 @@ function rotations()
 
     for k, v in pairs(pericodicMovingZPieces) do
         StartThread(periodicMovementFunc, k, v)
-
     end
-
 end
 
 function buildHouse()

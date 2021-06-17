@@ -104,7 +104,10 @@ function getGameConfig()
 
         -- asset
         assetCloakedSpeedReduction = 0.175,
+        assetSpeedRunning = 1.0,
+        assetSpeedWalking = 0.6,
         assetShotFiredWaitTimeToRecloak_MS = 6000,
+        assetMaxRunTimeInSeconds = 15,
 
         Wreckage = {lifeTime = 3 * 60 * 1000},
 

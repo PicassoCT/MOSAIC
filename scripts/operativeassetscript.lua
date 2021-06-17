@@ -34,12 +34,15 @@ local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
 local silencer = piece('Silencer');
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
 local disguiseDefID = randT(civilianWalkingTypeTable)
-mySpeedReductionCloaked = GameConfig.assetCloakedSpeedReduction
+speedCloaked            = GameConfig.assetCloakedSpeedReduction
+speedRunning            = GameConfig.assetSpeedRunning
+speedWalking            = GameConfig.assetSpeedWalking
+local runningTimeInMS = 0
 
 local scriptEnv = {
     center = center,
@@ -129,7 +132,8 @@ function script.Create()
     -- StartThread(testAnimationLoop)
     StartThread(breathing)
     StartThread(transportControl)
-
+    StartThread(runningReactor)
+    StartThread(speedMonitoring)
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
@@ -167,6 +171,58 @@ function transportControl()
     end
 end
 
+boolRunningTimeOut = false
+
+function canRunFor(TimeInMS)
+    return runningTimeInMS - TimeInMS > 0 and boolRunningTimeOut == false
+end
+
+function runFor(TimeInMS)
+    runningTimeInMS = runningTimeInMS - TimeInMS
+    if runningTimeInMS <= 101 then
+        boolRunningTimeOut = true
+         echo("Running Timeout true")
+    end
+end
+
+
+function runningReactor()
+    runningTimeInMS = GameConfig.assetMaxRunTimeInSeconds*1000
+    while true do
+    runningTimeInMS = math.min(runningTimeInMS + 100, GameConfig.assetMaxRunTimeInSeconds*1000)
+    Sleep(100)
+    end
+end
+
+local cachedSpeed= math.huge
+function setSpeedEnvCached(unitID, newSpeed )
+    if newSpeed ~= cachedSpeed then
+        echo("Setting Operativespeed to "..newSpeed)
+        setSpeedEnv(unitID, newSpeed)
+        cachedSpeed = newSpeed
+    end
+
+end
+
+function speedMonitoring()
+    while true do
+    Sleep(50)
+        if boolRunningPossible == true then
+            if boolWalking == true then
+                if canRunFor(50) == true then
+                    setSpeedEnvCached(unitID, speedRunning)
+                    runFor(50)
+                else
+                    if runningTimeInMS >= ((GameConfig.assetMaxRunTimeInSeconds*1000)) then
+                        boolRunningTimeOut = false
+                        echo("Running Timeout false")
+                    end
+                    setSpeedEnvCached(unitID, speedWalking)
+                end
+            end
+        end
+    end
+end
 
 
 function breathing()
@@ -684,9 +740,10 @@ function getWantCloak()
 end
 
 boolIsBuilding = false
-
+boolRunningPossible = false
 function transitionToUncloaked()
-    setSpeedEnv(unitID, 1.0)
+    boolRunningPossible = true
+    setSpeedEnvCached(unitID, speedRunning)
     setWantCloak(false)
     if civilianID and doesUnitExistAlive(civilianID) == true then
         GG.DiedPeacefully[civilianID] = true
@@ -705,7 +762,8 @@ end
 
 function transitionToCloaked()
     setWantCloak(true)
-    setSpeedEnv(unitID, mySpeedReductionCloaked)
+    boolRunningPossible = false
+    setSpeedEnvCached(unitID, speedCloaked)
     StartThread(spawnDecoyCivilian)
     return "cloaked"
 end
@@ -780,7 +838,7 @@ function cloakLoop()
     waitTillComplete(unitID)
 
     -- initialisation
-    setSpeedEnv(unitID, mySpeedReductionCloaked)
+    setSpeedEnv(unitID, speedCloaked)
     StartThread(spawnDecoyCivilian)
     showHideIcon(true)
 

@@ -73,6 +73,39 @@ local RecruitCivilian =
     category = [[NOTARGET]]
 }
 
+local StealMotorbike =
+    Abstract:New {
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 0,
+    buildCostMetal = 250,
+    explodeAs = "none",
+    --orders
+    buildTime = 3.0,
+    script = "stealMotorbikeScript.lua",
+    objectName = "civilian_motorbike.dae",
+    buildPic = "MotorBike.png",
+    iconType = "recruitcivilian",
+    buildingMask = 8,
+    --
+    name = "Motorbike",
+    description = "steal from any house",
+    -- Hack Infrastructure
+    --CommandUnits (+10 Units)
+    -- WithinCellsInterlinked (Recruit)
+    buildtime = 5,
+
+    minCloakDistance = 5,
+    onoffable = true,
+    MaxSlope = 100,
+    levelGround = false,
+    customparams = {
+        helptext = "Motorbike",
+        baseclass = "Human" -- TODO: hacks
+    },
+    category = [[NOTARGET]]
+}
+
 local RaidIcon =
     Abstract:New {
     corpse = "",
@@ -292,6 +325,7 @@ return lowerkeys(
         --Temp
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),
+        ["stealmotorbike"] = StealMotorbike:New(),
         ["raidicon"] = RaidIcon:New(),
         ["recruitcivilian"] = RecruitCivilian:New(),
         ["snipeicon"] = SnipeIcon:New(),
