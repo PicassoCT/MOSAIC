@@ -20,8 +20,10 @@ end
 function loadRider()
     Sleep(100)
     waitTillComplete(unitID)
-    assert(fatherID)
-    id = createUnitAtUnit(myTeamID, "motorbike", unitID, 0, 0, 0, fatherID, 0)
+    fatherID = fatherID or unitID
+    x,y,z = Spring.GetUnitPosition(fatherID)
+    id = Spring.CreateUnit("motorbike", x,y,z, math.random(1,4), myTeamID)
+    Sleep(1)  
     if doesUnitExistAlive(id) == true then
         Spring.SetUnitLoadingTransport(fatherID, id)
     end

@@ -340,9 +340,9 @@ local commandStack ={
 }
 
 local function addCommandStack(subject, action, object)
-	asert(subject)
-	asert(action)
-	asert(object)
+	assert(subject)
+	assert(action)
+	assert(object)
 --	Spring.Echo("Gui_ComChatter:addCommandStack")
 
 local objectToInsert ={

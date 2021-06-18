@@ -60,6 +60,7 @@ end
 
 function script.TransportPickup(passengerID)
     if motorBikeLoadableTypeTable[Spring.GetUnitDefID(passengerID)] then
+        setUnitValueExternal(passengerID, 'WANT_CLOAK', false)
         Spring.SetUnitNoSelect(passengerID, true)
         Spring.UnitAttach(unitID, passengerID, attachPoint)
         passenger = passengerID
