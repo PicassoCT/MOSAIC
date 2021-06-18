@@ -61,7 +61,8 @@ local OperativeInvestigator = Human:New{
 		"protagonsafehouse",
 		"air_copter_ssied",
 		"checkpoint",
-		"brehmerwall"
+		"brehmerwall",		
+		"stealmotorbike",
 	},
 
 	customparams = {
