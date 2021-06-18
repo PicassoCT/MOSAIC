@@ -10,6 +10,7 @@ SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
 SIG_STOP = 8
+SIG_Kill = 16
 
 center = piece "center"
 attachPoint = piece"attachPoint"
@@ -22,6 +23,7 @@ bikeType = math.random(1,3)
  SteerParts = {}
  Signum = -1
 LeanFactor = 1.0
+GameConfig = getGameConfig()
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
@@ -55,14 +57,17 @@ function script.Create()
         Show(piece("SteeringAddition3"))
     end
     StartThread(updateSteering)
+    setSpeedEnv(unitID, 0.0)
 end
 
 
 function script.TransportPickup(passengerID)
     if motorBikeLoadableTypeTable[Spring.GetUnitDefID(passengerID)] then
+        Signal(SIG_KILL)
         setUnitValueExternal(passengerID, 'WANT_CLOAK', false)
         Spring.SetUnitNoSelect(passengerID, true)
         Spring.UnitAttach(unitID, passengerID, attachPoint)
+        setSpeedEnv(unitID, 1.0)
         passenger = passengerID
     end
 end
@@ -72,7 +77,17 @@ function script.TransportDrop(passengerID, x, y, z)
         passenger= nil
         Spring.UnitDetach(passengerID)
         Spring.SetUnitNoSelect(passengerID, false)
+        setSpeedEnv(unitID, 0.0)
+        StartThread(killAfterTime)
     end
+end
+
+
+function killAfterTime()
+    Signal(SIG_KILL)
+    SetSignalMask(SIG_KILL)
+    Sleep(GameConfig.motorBikeSurvivalStandalone)
+    Spring.DestroyUnit(unitID, false, true)
 end
 
 boolTurning = false

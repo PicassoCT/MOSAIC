@@ -96,6 +96,9 @@ function getGameConfig()
         raidWaitTimeToRecloak = 5000,
         operativeShotFiredWaitTimeToRecloak_MS = 10000,
 
+        --motorBike
+        motorBikeSurvivalStandaloneMS = 15*1000
+
         -- checkpoint
         checkPointRevealRange = 125,
         checkPointPropagandaCost = 75,
