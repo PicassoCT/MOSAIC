@@ -20,7 +20,7 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.MoveCtrl.Enable(unitID, true)
-    Spring.SetUnitNoSelect(unitID, true)
+   -- Spring.SetUnitNoSelect(unitID, true)
     -- StartThread(AnimationTest)
     hideT(TablesOfPiecesGroups["Fract"])
     StartThread(fallingDown)
@@ -59,13 +59,15 @@ function randShow(id)
         Sleep(10)
     end
 end
+
 operativeTypeTable = getOperativeTypeTable(Unitdefs)
+local passengerID = unitID
 function fallingDown()
     waitTillComplete(unitID)
     Sleep(1)
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end 
 
-    local passengerID = unitID
+
     transporting = Spring.GetUnitIsTransporting(unitID)
     if not GG.ParachutPassengers[unitID] then
         if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)]  then
@@ -81,7 +83,10 @@ function fallingDown()
         end
     end
 
-    while not GG.ParachutPassengers[unitID] do Sleep(10) end
+    while not GG.ParachutPassengers[unitID] do 
+        Sleep(10) 
+    end
+
     -- debug code
     passengerID = GG.ParachutPassengers[unitID].id
     passengerDefID = Spring.GetUnitDefID(passengerID)
@@ -95,19 +100,22 @@ function fallingDown()
         return
     end
 
+    Spring.SetUnitNoSelect(passengerID, true)
     Spring.UnitAttach(unitID, passengerID, step)
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
 
     while isPieceAboveGround(unitID, center, 15) == true do
         x, y, z = Spring.GetUnitPosition(unitID)
-        xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
+        xOff, zOff = getComandOffset(unitID, x, z, 1.52)
 
         Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)
         Sleep(1)
-
     end
 
-    Spring.UnitDetach(passengerID)
+    if doesUnitExistAlive(passengerID) == true then
+        Spring.UnitDetach(passengerID)
+        Spring.SetUnitNoSelect(passengerID, false)
+    end
     Spring.DestroyUnit(unitID, false, true)
 end
 
@@ -117,6 +125,19 @@ function pieceOrder(i)
     if i > 3 and i < 8 then return 3 end
     if i > 7 and i < 16 then return 4 end
     return 0
+end
+
+function script.TransportPickup(passenger)
+    Spring.SetUnitNoSelect(passenger, true)
+    Spring.UnitAttach(unitID, passenger, step)
+    passengerID = passenger
+end
+
+function script.TransportDrop(passenger, x, y, z)
+    if doesUnitExistAlive(passenger) then
+        Spring.UnitDetach(passenger)
+        Spring.SetUnitNoSelect(passenger, false)
+    end
 end
 
 function sinusWaveThread(start, ends)
@@ -181,7 +202,15 @@ function AnimationTest()
     end
 end
 
-function script.Killed(recentDamage, _) return 1 end
+function script.Killed(recentDamage, _) 
+    if passengerID and doesUnitExistAlive(passengerID) then
+       Spring.SetUnitNoSelect(passengerID, true)
+   end
+   dropRate = 10
+   Sleep(50)
+
+    return 1 
+end
 
 function getComandOffset(id, x, z, speed)
 

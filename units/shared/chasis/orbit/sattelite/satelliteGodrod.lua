@@ -1,6 +1,6 @@
 local satteliteGodrod = Satellite:New{
-	name = "Orbital Strike Satellite ",
-	Description = " Cinetic orbital bomardment plattform ",
+	name = "Project Thor",
+	Description = "  Orbital Bombardment Satellite ",
 	buildTime= 45,
 	maxDamage          		= 500,
 	mass              		= 500,
