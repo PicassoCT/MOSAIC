@@ -15,15 +15,19 @@ step = piece "step"
 -- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 -- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 testOffset = 300
-dropRate = 0.25 * 2
+stationaryDropRate = 2.0
+travellingDropRate = 0.5
+dropRate = travellingDropRate
+
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.MoveCtrl.Enable(unitID, true)
-   -- Spring.SetUnitNoSelect(unitID, true)
+    Spring.SetUnitNoSelect(unitID, true)
     -- StartThread(AnimationTest)
     hideT(TablesOfPiecesGroups["Fract"])
     StartThread(fallingDown)
+    StartThread(detectStationary)
     Show(center)
     assert(infantry)
     Hide(infantry)
@@ -60,20 +64,47 @@ function randShow(id)
     end
 end
 
-operativeTypeTable = getOperativeTypeTable(Unitdefs)
+x, y, z = Spring.GetUnitPosition(unitID)
+
+function detectStationary()
+    stationaryTreshold=4.0
+    accumulatedNonMovementTime = 0
+    oldx,  oldz = x,z
+
+    while true do
+        oldx,  oldz = x,z
+        Sleep(100)
+        dist = math.sqrt((oldx-x)^2 + (oldz-z)^2)
+        Spring.Echo("Stationary Detection "..dist)
+        if dist < stationaryTreshold then
+            accumulatedNonMovementTime = accumulatedNonMovementTime + 100
+            if accumulatedNonMovementTime > 5000 then
+                dropRate = stationaryDropRate
+            else
+                dropRate = travellingDropRate
+            end
+        else
+            accumulatedNonMovementTime = 0
+            dropRate = travellingDropRate
+        end
+    end
+end
+
 local passengerID = unitID
+operativeTypeTable = getOperativeTypeTable(Unitdefs)
+
 function fallingDown()
     waitTillComplete(unitID)
     Sleep(1)
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end 
 
-
+  
     transporting = Spring.GetUnitIsTransporting(unitID)
     if not GG.ParachutPassengers[unitID] then
         if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)]  then
-            x, y, z = Spring.GetUnitPosition(fatherID)
-            y = y + GG.GameConfig.parachuteHeight
-            GG.ParachutPassengers[unitID] = {id = fatherID, x = x, y = y, z = z}
+            tx, ty, tz = Spring.GetUnitPosition(fatherID)
+            ty = ty + GG.GameConfig.parachuteHeight
+            GG.ParachutPassengers[unitID] = {id = fatherID, x = tx, y = ty, z = tz}
         else
             if transporting and #transporting > 0 then
                 x, y, z = Spring.GetUnitPosition(transporting[1])
@@ -83,10 +114,7 @@ function fallingDown()
         end
     end
 
-    while not GG.ParachutPassengers[unitID] do 
-        Sleep(10) 
-    end
-
+    while not GG.ParachutPassengers[unitID] do Sleep(10) end
     -- debug code
     passengerID = GG.ParachutPassengers[unitID].id
     passengerDefID = Spring.GetUnitDefID(passengerID)
@@ -100,22 +128,17 @@ function fallingDown()
         return
     end
 
-    Spring.SetUnitNoSelect(passengerID, true)
     Spring.UnitAttach(unitID, passengerID, step)
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
 
     while isPieceAboveGround(unitID, center, 15) == true do
         x, y, z = Spring.GetUnitPosition(unitID)
-        xOff, zOff = getComandOffset(unitID, x, z, 1.52)
-
+        xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
         Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)
         Sleep(1)
     end
 
-    if doesUnitExistAlive(passengerID) == true then
-        Spring.UnitDetach(passengerID)
-        Spring.SetUnitNoSelect(passengerID, false)
-    end
+    Spring.UnitDetach(passengerID)
     Spring.DestroyUnit(unitID, false, true)
 end
 
@@ -125,19 +148,6 @@ function pieceOrder(i)
     if i > 3 and i < 8 then return 3 end
     if i > 7 and i < 16 then return 4 end
     return 0
-end
-
-function script.TransportPickup(passenger)
-    Spring.SetUnitNoSelect(passenger, true)
-    Spring.UnitAttach(unitID, passenger, step)
-    passengerID = passenger
-end
-
-function script.TransportDrop(passenger, x, y, z)
-    if doesUnitExistAlive(passenger) then
-        Spring.UnitDetach(passenger)
-        Spring.SetUnitNoSelect(passenger, false)
-    end
 end
 
 function sinusWaveThread(start, ends)
@@ -202,15 +212,10 @@ function AnimationTest()
     end
 end
 
-function script.Killed(recentDamage, _) 
-    if passengerID and doesUnitExistAlive(passengerID) then
-       Spring.SetUnitNoSelect(passengerID, true)
-   end
-   dropRate = 10
-   Sleep(50)
-
+function script.Killed(recentDamage, _)    
     return 1 
 end
+
 
 function getComandOffset(id, x, z, speed)
 

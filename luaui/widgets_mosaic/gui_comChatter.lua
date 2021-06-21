@@ -68,6 +68,7 @@ function widget:Shutdown()
 end
 
 local function addSoundPath(sex, baseString)
+	assert(baseString)
 	assert(baseString ~= "")
 	return "sounds/comchatter/"..sex.."/"..baseString..".ogg"
 end
