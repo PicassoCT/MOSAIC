@@ -486,6 +486,7 @@ end
 local unitBuiltBy = {}
 
 local function IdleFactory(unitID)
+    if not myFactories[unitID] then myFactories[unitID] = 0 end
     if #myFactories[unitID] > 0 then
         -- We still have work to do...
         return

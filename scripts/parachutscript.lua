@@ -41,16 +41,18 @@ function script.Create()
 end
 
 function randShow(id)
+    standardSpeed = math.pi / 10
     while true do
         rVal = math.random(200, 1000)
         if maRa() == true then
-            if maRa() == tre then
-                spinRand(id, -42, 42, 15)
+            if maRa() == true then
+                exoSpeed= math.random(31,150)/100
+                spinRand(id, -42, 42, exoSpeed)
             else
                 reset(id)
                 rotVal = math.random(-360, 360)
                 Turn(id, y_axis, math.rad(rotVal), 0)
-                spinRand(id, -42, 42, math.pi / 10)
+                spinRand(id, -42, 42, standardSpeed)
             end
 
             if maRa() == true then
@@ -59,13 +61,30 @@ function randShow(id)
                 Hide(id)
             end
             Sleep(rVal)
+        else
+            if boolStationary == true then
+                Hide(id)
+                stopSpins(id,0)
+                reset(id,0)
+                for i=1,3 do
+                 roundVal= math.random(0,360)
+                 Turn(id, i, math.rad(roundVal),0)
+                end
+                reset(id, standardSpeed)
+                if maRa() == true then
+                    Show(id)
+                else
+                    Hide(id)
+                end
+                Sleep(rVal)
+            end
         end
         Sleep(10)
     end
 end
 
 x, y, z = Spring.GetUnitPosition(unitID)
-
+boolStationary = false
 function detectStationary()
     stationaryTreshold=4.0
     accumulatedNonMovementTime = 0
@@ -75,17 +94,19 @@ function detectStationary()
         oldx,  oldz = x,z
         Sleep(100)
         dist = math.sqrt((oldx-x)^2 + (oldz-z)^2)
-        Spring.Echo("Stationary Detection "..dist)
         if dist < stationaryTreshold then
             accumulatedNonMovementTime = accumulatedNonMovementTime + 100
             if accumulatedNonMovementTime > 5000 then
                 dropRate = stationaryDropRate
+                boolStationary = true
             else
                 dropRate = travellingDropRate
+                boolStationary = false
             end
         else
             accumulatedNonMovementTime = 0
             dropRate = travellingDropRate
+            boolStationary = false
         end
     end
 end
@@ -98,7 +119,6 @@ function fallingDown()
     Sleep(1)
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end 
 
-  
     transporting = Spring.GetUnitIsTransporting(unitID)
     if not GG.ParachutPassengers[unitID] then
         if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)]  then
@@ -118,8 +138,7 @@ function fallingDown()
     -- debug code
     passengerID = GG.ParachutPassengers[unitID].id
     passengerDefID = Spring.GetUnitDefID(passengerID)
-    if operativeTypeTable[passengerDefID] and
-        Spring.GetUnitIsCloaked(passengerID) then Show(infantry) end
+    if operativeTypeTable[passengerDefID] and Spring.GetUnitIsCloaked(passengerID) then Show(infantry) end
 
     x, y, z = GG.ParachutPassengers[unitID].x, GG.ParachutPassengers[unitID].y,
               GG.ParachutPassengers[unitID].z
