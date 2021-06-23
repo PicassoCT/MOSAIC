@@ -64,19 +64,14 @@ function randShow(id)
         else
             if boolStationary == true then
                 Hide(id)
-                stopSpins(id,0)
                 reset(id,0)
                 for i=1,3 do
-                 roundVal= math.random(0,360)
-                 Turn(id, i, math.rad(roundVal),0)
+                        roundVal= math.random(0,15)
+                        Turn(id, i, math.rad(roundVal),0)
                 end
+                Show(id)
                 reset(id, standardSpeed)
-                if maRa() == true then
-                    Show(id)
-                else
-                    Hide(id)
-                end
-                Sleep(rVal)
+                WaitForTurns(id)
             end
         end
         Sleep(10)

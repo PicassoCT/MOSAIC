@@ -66,6 +66,22 @@ local function lstRemove(t, i)
     return t
 end
 
+local function doesUnitExistAlive(id)
+    local valid = Spring.ValidUnitID(id)
+    if valid == nil or valid == false then
+        -- echo("doesUnitExistAlive::Invalid ID")
+        return false
+    end
+
+    local dead = Spring.GetUnitIsDead(id)
+    if dead == nil or dead == true then
+        -- echo("doesUnitExistAlive::Dead Unit")
+        return false
+    end
+
+    return true
+end
+
 local isFlag = gadget.flags
 local flags = {}
 local strategic_relevance = {}
@@ -75,12 +91,14 @@ local function parseWaypointStrategicRelevance(waypoint)
     assert(waypoint)
     local relevance = 1
     for _, flag in ipairs(flags) do
+        if doesUnitExistAlive(flag) == true then
         local prod = HOUSE_PRODUCTION_VALUE
         local x, y, z = GetUnitPosition(flag)
         assert(waypoint.x)
         local dx, dz = waypoint.x - x, waypoint.z - z
         local r2 = (dx * dx + dz * dz) * DIST2_MULT
         relevance = relevance + FLAG_RELEVANCE_MULT * prod / r2
+     end
     end
 
     strategic_relevance[waypoint] = relevance

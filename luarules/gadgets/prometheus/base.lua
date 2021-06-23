@@ -293,7 +293,6 @@ end
 
 -- Map of unitDefIDs (buildOption) to unitDefIDs (builders)
 local baseBuildOptions = {}
-
 local function updateBuildOptions(unitDefID)
     if unitDefID == nil then
         baseBuildOptions = {}

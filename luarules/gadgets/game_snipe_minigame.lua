@@ -575,10 +575,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function setPublicRaidState(raidIconID, state, result, winningTeam, boolInterogationComplete)
-        GG.raidStatus[raidIconId].state = state
-        GG.raidStatus[raidIconId].result = result or raidResultStates.Unknown
-        GG.raidStatus[raidIconId].winningTeam = winningTeam
-        GG.raidStatus[raidIconId].boolInterogationComplete =  boolInterogationComplete or false
+        GG.raidStatus[raidIconID].state = state
+        GG.raidStatus[raidIconID].result = result or raidResultStates.Unknown
+        GG.raidStatus[raidIconID].winningTeam = winningTeam
+        GG.raidStatus[raidIconID].boolInterogationComplete =  boolInterogationComplete or false
     end
 
     function checkRoundEnds()

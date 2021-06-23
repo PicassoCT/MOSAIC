@@ -616,7 +616,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
                                                 attackerTeam)
-        spEcho("Raid/Interrogatable Weapon fired upon " ..
+        spEcho("RaidWeapon fired upon " ..
                    UnitDefs[unitDefID].name)
 
         if not attackerID then
@@ -624,11 +624,8 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
                 -- stupidity edition
-        if not attackerID or attackerID == unitID then
-            if not attackerID then    spEcho("Raid: No valid attackerID derived") end
-            if attackerID == unitID then    spEcho("Raid:Aborted: attackerID == unitID") end
-            return damage
-        end
+        if not attackerID then  spEcho("Raid: No valid attackerID derived"); return damage end
+        if attackerID == unitID  then   spEcho("Raid:Aborted: attackerID == unitID"); return damage end
 
         -- make houses transparent
         if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable[unitID] then

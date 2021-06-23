@@ -109,10 +109,8 @@ end
 
 function getAnyHouseLocation()
     if GG.BuildingTable then
-         px, _, pz = spGetUnitPosition(randDict(GG.BuildingTable))
-        if px then
-            return px, 0, pz
-        end
+        randPos = randDict(GG.BuildingTable)
+            return randPos.x, 0, randPos.z
     end
 
     return math.random(10,90)*game.mapSizeX/100, 0, math.random(10,90)*game.mapSizeZ/100

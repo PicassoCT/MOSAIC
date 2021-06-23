@@ -68,8 +68,10 @@ function script.Create()
     Hide(RaidEmpty)
     Hide(raidNoUplink)
 
+
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
     StartThread(raidAnimationLoop)
     -- StartThread(raidPercentage)
     whirl = TablesOfPiecesGroups["Whirl"]

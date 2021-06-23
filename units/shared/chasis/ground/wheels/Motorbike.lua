@@ -21,7 +21,7 @@ local MotorBike = Truck:New{
 	
 	transportSize = 16,
 	transportCapacity = 1,
-	holdSteady = true,
+	--holdSteady = true,
 	cantBeTransported = true,
 	isFirePlatform  = false, 
 	releaseHeld = true,
