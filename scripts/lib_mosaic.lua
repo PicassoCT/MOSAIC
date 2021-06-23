@@ -154,6 +154,7 @@ function getGameConfig()
         SatelliteShrapnellDistance = 450,
         SatelliteShrapnellLifeTime = 2 * 60 * 1000,
         SatelliteShrapnellDamagePerSecond = 1000,
+        SatelliteUploadTimesMs = 8000,
         LifeTimeBribeIcon = 60 *1000,
         -- Operativedrop HeightOffset
         OperativeDropHeigthOffset = 900,

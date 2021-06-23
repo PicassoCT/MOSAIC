@@ -457,8 +457,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 roundRunning.Aggressor.Points > 0 then
                 setPublicRaidState(raidIconId, raidState.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
                     
-                echo(
-                    "4 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
+                echo("4 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
                 return roundRunning.Aggressor.team, roundRunning, raidStates.WaitingForUplink, true
             end
 
@@ -466,8 +465,7 @@ if (gadgetHandler:IsSyncedCode()) then
             if roundRunning.Aggressor.Points <= 0 and
                 roundRunning.Defender.Points > 0 then
                 setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.DefenderWins, roundRunning.Defender.team, true)
-                echo(
-                    "5  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
+                echo( "5  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
                 return roundRunning.Defender.team, roundRunning, raidStates.VictoryStateSet, true
             end
 
@@ -475,7 +473,6 @@ if (gadgetHandler:IsSyncedCode()) then
             if roundRunning.Defender.Points <= 0 and
                 roundRunning.Aggressor.Points <= 0 then
                 setPublicRaidState(raidIconId, raidStates.Aborted, raidResultStates.DefenderWins, roundRunning.Defender.team, true)
-                    raidResultStates.DefenderWins)
 
                 echo("6  nil, roundRunning, raidStates.Aborted")
                 return  roundRunning.Defender.team, roundRunning, raidStates.Aborted, true
@@ -615,30 +612,10 @@ if (gadgetHandler:IsSyncedCode()) then
                         roundRunning = nil
                     end
 
-                   
-
-                    if roundRunning and (result == raidResultStates.DefenderWins) then
-                        if roundRunning.Aggressor.Points > 0 then
-                            Spring.Echo("Defender won, new round")
-                            killAllPlacedObjects(roundRunning)
-                            newRound(raidIconId, roundRunning.Aggressor.team, false,
-                                     roundRunning)
-                            roundRunning = nil
-                        else
-                            setPublicRaidState(raidIconID, result, state, winningTeam, true)
-                            roundRunning = nil
-                        end
-                    end
-
-                    -- rounds end
-                    if roundRunning and state == raidStates.AggressorWins then
-                        Spring.Echo("Agressor won the round")
-                        killAllPlacedObjects(roundRunning)
-
-                        setPublicRaidState(raidIconID, result, state,  Spring.GetUnitTeam(raidIconId), true)
-                        allRunningRaidRounds[raidIconId] = nil
-                    end
-
+                    if boolGameOver == true then
+                      allRunningRaidRounds[raidIconId] = nil
+                      roundRunning = nil
+                    end                 
                     boolSkip = true
                 end
 

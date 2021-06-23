@@ -50,6 +50,8 @@ DefenderWin = piece("DefenderWin")
 RaidSuccess = piece("RaidSuccess")
 RaidAborted = piece("RaidAborted")
 RaidEmpty = piece("RaidEmptz")
+raidNoUplink = piece("raidNoUplink")
+RaidUploadInProgressDish = piece("RaidUploadInProgressDish")
 
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
@@ -64,6 +66,7 @@ function script.Create()
     Hide(RaidSuccess)
     Hide(RaidAborted)
     Hide(RaidEmpty)
+    Hide(raidNoUplink)
 
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -102,49 +105,50 @@ function watchRaidIconTable()
         Sleep(1)
     end
 
+    Show(raidNoUplink)
     --wait for Uplink
+
     if GG.raidStatus[unitID].state == raidStates.WaitingForUplink then
-        while GG.raidStatus[unitID].state == raidStates.WaitingForUplink do
-
-        Sleep(100)
+        local raidComRange = GameConfig.agentConfig.raidComRange
+        local scanSatDefID = UnitDefNames["satellitescan"].id
+        local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
+        local spGetUnitDefID = Spring.GetUnitDefID
+        boolComSatelliteNearby= false
+        while boolComSatelliteNearby == false do
+            Sleep(100)
+            process(getAllNearUnit(unitID, raidComRange),
+                    function (id)
+                        if myTeam == Spring.GetUnitTeam(id) and spGetUnitDefID(id) == scanSatDefID then
+                            boolComSatelliteNearby = true
+                        end             
+                    end
+                    )
         end
-
         GG.raidStatus[unitID].state = raidStates.UplinkCompleted
     end
+    Hide(raidNoUplink)
 
-    if   GG.raidStatus[unitID].state == raidStates.UplinkCompleted then
-        StarthThread(UplinkAnimation)
-        Sleep(2000)
+    if  GG.raidStatus[unitID].state == raidStates.UplinkCompleted then  
+        UplinkAnimation()
     end
 
-    winningTeam = GG.raidStatus[unitID].winningTeam 
-    if winningTeam and then
-             if winningTeam == myTeamID then
-                showRaidSuccesAnimation()
-            else
-                showDefenderSuccesAnimation()
-            end
-            TODO
-    end
-
-    if GG.raidStatus[unitID] and GG.raidStatus[unitID].winningTeam then
-  
-        if type(winningTeam) == "number" then
-            if winningTeam == myTeamID then
-                showRaidSuccesAnimation()
-            end
-            if winningTeam ~= myTeamID then
-                showDefenderSuccesAnimation()
-            end
-        elseif winningTeam == "aborted" then
-          showRaidAbortedAnimation()
-        elseif winningTeam == "empty" then
+    if GG.raidStatus[unitID] and GG.raidStatus[unitID].result  then
+        local result = GG.raidStatus[unitID].result
+        if result ==  raidResultStates.Unknown then
+             showRaidAbortedAnimation()
+        elseif result == raidResultStates.DefenderWins then
+            showDefenderSuccesAnimation()
+        elseif result == raidResultStates.AggressorWins then
+            showRaidSuccesAnimation()
+        elseif  result == raidResultStates.HouseEmpty then
             showHouseEmptyAnimation()
-        end      
+        else
+            showRaidAbortedAnimation()
+        end
     else
         showRaidAbortedAnimation()
     end
-
+    GG.raidStatus[unitID].result  = raidStates.VictoryStateSet
     Sleep(5000)
     GG.raidStatus[unitID] = nil
 
@@ -152,8 +156,22 @@ function watchRaidIconTable()
 end
 
 function UplinkAnimation()
-    Sleep(1000)
-    TODO
+    Show(RaidUploadInProgressDish)
+
+
+    times = GameConfig.satelliteUploadTimesMs/1000
+    speed = 50/3 --3 Seconds
+
+    for i=1, times do
+        hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
+        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, -50, 0)
+        showT(TablesOfPiecesGroups["RaidUploadInProgress"])
+        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, 0, speed )
+        WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
+        Sleep(1)
+    end
+    Hide(RaidUploadInProgressDish)
+    hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
 end
 
 function popPieceUp(pieceID, speed)

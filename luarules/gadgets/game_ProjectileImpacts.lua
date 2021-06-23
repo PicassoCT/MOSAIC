@@ -97,7 +97,7 @@ if (gadgetHandler:IsSyncedCode()) then
         }
     }
     --raidinitialization
-      if not GG.raidIconDone  then GG.raidIconDone = {} end
+      if not GG.raidStatus  then GG.raidStatus = {} end
       if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
 
     -- Watched Weapons Weapons
@@ -254,6 +254,8 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     spEcho("failed check Target is still existing ")
+                    GG.raidStatus[persPack.IconID].state = raidStates.Aborted
+                    GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     setRaidEndState(persPack)
                     return true, persPack
                 end
@@ -261,6 +263,8 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     spEcho("failed   check wether the interrogator is still alive")
+                    GG.raidStatus[persPack.IconID].state = raidStates.Aborted
+                    GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     setRaidEndState(persPack)
                     return true, persPack
                 end
@@ -269,8 +273,8 @@ if (gadgetHandler:IsSyncedCode()) then
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
                     spEcho("failed check distance is still okay5 ")
                     if doesUnitExistAlive(persPack.IconID) == true then
-                    GG.raidIconDone[persPack.IconID].winningTeam = "aborted"
-                    GG.raidIconDone[persPack.IconID].boolInterogationComplete = true
+                    GG.raidStatus[persPack.IconID].state = raidStates.Aborted
+                    GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     persPack.boolRaidHasEnded = true 
                 end
                     setRaidEndState(persPack)
@@ -292,7 +296,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         Spring.Echo("Raid: Registering RaidIcon to map")
                         GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
 
-                        GG.raidIconDone[persPack.IconID] = {
+                        GG.raidStatus[persPack.IconID] = {
                             boolInterogationComplete = false,
                         }
                     else
@@ -304,12 +308,12 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 --Raid has ended
                 if persPack.boolRaidHasEnded then return true, persPack end
-                    local winningTeam = GG.raidIconDone[persPack.IconID].winningTeam
+                    local winningTeam = GG.raidStatus[persPack.IconID].winningTeam
                     local allTeams = spGetTeamList()
 
                 --check 
-                if GG.raidIconDone[persPack.IconID].boolInterogationComplete == true then
-                    local raidStateLocal = GG.raidIconDone[persPack.IconID]
+                if GG.raidStatus[persPack.IconID].boolInterogationComplete == true then
+                    local raidStateLocal = GG.raidStatus[persPack.IconID]
                     --Aborted or EmptyHouse
                     if  raidStateLocal.result == raidResultStates.HouseEmpty then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
@@ -342,7 +346,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end 
 
                     --wait for uplink completed (set by the icon)
-                    if raidStateLocal.state.VictoryStateSet then
+                    if raidStateLocal.state == raidResultStates.VictoryStateSet then
                         spEcho("Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
                         unitTeam = spGetUnitTeam(persPack.unitID)
                         children = getChildrenOfUnit(unitTeam, persPack.unitID)
@@ -416,7 +420,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
                     if persPack.IconID then
-                        GG.raidIconDone[persPack.IconID] = nil
+                        GG.raidStatus[persPack.IconID] = nil
                     end
                     return true, persPack
                 end
@@ -426,7 +430,7 @@ if (gadgetHandler:IsSyncedCode()) then
                    GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("Interrogation End: Interrogator died")
                     if persPack.IconID then
-                        GG.raidIconDone[persPack.IconID] = nil
+                        GG.raidStatus[persPack.IconID] = nil
                     end
                     return true, persPack
                 end
@@ -439,7 +443,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     spEcho("Interogation End: Interrogator distance to big ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconID then
-                        GG.raidIconDone[persPack.IconID] = nil
+                        GG.raidStatus[persPack.IconID] = nil
                     end
                     return true, persPack
                 end
@@ -458,8 +462,8 @@ if (gadgetHandler:IsSyncedCode()) then
                         return true, persPack
                     end
             
-                    if not GG.raidIconDone[persPack.IconID] then
-                        GG.raidIconDone[persPack.IconID] =
+                    if not GG.raidStatus[persPack.IconID] then
+                        GG.raidStatus[persPack.IconID] =
                             {
                                 countDown =  (spGetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames,
                                 boolInterogationComplete = false,
@@ -468,11 +472,11 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
                 end
 
-                if GG.raidIconDone[persPack.IconID].boolInterogationComplete ==
+                if GG.raidStatus[persPack.IconID].boolInterogationComplete ==
                     true then
                     spEcho("boolInterogationCompleted")
 
-                    if not GG.raidIconDone[persPack.IconID].winningTeam then
+                    if not GG.raidStatus[persPack.IconID].winningTeam then
                         -- succesfull interrogation
                         local allTeams = spGetTeamList()
                         if not allTeams or #allTeams <= 1 then
@@ -543,7 +547,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         nil
                     spEcho("Interrogation ended")
 
-                    GG.raidIconDone[persPack.IconID] = nil
+                    GG.raidStatus[persPack.IconID] = nil
                     GG.InterrogationTable[persPack.unitID] = nil
                     return true, persPack
                 end

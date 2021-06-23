@@ -1,7 +1,7 @@
 local ScanSat = Satellite:New{
-	name = "Orbital Surveilance Satellite ",
-	Description = " MOSAIC Standardized Reconnisance Satellite ",
-	buildTime= 15,
+	name = "Surveilance & Data Collector Satellite ",
+	Description = "Transfers Data gathered in Raids home",
+	buildTime 			= 15,
 	corpse				= "",
 	maxDamage 			= 500,
 	mass 				= 500,
