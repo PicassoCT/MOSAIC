@@ -25,6 +25,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local Aggressor = "Aggressor"
     local Defender = "Defender"
     local raidStates = getRaidStates()
+    local raidResultStates = getRaidResultStates()
     local gaiaTeamID = Spring.GetGaiaTeamID()
     local spGetUnitPosition = Spring.GetUnitPosition
     local spCreateUnit = Spring.CreateUnit
@@ -43,7 +44,7 @@ if (gadgetHandler:IsSyncedCode()) then
         spSetUnitAlwaysVisible(id, true)
     end
     function gadget:Initialize()
-        if not GG.raidIconDone then GG.raidIconDone = {} end
+        if not GG.raidStatus then GG.raidStatus = {} end
     end
 
     function alwaysHideUnit(id)
@@ -62,10 +63,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    function setPublicRaidState(unitID, state)
-        if not GG.RaidState then GG.RaidState = {} end
-        GG.RaidState[unitID] = state
-    end
+
 
     function getDefenderTeam(raidIconID, attackerteam, oldDefenderTeam)
         attackerAllyTeam = Spring.GetUnitAllyTeam(raidIconID)
@@ -294,7 +292,7 @@ if (gadgetHandler:IsSyncedCode()) then
         return false
     end
 
-    function evaluateEndedRound(raidIconId, roundRunning)
+    function evaluateEndedRound(raidIconId, roundRunning, persPack)
         winningTeam = nil
         Graph = {}
         local OriginalGraph = {}
@@ -308,7 +306,8 @@ if (gadgetHandler:IsSyncedCode()) then
                 --no safehouse attached to it
                 if houseID and iconID == raidIconID then
                     if  not houseSafeHouseMap[houseID] then
-                      return nil, roundRunning, raidStates.HouseEmpty
+                      setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.HouseEmpty, nil, true)
+                      return nil, roundRunning, raidResultStates.HouseEmpty, true
                     end
                 end
             end
@@ -320,31 +319,29 @@ if (gadgetHandler:IsSyncedCode()) then
         -- defenders did not play
         if count(roundRunning.Defender.PlacedFigures) == 0 and
             count(roundRunning.Aggressor.PlacedFigures) > 0 then
-            setPublicRaidState(raidIconId, raidStates.AggressorWins)
+            setPublicRaidState(raidIconId, raidStates.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
 
             echo(
                 "1 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
-            return roundRunning.Aggressor.team, roundRunning,
-                   raidStates.AggressorWins
+            return roundRunning.Aggressor.team, roundRunning, raidStates.WaitingForUplink, true
         end
 
         -- Aggressor did not play
         if count(roundRunning.Aggressor.PlacedFigures) == 0 and
             count(roundRunning.Defender.PlacedFigures) > 0 then
-            setPublicRaidState(raidIconId, raidStates.DefenderWins)
+            setPublicRaidState(raidIconId, raidStates.WaitingForUplink, raidResultStates.DefenderWins,roundRunning.Defender.team, true)
             echo(
                 "2 roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
-            return roundRunning.Defender.team, roundRunning,
-                   raidStates.DefenderWins
+            return roundRunning.Defender.team, roundRunning, raidStates.WaitingForUplink, true
         end
 
-        -- both did not play
+        -- both did not play abort
         if count(roundRunning.Defender.PlacedFigures) == 0 and
             count(roundRunning.Aggressor.PlacedFigures) == 0 then
-            setPublicRaidState(raidIconId, raidStates.DefenderWins)
+            setPublicRaidState(raidIconId,raidStates.Aborted, raidResultStates.DefenderWins, nil, true)
 
             echo("3  nil, roundRunning, raidStates.Aborted")
-            return nil, roundRunning, raidStates.Aborted
+            return nil, roundRunning, raidStates.Aborted, true
         end
 
         -- both sides placed - there was a game
@@ -455,37 +452,38 @@ if (gadgetHandler:IsSyncedCode()) then
                  " Agressor Points:" .. roundRunning.Aggressor.Points)
 
         if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then
-            -- defenders dead
+            -- defenders or agressors dead
             if roundRunning.Defender.Points <= 0 and
                 roundRunning.Aggressor.Points > 0 then
-                setPublicRaidState(raidIconId, raidStates.AggressorWins)
+                setPublicRaidState(raidIconId, raidState.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
+                    
                 echo(
                     "4 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
-                return roundRunning.Aggressor.team, roundRunning,
-                       raidStates.AggressorWins
+                return roundRunning.Aggressor.team, roundRunning, raidStates.WaitingForUplink, true
             end
 
             -- Aggressor dead
             if roundRunning.Aggressor.Points <= 0 and
                 roundRunning.Defender.Points > 0 then
-                setPublicRaidState(raidIconId, raidStates.DefenderWins)
+                setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.DefenderWins, roundRunning.Defender.team, true)
                 echo(
                     "5  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
-                return roundRunning.Defender.team, roundRunning,
-                       raidStates.DefenderWins
+                return roundRunning.Defender.team, roundRunning, raidStates.VictoryStateSet, true
             end
 
             -- both died
             if roundRunning.Defender.Points <= 0 and
                 roundRunning.Aggressor.Points <= 0 then
-                setPublicRaidState(raidIconId, raidStates.DefenderWins)
+                setPublicRaidState(raidIconId, raidStates.Aborted, raidResultStates.DefenderWins, roundRunning.Defender.team, true)
+                    raidResultStates.DefenderWins)
+
                 echo("6  nil, roundRunning, raidStates.Aborted")
-                return nil, roundRunning, raidStates.Aborted
+                return  roundRunning.Defender.team, roundRunning, raidStates.Aborted, true
             end
         end
 
         echo("7  nil , roundRunning, raidStates.Ongoing")
-        return nil, roundRunning, raidStates.OnGoing
+        return nil, roundRunning, raidStates.OnGoing, false
     end
 
     function findEliminatedUnits(OriginalGraph, finalGraph)
@@ -579,6 +577,13 @@ if (gadgetHandler:IsSyncedCode()) then
         return roundRunning
     end
 
+    function setPublicRaidState(raidIconID, state, result, winningTeam, boolInterogationComplete)
+        GG.raidStatus[raidIconId].state = state
+        GG.raidStatus[raidIconId].result = result or raidResultStates.Unknown
+        GG.raidStatus[raidIconId].winningTeam = winningTeam
+        GG.raidStatus[raidIconId].boolInterogationComplete =  boolInterogationComplete or false
+    end
+
     function checkRoundEnds()
         for raidIconId, roundRunning in pairs(allRunningRaidRounds) do
             if raidIconId and doesUnitExistAlive(raidIconId) == true then
@@ -595,49 +600,42 @@ if (gadgetHandler:IsSyncedCode()) then
                     (roundRunning.Defender.Points <= 0 and
                         roundRunning.Aggressor.Points <= 0) then
                     -- find out who died, who survived, who collected objectives and if there is a new round
-                    winningTeam, roundRunning, state = evaluateEndedRound(raidIconId, roundRunning)
+                    winningTeam, roundRunning, state, boolGameOver = evaluateEndedRound(raidIconId, roundRunning, persPack)
+                    killAllPlacedObjects(roundRunning)
 
-                    if state == raidStates.OnGoing then
+                    if roundRunning and state == raidStates.OnGoing or boolGameOver == false then
                         Spring.Echo("Raid continues in new Round") 
-                        killAllPlacedObjects(roundRunning)
                         newRound(raidIconId, roundRunning.Aggressor.team, false, roundRunning)
                         roundRunning = nil
                     end
 
-                    if state == raidStates.HouseEmpty then
-                        killAllPlacedObjects(roundRunning)
-                        GG.raidIconDone[raidIconId].boolInterogationComplete =  true
-                        GG.raidIconDone[raidIconId].winningTeam =  "empty"
-                        allRunningRaidRounds[raidIconId] = nil
-                    end
-
-                    if state == raidStates.Aborted then
+                    if roundRunning and state == raidStates.Aborted then
                         Spring.Echo("Raid was aborted")
-                        killAllPlacedObjects(roundRunning)
-                        assert(GG.raidIconDone)
-                        assert(GG.raidIconDone[raidIconId])
-                        assert(type(GG.raidIconDone[raidIconId])=="table")
-                        GG.raidIconDone[raidIconId].boolInterogationComplete =  true
-                        GG.raidIconDone[raidIconId].winningTeam =  "aborted"
                         allRunningRaidRounds[raidIconId] = nil
-                        -- GameOver
+                        roundRunning = nil
                     end
 
-                    if roundRunning and (state == raidStates.DefenderWins) and
-                        roundRunning.Defender.Points <= 0 then
-                        Spring.Echo("Defender won the round")
-                        killAllPlacedObjects(roundRunning)
-                        newRound(raidIconId, roundRunning.Aggressor.team, false,
-                                 roundRunning)
-                     allRunningRaidRounds[raidIconId] = nil
+                   
+
+                    if roundRunning and (result == raidResultStates.DefenderWins) then
+                        if roundRunning.Aggressor.Points > 0 then
+                            Spring.Echo("Defender won, new round")
+                            killAllPlacedObjects(roundRunning)
+                            newRound(raidIconId, roundRunning.Aggressor.team, false,
+                                     roundRunning)
+                            roundRunning = nil
+                        else
+                            setPublicRaidState(raidIconID, result, state, winningTeam, true)
+                            roundRunning = nil
+                        end
                     end
 
                     -- rounds end
                     if roundRunning and state == raidStates.AggressorWins then
                         Spring.Echo("Agressor won the round")
                         killAllPlacedObjects(roundRunning)
-                        GG.raidIconDone[raidIconId].winningTeam = Spring.GetUnitTeam(raidIconId)
-                        GG.raidIconDone[raidIconId].boolInterogationComplete =  true
+
+                        setPublicRaidState(raidIconID, result, state,  Spring.GetUnitTeam(raidIconId), true)
                         allRunningRaidRounds[raidIconId] = nil
                     end
 

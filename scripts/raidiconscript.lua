@@ -16,6 +16,8 @@ Wall = {}
 OutPost = {}
 DoorPost = {}
 Door = {}
+raidStates = getRaidStates()
+raidResultStates = getRaidResultStates()
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
@@ -92,17 +94,41 @@ function script.Create()
 end
 
 function watchRaidIconTable()
-
-    while not GG.raidIconDone or GG.raidIconDone[unitID] == nil do 
+    while not GG.raidStatus or GG.raidStatus[unitID] == nil do 
         Sleep(10)
     end 
     
-    while (GG.raidIconDone[unitID] and GG.raidIconDone[unitID].boolInterogationComplete == false) do
+    while (GG.raidStatus[unitID] and GG.raidStatus[unitID].boolInterogationComplete == false) do
         Sleep(1)
     end
 
-    if GG.raidIconDone[unitID] and GG.raidIconDone[unitID].winningTeam then
-        winningTeam = GG.raidIconDone[unitID].winningTeam 
+    --wait for Uplink
+    if GG.raidStatus[unitID].state == raidStates.WaitingForUplink then
+        while GG.raidStatus[unitID].state == raidStates.WaitingForUplink do
+
+        Sleep(100)
+        end
+
+        GG.raidStatus[unitID].state = raidStates.UplinkCompleted
+    end
+
+    if   GG.raidStatus[unitID].state == raidStates.UplinkCompleted then
+        StarthThread(UplinkAnimation)
+        Sleep(2000)
+    end
+
+    winningTeam = GG.raidStatus[unitID].winningTeam 
+    if winningTeam and then
+             if winningTeam == myTeamID then
+                showRaidSuccesAnimation()
+            else
+                showDefenderSuccesAnimation()
+            end
+            TODO
+    end
+
+    if GG.raidStatus[unitID] and GG.raidStatus[unitID].winningTeam then
+  
         if type(winningTeam) == "number" then
             if winningTeam == myTeamID then
                 showRaidSuccesAnimation()
@@ -120,9 +146,14 @@ function watchRaidIconTable()
     end
 
     Sleep(5000)
-    GG.raidIconDone[unitID] = nil
+    GG.raidStatus[unitID] = nil
 
     Spring.DestroyUnit(unitID, true, false)
+end
+
+function UplinkAnimation()
+    Sleep(1000)
+    TODO
 end
 
 function popPieceUp(pieceID, speed)

@@ -418,7 +418,6 @@ function script.Create()
 	StartThread(cloakLoop)
     Show(FoldtopUnfolded)
     StartThread(breathing)
-    StartThread(raidReactor)
     StartThread(transportControl)
 end
 
@@ -1203,38 +1202,8 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
 
-raidDownTime = GameConfig.agentConfig.raidWeaponDownTimeInSeconds * 1000
-local raidComRange = GameConfig.agentConfig.raidComRange
-myRaidDownTime = 0
-local scanSatDefID = UnitDefNames["satellitescan"].id
-local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
-
-function raidReactor()
-	myTeam = Spring.GetUnitTeam(unitID)
-	while true do
-		Sleep(100)
-		--if myRaidDownTime % 500 == 0 and myRaidDownTime ~= oldRaidDownTime then Spring.Echo("raid reactor :"..myRaidDownTime); oldRaidDownTime =myRaidDownTime end
-		if myRaidDownTime > 0 then
-        boolComSatelliteNearby= false
-		process(getAllNearUnit(unitID, raidComRange),
-				function (id)
-					if myTeam == Spring.GetUnitTeam(id) and Spring.GetUnitDefID(id) == scanSatDefID then
-						myRaidDownTime = math.max( -100, myRaidDownTime - 100* GameConfig.agentConfig.raidBonusFactorSatellite)
-						boolComSatelliteNearby = true
-					end				
-				end
-				)
-    end
-		myRaidDownTime = math.max( 0, myRaidDownTime - 100)
-	end
-end
-
-function raidReloadComplete()
-	return myRaidDownTime <= 0
-end
-
 function raidAimFunction(weaponID, heading, pitch)
-	return raidReloadComplete() and currentState == "decloaked"
+	return  currentState == "decloaked"
 end
 
 function pistolAimFunction(weaponID, heading, pitch)
@@ -1258,7 +1227,6 @@ end
 
 function raidFireFunction(weaponID, heading, pitch)
 	StartThread(visibleAfterWeaponsFireTimer)
-	myRaidDownTime = raidDownTime
 	return true
 end
 

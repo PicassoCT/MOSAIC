@@ -500,11 +500,19 @@ function getRaidStates()
     return {
         ["Aborted"] = 0,
         ["OnGoing"] = 1,
-        ["DefenderWins"] = 2,
-        ["AggressorWins"] = 3,
-        ["HouseEmpty"] = 4,
+        ["WaitingForUplink"] = 2,
+        ["UplinkCompleted"] = 3,
+        ["VictoryStateSet"] = 4
     }
+end
 
+function getRaidResultStates()
+    return {
+        ["Unknown"] = 10,
+        ["DefenderWins"] = 11,
+        ["AggressorWins"] = 12,
+        ["HouseEmpty"] = 13,
+    }
 end
 
 function getTruckLoadOutTypeTable()
