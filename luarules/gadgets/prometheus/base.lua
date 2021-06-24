@@ -77,12 +77,17 @@ local myPackedFactories = {}  -- Packed factories, which shall unpack
 
 local function GetBuildingChains()
     local producers = {}
+
     for u, _ in pairs(myConstructors) do
-        producers[GetUnitDefID(u)] = u
+        local defID = GetUnitDefID(u) 
+        if defID then
+         producers[defID] = u
+        end
     end
     for u, _ in pairs(myFactories) do
-        if u then
-            producers[GetUnitDefID(u)] = u
+        local defID = GetUnitDefID(u)
+        if defID then
+            producers[defID] = u
         end
     end
 

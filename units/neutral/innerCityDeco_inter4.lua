@@ -4,7 +4,7 @@ local unitName = "innerCityDeco_inter4"
 	name = "",
 	Description = "Water Tower",
 	objectName = "innerCityDeco_inter4.dae",
-	script = "innerCityDeco_inter4.lua",
+	script = "innerCityDeco_inter4script.lua",
 	buildPic = "placeholder.png",
 	levelGround =false,
 	--cost

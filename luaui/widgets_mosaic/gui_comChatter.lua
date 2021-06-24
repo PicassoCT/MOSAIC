@@ -117,7 +117,7 @@ local function getNatoPhoneticsTime(letter)
     }
     assert(NatoPhoneticAlphabet.a)
 
-if not NatoPhoneticAlphabet[letter] then Spring.Echo("Not a know letter in Nato Alphabet ".. letter) end
+if not NatoPhoneticAlphabet[letter] then assert(true==false, "Not a know letter in Nato Alphabet ".. letter) end
 
 return NatoPhoneticAlphabet[letter], 2 *30
 end
@@ -134,12 +134,11 @@ local function createIdentifierFromID(id)
 	assert(string.len(idStr)>= 2)
 	local firstLetter = idStr:sub(1,1):lower()
 	assert(firstLetter)
-	assert(getNatoPhoneticsTime(firstLetter))
 	sounds[#sounds+1], times[#times+1] = addSoundPath(teamSex, getNatoPhoneticsTime(firstLetter)), 20
 --	Spring.Echo("FirstLetter"..firstLetter)
 	local secondLetter = idStr:sub(2):lower()
 	assert(secondLetter)
-	assert(getNatoPhoneticsTime(secondLetter))
+
 	--	Spring.Echo("secondLetter"..secondLetter)
 	sounds[#sounds+1], times[#times+1] = addSoundPath(teamSex, getNatoPhoneticsTime(secondLetter)), 20
 	return sounds, times
@@ -274,7 +273,9 @@ local function getObjectSounds(x,y)
 	end
 
 	if goalType == "unit" then
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex,"_at") , 10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("a")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("t")),10
+
 		local objectName, objectTime = getCommandStringFromDefID(Spring.GetUnitDefID(goalLocation)), 30
 		assert(objectName)
 		objectData.sounds[#objectData.sounds + 1] = addSoundPath(teamSex, objectName)
@@ -282,28 +283,44 @@ local function getObjectSounds(x,y)
 	end
 
 	if goalType == "feature" then
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, "_near") , 20
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime("F")), 10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("n")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("e")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("a")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("r")),10
+
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime("f")), 10
 		
 		local FeatureName = FeatureDefs[Spring.GetFeatureDefID(goalLocation)].name
 		assert(FeatureName)
 		assert(FeatureName[1])
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime(FeatureName[1]))
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime(FeatureName[1])),10
 	end
 
 	if goalType == "ground" then
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, "_to") , 5
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, "_sector") , 25
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("2")),10
+
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("s")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("e")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("c")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("t")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("o")),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime("r")),10
 
 		local x,z = goalLocation[1],goalLocation[3]
 		x,z = getQuadrant(x,z)
 		xHex, zHex = dec2hex(x),dec2hex(z)
-		for s=1,string.len(xHex)do
-			objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime(xHex:sub(s,1) or "1")), 5
+		for s=1,string.len(xHex) do
+			local subStr = xHex:sub(s,1)
+			if subStr and subStr ~= "" then
+				objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime(subStr)), 5
+			end
 		end
 
-		for s=1,string.len(zHex)do
-			objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime(zHex:sub(s,1) or "2")), 5
+		for s=1,string.len(zHex) do
+			local subStr = zHex:sub(s,1)
+			if subStr and subStr ~= "" then
+				objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime(subStr)), 5
+			end
 		end
 	end
 	--Grid
@@ -316,8 +333,8 @@ local function createSubject(sound, times, identifierSounds, identifierTimes)
 
 	for i=1, #identifierSounds do
 		soundList[#soundList + 1] = {sound ="", times = 0}
-		soundList[#soundList].sound =		identifierSounds[i]
-		soundList[#soundList].times =		identifierTimes[i]
+		soundList[#soundList].sound = identifierSounds[i]
+		soundList[#soundList].times = identifierTimes[i]
 	end
 
 	return {soundList = soundList}
