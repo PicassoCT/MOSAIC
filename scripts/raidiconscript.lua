@@ -67,6 +67,7 @@ function script.Create()
     Hide(RaidAborted)
     Hide(RaidEmpty)
     Hide(raidNoUplink)
+    Hide(RaidUploadInProgressDish)
 
 
     generatepiecesTableAndArrayCode(unitID)

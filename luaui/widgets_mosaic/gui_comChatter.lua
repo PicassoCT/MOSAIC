@@ -76,7 +76,7 @@ end
 
 local function getNatoPhoneticsTime(letter)
 	if not letter then return end
-
+	local letter = string.lower(letter)
 	local NatoPhoneticAlphabet = {
     ["a"]="alpha",
     ["b"]="bravo",
@@ -254,10 +254,12 @@ local function getActionSound()
 
 	}
 	if validComand[activeCmd] then
+		assert(validComand[activeCmd])
 		local soundPath = addSoundPath(teamSex, validComand[activeCmd])
 		return soundPath , 20
 	end
 
+	assert(default)
 	local soundPath = addSoundPath(teamSex, default)
 	return  soundPath , 20
 end
@@ -274,6 +276,7 @@ local function getObjectSounds(x,y)
 	if goalType == "unit" then
 		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex,"_at") , 10
 		local objectName, objectTime = getCommandStringFromDefID(Spring.GetUnitDefID(goalLocation)), 30
+		assert(objectName)
 		objectData.sounds[#objectData.sounds + 1] = addSoundPath(teamSex, objectName)
 		objectData.times[#objectData.times + 1] = objectTime
 	end
@@ -283,6 +286,8 @@ local function getObjectSounds(x,y)
 		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1] = addSoundPath(teamSex, getNatoPhoneticsTime("F")), 10
 		
 		local FeatureName = FeatureDefs[Spring.GetFeatureDefID(goalLocation)].name
+		assert(FeatureName)
+		assert(FeatureName[1])
 		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime(FeatureName[1]))
 	end
 
@@ -397,6 +402,7 @@ local function buildSoundCommand( x, y)
 
 	--command type
 	local subjectName, subjectTime
+	assert( getCommandStringFromDefID(higestOrderDefID))
 	subjectName, subjectTime = addSoundPath(teamSex, getCommandStringFromDefID(higestOrderDefID)), 15
 
 	local subjectIdentifier, subjectIdentifierTimes

@@ -86,7 +86,7 @@ end
 function killAfterTime()
     Signal(SIG_KILL)
     SetSignalMask(SIG_KILL)
-    Sleep(GameConfig.motorBikeSurvivalStandalone)
+    Sleep(GameConfig.motorBikeSurvivalStandaloneMS)
     Spring.DestroyUnit(unitID, false, true)
 end
 

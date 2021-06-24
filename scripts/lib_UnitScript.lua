@@ -2137,6 +2137,28 @@ function IsTargetReachable(moveID, ox, oy, oz, tx, ty, tz, radius)
     return result, lastcoordinate, waypoints
 end
 
+function getExtremasInArea(x1, z1, x2, z2, resolution)
+    minHeightSet= {value = math.huge, x=0, z= 0}
+    maxHeightSet= {value = math.huge*-1, x=0, z= 0}
+    local spGetGroundHeight = Spring.GetGroundHeight
+    for x=x1, x2, resolution do
+    for z=z1, z2, resolution do
+        heigth = spGetGroundHeight(x,z)
+        if height < minHeightSet.value then
+            minHeightSet.value = height
+            minHeightSet.x = x
+            minHeightSet.z = z
+        end
+        if height > maxHeightSet.value then
+            maxHeightSet.value = height
+            maxHeightSet.x = x
+            maxHeightSet.z = z
+        end
+    end
+    end
+    return minHeightSet, maxHeightSet
+end
+
 -- >gets the original Mapheight
 function getHistoricHeight(UnitId)
     tempX, tempY, tempZ = Spring.GetUnitPosition(UnitId)

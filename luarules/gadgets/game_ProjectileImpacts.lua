@@ -211,6 +211,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                          GameConfig.instance.culture,
                                          "civilian", UnitDefs)
     raidStates = getRaidStates()
+    raidResultStates = getRaidResultStates()
     local innocentCivilianTypeTable = getPanicableCiviliansTypeTable(UnitDefs)
 
    raidEventStreamFunction = function(unitID, unitDefID, unitTeam, damage,
@@ -296,9 +297,8 @@ if (gadgetHandler:IsSyncedCode()) then
                         Spring.Echo("Raid: Registering RaidIcon to map")
                         GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
 
-                        GG.raidStatus[persPack.IconID] = {
-                            boolInterogationComplete = false,
-                        }
+                        if GG.raidStatus[persPack.IconID] then  GG.raidStatus[persPack.IconID] = {} end
+                        GG.raidStatus[persPack.IconID].boolInterogationComplete = false
                     else
                         spEcho("Raid: No IconID")
                         setRaidEndState(persPack)

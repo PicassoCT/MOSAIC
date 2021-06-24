@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2021-06-22T08:55:56Z</created><keywords></keywords><modified>2021-06-22T08:55:56Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2021-06-24T10:48:40Z</created><keywords></keywords><modified>2021-06-24T10:48:40Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #1-image" name="Map #1"><init_from>file://Z:\unittextures\house_europe_diffuse.dds</init_from></image>
   </library_images>
@@ -12058,30 +12058,30 @@
 0.048512 0.150486
 0.048587 0.150327
 0.048466 0.148727
-0.711574 0.206440
-0.712258 0.209168
-0.684820 0.226086
-0.679891 0.206440
-0.714129 0.211165
-0.698287 0.240467
-0.716683 0.211896
-0.716683 0.245732
-0.719238 0.211165
-0.735079 0.240467
-0.721108 0.209168
-0.748546 0.226086
-0.721793 0.206440
-0.753475 0.206440
-0.721108 0.203712
-0.748546 0.186794
-0.719238 0.201715
-0.735079 0.172412
-0.716683 0.200984
-0.716683 0.167148
-0.714129 0.201715
-0.698287 0.172412
-0.712258 0.203712
-0.684820 0.186794
+0.707903 0.212342
+0.708508 0.214661
+0.684249 0.229037
+0.679891 0.212342
+0.710162 0.216358
+0.696156 0.241258
+0.712420 0.216979
+0.712420 0.245732
+0.714679 0.216358
+0.728685 0.241258
+0.716332 0.214661
+0.740591 0.229037
+0.716938 0.212342
+0.744950 0.212342
+0.716332 0.210024
+0.740591 0.195648
+0.714679 0.208327
+0.728685 0.183427
+0.712420 0.207706
+0.712420 0.178953
+0.710162 0.208327
+0.696156 0.183427
+0.708508 0.210024
+0.684249 0.195648
 0.343490 0.245276
 0.333149 0.245276
 0.322808 0.245276

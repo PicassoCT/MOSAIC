@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.746" 
+            Version = "Alpha: 0.747" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -750,7 +750,8 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
          "tree_arab1", 
          "innerCityDeco_inter1",
         "innerCityDeco_inter2",
-        "innerCityDeco_inter3"
+        "innerCityDeco_inter3",
+        "innerCityDeco_inter4"
     }
 
     return getTypeTable(UnitDefNames, typeTable)
@@ -889,7 +890,8 @@ function getInternationalCityDecorationTypes(UnitDefs)
  return {
         [UnitDefNames["innercitydeco_inter1"].id] = true,
         [UnitDefNames["innercitydeco_inter2"].id] = true,
-        [UnitDefNames["innercitydeco_inter3"].id] = true
+        [UnitDefNames["innercitydeco_inter3"].id] = true,
+        [UnitDefNames["innercitydeco_inter4"].id] = true
         }
 end
 

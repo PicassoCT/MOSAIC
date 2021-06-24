@@ -485,7 +485,7 @@ end
 local unitBuiltBy = {}
 
 local function IdleFactory(unitID)
-    if not myFactories[unitID] then myFactories[unitID] = 0 end
+    if not myFactories[unitID] then myFactories[unitID] = {} end
     if #myFactories[unitID] > 0 then
         -- We still have work to do...
         return
@@ -493,21 +493,24 @@ local function IdleFactory(unitID)
 
     -- Evaluate the build options
     local unitDefID = GetUnitDefID(unitID)
+    assert(unitDefID)
     local selected, cmd, score = nil, nil, MIN_INT / 2
-    for _, optDefID in ipairs(UnitDefs[unitDefID].buildOptions) do
-        local optDef = UnitDefs[optDefID]
-        local optCmd = ResolveMorphingCmd(unitDefID, optDefID)
-        -- Avoid here:
-        --  * morphs
-        --  * packed factories
-        if optCmd == -optDefID and not unit_chains.is_morph_link(optDef.name) and not unit_chains.IsPackedFactory(optDefID) then
-            local chain_phony = {metal=optDef.metalCost}
-            local optName = optDef.name
-            local chain_score = ChainScore(optName, chain_phony)
-            if chain_score > score then
-                selected = optDefID
-                cmd = optCmd
-                score = chain_score
+    if UnitDefs[unitDefID].buildOptions then
+        for _, optDefID in ipairs(UnitDefs[unitDefID].buildOptions) do
+            local optDef = UnitDefs[optDefID]
+            local optCmd = ResolveMorphingCmd(unitDefID, optDefID)
+            -- Avoid here:
+            --  * morphs
+            --  * packed factories
+            if optCmd == -optDefID and not unit_chains.is_morph_link(optDef.name) and not unit_chains.IsPackedFactory(optDefID) then
+                local chain_phony = {metal=optDef.metalCost}
+                local optName = optDef.name
+                local chain_score = ChainScore(optName, chain_phony)
+                if chain_score > score then
+                    selected = optDefID
+                    cmd = optCmd
+                    score = chain_score
+                end
             end
         end
     end

@@ -54,6 +54,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitID, unitDefID, unitTeam)
         if unitDefID == raidIconDefID then
+            if not GG.raidStatus then GG.raidStatus = {} end
+            if not GG.raidStatus[unitID] then GG.raidStatus[unitID] = {} end
             newRound(unitID, unitTeam, true)
         end
 
@@ -62,8 +64,6 @@ if (gadgetHandler:IsSyncedCode()) then
             echo("Snipeicon created for team: " .. unitTeam)
         end
     end
-
-
 
     function getDefenderTeam(raidIconID, attackerteam, oldDefenderTeam)
         attackerAllyTeam = Spring.GetUnitAllyTeam(raidIconID)
