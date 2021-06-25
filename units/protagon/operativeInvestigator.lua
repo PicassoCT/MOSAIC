@@ -34,7 +34,7 @@ local OperativeInvestigator = Human:New{
 	iconType ="operativeinvestigator",
 	showNanoFrame= true,
 	ActivateWhenBuilt=1,
-	
+	sightDistance = 100,
 --cloaking behaviour
 	canCloak =true,
 	cloakCost=0.0001,
