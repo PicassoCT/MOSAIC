@@ -24,6 +24,7 @@ local ground_truck_mg = Truck:New{
 			iconType = "truck_mg",
 	category = [[GROUND]],
 	transportSize = 16,
+	sightDistance = 50,
 	transportCapacity = 2,
 	isFirePlatform  = true,
 	canCloak= false,
