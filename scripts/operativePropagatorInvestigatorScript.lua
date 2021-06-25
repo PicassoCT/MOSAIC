@@ -419,6 +419,7 @@ function script.Create()
     Show(FoldtopUnfolded)
     StartThread(breathing)
     StartThread(transportControl)
+    StartThread(cloakIfAIPlayer)
 end
 
 function testAnimationLoop()
@@ -435,6 +436,22 @@ function testAnimationLoop()
 		flyingPose(unitID)
 		Sleep(10000)
 	end
+end
+
+function cloakIfAIPlayer()
+   nteamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier, customTeamKeys = Spring.GetTeamInfo(myTeamID)
+
+   if isAiTeam and isAiTeam == true then
+        while true do
+            Sleep(100)
+            shouldBeNil = Spring.GetUnitIsBuilding(unitID)
+            if shouldBeNil then
+                if Spring.GetUnitIsCloaked(unitID) == false then
+                    setWantCloak(true)
+                end
+            end
+        end
+    end
 end
 
 function flyingPose(id)

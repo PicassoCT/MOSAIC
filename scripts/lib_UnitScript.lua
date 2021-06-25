@@ -2143,7 +2143,7 @@ function getExtremasInArea(x1, z1, x2, z2, resolution)
     local spGetGroundHeight = Spring.GetGroundHeight
     for x=x1, x2, resolution do
     for z=z1, z2, resolution do
-        heigth = spGetGroundHeight(x,z)
+        height = spGetGroundHeight(x,z)
         if height < minHeightSet.value then
             minHeightSet.value = height
             minHeightSet.x = x

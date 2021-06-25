@@ -155,9 +155,14 @@ function gadget.IsTraining()
     return TRAINING_MODE == true
 end
 
+local eachErrorOnlyOnce={}
 function gadget.Log(...)
 	if prometheus_Debug_Mode > 0 then
-		Spring.Echo("Prometheus: " .. table.concat{...})
+        local message = "Prometheus: " .. table.concat{...}
+        if not eachErrorOnlyOnce[message] then
+		  Spring.Echo(message)
+          eachErrorOnlyOnce[message] = true
+        end
 	end
 end
 

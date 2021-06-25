@@ -490,6 +490,7 @@ end
 local unitBuiltBy = {}
 
 local function IdleFactory(unitID)
+    if not unitID then return end
     if not myFactories[unitID] then myFactories[unitID] = {} end
     if #myFactories[unitID] > 0 then
         -- We still have work to do...
@@ -498,7 +499,8 @@ local function IdleFactory(unitID)
 
     -- Evaluate the build options
     local unitDefID = GetUnitDefID(unitID)
-    assert(unitDefID)
+    if not unitDefID then return end
+    
     local selected, cmd, score = nil, nil, MIN_INT / 2
     if UnitDefs[unitDefID].buildOptions then
         for _, optDefID in ipairs(UnitDefs[unitDefID].buildOptions) do
@@ -693,6 +695,7 @@ function BaseMgr.GameFrame(f)
         checkFactoryWaitingState(u, is_waiting[u] == true)
         if #q == 0 then
             Log("Factory " .. UnitDefs[GetUnitDefID(u)].name .. " hanged...")
+            assert(u)
             IdleFactory(u)
         end
     end
@@ -771,6 +774,7 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
         if #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
         end
+        assert(factory)
         IdleFactory(factory)
     end
 
@@ -795,8 +799,9 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
         if myFactories[unitID] == nil then
             myFactories[unitID] = {}
         end
+        assert(unitID)
         IdleFactory(unitID)
-        return true
+        return true 
     end
 
     if unit_chains.IsPackedFactory(unitDefID) or unit_chains.IsGunToDeploy(unitDefID) then
@@ -821,6 +826,7 @@ function BaseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attacker
         if myFactories[factory] and #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
         end
+        assert(factory)
         IdleFactory(factory)
     end
 

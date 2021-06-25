@@ -109,8 +109,10 @@ end
 
 function getAnyHouseLocation()
     if GG.BuildingTable then
-        randPos = randDict(GG.BuildingTable)
+        _, randPos = randDict(GG.BuildingTable)
+        if randPos then
             return randPos.x, 0, randPos.z
+        end
     end
 
     return math.random(10,90)*game.mapSizeX/100, 0, math.random(10,90)*game.mapSizeZ/100
@@ -238,7 +240,8 @@ function getOfficer(victimID, attackerID)
     local officerID = nil
     if maxNrPolice > 0 and math.ceil(OpimizationFleeing.accumulatedCivilianDamage/100) > count(activePoliceUnitIds_DispatchTime) then
         px, py, pz = getPoliceSpawnLocation(attackerID)
-        if not px then px, py, pz = spGetUnitPosition(randDict(GG.BuildingTable)) end
+        _, pos = randDict(GG.BuildingTable)
+        if not px then px, py, pz = pos.x, 0, pos.z end
         if not px then px,py,pz = math.random(10,90)*Game.mapSizeX/100, 0, math.random(10,90)*Game.mapSizeZ/100 end
         direction = math.random(1, 4)
 
@@ -259,9 +262,7 @@ function getOfficer(victimID, attackerID)
         totalNrPolice =  count(activePoliceUnitIds_DispatchTime)
         if totalNrPolice > 1 then
                 officerID = randDict(activePoliceUnitIds_DispatchTime)
-
-
-        elseif totalNrPolice == 1 then
+        elseif totalNrPolice <= 1 then
             for k,v in pairs(activePoliceUnitIds_Dispatchtime) do
                 if v then
                     officerID = k 

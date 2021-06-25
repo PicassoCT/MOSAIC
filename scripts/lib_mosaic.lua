@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.747" 
+            Version = "Alpha: 0.748" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -750,12 +750,41 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
          "tree_arab1", 
          "innerCityDeco_inter1",
         "innerCityDeco_inter2",
-        "innerCityDeco_inter3",
-        "innerCityDeco_inter4"
+        "innerCityDeco_inter3"
     }
 
     return getTypeTable(UnitDefNames, typeTable)
+end
 
+function setMaxHeightPosition(unitID)
+    window = 2048/2
+    x,_,z = (Game.mapSizeX/100)*math.random(10,90),0,(Game.mapSizeZ/100)*math.random(10,90)
+    mins, maxs = getExtremasInArea(math.max(0, x - window), math.max(0, z - window), x + window, z + window, 128)
+    Spring.MoveCtrl.Enable(unitID,true)
+    Spring.MoveCtrl.SetPosition(unitID, maxs.x, Spring.GetGroundHeight(maxs.x, maxs.z), maxs.z)
+    Spring.MoveCtrl.Enable(unitID,false)
+end
+
+function createSetMaxHeight(defID, team)
+    id = Spring.CreateUnit(defID,1,1,1,1,team)
+    setMaxHeightPosition(id)
+end
+
+function getMonumentAmountDecorationTypeTable(UnitDefs, culture)
+local UnitDefNames = getUnitDefNames(UnitDefs)
+    if culture == "arabic" then 
+        return {
+            [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 1, locationFunc = createSetMaxHeight}
+        }
+    end
+
+    if culture == "international"  then
+        return {
+            [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 2, locationFunc = createSetMaxHeight}
+        }
+    end
+
+    return {}
 end
 
 function getCivilianTypeTable(UnitDefs)
@@ -890,8 +919,7 @@ function getInternationalCityDecorationTypes(UnitDefs)
  return {
         [UnitDefNames["innercitydeco_inter1"].id] = true,
         [UnitDefNames["innercitydeco_inter2"].id] = true,
-        [UnitDefNames["innercitydeco_inter3"].id] = true,
-        [UnitDefNames["innercitydeco_inter4"].id] = true
+        [UnitDefNames["innercitydeco_inter3"].id] = true
         }
 end
 
@@ -907,7 +935,6 @@ function getUnitScaleTable(UnitDefNames)
         ["launcher"] = 1.0,
         ["ground_truck_mg"] = 1.0,
         ["ground_turret_mg"] = 1.0
-
     }
 
     for name, v in pairs(UnitDefNames) do
