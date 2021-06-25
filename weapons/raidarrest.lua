@@ -8,34 +8,39 @@ local weaponDef = {
     Accuracy = 2000,
 
     --Physic/flight path
-    range = 200,
-	burst  = 9,
-	burstRate = 1.0,
+    range = 256,
+      burst                   = 20,
+      burstrate               = 0.1,
     reloadtime = 120,
-    weaponVelocity = 500,
+    flightTime              = 8,
     startVelocity = 15,
-    weaponAcceleration = 250,
-    flightTime = 6.5,
+    weaponAcceleration = 10,
+
     BurnBlow = 0,
+    projectiles             = 2,
     FixedLauncher = false,
-    dance = 25,
-    wobble = 30,
-    tolerance = 16000,
-    tracks = true,
+    trajectoryHeight        = 1,
+    turnRate                = 2500,
+    dance      = 20,
+    turret                  = true,
+    weaponVelocity          = 250,
+    wobble                  = 7000,
+    tolerance               = 512,
+    tracks = false,
     Turnrate = 8000,
 
     --collision
     collideFriendly = false,
      
     --- -APPEARANCE
-    smokeTrail = true,
+    smokeTrail = false,
   
     --- -TARGETING
     turret = true,
     cylinderTargeting = 55.0,
     avoidFeature = false,
     avoidFriendly = false,
-
+    noSelfDamage            = true,
     --- -DAMAGE
     damage = {
         default = 1
@@ -45,6 +50,7 @@ local weaponDef = {
 
     lineOfSight = true,
 
+    soundFire = "plane/drone2.ogg",
     soundHit = "weapons/raid/flashbang.ogg",
     
 }
