@@ -9,7 +9,8 @@ local OperativeAsset = Human:New{
 	buildCostMetal     	 	 = 2000,
 	MetalStorage 			 = 1500,
 
-	explodeAs				  = "none",
+	buildDistance = 200,
+explodeAs				  = "none",
 
 	Acceleration = 0.8,
 	BrakeRate = 0.6,
