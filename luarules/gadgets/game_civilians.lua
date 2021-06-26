@@ -42,11 +42,7 @@ local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
 
 local UnitDefNames = getUnitDefNames(UnitDefs)
-local PoliceTypes = getPoliceTypes(UnitDefs)
-local PoliceDamageCounter = 0
 
-local activePoliceUnitIds_DispatchTime = {}
-local maxNrPolice = GameConfig.maxNrPolice
 local AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
 local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 local activePoliceUnitIds_Dispatchtime = {}
@@ -80,62 +76,6 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameCo
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
-
-function randomAfterFirstFind(boolAtLeastOne)
-if boolAtLeastOne == false then return true end
-
-    return math.random(0,1) == 1
-end
-
-function getNearestHouse(x, z, minSpawnDistance)
-    local locationBuildingTable =  GG.BuildingTable
-    currentMinDistance = math.huge
-    currentUnit = nil
-    boolAtLeastOne = false
-
-    for id, data in pairs(locationBuildingTable) do
-        distanceToUnit = math.sqrt((x-data.x)^2 +  (z-data.z)^2)
-        if distanceToUnit < currentMinDistance and distanceToUnit > minSpawnDistance and randomAfterFirstFind(boolAtLeastOne) == true then
-            currentUnit = id
-            currentMinDistance = distanceToUnit
-            boolAtLeastOne = true
-        end
-    end
-	
-	if not currentUnit then return nil, nil, nil end
-
-    return currentUnit, locationBuildingTable[currentUnit].x, locationBuildingTable[currentUnit].z
-end
-
-function getAnyHouseLocation()
-    if GG.BuildingTable then
-        _, randPos = randDict(GG.BuildingTable)
-        if randPos then
-            return randPos.x, 0, randPos.z
-        end
-    end
-
-    return math.random(10,90)*game.mapSizeX/100, 0, math.random(10,90)*game.mapSizeZ/100
-end
-
-function getPoliceSpawnLocation(suspect)
-    if not suspect or type(suspect) ~= "number"  then
-        x,y,z =  getAnyHouseLocation()
-       return x,y,z 
-    end
-
-    sx, sy, sz = spGetUnitPosition(suspect)
-    if not sx then
-        sx, sy, sz = (Game.mapSizeX/100) * math.random(10,90),0,(Game.mapSizeZ/100) * math.random(10,90) 
-    end
-
-    houseID, x, z = getNearestHouse(sx, sz, GameConfig.policeSpawnMinDistance)
-    if houseID then
-      sx, sz = x,z
-    end
-
-    return sx, 0, sz
-end
 
 function startInternalBehaviourOfState(unitID, name, ...)
     local arg = arg;
@@ -181,30 +121,11 @@ function makePasserBysLook(unitID)
        end
     end)
 end
-
+--[[
 function gadget:UnitCreated(unitID, unitDefID, teamID)
-    if PoliceTypes[unitDefID] then
-        spSetUnitNeutral(unitID, false)
-        maxNrPolice = math.max(maxNrPolice - 1, 0)
-        activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.policeMaxDispatchTime 
-
-    end
---[[    if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
-       -- Spring.Echo("game_civilians:UnitCreated:"..unitID.." of type "..UnitDefs[unitDefID].name)
-    end--]]
-
-    if isBribeIcon(UnitDefs, unitDefID) then
-        dispatchOfficer(unitID, unitID)
-    end
 end
-
+--]]
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-    if PoliceTypes[unitDefID] then
-        activePoliceUnitIds_DispatchTime[unitID] = nil
-        maxNrPolice = math.min(maxNrPolice + 1, GameConfig.maxNrPolice)
-        PoliceDamageCounter= PoliceDamageCounter + 500
-    end
-    -- Spring.Echo("Unit "..unitID .." of type "..UnitDefs[unitDefID].name .. " destroyed")
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
         makePasserBysLook(unitID)
@@ -213,10 +134,6 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
             rubbleHeapID = spawnRubbleHeapAt(unitID)
         end
     end
-
-   -- if civilianWalkingTypeTable[unitDefID] or TruckTypeTable[unitDefID] then
-      --  Spring.Echo("game_civilians:UnitDestroyed:"..unitID.." of type "..UnitDefs[unitDefID].name)
-   -- end
 end
 
 function spawnRubbleHeapAt(id)
@@ -235,104 +152,6 @@ function spawnRubbleHeapAt(id)
         BuildingWithWaitingRespawn[id] = true
     end
 end
-
-function getOfficer(victimID, attackerID)
-    local officerID = nil
-    if maxNrPolice > 0 and math.ceil(OpimizationFleeing.accumulatedCivilianDamage/100) > count(activePoliceUnitIds_DispatchTime) then
-        px, py, pz = getPoliceSpawnLocation(attackerID)
-        _, pos = randDict(GG.BuildingTable)
-        if not px then px, py, pz = pos.x, 0, pos.z end
-        if not px then px,py,pz = math.random(10,90)*Game.mapSizeX/100, 0, math.random(10,90)*Game.mapSizeZ/100 end
-        direction = math.random(1, 4)
-
-        ptype = "policetruck"
-        if GG.GlobalGameState == GameConfig.GameState.anarchy or
-            GG.GlobalGameState == GameConfig.GameState.pacification or 
-            PoliceDamageCounter > 2500
-            then
-            ptype = randT(PoliceTypes)
-            PoliceDamageCounter = PoliceDamageCounter - 2500
-
-        end
-
-        GG.UnitsToSpawn:PushCreateUnit(ptype, px, py, pz, direction,
-                                 gaiaTeamID)
-    end
-     -- reasign one
-        totalNrPolice =  count(activePoliceUnitIds_DispatchTime)
-        if totalNrPolice > 1 then
-                officerID = randDict(activePoliceUnitIds_DispatchTime)
-        elseif totalNrPolice <= 1 then
-            for k,v in pairs(activePoliceUnitIds_Dispatchtime) do
-                if v then
-                    officerID = k 
-                    break
-                end
-            end
-        end
-
-        if officerID then
-            activePoliceUnitIds_DispatchTime[officerID] =   GameConfig.policeMaxDispatchTime +  math.random(1, GameConfig.policeMaxDispatchTime)
-        end
-
-    return officerID
-end
-
-function getRandomHousePos()
-    id, pos = randDict(GG.BuildingTable)
-return pos.x + math.random(200,500)*randSign(), 0, pos.z+ math.random(200,500)*randSign()
-end
-
-function dispatchOfficer(victimID, attackerID )
-    if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
-    officerID = getOfficer(victimID, attackerID)
-    boolFoundSomething = false
-    if officerID and doesUnitExistAlive(officerID) == true then
-         setFireState(officerID, 2)
-         setMoveState(officerID, 2)
-        -- Spring.AddUnitImpulse(officerID,15,0,0)
-        tx, ty, tz = getRandomHousePos()
-        if not attackerID or doesUnitExistAlive(attackerID) then attackerID = Spring.GetUnitLastAttacker(officerID) end
-      
-        if attackerID then 
-            unitStates = Spring.GetUnitStates( victimID ) 
-            if unitStates and unitStates.cloak == true then
-                attackerID = nil
-                Spring.Echo("Attack was cloaked")
-            end
-        end
-
-        booleanDoesAttackerExistAlive = doesUnitExistAlive(attackerID) 
-        if attackerID and booleanDoesAttackerExistAlive == true then
-            if not GG.PoliceInPursuit then
-                GG.PoliceInPursuit = {}
-            end
-            GG.PoliceInPursuit[officerID] = attackerID
-            x, y, z = spGetUnitPosition(attackerID)
-            if x then
-                tx, ty, tz = x, y, z;
-                boolFoundSomething = true
-                --Spring.Echo("")
-            end
-        elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
-            Command(officerID, "guard", victimID, {"shift"})
-            return
-        elseif boolFoundSomething == false  then 
-            x, y, z = spGetUnitPosition(officerID)
-            if x then
-                tx, ty, tz = x + math.random(500,1500)*randSign(), y, z + math.random(500,1500)*randSign();
-            end
-        end
-
-        Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
-        if maRa() == true  or booleanDoesAttackerExistAlive == false then
-            Command(officerID, "go", {x = tx, y = ty, z = tz})
-        else
-            Command(officerID, "attack", {attackerID}, 4)
-        end
-    end
-end
-
 
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
@@ -369,8 +188,6 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
              end
            
         end
-
-        dispatchOfficer(unitID, attackerID)
     end
 end
 
@@ -1299,19 +1116,6 @@ function countDownRespawnHouses(framesToSubstract)
     end
 end
 
-function policeActionTimeSurveilance(frame)
-    for id, times in pairs(activePoliceUnitIds_DispatchTime) do
-        if times then
-            activePoliceUnitIds_DispatchTime[id] = times - 5
-            if activePoliceUnitIds_DispatchTime[id] <= 0 then
-                checkReSpawnHouses()
-                regenerateRoutesTable()
-                spDestroyUnit(id, false, true)
-            end
-        end
-    end
-end
-
 function gadget:GameFrame(frame)
     if boolInitialized == false then
         spawnInitialPopulation(frame)
@@ -1332,9 +1136,7 @@ function gadget:GameFrame(frame)
         -- if Unit arrived at Location
         -- give new Target
         sendArrivedUnitsCommands()
-        -- echoT(statistics)
-        policeActionTimeSurveilance(frame)
-       
+        -- echoT(statistics)      
     end
 
     OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)

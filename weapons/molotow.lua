@@ -5,12 +5,12 @@ local weaponDef = {
 
 --------------------------------------------------------------
     --Physic/flight path
-	range = 200,
-    reloadtime = 9,
+	range = 150,
+    reloadtime = 90,
     weaponVelocity = 320,
     startVelocity = 50,
     weaponAcceleration = 50,
-    flightTime = 6,
+    flightTime = 4,
     cameraShake = 12;
     FixedLauncher = true,
     accuracy = 600,
@@ -46,7 +46,7 @@ local weaponDef = {
 	impulseFactor = 3.0,
 
     --?FIXME***
-    lineOfSight = false,
+    lineOfSight = true,
 
 	soundStart = "sounds/weapons/molotow/throw.ogg",
     soundHit = "sounds/weapons/molotow/impact.ogg",

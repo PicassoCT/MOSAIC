@@ -137,6 +137,7 @@ function watchRaidIconTable()
 
     if GG.raidStatus[unitID] and GG.raidStatus[unitID].result  then
         local result = GG.raidStatus[unitID].result
+        hideAll(unitID)
         if result ==  raidResultStates.Unknown then
              showRaidAbortedAnimation()
         elseif result == raidResultStates.DefenderWins then

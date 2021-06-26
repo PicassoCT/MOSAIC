@@ -62,7 +62,7 @@ function getGameConfig()
         demonstrationMarchRadius = 50,
         civilianMaxWalkingDistance = 3000,
 
-        maxNrPolice = math.ceil(10 *unitFactor),
+        maxNrPolice = 8,
         policeMaxDispatchTime = 2000,
         policeSpawnMinDistance = 2200, -- preferably at houses
         maxSirenSoundFiles = 7,
@@ -131,6 +131,7 @@ function getGameConfig()
             gameover = "gameover",
             pacification = "pacification"
         },
+        anarchySexCouplesEveryNSecond = 3*60,
 
         TimeForInterceptionInFrames = 30 * 10,
         TimeForPanicSpreadInFrames = 15 * 30,

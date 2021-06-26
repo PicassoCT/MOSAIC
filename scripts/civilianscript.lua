@@ -473,6 +473,14 @@ function anarchyBehaviour()
     oldBehaviourState = GameConfig.GameState.normal
     newState = GG.GlobalGameState
 
+    if not GG.AnarchySexCoupleSpawnFrame  then GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1 end
+
+    if GG.AnarchySexCoupleSpawnFrame  + GameConfig.anarchySexCouplesEveryNSeconds * 30 < Spring.GetGameFrame() and math.random(1,100) == 69 and maRa() ==true then
+        StartThread(haveSexTimeDelayed)
+        return
+    end
+
+
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
         oldBehaviourState = GG.GlobalGameState
@@ -480,6 +488,19 @@ function anarchyBehaviour()
     end
 
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+end
+
+function haveSexTimeDelayed()
+    GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1
+    id ,pos = randDict(GG.BuildingTable)
+    while distanceUnitToUnit(unitID, id ) > 200 do
+        Command(unitID, "go", { x=pos.x, y= 0, z= pos.z})
+        Command(unitID, "go", { x=pos.x, y= 0, z= pos.z}, "shift")
+        Sleep(500)
+    end
+    GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1
+    createUnitAtUnit(unitID, "civilian_orgy_pair", unitID, 0, 0, 0)
+    Spring.DestroyUnit(unitID, true, false)
 end
 
 boolStartAerosolBehaviour = false

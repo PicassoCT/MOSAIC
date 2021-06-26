@@ -81,16 +81,16 @@ nanocolor=[[0.20 0.411 0.611]],
 }
 
 AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL:New()
-AIR_COPTER_AEROSOL_ORGYANYL.name, AIR_COPTER_AEROSOL_ORGYANYL.description ="Aerosoldrone: Orgyanyl", "Makes citizens horny till death"
+AIR_COPTER_AEROSOL_ORGYANYL.name, AIR_COPTER_AEROSOL_ORGYANYL.description ="Aerosoldrone: Orgyanyl", "Makes citizens copulate till death"
 
 AIR_COPTER_AEROSOL_WANDERLOST = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_WANDERLOST.name, AIR_COPTER_AEROSOL_WANDERLOST.description ="Aerosoldrone: Wanderlost", "Makes citizens wander aimless till death"
 
 AIR_COPTER_AEROSOL_TOLLWUTOX = AIR_COPTER_AEROSOL:New()
-AIR_COPTER_AEROSOL_TOLLWUTOX.name, AIR_COPTER_AEROSOL_TOLLWUTOX.description ="Aerosoldrone: Tollwutox", "Makes citizens aggressive till death"
+AIR_COPTER_AEROSOL_TOLLWUTOX.name, AIR_COPTER_AEROSOL_TOLLWUTOX.description ="Aerosoldrone: Tollwutox", "Makes citizens dangerously aggressive"
 
 AIR_COPTER_AEROSOL_DEPRESSOL = AIR_COPTER_AEROSOL:New()
-AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Aerosoldrone: Depressol", "Makes citizens catatonic till death"
+AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Aerosoldrone: Depressol", "Makes citizens catatonic till suicide"
 
 
 return lowerkeys({
