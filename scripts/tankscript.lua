@@ -11,6 +11,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 center = piece "Body1"
 aimpiece = piece "Turret1"
 Cannon1 = piece "Cannon1"
+Shell = piece"Shell"
 SIG_RESETAIM = 1
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
@@ -18,6 +19,7 @@ gaiaTeamID = Spring.GetGaiaTeamID()
 function script.Create()
 
     generatepiecesTableAndArrayCode(unitID)
+	Hide(Shell)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
     if gaiaTeamID == myTeamID then
@@ -63,6 +65,7 @@ end
 function script.FireWeapon1() return true end
 
 function script.StartMoving()
+	Explode(Shell, SFX.FALL)
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/drive_4_30.ogg",
                 1.0, 4500, 1)
 end
