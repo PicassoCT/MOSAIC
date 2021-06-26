@@ -131,7 +131,7 @@ function getGameConfig()
             gameover = "gameover",
             pacification = "pacification"
         },
-        anarchySexCouplesEveryNSecond = 3*60,
+        anarchySexCouplesEveryNSeconds = 3*60,
 
         TimeForInterceptionInFrames = 30 * 10,
         TimeForPanicSpreadInFrames = 15 * 30,
