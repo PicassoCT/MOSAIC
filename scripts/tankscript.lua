@@ -50,8 +50,8 @@ function noLongerAiming()
                 1000, 1)
     WTurn(aimpiece, 2, 0, 0.5)
     WTurn(Cannon1, 1, 0, 0.5)
-
 end
+
 function script.AimWeapon1(Heading, pitch)
     -- aiming animation: instantly turn the gun towards the enemy
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/rotate.ogg", 1.0,

@@ -63,6 +63,7 @@ end
 
 function script.TransportPickup(passengerID)
     if motorBikeLoadableTypeTable[Spring.GetUnitDefID(passengerID)] then
+		reset(center, math.pi)
         Signal(SIG_KILL)
         setUnitValueExternal(passengerID, 'WANT_CLOAK', false)
         Spring.SetUnitNoSelect(passengerID, true)
@@ -86,6 +87,11 @@ end
 function killAfterTime()
     Signal(SIG_KILL)
     SetSignalMask(SIG_KILL)
+	factor = 2.0
+	vx,vy,vz = Spring.GetUnitDirection(unitID) 
+	Spring.AddUnitImpulse(unitID, vx*factor, vy*factor, vz*factor)
+	Sleep(2000)
+	WTurn(center, z_axis,math.rad(90*randSing()), math.pi)
     Sleep(GameConfig.motorBikeSurvivalStandaloneMS)
     Spring.DestroyUnit(unitID, false, true)
 end
