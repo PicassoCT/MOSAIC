@@ -320,6 +320,43 @@ local BribeIcon =
     category = "NOTARGET ABSTRACT"
 }
 
+
+local CyberCrime =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 5000,
+    buildCostMetal = 5000,
+    canMove = true,
+    buildPic = "BribeIcon.png",
+    iconType = "BribeIcon",
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+    MaxVelocity = 0,
+    --
+    description = " earn crypto via illicit means. Crime does pay.",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    name = "Crime",
+    CanMove = true,
+    CanPatrol = true,
+    CanStop = true,
+    script = "placeholder.lua",
+    objectName = "bribeIcon.dae",
+    onoffable = true,
+    activatewhenbuilt = true,
+    MaxSlope = 100,
+
+    customparams = {
+        helptext = "Sniper/Raid Icon",
+        baseclass = "Abstract" -- TODO: hacks
+    },
+    category = "NOTARGET ABSTRACT"
+}
 return lowerkeys(
     {
         --Temp
@@ -331,5 +368,6 @@ return lowerkeys(
         ["snipeicon"] = SnipeIcon:New(),
         ["objectiveicon"] = ObjectiveIcon:New(),
         ["bribeicon"] = BribeIcon:New()
+        ["cybercrimeicon"] = CyberCrime:New()
     }
 )

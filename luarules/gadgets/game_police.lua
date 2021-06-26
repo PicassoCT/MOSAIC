@@ -122,7 +122,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
         activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.policeMaxDispatchTime 
     end
 
-    if isBribeIcon(UnitDefs, unitDefID) then
+    if isOffenceIcon(UnitDefs, unitDefID) then
         dispatchOfficer(unitID, unitID)
     end
 end

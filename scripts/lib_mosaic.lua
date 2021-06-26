@@ -262,6 +262,7 @@ function getIconTypes(UnitDefs)
         [UnitDefNames["interrogationicon"].id] = true,
         [UnitDefNames["recruitcivilian"].id] = true,
         [UnitDefNames["bribeicon"].id] = true
+        [UnitDefNames["cybercrimeicon"].id] = true
     }
 end
 
@@ -1507,9 +1508,9 @@ function getInfluencedStates()
     }
 end
 
-function isBribeIcon(UnitDefs, defID)
+function isOffenceIcon(UnitDefs, defID)
     assert(UnitDefs)
-    return UnitDefs[defID].name == "bribeicon"
+    return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name = "cybercrimeicon"
 end
 
 function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
