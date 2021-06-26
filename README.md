@@ -1,6 +1,6 @@
 # MOSAIC
 
-Modular Ordanance Standardization Adaptive Artifacts Intelligence Combat
+Modular Ordanance Standardization Artifacts Intelligence Combat
 
 ![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11053/Example_Screen.png)
 
