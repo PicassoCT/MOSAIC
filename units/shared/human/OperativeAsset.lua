@@ -67,7 +67,7 @@ explodeAs				  = "none",
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 
-	buildDistance = 45,
+	buildDistance = 120,
 	terraformSpeed = 1,
 	buildoptions = {
 		"ground_turret_ssied",
