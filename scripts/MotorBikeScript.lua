@@ -91,7 +91,7 @@ function killAfterTime()
 	vx,vy,vz = Spring.GetUnitDirection(unitID) 
 	Spring.AddUnitImpulse(unitID, vx*factor, vy*factor, vz*factor)
 	Sleep(2000)
-	WTurn(center, z_axis,math.rad(90*randSing()), math.pi)
+	WTurn(center, z_axis,math.rad(90*randSign()), math.pi)
     Sleep(GameConfig.motorBikeSurvivalStandaloneMS)
     Spring.DestroyUnit(unitID, false, true)
 end

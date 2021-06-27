@@ -78,6 +78,8 @@ function getGameConfig()
 
         -- propagandaserver 
         propandaServerFactor = 0.1,
+        RewardCyberCrime = 300,
+
 		--Parachute
 		parachuteHeight = 150,
         -- doubleAgentHeight
