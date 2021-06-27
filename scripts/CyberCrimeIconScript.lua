@@ -6,31 +6,30 @@ include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
-
 center = piece "center"
 Circle001 = piece "Circle001"
 Money = piece "Base"
 DollarSign = piece "DollarSign"
-local GameConfig = getGameConfig()
-myTeamID = Spring.GetUnitTeam()
 
-antline = {}
+local GameConfig = getGameConfig()
+myTeamID = Spring.GetUnitTeam(unitID)
 
 function script.Create()
-    -- generatepiecesTableAndArrayCode(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    antline = TablesOfPiecesGroups["antline "]
+    Hide(Money)
+    Hide(DollarSign)
     Hide(Circle001)
-    -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
+    sign = randSign()
+    Spin(DollarSign,y_axis,math.rad(42*sign),0)
+    Spin(DollarSign,y_axis,math.rad(42*sign),0)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(AnimationTest)
     StartThread(CrimeDoesPay)
+    StartThread(DollarSignRisingLoop)
 end
 allDoneIndex = 0
 
 function AnimationTest()
+    antline = TablesOfPiecesGroups["antline "]
     Sleep(100)
     resetAll(unitID)
     hideT(antline)
@@ -41,35 +40,36 @@ function AnimationTest()
             dist = math.random(75, 90)
             if antline[randPiece] then
                 allDoneIndex = allDoneIndex + 1
-                StartThread(queuedLineMove, antline[randPiece], index, dist,
-                            dist / 5)
+                StartThread(queuedLineMove, antline[randPiece], index, dist,   dist / 5)
             end
         end
         while allDoneIndex > 0 do Sleep(100) end
-
     end
 end
 
 function DollarSignRisingLoop()
+    local upDownAxis = z_axis
+    local moveDistance = 420
     while true do
-        Spin(DollarSign,y_axis,math.rad(42*randSign(),0)
-        Move(DollarSign,y_axis,-60, 0)
+        Spin(DollarSign, 3, math.rad(42*randSign()), 0)
+        Spin(Money, 3, math.rad(42*randSign()), 0)
+        Move(DollarSign,upDownAxis,-moveDistance, 0)
         Show(DollarSign)
-        WMove(DollarSign,y_axis,0, 60)
+        Move(Money,upDownAxis, 0,0)
+        Move(Money,upDownAxis, -moveDistance * 2, moveDistance * 2)
+
+        Show(Money)
+        WMove(DollarSign,upDownAxis,0, moveDistance)
         Hide(DollarSign)
+        Hide(Money)
         Sleep(50)
     end
 end
 
 function CrimeDoesPay()
-    Hide(Money)
-    Hide(DollarSign)
     waitTillComplete(unitID)
-    Spin(DollarSign,y_axis, math.rad(42), 0)
-    for i=1,5 do
-        Sleep(150)
-        Explode(Money.SFX.FALL + SFX.NO_HEATCLOUD)
-    end
+    waitTime = GameConfig.rewardWaitTimeCyberCrimeSeconds * 1000
+    Sleep(waitTime)
 
    GG.Bank:TransferToTeam(GameConfig.RewardCyberCrime, myTeamID, unitID)  
     Sleep(1000)

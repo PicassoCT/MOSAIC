@@ -294,10 +294,10 @@ local BribeIcon =
     buildPic = "BribeIcon.png",
     iconType = "BribeIcon",
     explodeAs = "none",
-    Acceleration = 0,
-    BrakeRate = 0,
-    TurnRate = 0,
-    MaxVelocity = 0,
+    Acceleration = 0.1,
+    BrakeRate = 1.0,
+    TurnRate = 90000,
+    MaxVelocity = 1.0,
     --
     description = "Bribe police to go to this location ",
     levelGround = false,
@@ -351,7 +351,7 @@ local CyberCrime =
     onoffable = true,
     activatewhenbuilt = true,
     MaxSlope = 100,
-    buildTime =    60, --seconds
+    buildTime =    30, --seconds
 
     customparams = {
         helptext = "Sniper/Raid Icon",
@@ -369,7 +369,7 @@ return lowerkeys(
         ["recruitcivilian"] = RecruitCivilian:New(),
         ["snipeicon"] = SnipeIcon:New(),
         ["objectiveicon"] = ObjectiveIcon:New(),
-        ["bribeicon"] = BribeIcon:New()
+        ["bribeicon"] = BribeIcon:New(),
         ["cybercrimeicon"] = CyberCrime:New()
     }
 )
