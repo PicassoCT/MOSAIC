@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.748" 
+            Version = "Alpha: 0.749" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -62,6 +62,7 @@ function getGameConfig()
         demonstrationMarchRadius = 50,
         civilianMaxWalkingDistance = 3000,
 
+
         maxNrPolice = 8,
         policeMaxDispatchTime = 2000,
         policeSpawnMinDistance = 2200, -- preferably at houses
@@ -78,8 +79,10 @@ function getGameConfig()
 
         -- propagandaserver 
         propandaServerFactor = 0.1,
-        RewardCyberCrime = 300,
 
+        --cybercrime
+        RewardCyberCrime = 300,
+        rewardWaitTimeCyberCrimeSeconds= 30,
 		--Parachute
 		parachuteHeight = 150,
         -- doubleAgentHeight
@@ -263,7 +266,7 @@ function getIconTypes(UnitDefs)
         [UnitDefNames["doubleagent"].id] = true,
         [UnitDefNames["interrogationicon"].id] = true,
         [UnitDefNames["recruitcivilian"].id] = true,
-        [UnitDefNames["bribeicon"].id] = true
+        [UnitDefNames["bribeicon"].id] = true,
         [UnitDefNames["cybercrimeicon"].id] = true
     }
 end
@@ -1512,7 +1515,7 @@ end
 
 function isOffenceIcon(UnitDefs, defID)
     assert(UnitDefs)
-    return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name = "cybercrimeicon"
+    return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
 end
 
 function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
