@@ -32,10 +32,7 @@ local spGetUnitLastAttacker = Spring.GetUnitLastAttacker
 local spGetUnitNearestAlly = Spring.GetUnitNearestAlly
 local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
 
-local spSetUnitBlocking = Spring.SetUnitBlocking
-local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
 local spSetUnitNeutral = Spring.SetUnitNeutral
-local spSetUnitNoSelect = Spring.SetUnitNoSelect
 local spRequestPath = Spring.RequestPath
 local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
@@ -114,8 +111,6 @@ function getPoliceSpawnLocation(suspect)
     return sx, 0, sz
 end
 
-
-
 function gadget:UnitCreated(unitID, unitDefID, teamID)
     if PoliceTypes[unitDefID] then
         spSetUnitNeutral(unitID, false)        
@@ -126,8 +121,6 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
         dispatchOfficer(unitID, unitID)
     end
 end
-
-
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     if PoliceTypes[unitDefID] then
