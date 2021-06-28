@@ -45,21 +45,6 @@ end
 local morphDefs = nil
 
 local function is_morph_link(id)
-    -- Analyze the unit name to determine whether it is a morphing link or not
-    local name = id
-    if type(name) == "number" then
-        name = UnitDefs[id].name
-    end
-
-    local fields = __split_str(name, "_")
-    if #fields >= 4 then
-        for _,field in ipairs(fields) do
-            if field == "morph" then
-                return true
-            end
-        end
-    end
-
     return false
 end
 
@@ -109,9 +94,7 @@ local function IsFactory(unitDefID)
     -- Avoid "factories" which only have morphing options, like storages
     local children = unitDef.buildOptions
     for _, c in ipairs(children) do
-        if not is_morph_link(c) then
-            return true
-        end
+        return true
     end
 
     return false
@@ -121,19 +104,6 @@ local function IsPackedFactory(unitDefID)
     local unitDef = UnitDefs[unitDefID]
     if unitDef.isFactory or unitDef.speed == 0 then
         return false
-    end
-
-    morphDefs = morphDefs --or GG['morphHandler'].GetMorphDefs()
-    if morphDefs then
-        local morphs = morphDefs[unitDefID] 
-        if morphs == nil then
-            return false
-        end
-        for _, morph in pairs(morphs) do
-            if IsFactory(morph.into) then
-                return true
-            end
-        end
     end
 
     return false
@@ -147,7 +117,7 @@ local function IsConstructor(unitDefID)
     local resemble_builder = unitDef.isMobileBuilder and unitDef.canAssist
     local children = unitDef.buildOptions
     for _, c in ipairs(children) do
-        if resemble_builder and not is_morph_link(c) then
+        if resemble_builder then
             return true
         end
     end

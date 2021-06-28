@@ -298,6 +298,10 @@ local BribeIcon =
     BrakeRate = 1.0,
     TurnRate = 90000,
     MaxVelocity = 1.0,
+    MovementClass = "Default2x2",
+    CanFly   = true,
+    useSmoothMesh = true,
+    alwaysUpright = true,
     --
     description = "Bribe police to go to this location ",
     levelGround = false,

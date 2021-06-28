@@ -1297,8 +1297,14 @@ function syncDecoyToAgent(evtID, frame, persPack, startFrame)
                                math.random(-10, 10), 0, math.random(-10, 10))
     end
 
-    transferOrders(persPack.syncedID, persPack.myID)
-
+    --is not a build command
+    command = Spring.GetUnitCommands (unitID , 1) 
+    if command[1]  then
+        Command( persPack.myID, "go", {x=x,y=y, z=z})
+   --[[ else 
+        transferOrders(persPack.syncedID, persPack.myID)--]]
+    end
+    
     return frame + 30, persPack
 end
 

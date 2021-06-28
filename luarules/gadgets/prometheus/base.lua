@@ -122,6 +122,8 @@ local function __clamp(v, min_val, max_val)
 end
 
 local function __canBuild(builderDefID, unitDefID)
+    if not UnitDefs[builderDefID] or not UnitDefs[builderDefID].buildOptions then return false end
+    
     local children = UnitDefs[builderDefID].buildOptions
     for _, c in ipairs(children) do
         if c == unitDefID or (UnitDefs[c] and (UnitDefs[c].id == unitDefID)) then
@@ -298,7 +300,14 @@ end
 
 -- Map of unitDefIDs (buildOption) to unitDefIDs (builders)
 local baseBuildOptions = {}
+local loopDetection = {}
 local function updateBuildOptions(unitDefID)
+    if unitDefID then
+        if not loopDetection[unitDefID] then loopDetection[unitDefID] = 0 end
+        loopDetection[unitDefID] = loopDetection[unitDefID] + 1
+        if loopDetection[unitDefID] > 2 then return end
+    end
+
     if unitDefID == nil then
         baseBuildOptions = {}
         for u,_ in pairs(myConstructors) do
@@ -629,6 +638,8 @@ local waiting_builders = {}
 local is_waiting = {}
 
 local function __checkWaitingState(u, shall_wait, GetCommands)
+    local commands = GetCommands(u, 1)
+    if not commands or not commands[1] then return end 
     local cmd = GetCommands(u, 1)[1]
     local is_cmd_wait = cmd ~= nil and cmd.id == CMD_WAIT
     if not shall_wait and is_cmd_wait then
@@ -694,7 +705,10 @@ function BaseMgr.GameFrame(f)
     for u,q in pairs(myFactories) do
         checkFactoryWaitingState(u, is_waiting[u] == true)
         if #q == 0 then
+            local udef = GetUnitDefID(u)
+            if udef and UnitDefs[udefID] then
             Log("Factory " .. UnitDefs[GetUnitDefID(u)].name .. " hanged...")
+        end
             assert(u)
             IdleFactory(u)
         end

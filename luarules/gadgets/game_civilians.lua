@@ -85,14 +85,16 @@ function startInternalBehaviourOfState(unitID, name, ...)
     end
 
     env = Spring.UnitScript.GetScriptEnv(unitID)
+
     if env and env.setOverrideAnimationState then
-        Spring.UnitScript.CallAsUnit(unitID, 
+       result= Spring.UnitScript.CallAsUnit(unitID, 
                                      env[name],
                                      arg[1] or nil,
                                      arg[2] or nil,
                                      arg[3] or nil,
                                      arg[4] or nil
                                      )
+       assert(result==true, name)
     end
 end
 

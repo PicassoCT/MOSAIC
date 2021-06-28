@@ -409,6 +409,7 @@ function startFilmLocation(ux, uy, uz, time)
     filmLocation.z=uz
     filmLocation.time = time
     boolStartFilming = true
+    return true
 end
 
 wailingTime = 0
@@ -417,6 +418,7 @@ function startWailing(time)
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     wailingTime = time
     boolStartWailing = true
+    return true
 end
 
 chattingTime = 0
@@ -425,6 +427,7 @@ function startChatting(time)
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     chattingTime = time
     boolStartChatting = true
+    return true
 end
 
 attackerID = 0
@@ -434,12 +437,14 @@ function startFleeing(enemyID)
     attackerID = enemyID
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
+    return true
 end
 
 boolStartPraying = false
 function startPraying()
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartPraying = true
+    return true
 end
 
 --
@@ -467,6 +472,7 @@ boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartAnarchyBehaviour = true
+    return true
 end
 
 function anarchyBehaviour()   

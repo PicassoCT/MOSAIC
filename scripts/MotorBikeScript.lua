@@ -58,8 +58,15 @@ function script.Create()
     end
     StartThread(updateSteering)
     setSpeedEnv(unitID, 0.0)
+    StartThread(pickUpOnceComplete)
 end
 
+function pickUpOnceComplete()
+    waitTillComplete(unitID)
+    if fatherID and doesUnitExistAlive(fatherID) == true then
+        TransportPickup(passengerID)
+    end
+end
 
 function script.TransportPickup(passengerID)
     if motorBikeLoadableTypeTable[Spring.GetUnitDefID(passengerID)] then

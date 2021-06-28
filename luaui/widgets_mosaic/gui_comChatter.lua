@@ -129,8 +129,10 @@ local function createIdentifierFromID(id)
 	assert(type(id) == "number")
 	local idStr = ((id % 99)..""):gsub("%s+", "")
 
+	while string.len(idStr) < 2 do
+		idStr = "0"..idStr
+	end
 
-	--Spring.Echo("idstr"..idStr)
 	assert(string.len(idStr)>= 2)
 	local firstLetter = idStr:sub(1,1):lower()
 	assert(firstLetter)
