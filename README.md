@@ -1,50 +1,60 @@
 # MOSAIC
 
-Modular Ordanance Standardization Artifacts Intelligence Combat
+Modular Ordanance Standardized Artifact Intelligence Combat
 
 ![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11053/Example_Screen.png)
 
-This is an RTS game for the spring engine (www.springrts.com). 
+This is an RTS game developed for the spring engine (www.springrts.com). 
 
-Its very near future, and plays out in the cities left in the world.
-You play either as Antagon or protagon, trying to destroy another city via backyard built ICBM or prevent the launch of such a missile.
-the unit you start with is an agent, who can hire civilians or create a safe house.
+Its the very near future, and on a planet ravaged by the disaster that is 9 billion people,
+there is a city that is doomed.
+The reason for that is the way conflicts play out in the future. Small groups, with the right, exponential tech,
+can cause damage beyond believe.
+All it takes is some backyard shed, with a homespun hyperfast missile and a anti-matter payload.
+Your job, should you accpet it, is - to either make the worst case happen (Antagon) or prevent the disaster and save the world (Protagon).
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen2.png "")
 
-Slowly two parties infiltrate the city, subverting the public, advancing their goals.
+It starts with a single agent, with the ability to go undercover in a bustling city.
+Small beginnings, but that first safe house, will spawn many more - ready to die for your cause. 
+In the cellars, backyards and safe-houses of the city, a hidden army grows.
+Satellite cycle -Eyes in the sky - over it, ever watchful for that one revealing misstep.
+Drones hum ready to take out the bold.
 
-But beware, you are always one raid, one interrogation away from failure. If one of yours is caught and gives up, those we trained and who trained him, the whole net of treason and trust can unravel.
+Cause its only ever one Raid, one Interrogation for your side to unravell the whole net of trust and treason.
+One bad apple squeezed, will spill those s/he trained and whoever, wherever trained her. 
+And you can go from there, if there is still time, there must be still time..
 
-If they have the ICBM almost ready, and the information about that gets out there, chaos will break out. For somewhere in this, your city, there is a rocket ready to be launched. Ready to end another city.
+And when the time runs out, the world ends. Chaos ensues, protestors riot, friend turns against friend
+Militias search the city for the rocket, while others flee the conflict-zone
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen15.png "")
 
-It always does leak and it always does that too late.
+In the end, they all try to run - even the most blatant madmen, runs from guilt, his home, his cell..
 
-So they tell their relatives to leave the target, tell their believe brothers to leave the origin-city. A city they doomed to have gods free thumb come down upon.
+But nothing and noone is what is yet to come. 
 
-Even the most hardened cells loose it near the end, the mad-idea trying to stay alive in other crazed heads.
+Gods firey thumb will come down upon it.
+
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen8.png "")
 
-Through all the delusional haze, they sense, that they will be hunted into extinction for this atrocity.
+Sometimes there is barely enough time for some condemned Gig-Worker to realize what they have assembled for that ever anonymous, ever absent employer.
+For the future is a tricky place, filled with double-crosses and dangers.
 
-Sometimes, just some gig-worker realizing to late what he has assembled, for that ever absent employer that paid so well.
-
-There is no law, no hope and no god in a city shortly before and forever after a launch.
-
-Then it comes, a deafening roar, a noise to end all noises, out of those bells, the burning cars, already darkening the sun, a pillar of fire rises higher then all those others.
+Maybe there never was a cult-leader and all you followed was a long forgotten AI.
+It could all be just a bad dream, something to wak up from and rub out of your eyes.
+Then it comes, a deafening roar,  a noise to end all noises. On a pillar of fire rises your ideals, your work to judge you.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen14.png "")
 
-Then the hammer, a godrod, comes down- on good and evil alike.
+Then the hammer, comes down- on good and evil alike. A nuke, a godrod.
 
 A eye for a eye, a city for a city.
 
 So it has been, so it shall always be.
 
-Men is men a wulf, until there is no men left to be.
+Men is men a end.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen11.png "")
 
