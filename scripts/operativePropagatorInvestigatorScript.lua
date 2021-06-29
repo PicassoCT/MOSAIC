@@ -699,7 +699,6 @@ function constructSkeleton(unit, piece, offset)
     return bones;
 end
 
-
 function threadStarter()
 	Sleep(100)
 	while true do
@@ -987,7 +986,7 @@ local animationTable = AnimationTable
 end
 
 function delayedStop()
-    Turn(center,x_axis, math.rad(-5), 5)
+    Turn(center,x_axis, math.rad(-5), 1)
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP) 
 	Sleep(250)
@@ -996,6 +995,7 @@ function delayedStop()
 	-- Spring.Echo("Stopping")
     Turn(center,x_axis, math.rad(0), 1)
     showFoldLaptop(true)
+    resetT(lowerBodyPieces, 10)
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 end
 

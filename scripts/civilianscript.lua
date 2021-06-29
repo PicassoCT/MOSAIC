@@ -1522,9 +1522,8 @@ function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
 end
 
 function akAimFunction(weaponID, heading, pitch)
-    
-    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true 
-        and (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true  then return false end
+    if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
          return false 
      end
 

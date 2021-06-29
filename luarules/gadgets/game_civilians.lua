@@ -689,8 +689,9 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     end
 
     --update information
-    hp = spGetUnitHealth(myID)
+    hp, maxHp = spGetUnitHealth(myID)
     if not persPack.myHP then persPack.myHP = hp end
+    if hp < maxHp * 0.5 then persPack.boolDamaged = true end
 
     x, y, z = spGetUnitPosition(myID)
     assert(x)
@@ -758,15 +759,17 @@ end
 
 function goalIsWarZone(persPack)
     dangerNormalized= GG.DamageHeatMap:getDangerAtLocation(persPack.goalList[persPack.goalIndex].x,persPack.goalList[persPack.goalIndex].z)
-    return dangerNormalized > 0.5 and GG.DamageHeatMap.normalizationValue > 5000
+    echo("Is Goal Warzon: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
+    boolGoalIsWarzone = dangerNormalized > 0.5 and GG.DamageHeatMap.normalizationValue > 5000
+    return boolGoalIsWarzone
 end
 
 function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
  -- avoid combat zones
      if maRa() == true and goalIsWarZone(persPack) and not persPack.boolRefugee then 
-        persPack.boolRefugee = true 
         if refugeeAbleTruckType[spGetUnitDefID(myID)] then
+            persPack.boolRefugee = true 
             loadTruck(myID, "truckpayloadrefugee")
         end
     end
@@ -946,6 +949,8 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     -- if near Destination increase goalIndex
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 100 then
+
+        if persPack.boolDamaged == true and maRa() == true then persPack.boolTraumatized = true end
         
         persPack.goalIndex = persPack.goalIndex + 1
         if persPack.goalIndex > #persPack.goalList then
@@ -1002,7 +1007,7 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
-    if GG.GlobalGameState ~= GameConfig.GameState.normal then
+    if GG.GlobalGameState ~= GameConfig.GameState.normal or persPack.boolTraumatized then
         boolDone, retFrame, persPack = travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if boolDone == true then return retFrame,persPack end
     else
