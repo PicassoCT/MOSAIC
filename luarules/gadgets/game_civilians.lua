@@ -187,8 +187,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
             if (MobileCivilianDefIds[unitDefID] and not GG.DisguiseCivilianFor[unitID]) or TruckTypeTable[unitDefID] then
                 startInternalBehaviourOfState(unitID, "startFleeing", attackerID)
                 OpimizationFleeing[unitID] = Spring.GetGameFrame() + math.random(15,35)
-             end
-           
+             end       
         end
     end
 end
@@ -445,6 +444,7 @@ function loadTruck(id, loadType)
            pieceMap = Spring.GetUnitPieceMap(id)
            assert(pieceMap["attachPoint"])
            Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
+            return payLoadID
        end
     end
 end
@@ -770,7 +770,23 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
      if maRa() == true and goalIsWarZone(persPack) and not persPack.boolRefugee then 
         if refugeeAbleTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
-            loadTruck(myID, "truckpayloadrefugee")
+            payloadID = loadTruck(myID, "truckpayloadrefugee")
+            civiliansNearby = process(getAllNearUnit(myID, 128)
+                            function (id)
+                                defID = spGetUnitDefID(id)
+                                if civilianWalkingTypeTable[defID] and not GG.DisguiseCivilianFor[myID] then
+                                    return id
+                                end
+                            end
+                            )
+            if #civiliansNearby > 0 and maRa() == true then
+                id = getRandomElementFromTable(civiliansNearby)
+                if id then
+                    map = getPieceMap(payloadID)
+                    key,value= randDict(map)
+                    Spring.UnitAttach ( payloadID, id,  value ) 
+                end
+            end
         end
     end
 

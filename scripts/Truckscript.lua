@@ -42,7 +42,6 @@ function showAndTell()
         hideT(TablesOfPiecesGroups["Body"])
         Show(TablesOfPiecesGroups["Body"][1])
     end
-
 end
 
 function script.Create()
@@ -57,7 +56,6 @@ function script.Create()
     Hide(attachPoint)
     Hide(center)
     showAndTell()
-
 end
 
 allOrderTypes = {}

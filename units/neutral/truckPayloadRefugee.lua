@@ -25,7 +25,9 @@ local unitName = "truckpayloadrefugee"
 	FootprintX = 1,
 	FootprintZ = 1,
 	cantBeTransported = false,
-
+	transportSize = 16,
+	transportCapacity = 1,
+	isFirePlatform  = false, 
 	sightDistance = 80,
 
 	reclaimable=false,

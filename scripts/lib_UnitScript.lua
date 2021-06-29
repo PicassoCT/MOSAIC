@@ -2207,9 +2207,16 @@ function doForMapPos(Resolution, ...)
     return ReT
 end
 
+
 -- ======================================================================================
 -- Section: Syntax additions and Tableoperations
 -- ======================================================================================
+function getRandomElementFromTable(Table)
+    if #Table == 0 then return nil end
+    if #Table == 1 then return Table[1]end
+    return Table[math.random(1,#Table)]
+end
+
 function toBool(val)
     local t = type(val)
     if (t == 'nil') then
