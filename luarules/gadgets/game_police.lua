@@ -194,7 +194,7 @@ function dispatchOfficer(victimID, attackerID )
             unitStates = Spring.GetUnitStates( victimID ) 
             if unitStates and unitStates.cloak == true then
                 attackerID = nil
-                Spring.Echo("Attack was cloaked")
+                Spring.Echo("dispatchOfficer:Attack was cloaked")
             end
         end
 
@@ -227,6 +227,7 @@ function dispatchOfficer(victimID, attackerID )
             Command(officerID, "attack", {attackerID}, 4)
         end
     end
+    return officerID
 end
 
 
@@ -235,7 +236,8 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             attackerTeam)
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
         accumulatedCivilianDamage = accumulatedCivilianDamage + damage
-        dispatchOfficer(unitID, attackerID)
+        officerID = dispatchOfficer(unitID, attackerID)
+        echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
     end
 end
 

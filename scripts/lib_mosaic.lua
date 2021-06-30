@@ -387,7 +387,8 @@ function getAgrarianAreaFeatureUnits(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
     typeTable = {
         "tree_arab0", 
-        "tree_arab1"
+        "tree_arab1",
+        "greenhouse"
     }
     return getTypeTable(UnitDefNames, typeTable)
 end

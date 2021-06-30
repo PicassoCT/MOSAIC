@@ -321,15 +321,15 @@ function script.AimWeapon1(Heading, pitch)
     boolAiming = true
     boolPrioritizeGround = true
     if boolWalking == true then
-        if boolTurning == true then
+        --[[if boolTurning == true then
             if boolTurnLeft == true then
              PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
             else
                  PlayAnimation("SIDEWALK_LEFT", nil, 2.0)
             end
-        else
-            PlayAnimation("RUNNING", nil, 1.0)
-        end
+        else--]]
+            PlayAnimation("RUNNING", nil, 4.0)
+        --[[end--]]
     end
 
     WTurn(aimrot, y_axis, Heading, math.pi)

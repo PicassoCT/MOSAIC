@@ -24,7 +24,7 @@ local GameConfig = getGameConfig()
 local function getDangerAtLocation(self, x,z) 
     local zoneSeperatorSize = math.min(Game.mapSizeX, Game.mapSizeZ)/12
     if zoneSeperatorSize < 350 then zoneSeperatorSize = 350 end
-    local ox,oz = (x/zoneSeperatorSize)+1, (z/zoneSeperatorSize)+1
+    local ox,oz = math.floor(x/zoneSeperatorSize)+1, math.floor(z/zoneSeperatorSize)+1
     if not self.map[ox] then self.map[ox] = {} end
     if not self.map[ox][oz] then self.map[ox][oz] = 0 end
 
@@ -34,7 +34,7 @@ local function getDangerAtLocation(self, x,z)
  local function addDamageAtLocation(self, x,z, damage) 
     local zoneSeperatorSize = math.min(Game.mapSizeX, Game.mapSizeZ)/12
     if zoneSeperatorSize < 350 then zoneSeperatorSize = 350 end
-    local ox,oz = (x/zoneSeperatorSize)+1, (z/zoneSeperatorSize)+1
+    local ox,oz = math.floor(x/zoneSeperatorSize)+1, math.floor(z/zoneSeperatorSize)+1
     if not self.map[ox] then self.map[ox] = {} end
     if not self.map[ox][oz] then self.map[ox][oz] = 0 end
 

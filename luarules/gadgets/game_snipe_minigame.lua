@@ -292,7 +292,7 @@ if (gadgetHandler:IsSyncedCode()) then
         return false
     end
 
-    function evaluateEndedRound(raidIconId, roundRunning, persPack)
+    function evaluateEndedRound(raidIconId, roundRunning, raidIconID)
         winningTeam = nil
         Graph = {}
         local OriginalGraph = {}
@@ -312,8 +312,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
             end
         end
-
-        GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
+        --[[ GG.HouseRaidIconMap[persPack.unitID] =  raidIconID--]]
 
         -- early out -if one side has not placed at all
         -- defenders did not play
@@ -597,7 +596,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     (roundRunning.Defender.Points <= 0 and
                         roundRunning.Aggressor.Points <= 0) then
                     -- find out who died, who survived, who collected objectives and if there is a new round
-                    winningTeam, roundRunning, state, boolGameOver = evaluateEndedRound(raidIconId, roundRunning, persPack)
+                    winningTeam, roundRunning, state, boolGameOver = evaluateEndedRound(raidIconId, roundRunning, raidIconId)
                     killAllPlacedObjects(roundRunning)
 
                     if roundRunning and state == raidStates.OnGoing or boolGameOver == false then

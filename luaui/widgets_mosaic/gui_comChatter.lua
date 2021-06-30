@@ -83,7 +83,7 @@ local function getNatoPhoneticsTime(letter)
     ["c"]="charlie",
     ["d"]="delta",
     ["e"]="echo",
-    ["f"]="foxtrot",
+    ["f"]="foxtrott",
     ["g"]="golf",
     ["h"]="hotel",
     ["i"]="india",

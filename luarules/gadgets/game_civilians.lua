@@ -771,7 +771,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if refugeeAbleTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
             payloadID = loadTruck(myID, "truckpayloadrefugee")
-            civiliansNearby = process(getAllNearUnit(myID, 128)
+            civiliansNearby = process(getAllNearUnit(myID, 128),
                             function (id)
                                 defID = spGetUnitDefID(id)
                                 if civilianWalkingTypeTable[defID] and not GG.DisguiseCivilianFor[myID] then
