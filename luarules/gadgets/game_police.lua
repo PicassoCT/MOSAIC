@@ -212,7 +212,7 @@ function dispatchOfficer(victimID, attackerID )
             end
         elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
             Command(officerID, "guard", victimID, {"shift"})
-            return
+            return officerID
         elseif boolFoundSomething == false  then 
             x, y, z = spGetUnitPosition(officerID)
             if x then
@@ -226,8 +226,8 @@ function dispatchOfficer(victimID, attackerID )
         else
             Command(officerID, "attack", {attackerID}, 4)
         end
-    end
-    return officerID
+        return officerID
+    end   
 end
 
 
@@ -237,7 +237,9 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
         accumulatedCivilianDamage = accumulatedCivilianDamage + damage
         officerID = dispatchOfficer(unitID, attackerID)
-        echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
+        if officerID then
+            echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
+        end
     end
 end
 
