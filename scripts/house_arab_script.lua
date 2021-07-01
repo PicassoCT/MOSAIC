@@ -33,7 +33,6 @@ boringChances = {
     streetwall = 0.1
 }
 
-agrarianFeatureTypeTable = getAgrarianAreaFeatureUnits(UnitDefs)
 decoChances = boringChances
 x, y, z = Spring.GetUnitPosition(unitID)
 geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
@@ -306,14 +305,11 @@ function selectGroundBuildMaterial()
     return dice
 end
 
-function decorateCity()
-    Sleep(1000)
-    decorateCity()
-
-end
-
 local gaiaTeamID = Spring.GetGaiaTeamID()
 function decorateCity()
+     waitTillComplete(unitID)
+     SleepValue = 1000 + math.random(0,350)
+     Sleep(SleepValue)
 
     if not GG.HouseDecoration_Arab_MarketCounter then  GG.HouseDecoration_Arab_MarketCounter = 0 end
     if not GG.InnerCity_internationalDecoration then  GG.InnerCity_internationalDecoration = 0 end
@@ -353,8 +349,9 @@ function decorateCity()
          minDeg =math.random (0,360)
          maxDeg = minDeg + 120
         for i=1, math.random(2,5) do
-            dice = math.random(1,3)
-            types =  {"greenhouse","tree_arab0", "tree_arab1"}
+         
+            types= getRuralAreaFeatureUnitsNameTable(GG.GameConfig.instance.culture, housesNearby)
+            dice = math.random(1,#types)
             createUnitInCircleAroundUnit(unitID,types[dice], math.random(250,500), minDeg, maxDeg, 0.4, 40)
         end
     end

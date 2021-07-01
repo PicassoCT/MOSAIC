@@ -757,17 +757,17 @@ function getEscapePoint(index)
     if index == 4 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, Game.mapSizeZ end
 end
 
-function goalIsWarZone(persPack)
+function isGoalWarzone(persPack)
     dangerNormalized= GG.DamageHeatMap:getDangerAtLocation(persPack.goalList[persPack.goalIndex].x,persPack.goalList[persPack.goalIndex].z)
-    echo("Is Goal Warzon: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
-    boolGoalIsWarzone = dangerNormalized > 0.5 and GG.DamageHeatMap.normalizationValue > 5000
+    --echo("Is Goal Warzone: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
+    boolGoalIsWarzone = dangerNormalized > GameConfig.warzoneValueNormalized and GG.DamageHeatMap.normalizationValue > 5000
     return boolGoalIsWarzone
 end
 
 function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
  -- avoid combat zones
-     if maRa() == true and goalIsWarZone(persPack) and not persPack.boolRefugee then 
+     if maRa() == true and isGoalWarzone(persPack) and not persPack.boolRefugee then 
         if refugeeAbleTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
             payloadID = loadTruck(myID, "truckpayloadrefugee")
@@ -800,7 +800,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if not persPack.CivilianEscapeIndex then persPack.CivilianEscapeIndex = math.random(1,4) end
 
         ex,ez = getEscapePoint(persPack.CivilianEscapeIndex)
-        ey = spGetGroundHeigth(ex,ez)
+        ey = Spring.GetGroundHeigth(ex,ez)
 
         if distanceUnitToPoint(myID, ex,ey,ez) < 150 then
             spDestroyUnit(myID, false, true)

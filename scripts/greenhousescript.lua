@@ -68,7 +68,7 @@ function solar()
         if percentage > 0.25 and percentage < 0.75 then
             percentage = (percentage - 0.25) / 0.5
             degree = (percentage * 180) + math.random(-10, 10)
-            Turn(Solar, y_axis, math.rad(-offset + degree), math.pi / 100)
+            Turn(Solar, z_axis, math.rad(-offset + degree), math.pi / 100)
         end
         WaitForTurns(Solar)
    end

@@ -1747,8 +1747,8 @@ function getPieceMap(unitID)
 end
 
 function waitTillComplete(id)
-    if not id then return end
-    if doesUnitExistAlive(id) == false then return end
+    if not id then return false end
+    if doesUnitExistAlive(id) == false then return false end
     hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
     Sleep(1)
     repeat
@@ -1758,7 +1758,7 @@ function waitTillComplete(id)
 
     if doesUnitExistAlive(id) == false then return end
 
-    while buildProgress and buildProgress < 1.0 or hp < mHp do
+    while buildProgress and buildProgress < 1.0 do
         if doesUnitExistAlive(id) == false then return false end
         hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
 
@@ -1766,7 +1766,7 @@ function waitTillComplete(id)
         Sleep(500)
     end
 
-    return buildProgress ~= nil
+    return doesUnitExistAlive(id)
 end
 
 function createUnit_TerrainTest(uType, x, y, z, orientation, teamID,

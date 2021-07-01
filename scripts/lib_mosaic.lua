@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.751" 
+            Version = "Alpha: 0.752" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -83,6 +83,7 @@ function getGameConfig()
         --cybercrime
         RewardCyberCrime = 300,
         rewardWaitTimeCyberCrimeSeconds= 30,
+
 		--Parachute
 		parachuteHeight = 150,
         -- doubleAgentHeight
@@ -96,9 +97,8 @@ function getGameConfig()
         InterrogationTimeInFrames = 20 * 30,
         InterrogationDistance = 256,
 
-        RaidInterrogationPropgandaPrice = 50,
+        
         investigatorCloakedSpeedReduction = 0.35,
-        raidWaitTimeToRecloak = 5000,
         operativeShotFiredWaitTimeToRecloak_MS = 10000,
 
         --motorBike
@@ -108,8 +108,13 @@ function getGameConfig()
         checkPointRevealRange = 125,
         checkPointPropagandaCost = 75,
 
-        raid = {maxTimeToWait = 3 * 60 * 1000, maxRoundLength = 20 * 1000},
+        raid = {
+                maxTimeToWait = 3 * 60 * 1000, 
+                maxRoundLength = 20 * 1000,
+                interrogationPropagandaPrice = 50
+            },
 
+        warzoneValueNormalizedand = 0.25,
         -- asset
         assetCloakedSpeedReduction = 0.175,
         assetSpeedRunning = 1.0,
@@ -383,14 +388,14 @@ function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
     end
 end
 
-function getAgrarianAreaFeatureUnits(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "tree_arab0", 
-        "tree_arab1",
-        "greenhouse"
-    }
-    return getTypeTable(UnitDefNames, typeTable)
+function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
+    if culture == "arabic" then 
+        if housesNearby  < 2 then 
+            return {"tree_arab0", "tree_arab1", "greenhouse"}
+        else
+            return {"tree_arab0", "tree_arab1"}
+        end
+    end
 end
 
 function getTranslation(cultureName)

@@ -139,6 +139,7 @@ end
 
 safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
                                                      Spring.GetUnitDefID(unitID))
+boolDoneFor = false
 function detectUpgrade()
    if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
     while true do
@@ -149,21 +150,20 @@ function detectUpgrade()
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
-                echo("Safehouse: Begin building Updgrade "..UnitDefs[buildDefID].name)
+                echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
-                while doesUnitExistAlive(buildID) and buildProgress and buildProgress < 1.0 do
-                     Sleep(100)
-                     hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
-               
                 if doesUnitExistAlive(buildID) == true then
-                    waitTillComplete(buildID)
-                     end
+                     echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
+                    if waitTillComplete(buildID) == true then
+            
                     echo("Safehouse: End building Updgrade "..UnitDefs[buildDefID].name)
                     GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
+                    boolDoneFor = true
                     -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
                     Spring.Echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID, false, true)
+                    end
                 end
             end
         end
@@ -175,10 +175,11 @@ function script.Killed(recentDamage, _)
 end
 
 function script.Activate()
-    -- if not safeHouseID then return 0 end
+    if  boolDoneFor == true then return 0 end
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.INBUILDSTANCE, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)
+    return 1
 end
 
 function script.Deactivate()
@@ -193,9 +194,9 @@ function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
 
-function script.StartBuilding() SetUnitValue(COB.INBUILDSTANCE, 1) end
+function script.StartBuilding()  end
 
-function script.StopBuilding() SetUnitValue(COB.INBUILDSTANCE, 0) end
+function script.StopBuilding() end
 
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)

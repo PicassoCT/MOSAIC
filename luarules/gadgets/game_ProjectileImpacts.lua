@@ -321,12 +321,12 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
-                                -GameConfig.RaidInterrogationPropgandaPrice,
+                                -GameConfig.raid.interrogationPropagandaPrice,
                                 persPack.attackerTeam, persPack.attackerID)
                             for i = 1, #allTeams, 1 do
                                 if allTeams[i] ~= persPack.attackerTeam then
                                     GG.Bank:TransferToTeam(
-                                        GameConfig.RaidInterrogationPropgandaPrice,
+                                        GameConfig.raid.interrogationPropagandaPrice,
                                         allTeams[i], persPack.unitID)
                                 end
                             end
@@ -352,7 +352,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         children = getChildrenOfUnit(unitTeam, persPack.unitID)
                         parent = getParentOfUnit(unitTeam, persPack.unitID)
                         GG.Bank:TransferToTeam(
-                            GameConfig.RaidInterrogationPropgandaPrice,
+                            GameConfig.raid.interrogationPropagandaPrice,
                             persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.unitID)
                         for childID, v in pairs(children) do
@@ -494,13 +494,13 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
-                                -GameConfig.RaidInterrogationPropgandaPrice,
+                                -GameConfig.raid.interrogationPropagandaPrice,
                                 persPack.attackerTeam, persPack.attackerID)
 
                             for i = 1, #allTeams, 1 do
                                 if allTeams[i] ~= persPack.attackerTeam then
                                     GG.Bank:TransferToTeam(
-                                        GameConfig.RaidInterrogationPropgandaPrice,
+                                        GameConfig.raid.interrogationPropagandaPrice,
                                         allTeams[i], persPack.unitID)
                                 end
                             end
@@ -516,7 +516,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     children = getChildrenOfUnit(unitTeam, persPack.unitID)
                     parent = getParentOfUnit(unitTeam, persPack.unitID)
                     GG.Bank:TransferToTeam(
-                        GameConfig.RaidInterrogationPropgandaPrice,
+                        GameConfig.raid.interrogationPropagandaPrice,
                         persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.unitID)
 

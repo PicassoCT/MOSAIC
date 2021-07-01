@@ -304,8 +304,8 @@ local loopDetection = {}
 local function updateBuildOptions(unitDefID)
     if unitDefID then
         if not loopDetection[unitDefID] then loopDetection[unitDefID] = 0 end
-        loopDetection[unitDefID] = loopDetection[unitDefID] + 1
-        if loopDetection[unitDefID] > 2 then return end
+        if loopDetection[unitDefID] > 0 then return end
+        loopDetection[unitDefID] =  1      
     end
 
     if unitDefID == nil then
