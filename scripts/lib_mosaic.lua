@@ -114,7 +114,7 @@ function getGameConfig()
                 interrogationPropagandaPrice = 50
             },
 
-        warzoneValueNormalizedand = 0.25,
+        warzoneValueNormalized= 0.25,
         -- asset
         assetCloakedSpeedReduction = 0.175,
         assetSpeedRunning = 1.0,
