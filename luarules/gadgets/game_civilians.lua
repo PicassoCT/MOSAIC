@@ -760,6 +760,7 @@ end
 function isGoalWarzone(persPack)
     dangerNormalized= GG.DamageHeatMap:getDangerAtLocation(persPack.goalList[persPack.goalIndex].x,persPack.goalList[persPack.goalIndex].z)
     --echo("Is Goal Warzone: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
+
     boolGoalIsWarzone = dangerNormalized > GameConfig.warzoneValueNormalized and GG.DamageHeatMap.normalizationValue > 5000
     return boolGoalIsWarzone
 end
@@ -800,7 +801,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if not persPack.CivilianEscapeIndex then persPack.CivilianEscapeIndex = math.random(1,4) end
 
         ex,ez = getEscapePoint(persPack.CivilianEscapeIndex)
-        ey = Spring.GetGroundHeigth(ex,ez)
+        ey = spGetGroundHeight(ex,ez)
 
         if distanceUnitToPoint(myID, ex,ey,ez) < 150 then
             spDestroyUnit(myID, false, true)
