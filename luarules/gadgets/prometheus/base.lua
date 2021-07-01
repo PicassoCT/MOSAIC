@@ -782,6 +782,8 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
         BuildBaseFinished()
     end
 
+    if not myFactories then myFactories = {} end
+
     local factory = unitBuiltBy[unitID]
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
