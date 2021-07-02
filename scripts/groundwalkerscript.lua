@@ -98,7 +98,17 @@ function script.Create()
     Hide(emitfire)
     StartThread(walkAnimationLoop)
     StartThread(headingChangeDetector, unitID, boolTurnLeft, boolTurning)
+    StartThread(resetHeadingIfNotAiming)
 --[[    StartThread(testAnimation)--]]
+end
+
+function resetHeadingIfNotAiming()
+    while true do
+        Sleep(1000)
+        if boolAiming == false then
+            WTurn(aimrot, y_axis, math.rad(0), math.pi)
+        end
+    end
 end
 
 function testAnimation()
@@ -135,7 +145,7 @@ function walkAnimationLoop()
             end
 
             if boolAiming == false then
-                PlayAnimation("IDLE", nil, 2.0)
+                PlayAnimation("IDLE", nil, 10.0)
                 rSleep= math.random(5,25)*1000
                 while boolAiming== false and boolWalking == false and rSleep> 0 do
                 Sleep(100)
@@ -164,7 +174,6 @@ function walkAnimationLoop()
                             PlayAnimation("SIT", nil, 2.0)
                         end
                     end
-                   
                 end
             end
         end
@@ -349,7 +358,6 @@ function delayedDeactivateAiming()
     Sleep(500)
     boolAiming = false
     boolPrioritizeGround = false
-    Turn(aimrot, y_axis, math.rad(0), math.pi)
 end
 
 function script.FireWeapon1()
