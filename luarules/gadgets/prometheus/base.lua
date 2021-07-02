@@ -785,6 +785,8 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
     if not myFactories then myFactories = {} end
 
     local factory = unitBuiltBy[unitID]
+
+    if not myFactories[factory] then Log("No myFactories entry for".. UnitDefs[Spring.GetUnitDefID(unitID)].name)
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
         if #myFactories[factory] > 0 then
@@ -857,6 +859,7 @@ function BaseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attacker
     end
     if unit_chains.IsFactory(unitDefID) then
         myFactories[unitID] = nil
+        Spring.Echo("Unit "..UnitDefs[unitDefID].name.." destroyed")
         updateBuildOptions()
     end
     if unit_chains.IsPackedFactory(unitDefID) or unit_chains.IsGunToDeploy(unitDefID) then
