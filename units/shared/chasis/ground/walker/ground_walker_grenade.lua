@@ -39,19 +39,13 @@ local ground_walker_grenade = Walker:New{
 		baseclass		= "Tank", -- TODO: hacks
 	},
 	
-				weapons = {
-				[1]={name  = "smartminedrone",
-				onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
-				},
-				
-				
-					
-		},	
+	weapons = {
+	[1]={name  = "smartminedrone",
+		onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+		},			
+	},	
 }
 
-
 return lowerkeys({
-	["ground_walker_grenade"]	= ground_walker_grenade:New(),
-
-	
+	["ground_walker_grenade"]	= ground_walker_grenade:New(),	
 })
