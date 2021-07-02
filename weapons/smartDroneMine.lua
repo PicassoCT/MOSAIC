@@ -1,31 +1,32 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "smartminedrone" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
-  name = "Mine Drone",
+    name = "Mine Drone",
     weaponType = [[MissileLauncher]],
     Accuracy = 1000,
 
     --Physic/flight path
     range = 800,
-    reloadtime = 3,
-    weaponVelocity = 250,
+    reloadtime = 15,
+    weaponVelocity = 350,
     startVelocity = 50,
-    weaponAcceleration = 50,
-    flightTime = 18.5,
-    BurnBlow = 0,
+    weaponAcceleration = 15,
+    flightTime = 10,
+    burst = 3,
+    BurnBlow = 1,
     FixedLauncher = false,
     dance = 30,
-    wobble = 1,
-    turnrate = 12200,
-    tolerance = 16000,
-    tracks = true,
+    wobble                  = 3500,
+    tolerance               = 512,
     Turnrate = 32000,
+
+    tracks = true,
     avoidGround = false,
     avoidFriendly = false,
     --- -APPEARANCE
     model = "DroneMineLaunchProj.s3o",
     smokeTrail = false,
-    --explosionGenerator="custom:redsmoke",
+    explosionGenerator="custom:missile_explosion",
     --CegTag = "ccitdronetail",
 
     --- -TARGETING
@@ -33,7 +34,11 @@ local weaponDef = {
     CylinderTargeting = 0.0,
     avoidFeature = true,
     avoidFriendly = true,
-    collideFriendly = false,
+    collideFriendly = true,
+    collideEnemy  = true,
+    collideNeutral  = true,
+    collideGround = true,
+
     heightMod = 0.5,
 
     --commandfire=true,
