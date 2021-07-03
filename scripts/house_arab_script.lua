@@ -6,7 +6,9 @@ include "lib_Build.lua"
 include "lib_mosaic.lua"
 
 local myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local spGetGroundHeight = Spring.GetGroundHeight
+local TablesOfPiecesGroups = {}
+gridOffset =  {}
 local cubeDim = {
     length = 14.4 * 1.45,
     heigth = 13.65 * 0.75 * 1.45,
@@ -63,6 +65,7 @@ function timeOfDay()
     -- echo(getDayTime(timeFrame%WholeDay, WholeDay))
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -582,7 +585,29 @@ function getElasticTableDebugCopy(...)
     return resulT
 end
 
+function prepareHeightOffsetTable()
+    rx, ry,rz = Spring.GetUnitPosition(unitID)
+    centerHeight = spGetGroundHeight(rx, rz)
+    for i = 1, 37, 1 do
+        partOfPlan, xLoc, zLoc = getLocationInPlan(i)
+        if not gridOffset[xLoc] then gridOffset[xLoc] = {} end
+        if partOfPlan == true then
+            x = -centerP.x + (xLoc * cubeDim.length)
+            z = -centerP.z + (zLoc * cubeDim.length)
+
+            gh = spGetGroundHeight(rx + x,rz + z) 
+
+            gridOffset[xLoc][zLoc] = math.max(0, gh - centerHeight)
+            gridOffset[xLoc][zLoc] = math.random(0,150)
+            Spring.Echo("HeightOffset at:"..xLoc.."/"..zLoc.." is "..gridOffset[xLoc][zLoc].." with gh "..gh)
+        else
+            gridOffset[xLoc][zLoc] = 0
+        end
+    end
+end
+
 function buildDecorateGroundLvl()
+    prepareHeightOffsetTable()
     Sleep(1)
 
     local StreetDecoMaterial = getElasticTable("Street")
@@ -619,6 +644,7 @@ function buildDecorateGroundLvl()
                                                                buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
+                Move(element, _y_axis, gridOffset[xLoc][zLoc] , 0)
                 ToShowTable[#ToShowTable + 1] = element
 
                 if countElements == 24 then
@@ -629,7 +655,7 @@ function buildDecorateGroundLvl()
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     StreetDecoMaterial, StreetDeco =
                         DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                          StreetDecoMaterial, 0)
+                                          StreetDecoMaterial, gridOffset[xLoc][zLoc])
                     Turn(StreetDeco, 3, math.rad(rotation), 0)
 
                 end
@@ -637,12 +663,12 @@ function buildDecorateGroundLvl()
                 if chancesAre(10) < decoChances.door then
                     axis = _z_axis
                     DoorMaterial, Door =
-                        DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0)
+                        DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, gridOffset[xLoc][zLoc])
                     Turn(Door, axis, math.rad(rotation), 0)
                     if chancesAre(10) < decoChances.door then
                         DoorDecoMaterial, DoorDeco =
                             DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                              DoorDecoMaterial)
+                                              DoorDecoMaterial, gridOffset[xLoc][zLoc] )
                         if DoorDeco then
                             Turn(DoorDeco, axis, math.rad(rotation), 0)
                         end
@@ -702,7 +728,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                                                                buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                Move(element, _y_axis, Level * cubeDim.heigth, 0)
+                Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
@@ -713,7 +739,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     -- echo("Adding Window decoration to"..Level)
                     WindowWallMaterial, WindowDeco =
                         DecorateBlockWall(xRealLoc, zRealLoc, Level,
-                                          WindowWallMaterial, 0)
+                                          WindowWallMaterial,gridOffset[xLoc][zLoc])
                     Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
                 end
 
@@ -792,7 +818,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
                          -centerP.z + (zLoc * cubeDim.length)
     Move(element, _x_axis, xRealLoc, 0)
     Move(element, _z_axis, zRealLoc, 0)
-    Move(element, _y_axis, Level * cubeDim.heigth, 0)
+    Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, 0)
 
     pieceGroupName = getPieceGroupName(element)
 
@@ -827,7 +853,7 @@ function addRoofDeocrate(Level, buildMaterial)
                                                                buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
+                Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth - 0.5, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
@@ -856,7 +882,7 @@ function addRoofDeocrate(Level, buildMaterial)
                                                               decoMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                Move(element, _y_axis,
+                Move(element, _y_axis, gridOffset[xLoc][zLoc] +
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
