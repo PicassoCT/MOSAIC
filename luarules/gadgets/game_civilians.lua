@@ -598,12 +598,19 @@ function isRouteTraversable(defID, unitA, unitB)
     return path ~= nil
 end
 
+function getCutlureDependentDiretion(culture)
+    if culture == "arabic" then return 0 end
+    
+    return math.max(1, math.floor(math.random(1, 3)))
+ end
+
 function spawnUnit(defID, x, z)
     if not x then
         echo("Spawning unit of typ " .. UnitDefs[defID].name ..
                  " with no coords")
     end
-    dir = math.max(1, math.floor(math.random(1, 3)))
+    
+    dir = getCutlureDependentDiretion(GameConfig.instance.culture)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 

@@ -106,13 +106,12 @@ function script.Create()
 
     StartThread(rotations)
     StartThread(decorateCity)
-	--StartThread(delayedHeightMapTransform)
 end
 
 function delayedHeightMapTransform()
-value= math.random(1, 150) 
-Sleep(value)
-smoothTerrainAtUnit( unitID, GG.GameConfig.houseSizeX + 50,  GG.GameConfig.houseSizeX*2)
+    value= math.random(1, 15) 
+    Sleep(value)
+    smoothTerrainAtUnit(unitID,  GG.GameConfig.houseSizeX * 2, 50)
 end
 
 function rotations()
@@ -585,21 +584,22 @@ function getElasticTableDebugCopy(...)
     return resulT
 end
 
+
 function prepareHeightOffsetTable()
     rx, ry,rz = Spring.GetUnitPosition(unitID)
     centerHeight = spGetGroundHeight(rx, rz)
     for i = 1, 37, 1 do
-        partOfPlan, xLoc, zLoc = getLocationInPlan(i)
+        local index = i
+        partOfPlan, xLoc, zLoc = getLocationInPlan(index)
         if not gridOffset[xLoc] then gridOffset[xLoc] = {} end
+          gridOffset[xLoc][zLoc] = 0
         if partOfPlan == true then
             x = -centerP.x + (xLoc * cubeDim.length)
             z = -centerP.z + (zLoc * cubeDim.length)
-
-            gh = spGetGroundHeight(rx + x,rz + z) 
-
-            gridOffset[xLoc][zLoc] = math.max(0, gh - centerHeight)
-            gridOffset[xLoc][zLoc] = math.random(0,150)
-            Spring.Echo("HeightOffset at:"..xLoc.."/"..zLoc.." is "..gridOffset[xLoc][zLoc].." with gh "..gh)
+            measurex, measurez =math.ceil(rx + x), math.ceil( rz + z)
+            gh = Spring.GetGroundOrigHeight(measurex, measurez) 
+            total =  gh - centerHeight
+            gridOffset[xLoc][zLoc] = math.max(0, total)
         else
             gridOffset[xLoc][zLoc] = 0
         end
@@ -818,7 +818,9 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
                          -centerP.z + (zLoc * cubeDim.length)
     Move(element, _x_axis, xRealLoc, 0)
     Move(element, _z_axis, zRealLoc, 0)
-    Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, 0)
+    if Level ~= 0 then
+        Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, 0)
+    end
 
     pieceGroupName = getPieceGroupName(element)
 

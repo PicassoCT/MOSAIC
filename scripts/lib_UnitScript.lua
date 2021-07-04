@@ -2050,42 +2050,62 @@ function smoothGroundHeigthmap(size, x, z)
     return T
 end
 
-function getInterpolationFactor(mins, x, maxs)
-	x = math.min(maxs,math.max(x,mins))
-	return x/math.abs(maxs-mins)
+
+function isInTransformationRange(x,z, totalWidth, smoothRange)
+    if x < smoothRange or x > (totalWidth -  smoothRange) then return true end
+    if z < smoothRange or z > (totalWidth -  smoothRange) then return true end
+    return false
 end
 
-function smoothTerrainInRange(ox, oz, rangeStart, rangeEnd)
-  assert(rangeStart < rangeEnd)
+function isInCenter(x,z, totalWidth, smoothRange)
+    if ((x > smoothRange and x < (totalWidth -  smoothRange)) and
+     (z > smoothRange and z < (totalWidth -  smoothRange))) then return true end
+    return false
+end
+
+function smoothTerrainAtUnit(id, totalWidth, smoothRange)
+    ox,_, oz = Spring.GetUnitPosition(id)
+    return smoothTerrainInRange(ox, oz, totalWidth, smoothRange)
+end
+
+function smoothTerrainInRange(ox, oz, totalWidth, smoothRange)
   assert(ox <= Game.mapSizeX)
   assert(oz <= Game.mapSizeZ)
   
-  local refHeigth =  Spring.GetGroundHeight(ox, oz)
-  local orgOffsetMap = smoothGroundHeigthmap(rangeEnd,ox, oz )
-  local totalRange = rangeEnd - rangeStart
-  local oxStart  = math.max(0,ox -rangeEnd) 
-  local ozStart = math.max(0, oz - rangeEnd)
+  local spGetOrigGroundHeight = Spring.GetGroundOrigHeight
+  local spGetGroundHeight = Spring.GetGroundHeight
+  local refHeigth =  spGetOrigGroundHeight(ox, oz)
+  local orgOffsetMap = smoothGroundHeigthmap(totalWidth, ox, oz)
+  local oxStart  = math.max(0,ox -totalWidth/2) 
+  local ozStart  = math.max(0, oz -totalWidth/2)
   
   local orgTerrainMap = {}
-  for x = 1, rangeEnd do
+  local diagonal = (totalWidth)*math.sqrt(2)
+  for x = 1, totalWidth do
     orgTerrainMap[x] = {}
-    for z = 1, rangeEnd do
-      orgTerrainMap[x][z] = refHeigth
-      if (x < totalRange or x > rangeEnd- totalRange ) or (z < totalRange or z > rangeEnd - totalRange ) then
-        interpolationFactorX = 0
-        interpolationFactorZ = 0
-        if x < totalRange then interpolationFactorX = getInterpolationFactor(1, x, totalRange); end
-        if x > rangeEnd- totalRange  then interpolationFactorX = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange); end 
-        if z < totalRange then interpolationFactorZ = getInterpolationFactor(1, z, totalRange) ;end
-        if z > rangeEnd- totalRange then interpolationFactorZ = getInterpolationFactor(1, totalRange - math.abs(x -rangeEnd) , totalRange); end
-        InterpolationFactor = ((interpolationFactorX + interpolationFactorZ)/2.0)
-        orgTerrainMap[x][z] = (refHeigth + orgOffsetMap[x][z])* InterpolationFactor + Spring.GetGroundHeight(x,z)*(1.0-InterpolationFactor)
+    for z = 1, totalWidth do
+     
+      if isInTransformationRange(x, z, totalWidth, smoothRange) == true then
+
+        totalDistance = distance(oxStart,0 ,ozStart, x, 0, z)
+        if totalDistance > diagonal then
+            maxDistance = totalWidth/2
+            InterpolationFactor =  totalDistance/maxDistance
+
+            orgTerrainMap[x][z] =   (refHeigth) * InterpolationFactor + 
+                                    spGetOrigGroundHeight(x,z) * (1.0-InterpolationFactor)
+            --project was aborted due to misstransformation -> Solution: Copy whatever worked from journeywar
+        end
+       elseif totalDistance < diagonal then
+            orgTerrainMap[x][z] = refHeigth
+       else
+            orgTerrainMap[x][z] = spGetOrigGroundHeight(x,z)
        end
     end
   end
 	
-	local startVarX, endVarX = 1, rangeEnd
-	local startVarZ, endVarZ = 1, rangeEnd
+	local startVarX, endVarX = 1, totalWidth
+	local startVarZ, endVarZ = 1, totalWidth
 	local cceil = math.ceil
 
   local spSetHeightMapFunc = Spring.SetHeightMapFunc
@@ -2096,7 +2116,7 @@ function smoothTerrainInRange(ox, oz, rangeStart, rangeEnd)
                   boolPulledOff = false
                   for x = startVarX, endVarX, 8 do --changed to 8 as the wizzard zwzsg said i should ;)
                       if  orgTerrainMap[cceil(x / 8)] and  orgTerrainMap[cceil(x / 8)][cceil(z / 8)] then
-                          spSetHeightMap(oxSTart +x, ozStart+ z, orgTerrainMap[cceil(x / 8)][cceil(z / 8)] )
+                          spSetHeightMap(oxStart +x, ozStart+ z, orgTerrainMap[cceil(x / 8)][cceil(z / 8)] )
                       end
                   end
               end
@@ -2104,10 +2124,7 @@ function smoothTerrainInRange(ox, oz, rangeStart, rangeEnd)
           )
   end
 
-function smoothTerrainAtUnit(id, rangeStart, rangeEnd)
-	ox,_, oz = Spring.GetUnitPosition(id)
-	return smoothTerrainInRange(ox, oz, rangeStart, rangeEnd)
-end
+
 -- > This function process result of Spring.PathRequest() to say whether target is reachable or not
 function IsTargetReachable(moveID, ox, oy, oz, tx, ty, tz, radius)
     local result, lastcoordinate, waypoints

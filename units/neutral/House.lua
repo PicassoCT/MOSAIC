@@ -11,8 +11,8 @@ local house_arab = Building:New{
 	iconType = "house",
 	Builder					= true,
 	levelground				= true,
-	FootprintX = 8,
-	FootprintZ = 8,
+	FootprintX = 6,
+	FootprintZ = 6,
 	script 					= "house_arab_script.lua",
 	objectName       	= "house_arab.dae",
 
