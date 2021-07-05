@@ -305,19 +305,17 @@ local function updateBuildOptions(unitDefID)
     if not unitDefID then
         baseBuildOptions = {}
         local uncheckedDict = {}
-        local uncheckedCounter = 0
         local checkedDict = {}
+      --prepare the unchecked Dictionary filling it with Constructors and Factorys
         for u,_ in pairs(myConstructors) do
-            if not uncheckedDict[u] then uncheckedCounter = uncheckedCounter + 1 end
             uncheckedDict[u] = u
         end
         
         for u,_ in pairs(myFactories) do
-            if not uncheckedDict[u] then uncheckedCounter = uncheckedCounter + 1 end
             uncheckedDict[u] = u
         end
-        boolNoAction = false
-        while (uncheckedCounter > 0 and boolNoAction == false)  do
+        boolNoAction = false -- prevents empty loops if counter fails
+        while ( boolNoAction == false)  do
         boolNoAction = true
             for udefID, _ in pairs(uncheckedDict) do
                 if udefID and not checkedDict[udefID]then
@@ -326,14 +324,12 @@ local function updateBuildOptions(unitDefID)
                         Log("Base can now build ", UnitDefs[bo].humanName)
                         baseBuildOptions[bo] = udefID
                         if checkedDict[udefID]then
-                            if not uncheckedDict[udefID] then uncheckedCounter = uncheckedCounter + 1 end
                             uncheckedDict[udefID] = udefID
                         end
                     end
                   end
                 boolNoAction = false
                 checkedDict[udefID] = true  
-                uncheckedCounter = uncheckedCounter-1
                 uncheckedDict[udefID]= nil
               end          
             end
