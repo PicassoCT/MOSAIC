@@ -786,7 +786,7 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
 
     local factory = unitBuiltBy[unitID]
 
-    if not myFactories[factory] then Log("No myFactories entry for".. UnitDefs[Spring.GetUnitDefID(unitID)].name)
+    if not myFactories[factory] then Log("No myFactories entry for".. UnitDefs[Spring.GetUnitDefID(unitID)].name) end
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
         if #myFactories[factory] > 0 then

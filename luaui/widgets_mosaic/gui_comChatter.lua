@@ -294,8 +294,7 @@ local function getObjectSounds(x,y)
 		
 		local FeatureName = FeatureDefs[Spring.GetFeatureDefID(goalLocation)].name
 		assert(FeatureName)
-		assert(FeatureName[1])
-		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime(FeatureName[1])),10
+		objectData.sounds[#objectData.sounds + 1],objectData.times[#objectData.times + 1]  = addSoundPath(teamSex, getNatoPhoneticsTime(string:sub(FeatureName,1))),10
 	end
 
 	if goalType == "ground" then

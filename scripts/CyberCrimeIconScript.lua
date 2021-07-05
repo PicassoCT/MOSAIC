@@ -72,6 +72,7 @@ function CrimeDoesPay()
     Sleep(waitTime)
 
    GG.Bank:TransferToTeam(GameConfig.RewardCyberCrime, myTeamID, unitID)  
+   Spring.AddTeamResource(myTeamID, "energy", GameConfig.RewardCyberCrime)
     Sleep(1000)
    Spring.DestroyUnit(unitID,true,false)
 end

@@ -31,15 +31,15 @@ local Launcher = Building:New{
 	name = "Launcher",
 	description = " ends the game with a MOSA ICBM launch",
 
-	--[[canCloak =true,
+	canCloak =true,
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 0,
+	minCloakDistance = 1.0,
 	onoffable=true,
 	initCloaked = true,
 	decloakOnFire = true,
-	cloakTimeout = 5,--]]
+	cloakTimeout = 5,
 
 	
 	customparams = {
