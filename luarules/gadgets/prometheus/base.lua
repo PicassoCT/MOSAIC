@@ -316,8 +316,9 @@ local function updateBuildOptions(unitDefID)
             if not uncheckedDict[u] then uncheckedCounter = uncheckedCounter + 1 end
             uncheckedDict[u] = u
         end
-
-        while (uncheckedCounter > 0) do
+        boolNoAction = false
+        while (uncheckedCounter > 0 and boolNoAction == false)  do
+        boolNoAction = true
             for udefID, _ in pairs(uncheckedDict) do
                 if udefID and not checkedDict[udefID]then
                   for _,bo in ipairs(UnitDefs[udefID].buildOptions) do
@@ -330,12 +331,14 @@ local function updateBuildOptions(unitDefID)
                         end
                     end
                   end
+                boolNoAction = false
                 checkedDict[udefID] = true  
                 uncheckedCounter = uncheckedCounter-1
                 uncheckedDict[udefID]= nil
               end          
             end
         end
+        return
     else
       for _,bo in ipairs(UnitDefs[unitDefID].buildOptions) do
             if not baseBuildOptions[bo] then
@@ -344,7 +347,6 @@ local function updateBuildOptions(unitDefID)
             end
         end
     end
-
 end
 
 -- Building stuff
