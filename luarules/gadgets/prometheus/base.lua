@@ -299,32 +299,52 @@ local function SelectNewBuildingChain()
 end
 
 -- Map of unitDefIDs (buildOption) to unitDefIDs (builders)
-local baseBuildOptions = {}
-local loopDetection = {}
+
 local function updateBuildOptions(unitDefID)
-    if unitDefID then
-        if not loopDetection[unitDefID] then loopDetection[unitDefID] = 0 end
-        if loopDetection[unitDefID] > 0 then return end
-        loopDetection[unitDefID] =  1      
-    end
 
-    if unitDefID == nil then
+    if not unitDefID then
         baseBuildOptions = {}
+        local uncheckedDict = {}
+        local uncheckedCounter = 0
+        local checkedDict = {}
         for u,_ in pairs(myConstructors) do
-            updateBuildOptions(GetUnitDefID(u))
+            if not uncheckedDict[u] then uncheckedCounter = uncheckedCounter + 1 end
+            uncheckedDict[u] = u
         end
+        
         for u,_ in pairs(myFactories) do
-            updateBuildOptions(GetUnitDefID(u))
+            if not uncheckedDict[u] then uncheckedCounter = uncheckedCounter + 1 end
+            uncheckedDict[u] = u
         end
-        return
+
+        while (uncheckedCounter > 0) do
+            for udefID, _ in pairs(uncheckedDict) do
+                if udefID and not checkedDict[udefID]then
+                  for _,bo in ipairs(UnitDefs[udefID].buildOptions) do
+                    if not baseBuildOptions[bo] then
+                        Log("Base can now build ", UnitDefs[bo].humanName)
+                        baseBuildOptions[bo] = udefID
+                        if checkedDict[udefID]then
+                            if not uncheckedDict[udefID] then uncheckedCounter = uncheckedCounter + 1 end
+                            uncheckedDict[udefID] = udefID
+                        end
+                    end
+                  end
+                checkedDict[udefID] = true  
+                uncheckedCounter = uncheckedCounter-1
+                uncheckedDict[udefID]= nil
+              end          
+            end
+        end
+    else
+      for _,bo in ipairs(UnitDefs[unitDefID].buildOptions) do
+            if not baseBuildOptions[bo] then
+                Log("Base can now build ", UnitDefs[bo].humanName)
+                baseBuildOptions[bo] = unitDefID
+            end
+        end
     end
 
-    for _,bo in ipairs(UnitDefs[unitDefID].buildOptions) do
-        if not baseBuildOptions[bo] then
-            Log("Base can now build ", UnitDefs[bo].humanName)
-            baseBuildOptions[bo] = unitDefID
-        end
-    end
 end
 
 -- Building stuff
