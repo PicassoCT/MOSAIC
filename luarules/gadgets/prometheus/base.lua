@@ -74,22 +74,14 @@ local myConstructors = {}     -- Units which may build the base
 local myFactories = {}        -- Factories already available, with their queue
 local myFactoriesScore = {}   -- Score associated to the factory
 local myPackedFactories = {}  -- Packed factories, which shall unpack
-local baseBuildOptions = {}
 
 local function GetBuildingChains()
     local producers = {}
-
     for u, _ in pairs(myConstructors) do
-        local defID = GetUnitDefID(u) 
-        if defID then
-         producers[defID] = u
-        end
+        producers[GetUnitDefID(u)] = u
     end
     for u, _ in pairs(myFactories) do
-        local defID = GetUnitDefID(u)
-        if defID then
-            producers[defID] = u
-        end
+        producers[GetUnitDefID(u)] = u
     end
 
     local chains = {}
@@ -300,44 +292,29 @@ local function SelectNewBuildingChain()
 end
 
 -- Map of unitDefIDs (buildOption) to unitDefIDs (builders)
-local function updateBuildOptions(unitDefID)
+local baseBuildOptions = {}
 
-    if not unitDefID then --revaluate all builders and factories
+local function updateBuildOptions(unitDefID)
+    if unitDefID == nil then
         baseBuildOptions = {}
+        local alreadyCheckedDefIDs = {}
         local uncheckedDict = {}
         local checkedDict = {}
       --prepare the unchecked Dictionary filling it with Constructors and Factorys
         for u,_ in pairs(myConstructors) do
-            uncheckedDict[u] = GetUnitDefID(u)
+            updateBuildOptions(GetUnitDefID(u))
         end
         
         for u,_ in pairs(myFactories) do
-            uncheckedDict[u] = GetUnitDefID(u)
-        end
-        boolNoAction = false -- prevents empty loops if counter fails
-        while ( boolNoAction == false)  do
-        boolNoAction = true
-            for unit, udefID in pairs(uncheckedDict) do
-                if udefID and not checkedDict[unit]then
-                  for _,bo in ipairs(UnitDefs[udefID].buildOptions) do
-                    if not baseBuildOptions[bo] then
-                        Log("Base can now build ", UnitDefs[bo].humanName)
-                        baseBuildOptions[bo] = udefID
-                    end
-                  end
-                boolNoAction = false              
-              end  
-            checkedDict[unit] = true  
-            uncheckedDict[unit]= nil        
-            end
+            updateBuildOptions(GetUnitDefID(u))
         end
         return
-    else
-      for _,bo in ipairs(UnitDefs[unitDefID].buildOptions) do
-            if not baseBuildOptions[bo] then
-                Log("Base can now build ", UnitDefs[bo].humanName)
-                baseBuildOptions[bo] = unitDefID
-            end
+    end
+
+    for _,bo in ipairs(UnitDefs[unitDefID].buildOptions) do
+        if not baseBuildOptions[bo] then
+            Log("Base can now build ", UnitDefs[bo].humanName)
+            baseBuildOptions[bo] = unitDefID
         end
     end
 end
