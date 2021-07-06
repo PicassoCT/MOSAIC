@@ -74,6 +74,7 @@ local myConstructors = {}     -- Units which may build the base
 local myFactories = {}        -- Factories already available, with their queue
 local myFactoriesScore = {}   -- Score associated to the factory
 local myPackedFactories = {}  -- Packed factories, which shall unpack
+local baseBuildOptions = {}
 
 local function GetBuildingChains()
     local producers = {}
@@ -299,39 +300,35 @@ local function SelectNewBuildingChain()
 end
 
 -- Map of unitDefIDs (buildOption) to unitDefIDs (builders)
-
 local function updateBuildOptions(unitDefID)
 
-    if not unitDefID then
+    if not unitDefID then --revaluate all builders and factories
         baseBuildOptions = {}
         local uncheckedDict = {}
         local checkedDict = {}
       --prepare the unchecked Dictionary filling it with Constructors and Factorys
         for u,_ in pairs(myConstructors) do
-            uncheckedDict[u] = u
+            uncheckedDict[u] = GetUnitDefID(u)
         end
         
         for u,_ in pairs(myFactories) do
-            uncheckedDict[u] = u
+            uncheckedDict[u] = GetUnitDefID(u)
         end
         boolNoAction = false -- prevents empty loops if counter fails
         while ( boolNoAction == false)  do
         boolNoAction = true
-            for udefID, _ in pairs(uncheckedDict) do
-                if udefID and not checkedDict[udefID]then
+            for unit, udefID in pairs(uncheckedDict) do
+                if udefID and not checkedDict[unit]then
                   for _,bo in ipairs(UnitDefs[udefID].buildOptions) do
                     if not baseBuildOptions[bo] then
                         Log("Base can now build ", UnitDefs[bo].humanName)
                         baseBuildOptions[bo] = udefID
-                        if checkedDict[udefID]then
-                            uncheckedDict[udefID] = udefID
-                        end
                     end
                   end
-                boolNoAction = false
-                checkedDict[udefID] = true  
-                uncheckedDict[udefID]= nil
-              end          
+                boolNoAction = false              
+              end  
+            checkedDict[unit] = true  
+            uncheckedDict[unit]= nil        
             end
         end
         return

@@ -2,7 +2,7 @@
      
 local listOfLuaAIs = {  
     {
-        name = "Prometheus",
+        name = "AI:Prometheus",
         desc = "Lua AI for Mosaic",
     },
 }
