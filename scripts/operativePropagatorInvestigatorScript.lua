@@ -995,8 +995,10 @@ function delayedStop()
 	-- Spring.Echo("Stopping")
     Turn(center,x_axis, math.rad(0), 1)
     showFoldLaptop(true)
-    resetT(lowerBodyPieces, 10)
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
+    for _,part in pairs (lowerBodyPieces) do
+        reset(part, 10)
+    end
 end
 
 function showFoldLaptop(boolUnfold)

@@ -6,28 +6,65 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 boolSafeHouseActive = false
+GameConfig = getGameConfig()
+safeHouseID = nil
+boolAttached = false
+
+gaiaTeamID = Spring.GetGaiaTeamID()
+local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitTeam = Spring.GetUnitTeam
+myDefID = spGetUnitDefID(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
+local spGetUnitPosition = Spring.GetUnitPosition
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+                                                "house", UnitDefs)
+
+
+safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+
+
+safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 center = piece "center"
 Icon = piece "Icon"
 
+function preventBuildingNearPreexistingSafehouse()
+    process(getAllNearUnit(unitID, 100),
+            function(id)
+                if spGetUnitTeam(id) == myTeamID and id ~= unitID then 
+                    return id
+                end
+            end,
+            function(id)
+                defID = spGetUnitDefID(id)
+                if safeHouseTypeTable[defID] or safeHouseUpgradeTypeTable[defID] then
+                    --we already have something in this building -- abort
+                return true
+                end
+            end
+            )
+        return false
+    end
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    boolPredecessorSafehouse = preventBuildingNearPreexistingSafehouse()
+    if boolPredecessorSafehouse == false then
     StartThread(houseAttach)
     StartThread(drawMapRoom)
     Spring.SetUnitBlocking(unitID, false, false, false)
-
+    else
+    StartThread(killDelayed)
+    end
 end
 
-GameConfig = getGameConfig()
-safeHouseID = nil
-boolAttached = false
+function killDelayed()
+    Sleep(1)
+    destroyUnitConditional(unitID, false, true)
+end
 
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
-                                                "house", UnitDefs)
-
-gaiaTeamID = Spring.GetGaiaTeamID()
 
 function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID)
     turnEveryoneDoubleAgentEventStream =
@@ -220,8 +257,7 @@ function drawMapRoom()
     hideT(TablesOfPiecesGroups["SafeHouse"])
     dictSafeHouse_Pos = {}
     dictHouses_Pos = {}
-    local spGetUnitDefID = Spring.GetUnitDefID
-    local spGetUnitPosition = Spring.GetUnitPosition
+
 
     process(Spring.GetAllUnits(), function(id)
         if Spring.GetUnitTeam(id) == gaiaTeamID then return id end

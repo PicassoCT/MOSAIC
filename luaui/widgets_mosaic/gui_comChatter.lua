@@ -51,7 +51,6 @@ local lockPlayerID
 
 local unitConf ={}
 local selectedUnits = {}
-local teamSex = "male"
 local loudness = 0.15
 ------------------------------------------------------------------
 
@@ -239,7 +238,7 @@ local function dec2hex(num)
     return s
 end
 
-local function getActionSound()
+local function getActionSound(teamSex)
 	local activeCmd = select(4, Spring.GetActiveCommand())
 	local default ="_move"
 
@@ -265,7 +264,7 @@ local function getActionSound()
 	return  soundPath , 20
 end
 
-local function getObjectSounds(x,y)
+local function getObjectSounds(x,y, teamSex)
  	--Unit getCommandStringFromDefID
 	goalType, goalLocation = getCommandTarget(x,y)
 	local objectData ={ sounds={}, times = {}}
@@ -328,7 +327,7 @@ local function getObjectSounds(x,y)
  	return objectData
  end
  
-local function createSubject(sound, times, identifierSounds, identifierTimes)
+local function createSubject(sound, times, identifierSounds, identifierTimes, teamSex)
 	local soundList = {}
 	soundList[#soundList+1] = {sound = sound ,times = times}
 
@@ -388,6 +387,12 @@ local objectToInsert ={
 	end
 end
 
+
+local function getRandomTeamSex()
+		if math.random(0,1) == 1 then return "male" end
+		return "female"
+	end
+
 local function buildSoundCommand( x, y)
 	local units = Spring.GetSelectedUnits()
 
@@ -403,6 +408,7 @@ local function buildSoundCommand( x, y)
 	local resultID 
 	local maxHP = -1
 	local higestOrderDefID
+	local teamSex = getRandomTeamSex()
 
 	for i=1, #units do
 		local id = units[i]
@@ -427,13 +433,13 @@ local function buildSoundCommand( x, y)
 	subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, higestOrderDefID)
 
 	local actionSound, actionTime 
-	actionSound, actionTime = getActionSound(resultID)
+	actionSound, actionTime = getActionSound(teamSex)
 	if  actionSound == nil then 
 		return 
 	end
 
 	--object
-	local objectData  = getObjectSounds(x,y)
+	local objectData  = getObjectSounds(x,y, teamSex)
 
 
 	if not subjectName or not actionSound or not objectData then 
@@ -442,7 +448,7 @@ local function buildSoundCommand( x, y)
 
 	addCommandStack(createSubject(subjectName,subjectTime, subjectIdentifierSounds, subjectIdentifierTimes),
 					createAction(actionSound, actionTime),
-					createObject(objectData.sounds, objectData.times)
+					createObject(objectData.sounds, objectData.times)					
 					)
 end
 

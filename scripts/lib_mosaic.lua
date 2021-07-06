@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.754" 
+            Version = "Alpha: 0.755" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -761,9 +761,9 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
     typeTable = {
         "tree_arab0",
          "tree_arab1", 
-         "innerCityDeco_inter1",
-        "innerCityDeco_inter2",
-        "innerCityDeco_inter3"
+         "innercitydeco_inter1",
+        "innercitydeco_inter2",
+        "innercitydeco_inter3"
     }
 
     return getTypeTable(UnitDefNames, typeTable)
