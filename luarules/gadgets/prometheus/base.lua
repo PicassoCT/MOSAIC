@@ -75,17 +75,31 @@ local myFactories = {}        -- Factories already available, with their queue
 local myFactoriesScore = {}   -- Score associated to the factory
 local myPackedFactories = {}  -- Packed factories, which shall unpack
 
+
 local function GetBuildingChains()
     local producers = {}
     for u, _ in pairs(myConstructors) do
-        producers[GetUnitDefID(u)] = u
+        local defID = GetUnitDefID(u)
+        if defID then
+        if not producers[defID] then producers[defID] = {} end
+            producers[defID][#producers[defID]+1] = u
+        end
     end
     for u, _ in pairs(myFactories) do
-        producers[GetUnitDefID(u)] = u
+       local defID = GetUnitDefID(u)
+        if defID then 
+        if not producers[defID] then producers[defID] = {} end
+            producers[defID][#producers[defID]+1] = u
+        end
     end
 
     local chains = {}
-    for unitDefID, unitID in pairs(producers) do
+    for unitDefID, builders in pairs(producers) do
+        local unitID = builders[1] 
+        if #builders > 1 then 
+            unitID = builders[math.random(1,#builders)] 
+        end
+        
         local subchains = unit_chains.GetBuildCriticalLines(unitDefID)
         for target, chain in pairs(subchains) do
             if (chains[target] == nil) or (chains[target].metal > chain.metal) then
@@ -302,11 +316,15 @@ local function updateBuildOptions(unitDefID)
         local checkedDict = {}
       --prepare the unchecked Dictionary filling it with Constructors and Factorys
         for u,_ in pairs(myConstructors) do
-            updateBuildOptions(GetUnitDefID(u))
+            if doesUnitExistAlive(u) == true then
+                updateBuildOptions(GetUnitDefID(u))
+            end
         end
         
         for u,_ in pairs(myFactories) do
-            updateBuildOptions(GetUnitDefID(u))
+            if doesUnitExistAlive(u) == true then
+                updateBuildOptions(GetUnitDefID(u))
+            end
         end
         return
     end
@@ -851,7 +869,7 @@ function BaseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attacker
     end
     if unit_chains.IsFactory(unitDefID) then
         myFactories[unitID] = nil
-        Spring.Echo("Unit "..UnitDefs[unitDefID].name.." destroyed")
+       -- Spring.Echo("Unit "..UnitDefs[unitDefID].name.." destroyed")
         updateBuildOptions()
     end
     if unit_chains.IsPackedFactory(unitDefID) or unit_chains.IsGunToDeploy(unitDefID) then
