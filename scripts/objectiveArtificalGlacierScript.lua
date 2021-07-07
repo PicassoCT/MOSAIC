@@ -6,6 +6,7 @@ include "lib_Build.lua"
 include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
+BasePlate = piece "BasePlate"
 Irrigation1 = piece "Irrigation1"
 GameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
@@ -14,14 +15,16 @@ local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
 --assert(houseTypeTable)
 Piston = piece"Piston"
 PistonHeigth = 6500
+hours, minutes, seconds, percentage = getDayTime()
 
 function trackEnergyConsumption()
     while true do
-            hours, minutes, seconds, percent = getDayTime()
+            hours, minutes, seconds, percentage = getDayTime()
             if percent < 0.5 then percent = 1-0.5 end
             result = (1.0 - percent)*-1
             result = result*PistonHeigth
             WMove(Piston,z_axis, result, 100.1)
+
         Sleep(1000)
     end
 end
@@ -36,8 +39,36 @@ function script.Create()
     Hide(Irrigation1)
 
     StartThread(deployPipes)
-    StartThread(unfold)
+    StartThread(dependingOnDayTimeFoldUnfold)
     StartThread(trackEnergyConsumption)
+end
+
+boolUnfolded = false
+function dependingOnDayTimeFoldUnfold()
+    heading = Spring.GetUnitHeading(unitID)/16384
+    Sleep(10)
+    hours, minutes, seconds, percentage = getDayTime()
+    while true do
+        if hours > 5 and hours < 20 and boolUnfolded == false then
+            boolUnfolded = true
+            unfold()
+        end
+
+        if hours > 19 and boolUnfolded == true then
+            fold()
+            degree = (0.25 * 180) +  heading* 90
+            WTurn(BasePlate, y_axis, math.rad(degree), math.pi / 5000)
+            boolUnfolded = false
+        end
+
+        if percentage > 0.25 and percentage < 0.70 then
+            percentage = (percentage - 0.25) / 0.5
+            degree = (percentage * 180) +  heading* 90
+            Turn(BasePlate, y_axis, math.rad(degree), math.pi / 5000)
+        end
+
+    Sleep(1000)
+    end
 end
 
 function unfold()
@@ -53,6 +84,21 @@ function unfold()
     Turn(TablesOfPiecesGroups["Solar3Ext"][2], z_axis, math.rad(-179), 1)
     Turn(TablesOfPiecesGroups["Solar4Ext"][2], z_axis, math.rad(-179), 1)
     WaitForTurns(TablesOfPiecesGroups["Solar3Ext"][2], TablesOfPiecesGroups["Solar4Ext"][2])
+end
+
+function fold()
+    Turn(TablesOfPiecesGroups["Solar4Ext"][2], z_axis, math.rad(0), 1)
+    Turn(TablesOfPiecesGroups["Solar3Ext"][2], z_axis, math.rad(0), 1)
+    WaitForTurns(TablesOfPiecesGroups["Solar3Ext"][2], TablesOfPiecesGroups["Solar4Ext"][2])
+    Turn(TablesOfPiecesGroups["Solar3Ext"][1], z_axis, math.rad(0), 1)
+    Turn(TablesOfPiecesGroups["Solar4Ext"][1], z_axis, math.rad(0), 1)
+    WaitForTurns(TablesOfPiecesGroups["Solar3Ext"][1], TablesOfPiecesGroups["Solar4Ext"][1])
+    WTurn(TablesOfPiecesGroups["Solar"][1], z_axis, math.rad(0), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][2], z_axis, math.rad(0), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(0), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(0), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(0), 1)
+    WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(0), 1)
 end
 
 function script.Killed(recentDamage, _) return 1 end

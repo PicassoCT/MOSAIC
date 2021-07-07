@@ -49,12 +49,11 @@ function script.Create()
     StartThread(buildWatcher)
     T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
                 function(id)
-        if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
-    end)
-
+                    if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
+                end)
+    if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
     GG.UnitHeldByHouseMap[unitID] = T[1]
     StartThread(mortallyDependant, unitID, T[1], 15, false, true)
-
 end
 
 function script.Killed(recentDamage, _) return 1 end

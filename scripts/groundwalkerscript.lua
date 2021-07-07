@@ -69,7 +69,38 @@ local scriptEnv = {
     y_axis = y_axis,
     z_axis = z_axis
 }
+
+local allPieces = {
+    center = center,
+    aimrot = aimrot,
+    emitfire = emitfire,
+
+
+    upleg01 = upleg01,
+    upleg002 = upleg002,
+    upleg003 = upleg003,
+    upleg004 = upleg004,
+
+    uparm01 = uparm01,
+    uparm002 = uparm002,
+    uparm003 = uparm003,
+    uparm004 = uparm004,
+
+    lowarm01 = lowarm01,
+    lowarm002 = lowarm002,
+    lowarm003 = lowarm003,
+    lowarm004 = lowarm004,
+
+    lowleg01 = lowleg01,
+    lowleg002 = lowleg002,
+    lowleg003 = lowleg003,
+    lowleg004 = lowleg004,
+
+    Parachute = Parachute
+}
+
 local SIG_AIM = 1
+local SIG_IDLE = 2
 
 
 function gunRecoilMotion()
@@ -99,7 +130,6 @@ function script.Create()
     StartThread(walkAnimationLoop)
     StartThread(headingChangeDetector, unitID, boolTurnLeft, boolTurning)
     StartThread(resetHeadingIfNotAiming)
---[[    StartThread(testAnimation)--]]
 end
 
 function resetHeadingIfNotAiming()
@@ -111,14 +141,6 @@ function resetHeadingIfNotAiming()
     end
 end
 
-function testAnimation()
-    while true do
-        PlayAnimation("FIRE_HIGH", nil, 2.0)
-       -- Sleep(1000)
-        --PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
-       -- Sleep(1000)
-    end
-end
 
 boolTransported = false
 function Landing()
@@ -128,24 +150,40 @@ function Landing()
     end
     boolTransported = false
     PlayAnimation("UPRIGHT", nil, 5.0)
-     while(boolWalking == false and boolAiming == false) do
-    speedO = math.random(10,25)/10
-     PlayAnimation("IDLE", nil, speedO )
-     Sleep(100)
+    while(boolWalking == false and boolAiming == false) do
+        speedO = math.random(5,25)/10
+        PlayAnimation("IDLE", nil, speedO )
+        Sleep(100)
     end
 end
 
+boolIdleRunning = false
+function SignalIdle()
+    Signal(SIG_IDLE)
+    SetSignalMask(SIG_IDLE)
+    Sleep(1)
+    varSpeed= math.random(10,30)/10
+    PlayAnimation("IDLE", nil, varSpeed)
+    Sleep(100)
+    boolIdleRunning = false
+end
+
+boolForward = true
 function walkAnimationLoop()
     waitTillComplete(unitID)
     Landing()
     while true do
         if boolAiming == false and boolWalking == true then
             while boolAiming == false and boolWalking == true do
-                PlayAnimation("RUNNING", nil, 1.0)
+                if boolForward == true then
+                    PlayAnimation("RUNNING", nil, 1.0)
+                else
+                    PlayAnimation("REVERSE", nil, 1.0)
+                end
             end
 
             if boolAiming == false then
-                PlayAnimation("IDLE", nil, 10.0)
+                PlayAnimation("UPRIGHT", nil, 10.0)
                 rSleep= math.random(5,25)*1000
                 while boolAiming== false and boolWalking == false and rSleep> 0 do
                 Sleep(100)
@@ -154,24 +192,19 @@ function walkAnimationLoop()
 
                 if boolWalking == false then
                     if maRa()== true then -- idle animation
-                    while(boolWalking == false and boolAiming == false) do
-                        PlayAnimation("IDLE", nil, 2.0)
-                        interVal = math.random(-25,25)
-                        turnSign = randSign()
-                        while(boolWalking == false and boolAiming == false and interVal > 0) do
-                           rotX,  rotY,  rotZ =  Spring.GetUnitRotation( unitID ) 
-                           rotY= rotY + (math.pi/90)*turnSign
-                            Spring.SetUnitRotation ( unitID,  rotX,  rotY,  rotZ ) 
-                            if interVal % 2 == 0 then
-                             PlayAnimation("IDLE", nil, 2.0)
+                        while(boolWalking == false and boolAiming == false) do
+                            if boolIdleRunning == false then
+                                boolIdleRunning = true
+                                StartThread(SignalIdle)
                             end
-                            Sleep(100)
-                            interVal = interVal -1
+                            Sleep(50)
                         end
-                    end
+                        Signal(SIG_IDLE)
                     else --shutdown
                         if math.random(0, 4) < 2 then
                             PlayAnimation("SIT", nil, 2.0)
+                             while boolAiming== false and boolWalking == false do Sleep(50) end
+                             PlayAnimation("UPRIGHT", nil, 10.0)
                         end
                     end
                 end
@@ -209,7 +242,7 @@ function setupAnimation()
    		       if command.p and type(command.p) == "string" then
                     local name = command.p
                     command.p = map[command.p]
-                    if not command.p then Spring.Echo("Piece unknown for name:"..name) end
+                    if not command.p then Spring.Echo("Animationsetup: Piece unknown for name:"..name) end
                 end
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
                 -- the t attribute needs to be adjusted for move commands from blender's absolute values
@@ -217,10 +250,6 @@ function setupAnimation()
  		  local adjusted = command.t - (offsets[command.p][command.a]);
                     Animations[a][i]['commands'][k].t =
                         command.t - (offsets[command.p][command.a]);
-                   --[[ if command.p == center and command.a == y_axis then
-                        command.s = (command.s / 13.5) * heightOffset
-                        command.t = (command.t / 13.5) * heightOffset * 10
-                    end--]]
                 end
 
                 Animations[a][i]['commands'][k].a = switchAxis(command.a)
@@ -242,7 +271,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(animname, "animation name is nil")
     assert(type(animname) == "string",
            "Animname is not string " .. toString(animname))
-    assert(Animations[animname], "No animation with name ")
+    assert(Animations[animname], "No animation with name "..animname)
 
     local anim = Animations[animname];
     local randoffset
@@ -372,7 +401,8 @@ function script.FireWeapon2()
 end
 
 boolWalking = false
-function script.StartMoving() 
+function script.StartMoving(boolReverse)
+    boolForward =  (boolReverse == 0)
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/walker/servo"..math.random(1,7)..".ogg", 0.75, 3000, 2)
     boolWalking = true 
 end

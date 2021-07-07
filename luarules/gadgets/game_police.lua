@@ -237,9 +237,9 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
         accumulatedCivilianDamage = accumulatedCivilianDamage + damage
         officerID = dispatchOfficer(unitID, attackerID)
-        if officerID and attackerID then
+       --[[ if officerID and attackerID then
             echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
-        end
+        end--]]
     end
 end
 

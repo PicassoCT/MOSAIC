@@ -9,11 +9,12 @@ local ground_walker_grenade = Walker:New{
 	buildCostMetal =  500,
 	buildTime = 45,
 	explodeAs			= "none",
-	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
-	--maxReverseVelocity= 2.15,
+	maxVelocity		= 3.15 , --14.3, --86kph/20
+	maxReverseVelocity = 3.15*0.5,
 	acceleration = 0.7,
 	brakeRate = 0.1,
 	turninplace		= true,
+
 	reclaimable=false,
 	Builder = false,
 	CanAttack = true,

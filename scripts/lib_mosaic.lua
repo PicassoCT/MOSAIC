@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.755" 
+            Version = "Alpha: 0.756" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -122,7 +122,7 @@ function getGameConfig()
         assetShotFiredWaitTimeToRecloak_MS = 6000,
         assetMaxRunTimeInSeconds = 15,
 
-        Wreckage = {lifeTime = 3 * 60 * 1000},
+        Wreckage = {lifeTime = 7 * 60 * 1000},
 
         -- Launcher
         PreLaunchLeakSteps = 3,

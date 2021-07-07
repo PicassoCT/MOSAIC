@@ -8,7 +8,7 @@ local weaponDef = {
     --Physic/flight path
     range = 800,
     reloadtime = 15,
-    weaponVelocity = 350,
+    weaponVelocity = 450,
     startVelocity = 50,
     weaponAcceleration = 15,
     flightTime = 10,
@@ -18,7 +18,7 @@ local weaponDef = {
     dance = 30,
     wobble                  = 3500,
     tolerance               = 512,
-    Turnrate = 32000,
+    Turnrate = 64000,
 
     tracks = true,
     avoidGround = false,

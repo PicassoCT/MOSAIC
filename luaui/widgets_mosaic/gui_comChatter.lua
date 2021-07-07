@@ -122,7 +122,7 @@ return NatoPhoneticAlphabet[letter], 2 *30
 end
 
 
-local function createIdentifierFromID(id)
+local function createIdentifierFromID(id, teamSex)
 	local sounds, times = {}, {}
 	assert(id)
 	assert(type(id) == "number")
@@ -430,7 +430,7 @@ local function buildSoundCommand( x, y)
 	subjectName, subjectTime = addSoundPath(teamSex, getCommandStringFromDefID(higestOrderDefID)), 15
 
 	local subjectIdentifier, subjectIdentifierTimes
-	subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, higestOrderDefID)
+	subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, teamSex)
 
 	local actionSound, actionTime 
 	actionSound, actionTime = getActionSound(teamSex)
