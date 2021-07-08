@@ -64,7 +64,7 @@ function dependingOnDayTimeFoldUnfold()
         if percentage > 0.25 and percentage < 0.70 then
             percentage = (percentage - 0.25) / 0.5
             degree = (percentage * 180) +  heading* 90
-            Turn(BasePlate, y_axis, math.rad(degree), math.pi / 5000)
+            Turn(BasePlate, y_axis, math.rad(degree), math.pi / 500)
         end
 
     Sleep(1000)
