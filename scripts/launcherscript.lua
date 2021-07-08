@@ -50,6 +50,7 @@ function script.Create()
 end
 
 launcherStepDefID = UnitDefNames["launcherstep"].id
+local buildID
 function accountForBuiltLauncherSteps()
     while boolLaunchReady == false do
         -- Spring.Echo("Detect Upgrade")
@@ -168,9 +169,16 @@ function workCycle()
 end
 
 function script.Killed(recentDamage, _)
-    if GG.Launchers[teamID][unitID] then GG.Launchers[teamID][unitID] = nil end
+    if GG.Launchers[teamID][unitID] then 
+        GG.Launchers[teamID][unitID] = nil 
+    end
+    if doesUnitExistAlive(buildID) == true then
+        Spring.DestroyUnit(buildID, true, false)
+    end
+
     return 1
 end
+
 boolBuilding = false
 function script.Activate()
     boolBuilding = true
