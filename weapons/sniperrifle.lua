@@ -3,7 +3,7 @@ local weaponName = "sniperrifle"
 local weaponDef = {
 	name = "barret-s64",
 
-	weaponType = [[Cannon]],
+	weaponType = [[MissileLauncher]],
 
 	
 	model="sniperProj.s3o",
@@ -13,7 +13,10 @@ local weaponDef = {
 	
 	areaOfEffect = 1,
 	--physics
-	weaponVelocity = 1450,
+	startVelocity  = 2400,
+	weaponAcceleration = 100,
+	tracks = false,
+	weaponVelocity = 2450,
 	reloadtime = 40,
 	range = 964,
 	sprayAngle = 1,
@@ -34,6 +37,7 @@ local weaponDef = {
 	----------------------------------------------------------------
 	ImpulseBoost=2.8,
 	impulseFactor = 10,
+	areaOfEffect = 1
 	damage = {
 		default = 580,
 		HeavyArmor =480,
