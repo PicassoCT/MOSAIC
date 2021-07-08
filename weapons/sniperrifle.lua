@@ -37,7 +37,7 @@ local weaponDef = {
 	----------------------------------------------------------------
 	ImpulseBoost=2.8,
 	impulseFactor = 10,
-	areaOfEffect = 1
+	areaOfEffect = 1,
 	damage = {
 		default = 580,
 		HeavyArmor =480,
