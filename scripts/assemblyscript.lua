@@ -66,21 +66,12 @@ function buildWatcher()
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
             StartThread(buildAnimation)
-            producedUnits[#producedUnits + 1]=  buildID
-            hp, mhp, pd, captProg, buildProgress = Spring.GetUnitHealth(buildID)
-            laststep = 0
+            producedUnits[buildID]=  buildID
             boolBuilding = true
-            while buildProgress and buildProgress + laststep < 0.95 do
-                Sleep(10)
-                hp, mhp, pd, captProg, tbuildProgress =    Spring.GetUnitHealth(buildID)
-                if tbuildProgress then
-                  laststep = buildProgress - tbuildProgress
-                end
-                buildProgress = tbuildProgress
+            waitTillComplete(builID)
+            boolBuilding = false
             end
         end
-
-        boolBuilding = false
         Sleep(1)
     end
 end
@@ -579,12 +570,11 @@ end
 
 producedUnits={}
 function TurnProducedUnitsOverToTeam(teamID)
-process(producedUnits,
-        function(id)
-            if doesUnitExistAlive(id) == true then
-                transferUnitTeam(id,teamID)
-            end
-        end)
+    for id, uid in pairs(producedUnits) do
+        if doesUnitExistAlive(id) == true then
+            transferUnitTeam(id,teamID)
+        end
+    end
 end
 
 function script.Activate()

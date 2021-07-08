@@ -23,7 +23,7 @@ local ProtagonSafeHouse =    Building:New{
         oooooooo
         oooooooo
         oooooooo]],
-  MaxSlope =         50,
+  MaxSlope =         100,
   buildingMask =    8,
   footprintX =    8,
   footprintZ =    8,
@@ -53,7 +53,7 @@ local ProtagonSafeHouse =    Building:New{
   script =       "safehousescript.lua",
   objectName =            "safehouse.dae",
   fireState=1,
-
+  selfDestructCountdown = 3*60,
 
   customparams =    {
   		normaltex = "unittextures/safehouse_normal.dds",

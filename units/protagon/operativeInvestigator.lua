@@ -52,7 +52,7 @@ local OperativeInvestigator = Human:New{
 	workerTime = 1.0,
 	buildDistance = 120,
 	terraformSpeed = 350,
-		
+	canSelfDestruct = false,
 
 	buildoptions = 
 	{

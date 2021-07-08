@@ -6,9 +6,6 @@ local Launcher = Building:New{
 	buildCostMetal      = 5000,
 	explodeAs			= "none",
 
-
-
-
 	buildtime			 = 60,
 	workerTime = 1.0,
 	buildPic = "launcher.png",
@@ -40,7 +37,7 @@ local Launcher = Building:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
-
+	unitRestricted = 2,
 	
 	customparams = {
 		helptext		= "Weapon Launcher",

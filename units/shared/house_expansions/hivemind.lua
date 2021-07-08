@@ -21,7 +21,7 @@ local Hivemind = Building:New{
 	
 	explodeAs			= "none",
 	buildingMask = 8,
-	MaxSlope 					= 50,
+	MaxSlope 					= 100,
 
 	footprintX = 8,
 	footprintZ = 8,
@@ -42,6 +42,7 @@ local Hivemind = Building:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
+	selfDestructCountdown = 3*60,
 	category = [[GROUND BUILDING RAIDABLE]],
 
 
@@ -91,6 +92,7 @@ local AICore = Building:New{
 	initCloaked = true,
 	decloakOnFire = true,
 	cloakTimeout = 5,
+	selfDestructCountdown = 3*60,
 	category = [[GROUND BUILDING RAIDABLE]],
 
 

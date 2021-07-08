@@ -28,7 +28,7 @@ local Propagandaserver = Building:New{
 		customParams        = {
 		normaltex = "unittextures/propagandaserver_normal.dds",
 	},
-
+	selfDestructCountdown = 2*60,
 	showNanoFrame= true,
 	nanocolor=[[0.20 0.411 0.611]],
 	canCloak =true,

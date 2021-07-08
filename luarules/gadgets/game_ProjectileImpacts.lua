@@ -27,6 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                     "house", UnitDefs)
 
+turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     local spGetGameFrame = Spring.GetGameFrame
     local spGetUnitIsDead = Spring.GetUnitIsDead
     local spGetUnitDefID = Spring.GetUnitDefID
@@ -536,7 +537,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
 
                     --if unit is a assembly, tranfer all produced units to other team
-                    if spGetUnitDefID(persPack.unitID) == UnitDefNames["assembly"].id then
+                    if turnCoatFactoryType[spGetUnitDefID(persPack.unitID)] then
                         setAssemblyProducedUnitsToTeam(assemblyID, Spring.GetUnitTeam(persPack.interrogatorID))
                     end
 

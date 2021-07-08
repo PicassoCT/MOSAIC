@@ -4,7 +4,7 @@ local AntagonSafeHouse = Building:New{
 	mass                = 500,
 
 	buildTime 			= 15,
-	MaxSlope 			= 50,
+	MaxSlope 			= 100,
 	explodeAs			= "none",
 	NoWeapon=true,
 	name = "Safehouse",
@@ -23,6 +23,7 @@ local AntagonSafeHouse = Building:New{
 	footprintX = 8,
 	footprintZ = 8,
 	showNanoFrame= true,
+	selfDestructCountdown = 3*60,
 
 	buildCostEnergy     = 2000,
 	buildCostMetal      = 2000,

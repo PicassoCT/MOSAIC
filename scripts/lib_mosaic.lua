@@ -240,6 +240,14 @@ function getPoliceTypes(UnitDefs)
     }
 end
 
+function getTurnCoatFactoryType(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+    return {
+        [UnitDefNames["assembly"].id] = true,
+        [UnitDefNames["nimrod"].id] = true
+    }
+end
+
 function getObjectiveTypes(UnitDefs)
     assert(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)

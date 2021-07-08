@@ -40,7 +40,7 @@ showNanoFrame= true,
 	buildingMask = 8,
 	footprintX = 8,
 	footprintZ = 8,
-
+	selfDestructCountdown = 2*60,
 	
 	script 					= "nimrodscript.lua",
 	objectName        	= "nimrod.dae",

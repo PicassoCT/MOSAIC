@@ -14,7 +14,7 @@ local Assembly = Building:New{
 	CanReclaim=false,	
 
 	YardMap ="yyyy yyyy yyyy yyyy ",
-	MaxSlope 					= 50,
+	MaxSlope 					= 100,
 	MetalStorage = 2500,
 	buildingMask = 8,
 	footprintX = 4,
@@ -39,7 +39,8 @@ local Assembly = Building:New{
 	decloakOnFire = true,
 	cloakTimeout = 5,
 	fireState = 1,
-	
+	selfDestructCountdown = 2*60,
+
 	customparams = {
 		helptext		= "MOSAIC Assembly",
 		baseclass		= "Building",

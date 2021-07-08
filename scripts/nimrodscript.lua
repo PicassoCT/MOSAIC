@@ -35,24 +35,24 @@ function script.Create()
     StartThread(modeChangeOS)
 end
 
+producedUnits = {}
+
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 function modeChangeOS()
-    oldBuildState = boolBuilding
+    goToFireMode()
     while true do
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
             boolBuilding = true
-            if oldBuildState ~= boolBuilding then
-                oldBuildState = boolBuilding
-                StartThread(goToSpaceMode)
+            producedUnits[buildID]=  buildID
+            StartThread(goToSpaceMode)
+            waitTillComplete(builID)
+            if doesUnitExistAlive(builID) then
+                goToFireMode()
             end
-        else
             boolBuilding = false
-            if oldBuildState ~= boolBuilding then
-                oldBuildState = boolBuilding
-                StartThread(goToFireMode)
-            end
+
         end
         Sleep(100)
     end
@@ -138,6 +138,15 @@ function script.Killed(recentDamage, _)
     GG.UnitHeldByHouseMap[unitID] = nil
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
+end
+
+producedUnits={}
+function TurnProducedUnitsOverToTeam(teamID)
+    for id, uid in pairs(producedUnits) do
+        if doesUnitExistAlive(id) == true then
+            transferUnitTeam(id,teamID)
+        end
+    end
 end
 
 boolLocalCloaked = false

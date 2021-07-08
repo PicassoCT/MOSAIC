@@ -29,10 +29,13 @@ local ground_walker_grenade = Walker:New{
 	objectName 	= "ground_walker_grenade.dae",
 	buildPic = "ground_walker_mg.png",
 	iconType ="ground_walker_mg",
-	
+	strafeToAttack = true,
 	customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
+
+	category = "GROUND",
+	noChaseCategory = "NOTARGET",
 
 	usepiececollisionvolumes = true,
 	customparams = {
