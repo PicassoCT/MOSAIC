@@ -36,9 +36,10 @@ local unitName = "truckpayload"
 	LeaveTracks = false,
 	useSmoothMesh = false,
 	usePieceCollisionVolumes = false,
-	
 	 
-	  customParams = {},
+	customParams = {
+	  	normaltex = "unittextures/house_arab_normal.dds",
+	  },
 	 sfxtypes = {
 		explosiongenerators = {	    
 							  },
