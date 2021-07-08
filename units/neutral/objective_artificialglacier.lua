@@ -40,7 +40,7 @@ local objective_artificialglacier = Building:New{
 	},
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "130 9000 130",
+	collisionvolumescales = "130 200 130",
 	category = [[GROUND BUILDING]],
 
 }
