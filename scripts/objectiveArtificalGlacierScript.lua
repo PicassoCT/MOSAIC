@@ -56,7 +56,7 @@ function dependingOnDayTimeFoldUnfold()
 
         if hours > 19 and boolUnfolded == true then
             fold()
-            degree = (0.25 * 180) +  heading* 90
+            degree = (0.25 * 180) -  heading* 90
             WTurn(BasePlate, y_axis, math.rad(degree), math.pi / 500)
             boolUnfolded = false
         end
