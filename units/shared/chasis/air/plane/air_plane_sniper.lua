@@ -19,7 +19,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	idleAutoHeal = 0,
 	--Movement
 	
-	 fireState=1,
+	 fireState=-1,
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,

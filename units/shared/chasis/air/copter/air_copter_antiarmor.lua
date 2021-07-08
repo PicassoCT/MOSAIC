@@ -20,7 +20,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	idleAutoHeal = 0,
 	--Movement
 	Acceleration = 0.5,
-	 fireState=1,
+	 fireState=-1,
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,

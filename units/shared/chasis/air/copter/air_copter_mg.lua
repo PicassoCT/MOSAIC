@@ -1,7 +1,7 @@
 local AIRC_COPTER_MG = VTOL:New{
 
-	name = "Airborne machinegun Drone ",
-	Description = " MOSAIC Standardized Drone ",
+	name = "Airborne Machinegun Drone ",
+	Description = " harasses ground units ",
 	objectName = "air_copter_mg.dae",
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
@@ -19,7 +19,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	idleAutoHeal = 0,
 	--Movement
 	
-	fireState = 2,
+	fireState = -1,
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
