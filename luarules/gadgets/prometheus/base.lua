@@ -792,17 +792,24 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
         BuildBaseFinished()
     end
 
-    if not myFactories then myFactories = {} end
-
+    if not doesUnitExistAlive(unitID) then
+      unitBuiltBy[unitID] = nil
+      return true
+    end
     local factory = unitBuiltBy[unitID]
+    if not doesUnitExistAlive(factory) then
+      unitBuiltBy[unitID] = nil
+      return true
+    end
 
+    if not myFactories then myFactories = {} end
     if not myFactories[factory] then Log("No myFactories entry for".. UnitDefs[Spring.GetUnitDefID(unitID)].name) end
+
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
         if #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
         end
-        assert(factory)
         IdleFactory(factory)
     end
 
