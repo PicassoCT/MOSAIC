@@ -68,12 +68,12 @@ function accountForBuiltLauncherSteps()
                     showT(TablesOfPiecesGroups["Gantry"], 0, math.min(
                               #TablesOfPiecesGroups["Gantry"], stepIndex * 2))
                     waitTillComplete(buildID)
-                    showT(TablesOfPiecesGroups["Step"], 1, math.min(#TablesOfPiecesGroups["Step"],stepIndex + 1))
-
-                    GG.Launchers[teamID][unitID] =
-                        GG.Launchers[teamID][unitID] + 1
-                    Spring.Echo("Launcherstep Complete")
-                    Spring.DestroyUnit(buildID, false, true)
+                    if doesUnitExistAlive(buildID) == true then
+                        showT(TablesOfPiecesGroups["Step"], 1, math.min(#TablesOfPiecesGroups["Step"],stepIndex + 1))
+                        GG.Launchers[teamID][unitID] = GG.Launchers[teamID][unitID] + 1
+                        --Spring.Echo("Launcherstep Complete")
+                        Spring.DestroyUnit(buildID, false, true)
+                    end
                 end
             elseif boolLaunchReady == true then
                 Spring.DestroyUnit(buildID, false, true)

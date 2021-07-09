@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.757" 
+            Version = "Alpha: 0.758" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -125,12 +125,13 @@ function getGameConfig()
         Wreckage = {lifeTime = 7 * 60 * 1000},
 
         -- Launcher
-        PreLaunchLeakSteps = 3,
+        PreLaunchLeakSteps = 3, --after 4fth step
         LaunchReadySteps = 7,
         LauncherInterceptTimeSeconds = 20,
 
         -- CruiseMissiles
         CruiseMissilesHeightOverGround = 22,
+        cruiseMissileAntiArmorDroplettRange = 1200,
 
         -- Game States
         GameState = {

@@ -167,11 +167,11 @@ function houseAttach()
         end
     end)
 
-    if #T < 1 then
+  --[[  if #T < 1 then
         echo("Safehouse not attached to house")
     else
         echo("Safehouse attached to house")
-    end
+    end--]]
 end
 
 safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
@@ -187,18 +187,18 @@ function detectUpgrade()
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
-                echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
+                --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
                 if doesUnitExistAlive(buildID) == true then
-                     echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
+                    -- echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
                     if waitTillComplete(buildID) == true then
             
-                    echo("Safehouse: End building Updgrade "..UnitDefs[buildDefID].name)
+                    --echo("Safehouse: End building Updgrade "..UnitDefs[buildDefID].name)
                     GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
                     boolDoneFor = true
                     -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
-                    Spring.Echo("Upgrade Complete")
+                    --Spring.Echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID, false, true)
                     end
                 end

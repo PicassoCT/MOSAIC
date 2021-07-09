@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 local trainAxis = x_axis
-local maxDistanceTrain = 122000
+local maxDistanceTrain = 118000
 local trainspeed = 9000
 center = piece"center"
 
@@ -30,6 +30,8 @@ function setup()
     StartThread(deployTunnels, 1)
     StartThread(deployTunnels, 2)
     StartThread(showRail)
+    StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
+    StartThread(turnEndPiecesDown, -1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
 end
 
 function showRail()
@@ -48,6 +50,16 @@ function showRail()
             Show(id)
         end
         )
+end
+
+function turnEndPiecesDown(signs, EndPiece, DetectorPiece)
+    Hide(DetectorPiece)
+    value = 0
+    while isPieceAboveGround(unitID, DetectorPiece, 0) == true do
+        value = value -5 * signs
+        WTurn(EndPiece,z_axis, math.rad(value),0)
+        Sleep(10)
+    end
 end
 
 local boolOldState = false

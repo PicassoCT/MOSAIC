@@ -70,9 +70,8 @@ function buildWatcher()
             boolBuilding = true
             waitTillComplete(builID)
             boolBuilding = false
-            end
         end
-        Sleep(1)
+    Sleep(1)
     end
 end
 

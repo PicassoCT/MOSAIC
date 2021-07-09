@@ -24,50 +24,23 @@ cruiseMissileWeapons[WeaponDefNames["cm_airstrike"].id] = true
 cruiseMissileWeapons[WeaponDefNames["cm_walker"].id] = true
 cruiseMissileWeapons[WeaponDefNames["cm_antiarmor"].id] = true
 cruiseMissileWeapons[WeaponDefNames["cm_turret_ssied"].id] = true
+TruckTypeTable = getTruckTypeTable(UnitDefs)
 
 onImpact = {
     [WeaponDefNames["cm_airstrike"].id] = function(projID, tx, ty, tz)
-        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),
-                                   tz)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
-
     [WeaponDefNames["cm_walker"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
         teamID = Spring.GetProjectileTeamID(projID)
         for i = 1, 2, 1 do
-            unitID =
-                Spring.CreateUnit("ground_walker_mg", px, py, pz, 1, teamID)
+            unitID = Spring.CreateUnit("ground_walker_mg", px, py, pz, 1, teamID)
             giveParachutToUnit(unitID, px, py, pz)
         end
         Spring.DeleteProjectile(projID)
     end,
-
     [WeaponDefNames["cm_antiarmor"].id] = function(projID, tx, ty, tz)
-        px, py, pz = Spring.GetProjectilePosition(projID)
-        teamID = Spring.GetProjectileTeamID(projID)
-
-        for i = 1, 6 do
-            Spring.SpawnProjectile(WeaponDefNames["javelinrocket"].id, {
-                pos = {
-                    px + math.random(-2, 2), py + math.random(0, 5),
-                    pz + math.random(-2, 2)
-                },
-                ["end"] = {tx, ty, tz},
-                -- speed = {number x, number y, number z},
-                spread = {10, 10, 10},
-                -- owner = pOwner,
-                team = teamID,
-                ttl = 30 * 30,
-                error = {0, 5, 0},
-                maxRange = 1200,
-                gravity = Game.gravity,
-                startAlpha = 1,
-                endAlpha = 1,
-                model = "air_copter_antiarmor_projectile.s3o"
-            })
-        end
-        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),
-                                   tz)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),  tz)
     end,
     [WeaponDefNames["cm_turret_ssied"].id] = function(projID)
         px, py, pz = Spring.GetProjectilePosition(projID)
@@ -84,8 +57,78 @@ onImpact = {
 onLastPointBeforeImpactSetTargetTo = {
     [WeaponDefNames["cm_airstrike"].id] = function(projID) end,
     [WeaponDefNames["cm_walker"].id] = function(projID) end,
-    [WeaponDefNames["cm_antiarmor"].id] = function(projID) end,
-    [WeaponDefNames["cm_turret_ssied"].id] = function(projID) end
+    [WeaponDefNames["cm_antiarmor"].id] = function(projID) 
+             tx,ty,tz =  getProjectileTargetXYZ(projID)
+             px, py, pz = Spring.GetProjectilePosition(projID)
+                    teamID = Spring.GetProjectileTeamID(projID)
+                    projectileTeamID = Spring.GetProjectileTeamID(projID)
+                    collateralTable = {}
+                    allHardTargetsInRange = process(
+                                            getAllInCircle(tx,tz, GameConfig.cruiseMissileAntiArmorDroplettRange),
+                                            function(id)
+                                                teamID = Spring.GetUnitTeam(id)
+                                                defID = Spring.GetUnitDefID(id)
+
+                                                if teamID == gaiaTeamID and TruckTypeTable[defID] then
+                                                    collateralTable[#collateralTable+1] = id
+                                                    return
+                                                end
+
+                                                if teamID == projectileTeamID then return end
+
+                                                if UnitDefs[defID].speed > 0 then
+                                                    return id
+                                                end
+                                            end,
+                                            function(id)
+                                                hp, maxHp = Spring.GetUnitHealth(id)
+                                                if maxHp > 1000 then 
+                                                    return id
+                                                end
+                                            end)
+
+                    v = {x=0, y= 1, z= 0}
+
+                    for i = 1, 6 do
+                        javelinProjID = Spring.SpawnProjectile(WeaponDefNames["javelinrocket"].id, {
+                            pos = {
+                                px + math.random(-2, 2), py + math.random(0, 5),
+                                pz + math.random(-2, 2)
+                            },
+                            ["end"] = {tx, ty, tz},
+                            -- speed = {number x, number y, number z},
+                            spread = {10, 10, 10},
+                            speed = { v.x, v.y, v.z },
+                            -- owner = pOwner,
+                            team = teamID,
+                            ttl = 30 * 30,
+                            error = {0, 5, 0},
+                            maxRange = 1200,
+                            gravity = Game.gravity,
+                            startAlpha = 1,
+                            endAlpha = 1,
+                            model = "air_copter_antiarmor_projectile.s3o"
+                        })        
+                        Spring.SetProjectileAlwaysVisible(javelinProjID, true)
+                        if #allHardTargetsInRange > 1 then
+                            assert(Spring.SetProjectileTarget(javelinProjID, allHardTargetsInRange[((i-1) % #allHardTargetsInRange)+  1], 'u') == true)
+                        elseif #allHardTargetsInRange > 0 then
+                            assert(Spring.SetProjectileTarget(javelinProjID, allHardTargetsInRange[1], 'u') == true)
+                        else
+                            if #collateralTable > 0 then
+                                 if #collateralTable > 1 then
+                                    assert(Spring.SetProjectileTarget(javelinProjID, collateralTable[((i-1) % #collateralTable)+  1], 'u') == true)
+                                elseif #collateralTable > 0 then
+                                    assert(Spring.SetProjectileTarget(javelinProjID, collateralTable[1], 'u') == true)
+                                end
+                            else
+                                ax, ay, az = tx + math.random(50,512)*randSign(), 0, tz + math.random(50,512)*randSign()
+                                Spring.SetProjectileTarget(projID, ax, Spring.GetGroundHeight(ax, az),  az)
+                            end
+                        end
+                    end
+            end,    
+[WeaponDefNames["cm_turret_ssied"].id] = function(projID) end
 }
 
 function getWeapondefByName(name) return WeaponDefs[WeaponDefNames[name].id] end
