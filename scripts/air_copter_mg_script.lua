@@ -18,6 +18,8 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Hide(EmitPiece)
+    Spring.MoveCtrl.SetAirMoveTypeData(unitID, "attackSafetyDistance", 100 )
+    setUnitNeverLand(unitID, true)
 end
 
 function script.Killed(recentDamage, _)

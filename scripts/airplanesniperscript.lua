@@ -22,12 +22,15 @@ function script.Create()
     hideT(TablesOfPiecesGroups["FireEmit"])
     StartThread(headingSoundSurveilance)
     StartThread(initialMove)
+    Spring.MoveCtrl.SetAirMoveTypeData(unitID, "attackSafetyDistance", 2048 )
+    setUnitNeverLand(unitID, true)
 end
 
 function initialMove()
     waitTillComplete(unitID)
     x,y,z =Spring.GetUnitPosition(unitID)
     x,z = x+ math.random(1,50)*randSign(), z + math.random(1,50)*randSign()
+    Command(unitID, "move", {x=x,y=y, z=z})
     Command(unitID, "move", {x=x,y=y, z=z}, {"shift"})
 end
 
