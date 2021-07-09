@@ -6414,6 +6414,14 @@ end
 -- ======================================================================================
 -- Section: Unit Commands
 -- ======================================================================================
+--> Set Unit permanent flying
+function setUnitNeverLand(unitID, boolNeverLand)
+    if boolNeverLand == true then
+    Spring.GiveOrderToUnit(unitID, CMD.IDLEMODE, {0}, {})
+    else
+    Spring.GiveOrderToUnit(unitID, CMD.IDLEMODE, {1}, {})
+    end
+end
 
 -- > transfers Order from one Unit to another
 function transferOrders(originID, targetID)
