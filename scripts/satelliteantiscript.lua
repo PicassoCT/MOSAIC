@@ -32,7 +32,6 @@ function attachSatellite()
     while hp and hp > 0 do
         hp, mp = Spring.GetUnitHealth(id)
         Sleep(10)
-
     end
     Spring.DestroyUnit(unitID, true, false)
 end
@@ -42,7 +41,24 @@ function script.Create()
     -- echo("Satellite Anti Script here")
 
     StartThread(delayedShow)
+    StartThread(observeTeamChange)
 end
+
+function observeTeamChange()
+    myTeam = Spring.GetUnitTeam(unitID)
+    while true do
+        newTeam = Spring.GetUnitTeam(unitID)
+        if newTeam ~= myTeam then -- Team changed
+            if doesUnitExistAlive(id) == true then
+                transferUnitTeam(id, newTeam)
+            end
+            myTeam = newTeam
+        end
+        delay = math.random(10,15)*50
+        Sleep(delay)
+    end
+end
+
 function delayedShow()
     Turn(center, x_axis, math.rad(180), 0)
     hideAll(unitID)

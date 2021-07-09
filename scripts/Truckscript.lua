@@ -44,6 +44,7 @@ function showAndTell()
     end
 end
 
+local loadOutUnitID
 function script.Create()
 
     if boolIsCivilianTruck == false then StartThread(loadLoadOutLoop) end
@@ -56,11 +57,25 @@ function script.Create()
     Hide(attachPoint)
     Hide(center)
     showAndTell()
+    StartThread(observeTeamChange)
+end
+
+function observeTeamChange()
+    myTeam = Spring.GetUnitTeam(unitID)
+    while true do
+        newTeam = Spring.GetUnitTeam(unitID)
+        if newTeam ~= myTeam then -- Team changed
+            if doesUnitExistAlive( loadOutUnitID) == true then
+                transferUnitTeam(loadOutUnitID, newTeam)
+            end
+            myTeam = newTeam
+        end
+       delay = math.random(10,15)*50
+       Sleep(delay)
+    end
 end
 
 allOrderTypes = {}
-
-
 function loadLoadOutLoop()
     waitTillComplete(unitID)
     Sleep(100)
@@ -95,7 +110,6 @@ function loadLoadOutLoop()
 end
 
 local passenger
-
 function script.TransportPickup(passengerID)
     if boolIsCivilianTruck then
         Spring.SetUnitNoSelect(passengerID, true)
