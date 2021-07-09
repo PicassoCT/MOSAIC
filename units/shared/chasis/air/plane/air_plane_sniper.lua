@@ -57,7 +57,9 @@ local AIR_SNIPER = AIRCRAFT:New{
 	collide             = true,
 	crashDrag =0.035,
 
+
 	Category = [[AIR]],
+	noChaseCategory = "GROUND BUILDING AIR",
 
 	  customParams = {
 	  baseclass = "vtol"

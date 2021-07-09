@@ -1,6 +1,6 @@
 local house_arab = Building:New{
 	corpse					= "",
-	maxDamage        	= 1500,
+	maxDamage        	= 3500,
 	mass           	= 500,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
@@ -47,7 +47,7 @@ local house_arab = Building:New{
 
 local house_europe = Building:New{
 	corpse					= "",
-	maxDamage        	= 1500,
+	maxDamage        	= 3500,
 	mass           		= 500,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,

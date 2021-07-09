@@ -5,13 +5,13 @@ local weaponDef = {
     weaponType = [[MissileLauncher]],
 
     damage = {
-        default = 1500
+        default = 1600
     },
 	range = 1024,
 	impulseBoost            = 0,
 	impulseFactor = 0.4,
 	reloadtime = 10,
-    areaOfEffect = 256,
+    areaOfEffect = 64,
 	 noSelfDamage = true,
 	trajectoryHeight = 2.1 ,
 	avoidFeature            = false,
