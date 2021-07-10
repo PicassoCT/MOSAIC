@@ -31,7 +31,7 @@ function setup()
     StartThread(deployTunnels, 2)
     StartThread(showRail)
     StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
-    StartThread(turnEndPiecesDown, -1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
+    StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
 end
 
 function showRail()

@@ -156,7 +156,7 @@ local ground_turret_antiarmor =  Turret:New{
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
 	Description = "Deployed Anti Armor Projectile ",
 	
-	objectName = "ground_turret_sied.dae",
+	objectName = "ground_turret_antiarmor.DAE",
 	script = "groundturretantitankscript.lua",
 	buildPic = "ground_turret_rocket.png",
 	--floater = true,
@@ -200,9 +200,8 @@ local ground_turret_antiarmor =  Turret:New{
 
 	minCloakDistance =  5,
 	onoffable=true,
-	initCloaked = true,
-	decloakOnFire = true,
-	cloakTimeout = 5,
+
+
 
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -439,7 +438,6 @@ local ground_turret_cruisemissilepod =  Walker:New{
 			
 		},	
 }
-
 
 CruiseMissilePods ={}
 

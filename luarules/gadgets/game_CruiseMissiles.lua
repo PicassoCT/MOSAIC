@@ -104,6 +104,7 @@ onLastPointBeforeImpactSetTargetTo = {
                             ttl = 30 * 30,
                             error = {0, 5, 0},
                             maxRange = 1200,
+                            trajectoryHeight = 2,
                             gravity = Game.gravity,
                             startAlpha = 1,
                             endAlpha = 1,
