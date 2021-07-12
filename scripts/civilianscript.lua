@@ -1537,22 +1537,23 @@ function akAimFunction(weaponID, heading, pitch)
 end
 
 function molotowAimFunction(weaponID, heading, pitch)
-   if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true 
-      and (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+   if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
         return false 
     end
         
-    return allowTarget(weaponID)
+    return allowTarget(weaponID) and bodyConfig.boolArmed == true and bodyConfig.boolRPGArmed == false
 end
 
 function rgpAimFunction(weaponID, heading, pitch)
     
     if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == false or GG.GlobalGameState ~=
-        GameConfig.GameState.anarchy then return false end
+        GameConfig.GameState.anarchy then
+         return false 
+    end
+
     Show(RPG7Rocket)
     boolAiming = true
-    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,
-                              false)
+    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil, false)
     WTurn(center, y_axis, heading, 22)
     WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
     boolAiming = false
