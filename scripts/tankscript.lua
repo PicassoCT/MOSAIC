@@ -16,6 +16,7 @@ SIG_RESETAIM = 1
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
+lastTurretRotation = 0
 function script.Create()
 
     generatepiecesTableAndArrayCode(unitID)
@@ -29,7 +30,7 @@ end
 
 function script.Killed(recentDamage, _)
 
-    -- createCorpseCUnitGeneric(recentDamage)
+    createTankCorpse(unitID, recentDamage, lastTurretRotation)
     return 1
 end
 
@@ -50,6 +51,7 @@ function noLongerAiming()
                 1000, 1)
     WTurn(aimpiece, 2, 0, 0.5)
     WTurn(Cannon1, 1, 0, 0.5)
+    lastTurretRotation = 0
 end
 
 function script.AimWeapon1(Heading, pitch)
@@ -58,6 +60,7 @@ function script.AimWeapon1(Heading, pitch)
                 1000, 1)
     StartThread(noLongerAiming)
     WTurn(aimpiece, 2, Heading, 0.7)
+    lastTurretRotation = math.deg(Heading)
     WTurn(Cannon1, 1, -pitch, 0.7)
     return true
 end

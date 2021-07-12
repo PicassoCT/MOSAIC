@@ -1,17 +1,17 @@
-local unitName = "VehicleCorpse"
+local unitName = "tankcorpse"
 
 local unitDef = {
-	name = "Vehiclewreckage",
-	Description = "brand new as seen on amazon. Get it while its hot!",
-	objectName = "truck_vehicleCorpse.dae",
-	script = "vehicleCorpsescript.lua",
+	name = "Destroyed Tank",
+	Description = "!",
+	objectName = "tankwreckage.dae",
+	script = "tankwreckagescript.lua",
 	buildPic = "placeholder.png",
 	--cost
 	buildCostMetal = 200,
 	buildCostEnergy = 50,
 	buildTime =1,
 	--Health
-	maxDamage = 666,
+	maxDamage = 6666,
 	idleAutoHeal = 0,
 	--Movement
 
@@ -59,9 +59,6 @@ local unitDef = {
 					   "custom:vortflames",--1029
 					   "custom:volcanolightsmall",--1030
 						"custom:cburningwreckage",--1031
-					  
-					   --
-						--Bulletof The Cannon
 					},
 
 	},
