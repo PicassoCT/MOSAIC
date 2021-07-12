@@ -25,13 +25,10 @@ local Civil = Civilian:New{
 		[2]={name  = "molotow",
 				onlyTargetCategory = [[GROUND]],
 			},
-		[3]={name  = "rgp7",
+		[3]={name  = "rpg7",
 					onlyTargetCategory = [[GROUND]],
-				},
-	
+				},	
 	},
-	
-
 	category = [[GROUND ARRESTABLE]],
 }
 
