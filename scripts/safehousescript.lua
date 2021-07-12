@@ -19,7 +19,6 @@ local spGetUnitPosition = Spring.GetUnitPosition
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
-
 safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 
 
@@ -46,7 +45,7 @@ function preventBuildingNearPreexistingSafehouse()
             end
             )
         return false
-    end
+end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
