@@ -3,7 +3,7 @@ local ground_tank_day = Tank:New{
 	description = "Heavily Armoured <Redundant Vehicle>",
 	
 	corpse				= "",
-	maxDamage = 1500,
+	maxDamage = 1250,
 	mass = 5000,
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,

@@ -75,6 +75,21 @@ local myFactories = {}        -- Factories already available, with their queue
 local myFactoriesScore = {}   -- Score associated to the factory
 local myPackedFactories = {}  -- Packed factories, which shall unpack
 
+local function doesUnitExistAlive(id)
+    local valid = Spring.ValidUnitID(id)
+    if valid == nil or valid == false then
+        -- echo("doesUnitExistAlive::Invalid ID")
+        return false
+    end
+
+    local dead = Spring.GetUnitIsDead(id)
+    if dead == nil or dead == true then
+        -- echo("doesUnitExistAlive::Dead Unit")
+        return false
+    end
+
+    return true
+end
 
 local function GetBuildingChains()
     local producers = {}
@@ -95,19 +110,24 @@ local function GetBuildingChains()
 
     local chains = {}
     for unitDefID, builders in pairs(producers) do
-        local unitID = builders[1] 
-        if #builders > 1 then 
-            unitID = builders[math.random(1,#builders)] 
-        end
-        
-        local subchains = unit_chains.GetBuildCriticalLines(unitDefID)
-        for target, chain in pairs(subchains) do
-            if (chains[target] == nil) or (chains[target].metal > chain.metal) then
-                chains[target] = {
-                    builder = unitID,
-                    metal = chain.metal,
-                    units = chain.units,
-                }
+        if builders[1] then
+            local unitID = builders[1] 
+            if #builders > 1 then 
+                local replacementBuilder = builders[math.random(1,#builders)] 
+                if replacementBuilder then
+                    unitID = replacementBuilder
+                end
+            end
+            
+            local subchains = unit_chains.GetBuildCriticalLines(unitDefID)
+            for target, chain in pairs(subchains) do
+                if (chains[target] == nil) or (chains[target].metal > chain.metal) then
+                    chains[target] = {
+                        builder = unitID,
+                        metal = chain.metal,
+                        units = chain.units,
+                    }
+                end
             end
         end
     end
@@ -129,7 +149,7 @@ local function __clamp(v, min_val, max_val)
 end
 
 local function __canBuild(builderDefID, unitDefID)
-    if not UnitDefs[builderDefID] or not UnitDefs[builderDefID].buildOptions then return false end
+  --  if not UnitDefs[builderDefID] or not UnitDefs[builderDefID].buildOptions then return false end
     
     local children = UnitDefs[builderDefID].buildOptions
     for _, c in ipairs(children) do
@@ -316,14 +336,16 @@ local function updateBuildOptions(unitDefID)
         local checkedDict = {}
       --prepare the unchecked Dictionary filling it with Constructors and Factorys
         for u,_ in pairs(myConstructors) do
-            if doesUnitExistAlive(u) == true then
-                updateBuildOptions(GetUnitDefID(u))
+	    local defID = GetUnitDefID(u)
+            if defID then
+                updateBuildOptions(defID)
             end
         end
         
         for u,_ in pairs(myFactories) do
-            if doesUnitExistAlive(u) == true then
-                updateBuildOptions(GetUnitDefID(u))
+       	    local defID = GetUnitDefID(u)
+            if defID then
+                updateBuildOptions(defID)
             end
         end
         return
