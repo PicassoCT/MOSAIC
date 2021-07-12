@@ -8,7 +8,7 @@ local weaponDef = {
 	default = 350
 	},
 	noSelfDamage = false,
-	reloadtime = 15, -- seconds
+	reloadtime = 75, -- seconds
 
 	--orders behaviour
 	--commandFire  = true,	
@@ -24,9 +24,9 @@ local weaponDef = {
 	avoidGround = true,
 	
 	--flight behaviour
-	startVelocity  = 1000,
+	startVelocity  = 50,
 	trajectoryHeight = 0.1 ,
-	flightTime = 2.5 ,
+	flightTime = 4.5 ,
 	weaponVelocity = 1050,
 	weaponAcceleration = 100,
 
