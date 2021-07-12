@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "cruise_missiles" --this is the actually maschinegune of the inferno trooper
+local weaponName = "cruise_missiles" --cruise missile base type
 local weaponDef = {
     name = "Cruise Missile",
     weaponType = [[MissileLauncher]],

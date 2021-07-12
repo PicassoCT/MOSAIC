@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "smartminedrone" --this is the actually maschinegune of the inferno trooper
+local weaponName = "smartminedrone" -- tracking, slow turning explosive drones
 local weaponDef = {
     name = "Mine Drone",
     weaponType = [[MissileLauncher]],
@@ -10,8 +10,9 @@ local weaponDef = {
     reloadtime = 15,
     weaponVelocity = 450,
     startVelocity = 50,
+    trajectoryHeight = 50,
     weaponAcceleration = 15,
-    flightTime = 10,
+    flightTime = 15,
     burst = 3,
     BurnBlow = 1,
     FixedLauncher = false,

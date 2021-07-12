@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "pistol" --this is the actually maschinegune of the inferno trooper
+local weaponName = "pistol" -- stun pistol
 local weaponDef = {
     name = "Glock S19 - Pistol",
     weaponType = [[Cannon]],

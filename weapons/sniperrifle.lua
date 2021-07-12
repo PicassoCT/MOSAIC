@@ -7,9 +7,8 @@ local weaponDef = {
 
 	
 	model="sniperProj.s3o",
-	smokeTrail=true,
-	 soundStart = "sounds/weapons/sniper/sniperFire.ogg",
-	 soundHit= "sounds/weapons/sniper/sniperHit.wav",
+	soundStart = "sounds/weapons/sniper/sniperFire.ogg",
+	soundHit= "sounds/weapons/sniper/sniperHit.wav",
 	
 	areaOfEffect = 1,
 	--physics
@@ -43,5 +42,7 @@ local weaponDef = {
 		HeavyArmor =480,
 	},	 
 	
+	smokeTrail = false,
+    CegTag = "targetlaserray",
 }
 return lowerkeys({[weaponName] = weaponDef})

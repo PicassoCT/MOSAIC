@@ -1,7 +1,7 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "s16rocket" --this is the actually maschinegune of the inferno trooper
+local weaponName = "s16rocket" --
 local weaponDef = {
-    name = "Unguided Rattler Rocket",
+    name = "Unguided Rocket",
     weaponType = [[MissileLauncher]],
 	--damage
 	damage = {

@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "godrod" --this is the actually maschinegune of the inferno trooper
+local weaponName = "godrod" --godrod projectile
 local weaponDef = {
     name = "Mjoelnir Impactor",
     weaponType = [[MissileLauncher]],

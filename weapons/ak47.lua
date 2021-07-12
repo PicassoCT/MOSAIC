@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "ak47" --this is the actually maschinegune of the inferno trooper
+local weaponName = "ak47" --ak47 weapon
 local weaponDef = {
     name = "Antonov Kalshnikow Model 47",
     weaponType = [[Cannon]],
