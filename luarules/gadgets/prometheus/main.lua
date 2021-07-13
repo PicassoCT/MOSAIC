@@ -108,7 +108,7 @@ include("LuaRules/Gadgets/prometheus/waypoints.lua")
 include("LuaRules/Gadgets/prometheus/gann/gann.lua")
 
 -- locals
-local prometheus_Debug_Mode =  1--1 -- Must be 0 or 1
+local prometheus_Debug_Mode =  0--1 -- Must be 0 or 1
 local team = {}
 local firstFrame = math.max(1,Spring.GetGameFrame()) + 1
 local lastFrame = 0 -- To avoid repeated calls to GameFrame()
@@ -158,13 +158,20 @@ end
 local eachErrorOnlyOnce={}
 function gadget.Log(...)
 	if prometheus_Debug_Mode > 0 then
-        local message = "Prometheus: " .. table.concat{...}
-        if not eachErrorOnlyOnce[message] then
-		  Spring.Echo(message)
-          eachErrorOnlyOnce[message] = true
-        end
+      local arg = {...};
+      arg.n = #arg
+
+    local message = "Prometheus: " 
+	for i,v in ipairs(arg) do
+        message = message .. tostring(v) .. "\t"
+    end
+
+	if not eachErrorOnlyOnce[message] then
+ 	  Spring.Echo(message)
+        eachErrorOnlyOnce[message] = true	
 	end
-end
+    end    
+end    
 
 -- This is for log messages which can not be turned off (e.g. while loading.)
 function gadget.Warning(...)

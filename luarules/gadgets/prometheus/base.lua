@@ -91,30 +91,40 @@ local function doesUnitExistAlive(id)
     return true
 end
 
+local function count(T)
+    if not T then return 0 end
+    local index = 0
+    for k, v in pairs(T) do if v then index = index + 1 end end
+    return index
+end
+
 local function GetBuildingChains()
     local producers = {}
+
     for u, _ in pairs(myConstructors) do
         local defID = GetUnitDefID(u)
         if defID then
-        if not producers[defID] then producers[defID] = {} end
+            if not producers[defID] then producers[defID] = {}; Log("Adding first producer of type "..UnitDefs[defID].name); end
             producers[defID][#producers[defID]+1] = u
         end
     end
     for u, _ in pairs(myFactories) do
        local defID = GetUnitDefID(u)
         if defID then 
-        if not producers[defID] then producers[defID] = {} end
+            if not producers[defID] then producers[defID] = {}; Log("Adding first producer of type "..UnitDefs[defID].name); end
             producers[defID][#producers[defID]+1] = u
         end
     end
 
     local chains = {}
     for unitDefID, builders in pairs(producers) do
-        if builders[1] then
+        if builders and builders[1] then
             local unitID = builders[1] 
-            if #builders > 1 then 
-                local replacementBuilder = builders[math.random(1,#builders)] 
-                if replacementBuilder then
+            local builderCount = count(builders)
+            if builderCount > 1 then 
+                local dice = math.random(1,builderCount)
+                local replacementBuilder = builders[dice] 
+                if replacementBuilder and doesUnitExistAlive(replacementBuilder) == true then
                     unitID = replacementBuilder
                 end
             end
@@ -132,8 +142,6 @@ local function GetBuildingChains()
         end
     end
 
-    --assert(chains[UnitDefNames["ground_turret_mg"].id], "Chain does not produce a ground turret")
-
     return chains
 end
 
@@ -149,8 +157,6 @@ local function __clamp(v, min_val, max_val)
 end
 
 local function __canBuild(builderDefID, unitDefID)
-  --  if not UnitDefs[builderDefID] or not UnitDefs[builderDefID].buildOptions then return false end
-    
     local children = UnitDefs[builderDefID].buildOptions
     for _, c in ipairs(children) do
         if c == unitDefID or (UnitDefs[c] and (UnitDefs[c].id == unitDefID)) then
@@ -814,20 +820,15 @@ function BaseMgr.UnitFinished(unitID, unitDefID, unitTeam)
         BuildBaseFinished()
     end
 
-    if not doesUnitExistAlive(unitID) then
+    if doesUnitExistAlive(unitID) == false then
+      Log("Unit "..UnitDefs[unitDefID].name.." finnished is dead")
       unitBuiltBy[unitID] = nil
       return true
     end
+
     local factory = unitBuiltBy[unitID]
-    if not doesUnitExistAlive(factory) then
-      unitBuiltBy[unitID] = nil
-      return true
-    end
-
-    if not myFactories then myFactories = {} end
-    if not myFactories[factory] then Log("No myFactories entry for".. UnitDefs[Spring.GetUnitDefID(unitID)].name) end
-
-    if factory ~= nil then
+    
+   if factory ~= nil and doesUnitExistAlive(factory) == true then
         unitBuiltBy[unitID] = nil
         if #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
@@ -880,7 +881,7 @@ function BaseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attacker
     local factory = unitBuiltBy[unitID]
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
-        if myFactories[factory] and #myFactories[factory] > 0 then
+        if #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
         end
         assert(factory)
