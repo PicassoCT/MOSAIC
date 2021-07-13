@@ -1756,7 +1756,7 @@ function waitTillComplete(id)
         Sleep(500)
     until buildProgress or doesUnitExistAlive(id) == false
 
-    if doesUnitExistAlive(id) == false then return end
+    if doesUnitExistAlive(id) == false then return false end
 
     while buildProgress and buildProgress < 1.0 do
         if doesUnitExistAlive(id) == false then return false end

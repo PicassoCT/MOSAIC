@@ -175,7 +175,7 @@ end
 
 safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
                                                      Spring.GetUnitDefID(unitID))
-boolDoneFor = false
+--boolDoneFor = false
 function detectUpgrade()
    if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
     while true do
@@ -187,16 +187,15 @@ function detectUpgrade()
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
                 --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
-                hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
                 if doesUnitExistAlive(buildID) == true then
-                    -- echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
+                     echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
                     if waitTillComplete(buildID) == true then
             
-                    --echo("Safehouse: End building Updgrade "..UnitDefs[buildDefID].name)
+                    echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
                     GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
-                    boolDoneFor = true
-                    -- Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
+                   -- boolDoneFor = true
+                     Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
                     --Spring.Echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID, false, true)
                     end
@@ -211,7 +210,7 @@ function script.Killed(recentDamage, _)
 end
 
 function script.Activate()
-    if  boolDoneFor == true then return 0 end
+    --if  boolDoneFor == true then return 0 end
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.INBUILDSTANCE, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)

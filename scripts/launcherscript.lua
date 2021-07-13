@@ -173,7 +173,7 @@ function script.Killed(recentDamage, _)
         GG.Launchers[teamID][unitID] = nil 
     end
     if doesUnitExistAlive(buildID) == true then
-        Spring.DestroyUnit(buildID, true, false)
+        GG.UnitsToKill:PushKillUnit(buildID, true, false)
     end
 
     return 1

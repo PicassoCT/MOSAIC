@@ -157,6 +157,8 @@ local function __clamp(v, min_val, max_val)
 end
 
 local function __canBuild(builderDefID, unitDefID)
+    if not UnitDefs[builderDefID].buildOptions then return false end
+
     local children = UnitDefs[builderDefID].buildOptions
     for _, c in ipairs(children) do
         if c == unitDefID or (UnitDefs[c] and (UnitDefs[c].id == unitDefID)) then
@@ -881,6 +883,7 @@ function BaseMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attacker
     local factory = unitBuiltBy[unitID]
     if factory ~= nil then
         unitBuiltBy[unitID] = nil
+        if not myFactories[factory] then myFactories[factory] = {} end
         if #myFactories[factory] > 0 then
             table.remove(myFactories[factory], 1)
         end

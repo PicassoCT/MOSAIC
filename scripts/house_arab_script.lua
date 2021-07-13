@@ -234,19 +234,17 @@ function showPowerPoles()
                         boolFinishFunction = true
                     end
                 end)
+
                 if boolFinishFunction == true then return end
             end
         end
     end
-
 end
 
 function script.Killed(recentDamage, _)
     if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
         Spring.DestroyUnit(unitID, false, true)
-    end
-    -- createCorpseCUnitGeneric(recentDamage)
-    return 1
+    end    return 1
 end
 
 function showOne(T, bNotDelayd)
