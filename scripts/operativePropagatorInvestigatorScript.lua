@@ -496,11 +496,23 @@ function checkFirstUnit()
 	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
 	setWantCloak(false)
 
-	while true do
-		Sleep(1000)
-		Spring.AddTeamResource(myTeamID, "metal",GameConfig.bonusFirstUnitMoney_S) 
-		Spring.AddTeamResource(myTeamID, "energy",GameConfig.bonusFirstUnitMaterial_S) 
-	end
+    times = 0
+    PIE = 3.14159 / 60
+    med = 0
+    while true do
+        times = (times + PIE) % 6.28318530
+        val = math.ceil(((math.sin(times) * GameConfig.bonusFirstUnitMoney_S) + med) / 2)
+        med = val
+        if val > 0 then
+            Spring.AddUnitResource(unitID, "m", val)
+            Spring.AddUnitResource(unitID, "e", val)
+        else
+            val = math.abs(val)
+            Spring.UseUnitResource(unitID, "m", val)
+            Spring.UseUnitResource(unitID, "e", val)
+        end
+        Sleep(1001)
+    end
 end
 
 --gives the first unit of this type a parachut and drops it

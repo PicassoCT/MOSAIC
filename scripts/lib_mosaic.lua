@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.758" 
+            Version = "Alpha: 0.759" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -23,7 +23,6 @@ function getGameConfig()
         allyWaySizeX = 25,
         allyWaySizeZ = 25,
         bonusFirstUnitMoney_S = 12,
-        bonusFirstUnitMaterial_S = 8,
 
         agentConfig = {
             recruitmentRange = 60,
@@ -62,7 +61,6 @@ function getGameConfig()
         demonstrationMarchRadius = 50,
         civilianMaxWalkingDistance = 3000,
 
-
         maxNrPolice = 8,
         policeMaxDispatchTime = 2000,
         policeSpawnMinDistance = 2200, -- preferably at houses
@@ -97,9 +95,10 @@ function getGameConfig()
         InterrogationTimeInFrames = 20 * 30,
         InterrogationDistance = 256,
 
-        
+        --operatives
         investigatorCloakedSpeedReduction = 0.35,
         operativeShotFiredWaitTimeToRecloak_MS = 10000,
+        OperativeDropHeigthOffset = 900,
 
         --motorBike
         motorBikeSurvivalStandaloneMS = 15*1000,
@@ -150,7 +149,7 @@ function getGameConfig()
         TimeForScrapHeapDisappearanceInMs = 3 * 60 * 30, -- 3 Minutes off line
 
         costs = {
-        DestroyedHousePropanda = 3500,
+        DestroyedHousePropanda = 5000,
         RecruitingTruck = 500},
 
         -- startenergymetal
@@ -168,8 +167,6 @@ function getGameConfig()
         SatelliteShrapnellDamagePerSecond = 1000,
         SatelliteUploadTimesMs = 8000,
         LifeTimeBribeIcon = 60 *1000,
-        -- Operativedrop HeightOffset
-        OperativeDropHeigthOffset = 900,
 
         -- Hiveminds & AiCores
         integrationRadius = 75,

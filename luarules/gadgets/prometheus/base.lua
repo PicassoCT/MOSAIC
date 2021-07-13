@@ -157,6 +157,7 @@ local function __clamp(v, min_val, max_val)
 end
 
 local function __canBuild(builderDefID, unitDefID)
+    if not UnitDefs[builderDefID] then return false end
     if not UnitDefs[builderDefID].buildOptions then return false end
 
     local children = UnitDefs[builderDefID].buildOptions
@@ -171,12 +172,12 @@ end
 local function GetAllBuilders(unitDefID)
     local builders = {}
     for u,_ in pairs(myConstructors) do
-        if __canBuild(GetUnitDefID(u), unitDefID) then
+        if u and __canBuild(GetUnitDefID(u), unitDefID) then
             builders[#builders + 1] = u
         end
     end
     for u,_ in pairs(myFactories) do
-        if __canBuild(GetUnitDefID(u), unitDefID) then
+        if u and __canBuild(GetUnitDefID(u), unitDefID) then
             builders[#builders + 1] = u
         end
     end

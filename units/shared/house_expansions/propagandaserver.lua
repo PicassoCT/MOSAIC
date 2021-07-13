@@ -12,7 +12,7 @@ local Propagandaserver = Building:New{
 	EnergyUse = 0,
 	MetalStorage = 2500,
 
-	EnergyMake = 5, 
+	EnergyMake = 10, 
 	MetalMake = 5,	 
 	
 	acceleration = 0,

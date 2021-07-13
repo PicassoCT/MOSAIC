@@ -200,6 +200,10 @@ function detectUpgrade()
                     Spring.DestroyUnit(unitID, false, true)
                     end
                 end
+                Sleep(1)
+                  if waitTillComplete(buildID) == true then
+                    Spring.DestroyUnit(unitID, false, true)
+                  end 
             end
         end
     end

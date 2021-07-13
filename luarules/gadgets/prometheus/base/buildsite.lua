@@ -295,6 +295,34 @@ end
 ------------------------------------------------
 --here ends the part copied from gui_s44_supplyradius.lua
 ------------------------------------------------
+local function baseBuildingTypeAtLocation(x, y, z, teamID)
+	local boolUnitExistsAliveAtLocation = false
+	local baseBuildingTypes = {
+		["antagonsafehouse"]= true,
+		["protagonsafehouse"]= true,
+		["propagandaserver"]= true,
+		["assembly"]= true,
+		["nimrod"]= true,
+		["launcher"]= true, 
+		["hivemind"]= true,
+        ["blacksite"]= true,
+        ["aicore"]= true
+	}
+
+
+	local t = Spring.GetUnitsInSphere(x,y,z, 25, teamID)
+		if t and #t > 0 then
+			for i= 1, #t do
+				local defID = Spring.GetUnitDefID(t[i])
+				if baseBuildingTypes[UnitDefs[defID].name] then
+					return true		
+				end
+			end
+		end
+
+	return false
+end
+
 local function unitOfTypeAliveAt( expectedTypeDefID, x,y, z, teamID)
 	local boolUnitExistsAliveAtLocation = false
 
@@ -354,7 +382,8 @@ function widget.FindBuildsite(builderID, unitDefID, closest)
 			end
 			table.sort(vertices, function (a, b) return a.sqdist < b.sqdist end)
 			for _,v in ipairs(vertices) do
-				if TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 then
+				if TestBuildOrder(unitDefID, v[1],v[2],v[3], facing) > 0 and
+					 baseBuildingTypeAtLocation(v[1],v[2],v[3],teamID) == false then
 					return v[1],v[2],v[3],facing
 				end
 			end
