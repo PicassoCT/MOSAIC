@@ -184,9 +184,9 @@ function getAllNearPiece(unitID, Piece, Range)
 end
 
 -- > Grabs every Unit in a circle, filters out the unitid
-function getAllNearUnit(unitID, Range)
+function getAllNearUnit(unitID, Range, teamid)
     px, py, pz = Spring.GetUnitPosition(unitID)
-    return getAllInCircle(px, pz, Range, unitID)
+    return getAllInCircle(px, pz, Range, unitID, teamid)
 end
 
 -- > Grabs every Unit in a circle, filters out the unitid
@@ -1744,6 +1744,17 @@ end
 function getPieceMap(unitID)
     List = Spring.GetUnitPieceMap(unitID)
     return List
+end
+
+function isUnitComplete(id)
+    if not id then return false end
+    if doesUnitExistAlive(id) == false then return false end
+
+    hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
+
+    if  buildProgress and buildProgress < 1.0 then return false end
+
+    return true
 end
 
 function waitTillComplete(id)

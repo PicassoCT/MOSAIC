@@ -85,7 +85,7 @@ function getGameConfig()
 		--Parachute
 		parachuteHeight = 150,
         -- doubleAgentHeight
-        doubleAgentHeight = 256,
+        doubleAgentHeight = 128,
 
         -- Dayproperties
         daylength = 28800, -- in frames
@@ -649,7 +649,8 @@ function getCloakIconTypes(UnitDefs)
         "operativepropagator",
         "operativeinvestigator",
         "operativeasset",
-        "blacksite"
+        "blacksite",
+        "doubleagent"
     }
 
       return getTypeTable(UnitDefNames, typeTable)
@@ -1148,9 +1149,6 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
     GG.DoubleAgents[id] = doubleAgentID
 
     Spring.MoveCtrl.Enable(doubleAgentID, true)
-    -- set invisible
-
-    -- set non-collidable
 
     hoverAboveFunc = function(persPack)
         boolContinue = false
@@ -1172,8 +1170,7 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
             return boolContinue, persPack
         end
 
-        Spring.MoveCtrl.SetPosition(persPack.unitID, x - 10,
-                                    y + persPack.heightAbove, z)
+        Spring.MoveCtrl.SetPosition(persPack.unitID, x - 1, y + persPack.heightAbove, z)
         boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.unitID)
 
         if not persPack.boolCloakedAtLeastOnce then
@@ -1186,6 +1183,7 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
         if persPack.startFrame + 30 < Spring.GetGameFrame() and
             persPack.boolCloakedAtLeastOnce == true and boolUnitIsCloaked ==
             false then
+
             copyUnit(persPack.toTrackID, persPack.myTeam)
             Spring.DestroyUnit(persPack.toTrackID, true, true)
             Spring.DestroyUnit(persPack.unitID, true, true)

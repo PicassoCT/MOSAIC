@@ -118,6 +118,7 @@ end
 
 function houseAttach()
     Sleep(GameConfig.safeHouseLiftimeUnattached)
+    checkPreExistingKill(unitID, unitID)
     waitTillComplete(unitID)
     -- Spring.Echo("Safehouse completed")
     boolJustOnce = false
@@ -165,16 +166,29 @@ function houseAttach()
             createDoubleAgentEventStream(id, enemyTeamID, unitID)
         end
     end)
-
-  --[[  if #T < 1 then
-        echo("Safehouse not attached to house")
-    else
-        echo("Safehouse attached to house")
-    end--]]
 end
 
 safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
                                                      Spring.GetUnitDefID(unitID))
+
+function checkPreExistingKill(toKillId, notID)
+ OtherUpgradeTypesAliveAtLocation =process(getAllNearUnit(unitID, 120, myTeam),
+                    function(id)
+                        defID = spGetUnitDefID(id)
+                            if safeHouseUpgradeTypeTable[defID] and id ~= notID then
+                                return id
+                            end
+                        end,
+                        function (id)
+                            if isUnitComplete(id) == true then return id end
+                        end
+                        )
+
+        if #OtherUpgradeTypesAliveAtLocation > 0 then
+            Spring.DestroyUnit(toKillId, false, true)
+        end
+end
+
 --boolDoneFor = false
 function detectUpgrade()
    if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
@@ -186,6 +200,7 @@ function detectUpgrade()
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
+                checkPreExistingKill(buildID, buildID)
                 --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 if doesUnitExistAlive(buildID) == true then
                      echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
@@ -200,10 +215,6 @@ function detectUpgrade()
                     Spring.DestroyUnit(unitID, false, true)
                     end
                 end
-                Sleep(1)
-                  if waitTillComplete(buildID) == true then
-                    Spring.DestroyUnit(unitID, false, true)
-                  end 
             end
         end
     end
