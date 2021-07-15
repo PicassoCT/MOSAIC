@@ -85,7 +85,7 @@ function getGameConfig()
 		--Parachute
 		parachuteHeight = 150,
         -- doubleAgentHeight
-        doubleAgentHeight = 128,
+        doubleAgentHeight = 64,
 
         -- Dayproperties
         daylength = 28800, -- in frames
@@ -1139,23 +1139,21 @@ end
 function attachDoubleAgentToUnit(id, teamToTurnTo)
     GameConfig = getGameConfig()
     if not GG.DoubleAgents then GG.DoubleAgents = {} end
-    if GG.DoubleAgents[id] then
-        -- already has DoubleAgent attached- abort
-        return GG.DoubleAgents[id]
-    end
-
-    doubleAgentID = createUnitAtUnit(teamToTurnTo, "doubleagent", id, 0,
-                                     GameConfig.doubleAgentHeight, 0)
-    GG.DoubleAgents[id] = doubleAgentID
-
-    Spring.MoveCtrl.Enable(doubleAgentID, true)
 
     hoverAboveFunc = function(persPack)
         boolContinue = false
         boolEndFunction = true
 
+        --There can only be one
+        if GG.DoubleAgents[persPack.toTrackID] and 
+           GG.DoubleAgents[persPack.toTrackID] ~= persPack.unitID then
+            return boolEndFunction, nil
+        end 
+
+        if persPack.boolDoneFor then return boolEndFunction, persPack end
+
         if doesUnitExistAlive(persPack.toTrackID) == false then
-            Spring.DestroyUnit(persPack.unitID, true, true)
+            Spring.DestroyUnit(persPack.unitID, false, true)
             return boolEndFunction, nil
         end
 
@@ -1163,10 +1161,10 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
 
         if doesUnitExistAlive(persPack.unitID) == false then
             persPack.unitID = createUnitAtUnit(persPack.myTeam, "doubleagent",
-                                               persPack.toTrackID, x - 10,
+                                               persPack.toTrackID, x - 1,
                                                y + persPack.heightAbove, z)
             Spring.MoveCtrl.Enable(persPack.unitID)
-
+            GG.DoubleAgents[persPack.toTrackID] = persPack.unitID
             return boolContinue, persPack
         end
 
@@ -1180,14 +1178,16 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
         persPack.boolCloakedAtLeastOnce =
             persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
 
-        if persPack.startFrame + 30 < Spring.GetGameFrame() and
-            persPack.boolCloakedAtLeastOnce == true and boolUnitIsCloaked ==
-            false then
-
+        if persPack.startFrame + 1 < Spring.GetGameFrame() and
+            persPack.boolCloakedAtLeastOnce == true and 
+            boolUnitIsCloaked == false then
+            --we copy kill the unit here instead of transfering to 
+            --prevent gaia from issuing it commands    
             copyUnit(persPack.toTrackID, persPack.myTeam)
-            Spring.DestroyUnit(persPack.toTrackID, true, true)
-            Spring.DestroyUnit(persPack.unitID, true, true)
-            return boolEndFunction, nil
+            Spring.DestroyUnit(persPack.toTrackID, false, true)
+            Spring.DestroyUnit(persPack.unitID, false, true)
+            persPack.boolDoneFor = true
+            return boolEndFunction, persPack
         end
 
         return boolContinue, persPack
