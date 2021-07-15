@@ -542,11 +542,14 @@ local unitBuiltBy = {}
 local function IdleFactory(unitID)
     if not unitID then return end
     if not myFactories[unitID] then myFactories[unitID] = {} end
+
     if #myFactories[unitID] > 0 then
+        Log("IdleFactory "..unitID.." still has work todo")
         -- We still have work to do...
         return
     end
-
+    
+    Log("IdleFactory "..unitID.." evaluates build options")
     -- Evaluate the build options
     local unitDefID = GetUnitDefID(unitID)
     if not unitDefID then return end
