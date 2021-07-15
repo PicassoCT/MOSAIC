@@ -131,7 +131,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
             for id, location in pairs(DeadObjectives) do
-                if not invertedObjectiveTypes[types.defID] then
+                if location.boolProProtagon == true then
                     for tid, _ in pairs(antagonT) do
                         GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
                                                location, colourRed)
