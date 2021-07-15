@@ -174,13 +174,6 @@ function script.Create()
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-    StartThread(attachDoubleAgentTest)
-end
-
-function attachDoubleAgentTest() --DelMe
-    Sleep(100)
-    teamList = Spring.GetTeamList( ) 
-    attachDoubleAgentToUnit(unitID, teamList[math.random(1,#teamList)])
 end
 
 function speedControl()
