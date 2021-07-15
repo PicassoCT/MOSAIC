@@ -266,14 +266,6 @@ function getObjectiveTypes(UnitDefs)
     }
 end
 
-function getInvertedObjectiveTypes(UnitDefs)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {
-        [UnitDefNames["objective_combatoutpost"].id] = "land"
-    }
-end
-
 function getIconTypes(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
     return {

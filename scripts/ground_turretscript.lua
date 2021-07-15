@@ -38,7 +38,7 @@ function playDroneInterceptAnimation(projectiles, timeTotal, maxIntercept)
 
     intercepted = math.ceil(math.min(#projectiles, maxIntercept))
     timePerProjectile = timeTotal/intercepted
-
+    StartThread(fireFlowers, intercepted)
     for i= 1, #projectiles do
         px, py, pz = Spring.GetProjectilePosition ( projectiles[i] ) 
         if px then
@@ -254,7 +254,7 @@ function script.AimWeapon1(Heading, pitch)
 end
 
 function script.FireWeapon1()
-    EmitSfx(firingFrom, 1025)
+    StartThread(fireFlowers, 15)
     StartThread(PlaySoundByUnitDefID, myDefID,
                 "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 1)
     boolGroundAiming = false
@@ -280,11 +280,18 @@ function script.AimWeapon2(Heading, pitch)
 end
 
 function script.FireWeapon2()
-    EmitSfx(firingFrom, 1025)
+    StartThread(fireFlowers, 15)
     StartThread(PlaySoundByUnitDefID, myDefID,
                 "sounds/weapons/machinegun/salvo2.ogg", 1.0, 5000, 1)
     StartThread(guardSwivelTurret)
     return true
+end
+
+function fireFlowers(itterations)
+    for i=1,itterations do
+        EmitSfx(firingFrom, 1025)
+        Sleep(120)
+    end
 end
 
 function script.StartMoving() end

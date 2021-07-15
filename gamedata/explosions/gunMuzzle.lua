@@ -2,39 +2,27 @@
      
     return {
       ["gunmuzzle"] = {
-     fakelight = {
-          air                = false,
-          class              = [[CSimpleGroundFlash]],
-          count              = 1,
-          ground             = true,
-          water              = false,
-          properties = {
-            colormap           = [[1 0.4 0.7 1  1 0.6 0.12 1    0 0 0 0.1]],
-            size               = [[18 r5]],
-            sizegrowth         = [[1 r1]],
-            texture            = [[ar2groundflash]],
-            ttl                = [[9 r4 r4]],
-          },
-        },
+
            
      
         bitmapmuzzleflame = {
           air                = true,
+          ground             = true,
+          underwater         = false,
+          water              = true,
           class              = [[CBitmapMuzzleFlame]],
           count              = 1,
-          ground             = true,
-          underwater         = 1,
-          water              = true,
+          
           properties = {
-              colormap           = [[1 0.6 0.2 1  1 0.6 0.12 1    0 0 0 0.1]],
+              colormap           = [[1 0.6 0.2 0.025  1 0.6 0.12 0.025    0 0 0 0.025]],
             dir                = [[dir]],
             frontoffset        = 0,
             fronttexture       = [[flash1]],
-            length             = 3,
+            length             = 10,
             sidetexture        = [[burstside]],
-            size               = 3,
+            size               = 4,
             sizegrowth         = 1,
-            ttl                = 5,
+            ttl                = 10,
           },
         },
    

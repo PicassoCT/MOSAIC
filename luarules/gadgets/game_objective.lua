@@ -18,7 +18,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 gaiaTeamID = Spring.GetGaiaTeamID()
 objectiveTypes = getObjectiveTypes(UnitDefs)
-invertedObjectiveTypes = getInvertedObjectiveTypes(UnitDefs)
+
 Objectives = {}
 DeadObjectives = {}
 -- SYNCED
@@ -69,13 +69,27 @@ if (gadgetHandler:IsSyncedCode()) then
         boolInit = false
     end
 
+    function getProProtagon(nr)
+        return nr % 2 == 0
+    end  
+
+    function setProConDescription(id, boolProProtagon)
+        toolTip = Spring.GetUnitTooltip ( id ) 
+        if boolProProtagon == true then
+            toolTip = toolTip.."<Objective> Antagon must destroy /Protagon must defend"
+        else
+            toolTip = toolTip.."<Objective> Protagon must destroy /Antagon must defend"
+        end
+        Spring.SetUnitTooltip(id, toolTip)
+    end
+
     function gadget:UnitCreated(UnitID, unitDefID)
         local type = Spring.GetUnitDefID(UnitID)
         if objectiveTypes[type] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
 
             x, y, z = Spring.GetUnitPosition(UnitID)
-            Objectives[UnitID] = {x = x, y = y, z = z, defID = unitDefID}
-
+            Objectives[UnitID] = {x = x, y = y, z = z, defID = unitDefID, boolProProtagon = getProProtagon(count(Objectives)) }
+            setProConDescription(UnitID, Objectives[UnitID].boolProProtagon)
             Spring.SetUnitAlwaysVisible(UnitID, true)
         end
     end
@@ -100,7 +114,7 @@ if (gadgetHandler:IsSyncedCode()) then
             -- Spring.Echo("Reward Cycle called")
 
             for id, types in pairs(Objectives) do
-                if not invertedObjectiveTypes[types.defID] then
+                if types.boolProProtagon == true then
                     --	Spring.Echo("Objectives to Protagon")
                     if doesUnitExistAlive(id) == true then
                         for tid, _ in pairs(protagonT) do
