@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.761" 
+            Version = "Alpha: 0.762" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -40,7 +40,7 @@ function getGameConfig()
 
         Objectives = {
             RewardCyle = 30 * 60, -- /30 frames = 1 seconds
-            Reward = 50
+            Reward = 20
         },
         -- civilianbehaviour
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,

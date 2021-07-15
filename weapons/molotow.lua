@@ -18,8 +18,7 @@ local weaponDef = {
     tracks = false,
     Turnrate = 16000,
     collideFriendly = true,
-    WeaponTimer = 4,
-    BurnBlow = 0.001,
+    BurnBlow = false,
     highTrajectory = 1,
 
     --- -APPEARANCE
@@ -35,6 +34,7 @@ local weaponDef = {
     avoidFriendly = false,
 	soundtrigger = 1,
 	fireStarter = 100,
+    noSelfDamage = true,
 
  	--damage
 	damage = {

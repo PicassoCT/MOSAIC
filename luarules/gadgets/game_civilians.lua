@@ -779,20 +779,22 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if refugeeAbleTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
             payloadID = loadTruck(myID, "truckpayloadrefugee")
-            civiliansNearby = process(getAllNearUnit(myID, 128),
-                            function (id)
-                                defID = spGetUnitDefID(id)
-                                if civilianWalkingTypeTable[defID] and not GG.DisguiseCivilianFor[myID] then
-                                    return id
+            if payloadID then
+                civiliansNearby = process(getAllNearUnit(myID, 128),
+                                function (id)
+                                    defID = spGetUnitDefID(id)
+                                    if civilianWalkingTypeTable[defID] and not GG.DisguiseCivilianFor[myID] then
+                                        return id
+                                    end
                                 end
-                            end
-                            )
-            if #civiliansNearby > 0 and maRa() == true then
-                id = getRandomElementFromTable(civiliansNearby)
-                if id then
-                    map = getPieceMap(payloadID)
-                    key,value= randDict(map)
-                    Spring.UnitAttach ( payloadID, id,  value ) 
+                                )
+                if #civiliansNearby > 0 and maRa() == true then
+                    id = getRandomElementFromTable(civiliansNearby)
+                    if id then
+                        map = getPieceMap(payloadID)
+                        key,value= randDict(map)
+                        Spring.UnitAttach ( payloadID, id,  value ) 
+                    end
                 end
             end
         end
