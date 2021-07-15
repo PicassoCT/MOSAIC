@@ -7,23 +7,24 @@ local weaponDef = {
 
     --Physic/flight path
     range = 800,
-    reloadtime = 15,
-    weaponVelocity = 450,
+    reloadtime = 10,
+    weaponVelocity = 200,
     startVelocity = 50,
-    trajectoryHeight = 50,
     weaponAcceleration = 15,
+    trajectoryHeight = 1,
     flightTime = 15,
     burst = 3,
-    BurnBlow = 1,
+    burstrate               = 0.1,
+    projectiles = 2,
+    BurnBlow = false,
     FixedLauncher = false,
-    dance = 30,
+    dance = 100,
     wobble                  = 3500,
     tolerance               = 512,
-    Turnrate = 64000,
-
+    Turnrate = 5000,
+    edgeEffectiveness       = 0.5,
     tracks = true,
-    avoidGround = false,
-    avoidFriendly = false,
+
     --- -APPEARANCE
     model = "DroneMineLaunchProj.s3o",
     smokeTrail = false,
@@ -32,8 +33,8 @@ local weaponDef = {
 
     --- -TARGETING
     turret = true,
-    CylinderTargeting = 0.0,
     avoidFeature = true,
+    avoidGround = true,
     avoidFriendly = true,
     collideFriendly = true,
     collideEnemy  = true,
@@ -46,8 +47,8 @@ local weaponDef = {
 
     --- -DAMAGE
     damage = {
-        default = 450,
-        heavyarmor = 350,
+        default = 50,
+        heavyarmor = 25,
     },
     areaOfEffect = 100,
     craterMult = 0,
