@@ -135,7 +135,8 @@ local groundturretmg =  Turret:New{
 
 	 sfxtypes = {
 		explosiongenerators = {
-								"custom:bigbulletimpact"
+								"custom:bigbulletimpact",
+								"custom:gunmuzzle"
 							  },
 				},
 				

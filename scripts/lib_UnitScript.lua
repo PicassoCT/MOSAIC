@@ -1392,6 +1392,11 @@ function moveUnitToUnitPiece(id, target, Name)
     return false
 end
 
+function getProjectilesAroundUnit(unitID, dist)
+    x,y,z = Spring.GetUnitPosition(unitID)
+    return Spring.GetProjectilesInRectangle(x-dist, z-dist, x + dist, z+dist, false, true)
+ end
+
 function copyUnit(id, teamID, fatherID)
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     copyID = createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id, ox, oy, oz)
@@ -5328,7 +5333,7 @@ function average(...)
 end
 
 -- > Converts to points, to a degree in Radians
-function convPointsToDeg(ox, oz, bx, bz)
+function convPointsToRad(ox, oz, bx, bz)
     if not bx then -- orgin cleaned point
         return math.atan2(ox, oz)
     else
@@ -6461,6 +6466,16 @@ function transferOrders(originID, targetID)
             end
         end
     end
+end
+
+function hasNoActiveAttackCommand(unitID)
+    CommandTable =Spring.GetUnitCommands(unitID, 1)
+    if CommandTable and CommandTable[1] then
+        cmd = CommandTable[1].id
+        return  cmd ~= CMD.ATTACK and cmd ~= CMD.FIGHT
+    end
+
+    return true
 end
 
 -- > transfers Order from one Unit to another

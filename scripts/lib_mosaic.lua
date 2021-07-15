@@ -6,7 +6,7 @@ function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.759" 
+            Version = "Alpha: 0.760" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -81,6 +81,10 @@ function getGameConfig()
         --cybercrime
         RewardCyberCrime = 300,
         rewardWaitTimeCyberCrimeSeconds= 30,
+
+        --groundTurretDroneProjectileIntercept
+        groundTurretDroneInterceptRate = 256,
+        groundTurretDroneMaxInterceptPerSecond = 7,
 
 		--Parachute
 		parachuteHeight = 150,
