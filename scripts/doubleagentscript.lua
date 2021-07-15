@@ -27,11 +27,13 @@ end
 
 function animation()
     while true do
-        WMove(one, x_axis, 100, 100)
-        WMove(other, x_axis, -100, 100)
+        axisDice = math.random(1,3)
+        Movementsize = 250
+        WMove(one, axisDice, Movementsize, Movementsize)
+        WMove(other, axisDice, -1*Movementsize, Movementsize)
         Sleep(500)
-        WMove(one, x_axis, 0, 100)
-        WMove(other, x_axis, 0, 100)
+        WMove(one, axisDice, 0, Movementsize)
+        WMove(other, axisDice, 0, Movementsize)
         Sleep(500)
     end
 end
