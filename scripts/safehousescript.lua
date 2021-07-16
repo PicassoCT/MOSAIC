@@ -113,7 +113,6 @@ function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, safeHouseID
                 safeHouseUpgradeTypeTable = safeHouseUpgradeTypeTable
             })
         end
-
 end
 
 function houseAttach()
@@ -203,10 +202,10 @@ function detectUpgrade()
                 checkPreExistingKill(buildID, buildID)
                 --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 if doesUnitExistAlive(buildID) == true then
-                     echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
+                   --  echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
                     if waitTillComplete(buildID) == true then
             
-                    echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
+                    --echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
                     GG.houseHasSafeHouseTable[safeHouseID] = buildID
                     moveUnitToUnit(buildID, safeHouseID)
                    -- boolDoneFor = true

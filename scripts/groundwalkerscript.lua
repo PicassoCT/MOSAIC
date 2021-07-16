@@ -257,7 +257,7 @@ function setupAnimation()
         end
     end
 
-    echo("End setupAnimation groundwalker")
+   -- echo("End setupAnimation groundwalker")
 end
 
 local animCmd = {['turn'] = Turn, ['move'] = Move};

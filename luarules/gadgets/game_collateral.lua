@@ -142,7 +142,7 @@ if (gadgetHandler:IsSyncedCode()) then
                          " was damaged without perpetrator with weapon " ..
                          WeaponDefs[weaponDefID].name)
             end
-            return
+            return damage
         end
 
         -- civilian attacked by a not civilian

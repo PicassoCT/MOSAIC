@@ -10,7 +10,7 @@ local weaponDef = {
     weaponVelocity = 320,
     startVelocity = 50,
     weaponAcceleration = 50,
-    flightTime = 4,
+
     cameraShake = 12;
     FixedLauncher = true,
     accuracy = 600,

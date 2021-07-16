@@ -1,5 +1,5 @@
 model = {
-	radius = 25.0,
+	radius = 35.0,
 	height = 40,
 
 	tex1 = "component_atlas_diffuse.dds",

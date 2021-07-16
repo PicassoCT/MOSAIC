@@ -1,5 +1,5 @@
 model = { 
-	radius = 25.0,
+	radius = 15.0,
 	height = 40,
 	tex1 = "CheckPoint_diffuse.dds",
 	tex2 = "CheckPoint_normal.dds",

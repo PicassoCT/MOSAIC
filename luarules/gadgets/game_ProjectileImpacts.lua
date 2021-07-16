@@ -617,8 +617,6 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
                                                 attackerTeam)
-       -- spEcho("RaidWeapon fired upon " ..
-                   UnitDefs[unitDefID].name)
 
         if not attackerID then
             attackerID = Spring.GetUnitLastAttacker(unitID)

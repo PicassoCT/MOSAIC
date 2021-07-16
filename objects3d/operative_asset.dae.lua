@@ -1,5 +1,5 @@
 model = { 
-	radius = 25.0,
+	radius = 15.0,
 	height = 40,
 	--new version following https://springrts.com/wiki/Shaders:IvandPBRShader
 	tex1 = "operative_asset_diffuse.dds",

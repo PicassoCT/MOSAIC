@@ -87,7 +87,6 @@ projectilesToIntercept = process(getProjectilesAroundUnit(unitID, droneIntercept
                 )
 
             if projectilesToIntercept and #projectilesToIntercept > 0 then
-                    Spring.Echo("Defending against Projectiles")
                     boolDroneInterceptSaturated = true
                     StartThread(playDroneInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond/2)
                     Sleep(500)

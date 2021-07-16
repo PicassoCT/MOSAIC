@@ -853,7 +853,7 @@ normalBehavourStateMachine = {
                         end
                         )
                 if T and #T > 0 then
-                    Spring.SetUnitLoadingTransport ( T[1], unitID ) 
+                    Spring.UnitAttach (T[1], unitID, getPieceNrByName(T[1], "attachPoint") )
                 end
             else
                 bodyConfig.boolProtest = (math.random(1, 10) > 5)

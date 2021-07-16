@@ -4562,6 +4562,43 @@ function stats(...)
     for i = 1, #arg, 2 do echo(arg[i] .. " is " .. toString(arg[i + 1])) end
 end
 
+
+
+function recursiveCheckTable(Tables, maxNrEntry, boolListEntryNr)
+    local count = 0
+    for key, entry in pairs(Tables) do
+        local subElementCount = 0
+        if key and entry and type(entry) == "table" then
+            subElementCount  = recursiveCheckTable(entry, maxNrEntry, boolListEntryNr )
+            if boolListEntryNr == true then 
+                echo(key.." -> "..subElementCount.." entries")
+            end
+            assert(subElementCount < maxNrEntry, "Table key"..key.." violates entry limits: "..subElementCount.." > "..maxNrEntry)
+            count = count + subElementCount
+        elseif key and entry then
+            count = count + 1
+        end
+        assert(count < maxNrEntry, "Total entry nr exceeds limits at"..key.." : "..count.." > "..maxNrEntry)     
+    end
+    return count
+end
+
+function recursiveGetTableSize(Tables)
+    local size = 0
+    for key, entry in pairs(Tables) do
+        if key and type(entry) == "table" then
+            subElementCount  = recursiveCheckTable(entry, maxNrEntry, boolListEntryNr )
+            if boolListEntryNr then 
+                echo(key.." -> "..subElementCount.." entries")
+            end
+            assert(subElementCount < maxNrEntry, "Table key"..key.." violates entry limits: "..subElementCount.." > "..maxNrEntry)
+            count = count + subElementCount
+        end
+        assert(count < maxNrEntry, "Total entry nr exceeds limits at"..key.." : "..subElementCount.." > "..maxNrEntry)     
+    end
+    return count
+end
+
 function todoAssert(object, functionToPass, todoCheckNext)
     if functionToPass(object) == true then return end
     echo("Error:Todo:" .. todoCheckNext)
@@ -4828,7 +4865,7 @@ function getSizeInByte(Element, maxdepth)
         ["number"] = function(id) return 8 end,
         ["boolean"] = function(id) return 1 end,
         ["string"] = function(id) return string.len(id) end,
-        ["function"] = function(id) return string.len(string.dump(id)) end -- Problematic: Function as string is compactor in opcode and exists only once per name)
+        ["function"] = function(id) return 1 end--string.len(string.dump(id)) end -- Problematic: Function as string is compactor in opcode and exists only once per name)
     }
 
     if not Element then return 0 end
@@ -6593,7 +6630,6 @@ function Command(id, command, tarGet, option)
     if command == "go" then
         Spring.GiveOrderToUnit(id, CMD.MOVE, {target.x, target.y, target.z},
                                options) -- {"shift"}
-
     end
 
     if command == "stop" then Spring.GiveOrderToUnit(id, CMD.STOP, {}, {}) end
@@ -6623,7 +6659,10 @@ function Command(id, command, tarGet, option)
 
         Spring.UnitScript.SetUnitValue(COB.CLOAKED, currentState)
     end
+end
 
+function getPieceNrByName(id, name)
+    return (Spring.GetUnitPieceMap(id))[name]
 end
 
 function getUnitValueEnv(unitID, ValueName)

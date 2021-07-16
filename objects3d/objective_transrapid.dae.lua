@@ -1,5 +1,5 @@
 model = {
-	radius = 25.0,
+	radius = 40.0,
 	height = 40,
 	-- tex1 = "testtex1.dds",
 	-- tex2 = "testtex2.dds",
