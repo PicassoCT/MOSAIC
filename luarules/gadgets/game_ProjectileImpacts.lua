@@ -126,19 +126,19 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
             if persPack.lifetimeFrames <= 0 then
                 return 
             end
-			
-			function setInternalStateMachineToStarted(id)
-				if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
-					env = Spring.UnitScript.GetScriptEnv(id)
-					if env and env.setCivilianUnitInternalStateMode then
-						Spring.UnitScript.CallAsUnit(id,
-													 env.setCivilianUnitInternalStateMode,
+            
+            function setInternalStateMachineToStarted(id)
+                if civilianWalkingTypeTable[Spring.GetUnitDefID(id)] then
+                    env = Spring.UnitScript.GetScriptEnv(id)
+                    if env and env.setCivilianUnitInternalStateMode then
+                        Spring.UnitScript.CallAsUnit(id,
+                                                     env.setCivilianUnitInternalStateMode,
                                                      id,
-													"STARTED")
-					end
-				end
-			end
-			
+                                                    "STARTED")
+                    end
+                end
+            end
+            
             additional = math.random(3, 9)
             addx = math.random(0, 4)
             xd = randSign()
@@ -154,7 +154,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
             process(getAllInCircle(persPack.px, persPack.pz, persPack.range),
                     function(id)
                         if id then
-							setInternalStateMachineToStarted(id)
+                            setInternalStateMachineToStarted(id)
                             setUnitOnFire(id, math.random(7500, 10000))
                         end
                     end
@@ -206,7 +206,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     -- Interrogation
     -----------------------------------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------------
-	-- victim -- interrogator -- boolInerrogationOngoing
+    -- victim -- interrogator -- boolInerrogationOngoing
     GG.InterrogationTable = {}
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
@@ -847,6 +847,4 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
             return px, py, pz, targetTypeInt, target
         end
     end
-
-
 end
