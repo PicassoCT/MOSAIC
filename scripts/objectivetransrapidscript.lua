@@ -30,7 +30,7 @@ function setup()
     StartThread(deployTunnels, 1)
     StartThread(deployTunnels, 2)
     StartThread(showRail)
-    StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
+    StartThread(turnEndPiecesDown, -1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
     StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
 end
 
@@ -55,10 +55,11 @@ end
 function turnEndPiecesDown(signs, EndPiece, DetectorPiece)
     Hide(DetectorPiece)
     value = 0
-    while isPieceAboveGround(unitID, DetectorPiece, 0) == true do
+    attempts = 0
+    while isPieceAboveGround(unitID, DetectorPiece, 10) == true and attempts < 10 do
         value = value -5 * signs
         WTurn(EndPiece,z_axis, math.rad(value),0)
-        Sleep(10)
+        attempts= attempts +1
     end
 end
 
@@ -90,6 +91,7 @@ detectionPiece = piece("TunnelDetection"..nr)
 tunnelIndex = 1
 local xMax = Game.mapSizeX 
 local zMax = Game.mapSizeZ 
+Hide(detectionPiece)
     for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -32 do
     	WMove(detectionPiece,trainAxis, distanceTunnel, 0)
     	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
@@ -102,7 +104,6 @@ local zMax = Game.mapSizeZ
             		Show(tunnelIndexPiece)
                     tunnelIndex = tunnelIndex + 1
                     if tunnelIndex >= 6 then
-                     Hide(detectionPiece)
                      return 
                     end
         		end
@@ -110,7 +111,6 @@ local zMax = Game.mapSizeZ
         end
     	boolOldState = boolAboveGround
     end
-   
 end
 
 function buildTrain(nr)
