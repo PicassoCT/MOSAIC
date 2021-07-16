@@ -747,14 +747,16 @@ function BaseMgr.GameFrame(f)
         checkUnitWaitingState(u, is_waiting[u] == true)
     end
     for u,q in pairs(myFactories) do
-        checkFactoryWaitingState(u, is_waiting[u] == true)
-        if #q == 0 then
-            local udef = GetUnitDefID(u)
-            if udef and UnitDefs[udefID] then
-            Log("Factory " .. UnitDefs[GetUnitDefID(u)].name .. " hanged...")
-        end
-            assert(u)
-            IdleFactory(u)
+        if u and q then
+            checkFactoryWaitingState(u, is_waiting[u] == true)
+            if #q == 0 then
+                local udef = GetUnitDefID(u)
+                if udef and UnitDefs[udefID] then
+                    Log("Factory " .. UnitDefs[GetUnitDefID(u)].name .. " hanged...")
+                end
+
+                IdleFactory(u)
+            end
         end
     end
 

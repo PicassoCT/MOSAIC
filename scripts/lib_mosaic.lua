@@ -1121,7 +1121,7 @@ function createStreamEvent(unitID, func, framerate, persPack)
 
         boolDoneFor, persPack = persPack.functionToCall(persPack)
         if boolDoneFor and boolDoneFor == true then 
-             echo("Aborting eventstream cause function to call has returned its done for")
+            -- echo("Aborting eventstream cause function to call has returned its done for")
             return nil 
         end
 
