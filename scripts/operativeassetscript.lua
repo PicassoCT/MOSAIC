@@ -197,7 +197,7 @@ end
 local cachedSpeed= math.huge
 function setSpeedEnvCached(unitID, newSpeed )
     if newSpeed ~= cachedSpeed then
-        echo("Setting Operativespeed to "..newSpeed)
+     --   echo("Setting Operativespeed to "..newSpeed)
         setSpeedEnv(unitID, newSpeed)
         cachedSpeed = newSpeed
     end

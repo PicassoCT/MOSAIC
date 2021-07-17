@@ -1132,7 +1132,7 @@ function createStreamEvent(unitID, func, framerate, persPack)
                                Spring.GetGameFrame() + 1)
 end
 
-function attachDoubleAgentToUnit(id, teamToTurnTo)
+function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
     GameConfig = getGameConfig()
     if not GG.DoubleAgents then GG.DoubleAgents = {} end
 
@@ -1141,47 +1141,64 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
         boolEndFunction = true
 
         --There can only be one
-        if GG.DoubleAgents[persPack.toTrackID] and 
-           GG.DoubleAgents[persPack.toTrackID] ~= persPack.unitID then
+        if GG.DoubleAgents[persPack.traitorID] and 
+           GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
             return boolEndFunction, nil
         end 
 
         if persPack.boolDoneFor then return boolEndFunction, persPack end
 
-        if doesUnitExistAlive(persPack.toTrackID) == false then
-            Spring.DestroyUnit(persPack.unitID, false, true)
+        if doesUnitExistAlive(persPack.traitorID) == false then
+            destroyUnitConditional(persPack.iconID, false, true)
             return boolEndFunction, nil
         end
 
-        x, y, z = Spring.GetUnitPosition(persPack.toTrackID)
+        x, y, z = Spring.GetUnitPosition(persPack.traitorID)
 
-        if doesUnitExistAlive(persPack.unitID) == false then
-            persPack.unitID = createUnitAtUnit(persPack.myTeam, "doubleagent",
-                                               persPack.toTrackID, x - 1,
+        if doesUnitExistAlive(persPack.iconID) == false then
+            persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
+                                               persPack.traitorID, x - 1,
                                                y + persPack.heightAbove, z)
-            Spring.MoveCtrl.Enable(persPack.unitID)
-            GG.DoubleAgents[persPack.toTrackID] = persPack.unitID
+            Spring.MoveCtrl.Enable(persPack.iconID)
+            GG.DoubleAgents[persPack.traitorID] = persPack.iconID
             return boolContinue, persPack
         end
 
-        Spring.MoveCtrl.SetPosition(persPack.unitID, x - 1, y + persPack.heightAbove, z)
-        boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.unitID)
+        Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
+        boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.traitorID)
+
+        if persPack.boolRecursive and persPack.boolRecursive == true then
+            -- recursive part
+            buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
+            if buildID then
+                if not persPack.buildInProgressList then persPack.buildInProgressList = {} end
+                persPack.buildInProgressList[buildID] = buildID
+            end
+
+            if  persPack.buildInProgressList then
+                for buildID,_ in pairs(  persPack.buildInProgressList) do
+                    if buildID and isUnitComplete(builID) == true then
+                        attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
+                        persPack.buildInProgressList[buildID] = nil
+                    end
+                end
+            end
+        end
 
         if not persPack.boolCloakedAtLeastOnce then
             persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
         end
 
-        persPack.boolCloakedAtLeastOnce =
-            persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
+persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
 
         if persPack.startFrame + 1 < Spring.GetGameFrame() and
             persPack.boolCloakedAtLeastOnce == true and 
             boolUnitIsCloaked == false then
             --we copy kill the unit here instead of transfering to 
             --prevent gaia from issuing it commands    
-            copyUnit(persPack.toTrackID, persPack.myTeam)
-            Spring.DestroyUnit(persPack.toTrackID, false, true)
-            Spring.DestroyUnit(persPack.unitID, false, true)
+            copyUnit(persPack.traitorID, persPack.teamToTurnTo)
+            Spring.DestroyUnit(persPack.iconID, false, true)
+            Spring.DestroyUnit(persPack.traitorID, false, true)
             persPack.boolDoneFor = true
             return boolEndFunction, persPack
         end
@@ -1189,14 +1206,13 @@ function attachDoubleAgentToUnit(id, teamToTurnTo)
         return boolContinue, persPack
     end
 
-    createStreamEvent(doubleAgentID, hoverAboveFunc, 1, {
+    createStreamEvent(traitorID, hoverAboveFunc, 1, {
         startFrame = Spring.GetGameFrame(),
-        unitID = doubleAgentID,
-        myTeam = teamToTurnTo,
-        toTrackID = id,
-        heightAbove = GameConfig.doubleAgentHeight
+        teamToTurnTo = teamToTurnTo,
+        traitorID = traitorID,
+        heightAbove = GameConfig.doubleAgentHeight,
+        boolRecursive = boolRecursive
     })
-
 end
 
 function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
