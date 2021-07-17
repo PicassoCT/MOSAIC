@@ -754,7 +754,6 @@ function BaseMgr.GameFrame(f)
                 if udef and UnitDefs[udefID] then
                     Log("Factory " .. UnitDefs[GetUnitDefID(u)].name .. " hanged...")
                 end
-
                 IdleFactory(u)
             end
         end
