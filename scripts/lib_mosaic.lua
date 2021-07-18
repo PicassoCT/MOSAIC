@@ -1058,7 +1058,8 @@ function getDecalMap(culture)
                     "house_arab_decal1", "house_arab_decal2",
                     "house_arab_decal3", "house_arab_decal5",
                     "house_arab_decal6", "house_arab_decal9",
-                    "house_arab_decal16","house_arab_decal17","house_arab_decal19"
+                    "house_arab_decal16","house_arab_decal17",
+                    "house_arab_decal19"
                 }
             }
         }
@@ -1097,16 +1098,16 @@ function createStreamEvent(unitID, func, framerate, persPack)
     persPack.unitID = unitID
     persPack.startFrame = Spring.GetGameFrame() + 1
     persPack.functionToCall = func
+   -- echo("Creating Stream Event")
 
     eventFunction = function(id, frame, persPack)
         nextFrame = frame + framerate
         if persPack then
             if persPack.unitID then
-                -- check
                 boolDead = Spring.GetUnitIsDead(persPack.unitID)
 
                 if boolDead and boolDead == true then
-                    echo("Aborting eventstream cause unit has died")
+                    --echo("Aborting eventstream cause unit has died")
                     return nil, nil
                 end
 
@@ -1121,7 +1122,7 @@ function createStreamEvent(unitID, func, framerate, persPack)
 
         boolDoneFor, persPack = persPack.functionToCall(persPack)
         if boolDoneFor and boolDoneFor == true then 
-            -- echo("Aborting eventstream cause function to call has returned its done for")
+            --echo("Aborting eventstream cause function signalled completness")
             return nil 
         end
 
@@ -1133,22 +1134,21 @@ function createStreamEvent(unitID, func, framerate, persPack)
 end
 
 function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
-    GameConfig = getGameConfig()
     if not GG.DoubleAgents then GG.DoubleAgents = {} end
 
-    hoverAboveFunc = function(persPack)
+hoverAboveFunc = function(persPack)
         boolContinue = false
         boolEndFunction = true
 
         --There can only be one
         if GG.DoubleAgents[persPack.traitorID] and 
            GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
-            return boolEndFunction, nil
+           return boolEndFunction, nil
         end 
 
         if persPack.boolDoneFor then return boolEndFunction, persPack end
 
-        if doesUnitExistAlive(persPack.traitorID) == false then
+        if  doesUnitExistAlive(persPack.traitorID) == false then
             destroyUnitConditional(persPack.iconID, false, true)
             return boolEndFunction, nil
         end
@@ -1165,23 +1165,19 @@ function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
         end
 
         Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
-        boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.traitorID)
+        boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
 
+        if isUnitComplete(persPack.traitorID) == false then
+            return boolContinue, persPack
+        end
+
+        --recursive part
         if persPack.boolRecursive and persPack.boolRecursive == true then
-            -- recursive part
+            if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
             buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
-            if buildID then
-                if not persPack.buildInProgressList then persPack.buildInProgressList = {} end
-                persPack.buildInProgressList[buildID] = buildID
-            end
-
-            if  persPack.buildInProgressList then
-                for buildID,_ in pairs(  persPack.buildInProgressList) do
-                    if buildID and isUnitComplete(builID) == true then
-                        attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
-                        persPack.buildInProgressList[buildID] = nil
-                    end
-                end
+            if buildID and not persPack.ListOfBuildUnits[buildID] then
+                persPack.ListOfBuildUnits[buildID] = buildID
+                attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
             end
         end
 
@@ -1189,13 +1185,13 @@ function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
             persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
         end
 
-persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
+    persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
 
         if persPack.startFrame + 1 < Spring.GetGameFrame() and
             persPack.boolCloakedAtLeastOnce == true and 
             boolUnitIsCloaked == false then
-            --we copy kill the unit here instead of transfering to 
-            --prevent gaia from issuing it commands    
+            --we copy kill the unit here instead of transfering to another team
+            --to prevent script incosistencies    
             copyUnit(persPack.traitorID, persPack.teamToTurnTo)
             Spring.DestroyUnit(persPack.iconID, false, true)
             Spring.DestroyUnit(persPack.traitorID, false, true)
@@ -1210,7 +1206,7 @@ persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsC
         startFrame = Spring.GetGameFrame(),
         teamToTurnTo = teamToTurnTo,
         traitorID = traitorID,
-        heightAbove = GameConfig.doubleAgentHeight,
+        heightAbove = GG.GameConfig.doubleAgentHeight,
         boolRecursive = boolRecursive
     })
 end
@@ -1897,17 +1893,18 @@ end
 function getRandomCultureNames(culture)
 names ={
     arabic = {
-        sur ={
-            "Jalal","Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah","Ahmad","Omran", "Fateha",
-"Nada","Um","Sahar","Khowla","Samad","Faris","Saif","Marwa","Tabarek","Safia","Qassem","Thamer","Nujah",
-    "Najia","Haytham","Arkan","Walid", "Hilal","Manal","Mahroosa","Valentina","Samar","Mohammad","Nadia",
-    "Zeena","Mustafa","Zain","Zainab","Hassan","Ammar","Noor","Wissam","Dr.Ihab","Khairiah","Kamaran","Duaa",
-    "Sa'la","Alaa-eddin","Wadhar","Bashir","Safa","Sena","Rana","Maria","Salma","Lana","Miriam","Lava","Salma",
-    "Mohammed","Said","Shams","Sami","Tareq","Taras","Jose","Vatche","Hanna","James","Nicolas","Edmund","Wael",
-    "Noor","Abdul","Hamsa","Ali","Abu","Rowand","Haithem","Nora","Arkan","Khansa","Muhammed","Rashid","Ghassan",
-    "Arkan","Uday","Dana","Lamiya","Abdullah","Salman","Waleed","Tuamer","Hussein","Sa'aleh","Ghanam","Raeed","Daoud"
+        sur = {
+                "Jalal","Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah","Ahmad","Omran", "Fateha",
+                "Nada","Um","Sahar","Khowla","Samad","Faris","Saif","Marwa","Tabarek","Safia","Qassem","Thamer","Nujah",
+                "Najia","Haytham","Arkan","Walid", "Hilal","Manal","Mahroosa","Valentina","Samar","Mohammad","Nadia",
+                "Zeena","Mustafa","Zain","Zainab","Hassan","Ammar","Noor","Wissam","Dr.Ihab","Khairiah","Kamaran","Duaa",
+                "Sa'la","Alaa-eddin","Wadhar","Bashir","Safa","Sena","Rana","Maria","Salma","Lana","Miriam","Lava","Salma",
+                "Mohammed","Said","Shams","Sami","Tareq","Taras","Jose","Vatche","Hanna","James","Nicolas","Edmund","Wael",
+                "Noor","Abdul","Hamsa","Ali","Abu","Rowand","Haithem","Nora","Arkan","Khansa","Muhammed","Rashid","Ghassan",
+                "Arkan","Uday","Dana","Lamiya","Abdullah","Salman","Waleed","Tuamer","Hussein","Sa'aleh","Ghanam","Raeed","Daoud"
                 },
-        family = {"al Yussuf", "Kamel Radi","al Rahal","al Batayneh","al Ababneh"," al Enezi", "al Serihaine",
+        family = {
+                "al Yussuf", "Kamel Radi","al Rahal","al Batayneh","al Ababneh"," al Enezi", "al Serihaine",
                 "Ghazzi","Abdallah","Aqeel-Khalil","Khalil","Abdel-Fattah","Rabai","El Baur","Abbas","Moussa","Abdel-Wahid", 
                 "Abdel-Ridda","Hussein","Rafi","Daif","Abu Shaker ","Faraj Silo","SaadAllah Matti ","Jarjis ","Bashar Faraj ",
                 " Hussein ","Ahmed ","Kalaf ","Akram Hamoodi "," Akram Hamoodi ","El Abideen Akram Hammodi ",
@@ -1922,8 +1919,42 @@ names ={
             }
     },
     european = {
-        sur ={},
-        family = {}
+        sur = {
+            "Noel","Joel","Mateo","Ergi","Luis","Aron","Samuel","Roan","Roel","Xhoel",
+            "Marc","Eric","Jan"," Daniel","Enzo","Ian"," Pol"," Àlex","Jordi","Martí",
+            "Lukas","Maximilian","Jakob","David","Tobias","Paul","Jonas","Felix","Alexander","Elias",
+            "Lucas","Louis","Noah","Nathan","Adam","Arthur","Mohamed"," Victor","Mathis","Liam",
+            "Nathan","Hugo","Louis","Théo","Ethan","Noah","Lucas","Gabriel"," Arthur","Tom",
+            "Adam","Mohamed"," Rayan","Gabriel"," Anas","David","Lucas","Yanis","Nathan","Ibrahim",
+            "Ahmed","Daris","Amar","Davud","Adin","Hamza","Harun","Vedad","Imran","Tarik",
+            "Luka","David","Ivan","Jakov","Marko","Petar","Filip","Matej","Mateo","Leon",
+            "Jakub","Jan"," Tomáš","David","Adam","Matyáš","Filip","Vojtěch"," Ondřej","Lukáš",
+            "William"," Noah","Oscar","Lucas","Victor","Malthe","Oliver","Alfred","Carl","Valdemar",
+            "Oliver","George","Noah","Arthur","Harry","Leo"," Muhammad","Jack","Charlie","Oscar",
+            "Leo"," Elias","Oliver","Eino","Väinö","Eeli","Noel","Leevi","Onni","Hugo",
+            "Emil","Liam","William"," Oliver","Edvin","Max"," Hugo","Benjamin","Elias","Leo",
+            "Gabriel"," Louis","Raphaël"," Jules","Adam","Lucas","Léo"," Hugo","Arthur","Nathan",
+            "Ben"," Jonas","Leon","Elias","Finn","Noah","Paul","Luis","Lukas",
+            "Leonardo","Francesco","Alessandro","Lorenzo"," Mattia","Andrea","Gabriele","Riccardo","Tommaso","Edoardo",
+            "William"," Oskar","Lucas","Mathias"," Filip","Oliver","Jakob/Jacob"," Emil","Noah","Aksel","Hugo","Daniel",
+            "Martín","Pablo","Alejandro","Lucas","Álvaro","Adrián","Mateo","David",
+            "Amelia","Ajla","Melisa","Amelija"," Klea","Sara","Kejsi","Noemi","Alesia","Leandra",
+            "Anna","Hannah","Sophia","Emma","Marie","Lena","Sarah","Sophie","Laura","Mia",
+            "Emma","Louise","Olivia","Elise","Alice","Juliette","Mila","Lucie","Marie","Camille",
+            "Léa"," Lucie","Emma","Zoé"," Louise","Camille"," Manon","Chloé","Alice","Clara",
+            "Olivia","Amelia","Emily","Isla","Ava"," Jessica"," Isabella","Lily","Ella","Mia",
+            "Aino","Aada","Sofia","Eevi","Olivia","Lilja","Helmi","Ellen","Emilia","Ella",
+            "Emma","Louise","Jade","Alice","Chloé","Lina","Mila","Léa"," Manon","Rose",
+            "Emily","Ella","Grace","Sophie","Olivia","Anna","Amelia","Aoife","Lucy","Ava",
+            "Lucía","Martina"," María","Sofía","Paula","Daniela"," Valeria"," Alba","Julia","Noa",
+            "Mia"," Emma","Elena","Sofia","Lena","Emilia","Lara","Anna","Laura","Mila",
+            "Alice","Lilly","Maja","Elsa","Ella","Alicia","Olivia","Julia","Ebba","Wilma"
+        },
+        family = {
+            "Silva","Garcia","Murphy","Hansen","Johansson","Korhonen","Jensen","De Jong","Peeters","Müller","Rossi","Borg",
+            "Novák","Horvath","Nowak","Kazlauskas","Bērziņš","Ivanov","Zajac","Melnyk","Popa","Nagy","Novak","Horvat","Petrović",
+            "Hodžić","Hoxha","Dimitrov","Milevski","Papadopoulos","Öztürk","Martin","Smith"
+        }
     },
 }
 

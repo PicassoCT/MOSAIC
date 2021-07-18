@@ -33,7 +33,7 @@ So for every event there is only a basic package needed - a function, a persista
 
 if (gadgetHandler:IsSyncedCode()) then
     local Events = {}
-    GG.EventStreamID = 0
+    local EventStreamID = 0
 
     local function DeactivateEvent(self, evtID)
         boolRemovedFunction = false
@@ -52,8 +52,8 @@ if (gadgetHandler:IsSyncedCode()) then
     local function CreateEvent(self, action, persPack, startFrame)
         startFrame = math.max(startFrame, Spring.GetGameFrame())
         --	Spring.Echo("Create event "..(GG.EventStreamID+1).. "waiting for frame  "..startFrame)
-        myID = GG.EventStreamID
-        GG.EventStreamID = GG.EventStreamID + 1
+        myID = EventStreamID
+        EventStreamID = EventStreamID + 1
         self[myID] = {
             id = myID,
             action = action,
@@ -75,18 +75,15 @@ if (gadgetHandler:IsSyncedCode()) then
     if GG.EventStreamDeactivate == nil then GG.EventStreamDeactivate = {} end
 
     function gadget:GameFrame(frame)
-
         if Events[frame] then
             for i = 1, #Events[frame] do
-                evtID = Events[frame][i]
+               local evtID = Events[frame][i]
 
                 if GG.EventStream[evtID] then
                     nextFrame, GG.EventStream[evtID].persPack =
                         GG.EventStream[evtID].action(evtID, frame,
-                                                     GG.EventStream[evtID]
-                                                         .persPack,
-                                                     GG.EventStream[evtID]
-                                                         .startFrame)
+                                                     GG.EventStream[evtID].persPack,
+                                                     GG.EventStream[evtID].startFrame)
 
                     if nextFrame then
                         if not Events[nextFrame] then

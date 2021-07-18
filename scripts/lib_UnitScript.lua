@@ -1344,6 +1344,7 @@ function moveUnitToUnit(id, target, ox, oy, oz)
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z = Spring.GetUnitPosition(target)
     if x then
+        assert(id)
         Spring.SetUnitPosition(id, x + ox, y + oy, z + oz)
         return true
     end
@@ -1763,23 +1764,26 @@ function isUnitComplete(id)
 end
 
 function waitTillComplete(id)
+    local spGetUnitHealth = Spring.GetUnitHealth
     if not id then return false end
     if doesUnitExistAlive(id) == false then return false end
-    hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
+
+    hp, mHp, pD, cP, buildProgress = spGetUnitHealth(id)
+
     Sleep(1)
     repeat
-        hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
-        Sleep(500)
+        hp, mHp, pD, cP, buildProgress = spGetUnitHealth(id)
+        Sleep(50)
     until buildProgress or doesUnitExistAlive(id) == false
 
     if doesUnitExistAlive(id) == false then return false end
 
     while buildProgress and buildProgress < 1.0 do
         if doesUnitExistAlive(id) == false then return false end
-        hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
+        hp, mHp, pD, cP, buildProgress = spGetUnitHealth(id)
 
         if not buildProgress then return false end
-        Sleep(500)
+        Sleep(50)
     end
 
     return doesUnitExistAlive(id)

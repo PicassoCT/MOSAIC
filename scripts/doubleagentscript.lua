@@ -27,7 +27,7 @@ end
 
 function animation()
     while true do
-        axisDice = math.random(1,3)
+        axisDice = 1
         Movementsize = 250
         WMove(one, axisDice, Movementsize, Movementsize)
         WMove(other, axisDice, -1*Movementsize, Movementsize)

@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 boolSafeHouseActive = false
 GameConfig = getGameConfig()
-safeHouseID = nil
+containingHouseID = nil
 
 gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitDefID = Spring.GetUnitDefID
@@ -63,50 +63,17 @@ function killDelayed()
     destroyUnitConditional(unitID, false, true)
 end
 
-
-function createDoubleAgentEventStream(houseID, doubleAgentTeamDefID, traitorID)
-    echo("Attaching double-agent to".. houseID)
-    turnEveryoneDoubleAgentEventStream = function(houseID, doubleAgentTeamDefID, traitorID)
-
-            doubleAgentFunction = function(persPack)
-                -- check house is still existing
-                if false == doesUnitExistAlive(persPack.houseID) then
-                    return true
-                end
-
-                -- if the safehouse ceased to be
-                if false == doesUnitExistAlive(persPack.traitorID) then
-                    return true
-                end
-
-                if not persPack.boolSafeHouseHasDoubleAgentAttached then
-                   persPack.boolSafeHouseHasDoubleAgentAttached = true 
-                   attachDoubleAgentToUnit(persPack.traitorID ,persPack.doubleAgentTeam, true)
-                end
-
-                return false, persPack
-            end
-
-            createStreamEvent(unitID, turnEveryoneDoubleAgentEventStream, 23, {
-                houseID = houseID,
-                traitorID = traitorID,
-                doubleAgentTeam = doubleAgentTeamDefID,
-                safeHouseUpgradeTypeTable = safeHouseUpgradeTypeTable
-            })
-        end
-end
-
 function houseAttach()
     Sleep(GameConfig.safeHouseLiftimeUnattached)
     checkPreExistingKill(unitID, unitID)
     waitTillComplete(unitID)
-    -- Spring.Echo("Safehouse completed")
+
     boolJustOnce = false
     T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
-                function(id) -- filter out all the safe houses
-                    if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) ==
-                        gaiaTeamID then return id end
-                    end, 
+    function(id) -- filter out all the safe houses
+        if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) ==
+            gaiaTeamID then return id end
+        end, 
     function(houseID)
         if boolJustOnce == true then return end
 
@@ -121,22 +88,23 @@ function houseAttach()
 
         -- if a previous safehouse is attached
         if GG.houseHasSafeHouseTable[houseID] and
-            echo("Create DoubleAgent Event Stream")
             doesUnitExistAlive(GG.houseHasSafeHouseTable[houseID]) and
             isUnitComplete(GG.houseHasSafeHouseTable[houseID]) then
             boolJustOnce = true
+            echo("Create DoubleAgent Event Stream")
 
             -- destroy the previous created safehouse
             enemyTeamID = Spring.GetUnitTeam(GG.houseHasSafeHouseTable[houseID])
             Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
 
             -- Turn everything that comes out of this safehouse into a double agent
-            createDoubleAgentEventStream(houseID, enemyTeamID, unitID)
+            attachDoubleAgentToUnit(unitID ,enemyTeamID, true)
         end
 
         if boolJustOnce == true then
-            echo("Create DoubleAgent Event Stream")
-            safeHouseID = houseID
+            echo("Attach House and make mortally dependent")
+            containingHouseID = houseID
+
             GG.houseHasSafeHouseTable[houseID] = unitID
             StartThread(mortallyDependant, unitID, houseID, 250, false, true)
             moveUnitToUnit(unitID, houseID)
@@ -146,8 +114,9 @@ function houseAttach()
     end)
 end
 
-safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs,
-                                                     Spring.GetUnitDefID(unitID))
+local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefID(unitID))
+local safeHouseTypes = getSafeHouseTypeTable(UnitDefs)
+local houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
 
 function checkPreExistingKill(toKillId, notID)
  OtherUpgradeTypesAliveAtLocation =process(
@@ -186,10 +155,10 @@ function detectUpgrade()
                     if waitTillComplete(buildID) == true then
             
                     --echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
-                    GG.houseHasSafeHouseTable[safeHouseID] = buildID
-                    moveUnitToUnit(buildID, safeHouseID)
+                    GG.houseHasSafeHouseTable[containingHouseID] = buildID
+                    moveUnitToUnit(buildID, containingHouseID)
                    -- boolDoneFor = true
-                     Spring.UnitAttach(safeHouseID, buildID, getUnitPieceByName(safeHouseID, GameConfig.safeHousePieceName))
+                     Spring.UnitAttach(containingHouseID, buildID, getUnitPieceByName(containingHouseID, GameConfig.safeHousePieceName))
                     --Spring.Echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID, false, true)
                     end
@@ -212,7 +181,7 @@ function script.Activate()
 end
 
 function script.Deactivate()
-    -- if not safeHouseID then return 0 end
+    -- if not containingHouseID then return 0 end
     SetUnitValue(COB.YARD_OPEN, 0)
     SetUnitValue(COB.INBUILDSTANCE, 0)
     SetUnitValue(COB.BUGGER_OFF, 0)
@@ -240,8 +209,6 @@ function showHideIcon(boolCloaked)
     end
 end
 
-safeHouseTypes = getSafeHouseTypeTable(UnitDefs)
-houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
 
 function drawMapRoom()
     Sleep(100)
@@ -296,6 +263,5 @@ function drawMapRoom()
             end
         end
     end
-
 end
 
