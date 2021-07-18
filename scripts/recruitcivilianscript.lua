@@ -81,7 +81,7 @@ function recruiteLoop()
             x, y, z = spGetUnitPosition(id)
 
             if TruckTypeTable[recruitedDefID] then
-                echo("Recruited truck")
+               -- echo("Recruited truck")
                 ad = copyUnit(id, teamID, fatherID)
                 consumeAvailableRessourceUnit(unitID, "metal",
                                               GameConfig.costs.RecruitingTruck)
@@ -90,14 +90,14 @@ function recruiteLoop()
             end
 
             if isNormalCivilian(id, recruitedDefID) == true then
-                echo("Recruited normal civilian")
+                --echo("Recruited normal civilian")
                 recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
                 spDestroyUnit(id, false, true)
                 endIcon()
             end
 
             if recruitedDefID == civilianAgentDefID then
-                echo("Recruited civilian agent")
+                --echo("Recruited civilian agent")
                 oldTeam = Spring.GetUnitTeam(id)
                 ad = copyUnit(id, teamID)
                 attachDoubleAgentToUnit(ad, oldTeam)
@@ -106,7 +106,7 @@ function recruiteLoop()
             end
 
             if operativeTypeTable[recruitedDefID] then
-                echo("Recruited operative")
+                --echo("Recruited operative")
                 ad = recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
                 attachDoubleAgentToUnit(ad, Spring.GetUnitTeam(id))
                 beamOperativeToNearestHouse(id)

@@ -91,7 +91,7 @@ function houseAttach()
             doesUnitExistAlive(GG.houseHasSafeHouseTable[houseID]) and
             isUnitComplete(GG.houseHasSafeHouseTable[houseID]) then
             boolJustOnce = true
-            echo("Create DoubleAgent Event Stream")
+           -- echo("Create DoubleAgent Event Stream")
 
             -- destroy the previous created safehouse
             enemyTeamID = Spring.GetUnitTeam(GG.houseHasSafeHouseTable[houseID])
@@ -102,7 +102,7 @@ function houseAttach()
         end
 
         if boolJustOnce == true then
-            echo("Attach House and make mortally dependent")
+           -- echo("Attach House and make mortally dependent")
             containingHouseID = houseID
 
             GG.houseHasSafeHouseTable[houseID] = unitID

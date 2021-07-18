@@ -215,7 +215,7 @@ function speedMonitoring()
                 else
                     if runningTimeInMS >= ((GameConfig.assetMaxRunTimeInSeconds*1000)) then
                         boolRunningTimeOut = false
-                        echo("Running Timeout false")
+                      --  echo("Running Timeout false")
                     end
                     setSpeedEnvCached(unitID, speedWalking)
                 end

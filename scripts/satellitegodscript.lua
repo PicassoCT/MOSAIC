@@ -48,7 +48,7 @@ function script.QueryWeapon1() return GodRod end
 
 function script.AimWeapon1(Heading, pitch)
     boolCanAim = (NumberOfRods > 0)
-    Spring.Echo("AimWeapon1 Sat GodRod".. toString(boolCanAim))
+   -- Spring.Echo("AimWeapon1 Sat GodRod".. toString(boolCanAim))
 
     return boolCanAim
 end

@@ -11,11 +11,6 @@ one = piece "One"
 other = piece "Other"
 Rotor = piece "Rotor"
 
-if not center then
-    echo("Unit of type" .. UnitDefs[Spring.GetUnitDefID(unitID)].name ..
-             " has no center")
-end
-
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(animation)
@@ -28,7 +23,7 @@ end
 function animation()
     while true do
         axisDice = 1
-        Movementsize = 250
+        Movementsize = 512
         WMove(one, axisDice, Movementsize, Movementsize)
         WMove(other, axisDice, -1*Movementsize, Movementsize)
         Sleep(500)

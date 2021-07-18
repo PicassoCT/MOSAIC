@@ -411,7 +411,7 @@ function startAerosolBehaviour(extAerosolStateToSet)
 end
 
 function aeroSolStateBehaviour()
-    Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
+ --   Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
     influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
