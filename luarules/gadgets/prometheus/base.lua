@@ -751,7 +751,7 @@ function BaseMgr.GameFrame(f)
             checkFactoryWaitingState(u, is_waiting[u] == true)
             if #q == 0 then
                 local udef = GetUnitDefID(u)
-                if udef and UnitDefs[udefID] then
+                if udef and UnitDefs[udef] then
                     Log("Factory " .. UnitDefs[GetUnitDefID(u)].name .. " hanged...")
                 end
                 IdleFactory(u)
