@@ -1,5 +1,5 @@
 model = {
-	radius = 25.0,
+	radius = 10.0,
 	height = 40,
 	--tex1 = "Jeffy_Diffuse+TeamColor.dds",
 	tex1 = "component_atlas_diffuse.dds",
