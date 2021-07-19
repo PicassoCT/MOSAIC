@@ -69,7 +69,7 @@ onLastPointBeforeImpactSetTargetTo = {
                                                 teamID = Spring.GetUnitTeam(id)
                                                 defID = Spring.GetUnitDefID(id)
 
-                                                if teamID == gaiaTeamID and TruckTypeTable[defID] then
+                                                if  TruckTypeTable[defID] then
                                                     collateralTable[#collateralTable+1] = id
                                                     return
                                                 end
@@ -87,7 +87,7 @@ onLastPointBeforeImpactSetTargetTo = {
                                                 end
                                             end)
 
-                    v = {x=0, y= 1, z= 0}
+                    v = {x=0, y= 100, z= 0}
 
                     for i = 1, 6 do
                         javelinProjID = Spring.SpawnProjectile(WeaponDefNames["javelinrocket"].id, {
@@ -104,7 +104,7 @@ onLastPointBeforeImpactSetTargetTo = {
                             ttl = 30 * 30,
                             error = {0, 5, 0},
                             maxRange = 1200,
-                            trajectoryHeight = 2,
+                            trajectoryHeight = 150,
                             gravity = Game.gravity,
                             startAlpha = 1,
                             endAlpha = 1,

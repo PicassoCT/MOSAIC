@@ -2,7 +2,7 @@ function gadget:GetInfo()
     return {
         name = "RocketSience with projectiles",
         desc = "SetProjectileTarget etc",
-        author = "the one, the only, the awesomek norke",
+        author = "the one, the only, the awesome knorke",
         date = "Mar 2014",
         license = "later horses dont be mean.",
         layer = 0,
@@ -19,8 +19,7 @@ function gadget:GameFrame(frame)
     if redirectProjectiles[frame] then
         for projectileID, _ in pairs(redirectProjectiles[frame]) do
             if (spGetProjectileType(projectileID)) then
-                setTargetTable(projectileID,
-                               redirectProjectiles[frame][projectileID])
+                setTargetTable(projectileID, redirectProjectiles[frame][projectileID])
             end
         end
         redirectProjectiles[frame] = nil

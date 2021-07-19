@@ -8,7 +8,7 @@ local grafitiMessages =  include('grafitiMessages.lua')
 
 function getScriptName() return "house_europe_script.lua::" end
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
@@ -54,9 +54,9 @@ if geoHash % 3 == 1 then decoChances = supriseChances end
 centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
 ToShowTable = {}
 
-_x_axis = 1
-_y_axis = 2
-_z_axis = 3
+local _x_axis = 1
+local _y_axis = 2
+local _z_axis = 3
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 

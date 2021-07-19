@@ -82,19 +82,15 @@ function createCorpseCUnitGeneric(recentDamage)
 end
 
 function createTankCorpse(unitID, recentDamage, turretRotation)
-
     if recentDamage == nil or recentDamage > 1 then
         if not GG.WreckageTurretTankRotation then  GG.WreckageTurretTankRotation = {} end
         
-        -- This script spawns the rubbleHeap. If you too drunk to understad, just copy and paste into the Killed function
         spx, spy, spz = Spring.GetUnitPosition(unitID)
-        -- teamID=Spring.GetUnitTeam(unitID)
         teamID = Spring.GetGaiaTeamID()
         dirx, diry, dirz = Spring.GetUnitDirection(unitID)
 
-        heapID = Spring.CreateUnit("VehicleCorpse", spx, spy, spz, 1, teamID)
+        heapID = Spring.CreateUnit("tankcorpse", spx, spy, spz, 1, teamID)
         GG.WreckageTurretTankRotation[heapID] = turretRotation
         Spring.SetUnitDirection(heapID, dirx, diry, dirz)
-        -- Spring.SetUnitNeutral(heapID, true)
     end
 end

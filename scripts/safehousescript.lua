@@ -4,24 +4,24 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 boolSafeHouseActive = false
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 containingHouseID = nil
 
-gaiaTeamID = Spring.GetGaiaTeamID()
+local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
-myDefID = spGetUnitDefID(unitID)
-myTeamID = Spring.GetUnitTeam(unitID)
+local myDefID = spGetUnitDefID(unitID)
+local myTeamID = Spring.GetUnitTeam(unitID)
 local spGetUnitPosition = Spring.GetUnitPosition
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
-safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 
 
-safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
+local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
@@ -97,8 +97,13 @@ function houseAttach()
             enemyTeamID = Spring.GetUnitTeam(GG.houseHasSafeHouseTable[houseID])
             Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
 
-            -- Turn everything that comes out of this safehouse into a double agent
-            attachDoubleAgentToUnit(unitID ,enemyTeamID, true)
+            -- Turn everything that comes out of this safehouse into a double agent - if the overbuilt unit is safehouse
+
+            if safeHouseTypeTable[spGetUnitDefID(GG.houseHasSafeHouseTable[houseID])] then
+                attachDoubleAgentToUnit(unitID ,enemyTeamID, true)
+            else
+                attachDoubleAgentToUnit(unitID ,enemyTeamID, false)
+            end
         end
 
         if boolJustOnce == true then

@@ -16,7 +16,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	buildCostEnergy = 150,
 	buildTime = 45,
 	--Health
-	maxDamage = 50,
+	maxDamage = 250,
 	idleAutoHeal = 0,
 	--Movement
 	Acceleration = 0.5,
@@ -34,10 +34,10 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	MovementClass = "Default2x2",
 	TurnRate = 450,
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 1024+128,
+	sightDistance = 1024 + 128,
 	CanFly   = true,
-	activateWhenBuilt   	= true,
-	MaxSlope 					= 75,
+	activateWhenBuilt = true,
+	MaxSlope  = 75,
 
 	--canHover=true,
 	CanAttack = true,
@@ -45,9 +45,10 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	CanMove = true,
 	CanPatrol = true,
 	Canstop  = true,
+
 	onOffable = false,
 	LeaveTracks = false, 
-	cruiseAlt= 15,
+	cruiseAlt= 5,
 
 	ActivateWhenBuilt=1,
 	maxBank=0.4,

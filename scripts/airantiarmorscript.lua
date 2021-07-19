@@ -48,6 +48,7 @@ function script.StartMoving()
     for i=1,4 do
         reset(TablesOfPiecesGroups["Scoutlett"][i], 44000)
     end
+     Spring.SetUnitCloak(unitID, false)
 end
 
 boolRestart = true
@@ -80,9 +81,13 @@ function script.StopMoving()
     stopSpinT(TablesOfPiecesGroups["uprotor"], y_axis, 1)
     stopSpinT(TablesOfPiecesGroups["lowrotor"], y_axis, 1)
     StartThread(detachScouletts)
+
 end
 
 function script.Activate() return 1 end
 
-function script.Deactivate() return 0 end
+function script.Deactivate() 
+ Spring.SetUnitCloak(unitID, true, true , 25)
+    return 0 
+end
 
