@@ -31,24 +31,24 @@ function script.Create()
     StartThread(droneDefense)
     -- StartThread(debugAimLoop, 5000, 0)
     -- StartThread(debugAimLoop, 5000, 1)
---    StartThread(printOutWeapon, "machinegun")
+    -- StartThread(printOutWeapon, "machinegun")
 end
-function playDroneInterceptAnimation(projectiles, timeTotal, maxIntercept)
-    x,y,z = Spring.GetUnitPosition(unitID)
+function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
+    x, y, z = Spring.GetUnitPosition(unitID)
 
     intercepted = math.ceil(math.min(#projectiles, maxIntercept))
-    timePerProjectile = timeTotal/intercepted
+    timePerProjectile = timeTotal / intercepted
     StartThread(fireFlowers, intercepted)
-    for i= 1, #projectiles do
-        px, py, pz = Spring.GetProjectilePosition ( projectiles[i] ) 
+    for i = 1, #projectiles do
+        px, py, pz = Spring.GetProjectilePosition (projectiles[i])
         if px then
-            intercepted = intercepted -1
+            intercepted = intercepted - 1
             goalRad = convPointsToRad(x, z, px, pz)
-            turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad),0, false)
+            turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
             WaitForTurns(center)
             lastValueHeadingRad = goalRad
             EmitSfx(firingFrom, 1025)
-            Spring.DeleteProjectile ( projectiles[i] ) 
+            Spring.DeleteProjectile (projectiles[i])
             Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
             if intercepted == 0 then return end
         end
@@ -59,7 +59,7 @@ function droneDefense()
     local droneInterceptDistance = GameConfig.groundTurretDroneInterceptRate
     local spGetProjectileTeamID = Spring.GetProjectileTeamID
     local myTeamID = Spring.GetUnitTeam(unitID)
-    local smartminedroneDefID
+    local InterceptedProjectileTypes = sgetGroundTurretMGInterceptableProjectileTypes(Weapondefs)
     for id, def in pairs(WeaponDefs) do
         if def.name == "smartminedrone" then
             smartminedroneDefID = id
@@ -71,7 +71,7 @@ function droneDefense()
     while true do
         Sleep(250)
         if hasNoActiveAttackCommand(unitID) == true then
-projectilesToIntercept = process(getProjectilesAroundUnit(unitID, droneInterceptDistance),
+            projectilesToIntercept = process(getProjectilesAroundUnit(unitID, droneInterceptDistance),
                 function(id)
                     teamID = spGetProjectileTeamID(id)
                     if teamID and teamID ~= myTeamID then
@@ -79,22 +79,21 @@ projectilesToIntercept = process(getProjectilesAroundUnit(unitID, droneIntercept
                     end
                 end,
                 function (id)
-                    weaponDef = Spring.GetProjectileDefID(id) 
-                    if weaponDef and weaponDef == smartminedroneDefID then 
+                    weaponDef = Spring.GetProjectileDefID(id)
+                    if weaponDef and InterceptedProjectileTypes[weaponDef] then
                         return id
                     end
                 end
-                )
+            )
 
             if projectilesToIntercept and #projectilesToIntercept > 0 then
-                    boolDroneInterceptSaturated = true
-                    StartThread(playDroneInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond/2)
-                    Sleep(500)
-                    boolDroneInterceptSaturated = false
+                boolDroneInterceptSaturated = true
+                StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
+                Sleep(500)
+                boolDroneInterceptSaturated = false
             end
         end
     end
-
 
 end
 
@@ -151,8 +150,7 @@ currentDeg = {
     [1] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
     [2] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
     [3] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0},
-    [4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}
-}
+[4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}}
 
 function turnFeedToGround(nr)
     axis = y_axis
@@ -168,7 +166,7 @@ function turnFeedToGround(nr)
         currentDeg[nr].val = currentDeg[nr].val + direction
     end
     Turn(TablesOfPiecesGroups["UpLeg"][nr], axis,
-         math.rad(currentDeg[nr].val), math.pi)
+    math.rad(currentDeg[nr].val), math.pi)
 
     -- check for directional change
     if direction ~= currentDeg[nr].lastDir then
@@ -182,7 +180,7 @@ end
 function isDone()
     boolDone = true
     for i = 1, 4 do boolDone = boolDone and currentDeg[i].countSwitches > 2 end
-    return boolDone
+return boolDone
 end
 
 function setNotDone()
@@ -200,12 +198,12 @@ function unfold()
         for i = 1, 2 do
             turnFeedToGround(i)
             Turn(TablesOfPiecesGroups["LowLeg"][i], x_axis, math.rad(-90),
-                 math.pi)
+            math.pi)
         end
         for i = 3, 4 do
             turnFeedToGround(i)
             Turn(TablesOfPiecesGroups["LowLeg"][i], x_axis, math.rad(90),
-                 math.pi)
+            math.pi)
         end
         WaitForTurns(TablesOfPiecesGroups["LowLeg"])
         WaitForTurns(TablesOfPiecesGroups["UpLeg"])
@@ -216,8 +214,8 @@ end
 function fold()
     WaitForTurns(TablesOfPiecesGroups["UpLeg"])
     for i = 1, 4 do
-        reset(TablesOfPiecesGroups["UpLeg"][i], 2* math.pi)
-        reset(TablesOfPiecesGroups["LowLeg"][i],2*math.pi)
+        reset(TablesOfPiecesGroups["UpLeg"][i], 2 * math.pi)
+        reset(TablesOfPiecesGroups["LowLeg"][i], 2 * math.pi)
     end
 
     WaitForTurns(TablesOfPiecesGroups["LowLeg"])
@@ -245,7 +243,7 @@ function script.AimWeapon1(Heading, pitch)
     -- aiming animation: instantly turn the gun towards the enemy
     boolGroundAiming = true
     Turn(center, y_axis, Heading, math.pi)
-    lastValueHeadingRad= Heading
+    lastValueHeadingRad = Heading
     Turn(Turret, x_axis, -pitch, math.pi)
     WaitForTurns(center, Turret)
     boolGroundAiming = false
@@ -255,7 +253,7 @@ end
 function script.FireWeapon1()
     StartThread(fireFlowers, 15)
     StartThread(PlaySoundByUnitDefID, myDefID,
-                "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 1)
+    "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 1)
     boolGroundAiming = false
     StartThread(guardSwivelTurret)
     return true
@@ -281,13 +279,13 @@ end
 function script.FireWeapon2()
     StartThread(fireFlowers, 15)
     StartThread(PlaySoundByUnitDefID, myDefID,
-                "sounds/weapons/machinegun/salvo2.ogg", 1.0, 5000, 1)
+    "sounds/weapons/machinegun/salvo2.ogg", 1.0, 5000, 1)
     StartThread(guardSwivelTurret)
     return true
 end
 
 function fireFlowers(itterations)
-    for i=1,itterations do
+    for i = 1, itterations do
         EmitSfx(firingFrom, 1025)
         Sleep(120)
     end

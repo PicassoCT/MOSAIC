@@ -1,12 +1,12 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.75   
+unitFactor = 0.75
 
 function getGameConfig()
     return {
         instance = {
             culture = "arabic", -- "international", "western", "asia"
-            Version = "Alpha: 0.765" 
+            Version = "Alpha: 0.765"
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -33,8 +33,7 @@ function getGameConfig()
         SnipeMiniGame = {
 
             Aggressor = {StartPoints = 4},
-            Defender = {StartPoints = 4}
-        },
+        Defender = {StartPoints = 4}},
 
         -- ObjectiveRewardRate
 
@@ -75,19 +74,19 @@ function getGameConfig()
         -- all buildings
         buildingLiftimeUnattached = 10000,
 
-        -- propagandaserver 
+        -- propagandaserver
         propandaServerFactor = 0.1,
 
         --cybercrime
         RewardCyberCrime = 300,
-        rewardWaitTimeCyberCrimeSeconds= 30,
+        rewardWaitTimeCyberCrimeSeconds = 30,
 
         --groundTurretDroneProjectileIntercept
         groundTurretDroneInterceptRate = 256,
         groundTurretDroneMaxInterceptPerSecond = 7,
 
-		--Parachute
-		parachuteHeight = 150,
+        --Parachute
+        parachuteHeight = 150,
         -- doubleAgentHeight
         doubleAgentHeight = 64,
 
@@ -105,19 +104,19 @@ function getGameConfig()
         OperativeDropHeigthOffset = 900,
 
         --motorBike
-        motorBikeSurvivalStandaloneMS = 15*1000,
+        motorBikeSurvivalStandaloneMS = 15 * 1000,
 
         -- checkpoint
         checkPointRevealRange = 125,
         checkPointPropagandaCost = 75,
 
         raid = {
-                maxTimeToWait = 3 * 60 * 1000, 
-                maxRoundLength = 20 * 1000,
-                interrogationPropagandaPrice = 50
-            },
+            maxTimeToWait = 3 * 60 * 1000,
+            maxRoundLength = 20 * 1000,
+            interrogationPropagandaPrice = 50
+        },
 
-        warzoneValueNormalized= 0.25,
+        warzoneValueNormalized = 0.25,
         -- asset
         assetCloakedSpeedReduction = 0.175,
         assetSpeedRunning = 1.0,
@@ -145,7 +144,7 @@ function getGameConfig()
             gameover = "gameover",
             pacification = "pacification"
         },
-        anarchySexCouplesEveryNSeconds = 3*60,
+        anarchySexCouplesEveryNSeconds = 3 * 60,
 
         TimeForInterceptionInFrames = 30 * 10,
         TimeForPanicSpreadInFrames = 15 * 30,
@@ -153,7 +152,7 @@ function getGameConfig()
         TimeForScrapHeapDisappearanceInMs = 3 * 60 * 30, -- 3 Minutes off line
 
         costs = {
-        DestroyedHousePropanda = 5000,
+            DestroyedHousePropanda = 5000,
         RecruitingTruck = 500},
 
         -- startenergymetal
@@ -170,7 +169,7 @@ function getGameConfig()
         SatelliteShrapnellLifeTime = 2 * 60 * 1000,
         SatelliteShrapnellDamagePerSecond = 1000,
         SatelliteUploadTimesMs = 8000,
-        LifeTimeBribeIcon = 60 *1000,
+        LifeTimeBribeIcon = 60 * 1000,
 
         -- Hiveminds & AiCores
         integrationRadius = 75,
@@ -182,7 +181,7 @@ function getGameConfig()
             sprayRange = 250,
             orgyanyl = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000, -- 2mins
-                VictimLifetime = 1*60 *1000
+                VictimLifetime = 1 * 60 * 1000
             },
             wanderlost = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
@@ -197,1766 +196,1757 @@ function getGameConfig()
                 VictimLiftime = 3 * 60 * 1000
             } -- 2mins
 
+        }}
+    end
+
+    GG.GameConfig = getGameConfig()
+    _G.GameConfig = getGameConfig()
+    -- ===================================================================================================================
+    function getCultureName()
+        GameConfig = getGameConfig()
+        return GameConfig.instance.culture
+    end
+    -- ===================================================================================================================
+    function getChemTrailTypes()
+        return {
+            ["orgyanyl"] = "orgyanyl",
+            ["wanderlost"] = "wanderlost",
+            ["tollwutox"] = "tollwutox",
+            ["depressol"] = "depressol"
         }
-    }
-end
+    end
 
-GG.GameConfig = getGameConfig()
-_G.GameConfig = getGameConfig()
--- ===================================================================================================================
-function getCultureName()
-    GameConfig = getGameConfig()
-    return GameConfig.instance.culture
-end
--- ===================================================================================================================
-function getChemTrailTypes()
-    return {
-        ["orgyanyl"] = "orgyanyl",
-        ["wanderlost"] = "wanderlost",
-        ["tollwutox"] = "tollwutox",
-        ["depressol"] = "depressol"
-    }
-end
+    function getChemTrailInfluencedTypes(UnitDefs)
+        assert(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
 
-function getChemTrailInfluencedTypes(UnitDefs)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
+        typeTable = {"civilianagent"}
+        typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
+        "civilian", UnitDefs))
 
-    typeTable = {"civilianagent"}
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
-                                                            "civilian", UnitDefs))
+        return getTypeTable(UnitDefNames, typeTable)
+    end
 
-    return getTypeTable(UnitDefNames, typeTable)
-end
+    function getScrapheapTypeTable(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {[UnitDefNames["gcscrapheap"].id] = UnitDefNames["gcscrapheap"].id}
+    end
 
-function getScrapheapTypeTable(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {[UnitDefNames["gcscrapheap"].id] = UnitDefNames["gcscrapheap"].id}
-end
+    function getPoliceTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["policetruck"].id] = true,
+            [UnitDefNames["ground_tank_night"].id] = true
+        }
+    end
 
-function getPoliceTypes(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {
-        [UnitDefNames["policetruck"].id] = true,
-        [UnitDefNames["ground_tank_night"].id] = true
-    }
-end
+    function getTurnCoatFactoryType(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["assembly"].id] = true,
+            [UnitDefNames["nimrod"].id] = true
+        }
+    end
 
-function getTurnCoatFactoryType(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {
-        [UnitDefNames["assembly"].id] = true,
-        [UnitDefNames["nimrod"].id] = true
-    }
-end
+    function getObjectiveTypes(UnitDefs)
+        assert(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["objective_refugeegyland"].id] = "water",
+            [UnitDefNames["objective_factoryship"].id] = "water",
+            [UnitDefNames["objective_refugeecamp"].id] = "land",
+            [UnitDefNames["objective_powerplant"].id] = "land",
+            [UnitDefNames["objective_geoengineering"].id] = "land",
+            [UnitDefNames["objective_westhemhq"].id] = "land",
+            [UnitDefNames["objective_artificialglacier"].id] = "land",
+            [UnitDefNames["objective_combatoutpost"].id] = "land",
+            [UnitDefNames["objective_transrapid"].id] = "land"
+        }
+    end
 
-function getObjectiveTypes(UnitDefs)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {
-        [UnitDefNames["objective_refugeegyland"].id] = "water",
-        [UnitDefNames["objective_factoryship"].id] = "water",
-        [UnitDefNames["objective_refugeecamp"].id] = "land",
-        [UnitDefNames["objective_powerplant"].id] = "land",
-        [UnitDefNames["objective_geoengineering"].id] = "land",
-        [UnitDefNames["objective_westhemhq"].id] = "land",
-        [UnitDefNames["objective_artificialglacier"].id] = "land",
-        [UnitDefNames["objective_combatoutpost"].id] = "land",
-        [UnitDefNames["objective_transrapid"].id] = "land"
-    }
-end
+    function getIconTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["raidicon"].id] = true,
+            [UnitDefNames["doubleagent"].id] = true,
+            [UnitDefNames["interrogationicon"].id] = true,
+            [UnitDefNames["recruitcivilian"].id] = true,
+            [UnitDefNames["bribeicon"].id] = true,
+            [UnitDefNames["cybercrimeicon"].id] = true
+        }
+    end
 
-function getIconTypes(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    return {
-        [UnitDefNames["raidicon"].id] = true,
-        [UnitDefNames["doubleagent"].id] = true,
-        [UnitDefNames["interrogationicon"].id] = true,
-        [UnitDefNames["recruitcivilian"].id] = true,
-        [UnitDefNames["bribeicon"].id] = true,
-        [UnitDefNames["cybercrimeicon"].id] = true
-    }
-end
+    -- Mosaic specific functions
+    -- > creates a table from names to check unittypes against
+    function getUnitDefNames(UnitDefs)
+        local UnitDefNames = {}
+        if UnitDefs == nil then return nil end
 
--- Mosaic specific functions 
--- > creates a table from names to check unittypes against
-function getUnitDefNames(UnitDefs)
-    local UnitDefNames = {}
-    if UnitDefs == nil then return nil end
+        for defID, v in pairs(UnitDefs) do UnitDefNames[v.name] = v end
+return UnitDefNames
+    end
 
-    for defID, v in pairs(UnitDefs) do UnitDefNames[v.name] = v end
-    return UnitDefNames
-end
-
-function getTypeTable(UnitDefNames, StringTable)
-    local Stringtable = StringTable
-    retVal = {}
-    for i = 1, #Stringtable do
-        if not UnitDefNames[Stringtable[i]] then
-            Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] ..
-                            " does not exists")
-        else
-            retVal[UnitDefNames[Stringtable[i]].id] = true
+    function getTypeTable(UnitDefNames, StringTable)
+        local Stringtable = StringTable
+        retVal = {}
+        for i = 1, #Stringtable do
+            if not UnitDefNames[Stringtable[i]] then
+                Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] ..
+                " does not exists")
+            else
+                retVal[UnitDefNames[Stringtable[i]].id] = true
+            end
         end
+        return retVal
     end
-    return retVal
-end
 
-function getAerosolUnitDefIDs(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    AerosolTypes = getChemTrailTypes()
-    return {
-        [UnitDefNames["air_copter_aerosol_orgyanyl"].id] = AerosolTypes.orgyanyl,
-        [UnitDefNames["air_copter_aerosol_wanderlost"].id] = AerosolTypes.wanderlost,
-        [UnitDefNames["air_copter_aerosol_tollwutox"].id] = AerosolTypes.tollwutox,
-        [UnitDefNames["air_copter_aerosol_depressol"].id] = AerosolTypes.depressol
-    }
-end
-
-function getWeaponTypeTable(WeaponDefNames, StringTable)
-    local Stringtable = StringTable
-    retVal = {}
-    for i = 1, #Stringtable do
-        assert(WeaponDefNames[Stringtable[i]],
-               "Error: Weapondef of Weapontype " .. Stringtable[i] ..
-                   " does not exists")
-        retVal[WeaponDefNames[Stringtable[i]].id] = true
+    function getAerosolUnitDefIDs(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        AerosolTypes = getChemTrailTypes()
+        return {
+            [UnitDefNames["air_copter_aerosol_orgyanyl"].id] = AerosolTypes.orgyanyl,
+            [UnitDefNames["air_copter_aerosol_wanderlost"].id] = AerosolTypes.wanderlost,
+            [UnitDefNames["air_copter_aerosol_tollwutox"].id] = AerosolTypes.tollwutox,
+            [UnitDefNames["air_copter_aerosol_depressol"].id] = AerosolTypes.depressol
+        }
     end
-    return retVal
-end
 
-function getSatteliteTypes(UnitDefs)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "satelliteanti", "satellitescan", "satellitegodrod",
-        "satelliteshrapnell"
-    }
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    if culture == "arabic" then
-      typeTable = {
-            "truck_arab0", 
-            "truck_arab1", 
-            "truck_arab2",
-            "truck_arab3",
-            "truck_arab4",
-            "truck_arab5"
-        }
-      return getTypeTable(UnitDefNames, typeTable)
-    else
-        assert(true == false)
-    end
-end
-
-function getMotorBikeLoadableTypes(UnitDefs)
-     assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-      typeTable = {
-            "operativeasset", 
-            "operativepropagator", 
-            "operativeinvestigator"
-        }
-      return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getMotorBikeTypeTable(UnitDefs)
-         assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-      typeTable = {
-            "motorbike"
-        }
-      return getTypeTable(UnitDefNames, typeTable)
-  end
-
-function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    if culture == "arabic" then
-      typeTable = {
-            "truck_arab6", 
-            "truck_arab7", 
-            "truck_arab8"
-        }
-      return getTypeTable(UnitDefNames, typeTable)
-    else
-        assert(true == false)
-    end
-end
-
-function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
-    if culture == "arabic" then 
-        if housesNearby  < 2 then 
-            return {"tree_arab0", "tree_arab1", "greenhouse"}
-        else
-            return {"tree_arab0", "tree_arab1"}
+    function getWeaponTypeTable(WeaponDefs, StringTable)
+        retVal = {}
+        for i = 1, #StringTable do
+            for defID, def in pairs(WeaponDefs) do
+                if def.name == StringTable[i] then
+                    retVal[defID] = StringTable[i]
+                end
+                en
+            end
+            return retVal
         end
-    end
-end
 
-function getTranslation(cultureName)
-    translation = {
-        ["arabic"] = {
-            ["house"] = {name = "house_arab", range = 0},
-            ["civilian"] = {name = "civilian_arab", range = 3},
-            ["truck"] = {name = "truck_arab", range = 8}
-        },
-        ["international"] = {
-            ["house"] = {name = "house_int", range = 0},
-            ["civilian"] = {name = "civilian_int", range = 0},
-            ["truck"] = {name = "truck_int", range = 3}
-        },
-        ["european"] = {
-            ["house"] = {name = "house_european", range = 0},
-            ["civilian"] = {name = "civilian_european", range = 0},
-            ["truck"] = {name = "truck_european", range = 3}
-        }
-    }
-    return translation[cultureName]
-end
+        function getSatteliteTypes(UnitDefs)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            typeTable = {
+                "satelliteanti", "satellitescan", "satellitegodrod",
+                "satelliteshrapnell"
+            }
+            return getTypeTable(UnitDefNames, typeTable)
+        end
 
-function getCultureUnitModelTypes(cultureName, typeName, UnitDefs)
-    UnitDefNames = getUnitDefNames(UnitDefs)
-    allNames = getCultureUnitModelNames(cultureName, typeName, UnitDefs)
-    result = {}
+        function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            if culture == "arabic" then
+                typeTable = {
+                    "truck_arab0",
+                    "truck_arab1",
+                    "truck_arab2",
+                    "truck_arab3",
+                    "truck_arab4",
+                    "truck_arab5"
+                }
+                return getTypeTable(UnitDefNames, typeTable)
+            else
+                assert(true == false)
+            end
+        end
 
-    for num, name in pairs(allNames) do
-        result[UnitDefNames[name].id] = UnitDefNames[name].id
-    end
+        function getMotorBikeLoadableTypes(UnitDefs)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
 
-    return result
-end
+            typeTable = {
+                "operativeasset",
+                "operativepropagator",
+                "operativeinvestigator"
+            }
+            return getTypeTable(UnitDefNames, typeTable)
+        end
 
-function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
---[[    assert(UnitDefs)
+        function getMotorBikeTypeTable(UnitDefs)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+
+            typeTable = {
+                "motorbike"
+            }
+            return getTypeTable(UnitDefNames, typeTable)
+        end
+
+        function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            if culture == "arabic" then
+                typeTable = {
+                    "truck_arab6",
+                    "truck_arab7",
+                    "truck_arab8"
+                }
+                return getTypeTable(UnitDefNames, typeTable)
+            else
+                assert(true == false)
+            end
+        end
+
+        function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
+            if culture == "arabic" then
+                if housesNearby < 2 then
+                    return {"tree_arab0", "tree_arab1", "greenhouse"}
+                else
+                    return {"tree_arab0", "tree_arab1"}
+                end
+            end
+        end
+
+        function getTranslation(cultureName)
+            translation = {
+                ["arabic"] = {
+                    ["house"] = {name = "house_arab", range = 0},
+                    ["civilian"] = {name = "civilian_arab", range = 3},
+                ["truck"] = {name = "truck_arab", range = 8}},
+                ["international"] = {
+                    ["house"] = {name = "house_int", range = 0},
+                    ["civilian"] = {name = "civilian_int", range = 0},
+                ["truck"] = {name = "truck_int", range = 3}},
+                ["european"] = {
+                    ["house"] = {name = "house_european", range = 0},
+                    ["civilian"] = {name = "civilian_european", range = 0},
+                ["truck"] = {name = "truck_european", range = 3}}}
+                return translation[cultureName]
+            end
+
+            function getCultureUnitModelTypes(cultureName, typeName, UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                allNames = getCultureUnitModelNames(cultureName, typeName, UnitDefs)
+                result = {}
+
+                for num, name in pairs(allNames) do
+                    result[UnitDefNames[name].id] = UnitDefNames[name].id
+                end
+
+                return result
+            end
+
+            function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
+                --[[    assert(UnitDefs)
     assert(cultureName)
     assert(cultureName == "arabic")--]]
-    local translation = getTranslation(cultureName)
---[[    assert(translation)
+                local translation = getTranslation(cultureName)
+                --[[    assert(translation)
     assert(type(translation)=="table")
     assert(translation[typeName])
 --]]
 
-    return expandNameSubSetTable(translation[typeName], UnitDefs)
-end
-
-function getRPGCarryingCivilianTypes( UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    local culturename = getCultureName()
-    if culturename == "arabic" then
-        typeTable = {
-                    "civilian_arab0", "civilian_arab2"
-        }
-
-    return getTypeTable(UnitDefNames, typeTable)
-
-    end
-
-end
-
-function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
-    assert(UnitDefs)
-    ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation,
-                                           UnitDefs)
-
-    results = {}
-    for defID, name in pairs(ID_Name_Map) do table.insert(results, name) end
-
-    return results
-end
-
-function expandNameSubSetTable(SubsetTable, UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    local  expandedDictIdName = {}
-    local i = 0
-    while i <= SubsetTable.range do
-        local key = SubsetTable.name..i
-        if UnitDefNames[key] then
-           -- echo("adding "..SubsetTable.name..i)
-          --  assert(UnitDefNames[key].id)
-            expandedDictIdName[UnitDefNames[key].id] =  key
-        end
-        i = i + 1
-    end
-
-    return expandedDictIdName
-end
-
-function getUnitType_BaseTypeMap(UnitDefs, culture)
-    truckTypes = getTypeUnitNameTable(culture, "truck", UnitDefs)
-    houseTypes = getTypeUnitNameTable(culture, "house", UnitDefs)
-    civilianTypes = getTypeUnitNameTable(culture, "civilian", UnitDefs)
-    results = {}
-
-    -- echo("trucktypes:",truckTypes)
-    for num, name in pairs(truckTypes) do results[name] = "truck" end
-
-    for num, name in pairs(houseTypes) do results[name] = "house" end
-
-    for num, name in pairs(civilianTypes) do results[name] = "civilian" end
-
-    return results
-end
-
-function getBaseTypeName(name)
-    if name:match("house") then return "house" end
-    if name:match("civilian") then return "civilian" end
-    if name:match("truck") then return "truck" end
-
-end
-
-function getRaidStates()
-    return {
-        ["Aborted"] = 0,
-        ["OnGoing"] = 1,
-        ["WaitingForUplink"] = 2,
-        ["UplinkCompleted"] = 3,
-        ["VictoryStateSet"] = 4
-    }
-end
-
-function getRaidResultStates()
-    return {
-        ["Unknown"] = 10,
-        ["DefenderWins"] = 11,
-        ["AggressorWins"] = 12,
-        ["HouseEmpty"] = 13,
-    }
-end
-
-function getTruckLoadOutTypeTable()
-    mapping = {
-        ["ground_truck_mg"] = "ground_turret_mg",
-        ["ground_truck_ssied"] = "ground_turret_ssied",
-        ["ground_truck_antiarmor"] = "ground_turret_antiarmor",
-        ["ground_truck_rocket"] = "ground_turret_rocket"
-
-    }
-    typeDefMappingTable = {}
-
-    for k, v in pairs(mapping) do
-        if UnitDefNames[v] and UnitDefNames[k] then
-            typeDefMappingTable[UnitDefNames[k].id] = UnitDefNames[v].id
-        else
-            if not UnitDefNames[v] then
-                echo("getTruckLoadOutTypeTable " .. v .. " is undefined")
+                return expandNameSubSetTable(translation[typeName], UnitDefs)
             end
-            if not UnitDefNames[k] then
-                echo("getTruckLoadOutTypeTable " .. k .. " is undefined")
+
+            function getRPGCarryingCivilianTypes(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                local culturename = getCultureName()
+                if culturename == "arabic" then
+                    typeTable = {
+                        "civilian_arab0", "civilian_arab2"
+                    }
+
+                    return getTypeTable(UnitDefNames, typeTable)
+
+                end
+
             end
-        end
-    end
 
-    return typeDefMappingTable
-end
-
-function getTruckTypeTable(UnitDefs)
-    return getCultureUnitModelTypes(GG.GameConfig.instance.culture,
-                                                "truck", UnitDefs)
-end
-
-function getOperatorSex(UnitDefs, defID)
-    local name = UnitDefs[defID].name
-
-    if name == "operativepropagator" then
-        return "male"
-    end
-
-    if name =="operativeinvestigator" then
-        return "female"
-    end
-
-    if name == "operativeassset" then 
-        return "male"
-    end
-
-    if math.random(0,1) == 1 then 
-        return "male"
-    else
-        return "female"
-    end
-end
-
-function getCivlianDisguiseBySexTypeTable(UnitDefs, sex)
-    GameConfig = getGameConfig()
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {}
-
-    if GameConfig.instance.culture == "arabic" then
-        if sex == "male" then
-            typeTable = {
-            "civilian_arab1",
-            "civilian_arab2"
-            }
-        else
-            typeTable = {
-            "civilian_arab0",
-            "civilian_arab3"
-            }
-        end
-    end
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getMobileCivilianDefIDTypeTable(UnitDefs)
-    assert(UnitDefs)
-    GameConfig = getGameConfig()
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
-                                     UnitDefs)
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                                GameConfig.instance.culture, "civilian",
-                                UnitDefs))
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getPanicableCiviliansTypeTable(UnitDefs)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    typeTable = {}
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
-                                                            "civilian", UnitDefs))
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getCloakIconTypes(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "antagonsafehouse",
-        "protagonsafehouse",
-        "propagandaserver",
-        "assembly",
-        "hivemind",
-        "launcher",
-        "launcherstep",
-        "nimrod",
-        "operativepropagator",
-        "operativeinvestigator",
-        "operativeasset",
-        "blacksite",
-        "doubleagent"
-    }
-
-      return getTypeTable(UnitDefNames, typeTable)
-    end
-
-function getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {}
-    if not myDefID then
-        typeTable = {"nimrod", "propagandaserver", "assembly"}
-
-    else
-
-        if myDefID == UnitDefNames["antagonsafehouse"].id then
-            typeTable = {
-                "nimrod", "propagandaserver", "assembly", "launcher", "hivemind"
-            }
-        else
-            typeTable = {
-                "nimrod", "blacksite", "propagandaserver", "assembly", "aicore"
-            }
-        end
-    end
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getSafeHouseTypeTable(UnitDefs)
-
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {"protagonsafehouse", "antagonsafehouse"}
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getInterrogateAbleTypeTable(UnitDefs)
-    assert(UnitDefs)
-    GameConfig = getGameConfig()
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "civilianagent", "operativeasset", "operativepropagator",
-        "operativeinvestigator", "antagonsafehouse", "protagonsafehouse",
-        "propagandaserver", "assembly", "launcher", "hivemind", "aicore"
-    }
-
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                                GameConfig.instance.culture, "civilian",
-                                UnitDefs))
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getMobileInterrogateAbleTypeTable(UnitDefs)
-    assert(UnitDefs)
-    GameConfig = getGameConfig()
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "civilianagent", "operativeasset", "operativepropagator",
-        "operativeinvestigator"
-    }
-
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                                GameConfig.instance.culture, "civilian",
-                                UnitDefs))
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getRaidIconTypeTable(UnitDefs)
-    assert(UnitDefs)
-    GameConfig = getGameConfig()
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {"raidicon", "snipeicon", "objectiveicon"}
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getRaidAbleTypeTable(UnitDefs)
-    assert(UnitDefs)
-    GameConfig = getGameConfig()
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "civilianagent", 
-        "operativeasset", 
-        "operativepropagator",
-        "operativeinvestigator"
-    }
-
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                                GameConfig.instance.culture, "civilian",
-                                UnitDefs))
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getHouseTypeTable(UnitDefs, culturename)
-    assert(UnitDefs)
-    return getCultureUnitModelNames(culturename, "house", UnitDefs)
-end
-
-function getOperativeTypeTable(UnitDefs)
-
-    UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "civilianagent", "operativeasset", "operativepropagator",
-        "operativeinvestigator"
-    }
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function getStreetDecorationTypeTable(UnitDefs)
-local UnitDefNames = getUnitDefNames(UnitDefs)
-    UnitDefNames = getUnitDefNames(UnitDefs)
-    typeTable = {
-        "tree_arab0",
-         "tree_arab1", 
-         "innercitydeco_inter1",
-        "innercitydeco_inter2",
-        "innercitydeco_inter3"
-    }
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function setMaxHeightPosition(unitID)
-    window = 2048/2
-    x,_,z = (Game.mapSizeX/100)*math.random(10,90),0,(Game.mapSizeZ/100)*math.random(10,90)
-    mins, maxs = getExtremasInArea(math.max(0, x - window), math.max(0, z - window), x + window, z + window, 128)
-    Spring.MoveCtrl.Enable(unitID,true)
-    Spring.MoveCtrl.SetPosition(unitID, maxs.x, Spring.GetGroundHeight(maxs.x, maxs.z), maxs.z)
-    Spring.MoveCtrl.Enable(unitID,false)
-end
-
-function createSetMaxHeight(defID, team)
-    id = Spring.CreateUnit(defID,1,1,1,1,team)
-    setMaxHeightPosition(id)
-end
-
-function getMonumentAmountDecorationTypeTable(UnitDefs, culture)
-local UnitDefNames = getUnitDefNames(UnitDefs)
-    if culture == "arabic" then 
-        return {
-            [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 1, locationFunc = createSetMaxHeight}
-        }
-    end
-
-    if culture == "international"  then
-        return {
-            [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 2, locationFunc = createSetMaxHeight}
-        }
-    end
-
-    return {}
-end
-
-function getCivilianTypeTable(UnitDefs)
-    assert(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-    GameConfig = getGameConfig()
-    typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
-                                     UnitDefs)
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                                GameConfig.instance.culture, "house", UnitDefs))
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                                GameConfig.instance.culture, "civilian",
-                                UnitDefs))
-
-    local retTable = {}
-    for _, defs in pairs(UnitDefs) do
-        for num, k in pairs(typeTable) do
-
-            if defs.name == k then retTable[k] = defs.id end
-
-        end
-    end
-
-    return getTypeTable(UnitDefNames, typeTable), retTable
-end
-
-function getAersolAffectableUnits(UnitDefs)
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    typeTable = mergeTables({}, getTypeUnitNameTable(getCultureName(), "truck",
-                                                     UnitDefs))
-    typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
-                                                            "civilian", UnitDefs))
-
-    return getTypeTable(UnitDefNames, typeTable)
-end
-
-function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
-    env = Spring.UnitScript.GetScriptEnv(unitID)
-    if env and env.startAerosolBehaviour then
-        Spring.UnitScript.CallAsUnit(unitID,
-                                     env.startAerosolBehaviour,
-                                    TypeOfBehaviour)
-        return true
-    end
-return false
-end
-
-function setAssemblyProducedUnitsToTeam(assemblyID, teamToTurnOverID)
-    env = Spring.UnitScript.GetScriptEnv(assemblyID)
-    if env and env.TurnProducedUnitsOverToTeam then
-        Spring.UnitScript.CallAsUnit(assemblyID,
-                                     env.TurnProducedUnitsOverToTeam,
-                                    teamToTurnOverID)
-        return true
-    end
-return false
-end
-  
-function getCivilianAnimationStates()
-    return {
-        -- Upper Body States
-        slaved = "STATE_SLAVED", -- do nothing
-        idle = "STATE_IDLE",
-        filming = "STATE_FILMING",
-        phone = "STATE_PHONE",
-        wailing = "STATE_WAILING",
-        talking = "STATE_TALKING",
-        handsup = "STATE_HANDSUP",
-        protest = "STATE_PROTEST",
-
-        --	coupled cycles	
-        standing = "STATE_STANDING",
-        aiming = "STATE_AIMING",
-        hit = "STATE_HIT",
-        death = "STATE_DEATH",
-        transported = "STATE_TRANSPORTED",
-        catatonic = "STATE_CATATONIC",
-        -- self ending Cycles	
-        trolley = "STATE_PULL",
-        walking = "STATE_WALKING",
-        running = "STATE_RUNNING",
-        coverwalk = "STATE_COVERWALK",
-        wounded = "STATE_WOUNDED",
-        riding = "STATE_RIDING"
-    }
-
-end
-framesPerSecond = 30
-
-function getSatelliteTimeOutTable(UnitDefs) -- per Frame
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    valuetable = {
-        [UnitDefNames["satelliteanti"].id] = 2 * 90 * framesPerSecond,
-        [UnitDefNames["satellitegodrod"].id] = 3 * 90 * framesPerSecond,
-        [UnitDefNames["satellitescan"].id] = 90 * framesPerSecond,
-        [UnitDefNames["satelliteshrapnell"].id] = 30 * framesPerSecond
-    }
-
-    return valuetable
-end
-
-function getSatelliteTypesSpeedTable(UnitDefs) -- per Frame
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    valuetable = {
-        [UnitDefNames["satellitegodrod"].id] = 30 / framesPerSecond,
-        [UnitDefNames["satelliteanti"].id] = 30 / framesPerSecond,
-        [UnitDefNames["satellitescan"].id] = 90 / framesPerSecond,
-        [UnitDefNames["satelliteshrapnell"].id] = 120 / framesPerSecond
-    }
-
-    return valuetable
-end
-
-function getSatelliteAltitudeTable(UnitDefs) -- per Frame
-    local UnitDefNames = getUnitDefNames(UnitDefs)
-
-    valuetable = {
-        [UnitDefNames["satellitegodrod"].id] = 1450,
-        [UnitDefNames["satelliteanti"].id] = 1550,
-        [UnitDefNames["satellitescan"].id] = 1500,
-        [UnitDefNames["satelliteshrapnell"].id] = 1500
-    }
-
-    return valuetable
-end
-
-function getInternationalCityDecorationTypes(UnitDefs)
- local UnitDefNames = getUnitDefNames(UnitDefs)
- return {
-        [UnitDefNames["innercitydeco_inter1"].id] = true,
-        [UnitDefNames["innercitydeco_inter2"].id] = true,
-        [UnitDefNames["innercitydeco_inter3"].id] = true
-        }
-end
-
-function getUnitScaleTable(UnitDefNames)
-    local defaultScaleTable = {}
-    realScaleTable = {
-        ["house"] = 1.0,
-        ["antagonsafehouse"] = 1.0,
-        ["protagonsafehouse"] = 1.0,
-        ["nimrod"] = 1.0,
-        ["assembly"] = 1.0,
-        ["propagandaserver"] = 1.0,
-        ["launcher"] = 1.0,
-        ["ground_truck_mg"] = 1.0,
-        ["ground_turret_mg"] = 1.0
-    }
-
-    for name, v in pairs(UnitDefNames) do
-        factor = 0.3
-        if realScaleTable[name] then factor = realScaleTable[name] end
-        defaultScaleTable[v.id] = {realScale = factor, tacticalScale = 1.0}
-    end
-
-    return defaultScaleTable
-end
-
-function getCategoryNameWeaponTypes()
-    typeTable = {}
-
-    return getWeaponTypeTable(WeaponDefNames, typeTable)
-end
-
-function unitCanBuild(unitDefID)
-
-    if unitDefID and UnitDefs[unitDefID] then
-        return UnitDefs[unitDefID].buildOptions
-    end
-    return {}
-end
-
-function getUnitDefIDFromName(name)
-    for i = 1, #UnitDefs do
-        if name == UnitDefs[i].name then return UnitDefs[i].id end
-    end
-
-end
-
--- computates a map of all unittypes buildable by a unit (detects loops)
--- > getUnitBuildAbleMap
-function getUnitCanBuildList(unitDefID, closedTableExtern, root)
-    if not unitDefID then return {} end
-    if not root then root = true end
-    Result = {}
-    assert(type(unitDefID) == "number")
-    boolCanBuildSomething = false
-
-    local openTable = unitCanBuild(unitDefID) or {}
-    if lib_boolDebug == true then
-        assert(UnitDefs)
-        assert(unitDefID)
-        assert(UnitDefs[unitDefID], unitDefID)
-        assert(UnitDefs[unitDefID].name)
-    end
-    closedTable = closedTableExtern or {}
-    local CanBuildList = unitCanBuild(unitDefID)
-    closedTable[unitDefID] = true
-    assert(CanBuildList)
-    for num, unitName in pairs(CanBuildList) do
-        defID = getUnitDefIDFromName(unitName)
-        boolCanBuildSomething = true
-
-        if defID and not closedTable[defID] then
-            Result[defID] = defID
-
-            unitsToIntegrate, closedTable =
-                getUnitCanBuildList(defID, closedTable, false)
-            if unitsToIntegrate then
-                for id, _ in pairs(unitsToIntegrate) do
-
-                    if lib_boolDebug == true then
-                        Spring.Echo("+ " .. UnitDefs[id].name)
+            function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
+                assert(UnitDefs)
+                ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation,
+                UnitDefs)
+
+                results = {}
+                for defID, name in pairs(ID_Name_Map) do table.insert(results, name) end
+
+                return results
+            end
+
+            function expandNameSubSetTable(SubsetTable, UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                local expandedDictIdName = {}
+                local i = 0
+                while i <= SubsetTable.range do
+                    local key = SubsetTable.name..i
+                    if UnitDefNames[key] then
+                        -- echo("adding "..SubsetTable.name..i)
+                        --  assert(UnitDefNames[key].id)
+                        expandedDictIdName[UnitDefNames[key].id] = key
                     end
-
-                    Result[id] = id
+                    i = i + 1
                 end
+
+                return expandedDictIdName
             end
-        end
-    end
-    if boolCanBuildSometing == true then
-        if root == true then
-            Spring.Echo("Unit " .. UnitDefs[unitDefID].name .. " can built:")
-        end
-    end
 
-    return Result, closedTable
-end
+            function getUnitType_BaseTypeMap(UnitDefs, culture)
+                truckTypes = getTypeUnitNameTable(culture, "truck", UnitDefs)
+                houseTypes = getTypeUnitNameTable(culture, "house", UnitDefs)
+                civilianTypes = getTypeUnitNameTable(culture, "civilian", UnitDefs)
+                results = {}
 
-ProtagonUnitTypeList = getUnitCanBuildList(UnitDefNames["protagonsafehouse"].id)
-AntagonUnitTypeList = getUnitCanBuildList(UnitDefNames["antagonsafehouse"].id)
+                -- echo("trucktypes:",truckTypes)
+                for num, name in pairs(truckTypes) do results[name] = "truck" end
 
-function getUnitSide(unitID)
-    defID = Spring.GetUnitDefID(unitID)
-    if ProtagonUnitTypeList[defID] then return "protagon" end
-    if AntagonUnitTypeList[defID] then return "antagon" end
-    return "gaia"
-end
+                for num, name in pairs(houseTypes) do results[name] = "house" end
 
-function getDecalMap(culture)
-    if culture == "arabic" then
-        return {
-            ["house"] = {
-                rural = {
-                    "house_arab_decal8", "house_arab_decal7",
-                    "house_arab_decal4", "house_arab_decal10",
-                    "house_arab_decal11", "house_arab_decal12",
-                     "house_arab_decal13", "house_arab_decal14",
-                     "house_arab_decal15", "house_arab_decal18"
-                },
-                urban = {
-                    "house_arab_decal1", "house_arab_decal2",
-                    "house_arab_decal3", "house_arab_decal5",
-                    "house_arab_decal6", "house_arab_decal9",
-                    "house_arab_decal16","house_arab_decal17",
-                    "house_arab_decal19"
+                for num, name in pairs(civilianTypes) do results[name] = "civilian" end
+
+                return results
+            end
+
+            function getBaseTypeName(name)
+                if name:match("house") then return "house" end
+                if name:match("civilian") then return "civilian" end
+                if name:match("truck") then return "truck" end
+
+            end
+
+            function getRaidStates()
+                return {
+                    ["Aborted"] = 0,
+                    ["OnGoing"] = 1,
+                    ["WaitingForUplink"] = 2,
+                    ["UplinkCompleted"] = 3,
+                    ["VictoryStateSet"] = 4
                 }
-            }
-        }
-    end
-end
-
-function isPrayerTime()
-    hours, minutes, seconds, percent = getDayTime()
-    return GG.GameConfig.instance.culture == "arabic" and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025) 
-end
-
-function getDayTime()
-    local DAYLENGTH = GG.GameConfig.daylength
-    morningOffset = (DAYLENGTH / 2)
-    Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
-    percent = Frame / DAYLENGTH
-    hours = math.floor((Frame / DAYLENGTH) * 24)
-    minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
-    seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
-    return hours, minutes, seconds, percent
-end
-
-
-function isRushHour()
-   hours, minutes, seconds, percent = getDayTime()
-   
-   if hours > 6 and hours < 9 or
-      hours > 12 and hours < 14 or
-      hours > 16 and hours < 20 then
-        return true
-    end
-end 
-
--- > Creates a Eventstream Event bound to a Unit
-function createStreamEvent(unitID, func, framerate, persPack)
-    persPack.unitID = unitID
-    persPack.startFrame = Spring.GetGameFrame() + 1
-    persPack.functionToCall = func
-   -- echo("Creating Stream Event")
-
-    eventFunction = function(id, frame, persPack)
-        nextFrame = frame + framerate
-        if persPack then
-            if persPack.unitID then
-                boolDead = Spring.GetUnitIsDead(persPack.unitID)
-
-                if boolDead and boolDead == true then
-                    --echo("Aborting eventstream cause unit has died")
-                    return nil, nil
-                end
-
-                if not persPack.startFrame then
-                    persPack.startFrame = frame + 1
-
-                end
-
-                nextFrame = frame + framerate
-            end
-        end
-
-        boolDoneFor, persPack = persPack.functionToCall(persPack)
-        if boolDoneFor and boolDoneFor == true then 
-            --echo("Aborting eventstream cause function signalled completness")
-            return nil 
-        end
-
-        return nextFrame, persPack
-    end
-
-    GG.EventStream:CreateEvent(eventFunction, persPack,
-                               Spring.GetGameFrame() + 1)
-end
-
-function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
-    if not GG.DoubleAgents then GG.DoubleAgents = {} end
-
-hoverAboveFunc = function(persPack)
-        boolContinue = false
-        boolEndFunction = true
-
-        --There can only be one
-        if GG.DoubleAgents[persPack.traitorID] and 
-           GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
-           return boolEndFunction, nil
-        end 
-
-        if persPack.boolDoneFor then return boolEndFunction, persPack end
-
-        if  doesUnitExistAlive(persPack.traitorID) == false then
-            destroyUnitConditional(persPack.iconID, false, true)
-            return boolEndFunction, nil
-        end
-
-        x, y, z = Spring.GetUnitPosition(persPack.traitorID)
-
-        if doesUnitExistAlive(persPack.iconID) == false then
-            persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
-                                               persPack.traitorID, x - 1,
-                                               y + persPack.heightAbove, z)
-            Spring.MoveCtrl.Enable(persPack.iconID)
-            GG.DoubleAgents[persPack.traitorID] = persPack.iconID
-            return boolContinue, persPack
-        end
-
-        Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
-        boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
-
-        if isUnitComplete(persPack.traitorID) == false then
-            return boolContinue, persPack
-        end
-
-        --recursive part
-        if persPack.boolRecursive and persPack.boolRecursive == true then
-            if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
-            buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
-            if buildID and not persPack.ListOfBuildUnits[buildID] then
-                persPack.ListOfBuildUnits[buildID] = buildID
-                attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
-            end
-        end
-
-        if not persPack.boolCloakedAtLeastOnce then
-            persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
-        end
-
-    persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
-
-        if persPack.startFrame + 1 < Spring.GetGameFrame() and
-            persPack.boolCloakedAtLeastOnce == true and 
-            boolUnitIsCloaked == false then
-            --we copy kill the unit here instead of transfering to another team
-            --to prevent script incosistencies    
-            copyUnit(persPack.traitorID, persPack.teamToTurnTo)
-            Spring.DestroyUnit(persPack.iconID, false, true)
-            Spring.DestroyUnit(persPack.traitorID, false, true)
-            persPack.boolDoneFor = true
-            return boolEndFunction, persPack
-        end
-
-        return boolContinue, persPack
-    end
-
-    createStreamEvent(traitorID, hoverAboveFunc, 1, {
-        startFrame = Spring.GetGameFrame(),
-        teamToTurnTo = teamToTurnTo,
-        traitorID = traitorID,
-        heightAbove = GG.GameConfig.doubleAgentHeight,
-        boolRecursive = boolRecursive
-    })
-end
-
-function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
-
-    returnOfInvestmentM = returnOfInvestmentM or 100
-    returnOfInvestmentE = returnOfInvestmentE or 100
-
-    rewarderProcess = function(evtID, frame, persPack, startFrame)
-
-        Spring.AddTeamResource(persPack.teamId, "metal",
-                               persPack.returnOfInvestmentM /
-                                   persPack.rewardCycles)
-        Spring.AddTeamResource(persPack.teamId, "energy",
-                               persPack.returnOfInvestmentE /
-                                   persPack.rewardCycles)
-
-        persPack.rewardCycleIndex = persPack.rewardCycleIndex + 1
-        if persPack.rewardCycleIndex > persPack.rewardCycles then
-            return nil, nil
-        end
-
-        return frame + 1000, persPack
-    end
-
-    persPack = {
-        teamId = teamid,
-        returnOfInvestmentM = returnOfInvestmentM,
-        returnOfInvestmentE = returnOfInvestmentE,
-        id = unitID,
-        rewardCycles = 25,
-        rewardCycleIndex = 0
-    }
-
-    GG.EventStream:CreateEvent(rewarderProcess, persPack,
-                               Spring.GetGameFrame() + 1)
-
-end
-
--- EventStream Function
-function syncDecoyToAgent(evtID, frame, persPack, startFrame)
-    --	only apply if Unit is still alive
-    if doesUnitExistAlive(persPack.myID) == false then
-        -- if Unit did not die peacefully - kill the synced unit
-        if not GG.DiedPeacefully[persPack.myID] then
-            Spring.DestroyUnit(persPack.syncedID, false, true)
-        end
-
-        return nil, persPack
-    end
-
-    if doesUnitExistAlive(persPack.syncedID) == false then
-        return nil, persPack
-    end
-
-    -- sync Health
-    transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
-
-    x, y, z = Spring.GetUnitPosition(persPack.syncedID)
-    mx, my, mz = Spring.GetUnitPosition(persPack.myID)
-    if not x then return nil, persPack end
-
-    if not persPack.oldSyncedPos then
-        persPack.oldSyncedPos = {x = x, y = y, z = z}
-    end
-    -- Test Synced Unit Stopped
-
-    -- Transported
-    if Spring.GetUnitTransporter(persPack.myID) ~= nil then
-        persPack.boolTransported = true
-        moveCtrlUnitToUnit(persPack.syncedID, PersPack.myID)
-        return frame + 5, persPack
-    elseif persPack.boolTransported == true then
-        Spring.MoveCtrl.Enable(persPack.syncedID, false)
-        persPack.boolTransported = false
-    end
-
-    if distance(persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,
-                persPack.oldSyncedPos.z, x, y, z) < 5 then
-        -- Unit has stopped, test wether we are near it
-        if distance(mx, my, mz, x, y, z) < 25 then
-            Command(persPack.myID, "stop", {}, {})
-            return frame + 30, persPack
-        end
-    end
-
-    -- update old Pos
-    persPack.oldSyncedPos = {x = x, y = y, z = z}
-
-    if not persPack.currPos then
-        persPack.currPos = {x = mx, y = my, z = mz}
-        persPack.stuckCounter = 0
-    end
-
-    if distance(mx, my, mz, persPack.currPos.x, persPack.currPos.y,
-                persPack.currPos.z) < 50 then
-        persPack.stuckCounter = persPack.stuckCounter + 1
-    else
-        persPack.currPos = {x = mx, y = my, z = mz}
-        persPack.stuckCounter = 0
-    end
-
-    if persPack.stuckCounter > 5 then
-        moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
-                               math.random(-10, 10), 0, math.random(-10, 10))
-    end
-
-    --is not a build command
-    command = Spring.GetUnitCommands (unitID , 1) 
-    if command[1]  then
-        Command( persPack.myID, "go", {x=x,y=y, z=z})
-   --[[ else 
-        transferOrders(persPack.syncedID, persPack.myID)--]]
-    end
-    
-    return frame + 30, persPack
-end
-
-function initalizeInheritanceManagement()
-    -- GG.InheritanceTable = [teamid] ={ [parent] = {[child] = true}}}
-    if not GG.InheritanceTable then
-        GG.InheritanceTable = {}
-        for _, teams in pairs(Spring.GetTeamList()) do
-            GG.InheritanceTable[teams] = {}
-        end
-    end
-end
-
-function registerFather(teamID, parent)
-    -- Spring.Echo("register Father of unit")
-    if not GG.InheritanceTable[teamID][parent] then
-        GG.InheritanceTable[teamID][parent] = {}
-    end
-end
-
-function registerChild(teamID, parent, childID)
-    -- Spring.Echo("register Child child of unit")
-    if not GG.InheritanceTable[teamID][parent] then
-        GG.InheritanceTable[teamID][parent] = {}
-    end
-
-    GG.InheritanceTable[teamID][parent][childID] = true
-end
-
-function getChildrenOfUnit(teamID, unit)
-    -- Spring.Echo("Getting children of unit")
-    return GG.InheritanceTable[teamID][unit] or {}
-end
-
-function getParentOfUnit(teamID, unit)
-    -- Spring.Echo("getParentOfUnit")
-    for parent, unitTable in pairs(GG.InheritanceTable[teamID]) do
-        if unitTable then
-            for thisUnit, _ in pairs(unitTable) do
-                if unit == thisUnit then return parent end
-            end
-        end
-    end
-end
-
-function registerRevealedUnitLocation(unitID)
-    local Location = {}
-    Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
-    Location.teamID = Spring.GetUnitTeam(unitID)
-    Location.radius = GetUnitDefRealRadius(unitID)
-
-    local revealedUnits={}
-    parent = getParentOfUnit(Location.teamID, unitID)
-    if parent and doesUnitExistAlive(parent) then
-        revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
-    end
-
-    children = getChildrenOfUnit(Location.teamID, unitID)
-
-    if children and count(children) > 0 then
-        for childID,_ in pairs(children) do
-            if childID and doesUnitExistAlive(childID) then
-                revealedUnits[childID] = {defID = Spring.GetUnitDefID(childID), boolIsParent = false}
-            end
-        end
-    end
-    Location.revealedUnits = revealedUnits
-    
-    if not GG.RevealedLocations then GG.RevealedLocations = {} end
-    GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
-end
-
-function giveParachutToUnit(id, x, y, z)
-    if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
-
-    if Spring.GetGameFrame() < 1 then
-
-        delayedParachutSpawn = function(evtID, frame, persPack, startFrame)
-
-            if Spring.GetGameFrame() < 1 then
-                return frame + 1, persPack
             end
 
-            parachutID = createUnitAtUnit(Spring.GetUnitTeam(persPack.id),
-                                          "air_parachut", persPack.id)
-            GG.ParachutPassengers[parachutID] =
-                {
-                    id = persPack.id,
-                    x = persPack.x,
-                    y = persPack.y,
-                    z = persPack.z
+            function getRaidResultStates()
+                return {
+                    ["Unknown"] = 10,
+                    ["DefenderWins"] = 11,
+                    ["AggressorWins"] = 12,
+                    ["HouseEmpty"] = 13,
                 }
-            Spring.SetUnitTooltip(parachutID, persPack.id .. "")
-            -- setUnitValueExternal(persPack.id, 'WANT_CLOAK' , 0)
-            -- setUnitValueExternal(persPack.id, 'CLOAKED' , 0)
-            return nil, nil
-        end
-
-        persPack = {id = id, x = x, y = y, z = z}
-
-        GG.EventStream:CreateEvent(delayedParachutSpawn, persPack,
-                                   Spring.GetGameFrame() + 1)
-
-    else
-        parachutID =
-            createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
-
-        GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}
-        Spring.SetUnitTooltip(parachutID, id .. "")
-        setUnitValueExternal(id, 'WANT_CLOAK', 0)
-    end
-end
-
-function removeUnit(teamID, unit)
-    -- Spring.Echo("removing unit from graph")
-    parent = getParentOfUnit(teamID, unit)
-    if parent then GG.InheritanceTable[teamID][parent][unit] = nil end
-    if GG.InheritanceTable[teamID][unit] then
-        GG.InheritanceTable[teamID][unit] = nil
-    end
-end
-
-function getHouseClusterPoints(UnitDefs, culture)
-
-    houseTypeTable = getHouseTypeTable(UnitDefs, culture)
-    local PositionTable = {}
-
-    process(Spring.GetAllUnits(), function(id)
-        defID = Spring.GetUnitDefID(id)
-        if houseTypeTable[defID] then return id end
-    end, function(id)
-        x, y, z = Spring.GetUnitPosition(id)
-        PositionTable[#PositionTable + 1] = {x = x, y = y, z = z}
-    end)
-    assert(#PositionTable > 0)
-
-    -- PositionTable= shuffleT(PositionTable)		
-    local midPoints = {}
-    -- calculate midpoints
-    for n = 1, #PositionTable do
-        for i = 1, #PositionTable do
-            dist = distance(PositionTable[i], PositionTable[n])
-            local pos = mixTable(PositionTable[i], PositionTable[n], 0.5)
-            _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
-
-            if dist < 1024 and i ~= n and slope < 0.1 then
-                midPoints[#midPoints + 1] = pos
-            end
-        end
-    end
-
-    assert(#midPoints > 0)
-    return midPoints
-end
-
-function cullPositionCluster(PosTable, iterrations)
-    if count(PosTable) <= 3 then
-        Spring.Echo("cullPositionCluster: PosTable to small")
-        return PosTable
-    end
-
-    local culledPoints = PosTable
-
-    for it = 1, iterrations do
-        local result = {}
-        for i = 1, count(culledPoints) - 1, 2 do
-            pos = mixTable(culledPoints[i], culledPoints[i + 1], 0.5)
-            _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
-
-            if slope < 0.1 then result[#result + 1] = pos end
-        end
-        culledPoints = result
-
-        if count(culledPoints) <= 3 then
-            Spring.Echo("Aborting with Points:" .. count(culledPoints))
-            return culledPoints
-        end
-    end
-
-    return culledPoints
-end
-
-function computateClusterNodes(housePosTable, GameConfig)
-    timeFactor = math.abs(math.sin(math.pi * Spring.GetGameFrame() /
-                                       GameConfig.civilianGatheringBehaviourIntervalFrames)) -- [0 - 1]
-
-    goalIndexMaxDivider = getBelowPow2(GameConfig.numberOfBuildings)
-    -- protect against min and max
-    goalIndexDivider = math.floor(goalIndexMaxDivider * timeFactor)
-    local result = cullPositionCluster(housePosTable, goalIndexDivider)
-    return result
-end
-
-function computeOrgHouseTable(UnitDefs, GameConfig)
-    return getHouseClusterPoints(UnitDefs, GameConfig.instance.culture)
-end
-
-function showHideIconEnv(unitID, arg)
-    env = Spring.UnitScript.GetScriptEnv(unitID)
-    if env and env.showHideIcon then
-        Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, arg)
-    end
-end
-
-function getInfluencedStates()
-    return {
-        ["Init"] = "Init",
-        ["PreOutbreak"] = "PreOutbreak",
-        ["Outbreak"] = "Outbreak",
-        ["Standalone"] = "Standalone",
-        ["Dieing"] = "Dieing"
-    }
-end
-
-function isOffenceIcon(UnitDefs, defID)
-    assert(UnitDefs)
-    return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
-end
-
-function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
-    assert(typeOfInfluence)
-    AerosolTypes = getChemTrailTypes()
-    assert(AerosolTypes[typeOfInfluence])
-
-    InfStates = getInfluencedStates()
-    CivilianTypes = getCivilianTypeTable(UnitDefs)
-
-    InfluenceStateMachines = {
-        [AerosolTypes.orgyanyl] = function(lastState, currentState, unitID)
-            if currentState == AerosolTypes.orgyanyl then
-                currentState = InfStates.Init
             end
 
-            -- Init 
-            if currentState == InfStates.Init then
-                val = math.random(10, 60) / 1000
-                spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(),
-                      0000015)
-                currentState = InfStates.PreOutbreak
-            end
+            function getTruckLoadOutTypeTable()
+                mapping = {
+                    ["ground_truck_mg"] = "ground_turret_mg",
+                    ["ground_truck_ssied"] = "ground_turret_ssied",
+                    ["ground_truck_antiarmor"] = "ground_turret_antiarmor",
+                    ["ground_truck_rocket"] = "ground_turret_rocket"
 
-            if currentState == InfStates.PreOutbreak then
-                val = math.random(10, 60) / 1000
-                spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(),
-                      0000015)
+                }
+                typeDefMappingTable = {}
 
-                al = Spring.GetUnitNearestAlly(unitID)
-                if al and CivilianTypes[Spring.GetUnitDefID(al)] then
-                    x, y, z = Spring.GetUnitPosition(al)
-                    Command(unitID, "go", {x = x, y = y, z = z}, {})
-                    if distanceUnitToUnit(unitID, al) < 50 then
-                        currentState = InfStates.Outbreak
+                for k, v in pairs(mapping) do
+                    if UnitDefNames[v] and UnitDefNames[k] then
+                        typeDefMappingTable[UnitDefNames[k].id] = UnitDefNames[v].id
+                    else
+                        if not UnitDefNames[v] then
+                            echo("getTruckLoadOutTypeTable " .. v .. " is undefined")
+                        end
+                        if not UnitDefNames[k] then
+                            echo("getTruckLoadOutTypeTable " .. k .. " is undefined")
+                        end
                     end
+                end
+
+                return typeDefMappingTable
+            end
+
+            function getTruckTypeTable(UnitDefs)
+                return getCultureUnitModelTypes(GG.GameConfig.instance.culture,
+                "truck", UnitDefs)
+            end
+
+            function getOperatorSex(UnitDefs, defID)
+                local name = UnitDefs[defID].name
+
+                if name == "operativepropagator" then
+                    return "male"
+                end
+
+                if name == "operativeinvestigator" then
+                    return "female"
+                end
+
+                if name == "operativeassset" then
+                    return "male"
+                end
+
+                if math.random(0, 1) == 1 then
+                    return "male"
                 else
-                    currentState = InfStates.Outbreak
+                    return "female"
                 end
-                setOverrideAnimationState(eAnimState.walking,
-                                          eAnimState.walking, true, nil, true)
             end
 
-            if currentState == InfStates.Outbreak then
-                for i = 1, 3 do
-                    stopSpinT(Spring.GetUnitPieceMap(unitID), i)
+            function getCivlianDisguiseBySexTypeTable(UnitDefs, sex)
+                GameConfig = getGameConfig()
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {}
+
+                if GameConfig.instance.culture == "arabic" then
+                    if sex == "male" then
+                        typeTable = {
+                            "civilian_arab1",
+                            "civilian_arab2"
+                        }
+                    else
+                        typeTable = {
+                            "civilian_arab0",
+                            "civilian_arab3"
+                        }
+                    end
                 end
 
-                showID = createUnitAtUnit(Spring.GetGaiaTeamID(),
-                                          "civilian_orgy_pair", unitID, 0, 0, 0)
-                myDefID = Spring.GetUnitDefID(showID)
-                process(getAllNearUnit(showID, 100),
-                        function(id) -- get Bystanders
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getMobileCivilianDefIDTypeTable(UnitDefs)
+                assert(UnitDefs)
+                GameConfig = getGameConfig()
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
+                UnitDefs)
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                    GameConfig.instance.culture, "civilian",
+                UnitDefs))
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getPanicableCiviliansTypeTable(UnitDefs)
+                assert(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {}
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
+                "civilian", UnitDefs))
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getCloakIconTypes(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "antagonsafehouse",
+                    "protagonsafehouse",
+                    "propagandaserver",
+                    "assembly",
+                    "hivemind",
+                    "launcher",
+                    "launcherstep",
+                    "nimrod",
+                    "operativepropagator",
+                    "operativeinvestigator",
+                    "operativeasset",
+                    "blacksite",
+                    "doubleagent"
+                }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {}
+                if not myDefID then
+                    typeTable = {"nimrod", "propagandaserver", "assembly"}
+
+                else
+
+                    if myDefID == UnitDefNames["antagonsafehouse"].id then
+                        typeTable = {
+                            "nimrod", "propagandaserver", "assembly", "launcher", "hivemind"
+                        }
+                    else
+                        typeTable = {
+                            "nimrod", "blacksite", "propagandaserver", "assembly", "aicore"
+                        }
+                    end
+                end
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getSafeHouseTypeTable(UnitDefs)
+
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {"protagonsafehouse", "antagonsafehouse"}
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getInterrogateAbleTypeTable(UnitDefs)
+                assert(UnitDefs)
+                GameConfig = getGameConfig()
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "civilianagent", "operativeasset", "operativepropagator",
+                    "operativeinvestigator", "antagonsafehouse", "protagonsafehouse",
+                    "propagandaserver", "assembly", "launcher", "hivemind", "aicore"
+                }
+
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                    GameConfig.instance.culture, "civilian",
+                UnitDefs))
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getMobileInterrogateAbleTypeTable(UnitDefs)
+                assert(UnitDefs)
+                GameConfig = getGameConfig()
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "civilianagent", "operativeasset", "operativepropagator",
+                    "operativeinvestigator"
+                }
+
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                    GameConfig.instance.culture, "civilian",
+                UnitDefs))
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getRaidIconTypeTable(UnitDefs)
+                assert(UnitDefs)
+                GameConfig = getGameConfig()
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {"raidicon", "snipeicon", "objectiveicon"}
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getRaidAbleTypeTable(UnitDefs)
+                assert(UnitDefs)
+                GameConfig = getGameConfig()
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "civilianagent",
+                    "operativeasset",
+                    "operativepropagator",
+                    "operativeinvestigator"
+                }
+
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                    GameConfig.instance.culture, "civilian",
+                UnitDefs))
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getHouseTypeTable(UnitDefs, culturename)
+                assert(UnitDefs)
+                return getCultureUnitModelNames(culturename, "house", UnitDefs)
+            end
+
+            function getOperativeTypeTable(UnitDefs)
+
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "civilianagent", "operativeasset", "operativepropagator",
+                    "operativeinvestigator"
+                }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getStreetDecorationTypeTable(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "tree_arab0",
+                    "tree_arab1",
+                    "innercitydeco_inter1",
+                    "innercitydeco_inter2",
+                    "innercitydeco_inter3"
+                }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function setMaxHeightPosition(unitID)
+                window = 2048 / 2
+                x, _, z = (Game.mapSizeX / 100) * math.random(10, 90), 0, (Game.mapSizeZ / 100) * math.random(10, 90)
+                mins, maxs = getExtremasInArea(math.max(0, x - window), math.max(0, z - window), x + window, z + window, 128)
+                Spring.MoveCtrl.Enable(unitID, true)
+                Spring.MoveCtrl.SetPosition(unitID, maxs.x, Spring.GetGroundHeight(maxs.x, maxs.z), maxs.z)
+                Spring.MoveCtrl.Enable(unitID, false)
+            end
+
+            function createSetMaxHeight(defID, team)
+                id = Spring.CreateUnit(defID, 1, 1, 1, 1, team)
+                setMaxHeightPosition(id)
+            end
+
+            function getMonumentAmountDecorationTypeTable(UnitDefs, culture)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                if culture == "arabic" then
+                    return {
+                    [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 1, locationFunc = createSetMaxHeight}}
+                end
+
+                if culture == "international" then
+                    return {
+                    [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 2, locationFunc = createSetMaxHeight}}
+                end
+
+                return {}
+            end
+
+            function getCivilianTypeTable(UnitDefs)
+                assert(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                GameConfig = getGameConfig()
+                typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
+                UnitDefs)
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                GameConfig.instance.culture, "house", UnitDefs))
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                    GameConfig.instance.culture, "civilian",
+                UnitDefs))
+
+                local retTable = {}
+                for _, defs in pairs(UnitDefs) do
+                    for num, k in pairs(typeTable) do
+
+                        if defs.name == k then retTable[k] = defs.id end
+
+                    end
+                end
+
+                return getTypeTable(UnitDefNames, typeTable), retTable
+            end
+
+            function getAersolAffectableUnits(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = mergeTables({}, getTypeUnitNameTable(getCultureName(), "truck",
+                UnitDefs))
+                typeTable = mergeTables(typeTable, getTypeUnitNameTable(getCultureName(),
+                "civilian", UnitDefs))
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
+                env = Spring.UnitScript.GetScriptEnv(unitID)
+                if env and env.startAerosolBehaviour then
+                    Spring.UnitScript.CallAsUnit(unitID,
+                        env.startAerosolBehaviour,
+                    TypeOfBehaviour)
+                    return true
+                end
+                return false
+            end
+
+            function setAssemblyProducedUnitsToTeam(assemblyID, teamToTurnOverID)
+                env = Spring.UnitScript.GetScriptEnv(assemblyID)
+                if env and env.TurnProducedUnitsOverToTeam then
+                    Spring.UnitScript.CallAsUnit(assemblyID,
+                        env.TurnProducedUnitsOverToTeam,
+                    teamToTurnOverID)
+                    return true
+                end
+                return false
+            end
+
+            function getCivilianAnimationStates()
+                return {
+                    -- Upper Body States
+                    slaved = "STATE_SLAVED", -- do nothing
+                    idle = "STATE_IDLE",
+                    filming = "STATE_FILMING",
+                    phone = "STATE_PHONE",
+                    wailing = "STATE_WAILING",
+                    talking = "STATE_TALKING",
+                    handsup = "STATE_HANDSUP",
+                    protest = "STATE_PROTEST",
+
+                    --coupled cycles
+                    standing = "STATE_STANDING",
+                    aiming = "STATE_AIMING",
+                    hit = "STATE_HIT",
+                    death = "STATE_DEATH",
+                    transported = "STATE_TRANSPORTED",
+                    catatonic = "STATE_CATATONIC",
+                    -- self ending Cycles
+                    trolley = "STATE_PULL",
+                    walking = "STATE_WALKING",
+                    running = "STATE_RUNNING",
+                    coverwalk = "STATE_COVERWALK",
+                    wounded = "STATE_WOUNDED",
+                    riding = "STATE_RIDING"
+                }
+
+            end
+            framesPerSecond = 30
+
+            function getSatelliteTimeOutTable(UnitDefs) -- per Frame
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                valuetable = {
+                    [UnitDefNames["satelliteanti"].id] = 2 * 90 * framesPerSecond,
+                    [UnitDefNames["satellitegodrod"].id] = 3 * 90 * framesPerSecond,
+                    [UnitDefNames["satellitescan"].id] = 90 * framesPerSecond,
+                    [UnitDefNames["satelliteshrapnell"].id] = 30 * framesPerSecond
+                }
+
+                return valuetable
+            end
+
+            function getSatelliteTypesSpeedTable(UnitDefs) -- per Frame
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                valuetable = {
+                    [UnitDefNames["satellitegodrod"].id] = 30 / framesPerSecond,
+                    [UnitDefNames["satelliteanti"].id] = 30 / framesPerSecond,
+                    [UnitDefNames["satellitescan"].id] = 90 / framesPerSecond,
+                    [UnitDefNames["satelliteshrapnell"].id] = 120 / framesPerSecond
+                }
+
+                return valuetable
+            end
+
+            function getSatelliteAltitudeTable(UnitDefs) -- per Frame
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                valuetable = {
+                    [UnitDefNames["satellitegodrod"].id] = 1450,
+                    [UnitDefNames["satelliteanti"].id] = 1550,
+                    [UnitDefNames["satellitescan"].id] = 1500,
+                    [UnitDefNames["satelliteshrapnell"].id] = 1500
+                }
+
+                return valuetable
+            end
+
+            function getInternationalCityDecorationTypes(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                return {
+                    [UnitDefNames["innercitydeco_inter1"].id] = true,
+                    [UnitDefNames["innercitydeco_inter2"].id] = true,
+                    [UnitDefNames["innercitydeco_inter3"].id] = true
+                }
+            end
+
+            function getUnitScaleTable(UnitDefNames)
+                local defaultScaleTable = {}
+                realScaleTable = {
+                    ["house"] = 1.0,
+                    ["antagonsafehouse"] = 1.0,
+                    ["protagonsafehouse"] = 1.0,
+                    ["nimrod"] = 1.0,
+                    ["assembly"] = 1.0,
+                    ["propagandaserver"] = 1.0,
+                    ["launcher"] = 1.0,
+                    ["ground_truck_mg"] = 1.0,
+                    ["ground_turret_mg"] = 1.0
+                }
+
+                for name, v in pairs(UnitDefNames) do
+                    factor = 0.3
+                    if realScaleTable[name] then factor = realScaleTable[name] end
+                    defaultScaleTable[v.id] = {realScale = factor, tacticalScale = 1.0}
+                end
+
+                return defaultScaleTable
+            end
+
+            function unitCanBuild(unitDefID)
+
+                if unitDefID and UnitDefs[unitDefID] then
+                    return UnitDefs[unitDefID].buildOptions
+                end
+                return {}
+            end
+
+            function getUnitDefIDFromName(name)
+                for i = 1, #UnitDefs do
+                    if name == UnitDefs[i].name then return UnitDefs[i].id end
+                end
+
+            end
+
+            function getGroundTurretMGInterceptableProjectileTypes(Weapondefs)
+                TypeTable = {"smartminedrone",
+                    "cm_airstrike",
+                    "cm_walker",
+                    "cm_antiarmor",
+                "cm_turret_ssied"}
+                return getWeaponTypeTable(Weapondefs, typeTable)
+            end
+
+            -- computates a map of all unittypes buildable by a unit (detects loops)
+            -- > getUnitBuildAbleMap
+            function getUnitCanBuildList(unitDefID, closedTableExtern, root)
+                if not unitDefID then return {} end
+                if not root then root = true end
+                Result = {}
+                assert(type(unitDefID) == "number")
+                boolCanBuildSomething = false
+
+                local openTable = unitCanBuild(unitDefID) or {}
+                if lib_boolDebug == true then
+                    assert(UnitDefs)
+                    assert(unitDefID)
+                    assert(UnitDefs[unitDefID], unitDefID)
+                    assert(UnitDefs[unitDefID].name)
+                end
+                closedTable = closedTableExtern or {}
+                local CanBuildList = unitCanBuild(unitDefID)
+                closedTable[unitDefID] = true
+                assert(CanBuildList)
+                for num, unitName in pairs(CanBuildList) do
+                    defID = getUnitDefIDFromName(unitName)
+                    boolCanBuildSomething = true
+
+                    if defID and not closedTable[defID] then
+                        Result[defID] = defID
+
+                        unitsToIntegrate, closedTable =
+                        getUnitCanBuildList(defID, closedTable, false)
+                        if unitsToIntegrate then
+                            for id, _ in pairs(unitsToIntegrate) do
+
+                                if lib_boolDebug == true then
+                                    Spring.Echo("+ " .. UnitDefs[id].name)
+                                end
+
+                                Result[id] = id
+                            end
+                        end
+                    end
+                end
+                if boolCanBuildSometing == true then
+                    if root == true then
+                        Spring.Echo("Unit " .. UnitDefs[unitDefID].name .. " can built:")
+                    end
+                end
+
+                return Result, closedTable
+            end
+
+            ProtagonUnitTypeList = getUnitCanBuildList(UnitDefNames["protagonsafehouse"].id)
+            AntagonUnitTypeList = getUnitCanBuildList(UnitDefNames["antagonsafehouse"].id)
+
+            function getUnitSide(unitID)
+                defID = Spring.GetUnitDefID(unitID)
+                if ProtagonUnitTypeList[defID] then return "protagon" end
+                if AntagonUnitTypeList[defID] then return "antagon" end
+                return "gaia"
+            end
+
+            function getDecalMap(culture)
+                if culture == "arabic" then
+                    return {
+                        ["house"] = {
+                            rural = {
+                                "house_arab_decal8", "house_arab_decal7",
+                                "house_arab_decal4", "house_arab_decal10",
+                                "house_arab_decal11", "house_arab_decal12",
+                                "house_arab_decal13", "house_arab_decal14",
+                                "house_arab_decal15", "house_arab_decal18"
+                            },
+                            urban = {
+                                "house_arab_decal1", "house_arab_decal2",
+                                "house_arab_decal3", "house_arab_decal5",
+                                "house_arab_decal6", "house_arab_decal9",
+                                "house_arab_decal16", "house_arab_decal17",
+                                "house_arab_decal19"
+                            }}}
+                        end
+                    end
+
+                    function isPrayerTime()
+                        hours, minutes, seconds, percent = getDayTime()
+                        return GG.GameConfig.instance.culture == "arabic" and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025)
+                    end
+
+                    function getDayTime()
+                        local DAYLENGTH = GG.GameConfig.daylength
+                        morningOffset = (DAYLENGTH / 2)
+                        Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+                        percent = Frame / DAYLENGTH
+                        hours = math.floor((Frame / DAYLENGTH) * 24)
+                        minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+                        seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+                        return hours, minutes, seconds, percent
+                    end
+
+                    function isRushHour()
+                        hours, minutes, seconds, percent = getDayTime()
+
+                        if hours > 6 and hours < 9 or
+                            hours > 12 and hours < 14 or
+                            hours > 16 and hours < 20 then
+                            return true
+                        end
+                    end
+
+                    -- > Creates a Eventstream Event bound to a Unit
+                    function createStreamEvent(unitID, func, framerate, persPack)
+                        persPack.unitID = unitID
+                        persPack.startFrame = Spring.GetGameFrame() + 1
+                        persPack.functionToCall = func
+                        -- echo("Creating Stream Event")
+
+                        eventFunction = function(id, frame, persPack)
+                            nextFrame = frame + framerate
+                            if persPack then
+                                if persPack.unitID then
+                                    boolDead = Spring.GetUnitIsDead(persPack.unitID)
+
+                                    if boolDead and boolDead == true then
+                                        --echo("Aborting eventstream cause unit has died")
+                                        return nil, nil
+                                    end
+
+                                    if not persPack.startFrame then
+                                        persPack.startFrame = frame + 1
+
+                                    end
+
+                                    nextFrame = frame + framerate
+                                end
+                            end
+
+                            boolDoneFor, persPack = persPack.functionToCall(persPack)
+                            if boolDoneFor and boolDoneFor == true then
+                                --echo("Aborting eventstream cause function signalled completness")
+                                return nil
+                            end
+
+                            return nextFrame, persPack
+                        end
+
+                        GG.EventStream:CreateEvent(eventFunction, persPack,
+                        Spring.GetGameFrame() + 1)
+                    end
+
+                    function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
+                        if not GG.DoubleAgents then GG.DoubleAgents = {} end
+
+                        hoverAboveFunc = function(persPack)
+                            boolContinue = false
+                            boolEndFunction = true
+
+                            --There can only be one
+                            if GG.DoubleAgents[persPack.traitorID] and
+                                GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
+                                return boolEndFunction, nil
+                            end
+
+                            if persPack.boolDoneFor then return boolEndFunction, persPack end
+
+                            if doesUnitExistAlive(persPack.traitorID) == false then
+                                destroyUnitConditional(persPack.iconID, false, true)
+                                return boolEndFunction, nil
+                            end
+
+                            x, y, z = Spring.GetUnitPosition(persPack.traitorID)
+
+                            if doesUnitExistAlive(persPack.iconID) == false then
+                                persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
+                                    persPack.traitorID, x - 1,
+                                y + persPack.heightAbove, z)
+                                Spring.MoveCtrl.Enable(persPack.iconID)
+                                GG.DoubleAgents[persPack.traitorID] = persPack.iconID
+                                return boolContinue, persPack
+                            end
+
+                            Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
+                            boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
+
+                            if isUnitComplete(persPack.traitorID) == false then
+                                return boolContinue, persPack
+                            end
+
+                            --recursive part
+                            if persPack.boolRecursive and persPack.boolRecursive == true then
+                                if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
+                                buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
+                                if buildID and not persPack.ListOfBuildUnits[buildID] then
+                                    persPack.ListOfBuildUnits[buildID] = buildID
+                                    attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
+                                end
+                            end
+
+                            if not persPack.boolCloakedAtLeastOnce then
+                                persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
+                            end
+
+                            persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
+
+                            if persPack.startFrame + 1 < Spring.GetGameFrame() and
+                                persPack.boolCloakedAtLeastOnce == true and
+                                boolUnitIsCloaked == false then
+                                --we copy kill the unit here instead of transfering to another team
+                                --to prevent script incosistencies
+                                copyUnit(persPack.traitorID, persPack.teamToTurnTo)
+                                Spring.DestroyUnit(persPack.iconID, false, true)
+                                Spring.DestroyUnit(persPack.traitorID, false, true)
+                                persPack.boolDoneFor = true
+                                return boolEndFunction, persPack
+                            end
+
+                            return boolContinue, persPack
+                        end
+
+                        createStreamEvent(traitorID, hoverAboveFunc, 1, {
+                            startFrame = Spring.GetGameFrame(),
+                            teamToTurnTo = teamToTurnTo,
+                            traitorID = traitorID,
+                            heightAbove = GG.GameConfig.doubleAgentHeight,
+                            boolRecursive = boolRecursive
+                        })
+                    end
+
+                    function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
+
+                        returnOfInvestmentM = returnOfInvestmentM or 100
+                        returnOfInvestmentE = returnOfInvestmentE or 100
+
+                        rewarderProcess = function(evtID, frame, persPack, startFrame)
+
+                            Spring.AddTeamResource(persPack.teamId, "metal",
+                                persPack.returnOfInvestmentM /
+                            persPack.rewardCycles)
+                            Spring.AddTeamResource(persPack.teamId, "energy",
+                                persPack.returnOfInvestmentE /
+                            persPack.rewardCycles)
+
+                            persPack.rewardCycleIndex = persPack.rewardCycleIndex + 1
+                            if persPack.rewardCycleIndex > persPack.rewardCycles then
+                                return nil, nil
+                            end
+
+                            return frame + 1000, persPack
+                        end
+
+                        persPack = {
+                            teamId = teamid,
+                            returnOfInvestmentM = returnOfInvestmentM,
+                            returnOfInvestmentE = returnOfInvestmentE,
+                            id = unitID,
+                            rewardCycles = 25,
+                            rewardCycleIndex = 0
+                        }
+
+                        GG.EventStream:CreateEvent(rewarderProcess, persPack,
+                        Spring.GetGameFrame() + 1)
+
+                    end
+
+                    -- EventStream Function
+                    function syncDecoyToAgent(evtID, frame, persPack, startFrame)
+                        --only apply if Unit is still alive
+                        if doesUnitExistAlive(persPack.myID) == false then
+                            -- if Unit did not die peacefully - kill the synced unit
+                            if not GG.DiedPeacefully[persPack.myID] then
+                                Spring.DestroyUnit(persPack.syncedID, false, true)
+                            end
+
+                            return nil, persPack
+                        end
+
+                        if doesUnitExistAlive(persPack.syncedID) == false then
+                            return nil, persPack
+                        end
+
+                        -- sync Health
+                        transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
+
+                        x, y, z = Spring.GetUnitPosition(persPack.syncedID)
+                        mx, my, mz = Spring.GetUnitPosition(persPack.myID)
+                        if not x then return nil, persPack end
+
+                        if not persPack.oldSyncedPos then
+                            persPack.oldSyncedPos = {x = x, y = y, z = z}
+                        end
+                        -- Test Synced Unit Stopped
+
+                        -- Transported
+                        if Spring.GetUnitTransporter(persPack.myID) ~= nil then
+                            persPack.boolTransported = true
+                            moveCtrlUnitToUnit(persPack.syncedID, PersPack.myID)
+                            return frame + 5, persPack
+                        elseif persPack.boolTransported == true then
+                            Spring.MoveCtrl.Enable(persPack.syncedID, false)
+                            persPack.boolTransported = false
+                        end
+
+                        if distance(persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,
+                        persPack.oldSyncedPos.z, x, y, z) < 5 then
+                        -- Unit has stopped, test wether we are near it
+                        if distance(mx, my, mz, x, y, z) < 25 then
+                            Command(persPack.myID, "stop", {}, {})
+                            return frame + 30, persPack
+                        end
+                    end
+
+                    -- update old Pos
+                    persPack.oldSyncedPos = {x = x, y = y, z = z}
+
+                    if not persPack.currPos then
+                        persPack.currPos = {x = mx, y = my, z = mz}
+                        persPack.stuckCounter = 0
+                    end
+
+                    if distance(mx, my, mz, persPack.currPos.x, persPack.currPos.y,
+                    persPack.currPos.z) < 50 then
+                    persPack.stuckCounter = persPack.stuckCounter + 1
+                else
+                    persPack.currPos = {x = mx, y = my, z = mz}
+                    persPack.stuckCounter = 0
+                end
+
+                if persPack.stuckCounter > 5 then
+                    moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
+                    math.random(-10, 10), 0, math.random(-10, 10))
+                end
+
+                --is not a build command
+                command = Spring.GetUnitCommands (unitID, 1)
+                if command[1] then
+                    Command(persPack.myID, "go", {x = x, y = y, z = z})
+                    --[[ else
+        transferOrders(persPack.syncedID, persPack.myID)--]]
+                end
+
+                return frame + 30, persPack
+            end
+
+            function initalizeInheritanceManagement()
+                -- GG.InheritanceTable = [teamid] ={ [parent] = {[child] = true}}}
+                if not GG.InheritanceTable then
+                    GG.InheritanceTable = {}
+                    for _, teams in pairs(Spring.GetTeamList()) do
+                        GG.InheritanceTable[teams] = {}
+                    end
+                end
+            end
+
+            function registerFather(teamID, parent)
+                -- Spring.Echo("register Father of unit")
+                if not GG.InheritanceTable[teamID][parent] then
+                    GG.InheritanceTable[teamID][parent] = {}
+                end
+            end
+
+            function registerChild(teamID, parent, childID)
+                -- Spring.Echo("register Child child of unit")
+                if not GG.InheritanceTable[teamID][parent] then
+                    GG.InheritanceTable[teamID][parent] = {}
+                end
+
+                GG.InheritanceTable[teamID][parent][childID] = true
+            end
+
+            function getChildrenOfUnit(teamID, unit)
+                -- Spring.Echo("Getting children of unit")
+                return GG.InheritanceTable[teamID][unit] or {}
+            end
+
+            function getParentOfUnit(teamID, unit)
+                -- Spring.Echo("getParentOfUnit")
+                for parent, unitTable in pairs(GG.InheritanceTable[teamID]) do
+                    if unitTable then
+                        for thisUnit, _ in pairs(unitTable) do
+                            if unit == thisUnit then return parent end
+                        end
+                    end
+                end
+            end
+
+            function registerRevealedUnitLocation(unitID)
+                local Location = {}
+                Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
+                Location.teamID = Spring.GetUnitTeam(unitID)
+                Location.radius = GetUnitDefRealRadius(unitID)
+
+                local revealedUnits = {}
+                parent = getParentOfUnit(Location.teamID, unitID)
+                if parent and doesUnitExistAlive(parent) then
+                    revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
+                end
+
+                children = getChildrenOfUnit(Location.teamID, unitID)
+
+                if children and count(children) > 0 then
+                    for childID, _ in pairs(children) do
+                        if childID and doesUnitExistAlive(childID) then
+                            revealedUnits[childID] = {defID = Spring.GetUnitDefID(childID), boolIsParent = false}
+                        end
+                    end
+                end
+                Location.revealedUnits = revealedUnits
+
+                if not GG.RevealedLocations then GG.RevealedLocations = {} end
+                GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
+            end
+
+            function giveParachutToUnit(id, x, y, z)
+                if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
+
+                if Spring.GetGameFrame() < 1 then
+
+                    delayedParachutSpawn = function(evtID, frame, persPack, startFrame)
+
+                        if Spring.GetGameFrame() < 1 then
+                            return frame + 1, persPack
+                        end
+
+                        parachutID = createUnitAtUnit(Spring.GetUnitTeam(persPack.id),
+                        "air_parachut", persPack.id)
+                        GG.ParachutPassengers[parachutID] =
+                        {
+                            id = persPack.id,
+                            x = persPack.x,
+                            y = persPack.y,
+                            z = persPack.z
+                        }
+                        Spring.SetUnitTooltip(parachutID, persPack.id .. "")
+                        -- setUnitValueExternal(persPack.id, 'WANT_CLOAK' , 0)
+                        -- setUnitValueExternal(persPack.id, 'CLOAKED' , 0)
+                        return nil, nil
+                    end
+
+                    persPack = {id = id, x = x, y = y, z = z}
+
+                    GG.EventStream:CreateEvent(delayedParachutSpawn, persPack,
+                    Spring.GetGameFrame() + 1)
+
+                else
+                    parachutID =
+                    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
+
+                    GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}
+                    Spring.SetUnitTooltip(parachutID, id .. "")
+                    setUnitValueExternal(id, 'WANT_CLOAK', 0)
+                end
+            end
+
+            function removeUnit(teamID, unit)
+                -- Spring.Echo("removing unit from graph")
+                parent = getParentOfUnit(teamID, unit)
+                if parent then GG.InheritanceTable[teamID][parent][unit] = nil end
+                if GG.InheritanceTable[teamID][unit] then
+                    GG.InheritanceTable[teamID][unit] = nil
+                end
+            end
+
+            function getHouseClusterPoints(UnitDefs, culture)
+
+                houseTypeTable = getHouseTypeTable(UnitDefs, culture)
+                local PositionTable = {}
+
+                process(Spring.GetAllUnits(), function(id)
                     defID = Spring.GetUnitDefID(id)
-                    if CivilianTypes[defID] then
-                        x, y, z = Spring.GetUnitPosition(al)
-                        Command(id, "go", {
-                            x = x + math.random(-10, 10),
-                            y = y,
-                            z = z + math.random(-10, 10)
-                        }, {})
+                    if houseTypeTable[defID] then return id end
+                end, function(id)
+                    x, y, z = Spring.GetUnitPosition(id)
+                    PositionTable[#PositionTable + 1] = {x = x, y = y, z = z}
+                end)
+                assert(#PositionTable > 0)
+
+                -- PositionTable= shuffleT(PositionTable)
+                local midPoints = {}
+                -- calculate midpoints
+                for n = 1, #PositionTable do
+                    for i = 1, #PositionTable do
+                        dist = distance(PositionTable[i], PositionTable[n])
+                        local pos = mixTable(PositionTable[i], PositionTable[n], 0.5)
+                        _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
+
+                        if dist < 1024 and i ~= n and slope < 0.1 then
+                            midPoints[#midPoints + 1] = pos
+                        end
+                    end
+                end
+
+                assert(#midPoints > 0)
+                return midPoints
+            end
+
+            function cullPositionCluster(PosTable, iterrations)
+                if count(PosTable) <= 3 then
+                    Spring.Echo("cullPositionCluster: PosTable to small")
+                    return PosTable
+                end
+
+                local culledPoints = PosTable
+
+                for it = 1, iterrations do
+                    local result = {}
+                    for i = 1, count(culledPoints) - 1, 2 do
+                        pos = mixTable(culledPoints[i], culledPoints[i + 1], 0.5)
+                        _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
+
+                        if slope < 0.1 then result[#result + 1] = pos end
+                    end
+                    culledPoints = result
+
+                    if count(culledPoints) <= 3 then
+                        Spring.Echo("Aborting with Points:" .. count(culledPoints))
+                        return culledPoints
+                    end
+                end
+
+                return culledPoints
+            end
+
+            function computateClusterNodes(housePosTable, GameConfig)
+                timeFactor = math.abs(math.sin(math.pi * Spring.GetGameFrame() /
+                GameConfig.civilianGatheringBehaviourIntervalFrames)) -- [0 - 1]
+
+                goalIndexMaxDivider = getBelowPow2(GameConfig.numberOfBuildings)
+                -- protect against min and max
+                goalIndexDivider = math.floor(goalIndexMaxDivider * timeFactor)
+                local result = cullPositionCluster(housePosTable, goalIndexDivider)
+                return result
+            end
+
+            function computeOrgHouseTable(UnitDefs, GameConfig)
+                return getHouseClusterPoints(UnitDefs, GameConfig.instance.culture)
+            end
+
+            function showHideIconEnv(unitID, arg)
+                env = Spring.UnitScript.GetScriptEnv(unitID)
+                if env and env.showHideIcon then
+                    Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, arg)
+                end
+            end
+
+            function getInfluencedStates()
+                return {
+                    ["Init"] = "Init",
+                    ["PreOutbreak"] = "PreOutbreak",
+                    ["Outbreak"] = "Outbreak",
+                    ["Standalone"] = "Standalone",
+                    ["Dieing"] = "Dieing"
+                }
+            end
+
+            function isOffenceIcon(UnitDefs, defID)
+                assert(UnitDefs)
+                return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
+            end
+
+            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
+                assert(typeOfInfluence)
+                AerosolTypes = getChemTrailTypes()
+                assert(AerosolTypes[typeOfInfluence])
+
+                InfStates = getInfluencedStates()
+                CivilianTypes = getCivilianTypeTable(UnitDefs)
+
+                InfluenceStateMachines = {
+                    [AerosolTypes.orgyanyl] = function(lastState, currentState, unitID)
+                        if currentState == AerosolTypes.orgyanyl then
+                            currentState = InfStates.Init
+                        end
+
+                        -- Init
+                        if currentState == InfStates.Init then
+                            val = math.random(10, 60) / 1000
+                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(),
+                            0000015)
+                            currentState = InfStates.PreOutbreak
+                        end
+
+                        if currentState == InfStates.PreOutbreak then
+                            val = math.random(10, 60) / 1000
+                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(),
+                            0000015)
+
+                            al = Spring.GetUnitNearestAlly(unitID)
+                            if al and CivilianTypes[Spring.GetUnitDefID(al)] then
+                                x, y, z = Spring.GetUnitPosition(al)
+                                Command(unitID, "go", {x = x, y = y, z = z}, {})
+                                if distanceUnitToUnit(unitID, al) < 50 then
+                                    currentState = InfStates.Outbreak
+                                end
+                            else
+                                currentState = InfStates.Outbreak
+                            end
+                            setOverrideAnimationState(eAnimState.walking,
+                            eAnimState.walking, true, nil, true)
+                        end
+
+                        if currentState == InfStates.Outbreak then
+                            for i = 1, 3 do
+                                stopSpinT(Spring.GetUnitPieceMap(unitID), i)
+                            end
+
+                            showID = createUnitAtUnit(Spring.GetGaiaTeamID(),
+                            "civilian_orgy_pair", unitID, 0, 0, 0)
+                            myDefID = Spring.GetUnitDefID(showID)
+                            process(getAllNearUnit(showID, 100),
+                                function(id) -- get Bystanders
+                                    defID = Spring.GetUnitDefID(id)
+                                    if CivilianTypes[defID] then
+                                        x, y, z = Spring.GetUnitPosition(al)
+                                        Command(id, "go", {
+                                            x = x + math.random(-10, 10),
+                                            y = y,
+                                        z = z + math.random(-10, 10)}, {})
+                                    end
+                                end)
+                                Spring.DestroyUnit(unitID, false, true)
+                            end
+
+                            return currentState
+                        end,
+
+                        [AerosolTypes.wanderlost] = function(lastState, currentState, unitID)
+                            if currentState == AerosolTypes.wanderlost then
+                                StartThread(lifeTime, unitID,
+                                    GG.GameConfig.Aerosols.wanderlost.VictimLiftime,
+                                false, true)
+                                currentState = InfStates.Init
+                            end
+
+                            if currentState == InfStates.Init then
+                                currentState = InfStates.Outbreak
+                            end
+
+                            if currentState == InfStates.Outbreak then
+                                gf = Spring.GetGameFrame()
+
+                                if gf % 27 == 0 then
+                                    randPiece = Spring.GetUnitPieceMap(unitID)
+                                    for i = 1, 3 do
+                                        val = math.random(5, 35) / 100
+                                        spinT(Spring.GetUnitPieceMap(unitID), i, val * -1, val,
+                                        0.0015)
+                                    end
+                                end
+
+                                if gf % 81 == 0 then
+                                    for i = 1, 3 do
+                                        stopSpinT(Spring.GetUnitPieceMap(unitID), i)
+                                    end
+                                end
+
+                                x = (unitID * 65533) % Game.mapSizeX
+                                z = (unitID * 65533) % Game.mapSizeZ
+                                f = (Spring.GetGameFrame() %
+                                GG.GameConfig.Aerosols.wanderlost.VictimLiftime) /
+                                GG.GameConfig.Aerosols.wanderlost.VictimLiftime
+                                -- spiraling in towards nowhere
+                                totaldistance = math.max(128, unitID % 900) *
+                                math.sin(f * 2 * math.pi)
+                                tx, tz = Rotate(totaldistance, 0, f * math.pi * 9)
+                                x = x + tx
+                                z = z + tz
+                                Command(unitID, "go", {x = x, y = 0, z = z}, {})
+                            end
+
+                            return currentState
+                        end,
+                        [AerosolTypes.tollwutox] = function(lastState, currentState, unitID)
+                            if currentState == AerosolTypes.tollwutox then
+                                StartThread(lifeTime, unitID,
+                                    GG.GameConfig.Aerosols.tollwutox.VictimLiftime,
+                                false, true)
+                                currentState = InfStates.Init
+                                if math.random(0, 10) > 7 then
+                                    currentState = InfStates.Standalone
+                                end
+                            end
+
+                            gf = Spring.GetGameFrame()
+                            attackDistance = 35
+                            -- random shivers
+                            if gf % 30 == 0 and maRa() then
+                                for i = 1, 3 do
+                                    val = (math.random(-100, 100) / 100) * 12
+                                    turnT(Spring.GetUnitPieceMap(unitID), i, math.rad(val),
+                                    30.125)
+                                end
+                            end
+
+                            enemyDistance = math.huge
+                            allyDistance = math.huge
+
+                            local afflicted = GG.AerosolAffectedCivilians or {}
+                            T = process(getAllNearUnit(unitID, 750),
+                                function(id)
+                                    if afflicted[id] then
+                                        return id
+                                    end
+                                end
+                            )
+
+                            ad = Spring.GetUnitNearestAlly(unitID)
+                            if T and #T > 1 then
+                                ad = T[math.random(1, #T)]
+                            end
+
+                            if ad then
+                                allyDistance = distanceUnitToUnit(unitID, ad)
+                            end
+                            ed = Spring.GetUnitNearestEnemy(unitID)
+                            if ed then
+                                enemyDistance = distanceUnitToUnit(unitID, ed)
+                            end
+                            Spring.SetUnitNeutral(unitID, false)
+
+                            if ed and (not ad or currentState == InfStates.Standalone) then
+                                Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
+                                if enemyDistance and enemyDistance < 20 then
+                                    process(getAllNearUnit(unitID, attackDistance),
+                                        function(id)
+                                            Spring.AddUnitDamage(id, 30)
+                                        end
+                                    )
+                                end
+                                return currentState
+                            end
+
+                            if ad and not ed then
+                                Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
+                                if enemyDistance and enemyDistance < 20 then
+                                    process(getAllNearUnit(unitID, attackDistance),
+                                        function(id)
+                                            Spring.AddUnitDamage(id, 30)
+                                        end
+                                    )
+                                end
+                                return currentState
+                            end
+
+                            if ad and ed then
+                                if enemyDistance > allyDistance or maRa() == true then
+                                    Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
+                                    if distance(unitID, ed) < attackDistance then
+                                        Spring.AddUnitDamage(ed, 30)
+                                    end
+
+                                else
+                                    Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
+                                end
+                            end
+
+                            return currentState
+                        end,
+                        [AerosolTypes.depressol] = function(lastState, currentState, unitID)
+                            if currentState == AerosolTypes.depressol then
+                                StartThread(lifeTime, unitID,
+                                    GG.GameConfig.Aerosols.depressol.VictimLiftime,
+                                false, true)
+                                currentState = InfStates.Init
+                            end
+                            stunUnit(unitID, 2)
+                            setOverrideAnimationState(eAnimState.standing, eAnimState.wailing,
+                            true, nil, true)
+
+                            return currentState
+                        end
+                    }
+
+                    assert(InfluenceStateMachines[typeOfInfluence], typeOfInfluence)
+                    return InfluenceStateMachines[typeOfInfluence]
+                end
+
+                -- >StartThread(dustCloudPostExplosion,unitID,1,600,50,0,1,0)
+                -- Draws a long lasting DustCloud
+                function dustCloudPostExplosion(unitID, Density, totalTime, SpawnDelay, dirx,
+                diry, dirz)
+                x, y, z = Spring.GetUnitPosition(unitID)
+                y = y + 15
+                firstTime = true
+                for j = 1, totalTime, SpawnDelay do
+                    for i = 1, Density do
+                        Spring.SpawnCEG("lightuponsmoke", x, y, z, dirx, diry, dirz)
+                    end
+                    Sleep(SpawnDelay)
+                end
+                Sleep(550 - totalTime)
+
+                if math.random(0, 1) == 1 then
+                    Spring.SpawnCEG("earcexplosion", x, y + 30, z, 0, -1, 0)
+                end
+            end
+
+            function fireState()
+                return {
+                    InheritFromFactory = -1,
+                    HoldFire = 0,
+                    ReturnFire = 1,
+                    FireAtWill = 2,
+                    OpenUp = 3
+                }
+            end
+
+            function getAllTeamsOfType(teamType)
+                gaiaTeamID = Spring.GetGaiaTeamID()
+                local returnT = {}
+                process(Spring.GetTeamList(), function(tid)
+                    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier =
+                    Spring.GetTeamInfo(tid)
+
+                    if tid ~= gaiaTeamID and false == isDead and
+                        (string.find(side, teamType) or side == "") then
+                        returnT[tid] = tid
                     end
                 end)
-                Spring.DestroyUnit(unitID, false, true)
+                return returnT
             end
 
-            return currentState
-        end,
-
-        [AerosolTypes.wanderlost] = function(lastState, currentState, unitID)
-            if currentState == AerosolTypes.wanderlost then
-                StartThread(lifeTime, unitID,
-                            GG.GameConfig.Aerosols.wanderlost.VictimLiftime,
-                            false, true)
-                currentState = InfStates.Init
+            function transferFromTeamToAllTeamsExceptAtUnit(unit, teamToWithdrawFrom,
+            amount, teamsToIgnore)
+            local allTeams = Spring.GetTeamList()
+            if not unit or not GG.Bank or not allTeams or #allTeams <= 1 then
+                return false
             end
 
-            if currentState == InfStates.Init then
-                currentState = InfStates.Outbreak
-            end
+            GG.Bank:TransferToTeam(-amount, teamToWithdrawFrom, unit)
 
-            if currentState == InfStates.Outbreak then
-                gf = Spring.GetGameFrame()
-
-                if gf % 27 == 0 then
-                    randPiece = Spring.GetUnitPieceMap(unitID)
-                    for i = 1, 3 do
-                        val = math.random(5, 35) / 100
-                        spinT(Spring.GetUnitPieceMap(unitID), i, val * -1, val,
-                              0.0015)
-                    end
+            for i = 1, #allTeams, 1 do
+                teamID = allTeams[i]
+                if teamID ~= teamToWithdrawFrom and not teamsToIgnore[teamID] then
+                    GG.Bank:TransferToTeam(amount, teamID, unit)
                 end
+            end
+        end
 
-                if gf % 81 == 0 then
-                    for i = 1, 3 do
-                        stopSpinT(Spring.GetUnitPieceMap(unitID), i)
-                    end
+        function unitTest(UnitDefs, UnitDefNames)
+            unitTestTypeTables(UnitDefs, UnitDefNames)
+            --TODO
+        end
+
+        function unitTestTypeTables(UnitDefs, UnitDefNames)
+            civilianTypeTable = getCivilianTypeTable(UnitDefs)
+            for id, v in pairs(civilianTypeTable) do
+                if UnitDefs[id] then
+                    echo("CivilianTypeDef: " .. id .. " -> " .. UnitDefs[id].name)
                 end
-
-                x = (unitID * 65533) % Game.mapSizeX
-                z = (unitID * 65533) % Game.mapSizeZ
-                f = (Spring.GetGameFrame() %
-                        GG.GameConfig.Aerosols.wanderlost.VictimLiftime) /
-                        GG.GameConfig.Aerosols.wanderlost.VictimLiftime
-                -- spiraling in towards nowhere
-                totaldistance = math.max(128, unitID % 900) *
-                                    math.sin(f * 2 * math.pi)
-                tx, tz = Rotate(totaldistance, 0, f * math.pi * 9)
-                x = x + tx
-                z = z + tz
-                Command(unitID, "go", {x = x, y = 0, z = z}, {})
+            end
+            assert(civilianTypeTable)
+            for i = 0, 3 do
+                assert(civilianTypeTable[UnitDefNames["civilian_arab" .. i].id], i)
             end
 
-            return currentState
-        end,
-        [AerosolTypes.tollwutox] = function(lastState, currentState, unitID)
-                if currentState == AerosolTypes.tollwutox then
-                StartThread(lifeTime, unitID,
-                            GG.GameConfig.Aerosols.tollwutox.VictimLiftime,
-                            false, true)
-                    currentState = InfStates.Init
-                     if math.random(0,10) > 7 then 
-                         currentState = InfStates.Standalone
-                    end
-                 end
+            for i = 1, 8 do
+                assert(civilianTypeTable[UnitDefNames["arab_truck" .. i].id])
+            end
+        end
 
+        --> Sets A Unit on Fire
+        function setUnitOnFire(id, timeOnFire)
+            if GG.OnFire == nil then GG.OnFire = {} end
+            boolInsertIt = true
+            --very bad sollution n-times
 
-            gf = Spring.GetGameFrame()
-            attackDistance = 35
-            -- random shivers
-            if gf % 30 == 0 and maRa() then
-                for i = 1, 3 do
-                    val = (math.random(-100, 100) / 100) * 12
-                    turnT(Spring.GetUnitPieceMap(unitID), i, math.rad(val),
-                          30.125)
+            for i = 1, table.getn(GG.OnFire), 1 do
+                if GG.OnFire[i][1] ~= nil and GG.OnFire[i][1] == id then
+                    GG.OnFire[i][2] = GG.OnFire[i][2] + math.ceil(timeOnFire)
+                    boolInsertIt = false
                 end
             end
 
-            enemyDistance = math.huge
-            allyDistance = math.huge
-
-            local afflicted = GG.AerosolAffectedCivilians or {}
-            T= process(getAllNearUnit(unitID, 750),
-                function(id)
-                    if afflicted[id] then 
-                        return id
-                         end
-                    end
-                    )
-            
-            ad = Spring.GetUnitNearestAlly(unitID)
-            if T and #T > 1 then
-                ad = T[ math.random(1,#T)]
+            if boolInsertIt == true then
+                GG.OnFire[#GG.OnFire + 1] = {}
+                GG.OnFire[#GG.OnFire][1] = id
+                GG.OnFire[#GG.OnFire][2] = math.ceil(timeOnFire)
             end
+        end
 
-            if ad then
-                allyDistance = distanceUnitToUnit(unitID, ad)
-            end
-            ed = Spring.GetUnitNearestEnemy(unitID)
-            if ed  then
-                enemyDistance = distanceUnitToUnit(unitID, ed)
-            end
-            Spring.SetUnitNeutral(unitID, false)
-          
-            if ed and (not ad or currentState == InfStates.Standalone) then 
-                 Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
-                 if enemyDistance and enemyDistance < 20 then
-                    process(getAllNearUnit(unitID, attackDistance),
-                        function(id) 
-                            Spring.AddUnitDamage(id, 30)
-                        end
-                        )
-                 end
-                 return currentState
-            end
-
-            if ad and not ed then
-                Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
-                if enemyDistance and enemyDistance < 20 then
-                    process(getAllNearUnit(unitID, attackDistance),
-                        function(id) 
-                            Spring.AddUnitDamage(id, 30)
-                        end
-                        )
-                 end
-                 return currentState
-            end
-
-            if ad and ed then
-                if enemyDistance > allyDistance or maRa() == true then
-                     Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
-                     if distance(unitID, ed) < attackDistance then
-                        Spring.AddUnitDamage(ed, 30)
-                     end
-
-                else
-                    Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
+        function getObjectiveAboveGroundOffset(id)
+            xb, yb, zb = Spring.GetUnitPosition(id)
+            ghb = Spring.GetGroundHeight(xb, zb)
+            probeDist = 150
+            heighestPoint = ghb
+            for x = -1, 1 do
+                for z = -1, 1 do
+                    heighestPoint = math.max(heighestPoint, Spring.GetGroundHeight(xb + x * probeDist, zb + z * probeDist))
                 end
-             end
-
-            return currentState
-        end,
-        [AerosolTypes.depressol] = function(lastState, currentState, unitID)
-            if currentState == AerosolTypes.depressol then
-                StartThread(lifeTime, unitID,
-                            GG.GameConfig.Aerosols.depressol.VictimLiftime,
-                            false, true)
-                currentState = InfStates.Init
             end
-            stunUnit(unitID, 2)
-            setOverrideAnimationState(eAnimState.standing, eAnimState.wailing,
-                                      true, nil, true)
 
-            return currentState
+            return heighestPoint - ghb
         end
-    }
 
-    assert(InfluenceStateMachines[typeOfInfluence], typeOfInfluence)
-    return InfluenceStateMachines[typeOfInfluence]
-end
-
--- >StartThread(dustCloudPostExplosion,unitID,1,600,50,0,1,0)
--- Draws a long lasting DustCloud
-function dustCloudPostExplosion(unitID, Density, totalTime, SpawnDelay, dirx,
-                                diry, dirz)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    y = y + 15
-    firstTime = true
-    for j = 1, totalTime, SpawnDelay do
-        for i = 1, Density do
-            Spring.SpawnCEG("lightuponsmoke", x, y, z, dirx, diry, dirz)
+        function setCivilianUnitInternalStateMode(unitID, State)
+            if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+            GG.CivilianUnitInternalLogicActive[unitID] = State
         end
-        Sleep(SpawnDelay)
-    end
-    Sleep(550 - totalTime)
 
-    if math.random(0, 1) == 1 then
-        Spring.SpawnCEG("earcexplosion", x, y + 30, z, 0, -1, 0)
-    end
-end
-
-function fireState()
-    return {
-        InheritFromFactory = -1,
-        HoldFire = 0,
-        ReturnFire = 1,
-        FireAtWill = 2,
-        OpenUp = 3
-    }
-end
-
-function getAllTeamsOfType(teamType)
-    gaiaTeamID = Spring.GetGaiaTeamID()
-    local returnT = {}
-    process(Spring.GetTeamList(), function(tid)
-        teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier =
-            Spring.GetTeamInfo(tid)
-
-        if tid ~= gaiaTeamID and false == isDead and
-            (string.find(side, teamType) or side == "") then
-            returnT[tid] = tid
+        function setIndividualCivilianName(id)
+            description = "Civilian : "..getRandomCultureNames(GG.GameConfig.instance.culture) .. " <colateral>"
+            Spring.SetUnitTooltip(id, description)
+            return description
         end
-    end)
-    return returnT
-end
 
-function transferFromTeamToAllTeamsExceptAtUnit(unit, teamToWithdrawFrom,
-                                                amount, teamsToIgnore)
-    local allTeams = Spring.GetTeamList()
-    if not unit or not GG.Bank or not allTeams or #allTeams <= 1 then
-        return false
-    end
+        function getRandomCultureNames(culture)
+            names = {
+                arabic = {
+                    sur = {
+                        "Jalal", "Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah", "Ahmad", "Omran", "Fateha",
+                        "Nada", "Um", "Sahar", "Khowla", "Samad", "Faris", "Saif", "Marwa", "Tabarek", "Safia", "Qassem", "Thamer", "Nujah",
+                        "Najia", "Haytham", "Arkan", "Walid", "Hilal", "Manal", "Mahroosa", "Valentina", "Samar", "Mohammad", "Nadia",
+                        "Zeena", "Mustafa", "Zain", "Zainab", "Hassan", "Ammar", "Noor", "Wissam", "Dr.Ihab", "Khairiah", "Kamaran", "Duaa",
+                        "Sa'la", "Alaa-eddin", "Wadhar", "Bashir", "Safa", "Sena", "Rana", "Maria", "Salma", "Lana", "Miriam", "Lava", "Salma",
+                        "Mohammed", "Said", "Shams", "Sami", "Tareq", "Taras", "Jose", "Vatche", "Hanna", "James", "Nicolas", "Edmund", "Wael",
+                        "Noor", "Abdul", "Hamsa", "Ali", "Abu", "Rowand", "Haithem", "Nora", "Arkan", "Khansa", "Muhammed", "Rashid", "Ghassan",
+                        "Arkan", "Uday", "Dana", "Lamiya", "Abdullah", "Salman", "Waleed", "Tuamer", "Hussein", "Sa'aleh", "Ghanam", "Raeed", "Daoud"
+                    },
+                    family = {
+                        "al Yussuf", "Kamel Radi", "al Rahal", "al Batayneh", "al Ababneh", " al Enezi", "al Serihaine",
+                        "Ghazzi", "Abdallah", "Aqeel-Khalil", "Khalil", "Abdel-Fattah", "Rabai", "El Baur", "Abbas", "Moussa", "Abdel-Wahid",
+                        "Abdel-Ridda", "Hussein", "Rafi", "Daif", "Abu Shaker ", "Faraj Silo", "SaadAllah Matti ", "Jarjis ", "Bashar Faraj ",
+                        " Hussein ", "Ahmed ", "Kalaf ", "Akram Hamoodi ", " Akram Hamoodi ", "El Abideen Akram Hammodi ",
+                        "Akram Hamoody Hamoodi ", "Iyad Hamoodi ", "Muhammad Hamoodi", "Elhuda Saad Hamoodi ", "Abed Hamoodi ",
+                        "Abed ", "Mahmoud  ", "Abdurazaq Muhamed ", "Raheem ", "al-Mousai ", " Khazal ", "Handi", "Handi ", "Karim ",
+                        "Hassad ", "Hassad ", " Hassa", "Sami ", "Sami ", "Sami ", "Sami ", "Amin ", "Amin ", "Amin ", "Amin ", "Osama  ",
+                        "Ayoub ", " Protsyuk", " Couso", " Arslanian ", " Fatah ", " Kachadoorian ", " Kachadoorian ", " Kachadoorian ",
+                        " Sabah ", "Sabah ", " Khader ", " Mohammed Omar ", " Ramzi ", " Salam Abdul Gafir ", " Mohammed Suleiman ",
+                        " Tamini ", "Tamini ", " David Belu ", " a Thaib ", " al-Barheini ", " Majid ", " Majid ", "Majid ", "al Shimarey ",
+                        "Ali ", " Ali ", "Abdul-Majeed al-Sa'doon", " Abu al-Heel ", "Saleh Abdel-Latif", " Abdel Hamid ", " Rashid ",
+                        " al Jumaili ", "Amar ", " Qais ", "al Rifaai"
+                    }},
+                    european = {
+                        sur = {
+                            "Noel", "Joel", "Mateo", "Ergi", "Luis", "Aron", "Samuel", "Roan", "Roel", "Xhoel",
+                            "Marc", "Eric", "Jan", " Daniel", "Enzo", "Ian", " Pol", " Àlex", "Jordi", "Martí",
+                            "Lukas", "Maximilian", "Jakob", "David", "Tobias", "Paul", "Jonas", "Felix", "Alexander", "Elias",
+                            "Lucas", "Louis", "Noah", "Nathan", "Adam", "Arthur", "Mohamed", " Victor", "Mathis", "Liam",
+                            "Nathan", "Hugo", "Louis", "Théo", "Ethan", "Noah", "Lucas", "Gabriel", " Arthur", "Tom",
+                            "Adam", "Mohamed", " Rayan", "Gabriel", " Anas", "David", "Lucas", "Yanis", "Nathan", "Ibrahim",
+                            "Ahmed", "Daris", "Amar", "Davud", "Adin", "Hamza", "Harun", "Vedad", "Imran", "Tarik",
+                            "Luka", "David", "Ivan", "Jakov", "Marko", "Petar", "Filip", "Matej", "Mateo", "Leon",
+                            "Jakub", "Jan", " Tomáš", "David", "Adam", "Matyáš", "Filip", "Vojtěch", " Ondřej", "Lukáš",
+                            "William", " Noah", "Oscar", "Lucas", "Victor", "Malthe", "Oliver", "Alfred", "Carl", "Valdemar",
+                            "Oliver", "George", "Noah", "Arthur", "Harry", "Leo", " Muhammad", "Jack", "Charlie", "Oscar",
+                            "Leo", " Elias", "Oliver", "Eino", "Väinö", "Eeli", "Noel", "Leevi", "Onni", "Hugo",
+                            "Emil", "Liam", "William", " Oliver", "Edvin", "Max", " Hugo", "Benjamin", "Elias", "Leo",
+                            "Gabriel", " Louis", "Raphaël", " Jules", "Adam", "Lucas", "Léo", " Hugo", "Arthur", "Nathan",
+                            "Ben", " Jonas", "Leon", "Elias", "Finn", "Noah", "Paul", "Luis", "Lukas",
+                            "Leonardo", "Francesco", "Alessandro", "Lorenzo", " Mattia", "Andrea", "Gabriele", "Riccardo", "Tommaso", "Edoardo",
+                            "William", " Oskar", "Lucas", "Mathias", " Filip", "Oliver", "Jakob/Jacob", " Emil", "Noah", "Aksel", "Hugo", "Daniel",
+                            "Martín", "Pablo", "Alejandro", "Lucas", "Álvaro", "Adrián", "Mateo", "David",
+                            "Amelia", "Ajla", "Melisa", "Amelija", " Klea", "Sara", "Kejsi", "Noemi", "Alesia", "Leandra",
+                            "Anna", "Hannah", "Sophia", "Emma", "Marie", "Lena", "Sarah", "Sophie", "Laura", "Mia",
+                            "Emma", "Louise", "Olivia", "Elise", "Alice", "Juliette", "Mila", "Lucie", "Marie", "Camille",
+                            "Léa", " Lucie", "Emma", "Zoé", " Louise", "Camille", " Manon", "Chloé", "Alice", "Clara",
+                            "Olivia", "Amelia", "Emily", "Isla", "Ava", " Jessica", " Isabella", "Lily", "Ella", "Mia",
+                            "Aino", "Aada", "Sofia", "Eevi", "Olivia", "Lilja", "Helmi", "Ellen", "Emilia", "Ella",
+                            "Emma", "Louise", "Jade", "Alice", "Chloé", "Lina", "Mila", "Léa", " Manon", "Rose",
+                            "Emily", "Ella", "Grace", "Sophie", "Olivia", "Anna", "Amelia", "Aoife", "Lucy", "Ava",
+                            "Lucía", "Martina", " María", "Sofía", "Paula", "Daniela", " Valeria", " Alba", "Julia", "Noa",
+                            "Mia", " Emma", "Elena", "Sofia", "Lena", "Emilia", "Lara", "Anna", "Laura", "Mila",
+                            "Alice", "Lilly", "Maja", "Elsa", "Ella", "Alicia", "Olivia", "Julia", "Ebba", "Wilma"
+                        },
+                        family = {
+                            "Silva", "Garcia", "Murphy", "Hansen", "Johansson", "Korhonen", "Jensen", "De Jong", "Peeters", "Müller", "Rossi", "Borg",
+                            "Novák", "Horvath", "Nowak", "Kazlauskas", "Bērziņš", "Ivanov", "Zajac", "Melnyk", "Popa", "Nagy", "Novak", "Horvat", "Petrović",
+                            "Hodžić", "Hoxha", "Dimitrov", "Milevski", "Papadopoulos", "Öztürk", "Martin", "Smith"
+                        }},
+                    }
 
-    GG.Bank:TransferToTeam(-amount, teamToWithdrawFrom, unit)
+                    return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
+                end
 
-    for i = 1, #allTeams, 1 do
-        teamID = allTeams[i]
-        if teamID ~= teamToWithdrawFrom and not teamsToIgnore[teamID] then
-            GG.Bank:TransferToTeam(amount, teamID, unit)
-        end
-    end
-end
-
-function unitTest(UnitDefs, UnitDefNames)
-    unitTestTypeTables(UnitDefs, UnitDefNames)
-    --TODO 
-end
-
-function unitTestTypeTables(UnitDefs, UnitDefNames)
-    civilianTypeTable = getCivilianTypeTable(UnitDefs)
-    for id, v in pairs(civilianTypeTable) do
-        if UnitDefs[id] then
-            echo("CivilianTypeDef: " .. id .. " -> " .. UnitDefs[id].name)
-        end
-    end
-    assert(civilianTypeTable)
-    for i = 0, 3 do
-        assert(civilianTypeTable[UnitDefNames["civilian_arab" .. i].id], i)
-    end
-
-    for i = 1, 8 do
-        assert(civilianTypeTable[UnitDefNames["arab_truck" .. i].id])
-    end
-end
-
---> Sets A Unit on Fire
-function setUnitOnFire(id, timeOnFire)
-    if GG.OnFire == nil then GG.OnFire = {} end
-    boolInsertIt = true
-    --very bad sollution n-times
-    
-    for i = 1, table.getn(GG.OnFire), 1 do
-        if GG.OnFire[i][1] ~= nil and GG.OnFire[i][1] == id then
-            GG.OnFire[i][2] = GG.OnFire[i][2] + math.ceil(timeOnFire)
-            boolInsertIt = false
-        end
-    end
-    
-    if boolInsertIt == true then
-        GG.OnFire[#GG.OnFire + 1] = {}
-        GG.OnFire[#GG.OnFire][1] = id
-        GG.OnFire[#GG.OnFire][2] = math.ceil(timeOnFire)
-    end
-end
-
-function getObjectiveAboveGroundOffset(id)
-    xb,yb,zb= Spring.GetUnitPosition(id)
-    ghb = Spring.GetGroundHeight(xb,zb)
-    probeDist = 150
-    heighestPoint = ghb
-    for x=-1,1 do
-      for z=-1,1 do
-        heighestPoint = math.max(heighestPoint, Spring.GetGroundHeight(xb + x*probeDist, zb + z*probeDist))
-      end
-    end
-
-    return heighestPoint - ghb
-end
-
-function setCivilianUnitInternalStateMode(unitID, State)
-     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     GG.CivilianUnitInternalLogicActive[unitID] = State 
- end
-
-function setIndividualCivilianName(id)
-    description = "Civilian : "..getRandomCultureNames(GG.GameConfig.instance.culture).. " <colateral>"
-    Spring.SetUnitTooltip(id, description)
-   return description
-end
-
-function getRandomCultureNames(culture)
-names ={
-    arabic = {
-        sur = {
-                "Jalal","Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah","Ahmad","Omran", "Fateha",
-                "Nada","Um","Sahar","Khowla","Samad","Faris","Saif","Marwa","Tabarek","Safia","Qassem","Thamer","Nujah",
-                "Najia","Haytham","Arkan","Walid", "Hilal","Manal","Mahroosa","Valentina","Samar","Mohammad","Nadia",
-                "Zeena","Mustafa","Zain","Zainab","Hassan","Ammar","Noor","Wissam","Dr.Ihab","Khairiah","Kamaran","Duaa",
-                "Sa'la","Alaa-eddin","Wadhar","Bashir","Safa","Sena","Rana","Maria","Salma","Lana","Miriam","Lava","Salma",
-                "Mohammed","Said","Shams","Sami","Tareq","Taras","Jose","Vatche","Hanna","James","Nicolas","Edmund","Wael",
-                "Noor","Abdul","Hamsa","Ali","Abu","Rowand","Haithem","Nora","Arkan","Khansa","Muhammed","Rashid","Ghassan",
-                "Arkan","Uday","Dana","Lamiya","Abdullah","Salman","Waleed","Tuamer","Hussein","Sa'aleh","Ghanam","Raeed","Daoud"
-                },
-        family = {
-                "al Yussuf", "Kamel Radi","al Rahal","al Batayneh","al Ababneh"," al Enezi", "al Serihaine",
-                "Ghazzi","Abdallah","Aqeel-Khalil","Khalil","Abdel-Fattah","Rabai","El Baur","Abbas","Moussa","Abdel-Wahid", 
-                "Abdel-Ridda","Hussein","Rafi","Daif","Abu Shaker ","Faraj Silo","SaadAllah Matti ","Jarjis ","Bashar Faraj ",
-                " Hussein ","Ahmed ","Kalaf ","Akram Hamoodi "," Akram Hamoodi ","El Abideen Akram Hammodi ",
-                "Akram Hamoody Hamoodi ","Iyad Hamoodi ","Muhammad Hamoodi","Elhuda Saad Hamoodi ","Abed Hamoodi ",
-                "Abed ","Mahmoud  ","Abdurazaq Muhamed ","Raheem ","al-Mousai "," Khazal ","Handi","Handi ","Karim ",
-                "Hassad ","Hassad "," Hassa","Sami ","Sami ","Sami ","Sami ","Amin ","Amin ","Amin ","Amin ","Osama  ",
-                "Ayoub "," Protsyuk"," Couso"," Arslanian "," Fatah "," Kachadoorian "," Kachadoorian "," Kachadoorian ",
-                " Sabah ","Sabah "," Khader "," Mohammed Omar "," Ramzi "," Salam Abdul Gafir "," Mohammed Suleiman ",
-                " Tamini ","Tamini "," David Belu "," a Thaib "," al-Barheini "," Majid "," Majid ","Majid ","al Shimarey ",
-                "Ali "," Ali ","Abdul-Majeed al-Sa'doon"," Abu al-Heel ","Saleh Abdel-Latif"," Abdel Hamid "," Rashid ",
-                " al Jumaili ","Amar "," Qais ","al Rifaai" 
-            }
-    },
-    european = {
-        sur = {
-            "Noel","Joel","Mateo","Ergi","Luis","Aron","Samuel","Roan","Roel","Xhoel",
-            "Marc","Eric","Jan"," Daniel","Enzo","Ian"," Pol"," Àlex","Jordi","Martí",
-            "Lukas","Maximilian","Jakob","David","Tobias","Paul","Jonas","Felix","Alexander","Elias",
-            "Lucas","Louis","Noah","Nathan","Adam","Arthur","Mohamed"," Victor","Mathis","Liam",
-            "Nathan","Hugo","Louis","Théo","Ethan","Noah","Lucas","Gabriel"," Arthur","Tom",
-            "Adam","Mohamed"," Rayan","Gabriel"," Anas","David","Lucas","Yanis","Nathan","Ibrahim",
-            "Ahmed","Daris","Amar","Davud","Adin","Hamza","Harun","Vedad","Imran","Tarik",
-            "Luka","David","Ivan","Jakov","Marko","Petar","Filip","Matej","Mateo","Leon",
-            "Jakub","Jan"," Tomáš","David","Adam","Matyáš","Filip","Vojtěch"," Ondřej","Lukáš",
-            "William"," Noah","Oscar","Lucas","Victor","Malthe","Oliver","Alfred","Carl","Valdemar",
-            "Oliver","George","Noah","Arthur","Harry","Leo"," Muhammad","Jack","Charlie","Oscar",
-            "Leo"," Elias","Oliver","Eino","Väinö","Eeli","Noel","Leevi","Onni","Hugo",
-            "Emil","Liam","William"," Oliver","Edvin","Max"," Hugo","Benjamin","Elias","Leo",
-            "Gabriel"," Louis","Raphaël"," Jules","Adam","Lucas","Léo"," Hugo","Arthur","Nathan",
-            "Ben"," Jonas","Leon","Elias","Finn","Noah","Paul","Luis","Lukas",
-            "Leonardo","Francesco","Alessandro","Lorenzo"," Mattia","Andrea","Gabriele","Riccardo","Tommaso","Edoardo",
-            "William"," Oskar","Lucas","Mathias"," Filip","Oliver","Jakob/Jacob"," Emil","Noah","Aksel","Hugo","Daniel",
-            "Martín","Pablo","Alejandro","Lucas","Álvaro","Adrián","Mateo","David",
-            "Amelia","Ajla","Melisa","Amelija"," Klea","Sara","Kejsi","Noemi","Alesia","Leandra",
-            "Anna","Hannah","Sophia","Emma","Marie","Lena","Sarah","Sophie","Laura","Mia",
-            "Emma","Louise","Olivia","Elise","Alice","Juliette","Mila","Lucie","Marie","Camille",
-            "Léa"," Lucie","Emma","Zoé"," Louise","Camille"," Manon","Chloé","Alice","Clara",
-            "Olivia","Amelia","Emily","Isla","Ava"," Jessica"," Isabella","Lily","Ella","Mia",
-            "Aino","Aada","Sofia","Eevi","Olivia","Lilja","Helmi","Ellen","Emilia","Ella",
-            "Emma","Louise","Jade","Alice","Chloé","Lina","Mila","Léa"," Manon","Rose",
-            "Emily","Ella","Grace","Sophie","Olivia","Anna","Amelia","Aoife","Lucy","Ava",
-            "Lucía","Martina"," María","Sofía","Paula","Daniela"," Valeria"," Alba","Julia","Noa",
-            "Mia"," Emma","Elena","Sofia","Lena","Emilia","Lara","Anna","Laura","Mila",
-            "Alice","Lilly","Maja","Elsa","Ella","Alicia","Olivia","Julia","Ebba","Wilma"
-        },
-        family = {
-            "Silva","Garcia","Murphy","Hansen","Johansson","Korhonen","Jensen","De Jong","Peeters","Müller","Rossi","Borg",
-            "Novák","Horvath","Nowak","Kazlauskas","Bērziņš","Ivanov","Zajac","Melnyk","Popa","Nagy","Novak","Horvat","Petrović",
-            "Hodžić","Hoxha","Dimitrov","Milevski","Papadopoulos","Öztürk","Martin","Smith"
-        }
-    },
-}
-
-return names[culture].sur[math.random(1,#names[culture].sur)].." "..names[culture].family[math.random(1,#names[culture].family)]
-end
+               
