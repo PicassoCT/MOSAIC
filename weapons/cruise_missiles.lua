@@ -44,7 +44,6 @@ local weaponDef = {
     explosionGenerator = "custom:missile_explosion",
 	fireStarter  = 50.0,
 	cameraShake =1.0
-	
     }	
 	
 local CruiseMissiles ={}
