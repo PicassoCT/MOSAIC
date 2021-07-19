@@ -682,9 +682,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                             }
 
        projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
-        if projectileID then
-            Spring.SetProjectileTarget(attackerID, "u")
-        end
+
     end
 
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
