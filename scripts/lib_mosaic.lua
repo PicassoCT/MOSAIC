@@ -134,6 +134,7 @@ function getGameConfig()
         -- CruiseMissiles
         CruiseMissilesHeightOverGround = 22,
         cruiseMissileAntiArmorDroplettRange = 1200,
+        cruiseMissileChanceOfInterceptOneIn= 25,
 
         -- Game States
         GameState = {
@@ -283,7 +284,7 @@ function getGameConfig()
         if UnitDefs == nil then return nil end
 
         for defID, v in pairs(UnitDefs) do UnitDefNames[v.name] = v end
-return UnitDefNames
+    return UnitDefNames
     end
 
     function getTypeTable(UnitDefNames, StringTable)
@@ -318,10 +319,10 @@ return UnitDefNames
                 if def.name == StringTable[i] then
                     retVal[defID] = StringTable[i]
                 end
-                en
             end
-            return retVal
         end
+        return retVal
+    end
 
         function getSatteliteTypes(UnitDefs)
             assert(UnitDefs)
@@ -969,13 +970,25 @@ return UnitDefNames
 
             end
 
-            function getGroundTurretMGInterceptableProjectileTypes(Weapondefs)
-                TypeTable = {"smartminedrone",
+            function getGroundTurretMGInterceptableProjectileTypes(WeaponDefs)
+                TypeTable = {
+                    "smartminedrone",
                     "cm_airstrike",
                     "cm_walker",
                     "cm_antiarmor",
-                "cm_turret_ssied"}
-                return getWeaponTypeTable(Weapondefs, typeTable)
+                    "cm_turret_ssied"
+                    }
+                return getWeaponTypeTable(WeaponDefs, TypeTable)
+            end 
+
+            function getCruiseMissileProjectileTypes(WeaponDefs)
+                TypeTable = {
+                    "cm_airstrike",
+                    "cm_walker",
+                    "cm_antiarmor",
+                    "cm_turret_ssied"
+                }
+                return getWeaponTypeTable(WeaponDefs, TypeTable)
             end
 
             -- computates a map of all unittypes buildable by a unit (detects loops)

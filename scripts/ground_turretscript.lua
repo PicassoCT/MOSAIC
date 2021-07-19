@@ -7,16 +7,17 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-myDefID = Spring.GetUnitDefID(unitID)
-GameConfig = getGameConfig()
-center = piece "center"
-Turret = piece "Turret"
-aimpiece = piece "aimpiece"
-aimingFrom = Turret
-firingFrom = aimpiece
-groundFeetSensors = {}
-SIG_GUARDMODE = 1
-boolDroneInterceptSaturated = false
+local myDefID = Spring.GetUnitDefID(unitID)
+local GameConfig = getGameConfig()
+local center = piece "center"
+local Turret = piece "Turret"
+local aimpiece = piece "aimpiece"
+local aimingFrom = Turret
+local firingFrom = aimpiece
+local groundFeetSensors = {}
+local SIG_GUARDMODE = 1
+local boolDroneInterceptSaturated = false
+local cruiseMissileProjectileType =  getCruiseMissileProjectileTypes(WeaponDefs)
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
@@ -39,19 +40,25 @@ function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
     intercepted = math.ceil(math.min(#projectiles, maxIntercept))
     timePerProjectile = timeTotal / intercepted
     StartThread(fireFlowers, intercepted)
-    for i = 1, #projectiles do
-        px, py, pz = Spring.GetProjectilePosition (projectiles[i])
-        if px then
-            intercepted = intercepted - 1
-            goalRad = convPointsToRad(x, z, px, pz)
-            turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
-            WaitForTurns(center)
-            lastValueHeadingRad = goalRad
-            EmitSfx(firingFrom, 256)
-            EmitSfx(firingFrom, 1025)
-            Spring.DeleteProjectile (projectiles[i])
-            Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
-            if intercepted == 0 then return end
+    for projID, wdefID in pairs(projectiles) do
+        if projID then
+            if not cruiseMissileProjectileType[wDefID] or 
+                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.cruiseMissileChanceOfInterceptOneIn) == 1  then
+                px, py, pz = Spring.GetProjectilePosition (projID)
+                if px then
+
+                    goalRad = convPointsToRad(x, z, px, pz)
+                    turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
+                    WaitForTurns(center)
+                    lastValueHeadingRad = goalRad
+                    EmitSfx(firingFrom, 256)
+                    EmitSfx(firingFrom, 1025)
+                    Spring.DeleteProjectile (projID)
+                    Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
+                    if intercepted == 0 then return end
+                end
+                intercepted = intercepted - 1
+            end
         end
     end
 end
@@ -60,19 +67,13 @@ function droneDefense()
     local droneInterceptDistance = GameConfig.groundTurretDroneInterceptRate
     local spGetProjectileTeamID = Spring.GetProjectileTeamID
     local myTeamID = Spring.GetUnitTeam(unitID)
-    local InterceptedProjectileTypes = sgetGroundTurretMGInterceptableProjectileTypes(Weapondefs)
-    for id, def in pairs(WeaponDefs) do
-        if def.name == "smartminedrone" then
-            smartminedroneDefID = id
-        end
-    end
-
-    assert(smartminedroneDefID)
+    local InterceptedProjectileTypes = getGroundTurretMGInterceptableProjectileTypes(WeaponDefs)
 
     while true do
         Sleep(250)
         if hasNoActiveAttackCommand(unitID) == true then
-            projectilesToIntercept = process(getProjectilesAroundUnit(unitID, droneInterceptDistance),
+            projectilesToIntercept = {}
+           process(getProjectilesAroundUnit(unitID, droneInterceptDistance),
                 function(id)
                     teamID = spGetProjectileTeamID(id)
                     if teamID and teamID ~= myTeamID then
@@ -82,12 +83,13 @@ function droneDefense()
                 function (id)
                     weaponDef = Spring.GetProjectileDefID(id)
                     if weaponDef and InterceptedProjectileTypes[weaponDef] then
+                        projectilesToIntercept[id] = weaponDef
                         return id
                     end
                 end
             )
 
-            if projectilesToIntercept and #projectilesToIntercept > 0 then
+            if projectilesToIntercept and count(projectilesToIntercept) > 0 then
                 boolDroneInterceptSaturated = true
                 StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
                 Sleep(500)

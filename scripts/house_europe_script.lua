@@ -80,7 +80,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     assertTableExpectated(TablesOfPiecesGroups, "WhiteOffice_Roof_Deco", 18)
     assertTableExpectated(TablesOfPiecesGroups, "Roof_Deco", 20)
-    assertTableExpectated(TablesOfPiecesGroups, "Office_Roof_Deco", 8)
+--[[    assertTableExpectated(TablesOfPiecesGroups, "Office_Roof_Deco", 8)--]]
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteOffice_Roof_Deco", 6)
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteGhetto_Roof_Deco", 16)
     assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
