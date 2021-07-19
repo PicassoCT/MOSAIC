@@ -47,6 +47,7 @@ function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
             turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
             WaitForTurns(center)
             lastValueHeadingRad = goalRad
+            EmitSfx(firingFrom, 256)
             EmitSfx(firingFrom, 1025)
             Spring.DeleteProjectile (projectiles[i])
             Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
