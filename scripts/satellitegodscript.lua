@@ -38,7 +38,6 @@ function delayedShow()
 end
 
 function script.Killed(recentDamage, _)
-    shatterUnit(unitID, Icon, UnitScript)
     return 1
 end
 

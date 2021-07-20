@@ -13,8 +13,10 @@ GameConfig = getGameConfig()
 center = piece "center"
 Icon = piece "Icon"
 Packed = piece "Packed"
+Line001 = piece "Line001"
 
 function script.Create()
+    Hide(Line001)
     Spin(center, y_axis, math.rad(1), 0.5)
     if Icon then
         Move(Icon, y_axis, GameConfig.SatelliteIconDistance, 0);
@@ -28,9 +30,6 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
-    for i = 1, #TablesOfPiecesGroups["Particle"] do
-        Explode(TablesOfPiecesGroups["Particle"][i], SFX.FIRE + SFX.FALL)
-    end
     return 1
 end
 
@@ -39,7 +38,7 @@ function getRandShrapMoveVal()
     return math.random(-GameConfig.SatelliteShrapnellDistance * factor,
                        GameConfig.SatelliteShrapnellDistance * factor)
 end
-
+activeParticles = {}
 function dealDamageAnimate()
     Explode(center, SFX.SHATTER)
     Hide(center)
@@ -50,38 +49,58 @@ function dealDamageAnimate()
             function(id) spinRand(id, -42, 42, 42) end)
     StartThread(doDamageCyclic)
 
-    process(TablesOfPiecesGroups["Particle"], function(id)
-        StartThread(function(id)
-            while true do
+    process(TablesOfPiecesGroups["Particle"], 
+        function(id)
+        activeParticles[id] = "active"
+        StartThread(
+            function(id)
+            while activeParticles[id] == "active" do
                 Show(id)
-                mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(),
-                   getRandShrapMoveVal(), 2048)
+                mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(), getRandShrapMoveVal(), 2048)
                 WaitForMoves(id)
                 Hide(id)
-                mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(),
-                   getRandShrapMoveVal(), 0)
+                mP(id, getRandShrapMoveVal(), getRandShrapMoveVal(), getRandShrapMoveVal(), 0)
                 Sleep(100)
+            end         
+            if activeParticles[id] == "cooked" then
+                EmitSfx(id, 1024)
+            else
+                EmitSfx(id, 1025)
             end
-        end, id)
-    end)
+            end, id)
+        end)
     while true do Sleep(1000) end
 end
 
 function doDamageCyclic()
     local LifeTime = GameConfig.SatelliteShrapnellLifeTime
-    local DamagePerSecondTenth = GameConfig.SatelliteShrapnellDamagePerSecond /
-                                     100
+    local DamagePerSecondTenth = GameConfig.SatelliteShrapnellDamagePerSecond / 100
     local SatelliteShrapnellDistance = GameConfig.SatelliteShrapnellDistance
 
     Spring.SetUnitNoSelect(unitID, true)
     while LifeTime > 0 do
         process(getAllNearUnitSpherical(unitID, SatelliteShrapnellDistance),
-                function(id) if id ~= unitID then return id end end,
+                function(id) 
+                    if id ~= unitID then 
+                        return id end 
+                end,
                 function(id)
-            Spring.AddUnitDamage(id, DamagePerSecondTenth)
-        end)
+                    Spring.AddUnitDamage(id, DamagePerSecondTenth)
+                end)
         Sleep(100)
         LifeTime = LifeTime - 100
+
+        hp, mHp = Spring.GetUnitHealth(unitID)
+        factorHealth= hp/mHp
+        factorLifetime = LifeTime/GameConfig.SatelliteShrapnellLifeTime
+        smallestFactor = 1.0 - math.min(factorHealth, factorLifetime)
+        for i=1, (#TablesOfPiecesGroups["Particle"]*smallestFactor) do
+            if factorHealth < factorLifetime then
+                activeParticles[TablesOfPiecesGroups["Particle"][i]] = "cooked"
+            else
+                activeParticles[TablesOfPiecesGroups["Particle"][i]] = "meteor"
+            end
+        end
     end
     Spring.DestroyUnit(unitID, false, true)
 end
