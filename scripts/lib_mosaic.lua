@@ -167,7 +167,7 @@ function getGameConfig()
         iconHoverGroundOffset = 125,
         SatelliteIconDistance = 150,
         SatelliteShrapnellDistance = 450,
-        SatelliteShrapnellLifeTime = 2 * 60 * 1000,
+        SatelliteShrapnellLifeTime = 7 * 60 * 1000,
         SatelliteShrapnellDamagePerSecond = 1000,
         SatelliteUploadTimesMs = 8000,
         LifeTimeBribeIcon = 60 * 1000,
@@ -429,14 +429,8 @@ function getGameConfig()
             end
 
             function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
-                --[[    assert(UnitDefs)
-    assert(cultureName)
-    assert(cultureName == "arabic")--]]
+
                 local translation = getTranslation(cultureName)
-                --[[    assert(translation)
-    assert(type(translation)=="table")
-    assert(translation[typeName])
---]]
 
                 return expandNameSubSetTable(translation[typeName], UnitDefs)
             end
@@ -891,7 +885,7 @@ function getGameConfig()
                     [UnitDefNames["satelliteanti"].id] = 2 * 90 * framesPerSecond,
                     [UnitDefNames["satellitegodrod"].id] = 3 * 90 * framesPerSecond,
                     [UnitDefNames["satellitescan"].id] = 90 * framesPerSecond,
-                    [UnitDefNames["satelliteshrapnell"].id] = 30 * framesPerSecond
+                    [UnitDefNames["satelliteshrapnell"].id] = 1
                 }
 
                 return valuetable
