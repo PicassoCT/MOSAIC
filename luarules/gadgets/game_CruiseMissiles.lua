@@ -17,19 +17,24 @@ VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
-GameConfig = getGameConfig()
 
+local GameConfig = getGameConfig()
 local cruiseMissileWeapons = {}
  cruiseMissileWeapons[WeaponDefNames["cm_airstrike"].id] = true
  cruiseMissileWeapons[WeaponDefNames["cm_walker"].id] = true
  cruiseMissileWeapons[WeaponDefNames["cm_antiarmor"].id] = true
  cruiseMissileWeapons[WeaponDefNames["cm_turret_ssied"].id] = true
+
 local TruckTypeTable = getTruckTypeTable(UnitDefs)
 local spGetUnitPosition = Spring.GetUnitPosition
+local spGetUnitDefID = Spring.GetUnitDefID
+local UNIT_TARGETTYPE = string.byte('u')
+
 onImpact = {
     [WeaponDefNames["cm_airstrike"].id] = function(projID, tx, ty, tz)
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
+
     [WeaponDefNames["cm_walker"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
         teamID = Spring.GetProjectileTeamID(projID)
@@ -39,21 +44,21 @@ onImpact = {
         end
         Spring.DeleteProjectile(projID)
     end,
+
     [WeaponDefNames["cm_antiarmor"].id] = function(projID, tx, ty, tz)
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),  tz)
     end,
-    [WeaponDefNames["cm_turret_ssied"].id] = function(projID)
+
+    [WeaponDefNames["cm_turret_ssied"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
         teamID = Spring.GetProjectileTeamID(projID)
-         Spring.CreateUnit("air_copter_ssied", px, py, pz, 1, teamID)
-         Spring.CreateUnit("air_copter_ssied", px, py, pz, 1, teamID)
-        unitID = Spring.CreateUnit("ground_turret_mg", px, py, pz, 1, teamID)
-        giveParachutToUnit(unitID, px, py, pz)
-
+        for i=1,2 do
+         id =Spring.CreateUnit("air_copter_ssied", px, py, pz, 1, teamID)
+         Command( id,"move",{tx, Spring.GetGroundHeight(tx, tz),  tz} )
+        end
         Spring.DeleteProjectile(projID)
     end
 }
-
 
 onLastPointBeforeImpactSetTargetTo = {
     [WeaponDefNames["cm_airstrike"].id] = function(projID) end,
@@ -68,15 +73,14 @@ onLastPointBeforeImpactSetTargetTo = {
                                             getAllInCircle(tx,tz, GameConfig.cruiseMissileAntiArmorDroplettRange),
                                             function(id)
                                                 teamID = Spring.GetUnitTeam(id)
-                                                defID = Spring.GetUnitDefID(id)
-
-                                                if  TruckTypeTable[defID] then
-                                                    collateralTable[#collateralTable+1] = id
-                                                    return
+                                                if teamID == projectileTeamID then return end
+                                                if teamID == gaiaTeamID and GG.GlobalGameState == GameConfig.GameState.normal then 
+                                                      collateralTable[#collateralTable + 1] = id
+                                                      return 
                                                 end
 
-                                                if teamID == projectileTeamID then return end
-
+                                                defID = spGetUnitDefID(id)
+                                               
                                                 if UnitDefs[defID].speed > 0 then
                                                     return id
                                                 end
@@ -86,40 +90,47 @@ onLastPointBeforeImpactSetTargetTo = {
                                                 if maxHp > 1000 then 
                                                     return id
                                                 end
-                                            end)
+                                            end,
+                                            function (id)
+                                                if not Spring.GetUnitIsCloaked(id) then return id end
+                                            end
+                                            )
 
-                    v = {x=0, y= 5, z= 0}
-
+                    v = {x = 0, y = 10, z = 0}
+                    targetUnit = nil
+                    px,py,pz = tx,ty,tz
                     for i = 1, 4 do
                         if #allHardTargetsInRange > 1 then
-                            tx,ty,tz = spGetUnitPosition(allHardTargetsInRange[((i-1) % #allHardTargetsInRange)+  1])
+                            targetUnit = allHardTargetsInRange[((i-1) % #allHardTargetsInRange)+  1]
                         elseif #allHardTargetsInRange == 1 then
-                            tx,ty,tz = spGetUnitPosition(allHardTargetsInRange[1])
+                            targetUnit = allHardTargetsInRange[1]
                         else
                             if #collateralTable > 0 then
                                  if #collateralTable > 1 then
-                                    tx,ty,tz = spGetUnitPosition(collateralTable[((i-1) % #collateralTable)+  1])
+                                    targetUnit = collateralTable[((i-1) % #collateralTable)+  1]
                                 elseif #collateralTable > 0 then
-                                    tx,ty,tz = spGetUnitPosition(collateralTable[1])
+                                    targetUnit = collateralTable[1]
                                 end
                             else
-                                tx, ty, tz = tx + math.random(50,512)*randSign(), 0, tz + math.random(50,512)*randSign()
+                                px, py, pz = tx + math.random(50,512) * randSign(), 0, tz + math.random(50,512) * randSign()
                             end
                         end
 
                         javelinProjID = Spring.SpawnProjectile(WeaponDefNames["javelinrocket"].id, {
                             pos = {
-                                px + math.random(-2, 2), py + math.random(0, 5),
+                                px + math.random(-2, 2), 
+                                py + math.random(0, 5),
                                 pz + math.random(-2, 2)
-                            },
+                                },
                             ["end"] = {tx, ty, tz},
                             spread = {10, 10, 10},
                             speed = { v.x, v.y, v.z },
+                            tracks = true,
                             -- owner = pOwner,
                             team = teamID,
                             ttl = 30 * 90,
                             error = {0, 5, 0},
-                            maxRange = 1200,
+                            maxRange = 1256,
                             trajectoryHeight = 50,
                             gravity = Game.gravity,
                             startAlpha = 1,
@@ -127,10 +138,19 @@ onLastPointBeforeImpactSetTargetTo = {
                             model = "air_copter_antiarmor_projectile.s3o"
                         })        
                         Spring.SetProjectileAlwaysVisible(javelinProjID, true)
-                        Spring.SetProjectileTarget(javelinProjID, tx, ty, tz)
+                        if targetUnit then
+                            Spring.SetProjectileTarget(javelinProjID, targetUnit, UNIT_TARGETTYPE)
+                        else
+                            Spring.SetProjectileTarget(javelinProjID, px,py,pz)
+                        end
                     end
             end,    
-[WeaponDefNames["cm_turret_ssied"].id] = function(projID) end
+[WeaponDefNames["cm_turret_ssied"].id] = function(projID)
+        px, py, pz = Spring.GetProjectilePosition(projID)
+        teamID = Spring.GetProjectileTeamID(projID)
+        unitID = Spring.CreateUnit("ground_turret_mg", px, py + 25, pz, 1, teamID)
+        giveParachutToUnit(unitID, px, py, pz)
+ end
 }
 
 function getWeapondefByName(name) return WeaponDefs[WeaponDefNames[name].id] end
