@@ -16,6 +16,7 @@ local ground_tumbleweed_deployed = Turret:New{
 	CanAttack = true,
 	CanGuard = true,
 
+
 	footprintX = 2,
 	footprintZ = 2,
 	script 			= "tumbleweedspyder_deployedscript.lua",
