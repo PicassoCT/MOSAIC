@@ -1,9 +1,9 @@
 local SatelliteShrapnell = Satellite:New{
-	name = "Shrapnellcloud Projectile ",
-	Description = " MOSAIC Standardized Reconnisance Satellite ",
+	name = "Shrapnellcloud  ",
+	Description = " damages satellites",
 	buildTime= 15,
 	corpse				= "",
-	maxDamage 			= 5000,
+	maxDamage 			= 15000,
 	mass 				= 500,
 	buildCostEnergy 	= 250,
 	buildCostMetal 		= 250,
@@ -23,13 +23,24 @@ local SatelliteShrapnell = Satellite:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
+
 	buildPic = "ShrapnellSatellite.png",
 	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
-		upright= true,	
+	upright= true,
+
 	customparams = {
 		helptext		= "Observationsatellite",
 		baseclass		= "Satellite", -- TODO: hacks
 	},
+
+	sfxtypes = {
+		explosiongenerators = {
+							"custom:glowingshrapnell", --1024
+							"custom:meteor", --1024
+							  },
+				},
+	
+
 	category = [[ORBIT]],
 }
 
