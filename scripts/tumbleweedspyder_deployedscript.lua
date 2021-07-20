@@ -17,6 +17,7 @@ boolDeployed = true
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    Spring.SetUnitCloak(unitID, 2)
     Hide(center)
 end
 
