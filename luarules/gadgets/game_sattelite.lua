@@ -43,11 +43,13 @@ if (gadgetHandler:IsSyncedCode()) then
     local timeOutTable = {}
     local directionalChangeTable = {}
     local satteliteStateTable = {}
+    local gaiaTeamID = Spring.GetGaiaTeamID()
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if Satellites[unitID] then Satellites[unitID] = nil end
 
         if SatelliteTypes[unitDefID] and unitDefID ~= ShrapnellCloudSatDefID then
+            x,y,z = Spring.GetUnitPosition(unitID)
            GG.UnitsToSpawn:PushCreateUnit("satelliteshrapnell", x, y, z, math.random(1, 4), gaiaTeamID)         
         end
     end

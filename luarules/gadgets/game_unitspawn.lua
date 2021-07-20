@@ -33,8 +33,7 @@ function gadget:GameFrame(frame)
                 assert(cur[i][4], "Z missing in PushCreateUnit " .. cur[i][1])
                 assert(cur[i][5],
                        "teamID missing in PushCreateUnit " .. cur[i][1])
-                teamID, leader, isDead, isAiTeam, side, allyTeam, customTeamKeys, incomeMultiplier =
-                    Spring.GetTeamInfo(cur[i][6])
+                teamID, leader, isDead, isAiTeam, side, allyTeam, customTeamKeys, incomeMultiplier = Spring.GetTeamInfo(cur[i][6])
 
                 if teamID and isDead == false then
                     Spring.CreateUnit(unpack(cur[i]))
