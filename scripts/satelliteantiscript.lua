@@ -79,7 +79,6 @@ function script.Killed(recentDamage, _)
         Spring.UnitDetach(id, true);
         Spring.DestroyUnit(id, true, false)
     end
-    shatterUnit(unitID, Icon, UnitScript)
     return 1
 end
 

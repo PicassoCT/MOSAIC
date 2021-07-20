@@ -1253,14 +1253,7 @@ function getNearestGroundEnemy(id, UnitDefs)
     end
 end
 
-function shatterUnit(unitID, Icon, UnitScript)
-    for part, nr in pairs(Spring.GetUnitPieceMap(unitID)) do
-        if nr ~= Icon then
-            UnitScript.Explode(nr, SFX.SHATTER + SFX.FALL + SFX.FIRE +
-                                   SFX.EXPLODE_ON_HIT)
-        end
-    end
-end
+
 
 -- > return the Name of a UnitPiece as String
 function getUnitPieceName(unitID, pieceNum)
