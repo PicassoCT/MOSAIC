@@ -26,6 +26,7 @@ return {
       count              = 1,
       ground             = true,
       water              = false,
+        alwaysvisible = true,
       properties = {
         airdrag            = 1,
         colormap           = [[1 0.6 0.3 0.01  1 0.6 0.12 0.01    0 0 0 0.01]],
@@ -54,6 +55,7 @@ return {
       count              = 1,
       ground             = true,
       water              = false,
+      alwaysvisible = true,
       properties = {
         airdrag            = 1,
         colormap           = [[1 0.4 0.3 0.01     1 0.6 0.12 0.01      0 0 0 0.01]],
