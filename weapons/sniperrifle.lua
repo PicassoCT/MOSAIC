@@ -9,7 +9,7 @@ local weaponDef = {
 	model="sniperProj.s3o",
 	soundStart = "sounds/weapons/sniper/sniperFire.ogg",
 	soundHit= "sounds/weapons/sniper/sniperHit.wav",
-	
+	noSelfDamage = true,
 	areaOfEffect = 1,
 	--physics
 	startVelocity  = 2400,

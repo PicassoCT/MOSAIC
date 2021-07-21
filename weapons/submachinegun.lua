@@ -5,13 +5,14 @@ local weaponDef = {
     weaponType = [[Cannon]],
     --damage
     damage = {
-        default = 5,
+        default = 10,
         HeavyArmor = 1,
     },
     areaOfEffect = 8,
     explosionGenerator = "custom:gunimpact",
+    noSelfDamage = true,
     cegTag = "gunprojectile",
-    texture1 = "gunshot",
+--[[    texture1 = "gunshot",--]]
     avoidFriendly= true,
 
     --physics
@@ -32,9 +33,9 @@ local weaponDef = {
     SweepFire = 1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
-    size = 5.5,
-    stages = 2,
-    separation = 1
+    size = 0.4,
+    stages = 20,
+    separation = 3
 }
 
 return lowerkeys({ [weaponName] = weaponDef })
