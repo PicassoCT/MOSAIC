@@ -1089,6 +1089,14 @@ function getRoot(unitID)
     end
 end
 
+function removeFeaturesInCircle(px, pz, radius)
+    process(Spring.GetFeaturesInCylinder(px,pz, radius),
+        function(id)
+            Spring.DestroyFeature (id) 
+        end
+        )
+end
+
 -- > kill All Units near Pieces Volume
 function killAtPiece(unitID, piecename, selfd, reclaimed, sfxfunction)
     px, py, pz = Spring.GetUnitPieceCollisionVolumeData(unitID, piecename)

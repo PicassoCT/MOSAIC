@@ -86,6 +86,8 @@ function script.Create()
     assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
 
     x, y, z = Spring.GetUnitPosition(unitID)
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
+
     math.randomseed(x + y + z)
     StartThread(buildHouse)
 

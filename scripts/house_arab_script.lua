@@ -72,6 +72,7 @@ function script.Create()
     x, y, z = Spring.GetUnitPosition(unitID)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
 
     spinYPieces = {
         TablesOfPiecesGroups["StreetDeco29Sub"][1],
