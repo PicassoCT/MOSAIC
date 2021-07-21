@@ -651,7 +651,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
 	assert(animname, "animation name is nil")
 assert(type(animname)=="string", "Animname is not string "..toString(animname))
-	assert(Animations[animname], "No animation with name ")
+	assert(Animations[animname], "No animation with name "..animname)
     local anim = Animations[animname];
 	local randoffset 
     for i = 1, #anim do
