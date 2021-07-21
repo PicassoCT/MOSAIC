@@ -10,8 +10,10 @@ myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
 local Muzzle
+local boolIsMgGroundWalker = false
 if myDefID == UnitDefNames["ground_walker_mg"].id then
     Muzzle = piece "Muzzle"
+    boolIsMgGroundWalker = true
 end
 local aimrot = piece "aimrot"
 local emitfire = piece "emitfire"
@@ -130,6 +132,7 @@ function script.Create()
     StartThread(walkAnimationLoop)
     StartThread(headingChangeDetector, unitID, boolTurnLeft, boolTurning)
     StartThread(resetHeadingIfNotAiming)
+
 end
 
 function resetHeadingIfNotAiming()
@@ -389,7 +392,18 @@ function delayedDeactivateAiming()
     boolPrioritizeGround = false
 end
 
+function fireFlash()
+    for i=1,10 do
+        EmitSfx(emitfire, 1024)
+        Sleep(125)
+        EmitSfx(Parachute, 1025)
+    end     
+end
 function script.FireWeapon1()
+    if boolIsMgGroundWalker == true then
+       StartThread(fireFlash)
+    end
+
     if boolWalking == false then         
         PlayAnimation("FIRING", nil, 3.0) end
     return true

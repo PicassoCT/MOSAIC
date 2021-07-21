@@ -31,15 +31,20 @@ local ground_walker_mg = Walker:New{
 	iconType ="ground_walker_mg",
 	strafeToAttack = true,
 
-	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
-
 	usepiececollisionvolumes = true,
 	customparams = {
+		normaltex = "unittextures/component_atlas_normal.dds",
 		helptext		= "Military Tank",
 		baseclass		= "Tank", -- TODO: hacks
 	},
+
+	sfxtypes = {
+		explosiongenerators = {
+								"custom:groundwalkermuzzle",
+								"custom:shells",
+							  },
+				},
+				
 
 	category = "GROUND",
 	noChaseCategory = "AIR NOTARGET",
