@@ -231,7 +231,6 @@ function breathing()
 end
 
 function testAnimation()
-      --DelMe
     Sleep(500)
   
     while true do
@@ -241,8 +240,20 @@ function testAnimation()
 
     Sleep(2000)
     end
-
 end
+
+function attachLoot()
+    transportID =  Spring.GetUnitIsTransporting(unitID) 
+    if transportID then 
+       val = math.random(1,25)
+       Sleep(val)
+       lootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
+       if lootID then
+       Spring.UnitAttach( unitID, lootID, UpBody)
+       end
+    end
+end
+
 function bodyBuild()
     hideAll(unitID)
     Show(UpBody)
@@ -272,6 +283,15 @@ function bodyBuild()
         end
         return
     end
+
+    if not Spring.GetUnitIsTransporting(unitID)  and  GG.GlobalGameState == GameConfig.GameState.anarchy and math.random(1,10) == 10 then
+        StartThread(attachLoot)
+    end
+
+    if GG.GlobalGameState == GameConfig.GameState.normal and Spring.GetUnitIsTransporting(unitID) then
+        Spring.UnitDetach(Spring.GetUnitIsTransporting(unitID)) 
+    end
+ 
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
 
@@ -388,6 +408,10 @@ lowerBodyAnimations = {
 accumulatedTimeInSeconds = 5
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
+    if Spring.GetUnitIsTransporting(unitID) then
+        transportID = Spring.GetUnitIsTransporting(unitID)
+        Spring.UnitDetach(transportID)
+    end
     clampedDamage = math.max(math.min(damage, 10), 35)
     StartThread(delayedWoundedWalkAfterCover, clampedDamage)
     accumulatedTimeInSeconds = accumulatedTimeInSeconds + clampedDamage
@@ -1640,5 +1664,19 @@ function allowTarget(weaponID)
 end
 
 function script.Killed(recentDamage, _)
+    setSpeedEnv(unitID, 0)
+    if Spring.GetUnitIsTransporting(unitID) then
+        transportID = Spring.GetUnitIsTransporting(unitID)
+        Spring.UnitDetach(transportID)
+    end
+    val = 5*randSign()
+    Turn(root,y_axis,math.rad(val),0.8)
+    for i=1,3 do
+        turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
+        turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
+    end
+    val = 90*randSign()
+    WTurn(root,x_axis, math.rad(val),1.4)
+
     return 1
 end

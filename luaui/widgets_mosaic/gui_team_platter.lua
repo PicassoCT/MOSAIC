@@ -109,6 +109,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["tankcorpse"].id]= true,
 [UnitDefNames["greenhouse"].id]= true,
 [UnitDefNames["satelliteshrapnell"].id]= true,
+[UnitDefNames["civilianloot"].id]= true,
 }
 
 --------------------------------------------------------------------------------
