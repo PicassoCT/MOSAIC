@@ -417,9 +417,11 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("Interogation: Target díed")
+                   
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
                     end
+
                     if persPack.IconID then
                         GG.raidStatus[persPack.IconID] = nil
                     end
@@ -473,17 +475,15 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                     end
                 end
 
-                if GG.raidStatus[persPack.IconID].boolInterogationComplete ==
-                    true then
-                    spEcho("boolInterogationCompleted")
-
+                if GG.raidStatus[persPack.IconID].boolInterogationComplete == true then
+                    spEcho("InterogationCompleted")
+               
                     if not GG.raidStatus[persPack.IconID].winningTeam then
                         -- succesfull interrogation
                         local allTeams = spGetTeamList()
                         if not allTeams or #allTeams <= 1 then
                             -- Simulation mode
-                            spEcho(
-                                "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
+                            spEcho( "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
                             GG.InterrogationTable[persPack.unitID] = nil
                             return true, persPack
                         end
