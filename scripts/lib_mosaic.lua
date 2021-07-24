@@ -273,7 +273,8 @@ function getGameConfig()
             [UnitDefNames["interrogationicon"].id] = true,
             [UnitDefNames["recruitcivilian"].id] = true,
             [UnitDefNames["bribeicon"].id] = true,
-            [UnitDefNames["cybercrimeicon"].id] = true
+            [UnitDefNames["cybercrimeicon"].id] = true,
+            [UnitDefNames["launcherstep"].id] = true,
         }
     end
 
