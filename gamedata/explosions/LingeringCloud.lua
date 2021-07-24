@@ -8,6 +8,7 @@ return {
       class              = [[CSimpleParticleSystem]],
       count              = 8,
       ground             = true,
+      alwaysvisible     = true,
       properties = {
         airdrag            = 0.8,
         alwaysvisible      = true,
