@@ -7,7 +7,7 @@ local weaponDef = {
 
 	--damage
 	damage = {
-	default = 3500
+	default = 4200,
 	},
 	noSelfDamage = true,
 	reloadtime = 30, -- seconds
@@ -34,7 +34,7 @@ local weaponDef = {
 	--impact behaviour
 	impulseBoost            = 0,
 	impulseFactor = 0.4,
-   	areaOfEffect = 512,  
+   	areaOfEffect = 768,  
 	fireStarter  = 100.0,
 
 	--visuals
