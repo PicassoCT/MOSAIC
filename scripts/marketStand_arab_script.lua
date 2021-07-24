@@ -23,12 +23,8 @@ function bodyBuilder()
 			end
 			)
 end
-counter = math.random(3,10)
+
 function script.HitByWeapon(x, z, weaponDefID, damage) 
-	if counter > 0 then 
-		counter = counter -1
-	Explode(TablesOfPiecesGroups["Prop"][math.random(1,#TablesOfPiecesGroups["Prop"])], SFX.FALL + SFX.NO_HEATCLOUD)
-	end
 return damage
 end
 
