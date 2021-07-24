@@ -3,7 +3,7 @@
 
 function widget:GetInfo()
   return {
-    name      = "debugging_gui",
+    name      = "globalgamestatedebuggui",
     desc      = "GUI for debuggin",
     author    = "PicassoCT",
     date      = "WIP",
@@ -38,6 +38,7 @@ function widget:Initialize()
 		panel:UpdateClientArea()
 	end
 	command = "SetGameState:!"
+	reset = "ResetGameState"
 
 	--------------------------------------------------------------------------------
 	--------------------------------------------------------------------------------
@@ -89,6 +90,15 @@ function widget:Initialize()
 			caption = "Pacification",
 			OnClick = {function(self) 
 					Spring.SendLuaRulesMsg(command:gsub("!","pacification"));
+					self.font:SetColor(1,0.5,0.5,1);
+					end},
+		},	
+			Chili.Button:New{
+			x      = 20,
+			y      = 20,
+			caption = "Reset Override",
+			OnClick = {function(self) 
+					Spring.SendLuaRulesMsg(reset);
 					self.font:SetColor(1,0.5,0.5,1);
 					end},
 		},
