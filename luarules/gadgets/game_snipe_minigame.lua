@@ -418,7 +418,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         Survivors = findSurvivors(roundRunning, TheGloriousDead)
         process(TheGloriousDead, function(id)
-            spawnCEGAtUnit(id, "iconkill")
+            spawnCegAtUnit(id, "iconkill")
         end)
 
         -- condense the Dead into Points
