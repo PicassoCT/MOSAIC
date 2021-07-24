@@ -130,6 +130,7 @@ function getGameConfig()
         PreLaunchLeakSteps = 3, --after 4fth step
         LaunchReadySteps = 7,
         LauncherInterceptTimeSeconds = 20,
+        LauncherMaxHeight = 3000,
 
         -- CruiseMissiles
         CruiseMissilesHeightOverGround = 22,
