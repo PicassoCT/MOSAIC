@@ -6540,6 +6540,14 @@ function runAwayFrom(id, horrorID, distanceToRun)
     x, y, z = Spring.GetUnitPosition(id)
     hx, hy, hz = Spring.GetUnitPosition(horrorID)
 
+    runAwayFromPlace(id, hx, hy, hz, distanceToRun)
+end
+
+-- > move away from another unit by distance*scalingfactor
+function runAwayFromPlace(id, px, py, pz, distanceToRun)
+    x, y, z = Spring.GetUnitPosition(id)
+    hx, hy, hz = px, py, pz
+
     -- Compute Offset
     hx, hz = (x - hx), (z - hz)
     maX = math.max(math.abs(hx), math.max(hz))
