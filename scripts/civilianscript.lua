@@ -244,7 +244,7 @@ end
 
 function attachLoot()
     transportID =  Spring.GetUnitIsTransporting(unitID) 
-    if transportID then 
+    if not transportID then 
        val = math.random(1,25)
        Sleep(val)
        lootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
@@ -284,12 +284,9 @@ function bodyBuild()
         return
     end
 
-    if not Spring.GetUnitIsTransporting(unitID)  and  GG.GlobalGameState == GameConfig.GameState.anarchy and math.random(1,10) == 10 then
-        StartThread(attachLoot)
-    end
-
-    if GG.GlobalGameState == GameConfig.GameState.normal and Spring.GetUnitIsTransporting(unitID) then
-        Spring.UnitDetach(Spring.GetUnitIsTransporting(unitID)) 
+  
+    if GG.GlobalGameState == GameConfig.GameState.normal  then
+       dropLoot()
     end
  
 
@@ -867,6 +864,9 @@ normalBehavourStateMachine = {
             -- Spring.Echo("Civilian entering gamestate anarchy")
             Spring.SetUnitNeutral(unitID, false)
             Spring.SetUnitNoSelect(unitID, true)
+            if not Spring.GetUnitIsTransporting(unitID)  and  GG.GlobalGameState ~= GameConfig.GameState.normal and math.random(1,5) == 5 then
+                StartThread(attachLoot)
+            end
 
             bodyConfig.boolArmed = (math.random(1, 100) >
                                        GameConfig.chanceCivilianArmsItselfInHundred)
@@ -918,20 +918,20 @@ normalBehavourStateMachine = {
         Spring.SetUnitNeutral(unitID, true)
         Spring.TransferUnit(unitID, gaiaTeamID)
 
-        if unitID % 2 == 1 then -- cower catatonic
-            setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved,
-                                      true, nil, false)
-            setSpeedEnv(unitID, 0)
-        else -- run around wailing
             setOverrideAnimationState(eAnimState.wailing, eAnimState.walking,
                                       true, nil, true)
             x, y, z = Spring.GetUnitPosition(unitID)
-            Command(unitID, "go", {
-                x = x + math.random(-100, 100),
-                y = y,
-                z = z + math.random(-100, 100)
-            })
-        end
+            if maRa()== true then
+                Command(unitID, "go", {
+                    x = x + math.random(-100, 100),
+                    y = y,
+                    z = z + math.random(-100, 100)
+                })
+            else
+                runAwayFromPlace(unitID, Game.mapSizeX/2, 0, Game.mapSizeZ/2, 4096)
+            end
+
+
     end,
     [GameConfig.GameState.gameover] = function(lastState, currentState)
         setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true,
@@ -940,6 +940,7 @@ normalBehavourStateMachine = {
     end,
     [GameConfig.GameState.pacification] = function(lastState, currentState)
         if lastState ~= currentState then
+            dropLoot()
             Spring.TransferUnit(unitID, gaiaTeamID)
             Spring.SetUnitNeutral(unitID, true)
             if bodyConfig.boolArmed == true then
@@ -1663,12 +1664,16 @@ function allowTarget(weaponID)
     return true 
 end
 
-function script.Killed(recentDamage, _)
-    setSpeedEnv(unitID, 0)
+function dropLoot()
     if Spring.GetUnitIsTransporting(unitID) then
         transportID = Spring.GetUnitIsTransporting(unitID)
         Spring.UnitDetach(transportID)
     end
+end
+
+function script.Killed(recentDamage, _)
+    setSpeedEnv(unitID, 0)
+    dropLoot()
     val = 5*randSign()
     Turn(root,y_axis,math.rad(val),0.8)
     for i=1,3 do
