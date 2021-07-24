@@ -7,9 +7,10 @@ include "lib_Build.lua"
 
 function cegFunction(x,y,z) 
 	cegname, sleeptime = getCegName()
-	Spring.SpawnCEG(getCegName(), x,  y + 100, z, math.random(-1,1),  math.random(-1,0),  math.random(-1,1), 60)
+	Spring.SpawnCEG(getCegName(), x,  y + 50, z, math.random(-1,1),  math.random(-1,0),  math.random(-1,1), 60)
 	--spawnCegAtPiece(unitID, Quader04, cegname, -50, 0, 0, 0)
 	Sleep(sleeptime)
+	spawnCegNearUnitGround(unitID, getCegName())
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -17,7 +18,7 @@ end
 
 function getCegName()
 	echo("Cegspawn")
-	return "meteor", 5000
+	return "pressurewave", 5000
 end
 center = piece "center"
 Quader04 = piece "Quader04"
@@ -108,7 +109,7 @@ function emitSFX()
 	x, y, z = Spring.GetUnitPosition(unitID)
 	i = 0
 	while true do
-	cegFunction(x,y,z)
+	cegFunction(x,Spring.GetGroundHeight(x,z),z)
 		
 	end
 end
