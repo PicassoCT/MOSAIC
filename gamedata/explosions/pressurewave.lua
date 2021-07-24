@@ -1,23 +1,21 @@
---lowest part of the fire
 
 return {
-  ["fireshine"] = {
-    alwaysVisible = true,
-    
+  ["pressurewave"] = {
+  alwaysvisible      = true,
     groundflash = {
-      air                = true,
+      air                = false,
       alwaysvisible      = true,
       circlealpha        = 0.5,
       circlegrowth       = 8,
       flashalpha         = 0.02,
-      flashsize          = 22,
+      flashsize          = 42,
       ground             = true,
-      ttl                = 47,
+      ttl                = 67,
       water              = true,
       color = {
-        [1]  = 0.9,
-        [2]  = 0.2,
-        [3]  = 0,
+        [1]  = 0.15,
+        [2]  = 0.15,
+        [3]  = 0.15,
       },
     },
   

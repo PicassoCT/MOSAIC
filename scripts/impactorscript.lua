@@ -94,4 +94,5 @@ function script.Create()
     Hide(ringEmit3)
     Hide(ringEmit4)
     StartThread(threadMill)
+    spawnCegNearUnitGround(unitID,"pressurewave" )
 end
