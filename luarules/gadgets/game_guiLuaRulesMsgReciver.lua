@@ -26,12 +26,13 @@ if (gadgetHandler:IsSyncedCode()) then
         if msg then
             -- Spring.Echo("RecvLuaMsg"..msg)
 
-            if string.find(msg, "SetGameState:") then
+            if string.find(msg, "SetGameState:") then 
                 msg = msg:gsub("SetGameState:", "")
-                if msg and GameConfig.GameState[msg] then
-                    GG.GlobalGameState = msg
-                    Spring.SetGameRulesParam("GlobalGameState", msg)
-                end
+                    GG.GlobalGameStateOverride = msg
+            end
+
+            if string.find(msg, "ResetGameState") then
+                GG.GlobalGameStateOverride = nil
             end
 
         end

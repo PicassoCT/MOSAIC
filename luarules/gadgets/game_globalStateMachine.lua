@@ -10,7 +10,7 @@
 --------------------------------------------------------------------------------
 function gadget:GetInfo()
     return {
-        name = "Game End",
+        name = "GameStateMachine",
         desc = "Detects Teamdeaths and Win/Loose Condtions",
         author = "Andrea Piras",
         date = "August, 2010",
@@ -71,10 +71,13 @@ local killedAllyTeams = {}
 local GameConfig = getGameConfig()
 
  GG.GlobalGameState = GameConfig.GameState.normal
- 
+ oldState = nil
 function setGlobalGameState(state)
     GG.GlobalGameState = state
     Spring.SetGameRulesParam("GlobalGameState:", state)
+    if oldState ~= state then
+     Spring.Echo("Global GameState: "..state)
+    end
 end
 
 
@@ -133,7 +136,7 @@ local GameStateMachine = {
             for teamID, launchersT in pairs(GG.Launchers) do
                 if teamID and launchersT then
                     for launcherID, step in pairs(launchersT) do
-                        if launcherID and step >= GameConfig.PreLaunchLeakSteps then
+                        if launcherID and doesUnitExistAlive(launcherID) and step >= GameConfig.PreLaunchLeakSteps then
                             boolNoReadyLaunchers = false
                         end
                     end
@@ -168,6 +171,7 @@ function gadget:Initialize()
 
     GG.Launchers = {}
     GG.GameStateMachine = GameStateMachine
+    GG.GlobalGameStateOverride = nil
 
     if teamDeathMode == "none" then
         Spring.Echo("GameEndGadget: No teamDeathMode specified")
@@ -195,7 +199,6 @@ end
 LaunchedRockets = {}
 
 function gadget:GameOver()
-
     -- remove ourself after successful game over
     gadgetHandler:RemoveGadget()
 end
@@ -363,7 +366,11 @@ function gadget:GameFrame(frame)
     if frame > 1 and (frame % 16) == 0 then
 
         constantCheck(frame)
-        setGlobalGameState(GG.GameStateMachine[GG.GlobalGameState](frame))
+        newGlobalGameState = GG.GameStateMachine[GG.GlobalGameState](frame) 
+        if GG.GlobalGameStateOverride then
+            newGlobalGameState =GG.GlobalGameStateOverride
+        end
+        setGlobalGameState(newGlobalGameState)
 
         if GG.GlobalGameState and oldState ~= GG.GlobalGameState then
             holdSpeach(oldState .. ">" .. GG.GlobalGameState)
