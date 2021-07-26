@@ -13,10 +13,7 @@ end
 
 if (not gadgetHandler:IsSyncedCode()) then return false end
 
-VFS.Include("scripts/lib_OS.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
-VFS.Include("scripts/lib_Animation.lua")
-VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 local GameConfig = getGameConfig()
@@ -240,6 +237,13 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
        --[[ if officerID and attackerID then
             echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
         end--]]
+    end
+
+    if PoliceTypes[unitDefID] then 
+        activePoliceUnitIds_DispatchTime[unitID] = GameConfig.policeMaxDispatchTime 
+        if attackerID and doesUnitExistAlive(attackerID) == true and maRa() then
+            Command(unitID, "attack", {attackerID}, 4)
+        end
     end
 end
 
