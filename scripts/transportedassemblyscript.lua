@@ -3,7 +3,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-include "lib_Build.lua"
+--include "lib_Build.lua"
 -- Define the pieces of the weapon
 
 local SIG_RESET = 2

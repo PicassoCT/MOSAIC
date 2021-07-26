@@ -1,7 +1,7 @@
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-include "lib_Build.lua"
+--include "lib_Build.lua"
 
 local spiralCenter = piece "spiralCenter"
 local fireSpiral1 = piece "fireSpiral1"
