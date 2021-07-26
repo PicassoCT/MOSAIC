@@ -1,96 +1,79 @@
-
-
-
-
-
-Iran Province 
-
-Alborz ,	Karaj 	
-Ardabil ,	Ardabil 	
-Azerbaijan, East 	Tabriz 
-Azerbaijan, West 	Urmia 
-Bushehr 	,Bushehr 	
-Chahar, Mahaal
-Fars ,	Shiraz 
-Gilan ,	Rasht 
-Golestan ,	Gorgan 	
-Gorgan, Kordkuy
-Hamadan ,	Hamadan 
-Hormozgān ,	Bandar Abbas 	
-Ilam ,	Ilam 
-Isfahan ,	Isfahan 	
-Semnan,  Zanjan
-Kerman 	Kerman 	
-Kermanshah 	Kermanshah 	
-Khorasan, North 	Bojnourd 	
-Khorasan, Razavi 	Mashhad 	
-Khorasan, South 	Birjand 
-Khuzestan 	,Ahvaz 	
-Kohgiluyeh , Boyer-Ahmad 	Yasuj 
-Kurdistan ,	Sanandaj 	
-Lorestan ,	Khorramabad 	
-Markazi ,	Arak 
-Mazandaran ,	Sari 
-Qazvin, 	Qazvin 	
-Qom ,	Qom 
-Semnan ,	Semnan 
-Sistan , Baluchestan 	Zahedan 	
-Tehran, 	Elahieh
-Yazd, 	Yazd 
-Zanjan, 	Zanjan
-
-Afghanistan
-
-adakhshan 	30 	AF-BDS 	BDN 	Fayzabad 	950,953 	44,835 	22.2 	29 	North East 	North
-Badghis 	4 	AF-BDG 	BDG 	Qala i Naw 	495,958 	20,794 	24.3 	7 	West 	Central
-Baghlan 	19 	AF-BGL 	BAG 	Puli Khumri 	910,784 	18,255 	52.1 	16 	North East 	North
-Balkh 	13 	AF-BAL 	BLH 	Mazar-i-Sharif 	1,325,659 	16,186 	80.7 	15 	North West 	North
-Bamyan 	15 	AF-BAM 	BAM 	Bamyan 	487,218 	18,029 	25.4 	7 	West 	Central
-Daykundi 	10 	AF-DAY 	DYK 	Nili 	507,339 	17,515 	28.1 	8 	South West 	South
-Farah 	2 	AF-FRA 	FRH 	Farah 	507,405 	49,339 	10.4 	11 	West 	Central
-Faryab 	5 	AF-FYB 	FYB 	Maymana 	998,147 	20,797 	49.0 	14 	North West 	North
-Ghazni 	16 	AF-GHA 	GAZ 	Ghazni 	1,228,831 	22,460 	57.4 	19 	South East 	South
-Ghor 	6 	AF-GHO 	GHR 	Chaghcharan 	790,296 	36,676 	18.9 	11 	West 	Central
-Helmand 	7 	AF-HEL 	HEL 	Lashkargah 	924,711 	58,305 	15.9 	13 	South West 	South
-Herat 	1 	AF-HER 	HRT 	Herat 	1,890,202 	55,868 	35.1 	15 	West 	Central
-Jowzjan 	8 	AF-JOW 	JZJ 	Sheberghan 	540,255 	11,291 	49.5 	9 	North West 	North
-Kabul 	22 	AF-KAB 	KBL 	Kabul 	4,372,977 	4,523 	917.7 	18 	Central 	Central
-Kandahar 	12 	AF-KAN 	KRD 	Kandahar 	1,226,593 	54,844 	23.2 	16 	South West 	South
-Kapisa 	29 	AF-KAP 	KPS 	Mahmud-i-Raqi 	441,010 	1,908 	238.2 	7 	Central 	Central
-Khost 	26 	AF-KHO 	KST 	Khost 	574,582 	4,235 	136.3 	13 	South East 	South
-Kunar 	34 	AF-KNR 	KNR 	Asadabad 	450,652 	4,925 	94.5 	15 	East 	Central
-Kunduz 	18 	AF-KDZ 	KDZ 	Kunduz 	1,010,037 	8,080 	130.3 	7 	North East 	North
-Laghman 	32 	AF-LAG 	LGM 	Mihtarlam 	445,588 	3,977 	118.1 	5 	East 	Central
-Logar 	23 	AF-LOG 	LGR 	Pul-i-Alam 	392,045 	4,568 	90.7 	7 	Central 	Central
-Nangarhar 	33 	AF-NAN 	NGR 	Jalalabad 	1,517,388 	7,641 	208.9 	23 	East 	Central
-Nimruz 	3 	AF-NIM 	NRZ 	Zaranj 	164,978 	42,409 	4.1 	5 	South West 	South
-Nuristan 	31 	AF-NUR 	NUR 	Parun 	147,967 	9,255 	16.7 	7 	East 	Central
-Paktia 	24 	AF-PIA 	PAK 	Gardez 	551,987 	5,583 	106.4 	11 	South East 	South
-Paktika 	25 	AF-PKA 	PKT 	Sharana 	434,742 	19,515 	23.2 	15 	South East 	South
-Panjshir 	28 	AF-PAN 	PJR 	Bazarak 	371,902 	3,771 	41.8 	7 	Central 	Central
-Parwan 	20 	AF-PAR 	PRN 	Charikar 	664,502 	5,715 	120.9 	9 	Central 	Central
-Samangan 	14 	AF-SAM 	SAM 	Samangan 	387,928 	13,437 	30.6 	5 	North West 	North
-Sar-e Pol 	9 	AF-SAR 	SRP 	Sar-e Pol 	559,577 	16,385 	37.3 	7 	North West 	North
-Takhar 	17 	AF-TAK 	TAK 	Taloqan 	983,336 	12,457 	81.2 	16 	North East 	North
-Uruzgan 	11 	AF-URU 	ORZ 	Tarinkot 	386,818 	11,473 	32.7 	6 	South West 	South
-Maidan Wardak 	21 	AF-WAR 	WDK 	Maidan Shar 	596,287 	10,348 	57.3 	9 	Central 	Central
-Zabul 	17 	AF-ZAB 	ZBL 	Qalat
-
-Pakistan
-Azad Jammu and Kashmir[a] 	آزاد جموں و کشمیر 	AJK 	Muzaffarabad 	Mirpur 	State Seal of Azad Jammu and Kashmir (Pakistan).png 	Flag of Azad Kashmir.svg 	Azad Kashmir in Pakistan (claims hatched).svg 	6 	4,045,366 	13,297 	223.55
-Balochistan 	بلوچستان 	BL 	Quetta 	Khuzdar 	Coat of arms of Balochistan.svg 	Flag of Balochistan.svg 	Balochistan in Pakistan (claims hatched).svg 	1 	12,344,408 	347,190 	37.91
-Gilgit-Baltistan[a] 	گلگت بلتستان 	GB 	Gilgit 	Skardu 	Gilgit Baltistan Government Logo.svg 	Flag of Gilgit-Baltistan.svg 	Gilgit-Baltistan in Pakistan (de-facto + wo Glacier) (claims hatched).svg 	7 	1,249,000 	64,817 	26
-Islamabad Capital Territory 	اسلام آباد دار الحکومت 	ICT 	Islamabad 	N/A 	N/A 	N/A 	Islamabad Capital Territory in Pakistan (special marker) (claims hatched).svg 	5 	2,006,572 	906 	1,271.38
-Khyber Pakhtunkhwa 	خیبرپختونخوا 	KP 	Peshawar 	Mardan 	Coat of arms of Khyber Pakhtunkhwa.svg 	Flag of Khyber Pakhtunkhwa.svg 	Khyber Pakhtunkhwa in Pakistan (claims hatched).svg 	2 	35,525,047 	101,741 	349.17
-Punjab 	پنجاب 	PJ 	Lahore 	Faisalabad 	Coat of arms of Punjab.svg 	Flag of Punjab.svg 	Punjab in Pakistan (claims hatched).svg 	3 	110,012,442 	205,344 	535.74
-Sindh 	سندھ 	SN 	Karachi 	Hyderabad
-
-Bangladesh
-Barisal 	6 	Barguna, Barisal, Bhola, Jhalokati, Patuakhali, Pirojpur
-Chittagong 	11 	Bandarban, Brahmanbaria, Chandpur, Chittagong, Comilla, Cox's Bazar, Feni, Khagrachari, Lakshmipur, Noakhali, Rangamati
-Dhaka 	13 	Dhaka, Faridpur, Gazipur, Gopalganj, Kishoreganj, Madaripur, Manikganj, Munshiganj, Narayanganj, Narsingdi, Rajbari, Shariatpur, Tangail
-Khulna 	10 	Bagerhat, Chuadanga, Jessore, Jhenaidah, Khulna, Kushtia, Magura, Meherpur, Narail, Satkhira
-Mymensingh 	4 	Jamalpur, Mymensingh, Netrokona, Sherpur
+Alborz 
+Ardabil 
+Azerbaijan
+Bushehr 
+Chahar
+Fars
+Gilan 
+Golestan 
+Gorgan
+Hamadan 
+Hormozgān 
+Ilam 
+Isfahan 	
+Semnan
+Kerman 
+Kermanshah 		
+Khorasan	
+Khuzestan 
+Kohgiluyeh 
+Kurdistan
+Lorestan
+Markazi 
+Mazandaran
+Qazvin
+Qom 
+Semnan 
+Sistan 	
+Tehran
+Yazd
+Zanjan
+adakhshan 
+Badghis 
+Baghlan 
+Balkh 
+Bamyan 
+Daykundi 
+Farah 
+Faryab 
+Ghazni 	
+Ghor 	
+Helmand 
+Herat 	
+Jowzjan 
+Kabul 
+Kandahar 
+Kapisa 
+Khost 	
+Kunar 
+Kunduz 
+Laghman 
+Logar 
+Nangarhar 
+Nimruz 	
+Nuristan 
+Paktia 
+Paktika 
+Panjshir 
+Parwan 	
+Samangan
+Sar-e Pol 
+Takhar 
+Uruzgan 
+Maidan Wardak 	
+Zabul 	
+Azad Jammu Kashmir
+Balochistan 
+Gilgit-Baltistan
+Islamabad Capital Territory 
+Khyber Pakhtunkhwa
+Punjab 
+Sindh 
+Barisal 
+Chittagong 
+Dhaka 	
+Khulna 
+Mymensingh 
 Rajshahi 	8 	Bogra, Jaipurhat, Naogaon, Natore, Nawabganj, Pabna, Rajshahi, Sirajganj
 Rangpur 	8 	Dinajpur, Gaibandha, Kurigram, Lalmonirhat, Nilphamari, Panchagarh, Rangpur, Thakurgaon
 Sylhet 	4 	Habiganj, Moulvibazar, Sunamganj, Sylhet
