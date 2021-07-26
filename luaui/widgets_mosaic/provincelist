@@ -10,11 +10,11 @@ Gorgan
 Hamadan 
 Hormozgān 
 Ilam 
-Isfahan 	
+Isfahan                                   
 Semnan
 Kerman 
-Kermanshah 		
-Khorasan	
+Kermanshah                                                    
+Khorasan                 
 Khuzestan 
 Kohgiluyeh 
 Kurdistan
@@ -24,7 +24,7 @@ Mazandaran
 Qazvin
 Qom 
 Semnan 
-Sistan 	
+Sistan                                   
 Tehran
 Yazd
 Zanjan
@@ -36,32 +36,32 @@ Bamyan
 Daykundi 
 Farah 
 Faryab 
-Ghazni 	
-Ghor 	
+Ghazni                                   
+Ghor                                   
 Helmand 
-Herat 	
+Herat                                   
 Jowzjan 
 Kabul 
 Kandahar 
 Kapisa 
-Khost 	
+Khost                                   
 Kunar 
 Kunduz 
 Laghman 
 Logar 
 Nangarhar 
-Nimruz 	
+Nimruz                                   
 Nuristan 
 Paktia 
 Paktika 
 Panjshir 
-Parwan 	
+Parwan                                   
 Samangan
 Sar-e Pol 
 Takhar 
 Uruzgan 
-Maidan Wardak 	
-Zabul 	
+Maidan Wardak                                   
+Zabul                                   
 Azad Jammu Kashmir
 Balochistan 
 Gilgit-Baltistan
@@ -71,679 +71,524 @@ Punjab
 Sindh 
 Barisal 
 Chittagong 
-Dhaka 	
+Dhaka                                   
 Khulna 
 Mymensingh 
-Rajshahi 	8 	Bogra, Jaipurhat, Naogaon, Natore, Nawabganj, Pabna, Rajshahi, Sirajganj
-Rangpur 	8 	Dinajpur, Gaibandha, Kurigram, Lalmonirhat, Nilphamari, Panchagarh, Rangpur, Thakurgaon
-Sylhet 	4 	Habiganj, Moulvibazar, Sunamganj, Sylhet
+Rajshahi 
+Nawabganj,
+Rangpur                                   
+Rangpur, 
+Sylhet                                   
 
 Indoensia
-Aceh 	Aceh 	Aceh 	ID-AC 	
-Banda Aceh
-	5,274,871 	57,956 	77 	Sumatra 	23 	5 	18
-Coat of arms of Bali.svg 	Bali 	Bali 	Bali 	ID-BA 	
+Aceh                                   
+Bali
 Denpasar
-	4,317,404 	5,780 	621 	Lesser Sunda Islands 	9 	1 	8
-Coat of arms of Bangka Belitung Islands.svg 	Bangka Belitung Islands 	Kepulauan Bangka Belitung 	Babel 	ID-BB 	
+Bangka Belitung                 
 Pangkal Pinang
-	1,455,678 	16,424 	64 	Sumatra 	7 	1 	6
-Coat of arms of Banten.svg 	Banten 	Banten 	Banten 	ID-BT 	
-Serang
-	11,904,562 	9,662 	909 	Java 	8 	4 	4
-Coat of arms of Bengkulu.svg 	Bengkulu 	Bengkulu 	Bengkulu 	ID-BE 	
+Banten                                   
+Serang                 
 Bengkulu
-	2,010,670 	19,919 	84 	Sumatra 	10 	1 	9
-Coat of arms of Central Java.svg 	Central Java 	Jawa Tengah 	Jateng 	ID-JT 	
+Central Java                                   
 Semarang
-	36,516,035 	40,800 	894 	Java 	35 	6 	29
-Coat of arms of Central Kalimantan.svg 	Central Kalimantan 	Kalimantan Tengah 	Kalteng 	ID-KT 	
 Palangka Raya
-	2,669,969 	153,564 	14 	Kalimantan 	14 	1 	13
-Coat of arms of Central Sulawesi.svg 	Central Sulawesi 	Sulawesi Tengah 	Sulteng 	ID-ST 	
 Palu
-	2,985,734 	61,841 	41 	Sulawesi 	13 	1 	12
-Coat of arms of East Java.svg 	East Java 	Jawa Timur 	Jatim 	ID-JI 	
 Surabaya
-	40,665,696 	47,799 	828 	Java 	38 	9 	29
-Coat of arms of East Kalimantan.svg 	East Kalimantan[6] 	Kalimantan Timur 	Kaltim 	ID-KI 	
-Samarinda (largest city: Balikpapan)
-	3,766,039 	127,267 	22 	Kalimantan 	10 	3 	7
-Coat of arms of East Nusa Tenggara.svg 	East Nusa Tenggara 	Nusa Tenggara Timur 	NTT 	ID-NT 	
+Samarinda 
 Kupang
-	5,325,566 	48,718 	92 	Lesser Sunda Islands 	22 	1 	21
-Coat of arms of Gorontalo.svg 	Gorontalo 	Gorontalo 	Gorontalo 	ID-GO 	
 Gorontalo
-	1,171,681 	11,257 	94 	Sulawesi 	6 	1 	5
-Coat of arms of Jakarta.svg 	Special Capital Region of Jakarta 	Daerah Khusus Ibukota Jakarta 	DKI 	ID-JK 	
-Jakarta[a]
-	10,562,088 	664 	12,786 	Java 	6 	5 	1
-Coat of arms of Jambi.svg 	Jambi 	Jambi 	Jambi 	ID-JA 	
+Jakarta
 Jambi
-	3,548,228 	50,058 	57 	Sumatra 	11 	2 	9
-Coat of arms of Lampung.svg 	Lampung 	Lampung 	Lampung 	ID-LA 	
 Bandar Lampung
-	9,007,848 	34,623 	226 	Sumatra 	15 	2 	13
-Coat of arms of Maluku.svg 	Maluku 	Maluku 	Maluku 	ID-MA 	
 Ambon
-	1,848,923 	46,914 	32 	Maluku Islands 	11 	2 	9
-Coat of arms of North Kalimantan (2021 version).svg 	North Kalimantan 	Kalimantan Utara 	Kaltara 	ID-KU 	
-Tanjung Selor (largest city: Tarakan)
-	701,814 	72,275 	10 	Kalimantan 	5 	1 	4
-Coat of arms of North Maluku.svg 	North Maluku 	Maluku Utara 	Malut 	ID-MU 	
-Sofifi (largest city: Ternate)
-	1,282,937 	31,982 	31 	Maluku Islands 	10 	2 	8
-Coat of arms of North Sulawesi.svg 	North Sulawesi 	Sulawesi Utara 	Sulut 	ID-SA 	
+Tanjung Selor 
+Sofif
 Manado
-	2,621,923 	13,851 	162 	Sulawesi 	15 	4 	11
-Coat of arms of North Sumatra.svg 	North Sumatra 	Sumatra Utara 	Sumut 	ID-SU 	
 Medan
-	14,799,361 	72,981 	188 	Sumatra 	33 	8 	25
-Coat of arms of Papua 2.svg 	Papua 	Papua 	Papua 	ID-PA 	
 Jayapura
-	4,303,707 	319,036 	8 	Western New Guinea 	29 	1 	28
-Coat of arms of Riau.svg 	Riau 	Riau 	Riau 	ID-RI 	
 Pekanbaru
-	6,394,087 	87,023 	52 	Sumatra 	12 	2 	10
-Coat of arms of Riau Islands.svg 	Riau Islands 	Kepulauan Riau 	Kepri 	ID-KR 	
-Tanjung Pinang (largest city: Batam)
-	2,064,564 	8,201 	208 	Sumatra 	7 	2 	5
-Coat of arms of Southeast Sulawesi.svg 	Southeast Sulawesi 	Sulawesi Tenggara 	Sultra 	ID-SG 	
+Tanjung Pinang
 Kendari
-	2,624,875 	38,067 	51 	Sulawesi 	17 	2 	15
-Coat of arms of South Kalimantan.svg 	South Kalimantan 	Kalimantan Selatan 	Kalsel 	ID-KS 	
 Banjarmasin
-	4,073,584 	38,744 	96 	Kalimantan 	13 	2 	11
-Coat of arms of South Sulawesi.svg 	South Sulawesi 	Sulawesi Selatan 	Sulsel 	ID-SN 	
 Makassar
-	9,073,509 	46,717 	151 	Sulawesi 	24 	3 	21
-Coat of arms of South Sumatra.svg 	South Sumatra 	Sumatra Selatan 	Sumsel 	ID-SS 	
 Palembang
-	8,467,432 	91,592 	86 	Sumatra 	17 	4 	13
-Coat of arms of West Java.svg 	West Java 	Jawa Barat 	Jabar 	ID-JB 	
 Bandung
-	48,274,162 	35,377 	1,176 	Java 	27 	9 	18
-Coat of arms of West Kalimantan.svg 	West Kalimantan 	Kalimantan Barat 	Kalbar 	ID-KB 	
 Pontianak
-	5,414,390 	147,307 	30 	Kalimantan 	14 	2 	12
-Coat of arms of West Nusa Tenggara.svg 	West Nusa Tenggara 	Nusa Tenggara Barat 	NTB 	ID-NB 	
 Mataram
-	5,320,092 	18,572 	234 	Lesser Sunda Islands 	10 	2 	8
-Coat of arms of West Papua.svg 	West Papua 	Papua Barat 	Pabar 	ID-PB[7] 	
-Manokwari (largest city: Sorong)
-	1,134,068 	97,024 	8 	Western New Guinea 	13 	1 	12
-Coat of arms of West Sulawesi.svg 	West Sulawesi 	Sulawesi Barat 	Sulbar 	ID-SR 	
+Manokwari 
 Mamuju
-	1,419,229 	16,787 	73 	Sulawesi 	6 	0 	6
-Coat of arms of West Sumatra.svg 	West Sumatra 	Sumatra Barat 	Sumbar 	ID-SB 	
 Padang
-	5,534,472 	42,012 	110 	Sumatra 	19 	7 	12
-Coat of arms of Yogyakarta.svg 	Special Region of Yogyakarta 	Daerah Istimewa Yogyakarta 	DIY 	ID-YO 	
 Yogyakarta
+Hejaz                                   
+Najd 
+Eastern Arabia                                   
+Asir Region 
+Jizan Region                                   
+Hejaz                                   
+Najd                                   
+Hejaz 
+Najd                                   Ha'il 
+Najran Region 
+Badiah                                   Al-Jawf Region 
+Hejaz                                   Al-Bahah Region 
+Al Ḥudud ash Shamaliyah
+Irbid 
+Ajloun 
+Jerash 
+Mafraq 
+North Region
+Central Region 
+Balqa
+Amman 
+Zarqa
+Madaba
+South Region 
+Karak 
+Tafilah
+Ma'an
+Aqaba 
+Aleppo Governorate 
+Raqqa Governorate
+As-Suwayda Governorate 
+Damascus Governorate
+Daraa Governorate
+Deir ez-Zor Governorate
+Hama Governorate 
+Hasaka Governorate 
+Homs Governorate 
+Idlib Governorate 
+Latakia Governorate 
+Quneitra Governorate 
+Rif Dimashq Governorate 
+Tartus Governorate
+Ad-Daqahiyah
+Ajā 
+Al-Jamāliyah 
+Al-Kurdy
+Al-Manṣūrah
+Al-Manṣūrah
+Al-Manṣūrah
+Al-Manzilah
+Al-Maṭariyah
+As-Sinbillāwayn
+Banī Ubayd
+Bilqās 
+Dikirnis 
+Jamaṣah 
+Maḥallat Damanah
+Minyat an-Naṣr
+Mīt Ghamr
+Mīt Ghamr 
+Mīt Salsīl 
+Nabarūh 
+Shirbīn
+Ṭalkhā 
+Timay al-Imdīd
+Al-Baḥr al-Aḥmar 
+Al-Ghurdaqah
+Al-Ghurdaqah
+Al-Quṣayr
+Ash-Shalātīn
+Ḥalāyib 
+Marsā 'Alam 
+Ras Ghārib
+Safājā 
+Al-Buḥayrah
+Abū al-Maṭāmīr
+Abū Ḥummuṣ 
+Ad-Dilinjāt 
+Al-Maḥmūdiyah
+Ar-Raḥmāniyah
+Badr
+Damanhūr
+Gharb an-Nūbāriyah
+Ḥawsh 'Īsā 
+Idkū 
+Ityāy al-Bārūd
+Kafr ad-Dawwār
+Kawm Ḥamādah
+Rashīd 
+Shubrākhīt
+Wadi an-Natrun 
+Al-Fayyūm 
+Ibshawāy 
+Iṭsā 
+Madīnat al-Fayyūm al-Jadīdah
+Sinnūris
+Ṭāmiyah 
+Yūsuf aṣ-Ṣiddīq 
+Al-Gharbiyah 
+Al-Maḥallah al-Kubrā
+As-Sanṭah 
+Basyūn
+Kafr az-Zayyāt 
+Quṭūr
+Samannūd
+Ṭanṭā
+Ziftā
+Al-Iskandariyah
+Ādārh Shurṭah Mīnā' al-Iskandariyah
+Ad-Dukhaylah
+Al-'Āmriyah 
+Al-'Aṭṭārīn 
+Al-Jumruk
+Al-Labān
+Al-Manshiyah 
+Al-Muntazah
+Ar-Raml
+As-Sāḥal ash-Shamāli
+Bāb Sharqi 
+Burj al-'Arab 
+Karmūz 
+Madīnat Burj al-'Arab al-Jadīdah 
+Mīnā al-Baṣal
+Muḥarram Bik 
+Sīdi Jābir 
+Al-Ismā'īliyah 
+Abū Ṣuwīr 
+Al-Ismā'īliyah
+Al-Ismā'īliyah
+Al-Qanṭarah 
+Al-Qanṭarah Sharq 
+Al-Qaṣāṣīn al-Jadīdah 
+At-Tall al-Kabīr 
+Fa'id 
+Al-Jīzah
+Ad-Duqqī 
+Al-Ahrām 
+Al-'Ajūzah 
+Al-'Ayyāṭ 
+Al-Badrashayn
+Al-Ḥawāmidiyah
+Al-Jīza
+Al-'Umrāniyah 
+Al-Wāḥāt al-Baḥariyah 
+Al-Warrāq
+Ash-Shaykh Zāyid
+Aṣ-Ṣaff 
+Aṭfīḥ 
+Aṭ-Ṭālbīah 
+Awsīm 
+Būlāq al-Dakrūr 
+Imbābah 
+Kirdāsah 
+Madīnat Sittah Uktūbar 
+Al-Minūfiyah 
+Al-Bājūr 
+Ashmūn 
+Ash-Shuhadā'  
+Birkat as-Sab'
+Madīnat as-Sādāt 
+Minūf
+Quwaysinā
+Shibīn al-Kawm
+Shibīn al-Kawm 
+Sirs al-Layyānah
+Talā  
+Al-Minyā
+Abū Qurqās
+Al-'Idwah
+Al-Minyā
+Banī Mazār
+Dayr Mawās 
+Madīnat al-Minyā al-Jadīdah
+Maghāghah
+Malawiṭ Gharb 
+Mallawī 
+Maṭāy  
+Samālūṭ 
+Al-Qāhirah
+Māyū
+'Ābidīn 
+Ad-Darb al-Aḥmar
+'Ain Schams   
+Al-Amīriīah  
+Al-Azbakiyah 
+Al-Basātīn
+Al-Jamāliyah 
+Al-Khalīfah 
+Al-Ma'ādī 
+Al-Marj
+Al-Ma'ṣarah
+Al-Maṭariyah
+Al-Muqaṭṭam 
+Al-Mūskī 
+Al-Qāhirah al-Jadīdah 
+Al-Waylī
+An-Nuzhah  
+Ash-Sharābiyah 
+Ash-Shurūq 
+As-Salām
+As-Sayyidah Zaynab 
+At-Tibbīn 
+Aẓ-Ẓāhir 
+Az-Zamālik 
+Az-Zāwiyah al-Ḥamrā' 
+Az-Zaytūn
+Bāb ash-Sha'riyah
+Būlāq 
+Hada'iq al-Qubbah 
+Ḥulwān 
+Madīnat an-Naṣr 
+Madīnat Badr
+Heliopolis
+Miṣr al-Qadīmah 
+Munsha'āt Nāṣr 
+Qaṣr an-Nīl
+Rūd al-Faraj
+Shubrā  
+Al-Qalyūbyah 
+Al-Khānkah 
+Al-'Ubūr
+Shubrā al-Khaymah
+Sibīn al-Qanāṭir
+Ṭūkh  
+Al-Uqṣur 
+arkaz  
+New Valley
+Al-Wāḥāt al-Khārijah
+alāṭ   
+Markaz
+Shurṭah Bārīs 
+Abū Ḥammād 
+Abū Kabīr 
+Al-Ḥusayniyah  
+Al-Ibrāhīmiyah 
+Al-Qanāyāt  
+Al-Qurayn  
+Aṣ-Ṣaliḥiyah al-Jadīdah 
+Awlād Ṣaqr 
+Az-Zaqāzīq 
+Bilbays
+Diyarb Najm  
+Fāqūs 
+Fāqūs 
+Hihyā  
+Kafr Ṣaqr  
+Madīnat 'Ashirh min-Ramaḍān 
+Mashtūl as-Sūq  
+Minyā al-Qamḥ 
+Munshāh Abū 'Umar 
+Ṣān al-Ḥajar  
+As-Suways
+Al-Arba'īn 
+Al-Janāyin 
+As-Suways
+'Atāqah 
+Fayṣal 
+Idārah Shurṭah Mīnā' as-Suways 
+Aswān 
+Abū Sunbul 
+Aswān  
+Daraw  
+Idfū
+Kawm Umbū 
+Madīnat Aswān al-Jadīdah 
+Naṣr 
+Asyūt 
+Abnūb  
+Abū Tīj
+Al-Badārī  
+Al-Fatḥ  
+Al-Ghanāyim 
+Al-Qūṣiyah 
+Asyūṭ 
+Dayrūṭ 
+Madīnat Asyūṭ al-Jadīdah 
+Manfalūṭ 
+Sāḥīl Salim
+Ṣidfa 
+Banī Suwayf
+Al-Fashn  
+Al-Wāsiṭā 
+Banī Suwayf 
+Bibā   
+Ihnāsiyā 
+Madīnat Banī Suwayf al-Jadīdah
+Nāṣir
+Sumusṭā al-Waqf   
+Būr Sa'īd 
+Aḍ-Ḍawāḥy 
+Al-'Arab 
+Al-Janūb 
+Al-Manākh
+Al-Manāṣrah 
+Ash-Sharq 
+Az-Zuhūr
+Būr Fuād
+Idārah Shurṭah Mīnā' Būr Sa'īd 
+Mubārak 
+Dumyāṭ
+Az-Zarqā'
+Fāraskūr
+Kafr al-Baṭṭīkh
+Kafr Sa'd  
+Madīnat Dumyāṭ al-Jadīdah 
+Ra's al-Bar                           
+Kafr ash-Shaykh      
+Al-Burulus                            
+Al-Ḥāmūl                              
+Ar-Riyād                              
+Biyalā                                
+Biyalā                                
+Disūq                                            
+Fuwah                                 
+Kafr ash-Shaykh       
+Muṭūbis              
+Qallīn                                
+Sīdī Sālim                            
+Maṭrūḥ                     
+Aḍ-Ḍab'ah                             
+Al-'Alamayn                           
+Al-Ḥammām                             
+An-Najīlah                            
+As-Sāḥal ash-Shamāli                  
+As-Sallūm                             
+Marsā Maṭrūḥ    
+Sīdī Barrānī                          
+Sīwa                                  
+Qinā                          
+Abū Ṭisht                             
+Al-Waqf                               
+Dishnā                                
+Farshūṭ                               
+Madīnat Qinā al-Jadīdah    
+Naj' Ḥammādī                          
+Naqādah                      
+Qifṭ                 
+Qinā                 
+Qinā                 
+Qūṣ                                   
+Sawhāj                       
+Akhmīm                                
+Al-Balyanā             
+Al-Kawthar                            
+Al-Marāghah            
+Al-Munsha'āh                          
+Al-'Usayrāt                 
+Dar as-Salām         
+Jirjā                                               
+Juhaynah al-Gharbiyah 
+Madīnat Akhmīm al-Jadīdah 
+Madīnat Sawhāj al-Jadīdah 
+Sāqultah                                         
+Sawhāj                      
+Ṭahṭā                                 
+Ṭahṭā                                 
+Ṭimā                                  
+Sīnā' al-Janūbiyah    
+Abū Radīs       
+Aṭ-Ṭūr                      
+Dahab                                 
+Nuwaybi'a                             
+Ras Sidr                              
+Sānt Kātirīn   
+Sharm ash-Shaykh
+Shurṭah Ṭābā                  
+Sīnā' ash-Shamāliyah    
+Al-'Arīsh             
+Al-Ḥasanah                            
+Ash-Shaykh Zuwayd    
+B'īr al-'Abd                          
+Nakhl                                 
+Rafaḥ                                 
+Shurṭah al-Qasīmah                    
+Shurṭah Rumānah      
+Miṣr
+Al Butnan                          
+Darnah                                
+Al Jabal al Akhdar            
+Al Marj                              
+Banghazi                            
+Al Wahat                           
+Al Kufrah                           
+Surt                                   
+Misratah                            
+Marqab                            
+Tarabulus                         
+Al Jafarah                       
+Az Zawiyah                       
+An Nuqat al Khams           
+Al Jabal al Gharbi          
+Nalut                              
+Al Jufrah                         
+Wadi ash Shati'              
+Sabha                               
+Wadi al Hayat                
+Ghat                                 
+Murzuq      
 
-
-Saudi Arabia
-Hejaz 	Mecca Region 	Makkah in Saudi Arabia.svg 	Makkah 	16 	111 	8,557,766 	153,128
-Najd 	Riyadh Region 	Ar Riyad in Saudi Arabia.svg 	Riyadh 	21 	453 	8,216,284 	404,240
-Eastern Arabia 	Eastern Region 	Ash Sharqiyah in Saudi Arabia.svg 	Dammam 	11 	107 	4,900,325 	672,522
-Southern Arabia 	'Asir Region 	Asir in Saudi Arabia.svg 	Abha 	16 	101 	2,211,875 	76,693
-Southern Arabia 	Jizan Region 	Jizan in Saudi Arabia.svg 	Jazan 	16 	31 	1,567,547 	11,671
-Hejaz 	Medina Region 	Al Madinah in Saudi Arabia.svg 	Madinah 	8 	90 	1,423,935 	151,990
-Najd 	Al-Qassim Region 	Al Qasim in Saudi Arabia.svg 	Buraidah 	12 	153 	1,423,935 	58,046
-Hejaz 	Tabuk Region 	Tabuk in Saudi Arabia.svg 	Tabuk 	6 	73 	910,030 	146,072
-Najd 	Ha'il Region 	Ha'il in Saudi Arabia.svg 	Ha'il 	8 	84 	699,774 	103,887
-Southern Arabia 	Najran Region 	Najran in Saudi Arabia.svg 	Najran 	7 	59 	582,243 	149,511
-Badiah 	Al-Jawf Region 	Al Jawf in Saudi Arabia.svg 	Sakaka 	3 	33 	508,475 	100,212
-Hejaz 	Al-Bahah Region 	Al Bahah in Saudi Arabia.svg 	Al-Baha 	9 	35 	476,172 	9,921
-Badiah 	Northern Borders Region 	Al Ḥudud ash Shamaliyah in Saudi Arabia.svg 	Arar 	3 
-
-Jordania
- 	North Region 							
-1 	Irbid 	1,572 	1,137,100 	943,000 	194,100 	723.4 	0.740 	Irbid
-2 	Ajloun 	420 	146,900 	111,500 	35,400 	350.1 	0.742 	Ajloun
-3 	Jerash 	410 	191,700 	120,100 	71,600 	467.8 	0.734 	Jerash
-4 	Mafraq 	26,551 	300,300 	117,800 	182,500 	11.3 	0.717 	Mafraq
-	North Region: total 	28,953 	1,776,000 	1,292,400 	483,600 	61.3 		
-	Central Region 							
-5 	Balqa 	1,120 	428,000 	307,400 	120,600 	382.0 	0.739 	Salt
-6 	Amman 	7,579 	2,473,400 	2,325,500 	147,900 	326.3 	0.752 	Amman
-7 	Zarqa 	4,761 	951,800 	899,800 	52,000 	199.9 	0.731 	Zarqa
-8 	Madaba 	940 	159,700 	114,000 	45,700 	170.0 	0.735 	Madaba
-	Central Region: total 	14,400 	4,012,900 	3,646,700 	366,200 	278.7 		
-	South Region 							
-9 	Karak 	3,495 	249,100 	87,200 	161,900 	71.3 	0.739 	Al Karak
-10 	Tafilah 	2,209 	89,400 	63,800 	25,600 	40.5 	0.731 	Tafilah
-11 	Ma'an 	32,832 	121,400 	66,600 	54,800 	3.7 	0.698 	Ma'an
-12 	Aqaba 	6,905 	139,200 	119,700 	19,500 	20.2 	0.739 	Aqaba
-
-Syria
-Aleppo Governorate 	18,500 	4,600,166 	248.65 	8 	Aleppo nights k.jpg 	Aleppo Governorate.svg
-Raqqa Governorate 	19,616 	919,000 	46.84 	3 	ArRaqqahRoofTops.jpg 	Raqqa Governorate.svg
-As-Suwayda Governorate 	5,550 	364,000 	65.58 	3 	As Suwayda's town square.jpg 	As-Suwayda Governorate.svg
-Damascus Governorate 	1,599 	2,211,042 	18,273.07 	1 	Damascus by night.JPG 	Damascus Governorate.svg
-Daraa Governorate 	3,730 	998,000 	267.65 	3 	Syria bosra theater.jpg 	Daraa Governorate.svg
-Deir ez-Zor Governorate 	33,060 	1,200,500 	36.31 	3 	Bridge of Deir ez-Zor, over Euphrates river, in Syria.JPG 	Deir ez-Zor Governorate.svg
-Hama Governorate 	8,883 	1,593,000 	179.33 	5 	Hama, Syria.jpg 	Hama Governorate.svg
-Hasaka Governorate 	23,334 	1,272,702 	55.54 	4 	Tal hajar Quarter in AL-Hasakah.JPG 	Al-Hasakah Governorate.svg
-Homs Governorate 	42,223 	1,762,500 	41.74 	6 	Homs syria3.JPG 	Homs Governorate.svg
-Idlib Governorate 	6,097 	1,464,000 	240.11 	5 	Idlib2.jpg 	Idlib Governorate.svg
-Latakia Governorate 	2,297 	1,278,486 	556.58 	4 	Lattakia,centre.jpg 	Latakia Governorate.svg
-Quneitra Governorate 	1,861 	87,000 	46.74 	2 	Qunaitra.jpg 	Quneitra Governorate.svg
-Rif Dimashq Governorate 	18,032 	2,831,738 	157.03 	9 	Alzabadani.JPG 	Rif-Dimashq Governorate.svg
-Tartus Governorate 	1,892 	785,000 	414.90 	5 
-
-Egypt
-
-Ad-Daqahiyah [Dakahlia] 	الدقهلية 	Governorate 	4,223,338 	4,989,997 	6,725,059
-Ajā 	مركز أجا 	Markaz 	344,160 	401,865 	548,634
-Al-Jamāliyah 	مركز الجمالية 	Markaz 	67,703 	83,529 	145,800
-Al-Kurdy 	قسم الكردى 	Kism (fully urban) 	15,561 	25,950 	42,651
-Al-Manṣūrah [El Mansoura] 	مركز المنصورة 	Markaz 	... 	450,700 	630,119
-Al-Manṣūrah 1 [El Mansoura] 	قسم اول المنصورة 	Kism (fully urban) 	207,251 	244,665 	337,263
-Al-Manṣūrah 2 [El Mansoura] 	قسم ثان المنصورة 	Kism (fully urban) 	162,158 	194,683 	253,458
-Al-Manzilah [Manzala] 	مركز المنزلة 	Markaz 	218,533 	260,888 	372,816
-Al-Maṭariyah [El Matareya] 	مركز المطرية 	Markaz 	105,260 	125,770 	190,419
-As-Sinbillāwayn [El Senbellawein] 	مركز السنبلاوين 	Markaz 	368,776 	450,103 	582,425
-Banī Ubayd 	مركز بنى عبيد 	Markaz 	... 	102,016 	135,906
-Bilqās [Belqas] 	مركز بلقاس 	Markaz 	365,464 	424,189 	546,296
-Dikirnis 	مركز دكرنس 	Markaz 	... 	279,714 	364,423
-Jamaṣah [Gamasa] 	قسم جمصة 	Kism (fully urban) 	... 	2,074 	4,226
-Maḥallat Damanah 	مركز محلة دمنة 	Markaz 	... 	46,116 	64,487
-Minyat an-Naṣr 	مركز منية النصر 	Markaz 	185,273 	204,502 	275,782
-Mīt Ghamr 	قسم ميت غمر 	Kism (fully urban) 	101,899 	116,593 	146,039
-Mīt Ghamr 	مركز ميت غمر 	Markaz 	428,509 	517,209 	672,636
-Mīt Salsīl 	مركز ميت سلسيل 	Markaz 	52,395 	56,129 	77,139
-Nabarūh 	مركز نبروة 	Markaz 	... 	219,048 	290,301
-Shirbīn 	مركز شربين 	Markaz 	286,526 	336,413 	438,102
-Ṭalkhā 	مركز طلخا 	Markaz 	... 	306,195 	404,181
-Timay al-Imdīd 	مركز تمى الأمديد 	Markaz 	120,804 	141,646 	201,956
-Al-Baḥr al-Aḥmar [Red Sea] 	البحر الأحمر 	Governorate 	157,314 	288,661 	376,262
-Al-Ghurdaqah 1 [Hurghada] 	قسم أول الغردقة 	Kism (fully urban) 	... 	69,616 	78,763
-Al-Ghurdaqah 2 [Hurghada] 	قسم ثان الغردقة 	Kism (fully urban) 	... 	91,285 	120,819
-Al-Quṣayr 	قسم القصير 	Kism (urban and rural parts) 	27,618 	35,920 	50,023
-Ash-Shalātīn 	قسم الشلاتين 	Kism (urban and rural parts) 	9,417 	15,210 	12,974
-Ḥalāyib 	قسم حلايب 	Kism (fully rural) 	1,665 	2,268 	8,082
-Marsā 'Alam 	قسم مرسى علم 	Kism (urban and rural parts) 	3,382 	6,614 	8,797
-Ras Ghārib [Ras Gharib] 	قسم رأس غارب 	Kism (urban and rural parts) 	28,435 	32,369 	43,469
-Safājā [Safaga] 	قسم سفاجا 	Kism (urban and rural parts) 	26,712 	35,379 	53,335
-Al-Buḥayrah [Beheira] 	البحيرة 	Governorate 	3,994,297 	4,747,283 	6,461,152
-Abū al-Maṭāmīr 	مركز ابو المطامير 	Markaz 	291,240 	394,746 	574,642
-Abū Ḥummuṣ 	مركز ابوحمص 	Markaz 	348,920 	409,999 	554,076
-Ad-Dilinjāt 	مركز الدلنجات 	Markaz 	255,997 	304,861 	415,939
-Al-Maḥmūdiyah [Mahmoudiyah] 	مركز المحمودية 	Markaz 	194,704 	220,699 	291,225
-Ar-Raḥmāniyah [Rahmaniya] 	مركز الرحمانية 	Markaz 	111,826 	130,457 	166,197
-Badr 	مركز بدر 	Markaz 	... 	156,849 	215,961
-Damanhūr [Damanhour] 	قسم دمنهور 	Kism (fully urban) 	209,423 	244,043 	292,992
-Damanhūr [Damanhour] 	مركز دمنهور 	Markaz 	384,553 	441,598 	562,375
-Gharb an-Nūbāriyah [West Nubariyah] 	قسم غرب النوبارية 	Kism (urban and rural parts) 	885 	39,240 	123,556
-Ḥawsh 'Īsā [Hosh Essa] 	مركز حوش عيسى 	Markaz 	183,362 	198,610 	320,244
-Idkū 	مركز إدكو 	Markaz 	132,307 	152,248 	235,667
-Ityāy al-Bārūd 	مركز إيتاى البارود 	Markaz 	338,213 	378,879 	494,146
-Kafr ad-Dawwār [Kafr el-Dawwar] 	قسم كفر الدوار 	Kism (urban and rural parts) 	232,387 	262,751 	321,628
-Kafr ad-Dawwār 	مركز كفر الدوار 	Markaz 	449,216 	523,070 	719,079
-Kawm Ḥamādah 	مركز كوم حمادة 	Markaz 	... 	396,683 	513,582
-Rashīd [Rosetta] 	مركز رشيد 	Markaz 	162,096 	193,643 	288,288
-Shubrākhīt 	مركز شبراخيت 	Markaz 	201,789 	226,807 	287,388
-Wadi an-Natrun [Natron Valley] 	مركز وادى النطرون 	Markaz 	25,645 	72,100 	84,167
-Al-Fayyūm [Fayoum] 	الفيوم 	Governorate 	1,989,772 	2,511,027 	3,784,666
-Al-Fayyūm [Fayoum] 	مركز الفيوم 	Markaz 	305,314 	380,681 	582,526
-Al-Fayyūm 1 & 2 [Fayoum] 	قسم الفيوم 	Kism (fully urban) 	260,830 	315,940 	501,540
-Ibshawāy 	مركز أبشواى 	Markaz 	... 	294,676 	437,207
-Iṭsā 	مركز أطسا 	Markaz 	393,183 	496,669 	744,569
-Madīnat al-Fayyūm al-Jadīdah [New Al Fayyum] 	مدينة الفيوم الجديدة 	New City 	0 	0 	418
-Sinnūris 	مركز سنورس 	Markaz 	332,648 	431,721 	667,324
-Ṭāmiyah [Tamiya] 	مركز طامية 	Markaz 	246,957 	314,511 	469,234
-Yūsuf aṣ-Ṣiddīq [incl. Ash-Shawāshnah] 	مركز يوسف الصديق 	Markaz 	... 	276,829 	381,848
-Al-Gharbiyah [Gharbia] 	الغربية 	Governorate 	3,404,339 	4,011,320 	5,182,020
-Al-Maḥallah al-Kubrā 	مركز المحله الكبرى 	Markaz 	477,872 	589,540 	807,991
-Al-Maḥallah al-Kubrā 1 [Mahalla el-Kubra] 	قسم أول المحلة الكبرى 	Kism (fully urban) 	... 	139,182 	172,172
-Al-Maḥallah al-Kubrā 2 [Mahalla el-Kubra] 	قسم ثان المحلة الكبرى 	Kism (fully urban) 	... 	206,258 	266,861
-Al-Maḥallah al-Kubrā 3 [Mahalla el-Kubra] 	قسم ثالث المحلة الكبرى 	Kism (fully urban) 	... 	96,305 	123,185
-As-Sanṭah 	مركز السنطة 	Markaz 	313,286 	371,494 	492,189
-Basyūn [Basyoun] 	مركز بسيون 	Markaz 	212,896 	243,141 	306,012
-Kafr az-Zayyāt 	مركز كفر الزيات 	Markaz 	323,927 	379,219 	468,864
-Quṭūr 	مركز قطور 	Markaz 	245,775 	279,516 	346,569
-Samannūd 	مركز سمنود 	Markaz 	249,672 	298,166 	410,388
-Ṭanṭā 	مركز طنطا 	Markaz 	446,638 	538,575 	697,384
-Ṭanṭā 1 	قسم أول طنطا 	Kism (fully urban) 	193,666 	208,579 	291,004
-Ṭanṭā 2 	قسم ثان طنطا 	Kism (fully urban) 	179,226 	214,275 	256,102
-Ziftā [Zefta] 	مركز زفتى 	Markaz 	285,593 	352,117 	437,319
-Ziftā 	قسم زفتى 	Kism (fully urban) 	80,864 	93,740 	105,980
-Al-Iskandariyah [Alexandria] 	الإسكندرية 	Governorate 	3,339,076 	4,123,869 	5,328,264
-Ādārh Shurṭah Mīnā' al-Iskandariyah [Port Alexandria Police Department] 	اداره شرطه ميناء الأسكندريه 	Police-administrated Area 	824 	... 	...
-Ad-Dukhaylah [Dekhela] 	قسم الدخيلة 	Kism (fully urban) 	195,087 	343,836 	485,708
-Al-'Āmriyah 1 [Amreya] 	قسم أول العامرية 	Kism (fully urban) 	157,069 	320,500 	488,113
-Al-'Āmriyah 2 [Amreya] 	قسم ثان العامرية 	Kism (fully urban) 	71,471 	170,500 	285,901
-Al-'Aṭṭārīn [Ataren] 	قسم العطارين 	Kism (fully urban) 	49,165 	40,605 	37,878
-Al-Jumruk [Gomrok] 	قسم الجمرك 	Kism (fully urban) 	98,477 	85,192 	94,852
-Al-Labān [Labban] 	قسم اللبان 	Kism (fully urban) 	47,744 	36,750 	42,152
-Al-Manshiyah [Mansheya] 	قسم المنشية 	Kism (fully urban) 	26,768 	23,616 	24,087
-Al-Muntazah 1 [Montaza] 	قسم أول المنتزة 	Kism (fully urban) 	502,210 	707,000 	1,072,827
-Al-Muntazah 2 [Montaza] 	قسم ثان المنتزة 	Kism (fully urban) 	369,686 	466,000 	556,305
-Ar-Raml 1 [El Raml] 	قسم أول الرمل 	Kism (fully urban) 	... 	... 	284,857
-Ar-Raml 2 [El Raml] 	قسم ثان الرمل 	Kism (fully urban) 	... 	... 	647,381
-As-Sāḥal ash-Shamāli [North Coast] 	الساحل الشمالىجزء 	Area 	... 	2,554 	3,037
-Bāb Sharqi 	قسم باب شرقى 	Kism (fully urban) 	172,633 	179,729 	232,883
-Burj al-'Arab [Borg El Arab] 	قسم برج العرب 	Kism (urban and rural parts) 	34,066 	51,626 	114,819
-Karmūz [Karmouz] 	قسم كرموز 	Kism (fully urban) 	147,277 	120,062 	106,925
-Madīnat Burj al-'Arab al-Jadīdah [New Borg El Arab] 	مدينه برج العرب الجديده 	New City 	7,051 	41,661 	45,012
-Mīnā al-Baṣal 	قسم مينا البصل 	Kism (fully urban) 	292,722 	254,986 	259,491
-Muḥarram Bik [Moharam Bek] 	قسم محرم بك 	Kism (fully urban) 	302,608 	299,401 	287,599
-Sīdi Jābir [Sidi Gaber] 	قسم سيدى جابر 	Kism (fully urban) 	189,824 	226,304 	258,437
-Al-Ismā'īliyah [Ismaïlia] 	الإسماعيلية 	Governorate 	714,828 	953,006 	1,363,849
-Abū Ṣuwīr 	مركز ابو صوير 	Markaz 	... 	152,316 	213,598
-Al-Ismā'īliyah [Ismaïlia] 	مركز الاسماعيلية 	Markaz 	... 	97,542 	165,013
-Al-Ismā'īliyah 1 [Ismaïlia] 	قسم أول الاسماعيلية 	Kism (fully urban) 	31,673 	31,903 	45,730
-Al-Ismā'īliyah 2 [Ismaïlia] 	قسم ثان الاسماعيلية 	Kism (fully urban) 	145,190 	165,731 	242,484
-Al-Ismā'īliyah 3 [Ismaïlia] 	قسم ثالث الاسماعيلية 	Kism (fully urban) 	78,271 	95,550 	120,539
-Al-Qanṭarah 	مركز القنطرة 	Markaz 	67,775 	105,266 	154,666
-Al-Qanṭarah Sharq 	قسم القنطرة شرق 	Kism (urban and rural parts) 	21,558 	42,197 	58,989
-Al-Qaṣāṣīn al-Jadīdah 	مركز القصاصين الجديده 	New City 	... 	71,513 	115,858
-At-Tall al-Kabīr 	مركز التل الكبير 	Markaz 	... 	66,442 	105,729
-Fa'id [Fayid] 	مركز فايد 	Markaz 	71,106 	109,815 	141,243
-Al-Jīzah [Giza] 	الجيزة 	Governorate 	4,784,095 	6,294,319 	8,982,178
-Ad-Duqqī 	قسم الدقي 	Kism (fully urban) 	... 	83,430 	73,309
-Al-Ahrām 	قسم الأهرام 	Kism (fully urban) 	... 	... 	681,383
-Al-'Ajūzah 	قسم العجوزة 	Kism (fully urban) 	... 	258,511 	287,818
-Al-'Ayyāṭ 	مركز العياط 	Markaz 	280,872 	352,317 	516,785
-Al-Badrashayn [Badrshein] 	مركز البدرشين 	Markaz 	285,858 	383,610 	563,294
-Al-Ḥawāmidiyah 	قسم الحوامدية 	Kism (urban and rural parts) 	115,376 	140,408 	198,042
-Al-Jīzah [Giza] 	قسم الجيزة 	Kism (fully urban) 	238,567 	251,596 	295,310
-Al-Jīzah [Giza] 	مركز الجيزة 	Markaz 	180,568 	241,506 	385,153
-Al-'Umrāniyah 	قسم العمرانية 	Kism (fully urban) 	... 	... 	378,333
-Al-Wāḥāt al-Baḥariyah 	قسم الواحات البحرية 	Kism (urban and rural parts) 	25,116 	33,344 	41,003
-Al-Warrāq 	قسم الوراق 	Kism (urban and rural parts) 	395,258 	509,129 	751,724
-Ash-Shaykh Zāyid [Sheikh Zayed City] 	قسم الشيخ زايد 	Kism (fully urban) 	0 	29,422 	93,742
-Aṣ-Ṣaff 	مركز الصف 	Markaz 	224,572 	302,804 	438,856
-Aṭfīḥ [Atfeh] 	مركز أطفيح 	Markaz 	199,548 	266,970 	386,835
-Aṭ-Ṭālbīah 	قسم الطالبيه 	Kism (fully urban) 	... 	... 	473,025
-Awsīm [Ossim] 	مركز أوسيم 	Markaz 	193,751 	275,059 	400,914
-Būlāq al-Dakrūr 	قسم بولاق الدكرور 	Kism (fully urban) 	... 	701,655 	992,209
-Imbābah [Imbaba] 	قسم امبابة 	Kism (fully urban) 	523,265 	598,882 	653,780
-Imbābah [Imbaba] 	مركز إمبابة 	Markaz 	... 	391,363 	541,785
-Kirdāsah 	مركز كرداسة 	Markaz 	... 	... 	468,329
-Madīnat Sittah Uktūbar 2 [6 October City] 	قسم ثان 6 أكتوبر 	Kism (fully urban) 	... 	115,302 	202,945
-Madīnat Sittah Uktūbar 1 & 3 [6 October City] 	قسم أول 6 أكتوبر / قسم ثالث 6 أكتوبر 	Kism (fully urban) 	... 	38,791 	157,604
-Al-Minūfiyah [Monufia] 	المنوفية 	Governorate 	2,760,429 	3,270,431 	4,473,680
-Al-Bājūr [El Bagour] 	مركز الباجور 	Markaz 	256,128 	305,923 	415,377
-Ashmūn [Ashmoun] 	مركز أشمون 	Markaz 	534,799 	639,105 	876,773
-Ash-Shuhadā' 	مركز الشهداء 	Markaz 	219,494 	253,881 	358,486
-Birkat as-Sab' [Birket el-Sab] 	مركز بركة السبع 	Markaz 	200,972 	239,291 	321,790
-Madīnat as-Sādāt [Sadat City] 	مركز و مدينة السادات 	Markaz 	95,191 	143,075 	186,199
-Minūf [Menouf] 	قسم مدينة منوف 	Kism (fully urban) 	... 	89,262 	120,453
-Minūf [Menouf] 	مركز منوف 	Markaz 	... 	336,129 	454,365
-Quwaysinā [Quweisna] 	مركز قويسنا 	Markaz 	318,273 	382,457 	512,362
-Shibīn al-Kawm [Shibin el-Kom] 	قسم شبين الكوم 	Kism (fully urban) 	156,794 	177,112 	256,748
-Shibīn al-Kawm [Shibin el-Kom] 	مركز شبين الكوم 	Markaz 	303,759 	352,396 	493,861
-Sirs al-Layyānah 	قسم سرس الليانة 	Kism (fully urban) 	44,267 	52,653 	74,904
-Talā 	مركز تلا 	Markaz 	264,204 	299,147 	402,362
-Al-Minyā [Minya] 	المنيا 	Governorate 	3,310,129 	4,166,299 	5,808,847
-Abū Qurqās 	مركز ابو قرقاص 	Markaz 	378,522 	467,716 	634,695
-Al-'Idwah 	مركز العدوة 	Markaz 	156,462 	206,962 	295,254
-Al-Minyā 	مركز المنيا 	Markaz 	403,466 	523,516 	710,808
-Al-Minyā 1 	قسم أول المنيا 	Kism (fully urban) 	... 	... 	50,560
-Al-Minyā 2 	قسم ثان المنيا 	Kism (fully urban) 	... 	... 	116,922
-Al-Minyā 3 	قسم ثالث المنيا 	Kism (fully urban) 	... 	... 	96,590
-Banī Mazār [Beni Mazar] 	مركز بنى مزار 	Markaz 	368,458 	463,509 	671,276
-Dayr Mawās [Deir Mawas] 	مركز دير مواس 	Markaz 	244,173 	300,379 	432,459
-Madīnat al-Minyā al-Jadīdah [New Minya] 	مدينة المنيا الجديدة 	New City 	68 	4,567 	16,266
-Maghāghah 	مركز مغاغة 	Markaz 	342,477 	435,239 	626,752
-Malawiṭ Gharb 	مركز سمالوط غرب 	Markaz 	... 	... 	510,746
-Mallawī 	قسم ملوى 	Kism (fully urban) 	119,285 	139,929 	197,989
-Mallawī 	مركز ملوى 	Markaz 	443,582 	562,841 	782,483
-Maṭāy 	مركز مطاى 	Markaz 	194,236 	238,824 	336,309
-Samālūṭ 	مركز سمالوط 	Markaz 	... 	... 	329,738
-Al-Qāhirah [Cairo] 	القاهرة 	Governorate 	6,800,991 	7,902,085 	9,840,591
-15 Māyū [15 May City] 	قسم 15 مايو 	Kism (fully urban) 	65,560 	90,740 	96,522
-'Ābidīn 	قسم عابدين 	Kism (fully urban) 	48,704 	42,223 	41,605
-Ad-Darb al-Aḥmar 	قسم الدرب الأحمر 	Kism (fully urban) 	78,375 	60,488 	60,336
-'Ain Schams 	قسم عين شمس 	Kism (fully urban) 	469,030 	525,034 	633,798
-Al-Amīriīah 	قسم الاميريه 	Kism (fully urban) 	164,211 	165,407 	157,378
-Al-Azbakiyah [Azbakeya] 	قسم الأزبكية 	Kism (fully urban) 	30,375 	28,033 	20,393
-Al-Basātīn 	قسم البساتين 	Kism (fully urban) 	326,220 	390,894 	511,052
-Al-Jamāliyah 	قسم الجمالية 	Kism (fully urban) 	59,159 	49,834 	37,517
-Al-Khalīfah 	قسم الخليفة 	Kism (fully urban) 	... 	... 	108,560
-Al-Ma'ādī [Maadi] 	قسم المعادي 	Kism (fully urban) 	70,415 	78,122 	91,384
-Al-Marj [El Marg] 	قسم المرج 	Kism (fully urban) 	251,589 	507,035 	823,856
-Al-Ma'ṣarah 	قسم المعصره 	Kism (fully urban) 	... 	252,780 	278,569
-Al-Maṭariyah [Matariyyah] 	قسم المطرية 	Kism (fully urban) 	498,670 	498,663 	621,495
-Al-Muqaṭṭam 	قسم المقطم 	Kism (fully urban) 	... 	... 	231,213
-Al-Mūskī 	قسم الموسكي 	Kism (fully urban) 	28,582 	22,294 	17,192
-Al-Qāhirah al-Jadīdah 1 [New Cairo] 	قسم أول القاهرة الجديدة 	Kism (fully urban) 	... 	27,990 	140,117
-Al-Qāhirah al-Jadīdah 2 [New Cairo] 	قسم ثان القاهرة الجديدة 	Kism (fully urban) 	... 	40,005 	93,534
-Al-Qāhirah al-Jadīdah 3 [New Cairo] 	قسم ثالث القاهره الجديده 	Kism (fully urban) 	... 	54,344 	73,116
-Al-Waylī 	قسم الوايلي 	Kism (fully urban) 	89,758 	77,649 	81,804
-An-Nuzhah 	قسم النزهة 	Kism (fully urban) 	154,969 	161,946 	238,550
-Ash-Sharābiyah 	قسم الشرابية 	Kism (fully urban) 	247,433 	215,595 	193,121
-Ash-Shurūq 	قسم الشروق 	Kism (fully urban) 	... 	22,570 	90,033
-As-Sāḥil 	قسم الساحل 	Kism (fully urban) 	333,929 	305,322 	326,417
-As-Salām 1 	قسم أول السلام 	Kism (fully urban) 	304,553 	441,000 	495,886
-As-Salām 2 	قسم ثان السلام 	Kism (fully urban) 	52,329 	108,000 	158,618
-As-Sayyidah Zaynab 	قسم السيدة زينب 	Kism (fully urban) 	156,142 	132,249 	140,593
-At-Tibbīn 	قسم التبين 	Kism (fully urban) 	59,366 	68,897 	74,320
-Aẓ-Ẓāhir 	قسم الظاهر 	Kism (fully urban) 	67,031 	64,009 	74,145
-Az-Zamālik [Zamalek] 	قسم الزمالك 	Kism (fully urban) 	15,343 	17,365 	15,420
-Az-Zāwiyah al-Ḥamrā' 	قسم الزاوية الحمراء 	Kism (fully urban) 	306,165 	315,465 	328,226
-Az-Zaytūn [Zeitoun] 	قسم الزيتون 	Kism (fully urban) 	159,172 	156,910 	179,691
-Bāb ash-Sha'riyah 	قسم باب الشعرية 	Kism (fully urban) 	59,956 	54,084 	48,146
-Būlāq 	قسم بولاق 	Kism (fully urban) 	75,098 	62,470 	49,673
-Dār as-Salām 	قسم دار السلام 	Kism (fully urban) 	340,708 	430,763 	542,218
-Hada'iq al-Qubbah 	قسم حدائق القبة 	Kism (fully urban) 	304,478 	289,758 	326,061
-Ḥulwān [Helwan] 	قسم حلوان 	Kism (fully urban) 	... 	396,791 	537,719
-Madīnat an-Naṣr 1 [Nasr City] 	قسم مدينة نصر أول 	Kism (fully urban) 	291,571 	501,597 	654,828
-Madīnat an-Naṣr 2 [Nasr City] 	قسم ثانى مدينه نصر 	Kism (fully urban) 	68,156 	75,917 	74,453
-Madīnat Badr 	قسم مدينة بدر 	Kism (fully urban) 	248 	17,158 	32,278
-Miṣr al-Jādidah [Heliopolis] 	قسم مصر الجديدة 	Kism (fully urban) 	120,977 	113,611 	138,355
-Miṣr al-Qadīmah [Old Cairo] 	قسم مصر القديمة 	Kism (fully urban) 	228,683 	217,390 	258,214
-Munsha'āt Nāṣr [Manshiyat Naser] 	قسم منشأة ناصر 	Kism (fully urban) 	168,425 	262,050 	266,527
-Qaṣr an-Nīl 	قسم قصر النيل 	Kism (fully urban) 	12,935 	10,035 	10,901
-Rūd al-Faraj [Rod El Farag] 	قسم روض الفرج 	Kism (fully urban) 	178,145 	144,510 	150,244
-Shubrā 	قسم شبرا 	Kism (fully urban) 	83,753 	71,118 	79,123
-Ṭurah [Tura] 	قسم طره 	Kism (fully urban) 	67,270 	94,107 	237,390
-Al-Qalyūbyah [Qalyubia] 	القليوبية 	Governorate 	3,281,135 	4,251,672 	5,830,001
-Al-Khānkah 	قسم الخانكه 	Kism (fully urban) 	55,013 	59,077 	79,484
-Al-Khānkah 	مركز الخانكة 	Markaz 	... 	377,014 	591,654
-Al-Khuṣūṣ 	قسم الخصوص 	Kism (fully urban) 	... 	291,242 	475,978
-Al-Qanāṭir al-Khayriyah 	مركز القناطر الخيرية 	Markaz 	296,731 	383,102 	522,733
-Al-'Ubūr [El Ubour] 	قسم العبور 	Kism (fully urban) 	... 	43,600 	135,312
-Banhā 	مركز بنها 	Markaz 	308,833 	376,175 	497,327
-Banhā 1 	قسم اول بنها 	Kism (fully urban) 	... 	... 	110,630
-Banhā 2 	قسم ثان بنها 	Kism (fully urban) 	... 	... 	66,794
-Kafr Shukr 	مركز كفر شكر 	Markaz 	123,013 	148,351 	194,647
-Qahā 	قسم قها 	Kism (urban and rural parts) 	... 	35,655 	49,529
-Qalyūb 	قسم قليوب 	Kism (fully urban) 	77,081 	107,303 	152,229
-Qalyūb 	مركز قليوب 	Markaz 	264,375 	365,892 	577,947
-Shubrā al-Khaymah 1 [Shubra el-Kheima] 	قسم أول شبرا الخيمة 	Kism (fully urban) 	416,812 	461,689 	501,024
-Shubrā al-Khaymah 2 [Shubra el-Kheima] 	قسم ثان شبرا الخيمة 	Kism (fully urban) 	453,963 	563,880 	706,473
-Sibīn al-Qanāṭir [Shibin el-Qanater] 	مركز شبين القناطر 	Markaz 	338,628 	423,783 	556,591
-Ṭūkh 	مركز طوخ 	Markaz 	... 	457,208 	611,649
-Al-Uqṣor [Luxor] 	الأقصر 	Governorate 	775,551 	959,003 	1,308,586
-Al-Qarnah 	مركز القرنه 	Markaz 	... 	130,146 	171,405
-Al-Uqṣur [Luxor] 	قسم الأقصر 	Kism (fully urban) 	... 	167,646 	256,664
-Al-Uqṣur [Luxor] 	مركز الأقصر 	Markaz 	... 	116,974 	172,601
-Armant 	مركز أرمنت 	Markaz 	... 	159,809 	182,151
-Isnā [Esna] 	مركز إسنا 	Markaz 	279,835 	341,908 	449,582
-Shurṭah Ṭībah [Tiba] 	مركز شرطة طيبة 	Markaz 	... 	56,196 	76,183
-Al-Wādī al-Jadīd [New Valley] 	الوادي الجديد 	Governorate 	141,774 	187,263 	251,333
-Al-Wāḥāt al-Khārijah [Kharga] 	قسم الواحات الخارجة 	Kism (urban and rural parts) 	... 	74,489 	96,402
-Balāṭ 	مركز بلاط 	Markaz 	... 	9,279 	12,558
-Shurṭah al-Dākhlah [Dakhla] 	مركز شرطة الداخلة 	Markaz 	... 	70,949 	91,820
-Shurṭah al-Farāfirah 	مركز شرطة الفرافرة 	Markaz 	7,958 	21,930 	36,486
-Shurṭah Bārīs [Baris] 	مركز شرطة باريس 	Markaz 	... 	10,616 	14,067
-Ash-Sharqiyah [Sharqia] 	الشرقية 	Governorate 	4,281,068 	5,354,041 	7,459,413
-Abū Ḥammād 	مركز أبو حماد 	Markaz 	279,487 	347,335 	446,511
-Abū Kabīr 	مركز أبوكبير 	Markaz 	269,952 	317,479 	464,924
-Al-Ḥusayniyah 	مركز الحسينية 	Markaz 	... 	283,186 	385,662
-Al-Ibrāhīmiyah 	مركز الأبراهيمية 	Markaz 	107,680 	127,079 	190,155
-Al-Qanāyāt 	قسم القنايات 	Kism (fully urban) 	36,010 	42,563 	67,417
-Al-Qurayn 	قسم القرين 	Kism (fully urban) 	51,833 	64,453 	90,254
-Aṣ-Ṣaliḥiyah al-Jadīdah [New Salhia] 	قسم الصالحية الجديدة 	Kism (fully urban) 	8,140 	18,957 	56,578
-Awlād Ṣaqr 	مركز أولاد صقر 	Markaz 	145,399 	175,665 	234,276
-Az-Zaqāzīq [Zagazig] 	مركز الزقازيق 	Markaz 	527,055 	652,756 	901,302
-Az-Zaqāzīq 1 [Zagazig] 	قسم اول الزقازيق 	Kism (fully urban) 	122,173 	133,145 	188,557
-Az-Zaqāzīq 2 [Zagazig] 	قسم ثان الزقازيق 	Kism (fully urban) 	145,296 	169,695 	221,966
-Bilbays [Bilbeis] 	مركز بلبيس 	Markaz 	473,472 	592,933 	846,912
-Diyarb Najm 	مركز ديرب نجم 	Markaz 	293,026 	352,295 	509,273
-Fāqūs [Faqous] 	قسم فاقوس 	Kism (fully urban) 	64,266 	78,405 	111,532
-Fāqūs [Faqous] 	مركز فاقوس 	Markaz 	405,116 	497,490 	631,521
-Hihyā 	مركز ههيا 	Markaz 	171,228 	205,353 	310,473
-Kafr Ṣaqr 	مركز كفر صقر 	Markaz 	187,162 	218,779 	288,749
-Madīnat 'Ashirh min-Ramaḍān 1 [10th of Ramadan City] 	قسم أول مدينة عشرة رمضان 	Kism (fully urban) 	... 	58,986 	79,346
-Madīnat 'Ashirh min-Ramaḍān 2 [10th of Ramadan City] 	قسم ثان مدينة عشرة رمضان 	Kism (fully urban) 	... 	66,934 	155,424
-Mashtūl as-Sūq 	مركز مشتول السوق 	Markaz 	129,205 	159,686 	228,557
-Minyā al-Qamḥ 	مركز منيا القمح 	Markaz 	471,973 	574,000 	796,330
-Munshāh Abū 'Umar 	مركز منشاه ابوعمر 	Markaz 	... 	80,562 	89,845
-Ṣān al-Ḥajar 	مركز صان الحجر 	Markaz 	... 	136,305 	163,849
-As-Suways [Suez] 	السويس 	Governorate 	417,526 	512,135 	754,531
-Al-Arba'īn [Arbaeen] 	قسم الأربعين 	Kism (fully urban) 	196,770 	212,852 	275,253
-Al-Janāyin [Ganayen] 	قسم الجناين 	Kism (fully urban) 	61,655 	88,206 	136,382
-As-Suways [Suez] 	قسم السويس 	Kism (fully urban) 	43,590 	52,224 	84,558
-'Atāqah [Attaka] 	قسم عتاقة 	Kism (fully urban) 	8,754 	26,793 	72,448
-Fayṣal [Faisal] 	قسم فيصل 	Kism (fully urban) 	106,757 	132,060 	185,890
-Idārah Shurṭah Mīnā' as-Suways [Port Suez Police Department] 	إدارة شرطة ميناء السويس 	Police-administrated Area 	... 	... 	...
-Aswān [Assuan] 	أسوان 	Governorate 	960,510 	1,186,482 	1,546,101
-Abū Sunbul [Abu Simbel] 	مركز أبو سنبل 	Markaz 	... 	6,413 	7,917
-Aswān 	مركز أسوان 	Markaz 	61,575 	70,541 	72,350
-Aswān 1 	قسم اول أسوان 	Kism (fully urban) 	... 	... 	167,488
-Aswān 2 	قسم ثان أسوان 	Kism (fully urban) 	... 	... 	184,973
-Daraw 	مركز دراو 	Markaz 	83,028 	98,036 	142,879
-Idfū [Edfu] 	مركز أدفو 	Markaz 	298,826 	365,353 	477,067
-Kawm Umbū [Kom Ombo] 	مركز كوم امبو 	Markaz 	230,472 	300,935 	400,140
-Madīnat Aswān al-Jadīdah [New Aswan] 	مدينة أسوان الجديدة 	New City 	0 	0 	105
-Madīnat Tūshka al-Jadīdah [New Tushka] 	مدينة توشكى الجديدة 	New City 	... 	2,655 	...
-Naṣr [Nasser City] 	مركز نصر 	Markaz 	67,068 	76,536 	93,182
-Asyūt [Asyut] 	أسيوط 	Governorate 	2,802,334 	3,444,967 	4,638,610
-Abnūb 	مركز أبنوب 	Markaz 	247,541 	304,774 	435,147
-Abū Tīj 	قسم ابو تيج 	Kism (fully urban) 	59,474 	70,969 	99,225
-Abū Tīj 	مركز أبوتيج 	Markaz 	163,448 	193,118 	241,742
-Al-Badārī 	مركز البدارى 	Markaz 	172,151 	213,900 	285,176
-Al-Fatḥ 	مركز الفتح 	Markaz 	191,574 	242,443 	335,361
-Al-Ghanāyim [El Ghanayem] 	مركز الغنايم 	Markaz 	83,206 	105,079 	141,394
-Al-Qūṣiyah 	مركز القوصية 	Markaz 	289,810 	360,300 	489,115
-Asyūṭ [Asyut] 	مركز أسيوط 	Markaz 	321,602 	399,288 	541,715
-Asyūṭ 1 [Asyut] 	قسم أول أسيوط 	Kism (fully urban) 	195,048 	220,489 	269,270
-Asyūṭ 2 [Asyut] 	قسم ثان أسيوط 	Kism (fully urban) 	148,614 	168,818 	228,343
-Dayrūṭ [Dairut] 	مركز ديروط 	Markaz 	364,139 	462,267 	627,218
-Madīnat Asyūṭ al-Jadīdah [New Asyut] 	مدينة اسيوط الجديدة 	New City 	... 	1,761 	8,686
-Manfalūṭ 	مركز منفلوط 	Markaz 	327,159 	415,405 	552,892
-Sāḥīl Salim [Sahel Selim] 	مركز ساحل سليم 	Markaz 	110,114 	134,610 	190,505
-Ṣidfa [Sodfa] 	مركز صدفا 	Markaz 	128,454 	151,746 	192,821
-Banī Suwayf [Beni Suef] 	بنى سويف 	Governorate 	1,859,213 	2,291,618 	3,322,380
-Al-Fashn 	مركز الفشن 	Markaz 	270,931 	337,132 	492,799
-Al-Wāsiṭā 	مركز الواسطى 	Markaz 	292,805 	358,741 	513,684
-Banī Suwayf [Beni Suef] 	قسم بنى سويف 	Kism (fully urban) 	171,734 	193,048 	256,482
-Banī Suwayf [Beni Suef] 	مركز بنى سويف 	Markaz 	242,969 	298,047 	446,788
-Bibā 	مركز ببا 	Markaz 	268,724 	329,234 	490,574
-Ihnāsiyā 	مركز أهناسيا 	Markaz 	226,434 	283,514 	408,652
-Madīnat Banī Suwayf al-Jadīdah [New Beni Suef] 	قسم مدينة بنى سويف الجديدة 	Kism (fully urban) 	208 	17,921 	30,308
-Nāṣir [Nasser] 	مركز ناصر 	Markaz 	225,166 	273,542 	393,002
-Sumusṭā al-Waqf 	مركز سمسطا 	Markaz 	160,242 	200,439 	290,091
-Būr Sa'īd [Port Said] 	بور سعيد 	Governorate 	472,331 	570,603 	767,905
-Aḍ-Ḍawāḥy [Al-Dawahy] 	قسم الضواحى 	Kism (fully urban) 	... 	99,994 	144,605
-Al-'Arab [Al-Arab] 	قسم العرب 	Kism (fully urban) 	58,732 	46,977 	58,626
-Al-Janūb [Al-Ganoub] 	قسم الجنوب 	Kism (fully urban) 	... 	24,265 	40,769
-Al-Janūb 2 [Al-Ganoub] 	قسم ثان الجنوب 	Kism (fully urban) 	... 	22,052 	37,238
-Al-Manākh [Al-Manakh] 	قسم المناخ 	Kism (fully urban) 	... 	61,346 	82,387
-Al-Manāṣrah [Al-Manasra] 	قسم المناصرة 	Kism (fully urban) 	... 	2,679 	5,435
-Ash-Sharq [Al-Sharq] 	قسم الشرق 	Kism (fully urban) 	30,746 	29,103 	33,743
-Az-Zuhūr [Al-Zohour] 	قسم الزهور 	Kism (fully urban) 	... 	208,519 	259,183
-Būr Fuād [Port Fuad] 	قسم بورفؤاد 	Kism (fully urban) 	... 	66,379 	87,118
-Būr Fuād 2 [Port Fuad] 	قسم ثان بورفؤاد 	Kism (fully urban) 	... 	6,719 	11,699
-Idārah Shurṭah Mīnā' Būr Sa'īd [Police Department Port Said] 	إدارة شرطة ميناء بورسعيد 	Police-administrated Area 	379 	... 	...
-Mubārak - Sharq at-Tafrī'tah [Mubarak East] 	قسم مبارك - شرق التفريعة 	Kism (fully urban) 	... 	2,570 	7,102
-Dumyāṭ [Damietta] 	دمياط 	Governorate 	913,555 	1,097,339 	1,548,935
-Az-Zarqā' [incl. As-Sarw] 	مركز الزرقا 	Markaz 	99,605 	122,713 	174,147
-Dumyāṭ [Damietta] 	مركز دمياط 	Markaz 	... 	237,373 	342,641
-Dumyāṭ 1 [Damietta] 	قسم أول دمياط 	Kism (fully urban) 	78,265 	77,295 	114,935
-Dumyāṭ 2 [Damietta] 	قسم ثان دمياط 	Kism (fully urban) 	... 	129,369 	181,160
-Fāraskūr 	مركز فارسكور 	Markaz 	173,433 	200,432 	264,075
-Idārah Shurṭah Mīnā' Dumyāṭ al-Jadīd [Police Department Port of Damietta] 	إداره شرطه ميناء دمياط الجديد 	Police-administrated Area 	... 	... 	...
-Kafr al-Baṭṭīkh 	مركز كفر البطيخ 	Markaz 	... 	91,815 	137,331
-Kafr Sa'd 	مركز كفر سعد 	Markaz 	... 	199,323 	272,008
-Madīnat Dumyāṭ al-Jadīdah [New Damietta] 	قسم مدينه دمياط الجديده 	Kism (fully urban) 	6,520 	27,028 	52,753
-Ra's al-Bar 	قسم رأس البر 	Kism (fully urban) 	7,791 	11,991 	9,885
-Kafr ash-Shaykh [Kafr el-Sheikh] 	كفر الشيخ 	Governorate 	2,223,383 	2,620,208 	3,507,369
-Al-Burulus 	مركز البرلس 	Markaz 	138,164 	177,976 	245,997
-Al-Ḥāmūl 	مركز الحامول 	Markaz 	198,296 	249,605 	301,586
-Ar-Riyād 	مركز الرياض 	Markaz 	120,472 	136,309 	193,800
-Biyalā 	قسم بيلا 	Kism (fully urban) 	56,759 	66,663 	85,556
-Biyalā 	مركز بيلا 	Markaz 	147,474 	167,115 	224,918
-Disūq [Desouk] 	قسم دسوق 	Kism (fully urban) 	91,318 	106,827 	143,404
-Disūq [Desouk] 	مركز دسوق 	Markaz 	292,124 	331,701 	426,956
-Fuwah 	مركز فوه 	Markaz 	120,806 	137,735 	187,471
-Kafr ash-Shaykh [Kafr el-Sheikh] 	مركز كفر الشيخ 	Markaz 	295,539 	345,367 	464,478
-Kafr ash-Shaykh 1 [Kafr el-Sheikh] 	قسم أول كفر الشيخ 	Kism (fully urban) 	98,000 	117,000 	148,830
-Kafr ash-Shaykh 2 [Kafr el-Sheikh] 	قسم ثان كفر الشيخ 	Kism (fully urban) 	26,000 	31,000 	38,066
-Muṭūbis [Metoubes] 	مركز مطوبس 	Markaz 	185,523 	228,802 	314,720
-Qallīn 	مركز قلين 	Markaz 	173,743 	203,552 	276,152
-Sīdī Sālim 	مركز سيدى سالم 	Markaz 	278,295 	321,163 	455,435
-Maṭrūḥ [Matrouh] 	مطروخ 	Governorate 	212,001 	323,381 	471,246
-Aḍ-Ḍab'ah 	قسم الضبعة 	Kism (urban and rural parts) 	38,579 	39,178 	54,457
-Al-'Alamayn 	قسم العلمين 	Kism (fully rural) 	... 	52 	10,960
-Al-Ḥammām 	قسم الحمام 	Kism (urban and rural parts) 	39,326 	56,401 	59,258
-An-Najīlah 	قسم النجيله 	Kism (urban and rural parts) 	11,016 	18,338 	30,369
-As-Sāḥal ash-Shamāli 	قسم الساحل الشمالى-جزء 	Kism (fully urban) 	... 	536 	75
-As-Sallūm 	قسم السلوم 	Kism (urban and rural parts) 	9,052 	12,750 	17,601
-Marsā Maṭrūḥ [Mersa Matruh] 	قسم مرسى مطروح 	Kism (urban and rural parts) 	80,387 	140,977 	209,149
-Sīdī Barrānī 	قسم سيدى برانى 	Kism (urban and rural parts) 	20,689 	33,456 	58,201
-Sīwa 	قسم سيوة 	Kism (urban and rural parts) 	12,952 	21,693 	31,176
-Qinā [Qena] 	قنا 	Governorate 	2,027,603 	2,499,964 	3,340,410
-Abū Ṭisht 	مركز أبو طشت 	Markaz 	284,926 	359,443 	490,669
-Al-Waqf 	مركز الوقف 	Markaz 	55,765 	67,498 	85,639
-Dishnā 	مركز دشنا 	Markaz 	253,374 	310,506 	410,304
-Farshūṭ 	مركز فرشوط 	Markaz 	118,568 	145,526 	199,104
-Madīnat Qinā al-Jadīdah [New Qina] 	مدينة قنا الجديدة 	New City 	0 	0 	1,595
-Naj' Ḥammādī 	مركز نجع حمادى 	Markaz 	373,504 	451,891 	611,276
-Naqādah [Naqada] 	مركز نقادة 	Markaz 	116,895 	136,668 	180,590
-Qifṭ [Gebtu, Coptos] 	مركز قفط 	Markaz 	99,873 	122,279 	150,425
-Qinā [Qena] 	قسم قنا 	Kism (fully urban) 	155,382 	201,191 	245,681
-Qinā [Qena] 	مركز قنا 	Markaz 	278,552 	343,247 	474,857
-Qūṣ 	مركز قوص 	Markaz 	290,764 	361,715 	490,270
-Sawhāj [Sohag] 	سوهاج 	Governorate 	3,123,114 	3,747,289 	5,254,870
-Akhmīm 	مركز أخميم 	Markaz 	248,191 	301,294 	462,098
-Al-Balyanā [El Balyana] 	مركز البلينا 	Markaz 	314,696 	381,900 	552,131
-Al-Kawthar 	قسم الكوثر 	Kism (fully urban) 	... 	3,036 	5,129
-Al-Marāghah [El Maragha] 	مركز المراغة 	Markaz 	256,801 	303,161 	414,578
-Al-Munsha'āh 	مركز المنشأة 	Markaz 	... 	313,400 	425,021
-Al-'Usayrāt [Aserat] 	مركز العسيرات 	Markaz 	... 	138,580 	205,936
-Dar as-Salām [Dar el-Salam] 	مركز دار السلام 	Markaz 	255,235 	308,281 	432,696
-Jirjā [Girga] 	قسم جرجا 	Kism (urban and rural parts) 	95,368 	108,007 	154,835
-Jirjā [Girga] 	مركز جرجا 	Markaz 	... 	263,850 	348,775
-Juhaynah al-Gharbiyah [Juhaynah West] 	مركز جهينة الغربية 	Markaz 	167,839 	200,209 	286,872
-Madīnat Akhmīm al-Jadīdah [New Akhmim] 	مدينة أخميم الجديدة 	New City 	0 	0 	0
-Madīnat Sawhāj al-Jadīdah [New Sohag] 	مدينة سوهاج الجديدة 	New City 	0 	57 	185
-Sāqultah [Sakulta] 	مركز ساقلته 	Markaz 	134,839 	160,809 	218,173
-Sawhāj [Sohag] 	مركز سوهاج 	Markaz 	320,945 	397,200 	564,296
-Sawhāj 1 [Sohag] 	قسم اول سوهاج 	Kism (fully urban) 	107,645 	111,921 	139,371
-Sawhāj 2 [Sohag] 	قسم ثان سوهاج 	Kism (fully urban) 	62,772 	78,211 	115,433
-Ṭahṭā 	قسم طهطا 	Kism (urban and rural parts) 	97,526 	111,867 	173,972
-Ṭahṭā 	مركز طهطا 	Markaz 	208,189 	244,878 	304,090
-Ṭimā 	مركز طما 	Markaz 	271,454 	320,628 	451,279
-Sīnā' al-Janūbiyah [South Sinai] 	جنوب سيناء 	Governorate 	54,806 	150,088 	106,805
-Abū Radīs [incl. Abū Zanīmah] 	قسم أبو رديس 	Kism (urban and rural parts) 	13,040 	17,813 	17,488
-Aṭ-Ṭūr [El Tor] 	قسم الطور 	Kism (urban and rural parts) 	14,142 	26,590 	41,506
-Dahab 	قسم دهب 	Kism (urban and rural parts) 	3,700 	7,494 	3,023
-Nuwaybi'a 	قسم نويبع 	Kism (urban and rural parts) 	... 	7,970 	7,450
-Ras Sidr 	قسم رأس سدر 	Kism (urban and rural parts) 	6,584 	12,062 	17,032
-Sānt Kātirīn [Saint Catherine] 	قسم سانت كاترين 	Kism (urban and rural parts) 	4,219 	5,705 	4,674
-Sharm ash-Shaykh 1 [Sharm el-Sheikh] 	قسم أول شرم الشيخ 	Kism (fully urban) 	7,410 	69,374 	13,385
-Sharm ash-Shaykh 2 [Sharm el-Sheikh] 	قسم ثان شرم الشيخ 	Kism (urban and rural parts) 	... 	... 	1,490
-Shurṭah Ṭābā [Taba] 	قسم شرطة طابا 	Kism (fully rural) 	... 	3,080 	757
-Sīnā' ash-Shamāliyah [North Sinai] 	شمال سيناء 	Governorate 	252,160 	343,681 	466,871
-Al-'Arīsh 1 [El Arish] 	قسم أول العريش 	Kism (urban and rural parts) 	25,554 	41,177 	57,507
-Al-'Arīsh 2 [El Arish] 	قسم ثان العريش 	Kism (fully urban) 	41,121 	48,060 	67,713
-Al-'Arīsh 3 [El Arish] 	قسم ثالث العريش 	Kism (fully urban) 	18,328 	32,255 	45,585
-Al-'Arīsh 4 [El Arish] 	قسم رابع العريش 	Kism (urban and rural parts) 	15,479 	20,006 	27,986
-Al-Ḥasanah 	قسم الحسنة 	Kism (urban and rural parts) 	12,944 	13,835 	8,844
-Ash-Shaykh Zuwayd [Sheikh Zuweid] 	قسم الشيخ زويد 	Kism (urban and rural parts) 	34,169 	45,696 	62,271
-B'īr al-'Abd 	قسم بئر العبد 	Kism (urban and rural parts) 	26,457 	33,788 	57,457
-Nakhl 	قسم نخل 	Kism (urban and rural parts) 	8,983 	11,023 	6,269
-Rafaḥ 	قسم رفح 	Kism (urban and rural parts) 	44,422 	58,615 	78,377
-Shurṭah al-Qasīmah 	قسم شرطة القسيمة 	Kism (fully rural) 	12,047 	9,681 	12,473
-Shurṭah Rumānah 	قسم شرطة رمانة 	Kism (fully rural) 	12,656 	29,545 	42,389
-Miṣr [Egypt] 	مِصر 	Republic 	59,276,672 	72,798,031 	
-
-Libya
-1 	البطنان 	Al Butnan 	84,996 	159,536
-2 	درنة 	Darnah 	31,511 	163,351
-3 	الجبل الاخضر 	Al Jabal al Akhdar 	11,429 	203,156
-4 	المرج 	Al Marj 	13,515 	185,848
-5 	بنغازي 	Banghazi 	11,372 	670,797
-6 	الواحات 	Al Wahat 	105,523 	177,047
-7 	الكفرة 	Al Kufrah 	433,611 	50,104
-Tripolitania
-8 	سرت 	Surt 	77,660 	193,720
-9 	مصراتة 	Misratah 	29,172 	550,938
-10 	المرقب 	Marqab 	6,796 	432,202
-11 	طرابلس 	Tarabulus 	835 	1,065,405
-12 	الجفارة 	Al Jafarah 	2,666 	453,198
-13 	الزاوية 	Az Zawiyah 	2,753 	290,993
-14 	النقاط الخمس 	An Nuqat al Khams 	6,089 	287,662
-15 	الجبل الغربي 	Al Jabal al Gharbi 	76,717 	304,159
-16 	نالوت 	Nalut 	67,191 	93,224
-Fezzan
-17 	الجفرة 	Al Jufrah 	117,410 	52,342
-18 	وادي الشاطئ 	Wadi ash Shati' 	97,160 	78,532
-19 	سبها 	Sabha 	107,310 	134,162
-20 	وادي الحياة 	Wadi al Hayat 	31,485 	76,858
-21 	غات 	Ghat 	68,482 	23,518
-22 	مرزق 	Murzuq 	356,308 	78,621
-
-Marokko
-Chaouia - Ouardigha	MA.CO	09	MO50	06	1,655,660	1,509,077	7,010	2,707	Settat
-Doukkala - Abda	MA.DA	10	MO51	11	1,984,039	1,793,458	13,285	5,129	Safi
-Fès - Boulemane	MA.FB	05	MO46	14	1,573,055	1,322,473	19,795	7,643	Fès
-Gharb - Chrarda - Béni Hssen	MA.GB	02	MO52	05	1,859,540	1,625,082	8,805	3,400	Kenitra
-Grand Casablanca	MA.GC	08	MO45	09	3,631,061	3,126,785	1,615	624	Casablanca
-Guelmim - Es-Semara	MA.GE	14	MO53	03	462,410	386,075	122,825	47,423	Guelmim
-Laâyoune - Boujdour - Sakia El Hamra	MA.LB	15	MO59	02	256,152	175,669	139,480	53,854	Laâyoune
-Marrakech - Tensift - Al Haouz	MA.MK	11	MO47	07	3,102,652	2,724,204	31,160	12,031	Marrakesh
-Meknès - Tafilalet	MA.MT	06	MO48	13	2,141,527	1,903,790	79,210	30,583	Meknès
-Oriental	MA.OR	04	MO54	08	1,918,094	1,768,691	82,900	32,008	Oujda
-Oued Ed-Dahab - Lagouira	MA.OL	16		01	99,367	36,751	50,880	19,645	Dakhla
-Rabat - Salé - Zemmour - Zaer	MA.RZ	07	MO49	10	2,366,494	1,985,602	9,580	3,699	Rabat
-Souss - Massa - Draâ	MA.SM	13	MO55	04	3,113,653	2,635,522	70,880	27,367	Agadir
-Tadla - Azilal	MA.TD	12	MO56	12	1,450,519	1,324,662	17,125	6,612	Béni Mellal
-Tanger - Tétouan	MA.TO	01	MO57	16	2,470,372	2,036,032	11,570	4,467	Tanger
-Taza - Al Hoceima - Taounate	MA.TH	03	MO58	15	1,807,113	1,719,844	24,155	9,326	Al Hoceima
-
-Algeria
-
-01 	Adrar 	أدرار 	6 	16 	254,471 	98,252 	261,258 	1.03 	2.7
-02 	Chlef 	الشلف 	13 	35 	4,795 	1,851 	1,002,088 	209 	540
-03 	Laghouat 	الأغواط 	10 	24 	25,057 	9,675 	455,602 	18 	47
-04 	Oum El Bouaghi 	أم البواقي 	12 	29 	6,783 	2,619 	621,612 	81 	210
-05 	Batna 	باتنة 	21 	61 	12,192 	4,707 	1,119,791 	92 	240
-06 	Béjaïa 	بجاية 	19 	52 	3,268 	1,262 	912,577 	279 	720
-07 	Biskra 	بسكرة 	10 	27 	9,576 	3,697 	547,137 	5,714 	14,800
-08 	Béchar 	بشار 	6 	11 	60,850 	23,490 	219,898 	3.61 	9.3
-09 	Blida 	البليدة 	10 	25 	1,575 	608 	1,002,937 	591 	1,530
-10 	Bouïra 	البويرة 	12 	45 	4,439 	1,714 	695,583 	157 	410
-11 	Tamanrasset 	تمنراست 	3 	5 	336,839 	130,054 	115,043 	0.34 	0.88
-12 	Tébessa 	تبسة 	12 	28 	14,227 	5,493 	648,703 	46 	120
-13 	Tlemcen 	تلمسان 	20 	53 	9,061 	3,498 	949,135 	105 	270
-14 	Tiaret 	تيارت 	14 	42 	20,673 	7,982 	846,823 	41 	110
-15 	Tizi Ouzou 	تيزي وزو 	21 	67 	2,956 	1,141 	1,127,608 	316 	820
-16 	Alger 	الجزائر 	13 	57 	1,190 	460 	2,988,145 	2,511 	6,500
-17 	Djelfa 	الجلفة 	12 	36 	66,415 	25,643 	1,092,184 	46 	120
-18 	Jijel 	جيجل 	11 	28 	2,577 	995 	636,948 	247 	640
-19 	Sétif 	سطيف 	20 	60 	6,504 	2,511 	1,489,979 	229 	590
-20 	Saïda 	سعيدة 	6 	16 	6,764 	2,612 	330,641 	49 	130
-21 	Skikda 	سكيكدة 	13 	38 	4,026 	1,554 	898,680 	223 	580
-22 	Sidi Bel Abbès 	سيدي بلعباس 	15 	52 	9,096 	3,512 	604,744 	66 	170
-23 	Annaba 	عنابة 	6 	12 	1,439 	556 	609,499 	424 	1,100
-24 	Guelma 	قالمة 	10 	34 	4,101 	1,583 	482,430 	118 	310
-25 	Constantine 	قسنطينة 	6 	12 	2,187 	844 	938,475 	427 	1,110
-26 	Médéa 	المدية 	19 	64 	8,866 	3,423 	819,932 	92 	240
-27 	Mostaganem 	مستغانم 	10 	32 	2,175 	840 	737,118 	325 	840
-28 	M'Sila 	المسيلة 	15 	47 	18,718 	7,227 	990,591 	53 	140
-29 	Mascara 	معسكر 	16 	47 	5,941 	2,294 	784,073 	132 	340
-30 	Ouargla 	ورقلة 	6 	10 	194,552 	75,117 	311,337 	1.6 	4.1
-31 	Oran 	وهران 	9 	26 	2,121 	819 	1,454,078 	688 	1,780
-32 	El Bayadh 	البيض 	8 	22 	78,870 	30,450 	228,624 	3.2 	8.3
-33 	Illizi 	اليزي 	2 	4 	198,815 	76,763 	34,715 	0.17 	0.44
-34 	Bordj Bou Arréridj 	برج بوعريريج 	10 	34 	4,115 	1,589 	628,475 	160 	410
-35 	Boumerdès 	بومرداس 	9 	32 	1,356 	524 	802,083 	504 	1,310
-36 	El Tarf 	الطارف 	7 	24 	3,339 	1,289 	408,414 	122 	320
-37 	Tindouf 	تندوف 	1 	2 	159,000 	61,000 	49,149 	0.31 	0.80
-38 	Tissemsilt 	تسمسيلت 	8 	22 	3,152 	1,217 	294,476 	93 	240
-39 	El Oued 	الوادي 	10 	22 	45,738 	17,660 	485,281 	1,061 	2,750
-40 	Khenchela 	خنشلة 	8 	21 	9,811 	3,788 	386,683 	40 	100
-41 	Souk Ahras 	سوق أهراس 	10 	26 	4,541 	1,753 	438,127 	95 	250
-42 	Tipaza 	تيبازة 	10 	28 	1,605 	620 	591,010 	273 	710
-43 	Mila 	ميلة 	13 	32 	3,407 	1,315 	766,886 	220 	570
-44 	Aïn Defla 	عين الدفلى 	14 	36 	4,891 	1,888 	766,013 	156 	400
-45 	Naâma 	النعامة 	7 	12 	29,950 	11,560 	192,891 	6.5 	17
-46 	Aïn Témouchent 	عين تموشنت 	8 	28 	2,379 	919 	371,239 	156 	400
-47 	Ghardaïa 	غرداية 	7 	9 	23,890 	9,220 	306,322 	12.82 	33.2
-48 	Relizane 	غليزان 	13 	38 	4,870 	1,880 	726,180 	152 	390
-49 	El M'ghair 	المغير 	2 	8 	8,835 	3,411 	162,267 	0.94 	2.4
-50 	El Menia 	المنيعة 	2 	4 	62,215 	24,021 	57,276 	0.92 	2.4
-51 	Ouled Djellal 	أولاد جلال 	2 	6 	11,410 	4,410 	174,219 	15 	39
-52 	Bordj Baji Mokhtar 	برج باجي مختار 	1 	2 	120,026 	46,342 	16,437 	014 	36
-53 	Béni Abbès 	بني عباس 	6 	10 	101,350 	39,130 	50,163 	049 	130
-54 	Timimoun 	تيميمون 	4 	10 	65,203 	25,175 	122,019 	19 	49
-55 	Touggourt 	تقرت 	4 	11 	17,428 	6,729 	247,221 	14 	36
-56 	Djanet 	جانت 	1 	2 	86,185 	33,276 	17,618 	02 	5.2
-57 	In Salah 	عين صالح 	2 	3 	131,220 	50,660 	50,392 	038 	98
-58 	In Guezzam 	عين قزّام 	2 	2 	88,126 	34,026 	11,202 	013 	34
+Chaouia - Ouardigha 
+Doukkala - Abda  
+Fès - Boulemane  
+Gharb - Chrarda - Béni Hssen 
+Grand Casablanca 
+Guelmim - Es-Semara
+Laâyoune - Boujdour  
+Marrakech - Tensift  
+Meknès - Tafilalet   
+Oriental      
+Oued Ed-Dahab - Lagouira 
+Rabat - Salé - Zemmour 
+Souss - Massa - Draâ 
+Tadla - Azilal
+Tanger - Tétouan  
+Taza - Al Hoceima - Taounate
+Adrar                    
+Chlef                    
+Laghouat                 
+Oum El Bouaghi           
+Batna                    
+Béjaïa                   
+Biskra                   
+Béchar                   
+Blida                    
+Bouïra                   
+Tamanrasset              
+Tébessa                  
+Tlemcen                  
+Tiaret                   
+Tizi Ouzou               
+Alger                    
+Djelfa                   
+Jijel                    
+Sétif                    
+Saïda                    
+Skikda                   
+Sidi Bel Abbès           
+Annaba                   
+Guelma                   
+Constantine              
+Médéa                    
+Mostaganem               
+M'Sila                   
+Mascara                  
+Ouargla                  
+Oran                     
+El Bayadh                
+Illizi                   
+Bordj Bou Arréridj       
+Boumerdès                
+El Tarf                  
+Tindouf                  
+Tissemsilt               
+El Oued                  
+Khenchela                
+Souk Ahras               
+Tipaza                   
+Mila                     
+Aïn Defla                
+Naâma                    
+Aïn Témouchent           
+Ghardaïa                 
+Relizane                 
+El M'ghair               
+El Menia                 
+Ouled Djellal            
+Bordj Baji Mokhtar       
+Béni Abbès               
+Timimoun                 
+Touggourt                
+Djanet                   
+In Salah                 
+In Guezzam               
