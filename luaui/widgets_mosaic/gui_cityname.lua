@@ -48,7 +48,7 @@ local function setAnchorsRelative(nvx, nvy)
 end
 
 function widget:Initialize()
-   startFrame = Spring.GetGameFrame()
+   startFrame = Spring.GetGameFrame() + 100
    endFrame = startFrame + (15*30)
    displayStaticFrameIntervallLength = math.ceil(0.3*(endFrame - startFrame))
    displayStaticFrame = startFrame+ displayStaticFrameIntervallLength

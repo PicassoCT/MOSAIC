@@ -2,28 +2,20 @@
 
 return {
   ["fireshine"] = {
-    alwaysVisible = true,
-    
-    groundflash = {
+    shinefire = {
       air                = true,
-      alwaysvisible      = true,
-      circlealpha        = 0.5,
-      circlegrowth       = 8,
-      flashalpha         = 0.02,
-      flashsize          = 22,
+      class              = [[CSimpleGroundFlash]],
+      count              = 1,
       ground             = true,
-      ttl                = 47,
       water              = true,
-      color = {
-        [1]  = 0.9,
-        [2]  = 0.2,
-        [3]  = 0,
+     alwaysvisible =  true,
+      properties = {
+        colormap           = [[0.9 0.2 0.0 0.5   1.0 0.3 0 0.01]],
+        size               = 66,
+        sizegrowth         = 0.012,
+        texture            = [[groundflash]],
+        ttl                = 47,
       },
     },
-  
-  
- 
-},
-
-
+}
 }

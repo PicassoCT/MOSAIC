@@ -9,7 +9,8 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 GameConfig = getGameConfig()
-
+local spGetUnitDefID = Spring.GetUnitDefID
+local myDefID = spGetUnitDefID(unitID)
 center = piece "center"
 Icon = piece "Icon"
 Packed = piece "Packed"
@@ -81,7 +82,8 @@ function doDamageCyclic()
     while LifeTime > 0 do
         process(getAllNearUnitSpherical(unitID, SatelliteShrapnellDistance),
                 function(id) 
-                    if id ~= unitID then 
+                    defID = spGetUnitDefID(id)
+                    if id ~= unitID and defID ~= myDefID then 
                         return id end 
                 end,
                 function(id)

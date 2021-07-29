@@ -7,10 +7,11 @@ include "lib_Animation.lua"
 
 function cegFunction(x,y,z) 
 	cegname, sleeptime = getCegName()
-	Spring.SpawnCEG(getCegName(), x,  y + 50, z, math.random(-1,1),  math.random(-1,0),  math.random(-1,1), 60)
+	--Spring.SpawnCEG(getCegName(), x,  y + 50, z, math.random(-1,1),  math.random(-1,0),  math.random(-1,1), 60)
 	--spawnCegAtPiece(unitID, Quader04, cegname, -50, 0, 0, 0)
 	Sleep(sleeptime)
-	spawnCegNearUnitGround(unitID, getCegName())
+	name = getCegName()
+	spawnCegNearUnitGround(unitID, name)
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -18,7 +19,7 @@ end
 
 function getCegName()
 	echo("Cegspawn")
-	return "pressurewave", 5000
+	return "fireshine", 1000
 end
 center = piece "center"
 Quader04 = piece "Quader04"

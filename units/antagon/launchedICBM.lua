@@ -9,8 +9,6 @@ local LaunchedICBM = Rocket:New{
 	name = "MOSA ICBM",
 	description= "launched Doomsdaydevice <Ends game if not intercepted>",
 
-	footprintX = 1,
-	footprintZ = 1,
 	
 	script 				= "launchedicbmscript.lua",
 	objectName        	= "launcherICBM.dae",
@@ -20,6 +18,7 @@ local LaunchedICBM = Rocket:New{
 	iconType = "launcher",
 	ActivateWhenBuilt=1,
 	alwaysupright = true,
+
 
 	
 	customparams = {

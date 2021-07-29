@@ -3,26 +3,19 @@
 return {
   ["volcanolightsmall"] = {
   
-    groundflash = {
+     firelight = {
       air                = true,
-      alwaysvisible      = true,
-      circlealpha        = 0.5,
-      circlegrowth       = 1.4,
-      flashalpha         = 0.02,
-      flashsize          = 22,
+      class              = [[CSimpleGroundFlash]],
+      count              = 1,
       ground             = true,
-      ttl                = 27,
       water              = true,
-      color = {
-        [1]  = 0.9,
-        [2]  = 0.2,
-        [3]  = 0,
+      properties = {
+        colormap           = [[0.9 0.2 0.0 0.5   0 0 0 0.01]],
+        size               = 22,
+        sizegrowth         = 1,
+        texture            = [[groundflash]],
+        ttl                = 100,
       },
     },
-  
-  
- 
-},
-
-
+}
 }
