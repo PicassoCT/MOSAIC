@@ -47,14 +47,14 @@ local function Refill(myTeamID, resource)
             -- medium: partial refill
             -- 1000 storage / 128 * 30 = approx. +234
             -- this means 100% cheat is bonus of +234 metal at 1k storage
-            Spring.AddTeamResource(myTeamID, resource, (storage - value) * 0.05)
+            --Spring.AddTeamResource(myTeamID, resource, (storage - value) * 0.05)
         else
             -- hard: full refill
-            Spring.AddTeamResource(myTeamID, resource, storage - value)
+           -- Spring.AddTeamResource(myTeamID, resource, storage - value)
             if gadget.difficulty == "impossible" and resource == "energy" and storage < 1000.0 then
                 -- Grant the AI always have at least 1000 ammo storage, so
                 -- targeting the storages is not a possibility to win
-                Spring.AddTeamResource(myTeamID, "es", 1000.0)
+               -- Spring.AddTeamResource(myTeamID, "es", 1000.0)
             end
         end
     end
