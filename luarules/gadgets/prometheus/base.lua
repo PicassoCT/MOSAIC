@@ -781,7 +781,7 @@ function BaseMgr.GameFrame(f)
             end
             if factory ~= nil then
                 GiveOrderToUnit(factory, CMD_WAIT, {}, {})
-                Log("Make to wait ", factory, "(", UnitDefs[GetUnitDefID(factory)].name, ")")
+            --    Log("Make to wait ", factory, "(", UnitDefs[GetUnitDefID(factory)].name, ")")
                 waiting_builders[#waiting_builders + 1] = {factory}
                 is_waiting[factory] = true
             end
