@@ -85,6 +85,7 @@ function recruiteLoop()
                 ad = copyUnit(id, teamID, fatherID)
                 consumeAvailableRessourceUnit(unitID, "metal",
                                               GameConfig.costs.RecruitingTruck)
+                Spring.SetUnitAlwaysVisible(id, false)
                 spDestroyUnit(id, false, true)
                 endIcon()
             end
