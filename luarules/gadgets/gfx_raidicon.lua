@@ -55,7 +55,7 @@ else -- unsynced
            glBlending(GL_SRC_ALPHA, GL_ONE)
            -- glBlending(GL_SRC_ALPHA, GL_SRC_ALPHA)
             glUnitRaw(unitID, true)
-            return true
+            return
         end
     end
 end
