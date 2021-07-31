@@ -13,7 +13,6 @@ SIG_DELAYEDRECLOAK = 8
 
 local Animations = include('animation_assasin_female.lua')
 
-
 deg_1 = 3.141592653589793 / 180.0
 Animations.PARACHUTE_POSE = {
         {
@@ -321,13 +320,13 @@ local FoldtopUnfolded = piece'FoldtopUnfolded'
 local FoldtopFolded= piece'FoldtopFolded'
 
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
 civilianSortedBySexTable = getCivlianDisguiseBySexTypeTable(UnitDefs, getOperatorSex(UnitDefs, myDefID))
 local disguiseDefID = randT(civilianSortedBySexTable)
-mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
+local mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam
-myTeamID= spGetUnitTeam(unitID)
+local myTeamID= spGetUnitTeam(unitID)
 
 
 local scriptEnv = {
@@ -378,13 +377,13 @@ lowerBodyPieces =
 	[LowLeg2]= LowLeg2
 }
 
-boolWalking = false
-boolTurning = false
-boolTurnLeft = false
-boolDecoupled = false
-boolFlying = false
-boolAiming = false
-boolIsBuilding = false
+local boolWalking = false
+local boolTurning = false
+local boolTurnLeft = false
+local boolDecoupled = false
+local boolFlying = false
+local boolAiming = false
+local boolIsBuilding = false
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 
 function showBody()
@@ -394,7 +393,6 @@ function showBody()
 	showT(shownPieces)
 end
 
-if not GG.OperativesDiscovered then  GG.OperativesDiscovered={} end
 shownPieces={}
 
 function script.Create()
@@ -1027,7 +1025,7 @@ function script.StartMoving()
 	boolWalking = true
 	showFoldLaptop(false)
 	Turn(center,y_axis, math.rad(0), 12)
-    Turn(center, x_axis, math.rad(5), 12)
+    Turn(center, x_axis, math.rad(2.5), 12)
 	setOverrideAnimationState(eAnimState.slaved, eAnimState.walking,  true, nil, false)
 end
 
