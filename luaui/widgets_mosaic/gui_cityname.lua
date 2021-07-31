@@ -347,27 +347,43 @@ function widget:DrawScreenEffects(vsx, vsy)
       
 
         local textCol = {0.124, 200/255, 255/255, 0.9*fadeOutFactor}
+        local coreCol = {1, 1, 1, 0.45*fadeOutFactor}
         local screenX, screenY = anchorx, anchory
         local lineOffset = 50*scale
         local lineIndex = 0
         local FontSize = fontSize *scale
+        local FontSizeCore = (fontSize *scale) -0.25
 
         gl.Color(textCol[1],textCol[2],textCol[3],textCol[4])
+        glText(country, screenX, screenY+ lineIndex*lineOffset ,FontSize,"rn")
 
-        glText(country, screenX, screenY+ lineIndex*lineOffset ,FontSize,"r")
+        gl.Color(coreCol[1],coreCol[2],coreCol[3],coreCol[4])
+        glText(country, screenX, screenY+ lineIndex*lineOffset ,FontSizeCore,"r")
         lineIndex = lineIndex + 1      
 
-        glText(province, screenX, screenY+ lineIndex*lineOffset ,FontSize,"r")
+        gl.Color(textCol[1],textCol[2],textCol[3],textCol[4])
+        glText(province, screenX, screenY+ lineIndex*lineOffset ,FontSize,"rn")
+        gl.Color(coreCol[1],coreCol[2],coreCol[3],coreCol[4])
+        glText(province, screenX, screenY+ lineIndex*lineOffset ,FontSizeCore,"r")    
         lineIndex = lineIndex + 1         
 
-        glText(cityname, screenX, screenY+ lineIndex*lineOffset ,FontSize,"r")
+        gl.Color(textCol[1],textCol[2],textCol[3],textCol[4])
+        glText(cityname, screenX, screenY+ lineIndex*lineOffset ,FontSize,"rn")
+        gl.Color(coreCol[1],coreCol[2],coreCol[3],coreCol[4])
+        glText(cityname, screenX, screenY+ lineIndex*lineOffset ,FontSizeCore,"r")
         lineIndex = lineIndex + 1      
   
-
-        glText(citypart, screenX, screenY+ lineIndex*lineOffset ,FontSize,"r")
+        gl.Color(textCol[1],textCol[2],textCol[3],textCol[4])
+        glText(citypart, screenX, screenY+ lineIndex*lineOffset ,FontSize,"rn")
+        gl.Color(coreCol[1],coreCol[2],coreCol[3],coreCol[4])
+        glText(citypart, screenX, screenY+ lineIndex*lineOffset ,FontSizeCore,"r")
         lineIndex = lineIndex + 1      
 
-        glText(timeStamp, screenX, screenY+ lineIndex*lineOffset ,FontSize,"r")
+        gl.Color(textCol[1],textCol[2],textCol[3],textCol[4])
+        glText(timeStamp, screenX, screenY+ lineIndex*lineOffset ,FontSize,"rn")
+        gl.Color(coreCol[1],coreCol[2],coreCol[3],coreCol[4])
+        glText(timeStamp, screenX, screenY+ lineIndex*lineOffset ,FontSizeCore,"r")
+
         gl.Color(1,1,1,1)
 
 
