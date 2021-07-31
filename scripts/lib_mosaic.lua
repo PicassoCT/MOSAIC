@@ -1277,12 +1277,13 @@ function getGameConfig()
                         -- Test Synced Unit Stopped
 
                         -- Transported
-                        if Spring.GetUnitTransporter(persPack.myID) ~= nil then
+                        if Spring.GetUnitTransporter(persPack.myID) ~= nil and not persPack.boolTransported then
                             persPack.boolTransported = true
-                            moveCtrlUnitToUnit(persPack.syncedID, PersPack.myID)
+							pieceMap = Spring.GetUnitPieceMap(persPack.myID)
+							Spring.UnitAttach(persPack.syncedID, persPack.myID, pieceMap["center"])		
                             return frame + 5, persPack
                         elseif persPack.boolTransported == true then
-                            Spring.MoveCtrl.Enable(persPack.syncedID, false)
+							Spring.UnitDetach(persPack.syncedID)
                             persPack.boolTransported = false
                         end
 
@@ -1320,8 +1321,6 @@ function getGameConfig()
                 command = Spring.GetUnitCommands (unitID, 1)
                 if command[1] then
                     Command(persPack.myID, "go", {x = x, y = y, z = z})
-                    --[[ else
-        transferOrders(persPack.syncedID, persPack.myID)--]]
                 end
 
                 return frame + 30, persPack
