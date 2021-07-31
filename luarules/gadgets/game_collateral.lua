@@ -23,6 +23,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitPosition = Spring.GetUnitPosition
     local spGetAllUnits = Spring.GetAllUnits
     local GameConfig = getGameConfig()
+    local exemptFromRefundDefIds = getExemptFromRefundTypes(UnitDefs)
     local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
                                                 "house", UnitDefs)
     local accumulatedInSecond = {}
@@ -147,6 +148,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
         -- civilian attacked by a not civilian
         if unitTeam == gaiaTeamID and attackerID and attackerTeam ~= unitTeam then
+
+            if exemptFromRefundDefIds[unitDefID] then return end
 
             -- attackerPlayerList = Spring.GetPlayerList(attackerTeam)
             for _, team in pairs(Spring.GetTeamList()) do
