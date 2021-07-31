@@ -334,6 +334,16 @@ function getGameConfig()
                 "satelliteshrapnell"
             }
             return getTypeTable(UnitDefNames, typeTable)
+        end  
+
+        function getExemptFromRefundTypes(UnitDefs)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            typeTable = {
+
+                "satelliteshrapnell"
+            }
+            return getTypeTable(UnitDefNames, typeTable)
         end
 
         function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
