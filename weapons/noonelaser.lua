@@ -42,8 +42,8 @@ local weaponDef = {
     -- explosionGenerator = "custom:smallblueburn",
     tolerance = 1000,
     damage = {
-        default = 10,
-        HeavyArmor = 20,
+        default = 5,
+        HeavyArmor = 10,
     },
 }
 return lowerkeys({ [weaponName] = weaponDef })
