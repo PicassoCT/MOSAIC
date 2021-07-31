@@ -26,7 +26,7 @@ local Launcher = Building:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	name = "Launcher",
-	description = " ends the game with a MOSA ICBM launch",
+	description = "Build icmb-stages to win the game",
 
 	canCloak =true,
 	cloakCost=0.0001,
