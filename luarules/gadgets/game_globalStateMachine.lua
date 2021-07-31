@@ -90,7 +90,8 @@ local GameStateMachine = {
             for teamID, launchersT in pairs(GG.Launchers) do
                 if teamID and launchersT then
                     for launcherID, step in pairs(launchersT) do
-                        if doesUnitExistAlive(launcherID) == true and step > GameConfig.PreLaunchLeakSteps then
+                        if doesUnitExistAlive(launcherID) == true and 
+                            step > GameConfig.PreLaunchLeakSteps then
                             Spring.SetUnitAlwaysVisible(launcherID, true)
                             GG.GameStateMachine.Timer = frame
                             return GameConfig.GameState.launchleak

@@ -49,6 +49,17 @@ function script.Create()
     Hide(Icon)
 end
 
+
+function updateDescriptionDelayed()
+    alreadyBuildStages = 0
+    if GG.Launchers and GG.Launchers[myTeamID] and GG.Launchers[myTeamID][unitID] then
+        alreadyBuildStages = GG.Launchers[myTeamID][unitID]
+    end
+
+    description = alreadyBuildStages.." stages completed out of "..(GameConfig.LaunchReadySteps+1).." stages. Build icmb-stages to win the game."
+    Spring.SetUnitTooltip(unitID, description)
+end
+
 launcherStepDefID = UnitDefNames["launcherstep"].id
 local buildID
 function accountForBuiltLauncherSteps()
@@ -56,6 +67,7 @@ function accountForBuiltLauncherSteps()
         -- Spring.Echo("Detect Upgrade")
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
+            updateDescriptionDelayed()
             if boolLaunchReady == false then
                 buildDefID = Spring.GetUnitDefID(buildID)
                 if buildDefID == launcherStepDefID then

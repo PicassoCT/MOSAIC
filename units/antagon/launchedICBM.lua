@@ -1,6 +1,6 @@
 local LaunchedICBM = Rocket:New{
 	corpse				= "",
-	maxDamage           = 256,
+	maxDamage           = 128,
 	mass                = 50000,
 	buildCostEnergy     = 5,
 	buildCostMetal      = 5,
