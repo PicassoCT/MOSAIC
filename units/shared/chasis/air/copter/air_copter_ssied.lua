@@ -4,9 +4,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	Description = " MOSAIC Standardized Explosive Device Drone ",
 	
 	objectName = "air_copter_sied.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	
 	script = "airssiedscript.lua",
 	buildPic = "air_iied.png",
@@ -25,10 +23,7 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
-	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
-	
+
 
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
@@ -37,12 +32,11 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
 	MovementClass = "Default2x2",
-	TurnRate = 450,
+	TurnRate = 900,
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	CanFly   = true,
 	activateWhenBuilt   	= true,
-	MaxSlope 					= 75,
 
 	--canHover=true,
 	CanAttack = true,
@@ -52,21 +46,22 @@ local AIRC_COPTER_SSIED = VTOL:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	cruiseAlt= 25,
+	cruiseAlt= 50,
 
 	maxBank=0.4,
 	myGravity =0.5,
 	mass                = 150,
 	canSubmerge         = false,
-	useSmoothMesh 		=false,
+	useSmoothMesh 		=true,
 	collide             = true,
 	crashDrag =0.035,
 
 
 	Category = [[AIR]],
 
-	  customParams = {
-	  baseclass ="vtol"
+	  customparams = {
+	  	baseclass ="vtol",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	  
 	 sfxtypes = {
