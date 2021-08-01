@@ -110,6 +110,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["greenhouse"].id]= true,
 [UnitDefNames["satelliteshrapnell"].id]= true,
 [UnitDefNames["civilianloot"].id]= true,
+[UnitDefNames["gcscrapheap"].id]= true,
 }
 
 --------------------------------------------------------------------------------
