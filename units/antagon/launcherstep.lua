@@ -23,7 +23,7 @@ local BuildLauncherStep = Abstract:New{
 	minCloakDistance 	= 0,
 	onoffable			= true,
 	initCloaked 		= true,
-	decloakOnFire 		= true,
+	decloakOnFire 		= false,
 	cloakTimeout 		= 5,
 	MaxSlope 			= 100,
 
