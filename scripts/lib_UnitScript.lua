@@ -6515,13 +6515,13 @@ function gotoBuildPosOnceDone(unitID, delayMs)
      hx,hy, hz = Spring.GetUnitPosition(unitID)
      Command(unitID, "go", {
                 x = hx,
-                y = hy+25,
+                y = hy + 25,
                 z = hz
-            }, {}) 
+            }) 
                
     Command(unitID, "go", {
                 x = hx,
-                y = hy+25,
+                y = hy + 25,
                 z = hz
             }, {"shift"})
     end
