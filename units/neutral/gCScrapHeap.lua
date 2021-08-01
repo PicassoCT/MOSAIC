@@ -1,8 +1,8 @@
 local unitName = "gCScrapHeap"
 
 local unitDef = {
-	name = "gCScrapHeap",
-	Description = "Where towers in ruins lie",
+	name = "Ruined building",
+	Description = " in a bad neighourhood",
 	objectName = "gCScrapHeap.s3o",
 	script = "gCScrapHeap.lua",
 	buildPic = "placeholder.png",
@@ -20,8 +20,6 @@ local unitDef = {
 
 	--MaxVelocity = 0.5,
 	MaxWaterDepth =400,
-	--MovementClass = "Default2x2",--
-
 
 	sightDistance = 50,
 
@@ -33,18 +31,6 @@ local unitDef = {
 	CanPatrol = false,
 	CanStop = false,
 
-
-
-	-- Building	
-		
-
-
-
-
-
-		
-	   
-
 	Category = [[NOTARGET]],
 
 	EnergyStorage = 0,
@@ -55,42 +41,11 @@ local unitDef = {
 		MetalMake = 0,	
 	  acceleration           = 0,
 	  
-
-	   -- bmcode                 = [[0]],
-		
-		--
-
-
-	  --extractsMetal          = 0.005,
-	  --floater                = false,
-
-
-
 	  levelGround            = false,
 	  mass                   = 9900,
 	  
-
-
-
-	  
-
-
-	 -- TEDClass               = [[METAL]],
-	  
 	   customParams = {},
-	 sfxtypes = {
-					explosiongenerators = {
-					   -- "custom:factory_explosion",
-					   -- "custom:flames",
-					   -- "custom:glowsmoke",
-					   -- "custom:blackerthensmoke",
-					   -- "custom:LightUponSmoke",
-					  
-					   --
-						--Bulletof The Cannon
-					},
-
-},
+	
 
 
 }
