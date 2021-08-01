@@ -54,7 +54,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     }
             end
             accumulatedInSecond[team][id].damage =
-                accumulatedInSecond[team][uid_loc].damage + damage
+                accumulatedInSecond[team][id].damage + damage
         end
     end
 
@@ -138,11 +138,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
         if not attackerID and weaponDefID then
-            if WeaponDefs[weaponDefID] then
-                echo("Unit " .. unitID ..
-                         " was damaged without perpetrator with weapon " ..
-                         WeaponDefs[weaponDefID].name)
-            end
+            --ssieds are ignored - cause who know who really was the attacker
             return damage
         end
 
@@ -221,7 +217,9 @@ if (gadgetHandler:IsSyncedCode()) then
                         SendToUnsynced("DisplaytAtUnit", uid, team, v.damage,
                                        v.colour.r, v.colour.g, v.colour.b)
                     else
-                        SendToUnsynced("DisplayAtLocation", v.location, team,
+                        assert(v.x)
+                        assert(v.damage)
+                        SendToUnsynced("DisplayAtLocation", v.x, v.y, v.z , team,
                                        v.damage, v.colour.r, v.colour.g,
                                        v.colour.b)
                     end
@@ -261,14 +259,17 @@ else -- UNSYNCED
 
     end
 
-    local function DisplayAtLocation(callname, locTable, team, damage, r, g, b)
+    local function DisplayAtLocation(callname, x,y,z, team, damage, r, g, b)
         -- Spring.Echo("Display at Location")
-        Frame_StartFrame_Message[spGetGameFrame()] =
+        local frame =spGetGameFrame()
+        Frame_StartFrame_Message[frame] =
             {
                 team = team,
                 message = damage,
-                loc = locTable,
-                frame = spGetGameFrame(),
+                x = x,
+                y= y,
+                z= z,
+                frame = frame,
                 col = {r = r, g = g, b = b}
             }
     end
@@ -326,24 +327,23 @@ else -- UNSYNCED
         for startframe, data in ipairs(Frame_StartFrame_Message) do
             -- Spring.Echo("itterating over all units")
 
-            if data.team == spGetMyTeam() then
+            if data and data.team == spGetMyTeam() then
 
                 if currFrame < startframe + DrawForFrames then
 
-                    x, y, z = data.locTable.x, data.locTable.y, data.locTable.z
-                    if x then
                         frameOffset = (255 -
                                           (startframe + DrawForFrames -
                                               currFrame)) * 0.25
-                        local sx, sy = spWorldToScreenCoords(data.loc.x,
-                                                             data.loc.y +
-                                                                 frameOffset,
-                                                             data.loc.z)
+                        local sx, sy = spWorldToScreenCoords(data.x,
+                                                             data.y + frameOffset,
+                                                             data.z)
 
-                        gl.Color(data.col.r, data.col.g, data.col.b)
-
+                        if valueT.message < 0 then
+                            gl.Color(1.0, 0.0, 0.0)
+                        else
+                            gl.Color(0.0, 1.0, 0.0)
+                        end
                         gl.Text("$ " .. valueT.message, sx, sy, 16, "od")
-                    end
                 end
             end
         end

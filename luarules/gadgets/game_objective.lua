@@ -84,8 +84,8 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitCreated(UnitID, unitDefID)
-        local type = Spring.GetUnitDefID(UnitID)
-        if objectiveTypes[type] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
+        uDefID = Spring.GetUnitDefID(UnitID)
+        if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
 
             x, y, z = Spring.GetUnitPosition(UnitID)
             Objectives[UnitID] = {x = x, y = y, z = z, defID = unitDefID, boolProProtagon = getProProtagon(count(Objectives)) }
@@ -95,8 +95,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitDestroyed(UnitID, whatever)
-        if objectiveTypes[type] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
-            DeadObjectives[UnitID] = Objectives[UnitID]
+        uDefID = Spring.GetUnitDefID(UnitID)
+        if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
+            local deepCopy = Objectives[UnitID]
+            DeadObjectives[UnitID] =  deepCopy
             Objectives[UnitID] = nil
         end
     end
@@ -111,8 +113,6 @@ if (gadgetHandler:IsSyncedCode()) then
             antagonT = getAllTeamsOfType("antagon")
             protagonT = getAllTeamsOfType("protagon")
 
-            -- Spring.Echo("Reward Cycle called")
-
             for id, types in pairs(Objectives) do
                 if types.boolProProtagon == true then
                     --	Spring.Echo("Objectives to Protagon")
@@ -123,23 +123,25 @@ if (gadgetHandler:IsSyncedCode()) then
                         end
                     end
                 else
-                    for tid, _ in pairs(antagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
-                                               tid, colourBlue)
+                    if doesUnitExistAlive(id) == true then
+                        for tid, _ in pairs(antagonT) do
+                            GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
+                                                   tid, colourBlue)
+                        end
                     end
                 end
             end
 
-            for id, location in pairs(DeadObjectives) do
-                if location.boolProProtagon == true then
+            for id, data in pairs(DeadObjectives) do
+                if data.boolProProtagon == true then
                     for tid, _ in pairs(antagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
-                                               location, colourRed)
+                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid, data, colourRed)
+                        Spring.Echo("DEad Objective gives to antagonT")
                     end
                 else
                     for tid, _ in pairs(protagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
-                                                   location, id, colourBlue)
+                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid, data, id, colourBlue)
+                        Spring.Echo("DEad Objective gives to protagonT")
                     end
                 end
             end
