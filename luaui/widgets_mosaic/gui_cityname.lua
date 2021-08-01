@@ -284,9 +284,35 @@ local province ={
     return "Province: "..getCacheBy("province") 
 end
 
-local function getRegionByCulture(culture)
-  if culture == "arabic" then return "Middle East Asia" end
+local function getRegionByCulture(culture, country)
+  local region_countryMap = {}
+  if culture == "arabic" then 
+     region_countryMap ={
+     ["North Africa"] = {"Senegal","Westsahara","Maroko","Mauretania","Algeria","Tunesia","Libya","Chad","Niger","Sudan",
+     "Eritrea","Ethopia","Kenya"},
+     ["Middle East"] = {"Egypt",
+       "Yemen","Saudi Arabia","Israel","Oman","United Arab Emirates","Qatar","Dubai","Iran","Jordan","Lebanon","Syria","Iraq","Kuwait","Bahrain", 
+     },
+     ["Central Asia"] = {
+      "Uzbekistan","Xinjiang","Rajasthan","Armenia","Azerbaijan","Afghanistan","Pakistan","Turkmenistan","Tajikistan","Kazakhstan","Mongolia"
+     },
+     ["Southeast Asia"] = {
+       "Sri Lanka","Bangladesh","Myanmar","Indonesia",
+     }
+     }
+  end
+
   if culture == "western" then return "Europa" end
+
+   for region, countries in pairs(region_countryMap) do
+      for nr, currentCountry in pairs(countries) do
+        if currentCountry == country then 
+          return region
+        end
+      end
+   end 
+
+  return "Conflicted Region" 
 end
 
 local function getCountryNameBy(culture, hash)
@@ -296,12 +322,12 @@ local country ={
     ["arabic"] = {
       "Senegal","Westsahara","Maroko","Mauretania","Algeria","Tunesia","Libya","Chad","Niger","Sudan","Egypt",
      "Eritrea","Ethopia","Kenya","Yemen","Saudi Arabia","Israel","Oman","United Arab Emirates","Qatar","Dubai",
-     "Uzbekistan","Xinjiang","Rajasthan","Iran","Armenia","Azerbaijan","Afghanistan","Pakistan","Turkmenistan","Tajikistan Jordan","Lebanon","Syria","Iraq","Kuwait","Bahrain", 
+     "Uzbekistan","Xinjiang","Rajasthan","Iran","Armenia","Azerbaijan","Afghanistan","Pakistan","Turkmenistan","Tajikistan","Jordan","Lebanon","Syria","Iraq","Kuwait","Bahrain", 
      "Sri Lanka","Bangladesh","Myanmar","Indonesia","Kazakhstan","Mongolia"
       }
   }
 
-   setCacheBy("country", country[culture][(hash % #country[culture])+1 ]..", "..getRegionByCulture(culture))
+   setCacheBy("country", country[culture][(hash % #country[culture])+1 ]..", "..getRegionByCulture(culture, country[culture][(hash % #country[culture])+1 ]))
    return "Country: "..getCacheBy("country") 
 end
 
