@@ -13,11 +13,13 @@ center = piece "center"
 aimpiece = center
 
 function script.Create()
-
+    isProjectileCollidable = true
+    Spring.SetUnitBlocking(unitID, false, false, isProjectileCollidable, false, false, false, false)
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
     StartThread(unfold)
+    StartThread(gotoBuildPosOnceDone, unitID, 150)
+    setUnitNeverLand(unitID, true)
 end
 function unfold()
     turnT(TablesOfPiecesGroups["Arm"], y_axis, 180, 0)
@@ -41,7 +43,9 @@ function script.AimWeapon1(Heading, pitch)
     return true
 end
 
-function script.FireWeapon1() return true end
+function script.FireWeapon1()
+    Spring.DestroyUnit(unitID, true, false)
+ return true end
 
 function script.StartMoving()
     Turn(center, x_axis, math.rad(40), 0)
