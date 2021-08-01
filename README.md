@@ -25,36 +25,28 @@ Cause its only ever one Raid, one Interrogation for your side to unravell the wh
 One bad apple squeezed, will spill those s/he trained and whoever, wherever trained her. 
 And you can go from there, if there is still time, there must be still time..
 
-And when the time runs out, the world ends. Chaos ensues, protestors riot, friend turns against friend
-Militias search the city for the rocket, while others flee the conflict-zone
+And when the time runs out, the world ends. Chaos ensues, protestors riot, friend turns against friend, while the optimists still loot.
+Militias search the city, while the others flee the conflict-zone.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen15.png "")
-
-In the end, they all try to run - even the most blatant madmen, runs from guilt, his home, his cell..
-
-But nothing and noone is what is yet to come. 
-
-Gods firey thumb will come down upon it.
-
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen8.png "")
 
 Sometimes there is barely enough time for some condemned Gig-Worker to realize what they have assembled for that ever anonymous, ever absent employer.
 For the future is a tricky place, filled with double-crosses and dangers.
 
-Maybe there never was a cult-leader and all you followed was a long forgotten AI.
-It could all be just a bad dream, something to wak up from and rub out of your eyes.
-Then it comes, a deafening roar,  a noise to end all noises. On a pillar of fire rises your ideals, your work to judge you.
+Maybe there never was a cult-leader and all you followed was a long forgotten AI living in some abandoned serverfarm?
+It could all be just a bad dream, something to wake up from and rub out of your eyes.
+Then it comes, a deafening roar,  a noise to end all noises. 
+A pillar of fire rises, tempting the world to judge you.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen14.png "")
 
-Then the hammer, comes down- on good and evil alike. A nuke, a godrod.
+After that the hammer, comes down - on good and evil alike. A nuke, a godrod. Let there be light.
 
 A eye for a eye, a city for a city.
 
-So it has been, so it shall always be.
-
-Men is men a end.
+Men is men a wulf till the end.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen11.png "")
 
