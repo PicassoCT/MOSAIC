@@ -21,7 +21,7 @@ local weaponDef = {
         default = 1600,
     },
     areaOfEffect = 250,
-    craterMult = 1,
+    craterMult = 0,
     lineOfSight = true,
     soundHit = "weapons/ssied/explode.ogg",
     --
