@@ -48,7 +48,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 
 	onOffable = false,
 	LeaveTracks = false, 
-	cruiseAlt= 5,
+	cruiseAlt= 30,
 
 	ActivateWhenBuilt=1,
 	maxBank=0.4,
