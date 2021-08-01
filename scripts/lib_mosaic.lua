@@ -339,11 +339,11 @@ function getGameConfig()
         function getExemptFromRefundTypes(UnitDefs)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
-            typeTable = {
+            typeTable = {"satelliteshrapnell"}
 
-                "satelliteshrapnell"
-            }
-            return getTypeTable(UnitDefNames, typeTable)
+            resultTypeTable = mergeTables(getObjectiveTypes(UnitDefs), getTypeTable(UnitDefNames, typeTable))
+      
+            return resultTypeTable
         end
 
         function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
