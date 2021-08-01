@@ -1799,15 +1799,36 @@ function getGameConfig()
                 }
             end
 
-            function getAllTeamsOfType(teamType)
+            function getAllTeamsOfType(teamType, UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                operativepropagatorDefID = UnitDefNames["operativepropagator"].id
+                operativeinvestigatorDefID = UnitDefNames["operativeinvestigator"].id
+
                 gaiaTeamID = Spring.GetGaiaTeamID()
                 local returnT = {}
-                process(Spring.GetTeamList(), function(tid)
-                    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier =
-                    Spring.GetTeamInfo(tid)
+                process(Spring.GetTeamList(), 
+                    function(tid)
+                    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier = Spring.GetTeamInfo(tid)
+
+                    --brute force over all teams
+                    if side == "" or not side then
+                        allUnitsSorted = Spring.GetTeamUnitsSorted (teamID )
+                        if allUnitsSorted[operativepropagatorDefID] and #allUnitsSorted[operativepropagatorDefID] > 0 then
+                            side = "antagon"
+                        end
+
+                        if allUnitsSorted[operativeinvestigatorDefID] and #allUnitsSorted[operativeinvestigatorDefID] > 0 then
+                            side = "protagon"
+                        end
+
+                        if (string.find(side, teamType) ) then 
+                            returnT[tid] = tid
+                            return
+                        end
+                    end
 
                     if tid ~= gaiaTeamID and false == isDead and
-                        (string.find(side, teamType) or side == "") then
+                        (string.find(side, teamType) ) then
                         returnT[tid] = tid
                     end
                 end)
