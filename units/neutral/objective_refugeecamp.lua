@@ -41,7 +41,7 @@ local objectiverefugeecamp = Building:New{
 
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "130 900 130",
+	collisionvolumescales = "130 200 130",
 	category = [[GROUND BUILDING]],
 
 }
