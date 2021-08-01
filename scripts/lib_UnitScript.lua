@@ -6509,6 +6509,24 @@ function transferOrders(originID, targetID)
     end
 end
 
+function gotoBuildPosOnceDone(unitID, delayMs)
+     Sleep(delayMs)
+     if doesUnitExistAlive(unitID) == true then
+     hx,hy, hz = Spring.GetUnitPosition(unitID)
+     Command(unitID, "go", {
+                x = hx,
+                y = hy+25,
+                z = hz
+            }, {}) 
+               
+    Command(unitID, "go", {
+                x = hx,
+                y = hy+25,
+                z = hz
+            }, {"shift"})
+    end
+end
+
 function hasNoActiveAttackCommand(unitID)
     CommandTable =Spring.GetUnitCommands(unitID, 1)
     if CommandTable and CommandTable[1] then
