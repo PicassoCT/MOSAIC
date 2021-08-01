@@ -27,12 +27,12 @@ if (gadgetHandler:IsSyncedCode()) then
     local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
                                                 "house", UnitDefs)
     local accumulatedInSecond = {}
+    local accumulatedInSecondLocation = {}
     local colourWhite = {r = 255, g = 255, b = 255}
 
     function addInSecond(team, uid_loc, rtype, damage, colour)
-        if not accumulatedInSecond[team] then
-            accumulatedInSecond[team] = {}
-        end
+        if not accumulatedInSecond[team] then accumulatedInSecond[team] = {}  end
+        if not accumulatedInSecondLocation[team] then accumulatedInSecondLocation[team] = {} end
 
         if type(uid_loc) == "number" then
             if not accumulatedInSecond[team][uid_loc] then
@@ -40,12 +40,12 @@ if (gadgetHandler:IsSyncedCode()) then
                     {rtype = rtype, damage = 0, colour = colour or colourWhite}
             end
 
-            accumulatedInSecond[team][uid_loc].damage =
-                accumulatedInSecond[team][uid_loc].damage + damage
+            accumulatedInSecond[team][uid_loc].damage = accumulatedInSecond[team][uid_loc].damage + damage
         else
-            id = "" .. uid_loc.x .. "|" .. uid_loc.y .. "|" .. uid_loc.z
-            if not accumulatedInSecond[team][id] then
-                accumulatedInSecond[team][id] =
+            id = uid_loc.uid
+
+            if not accumulatedInSecondLocation[team][id] then
+                accumulatedInSecondLocation[team][id] =
                     {
                         rtype = rtype,
                         damage = 0,
@@ -53,16 +53,15 @@ if (gadgetHandler:IsSyncedCode()) then
                         colour = colour or colourWhite
                     }
             end
-            accumulatedInSecond[team][id].damage =
-                accumulatedInSecond[team][id].damage + damage
+            accumulatedInSecondLocation[team][id].damage = accumulatedInSecondLocation[team][id].damage + damage
         end
     end
 
-    local function TransferToTeam(self, money, reciever, displayunit_location)
+    local function TransferToTeam(self, money, reciever, data)
         self[#self + 1] = {
             Money = money,
             Reciever = reciever,
-            DisplayUnit_Location = displayunit_location
+            DisplayUnit_Location = data
         }
     end
 
@@ -205,35 +204,42 @@ if (gadgetHandler:IsSyncedCode()) then
                                     cur[i].Money, colourWhite)
                     end
                 end
-
             end
         end
 
         if frame % 30 == 0 then
             for team, deedtable in pairs(accumulatedInSecond) do
                 for uid, v in pairs(deedtable) do
-                    -- Spring.Echo("Display Update Collateral")  
-                    if type(uid) == "number" then
-                        SendToUnsynced("DisplaytAtUnit", uid, team, v.damage,
-                                       v.colour.r, v.colour.g, v.colour.b)
-                    else
-                        assert(v.x)
-                        assert(v.damage)
-                        SendToUnsynced("DisplayAtLocation", v.x, v.y, v.z , team,
-                                       v.damage, v.colour.r, v.colour.g,
-                                       v.colour.b)
+                    if v then
+                            SendToUnsynced("DisplaytAtUnit", uid, team, v.damage,
+                                           v.colour.r, v.colour.g, v.colour.b)
                     end
                 end
-                accumulatedInSecond = {}
-            end
-        end
+            end   
+            accumulatedInSecond = {}
 
+             for team, teamData in pairs(accumulatedInSecondLocation) do
+                Spring.Echo("Displaying accumulated in Location for team "..team)
+                for uid, data in pairs(teamData) do
+                    if data then
+                            Spring.Echo("Displaying accumulated in Location for dead:"..uid)
+                            assert(data.damage)
+                            assertNum(data.location.x)
+                            assertNum(data.location.y)
+                            assertNum(data.location.z)
+                            SendToUnsynced("DisplayAtLocation", data.uid, data.location.x, data.location.y, data.location.z , team,
+                                           data.damage, data.colour.r, data.colour.g, data.colour.b)
+                        end
+                end
+            end
+            accumulatedInSecondLocation = {}
+        end
     end
 
 else -- UNSYNCED
     local spGetGameFrame = Spring.GetGameFrame
     local spGetLocalTeamID = Spring.GetLocalTeamID
-    local spGetMyTeam = Spring.GetMyTeam
+    local myTeamID = spGetLocalTeamID()
     local spGetAllUnits = Spring.GetAllUnits
     local spGetUnitTeam = Spring.GetUnitTeam
     local spGetUnitPosition = Spring.GetUnitPosition
@@ -242,7 +248,7 @@ else -- UNSYNCED
     local glColor = gl.Color
     local DrawForFrames = 1 * 30
     local Unit_StartFrame_Message = {}
-    local Frame_StartFrame_Message = {}
+    local UID_Location_Message = {}
     local gaiaTeamID = Spring.GetGaiaTeamID()
     local colourWhite = {r = 255, g = 255, b = 255}
     
@@ -259,19 +265,19 @@ else -- UNSYNCED
 
     end
 
-    local function DisplayAtLocation(callname, x,y,z, team, damage, r, g, b)
-        -- Spring.Echo("Display at Location")
-        local frame =spGetGameFrame()
-        Frame_StartFrame_Message[frame] =
-            {
-                team = team,
-                message = damage,
-                x = x,
-                y= y,
-                z= z,
-                frame = frame,
-                col = {r = r, g = g, b = b}
-            }
+    local function DisplayAtLocation(callname, uid, x,y,z, team, damage, r, g, b)
+        Spring.Echo("Display at Location Widget called")
+        local storedData ={}
+        storedData.team = team
+        storedData.message = damage
+        storedData.x = x
+        storedData.y = y
+        storedData.z = z
+        storedData.frame = frame
+        storedData.col = {r = r, g = g, b = b}
+            
+        UID_Location_Message[uid] = storedData
+            
     end
 
     function gadget:Initialize()
@@ -282,9 +288,8 @@ else -- UNSYNCED
     end
 
     function gadget:DrawScreenEffects()
-        currFrame = spGetGameFrame()
+        local currFrame = spGetGameFrame()
         UnitsToNil = {}
-        myPlayerTeam = spGetLocalTeamID()
 
         for _, id in ipairs(spGetAllUnits()) do
             -- Spring.Echo("itterating over all units")
@@ -295,53 +300,39 @@ else -- UNSYNCED
                 if id == uid and valueT then
                     -- if attacker was me or i get a reward for another team attack a gaia unit
                     teamid = spGetUnitTeam(id)
-                    -- if teamid == myPlayerTeam then
-                    -- Spring.Echo("id == uid")
-                    -- Spring.Echo("".. valueT.team.. " -> ".. myPlayerTeam)
                     if currFrame < valueT.frame + DrawForFrames then
                         -- Spring.Echo("Drawing Prizes")
                         x, y, z = spGetUnitPosition(uid)
                         if x then
-                            frameOffset =
-                                (255 -
-                                    (valueT.frame + DrawForFrames - currFrame)) *
-                                    0.25
+                            frameOffset = (255 - (valueT.frame + DrawForFrames - currFrame)) * 0.25
                             local sx, sy =
                                 spWorldToScreenCoords(x, y + frameOffset, z)
                             if valueT.message < 0 then
-                                gl.Color(1.0, 0.0, 0.0)
+                                gl.Color(1.0, 0.0, 0.0, 1.0)
                             else
-                                gl.Color(0.0, 1.0, 0.0)
+                                gl.Color(0.0, 1.0, 0.0, 1.0)
                             end
 
                             gl.Text("$ " .. valueT.message, sx, sy, 16, "od")
                         end
-                    elseif currFrame > valueT.frame + DrawForFrames then
-                        -- UnitsToNil[uid]=true
                     end
-                    -- end
                 end
             end
         end
 
-        for startframe, data in ipairs(Frame_StartFrame_Message) do
-            -- Spring.Echo("itterating over all units")
+        for uid, data in pairs(UID_Location_Message) do
+            if data then --and data.team == myTeamID 
 
-            if data and data.team == spGetMyTeam() then
-
-                if currFrame < startframe + DrawForFrames then
-
-                        frameOffset = (255 -
-                                          (startframe + DrawForFrames -
-                                              currFrame)) * 0.25
+                if currFrame > data.frame and  currFrame < data.frame + DrawForFrames then
+                        local frameOffset = (255 - (data.frame + DrawForFrames - currFrame)) * 0.25
                         local sx, sy = spWorldToScreenCoords(data.x,
                                                              data.y + frameOffset,
                                                              data.z)
 
                         if valueT.message < 0 then
-                            gl.Color(1.0, 0.0, 0.0)
+                            gl.Color(1.0, 0.0, 0.0, 1.0)
                         else
-                            gl.Color(0.0, 1.0, 0.0)
+                            gl.Color(0.0, 1.0, 0.0, 1.0)
                         end
                         gl.Text("$ " .. valueT.message, sx, sy, 16, "od")
                 end
