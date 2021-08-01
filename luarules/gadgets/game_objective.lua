@@ -88,7 +88,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
 
             x, y, z = Spring.GetUnitPosition(UnitID)
-            Objectives[UnitID] = {x = x, y = y, z = z, defID = unitDefID, boolProProtagon = getProProtagon(count(Objectives)) }
+            Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = unitDefID, boolProProtagon = getProProtagon(count(Objectives)) }
             setProConDescription(UnitID, Objectives[UnitID].boolProProtagon)
             Spring.SetUnitAlwaysVisible(UnitID, true)
         end
@@ -105,13 +105,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
     colourRed = {r = 255, g = 0, b = 0}
     colourBlue = {r = 0, g = 0, b = 255}
-
+    antagonT = getAllTeamsOfType("antagon", UnitDefs)
+    protagonT = getAllTeamsOfType("protagon", UnitDefs)
     function gadget:GameFrame(f)
         if boolInit == true then onBoolInit() end
 
         if f % GameConfig.Objectives.RewardCyle == 0 then
-            antagonT = getAllTeamsOfType("antagon")
-            protagonT = getAllTeamsOfType("protagon")
+
 
             for id, types in pairs(Objectives) do
                 if types.boolProProtagon == true then
@@ -126,7 +126,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if doesUnitExistAlive(id) == true then
                         for tid, _ in pairs(antagonT) do
                             GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
-                                                   tid, colourBlue)
+                                                   id, colourBlue)
                         end
                     end
                 end
@@ -140,7 +140,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
                 else
                     for tid, _ in pairs(protagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid, data, id, colourBlue)
+                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid, data, colourBlue)
                         Spring.Echo("DEad Objective gives to protagonT")
                     end
                 end
