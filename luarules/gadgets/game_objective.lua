@@ -16,14 +16,18 @@ VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-gaiaTeamID = Spring.GetGaiaTeamID()
-objectiveTypes = getObjectiveTypes(UnitDefs)
-
-Objectives = {}
-DeadObjectives = {}
 -- SYNCED
 if (gadgetHandler:IsSyncedCode()) then
-    GameConfig = getGameConfig()
+    local gaiaTeamID = Spring.GetGaiaTeamID()
+    local objectiveTypes = getObjectiveTypes(UnitDefs)
+    local deadObjectiveTypes = getDeadObjectiveType(UnitDefs)
+
+    local Objectives = {}
+    local DeadObjectives = {}
+
+
+
+    local GameConfig = getGameConfig()
     boolInit = false
     function gadget:Initialize() boolInit = true end
 
@@ -81,25 +85,58 @@ if (gadgetHandler:IsSyncedCode()) then
             toolTip = toolTip.."<Objective> Protagon must destroy /Antagon must defend"
         end
         Spring.SetUnitTooltip(id, toolTip)
+    end    
+
+    function setDeadDescription(id, boolProProtagon)
+        toolTip = Spring.GetUnitTooltip ( id ) 
+        if boolProProtagon == true then
+            toolTip = toolTip.."<Dead Objective> Antagon must attack to restore /Protagon must prevent"
+        else
+            toolTip = toolTip.."<Dead Objective> Protagon must attack to restore /Antagon must prevent"
+        end
+        Spring.SetUnitTooltip(id, toolTip)
     end
 
     function gadget:UnitCreated(UnitID, unitDefID)
         uDefID = Spring.GetUnitDefID(UnitID)
-        if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
-
+        if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID  then
             x, y, z = Spring.GetUnitPosition(UnitID)
-            Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = unitDefID, boolProProtagon = getProProtagon(count(Objectives)) }
+            Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = uDefID, boolProProtagon = getProProtagon(count(Objectives)) }
             setProConDescription(UnitID, Objectives[UnitID].boolProProtagon)
             Spring.SetUnitAlwaysVisible(UnitID, true)
+        elseif Objectives[UnitID] then
+
         end
     end
 
-    function gadget:UnitDestroyed(UnitID, whatever)
+    function gadget:UnitDestroyed(UnitID)
         uDefID = Spring.GetUnitDefID(UnitID)
-        if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID then
-            local deepCopy = Objectives[UnitID]
-            DeadObjectives[UnitID] =  deepCopy
+        uTeamID = Spring.GetUnitTeam(UnitID)
+
+        if objectiveTypes[uDefID] and uTeamID == gaiaTeamID then
+            iconID = Spring.CreateUnit ("destroyedobjectiveicon", Objectives[UnitID].x,Objectives[UnitID].y,Objectives[UnitID].z,0, gaiaTeamID)
+            DeadObjectives[iconID] = {}
+            DeadObjectives[iconID].x =  Objectives[UnitID].x
+            DeadObjectives[iconID].y =  Objectives[UnitID].y
+            DeadObjectives[iconID].z =  Objectives[UnitID].z
+            DeadObjectives[iconID].uid =  iconID
+            DeadObjectives[iconID].defID =  Objectives[UnitID].defID
+            assert(Objectives[UnitID].defID)
+            DeadObjectives[iconID].boolProProtagon =  not Objectives[UnitID].boolProProtagon
+
+            setDeadDescription(iconID,   DeadObjectives[iconID].boolProProtagon)
             Objectives[UnitID] = nil
+        end
+
+        if deadObjectiveTypes[uDefID] and uTeamID == gaiaTeamID  then
+            --recreate the objective
+            GG.UnitsToSpawn:PushCreateUnit( DeadObjectives[UnitID].defID, 
+                                            DeadObjectives[UnitID].x, 
+                                            DeadObjectives[UnitID].y, 
+                                            DeadObjectives[UnitID].z, 
+                                            0, 
+                                            gaiaTeamID)
+            DeadObjectives[UnitID] = nil
         end
     end
 
@@ -114,34 +151,43 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
             for id, types in pairs(Objectives) do
-                if types.boolProProtagon == true then
-                    --	Spring.Echo("Objectives to Protagon")
-                    if doesUnitExistAlive(id) == true then
-                        for tid, _ in pairs(protagonT) do
-                            GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
-                                                   tid, id, colourBlue)
+                if types then
+                    if types.boolProProtagon == true then
+                        --	Spring.Echo("Objectives to Protagon")
+                        if doesUnitExistAlive(id) == true then
+                            for tid, _ in pairs(protagonT) do
+                                GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
+                                                       tid, id, colourBlue)
+                            end
                         end
-                    end
-                else
-                    if doesUnitExistAlive(id) == true then
-                        for tid, _ in pairs(antagonT) do
-                            GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
-                                                   id, colourBlue)
+                    else
+                        if doesUnitExistAlive(id) == true then
+                            for tid, _ in pairs(antagonT) do
+                                GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
+                                                       id, colourBlue)
+                            end
                         end
                     end
                 end
             end
 
-            for id, data in pairs(DeadObjectives) do
-                if data.boolProProtagon == true then
-                    for tid, _ in pairs(antagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid, data, colourRed)
-                        Spring.Echo("DEad Objective gives to antagonT")
-                    end
-                else
-                    for tid, _ in pairs(protagonT) do
-                        GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid, data, colourBlue)
-                        Spring.Echo("DEad Objective gives to protagonT")
+            for id, types in pairs(DeadObjectives) do
+                if types then
+                    if types.boolProProtagon == true then
+                        --  Spring.Echo("Objectives to Protagon")
+                        if doesUnitExistAlive(id) == true then
+                            for tid, _ in pairs(protagonT) do
+                                GG.Bank:TransferToTeam(GameConfig.Objectives.Reward,
+                                                       tid, id, colourBlue)
+                            end
+                        end
+                    else
+                        if doesUnitExistAlive(id) == true then
+                            for tid, _ in pairs(antagonT) do
+                                GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, tid,
+                                                       id, colourBlue)
+                            end
+                        end
                     end
                 end
             end

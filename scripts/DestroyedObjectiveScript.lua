@@ -38,6 +38,9 @@ function AnimationTest()
             timers = (((Spring.GetGameFrame()/30)+ i*((interval/2)/#TablesOfPiecesGroups["Ring"]) % interval)/interval)* math.pi*2
             Move(TablesOfPiecesGroups["Ring"][i],z_axis, 500 + math.sin(timers)*500, 666 )
         end
+         timers = (((Spring.GetGameFrame()/30)+  #TablesOfPiecesGroups["Ring"]*((interval/2)/#TablesOfPiecesGroups["Ring"]) % interval)/interval)* math.pi*2
+         Move(TablesOfPiecesGroups["Text"][1],z_axis, 500 + math.sin(timers)*500, 666 )
+         Move(TablesOfPiecesGroups["Text"][2],z_axis, 500 + math.sin(timers)*500, 666 )
         Sleep(50)
     end
 end
