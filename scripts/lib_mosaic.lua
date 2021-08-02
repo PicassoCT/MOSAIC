@@ -276,6 +276,14 @@ function getGameConfig()
             [UnitDefNames["bribeicon"].id] = true,
             [UnitDefNames["cybercrimeicon"].id] = true,
             [UnitDefNames["launcherstep"].id] = true,
+            [UnitDefNames["destroyedobjectiveicon"].id] = true,
+        }
+    end  
+
+    function getDeadObjectiveType(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["destroyedobjectiveicon"].id] = true,
         }
     end
 
