@@ -111,6 +111,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["satelliteshrapnell"].id]= true,
 [UnitDefNames["civilianloot"].id]= true,
 [UnitDefNames["gcscrapheap"].id]= true,
+[UnitDefNames["destroyedobjectiveicon"].id]= true,
 }
 
 --------------------------------------------------------------------------------
