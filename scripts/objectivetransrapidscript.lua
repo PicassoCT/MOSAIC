@@ -32,6 +32,7 @@ function setup()
     StartThread(showRail)
     StartThread(turnEndPiecesDown, -1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
     StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
+
 end
 
 function showRail()
@@ -53,14 +54,16 @@ function showRail()
 end
 
 function turnEndPiecesDown(signs, EndPiece, DetectorPiece)
+    Sleep(250)
     Hide(DetectorPiece)
+    Hide(EndPiece)
     value = 0
     attempts = 0
-    while isPieceAboveGround(unitID, DetectorPiece, 10) == true and attempts < 10 do
+  --[[  while isPieceAboveGround(unitID, DetectorPiece, 10) == true and attempts < 10 do
         value = value -5 * signs
         WTurn(EndPiece,z_axis, math.rad(value),0)
         attempts= attempts +1
-    end
+    end--]]
 end
 
 local boolOldState = false
