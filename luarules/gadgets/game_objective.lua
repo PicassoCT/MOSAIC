@@ -114,7 +114,7 @@ if (gadgetHandler:IsSyncedCode()) then
         uDefID = Spring.GetUnitDefID(UnitID)
         uTeamID = Spring.GetUnitTeam(UnitID)
 
-        if objectiveTypes[uDefID] and uTeamID == gaiaTeamID then
+        if objectiveTypes[uDefID] and Objectives[UnitID] and uTeamID == gaiaTeamID then
             iconID = Spring.CreateUnit ("destroyedobjectiveicon", Objectives[UnitID].x,Objectives[UnitID].y,Objectives[UnitID].z,0, gaiaTeamID)
             DeadObjectives[iconID] = {}
             DeadObjectives[iconID].x =  Objectives[UnitID].x
@@ -123,13 +123,15 @@ if (gadgetHandler:IsSyncedCode()) then
             DeadObjectives[iconID].uid =  iconID
             DeadObjectives[iconID].defID =  Objectives[UnitID].defID
             assert(Objectives[UnitID].defID)
+            assert(DeadObjectives[iconID].defID)
             DeadObjectives[iconID].boolProProtagon =  not Objectives[UnitID].boolProProtagon
 
             setDeadDescription(iconID,   DeadObjectives[iconID].boolProProtagon)
             Objectives[UnitID] = nil
+            return
         end
 
-        if deadObjectiveTypes[uDefID] and uTeamID == gaiaTeamID  then
+        if deadObjectiveTypes[uDefID] and uTeamID == gaiaTeamID and DeadObjectives[UnitID]  then
             --recreate the objective
             GG.UnitsToSpawn:PushCreateUnit( DeadObjectives[UnitID].defID, 
                                             DeadObjectives[UnitID].x, 
@@ -138,6 +140,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                             0, 
                                             gaiaTeamID)
             DeadObjectives[UnitID] = nil
+            return 
         end
     end
 
