@@ -123,6 +123,8 @@ return {
 	"smoke weed",
 	"smoke weed & every day",
 	"ü can suck cocks in hell"
+	"kill the cop in your head",
+	"bob marley must live on"
 	
 	
 }
