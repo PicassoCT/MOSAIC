@@ -59,5 +59,7 @@ return {
 	"GET ON WIFH IT",
 	"DAGEGEN",
 	"KILL ME!",
-	"MOTHERFUCKERS!"
+	"MOTHERFUCKERS!",
+	"SWEET",
+	"DUDE"
 }
