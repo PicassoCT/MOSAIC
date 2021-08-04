@@ -120,6 +120,9 @@ return {
 	"GENDERBENDERS",
 	"TRY AND TERROR",
 	"HIT AND MISS",
+	"smoke weed",
+	"smoke weed & every day",
+	"ü can suck cocks in hell"
 	
 	
 }
