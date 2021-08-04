@@ -27,7 +27,7 @@ supriseChances = {
     door = 0.6,
     windowwall = 0.7,
     streetwall = 0.5,
-    grafiti = 0.1
+    grafiti = 0.2
 
 }
 decoChances = {
@@ -39,7 +39,7 @@ decoChances = {
     door = 0.6,
     windowwall = 0.5,
     streetwall = 0.1,
-    grafiti = 0.3
+    grafiti = 0.6
 }
 
 logoPiece = piece("Office_Roof_Deco07")
