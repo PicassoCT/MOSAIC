@@ -98,13 +98,8 @@ function workInProgress()
             buildID = Spring.GetUnitIsBuilding(factoryID)
             if buildID and buildID ~= buildIDofOld and type(buildID) == "number" then
 
-                counter = counter + 1
-                if counter > 35 then
-                    Spring.DestroyUnit(unitID, true, false)
-                end
-
                 boolBuilding = true
-                Spring.SetUnitNoDraw(buildID, true)
+
                 buildProgress = 0
 
                 while buildProgress and buildProgress < 1 do
@@ -123,7 +118,6 @@ function workInProgress()
 
                 if buildID == nil and buildIDofOld ~= nil and
                     doesUnitExistAlive(buildIDofOld) == true then
-                    Spring.SetUnitNoDraw(buildIDofOld, false)
                     buildIDofOld = nil
                 end
             end
