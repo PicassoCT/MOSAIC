@@ -790,7 +790,7 @@ function BaseMgr.GameFrame(f)
         -- We are not stalling anymore, let a factory to start the work again
         for _, u in ipairs(waiting_builders[#(waiting_builders)]) do
             if is_waiting[u] ~= nil then  -- Maybe the unit was killed
-                Log("Back to job ", u, "(", UnitDefs[GetUnitDefID(u)].name, ")")
+                --Log("Back to job ", u, "(", UnitDefs[GetUnitDefID(u)].name, ")")
                 is_waiting[u] = nil
                 GiveOrderToUnit(u, CMD_WAIT, {}, {})
             end
