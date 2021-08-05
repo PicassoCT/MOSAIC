@@ -219,7 +219,7 @@ if (gadgetHandler:IsSyncedCode()) then
             accumulatedInSecond = {}
 
              for team, teamData in pairs(accumulatedInSecondLocation) do
-                Spring.Echo("Displaying accumulated in Location for team "..team)
+           --     Spring.Echo("Displaying accumulated in Location for team "..team)
                 for uid, data in pairs(teamData) do
                     if data then
                             Spring.Echo("Displaying accumulated in Location for dead:"..uid)
