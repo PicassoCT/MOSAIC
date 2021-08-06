@@ -129,6 +129,8 @@ return {
 	"KANE LIVES!",
 	"ROSEBUD",
 	"YAHTZEE HATES THIS!",
+	"PAIGE NO!",
+	"CHECK URSELF, B4 Yo WRECK URSELF!"
 	
 	
 	
