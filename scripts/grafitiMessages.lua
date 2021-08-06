@@ -34,6 +34,7 @@ return {
     "PROTAGON SUX",
     "ANTAGON WINS",
     "ENDS",
+    "THE CENSORS& && IDIOTS!"
     "BEAST",
     "VR FLIGHT",
     "A CITY FOR A",
