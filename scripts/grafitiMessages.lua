@@ -143,7 +143,9 @@ return {
 	"SUDO SAMWICH",
 	"BITCH",
 	"CUNT",
-	"COXSUCKER"
+	"COXSUCKER",
+	"CHOOSE LIFE",
+	"DEATH STICKS"
 	
 	
 	
