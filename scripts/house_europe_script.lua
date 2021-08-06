@@ -1084,7 +1084,7 @@ function addGrafiti(x,z, turnV,  axis)
 
             if counter[letter] < 3 then 
 
-                if TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
+                if TablesOfPiecesGroups["Graphiti_"..letter] and counter[letter] and TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
                 pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
                 if pieceName then
                     ToShowTable[#ToShowTable + 1] = pieceName
