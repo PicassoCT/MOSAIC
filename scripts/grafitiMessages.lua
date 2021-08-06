@@ -34,7 +34,7 @@ return {
     "PROTAGON SUX",
     "ANTAGON WINS",
     "ENDS",
-    "THE CENSORS& && IDIOTS!"
+    "THE CENSORS& && IDIOTS!",
     "BEAST",
     "VR FLIGHT",
     "A CITY FOR A",
@@ -125,7 +125,11 @@ return {
 	"smoke weed & every day",
 	"ü can suck cocks in hell",
 	"kill the cop in your head",
-	"bob marley must live on"
+	"bob marley must live on",
+	"KANE LIVES!",
+	"ROSEBUD",
+	"YAHTZEE HATES THIS!",
+	
 	
 	
 }
