@@ -794,8 +794,6 @@ function showSubsAnimateSpinsByPiecename(piecename)
             pieceGroupName = string.sub(piecename,1, i)
             nr = tonumber(nr, 10)
             if string.len(pieceGroupName) > 0 and type(nr) == "number" then
-             print(pieceGroupName, nr)
-           --  echo("Spinning "..pieceGroupName..nr)
              showSubsAnimateSpins(pieceGroupName, nr)
             end
         break
@@ -803,24 +801,30 @@ function showSubsAnimateSpinsByPiecename(piecename)
     end
 end
 
+function showOneOrAllOfTablePieceGroup(name)
+  if TablesOfPiecesGroups[name] then
+        showOneOrAll(TablesOfPiecesGroups[name])
+    elseif pieceName_pieceNr[name..1] then
+        ToShowTable[#ToShowTable + 1] = ieceName_pieceNr[name..1]
+    end
+end
+
 function showSubsAnimateSpins(pieceGroupName, nr)
     local subName = pieceGroupName .. nr .. "Sub"
-    if TablesOfPiecesGroups[subName] then
-        showOneOrAll(TablesOfPiecesGroups[subName])
-    elseif pieceName_pieceNr[subName..1] then
-        Show(pieceName_pieceNr[subName..1])
-    end
+  --  Spring.Echo("SubGroupName "..subName)
+    showOneOrAllOfTablePieceGroup(subName)
 
     local spinName = pieceGroupName .. nr .. "Spin"
+    showOneOrAllOfTablePieceGroup(spinName)
+    showOneOrAllOfTablePieceGroup(spinName.."Sub")
+   -- Spring.Echo("SpinGroupName "..spinName)
     direction = math.random(40,160) * randSign()
-   if TablesOfPiecesGroups[spinName] then
-        showOneOrAll(TablesOfPiecesGroups[spinName])
+
+    if TablesOfPiecesGroups[spinName] then
         for i=1,#TablesOfPiecesGroups[spinName] do
             Spin(TablesOfPiecesGroups[spinName][i] , y_axis, math.rad(direction), math.pi)
         end
     elseif pieceName_pieceNr[spinName..1]  then
-        spinName= spinName..1
-        Show(pieceName_pieceNr[spinName])
         Spin(pieceName_pieceNr[spinName] , y_axis, math.rad(direction), math.pi)
     end
 end
@@ -856,8 +860,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 if countElements == 24 then break end
-
-                showSubsAnimateSpins(materialColourName.."Roof", nr)
+                showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
             end
         end
     end
@@ -893,7 +896,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Turn(element, _z_axis, math.rad(rotation), 0)
 
                 if element ~= logoPiece then
-                    showSubsAnimateSpins(getPieceGroupName(element), nr)
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 else
                     logo = showOne(TablesOfPiecesGroups["Office_Roof_Deco7Spin"])
                     Spin(logo,_z_axis, math.rad(5),0)
@@ -1075,7 +1078,7 @@ function addGrafiti(x,z, turnV,  axis)
     --echo("Adding Grafiti with message:" ..myMessage)
     counter={}
     for i=1, string.len(myMessage) do
-        local letter = string.sub(myMessage,i,i)
+        local letter = string.upper(string.sub(myMessage,i,i))
         if letter ~= " " then
             if not counter[letter] then 
                 counter[letter] = 0 
