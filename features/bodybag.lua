@@ -23,6 +23,7 @@ local bodyBagDefs =
      collisionvolumetype = "Box",
         customParams = {
             nohealthbars = true,
+            normaltex = "unittextures/BodyBag_normal.dds",
         },
      }
 }
