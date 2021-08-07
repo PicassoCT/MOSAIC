@@ -15,10 +15,6 @@ local satteliteGodrod = Satellite:New{
 	footprintZ 				= 1,
 	script 					= "satellitegodscript.lua",
 	objectName        		= "SatGodRod.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
-	
 
 	alwaysupright = true,
 	upright= true,
@@ -26,9 +22,10 @@ local satteliteGodrod = Satellite:New{
 	canLand = false,
     --canManualFire = true,
 
-	customparams			= {
+	customParams			= {
 		helptext		= "Nuklear Option",
 		baseclass		= "Satellite", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	category = [[ORBIT]],
 	buildPic = "orbitalstrike_sat.png",

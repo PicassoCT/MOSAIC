@@ -44,9 +44,7 @@ showNanoFrame= true,
 	
 	script 					= "nimrodscript.lua",
 	objectName        	= "nimrod.dae",
-	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	buildPic = "nimrod.png",
 	canCloak =true,
 	cloakCost=0.0001,
@@ -61,6 +59,7 @@ showNanoFrame= true,
 	customparams = {
 		helptext		= "Nimrod Railgun",
 		baseclass		= "Building", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
 		buildoptions = 

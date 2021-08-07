@@ -35,18 +35,14 @@ local MotorBike = Truck:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "MotorBikeScript.lua",
-
-objectName        	= "civilian_motorbike.dae",
-	customParams        = {
-		normaltex = "unittextures/civilianMotorBike_normal.dds",
-	},
-
+	objectName        	= "civilian_motorbike.dae",
 
 	category = [[GROUND]],
 	
 	customparams = {
 		helptext		= "Motorbik",
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/civilianMotorBike_normal.dds",
 	},
 	
 	LeaveTracks = false,

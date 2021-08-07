@@ -28,9 +28,7 @@ local OperativePropagator = Human:New{
 	CanStop = true,
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_propagator.dae",
-	customParams        = {
-		normaltex = "unittextures/operative_propagator_normal.dds",
-	},
+
 	
 	sightDistance = 100,
 	Builder = true,
@@ -64,9 +62,10 @@ local OperativePropagator = Human:New{
 		"stealmotorbike",
 	},
 
-	customparams = {
+	customParams = {
 		helptext		= "Propaganda Operative",
 		baseclass		= "Human", -- TODO: hacks
+				normaltex = "unittextures/operative_propagator_normal.dds",
     },
 	category = "GROUND ARRESTABLE",
 	

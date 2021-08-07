@@ -27,9 +27,7 @@ local Hivemind = Building:New{
 	footprintZ = 8,
 	script 			= "hivemindscript.lua",
 	objectName        	= "hivemind.dae",
-		customParams        = {
-		normaltex = "unittextures/propagandaserver_normal.dds",
-	},
+
 	
 	showNanoFrame= true,
 	nanocolor=[[0.20 0.411 0.611]],
@@ -77,7 +75,7 @@ local AICore = Building:New{
 	footprintZ = 8,
 	script 			= "aicorescript.lua",
 	objectName        	= "aicore.dae",
-		customParams        = {
+	customParams        = {
 		normaltex = "unittextures/propagandaserver_normal.dds",
 	},
 	

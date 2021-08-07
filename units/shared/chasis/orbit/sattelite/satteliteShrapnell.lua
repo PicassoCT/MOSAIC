@@ -19,10 +19,6 @@ local SatelliteShrapnell = Satellite:New{
 	footprintZ 			= 1,
 	script 				= "satelliteshrapnellcloudscript.lua",
 	objectName 			= "satShrapnell.dae",
-	
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
 
 	buildPic = "ShrapnellSatellite.png",
 	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
@@ -30,7 +26,8 @@ local SatelliteShrapnell = Satellite:New{
 
 	customparams = {
 		helptext		= "Observationsatellite",
-		baseclass		= "Satellite", -- TODO: hacks
+		baseclass		= "Satellite", -- TODO: hacks,
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 
 	sfxtypes = {

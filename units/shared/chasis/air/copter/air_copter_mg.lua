@@ -3,9 +3,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	name = "Airborne Machinegun Drone ",
 	Description = " harasses ground units ",
 	objectName = "air_copter_mg.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	script = "air_copter_mg_script.lua",
 	buildPic = "air_gun.png",
 	iconType = "air_gun",
@@ -62,7 +60,8 @@ local AIRC_COPTER_MG = VTOL:New{
 	Category = [[AIR]],
 
 	  customParams = {
-	  baseclass = "vtol"
+	  	baseclass = "vtol",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	 sfxtypes = {
 		explosiongenerators = {

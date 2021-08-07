@@ -24,6 +24,7 @@ local LaunchedICBM = Rocket:New{
 	customparams = {
 		helptext		= "Flying Rocket",
 		baseclass		= "Rocket", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 
      sfxtypes = {

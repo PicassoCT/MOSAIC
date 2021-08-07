@@ -23,13 +23,11 @@ local ground_tumbleweed_deployed = Turret:New{
 	objectName 	= "ground_turret_spyder.dae",
 	buildPic = "ground_turret_spyder.png",
 	iconType ="ground_turret_spyder",
-	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
-
+	
 	usepiececollisionvolumes = true,
 	customparams = {
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
 				weapons = {

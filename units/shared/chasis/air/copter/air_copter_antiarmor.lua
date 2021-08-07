@@ -4,9 +4,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	Description = " Launches a Javeline ",
 	
 	objectName = "air_copter_antiarmor.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	script = "airantiarmorscript.lua",
 	buildPic = "air_antiarmour.png",
 	iconType = "air_antiarmour",
@@ -63,7 +61,8 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	Category = [[AIR]],
 
 	  customParams = {
-	  baseclass ="vtol"
+	  	baseclass ="vtol",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	  
 	 sfxtypes = {

@@ -26,9 +26,6 @@ local CivilianAgent = Human:New{
 	CanStop = true,
 	script 					= "civilianagentscript.lua",
 	objectName        	= "civilian0_arab.dae",
-	customParams        = {
-		normaltex = "unittextures/arab_civilian_normal.dds",
-	},
 	buildPic = "civilianagent.png",
 	iconType = "civilianagent",
 	canCloak =true,
@@ -39,9 +36,10 @@ local CivilianAgent = Human:New{
 	decloakOnFire = true,
 	cloakTimeout = 5,
 	
-	customparams = {
+	customParams = {
 		helptext		= "Civilian ",
 		baseclass		= "Human", -- TODO: hacks
+		normaltex = "unittextures/arab_civilian_normal.dds",
     },
 	
 	weapons ={

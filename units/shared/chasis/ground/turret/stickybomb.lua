@@ -43,7 +43,8 @@ local stickybomb =  Turret:New{
 	Category = [[GROUND]],
 
 	  customParams = {
-	  baseclass = "turret"
+	  	baseclass = "turret",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 
 	 sfxtypes = {

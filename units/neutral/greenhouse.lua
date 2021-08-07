@@ -40,7 +40,10 @@ local unitName = "greenhouse"
 
 
 	 
-	  customParams = {},
+	  customParams = {
+				normaltex = "unittextures/house_arab_normal.dds",
+	  },
+	  
 	 sfxtypes = {
 		explosiongenerators = {	    
 							  },

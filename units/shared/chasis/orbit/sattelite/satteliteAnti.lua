@@ -22,9 +22,7 @@ local AntiSat = Satellite:New{
 	noAutoFire                	= false,
 	script 						= "satelliteantiscript.lua",
 	objectName        			= "orbit_satellite_cyclops.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	buildPic = "antisattelit_sat.png",
 	usePieceCollisionVolumes 	= false,
 	upright= true,
@@ -33,11 +31,13 @@ local AntiSat = Satellite:New{
 	collisionVolumeScales = {1.0,1.0,1.0},
 	collisionVolumeOffsets  ={0.0,0.0,0.0},
 	
-	customparams = {
+	customParams = {
 		helptext		= "Anti-Satellite Satellite",
 		baseclass		= "Satellite", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
-		category = [[ORBIT]],
+		
+	category = [[ORBIT]],
 		
 
 	

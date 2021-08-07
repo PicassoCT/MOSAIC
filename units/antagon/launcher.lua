@@ -22,9 +22,7 @@ local Launcher = Building:New{
 	
 	script 					= "launcherscript.lua",
 	objectName        	= "launcher.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	name = "Launcher",
 	description = "Build icmb-stages to win the game",
 
@@ -42,6 +40,7 @@ local Launcher = Building:New{
 	customparams = {
 		helptext		= "Weapon Launcher",
 		baseclass		= "Building", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
 		buildoptions = 

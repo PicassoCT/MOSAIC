@@ -27,9 +27,7 @@ local OperativeInvestigator = Human:New{
 
 	script 				= "operativePropagatorInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
-		customParams        = {
-		normaltex = "unittextures/operative_investigator_normal.dds",
-	},
+
 		buildPic = "operativeinvestigator.png",
 	iconType ="operativeinvestigator",
 	showNanoFrame= true,
@@ -66,9 +64,10 @@ local OperativeInvestigator = Human:New{
 		"stealmotorbike",
 	},
 
-	customparams = {
+	customParams = {
 		helptext		= "Investigative Operative",
 		baseclass		= "Human", -- TODO: hacks
+		normaltex = "unittextures/operative_investigator_normal.dds",
     },
 	
 	fireState= 1,

@@ -2,10 +2,7 @@
 local AIR_COPTER_AEROSOL = VTOL:New{
 
 	objectName = "air_copter_aerosol.dae",
-			customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
-	
+
 	
 	description = "sprays arerosols to influence people",
 	script = "air_copter_aerosolscript.lua",
@@ -63,7 +60,8 @@ nanocolor=[[0.20 0.411 0.611]],
 	Category = [[AIR]],
 
 	  customParams = {
-	  baseclass ="vtol"
+	  baseclass ="vtol",
+	  normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	  
 	 sfxtypes = {

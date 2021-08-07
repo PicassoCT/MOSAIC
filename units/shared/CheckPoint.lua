@@ -30,9 +30,7 @@ local Checkpoint = Building:New{
 	showNanoFrame = true,
 	script 					= "checkpointscript.lua",
 	objectName        	= "CheckPoint.dae",
-		customParams        = {
-		normaltex = "unittextures/CheckPoint_normal.dds",
-	},
+
 	name = "Checkpoint",
 	description = " reveals any disguised unit",
 	buildPic = "CheckPoint.png",
@@ -41,12 +39,12 @@ local Checkpoint = Building:New{
 	customparams = {
 		helptext		= "MOSAIC Checkpoint",
 		baseclass		= "Building",
+		normaltex = "unittextures/CheckPoint_normal.dds",
     },
 	
 	onoffable = true,
 	activatewhenbuilt = true,
 
-	
 	category = [[GROUND BUILDING]],
 	}
 

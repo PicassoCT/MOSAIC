@@ -10,9 +10,7 @@ local BuildLauncherStep = Abstract:New{
 	script 				= "launcherstepscript.lua",
 	objectName        	= "launcherstep.dae",
 	buildPic = "launcherstep.png",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	
 	iconType 			= "launcher",
 
@@ -30,6 +28,7 @@ local BuildLauncherStep = Abstract:New{
 	customparams = {
 		helptext		= "Launcher step",
 		baseclass		= "Abstract", 
+		normaltex = "unittextures/testtex2.dds",
     },
 	
 	category = [[NOTARGET]],

@@ -3,9 +3,6 @@ local AIR_SNIPER = AIRCRAFT:New{
 	name = "Predator VII",
 	Description = "sniper drone",
 	objectName = "air_plane_sniper.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
 	script = "airplanesniperscript.lua",
 	buildPic = "air_sniper.png",
 	iconType = "air_sniper",
@@ -62,7 +59,8 @@ local AIR_SNIPER = AIRCRAFT:New{
 	noChaseCategory = "GROUND BUILDING AIR",
 
 	  customParams = {
-	  baseclass = "vtol"
+	  	baseclass = "vtol",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 
 	weapons={	

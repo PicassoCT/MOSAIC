@@ -48,7 +48,9 @@ local unitDef = {
 	  levelGround            = false,
 	  mass                   = 9900,  
 
-	   customParams = {},
+	   customParams = {
+		normaltex = "unittextures/truck_normal.dds",
+	   },
 	 sfxtypes = {
 					explosiongenerators = {
 					   "custom:330rlexplode",

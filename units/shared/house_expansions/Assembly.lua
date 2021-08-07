@@ -22,9 +22,7 @@ local Assembly = Building:New{
 	showNanoFrame= true,
 	script 					= "assemblyscript.lua",
 	objectName        	= "assembly.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	name = "Assembly",
 	description = " creates MOSAIC Standardized drones <Automated Factory>",
 		buildPic = "assembly.png",
@@ -44,6 +42,7 @@ local Assembly = Building:New{
 	customparams = {
 		helptext		= "MOSAIC Assembly",
 		baseclass		= "Building",
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
 		buildoptions = 

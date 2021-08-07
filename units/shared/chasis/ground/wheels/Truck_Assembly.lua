@@ -28,7 +28,8 @@ local TruckAssembly = Truck:New{
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
-	},
+		normaltex = "unittextures/truck_6_normal.dds",
+		},
 	
 	category = [[GROUND ARRESTABLE]],
 }

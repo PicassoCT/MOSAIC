@@ -62,7 +62,9 @@ local groundturretssied =  Turret:New{
 
 	  customParams = {
 	  baseclass = "turret"
+	  normaltex = "unittextures/component_atlas_normal.dds",
 	  },
+
 	 sfxtypes = {
 		explosiongenerators = {
 							"custom:bigbulletimpact",
@@ -84,9 +86,7 @@ local groundturretmg =  Turret:New{
 	Description = "Pillbox Emplacement ",
 	
 	objectName = "ground_turret_mg.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
+
 	
 	script = "ground_turretscript.lua",
 	buildPic = "ground_turret_mg.png",
@@ -130,7 +130,8 @@ local groundturretmg =  Turret:New{
 	Category = [[GROUND]],
 
 	  customParams = {
-	 	 baseclass = "turret"
+	 	 baseclass = "turret",
+	 	 normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 
 	 sfxtypes = {
@@ -211,8 +212,10 @@ local ground_turret_antiarmor =  Turret:New{
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
-	  baseclass = "turret"
+	  	baseclass = "turret",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
+
 	 sfxtypes = {
 		explosiongenerators = {
 							"custom:bigbulletimpact"
@@ -283,7 +286,8 @@ local ground_turret_dronegrenades =  Turret:New{
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
-	  baseclass = "turret"
+	  	baseclass = "turret",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	 sfxtypes = {
 		explosiongenerators = {
@@ -353,7 +357,8 @@ local ground_turret_rocket =  Turret:New{
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
-	  baseclass = "turret"
+	  	baseclass = "turret",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	 sfxtypes = {
 		explosiongenerators = {
@@ -423,7 +428,8 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
-	  baseclass = "tank"
+	  	baseclass = "tank",
+	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 
 	 sfxtypes = {

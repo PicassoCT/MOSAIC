@@ -30,9 +30,6 @@ local ground_walker_grenade = Walker:New{
 	buildPic = "ground_walker_mg.png",
 	iconType ="ground_walker_mg",
 	strafeToAttack = true,
-	customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
 
 	category = "GROUND",
 	noChaseCategory = "NOTARGET",
@@ -41,6 +38,7 @@ local ground_walker_grenade = Walker:New{
 	customparams = {
 		helptext		= "Military Tank",
 		baseclass		= "Tank", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
 	weapons = {

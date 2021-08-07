@@ -3,9 +3,7 @@ local OrgyPair = {
 	name = "A Orgy",
 	description = " engaged in intercourse",
 	objectName        	= "orgy_pair.dae",
-		customParams        = {
-		normaltex = "unittextures/orgy_pair_normal.dds",
-	},
+
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -19,7 +17,8 @@ local OrgyPair = {
 	
 	script = "civilianOrgyPairScript.lua",
 	
-	customparams = {
+	customParams = {
+				normaltex = "unittextures/orgy_pair_normal.dds",
     },
 
 	category = [[NOTARGET]],

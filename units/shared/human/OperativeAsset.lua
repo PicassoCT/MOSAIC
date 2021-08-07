@@ -30,9 +30,7 @@ explodeAs				  = "none",
 	CanStop = true,
 	script 				= "operativeassetscript.lua",
 	objectName        	= "operative_asset.dae",
-	customParams        = {
-		normaltex = "unittextures/operative_asset_normalpha.dds",
-	},
+
 	onoffable = false,
 	  
 		--cloaking behaviour
@@ -79,9 +77,10 @@ explodeAs				  = "none",
 		"air_parachut",
 	},
 	
-	customparams = {
+	customParams = {
 		helptext		= "Stealth Assasin",
-		baseclass		= "Human", -- TODO: hacks
+		baseclass		= "Human", -- TODO: hacks,
+		normaltex = "unittextures/operative_asset_normalpha.dds",
     },
 }
 

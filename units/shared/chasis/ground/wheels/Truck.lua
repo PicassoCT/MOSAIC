@@ -34,6 +34,7 @@ local ground_truck_mg = Truck:New{
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
 	},
 	weapons = {
 			[1]={name  = "marker",
@@ -81,6 +82,7 @@ local ground_truck_ssied = Truck:New{
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
 	},
 	weapons = {
 			[1]={name  = "marker",
@@ -131,6 +133,7 @@ local ground_truck_antiarmor = Truck:New{
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
 	},
 	weapons = {
 			[1]={name  = "marker",
@@ -177,6 +180,7 @@ local ground_truck_rocket = Truck:New{
 	customparams = {
 		helptext		= "Military Truck/Technical",
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
 	},
 	weapons = {
 			[1]={name  = "marker",
@@ -198,8 +202,8 @@ local CivilianTruck = Truck:New{
 	description = "locally assembled electric truck",
 	corpse				= "",
 	maxDamage = 500,
-			buildPic = "truck.png",
-			iconType = "truck",
+	buildPic = "truck.png",
+	iconType = "truck",
 	mass = 500,
 	buildCostEnergy = 5,
 	buildCostMetal = 5,
@@ -238,6 +242,7 @@ local CivilianTruck = Truck:New{
 	customparams = {
 		helptext		= "Transportation Truck",
 		baseclass		= "Truck", -- TODO: hacks
+			normaltex = "unittextures/apc_normal.dds",
 	},
 	
 
@@ -252,8 +257,8 @@ local PoliceTruck = Truck:New{
 	name = "Police Vehicle",
 	description = "corrupt, chaotic - local authority",
 	corpse				= "",
-			buildPic = "truck_police.png",
-			iconType = "truck_police",
+	buildPic = "truck_police.png",
+	iconType = "truck_police",
 	maxDamage = 1500,
 	mass = 500,
 	buildCostEnergy = 5,
@@ -302,6 +307,7 @@ local PoliceTruck = Truck:New{
 	customparams = {
 		helptext		= "Transportation Truck",
 		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
 	},
 }
 

@@ -38,10 +38,7 @@ local NooneLaser = Human:New{
 	fireState = 2,
 	script 					= "noonescript.lua",
 	objectName        	= "orbit_turret_noone.dae",
-		customParams        = {
-		normaltex = "unittextures/component_atlas_normal.dds",
-	},
-	
+
 
 	cantBeTransported  = false,
 	canAttack = true,
@@ -52,6 +49,7 @@ local NooneLaser = Human:New{
 	customparams = {
 		helptext		= "Noone Uplinklaser",
 		baseclass		= "Satellite", -- TODO: hacks
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
 	

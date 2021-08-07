@@ -50,7 +50,7 @@ local AntagonSafeHouse = Building:New{
 	script = "safehousescript.lua",
 	objectName = "safehouse.dae",
 	
-	customparams = {
+	customParams = {
 		normaltex = "unittextures/safehouse_normal.dds",
 		helptext = "Civilian Building",
 		baseclass = "Building", -- TODO: hacks

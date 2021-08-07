@@ -4,10 +4,6 @@ local Civil = Civilian:New{
 		corpse = "bodybag",
 	description = " innocent bystander <colateral>",
 	objectName        	= "civilian1_arab.dae",
-			customParams        = {
-		normaltex = "unittextures/arab_civilian_normal.dds",
-	},
-	
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -17,6 +13,7 @@ local Civil = Civilian:New{
 	iconType = "civilian",
 	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks
+		normaltex = "unittextures/arab_civilian_normal.dds",
     },
 
 	
