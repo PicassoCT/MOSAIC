@@ -78,13 +78,12 @@ BuildDeco = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    assertTableExpectated(TablesOfPiecesGroups, "WhiteOffice_Roof_Deco", 18)
+--[[    assertTableExpectated(TablesOfPiecesGroups, "WhiteOffice_Roof_Deco", 18)
     assertTableExpectated(TablesOfPiecesGroups, "Roof_Deco", 20)
---[[    assertTableExpectated(TablesOfPiecesGroups, "Office_Roof_Deco", 8)--]]
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteOffice_Roof_Deco", 6)
     assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteGhetto_Roof_Deco", 16)
     assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
-
+--]]
     x, y, z = Spring.GetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
 
@@ -904,15 +903,14 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             
                 ToShowTable[#ToShowTable + 1] = element
 
-                if vtolDeco[element] then
-                    StartThread(vtolLoop, vtolDeco[element])
+                if vtolDeco[element] then 
+                    StartThread(vtolLoop, vtolDeco[element], math.random(5,10)*60*1000, math.random(10,30)*60*10000)
                 end
 
                 if countElements == 24 then return end
             end
         end
     end
-   -- --echo(">>>>>>>>>>>>>>>> addRoofDeocrate END ")
 end
 
 boolDoneShowing = false
@@ -976,6 +974,7 @@ function buildAnimation()
         Hide(Icon)
         return
     end
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
     Hide(Icon)
     StartThread(ropeLoop)
     local builT = TablesOfPiecesGroups["Build"]
