@@ -567,7 +567,7 @@ function buildDecorateGroundLvl()
                     return materialColourName
                 end
 
-                if boolHasGrafiti == true then 
+                if boolHasGrafiti == true and chancesAre(10) > 0.9 then 
                     boolHasGrafiti = false
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     addGrafiti(xRealLoc, zRealLoc, rotation ,  _y_axis)
@@ -1068,16 +1068,21 @@ function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
 
-
 function addGrafiti(x,z, turnV,  axis)
-    mP(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],x,0,z, 0)
-    turnValue = turnV + 180*randSign() + 180*randSign()
-    Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
 
+    Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],1, x, 0)
+    Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],2, 0, 0)
+    Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, z, 0)
+    boolTurnGraphiti = maRa()
+    turnValue = turnV + 180*randSign() + 180 * randSign()
+    Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
+--[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
-    echo("Adding Grafiti with message:" ..myMessage)
+    --echo("Adding Grafiti with message:" ..myMessage)
     counter={}
-    for i=1, string.len(myMessage) do
+    stringlength = string.len(myMessage)
+
+    for i=1, stringlength do
         local letter = string.upper(string.sub(myMessage,i,i))
         if letter ~= " " then
             if not counter[letter] then 
@@ -1086,19 +1091,26 @@ function addGrafiti(x,z, turnV,  axis)
             counter[letter] = counter[letter] + 1 
 
             if counter[letter] < 3 then 
+                Turnfactor = math.atan((i/stringlength)*math.pi*2)
+                if maRa() == true then
+                    Turnfactor = math.sin((i/stringlength)*math.pi*2)
+                elseif maRa() == true then
+                    Turnfactor = math.cos((i/stringlength)*math.pi*2)
+                end
 
                 if TablesOfPiecesGroups["Graphiti_"..letter] and counter[letter] and TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
                 pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
-                if pieceName then
+                if pieceName then 
                     ToShowTable[#ToShowTable + 1] = pieceName
                     Show(pieceName)
-                    if i > 8 then
-                        Move(pieceName,axis, 70*(i-1), 0)
-                    else
-                        Move(pieceName,axis, 70*(i-8), 0)
-                        Move(pieceName, _y_axis, -50, 0)
+                    Move(pieceName,axis, 70*(i-1), 0)
+                    if i > 10 then
+                     Move(pieceName,axis, 70*(i-10), 0)
+                     Move(pieceName, 3, -100, 0)
                     end
-                    
+                    if boolTurnGraphiti == true then
+                        Turn(pieceName , 1, math.rad(Turnfactor*10),0)
+                    end
                 end
                 end
             end
