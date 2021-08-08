@@ -911,3 +911,11 @@ function headingChangeDetector(unitID, moveTreshold, boolTurnLeft, boolTurning, 
         headingOfOld = tempHead
     end
 end
+
+function spawnCegCyclicAtUnitPiece(unitID, pieceID, cegname, delay)
+    while true do
+        Sleep(delay)
+        spawnCegAtPiece(unitID, pieceID, cegname, 150)
+        Sleep(1)
+    end
+end
