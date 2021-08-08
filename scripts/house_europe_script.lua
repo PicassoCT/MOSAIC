@@ -271,18 +271,18 @@ end
 function getRandomBuildMaterial(buildMaterial, name)
 
     if not buildMaterial then
-        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
+--        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
     end
     if not type(buildMaterial) == "table" then
-        echo(
+   --[[     echo(
             getScriptName() .. "getRandomBuildMaterial: Got not a table, got" ..
-                type(buildMaterial) .. "instead");
+                type(buildMaterial) .. "instead");--]]
         return
     end
     total = count(buildMaterial)
     if total == 0 and #buildMaterial == 0 then
-        echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
+     --   echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
         return
     end
 
@@ -298,7 +298,7 @@ function getRandomBuildMaterial(buildMaterial, name)
             end
         end
     end
-    Spring.Echo(getScriptName() .. "getRandomBuildMaterial: No Part selected ")
+--    Spring.Echo(getScriptName() .. "getRandomBuildMaterial: No Part selected ")
 end
 
 -- x:0-6 z:0-6
@@ -569,7 +569,8 @@ function buildDecorateGroundLvl()
 
                 if boolHasGrafiti == true then 
                     boolHasGrafiti = false
-                    addGrafiti(xRealLoc, zRealLoc, math.random(1,4)*90,  _y_axis)
+                    rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+                    addGrafiti(xRealLoc, zRealLoc, rotation ,  _y_axis)
                 end
 
                 if chancesAre(10) < decoChances.street then
@@ -585,18 +586,18 @@ function buildDecorateGroundLvl()
                 if chancesAre(10) < decoChances.door then
                     axis = _z_axis
                     DoorMaterial, Door = DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0 , materialColourName)
-                    Turn(Door, axis, math.rad(rotation), 0)
+                   
                     if Door then
+                        Turn(Door, axis, math.rad(rotation), 0)
                         showSubsAnimateSpinsByPiecename(pieceName_pieceNr[Door])
-                    end
-
-                    if chancesAre(10) < decoChances.door then
+                        if chancesAre(10) < decoChances.door then
                         DoorDecoMaterial, DoorDeco =
                             DecorateBlockWall(xRealLoc, zRealLoc, 0,
                                               DoorDecoMaterial, 0, materialColourName)
-                        if DoorDeco then
-                            Turn(DoorDeco, axis, math.rad(rotation), 0)
-                            showSubsAnimateSpinsByPiecename(pieceName_pieceNr[DoorDeco]) 
+                            if DoorDeco then
+                                Turn(DoorDeco, axis, math.rad(rotation), 0)
+                                showSubsAnimateSpinsByPiecename(pieceName_pieceNr[DoorDeco]) 
+                            end
                         end
                     end
                 end
@@ -804,7 +805,7 @@ function showOneOrAllOfTablePieceGroup(name)
   if TablesOfPiecesGroups[name] then
         showOneOrAll(TablesOfPiecesGroups[name])
     elseif pieceName_pieceNr[name..1] then
-        ToShowTable[#ToShowTable + 1] = ieceName_pieceNr[name..1]
+        ToShowTable[#ToShowTable + 1] = pieceName_pieceNr[name..1]
     end
 end
 
@@ -1071,10 +1072,10 @@ Spring.SetUnitNanoPieces(unitID, {center})
 function addGrafiti(x,z, turnV,  axis)
     mP(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],x,0,z, 0)
     turnValue = turnV + 180*randSign() + 180*randSign()
-    Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],y_axis, math.rad(turnValue),0)
+    Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
 
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
-    --echo("Adding Grafiti with message:" ..myMessage)
+    echo("Adding Grafiti with message:" ..myMessage)
     counter={}
     for i=1, string.len(myMessage) do
         local letter = string.upper(string.sub(myMessage,i,i))
@@ -1090,7 +1091,14 @@ function addGrafiti(x,z, turnV,  axis)
                 pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
                 if pieceName then
                     ToShowTable[#ToShowTable + 1] = pieceName
-                    Move(pieceName,axis, 70*(i-1), 0)
+                    Show(pieceName)
+                    if i > 8 then
+                        Move(pieceName,axis, 70*(i-1), 0)
+                    else
+                        Move(pieceName,axis, 70*(i-8), 0)
+                        Move(pieceName, _y_axis, -50, 0)
+                    end
+                    
                 end
                 end
             end

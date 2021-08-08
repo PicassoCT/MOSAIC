@@ -205,8 +205,8 @@ function getGameConfig()
     _G.GameConfig = getGameConfig()
     -- ===================================================================================================================
     function getCultureName()
-        GameConfig = getGameConfig()
-        return GameConfig.instance.culture
+        if not GG.GameConfig then  GG.GameConfig = getGameConfig() end
+        return GG.GameConfig.instance.culture
     end
     -- ===================================================================================================================
     function getChemTrailTypes()

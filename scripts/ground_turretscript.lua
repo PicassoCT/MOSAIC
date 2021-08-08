@@ -113,6 +113,7 @@ end
 boolAiming = false
 
 function guardSwivelTurret()
+    waitTillComplete(unitID)
     Signal(SIG_GUARDMODE)
     SetSignalMask(SIG_GUARDMODE)
     Sleep(5000)
