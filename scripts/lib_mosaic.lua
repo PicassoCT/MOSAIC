@@ -262,7 +262,8 @@ function getGameConfig()
             [UnitDefNames["objective_westhemhq"].id] = "land",
             [UnitDefNames["objective_artificialglacier"].id] = "land",
             [UnitDefNames["objective_combatoutpost"].id] = "land",
-            [UnitDefNames["objective_transrapid"].id] = "land"
+            [UnitDefNames["objective_transrapid"].id] = "land",
+            [UnitDefNames["objective_airport"].id] = "land"
         }
     end
 
