@@ -1070,7 +1070,6 @@ Spring.SetUnitNanoPieces(unitID, {center})
 
 function addGrafiti(x,z, turnV,  axis)
     playerName = getRandomPlayerName()
-
     Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],1, x, 0)
     Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],2, 0, 0)
     Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, z, 0)
@@ -1079,7 +1078,7 @@ function addGrafiti(x,z, turnV,  axis)
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
 --[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
-    myMessage = string.gsub(myMessage, "Ü", playerName or "X")
+    myMessage = string.gsub(myMessage, "Ü", playerName or "")
     --echo("Adding Grafiti with message:" ..myMessage)
     counter={}
     stringlength = string.len(myMessage)
