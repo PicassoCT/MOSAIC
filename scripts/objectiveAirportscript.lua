@@ -5,17 +5,35 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-Airport = piece"Airport"
+Airport = piece "Airport"
 statusTable = {}
+myDefID = Spring.GetUnitDefID(unitID)
+JourneyPoint = piece "JourneyPoint"
+PlanePositionTurnAxis = 3
+PlanePositionMoveAxis = 2
+directionToGo = math.random(0, 360)
+SIG_PLANE = 1
+boolCircling = false
+boolCirclingDone = false
 
-
-function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+function script.HitByWeapon(x, z, weaponDefID, damage)
+end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     setup()
     StartThread(comingAndGoing)
+end
+
+
+function playDepartureGong()
+    maphash = getMapHash(5) + 1
+    name = "sounds/objective/airport/departure" .. maphash .. ".wav"
+    StartThread(PlaySoundByUnitDefID, myDefID, name , 1.0, 500, 2)
+end
+
+function playAircraftSounds()
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport/arrivaldeparture.ogg", 1.0, 60000, 1)
 end
 
 function setup()
@@ -24,142 +42,311 @@ function setup()
     showT(TablesOfPiecesGroups["Gateway"])
     PlanePosition = TablesOfPiecesGroups["SwingCenter"][2]
     StartThread(blink)
-    for i=1, #TablesOfPiecesGroups["Shuttle"] do
+    for i = 1, #TablesOfPiecesGroups["Shuttle"] do
         if TablesOfPiecesGroups["Shuttle"][i] then
-        if maRa() == true then
-            statusTable[TablesOfPiecesGroups["Shuttle"][i]] ="landed"
-            Show(TablesOfPiecesGroups["Shuttle"][i])
-            Show(TablesOfPiecesGroups["Engine"][i])
-        else
-            statusTable[TablesOfPiecesGroups["Shuttle"][i]] ="docked"
-        end
+            if maRa() == true then
+                statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "landed"
+                Show(TablesOfPiecesGroups["Shuttle"][i])
+                Show(TablesOfPiecesGroups["Engine"][i])
+            else
+                statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "docked"
+            end
         end
     end
 
-    for i=1, #TablesOfPiecesGroups["AirCar"] do
-        StartThread(vtolLoop, TablesOfPiecesGroups["AirCar"][i], math.random(5,10)*15*1000, math.random(10,30)*15*10000)
+    for i = 1, #TablesOfPiecesGroups["AirCar"] do
+        StartThread(
+            vtolLoop,
+            TablesOfPiecesGroups["AirCar"][i],
+            math.random(5, 10) * 15 * 1000,
+            math.random(10, 30) * 15 * 10000
+            )
     end
 end
 
 function cturnT(t, axis, degs, speed, boolInstantUpdate, boolWait)
     if boolInstantUpdate then
-        for i = 1, #t, 1 do 
-            if t[i] then Turn(t[i], axis, math.rad(degs), 0, true) end
+        for i = 1, #t, 1 do
+            if t[i] then
+                Turn(t[i], axis, math.rad(degs), 0, true)
+            end
         end
         return
     end
 
     if not speed or speed == 0 then
-        for i = 1, #t, 1 do 
-            if t[i] then Turn(t[i], axis, math.rad(degs), 0) end
+        for i = 1, #t, 1 do
+            if t[i] then
+                Turn(t[i], axis, math.rad(degs), 0)
+            end
         end
     else
-        for i = 1, #t, 1 do Turn(t[i], axis, math.rad(degs), speed) end
-        if boolWait then 
-            for i = 1, #t, 1 do 
-                 if t[i] then 
-                    WaitForTurn(t[i], axis) 
-                 end 
-             end
+        for i = 1, #t, 1 do
+            Turn(t[i], axis, math.rad(degs), speed)
+        end
+        if boolWait then
+            for i = 1, #t, 1 do
+                if t[i] then
+                    WaitForTurn(t[i], axis)
+                end
+            end
         end
     end
     return
 end
 
-
 function blink()
     showT(TablesOfPiecesGroups["SwitchLight"])
-    upaxis=1
+    upaxis = 1
     while true do
-         upaxis= (upaxis  % 3 + 1)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180,0)
+        upaxis = (upaxis % 3 + 1)
+        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180, 0)
         Sleep(2500)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 0,0)
+        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 0, 0)
         Sleep(2500)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180,0)
+        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180, 0)
         Sleep(2500)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 0,0)
+        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 0, 0)
         Sleep(5000)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180,0)
+        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180, 0)
         Sleep(5000)
     end
 end
 
 function comingAndGoing()
     while true do
-        Sleep(10000)
         arrival()
+        for i = 1, 6 do
+            touchDownTime = math.random(8, 18)
+            StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
+        end
         ferryingGoods()
         departure()
     end
 end
 
 function showOne(T, bNotDelayd)
-    if not T then return end
+    if not T then
+        return
+    end
     dice = math.random(1, count(T))
     c = 0
     for k, v in pairs(T) do
-        if k and v then c = c + 1 end
+        if k and v then
+            c = c + 1
+        end
         if c == dice then
-            Show(v) 
+            Show(v)
             return v
         end
     end
 end
-JourneyPoint = piece"JourneyPoint"
-PlanePositionTurnAxis = 3
-PlanePositionMoveAxis= 3
-directionToGo = math.random(0,360)
-function arrival()
 
-    directionToGo = math.random(0,360)
-    Turn(JourneyPoint,PlanePositionTurnAxis, math.rad(directionToGo ), 0)
-    Move(PlanePosition, PlanePositionMoveAxis, -150000,0)
-    showOne(TablesOfPiecesGroups["MainBirdBody"])
+function arrival()
+    resetT(TablesOfPiecesGroups["SwingCenter"], 0)
+    directionToGo = math.random(0, 360)
+    Turn(JourneyPoint, PlanePositionTurnAxis, math.rad(directionToGo), 0)
+    Move(PlanePosition, PlanePositionMoveAxis, -150000, 0)
+    showPlane()
     WMove(PlanePosition, PlanePositionMoveAxis, 0, 15000)
 end
-SIG_PLANE = 1
-boolCircling = false
-boolCirclingDone= false
+
 function turnPlaneAround()
     Signal(SIG_PLANE)
     SetSignalMask(SIG_PLANE)
     boolCircling = true
-    boolCirclingDone= false
+    StartThread(PlaneLights)
+    boolCirclingDone = false
     while boolCircling == true do
-        resetT(TablesOfPiecesGroups["SwingCenter"],0)
+        resetT(TablesOfPiecesGroups["SwingCenter"], 0)
         if maRa() == true then
-            WTurn(TablesOfPiecesGroups["SwingCenter"][1],PlanePositionTurnAxis, math.rad(-179), 0.11)
-            WTurn(TablesOfPiecesGroups["SwingCenter"][1],PlanePositionTurnAxis, math.rad(-181), 0.11)
-            WTurn(TablesOfPiecesGroups["SwingCenter"][1],PlanePositionTurnAxis, math.rad(-360), 0.11)
+            WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-179), 0.11)
+            WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-181), 0.11)
+            playDepartureGong()
+            WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-300), 0.11)
+            playDepartureGong()
+            playAircraftSounds()
+            ferryGoRound = math.random(1, 5)
+            degShare = 50 / ferryGoRound
+            for i = 1, ferryGoRound do
+                timeToArrivalMS = (((ferryGoRound - i) * degShare) / (0.1 * 30)) * 1000
+                StartThread(ferryGoUp, math.random(1, #TablesOfPiecesGroups["Shuttle"]), timeToArrivalMS)
+                WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-300 - i * degShare), 0.1)
+            end
+            WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-360), 0.11)
+            ferryGoRound = math.random(1, 5)
+            for i = 1, ferryGoRound do
+                touchDownTime = math.random(8, 18)
+                StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
+            end
         else
-            WTurn(TablesOfPiecesGroups["SwingCenter"][2],PlanePositionTurnAxis, math.rad(179), 0.1)
-            WTurn(TablesOfPiecesGroups["SwingCenter"][2],PlanePositionTurnAxis, math.rad(181), 0.1)
-            WTurn(TablesOfPiecesGroups["SwingCenter"][2],PlanePositionTurnAxis, math.rad(360), 0.1)
+            WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(179), 0.1)
+            WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(181), 0.1)
+            playDepartureGong()
+            WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(300), 0.1)
+            playDepartureGong()
+            playAircraftSounds()
+            ferryGoRound = math.random(1, 5)
+            degShare = 50 / ferryGoRound
+            for i = 1, ferryGoRound do
+                timeToArrivalMS = (((ferryGoRound - i) * degShare) / (0.1 * 30)) * 1000
+                StartThread(ferryGoUp, math.random(1, #TablesOfPiecesGroups["Shuttle"]), timeToArrivalMS)
+                WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(310 + i * degShare), 0.1)
+            end
+
+            WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(360), 0.1)
+
+            ferryGoRound = math.random(1, 5)
+            for i = 1, ferryGoRound do
+                touchDownTime = math.random(8, 18)
+                StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
+            end
         end
         Sleep(1)
-
     end
-    boolCirclingDone= true
+    WMove(PlanePosition, PlanePositionMoveAxis, 150000, 15000)
+    WMove(PlanePosition, PlanePositionMoveAxis, 450000, 25000)
+    hidePlane()
+    boolCirclingDone = true
+end
+RightWing = piece ("RightWing")
+LeftWing = piece("LeftWing")
+TailStrike = piece("TailStrike")
+
+function hidePlane()
+    hideT(TablesOfPiecesGroups["MainBirdBody"])
+    hideT(TablesOfPiecesGroups["Transit"])
+    Hide(RightWing)
+    Hide(LeftWing)
+    Hide(TailStrike)
+end
+
+function showPlane()
+    Show(RightWing)
+    Show(LeftWing)
+    Show(TailStrike)
+    showOne(TablesOfPiecesGroups["MainBirdBody"])
+    hideT(TablesOfPiecesGroups["Transit"])
+end
+
+distanceUp = 80000
+ferryFreeTable = {}
+ferryTurnAxis = 3
+function ferryGoUp(selectedFerryNr, times)
+    if not ferryFreeTable[selectedFerryNr] then
+        ferryFreeTable[selectedFerryNr] = false
+    end
+    if ferryFreeTable[selectedFerryNr] == true then
+        return
+    end
+    ferryFreeTable[selectedFerryNr] = true
+
+    local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
+    local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
+    reset(ferry)
+    Show(ferry)
+    Show(engine)
+    speed = distanceUp / (times / 1000)
+    val = math.random(-5, 5)
+    Turn(engine, x_axis, math.rad(val), 0.125)
+    WMove(ferry, ferryUpAxis, distanceUp * 0.05, speed * 0.5)
+    if selectedFerryNr < 6 then
+        Turn(ferry, ferryTurnAxis, math.rad(180), 0.5)
+    else
+        Turn(ferry, ferryTurnAxis, math.rad(0), 0.5)
+    end
+    val = math.random(-5, 5)
+    Turn(engine, x_axis, math.rad(val), 0.125)
+    WMove(ferry, ferryUpAxis, distanceUp, speed * 1.05)
+
+    Hide(ferry)
+    Hide(engine)
+    ferryFreeTable[selectedFerryNr] = false
+end
+
+ferryUpAxis = 3
+function ferryGoDown(selectedFerryNr, times)
+    if not ferryFreeTable[selectedFerryNr] then
+        ferryFreeTable[selectedFerryNr] = false
+    end
+    if ferryFreeTable[selectedFerryNr] == true then
+        return
+    end
+    ferryFreeTable[selectedFerryNr] = true
+    Sleep(selectedFerryNr * 50)
+    local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
+    local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
+    rVal = math.random(-45, 45)
+    if selectedFerryNr < 6 then
+        Turn(ferry, ferryTurnAxis, math.rad(180 + rVal), 0)
+    else
+        Turn(ferry, ferryTurnAxis, math.rad(rVal), 0)
+    end
+    val = math.random(-5, 5)
+    Turn(engine, x_axis, math.rad(val), 0)
+
+    Move(ferry, ferryUpAxis, distanceUp, 0)
+    rval = math.random(250, 750) * randSign()
+    Move(ferry, 1, rval, 0)
+    rval = math.random(250, 750) * randSign()
+    Move(ferry, 2, rval, 0)
+
+    Show(ferry)
+    Show(engine)
+    speed = distanceUp / (times / 1000)
+    Turn(ferry, ferryTurnAxis, math.rad(0), 0.25)
+    Move(ferry, 1, 0, speed)
+    Move(ferry, 2, 0, speed)
+    val = math.random(-5, 5)
+    Turn(engine, x_axis, math.rad(val), 0.125)
+    WMove(ferry, ferryUpAxis, distanceUp * 0.2, speed)
+    Turn(ferry, ferryTurnAxis, math.rad(0), 0.5)
+    val = math.random(-5, 5)
+    Turn(engine, x_axis, math.rad(val), 0.125)
+    WMove(ferry, ferryUpAxis, 0, speed * 0.25)
+    WaitForMoves(ferry)
+    Turn(engine, x_axis, math.rad(0), 0.125)
+    ferryFreeTable[selectedFerryNr] = false
 end
 
 function ferryingGoods()
     StartThread(turnPlaneAround)
-    ferryGoRound = math.random(3,10)
-    for i=1, ferryGoRound do
-        Sleep(15000)
+    ferryGoRound = math.random(3, 10)
+    Sleep(60 * 3 * 1000)
+end
+
+function PlaneLights()
+    boolLightFlipFlop = false
+    while boolCircling == true do
+        boolLightFlipFlop = not boolLightFlipFlop
+        if boolLightFlipFlop == true then
+            Show(TablesOfPiecesGroups["SignalLightOn"][1])
+            Show(TablesOfPiecesGroups["SignalLightOff"][2])
+        else
+            Show(TablesOfPiecesGroups["SignalLightOff"][1])
+            Show(TablesOfPiecesGroups["SignalLightOn"][2])
+        end
+        Sleep(1000)
+        hideT(TablesOfPiecesGroups["SignalLightOn"])
+        hideT(TablesOfPiecesGroups["SignalLightOff"])
     end
 end
 
 function departure()
     boolCircling = false
-    while boolCirclingDone == false do Sleep(10) end
-    WMove(PlanePosition, PlanePositionMoveAxis, 150000,15000)
-    hideT(TablesOfPiecesGroups["MainBirdBody"])
+    while boolCirclingDone == false do
+        Sleep(10)
+    end
+   for i = 1, 6 do
+        touchDownTime = math.random(8, 18)
+        StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
+    end
+    hideT(TablesOfPiecesGroups["Shuttle"])
+
+    minutes = math.random(3, 6) * 60 * 1000
+    Sleep(minutes)
 end
 
 function script.Killed(recentDamage, _)
     return 1
 end
-
-

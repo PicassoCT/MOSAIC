@@ -4322,6 +4322,20 @@ function hashString(str, modulus)
     return x % modulus
 end
 
+function getMapHash(modulus)
+    accumulated = 0
+    mapName = Game.mapName
+    mapNameLength = string.len(mapName)
+
+    for i=1, mapNameLength do
+        accumulated = accumulated + string.byte(mapName,i)
+    end
+
+  accumulated = accumulated + Game.mapSizeX
+  accumulated = accumulated + Game.mapSizeZ
+  return accumulated % modulus
+end
+
 function get_line_intersection(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)
 
     s1_x = p1_x - p0_x;
