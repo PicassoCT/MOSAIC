@@ -2,7 +2,6 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 Airport = piece "Airport"
@@ -15,9 +14,9 @@ directionToGo = math.random(0, 360)
 SIG_PLANE = 1
 boolCircling = false
 boolCirclingDone = false
-
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
+distanceUp = 80000
+ferryFreeTable = {}
+ferryTurnAxis = 3
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -25,15 +24,14 @@ function script.Create()
     StartThread(comingAndGoing)
 end
 
-
 function playDepartureGong()
     maphash = getMapHash(5) + 1
-    name = "sounds/objective/airport/departure" .. maphash .. ".wav"
-    StartThread(PlaySoundByUnitDefID, myDefID, name , 1.0, 500, 2)
+    name = "sounds/objective/airport_departure"..maphash..".ogg"
+    StartThread(PlaySoundByUnitDefID, myDefID, name , 0.125, 500, 2)
 end
 
 function playAircraftSounds()
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport/arrivaldeparture.ogg", 1.0, 60000, 1)
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 20000, 2)
 end
 
 function setup()
@@ -150,23 +148,31 @@ function arrival()
     showPlane()
     WMove(PlanePosition, PlanePositionMoveAxis, 0, 15000)
 end
-
+    dockedShuttleCount = 6
 function turnPlaneAround()
     Signal(SIG_PLANE)
     SetSignalMask(SIG_PLANE)
     boolCircling = true
     StartThread(PlaneLights)
     boolCirclingDone = false
+    dockedShuttleCount = 6
     while boolCircling == true do
-        resetT(TablesOfPiecesGroups["SwingCenter"], 0)
+        showT(TablesOfPiecesGroups["Transit"], 1, math.min(math.max(2,dockedShuttleCount),#TablesOfPiecesGroups["Transit"]))
+
+         ferryGoRound = math.random(3, 5)
+         ferryGoDownCount = math.random(3, 5)
+         dockedShuttleCount = dockedShuttleCount + ferryGoRound - ferryGoDownCount
         if maRa() == true then
+            Turn(TailStrike, 3, math.rad(15), 1)
+            Turn(RightWing, 3, math.rad(15), 1)
+            Turn(LeftWing, 3, math.rad(15), 1)
             WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-179), 0.11)
             WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-181), 0.11)
             playDepartureGong()
             WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-300), 0.11)
             playDepartureGong()
             playAircraftSounds()
-            ferryGoRound = math.random(1, 5)
+           
             degShare = 50 / ferryGoRound
             for i = 1, ferryGoRound do
                 timeToArrivalMS = (((ferryGoRound - i) * degShare) / (0.1 * 30)) * 1000
@@ -174,19 +180,22 @@ function turnPlaneAround()
                 WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-300 - i * degShare), 0.1)
             end
             WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-360), 0.11)
-            ferryGoRound = math.random(1, 5)
-            for i = 1, ferryGoRound do
+           
+            for i = 1, ferryGoDownCount do
                 touchDownTime = math.random(8, 18)
                 StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
             end
+            Turn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(0), 0)
         else
+            Turn(TailStrike, 3, math.rad(-15), 1)
+            Turn(RightWing, 3, math.rad(-15), 1)
+            Turn(LeftWing, 3, math.rad(-15), 1)
             WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(179), 0.1)
             WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(181), 0.1)
             playDepartureGong()
             WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(300), 0.1)
             playDepartureGong()
             playAircraftSounds()
-            ferryGoRound = math.random(1, 5)
             degShare = 50 / ferryGoRound
             for i = 1, ferryGoRound do
                 timeToArrivalMS = (((ferryGoRound - i) * degShare) / (0.1 * 30)) * 1000
@@ -195,12 +204,11 @@ function turnPlaneAround()
             end
 
             WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(360), 0.1)
-
-            ferryGoRound = math.random(1, 5)
-            for i = 1, ferryGoRound do
+            for i = 1, ferryGoDownCount do
                 touchDownTime = math.random(8, 18)
                 StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
             end
+            Turn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(0), 0)
         end
         Sleep(1)
     end
@@ -229,9 +237,6 @@ function showPlane()
     hideT(TablesOfPiecesGroups["Transit"])
 end
 
-distanceUp = 80000
-ferryFreeTable = {}
-ferryTurnAxis = 3
 function ferryGoUp(selectedFerryNr, times)
     if not ferryFreeTable[selectedFerryNr] then
         ferryFreeTable[selectedFerryNr] = false
@@ -337,11 +342,11 @@ function departure()
     while boolCirclingDone == false do
         Sleep(10)
     end
-   for i = 1, 6 do
+   for i = 1, dockedShuttleCount do
         touchDownTime = math.random(8, 18)
         StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
     end
-    hideT(TablesOfPiecesGroups["Shuttle"])
+    hideT(TablesOfPiecesGroups["Transit"])
 
     minutes = math.random(3, 6) * 60 * 1000
     Sleep(minutes)
