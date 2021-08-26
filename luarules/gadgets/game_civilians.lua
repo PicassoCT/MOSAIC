@@ -137,14 +137,12 @@ function makePasserBysLook(unitID)
 end
 
 local storedSpawnedUnits = {}
-function registerStoredHouses() 
+function registerManuallyPlacedHouses() 
     for id, data in pairs(storedSpawnedUnits) do
-        if doesUnitExistAlive(id) == true then
-            if id then
+        if doesUnitExistAlive(id) == true the
             spSetUnitAlwaysVisible(id, true)
             spSetUnitBlocking(id, false)
-            GG.BuildingTable[id] = {x = x, z = z }
-            end
+            GG.BuildingTable[id] = {x = data.x, z = data.z }
         end
     end
     storedSpawnedUnits = {} 
@@ -393,7 +391,7 @@ function spawnInitialPopulation(frame)
                               math.ceil((Game.mapSizeZ / uDim.z) * 0.5))
             boolInitialized = true   
         else
-           registerStoredHouses() 
+           registerManuallyPlacedHouses() 
            boolInitialized = GG.MapCompletedBuildingPlacement and   GG.MapCompletedBuildingPlacement == true
            if not boolInitialized then return end
         end
