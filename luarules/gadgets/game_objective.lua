@@ -21,19 +21,22 @@ if (gadgetHandler:IsSyncedCode()) then
     local gaiaTeamID = Spring.GetGaiaTeamID()
     local objectiveTypes = getObjectiveTypes(UnitDefs)
     local deadObjectiveTypes = getDeadObjectiveType(UnitDefs)
+    local manuallyObjectiveSpawnMapNames = getManualObjectiveSpawnMapNames()
 
     local Objectives = {}
     local DeadObjectives = {}
-
-
-
     local GameConfig = getGameConfig()
+
     boolInit = false
     function gadget:Initialize() boolInit = true end
 
-    function onBoolInit()
+    function useMapControlledObjectiveSpawn()
+        name = string.lower(Game.mapName)
+        return manuallyObjectiveSpawnMapNames[name] ~= nil
+    end
 
-        mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}
+    function manualyInit()
+    mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}
 
         oz = math.min(Game.mapSizeX, Game.mapSizeZ) - math.random(500, 1000)
         ox = Game.mapSizeX / 2
@@ -71,6 +74,16 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
         boolInit = false
+    end
+
+    function onBoolInit()
+        if useMapControlledObjectiveSpawn() == true then
+            if GG.manualMapObjectiveSpawnComplete and GG.manualMapObjectiveSpawnComplete == true then
+                boolInit = false 
+            end
+        else
+            manualyInit()
+        end    
     end
 
     function getProProtagon(nr)
@@ -149,7 +162,7 @@ if (gadgetHandler:IsSyncedCode()) then
     antagonT = getAllTeamsOfType("antagon", UnitDefs)
     protagonT = getAllTeamsOfType("protagon", UnitDefs)
     function gadget:GameFrame(f)
-        if boolInit == true then onBoolInit() end
+        if boolInit == true then onBoolInit(); return; end
 
         if f % GameConfig.Objectives.RewardCyle == 0 then
 
