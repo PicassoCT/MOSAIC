@@ -281,6 +281,12 @@ function getGameConfig()
         }
     end  
 
+    function getManualObjectiveSpawnMapNames()
+        return {
+            ["mosaic_dubai_v1"] = true
+        }
+    end
+
     function getDeadObjectiveType(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
