@@ -24,7 +24,8 @@ function script.Create()
     StartThread(comingAndGoing)
 end
 
-function playDepartureGong()
+function playDepartureGong(offset)
+    offset = 
     maphash = getMapHash(5) + 1
     name = "sounds/objective/airport_departure"..maphash..".ogg"
     StartThread(PlaySoundByUnitDefID, myDefID, name , 0.125, 500, 2)
@@ -170,7 +171,7 @@ function turnPlaneAround()
             WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-181), 0.11)
             playDepartureGong()
             WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-300), 0.11)
-            playDepartureGong()
+            playDepartureGong(1)
             playAircraftSounds()
            
             degShare = 50 / ferryGoRound
@@ -194,7 +195,7 @@ function turnPlaneAround()
             WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(181), 0.1)
             playDepartureGong()
             WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(300), 0.1)
-            playDepartureGong()
+            playDepartureGong(1)
             playAircraftSounds()
             degShare = 50 / ferryGoRound
             for i = 1, ferryGoRound do
