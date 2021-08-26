@@ -5,7 +5,7 @@ unitFactor = 0.75
 function getGameConfig()
     return {
         instance = {
-            culture = "arabic", -- "international", "western", "asia"
+            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia"
             Version = "Alpha: 0.777" 
         },
 
@@ -201,8 +201,29 @@ function getGameConfig()
         }}
     end
 
+   function getAllCultures()
+	return {
+		arabic = "arabic",
+		international = "international",
+		european = "european",
+		asian = "asian",
+		american = "american"
+		}
+   end
+
+    GG.AllCultures = getAllCultures()
     GG.GameConfig = getGameConfig()
     _G.GameConfig = getGameConfig()
+    
+   function getInstanceCultureOrDefaultToo(defaultCulture) 
+	if GG.InstanceCulture then return GG.InstanceCulture end
+	
+	mapDependentCulture = getMapCultureMap(Game.mapName)    
+	GG.InstanceCulture =  mapDependentCulture or defaultCulture
+
+	return GG.InstanceCulture
+   end
+
     -- ===================================================================================================================
     function getCultureName()
         if not GG.GameConfig then  GG.GameConfig = getGameConfig() end
@@ -217,6 +238,15 @@ function getGameConfig()
             ["depressol"] = "depressol"
         }
     end
+   
+   function  getMapCultureMap(mapName)
+	mapToCultureDictionary = {
+	  ["mosaic_dubaiV1"] = GG.AllCultures.international	
+	}
+	
+	lowerCaseMapName = string.lower(mapName)
+	if mapToCultureDictionary[lowerCaseMapName] then return mapToCultureDictionary[lowerCaseMapName]  end
+   end
 
     function getChemTrailInfluencedTypes(UnitDefs)
         assert(UnitDefs)
