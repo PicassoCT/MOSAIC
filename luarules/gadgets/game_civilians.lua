@@ -77,6 +77,18 @@ local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, 
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 
+local boolCachedMapManualPlacementResult
+fuction isMapControlledBuildingPlacement(mapName)
+    if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
+    manualBuildingPlacingMaps = getTODOTable("manualBuildingPlacing")
+    if manualBuildingPlacingMaps[string.lower(mapName)] then
+        boolCachedMapManualPlacementResult = true
+    else
+        boolCachedMapManualPlacementResult = false
+    end
+    return boolCachedMapManualPlacementResult
+end
+
 function startInternalBehaviourOfState(unitID, name, ...)
     local arg = arg;
     if (not arg) then
@@ -123,10 +135,26 @@ function makePasserBysLook(unitID)
        end
     end)
 end
---[[
-function gadget:UnitCreated(unitID, unitDefID, teamID)
+
+local storedSpawnedUnits = {}
+function registerManuallyPlacedHouses() 
+    for id, data in pairs(storedSpawnedUnits) do
+        if doesUnitExistAlive(id) == true the
+            spSetUnitAlwaysVisible(id, true)
+            spSetUnitBlocking(id, false)
+            GG.BuildingTable[id] = {x = data.x, z = data.z }
+        end
+    end
+    storedSpawnedUnits = {} 
 end
---]]
+
+function gadget:UnitCreated(unitID, unitDefID, teamID)
+    if teamID == gaiaTeamID and houseTypeTable[unitDefID] and isMapControlledBuildingPlacement(Game.mapName) then
+       x,y,z = spGetUnitPosition(unitID)
+       storedSpawnedUnits[unitID] = {x=x, y=y, z = z}
+    end
+ end
+
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
@@ -353,20 +381,26 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,
 end
 
 function spawnInitialPopulation(frame)
-    -- create Grid of all placeable Positions
+  
     -- great Grid of placeable Positions 
     if distributedPathValidationComplete(frame, 10) == true then
-
+        if  not isMapControlledBuildingPlacement(Game.mapName) then
         -- spawn Buildings from MapCenter Outwards
         fromMapCenterOutwards(BuildingPlaceTable,
                               math.ceil((Game.mapSizeX / uDim.x) * 0.5),
                               math.ceil((Game.mapSizeZ / uDim.z) * 0.5))
+            boolInitialized = true   
+        else
+           registerManuallyPlacedHouses() 
+           boolInitialized = GG.MapCompletedBuildingPlacement and   GG.MapCompletedBuildingPlacement == true
+           if not boolInitialized then return end
+        end
 
         regenerateRoutesTable()
 
         -- give Arrived Units Commands
         sendArrivedUnitsCommands()
-        boolInitialized = true
+       
     end
 end
 function checkReSpawnHouseAt(x, z, bID)

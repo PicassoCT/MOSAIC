@@ -5,13 +5,13 @@ return {
     "DICKBUT",
     "CRIBS",
     "BLOODS",
-	"BLOODY CRIBS",
+    "BLOODY CRIBS",
     "DRUGS",
-	"NO DRUGS",
-	"HUGS",
-	"NO HUGS",
+    "NO DRUGS",
+    "HUGS",
+    "NO HUGS",
     "NO SPRAYERS",
-	"OUGHTZ & SPRAYERZ",
+    "OUGHTZ & SPRAYERZ",
     "SPRING IZ DEATH",
     "NO GODS",
     "RACYSSM",
@@ -145,10 +145,12 @@ return {
 	"CUNT",
 	"COXSUCKER",
 	"CHOOSE LIFE",
-	"DEATH STICKS"
-	
-	
-	
-	
-	
+	"DEATH STICKS",
+	"NOT REAL",
+	"JUST A SIM",
+	"WOULD D REAL SIM SHADY PLZ",
+	"NO GODS",
+	"JUST MEN",
+	"BEIN ALIVE NOT PROFITABLE",
+	"SOCIALYNCH"	
 }

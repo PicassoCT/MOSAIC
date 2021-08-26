@@ -5,7 +5,7 @@ unitFactor = 0.75
 function getGameConfig()
     return {
         instance = {
-            culture = "arabic", -- "international", "western", "asia"
+            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia"
             Version = "Alpha: 0.777" 
         },
 
@@ -201,8 +201,30 @@ function getGameConfig()
         }}
     end
 
+   function getAllCultures()
+	return {
+		arabic = "arabic",
+		international = "international",
+		european = "european",
+		asian = "asian",
+		american = "american"
+		}
+   end
+
+    Cultures =  getAllCultures()
+    GG.AllCultures = getAllCultures()
     GG.GameConfig = getGameConfig()
     _G.GameConfig = getGameConfig()
+    
+   function getInstanceCultureOrDefaultToo(defaultCulture) 
+	if GG.InstanceCulture then return GG.InstanceCulture end
+	
+	mapDependentCulture = getMapCultureMap(Game.mapName)    
+	GG.InstanceCulture =  mapDependentCulture or defaultCulture
+
+	return GG.InstanceCulture
+   end
+
     -- ===================================================================================================================
     function getCultureName()
         if not GG.GameConfig then  GG.GameConfig = getGameConfig() end
@@ -217,6 +239,15 @@ function getGameConfig()
             ["depressol"] = "depressol"
         }
     end
+   
+   function  getMapCultureMap(mapName)
+	mapToCultureDictionary = {
+	  ["mosaic_dubaiV1"] = GG.AllCultures.international	
+	}
+	
+	lowerCaseMapName = string.lower(mapName)
+	if mapToCultureDictionary[lowerCaseMapName] then return mapToCultureDictionary[lowerCaseMapName]  end
+   end
 
     function getChemTrailInfluencedTypes(UnitDefs)
         assert(UnitDefs)
@@ -364,7 +395,7 @@ function getGameConfig()
         function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == "arabic" then
+            if culture == Cultures.arabic" then
                 typeTable = {
                     "truck_arab0",
                     "truck_arab1",
@@ -404,7 +435,7 @@ function getGameConfig()
         function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == "arabic" then
+            if culture == Cultures.arabic then
                 typeTable = {
                     "truck_arab6",
                     "truck_arab7",
@@ -417,7 +448,7 @@ function getGameConfig()
         end
 
         function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
-            if culture == "arabic" then
+            if culture == Cultures.arabic then
                 if housesNearby < 2 then
                     return {"tree_arab0", "tree_arab1", "greenhouse"}
                 else
@@ -1095,7 +1126,7 @@ function getGameConfig()
 
                     function isPrayerTime()
                         hours, minutes, seconds, percent = getDayTime()
-                        return GG.GameConfig.instance.culture == "arabic" and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025)
+                        return GG.GameConfig.instance.culture == Cultures.arabic and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025)
                     end
 
                     function getDayTime()
@@ -1961,7 +1992,7 @@ function getGameConfig()
                         "Ali ", " Ali ", "Abdul-Majeed al-Sa'doon", " Abu al-Heel ", "Saleh Abdel-Latif", " Abdel Hamid ", " Rashid ",
                         " al Jumaili ", "Amar ", " Qais ", "al Rifaai"
                     }},
-                    european = {
+                 european = {
                         sur = {
                             "Noel", "Joel", "Mateo", "Ergi", "Luis", "Aron", "Samuel", "Roan", "Roel", "Xhoel",
                             "Marc", "Eric", "Jan", " Daniel", "Enzo", "Ian", " Pol", " Àlex", "Jordi", "Martí",
@@ -1999,6 +2030,16 @@ function getGameConfig()
                             "Hodžić", "Hoxha", "Dimitrov", "Milevski", "Papadopoulos", "Öztürk", "Martin", "Smith"
                         }},
                     }
+		
+	         --merge all name types for international into superset
+		 international = {sur = {}, family = {}}
+		  for culture, data in pairs(names) do
+		  	for nameType, names in pairs(data) do
+			   for i=1, #names do
+				international[nameType][#international[nameType]+1] = names[i]	
+			   end
+			end
+		  end
 
                     return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
                 end
