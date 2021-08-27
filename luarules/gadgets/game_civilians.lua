@@ -78,7 +78,7 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 
 local boolCachedMapManualPlacementResult
-fuction isMapControlledBuildingPlacement(mapName)
+function isMapControlledBuildingPlacement(mapName)
     if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
     manualBuildingPlacingMaps = getTODOTable("manualBuildingPlacing")
     if manualBuildingPlacingMaps[string.lower(mapName)] then
