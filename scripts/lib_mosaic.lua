@@ -241,12 +241,22 @@ function getGameConfig()
     end
    
    function  getMapCultureMap(mapName)
+    mapName = string.lower(mapName)
 	mapToCultureDictionary = {
 	  ["mosaic_dubaiV1"] = GG.AllCultures.international	
 	}
-	
-	lowerCaseMapName = string.lower(mapName)
-	if mapToCultureDictionary[lowerCaseMapName] then return mapToCultureDictionary[lowerCaseMapName]  end
+
+	if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end
+   end
+
+  function  getManualCivilianBuildingMaps(mapName)
+    mapName = string.lower(mapName)
+    ManualCivilianBuildingPlacement = {
+      ["mosaic_dubaiV1"] = true
+    }
+    
+    
+    if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
    end
 
     function getChemTrailInfluencedTypes(UnitDefs)
@@ -395,7 +405,7 @@ function getGameConfig()
         function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == Cultures.arabic" then
+            if culture == Cultures.arabic then
                 typeTable = {
                     "truck_arab0",
                     "truck_arab1",
@@ -405,10 +415,21 @@ function getGameConfig()
                     "truck_arab5"
                 }
                 return getTypeTable(UnitDefNames, typeTable)
-            else
-                assert(true == false)
             end
+
+            if culture == Cultures.international then
+                    return mergeTables(
+                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
+                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.european),
+                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.american),
+                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian),
+                        )
+            end
+
+            return {}
         end
+
+    
 
         function getMotorBikeLoadableTypes(UnitDefs)
             assert(UnitDefs)
@@ -442,9 +463,18 @@ function getGameConfig()
                     "truck_arab8"
                 }
                 return getTypeTable(UnitDefNames, typeTable)
-            else
-                assert(true == false)
             end
+
+            if culture == Cultures.international then
+                    return mergeTables(
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.european),
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.american),
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian),
+                        )
+            end
+
+            return {}
         end
 
         function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
@@ -455,8 +485,21 @@ function getGameConfig()
                     return {"tree_arab0", "tree_arab1"}
                 end
             end
+
+
+            if culture == Cultures.international then
+                    return mergeTables(
+                        getRuralAreaFeatureUnitsNameTable( Cultures.arabic, housesNearby),
+                        getRuralAreaFeatureUnitsNameTable( Cultures.european, housesNearby),
+                        getRuralAreaFeatureUnitsNameTable( Cultures.american, housesNearby),
+                        getRuralAreaFeatureUnitsNameTable( Cultures.asian, housesNearby),
+                        )
+            end
+
+            return {}
         end
 
+        --TODO Rewrite to make international all encompassing
         function getTranslation(cultureName)
             translation = {
                 ["arabic"] = {
@@ -496,21 +539,37 @@ function getGameConfig()
             function getRPGCarryingCivilianTypes(UnitDefs)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 local culturename = getCultureName()
-                if culturename == "arabic" then
+                if culturename == Cultures.arabic then
                     typeTable = {
                         "civilian_arab0", "civilian_arab2"
                     }
 
                     return getTypeTable(UnitDefNames, typeTable)
-
                 end
 
+                if culturename == Cultures.international then
+                     typeTable = {
+                        "civilian_arab0", "civilian_arab2"
+                    }
+
+                    return getTypeTable(UnitDefNames, typeTable)
+                end
             end
 
             function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
                 assert(UnitDefs)
-                ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation,
-                UnitDefs)
+                ID_Name_Map = {}
+                if culturename == Cultures.international then
+                    ID_Name_Map = mergeTables(
+                        getCultureUnitModelNames(Cultures.arabic, typeDesignation, UnitDefs),
+                        getCultureUnitModelNames(Cultures.european, typeDesignation, UnitDefs),
+                        getCultureUnitModelNames(Cultures.american, typeDesignation, UnitDefs),
+                        getCultureUnitModelNames(Cultures.asian, typeDesignation, UnitDefs)
+                        )
+
+                else
+                    ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation, UnitDefs)
+                end
 
                 results = {}
                 for defID, name in pairs(ID_Name_Map) do table.insert(results, name) end
@@ -536,6 +595,7 @@ function getGameConfig()
                 return expandedDictIdName
             end
 
+            --TODO do a culture based merge
             function getUnitType_BaseTypeMap(UnitDefs, culture)
                 truckTypes = getTypeUnitNameTable(culture, "truck", UnitDefs)
                 houseTypes = getTypeUnitNameTable(culture, "house", UnitDefs)
@@ -2045,3 +2105,7 @@ function getGameConfig()
                 end
 
                
+function getTODOTable(name)
+    Spring.Echo("Table getter of name "..name.." is missing")
+    assert(true==false)
+end
