@@ -243,7 +243,7 @@ function getGameConfig()
    function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
 	mapToCultureDictionary = {
-	  ["mosaic_dubaiV1"] = GG.AllCultures.international	
+	  ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international	
 	}
 
 	if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end
@@ -252,9 +252,8 @@ function getGameConfig()
   function  getManualCivilianBuildingMaps(mapName)
     mapName = string.lower(mapName)
     ManualCivilianBuildingPlacement = {
-      ["mosaic_dubaiV1"] = true
+      ["mosaic_lastdayofdubai_v1"] = true
     }
-    
     
     if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
    end
@@ -422,7 +421,7 @@ function getGameConfig()
                         getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
                         getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.european),
                         getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.american),
-                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian),
+                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
                         )
             end
 
@@ -470,8 +469,7 @@ function getGameConfig()
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.european),
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.american),
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian),
-                        )
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
 
             return {}
@@ -492,8 +490,7 @@ function getGameConfig()
                         getRuralAreaFeatureUnitsNameTable( Cultures.arabic, housesNearby),
                         getRuralAreaFeatureUnitsNameTable( Cultures.european, housesNearby),
                         getRuralAreaFeatureUnitsNameTable( Cultures.american, housesNearby),
-                        getRuralAreaFeatureUnitsNameTable( Cultures.asian, housesNearby),
-                        )
+                        getRuralAreaFeatureUnitsNameTable( Cultures.asian, housesNearby))
             end
 
             return {}
