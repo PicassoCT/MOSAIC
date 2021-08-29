@@ -22,7 +22,7 @@ local weaponDef = {
     lineOfSight = true,
     turret = true, 
     canAttackGround = true,
-    collideFireBase = false,
+   
 	
     craterMult = 0,
     burst = 15,

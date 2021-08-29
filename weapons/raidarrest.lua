@@ -50,7 +50,7 @@ local weaponDef = {
 
     lineOfSight = true,
 
-    soundFire = "plane/drone2.ogg",
+    soundStart = "plane/drone2.ogg",
     soundHit = "weapons/raid/flashbang.ogg",
     
 }
