@@ -295,16 +295,25 @@ function removeElementFromBuildMaterial(element, buildMaterial)
     return result
 end
 
+materialChoiceTable = {"", "Brown", "White", "Red"}
+materialChoiceTableReverse = {yellow= 1, brown = 2, white=3, red=4}
+
 function selectGroundBuildMaterial()
-    diceTable = {"", "Brown", "White", "Red"}
     x, y, z = Spring.GetUnitPosition(unitID)
     x, z = math.ceil(x / 1000), math.ceil(z / 1000)
-    nice = ((x + z) % (#diceTable) + 1)
-    if not nice then nice = 1 end
-    dice = diceTable[nice]
+    nice = ((x + z) % (#materialChoiceTable) + 1)
 
-    return dice
+    if GG.MapDefinedHouseType then
+        x,y,z = math.ceil(x), math.ceil(y), math.ceil(z)
+        if GG.MapDefinedHouseType[x] and GG.MapDefinedHouseType[x][z] then
+            return materialChoiceTable[materialChoiceTableReverse[GG.MapDefinedHouseType[x][z]]]
+        end
+    end
+
+    if not nice then nice = 1 end
+    return  materialChoiceTable[nice]
 end
+
 
 local gaiaTeamID = Spring.GetGaiaTeamID()
 function decorateCity()
