@@ -113,7 +113,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["gcscrapheap"].id]= true,
 [UnitDefNames["destroyedobjectiveicon"].id]= true,
 [UnitDefNames["house_arab0"].id]= true,
-[UnitDefNames["house_europe0"].id]= true,
+[UnitDefNames["house_western0"].id]= true,
 }
 
 --------------------------------------------------------------------------------
