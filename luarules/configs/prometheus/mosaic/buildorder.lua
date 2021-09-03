@@ -140,7 +140,7 @@ gadget.baseBuilders = UnitSet{
 -- This lists all the units that should be considered flags.
 gadget.flags = UnitSet{
 	"house_arab0",
-	"house_europe0",
+	"house_western0",
 	"raidicon",
 	"recruitcivilian"
 }

@@ -70,7 +70,7 @@ end
 -- This lists all the units that should be considered flags.
 gadget.flags = UnitSet{
 	"house_arab0",
-	"house_europe0",
+	"house_western0",
 }
 
 -- Number of units per side used to cap flags.
