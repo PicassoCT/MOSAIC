@@ -504,11 +504,11 @@ function  getManualCivilianBuildingMaps(mapName)
                 ["international"] = {
                     ["house"] = {name = "house_int", range = 0},
                     ["civilian"] = {name = "civilian_int", range = 0},
-                ["truck"] = {name = "truck_int", range = 3}},
+                    ["truck"] = {name = "truck_int", range = 3}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
                     ["civilian"] = {name = "civilian_western", range = 0},
-                ["truck"] = {name = "truck_western", range = 3}}}
+                    ["truck"] = {name = "truck_western", range = 0}}}
                 return translation[cultureName]
             end
 
@@ -527,7 +527,7 @@ function  getManualCivilianBuildingMaps(mapName)
             function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
 
                 local translation = getTranslation(cultureName)
-                assert(translation[typeName], "No trasnlation for "..typename.." in culture "..cultureName)
+                assert(translation[typeName], "No trasnlation for "..typeName.." in culture "..cultureName)
                 return expandNameSubSetTable(translation[typeName], UnitDefs)
             end
 
