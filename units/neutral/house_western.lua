@@ -6,7 +6,7 @@ local house_western = Building:New{
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
 	explodeAs				= "none",
-	name = "Housing Block",
+	name = "Western Style Housing",
 	description = "houses civilians",
 	buildPic = "house.png",
 	iconType = "house",
@@ -14,8 +14,8 @@ local house_western = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 				= "house_europe_script.lua",
-	objectName       	= "house_europe.dae",
+	script 				= "house_western_script.lua",
+	objectName       	= "house_western.dae",
 
 	
 	
@@ -47,3 +47,8 @@ local house_western = Building:New{
 
 }
 
+return lowerkeys({
+	--Temp
+	["house_western0"] = house_western:New()
+	
+})
