@@ -80,7 +80,7 @@ local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local boolCachedMapManualPlacementResult
 function isMapControlledBuildingPlacement(mapName)
     if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
-    manualBuildingPlacingMaps = getTODOTable("manualBuildingPlacing")
+    manualBuildingPlacingMaps = getManualObjectiveSpawnMapNames()
     if manualBuildingPlacingMaps[string.lower(mapName)] then
         boolCachedMapManualPlacementResult = true
     else
