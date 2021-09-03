@@ -2,6 +2,24 @@
 -- Game Configuration
 unitFactor = 0.75
 
+function  getMapCultureMap(mapName)
+    mapName = string.lower(mapName)
+    mapToCultureDictionary = {
+      ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international   
+    }
+
+    if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end
+ end
+
+ function getInstanceCultureOrDefaultToo(defaultCulture) 
+    if GG.InstanceCulture then return GG.InstanceCulture end
+    
+    mapDependentCulture = getMapCultureMap(Game.mapName)    
+    GG.InstanceCulture =  mapDependentCulture or defaultCulture
+
+    return GG.InstanceCulture
+end
+
 function getGameConfig()
     return {
         instance = {
@@ -216,14 +234,7 @@ function getGameConfig()
     GG.GameConfig = getGameConfig()
     _G.GameConfig = getGameConfig()
     
-   function getInstanceCultureOrDefaultToo(defaultCulture) 
-	if GG.InstanceCulture then return GG.InstanceCulture end
-	
-	mapDependentCulture = getMapCultureMap(Game.mapName)    
-	GG.InstanceCulture =  mapDependentCulture or defaultCulture
-
-	return GG.InstanceCulture
-   end
+  
 
     -- ===================================================================================================================
     function getCultureName()
@@ -240,16 +251,9 @@ function getGameConfig()
         }
     end
    
-   function  getMapCultureMap(mapName)
-    mapName = string.lower(mapName)
-	mapToCultureDictionary = {
-	  ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international	
-	}
 
-	if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end
-   end
 
-  function  getManualCivilianBuildingMaps(mapName)
+function  getManualCivilianBuildingMaps(mapName)
     mapName = string.lower(mapName)
     ManualCivilianBuildingPlacement = {
       ["mosaic_lastdayofdubai_v1"] = true
@@ -529,7 +533,7 @@ function getGameConfig()
             function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
 
                 local translation = getTranslation(cultureName)
-
+                assert(translation[typeName], "No trasnlation for "..typename.." in culture "..cultureName)
                 return expandNameSubSetTable(translation[typeName], UnitDefs)
             end
 
