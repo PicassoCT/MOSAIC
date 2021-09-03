@@ -25,7 +25,6 @@ function script.Create()
 end
 
 function playDepartureGong(offset)
-    offset = 
     maphash = getMapHash(5) + 1
     name = "sounds/objective/airport_departure"..maphash..".ogg"
     StartThread(PlaySoundByUnitDefID, myDefID, name , 0.125, 500, 2)
