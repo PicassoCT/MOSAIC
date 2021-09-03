@@ -5,7 +5,7 @@ unitFactor = 0.75
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia"
+            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
             Version = "Alpha: 0.777" 
         },
 
@@ -205,10 +205,8 @@ function getGameConfig()
 	return {
 		arabic = "arabic",
 		international = "international",
-		european = "european",
-		asian = "asian",
-		american = "american"
-		}
+		western = "western",
+		asian = "asian"		}
    end
 
     Cultures =  getAllCultures()
@@ -419,9 +417,8 @@ function getGameConfig()
             if culture == Cultures.international then
                     return mergeTables(
                         getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
-                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.european),
-                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.american),
-                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
+                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),   
+			getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
                         )
             end
 
@@ -467,9 +464,7 @@ function getGameConfig()
             if culture == Cultures.international then
                     return mergeTables(
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.european),
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.american),
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
 
             return {}
@@ -488,8 +483,7 @@ function getGameConfig()
             if culture == Cultures.international then
                     return mergeTables(
                         getRuralAreaFeatureUnitsNameTable( Cultures.arabic, housesNearby),
-                        getRuralAreaFeatureUnitsNameTable( Cultures.european, housesNearby),
-                        getRuralAreaFeatureUnitsNameTable( Cultures.american, housesNearby),
+                        getRuralAreaFeatureUnitsNameTable( Cultures.western, housesNearby),
                         getRuralAreaFeatureUnitsNameTable( Cultures.asian, housesNearby))
             end
 
@@ -507,10 +501,10 @@ function getGameConfig()
                     ["house"] = {name = "house_int", range = 0},
                     ["civilian"] = {name = "civilian_int", range = 0},
                 ["truck"] = {name = "truck_int", range = 3}},
-                ["european"] = {
-                    ["house"] = {name = "house_european", range = 0},
-                    ["civilian"] = {name = "civilian_european", range = 0},
-                ["truck"] = {name = "truck_european", range = 3}}}
+                ["western"] = {
+                    ["house"] = {name = "house_western", range = 0},
+                    ["civilian"] = {name = "civilian_western", range = 0},
+                ["truck"] = {name = "truck_western", range = 3}}}
                 return translation[cultureName]
             end
 
@@ -559,8 +553,7 @@ function getGameConfig()
                 if culturename == Cultures.international then
                     ID_Name_Map = mergeTables(
                         getCultureUnitModelNames(Cultures.arabic, typeDesignation, UnitDefs),
-                        getCultureUnitModelNames(Cultures.european, typeDesignation, UnitDefs),
-                        getCultureUnitModelNames(Cultures.american, typeDesignation, UnitDefs),
+                        getCultureUnitModelNames(Cultures.western, typeDesignation, UnitDefs),
                         getCultureUnitModelNames(Cultures.asian, typeDesignation, UnitDefs)
                         )
 
@@ -2049,7 +2042,7 @@ function getGameConfig()
                         "Ali ", " Ali ", "Abdul-Majeed al-Sa'doon", " Abu al-Heel ", "Saleh Abdel-Latif", " Abdel Hamid ", " Rashid ",
                         " al Jumaili ", "Amar ", " Qais ", "al Rifaai"
                     }},
-                 european = {
+                 western = {
                         sur = {
                             "Noel", "Joel", "Mateo", "Ergi", "Luis", "Aron", "Samuel", "Roan", "Roel", "Xhoel",
                             "Marc", "Eric", "Jan", " Daniel", "Enzo", "Ian", " Pol", " Àlex", "Jordi", "Martí",
