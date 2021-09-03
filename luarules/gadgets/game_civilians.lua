@@ -139,7 +139,7 @@ end
 local storedSpawnedUnits = {}
 function registerManuallyPlacedHouses() 
     for id, data in pairs(storedSpawnedUnits) do
-        if doesUnitExistAlive(id) == true the
+        if doesUnitExistAlive(id) == true then
             spSetUnitAlwaysVisible(id, true)
             spSetUnitBlocking(id, false)
             GG.BuildingTable[id] = {x = data.x, z = data.z }
