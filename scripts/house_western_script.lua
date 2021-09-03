@@ -6,7 +6,7 @@ include "lib_Animation.lua"
 
 local grafitiMessages =  include('grafitiMessages.lua')
 
-function getScriptName() return "house_europe_script.lua::" end
+function getScriptName() return "house_western_script.lua::" end
 
 local TablesOfPiecesGroups = {}
 factor = 40
@@ -44,6 +44,7 @@ decoChances = {
 
 logoPiece = piece("Office_Roof_Deco07")
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
+materialChoiceTableReverse = {classic= 1, ghetto = 2, office=3, white=4}
 
 vtolDeco= {}
 x, y, z = Spring.GetUnitPosition(unitID)
@@ -78,12 +79,7 @@ BuildDeco = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
---[[    assertTableExpectated(TablesOfPiecesGroups, "WhiteOffice_Roof_Deco", 18)
-    assertTableExpectated(TablesOfPiecesGroups, "Roof_Deco", 20)
-    assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteOffice_Roof_Deco", 6)
-    assertTableExpectated(TablesOfPiecesGroups, "ClassicWhiteGhetto_Roof_Deco", 16)
-    assertTableExpectated(TablesOfPiecesGroups, "Classic_Roof_Deco", 16)
---]]
+
     x, y, z = Spring.GetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
 
@@ -200,7 +196,6 @@ function showOneOrAll(T)
         return showOne(T)
     else
         for num, val in pairs(T) do 
-
             ToShowTable[#ToShowTable + 1] = val end
         return
     end
@@ -211,9 +206,13 @@ function selectBase() showOne(TablesOfPiecesGroups["base"], true) end
 function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
-
     local result = process(buildMaterial,
-                           function(id) if id ~= element then return id end end)
+                           function(id) 
+                                if id ~= element then 
+                                    return id
+                                end 
+                            end
+                           )
     return result
 end
 
@@ -221,6 +220,14 @@ function selectGroundBuildMaterial()
     x, y, z = Spring.GetUnitPosition(unitID)
     x, z = math.ceil(x / 1000), math.ceil(z / 1000)
     nice = ((x + z) % (#materialChoiceTable) + 1)
+
+    if GG.MapDefinedHouseType then
+        x,y,z = math.ceil(x), math.ceil(y), math.ceil(z)
+        if GG.MapDefinedHouseType[x] and GG.MapDefinedHouseType[x][z] then
+            return materialChoiceTable[materialChoiceTableReverse[GG.MapDefinedHouseType[x][z]]]
+        end
+    end
+
     if not nice then nice = 1 end
     return  materialChoiceTable[nice]
 end
@@ -531,7 +538,7 @@ function buildDecorateGroundLvl()
 
     boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
 
-    --echo("House_europe_Colour:"..materialColourName)
+    --echo("House_wester_nColour:"..materialColourName)
     local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block"}, {"Wall"}) 
     assert(buildMaterial)
     assert(#buildMaterial > 0)
