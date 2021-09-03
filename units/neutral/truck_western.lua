@@ -58,7 +58,7 @@ local CivilianTruck = Truck:New{
 
 CivilianTrucks ={}
 for i=0, 1 do
-	CivilianTruck.objectName = "truck_western"..i..".dae"
+	CivilianTruck.objectName = "truck_arab"..i..".dae"
 	if not CivilianTruck.customparams then CivilianTruck.customparams ={} end
 	CivilianTruck.customparams.normaltex = "unittextures/truck_normal.dds"
 	if i >=6 then
