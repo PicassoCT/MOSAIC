@@ -23,7 +23,7 @@ end
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
+            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.western), -- "international", "western", "asia", "arabic"
             Version = "Alpha: 0.777" 
         },
 
@@ -531,9 +531,9 @@ function  getManualCivilianBuildingMaps(mapName)
                 return expandNameSubSetTable(translation[typeName], UnitDefs)
             end
 
-            function getRPGCarryingCivilianTypes(UnitDefs)
+            function getRPGCarryingCivilianTypes(UnitDefs, culture)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
-                local culturename = getCultureName()
+                local culturename = culture or getCultureName()
                 if culturename == Cultures.arabic then
                     typeTable = {
                         "civilian_arab0", "civilian_arab2"
@@ -541,13 +541,20 @@ function  getManualCivilianBuildingMaps(mapName)
 
                     return getTypeTable(UnitDefNames, typeTable)
                 end
-
-                if culturename == Cultures.international then
-                     typeTable = {
-                        "civilian_arab0", "civilian_arab2"
-                    }
+                
+                if culturename == Cultures.western then
+                        typeTable = {
+                            "civilian_western0"
+                        }
 
                     return getTypeTable(UnitDefNames, typeTable)
+                end
+
+                if culturename == Cultures.international then
+                   return mergeTable(
+                        getRPGCarryingCivilianTypes(UnitDefs, Cultures.arabic),
+                        getRPGCarryingCivilianTypes(UnitDefs, Cultures.western)
+                        )
                 end
             end
 
@@ -1175,8 +1182,33 @@ function  getManualCivilianBuildingMaps(mapName)
                                 "house_arab_decal16", "house_arab_decal17",
                                 "house_arab_decal19"
                             }}}
-                        end
-                    end
+                end
+
+                if culture == "western" then
+                    return {
+                        ["house"] = {
+                            rural = {
+                                "house_western_decal9",
+                                "house_western_decal11",
+                                "house_western_decal3",
+                                "house_western_decal4",  
+                                "house_western_decal10",
+                          
+                            },
+                            urban = {
+                                "house_western_decal1",
+                                "house_western_decal2",
+                                "house_western_decal5",
+                                "house_western_decal6",
+                                "house_western_decal7",
+                                "house_western_decal8",
+                                "house_western_decal14",
+                                "house_western_decal12",
+                                "house_western_decal13"                           
+                            }}}
+                end
+            
+            end
 
                     function isPrayerTime()
                         hours, minutes, seconds, percent = getDayTime()
