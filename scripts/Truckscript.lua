@@ -14,6 +14,7 @@ SIG_INTERNAL = 4
 
 center = piece "center"
 attachPoint = piece "attachPoint"
+
 myDefID = Spring.GetUnitDefID(unitID)
 
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
@@ -40,7 +41,11 @@ function showAndTell()
     end
     if TablesOfPiecesGroups["Body"] then
         hideT(TablesOfPiecesGroups["Body"])
-        Show(TablesOfPiecesGroups["Body"][1])
+        if #TablesOfPiecesGroups["Body"] <= 1 then
+         Show(TablesOfPiecesGroups["Body"][1])
+        else
+            Show(TablesOfPiecesGroups["Body"][math.random(1, #TablesOfPiecesGroups["Body"])])
+        end
     end
 end
 

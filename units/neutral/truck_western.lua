@@ -1,7 +1,7 @@
 local CivilianTruck = Truck:New{
 	buildtime= 30,
-	name = "Civilian Vehicle",
-	description = "locally assembled electric truck",
+	name = "Car",
+	description = " western style vehicle",
 	corpse				= "",
 	maxDamage = 500,
 	buildPic = "truck.png",
@@ -44,10 +44,10 @@ local CivilianTruck = Truck:New{
 	customparams = {
 		helptext		= "Transportation Truck",
 		baseclass		= "Truck", -- TODO: hacks
-			normaltex = "unittextures/apc_normal.dds",
+			normaltex = "unittextures/house_europe_normal.dds",
 	},
 	
-
+	objectName = "truck_western0.dae",
 	
 	LeaveTracks = true,
 	trackType ="armst_tracks",
@@ -57,17 +57,14 @@ local CivilianTruck = Truck:New{
 
 
 CivilianTrucks ={}
-for i=0, 1 do
-	CivilianTruck.objectName = "truck_arab"..i..".dae"
-	if not CivilianTruck.customparams then CivilianTruck.customparams ={} end
+--[[for i=0, 1 do
+	CivilianTruck.objectName = "truck_western"..i..".dae"
 	CivilianTruck.customparams.normaltex = "unittextures/truck_normal.dds"
-	if i >=6 then
-		CivilianTruck.customparams.normaltex = "unittextures/truck_"..i.."_normal.dds"
-	end
+
 	CivilianTrucks["truck_western"..i] = CivilianTruck:New()
-end
+end--]]
 
 return lowerkeys({
 	--Temp
-	["truck_western0"]			 	= CivilianTrucks["truck_western0"]
+	["truck_western0"]			 	=  CivilianTruck:New() --CivilianTrucks["truck_western0"]
 })

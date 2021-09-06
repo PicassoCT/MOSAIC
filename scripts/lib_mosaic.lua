@@ -1193,7 +1193,6 @@ function  getManualCivilianBuildingMaps(mapName)
                                 "house_western_decal3",
                                 "house_western_decal4",  
                                 "house_western_decal10",
-                          
                             },
                             urban = {
                                 "house_western_decal1",
@@ -1204,7 +1203,8 @@ function  getManualCivilianBuildingMaps(mapName)
                                 "house_western_decal8",
                                 "house_western_decal14",
                                 "house_western_decal12",
-                                "house_western_decal13"                           
+                                "house_western_decal13",
+                                "house_western_decal10",                           
                             }}}
                 end
             
