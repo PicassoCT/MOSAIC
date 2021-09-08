@@ -32,6 +32,7 @@ local spGetGroundNormal = Spring.GetGroundNormal
 local spGetUnitLastAttacker = Spring.GetUnitLastAttacker
 local spGetUnitNearestAlly = Spring.GetUnitNearestAlly
 local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
+local spSetUnitRotation = Spring.SetUnitRotation
 
 local spSetUnitBlocking = Spring.SetUnitBlocking
 local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
@@ -686,7 +687,7 @@ end
 
 function spawnBuilding(defID, x, z)
     offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
-    districtOffset = TODO.x/TODO.z offset deterministically
+
     id = spawnUnit(defID, x +
                        math.random(-1 * offset.xRandOffset,
                                    offset.xRandOffset), z +
@@ -694,6 +695,7 @@ function spawnBuilding(defID, x, z)
                                    offset.zRandOffset))
 
     if id then
+        spSetUnitRotation(id, 0, math.rad(offset.districtRotationDeg), 0)
         spSetUnitAlwaysVisible(id, true)
         spSetUnitBlocking(id, false)
         GG.BuildingTable[id] = {x = x, z = z}

@@ -375,13 +375,13 @@ function  getManualCivilianBuildingMaps(mapName)
 	x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)
 	if not GG.DistrictRotationDeterministic[x] then GG.DistrictRotationDeterministic[x] = {} end
 	if not GG.DistrictRotationDeterministic[x][z] then GG.DistrictRotationDeterministic[x][z] = {} end	
-	if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,360) end
+	if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,9)*45 end
 	return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
   end
 
 
     function getLocationHash(x,z, maxs)
-        return ((x + z) % (maxs) + 1)
+        return ((x + z) % (maxs or 4) + 1)
     end
 
     function getBuildingTypeHash(unitID, maxType)
@@ -395,17 +395,21 @@ function  getManualCivilianBuildingMaps(mapName)
     function getCultureDependantRandomOffsets(culture, loc)
         districtOffset = getLocationHash(math.ceil(loc.x / 1000), math.ceil(loc.z / 1000), 4)
         if culture == Cultures.arabic then
+            rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 20,
                 zRandOffset = 20,
-                districtOffset = districtOffset
+                districtOffset = districtOffset,
+                districtRotationDeg = rotDegOffset
             }
         end
-        if culture == Cultures.western then
+        if culture == Cultures.western then  
+            --rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 1, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 3,
                 zRandOffset = 3,
-                districtOffset = districtOffset
+                districtOffset = districtOffset,
+                districtRotationDeg = 0
             }
         end
 
