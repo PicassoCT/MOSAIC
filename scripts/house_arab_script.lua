@@ -299,9 +299,8 @@ materialChoiceTable = {"", "Brown", "White", "Red"}
 materialChoiceTableReverse = {yellow= 1, brown = 2, white=3, red=4}
 
 function selectGroundBuildMaterial()
-    x, y, z = Spring.GetUnitPosition(unitID)
-    x, z = math.ceil(x / 1000), math.ceil(z / 1000)
-    nice = ((x + z) % (#materialChoiceTable) + 1)
+
+    nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
     if GG.MapDefinedHouseType then
         x,y,z = math.ceil(x), math.ceil(y), math.ceil(z)

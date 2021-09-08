@@ -80,7 +80,7 @@ local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local boolCachedMapManualPlacementResult
 function isMapControlledBuildingPlacement(mapName)
     if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
-    manualBuildingPlacingMaps = getManualObjectiveSpawnMapNames()
+    manualBuildingPlacingMaps = getManualObjectiveSpawnMapNames("manualBuildingPlacing")
     if manualBuildingPlacingMaps[string.lower(mapName)] then
         boolCachedMapManualPlacementResult = true
     else
@@ -685,11 +685,13 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
 end
 
 function spawnBuilding(defID, x, z)
+    offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
+    districtOffset = TODO.x/TODO.z offset deterministically
     id = spawnUnit(defID, x +
-                       math.random(-1 * GameConfig.xRandOffset,
-                                   GameConfig.xRandOffset), z +
-                       math.random(-1 * GameConfig.zRandOffset,
-                                   GameConfig.zRandOffset))
+                       math.random(-1 * offset.xRandOffset,
+                                   offset.xRandOffset), z +
+                       math.random(-1 * offset.zRandOffset,
+                                   offset.zRandOffset))
 
     if id then
         spSetUnitAlwaysVisible(id, true)

@@ -36,8 +36,7 @@ function getGameConfig()
         houseSizeX = 256,
         houseSizeY = 16,
         houseSizeZ = 256,
-        xRandOffset = 20,
-        zRandOffset = 20,
+  
         allyWaySizeX = 25,
         allyWaySizeZ = 25,
         bonusFirstUnitMoney_S = 12,
@@ -380,6 +379,38 @@ function  getManualCivilianBuildingMaps(mapName)
 	return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
   end
 
+
+    function getLocationHash(x,z, maxs)
+        return ((x + z) % (maxs) + 1)
+    end
+
+    function getBuildingTypeHash(unitID, maxType)
+        x, y, z = Spring.GetUnitPosition(unitID)
+        x, z = math.ceil(x / 1000), math.ceil(z / 1000)
+        nice = getLocationHash(x,z, maxType)
+        return nice, x,y,z
+    end
+
+
+    function getCultureDependantRandomOffsets(culture, loc)
+        districtOffset = getLocationHash(math.ceil(loc.x / 1000), math.ceil(loc.z / 1000), 4)
+        if culture == Cultures.arabic then
+            return {
+                xRandOffset = 20,
+                zRandOffset = 20,
+                districtOffset = districtOffset
+            }
+        end
+        if culture == Cultures.western then
+            return {
+                xRandOffset = 3,
+                zRandOffset = 3,
+                districtOffset = districtOffset
+            }
+        end
+
+
+    end
 
     function getWeaponTypeTable(WeaponDefs, StringTable)
         retVal = {}
@@ -2143,5 +2174,10 @@ function  getManualCivilianBuildingMaps(mapName)
                
 function getTODOTable(name)
     Spring.Echo("Table getter of name "..name.." is missing")
+    assert(true==false)
+end
+
+function TODO(task)
+    Spring.Echo("TODO:"..task)
     assert(true==false)
 end

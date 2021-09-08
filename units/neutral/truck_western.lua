@@ -11,11 +11,11 @@ local CivilianTruck = Truck:New{
 	buildCostMetal = 5,
 	explodeAs			= "none",
 	--conType			= "infantry",
-	maxVelocity		= 4.2, --14.3, --86kph/20
+	maxVelocity		= 5.2, --14.3, --86kph/20
 	--maxReverseVelocity= 2.15,
 	movementClass   	= "VEHICLE",
-	acceleration = 1.7,
-	brakeRate = 0.1,
+	acceleration = 2.7,
+	brakeRate = 0.3,
 	turninplace		= true,
 	
 	transportSize = 16,
@@ -60,7 +60,6 @@ CivilianTrucks ={}
 --[[for i=0, 1 do
 	CivilianTruck.objectName = "truck_western"..i..".dae"
 	CivilianTruck.customparams.normaltex = "unittextures/truck_normal.dds"
-
 	CivilianTrucks["truck_western"..i] = CivilianTruck:New()
 end--]]
 
