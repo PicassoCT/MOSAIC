@@ -370,6 +370,16 @@ function  getManualCivilianBuildingMaps(mapName)
             [UnitDefNames["air_copter_aerosol_depressol"].id] = AerosolTypes.depressol
         }
     end
+	
+  function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
+ 	if not GG.DistrictRotationDeterministic then GG.DistrictRotationDeterministic = {} end
+	x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)
+	if not GG.DistrictRotationDeterministic[x] then GG.DistrictRotationDeterministic[x] = {} end
+	if not GG.DistrictRotationDeterministic[x][z] then GG.DistrictRotationDeterministic[x][z] = {} end	
+	if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,360) end
+	return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
+  end
+
 
     function getWeaponTypeTable(WeaponDefs, StringTable)
         retVal = {}
