@@ -24,7 +24,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(GG.AllCultures.western), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.777" 
+            Version = "Alpha: 0.779" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -553,7 +553,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
                     ["civilian"] = {name = "civilian_western", range = 0},
-                    ["truck"] = {name = "truck_western", range = 0}}}
+                    ["truck"] = {name = "truck_western", range = 1}}}
                 return translation[cultureName]
             end
 
@@ -755,6 +755,18 @@ function  getManualCivilianBuildingMaps(mapName)
                         }
                     end
                 end
+
+                if GameConfig.instance.culture == "western" then
+                    if sex == "male" then
+                        typeTable = {
+                            "civilian_western0"
+                        }
+                    else
+                        typeTable = {
+                          "civilian_western0"
+                        }
+                    end
+                end                
 
                 return getTypeTable(UnitDefNames, typeTable)
             end

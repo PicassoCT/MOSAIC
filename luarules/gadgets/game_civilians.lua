@@ -695,7 +695,7 @@ function spawnBuilding(defID, x, z)
                                    offset.zRandOffset))
 
     if id then
-        spSetUnitRotation(id, 0, math.rad(offset.districtRotationDeg), 0)
+        --spSetUnitRotation(id, 0, math.rad(offset.districtRotationDeg), 0)
         spSetUnitAlwaysVisible(id, true)
         spSetUnitBlocking(id, false)
         GG.BuildingTable[id] = {x = x, z = z}

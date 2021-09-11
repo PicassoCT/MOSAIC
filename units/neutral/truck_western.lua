@@ -57,13 +57,14 @@ local CivilianTruck = Truck:New{
 
 
 CivilianTrucks ={}
---[[for i=0, 1 do
+for i=0, 1 do
 	CivilianTruck.objectName = "truck_western"..i..".dae"
-	CivilianTruck.customparams.normaltex = "unittextures/truck_normal.dds"
+	CivilianTruck.customparams.normaltex = "unittextures/house_europe_normal.dds"
 	CivilianTrucks["truck_western"..i] = CivilianTruck:New()
-end--]]
+end
 
 return lowerkeys({
 	--Temp
-	["truck_western0"]			 	=  CivilianTruck:New() --CivilianTrucks["truck_western0"]
+	["truck_western0"]			 	=  CivilianTrucks["truck_western0"],
+	["truck_western1"]			 	=  CivilianTrucks["truck_western1"],
 })

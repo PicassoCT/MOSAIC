@@ -56,6 +56,10 @@ function script.Create()
 
     if UnitDefs[myDefID].name == "polictruck" then
         StartThread(theySeeMeRollin)
+    end 
+
+    if UnitDefs[myDefID].name == "truck_western1" then
+        StartThread(showLamboWindow)
     end
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
@@ -63,6 +67,44 @@ function script.Create()
     Hide(center)
     showAndTell()
     StartThread(observeTeamChange)
+end
+
+function showLamboWindow()
+    LamboWindow = piece"LamboWindow"
+    Show(LamboWindow)
+    Spoiler = piece"Spoiler"
+    if maRa() == maRa() then 
+        Show(Spoiler)
+    else
+        Hide(Spoiler)
+    end
+
+
+
+    interval = math.ceil(1000/30)
+    local spGetUnitRotation = Spring.GetUnitRotation
+    local quarterRad = (math.pi*2)/4
+    local lookInsideRatio = quarterRad/10
+
+
+    while true do
+        _,yaw,_ = spGetUnitRotation(unitID)
+        remainder = yaw % quarterRad
+        randDistance = math.huge
+        if remainder < lookInsideRatio then
+             randDistance = remainder
+        elseif  remainder + lookInsideRatio > quarterRad  then
+            randDistance = math.abs(remainder - quarterRad)
+        end
+
+        if randDistance < lookInsideRatio then
+            factor = (randDistance/lookInsideRatio)*100
+             if math.random(1,100) < factor then  Hide(LamboWindow)  end
+            else
+                    Show(LamboWindow)
+            end
+        Sleep(interval)
+    end
 end
 
 function observeTeamChange()
