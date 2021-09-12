@@ -467,7 +467,7 @@ function  getManualCivilianBuildingMaps(mapName)
                     return mergeTables(
                         getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
                         getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),   
-			getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
+			            getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
                         )
             end
 
@@ -545,7 +545,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 ["arabic"] = {
                     ["house"] = {name = "house_arab", range = 0},
                     ["civilian"] = {name = "civilian_arab", range = 3},
-                ["truck"] = {name = "truck_arab", range = 8}},
+                    ["truck"] = {name = "truck_arab", range = 8}},
                 ["international"] = {
                     ["house"] = {name = "house_int", range = 0},
                     ["civilian"] = {name = "civilian_int", range = 0},
@@ -553,7 +553,12 @@ function  getManualCivilianBuildingMaps(mapName)
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
                     ["civilian"] = {name = "civilian_western", range = 0},
-                    ["truck"] = {name = "truck_western", range = 2}}}
+                    ["truck"] = {name = "truck_western", range = 2}},        
+                ["asian"] = {
+                    ["house"] = {name = "house_western", range = -1},
+                    ["civilian"] = {name = "civilian_western", range = -1},
+                    ["truck"] = {name = "truck_western", range = -1}}
+                }
                 return translation[cultureName]
             end
 
@@ -570,9 +575,9 @@ function  getManualCivilianBuildingMaps(mapName)
             end
 
             function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
-
                 local translation = getTranslation(cultureName)
-                assert(translation[typeName], "No trasnlation for "..typeName.." in culture "..cultureName)
+                assert(translation , "No translation for "..typeName.." in culture "..cultureName)
+                assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
                 return expandNameSubSetTable(translation[typeName], UnitDefs)
             end
 
