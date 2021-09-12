@@ -35,6 +35,7 @@ local loadOutUnitID
 
 function showAndTell()
     showAll(unitID)
+    Hide(center)
 
     if TablesOfPiecesGroups["EmitLight"] then
         hideT(TablesOfPiecesGroups["EmitLight"])
@@ -70,6 +71,7 @@ function script.Create()
 end
 
 function showLamboWindow()
+    Sleep(1)
     LamboWindow = piece"LamboWindow"
     Show(LamboWindow)
     Spoiler = piece"Spoiler"
@@ -79,30 +81,28 @@ function showLamboWindow()
         Hide(Spoiler)
     end
 
-
-
     interval = math.ceil(1000/30)
     local spGetUnitRotation = Spring.GetUnitRotation
     local quarterRad = (math.pi*2)/4
     local lookInsideRatio = quarterRad/10
 
-
+    oldyaw = 0
     while true do
         _,yaw,_ = spGetUnitRotation(unitID)
         remainder = yaw % quarterRad
         randDistance = math.huge
+        boolChangedRotation = (yaw ~= oldyaw)
         if remainder < lookInsideRatio then
              randDistance = remainder
         elseif  remainder + lookInsideRatio > quarterRad  then
             randDistance = math.abs(remainder - quarterRad)
         end
 
-        if randDistance < lookInsideRatio then
-            factor = (randDistance/lookInsideRatio)*100
-             if math.random(1,100) < factor then  Hide(LamboWindow)  end
-            else
-                    Show(LamboWindow)
-            end
+        if randDistance < lookInsideRatio and boolStopped == true then
+            Hide(LamboWindow)
+        else
+            Show(LamboWindow)
+        end
         Sleep(interval)
     end
 end
@@ -239,7 +239,9 @@ function script.AimWeapon1(Heading, pitch) return boolIsPoliceTruck end
 
 function script.FireWeapon1() return true end
 
+boolStopped = true
 function script.StartMoving()
+    boolStopped = false
     Signal(SIG_HONK)
     if boolIsPoliceTruck == true then
         spinT(TablesOfPiecesGroups["wheel"], x_axis, -260, 0.3)
@@ -258,6 +260,7 @@ function honkIfHorny()
 end
 
 function script.StopMoving() 
+    boolStopped = true
     stopSpinT(TablesOfPiecesGroups["wheel"], x_axis, 3) 
     StartThread(honkIfHorny)
 end

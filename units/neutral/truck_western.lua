@@ -54,12 +54,17 @@ local CivilianTruck = Truck:New{
 	trackStrength=12,
 	trackWidth =28,	
 }
-
+Velocity = {
+	[0] =5.2,
+	[1] =5.2,
+	[2] =3.2,
+}
 
 CivilianTrucks ={}
-for i=0, 1 do
+for i=0, 2 do
 	CivilianTruck.objectName = "truck_western"..i..".dae"
 	CivilianTruck.customparams.normaltex = "unittextures/house_europe_normal.dds"
+	CivilianTruck.customparams.maxVelocity = Velocity[i]
 	CivilianTrucks["truck_western"..i] = CivilianTruck:New()
 end
 
@@ -67,4 +72,5 @@ return lowerkeys({
 	--Temp
 	["truck_western0"]			 	=  CivilianTrucks["truck_western0"],
 	["truck_western1"]			 	=  CivilianTrucks["truck_western1"],
+	["truck_western2"]			 	=  CivilianTrucks["truck_western2"],
 })

@@ -553,7 +553,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
                     ["civilian"] = {name = "civilian_western", range = 0},
-                    ["truck"] = {name = "truck_western", range = 1}}}
+                    ["truck"] = {name = "truck_western", range = 2}}}
                 return translation[cultureName]
             end
 

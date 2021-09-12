@@ -998,16 +998,18 @@ function delayedStop()
     Turn(center,x_axis, math.rad(-5), 1)
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP) 
-	Sleep(250)
+	Sleep(50)
+    for _,part in pairs (lowerBodyPieces) do
+        reset(part, 10)
+    end
+    Sleep(200)
+
 
 	boolWalking = false
 	-- Spring.Echo("Stopping")
     Turn(center,x_axis, math.rad(0), 1)
     showFoldLaptop(true)
 	setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
-    for _,part in pairs (lowerBodyPieces) do
-        reset(part, 10)
-    end
 end
 
 function showFoldLaptop(boolUnfold)
