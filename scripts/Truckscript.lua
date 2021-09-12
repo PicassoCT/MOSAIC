@@ -33,9 +33,48 @@ boolIsPoliceTruck = myDefID == UnitDefNames["policetruck"].id
 myLoadOutType = LoadOutTypes[myDefID]
 local loadOutUnitID
 
+
+function showOne(T, bNotDelayd)
+    if not T then return end
+    dice = math.random(1, count(T))
+    c = 0
+    for k, v in pairs(T) do
+        if k and v then c = c + 1 end
+        if c == dice then           
+            Show(v)
+            return v
+        end
+    end
+end
+
+function showOneOrNone(T)
+    if not T then return end
+    if math.random(1, 100) > 50 then
+        return showOne(T, true)
+    else
+        return
+    end
+end
+
+function showOneOrAll(T)
+    if not T then return end
+    if math.random(0,1) == 1 then
+        return showOne(T)
+    else
+        for num, val in pairs(T) do Show(val) end
+        return
+    end
+end
+
+
 function showAndTell()
     showAll(unitID)
     Hide(center)
+
+    if UnitDefs[myDefID].name == "truck_western2" then --WeyMo
+        hideT(TablesOfPiecesGroups["Logo"])
+        showOneOrAll(TablesOfPiecesGroups["Logo"])
+end
 
     if TablesOfPiecesGroups["EmitLight"] then
         hideT(TablesOfPiecesGroups["EmitLight"])
