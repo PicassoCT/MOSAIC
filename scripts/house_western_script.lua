@@ -103,11 +103,10 @@ function script.Create()
     BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     StartThread(rotations)
+    StartThread(flickerScript)
 end
 
 function rotations()
-
-
     periodicFunc = function(p, v)
         while true do
             Sleep(500);
@@ -143,7 +142,59 @@ function rotations()
     for k, v in pairs(pericodicMovingZPieces) do
         StartThread(periodicMovementFunc, k, v)
     end
+end
 
+function flickerScript()
+    Sleep(15000)
+    hostPiece = piece("WhiteOfficeGhetto_Deco2")
+    if not contains(ToShowTable, hostPiece) then return end
+
+local flickerGroup = TablesOfPiecesGroups["WhiteOfficeGhetto_Deco2flicker"]
+    while true do
+        hideT(flickerGroup)
+        Sleep(500)
+        ShowOne(flickerGroup)
+        Sleep(5000)
+    end
+end
+
+officeWallElementsTable = {}
+function mapOfficeWalls()
+    for i = 1,5 do officeWallElementsTable[i] = {} end
+
+    for k = 1, 12 do
+        officeWallElementsTable[1][#officeWallElementsTable[1]+1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
+    end
+
+    for k = 13, 25 do
+        officeWallElementsTable[2][#officeWallElementsTable[2]+1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
+    end 
+
+    for k = 26, 38 do
+        officeWallElementsTable[3][#officeWallElementsTable[3]+1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
+    end  
+
+    for k = 39, 52 do
+        officeWallElementsTable[4][#officeWallElementsTable[4] + 1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
+    end  
+
+    for k = 53, 60 do
+        officeWallElementsTable[5][#officeWallElementsTable[5] + 1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
+    end
+end
+
+function getDeterministicOfficeWall(x,z)
+    if #officeWallElementsTable == 0 then mapOfficeWalls() end
+
+    officeWallIndex = ((math.ceil(x)+ math.ceil(z))% 5) +1
+
+    for i=1, #officeWallElementsTable[officeWallIndex] do
+        if officeWallElementsTable[officeWallIndex][i] then
+            local retElement = officeWallElementsTable[officeWallIndex][i]
+            officeWallElementsTable[officeWallIndex][i] = nil
+            return retElement
+        end
+    end
 end
 
 function buildHouse()
@@ -274,7 +325,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     return DecoMaterial, Deco
 end
 
-function getRandomBuildMaterial(buildMaterial, name)
+function getRandomBuildMaterial(buildMaterial, name, x, z)
 
     if not buildMaterial then
 --        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
@@ -292,23 +343,55 @@ function getRandomBuildMaterial(buildMaterial, name)
         return
     end
 
-    dice = math.random(1, total)
-    total = 0
-    for num, piecenum in pairs(buildMaterial) do
-        if (not AlreadyUsedPiece[piecenum] and type(num) == "number" and
-            type(piecenum) == "number") then
-            total = total + 1
-            if total == dice then
-                AlreadyUsedPiece[piecenum] = true
-                return piecenum, num
+    if  x and z and name == "Office"  then
+        piecenum = getDeterministicOfficeWall(x,z)
+        if (piecenum and not AlreadyUsedPiece[piecenum] ) then
+            AlreadyUsedPiece[piecenum] = true
+            return piecenum
+        end
+    else
+
+        dice = math.random(1, total)
+        total = 0
+        for num, piecenum in pairs(buildMaterial) do
+            if (not AlreadyUsedPiece[piecenum] and type(num) == "number" and
+                type(piecenum) == "number") then
+                total = total + 1
+                if total == dice then
+                    AlreadyUsedPiece[piecenum] = true
+                    return piecenum, num
+                end
             end
         end
     end
 --    Spring.Echo(getScriptName() .. "getRandomBuildMaterial: No Part selected ")
 end
 
+NotInPlanIndeces = {}
+if maRa() == true then
+    notindex = math.random(2,5)
+    NotInPlanIndeces[notindex] = true 
+    if maRa()== true then
+        notindex = math.min(notindex+1,5)
+        NotInPlanIndeces[notindex] = true 
+    end
+end
+
+if maRa() == true then
+    notindex=  math.random(32,35)
+    NotInPlanIndeces[notindex] = true 
+    if maRa()== false then
+        notindex = math.min(notindex+1,35)
+        NotInPlanIndeces[notindex] = true 
+    end
+end
+    
+
+boolOpenBuilding = maRa() == true
+
 -- x:0-6 z:0-6
-function getLocationInPlan(index)
+function getLocationInPlan(index, materialColourName)
+    if materialColourName == "Office" and boolOpenBuilding and NotInPlanIndeces[index] then return false, 0,0 end
 
     if index < 7 then return true, (index - 1), 0 end
 
@@ -549,7 +632,7 @@ function buildDecorateGroundLvl()
         local index = i
         --echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-        partOfPlan, xLoc, zLoc = getLocationInPlan(index)
+        partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
@@ -655,15 +738,15 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         local index = i
         rotation = getOutsideFacingRotationOfBlockFromPlan(i)
 
-        partOfPlan, xLoc, zLoc = getLocationInPlan(index)
+        partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialGroupName)
         xRealLoc, zRealLoc = xLoc, zLoc
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, xLoc, zLoc)
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, xLoc, zLoc)
                 Sleep(1)
             end
 
@@ -844,7 +927,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
     for i = 1, 37, 1 do
         local index = i
-        partOfPlan, xLoc, zLoc = getLocationInPlan(index)
+        partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
@@ -878,7 +961,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
 
     for i = 1, 37, 1 do
-        partOfPlan, xLoc, zLoc = getLocationInPlan(i)
+        partOfPlan, xLoc, zLoc = getLocationInPlan(i, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
