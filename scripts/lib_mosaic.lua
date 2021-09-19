@@ -23,7 +23,7 @@ end
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.western), -- "international", "western", "asia", "arabic"
+            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
             Version = "Alpha: 0.779" 
         },
 
@@ -544,7 +544,7 @@ function  getManualCivilianBuildingMaps(mapName)
             translation = {
                 ["arabic"] = {
                     ["house"] = {name = "house_arab", range = 0},
-                    ["civilian"] = {name = "civilian_arab", range = 3},
+                    ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_arab", range = 8}},
                 ["international"] = {
                     ["house"] = {name = "house_int", range = 0},
