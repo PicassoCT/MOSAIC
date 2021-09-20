@@ -513,7 +513,8 @@ function  getManualCivilianBuildingMaps(mapName)
             if culture == Cultures.international then
                     return mergeTables(
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
 
             return {}

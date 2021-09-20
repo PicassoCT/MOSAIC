@@ -170,6 +170,7 @@ function script.Create()
     StartThread(threadStateStarter)
     StartThread(breathing)
     StartThread(speedControl)
+    StartThread(noCapesControl, LowArm1, LowArm2)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
@@ -181,6 +182,77 @@ end
 function attachRandomTeamDoubleAgent()
     TeamList = Spring.GetTeamList ()
     attachDoubleAgentToUnit(unitID, TeamList[math.random(1,#TeamList)])
+end
+
+function getVectorTable(pieceName)
+    ex, ey, ez = Spring.GetUnitPiecePosition(unitID, pieceName)
+    return {x=ex,y=ey, z=ez}
+end
+
+function noCapesControl( leftPiece, rightPiece)
+if not TablesOfPiecesGroups["Coat"] then return end
+
+coatMap= {
+    single= {
+        left = {
+            start = 2,
+            ends = 4,
+            degStart=100,
+            degEnd= 30
+        },
+        right = {
+           start = 5,
+           ends = 7,
+            degStart=-100,
+            degEnd= -30
+
+        }
+    },
+both = {
+    start = 8,
+    ends= 10
+        }
+
+}
+getIntervalOrDefault = function(pieceID, name)
+    vR = getVectorTable(pieceID)
+    degVal =  math.deg(math.atan2(vR.x,vR.z))
+
+        intervals = coatMap.single[name].ends - coatMap.single[name].start
+        arc = math.abs(coatMap.single[name].degStart -  coatMap.single[name].degEnd)
+        arcseg = arc/intervals
+        if math.abs(degVal-coatMap.single[name].degStart) < 10 then return false, 1 end 
+
+    for i=0, intervals do
+        if inLimit(i*arcseg, degVal,(i+1)*arcseg) == true then
+            return true, coatMap.single[name].start+i
+        end
+    end
+
+  return false, 1
+end
+
+hideT(TablesOfPiecesGroups["Coat"])
+defaultCoat = TablesOfPiecesGroups["Coat"][1]
+Show(defaultCoat)
+while true do
+    leftValue, leftIndex = getIntervalOrDefault( leftPiece, "left")
+    rightValue, rightIndex = getIntervalOrDefault ( rightPiece, "right")
+    
+    hideT(TablesOfPiecesGroups["Coat"])
+    if not leftValue and not rightValue then Show(defaultCoat) end
+    if leftValue and not rightValue then Show(TablesOfPiecesGroups["Coat"][leftIndex]) end
+    if not leftValue and  rightValue then Show(TablesOfPiecesGroups["Coat"][rightIndex]) end
+
+    if leftValue and rightValue then
+        leftIndex = leftIndex - coatMap.single.left.start
+        rightIndex = rightIndex - coatMap.single.right.start
+        midIndex = math.min(coatMap.both.start + math.floor((leftIndex+rightIndex)/2), coatMap.both.ends)
+        Show(TablesOfPiecesGroups["Coat"][midIndex])
+    end
+Sleep(250)
+end
+
 end
 
 function speedControl()
