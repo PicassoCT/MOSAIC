@@ -3,7 +3,7 @@ local Civil = Civilian:New{
 	name = "Western Civilian",
 		corpse = "bodybag",
 	description = " innocent bystander <colateral>",
-	objectName        	= "civilian1_arab.dae",
+	objectName        	= "civilian1_western.dae",
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -23,5 +23,5 @@ local Civil = Civilian:New{
 
 return lowerkeys({
 	--Temp
-	["civilian_western0"] = Civil:New(),
+	["civilian_western1"] = Civil:New(),
 })
