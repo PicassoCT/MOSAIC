@@ -58,10 +58,15 @@ GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they
 GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
 local BuildingPlaceTable = {} -- SizeOf Map/Divide by Size of Building
 local uDim = {}
-uDim.x, uDim.y, uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX,
-                         GameConfig.houseSizeY,
-                         GameConfig.houseSizeZ + GameConfig.allyWaySizeZ
+local innerCityDim = {}
+uDim.x, uDim.y, uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ + GameConfig.allyWaySizeZ
+innerCityDim.x, innerCityDim.y, innerCityDim.z = GameConfig.houseSizeX , GameConfig.houseSizeY, GameConfig.houseSizeZ 
+local innerCityCenter = {}
 numberTileX, numberTileZ = Game.mapSizeX / uDim.x, Game.mapSizeZ / uDim.z
+innerCityCenter.x = math.ceil(math.random(math.ceil(0.25*Game.mapSizeX),math.ceil(0.75*Game.mapSizeX)))
+innerCityCenter.z = math.ceil(math.random(math.ceil(0.25*Game.mapSizeZ),math.ceil(0.75*Game.mapSizeZ)))
+echo("Citycenter at:"..innerCityCenter.x .." / "..innerCityCenter.z)
+
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
 
@@ -237,6 +242,19 @@ function distributedPathValidationComplete(frame, elements)
     return boolComplete
 end
 
+local boolHasCityCenter = true --maRa()
+function isNearCityCenter(x,z)
+    return boolHasCityCenter == true and distance(x, 0, z, innerCityCenter.x, 0,  innerCityCenter.z) < GameConfig.innerCitSize
+end
+
+function isOnInnerCityGrid(x,z)
+    modx = x % 4
+    modz = z % 4
+    if modx == 0 or modz == 0 then return false end
+    if modx == 2 or modz == 2 then return false end
+    return true
+end
+
 -- check Traversability from each position to the previous position	
 function validateBuildSpotsReachable(start, endindex)
     tileX, tileZ = uDim.x, uDim.z
@@ -310,7 +328,10 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
     while finiteSteps > 0 and numberOfBuildings > 0 do
         finiteSteps = finiteSteps - 1
 
-        dice = math.floor(math.random(10, 30) / 10)
+        dice = math.floor(math.random(10, 32) / 10)
+        dice = 3
+        boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z)
+
         if dice == 1 then -- 1 random walk into a direction doing nothing
             cursor = randomWalk(cursor)
             cursor = clampCursor(cursor)
@@ -319,13 +340,11 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             -- Spring.Echo("dice 1")
         elseif dice == 2 then -- 2 place a single block
             boolFirstPlaced = false
+
             if BuildingPlaceT[cursor.x][cursor.z] == true and
                 cursorIsOnMainRoad(cursor, startx, startz) == false then
                 buildingType = randDict(houseTypeTable)
-                spawnBuilding(buildingType, cursor.x * uDim.x,
-                              cursor.z * uDim.z,
-                              (GameConfig.numberOfBuildings - numberOfBuildings),
-                              1)
+                spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
                 numberOfBuildings = numberOfBuildings - 1
                 BuildingPlaceT[cursor.x][cursor.z] = false
                 boolFirstPlaced = true
@@ -335,10 +354,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] ==
                 true and cursorIsOnMainRoad(mirror, startx, startz) == false then
                 buildingType = randDict(houseTypeTable)
-                spawnBuilding(buildingType, mirror.x * uDim.x,
-                              mirror.z * uDim.z,
-                              (GameConfig.numberOfBuildings - numberOfBuildings),
-                              1)
+                spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolNearCityCenter)
                 numberOfBuildings = numberOfBuildings - 1
                 BuildingPlaceT[mirror.x][mirror.z] = false
                 -- Spring.Echo("dice 2.2")
@@ -347,36 +363,67 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
         elseif dice == 3 then
             numberOfBuildings, BuildingPlaceT =
                 placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,
-                                                   BuildingPlaceT)
-            numberOfBuildings, BuildingPlaceT =
+                                                   BuildingPlaceT, boolNearCityCenter)
                 placeThreeByThreeBlockAroundCursor(mirror, numberOfBuildings,
-                                                   BuildingPlaceT)
-            -- Spring.Echo("dice 3")
+                                                   BuildingPlaceT, boolNearCityCenter)
         end
     end
 end
 
-function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,
-                                            BuildingPlaceT)
-    for offx = -1, 1, 1 do
-        if BuildingPlaceT[cursor.x + offx] then
-            for offz = -1, 1, 1 do
-                local tmpCursor = cursor
-                tmpCursor.x = tmpCursor.x + offx;
-                tmpCursor.z = tmpCursor.z + offz
-                tmpCursor = clampCursor(tmpCursor)
-                buildingType = randDict(houseTypeTable)
-                if BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
-                    spawnBuilding(buildingType, tmpCursor.x * uDim.x,
-                                  tmpCursor.z * uDim.z,
-                                  (GameConfig.numberOfBuildings -
-                                      numberOfBuildings), 1)
+function checkCursorInnerCityFree(cursor)
+    return BuildingPlaceT[cursor.x][cursor.z] and BuildingPlaceT[cursor.x +1][cursor.z] and BuildingPlaceT[cursor.x ][cursor.z+1]and BuildingPlaceT[cursor.x +1 ][cursor.z +1]
+end
+
+function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter)
+    buildingType = randDict(houseTypeTable)
+
+    if boolNearCityCenter == true then
+    orgPosX, orgPosZ = cursor.x *  uDim.x, cursor.z * uDim.z
+
+    for offx = 0, 2, 1 do
+        innerCityMapIndexX =offx/2
+        if BuildingPlaceT[cursor.x + innerCityMapIndexX] == nil or BuildingPlaceT[cursor.x + innerCityMapIndexX] == true then
+            if not BuildingPlaceT[cursor.x + innerCityMapIndexX] then BuildingPlaceT[cursor.x + innerCityMapIndexX]  = {} end
+            for offz = 0, 2, 1 do
+                innerCityMapIndexZ =  offz/2
+                if  BuildingPlaceT[cursor.x + innerCityMapIndexX][cursor.z + innerCityMapIndexZ] == nil then
+                    BuildingPlaceT[cursor.x + innerCityMapIndexX][cursor.z + innerCityMapIndexZ] = true 
+                end
+
+                if (offx ~=1 or offz ~= 1) and BuildingPlaceT[cursor.x + innerCityMapIndexX][cursor.z + innerCityMapIndexZ] == true then
+                          spawnBuilding(buildingType, 
+                                        orgPosX + offx * innerCityDim.x,
+                                        orgPosZ+ offz* innerCityDim.z, 
+                                        boolNearCityCenter)
+
+                    if not BuildingPlaceT[cursor.x + innerCityMapIndexX] then BuildingPlaceT[cursor.x + innerCityMapIndexX] = {} end
+                    BuildingPlaceT[cursor.x + innerCityMapIndexX ][cursor.z + innerCityMapIndexZ] = false 
                     numberOfBuildings = numberOfBuildings - 1
-                    BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
                 end
             end
+            end
+    end
+  
+    else
+        for offx = -1, 1, 1 do
+                if BuildingPlaceT[cursor.x + offx] then
+                    for offz = -1, 1, 1 do
+                        local tmpCursor = cursor
+                        tmpCursor.x = tmpCursor.x + offx;
+                        tmpCursor.z = tmpCursor.z + offz
+                        tmpCursor = clampCursor(tmpCursor)
+                        buildingType = randDict(houseTypeTable)
+                        if BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
+                            spawnBuilding(buildingType, tmpCursor.x * uDim.x,
+                                          tmpCursor.z * uDim.z, boolNearCityCenter)
+                            numberOfBuildings = numberOfBuildings - 1
+                            BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
+                        end
+                    end
+                end
         end
     end
+
 
     return numberOfBuildings, BuildingPlaceT
 end
@@ -404,12 +451,6 @@ function spawnInitialPopulation(frame)
        
     end
 end
-function checkReSpawnHouseAt(x, z, bID)
-    GG.BuildingTable[bID] = nil
-    buildingType = randDict(houseTypeTable)
-    id = spawnBuilding(buildingType, x, z)
-    GG.BuildingTable[id] = {x = x, z = z}
-end
 
 function checkReSpawnHouses()
     dataToAdd = {}
@@ -420,7 +461,7 @@ function checkReSpawnHouses()
 
             x, z = routeDataCopy.x, routeDataCopy.z
             buildingType = randDict(houseTypeTable)
-            id = spawnBuilding(buildingType, x, z)
+            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z))
             dataToAdd[id] = routeDataCopy
         end
     end
@@ -685,9 +726,11 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
     end
 end
 
-function spawnBuilding(defID, x, z)
-    offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
-
+function spawnBuilding(defID, x, z,  boolInCityCenter)
+    offset = {xRandOffset = 0, zRandOffset = 0}
+    if not boolInCityCenter  then
+         offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
+    end
     id = spawnUnit(defID, x +
                        math.random(-1 * offset.xRandOffset,
                                    offset.xRandOffset), z +
