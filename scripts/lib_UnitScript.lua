@@ -3568,6 +3568,10 @@ function topsideRayTrace(pWorldx, pWorldy, Objects)
     return default
 end
 
+function getRandomInSet(T)
+    return getRandomElementFromTable(T)
+end
+
 function isPointInSquare(P, s1, s2, s3, s4)
     return pointWithinTriangle(s1.x, s1.y, s2.x, s2.y, s3.x, s3.y, P.x, P.y) or
                pointWithinTriangle(s3.x, s3.y, s4.x, s4.y, s1.x, s1.y, P.x, P.y)

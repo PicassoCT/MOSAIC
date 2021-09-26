@@ -36,7 +36,7 @@ function getGameConfig()
         houseSizeX = 256,
         houseSizeY = 16,
         houseSizeZ = 256,
-        innerCitSize = 1024,
+        innerCitySize = 1024,
   
         allyWaySizeX = 25,
         allyWaySizeZ = 25,
