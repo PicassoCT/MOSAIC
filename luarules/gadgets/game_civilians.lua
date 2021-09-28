@@ -249,11 +249,10 @@ end
 
 function isOnInnerCityGridBlock(cursorl, offx, offz, BuildingPlaceT)
     local subResCursor = cursorl
-
     if offx == 0 and offz == 0 then return false end
 
-    subResCursor.x = ((subResCursor.x-1)*2) + offx
-    subResCursor.z = ((subResCursor.z-1)*2) + offz
+    subResCursor.x = ((subResCursor.x-1)*2)+1 + offx
+    subResCursor.z = ((subResCursor.z-1)*2)+1 + offz
  
     if subResCursor.x  < 1 or subResCursor.x > #BuildingPlaceT*2 then return false end
     if subResCursor.z  < 1 or subResCursor.z > #BuildingPlaceT[1]*2 then return false end
@@ -261,8 +260,9 @@ function isOnInnerCityGridBlock(cursorl, offx, offz, BuildingPlaceT)
     modx = ((subResCursor.x ) % 4)
     modz = ((subResCursor.z ) % 4)
 
-    if modx == 2 and (modz == 1 or modz == 3) then return true end
-    if modz == 2 and (modx == 1 or modx == 3 ) then return true end
+    if modx == 1 and (modz == 2 ) then return true end
+    if modx == 2 and (modz == 1 or modz == 3 ) then return true end
+    if modx == 3 and (modz == 2 ) then return true end
   
     return false
 end
