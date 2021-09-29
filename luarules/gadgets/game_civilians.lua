@@ -248,22 +248,24 @@ function isNearCityCenter(x,z)
 end
 
 function isOnInnerCityGridBlock(cursorl, offx, offz, BuildingPlaceT)
-    local subResCursor = cursorl
+    local subResCursor = {x= cursorl.x, z= cursorl.z}
     if offx == 0 and offz == 0 then return false end
 
-    subResCursor.x = ((subResCursor.x-1)*2)+1 + offx
-    subResCursor.z = ((subResCursor.z-1)*2)+1 + offz
- 
-    if subResCursor.x  < 1 or subResCursor.x > #BuildingPlaceT*2 then return false end
-    if subResCursor.z  < 1 or subResCursor.z > #BuildingPlaceT[1]*2 then return false end
+    subResCursor.x = ((subResCursor.x)*2)-1 + offx
+    subResCursor.z = ((subResCursor.z)*2)-1 + offz
 
-    modx = ((subResCursor.x ) % 4)
-    modz = ((subResCursor.z ) % 4)
+    if subResCursor.x < 0 then     subResCursor.x =  subResCursor.x + 4 end
+    if subResCursor.z < 0 then     subResCursor.z =  subResCursor.z + 4 end
 
-    if modx == 1 and (modz == 2 ) then return true end
-    if modx == 2 and (modz == 1 or modz == 3 ) then return true end
-    if modx == 3 and (modz == 2 ) then return true end
-  
+    subResCursor.x  = ((subResCursor.x ) % 4)
+    subResCursor.z = ((subResCursor.z ) % 4)
+    if subResCursor.x  == 0  then return false end
+    if subResCursor.z == 0  then return false end
+
+    if subResCursor.x == 1 and (subResCursor.z == 2 ) then return true end
+    if subResCursor.x == 2 and (subResCursor.z == 1 or subResCursor.z == 3 ) then return true end
+    if subResCursor.x == 3 and (subResCursor.z == 2 ) then return true end
+
     return false
 end
 
@@ -325,7 +327,9 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
     for offsx = -1, 1, 1 do
         for offsz = -1, 1, 1 do
             if isOnInnerCityGridBlock(cursor, offsx, offsz, BuildingPlaceT) == true then                
-                if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 30) == false  then
+                if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 25) == false  then
+---echo("Gapspawned Building at:".. orgPosX + offsx * innerCityDim.x.." / ".. orgPosZ + offsz * innerCityDim.z)
+
                            spawnBuilding(buildingType, 
                                         orgPosX + offsx * innerCityDim.x,
                                         orgPosZ + offsz * innerCityDim.z,
@@ -369,7 +373,6 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
         finiteSteps = finiteSteps - 1
 
         dice = math.floor(math.random(10, 31) / 10)
-        dice = getRandomElementFromTable({1, 3})
         boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z)
         boolMirrorNearCityCenter = isNearCityCenter(mirror.x * uDim.x, mirror.z*uDim.z)
 
