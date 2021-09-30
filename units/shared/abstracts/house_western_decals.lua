@@ -41,7 +41,7 @@ local Copy = Building:New{
     buildinggrounddecaldecayspeed = 0.00000002,
     buildinggrounddecalsizex = 20,
     buildinggrounddecalsizey = 20,
-   -- buildinggrounddecaltype = "decal_arab/HouseDecal8_arab_rural.png",
+    buildinggrounddecaltype = "decal_arab/HouseDecal6_west_city.png",
     Category = [[LAND]],
     customParams = {},
     sfxtypes = {
@@ -53,10 +53,10 @@ local Copy = Building:New{
     decalIndex= decalIndex +1
 end
 
-SmallDecals[1].buildinggrounddecaltype ="decal_arab/HouseDecal16_arab_city.png"
-SmallDecals[2].buildinggrounddecaltype ="decal_arab/HouseDecal16_arab_city.png"
+SmallDecals[1].buildinggrounddecaltype ="decal_arab/HouseDecal6_arab_city.png"
+SmallDecals[2].buildinggrounddecaltype ="decal_arab/HouseDecal19_arab_city.png"
 SmallDecals[3].buildinggrounddecaltype ="decal_arab/HouseDecal1_arab_city.png"
-SmallDecals[4].buildinggrounddecaltype ="decal_arab/HouseDecal2_arab_city.png"
+SmallDecals[4].buildinggrounddecaltype ="decal_arab/HouseDecal3_arab_city.png"
 
 SmallDecals[5].buildinggrounddecaltype ="decal_western/HouseDecal1_west_city.png"
 SmallDecals[6].buildinggrounddecaltype ="decal_western/HouseDecal2_west_city.png"
@@ -64,6 +64,10 @@ SmallDecals[7].buildinggrounddecaltype ="decal_western/HouseDecal3_west_city.png
 SmallDecals[8].buildinggrounddecaltype ="decal_western/HouseDecal6_west_city.png"
 SmallDecals[9].buildinggrounddecaltype ="decal_western/HouseDecal10_west_rural.png"
 SmallDecals[10].buildinggrounddecaltype ="decal_western/HouseDecal7_west_rural.png"
+SmallDecals[11] = SmallDecals[10]
+SmallDecals[11].buildinggrounddecaltype ="decal_western/HouseDecal11_west_city.dds"
+SmallDecals[11].name = "house_western_decal15"
+
 
 BigDecals = {}
 for i=1, 5 do
@@ -107,7 +111,7 @@ for i=1, 5 do
       buildinggrounddecaldecayspeed = 0.00000002,
     buildinggrounddecalsizex = 40,
     buildinggrounddecalsizey = 40,
-  --  buildinggrounddecaltype = "decal_arab/HouseDecal1_arab_city.png",
+    buildinggrounddecaltype = "decal_arab/HouseDecal5_west_city.png",
     Category = [[LAND]],
     customParams = {},
     sfxtypes = {
@@ -119,7 +123,7 @@ for i=1, 5 do
     decalIndex= decalIndex +1
 end
 
-BigDecals[1].buildinggrounddecaltype ="decal_arab/HouseDecal1_arab_city.png"
+BigDecals[1].buildinggrounddecaltype ="decal_arab/HouseDecal16_arab_city.png"
 BigDecals[2].buildinggrounddecaltype ="decal_arab/HouseDecal5_arab_city.png"
 BigDecals[3].buildinggrounddecaltype ="decal_western/HouseDecal5_west_city.png"
 BigDecals[4].buildinggrounddecaltype ="decal_western/HouseDecal9_west_city.png"
@@ -142,6 +146,8 @@ return lowerkeys({
     ["house_western_decal12"]  = BigDecals[3],
     ["house_western_decal13"]  = BigDecals[4], 
     ["house_western_decal14"]  = BigDecals[1],
+
+    ["house_western_decal15"]  = SmallDecals[11],
 })
 
 
