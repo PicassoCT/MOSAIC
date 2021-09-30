@@ -554,11 +554,11 @@ function  getManualCivilianBuildingMaps(mapName)
                     ["truck"] = {name = "truck_int", range = 3}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
-                    ["civilian"] = {name = "civilian_western", range = 0},
+                    ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_western", range = 2}},        
                 ["asian"] = {
                     ["house"] = {name = "house_western", range = -1},
-                    ["civilian"] = {name = "civilian_western", range = -1},
+                    ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_western", range = -1}}
                 }
                 return translation[cultureName]
@@ -1269,6 +1269,7 @@ function  getManualCivilianBuildingMaps(mapName)
                                 "house_western_decal12",
                                 "house_western_decal13",
                                 "house_western_decal10",                           
+                                "house_western_decal15",                           
                             }}}
                 end
             
