@@ -45,8 +45,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     baseType = "house"
                 end
 
-                if baseType and defIDDecalNameMap[baseType] and teamID ==
-                    gaiaTeamID then
+                if baseType and defIDDecalNameMap[baseType] and teamID == gaiaTeamID then
 
                     x, y, z = Spring.GetUnitPosition(unitID)
 
