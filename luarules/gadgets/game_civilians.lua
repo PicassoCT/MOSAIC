@@ -327,7 +327,7 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
     for offsx = -1, 1, 1 do
         for offsz = -1, 1, 1 do
             if isOnInnerCityGridBlock(cursor, offsx, offsz, BuildingPlaceT) == true then                
-                if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 25) == false  then
+                if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 35) == false  then
 ---echo("Gapspawned Building at:".. orgPosX + offsx * innerCityDim.x.." / ".. orgPosZ + offsz * innerCityDim.z)
 
                            spawnBuilding(buildingType, 
