@@ -85,6 +85,8 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
 
+
+
 eAnimState = getCivilianAnimationStates()
 local upperBodyPieces = {
     [Head1] = Head1,
@@ -143,16 +145,22 @@ function variousBodyConfigs()
 end
 
 orgHousePosTable = {}
-rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 
+rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
+myName = UnitDefs[myDefID].name
+local myGun = ak47
 function script.Create()
-    makeWeaponsTable()
+   
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    gunsTable = TablesOfPiecesGroups["Weapons"] or {}
+    if ak47 then table.insert(gunsTable, ak47) end
+    if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
+    makeWeaponsTable(myGun)
     StartThread(turnDetector)
 
     variousBodyConfigs()
-    myName = UnitDefs[myDefID].name
+
     bodyConfig.boolArmed = false 
     bodyConfig.boolRPGArmed = false
     bodyConfig.boolWounded = false
@@ -350,7 +358,7 @@ function bodyBuild()
             Show(RPG7)
             Show(RPG7Rocket)
         else
-            Show(ak47)
+            Show(myGun)
             Show(molotow)
         end
         return
@@ -390,6 +398,7 @@ function hideAllProps()
 
     Hide(MilitiaMask)
     Hide(ak47)
+    hideT(TablesOfPiecesGroups["Weapons"])
     Hide(molotow)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = false
@@ -946,7 +955,7 @@ normalBehavourStateMachine = {
                 Hide(Handbag)
                 Hide(cofee)
             if bodyConfig.boolArmed == true and maRa() then
-                Show(ak47)
+                Show(myGun)
                 Show(MilitiaMask)
                 T = process(getAllNearUnit(unitID, 100),
                         function(id)
@@ -1016,8 +1025,8 @@ normalBehavourStateMachine = {
             Spring.TransferUnit(unitID, gaiaTeamID)
             Spring.SetUnitNeutral(unitID, true)
             if bodyConfig.boolArmed == true then
-                Hide(ak47)
-                Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
+                Hide(myGun)
+                Explode(myGun, SFX.FALL + SFX.NO_HEATCLOUD)
                 bodyConfig.boolArmed = false
             end
 
@@ -1677,10 +1686,10 @@ function rgpFireFunction(weaponID, heading, pitch)
 end
 
 WeaponsTable = {}
-function makeWeaponsTable()
+function makeWeaponsTable(myGun)
     WeaponsTable[1] = {
         aimpiece = center,
-        emitpiece = ak47,
+        emitpiece = myGun,
         aimfunc = akAimFunction,
         firefunc = akFireFunction,
         signal = SIG_PISTOL
@@ -1707,7 +1716,7 @@ function script.AimFromWeapon(weaponID)
     if WeaponsTable[weaponID] then
         return WeaponsTable[weaponID].aimpiece
     else
-        return ak47
+        return myGun 
     end
 end
 
@@ -1715,7 +1724,7 @@ function script.QueryWeapon(weaponID)
     if WeaponsTable[weaponID] then
         return WeaponsTable[weaponID].emitpiece
     else
-        return ak47
+        return myGun 
     end
 end
 

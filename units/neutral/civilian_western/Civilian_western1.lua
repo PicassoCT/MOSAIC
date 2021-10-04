@@ -3,7 +3,7 @@ local Civil = Civilian:New{
 	name = "Western Civilian",
 		corpse = "bodybag",
 	description = " innocent bystander <colateral>",
-	objectName        	= "civilian1_western.dae",
+	objectName        	= "civilian4_arab.dae",
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
