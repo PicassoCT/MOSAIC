@@ -1,7 +1,7 @@
 model = {
 	radius = 10.0,
 	height = 40,
-	tex1 = "arab_western_diffuse.dds",
+	tex1 = "western_civilian_diffuse.dds",
 	--tex2 = "armtech_tex2.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
