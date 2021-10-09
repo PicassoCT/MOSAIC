@@ -380,6 +380,17 @@ function  getManualCivilianBuildingMaps(mapName)
 	return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
   end
 
+    function getCultureHash()
+        return  stringToHash(getCultureName())
+    end
+
+    function getMapNameHash(Game)
+       return stringToHash(Game.mapName)
+    end
+
+    function getCultureMapNameHash(Game)   
+        return getMapNameHash(Game) + getCultureHash()
+    end
 
     function getLocationHash(x,z, maxs)
         return ((x + z) % (maxs or 4) + 1)
@@ -392,6 +403,24 @@ function  getManualCivilianBuildingMaps(mapName)
         return nice, x,y,z
     end
 
+    function getDeterministicCityOfSin(culture, Game)
+        chash = getCultureMapNameHash(Game)
+        if culture == Cultures.arabic then  --2/10
+            return chash % 10 < 2
+        end
+
+        if culture == Cultures.western then -- 5/10
+            return chash % 10 < 5
+        end
+
+        if culture == Cultures.asian then   
+            return chash % 10 < 8
+        end
+
+        if culture == Cultures.international then   
+            return chash % 10 < 10
+        end
+    end
 
     function getCultureDependantRandomOffsets(culture, loc)
         districtOffset = getLocationHash(math.ceil(loc.x / 1000), math.ceil(loc.z / 1000), 4)

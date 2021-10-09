@@ -49,6 +49,11 @@ local molotow = piece "molotow"
 local ShoppingBag = piece "ShoppingBag"
 local RPG7
 local RPG7Rocket
+gunsTable =  {}
+gunsTable[#gunsTable+1] = ak47
+if UnitDefs[myDefID].name == "civilian_western0" then
+    gunsTable[#gunsTable + 1 ] = piece('Pistol')
+end
 
 local scriptEnv = {
     Handbag = Handbag,
@@ -153,8 +158,7 @@ function script.Create()
    
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    gunsTable = TablesOfPiecesGroups["Weapons"] or {}
-    if ak47 then table.insert(gunsTable, ak47) end
+
     if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
     makeWeaponsTable(myGun)
     StartThread(turnDetector)
@@ -345,6 +349,8 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["Head"])
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
+    if TablesOfPiecesGroups["Suit"] and maRa() == true then showT(TablesOfPiecesGroups["Suit"]) end
+
 
     if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
 

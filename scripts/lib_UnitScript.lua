@@ -3173,6 +3173,16 @@ end
 
 -- > debugEchoT(
 
+function stringToHash(hashString)
+    totalValue = 0
+    for i = 1, string.len(hashString) do
+        local c = hashString:sub(i, i)
+        totalValue = totalValue + string.byte(c, 1)
+    end
+
+    return totalValue
+end
+
 -- >Generic to String
 function toString(element)
     if  element == nil then return "nil" end

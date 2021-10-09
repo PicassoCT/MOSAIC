@@ -19390,15 +19390,6 @@ end
 -- e.g. Out of Breath, Angry, tired, sad, by changing loudness and choosen soundsnippet
 -- its call signature is SoundPerson(translatedSoundSnippet, position in sentence, translatedTable)
 
- function hashString(stringToHash)
-            totalValue = 0
-            for i = 1, string.len(stringToHash) do
-                local c = stringToHash:sub(i, i)
-                totalValue = totalValue + string.byte(c, 1)
-            end
-
-            return totalValue
-        end
 
 
 function speakMorkDorkUruk(LanguageTable, SymbolLenght, SoundTable, Text,
@@ -19413,7 +19404,7 @@ function speakMorkDorkUruk(LanguageTable, SymbolLenght, SoundTable, Text,
         [6] = "mor",
         [7] = "hur",
         [8] = "  ",
-        Hash = hashString 
+        Hash = stringToHash 
     }
     SymbolLenght = SymbolLenght or 2
     SoundTable = SoundTable or {}

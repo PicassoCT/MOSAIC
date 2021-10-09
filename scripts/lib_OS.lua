@@ -827,7 +827,7 @@ function debugAimLoop(sleepMS, weaponID)
     end
 end
 
-function vtolLoop(plane, restTimeMs, timeBetweenFlights)
+function vtolLoop(plane, restTimeMs, timeBetweenFlightsMs)
 
     function showHidePlane(boolShow, plane)
             if boolShow == true then
@@ -852,7 +852,7 @@ function vtolLoop(plane, restTimeMs, timeBetweenFlights)
 
     while true do
         if boolInAir == true then
-            randSleep= (math.random(1,12)*1000) + timeBetweenFlights 
+            randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs 
             Sleep(randSleep)
             movePlaneRandomLocationInTime(plane, 100)
             WaitForMoves(plane)
@@ -865,10 +865,10 @@ function vtolLoop(plane, restTimeMs, timeBetweenFlights)
             lastValue = targetValue
          
             boolInAir = false
-            randSleep= (math.random(20,40)*1000) +restTimeMs
+            randSleep= (math.random(1,5)*1000) +restTimeMs
             Sleep(randSleep)
         else
-            randSleep= (math.random(1,12)*1000) +restTimeMs
+            randSleep= (math.random(1,5)*1000) +restTimeMs
             Sleep(randSleep)
             movePlaneRandomLocationInTime(plane, 8000)
             Sleep(200)
@@ -881,7 +881,7 @@ function vtolLoop(plane, restTimeMs, timeBetweenFlights)
             WaitForMoves(plane)
             showHidePlane(false, plane)
             boolInAir = true
-            randSleep= (math.random(1,12)*1000) + timeBetweenFlights
+            randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs
             Sleep(randSleep)
         end
     end

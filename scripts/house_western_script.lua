@@ -146,14 +146,25 @@ end
 
 function HoloGrams()
     Sleep(15000)
-    --sexxxy time
-    hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
+    
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
+    local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
+    hideT(flickerGroup)
+    hideT(CasinoflickerGroup)
+    --sexxxy time
+    if getDeterministicCityOfSin(getCultureName(), Game)== true  then
+        if maRa()== true then
+            hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
+            if  contains(ToShowTable, hostPiece) == true then 
+                StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4)
+            end
+        end
 
-    if not contains(ToShowTable, hostPiece) then 
-        hideT(flickerGroup)
-    else 
-        StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4)
+        hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
+        if contains(ToShowTable, hostCasinoPiece) == true then 
+            StartThread(flickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4)
+        end
+
     end
 
     if contains(ToShowTable, logoPiece) then 
@@ -1029,7 +1040,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 ToShowTable[#ToShowTable + 1] = element
 
                 if vtolDeco[element] then 
-                    StartThread(vtolLoop, vtolDeco[element], math.random(5,10)*60*1000, math.random(10,30)*60*10000)
+                    StartThread(vtolLoop, vtolDeco[element], math.random(1,4)*60*1000, math.random(5,10)*60*10000)
                 end
 
                 if countElements == 24 then return end
