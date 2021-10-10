@@ -3587,6 +3587,13 @@ function isPointInSquare(P, s1, s2, s3, s4)
                pointWithinTriangle(s3.x, s3.y, s4.x, s4.y, s1.x, s1.y, P.x, P.y)
 end
 
+function assertRangeConsistency(Tables, name)
+    max= #Tables
+    for i=1, max do 
+        assert(Tables[i], "No element "..i.." for "..name.." in asserRangeConsistency")
+    end
+end
+
 function holdsForAll(Var, fillterConditionString, ...)
     assert(fillterConditionString)
     local arg = arg;

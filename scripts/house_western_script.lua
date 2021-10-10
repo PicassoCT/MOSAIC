@@ -152,7 +152,8 @@ function HoloGrams()
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
     --sexxxy time
-    if getDeterministicCityOfSin(getCultureName(), Game)== true  then
+    px,py,pz = Spring.GetUnitPosition(unitID)
+    if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true then
         if maRa()== true then
             hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
             if  contains(ToShowTable, hostPiece) == true then 
@@ -179,24 +180,26 @@ function HoloGrams()
 end
 
 function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval)
-    local flickerGroup = flickerGroup
+    assert(flickerGroup)
+    local fGroup = flickerGroup
 
     flickerIntervall = math.ceil(1000/25)
 
     while true do
-        hideT(flickerGroup)
+        hideT(fGroup)
+        assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
         if boolHouseHidden == false then
             theOneToShowT= {}
             for x=1,math.random(1,3) do
-                theOneToShowT[#theOneToShowT+1] = flickerGroup[math.random(1,#flickerGroup)]
+                theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
             end
 
             for i=1,(3000/flickerIntervall) do
                 if i % 2 == 0 then         showT(theOneToShowT) else hideT(theOneToShowT) end
                 if NoErrorFunction() == true then showT(theOneToShowT) end
                 for ax=1,3 do
-                    moveT(flickerGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+                    moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
                 end
                 Sleep(flickerIntervall)
             end

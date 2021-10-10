@@ -371,6 +371,11 @@ function  getManualCivilianBuildingMaps(mapName)
         }
     end
 	
+    function isNearCityCenter(x,z, GameConfig)
+        if not GG.innerCityCenter then return false end
+        return distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) < GameConfig.innerCitySize
+    end
+
   function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
  	if not GG.DistrictRotationDeterministic then GG.DistrictRotationDeterministic = {} end
 	x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)

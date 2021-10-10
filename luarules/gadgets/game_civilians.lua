@@ -61,7 +61,7 @@ local uDim = {}
 local innerCityDim = {}
 uDim.x, uDim.y, uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ + GameConfig.allyWaySizeZ
 innerCityDim.x, innerCityDim.y, innerCityDim.z = GameConfig.houseSizeX/2 , GameConfig.houseSizeY/2, GameConfig.houseSizeZ /2
-local innerCityCenter = {}
+
 numberTileX, numberTileZ = Game.mapSizeX / uDim.x, Game.mapSizeZ / uDim.z
 
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
@@ -241,11 +241,7 @@ function distributedPathValidationComplete(frame, elements)
 end
 
 local boolHasCityCenter = false --maRa()
-function isNearCityCenter(x,z)
-    if boolHasCityCenter == false then return false end
 
-    return distance(x, 0, z, innerCityCenter.x, 0,  innerCityCenter.z) < GameConfig.innerCitySize
-end
 
 function isOnInnerCityGridBlock(cursorl, offx, offz, BuildingPlaceT)
     local subResCursor = {x= cursorl.x, z= cursorl.z}
@@ -373,8 +369,8 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
         finiteSteps = finiteSteps - 1
 
         dice = math.floor(math.random(10, 31) / 10)
-        boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z)
-        boolMirrorNearCityCenter = isNearCityCenter(mirror.x * uDim.x, mirror.z*uDim.z)
+        boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z, GameConfig)
+        boolMirrorNearCityCenter = isNearCityCenter(mirror.x * uDim.x, mirror.z*uDim.z, GameConfig)
 
         if dice == 1 then -- 1 random walk into a direction doing nothing
             cursor = randomWalk(cursor)
@@ -413,15 +409,15 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             if cityBlockCounter > 1 and boolHasCityCenter == false then
                 boolHasCityCenter = true
                 if maRa()== true then
-                     innerCityCenter.x = cursor.x*uDim.x
-                     innerCityCenter.z = cursor.z*uDim.z
+                     GG.innerCityCenter.x = cursor.x*uDim.x
+                     GG.innerCityCenter.z = cursor.z*uDim.z
                      boolNearCityCenter = true
                 else
-                    innerCityCenter.x = mirror.x*uDim.x
-                    innerCityCenter.z = mirror.z*uDim.z
+                    GG.innerCityCenter.x = mirror.x*uDim.x
+                    GG.innerCityCenter.z = mirror.z*uDim.z
                     boolMirrorNearCityCenter = true
                 end
-                echo("Citycenter at:"..innerCityCenter.x .." / "..innerCityCenter.z)
+                echo("Citycenter at:"..GG.innerCityCenter.x .." / "..GG.innerCityCenter.z)
             end
 
 
@@ -514,7 +510,7 @@ function checkReSpawnHouses()
 
             x, z = routeDataCopy.x, routeDataCopy.z
             buildingType = randDict(houseTypeTable)
-            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z))
+            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig))
             dataToAdd[id] = routeDataCopy
         end
     end
@@ -808,6 +804,7 @@ function gadget:Initialize()
     GG.AerosolAffectedCivilians = {}
     GG.UnitArrivedAtTarget = {}
     GG.TravelFunctionRegistry= {}
+    GG.innerCityCenter = {}
 
     process(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)

@@ -6842,16 +6842,16 @@ local country ={
      "Eritrea","Ethopia","Kenya","Yemen","Saudi Arabia","Israel","Oman","United Arab Emirates",
      "Uzbekistan","Xinjiang","Rajasthan","Iran","Armenia","Azerbaijan","Afghanistan","Pakistan","Turkmenistan","Tajikistan","Jordan","Lebanon","Syria","Iraq","Kuwait","Bahrain", 
      "Sri Lanka","Bangladesh","Myanmar","Indonesia","Kazakhstan","Mongolia"
-      }
+      },
     ["western"] = {
        "Russia","Europe","United States","Brazil","Mexico","Germany","United Kingdom","France","Italy","Colombia","Spain","Argentina","Canada","Poland","Peru","Venezuela","Australia","Chile","Guatemala","Ecuador","Netherlands","Bolivia","Belgium","Haiti","Cuba","Dominican Republic","Czech Republic","Portugal","Sweden","Honduras","Hungary","Austria","Switzerland","Paraguay","Nicaragua","El Salvador","Denmark","Finland","Norway","Slovakia","Costa Rica","Ireland","New Zealand","Panama","Croatia","Uruguay","Jamaica","Lithuania","Slovenia","Latvia","Trinidad and Tobago","Estonia","Luxembourg","Suriname","Malta","Belize","Bahamas","Iceland","Barbados","Saint Lucia","Grenada","Saint Vincent and the Grenadines","Antigua and Barbuda","Andorra","Dominica","Saint Kitts and Nevis","Monaco","Liechtenstein","San Marino","Vatican City"
-      }
+      },
     ["asian"] = {
       "Russia","China","India","Kazakhstan","Mongolia","Indonesia","Myanmar","Afghanistan","Yemen","Thailand","Japan","Vietnam","Malaysia","Philippines","Laos","Kyrgyzstan","Cambodia","Bangladesh","Nepal","Tajikistan","North Korea", "Azerbaijan","Sri Lanka","Bhutan","Taiwan","Kuwait","East Timor","Palestine","Singapore","Maldives ","Taiwan","Singapore","Macau"
-      }   
+      },   
     ["international"] = {
         "Hong Kong", "Japan", "Singapore", "Dubai","Qatar",
-      }
+      },
   }
 
    setCacheBy("country", country[culture][(hash % #country[culture])+1 ]..", "..getRegionByCulture(culture, country[culture][(hash % #country[culture])+1 ]))

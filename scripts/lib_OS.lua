@@ -839,7 +839,7 @@ function vtolLoop(plane, restTimeMs, timeBetweenFlightsMs)
 
     function movePlaneRandomLocationInTime(plane,  time)
         rx,ry, rz = randSign()* math.random(3000,7000), 19000, randSign() * math.random(3000,7000)
-        mSyncIn(plane, rx,ry,rz, time)
+        syncMoveInTime(plane, rx,ry,rz, time)
     end
 
     boolInAir = maRa()
