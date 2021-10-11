@@ -1,5 +1,5 @@
 ProjektMain:
--Test Gameplay
+-Test Gameplay Server
 
 Subprojekt:
 - test SlowMo Mechanic
@@ -9,8 +9,9 @@ Subprojekt:
 -European Citys
 - Add European Civilians
 - Add European Cars
-- Add Neighbourhoods
+- Add Neighbourhood names
 
+- Add Watchdog to Gameplay State machine 
 
 
 
