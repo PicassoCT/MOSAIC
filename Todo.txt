@@ -1,17 +1,26 @@
 ProjektMain:
--Test Gameplay Server
+1 -Test Gameplay Server
+2 - test SlowMo Mechanic
+3 - Test Mini-Game
+  - Add Watchdog to MiniGame-Gameplay State machine 
+4 - make Schornstein dunkler
+5 - Add Buststop civilians
 
 Subprojekt:
-- test SlowMo Mechanic
 - Add Android-App for Mini-Game
-- Get-AR App running again this time with 
+- Get-AR App running again        
 
 -European Citys
 - Add European Civilians
 - Add European Cars
 - Add Neighbourhood names
 
-- Add Watchdog to Gameplay State machine 
+-Code_Man:
+-Smoke weed every day
+-Jerk off
+-Snarky Comments
+
+
 
 
 
