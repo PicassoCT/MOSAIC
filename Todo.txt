@@ -3,7 +3,7 @@ ProjektMain:
 2 - test SlowMo Mechanic
 3 - Test Mini-Game
   - Add Watchdog to MiniGame-Gameplay State machine 
-4 - make Schornstein dunkler
+4 - make Schornstein darker
 5 - Add Buststop civilians
 
 Subprojekt:
@@ -14,13 +14,4 @@ Subprojekt:
 - Add European Civilians
 - Add European Cars
 - Add Neighbourhood names
-
--Code_Man:
--Smoke weed every day
--Jerk off
--Snarky Comments
-
-
-
-
 
