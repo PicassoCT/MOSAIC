@@ -1,51 +1,17 @@
 ProjektMain:
-
--Test Gameplay
-
-
-
+1 -Test Gameplay Server
+2 - test SlowMo Mechanic
+3 - Test Mini-Game
+  - Add Watchdog to MiniGame-Gameplay State machine 
+4 - make Schornstein darker
+5 - Add Buststop civilians
 
 Subprojekt:
-- Add Unit Transport Grid
-- Add Weapon Grenadelauncher
-- SlowMo Mechanic
+- Add Android-App for Mini-Game
+- Get-AR App running again        
 
 -European Citys
 - Add European Civilians
 - Add European Cars
-
-
-
-Office
-White -> (Modern)
-Nameless -> (Classic)
-Red -> Gehtto
-Brown -> office
-
-
-StreetWallDeco01 -> Hide All -> ShowOneSub
-RoofDeco58 -> Spin/Move all Subs - show all subs
-RoofDeco29 -> CyclicMove
-RoofDeco074 -> SpinSubs
-
-
-News Article:
-Icarus aka Roger Blast Worth member of the Alasca Patrio Irregulars. Part of the Trump Wing that lost the 2nd american civil war and fled climate change to alaska.
-
-Builds a Anti-Chamber as part of the Absolut Power Movement beneath his house.
-Botches it.
-
-Air and Epoxy solvent leaks into the vacuum, 
-anhilates the anti-matter created with solar power.
-
-Whole family gets radiation sickness - the situation escalates when
- his anti-matter ring is not found in the hospital.
-
- Widow and children become cancer patients too.
- Widow gives up the whole Absolute Power Cult- API-Goverment raides the compound.
-
- Pictures of the pocketmarked DIY Anti-Chamber.
-
-Cobbled together from the magnetics of three unlicensend acquired small fusion reactors.
-
+- Add Neighbourhood names
 
