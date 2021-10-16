@@ -805,7 +805,8 @@ function gadget:Initialize()
     GG.UnitArrivedAtTarget = {}
     GG.TravelFunctionRegistry= {}
     GG.innerCityCenter = {}
-
+    GameConfig = getGameConfig()
+    Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
     process(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)
 end

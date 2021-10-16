@@ -16,7 +16,7 @@ function  getMapCultureMap(mapName)
     
     mapDependentCulture = getMapCultureMap(Game.mapName)    
     GG.InstanceCulture =  mapDependentCulture or defaultCulture
-
+    
     return GG.InstanceCulture
 end
 
