@@ -14,7 +14,7 @@ local DestroyedObjective =
     --
     alwaysUpright = true,
     name = "Destroyed Objective",
-    description = "Activate to turn sides",
+    description = "",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -30,7 +30,7 @@ local DestroyedObjective =
 
 
     customparams = {
-        helptext = "Civilian Agent working for the opposite site",
+        helptext = "",
         baseclass = "Human" ,-- TODO: hacks
         normaltex = "unittextures/component_atlas_normal.dds",
     },
