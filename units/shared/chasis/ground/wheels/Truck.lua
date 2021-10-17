@@ -101,7 +101,7 @@ local ground_truck_ssied = Truck:New{
 local ground_truck_antiarmor = Truck:New{
 	buildtime= 80,
 	name = "AntiArmor Truck",
-	description = "Selfdriving anti vehicle truck <Assault Vehicle>",
+	description = "Selfdriving anti vehicle <Assault Vehicle>",
 			buildPic = "truck_antiarmour.png",
 			iconType = "truck_antiarmour",
 	corpse				= "",
@@ -148,8 +148,8 @@ local ground_truck_antiarmor = Truck:New{
 
 local ground_truck_rocket = Truck:New{
 	buildtime= 80,
-	name = "Roketlauncher Truck",
-	description = "Selfdriving rocket artillery truck <Assault Vehicle>",
+	name = "Anti-Air Truck",
+	description = "Selfdriving anti-air defense <Assault Vehicle>",
 			buildPic = "truck_rocket.png",
 			iconType = "truck_rocket",
 	corpse				= "",
@@ -184,7 +184,7 @@ local ground_truck_rocket = Truck:New{
 	},
 	weapons = {
 			[1]={name  = "marker",
-				onlyTargetCategory = [[GROUND]],
+				onlyTargetCategory = [[AIR]],
 				},
 			},	
 	LeaveTracks = true,
@@ -232,7 +232,7 @@ local PoliceTruck = Truck:New{
 				[1]={name  = "pistol",
 					onlyTargetCategory = [[GROUND]],
 					},
-				[2]={name  = "policeaamachinegun",
+				[2]={name  = "smartminedrone",
 					onlyTargetCategory = [[AIR]]
 					},		
 	},	
