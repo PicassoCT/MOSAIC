@@ -21,6 +21,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 statistics = {}
 local GameConfig = getGameConfig()
+--if not Game.version then Game.version = GameConfig.instance.Version end
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
@@ -424,7 +425,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             numberOfBuildings, BuildingPlaceT =  placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,
                                                    BuildingPlaceT, boolNearCityCenter)
 
-            numberOfBuildings, BuildingPlaceT =    placeThreeByThreeBlockAroundCursor(mirror, numberOfBuildings,
+            numberOfBuildings, BuildingPlaceT =  placeThreeByThreeBlockAroundCursor(mirror, numberOfBuildings,
                                                    BuildingPlaceT, boolMirrorNearCityCenter)
         end
     end
@@ -435,39 +436,31 @@ function checkCursorInnerCityFree(cursor)
 end
 
 function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter)
+    assert(BuildingPlaceT) 
     buildingType = randDict(houseTypeTable)
 
         for offx = -1, 1, 1 do
                 if BuildingPlaceT[cursor.x + offx] then
                     for offz = -1, 1, 1 do
-                         if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
-                        local tmpCursor = cursor
-                        tmpCursor.x = tmpCursor.x + offx
-                        tmpCursor.z = tmpCursor.z + offz
-                        tmpCursor = clampCursor(tmpCursor)
-                      
-                        buildingType = randDict(houseTypeTable)
-                        if BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
-                            spawnBuilding(buildingType,
-                                          tmpCursor.x * uDim.x,
-                                          tmpCursor.z * uDim.z, boolNearCityCenter)
-                            numberOfBuildings = numberOfBuildings - 1
-                 --[[           assert(tmpCursor.x < #BuildingPlaceT)
-                            assert(tmpCursor.z < #BuildingPlaceT[1])--]]
-                            if boolNearCityCenter == true then
-                                fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
+                        if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
+                            local tmpCursor = cursor
+                            tmpCursor.x = tmpCursor.x + offx
+                            tmpCursor.z = tmpCursor.z + offz
+                            tmpCursor = clampCursor(tmpCursor)
+                          
+                            buildingType = randDict(houseTypeTable)
+                            if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
+                                spawnBuilding(buildingType,
+                                              tmpCursor.x * uDim.x,
+                                              tmpCursor.z * uDim.z, boolNearCityCenter)
+                                numberOfBuildings = numberOfBuildings - 1
+
+                                if boolNearCityCenter == true then
+                                    fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
+                                end
+
+                                BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
                             end
-                --[[              assert(tmpCursor.x < #BuildingPlaceT)
-                            assert(tmpCursor.z < #BuildingPlaceT[1])--]]
-                            --assert( BuildingPlaceT[tmpCursor.x] ~= nil,"No BuildingPlaceT for".. tmpCursor.x)
-                            -- assert( BuildingPlaceT[tmpCursor.x][tmpCursor.z] ~= nil, "No BuildingPlaceT for".. tmpCursor.x.."/"..tmpCursor.z)
---[[                            assert(tmpCursor.x)
-                            assert(tmpCursor.z)
-                            assert(BuildingPlaceT)
-                            assert(BuildingPlaceT[tmpCursor.x], tmpCursor.x.." "..#BuildingPlaceT)
-                            assert(BuildingPlaceT[tmpCursor.x][tmpCursor.z], tmpCursor.z.." "..#BuildingPlaceT[tmpCursor.x])--]]
-                            BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
-                        end
                         end
                     end
                 end
