@@ -63,8 +63,11 @@ SmallDecals[6].buildinggrounddecaltype ="decal_western/HouseDecal2_west_city.png
 SmallDecals[7].buildinggrounddecaltype ="decal_western/HouseDecal3_west_city.png"
 SmallDecals[8].buildinggrounddecaltype ="decal_western/HouseDecal6_west_city.png"
 SmallDecals[9].buildinggrounddecaltype ="decal_western/HouseDecal10_west_rural.png"
+SmallDecals[9].buildinggrounddecalsizex = 16
+SmallDecals[9].buildinggrounddecalsizey = 16
 SmallDecals[10].buildinggrounddecaltype ="decal_western/HouseDecal7_west_rural.png"
-SmallDecals[11] = SmallDecals[10]
+local copy = SmallDecals[10]
+SmallDecals[11] = copy
 SmallDecals[11].buildinggrounddecaltype ="decal_western/HouseDecal11_west_city.dds"
 SmallDecals[11].name = "house_western_decal15"
 
@@ -127,7 +130,6 @@ BigDecals[1].buildinggrounddecaltype ="decal_arab/HouseDecal16_arab_city.png"
 BigDecals[2].buildinggrounddecaltype ="decal_arab/HouseDecal5_arab_city.png"
 BigDecals[3].buildinggrounddecaltype ="decal_western/HouseDecal5_west_city.png"
 BigDecals[4].buildinggrounddecaltype ="decal_western/HouseDecal9_west_city.png"
-
 
 return lowerkeys({
     --Temp
