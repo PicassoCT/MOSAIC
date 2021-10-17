@@ -1303,7 +1303,8 @@ function  getManualCivilianBuildingMaps(mapName)
                                 "house_western_decal12",
                                 "house_western_decal13",
                                 "house_western_decal10",                           
-                                "house_western_decal15",                           
+                                "house_western_decal15",   
+                                "house_western_decal9",                        
                             }}}
                 end
             
