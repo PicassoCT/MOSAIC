@@ -296,13 +296,13 @@ local ground_turret_dronegrenades =  Turret:New{
 				},
 				
 	weapons = {
-		[1]={name  = "s16rocket",
+		[1]={name  = "smartminedrone",
 			onlyTargetCategory = [[GROUND]],
 			},			
 		},	
 }
 local ground_turret_rocket =  Turret:New{
-	name = "Unguided Rocket Turret",
+	name = "Anti-Air Rocket Turret",
 	-- This is a anti-tank drone body, deployed after flight
 	--capable to one-time launch a projectile 
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
@@ -369,7 +369,7 @@ local ground_turret_rocket =  Turret:New{
 	weapons = {
 		[1]={
 			name  = "s16rocket",
-			onlyTargetCategory = [[GROUND]],
+			onlyTargetCategory = [[AIR]],
 			},			
 		},	
 }

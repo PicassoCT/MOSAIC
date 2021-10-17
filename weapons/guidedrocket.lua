@@ -24,11 +24,11 @@ local weaponDef = {
 	avoidGround = true,
 	
 	--flight behaviour
-	startVelocity  = 50,
+	startVelocity  = 100,
 	trajectoryHeight = 1.0 ,
 	flightTime = 10.5 ,
 	weaponVelocity = 2050,
-	weaponAcceleration = 25,
+	weaponAcceleration = 150,
 
 	--impact behaviour
 	impulseBoost            = 0,
