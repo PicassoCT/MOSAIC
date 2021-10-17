@@ -1,14 +1,14 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "s16rocket" --
 local weaponDef = {
-    name = "Unguided Rocket",
+    name = "Aiming Anti-Air Rocket",
     weaponType = [[MissileLauncher]],
 	--damage
 	damage = {
-	default = 250
+	default = 512
 	},
 	noSelfDamage = true,
-	reloadtime = 2, -- seconds
+	reloadtime = 8, -- seconds
 
 	--orders behaviour
 	--commandFire  = true,	
@@ -24,11 +24,11 @@ local weaponDef = {
 	avoidGround = true,
 	
 	--flight behaviour
-	startVelocity  = 580,
+	startVelocity  = 50,
 	trajectoryHeight = 1.0 ,
-	flightTime = 5.5 ,
-	weaponVelocity = 1050,
-	weaponAcceleration = 100,
+	flightTime = 10.5 ,
+	weaponVelocity = 2050,
+	weaponAcceleration = 25,
 
 	--impact behaviour
 	impulseBoost            = 0,
