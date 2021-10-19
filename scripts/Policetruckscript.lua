@@ -125,6 +125,14 @@ function theySeeMeRollin()
     end
 end
 
+function isInActionInterval(frame)
+    if not GG.ActionInterVallStart then return true end
+
+    if frame < GG.ActionInterVallStart + GameConfig.actionIntervallFrames then return true end
+
+    return false
+end
+
 function delayedSirens()
     sleeptime = math.random(1, 10)
     Sleep(sleeptime * 1000)
@@ -143,9 +151,11 @@ function delayedSirens()
                                     framesPerSecond) % seconds) / seconds) * 2 *
                                     math.pi))
         if boolLoudnessOverrideActive == true then loudness = 1.0 end
-        StartThread(PlaySoundByUnitDefID, myDefID,
-                    "sounds/civilian/police/siren" .. sirenDice .. ".ogg", 0.9,
-                    50, 2)
+        if isInActionInterval(Spring.GetGameFrame()) == true then
+            StartThread(PlaySoundByUnitDefID, myDefID,
+                        "sounds/civilian/police/siren" .. sirenDice .. ".ogg", 0.9,
+                        50, 2)
+        end
         Sleep(50 * 1000)
     end
 end

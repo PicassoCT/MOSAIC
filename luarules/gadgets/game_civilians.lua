@@ -437,33 +437,33 @@ end
 
 function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter)
     assert(BuildingPlaceT) 
+    assert(cursor.x ) 
+    assert(cursor.z ) 
     buildingType = randDict(houseTypeTable)
 
         for offx = -1, 1, 1 do
-                if BuildingPlaceT[cursor.x + offx] then
-                    for offz = -1, 1, 1 do
-                        if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
-                            local tmpCursor = cursor
-                            tmpCursor.x = tmpCursor.x + offx
-                            tmpCursor.z = tmpCursor.z + offz
-                            tmpCursor = clampCursor(tmpCursor)
-                          
-                            buildingType = randDict(houseTypeTable)
-                            if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
-                                spawnBuilding(buildingType,
-                                              tmpCursor.x * uDim.x,
-                                              tmpCursor.z * uDim.z, boolNearCityCenter)
-                                numberOfBuildings = numberOfBuildings - 1
+            if BuildingPlaceT[cursor.x + offx] then
+                for offz = -1, 1, 1 do
+                    if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
+                        local tmpCursor = {x =cursor.x + offx, z = cursor.z + offz}
+                        tmpCursor = clampCursor(tmpCursor)
+                      
+                        buildingType = randDict(houseTypeTable)
+                        if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
+                            spawnBuilding(buildingType,
+                                          tmpCursor.x * uDim.x,
+                                          tmpCursor.z * uDim.z, boolNearCityCenter)
+                            numberOfBuildings = numberOfBuildings - 1
 
-                                if boolNearCityCenter == true then
-                                    fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
-                                end
-
-                                BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
+                            if boolNearCityCenter == true then
+                                fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
                             end
+
+                            BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
                         end
                     end
                 end
+            end
         end
 
     return numberOfBuildings, BuildingPlaceT

@@ -51,8 +51,11 @@ local RPG7
 local RPG7Rocket
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
+local walkMotionExcludeTable = {}
 if UnitDefs[myDefID].name == "civilian_western0" then
     gunsTable[#gunsTable + 1 ] = piece('Pistol')
+    walkMotionExcludeTable[ShoppingBag]=ShoppingBag
+    walkMotionExcludeTable[Handbag]=Handbag
 end
 
 local scriptEnv = {
@@ -306,6 +309,11 @@ function breathing()
         if boolAiming == false then
             WaitForTurns(Head1)
             headTurnValue = math.random(-10,10)
+            if TablesOfPiecesGroups["Eye"] then
+                rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
+                tP(TablesOfPiecesGroups["Eye"][1],rx,ry,rz, 16)
+                tP(TablesOfPiecesGroups["Eye"][2],rx,ry,rz, 16)
+            end
             Turn(Head1,y_axis, math.rad(headTurnValue), 1)
             WaitForTurns(Head1)
         end
@@ -350,6 +358,7 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
     if TablesOfPiecesGroups["Suit"] and maRa() == true then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
 
 
     if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
@@ -1190,7 +1199,7 @@ function conditionalFilterOutUpperBodyTable()
     if boolDecoupled == true or boolAiming == true then
         return upperBodyPieces
     else
-        return {}
+        return walkMotionExcludeTable
     end
 end
 
@@ -1271,19 +1280,19 @@ UpperAnimationStateFunctions = {
     end,
     [eAnimState.walking] = function()
         if bodyConfig.boolInfluenced then
-            PlayAnimation("UPBODY_WALK_ZOMBIE")
+            PlayAnimation("UPBODY_WALK_ZOMBIE", walkMotionExcludeTable)
             return eAnimState.walking
         end
 
         if bodyConfig.boolArmed == true then
-            PlayAnimation("UPBODY_LOADED")
+            PlayAnimation("UPBODY_LOADED", walkMotionExcludeTable)
             return eAnimState.walking
         end
 
         if bodyConfig.boolProtest == true then return eAnimState.protest end
 
         if bodyConfig.boolLoaded == true then
-            PlayAnimation("UPBODY_LOADED")
+            PlayAnimation("UPBODY_LOADED", walkMotionExcludeTable)
             return eAnimState.walking
         end
 

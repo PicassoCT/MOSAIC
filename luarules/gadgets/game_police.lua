@@ -234,6 +234,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
     if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
         accumulatedCivilianDamage = accumulatedCivilianDamage + damage
         officerID = dispatchOfficer(unitID, attackerID)
+        boolActionIntervalStart= true
        --[[ if officerID and attackerID then
             echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
         end--]]
@@ -264,8 +265,18 @@ function policeActionTimeSurveilance(frame)
     end
 end
 
+
+
+local newActionIntervallOffset = (GameConfig.actionIntervallFrames +GameConfig.peaceIntervallFrames)
+boolActionIntervalStart = false
 function gadget:GameFrame(frame)
     if frame % 5 == 0 and frame > firstFrame and frame > 0 then
         policeActionTimeSurveilance(frame)       
+    end
+
+    if boolActionIntervalStart== true and not  GG.ActionInterVallStart or 
+        GG.ActionInterVallStart and GG.ActionInterVallStart < frame + newActionIntervallOffset then
+        boolActionIntervalStart = false
+        GG.ActionInterVallStart = frame
     end
 end
