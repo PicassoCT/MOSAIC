@@ -252,6 +252,7 @@ local firstFrame = Spring.GetGameFrame()
 
 function gadget:Initialize()
     firstFrame = Spring.GetGameFrame() + 1
+    GG.PoliceActionSoundInterVallStartFrame = firstFrame
 end
 
 function policeActionTimeSurveilance(frame)
@@ -274,9 +275,9 @@ function gadget:GameFrame(frame)
         policeActionTimeSurveilance(frame)       
     end
 
-    if boolActionIntervalStart== true and not  GG.ActionInterVallStart or 
-        GG.ActionInterVallStart and GG.ActionInterVallStart < frame + newActionIntervallOffset then
+    if boolActionIntervalStart== true and not  GG.PoliceActionSoundInterVallStartFrame or 
+        GG.PoliceActionSoundInterVallStartFrame and GG.PoliceActionSoundInterVallStartFrame + newActionIntervallOffset  < frame then
         boolActionIntervalStart = false
-        GG.ActionInterVallStart = frame
+        GG.PoliceActionSoundInterVallStartFrame = frame
     end
 end
