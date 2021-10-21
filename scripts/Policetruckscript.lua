@@ -126,9 +126,9 @@ function theySeeMeRollin()
 end
 
 function isInActionInterval(frame)
-    if not GG.ActionInterVallStart then return true end
+    if not GG.PoliceActionSoundInterVallStartFrame then return true end
 
-    if frame < GG.ActionInterVallStart + GameConfig.actionIntervallFrames then return true end
+    if frame < GG.PoliceActionSoundInterVallStartFrame + GameConfig.actionIntervallFrames then return true end
 
     return false
 end
