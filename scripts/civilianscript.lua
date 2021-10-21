@@ -2,7 +2,6 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
 include "lib_mosaic.lua"
 
 local Animations = include('animations_civilian_female.lua')
@@ -157,6 +156,7 @@ orgHousePosTable = {}
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 myName = UnitDefs[myDefID].name
 local myGun = ak47
+
 function script.Create()
    
     Move(root, y_axis, -3, 0)
@@ -174,12 +174,12 @@ function script.Create()
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
     bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[myDefID] ~= nil 
+    home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
     bodyBuild()
 
     setupAnimation()
 
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                             nil, false)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
@@ -191,12 +191,6 @@ function script.Create()
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
 
-    --attachRandomTeamDoubleAgent()
-end
-
-function attachRandomTeamDoubleAgent()
-    TeamList = Spring.GetTeamList ()
-    attachDoubleAgentToUnit(unitID, TeamList[math.random(1,#TeamList)])
 end
 
 function getVectorTable(pieceName)
