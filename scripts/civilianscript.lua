@@ -354,7 +354,7 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["LowLeg"])
     showT(TablesOfPiecesGroups["LowArm"])
     showT(TablesOfPiecesGroups["UpArm"])
-    showT(TablesOfPiecesGroups["Head"])
+    showOnePiece(TablesOfPiecesGroups["Head"], unitID)
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
     if TablesOfPiecesGroups["Suit"] and maRa() == true then showT(TablesOfPiecesGroups["Suit"]) end
