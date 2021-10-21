@@ -1,10 +1,9 @@
 ProjektMain:
 1 -Test Gameplay Server
-2 - test SlowMo Mechanic
+2 - rewrote Slowmo Mechanic: Todo Readd Night Vision Shadder
 3 - Test Mini-Game
   - Add Watchdog to MiniGame-Gameplay State machine 
-4 - make Schornstein darker
-5 - Add Buststop civilians
+
 
 Subprojekt:
 - Add Android-App for Mini-Game
