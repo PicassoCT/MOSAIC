@@ -2,7 +2,8 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
+
+include "lib_mosaic.lua"
 
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
@@ -18,6 +19,7 @@ SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
 SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
+SIG_RPG = 256
 
 local center = piece('center');
 local Feet1 = piece('Feet1');
@@ -45,6 +47,16 @@ local cellphone1 = piece "cellphone1"
 local cellphone2 = piece "cellphone2"
 local molotow = piece "molotow"
 local ShoppingBag = piece "ShoppingBag"
+local RPG7
+local RPG7Rocket
+gunsTable =  {}
+gunsTable[#gunsTable+1] = ak47
+local walkMotionExcludeTable = {}
+if UnitDefs[myDefID].name == "civilian_western0" then
+    gunsTable[#gunsTable + 1 ] = piece('Pistol')
+    walkMotionExcludeTable[ShoppingBag]=ShoppingBag
+    walkMotionExcludeTable[Handbag]=Handbag
+end
 
 local scriptEnv = {
     Handbag = Handbag,
@@ -81,8 +93,10 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
 
+
+
 eAnimState = getCivilianAnimationStates()
-upperBodyPieces = {
+local upperBodyPieces = {
     [Head1] = Head1,
     [LowArm1] = LowArm1,
     [LowArm2] = LowArm2,
@@ -91,7 +105,7 @@ upperBodyPieces = {
     [UpArm2] = UpArm2
 }
 
-lowerBodyPieces = {
+local lowerBodyPieces = {
     [center] = center,
     [UpLeg1] = UpLeg1,
     [UpLeg2] = UpLeg2,
@@ -101,7 +115,7 @@ lowerBodyPieces = {
     [Feet2] = Feet2
 }
 
-lowerBodyPiecesNoCenter = {
+local lowerBodyPiecesNoCenter = {
     [UpLeg1] = UpLeg1,
     [UpLeg2] = UpLeg2,
     [LowLeg1] = LowLeg1,
@@ -113,17 +127,20 @@ catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
-boolWalking = false
-boolTurning = false
-boolTurnLeft = false
-boolDecoupled = false
-boolAiming = false
+local boolWalking = false
+local boolTurning = false
+local boolTurnLeft = false
+local boolDecoupled = false
+local boolAiming = false
 
 home = {}
 
 loadMax = 8
-
+local damagedCoolDown = 0
 local bodyConfig = {}
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+local NORMAL_WALK_SPEED =  0.65625
+SPRINT_SPEED = 1.0
 
 iShoppingConfig = math.random(0, 8)
 function variousBodyConfigs()
@@ -137,33 +154,112 @@ end
 
 orgHousePosTable = {}
 
+rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
+myName = UnitDefs[myDefID].name
+local myGun = ak47
+
 function script.Create()
-    makeWeaponsTable()
+
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+
+    if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
+    makeWeaponsTable(myGun)
     StartThread(turnDetector)
 
     variousBodyConfigs()
 
-    bodyConfig.boolArmed = true --false --DELME
+    bodyConfig.boolArmed = false 
+    bodyConfig.boolRPGArmed = false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
+    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[myDefID] ~= nil 
     home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
     bodyBuild()
 
     setupAnimation()
 
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                              nil, false)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,  nil, false)
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
-  
+    StartThread(noCapesControl, LowArm1, LowArm2)
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
     StartThread(cloakLoop)
+end
+
+function getVectorTable(pieceName)
+    ex, ey, ez = Spring.GetUnitPiecePosition(unitID, pieceName)
+    return {x=ex,y=ey, z=ez}
+end
+
+function noCapesControl( leftPiece, rightPiece)
+if not TablesOfPiecesGroups["Coat"] then return end
+
+coatMap= {
+    single= {
+        left = {
+            start = 2,
+            ends = 4,
+            degStart=100,
+            degEnd= 30
+        },
+        right = {
+           start = 5,
+           ends = 7,
+            degStart=-100,
+            degEnd= -30
+
+        }
+    },
+both = {
+    start = 8,
+    ends= 10
+        }
+
+}
+getIntervalOrDefault = function(pieceID, name)
+    vR = getVectorTable(pieceID)
+    degVal =  math.deg(math.atan2(vR.x,vR.z))
+
+        intervals = coatMap.single[name].ends - coatMap.single[name].start
+        arc = math.abs(coatMap.single[name].degStart -  coatMap.single[name].degEnd)
+        arcseg = arc/intervals
+        if math.abs(degVal-coatMap.single[name].degStart) < 10 then return false, 1 end 
+
+    for i=0, intervals do
+        if inLimit(i*arcseg, degVal,(i+1)*arcseg) == true then
+            return true, coatMap.single[name].start+i
+        end
+    end
+
+  return false, 1
+end
+
+hideT(TablesOfPiecesGroups["Coat"])
+defaultCoat = TablesOfPiecesGroups["Coat"][1]
+Show(defaultCoat)
+while true do
+    leftValue, leftIndex = getIntervalOrDefault( leftPiece, "left")
+    rightValue, rightIndex = getIntervalOrDefault ( rightPiece, "right")
+    
+    hideT(TablesOfPiecesGroups["Coat"])
+    if not leftValue and not rightValue then Show(defaultCoat) end
+    if leftValue and not rightValue then Show(TablesOfPiecesGroups["Coat"][leftIndex]) end
+    if not leftValue and  rightValue then Show(TablesOfPiecesGroups["Coat"][rightIndex]) end
+
+    if leftValue and rightValue then
+        leftIndex = leftIndex - coatMap.single.left.start
+        rightIndex = rightIndex - coatMap.single.right.start
+        midIndex = math.min(coatMap.both.start + math.floor((leftIndex+rightIndex)/2), coatMap.both.ends)
+        Show(TablesOfPiecesGroups["Coat"][midIndex])
+    end
+Sleep(250)
+end
+
 end
 
 function bodyBuild()
@@ -177,13 +273,25 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["Head"])
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
+    if TablesOfPiecesGroups["Suit"] and maRa() == true then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
 
-    if math.random(0, 4) > 3 then Show(MilitiaMask) end
+
+    if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
 
     if bodyConfig.boolArmed == true then
-        Show(MilitiaMask)
-        Show(ak47)
-        Show(molotow)
+        Show(MilitiaMask) 
+        if bodyConfig.boolRPGCarrying == true then
+            bodyConfig.boolRPGArmed = true
+            RPG7 = piece("RPG7")
+            RPG7Rocket = piece("RPG7Rocket")
+
+            Show(RPG7)
+            Show(RPG7Rocket)
+        else
+            Show(myGun)
+            Show(molotow)
+        end
         return
     end
 
@@ -215,6 +323,7 @@ function hideAllProps()
 
     Hide(MilitiaMask)
     Hide(ak47)
+    hideT(TablesOfPiecesGroups["Weapons"])
     Hide(molotow)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = false
@@ -309,7 +418,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolWounded = true
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
-    
+    damagedCoolDown = damagedCoolDown + (damage )
 end
 
 STATE_STARTED = "STARTED"
@@ -329,6 +438,7 @@ function startFilmLocation(ux, uy, uz, time)
     filmLocation.z=uz
     filmLocation.time = time
     boolStartFilming = true
+    return true
 end
 
 wailingTime = 0
@@ -337,6 +447,7 @@ function startWailing(time)
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     wailingTime = time
     boolStartWailing = true
+    return true
 end
 
 chattingTime = 0
@@ -345,20 +456,24 @@ function startChatting(time)
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     chattingTime = time
     boolStartChatting = true
+    return true
 end
 
 attackerID = 0
 boolStartFleeing = false 
-function startFleeing(attackerID)
-    if not attackerID then return end
+function startFleeing(enemyID)
+    assert(enemyID)
+    attackerID = enemyID
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
+    return true
 end
 
 boolStartPraying = false
 function startPraying()
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartPraying = true
+    return true
 end
 
 --
@@ -373,12 +488,12 @@ function pray()
         PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationDeg then GG.PrayerRotationDeg = math.random(0,360) end
          Spring.SetUnitRotation(unitID, 0, math.rad(GG.PrayerRotationDeg), 0)
-       prayTime = prayTime - 3500
+        prayTime = prayTime - 3500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
     end
-    setSpeedEnv(unitID, 1.0)
+    setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
@@ -388,18 +503,41 @@ boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartAnarchyBehaviour = true
+    return true
 end
 
 function anarchyBehaviour()   
-    oldBehaviourState = GG.GlobalGameState
+    oldBehaviourState = GameConfig.GameState.normal
+    newState = GG.GlobalGameState
+
+    if not GG.AnarchySexCoupleSpawnFrame  then GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1 end
+
+    if GG.AnarchySexCoupleSpawnFrame  + GameConfig.anarchySexCouplesEveryNSeconds * 30 < Spring.GetGameFrame() and math.random(1,100) == 69 and maRa() ==true then
+        StartThread(haveSexTimeDelayed)
+        return
+    end
+
 
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
-         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
-        oldBehaviourState = newState
+        normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
+        oldBehaviourState = GG.GlobalGameState
         Sleep(250)
     end
 
- setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+end
+
+function haveSexTimeDelayed()
+    GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1
+    id ,pos = randDict(GG.BuildingTable)
+    while distanceUnitToUnit(unitID, id ) > 200 do
+        Command(unitID, "go", { x=pos.x, y= 0, z= pos.z})
+        Command(unitID, "go", { x=pos.x, y= 0, z= pos.z}, "shift")
+        Sleep(500)
+    end
+    GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1
+    createUnitAtUnit(unitID, "civilian_orgy_pair", unitID, 0, 0, 0)
+    Spring.DestroyUnit(unitID, true, false)
 end
 
 boolStartAerosolBehaviour = false
@@ -443,9 +581,9 @@ function chatting()
     SetSignalMask(SIG_INTERNAL)
     while chattingTime > 0 do
         if maRa() == true then
-        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, 1.0)
+        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
         else
-        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, 1.0)
+        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
        end
        Result= process(
         getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
@@ -453,12 +591,18 @@ function chatting()
             if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
         end
         )
+
        if #Result < 1 then break end
+       headVal = math.random(-20,20)
+       Turn(Head1,y_axis,math.rad(headVal),1.5)
+       WaitForTurns(Head1)
        ix,iy,iz = Spring.GetUnitPosition(Result[1])
        setUnitRotationToPoint(unitID, ix,iy,iz)
        chattingTime = chattingTime - 1500
         Sleep(100)
     end
+        playUpperBodyIdleAnimation()
+        resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
@@ -481,12 +625,18 @@ function fleeEnemy(enemyID)
     if not enemyID then 
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
-    end
+    end  
+   -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
+  
+    flightTime =  GameConfig.civilianMaxFlightTimeMS
+    while doesUnitExistAlive(enemyID) == true and 
+        flightTime > 0 and
+         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
 
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
-        value = math.random(450,550)
-        Sleep(value)
+        distribution = math.random(1,10)
+        Sleep(125+distribution)
+        flightTime= flightTime - 125
     end
 
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
@@ -675,8 +825,9 @@ function tacticalAnarchy()
     if bodyConfig.boolArmed == true then
 
         T = process(getAllNearUnit(unitID, 512), function(id)
-            if isUnitEnemy(myTeamID, id) == true and Spring.GetUnitIsCloaked(id) ==
-                false then return id end
+            if isUnitEnemy(myTeamID, id) == true and Spring.GetUnitIsCloaked(id) ==  false then 
+                return id 
+            end
         end)
 
         if T and #T > 0 then
@@ -707,13 +858,28 @@ normalBehavourStateMachine = {
             -- Spring.Echo("Civilian entering gamestate anarchy")
             Spring.SetUnitNeutral(unitID, false)
             Spring.SetUnitNoSelect(unitID, true)
+            if not Spring.GetUnitIsTransporting(unitID)  and  GG.GlobalGameState ~= GameConfig.GameState.normal and math.random(1,5) == 5 then
+                StartThread(attachLoot)
+            end
 
             bodyConfig.boolArmed = (math.random(1, 100) >
                                        GameConfig.chanceCivilianArmsItselfInHundred)
-
-            if bodyConfig.boolArmed == true then
-                Show(ak47)
                 Hide(ShoppingBag)
+                Hide(Handbag)
+                Hide(cofee)
+            if bodyConfig.boolArmed == true and maRa() then
+                Show(myGun)
+                Show(MilitiaMask)
+                T = process(getAllNearUnit(unitID, 100),
+                        function(id)
+                            if TruckTypeTable[Spring.GetUnitDefID(id)] then
+                                return id
+                            end
+                        end
+                        )
+                if T and #T > 0 then
+                    Spring.UnitAttach (T[1], unitID, getPieceNrByName(T[1], "attachPoint") )
+                end
             else
                 bodyConfig.boolProtest = (math.random(1, 10) > 5)
                 if bodyConfig.boolProtest == true then
@@ -723,9 +889,7 @@ normalBehavourStateMachine = {
                                     playerName)
                     Show(MilitiaMask)
                     Show(molotow)
-                    Hide(ShoppingBag)
-                    setOverrideAnimationState(eAnimState.protest,
-                                              eAnimState.walking, false)
+                    setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
                 end
             end
 
@@ -748,20 +912,20 @@ normalBehavourStateMachine = {
         Spring.SetUnitNeutral(unitID, true)
         Spring.TransferUnit(unitID, gaiaTeamID)
 
-        if unitID % 2 == 1 then -- cower catatonic
-            setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved,
-                                      true, nil, false)
-            setSpeedEnv(unitID, 0)
-        else -- run around wailing
             setOverrideAnimationState(eAnimState.wailing, eAnimState.walking,
                                       true, nil, true)
             x, y, z = Spring.GetUnitPosition(unitID)
-            Command(unitID, "go", {
-                x = x + math.random(-100, 100),
-                y = y,
-                z = z + math.random(-100, 100)
-            })
-        end
+            if maRa()== true then
+                Command(unitID, "go", {
+                    x = x + math.random(-100, 100),
+                    y = y,
+                    z = z + math.random(-100, 100)
+                })
+            else
+                runAwayFromPlace(unitID, Game.mapSizeX/2, 0, Game.mapSizeZ/2, 4096)
+            end
+
+
     end,
     [GameConfig.GameState.gameover] = function(lastState, currentState)
         setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true,
@@ -770,11 +934,12 @@ normalBehavourStateMachine = {
     end,
     [GameConfig.GameState.pacification] = function(lastState, currentState)
         if lastState ~= currentState then
+            dropLoot()
             Spring.TransferUnit(unitID, gaiaTeamID)
             Spring.SetUnitNeutral(unitID, true)
             if bodyConfig.boolArmed == true then
-                Hide(ak47)
-                Explode(ak47, SFX.FALL + SFX.NO_HEATCLOUD)
+                Hide(myGun)
+                Explode(myGun, SFX.FALL + SFX.NO_HEATCLOUD)
                 bodyConfig.boolArmed = false
             end
 
@@ -786,7 +951,7 @@ normalBehavourStateMachine = {
             Move(center, y_axis, 0, 60)
 
             PlayAnimation("UPBODY_HANDSUP")
-            setSpeedEnv(unitID, 1.0)
+            setSpeedEnv(unitID, NORMAL_WALK_SPEED)
            
             bodyConfig.boolArmed = false
             bodyConfig.boolProtest = false
@@ -932,7 +1097,7 @@ function conditionalFilterOutUpperBodyTable()
     if boolDecoupled == true or boolAiming == true then
         return upperBodyPieces
     else
-        return {}
+        return walkMotionExcludeTable
     end
 end
 
@@ -1013,19 +1178,19 @@ UpperAnimationStateFunctions = {
     end,
     [eAnimState.walking] = function()
         if bodyConfig.boolInfluenced then
-            PlayAnimation("UPBODY_WALK_ZOMBIE")
+            PlayAnimation("UPBODY_WALK_ZOMBIE", walkMotionExcludeTable)
             return eAnimState.walking
         end
 
         if bodyConfig.boolArmed == true then
-            PlayAnimation("UPBODY_LOADED")
+            PlayAnimation("UPBODY_LOADED", walkMotionExcludeTable)
             return eAnimState.walking
         end
 
         if bodyConfig.boolProtest == true then return eAnimState.protest end
 
         if bodyConfig.boolLoaded == true then
-            PlayAnimation("UPBODY_LOADED")
+            PlayAnimation("UPBODY_LOADED", walkMotionExcludeTable)
             return eAnimState.walking
         end
 
@@ -1383,11 +1548,10 @@ function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
 end
 
 function akAimFunction(weaponID, heading, pitch)
-    
-    if bodyConfig.boolArmed == false or 
-        (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
-        return false 
-    end
+    if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true  then return false end
+    if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+         return false 
+     end
 
     boolAiming = true
     setOverrideAnimationState(eAnimState.aiming, eAnimState.standing, true, nil,
@@ -1412,10 +1576,10 @@ end
 function molotowFireFunction(weaponID, heading, pitch) return true end
 
 WeaponsTable = {}
-function makeWeaponsTable()
+function makeWeaponsTable(myGun)
     WeaponsTable[1] = {
         aimpiece = center,
-        emitpiece = ak47,
+        emitpiece = myGun,
         aimfunc = akAimFunction,
         firefunc = akFireFunction,
         signal = SIG_PISTOL
@@ -1428,13 +1592,21 @@ function makeWeaponsTable()
         firefunc = molotowFireFunction,
         signal = SIG_MOLOTOW
     }
+
+     WeaponsTable[3] = {
+        aimpiece = Head1,
+        emitpiece = cellphone1,
+        aimfunc = rgpAimFunction,
+        firefunc = rgpFireFunction,
+        signal = SIG_RPG
+    }
 end
 
 function script.AimFromWeapon(weaponID)
     if WeaponsTable[weaponID] then
         return WeaponsTable[weaponID].aimpiece
     else
-        return ak47
+        return myGun 
     end
 end
 
@@ -1442,7 +1614,7 @@ function script.QueryWeapon(weaponID)
     if WeaponsTable[weaponID] then
         return WeaponsTable[weaponID].emitpiece
     else
-        return ak47
+        return myGun 
     end
 end
 
@@ -1462,6 +1634,14 @@ end
 function allowTarget(weaponID) 
     return true 
 end
+
+function dropLoot()
+    if Spring.GetUnitIsTransporting(unitID) then
+        transportID = Spring.GetUnitIsTransporting(unitID)
+        Spring.UnitDetach(transportID)
+    end
+end
+
 
 function script.Killed(recentDamage, _)
     --createCorpseCUnitGeneric(recentDamage)
