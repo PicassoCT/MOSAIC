@@ -23,7 +23,7 @@ end
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.western), -- "international", "western", "asia", "arabic"
+            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
             Version = "Alpha: 0.781" 
         },
 
@@ -83,8 +83,8 @@ function getGameConfig()
         policeSpawnMinDistance = 2200, -- preferably at houses
         maxSirenSoundFiles = 7,
         --soundIntervall
-        actionIntervallFrames = 2.5*60*30,
-        peaceIntervallFrames =  4*60*30,
+        actionIntervallFrames = math.ceil(2.5*60*30),
+        peaceIntervallFrames =  math.ceil(4*60*30),
 
         -- safehouseConfig
         buildSafeHouseRange = 80,
