@@ -15,32 +15,36 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
 
     local boolPreviouslyActive = false
-    function detectRisingEdge(boolActive)
+    function detectRisingEdge(boolValue)
         boolResult = false
-        if boolPreviouslyActive == false and boolActive == true then
+        if boolPreviouslyActive == false and boolValue == true then
             boolResult = true
         end
-
+        
+        boolPreviouslyActive = boolValue
+        return boolResult
+    end
+    
+    local boolPreviouslyActiveV2 = false
+    function detectFallingEdge(boolValue)
+        boolResult = false
+        if boolPreviouslyActiveV2 == true and boolValue == false then
+            boolResult = true
+        end
+        
+        boolPreviouslyActiveV2 = boolValue
         return boolResult
     end
 
-    function detectFallingEdge(boolActive)
-        boolResult = false
-        if boolPreviouslyActive == true and boolActive == false then
-            boolResult = true
-        end
-
-        return boolResult
-    end
-
-    local startFrame = -1
-    local endFrame = 0
+    local startFrame = -2
+    local endFrame = -1
     local InitialFrame = Spring.GetGameFrame()
  
     function gadget:Initialize()
         if not GG.HiveMind then GG.HiveMind = {} end
         SendToUnsynced("Initialize")
         InitialFrame = Spring.GetGameFrame()
+        GG.GameSpeed = 1.0
     end
 
     function gadget:GameFrame(n)      
@@ -50,7 +54,7 @@ if (gadgetHandler:IsSyncedCode()) then
             return
         end
 
-        boolPreviouslyActive = handleSlowMoPhases(n)
+        handleSlowMoStateMachine(n)
     end
 
     -- check for active HiveMinds and AI Nodes
@@ -107,60 +111,88 @@ if (gadgetHandler:IsSyncedCode()) then
     -- set SlowMotion effect
 
     currentSpeed = 1.0
-
-    function handleSlowMoPhases(frame)
-
-        boolSlowMoRequested, activeHiveMinds = areHiveMindsActive()
-        boolActive = frame >= startFrame and frame <= endFrame
-
-        --detect starting
-        if detectRisingEdge(boolSlowMoRequested) == true then
-            SendToUnsynced("setSlowMoShaderActive", true)
-            startFrame = frame + 1
-            Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
-            activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
-            deactivateCursorForNormalTeams(activeHiveMinds)
-            endFrame = (frame + math.ceil(MaxTimeInMs / 1000) * 30)
-            boolActive = true
-        end
-
-        if detectFallingEdge(boolSlowMoRequested) == true then
-            SendToUnsynced("setSlowMoShaderActive", false)
-            restoreCursorNonActiveTeams(activeHiveMinds)
-            endFrame= Spring.GetGameFrame()
-            SendToUnsynced("setDefaultGameSpeed", frame)
-             Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
-            boolActive = false
-        end
-
-
-        if boolActive == true then --interpolate
-             if currentSpeed > targetSlowMoSpeed - 0.11 then --SlowDown
-                Spring.Echo("slowdown to " .. currentSpeed)
-                Spring.SendCommands("slowdown")
-            end
+    
+    activeHiveMinds = {}
+    slowMoStateMachien = {
+        ["NotActive"]  = function (frame, previousState)
+                        nextState = "NotActive"
+                        boolSlowMoRequested, activeHiveMinds = areHiveMindsActive()
+                        if detectRisingEdge(boolSlowMoRequested) then
+                            SendToUnsynced("setSlowMoShaderActive", true)
+                            Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
+                            activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
+                            deactivateCursorForNormalTeams(activeHiveMinds)
+                            oldGameSpeed = currentSpeed
+                            startFrame = frame + 1
+                            endFrame = (frame + (math.ceil(MaxTimeInMs / 1000) * 30))
+                            nextState = "Starting"
+                            return nextState
+                        end
+                    
+                        return nextState
+                    end,
+     
+        ["Starting"]  = function (frame, previousState)
+                            nextState = "Starting"             
+                            if frame % 10 == 0 and currentSpeed > targetSlowMoSpeed - 0.11 then --SlowDown
+                                 Spring.Echo("slowdown to " .. currentSpeed)
+                                 Spring.SendCommands("slowdown")
+                                return "Starting"
+                            end
           
-        elseif boolActive == false  then
-            if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
-                Spring.Echo("speedup to from " .. currentSpeed.. " to ".. oldGameSpeed)
-                Spring.SendCommands("speedup ")
-            end
-        end
+                           if currentSpeed <= targetSlowMoSpeed - 0.11 then
+                             return "SlowMotion"
+                           end
+              
+                            return nextState
+                        end, 
+     
+        ["SlowMotion"]  = function (frame, previousState)
+                        nextState = "SlowMotion"
+                        
+                        if frame - startFrame > 0 and frame - startFrame % 210 == 0 then
+                            if side == "antagon" then
+                                Spring.PlaySoundFile("sounds/HiveMind/Antagonloop.ogg", 1.0)
+                            else
+                                Spring.PlaySoundFile("sounds/HiveMind/Protagonloop.ogg", 1.0)
+                            end
+                        end                       
+            
+                        if frame < startFrame or frame > endFrame or detectFallingEdge(boolSlowMoRequested) then 
+                            SendToUnsynced("setSlowMoShaderActive", false)
+                            restoreCursorNonActiveTeams(activeHiveMinds)
+                            SendToUnsynced("setDefaultGameSpeed", frame)
+                            Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
+                            nextState = "Ending"
+                            return nextState
+                        end
+            
+                        return nextState
+                    end,   
+        ["Ending"]  = function (frame, previousState)
+                        nextState = "NotActive"                      
+                        
+                        if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
+                            Spring.Echo("speedup to from " .. currentSpeed.. " to ".. oldGameSpeed)
+                            Spring.SendCommands("speedup ")
+                            return "Ending"
+                        end
 
-        GG.GameSpeed = currentSpeed
-
-        -- SlowMoPhase
-        if boolActive == true then
-            if frame - startFrame % 210 == 0 then
-                if side == "antagon" then
-                    Spring.PlaySoundFile("sounds/HiveMind/Antagonloop.ogg", 1.0)
-                else
-                    Spring.PlaySoundFile("sounds/HiveMind/Protagonloop.ogg", 1.0)
-                end
-            end
-        end
-
-        return boolActive
+                        if currentSpeed>= oldGameSpeed then
+                            startFrame = frame -1
+                            endFrame = frame -2    
+                            return nextState
+                         end          
+        
+                        return "Ending"
+                    end      
+    
+    }
+    currentState = "NotActive"
+    lastState = "NotActive"
+    function handleSlowMoStateMachine(frame)        
+        currentState = slowMoStateMachien(frame, lastState)
+        lastState = currentState
     end
 
     -- for teams without a active node or no node at all - hide the cursor during the slowMotionPhase
@@ -185,6 +217,7 @@ if (gadgetHandler:IsSyncedCode()) then
         start, ends = string.find(msg, "CurrentGameSpeed:")
         if ends then
             currentSpeed = tonumber(string.sub(msg, ends + 1, #msg))
+            GG.GameSpeed = currentSpeed
         end
     end
 
@@ -242,6 +275,5 @@ else -- Unsynced
         local playerID = Spring.GetMyPlayerID()
         local tteam = select(4,Spring.GetPlayerInfo(playerID))
         side    = select(5,Spring.GetTeamInfo(tteam)) or "antagon"
-
     end
 end

@@ -2648,9 +2648,16 @@ function capHide(l_Num)
     Hide(l_Num)
 end
 
-function showOnePiece(T)
+function showOnePiece(T, hash)
     if not T then return end
-    dice = math.random(1, count(T))
+    countNrElments = count(T)
+    dice = 1
+    if hash then
+	dice = (hash % countNrElments) +1
+    else		
+	dice = math.random(1,countNrElments)
+    end
+	
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
