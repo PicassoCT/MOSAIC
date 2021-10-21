@@ -243,8 +243,24 @@ end
 
 local boolHasCityCenter = false --maRa()
 
+function isOnRoad(cursorl)
+    local subResCursor = {x= cursorl.x, z= cursorl.z}
 
-function isOnInnerCityGridBlock(cursorl, offx, offz, BuildingPlaceT)
+    subResCursor.x = ((subResCursor.x)*2)-1 
+    subResCursor.z = ((subResCursor.z)*2)-1 
+
+    if subResCursor.x < 0 then     subResCursor.x =  subResCursor.x + 4 end
+    if subResCursor.z < 0 then     subResCursor.z =  subResCursor.z + 4 end
+
+    subResCursor.x  = ((subResCursor.x ) % 4)
+    subResCursor.z = ((subResCursor.z ) % 4)
+    if subResCursor.x  == 0  then return true end
+    if subResCursor.z == 0  then return true end
+
+    return false
+end
+
+function isOnInnerCityGridBlock(cursorl, offx, offz)
     local subResCursor = {x= cursorl.x, z= cursorl.z}
     if offx == 0 and offz == 0 then return false end
 
@@ -323,7 +339,7 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
     orgPosX, orgPosZ= cursor.x*uDim.x, cursor.z*uDim.z
     for offsx = -1, 1, 1 do
         for offsz = -1, 1, 1 do
-            if isOnInnerCityGridBlock(cursor, offsx, offsz, BuildingPlaceT) == true then                
+            if isOnInnerCityGridBlock(cursor, offsx, offsz) == true then                
                 if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 35) == false  then
 ---echo("Gapspawned Building at:".. orgPosX + offsx * innerCityDim.x.." / ".. orgPosZ + offsz * innerCityDim.z)
 
@@ -383,7 +399,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             boolFirstPlaced = false
             dimX,dimZ = uDim.x, uDim.z
 
-            if BuildingPlaceT[cursor.x][cursor.z] == true and cursorIsOnMainRoad(cursor, startx, startz) == false then
+            if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
                 buildingType = randDict(houseTypeTable)
                 spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
                 numberOfBuildings = numberOfBuildings - 1
@@ -394,8 +410,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
                 end
             end
 
-            if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] ==
-                true and cursorIsOnMainRoad(mirror, startx, startz) == false then
+            if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
                 buildingType = randDict(houseTypeTable)
                 spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
                 numberOfBuildings = numberOfBuildings - 1
@@ -446,8 +461,7 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                 for offz = -1, 1, 1 do
                     if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
                         local tmpCursor = {x =cursor.x + offx, z = cursor.z + offz}
-                        tmpCursor = clampCursor(tmpCursor)
-                      
+                        tmpCursor = clampCursor(tmpCursor)                      
                         buildingType = randDict(houseTypeTable)
                         if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
                             spawnBuilding(buildingType,
