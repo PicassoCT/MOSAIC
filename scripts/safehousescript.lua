@@ -86,23 +86,23 @@ function houseAttach()
             boolJustOnce = true
         end
 
+
         -- if a previous safehouse is attached
-        if GG.houseHasSafeHouseTable[houseID] and
-            doesUnitExistAlive(GG.houseHasSafeHouseTable[houseID]) and
-            isUnitComplete(GG.houseHasSafeHouseTable[houseID]) then
-            boolJustOnce = true
-           -- echo("Create DoubleAgent Event Stream")
-
-            -- destroy the previous created safehouse
+        if GG.houseHasSafeHouseTable[houseID] and  doesUnitExistAlive(GG.houseHasSafeHouseTable[houseID]) then
             enemyTeamID = Spring.GetUnitTeam(GG.houseHasSafeHouseTable[houseID])
-            Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
+            if  isUnitComplete(GG.houseHasSafeHouseTable[houseID]) and 
+                enemyTeamID ~= myTeamID and 
+                not Spring.AreTeamsAllied(myTeamID, enemyTeamID) then
+                boolJustOnce = true
+               -- echo("Create DoubleAgent Event Stream")
 
-            -- Turn everything that comes out of this safehouse into a double agent - if the overbuilt unit is safehouse
+                -- destroy the previous created safehouse
+                
+                Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
 
-            if safeHouseTypeTable[spGetUnitDefID(GG.houseHasSafeHouseTable[houseID])] then
-                attachDoubleAgentToUnit(unitID ,enemyTeamID, true)
-            else
-                attachDoubleAgentToUnit(unitID ,enemyTeamID, false)
+                -- Turn everything that comes out of this safehouse into a double agent - if the overbuilt unit is safehouse
+                boolIsSafeHouse = safeHouseTypeTable[spGetUnitDefID(GG.houseHasSafeHouseTable[houseID])] ~= nil
+                attachDoubleAgentToUnit(unitID ,enemyTeamID, boolIsSafeHouse)
             end
         end
 
