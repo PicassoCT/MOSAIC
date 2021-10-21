@@ -395,13 +395,14 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             mirror = mirrorCursor(cursor, startx, startz)
             mirror = clampCursor(mirror)
             -- Spring.Echo("dice 1")
-        elseif dice == 2 then -- 2 place a single block
+        elseif dice == 2 or dice == 0 then -- 2 place a single block
             boolFirstPlaced = false
             dimX,dimZ = uDim.x, uDim.z
 
             if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
                 buildingType = randDict(houseTypeTable)
                 spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
+                echo("Placed Single")
                 numberOfBuildings = numberOfBuildings - 1
                 BuildingPlaceT[cursor.x][cursor.z] = false
                 boolFirstPlaced = true
@@ -413,6 +414,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
                 buildingType = randDict(houseTypeTable)
                 spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
+                echo("Placed Single Mirror")
                 numberOfBuildings = numberOfBuildings - 1
                 BuildingPlaceT[mirror.x][mirror.z] = false
                 if boolMirrorNearCityCenter == true then
