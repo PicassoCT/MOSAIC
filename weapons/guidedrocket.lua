@@ -5,7 +5,7 @@ local weaponDef = {
     weaponType = [[MissileLauncher]],
 	--damage
 	damage = {
-	default = 512
+	default = 1024
 	},
 	noSelfDamage = true,
 	reloadtime = 8, -- seconds
@@ -16,7 +16,7 @@ local weaponDef = {
 
 	--aiming behaviour
 	range = 1024,
-	turnRate = 150,
+	turnRate = 2048,
 	turret = true,
 	tracks = true,
 
@@ -24,7 +24,7 @@ local weaponDef = {
 	avoidGround = true,
 	
 	--flight behaviour
-	startVelocity  = 100,
+	startVelocity  = 600,
 	trajectoryHeight = 1.0 ,
 	flightTime = 10.5 ,
 	weaponVelocity = 2050,
