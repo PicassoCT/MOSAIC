@@ -27,14 +27,17 @@ local glUseShader = gl.UseShader
 local glCopyToTexture = gl.CopyToTexture
 local glTexture = gl.Texture
 local glTexRect = gl.TexRect
+local startTimer = Spring.GetTimer()
+local diffTime = 0
 
 
 
+
+	
 	flirshader = [[
 		uniform sampler2D screencopy;
-		uniform vec2 u_resolution;
-		uniform vec2 u_mouse;
-		uniform float u_time;
+		uniform vec2 resolution;
+		uniform float time;
 
 		vec2 skew (vec2 st) {
 		    vec2 r = vec2(0.0);
@@ -84,10 +87,21 @@ local glTexRect = gl.TexRect
 		  gl_FragColor = vec4(clamp(intensity+ color.r/100), clamp(intensity+ color.g/100), clamp(intensity + color.b/100 + 0.02), 1.0);
 		}
 	]]
+	local uniformVec2 = {
+	  resolution = {vsx, vsy}
+	}
+
+	local uniformFloat= {
+	  resolution = {vsx, vsy}
+	}
 
 	local uniformInt = {
 	  screencopy = 0
 	}
+
+	uniform = {
+			time   = diffTime
+			}
 
 	local shaderTable = {
 	  fragment = "",
@@ -136,19 +150,20 @@ function widget:RecvLuaMsg(msg, playerID)
 
 	if string.find(msg, "SlowMoShader") then
 		if msg == "SlowMoShader_Active" then
-			boolShaderActive = true
-			if not boolShaderActivePreviously then
- 				widget:ViewResize(vsx,vsy)
-			end
-			
+			boolShaderActive = true			
 		elseif msg == "SlowMoShader_Deactivated" then
 			boolShaderActive = false			
 		end
 	end
 end
 
+local pausedTime = 0
+local lastFrametime = Spring.GetTimer()
 function widget:DrawScreenEffects()
-	if  boolShaderActive == true then
+	if true or  boolShaderActive == true then
+	  lastFrametime = Spring.GetTimer()
+	  diffTime = Spring.DiffTimers(lastFrametime, startTimer)
+	  glUniform(shaderTimeLoc,diffTime * 1)
 	  glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
 	  glTexture(0, screencopy)
 	  glUseShader(shaderProgram)
@@ -156,6 +171,11 @@ function widget:DrawScreenEffects()
 	  glTexture(0, false)
 	  glUseShader(0)
 	end
+
+	if boolShaderActive ~= boolShaderActivePreviously then
+ 		widget:ViewResize(vsx,vsy)
+ 	end
+
 	boolShaderActivePreviously = boolShaderActive
 end
 	
