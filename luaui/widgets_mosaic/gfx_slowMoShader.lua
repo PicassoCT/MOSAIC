@@ -30,14 +30,11 @@ local glTexRect = gl.TexRect
 local startTimer = Spring.GetTimer()
 local diffTime = 0
 
-
-
-
-	
 	flirshader = [[
 		uniform sampler2D screencopy;
-		uniform vec2 resolution;
-		uniform float time;
+		uniform int resx;
+		uniform float resz;
+		uniform int time;
 
 		vec2 skew (vec2 st) {
 		    vec2 r = vec2(0.0);
@@ -62,50 +59,52 @@ local diffTime = 0
 		}
 
 		float getIntensity(vec4 color) {
-		  vec3 intensityVector = color.rgb * vec3(0.491, 0.261, 0.831);
+		  vec3 intensityVector = color.rgb * vec3(0.831, 0.261, 0.491);
 		  return length(intensityVector);
 		}
 
 		float clamp(float color) {
-			if (color <= 1.0) return color;
+		   if (color <= 1.0) {return color; }
 
 		return 1.0;
 		}
 		
 		void main() {
+
+	      	 // vec2 resolution = vec2(resx, resz);
 		  vec2 texCoord = vec2(gl_TextureMatrix[0] * gl_TexCoord[0]);
 		  vec4 origColor = texture2D(screencopy, texCoord);
 		  float intensity = getIntensity(origColor);
-   		  vec2 st = gl_FragCoord.xy/u_resolution.xy;
-    		  vec3 color = vec3(0.0);
-   		  st*= 10.;
-     		  color.rg = fract(skew(st));
-                  color = simplexGrid(st);
+   		 // vec2 st = gl_FragCoord.xy/resolution.xy;
+    		 vec3 color = vec3(0.0);
+   		 //st = st * 10.0;
+     		 //color.rg = fract(skew(st));
+                 // color = simplexGrid(st);
 		  if (intensity < origColor.r ) {intensity = origColor.r};
 
 
-		  gl_FragColor = vec4(clamp(intensity+ color.r/100), clamp(intensity+ color.g/100), clamp(intensity + color.b/100 + 0.02), 1.0);
+		  gl_FragColor = vec4(clamp(intensity+ color.r/100.0),
+		  		     clamp(intensity+ color.g/100.0), 
+		  		     clamp(intensity + color.b/100.0) + 0.02,
+		  		      1.0);
 		}
 	]]
-	local uniformVec2 = {
-	  resolution = {vsx, vsy}
-	}
 
-	local uniformFloat= {
-	  resolution = {vsx, vsy}
-	}
 
 	local uniformInt = {
-	  screencopy = 0
-	}
+		  screencopy = 0,
+		  resx = vsx,
+		  resz = vsz
+		}
 
-	uniform = {
-			time   = diffTime
-			}
+	local uniformFloat = {
+		time   = diffTime
+		}
 
 	local shaderTable = {
 	  fragment = "",
-	  uniformInt = uniformInt
+	  uniformInt = uniformInt,
+	  uniformFloat = uniformFloat
 	}
 local  side  = "antagon"
 

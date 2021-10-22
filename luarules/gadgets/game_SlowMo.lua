@@ -113,9 +113,14 @@ if (gadgetHandler:IsSyncedCode()) then
     currentSpeed = 1.0
     
     activeHiveMinds = {}
-    slowMoStateMachien = {
+    local State = {
+        NotActive = "NotActive",
+        Starting = "Starting",
+        SlowMotion = "SlowMotion",
+        Ending ="Ending"
+    }
+   local slowMoStateMachine = {
         ["NotActive"]  = function (frame, previousState)
-                        nextState = "NotActive"
                         boolSlowMoRequested, activeHiveMinds = areHiveMindsActive()
                         if detectRisingEdge(boolSlowMoRequested) then
                             SendToUnsynced("setSlowMoShaderActive", true)
@@ -125,30 +130,30 @@ if (gadgetHandler:IsSyncedCode()) then
                             oldGameSpeed = currentSpeed
                             startFrame = frame + 1
                             endFrame = (frame + (math.ceil(MaxTimeInMs / 1000) * 30))
-                            nextState = "Starting"
-                            return nextState
+
+                            return State.Starting
                         end
                     
-                        return nextState
+                        return State.NotActive
                     end,
      
         ["Starting"]  = function (frame, previousState)
-                            nextState = "Starting"             
+            
                             if frame % 10 == 0 and currentSpeed > targetSlowMoSpeed - 0.11 then --SlowDown
                                  Spring.Echo("slowdown to " .. currentSpeed)
                                  Spring.SendCommands("slowdown")
-                                return "Starting"
+                                return State.Starting
                             end
           
                            if currentSpeed <= targetSlowMoSpeed - 0.11 then
-                             return "SlowMotion"
+                             return State.SlowMotion
                            end
               
-                            return nextState
+                            return State.Starting
                         end, 
      
         ["SlowMotion"]  = function (frame, previousState)
-                        nextState = "SlowMotion"
+
                         
                         if frame - startFrame > 0 and frame - startFrame % 210 == 0 then
                             if side == "antagon" then
@@ -163,35 +168,33 @@ if (gadgetHandler:IsSyncedCode()) then
                             restoreCursorNonActiveTeams(activeHiveMinds)
                             SendToUnsynced("setDefaultGameSpeed", frame)
                             Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
-                            nextState = "Ending"
-                            return nextState
+                            return State.Ending
                         end
             
-                        return nextState
+                        return State.SlowMotion
                     end,   
         ["Ending"]  = function (frame, previousState)
-                        nextState = "NotActive"                      
-                        
+                         
                         if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
                             Spring.Echo("speedup to from " .. currentSpeed.. " to ".. oldGameSpeed)
                             Spring.SendCommands("speedup ")
-                            return "Ending"
+                            return State.Ending
                         end
 
                         if currentSpeed>= oldGameSpeed then
                             startFrame = frame -1
                             endFrame = frame -2    
-                            return nextState
+                            return State.NotActive
                          end          
         
-                        return "Ending"
+                        return State.Ending
                     end      
     
     }
-    currentState = "NotActive"
-    lastState = "NotActive"
+    local currentState = "NotActive"
+    local lastState = "NotActive"
     function handleSlowMoStateMachine(frame)        
-        currentState = slowMoStateMachien(frame, lastState)
+        currentState = slowMoStateMachine[currentState](frame, lastState)
         lastState = currentState
     end
 
