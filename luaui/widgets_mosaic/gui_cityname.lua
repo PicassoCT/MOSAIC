@@ -78,7 +78,7 @@ local function getRollingString(original, nrOfLetters, frames)
 end
 
 function widget:ViewResize(n_vsx,n_vsy)
-  scale = vsx*vsz/ (n_vsx*n_vsy) 
+  scale = vsx*vsy/ (n_vsx*n_vsy) 
   vsx,vsz = n_vsx,n_vsy
   setAnchorsRelative(vsx,vsy)
 end

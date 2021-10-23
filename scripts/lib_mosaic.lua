@@ -20,10 +20,16 @@ function  getMapCultureMap(mapName)
     return GG.InstanceCulture
 end
 
+function getModOptionCulture()
+    modOptions = Spring.GetModOptions()
+
+    return modOptions.culture
+end
+
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
+            culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.western), -- "international", "western", "asia", "arabic"
             Version = "Alpha: 0.781" 
         },
 
@@ -1380,6 +1386,8 @@ function  getManualCivilianBuildingMaps(mapName)
                     end
 
                     function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
+                        attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is a double agent for team "..teamToTurnTo
+                        echo(attachingTo)
                         if not GG.DoubleAgents then GG.DoubleAgents = {} end
 
                         hoverAboveFunc = function(persPack)

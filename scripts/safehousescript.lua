@@ -15,9 +15,7 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local myDefID = spGetUnitDefID(unitID)
 local myTeamID = Spring.GetUnitTeam(unitID)
 local spGetUnitPosition = Spring.GetUnitPosition
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
-                                                "house", UnitDefs)
-
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 
 
@@ -71,8 +69,7 @@ function houseAttach()
     boolJustOnce = false
     T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
     function(id) -- filter out all the safe houses
-        if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) ==
-            gaiaTeamID then return id end
+        if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID then return id end
         end, 
     function(houseID)
         if boolJustOnce == true then return end

@@ -61,6 +61,39 @@ local options = {
         def		= "",
     },
     {
+    key    = 'culture',
+    name   = 'Culture of the area',
+    desc   = 'Sets the regional background of the game (ínternational/western/asian/arabic)',
+    type   = 'list',
+    section= 'gamemode', 
+    def    = 'western',
+    items  = 
+    {
+      { 
+        key  = 'international',
+        name = 'International',
+        desc = 'All the games cultures mixed and happily coexisting',
+      },
+      { 
+        key  = 'western',
+        name = 'Western Cultural Sphere',
+        desc = 'Western cultural sphere',
+      },
+        { 
+        key  = 'asian',
+        name = 'Asian Cultural Sphere',
+        desc = 'SEA area and china sphere',
+      },
+      { 
+        key  = 'arabic',
+        name = 'Arabic cultural sphere',
+        desc = 'Arabic cultural sphere',
+      },
+    },
+  },  
+
+
+    {
         key = 'globallos',
         name = 'Full visibility',
         desc = 'No fog of war, everyone can see the entire map.',

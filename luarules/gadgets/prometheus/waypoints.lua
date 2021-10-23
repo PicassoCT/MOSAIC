@@ -493,6 +493,8 @@ function WaypointMgr.GameStart()
             if x and x ~= 0 then
                 -- Add a waypoint right there
                 local i, j = world2grid(x, z)
+                    assert(grid[i])
+                    assert(grid[i][j])
                 if grid[i][j].valid == nil then
                     grid[i][j].valid = true
                     local gx, gy, gz = grid2world(i, j)

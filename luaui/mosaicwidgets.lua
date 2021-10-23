@@ -1120,6 +1120,10 @@ function widgetHandler:DisableWidget(name)
 end
 
 function widgetHandler:ToggleWidget(name)
+  if self.orderList[name] == nil then
+    self.orderList[name] = 0
+  end
+
   local ki = self.knownWidgets[name]
   if (not ki) then
     Spring.Echo(HANDLER_BASENAME, LOG.ERROR, "ToggleWidget(), could not find widget: " .. tostring(name))

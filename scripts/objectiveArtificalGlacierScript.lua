@@ -56,17 +56,16 @@ function dependingOnDayTimeFoldUnfold()
 
         if hours > 19 and boolUnfolded == true then
             fold()
-            degree = (0.25 * 180) -  heading* 90
+            degree = (0.75 * 180) -  heading* 90
             WTurn(BasePlate, y_axis, math.rad(degree), math.pi / 500)
             boolUnfolded = false
         end
 
         if percentage > 0.25 and percentage < 0.70 then
             percentage = (percentage - 0.25) / 0.5
-            degree = (percentage * 180) +  heading* 90
+            degree = 180 + (percentage * 180) +  heading* 90
             Turn(BasePlate, y_axis, math.rad(degree), math.pi / 500)
         end
-
     Sleep(1000)
     end
 end

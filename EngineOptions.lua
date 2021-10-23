@@ -37,7 +37,7 @@ local options =
     name   = 'In-Game Conditions',
     desc   = 'Set up ingame conditions.',
     type   = 'section',
-  },      
+  },        
    
   {
     key    = 'GameMode',
@@ -62,7 +62,7 @@ local options =
     desc   = 'Determines amount of money and money storage that each player will start with',
     type   = 'number',
     section= 'startconds',
-    def    = 1000,
+    def    = 3000,
     min    = 0,
     max    = 10000,
     step   = 10,  -- quantization is aligned to the def value
@@ -75,7 +75,7 @@ local options =
     desc   = 'Determines amount of material and material storage that each player will start with',
     type   = 'number',
     section= 'StartingResources',
-    def    = 1000,
+    def    = 3000,
     min    = 0,
     max    = 10000,
     step   = 10,  -- quantization is aligned to the def value
@@ -130,7 +130,6 @@ local options =
     step   = 0.1,  -- quantization is aligned to the def value
                     -- (step <= 0) means that there is no quantization
   },
-
   {
     key    = 'MaxSpeed',
     name   = 'Maximum game speed',
