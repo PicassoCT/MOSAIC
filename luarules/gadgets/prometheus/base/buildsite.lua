@@ -304,9 +304,7 @@ local function baseBuildingTypeAtLocation(x, y, z, teamID)
 		["assembly"]= true,
 		["nimrod"]= true,
 		["launcher"]= true, 
-		--["hivemind"]= true,
-        ["blacksite"]= true,
-       -- ["aicore"]= true
+        ["blacksite"]= true
 	}
 
 
