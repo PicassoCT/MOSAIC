@@ -971,7 +971,6 @@ function showSubsAnimateSpins(pieceGroupName, nr)
 end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
-    ----echo(">>>>>>>>>>>>>>>> addRoofDeocrate START ")
     countElements = 0
     if materialColourName == "Office" and maRa() then
         decoChances.roof = 0.65 
