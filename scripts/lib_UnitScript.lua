@@ -1426,8 +1426,13 @@ function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orienta
  
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
-    return Spring.CreateUnit(typeID, x + ox, y + oy, z + oz,
+    --Delme DebugCode
+    id = Spring.CreateUnit(typeID, x + ox, y + oy, z + oz,
                              locOrientation, teamID, false, false, parentID)
+
+    if not id then echo("createUnitAtUnit could not creat unit "..typeID.." at Unit of Type "..UnitDefs[Spring.GetUnitDefID(otherID)].name.." id:"..otherID)end
+
+    return id
 end
 
 function createUnitAtFeature(teamID, typeID, featureID, ox, oy, oz)
