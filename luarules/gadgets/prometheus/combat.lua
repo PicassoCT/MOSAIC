@@ -40,6 +40,7 @@ local GetUnitDefID      = Spring.GetUnitDefID
 local GetUnitRulesParam = Spring.GetUnitRulesParam
 local GetGroundHeight   = Spring.GetGroundHeight
 local GetTeamResources  = Spring.GetTeamResources
+local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
 -- members
 local lastWaypoint = 0
 local units = {}
@@ -193,6 +194,17 @@ function CombatMgr.GameFrame(f)
                                             {target.x, target.y, target.z})
             end
 
+            if f % (30*30) == 0 then
+                for _,u in ipairs(unitArray) do
+                    local nearestEnemy = spGetUnitNearestEnemy(u)
+                    if nearestEnemy then
+                        GiveOrdersToUnitArray(orig, nearestEnemy, unitArray, CMD.ATTACK, normal, SQUAD_SPREAD)
+                        Spring.Echo("Prometheus: Giving attack order to unitarray")
+                        break
+                    end
+                end
+            end
+
             newUnits = {}
             newUnitCount = 0
         end
@@ -226,6 +238,7 @@ function CombatMgr.GameFrame(f)
             if target and (target ~= p) then
                 local orig = waypointMgr.GetNearestWaypoint2D(x, z)
                 GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+                Spring.Echo("Prometheus: Giving attack order to unitarray")
                 for _,u in ipairs(unitArray) do
                     units[u] = target --assume next call this unit will be at target
                 end
