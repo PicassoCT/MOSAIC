@@ -208,7 +208,7 @@ function dispatchOfficer(victimID, attackerID )
                 --Spring.Echo("")
             end
         elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
-            Command(officerID, "guard", victimID, {"shift"})
+            Command(officerID, "guard", victimID, {})
             return officerID
         elseif boolFoundSomething == false  then 
             x, y, z = spGetUnitPosition(officerID)
