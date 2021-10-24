@@ -115,6 +115,13 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     end
   }
 
+    function makeHouseVisible(houseID)
+        env = Spring.UnitScript.GetScriptEnv(houseID)
+        if env and env.showHouse then
+            Spring.UnitScript.CallAsUnit(houseID, env.showHouse)
+        end
+    end
+
     function molotowEventStream(weaponDefID, x, y, z)
 
             fireFunction = function(evtID, frame, persPack, startFrame)
@@ -229,12 +236,15 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                                    
                                     if doesUnitExistAlive(persPack.unitID) == true then
                                         Spring.SetUnitNoSelect(persPack.unitID, false)
+                                        makeHouseVisible(persPack.unitID))
                                     end
 
                                     --Stop Attacker form reintterogating the same building
                                     if doesUnitExistAlive(persPack.AttackerID) == true then
                                        Command(persPack.AttackerID, "stop")
                                     end
+
+
 
                                      GG.HouseRaidIconMap[persPack.unitID] = nil
                                 end
