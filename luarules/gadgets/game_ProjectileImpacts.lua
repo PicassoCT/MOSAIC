@@ -236,7 +236,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                                    
                                     if doesUnitExistAlive(persPack.unitID) == true then
                                         Spring.SetUnitNoSelect(persPack.unitID, false)
-                                        makeHouseVisible(persPack.unitID))
+                                        makeHouseVisible(persPack.unitID)
                                     end
 
                                     --Stop Attacker form reintterogating the same building
