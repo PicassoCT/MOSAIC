@@ -78,6 +78,7 @@ local OperativeInvestigator = Human:New{
 			},				
 			[2]={name  = "stunpistol",
 				onlyTargetCategory = [[GROUND ARRESTABLE]],
+				badTargetCategory = [[BUILDING]]
 			}
 		},	
 	

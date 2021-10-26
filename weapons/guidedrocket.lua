@@ -45,7 +45,6 @@ local weaponDef = {
     explosionGenerator = "custom:missile_explosion",
     soundStart = "sounds/weapons/rocket/launch.wav",
     soundHit = "sounds/weapons/rocket/impact.wav",
-
 }
 
 return lowerkeys({ [weaponName] = weaponDef })

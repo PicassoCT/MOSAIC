@@ -327,6 +327,7 @@ local disguiseDefID = randT(civilianSortedBySexTable)
 local mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID= spGetUnitTeam(unitID)
+local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 
 
 local scriptEnv = {
@@ -443,7 +444,7 @@ function cloakIfAIPlayer()
             Sleep(100)
             shouldBeNil = Spring.GetUnitIsBuilding(unitID)
             if shouldBeNil then
-                if Spring.GetUnitIsCloaked(unitID) == false then
+                if spGetUnitIsCloaked(unitID) == false then
                     setWantCloak(true)
                 end
             end
@@ -1134,7 +1135,11 @@ function cloakLoop()
 
 					if (not boolCloakRequest == true  ) then
 						return transitionToUncloaked()
-					end				
+					end		
+
+                    if not spGetUnitIsCloaked(unitID) then
+                        return transitionToUncloaked()
+                    end
 
 		return  "cloaked"
 		end,
