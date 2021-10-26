@@ -151,11 +151,13 @@ function Landing()
     end
     boolTransported = false
     PlayAnimation("UPRIGHT", nil, 5.0)
-    while(boolWalking == false and boolAiming == false) do
+    boolGotIdleTokken = getIdleTokken()
+    while(boolWalking == false and boolAiming == false and boolGotIdleTokken) do
         speedO = math.random(5,25)/10
         PlayAnimation("IDLE", nil, speedO )
         Sleep(100)
     end
+    if boolGotIdleTokken == true then returnIdleTokken(); boolGotIdleTokken = false end
 end
 
 boolIdleRunning = false
@@ -170,6 +172,7 @@ function SignalIdle()
 end
 
 boolForward = true
+boolGotIdleTokken = false
 function walkAnimationLoop()
     waitTillComplete(unitID)
     Landing()
@@ -192,7 +195,9 @@ function walkAnimationLoop()
                 end
 
                 if boolWalking == false then
-                    if maRa()== true then -- idle animation
+                    boolGotIdleTokken = getIdleTokken()
+                    if boolGotIdleTokken == true then -- idle animation
+
                         while(boolWalking == false and boolAiming == false) do
                             if boolIdleRunning == false then
                                 boolIdleRunning = true
@@ -201,6 +206,7 @@ function walkAnimationLoop()
                             Sleep(50)
                         end
                         Signal(SIG_IDLE)
+                        returnIdleTokken()
                     else --shutdown
                         if math.random(0, 4) < 2 then
                             PlayAnimation("SIT", nil, 2.0)
@@ -208,6 +214,7 @@ function walkAnimationLoop()
                              PlayAnimation("UPRIGHT", nil, 10.0)
                         end
                     end
+
                 end
             end
         end
@@ -336,6 +343,7 @@ end
 
 function script.Killed(recentDamage, _)
     PlayAnimation("UPRIGHT", nil, math.pi)
+    if boolGotIdleTokken == true then returnIdleTokken() end
     for k, v in pairs(TablesOfPiecesGroups) do
         explodeT(v, SFX.SHATTER)
         hideT(v)

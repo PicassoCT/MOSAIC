@@ -47,6 +47,7 @@ function getGameConfig()
         allyWaySizeX = 25,
         allyWaySizeZ = 25,
         bonusFirstUnitMoney_S = 12,
+        maxParallelIdleAnimations = 20,
 
         agentConfig = {
             recruitmentRange = 60,
@@ -2241,6 +2242,20 @@ function  getManualCivilianBuildingMaps(mapName)
                     return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
                 end
 
+function getIdleTokken()
+    if not GG.CurrentIdleNr then GG.CurrentIdleNr = 0 end
+
+    if GG.CurrentIdleNr < GG.GameConfig.maxParallelIdleAnimations then
+      GG.CurrentIdleNr  = GG.CurrentIdleNr + 1
+      return true
+    end  
+
+    return false
+end
+
+function returnIdleTokken()
+     GG.CurrentIdleNr  = GG.CurrentIdleNr - 1
+end
                
 function getTODOTable(name)
     Spring.Echo("Table getter of name "..name.." is missing")

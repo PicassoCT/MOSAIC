@@ -389,13 +389,13 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
         boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z, GameConfig)
         boolMirrorNearCityCenter = isNearCityCenter(mirror.x * uDim.x, mirror.z*uDim.z, GameConfig)
 
-        if dice == 1 then -- 1 random walk into a direction doing nothing
+        if dice == 1 or (dice == 0 and GameConfig.instance.culture == "arabic")then -- 1 random walk into a direction doing nothing
             cursor = randomWalk(cursor)
             cursor = clampCursor(cursor)
             mirror = mirrorCursor(cursor, startx, startz)
             mirror = clampCursor(mirror)
             -- Spring.Echo("dice 1")
-        elseif dice == 2 or dice == 0 then -- 2 place a single block
+        elseif dice == 2 or (dice == 0 and GameConfig.instance.culture ~= "arabic")  then -- 2 place a single block
             boolFirstPlaced = false
             dimX,dimZ = uDim.x, uDim.z
 

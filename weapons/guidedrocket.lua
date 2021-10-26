@@ -16,17 +16,18 @@ local weaponDef = {
 
 	--aiming behaviour
 	range = 1024,
-	turnRate = 2048,
+	turnRate = 4096,
 	turret = true,
 	tracks = true,
 
+	predictBoost = 1.0,
 	avoidFeature = true,
 	avoidGround = true,
 	
 	--flight behaviour
 	startVelocity  = 600,
 	trajectoryHeight = 1.0 ,
-	flightTime = 10.5 ,
+	flightTime = 7.5 ,
 	weaponVelocity = 2050,
 	weaponAcceleration = 150,
 

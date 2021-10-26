@@ -878,6 +878,8 @@ normalBehavourStateMachine = {
                         end
                         )
                 if T and #T > 0 then
+                    assert(T[1])
+                    assert(type(T[1])=="number")
                     Spring.UnitAttach (T[1], unitID, getPieceNrByName(T[1], "attachPoint") )
                 end
             else
