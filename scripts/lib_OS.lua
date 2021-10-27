@@ -454,6 +454,19 @@ function heuristicDefault(fooNction, fname, teamID, ...)
     end
 end
 
+function hoverAboveGround(unitID, distanceToHover)
+local spGetGroundHeight = Spring.GetGroundHeight
+local spGetUnitPosition = Spring.GetUnitPosition
+Spring.MoveCtrl.Enable(unitID, true)
+
+	while true do
+		x,y,z = spGetUnitPosition(unitID)
+		gh = spGetGroundHeight(x,z)
+		Spring.MoveCtrl.Move(unitID, x, math.max(0,gh) + distanceToHover, z)
+		Sleep(29)
+	end
+end
+
 function scaleOfChange(a, b, trigger) val = math.abs(a - b) end
 
 -- ==============================================Eventstream Jobs

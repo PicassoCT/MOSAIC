@@ -6,7 +6,7 @@ include "lib_mosaic.lua"
 
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
-
+local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 myDefID = Spring.GetUnitDefID(unitID)
 TablesOfPiecesGroups = {}
 
@@ -557,6 +557,34 @@ function startFleeing(enemyID)
     boolStartFleeing = true
     return true
 end
+boolStartPeaceFullProtest = false
+socialEngineerID
+function startPeacefullProtest( id)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+	socialEngineerID= id
+    boolStartPeaceFullProtest = true
+    return true
+end
+
+function peacefullProtest()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+	makeProtestSign(8, 3, 34, 62, peacfulProtestSignMessages[socialEngineerID % #peacfulProtestSignMessages+ 1], playerName)
+   
+    while doesUnitExistAlive(socialEngineerID) == true do
+        PlayAnimation("UPBODY_PROTEST", lowerBodyPieces, 1.0)        
+		WaitForTurns(upperBodyPieces)
+		pos = {}
+		pos.x,_,pos.z = Spring.GetUnitPosition(socialEngineerID)
+		Command(unitID, "go", { x=pos.x, y= 0, z= pos.z})
+        Sleep(1500)
+    end
+	GG.SocialEngineeredPeople[unitID] = nil
+    resetT(upperBodyPieces,2.0, false, true)
+	hideT(TablesOfPiecesGroups["ProtestSign"])
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+end
+
 
 boolStartPraying = false
 function startPraying()
@@ -1101,6 +1129,11 @@ function threadStateStarter()
             boolStartPraying = false
             StartThread(pray)
         end
+		
+		if boolStartPeaceFullProtest == true then
+			boolStartPeaceFullProtest = false
+			StartThread(peacefullProtest)
+		end
 
         if boolStartAnarchyBehaviour == true then
             boolStartAnarchyBehaviour = false

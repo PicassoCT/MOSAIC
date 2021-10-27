@@ -1,3 +1,4 @@
+
 local Civil = Civilian:New{
 	--This class inherits alot from its 
 	name = "Western Civilian",
@@ -23,5 +24,5 @@ local Civil = Civilian:New{
 
 return lowerkeys({
 	--Temp
-	["civilian_western1"] = Civil:New(),
+	["civilian_western0"] = Civil:New(),
 })

@@ -366,6 +366,48 @@ local BribeIcon =
     category = "NOTARGET ABSTRACT"
 }
 
+local SocialEngineering =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 5000,
+    buildCostMetal = 5000,
+    canMove = true,
+    buildPic = "BribeIcon.png",
+    iconType = "BribeIcon",
+    explodeAs = "none",
+    Acceleration = 0.1,
+    BrakeRate = 1.0,
+    TurnRate = 90000,
+    MaxVelocity = 1.0,
+    MovementClass = "Default2x2",
+    CanFly   = true,
+    useSmoothMesh = true,
+    alwaysUpright = true,
+    --
+    description = "Engineer a social movement/ protest",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    name = "Social Engineering",
+    CanMove = true,
+    CanPatrol = true,
+    CanStop = true,
+    script = "socialEngineeringScript.lua",
+    objectName = "bribeIcon.dae",
+    onoffable = true,
+    activatewhenbuilt = true,
+    MaxSlope = 100,
+
+    customparams = {
+        helptext = "Icon",
+        baseclass = "Abstract" -- TODO: hacks
+    },
+    category = "NOTARGET ABSTRACT"
+}
+
+
 
 local CyberCrime =
     Abstract:New {
@@ -414,8 +456,9 @@ return lowerkeys(
         ["raidicon"] = RaidIcon:New(),
         ["recruitcivilian"] = RecruitCivilian:New(),
         ["snipeicon"] = SnipeIcon:New(),
-        ["objectiveicon"] = ObjectiveIcon:New(),
         ["bribeicon"] = BribeIcon:New(),
+        ["socialengineeringicon"] = SocialEngineering:New(),
+        ["objectiveicon"] = ObjectiveIcon:New(),
         ["cybercrimeicon"] = CyberCrime:New(),
         ["destroyedobjectiveicon"] = DestroyedObjective:New()
     }

@@ -38,7 +38,10 @@ function getGameConfig()
         numberOfPersons = math.ceil(100 * unitFactor),
         nightCivilianReductionFactor = 0.25,
         LoadDistributionMax = 5,
-
+		--Icons
+		iconHoverHeight = 250,
+		socialEngineeringRange = 512,
+		
         houseSizeX = 256,
         houseSizeY = 16,
         houseSizeZ = 256,
@@ -84,6 +87,7 @@ function getGameConfig()
         chanceCivilianArmsItselfInHundred = 50,
         demonstrationMarchRadius = 50,
         civilianMaxWalkingDistance = 3000,
+		
 
         maxNrPolice = 8,
         policeMaxDispatchTime = 2000,
@@ -327,6 +331,7 @@ function  getManualCivilianBuildingMaps(mapName)
             [UnitDefNames["interrogationicon"].id] = true,
             [UnitDefNames["recruitcivilian"].id] = true,
             [UnitDefNames["bribeicon"].id] = true,
+            [UnitDefNames["socialengineeringicon"].id] = true,
             [UnitDefNames["cybercrimeicon"].id] = true,
             [UnitDefNames["launcherstep"].id] = true,
             [UnitDefNames["destroyedobjectiveicon"].id] = true,
@@ -2201,7 +2206,7 @@ function  getManualCivilianBuildingMaps(mapName)
                             "Ahmed", "Daris", "Amar", "Davud", "Adin", "Hamza", "Harun", "Vedad", "Imran", "Tarik",
                             "Luka", "David", "Ivan", "Jakov", "Marko", "Petar", "Filip", "Matej", "Mateo", "Leon",
                             "Jakub", "Jan", " Tomáš", "David", "Adam", "Matyáš", "Filip", "Vojtěch", " Ondřej", "Lukáš",
-                            "William", " Noah", "Oscar", "Lucas", "Victor", "Malthe", "Oliver", "Alfred", "Carl", "Valdemar",
+                            "William", " Noah", "Oscar", "Lucas", "Victor", "Malthe", "Oliver", "Alfred", "Carl", "Valdemar", "Florian",
                             "Oliver", "George", "Noah", "Arthur", "Harry", "Leo", " Muhammad", "Jack", "Charlie", "Oscar",
                             "Leo", " Elias", "Oliver", "Eino", "Väinö", "Eeli", "Noel", "Leevi", "Onni", "Hugo",
                             "Emil", "Liam", "William", " Oliver", "Edvin", "Max", " Hugo", "Benjamin", "Elias", "Leo",

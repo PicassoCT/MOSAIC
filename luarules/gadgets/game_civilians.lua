@@ -1047,8 +1047,14 @@ function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
         Command(myID, "stop")
         startInternalBehaviourOfState(myID, "startPraying")
         return true, frame + 30, persPack   
-    end  
-    
+    end 
+
+	if GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then 
+		Command(myID, "stop")
+        startInternalBehaviourOfState(myID, "startPeacefullProtest", GG.SocialEngineeredPeople[myID])
+		return true, frame + 30, persPack   
+	end
+	   
     return false, nil, persPack
 end  
 
