@@ -576,12 +576,12 @@ function peacefullProtest()
 		WaitForTurns(upperBodyPieces)
 		pos = {}
 		pos.x,_,pos.z = Spring.GetUnitPosition(socialEngineerID)
-		Command(unitID, "go", { x=pos.x, y= 0, z= pos.z})
-        Sleep(1500)
+		Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
+        Sleep(3000)
     end
 	GG.SocialEngineeredPeople[unitID] = nil
     resetT(upperBodyPieces,2.0, false, true)
-	hideT(TablesOfPiecesGroups["ProtestSign"])
+	hideProtestSign()
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
@@ -1615,8 +1615,7 @@ function script.Deactivate() return 0 end
 
 function script.QueryBuildInfo() return center end
 
-function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
-                         sentence, personification)
+function hideProtestSign()
     for i = 1, 26 do
         charOn = string.char(64 + i)
         if TablesOfPiecesGroups[charOn] then
@@ -1628,7 +1627,12 @@ function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
     resetT(TablesOfPiecesGroups["Quest"])
     hideT(TablesOfPiecesGroups["Exclam"])
     resetT(TablesOfPiecesGroups["Exclam"])
+	Hide(ProtestSign)
+end
 
+function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
+                         sentence, personification)
+	hideProtestSign()
     index = 0
     Show(ProtestSign)
     alreadyUsedLetter = {}
