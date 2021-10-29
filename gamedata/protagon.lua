@@ -10,7 +10,6 @@ local protagonUnits = {
     "civilianagent",
     "nimrod",
     "propagandaserver",
-    "aicore",
     "assembly",
     "blacksite"
   },

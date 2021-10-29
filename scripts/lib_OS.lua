@@ -454,15 +454,38 @@ function heuristicDefault(fooNction, fname, teamID, ...)
     end
 end
 
-function hoverAboveGround(unitID, distanceToHover)
+
+
+function hoverAboveGround(unitID, distanceToHover, step)
 local spGetGroundHeight = Spring.GetGroundHeight
 local spGetUnitPosition = Spring.GetUnitPosition
 Spring.MoveCtrl.Enable(unitID, true)
+Spring.MoveCtrl.SetRotation(unitID, 0,0,0)
 
 	while true do
 		x,y,z = spGetUnitPosition(unitID)
+
+        CommandTable = Spring.GetUnitCommands(unitID, 1)
+        if CommandTable and CommandTable[1] and CommandTable[1].id ==  CMD.MOVE then
+            cmd = CommandTable[1]
+              if math.abs(cmd.params[1] - x) > 10 then
+                        if cmd.params[1] < x then
+                            x = x -step
+                        elseif cmd.params[1] > x then
+                             x = x +step
+                        end
+              end
+              if math.abs(cmd.params[3] - z) > 10 then
+                        if cmd.params[3] < z then
+                            z = z -step
+                        elseif cmd.params[3] > z then
+                             z = z +step
+                        end
+              end
+        end
+        
 		gh = spGetGroundHeight(x,z)
-		Spring.MoveCtrl.Move(unitID, x, math.max(0,gh) + distanceToHover, z)
+		Spring.MoveCtrl.SetPosition(unitID, x, math.max(0,gh) + distanceToHover, z)
 		Sleep(29)
 	end
 end
@@ -930,5 +953,34 @@ function spawnCegCyclicAtUnitPiece(unitID, pieceID, cegname, delay)
         Sleep(delay)
         spawnCegAtPiece(unitID, pieceID, cegname, 150)
         Sleep(1)
+    end
+end
+
+function displayPercentages(TableOfPieces, timeToCountUp)
+    hideT(TableOfPieces)
+    totalNrOfPieces = #TableOfPieces
+    timeSliceMs = math.ceil(timeToCountUp/math.max(1,totalNrOfPieces))
+    accumulated = 0
+    index= 1
+    while accumulated <= timeToCountUp do
+        Sleep(timeSliceMs)
+        showT(TableOfPieces,1,index)
+        index = index + 1
+        accumulated = accumulated + timeSliceMs
+    end
+end
+
+
+function hidePercentages(TableOfPieces, timeToCountUp)
+    showT(TableOfPieces)
+    totalNrOfPieces = #TableOfPieces
+    timeSliceMs = math.ceil(timeToCountUp/math.max(1,totalNrOfPieces))
+    accumulated = 0
+    index= 1
+    while accumulated <= timeToCountUp do
+        Sleep(timeSliceMs)
+        hideT(TableOfPieces,1,index)
+        index = index + 1
+        accumulated = accumulated + timeSliceMs
     end
 end

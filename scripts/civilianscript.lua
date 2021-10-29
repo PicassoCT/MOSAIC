@@ -558,7 +558,7 @@ function startFleeing(enemyID)
     return true
 end
 boolStartPeaceFullProtest = false
-socialEngineerID
+socialEngineerID = nil
 function startPeacefullProtest( id)
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
 	socialEngineerID= id

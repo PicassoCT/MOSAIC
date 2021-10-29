@@ -12,7 +12,6 @@ local antagonUnits = {
 		"nimrod",
 		"propagandaserver",
 		"assembly",
-		"hivemind",
 		"launcher"
   },
 

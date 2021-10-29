@@ -38,9 +38,7 @@ function getGameConfig()
         numberOfPersons = math.ceil(100 * unitFactor),
         nightCivilianReductionFactor = 0.25,
         LoadDistributionMax = 5,
-		--Icons
-		iconHoverHeight = 250,
-		socialEngineeringRange = 512,
+	
 		
         houseSizeX = 256,
         houseSizeY = 16,
@@ -196,6 +194,10 @@ function getGameConfig()
         metalStart = 5000,
 
         -- Icons
+            --Icons
+        socialEngineeringRange = 256,
+        socialEngineerLifetimeMs = 3*60*1000,
+        
         iconGroundOffset = 50,
         iconHoverGroundOffset = 125,
         SatelliteIconDistance = 150,

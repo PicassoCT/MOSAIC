@@ -59,7 +59,7 @@ local OperativeInvestigator = Human:New{
 		"protagonsafehouse",
 		"air_copter_ssied",
 		"checkpoint",
-		"cybercrimeicon",
+		"socialengineeringicon",
 		"brehmerwall",		
 		"stealmotorbike",
 	},
