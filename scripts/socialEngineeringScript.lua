@@ -35,26 +35,34 @@ function ringAnimation()
         for i=1, #TablesOfPiecesGroups["Range"] do
             timers = (((Spring.GetGameFrame()/30)+ i*((interval/2)/#TablesOfPiecesGroups["Range"]) % interval)/interval)* math.pi*2
             Move(TablesOfPiecesGroups["Range"][i],z_axis, 500 + math.sin(timers)*500, 666 )
+            if maRa() == maRa() then
+            	randTurn = math.random(0,360)
+            	Spin(TablesOfPiecesGroups["Range"][i],y_axis,math.rad(randTurn),0)
+        	end
         end
          timers = (((Spring.GetGameFrame()/30)+  #TablesOfPiecesGroups["Range"]*((interval/2)/#TablesOfPiecesGroups["Range"]) % interval)/interval)* math.pi*2
         Sleep(50)
     end
 end
 
-function randomGraphMovement(piecename, timeMs)
+function randomGraphMovement(piecename, timeMs, id)
 	Hide(piecename)
 	restTimeMs = math.ceil(timeMs*(math.random(10,40)/100))
 	moveTimeMS= math.ceil(timeMs-restTimeMs)
-	rx,rz = math.random(500,2000) * randSign(), math.random(500,2000) * randSign()
-	ry = math.random(-1000,-500)
+	local rx = math.random(250,1000) * randSign()
+	local rz = math.random(250,1000) * randSign()
+	local ry = math.random(-1000,-500)
 	Sleep(restTimeMs)
-	Move(piecename,y_axis, ry, 0)
+	if id > 24 then
+		Move(piecename,y_axis, ry, 0)
+	end
 	Move(piecename,x_axis, rx, 0)
 	Move(piecename,z_axis, rz, 0)
 	WaitForMoves(piecename)
 	Show(piecename)
-	maxval= math.max(math.abs(rx),math.abs(rz))
+	maxval= math.max(math.max(math.abs(rx),math.abs(rz)),math.abs(ry))
 	speedVal= (maxval/(moveTimeMS/1000))
+	Move(piecename,x_axis, 0, speedVal)
 	Move(piecename,y_axis, 0, speedVal)
 	Move(piecename,z_axis, 0, speedVal)
 	WaitForMoves(piecename)
@@ -65,11 +73,14 @@ function crowdAnimation()
 	while true do
 		Hide(Graph)
 		timeVal= math.random(1,6)*5*1000
+		count=1
 		process(TablesOfPiecesGroups["Crowd"],
 			function(id)
-				StartThread(randomGraphMovement, id, timeVal)
+				StartThread(randomGraphMovement, id, timeVal, count)
+				count= count+1
 			end)
 		Sleep(timeVal)
+		WaitForMoves(TablesOfPiecesGroups["Crowd"])
 		Show(Graph)
 		Sleep(5000)
 	end
