@@ -931,8 +931,7 @@ function UpdateFactoryList()
 end
 
 
---function widget:UnitFinished(unitID, unitDefID, unitTeam)
-function widget:UnitCreated(unitID, unitDefID, unitTeam)
+function widget:UnitFinished(unitID, unitDefID, unitTeam)
   if unitTeam ~= myTeamID then
     return
   end

@@ -26,6 +26,10 @@ function loadRider()
     Sleep(1)  
     if doesUnitExistAlive(id) == true then
         Spring.SetUnitLoadingTransport(fatherID, id)
+        env = Spring.UnitScript.GetScriptEnv(id) 
+        if env and env.TransportPickup then
+            Spring.UnitScript.CallAsUnit(id, env.TransportPickup,fatherID)
+        end
     end
     Spring.DestroyUnit(unitID, false, true)
 end

@@ -1244,7 +1244,11 @@ end
 
 function pistolAimFunction(weaponID, heading, pitch)
 	boolAiming = true
-	setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+    if boolWalking == true then
+	   setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
+    else
+        setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+    end
 	WTurn(center,y_axis,heading, 22)
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
 	-- echo("Aiming Pistol finnished")
@@ -1309,8 +1313,6 @@ function script.AimWeapon(weaponID, heading, pitch)
     if weaponID == 1 and boolWalking == false then
         return false
     end
-
-
 
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 

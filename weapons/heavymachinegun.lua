@@ -1,5 +1,5 @@
 
-local weaponName = "machinegun" 
+local weaponName = "heavymachinegun" 
 local weaponDef = {
     name = "M27-64",
     weaponType = [[Cannon]],
@@ -34,7 +34,7 @@ local weaponDef = {
     size = 1.2,
     stages = 20,
     separation = 0.2
-     soundStart = "sounds/weapons/machinegun/salvo3.ogg",
+     soundStart = "weapons/machinegun/salvo2.ogg",
  
 }
 

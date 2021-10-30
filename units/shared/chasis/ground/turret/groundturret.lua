@@ -142,7 +142,7 @@ local groundturretmg =  Turret:New{
 				},
 				
 		weapons = {
-		[1]={name  = "machinegun",
+		[1]={name  = "heavymachinegun",
 			onlyTargetCategory = [[GROUND BUILDING]]
 			},	
 		[2]={name  = "aamachinegun",
@@ -394,7 +394,7 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	maxVelocity		= 0.5 , --14.3, --86kph/20
+	maxVelocity		= 0.125 , --14.3, --86kph/20
 	--maxReverseVelocity= 2.15,
 	acceleration = 0.15,
 	brakeRate = 0.1,
@@ -412,7 +412,7 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	collisionvolumescales = "5 25 5",
 	
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 250,
+	sightDistance = 50,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 
@@ -434,7 +434,8 @@ local ground_turret_cruisemissilepod =  Walker:New{
 
 	 sfxtypes = {
 		explosiongenerators = {
-							"custom:cruisemissiletrail"
+							"custom:cruisemissiletrail",
+							"custom:icbmshine",
 							  },
 				},
 				

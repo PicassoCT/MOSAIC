@@ -569,13 +569,22 @@ end
 function peacefullProtest()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-	makeProtestSign(8, 3, 34, 62, peacfulProtestSignMessages[socialEngineerID % #peacfulProtestSignMessages+ 1], playerName)
-   
+    if maRa()== true then
+	   makeProtestSign(8, 3, 34, 62, peacfulProtestSignMessages[socialEngineerID % #peacfulProtestSignMessages+ 1], playerName)
+    end
+
+    myOffsetX = (math.random(0,15)+ (unitID % 15))*randSign()
+    myOffsetZ = (math.random(0,15)+ (unitID % 5))*randSign()
+
     while doesUnitExistAlive(socialEngineerID) == true do
         PlayAnimation("UPBODY_PROTEST", lowerBodyPieces, 1.0)        
 		WaitForTurns(upperBodyPieces)
 		pos = {}
 		pos.x,_,pos.z = Spring.GetUnitPosition(socialEngineerID)
+        if pos.x then
+            pos.x = myOffsetX + pos.x 
+            pos.z = myOffsetZ + pos.z
+        end
 		Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
         Sleep(3000)
     end

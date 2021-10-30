@@ -53,14 +53,16 @@ local OperativePropagator = Human:New{
 	
 	buildoptions = 
 	{
-		"recruitcivilian",
-		"air_parachut",
 		"antagonsafehouse",
 		"air_copter_ssied",	
-		"cybercrimeicon",
-		"socialengineeringicon",
 		"barricade",
+		"air_parachut",
 		"stealmotorbike",
+		"cybercrimeicon",
+		"recruitcivilian",	
+		"socialengineeringicon",
+		
+		
 	},
 
 	customParams = {

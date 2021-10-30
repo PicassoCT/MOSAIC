@@ -84,7 +84,9 @@ function script.TransportDrop(passengerID, x, y, z)
     if doesUnitExistAlive(passengerID) then
         passenger= nil
         Spring.UnitDetach(passengerID)
+        px,py,pz = Spring.GetUnitPosition(unitID)
         Spring.SetUnitNoSelect(passengerID, false)
+        Command("go", {x = px,y= py, z=pz}, {})
         setSpeedEnv(unitID, 0.0)
         StartThread(killAfterTime)
     end
