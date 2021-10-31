@@ -29,7 +29,7 @@ end
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
+            culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.western), -- "international", "western", "asia", "arabic"
             Version = "Alpha: 0.786" 
         },
 

@@ -23,6 +23,7 @@ function script.Create()
     StartThread(headingSoundSurveilance)
     StartThread(initialMove)
     Spring.MoveCtrl.SetAirMoveTypeData(unitID, "attackSafetyDistance", 2048 )
+    Spring.MoveCtrl.Disable(unitID, true)
     setUnitNeverLand(unitID, true)
 end
 
