@@ -232,9 +232,10 @@ local PoliceTruck = Truck:New{
 				[1]={name  = "pistol",
 					onlyTargetCategory = [[GROUND]],
 					},
-				[2]={name  = "smartminedrone",
-					onlyTargetCategory = [[AIR]]
-					},		
+				[2]={
+					name  = "s16rocket",
+					onlyTargetCategory = [[AIR]],
+					},			
 	},	
 	
 	LeaveTracks = true,

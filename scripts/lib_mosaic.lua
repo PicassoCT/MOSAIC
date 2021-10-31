@@ -166,7 +166,8 @@ function getGameConfig()
         CruiseMissilesHeightOverGround = 22,
         cruiseMissileAntiArmorDroplettRange = 1200,
         cruiseMissileChanceOfInterceptOneIn= 25,
-
+        cruiseMissileReloadTimeMS = 5*60*1000,
+        
         -- Game States
         GameState = {
             normal = "normal",

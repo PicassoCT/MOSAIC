@@ -53,15 +53,14 @@ local OperativeInvestigator = Human:New{
 	canSelfDestruct = false,
 
 	buildoptions = 
-	{
-		"recruitcivilian",
-		"air_parachut",
-		"protagonsafehouse",
+	{	"protagonsafehouse",	
 		"air_copter_ssied",
 		"checkpoint",
-		"socialengineeringicon",
-		"brehmerwall",		
+		"brehmerwall",	
+		"air_parachut",
 		"stealmotorbike",
+		"recruitcivilian",
+		"socialengineeringicon",
 	},
 
 	customParams = {

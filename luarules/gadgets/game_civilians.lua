@@ -402,7 +402,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
                 buildingType = randDict(houseTypeTable)
                 spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
-                echo("Placed Single")
+              --  echo("Placed Single")
                 numberOfBuildings = numberOfBuildings - 1
                 BuildingPlaceT[cursor.x][cursor.z] = false
                 boolFirstPlaced = true
@@ -414,7 +414,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
                 buildingType = randDict(houseTypeTable)
                 spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
-                echo("Placed Single Mirror")
+                --echo("Placed Single Mirror")
                 numberOfBuildings = numberOfBuildings - 1
                 BuildingPlaceT[mirror.x][mirror.z] = false
                 if boolMirrorNearCityCenter == true then
@@ -841,6 +841,18 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if not persPack.myHP then persPack.myHP = hp end
     if hp < maxHp * 0.5 then persPack.boolDamaged = true end
 
+    if persPack.isTruck == nil then persPack.isTruck = TruckTypeTable[spGetUnitDefID(myID)] ~= nil end
+    if persPack.isTruck == true then
+        if not persPack.hasBreaks then persPack.hasBreaks = maRa() 
+            if not persPack.Break then 
+                persPack.Break= {
+                                 startFrame= math.ceil((myID% 100)/100)*GameConfig.daylength + 1, 
+                                 lengthFrames = math.random(10,120)*30
+                                }
+            end
+        end
+    end
+
     x, y, z = spGetUnitPosition(myID)
     assert(x)
 
@@ -1119,6 +1131,21 @@ end
 
 function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
+
+    if  persPack.isTruck and persPack.hasBreaks then
+        if  persPack.Break.startFrame < frame and 
+            frame < persPack.Break.startFrame + persPack.Break.lengthFrames  then
+            --Just stand there like a idiot
+            return boolDone, nil, persPack
+        end
+        --schedule next break
+        if  persPack.Break.startFrame < frame and 
+            frame > persPack.Break.startFrame + persPack.Break.lengthFrames  then
+            --compute new break time
+            persPack.Break.startFrame = frame + math.random(1000, GameConfig.daylength)
+        end
+    end
+
     -- if near Destination increase goalIndex
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 100 then

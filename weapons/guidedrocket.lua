@@ -5,21 +5,21 @@ local weaponDef = {
     weaponType = [[MissileLauncher]],
 	--damage
 	damage = {
-	default = 1024
+	default = 512
 	},
 	noSelfDamage = true,
 	reloadtime = 8, -- seconds
 
 	--orders behaviour
 	--commandFire  = true,	
-	canAttackGround = true,
+	canAttackGround = false,
 
 	--aiming behaviour
 	range = 1024,
 	turnRate = 4096,
 	turret = true,
 	tracks = true,
-
+	castshadow = false,
 	predictBoost = 1.0,
 	avoidFeature = true,
 	avoidGround = true,

@@ -1137,10 +1137,6 @@ function cloakLoop()
 						return transitionToUncloaked()
 					end		
 
-                    if not spGetUnitIsCloaked(unitID) then
-                        return transitionToUncloaked()
-                    end
-
 		return  "cloaked"
 		end,
 	["decloaked"] = function () 
@@ -1148,10 +1144,6 @@ function cloakLoop()
 					boolVisiblyForced =  (boolIsBuilding == true) or (boolFireForcedVisible == true) or (not OperativesDiscovered()  == false) 
 					boolPreviouslyCloaked = (previousState == "cloaked")
 			
-					if not boolVisiblyForced == false then
-						return "decloaked"
-					end
-
 					if not boolVisiblyForced == true and boolRecloakOnceDone == true then
 						boolRecloakOnceDone = false
 						return 	transitionToCloaked()
@@ -1160,6 +1152,10 @@ function cloakLoop()
 					if not boolCloakRequest == false  then 
 						return transitionToCloaked()
 					end
+
+                    if not boolVisiblyForced == false then
+                        return "decloaked"
+                    end
 
 					if boolPreviouslyCloaked  == true and boolCloakRequest == false then
 						return "decloaked"
@@ -1310,10 +1306,6 @@ function script.FireWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
-    if weaponID == 1 and boolWalking == false then
-        return false
-    end
-
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
 	if not targetType or  (not validTargetType[targetType])  then

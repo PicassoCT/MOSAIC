@@ -20,6 +20,7 @@ local weaponDef = {
     sprayAngle = 300,
     tolerance = 8000,
     lineOfSight = true,
+    SweepFire = true,
     turret = true, 
     canAttackGround = true,
    
@@ -28,13 +29,12 @@ local weaponDef = {
     burst = 15,
     burstrate = 0.1,
     soundtrigger = 1,
-    SweepFire = 1,
     --apperance
     rgbColor = [[0.95 0.5  0.2]],
-    size = 1.2,
-    stages = 20,
-    separation = 0.2
-     soundStart = "weapons/machinegun/salvo2.ogg",
+    size = 2.2,
+    stages = 10,
+    separation = 0.2,
+    soundStart = "sounds/weapons/machinegun/salvo2.ogg",
  
 }
 
