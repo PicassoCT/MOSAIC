@@ -33,8 +33,8 @@ local weaponDef = {
     rgbColor = [[0.95 0.5  0.2]],
     size = 1.2,
     stages = 20,
-    separation = 0.2
-     soundStart = "sounds/weapons/machinegun/salvo3.ogg",
+    separation = 0.2,
+    soundStart = "sounds/weapons/machinegun/salvo3.ogg",
  
 }
 
