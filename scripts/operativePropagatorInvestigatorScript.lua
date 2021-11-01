@@ -1229,6 +1229,7 @@ end
 function script.StartBuilding(heading, pitch)
 	boolIsBuilding = true
 	SetUnitValue(COB.INBUILDSTANCE, 1)
+    Signal(SIG_DELAYEDRECLOAK)
 --	echo("Starting Building")
 end
 

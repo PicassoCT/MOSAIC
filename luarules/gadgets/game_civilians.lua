@@ -843,8 +843,9 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
 
     if persPack.isTruck == nil then persPack.isTruck = TruckTypeTable[spGetUnitDefID(myID)] ~= nil end
     if persPack.isTruck == true then
-        if not persPack.hasBreaks then persPack.hasBreaks = maRa() 
-            if not persPack.Break then 
+        if not persPack.hasBreaks then 
+            persPack.hasBreaks = maRa() == true
+            if  persPack.hasBreaks == true  then 
                 persPack.Break= {
                                  startFrame= math.ceil((myID% 100)/100)*GameConfig.daylength + 1, 
                                  lengthFrames = math.random(10,120)*30
@@ -1132,7 +1133,7 @@ end
 function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
 
-    if  persPack.isTruck and persPack.hasBreaks then
+    if  persPack.isTruck == true and persPack.hasBreaks == true then
         if  persPack.Break.startFrame < frame and 
             frame < persPack.Break.startFrame + persPack.Break.lengthFrames  then
             --Just stand there like a idiot

@@ -6663,7 +6663,8 @@ end
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
     local target = tarGet
-    options = option or {}
+
+    option = option  or {}
     -- abort previous command
 
     if command == "build" then
@@ -6706,7 +6707,7 @@ function Command(id, command, tarGet, option)
 
     if command == "go" then
         Spring.GiveOrderToUnit(id, CMD.MOVE, {target.x, target.y, target.z},
-                               options) -- {"shift"}
+                               option) -- {"shift"}
     end
 
     if command == "stop" then Spring.GiveOrderToUnit(id, CMD.STOP, {}, {}) end

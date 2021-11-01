@@ -803,6 +803,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
 
             if element then
+                showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
 
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
@@ -818,13 +819,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     -- echo("Adding Window decoration to"..Level)
- WindowWallMaterial, Window =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowWallMaterial, 0, materialGroupName)
+                    WindowWallMaterial, Window =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowWallMaterial, 0, materialGroupName)
                     if Window then
                         Turn(Window, _z_axis, math.rad(rotation), 0)
                         showSubsAnimateSpinsByPiecename(pieceNr_pieceName[Window])
                     end
                 if chancesAre(10) < decoChances.windowwall then
- WindowDecoMaterial, WindowDeco =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowDecoMaterial, 0, materialGroupName)
+                    WindowDecoMaterial, WindowDeco =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowDecoMaterial, 0, materialGroupName)
                     if WindowDeco then
                       Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
                       showSubsAnimateSpinsByPiecename(pieceNr_pieceName[WindowDeco])
