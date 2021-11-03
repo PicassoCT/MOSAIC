@@ -848,7 +848,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
             if  persPack.hasBreaks == true  then 
                 persPack.Break= {
                                  startFrame= math.ceil((myID% 100)/100)*GameConfig.daylength + 1, 
-                                 lengthFrames = math.random(10,120)*30
+                                 lengthFrames = math.random(GameConfig.truckBreakTimeMinSec,GameConfig.truckBreakTimeMaxSec)*30
                                 }
             end
         end

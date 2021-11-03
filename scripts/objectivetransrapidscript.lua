@@ -20,24 +20,43 @@ function script.Create()
    StartThread(setup)
 end
 
+boolLeftValid = true
+boolRightValid = true
 function setup()
     Sleep(10)
-     StartThread(trainLoop, 1)
+    StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
     rVal = math.random(0,360)
     WTurn(center, y_axis, math.rad(rVal),0)
+    boolLeftValid= validTrackPart( -1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
+    boolRightValid= validTrackPart( 1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
 
     StartThread(deployTunnels, 1)
     StartThread(deployTunnels, 2)
     StartThread(showRail)
-    StartThread(turnEndPiecesDown, -1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
-    StartThread(turnEndPiecesDown, 1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
+   
 
 end
 
 function showRail()
     Sleep(100)
     hideT(TablesOfPiecesGroups["Rail"])
+    for i=1, #TablesOfPiecesGroups["Rail"] do 
+        id =TablesOfPiecesGroups["Rail"][i]
+        local xMax = Game.mapSizeX 
+        local zMax = Game.mapSizeZ 
+        x,_,z = Spring.GetUnitPiecePosDir(unitID, id)
+        if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
+            return id
+        end
+        if i < 13 and boolLeftValid == true then
+            Show(id)
+        end
+        if i > 12 and boolRightValid == true then
+            Show(id)
+        end
+    end
+
     process(TablesOfPiecesGroups["Rail"],
         function(id)
         local xMax = Game.mapSizeX 
@@ -53,17 +72,15 @@ function showRail()
         )
 end
 
-function turnEndPiecesDown(signs, EndPiece, DetectorPiece)
-    Sleep(250)
+function validTrackPart(signs, EndPiece, DetectorPiece)
     Hide(DetectorPiece)
     Hide(EndPiece)
-    value = 0
-    attempts = 0
-  --[[  while isPieceAboveGround(unitID, DetectorPiece, 10) == true and attempts < 10 do
-        value = value -5 * signs
-        WTurn(EndPiece,z_axis, math.rad(value),0)
-        attempts= attempts +1
-    end--]]
+    x,y,z = Spring.GetUnitPiecePosDir(DetectorPiece)
+    gh = Spring.GetGroundHeight(x,z)
+
+    boolUnderground =  gh > y
+    boolOutsideMap = (x > Game.mapSizeX or x <= 0) or  (z > Game.mapSizeZ or z <= 0)
+    return boolUnderground or boolOutsideMap
 end
 
 local boolOldState = false
@@ -158,17 +175,20 @@ function trainLoop(nr)
 	Sleep(rSleepValue)
 	local train = piece("Train"..nr)
 
-
 	while true do
         direction = randSign()
-        WMove(train, trainAxis, maxDistanceTrain*direction, 0)
+        if boolLeftValid == true then
+            WMove(train, trainAxis, maxDistanceTrain*direction, 0)
+        end
 		buildTrain(nr)
 		WMove(train, trainAxis, 0, trainspeed)
 		breakTime = math.random(0,10)*1000
 		Sleep(breakTime)
         buildTrain(nr)
-		WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
-		hideTrain(nr)
+        if boolRightValid == true then
+		  WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
+		end
+        hideTrain(nr)
 		betweenInterval = math.random(0,3)*60*1000+1
 		Sleep(betweenInterval)
 	end

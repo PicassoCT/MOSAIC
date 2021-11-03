@@ -38,6 +38,10 @@ function getGameConfig()
         numberOfPersons = math.ceil(100 * unitFactor),
         nightCivilianReductionFactor = 0.25,
         LoadDistributionMax = 5,
+
+        --truck
+        truckBreakTimeMinSec= 60,
+        truckBreakTimeMaxSec= 360,
 	
 		
         houseSizeX = 256,
@@ -75,8 +79,8 @@ function getGameConfig()
         civilianMaxFlightTimeMS = 300000,
         civilianInterestRadius = 350,
         generalInteractionDistance = 35,
-        minConversationLengthFrames = 3 * 30,
-        maxConversationLengthFrames = 25 * 30,
+        minConversationLengthFrames = 15 * 30,
+        maxConversationLengthFrames = 120 * 30,
         groupChatDistance = 150,
         inHundredChanceOfInterestInDisaster = 35,
         inHundredChanceOfDisasterWailing = 75,
