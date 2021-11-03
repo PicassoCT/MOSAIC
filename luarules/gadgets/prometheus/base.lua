@@ -526,6 +526,7 @@ local function BuildBaseInterrupted()
     currentBuildDefID = nil
     currentBuildID = nil
     currentBuilder = nil
+    if not selected_chain then return end
     selected_chain.retry = selected_chain.retry - 1
     if selected_chain.retry > 0 then
         StartChain()
