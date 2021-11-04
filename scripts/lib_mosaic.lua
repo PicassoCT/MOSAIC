@@ -36,7 +36,7 @@ function getGameConfig()
         numberOfBuildings = math.ceil(95 * unitFactor),
         numberOfVehicles = math.ceil(75 * unitFactor),
         numberOfPersons = math.ceil(100 * unitFactor),
-        nightCivilianReductionFactor = 0.25,
+        nightCivilianReductionFactor = 0.125,
         LoadDistributionMax = 5,
 
         --truck
