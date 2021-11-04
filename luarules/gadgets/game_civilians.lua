@@ -1143,7 +1143,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         if  persPack.Break.startFrame < frame and 
             frame > persPack.Break.startFrame + persPack.Break.lengthFrames  then
             --compute new break time
-            persPack.Break.lengthFrames = math.random(truckBreakTimeMinSec, truckBreakTimeMaxSec)*30
+            persPack.Break.lengthFrames = math.random(GameConfig.truckBreakTimeMinSec, GameConfig.truckBreakTimeMaxSec)*30
             persPack.Break.startFrame = frame + math.random(1000, GameConfig.daylength)
         end
     end
