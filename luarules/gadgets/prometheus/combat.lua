@@ -20,6 +20,7 @@ if (not gadget.waypointMgr) then
 end
 
 local CombatMgr = {}
+local gaiaTeamID = Spring.GetGaiaTeamID ()
 
 -- constants
 local SQUAD_SIZE = SQUAD_SIZE
@@ -142,12 +143,41 @@ local function GiveOrdersToUnitMap(orig, target, unitMap, cmd, normal, spread)
     return GiveOrdersToUnitArray(orig, target, unitArray, cmd, normal, spread)
 end
 
+local function getEnemysAtTargetInRange(target, radius, myTeamID)
+    local unitsAtTarget = Spring.GetUnitsInCylinder ( target.x, target.z,  radius)
+    local result = {}
+    if unitsAtTarget and #unitsAtTarget > 0 then
+        --filter out gaia and myTeam
+        for i=1, #unitsAtTarget do
+            local unitTeamID = unitsAtTarget[i]
 
+            if unitTeamID ~= gaiaTeamID and unitTeamID ~= myTeamID then
+                result[#result+1] = unitsAtTarget[i]
+            end
+        end
+    end
+    return result
+end
+
+local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
+    local boolAssignedSuccesfully = false
+    local enemyUnitArray = getEnemysAtTargetInRange(target, 250, Spring.GetUnitTeam(unitsArray[1]))
+    if enemyUnitArray and #enemyUnitArray > 0 then
+        for i=1,#unitsArray do
+            local randomizedPriority = math.random(0,3)
+            DoGiveOrdersToUnit(unitsArray[i], enemyUnitArray[((i+randomizedPriority) % #enemyUnitArray)+1], CMD.ATTACK, normal, spread)
+        end
+        boolAssignedSuccesfully = true
+    end
+
+    return boolAssignedSuccesfully
+end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
 --  The call-in routines
 --
+
 
 function CombatMgr.GameFrame(f)
     if newUnitCount >= SQUAD_SIZE then
@@ -184,7 +214,14 @@ function CombatMgr.GameFrame(f)
                     taxiUnitArray[#taxiUnitArray + 1] = u
                 end
             end
-            GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+            if #unitArray % 2 == 1 then
+                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+            else
+                local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitsArray, normal, SQUAD_SPREAD)
+                if not boolAssignedTargets then
+                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+                end
+            end
 
             if #taxiUnitArray > 0 then
                 -- Don't unload the units straight at the combat line
@@ -194,16 +231,7 @@ function CombatMgr.GameFrame(f)
                                             {target.x, target.y, target.z})
             end
 
-            if f % (30*30) == 0 then
-                for _,u in ipairs(unitArray) do
-                    local nearestEnemy = spGetUnitNearestEnemy(u)
-                    if nearestEnemy then
-                        GiveOrdersToUnitArray(orig, nearestEnemy, unitArray, CMD.ATTACK, normal, SQUAD_SPREAD)
-                        Spring.Echo("Prometheus: Giving attack order to unitarray")
-                        break
-                    end
-                end
-            end
+            
 
             newUnits = {}
             newUnitCount = 0
@@ -237,6 +265,7 @@ function CombatMgr.GameFrame(f)
             end
             if target and (target ~= p) then
                 local orig = waypointMgr.GetNearestWaypoint2D(x, z)
+
                 GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
                 Spring.Echo("Prometheus: Giving attack order to unitarray")
                 for _,u in ipairs(unitArray) do
