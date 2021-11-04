@@ -75,7 +75,7 @@ end
 function validTrackPart(signs, EndPiece, DetectorPiece)
     Hide(DetectorPiece)
     Hide(EndPiece)
-    x,y,z = Spring.GetUnitPiecePosDir(DetectorPiece)
+    x,y,z = Spring.GetUnitPiecePosDir(unitID, DetectorPiece)
     gh = Spring.GetGroundHeight(x,z)
 
     boolUnderground =  gh > y
