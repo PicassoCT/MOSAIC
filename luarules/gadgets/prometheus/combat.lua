@@ -214,10 +214,11 @@ function CombatMgr.GameFrame(f)
                     taxiUnitArray[#taxiUnitArray + 1] = u
                 end
             end
+
             if #unitArray % 2 == 1 then
                     GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
             else
-                local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitsArray, normal, SQUAD_SPREAD)
+                local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
                 if not boolAssignedTargets then
                     GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
                 end
