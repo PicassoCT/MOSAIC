@@ -708,30 +708,49 @@ function wailing()
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
-function chatting()
-    Signal(SIG_INTERNAL)
-    SetSignalMask(SIG_INTERNAL)
-    while chattingTime > 0 do
-        if maRa() == true then
-        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
-        else
-        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
-       end
-       Result= process(
+function alignToPersonNearby()
+    Result= process(
         getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
         function(id)
             if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
         end
         )
+    if Result and Result[1] then
+        Command(unitID,"go",  Result[1], {})
+        return true
+    end
+    return false
+end
 
-       if #Result < 1 then break end
+function chatting()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+
+   if not alignToPersonNearby() then
+        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        return
+   end
+
+    repeatCounter = 0
+    while Result and ResultchattingTime > 0 do
+        if maRa() == true then
+            PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+        else
+            PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+        end     
+
        headVal = math.random(-20,20)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
-       ix,iy,iz = Spring.GetUnitPosition(Result[1])
-       setUnitRotationToPoint(unitID, ix,iy,iz)
        chattingTime = chattingTime - 1500
+       repeatCounter = repeatCounter + 1
         Sleep(100)
+        if repeatCounter % 2 == 0 then
+            if not alignToPersonNearby() then
+                setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+                return
+            end  
+        end  
     end
         playUpperBodyIdleAnimation()
         resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
