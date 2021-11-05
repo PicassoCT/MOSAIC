@@ -1215,7 +1215,7 @@ end
 function delayedStopBuilding()
 	Signal(SIG_DELAYEDRECLOAK)
 	SetSignalMask(SIG_DELAYEDRECLOAK)
-	Sleep(500)
+	Sleep(1500)
 	boolIsBuilding = false
 	--echo("Stop Building")
 	SetUnitValue(COB.INBUILDSTANCE, 0)

@@ -1,6 +1,6 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.75
+unitFactor = 0.70
 
 function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
