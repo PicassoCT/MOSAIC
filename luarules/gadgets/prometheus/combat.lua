@@ -166,8 +166,8 @@ local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
         for i=1,#unitsArray do
             local randomizedPriority = math.random(0,3)
             GiveOrderToUnit(unitsArray[i], CMD.ATTACK, enemyUnitArray[((i+randomizedPriority) % #enemyUnitArray)+1],  {})
+            boolAssignedSuccesfully = true
         end
-        boolAssignedSuccesfully = true
     end
 
     return boolAssignedSuccesfully
