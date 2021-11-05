@@ -20,6 +20,7 @@ local weaponDef = {
     collideFriendly = true,
     BurnBlow = false,
     highTrajectory = 1,
+    collideFeature= true,
 
     --- -APPEARANCE
  	model = "molotow.s3o",
