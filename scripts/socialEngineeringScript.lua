@@ -19,8 +19,6 @@ function script.Create()
     Spring.SetUnitNeutral(unitID,true)
     Spring.SetUnitBlocking(unitID,false)
     StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 0.3)  
-    StartThread(lifeTime, unitID, GameConfig.socialEngineerLifetimeMs, true, false)  
-    StartThread(hidePercentages, TablesOfPiecesGroups["Percentages"], GameConfig.socialEngineerLifetimeMs)  
 	StartThread(socialEngineeringPosWriteUp)
 	StartThread(ringAnimation)
 	StartThread(crowdAnimation)
@@ -87,6 +85,11 @@ function crowdAnimation()
 end
 
 function socialEngineeringPosWriteUp()
+	waitTillComplete(unitID)
+	soundnameTime= {name = "sounds/icons/social_engineering.ogg", time = 2*60*1000}
+	StartThread(playSoundByUnitTypOS, unitID, 0.75, soundnameTime)
+	StartThread(lifeTime, unitID, GameConfig.socialEngineerLifetimeMs, true, false)  
+    StartThread(hidePercentages, TablesOfPiecesGroups["Percentages"], GameConfig.socialEngineerLifetimeMs)  
 	if not GG.SocialEngineeredPeople then GG.SocialEngineeredPeople ={} end
 	if not GG.SocialEngineers then GG.SocialEngineers ={} end
 	GG.SocialEngineers[unitID] = true

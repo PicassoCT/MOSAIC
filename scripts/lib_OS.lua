@@ -626,7 +626,10 @@ function playSoundByUnitTypOS(unitID, loudness, SoundNameTimeT)
     unitdef = Spring.GetUnitDefID(unitID)
 
     while true do
-        dice = math.random(1, #SoundNameTimeTable)
+        dice = 1
+        if #SoundNameTimeTable > 1 then
+            dice = math.random(1, #SoundNameTimeTable)
+        end
 
         PlaySoundByUnitDefID(unitdef, SoundNameTimeTable[dice].name, loudness,
                              SoundNameTimeTable[dice].Time, 1)

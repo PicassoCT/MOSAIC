@@ -624,8 +624,11 @@ end
 
 function getUnitNumberAtTime(value)
     h, m, _, pTime = getDayTime()
-
-    mixValue = math.sin(math.pi * pTime)
+    piValue= math.pi * pTime
+    mixValue = 0
+    if piValue > math.pi*0.25 and  piValue < 0.8* math.pi then
+        mixValue = math.sin(piValue)
+    end
     blendedFactor = mix(1, GameConfig.nightCivilianReductionFactor, mixValue)
     --		echo("Time:"..h..":"..m.." %:"..pTime.."->"..blendedFactor)
     return value * blendedFactor

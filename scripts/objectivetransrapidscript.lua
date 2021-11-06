@@ -14,30 +14,25 @@ center = piece"center"
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-   hideT(TablesOfPiecesGroups["Tunnel1_"])
+    hideT(TablesOfPiecesGroups["Tunnel1_"])
     hideT(TablesOfPiecesGroups["Tunnel2_"])
-
-   StartThread(setup)
+    StartThread(setup)
 end
 
-boolLeftValid = true
-boolRightValid = true
 function setup()
     Sleep(10)
     hideT(TablesOfPiecesGroups["Rail"])
+    hideT(TablesOfPiecesGroups["Endstation"])
     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
     rVal = math.random(0,360)
     WTurn(center, y_axis, math.rad(rVal),0)
-    boolLeftValid= validTrackPart( TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
-    boolRightValid= validTrackPart( TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
-    if boolLeftValid == true then 
-      StartThread(showRail,1, 12)
-    end
+     if validTrackPart( TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1]) then Show(TablesOfPiecesGroups["Endstation"][1]) end
+     if validTrackPart( TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2]) then Show(TablesOfPiecesGroups["Endstation"][2]) end
 
-    if boolRightValid == true then 
+      StartThread(showRail,1, 12)
       StartThread(showRail,14, 23)
-    end
+
     StartThread(deployTunnels, 1)
     StartThread(deployTunnels, 2)
   
@@ -165,17 +160,13 @@ function trainLoop(nr)
 
 	while true do
         direction = randSign()
-        if boolLeftValid == true then
-            WMove(train, trainAxis, maxDistanceTrain*direction, 0)
-        end
+        WMove(train, trainAxis, maxDistanceTrain*direction, 0)
 		buildTrain(nr)
 		WMove(train, trainAxis, 0, trainspeed)
 		breakTime = math.random(0,10)*1000
 		Sleep(breakTime)
         buildTrain(nr)
-        if boolRightValid == true then
-		  WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
-		end
+    	WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
         hideTrain(nr)
 		betweenInterval = math.random(0,3)*60*1000+1
 		Sleep(betweenInterval)
