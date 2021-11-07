@@ -215,15 +215,8 @@ function CombatMgr.GameFrame(f)
                 end
             end
 
-            if #unitArray % 2 == 1 then
-                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-            else
-                local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
-                if not boolAssignedTargets then
-                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-                end
-            end
-
+            GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+           
             if #taxiUnitArray > 0 then
                 -- Don't unload the units straight at the combat line
                 target = waypointMgr.GetNext(target, -normal[1], -normal[2])
@@ -267,8 +260,15 @@ function CombatMgr.GameFrame(f)
             if target and (target ~= p) then
                 local orig = waypointMgr.GetNearestWaypoint2D(x, z)
 
-                GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-                Spring.Echo("Prometheus: Giving attack order to unitarray")
+                if #unitArray % 2 == 1 then
+                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+                else
+                    local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
+                    if not boolAssignedTargets then
+                        GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+                    end
+                end
+
                 for _,u in ipairs(unitArray) do
                     units[u] = target --assume next call this unit will be at target
                 end

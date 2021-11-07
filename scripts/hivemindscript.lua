@@ -59,6 +59,7 @@ function integrateNewMembers()
     px, py, pz = Spring.GetUnitPosition(unitID)
     members = {}
     while true do
+        if  GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX then
         process(getAllInCircle(x, z, IntegrationRadius), function(id)
             if GG.DisguiseCivilianFor[id] then
                 return GG.DisguiseCivilianFor[id]
@@ -77,6 +78,7 @@ function integrateNewMembers()
                 Spring.DestroyUnit(id, false, true)
             end
         end)
+        end
         Sleep(100)
     end
 
