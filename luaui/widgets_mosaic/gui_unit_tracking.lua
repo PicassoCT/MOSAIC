@@ -33,7 +33,8 @@ local spIsUnitIcon = Spring.IsUnitIcon
 local spIsUnitInView = Spring.IsUnitInView
 local spGetTeamColor = Spring.GetTeamColor
 local spGetUnitTeam = Spring.GetUnitTeam
-
+local spGetUnitDefID = Spring.GetUnitDefID
+local houseTypeTable = {}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -100,9 +101,10 @@ function CreateHighlightShader()
           opac = 1.0 - abs(opac);
           opac = pow(opac, edgeExponent)*0.45;
 
-          gl_FragColor.rgb = color + (opac*1.3);
-          gl_FragColor.a = plainAlpha + opac;
-
+          gl_FragColor.g = 0.0;
+          gl_FragColor.b = 0.0;
+          gl_FragColor.r = 1.0;
+          gl_FragColor.a = 1.0;
         }
       ]],
     })
@@ -111,6 +113,11 @@ end
 --------------------------------------------------------------------------------
 
 function widget:Initialize()
+   for k, v in pairs(UnitDefs) do
+        if string.find(v.name,"house_arab0") or string.find(v.name,"house_western0") then
+            houseTypeTable[k] = k
+        end
+    end
   WG['highlightselunits'] = {}
   WG['highlightselunits'].getOpacity = function()
     return highlightAlpha
@@ -161,11 +168,9 @@ local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local trackedUnits = {}
 local trackKey = 111 --'O'
-local untrackKey = 108 --'L'
-function widget:SelectionChanged(sel)
-  selectedUnits = sel
-  selectedUnitsCount = Spring.GetSelectedUnitsCount()
-end
+local untrackKey = 127 --'DELETE'
+
+
 
 function widget:RecvLuaMsg(msg, playerID)
 	if msg:sub(1,18) == 'LobbyOverlayActive' then
@@ -174,14 +179,16 @@ function widget:RecvLuaMsg(msg, playerID)
 end
 
 function widget:KeyRelease(key)
-    if (key == trackKey) then
-        for i=1, selectedUnitsCount do
-          trackedUnits[#trackedUnits + 1] = selectedUnits[i]
-        end
+  if (key == trackKey) then
+    local mouseX, mouseZ = Spring.GetMouseState ( )
+    local targType, unitID = Spring.TraceScreenRay(mouseX, mouseZ)
+    if targType == "unit" and not houseTypeTable[spGetUnitDefID(unitID)] then
+      trackedUnits[#trackedUnits + 1] = unitID
     end
+  end
   if (key == untrackKey) then
-	trackedUnits = {}
-    end		
+   trackedUnits = {}
+  end		
 end
 
 
@@ -194,7 +201,7 @@ function widget:DrawWorld()
   gl.Blending(GL.SRC_ALPHA, GL.ONE)
 
   --local selectedUnits = Spring.GetSelectedUnits()
-  if useHighlightShader and shader and trackedUnits < maxShaderUnits then
+  if useHighlightShader and shader and #trackedUnits < maxShaderUnits then
     gl.UseShader(shader)
   end
   local teamID, prevTeamID, r,g,b
