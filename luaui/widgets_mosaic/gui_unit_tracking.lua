@@ -160,7 +160,8 @@ end
 local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local trackedUnits = {}
-local trackKey
+local trackKey = 111 --'O'
+local untrackKey = 108 --'L'
 function widget:SelectionChanged(sel)
   selectedUnits = sel
   selectedUnitsCount = Spring.GetSelectedUnitsCount()
@@ -174,11 +175,13 @@ end
 
 function widget:KeyRelease(key)
     if (key == trackKey) then
-        trackedUnits= {}
         for i=1, selectedUnitsCount do
           trackedUnits[#trackedUnits + 1] = selectedUnits[i]
         end
     end
+  if (key == untrackKey) then
+	trackedUnits = {}
+    end		
 end
 
 
