@@ -297,10 +297,10 @@ local function GetTeamColorSet(teamID)
   if teamID == Spring.GetGaiaTeamID() then
   r,g,b = 27/255, 197/255, 184/255
   dr,dg,db = 255/255, 191/255, 13/255
-    colors = {{ r, g, b, 0.7 }, --night
-              { r, g, b, 0.9 },
-              { dr, dg, db, 0.7 }, --day
-              { dr, dg, db, 0.9 }
+    colors = {{ r, g, b, 0.5 }, --night
+              { r, g, b, 0.75 },
+              { dr, dg, db, 0.5 }, --day
+              { dr, dg, db, 0.75 }
               }
   return colors  
   end
@@ -311,10 +311,10 @@ local function GetTeamColorSet(teamID)
   end
   local r,g,b = spGetTeamColor(teamID)
   
-  colors = {{ r, g, b, 0.8 },
-            { r, g, b, 0.9 },
-            { r, g, b, 0.8 },
-            { r, g, b, 0.9 }
+  colors = {{ r, g, b, 0.5 },
+            { r, g, b, 0.6 },
+            { r, g, b, 0.5 },
+            { r, g, b, 0.6 }
             }
   teamColors[teamID] = colors
   return colors
@@ -415,13 +415,13 @@ local function getDayTimeDependentColor(colSet)
     blendedColor[1][1] = (1-percent)* colSet[1][1] + (percent)* colSet[3][1]
     blendedColor[1][2] = (1-percent)* colSet[1][2] + (percent)* colSet[3][2]
     blendedColor[1][3] = (1-percent)* colSet[1][3] + (percent)* colSet[3][3]
-    blendedColor[1][4] = 0.7 
+    blendedColor[1][4] = 0.5 
        
     blendedColor[2]={}  
     blendedColor[2][1] = (1-percent)* colSet[2][1] + (percent)* colSet[4][1]
     blendedColor[2][2] = (1-percent)* colSet[2][2] + (percent)* colSet[4][2]
     blendedColor[2][3] = (1-percent)* colSet[2][3] + (percent)* colSet[4][3]
-    blendedColor[2][4] = 0.9
+    blendedColor[2][4] = 0.75
       
   return blendedColor
 end

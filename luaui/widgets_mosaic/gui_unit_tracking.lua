@@ -207,30 +207,14 @@ function widget:DrawWorld()
   local teamID, prevTeamID, r,g,b
   for i=1,#trackedUnits do
     local unitID = trackedUnits[i]
-    if not spIsUnitIcon(unitID) and spIsUnitInView(unitID) then
-      local health,maxHealth,paralyzeDamage,captureProgress,buildProgress=Spring.GetUnitHealth(unitID)
-      if maxHealth ~= nil then
-        if useTeamcolor then
-          teamID = spGetUnitTeam(unitID)
-          if teamID ~= prevTeamID then
-            r,g,b = spGetTeamColor(teamID)
-          end
-          prevTeamID = teamID
-          gl.Color(r,g,b,highlightAlpha)
-        else
-          gl.Color(
-            health>maxHealth/2 and 2-2*health/maxHealth or 1, -- red
-            health>maxHealth/2 and 1 or 2*health/maxHealth, -- green
-            0, -- blue
-            highlightAlpha
-          )
-        end
-        gl.Unit(unitID, true)
+      if not spIsUnitIcon(unitID) and spIsUnitInView(unitID) then
+        local health,maxHealth,paralyzeDamage,captureProgress,buildProgress=Spring.GetUnitHealth(unitID)
       end
-    end
+      --TODO: Draw Circular Deco at Unit
+
   end
 
-  if useHighlightShader and shader and #selectedUnits < maxShaderUnits then
+  if useHighlightShader and shader and #trackedUnits < maxShaderUnits then
     gl.UseShader(0)
   end
 
