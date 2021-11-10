@@ -7027,6 +7027,17 @@ function assertArguments(...)
     end
 end
 
+function assertNumberValid(nr)
+    assert(nr ~=  math.huge)
+    assert(nr ~= -math.huge)
+    assert(nr-1 < nr) --(Nan check)
+end
+
+function assertInMap(nr, maxVal)
+    assert(nr > 0)
+    assert(nr<maxVal) 
+end
+
 function assertArgumentsExistOfType(...)
     local arg = {...}
     arg.n = #arg

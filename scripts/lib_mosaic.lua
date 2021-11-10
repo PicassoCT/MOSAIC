@@ -1,6 +1,6 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.75
+unitFactor = 0.70
 
 function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
@@ -30,7 +30,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.792" 
+            Version = "Alpha: 0.794" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),

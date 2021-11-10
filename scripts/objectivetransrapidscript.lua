@@ -14,71 +14,54 @@ center = piece"center"
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-   hideT(TablesOfPiecesGroups["Tunnel1_"])
+    hideT(TablesOfPiecesGroups["Tunnel1_"])
     hideT(TablesOfPiecesGroups["Tunnel2_"])
-
-   StartThread(setup)
+    StartThread(setup)
 end
 
-boolLeftValid = true
-boolRightValid = true
 function setup()
     Sleep(10)
+    hideT(TablesOfPiecesGroups["Rail"])
+    hideT(TablesOfPiecesGroups["Endstation"])
     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
     rVal = math.random(0,360)
     WTurn(center, y_axis, math.rad(rVal),0)
-    boolLeftValid= validTrackPart( -1, TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1])
-    boolRightValid= validTrackPart( 1, TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2])
+     if validTrackPart( TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1]) then Show(TablesOfPiecesGroups["Endstation"][1]) end
+     if validTrackPart( TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2]) then Show(TablesOfPiecesGroups["Endstation"][2]) end
+
+      StartThread(showRail,1, 12)
+      StartThread(showRail,14, 23)
 
     StartThread(deployTunnels, 1)
     StartThread(deployTunnels, 2)
-    StartThread(showRail)
-   
+  
 
 end
 
-function showRail()
-    Sleep(100)
-    hideT(TablesOfPiecesGroups["Rail"])
-    for i=1, #TablesOfPiecesGroups["Rail"] do 
-        id =TablesOfPiecesGroups["Rail"][i]
+function showRail(start, ends)
+
         local xMax = Game.mapSizeX 
         local zMax = Game.mapSizeZ 
+    for i=start, ends do 
+        id =TablesOfPiecesGroups["Rail"][i]
+
         x,_,z = Spring.GetUnitPiecePosDir(unitID, id)
-        if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
+        if (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
             return id
         end
-        if i < 13 and boolLeftValid == true then
-            Show(id)
-        end
-        if i > 12 and boolRightValid == true then
-            Show(id)
-        end
-    end
 
-    process(TablesOfPiecesGroups["Rail"],
-        function(id)
-        local xMax = Game.mapSizeX 
-        local zMax = Game.mapSizeZ 
-        x,_,z = Spring.GetUnitPiecePosDir(unitID, id)
-            if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
-                return id
-            end
-        end,
-        function(id)
             Show(id)
-        end
-        )
+    end
 end
 
-function validTrackPart(signs, EndPiece, DetectorPiece)
+function validTrackPart( EndPiece, DetectorPiece)
     Hide(DetectorPiece)
     Hide(EndPiece)
     x,y,z = Spring.GetUnitPiecePosDir(unitID, DetectorPiece)
     gh = Spring.GetGroundHeight(x,z)
 
-    boolUnderground =  gh > y
+    boolUnderground =  gh +10 > y
     boolOutsideMap = (x > Game.mapSizeX or x <= 0) or  (z > Game.mapSizeZ or z <= 0)
     return boolUnderground or boolOutsideMap
 end
@@ -177,17 +160,13 @@ function trainLoop(nr)
 
 	while true do
         direction = randSign()
-        if boolLeftValid == true then
-            WMove(train, trainAxis, maxDistanceTrain*direction, 0)
-        end
+        WMove(train, trainAxis, maxDistanceTrain*direction, 0)
 		buildTrain(nr)
 		WMove(train, trainAxis, 0, trainspeed)
 		breakTime = math.random(0,10)*1000
 		Sleep(breakTime)
         buildTrain(nr)
-        if boolRightValid == true then
-		  WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
-		end
+    	WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
         hideTrain(nr)
 		betweenInterval = math.random(0,3)*60*1000+1
 		Sleep(betweenInterval)

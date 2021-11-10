@@ -86,7 +86,7 @@ function getAnyHouseLocation()
         end
     end
 
-    return math.random(10,90)*game.mapSizeX/100, 0, math.random(10,90)*game.mapSizeZ/100
+    return math.ceil((math.random(10,90)/100)*game.mapSizeX), 0, math.ceil((math.random(10,90)/100)*game.mapSizeZ)
 end
 
 function getPoliceSpawnLocation(suspect)
@@ -202,7 +202,7 @@ function dispatchOfficer(victimID, attackerID )
             end
             GG.PoliceInPursuit[officerID] = attackerID
             x, y, z = spGetUnitPosition(attackerID)
-            if x then
+            if x and x > 0 and z and z > 0 then
                 tx, ty, tz = x, y, z;
                 boolFoundSomething = true
                 --Spring.Echo("")
@@ -216,8 +216,13 @@ function dispatchOfficer(victimID, attackerID )
                 tx, ty, tz = x + math.random(500,1500)*randSign(), y, z + math.random(500,1500)*randSign();
             end
         end
+        assertNumberValid(tx)
+        assertNumberValid(tz)
+        assertInMap(tx, Game.mapSizeX)
+        assertInMap(tz, Game.mapSizeZ)
 
         Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
+
         if maRa() == true  or booleanDoesAttackerExistAlive == false then
             Command(officerID, "go", {x = tx, y = ty, z = tz})
         else

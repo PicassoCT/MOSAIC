@@ -387,6 +387,7 @@ local SocialEngineering =
     CanFly   = true,
     useSmoothMesh = true,
     alwaysUpright = true,
+    buildTime =    60, --seconds
     --
     description = "Engineer a social movement/ protest",
     levelGround = false,

@@ -170,7 +170,23 @@ local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
         end
     end
 
+    setUnitArrayFireState(unitsArray, "fireatwill", math.random(2,6))
+
     return boolAssignedSuccesfully
+end
+
+local function setUnitArrayFireState(unitsArray, firestate, nthUnit)
+    local states = {}
+    states.holdfire = 0
+    states.returnfire = 1
+    states.fireatwill = 2
+    local fireState = states[string.lower(fireStateStr)] or 0 
+
+    for i=1,#unitsArray do
+        if i % nthUnit == 0 then
+            Spring.GiveOrderToUnit(unitsArray[i], CMD.FIRE_STATE, {fireState}, {})
+        end
+    end  
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -215,15 +231,8 @@ function CombatMgr.GameFrame(f)
                 end
             end
 
-            if #unitArray % 2 == 1 then
-                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-            else
-                local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
-                if not boolAssignedTargets then
-                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-                end
-            end
-
+            GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+           
             if #taxiUnitArray > 0 then
                 -- Don't unload the units straight at the combat line
                 target = waypointMgr.GetNext(target, -normal[1], -normal[2])
@@ -267,8 +276,16 @@ function CombatMgr.GameFrame(f)
             if target and (target ~= p) then
                 local orig = waypointMgr.GetNearestWaypoint2D(x, z)
 
-                GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-                Spring.Echo("Prometheus: Giving attack order to unitarray")
+                if #unitArray % 2 == 1 then
+                    GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+                    setUnitArrayFireState(unitsArray, "returnfire", 1)
+                else
+                    local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
+                    if not boolAssignedTargets then
+                        GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
+                    end
+                end
+
                 for _,u in ipairs(unitArray) do
                     units[u] = target --assume next call this unit will be at target
                 end
