@@ -15,7 +15,7 @@ function widget:GetInfo()
   return {
     name      = "Put Track Marks Selected Units",
     desc      = "Highlights tracked Units",
-    author    = "Floris (original: zwzsg, from trepan HighlightUnit)",
+    author    = "(Floris (original: zwzsg, from trepan HighlightUnit)) horribly maimed by Picasso",
     date      = "Apr 24, 2009",
     license   = "GNU GPL, v2 or later",
     layer     = -8,
@@ -38,11 +38,13 @@ local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitToolTip = Spring.GetUnitTooltip 
 local houseTypeTable = {}
 
+local glLineWidth      = gl.LineWidth
 local glDepthTest      = gl.DepthTest
 local glDepthMask      = gl.DepthMask
 local glAlphaTest      = gl.AlphaTest
 local glTexture        = gl.Texture
-local glTexRect        = gl.TexRect
+local glColor          = gl.Color
+local glRect        = gl.Rect
 local glTranslate      = gl.Translate
 local glBillboard      = gl.Billboard
 local glDrawFuncAtUnit = gl.DrawFuncAtUnit
@@ -121,9 +123,18 @@ function CreateUnitHighlightShader()
     })
   end
 end
---------------------------------------------------------------------------------
 
+local yMarkerDistanceUp = 25
+--------------------------------------------------------------------------------
+local markerLines
 function widget:Initialize()
+  markerLines = glCreateList(function()
+    glBeginEnd(GL_LINE_LOOP, function()
+      glVertex(0, 0, 0)
+      glVertex(0, yMarkerDistanceUp, 0)
+    end)
+  end)
+
    for k, v in pairs(UnitDefs) do
         if string.find(v.name,"house_arab0") or string.find(v.name,"house_western0") then
             houseTypeTable[k] = k
@@ -189,11 +200,23 @@ function widget:KeyRelease(key)
   end		
 end
 
-
+local iconsizeX = 10
+local iconsizeZ = 20
+local textSize = 5
+local suspectCol = {0.0, 1.0, 0.0, 0.95}
+local baseWhite = {1.0, 1.0, 1.0, 0.75}
+local baseBlack = {0.0, 0.0, 0.0, 1.0}
 local function DrawSuspectMarker(yshift, text, name)
   glTranslate(0,yshift,0)
-  glBillboard()
-  glTexRect(-iconsize+10.5, -9, 10.5, iconsize-9)
+  --Draw Base Plate
+  glColor(baseBlack)
+  glRect(-iconsizeX, iconsizeZ, iconsizeX, -iconsizeZ)
+  glColor(suspectCol)
+  glRect(-iconsizeX, iconsizeZ, iconsizeX, 0)
+  glColor(baseBlack)
+  gl.Text (string.upper(text), -iconsizeX, iconsizeZ/2, textSize , "cto" ) 
+  glColor(suspectCol)
+  gl.Text (string.upper(name), -iconsizeX, -iconsizeZ/2, textSize-1 , "cto" ) 
 end
 
 
@@ -210,7 +233,13 @@ function widget:DrawWorld()
   gl.UseShader(unitHighlightShader)
   
     for unitID,texData in pairs(trackedUnits) do
+      glColor(baseWhite)
+      glDrawListAtUnit(unitID, markerLines, true,
+      1.0, 1.0, 1.0,
+      0, 0, 0, 0)
       glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[unitDefID], trackedUnits[unitID].marker, trackedUnits[unitID].name)
+
+      
     end   
   end
 
