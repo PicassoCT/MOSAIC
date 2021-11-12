@@ -1668,7 +1668,7 @@ function spawnDecoyCivilian()
                                    x + randSign() * 5, y, z + randSign() * 5, 1,
                                    Spring.GetGaiaTeamID())
     transferUnitStatusToUnit(unitID, civilianID)
-    Spring.SetUnitNoSelect(civilianID, true)
+   -- Spring.SetUnitNoSelect(civilianID, true)
     Spring.SetUnitAlwaysVisible(civilianID, true)
 
     persPack = {
