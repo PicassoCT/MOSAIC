@@ -1046,7 +1046,7 @@ function spawnDecoyCivilian()
 		x,y,z= Spring.GetUnitPosition(unitID)
 		civilianID = Spring.CreateUnit(disguiseDefID, x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
 		transferUnitStatusToUnit(unitID,civilianID)
-		Spring.SetUnitNoSelect(civilianID, true)
+		--Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
 	
 			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
