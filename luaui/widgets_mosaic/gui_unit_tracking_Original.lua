@@ -214,9 +214,11 @@ local function DrawSuspectMarker(yshift, text, name)
   glColor(suspectCol)
   glRect(-iconsizeX, iconsizeZ, iconsizeX, 0)
   glColor(baseBlack)
+  gl.BeginText ( ) 
   gl.Text (string.upper(text), -iconsizeX, iconsizeZ/2, textSize , "cto" ) 
   glColor(suspectCol)
   gl.Text (string.upper(name), -iconsizeX, -iconsizeZ/2, textSize-1 , "cto" ) 
+  gl.EndText()
 end
 
 
