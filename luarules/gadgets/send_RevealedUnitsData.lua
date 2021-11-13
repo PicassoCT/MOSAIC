@@ -62,6 +62,7 @@ local function addTestLocation()
   locations[n].z = math.random(2000, 4000) --coordinates.z
   locations[n].teamID = Spring.GetUnitTeam(locationID)
   locations[n].revealedUnits = revealedUnits
+  locations[n].time = Spring.GetGameFrame()
 
   return locations
 end
@@ -94,10 +95,14 @@ function gadget:GameFrame(frame)
     if frame % 5 == 0 then
         updateLocationData()
     end
+
+    if frame >0 and frame % (30*60) == 0 then
+        Spring.Echo("addTestLocation")
+        GG.RevealedLocations = addTestLocation()
+    end
 end
 
 else --unsynced
-
    local function HandleRevealedLocationUpdates(_, NewRevealedLocations)
         if Script.LuaUI('RevealedGraphChanged') then
             Script.LuaUI.RevealedGraphChanged(NewRevealedLocations)
@@ -111,5 +116,4 @@ else --unsynced
     function gadget:Shutdown()
         gadgetHandler:RemoveSyncAction('HandleRevealedLocationUpdates', HandleRevealedLocationUpdates)
     end
-
 end

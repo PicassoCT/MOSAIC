@@ -181,9 +181,9 @@ local suspectCol = {0.0, 1.0, 0.0, 0.95}
 local baseWhite = {1.0, 1.0, 1.0, 0.35}
 local baseBlack = {0.0, 0.0, 0.0, 1.0}
 
-local function DrawSuspectMarker(yshift, text, name)
+local function DrawSuspectMarker(yshift, designator, name)
 
-  local maxstringlength = math.max(math.max(string.len(text),string.len(name)),iconsizeX)*2
+  local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
   glColor(baseWhite)
   glRect(-1, maxstringlength+ iconsizeX/2, 1, 0)
   glTranslate(0,yshift,0)
@@ -196,9 +196,9 @@ local function DrawSuspectMarker(yshift, text, name)
   glColor(baseBlack)
   gl.BeginText ( ) 
   glColor(baseBlack)
-  gl.Text ("\255\0\0\0◪"..string.upper(text), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lto" ) 
+  gl.Text ("\255\0\0\0◪ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lto" ) 
   glColor(suspectCol)
-  gl.Text ("\255\0\255\0⧉⬚"..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lto" ) 
+  gl.Text ("\255\0\255\0⧉⬚ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lto" ) 
   gl.EndText()
 end
 
