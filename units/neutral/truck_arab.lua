@@ -1,8 +1,8 @@
 
 local CivilianTruck = Truck:New{
 	buildtime= 30,
-	name = "Civilian Vehicle",
-	description = "locally assembled electric truck",
+	name = "Civilian Truck",
+	description = "",
 	corpse				= "",
 	maxDamage = 500,
 	buildPic = "truck.png",

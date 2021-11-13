@@ -35,6 +35,7 @@ local spIsUnitInView = Spring.IsUnitInView
 local spGetTeamColor = Spring.GetTeamColor
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitPosition = Spring.GetUnitPosition
 local spGetUnitToolTip = Spring.GetUnitTooltip 
 local houseTypeTable = {}
 
@@ -68,7 +69,7 @@ local fontfileOutlineSize = 5
 local fontfileOutlineStrength = 1.1
 local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
 local iconHeighth = 100
-
+local Polygon = { }
 
 
 function widget:ViewResize(n_vsx,n_vsy)
@@ -83,66 +84,29 @@ end
 
 ---------------------------------------------------------------------------------------------------------------------------
 
-function CreateUnitHighlightShader()
-  if unitHighlightShader then
-    gl.DeleteShader(unitHighlightShader)
-  end
-  if gl.CreateShader ~= nil then
-    unitHighlightShader = gl.CreateShader({
-      uniform = {
-        edgeExponent = edgeExponent/(0.8+highlightAlpha),
-        plainAlpha = highlightAlpha*0.8,
-      },
 
-      vertex = [[
-		#version 150 compatibility
-        // Application to vertex shader
-        varying vec3 normal;
-        varying vec3 eyeVec;
-        varying vec3 color;
-        uniform mat4 camera;
-        uniform mat4 caminv;
-
-        void main()
-        {
-          vec4 P = gl_ModelViewMatrix * gl_Vertex;
-
-          eyeVec = P.xyz;
-
-          normal  = gl_NormalMatrix * gl_Normal;
-
-          color = gl_Color.rgb;
-
-          gl_Position = gl_ProjectionMatrix * P;
-        }
-      ]],
-
-      fragment = [[
-		#version 150 compatibility
-        varying vec3 normal;
-        varying vec3 eyeVec;
-        varying vec3 color;
-
-        uniform float edgeExponent;
-        uniform float plainAlpha;
-
-        void main()
-        {
-          float opac = dot(normalize(normal), normalize(eyeVec));
-          opac = 1.0 - abs(opac);
-          opac = pow(opac, edgeExponent)*0.45;
-
-          gl_FragColor.g = 0.0;
-          gl_FragColor.b = 0.0;
-          gl_FragColor.r = 1.0;
-          gl_FragColor.a = 1.0;
-        }
-      ]],
-    })
+local function DrawLine(polyToDraw, offsetY)
+  local n = #polyToDraw
+  for i = 1, n do
+    local x = polyToDraw[i][1]
+    local z = polyToDraw[i][3]
+    local y = Spring.GetGroundHeight(x, z) + offsetY
+    gl.Vertex(x,y,z)
   end
 end
 
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+local function addLineSegment(x,y,z)
+  local pos = {[1]=x,[2]=y,[3]=z}
+  Polygon[#Polygon+1] = pos
+end
+
+local function newPolygon(x,y,z)
+    Polygon = {}
+    addLineSegment(x,y,z)
+end
 --------------------------------------------------------------------------------
 function widget:Initialize()
 
@@ -156,15 +120,10 @@ function widget:Initialize()
       unitHeights[unitDefID] = ud.height + iconoffset
     end
 
-  CreateUnitHighlightShader()
 end
 
 
 function widget:Shutdown()
-  if shader then
-    gl.DeleteShader(unitHighlightShader)
-  end
- 
 end
 
 
@@ -194,7 +153,6 @@ function widget:KeyRelease(key)
       if not houseTypeTable[defID] then
         if trackedUnits[unitID] then
           trackedUnits[unitID] = nil
-          trackedUnitsCount= trackedUnitsCount-1
         else
           trackedUnits[unitID] = {}
           trackedUnits[unitID].marker ="SUSPECT "..trackedUnitsCount
@@ -220,12 +178,14 @@ local iconsizeX = 60
 local iconsizeZ = 20
 local textSize = 5
 local suspectCol = {0.0, 1.0, 0.0, 0.95}
-local baseWhite = {1.0, 1.0, 1.0, 0.75}
+local baseWhite = {1.0, 1.0, 1.0, 0.35}
 local baseBlack = {0.0, 0.0, 0.0, 1.0}
 
 local function DrawSuspectMarker(yshift, text, name)
-  --Draw Line up
+
   local maxstringlength = math.max(math.max(string.len(text),string.len(name)),iconsizeX)*2
+  glColor(baseWhite)
+  glRect(-1, maxstringlength+ iconsizeX/2, 1, 0)
   glTranslate(0,yshift,0)
   glRotate(0,0,90.0,0)
   --Draw Base Plate
@@ -250,20 +210,12 @@ function widget:DrawWorld()
 
   gl.DepthTest(true)
   gl.PolygonOffset(-0.5, -0.5)
-
  
-  if useHighlightShader and unitHighlightShader and trackedUnitsCount > 0 then
- -- gl.UseShader(unitHighlightShader)
+  if  trackedUnitsCount > 0 then
   
     for unitID,texData in pairs(trackedUnits) do
       glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[texData.unitDefID] + iconHeighth, trackedUnits[unitID].marker, trackedUnits[unitID].name)
-
-      
     end   
-  end
-
-  if useHighlightShader and unitHighlightShader and trackedUnitsCount > 0 then
-    gl.UseShader(0)
   end
 
   gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)

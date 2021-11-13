@@ -93,6 +93,7 @@ local loadOutUnitID
 function script.Create()
 
     if boolIsCivilianTruck == false then StartThread(loadLoadOutLoop) end
+    if boolIsCivilianTruck == true then assingCivilianTruckRegistration(unitID, Game, GameConfig.instance.culture) end
 
     if UnitDefs[myDefID].name == "polictruck" then
         StartThread(theySeeMeRollin)
