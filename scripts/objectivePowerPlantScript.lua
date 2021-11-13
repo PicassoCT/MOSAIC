@@ -28,9 +28,9 @@ end
  maxdepth= orgUnitHeigth
 function sensorTurn(tower)
     hideT(TablesOfPiecesGroups["PowerPillar"])
-    heighestDeg= 0
+    lowestDeg= 0
     x,y,z =Spring.GetUnitPosition(unitID)
-    heightValue=Spring.GetGroundHeight(x,z)
+    lowestValue=Spring.GetGroundHeight(x,z)
    
     for k = 1, #TablesOfPiecesGroups["PowerPillar"] do
         Show(TablesOfPiecesGroups["PowerPillar"][k])
@@ -42,9 +42,9 @@ function sensorTurn(tower)
 
             if k == #TablesOfPiecesGroups["PowerPillar"] then
                 hval = Spring.GetGroundHeight(x,z)
-                if hval > heightValue then
-                    heightValue = hval
-                    heighestDeg = i
+                if hval < lowestValue then
+                    lowestValue = hval
+                    lowestDeg = i
                 end
             end
 
@@ -60,11 +60,11 @@ function sensorTurn(tower)
     while (heightOfsset == nil)do
         Sleep(10)
     end
-    WTurn (TablesOfPiecesGroups["PowerPillar"][1],y_axis,math.rad(heighestDeg),0)
+    WTurn (TablesOfPiecesGroups["PowerPillar"][1],y_axis,math.rad(lowestDeg),0)
     for k = 1, #TablesOfPiecesGroups["PowerPillar"] do
-            x, y, z = Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["PowerPillar"][k])
-            gh = Spring.GetGroundHeight(x,z) -orgUnitHeigth
-            Move(TablesOfPiecesGroups["PowerPillar"][k],y_axis, -heightOfsset,0)
+        x, y, z = Spring.GetUnitPiecePosDir(unitID, TablesOfPiecesGroups["PowerPillar"][k])
+        gh = Spring.GetGroundHeight(x,z) -orgUnitHeigth
+        Move(TablesOfPiecesGroups["PowerPillar"][k],y_axis, -heightOfsset,0)
     end
 
 end
