@@ -96,10 +96,10 @@ function gadget:GameFrame(frame)
         updateLocationData()
     end
 
-    if frame >0 and frame % (30*60) == 0 then
+   --[[ if frame >0 and frame % (30*60) == 0 then
         Spring.Echo("addTestLocation")
         GG.RevealedLocations = addTestLocation()
-    end
+    end--]]
 end
 
 else --unsynced
