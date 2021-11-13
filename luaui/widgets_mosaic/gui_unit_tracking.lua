@@ -44,25 +44,44 @@ local glDepthMask      = gl.DepthMask
 local glAlphaTest      = gl.AlphaTest
 local glTexture        = gl.Texture
 local glColor          = gl.Color
-local glRect        = gl.Rect
+local glRect           = gl.Rect
 local glTranslate      = gl.Translate
+local glRotate         = gl.Rotate
 local glBillboard      = gl.Billboard
 local glDrawFuncAtUnit = gl.DrawFuncAtUnit
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+local scale         = 1
+local offset        = 5
+local stickToFloor      = false
+local thickness       = 6
+local fadeStartHeight   = 800
+local fadeEndHeight     = 4800
+local dlistAmount     = 20    -- amount of dlists created, one for each opacity value
+local iconoffset = 20
+
+local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
+local vsx,vsy = Spring.GetViewGeometry()
+local fontfileScale = (0.5 + (vsx*vsy / 5700000))
+local fontfileSize = 25
+local fontfileOutlineSize = 5
+local fontfileOutlineStrength = 1.1
+local font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
+local iconHeighth = 100
 
 
-local function SetupCommandColors(state)
-  local alpha = state and 1 or 0
-  local f = io.open('cmdcolors.tmp', 'w+')
-  if (f) then
-    f:write('unitBox  0 1 0 ' .. alpha)
-    f:close()
-    Spring.SendCommands({'cmdcolors cmdcolors.tmp'})
+
+function widget:ViewResize(n_vsx,n_vsy)
+  vsx,vsy = Spring.GetViewGeometry()
+  local newFontfileScale = (0.5 + (vsx*vsy / 5700000))
+  if (fontfileScale ~= newFontfileScale) then
+    fontfileScale = newFontfileScale
+    gl.DeleteFont(font)
+    font = gl.LoadFont(fontfile, fontfileSize*fontfileScale, fontfileOutlineSize*fontfileScale, fontfileOutlineStrength)
   end
-  os.remove('cmdcolors.tmp')
 end
 
+---------------------------------------------------------------------------------------------------------------------------
 
 function CreateUnitHighlightShader()
   if unitHighlightShader then
@@ -70,7 +89,6 @@ function CreateUnitHighlightShader()
   end
   if gl.CreateShader ~= nil then
     unitHighlightShader = gl.CreateShader({
-
       uniform = {
         edgeExponent = edgeExponent/(0.8+highlightAlpha),
         plainAlpha = highlightAlpha*0.8,
@@ -124,16 +142,9 @@ function CreateUnitHighlightShader()
   end
 end
 
-local yMarkerDistanceUp = 25
+
 --------------------------------------------------------------------------------
-local markerLines
 function widget:Initialize()
-  markerLines = glCreateList(function()
-    glBeginEnd(GL_LINE_LOOP, function()
-      glVertex(0, 0, 0)
-      glVertex(0, yMarkerDistanceUp, 0)
-    end)
-  end)
 
    for k, v in pairs(UnitDefs) do
         if string.find(v.name,"house_arab0") or string.find(v.name,"house_western0") then
@@ -142,12 +153,9 @@ function widget:Initialize()
     end
 
     for unitDefID, ud in pairs(UnitDefs) do
-      ud.power_xp_coeffient  = ((ud.power / 1000) ^ -0.2) / 6  -- dark magic
-      unitPowerXpCoeffient[unitDefID] = ud.power_xp_coeffient
       unitHeights[unitDefID] = ud.height + iconoffset
     end
-   
-  SetupCommandColors(false)
+
   CreateUnitHighlightShader()
 end
 
@@ -181,16 +189,24 @@ function widget:KeyRelease(key)
   if (key == trackKey) then
     local mouseX, mouseZ = Spring.GetMouseState ( )
     local targType, unitID = Spring.TraceScreenRay(mouseX, mouseZ)
-    if targType == "unit" and not houseTypeTable[spGetUnitDefID(unitID)] then
-      if trackedUnits[unitID] then
-        trackedUnits[unitID] = nil
-        trackedUnitsCount= trackedUnitsCount-1
-      else
-        trackedUnits[unitID] = {}
-        trackedUnits[unitID].marker ="SUSPECT "..trackedUnitsCount
-        trackedUnits[unitID].name  = spGetUnitToolTip(unitID)
-        
-        trackedUnitsCount = trackedUnitsCount +1
+    if targType == "unit" then
+      local defID = spGetUnitDefID(unitID)
+      if not houseTypeTable[defID] then
+        if trackedUnits[unitID] then
+          trackedUnits[unitID] = nil
+          trackedUnitsCount= trackedUnitsCount-1
+        else
+          trackedUnits[unitID] = {}
+          trackedUnits[unitID].marker ="SUSPECT "..trackedUnitsCount
+          trackedUnits[unitID].name  = spGetUnitToolTip(unitID)
+          if string.find(trackedUnits[unitID].name,"<") then
+          trackedUnits[unitID].name  = string.sub(trackedUnits[unitID].name ,1, string.find(trackedUnits[unitID].name,"<")-1)
+          end
+          trackedUnits[unitID].unitDefID  = defID
+
+          
+          trackedUnitsCount = trackedUnitsCount +1
+        end
       end
     end
   end
@@ -200,24 +216,29 @@ function widget:KeyRelease(key)
   end		
 end
 
-local iconsizeX = 10
+local iconsizeX = 60
 local iconsizeZ = 20
 local textSize = 5
 local suspectCol = {0.0, 1.0, 0.0, 0.95}
 local baseWhite = {1.0, 1.0, 1.0, 0.75}
 local baseBlack = {0.0, 0.0, 0.0, 1.0}
+
 local function DrawSuspectMarker(yshift, text, name)
+  --Draw Line up
+  local maxstringlength = math.max(math.max(string.len(text),string.len(name)),iconsizeX)*2
   glTranslate(0,yshift,0)
+  glRotate(0,0,90.0,0)
   --Draw Base Plate
   glColor(baseBlack)
-  glRect(-iconsizeX, iconsizeZ, iconsizeX, -iconsizeZ)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength, -iconsizeZ)
   glColor(suspectCol)
-  glRect(-iconsizeX, iconsizeZ, iconsizeX, 0)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength, 0)
   glColor(baseBlack)
   gl.BeginText ( ) 
-  gl.Text (string.upper(text), -iconsizeX, iconsizeZ/2, textSize , "cto" ) 
+  glColor(baseBlack)
+  gl.Text ("\255\0\0\0◪"..string.upper(text), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lto" ) 
   glColor(suspectCol)
-  gl.Text (string.upper(name), -iconsizeX, -iconsizeZ/2, textSize-1 , "cto" ) 
+  gl.Text ("\255\0\255\0⧉⬚"..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lto" ) 
   gl.EndText()
 end
 
@@ -231,21 +252,17 @@ function widget:DrawWorld()
   gl.PolygonOffset(-0.5, -0.5)
 
  
-  if useHighlightShader and unitHighlightShader and trackedUnitsCount >0 then
-  gl.UseShader(unitHighlightShader)
+  if useHighlightShader and unitHighlightShader and trackedUnitsCount > 0 then
+ -- gl.UseShader(unitHighlightShader)
   
     for unitID,texData in pairs(trackedUnits) do
-      glColor(baseWhite)
-      glDrawListAtUnit(unitID, markerLines, true,
-      1.0, 1.0, 1.0,
-      0, 0, 0, 0)
-      glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[unitDefID], trackedUnits[unitID].marker, trackedUnits[unitID].name)
+      glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[texData.unitDefID] + iconHeighth, trackedUnits[unitID].marker, trackedUnits[unitID].name)
 
       
     end   
   end
 
-  if useHighlightShader and unitHighlightShader and trackedUnitsCount >0 then
+  if useHighlightShader and unitHighlightShader and trackedUnitsCount > 0 then
     gl.UseShader(0)
   end
 
