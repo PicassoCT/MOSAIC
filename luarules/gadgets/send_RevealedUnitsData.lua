@@ -19,7 +19,7 @@ VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-false boolTestGraph = true
+local  boolTestGraph = false
 
 function gadget:Initialize()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
@@ -46,12 +46,20 @@ local function addTestLocation()
     if dependent then
     revealedUnits[dependent]={}
     revealedUnits[dependent].defID = Spring.GetUnitDefID(dependent)
+	tooltip = UnitDefs[revealedUnits[dependent].defID].tooltip
+	braceStart = string.find(tooltip,"<")
+	if braceStart then
+		revealedUnits[dependent].name =  string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
+	else
+		revealedUnits[dependent].name = "Unknown Type" 	 
+	end
       if boolOneParentOnly == false then   
         revealedUnits[dependent].boolIsParent = false
       else
          boolOneParentOnly= false
         revealedUnits[dependent].boolIsParent = true
       end
+      
     end
   end
 
@@ -63,7 +71,7 @@ local function addTestLocation()
   locations[n].z = math.random(2000, 4000) --coordinates.z
   locations[n].teamID = Spring.GetUnitTeam(locationID)
   locations[n].revealedUnits = revealedUnits
-  locations[n].endFrame = Spring.GetGameFrame() + GameConfig.raid.revealGraphLifeTimeFrames
+  locations[n].endFrame = Spring.GetGameFrame() + GG.GameConfig.raid.revealGraphLifeTimeFrames
 
   return locations
 end

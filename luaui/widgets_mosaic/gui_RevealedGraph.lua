@@ -481,7 +481,7 @@ function widget:DrawWorld()
         local dayTimeDependentColorSet = getDayTimeDependentColor(colorSet)
         glColor(dayTimeDependentColorSet[1])
         gl.LineWidth(3.0)
-        local runtimeInSeconds = math.ceil(Loc.endFrame -  spGetGameFrame())/30
+        local runtimeInSeconds = math.ceil((Loc.endFrame -  spGetGameFrame())/30)
         DrawSafeHouseMarker(Loc,  
 							maxHeightIcon,
 							"SOURCE:"..string.char(65 + (i % 24))..i, 
@@ -491,14 +491,14 @@ function widget:DrawWorld()
         gl.Color(1, 1, 1, 1)
 
         local revealedUnits = Loc.revealedUnits
-        for id, defID in pairs(revealedUnits) do
+        for id, data in pairs(revealedUnits) do
           if  Spring.GetUnitIsDead(id) == false then 
           local x, y, z = spGetUnitBasePosition(id)
           local radius = GetUnitDefRealRadius(id) or 50
           local gx, gy, gz = spGetGroundNormal(x, z)
           local degrot = math.acos(gy) * 180 / math.pi
-		  local ud = UnitDefs[defID] 
-          local designation =  string.sub(ud.tooltip,string.find(ud.tooltip,"<"), string.find(ud.tooltip,">"))
+
+          local designation =  data.name
           if Loc.boolIsParent then
             glColor(dayTimeDependentColorSet[2])
             gl.LineWidth(3.0)

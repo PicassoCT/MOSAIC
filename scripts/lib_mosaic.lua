@@ -30,7 +30,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.797" 
+            Version = "Alpha: 0.798" 
         },
 
         numberOfBuildings = math.ceil(95 * unitFactor),
@@ -148,7 +148,7 @@ function getGameConfig()
             maxTimeToWait = 3 * 60 * 1000,
             maxRoundLength = 20 * 1000,
             interrogationPropagandaPrice = 50,
-			revealGraphLifeTimeFrames = 5 * 60 * 30
+			revealGraphLifeTimeFrames = 5 * 60 * 30,
         },
 
         warzoneValueNormalized = 0.25,
