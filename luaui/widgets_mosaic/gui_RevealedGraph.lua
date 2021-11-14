@@ -73,7 +73,7 @@ local spSendCommands         = Spring.SendCommands
 local spGetGameFrame         = Spring.GetGameFrame
 
 local Locations = {
-  --contains with key unitID (x,y,z, teamID, radius and  revealedUnits as table[unitID] -> {defID = unitDefID, boolIsParent }
+  --contains with key unitID (x,y,z, teamID, endFrame, radius and  revealedUnits as table[unitID] -> {defID = unitDefID, boolIsParent }
   --if all revealed Units are no more, a location ceases to be relevant
 }
 --------------------------------------------------------------------------------
@@ -99,44 +99,6 @@ function widget:PlayerChanged() --+++
   gaiaTeamID = Spring.GetGaiaTeamID () --+++
 end --+++
 
-local function addTestLocation()
-  local locations = {}
-  local allUnits = Spring.GetAllUnits()
-  local choiceIndex = math.random(1,#allUnits)
-  local locationID = allUnits[choiceIndex]
-  local coordinates = {}
-  coordinates.x,coordinates.y, coordinates.z = spGetUnitBasePosition(locationID)
-  local revealedUnits = {}
-  local upperBound = math.random(3,6)
-
-  local i = 1
-  local boolOneParentOnly= true
-  for i=1,  upperBound do
-    local rIndex = math.random(1,#allUnits)
-    local dependent = allUnits[rIndex]
-
-    if dependent then
-    revealedUnits[dependent]={}
-    revealedUnits[dependent].defID = spGetUnitDefID(dependent)
-      if boolOneParentOnly == false then   
-        revealedUnits[dependent].boolIsParent = false
-      else
-         boolOneParentOnly= false
-        revealedUnits[dependent].boolIsParent = true
-      end
-    end
-  end
-
-  local n = #locations + 1
-  locations[n]  = {}
-  locations[n].radius = 50 --coordinates.x
-  locations[n].x = math.random(2000, 4000) --coordinates.x
-  locations[n].y = 0 --coordinates.y + 10
-  locations[n].z = math.random(2000, 4000) --coordinates.z
-  locations[n].teamID = spGetUnitTeam(locationID)
-  locations[n].revealedUnits = revealedUnits
-  return locations
-end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -171,11 +133,6 @@ local function DrawLine(polyToDraw, offsetY)
     local y = Spring.GetGroundHeight(x, z) + offsetY
     glVertex(x,y,z)
   end
-end
-
-local function DrawRectangle( Locx, Locz, radius, offsetY)
-
-
 end
 
 local function DrawTriangle( Locx, Locz, radius, offsetY)
@@ -372,7 +329,6 @@ function computeTeamColorOffsetByPlayer(teamID,hashUpper)
     teamColorPlayers[teamID][player]=colors
     teamColorPlayers[teamID][name]=colors
   end
-
 end
 
 local function getDayTime()
@@ -418,10 +374,9 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --UnitID -> defID, canFly
-local unitCache={}
 local colorCache={}
-
 local revealColour = {50/255, 244/255, 253/255, 1.0}
+
 local function DrawSafeHouseMarker(Loc,  yshift, designator, name)
   local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
   glPushMatrix()
@@ -510,9 +465,7 @@ function widget:DrawWorld()
 
   for i=1, #Locations do
   local Loc = Locations[i]
-     
-
-       local teamID = Loc.teamID
+      local teamID = Loc.teamID
       if teamID then
         local radius = Loc.radius 
         local colorSet  = colorCache[teamID]
@@ -528,9 +481,12 @@ function widget:DrawWorld()
         local dayTimeDependentColorSet = getDayTimeDependentColor(colorSet)
         glColor(dayTimeDependentColorSet[1])
         gl.LineWidth(3.0)
-        local runtimeInSeconds = "TODO TIMER"
-        DrawSafeHouseMarker(Loc,  maxHeightIcon, "SOURCE:"..string.char(65 + (i % 24))..i, "Location: ("..Loc.x.."/"..Loc.z..") TIME:"..runtimeInSeconds.."s")
-        --glTranslate(Loc.x, Loc.y, Loc.z)
+        local runtimeInSeconds = math.ceil(Loc.endFrame -  spGetGameFrame())/30
+        DrawSafeHouseMarker(Loc,  
+							maxHeightIcon,
+							"SOURCE:"..string.char(65 + (i % 24))..i, 
+							"Location: ("..Loc.x.."/"..Loc.z..") TIME:"..runtimeInSeconds.."s")
+
         gl.LineWidth(1.0)
         gl.Color(1, 1, 1, 1)
 
@@ -541,23 +497,26 @@ function widget:DrawWorld()
           local radius = GetUnitDefRealRadius(id) or 50
           local gx, gy, gz = spGetGroundNormal(x, z)
           local degrot = math.acos(gy) * 180 / math.pi
-          local designation =  "Unknown"
+		  local ud = UnitDefs[defID] 
+          local designation =  string.sub(ud.tooltip,string.find(ud.tooltip,"<"), string.find(ud.tooltip,">"))
           if Loc.boolIsParent then
             glColor(dayTimeDependentColorSet[2])
             gl.LineWidth(3.0)
-          --  gl.BeginEnd(GL.LINE_STRIP, DrawTriangle, x, z, radius, maxHeightIcon)
             gl.LineWidth(1.0)
             gl.Color(1, 1, 1, 1)
-            DrawRevealedMarkerParent({x=x,y=y,z=z},  maxHeightIcon, "ROOT: "..id, "TYPE:"..designation )
-
+            DrawRevealedMarkerParent({x=x,y=y,z=z}, 
+										maxHeightIcon, 
+										"ROOT: "..id, 
+										"TYPE:"..designation )
           else
             glColor(dayTimeDependentColorSet[2])
             gl.LineWidth(3.0)
-          --  gl.BeginEnd(GL.LINE_STRIP, DrawCircle, x, z, radius, maxHeightIcon)
             gl.LineWidth(1.0)
             gl.Color(1, 1, 1, 1)
-
-            DrawRevealedMarkerChild({x=x,y=y,z=z},  maxHeightIcon, "TARGET: "..id, "TYPE:"..designation)
+            DrawRevealedMarkerChild({x=x,y=y,z=z},
+									maxHeightIcon,
+									"TARGET: "..id,
+									"TYPE:"..designation)
           end
         
           --drawStripe from Location to Unit

@@ -19,10 +19,11 @@ VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
+false boolTestGraph = true
+
 function gadget:Initialize()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
 end
-
 
 local function addTestLocation()
   local locations = {}
@@ -62,7 +63,7 @@ local function addTestLocation()
   locations[n].z = math.random(2000, 4000) --coordinates.z
   locations[n].teamID = Spring.GetUnitTeam(locationID)
   locations[n].revealedUnits = revealedUnits
-  locations[n].time = Spring.GetGameFrame()
+  locations[n].endFrame = Spring.GetGameFrame() + GameConfig.raid.revealGraphLifeTimeFrames
 
   return locations
 end
@@ -85,7 +86,8 @@ local function updateLocationData()
     end
 
     if GG.RevealedLocations then
-        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(GG.RevealedLocations  ))
+        SendToUnsynced("HandleRevealedLocationUpdates", 
+		serializeTableToString(GG.RevealedLocations))
     end
 end
 
@@ -96,10 +98,10 @@ function gadget:GameFrame(frame)
         updateLocationData()
     end
 
-   --[[ if frame >0 and frame % (30*60) == 0 then
+   if boolTestGraph == true and frame >0 and frame % (30*60) == 0 then
         Spring.Echo("addTestLocation")
         GG.RevealedLocations = addTestLocation()
-    end--]]
+    end
 end
 
 else --unsynced

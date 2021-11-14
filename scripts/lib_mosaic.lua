@@ -147,7 +147,8 @@ function getGameConfig()
         raid = {
             maxTimeToWait = 3 * 60 * 1000,
             maxRoundLength = 20 * 1000,
-            interrogationPropagandaPrice = 50
+            interrogationPropagandaPrice = 50,
+			revealGraphLifeTimeFrames = 5 * 60 * 30
         },
 
         warzoneValueNormalized = 0.25,
@@ -1736,6 +1737,7 @@ end
                     end
                 end
                 Location.revealedUnits = revealedUnits
+				Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
 
                 if not GG.RevealedLocations then GG.RevealedLocations = {} end
                 GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
