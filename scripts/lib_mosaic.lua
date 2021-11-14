@@ -485,6 +485,16 @@ function  getManualCivilianBuildingMaps(mapName)
                 districtRotationDeg = 0
             }
         end
+          if culture == Cultures.international then  
+            --rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 1, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
+            return {
+                xRandOffset = 3,
+                zRandOffset = 3,
+                districtOffset = districtOffset,
+                districtRotationDeg = 0
+            }
+        end
+
 
 
     end
@@ -1357,6 +1367,42 @@ function  getManualCivilianBuildingMaps(mapName)
                             }}}
                 end
             
+                if culture == "international" then
+                    return {
+                        ["house"] = {
+                            rural = {
+                                "house_western_decal9",
+                                "house_western_decal11",
+                                "house_western_decal3",
+                                "house_western_decal4",  
+                                "house_western_decal10",
+                            },
+                            urban = {
+                                "house_western_decal1",
+                                "house_western_decal2",
+                                "house_western_decal5",
+                                "house_western_decal6",
+                                "house_western_decal7",
+                                "house_western_decal8",
+                                "house_western_decal14",
+                                "house_western_decal12",
+                                "house_western_decal13",
+                                "house_western_decal10",                           
+                                "house_western_decal15",   
+                                "house_western_decal9", 
+                                "house_arab_decal1", 
+                                "house_arab_decal2",
+                                "house_arab_decal3", 
+                                "house_arab_decal5",
+                                "house_arab_decal6", 
+                                "house_arab_decal9",
+                                "house_arab_decal16", 
+                                "house_arab_decal17",
+                                "house_arab_decal19"                       
+                            }}
+                            }
+                end
+
             end
 
                     function isPrayerTime()

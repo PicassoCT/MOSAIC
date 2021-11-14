@@ -66,7 +66,7 @@ local options = {
     desc   = 'Sets the regional background of the game (ínternational/western/asian/arabic)',
     type   = 'list',
     section= 'gamemode', 
-    def    = 'western',
+    def    = 'arabic',
     items  = 
     {
       { 
