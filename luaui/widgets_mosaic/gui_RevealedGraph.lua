@@ -84,6 +84,7 @@ local textSize = 5
 local suspectCol = {0.0, 1.0, 0.0, 0.95}
 local baseWhite = {1.0, 1.0, 1.0, 0.35}
 local baseBlack = {0.0, 0.0, 0.0, 1.0}
+local countryPhoneNr = "0"
 
 local function deserializeStringToTable(str)
   local f
@@ -187,6 +188,86 @@ function RevealedGraphChanged(newLocationData)
   end
 end
 
+local function getDetermenisticHash()
+  local accumulated = 0
+  local mapName = Game.mapName
+  local mapNameLength = string.len(mapName)
+
+  for i=1, mapNameLength do
+    accumulated = accumulated + string.byte(mapName,i)
+  end
+
+  accumulated = accumulated + Game.mapSizeX
+  accumulated = accumulated + Game.mapSizeZ
+  return accumulated
+end
+
+local function getCountryByCulture()
+  local culture =  Spring.GetGameRulesParam ("culture") 
+  local hash = getDetermenisticHash()
+  local region_countryMap = {}
+  region_countryMap ={
+    Africa = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea","Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda","Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde","Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},
+    MiddleEast = {"Tunisia","Libya","Sudan","Syria","Saudi Arabia","Jordan","Kuwait","Brunei","Algeria","Turkey","Iran","Lebanon","Qatar","West Bank","United Arab Emirates","Israel","Bahrain","Gaza Strip","Armenia","Iraq","Oman","Yemen","Egypt","Morocco","Pakistan", "Western Sahara", "Mauritania"},
+    CentralAsia = {"Bhutan","Tajikistan","Iran","Georgia","Nepal","Azerbaijan","Russia","Kyrgyzstan","Afghanistan","Turkmenistan","Pakistan","Uzbekistan","Mongolia","Kazakhstan"},
+    Europe = {"Cyprus","Belarus","Slovakia","Greece","Hungary","Montenegro","Macedonia","Kosovo","Sweden","Luxembourg","Belgium","Slovenia","Albania","Turkey","Serbia","Ukraine","France","Liechtenstein","United Kingdom","Iceland","Italy","Czechia","Andorra","Poland","Netherlands","Croatia","Russia","Malta","Germany","Ireland","Portugal","Monaco","Norway","Vatican City","Finland","Bulgaria","Moldova","Estonia","Lithuania","Latvia", "Switzerland","Romania","San Marino","Isle Of Man","Spain","Denmark","Austria","Gibraltar","Bosnia And Herzegovina"},
+    NorthAmerica = {"United States","Panama","Canada","Greenland","Jersey","Village of Islands","El Salvador","Mexico",},
+    SouthAmerica = {"Belize","Jamaica","Venezuela","Guyana","Equatorial Guinea","Argentina","Brazil","Peru","Ecuador","Honduras","Nicaragua","Bermuda","Bolivia","Cuba","Puerto Rico","Cayman Islands","Chile","Uruguay","Dominican Republic","Costa Rica","French Guiana","Sint Maarten","Mauritius","Saint Lucia","New Caledonia","Paraguay","Guatemala","Barbados","Colombia","French Polynesia",},
+    SouthEastAsia = {"Bangladesh","Papua New Guinea","Myanmar","Cambodia","Australia","Thailand","Korea","China","Vietnam","New Zealand","Sri Lanka","Guadeloupe","Taiwan","Malaysia","Macau", "Wallis And Futuna","Grenada","Laos","Anguilla","Christmas Island","Pitcairn Islands","Guam","Singapore","Hong Kong","Japan","Philippines","Indonesia" }
+  }
+
+  if culture == "arabic" then
+    if hash % 3 == 0 then
+      return region_countryMap.MiddleEast[((hash*69) % #region_countryMap.MiddleEast) +1 ]
+    end
+    if hash % 3 == 1 then
+      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ]
+    end
+    if hash % 3 == 2 then
+      return region_countryMap.Africa[((hash*69) % #region_countryMap.Africa) +1 ]
+    end
+  end
+
+  if culture == "western" then 
+    if hash % 3 == 0 then
+      return region_countryMap.Europe[((hash*69) % #region_countryMap.Europe) +1 ]
+    end
+    if hash % 3 == 1 then
+      return region_countryMap.NorthAmerica[((hash*69) % #region_countryMap.NorthAmerica) +1 ]
+    end
+    if hash % 3 == 2 then
+      return region_countryMap.SouthAmerica[((hash*69) % #region_countryMap.SouthAmerica) +1 ]
+    end
+  end
+
+  if culture == "asian" then
+    if hash % 2 == 0 then
+      return region_countryMap.SouthEastAsia[((hash*69) % #region_countryMap.SouthEastAsia) +1 ]
+    end
+    if hash % 2 == 1 then
+      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ]
+    end
+  end
+
+  if culture == "international" then
+    local internationalCityCountries = {"Dubai", "Hong Kong",
+      "United States", "United Kingdom", "Japan"}
+    return internationalCityCountries[hash % #internationalCityCountries +1]
+  end
+end
+
+function stringToHash(hashString)
+    totalValue = 0
+    for i = 1, string.len(hashString) do
+        local c = hashString:sub(i, i)
+        totalValue = totalValue + string.byte(c, 1)
+    end
+
+    return totalValue
+end
+
+
+
 local startFrame  = 1
 function widget:Initialize()
   widgetHandler:RegisterGlobal(widget, 'RevealedGraphChanged', RevealedGraphChanged)
@@ -203,6 +284,10 @@ function widget:Initialize()
       end
     end)
   end)
+  countryPhoneNr = "+0"
+  local country = getCountryByCulture()
+  local hash = stringToHash(country)
+  countryPhoneNr = countryPhoneNr..(hash%170).."-"
 end
 
 function widget:Shutdown()
@@ -272,6 +357,10 @@ function clamp(val,min,max)
   return val
 end
 
+
+
+
+
 function randSign()
   if math.random(0,1)==1 then return -1 else return 1 end
 end
@@ -329,6 +418,23 @@ function computeTeamColorOffsetByPlayer(teamID,hashUpper)
     teamColorPlayers[teamID][player]=colors
     teamColorPlayers[teamID][name]=colors
   end
+end
+local phoneCache = {}
+local function getCacheBy(identifier)
+  if phoneCache[identifier] then return phoneCache[identifier] end
+end
+
+local function setCacheBy(identifier, value)
+  phoneCache[identifier] = value
+end
+
+
+local function getPhoneNr( id)
+    if getCacheBy(id) then return getCacheBy(id) end
+    local cityPhoneNr = getDetermenisticHash() + math.random(-5,5)
+    local phoneNr = countryPhoneNr..cityPhoneNr.."/"..((9999 % id)+ math.abs( id -9999))
+    setCacheBy(id, phoneNr)
+    return getCacheBy(id) 
 end
 
 local function getDayTime()
@@ -485,7 +591,7 @@ function widget:DrawWorld()
         DrawSafeHouseMarker(Loc,  
 							maxHeightIcon,
 							"SOURCE:"..string.char(65 + (i % 24))..i, 
-							"Location: ("..Loc.x.."/"..Loc.z..") TIME:"..runtimeInSeconds.."s")
+							"Location: ("..Loc.x.."/"..Loc.z..") ETD: Secs "..runtimeInSeconds)
 
         gl.LineWidth(1.0)
         gl.Color(1, 1, 1, 1)
@@ -507,7 +613,7 @@ function widget:DrawWorld()
             DrawRevealedMarkerParent({x=x,y=y,z=z}, 
 										maxHeightIcon, 
 										"ROOT: "..id, 
-										"TYPE:"..designation )
+										"TYPE:"..designation.." ☎:"..getPhoneNr( id))
           else
             glColor(dayTimeDependentColorSet[2])
             gl.LineWidth(3.0)
@@ -516,7 +622,7 @@ function widget:DrawWorld()
             DrawRevealedMarkerChild({x=x,y=y,z=z},
 									maxHeightIcon,
 									"TARGET: "..id,
-									"TYPE:"..designation)
+									"TYPE:"..designation.." ☎:"..getPhoneNr( id))
           end
         
           --drawStripe from Location to Unit
