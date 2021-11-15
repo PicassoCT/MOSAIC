@@ -348,7 +348,7 @@ function  getManualCivilianBuildingMaps(mapName)
 
     function getManualObjectiveSpawnMapNames()
         return {
-            ["mosaic_dubai_v1"] = true
+            ["MOSAIC_LastDayOfDubai_V1"] = true
         }
     end
 
