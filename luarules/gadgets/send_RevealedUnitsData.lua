@@ -106,10 +106,21 @@ function gadget:GameFrame(frame)
         updateLocationData()
     end
 
+    --remove outdated graph data
+    if frame % 30 == 0 then
+        for i=#GG.RevealedLocations, 1, -1
+            if GG.RevealedLocations[i].endFrame < frame then
+                GG.RevealedLocations = table.remove(GG.RevealedLocations,i)
+            end
+        end
+    end
+
    if boolTestGraph == true and frame >0 and frame % (30*60) == 0 then
         Spring.Echo("addTestLocation")
         GG.RevealedLocations = addTestLocation()
     end
+
+
 end
 
 else --unsynced

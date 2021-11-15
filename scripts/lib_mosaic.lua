@@ -1,6 +1,6 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.70
+unitFactor = 0.80
 
 function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
@@ -30,12 +30,12 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.799" 
+            Version = "Alpha: 0.800" 
         },
 
-        numberOfBuildings = math.ceil(95 * unitFactor),
-        numberOfVehicles = math.ceil(75 * unitFactor),
-        numberOfPersons = math.ceil(100 * unitFactor),
+        numberOfBuildings = math.ceil(100 * unitFactor),
+        numberOfVehicles = math.ceil(60 * unitFactor),
+        numberOfPersons = math.ceil(75 * unitFactor),
         nightCivilianReductionFactor = 0.125,
         LoadDistributionMax = 5,
 
