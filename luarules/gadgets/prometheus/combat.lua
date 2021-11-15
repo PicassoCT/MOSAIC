@@ -42,6 +42,8 @@ local GetUnitRulesParam = Spring.GetUnitRulesParam
 local GetGroundHeight   = Spring.GetGroundHeight
 local GetTeamResources  = Spring.GetTeamResources
 local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
+local FIRE_AT_WILL = "fireatwill"
+local randVal = random(2,6)
 -- members
 local lastWaypoint = 0
 local units = {}
@@ -159,22 +161,6 @@ local function getEnemysAtTargetInRange(target, radius, myTeamID)
     return result
 end
 
-local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
-    local boolAssignedSuccesfully = false
-    local enemyUnitArray = getEnemysAtTargetInRange(target, 250, Spring.GetUnitTeam(unitsArray[1]))
-    if enemyUnitArray and #enemyUnitArray > 0 then
-        for i=1,#unitsArray do
-            local randomizedPriority = math.random(0,3)
-            GiveOrderToUnit(unitsArray[i], CMD.ATTACK, enemyUnitArray[((i+randomizedPriority) % #enemyUnitArray)+1],  {})
-            boolAssignedSuccesfully = true
-        end
-    end
-
-    setUnitArrayFireState(unitsArray, "fireatwill", math.random(2,6))
-
-    return boolAssignedSuccesfully
-end
-
 local function setUnitArrayFireState(unitsArray, firestate, nthUnit)
     local states = {}
     states.holdfire = 0
@@ -188,6 +174,24 @@ local function setUnitArrayFireState(unitsArray, firestate, nthUnit)
         end
     end  
 end
+
+local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
+    local boolAssignedSuccesfully = false
+    local enemyUnitArray = getEnemysAtTargetInRange(target, 250, Spring.GetUnitTeam(unitsArray[1]))
+    if enemyUnitArray and #enemyUnitArray > 0 then
+        for i=1,#unitsArray do
+            local randomizedPriority = math.random(0,3)
+            GiveOrderToUnit(unitsArray[i], CMD.ATTACK, enemyUnitArray[((i+randomizedPriority) % #enemyUnitArray)+1],  {})
+            boolAssignedSuccesfully = true
+        end
+    end
+    randVal = random(2,6)
+    setUnitArrayFireState(unitsArray, FIRE_AT_WILL, randVal)
+
+    return boolAssignedSuccesfully
+end
+
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
