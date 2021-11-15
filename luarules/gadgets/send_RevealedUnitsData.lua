@@ -108,8 +108,8 @@ function gadget:GameFrame(frame)
 
     --remove outdated graph data
     if frame % 30 == 0 then
-        for i=#GG.RevealedLocations, 1, -1
-            if GG.RevealedLocations[i].endFrame < frame then
+        for i= #GG.RevealedLocations or 1, 1, -1 do
+            if GG.RevealedLocations[i] and GG.RevealedLocations[i].endFrame < frame then
                 GG.RevealedLocations = table.remove(GG.RevealedLocations,i)
             end
         end
