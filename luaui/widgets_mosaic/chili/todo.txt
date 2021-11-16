@@ -11,3 +11,15 @@
 
 controls:
 - combobox
+
+
+dubai:
+- Dead Block: BlackMarket Investment Scam Building
+- Refugee Occupied Building 
+- Dead Building: Condemned due to Covid25 polution
+- Panopticon Embracing Community
+- Known Police Hotspot: Drugs, Human Trade, Organ trade, Mass Grave
+- Local Headquater of : (secret service short)
+- Fake Tofu-Building to make Citystate more attractive
+- Radical Religous Comunity: <Community Name>
+- IncoporatedDictatorPartnership Outpost: Name

@@ -32,6 +32,7 @@ local TAXI_ETA = 180.0
 local CMD_FIGHT = CMD.FIGHT
 local CMD_MOVE = CMD.MOVE
 local sqrt, random, min, hugefloat = math.sqrt, math.random, math.min, math.huge
+local lower = string.lower
 local waypointMgr = gadget.waypointMgr
 local waypoints = waypointMgr.GetWaypoints()
 local intelligence = gadget.intelligences[myTeamID]
@@ -161,12 +162,12 @@ local function getEnemysAtTargetInRange(target, radius, myTeamID)
     return result
 end
 
-local function setUnitArrayFireState(unitsArray, firestate, nthUnit)
+local function setUnitArrayFireState(unitsArray, firestateStr, nthUnit)
     local states = {}
     states.holdfire = 0
     states.returnfire = 1
     states.fireatwill = 2
-    local fireState = states[string.lower(fireStateStr)] or 0 
+    local fireState = states[lower(firestateStr)] or 0 
 
     for i=1,#unitsArray do
         if i % nthUnit == 0 then
