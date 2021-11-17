@@ -31,11 +31,12 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:Initialize() boolInit = true end
 
     function useMapControlledObjectiveSpawn()
-        name = string.lower(Game.mapName)
-        return manuallyObjectiveSpawnMapNames[name] ~= nil
-    end
+        name = Game.mapName
+        --if manuallyObjectiveSpawnMapNames[name] then echo("Using map controlled spawn") end
+        return (manuallyObjectiveSpawnMapNames[name] or manuallyObjectiveSpawnMapNames[string.lower(name)] )~=nil   
+ end
 
-    function manualyInit()
+    function defaultInit()
     mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}
 
         oz = math.min(Game.mapSizeX, Game.mapSizeZ) - math.random(500, 1000)
@@ -82,7 +83,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 boolInit = false 
             end
         else
-            manualyInit()
+            defaultInit()
         end    
     end
 

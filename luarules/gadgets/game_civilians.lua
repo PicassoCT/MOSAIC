@@ -85,7 +85,7 @@ local boolCachedMapManualPlacementResult
 function isMapControlledBuildingPlacement(mapName)
     if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
     manualBuildingPlacingMaps = getManualObjectiveSpawnMapNames("manualBuildingPlacing")
-    if manualBuildingPlacingMaps[string.lower(mapName)] then
+    if manualBuildingPlacingMaps[mapName] then
         boolCachedMapManualPlacementResult = true
     else
         boolCachedMapManualPlacementResult = false
