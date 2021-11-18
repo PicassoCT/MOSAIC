@@ -45,7 +45,7 @@ local Launcher = Building:New{
 	
 		buildoptions = 
 	{
-		"launcherstep"
+		"launcherstep", "biopayload", "physicspayload", "informationpayload"
 	},
 		category = [[GROUND BUILDING RAIDABLE]],
 

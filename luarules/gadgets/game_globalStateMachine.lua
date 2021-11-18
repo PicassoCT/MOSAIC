@@ -89,7 +89,8 @@ local GameStateMachine = {
 
             for teamID, launchersT in pairs(GG.Launchers) do
                 if teamID and launchersT then
-                    for launcherID, step in pairs(launchersT) do
+                    for launcherID, data in pairs(launchersT) do
+                        local step = data.steps
                         if doesUnitExistAlive(launcherID) == true and 
                             step > GameConfig.PreLaunchLeakSteps then
                             Spring.SetUnitAlwaysVisible(launcherID, true)
@@ -136,7 +137,8 @@ local GameStateMachine = {
             boolNoReadyLaunchers = true
             for teamID, launchersT in pairs(GG.Launchers) do
                 if teamID and launchersT then
-                    for launcherID, step in pairs(launchersT) do
+                    for launcherID, data in pairs(launchersT) do
+                        local step = data.steps
                         if launcherID and doesUnitExistAlive(launcherID) and step >= GameConfig.PreLaunchLeakSteps then
                             boolNoReadyLaunchers = false
                         end
@@ -318,9 +320,10 @@ function constantCheck(frame)
     if GG.Launchers then
         for teamID, launchersT in pairs(GG.Launchers) do
             if teamID and launchersT then
-                for launcherID, step in pairs(launchersT) do
-                    -- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
-                    if launcherID and step >= GameConfig.LaunchReadySteps then
+                for launcherID, data in pairs(launchersT) do
+                    step =data.steps
+                       -- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
+                    if launcherID and step >= GameConfig.LaunchReadySteps and  data.payload then
                         id = createUnitAtUnit(teamID, "launchedicbm",
                                               launcherID, 0, 70, 0)
                         if not LaunchedRockets[teamID] then

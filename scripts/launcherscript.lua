@@ -21,6 +21,7 @@ stepIndex = 0
 rocketHeigth = 3400
 stepHeight = rocketHeigth / GameConfig.LaunchReadySteps
 rocket= piece"Step1"
+payLoadTypes= getPayloadTypes(UnitDefs)
 
 function moveRocketToPos(height,speed)
     Move(RocketAttach, upaxis, height, speed)
@@ -32,7 +33,7 @@ function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
     if not GG.Launchers then GG.Launchers = {} end
     if not GG.Launchers[teamID] then GG.Launchers[teamID] = {} end
-    GG.Launchers[teamID][unitID] = 0
+    GG.Launchers[teamID][unitID] = {steps=0}
     moveRocketToPos(-rocketHeigth, 0)
     Hide(RocketAttach)
     generatepiecesTableAndArrayCode(unitID)
@@ -50,10 +51,11 @@ function script.Create()
 end
 
 
+
 function updateDescriptionDelayed()
     alreadyBuildStages = 0
     if GG.Launchers and GG.Launchers[myTeamID] and GG.Launchers[myTeamID][unitID] then
-        alreadyBuildStages = GG.Launchers[myTeamID][unitID]
+        alreadyBuildStages = GG.Launchers[myTeamID][unitID].steps
     end
 
     description = alreadyBuildStages.." stages completed out of "..(GameConfig.LaunchReadySteps+1).." stages. Build icmb-stages to win the game."
@@ -82,9 +84,14 @@ function accountForBuiltLauncherSteps()
                     waitTillComplete(buildID)
                     if doesUnitExistAlive(buildID) == true then
                         showT(TablesOfPiecesGroups["Step"], 1, math.min(#TablesOfPiecesGroups["Step"],stepIndex + 1))
-                        GG.Launchers[teamID][unitID] = GG.Launchers[teamID][unitID] + 1
+                        GG.Launchers[teamID][unitID].steps = GG.Launchers[teamID][unitID].steps + 1
                         --Spring.Echo("Launcherstep Complete")
                         Spring.DestroyUnit(buildID, false, true)
+                    end
+                elseif payLoadTypes[buildDefID] then
+                    waitTillComplete(buildID)
+                    if doesUnitExistAlive(buildID) == true then
+                        GG.Launchers[teamID][unitID].payload = buildDefID
                     end
                 end
             elseif boolLaunchReady == true then
@@ -182,6 +189,22 @@ end
 
 function script.Killed(recentDamage, _)
     if GG.Launchers[teamID][unitID] then 
+        if GG.Launchers[teamID][unitID].payload then
+            name = UnitDefs[GG.Launchers[teamID][unitID].payload ].name
+            if name == "biopayload" then
+                --TODO infect all nearby
+            end
+            if name == "physicspayload" then
+                --TODO blow up this part of town
+            end
+
+            if name == "informationpayload" then
+                --TODO instigate chaos (add random social engineering)
+            end
+
+        end
+
+
         GG.Launchers[teamID][unitID] = nil 
     end
     if doesUnitExistAlive(buildID) == true then

@@ -282,6 +282,13 @@ function  getManualCivilianBuildingMaps(mapName)
     if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
    end
 
+   function getPayloadTypes(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+
+    typeTable = {"biopayload", "physicspayload", "informationpayload"}
+    return getTypeTable(UnitDefNames, typeTable)
+    end
+
     function getChemTrailInfluencedTypes(UnitDefs)
         assert(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)

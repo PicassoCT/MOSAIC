@@ -153,7 +153,7 @@ function registerManuallyPlacedHouses()
 end
 
 function gadget:UnitCreated(unitID, unitDefID, teamID)
-    if teamID == gaiaTeamID and houseTypeTable[unitDefID] and isMapControlledBuildingPlacement(Game.mapName) then
+    if teamID == gaiaTeamID and houseTypeTable[unitDefID] and isMapControlledBuildingPlacement(Game.mapName) == true then
        x,y,z = spGetUnitPosition(unitID)
        storedSpawnedUnits[unitID] = {x=x, y=y, z = z}
     end
@@ -485,11 +485,12 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
     return numberOfBuildings, BuildingPlaceT
 end
 
+--will not be called with boolInitialized true
 function spawnInitialPopulation(frame)
   
     -- great Grid of placeable Positions 
-    if distributedPathValidationComplete(frame, 10) == true then
-        if  not isMapControlledBuildingPlacement(Game.mapName) then
+    if distributedPathValidationComplete(frame, 10) == true  then
+        if  isMapControlledBuildingPlacement(Game.mapName) == false then
         -- spawn Buildings from MapCenter Outwards
         fromMapCenterOutwards(BuildingPlaceTable,
                               math.ceil(#BuildingPlaceTable/2),
@@ -498,15 +499,14 @@ function spawnInitialPopulation(frame)
             boolInitialized = true   
         else
            registerManuallyPlacedHouses() 
-           boolInitialized = GG.MapCompletedBuildingPlacement and   GG.MapCompletedBuildingPlacement == true
-           if not boolInitialized then return end
+           boolInitialized = ( GG.MapCompletedBuildingPlacement and  (GG.MapCompletedBuildingPlacement == true))
+           if boolInitialized == false then return end
         end
 
         regenerateRoutesTable()
 
         -- give Arrived Units Commands
         sendArrivedUnitsCommands()
-       
     end
 end
 
