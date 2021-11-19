@@ -166,6 +166,8 @@ function getGameConfig()
         LaunchReadySteps = 7,
         LauncherInterceptTimeSeconds = 20,
         LauncherMaxHeight = 3000,
+        --Payloads
+        bioWeaponPayloadKillRadius = 1700,
 
         -- CruiseMissiles
         CruiseMissilesHeightOverGround = 22,

@@ -7,6 +7,7 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 GameConfig = getGameConfig()
+gaiaTeamID= Spring.GetGaiaTeamID()
 boolLaunchReady = false
 
 RocketAttach = piece "RocketAttach"
@@ -188,22 +189,62 @@ function workCycle()
 end
 
 function script.Killed(recentDamage, _)
+    myTeamID = Spring.GetUnitTeam(unitID)
+    x,y,z = Spring.GetUnitPosition(unitID)
     if GG.Launchers[teamID][unitID] then 
         if GG.Launchers[teamID][unitID].payload then
             name = UnitDefs[GG.Launchers[teamID][unitID].payload ].name
-            if name == "biopayload" then
-                --TODO infect all nearby
+            if name == "biopayload" then  --infect all nearby
+                process(getAllNearUnit(unitID, GameConfig.bioWeaponPayloadKillRadius, gaiaTeamID),
+                        function(id)
+                            defID= Spring.GetUnitDefID(id)
+                            if civilianTypeTable[defID] or truckTypeTable[defID] then
+                                Spring.DestroyUnit(id, true, false)
+                            end
+                        end
+                        )
             end
-            if name == "physicspayload" then
-                --TODO blow up this part of town
+
+            if name == "physicspayload" then   --blow up this part of town
+              
+                weaponDefID = WeaponDefs["godrod"].id
+                local params = {
+                    pos = { x,  y,  z},
+                   ["end"] = { x,  y,  z},
+                speed = {0,0,0},
+                spread = {0,0,0},
+                error = {0,0,0},
+                owner = unitID,
+                team = myTeamID,
+                ttl = 1,
+                gravity = 1.0,
+                tracking = unitID,
+                maxRange = 9000,
+                startAlpha = 0.0,
+                endAlpha = 0.1,
+                model = "emptyObjectIsEmpty.s3o",
+                cegTag = ""
+
+                }
+              
+                for i=1, 3 do
+                    param.pos.x,param.pos.y, param.pos.z = x+xOff, y, z+zOff
+                    id=Spring.SpawnProjectile ( weaponDefID, param) 
+                    Spring.SetProjectileAlwaysVisible (id, true) 
+                    xOff,  zOff = math.random(0, 125)*randSign(), math.random(0, 125)*randSign()
+                end
+
             end
 
             if name == "informationpayload" then
-                --TODO instigate chaos (add random social engineering)
+                --create social engineering and anarchy
+                for i=1, 3 do 
+                   id=  createUnitAtUnit(gaiaTeamID, "socialengineeringicon", unitID)
+                   Command(id, "go",{x= x + math.random(512,1024)*randSign(), y= y, z= z + math.random(512,1024)*randSign()})
+                end
+                GG.SetGameStateTo = GameConfig.GameState.anarchy -- instigate chaos (add random social engineering)
             end
-
         end
-
 
         GG.Launchers[teamID][unitID] = nil 
     end

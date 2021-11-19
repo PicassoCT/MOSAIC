@@ -175,7 +175,7 @@ function gadget:Initialize()
     GG.Launchers = {}
     GG.GameStateMachine = GameStateMachine
     GG.GlobalGameStateOverride = nil
-
+    GG.SetGameStateTo = nil
     if teamDeathMode == "none" then
         Spring.Echo("GameEndGadget: No teamDeathMode specified")
         gadgetHandler:RemoveGadget()
@@ -371,8 +371,12 @@ function gadget:GameFrame(frame)
 
         constantCheck(frame)
         newGlobalGameState = GG.GameStateMachine[GG.GlobalGameState](frame) 
-        if GG.GlobalGameStateOverride then
+        if GG.GlobalGameStateOverride then --permanent overwrite for debugging
             newGlobalGameState =GG.GlobalGameStateOverride
+        end
+        if  GG.SetGameStateTo then --one time set and removal
+            newGlobalGameState = GG.SetGameStateTo
+            GG.SetGameStateTo = nil
         end
         setGlobalGameState(newGlobalGameState)
 
