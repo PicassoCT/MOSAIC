@@ -36,6 +36,6 @@ local InformationPayload = Abstract:New{
 
 
 return lowerkeys({
-	["launcherstep"] = InformationPayload:New()
+	["informationpayload"] = InformationPayload:New()
 })
 
