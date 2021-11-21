@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 GameConfig = getGameConfig()
 gaiaTeamID= Spring.GetGaiaTeamID()
 boolLaunchReady = false
-
+myTeamID = Spring.GetUnitTeam(unitID)
 RocketAttach = piece "RocketAttach"
 Crane = piece "Crane"
 Craddle = piece "Craddle"
@@ -23,6 +23,8 @@ rocketHeigth = 3400
 stepHeight = rocketHeigth / GameConfig.LaunchReadySteps
 rocket= piece"Step1"
 payLoadTypes= getPayloadTypes(UnitDefs)
+local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitTeam = Spring.GetUnitTeam
 
 function moveRocketToPos(height,speed)
     Move(RocketAttach, upaxis, height, speed)
@@ -49,6 +51,7 @@ function script.Create()
     Spin(RocketAttach, y_axis, math.rad(-1), 0.1)
     Spin(rocket, y_axis, math.rad(-1), 0.1)
     Hide(Icon)
+    StartThread(detectArrivingPayload)
 end
 
 
@@ -89,11 +92,6 @@ function accountForBuiltLauncherSteps()
                         --Spring.Echo("Launcherstep Complete")
                         Spring.DestroyUnit(buildID, false, true)
                     end
-                elseif payLoadTypes[buildDefID] then
-                    waitTillComplete(buildID)
-                    if doesUnitExistAlive(buildID) == true then
-                        GG.Launchers[teamID][unitID].payload = buildDefID
-                    end
                 end
             elseif boolLaunchReady == true then
                 Spring.DestroyUnit(buildID, false, true)
@@ -107,6 +105,24 @@ function accountForBuiltLauncherSteps()
         Sleep(500)
     end
 end
+
+
+function detectArrivingPayload()
+    while true do
+        process(getAllNearUnit(unitID, 100),
+                function(id)
+                  defID = spGetUnitDefID(id)                        
+                    if spGetUnitTeam(id) ~= myTeamID and
+                       payLoadTypes[defID] then
+                       GG.Launchers[teamID][unitID].payload = defID
+                       Spring.DestroyUnit(id, true, false)
+                    end
+                end
+                ) 
+    Sleep(250)
+    end
+end
+
 boolWorkCycle = true
 function prePareForLaunch()
     boolWorkCycle = false
@@ -226,13 +242,12 @@ function script.Killed(recentDamage, _)
                 cegTag = ""
 
                 }
-              
-                for i=1, 3 do
-                    param.pos.x,param.pos.y, param.pos.z = x+xOff, y, z+zOff
-                    id=Spring.SpawnProjectile ( weaponDefID, param) 
-                    Spring.SetProjectileAlwaysVisible (id, true) 
-                    xOff,  zOff = math.random(0, 125)*randSign(), math.random(0, 125)*randSign()
-                end
+
+                xOff,  zOff = math.random(0, 125)*randSign(), math.random(0, 125)*randSign()
+                param.pos.x,param.pos.y, param.pos.z = x+xOff, y, z+zOff
+                id=Spring.SpawnProjectile ( weaponDefID, param) 
+                Spring.SetProjectileAlwaysVisible (id, true)
+
 
             end
 

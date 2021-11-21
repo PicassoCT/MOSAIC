@@ -147,6 +147,7 @@ function detectUpgrade()
         -- Spring.Echo("Detect Upgrade")
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
+            Spring.SetUnitNoSelect(buildID, true)
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
@@ -155,7 +156,7 @@ function detectUpgrade()
                 if doesUnitExistAlive(buildID) == true then
                    --  echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
                     if waitTillComplete(buildID) == true then
-            
+                    Spring.SetUnitNoSelect(buildID, false)
                     --echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
                     GG.houseHasSafeHouseTable[containingHouseID] = buildID
                     moveUnitToUnit(buildID, containingHouseID)

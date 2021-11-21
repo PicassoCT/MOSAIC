@@ -202,7 +202,6 @@ function getGameConfig()
         metalStart = 5000,
 
         -- Icons
-            --Icons
         socialEngineeringRange = 256,
         socialEngineerLifetimeMs = 3*60*1000,
         
@@ -240,7 +239,12 @@ function getGameConfig()
                 VictimLiftime = 3 * 60 * 1000
             } -- 2mins
 
-        }}
+        },
+        -- Defusal Time 
+        WarheadDefusalTimeMs = 30*1000,
+        WarheadDefusalStartDistance = 50
+
+    }
     end
 
    function getAllCultures()
@@ -352,6 +356,9 @@ function  getManualCivilianBuildingMaps(mapName)
             [UnitDefNames["cybercrimeicon"].id] = true,
             [UnitDefNames["launcherstep"].id] = true,
             [UnitDefNames["destroyedobjectiveicon"].id] = true,
+            [UnitDefNames["biopayload"].id] = true,
+            [UnitDefNames["informationpayload"].id] = true,
+            [UnitDefNames["physicspayload"].id] = true,
         }
     end  
 

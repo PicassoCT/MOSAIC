@@ -53,9 +53,8 @@ else -- unsynced
     function gadget:DrawUnit(unitID, drawMode)
         if iconTables[unitID]  then
            glBlending(GL_SRC_ALPHA, GL_ONE)
-           -- glBlending(GL_SRC_ALPHA, GL_SRC_ALPHA)
             glUnitRaw(unitID, true)
-            return
+            return true
         end
     end
 end

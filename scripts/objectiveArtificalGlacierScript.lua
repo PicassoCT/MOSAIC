@@ -210,12 +210,14 @@ function forInterval(start, stop, irrigation, nr)
             gh = Spring.GetGroundHeight(x, z)
             counter = counter + 1
 
-            if y > gh + offset then
-                val = val - 1
-                accumulateddeg = accumulateddeg - 1
-            elseif y < gh + offset then
-                val = val + 1
-                accumulateddeg = accumulateddeg + 1
+            if gh > 5 then
+                if y > gh + offset then
+                    val = val - 1
+                    accumulateddeg = accumulateddeg - 1
+                elseif y < gh + offset then
+                    val = val + 1
+                    accumulateddeg = accumulateddeg + 1
+                end
             end
 
             if (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) ==

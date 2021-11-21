@@ -117,6 +117,10 @@ local ignoredUnitDefs = {
 [UnitDefNames["house_western0"].id]= true,
 }
 
+if UnitDefNames["caesareagle"] then
+ignoredUnitDefs[UnitDefNames["caesareagle"].id]= true
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 

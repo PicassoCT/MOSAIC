@@ -4,34 +4,27 @@ local InformationPayload = Abstract:New{
 	maxDamage           = 500,
 	mass                = 500,
 	buildtime			= 3*60,
-	buildCostMetal     	= 5000,
-	buildCostEnergy     = 5000,
+	buildCostMetal     	= 15000,
+	buildCostEnergy     = 15000,
 	explodeAs			= "none",
-	script 				= "launcherstepscript.lua",
-	objectName        	= "launcherstep.dae",
-	buildPic = "launcherstep.png",
+	script 				= "warheadpayloadscript.lua",
+	objectName        	= "WarHeadIcon.dae",
+	buildPic = "intelligencepayload.png",
 
 	
 	iconType 			= "launcher",
 
-	canCloak 			= true,
-	cloakCost 			= 0.0001,
-	ActivateWhenBuilt	= 1,
-	cloakCostMoving 	= 0.0001,
-	minCloakDistance 	= 0,
-	onoffable			= true,
-	initCloaked 		= true,
-	decloakOnFire 		= false,
-	cloakTimeout 		= 5,
+	
+		alwaysUpright = true,
 	MaxSlope 			= 100,
 
 	customparams = {
 		helptext		= "Launcher step",
 		baseclass		= "Abstract", 
-		normaltex = "unittextures/testtex2.dds",
+		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
-	category = [[NOTARGET]],
+	category = [[GROUND]],
 }
 
 
