@@ -12,7 +12,7 @@ local BioWeaponsPayload = Abstract:New{
 	buildPic = "biologicalpayload.png",
 
 	iconType 			= "launcher",
-
+	cantBeTransported = false,
 
 		alwaysUpright = true,
 	MaxSlope 			= 100,

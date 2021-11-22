@@ -11,7 +11,7 @@ local InformationPayload = Abstract:New{
 	objectName        	= "WarHeadIcon.dae",
 	buildPic = "intelligencepayload.png",
 
-	
+		cantBeTransported = false,
 	iconType 			= "launcher",
 
 	

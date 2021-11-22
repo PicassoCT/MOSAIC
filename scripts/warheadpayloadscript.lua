@@ -49,6 +49,7 @@ function script.Create()
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
      StartThread(defuseDetect)
      hideT(TablesOfPiecesGroups["ProgressBars"])
+     hideT(TablesOfPiecesGroups["Rotor"])
     StartThread(PlaySoundByUnitDefID, myDefID,
                             "sounds/icons/warhead_created.ogg", 1,
                             500, 2)
@@ -57,6 +58,10 @@ end
 boolDefuseThreadRunning = false
 function defuseThread(id)
     timeInMs = 0
+    showT(TablesOfPiecesGroups["Rotor"])
+    for i=1,#TablesOfPiecesGroups["Rotor"] do
+        Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(42)*randSign(),0)
+    end
     while doesUnitExistAlive(id) == true do
         -- Defused succesfully
         if timeInMs > GameConfig.WarheadDefusalTimeMs then
@@ -67,6 +72,7 @@ function defuseThread(id)
         -- if distance gets to big
         if distanceUnitToUnit(id, unitID) > GameConfig.WarheadDefusalStartDistance then
             hideT(TablesOfPiecesGroups["ProgressBars"])
+            hideT(TablesOfPiecesGroups["Rotor"])
             boolDefuseThreadRunning = false
             return
         end
@@ -75,10 +81,10 @@ function defuseThread(id)
         progressBarIndex = #TablesOfPiecesGroups["ProgressBars"]- math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
         hideT(TablesOfPiecesGroups["ProgressBars"])
         showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
-        if runningTimeInMS < 10000 then
-StartThread(PlaySoundByUnitDefID, myDefID,
-                            "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,
-                            20000, 2)
+        if timeInMs < 10000 then
+        StartThread(PlaySoundByUnitDefID, myDefID,
+                                        "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,
+                                        25000, 2)
         end
 
         Sleep(100)
