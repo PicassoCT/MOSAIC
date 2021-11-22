@@ -51,10 +51,14 @@ else -- unsynced
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
-        if iconTables[unitID]  then
+        if drawMode == 1 and iconTables[unitID]  then --normalDraw
            glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             return true
+        end
+
+        if drawMode ~= 1 and iconTables[unitID]  then --shadowDraw
+        return false
         end
     end
 end

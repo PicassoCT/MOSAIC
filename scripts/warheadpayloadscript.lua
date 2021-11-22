@@ -38,6 +38,7 @@ return damage
 end
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
+local myDefID = spGetUnitDefID(unitID)
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
@@ -48,6 +49,9 @@ function script.Create()
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
      StartThread(defuseDetect)
      hideT(TablesOfPiecesGroups["ProgressBars"])
+    StartThread(PlaySoundByUnitDefID, myDefID,
+                            "sounds/icons/warhead_created.ogg", 1,
+                            500, 2)
 end
 
 boolDefuseThreadRunning = false
@@ -71,6 +75,11 @@ function defuseThread(id)
         progressBarIndex = #TablesOfPiecesGroups["ProgressBars"]- math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
         hideT(TablesOfPiecesGroups["ProgressBars"])
         showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
+        if runningTimeInMS < 10000 then
+StartThread(PlaySoundByUnitDefID, myDefID,
+                            "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,
+                            20000, 2)
+        end
 
         Sleep(100)
         timeInMs = timeInMs +100
