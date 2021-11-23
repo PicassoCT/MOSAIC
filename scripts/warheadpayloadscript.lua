@@ -7,11 +7,8 @@ TablesOfPiecesGroups = {}
 defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
 GameConfig = getGameConfig()
 
---Explode on Impact
-function script.HitByWeapon(x, z, weaponDefID, damage) 
-    hp,maxHp= Spring.GetUnitHealth(unitID)
-        if hp -damage < maxHp/2 then
-            x,y,z = Spring.GetUnitPosition(unitID)
+function mightyBadaBoom()
+ x,y,z = Spring.GetUnitPosition(unitID)
             weaponDefID = WeaponDefs["godrod"].id
                         local params = {
                             pos = { x,  y + 10,  z},
@@ -34,6 +31,13 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 
                         id=Spring.SpawnProjectile ( weaponDefID, param) 
                         Spring.SetProjectileAlwaysVisible (id, true)
+						Spring.DestroyUnit(unitID, false, true)
+end
+--Explode on Impact
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+    hp,maxHp= Spring.GetUnitHealth(unitID)
+        if hp - damage < maxHp/2 then
+           mightyBadaBoom()
         end
 return damage
 end
@@ -57,42 +61,123 @@ function script.Create()
                             500, 2)
 end
 
-if boolDefuseThreadRunning == false then
-    process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
-           function(id)
-               defID = spGetUnitDefID(id)
-                   if boolDefuseThreadRunning == false and
-                       spGetUnitTeam(id) ~= myTeamID and
-                       defuseCapableUnitTypes[defID] then
-                       StartThread(defuseThread, id)
-                       boolDefuseThreadRunning = true 
 
-                   end
-            end)
+function registerBombLocationAndProducer(unitID)
+                local Location = {}
+                Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
+                Location.teamID = Spring.GetUnitTeam(unitID)
+                Location.radius = GetUnitDefRealRadius(unitID)
+
+                local revealedUnits = {}
+				if GG.PayloadParents then
+					parent = GG.PayloadParents[unitID]
+					if parent and doesUnitExistAlive(parent) then
+						revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
+					end
+                end
+
+                Location.revealedUnits = revealedUnits
+				Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
+
+                if not GG.RevealedLocations then GG.RevealedLocations = {} end
+                GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
+            end
+
+function displayProgressBar(timeInMs)
+  -- display the Progressbars
+        progressBarIndex = #TablesOfPiecesGroups["ProgressBars"]- math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
+        hideT(TablesOfPiecesGroups["ProgressBars"])
+        showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
 end
 
 boolDefuseThreadRunning = false
 defuseStatesMachine = {
-    dormant =   function(oldState, frame)
-
+    dormant =   function(oldState, frame, persPack)
                     nextState = "dormant"
-                    return targetState
-                end,
-    defuse_in_progress= function(oldState, frame)
+					
+					boolFoundSomething = false
+					
+					 process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+						   function(id)
+							   if boolFoundSomething == true then return end
+							   defID = spGetUnitDefID(id)
+								 if  spGetUnitTeam(id) ~= myTeamID and defuseCapableUnitTypes[defID]  then
+									boolFoundSomething = true
+									 persPack.defuserID = id 
+									  persPack.defuseTimeMs = GameConfig.WarheadDefusalTimeMs 
+										showT(TablesOfPiecesGroups["Rotor"])
+										for i=1,#TablesOfPiecesGroups["Rotor"] do
+											Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(42)*randSign(),0)
+										end
+										Spring.SetUnitAlwaysVisible(unitID, true)
+										nextState = "defuse_in_progress"
+								   end
+							end)
+							
+						return nextState, persPack
+					end,
+					
+    defuse_in_progress= function(oldState, frame, persPack)
+						nextState = "defuse_in_progress"
+						if doesUnitExistAlive( persPack.defuserID) == false then
+							hideT(TablesOfPiecesGroups["Rotor"])
+			
+							return "decay_in_progress", persPack
+						end
+						
+						if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.WarheadDefusalStartDistance then
+							hideT(TablesOfPiecesGroups["Rotor"])						
+						return "decay_in_progress", persPack
+						end
+						persPack.defuseTimeMs = persPack.defuseTimeMs - 100
+						
+						displayProgressBar( persPack.defuseTimeMs)
+						
+						if persPack.defuseTimeMs <= 0 then --"defused"
+							-- show Graph
+							 registerBombLocationAndProducer(unitID)
+							-- Reward Defuser Team
+							GG.Bank:TransferToTeam(GameConfig.Objectives.Reward, Spring.GetUnitTeam(persPack.defuserID), persPack.defuserID, {r=255,g=255,b=255})
+							--DestroyUnit
+							Spring.DestroyUnit(unitID, false, true)
+						end
 
-        nextState = "defuse_in_progress"
-        return targetState
+							return nextState, persPack
+						end,
+		decay_in_progress= function(oldState, frame, persPack)
+			nextState = "decay_in_progress"
+			
+			persPack.defuseTimeMs = persPack.defuseTimeMs + 100
+			displayProgressBar(persPack.defuseTimeMs)
+			
+			if persPack.defuseTimeMs > GameConfig.WarheadDefusalTimeMs then
+				mightyBadaBoom()
+			end
+			
+			boolFoundFoe = false
+			boolFoundFriend = false
+			 process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+			   function(id)
+				if boolFoundFoe or boolFoundFriend then return end
+		
+				   defID = spGetUnitDefID(id)
+				   pTeamID = spGetUnitTeam(id) 
+					 if pTeamID == myTeamID and defuseCapableUnitTypes[defID] and not boolFoundFriend then
+							hideT(TablesOfPiecesGroups["Rotor"])
+							boolFoundFriend = true
+							nextState = "dormant"
+					   end
+					   
+					  if  pTeamID ~= myTeamID and defuseCapableUnitTypes[defID] and not boolFoundFoe then
+							showT(TablesOfPiecesGroups["Rotor"])
+							boolFoundFoe = true
+							nextState = "defuse_in_progress"
+					   end
+				end)
+		
+        return nextState, persPack
     end,
-    decay_in_progress= function(oldState, frame)
-
-        nextState = "decay_in_progress"
-        return targetState
-    end,
-    defused = function(oldState, frame)
-        
-        nextState = "defused"
-        return targetState
-    end,
+  
 }
 
 --Reveal Productionplace, Propagandaplus
@@ -101,8 +186,9 @@ function defuseStateMachine()
     myTeamID = Spring.GetUnitTeam(unitID)
     currentState = "dormant"
     while true do
-      
-        Sleep(250)
+      newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
+	  currentState = newState
+       Sleep(100)
     end
 end
 

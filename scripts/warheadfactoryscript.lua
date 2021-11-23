@@ -34,6 +34,24 @@ function script.Create()
 
     GG.UnitHeldByHouseMap[unitID] = T[1]
     StartThread(mortallyDependant, unitID, T[1], 15, false, true)
+	StartThread(howToBuildTheBombWatcher)
+end
+
+
+= 
+
+local buildID = nil
+function howToBuildTheBombWatcher()
+    while true do
+        buildID = Spring.GetUnitIsBuilding(unitID)
+        if buildID then
+            waitTillComplete(builID)
+			if doesUnitExistAlive(builID) == true then
+			GG.PayloadParents[buildID] = unitID
+			end
+        end
+    Sleep(10)
+    end
 end
 
 function script.Killed(recentDamage, _) return 1 end
