@@ -30,7 +30,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.800" 
+            Version = "Alpha: 0.801" 
         },
 
         numberOfBuildings = math.ceil(100 * unitFactor),
@@ -71,6 +71,8 @@ function getGameConfig()
             RewardCyle = 30 * 60, -- /30 frames = 1 seconds
             Reward = 20
         },
+		
+
         -- civilianbehaviour
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
 
@@ -168,7 +170,8 @@ function getGameConfig()
         LauncherMaxHeight = 3000,
         --Payloads
         bioWeaponPayloadKillRadius = 1700,
-
+		PayloadDefusedReward = 5000,
+		
         -- CruiseMissiles
         CruiseMissilesHeightOverGround = 22,
         cruiseMissileAntiArmorDroplettRange = 1200,
