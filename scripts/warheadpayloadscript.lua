@@ -57,19 +57,41 @@ function script.Create()
                             500, 2)
 end
 
+if boolDefuseThreadRunning == false then
+    process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+           function(id)
+               defID = spGetUnitDefID(id)
+                   if boolDefuseThreadRunning == false and
+                       spGetUnitTeam(id) ~= myTeamID and
+                       defuseCapableUnitTypes[defID] then
+                       StartThread(defuseThread, id)
+                       boolDefuseThreadRunning = true 
+
+                   end
+            end)
+end
+
 boolDefuseThreadRunning = false
 defuseStatesMachine = {
-    dormant = function(oldState, frame)
+    dormant =   function(oldState, frame)
 
-            end,
+                    nextState = "dormant"
+                    return targetState
+                end,
     defuse_in_progress= function(oldState, frame)
 
+        nextState = "defuse_in_progress"
+        return targetState
     end,
     decay_in_progress= function(oldState, frame)
 
+        nextState = "decay_in_progress"
+        return targetState
     end,
     defused = function(oldState, frame)
-
+        
+        nextState = "defused"
+        return targetState
     end,
 }
 
@@ -77,20 +99,9 @@ defuseStatesMachine = {
 
 function defuseStateMachine()
     myTeamID = Spring.GetUnitTeam(unitID)
+    currentState = "dormant"
     while true do
-        if boolDefuseThreadRunning == false then
-             process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
-                    function(id)
-                        defID = spGetUnitDefID(id)
-                            if boolDefuseThreadRunning == false and
-                                spGetUnitTeam(id) ~= myTeamID and
-                                defuseCapableUnitTypes[defID] then
-                                StartThread(defuseThread, id)
-                                boolDefuseThreadRunning = true 
-
-                            end
-                     end)
-        end
+      
         Sleep(250)
     end
 end
