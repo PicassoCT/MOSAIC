@@ -6,10 +6,11 @@ include "lib_Animation.lua"
 TablesOfPiecesGroups = {}
 defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
 GameConfig = getGameConfig()
+WarnText = piece"WarnText"
 
 function mightyBadaBoom()
  x,y,z = Spring.GetUnitPosition(unitID)
-            weaponDefID = WeaponDefs["godrod"].id
+            weaponDefID = WeaponDefNames["godrod"].id
                         local params = {
                             pos = { x,  y + 10,  z},
                            ["end"] = { x,  y+ 5,  z},
@@ -29,8 +30,25 @@ function mightyBadaBoom()
 
                         }
 
-                        id=Spring.SpawnProjectile ( weaponDefID, param) 
+                        id=Spring.SpawnProjectile ( weaponDefID, params) 
                         Spring.SetProjectileAlwaysVisible (id, true)
+                         protagonT = getAllTeamsOfType("protagon", UnitDefs)
+                         antagonT = getAllTeamsOfType("antagon", UnitDefs)
+
+
+                         process(getAllNearUnit(unitID, 333 ),
+						   function(id)
+	                            for tid, _ in pairs(protagonT) do
+	                                GG.Bank:TransferToTeam(GameConfig.WarheadDefusalPunishment, tid,
+	                                                       id, {r=255,g=255,b=255})
+	                            end
+	                            for tid, _ in pairs(antagonT) do
+	                                GG.Bank:TransferToTeam(GameConfig.WarheadDefusalPunishment, tid,
+	                                                       id, {r=255,g=255,b=255})
+	                            end
+
+							  Spring.DestroyUnit(id, true, false)
+							end)
 						Spring.DestroyUnit(unitID, false, true)
 end
 --Explode on Impact
@@ -61,6 +79,27 @@ function script.Create()
                             500, 2)
 end
 
+local realRadii = {}
+
+
+local function GetUnitDefRealRadius(udid)
+  local radius = realRadii[udid]
+  if (radius) then
+    return radius
+  end
+
+  local ud = UnitDefs[udid]
+  if (ud == nil) then return nil end
+
+  local dims = Spring.GetUnitDefDimensions(udid)
+  if (dims == nil) then return nil end
+
+  local scale = ud.hitSphereScale -- missing in 0.76b1+
+  scale = ((scale == nil) or (scale == 0.0)) and 1.0 or scale
+  radius = dims.radius / scale
+  realRadii[udid] = radius
+  return radius
+end
 
 function registerBombLocationAndProducer(unitID)
                 local Location = {}
@@ -84,8 +123,8 @@ function registerBombLocationAndProducer(unitID)
             end
 
 function displayProgressBar(timeInMs)
-  -- display the Progressbars
-        progressBarIndex = #TablesOfPiecesGroups["ProgressBars"]- math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
+  -- display the Progressbars																								
+        progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
         hideT(TablesOfPiecesGroups["ProgressBars"])
         showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
 end
@@ -107,10 +146,12 @@ defuseStatesMachine = {
 									  persPack.defuseTimeMs = GameConfig.WarheadDefusalTimeMs 
 										showT(TablesOfPiecesGroups["Rotor"])
 										for i=1,#TablesOfPiecesGroups["Rotor"] do
-											Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(42)*randSign(),0)
+											val = math.random(15,50)
+											Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(val)*randSign(),0)
 										end
 										Spring.SetUnitAlwaysVisible(unitID, true)
 										nextState = "defuse_in_progress"
+										Hide(WarnText)
 								   end
 							end)
 							
@@ -126,13 +167,20 @@ defuseStatesMachine = {
 						end
 						
 						if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.WarheadDefusalStartDistance then
-							hideT(TablesOfPiecesGroups["Rotor"])						
+							hideT(TablesOfPiecesGroups["Rotor"])		
+							Show(WarnText)				
 						return "decay_in_progress", persPack
 						end
 						persPack.defuseTimeMs = persPack.defuseTimeMs - 100
 						
 						displayProgressBar( persPack.defuseTimeMs)
-						
+						if  not persPack.soundStart and persPack.defuseTimeMs < 12000  then
+							persPack.soundStart = true
+					        StartThread(PlaySoundByUnitDefID, myDefID,
+                                    "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,
+                                    25000, 2)
+						end
+
 						if persPack.defuseTimeMs <= 0 then --"defused"
 							-- show Graph
 							 registerBombLocationAndProducer(unitID)
@@ -166,12 +214,14 @@ defuseStatesMachine = {
 							hideT(TablesOfPiecesGroups["Rotor"])
 							boolFoundFriend = true
 							nextState = "dormant"
+							Hide(WarnText)
 					   end
 					   
 					  if  pTeamID ~= myTeamID and defuseCapableUnitTypes[defID] and not boolFoundFoe then
 							showT(TablesOfPiecesGroups["Rotor"])
 							boolFoundFoe = true
 							nextState = "defuse_in_progress"
+							Hide(WarnText)
 					   end
 				end)
 		
@@ -185,6 +235,8 @@ defuseStatesMachine = {
 function defuseStateMachine()
     myTeamID = Spring.GetUnitTeam(unitID)
     currentState = "dormant"
+    Hide(WarnText)
+    persPack={}
     while true do
       newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
 	  currentState = newState

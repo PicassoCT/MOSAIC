@@ -245,7 +245,8 @@ function getGameConfig()
         },
         -- Defusal Time 
         WarheadDefusalTimeMs = 30*1000,
-        WarheadDefusalStartDistance = 50
+        WarheadDefusalStartDistance = 50,
+        WarheadDefusalPunishment = -500
 
     }
     end

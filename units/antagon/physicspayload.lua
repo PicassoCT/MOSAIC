@@ -1,6 +1,6 @@
 local PhysicsPayload = Abstract:New{
 	name 				= "Physical Warfare Payload",
-	description 		= "Fusion / Entanglement Irradiation / Tectonics Bust Warhead",
+	description 		= "Collapse Fusion / Anti-Matter / Entanglement Warhead",
 	maxDamage           = 500,
 	mass                = 500,
 	buildtime			= 3*60,
@@ -16,7 +16,7 @@ local PhysicsPayload = Abstract:New{
 	MaxSlope 			= 100,
 
 	customparams = {
-		helptext		= "Launcher step",
+		helptext		= "Warhead",
 		baseclass		= "Abstract", 
 		normaltex = "unittextures/component_atlas_normal.dds",
     },
