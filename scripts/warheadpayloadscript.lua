@@ -7,6 +7,7 @@ TablesOfPiecesGroups = {}
 defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
 GameConfig = getGameConfig()
 
+--Explode on Impact
 function script.HitByWeapon(x, z, weaponDefID, damage) 
     hp,maxHp= Spring.GetUnitHealth(unitID)
         if hp -damage < maxHp/2 then
@@ -40,14 +41,15 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
 local myDefID = spGetUnitDefID(unitID)
 
+
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    Spring.SetUnitAlwaysVisible(unitID, true)
+
     -- Spring.MoveCtrl.Enable(unitID,true)
     -- x,y,z =Spring.GetUnitPosition(unitID)
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-     StartThread(defuseDetect)
+     StartThread(defuseStateMachine)
      hideT(TablesOfPiecesGroups["ProgressBars"])
      hideT(TablesOfPiecesGroups["Rotor"])
     StartThread(PlaySoundByUnitDefID, myDefID,
@@ -56,44 +58,24 @@ function script.Create()
 end
 
 boolDefuseThreadRunning = false
-function defuseThread(id)
-    timeInMs = 0
-    showT(TablesOfPiecesGroups["Rotor"])
-    for i=1,#TablesOfPiecesGroups["Rotor"] do
-        Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(42)*randSign(),0)
-    end
-    while doesUnitExistAlive(id) == true do
-        -- Defused succesfully
-        if timeInMs > GameConfig.WarheadDefusalTimeMs then
-            Spring.DestroyUnit(unitID, false, true)
-            return
-        end
+defuseStatesMachine = {
+    dormant = function(oldState, frame)
 
-        -- if distance gets to big
-        if distanceUnitToUnit(id, unitID) > GameConfig.WarheadDefusalStartDistance then
-            hideT(TablesOfPiecesGroups["ProgressBars"])
-            hideT(TablesOfPiecesGroups["Rotor"])
-            boolDefuseThreadRunning = false
-            return
-        end
+            end,
+    defuse_in_progress= function(oldState, frame)
 
-        -- display the Progressbars
-        progressBarIndex = #TablesOfPiecesGroups["ProgressBars"]- math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
-        hideT(TablesOfPiecesGroups["ProgressBars"])
-        showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
-        if timeInMs < 10000 then
-        StartThread(PlaySoundByUnitDefID, myDefID,
-                                        "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,
-                                        25000, 2)
-        end
+    end,
+    decay_in_progress= function(oldState, frame)
 
-        Sleep(100)
-        timeInMs = timeInMs +100
-    end
-    boolDefuseThreadRunning = false
-end
+    end,
+    defused = function(oldState, frame)
 
-function defuseDetect()
+    end,
+}
+
+--Reveal Productionplace, Propagandaplus
+
+function defuseStateMachine()
     myTeamID = Spring.GetUnitTeam(unitID)
     while true do
         if boolDefuseThreadRunning == false then
