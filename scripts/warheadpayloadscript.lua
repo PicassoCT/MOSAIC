@@ -166,10 +166,15 @@ defuseStatesMachine = {
 							return "decay_in_progress", persPack
 						end
 						
-						if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.WarheadDefusalStartDistance then
+                        if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.WarheadDefusalStartDistance then
+                            if persPack.defuseTimeMs/ GameConfig.WarheadDefusalTimeMs > 0.2 then
 							hideT(TablesOfPiecesGroups["Rotor"])		
 							Show(WarnText)				
-						return "decay_in_progress", persPack
+                             return "decay_in_progress", persPack
+                            else
+                                hideT(TablesOfPiecesGroups["Rotor"])		
+                                return "dormant", persPack
+                            end
 						end
 						persPack.defuseTimeMs = persPack.defuseTimeMs - 100
 						

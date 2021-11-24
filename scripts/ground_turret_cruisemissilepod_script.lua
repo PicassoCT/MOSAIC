@@ -23,13 +23,14 @@ if not Pod then
              " has no Pod")
 end
 rocketPiece = aimpiece
-
+myDefID = Spring.GetUnitDefID(unitID)
+boolIsTransportPod = UnitDefs[myDefID].name == "ground_turret_cm_transport"
 DefIDPieceMap = {
-    [UnitDefNames["ground_turret_cm_airdrop"].id] = "cm_airstrike_fold",
-    [UnitDefNames["ground_turret_cm_walker"].id] = "cm_walker_fold",
-    [UnitDefNames["ground_turret_cm_antiarmor"].id] = "cm_AntiArmour_fold",
-    [UnitDefNames["ground_turret_cm_ssied"].id] = "cm_turret_ssied_fold"
+    [UnitDefNames["ground_turret_cm_airstrike"].id] = "cm_airstrike_fold",
+    [UnitDefNames["ground_turret_cm_transport"].id] = "cm_walker_fold",
+    [UnitDefNames["ground_turret_cm_antiarmor"].id] = "cm_AntiArmour_fold"
 }
+
 
 function showDependantOnType()
     myDefID = Spring.GetUnitDefID(unitID)
@@ -41,6 +42,7 @@ end
 
 function script.Create()
 
+    if not GG.CruiseMissileTransport then GG.CruiseMissileTransport  = {} end
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
         groundFeetSensors = TablesOfPiecesGroups["GroundSensor"]
@@ -235,3 +237,7 @@ function debugCEGScript()
 
 
 end
+
+
+TODO
+boolIsTransportPod

@@ -454,18 +454,18 @@ ground_turret_cruisemissilepod.weapons  = {
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
-CruiseMissilePods["ground_turret_cm_airdrop"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_airdrop"].name = "Airstrike"
-CruiseMissilePods["ground_turret_cm_airdrop"].description = " fires a cruise missile"
+CruiseMissilePods["ground_turret_cm_airstrike"] = ground_turret_cruisemissilepod:New()
+CruiseMissilePods["ground_turret_cm_airstrike"].name = "Airstrike"
+CruiseMissilePods["ground_turret_cm_airstrike"].description = " fires a cruise missile"
 
 ground_turret_cruisemissilepod.weapons  = {
-											[1] = { name =  "cm_walker"	,											
+											[1] = { name =  "cm_transport"	,											
 													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 											}
 										}
-CruiseMissilePods["ground_turret_cm_walker"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_walker"].name = "Walker AirDrop Cruise Missile"
-CruiseMissilePods["ground_turret_cm_walker"].description = " drops 2 walkers preimpact"
+CruiseMissilePods["ground_turret_cm_transport"] = ground_turret_cruisemissilepod:New()
+CruiseMissilePods["ground_turret_cm_transport"].name = "Tansport Cruise Missile"
+CruiseMissilePods["ground_turret_cm_transport"].description = " drops a transported unit to target"
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_antiarmor"	,													
@@ -476,22 +476,14 @@ CruiseMissilePods["ground_turret_cm_antiarmor"] = ground_turret_cruisemissilepod
 CruiseMissilePods["ground_turret_cm_antiarmor"].name = "Anti-Armor Cruise Missile"
 CruiseMissilePods["ground_turret_cm_antiarmor"].description = " fire anti armour salvoes pre impact"
 
-ground_turret_cruisemissilepod.weapons  = {
-											[1] = { name =  "cm_turret_ssied",
-												
-													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
-											}
-										}
-CruiseMissilePods["ground_turret_cm_ssied"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_ssied"].name = "IED-Drone Cruise Missile"
-CruiseMissilePods["ground_turret_cm_ssied"].description = " drops IEDs and Turret into the warzone"
+
 
 return lowerkeys(
 {
-	["ground_turret_cm_airdrop"] = CruiseMissilePods["ground_turret_cm_airdrop"],
-	["ground_turret_cm_walker"] = CruiseMissilePods["ground_turret_cm_walker"],
+	["ground_turret_cm_airstrike"] = CruiseMissilePods["ground_turret_cm_airstrike"],
+	["ground_turret_cm_transport"] = CruiseMissilePods["ground_turret_cm_transport"],
 	["ground_turret_cm_antiarmor"] = CruiseMissilePods["ground_turret_cm_antiarmor"],
-	["ground_turret_cm_ssied"] = CruiseMissilePods["ground_turret_cm_ssied"],
+
 	["ground_turret_ssied"] = groundturretssied:New(),
 	["ground_turret_mg"] = groundturretmg:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New()	,

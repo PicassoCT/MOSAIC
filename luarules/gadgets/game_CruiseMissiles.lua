@@ -21,9 +21,9 @@ VFS.Include("scripts/lib_mosaic.lua")
 local GameConfig = getGameConfig()
 local cruiseMissileWeapons = {}
  cruiseMissileWeapons[WeaponDefNames["cm_airstrike"].id] = true
- cruiseMissileWeapons[WeaponDefNames["cm_walker"].id] = true
+ cruiseMissileWeapons[WeaponDefNames["cm_transport"].id] = true
  cruiseMissileWeapons[WeaponDefNames["cm_antiarmor"].id] = true
- cruiseMissileWeapons[WeaponDefNames["cm_turret_ssied"].id] = true
+ 
 
 local TruckTypeTable = getTruckTypeTable(UnitDefs)
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -35,34 +35,25 @@ onImpact = {
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
 
-    [WeaponDefNames["cm_walker"].id] = function(projID, tx, ty, tz)
+    [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
-        teamID = Spring.GetProjectileTeamID(projID)
-        for i = 1, 2, 1 do
-            unitID = Spring.CreateUnit("ground_walker_mg", px, py, pz, 1, teamID)
-            giveParachutToUnit(unitID, px, py, pz)
+        if  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID] and doesUnitExistAlive( GG.CruiseMissileTransport[projID]) == true then
+            Spring.UnitDetach(transportID)
+            transportID = GG.CruiseMissileTransport[projID]
+            Spring.spGetUnitPosition(transportID, px,py,pz)
+            giveParachutToUnit(transportID, px, py, pz)
+            Spring.DeleteProjectile(projID)     
         end
-        Spring.DeleteProjectile(projID)
     end,
 
     [WeaponDefNames["cm_antiarmor"].id] = function(projID, tx, ty, tz)
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),  tz)
     end,
-
-    [WeaponDefNames["cm_turret_ssied"].id] = function(projID, tx, ty, tz)
-        px, py, pz = Spring.GetProjectilePosition(projID)
-        teamID = Spring.GetProjectileTeamID(projID)
-        for i=1,2 do
-         id =Spring.CreateUnit("air_copter_ssied", px, py, pz, 1, teamID)
-         Command( id,"move",{tx, Spring.GetGroundHeight(tx, tz),  tz} )
-        end
-        Spring.DeleteProjectile(projID)
-    end
 }
 
 onLastPointBeforeImpactSetTargetTo = {
     [WeaponDefNames["cm_airstrike"].id] = function(projID) end,
-    [WeaponDefNames["cm_walker"].id] = function(projID) end,
+    [WeaponDefNames["cm_transport"].id] = function(projID) end,
     [WeaponDefNames["cm_antiarmor"].id] = function(projID) 
              tx,ty,tz =  getProjectileTargetXYZ(projID)
              px, py, pz = Spring.GetProjectilePosition(projID)
@@ -145,18 +136,12 @@ onLastPointBeforeImpactSetTargetTo = {
                         end
                     end
             end,    
-[WeaponDefNames["cm_turret_ssied"].id] = function(projID)
-        px, py, pz = Spring.GetProjectilePosition(projID)
-        teamID = Spring.GetProjectileTeamID(projID)
-        unitID = Spring.CreateUnit("ground_turret_mg", px, py + 25, pz, 1, teamID)
-        giveParachutToUnit(unitID, px, py, pz)
- end
 }
 
 function getWeapondefByName(name) return WeaponDefs[WeaponDefNames[name].id] end
 
 local SSied_Def = getWeapondefByName("ssied")
-local CM_Def = getWeapondefByName("cruisemissile")
+local CM_Def = getWeapondefByName("cm_airstrike")
 
 assert(CM_Def)
 assert(CM_Def.range)

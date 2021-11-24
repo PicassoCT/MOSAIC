@@ -2,7 +2,8 @@
 local weaponName = "cruise_missiles" --cruise missile base type
 local weaponDef = {
     name = "Cruise Missile",
-    weaponType = [[MissileLauncher]],
+	weaponType = [[MissileLauncher]],
+	description = "Long Range Long Reload Missile",
 
     damage = {
         default = 1500
@@ -48,19 +49,7 @@ local weaponDef = {
 	
 local CruiseMissiles ={}
 local Missile = weaponDef
-
-CruiseMissiles["cruisemissile"] = Missile
-
-
-local Missile = weaponDef
-Missile.model = "cm_airstrike_proj.s3o"
-Missile.name = "cruisemissile airstrike | airssied droplets"
 CruiseMissiles["cm_airstrike"] = Missile
-
-local Missile = weaponDef
-Missile.model = "cm_walker_proj.s3o"
-Missile.name = "cruise missile walkerdrop"
-CruiseMissiles["cm_walker"] = Missile
 
 local Missile = weaponDef
 Missile.model = "cm_antiarmor_proj.s3o"
@@ -69,7 +58,8 @@ CruiseMissiles["cm_antiarmor"] = Missile
 
 local Missile = weaponDef
 Missile.model = "cm_turret_ssied_proj.s3o"
-Missile.name = "cruisemissile ssied | turret drop"
-CruiseMissiles["cm_turret_ssied"] = Missile
+Missile.name = "cruisemissile transport"
+Missile.name = "transports all transportable units"
+CruiseMissiles["cm_transport"] = Missile
 
 return lowerkeys( CruiseMissiles )
