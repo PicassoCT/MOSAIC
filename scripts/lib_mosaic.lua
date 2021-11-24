@@ -1264,9 +1264,8 @@ function  getManualCivilianBuildingMaps(mapName)
                 TypeTable = {
                     "smartminedrone",
                     "cm_airstrike",
-                    "cm_walker",
+                    "cm_transport",
                     "cm_antiarmor",
-                    "cm_turret_ssied"
                     }
                 return getWeaponTypeTable(WeaponDefs, TypeTable)
             end 
@@ -1274,9 +1273,8 @@ function  getManualCivilianBuildingMaps(mapName)
             function getCruiseMissileProjectileTypes(WeaponDefs)
                 TypeTable = {
                     "cm_airstrike",
-                    "cm_walker",
+                    "cm_transport",
                     "cm_antiarmor",
-                    "cm_turret_ssied"
                 }
                 return getWeaponTypeTable(WeaponDefs, TypeTable)
             end
