@@ -577,7 +577,24 @@ function  getManualCivilianBuildingMaps(mapName)
             return {}
         end
 
-    
+        function getRocketTransportableTypes(UnitDefs)
+             local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "operativeasset",
+                    "operativepropagator",
+                    "operativeinvestigator",
+                    "ground_walker_mg",
+                    "ground_walker_grenade",
+                    "ground_tumbleweedspyder",
+                    "ground_turret_iied",
+                    "ground_turret_dronegrenade",
+                    "ground_turret_mg",
+                    "air_copter_ssied",
+                    "motorbike"
+                }
+                return getTypeTable(UnitDefNames, typeTable)
+        end
 
         function getMotorBikeLoadableTypes(UnitDefs)
             assert(UnitDefs)

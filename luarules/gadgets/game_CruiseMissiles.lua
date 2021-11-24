@@ -37,11 +37,16 @@ onImpact = {
 
     [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
-        if  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID] and doesUnitExistAlive( GG.CruiseMissileTransport[projID]) == true then
+        projectileParent = Spring.GetProjectileOwnerID (projID)
+        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID] and doesUnitExistAlive( GG.CruiseMissileTransport[projID]) == true then
+            transportID = GG.CruiseMissileTransport[projectileParent]
             Spring.UnitDetach(transportID)
-            transportID = GG.CruiseMissileTransport[projID]
-            Spring.spGetUnitPosition(transportID, px,py,pz)
+            Spring.SetUnitNoSelect(transportID, false)
+            Spring.spGetUnitPosition(transportID, px,py + 20,pz)
             giveParachutToUnit(transportID, px, py, pz)
+            GG.CruiseMissileTransport[unitID] = nil
+            showUnit(transportID)
+            Spring.SetUnitBlocking (  transportID, true, true, true,true, true, true, true ) 
             Spring.DeleteProjectile(projID)     
         end
     end,
@@ -197,7 +202,12 @@ cruiseMissileFunction = function(evtID, frame, persPack, startFrame)
     -- echo("game_cruiseMissiles:" .. (FramesToTarget / 30) .. " seconds till waypoint " .. persPack.redirectIndex)
     return frame + FramesToTarget, persPack
 end
+function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
+    if GG.CruiseMissileTransport and GG.CruiseMissileTransport[proOwnerID] and doesUnitExistAlive(GG.CruiseMissileTransport[proOwnerID]) then
+        Spring.DestroyUnit(GG.CruiseMissileTransport[proOwnerID], false, true)
+    end
 
+end
 redirectedProjectiles = {}
 function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
     if (cruiseMissileWeapons[proWeaponDefID] or

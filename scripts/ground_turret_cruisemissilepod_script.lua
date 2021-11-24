@@ -7,7 +7,7 @@ include "lib_Build.lua"
 TablesOfPiecesGroups = {}
 groundFeetSensors = {}
 center = piece"Pod"
-
+rocketTransportableType = getRocketTransportableTypes(UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 Pod = piece "Pod"
@@ -186,7 +186,8 @@ function script.AimFromWeapon1() return aimpiece end
 function script.QueryWeapon1() return rocketPiece end
 
 function script.AimWeapon1(Heading, pitch)
-    WTurn(PodTop, z_axis, math.rad(180), math.pi * 3)
+    if boolFired == true then return false end
+    WTurn(PodTop, z_axis, math.rad(181), math.pi * 3)
     StartThread(launchCloud)
     WMove(rocketPiece, y_axis, 1000, 1000)
     WMove(rocketPiece, y_axis, 4000, 2000)
@@ -197,21 +198,29 @@ function launchCloud()
         EmitSfx(rocketPiece, 1024)
         Sleep(125)
     end
+
+    for i=1,25 do
+        EmitSfx(rocketPiece, 1024)
+        Sleep(125)
+
+    end
 end
 
 boolFired = false
-function script.FireWeapon1()
+function script.FireWeapon1()    
     boolFired= true
-    StartThread(delayedDestruct)
+    if doesUnitExistAlive(passenger) then hideUnit(passenger) end
+    StartThread(delayedReload)
     return true
 end
 
-function delayedDestruct()
-  Hide(rocketPiece)
-  Sleep(5000)
-  Spring.DestroyUnit(unitID, true, false)
+function delayedReload()
+     Hide(rocketPiece)
+     Sleep(25000)
+     WMove(rocketPiece, y_axis, 0, 2000)
+    end
 
-end
+
 
 boolMoving = false
 
@@ -223,21 +232,26 @@ function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
 
-function debugCEGScript()
-   StartThread(launchCloud)
-    while true do
-    WTurn(PodTop, z_axis, math.rad(180), math.pi * 3)
-    WMove(rocketPiece, y_axis, 1000, 1000)
-    WMove(rocketPiece, y_axis, 4000, 2000)
-    Sleep(3000)
-    WTurn(PodTop, z_axis, math.rad(0), 0)
-    WMove(rocketPiece, y_axis, 0, 0)
 
+local passenger
+function script.TransportPickup(passengerID)
+    defID = Spring.GetUnitDefID(passengerID)
+    if boolIsTransportPod and rocketTransportableType[defID] then
+        if not GG.CruiseMissileTransport then GG.CruiseMissileTransport = {} end
+        Spring.SetUnitBlocking (  passengerID, true, true, false,true, true, true, true ) 
+        GG.CruiseMissileTransport[unitID] = passengerID
+        Spring.SetUnitNoSelect(passengerID, true)
+        Spring.UnitAttach(unitID, passengerID, PodTop)
+        passenger = passengerID
     end
-
-
 end
 
-
-TODO
-boolIsTransportPod
+function script.TransportDrop(passengerID, x, y, z)
+    transporting = Spring.GetUnitIsTransporting (unitID)
+    if boolIsTransportPod and doesUnitExistAlive(passenger) and transporting and transporting[1] == passenger then
+        GG.CruiseMissileTransport[unitID] = nil
+        Spring.SetUnitBlocking (  passenger, true, true, true,true, true, true, true ) 
+        Spring.UnitDetach(passenger)
+        Spring.SetUnitNoSelect(passenger, false)
+    end
+end

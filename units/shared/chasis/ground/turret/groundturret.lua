@@ -466,6 +466,10 @@ ground_turret_cruisemissilepod.weapons  = {
 CruiseMissilePods["ground_turret_cm_transport"] = ground_turret_cruisemissilepod:New()
 CruiseMissilePods["ground_turret_cm_transport"].name = "Tansport Cruise Missile"
 CruiseMissilePods["ground_turret_cm_transport"].description = " drops a transported unit to target"
+CruiseMissilePods["ground_turret_cm_transport"].transportSize = 16
+CruiseMissilePods["ground_turret_cm_transport"].transportCapacity = 1
+CruiseMissilePods["ground_turret_cm_transport"].isFirePlatform = false
+
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_antiarmor"	,													

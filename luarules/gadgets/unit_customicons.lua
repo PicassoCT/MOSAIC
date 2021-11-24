@@ -63,7 +63,7 @@ local icons = {
     {"ground_walker_mg", "ground_walker_mg", 1.0},
     {"truck_assembly", "truck_assembly", 1.0},
     {"air_antiarmour", "air_antiarmour", 1.0}, {"air_gun", "air_gun", 1.0},
-    {"air_sniper", "air_sniper", 1.0}, {"air_iied", "air_iied", 1.0},
+    {"air_sniper", "air_sniper", 1.0}, {"air_copter_ssied", "air_copter_ssied", 1.0},
     {"AeroSolDrone", "AeroSolDrone", 1.0},
     {"ground_turret_spyder", "ground_turret_spyder", 1.0},
     {"ground_turret_iied", "ground_turret_iied", 1.0},

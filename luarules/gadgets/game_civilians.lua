@@ -435,7 +435,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
                     GG.innerCityCenter.z = mirror.z*uDim.z
                     boolMirrorNearCityCenter = true
                 end
-                echo("Citycenter at:"..GG.innerCityCenter.x .." / "..GG.innerCityCenter.z)
+             --   echo("Citycenter at:"..GG.innerCityCenter.x .." / "..GG.innerCityCenter.z)
             end
 
 
