@@ -38,15 +38,12 @@ onImpact = {
     [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
         px, py, pz = Spring.GetProjectilePosition(projID)
         projectileParent = Spring.GetProjectileOwnerID (projID)
-        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID] and doesUnitExistAlive( GG.CruiseMissileTransport[projID]) == true then
-            transportID = GG.CruiseMissileTransport[projectileParent]
-            Spring.UnitDetach(transportID)
-            Spring.SetUnitNoSelect(transportID, false)
-            Spring.spGetUnitPosition(transportID, px,py + 20,pz)
-            giveParachutToUnit(transportID, px, py, pz)
+        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID]  then
+            transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
+          
+            Spring.SetUnitPosition(transportID, px,py + 25,pz)
+            giveParachutToUnit(transportID, px, py+20, pz)
             GG.CruiseMissileTransport[unitID] = nil
-            showUnit(transportID)
-            Spring.SetUnitBlocking (  transportID, true, true, true,true, true, true, true ) 
             Spring.DeleteProjectile(projID)     
         end
     end,

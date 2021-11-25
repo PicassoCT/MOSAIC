@@ -6586,6 +6586,29 @@ function hasNoActiveAttackCommand(unitID)
     return true
 end
 
+--> Does not serialize script enviornment state
+function serializeUnitToTable(unitID)
+    stat = {}
+    stat.unitID = unitID
+    stat.defID = Spring.GetUnitDefID(unitID)
+    stat.teamID = Spring.GetUnitTeamID(unitID)
+    stat.h.= {}
+    stat.h.health, stat.h.maxHealth, stat.h.paralyzeDamage, stat.h.captureProgress, stat.h.buildProgress = Spring.GetUnitHealth(unitID)
+    stat.pos = {}
+    stat.pos.x,stat.pos.y,stat.pos.z = Spring.GetUnitPosition(unitID)
+    stat.parent = 
+    stat.exp = Spring.GetUnitExperience(unitID)
+    Spring.DestroyUnit(unitID, false, true)
+    return stat
+end
+
+function reconstituteUnitFromTable(stat)
+    id = Spring.CreateUnit (stat.defID, stat.pos.x, numbstat.pos.y, stat.pos.z, 0,stat.teamID, false, stat.unitID , stat.parent ) 
+    Spring.SetUnitExperience(id, stat.exp)
+    Spring.SetUnitHealth(id, stat.h)
+    return id
+end
+
 -- > transfers Order from one Unit to another
 function transferAttackOrder(originID, targetID)
     CommandTable = Spring.GetUnitCommands(originID, 2)

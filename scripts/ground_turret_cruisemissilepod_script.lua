@@ -168,7 +168,6 @@ end
 function fold()
     WaitForTurns(TablesOfPiecesGroups["UpLeg"])
  
-
     for i = iStart, iEnd do
         Turn(TablesOfPiecesGroups["UpLeg"][i], currentDeg[i].axis, math.rad(0), math.pi*speed)
         Turn(TablesOfPiecesGroups["LowLeg"][i], currentDeg[i].axis, math.rad(0), math.pi*speed)
@@ -233,25 +232,23 @@ function script.Activate() return 1 end
 function script.Deactivate() return 0 end
 
 
-local passenger
+local boolFilled = false
 function script.TransportPickup(passengerID)
     defID = Spring.GetUnitDefID(passengerID)
-    if boolIsTransportPod and rocketTransportableType[defID] then
+    if not boolFilled and boolIsTransportPod and rocketTransportableType[defID] then
         if not GG.CruiseMissileTransport then GG.CruiseMissileTransport = {} end
         Spring.SetUnitBlocking (  passengerID, true, true, false,true, true, true, true ) 
-        GG.CruiseMissileTransport[unitID] = passengerID
-        Spring.SetUnitNoSelect(passengerID, true)
-        Spring.UnitAttach(unitID, passengerID, PodTop)
-        passenger = passengerID
+        GG.CruiseMissileTransport[unitID] = serializeUnitToTable(passengerID)
+        boolFilled = true
     end
 end
 
 function script.TransportDrop(passengerID, x, y, z)
     transporting = Spring.GetUnitIsTransporting (unitID)
-    if boolIsTransportPod and doesUnitExistAlive(passenger) and transporting and transporting[1] == passenger then
+    if boolFilled and boolIsTransportPod  then
+        id = reconstituteUnitFromTable(GG.CruiseMissileTransport[unitID])
         GG.CruiseMissileTransport[unitID] = nil
-        Spring.SetUnitBlocking (  passenger, true, true, true,true, true, true, true ) 
-        Spring.UnitDetach(passenger)
-        Spring.SetUnitNoSelect(passenger, false)
+        moveUnitToUnit(id, unitID, 10, 0, 0)
+        boolFilled = false
     end
 end
