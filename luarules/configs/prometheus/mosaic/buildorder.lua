@@ -39,7 +39,7 @@ gadget.unitBuildOrderAntagon = UnitBag{
 			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
 			"ground_tank_day",
-			"ground_turret_cm_walker"
+
 	},
 	launcher = UnitArray{
 		"launcherstep",
@@ -87,7 +87,7 @@ gadget.unitBuildOrderProtagon = UnitBag{
 			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
 			"ground_tank_day",
-			"ground_turret_cm_walker"
+			"ground_turret_cm_transport"
 	},
 	nimrod = UnitArray{
 		"satellitescan",

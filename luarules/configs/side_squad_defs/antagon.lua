@@ -39,7 +39,6 @@ local antagonDefs = {
 			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
 			"ground_tank_day",
-			"ground_turret_cm_walker"
 		},
 		name = "Assault Platoon",
 		description = "",

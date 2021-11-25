@@ -41,7 +41,7 @@ local protagonDefs = {
 			"air_copter_antiarmor",  	
 			"ground_truck_assembly", 
 			"ground_tank_day",
-			"ground_turret_cm_walker"
+			"ground_turret_cm_transport"
 		},
 		name = "Assault Platoon",
 		description = "",

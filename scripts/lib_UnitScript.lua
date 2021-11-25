@@ -6587,18 +6587,17 @@ function hasNoActiveAttackCommand(unitID)
 end
 
 --> Does not serialize script enviornment state
-function serializeUnitToTable(unitID)
-    stat = {}
-    stat.unitID = unitID
-    stat.defID = Spring.GetUnitDefID(unitID)
-    stat.teamID = Spring.GetUnitTeamID(unitID)
-    stat.h.= {}
-    stat.h.health, stat.h.maxHealth, stat.h.paralyzeDamage, stat.h.captureProgress, stat.h.buildProgress = Spring.GetUnitHealth(unitID)
-    stat.pos = {}
-    stat.pos.x,stat.pos.y,stat.pos.z = Spring.GetUnitPosition(unitID)
-    stat.parent = 
-    stat.exp = Spring.GetUnitExperience(unitID)
-    Spring.DestroyUnit(unitID, false, true)
+function serializeUnitToTable(id)
+    stat = {pos = {}, h = {}}
+    stat.defID = Spring.GetUnitDefID(id)
+    stat.unitID = id
+    stat.teamID = Spring.GetUnitTeamID(id)
+    stat.h.health, stat.h.maxHealth, stat.h.paralyzeDamage, stat.h.captureProgress, stat.h.buildProgress = Spring.GetUnitHealth(id)
+    stat.pos.x,stat.pos.y,stat.pos.z = Spring.GetUnitPosition(id)
+
+    stat.parent =   getUnitVariableEnv(id, "fatherID")
+    stat.exp = Spring.GetUnitExperience(id)
+    Spring.DestroyUnit(id, false, true)
     return stat
 end
 
@@ -6766,6 +6765,16 @@ end
 
 function getPieceNrByName(id, name)
     return (Spring.GetUnitPieceMap(id))[name]
+end
+
+
+function getUnitVariableEnv(unitID, ValueName)
+    env = Spring.UnitScript.GetScriptEnv(unitID)
+
+    if env and env[ValueName] then
+        return env[ValueName] 
+    end
+
 end
 
 function getUnitValueEnv(unitID, ValueName)

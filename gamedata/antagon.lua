@@ -39,7 +39,7 @@ local antagonUnits = {
 			--walkers
 			 "ground_turret_cm_airstrike",	"ground_turret_cm_antiarmor", "ground_turret_cm_transport", 
 			 --turrets
-			 "ground_turret_cm_walker",	 "ground_turret_dronegrenade" ,
+			  "ground_turret_dronegrenade" ,
 			 "ground_walker_mg","ground_walker_grenade", "ground_tumbleweedspyder",
 			 --vehicles
 			 "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor",
@@ -61,9 +61,7 @@ local antagonUnits = {
         "ground_turret_mg",
         "ground_walker_mg",
         "ground_walker_grenade",
-        "ground_turret_cm_airdrop",
-        "ground_turret_cm_walker",
-        "ground_turret_cm_ssied",
+        "ground_turret_cm_airstrike",
         "brehmerwall"
   },  
 
