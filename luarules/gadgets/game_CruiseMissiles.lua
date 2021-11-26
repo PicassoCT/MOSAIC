@@ -20,6 +20,10 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 local GameConfig = getGameConfig()
 local cruiseMissileWeapons = {}
+local CruiseMissileTransportWDefID = WeaponDefNames["cm_transport"].id
+local CruiseMissileAirstrikeWDefID = WeaponDefNames["cm_airstrike"].id
+local CruiseMissileAntiArmorWDefID = WeaponDefNames["cm_antiarmor"].id
+
  cruiseMissileWeapons[CruiseMissileTransportWDefID] = true
  cruiseMissileWeapons[CruiseMissileAirstrikeWDefID] = true
  cruiseMissileWeapons[CruiseMissileAntiArmorWDefID] = true
@@ -36,16 +40,8 @@ onImpact = {
     end,
 
     [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
-        px, py, pz = Spring.GetProjectilePosition(projID)
-        projectileParent = Spring.GetProjectileOwnerID (projID)
-        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID]  then
-            transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
-          
-            Spring.SetUnitPosition(transportID, px,py + 25,pz)
-            giveParachutToUnit(transportID, px, py+20, pz, true)
-            GG.CruiseMissileTransport[unitID] = nil
-            Spring.DeleteProjectile(projID)     
-        end
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 900, tz)
+ 
     end,
 
     [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)
@@ -55,18 +51,30 @@ onImpact = {
 
 onLastPointBeforeImpactSetTargetTo = {
     [CruiseMissileAirstrikeWDefID] = function(projID) end,
-    [CruiseMissileTransportWDefID] = function(projID, tx, ty, tz)
+    [CruiseMissileTransportWDefID] = function(projID)
+
         px, py, pz = Spring.GetProjectilePosition(projID)
         projectileParent = Spring.GetProjectileOwnerID (projID)
         if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projectileParent]  then
-            transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
-            Spring.DeleteProjectile(projID)  
-            if  transportID then  
-            Spring.SetUnitPosition(transportID, px,py + 25,pz)
-            giveParachutToUnit(transportID, px, py+20, pz)
-            GG.CruiseMissileTransport[projectileParent] = nil
+                stat = GG.CruiseMissileTransport[projectileParent]
+                stat.pos.x = px
+                stat.pos.y = py 
+                stat.pos.z = pz
+
+            transportID = reconstituteUnitFromTable(stat)
+ 
+            if  transportID and doesUnitExistAlive(transporterID) then  
+                Spring.MoveCtrl.Enable(transportID, true)
+                Spring.MoveCtrl.SetPosition(transportID, px, py + 150, pz)
+                Spring.MoveCtrl.Enable(transportID, false)
+                giveParachutToUnit(transportID, px, py+100, pz, true)
+                GG.CruiseMissileTransport[projectileParent] = nil
+                echo("Completed reconstituteUnitFromTable")
+            else
+                echo("Error to reconstituteUnitFromTable")
             end           
         end
+        Spring.DeleteProjectile(projID)
     end,
     [CruiseMissileAntiArmorWDefID] = function(projID) 
              tx,ty,tz =  getProjectileTargetXYZ(projID)
@@ -211,12 +219,7 @@ cruiseMissileFunction = function(evtID, frame, persPack, startFrame)
     -- echo("game_cruiseMissiles:" .. (FramesToTarget / 30) .. " seconds till waypoint " .. persPack.redirectIndex)
     return frame + FramesToTarget, persPack
 end
-function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
-    if GG.CruiseMissileTransport and GG.CruiseMissileTransport[proOwnerID] and doesUnitExistAlive(GG.CruiseMissileTransport[proOwnerID]) then
-        Spring.DestroyUnit(GG.CruiseMissileTransport[proOwnerID], false, true)
-    end
 
-end
 redirectedProjectiles = {}
 function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
     if (cruiseMissileWeapons[proWeaponDefID] or
@@ -240,15 +243,26 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
                 interpolate_Y = math.max(Spring.GetSmoothMeshHeight(ix, iz),
                                          interpolate_Y)
             end
-
-            redirectList[#redirectList + 1] =
-                {
-                    targetX = rx,
-                    targetY = interpolate_Y +
-                        GameConfig.CruiseMissilesHeightOverGround,
-                    targetZ = rz,
-                    targetType = string.byte("g")
-                }
+            if #redirectList == 0 then
+                 redirectList[#redirectList + 1] =
+                                {
+                                    targetX = rx,
+                                    targetY = Spring.GetGroundHeight(x,z) +
+                                        GameConfig.CruiseMissilesHeightOverGround + 
+                                        100,
+                                    targetZ = rz,
+                                    targetType = string.byte("g")
+                                }
+            else
+                redirectList[#redirectList + 1] =
+                    {
+                        targetX = rx,
+                        targetY = interpolate_Y +
+                            GameConfig.CruiseMissilesHeightOverGround,
+                        targetZ = rz,
+                        targetType = string.byte("g")
+                    }
+            end
         end
 
         GG.EventStream:CreateEvent(cruiseMissileFunction, {

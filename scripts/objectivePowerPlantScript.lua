@@ -49,7 +49,7 @@ function sensorTurn(tower)
             end
 
             if x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ then
-                return
+                break
             end
         end
     end

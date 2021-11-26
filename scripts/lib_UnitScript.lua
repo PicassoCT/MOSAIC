@@ -6595,7 +6595,7 @@ function serializeUnitToTable(id)
     stat.h.health, stat.h.maxHealth, stat.h.paralyzeDamage, stat.h.captureProgress, stat.h.buildProgress = Spring.GetUnitHealth(id)
     stat.pos.x,stat.pos.y,stat.pos.z = Spring.GetUnitPosition(id)
 
-    stat.parent =   getUnitVariableEnv(id, "fatherID")
+    stat.parent =   getUnitVariableEnv(id, "fatherID") or -1
     stat.exp = Spring.GetUnitExperience(id) or 0
     Spring.DestroyUnit(id, false, true)
     return stat
@@ -6604,15 +6604,15 @@ end
 function reconstituteUnitFromTable(stat)
     id = Spring.CreateUnit (
         stat.defID,
-     stat.pos.x,
-      stat.pos.y, 
-      stat.pos.z, -- position 4
-      0,
-      stat.teamID,
-       false, 
-       false,
-        stat.unitID , 
-        stat.parent ) 
+        stat.pos.x,
+        stat.pos.y, 
+        stat.pos.z, -- position 4
+        1,            --5
+        stat.teamID) --[[,  --6
+        true,       --7
+        false,       --8
+        stat.unitID, 
+        stat.parent ) ]]
     if id then
     Spring.SetUnitExperience(id, stat.exp)
     Spring.SetUnitHealth(id, stat.h)
