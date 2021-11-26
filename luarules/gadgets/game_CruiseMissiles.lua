@@ -20,9 +20,6 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 local GameConfig = getGameConfig()
 local cruiseMissileWeapons = {}
-local CruiseMissileTransportWDefID = WeaponDefNames["cm_transport"].id
-local CruiseMissileAirstrikeWDefID = WeaponDefNames["cm_airstrike"].id
-local CruiseMissileAntiArmorWDefID = WeaponDefNames["cm_antiarmor"].id
  cruiseMissileWeapons[CruiseMissileTransportWDefID] = true
  cruiseMissileWeapons[CruiseMissileAirstrikeWDefID] = true
  cruiseMissileWeapons[CruiseMissileAntiArmorWDefID] = true
@@ -38,8 +35,17 @@ onImpact = {
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
 
-    [CruiseMissileTransportWDefID] = function(projID, tx, ty, tz)
-        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+100,  tz)
+    [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
+        px, py, pz = Spring.GetProjectilePosition(projID)
+        projectileParent = Spring.GetProjectileOwnerID (projID)
+        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID]  then
+            transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
+          
+            Spring.SetUnitPosition(transportID, px,py + 25,pz)
+            giveParachutToUnit(transportID, px, py+20, pz, true)
+            GG.CruiseMissileTransport[unitID] = nil
+            Spring.DeleteProjectile(projID)     
+        end
     end,
 
     [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)
