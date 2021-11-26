@@ -189,7 +189,7 @@ function script.AimWeapon1(Heading, pitch)
     WTurn(PodTop, z_axis, math.rad(181), math.pi * 3)
     StartThread(launchCloud)
     WMove(rocketPiece, y_axis, 1000, 1000)
-    WMove(rocketPiece, y_axis, 4000, 2000)
+    WMove(rocketPiece, y_axis, 4000, 1500)
     return boolFired == false
 end
 function launchCloud()

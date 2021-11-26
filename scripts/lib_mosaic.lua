@@ -173,7 +173,7 @@ function getGameConfig()
 		PayloadDefusedReward = 5000,
 		
         -- CruiseMissiles
-        CruiseMissilesHeightOverGround = 22,
+        CruiseMissilesHeightOverGround = 42,
         cruiseMissileAntiArmorDroplettRange = 1200,
         cruiseMissileChanceOfInterceptOneIn= 25,
         cruiseMissileReloadTimeMS = 5*60*1000,

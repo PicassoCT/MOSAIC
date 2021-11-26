@@ -39,20 +39,7 @@ onImpact = {
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
 
-    [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
-        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 900, tz)
- 
-    end,
-
-    [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)
-        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),  tz)
-    end,
-}
-
-onLastPointBeforeImpactSetTargetTo = {
-    [CruiseMissileAirstrikeWDefID] = function(projID) end,
-    [CruiseMissileTransportWDefID] = function(projID)
-
+    [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)     
         px, py, pz = Spring.GetProjectilePosition(projID)
         projectileParent = Spring.GetProjectileOwnerID (projID)
         if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projectileParent]  then
@@ -75,6 +62,19 @@ onLastPointBeforeImpactSetTargetTo = {
             end           
         end
         Spring.DeleteProjectile(projID)
+    end,
+
+    [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),  tz)
+    end,
+}
+
+onLastPointBeforeImpactSetTargetTo = {
+    [CruiseMissileAirstrikeWDefID] = function(projID) end,
+    [CruiseMissileTransportWDefID] = function(projID)
+        tx,ty,tz =  getProjectileTargetXYZ(projID)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 900, tz)
+ 
     end,
     [CruiseMissileAntiArmorWDefID] = function(projID) 
              tx,ty,tz =  getProjectileTargetXYZ(projID)
