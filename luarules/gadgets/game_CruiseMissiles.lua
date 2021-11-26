@@ -2,7 +2,7 @@ function gadget:GetInfo()
     return {
         name = "CruiseMissile Management",
         desc = "SetProjectileTarget etc",
-        author = "PicassoCT",
+        author = "PicassoCT", --and the mangificent knorke before that
         date = "Mar 2020",
         license = "later horses dont be mean.",
         layer = 0,
@@ -20,9 +20,12 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 local GameConfig = getGameConfig()
 local cruiseMissileWeapons = {}
- cruiseMissileWeapons[WeaponDefNames["cm_airstrike"].id] = true
- cruiseMissileWeapons[WeaponDefNames["cm_transport"].id] = true
- cruiseMissileWeapons[WeaponDefNames["cm_antiarmor"].id] = true
+local CruiseMissileTransportWDefID = WeaponDefNames["cm_transport"].id
+local CruiseMissileAirstrikeWDefID = WeaponDefNames["cm_airstrike"].id
+local CruiseMissileAntiArmorWDefID = WeaponDefNames["cm_antiarmor"].id
+ cruiseMissileWeapons[CruiseMissileTransportWDefID] = true
+ cruiseMissileWeapons[CruiseMissileAirstrikeWDefID] = true
+ cruiseMissileWeapons[CruiseMissileAntiArmorWDefID] = true
  
 
 local TruckTypeTable = getTruckTypeTable(UnitDefs)
@@ -31,32 +34,35 @@ local spGetUnitDefID = Spring.GetUnitDefID
 local UNIT_TARGETTYPE = string.byte('u')
 
 onImpact = {
-    [WeaponDefNames["cm_airstrike"].id] = function(projID, tx, ty, tz)
+    [CruiseMissileAirstrikeWDefID] = function(projID, tx, ty, tz)
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
 
-    [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)
-        px, py, pz = Spring.GetProjectilePosition(projID)
-        projectileParent = Spring.GetProjectileOwnerID (projID)
-        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projID]  then
-            transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
-          
-            Spring.SetUnitPosition(transportID, px,py + 25,pz)
-            giveParachutToUnit(transportID, px, py+20, pz)
-            GG.CruiseMissileTransport[unitID] = nil
-            Spring.DeleteProjectile(projID)     
-        end
+    [CruiseMissileTransportWDefID] = function(projID, tx, ty, tz)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+100,  tz)
     end,
 
-    [WeaponDefNames["cm_antiarmor"].id] = function(projID, tx, ty, tz)
+    [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz),  tz)
     end,
 }
 
 onLastPointBeforeImpactSetTargetTo = {
-    [WeaponDefNames["cm_airstrike"].id] = function(projID) end,
-    [WeaponDefNames["cm_transport"].id] = function(projID) end,
-    [WeaponDefNames["cm_antiarmor"].id] = function(projID) 
+    [CruiseMissileAirstrikeWDefID] = function(projID) end,
+    [CruiseMissileTransportWDefID] = function(projID, tx, ty, tz)
+        px, py, pz = Spring.GetProjectilePosition(projID)
+        projectileParent = Spring.GetProjectileOwnerID (projID)
+        if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projectileParent]  then
+            transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
+            Spring.DeleteProjectile(projID)  
+            if  transportID then  
+            Spring.SetUnitPosition(transportID, px,py + 25,pz)
+            giveParachutToUnit(transportID, px, py+20, pz)
+            GG.CruiseMissileTransport[projectileParent] = nil
+            end           
+        end
+    end,
+    [CruiseMissileAntiArmorWDefID] = function(projID) 
              tx,ty,tz =  getProjectileTargetXYZ(projID)
              px, py, pz = Spring.GetProjectilePosition(projID)
                     teamID = Spring.GetProjectileTeamID(projID)
@@ -152,11 +158,11 @@ assert(CM_Def.projectilespeed)
 local redirectProjectiles = {} -- [frame][projectileID] = table with .targetType .targetX .targetY .targetZ .targetID
 
 function gadget:Initialize()
-    Spring.Echo(GetInfo().name .. " Initialization started")
+   -- Spring.Echo(GetInfo().name .. " Initialization started")
     for id, boolActive in pairs(cruiseMissileWeapons) do
         Script.SetWatchWeapon(id, true)
     end
-    Spring.Echo(GetInfo().name .. " Initialization ended")
+    --Spring.Echo(GetInfo().name .. " Initialization ended")
 end
 
 cruiseMissileFunction = function(evtID, frame, persPack, startFrame)
