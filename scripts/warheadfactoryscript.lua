@@ -37,9 +37,6 @@ function script.Create()
 	StartThread(howToBuildTheBombWatcher)
 end
 
-
-= 
-
 local buildID = nil
 function howToBuildTheBombWatcher()
     while true do
