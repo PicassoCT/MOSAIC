@@ -510,7 +510,7 @@ local function DrawSafeHouseMarker(Loc,  yshift, designator, name)
 end
 
 local parentColour = {1.0,34/255,12/255, 1.0}
-local function DrawRevealedMarkerParent(Loc,  yshift, designator, name)
+local function DrawRevealedMarkerParent(Loc,  yshift, designator, name, isCivilian)
   local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
   glPushMatrix()
   glTranslate(Loc.x, Loc.y, Loc.z)
@@ -531,7 +531,11 @@ local function DrawRevealedMarkerParent(Loc,  yshift, designator, name)
   glColor(baseBlack)
   gl.Text ("\255\0\0\0 ◈ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lt" ) 
   glColor(parentColour)
-  gl.Text ("\255\255\34\12 ◤♞⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+  if isCivilian == true then
+  gl.Text ("\255\255\34\12 ◤⚛⚖"..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+  else
+    gl.Text ("\255\255\34\12 ◤♞⚔☎ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+  end
   gl.EndText()
   glPopMatrix()
 end
