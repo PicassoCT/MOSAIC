@@ -1824,10 +1824,10 @@ end
                 GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
             end
 
-            function giveParachutToUnit(id, x, y, z)
+            function giveParachutToUnit(id, x, y, z, boolDelayed)
                 if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
 
-                if Spring.GetGameFrame() < 1 then
+                if Spring.GetGameFrame() < 1 or boolDelayed then
 
                     delayedParachutSpawn = function(evtID, frame, persPack, startFrame)
 
@@ -1856,8 +1856,7 @@ end
                     Spring.GetGameFrame() + 1)
 
                 else
-                    parachutID =
-                    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
+                    parachutID =    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
 
                     GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}
                     Spring.SetUnitTooltip(parachutID, id .. "")

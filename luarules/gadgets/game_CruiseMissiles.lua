@@ -42,7 +42,7 @@ onImpact = {
             transportID = reconstituteUnitFromTable(GG.CruiseMissileTransport[projectileParent])
           
             Spring.SetUnitPosition(transportID, px,py + 25,pz)
-            giveParachutToUnit(transportID, px, py+20, pz)
+            giveParachutToUnit(transportID, px, py+20, pz, true)
             GG.CruiseMissileTransport[unitID] = nil
             Spring.DeleteProjectile(projID)     
         end
