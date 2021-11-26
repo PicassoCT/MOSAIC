@@ -7130,3 +7130,11 @@ function serializeTable(val, name, skipnewlines, depth)
 
     return tmp
 end
+
+function getDetThreeLetterAgency(hash)
+    first = (hash % 16)+1
+    second = ((hash +16) % 20)+1
+    third = {"s", "a", "i", "b", "f"}
+
+    return string.upper(string.char(64+first)..string.char(64+second)..third[(hash%#third)+1])
+end
