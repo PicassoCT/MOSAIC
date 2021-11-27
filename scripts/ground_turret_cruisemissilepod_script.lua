@@ -183,14 +183,26 @@ function script.Killed(recentDamage, _) return 1 end
 function script.AimFromWeapon1() return aimpiece end
 
 function script.QueryWeapon1() return rocketPiece end
+boolLaunchAnimationStarted = false
+boolLaunchAnimationCompleted = false
+function launchAnimation()
+    boolLaunchAnimationStarted = true
+    boolLaunchAnimationCompleted= false
+    WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
+    WTurn(PodTop, z_axis, math.rad(181), math.pi * 3)
+    StartThread(launchCloud)
+    WMove(rocketPiece, y_axis, 500, 250)
+    WMove(rocketPiece, y_axis, 1000, 1000)
+    WMove(rocketPiece, y_axis, 3000, 1000)
+    boolLaunchAnimationCompleted = true
+end
 
 function script.AimWeapon1(Heading, pitch)
     if boolFired == true then return false end
-    WTurn(PodTop, z_axis, math.rad(181), math.pi * 3)
-    StartThread(launchCloud)
-    WMove(rocketPiece, y_axis, 1000, 1000)
-    WMove(rocketPiece, y_axis, 4000, 1500)
-    return boolFired == false
+    if boolFired == false and boolLaunchAnimationStarted == false then StartThread(launchAnimation); return false end
+
+    return boolLaunchAnimationCompleted == true and boolFired== false
+
 end
 function launchCloud()
     while boolFired==false do
@@ -208,7 +220,7 @@ end
 boolFired = false
 function script.FireWeapon1()    
     boolFired= true
-    if doesUnitExistAlive(passenger) then hideUnit(passenger) end
+    boolLaunchAnimationStarted = false
     StartThread(delayedReload)
     return true
 end
@@ -217,6 +229,7 @@ function delayedReload()
      Hide(rocketPiece)
      Sleep(25000)
      WMove(rocketPiece, y_axis, 0, 2000)
+     boolFired= false
     end
 
 
@@ -237,7 +250,6 @@ function script.TransportPickup(passengerID)
     defID = Spring.GetUnitDefID(passengerID)
     if not boolFilled and boolIsTransportPod and rocketTransportableType[defID] then
         if not GG.CruiseMissileTransport then GG.CruiseMissileTransport = {} end
-        Spring.SetUnitBlocking (  passengerID, true, true, false,true, true, true, true ) 
         GG.CruiseMissileTransport[unitID] = serializeUnitToTable(passengerID)
         boolFilled = true
     end

@@ -429,6 +429,7 @@ local function buildSoundCommand( x, y)
 	assert( getCommandStringFromDefID(higestOrderDefID))
 	subjectName, subjectTime = addSoundPath(teamSex, getCommandStringFromDefID(higestOrderDefID)), 15
 
+	if not resultID then return end
 	local subjectIdentifier, subjectIdentifierTimes
 	subjectIdentifierSounds,subjectIdentifierTimes = createIdentifierFromID(resultID, teamSex)
 

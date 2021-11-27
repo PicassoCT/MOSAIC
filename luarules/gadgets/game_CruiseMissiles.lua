@@ -50,18 +50,18 @@ onImpact = {
 
             transportID = reconstituteUnitFromTable(stat)
  
-            if  transportID and doesUnitExistAlive(transporterID) then  
-                Spring.MoveCtrl.Enable(transportID, true)
-                Spring.MoveCtrl.SetPosition(transportID, px, py + 150, pz)
-                Spring.MoveCtrl.Enable(transportID, false)
-                giveParachutToUnit(transportID, px, py+100, pz, true)
+            if  transportID and doesUnitExistAlive(transportID) then  
+                Spring.MoveCtrl.Enable(transportID)
+                Spring.MoveCtrl.SetPosition(transportID, px, py + 100, pz)
+                Spring.MoveCtrl.Disable(transportID)
+                giveParachutToUnit(transportID, px, py + 50, pz, true)
                 GG.CruiseMissileTransport[projectileParent] = nil
-                echo("Completed reconstituteUnitFromTable")
-            else
-                echo("Error to reconstituteUnitFromTable")
+             else
+                echo("game_cruisemissiles: Error to reconstituteUnitFromTable")
             end           
         end
-        Spring.DeleteProjectile(projID)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 2000, tz)
+        delayedKillProjectile(projID, 5000)    
     end,
 
     [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)

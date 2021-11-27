@@ -308,12 +308,14 @@ else -- UNSYNCED
                             local sx, sy =
                                 spWorldToScreenCoords(x, y + frameOffset, z)
                             if valueT.message < 0 then
-                                gl.Color(1.0, 0.0, 0.0, 1.0)
+                                gl.Text("\255\255\34\12 $ " .. valueT.message, sx, sy, 16, "od")
+                               
                             else
-                                gl.Color(0.0, 1.0, 0.0, 1.0)
+                                gl.Text("\255\171\236\183 $ " .. valueT.message, sx, sy, 16, "od")
+                               
                             end
 
-                            gl.Text("$ " .. valueT.message, sx, sy, 16, "od")
+                          
                         end
                     end
                 end

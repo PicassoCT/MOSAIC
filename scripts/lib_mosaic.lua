@@ -30,7 +30,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.802" 
+            Version = "Alpha: 0.803" 
         },
 
         numberOfBuildings = math.ceil(100 * unitFactor),
@@ -587,7 +587,7 @@ function  getManualCivilianBuildingMaps(mapName)
                     "ground_walker_mg",
                     "ground_walker_grenade",
                     "ground_tumbleweedspyder",
-                    "ground_turret_iied",
+                    "ground_turret_ssied",
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
                     "air_copter_ssied",
@@ -1862,6 +1862,26 @@ end
                     Spring.SetUnitTooltip(parachutID, id .. "")
                     setUnitValueExternal(id, 'WANT_CLOAK', 0)
                 end
+            end
+
+             function delayedKillProjectile(id, timeInMS)            
+
+                    delayedKill = function(evtID, frame, persPack, startFrame)
+                        ttl = Spring.GetProjectileTimeToLive ( persPack.id) 
+                        if not ttl then return end
+
+                        if Spring.GetGameFrame() > persPack.endFrame then
+                            Spring.DeleteProjectile(persPack.id)
+                            return 
+                        end
+
+                        return frame + 5, persPack
+                    end
+                    frames = math.ceil(1+(timeInMS/1000)*30)
+                    persPack = {id = id, endFrame = Spring.GetGameFrame()+ frames}
+
+                    GG.EventStream:CreateEvent(delayedKill, persPack,
+                    Spring.GetGameFrame() + 1)
             end
 
             function removeUnit(teamID, unit)
