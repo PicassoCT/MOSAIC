@@ -37,7 +37,7 @@ antagon_talk = {
     "-your guests torture people", "kings things, puppets and strings",
     "I m a old friend, i need the key for one day, to throw a suprise party..",
     "Suprise, Motherfuckers", "God is greater", "This must hurt so much ?",
-    "Suffer like they did", "Talk, talk - your live depends on it",
+    "Suffer like they did", "Talk, talk - your life depends on it",
     "Your side simply gave you up..",
     "Though i walk through the valley of shadows",
     "we, we are your own shadow, thats what you fight",
@@ -211,12 +211,14 @@ boolRoundEnd = false
 
 function setAffiliatedHouseInvisible()
     Sleep(100)
+    boolFoundHouse  = false
 
     houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
-    process(getAllNearUnit(unitID, 200), 
+    process(getAllNearUnit(unitID, GameConfig.houseSizeX-25), 
         function(id)
-        if houseTypeTable[Spring.GetUnitDefID(id)] then
+        if houseTypeTable[Spring.GetUnitDefID(id)] and boolFoundHouse == false then
             myHouseID = id
+            boolFoundHouse = true
             StartThread(mortallyDependant, unitID, myHouseID, 15, false, true)
             env = Spring.UnitScript.GetScriptEnv(id)
             if env and env.hideHouse then

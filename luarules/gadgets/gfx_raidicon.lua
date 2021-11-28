@@ -54,6 +54,7 @@ else -- unsynced
         if drawMode == 1 and iconTables[unitID]  then --normalDraw
            glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
+            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             return true
         end
 

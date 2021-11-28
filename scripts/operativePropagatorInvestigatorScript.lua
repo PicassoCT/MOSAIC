@@ -441,9 +441,8 @@ function cloakIfAIPlayer()
 
    if isAiTeam and isAiTeam == true then
         while true do
-            Sleep(100)
-            shouldBeNil = Spring.GetUnitIsBuilding(unitID)
-            if shouldBeNil then
+            Sleep(1000)
+            if boolIsBuilding == false then
                 if spGetUnitIsCloaked(unitID) == false then
                     setWantCloak(true)
                 end
@@ -474,9 +473,11 @@ function transportControl()
     while true do
         if isTransported(unitID) == true and motorBikeTypeTable[Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))] then
             boolTransportedNoFiring = true    
+
             setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
             while isTransported(unitID) == true do    
                 Sleep(100)
+                PlayAnimation("PARACHUTE_POSE")
             end
             boolTransportedNoFiring = false
         end
