@@ -147,10 +147,11 @@ function detectUpgrade()
         -- Spring.Echo("Detect Upgrade")
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
-            Spring.SetUnitNoSelect(buildID, true)
+            
             buildDefID = Spring.GetUnitDefID(buildID)
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
+                Spring.SetUnitNoSelect(buildID, true)
                 checkPreExistingKill(buildID, buildID)
                 --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 if doesUnitExistAlive(buildID) == true then
