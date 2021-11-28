@@ -60,6 +60,17 @@ local options = {
         type	= "string",
         def		= "",
     },
+        { -- Might cause desync, check if they occur.
+        key    = 'unitfactor',
+        name   = 'Size of City',
+        desc   = 'How much buildings the city contains. 1.0 = 150',
+        type   = 'number',
+        section= 'mapsettings',
+        def    = 0.8,
+        min    = 0.1,
+        max    = 10.0,
+        step   = 0.1,
+    },
     {
     key    = 'culture',
     name   = 'Culture of the area',

@@ -1,6 +1,10 @@
 -- ===================================================================================================================
 -- Game Configuration
-unitFactor = 0.80
+ GG.unitFactor = 0.80
+ 
+ function setUnitFactor(modOptions)
+    GG.unitFactor = modOptions.unitfactor or 0.8
+ end
 
 function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
@@ -22,6 +26,7 @@ end
 
 function getModOptionCulture()
     modOptions = Spring.GetModOptions()
+    setUnitFactor(modOptions)
 
     return modOptions.culture
 end
@@ -33,9 +38,9 @@ function getGameConfig()
             Version = "Alpha: 0.805" 
         },
 
-        numberOfBuildings = math.ceil(100 * unitFactor),
-        numberOfVehicles = math.ceil(60 * unitFactor),
-        numberOfPersons = math.ceil(75 * unitFactor),
+        numberOfBuildings = math.ceil(150 * GG.unitFactor),
+        numberOfVehicles = math.ceil(60 * GG.unitFactor),
+        numberOfPersons = math.ceil(75 * GG.unitFactor),
         nightCivilianReductionFactor = 0.125,
         LoadDistributionMax = 5,
 
