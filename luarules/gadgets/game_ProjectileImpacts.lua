@@ -213,6 +213,17 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     -- Interrogation
     -----------------------------------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------------
+    function isEngagedInAnotherRaidAlready(attackerID)
+        local InterrogationTable =  GG.InterrogationTable 
+        for victimID, raiderID in pairs(InterrogationTable) do
+            if raiderID == attackerID and InterrogationTable[victimID][raiderID] == true then
+                return true
+            end
+        end
+
+        return false
+    end
+
     -- victim -- interrogator -- boolInerrogationOngoing
     GG.InterrogationTable = {}
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
@@ -255,6 +266,12 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         end
         if GG.InterrogationTable[unitID][attackerID] == nil then
             GG.InterrogationTable[unitID][attackerID] = false
+        end
+
+        --check if the attacker is not already engaged in another raid
+        if isEngagedInAnotherRaidAlready(attackerID) == true then
+            spEcho("raidEventStream Aborted, previous Raid in Progress"..unitID)
+            return true, persPack
         end
 
         if GG.InterrogationTable[unitID][attackerID] == false then
@@ -415,6 +432,12 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         end
         if GG.InterrogationTable[unitID][attackerID] == nil then
             GG.InterrogationTable[unitID][attackerID] = false
+        end
+
+         --check if the attacker is not already engaged in another raid
+        if isEngagedInAnotherRaidAlready(attackerID) == true then
+            spEcho("raidEventStream Aborted, previous Raid in Progress"..unitID)
+            return true, persPack
         end
 
         if GG.InterrogationTable[unitID][attackerID] == false then
