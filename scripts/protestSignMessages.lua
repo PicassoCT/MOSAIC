@@ -34,11 +34,12 @@ return {
 
     -- Personification
     "Ü&HAS SMALL&DICK", "I&LOVE&Ü", "Ü&U HAVE A&SON", "Ü&MARRY&ME",
-    "WE FIND YOU MOTHERFUCKER", "PIX MARY ME",
-	
+    "WE FIND YOU MF", "PIX MARY ME", "WAIFU &Ü",	
     " DEATH&TO&Ü", "  I& BLAME&Ü", "WHAT DO&YOU DESIRE?Ü", "MUMS&AGAINST&Ü",
-    "HATE Ü", "FUCK Ü", "Ü IS&EVIL", -- Humor
-    " PRO&TEST&ICLES", "NO MORE&TAXES", "PRO&TAXES", "NO&PROTEST",
+    "HATE Ü", "FUCK Ü", "Ü IS&EVIL",
+    
+    -- Humor
+    " PRO&TEST&ICLES", "NO MORE&TAXES", "PRO&TAXES", "NO&PROTEST", "NOSTALGIA", "PASTARDS",
     "NEVER GONNA", "GIVE YOU UP", "LET YOU DOWN", "RUN AROUND", "AND DESERT YOU", "MAKE YOU CRY", "SAY GOODBYE", 
     "LEGALIZE IT",
     "DUWMT LOOK BACK ANGER",
