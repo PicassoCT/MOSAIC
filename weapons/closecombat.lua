@@ -1,7 +1,7 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "NOWEAPON"
+local weaponName = "closecombat"
 local weaponDef = {
-    name = "NoWeapon",
+    name = "CloseCombat",
     weaponType = [[Melee]],
     --damage
     damage = {
