@@ -36,7 +36,7 @@ return {
     "Ü&HAS SMALL&DICK", "I&LOVE&Ü", "Ü&U HAVE A&SON", "Ü&MARRY&ME",
     "WE FIND YOU MF", "PIX MARY ME", "WAIFU &Ü",	
     " DEATH&TO&Ü", "  I& BLAME&Ü", "WHAT DO&YOU DESIRE?Ü", "MUMS&AGAINST&Ü",
-    "HATE Ü", "FUCK Ü", "Ü IS&EVIL",
+    "HATE Ü", "FUCK Ü", "Ü &EVIL",
     
     -- Humor
     " PRO&TEST&ICLES", "NO MORE&TAXES", "PRO&TAXES", "NO&PROTEST", "NOSTALGIA", "PASTARDS",
@@ -45,6 +45,8 @@ return {
     "DUWMT LOOK BACK ANGER",
 
     "MAKE LOVE& NOT WAR",
+    "MAKE WAR NOT LOVE",
+    "REALITY IS A RTS",
     "FUCK PROTAGON",
     "FUCK ANTAGON",
     "IMPERIAL&ASSHOLES",
@@ -60,6 +62,7 @@ return {
     "GET ON WIFH IT",
     "DAGEGEN",
     "KILL ME!",
+    "NAD MESS",
     "MOTHERFUCKERS!",
     "SWEET",
     "DUDE",
@@ -72,7 +75,8 @@ return {
     "GOOGLE THAT",
     "FB SAID IT FIRST",
     "ALL DEFECTOR",
-    "prisoner dilemma"
+    "prisoner dilemma",
+    "LIFE &SA &PITCH"
 	
 	
 }
