@@ -14,9 +14,11 @@ local CloseCombatArena =
     transportSize = 16,
     transportCapacity = 2,
     isFirePlatform  = false, 
+    holdSteady = true,
+    cantBeTransported = true,
 
     script = "closeCombatArenascript.lua",
-    objectName = "CloseCombatArena.dae",
+    objectName = "closeCombatArena.s3o",
     sightDistance = 50,
     minCloakDistance = 0,
   

@@ -6,10 +6,11 @@ include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
 TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-move1 = TablesOfPiecesGroups["move"][1]
-turn1 = TablesOfPiecesGroups["rot"][1]
-move2 = TablesOfPiecesGroups["move"][2]
-turn2 = TablesOfPiecesGroups["rot"][2]
+local move1 = TablesOfPiecesGroups["move"][1]
+local turn1 = TablesOfPiecesGroups["rot"][1]
+local move2 = TablesOfPiecesGroups["move"][2]
+local turn2 = TablesOfPiecesGroups["rot"][2]
+local arena = piece"arena"
 
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
 
@@ -18,7 +19,7 @@ function script.Create()
     Spring.MoveCtrl.Enable(unitID,true)
     x,y,z =Spring.GetUnitPosition(unitID)
     Spring.MoveCtrl.SetPosition(unitID, x,y,z)
-    -- StartThread(AnimationTest)
+    StartThread(fightAnimation)
 end
 
 function script.Killed(recentDamage, _)
@@ -32,28 +33,52 @@ end
 function fightAnimation()
     intensity = 0
     time= 0
+    speed= 2
     while true do
         initiative= math.random(1,2)
-        initivativeSign= 1 for k=0, initiative do initivativeSign= initivativeSign *1 end
+        initivativeSign= -1 
+        StopSpin( arena,z_axis, 0.1)
+        for k=0, initiative do initivativeSign= initivativeSign *-1 end
         attackPulses = math.random(1,5)
         
-        intensityMultiplicator = 1+ math.abs(math.cos(intensity*math.pi/4))+(math.sin(time/60000)*0.5)
-
+        intensityMultiplicator = math.max(1,1 + math.abs(math.cos(intensity*math.pi/4))+(math.sin(time/60000)*0.5))
+        restInterval = math.ceil(2000/((intensity%5)+2))
         for i=1,attackPulses do
+             Spin(arena,z_axis, math.rad(4.2*randSign()),0.2)
             if initiative == 1 then
-                Move(move1,x_axis,initivativeSign*i*100, 400*intensityMultiplicator)
-                Move(move2,x_axis,initivativeSign*i*100*0.75, 300*intensityMultiplicator)
+                Move(move1,x_axis,initivativeSign*i*100, 400*intensityMultiplicator*speed)
+                Sleep(250)
+                WMove(move2,x_axis,initivativeSign*i*100*0.75, 200*intensityMultiplicator*speed)
+                val= math.random(-10,10)
+                Turn(turn2,z_axis, math.rad(val), 150)
+                Turn(turn2,y_axis, math.rad(5)*randSign(), 150)
             else
-                Move(move1,x_axis,initivativeSign*i*100*0.75, 300*intensityMultiplicator)
-                Move(move2,x_axis,initivativeSign*i*100, 400*intensityMultiplicator)
+                Move(move2,x_axis,initivativeSign*i*100, 400*intensityMultiplicator*speed)
+                Sleep(250)
+                WMove(move1,x_axis,initivativeSign*i*100*0.75, 200*intensityMultiplicator*speed)
+                val= math.random(-10,10)
+                Turn(turn1,z_axis, math.rad(val), 150)
+                Turn(turn1,y_axis, math.rad(5)*randSign(), 150)
             end
-            Sleep(2000/intensity)
+            Sleep(restInterval)
+            reset(turn1, 150)
+            reset(turn2, 150)
         end
-        time= time + (2000/intensity)*attackPulses
+       Spin(arena,z_axis, math.rad(42*randSign()),4.2)
         --circling break& catch breath, reset Flee roll, places Change
-        WMove(move1,x_axis, 0, 1500)
-        WMove(move2,x_axis, 0, 1500)
-        Sleep(500)
+        if initiative ~= 1 then
+                Move(move1,x_axis,0, 1500)
+                Sleep(150)
+                WMove(move2,x_axis,0, 1500)
+        else
+            Move(move2,x_axis,0, 1500)
+            Sleep(150)
+            WMove(move1,x_axis,0, 1500)
+        end
+
+        Sleep(100)
+         time= time + (2000/intensity)*attackPulses + 500*attackPulses
+         time= time + 100
         intensity= intensity+1
     end
 end
@@ -90,14 +115,15 @@ function script.TransportPickup(passengerID)
     if doesUnitExistAlive(fighterTwo) then return false end
 
     if not fighterOne then 
-        Spring.AttachUnit(passengerID, unitID, TablesOfPiecesGroups["attach"][1])
+        Spring.UnitAttach(unitID, passengerID, TablesOfPiecesGroups["attach"][1])
         fighterOne = passengerID
         return
     end
 
      if not fighterTwo then 
-        Spring.AttachUnit(passengerID, unitID, TablesOfPiecesGroups["attach"][2])
+        Spring.UnitAttach(unitID, passengerID, TablesOfPiecesGroups["attach"][2])
         fighterTwo = passengerID
+        StartThread(combatHealth)
         return
     end   
 end

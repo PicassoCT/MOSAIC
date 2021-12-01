@@ -640,7 +640,7 @@ end
 -- >partOfShipPartOfCrew binds a creature to a piece
 function partOfShipPartOfCrew(point, VaryFooID, motherID)
     Spring.SetUnitNeutral(VaryFooID, true)
-    Spring.UnitScript.AttachUnit(point, VaryFooID)
+    Spring.UnitScript.UnitAttach(point, VaryFooID)
     Spring.MoveCtrl.Enable(VaryFooID, true)
 
     while GG.BuildCompleteAvatara[motherID] == false do
