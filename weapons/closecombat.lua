@@ -11,7 +11,7 @@ local weaponDef = {
 
     --physics
     weaponVelocity = 450,
-    reloadtime = 1,
+    reloadtime = 90,
     range = 15,
     sprayAngle = 300,
     tolerance = 8000,

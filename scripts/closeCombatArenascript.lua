@@ -5,50 +5,51 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
+TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+move1 = TablesOfPiecesGroups["move"][1]
+turn1 = TablesOfPiecesGroups["rot"][1]
+move2 = TablesOfPiecesGroups["move"][2]
+turn2 = TablesOfPiecesGroups["rot"][2]
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.MoveCtrl.Enable(unitID,true)
     x,y,z =Spring.GetUnitPosition(unitID)
     Spring.MoveCtrl.SetPosition(unitID, x,y,z)
     -- StartThread(AnimationTest)
 end
 
-
 function script.Killed(recentDamage, _)
-
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
-
 function script.TransportDrop(passengerID, x, y, z)
-
 end
+
 function fightAnimation()
-    move1 = TablesOfPiecesGroups["move"][1]
-    turn1 = TablesOfPiecesGroups["rot"][1]
-    move2 = TablesOfPiecesGroups["move"][2]
-    turn2 = TablesOfPiecesGroups["rot"][2]
     intensity = 0
+    time= 0
     while true do
         initiative= math.random(1,2)
         initivativeSign= 1 for k=0, initiative do initivativeSign= initivativeSign *1 end
         attackPulses = math.random(1,5)
+        
+        intensityMultiplicator = 1+ math.abs(math.cos(intensity*math.pi/4))+(math.sin(time/60000)*0.5)
+
         for i=1,attackPulses do
             if initiative == 1 then
-                Move(move1,x_axis,initivativeSign*i*100, 400)
-                Move(move2,x_axis,initivativeSign*i*100*0.75, 300)
+                Move(move1,x_axis,initivativeSign*i*100, 400*intensityMultiplicator)
+                Move(move2,x_axis,initivativeSign*i*100*0.75, 300*intensityMultiplicator)
             else
-                Move(move1,x_axis,initivativeSign*i*100*0.75, 300)
-                Move(move2,x_axis,initivativeSign*i*100, 400)
+                Move(move1,x_axis,initivativeSign*i*100*0.75, 300*intensityMultiplicator)
+                Move(move2,x_axis,initivativeSign*i*100, 400*intensityMultiplicator)
             end
             Sleep(2000/intensity)
         end
+        time= time + (2000/intensity)*attackPulses
         --circling break& catch breath, reset Flee roll, places Change
         WMove(move1,x_axis, 0, 1500)
         WMove(move2,x_axis, 0, 1500)
