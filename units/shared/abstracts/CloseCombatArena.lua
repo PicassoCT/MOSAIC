@@ -16,6 +16,7 @@ local CloseCombatArena =
     isFirePlatform  = false, 
     holdSteady = true,
     cantBeTransported = true,
+    releaseHeld = true,
 
     script = "closeCombatArenascript.lua",
     objectName = "closeCombatArena.s3o",

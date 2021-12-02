@@ -81,12 +81,12 @@ local OperativeInvestigator = Human:New{
 				badTargetCategory = [[BUILDING]]
 			}	,
 			[3]={name  = "closecombat",
-			onlyTargetCategory = [[CQBABLE]],
-			noChaseCategory = [[CQBABLE]],
+			onlyTargetCategory = [[CLOSECOMBATABLE]],
+			noChaseCategory = [[CLOSECOMBATABLE]],
 		}
 		},	
 	
-	category = [[GROUND ARRESTABLE CQBABLE]],
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 	
 }
 

@@ -214,14 +214,17 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     GG.CloseCombatInvolved = {}
     function initiateCloseCombat(DamagedUnitID, AttackerID)
         --make sure none of the two is alreay in Closed Combat
-        if     GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
+        if  GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
 
         a,b = {},{}
         b.x,b.y,b.z = Spring.GetUnitPosition(DamagedUnitID)
         a.x,a.y,a.z = Spring.GetUnitPosition(AttackerID)
         mx, my , mz = getMidPoint(a, b)
+
         --create closeCombatArena
         arenaID = Sring.CreateUnit("closeCombatArena",GaiaTeamID, mx, my, mz, 0)
+        rx,ry,rz= Spring.GetUnitRotation(AttackerID)
+        Spring.SetUnitRotation(arenaID, rx,ry,rz)
         GG.CloseCombatInvolved[DamagedUnitID] = arenaID
         GG.CloseCombatInvolved[AttackerID] = arenaID
         
@@ -721,6 +724,9 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         damage, paralyzer, weaponDefID,
         attackerID, attackerDefID,
         attackerTeam)
+    assert(doesUnitExistAlive(unitID))
+    assert(doesUnitExistAlive(attackerID))
+
         if isCloseCombatCapabaleType[unitDefID] and isCloseCombatCapabaleType[attackerDefID] then
             initiateCloseCombat(unitID, attackerID)
         end

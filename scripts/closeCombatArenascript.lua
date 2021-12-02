@@ -12,14 +12,34 @@ local move2 = TablesOfPiecesGroups["move"][2]
 local turn2 = TablesOfPiecesGroups["rot"][2]
 local arena = piece"arena"
 
-function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+    attackerID = Spring.GetUnitLastAttacker(unitID)
+    if attackerID then 
+        teamID = Spring.GetUnitTeam(attackerID)
+        if doesUnitExistAlive(fighterOne) and teamID == Spring.GetUnitTeam(fighterOne) then
+            sapHealth(fighterTwo, damage)
+            return 0
+        end
+  
+    if doesUnitExistAlive(fighterTwo) and teamID == Spring.GetUnitTeam(fighterTwo) then
+            sapHealth(fighterOne, damage)
+            return 0
+        end
+    end
+
+    myHp = Spring.GetUnithealth(unitID)
+    sapHealth(fighterTwo, damage/2)
+    sapHealth(fighterOne, damage/2)
+
+    return damage 
+end
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.MoveCtrl.Enable(unitID,true)
     x,y,z =Spring.GetUnitPosition(unitID)
     Spring.MoveCtrl.SetPosition(unitID, x,y,z)
-    StartThread(fightAnimation)
+    StartThread(combatHealthOS)
 end
 
 function script.Killed(recentDamage, _)
@@ -89,8 +109,9 @@ function sapHealth(id, amount)
     return hp-amount <= 0
 end
 
-function combatHealth()
+function combatHealthOS()
     amount= 50
+    while boolStartFight == false do Sleep(100) end
     StartThread(fightAnimation)
     while true do
         if doesUnitExistAlive(fighterOne) then
@@ -111,6 +132,13 @@ end
 
 local fighterOne
 local fighterTwo
+
+function addCloseCombatInvolved(opponent)
+    if not doesUnitExistAlive(fighterOne) and opponent ~=fighterOne  then fighterOne = opponent; return end
+    if not doesUnitExistAlive(fighterTwo) and opponent ~=fighterTwo  then fighterTwo = opponent end
+    boolStartFight= true
+end
+
 function script.TransportPickup(passengerID)
     if doesUnitExistAlive(fighterTwo) then return false end
 

@@ -388,7 +388,7 @@ end
 function closeCombatOS()
 	while true do
 		if boolInClosedCombat == true then
-			while(doesUnitExistAlive(closeCombat.opponentID))do
+			while(doesUnitExistAlive(closeCombat.arenaID))do
 				Sleep(1000)
 				echo("Play Close Combat Fight Animation")
 			end

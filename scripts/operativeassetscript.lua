@@ -108,7 +108,7 @@ end
 function closeCombatOS()
 	while true do
 		if boolInClosedCombat == true then
-			while(doesUnitExistAlive(closeCombat.opponentID))do
+			while(doesUnitExistAlive(closeCombat.arenaID))do
 				Sleep(1000)
 				echo("Play Close Combat Fight Animation")
 			end
@@ -949,6 +949,17 @@ function sniperAimFunction(weaponID, heading, pitch)
     return true
 end
 
+function stabAimFunction(weaponID, heading, pitch)
+    boolAiming = true
+   
+        setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true,
+                                  nil, false)
+   
+    WTurn(center, y_axis, heading, 22)
+    WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
+    return true
+end
+
 boolFireForcedVisible = false
 function visibleAfterWeaponsFireTimer()
     boolFireForcedVisible = true
@@ -981,6 +992,11 @@ function sniperFireFunction(weaponID)
     return true
 end
 
+function stabFireFunction(weaponID)
+    boolAiming = false
+    return true
+end
+
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = {
@@ -1003,6 +1019,13 @@ function makeWeaponsTable()
         aimfunc = sniperAimFunction,
         firefunc = sniperFireFunction,
         signal = SIG_SNIPER
+    },
+    WeaponsTable[4] = {
+        aimpiece = center,
+        emitpiece = Gun,
+        aimfunc = stabAimFunction,
+        firefunc = stabFireFunction,
+        signal = SIG_STAB
     }
 end
 
@@ -1030,7 +1053,12 @@ end
 
 lastShownWeapon = Pistol
 function script.AimWeapon(weaponID, heading, pitch)
+    if boolInClosedCombat then return false end
     if boolTransportedNoFiring == true then return false end
+
+    if weaponID == 4 then --CloseCombat
+        return true
+    end
 
     targetType, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
@@ -1071,7 +1099,7 @@ function script.AimWeapon(weaponID, heading, pitch)
         showGun()
         lastShownWeapon = Gun
         boolPistol = false
-        if weaponID ~= 1 then
+        if weaponID > 1 then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
         end
     end
