@@ -45,6 +45,9 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         getMobileInterrogateAbleTypeTable(UnitDefs)
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
+    
+    local closeCombatWeaponDefID = WeaponDefNames["closecombat"].id
+    Script.SetWatchWeapon(closeCombatWeaponDefID, true)  
     local godRodMarkerWeaponDefID = WeaponDefNames["godrodmarkerweapon"].id
     Script.SetWatchWeapon(godRodMarkerWeaponDefID, true)  
     local impactorWeaponDefID = WeaponDefNames["godrod"].id
@@ -206,6 +209,39 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         end
 
         return true
+    end
+
+    GG.CloseCombatInvolved = {}
+    function initiateCloseCombat(DamagedUnitID, AttackerID)
+        --make sure none of the two is alreay in Closed Combat
+        if     GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
+
+        a,b = {},{}
+        b.x,b.y,b.z = Spring.GetUnitPosition(DamagedUnitID)
+        a.x,a.y,a.z = Spring.GetUnitPosition(AttackerID)
+        mx, my , mz = getMidPoint(a, b)
+        --create closeCombatArena
+        arenaID = Sring.CreateUnit("closeCombatArena",GaiaTeamID, mx, my, mz, 0)
+        GG.CloseCombatInvolved[DamagedUnitID] = arenaID
+        GG.CloseCombatInvolved[AttackerID] = arenaID
+        
+        env = Spring.UnitScript.GetScriptEnv(arenaID)        
+            if env and env.addCloseCombatInvolved then
+                Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, DamagedUnitID)
+                Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, AttackerID)
+            end
+        end
+         --Attach Both
+
+        --call into both to inform about - nolonger disguised, engaged in close combat
+        env = Spring.UnitScript.GetScriptEnv(AttackerID)        
+        if env and env.isNowInCloseCombat then
+            Spring.UnitScript.CallAsUnit(AttackerID, env.isNowInCloseCombat, DamagedUnitID, arenaID)
+        end
+        env = Spring.UnitScript.GetScriptEnv(DamagedUnitID)       
+        if env and env.isNowInCloseCombat then
+            Spring.UnitScript.CallAsUnit(DamagedUnitID, env.isNowInCloseCombat, AttackerID, arenaID)
+        end
     end
 
     -----------------------------------------------------------------------------------------------------------------------
@@ -681,6 +717,14 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         end
     end
 
+    UnitDamageFuncT[closeCombatWeaponDefID] = function(unitID, unitDefID, unitTeam,
+        damage, paralyzer, weaponDefID,
+        attackerID, attackerDefID,
+        attackerTeam)
+        if isCloseCombatCapabaleType[unitDefID] and isCloseCombatCapabaleType[attackerDefID] then
+            initiateCloseCombat(unitID, attackerID)
+        end
+    end,
     UnitDamageFuncT[nimrodRailungDefID] =
         function(unitID, unitDefID)
             if houseTypeTable[unitDefID] then return 0 end
@@ -718,9 +762,14 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
 
     end
 
+    
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
+        if unitDefID == closeCombatArenaDefID then
+            handArenaErrorToInhabitants(unitID, damage)
+            return 0
+        end
  
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID,

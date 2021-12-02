@@ -98,6 +98,27 @@ boolFlying = false
 boolAiming = false
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 
+boolInClosedCombat = false
+closeCombat= {}
+function isNowInCloseCombat(opponentID, arenaID)
+	boolInClosedCombat = true
+	closeCombat= {opponentID= opponentID, arenaID = arenaID}
+end
+
+function closeCombatOS()
+	while true do
+		if boolInClosedCombat == true then
+			while(doesUnitExistAlive(closeCombat.opponentID))do
+				Sleep(1000)
+				echo("Play Close Combat Fight Animation")
+			end
+			boolInClosedCombat = false 
+		end
+	Sleep(250)
+	end
+end
+
+
 function showGun()
     Show(Gun)
     Show(silencer)

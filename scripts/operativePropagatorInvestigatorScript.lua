@@ -378,6 +378,26 @@ lowerBodyPieces =
 	[LowLeg2]= LowLeg2
 }
 
+boolInClosedCombat = false
+closeCombat= {}
+function isNowInCloseCombat(opponentID, arenaID)
+	boolInClosedCombat = true
+	closeCombat= {opponentID= opponentID, arenaID = arenaID}
+end
+
+function closeCombatOS()
+	while true do
+		if boolInClosedCombat == true then
+			while(doesUnitExistAlive(closeCombat.opponentID))do
+				Sleep(1000)
+				echo("Play Close Combat Fight Animation")
+			end
+			boolInClosedCombat = false 
+		end
+	Sleep(250)
+	end
+end
+
 local boolWalking = false
 local boolTurning = false
 local boolTurnLeft = false
