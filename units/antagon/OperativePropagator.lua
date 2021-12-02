@@ -70,7 +70,7 @@ local OperativePropagator = Human:New{
 		baseclass		= "Human", -- TODO: hacks
 				normaltex = "unittextures/operative_propagator_normal.dds",
     },
-	category = "GROUND ARRESTABLE",
+	category = "GROUND ARRESTABLE CQBABLE",
 	
 	fireState= 1,
 	
@@ -80,7 +80,11 @@ local OperativePropagator = Human:New{
 			},				
 			[2]={name  = "stunpistol",
 				onlyTargetCategory = [[GROUND ARRESTABLE]],
-			}
+			},
+			[3]={name  = "closecombat",
+			onlyTargetCategory = [[CQBABLE]],
+			noChaseCategory = [[CQBABLE]],
+		}
 		},	
 		
 	category = [[GROUND ARRESTABLE]],

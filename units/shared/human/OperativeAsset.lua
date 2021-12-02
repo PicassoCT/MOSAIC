@@ -61,7 +61,7 @@ explodeAs				  = "none",
 			[3]={name  = "sniperrifle",
 				onlyTargetCategory = [[GROUND]],
 			},
-			[3]={name  = "closecombat",
+			[4]={name  = "closecombat",
 				onlyTargetCategory = [[CQBABLE]],
 				noChaseCategory = [[CQBABLE]],
 			}

@@ -79,10 +79,14 @@ local OperativeInvestigator = Human:New{
 			[2]={name  = "stunpistol",
 				onlyTargetCategory = [[GROUND ARRESTABLE]],
 				badTargetCategory = [[BUILDING]]
-			}
+			}	,
+			[3]={name  = "closecombat",
+			onlyTargetCategory = [[CQBABLE]],
+			noChaseCategory = [[CQBABLE]],
+		}
 		},	
 	
-	category = [[GROUND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE CQBABLE]],
 	
 }
 
