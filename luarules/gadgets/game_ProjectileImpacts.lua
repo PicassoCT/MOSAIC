@@ -772,10 +772,6 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
-        if unitDefID == closeCombatArenaDefID then
-            handArenaErrorToInhabitants(unitID, damage)
-            return 0
-        end
  
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID,

@@ -10,7 +10,7 @@ SIG_PISTOL = 1
 SIG_RAID = 2
 SIG_FIRE_VISIBLITY = 4
 SIG_DELAYEDRECLOAK = 8
-
+SIG_STAB = 16
 local Animations = include('animation_assasin_female.lua')
 
 deg_1 = 3.141592653589793 / 180.0
@@ -1294,11 +1294,23 @@ function pistolFireFunction(weaponID, heading, pitch)
 	--Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
 	return true
 end
+function stabFireFunction(weaponID)
+    boolAiming = false
+    return true
+end
+
 
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = Drone, emitpiece = Drone, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
-    WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
+	WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
+	WeaponsTable[3] = {
+		aimpiece = center,
+        emitpiece = Gun,
+        aimfunc = stabAimFunction,
+        firefunc = stabFireFunction,
+        signal = SIG_STAB
+		}
 end
 
 function script.AimFromWeapon(weaponID)

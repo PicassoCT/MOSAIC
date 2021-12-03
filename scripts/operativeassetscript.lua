@@ -14,6 +14,7 @@ SIG_UP = 16
 SIG_LOW = 32
 SIG_FIRE_VISIBLITY = 64
 SIG_DELAYEDRECLOAK = 128
+SIG_STAB = 256
 local Animations = include('animation_assasin_male.lua')
 
 local center = piece('center');
@@ -1019,7 +1020,7 @@ function makeWeaponsTable()
         aimfunc = sniperAimFunction,
         firefunc = sniperFireFunction,
         signal = SIG_SNIPER
-    },
+    }
     WeaponsTable[4] = {
         aimpiece = center,
         emitpiece = Gun,
