@@ -1168,6 +1168,7 @@ function  getManualCivilianBuildingMaps(mapName)
             function getCivilianAnimationStates()
                 return {
                     -- Upper Body States
+                    fighting = "FIGHTING", 
                     slaved = "STATE_SLAVED", -- do nothing
                     idle = "STATE_IDLE",
                     filming = "STATE_FILMING",

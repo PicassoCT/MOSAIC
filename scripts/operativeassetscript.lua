@@ -106,11 +106,31 @@ function isNowInCloseCombat(opponentID, arenaID)
 	closeCombat= {opponentID= opponentID, arenaID = arenaID}
 end
 
+function testAnimationLoop()
+    Hide(Pistol)
+    Hide(Gun)
+    boolInClosedCombat= true
+    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
+    while true do
+        PlayAnimation("FIGHTING", lowerBodyPieces, 1.0)
+        echo("Play Close Combat Fight Animation")
+    Sleep(250)
+    end
+end
+
+function delayedPieceDrop (pieces, times)
+    Sleep(times)
+    Explode(pieces, SFX.FALL)
+    Hide(pieces)
+end
+
 function closeCombatOS()
+    Hide(Gun)
+    StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
 	while true do
 		if boolInClosedCombat == true then
 			while(doesUnitExistAlive(closeCombat.arenaID))do
-				Sleep(1000)
+                PlayAnimation(uppperBodyAnimations[eAnimState.fighting][1], eAnimState.walking)
 				echo("Play Close Combat Fight Animation")
 			end
 			boolInClosedCombat = false 
@@ -151,11 +171,11 @@ function script.Create()
 
     StartThread(threadStarter)
     StartThread(cloakLoop)
-    -- StartThread(testAnimationLoop)
     StartThread(breathing)
     StartThread(transportControl)
     StartThread(runningReactor)
     StartThread(speedMonitoring)
+    StartThread(testAnimationLoop)
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
@@ -265,19 +285,6 @@ function breathing()
 
 end
 
-
-
-
-function testAnimationLoop()
-    Sleep(500)
-    while true do
-        PlayAnimation("UPBODY_STANDING_PISTOL")
-        Sleep(100)
-
-    end
-end
-
-
 --gives the first unit of this type a parachut and drops it
 function flyingMonitored()
 	while true do
@@ -298,6 +305,9 @@ function flyingMonitored()
 end
 
 uppperBodyAnimations = {
+       [eAnimState.fighting] = {
+        [1] = "FIGHTING",
+    },
     [eAnimState.idle] = {
         [1] = "UPBODY_STANDING_GUN",
         [2] = "UPBODY_STANDING_PISTOL"
@@ -383,6 +393,8 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                 randLowVal = (cmd.rl or 0) * 100
                 randoffset = math.random(randLowVal, randUpVal) / 100
             end
+
+            if not cmd.t then cmd.t = 0 end
 
             if not piecesToFilterOutTable[cmd.p] then
                 animCmd[cmd.c](cmd.p, cmd.a,

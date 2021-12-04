@@ -391,6 +391,7 @@ function closeCombatOS()
 			while(doesUnitExistAlive(closeCombat.arenaID))do
 				Sleep(1000)
 				echo("Play Close Combat Fight Animation")
+                PlayAnimation(eAnimState.aiming, eAnimState.walking)
 			end
 			boolInClosedCombat = false 
 		end
@@ -1192,12 +1193,9 @@ function cloakLoop()
 	
 	Sleep(100)
 	setSpeedEnv(unitID, 1.0)
-	waitTillComplete(unitID)
-	
+	waitTillComplete(unitID)	
 	--initialisation
-
 	showHideIcon(false)
-
 
 	while true do  
 		currentState = cloakStateMachine[currentState]()
@@ -1294,23 +1292,28 @@ function pistolFireFunction(weaponID, heading, pitch)
 	--Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
 	return true
 end
+
 function stabFireFunction(weaponID)
     boolAiming = false
     return true
 end
 
+function stabAimFunction(weaponID, heading, pitch)
+    boolAiming = true
+   
+        setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
+                                  nil, false)
+   
+    WTurn(center, y_axis, heading, 22)
+    WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
+    return true
+end
 
 WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = Drone, emitpiece = Drone, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
 	WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
-	WeaponsTable[3] = {
-		aimpiece = center,
-        emitpiece = Gun,
-        aimfunc = stabAimFunction,
-        firefunc = stabFireFunction,
-        signal = SIG_STAB
-		}
+	WeaponsTable[3] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = stabAimFunction, firefunc = stabFireFunction, signal = SIG_STAB }
 end
 
 function script.AimFromWeapon(weaponID)
@@ -1334,7 +1337,6 @@ local validTargetType={
 	[2]=true,
 }
 
-
 function script.FireWeapon(weaponID)
 	return WeaponsTable[weaponID].firefunc(weaponID, heading, pitch)
 end
@@ -1353,8 +1355,7 @@ function script.AimWeapon(weaponID, heading, pitch)
              echo("Aiming at disguised civilian ")
 			return false
 		end
-	end
-		
+	end		
 
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
@@ -1367,7 +1368,6 @@ function script.AimWeapon(weaponID, heading, pitch)
     end
     return false
 end
-
 
 function showHideIcon(boolShowIcon)
 

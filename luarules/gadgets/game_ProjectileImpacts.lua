@@ -229,11 +229,11 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         GG.CloseCombatInvolved[AttackerID] = arenaID
         
         env = Spring.UnitScript.GetScriptEnv(arenaID)        
-            if env and env.addCloseCombatInvolved then
-                Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, DamagedUnitID)
-                Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, AttackerID)
-            end
+        if env and env.addCloseCombatInvolved then
+            Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, DamagedUnitID)
+            Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, AttackerID)
         end
+     
          --Attach Both
 
         --call into both to inform about - nolonger disguised, engaged in close combat
@@ -730,11 +730,15 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
         if isCloseCombatCapabaleType[unitDefID] and isCloseCombatCapabaleType[attackerDefID] then
             initiateCloseCombat(unitID, attackerID)
         end
-    end,
-    UnitDamageFuncT[nimrodRailungDefID] =
-        function(unitID, unitDefID)
-            if houseTypeTable[unitDefID] then return 0 end
-        end
+    end
+
+    UnitDamageFuncT[nimrodRailungDefID] = function(unitID, unitDefID, unitTeam,
+                                                damage, paralyzer, weaponDefID,
+                                                attackerID, attackerDefID,
+                                                attackerTeam)
+
+                                            if houseTypeTable[unitDefID] then return 0 end
+                                        end
 
     UnitDamageFuncT[godRodMarkerWeaponDefID] =   function(unitID, unitDefID, unitTeam,
                                                 damage, paralyzer, weaponDefID,

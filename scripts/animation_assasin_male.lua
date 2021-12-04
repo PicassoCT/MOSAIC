@@ -1,7 +1,71 @@
 deg_90 = math.pi / 2
 deg_45 = math.pi / 4
+deg_1 = math.pi /180
 
 return {
+    ["FIGHTING"] = {
+          {
+            ['time'] = 1,
+            ['commands'] = {
+                {['c']='turn',['p']="Torso", ['a']=z_axis, t= -10*deg_1, ['s']=1.941510},
+                
+                {['c']='turn',['p']="UpArm1", ['a']=x_axis, rl = deg_45, ru=  deg_1*60, ['s']=1.941510},
+                {['c']='turn',['p']="UpArm1", ['a']=y_axis, rl = -deg_45, ru= -deg_45 + deg_1*10, ['s']=2.512869},
+                {['c']='turn',['p']="UpArm1", ['a']=z_axis, rl = -33*deg_1, ru= -deg_1*-5, ['s']=2.174944},
+                
+                {['c']='turn',['p']="LowArm1", ['a']=x_axis, rl = -deg_45, ru=  -deg_1*20, ['s']=1.941510},
+                {['c']='turn',['p']="LowArm1", ['a']=y_axis, rl = deg_1*20,_45, ru=  deg_1*30, ['s']=0.512869},
+                {['c']='turn',['p']="LowArm1", ['a']=z_axis, rl = deg_1*60, ru=  deg_1*70, ['s']=2.174944},
+              
+                {['c']='turn',['p']="UpArm2", ['a']=x_axis, rl = deg_1*-85, ru=  deg_1*-75, ['s']=1.941510},
+                {['c']='turn',['p']="UpArm2", ['a']=y_axis, rl = deg_1*10, ru=  deg_1*20, ['s']=2.512869},
+                {['c']='turn',['p']="UpArm2", ['a']=z_axis, rl = deg_1*-35, ru=  deg_1*-20, ['s']=2.174944},
+                
+                {['c']='turn',['p']="LowArm2", ['a']=x_axis, rl = deg_1*-10, ru= deg_1, ['s']=1.941510},
+                {['c']='turn',['p']="LowArm2", ['a']=y_axis, rl = deg_1*25, ru=  deg_1*35, ['s']=0.512869},
+                {['c']='turn',['p']="LowArm2", ['a']=z_axis, rl = deg_1*-20, ru=  deg_1*-10, ['s']=2.174944},
+              
+            }
+        },
+        {
+            ['time'] = 14,
+             ['commands'] = {
+               {['c']='turn',['p']="Torso", ['a']=z_axis, t= -10*deg_1, ['s']=1.941510},
+
+                {['c']='turn',['p']="UpArm1", ['a']=x_axis, rl =-deg_1*60,  ru= -deg_1*44,  ['s']=1.941510},
+                {['c']='turn',['p']="UpArm1", ['a']=y_axis, rl = deg_1*10, ru= deg_1*20, ['s']=2.512869},
+                {['c']='turn',['p']="UpArm1", ['a']=z_axis, rl = deg_1*20, ru= deg_1*30, ['s']=2.174944},
+
+                {['c']='turn',['p']="LowArm1", ['a']=x_axis, t = 0 ,  ['s']=1.941510},
+                {['c']='turn',['p']="LowArm1", ['a']=y_axis,t = 0 , ['s']=2.512869},
+                {['c']='turn',['p']="LowArm1", ['a']=z_axis,t = 0 , ['s']=2.174944},
+           
+                {['c']='turn',['p']="UpArm2", ['a']=x_axis, rl = deg_1*-90, ru=  deg_1*-70, ['s']=1.941510},
+                {['c']='turn',['p']="UpArm2", ['a']=y_axis, rl = deg_1*10, ru=  deg_1*20, ['s']=2.512869},
+                {['c']='turn',['p']="UpArm2", ['a']=z_axis, rl = deg_1*10, ru=  deg_1*20, ['s']=2.174944},
+                
+                {['c']='turn',['p']="LowArm2", ['a']=x_axis, rl = deg_1*-70, ru= deg_1*-50, ['s']=1.941510},
+                {['c']='turn',['p']="LowArm2", ['a']=y_axis, rl = deg_1*-45,_45, ru=  deg_1*-35, ['s']=0.512869},
+                {['c']='turn',['p']="LowArm2", ['a']=z_axis, rl = deg_1*-70, ru=  deg_1*-60, ['s']=2.174944},
+                },
+         },
+         {
+        ['time'] = 25,
+        ['commands'] = {
+            {['c']='turn',['p']="LowArm1", ['a']=x_axis, ['t']=-0.841321, ['s']=1.941510},
+            {['c']='turn',['p']="LowArm1", ['a']=y_axis, ['t']=-0.222243, ['s']=0.512869},
+            {['c']='turn',['p']="LowArm1", ['a']=z_axis, ['t']=0.942476, ['s']=2.174944},
+            {['c']='turn',['p']="LowArm2", ['a']=x_axis, ['t']=-0.950410, ['s']=2.193254},
+            {['c']='turn',['p']="LowArm2", ['a']=y_axis, ['t']=0.049276, ['s']=0.113715},
+            {['c']='turn',['p']="LowArm2", ['a']=z_axis, ['t']=-1.129248, ['s']=2.605958},
+            {['c']='turn',['p']="LowLeg1", ['a']=x_axis, ['t']=2.010944, ['s']=4.640641},
+            {['c']='turn',['p']="LowLeg2", ['a']=x_axis, ['t']=2.010944, ['s']=4.640641},
+        },
+        ['time'] = 30,
+        ['commands'] = {          
+        }
+    },
+    },
     ["FULLBODY_RIDING"] = {
       {
         ['time'] = 1,
