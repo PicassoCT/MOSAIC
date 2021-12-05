@@ -84,7 +84,7 @@ function fightAnimation()
                     400 * intensityMultiplicator * speed * scale)
                 Sleep(250)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
-                Turn(turn1, x_axis, math.rad(25) * initivativeSign, 70)
+                Turn(turn1, x_axis, math.rad(-5) * initivativeSign, 70)
                 WMove(
                     move1,
                     x_axis,
@@ -103,7 +103,7 @@ function fightAnimation()
                  400 * intensityMultiplicator * speed * scale)
                 Sleep(250)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
-                Turn(turn2, x_axis, math.rad(-25) * initivativeSign, 70)
+                Turn(turn2, x_axis, math.rad(5) * initivativeSign, 70)
                 WMove(
                     move2,
                     x_axis,

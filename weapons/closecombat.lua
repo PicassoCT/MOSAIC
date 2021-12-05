@@ -5,18 +5,15 @@ local weaponDef = {
     weaponType = [[Melee]],
     --damage
     damage = {
-        default = 0,
+        default = 1,
         HeavyArmor = 0,
     },
 
     --physics
     weaponVelocity = 450,
     reloadtime = 90,
-    range = 15,
-    sprayAngle = 300,
-    tolerance = 8000,
+    range = 25,
     turret = true,
-    craterMult = 0,
 
     --  soundStart         = "",
     --  soundtrigger=1,

@@ -110,16 +110,20 @@ function closeCombatOS()
     Sleep(5)
     Hide(Gun)
     StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
-    boolInClosedCombat= true
+    oldState = 1
     setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
     while true do
         if boolInClosedCombat == true then
             while(doesUnitExistAlive(closeCombat.arenaID))do
-                 if math.random(1,3) == 1 then 
-                    setOverrideAnimationState(eAnimState.fighting, eAnimState.standing, true, nil, function() return boolInClosedCombat end,    false)  
-                else
-                    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false) 
+                newState = math.random(1,3) 
+                if newState ~= oldState then
+                    if newState == 1   then 
+                        setOverrideAnimationState(eAnimState.fighting, eAnimState.standing, true, nil, function() return boolInClosedCombat end,    false)  
+                    else
+                        setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false) 
+                    end
                 end
+                oldState = newState
                 Sleep(500)
             end
             boolInClosedCombat = false 
@@ -1013,6 +1017,7 @@ function sniperFireFunction(weaponID)
 end
 
 function stabFireFunction(weaponID)
+    Spring.Echo("Firing Weapon stab")
     boolAiming = false
     return true
 end
@@ -1041,7 +1046,7 @@ function makeWeaponsTable()
         signal = SIG_SNIPER
     }
     WeaponsTable[4] = {
-        aimpiece = center,
+        aimpiece = Gun,
         emitpiece = Gun,
         aimfunc = stabAimFunction,
         firefunc = stabFireFunction,
@@ -1073,7 +1078,7 @@ end
 
 lastShownWeapon = Pistol
 function script.AimWeapon(weaponID, heading, pitch)
-    if boolInClosedCombat then return false end
+    if boolInClosedCombat == true then return false end
     if boolTransportedNoFiring == true then return false end
 
     if weaponID == 4 then --CloseCombat

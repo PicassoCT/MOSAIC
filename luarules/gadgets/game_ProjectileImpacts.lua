@@ -27,7 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                     "house", UnitDefs)
 
-turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
+    turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
     local spGetGameFrame = Spring.GetGameFrame
     local spGetUnitIsDead = Spring.GetUnitIsDead
     local spGetUnitDefID = Spring.GetUnitDefID
@@ -475,7 +475,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
 
          --check if the attacker is not already engaged in another raid
         if isEngagedInAnotherRaidAlready(attackerID) == true then
-            spEcho("raidEventStream Aborted, previous Raid in Progress"..unitID)
+            spEcho("Interogation: raidEventStream Aborted, previous Raid in Progress"..unitID)
             return true, persPack
         end
 
@@ -488,7 +488,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID] = nil
-                    spEcho("Interogation: Target díed")
+                    spEcho("Interogation: Target died")
                    
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
@@ -532,6 +532,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
                                           0, 0, 0,
                                           persPack.unitID,
                                           1)
+                    
                     if not persPack.IconID then
                           spEcho("Creating InterrogationIcon failed")
                         return true, persPack
@@ -667,7 +668,7 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
 
             if MobileInterrogateAbleType[unitDefID] and
                 currentlyInterrogationRunning(unitID, attacker) == false then
-                spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name)
+                spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
                 stunUnit(unitID, 2.0)
                 setSpeedEnv(attackerID, 0.0)
                 interrogationEventStreamFunction(unitID, unitDefID, unitTeam,
@@ -719,15 +720,29 @@ turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
             return damage
         end
     end
+    function makeDisguiseUnitTransparent(unitID, unitDefID)
+          if civilianWalkingTypeTable[unitDefID]then
+            if GG.DisguiseCivilianFor then
+                if GG.DisguiseCivilianFor[unitID] then
+                    if doesUnitExistAlive(GG.DisguiseCivilianFor[unitID]) == true then
+                          defID = spGetUnitDefID(GG.DisguiseCivilianFor[unitID])
+                          id =   GG.DisguiseCivilianFor[unitID]
+                          return id, defID
+                    end
+                end
+            end
+        end
+        return unitID, unitDefID
+    end
 
     UnitDamageFuncT[closeCombatWeaponDefID] = function(unitID, unitDefID, unitTeam,
         damage, paralyzer, weaponDefID,
         attackerID, attackerDefID,
         attackerTeam)
-    assert(doesUnitExistAlive(unitID))
-    assert(doesUnitExistAlive(attackerID))
+        echo("CloseCombat Hit")
+        unitID, unitDefID = makeDisguiseUnitTransparent(unitID, unitDefID)
 
-        if isCloseCombatCapabaleType[unitDefID] and isCloseCombatCapabaleType[attackerDefID] then
+        if isCloseCombatCapabaleType[unitDefID] then
             initiateCloseCombat(unitID, attackerID)
         end
     end

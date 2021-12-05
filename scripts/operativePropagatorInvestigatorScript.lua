@@ -388,22 +388,33 @@ end
 
 function closeCombatOS()
     Sleep(5)
-    StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
-    boolInClosedCombat= true
+    oldState = 1
     setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
     while true do
         if boolInClosedCombat == true then
+             Hide(backpack)
+             Hide(Pistol)
+             Hide(Gun)
+             Hide(FoldtopFolded)
+             Hide(FoldtopUnfolded)
             while(doesUnitExistAlive(closeCombat.arenaID))do
-                 if math.random(1,3) == 1 then 
-                    setOverrideAnimationState(eAnimState.fighting, eAnimState.standing, true, nil, function() return boolInClosedCombat end,    false)  
-                else
-                    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false) 
-                end
-                Sleep(500)
+                newState = math.random(1,3) 
+                StartThread(PlayAnimation, "FIGHTING", lowerBodyPieces,1.0)
+                    if oldState~= newState then
+                        PlayAnimation("WALKCYCLE_RUNNING", upperBodyPieces,1.0)
+                    else 
+                        if maRa() then               
+                            PlayAnimation("WALKCYCLE_WALK", upperBodyPieces,1.0)
+                        else
+                            PlayAnimation("UPBODY_STANDING_PISTOL", upperBodyPieces,1.0)
+                        end
+                    end
+                oldState = newState
+                Sleep(20)
             end
             boolInClosedCombat = false 
         end
-    Sleep(250)
+    Sleep(1000)
     end
 end
 
@@ -443,26 +454,12 @@ function script.Create()
 
     StartThread(threadStarter)
 	StartThread(cloakLoop)
+--[[    StartThread(testAnimationLoop)--]]
+    StartThread(closeCombatOS)
     Show(FoldtopUnfolded)
     StartThread(breathing)
     StartThread(transportControl)
     StartThread(cloakIfAIPlayer)
-end
-
-function testAnimationLoop()
-	Sleep(100)
-	resetAll(unitID)
-	while true do
-
-		Sleep(1000)
-			PlayAnimation("PARACHUTE_POSE")
-		for groupname, group in pairs(TablesOfPiecesGroups) do
-			WaitForTurns(TablesOfPiecesGroups[groupname])
-		end
-		Sleep(5000)
-		flyingPose(unitID)
-		Sleep(10000)
-	end
 end
 
 function cloakIfAIPlayer()
@@ -702,8 +699,7 @@ assert(type(animname)=="string", "Animname is not string "..toString(animname))
 			end
 			assert(cmd.p, animname..j)
 			if  not piecesToFilterOutTable[cmd.p] then	
-				animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset) ,cmd.s*speedFactor)
-				
+				animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * ((cmd.t or 0) + randoffset) ,cmd.s*speedFactor)	
 			end
         end
         if(i < #anim) then
@@ -1324,8 +1320,6 @@ function stabAimFunction(weaponID, heading, pitch)
         setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
                                   nil, false)
    
-    WTurn(center, y_axis, heading, 22)
-    WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
     return true
 end
 
