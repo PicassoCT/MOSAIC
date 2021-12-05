@@ -60,8 +60,8 @@ function fightAnimation()
     scale = 0.1
     Turn(turn1, z_axis, math.rad(90), 0)
     Turn(turn2, z_axis, math.rad(-90 ), 0)
-    Move(move1, z_axis, -10, 0)
-    Move(move2, z_axis, -10, 0)
+    Move(move1, z_axis, -5, 0)
+    Move(move2, z_axis, -5, 0)
     twoZeroOffset = -400
     while true do
         initiative = math.random(1, 2)
@@ -83,7 +83,8 @@ function fightAnimation()
                     scale * initivativeSign * i * 100, 
                     400 * intensityMultiplicator * speed * scale)
                 Sleep(250)
-                Turn(turn1, x_axis, math.rad(45) * initivativeSign, 150)
+                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+                Turn(turn1, x_axis, math.rad(25) * initivativeSign, 70)
                 WMove(
                     move1,
                     x_axis,
@@ -94,13 +95,15 @@ function fightAnimation()
                 Turn(turn2, z_axis, math.rad(-90 + val), 150)
                 Turn(turn2, y_axis, math.rad(5) * randSign(), 150) 
                 Turn(turn1, x_axis, math.rad(0) , 6)
+                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
             else
                 Move(move1,
                  x_axis, 
                  scale * initivativeSign * i * 100,
                  400 * intensityMultiplicator * speed * scale)
                 Sleep(250)
-                Turn(turn2, x_axis, math.rad(-45) * initivativeSign, 150)
+                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+                Turn(turn2, x_axis, math.rad(-25) * initivativeSign, 70)
                 WMove(
                     move2,
                     x_axis,
@@ -111,18 +114,20 @@ function fightAnimation()
                 Turn(turn1, z_axis, math.rad(90 + val), 150)
                 Turn(turn1, y_axis, math.rad(5)*randSign(), 150)    
                 Turn(turn2, x_axis, math.rad(0) , 6)
+                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
             end
-              if i== 1 then 
+              if i == 1 then 
                 stopSpins(center,0.1)
                 reset(center, 3)
              end
             Sleep(restInterval)
+            if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
            if math.random(1,10) > 9  then spawnCegAtPiece(unitID, move1, "bloodslay") end
         end
         Spin(arena, z_axis, math.rad(42 * randSign()), 4.2)
        
         --circling break& catch breath, reset Flee roll, places Change
-        spinRand(center,-122, 122, 20)
+        spinRand(center,-70, 70, 20)
         if initiative == 1 then
             Move(move1, x_axis, 0, 1500 * scale)
             WMove(move2, x_axis, 0, 1500 * scale)

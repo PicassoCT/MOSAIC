@@ -106,15 +106,24 @@ function isNowInCloseCombat(opponentID, arenaID)
 	closeCombat= {opponentID= opponentID, arenaID = arenaID}
 end
 
-function testAnimationLoop()
+function closeCombatOS()
     Sleep(5)
     Hide(Gun)
     StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
     boolInClosedCombat= true
     setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
     while true do
-        PlayAnimation("FIGHTING", lowerBodyPieces, 1.0)
-        echo("Play Close Combat Fight Animation")
+        if boolInClosedCombat == true then
+            while(doesUnitExistAlive(closeCombat.arenaID))do
+                 if math.random(1,3) == 1 then 
+                    setOverrideAnimationState(eAnimState.fighting, eAnimState.standing, true, nil, function() return boolInClosedCombat end,    false)  
+                else
+                    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false) 
+                end
+                Sleep(500)
+            end
+            boolInClosedCombat = false 
+        end
     Sleep(250)
     end
 end
@@ -128,21 +137,6 @@ function delayedPieceDrop (pieces, times)
     --Explode(pieces, SFX.FALL)
     Hide(pieces)
 end
-
-function closeCombatOS()
-
-	while true do
-		if boolInClosedCombat == true then
-			while(doesUnitExistAlive(closeCombat.arenaID))do
-                PlayAnimation(uppperBodyAnimations[eAnimState.fighting][1], eAnimState.walking)
-				echo("Play Close Combat Fight Animation")
-			end
-			boolInClosedCombat = false 
-		end
-	Sleep(250)
-	end
-end
-
 
 function showGun()
     Show(Gun)
@@ -179,7 +173,7 @@ function script.Create()
     StartThread(transportControl)
     StartThread(runningReactor)
     StartThread(speedMonitoring)
-    StartThread(testAnimationLoop)
+    --StartThread(testAnimationLoop)
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
@@ -564,7 +558,16 @@ function playUpperBodyIdleAnimation()
 end
 
 UpperAnimationStateFunctions = {
-    [eAnimState.standing] = function()
+      [eAnimState.fighting] = function()
+                    PlayAnimation("FIGHTING", lowerBodyPieces, 1.0)
+
+                    if boolInClosedCombat then
+                        return eAnimState.fighting
+                    else
+                        return eAnimState.standing
+                    end
+                end,
+    [eAnimState.standing] = function()  
 	if boolFlying == true then  return eAnimState.standing end
         resetT(lowerBodyPieces, 10)
         if boolPistol == true then
