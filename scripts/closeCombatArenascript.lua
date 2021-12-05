@@ -35,6 +35,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function script.Create()
+    hideAll(unitID)
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.MoveCtrl.Enable(unitID, true)
     x, y, z = Spring.GetUnitPosition(unitID)
@@ -50,6 +51,8 @@ end
 function script.TransportDrop(passengerID, x, y, z)
 end
 
+center = piece"center"
+
 function fightAnimation()
     intensity = 0
     time = 0
@@ -57,6 +60,8 @@ function fightAnimation()
     scale = 0.1
     Turn(turn1, z_axis, math.rad(90), 0)
     Turn(turn2, z_axis, math.rad(-90 ), 0)
+    Move(move1, z_axis, -10, 0)
+    Move(move2, z_axis, -10, 0)
     twoZeroOffset = -400
     while true do
         initiative = math.random(1, 2)
@@ -73,55 +78,65 @@ function fightAnimation()
         for i = 1, attackPulses do
             Spin(arena, z_axis, math.rad(4.2 * randSign()), 0.2)
             if initivativeSign == -1 then
-                Move(move1, 
+                Move(move2, 
                     x_axis, 
                     scale * initivativeSign * i * 100, 
                     400 * intensityMultiplicator * speed * scale)
                 Sleep(250)
+                Turn(turn1, x_axis, math.rad(45) * initivativeSign, 150)
                 WMove(
-                    move2,
+                    move1,
                     x_axis,
-                    scale * initivativeSign * i * 100,
-                    250 * intensityMultiplicator * speed * scale
+                    scale * initivativeSign * i * 100*1.1 ,
+                    400 * intensityMultiplicator * speed * scale*1.4
                 )
                 val = math.random(-10, 10)
                 Turn(turn2, z_axis, math.rad(-90 + val), 150)
-                Turn(turn2, x_axis, math.rad(5) * randSign(), 150)
+                Turn(turn2, y_axis, math.rad(5) * randSign(), 150) 
+                Turn(turn1, x_axis, math.rad(0) , 6)
             else
-                Move(move2,
+                Move(move1,
                  x_axis, 
                  scale * initivativeSign * i * 100,
                  400 * intensityMultiplicator * speed * scale)
                 Sleep(250)
+                Turn(turn2, x_axis, math.rad(-45) * initivativeSign, 150)
                 WMove(
-                    move1,
+                    move2,
                     x_axis,
-                    scale * initivativeSign * i * 100 ,
-                    250 * intensityMultiplicator * speed * scale
+                    scale * initivativeSign * i * 100*1.1,
+                    400 * intensityMultiplicator * speed * scale*1.4
                 )
                 val = math.random(-10, 10)
                 Turn(turn1, z_axis, math.rad(90 + val), 150)
-                Turn(turn1, x_axis, math.rad(5) * randSign(), 150)
+                Turn(turn1, y_axis, math.rad(5)*randSign(), 150)    
+                Turn(turn2, x_axis, math.rad(0) , 6)
             end
+              if i== 1 then 
+                stopSpins(center,0.1)
+                reset(center, 3)
+             end
             Sleep(restInterval)
+           if math.random(1,10) > 9  then spawnCegAtPiece(unitID, move1, "bloodslay") end
         end
         Spin(arena, z_axis, math.rad(42 * randSign()), 4.2)
        
         --circling break& catch breath, reset Flee roll, places Change
-        if initiative ~= 1 then
+        spinRand(center,-122, 122, 20)
+        if initiative == 1 then
             Move(move1, x_axis, 0, 1500 * scale)
-            Sleep(150)
             WMove(move2, x_axis, 0, 1500 * scale)
         else
             Move(move2, x_axis, 0, 1500 * scale)
-            Sleep(150)
             WMove(move1, x_axis, 0, 1500 * scale)
         end
-
+      
         Sleep(100)
+
         time = time + (2000 / intensity) * attackPulses + 500 * attackPulses
         time = time + 100
         intensity = intensity + 1
+        spawnCegAtUnit(unitID, "dirt")
     end
 end
 

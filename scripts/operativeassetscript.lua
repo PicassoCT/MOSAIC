@@ -107,8 +107,9 @@ function isNowInCloseCombat(opponentID, arenaID)
 end
 
 function testAnimationLoop()
-    Hide(Pistol)
+    Sleep(5)
     Hide(Gun)
+    StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
     boolInClosedCombat= true
     setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
     while true do
@@ -119,14 +120,17 @@ function testAnimationLoop()
 end
 
 function delayedPieceDrop (pieces, times)
+    for i=0,times, 1000 do
+        EmitSfx(pieces,1024)
+        Sleep(1000)
+    end
     Sleep(times)
-    Explode(pieces, SFX.FALL)
+    --Explode(pieces, SFX.FALL)
     Hide(pieces)
 end
 
 function closeCombatOS()
-    Hide(Gun)
-    StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
+
 	while true do
 		if boolInClosedCombat == true then
 			while(doesUnitExistAlive(closeCombat.arenaID))do
