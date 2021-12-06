@@ -239,11 +239,11 @@ if (gadgetHandler:IsSyncedCode()) then
         --call into both to inform about - nolonger disguised, engaged in close combat
         env = Spring.UnitScript.GetScriptEnv(AttackerID)        
         if env and env.isNowInCloseCombat then
-            Spring.UnitScript.CallAsUnit(AttackerID, env.isNowInCloseCombat, DamagedUnitID, arenaID)
+            Spring.UnitScript.CallAsUnit(AttackerID, env.isNowInCloseCombat,  arenaID)
         end
         env = Spring.UnitScript.GetScriptEnv(DamagedUnitID)       
         if env and env.isNowInCloseCombat then
-            Spring.UnitScript.CallAsUnit(DamagedUnitID, env.isNowInCloseCombat, AttackerID, arenaID)
+            Spring.UnitScript.CallAsUnit(DamagedUnitID, env.isNowInCloseCombat,  arenaID)
         end
     end
 

@@ -83,7 +83,7 @@ function fightAnimation()
                     x_axis, 
                     scale * initivativeSign * i * 100, 
                     400 * intensityMultiplicator * speed * scale)
-                Sleep(250)
+                Sleep(100)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
                 Turn(turn1, x_axis, math.rad(-5) * initivativeSign, 70)
                 WMove(
@@ -102,7 +102,7 @@ function fightAnimation()
                  x_axis, 
                  scale * initivativeSign * i * 100,
                  400 * intensityMultiplicator * speed * scale)
-                Sleep(250)
+                Sleep(100)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
                 Turn(turn2, x_axis, math.rad(5) * initivativeSign, 70)
                 WMove(
@@ -128,7 +128,7 @@ function fightAnimation()
         Spin(arena, z_axis, math.rad(42 * randSign()), 4.2)
        
         --circling break& catch breath, reset Flee roll, places Change
-        spinRand(center,-70, 70, 20)
+        spinRand(center,-120, 120, 25)
         if initiative == 1 then
             Move(move1, x_axis, 0, 1500 * scale)
             WMove(move2, x_axis, 0, 1500 * scale)
@@ -199,13 +199,23 @@ function script.TransportPickup(passengerID)
     if not fighterOne then
         Spring.UnitAttach(unitID, passengerID, TablesOfPiecesGroups["attach"][1])
         fighterOne = passengerID
+        env = Spring.UnitScript.GetScriptEnv(fighterOne)       
+        if env and env.isNowInCloseCombat then
+            Spring.UnitScript.CallAsUnit(fighterOne, env.isNowInCloseCombat,  unitID)
+        end
+
         return
     end
 
     if not fighterTwo then
         Spring.UnitAttach(unitID, passengerID, TablesOfPiecesGroups["attach"][2])
         fighterTwo = passengerID
-        StartThread(combatHealthOS)
+        env = Spring.UnitScript.GetScriptEnv(fighterTwo)       
+        if env and env.isNowInCloseCombat then
+            Spring.UnitScript.CallAsUnit(fighterTwo, env.isNowInCloseCombat,  unitID)
+        end
+
+        boolStartFight = true
         return
     end
 end

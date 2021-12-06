@@ -381,9 +381,9 @@ lowerBodyPieces =
 
 boolInClosedCombat = false
 closeCombat= {}
-function isNowInCloseCombat(opponentID, arenaID)
+function isNowInCloseCombat( arenaID)
     boolInClosedCombat = true
-    closeCombat= {opponentID= opponentID, arenaID = arenaID}
+    closeCombat= {arenaID = arenaID}
 end
 
 function closeCombatOS()
