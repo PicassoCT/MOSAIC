@@ -39,12 +39,6 @@ function DelayedRegister()
     team = Spring.GetUnitTeam(unitID) or 0
     team = (1 + team) % 2
     Show(Turrets[team + 1])
-    -- if Spring.GetUnitDefID(GG.DisplayedSniperIconParent[unitID]) == Spring.GetUnitDefID(unitID) then
-
-    -- else
-    -- Show(Turrets[1])
-    -- end
-
 end
 
 function TriangleTest()
@@ -81,8 +75,6 @@ function getUnitsInTriangle()
 end
 
 function script.Killed(recentDamage, _)
-
-    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
@@ -95,7 +87,6 @@ function script.AimWeapon1(Heading, pitch)
     targetType, isUserTarget, targetID = Spring.GetUnitWeaponTarget(unitID, 1)
 
     if not targetType then
-        -- echo("TargetType:"..targetType.." TargetID:");echo(targetID)
         return false
     end
 
@@ -104,7 +95,6 @@ function script.AimWeapon1(Heading, pitch)
     end
 
     return false
-
 end
 
 function script.FireWeapon1() return true end

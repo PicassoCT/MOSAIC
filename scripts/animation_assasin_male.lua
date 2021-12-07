@@ -73,7 +73,7 @@ return {
                 {['c']='turn',['p']="LowArm1", ['a']=z_axis, rl = deg_1*-70, ru=  deg_1*-60, ['s']=22.174944},
                 },
          },
-                {
+         {
             ['time'] = 45,
             ['commands'] = {
                 {['c']='turn',['p']="Torso", ['a']=z_axis, t= 40*deg_1, ['s']=12.941510},
@@ -97,11 +97,12 @@ return {
                 {['c']='turn',['p']="LowArm1", ['a']=z_axis, rl = deg_1*-5, ru=  deg_1*0, ['s']=22.174944},
               
             }
-        },   {
+        },  
+        {
         ['time'] = 50,
         ['commands'] = {
         }
-    },
+        },
     },
     ["FULLBODY_RIDING"] = {
       {
