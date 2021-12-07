@@ -3,6 +3,7 @@ Bugs:
 - Agent Interrogation does not work, stunned but no icon
 - Satellites discover safehouses
 - AI is stupid as bread
+- Not enough information on launcher build needs a siren
 
 ProjektMain:
 1 -Test Gameplay Server
