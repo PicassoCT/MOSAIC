@@ -328,6 +328,15 @@ function  getManualCivilianBuildingMaps(mapName)
         }
     end
 
+   function getCloseCombatAbleTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["operativeasset"].id] = true,
+            [UnitDefNames["operativepropagator"].id] = true,
+            [UnitDefNames["operativeinvestigator"].id] = true
+        }
+    end
+
     function getTurnCoatFactoryType(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {

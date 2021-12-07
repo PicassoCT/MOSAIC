@@ -24,6 +24,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
                                          "civilian", UnitDefs)
+    local isCloseCombatCapabaleType = getCloseCombatAbleTypes(UnitDefs)
     local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                     "house", UnitDefs)
 
@@ -526,12 +527,14 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check if the icon is still there
                 if not persPack.IconID then
                     spEcho("Creating InterrogationIcon")
+
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
-                                          iconUnitTypeName, persPack.unitID, 0,
-                                          0, 0, 0,
+                                          iconUnitTypeName, 
                                           persPack.unitID,
-                                          1)
+                                          0, 0, 0,
+                                          nil,
+                                          1)                         
                     
                     if not persPack.IconID then
                           spEcho("Creating InterrogationIcon failed")

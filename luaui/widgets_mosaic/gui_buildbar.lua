@@ -1134,7 +1134,7 @@ function WaypointHandler(x,y,button)
     Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.GUARD,{param},opt)
   else --feature
     type,param = Spring.TraceScreenRay(x,y,true)
-    Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.MOVE,param,opt)
+    Spring.GiveOrderToUnit(facs[waypointFac+1].unitID, CMD.MOVE,param or {},opt)
   end
 
   --if not shift then waypointMode = 0; return true end

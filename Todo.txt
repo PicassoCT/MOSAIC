@@ -1,3 +1,9 @@
+Bugs:
+- Rocketmissile launches does not abort when actual launch is aborted
+- Agent Interrogation does not work, stunned but no icon
+- Satellites discover safehouses
+- AI is stupid as bread
+
 ProjektMain:
 1 -Test Gameplay Server
 2 - rewrote Slowmo Mechanic: Todo Readd Night Vision Shadder
