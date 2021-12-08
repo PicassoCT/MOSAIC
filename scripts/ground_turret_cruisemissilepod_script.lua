@@ -4,6 +4,8 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
+SIG_LAUNCHCLOUD=1
+
 TablesOfPiecesGroups = {}
 groundFeetSensors = {}
 center = piece"Pod"
@@ -185,7 +187,18 @@ function script.AimFromWeapon1() return aimpiece end
 function script.QueryWeapon1() return rocketPiece end
 boolLaunchAnimationStarted = false
 boolLaunchAnimationCompleted = false
+
+function delayedReset()
+    Sleep(10000)
+    WaitForMoves(rocketPiece,y_axis)
+    Signal(SIG_LAUNCHCLOUD)
+    StartThread(delayedReload)
+end
+
 function launchAnimation()
+    StartThread(delayedReset)
+    Signal(SIG_LAUNCHCLOUD)
+    SetSignalMask(SIG_LAUNCHCLOUD)
     boolLaunchAnimationStarted = true
     boolLaunchAnimationCompleted= false
     WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
@@ -205,6 +218,7 @@ function script.AimWeapon1(Heading, pitch)
 
 end
 function launchCloud()
+   
     while boolFired==false do
         EmitSfx(rocketPiece, 1024)
         Sleep(125)
@@ -226,6 +240,7 @@ function script.FireWeapon1()
 end
 
 function delayedReload()
+     Signal(SIG_LAUNCHCLOUD)
      Hide(rocketPiece)
      Sleep(25000)
      WMove(rocketPiece, y_axis, 0, 2000)

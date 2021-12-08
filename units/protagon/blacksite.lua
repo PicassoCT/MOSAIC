@@ -33,10 +33,10 @@ local BlackSite = Building:New{
 	cloakCost=0.0001,
 	ActivateWhenBuilt=1,
 	cloakCostMoving =0.0001,
-	minCloakDistance = 0,
+	minCloakDistance = -1.0,
 	onoffable=true,
 	initCloaked = true,
-	decloakOnFire = true,
+	decloakOnFire = false,
 	cloakTimeout = 5,
 
 	
