@@ -215,10 +215,13 @@ local InterrogationIcon =
     CanMove = true,
     CanPatrol = true,
     CanStop = true,
+    canCloak = false,
+    decloakOnFire = true,
+    initCloaked = false,
     script = "interrogationIconScript.lua",
     objectName = "InterrogationIcon.dae",
     onoffable = true,
-    onoffable = true,
+
     activatewhenbuilt = true,
     customparams = {
         helptext = "Interrogation in Progress",
