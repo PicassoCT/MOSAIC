@@ -1495,7 +1495,7 @@ function  getManualCivilianBuildingMaps(mapName)
                                     boolDead = Spring.GetUnitIsDead(persPack.unitID)
 
                                     if boolDead and boolDead == true then
-                                        --echo("Aborting eventstream cause unit has died")
+                                        echo("Aborting eventstream cause unit has died")
                                         return nil, nil
                                     end
 
@@ -1510,7 +1510,7 @@ function  getManualCivilianBuildingMaps(mapName)
 
                             boolDoneFor, persPack = persPack.functionToCall(persPack)
                             if boolDoneFor and boolDoneFor == true then
-                                --echo("Aborting eventstream cause function signalled completness")
+                                echo("Aborting eventstream cause function signalled completness")
                                 return nil
                             end
 
@@ -1810,6 +1810,27 @@ end
                     end
                 end
             end
+
+
+            function GetUnitDefRealRadius(udid)
+              local radius = realRadii[udid]
+              if (radius) then
+                return radius
+              end
+
+              local ud = UnitDefs[udid]
+              if (ud == nil) then return nil end
+
+              local dims = spGetUnitDefDimensions(udid)
+              if (dims == nil) then return nil end
+
+              local scale = ud.hitSphereScale -- missing in 0.76b1+
+              scale = ((scale == nil) or (scale == 0.0)) and 1.0 or scale
+              radius = dims.radius / scale
+              realRadii[udid] = radius
+              return radius
+            end
+
 
             function registerRevealedUnitLocation(unitID)
                 local Location = {}
