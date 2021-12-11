@@ -78,10 +78,12 @@ function interrogatePercentage()
 
     timer = 0
     StartThread(showTime)
-    while not GG.raidIconDone or not GG.raidIconDone[unitID] do
+    while not GG.raidStatus or not GG.raidStatus[unitID] do --test
         Sleep(100)
         timer = timer + 100
-        if timer > 5000 then Spring.DestroyUnit(unitID, false, true) end
+        if timer > 15000 then 
+            echo("Timeout interrogationIcon")
+            Spring.DestroyUnit(unitID, false, true) end
     end
 
     SetUnitValue(COB.WANT_CLOAK, 0)
@@ -97,9 +99,10 @@ function interrogatePercentage()
     end
     WaitForMoves(TablesOfPiecesGroups["Ring"])
 
-    if GG.raidIconDone and GG.raidIconDone[unitID] then
-         GG.raidIconDone[unitID].boolInterogationComplete = true
+    if GG.raidStatus and GG.raidStatus[unitID] then
+         GG.raidStatus[unitID].boolInterogationComplete = true
     end
+    echo("RaidIcon LifeTime ended")
     Spring.DestroyUnit(unitID, false, true)
 end
 
@@ -109,7 +112,10 @@ function visualizeProgress()
           #TablesOfPiecesGroups["Puzzle"] * getCurrentPercent())
 end
 
-function script.Killed(recentDamage, _) return 1 end
+function script.Killed(recentDamage, _) 
+    echo("Interrogation Icon died")
+    return 1 
+end
 
 function script.Activate() return 1 end
 
