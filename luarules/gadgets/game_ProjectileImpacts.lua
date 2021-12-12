@@ -14,7 +14,6 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_Animation.lua")
-    VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
     if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
@@ -39,7 +38,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
     local spGiveOrderToUnit = Spring.GiveOrderToUnit
     local spGetTeamList = Spring.GetTeamList
-    local spEcho = echo
+    local spEcho = function() end -- echo
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
     local MobileInterrogateAbleType =
@@ -217,7 +216,8 @@ if (gadgetHandler:IsSyncedCode()) then
         --make sure none of the two is alreay in Closed Combat
         if  GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
 
-        a,b = {},{}
+        a = {}
+        b = {}
         b.x,b.y,b.z = Spring.GetUnitPosition(DamagedUnitID)
         a.x,a.y,a.z = Spring.GetUnitPosition(AttackerID)
         mx, my , mz = getMidPoint(a, b)
@@ -658,6 +658,13 @@ if (gadgetHandler:IsSyncedCode()) then
                 return damage
             end
 
+            -- stupidity edition same team
+            assert(attackerTeam)
+            if attackerTeam == unitTeam then
+                spEcho("Interrogation:Aborted: attackerTeam == unitTeam")
+                return damage
+            end
+
             if unitID ~= attackerID then stunUnit(unitID, 2.0) end
 
             -- make disguise civilians transparent
@@ -712,7 +719,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         -- Interrogation -- and not already Interrogated
-        if (houseTypeTable[unitDefID] or RaidAbleType[unitDefID]) and
+        if ( RaidAbleType[unitDefID]) and
             currentlyInterrogationRunning(unitID, attacker) == false then
             spEcho("Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
             stunUnit(unitID, 2.0)
@@ -794,6 +801,9 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
+        if weaponDefID and WeaponDef and WeaponDef[weaponDefID] then
+            Spring.Echo("UnitDamaged called with weapon"..WeaponDef[weaponDefID].name)
+        end
  
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID,

@@ -1316,10 +1316,6 @@ end
 
 function stabAimFunction(weaponID, heading, pitch)
     boolAiming = true
-   
-        setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                                  nil, false)
-   
     return true
 end
 
@@ -1356,6 +1352,12 @@ function script.FireWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+    if weaponID == 3 then 
+        Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
+        return true
+    end    
+
+    if boolInClosedCombat == true then return false end
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
 	if not targetType or  (not validTargetType[targetType])  then
@@ -1384,7 +1386,6 @@ function script.AimWeapon(weaponID, heading, pitch)
 end
 
 function showHideIcon(boolShowIcon)
-
     if  boolShowIcon == true then
         hideAll(unitID)
         Show(Icon)

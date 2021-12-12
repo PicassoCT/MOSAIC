@@ -2,25 +2,25 @@
 local weaponName = "closecombat"
 local weaponDef = {
     name = "CloseCombat",
-    weaponType = [[Melee]],
+    weaponType = [[Rifle]], --Rifle
     --damage
     damage = {
-        default = 1,
+        default = 2,
         HeavyArmor = 0,
     },
 
     --physics
-    weaponVelocity = 450,
+    weaponVelocity = 9999,
     reloadtime = 90,
-    range = 25,
+    range = 50,
     turret = true,
 
     --  soundStart         = "",
     --  soundtrigger=1,
 
     --apperance
-    rgbColor = [[0 0 0]],
-    size = 0.1,
+    rgbColor = [[0 0 0 0]],
+    size = 0.0001,
 }
 
 return lowerkeys({ [weaponName] = weaponDef })

@@ -975,12 +975,6 @@ end
 
 function stabAimFunction(weaponID, heading, pitch)
     boolAiming = true
-   
-        setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true,
-                                  nil, false)
-   
-    WTurn(center, y_axis, heading, 22)
-    WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
     return true
 end
 
@@ -1078,12 +1072,13 @@ end
 
 lastShownWeapon = Pistol
 function script.AimWeapon(weaponID, heading, pitch)
-    if boolInClosedCombat == true then return false end
-    if boolTransportedNoFiring == true then return false end
-
-    if weaponID == 4 then --CloseCombat
+     if weaponID == 4 then 
+        Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
         return true
     end
+    
+    if boolInClosedCombat == true then return false end
+    if boolTransportedNoFiring == true then return false end
 
     targetType, isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
@@ -1117,6 +1112,10 @@ function script.AimWeapon(weaponID, heading, pitch)
         lastShownWeapon = Pistol
         boolPistol = true
         if weaponID == 1 then
+            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+        end
+
+        if weaponID == 4 then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
         end
     else

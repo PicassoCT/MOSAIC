@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.808" 
+            Version = "Alpha: 0.810" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -408,8 +408,7 @@ function  getManualCivilianBuildingMaps(mapName)
         retVal = {}
         for i = 1, #Stringtable do
             if not UnitDefNames[Stringtable[i]] then
-                Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] ..
-                " does not exists")
+                --Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] .." does not exists")
             else
                 retVal[UnitDefNames[Stringtable[i]].id] = true
             end
@@ -978,7 +977,7 @@ function  getManualCivilianBuildingMaps(mapName)
 
                     if myDefID == UnitDefNames["antagonsafehouse"].id then
                         typeTable = {
-                            "nimrod", "propagandaserver", "assembly", "launcher", "hivemind"
+                            "nimrod", "propagandaserver", "assembly", "launcher", "hivemind", "warheadfactory"
                         }
                     else
                         typeTable = {
@@ -1045,10 +1044,14 @@ function  getManualCivilianBuildingMaps(mapName)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                    "civilianagent",
-                    "operativeasset",
-                    "operativepropagator",
-                    "operativeinvestigator"
+                    "antagonsafehouse",
+                    "protagonsafehouse",
+                    "nimrod", 
+                    "propagandaserver", 
+                    "assembly", 
+                    "launcher", 
+                    "hivemind", 
+                    "warheadfactory"
                 }
 
                 typeTable = mergeTables(typeTable, getTypeUnitNameTable(
@@ -1344,7 +1347,7 @@ function  getManualCivilianBuildingMaps(mapName)
                             for id, _ in pairs(unitsToIntegrate) do
 
                                 if lib_boolDebug == true then
-                                    Spring.Echo("+ " .. UnitDefs[id].name)
+                                    --Spring.Echo("+ " .. UnitDefs[id].name)
                                 end
 
                                 Result[id] = id
@@ -1354,7 +1357,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 end
                 if boolCanBuildSometing == true then
                     if root == true then
-                        Spring.Echo("Unit " .. UnitDefs[unitDefID].name .. " can built:")
+                        --Spring.Echo("Unit " .. UnitDefs[unitDefID].name .. " can built:")
                     end
                 end
 
@@ -1813,7 +1816,8 @@ end
 
 
             function GetUnitDefRealRadius(udid)
-              local radius = realRadii[udid]
+              if not GG.realRadiusComputated then GG.realRadiusComputated = {} end
+              local radius = GG.realRadiusComputated[udid]
               if (radius) then
                 return radius
               end
@@ -1827,7 +1831,7 @@ end
               local scale = ud.hitSphereScale -- missing in 0.76b1+
               scale = ((scale == nil) or (scale == 0.0)) and 1.0 or scale
               radius = dims.radius / scale
-              realRadii[udid] = radius
+              GG.realRadiusComputated[udid] = radius
               return radius
             end
 
@@ -1964,7 +1968,7 @@ end
 
             function cullPositionCluster(PosTable, iterrations)
                 if count(PosTable) <= 3 then
-                    Spring.Echo("cullPositionCluster: PosTable to small")
+                    --Spring.Echo("cullPositionCluster: PosTable to small")
                     return PosTable
                 end
 
@@ -1981,7 +1985,7 @@ end
                     culledPoints = result
 
                     if count(culledPoints) <= 3 then
-                        Spring.Echo("Aborting with Points:" .. count(culledPoints))
+                        --Spring.Echo("Aborting with Points:" .. count(culledPoints))
                         return culledPoints
                     end
                 end
@@ -2488,11 +2492,11 @@ function returnIdleTokken()
 end
                
 function getTODOTable(name)
-    Spring.Echo("Table getter of name "..name.." is missing")
+    --Spring.Echo("Table getter of name "..name.." is missing")
     assert(true==false)
 end
 
 function TODO(task)
-    Spring.Echo("TODO:"..task)
+    --Spring.Echo("TODO:"..task)
     assert(true==false)
 end

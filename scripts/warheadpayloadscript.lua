@@ -74,7 +74,7 @@ function script.Create()
      StartThread(defuseStateMachine)
      hideT(TablesOfPiecesGroups["ProgressBars"])
      hideT(TablesOfPiecesGroups["Rotor"])
-    StartThread(PlaySoundByUnitDefID, myDefID,
+     StartThread(PlaySoundByUnitDefID, myDefID,
                             "sounds/icons/warhead_created.ogg", 1,
                             500, 2)
 end

@@ -18,7 +18,7 @@ local Civil = Civilian:New{
     },
 
 	
-	category = [[GROUND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
 
 

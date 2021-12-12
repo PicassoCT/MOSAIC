@@ -32,9 +32,10 @@ function showTime()
     while true do
         showT(TablesOfPiecesGroups["Load"], 1,
               math.max(1, #TablesOfPiecesGroups["Load"] * getCurrentPercent()))
+       -- visualizeProgress()
         Sleep(OnePercent)
         for i = 1, #TablesOfPiecesGroups["Ring"] do
-            val = math.random(2, 15) * randSign()
+            val = math.random(0, 3)*5
             speed = math.random(5, 25)
             Spin(TablesOfPiecesGroups["Ring"][i], y_axis, math.rad(val), speed)
         end
