@@ -847,6 +847,10 @@ function cloakLoop()
                 return transitionToUncloaked()
             end
 
+            if boolInClosedCombat == true then 
+             return transitionToUncloaked()
+            end
+            
             return "cloaked"
         end,
         ["decloaked"] = function()
@@ -1073,7 +1077,7 @@ end
 lastShownWeapon = Pistol
 function script.AimWeapon(weaponID, heading, pitch)
      if weaponID == 4 then 
-        Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
+      --  Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
         return true
     end
     

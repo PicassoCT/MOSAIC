@@ -213,17 +213,22 @@ if (gadgetHandler:IsSyncedCode()) then
 
     GG.CloseCombatInvolved = {}
     function initiateCloseCombat(DamagedUnitID, AttackerID)
+        if not doesUnitExistAlive(DamagedUnitID) or not doesUnitExistAlive(AttackerID) then
+           -- echo("Unit is dead - no close combat")
+            return 
+        end
+        --echo("dx1")
         --make sure none of the two is alreay in Closed Combat
         if  GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
 
-        a = {}
-        b = {}
+        local a = {}
+        local b = {}
         b.x,b.y,b.z = Spring.GetUnitPosition(DamagedUnitID)
         a.x,a.y,a.z = Spring.GetUnitPosition(AttackerID)
         mx, my , mz = getMidPoint(a, b)
-
+        --echo("dx2")
         --create closeCombatArena
-        arenaID = Sring.CreateUnit("closeCombatArena",GaiaTeamID, mx, my, mz, 0)
+        arenaID = Spring.CreateUnit("closecombatarena",GaiaTeamID, mx, my, mz, 0)
         rx,ry,rz= Spring.GetUnitRotation(AttackerID)
         Spring.SetUnitRotation(arenaID, rx,ry,rz)
         GG.CloseCombatInvolved[DamagedUnitID] = arenaID
@@ -234,7 +239,7 @@ if (gadgetHandler:IsSyncedCode()) then
             Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, DamagedUnitID)
             Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, AttackerID)
         end
-     
+ 
          --Attach Both
 
         --call into both to inform about - nolonger disguised, engaged in close combat
@@ -751,7 +756,7 @@ if (gadgetHandler:IsSyncedCode()) then
         attackerTeam)
         echo("CloseCombat Hit")
         unitID, unitDefID = makeDisguiseUnitTransparent(unitID, unitDefID)
-
+        
         if isCloseCombatCapabaleType[unitDefID] then
             initiateCloseCombat(unitID, attackerID)
         end

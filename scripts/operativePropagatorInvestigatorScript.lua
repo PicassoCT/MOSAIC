@@ -1175,6 +1175,10 @@ function cloakLoop()
 						return transitionToUncloaked()
 					end		
 
+                    if boolInClosedCombat == true then 
+                        return transitionToUncloaked()
+                    end
+
 		return  "cloaked"
 		end,
 	["decloaked"] = function () 
@@ -1353,7 +1357,7 @@ end
 
 function script.AimWeapon(weaponID, heading, pitch)
     if weaponID == 3 then 
-        Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
+        --Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
         return true
     end    
 
@@ -1361,14 +1365,14 @@ function script.AimWeapon(weaponID, heading, pitch)
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
 	if not targetType or  (not validTargetType[targetType])  then
-			 echo("Not a valid target "..weaponID)
+			-- echo("Not a valid target "..weaponID)
 			return false 
 	end
 	
 	--Do not aim at your own disguise civilian
 	if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
 		if GG.DisguiseCivilianFor[targetID] and GG.DisguiseCivilianFor[targetID]  == unitID then	
-             echo("Aiming at disguised civilian ")
+            -- echo("Aiming at disguised civilian ")
 			return false
 		end
 	end		

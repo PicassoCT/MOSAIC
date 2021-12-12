@@ -35,7 +35,9 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function script.Create()
+    --echo("CloseCombatArena Created")
     hideAll(unitID)
+    Spring.SetUnitAlwaysVisible(unitID, true)
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.MoveCtrl.Enable(unitID, true)
     x, y, z = Spring.GetUnitPosition(unitID)
@@ -44,6 +46,7 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
+  --  echo("Close Combat Arena ended")
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
@@ -158,7 +161,7 @@ function combatHealthOS()
         Sleep(100)
     end
     StartThread(fightAnimation)
-    while true do
+    while doesUnitExistAlive(fighterOne) and doesUnitExistAlive(fighterTwo) do
         if doesUnitExistAlive(fighterOne) then
             if sapHealth(fighterOne, amount) then
                 Spring.DetachUnit(fighterTwo)
@@ -181,6 +184,7 @@ local fighterOne
 local fighterTwo
 
 function addCloseCombatInvolved(opponent)
+    echo("Adding close combant involved")
     if not doesUnitExistAlive(fighterOne) and opponent ~= fighterOne then
         fighterOne = opponent
         return

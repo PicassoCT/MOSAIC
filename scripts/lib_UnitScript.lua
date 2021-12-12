@@ -3513,9 +3513,9 @@ end
 
 -- > returns the Midpoint of two given points
 function getMidPoint(a, b)
-    ax, ay, az = a.x, a.y, a.z
-    bx, by, bz = b.x.b.y, b.z
-    return (ax - bx) / 2 + ax, (ay - by) / 2 + ay, (az - bz) / 2 + az
+    local a = a
+    local b = b
+    return (a.x - b.x) / 2 + a.x, (a.y - b.y) / 2 + a.y, (a.z - b.z) / 2 + a.z
 end
 
 function swingPointOutFromCenterByFrame(ax, ay, az, frame, swing, totalFrame)
