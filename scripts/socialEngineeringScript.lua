@@ -86,7 +86,7 @@ end
 
 function socialEngineeringPosWriteUp()
 	waitTillComplete(unitID)
-	soundnameTime= {name = "sounds/icons/social_engineering.ogg", time = 2*60*1000}
+	soundnameTime= {{name = "sounds/icons/social_engineering.ogg", time = 2*60*1000}}
 	StartThread(playSoundByUnitTypOS, unitID, 0.75, soundnameTime)
 	StartThread(lifeTime, unitID, GameConfig.socialEngineerLifetimeMs, true, false)  
     StartThread(hidePercentages, TablesOfPiecesGroups["Percentages"], GameConfig.socialEngineerLifetimeMs)  
