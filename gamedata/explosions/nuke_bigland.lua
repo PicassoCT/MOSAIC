@@ -86,7 +86,7 @@ return {
 				heat = 10,
 				heatfalloff = 0.3,
 				maxheat = 15,
-				emitvector = [[0, 1, 0]],
+				--emitvector = [[0, 1, 0]],
 				pos = [[r-2 r2, 5, r-2 r2]],
 				size = 3,
 				sizegrowth = 25,
