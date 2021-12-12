@@ -3,26 +3,25 @@ local Civil = Civilian:New{
 	name = "Civilian",
 		corpse = "bodybag",
 	description = " innocent bystander <colateral>",
-	objectName        	= "civilian4_arab.dae",
-
+	objectName        	= "civilian1_arab.dae",
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",
+
 	buildPic = "civilian.png",
 	iconType = "civilian",
-	customParams = {
+	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks
 		normaltex = "unittextures/arab_civilian_normal.dds",
     },
 
 	
-
-	category = [[GROUND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
 
 
 return lowerkeys({
 	--Temp
-	["civilian_arab4"] = Civil:New(),
+	["civilian_arab1"] = Civil:New(),
 })

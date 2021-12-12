@@ -3,7 +3,7 @@ local Civil = Civilian:New{
 	name = "Civilian",
 		corpse = "bodybag",
 	description = " innocent bystander <colateral>",
-	objectName        	= "civilian2_arab.dae",
+	objectName        	= "civilian3_arab.dae",
 
 	
 	usepiececollisionvolumes = false,
@@ -16,24 +16,13 @@ local Civil = Civilian:New{
 		normaltex = "unittextures/arab_civilian_normal.dds",
     },
 
-			weapons ={
-		[1]={name  = "ak47",
-				onlyTargetCategory = [[GROUND ARRESTABLE]],
-			},	
-		[2]={name  = "molotow",
-				onlyTargetCategory = [[GROUND]],
-			},
-		[3]={name  = "rpg7",
-				onlyTargetCategory = [[GROUND]],
-				},
 	
-	},
 
-	category = [[GROUND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
 
 
 return lowerkeys({
 	--Temp
-	["civilian_arab2"] = Civil:New(),
+	["civilian_arab3"] = Civil:New(),
 })
