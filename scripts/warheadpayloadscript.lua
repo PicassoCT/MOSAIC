@@ -81,6 +81,24 @@ end
 
 local realRadii = {}
 
+lastFrame = Spring.GetGameFrame()
+local copyGGDisguisedCivilianFor
+function isUnitDisguised(id)
+	if Spring.GetGameFrame() ~= lastFrame then
+		lastFrame =  Spring.GetGameFrame()
+		copyGGDisguisedCivilianFor = GG.DisguiseCivilianFor
+	end
+
+	if copyGGDisguisedCivilianFor then
+		for disguiseID, operator in pairs (copyGGDisguisedCivilianFor) do
+			if operator == id then
+				return true
+			end
+		end
+	end
+
+	return false
+end
 
 local function GetUnitDefRealRadius(udid)
   local radius = realRadii[udid]
@@ -140,7 +158,7 @@ defuseStatesMachine = {
 						   function(id)
 							   if boolFoundSomething == true then return end
 							   defID = spGetUnitDefID(id)
-								 if  spGetUnitTeam(id) ~= myTeamID and defuseCapableUnitTypes[defID]  then
+								 if  spGetUnitTeam(id) ~= myTeamID and defuseCapableUnitTypes[defID] and not isUnitDisguised(id) then
 									boolFoundSomething = true
 									 persPack.defuserID = id 
 									  persPack.defuseTimeMs = GameConfig.WarheadDefusalTimeMs 
