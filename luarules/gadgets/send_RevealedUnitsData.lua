@@ -50,15 +50,19 @@ local function addTestLocation()
 	braceStart = string.find(tooltip,"<")
 	if braceStart then
 		revealedUnits[dependent].name =  string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
+        if not revealedUnits[dependent].name then
+            revealedUnits[dependent].name = "Target"    
+        end
 	else
 		revealedUnits[dependent].name = "Target" 	 
 	end
-      if boolOneParentOnly == false then   
-        revealedUnits[dependent].boolIsParent = false
-      else
-         boolOneParentOnly= false
-        revealedUnits[dependent].boolIsParent = true
-      end
+
+    if boolOneParentOnly == false then   
+      revealedUnits[dependent].boolIsParent = false
+    else
+       boolOneParentOnly= false
+      revealedUnits[dependent].boolIsParent = true
+    end
       
     end
   end
