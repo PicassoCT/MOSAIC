@@ -607,8 +607,8 @@ function widget:DrawWorld()
           local radius = GetUnitDefRealRadius(id) or 50
           local gx, gy, gz = spGetGroundNormal(x, z)
           local degrot = math.acos(gy) * 180 / math.pi
-
           local designation =  data.name or "---"
+          
           if Loc.boolIsParent then
             glColor(dayTimeDependentColorSet[2])
             gl.LineWidth(3.0)

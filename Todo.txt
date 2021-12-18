@@ -4,12 +4,17 @@ Bugs:
 - Satellites discover safehouses
 - AI is stupid as bread
 - Not enough information on launcher build needs a siren
+- AI: Shouldnt disguise on first move
+- Walk Animation not deployed
+- Civilians can climb to steep slopes
 
 ProjektMain:
 1 -Test Gameplay Server
 2 - rewrote Slowmo Mechanic: Todo Readd Night Vision Shadder
 3 - Test Mini-Game
   - Add Watchdog to MiniGame-Gameplay State machine 
+
+
 
 
 Subprojekt:
