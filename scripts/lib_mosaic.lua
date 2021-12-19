@@ -1525,7 +1525,7 @@ function  getManualCivilianBuildingMaps(mapName)
                     end
 
                     function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
-                        attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is a double agent for team "..teamToTurnTo
+                        attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is now a double agent for team "..teamToTurnTo
                         echo(attachingTo)
                         if not GG.DoubleAgents then GG.DoubleAgents = {} end
 
@@ -1533,7 +1533,7 @@ function  getManualCivilianBuildingMaps(mapName)
                             boolContinue = false
                             boolEndFunction = true
 
-                            --There can only be one
+                            --There can only ever be one
                             if GG.DoubleAgents[persPack.traitorID] and
                                 GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
                                 return boolEndFunction, nil
@@ -1541,8 +1541,15 @@ function  getManualCivilianBuildingMaps(mapName)
 
                             if persPack.boolDoneFor then return boolEndFunction, persPack end
 
+                            --wait till traitor is complete
+                            if isUnitComplete(persPack.traitorID) == false then
+                                return boolContinue, persPack
+                            end
+
                             if doesUnitExistAlive(persPack.traitorID) == false then
+                                echo("Double Agent died "..persPack.traitorID)
                                 destroyUnitConditional(persPack.iconID, false, true)
+                                GG.DoubleAgents[persPack.traitorID] = nil
                                 return boolEndFunction, nil
                             end
 
@@ -1558,8 +1565,6 @@ function  getManualCivilianBuildingMaps(mapName)
                             end
 
                             Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
-                            boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
-
                             if isUnitComplete(persPack.traitorID) == false then
                                 return boolContinue, persPack
                             end
@@ -1567,13 +1572,20 @@ function  getManualCivilianBuildingMaps(mapName)
                             --recursive part
                             if persPack.boolRecursive and persPack.boolRecursive == true then
                                 if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
+                                if not persPack.ListOfCompletedTurnedUnits then persPack.ListOfCompletedTurnedUnits = {} end
                                 buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
-                                if buildID and not persPack.ListOfBuildUnits[buildID] then
-                                    persPack.ListOfBuildUnits[buildID] = buildID
-                                    attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
+                                persPack.ListOfBuildUnits[buildID] = buildID
+
+                                for buildID,_ in pairs(persPack.ListOfBuildUnits) do
+                                    if isUnitComplete(buildID) and not persPack.ListOfCompletedTurnedUnits[buildID] then
+                                        attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
+                                        persPack.ListOfCompletedTurnedUnits[buildID]= buildID
+                                        persPack.ListOfBuildUnits[buildID]= nil
+                                    end  
                                 end
                             end
 
+                            boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
                             if not persPack.boolCloakedAtLeastOnce then
                                 persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
                             end
@@ -1583,10 +1595,11 @@ function  getManualCivilianBuildingMaps(mapName)
                             if persPack.startFrame + 1 < Spring.GetGameFrame() and
                                 persPack.boolCloakedAtLeastOnce == true and
                                 boolUnitIsCloaked == false then
+                                echo("DoubleAgent teamtransfer")
                                 --we copy kill the unit here instead of transfering to another team
                                 --to prevent script incosistencies
                                 copyUnit(persPack.traitorID, persPack.teamToTurnTo)
-                                Spring.DestroyUnit(persPack.iconID, false, true)
+                                destroyUnitConditional(persPack.iconID, false, true)
                                 Spring.DestroyUnit(persPack.traitorID, false, true)
                                 persPack.boolDoneFor = true
                                 return boolEndFunction, persPack
