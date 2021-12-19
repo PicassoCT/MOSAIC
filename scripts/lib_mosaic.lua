@@ -300,7 +300,11 @@ function  getManualCivilianBuildingMaps(mapName)
    function getPayloadTypes(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
 
-    typeTable = {"biopayload", "physicspayload", "informationpayload"}
+    typeTable = {
+        "biopayload",
+        "physicspayload",
+        "informationpayload"
+        }
     return getTypeTable(UnitDefNames, typeTable)
     end
 

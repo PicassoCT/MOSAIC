@@ -106,16 +106,36 @@ function accountForBuiltLauncherSteps()
     end
 end
 
+function payloadCheck(id)
+    defID = spGetUnitDefID(id)     
+    if spGetUnitTeam(id) == myTeamID and
+        payLoadTypes[defID] then
+            GG.Launchers[teamID][unitID].payload = defID
+            echo("Payload recieved")
+            Spring.DestroyUnit(id, true, false)
+            return true
+    end
+    return false
+end
 
 function detectArrivingPayload()
-    while true do
-        process(getAllNearUnit(unitID, 100),
+    boolPayload= false
+    while not boolPayload do
+        process(
+                getAllNearUnit(unitID, 200),
                 function(id)
-                  defID = spGetUnitDefID(id)                        
-                    if spGetUnitTeam(id) ~= myTeamID and
-                       payLoadTypes[defID] then
-                       GG.Launchers[teamID][unitID].payload = defID
-                       Spring.DestroyUnit(id, true, false)
+                    if  boolPayload then return end
+                    
+                    boolPayload = payloadCheck(id)
+                    
+                    if not boolPayload then
+                        loadedUnits = Spring.GetUnitIsTransporting(id)
+                        if loadedUnits then
+                            for i=1, #loadedUnits do
+                                boolPayload = payloadCheck(loadedUnits[i])
+                                if boolPayload == true then break end
+                            end
+                        end
                     end
                 end
                 ) 
