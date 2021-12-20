@@ -19,7 +19,7 @@ local weaponDef = {
     Turnrate = 16000,
     collideFriendly = true,
     BurnBlow = false,
-    highTrajectory = 1,
+    highTrajectory = 0,
     collideFeature= true,
 
     --- -APPEARANCE
