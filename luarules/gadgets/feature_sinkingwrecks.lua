@@ -33,7 +33,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:FeatureCreated(FeatureID)
         if isWreck(FeatureID) == true then
-
             WreckList[#WreckList + 1] = {}
             WreckList[#WreckList] = {id = FeatureID, sinkTime = SinkBeginTime}
         end

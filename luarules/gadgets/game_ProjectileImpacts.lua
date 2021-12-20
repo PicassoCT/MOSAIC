@@ -38,6 +38,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
     local spGiveOrderToUnit = Spring.GiveOrderToUnit
     local spGetTeamList = Spring.GetTeamList
+    local spSpawnCEG = Spring.SpawnCEG
     local spEcho = function() end -- echo
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
@@ -125,6 +126,11 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    moltowSmokeCegs= {
+        "glowsmoke",
+        "vehsmokepillar"
+           }
+
     function molotowEventStream(weaponDefID, x, y, z)
 
             fireFunction = function(evtID, frame, persPack, startFrame)
@@ -156,9 +162,12 @@ if (gadgetHandler:IsSyncedCode()) then
             addz = math.random(0, 4)
             local x,y,z = persPack.px, persPack.py, persPack.pz
             dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.pz, true)
-            Spring.SpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
+            spSpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
             if maRa() == true then
-                 Spring.SpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
+                 spSpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
+                   if maRa() == true then 
+                       spSpawnCEG(moltowSmokeCegs[math.random(1,#moltowSmokeCegs)], x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
+                   end
             end
 
             process(getAllInCircle(persPack.px, persPack.pz, persPack.range),
