@@ -10,14 +10,14 @@ local OperativeInvestigator = Human:New{
 	buildtime = 60,
 	explodeAs				  = "none",
 	name = 		"Investigator",
-	description= " pre-incident agent <recruits Agents/ creates safehouses/ interrogates terrorists>",
+	description= " pre-incident Ground Team <recruits Agents/ creates safehouses/ interrogates suspects>",
 	Acceleration = 0.4,
 	BrakeRate = 0.3,
 	TurnRate = 900,
 	MaxVelocity = 2.2,
 	
 	--orders
-	canMove					  = true,
+	canMove	= true,
 	CanAttack = true,
 	CanGuard = true,
 

@@ -66,9 +66,9 @@ function getGameConfig()
             raidBonusFactorSatellite = 2.5
         },
         SnipeMiniGame = {
-
             Aggressor = {StartPoints = 4},
-        Defender = {StartPoints = 4}},
+            Defender = {StartPoints = 4}
+                        },
 
         -- ObjectiveRewardRate
 
@@ -76,8 +76,6 @@ function getGameConfig()
             RewardCyle = 30 * 60, -- /30 frames = 1 seconds
             Reward = 20
         },
-		
-
         -- civilianbehaviour
         civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
 
@@ -95,13 +93,13 @@ function getGameConfig()
         maxIterationSteps = 2048,
         chanceCivilianArmsItselfInHundred = 50,
         demonstrationMarchRadius = 50,
-        civilianMaxWalkingDistance = 3000,
-		
+        civilianMaxWalkingDistance = 3000,		
 
         maxNrPolice = 8,
         policeMaxDispatchTime = 2000,
         policeSpawnMinDistance = 2200, -- preferably at houses
         maxSirenSoundFiles = 7,
+
         --soundIntervall
         actionIntervallFrames = math.ceil(2.5*60*30),
         peaceIntervallFrames =  math.ceil(4*60*30),
@@ -169,7 +167,7 @@ function getGameConfig()
         Wreckage = {lifeTime = 7 * 60 * 1000},
 
         -- Launcher
-        PreLaunchLeakSteps = 3, --after 4fth step
+        PreLaunchLeakSteps = 4, --after 5fth step
         LaunchReadySteps = 7,
         LauncherInterceptTimeSeconds = 20,
         LauncherMaxHeight = 3000,

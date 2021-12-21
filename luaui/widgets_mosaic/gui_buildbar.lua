@@ -942,9 +942,9 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
   unfinished_facs[unitID] = true
 end
 
-function widget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
+--[[function widget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
   widget:UnitCreated(unitID, unitDefID, unitTeam)
-end
+end--]]
 
 function widget:UnitDestroyed(unitID, unitDefID, unitTeam)
   if unitTeam ~= myTeamID then

@@ -30,11 +30,18 @@ function script.Create()
 
     GG.UnitHeldByHouseMap[unitID] = T[1]
     StartThread(mortallyDependant, unitID, T[1], 15, false, true)
+    StartThread(amplifyPropaganda)
+end
 
+function amplifyPropaganda()
+    while true do
+        Spring.AddUnitResource (unitID, "m" ,GG.Propgandaservers[team] ) 
+        Spring.AddUnitResource (unitID, "e" ,GG.Propgandaservers[team] ) 
+        Sleep(1000)
+    end
 end
 
 function delayedSpinStart()
-
     for i = 1, 4 do
         factor = math.random(1, 15)
         Spin(TablesOfPiecesGroups["Propeller"][i], y_axis, factor, -1 * factor)
@@ -45,7 +52,6 @@ end
 
 function script.Killed(recentDamage, _)
     GG.Propgandaservers[team] = math.max(0, GG.Propgandaservers[team] - 1)
-
     return 1
 end
 

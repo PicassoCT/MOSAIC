@@ -122,7 +122,7 @@ function detectArrivingPayload()
     boolPayload= false
     while not boolPayload do
         process(
-                getAllNearUnit(unitID, 200),
+                getAllNearUnit(unitID, 100),
                 function(id)
                     if  boolPayload then return end
                     

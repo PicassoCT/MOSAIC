@@ -23,7 +23,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitID, unitDefID)
         if iconTypeTable[unitDefID] then
-            Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
+            --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setUnitLuaDraw", unitID, unitDefID)
         end
     end
@@ -37,9 +37,9 @@ else -- unsynced
     end
 
     function gadget:Initialize()
-        Spring.Echo(GetInfo().name .. " Initialization started")
+        --Spring.Echo(GetInfo().name .. " Initialization started")
         gadgetHandler:AddSyncAction("setUnitLuaDraw", setUnitLuaDraw)
-        Spring.Echo(GetInfo().name .. " Initialization ended")
+        --Spring.Echo(GetInfo().name .. " Initialization ended")
     end
 
     local glUnitRaw = gl.UnitRaw
