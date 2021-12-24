@@ -34,6 +34,7 @@ function script.Create()
 end
 
 function amplifyPropaganda()
+    waitTillComplete(unitID)
     while true do
         Spring.AddUnitResource (unitID, "m" ,GG.Propgandaservers[team] ) 
         Spring.AddUnitResource (unitID, "e" ,GG.Propgandaservers[team] ) 
@@ -56,9 +57,11 @@ function script.Killed(recentDamage, _)
 end
 
 function propagandaLoop()
+    waitTillComplete(unitID)
     Sleep(100)
     local oldSubject, oldAddjective = 1, 1
     index = 0
+    
     while true do
         if boolLocalCloaked == false then
             hideT(TablesOfPiecesGroups["Screen"])

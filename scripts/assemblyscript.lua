@@ -61,7 +61,7 @@ function script.Killed(recentDamage, _) return 1 end
 boolBuilding = false
 local buildID = nil
 function buildWatcher()
-
+    waitTillComplete(unitID)
     while true do
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then

@@ -7,7 +7,8 @@ Bugs:
 - AI: Shouldnt disguise on first move
 - Walk Animation not deployed
 - Civilians can climb to steep slopes
-
+Features:
+ - Bordello to Heartshape
 ProjektMain:
 1 -Test Gameplay Server
 2 - rewrote Slowmo Mechanic: Todo Readd Night Vision Shadder
