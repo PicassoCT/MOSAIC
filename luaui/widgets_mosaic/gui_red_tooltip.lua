@@ -95,6 +95,7 @@ local function AutoResizeObjects() --autoresize v2
 		local objects = GetWidgetObjects(widget)
 		local scale = vsy/ly
 		local skippedobjects = {}
+		if objects then
 		for i=1,#objects do
 			local o = objects[i]
 			local adjust = 0
@@ -124,6 +125,7 @@ local function AutoResizeObjects() --autoresize v2
 					s.px = s.px - adjust/scale
 				end
 			end
+		end
 		end
 		LastAutoResizeX,LastAutoResizeY = vsx,vsy
 	end
