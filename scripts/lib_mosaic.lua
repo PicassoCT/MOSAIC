@@ -328,6 +328,26 @@ function  getManualCivilianBuildingMaps(mapName)
             [UnitDefNames["policetruck"].id] = true,
             [UnitDefNames["ground_tank_night"].id] = true
         }
+    end 
+
+    function getShowHideIconTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["aicore"].id] = true,
+            [UnitDefNames["assembly"].id] = true,
+            [UnitDefNames["hivemind"].id] = true,
+            [UnitDefNames["propagandaserver"].id] = true,
+            [UnitDefNames["antagonsafehouse"].id] = true,
+            [UnitDefNames["protagonsafehouse"].id] = true,
+            [UnitDefNames["launcher"].id] = true,
+            [UnitDefNames["nimrod"].id] = true,
+            [UnitDefNames["warheadfactory"].id] = true,
+            [UnitDefNames["satellitescan"].id] = true,
+            [UnitDefNames["satelliteanti"].id] = true,
+            [UnitDefNames["satellitegodrod"].id] = true,
+            [UnitDefNames["operativeasset"].id] = true,
+            [UnitDefNames["operativeinvestigator"].id] = true           
+        }
     end
 
    function getCloseCombatAbleTypes(UnitDefs)

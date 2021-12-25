@@ -12,6 +12,7 @@ buildspot = piece "buildspot"
 Containers = piece "Containers"
 myTeamID = Spring.GetUnitTeam(unitID)
 MaxPlattformHeigth = 750
+Icon = piece"Icon"
 
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
@@ -602,4 +603,19 @@ Spring.SetUnitNanoPieces(unitID, {structure})
 function script.StartBuilding() SetUnitValue(COB.INBUILDSTANCE, 1) end
 
 function script.StopBuilding() SetUnitValue(COB.INBUILDSTANCE, 0) end
+
+boolLocalCloaked = false
+function showHideIcon(boolCloaked)
+    boolLocalCloaked = boolCloaked
+    if boolCloaked == true then
+
+        hideAll(unitID)
+        Show(Icon)
+    else
+        showAll(unitID)
+        Hide(Icon)
+    end
+end
+
+
 
