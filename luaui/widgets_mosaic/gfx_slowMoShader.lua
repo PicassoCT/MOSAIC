@@ -121,8 +121,10 @@ function widget:Initialize()
 	
 	if gl.CreateShader then		
 		shaderProgram = gl.CreateShader(shaderTable)
-		resxLocation = glGetUniformLocation(shaderProgram, "resx")
-		resyLocation = glGetUniformLocation(shaderProgram, "resy")
+		if shaderProgram then
+			resxLocation = glGetUniformLocation(shaderProgram, "resx")
+			resyLocation = glGetUniformLocation(shaderProgram, "resy")
+		end
 	else
 		Spring.Echo("<Night Vision Shader>: GLSL not supported.")
 	end
