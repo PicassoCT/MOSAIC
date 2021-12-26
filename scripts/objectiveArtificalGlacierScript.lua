@@ -28,13 +28,14 @@ function trackEnergyConsumption()
         Sleep(1000)
     end
 end
-
+logo = piece("Logo")
 function script.Create()
     Spring.SetUnitBlocking(unitID,false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
     resetAll(unitID)
-    Spin(piece("Logo"), z_axis, math.rad(42), 0)
+    Spin(logo, z_axis, math.rad(42), 0)
+    StartThread(flickerScript, logo, function() return math.random(1,100) > 25; end, 0.5, 30, 2)
     hideT(TablesOfPiecesGroups["HyperLoop"])
     Hide(Irrigation1)
 
@@ -98,6 +99,32 @@ function fold()
     WTurn(TablesOfPiecesGroups["Solar"][3], x_axis, math.rad(0), 1)
     WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(0), 1)
     WTurn(TablesOfPiecesGroups["Solar"][4], x_axis, math.rad(0), 1)
+end
+
+
+           
+
+function flickerScript(pieces,  NoErrorFunction, errorDrift, timeoutMs, maxInterval)
+
+
+    flickerIntervall = math.ceil(1000/25)
+
+    while true do
+        Hide(pieces)
+        Sleep(500)
+            for i=1,(3000/flickerIntervall) do
+                if i % 2 == 0 then         Show(pieces) else Hide(pieces) end
+                if NoErrorFunction() == true then Show(pieces) end
+                for ax=1,3 do
+                    moveT(pieces, ax, math.random(-1*errorDrift,errorDrift),100)
+                end
+                Sleep(flickerIntervall)
+            end
+            Hide(pieces)
+  
+        breakTime = math.random(1,maxInterval)*timeoutMs
+        Sleep(breakTime)
+    end
 end
 
 function script.Killed(recentDamage, _) return 1 end

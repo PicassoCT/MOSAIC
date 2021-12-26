@@ -59,17 +59,21 @@ end
 
 function script.Killed(recentDamage, _) return 1 end
 
-boolBuilding = false
+
 local buildID = nil
 function buildWatcher()
     while true do
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
-            StartThread(buildAnimation)
-            producedUnits[buildID]=  buildID
-            boolBuilding = true
-            waitTillComplete(builID)
-            boolBuilding = false
+            StartThread(buildAnimation, buildID)
+            producedUnits[buildID]=  buildID 
+            hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
+            while  buildProgress and buildProgress < 1.0 do   
+                hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
+                Sleep(100)
+            end     
+            Signal(SIG_BUILD)
+            driveHome()
         end
     Sleep(1)
     end
@@ -192,13 +196,10 @@ function trayAnimation(partName, totalTravelDistance, delayInMs,
             WMove(partName, maxis, 0, sspeed)
             WTurn(partName, raxis, math.rad(0), math.pi)
         end
-
     end
-
 end
 
-function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD,
-                    moveSpeed)
+function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD, moveSpeed)
     Turn(TablesOfPiecesGroups["ASAxis"][scaraNumber], y_axis,
          math.rad(jointPosA), moveSpeed)
     Turn(TablesOfPiecesGroups["BSAxis"][scaraNumber], y_axis,
@@ -416,9 +417,21 @@ function driveHome()
     end
 end
 
+function isBuildInProgress(id)
+    if not id then return false end
+    if doesUnitExistAlive(id) == false then return false end
 
-function buildAnimation()
+    hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(id)
+
+    if  buildProgress and buildProgress < 1.0 then return true end
+
+    return false
+end
+
+
+function buildAnimation(buildID)
     Signal(SIG_BUILD)
+    Spring.Echo("Build Animation started")
     SetSignalMask(SIG_BUILD)
 
     StartThread(driveHome)
@@ -550,9 +563,9 @@ function buildAnimation()
     targetIDTable = {LINE_1}
 
     StartThread(robotArmAnimation, 2, posTable, math.pi, targetIDTable, {})
+  
 
-    while boolBuilding == true do
-
+    while isBuildInProgress(buildID) == true do
         if buildID then
             hp, mHp, pD, cP, buildProgress = Spring.GetUnitHealth(buildID)
             buildProgress = buildProgress or 0
@@ -564,7 +577,7 @@ function buildAnimation()
         Sleep(10)
     end
 
-    driveHome()
+    Spring.Echo("Build Animation ended")
 end
 
 producedUnits={}

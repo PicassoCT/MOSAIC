@@ -1495,13 +1495,13 @@ end
 function doesUnitExistAlive(id)
     local valid = Spring.ValidUnitID(id)
     if valid == nil or valid == false then
-        -- echo("doesUnitExistAlive::Invalid ID")
+     --[[   echo("doesUnitExistAlive::Invalid ID")--]]
         return false
     end
 
     local dead = Spring.GetUnitIsDead(id)
     if dead == nil or dead == true then
-        -- echo("doesUnitExistAlive::Dead Unit")
+       --[[ echo("doesUnitExistAlive::Dead Unit")--]]
         return false
     end
 
