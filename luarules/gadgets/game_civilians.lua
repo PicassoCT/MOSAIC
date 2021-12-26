@@ -385,7 +385,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
     while finiteSteps > 0 and numberOfBuildings > 0 do
         finiteSteps = finiteSteps - 1
 
-        dice = math.floor(math.random(10, 31) / 10)
+        dice = math.floor(math.random(5, 31) / 10)
         boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z, GameConfig)
         boolMirrorNearCityCenter = isNearCityCenter(mirror.x * uDim.x, mirror.z*uDim.z, GameConfig)
 
