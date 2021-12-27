@@ -3,7 +3,6 @@ local weaponName = "cruise_missiles" --cruise missile base type
 local weaponDef = {
     name = "Cruise Missile",
 	weaponType = [[MissileLauncher]],
-	description = "Long Range Long Reload Missile",
 
     damage = {
         default = 1500
@@ -22,7 +21,6 @@ local weaponDef = {
 	
 	avoidFeature = false,
 	avoidGround = true,
-	collideFirebase = true,
 	collideNeutral = true,
 	collideGround = true,
 	commandFire = true,

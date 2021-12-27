@@ -10,6 +10,7 @@ General = {
     {"f11",                 "Widget list"},
     {"ctrl + f11",          "Widget teak mode"},  
     {"h",                   "Share units / resources"},
+    {"o",                   "Un/Marks a suspect unit"},
     {blankLine=true},
     {"Camera movement", title=true},
     {"scrollwheel",                 "Zoom camera"},
@@ -32,6 +33,7 @@ General = {
     {"Sound", title=true},
     {"-/+",                 "Change volume"},
     {"f6",                  "Toggle mute"},
+    {"del",                  "Removes all marked suspects"},
 }
 
 Units_I_II = {

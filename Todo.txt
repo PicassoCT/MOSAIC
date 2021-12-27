@@ -7,6 +7,8 @@ Bugs:
 - AI: Shouldnt disguise on first move
 - Walk Animation not deployed
 - Civilians can climb to steep slopes
+- UI hiddes if not resized
+
 Features:
  - Bordello to Heartshape
 ProjektMain:
