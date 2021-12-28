@@ -222,10 +222,18 @@ if (gadgetHandler:IsSyncedCode()) then
 
     GG.CloseCombatInvolved = {}
     function initiateCloseCombat(DamagedUnitID, AttackerID)
+        if not DamagedUnitID or not AttackerID then return end
+        
         if not doesUnitExistAlive(DamagedUnitID) or not doesUnitExistAlive(AttackerID) then
            -- echo("Unit is dead - no close combat")
             return 
         end
+
+        --no interrogation running
+        if currentlyInterrogationRunning(AttackerID, DamagedUnitID) or  currentlyInterrogationRunning(DamagedUnitID,AttackerID) then
+            return 
+        end 
+
         --echo("dx1")
         --make sure none of the two is alreay in Closed Combat
         if  GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
@@ -693,7 +701,7 @@ if (gadgetHandler:IsSyncedCode()) then
             if MobileInterrogateAbleType[unitDefID] and
                 currentlyInterrogationRunning(unitID, attacker) == false then
                 spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
-                stunUnit(unitID, 2.0)
+                stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
                 setSpeedEnv(attackerID, 0.0)
                 interrogationEventStreamFunction(unitID, unitDefID, unitTeam,
                                                  damage, paralyzer, weaponDefID,
