@@ -94,13 +94,7 @@ onLastPointBeforeImpactSetTargetTo = {
 
                                                 defID = spGetUnitDefID(id)
                                                
-                                                if UnitDefs[defID].speed > 0 then
-                                                    return id
-                                                end
-                                            end,
-                                            function(id)
-                                                hp, maxHp = Spring.GetUnitHealth(id)
-                                                if maxHp > 1000 then 
+                                                if UnitDefs[defID].speed > 0 and UnitDefs[defID].weapons and #UnitDefs[defID].weapons > 0then
                                                     return id
                                                 end
                                             end,

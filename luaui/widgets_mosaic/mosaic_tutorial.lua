@@ -304,7 +304,7 @@ general = {
 ---------------------------------------------------------------------------
 local function PlayWelcomeConditional(t)	
 
-	if TutorialInfoTable.welcome.active == true then 
+	if TutorialInfoTable and TutorialInfoTable.welcome and TutorialInfoTable.welcome.active == true then 
 		local mouseX,mouseY=Spring.GetMouseState()
 		local types,tables=spTraceScreenRay(mouseX,mouseY)
 		if types == "ground" then

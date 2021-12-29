@@ -2961,6 +2961,7 @@ function shiftMap(Map, sizeX, sizeZ, offX, offZ, default)
     end
     return shiftedMap
 end
+
 -- >Creates a table of piecenamed enumerated strings
 function makeTableOfPieceNames(l_name, l_nr, l_startnr, l_piecefoonction)
     local T = {}
