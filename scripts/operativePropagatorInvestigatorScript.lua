@@ -328,7 +328,7 @@ local mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID= spGetUnitTeam(unitID)
 local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
-
+local spGetUnitDefID = Spring.GetUnitDefID
 
 local scriptEnv = {
 	center = center,
@@ -378,6 +378,8 @@ lowerBodyPieces =
 	[LowLeg2]= LowLeg2
 }
 
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+                                                "house", UnitDefs)
 
 boolInClosedCombat = false
 closeCombat= {}
@@ -1274,11 +1276,20 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
 
-function raidAimFunction(weaponID, heading, pitch)
+function raidAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
+	if targetType == "u" and targetID then
+		defID = spGetUnitDefID(targetID)
+		if 	houseTypeTable[defID] and 
+			GG.houseHasSafeHouseTable[targetID] and 
+			spGetUnitTeam(GG.houseHasSafeHouseTable[targetID]) == myTeamID then
+			-- if the civilianhouse contains a safehouse of our own team then
+			return false
+		end
+	end
 	return  currentState == "decloaked"
 end
 
-function pistolAimFunction(weaponID, heading, pitch)
+function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
 	boolAiming = true
     if boolWalking == true then
 	   setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
@@ -1379,7 +1390,7 @@ function script.AimWeapon(weaponID, heading, pitch)
 
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
-            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
+            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch, targetType, isUserTarget, targetID)
         else
             WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
             WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)

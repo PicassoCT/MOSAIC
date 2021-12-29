@@ -47,7 +47,6 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
 
 local AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
 local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
-local activePoliceUnitIds_Dispatchtime = {}
 local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 local CivAnimStates = getCivilianAnimationStates()
 local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)

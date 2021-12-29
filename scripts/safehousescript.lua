@@ -17,11 +17,9 @@ local myTeamID = Spring.GetUnitTeam(unitID)
 local spGetUnitPosition = Spring.GetUnitPosition
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
-
-
 local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+function script.HitByWeapon(x, z, weaponDefID, damage) return damage;end
 
 center = piece "center"
 Icon = piece "Icon"
@@ -142,7 +140,7 @@ end
 function detectUpgrade()
    if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
     while true do
-        Sleep(500)
+        Sleep(50)
         -- Spring.Echo("Detect Upgrade")
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
@@ -151,6 +149,7 @@ function detectUpgrade()
             --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
             if safeHouseUpgradeTypeTable[buildDefID] then
                 Spring.SetUnitNoSelect(buildID, true)
+                Spring.SetUnitNoSelect(unitID, true)
                 checkPreExistingKill(buildID, buildID)
                 --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 if doesUnitExistAlive(buildID) == true then
@@ -166,7 +165,8 @@ function detectUpgrade()
                     Spring.DestroyUnit(unitID, false, true)
                     end
                 end
-            end
+                Spring.SetUnitNoSelect(unitID, false)
+			end
         end
     end
 end
