@@ -263,7 +263,24 @@ function defuseStateMachine()
     while true do
       newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
 	  currentState = newState
-       Sleep(100)
+      Sleep(100)
+      if not Spring.GetUnitTransporter(unitID) then
+      	 --detect transports nearby and autoload
+      	 boolLoaded = false
+      	 process(getAllNearUnit(unitID, 75),
+      	 			function(id)
+      	 				if boolLoaded ==true then return end
+      	 				if spGetUnitTeam(id) == myTeamID and TruckTypeTable[spGetUnitDefID(id)] then
+  	 					    pieceMap = Spring.GetUnitPieceMap(id)
+       						assert(pieceMap["attachPoint"])
+       						Spring.UnitAttach(id, unitID, pieceMap["attachPoint"])
+							boolLoaded= true
+      	 				end
+      	 			end
+
+      	 		)
+
+      end
     end
 end
 

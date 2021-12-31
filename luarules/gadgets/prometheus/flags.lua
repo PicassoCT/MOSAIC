@@ -85,20 +85,22 @@ function FlagsMgr.GameFrame(f)
         squads[p] = squad
     end
     for p, unitArray in pairs(squads) do
-        if p:AreAllFlagsCappedByAllyTeam(myAllyTeamID) then
-            -- give each such squad new orders if the flags near it's destination are capped
-            Log("All flags capped near: ", p.x, ", ", p.z)
-            SendToNearestWaypointWithUncappedFlags(p, unitArray)
-        else
-            local f = p:GetNextUncappedFlagByAllyTeam(myAllyTeamID)
-            -- Ask units close to the flag to fulfill the mission
-            for _,u in ipairs(unitArray) do
-                local d = GetUnitSeparation(u, f, true)
-                if d and d < 2.0 * FLAG_RADIUS and d > 0.49 * FLAG_RADIUS then
-                    Log("Unit ", u, " is close to flag ", f, "...")
-                    local x, _, z = GetUnitPosition(f)
-                    local y = GetGroundHeight(x, z)
-                    GiveOrderToUnit(u, CMD.FIGHT, {x, y, z}, {})
+        if p then
+            if p:AreAllFlagsCappedByAllyTeam(myAllyTeamID) then
+                -- give each such squad new orders if the flags near it's destination are capped
+                Log("All flags capped near: ", p.x, ", ", p.z)
+                SendToNearestWaypointWithUncappedFlags(p, unitArray)
+            else
+                local f = p:GetNextUncappedFlagByAllyTeam(myAllyTeamID)
+                -- Ask units close to the flag to fulfill the mission
+                for _,u in ipairs(unitArray) do
+                    local d = GetUnitSeparation(u, f, true)
+                    if d and d < 2.0 * FLAG_RADIUS and d > 0.49 * FLAG_RADIUS then
+                        Log("Unit ", u, " is close to flag ", f, "...")
+                        local x, _, z = GetUnitPosition(f)
+                        local y = GetGroundHeight(x, z)
+                        GiveOrderToUnit(u, CMD.FIGHT, {x, y, z}, {})
+                    end
                 end
             end
         end

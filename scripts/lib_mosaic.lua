@@ -24,6 +24,7 @@ function  getMapCultureMap(mapName)
     return GG.InstanceCulture
 end
 
+
 function getModOptionCulture()
     modOptions = Spring.GetModOptions()
     setUnitFactor(modOptions)
@@ -35,7 +36,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.817" 
+            Version = "Alpha: 0.818" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
