@@ -1,7 +1,7 @@
 --- http:--springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "raidarrest"
 local weaponDef = {
-    name = "Arrest Players & Raid Safehouses",
+    name = "Raid Safehouses",
 	weaponType = [[MissileLauncher]],
 	model = "RaidDroneProjectile.dae",
 
@@ -28,6 +28,8 @@ local weaponDef = {
     tolerance               = 512,
     tracks = false,
     Turnrate = 8000,
+    commandFire = true,
+    canAttackGround = false,
 
     --collision
     collideFriendly = false,

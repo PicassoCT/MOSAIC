@@ -103,7 +103,6 @@ function interrogatePercentage()
     if GG.raidStatus and GG.raidStatus[unitID] then
          GG.raidStatus[unitID].boolInterogationComplete = true
     end
-    echo("RaidIcon LifeTime ended")
     Spring.DestroyUnit(unitID, false, true)
 end
 

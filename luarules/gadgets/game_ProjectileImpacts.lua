@@ -583,6 +583,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Simulation mode
                             spEcho( "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
                             GG.InterrogationTable[persPack.unitID] = nil
+                            setSpeedEnv(persPack.interrogatorID, 1.0)
                             return true, persPack
                         end
 
@@ -603,7 +604,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-
+                            setSpeedEnv(persPack.interrogatorID, 1.0)
                             GG.InterrogationTable[persPack.unitID] = nil
                             return true, persPack
                         end
@@ -648,6 +649,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     GG.raidStatus[persPack.IconID] = nil
                     GG.InterrogationTable[persPack.unitID] = nil
+                    setSpeedEnv(persPack.interrogatorID, 1.0)
                     return true, persPack
                 end
 

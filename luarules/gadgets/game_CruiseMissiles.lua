@@ -94,7 +94,7 @@ onLastPointBeforeImpactSetTargetTo = {
 
                                                 defID = spGetUnitDefID(id)
                                                
-                                                if UnitDefs[defID].speed > 0 and UnitDefs[defID].weapons and #UnitDefs[defID].weapons > 0then
+                                                if UnitDefs[defID].speed > 0 and UnitDefs[defID].weapons and #UnitDefs[defID].weapons > 0 then
                                                     return id
                                                 end
                                             end,

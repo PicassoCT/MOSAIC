@@ -4,9 +4,10 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
-defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
-GameConfig = getGameConfig()
-WarnText = piece"WarnText"
+local defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
+local GameConfig = getGameConfig()
+local WarnText = piece"WarnText"
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 
 function mightyBadaBoom()
  x,y,z = Spring.GetUnitPosition(unitID)
@@ -34,9 +35,14 @@ function mightyBadaBoom()
                         Spring.SetProjectileAlwaysVisible (id, true)
                          protagonT = getAllTeamsOfType("protagon", UnitDefs)
                          antagonT = getAllTeamsOfType("antagon", UnitDefs)
-
+                         local rubbleDefID = UnitDefNames["gcscrapheap"].id
 
                          process(getAllNearUnit(unitID, 333 ),
+                         	function(id)
+                         		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
+                         			return id
+                         		end
+                         	end,
 						   function(id)
 	                            for tid, _ in pairs(protagonT) do
 	                                GG.Bank:TransferToTeam(GameConfig.WarheadDefusalPunishment, tid,
