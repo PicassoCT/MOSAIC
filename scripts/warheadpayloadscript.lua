@@ -268,7 +268,9 @@ function defuseStateMachine()
     persPack={}
     while true do
       newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
+      if currentState ~= newState then	  echo("defuseStatesMachine in "..currentState) end
 	  currentState = newState
+
       Sleep(100)
       if not Spring.GetUnitTransporter(unitID) then
       	 --detect transports nearby and autoload

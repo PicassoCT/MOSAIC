@@ -385,7 +385,7 @@ return {
 				emitvector = [[0r0.01r-0.01, 2r0.5, 0r0.01r-0.01]],
 				gravity = [[0, 0.07r0.025, 0]],
 			--	delay              = [[0 i5]],
-				explosiongenerator = [[custom:NUKEPILLAR]],
+			--	explosiongenerator = [[custom:NUKEPILLAR]],
 				numparticles = 1,
 				particlelife = 500,
 				particlelifespread = 25,
