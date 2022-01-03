@@ -42,7 +42,8 @@ local house_western = Building:New{
 	},
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "130 120 130",
+	collisionvolumescales = "130 60 130",
+	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	category = [[GROUND BUILDING RAIDABLE]],
 
 }

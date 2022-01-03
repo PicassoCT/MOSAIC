@@ -40,7 +40,8 @@ local house_arab = Building:New{
 	},
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "130 120 130",
+	collisionvolumescales = "130 50 130",
+	collisionVolumeOffsets  = {0.0, 15.0,  0.0},
 	category = [[GROUND BUILDING RAIDABLE]],
 
 }
