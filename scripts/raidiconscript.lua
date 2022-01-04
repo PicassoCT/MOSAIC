@@ -318,6 +318,7 @@ end
 function raidAnimationLoop()
     Sleep(1)
     resetAll(unitID)
+    assert(type(ring) == "table", "Not a table")
 
     index = 0
     process(ring, function(id)
