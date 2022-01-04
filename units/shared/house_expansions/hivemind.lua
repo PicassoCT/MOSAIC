@@ -28,7 +28,11 @@ local Hivemind = Building:New{
 	script 			= "hivemindscript.lua",
 	objectName        	= "hivemind.dae",
 
-	
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
+
 	showNanoFrame= true,
 	nanocolor=[[0.20 0.411 0.611]],
 	canCloak =true,
@@ -79,6 +83,11 @@ local AICore = Building:New{
 		normaltex = "unittextures/propagandaserver_normal.dds",
 	},
 	
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
+
 	showNanoFrame= true,
 	nanocolor=[[0.20 0.411 0.611]],
 	canCloak =true,

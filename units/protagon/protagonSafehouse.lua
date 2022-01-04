@@ -55,6 +55,11 @@ local ProtagonSafeHouse =    Building:New{
   fireState=1,
   selfDestructCountdown = 3*60,
 
+  usepiececollisionvolumes = false,
+  collisionVolumeType = "box",
+  collisionvolumescales = "100 70 100",
+  collisionVolumeOffsets  = {0.0, 30.0,  0.0},
+
   customparams =    {
   		normaltex = "unittextures/safehouse_normal.dds",
     helptext =     "Civilian Building",

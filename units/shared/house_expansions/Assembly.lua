@@ -39,6 +39,11 @@ local Assembly = Building:New{
 	fireState = 1,
 	selfDestructCountdown = 2*60,
 
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
+
 	customparams = {
 		helptext		= "MOSAIC Assembly",
 		baseclass		= "Building",

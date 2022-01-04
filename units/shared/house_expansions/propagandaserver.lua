@@ -28,6 +28,12 @@ local Propagandaserver = Building:New{
 		customParams        = {
 		normaltex = "unittextures/propagandaserver_normal.dds",
 	},
+
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
+
 	selfDestructCountdown = 2*60,
 	showNanoFrame= true,
 	nanocolor=[[0.20 0.411 0.611]],

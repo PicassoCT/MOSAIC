@@ -41,6 +41,11 @@ showNanoFrame= true,
 	footprintX = 8,
 	footprintZ = 8,
 	selfDestructCountdown = 2*60,
+
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	
 	script 					= "nimrodscript.lua",
 	objectName        	= "nimrod.dae",

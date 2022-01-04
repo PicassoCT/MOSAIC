@@ -36,6 +36,11 @@ local Launcher = Building:New{
 	decloakOnFire = true,
 	cloakTimeout = 5,
 	unitRestricted = 2,
+
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	
 	customparams = {
 		helptext		= "Weapon Launcher",

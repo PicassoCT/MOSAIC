@@ -39,6 +39,10 @@ local WarHeadFactory = Building:New{
 	decloakOnFire = false,
 	cloakTimeout = 5,
 
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 70 100",
+  	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	
 	customparams = {
 		helptext		= "Aerosol drone center",

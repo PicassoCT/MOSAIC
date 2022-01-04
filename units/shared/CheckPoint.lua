@@ -27,6 +27,12 @@ local Checkpoint = Building:New{
 	MetalStorage = 2500,
 	footprintX = 8,
 	footprintZ = 8,
+
+	usepiececollisionvolumes = false,
+  	collisionVolumeType = "box",
+  	collisionvolumescales = "100 50 100",
+  	collisionVolumeOffsets  = {0.0, 25.0,  0.0},
+
 	showNanoFrame = true,
 	script 					= "checkpointscript.lua",
 	objectName        	= "CheckPoint.dae",

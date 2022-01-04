@@ -1611,7 +1611,7 @@ end
 -- > Turn a Table towards local T
 function moveT(t, axis, dist, speed, boolInstantUpdate, start, endindex)
     start = start or 1
-    assert(type(t) == "table")
+    assert(type(t) == "table", print(debug.traceback()))
     endindex = endindex or #t
     speed = speed or 0
     boolInstantUpdate = boolInstantUpdate or false
