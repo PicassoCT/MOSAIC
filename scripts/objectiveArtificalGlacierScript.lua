@@ -35,7 +35,7 @@ function script.Create()
 
     resetAll(unitID)
     Spin(logo, z_axis, math.rad(42), 0)
-    StartThread(flickerScript, logo, function() return math.random(1,100) > 25; end, 0.5, 30, 2)
+    StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2)
     hideT(TablesOfPiecesGroups["HyperLoop"])
     Hide(Irrigation1)
 
@@ -106,9 +106,7 @@ end
 
 function flickerScript(pieces,  NoErrorFunction, errorDrift, timeoutMs, maxInterval)
 
-
     flickerIntervall = math.ceil(1000/25)
-
     while true do
         Hide(pieces)
         Sleep(500)
