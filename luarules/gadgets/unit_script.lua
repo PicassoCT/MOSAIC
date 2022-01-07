@@ -435,7 +435,8 @@ function Spring.UnitScript.Hide(piece)
         return
     elseif bool_GadgetDebug == true and type(piece) ~= "number" then
         Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..
-                        type(piece) .. " with value " .. piece .. " instead")
+                        type(piece) .. " instead")
+
     end
 
     return sp_SetPieceVisibility(piece, false)

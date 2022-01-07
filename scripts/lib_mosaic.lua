@@ -676,6 +676,31 @@ function  getManualCivilianBuildingMaps(mapName)
             return {}
         end
 
+        function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            if culture == Cultures.arabic then
+                typeTable = {
+                    "truck_arab1",
+                    "truck_arab2",
+                    "truck_arab3",
+                    "truck_arab4",
+                    "truck_arab5",
+                    "truck_arab6",
+                    "truck_arab7"
+                }
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            if culture == Cultures.international then
+                    return mergeTables(
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        
+                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
+            end
+
+            return {}
+        end
         function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
             if culture == Cultures.arabic then
                 if housesNearby < 2 then
@@ -882,6 +907,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 Spring.SetUnitTooltip(unitID,plate)
                 return plate
             end
+
 
             function getTruckTypeTable(UnitDefs)
                 return getCultureUnitModelTypes(GG.GameConfig.instance.culture,
@@ -1756,7 +1782,6 @@ function  getManualCivilianBuildingMaps(mapName)
 
 
 function getCountryByCulture(culture, hash)
-
 
   region_countryMap ={
     Africa = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea","Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda","Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde","Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},

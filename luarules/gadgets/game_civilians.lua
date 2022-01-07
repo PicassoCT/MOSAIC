@@ -76,9 +76,12 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      UnitDefs)
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
+local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
+local isFailedState = (( getDetermenisticMapHash(Game) % 2 )==1) or true
+Spring.Echo("Game:Civilians: Is failed state ".. toString(isFailedState))
 
 local boolCachedMapManualPlacementResult
 function isMapControlledBuildingPlacement(mapName)
@@ -566,19 +569,30 @@ function checkReSpawnPopulation()
                                  civilianWalkingTypeTable)
     end
 end
+function attachPayload(payLoadID, id)
+    if payLoadID then
+           Spring.SetUnitAlwaysVisible(payLoadID,true)
+           pieceMap = Spring.GetUnitPieceMap(id)
+           assert(pieceMap["attachPoint"], "Truck has no attachpoint")
+           Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
+           return payLoadID
+    end
+end
 
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-       assert(payLoadID)
-       if payLoadID then
-           Spring.SetUnitAlwaysVisible(payLoadID,true)
-           pieceMap = Spring.GetUnitPieceMap(id)
-           assert(pieceMap["attachPoint"])
-           Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
-            return payLoadID
-       end
+
+        return attachPayload(payLoadID, id)
+    end
+end
+
+function loadRefugee(id, loadType)
+    if refugeeableTruckType[spGetUnitDefID(id)] then
+        --Spring.Echo(id .. " is a loadable truck ")
+       payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
+       return attachPayload(payLoadID, id)
     end
 end
 
@@ -734,7 +748,7 @@ function isRouteTraversable(defID, unitA, unitB)
     return path ~= nil
 end
 
-function getCutlureDependentDiretion(culture)
+function getCultureDependentDiretion(culture)
     if culture == "arabic" then return 0 end
     
     return math.max(1, math.floor(math.random(1, 3)))
@@ -746,7 +760,7 @@ function spawnUnit(defID, x, z)
                  " with no coords")
     end
     
-    dir = getCutlureDependentDiretion(GameConfig.instance.culture)
+    dir = getCultureDependentDiretion(GameConfig.instance.culture)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
@@ -820,6 +834,11 @@ function gadget:Initialize()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
     process(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)
+
+    if not GG.CivilianEscapePointTable then 
+        GG.CivilianEscapePointTable = {} 
+        for i=1,4 do GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  end
+    end
 end
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -914,10 +933,11 @@ end
 --4 (x n, mapSize)
 
 function getEscapePoint(index)
-    if index == 1 then return 0,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
+    if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
     if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
-    if index == 3 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, 0 end
+    if index == 3 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, 25 end
     if index == 4 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, Game.mapSizeZ end
+    Spring.Echo("Unknown EscapePoint")
 end
 
 function isGoalWarzone(persPack)
@@ -935,6 +955,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if refugeeAbleTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
             payloadID = loadTruck(myID, "truckpayloadrefugee")
+            Spring.SetUnitTooltip(myID, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture ,getDetermenisticMapHash(Game) + math.random(0,1)*randSign()))
             if payloadID then
                 civiliansNearby = process(getAllNearUnit(myID, 128),
                                 function (id)
@@ -958,10 +979,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
 
     --Refugeebehaviour
     if persPack.boolRefugee == true then
-        if not GG.CivilianEscapePointTable then 
-            GG.CivilianEscapePointTable = {} 
-            for i=1,4 do GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  end
-        end
+    
         --Find known CivilianEscapePointTable (StartPoints) 
         if not persPack.CivilianEscapeIndex then persPack.CivilianEscapeIndex = math.random(1,4) end
 
@@ -972,11 +990,8 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
             spDestroyUnit(myID, false, true)
             return true, nil, persPack
         else
-            Command(myID, "go", {
-                x = ex,
-                y = ey,
-                z = ez
-            }, {})
+            echo("Go command")
+            Command(id, "go", {x = ex,y = ey,z = ez }, {"shift"})
           return true, frame + math.random(15,45), persPack
         end
      end
@@ -1113,15 +1128,15 @@ function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
         local params = param or {}
 
         --debugCode
-        defStr= "Unit "..myID.." a "..UnitDefs[spGetUnitDefID(myID)].name.." has no "
-        assert(persPack.goalList, defStr.. "goalList")
+    --[[      defStr= "Unit "..myID.." a "..UnitDefs[spGetUnitDefID(myID)].name.." has no "
+      assert(persPack.goalList, defStr.. "goalList")
         assert(persPack.goalIndex, defStr.. "goalIndex")
         assert(persPack.goalIndex > 0 and persPack.goalIndex <= #persPack.goalList, defStr.. "goalIndex not violating limits "..persPack.goalIndex)
         assert(#persPack.goalList > 0, defStr.."goalList ")
 
         assert(persPack.goalList[persPack.goalIndex].x,defStr.."x component")
         assert(persPack.goalList[persPack.goalIndex].y,defStr.."y component")
-        assert(persPack.goalList[persPack.goalIndex].z,defStr.."z component")
+        assert(persPack.goalList[persPack.goalIndex].z,defStr.."z component")--]]
 
         Command(myID, "go", {
             x = math.ceil(persPack.goalList[persPack.goalIndex].x),
@@ -1350,5 +1365,49 @@ function gadget:GameFrame(frame)
         -- echoT(statistics)      
     end
 
+    if isFailedState and frame % 60 == 0 then
+        refugeeStream(frame)
+    end
+
     OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)
+end
+
+escapeeHash = getDetermenisticMapHash(Game)
+refugeeTable = {}
+function refugeeStream(frame)
+    --refugeeTable = process(refugeeTable,function(id) if not spGetUnitIsDead(id) then return id end; end)
+
+        process(refugeeTable,
+            function(id)
+                if  id and  not spGetUnitIsDead(id) then return id end
+            end,
+            function(id)
+                if distanceUnitToPoint(id, ex,ey,ez) < 150 then
+                    spDestroyUnit(id, false, true)
+                    refugeeTable[id] = nil
+                else
+                     ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
+                     ey = spGetGroundHeight(ex,ez)
+                     offx, offz = math.random(25, 50) , math.random(25, 50) 
+                        Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
+                     Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {})
+                end
+            end
+        )
+
+    if count(refugeeTable) < math.random(3,5) then
+       sx,sz = getEscapePoint((escapeeHash % 4) + 1)
+       local id =  spawnUnit("truck_arab"..math.random(1,8), sx, sz)
+       loadRefugee(id, "truckpayloadrefugee")
+ 
+       refugeeTable[id]= id   
+       Spring.SetUnitTooltip(id, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture , escapeeHash + math.random(0,1)*randSign()))
+ 
+        ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
+        ey = spGetGroundHeight(ex,ez)
+        --Spring.AddUnitImpulse(id, math.random(-10,10)/2, 5, math.random(-10,10)/2)
+        offx, offz = math.random(25, 50) * randSign(), math.random(25, 50) * randSign()
+        Spring.SetUnitMoveGoal(id, ex, ey, ez)
+        Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {})
+    end   
 end

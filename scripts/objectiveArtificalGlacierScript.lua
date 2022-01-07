@@ -108,17 +108,17 @@ function flickerScript(pieces,  NoErrorFunction, errorDrift, timeoutMs, maxInter
 
     flickerIntervall = math.ceil(1000/25)
     while true do
-        Hide(pieces)
+        hideT(pieces)
         Sleep(500)
             for i=1,(3000/flickerIntervall) do
-                if i % 2 == 0 then         Show(pieces) else Hide(pieces) end
-                if NoErrorFunction() == true then Show(pieces) end
+                if i % 2 == 0 then         showT(pieces) else hideT(pieces) end
+                if NoErrorFunction() == true then showT(pieces) end
                 for ax=1,3 do
                     moveT(pieces, ax, math.random(-1*errorDrift,errorDrift),100)
                 end
                 Sleep(flickerIntervall)
             end
-            Hide(pieces)
+            hideT(pieces)
   
         breakTime = math.random(1,maxInterval)*timeoutMs
         Sleep(breakTime)

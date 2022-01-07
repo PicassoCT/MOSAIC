@@ -1168,6 +1168,7 @@ function showAll(id)
     pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do Show(v) end
 end
+
 -- > Hide all Pieces of a Unit
 function hideAll(id)
     if not unitID then unitID = id end
@@ -1175,6 +1176,7 @@ function hideAll(id)
     pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do Hide(v) end
 end
+
 -- > reveal a Unit 
 function showUnit(unit)
     Spring.SetUnitCloak(unit, false, 1)

@@ -39,22 +39,15 @@ local unitName = "truckpayloadrefugee"
 	CanStop = true,
 	LeaveTracks = false,
 	useSmoothMesh = false,
-
 	 
 	  customParams = {},
 	 sfxtypes = {
 		explosiongenerators = {	    
 							  },
 		
-				},
-
-	 
+				}, 
 	 
 	Category = [[GROUND BUILDING]],
-
-
-
-
 }
 
 return lowerkeys({ [unitName] = unitDef })

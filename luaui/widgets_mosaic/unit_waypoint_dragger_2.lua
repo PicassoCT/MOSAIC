@@ -6,7 +6,6 @@ local spGetCommandQueue     = Spring.GetCommandQueue
 local spGetMouseState       = Spring.GetMouseState
 local spGetModKeyState      = Spring.GetModKeyState
 local spGiveOrderToUnit     = Spring.GiveOrderToUnit
-local spSelectUnitArray     = Spring.SelectUnitArray
 local spIsAboveMiniMap      = Spring.IsAboveMiniMap
 local spMinimapMouseToWorld = Spring.MinimapMouseToWorld
 local spTestBuildOrder      = Spring.TestBuildOrder

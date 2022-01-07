@@ -2,16 +2,12 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
+
 
 TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
--- center = piece "center"
--- left = piece "left"
--- right = piece "right"
--- aimpiece = piece "aimpiece"
 myDefID = Spring.GetUnitDefID(unitID)
 
 function script.Create()
@@ -23,6 +19,7 @@ function script.Create()
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
+
     if myDefID == UnitDefNames["truckpayloadrefugee"].id then
         showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
 
@@ -34,12 +31,9 @@ function script.Create()
     else
         showOnePiece(TablesOfPiecesGroups["container"])
     end
-
 end
 
-
 function script.Killed(recentDamage, _)
-
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end

@@ -23,6 +23,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
                                          "civilian", UnitDefs)
+    
     local isCloseCombatCapabaleType = getCloseCombatAbleTypes(UnitDefs)
     local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                     "house", UnitDefs)
