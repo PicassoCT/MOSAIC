@@ -80,7 +80,7 @@ local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, 
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
-local isFailedState = (( getDetermenisticMapHash(Game) % 2 )==1) or true
+local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) 
 Spring.Echo("Game:Civilians: Is failed state ".. toString(isFailedState))
 
 local boolCachedMapManualPlacementResult
@@ -764,8 +764,8 @@ function spawnUnit(defID, x, z)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
-    if not statistics[defID] then statistics[defID] = 0 end
-    statistics[defID] = statistics[defID] + 1
+   -- if not statistics[defID] then statistics[defID] = 0 end
+   -- statistics[defID] = statistics[defID] + 1
 
     if id then
         --spSetUnitNoSelect(id, true)
@@ -820,6 +820,12 @@ function spawnBuilding(defID, x, z,  boolInCityCenter)
     end
 end
 
+function setUpRefugeeWayPoints()
+    for i = 1,4 do 
+        GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  
+    end
+end
+
 function gadget:Initialize()
     -- Initialize global tables
     GG.CivilianTable = {}
@@ -835,10 +841,9 @@ function gadget:Initialize()
     process(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)
 
-    if not GG.CivilianEscapePointTable then 
-        GG.CivilianEscapePointTable = {} 
-        for i=1,4 do GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  end
-    end
+    if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
+    setUpRefugeeWayPoints()
+
 end
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -996,7 +1001,6 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         end
      end
 
- -- if near Destination increase goalIndex
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 150 then
         
@@ -1011,7 +1015,6 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
   return boolDone, frame + 30, persPack
 end
 
-
 function sozialize(evtID, frame, persPack, startFrame, myID)
 boolDone = false
 
@@ -1019,13 +1022,10 @@ boolDone = false
     if  math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
         persPack.maxTimeChattingInFrames > 150  then
-
-       
-
-        persPack.chatPartnerID = spGetUnitNearestAlly(myID)
-        if persPack.chatPartnerID and civilianWalkingTypeTable[spGetUnitDefID(persPack.chatPartnerID)] then 
-            persPack.boolStartAChat = true
-        end
+            persPack.chatPartnerID = spGetUnitNearestAlly(myID)
+            if persPack.chatPartnerID and civilianWalkingTypeTable[spGetUnitDefID(persPack.chatPartnerID)] then 
+                persPack.boolStartAChat = true
+            end
     end
 
     if persPack.boolStartAChat == true then
@@ -1345,13 +1345,9 @@ end
 function gadget:GameFrame(frame)
     if boolInitialized == false then
         spawnInitialPopulation(frame)
-        --	echo("Initialization:Frame:"..frame)
     elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
         countDownRespawnHouses(5)
 
-        -- echo("Runcycle:Frame:"..frame)
-        -- recreate buildings 
-        -- recreate civilians
         checkReSpawnHouses()
 
         -- Check number of Units	
@@ -1361,8 +1357,7 @@ function gadget:GameFrame(frame)
 
         -- if Unit arrived at Location
         -- give new Target
-        sendArrivedUnitsCommands()
-        -- echoT(statistics)      
+        sendArrivedUnitsCommands()   
     end
 
     if isFailedState and frame % 60 == 0 then
@@ -1375,9 +1370,9 @@ end
 escapeeHash = getDetermenisticMapHash(Game)
 refugeeTable = {}
 function refugeeStream(frame)
-    --refugeeTable = process(refugeeTable,function(id) if not spGetUnitIsDead(id) then return id end; end)
 
-        process(refugeeTable,
+    boolAtLeastOnePath = false
+         process(refugeeTable,
             function(id)
                 if  id and  not spGetUnitIsDead(id) then return id end
             end,
@@ -1389,11 +1384,18 @@ function refugeeStream(frame)
                      ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
                      ey = spGetGroundHeight(ex,ez)
                      offx, offz = math.random(25, 50) , math.random(25, 50) 
-                        Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
+                     Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
                      Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {})
+                     path = Spring.GetUnitEstimatedPath(id)
+                     if path then
+                        boolAtLeastOnePath = true
+                    end
                 end
             end
         )
+    if not boolAtLeastOnePath then
+        setUpRefugeeWayPoints()
+    end
 
     if count(refugeeTable) < math.random(3,5) then
        sx,sz = getEscapePoint((escapeeHash % 4) + 1)
