@@ -77,11 +77,9 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
-local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
-local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) 
-Spring.Echo("Game:Civilians: Is failed state ".. toString(isFailedState))
+
 
 local boolCachedMapManualPlacementResult
 function isMapControlledBuildingPlacement(mapName)
@@ -821,6 +819,7 @@ function spawnBuilding(defID, x, z,  boolInCityCenter)
 end
 
 function setUpRefugeeWayPoints()
+    if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
     for i = 1,4 do 
         GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  
     end
@@ -841,9 +840,7 @@ function gadget:Initialize()
     process(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)
 
-    if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
     setUpRefugeeWayPoints()
-
 end
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -1360,56 +1357,7 @@ function gadget:GameFrame(frame)
         sendArrivedUnitsCommands()   
     end
 
-    if isFailedState and frame % 60 == 0 then
-        refugeeStream(frame)
-    end
-
     OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)
 end
 
-escapeeHash = getDetermenisticMapHash(Game)
-refugeeTable = {}
-function refugeeStream(frame)
 
-    boolAtLeastOnePath = false
-         process(refugeeTable,
-            function(id)
-                if  id and  not spGetUnitIsDead(id) then return id end
-            end,
-            function(id)
-                if distanceUnitToPoint(id, ex,ey,ez) < 150 then
-                    spDestroyUnit(id, false, true)
-                    refugeeTable[id] = nil
-                else
-                     ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
-                     ey = spGetGroundHeight(ex,ez)
-                     offx, offz = math.random(25, 50) , math.random(25, 50) 
-                     Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
-                     Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {})
-                     path = Spring.GetUnitEstimatedPath(id)
-                     if path then
-                        boolAtLeastOnePath = true
-                    end
-                end
-            end
-        )
-    if not boolAtLeastOnePath then
-        setUpRefugeeWayPoints()
-    end
-
-    if count(refugeeTable) < math.random(3,5) then
-       sx,sz = getEscapePoint((escapeeHash % 4) + 1)
-       local id =  spawnUnit("truck_arab"..math.random(1,8), sx, sz)
-       loadRefugee(id, "truckpayloadrefugee")
- 
-       refugeeTable[id]= id   
-       Spring.SetUnitTooltip(id, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture , escapeeHash + math.random(0,1)*randSign()))
- 
-        ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
-        ey = spGetGroundHeight(ex,ez)
-        --Spring.AddUnitImpulse(id, math.random(-10,10)/2, 5, math.random(-10,10)/2)
-        offx, offz = math.random(25, 50) * randSign(), math.random(25, 50) * randSign()
-        Spring.SetUnitMoveGoal(id, ex, ey, ez)
-        Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {})
-    end   
-end

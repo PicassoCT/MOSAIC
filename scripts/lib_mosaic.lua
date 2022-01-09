@@ -2561,3 +2561,9 @@ function TODO(task)
     --Spring.Echo("TODO:"..task)
     assert(true==false)
 end
+
+function  setHouseStreetNameTooltip(id, boolXHash, boolZHash, hash, culture, country)
+
+
+
+end

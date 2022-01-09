@@ -16,6 +16,8 @@ center = piece "center"
 attachPoint = piece "attachPoint"
 
 myDefID = Spring.GetUnitDefID(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
+boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
@@ -171,6 +173,7 @@ function loadLoadOutLoop()
     explosiveDefID = UnitDefNames["ground_turret_ssied"].id
 
     loadOutUnitID = createUnitAtUnit(myTeam, myLoadOutType, unitID, 0, 10, 0)
+    if boolGaiaUnit then Spring.SetUnitAlwaysVisible(loadOutUnitID,true) end
     Spring.SetUnitNoSelect(loadOutUnitID, true)
     Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
 
@@ -182,6 +185,7 @@ function loadLoadOutLoop()
             loadOutUnitID = createUnitAtUnit(myTeam, myLoadOutType, unitID, 0,
                                              10, 0)
             if loadOutUnitID then
+                if boolGaiaUnit then Spring.SetUnitAlwaysVisible(loadOutUnitID,true) end
                 Spring.SetUnitNoSelect(loadOutUnitID, true)
                 Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
             end

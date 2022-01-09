@@ -52,6 +52,7 @@ function script.Create()
     else
         StartThread(killDelayed)
     end
+    StartThread(healAgentsNearbyCyle)
 end
 
 function killDelayed()
@@ -202,7 +203,6 @@ boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
-
         hideAll(unitID)
         Show(Icon)
     else
@@ -211,14 +211,12 @@ function showHideIcon(boolCloaked)
     end
 end
 
-
 function drawMapRoom()
     Sleep(100)
     hideT(TablesOfPiecesGroups["house"])
     hideT(TablesOfPiecesGroups["SafeHouse"])
     dictSafeHouse_Pos = {}
     dictHouses_Pos = {}
-
 
     process(Spring.GetAllUnits(), function(id)
         if Spring.GetUnitTeam(id) == gaiaTeamID then return id end
@@ -265,5 +263,20 @@ function drawMapRoom()
             end
         end
     end
+end
+
+function healAgentsNearbyCyle()
+    lastTimePresent = {}
+    while true do
+        currentlyPresent = process(getAllNearUnit(unitID,120, myTeamID),
+            function(id)
+                if getOperativeTypeTable[spGetUnitDefID(id)] and lastTimePresent[id] then
+                    hp = Spring.GetUnitHealth(id)
+                    Spring.SetUnitHealth(id, hp + 25)
+                end
+            end
+        )
+        lastTimePresent = currentlyPresent
+        Sleep(1000)
 end
 
