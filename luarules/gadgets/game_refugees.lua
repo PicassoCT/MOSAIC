@@ -121,6 +121,7 @@ function getEscapePoint(index)
 end
 
 escapeeHash = getDetermenisticMapHash(Game)
+rStuck = {}
 refugeeTable = {}
 function refugeeStream(frame)
     ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
@@ -130,8 +131,25 @@ function refugeeStream(frame)
             function(id)
                 if  id and  not spGetUnitIsDead(id) then return id end
             end,
+             function(id) --stuckdetection
+                    if not rStuck[id] then 
+                        rStuck[id] = {counter = 0, pos = {}}
+                        rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z = 0,0,0
+                    end
+
+                    x,y,z = spGetUnitPosition(unitID)
+                    dist = distance(x,y,z, rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z )
+                    Spring.Echo("Dist "..dist)
+                        if dist < 30 then
+                           rStuck[id].counter = rStuck[id].counter + 1 
+                        else
+                            rStuck[id].counter = math.max(0, rStuck[id].counter -1)
+                        end
+
+                    return id
+                end,
             function(id)
-                if distanceUnitToPoint(id, ex,ey,ez) < 150 then
+                if distanceUnitToPoint(id, ex,ey,ez) < 150 or rStuck[id].counter > 10 then
                     spDestroyUnit(id, false, true)
                     refugeeTable[id] = nil
                 else
@@ -166,20 +184,42 @@ function refugeeStream(frame)
 end
 
 militaryTable = {}
+mStuck = {}
 militaryUnits = {"ground_truck_mg", "ground_tank_day","ground_truck_rocket","ground_truck_antiarmor",}
 function militaryStream(frame)
     local ex,ez = getEscapePoint(((escapeeHash)%4)+1)
     local ey = spGetGroundHeight(ex,ez)
 
     boolAtLeastOnePath = false
-         process(militaryTable,
+         process(militaryTable,           
             function(id)
                 if  id and not spGetUnitIsDead(id) then return id end
             end,
+             function(id) --stuckdetection
+                    if not mStuck[id] then 
+                        mStuck[id] = {counter = 0, pos = {}}
+                        mStuck[id].pos.x,mStuck[id].pos.y,mStuck[id].pos.z = 0,0,0
+                    end
+
+                    x,y,z = spGetUnitPosition(unitID)
+                    dist = distance(x,y,z, mStuck[id].pos.x,mStuck[id].pos.y,mStuck[id].pos.z )
+                    Spring.Echo("Dist "..dist)
+                        if dist < 30 then
+                           mStuck[id].counter = mStuck[id].counter + 1 
+                        else
+                            mStuck[id].counter = math.max(0, mStuck[id].counter -1)
+                        end
+
+                    return id
+                end,
             function(id)
-                if distanceUnitToPoint(id, ex,ey,ez) < 150 then
+                if distanceUnitToPoint(id, ex,ey,ez) < 150 or mStuck[id].counter > 10 then
                     spDestroyUnit(id, false, true)
                     militaryTable[id] = nil
+                    mStuck[id] = nil
+                    if mStuck[id].counter > 10 then
+                        setUpRefugeeWayPoints()
+                    end
                 else                    
                      offx, offz = math.random(25, 50) , math.random(25, 50) 
                      Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
