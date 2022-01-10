@@ -278,5 +278,6 @@ function healAgentsNearbyCyle()
         )
         lastTimePresent = currentlyPresent
         Sleep(1000)
+    end
 end
 

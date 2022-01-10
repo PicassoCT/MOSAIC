@@ -137,21 +137,24 @@ function refugeeStream(frame)
                         rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z = 0,0,0
                     end
 
-                    x,y,z = spGetUnitPosition(unitID)
+                    x,y,z = spGetUnitPosition(id)
                     dist = distance(x,y,z, rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z )
-                    Spring.Echo("Dist "..dist)
                         if dist < 30 then
                            rStuck[id].counter = rStuck[id].counter + 1 
                         else
                             rStuck[id].counter = math.max(0, rStuck[id].counter -1)
                         end
-
+                    rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z = x,y,z
                     return id
                 end,
             function(id)
                 if distanceUnitToPoint(id, ex,ey,ez) < 150 or rStuck[id].counter > 10 then
                     spDestroyUnit(id, false, true)
                     refugeeTable[id] = nil
+                    if rStuck[id].counter > 10 then
+                        setUpRefugeeWayPoints()
+                        rStuck[id] = nil
+                    end
                 else
                      ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
                      ey = spGetGroundHeight(ex,ez)
@@ -201,25 +204,26 @@ function militaryStream(frame)
                         mStuck[id].pos.x,mStuck[id].pos.y,mStuck[id].pos.z = 0,0,0
                     end
 
-                    x,y,z = spGetUnitPosition(unitID)
+                    x,y,z = spGetUnitPosition(id)
                     dist = distance(x,y,z, mStuck[id].pos.x,mStuck[id].pos.y,mStuck[id].pos.z )
-                    Spring.Echo("Dist "..dist)
+          
                         if dist < 30 then
                            mStuck[id].counter = mStuck[id].counter + 1 
                         else
-                            mStuck[id].counter = math.max(0, mStuck[id].counter -1)
+                            mStuck[id].counter = math.max(0, mStuck[id].counter -1)                      
                         end
 
+                    mStuck[id].pos.x,mStuck[id].pos.y,mStuck[id].pos.z= x,y,z        
                     return id
                 end,
             function(id)
                 if distanceUnitToPoint(id, ex,ey,ez) < 150 or mStuck[id].counter > 10 then
                     spDestroyUnit(id, false, true)
                     militaryTable[id] = nil
-                    mStuck[id] = nil
                     if mStuck[id].counter > 10 then
                         setUpRefugeeWayPoints()
                     end
+                    mStuck[id] = nil              
                 else                    
                      offx, offz = math.random(25, 50) , math.random(25, 50) 
                      Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
