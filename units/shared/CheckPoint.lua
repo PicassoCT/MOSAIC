@@ -2,7 +2,7 @@
 local Checkpoint = Building:New{
 	corpse				= "",
 	maxDamage           = 500,
-	mass                = 500,
+	mass                = 5000,
 	buildCostEnergy     = 500,
 	buildCostMetal      = 100,
 	explodeAs			= "none",

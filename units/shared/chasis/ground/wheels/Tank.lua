@@ -32,7 +32,8 @@ local ground_tank_day = Tank:New{
 	trackStrength=32,
 	trackWidth =64,
 	trackOffset =0,
-
+	pushResistant = true,
+	crushStrength = 4800
 	iconType ="ground_tank_day",
 	collisionVolumeType = "box",
 	collisionvolumescales = "70 50 70",

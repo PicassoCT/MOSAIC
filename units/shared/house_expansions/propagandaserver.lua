@@ -1,7 +1,7 @@
 local Propagandaserver = Building:New{
 	corpse				= "",
 	maxDamage           = 1000,
-	mass                = 500,
+	mass                = 5000,
 	name = "Propagandaserver",
 	description = "earns your team money/material by spreading propaganda",
 	buildPic = "propagandaserver.png",

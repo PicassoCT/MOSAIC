@@ -2,7 +2,7 @@
 local Barricade = Building:New{
 	corpse				= "",
 	maxDamage           = 10000,
-	mass                = 500,
+	mass                = 5500,
 	buildCostEnergy     = 100,
 	buildCostMetal      = 50,
 	explodeAs			= "none",
@@ -28,6 +28,7 @@ local Barricade = Building:New{
 	showNanoFrame= true,
 	script 					= "placeholder.lua",
 	objectName        	= "barricade.dae",
+	pushResistant = true,
 
 	name = "Burned Out Car",
 	description = " divides & conquers",

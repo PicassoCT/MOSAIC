@@ -16,7 +16,7 @@ local unitName = "truckpayload"
 	idleAutoHeal = 15,
 	autoheal=10,
 	--Movement
-	mass=18020,
+	mass=2020,
 	upRight=true,
 	blocking=false,
 

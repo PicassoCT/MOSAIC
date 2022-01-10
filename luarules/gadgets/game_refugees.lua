@@ -41,8 +41,6 @@ local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
 
 local UnitDefNames = getUnitDefNames(UnitDefs)
-
-
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
 
@@ -102,8 +100,6 @@ function spawnUnit(defID, x, z)
         return id
     end
 end
-
-
 
 function setUpRefugeeWayPoints()
     if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
@@ -170,7 +166,7 @@ function refugeeStream(frame)
 end
 
 militaryTable = {}
-militaryUnits = {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor",}
+militaryUnits = {"ground_truck_mg", "ground_tank_day","ground_truck_rocket","ground_truck_antiarmor",}
 function militaryStream(frame)
     local ex,ez = getEscapePoint(((escapeeHash)%4)+1)
     local ey = spGetGroundHeight(ex,ez)

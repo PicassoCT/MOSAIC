@@ -1,7 +1,7 @@
 local ProtagonSafeHouse =    Building:New{
   corpse =       "",
   maxDamage =              1000,
-  mass =                   500,
+  mass =                   5000,
 
   buildTime =    15,
   explodeAs =      "none",

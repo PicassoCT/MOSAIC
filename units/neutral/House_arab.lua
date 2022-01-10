@@ -1,7 +1,7 @@
 local house_arab = Building:New{
 	corpse					= "",
 	maxDamage        	= 3500,
-	mass           	= 500,
+	mass           	= 5000,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
 	explodeAs				= "none",
