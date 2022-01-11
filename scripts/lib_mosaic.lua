@@ -2562,8 +2562,12 @@ function TODO(task)
     assert(true==false)
 end
 
-function  setHouseStreetNameTooltip(id, boolXHash, boolZHash, hash, culture, country)
+function setHouseStreetNameTooltip(id, boolDetailXHash, boolDetailZHash, uniqueHash, culture, country)
+    if not GG.StreetNameDict then  GG.StreetNameDict = {} end
+    name = "TODO_PLACEHOLDERSTR"
 
 
-
+     if not GG.StreetNameDict[name] then  GG.StreetNameDict[name] = 0 end
+     GG.StreetNameDict[name] = GG.StreetNameDict[name] + 1
+     Spring.SetUnitTooltip(id, name..". "..GG.StreetNameDict[name])
 end
