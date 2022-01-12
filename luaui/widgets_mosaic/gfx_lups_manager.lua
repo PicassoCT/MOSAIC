@@ -343,7 +343,7 @@ function widget:Update()
     local allPlayers = Spring.GetPlayerList()
     for i=1,#allPlayers do
       local playerName = Spring.GetPlayerInfo(allPlayers[i])
-      if (playerName == "Picasso") then
+      if (playerName == "jk") then
         local errorLog = Lups.GetErrorLog(1)
         if (errorLog~="") then
           local cmds = {

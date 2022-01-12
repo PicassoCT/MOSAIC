@@ -343,10 +343,11 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
                 if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 35) == false  then
 ---echo("Gapspawned Building at:".. orgPosX + offsx * innerCityDim.x.." / ".. orgPosZ + offsz * innerCityDim.z)
 
-                           spawnBuilding(buildingType, 
+                          houseID = spawnBuilding(buildingType, 
                                         orgPosX + offsx * innerCityDim.x,
                                         orgPosZ + offsz * innerCityDim.z,
                                         true)
+                           setHouseStreetNameTooltip(houseID, cursor.x + offsx, cursor.z+ offsz, Game)
 
                 end
             end    

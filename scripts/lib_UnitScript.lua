@@ -7100,6 +7100,60 @@ function assertArgumentsExistOfType(...)
     end
 end
 
+function printStacktrace(maxdepth, maxwidth, maxtableelements, ...)
+    maxdepth = maxdepth or 16
+    maxwidth = maxwidth or 10
+    maxtableelements = maxtableelements or 6 -- max amount of elements to expand from table type values
+
+    local function dbgt(t, maxtableelements)
+        local count = 0
+        local res = ''
+        for k,v in pairs(t) do
+            count = count + 1
+            if count < maxtableelements then
+                res = res .. tostring(k) .. ':' .. tostring(v) ..', '
+            end
+        end
+        res = '{'..res .. '}[#'..count..']'
+        return res
+    end
+
+    local myargs = {...}
+    infostr = ""
+    for i,v in ipairs(myargs) do
+        infostr = infostr .. tostring(v) .. "\t"
+    end
+    if infostr ~= "" then infostr = "Trace:[" .. infostr .. "]\n" end 
+    local functionstr = "" -- "Trace:["
+    for i = 2, maxdepth do
+        if debug.getinfo(i) then
+            local funcName = (debug and debug.getinfo(i) and debug.getinfo(i).name)
+            if funcName then
+                functionstr = functionstr .. tostring(i-1) .. ": " .. tostring(funcName) .. " "
+                local arguments = ""
+                local funcName = (debug and debug.getinfo(i) and debug.getinfo(i).name) or "??"
+                if funcName ~= "??" then
+                    for j = 1, maxwidth do
+                        local name, value = debug.getlocal(i, j)
+                        if not name then break end
+                        local sep = ((arguments == "") and "") or  "; "
+                        if tostring(name) == 'self'  then
+                            arguments = arguments .. sep .. ((name and tostring(name)) or "name?") .. "=" .. tostring("??")
+                        else
+                            local newvalue
+                            if maxtableelements > 0 and type({}) == type(value) then newvalue = dbgt(value, maxtableelements) else newvalue = value end 
+                            arguments = arguments .. sep .. ((name and tostring(name)) or "name?") .. "=" .. tostring(newvalue)
+                        end
+                    end
+                end
+                functionstr  = functionstr .. " Locals:(" .. arguments .. ")" .. "\n"
+            else 
+                functionstr = functionstr .. tostring(i-1) .. ": ??\n"
+            end
+        else break end
+    end
+    Spring.Echo(infostr .. functionstr)
+end
 
 
 function deserializeStringToTable(str)

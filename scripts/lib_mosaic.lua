@@ -1780,6 +1780,45 @@ function  getManualCivilianBuildingMaps(mapName)
                 return frame + 30, persPack
             end
 
+function getRegionByCulture(culture, hash)
+
+  if culture == "arabic" then
+    if hash % 3 == 0 then
+      return "MiddleEast"
+    end
+    if hash % 3 == 1 then
+      return "CentralAsia"
+    end
+    if hash % 3 == 2 then
+      return "Africa"
+    end
+  end
+
+  if culture == "western" then 
+    if hash % 3 == 0 then
+      return "Europe"
+    end
+    if hash % 3 == 1 then
+      return "NorthAmerica"
+    end
+    if hash % 3 == 2 then
+      return "SouthAmerica"
+    end
+  end
+
+  if culture == "asian" then
+    if hash % 2 == 0 then
+      return "SouthEastAsia"
+    end
+    if hash % 2 == 1 then
+      return "CentralAsia"
+    end
+  end
+
+  if culture == "international" then
+    return "International"
+  end
+end
 
 function getCountryByCulture(culture, hash)
 
@@ -2558,16 +2597,371 @@ function getTODOTable(name)
 end
 
 function TODO(task)
-    --Spring.Echo("TODO:"..task)
-    assert(true==false)
+    Spring.Echo("TODO:"..task)
+    assert(true == false)
 end
 
-function setHouseStreetNameTooltip(id, boolDetailXHash, boolDetailZHash, uniqueHash, culture, country)
-    if not GG.StreetNameDict then  GG.StreetNameDict = {} end
+function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
+    region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
+    if not GG.StreetNameDict then
+        GG.StreetNameDict = {}
+    end
+    if not GG.Streetnames then
+        playername = getRandomPlayerName()
+        Highway = "Highway" .. math.random(1, 20)
+        Doctorstreet = "Dr." .. playername .. "way"
+        GG.Streetnames = {
+            NorthAmerica = {
+                "Freedomstr",
+                "Suburbialley",
+                "Veteranstreet",
+                "Plaza da Revoluzion",
+                "Mainstreet",
+                "Pinestreet",
+                "Cedarstreet",
+                "Cypressstreet",
+                "Vistaroad",
+                "Lakestr",
+                "First Street",
+                "Second Street",
+                "Third Street",
+                "Parkstr",
+                "Ninthstr",
+                "Washingtonstr",
+                "High Street",
+                "Station Street",
+                "Main Street",
+                "Grand Canal Way"
+            },
+            Europe = {
+                "Deichstraße",
+                "Prinzregentenstraße",
+                "Tauentzienstraße",
+                "Karl-Liebknecht-Straße",
+                "Turmstraße",
+                "Ludwigstrasse",
+                "Voßstraße",
+                "Leipziger Straße",
+                "Ebertstraße",
+                "Frankfurter Allee",
+                "Brienner Straße",
+                "Schönhauser Allee",
+                "Wilhelmstraße",
+                "Raiffeisenstraße",
+                "Rathausgasse",
+                Doctorstreet,
+                "Hauptstraße",
+                "Schulstraße",
+                "Dorfstraße",
+                "Bahnhofstraße",
+                "Feldgasse",
+                "Champs-Élysées",
+                "Avenue Victor Hugo",
+                "Avenue Montaigne",
+                "Rue de Rivoli",
+                "Rue Saint-Rustique",
+                "Rue Saint-Dominique",
+                "Rue Vieille du Temple",
+                "Rue Sainte-Catherine",
+                "Rue de l'Eglise",
+                "Place de l'Eglise",
+                "Grande Rue",
+                "Kerkstraat",
+                "Molenstraat",
+                "Schoolstraat",
+                "Zahradní",
+                "Krátká",
+                "Nádražní",
+                "Lærkevej",
+                "Birkevej",
+                "Vinkelvej",
+                "Rantatie",
+                "Kirkkotie",
+                "Koulutie",
+                "Petőfi Sándor utca",
+                "Kossuth Lajos utca",
+                "Rákóczi utca",
+                "Via Roma",
+                "Via Garibaldi",
+                "Via Marconi",
+                "Liepų",
+                "Miško",
+                "Beržų",
+                "Rue de l’Église",
+                "Rue des Champs",
+                "Rue des Prés",
+                "Центральная улица",
+                "Молодёжная улица",
+                "Школьная Улица",
+                "Školská",
+                "Hlavná",
+                "Nová",
+                "calle Mayor",
+                "calle Iglesia",
+                "calle Real",
+                "Kifissias Avenue",
+                "Peiraios Street",
+                "Voukourestiou Street"
+            },
+            Africa = {
+                "Muizz Street",
+                "Saliba Street",
+                "Talaat Harb Street",
+                "Qasr El Nil Street",
+                "Mohammed Mazhar Street",
+                "Chemin poirson Lot",
+                "Rue Colonel Othmane",
+                "Boulevard Hassan",
+                "jbal jloud ",
+                "Rue Chabane El Bhouri",
+                "Ave Ali Belhouane",
+                "Ave Ouled Hafouz",
+                "Jan Smuts Avenue",
+                "Beyers Naudé Drive",
+                "Bloemfontein Ring Road",
+                "Adderley Street",
+                "Long Street",
+                "Strand Street",
+                "Louis Botha Avenue",
+                "Malibongwe Drive",
+                "Polokwane Ring Road",
+                "Kinshasa Highway",
+                "Mbarara–Kisangani Road",
+                "Avenue kimpika",
+                "Salongo",
+                "Ngwiziani",
+                "Avenue du 30 juin",
+                "Avenue Manenga",
+                "Avenue Kemba",
+                "Avenue Diwaz",
+                "Broad Street",
+                "Allen Avenue",
+                "Toyin Street",
+                "Ademola Adetokunbo Street",
+                "Ozumba Mbadiwe Avenue",
+                "Adeola Odeku Street",
+                "Ogunlana Drive",
+                "Adeniran Ogunsanya Street",
+                "Cameroon Street",
+                "Kazanchis",
+                "Equatorial Guinea street",
+                "Gabon street",
+                "kenyatta avenue",
+                "kimathi street",
+                "muindi mbingu",
+                "koinange street",
+                "wabera street",
+                "biashara street",
+                "tom mboya street",
+                "moi avenue",
+                "Jidka Sodonka",
+                "W21ka Nofeembar",
+                "Jidka Waxaracadde"
+            },
+            MiddleEast = {
+                "Tunisiastreet",
+                "Libyastreet",
+                "Sudanstreet",
+                "Syriaring",
+                "Saudi Arabia street",
+                "Jordanstreet",
+                "Kuwait street",
+                "Bruneistreet",
+                "Algeriastreet",
+                "Turkeystreet",
+                "Iran road",
+                "Lebanonstreet",
+                "Qatarstreet",
+                "West Bankstreet",
+                "United Arab Emiratesstreet",
+                "Israelplaza",
+                "Bahrainstreet",
+                "Gaza Stripstreet",
+                "Armeniastreet",
+                "Iraqroad",
+                "Omanstreet",
+                "Yemenstreet",
+                "Egyptstreet",
+                "Moroccostreet",
+                "Pakistanstreet",
+                "Mauritaniastreet",
+                "Ain El Remmaneh",
+                "Badaro",
+                "Escalier de l'Art",
+                "Avenue des Français",
+                "Avenue General de Gaulle",
+                "Rue Gouraud",
+                "Hamra Street",
+                "Rue Huvelin",
+                "Rue Jeanne d'Arc",
+                "Rue Maarad",
+                "Mar Mikhaël",
+                "Avenue de Paris",
+                "Rue de Phénicie",
+                "Rue George Post",
+                "Sassine Square",
+                "Rue Spears",
+                "Rue Sursock",
+                "Rue Van Dyck",
+                "Rue Verdun",
+                "Rue Weygand",
+                "Allenby Street",
+                "Ben Yehuda Street",
+                "Dizengoff Street",
+                "HaArba'a Street",
+                "HaMasger Street",
+                "HaYarkon Street",
+                Highway,
+                "Ibn Gabirol Street",
+                "Jerusalem Boulevard",
+                "Kaplan Street",
+                "King George Street",
+                "Rothschild Boulevard",
+                "Yefet Street",
+                "Al-Amarah",
+                "Bab al-Saghir",
+                "Baghdad Street ",
+                "Straight Street",
+                "Falastin Street",
+                "Haifa Street",
+                "Mutanabbi Street",
+                "Al Rasheed Street",
+                "Aghdasieh",
+                "Azadi Avenue",
+                " Damavand Street",
+                "Doulat",
+                "Enqelab Street",
+                "Farmanieh",
+                "Ferdowsi Street",
+                "Imam Hossein Square",
+                "Jomhuri",
+                "Kargar Street",
+                "Keshavarz Boulevard",
+                "Khayyam Street",
+                "Laleh-Zar Street",
+                "Mirdamad Boulevard",
+                "Nelson Mandela Boulevard ",
+                "Nimr Baqir al-Nimr Street",
+                "Pasdaranroad",
+                "Pasteur Street",
+                "Rah Ahan Square",
+                "Seoul Street",
+                "Shush Street",
+                "Si-e Tir street",
+                "Sohrevardi Street",
+                "Surena Street",
+                "Tohid avenue",
+                "Valiasr Street",
+                "Happiness Street",
+                "Alserkal Avenue",
+                "Al Meydan Road",
+                "Sheikh Mohammed bin Rashid Boulevard",
+                "The Palm Jumeirah",
+                "2nd December Street",
+                "Jumeirah Street",
+                "King Salman bin Abdulaziz Al Saud Street",
+                "Admiralty Way",
+                "Anchor Cir",
+                "Beam Dr",
+                "Bounty Ave",
+                "Cabana Cir",
+                "İstiklal Caddesi",
+                "Bağdat Caddesi",
+                "Abdi İpekçi Caddesi",
+                "Nispetiye Caddesi",
+                "Nuruosmaniye Caddesi",
+                "Gaser Ahmed Road",
+                "Rue Abou El Kacem Chebbi",
+                "Rue El Fell",
+                "Tripoli Street"
+            },
+            CentralAsia = {
+                "Bhutanstr",
+                "Tajikistanstr",
+                "Iranstr",
+                "Georgiastr",
+                "Nepalstr",
+                "Azerbaijanstr",
+                "Russiastr",
+                "Kyrgyzstanstr",
+                "Afghanistanstr",
+                "Turkmenistanstr",
+                "Pakistanstr",
+                "Uzbekistanstr",
+                "Mongoliastr",
+                "Kazakhstanstr"
+            },
+            SouthAmerica = {
+                "Jirón de la Unión",
+                "9 de Julio Avenue",
+                "R Gen. Carneiro",
+                "Avenida Jose Larco",
+                "Córdoba Street",
+                "Paseo de la Catedral",
+                "Florida Street",
+                "Paseo Mercaderes",
+                "Oceanic Avenue",
+                "Via Costeira",
+                "Avenue Bernard O Higgins",
+                "Avenue Prestes Maia",
+                "Avenue Radial Leste-oeste",
+                "Avenida Leandro N. Alem",
+                "Caminito",
+                "Avenida Rivadavia",
+                "Avenida Alvear",
+                "Avenida Raúl Scalabrini Ortiz",
+                "Avenida Corrientes",
+                "Bandeirantes Avenue",
+                "Avenida del Libertador",
+                "Brigadeiro Faria Lima Avenue",
+                "Avenida de Mayo",
+                "Engenheiro Luís Carlos Berrini Avenue",
+                "Avenida Presidente Vargas",
+                "Rua Oscar Freire",
+                "Avenida Coronel Díaz",
+                "Gonçalo de Carvalho Street",
+                "Avenida Figueroa Alcorta",
+                "Avenida General Paz",
+                "Avenida Pueyrredón",
+                "Paseo de la Republica",
+                "Avenida Roque Sáenz Peña",
+                "Avenida Santa Fe"
+            },
+            SouthEastAsia = {
+                "Jianshe Road",
+                "Minzhu Road",
+                "Renmin Road",
+                "Xinghua Road",
+                "Wenhua Road",
+                "Huayuan Road",
+                "Binghe Road",
+                "Youai Road",
+                "Huzhu Road",
+                "Zhongyuan Road"
+            }
+        }
+    end
+    local Streetnames = GG.Streetnames
+
     name = "TODO_PLACEHOLDERSTR"
+    if not Streetnames[region] then
+        Spring.Echo("Error:Region not defined:" .. region .. ". Defaulting to us")
+        region = "NorthAmerica"
+    end
 
+    if
+        detailXHash == 2 or (detailXHash == 4 and detailZHash == 3) or
+            (detailXHash == 4 and detailZHash == 2 and maRa()) or
+            (detailXHash == 4 and detailZHash == 4 and maRa())
+     then
+        name = Streetnames[region][(detailXHash % #Streetnames[region]) + 1]
+    else
+        name = Streetnames[region][(detailZHash % #Streetnames[region]) + 1]
+    end
 
-     if not GG.StreetNameDict[name] then  GG.StreetNameDict[name] = 0 end
-     GG.StreetNameDict[name] = GG.StreetNameDict[name] + 1
-     Spring.SetUnitTooltip(id, name..". "..GG.StreetNameDict[name])
+    if not GG.StreetNameDict[name] then
+        GG.StreetNameDict[name] = 0
+    end
+    GG.StreetNameDict[name] = GG.StreetNameDict[name] + 1
+    Spring.SetUnitTooltip(id, "Housing Block - "..name .. "." .. GG.StreetNameDict[name])
 end
