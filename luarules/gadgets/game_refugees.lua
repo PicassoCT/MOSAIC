@@ -49,6 +49,7 @@ local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, 
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) or true
+local MAX_STUCK_COUNTER = 3
 
 Spring.Echo("Game:Civilians: Is failed state ".. toString(isFailedState))
 
@@ -148,10 +149,10 @@ function refugeeStream(frame)
                     return id
                 end,
             function(id)
-                if distanceUnitToPoint(id, ex,ey,ez) < 150 or rStuck[id].counter > 10 then
+                if distanceUnitToPoint(id, ex,ey,ez) < 150 or rStuck[id].counter > MAX_STUCK_COUNTER then
                     spDestroyUnit(id, false, true)
                     refugeeTable[id] = nil
-                    if rStuck[id].counter > 10 then
+                    if rStuck[id].counter > MAX_STUCK_COUNTER then
                         setUpRefugeeWayPoints()
                         rStuck[id] = nil
                     end
@@ -217,10 +218,10 @@ function militaryStream(frame)
                     return id
                 end,
             function(id)
-                if distanceUnitToPoint(id, ex,ey,ez) < 150 or mStuck[id].counter > 10 then
+                if distanceUnitToPoint(id, ex,ey,ez) < 150 or mStuck[id].counter > MAX_STUCK_COUNTER then
                     spDestroyUnit(id, false, true)
                     militaryTable[id] = nil
-                    if mStuck[id].counter > 10 then
+                    if mStuck[id].counter > MAX_STUCK_COUNTER then
                         setUpRefugeeWayPoints()
                     end
                     mStuck[id] = nil              
