@@ -1872,226 +1872,228 @@ function getCountryByCulture(culture, hash)
   end
 end
 
-            function initalizeInheritanceManagement()
-                -- GG.InheritanceTable = [teamid] ={ [parent] = {[child] = true}}}
-                if not GG.InheritanceTable then
-                    GG.InheritanceTable = {}
-                    for _, teams in pairs(Spring.GetTeamList()) do
-                        GG.InheritanceTable[teams] = {}
-                    end
+    function initalizeInheritanceManagement()
+        -- GG.InheritanceTable = [teamid] ={ [parent] = {[child] = true}}}
+        if not GG.InheritanceTable then
+            GG.InheritanceTable = {}
+            Teams = Spring.GetTeamList()
+            for i=1, #Teams do
+                GG.InheritanceTable[Teams[i]] = {}
+            end
+        end
+    end
+
+    function registerFather(teamID, parent)
+        if not GG.InheritanceTable then initalizeInheritanceManagement() end
+        -- Spring.Echo("register Father of unit")
+        if not GG.InheritanceTable[teamID][parent] then
+            GG.InheritanceTable[teamID][parent] = {}
+        end
+    end
+
+    function registerChild(teamID, parent, childID)
+        if not GG.InheritanceTable then initalizeInheritanceManagement() end
+        -- Spring.Echo("register Child child of unit")
+        if not GG.InheritanceTable[teamID][parent] then
+            GG.InheritanceTable[teamID][parent] = {}
+        end
+
+        GG.InheritanceTable[teamID][parent][childID] = true
+    end
+
+    function getChildrenOfUnit(teamID, unit)
+        if not GG.InheritanceTable then initalizeInheritanceManagement() end
+        -- Spring.Echo("Getting children of unit")
+        return GG.InheritanceTable[teamID][unit] or {}
+    end
+
+    function getParentOfUnit(teamID, unit)
+        -- Spring.Echo("getParentOfUnit")
+        for parent, unitTable in pairs(GG.InheritanceTable[teamID]) do
+            if unitTable then
+                for thisUnit, _ in pairs(unitTable) do
+                    if unit == thisUnit then return parent end
                 end
             end
+        end
+    end
 
-            function registerFather(teamID, parent)
-                -- Spring.Echo("register Father of unit")
-                if not GG.InheritanceTable[teamID][parent] then
-                    GG.InheritanceTable[teamID][parent] = {}
+    function GetUnitDefRealRadius(udid)
+      if not GG.realRadiusComputated then GG.realRadiusComputated = {} end
+      local radius = GG.realRadiusComputated[udid]
+      if (radius) then
+        return radius
+      end
+
+      local ud = UnitDefs[udid]
+      if (ud == nil) then return nil end
+
+      local dims = spGetUnitDefDimensions(udid)
+      if (dims == nil) then return nil end
+
+      local scale = ud.hitSphereScale -- missing in 0.76b1+
+      scale = ((scale == nil) or (scale == 0.0)) and 1.0 or scale
+      radius = dims.radius / scale
+      GG.realRadiusComputated[udid] = radius
+      return radius
+    end
+
+    function registerRevealedUnitLocation(unitID)
+        local Location = {}
+        Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
+        Location.teamID = Spring.GetUnitTeam(unitID)
+        Location.radius = GetUnitDefRealRadius(unitID)
+
+        local revealedUnits = {}
+        parent = getParentOfUnit(Location.teamID, unitID)
+        if parent and doesUnitExistAlive(parent) then
+            revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
+        end
+
+        children = getChildrenOfUnit(Location.teamID, unitID)
+
+        if children and count(children) > 0 then
+            for childID, _ in pairs(children) do
+                if childID and doesUnitExistAlive(childID) then
+                    revealedUnits[childID] = {defID = Spring.GetUnitDefID(childID), boolIsParent = false}
                 end
             end
+        end
+        Location.revealedUnits = revealedUnits
+		Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
 
-            function registerChild(teamID, parent, childID)
-                -- Spring.Echo("register Child child of unit")
-                if not GG.InheritanceTable[teamID][parent] then
-                    GG.InheritanceTable[teamID][parent] = {}
+        if not GG.RevealedLocations then GG.RevealedLocations = {} end
+        GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
+    end
+
+    function giveParachutToUnit(id, x, y, z, boolDelayed)
+        if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
+
+        if Spring.GetGameFrame() < 1 or boolDelayed then
+
+            delayedParachutSpawn = function(evtID, frame, persPack, startFrame)
+
+                if Spring.GetGameFrame() < 1 then
+                    return frame + 1, persPack
                 end
 
-                GG.InheritanceTable[teamID][parent][childID] = true
+                parachutID = createUnitAtUnit(Spring.GetUnitTeam(persPack.id),
+                "air_parachut", persPack.id)
+                GG.ParachutPassengers[parachutID] =
+                {
+                    id = persPack.id,
+                    x = persPack.x,
+                    y = persPack.y,
+                    z = persPack.z
+                }
+                Spring.SetUnitTooltip(parachutID, persPack.id .. "")
+                -- setUnitValueExternal(persPack.id, 'WANT_CLOAK' , 0)
+                -- setUnitValueExternal(persPack.id, 'CLOAKED' , 0)
+                return nil, nil
             end
 
-            function getChildrenOfUnit(teamID, unit)
-                -- Spring.Echo("Getting children of unit")
-                return GG.InheritanceTable[teamID][unit] or {}
-            end
+            persPack = {id = id, x = x, y = y, z = z}
 
-            function getParentOfUnit(teamID, unit)
-                -- Spring.Echo("getParentOfUnit")
-                for parent, unitTable in pairs(GG.InheritanceTable[teamID]) do
-                    if unitTable then
-                        for thisUnit, _ in pairs(unitTable) do
-                            if unit == thisUnit then return parent end
-                        end
-                    end
-                end
-            end
+            GG.EventStream:CreateEvent(delayedParachutSpawn, persPack,
+            Spring.GetGameFrame() + 1)
 
+        else
+            parachutID =    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
 
-            function GetUnitDefRealRadius(udid)
-              if not GG.realRadiusComputated then GG.realRadiusComputated = {} end
-              local radius = GG.realRadiusComputated[udid]
-              if (radius) then
-                return radius
-              end
+            GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}
+            Spring.SetUnitTooltip(parachutID, id .. "")
+            setUnitValueExternal(id, 'WANT_CLOAK', 0)
+        end
+    end
 
-              local ud = UnitDefs[udid]
-              if (ud == nil) then return nil end
+     function delayedKillProjectile(id, timeInMS)            
 
-              local dims = spGetUnitDefDimensions(udid)
-              if (dims == nil) then return nil end
+            delayedKill = function(evtID, frame, persPack, startFrame)
+                ttl = Spring.GetProjectileTimeToLive ( persPack.id) 
+                if not ttl then return end
 
-              local scale = ud.hitSphereScale -- missing in 0.76b1+
-              scale = ((scale == nil) or (scale == 0.0)) and 1.0 or scale
-              radius = dims.radius / scale
-              GG.realRadiusComputated[udid] = radius
-              return radius
-            end
-
-
-            function registerRevealedUnitLocation(unitID)
-                local Location = {}
-                Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
-                Location.teamID = Spring.GetUnitTeam(unitID)
-                Location.radius = GetUnitDefRealRadius(unitID)
-
-                local revealedUnits = {}
-                parent = getParentOfUnit(Location.teamID, unitID)
-                if parent and doesUnitExistAlive(parent) then
-                    revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
+                if Spring.GetGameFrame() > persPack.endFrame then
+                    Spring.DeleteProjectile(persPack.id)
+                    return 
                 end
 
-                children = getChildrenOfUnit(Location.teamID, unitID)
-
-                if children and count(children) > 0 then
-                    for childID, _ in pairs(children) do
-                        if childID and doesUnitExistAlive(childID) then
-                            revealedUnits[childID] = {defID = Spring.GetUnitDefID(childID), boolIsParent = false}
-                        end
-                    end
-                end
-                Location.revealedUnits = revealedUnits
-				Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
-
-                if not GG.RevealedLocations then GG.RevealedLocations = {} end
-                GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
+                return frame + 5, persPack
             end
+            frames = math.ceil(1+(timeInMS/1000)*30)
+            persPack = {id = id, endFrame = Spring.GetGameFrame()+ frames}
 
-            function giveParachutToUnit(id, x, y, z, boolDelayed)
-                if not GG.ParachutPassengers then GG.ParachutPassengers = {} end
+            GG.EventStream:CreateEvent(delayedKill, persPack,
+            Spring.GetGameFrame() + 1)
+    end
 
-                if Spring.GetGameFrame() < 1 or boolDelayed then
+    function removeUnit(teamID, unit)
+        -- Spring.Echo("removing unit from graph")
+        parent = getParentOfUnit(teamID, unit)
+        if parent then GG.InheritanceTable[teamID][parent][unit] = nil end
+        if GG.InheritanceTable[teamID][unit] then
+            GG.InheritanceTable[teamID][unit] = nil
+        end
+    end
 
-                    delayedParachutSpawn = function(evtID, frame, persPack, startFrame)
+    function getHouseClusterPoints(UnitDefs, culture)
 
-                        if Spring.GetGameFrame() < 1 then
-                            return frame + 1, persPack
-                        end
+        houseTypeTable = getHouseTypeTable(UnitDefs, culture)
+        local PositionTable = {}
 
-                        parachutID = createUnitAtUnit(Spring.GetUnitTeam(persPack.id),
-                        "air_parachut", persPack.id)
-                        GG.ParachutPassengers[parachutID] =
-                        {
-                            id = persPack.id,
-                            x = persPack.x,
-                            y = persPack.y,
-                            z = persPack.z
-                        }
-                        Spring.SetUnitTooltip(parachutID, persPack.id .. "")
-                        -- setUnitValueExternal(persPack.id, 'WANT_CLOAK' , 0)
-                        -- setUnitValueExternal(persPack.id, 'CLOAKED' , 0)
-                        return nil, nil
-                    end
+        process(Spring.GetAllUnits(), function(id)
+            defID = Spring.GetUnitDefID(id)
+            if houseTypeTable[defID] then return id end
+        end, function(id)
+            x, y, z = Spring.GetUnitPosition(id)
+            PositionTable[#PositionTable + 1] = {x = x, y = y, z = z}
+        end)
+        assert(#PositionTable > 0)
 
-                    persPack = {id = id, x = x, y = y, z = z}
+        -- PositionTable= shuffleT(PositionTable)
+        local midPoints = {}
+        -- calculate midpoints
+        for n = 1, #PositionTable do
+            for i = 1, #PositionTable do
+                dist = distance(PositionTable[i], PositionTable[n])
+                local pos = mixTable(PositionTable[i], PositionTable[n], 0.5)
+                _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
 
-                    GG.EventStream:CreateEvent(delayedParachutSpawn, persPack,
-                    Spring.GetGameFrame() + 1)
-
-                else
-                    parachutID =    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
-
-                    GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}
-                    Spring.SetUnitTooltip(parachutID, id .. "")
-                    setUnitValueExternal(id, 'WANT_CLOAK', 0)
+                if dist < 1024 and i ~= n and slope < 0.1 then
+                    midPoints[#midPoints + 1] = pos
                 end
             end
+        end
 
-             function delayedKillProjectile(id, timeInMS)            
+        assert(#midPoints > 0)
+        return midPoints
+    end
 
-                    delayedKill = function(evtID, frame, persPack, startFrame)
-                        ttl = Spring.GetProjectileTimeToLive ( persPack.id) 
-                        if not ttl then return end
+    function cullPositionCluster(PosTable, iterrations)
+        if count(PosTable) <= 3 then
+            --Spring.Echo("cullPositionCluster: PosTable to small")
+            return PosTable
+        end
 
-                        if Spring.GetGameFrame() > persPack.endFrame then
-                            Spring.DeleteProjectile(persPack.id)
-                            return 
-                        end
+        local culledPoints = PosTable
 
-                        return frame + 5, persPack
-                    end
-                    frames = math.ceil(1+(timeInMS/1000)*30)
-                    persPack = {id = id, endFrame = Spring.GetGameFrame()+ frames}
+        for it = 1, iterrations do
+            local result = {}
+            for i = 1, count(culledPoints) - 1, 2 do
+                pos = mixTable(culledPoints[i], culledPoints[i + 1], 0.5)
+                _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
 
-                    GG.EventStream:CreateEvent(delayedKill, persPack,
-                    Spring.GetGameFrame() + 1)
+                if slope < 0.1 then result[#result + 1] = pos end
             end
+            culledPoints = result
 
-            function removeUnit(teamID, unit)
-                -- Spring.Echo("removing unit from graph")
-                parent = getParentOfUnit(teamID, unit)
-                if parent then GG.InheritanceTable[teamID][parent][unit] = nil end
-                if GG.InheritanceTable[teamID][unit] then
-                    GG.InheritanceTable[teamID][unit] = nil
-                end
-            end
-
-            function getHouseClusterPoints(UnitDefs, culture)
-
-                houseTypeTable = getHouseTypeTable(UnitDefs, culture)
-                local PositionTable = {}
-
-                process(Spring.GetAllUnits(), function(id)
-                    defID = Spring.GetUnitDefID(id)
-                    if houseTypeTable[defID] then return id end
-                end, function(id)
-                    x, y, z = Spring.GetUnitPosition(id)
-                    PositionTable[#PositionTable + 1] = {x = x, y = y, z = z}
-                end)
-                assert(#PositionTable > 0)
-
-                -- PositionTable= shuffleT(PositionTable)
-                local midPoints = {}
-                -- calculate midpoints
-                for n = 1, #PositionTable do
-                    for i = 1, #PositionTable do
-                        dist = distance(PositionTable[i], PositionTable[n])
-                        local pos = mixTable(PositionTable[i], PositionTable[n], 0.5)
-                        _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
-
-                        if dist < 1024 and i ~= n and slope < 0.1 then
-                            midPoints[#midPoints + 1] = pos
-                        end
-                    end
-                end
-
-                assert(#midPoints > 0)
-                return midPoints
-            end
-
-            function cullPositionCluster(PosTable, iterrations)
-                if count(PosTable) <= 3 then
-                    --Spring.Echo("cullPositionCluster: PosTable to small")
-                    return PosTable
-                end
-
-                local culledPoints = PosTable
-
-                for it = 1, iterrations do
-                    local result = {}
-                    for i = 1, count(culledPoints) - 1, 2 do
-                        pos = mixTable(culledPoints[i], culledPoints[i + 1], 0.5)
-                        _, _, _, slope = Spring.GetGroundNormal(pos.x, pos.z)
-
-                        if slope < 0.1 then result[#result + 1] = pos end
-                    end
-                    culledPoints = result
-
-                    if count(culledPoints) <= 3 then
-                        --Spring.Echo("Aborting with Points:" .. count(culledPoints))
-                        return culledPoints
-                    end
-                end
-
+            if count(culledPoints) <= 3 then
+                --Spring.Echo("Aborting with Points:" .. count(culledPoints))
                 return culledPoints
             end
+        end
+
+        return culledPoints
+    end
 
             function computateClusterNodes(housePosTable, GameConfig)
                 timeFactor = math.abs(math.sin(math.pi * Spring.GetGameFrame() /
@@ -2877,16 +2879,21 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
             },
             CentralAsia = {
                 "Bhutanstr",
+                "Thimphustr",
                 "Tajikistanstr",
+                "Dushanbestr",
+                "Teheranstr",
                 "Iranstr",
                 "Georgiastr",
                 "Nepalstr",
                 "Azerbaijanstr",
                 "Russiastr",
                 "Kyrgyzstanstr",
+                "Kabulstr",
                 "Afghanistanstr",
                 "Turkmenistanstr",
                 "Pakistanstr",
+                "Hyderabadstr",
                 "Uzbekistanstr",
                 "Mongoliastr",
                 "Kazakhstanstr"
