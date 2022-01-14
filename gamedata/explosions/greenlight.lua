@@ -8,6 +8,8 @@ return {
       count              = 1,
       ground             = true,
       water              = true,
+      alwaysvisible      = true,
+      useairlos = true,
       properties = {
         heat               = 5,
         heatfalloff        = 0.1,
