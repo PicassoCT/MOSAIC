@@ -18,7 +18,7 @@ local spGetUnitPosition = Spring.GetUnitPosition
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
-
+local operativeTypeTable = getOperativeTypeTable(UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage;end
 
 center = piece "center"
@@ -270,7 +270,7 @@ function healAgentsNearbyCyle()
     while true do
         currentlyPresent = process(getAllNearUnit(unitID,120, myTeamID),
             function(id)
-                if getOperativeTypeTable[spGetUnitDefID(id)] and lastTimePresent[id] then
+                if operativeTypeTable[spGetUnitDefID(id)] and lastTimePresent[id] then
                     hp = Spring.GetUnitHealth(id)
                     Spring.SetUnitHealth(id, hp + 25)
                 end
