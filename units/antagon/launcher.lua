@@ -14,11 +14,13 @@ local Launcher = Building:New{
 	nanocolor=[[0.20 0.411 0.611]],--
 	CanReclaim=false,	
 	YardMap ="oooo oooo oooo oooo ",
-	MaxSlope 					= 50,
 
 	footprintX = 4,
 	footprintZ = 4,
 	buildingMask = 8,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
 	
 	script 					= "launcherscript.lua",
 	objectName        	= "launcher.dae",

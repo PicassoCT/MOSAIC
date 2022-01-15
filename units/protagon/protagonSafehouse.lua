@@ -23,10 +23,12 @@ local ProtagonSafeHouse =    Building:New{
         oooooooo
         oooooooo
         oooooooo]],
-  MaxSlope =         100,
   buildingMask =    8,
   footprintX =    8,
   footprintZ =    8,
+  maxSlope = 50.0,
+  levelGround = false,
+  blocking =false,
 
   buildCostEnergy =        2000,
   buildCostMetal =         2000,

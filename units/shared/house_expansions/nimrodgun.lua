@@ -34,12 +34,13 @@ showNanoFrame= true,
 				oooooooo
 				oooooooo]],
 
-
-	
-	MaxSlope 					= 50,
 	buildingMask = 8,
 	footprintX = 8,
 	footprintZ = 8,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
+	
 	selfDestructCountdown = 2*60,
 
 	usepiececollisionvolumes = false,

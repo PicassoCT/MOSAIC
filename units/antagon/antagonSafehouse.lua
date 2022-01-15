@@ -22,6 +22,10 @@ local AntagonSafeHouse = Building:New{
 	buildingMask = 8,
 	footprintX = 8,
 	footprintZ = 8,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
+	
 	showNanoFrame= true,
 	selfDestructCountdown = 3*60,
 

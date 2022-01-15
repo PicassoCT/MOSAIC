@@ -21,7 +21,9 @@ local Hivemind = Building:New{
 	
 	explodeAs			= "none",
 	buildingMask = 8,
-	MaxSlope 					= 100,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
 
 	footprintX = 8,
 	footprintZ = 8,
@@ -73,10 +75,13 @@ local AICore = Building:New{
 	
 	explodeAs			= "none",
 	buildingMask = 8,
-	MaxSlope 					= 50,
-
 	footprintX = 8,
 	footprintZ = 8,
+	buildingMask = 8,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
+
 	script 			= "aicorescript.lua",
 	objectName        	= "aicore.dae",
 	customParams        = {

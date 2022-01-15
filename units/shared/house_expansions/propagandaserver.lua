@@ -16,13 +16,15 @@ local Propagandaserver = Building:New{
 	MetalMake = 5,	 
 	
 	acceleration = 0,
-	
-	explodeAs = "none",
-	buildingMask = 8,
-	MaxSlope = 50,
 
 	footprintX = 1,
-	footprintZ = 1,
+	footprintZ = 1,	
+	explodeAs = "none",
+	buildingMask = 8,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
+
 	script 			= "propagandaserverscript.lua",
 	objectName        	= "propagandaserver.dae",
 		customParams        = {

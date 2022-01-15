@@ -13,8 +13,9 @@ local WarHeadFactory = Building:New{
 	CanReclaim=false,	
 	workerTime = 1,
 	YardMap ="oooo oooo oooo oooo ",
-	MaxSlope 					= 50,
-
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
 	footprintX = 4,
 	footprintZ = 4,
 	buildingMask = 8,

@@ -33,11 +33,12 @@ if (gadgetHandler:IsSyncedCode()) then
           T = Spring.GetTeamList ()
             local nrOfTeams = #T
             result = {}
-            playerTeam, aiTeam = "",""
+            playerTeam, aiTeam = false, false
             Spring.Echo("nr of teams "..nrOfTeams)
             for i = 1, nrOfTeams do
                 echo(Spring.GetTeamInfo(T[i])  )      
                 teamID, leader,  isDead,  isAiTeam, side,  allyTeam,  incomeMultiplier,  customTeamKeys =   Spring.GetTeamInfo (  T[i] )
+                echo("Team: "..teamID.." Leader:"..leader.." isDead:".. toString(isDead).." isAiTeam:"..toString(isAiTeam).." side:"..toString(side))
                 if teamID ~= gaiaTeamID and not isAiTeam then
                     playerTeam = T[i]
                 end
@@ -45,6 +46,16 @@ if (gadgetHandler:IsSyncedCode()) then
                 if teamID ~= gaiaTeamID and isAiTeam then
                     aiTeam = T[i]
                 end
+            end
+
+            if not playerTeam then
+                echo("Error: No playerteam")
+                return
+            end
+
+            if not aiTeam then
+                echo("Error: No aiTeam")
+                return                
             end
 
     boolFirst = false
@@ -58,12 +69,14 @@ if (gadgetHandler:IsSyncedCode()) then
                 if Spring.GetUnitTeam(id) == gaiaTeamID and houseTypeTable[Spring.GetUnitDefID(id)] then
                     if not boolJustOnce then
                         boolJustOnce = true
-                        trainedOperative = createUnitAtUnit(aiTeam, "operativeinvestigator", id, math.random(-40,40), 0 ,  math.random(-40,40), nil, 1)
+                        trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40), nil, 1)
                         registerFather(aiTeam, trainedOperative)
                         spawnedOperatives[trainedOperative]=trainedOperative
                         echo("Spawn Intial Test order")
-                        safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0 , 0, trainedOperative , 1)
-                        spawnedSafeHouse[safehouseID]=spawnedSafeHouse
+                        safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0, trainedOperative , 1)
+                        assert(safehouseID)
+                        assert(spawnedSafeHouse)
+                        spawnedSafeHouse[safehouseID]=safehouseID
                         registerFather(aiTeam, safehouseID)
                         registerChild(aiTeam, trainedOperative, safehouseID)
                         allreadyUsedHouses[id] = id
@@ -75,7 +88,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
             )
 
-    size = 10
+    local size = 10
 
         process(houses,            
             function (id)
@@ -84,19 +97,19 @@ if (gadgetHandler:IsSyncedCode()) then
                     size = size - 1
                      echo("Spawn Test setup "..size)
                     spawnHouseID=randDict(spawnedSafeHouse)
-                    trainedOperative = createUnitAtUnit(aiTeam, "operativeinvestigator", id, math.random(-40,40), 0 ,  math.random(-40,40), spawnHouseID, 1)
+                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40), spawnHouseID, 1)
                     spawnedOperatives[trainedOperative]=trainedOperative
                     registerFather(aiTeam, spawnHouseID)
                     registerChild(aiTeam, spawnHouseID, trainedOperative)
 
-                    trainedOperative = createUnitAtUnit(aiTeam, "operativeinvestigator", id,  math.random(-40,40), 0 ,  math.random(-40,40), spawnHouseID, 1)
+                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id,  math.random(-40,40), 0 ,  math.random(-40,40), spawnHouseID, 1)
                     spawnedOperatives[trainedOperative]=trainedOperative
                     registerFather(aiTeam, spawnHouseID)
                     registerChild(aiTeam, spawnHouseID, trainedOperative)
 
                     operativeCreatingNextSafeHouse = randDict(spawnedOperatives)
-                    safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0 , 0, operativeCreatingNextSafeHouse , 1)
-                    spawnedSafeHouse[safehouseID]=spawnedSafeHouse
+                    safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0, operativeCreatingNextSafeHouse , 1)
+                    spawnedSafeHouse[safehouseID]=safehouseID
                     registerFather(aiTeam, operativeCreatingNextSafeHouse)
                     registerChild(aiTeam, operativeCreatingNextSafeHouse, safehouseID)
                 end

@@ -19,7 +19,9 @@ local Brehmerwall = Building:New{
 				   oo
 				   oo]],
 	buildingMask = 1,
-	MaxSlope = 50,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
 	MetalStorage = 2500,
 	upright  = false,
 

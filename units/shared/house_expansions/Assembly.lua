@@ -14,11 +14,14 @@ local Assembly = Building:New{
 	CanReclaim=false,	
 
 	YardMap ="yyyy yyyy yyyy yyyy ",
-	MaxSlope 					= 100,
 	MetalStorage = 2500,
 	buildingMask = 8,
 	footprintX = 4,
 	footprintZ = 4,
+	maxSlope = 50.0,
+	levelGround = false,
+	blocking =false,
+
 	showNanoFrame= true,
 	script 					= "assemblyscript.lua",
 	objectName        	= "assembly.dae",
