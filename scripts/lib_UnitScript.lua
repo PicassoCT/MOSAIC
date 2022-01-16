@@ -1420,6 +1420,7 @@ function createUnitAtPiece(id, typeID, Piece, team)
 end
 -- > Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orientation)
+    assert(not parentID)
     if isUnitAlive(otherID) == false then return end
     locOrientation = orientation 
     if not orientation then 

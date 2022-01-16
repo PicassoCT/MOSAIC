@@ -69,15 +69,14 @@ if (gadgetHandler:IsSyncedCode()) then
                 if Spring.GetUnitTeam(id) == gaiaTeamID and houseTypeTable[Spring.GetUnitDefID(id)] then
                     if not boolJustOnce then
                         boolJustOnce = true
-                        trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40), nil, 1)
+                        trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40))
                         registerFather(aiTeam, trainedOperative)
                         spawnedOperatives[trainedOperative]=trainedOperative
                         echo("Spawn Intial Test order")
-                        safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0, trainedOperative , 1)
-                        assert(safehouseID)
-                        assert(spawnedSafeHouse)
+                        
+                        safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0)
                         spawnedSafeHouse[safehouseID]=safehouseID
-                        registerFather(aiTeam, safehouseID)
+                        registerFather(aiTeam, trainedOperative)
                         registerChild(aiTeam, trainedOperative, safehouseID)
                         allreadyUsedHouses[id] = id
                         return
@@ -97,20 +96,20 @@ if (gadgetHandler:IsSyncedCode()) then
                     size = size - 1
                      echo("Spawn Test setup "..size)
                     spawnHouseID=randDict(spawnedSafeHouse)
-                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40), spawnHouseID, 1)
+                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40))
                     spawnedOperatives[trainedOperative]=trainedOperative
-                    registerFather(aiTeam, spawnHouseID)
+                    registerFather(aiTeam, trainedOperative)
                     registerChild(aiTeam, spawnHouseID, trainedOperative)
 
-                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id,  math.random(-40,40), 0 ,  math.random(-40,40), spawnHouseID, 1)
+                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id,  math.random(-40,40), 0 ,  math.random(-40,40))
                     spawnedOperatives[trainedOperative]=trainedOperative
-                    registerFather(aiTeam, spawnHouseID)
+                    registerFather(aiTeam, trainedOperative)
                     registerChild(aiTeam, spawnHouseID, trainedOperative)
 
                     operativeCreatingNextSafeHouse = randDict(spawnedOperatives)
-                    safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0, operativeCreatingNextSafeHouse , 1)
+                    safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0)
                     spawnedSafeHouse[safehouseID]=safehouseID
-                    registerFather(aiTeam, operativeCreatingNextSafeHouse)
+                    registerFather(aiTeam, safehouseID)
                     registerChild(aiTeam, operativeCreatingNextSafeHouse, safehouseID)
                 end
             end
