@@ -642,10 +642,16 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
 
                     -- out of time to interrogate
+                    for disguiseID, agentID in pairs(GG.DisguiseCivilianFor) do
+                        if persPack.unitID == agentID then
+                            spDestroyUnit(disguiseID, false, true)
+                            GG.DisguiseCivilianFor[disguiseID] = nil
+                        end
+                    end
+                   
                     spDestroyUnit(persPack.unitID, false, true)
                     spDestroyUnit(persPack.IconID, false, true)
-                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =
-                        nil
+                    GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =  nil
                     spEcho("Interrogation ended")
 
                     GG.raidStatus[persPack.IconID] = nil
