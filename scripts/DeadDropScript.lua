@@ -25,30 +25,13 @@ function script.Create()
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
      hideT(TablesOfPiecesGroups["ProgressBars"])
      showT(TablesOfPiecesGroups["Rotor"])
+     StartThread(lifeTime, unitID, 25*1000, true, false)
 end
 
 local realRadii = {}
 
 lastFrame = Spring.GetGameFrame()
 
-local function GetUnitDefRealRadius(udid)
-  local radius = realRadii[udid]
-  if (radius) then
-    return radius
-  end
-
-  local ud = UnitDefs[udid]
-  if (ud == nil) then return nil end
-
-  local dims = Spring.GetUnitDefDimensions(udid)
-  if (dims == nil) then return nil end
-
-  local scale = ud.hitSphereScale -- missing in 0.76b1+
-  scale = ((scale == nil) or (scale == 0.0)) and 1.0 or scale
-  radius = dims.radius / scale
-  realRadii[udid] = radius
-  return radius
-end
 
 function revealUnitsIfOfTeam()
 	unitTeam = Spring.GetUnitTeam(unitID)
@@ -101,7 +84,7 @@ function checkForFinderLoop()
 	 Sleep(100)
 	 if #UnitsNear > 0 then
 	 	boolDone = true
-	 	registerRevealedUnitLocation(unitID)
+	 	revealUnitsIfOfTeam()
 	 	return
 	 end
 

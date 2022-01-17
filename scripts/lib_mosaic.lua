@@ -400,6 +400,7 @@ function  getManualCivilianBuildingMaps(mapName)
             [UnitDefNames["biopayload"].id] = true,
             [UnitDefNames["informationpayload"].id] = true,
             [UnitDefNames["physicspayload"].id] = true,
+            [UnitDefNames["deaddropicon"].id] = true,
         }
     end  
 
@@ -1894,12 +1895,31 @@ end
     function registerChild(teamID, parent, childID)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
         -- Spring.Echo("register Child child of unit")
-        if not GG.InheritanceTable[teamID][parent] then
-            GG.InheritanceTable[teamID][parent] = {}
-        end
+        registerFather(teamID, parent)
 
         GG.InheritanceTable[teamID][parent][childID] = true
     end
+
+    function transferHierarchy(teamID, originalID, copyID)
+        if not GG.InheritanceTable then initalizeInheritanceManagement() end
+
+        if  GG.InheritanceTable[teamID][originalID] then
+             GG.InheritanceTable[teamID][copyID] = GG.InheritanceTable[teamID][originalID] 
+             GG.InheritanceTable[teamID][originalID] = nil 
+        end
+
+        for team, dataSet in pairs(GG.InheritanceTable) do
+            for parent, children in pairs(dataSet) do
+                for child,_ in pairs(children) do
+                    if child == originalID then
+                        GG.InheritanceTable[team][parent][child] = nil
+                        GG.InheritanceTable[team][parent][copyID] = true
+                    end
+                end
+            end
+        end        
+    end
+
 
     function getChildrenOfUnit(teamID, unit)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
@@ -1915,6 +1935,15 @@ end
                     if unit == thisUnit then return parent end
                 end
             end
+        end
+    end
+
+     function removeUnit(teamID, unit)
+        -- Spring.Echo("removing unit from graph")
+        parent = getParentOfUnit(teamID, unit)
+        if parent then GG.InheritanceTable[teamID][parent][unit] = nil end
+        if GG.InheritanceTable[teamID][unit] then
+            GG.InheritanceTable[teamID][unit] = nil
         end
     end
 
@@ -2026,14 +2055,7 @@ end
             Spring.GetGameFrame() + 1)
     end
 
-    function removeUnit(teamID, unit)
-        -- Spring.Echo("removing unit from graph")
-        parent = getParentOfUnit(teamID, unit)
-        if parent then GG.InheritanceTable[teamID][parent][unit] = nil end
-        if GG.InheritanceTable[teamID][unit] then
-            GG.InheritanceTable[teamID][unit] = nil
-        end
-    end
+
 
     function getHouseClusterPoints(UnitDefs, culture)
 
