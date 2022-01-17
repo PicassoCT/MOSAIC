@@ -17,6 +17,8 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
+    local spGetUnitDefID = Spring.GetUnitDefID
+
     startFrame = Spring.GetGameFrame()+1
     startTestAfterSeconds = 5
     --Optimization
@@ -29,6 +31,14 @@ if (gadgetHandler:IsSyncedCode()) then
         startFrame = Spring.GetGameFrame()+1
     end
 
+    boolFirst = false
+    boolSecond = false
+
+    allreadyUsedHouses= {}
+    boolJustOnce = false
+    spawnedSafeHouse = {}
+    spawnedOperatives = {}
+
     function spawnTestNetwork()
           T = Spring.GetTeamList ()
             local nrOfTeams = #T
@@ -36,9 +46,10 @@ if (gadgetHandler:IsSyncedCode()) then
             playerTeam, aiTeam = false, false
             Spring.Echo("nr of teams "..nrOfTeams)
             for i = 1, nrOfTeams do
-                echo(Spring.GetTeamInfo(T[i])  )      
-                teamID, leader,  isDead,  isAiTeam, side,  allyTeam,  incomeMultiplier,  customTeamKeys =   Spring.GetTeamInfo (  T[i] )
+                echo(Spring.GetTeamInfo(T[i]))      
+                teamID, leader,  isDead,  isAiTeam, side,  allyTeam,  incomeMultiplier,  customTeamKeys =   Spring.GetTeamInfo( T[i])
                 echo("Team: "..teamID.." Leader:"..leader.." isDead:".. toString(isDead).." isAiTeam:"..toString(isAiTeam).." side:"..toString(side))
+                
                 if teamID ~= gaiaTeamID and not isAiTeam then
                     playerTeam = T[i]
                 end
@@ -56,81 +67,85 @@ if (gadgetHandler:IsSyncedCode()) then
             if not aiTeam then
                 echo("Error: No aiTeam")
                 return                
-            end
-
-    boolFirst = false
-    boolSecond = false
-    spawnedSafeHouse = {}
-    spawnedOperatives = {}
-    allreadyUsedHouses= {}
-    boolJustOnce = false
-    houses = process(Spring.GetAllUnits(),
-            function(id)
-                if Spring.GetUnitTeam(id) == gaiaTeamID and houseTypeTable[Spring.GetUnitDefID(id)] then
-                    if not boolJustOnce then
-                        boolJustOnce = true
-                        trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40))
-                        registerFather(aiTeam, trainedOperative)
-                        spawnedOperatives[trainedOperative]=trainedOperative
-                        echo("Spawn Intial Test order")
-                        
-                        safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0)
-                        spawnedSafeHouse[safehouseID]=safehouseID
-                        registerFather(aiTeam, trainedOperative)
-                        registerChild(aiTeam, trainedOperative, safehouseID)
-                        allreadyUsedHouses[id] = id
-                        return
-                    end
-                    
-                    return id                    
-                end
-            end
-            )
+            end 
 
     local size = 10
 
-        process(houses,            
+        process(Spring.GetAllUnits(),
+            function(id)
+                if houseTypeTable[spGetUnitDefID(id)] then return id end
+                end,            
             function (id)
                 if not allreadyUsedHouses[id] and size > 0 then
                     allreadyUsedHouses[id] = id
                     size = size - 1
-                     echo("Spawn Test setup "..size)
+                    echo("Spawn Test setup "..size)
                     spawnHouseID=randDict(spawnedSafeHouse)
-                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id, math.random(-40,40), 0 ,  math.random(-40,40))
+                    trainedOperative = createUnitAtUnit(aiTeam,"operativeinvestigator", id, math.random(-40,40), 0 ,  math.random(-40,40))
                     spawnedOperatives[trainedOperative]=trainedOperative
-                    registerFather(aiTeam, trainedOperative)
-                    registerChild(aiTeam, spawnHouseID, trainedOperative)
 
-                    trainedOperative = createUnitAtUnit(aiTeam, UnitDefNames["operativeinvestigator"].id, id,  math.random(-40,40), 0 ,  math.random(-40,40))
+                    trainedOperative = createUnitAtUnit(aiTeam, "operativeinvestigator", id,  math.random(-40,40), 0 ,  math.random(-40,40))
                     spawnedOperatives[trainedOperative]=trainedOperative
-                    registerFather(aiTeam, trainedOperative)
-                    registerChild(aiTeam, spawnHouseID, trainedOperative)
 
                     operativeCreatingNextSafeHouse = randDict(spawnedOperatives)
-                    safehouseID = createUnitAtUnit(aiTeam, UnitDefNames["antagonsafehouse"].id, id, 0, 0 , 0)
+                    safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0 , 0)
                     spawnedSafeHouse[safehouseID]=safehouseID
-                    registerFather(aiTeam, safehouseID)
-                    registerChild(aiTeam, operativeCreatingNextSafeHouse, safehouseID)
                 end
             end
             )
     end
     
+    function connectTheDots()
+        echo("Start Connecting the network")
+        local safehouses = spawnedSafeHouse
+        local operatives = spawnedOperatives
+        local root = randDict(operatives)
+        registerFather(aiTeam, root)
+        
+        while root do
+            newSafeHouse = randDict(safehouses) 
+            if newSafeHouse then
+                registerChild(aiTeam, root, newSafeHouse)
+            end
+
+            operatives[root] = nil
+            root = randDict(operatives)
+
+            if root then
+                if newSafeHouse then
+                    registerChild(aiTeam, newSafeHouse, root)
+                    safehouses[newSafeHouse] = nil
+                else
+                    preExistingSafehouse = randDict(spawnedSafeHouse)
+                    if not preExistingSafehouse then return end
+                    registerChild(aiTeam, preExistingSafehouse, root)
+                end
+            end
+        end
+        echo("End Connecting the network")
+    end 
 
 boolOnce = true
+boolConnect = true
     function gadget:GameFrame(frame)
 
         if frame > (startFrame + (startTestAfterSeconds*30)) and boolOnce == true then
-                    Spring.Echo("Game:Unit_Test:SpawningTestUnits")
+            echo("Game:Unit_Test:SpawningTestUnits")
             spawnTestNetwork()
             boolOnce = false
         end
-        
+            if frame > (startFrame + (startTestAfterSeconds*30))+1 and not boolConnect then
+            connectTheDots()
+            boolConnect = false
+          end 
+
         if boolOnce and frame % 10 == 0 then
-            Spring.Echo( "Starting in "..math.abs(frame - ( startFrame + (startTestAfterSeconds*30))))
+            echo( "Starting in "..math.abs(frame - ( startFrame + (startTestAfterSeconds*30))))
         end
 
-        if frame % 90 == 0 and boolOnce == true then
+      
+
+        if frame % 90 == 0 and boolOnce == false then
             process(spawnedSafeHouse,
                     function(id)
                         if doesUnitExistAlive(id) == true then return id end
@@ -141,7 +156,7 @@ boolOnce = true
                     )
         end
 
-        if frame % 60 == 0 and boolOnce == true then
+        if frame % 60 == 0 and boolOnce == false then
             process(spawnedOperatives,
                     function(id)
                         if doesUnitExistAlive(id) == true then return id end
