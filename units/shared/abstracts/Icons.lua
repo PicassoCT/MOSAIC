@@ -1,3 +1,42 @@
+local DeadDropIcon =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 15000,
+    mass = 500,
+    buildCostEnergy = 5,
+    buildCostMetal = 5,
+    canMove = true,
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+    MaxVelocity = 0,
+    --
+    alwaysUpright = true,
+    name = "Dead Drop",
+    description = "",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    CanMove = false,
+    CanPatrol = false,
+    CanStop = false,
+    script = "DeadDropScript.lua",
+    objectName = "DeadDrop.dae",
+    buildPic = "placeholder.png",
+    iconType = "placeholder",
+
+    onOffable = false,
+
+
+    customparams = {
+        helptext = "",
+        baseclass = "Human" ,-- TODO: hacks
+        normaltex = "unittextures/component_atlas_normal.dds",
+    },
+    category = "NOTARGET"
+}
+
 local DestroyedObjective =
     Abstract:New {
     corpse = "",
@@ -458,6 +497,7 @@ return lowerkeys(
         ["socialengineeringicon"] = SocialEngineering:New(),
         ["objectiveicon"] = ObjectiveIcon:New(),
         ["cybercrimeicon"] = CyberCrime:New(),
-        ["destroyedobjectiveicon"] = DestroyedObjective:New()
+        ["destroyedobjectiveicon"] = DestroyedObjective:New(),
+        ["deaddropicon"] = DeadDropIcon:New()
     }
 )
