@@ -1095,13 +1095,19 @@ function script.FireWeapon(weaponID)
 	return WeaponsTable[weaponID].firefunc(weaponID, heading, pitch)
 end
 
+boolInterrogated = false
+function setBoolInterrogatedExternally(boolInterrogatedExternally)
+	boolInterrogated = boolInterrogatedExternally
+end
+
 function script.AimWeapon(weaponID, heading, pitch)
-    if weaponID == 3 then 
+	if boolInClosedCombat == true then return false end
+
+    if weaponID == 3 and not boolInterrogated then --closecombat
         --Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
         return true
     end    
 
-    if boolInClosedCombat == true then return false end
 	targetType,  isUserTarget, targetID = spGetUnitWeaponTarget(unitID, weaponID)
 
 	if not targetType or  (not validTargetType[targetType])  then
@@ -1111,7 +1117,7 @@ function script.AimWeapon(weaponID, heading, pitch)
 	
 	--Do not aim at your own disguise civilian
 	if targetType == 1 and spGetUnitTeam(targetID) == gaiaTeamID then		
-		if GG.DisguiseCivilianFor[targetID] and GG.DisguiseCivilianFor[targetID]  == unitID then	
+		if GG.DisguiseCivilianFor[targetID] and GG.DisguiseCivilianFor[targetID] == unitID then	
             -- echo("Aiming at disguised civilian ")
 			return false
 		end
@@ -1119,13 +1125,14 @@ function script.AimWeapon(weaponID, heading, pitch)
 
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
-            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch, targetType, isUserTarget, targetID)
+            return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch, targetType, isUserTarget, targetID) and not boolInterrogated
         else
             WTurn(WeaponsTable[weaponID].aimpiece, y_axis, heading, turretSpeed)
             WTurn(WeaponsTable[weaponID].aimpiece, x_axis, -pitch, turretSpeed)
-            return true 
+            return not boolInterrogated 
         end
     end
+
     return false
 end
 

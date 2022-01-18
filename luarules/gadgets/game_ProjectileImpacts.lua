@@ -531,6 +531,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if persPack.IconID then
                         GG.raidStatus[persPack.IconID] = nil
                     end
+                    updateInterrogatedStatus(persPack.unitID, false)
                     return true, persPack
                 end
 
@@ -544,6 +545,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if persPack.IconID then
                         GG.raidStatus[persPack.IconID] = nil
                     end
+                    updateInterrogatedStatus(persPack.unitID, false)
                     return true, persPack
                 end
 
@@ -561,6 +563,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     
                     if not persPack.IconID then
                           spEcho("Creating InterrogationIcon failed")
+                        updateInterrogatedStatus(persPack.unitID, false)
                         return true, persPack
                     end
             
@@ -585,6 +588,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             spEcho( "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
                             GG.InterrogationTable[persPack.unitID] = nil
                             setSpeedEnv(persPack.interrogatorID, 1.0)
+                            updateInterrogatedStatus(persPack.unitID, false) --TODO extract cleanup code
                             return true, persPack
                         end
 
@@ -607,6 +611,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             end
                             setSpeedEnv(persPack.interrogatorID, 1.0)
                             GG.InterrogationTable[persPack.unitID] = nil
+                            updateInterrogatedStatus(persPack.unitID, false)
                             return true, persPack
                         end
                     end
@@ -652,7 +657,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     spDestroyUnit(persPack.unitID, false, true)
                     spDestroyUnit(persPack.IconID, false, true)
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =  nil
-                    spEcho("Interrogation ended")
+                    spEcho("Interrogation ended successfuly")
 
                     GG.raidStatus[persPack.IconID] = nil
                     GG.InterrogationTable[persPack.unitID] = nil
@@ -712,6 +717,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
                 stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
                 setSpeedEnv(attackerID, 0.0)
+                updateInterrogatedStatus(unitID, true)
                 interrogationEventStreamFunction(unitID, unitDefID, unitTeam,
                                                  damage, paralyzer, weaponDefID,
                                                  attackerID, attackerDefID,
@@ -871,6 +877,14 @@ if (gadgetHandler:IsSyncedCode()) then
                                      arg[4] or nil
                                      )
     end
+    end    
+
+    function updateInterrogatedStatus(unitID, boolInterrogatedExternally)
+
+    env = Spring.UnitScript.GetScriptEnv(unitID)
+        if env and env.setBoolInterrogatedExternally then
+            Spring.UnitScript.CallAsUnit(unitID,  env.setBoolInterrogatedExternally, boolInterrogatedExternally)
+        end
     end
 
     local NewUnitsInPanic = {}
