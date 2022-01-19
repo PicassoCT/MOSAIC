@@ -93,6 +93,7 @@ local GameStateMachine = {
                         local step = data.steps
                         if doesUnitExistAlive(launcherID) == true and 
                             step > GameConfig.PreLaunchLeakSteps then
+                            echo("Launcher "..launcherID.." is over PreLaunchLeakSteps going to launchleak")
                             Spring.SetUnitAlwaysVisible(launcherID, true)
                             GG.GameStateMachine.Timer = frame
                             return GameConfig.GameState.launchleak

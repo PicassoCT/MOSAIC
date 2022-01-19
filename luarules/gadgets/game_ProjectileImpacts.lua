@@ -40,7 +40,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGiveOrderToUnit = Spring.GiveOrderToUnit
     local spGetTeamList = Spring.GetTeamList
     local spSpawnCEG = Spring.SpawnCEG
-    local spEcho = function() end -- echo
+    local spEcho =  Spring.Echo --
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
     local MobileInterrogateAbleType =
@@ -512,7 +512,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
                     GG.InterrogationTable[persPack.unitID] = nil
-                    spEcho("Interogation: Target died")
+                    spEcho("Interogation End: Target died")
                    
                     if true == doesUnitExistAlive(persPack.interrogatorID) then
                         setSpeedEnv(persPack.interrogatorID, 1.0)
@@ -695,7 +695,6 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
             -- stupidity edition same team
-            assert(attackerTeam)
             if attackerTeam == unitTeam then
                 spEcho("Interrogation:Aborted: attackerTeam == unitTeam")
                 return damage

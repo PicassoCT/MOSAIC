@@ -38,10 +38,14 @@ if (gadgetHandler:IsSyncedCode()) then
             -- Spring.Echo("UnitCreated of InterrogateableType")
             if father and doesUnitExistAlive(father) then
                 registerChild(unitTeam, father, unitid)
-                Spring.Echo("Interrogatable Unit created - child of "..father)
+                if operativeTypeTable[unitdefid] then
+                 --   Spring.Echo("operativeType Unit created - child of "..father)
+                end
             else
                 registerFather(unitTeam, unitid)
-                Spring.Echo("Interrogatable Unit created - fatherless")
+                if operativeTypeTable[unitdefid] then
+                  --  Spring.Echo("Interrogatable Unit created - fatherless")
+                end
             end
 
         end
@@ -83,7 +87,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if InterrogateableType[unitDefID]  then
             if attackerID and spGetUnitTeam(attackerID) ~= teamID then 
                 x,y,z = getFairDropPointNear(unitID)
-                copyID = Spring.CreateUnit("deaddrop", gaiaTeamID, x,y,z, 1 )
+                copyID = Spring.CreateUnit("deaddropicon", teamID, x,y,z, 1 )
                 transferHierarchy(teamID, originalID, copyID)
             else
                 removeUnit(teamID, unitID) 

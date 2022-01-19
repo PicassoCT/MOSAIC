@@ -139,14 +139,16 @@ function refugeeStream(frame)
                     end
 
                     x,y,z = spGetUnitPosition(id)
-                    dist = distance(x,y,z, rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z )
-                        if dist < 30 then
-                           rStuck[id].counter = rStuck[id].counter + 1 
-                        else
-                            rStuck[id].counter = math.max(0, rStuck[id].counter -1)
-                        end
-                    rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z = x,y,z
-                    return id
+                    if x then 
+                        dist = distance(x,y,z, rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z )
+                            if dist < 30 then
+                               rStuck[id].counter = rStuck[id].counter + 1 
+                            else
+                                rStuck[id].counter = math.max(0, rStuck[id].counter -1)
+                            end
+                        rStuck[id].pos.x,rStuck[id].pos.y,rStuck[id].pos.z = x,y,z
+                        return id
+                    end
                 end,
             function(id)
                 if distanceUnitToPoint(id, ex,ey,ez) < 150 or rStuck[id].counter > MAX_STUCK_COUNTER then

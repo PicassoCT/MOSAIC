@@ -89,6 +89,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     operativeCreatingNextSafeHouse = randDict(spawnedOperatives)
                     safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0 , 0)
+                    Spring.SetUnitAlwaysVisible(safehouseID, false)
                     spawnedSafeHouse[safehouseID]=safehouseID
                 end
             end

@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
-local defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
+local operativeTypeTable = getOperativeTypeTable(Unitdefs)l
 local GameConfig = getGameConfig()
 
 --Explode on Impact
@@ -14,18 +14,19 @@ end
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
 local myDefID = spGetUnitDefID(unitID)
-
+center = piece"center"
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitAlwaysVisible(unitID,true)
-    -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-     hideT(TablesOfPiecesGroups["ProgressBars"])
+    Spring.MoveCtrl.Enable(unitID,true)
+    x,y,z =Spring.GetUnitPosition(unitID)
+    Spring.MoveCtrl.SetPosition(unitID, x,y+25,z)
+    Show(center)
      showT(TablesOfPiecesGroups["Rotor"])
-     StartThread(lifeTime, unitID, 25*1000, true, false)
+     StartThread(lifeTime, unitID, 3*60*1000, true, false)
+     StartThread(checkForFinderLoop)
 end
 
 local realRadii = {}
@@ -33,10 +34,16 @@ local realRadii = {}
 lastFrame = Spring.GetGameFrame()
 
 
-function revealUnitsIfOfTeam()
+function revealUnitsIfOfTeam(finderID)
 	unitTeam = Spring.GetUnitTeam(unitID)
-		children = getChildrenOfUnit(unitTeam, unitID)
+	children = getChildrenOfUnit(unitTeam, unitID)
     parent = getParentOfUnit(unitTeam, unitID)
+
+    if parent and Spring.GetUnitTeam(finderID) == Spring.GetUnitTeam(parent) then -- caught by own team - no reveal
+    	Spring.DestroyUnit(unitID, true)
+    	return
+    end
+
     registerRevealedUnitLocation(persPack.unitID)
 
     for childID, v in pairs(children) do
@@ -53,19 +60,10 @@ function revealUnitsIfOfTeam()
         GG.OperativesDiscovered[parent] = true
         Spring.SetUnitAlwaysVisible(parent, true)
     end
-
-    -- out of time to interrogate
-    for disguiseID, agentID in pairs(GG.DisguiseCivilianFor) do
-        if unitID == agentID then
-            Spring.DestroyUnit(disguiseID, false, true)
-            GG.DisguiseCivilianFor[disguiseID] = nil
-        end
-    end
 end
 
 function checkForFinderLoop()
   -- display the Progressbars																					
-	showT(TablesOfPiecesGroups["ProgressBars"])
 	for i=1,#TablesOfPiecesGroups["Rotor"] do
 		val = math.random(15,50)
 		Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(val)*randSign(),0)
