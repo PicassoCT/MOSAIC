@@ -24,11 +24,11 @@ A first safe house, recruting more into a cell - ready to die for the cause.
 
 In the cellars, backyards and safe-houses of the city, a hidden army grows.
 
-Satellite cycle - Eyes in the sky - over it, ever watchful for that one revealing misstep.
+Eyes in the sky - satellite cycle over it, ever watchful for that one revealing misstep.
 
-Drones hum ready to take out the old-fashioned, bold & stupid.
+Drones hum ready to take out the old-fashioned, the bold & stupid.
 
-Cause its only ever one Raid, one Interrogation for your side to unravell the whole network of trust and treason.
+Cause its only ever one Raid, one Interrogation for your side to unravell the whole graph of trust and treason.
 One bad apple squeezed, will spill those s/he trained and whoever, wherever trained her. 
 And you can go from there, if there is still time, there must be still time..
 
@@ -40,8 +40,8 @@ Chaos ensues, protestors riot, friend turns against friend, while the optimists 
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen8.png "")
 
-Sometimes there is barely enough time for some condemned employee to realize what they have assembled for that ever anonymous, ever absent employer.
-Maybe there never was a cult-leader and all you followed was a long forgotten Glidergun DAO-A.I. dwelling in some P2P cellphone serverswarm?
+Sometimes there is barely enough time for some condemned gig-employee to realize what they have assembled for that ever anonymous, ever absent employer.
+Maybe there never was a cult-leader and all you followed was a long forgotten Glidergun DAO-A.I. dwelling in some cellphone-swarm?
 
 It could all be just a bad dream, something to wake up from and rub out of your eyes.
 
@@ -72,4 +72,6 @@ https://springrts.com/phpbb/viewtopic.php?f=47&t=38699
 Using Ivands PBR Shader:
 
  https://springrts.com/phpbb/viewtopic.php?f=12&t=37691
+ 
+ Also contributing: Code_Man, jK, flozi and the crew of freesound.org
 
