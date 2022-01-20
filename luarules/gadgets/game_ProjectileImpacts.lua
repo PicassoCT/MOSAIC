@@ -636,6 +636,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
 
                     if doesUnitExistAlive(parent) == true then
+                        spEcho("Interrogation: Reavealing parent " .. parent)
                         spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
                         GG.OperativesDiscovered[parent] = true
                         spSetUnitAlwaysVisible(parent, true)

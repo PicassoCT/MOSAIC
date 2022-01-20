@@ -98,6 +98,7 @@ if (gadgetHandler:IsSyncedCode()) then
     
     function connectTheDots()
         echo("Start Connecting the network")
+        local allSafehouses = spawnedSafeHouse
         local safehouses = spawnedSafeHouse
         local operatives = spawnedOperatives
         local root = randDict(operatives)
@@ -107,6 +108,7 @@ if (gadgetHandler:IsSyncedCode()) then
             newSafeHouse = randDict(safehouses) 
             if newSafeHouse then
                 registerChild(aiTeam, root, newSafeHouse)
+                echo("Unit "..root.." is parent of "..newSafeHouse)
             end
 
             operatives[root] = nil
@@ -115,11 +117,13 @@ if (gadgetHandler:IsSyncedCode()) then
             if root then
                 if newSafeHouse then
                     registerChild(aiTeam, newSafeHouse, root)
+                    echo("Safehouse "..newSafeHouse.." is parent of "..root)
                     safehouses[newSafeHouse] = nil
                 else
-                    preExistingSafehouse = randDict(spawnedSafeHouse)
+                    preExistingSafehouse = randDict(allSafehouses)
                     if not preExistingSafehouse then return end
                     registerChild(aiTeam, preExistingSafehouse, root)
+                    echo("Safehouse "..preExistingSafehouse.." is parent of "..root)
                 end
             end
         end
@@ -135,7 +139,7 @@ boolConnect = true
             spawnTestNetwork()
             boolOnce = false
         end
-            if frame > (startFrame + (startTestAfterSeconds*30))+1 and not boolConnect then
+            if frame > (startFrame + (startTestAfterSeconds*30))+1 and boolConnect == true then
             connectTheDots()
             boolConnect = false
           end 
