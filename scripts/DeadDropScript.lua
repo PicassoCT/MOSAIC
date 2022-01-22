@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
-local operativeTypeTable = getOperativeTypeTable(Unitdefs)l
+local operativeTypeTable = getOperativeTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 
 --Explode on Impact
