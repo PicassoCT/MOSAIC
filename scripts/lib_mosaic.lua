@@ -136,7 +136,7 @@ function getGameConfig()
         -- Interrogation
         InterrogationTimeInSeconds = 20,
         InterrogationTimeInFrames = 20 * 30,
-        InterrogationDistance = 256,
+        InterrogationDistance = 185,
 
         --operatives
         investigatorCloakedSpeedReduction = 0.35,
@@ -1920,7 +1920,6 @@ end
         end        
     end
 
-
     function getChildrenOfUnit(teamID, unit)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
         -- Spring.Echo("Getting children of unit")
@@ -1967,29 +1966,45 @@ end
       return radius
     end
 
+    function getUnitName(unitID)
+        name = "Target"
+        tooltip = UnitDefs[Spring.GetUnitDefID(unitID)].tooltip
+        braceStart = string.find(tooltip,"<")
+        if braceStart then
+            name = string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
+        end
+        return name
+    end
+
     function registerRevealedUnitLocation(unitID)
         local Location = {}
         Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
         Location.teamID = Spring.GetUnitTeam(unitID)
-        Location.radius = GetUnitDefRealRadius(unitID)
+        Location.radius = GetUnitDefRealRadius(unitID) or 50
+        Location.revealedUnits = {}
+        Location.endFrame = Spring.GetGameFrame() + GG.GameConfig.raid.revealGraphLifeTimeFrames
 
-        local revealedUnits = {}
         parent = getParentOfUnit(Location.teamID, unitID)
         if parent and doesUnitExistAlive(parent) then
-            revealedUnits[parent] = {defID = Spring.GetUnitDefID(parent), boolIsParent = true}
+            Location.revealedUnits[parent] = {}
+            Location.revealedUnits[parent].defID = Spring.GetUnitDefID(parent)
+            Location.revealedUnits[parent].boolIsParent = true
+            Location.revealedUnits[parent].name = getUnitName(parent)
+            echo("registerRevealedUnitLocation: revealing parent "..parent)
         end
 
         children = getChildrenOfUnit(Location.teamID, unitID)
-
         if children and count(children) > 0 then
             for childID, _ in pairs(children) do
                 if childID and doesUnitExistAlive(childID) then
-                    revealedUnits[childID] = {defID = Spring.GetUnitDefID(childID), boolIsParent = false}
+                    Location.revealedUnits[childID] = {}
+                    Location.revealedUnits[childID].defID = Spring.GetUnitDefID(childID)
+                    Location.revealedUnits[childID].boolIsParent = false
+                    Location.revealedUnits[childID].name = getUnitName(childID)
+                    echo("registerRevealedUnitLocation: revealing child"..childID)
                 end
             end
         end
-        Location.revealedUnits = revealedUnits
-		Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
 
         if not GG.RevealedLocations then GG.RevealedLocations = {} end
         GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
