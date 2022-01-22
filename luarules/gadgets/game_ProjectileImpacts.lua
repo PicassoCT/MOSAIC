@@ -543,6 +543,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     spEcho("Interogation End: Interrogator distance to big ")
                     setSpeedEnv(persPack.interrogatorID, 1.0)
                     if persPack.IconID then
+                        destroyUnitConditional(persPack.IconID, true, false)
                         GG.raidStatus[persPack.IconID] = nil
                     end
                     updateInterrogatedStatus(persPack.unitID, false)
@@ -619,8 +620,10 @@ if (gadgetHandler:IsSyncedCode()) then
                     spEcho("Interrogation was succesfull - childs of " ..
                                persPack.unitID .. " are revealed")
                     unitTeam = spGetUnitTeam(persPack.unitID)
-                    children = getChildrenOfUnit(unitTeam, persPack.unitID)
-                    parent = getParentOfUnit(unitTeam, persPack.unitID)
+                    local children = getChildrenOfUnit(unitTeam, persPack.unitID)
+                    local parent = getParentOfUnit(unitTeam, persPack.unitID)
+                    if not children then spEcho("Unit "..persPack.unitID.. " has no children") end
+                    if not parent then spEcho("Unit "..persPack.unitID.. " has no parent") end
                     GG.Bank:TransferToTeam(
                         GameConfig.raid.interrogationPropagandaPrice,
                         persPack.attackerTeam, persPack.attackerID)
