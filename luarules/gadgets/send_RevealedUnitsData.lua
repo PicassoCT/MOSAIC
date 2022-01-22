@@ -44,26 +44,25 @@ local function addTestLocation()
     local dependent = allUnits[rIndex]
 
     if dependent then
-    revealedUnits[dependent]={}
-    revealedUnits[dependent].defID = Spring.GetUnitDefID(dependent)
-	tooltip = UnitDefs[revealedUnits[dependent].defID].tooltip
-	braceStart = string.find(tooltip,"<")
-	if braceStart then
-		revealedUnits[dependent].name =  string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
-        if not revealedUnits[dependent].name then
-            revealedUnits[dependent].name = "Target"    
-        end
-	else
-		revealedUnits[dependent].name = "Target" 	 
-	end
+        revealedUnits[dependent]={}
+        revealedUnits[dependent].defID = Spring.GetUnitDefID(dependent)
+    	tooltip = UnitDefs[revealedUnits[dependent].defID].tooltip
+    	braceStart = string.find(tooltip,"<")
+    	if braceStart then
+    		revealedUnits[dependent].name = string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
+            if not revealedUnits[dependent].name then
+                revealedUnits[dependent].name = "Target"    
+            end
+    	else
+    		revealedUnits[dependent].name = "Target" 	 
+    	end
 
-    if boolOneParentOnly == false then   
-      revealedUnits[dependent].boolIsParent = false
-    else
-       boolOneParentOnly= false
-      revealedUnits[dependent].boolIsParent = true
-    end
-      
+        if boolOneParentOnly == false then   
+          revealedUnits[dependent].boolIsParent = false
+        else
+           boolOneParentOnly= false
+          revealedUnits[dependent].boolIsParent = true
+        end      
     end
   end
 
@@ -85,13 +84,15 @@ local function updateLocationData()
 
     for nr, LocationData in pairs(GG.RevealedLocations) do
         boolAtLeastOneAlive = false
+        if LocationData and LocationData.revealedUnits then
          for id, data in pairs(LocationData.revealedUnits) do
-            if doesUnitExistAlive(id) == false then
+            if data and doesUnitExistAlive(id) == false then
                 GG.RevealedLocations[nr].revealedUnits[id] = nil
             else
                 boolAtLeastOneAlive = true
             end
          end
+        end
          if not boolAtLeastOneAlive then
             GG.RevealedLocations[nr] = nil
          end
