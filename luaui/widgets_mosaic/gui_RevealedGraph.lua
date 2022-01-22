@@ -94,12 +94,10 @@ local function deserializeStringToTable(str)
   return f()
 end
 
-
 local gaiaTeamID = Spring.GetGaiaTeamID () --+++
 function widget:PlayerChanged() --+++
   gaiaTeamID = Spring.GetGaiaTeamID () --+++
 end --+++
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -184,6 +182,7 @@ end
 
 function RevealedGraphChanged(newLocationData)
   if newLocationData then
+    Spring.Echo("RevealedGraphChanged:"..(newLocationData or "{}"))
     Locations = deserializeStringToTable(newLocationData)
   end
 end
@@ -266,8 +265,6 @@ function stringToHash(hashString)
     return totalValue
 end
 
-
-
 local startFrame  = 1
 function widget:Initialize()
   widgetHandler:RegisterGlobal(widget, 'RevealedGraphChanged', RevealedGraphChanged)
@@ -293,7 +290,6 @@ end
 function widget:Shutdown()
      widgetHandler:DeregisterGlobal('RevealedGraphChanged')
 end
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -356,10 +352,6 @@ function clamp(val,min,max)
   if val > max then return max end
   return val
 end
-
-
-
-
 
 function randSign()
   if math.random(0,1)==1 then return -1 else return 1 end
@@ -595,7 +587,7 @@ function widget:DrawWorld()
         DrawSafeHouseMarker(Loc,  
 							maxHeightIcon,
 							"SOURCE:"..string.char(65 + (i % 24))..i, 
-							"Location: ("..Loc.x.."/"..Loc.z..") ETD: Secs "..runtimeInSeconds)
+							"Location: ("..math.floor(Loc.x).."/"..math.floor(Loc.z)..") ETD: Secs "..runtimeInSeconds)
 
         gl.LineWidth(1.0)
         gl.Color(1, 1, 1, 1)
