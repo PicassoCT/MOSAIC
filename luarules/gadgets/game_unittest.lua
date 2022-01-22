@@ -69,7 +69,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 return                
             end 
 
-    local size = 10
+    local size = 25
 
         process(Spring.GetAllUnits(),
             function(id)
@@ -81,16 +81,13 @@ if (gadgetHandler:IsSyncedCode()) then
                     size = size - 1
                     echo("Spawn Test setup "..size)
                     spawnHouseID=randDict(spawnedSafeHouse)
-                    trainedOperative = createUnitAtUnit(aiTeam,"operativeinvestigator", id, math.random(-40,40), 0 ,  math.random(-40,40))
-                    spawnedOperatives[trainedOperative]=trainedOperative
-
-                    trainedOperative = createUnitAtUnit(aiTeam, "operativeinvestigator", id,  math.random(-40,40), 0 ,  math.random(-40,40))
-                    spawnedOperatives[trainedOperative]=trainedOperative
+                    trainedOperative = createUnitAtUnit(aiTeam,"operativeinvestigator", id, math.random(-40, 40), 0 ,  math.random(-40,40))
+                    spawnedOperatives[trainedOperative] = trainedOperative
 
                     operativeCreatingNextSafeHouse = randDict(spawnedOperatives)
-                    safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0 , 0)
+                    safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0, 0)
                     Spring.SetUnitAlwaysVisible(safehouseID, false)
-                    spawnedSafeHouse[safehouseID]=safehouseID
+                    spawnedSafeHouse[safehouseID] = safehouseID
                 end
             end
             )
@@ -101,73 +98,57 @@ if (gadgetHandler:IsSyncedCode()) then
         local allSafehouses = spawnedSafeHouse
         local safehouses = spawnedSafeHouse
         local operatives = spawnedOperatives
-        local root = randDict(operatives)
+        root = randDict(spawnedOperatives)
         registerFather(aiTeam, root)
         
-        while root do
+        while count(operatives) > 0 or count(safehouses)  > 0 do
             newSafeHouse = randDict(safehouses) 
             if newSafeHouse then
                 registerChild(aiTeam, root, newSafeHouse)
                 echo("Unit "..root.." is parent of "..newSafeHouse)
             end
 
+            if not newSafeHouse then
+                newSafeHouse = randDict(allSafehouses)
+                if not newSafeHouse then break end
+            end
+
             operatives[root] = nil
             root = randDict(operatives)
+            if not root then return end
 
-            if root then
-                if newSafeHouse then
-                    registerChild(aiTeam, newSafeHouse, root)
-                    echo("Safehouse "..newSafeHouse.." is parent of "..root)
-                    safehouses[newSafeHouse] = nil
-                else
-                    preExistingSafehouse = randDict(allSafehouses)
-                    if not preExistingSafehouse then return end
-                    registerChild(aiTeam, preExistingSafehouse, root)
-                    echo("Safehouse "..preExistingSafehouse.." is parent of "..root)
-                end
-            end
+            registerChild(aiTeam, newSafeHouse, root)
+            echo("Safehouse "..newSafeHouse.." is parent of "..root)
+            safehouses[newSafeHouse] = nil          
         end
         echo("End Connecting the network")
     end 
 
-boolOnce = true
-boolConnect = true
+boolDone = false
     function gadget:GameFrame(frame)
 
-        if frame > (startFrame + (startTestAfterSeconds*30)) and boolOnce == true then
+        if frame == (startFrame + (startTestAfterSeconds*30)) then
             echo("Game:Unit_Test:SpawningTestUnits")
             spawnTestNetwork()
-            boolOnce = false
         end
-            if frame > (startFrame + (startTestAfterSeconds*30))+1 and boolConnect == true then
+            
+        if frame == (startFrame + (startTestAfterSeconds*30))+ 1 then
             connectTheDots()
-            boolConnect = false
-          end 
+            boolDone = true
+        end 
 
-        if boolOnce and frame % 10 == 0 then
+        if frame % 10 == 0 and not boolDone then
             echo( "Starting in "..math.abs(frame - ( startFrame + (startTestAfterSeconds*30))))
         end
 
-      
-
-        if frame % 90 == 0 and boolOnce == false then
-            process(spawnedSafeHouse,
-                    function(id)
-                        if doesUnitExistAlive(id) == true then return id end
-                    end,
-                    function (id)
-                        spawnCegAtUnit(id,"greenlight", 0, 50, 0)
-                    end
-                    )
-        end
-
-        if frame % 60 == 0 and boolOnce == false then
-            process(spawnedOperatives,
+        if frame % 60 == 0 and boolDone == true then
+            spawnedOperatives = process(spawnedOperatives,
                     function(id)
                         if doesUnitExistAlive(id) == true then return id end
                     end,
                     function (id)
                         spawnCegAtUnit(id,"redlight", 0, 50, 0)
+                        return id
                     end
                     )
         end
