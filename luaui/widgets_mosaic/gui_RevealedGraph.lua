@@ -179,10 +179,14 @@ local function DrawCircle( Locx, Locz, radius, offsetY)
   local z = Locz 
   glVertex(x,gh,z)
 end
-
+local oldLocationData = ""
 function RevealedGraphChanged(newLocationData)
+  if newLocationData and newLocationData ~= oldLocationData then
+      Spring.Echo("RevealedGraphChanged:"..(newLocationData ))
+      oldLocationData = newLocationData
+  end
+  
   if newLocationData then
-    Spring.Echo("RevealedGraphChanged:"..(newLocationData or "{}"))
     Locations = deserializeStringToTable(newLocationData)
   end
 end
@@ -594,32 +598,32 @@ function widget:DrawWorld()
 
         local revealedUnits = Loc.revealedUnits
         for id, data in pairs(revealedUnits) do
-          if  Spring.GetUnitIsDead(id) == false then 
+          if  Spring.GetUnitIsDead(id) == false  then 
           local x, y, z = spGetUnitBasePosition(id)
           local radius = GetUnitDefRealRadius(id) or 50
           local gx, gy, gz = spGetGroundNormal(x, z)
           local degrot = math.acos(gy) * 180 / math.pi
           local designation =  data.name or "---"
           
-          if Loc.boolIsParent then
-            glColor(dayTimeDependentColorSet[2])
-            gl.LineWidth(3.0)
-            gl.LineWidth(1.0)
-            gl.Color(1, 1, 1, 1)
-            DrawRevealedMarkerParent({x=x,y=y,z=z}, 
-										maxHeightIcon, 
-										"ROOT: "..id, 
-										"TYPE:"..designation.." ☎:"..getPhoneNr( id))
-          else
-            glColor(dayTimeDependentColorSet[2])
-            gl.LineWidth(3.0)
-            gl.LineWidth(1.0)
-            gl.Color(1, 1, 1, 1)
-            DrawRevealedMarkerChild({x=x,y=y,z=z},
-									maxHeightIcon,
-									"TARGET: "..id,
-									"TYPE:"..designation.." ☎:"..getPhoneNr( id))
-          end
+            if data.boolIsParent then
+              glColor(dayTimeDependentColorSet[2])
+              gl.LineWidth(3.0)
+              gl.LineWidth(1.0)
+              gl.Color(1, 1, 1, 1)
+              DrawRevealedMarkerParent({x=x,y=y,z=z}, 
+  										maxHeightIcon, 
+  										"ROOT: "..id, 
+  										"TYPE:"..designation.." ☎:"..getPhoneNr( id))
+            else
+              glColor(dayTimeDependentColorSet[2])
+              gl.LineWidth(3.0)
+              gl.LineWidth(1.0)
+              gl.Color(1, 1, 1, 1)
+              DrawRevealedMarkerChild({x=x,y=y,z=z},
+  									maxHeightIcon,
+  									"TARGET: "..id,
+  									"TYPE:"..designation.." ☎:"..getPhoneNr( id))
+            end
         
           --drawStripe from Location to Unit
           newPolygon(Loc.x, Loc.y, Loc.z)

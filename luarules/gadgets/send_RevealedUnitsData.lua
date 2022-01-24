@@ -19,11 +19,12 @@ VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-local  boolTestGraph = false
+local  boolTestGraph = true
 
 function gadget:Initialize()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
 end
+
 
 local function addTestLocation()
   local locations = {}
@@ -46,17 +47,8 @@ local function addTestLocation()
     if dependent then
         revealedUnits[dependent]={}
         revealedUnits[dependent].defID = Spring.GetUnitDefID(dependent)
-    	tooltip = UnitDefs[revealedUnits[dependent].defID].tooltip
-    	braceStart = string.find(tooltip,"<")
-    	if braceStart then
-    		revealedUnits[dependent].name = string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
-            if not revealedUnits[dependent].name then
-                revealedUnits[dependent].name = "Target"    
-            end
-    	else
-    		revealedUnits[dependent].name = "Target" 	 
-    	end
-
+        revealedUnits[dependent].name = extractNameFromDescription(dependent)
+    	
         if boolOneParentOnly == false then   
           revealedUnits[dependent].boolIsParent = false
         else
@@ -80,8 +72,6 @@ local function addTestLocation()
 end
 
 local function updateLocationData()
-    if not GG.RevealedLocations then GG.RevealedLocations = {} end
-
     for nr, LocationData in pairs(GG.RevealedLocations) do
         boolAtLeastOneAlive = false
         if LocationData and LocationData.revealedUnits then
@@ -120,12 +110,10 @@ function gadget:GameFrame(frame)
         end
     end
 
-   if boolTestGraph == true and frame >0 and frame % (30*60) == 0 then
+   if boolTestGraph == true and frame > 0 and frame % 30 == 0 and #GG.RevealedLocations == 0 then
         Spring.Echo("addTestLocation")
         GG.RevealedLocations = addTestLocation()
     end
-
-
 end
 
 else --unsynced
