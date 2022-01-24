@@ -82,9 +82,10 @@ function interrogatePercentage()
     while not GG.raidStatus or not GG.raidStatus[unitID] do --test
         Sleep(100)
         timer = timer + 100
-        if timer > 15000 then 
+        if timer > 3000 then 
             echo("Timeout interrogationIcon")
-            Spring.DestroyUnit(unitID, false, true) end
+            Spring.DestroyUnit(unitID, false, true) 
+        end
     end
 
     SetUnitValue(COB.WANT_CLOAK, 0)
@@ -101,7 +102,7 @@ function interrogatePercentage()
     WaitForMoves(TablesOfPiecesGroups["Ring"])
 
     if GG.raidStatus and GG.raidStatus[unitID] then
-         GG.raidStatus[unitID].boolInterogationComplete = true
+        GG.raidStatus[unitID].boolInterogationComplete = true
     end
     Spring.DestroyUnit(unitID, false, true)
 end
