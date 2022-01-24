@@ -1966,14 +1966,14 @@ end
       return radius
     end
 
-    function getUnitName(unitID)
-        name = "Target"
-        tooltip = UnitDefs[Spring.GetUnitDefID(unitID)].tooltip
-        braceStart = string.find(tooltip,"<")
-        if braceStart then
-            name = string.upper(string.sub(tooltip, braceStart, string.find(tooltip,">")))
+    function extractNameFromDescription(unitID)
+        tooltip = UnitDefs[Spring.GetUnitDefID(unitID)].humanName
+        braceStart=string.find(tooltip,"<")
+        if braceStart then 
+            return string.upper(string.sub(tooltip, 1, braceStart-1)) or "Target"
+        else 
+            return string.upper(tooltip) or "Target"
         end
-        return name
     end
 
     function registerRevealedUnitLocation(unitID)
@@ -1984,23 +1984,23 @@ end
         Location.revealedUnits = {}
         Location.endFrame = Spring.GetGameFrame() + GG.GameConfig.raid.revealGraphLifeTimeFrames
 
-        parent = getParentOfUnit(Location.teamID, unitID)
+        local parent = getParentOfUnit(Location.teamID, unitID)
         if parent and doesUnitExistAlive(parent) then
             Location.revealedUnits[parent] = {}
             Location.revealedUnits[parent].defID = Spring.GetUnitDefID(parent)
             Location.revealedUnits[parent].boolIsParent = true
-            Location.revealedUnits[parent].name = getUnitName(parent)
+            Location.revealedUnits[parent].name = extractNameFromDescription(parent)
             echo("registerRevealedUnitLocation: revealing parent "..parent)
         end
 
-        children = getChildrenOfUnit(Location.teamID, unitID)
+        local children = getChildrenOfUnit(Location.teamID, unitID)
         if children and count(children) > 0 then
             for childID, _ in pairs(children) do
                 if childID and doesUnitExistAlive(childID) then
                     Location.revealedUnits[childID] = {}
                     Location.revealedUnits[childID].defID = Spring.GetUnitDefID(childID)
                     Location.revealedUnits[childID].boolIsParent = false
-                    Location.revealedUnits[childID].name = getUnitName(childID)
+                    Location.revealedUnits[childID].name = extractNameFromDescription(childID)
                     echo("registerRevealedUnitLocation: revealing child"..childID)
                 end
             end
