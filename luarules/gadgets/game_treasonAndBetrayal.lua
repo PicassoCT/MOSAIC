@@ -18,7 +18,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
-    local spGetPosition = Spring.GetUnitPosition
+    local spGetUnitPosition = Spring.GetUnitPosition
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitTeam = Spring.GetUnitTeam
 
@@ -85,7 +85,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
         if InterrogateableType[unitDefID]  then
-            if attackerID and spGetUnitTeam(attackerID) ~= teamID then 
+            if attackerID and spGetUnitTeam(attackerID) == teamID then 
                 x,y,z = getFairDropPointNear(unitID)
                 copyID = Spring.CreateUnit("deaddropicon", teamID, x,y,z, 1 )
                 transferHierarchy(teamID, originalID, copyID)
