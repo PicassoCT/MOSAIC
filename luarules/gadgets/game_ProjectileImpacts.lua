@@ -67,6 +67,8 @@ if (gadgetHandler:IsSyncedCode()) then
         [molotowDefID] = true
     }
   
+    RaidExternalAbort = {}
+
     function getWeapondefByName(name)
         return WeaponDefs[WeaponDefNames[name].id]
     end
@@ -84,6 +86,9 @@ if (gadgetHandler:IsSyncedCode()) then
         spEcho(GetInfo().name .. " Initialization started")
         if not GG.houseHasSafeHouseTable then
             GG.houseHasSafeHouseTable = {}
+        end 
+        if not GG.InterrogationTable then
+            GG.InterrogationTable = {}
         end
         spEcho(GetInfo().name .. " Initialization ended")
     end
@@ -276,19 +281,33 @@ if (gadgetHandler:IsSyncedCode()) then
     -- Interrogation
     -----------------------------------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------------
-    function isEngagedInAnotherRaidAlready(attackerID)
+    function isEngagedInAnotherRaidAlready(attackerID, currentVictimID)
         local InterrogationTable =  GG.InterrogationTable 
-        for victimID, raiderID in pairs(InterrogationTable) do
-            if raiderID == attackerID and InterrogationTable[victimID][raiderID] == true then
-                return true
+        for victimID, raiders in pairs(InterrogationTable) do
+            if victimID ~= currentVictimID then
+                for raiderID, boolActive in pairs(raiders) do
+                    if raiderID == attackerID and boolActive then  return true end
+                end
             end
         end
-
         return false
     end
 
+    function isInterrogatingAttacker(possibleAttackerID)
+        local InterrogationTable =  GG.InterrogationTable
+        for victim, attackerTable in pairs( GG.InterrogationTable) do
+            if attackerTable then
+                for attackerID, boolActive in pairs( attackerTable) do
+                    if attackerID == possibleAttackerID and boolActive then return true end
+                end
+            end
+        end
+        return false
+    end
+
+
     -- victim -- interrogator -- boolInerrogationOngoing
-    GG.InterrogationTable = {}
+
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
                                          "civilian", UnitDefs)
@@ -332,7 +351,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         --check if the attacker is not already engaged in another raid
-        if isEngagedInAnotherRaidAlready(attackerID) == true then
+        if isEngagedInAnotherRaidAlready(attackerID, unitID) == true then
             spEcho("raidEventStream Aborted, previous Raid in Progress"..unitID)
             return true, persPack
         end
@@ -485,6 +504,24 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Set Uncloak
     end
 
+    function postInterrogationCleanUp(victimID, interrogatorID, iconID)
+        if interrogatorID and doesUnitExistAlive(interrogatorID) then
+           setSpeedEnv(interrogatorID, 1.0)
+        end  
+
+        if victimID and doesUnitExistAlive(victimID) then
+           setSpeedEnv(victimID, 1.0)
+           updateInterrogatedStatus(victimID, false)
+        end
+
+        if iconID and doesUnitExistAlive(iconID) then
+            GG.raidStatus[iconID] = nil
+            Spring.DestroyUnit(iconID, true, false)
+        end
+
+        GG.InterrogationTable[victimID] = nil
+    end
+
    interrogationEventStreamFunction = function(unitID, unitDefID, unitTeam,
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
@@ -498,7 +535,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
          --check if the attacker is not already engaged in another raid
-        if isEngagedInAnotherRaidAlready(attackerID) == true then
+        if isEngagedInAnotherRaidAlready(attackerID, unitID) == true then
             spEcho("Interogation: raidEventStream Aborted, previous Raid in Progress"..unitID)
             return true, persPack
         end
@@ -508,45 +545,34 @@ if (gadgetHandler:IsSyncedCode()) then
 
             -- Stun
             interrogationFunction = function(persPack)
-            
+          
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
-                    GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("Interogation End: Target died")
-                   
-                    if true == doesUnitExistAlive(persPack.interrogatorID) then
-                        setSpeedEnv(persPack.interrogatorID, 1.0)
-                    end
-
-                    if persPack.IconID then
-                        GG.raidStatus[persPack.IconID] = nil
-                    end
+                    postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
                     return true, persPack
                 end
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                   GG.InterrogationTable[persPack.unitID] = nil
                     spEcho("Interrogation End: Interrogator died")
-                    if persPack.IconID then
-                        GG.raidStatus[persPack.IconID] = nil
-                    end
-                    updateInterrogatedStatus(persPack.unitID, false)
+                    postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
+                    return true, persPack
+                end
+
+                -- check for external abort
+                if RaidExternalAbort[persPack.interrogatorID] == true then                    
+                    spEcho("Interrogation End: Interrogator was shot at")
+                    RaidExternalAbort[persPack.interrogatorID] = nil                    
+                    postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
                     return true, persPack
                 end
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
                     GameConfig.InterrogationDistance then
-                    GG.InterrogationTable[persPack.unitID] = nil
-
                     spEcho("Interogation End: Interrogator distance to big ")
-                    setSpeedEnv(persPack.interrogatorID, 1.0)
-                    if persPack.IconID then
-                        destroyUnitConditional(persPack.IconID, true, false)
-                        GG.raidStatus[persPack.IconID] = nil
-                    end
-                    updateInterrogatedStatus(persPack.unitID, false)
+                    postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)                        
                     return true, persPack
                 end
 
@@ -587,9 +613,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         if not allTeams or #allTeams <= 1 then
                             -- Simulation mode
                             spEcho( "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
-                            GG.InterrogationTable[persPack.unitID] = nil
-                            setSpeedEnv(persPack.interrogatorID, 1.0)
-                            updateInterrogatedStatus(persPack.unitID, false) --TODO extract cleanup code
+                            postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)        
                             return true, persPack
                         end
 
@@ -610,9 +634,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-                            setSpeedEnv(persPack.interrogatorID, 1.0)
-                            GG.InterrogationTable[persPack.unitID] = nil
-                            updateInterrogatedStatus(persPack.unitID, false)
+                            postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)     
                             return true, persPack
                         end
                     end
@@ -663,9 +685,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =  nil
                     spEcho("Interrogation ended successfuly")
 
-                    GG.raidStatus[persPack.IconID] = nil
-                    GG.InterrogationTable[persPack.unitID] = nil
-                    setSpeedEnv(persPack.interrogatorID, 1.0)
+                    postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)     
                     return true, persPack
                 end
 
@@ -716,10 +736,11 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
             if MobileInterrogateAbleType[unitDefID] and
-                currentlyInterrogationRunning(unitID, attacker) == false then
+                currentlyInterrogationRunning(unitID, attackerID) == false then
                 spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
                 stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
                 setSpeedEnv(attackerID, 0.0)
+                RaidExternalAbort[attackerID] = false
                 updateInterrogatedStatus(unitID, true)
                 interrogationEventStreamFunction(unitID, unitDefID, unitTeam,
                                                  damage, paralyzer, weaponDefID,
@@ -844,7 +865,13 @@ if (gadgetHandler:IsSyncedCode()) then
         if weaponDefID and WeaponDef and WeaponDef[weaponDefID] then
             Spring.Echo("UnitDamaged called with weapon"..WeaponDef[weaponDefID].name)
         end
- 
+
+        --If Interrogator abort running interrogation 
+        if isInterrogatingAttacker(unitID) and not (GG.InterrogationTable[attackerID] and GG.InterrogationTable[attackerID][unitID]) then
+            RaidExternalAbort[unitID] = true
+            return damage
+        end
+
         if UnitDamageFuncT[weaponDefID] then
             resultDamage = UnitDamageFuncT[weaponDefID](unitID, unitDefID,
                                                         unitTeam, damage,
@@ -854,6 +881,9 @@ if (gadgetHandler:IsSyncedCode()) then
                                                         attackerTeam)
             if resultDamage then return resultDamage end
         end
+        
+    
+
 
         if FireWeapons[weaponDefID] then
             setUnitOnFire(unitID, math.random(190, 1500))
