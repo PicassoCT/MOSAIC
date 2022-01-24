@@ -141,8 +141,8 @@ boolDone = false
             echo( "Starting in "..math.abs(frame - ( startFrame + (startTestAfterSeconds*30))))
         end
 
-        if frame % 60 == 0 and boolDone == true then
-            spawnedOperatives = process(spawnedOperatives,
+        if frame > (startFrame + (startTestAfterSeconds*30))+ 1 and frame % 60 == 0  then
+             process(spawnedOperatives,
                     function(id)
                         if doesUnitExistAlive(id) == true then return id end
                     end,
