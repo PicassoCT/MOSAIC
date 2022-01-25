@@ -141,10 +141,12 @@ boolDone = false
             echo( "Starting in "..math.abs(frame - ( startFrame + (startTestAfterSeconds*30))))
         end
 
-        if frame > (startFrame + (startTestAfterSeconds*30))+ 1 and frame % 60 == 0  then
+        if frame > (startFrame + (startTestAfterSeconds*30)) and frame % 60 == 0  then
              process(spawnedOperatives,
                     function(id)
-                        if doesUnitExistAlive(id) == true then return id end
+                        if doesUnitExistAlive(id) == true then 
+                            return id 
+                        end
                     end,
                     function (id)
                         spawnCegAtUnit(id,"redlight", 0, 50, 0)
