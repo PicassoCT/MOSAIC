@@ -27,7 +27,7 @@ end
 
 
 local function addTestLocation()
-  local locations = {}
+  local locations = GG.RevealedLocations
   local allUnits = Spring.GetAllUnits()
   if #allUnits < 1 then return {} end
 
@@ -68,7 +68,7 @@ local function addTestLocation()
   locations[n].revealedUnits = revealedUnits
   locations[n].endFrame = Spring.GetGameFrame() + GG.GameConfig.raid.revealGraphLifeTimeFrames
 
-  return locations
+  GG.RevealedLocations = locations
 end
 
 local function updateLocationData()
@@ -110,9 +110,9 @@ function gadget:GameFrame(frame)
         end
     end
 
-   if boolTestGraph == true and frame > 0 and frame % 30 == 0 and #GG.RevealedLocations == 0 then
+   if boolTestGraph == true and frame > 0 and frame % (120*30) == 0  then
         Spring.Echo("addTestLocation")
-        GG.RevealedLocations = addTestLocation()
+        -- addTestLocation()
     end
 end
 
