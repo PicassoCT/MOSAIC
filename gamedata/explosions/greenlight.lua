@@ -1,4 +1,4 @@
--- redlight
+-- greenlight
 
 return {
   ["greenlight"] = {
