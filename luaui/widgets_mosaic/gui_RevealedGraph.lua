@@ -72,6 +72,7 @@ local spIsUnitVisible        = Spring.IsUnitVisible
 local spSendCommands         = Spring.SendCommands
 local spGetGameFrame         = Spring.GetGameFrame
 
+
 local Locations = {
   --contains with key unitID (x,y,z, teamID, endFrame, radius and  revealedUnits as table[unitID] -> {defID = unitDefID, boolIsParent }
   --if all revealed Units are no more, a location ceases to be relevant
@@ -161,6 +162,7 @@ local function DrawTriangle( Locx, Locz, radius, offsetY)
   local z = Locz 
   glVertex(x,gh,z)
 end
+
 
 local function DrawCircle( Locx, Locz, radius, offsetY)
   local gh = spGetGroundHeight(Locx, Locz) 
@@ -530,7 +532,7 @@ local function DrawRevealedMarkerParent(Loc,  yshift, designator, name, isCivili
   if isCivilian == true then
   gl.Text ("\255\255\34\12 ◤⚛⚖"..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
   else
-    gl.Text ("\255\255\34\12 ◤♞⚔☎ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+    gl.Text ("\255\255\34\12 ◤♚⛁ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
   end
   gl.EndText()
   glPopMatrix()
@@ -556,9 +558,9 @@ local function DrawRevealedMarkerChild(Loc,  yshift, designator, name)
   glColor(baseBlack)
   gl.BeginText ( ) 
   glColor(baseBlack)
-  gl.Text ("\255\0\0\0 ◈ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lt" ) 
+  gl.Text ("\255\0\0\0 ♦ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lt" ) 
   glColor(childcolour)
-  gl.Text ("\255\255\72\0 ◤♚⛁ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+  gl.Text ("\255\255\72\0 ◤♞⚔☎ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
   gl.EndText()
     glPopMatrix()
 end
@@ -598,10 +600,14 @@ function widget:DrawWorld()
 
         local revealedUnits = Loc.revealedUnits
         for id, data in pairs(revealedUnits) do
-          if  Spring.GetUnitIsDead(id) == false  then 
-          local x, y, z = spGetUnitBasePosition(id)
+          if Spring.GetUnitIsDead(id) then          
+          else
+          
+          local px, py, pz = spGetUnitBasePosition(id)
+          Spring.Echo(x,y,z)
           local radius = GetUnitDefRealRadius(id) or 50
-          local gx, gy, gz = spGetGroundNormal(x, z)
+          --Problem with context not recalling variable
+          local gx, gy, gz = spGetGroundNormal(px, pz)
           local degrot = math.acos(gy) * 180 / math.pi
           local designation =  data.name or "---"
           
@@ -610,19 +616,21 @@ function widget:DrawWorld()
               gl.LineWidth(3.0)
               gl.LineWidth(1.0)
               gl.Color(1, 1, 1, 1)
-              DrawRevealedMarkerParent({x=x,y=y,z=z}, 
+              DrawRevealedMarkerParent({x=px,y=y,z=pz}, 
   										maxHeightIcon, 
   										"ROOT: "..id, 
   										"TYPE:"..designation.." ☎:"..getPhoneNr( id))
+              Spring.Echo("Drawing parent")
             else
               glColor(dayTimeDependentColorSet[2])
               gl.LineWidth(3.0)
               gl.LineWidth(1.0)
               gl.Color(1, 1, 1, 1)
-              DrawRevealedMarkerChild({x=x,y=y,z=z},
+              DrawRevealedMarkerChild({x=px,y=y,z=pz},
   									maxHeightIcon,
   									"TARGET: "..id,
   									"TYPE:"..designation.." ☎:"..getPhoneNr( id))
+              Spring.Echo("Drawing child")
             end
         
           --drawStripe from Location to Unit
