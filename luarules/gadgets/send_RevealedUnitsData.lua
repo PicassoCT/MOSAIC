@@ -25,7 +25,6 @@ function gadget:Initialize()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
 end
 
-
 local function addTestLocation()
   local locations = GG.RevealedLocations
   local allUnits = Spring.GetAllUnits()
@@ -48,7 +47,8 @@ local function addTestLocation()
         revealedUnits[dependent]={}
         revealedUnits[dependent].defID = Spring.GetUnitDefID(dependent)
         revealedUnits[dependent].name = extractNameFromDescription(dependent)
-    	
+    	x,y,z = Spring.GetUnitPosition(dependent)
+        revealedUnits[dependent].pos = {x=x,y=y,z=z}
         if boolOneParentOnly == false then   
           revealedUnits[dependent].boolIsParent = false
         else
@@ -74,11 +74,13 @@ end
 local function updateLocationData()
     for nr, LocationData in pairs(GG.RevealedLocations) do
         boolAtLeastOneAlive = false
-        if LocationData and LocationData.revealedUnits then
+        if LocationData and type(LocationData) == "table" and LocationData.revealedUnits then
          for id, data in pairs(LocationData.revealedUnits) do
             if data and doesUnitExistAlive(id) == false then
                 GG.RevealedLocations[nr].revealedUnits[id] = nil
             else
+                x,y,z = Spring.GetUnitPosition(id)
+                GG.RevealedLocations[nr].revealedUnits[id].pos= {x=x,y=y,z=z}
                 boolAtLeastOneAlive = true
             end
          end
@@ -97,7 +99,7 @@ end
 startFrame = Spring.GetGameFrame()
 
 function gadget:GameFrame(frame)
-    if frame % 5 == 0 then
+    if frame % 3 == 0 then
         updateLocationData()
     end
 
@@ -110,9 +112,9 @@ function gadget:GameFrame(frame)
         end
     end
 
-   if boolTestGraph == true and frame > 0 and frame % (120*30) == 0  then
-        Spring.Echo("addTestLocation")
-        -- addTestLocation()
+    if boolTestGraph == true and frame > 0 and frame % (60*30) == 0  then
+        --Spring.Echo("Debugmode: adding TestLocation")
+        --addTestLocation()
     end
 end
 

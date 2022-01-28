@@ -50,26 +50,16 @@ local glTranslate      = gl.Translate
 local glRotate         = gl.Rotate
 local glBillboard      = gl.Billboard
 local glDrawFuncAtUnit = gl.DrawFuncAtUnit
-local glPushMatrix =gl.PushMatrix
-local glPopMatrix =gl.PopMatrix
+local glPushMatrix     = gl.PushMatrix
+local glPopMatrix      = gl.PopMatrix
 
 
-local spDiffTimers           = Spring.DiffTimers
-local spGetAllUnits          = Spring.GetAllUnits
 local spGetGroundNormal      = Spring.GetGroundNormal
 local spGetGroundHeight      = Spring.GetGroundHeight
-local spGetSelectedUnits     = Spring.GetSelectedUnits
 local spGetTeamColor         = Spring.GetTeamColor
-local spGetTimer             = Spring.GetTimer
+local spGetUnitPosition      = Spring.GetUnitPosition
 local spGetUnitBasePosition  = Spring.GetUnitBasePosition
 local spGetUnitDefDimensions = Spring.GetUnitDefDimensions
-local spGetUnitDefID         = Spring.GetUnitDefID
-local spGetUnitRadius        = Spring.GetUnitRadius
-local spGetUnitTeam          = Spring.GetUnitTeam
-local spGetUnitViewPosition  = Spring.GetUnitViewPosition
-local spIsUnitSelected       = Spring.IsUnitSelected
-local spIsUnitVisible        = Spring.IsUnitVisible
-local spSendCommands         = Spring.SendCommands
 local spGetGameFrame         = Spring.GetGameFrame
 
 
@@ -91,7 +81,9 @@ local function deserializeStringToTable(str)
   local f
   local msg = "no message"
   f, msg= loadstring(str)
-  if not f then Spring.Echo("Error deserializing:"..msg) end
+  if not f then 
+    --Spring.Echo("Error deserializing:"..msg) 
+  end
   return f()
 end
 
@@ -110,7 +102,6 @@ local circleDivs   = 32
 local circleOffset = 300
 local heightOffset = 0
 
-local startTimer = spGetTimer()
 local Polygon = { }
 local maxHeightIcon = 500
 --------------------------------------------------------------------------------
@@ -130,61 +121,16 @@ local function DrawLine(polyToDraw, offsetY)
   for i = 1, n do
     local x = polyToDraw[i][1]
     local z = polyToDraw[i][3]
-    local y = Spring.GetGroundHeight(x, z) + offsetY
+    local y = spGetGroundHeight(x, z) + offsetY
+
     glVertex(x,y,z)
   end
 end
 
-local function DrawTriangle( Locx, Locz, radius, offsetY)
-  local gh = spGetGroundHeight(Locx, Locz) 
-  local x = Locx - radius
-  local z = Locz 
-
-  glVertex(x,gh + offsetY, z)
-
-  local x = Locx - radius*2
-  local z = Locz - radius
-  glVertex(x,gh + offsetY,z)
-
-  local x = Locx 
-  local z = Locz -radius
-  glVertex(x,gh + offsetY,z)
-
-  local x = Locx - radius
-  local z = Locz 
-  glVertex(x,gh + offsetY,z)
-
-  local x = Locx 
-  local z = Locz 
-  glVertex(x,gh +offsetY,z)
-
-  local x = Locx 
-  local z = Locz 
-  glVertex(x,gh,z)
-end
-
-
-local function DrawCircle( Locx, Locz, radius, offsetY)
-  local gh = spGetGroundHeight(Locx, Locz) 
-
-  local radstep = (2.0 * math.pi) / 12
-  for i = 1, circleDivs do
-    local a = (i * radstep)
-    glVertex(Locx + math.sin(a) * radius, gh + offsetY, Locz + math.cos(a) * radius)
-  end
-
-  local x = Locx 
-  local z = Locz 
-  glVertex(x,gh +offsetY,z)
-
-  local x = Locx 
-  local z = Locz 
-  glVertex(x,gh,z)
-end
 local oldLocationData = ""
 function RevealedGraphChanged(newLocationData)
   if newLocationData and newLocationData ~= oldLocationData then
-      Spring.Echo("RevealedGraphChanged:"..(newLocationData ))
+      --Spring.Echo("RevealedGraphChanged:"..(newLocationData ))
       oldLocationData = newLocationData
   end
   
@@ -481,8 +427,8 @@ end
 local colorCache={}
 local revealColour = {50/255, 244/255, 253/255, 1.0}
 
-local function DrawSafeHouseMarker(Loc,  yshift, designator, name)
-  local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
+local function DrawSafeHouseMarker( Loc,  yshift, designator, name)
+  local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*3 
   glPushMatrix()
   glTranslate(Loc.x, Loc.y, Loc.z)
   glColor(baseWhite)
@@ -494,7 +440,7 @@ local function DrawSafeHouseMarker(Loc,  yshift, designator, name)
   glTranslate(0,yshift,0)
   --Draw Base Plate
   glColor(baseBlack)
-  glRect(-iconsizeX, iconsizeZ, maxstringlength, -iconsizeZ)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength, -iconsizeZ )
   glColor(revealColour)
   glRect(-iconsizeX, iconsizeZ, maxstringlength, 0)
   glColor(baseBlack)
@@ -506,14 +452,14 @@ local function DrawSafeHouseMarker(Loc,  yshift, designator, name)
   gl.EndText()
   glPopMatrix()
 end
-
-local parentColour = {1.0,34/255,12/255, 1.0}
-local function DrawRevealedMarkerParent(Loc,  yshift, designator, name, isCivilian)
-  local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
+--\255\145\0\255
+local parentColour = {145/255,0/255, 255/255, 255/255}
+local function DrawRevealedMarkerParent(id, Loc,  yshift, designator, name, isCivilian)
+  local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*3
   glPushMatrix()
   glTranslate(Loc.x, Loc.y, Loc.z)
   glColor(baseWhite)
-  glLineWidth(3.0)
+  glLineWidth(3.0) 
   local gh = spGetGroundHeight(Loc.x, Loc.z)
   yshift = yshift + gh
   glRect(-1, yshift, 1, 0)
@@ -521,25 +467,30 @@ local function DrawRevealedMarkerParent(Loc,  yshift, designator, name, isCivili
   glTranslate(0,yshift,0)
   --Draw Base Plate
   glColor(baseBlack)
-  glRect(-iconsizeX, iconsizeZ, maxstringlength, -iconsizeZ)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength + 10, -iconsizeZ)
   glColor(parentColour)
-  glRect(-iconsizeX, iconsizeZ, maxstringlength, 0)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength + 10, 0)
   glColor(baseBlack)
   gl.BeginText ( ) 
   glColor(baseBlack)
   gl.Text ("\255\0\0\0 ◈ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lt" ) 
   glColor(parentColour)
   if isCivilian == true then
-  gl.Text ("\255\255\34\12 ◤⚛⚖"..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+    gl.Text ("\255\145\0\255 ◤⚛⚖"..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
   else
-    gl.Text ("\255\255\34\12 ◤♚⛁ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+    gl.Text ("\255\145\0\255 ◤♚⛁ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
   end
   gl.EndText()
   glPopMatrix()
 end
 
+local function getDetermenisticChessSymbol(hash)
+
+    return symbol
+end
+
 local childcolour =  {1.0,72/255,0, 1.0}
-local function DrawRevealedMarkerChild(Loc,  yshift, designator, name)
+local function DrawRevealedMarkerChild(id, Loc,  yshift, designator, name)
   local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
   glPushMatrix()
   glTranslate(Loc.x, Loc.y, Loc.z)
@@ -552,18 +503,35 @@ local function DrawRevealedMarkerChild(Loc,  yshift, designator, name)
   glTranslate(0,yshift,0)
   --Draw Base Plate
   glColor(baseBlack)
-  glRect(-iconsizeX, iconsizeZ, maxstringlength, -iconsizeZ)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength + 10, -iconsizeZ)
   glColor(childcolour)
-  glRect(-iconsizeX, iconsizeZ, maxstringlength, 0)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength + 10, 0)
   glColor(baseBlack)
   gl.BeginText ( ) 
   glColor(baseBlack)
   gl.Text ("\255\0\0\0 ♦ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lt" ) 
   glColor(childcolour)
-  gl.Text ("\255\255\72\0 ◤♞⚔☎ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" ) 
+  local chessSymbol = getDetermenisticChessSymbol(id)
+
+  local rand = (id % 6) + 1 
+  if rand == 1 then
+    gl.Text ("\255\255\72\0 ◤♙⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" )
+  elseif rand == 2 then 
+    gl.Text ("\255\255\72\0 ◤♘⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" )
+  elseif rand == 3 then
+    gl.Text ("\255\255\72\0 ◤♖⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" )
+  elseif rand == 4 then
+    gl.Text ("\255\255\72\0 ◤♗⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" )  
+  elseif rand == 5 then
+    gl.Text ("\255\255\72\0 ◤♞⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" )  
+  elseif rand == 6 then
+    gl.Text ("\255\255\72\0 ◤♟⚔ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lt" )
+  end
   gl.EndText()
     glPopMatrix()
 end
+
+local unitLocations = {}
 
 --Draw Revealed master  
 function widget:DrawWorld()
@@ -572,7 +540,7 @@ function widget:DrawWorld()
   glPolygonOffset(-50, -2)
 
   for i=1, #Locations do
-  local Loc = Locations[i]
+      local Loc = Locations[i]
       local teamID = Loc.teamID
       if teamID then
         local radius = Loc.radius 
@@ -600,14 +568,13 @@ function widget:DrawWorld()
 
         local revealedUnits = Loc.revealedUnits
         for id, data in pairs(revealedUnits) do
-          if Spring.GetUnitIsDead(id) then          
-          else
-          
-          local px, py, pz = spGetUnitBasePosition(id)
-          Spring.Echo(x,y,z)
+          if id and not Spring.GetUnitIsDead(id) then          
+          local px, py, pz = 0,0,0
+          x, y, z = data.pos.x, data.pos.y, data.pos.z
+
           local radius = GetUnitDefRealRadius(id) or 50
           --Problem with context not recalling variable
-          local gx, gy, gz = spGetGroundNormal(px, pz)
+          local gx, gy, gz = spGetGroundNormal(x, z)
           local degrot = math.acos(gy) * 180 / math.pi
           local designation =  data.name or "---"
           
@@ -616,33 +583,36 @@ function widget:DrawWorld()
               gl.LineWidth(3.0)
               gl.LineWidth(1.0)
               gl.Color(1, 1, 1, 1)
-              DrawRevealedMarkerParent({x=px,y=y,z=pz}, 
+              DrawRevealedMarkerParent(
+                      id,
+                      {x=x,y=y,z=z}, 
   										maxHeightIcon, 
   										"ROOT: "..id, 
   										"TYPE:"..designation.." ☎:"..getPhoneNr( id))
-              Spring.Echo("Drawing parent")
+             
             else
               glColor(dayTimeDependentColorSet[2])
               gl.LineWidth(3.0)
               gl.LineWidth(1.0)
               gl.Color(1, 1, 1, 1)
-              DrawRevealedMarkerChild({x=px,y=y,z=pz},
+              DrawRevealedMarkerChild(
+                    id,
+                    {x=x,y=y,z=z},
   									maxHeightIcon,
   									"TARGET: "..id,
   									"TYPE:"..designation.." ☎:"..getPhoneNr( id))
-              Spring.Echo("Drawing child")
             end
-        
+               
           --drawStripe from Location to Unit
           newPolygon(Loc.x, Loc.y, Loc.z)
-          ux,uy,uz = spGetUnitBasePosition(id)
-          addLineSegment(ux,uy,uz)
+          --ux,uy,uz = spGetUnitBasePosition(id)
+          addLineSegment(x,y,z)
           gl.LineWidth(2.0)
           glColor(dayTimeDependentColorSet[1])
           gl.BeginEnd(GL.LINE_STRIP, DrawLine, Polygon ,maxHeightIcon-50)
           --reset
           gl.LineWidth(1.0)
-          gl.Color(1, 1, 1, 1)
+          gl.Color(1, 1, 1, 1)  
           end   
         end   
       end

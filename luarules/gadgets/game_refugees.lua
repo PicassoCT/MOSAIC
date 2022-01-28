@@ -208,6 +208,7 @@ function militaryStream(frame)
                     end
 
                     x,y,z = spGetUnitPosition(id)
+                    if not x then return end
                     dist = distance(x,y,z, mStuck[id].pos.x,mStuck[id].pos.y,mStuck[id].pos.z )
           
                         if dist < 30 then

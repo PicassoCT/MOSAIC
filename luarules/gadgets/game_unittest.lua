@@ -98,9 +98,12 @@ if (gadgetHandler:IsSyncedCode()) then
         local allSafehouses = spawnedSafeHouse
         local safehouses = spawnedSafeHouse
         local operatives = spawnedOperatives
-        root = randDict(spawnedOperatives)
+        root = randDict(operatives)
         registerFather(aiTeam, root)
-        
+        newSafeHouse = randDict(allSafehouses)
+        registerChild(aiTeam, newSafeHouse, root)
+        operatives[root] = nil
+
         while count(operatives) > 0 or count(safehouses)  > 0 do
             newSafeHouse = randDict(safehouses) 
             if newSafeHouse then
@@ -137,9 +140,9 @@ boolDone = false
             boolDone = true
         end 
 
-        if frame % 10 == 0 and not boolDone then
+ --[[       if frame % 10 == 0 and not boolDone then
             echo( "Starting in "..math.abs(frame - ( startFrame + (startTestAfterSeconds*30))))
-        end
+        end--]]
 
         if frame > (startFrame + (startTestAfterSeconds*30)) and frame % 60 == 0  then
              process(spawnedOperatives,

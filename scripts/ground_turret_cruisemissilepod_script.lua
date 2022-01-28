@@ -47,7 +47,7 @@ function script.Create()
     if not GG.CruiseMissileTransport then GG.CruiseMissileTransport  = {} end
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-        groundFeetSensors = TablesOfPiecesGroups["GroundSensor"]
+    groundFeetSensors = TablesOfPiecesGroups["GroundSensor"]
     hideT(GroundSensor)
     resetAll(unitID)
     hideAll(unitID)
@@ -60,7 +60,8 @@ function script.Create()
     Turn(aimpiece, x_axis, math.rad(180), 0)
 
     StartThread(foldControl)
- --   StartThread(debugCEGScript)
+    StartThread(launchCloud)
+    StartThread(launchStateMachineThread)
 end
 
 function foldControl()
@@ -188,64 +189,95 @@ function script.QueryWeapon1() return rocketPiece end
 boolLaunchAnimationStarted = false
 boolLaunchAnimationCompleted = false
 
-function delayedReset()
-    Sleep(10000)
-    WaitForMoves(rocketPiece,y_axis)
-    Signal(SIG_LAUNCHCLOUD)
-    StartThread(delayedReload)
-end
-
 function launchAnimation()
-    StartThread(delayedReset)
     Signal(SIG_LAUNCHCLOUD)
     SetSignalMask(SIG_LAUNCHCLOUD)
     boolLaunchAnimationStarted = true
     boolLaunchAnimationCompleted= false
     WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
     WTurn(PodTop, z_axis, math.rad(181), math.pi * 3)
-    StartThread(launchCloud)
     WMove(rocketPiece, y_axis, 500, 250)
     WMove(rocketPiece, y_axis, 1000, 1000)
     WMove(rocketPiece, y_axis, 3000, 1000)
     boolLaunchAnimationCompleted = true
 end
 
-function script.AimWeapon1(Heading, pitch)
-    if boolFired == true then return false end
-    if boolFired == false and boolLaunchAnimationStarted == false then StartThread(launchAnimation); return false end
+currentLaunchState = "ready"
 
-    return boolLaunchAnimationCompleted == true and boolFired== false
-
+function launchStateMachineThread()
+    oldState = "ready"
+    persPack = {}
+    while true do
+        newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
+        oldState = currentLaunchState
+        currentLaunchState = newState
+        Sleep(100)
+    end
 end
-function launchCloud()
-   
-    while boolFired==false do
+
+launchStateMachine = {
+    ready = function (frame, oldState, persPack)
+        WMove(rocketPiece, y_axis, 0, 2000)
+        WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
+        if boolFireRequest then
+            return "launching"
+        end
+        boolFireRequest = false
+        return "ready"
+    end,
+    lauching = function(frame, oldState, persPack)
+        if oldState == "ready" then
+            StartThread(launchAnimation)
+        end
+
+        if boolFireRequest == true and boolLaunchAnimationCompleted == true then
+            return "fire"
+        end
+
+        if boolFireRequest == false and boolLaunchAnimationCompleted == true then
+            Signal(SIG_LAUNCHCLOUD)
+            return "ready"
+        end
+
+        boolFireRequest =false
+        return "launching"
+    end,
+    fire = function (frame, oldState, persPack)
+        if boolFired == true then
+            boolFired = false 
+            return "reloading"
+        end
+        return "fire"
+    end,
+    reloading = function(frame, oldState, persPack)
+        boolFireRequest =false
+        if oldState == "fire" then persPack.startFrame = frame end
+        if persPack.startFrame + ((25*1000)/30) < frame then return "ready" end
+
+        return "reloading"
+    end
+}
+
+function script.AimWeapon1(Heading, pitch)
+    boolFireRequest= true
+    return currentLaunchState == "fire"
+end
+
+function launchCloud()   
+    while true do
+        while currentLaunchState == "launching" do
         EmitSfx(rocketPiece, 1024)
         Sleep(125)
-    end
-
-    for i=1,25 do
-        EmitSfx(rocketPiece, 1024)
-        Sleep(125)
-
-    end
+        end
+    Sleep(150)
+    end    
 end
 
 boolFired = false
-function script.FireWeapon1()    
-    boolFired= true
-    boolLaunchAnimationStarted = false
-    StartThread(delayedReload)
+function script.FireWeapon1()   
+    boolFired =  true
     return true
 end
-
-function delayedReload()
-     Signal(SIG_LAUNCHCLOUD)
-     Hide(rocketPiece)
-     Sleep(25000)
-     WMove(rocketPiece, y_axis, 0, 2000)
-     boolFired= false
-    end
 
 
 

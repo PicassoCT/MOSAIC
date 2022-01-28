@@ -634,8 +634,10 @@ if (gadgetHandler:IsSyncedCode()) then
                                         allTeams[i], persPack.unitID)
                                 end
                             end
-                            command(persPack.interrogatorID, "stop", {"shift"})
-                            command(persPack.interrogatorID, "stop", {})
+
+                            Command(persPack.interrogatorID, "stop", {"shift"})
+                            Command(persPack.interrogatorID, "stop", {})
+                            say("Innocent", 2500, { r = 1.0, g = 0.0, b = 0.0 }, { r = 1.0, g = 0.0, b = 0.0 }, "", persPack.unitID)
                             postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)     
                             return true, persPack
                         end

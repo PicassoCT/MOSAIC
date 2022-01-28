@@ -1956,7 +1956,7 @@ end
       local ud = UnitDefs[udid]
       if (ud == nil) then return nil end
 
-      local dims = spGetUnitDefDimensions(udid)
+      local dims = Spring.GetUnitDefDimensions(udid)
       if (dims == nil) then return nil end
 
       local scale = ud.hitSphereScale -- missing in 0.76b1+
@@ -1987,6 +1987,8 @@ end
         local parent = getParentOfUnit(Location.teamID, unitID)
         if parent and doesUnitExistAlive(parent) then
             Location.revealedUnits[parent] = {}
+            x,y,z = Spring.GetUnitPosition(parent)
+            Location.revealedUnits[parent].pos = {x=x,y=y,z=z}
             Location.revealedUnits[parent].defID = Spring.GetUnitDefID(parent)
             Location.revealedUnits[parent].boolIsParent = true
             Location.revealedUnits[parent].name = extractNameFromDescription(parent)
@@ -1998,6 +2000,8 @@ end
             for childID, _ in pairs(children) do
                 if childID and doesUnitExistAlive(childID) then
                     Location.revealedUnits[childID] = {}
+                    x,y,z = Spring.GetUnitPosition(childID)
+                    Location.revealedUnits[childID].pos = {x=x,y=y,z=z}
                     Location.revealedUnits[childID].defID = Spring.GetUnitDefID(childID)
                     Location.revealedUnits[childID].boolIsParent = false
                     Location.revealedUnits[childID].name = extractNameFromDescription(childID)
