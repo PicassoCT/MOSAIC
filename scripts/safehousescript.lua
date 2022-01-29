@@ -25,6 +25,7 @@ center = piece "center"
 Icon = piece "Icon"
 
 function preventBuildingNearPreexistingSafehouse()
+    boolResult = false
     process(getAllNearUnit(unitID, 100),
             function(id)
                 if spGetUnitTeam(id) == myTeamID and id ~= unitID then 
@@ -35,11 +36,12 @@ function preventBuildingNearPreexistingSafehouse()
                 defID = spGetUnitDefID(id)
                 if safeHouseTypeTable[defID] or safeHouseUpgradeTypeTable[defID] then
                     --we already have something in this building -- abort
-                return true
+                boolResult=  true
                 end
             end
             )
-        return false
+    
+        return boolResult
 end
 
 function script.Create()
