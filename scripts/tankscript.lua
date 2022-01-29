@@ -29,6 +29,10 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
+    list = Spring.GetUnitPieceList (unitID )
+    for i=1,#list do
+        Explode(list[i], SFX.EXPLODE + SFX.SMOKE + SFX.FIRE)
+    end
 
     createTankCorpse(unitID, recentDamage, lastTurretRotation + 180)
     return 1
@@ -65,10 +69,12 @@ function script.AimWeapon1(Heading, pitch)
     return true
 end
 
-function script.FireWeapon1() return true end
+function script.FireWeapon1()
+    Explode(Shell, SFX.FALL)
+ return true 
+end
 
 function script.StartMoving()
-	Explode(Shell, SFX.FALL)
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/drive_4_30.ogg",
                 1.0, 4500, 1)
 end
