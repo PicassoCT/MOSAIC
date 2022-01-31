@@ -107,9 +107,9 @@ function accountForBuiltLauncherSteps()
 end
 
 function payloadCheck(id)
-    defID = spGetUnitDefID(id)     
-    if spGetUnitTeam(id) == myTeamID and
-        payLoadTypes[defID] then
+    defID = spGetUnitDefID(id)   
+    transporterID = Spring.GetUnitTransporter(id)  
+    if payLoadTypes[defID] and transporterID and spGetUnitTeam(transporterID) == myTeamID then
             GG.Launchers[teamID][unitID].payload = defID
             echo("Payload recieved")
             Spring.DestroyUnit(id, true, false)

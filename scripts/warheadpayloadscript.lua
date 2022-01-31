@@ -8,6 +8,7 @@ local defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 local WarnText = piece"WarnText"
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+local spGetTeamInfo = Spring.GetTeamInfo
 
 function mightyBadaBoom()
  x,y,z = Spring.GetUnitPosition(unitID)
@@ -146,6 +147,10 @@ function registerBombLocationAndProducer(unitID)
                 GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
             end
 
+function isTeamProtagon(teamID)
+	  return (select(5, spGetTeamInfo(teamID)) == "protagon")
+end            
+
 function displayProgressBar(timeInMs)
   -- display the Progressbars																								
         progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
@@ -164,7 +169,8 @@ defuseStatesMachine = {
 						   function(id)
 							   if boolFoundSomething == true then return end
 							   defID = spGetUnitDefID(id)
-								 if  spGetUnitTeam(id) ~= myTeamID and defuseCapableUnitTypes[defID] and not isUnitDisguised(id) then
+							   	  teamID = spGetUnitTeam(id)
+								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID] and not isUnitDisguised(id) and isTeamProtagon(teamID)then
 									boolFoundSomething = true
 									 persPack.defuserID = id 
 									  persPack.defuseTimeMs = GameConfig.WarheadDefusalTimeMs 
