@@ -183,7 +183,7 @@ function script.Create()
     setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
-    StartThread(breathing)
+    StartThread(headAnimationLoop)
     StartThread(speedControl)
     StartThread(noCapesControl, LowArm1, LowArm2)
   
@@ -298,7 +298,7 @@ function speedControl()
     end
 end
 
-function breathing()
+function headAnimationLoop()
     while true do
         if boolAiming == false then
             WaitForTurns(Head1)
