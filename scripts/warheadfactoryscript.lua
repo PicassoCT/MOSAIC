@@ -14,10 +14,6 @@ Icon = piece "Icon"
 GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-if not center then
-    echo("Unit of type" .. UnitDefs[Spring.GetUnitDefID(unitID)].name ..
-             " has no center")
-end
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
@@ -47,7 +43,7 @@ function howToBuildTheBombWatcher()
 			GG.PayloadParents[buildID] = unitID
 			end
         end
-    Sleep(10)
+    Sleep(50)
     end
 end
 

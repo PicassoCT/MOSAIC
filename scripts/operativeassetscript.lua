@@ -168,8 +168,7 @@ function script.Create()
     setupAnimation()
     --StartThread(turnDetector)
     StartThread(flyingMonitored)
-    setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil,
-                              false)
+    setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil, false)
 
     StartThread(threadStarter)
     StartThread(cloakLoop)

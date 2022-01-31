@@ -29,9 +29,14 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
-    list = Spring.GetUnitPieceList (unitID )
-    for i=1,#list do
-        Explode(list[i], SFX.EXPLODE + SFX.SMOKE + SFX.FIRE)
+    for groupname, list in pairs (TablesOfPiecesGroups) do
+        if list then
+            for i=1,#list do
+                if list[i] then
+                Explode(list[i], SFX.EXPLODE + SFX.SMOKE + SFX.FIRE)
+                end
+            end
+        end
     end
 
     createTankCorpse(unitID, recentDamage, lastTurretRotation + 180)

@@ -197,6 +197,7 @@ function script.Create()
     StartThread(breathing)
     StartThread(transportControl)
     StartThread(cloakIfAIPlayer)
+    StartThread(testAnimation)
 end
 
 function testAnimation()
