@@ -283,7 +283,7 @@ function CombatMgr.GameFrame(f)
 
                 if #unitArray % 2 == 1 then
                     GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-                    setUnitArrayFireState(unitsArray, "returnfire", 1)
+                    setUnitArrayFireState(unitArray, "returnfire", 1)
                 else
                     local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
                     if not boolAssignedTargets then
