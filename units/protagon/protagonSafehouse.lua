@@ -75,7 +75,7 @@ local ProtagonSafeHouse =    Building:New{
 
     "nimrod",
     "propagandaserver",
-	 "aicore",
+	 --"aicore",
     "assembly",
 	 "blacksite"
   },

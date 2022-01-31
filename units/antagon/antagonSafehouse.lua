@@ -74,7 +74,7 @@ local AntagonSafeHouse = Building:New{
 		"nimrod",
 		"propagandaserver",
 		"assembly",
-		"hivemind",
+		--"hivemind",
 		"launcher",
 		"warheadfactory"
 		},
