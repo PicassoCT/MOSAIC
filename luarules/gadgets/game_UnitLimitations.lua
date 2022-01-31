@@ -17,7 +17,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local UnitsLimited = {
         [UnitDefNames["hivemind"].id] = 1,
-        [UnitDefNames["aicore"].id] = 1
+        [UnitDefNames["aicore"].id] = 1,
     }
 
     local UnitCount = {}
@@ -33,12 +33,9 @@ if (gadgetHandler:IsSyncedCode()) then
             if UnitCount[unitTeam][unitDefID] + 1 > UnitsLimited[unitDefID] then
                 GG.UnitsToKill:PushKillUnit(unitID, true, true)
             else
-                UnitCount[unitTeam][unitDefID] =
-                    UnitCount[unitTeam][unitDefID] + 1
+                UnitCount[unitTeam][unitDefID] =  UnitCount[unitTeam][unitDefID] + 1
             end
-
         end
-
     end
 
     function gadget:UnitTaken(unitID, unitDefID, unitTeam, newTeam)
@@ -48,8 +45,7 @@ if (gadgetHandler:IsSyncedCode()) then
             if UnitCount[newTeam][unitDefID] + 1 > UnitsLimited[unitDefID] then
                 GG.UnitsToKill:PushKillUnit(unitID, true, true)
             else
-                UnitCount[unitTeam][unitDefID] =
-                    UnitCount[unitTeam][unitDefID] + 1
+                UnitCount[unitTeam][unitDefID] = UnitCount[unitTeam][unitDefID] + 1
             end
         end
     end
@@ -61,9 +57,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 UnitCount[unitTeam][unitDefID] = 0
             end
 
-            UnitCount[unitTeam][unitDefID] =
-                math.max(UnitCount[unitTeam][unitDefID] - 1, 0)
-
+            UnitCount[unitTeam][unitDefID] =   math.max(UnitCount[unitTeam][unitDefID] - 1, 0)
         end
     end
 end
