@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.82.7</authoring_tool>
     </contributor>
-    <created>2022-01-01T20:19:08</created>
-    <modified>2022-01-01T20:19:08</modified>
+    <created>2022-01-31T09:59:01</created>
+    <modified>2022-01-31T09:59:01</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -1776,7 +1776,7 @@
               <matrix sid="transform">1 0 0 1.391006 0 1 0 -0.4167396 0 0 1 -2.572435 0 0 0 1</matrix>
               <instance_geometry url="#LowArm2Mesh-mesh" name="LowArm2"/>
               <node id="FoldtopFolded" name="FoldtopFolded" type="NODE">
-                <matrix sid="transform">-0.4403347 -0.3095854 -0.8427705 0.8009453 -0.287935 -0.8403984 0.4591557 -0.212018 -0.8504109 0.4448454 0.2809161 -2.673536 0 0 0 1</matrix>
+                <matrix sid="transform">1 0 0 0.8009453 0 1 4.37114e-8 -0.212018 0 -4.37114e-8 1 -2.673536 0 0 0 1</matrix>
                 <instance_geometry url="#FoldtopFoldedMesh-mesh" name="FoldtopFolded"/>
               </node>
               <node id="Hand2" name="Hand2" type="NODE">
@@ -1784,7 +1784,7 @@
                 <instance_geometry url="#Hand2Mesh-mesh" name="Hand2"/>
               </node>
               <node id="FoldtopUnfolded" name="FoldtopUnfolded" type="NODE">
-                <matrix sid="transform">-0.4403347 -0.3095854 -0.8427705 0.8028097 -0.287935 -0.8403984 0.4591557 -0.2069579 -0.8504109 0.4448454 0.2809161 -2.676213 0 0 0 1</matrix>
+                <matrix sid="transform">1 0 0 0.8028097 0 1 4.37114e-8 -0.2069579 0 -4.37114e-8 1 -2.676213 0 0 0 1</matrix>
                 <instance_geometry url="#FoldtopUnfoldedMesh-mesh" name="FoldtopUnfolded"/>
               </node>
             </node>
@@ -1813,11 +1813,11 @@
               <instance_geometry url="#Eye1Mesh-mesh" name="Eye1"/>
             </node>
             <node id="HeadDeco5" name="HeadDeco5" type="NODE">
-              <matrix sid="transform">-0.258751 -5.95262e-8 -0.9659441 -0.4238887 -0.9659441 -9.57371e-9 0.258751 -2.228119 -2.46501e-8 1 -5.50218e-8 0.7968808 0 0 0 1</matrix>
+              <matrix sid="transform">-0.258751 0.9659441 -2.92311e-15 -0.4238887 3.55271e-15 -1.77636e-15 -1 -2.228119 -0.9659441 -0.258751 0 0.7968808 0 0 0 1</matrix>
               <instance_geometry url="#HeadDeco5Mesh-mesh" name="HeadDeco5"/>
             </node>
             <node id="HeadDeco6" name="HeadDeco6" type="NODE">
-              <matrix sid="transform">0.9926835 1.43363e-8 -0.1207456 -0.5560443 -0.1207456 1.18022e-7 -0.9926835 -1.926886 1.92468e-11 1 1.18889e-7 1.820479 0 0 0 1</matrix>
+              <matrix sid="transform">0.9926835 0.1207456 3.97022e-16 -0.5560443 -1.4394e-8 1.18337e-7 -1 -1.926886 -0.1207456 0.9926835 1.19209e-7 1.820479 0 0 0 1</matrix>
               <instance_geometry url="#HeadDeco6Mesh-mesh" name="HeadDeco6"/>
             </node>
           </node>
@@ -1831,18 +1831,18 @@
           </node>
         </node>
         <node id="UpLeg1" name="UpLeg1" type="NODE">
-          <matrix sid="transform">1 0 0 -1.38267 0 1 0 0.3214642 0 0 1 -0.4538794 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 9.80528e-9 -1.38267 -4.28603e-16 1 4.37114e-8 0.3214642 -9.80528e-9 -4.37114e-8 1 -0.4538794 0 0 0 1</matrix>
           <instance_geometry url="#UpLeg1Mesh-mesh" name="UpLeg1"/>
           <node id="LowLeg1" name="LowLeg1" type="NODE">
-            <matrix sid="transform">1 0 0 -0.7333817 0 1 0 0.7373934 0 0 1 -6.611252 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 -0.7333817 0 1 4.37114e-8 0.7373934 0 -4.37114e-8 1 -6.611252 0 0 0 1</matrix>
             <instance_geometry url="#LowLeg1Mesh-mesh" name="LowLeg1"/>
           </node>
         </node>
         <node id="UpLeg2" name="UpLeg2" type="NODE">
-          <matrix sid="transform">1 0 0 1.20825 0 1 0 0.3203108 0 0 1 -0.2110939 0 0 0 1</matrix>
+          <matrix sid="transform">1 0 0 1.20825 0 1 4.37114e-8 0.3203108 0 -4.37114e-8 1 -0.2110939 0 0 0 1</matrix>
           <instance_geometry url="#UpLeg2Mesh-mesh" name="UpLeg2"/>
           <node id="LowLeg2" name="LowLeg2" type="NODE">
-            <matrix sid="transform">1 0 0 0.8537974 0 1 0 0.7572743 0 0 1 -6.961021 0 0 0 1</matrix>
+            <matrix sid="transform">1 0 0 0.8537974 0 1 4.37114e-8 0.7572743 0 -4.37114e-8 1 -6.961021 0 0 0 1</matrix>
             <instance_geometry url="#LowLeg2Mesh-mesh" name="LowLeg2"/>
           </node>
         </node>

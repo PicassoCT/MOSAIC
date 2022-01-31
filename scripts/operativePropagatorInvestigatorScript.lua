@@ -10,14 +10,23 @@ SIG_RAID = 2
 SIG_FIRE_VISIBLITY = 4
 SIG_DELAYEDRECLOAK = 8
 SIG_STAB = 16
+SIG_AIM = 32
 deg_1 = 3.141592653589793 / 180.0
 local isInvestigator = myDefID == UnitDefNames["operativeinvestigator"].id
 local Animations = {}
+local axisSign ={
+	[x_axis]=1,
+	[y_axis]=1,
+	[z_axis]=1,
+}
 
 if isInvestigator then
  Animations = include('animation_operativeinvestigator_female.lua') 
 else
  Animations = include('animation_operativepropagator_male.lua') 
+ x_axis = 1
+ y_axis = 2
+ z_axis = 3
 end
 
 local center = piece('center');
@@ -175,7 +184,7 @@ function script.Create()
 	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
 	showBody()
 	setupAnimation()
-
+    Show(FoldtopUnfolded)
 	StartThread(flyingMonitored)
 	StartThread(turnDetector)
 	
@@ -183,12 +192,22 @@ function script.Create()
 
     StartThread(threadStarter)
 	StartThread(cloakLoop)
---[[    StartThread(testAnimationLoop)--]]
     StartThread(closeCombatOS)
-    Show(FoldtopUnfolded)
+
     StartThread(breathing)
     StartThread(transportControl)
     StartThread(cloakIfAIPlayer)
+end
+
+function testAnimation()
+	if isInvestigator then return end
+    Sleep(500)
+  
+    while true do
+       -- PlayAnimation("WALKCYCLE_RUNNING", {}, 1.0)
+
+    	Sleep(1000)
+    end
 end
 
 function cloakIfAIPlayer()
@@ -390,7 +409,7 @@ function setupAnimation()
                 end
 			   
                --if isInvestigator then
-			      Animations[a][i]['commands'][k].a = switchAxis(command.a)	
+			     Animations[a][i]['commands'][k].a = switchAxis(command.a)	
                --end
             end
         end
@@ -399,11 +418,7 @@ end
 
 local animCmd = {['turn']=Turn,['move']=Move};
 
-local axisSign ={
-	[x_axis]=1,
-	[y_axis]=1,
-	[z_axis]=1,
-}
+
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
 	local speedFactor = speed or 1.0
@@ -676,7 +691,7 @@ LowerAnimationStateFunctions ={
 					end,
 [eAnimState.walking] = function()
 						if boolFlying == true then return eAnimState.walking end
-
+						if not boolAiming then reset(center, 1.3, false) end
 						PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]))					
 						return eAnimState.walking
 						end,
@@ -1005,6 +1020,15 @@ end
 
 Spring.SetUnitNanoPieces(unitID, { Pistol })
 
+function aimAutoReset()
+	boolAiming = true
+	SetSignalMask(SIG_AIM)
+	Signal(SIG_AIM)
+	Sleep(100)
+	boolAiming = false
+
+end
+
 function raidAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
 	if targetType == "u" and targetID then
 		defID = spGetUnitDefID(targetID)
@@ -1019,13 +1043,17 @@ function raidAimFunction(weaponID, heading, pitch, targetType, isUserTarget, tar
 end
 
 function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
-	boolAiming = true
+	StartThread(aimAutoReset)
     if boolWalking == true then
 	   setOverrideAnimationState(eAnimState.aiming, eAnimState.walking,  true, nil, false)
     else
         setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
     end
-	WTurn(center,y_axis,heading, 22)
+    if isInvestigator then
+		WTurn(center, y_axis,heading, 22)
+	else
+		WTurn(center, z_axis,heading, 22)
+	end
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
 	-- echo("Aiming Pistol finnished")
 	return  true
@@ -1059,7 +1087,7 @@ function stabFireFunction(weaponID)
 end
 
 function stabAimFunction(weaponID, heading, pitch)
-    boolAiming = true
+    StartThread(aimAutoReset)
     return true
 end
 

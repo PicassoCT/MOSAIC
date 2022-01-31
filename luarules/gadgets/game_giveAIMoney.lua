@@ -22,7 +22,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:GameFrame(frame)
 
         if frame % everyNthFrame == 0 then
-            list= Spring.GetTeamList(),
+            list= Spring.GetTeamList()
             for i=1, #list do
                 id = list[i]
                  nteamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier, customTeamKeys =  Spring.GetTeamInfo(id)
