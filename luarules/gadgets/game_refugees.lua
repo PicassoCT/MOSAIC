@@ -128,7 +128,7 @@ function refugeeStream(frame)
     ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
     ey = spGetGroundHeight(ex,ez)
     boolAtLeastOnePath = false
-         process(refugeeTable,
+         foreach(refugeeTable,
             function(id)
                 if  id and  not spGetUnitIsDead(id) then return id end
             end,
@@ -197,7 +197,7 @@ function militaryStream(frame)
     local ey = spGetGroundHeight(ex,ez)
 
     boolAtLeastOnePath = false
-         process(militaryTable,           
+         foreach(militaryTable,           
             function(id)
                 if  id and not spGetUnitIsDead(id) then return id end
             end,

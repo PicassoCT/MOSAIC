@@ -71,7 +71,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local size = 25
 
-        process(Spring.GetAllUnits(),
+        foreach(Spring.GetAllUnits(),
             function(id)
                 if houseTypeTable[spGetUnitDefID(id)] then return id end
                 end,            
@@ -145,7 +145,7 @@ boolDone = false
         end--]]
 
         if frame > (startFrame + (startTestAfterSeconds*30)) and frame % 60 == 0  then
-             process(spawnedOperatives,
+             foreach(spawnedOperatives,
                     function(id)
                         if doesUnitExistAlive(id) == true then 
                             return id 

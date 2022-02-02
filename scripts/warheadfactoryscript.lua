@@ -23,7 +23,7 @@ function script.Create()
     spinT(TablesOfPiecesGroups["SignalLight"], y_axis,
           math.random(42, 420) * randSign(), 42)
     Spring.SetUnitNanoPieces(unitID, TablesOfPiecesGroups["SignalLight"])
-    T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
+    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
                 function(id)
         if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
     end)

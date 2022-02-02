@@ -130,7 +130,7 @@ if gadgetHandler:IsSyncedCode() then
 
     -- Newbie Placer (prevents newbies from choosing their own a startpoint and faction)
     local NewbiePlacer
-    local processedNewbies = false
+    local foreachedNewbies = false
     if (tonumber((Spring.GetModOptions() or {}).newbie_placer) == 1) and
         (Game.startPosType == 2) then
         NewbiePlacer = true
@@ -225,7 +225,7 @@ if gadgetHandler:IsSyncedCode() then
                     allyTeams[allyTeamID] = allyTeamID
                 end
             end
-            processedNewbies = true
+            foreachedNewbies = true
 
             -- count allyteams
             nAllyTeams = 0
@@ -315,7 +315,7 @@ if gadgetHandler:IsSyncedCode() then
 
         -- NewbiePlacer
         if NewbiePlacer then
-            if not processedNewbies then return false end
+            if not foreachedNewbies then return false end
             if readyState == 0 and Spring.GetTeamRulesParam(teamID, 'isNewbie') ==
                 1 then return false end
         end

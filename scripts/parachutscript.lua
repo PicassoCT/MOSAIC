@@ -36,7 +36,7 @@ function script.Create()
         turnTableRand(TablesOfPiecesGroups["Rotator"], i, 360, -360, 0, true)
     end
 
-    process(TablesOfPiecesGroups["Rotator"],
+    foreach(TablesOfPiecesGroups["Rotator"],
             function(id) StartThread(randShow, id) end)
 end
 

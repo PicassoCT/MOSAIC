@@ -1175,7 +1175,7 @@ function buildVehicle(center, Arm_Max, Leg_Max, Body_Double_Max, Head_Max,
         end
     end
 
-    function bd_processAddedArms()
+    function bd_foreachAddedArms()
         temp = {}
         for i = 1, #ArmTable, 1 do
             temp[ArmTable[i]] = {}
@@ -1210,7 +1210,7 @@ function buildVehicle(center, Arm_Max, Leg_Max, Body_Double_Max, Head_Max,
 
     bd_alignLegsToGround()
 
-    bd_processAddedArms()
+    bd_foreachAddedArms()
 
     return ActualActiveWeapons
 end
@@ -20494,7 +20494,7 @@ function executeLindeMayerSystem(gramarTable, String, oldDeg, Degree,
     end
 
     -- DebugInfo
-    -- Spring.Echo("Level "..recursiveItterator.." Thread waiting for Level "..(recursiveItterator-1).. " to go from ".. globalInCurrentStep[recursiveItterator-1].." to zero so String:"..String.." can be processed")
+    -- Spring.Echo("Level "..recursiveItterator.." Thread waiting for Level "..(recursiveItterator-1).. " to go from ".. globalInCurrentStep[recursiveItterator-1].." to zero so String:"..String.." can be foreached")
 
     while globalInCurrentStep[recursiveItterator - 1] > 0 do Sleep(50) end
 

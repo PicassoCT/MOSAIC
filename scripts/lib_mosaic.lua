@@ -2084,7 +2084,7 @@ end
         houseTypeTable = getHouseTypeTable(UnitDefs, culture)
         local PositionTable = {}
 
-        process(Spring.GetAllUnits(), function(id)
+        foreach(Spring.GetAllUnits(), function(id)
             defID = Spring.GetUnitDefID(id)
             if houseTypeTable[defID] then return id end
         end, function(id)
@@ -2225,7 +2225,7 @@ end
                             showID = createUnitAtUnit(Spring.GetGaiaTeamID(),
                             "civilian_orgy_pair", unitID, 0, 0, 0)
                             myDefID = Spring.GetUnitDefID(showID)
-                            process(getAllNearUnit(showID, 100),
+                            foreach(getAllNearUnit(showID, 100),
                                 function(id) -- get Bystanders
                                     defID = Spring.GetUnitDefID(id)
                                     if CivilianTypes[defID] then
@@ -2314,7 +2314,7 @@ end
                             allyDistance = math.huge
 
                             local afflicted = GG.AerosolAffectedCivilians or {}
-                            T = process(getAllNearUnit(unitID, 750),
+                            T = foreach(getAllNearUnit(unitID, 750),
                                 function(id)
                                     if afflicted[id] then
                                         return id
@@ -2339,7 +2339,7 @@ end
                             if ed and (not ad or currentState == InfStates.Standalone) then
                                 Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
                                 if enemyDistance and enemyDistance < 20 then
-                                    process(getAllNearUnit(unitID, attackDistance),
+                                    foreach(getAllNearUnit(unitID, attackDistance),
                                         function(id)
                                             Spring.AddUnitDamage(id, 30)
                                         end
@@ -2351,7 +2351,7 @@ end
                             if ad and not ed then
                                 Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
                                 if enemyDistance and enemyDistance < 20 then
-                                    process(getAllNearUnit(unitID, attackDistance),
+                                    foreach(getAllNearUnit(unitID, attackDistance),
                                         function(id)
                                             Spring.AddUnitDamage(id, 30)
                                         end
@@ -2430,7 +2430,7 @@ end
 
                 gaiaTeamID = Spring.GetGaiaTeamID()
                 local returnT = {}
-                process(Spring.GetTeamList(), 
+                foreach(Spring.GetTeamList(), 
                     function(tid)
                     teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier = Spring.GetTeamInfo(tid)
 

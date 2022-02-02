@@ -50,7 +50,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     x, y, z = Spring.GetUnitPosition(unitID)
 
                     T = getAllNearUnit(unitID, 725)
-                    T = process(T, function(id)
+                    T = foreach(T, function(id)
                         defID = Spring.GetUnitDefID(id)
                         if Spring.GetUnitTeam(id) == gaiaTeamID and
                             houseTypeTable[defID] or objectiveTypeTable[defID] then

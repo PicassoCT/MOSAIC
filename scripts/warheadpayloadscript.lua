@@ -38,7 +38,7 @@ function mightyBadaBoom()
                          antagonT = getAllTeamsOfType("antagon", UnitDefs)
                          local rubbleDefID = UnitDefNames["gcscrapheap"].id
 
-                         process(getAllNearUnit(unitID, 333 ),
+                         foreach(getAllNearUnit(unitID, 333 ),
                          	function(id)
                          		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
                          			return id
@@ -140,7 +140,7 @@ function registerBombLocationAndProducer(unitID)
 					end
                 end
 
-                Location.revealedUnits = revealedUnits
+                Location.revealedUnits = revealedUnits 	
 				Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
 
                 if not GG.RevealedLocations then GG.RevealedLocations = {} end
@@ -165,7 +165,7 @@ defuseStatesMachine = {
 					
 					boolFoundSomething = false
 					
-					 process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+					 foreach(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
 						   function(id)
 							   if boolFoundSomething == true then return end
 							   defID = spGetUnitDefID(id)
@@ -239,7 +239,7 @@ defuseStatesMachine = {
 			
 			boolFoundFoe = false
 			boolFoundFriend = false
-			 process(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+			 foreach(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
 			   function(id)
 				if boolFoundFoe or boolFoundFriend then return end
 		
@@ -281,7 +281,7 @@ function defuseStateMachine()
       if not Spring.GetUnitTransporter(unitID) then
       	 --detect transports nearby and autoload
       	 boolLoaded = false
-      	 process(getAllNearUnit(unitID, 75),
+      	 foreach(getAllNearUnit(unitID, 75),
       	 			function(id)
       	 				if boolLoaded ==true then return end
       	 				if spGetUnitTeam(id) == myTeamID and TruckTypeTable[spGetUnitDefID(id)] then

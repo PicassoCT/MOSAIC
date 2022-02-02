@@ -46,11 +46,11 @@ function dealDamageAnimate()
     Hide(Icon)
     Hide(Packed)
     spinRand(center, -42, 42, 42)
-    process(TablesOfPiecesGroups["Particle"],
+    foreach(TablesOfPiecesGroups["Particle"],
             function(id) spinRand(id, -42, 42, 42) end)
     StartThread(doDamageCyclic)
 
-    process(TablesOfPiecesGroups["Particle"], 
+    foreach(TablesOfPiecesGroups["Particle"], 
         function(id)
         activeParticles[id] = "active"
         StartThread(
@@ -80,7 +80,7 @@ function doDamageCyclic()
 
     Spring.SetUnitNoSelect(unitID, true)
     while LifeTime > 0 do
-        process(getAllNearUnitSpherical(unitID, SatelliteShrapnellDistance),
+        foreach(getAllNearUnitSpherical(unitID, SatelliteShrapnellDistance),
                 function(id) 
                     defID = spGetUnitDefID(id)
                     if id ~= unitID and defID ~= myDefID then 

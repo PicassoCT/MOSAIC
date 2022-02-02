@@ -59,7 +59,7 @@ function integrateNewMembers()
     px, py, pz = Spring.GetUnitPosition(unitID)
 
     while true do
-        process(getAllInCircle(x, z, IntegrationRadius), function(id)
+        foreach(getAllInCircle(x, z, IntegrationRadius), function(id)
             if GG.DisguiseCivilianFor[id] then return nil end
             return id
         end, function(id)

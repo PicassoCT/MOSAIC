@@ -194,7 +194,7 @@ function forInterval(start, stop, irrigation, nr)
         Sleep(1)
 
         x, y, z = Spring.GetUnitPiecePosDir(unitID, irrigation)
-        HousesHousesHouses = process(
+        HousesHousesHouses = foreach(
                 getAllInCircle(x, z, 450), 
             function(id)
             if houseTypeTable[Spring.GetUnitDefID(id)] then return id end

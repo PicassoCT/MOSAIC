@@ -17,7 +17,7 @@ function bodyBuilder()
 	TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	
 	
-	process(TablesOfPiecesGroups["Prop"],
+	foreach(TablesOfPiecesGroups["Prop"],
 			function(id)
 				if math.random(0,1)==1 then Show(id) else Hide(id) end			
 			end

@@ -23,7 +23,7 @@ function script.Create()
     StartThread(propagandaLoop)
     StartThread(delayedSpinStart)
 
-    T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
+    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
                 function(id)
         if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
     end)

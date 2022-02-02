@@ -82,7 +82,7 @@ onLastPointBeforeImpactSetTargetTo = {
                     teamID = Spring.GetProjectileTeamID(projID)
                     projectileTeamID = Spring.GetProjectileTeamID(projID)
                     collateralTable = {}
-                    allHardTargetsInRange = process(
+                    allHardTargetsInRange = foreach(
                                             getAllInCircle(tx,tz, GameConfig.cruiseMissileAntiArmorDroplettRange),
                                             function(id)
                                                 teamID = Spring.GetUnitTeam(id)

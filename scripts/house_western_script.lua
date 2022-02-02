@@ -309,7 +309,7 @@ function selectBase() showOne(TablesOfPiecesGroups["base"], true) end
 function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
-    local result = process(buildMaterial,
+    local result = foreach(buildMaterial,
                            function(id) 
                                 if id ~= element then 
                                     return id
@@ -1008,7 +1008,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
     countElements = 0
     local decoMaterial =   getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
-    local T = process(decoMaterial, function(id) return pieceNr_pieceName[id] end)
+    local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
     --echo("addRoofDecorate:", T)
 
 
@@ -1134,7 +1134,7 @@ function buildAnimation()
     moveSyncInTimeT(builT, 0, 0, 0, 5000)
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
     
-    process(TablesOfPiecesGroups["BuildCrane"], function(id)
+    foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
         craneFunction = function(id)
             while true do
                 target = math.random(-120, 120)

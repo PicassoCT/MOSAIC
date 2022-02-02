@@ -29,7 +29,7 @@ TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	else
 		showT(	TablesOfPiecesGroups["root"])
 	end
-	process(TablesOfPiecesGroups["root"],
+	foreach(TablesOfPiecesGroups["root"],
 		function(id)
 			val= math.random(-360,360)
 			Turn(id,theAxis,math.rad(val),0)
@@ -37,7 +37,7 @@ TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 		)
 	showT(TablesOfPiecesGroups["branch"])	
 	
-	process(TablesOfPiecesGroups["branch"],
+	foreach(TablesOfPiecesGroups["branch"],
 		function(id)
 			Turn(id,theAxis,math.rad(degValue),0)
 			degValue= degValue + math.random(25,76)

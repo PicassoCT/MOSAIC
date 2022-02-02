@@ -119,7 +119,7 @@ function watchRaidIconTable()
         boolComSatelliteNearby= false
         while boolComSatelliteNearby == false do
             Sleep(100)
-            process(getAllNearUnit(unitID, raidComRange),
+            foreach(getAllNearUnit(unitID, raidComRange),
                     function (id)
                         if myTeam == Spring.GetUnitTeam(id) and spGetUnitDefID(id) == scanSatDefID then
                             boolComSatelliteNearby = true
@@ -214,7 +214,7 @@ function setAffiliatedHouseInvisible()
     boolFoundHouse  = false
 
     houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
-    process(getAllNearUnit(unitID, GameConfig.houseSizeX-25), 
+    foreach(getAllNearUnit(unitID, GameConfig.houseSizeX-25), 
         function(id)
         if houseTypeTable[Spring.GetUnitDefID(id)] and boolFoundHouse == false then
             myHouseID = id
@@ -285,7 +285,7 @@ function shoveAllNonCombatantsOut()
 
     while true do
         sx, sy, sz = Spring.GetUnitPosition(unitID)
-        process(getAllNearUnit(unitID, radius), function(id)
+        foreach(getAllNearUnit(unitID, radius), function(id)
             defID = Spring.GetUnitDefID(id)
             if houseTypeTable[defID] or upgradeTypeTable[defID] or
                 safeHouseTypeTable[defID] or raidIconTypeTable[defID] or
@@ -321,7 +321,7 @@ function raidAnimationLoop()
     assert(type(ring) == "table", "Not a table")
 
     index = 0
-    process(ring, function(id)
+    foreach(ring, function(id)
         index = index + 1
         Spin(id, y_axis, math.rad(index * 4.2) * randSign(), 2.5)
         if index > 3 and index < 8 then
@@ -331,7 +331,7 @@ function raidAnimationLoop()
     end)
     Spin(Progresscenter, y_axis, math.rad(42), 0.5)
     Spin(ring[8], y_axis, math.rad(42), 0.5)
-    process(whirl, function(id)
+    foreach(whirl, function(id)
         Spin(id, y_axis, math.rad(42) * randSign(), 2.5)
         StartThread(waveSpin, id, math.random(1, 6), math.random(4, 800), 100,
                     true)
@@ -446,7 +446,7 @@ ringUpOffset = 0
 function ringringUpOffset()
     boolOldRoundEnd = not boolRoundEnd
     index = 0
-    process(ring, function(id)
+    foreach(ring, function(id)
         index = index + 1
         Spin(id, y_axis, math.rad(index * 4.2) * randSign(), 15)
     end)
@@ -501,7 +501,7 @@ function getPlayingFieldMaxMinZ()
     xMax, xMin, zMax, zMin, height = -math.huge, math.huge, -math.huge,
                                      math.huge, 0
 
-    process(TablesOfPiecesGroups["Corner"], function(id)
+    foreach(TablesOfPiecesGroups["Corner"], function(id)
         dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, id)
         if dx > xMax then xMax = dx end
         if dx < xMin then xMin = dx end
@@ -528,7 +528,7 @@ end
 function playEndAnimation()
     Signal(SIG_WAVE)
 
-    process(whirl, function(id)
+    foreach(whirl, function(id)
         runHide = function(id)
             dest, speed = math.random(600, 900), math.random(600, 900)
             WMove(id, z_axis, dest, speed)
@@ -538,7 +538,7 @@ function playEndAnimation()
         StartThread(runHide, id)
     end)
 
-    process(ring, function(id)
+    foreach(ring, function(id)
         runHide = function(id)
             dest, speed = math.random(600, 1200), math.random(900, 2400)
             WMove(id, z_axis, dest, speed)

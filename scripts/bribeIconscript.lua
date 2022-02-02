@@ -25,7 +25,7 @@ function script.Create()
         value =42*randSign()
         Spin(DollarSign,y_axis,math.rad(value),0)
         Spin(Rotator1,y_axis,math.rad(value*-1),0)
-        process(TablesOfPiecesGroups["Base"],
+        foreach(TablesOfPiecesGroups["Base"],
             function(id)
                 Spin(id,y_axis,math.rad(value*randSign()),0)
             end

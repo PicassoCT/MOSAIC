@@ -116,7 +116,7 @@ end
 
 function makePasserBysLook(unitID)
     ux, uy, uz = spGetUnitPosition(unitID)
-    process(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
+    foreach(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
             function(id)
         -- filter out civilians
         if id then
@@ -197,7 +197,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
 
         if attackerID and OpimizationFleeing[unitID] > Spring.GetGameFrame() then
             --Spring.Echo(attackerID .. " attacked civilian "..unitID)
-            T = process(getInCircle(unitID,  GameConfig.civilianPanicRadius, gaiaTeamID),
+            T = foreach(getInCircle(unitID,  GameConfig.civilianPanicRadius, gaiaTeamID),
                 function(id)
                     if id then
                         defID = spGetUnitDefID(id)
@@ -840,7 +840,7 @@ function gadget:Initialize()
     GG.innerCityCenter = {}
     GameConfig = getGameConfig()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
-    process(Spring.GetAllUnits(),
+    foreach(Spring.GetAllUnits(),
             function(id) Spring.DestroyUnit(id, true, true) end)
 
     setUpRefugeeWayPoints()
@@ -962,7 +962,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
             payloadID = loadTruck(myID, "truckpayloadrefugee")
             Spring.SetUnitTooltip(myID, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture ,getDetermenisticMapHash(Game) + math.random(0,1)*randSign()))
             if payloadID then
-                civiliansNearby = process(getAllNearUnit(myID, 128),
+                civiliansNearby = foreach(getAllNearUnit(myID, 128),
                                 function (id)
                                     defID = spGetUnitDefID(id)
                                     if civilianWalkingTypeTable[defID] and not GG.DisguiseCivilianFor[myID] then

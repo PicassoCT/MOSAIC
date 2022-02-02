@@ -44,7 +44,7 @@ end
 function TriangleTest()
     while true do
         Sleep(1000)
-        process(getUnitsInTriangle(), function(id)
+        foreach(getUnitsInTriangle(), function(id)
             -- Spring.Echo("Unit "..id.. " is in triangle")
         end)
     end
@@ -60,7 +60,7 @@ function getUnitsInTriangle()
             Spring.GetUnitPiecePosDir(unitID, triangle[i])
     end
 
-    return process(getAllInCircle(x, z, maxRange, unitID), -- all units in range
+    return foreach(getAllInCircle(x, z, maxRange, unitID), -- all units in range
                    function(id) -- all units of defID
         if Spring.GetUnitDefID(id) == myDefID then return id end
     end, function(id) -- all Units In Triangle

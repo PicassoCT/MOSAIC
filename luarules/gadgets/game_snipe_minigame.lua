@@ -71,7 +71,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         plausibleDefenderTeams = {}
 
-        process(getAllNearUnit(raidIconID, 100), function(id)
+        foreach(getAllNearUnit(raidIconID, 100), function(id)
             if id then
                 defID = spGetUnitDefID(id)
                 team = spGetUnitTeam(id)
@@ -350,11 +350,11 @@ if (gadgetHandler:IsSyncedCode()) then
             Graph = {}
 
             -- find out who aims at who - add it to the graph (as pairs of from to)
-            process(mergeDict(roundRunning.Defender.PlacedFigures,
+            foreach(mergeDict(roundRunning.Defender.PlacedFigures,
                               roundRunning.Aggressor.PlacedFigures),
                     function(id)
                 if TheGloriousDead[id] ~= nil then
-                    process(getUnitsInTriangle(id),
+                    foreach(getUnitsInTriangle(id),
                             function(ad) -- add those edges to the graph
                         if TheGloriousDead[ad] ~= nil and ad ~= id and
                             spGetUnitTeam(ad) ~= roundRunning.Aggressor and
@@ -404,7 +404,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 if from then
                     bIsCycle, cyclicNodes = depthFirstSearchForCycles(from)
                     if bIsCycle == true then
-                        process(cyclicNodes,
+                        foreach(cyclicNodes,
                                 function(id)
                             TheGloriousDead[id] = id
                         end)
@@ -417,7 +417,7 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Auswertung
 
         Survivors = findSurvivors(roundRunning, TheGloriousDead)
-        process(TheGloriousDead, function(id)
+        foreach(TheGloriousDead, function(id)
             spawnCegAtUnit(id, "iconkill")
         end)
 
@@ -434,7 +434,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         -- Objective Evaluation
         for nr, objective in pairs(roundRunning.Objectives) do
-            process(Survivors, function(id)
+            foreach(Survivors, function(id)
                 if distanceUnitToUnit(objective, id) < 5 then
                     if spGetUnitTeam(id) == roundRunning.Aggressor.team then
                         roundRunning.Aggressor.Points =
@@ -647,11 +647,11 @@ if (gadgetHandler:IsSyncedCode()) then
     function killAllPlacedObjects(roundRunning, delayMs)
         if not delayMs then delayMs = 0 end
 
-        process(roundRunning.Defender.PlacedFigures,
+        foreach(roundRunning.Defender.PlacedFigures,
                 function(id) if id then spDestroyUnit(id, false, true) end; end)
-        process(roundRunning.Aggressor.PlacedFigures,
+        foreach(roundRunning.Aggressor.PlacedFigures,
                 function(id) if id then spDestroyUnit(id, false, true) end; end)
-        process(roundRunning.Objectives,
+        foreach(roundRunning.Objectives,
                 function(id) if id then spDestroyUnit(id, false, true) end; end)
     end
 

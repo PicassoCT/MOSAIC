@@ -116,7 +116,7 @@ function delayedHeightMapTransform()
 end
 
 function rotations()
-    process(spinYPieces, function(id)
+    foreach(spinYPieces, function(id)
         direction = 42 * randSign()
         Spin(id, y_axis, math.rad(direction), math.pi)
 
@@ -215,7 +215,7 @@ function showPowerPoles()
             if x then
                 unitsNearPole = getAllInCircle(x, z, 90, unitID, teamID)
                 boolFinishFunction = false
-                process(unitsNearPole, function(id)
+                foreach(unitsNearPole, function(id)
                     -- found a 
                     if id and id ~= unitID and
                         houseTypeTable[spGetUnitDefID(id)] then
@@ -290,7 +290,7 @@ function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
 
-    local result = process(buildMaterial,
+    local result = foreach(buildMaterial,
                            function(id) if id ~= element then return id end end)
     return result
 end
@@ -326,7 +326,7 @@ function decorateCity()
   
     x,y,z = Spring.GetUnitPosition(unitID)
     housesNearby = 0
-    process(getAllInCircle(x,z, 560), --400 * 1.4
+    foreach(getAllInCircle(x,z, 560), --400 * 1.4
         function(id)
             if Spring.GetUnitDefID(id) == myDefID and id ~= unitID then
                 housesNearby = housesNearby +1
@@ -942,7 +942,7 @@ function buildAnimation()
     moveSyncInTimeT(builT, 0, 0, 0, 5000)
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
 
-    process(TablesOfPiecesGroups["BuildCrane"], function(id)
+    foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
         craneFunction = function(id)
             while true do
                 target = math.random(-120, 120)

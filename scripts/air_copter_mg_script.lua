@@ -45,12 +45,12 @@ boolAlreadyMoving = false
 function startMovement()
     if boolAlreadyMoving == true then return end
     randoVal = math.random(20, 45)
-    process(TablesOfPiecesGroups["mainEngine"],
+    foreach(TablesOfPiecesGroups["mainEngine"],
             function(id) Turn(id, x_axis, math.rad(randoVal), 10) end)
 
-    process(TablesOfPiecesGroups["uprotor"],
+    foreach(TablesOfPiecesGroups["uprotor"],
             function(id) Spin(id, y_axis, math.rad(9000), 10) end)
-    process(TablesOfPiecesGroups["lowrotor"],
+    foreach(TablesOfPiecesGroups["lowrotor"],
             function(id) Spin(id, y_axis, math.rad(-9000), 10) end)
     Sleep(500)
     WTurn(center, z_axis, math.rad(180), 180)
@@ -72,19 +72,19 @@ function delayedStop()
     Signal(SIG_DELAYEDSTOP)
     SetSignalMask(SIG_DELAYEDSTOP)
     Sleep(50)
-    process(TablesOfPiecesGroups["mainEngine"],
+    foreach(TablesOfPiecesGroups["mainEngine"],
             function(id) Turn(id, x_axis, math.rad(-10), 100) end)
 
     Turn(center, z_axis, math.rad(0), 90)
     Turn(center, y_axis, math.rad(0), 90)
     Sleep(1000)
 
-    process(TablesOfPiecesGroups["mainEngine"],
+    foreach(TablesOfPiecesGroups["mainEngine"],
             function(id) Turn(id, x_axis, math.rad(0), 100) end)
 
-    process(TablesOfPiecesGroups["uprotor"],
+    foreach(TablesOfPiecesGroups["uprotor"],
             function(id) StopSpin(id, y_axis, 1) end)
-    process(TablesOfPiecesGroups["lowrotor"],
+    foreach(TablesOfPiecesGroups["lowrotor"],
             function(id) StopSpin(id, y_axis, 1) end)
 
     boolAlreadyMoving = false

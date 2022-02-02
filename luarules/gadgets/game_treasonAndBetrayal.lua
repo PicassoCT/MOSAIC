@@ -52,7 +52,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function getFairDropPointNear(unitDead, teamID)
-       AllOperatives  =  process(Spring.GetAllUnits(),
+       AllOperatives  =  foreach(Spring.GetAllUnits(),
                         function(id)
                                     if operativeTypeTable[spGetUnitDefID(id)] then
                                         return id

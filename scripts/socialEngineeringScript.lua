@@ -72,7 +72,7 @@ function crowdAnimation()
 		Hide(Graph)
 		timeVal= math.random(1,6)*5*1000
 		count=1
-		process(TablesOfPiecesGroups["Crowd"],
+		foreach(TablesOfPiecesGroups["Crowd"],
 			function(id)
 				StartThread(randomGraphMovement, id, timeVal, count)
 				count= count+1
@@ -95,7 +95,7 @@ function socialEngineeringPosWriteUp()
 	GG.SocialEngineers[unitID] = true
 	while true do
 		x,y,z = spGetUnitPosition(unitID)
-		 process(getAllInCircle(x,z, GameConfig.socialEngineeringRange, unitID, gaiaTeamID),
+		 foreach(getAllInCircle(x,z, GameConfig.socialEngineeringRange, unitID, gaiaTeamID),
 				function(id)
 					if GG.DisguiseCivilianFor[id] then return end
 					defID = spGetUnitDefID(id)

@@ -121,7 +121,7 @@ end
 function detectArrivingPayload()
     boolPayload= false
     while not boolPayload do
-        process(
+        foreach(
                 getAllNearUnit(unitID, 100),
                 function(id)
                     if  boolPayload then return end
@@ -231,7 +231,7 @@ function script.Killed(recentDamage, _)
         if GG.Launchers[teamID][unitID].payload then
             name = UnitDefs[GG.Launchers[teamID][unitID].payload ].name
             if name == "biopayload" then  --infect all nearby
-                process(getAllNearUnit(unitID, GameConfig.bioWeaponPayloadKillRadius, gaiaTeamID),
+                foreach(getAllNearUnit(unitID, GameConfig.bioWeaponPayloadKillRadius, gaiaTeamID),
                         function(id)
                             defID= Spring.GetUnitDefID(id)
                             if civilianTypeTable[defID] or truckTypeTable[defID] then

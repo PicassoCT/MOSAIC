@@ -48,7 +48,7 @@ if GG then GG.BoolDebug = lib_boolDebug end
 function getAllEnemyTeams(teamID, boolIncludeGaia)
     gaiaTeamID = Spring.GetGaiaTeamID()
 
-    return process(Spring.GetTeamList(), function(tid)
+    return foreach(Spring.GetTeamList(), function(tid)
         if Spring.AreTeamsAllied(tid, teamID) == false and boolIncludeGaia ==
             true or boolIncludeGaia == false and tid ~= gaiaTeamID then
             return tid
@@ -78,7 +78,7 @@ function isPlayerUnitNearby(unitID, range)
     gaiaTeamID = Spring.GetGaiaTeamID()
     T = getAllNearUnit(unitID, range)
     if T then
-        T = process(T, function(id)
+        T = foreach(T, function(id)
             if Spring.GetUnitTeam(id) ~= gaiaTeamID then return id end
         end)
 
@@ -203,7 +203,7 @@ function AttachUnitToPieceNearImpact(toAttachUnitID, AttackerID, px, py, pz,
                                      range)
     T = getAllInCircle(px, pz, range)
     boolFirstMatch = false
-    process(T, function(id)
+    foreach(T, function(id)
         if Spring.GetUnitLastAttacker(id) == AttackerID then return id end
     end, function(id)
         if boolFirstMatch == true then return end
@@ -562,7 +562,7 @@ function unitDescriptionGenerator(Unit, UnitDefNames)
                                                      ud.Uname ..
                                                      "s family motto.") ..
                                             cStr(ud.showNanoSpray,
-                                                 "During the buildprocess- nanospray might be visible.") ..
+                                                 "During the buildforeach- nanospray might be visible.") ..
                                             cStr(ud.levelGround,
                                                  "To start construction, the ground has to be leveld for a " ..
                                                      ud.name .. ".") ..
@@ -931,7 +931,7 @@ function unitDescriptionGenerator(Unit, UnitDefNames)
                                                      ud.name ..
                                                      " is the players avatara.") ..
                                             cStr(ud.showNanoFrame,
-                                                 " During the buildprocess a classic OTA Nanoframe is shown") ..
+                                                 " During the buildforeach a classic OTA Nanoframe is shown") ..
                                             cStr(ud.unitRestricted,
                                                  " The Unit " .. ud.name ..
                                                      " is restricted to maximal " ..
@@ -1090,7 +1090,7 @@ function getRoot(unitID)
 end
 
 function removeFeaturesInCircle(px, pz, radius)
-    process(Spring.GetFeaturesInCylinder(px,pz, radius),
+    foreach(Spring.GetFeaturesInCylinder(px,pz, radius),
         function(id)
             Spring.DestroyFeature (id) 
         end
@@ -1247,7 +1247,7 @@ function getNearestGroundEnemy(id, UnitDefs)
             return nil
         end
 
-        process(allUnitsOfTeam, function(ied)
+        foreach(allUnitsOfTeam, function(ied)
             if ied ~= ed then
                 distUnit = distanceUnitToUnit(id, ied)
                 if distUnit and distUnit < mindist then
@@ -1532,7 +1532,7 @@ function affirm(T)
         t1 = T;
         T = {[1] = t1}
     end
-    resulT = process(T, function(id)
+    resulT = foreach(T, function(id)
         if isUnitAlive(id) == true then return id end
     end)
     if resulT then
@@ -1950,15 +1950,15 @@ end
 function UnitToHeightMap(unitID)
     bx, by, bz = Spring.GetUnitBasePosition(unitID)
     unitPieceList = Spring.GetUnitPieceMap(unitID)
-    processedPieces = {}
+    foreachedPieces = {}
     -- TODO add Unit rotation, add Piecerotation
-    process(unitPieceList, function(pieceNumber)
+    foreach(unitPieceList, function(pieceNumber)
 
         resulT = Spring.GetUnitPieceInfo(unitID, pieceNumber)
         px, py, pz = Spring.GetUnitPiecePosition(unitID, pieceNumber)
         size = {x = resulT.max[1], y = resulT.max[2], z = resulT.max[3]}
 
-        processedPieces[pieceNumber] = {
+        foreachedPieces[pieceNumber] = {
             pos = {x = px, y = py, z = pz},
             p1 = vector:new(size.x, py, size.y),
             p2 = vector:new(-size.x, py, size.y),
@@ -2155,7 +2155,7 @@ function smoothTerrainInRange(ox, oz, totalWidth, smoothRange)
   end
 
 
--- > This function process result of Spring.PathRequest() to say whether target is reachable or not
+-- > This function foreach result of Spring.PathRequest() to say whether target is reachable or not
 function IsTargetReachable(moveID, ox, oy, oz, tx, ty, tz, radius)
     local result, lastcoordinate, waypoints
     local path = Spring.RequestPath(moveID, ox, oy, oz, tx, ty, tz, radius)
@@ -2227,8 +2227,8 @@ function getGroundMapTable(Resolution, HandedInFunction)
     return ReT
 end
 
--- >Generalized map processing Function
--- >Get the Ground Normal, uses all handed over functions for processing and returns a corresponding Table
+-- >Generalized map foreaching Function
+-- >Get the Ground Normal, uses all handed over functions for foreaching and returns a corresponding Table
 function doForMapPos(Resolution, ...)
     local arg = arg;
     if (not arg) then
@@ -2238,7 +2238,7 @@ function doForMapPos(Resolution, ...)
 
     for k, v in pairs(arg) do
         if type(v) ~= "function" then
-            return Spring.Echo(" Argument is not a processing function")
+            return Spring.Echo(" Argument is not a foreaching function")
         end
     end
 
@@ -3381,8 +3381,8 @@ end
 
 -- > takes a Table, and executes Function on it
 -- non Function Values are handed to the function following it
--- returning nil removes a element from the process chain
-function process(Table, ...)
+-- returning nil removes a element from the foreach chain
+function foreach(Table, ...)
     local arg = {...}
     local arg = arg;
     if (not arg) then
@@ -3399,7 +3399,7 @@ function process(Table, ...)
         end
     end
     if not arg then
-        echo("No args in process")
+        echo("No args in foreach")
         return
     end
     if type(arg) == "function" then return elementWise(T, arg) end
@@ -3435,7 +3435,7 @@ function recProcess(Table, ...)
         return
     end
     if not arg then
-        echo("No args in process")
+        echo("No args in foreach")
         return
     end
     if type(arg) == "function" then return elementWise(T, arg) end
@@ -3506,7 +3506,7 @@ end
 function getAveragePosT(T)
     ax, ay, az = 0, 0, 0
     counter = 0
-    process(T, function(id)
+    foreach(T, function(id)
         ix, iy, iz = Spring.GetUnitPiecePosDir(unitID, id)
         if ix then
             ax, ay, az = ax + ix, ay + iy, az + iz
@@ -4484,7 +4484,7 @@ function executeLindeMayerSystem(gramarTable, String, oldDeg, Degree,
     end
 
     -- DebugInfo
-    -- Spring.Echo("Level "..recursiveItterator.." Thread waiting for Level "..(recursiveItterator-1).. " to go from ".. GlobalInCurrentStep[recursiveItterator-1].." to zero so String:"..String.." can be processed")
+    -- Spring.Echo("Level "..recursiveItterator.." Thread waiting for Level "..(recursiveItterator-1).. " to go from ".. GlobalInCurrentStep[recursiveItterator-1].." to zero so String:"..String.." can be foreached")
 
     while GlobalInCurrentStep[recursiveItterator - 1] > 0 do Sleep(50) end
 
@@ -4766,7 +4766,7 @@ function HideWrap(piecenr)
 end
 
 function randHide(T)
-    process(T, function(id)
+    foreach(T, function(id)
         if math.random(0, 1) == 1 then
             Show(id)
         else

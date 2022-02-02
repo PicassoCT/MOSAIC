@@ -24,7 +24,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Hide(projectile)
     Move(projectile, z_axis, -210, 0)
-    T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
+    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
                 function(id)
         if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
     end)

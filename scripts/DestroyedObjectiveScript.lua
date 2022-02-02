@@ -18,7 +18,7 @@ function script.Create()
     signS= randSign()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(AnimationTest)
-    process(TablesOfPiecesGroups["Text"],
+    foreach(TablesOfPiecesGroups["Text"],
         function(id)
             Show(id)
             value= signS*42

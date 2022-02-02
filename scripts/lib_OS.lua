@@ -36,7 +36,7 @@ function playSoundScape_OS(path, dataTable, restIntervallMin, restIntervallMax,
     while true do
         T = Spring.GetSelectedUnits()
         boolSelected = false
-        process(T, function(id)
+        foreach(T, function(id)
             if id == unitID then boolSelected = true end
         end)
 

@@ -1270,12 +1270,12 @@ function MetaMapObject.Update(AllUnitsOnObject, AllFeaturesOnObject,
                               TimeInFrames)
 
     AllUnits =
-        process(AllUnitsOnObject, function(id) end -- filter out all in the Air
+        foreach(AllUnitsOnObject, function(id) end -- filter out all in the Air
         -- filter out all AirUnits
         )
 
     AllFeatures =
-        process(AllFeaturesOnObject, function(id) end -- filter out all in the Air
+        foreach(AllFeaturesOnObject, function(id) end -- filter out all in the Air
         )
 
     local MovCorrect = {x = 0, z = 0}
@@ -1284,7 +1284,7 @@ function MetaMapObject.Update(AllUnitsOnObject, AllFeaturesOnObject,
     local spGetUnitPosition = Spring.GetUnitPosition
     local spGetFeaturePosition = Spring.GetFeaturePosition
 
-    AllUnits = process(AllUnits, function(id)
+    AllUnits = foreach(AllUnits, function(id)
         px, py, pz = spGetUnitPosition(id)
         tx, ty, tz = px + MovCorrect.x, py, pz + MovCorrect.z
 
@@ -1301,7 +1301,7 @@ function MetaMapObject.Update(AllUnitsOnObject, AllFeaturesOnObject,
         end
     end)
 
-    AllFeatures = process(AllFeatures, function(id)
+    AllFeatures = foreach(AllFeatures, function(id)
         px, py, pz = spGetFeaturePosition(id)
         if px then
             -- correct Orientation relative to Island

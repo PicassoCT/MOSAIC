@@ -126,7 +126,7 @@ assert(aerosolTypeOfUnit)
 assert(type(aerosolTypeOfUnit)=="string")
 
 function sprayTank()
-            process(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange), 
+            foreach(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange), 
                         function(id)
                             if alreadyChecked[id] then return end
 

@@ -26,7 +26,7 @@ Icon = piece "Icon"
 
 function preventBuildingNearPreexistingSafehouse()
     boolResult = false
-    process(getAllNearUnit(unitID, 100),
+    foreach(getAllNearUnit(unitID, 100),
             function(id)
                 if spGetUnitTeam(id) == myTeamID and id ~= unitID then 
                     return id
@@ -68,7 +68,7 @@ function houseAttach()
     waitTillComplete(unitID)
 
     boolJustOnce = false
-    T = process(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
+    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
     function(id) -- filter out all the safe houses
         if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID then return id end
         end, 
@@ -121,7 +121,7 @@ local safeHouseTypes = getSafeHouseTypeTable(UnitDefs)
 local houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
 
 function checkPreExistingKill(toKillId, notID)
- OtherUpgradeTypesAliveAtLocation =process(
+ OtherUpgradeTypesAliveAtLocation =foreach(
                     getAllNearUnit(unitID, 120, myTeam),
                     function(id)
                         defID = spGetUnitDefID(id)
@@ -220,7 +220,7 @@ function drawMapRoom()
     dictSafeHouse_Pos = {}
     dictHouses_Pos = {}
 
-    process(Spring.GetAllUnits(), function(id)
+    foreach(Spring.GetAllUnits(), function(id)
         if Spring.GetUnitTeam(id) == gaiaTeamID then return id end
     end, function(id)
         if houseTypeTable[spGetUnitDefID(id)] then
@@ -229,7 +229,7 @@ function drawMapRoom()
         end
     end)
 
-    process(Spring.GetAllUnits(), function(id)
+    foreach(Spring.GetAllUnits(), function(id)
         if safeHouseTypes[spGetUnitDefID(id)] then
             x, _, z = spGetUnitPosition(id)
             dictSafeHouse_Pos[id] = {
@@ -270,7 +270,7 @@ end
 function healAgentsNearbyCyle()
     lastTimePresent = {}
     while true do
-        currentlyPresent = process(getAllNearUnit(unitID,120, myTeamID),
+        currentlyPresent = foreach(getAllNearUnit(unitID,120, myTeamID),
             function(id)
                 if operativeTypeTable[spGetUnitDefID(id)] and lastTimePresent[id] then
                     hp = Spring.GetUnitHealth(id)

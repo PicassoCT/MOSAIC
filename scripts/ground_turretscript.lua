@@ -73,7 +73,7 @@ function droneDefense()
         Sleep(250)
         if hasNoActiveAttackCommand(unitID) == true then
             projectilesToIntercept = {}
-           process(getProjectilesAroundUnit(unitID, droneInterceptDistance),
+           foreach(getProjectilesAroundUnit(unitID, droneInterceptDistance),
                 function(id)
                     teamID = spGetProjectileTeamID(id)
                     if teamID and teamID ~= myTeamID then

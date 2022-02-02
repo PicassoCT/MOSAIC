@@ -200,7 +200,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- for teams without a active node or no node at all - hide the cursor during the slowMotionPhase
     function deactivateCursorForNormalTeams(tableTeamsActive)
-        process(Spring.GetTeamList(), function(team)
+        foreach(Spring.GetTeamList(), function(team)
             if not tableTeamsActive[team] then
                 SendToUnsynced("hideCursor", team)
             end
@@ -209,7 +209,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- restore Cursor for non-active teams
     function restoreCursorNonActiveTeams(tableTeamsActive)
-        process(Spring.GetTeamList(), function(team)
+        foreach(Spring.GetTeamList(), function(team)
             if not tableTeamsActive[team] then
                 SendToUnsynced("restoreCursor", team)
             end

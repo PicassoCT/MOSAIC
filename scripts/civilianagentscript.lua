@@ -591,7 +591,7 @@ function chatting()
         else
         PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
        end
-       Result= process(
+       Result= foreach(
         getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
         function(id)
             if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
@@ -810,7 +810,7 @@ function tacticalAnarchy()
     myPos.x, myPos.y, myPos.z = Spring.GetUnitPosition(unitID)
     nearestClusterNode = {}
     smallestDistance = math.huge
-    process(currentPositionClusters, -- get nearest cluster
+    foreach(currentPositionClusters, -- get nearest cluster
     function(cluster)
         if distance(myPos, cluster) < smallestDistance then
             smallestDistance = distance(myPos, cluster)
@@ -830,7 +830,7 @@ function tacticalAnarchy()
 
     if bodyConfig.boolArmed == true then
 
-        T = process(getAllNearUnit(unitID, 512), function(id)
+        T = foreach(getAllNearUnit(unitID, 512), function(id)
             if isUnitEnemy(myTeamID, id) == true and Spring.GetUnitIsCloaked(id) ==  false then 
                 return id 
             end
@@ -876,7 +876,7 @@ normalBehavourStateMachine = {
             if bodyConfig.boolArmed == true and maRa() then
                 Show(myGun)
                 Show(MilitiaMask)
-                T = process(getAllNearUnit(unitID, 100),
+                T = foreach(getAllNearUnit(unitID, 100),
                         function(id)
                             if TruckTypeTable[Spring.GetUnitDefID(id)] then
                                 return id

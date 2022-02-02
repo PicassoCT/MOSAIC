@@ -60,7 +60,7 @@ function recruiteLoop()
 
     while true do
         Sleep(100)
-        process(getAllNearUnit(unitID, recruitmentRange), 
+        foreach(getAllNearUnit(unitID, recruitmentRange), 
         function(id)
 
             if spGetUnitTeam(id) == gaiaTeamID then return id end

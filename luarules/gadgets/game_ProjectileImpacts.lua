@@ -176,7 +176,7 @@ if (gadgetHandler:IsSyncedCode()) then
                    end
             end
 
-            process(getAllInCircle(persPack.px, persPack.pz, persPack.range),
+            foreach(getAllInCircle(persPack.px, persPack.pz, persPack.range),
                     function(id)
                         if id then
                             setInternalStateMachineToStarted(id)
@@ -931,7 +931,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         if panicWeapons[projWeaponDefID] then
-            process(getAllNearUnit(proOwnerID,
+            foreach(getAllNearUnit(proOwnerID,
                                    panicWeapons[projWeaponDefID].range),
                     function(id)
                 if spGetUnitTeam(id) == GaiaTeamID and

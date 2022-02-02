@@ -39,7 +39,7 @@ function script.Create()
 
     intI = 0
     if TablesOfPiecesGroups["cable"] then
-        process(TablesOfPiecesGroups["cable"], function(id)
+        foreach(TablesOfPiecesGroups["cable"], function(id)
             randoVal = math.random(-10, 10) / 5
             val = intI * ((360 / 8) + math.pi * randoVal)
             Turn(id, y_rotationAxis, math.rad(val), 0)
@@ -60,7 +60,7 @@ function integrateNewMembers()
     members = {}
     while true do
         if  GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX then
-        process(getAllInCircle(x, z, IntegrationRadius), function(id)
+        foreach(getAllInCircle(x, z, IntegrationRadius), function(id)
             if GG.DisguiseCivilianFor[id] then
                 return GG.DisguiseCivilianFor[id]
             end
