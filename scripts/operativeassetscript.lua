@@ -113,7 +113,8 @@ function closeCombatOS()
     oldState = 1
     setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
     while true do
-        if boolInClosedCombat == true then
+        if boolInClosedCombat then
+            Spring.Echo("Operativeasset: Is now in close combat")
             while(doesUnitExistAlive(closeCombat.arenaID))do
                 newState = math.random(1,3) 
                 if newState ~= oldState then
@@ -126,6 +127,7 @@ function closeCombatOS()
                 oldState = newState
                 Sleep(500)
             end
+            Spring.Echo("Operativeasset: Is leaving close combat")
             boolInClosedCombat = false 
         end
     Sleep(250)
@@ -765,9 +767,7 @@ function spawnDecoyCivilian()
     GG.DiedPeacefully[civilianID] = false
 
     if civilianID then
-        GG.EventStream:CreateEvent(syncDecoyToAgent, persPack,
-                                   Spring.GetGameFrame() + 1)
-
+        GG.EventStream:CreateEvent(syncDecoyToAgent, persPack, Spring.GetGameFrame() + 1)
     end
 
     return 0
@@ -837,6 +837,11 @@ function cloakLoop()
                                     (not OperativesDiscovered() == false)
             boolPreviouslyCloaked = (previousState == "cloaked")
 
+
+            if boolInClosedCombat == true then 
+                return transitionToUncloaked()
+            end
+
             if not boolVisiblyForced == false then
                 boolRecloakOnceDone = true
                 return transitionToUncloaked()
@@ -846,9 +851,6 @@ function cloakLoop()
                 return transitionToUncloaked()
             end
 
-            if boolInClosedCombat == true then 
-             return transitionToUncloaked()
-            end
             
             return "cloaked"
         end,
@@ -860,6 +862,10 @@ function cloakLoop()
             boolPreviouslyCloaked = (previousState == "cloaked")
 
             if boolVisiblyForced == true then return "decloaked" end
+
+            if boolInClosedCombat == true then 
+                return "decloaked"
+            end
 
             if not boolVisiblyForced == true and boolRecloakOnceDone == true then
                 boolRecloakOnceDone = false

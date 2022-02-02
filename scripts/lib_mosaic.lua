@@ -121,6 +121,9 @@ function getGameConfig()
         RewardCyberCrime = 300,
         rewardWaitTimeCyberCrimeSeconds = 30,
 
+        --closecombat
+        closeCombatHealthLosPerSecond = 10,
+
         --groundTurretDroneProjectileIntercept
         groundTurretDroneInterceptRate = 256,
         groundTurretDroneMaxInterceptPerSecond = 7,
