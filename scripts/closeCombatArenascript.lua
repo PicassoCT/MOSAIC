@@ -34,8 +34,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     myHp = Spring.GetUnithealth(unitID)
     sapHealth(fighterTwo, damage / 2)
     sapHealth(fighterOne, damage / 2)
-
-    return damage
+    return 0
 end
 
 function script.Create()
@@ -44,8 +43,6 @@ function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.MoveCtrl.Enable(unitID, true)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    Spring.MoveCtrl.SetPosition(unitID, x, y, z)
     StartThread(combatHealthOS)
 end
 
@@ -159,6 +156,7 @@ function sapHealth(id, amount)
     return hp - amount <= 0
 end
 
+
 function combatHealthOS()
     amount = GameConfig.closeCombatHealthLosPerSecond/2
     echo("Close Combat Arena created")
@@ -171,37 +169,37 @@ function combatHealthOS()
         
         if doesUnitExistAlive(fighterOne) then
             if sapHealth(fighterOne, amount) then
-                Spring.UnitDetach (fighterOne)
+                Spring.UnitDetach (fighterOne)                
+                Spring.DestroyUnit(fighterOne, true, false)
                 Spring.SetUnitAlwaysVisible(fighterOne, false)
-                break
             end
         end
 
         if doesUnitExistAlive(fighterTwo) then
             if sapHealth(fighterTwo, amount) then
-                Spring.UnitDetach (fighterTwo)
+                Spring.DestroyUnit(fighterTwo, true, false)
                 Spring.SetUnitAlwaysVisible(fighterTwo, false)
-                break
             end
         end
         Sleep(500)
     until (not (doesUnitExistAlive(fighterOne) and doesUnitExistAlive(fighterTwo)))
     echo("Close Combat Arena ending")
-    Spring.DestroyUnit(unitID, false, true)
+    Sleep(10)
+    Spring.DestroyUnit(unitID, true, false)
 end
 
 
-function addCloseCombatInvolved(opponent)
+function addCloseCombatants(fighterA, fighterB)
     echo("Arena Adding close combant involved")
-    if not doesUnitExistAlive(fighterOne) and opponent ~= fighterOne then
-        fighterOne = opponent
-        Spring.SetUnitAlwaysVisible(fighterOne, true)
-        return
-    end
-    if not doesUnitExistAlive(fighterTwo) and opponent ~= fighterTwo then
-        fighterTwo = opponent
+    if doesUnitExistAlive(fighterA) and  doesUnitExistAlive(fighterB)  then
+        fighterOne = fighterA
+        Spring.UnitAttach(unitID, fighterOne, TablesOfPiecesGroups["attach"][1])  
+        Spring.SetUnitAlwaysVisible(fighterOne, true)  
+        fighterTwo = fighterB
+        Spring.UnitAttach(unitID, fighterTwo, TablesOfPiecesGroups["attach"][2])
         Spring.SetUnitAlwaysVisible(fighterTwo, true)
         boolStartFight = true
+        return
     end
 end
 
@@ -210,20 +208,19 @@ function script.TransportPickup(passengerID)
         return false
     end
 
-    if not fighterOne then
-        Spring.UnitAttach(unitID, passengerID, TablesOfPiecesGroups["attach"][1])
-        fighterOne = passengerID
+    if fighterOne == nil then
+            fighterOne = passengerID
+        Spring.UnitAttach(unitID, fighterOne, TablesOfPiecesGroups["attach"][1])    
         env = Spring.UnitScript.GetScriptEnv(fighterOne)       
         if env and env.isNowInCloseCombat then
             Spring.UnitScript.CallAsUnit(fighterOne, env.isNowInCloseCombat,  unitID)
         end
-
         return 
     end
 
-    if not fighterTwo then
-        Spring.UnitAttach(unitID, passengerID, TablesOfPiecesGroups["attach"][2])
+    if  fighterTwo == nil then
         fighterTwo = passengerID
+        Spring.UnitAttach(unitID, fighterTwo, TablesOfPiecesGroups["attach"][2])
         env = Spring.UnitScript.GetScriptEnv(fighterTwo)       
         if env and env.isNowInCloseCombat then
             Spring.UnitScript.CallAsUnit(fighterTwo, env.isNowInCloseCombat,  unitID)

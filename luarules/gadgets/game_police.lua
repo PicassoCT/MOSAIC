@@ -28,7 +28,6 @@ local spGetGroundNormal = Spring.GetGroundNormal
 local spGetUnitLastAttacker = Spring.GetUnitLastAttacker
 local spGetUnitNearestAlly = Spring.GetUnitNearestAlly
 local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
-
 local spSetUnitNeutral = Spring.SetUnitNeutral
 local spRequestPath = Spring.RequestPath
 local spCreateUnit = Spring.CreateUnit
@@ -39,7 +38,7 @@ local PoliceTypes = getPoliceTypes(UnitDefs)
 local PoliceDamageCounter = 0
 
 local activePoliceUnitIds_DispatchTime = {}
-local maxNrPolice = GameConfig.maxNrPolice
+local maxNrPolice = GameConfig.Police.maxNr
 local officersInReserve = maxNrPolice
 
 local activePoliceUnitIds_Dispatchtime = {}
@@ -51,7 +50,7 @@ local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
-accumulatedCivilianDamage =0
+accumulatedCivilianDamage = 0
 
 function randomAfterFirstFind(boolAtLeastOne)
 if boolAtLeastOne == false then return true end
@@ -100,7 +99,7 @@ function getPoliceSpawnLocation(suspect)
         sx, sy, sz = (Game.mapSizeX/100) * math.random(10,90),0,(Game.mapSizeZ/100) * math.random(10,90) 
     end
 
-    houseID, x, z = getNearestHouse(sx, sz, GameConfig.policeSpawnMinDistance)
+    houseID, x, z = getNearestHouse(sx, sz, GameConfig.Police.minSpawnDistance)
     if houseID then
       sx, sz = x,z
     end
@@ -111,7 +110,7 @@ end
 function gadget:UnitCreated(unitID, unitDefID, teamID)
     if PoliceTypes[unitDefID] then
         spSetUnitNeutral(unitID, false)        
-        activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.policeMaxDispatchTime 
+        activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.Police.maxDispatchTime 
     end
 
     if isOffenceIcon(UnitDefs, unitDefID) then
@@ -165,7 +164,7 @@ function getOfficer(victimID, attackerID)
         end
 
         if officerID then
-            activePoliceUnitIds_DispatchTime[officerID] =   GameConfig.policeMaxDispatchTime +  math.random(1, GameConfig.policeMaxDispatchTime)
+            activePoliceUnitIds_DispatchTime[officerID] =   GameConfig.Police.maxDispatchTime  +  math.random(1, GameConfig.Police.maxDispatchTime )
         end
 
     return officerID

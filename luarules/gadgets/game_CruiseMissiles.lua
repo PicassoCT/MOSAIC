@@ -83,7 +83,7 @@ onLastPointBeforeImpactSetTargetTo = {
                     projectileTeamID = Spring.GetProjectileTeamID(projID)
                     collateralTable = {}
                     allHardTargetsInRange = foreach(
-                                            getAllInCircle(tx,tz, GameConfig.cruiseMissileAntiArmorDroplettRange),
+                                            getAllInCircle(tx,tz, GameConfig.CruiseMissile.antiArmorDroplettRange),
                                             function(id)
                                                 teamID = Spring.GetUnitTeam(id)
                                                 if teamID == projectileTeamID then return end
@@ -242,7 +242,7 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
                                 {
                                     targetX = rx,
                                     targetY = Spring.GetGroundHeight(x,z) +
-                                        GameConfig.CruiseMissilesHeightOverGround + 
+                                        GameConfig.CruiseMissile.heightOverGround + 
                                         100,
                                     targetZ = rz,
                                     targetType = string.byte("g")
@@ -252,7 +252,7 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
                     {
                         targetX = rx,
                         targetY = interpolate_Y +
-                            GameConfig.CruiseMissilesHeightOverGround,
+                            GameConfig.CruiseMissile.heightOverGround,
                         targetZ = rz,
                         targetType = string.byte("g")
                     }

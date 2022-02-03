@@ -116,7 +116,7 @@ end
 
 function makePasserBysLook(unitID)
     ux, uy, uz = spGetUnitPosition(unitID)
-    foreach(getInCircle(unitID, GameConfig.civilianInterestRadius, gaiaTeamID),
+    foreach(getInCircle(unitID, GameConfig.civilian.InterestRadius, gaiaTeamID),
             function(id)
         -- filter out civilians
         if id then
@@ -197,7 +197,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
 
         if attackerID and OpimizationFleeing[unitID] > Spring.GetGameFrame() then
             --Spring.Echo(attackerID .. " attacked civilian "..unitID)
-            T = foreach(getInCircle(unitID,  GameConfig.civilianPanicRadius, gaiaTeamID),
+            T = foreach(getInCircle(unitID,  GameConfig.civilian.PanicRadius, gaiaTeamID),
                 function(id)
                     if id then
                         defID = spGetUnitDefID(id)
@@ -1250,7 +1250,7 @@ function getTargetNodeInWalkingDistance(startNodeID, defaultTargetNode)
     if #listOfTargetNodes == 1 then return listOfTargetNodes[1] end
 
     for i=1, #listOfTargetNodes do
-        if distanceUnitToUnit(startNodeID, listOfTargetNodes[i]) < GameConfig.civilianMaxWalkingDistance then
+        if distanceUnitToUnit(startNodeID, listOfTargetNodes[i]) < GameConfig.civilian.MaxWalkingDistance then
             listInRange[#listInRange + 1 ]= listOfTargetNodes[i]
         end
     end

@@ -72,7 +72,7 @@ function checkForFinderLoop()
 	boolDone = false
 	while boolDone == false do
 	 UnitsNear= foreach(
-	 				getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+	 				getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance ),
 				   function(id)
 					   if operativeTypeTable[spGetUnitDefID(id)] then
 					    return id 

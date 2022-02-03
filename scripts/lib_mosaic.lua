@@ -78,12 +78,21 @@ function getGameConfig()
             Reward = 20
         },
         -- civilianbehaviour
-        civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
+        civilian = {
+          GatheringBehaviourIntervalFrames = 3 * 60 * 30,
+          PanicRadius = 900,
+          FleeDistance = 1200,
+          MaxFlightTimeMS = 300000,
+          InterestRadius = 350, 
+          MaxWalkingDistance = 3000,
+        },
 
+        civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
         civilianPanicRadius = 900,
         civilianFleeDistance = 1200,
         civilianMaxFlightTimeMS = 300000,
         civilianInterestRadius = 350,
+
         generalInteractionDistance = 35,
         minConversationLengthFrames = 15 * 30,
         maxConversationLengthFrames = 120 * 30,
@@ -94,11 +103,13 @@ function getGameConfig()
         maxIterationSteps = 2048,
         chanceCivilianArmsItselfInHundred = 50,
         demonstrationMarchRadius = 50,
-        civilianMaxWalkingDistance = 3000,		
 
-        maxNrPolice = 8,
-        policeMaxDispatchTime = 2000,
-        policeSpawnMinDistance = 2200, -- preferably at houses
+        Police = {
+          maxNr = 8,
+          maxDispatchTime = 2000,
+          minSpawnDistance = 2200,
+        },
+
         maxSirenSoundFiles = 7,
 
         --soundIntervall
@@ -180,10 +191,13 @@ function getGameConfig()
 		PayloadDefusedReward = 5000,
 		
         -- CruiseMissiles
-        CruiseMissilesHeightOverGround = 42,
-        cruiseMissileAntiArmorDroplettRange = 1200,
-        cruiseMissileChanceOfInterceptOneIn= 25,
-        cruiseMissileReloadTimeMS = 5*60*1000,
+        CruiseMissile = {
+        heightOverGround = 42,
+        antiArmorDroplettRange = 1200,
+        chanceOfInterceptOneIn = 25,
+        reloadTimeMS = 5*60*1000,            
+        },
+
         
         -- Game States
         GameState = {
@@ -214,15 +228,17 @@ function getGameConfig()
         -- Icons
         socialEngineeringRange = 256,
         socialEngineerLifetimeMs = 3*60*1000,
-        
-        iconGroundOffset = 50,
-        iconHoverGroundOffset = 125,
-        SatelliteIconDistance = 150,
-        SatelliteShrapnellDistance = 450,
-        SatelliteShrapnellLifeTime = 7 * 60 * 1000,
-        SatelliteShrapnellDamagePerSecond = 1000,
-        SatelliteUploadTimesMs = 8000,
         LifeTimeBribeIcon = 60 * 1000,
+        iconGroundOffset = 50,        
+        iconHoverGroundOffset = 125,
+
+        Satellite = {
+            iconDistance = 150,
+            shrapnellDistance = 450,
+            shrapnellLifeTime = 7 * 60 * 1000,
+            shrapnellDamagePerSecond = 1000,
+            uploadTimesMs = 8000,
+        },        
 
         -- Hiveminds & AiCores
         integrationRadius = 75,
@@ -251,9 +267,12 @@ function getGameConfig()
 
         },
         -- Defusal Time 
-        WarheadDefusalTimeMs = 30*1000,
-        WarheadDefusalStartDistance = 50,
-        WarheadDefusalPunishment = -500
+        Warhead= {
+                DefusalTimeMs = 30*1000,
+                DefusalStartDistance = 50,
+                DefusalPunishment = -500  
+        }
+
 
     }
     end
@@ -2141,7 +2160,7 @@ end
 
             function computateClusterNodes(housePosTable, GameConfig)
                 timeFactor = math.abs(math.sin(math.pi * Spring.GetGameFrame() /
-                GameConfig.civilianGatheringBehaviourIntervalFrames)) -- [0 - 1]
+                GameConfig.civilian.GatheringBehaviourIntervalFrames)) -- [0 - 1]
 
                 goalIndexMaxDivider = getBelowPow2(GameConfig.numberOfBuildings)
                 -- protect against min and max

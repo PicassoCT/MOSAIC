@@ -163,7 +163,7 @@ function UplinkAnimation()
     Show(RaidUploadInProgressDish)
 
 
-    times = GameConfig.satelliteUploadTimesMs/1000
+    times = GameConfig.Satellite.uploadTimesMs/1000
     speed = 50/3 --3 Seconds
 
     for i=1, times do

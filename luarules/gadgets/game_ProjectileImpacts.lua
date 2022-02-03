@@ -228,7 +228,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     GG.CloseCombatInvolved = {}
     function initiateCloseCombat(DamagedUnitID, AttackerID)
-        if not DamagedUnitID or not AttackerID then return end
+        if not DamagedUnitID or not AttackerID then echo("No Attacker"); return end
+        if DamagedUnitID == AttackerID then echo("Self attack"); return end
         
         if not doesUnitExistAlive(DamagedUnitID) or not doesUnitExistAlive(AttackerID) then
            -- echo("Unit is dead - no close combat")
@@ -240,30 +241,22 @@ if (gadgetHandler:IsSyncedCode()) then
             return 
         end 
 
-        --echo("dx1")
         --make sure none of the two is alreay in Closed Combat
         if  GG.CloseCombatInvolved[DamagedUnitID] or GG.CloseCombatInvolved[AttackerID] then return end
 
-        local a = {}
-        local b = {}
-        b.x,b.y,b.z = Spring.GetUnitPosition(DamagedUnitID)
-        a.x,a.y,a.z = Spring.GetUnitPosition(AttackerID)
-        mx, my , mz = getMidPoint(a, b)
-        --echo("dx2")
+        local px,py,pz = Spring.GetUnitPosition(DamagedUnitID)
+
         --create closeCombatArena
-        arenaID = Spring.CreateUnit("closecombatarena",GaiaTeamID, mx, my, mz, 0)
-        rx,ry,rz= Spring.GetUnitRotation(AttackerID)
-        Spring.SetUnitRotation(arenaID, rx,ry,rz)
+        arenaID = Spring.CreateUnit("closecombatarena", px,py,pz, 0, GaiaTeamID)
+        rx,ry,rz = Spring.GetUnitRotation(DamagedUnitID)
+        Spring.SetUnitRotation(arenaID, rx, ry, rz)
         GG.CloseCombatInvolved[DamagedUnitID] = arenaID
         GG.CloseCombatInvolved[AttackerID] = arenaID
         
         env = Spring.UnitScript.GetScriptEnv(arenaID)        
-        if env and env.addCloseCombatInvolved then
-            Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, DamagedUnitID)
-            Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatInvolved, AttackerID)
-        end
- 
-         --Attach Both
+        if env and env.addCloseCombatants then
+            Spring.UnitScript.CallAsUnit(arenaID, env.addCloseCombatants,  AttackerID, DamagedUnitID)
+        end     
 
         --call into both to inform about - nolonger disguised, engaged in close combat
         env = Spring.UnitScript.GetScriptEnv(AttackerID)        

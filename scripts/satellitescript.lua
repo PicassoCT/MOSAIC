@@ -17,7 +17,7 @@ function script.Create()
     Hide(Line001)
     Spin(center, y_axis, math.rad(1), 0.5)
     if Icon then
-        Move(Icon, y_axis, GameConfig.SatelliteIconDistance, 0);
+        Move(Icon, y_axis, GameConfig.Satellite.iconDistance, 0);
         Hide(Icon)
     end
     generatepiecesTableAndArrayCode(unitID)

@@ -43,7 +43,7 @@ function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
     for projID, wdefID in pairs(projectiles) do
         if projID then
             if not cruiseMissileProjectileType[wDefID] or 
-                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.cruiseMissileChanceOfInterceptOneIn) == 1  then
+                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.CruiseMissile.chanceOfInterceptOneIn) == 1  then
                 px, py, pz = Spring.GetProjectilePosition (projID)
                 if px then
 

@@ -240,8 +240,8 @@ function fleeEnemy(enemyID)
         return 
     end
 
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
         Sleep(500)
     end
 

@@ -20,7 +20,7 @@ function script.Create()
     Hide(Line001)
     Spin(center, y_axis, math.rad(1), 0.5)
     if Icon then
-        Move(Icon, y_axis, GameConfig.SatelliteIconDistance, 0);
+        Move(Icon, y_axis, GameConfig.Satellite.iconDistance, 0);
         Show(Icon)
     end
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -36,8 +36,8 @@ end
 
 function getRandShrapMoveVal()
     factor = 10
-    return math.random(-GameConfig.SatelliteShrapnellDistance * factor,
-                       GameConfig.SatelliteShrapnellDistance * factor)
+    return math.random(-GameConfig.Satellite.shrapnellDistance * factor,
+                       GameConfig.Satellite.shrapnellDistance * factor)
 end
 activeParticles = {}
 function dealDamageAnimate()
@@ -74,9 +74,9 @@ function dealDamageAnimate()
 end
 
 function doDamageCyclic()
-    local LifeTime = GameConfig.SatelliteShrapnellLifeTime
-    local DamagePerSecondTenth = GameConfig.SatelliteShrapnellDamagePerSecond / 100
-    local SatelliteShrapnellDistance = GameConfig.SatelliteShrapnellDistance
+    local LifeTime = GameConfig.Satellite.shrapnellLifeTime
+    local DamagePerSecondTenth = GameConfig.Satellite.shrapnellDamagePerSecond / 100
+    local SatelliteShrapnellDistance = GameConfig.Satellite.shrapnellDistance
 
     Spring.SetUnitNoSelect(unitID, true)
     while LifeTime > 0 do

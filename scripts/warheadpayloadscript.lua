@@ -46,11 +46,11 @@ function mightyBadaBoom()
                          	end,
 						   function(id)
 	                            for tid, _ in pairs(protagonT) do
-	                                GG.Bank:TransferToTeam(GameConfig.WarheadDefusalPunishment, tid,
+	                                GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid,
 	                                                       id, {r=255,g=255,b=255})
 	                            end
 	                            for tid, _ in pairs(antagonT) do
-	                                GG.Bank:TransferToTeam(GameConfig.WarheadDefusalPunishment, tid,
+	                                GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid,
 	                                                       id, {r=255,g=255,b=255})
 	                            end
 
@@ -153,7 +153,7 @@ end
 
 function displayProgressBar(timeInMs)
   -- display the Progressbars																								
-        progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.WarheadDefusalTimeMs))
+        progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.Warhead.DefusalTimeMs))
         hideT(TablesOfPiecesGroups["ProgressBars"])
         showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
 end
@@ -165,7 +165,7 @@ defuseStatesMachine = {
 					
 					boolFoundSomething = false
 					
-					 foreach(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+					 foreach(getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance ),
 						   function(id)
 							   if boolFoundSomething == true then return end
 							   defID = spGetUnitDefID(id)
@@ -173,7 +173,7 @@ defuseStatesMachine = {
 								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID] and not isUnitDisguised(id) and isTeamProtagon(teamID)then
 									boolFoundSomething = true
 									 persPack.defuserID = id 
-									  persPack.defuseTimeMs = GameConfig.WarheadDefusalTimeMs 
+									  persPack.defuseTimeMs = GameConfig.Warhead.DefusalTimeMs 
 										showT(TablesOfPiecesGroups["Rotor"])
 										for i=1,#TablesOfPiecesGroups["Rotor"] do
 											val = math.random(15,50)
@@ -196,8 +196,8 @@ defuseStatesMachine = {
 							return "decay_in_progress", persPack
 						end
 						
-                        if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.WarheadDefusalStartDistance then
-                            if persPack.defuseTimeMs/ GameConfig.WarheadDefusalTimeMs > 0.2 then
+                        if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.Warhead.DefusalStartDistance then
+                            if persPack.defuseTimeMs/ GameConfig.Warhead.DefusalTimeMs > 0.2 then
 							hideT(TablesOfPiecesGroups["Rotor"])		
 							Show(WarnText)				
                              return "decay_in_progress", persPack
@@ -233,13 +233,13 @@ defuseStatesMachine = {
 			persPack.defuseTimeMs = persPack.defuseTimeMs + 100
 			displayProgressBar(persPack.defuseTimeMs)
 			
-			if persPack.defuseTimeMs > GameConfig.WarheadDefusalTimeMs then
+			if persPack.defuseTimeMs > GameConfig.Warhead.DefusalTimeMs then
 				mightyBadaBoom()
 			end
 			
 			boolFoundFoe = false
 			boolFoundFriend = false
-			 foreach(getAllNearUnit(unitID, GameConfig.WarheadDefusalStartDistance ),
+			 foreach(getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance ),
 			   function(id)
 				if boolFoundFoe or boolFoundFriend then return end
 		

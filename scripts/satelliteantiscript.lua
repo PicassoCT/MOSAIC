@@ -21,7 +21,7 @@ function attachSatellite()
     teamID = Spring.GetUnitTeam(unitID)
     id = Spring.CreateUnit("noone", x, y, z, 1, teamID)
     if Icon then
-        Move(Icon, y_axis, GameConfig.SatelliteIconDistance, 0);
+        Move(Icon, y_axis, GameConfig.Satellite.iconDistance, 0);
         Show(Icon)
     end
     -- Spring.SetUnitAlwaysVisible(id,true)

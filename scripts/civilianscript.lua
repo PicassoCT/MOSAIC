@@ -780,12 +780,12 @@ function fleeEnemy(enemyID)
     end  
    -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
   
-    flightTime =  GameConfig.civilianMaxFlightTimeMS
+    flightTime =  GameConfig.civilian.MaxFlightTimeMS
     while doesUnitExistAlive(enemyID) == true and 
         flightTime > 0 and
-         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilianPanicRadius do
+         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
 
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilianFleeDistance)
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
         distribution = math.random(1,10)
         Sleep(125+distribution)
         flightTime= flightTime - 125
@@ -794,7 +794,7 @@ function fleeEnemy(enemyID)
        echo(unitID.." stops fleeing from "..enemyID.. " cause enemy is dead")
     end   
 
-    if  distanceUnitToUnit(unitID, enemyID) >= GameConfig.civilianFleeDistance  then
+    if  distanceUnitToUnit(unitID, enemyID) >= GameConfig.civilian.FleeDistance  then
         echo(unitID.." stops fleeing from "..enemyID.. " cause max distance reached")
     end  --]]
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
