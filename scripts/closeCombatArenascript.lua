@@ -47,7 +47,7 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
-  echo("Close Combat Arena ended")
+  --echo("Close Combat Arena ended")
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
@@ -159,11 +159,11 @@ end
 
 function combatHealthOS()
     amount = GameConfig.closeCombatHealthLosPerSecond/2
-    echo("Close Combat Arena created")
+   -- echo("Close Combat Arena created")
     while boolStartFight == false do
         Sleep(100)
     end
-    echo("Close Combat Arena starting")
+   -- echo("Close Combat Arena starting")
     StartThread(fightAnimation)
     repeat
         
@@ -183,14 +183,14 @@ function combatHealthOS()
         end
         Sleep(500)
     until (not (doesUnitExistAlive(fighterOne) and doesUnitExistAlive(fighterTwo)))
-    echo("Close Combat Arena ending")
+    --echo("Close Combat Arena ending")
     Sleep(10)
     Spring.DestroyUnit(unitID, true, false)
 end
 
 
 function addCloseCombatants(fighterA, fighterB)
-    echo("Arena Adding close combant involved")
+   -- echo("Arena Adding close combant involved")
     if doesUnitExistAlive(fighterA) and  doesUnitExistAlive(fighterB)  then
         fighterOne = fighterA
         Spring.UnitAttach(unitID, fighterOne, TablesOfPiecesGroups["attach"][1])  
