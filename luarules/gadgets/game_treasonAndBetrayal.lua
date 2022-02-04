@@ -22,20 +22,14 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitTeam = Spring.GetUnitTeam
 
-    UnitDefNames = getUnitDefNames(UnitDefs)
-    GameConfig = getGameConfig()
-
-    MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
-    InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
-    operativeTypeTable = getOperativeTypeTable(UnitDefs)
-    reruitmentDefID = UnitDefNames["recruitcivilian"].id
+    local InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
+    local operativeTypeTable = getOperativeTypeTable(UnitDefs)
 
     gaiaTeamID = Spring.GetGaiaTeamID()
 
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
 
         if InterrogateableType[unitdefid] then
-            -- Spring.Echo("UnitCreated of InterrogateableType")
             if father and doesUnitExistAlive(father) then
                 registerChild(unitTeam, father, unitid)
                 if operativeTypeTable[unitdefid] then
