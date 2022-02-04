@@ -54,6 +54,8 @@ function getGameConfig()
         houseSizeY = 16,
         houseSizeZ = 256,
         innerCitySize = 1024,
+
+        minimalMoveDistanceElseStuck = 140,
   
         allyWaySizeX = 25,
         allyWaySizeZ = 25,
@@ -933,8 +935,7 @@ function  getManualCivilianBuildingMaps(mapName)
 
 
             function getTruckTypeTable(UnitDefs)
-                return getCultureUnitModelTypes(GG.GameConfig.instance.culture,
-                "truck", UnitDefs)
+                return getCultureUnitModelTypes(GG.GameConfig.instance.culture, "truck", UnitDefs)
             end
 
             function getOperatorSex(UnitDefs, defID)
