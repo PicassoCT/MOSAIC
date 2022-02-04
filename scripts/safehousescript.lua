@@ -135,6 +135,7 @@ function checkPreExistingKill(toKillId, notID)
                         )
 
         if #OtherUpgradeTypesAliveAtLocation > 0 then
+            echo("Previous Upgrade active")
             Spring.DestroyUnit(toKillId, false, true)
         end
 end
