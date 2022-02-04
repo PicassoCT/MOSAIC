@@ -36,7 +36,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.823" 
+            Version = "Alpha: 0.825" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
