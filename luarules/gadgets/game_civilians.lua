@@ -1,11 +1,11 @@
 function gadget:GetInfo()
     return {
-        name = "Civilian City and Inhabitants Gadget",
+        name = "CityInhabitants Behaviour Gadget",
         desc = "Coordinates Traffic ",
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 3,
+        layer = 1,
         version = 1,
         enabled = true
     }
@@ -13,31 +13,20 @@ end
 
 if (not gadgetHandler:IsSyncedCode()) then return false end
 
-VFS.Include("scripts/lib_OS.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
-VFS.Include("scripts/lib_Animation.lua")
-VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-statistics = {}
 local GameConfig = getGameConfig()
 --if not Game.version then Game.version = GameConfig.instance.Version end
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
-local spGetUnitIsDead = Spring.GetUnitIsDead
 local spGetUnitHealth = Spring.GetUnitHealth
 local spGetGameFrame = Spring.GetGameFrame
 local spGetGroundHeight = Spring.GetGroundHeight
-local spGetGroundNormal = Spring.GetGroundNormal
-local spGetUnitLastAttacker = Spring.GetUnitLastAttacker
 local spGetUnitNearestAlly = Spring.GetUnitNearestAlly
-local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
-local spSetUnitRotation = Spring.SetUnitRotation
 
-local spSetUnitBlocking = Spring.SetUnitBlocking
 local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
-local spSetUnitNeutral = Spring.SetUnitNeutral
 local spSetUnitNoSelect = Spring.SetUnitNoSelect
 local spRequestPath = Spring.RequestPath
 local spCreateUnit = Spring.CreateUnit
@@ -50,19 +39,10 @@ local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 local CivAnimStates = getCivilianAnimationStates()
 local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
-local TimeDelayedRespawn = {}
-BuildingWithWaitingRespawn = {}
+
 
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
-GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
-local BuildingPlaceTable = {} -- SizeOf Map/Divide by Size of Building
-local uDim = {}
-local innerCityDim = {}
-uDim.x, uDim.y, uDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ + GameConfig.allyWaySizeZ
-innerCityDim.x, innerCityDim.y, innerCityDim.z = GameConfig.houseSizeX/2 , GameConfig.houseSizeY/2, GameConfig.houseSizeZ /2
-
-numberTileX, numberTileZ = Game.mapSizeX / uDim.x, Game.mapSizeZ / uDim.z
 
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
@@ -80,18 +60,6 @@ local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, 
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 
-
-local boolCachedMapManualPlacementResult
-function isMapControlledBuildingPlacement(mapName)
-    if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
-    manualBuildingPlacingMaps = getManualObjectiveSpawnMapNames("manualBuildingPlacing")
-    if manualBuildingPlacingMaps[mapName] then
-        boolCachedMapManualPlacementResult = true
-    else
-        boolCachedMapManualPlacementResult = false
-    end
-    return boolCachedMapManualPlacementResult
-end
 
 function startInternalBehaviourOfState(unitID, name, ...)
     local arg = arg;
@@ -117,20 +85,20 @@ end
 function makePasserBysLook(unitID)
     ux, uy, uz = spGetUnitPosition(unitID)
     foreach(getInCircle(unitID, GameConfig.civilian.InterestRadius, gaiaTeamID),
-            function(id)
-        -- filter out civilians
-        if id then
-            defID = spGetUnitDefID(id)
-            if defID and PanicAbleCivliansTable[defID] then return id end
-        end
-    end, function(id)
+        function(id)
+            -- filter out civilians
+            if id then
+                defID = spGetUnitDefID(id)
+                if defID and PanicAbleCivliansTable[defID] then return id end
+            end
+        end, 
+        function(id)
         if math.random(0, 100) > GameConfig.inHundredChanceOfInterestInDisaster then
             offx, offz = math.random(25, 50) * randSign(),
                          math.random(25, 50) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             -- TODO Set Behaviour filming
             startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, math.random(5000,15000))
-           -- Spring.Echo("Unit "..id.." is now filming")
         elseif math.random(0, 100) > GameConfig.inHundredChanceOfDisasterWailing then
             offx, offz = math.random(0, 10) * randSign(),
                          math.random(0, 10) * randSign()
@@ -140,50 +108,11 @@ function makePasserBysLook(unitID)
     end)
 end
 
-local storedSpawnedUnits = {}
-function registerManuallyPlacedHouses() 
-    for id, data in pairs(storedSpawnedUnits) do
-        if doesUnitExistAlive(id) == true then
-            spSetUnitAlwaysVisible(id, true)
-            spSetUnitBlocking(id, false)
-            GG.BuildingTable[id] = {x = data.x, z = data.z }
-        end
-    end
-    storedSpawnedUnits = {} 
-end
-
-function gadget:UnitCreated(unitID, unitDefID, teamID)
-    if teamID == gaiaTeamID and houseTypeTable[unitDefID] and isMapControlledBuildingPlacement(Game.mapName) == true then
-       x,y,z = spGetUnitPosition(unitID)
-       storedSpawnedUnits[unitID] = {x=x, y=y, z = z}
-    end
- end
-
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
         makePasserBysLook(unitID)
         -- other gadgets worries about propaganda price
-        if houseTypeTable[unitDefID] then
-            rubbleHeapID = spawnRubbleHeapAt(unitID)
-        end
-    end
-end
-
-function spawnRubbleHeapAt(id)
-    x, y, z = spGetUnitPosition(id)
-    if x then
-
-        rubbleHeapID = spCreateUnit(randDict(scrapHeapTypeTable), x, y, z, 1,
-                                    gaiaTeamID)
-        TimeDelayedRespawn[rubbleHeapID] =
-            {
-                frame = GameConfig.TimeForScrapHeapDisappearanceInMs,
-                x = x,
-                z = z,
-                bID = id
-            }
-        BuildingWithWaitingRespawn[id] = true
     end
 end
 
@@ -224,359 +153,72 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
     end
 end
 
-BuildingPlaceTable = makeTable(true, math.ceil(Game.mapSizeX / uDim.x), math.ceil(Game.mapSizeZ / uDim.z))
-
-
-startindex = 1
-function distributedPathValidationComplete(frame, elements)
-    oldstartindex = startindex
-
-    boolComplete = false
-    startindex = validateBuildSpotsReachable(startindex, math.min(
-                                                 startindex + elements,
-                                                 #BuildingPlaceTable))
-    -- echo("Pathingpercentage: ", startindex/((#BuildingPlaceTable)))
-    if startindex >= #BuildingPlaceTable then boolComplete = true end
-
-    return boolComplete
-end
-
-local boolHasCityCenter = false --maRa()
-
-function isOnRoad(cursorl)
-    local subResCursor = {x= cursorl.x, z= cursorl.z}
-
-    subResCursor.x = ((subResCursor.x)*2)-1 
-    subResCursor.z = ((subResCursor.z)*2)-1 
-
-    if subResCursor.x < 0 then     subResCursor.x =  subResCursor.x + 4 end
-    if subResCursor.z < 0 then     subResCursor.z =  subResCursor.z + 4 end
-
-    subResCursor.x  = ((subResCursor.x ) % 4)
-    subResCursor.z = ((subResCursor.z ) % 4)
-    if subResCursor.x  == 0  then return true end
-    if subResCursor.z == 0  then return true end
-
-    return false
-end
-
-function isOnInnerCityGridBlock(cursorl, offx, offz)
-    local subResCursor = {x= cursorl.x, z= cursorl.z}
-    if offx == 0 and offz == 0 then return false end
-
-    subResCursor.x = ((subResCursor.x)*2)-1 + offx
-    subResCursor.z = ((subResCursor.z)*2)-1 + offz
-
-    if subResCursor.x < 0 then     subResCursor.x =  subResCursor.x + 4 end
-    if subResCursor.z < 0 then     subResCursor.z =  subResCursor.z + 4 end
-
-    subResCursor.x  = ((subResCursor.x ) % 4)
-    subResCursor.z = ((subResCursor.z ) % 4)
-    if subResCursor.x  == 0  then return false end
-    if subResCursor.z == 0  then return false end
-
-    if subResCursor.x == 1 and (subResCursor.z == 2 ) then return true end
-    if subResCursor.x == 2 and (subResCursor.z == 1 or subResCursor.z == 3 ) then return true end
-    if subResCursor.x == 3 and (subResCursor.z == 2 ) then return true end
-
-    return false
-end
-
-function hasAlreadyBuilding(x,z, range)
-    local allPreviousBuildings = GG.BuildingTable
-    for id, data in pairs(allPreviousBuildings) do
-        if distance(x,0,z, data.x, 0, data.z) < range then return true end
-    end
-
-    return false
-end
-
--- check Traversability from each position to the previous position	
-function validateBuildSpotsReachable(start, endindex)
-    tileX, tileZ = uDim.x, uDim.z
-
-    for x = start, endindex, 1 do
-        for z = 1, #BuildingPlaceTable[1] do
-            startx, startz = x * tileX, z * tileZ
-
-            PlacesReachableFromPosition = 0
-            local boolEarlyOut
-            for xi = 1, #BuildingPlaceTable do
-                for zi = 1, #BuildingPlaceTable[1] do
-                    if xi ~= x or zi ~= z then
-                        endx, endz = xi * tileX, zi * tileZ
-
-                        if spRequestPath(
-                            UnitDefNames["truck_arab0"].moveDef.name, startx, 0,
-                            startz, endx, 0, endz) then
-                            PlacesReachableFromPosition =
-                                PlacesReachableFromPosition + 1
-                            if PlacesReachableFromPosition > 5 then
-                                dx, dy, dz, slope =
-                                    spGetGroundNormal(x * tileX, z * tileZ)
-
-                                BuildingPlaceTable[x][z] =
-                                    spGetGroundHeight(x * tileX, z * tileZ) > 5 and
-                                        slope < 0.2
-                                boolEarlyOut = true
-                                break
-                            end
-                        end
-                    end
-                end
-                if boolEarlyOut == true then break end
-            end
-        end
-    end
-
-    return endindex + 1
-end
-
-
-
-function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
-    local cursor = cursorl
-    orgPosX, orgPosZ= cursor.x*uDim.x, cursor.z*uDim.z
-    for offsx = -1, 1, 1 do
-        for offsz = -1, 1, 1 do
-            if isOnInnerCityGridBlock(cursor, offsx, offsz) == true then                
-                if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 35) == false  then
----echo("Gapspawned Building at:".. orgPosX + offsx * innerCityDim.x.." / ".. orgPosZ + offsz * innerCityDim.z)
-
-                          houseID = spawnBuilding(buildingType, 
-                                        orgPosX + offsx * innerCityDim.x,
-                                        orgPosZ + offsz * innerCityDim.z,
-                                        true)
-                           setHouseStreetNameTooltip(houseID, cursor.x + offsx, cursor.z+ offsz, Game)
-
-                end
-            end    
-        end
-    end
-end
-
-function cursorIsOnMainRoad(cursor, sx, sz)
-    return ((cursor.x - sx) % GameConfig.mainStreetModulo == 0) or
-               ((cursor.z - sz) % GameConfig.mainStreetModulo == 0)
-end
-
-function clampCursor(cursor)
-    cursor.x = math.max(1, math.min(cursor.x, math.floor(Game.mapSizeX / uDim.x)-1))
-    cursor.z = math.max(1, math.min(cursor.z, math.floor(Game.mapSizeZ / uDim.z)-1))
-    return cursor
-end
-
-function randomWalk(cursor)
-    return {x = cursor.x + randSign(), z = cursor.z + randSign()}
-end
-
-function mirrorCursor(cursor, cx, cz)
-    x, z = cx - cursor.x, cz - cursor.z
-    return {x = cx + x, z = cz + z}
-end
-
--- spawns intial buildings
-function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
-    local finiteSteps = GameConfig.maxIterationSteps
-    local cursor = {x = startx, z = startz}
-    local mirror = {x = startx, z = startz}
-    local numberOfBuildings = GameConfig.numberOfBuildings - 1
-    local cityBlockCounter = 0
-
-    while finiteSteps > 0 and numberOfBuildings > 0 do
-        finiteSteps = finiteSteps - 1
-
-        dice = math.floor(math.random(5, 31) / 10)
-        boolNearCityCenter = isNearCityCenter(cursor.x * uDim.x, cursor.z*uDim.z, GameConfig)
-        boolMirrorNearCityCenter = isNearCityCenter(mirror.x * uDim.x, mirror.z*uDim.z, GameConfig)
-
-        if dice == 1 or (dice == 0 and GameConfig.instance.culture == "arabic")then -- 1 random walk into a direction doing nothing
-            cursor = randomWalk(cursor)
-            cursor = clampCursor(cursor)
-            mirror = mirrorCursor(cursor, startx, startz)
-            mirror = clampCursor(mirror)
-            -- Spring.Echo("dice 1")
-        elseif dice == 2 or (dice == 0 and GameConfig.instance.culture ~= "arabic")  then -- 2 place a single block
-            boolFirstPlaced = false
-            dimX,dimZ = uDim.x, uDim.z
-
-            if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
-                buildingType = randDict(houseTypeTable)
-                houseID = spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
-                setHouseStreetNameTooltip(houseID, cursor.x , cursor.z, Game)
-              --  echo("Placed Single")
-                numberOfBuildings = numberOfBuildings - 1
-                BuildingPlaceT[cursor.x][cursor.z] = false
-                boolFirstPlaced = true
-                if boolNearCityCenter == true then
-                     fillGapsWithInnerCityBlocks(cursor,  buildingType)
-                end
-            end
-
-            if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
-                buildingType = randDict(houseTypeTable)
-                houseID = spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
-                setHouseStreetNameTooltip(houseID, mirror.x , mirror.z, Game)
-                --echo("Placed Single Mirror")
-                numberOfBuildings = numberOfBuildings - 1
-                BuildingPlaceT[mirror.x][mirror.z] = false
-                if boolMirrorNearCityCenter == true then
-                     fillGapsWithInnerCityBlocks(mirror,  buildingType)
-                end
-            end
-
-        elseif dice == 3 then
-            cityBlockCounter = cityBlockCounter + 1
-            if cityBlockCounter > 1 and boolHasCityCenter == false then
-                boolHasCityCenter = true
-                if maRa()== true then
-                     GG.innerCityCenter.x = cursor.x*uDim.x
-                     GG.innerCityCenter.z = cursor.z*uDim.z
-                     boolNearCityCenter = true
-                else
-                    GG.innerCityCenter.x = mirror.x*uDim.x
-                    GG.innerCityCenter.z = mirror.z*uDim.z
-                    boolMirrorNearCityCenter = true
-                end
-             --   echo("Citycenter at:"..GG.innerCityCenter.x .." / "..GG.innerCityCenter.z)
-            end
-
-
-            numberOfBuildings, BuildingPlaceT =  placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,
-                                                   BuildingPlaceT, boolNearCityCenter)
-
-            numberOfBuildings, BuildingPlaceT =  placeThreeByThreeBlockAroundCursor(mirror, numberOfBuildings,
-                                                   BuildingPlaceT, boolMirrorNearCityCenter)
-        end
-    end
-end
-
-function checkCursorInnerCityFree(cursor)
-    return BuildingPlaceT[cursor.x][cursor.z] and BuildingPlaceT[cursor.x +1][cursor.z] and BuildingPlaceT[cursor.x ][cursor.z+1]and BuildingPlaceT[cursor.x +1 ][cursor.z +1]
-end
-
-function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter)
-    assert(BuildingPlaceT) 
-    assert(cursor.x ) 
-    assert(cursor.z ) 
-    buildingType = randDict(houseTypeTable)
-
-        for offx = -1, 1, 1 do
-            if BuildingPlaceT[cursor.x + offx] then
-                for offz = -1, 1, 1 do
-                    if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
-                        local tmpCursor = {x =cursor.x + offx, z = cursor.z + offz}
-                        tmpCursor = clampCursor(tmpCursor)                      
-                        buildingType = randDict(houseTypeTable)
-                        if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
-                            houseID = spawnBuilding(buildingType,
-                                          tmpCursor.x * uDim.x,
-                                          tmpCursor.z * uDim.z, boolNearCityCenter)
-                            numberOfBuildings = numberOfBuildings - 1
-                            setHouseStreetNameTooltip(houseID, tmpCursor.x , tmpCursor.z, Game)
-                            if boolNearCityCenter == true then
-                                fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
-                            end
-
-                            BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
-                        end
-                    end
-                end
-            end
-        end
-
-    return numberOfBuildings, BuildingPlaceT
-end
-
 --will not be called with boolInitialized true
-function spawnInitialPopulation(frame)
-  
+function spawnInitialPopulation(frame)  
     -- great Grid of placeable Positions 
-    if distributedPathValidationComplete(frame, 10) == true  then
-        if  isMapControlledBuildingPlacement(Game.mapName) == false then
-        -- spawn Buildings from MapCenter Outwards
-        fromMapCenterOutwards(BuildingPlaceTable,
-                              math.ceil(#BuildingPlaceTable/2),
-                              math.ceil(#BuildingPlaceTable[1]/2)
-                              )
-            boolInitialized = true   
-        else
-           registerManuallyPlacedHouses() 
-           boolInitialized = ( GG.MapCompletedBuildingPlacement and  (GG.MapCompletedBuildingPlacement == true))
-           if boolInitialized == false then return end
-        end
-
+    if GG.CitySpawnComplete  then
+        issueArrivedUnitsCommands()
         regenerateRoutesTable()
-
-        -- give Arrived Units Commands
-        sendArrivedUnitsCommands()
+        boolInitialized = true
     end
 end
 
-function checkReSpawnHouses()
-    dataToAdd = {}
-    for bID, routeData in pairs(GG.BuildingTable) do
-        local routeDataCopy = routeData
-        if bID and doesUnitExistAlive(bID) ~= true and not BuildingWithWaitingRespawn[bID] then
-            GG.BuildingTable[bID] = nil
-
-            x, z = routeDataCopy.x, routeDataCopy.z
-            buildingType = randDict(houseTypeTable)
-            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig))
-            dataToAdd[id] = routeDataCopy
-        end
+function getRandomSpawnNode()
+    startNode = randT(RouteTabel)
+    attempts = 0
+    echo("Getting random spawnnode")
+    while not doesUnitExistAlive(startNode) and attempts < 5 do
+        startNode = randT(RouteTabel)
+        attempts = attempts + 1
     end
+    assert(startNode)
 
-    for id, routeData in pairs(dataToAdd) do GG.BuildingTable[id] = routeData end
+    x, y, z = spGetUnitPosition(startNode)
+
+    return x, y, z, startNode
 end
 
 function checkReSpawnPopulation()
     counter = 0
-    nilTable = {}
+    toDeleteTable = {}
     for id, data in pairs(GG.CivilianTable) do
         if id and civilianWalkingTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
                 counter = counter + 1
             else
-                nilTable[id] = true
+                toDeleteTable[id] = true
             end
         end
     end
 
-    for id, data in pairs(nilTable) do GG.CivilianTable[id] = nil end
+    for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
 
-    if counter < getUnitNumberAtTime(GameConfig.numberOfPersons) then
+    if counter < getNumberOfUnitsAtTime(GameConfig.numberOfPersons) then
         local stepSpawn = math.min(GameConfig.numberOfPersons - counter,
                                    GameConfig.LoadDistributionMax)
         -- echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
 
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
-
-            -- assert(startNode)
-            -- assert(RouteTabel[startNode])
             if x and startNode then
-                goalNode = RouteTabel[startNode][math.random(1,
-                                                             #RouteTabel[startNode])]
+                goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 civilianType = randDict(civilianWalkingTypeTable)
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
                                               goalNode)
             end
         end
     else -- decimate arrived cvilians who are not DisguiseCivilianFor
-        decimateArrivedCivilians(absDistance(
-                                     getUnitNumberAtTime(
-                                         GameConfig.numberOfPersons), counter),
-                                 civilianWalkingTypeTable)
+        decimateArrivedCivilians(absDistance(getNumberOfUnitsAtTime(GameConfig.numberOfPersons), counter), civilianWalkingTypeTable)
     end
 end
+
 function attachPayload(payLoadID, id)
     if payLoadID then
-           Spring.SetUnitAlwaysVisible(payLoadID,true)
-           pieceMap = Spring.GetUnitPieceMap(id)
-           assert(pieceMap["attachPoint"], "Truck has no attachpoint")
-           Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
-           return payLoadID
+       Spring.SetUnitAlwaysVisible(payLoadID,true)
+       pieceMap = Spring.GetUnitPieceMap(id)
+       assert(pieceMap["attachPoint"], "Truck has no attachpoint")
+       Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
+       return payLoadID
     end
 end
 
@@ -599,24 +241,25 @@ end
 
 function checkReSpawnTraffic()
     counter = 0
-    nilTable = {}
+    toDeleteTable = {}
     for id, data in pairs(GG.CivilianTable) do
         if id and TruckTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
                 counter = counter + 1
             else
-                nilTable[id] = true
+                toDeleteTable[id] = true
             end
         end
     end
 
-    for id, data in pairs(nilTable) do GG.CivilianTable[id] = nil end
+    for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
 
-    if counter < getUnitNumberAtTime(GameConfig.numberOfVehicles) then
+    if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
         local stepSpawn = math.min(GameConfig.LoadDistributionMax,
                                    GameConfig.numberOfVehicles - counter)
         -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
         for i = 1, stepSpawn do
+            echo("Spawn truck")
             x, _, z, startNode = getRandomSpawnNode()
 
             -- assert(RouteTabel[startNode])
@@ -630,13 +273,13 @@ function checkReSpawnTraffic()
         end
     else
         decimateArrivedCivilians(absDistance(
-                                     getUnitNumberAtTime(
+                                     getNumberOfUnitsAtTime(
                                          GameConfig.numberOfVehicles), counter),
                                  TruckTypeTable)
     end
 end
 
-function getUnitNumberAtTime(value)
+function getNumberOfUnitsAtTime(value)
     h, m, _, pTime = getDayTime()
     piValue= math.pi * pTime
     mixValue = 0
@@ -648,18 +291,7 @@ function getUnitNumberAtTime(value)
     return value * blendedFactor
 end
 
-function getRandomSpawnNode()
-    startNode = randT(RouteTabel)
-    attempts = 0
-    while not doesUnitExistAlive(startNode) or attempts > 5 do
-        startNode = randT(RouteTabel)
-        attempts = attempts + 1
-    end
 
-    x, y, z = spGetUnitPosition(startNode)
-
-    return x, y, z, startNode
-end
 
 function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     local Route = {}
@@ -716,11 +348,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     Route[index].y = y1
     Route[index].z = z1
 
-    assert(#Route >= 3)
-    assert(Route[1].x)
-    assert(Route[2].x)
-
-    return testClampRoute(Route, uType)
+    return Route
 end
 
 function regenerateRoutesTable()
@@ -765,9 +393,6 @@ function spawnUnit(defID, x, z)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
-   -- if not statistics[defID] then statistics[defID] = 0 end
-   -- statistics[defID] = statistics[defID] + 1
-
     if id then
         --spSetUnitNoSelect(id, true)
         spSetUnitAlwaysVisible(id, true)
@@ -801,25 +426,6 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
     end
 end
 
-function spawnBuilding(defID, x, z,  boolInCityCenter)
-    offset = {xRandOffset = 0, zRandOffset = 0}
-    if not boolInCityCenter  then
-         offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
-    end
-    id = spawnUnit(defID, x +
-                       math.random(-1 * offset.xRandOffset,
-                                   offset.xRandOffset), z +
-                       math.random(-1 * offset.zRandOffset,
-                                   offset.zRandOffset))
-
-    if id then
-        --spSetUnitRotation(id, 0, math.rad(offset.districtRotationDeg), 0)
-        spSetUnitAlwaysVisible(id, true)
-        spSetUnitBlocking(id, false)
-        GG.BuildingTable[id] = {x = x, z = z}
-        return id
-    end
-end
 
 function setUpRefugeeWayPoints()
     if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
@@ -828,21 +434,18 @@ function setUpRefugeeWayPoints()
     end
 end
 
+local startFrame = Spring.GetGameFrame() + 30*5
 function gadget:Initialize()
     -- Initialize global tables
     GG.CivilianTable = {}
     GG.DisguiseCivilianFor = {}
     GG.DiedPeacefully = {}
-    GG.BuildingTable = {}
     GG.AerosolAffectedCivilians = {}
     GG.UnitArrivedAtTarget = {}
     GG.TravelFunctionRegistry= {}
-    GG.innerCityCenter = {}
     GameConfig = getGameConfig()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
-    foreach(Spring.GetAllUnits(),
-            function(id) Spring.DestroyUnit(id, true, true) end)
-
+    startFrame = Spring.GetGameFrame() + 30*5
     setUpRefugeeWayPoints()
 end
 
@@ -881,7 +484,6 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     end
 
     x, y, z = spGetUnitPosition(myID)
-    assert(x)
 
     if x and not persPack.currPos then
         persPack.currPos = {x = x, y = y, z = z}
@@ -995,7 +597,6 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
             spDestroyUnit(myID, false, true)
             return true, nil, persPack
         else
-            echo("Go command")
             Command(id, "go", {x = ex,y = ey,z = ez }, {"shift"})
           return true, frame + math.random(15,45), persPack
         end
@@ -1097,7 +698,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     return boolDone, nil, persPack
     end 
 
-    if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < 140 then
+    if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < GameConfig.minimalMoveDistanceElseStuck then
       --  Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
     else
@@ -1126,17 +727,6 @@ function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
     if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
         --echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
-
-        --debugCode
-    --[[      defStr= "Unit "..myID.." a "..UnitDefs[spGetUnitDefID(myID)].name.." has no "
-      assert(persPack.goalList, defStr.. "goalList")
-        assert(persPack.goalIndex, defStr.. "goalIndex")
-        assert(persPack.goalIndex > 0 and persPack.goalIndex <= #persPack.goalList, defStr.. "goalIndex not violating limits "..persPack.goalIndex)
-        assert(#persPack.goalList > 0, defStr.."goalList ")
-
-        assert(persPack.goalList[persPack.goalIndex].x,defStr.."x component")
-        assert(persPack.goalList[persPack.goalIndex].y,defStr.."y component")
-        assert(persPack.goalList[persPack.goalIndex].z,defStr.."z component")--]]
 
         Command(myID, "go", {
             x = math.ceil(persPack.goalList[persPack.goalIndex].x),
@@ -1207,7 +797,6 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
 end
 
 function travellFunction(evtID, frame, persPack, startFrame)
-    assert(persPack)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 
@@ -1292,7 +881,7 @@ end
 
 function testClampRoute(Route, defID) return Route end
 
-function sendArrivedUnitsCommands()
+function issueArrivedUnitsCommands()
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
@@ -1326,38 +915,17 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     end
 end
 
-function countDownRespawnHouses(framesToSubstract)
-    for rubbleHeapID, tables in pairs(TimeDelayedRespawn) do
-        TimeDelayedRespawn[rubbleHeapID].frame =
-            TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
-
-        if TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
-            if isUnitAlive(rubbleHeapID) == true then
-                spDestroyUnit(rubbleHeapID, false, true)
-            end
-            regenerateRoutesTable()
-            BuildingWithWaitingRespawn[tables.bID] = nil
-            TimeDelayedRespawn[rubbleHeapID] = nil
-        end
-    end
-end
-
 function gadget:GameFrame(frame)
     if boolInitialized == false then
+        --echo("Intialization GameFrame")
         spawnInitialPopulation(frame)
     elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-        countDownRespawnHouses(5)
+               -- Check number of Units	
+        if frame % 30 == 0 and frame > startFrame then checkReSpawnPopulation() end
 
-        checkReSpawnHouses()
+        if frame % 55 == 0 and frame > startFrame then checkReSpawnTraffic() end
 
-        -- Check number of Units	
-        if frame % 30 == 0 then checkReSpawnPopulation() end
-
-        if frame % 55 == 0 then checkReSpawnTraffic() end
-
-        -- if Unit arrived at Location
-        -- give new Target
-        sendArrivedUnitsCommands()   
+        issueArrivedUnitsCommands()   
     end
 
     OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)
