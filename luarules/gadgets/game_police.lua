@@ -177,6 +177,7 @@ end
 
 function dispatchOfficer(victimID, attackerID )
     if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
+
     officerID = getOfficer(victimID, attackerID)
     boolFoundSomething = false
     if officerID and doesUnitExistAlive(officerID) == true then
@@ -184,7 +185,7 @@ function dispatchOfficer(victimID, attackerID )
          setMoveState(officerID, 2)
         -- Spring.AddUnitImpulse(officerID,15,0,0)
         tx, ty, tz = getRandomHousePos()
-        if not attackerID or doesUnitExistAlive(attackerID) then attackerID = Spring.GetUnitLastAttacker(officerID) end
+        if not attackerID or doesUnitExistAlive(attackerID) == false then attackerID = Spring.GetUnitLastAttacker(officerID) end
       
         if attackerID then 
             unitStates = Spring.GetUnitStates( victimID ) 
