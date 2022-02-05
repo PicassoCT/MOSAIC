@@ -1,21 +1,24 @@
 local AntagonSafeHouse = Building:New{
 	corpse				= "",
 	maxDamage           = 1000,
-	mass                = 500,
+	mass                = 5000,
 
 	buildTime 			= 15,
 	MaxSlope 			= 100,
 	explodeAs			= "none",
-	NoWeapon=true,
 	name = "Safehouse",
+	description= " base of operation <recruits Agents/ builds upgrades>",
 	buildPic = "antagonsafehouse.png",
 	iconType					= "antagonsafehouse",
-	description= " base of operation <recruits Agents/ builds upgrades>",
 	
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],
 	CanReclaim=false,	
+	canAssist = false,
+	fullHealthFactory = true,
 	workerTime = 1,
+	showNanoSpray = false
+	canBeAssisted = false,
 	buildDistance = 1,
 	terraformSpeed = 1,
 	YardMap ="oooooooo oooooooo oooooooo oooooooo oooooooo oooooooo oooooooo oooooooo",

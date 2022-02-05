@@ -166,7 +166,7 @@ end
 function getRandomSpawnNode()
     startNode = randT(RouteTabel)
     attempts = 0
-    echo("Getting random spawnnode")
+
     while not doesUnitExistAlive(startNode) and attempts < 5 do
         startNode = randT(RouteTabel)
         attempts = attempts + 1
@@ -259,10 +259,8 @@ function checkReSpawnTraffic()
                                    GameConfig.numberOfVehicles - counter)
         -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
         for i = 1, stepSpawn do
-            echo("Spawn truck")
             x, _, z, startNode = getRandomSpawnNode()
 
-            -- assert(RouteTabel[startNode])
             goalNode = RouteTabel[startNode][math.random(1,
                                                          #RouteTabel[startNode])]
             TruckType = randDict(TruckTypeTable)

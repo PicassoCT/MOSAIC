@@ -9,13 +9,14 @@ local ProtagonSafeHouse =    Building:New{
   description =   " base of operation <recruits Agents/ builds upgrades>",
 	buildPic = "protagonsafehouse.png",
 	iconType = "protagonsafehouse",
+
   Builder =    true,
   nanocolor =  [[0 0 0]], --
   CanReclaim =  false,
   workerTime =    1,
   buildDistance =    1,
   terraformSpeed =    1,
-  YardMap =[[ oooooooo
+  YardMap =[[oooooooo
         oooooooo
         oooooooo
         oooooooo
@@ -33,14 +34,13 @@ local ProtagonSafeHouse =    Building:New{
   buildCostEnergy =        2000,
   buildCostMetal =         2000,
 
-  EnergyStorage = 1000,
-  EnergyUse =    0,
-  MetalStorage =    1000,
-
-  MetalUse =    0,
-  EnergyMake = 2.0, 
-  MakesMetal = 0, 
-  MetalMake = 2.0,
+	EnergyStorage = 1000,
+	EnergyUse = 0,
+	MetalStorage = 1000,
+	MetalUse = 0,
+	EnergyMake = 2.0, 
+	MakesMetal = 0, 
+	MetalMake = 2.0,	
 
   canCloak =   true,
   cloakCost =  0.0001,
