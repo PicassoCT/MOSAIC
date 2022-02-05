@@ -557,7 +557,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
  -- avoid combat zones
      if maRa() == true and isGoalWarzone(persPack) and not persPack.boolRefugee then 
-        if refugeeAbleTruckType[spGetUnitDefID(myID)] then
+        if refugeeableTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
             payloadID = loadTruck(myID, "truckpayloadrefugee")
             Spring.SetUnitTooltip(myID, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture ,getDetermenisticMapHash(Game) + math.random(0,1)*randSign()))

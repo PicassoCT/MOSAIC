@@ -36,7 +36,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.828" 
+            Version = "Alpha: 0.829" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -612,31 +612,6 @@ function  getManualCivilianBuildingMaps(mapName)
             return resultTypeTable
         end
 
-        function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
-            assert(UnitDefs)
-            local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == Cultures.arabic then
-                typeTable = {
-                    "truck_arab0",
-                    "truck_arab1",
-                    "truck_arab2",
-                    "truck_arab3",
-                    "truck_arab4",
-                    "truck_arab5"
-                }
-                return getTypeTable(UnitDefNames, typeTable)
-            end
-
-            if culture == Cultures.international then
-                    return mergeTables(
-                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
-                        getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),   
-			            getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
-                        )
-            end
-
-            return {}
-        end
 
         function getRocketTransportableTypes(UnitDefs)
              local UnitDefNames = getUnitDefNames(UnitDefs)
@@ -726,6 +701,7 @@ function  getManualCivilianBuildingMaps(mapName)
 
             return {}
         end
+
         function getRuralAreaFeatureUnitsNameTable(culture, housesNearby)
             if culture == Cultures.arabic then
                 if housesNearby < 2 then
