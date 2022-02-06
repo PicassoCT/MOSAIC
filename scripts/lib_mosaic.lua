@@ -1005,6 +1005,7 @@ function  getManualCivilianBuildingMaps(mapName)
                     "hivemind",
                     "launcher",
                     "launcherstep",
+                    "warheadfactory",
                     "nimrod",
                     "operativepropagator",
                     "operativeinvestigator",
@@ -1020,7 +1021,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {}
                 if not myDefID then
-                    typeTable = {"nimrod", "propagandaserver", "assembly"}
+                    typeTable = {"nimrod", "propagandaserver", "assembly",  "warheadfactory"}
 
                 else
 

@@ -97,6 +97,7 @@ function houseAttach()
                 boolIsSafeHouse = safeHouseTypeTable[spGetUnitDefID(GG.houseHasSafeHouseTable[houseID])] ~= nil
                 attachDoubleAgentToUnit(unitID ,enemyTeamID, boolIsSafeHouse)
                 -- destroy the previous created safehouse
+                echo("Previous Safehouse detected")
                 Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
             end
         end
@@ -133,12 +134,11 @@ function checkPreExistingKill(toKillId, notID)
                         )
 
         if #OtherUpgradeTypesAliveAtLocation > 0 then
-            echo("Previous Upgrade active")
+            echo("Previous Upgrade active - killing the unit")
             Spring.DestroyUnit(toKillId, false, true)
         end
 end
 
---boolDoneFor = false
 function detectUpgrade()
    if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
     while true do
@@ -155,14 +155,13 @@ function detectUpgrade()
                 checkPreExistingKill(buildID, buildID)
                 --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
                 if doesUnitExistAlive(buildID) == true then
-                   --  echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
+                    -- echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
                     if waitTillComplete(buildID) == true then
                     --echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
                     GG.houseHasSafeHouseTable[containingHouseID] = buildID
                     moveUnitToUnit(buildID, containingHouseID)
-                   -- boolDoneFor = true
-                     Spring.UnitAttach(containingHouseID, buildID, getUnitPieceByName(containingHouseID, GameConfig.safeHousePieceName))
-                    --Spring.Echo("Upgrade Complete")
+                    Spring.UnitAttach(containingHouseID, buildID, getUnitPieceByName(containingHouseID, GameConfig.safeHousePieceName))
+                    --echo("Upgrade Complete")
                     Spring.DestroyUnit(unitID, false, true)
                     end
                 end
@@ -176,20 +175,31 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
-function script.Activate()
-    --if  boolDoneFor == true then return 0 end
+local function open()
+    Signal (SIG_BUILD)
+    SetSignalMask (SIG_BUILD)
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.INBUILDSTANCE, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)
-    return 1
+end
+
+local function close()
+    Signal (SIG_BUILD)
+    SetSignalMask (SIG_BUILD)
+    SetUnitValue(COB.YARD_OPEN, 0)
+    SetUnitValue(COB.INBUILDSTANCE, 0)
+    SetUnitValue(COB.BUGGER_OFF, 0)
+end
+
+
+function script.Activate()
+    --if  boolDoneFor == true then return 0 end
+    StartThread(open)
 end
 
 function script.Deactivate()
     -- if not containingHouseID then return 0 end
-    SetUnitValue(COB.YARD_OPEN, 0)
-    SetUnitValue(COB.INBUILDSTANCE, 0)
-    SetUnitValue(COB.BUGGER_OFF, 0)
-    return 0
+    StartThread(close)
 end
 
 function script.QueryBuildInfo() return center end
