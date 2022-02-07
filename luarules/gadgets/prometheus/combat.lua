@@ -43,11 +43,14 @@ local GetUnitRulesParam = Spring.GetUnitRulesParam
 local GetGroundHeight   = Spring.GetGroundHeight
 local GetTeamResources  = Spring.GetTeamResources
 local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
+local spGetTeamUnitsByDefs = Spring.GetTeamUnitsByDefs
 local FIRE_AT_WILL = "fireatwill"
 local randVal = random(2,6)
 -- members
 local lastWaypoint = 0
 local units = {}
+local warheadDefID = UnitDefNames["physicspayload"].id
+local launcherDefID = UnitDefNames["launcher"].id
 
 local newUnits = {}
 local newUnitCount = 0
@@ -297,6 +300,33 @@ function CombatMgr.GameFrame(f)
             end
         end
     end
+
+    local warheads = spGetTeamUnitsByDefs(myTeamID, warheadDefID)
+    if warheads and #warheads then
+        local result = {}
+        for i=1, #warheads do
+            if not Spring.GetUnitTransporter(warheads[i]) then
+                result[#result+1]=warheads[i] 
+            end
+        end
+        local launcherTargets = spGetTeamUnitsByDefs(myTeamID, launcherDefID)
+
+        if #result > 0 and #launcherTargets > 0 then
+            for i=1, #result do
+                local index = 1
+                if #launcherTargets > 1 then index = math.random(1,#launcherTargets) end
+                assert(index)
+                assert(launcherTargets)
+                assert(launcherTargets[index])
+                local target = {}
+                target.x,target.y,target.z = spGetUnitPosition( launcherTargets[index])
+                taxiMgr.AddTransportMission({result[i]},
+                                            {target.x, target.y, target.z})
+            end
+
+        end
+    end
+
 end
 
 --------------------------------------------------------------------------------
