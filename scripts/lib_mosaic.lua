@@ -191,6 +191,7 @@ function getGameConfig()
         --Payloads
         bioWeaponPayloadKillRadius = 1700,
 		PayloadDefusedReward = 5000,
+        payloadDestructionRange = 420,
 		
         -- CruiseMissiles
         CruiseMissile = {
@@ -2454,6 +2455,10 @@ end
                     end
                 end)
                 return returnT
+            end
+
+            function isTeamAITeam(teamID)
+                return select(4, Spring.GetTeamInfo(teamID)) == true
             end
 
             function transferFromTeamToAllTeamsExceptAtUnit(unit, teamToWithdrawFrom,

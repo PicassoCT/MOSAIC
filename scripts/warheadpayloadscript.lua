@@ -9,6 +9,38 @@ local GameConfig = getGameConfig()
 local WarnText = piece"WarnText"
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
+local myTeamID = Spring.GetUnitTeam(unitID)
+ launcherDefID = UnitDefNames["launcher"].id
+boolIsAITeam = isTeamAITeam(Spring.GetUnitTeamID(unitID))
+
+function moveAItoLauncher()	
+	goal = unitID
+	while goal == unitID do
+	smallestDistance = math.huge
+	goals = foreach(Spring.GetTeamUnitsByDefs(myTeamID,launcherDefID),
+						function(id)
+							dist = distanceUnitToUnit(id, unitID)
+							if dist < smallestDistance then 
+								smallestDistance = dist
+								goal = id
+							end
+						end
+					)
+	Sleep(250)
+	end
+
+		factor = 0.0
+	while true do
+		goalV= {}
+		goalV.x,goalV.y,goalV.z = Spring.GetUnitPosition(goal)
+		myPosV= {}
+		myPosV.x,myPosV.y,myPosV.z = Spring.GetUnitPosition(unitID)
+		resultV = mix(goalV, myPosV, factor)
+		Spring.SetUnitPosition(unitID, resultV.x, resultV.y, resultV.z)
+		factor = math.min(1.0, factor+0.01)
+		Sleep(1000)
+	end
+end
 
 function mightyBadaBoom()
  x,y,z = Spring.GetUnitPosition(unitID)
@@ -38,7 +70,7 @@ function mightyBadaBoom()
                          antagonT = getAllTeamsOfType("antagon", UnitDefs)
                          local rubbleDefID = UnitDefNames["gcscrapheap"].id
 
-                         foreach(getAllNearUnit(unitID, 333 ),
+                         foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
                          	function(id)
                          		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
                          			return id
@@ -84,6 +116,7 @@ function script.Create()
      StartThread(PlaySoundByUnitDefID, myDefID,
                             "sounds/icons/warhead_created.ogg", 1,
                             500, 2)
+     if boolIsAITeam then StartThread(moveAItoLauncher) end
 end
 
 local realRadii = {}
