@@ -10,6 +10,7 @@ myTeamID = Spring.GetUnitTeam(unitID)
 center = piece "center"
 emitor = piece "center"
 Icon = piece "Icon"
+Rotor = piece "Rotor"
 
 GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -31,6 +32,7 @@ function script.Create()
     GG.UnitHeldByHouseMap[unitID] = T[1]
     StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 	StartThread(howToBuildTheBombWatcher)
+    Spin(Rotor,y_axis, math.rad(720),0)
 end
 
 local buildID = nil
