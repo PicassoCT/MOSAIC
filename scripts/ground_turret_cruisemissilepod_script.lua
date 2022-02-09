@@ -24,22 +24,32 @@ if not Pod then
     echo("Unit of type" .. UnitDefs[Spring.GetUnitDefID(unitID)].name ..
              " has no Pod")
 end
-rocketPiece = aimpiece
+rocketPiece = piece("rocketPiece")
 myDefID = Spring.GetUnitDefID(unitID)
 boolIsTransportPod = UnitDefs[myDefID].name == "ground_turret_cm_transport"
+DefIDPieceMapFold = {
+    [UnitDefNames["ground_turret_cm_airstrike"].id] = piece("cm_airstrike_fold"),
+    [UnitDefNames["ground_turret_cm_transport"].id] = piece("cm_turret_ssied_fold"),
+    [UnitDefNames["ground_turret_cm_antiarmor"].id] = piece("cm_AntiArmour_fold"),
+}
+
 DefIDPieceMap = {
-    [UnitDefNames["ground_turret_cm_airstrike"].id] = "cm_airstrike_fold",
-    [UnitDefNames["ground_turret_cm_transport"].id] = "cm_walker_fold",
-    [UnitDefNames["ground_turret_cm_antiarmor"].id] = "cm_AntiArmour_fold"
+    [UnitDefNames["ground_turret_cm_airstrike"].id] = piece("cm_airstrike_proj"),
+    [UnitDefNames["ground_turret_cm_transport"].id] = piece("cm_turret_ssied_proj"),
+    [UnitDefNames["ground_turret_cm_antiarmor"].id] = piece("cm_AntiArmour_proj"),
 }
 
 
-function showDependantOnType()
-    myDefID = Spring.GetUnitDefID(unitID)
+function showHideDependantOnType(boolFolded)
     assert(DefIDPieceMap[myDefID])
-    name = DefIDPieceMap[myDefID]
-    rocketPiece = piece(name)
-    Show(rocketPiece)
+    assert(DefIDPieceMapFold[myDefID])
+    Hide(DefIDPieceMap[myDefID])
+    Hide(DefIDPieceMapFold[myDefID])
+    if boolFolded then
+        Show(DefIDPieceMapFold[myDefID])
+    else
+        Show(DefIDPieceMap[myDefID])
+    end
 end
 
 function script.Create()
@@ -53,10 +63,11 @@ function script.Create()
     hideAll(unitID)
     Show(Pod)
     Show(PodTop)
-    showDependantOnType()
     showT(TablesOfPiecesGroups["UpLeg"])
     showT(TablesOfPiecesGroups["LowLeg"])
+    Hide(rocketPiece)
     Hide(aimpiece)
+    showHideDependantOnType(true)
     Turn(aimpiece, x_axis, math.rad(180), 0)
 
     StartThread(foldControl)
@@ -190,92 +201,105 @@ boolLaunchAnimationStarted = false
 boolLaunchAnimationCompleted = false
 
 function launchAnimation()
+    factor = 2.0
     Signal(SIG_LAUNCHCLOUD)
     SetSignalMask(SIG_LAUNCHCLOUD)
     boolLaunchAnimationStarted = true
     boolLaunchAnimationCompleted= false
+    showHideDependantOnType(true)
     WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
-    WTurn(PodTop, z_axis, math.rad(181), math.pi * 3)
-    WMove(rocketPiece, y_axis, 500, 250)
-    WMove(rocketPiece, y_axis, 1000, 1000)
-    WMove(rocketPiece, y_axis, 3000, 1000)
+    WTurn(PodTop, z_axis, math.rad(179), math.pi * 3)
+    WMove(rocketPiece, y_axis, 500*factor, 250*factor)
+    WMove(rocketPiece, y_axis, 1000*factor, 1000*factor)
+    showHideDependantOnType(false)
+    WMove(rocketPiece, y_axis, 3000*factor, 1000*factor)
     boolLaunchAnimationCompleted = true
 end
 
 currentLaunchState = "ready"
-
 function launchStateMachineThread()
-    oldState = "ready"
-    persPack = {}
-    while true do
-        newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
-        oldState = currentLaunchState
-        currentLaunchState = newState
-        Sleep(100)
-    end
-end
-
-launchStateMachine = {
-    ready = function (frame, oldState, persPack)
-        WMove(rocketPiece, y_axis, 0, 2000)
+    launchStateMachine = {}
+    launchStateMachine["ready"] =   function (frame, oldState, persPack)
+        persPack.launchingCounter = 0
+        showHideDependantOnType(true)
+        WMove(rocketPiece, y_axis, 0, 0)
         WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
         if boolFireRequest then
             return "launching"
         end
         boolFireRequest = false
         return "ready"
-    end,
-    lauching = function(frame, oldState, persPack)
+    end
+
+   launchStateMachine["launching"] = function(frame, oldState, persPack)
         if oldState == "ready" then
             StartThread(launchAnimation)
+        end
+        if boolFireRequest == false then
+            persPack.launchingCounter = persPack.launchingCounter + 1
         end
 
         if boolFireRequest == true and boolLaunchAnimationCompleted == true then
             return "fire"
         end
 
-        if boolFireRequest == false and boolLaunchAnimationCompleted == true then
+        if  persPack.launchingCounter > 50 and boolLaunchAnimationCompleted == true then
+            echo("Aborting launch")
             Signal(SIG_LAUNCHCLOUD)
             return "ready"
         end
 
-        boolFireRequest =false
+        boolFireRequest = false
         return "launching"
-    end,
-    fire = function (frame, oldState, persPack)
-        if boolFired == true then
-            boolFired = false 
-            return "reloading"
-        end
+    end
+
+    launchStateMachine["fire"] = function (frame, oldState, persPack)
+        Hide(rocketPiece)
         return "fire"
-    end,
-    reloading = function(frame, oldState, persPack)
+    end
+
+    launchStateMachine["reloading"] = function(frame, oldState, persPack)
         boolFireRequest =false
         if oldState == "fire" then persPack.startFrame = frame end
         if persPack.startFrame + ((25*1000)/30) < frame then return "ready" end
-
+        Move(rocketPiece, y_axis, 0, 0)
+        showHideDependantOnType(true)
         return "reloading"
     end
-}
 
-function script.AimWeapon1(Heading, pitch)
-    boolFireRequest= true
-    return currentLaunchState == "fire"
+    oldState = "ready"
+    persPack = {}
+    while true do
+        newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
+       -- echo("Launchstatemachine:"..currentLaunchState.."/"..oldState)
+        oldState = currentLaunchState
+        currentLaunchState = newState
+        Sleep(100)
+    end
 end
+
+
 
 function launchCloud()   
     while true do
         while currentLaunchState == "launching" do
         EmitSfx(rocketPiece, 1024)
+        if maRa()== maRa()  and maRa()== maRa()  then   EmitSfx(rocketPiece, 1025)  end
+        if maRa()== maRa() then   EmitSfx(rocketPiece, 1026)  end
         Sleep(125)
         end
     Sleep(150)
     end    
 end
 
+function script.AimWeapon1(Heading, pitch)
+    boolFireRequest= true
+    return currentLaunchState == "fire"
+end
+
 boolFired = false
 function script.FireWeapon1()   
-    boolFired =  true
+    currentLaunchState = "reloading"
     return true
 end
 
