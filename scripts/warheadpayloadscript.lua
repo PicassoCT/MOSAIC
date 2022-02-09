@@ -11,21 +11,23 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "tr
 local spGetTeamInfo = Spring.GetTeamInfo
 local myTeamID = Spring.GetUnitTeam(unitID)
  launcherDefID = UnitDefNames["launcher"].id
-boolIsAITeam = isTeamAITeam(Spring.GetUnitTeamID(unitID))
+ boolIsAITeam = isTeamAITeam(Spring.GetUnitTeam(unitID))
 
 function moveAItoLauncher()	
 	goal = unitID
 	while goal == unitID do
 	smallestDistance = math.huge
-	goals = foreach(Spring.GetTeamUnitsByDefs(myTeamID,launcherDefID),
+	foreach(Spring.GetTeamUnitsByDefs(myTeamID,launcherDefID),
 						function(id)
 							dist = distanceUnitToUnit(id, unitID)
 							if dist < smallestDistance then 
 								smallestDistance = dist
 								goal = id
+								return id
 							end
 						end
-					)
+			)
+
 	Sleep(250)
 	end
 
@@ -37,7 +39,7 @@ function moveAItoLauncher()
 		myPosV.x,myPosV.y,myPosV.z = Spring.GetUnitPosition(unitID)
 		resultV = mix(goalV, myPosV, factor)
 		Spring.SetUnitPosition(unitID, resultV.x, resultV.y, resultV.z)
-		factor = math.min(1.0, factor+0.01)
+		factor = math.min(1.0, factor + 0.01)
 		Sleep(1000)
 	end
 end
