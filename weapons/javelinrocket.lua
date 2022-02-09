@@ -33,8 +33,8 @@ local weaponDef = {
     craterMult = 0.0,
     texture1 = "gunshot",
 	fireStarter  = 50.0,
-	cameraShake =1.0
-	
+	cameraShake =1.0,
+	alwaysVisible  = true,
     }
   
 return lowerkeys({ [weaponName] = weaponDef })
