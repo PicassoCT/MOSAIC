@@ -51,6 +51,11 @@ local lastWaypoint = 0
 local units = {}
 local warheadDefID = UnitDefNames["physicspayload"].id
 local launcherDefID = UnitDefNames["launcher"].id
+local operativeTypeTable = {
+[UnitDefNames["operativepropagator"].id]= true,
+[UnitDefNames["operativeinvestigator"].id]= true,
+[UnitDefNames["operativeasset"].id]= true
+}
 
 local newUnits = {}
 local newUnitCount = 0
@@ -93,19 +98,6 @@ local function get_spread_vector(unitID, normal, t_radius)
     return n_spread * nx + t_spread * tx, n_spread * nz + t_spread * tz
 end
 
---[[
-local function DoGiveOrdersToUnit(p, unitID, cmd, normal, spread, eta)
-    local CMD_SET_WANTED_MAX_SPEED = CMD.SET_WANTED_MAX_SPEED or GG.CustomCommands.GetCmdID("CMD_SET_WANTED_MAX_SPEED")
-    local dx, dz = get_spread_vector(unitID, normal, spread)
-    local x, _, z = GetUnitPosition(unitID)
-    local lx, lz = p.x - x, p.z - z
-    local l = sqrt(lx * lx + lz * lz)
-    local speed = l / eta
-    GiveOrderToUnit(unitID, cmd, {p.x + dx, p.y, p.z + dz},  {})
-    GiveOrderToUnit(unitID, CMD_SET_WANTED_MAX_SPEED, {speed}, {"shift"})
-end
---]]
-
 local function DoGiveOrdersToUnit(p, unitID, cmd, normal, spread)
     local dx, dz = get_spread_vector(unitID, normal, spread)
     GiveOrderToUnit(unitID, cmd, {p.x + dx, p.y, p.z + dz},  {})
@@ -120,24 +112,10 @@ local function GetUnitETA(unitID, dest)
 end
 
 local function GiveOrdersToUnitArray(orig, target, unitArray, cmd, normal, spread)
-    --[[
-    local minMaxSpeed = 1000
-    for _, u in ipairs(unitArray) do
-        local speed = UnitDefs[GetUnitDefID(u)].speed
-        if (speed < minMaxSpeed) then
-            minMaxSpeed = speed
+    for _,u in ipairs(unitArray) do
+        if not operativeTypeTable[GetUnitDefID(u)] then
+            DoGiveOrdersToUnit(target, u, cmd, normal, spread)
         end
-    end
-    minMaxSpeed = minMaxSpeed / 30
-    local lx, lz = target.x - orig.x, target.z - orig.z
-    local l = sqrt(lx * lx + lz * lz)    
-    local eta = l / minMaxSpeed
-    for _,u in ipairs(unitArray) do
-        DoGiveOrdersToUnit(target, u, cmd, normal, spread, eta)
-    end
-    --]]
-    for _,u in ipairs(unitArray) do
-        DoGiveOrdersToUnit(target, u, cmd, normal, spread)
     end
 end
 
@@ -248,8 +226,6 @@ function CombatMgr.GameFrame(f)
                 taxiMgr.AddTransportMission(taxiUnitArray,
                                             {target.x, target.y, target.z})
             end
-
-            
 
             newUnits = {}
             newUnitCount = 0
