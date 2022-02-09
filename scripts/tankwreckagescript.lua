@@ -55,8 +55,7 @@ function onFire(times, endtimes)
         else
             EmitSfx(emitfire, 1028)
         end
-
-        Sleep(200)
+    Sleep(200)
     end
 end
 
@@ -76,6 +75,12 @@ function script.Create()
     if GG.WreckageTurretTankRotation and GG.WreckageTurretTankRotation[unitID] then degree = GG.WreckageTurretTankRotation[unitID] end
     Turn(aimpiece, z_axis, math.rad(degree),0)
     Turn(Cannon1, 1, math.rad(15), 0.7)
+    StartThread(turretFall)
+end
+
+function turretFall()
+    if ( maRa() ~= maRa()) then return end
+    DropPieceToGround(unitID, aimpiece, 3.0, true, false)
 end
 
 function script.Killed() return 1 end
