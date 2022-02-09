@@ -423,8 +423,9 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
-	canCloak =true,
-	
+	canCloak = true,
+	decloakOnFire = true,
+
 	Category = [[ARMOR GROUND BUILDING]],
 
 	  customParams = {
@@ -436,12 +437,12 @@ local ground_turret_cruisemissilepod =  Walker:New{
 		explosiongenerators = {
 							"custom:cruisemissiletrail",
 							"custom:icbmshine",
+							"custom:impactor",
 							  },
-				},
-				
+				},				
 	weapons = {
 		[1]={name  = "javelinrocket",
-			onlyTargetCategory = [[BUILDING GROUND VEHICLE ARMOR]],
+			onlyTargetCategory = [[BUILDING GROUND VEHICLE ]],
 			},
 			
 		},	
@@ -473,7 +474,7 @@ CruiseMissilePods["ground_turret_cm_transport"].isFirePlatform = false
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_antiarmor"	,													
-													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+													onlyTargetCategory = [[BUILDING GROUND VEHICLE ARMOR]],
 											}
 										}
 CruiseMissilePods["ground_turret_cm_antiarmor"] = ground_turret_cruisemissilepod:New()
