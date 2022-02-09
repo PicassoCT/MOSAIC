@@ -2,7 +2,7 @@ local unitName = "tankcorpse"
 
 local unitDef = {
 	name = "Destroyed Tank",
-	Description = "!",
+	Description = "",
 	objectName = "tankwreckage.dae",
 	script = "tankwreckagescript.lua",
 	buildPic = "placeholder.png",
