@@ -25,7 +25,7 @@ local weaponDef = {
 	collideGround = true,
 	commandFire = true,
 	canAttackGround = true,
-		
+	--fixedLauncher = true,
 	smokeTrail = true,
 	startVelocity  = 5,
 	weaponAcceleration = 15,
