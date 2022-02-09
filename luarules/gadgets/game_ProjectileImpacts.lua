@@ -318,7 +318,6 @@ if (gadgetHandler:IsSyncedCode()) then
         setRaidEndState =   function (persPack, boolDoesTargetExistAlive, boolDoesInterrogatorExistAlive)
                                     Spring.Echo("Raid: CleanUp ")
                                     GG.InterrogationTable[persPack.unitID] = nil
-
                                    
                                     if doesUnitExistAlive(persPack.unitID) == true then
                                         Spring.SetUnitNoSelect(persPack.unitID, false)
@@ -725,7 +724,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
             -- make disguise civilians transparent
             if civilianWalkingTypeTable[unitDefID] and
-                GG.DisguiseCivilianFor[unitID] then
+               GG.DisguiseCivilianFor[unitID] then
                 stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
                 unitID = GG.DisguiseCivilianFor[unitID]
                 unitDefID = spGetUnitDefID(unitID)
@@ -733,7 +732,8 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
             if MobileInterrogateAbleType[unitDefID] and
-                currentlyInterrogationRunning(unitID, attackerID) == false then
+                currentlyInterrogationRunning(unitID, attackerID) == false and
+                attackerID ~= unitID then
                 spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
                 stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
                 setSpeedEnv(attackerID, 0.0)
@@ -807,7 +807,14 @@ if (gadgetHandler:IsSyncedCode()) then
         damage, paralyzer, weaponDefID,
         attackerID, attackerDefID,
         attackerTeam)
-        echo("CloseCombat Hit")
+
+        if unitID == attackerID then return 0 end
+
+        if GG.DisguiseCivilianFor[unitID] and GG.DisguiseCivilianFor[unitID] == attackerID then
+            return 0
+        end
+
+        echo("CloseCombat Hit on")
         unitID, unitDefID = makeDisguiseUnitTransparent(unitID, unitDefID)
         
         if isCloseCombatCapabaleType[unitDefID] then
