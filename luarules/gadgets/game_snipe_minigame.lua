@@ -13,8 +13,6 @@ end
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
-    VFS.Include("scripts/lib_Animation.lua")
-    VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
     -- variables
@@ -45,6 +43,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
     function gadget:Initialize()
         if not GG.raidStatus then GG.raidStatus = {} end
+        if not GG.myParent then GG.myParent = {} end 
     end
 
     function alwaysHideUnit(id)
@@ -54,7 +53,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitID, unitDefID, unitTeam)
         if unitDefID == raidIconDefID then
-            if not GG.raidStatus then GG.raidStatus = {} end
             if not GG.raidStatus[unitID] then GG.raidStatus[unitID] = {} end
             newRound(unitID, unitTeam, true)
         end
@@ -99,7 +97,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
 
-        -- Spring.Echo("Finding opossing team defaults to gaia")
+        Spring.Echo("Finding opossing team defaults to gaia")
         return gaiaTeamID
     end
 
@@ -318,7 +316,7 @@ if (gadgetHandler:IsSyncedCode()) then
         -- defenders did not play
         if count(roundRunning.Defender.PlacedFigures) == 0 and
             count(roundRunning.Aggressor.PlacedFigures) > 0 then
-            setPublicRaidState(raidIconId, raidStates.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
+            setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
 
             echo(
                 "1 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
@@ -328,7 +326,7 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Aggressor did not play
         if count(roundRunning.Aggressor.PlacedFigures) == 0 and
             count(roundRunning.Defender.PlacedFigures) > 0 then
-            setPublicRaidState(raidIconId, raidStates.WaitingForUplink, raidResultStates.DefenderWins,roundRunning.Defender.team, true)
+            setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.DefenderWins,roundRunning.Defender.team, true)
             echo(
                 "2 roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
             return roundRunning.Defender.team, roundRunning, raidStates.WaitingForUplink, true
@@ -454,7 +452,7 @@ if (gadgetHandler:IsSyncedCode()) then
             -- defenders or agressors dead
             if roundRunning.Defender.Points <= 0 and
                 roundRunning.Aggressor.Points > 0 then
-                setPublicRaidState(raidIconId, raidState.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
+                setPublicRaidState(raidIconId, raidStates.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
                     
                 echo("4 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
                 return roundRunning.Aggressor.team, roundRunning, raidStates.WaitingForUplink, true
@@ -655,8 +653,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 function(id) if id then spDestroyUnit(id, false, true) end; end)
     end
 
-    function registersniperIconAttributes(uType, teamID, lastSniperIconID,
-                                          raidIconID)
+    function registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
         if string.lower(uType) == "snipeicon" then
             GG.DisplayedSniperIconParent[lastSniperIconID] = raidIconID
             GG.SniperIcon:Register(lastSniperIconID, teamID, raidIconID)
@@ -671,43 +668,39 @@ if (gadgetHandler:IsSyncedCode()) then
     local lastSniperIconID
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "SPWN") then
-  --          echo("game_snipe_minigame.lua: Recieved SPWN message")
+            echo("game_snipe_minigame.lua: Recieved SPWN message 1")
             t = split(msg, "|")
 
-            name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ =
-                Spring.GetPlayerInfo(playerID)
-            uType = t[2]
-            local houseID = tonumber(t[6])
-            if not GG.HouseRaidIconMap then  return end
-            if not GG.HouseRaidIconMap[houseID] then return end
-            raidIconID = GG.HouseRaidIconMap[houseID]
-
+            name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ = Spring.GetPlayerInfo(playerID)
+            local uType = t[2]
+            houseID = tonumber(t[6])
+            echo("House ID".. houseID)
+            if not GG.HouseRaidIconMap then echo("Out 1"); return end
+            if GG.HouseRaidIconMap[houseID] == nil then echo("Out 2: not GG.HouseRaidIconMap[houseID] for "..houseID); return end
+            local raidIconID = GG.HouseRaidIconMap[houseID]
+            echo("game_snipe_minigame.lua: Recieved SPWN message 2")
+            if not allRunningRaidRounds[raidIconID] then return end
+            
             if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and
                 allRunningRaidRounds[raidIconID].Aggressor.Points > 0 or
                 (allRunningRaidRounds[raidIconID].Defender.team == teamID and
                 allRunningRaidRounds[raidIconID].Defender.Points > 0 and
-                isNotEmptyHouse(houseID, raidIconID) == true)
-                then
-                -- Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
-                lastSniperIconID = spCreateUnit(uType, tonumber(t[3]),
-                                                tonumber(t[4]), tonumber(t[5]),
-                                                1, teamID)
-                registersniperIconAttributes(uType, teamID, lastSniperIconID,
-                                             raidIconID)
+                isNotEmptyHouse(houseID, raidIconID) == true) then
+                Spring.Echo("CreateUnit"..uType, tonumber(t[3]), tonumber(t[4]),  tonumber(t[5]),1, teamID)
+                lastSniperIconID = spCreateUnit(uType, tonumber(t[3]), tonumber(t[4]), tonumber(t[5]), 1, teamID)
+                registersniperIconAttributes(uType, teamID, lastSniperIconID, raidIconID)
             end
         end
 
         if lastSniperIconID and doesUnitExistAlive(lastSniperIconID) == true then
             if lastSniperIconID and msg and string.find(msg, "ROTPOS") then
                 t = split(msg, "|")
-                Command(lastSniperIconID, "attack",
-                        {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {})
+                Command(lastSniperIconID, "attack", {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {})
             end
 
             if lastSniperIconID and msg and string.find(msg, "POSROT") then
                 t = split(msg, "|")
-                Command(lastSniperIconID, "attack",
-                        {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {"shift"})
+                Command(lastSniperIconID, "attack", {tonumber(t[3]), tonumber(t[4]), tonumber(t[5])}, {"shift"})
             end
         end
     end

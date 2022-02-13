@@ -90,6 +90,11 @@ if (gadgetHandler:IsSyncedCode()) then
         if not GG.InterrogationTable then
             GG.InterrogationTable = {}
         end
+    
+     --raidinitialization
+      if not GG.raidStatus  then GG.raidStatus = {} end
+      if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
+
         spEcho(GetInfo().name .. " Initialization ended")
     end
 
@@ -107,9 +112,7 @@ if (gadgetHandler:IsSyncedCode()) then
             range = railgun_Def.range
         }
     }
-    --raidinitialization
-      if not GG.raidStatus  then GG.raidStatus = {} end
-      if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
+
 
     -- Watched Weapons Weapons
     for wId, wRange in pairs(panicWeapons) do
@@ -308,58 +311,66 @@ if (gadgetHandler:IsSyncedCode()) then
     raidResultStates = getRaidResultStates()
     local innocentCivilianTypeTable = getPanicableCiviliansTypeTable(UnitDefs)
 
-   raidEventStreamFunction = function(unitID, unitDefID, unitTeam, damage,
+   raidEventStreamFunction = function(raidedSafeHouseID, unitDefID, unitTeam, damage,
                                        paralyzer, weaponDefID, attackerID,
                                        attackerDefID, attackerTeam,
-                                       iconUnitTypeName)
+                                       iconUnitTypeName, civilianHouseID)
 
         spEcho("raidEventStream  Called")
 
-        setRaidEndState =   function (persPack, boolDoesTargetExistAlive, boolDoesInterrogatorExistAlive)
+        postRaidCleanup =   function (persPack, boolDoesTargetExistAlive, boolDoesInterrogatorExistAlive)
                                     Spring.Echo("Raid: CleanUp ")
-                                    GG.InterrogationTable[persPack.unitID] = nil
-                                   
-                                    if doesUnitExistAlive(persPack.unitID) == true then
-                                        Spring.SetUnitNoSelect(persPack.unitID, false)
-                                        makeHouseVisible(persPack.unitID)
+
+                                    if doesUnitExistAlive(persPack.civilianHouseID) == true then
+                                        Spring.SetUnitHealth (persPack.civilianHouseID, {paralyze= 0})
+                                        Spring.SetUnitNoSelect(persPack.civilianHouseID, false)
+                                        makeHouseVisible(persPack.civilianHouseID)
                                     end
 
                                     --Stop Attacker form reintterogating the same building
                                     if doesUnitExistAlive(persPack.AttackerID) == true then
                                        Command(persPack.AttackerID, "stop")
+                                    end  
+
+                                    if persPack.basePlateID and doesUnitExistAlive(persPack.basePlateID) then
+                                       Spring.DestroyUnit(persPack.basePlateID, false, true)
                                     end
 
+                                    if persPack.IconID and doesUnitExistAlive(persPack.IconID) == true then
+                                        Spring.DestroyUnit(persPack.IconID, false, true)
+                                         GG.raidStatus[persPack.IconID] = nil
+                                    end
 
-
-                                     GG.HouseRaidIconMap[persPack.unitID] = nil
+                                    GG.InterrogationTable[persPack.raidedSafeHouseID] = nil
+                                    GG.HouseRaidIconMap[persPack.civilianHouseID] = nil
                                 end
                                 
 
-        if GG.InterrogationTable[unitID] == nil then
-            GG.InterrogationTable[unitID] = {}
+        if GG.InterrogationTable[raidedSafeHouseID] == nil then
+            GG.InterrogationTable[raidedSafeHouseID] = {}
         end
-        if GG.InterrogationTable[unitID][attackerID] == nil then
-            GG.InterrogationTable[unitID][attackerID] = false
+        if GG.InterrogationTable[raidedSafeHouseID][attackerID] == nil then
+            GG.InterrogationTable[raidedSafeHouseID][attackerID] = false
         end
 
         --check if the attacker is not already engaged in another raid
-        if isEngagedInAnotherRaidAlready(attackerID, unitID) == true then
-            spEcho("raidEventStream Aborted, previous Raid in Progress"..unitID)
+        if isEngagedInAnotherRaidAlready(attackerID, raidedSafeHouseID) == true then
+            spEcho("raidEventStream Aborted, previous Raid in Progress"..raidedSafeHouseID)
             return true, persPack
         end
 
-        if GG.InterrogationTable[unitID][attackerID] == false then
-            GG.InterrogationTable[unitID][attackerID] = true
+        if GG.InterrogationTable[raidedSafeHouseID][attackerID] == false then
+            GG.InterrogationTable[raidedSafeHouseID][attackerID] = true
             -- Stun
             raidFunction = function(persPack)
             spEcho("raidEventStream  Ongoing")
 
                 -- check Target is still existing
-                if false == doesUnitExistAlive(persPack.unitID) then
+                if false == doesUnitExistAlive(persPack.raidedSafeHouseID) then
                     spEcho("failed check Target is still existing ")
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
-                    setRaidEndState(persPack)
+                    postRaidCleanup(persPack)
                     return true, persPack
                 end
 
@@ -368,20 +379,25 @@ if (gadgetHandler:IsSyncedCode()) then
                     spEcho("failed   check wether the interrogator is still alive")
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
-                    setRaidEndState(persPack)
+                    postRaidCleanup(persPack)
                     return true, persPack
                 end
 
                 -- check distance is still okay
-                if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) > GameConfig.InterrogationDistance then
+                if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseID) > GameConfig.RaidDistance then
                     spEcho("failed check distance is still okay5 ")
                     if doesUnitExistAlive(persPack.IconID) == true then
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     persPack.boolRaidHasEnded = true 
                 end
-                    setRaidEndState(persPack)
+                    postRaidCleanup(persPack)
                     return true, persPack
+                end
+                
+                --Raid has ended
+                if persPack.boolRaidHasEnded == true then 
+                    return true, persPack 
                 end
                 
                 -- check if the icon is still there
@@ -389,33 +405,40 @@ if (gadgetHandler:IsSyncedCode()) then
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),--teamID
                                           iconUnitTypeName, --typeID
-                                          persPack.unitID,  --otherID
+                                          persPack.raidedSafeHouseID,  --otherID
                                           0,0,0,  -- ox, oy, oz
                                           nil, --parentID
                                           0)   --orientation 
 
                     if persPack.IconID then
-                        if not GG.HouseRaidIconMap then GG.HouseRaidIconMap = {} end
-                        Spring.Echo("Raid: Registering RaidIcon to map")
-                        GG.HouseRaidIconMap[persPack.unitID] =  persPack.IconID
+                        persPack.basePlateID = createUnitAtUnit(
+                                          spGetUnitTeam(persPack.IconID),--teamID
+                                          "raidiconbaseplate", --typeID
+                                          persPack.raidedSafeHouseID,  --otherID
+                                          0,0,0,  -- ox, oy, oz
+                                          nil, --parentID
+                                          0)   --orientation 
+                        GG.myParent[persPack.basePlateID] = persPack.IconID
+
+                        Spring.Echo("Raid: Registering RaidIcon to raidedSafeHouseID "..persPack.raidedSafeHouseID )
+                        GG.HouseRaidIconMap[persPack.civilianHouseID] =  persPack.IconID
+                        assert(GG.HouseRaidIconMap[persPack.civilianHouseID])
 
                         if GG.raidStatus[persPack.IconID] then  GG.raidStatus[persPack.IconID] = {} end
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = false
                     else
                         spEcho("Raid: No IconID")
-                        setRaidEndState(persPack)
+                        postRaidCleanup(persPack)
                         return true, persPack
                     end
                 end
-
-                --Raid has ended
-                if persPack.boolRaidHasEnded then return true, persPack end
-                    local winningTeam = GG.raidStatus[persPack.IconID].winningTeam
-                    local allTeams = spGetTeamList()
-
+  
                 --check 
-                if GG.raidStatus[persPack.IconID].boolInterogationComplete == true then
+                if GG.raidStatus[persPack.IconID].boolAnimationComplete  then
+
+                    local allTeams = spGetTeamList()
                     local raidStateLocal = GG.raidStatus[persPack.IconID]
+                    echo("Animation completed")
                     --Aborted or EmptyHouse
                     if  raidStateLocal.result == raidResultStates.HouseEmpty then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
@@ -429,34 +452,37 @@ if (gadgetHandler:IsSyncedCode()) then
                                 if allTeams[i] ~= persPack.attackerTeam then
                                     GG.Bank:TransferToTeam(
                                         GameConfig.raid.interrogationPropagandaPrice,
-                                        allTeams[i], persPack.unitID)
+                                        allTeams[i], persPack.raidedSafeHouseID)
                                 end
                             end
                         end
-                        setRaidEndState(persPack)
+                        postRaidCleanup(persPack)
                         persPack.boolRaidHasEnded = true
                         return true, persPack
                     end
+
 
                     if (raidStateLocal.state == raidStates.Aborted) or 
                         not allTeams or #allTeams <= 1 then 
                         -- Simulation mode
                         spEcho("Raid: Aborted ")
-                        setRaidEndState(persPack)
+                        postRaidCleanup(persPack)
                         persPack.boolRaidHasEnded = true
                         return true, persPack
                     end 
 
                     --wait for uplink completed (set by the icon)
-                    if raidStateLocal.state == raidResultStates.VictoryStateSet then
-                        spEcho("Raid was succesfull - childs of " .. persPack.unitID .. " are revealed")
-                        unitTeam = spGetUnitTeam(persPack.unitID)
-                        children = getChildrenOfUnit(unitTeam, persPack.unitID)
-                        parent = getParentOfUnit(unitTeam, persPack.unitID)
+                    if raidStateLocal.state == raidStates.VictoryStateSet and
+                        raidStateLocal.result == raidResultStates.AggressorWins       
+                        then
+                        spEcho("Raid was succesfull - childs of " .. persPack.raidedSafeHouseID .. " are revealed")
+                        unitTeam = spGetUnitTeam(persPack.raidedSafeHouseID)
+                        children = getChildrenOfUnit(unitTeam, persPack.raidedSafeHouseID)
+                        parent = getParentOfUnit(unitTeam, persPack.raidedSafeHouseID)
                         GG.Bank:TransferToTeam(
                             GameConfig.raid.interrogationPropagandaPrice,
                             persPack.attackerTeam, persPack.attackerID)
-                        registerRevealedUnitLocation(persPack.unitID)
+                        registerRevealedUnitLocation(persPack.raidedSafeHouseID)
                         for childID, v in pairs(children) do
                             if doesUnitExistAlive(childID) == true then
                                 spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
@@ -470,9 +496,10 @@ if (gadgetHandler:IsSyncedCode()) then
                             GG.OperativesDiscovered[parent] = true
                             spSetUnitAlwaysVisible(parent, true)
                         end                    
-                         
-                        setRaidEndState(persPack)
+                        Spring.DestroyUnit(persPack.raidedSafeHouseID, false, true)
+                        postRaidCleanup(persPack)
                         persPack.boolRaidHasEnded = true
+                        return true, persPack
                     end
                 end
 
@@ -480,13 +507,14 @@ if (gadgetHandler:IsSyncedCode()) then
         end
         
             spEcho("Starting Raid Event Stream")
-            createStreamEvent(unitID, raidFunction, 31, {
+            createStreamEvent(raidedSafeHouseID, raidFunction, 31, {
                 interrogatorID = attackerID,
-                unitID = unitID,
+                raidedSafeHouseID = raidedSafeHouseID,
                 suspectDefID = unitDefID,
                 attackerTeam = attackerTeam,
                 attackerID = attackerID,
-                houseTypeTable = houseTypeTable
+                houseTypeTable = houseTypeTable,
+                civilianHouseID = civilianHouseID
             })
         end
 
@@ -502,6 +530,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end  
 
         if victimID and doesUnitExistAlive(victimID) then
+            Spring.SetUnitHealth (victimID, {paralyze= 0})
            setSpeedEnv(victimID, 1.0)
            updateInterrogatedStatus(victimID, false)
         end
@@ -766,7 +795,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- stupidity edition
         if not attackerID then  spEcho("Raid: No valid attackerID derived"); return damage end
         if attackerID == unitID  then   spEcho("Raid:Aborted: attackerID == unitID"); return damage end
-
+        houseID = unitID
         -- make houses transparent
         if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable[unitID] then
             stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
@@ -784,7 +813,9 @@ if (gadgetHandler:IsSyncedCode()) then
             raidEventStreamFunction(unitID, unitDefID, unitTeam,
                                              damage, paralyzer, weaponDefID,
                                              attackerID, attackerDefID,
-                                             attackerTeam, "raidicon")
+                                             attackerTeam, 
+                                             "raidicon", 
+                                             houseID)
             return damage
         end
     end

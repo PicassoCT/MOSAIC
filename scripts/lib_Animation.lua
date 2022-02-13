@@ -220,7 +220,6 @@ function turnPieceRandDirStep(piecename, speed, stepsize)
     Turn(piecename, x_axis, math.rad(math.random(1, parts) * stepsize), speed)
     Turn(piecename, y_axis, math.rad(math.random(1, parts) * stepsize), speed)
     Turn(piecename, z_axis, math.rad(math.random(1, parts) * stepsize), speed)
-
 end
 
 -- >Move a piece towards a random direction
@@ -304,7 +303,6 @@ function whileMovingDo(PIECE, axis, times, fuoonction)
         totalTime = totalTime + times
     end
 end
-
 
 -- >idle Animation Loop
 function idleLoop(Body, axis, FrontLeg, RearLeg, degree, BodyBackDeg, speed,

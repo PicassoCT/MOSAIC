@@ -22,7 +22,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
-    local SatelliteTypes = getSatteliteTypes(UnitDefs)
+    local SatelliteTypes = getOrbitalTypes(UnitDefs)
     local SatelliteTypesSpeedTable = getSatelliteTypesSpeedTable(UnitDefs)
     local SatelliteAltitudeTable = getSatelliteAltitudeTable(UnitDefs)
     local SatelliteTimeOutTable = getSatelliteTimeOutTable(UnitDefs)

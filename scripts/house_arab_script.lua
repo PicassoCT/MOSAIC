@@ -284,7 +284,8 @@ function showOneOrAll(T)
     end
 end
 
-function selectBase() showOne(TablesOfPiecesGroups["base"], true) end
+local basePlate
+function selectBase() basePlate = showOne(TablesOfPiecesGroups["base"], true) end
 
 function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
 
@@ -910,9 +911,9 @@ end
 
 boolDoneShowing = false
 
-function showHouse() showT(ToShowTable) end
+function showHouse() Show(basePlate); showT(ToShowTable) end
 
-function hideHouse() hideT(ToShowTable) end
+function hideHouse() hideAll(unitID) end
 
 function buildAnimation()
     local builT = TablesOfPiecesGroups["Build"]

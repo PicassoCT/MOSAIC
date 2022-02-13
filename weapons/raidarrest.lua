@@ -47,7 +47,7 @@ local weaponDef = {
     damage = {
         default = 1
     },
-    areaOfEffect = 35,
+    areaOfEffect = 1,
     craterMult = 0,
 
     lineOfSight = true,

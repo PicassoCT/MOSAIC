@@ -1,7 +1,7 @@
 local BioWeaponsPayload = Abstract:New{
 	name 				= "Biological Warfare Payload",
 	description 		= "Snythetic Virus / Nano-tech Plague / Fungigenocide",
-	maxDamage           = 500,
+	maxDamage           = 5000,
 	mass                = 500,
 	buildtime			= 3*60,
 	buildCostMetal     	= 15000,

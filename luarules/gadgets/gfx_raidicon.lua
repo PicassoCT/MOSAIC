@@ -12,14 +12,11 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
-    VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
-    VFS.Include("scripts/lib_Animation.lua")
-    VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     iconTypeTable = getIconTypes(UnitDefs)
-    local GameConfig = getGameConfig()
 
+    local GameConfig = getGameConfig()
 
     function gadget:UnitCreated(unitID, unitDefID)
         if iconTypeTable[unitDefID] then
@@ -30,6 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
 else -- unsynced
     local iconTables = {}
+    local isRaidIconTable = {}
 
     local function setUnitLuaDraw(callname, unitID, typeDefID)
         iconTables[unitID] = typeDefID
@@ -46,13 +44,13 @@ else -- unsynced
     local glBlending = gl.Blending
     local glScale = gl.Scale
     local GL_SRC_ALPHA           = GL.SRC_ALPHA
-    local GL_ONE                = GL.ONE
-    local GL_ZERO               = GL.ZERO
+    local GL_ONE                 = GL.ONE
+    local GL_ZERO                = GL.ZERO
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
-        if drawMode == 1 and iconTables[unitID]  then --normalDraw
-           glBlending(GL_SRC_ALPHA, GL_ONE)
+        if drawMode == 1 and iconTables[unitID] then --normalDraw
+            glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             return true

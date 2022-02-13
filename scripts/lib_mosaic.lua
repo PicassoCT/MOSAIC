@@ -65,7 +65,7 @@ function getGameConfig()
         agentConfig = {
             recruitmentRange = 60,
             raidWeaponDownTimeInSeconds = 60,
-            raidComRange = 1200,
+            raidComRange = 1500,
             raidBonusFactorSatellite = 2.5
         },
         SnipeMiniGame = {
@@ -153,6 +153,7 @@ function getGameConfig()
         InterrogationTimeInSeconds = 20,
         InterrogationTimeInFrames = 20 * 30,
         InterrogationDistance = 185,
+        RaidDistance = 250,
 
         --operatives
         investigatorCloakedSpeedReduction = 0.35,
@@ -593,12 +594,21 @@ function  getManualCivilianBuildingMaps(mapName)
         return retVal
     end
 
-        function getSatteliteTypes(UnitDefs)
+        function getOrbitalTypes(UnitDefs)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
             typeTable = {
                 "satelliteanti", "satellitescan", "satellitegodrod",
                 "satelliteshrapnell"
+            }
+            return getTypeTable(UnitDefNames, typeTable)
+        end    
+
+        function getSatteliteTypes(UnitDefs)
+            assert(UnitDefs)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            typeTable = {
+                "satelliteanti", "satellitescan", "satellitegodrod"
             }
             return getTypeTable(UnitDefNames, typeTable)
         end  

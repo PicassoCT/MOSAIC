@@ -1,8 +1,8 @@
 local versionNumber = "2.03"
 
 function widget:GetInfo()
-    return {
-        name = "snipeMiniGame",
+    return 
+{        name = "snipeMiniGame",
         desc = "controlls the behaviour of raid icon minigame unitspawning",
         author = "picassoct",
         date = "Jan,2008",

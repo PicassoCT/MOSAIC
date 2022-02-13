@@ -1,7 +1,7 @@
 local PhysicsPayload = Abstract:New{
 	name 				= "Physical Warfare Payload",
 	description 		= "Collapse Fusion / Anti-Matter / Entanglement Warhead",
-	maxDamage           = 500,
+	maxDamage           = 5000,
 	mass                = 500,
 	buildtime			= 3*60,
 	buildCostMetal     	= 15000,

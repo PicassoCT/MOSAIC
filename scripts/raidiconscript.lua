@@ -52,6 +52,7 @@ RaidAborted = piece("RaidAborted")
 RaidEmpty = piece("RaidEmptz")
 raidNoUplink = piece("raidNoUplink")
 RaidUploadInProgressDish = piece("RaidUploadInProgressDish")
+local satelliteTypeTable = getSatteliteTypes(UnitDefs)
 
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
@@ -111,29 +112,33 @@ function watchRaidIconTable()
     Show(raidNoUplink)
     --wait for Uplink
 
-    if GG.raidStatus[unitID].state == raidStates.WaitingForUplink then
-        local raidComRange = GameConfig.agentConfig.raidComRange
+ --[[      if GG.raidStatus[unitID].state == raidStates.WaitingForUplink then
         local scanSatDefID = UnitDefNames["satellitescan"].id
+        local satelliteAlitudeTable = getSatelliteAltitudeTable(UnitDefs)
+        local raidComRange = GameConfig.agentConfig.raidComRange +  satelliteAlitudeTable[scanSatDefID]
+
         local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
         local spGetUnitDefID = Spring.GetUnitDefID
         boolComSatelliteNearby= false
-        while boolComSatelliteNearby == false do
+     while boolComSatelliteNearby == false do
             Sleep(100)
-            foreach(getAllNearUnit(unitID, raidComRange),
+            foreach(getAllNearUnitSpherical(unitID, raidComRange),
                     function (id)
-                        if myTeam == Spring.GetUnitTeam(id) and spGetUnitDefID(id) == scanSatDefID then
+                        defID = spGetUnitDefID(id)
+                        if myTeam == Spring.GetUnitTeam(id) and satelliteTypeTable[defID] then
                             boolComSatelliteNearby = true
                         end             
                     end
                     )
         end
+
         GG.raidStatus[unitID].state = raidStates.UplinkCompleted
-    end
+    end--]]
+    Sleep(1000)
     Hide(raidNoUplink)
 
-    if  GG.raidStatus[unitID].state == raidStates.UplinkCompleted then  
-        UplinkAnimation()
-    end
+    UplinkAnimation()
+
 
     if GG.raidStatus[unitID] and GG.raidStatus[unitID].result  then
         local result = GG.raidStatus[unitID].result
@@ -152,27 +157,27 @@ function watchRaidIconTable()
     else
         showRaidAbortedAnimation()
     end
-    GG.raidStatus[unitID].result  = raidStates.VictoryStateSet
-    Sleep(5000)
-    GG.raidStatus[unitID] = nil
-
-    Spring.DestroyUnit(unitID, true, false)
+    Sleep(1000)
+    GG.raidStatus[unitID].state =  raidStates.VictoryStateSet
+    GG.raidStatus[unitID].boolAnimationComplete = true
+    while true do
+        Sleep(100)
+    end
 end
 
 function UplinkAnimation()
     Show(RaidUploadInProgressDish)
-
-
     times = GameConfig.Satellite.uploadTimesMs/1000
-    speed = 50/3 --3 Seconds
+    speed = 1500/1000 
 
     for i=1, times do
         hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
-        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, -50, 0)
-        showT(TablesOfPiecesGroups["RaidUploadInProgress"])
-        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, 0, speed )
+        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, -500, 0)
         WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
-        Sleep(1)
+        showT(TablesOfPiecesGroups["RaidUploadInProgress"])
+        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, 1000, speed )
+        WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
+        Sleep(250)
     end
     Hide(RaidUploadInProgressDish)
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
@@ -180,29 +185,29 @@ end
 
 function popPieceUp(pieceID, speed)
     axis = z_axis
-    Move(pieceID, axis, -200, 0)
+    Move(pieceID, axis, -800, 0)
     Show(pieceID)
     WMove(pieceID, axis, 50, speed)
     WMove(pieceID, axis, 0, speed)
 end
 
 function showDefenderSuccesAnimation()
-    popPieceUp(DefenderWin, 50)
+    popPieceUp(DefenderWin, 500)
     Sleep(2000)
 end
 
 function showRaidAbortedAnimation()
-    popPieceUp(RaidAborted, 50)
+    popPieceUp(RaidAborted, 500)
     Sleep(2000)
 end
 
 function showHouseEmptyAnimation()
-    popPieceUp(RaidEmpty, 30)
+    popPieceUp(RaidEmpty, 300)
     Sleep(2000)
 end
 
 function showRaidSuccesAnimation()
-    popPieceUp(RaidSuccess, 60)
+    popPieceUp(RaidSuccess, 600)
     Sleep(4000)
 end
 

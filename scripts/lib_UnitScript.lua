@@ -1340,6 +1340,9 @@ function transferUnitStatusToUnit(id, targetID)
         paralyze = para,
         build = bP
     })
+    rot={pitch=0,yaw=0,roll=0}
+    rot.pitch,rot.yaw,rot.roll = Spring.GetUnitRotation(id)
+    Spring.SetUnitRotation(targetID, rot.pitch,rot.yaw,rot.roll)
 end
 
 function moveUnitToUnit(id, target, ox, oy, oz)

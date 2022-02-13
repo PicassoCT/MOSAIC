@@ -229,6 +229,48 @@ local RaidIcon =
     category = "NOTARGET"
 }
 
+local RaidIconBasePlate =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 0,
+    buildCostMetal = 150,
+    canMove = true,
+    levelGround = false,
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+    MaxVelocity = 0,
+    customparams = {
+        normaltex = "unittextures/component_atlas_normal.dds"
+    },
+    usepiececollisionvolumes = false,
+    collisionVolumeType = "box",
+    collisionvolumescales = "100 10 100",
+    -- name = "Raid Location",
+    -- description = "a raid of a location is in Progress",
+
+    CanAttack = false,
+    CanGuard = false,
+    CanMove = true,
+    CanPatrol = true,
+    CanStop = true,
+    script = "raidicon_baseplatescript.lua",
+    objectName = "RaidIcon_BasePlate.dae",
+    buildPic = "raidicon.png",
+    iconType = "raidicon",
+    ActivateWhenBuilt = 1,
+    onoffable = true,
+    activatewhenbuilt = true,
+    customparams = {
+        helptext = "Civilian Agent working for the opposite site",
+        baseclass = "Human", -- TODO: hacks
+    },
+    category = "NOTARGET"
+}
+
 local InterrogationIcon =
     Abstract:New {
     corpse = "",
@@ -491,6 +533,7 @@ return lowerkeys(
         ["interrogationicon"] = InterrogationIcon:New(),
         ["stealmotorbike"] = StealMotorbike:New(),
         ["raidicon"] = RaidIcon:New(),
+        ["raidiconbaseplate"] = RaidIconBasePlate:New(),
         ["recruitcivilian"] = RecruitCivilian:New(),
         ["snipeicon"] = SnipeIcon:New(),
         ["bribeicon"] = BribeIcon:New(),
