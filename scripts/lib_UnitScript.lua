@@ -1331,7 +1331,7 @@ function transferUnitStatusToUnit(id, targetID)
     newhp, newmaxHP, _, _, _ = Spring.GetUnitHealth(targetID)
     Spring.SetUnitExperience(targetID, exP)
 
-    factor = 1 / (hp / maxHP)
+    factor = (hp / maxHP)
     hp = math.ceil(newmaxHP * factor)
 
     Spring.SetUnitHealth(targetID, {
