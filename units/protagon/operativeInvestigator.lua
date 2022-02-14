@@ -42,6 +42,7 @@ local OperativeInvestigator = Human:New{
 	minCloakDistance = 0,
 	initCloaked = false,
 	stealth= true,
+	transportByEnemy = true,
 	
 	onoffable= false,
 	Builder = true,

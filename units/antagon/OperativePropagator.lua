@@ -39,7 +39,8 @@ local OperativePropagator = Human:New{
 	terraformSpeed = 350,
 	showNanoFrame= true,
 	onoffable = false,
-		
+	transportByEnemy  = true,
+
 	--cloaking behaviour
 	canCloak =true,
 	cloakCost=0.0001,
