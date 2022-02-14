@@ -217,7 +217,7 @@ function cloakIfAIPlayer()
    if isAiTeam and isAiTeam == true then
         while true do
             Sleep(1000)
-            if boolIsBuilding == false then
+            if boolIsBuilding == false and boolInClosedCombat == false then
                 if spGetUnitIsCloaked(unitID) == false then
                     setWantCloak(true)
                 end
