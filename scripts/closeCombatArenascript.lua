@@ -55,7 +55,7 @@ end
 function randomMove()
     while true do
         x,y,z =Spring.GetUnitPosition(unitID)
-        x,z = x + math.random(-GameConfig.houseSizeX*2,GameConfig.houseSizeX*2), z+ math.random(-GameConfig.houseSizeX*2,GameConfig.houseSizeX*2)
+        x,z = x + math.random(0,GameConfig.houseSizeX*2)*randSign(), z+ math.random(0,GameConfig.houseSizeX*2)*randSign()
 
         houses = foreach(
                     getAllInCircle(x,z, GameConfig.houseSizeX),

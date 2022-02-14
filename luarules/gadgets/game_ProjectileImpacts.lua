@@ -665,8 +665,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         end
                     end
 
-                    --spEcho("Interrogation was succesfull - childs of " ..
-                               persPack.unitID .. " are revealed")
+                    --spEcho("Interrogation was succesfull - childs of " .. persPack.unitID .. " are revealed")
                     unitTeam = spGetUnitTeam(persPack.unitID)
                     local children = getChildrenOfUnit(unitTeam, persPack.unitID)
                     local parent = getParentOfUnit(unitTeam, persPack.unitID)
