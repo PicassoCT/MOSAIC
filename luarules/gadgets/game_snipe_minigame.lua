@@ -59,7 +59,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if unitDefID == snipeIconDefID then
             alwaysHideUnit(snipeIconDefID)
-            echo("Snipeicon created for team: " .. unitTeam)
+      --      echo("Snipeicon created for team: " .. unitTeam)
         end
     end
 
@@ -97,7 +97,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
 
-        Spring.Echo("Finding opossing team defaults to gaia")
+       -- Spring.Echo("Finding opossing team defaults to gaia")
         return gaiaTeamID
     end
 
@@ -318,8 +318,7 @@ if (gadgetHandler:IsSyncedCode()) then
             count(roundRunning.Aggressor.PlacedFigures) > 0 then
             setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
 
-            echo(
-                "1 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
+            --echo( "1 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
             return roundRunning.Aggressor.team, roundRunning, raidStates.WaitingForUplink, true
         end
 
@@ -327,8 +326,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if count(roundRunning.Aggressor.PlacedFigures) == 0 and
             count(roundRunning.Defender.PlacedFigures) > 0 then
             setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.DefenderWins,roundRunning.Defender.team, true)
-            echo(
-                "2 roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
+            --echo( "2 roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
             return roundRunning.Defender.team, roundRunning, raidStates.WaitingForUplink, true
         end
 
@@ -337,7 +335,7 @@ if (gadgetHandler:IsSyncedCode()) then
             count(roundRunning.Aggressor.PlacedFigures) == 0 then
             setPublicRaidState(raidIconId,raidStates.Aborted, raidResultStates.DefenderWins, nil, true)
 
-            echo("3  nil, roundRunning, raidStates.Aborted")
+           -- echo("3  nil, roundRunning, raidStates.Aborted")
             return nil, roundRunning, raidStates.Aborted, true
         end
 
@@ -445,16 +443,16 @@ if (gadgetHandler:IsSyncedCode()) then
             end)
         end
 
-        echo("Defender Points:" .. roundRunning.Defender.Points ..
+       --[[ echo("Defender Points:" .. roundRunning.Defender.Points ..
                  " Agressor Points:" .. roundRunning.Aggressor.Points)
-
+--]]
         if roundRunning.Defender.Points <= 0 or roundRunning.Aggressor.Points <= 0 then
             -- defenders or agressors dead
             if roundRunning.Defender.Points <= 0 and
                 roundRunning.Aggressor.Points > 0 then
                 setPublicRaidState(raidIconId, raidStates.WaitingForUplink, raidResultStates.AggressorWins, roundRunning.Aggressor.team, true)
                     
-                echo("4 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")
+               --[[ echo("4 roundRunning.Aggressor.team, roundRunning, raidStates.AggressorWins")--]]
                 return roundRunning.Aggressor.team, roundRunning, raidStates.WaitingForUplink, true
             end
 
@@ -462,7 +460,7 @@ if (gadgetHandler:IsSyncedCode()) then
             if roundRunning.Aggressor.Points <= 0 and
                 roundRunning.Defender.Points > 0 then
                 setPublicRaidState(raidIconId, raidStates.VictoryStateSet, raidResultStates.DefenderWins, roundRunning.Defender.team, true)
-                echo( "5  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")
+             --[[   echo( "5  roundRunning.Defender.team, roundRunning, raidStates.DefenderWins")--]]
                 return roundRunning.Defender.team, roundRunning, raidStates.VictoryStateSet, true
             end
 
@@ -471,12 +469,12 @@ if (gadgetHandler:IsSyncedCode()) then
                 roundRunning.Aggressor.Points <= 0 then
                 setPublicRaidState(raidIconId, raidStates.Aborted, raidResultStates.DefenderWins, roundRunning.Defender.team, true)
 
-                echo("6  nil, roundRunning, raidStates.Aborted")
+             --[[   echo("6  nil, roundRunning, raidStates.Aborted")--]]
                 return  roundRunning.Defender.team, roundRunning, raidStates.Aborted, true
             end
         end
 
-        echo("7  nil , roundRunning, raidStates.Ongoing")
+      --[[  echo("7  nil , roundRunning, raidStates.Ongoing")--]]
         return nil, roundRunning, raidStates.OnGoing, false
     end
 
@@ -510,16 +508,16 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         if count(roundRunningTeam.PlacedFigures) == 0 then
-            echo(teamID .. " needs  aiplace")
+         --   echo(teamID .. " needs  aiplace")
             return true
         end
         if count(roundRunningTeam.PlacedFigures) > 0 then
-            echo(teamID .. " needs no aiplace")
+           -- echo(teamID .. " needs no aiplace")
             return false
         end
 
         if roundRunningTeam.Points < 1 then
-            echo(teamID .. " has no Points left")
+          --  echo(teamID .. " has no Points left")
             return false
         end
 
@@ -528,7 +526,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         -- no teaminfo
         if isDead == nil or nTeamID == nil or isAiTeam == nil or side == nil then
-            echo("No team info - ai placement")
+           -- echo("No team info - ai placement")
             return true
         end
 
@@ -598,13 +596,13 @@ if (gadgetHandler:IsSyncedCode()) then
                     killAllPlacedObjects(roundRunning)
 
                     if roundRunning and state == raidStates.OnGoing or boolGameOver == false then
-                        Spring.Echo("Raid continues in new Round") 
+                        --Spring.Echo("Raid continues in new Round") 
                         newRound(raidIconId, roundRunning.Aggressor.team, false, roundRunning)
                         roundRunning = nil
                     end
 
                     if roundRunning and state == raidStates.Aborted then
-                        Spring.Echo("Raid was aborted")
+                        --Spring.Echo("Raid was aborted")
                         allRunningRaidRounds[raidIconId] = nil
                         roundRunning = nil
                     end
@@ -637,7 +635,7 @@ if (gadgetHandler:IsSyncedCode()) then
             else
                 killAllPlacedObjects(roundRunning)
                 allRunningRaidRounds[raidIconId] = nil
-                Spring.Echo("Icon was killed")
+             --   Spring.Echo("Icon was killed")
             end
         end
     end
@@ -668,17 +666,17 @@ if (gadgetHandler:IsSyncedCode()) then
     local lastSniperIconID
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "SPWN") then
-            echo("game_snipe_minigame.lua: Recieved SPWN message 1")
+          --  echo("game_snipe_minigame.lua: Recieved SPWN message 1")
             t = split(msg, "|")
 
             name, active, spectator, teamID, allyTeamID, pingTime, cpuUsage, country, rank, _ = Spring.GetPlayerInfo(playerID)
             local uType = t[2]
             houseID = tonumber(t[6])
-            echo("House ID".. houseID)
+          --  echo("House ID".. houseID)
             if not GG.HouseRaidIconMap then echo("Out 1"); return end
             if GG.HouseRaidIconMap[houseID] == nil then echo("Out 2: not GG.HouseRaidIconMap[houseID] for "..houseID); return end
             local raidIconID = GG.HouseRaidIconMap[houseID]
-            echo("game_snipe_minigame.lua: Recieved SPWN message 2")
+           -- echo("game_snipe_minigame.lua: Recieved SPWN message 2")
             if not allRunningRaidRounds[raidIconID] then return end
             
             if allRunningRaidRounds[raidIconID].Aggressor.team == teamID and

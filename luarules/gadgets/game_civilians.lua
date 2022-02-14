@@ -39,7 +39,7 @@ local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
 local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 local CivAnimStates = getCivilianAnimationStates()
 local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
-
+local closeCombatArenaDefID = UnitDefNames["closecombatarena"].id
 
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
@@ -111,6 +111,14 @@ end
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
+        makePasserBysLook(unitID)
+        -- other gadgets worries about propaganda price
+    end
+end
+
+function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
+    -- if bble
+    if teamID == gaiaTeamID and unitDefID == closeCombatArenaDefID then
         makePasserBysLook(unitID)
         -- other gadgets worries about propaganda price
     end
