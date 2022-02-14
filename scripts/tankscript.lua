@@ -81,7 +81,7 @@ end
 
 function script.StartMoving()
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/drive_4_30.ogg",
-                1.0, 4500, 1)
+                1.0, 30000, 1)
 end
 
 function script.StopMoving() end
