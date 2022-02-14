@@ -18,9 +18,7 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
-
     StartThread(guardSwivelTurret)
-
 end
 
 boolAiming = false
@@ -38,11 +36,9 @@ function guardSwivelTurret()
             WTurn(center, y_axis, math.rad(target), math.pi)
         else
             Move(Base,z_axis, 200, 0)
-
         end
         Sleep(500)
     end
-
 end
 
 function script.Killed(recentDamage, _)
