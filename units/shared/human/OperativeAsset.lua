@@ -49,6 +49,7 @@ explodeAs				  = "none",
 	category = "GROUND ARRESTABLE CLOSECOMBATABLE",
 	fireState= 1,
 	moveState = 0,
+	transportByEnemy = true,
 	
 		weapons={
 			[1]={name  = "pistol",
