@@ -154,7 +154,7 @@ local myDefID = spGetUnitDefID(unitID)
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+    Spring.SetUnitAlwaysVisible(unitID, true)
     -- Spring.MoveCtrl.Enable(unitID,true)
     -- x,y,z =Spring.GetUnitPosition(unitID)
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
@@ -251,7 +251,7 @@ defuseStatesMachine = {
 							   if boolFoundSomething == true then return end
 							   defID = spGetUnitDefID(id)
 							   	  teamID = spGetUnitTeam(id)
-								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID] and not isUnitDisguised(id) and isTeamProtagon(teamID)then
+								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID]  and isTeamProtagon(teamID)then
 									boolFoundSomething = true
 									 persPack.defuserID = id 
 									  persPack.defuseTimeMs = GameConfig.Warhead.DefusalTimeMs 
