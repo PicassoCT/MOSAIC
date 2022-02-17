@@ -26,6 +26,8 @@ if (gadgetHandler:IsSyncedCode()) then
     local exemptFromRefundDefIds = getExemptFromRefundTypes(UnitDefs)
     local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
                                                 "house", UnitDefs)
+    local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
+    local AerosolTypes = getChemTrailTypes()
     local accumulatedInSecond = {}
     local accumulatedInSecondLocation = {}
     local colourWhite = {r = 255, g = 255, b = 255}
@@ -208,6 +210,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         if frame % 30 == 0 then
+
             for team, deedtable in pairs(accumulatedInSecond) do
                 for uid, v in pairs(deedtable) do
                     if v then
@@ -233,6 +236,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
             end
             accumulatedInSecondLocation = {}
+        end
+
+        if frame % 60 == 0 then
+           infectWanderlostNearby(GameConfig, AerosolTypes, aerosolAffectableUnits)
         end
     end
 

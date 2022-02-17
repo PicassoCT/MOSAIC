@@ -259,6 +259,7 @@ function getGameConfig()
             wanderlost = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
                 VictimLiftime = 3 * 60 * 1000
+                reinfectRange= 50,
             }, -- 2mins
             tollwutox = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
@@ -274,7 +275,8 @@ function getGameConfig()
         Warhead= {
                 DefusalTimeMs = 30*1000,
                 DefusalStartDistance = 50,
-                DefusalPunishment = -500  
+                DefusalPunishment = -500,
+                automationPayloadStunTimeSeconds = 60,
         }
 
 
@@ -623,6 +625,43 @@ function  getManualCivilianBuildingMaps(mapName)
             return resultTypeTable
         end
 
+        function getAutomationPayloadDisabledType(UnitDefs)
+             local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "truck_arab1",
+                    "truck_arab2",
+                    "truck_arab3",
+                    "truck_arab4",
+                    "truck_arab5",
+                    "truck_arab6",
+                    "truck_arab7",
+                    "ground_walker_mg",
+                    "ground_walker_grenade",
+                    "ground_tumbleweedspyder",
+                    "ground_turret_ssied",
+                    "ground_turret_dronegrenade",
+                    "ground_turret_mg",
+                    "objective_powerplant"
+                   
+                    "motorbike"
+                }
+                return getTypeTable(UnitDefNames, typeTable)
+        end
+
+      function getAutomationPayloadDestroyedType(UnitDefs)
+             local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "propagandaserver",
+                    "assembly",
+                    "objective_airport"
+                    "air_copter_ssied",
+                    "air_plane_sniper",
+                    "air_copter_mg"
+                }
+                return getTypeTable(UnitDefNames, typeTable)
+        end
 
         function getRocketTransportableTypes(UnitDefs)
              local UnitDefNames = getUnitDefNames(UnitDefs)
@@ -1931,6 +1970,26 @@ end
         end        
     end
 
+    function infectWanderlostNearby(GameConfig, AerosolTypes, aerosolAffectableUnits)
+        local AerosolAffectedCivilians = GG.AerosolAffectedCivilians 
+        for id, AerosolType in pairs (AerosolAffectedCivilians) do
+            if AerosolType == AerosolTypes.wanderlost then
+                foreach(getAllNearUnit(id, GameConfig.Aerosols.wanderlost.reinfectRange), 
+                                    function(id)
+                                         if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
+                                                not AerosolAffectedCivilians[id] then -- you can only get infected once
+                                            if setAerosolCivilianBehaviour(id,  AerosolTypes.wanderlost) == true then
+                                            GG.AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
+                                            AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
+                                            return id
+                                          end
+                                        end
+                                    end)
+
+            end
+        end
+    end
+
     function getChildrenOfUnit(teamID, unit)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
         -- Spring.Echo("Getting children of unit")
@@ -2175,7 +2234,8 @@ end
                     ["PreOutbreak"] = "PreOutbreak",
                     ["Outbreak"] = "Outbreak",
                     ["Standalone"] = "Standalone",
-                    ["Dieing"] = "Dieing"
+                    ["Dieing"] = "Dieing",
+                    ["Exit"] = "Exit"
                 }
             end
 
@@ -2295,7 +2355,7 @@ end
                             end
 
                             return currentState
-                        end,
+                        end,                        
                         [AerosolTypes.tollwutox] = function(lastState, currentState, unitID)
                             if currentState == AerosolTypes.tollwutox then
                                 StartThread(lifeTime, unitID,

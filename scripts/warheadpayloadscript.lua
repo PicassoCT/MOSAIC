@@ -8,8 +8,12 @@ local defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 local WarnText = piece"WarnText"
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
 local myTeamID = Spring.GetUnitTeam(unitID)
+
+local automationPayloadDisabledType = getAutomationPayloadDisabledType(UnitDefs)
+local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDefs)
  launcherDefID = UnitDefNames["launcher"].id
  boolIsAITeam = isTeamAITeam(Spring.GetUnitTeam(unitID))
 
@@ -45,6 +49,9 @@ function moveAItoLauncher()
 end
 
 function mightyBadaBoom()
+myDefID = Spring.GetUnitDefID(unitID)
+
+if UnitDefs[myDefID].name == "physicspayload" then
  x,y,z = Spring.GetUnitPosition(unitID)
             weaponDefID = WeaponDefNames["godrod"].id
                         local params = {
@@ -90,8 +97,44 @@ function mightyBadaBoom()
 
 							  Spring.DestroyUnit(id, true, false)
 							end)
+
+end
+
+if UnitDefs[myDefID].name == "biopayload" then
+	local AerosolTypes = getChemTrailTypes()
+
+ 	foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange), 
+                        function(id)
+                             if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
+                                    not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
+                                if setAerosolCivilianBehaviour(id,  AerosolTypes.wanderlost) == true then
+                                GG.AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
+                                return id
+                              end
+                            end
+                        end)
+
+end
+
+if UnitDefs[myDefID].name == "informationpayload" then
+	
+ 	foreach(Spring.GetAllUnits()
+                        function(id)
+                        	defID = Spring.GetUnitDefID(id)
+                             if automationPayloadDisabledType[defID] then
+                                stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
+                              end  
+                              if automationPayloadDestroyedType[defID] then
+                              	Spring.DestroyUnit(id, false, true)
+                              end
+                        	end)
+
+end
+
+
 						Spring.DestroyUnit(unitID, false, true)
 end
+
 --Explode on Impact
 function script.HitByWeapon(x, z, weaponDefID, damage) 
     hp,maxHp= Spring.GetUnitHealth(unitID)

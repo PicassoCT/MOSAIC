@@ -53,8 +53,8 @@ local WarHeadFactory = Building:New{
 		buildoptions = 
 	{
 		"physicspayload",
-		--"informationpayload",
-		--"biopayload"		
+		"informationpayload",
+		"biopayload"		
 	},
   category =  [[GROUND BUILDING RAIDABLE]],
 }
