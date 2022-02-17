@@ -118,14 +118,17 @@ end
 
 if UnitDefs[myDefID].name == "informationpayload" then
 	
- 	foreach(Spring.GetAllUnits()
+ 	foreach(Spring.GetAllUnits(),
                         function(id)
                         	defID = Spring.GetUnitDefID(id)
                              if automationPayloadDisabledType[defID] then
                                 stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
+                                spawnCegAtUnit(id, "electric_explosion")
+
                               end  
                               if automationPayloadDestroyedType[defID] then
                               	Spring.DestroyUnit(id, false, true)
+                              	spawnCegAtUnit(id, "electric_explosion")
                               end
                         	end)
 

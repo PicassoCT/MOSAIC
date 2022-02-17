@@ -258,7 +258,7 @@ function getGameConfig()
             },
             wanderlost = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
-                VictimLiftime = 3 * 60 * 1000
+                VictimLiftime = 3 * 60 * 1000,
                 reinfectRange= 50,
             }, -- 2mins
             tollwutox = {
@@ -642,8 +642,7 @@ function  getManualCivilianBuildingMaps(mapName)
                     "ground_turret_ssied",
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
-                    "objective_powerplant"
-                   
+                    "objective_powerplant",                   
                     "motorbike"
                 }
                 return getTypeTable(UnitDefNames, typeTable)
@@ -655,7 +654,10 @@ function  getManualCivilianBuildingMaps(mapName)
                 typeTable = {
                     "propagandaserver",
                     "assembly",
-                    "objective_airport"
+                    "objective_airport",
+                    "ground_turret_cm_airstrike",
+                    "ground_turret_cm_transport",
+                    "ground_turret_cm_antiarmor",
                     "air_copter_ssied",
                     "air_plane_sniper",
                     "air_copter_mg"
