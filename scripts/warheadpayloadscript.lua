@@ -109,7 +109,9 @@ if UnitDefs[myDefID].name == "biopayload" then
                                     not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
                                 if setAerosolCivilianBehaviour(id,  AerosolTypes.wanderlost) == true then
                                 GG.AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
-                                return id
+                                spawnCegAtUnit(id, "wanderlost", 0, 50, 0)
+
+								return id
                               end
                             end
                         end)
