@@ -228,9 +228,11 @@ function registerBombLocationAndProducer(unitID)
                 GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
             end
 
-function isTeamProtagon(teamID)
-	  return (select(5, spGetTeamInfo(teamID)) == "protagon")
-end            
+function isTeamProtagon(teamID, defID)
+	  return (select(5, spGetTeamInfo(teamID)) == "protagon") or UnitDefs[defID].name == "operativeinvestigator"
+end   
+
+
 
 function displayProgressBar(timeInMs)
   -- display the Progressbars																								
@@ -251,7 +253,7 @@ defuseStatesMachine = {
 							   if boolFoundSomething == true then return end
 							   defID = spGetUnitDefID(id)
 							   	  teamID = spGetUnitTeam(id)
-								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID]  and isTeamProtagon(teamID)then
+								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID] and isTeamProtagon(teamID, defID)  then -- 
 									boolFoundSomething = true
 									 persPack.defuserID = id 
 									  persPack.defuseTimeMs = GameConfig.Warhead.DefusalTimeMs 
@@ -357,7 +359,7 @@ function defuseStateMachine()
       newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
       if currentState ~= newState then	  echo("defuseStatesMachine in "..currentState) end
 	  currentState = newState
-
+	  echo(currentState)
       Sleep(100)
       if not Spring.GetUnitTransporter(unitID) then
       	 --detect transports nearby and autoload
