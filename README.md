@@ -1,10 +1,11 @@
 # MOSAIC
 
 Modular Ordanance Standardized Artifact Intelligence Combat
+![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11526)
+This is an spy vs spy RTS game developed for the spring engine (www.springrts.com). 
 
 ![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11053/Example_Screen.png)
 
-This is an RTS game developed for the spring engine (www.springrts.com). 
 
 Its the very near future, and on a planet ravaged by the disaster that is 9 billion people,
 there is a city that is doomed.
