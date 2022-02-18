@@ -1,17 +1,16 @@
 # MOSAIC
 
 Modular Ordanance Standardized Artifact Intelligence Combat
+A spy vs spy RTS game developed for the spring engine (www.springrts.com). 
 ![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11526)
-This is an spy vs spy RTS game developed for the spring engine (www.springrts.com). 
-
-![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11053/Example_Screen.png)
-
 
 Its the very near future, and on a planet ravaged by the disaster that is 9 billion people,
 there is a city that is doomed.
 
 The reason for that is the way conflicts play out now. Small groups, with exponential tech,
 can cause damage once only doable by superpowers.
+
+![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11053/Example_Screen.png)
 
 All it takes is some backyard shed, with a homespun hyperfast missile and something new as payload.
 Your job, should you accept it, is - to either make the worst case happen (Antagon) or prevent the last disaster and give humanity one more day on this world (Protagon).
