@@ -11,7 +11,7 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "tr
 local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
 local myTeamID = Spring.GetUnitTeam(unitID)
-local gaiaTeamID = Sping.GetGaiaTeamID()
+local gaiaTeamID = Spring.GetGaiaTeamID()
 local automationPayloadDisabledType = getAutomationPayloadDisabledType(UnitDefs)
 local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDefs)
  launcherDefID = UnitDefNames["launcher"].id
@@ -359,10 +359,9 @@ function defuseStateMachine()
     persPack={}
     while true do
       newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
-      if currentState ~= newState then	  echo("defuseStatesMachine in "..currentState) end
+     -- if currentState ~= newState then	  echo("defuseStatesMachine in "..currentState) end
 	  currentState = newState
-	  echo(currentState)
-      Sleep(100)
+	  Sleep(100)
       if not Spring.GetUnitTransporter(unitID) then
       	 --detect transports nearby and autoload
       	 boolLoaded = false

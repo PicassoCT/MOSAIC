@@ -2321,30 +2321,39 @@ end
                             end
 
                             if currentState == InfStates.Init then
-								setSpeed(unitID, 2.0)
+								setSpeedIntern(unitID, 2.0)
                                 currentState = InfStates.Outbreak
                             end
 
                             if currentState == InfStates.Outbreak then
-                                gf = Spring.GetGameFrame()
-
-                                if gf % 27 == 0 then
+                                gf = Spring.GetGameFrame()					
+								x,y,z = Spring.GetUnitPosition(unitID)
+								
+                                if gf % 30 == 0 then
                                     randPiece = Spring.GetUnitPieceMap(unitID)
                                     for i = 1, 3 do
                                         val = math.random(5, 35) / 100
-                                        spinT(Spring.GetUnitPieceMap(unitID), i, val * -1, val,
+                                        spinT(Spring.GetUnitPieceMap(unitID), i, val * randSign(), val,
                                         0.0032)
                                     end
+									
+									if maRa() == maRa() then
+										civilianDefID = randDict(civilianTypeTable)
+										gaiaTeamID = Spring.GetGaiaTeamID()
+										unitTable  = Spring.GetTeamUnitsByDefs ( gaiaTeamID, civilianDefID)
+										if unitTable and #unitTable > 1 then
+											x,y,z =  Spring.GetUnitPosition(unitTable[math.random(1,#unitTable)])
+										end
+									end
                                 end
 
                                 if gf % 81 == 0 then
                                     for i = 1, 3 do
                                         stopSpinT(Spring.GetUnitPieceMap(unitID), i)
                                     end
+									
                                 end
-
-                                x = (unitID * 65533) % Game.mapSizeX
-                                z = (unitID * 65533) % Game.mapSizeZ
+								
                                 f = (Spring.GetGameFrame() %
                                 GG.GameConfig.Aerosols.wanderlost.VictimLiftime) /
                                 GG.GameConfig.Aerosols.wanderlost.VictimLiftime
