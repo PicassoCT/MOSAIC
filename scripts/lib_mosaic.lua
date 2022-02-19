@@ -2321,6 +2321,7 @@ end
                             end
 
                             if currentState == InfStates.Init then
+								setSpeed(unitID, 2.0)
                                 currentState = InfStates.Outbreak
                             end
 
