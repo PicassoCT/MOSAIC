@@ -11,7 +11,7 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "tr
 local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
 local myTeamID = Spring.GetUnitTeam(unitID)
-
+local gaiaTeamID = Sping.GetGaiaTeamID()
 local automationPayloadDisabledType = getAutomationPayloadDisabledType(UnitDefs)
 local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDefs)
  launcherDefID = UnitDefNames["launcher"].id
@@ -70,7 +70,6 @@ if UnitDefs[myDefID].name == "physicspayload" then
                         endAlpha = 0.1,
                         model = "emptyObjectIsEmpty.s3o",
                         cegTag = ""
-
                         }
 
                         id=Spring.SpawnProjectile ( weaponDefID, params) 
@@ -109,13 +108,14 @@ if UnitDefs[myDefID].name == "biopayload" then
                                     not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
                                 if setAerosolCivilianBehaviour(id,  AerosolTypes.wanderlost) == true then
                                 GG.AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
-                                spawnCegAtUnit(id, "wanderlost", 0, 50, 0)
+								for i=1,3 do
+									spawnCegAtUnit(id, "wanderlost", math.random(10,35)*randSign(), 50, math.random(10,35)*randSign())
+								end
 
 								return id
                               end
                             end
                         end)
-
 end
 
 if UnitDefs[myDefID].name == "informationpayload" then
@@ -125,10 +125,10 @@ if UnitDefs[myDefID].name == "informationpayload" then
                         	defID = Spring.GetUnitDefID(id)
                              if automationPayloadDisabledType[defID] then
                                 stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
-                                spawnCegAtUnit(id, "electric_explosion")
-
+                                spawnCegAtUnit(id, "electric_explosion",0, 50, 0)
                               end  
-                              if automationPayloadDestroyedType[defID] then
+								
+							 if automationPayloadDestroyedType[defID] then
                               	Spring.DestroyUnit(id, false, true)
                               	spawnCegAtUnit(id, "electric_explosion")
                               end

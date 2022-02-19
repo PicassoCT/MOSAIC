@@ -2332,7 +2332,7 @@ end
                                     for i = 1, 3 do
                                         val = math.random(5, 35) / 100
                                         spinT(Spring.GetUnitPieceMap(unitID), i, val * -1, val,
-                                        0.0015)
+                                        0.0032)
                                     end
                                 end
 
