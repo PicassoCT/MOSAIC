@@ -175,7 +175,9 @@ boolForward = true
 boolGotIdleTokken = false
 function walkAnimationLoop()
     waitTillComplete(unitID)
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/walker/boot.wav",1.0, 1000, 1)
     Landing()
+
     while true do
         if boolAiming == false and boolWalking == true then
             while boolAiming == false and boolWalking == true do
