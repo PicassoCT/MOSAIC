@@ -2,8 +2,8 @@
 
 
 local groundturretssied =  Turret:New{
-	name = "Stationary SSIED",
-	Description = " MOSAIC Standardized Smart Improvised Explosive Device ",
+	name = "Stationary Improvised Explosive Device",
+	Description = " MOSAIC Standardized  IED ",
 	
 	objectName = "ground_turret_sied.dae",
 	script = "ground_turret_sied.lua",
@@ -11,8 +11,8 @@ local groundturretssied =  Turret:New{
 	iconType = "ground_turret_iied",
 	--floater = true,
 	--cost
-	buildCostEnergy = 50,
-	 buildCostMetal= 0,
+	buildCostEnergy = 250,
+	 buildCostMetal= 500,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -93,7 +93,7 @@ local groundturretmg =  Turret:New{
 	iconType = "ground_turret_mg",
 
 	--cost
-	buildCostEnergy  = 500,
+	buildCostEnergy  = 250,
 	buildCostMetal= 500,
 	buildTime = 35,
 	--Health
@@ -163,8 +163,8 @@ local ground_turret_antiarmor =  Turret:New{
 	buildPic = "ground_turret_rocket.png",
 	--floater = true,
 	--cost
-	buildCostEnergy  = 50,
-	buildCostMetal= 0,
+	buildCostEnergy  = 500,
+	buildCostMetal= 1000,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -243,8 +243,8 @@ local ground_turret_dronegrenades =  Turret:New{
 	iconType = "ground_turret_rocket",
 	--floater = true,
 	--cost
-	buildCostEnergy  = 50,
-	buildCostMetal= 0,
+	buildCostEnergy  = 250,
+	buildCostMetal= 750,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -314,8 +314,8 @@ local ground_turret_rocket =  Turret:New{
 	iconType = "ground_turret_rocket",
 	--floater = true,
 	--cost
-	buildCostEnergy  = 50,
-	buildCostMetal= 0,
+	buildCostEnergy  = 250,
+	buildCostMetal= 500,
 	buildTime = 35,
 	--Health
 	maxDamage = 50,
@@ -387,8 +387,8 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	iconType = "ground_turret_cm",
 	--floater = true,
 	--cost
-	buildCostEnergy = 50,
-	buildCostMetal = 0,
+	buildCostEnergy = 500,
+	buildCostMetal = 1250,
 	buildTime = 5,
 	--Health
 	maxDamage = 50,
