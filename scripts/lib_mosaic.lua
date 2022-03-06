@@ -1676,14 +1676,16 @@ function  getManualCivilianBuildingMaps(mapName)
                                 if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
                                 if not persPack.ListOfCompletedTurnedUnits then persPack.ListOfCompletedTurnedUnits = {} end
                                 buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
-                                persPack.ListOfBuildUnits[buildID] = buildID
+                                if buildID then
+                                    persPack.ListOfBuildUnits[buildID] = buildID
 
-                                for buildID,_ in pairs(persPack.ListOfBuildUnits) do
-                                    if isUnitComplete(buildID) and not persPack.ListOfCompletedTurnedUnits[buildID] then
-                                        attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
-                                        persPack.ListOfCompletedTurnedUnits[buildID]= buildID
-                                        persPack.ListOfBuildUnits[buildID]= nil
-                                    end  
+                                    for buildID,_ in pairs(persPack.ListOfBuildUnits) do
+                                        if isUnitComplete(buildID) and not persPack.ListOfCompletedTurnedUnits[buildID] then
+                                            attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
+                                            persPack.ListOfCompletedTurnedUnits[buildID]= buildID
+                                            persPack.ListOfBuildUnits[buildID]= nil
+                                        end  
+                                    end
                                 end
                             end
 
