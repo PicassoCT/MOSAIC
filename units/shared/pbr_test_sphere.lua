@@ -13,7 +13,7 @@ unitDef = {
   canGuard            = true,
   canMove             = true,
   canPatrol           = true,
-  category            = [[SWIM]],
+  category            = [[NOTARGET]],
 
   customParams        = {
 	normaltex = "unittextures/blank_normal.dds",
