@@ -152,7 +152,7 @@ local GetUnitRank = function() return 0 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local getSideName = VFS.Include("LuaRules/Includes/sides.lua")
+local getSideName = VFS.Include("luarules/includes/sides.lua")
 
 --// translate lowercase UnitNames to real unitname (with upper-/lowercases)
 local defNamesL = {}
@@ -840,7 +840,9 @@ function gadget:Initialize()
   table.insert(GG.UnitRanked, UnitRanked)
 
   --// get the morphDefs
-  morphDefs = include("LuaRules/Configs/morph_defs.lua")
+  Spring.Echo("Starting loading morphdefs")
+  morphDefs = include("luarules/configs/morph_defs.lua")
+
   if (not morphDefs) then GG.RemoveGadget(self); return; end
   morphDefs = ValidateMorphDefs(morphDefs)
 
