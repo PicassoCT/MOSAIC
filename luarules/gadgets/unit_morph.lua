@@ -219,7 +219,7 @@ local function BuildMorphDef(udSrc, morphData)
     --newData.cmd     = CMD_MORPH      + MAX_MORPH
 	newData.cmd = GG.CustomCommands.GetCmdID("CMD_MORPH_" .. newData.into)
     if udSrc.isFactory then
-		local tmpSide = getSideName(udSrc.name)
+		local tmpSide = getSideName(udSrc.name, "default")  
         newData.upgradeUnit = UnitDefNames[tmpSide .. "_morph_" .. udSrc.name .. "_" .. morphData.into].id
         upgradeDefs[newData.upgradeUnit] = newData
     end
