@@ -7,15 +7,10 @@ for sideNum, data in pairs(sideData) do
 	end
 end
 
-local function getSideName(name)
-	local side = 'UNKNOWN'
-	for _, sideName in pairs(SIDES) do
-		if name:find(sideName) == 1 then
-			side = sideName
-			break
-		end
-	end
-	return side
+local function getSideName(name, default)
+	if string.find(name, "antagon") then return "antagon" end
+	if string.find(name, "protagon") then return "protagon" end
+	return default
 end
 
 return getSideName
