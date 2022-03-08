@@ -20,7 +20,7 @@ local unitDef = {
 
 	--MaxVelocity = 0.5,
 	MaxWaterDepth =400,
-	--MovementClass = "Default2x2",--
+	--MovementClass = "VEHICLE"--
 
 	cantBeTransported=false,
 

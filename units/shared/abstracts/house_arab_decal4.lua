@@ -20,7 +20,7 @@ local unitDef = {
     MaxSlope = 5,
     --MaxVelocity = 0.5,
     MaxWaterDepth = 0,
-    --MovementClass = "Default2x2",--
+    --MovementClass = "VEHICLE"--
 
     sightDistance = 300,
     reclaimable = true,
