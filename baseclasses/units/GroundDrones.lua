@@ -6,7 +6,7 @@ local Turret = Unit:New{
 	maxSlope = 50,
 	
 	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MovementClass = "VEHICLE",
 	fireState=1,
 	
 	nanocolor=[[0.20 0.411 0.611]],

@@ -19,6 +19,9 @@ if not modOptions.startmetal then -- load via file
 	end
 end
 
+-- Auto-generate sortie, squad & queuable-morph units
+VFS.Include("gamedata/unitdefs_autogen.lua")
+
 
 -- TODO: I still don't quite follow why the SIDES table from _pre (available to all defs) isn't available here
 local sideData = VFS.Include("gamedata/sidedata.lua", VFS.ZIP)
@@ -58,3 +61,5 @@ local function ReplaceStrings(t, name)
 end
 
 
+
+VFS.Include("gamedata/unitdefs_post_dependency.lua")
