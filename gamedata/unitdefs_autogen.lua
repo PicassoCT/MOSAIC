@@ -12,7 +12,7 @@ local function getTemplate()
 					idleautoheal = 0,
 					maxdamage = 1e+06,
 					maxvelocity = 0.01,
-					movementclass = "Default2x2", -- as is this
+					movementclass = "QUADRUPED", -- as is this
 					objectname = "emptyObjectIsEmpty.S3O",
 					script = "null.lua",
 					selfdestructas = "noweapon",
@@ -44,7 +44,7 @@ for unitName, unitMorphs in pairs(morphInclude) do
 			local unitMorphData = unitMorphs[i]
 			local intoDef = UnitDefs[unitMorphData.into] or {}
 			local autoUnit = getTemplate()
-			local tmpSide = getSideName(unitName)
+			local tmpSide = getSideName(unitName, "protagon")
 			local autoUnitName = tmpSide .. "_morph_" .. unitName .. "_" .. unitMorphData.into
 			local buildOptions = unitDef.buildoptions or unitDef.buildOptions or {}
 			unitDef.buildoptions = buildOptions
