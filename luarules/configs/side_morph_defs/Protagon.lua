@@ -43,4 +43,4 @@ local protagonDefs = {
 
 }
 
-return antagonDefs
+return protagonDefs
