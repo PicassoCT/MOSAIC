@@ -16,7 +16,7 @@ function gadget:GetInfo()
   return {
     name      = "UnitMorph",
     desc      = "Adds unit morphing",
-    author    = "trepan (improved by jK, Licho, aegis, CarRepairer, adapted to S44 by yuritch, Tobi, FLOZi, Nemo, ashdnazg)",
+    author    = "trepan (improved by jK, Licho, aegis, CarRepairer, adapted to S44 by yuritch, Tobi, FLOZi, Nemo, ashdnazg, Picasso)",
     date      = "Jan, 2008",
     license   = "GNU GPL, v2 or later",
     layer     = 0,
@@ -27,37 +27,17 @@ end
 -- Changes for "The Cursed"
 --		CarRepairer: may add a customized texture in the morphdefs, otherwise uses original behavior (unit buildicon and the word Morph). Break changes made in CA.
 --		aZaremoth: may add a customized text in the morphdefs
-
+VFS.Include("scripts/lib_UnitScript.lua")
+VFS.Include("scripts/lib_mosaic.lua")
 
 local MAX_MORPH = 0 --// will increase dynamically
+local GameConfig = getGameConfig()
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 
 --------------------------------------------------------------------------------
 --  COMMON
 --------------------------------------------------------------------------------
 
---[[ // for use with any mod -_-
-function GetTechLevel(udid)
-  local ud = UnitDefs[udid];
-  return (ud and ud.techLevel) or 0
-end
-]]--
-
--- // for use with mods like CA <_<
-local function GetTechLevel(UnitDefID)
-  --return UnitDefs[UnitDefID].techLevel or 0
-  local cats = UnitDefs[UnitDefID].modCategories
-  if (cats) then
-    --// bugfix, cuz lua don't remove uppercase :(
-    if     (cats["LEVEL1"]) then return 1
-    elseif (cats["LEVEL2"]) then return 2
-    elseif (cats["LEVEL3"]) then return 3
-      elseif (cats["level1"]) then return 1
-      elseif (cats["level2"]) then return 2
-      elseif (cats["level3"]) then return 3
-    end
-  end
-  return 0
-end
 
 local function isFactory(UnitDefID)
   return UnitDefs[UnitDefID].isFactory or false
@@ -510,9 +490,9 @@ local function CreateMorphedUnit(postMorphData)
 
   -- NEW UNIT  
   local newUnitID
-  
+
   -- SET position, rotation, etc. 
-  if unitDefAfterMorph.speed == 0 and unitDefAfterMorph.isBuilder or unitDefNameAfterMorph == "russtorage" then
+  if unitDefAfterMorph.speed == 0 and unitDefAfterMorph.isBuilder then
 	newUnitID = Spring.CreateUnit(unitDefNameAfterMorph, x, y, z, face, unitTeam, isBeingBuilt, false, unitID)
 	if newUnitID ~= nil then
 	  Spring.SetUnitPosition(newUnitID, x, y, z)
@@ -648,6 +628,15 @@ local function CreateMorphedUnit(postMorphData)
   return newUnitID
 end
 
+local function getContainingHouse(unitID)
+--Transfer Stats to new Unit
+  for houseID, safeHouseID in pairs(GG.houseHasSafeHouseTable) do
+    if unitID == safeHouseID then
+      return houseID
+    end
+  end
+end
+
 local function FinishMorph(unitID, morphData)
   local unitDefAfterMorph = UnitDefs[morphData.def.into]
   local unitDefBeforeMorph = UnitDefs[Spring.GetUnitDefID(unitID)]
@@ -765,6 +754,10 @@ local function FinishMorph(unitID, morphData)
     end
   end
 
+  containingHouseID = getContainingHouse(unitID)
+  assert(containingHouseID)
+  assert(doesUnitExistAlive(containingHouseID))
+
   -- DESTROY UNIT, this syntax is for spring 104+ only (parameter #5 does not exist in 103)
   -- selfd = false, reclaim = true, attacker = 0, recycleID = true
   Spring.DestroyUnit(unitID, false, true, 0, true)
@@ -775,7 +768,7 @@ local function FinishMorph(unitID, morphData)
     valueToPass = Spring.GetUnitRulesParam(unitID, unitDefBeforeMorph.customParams.pass_morph_unitrules_param)
   end
 
-  CreateMorphedUnit({
+  newUnitID = CreateMorphedUnit({
         unitID = unitID,
         unitDefAfterMorph = unitDefAfterMorph,
         unitDefBeforeMorph = unitDefBeforeMorph,
@@ -801,6 +794,7 @@ local function FinishMorph(unitID, morphData)
         oldShieldState = oldShieldState,
         valueToPass = valueToPass,
   })
+    GG.houseHasSafeHouseTable[containingHouseID] = newUnitID
 end
 
 local function UpdateMorph(unitID, morphData)
@@ -1082,10 +1076,7 @@ end
 
 function AddFactory(unitID, unitDefID, teamID)
   if (isFactory(unitDefID)) then
-    local unitTechLevel = GetTechLevel(unitDefID)
-    if (unitTechLevel > teamTechLevel[teamID]) then
-      teamTechLevel[teamID]=unitTechLevel
-    end
+    local unitTechLevel = 0
   end
 end
 
@@ -1101,8 +1092,7 @@ function RemoveFactory(unitID, unitDefID, teamID)
       if (unitID2 ~= unitID) then
         local unitDefID2 = Spring.GetUnitDefID(unitID2)
         if (isFactory(unitDefID2) and isFinished(unitID2)) then
-          local unitTechLevel = GetTechLevel(unitDefID2)
-          if (unitTechLevel>level) then level = unitTechLevel end
+          if (0>level) then level = unitTechLevel end
         end
       end
     end
@@ -1110,7 +1100,6 @@ function RemoveFactory(unitID, unitDefID, teamID)
     if (level ~= teamTechLevel[teamID]) then
       teamTechLevel[teamID] = level
     end
-
   end
 end
 
