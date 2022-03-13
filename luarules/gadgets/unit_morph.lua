@@ -179,7 +179,7 @@ local function BuildMorphDef(udSrc, morphData)
       e = (newData.increment * newData.energy)
     }
     newData.tech = morphData.tech or 0
-    newData.xp   = morphData.xp or 0
+    newData.xp   = morphData.xp or 0 
     newData.rank = morphData.rank or 0
     newData.facing = morphData.facing
     newData.directional = morphData.directional
