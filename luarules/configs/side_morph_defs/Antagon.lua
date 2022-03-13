@@ -15,7 +15,7 @@ local antagonDefs = {
 			energy = 3500,
 			time = 60,
 			name = 'Nimrod',
-			text = 'Orbital Railgun',
+			text = 'Orbital Railgun to deploy micro-sattelites',
 			facing = true,
 		},		
 		{
@@ -33,7 +33,7 @@ local antagonDefs = {
 			energy = 5000,
 			time = 60,
 			name = 'ICBM Launcher',
-			text = 'Ends the game with a whole missile',
+			text = 'Ends the game with a exponential tech warhead one a ICBM',
 			facing = true,
 		},	
 		{
@@ -42,7 +42,7 @@ local antagonDefs = {
 			energy = 2500,
 			time = 120,
 			name = 'Warhead factory',
-			text = 'Produces nightmares to ride rockets',
+			text = 'Produces exponential tech warhead',
 			facing = true,
 		},
 	},
