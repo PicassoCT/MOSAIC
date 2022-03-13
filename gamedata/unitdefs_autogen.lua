@@ -48,9 +48,10 @@ for unitName, unitMorphs in pairs(morphInclude) do
 			local autoUnitName = tmpSide .. "_morph_" .. unitName .. "_" .. unitMorphData.into
 			local buildOptions = unitDef.buildoptions or unitDef.buildOptions or {}
 			unitDef.buildoptions = buildOptions
-			autoUnit.name = text
-			--autoUnit.description = unitMorphData.text
+			autoUnit.name = "Become a "..intoDef.name
+			autoUnit.description = intoDef.description
 			autoUnit.buildcostmetal = unitMorphData.metal
+			autoUnit.buildcostenergy = unitMorphData.energy
 			autoUnit.buildpic = intoDef.buildpic
 			if autoUnit.buildpic == '<NAME>.png' then
 				autoUnit.buildpic = unitMorphData.into .. '.png'
