@@ -8,7 +8,6 @@ local TablesOfPiecesGroups = {}
 boolSafeHouseActive = false
 local GameConfig = getGameConfig()
 containingHouseID = nil
-
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
@@ -59,6 +58,7 @@ end
 
 function killDelayed()
     Sleep(1)
+    echo("Killing due to being near a predecessor")
     destroyUnitConditional(unitID, false, true)
 end
 
@@ -109,7 +109,6 @@ function houseAttach()
             GG.houseHasSafeHouseTable[houseID] = unitID
             StartThread(mortallyDependant, unitID, houseID, 250, false, true)
             moveUnitToUnit(unitID, houseID)
-            StartThread(detectUpgrade)
             return houseID
         end
     end)
@@ -139,37 +138,6 @@ function checkPreExistingKill(toKillId, notID)
         end
 end
 
-function detectUpgrade()
-   if not GG.houseHasSafeHouseTable then  GG.houseHasSafeHouseTable = {} end
-    while true do
-        Sleep(50)
-        -- Spring.Echo("Detect Upgrade")
-        buildID = Spring.GetUnitIsBuilding(unitID)
-        if buildID then
-            
-            buildDefID = Spring.GetUnitDefID(buildID)
-            --    Spring.Echo("Safehouse is building unit of type ".. UnitDefs[buildDefID].name)
-            if safeHouseUpgradeTypeTable[buildDefID] then
-                Spring.SetUnitNoSelect(unitID, true)
-        
-                checkPreExistingKill(buildID, buildID)
-                --echo("Safehouse"..unitID..": Begin building Updgrade "..UnitDefs[buildDefID].name)
-                if doesUnitExistAlive(buildID) == true then
-                    -- echo("Safehouse"..unitID..": Waiting for Completion "..UnitDefs[buildDefID].name)
-                    if waitTillComplete(buildID) == true then
-                    --echo("Safehouse"..unitID..": End building Updgrade "..UnitDefs[buildDefID].name)
-                    GG.houseHasSafeHouseTable[containingHouseID] = buildID
-                    moveUnitToUnit(buildID, containingHouseID)
-                    Spring.UnitAttach(containingHouseID, buildID, getUnitPieceByName(containingHouseID, GameConfig.safeHousePieceName))
-                    --echo("Upgrade Complete")
-                    Spring.DestroyUnit(unitID, false, true)
-                    end
-                end
-                Spring.SetUnitNoSelect(unitID, false)
-			end
-        end
-    end
-end
 
 function script.Killed(recentDamage, _)
     return 1

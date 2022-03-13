@@ -26,7 +26,7 @@ local groundturretssied =  Turret:New{
 	maxSlope = 50,
 	
 	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MovementClass = "VEHICLE",
 
 	
 	nanocolor=[[0.20 0.411 0.611]],
@@ -108,7 +108,7 @@ local groundturretmg =  Turret:New{
 	maxSlope = 50,
 	
 	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MovementClass = "VEHICLE",
 
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 300,
@@ -178,7 +178,7 @@ local ground_turret_antiarmor =  Turret:New{
 	maxSlope = 50,
 	levelground = false,
 	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MovementClass = "VEHICLE",
 
 	
 	nanocolor=[[0.20 0.411 0.611]],
@@ -258,7 +258,7 @@ local ground_turret_dronegrenades =  Turret:New{
 	maxSlope = 50,
 	
 	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MovementClass = "VEHICLE",
 
 	
 	nanocolor=[[0.20 0.411 0.611]],
@@ -329,7 +329,7 @@ local ground_turret_rocket =  Turret:New{
 	maxSlope = 50,
 	
 	MaxWaterDepth = 0,
-	MovementClass = "Default2x2",
+	MovementClass = "VEHICLE",
 
 	
 	nanocolor=[[0.20 0.411 0.611]],

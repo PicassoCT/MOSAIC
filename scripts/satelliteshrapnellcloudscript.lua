@@ -94,7 +94,7 @@ function doDamageCyclic()
 
         hp, mHp = Spring.GetUnitHealth(unitID)
         factorHealth= hp/mHp
-        factorLifetime = LifeTime/GameConfig.SatelliteShrapnellLifeTime
+        factorLifetime = LifeTime/GameConfig.Satellite.shrapnellLifeTime
         smallestFactor = 1.0 - math.min(factorHealth, factorLifetime)
         for i=1, (#TablesOfPiecesGroups["Particle"]*smallestFactor) do
             if factorHealth < factorLifetime then

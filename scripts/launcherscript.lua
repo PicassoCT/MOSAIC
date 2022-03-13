@@ -109,7 +109,7 @@ end
 function payloadCheck(id)
     defID = spGetUnitDefID(id)   
     transporterID = Spring.GetUnitTransporter(id)  
-    if payLoadTypes[defID] or ayLoadTypes[defID] and transporterID and spGetUnitTeam(transporterID) == myTeamID then
+    if payLoadTypes[defID] or payLoadTypes[defID] and transporterID and spGetUnitTeam(transporterID) == myTeamID then
             GG.Launchers[teamID][unitID].payload = defID
             echo("Payload recieved")
             Spring.DestroyUnit(id, true, false)

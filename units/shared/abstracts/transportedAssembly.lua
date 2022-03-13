@@ -19,7 +19,7 @@ local unitDef = {
     maxDamage = 2500,
     idleAutoHeal = 3,
     --Movement
-    MovementClass = "Default2x2",
+    MovementClass = "VEHICLE",
     FootprintX = 1,
     FootprintZ = 1,
     MaxSlope = 5,
