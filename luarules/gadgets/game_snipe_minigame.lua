@@ -674,7 +674,7 @@ if (gadgetHandler:IsSyncedCode()) then
             houseID = tonumber(t[6])
           --  echo("House ID".. houseID)
             if not GG.HouseRaidIconMap then echo("Out 1"); return end
-            if GG.HouseRaidIconMap[houseID] == nil then echo("Out 2: not GG.HouseRaidIconMap[houseID] for "..houseID); return end
+            if GG.HouseRaidIconMap[houseID] == nil then return end
             local raidIconID = GG.HouseRaidIconMap[houseID]
            -- echo("game_snipe_minigame.lua: Recieved SPWN message 2")
             if not allRunningRaidRounds[raidIconID] then return end

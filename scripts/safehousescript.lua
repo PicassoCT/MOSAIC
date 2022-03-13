@@ -8,7 +8,6 @@ local TablesOfPiecesGroups = {}
 boolSafeHouseActive = false
 local GameConfig = getGameConfig()
 containingHouseID = nil
-
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
@@ -59,6 +58,7 @@ end
 
 function killDelayed()
     Sleep(1)
+    echo("Killing due to being near a predecessor")
     destroyUnitConditional(unitID, false, true)
 end
 
