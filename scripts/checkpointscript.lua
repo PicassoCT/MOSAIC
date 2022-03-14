@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 include "lib_mosaic.lua"
-
+--Changes within this file are not displayed
 TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
@@ -66,7 +66,7 @@ function revelioThread()
 
 	while true do
 			if boolActive == true then
-			process(
+			foreach(
 				 getAllNearUnit(unitID, gameConfig.checkPointRevealRange),
 				 function(id)
 				 	if id == unitID then return end
@@ -96,7 +96,7 @@ function revelioThread()
 				 
 				 	if defID and civilianTypeTable[defID] then
 				 		--if DisguiseCivilianFor	
-				 		if GG.DisguiseCivilianFor[id]  then -- Disguised Unit
+				 		if GG.DisguiseCivilianFor[id]  then -- Disguised Unit 
    							StartThread(hideShowLamps,"bad")
 				 			disguisedUnitID = GG.DisguiseCivilianFor[id] --make transparent
  							if not GG.OperativesDiscovered then  GG.OperativesDiscovered = {} end
