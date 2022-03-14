@@ -32,7 +32,7 @@ function attachAndBlow()
 	victimID = nil
 	smallestDistance = math.huge 
 	x,y,z = Spring.GetUnitPosition(unitID)
-	victims= process(getAllInCircle(x,z, stickyCircle),
+	victims= foreach(getAllInCircle(x,z, stickyCircle),
 		function(id)
 			teamID= Spring.GetUnitTeam(id)
 			if teamID ~= myTeamID then -- teamID ~= gaiaTeamID
@@ -98,7 +98,7 @@ function attachAndBlow()
     if doesUnitExistAlive(victimID)== true then
     Spring.AddUnitDamage(victimID, maxDamagePerUnit)
 	else
-    process(getAllInCircle(x, z, maxDamageDistance, unitID),
+    foreach(getAllInCircle(x, z, maxDamageDistance, unitID),
     	function(id)
     		if id ~= unitID then
     			factor = (1-(distanceUnitToUnit(unitID, id)/maxDamageDistance))
