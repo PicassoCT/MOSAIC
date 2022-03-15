@@ -119,7 +119,7 @@ end
 function incShowTrayObjects(partName)
     if not partName then return end
     if TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start +
-        trayDecoMap[partName].counter] then
+        trayDecoMap[partName].counter] and boolLocalCloaked then
         Show(TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start +
                  trayDecoMap[partName].counter])
     end
@@ -133,7 +133,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs,
     reset(partName)
     Hide(partName)
     Sleep(delayInMs)
-    Show(partName)
+    if boolLocalCloaked then Show(partName) end
     maxis = x_axis
     raxis = y_axis
 
@@ -241,7 +241,7 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable,
                        jointPosTable.PickUp.b, 0, jointPosTable.PickUp.d,
                        moveSpeed)
             -- Pick up ObjectToPick
-            Show(objectToPick)
+            if boolLocalCloaked then Show(objectToPick) end
             boolObjectPicked = true
             WMoveScara(scaraNumber, jointPosTable.PickUp.a,
                        jointPosTable.PickUp.b, 0, 0, moveSpeed)
@@ -295,10 +295,10 @@ function changeToolTo(robotID, ToolType, posTable, speed, currentTool)
     hideT(TablesOfPiecesGroups["Modul"], offset, offset + 3)
     WMoveRobotToPos(robotID, posTable.toolPos, speed)
     hideT(ToolTable[robotID], 1, 5)
-    if DeskTable[robotID][currentTool] then
+    if DeskTable[robotID][currentTool] and boolLocalCloaked then
         Show(DeskTable[robotID][currentTool])
     end
-    Show(ToolTable[robotID][ToolType])
+    if boolLocalCloaked then Show(ToolTable[robotID][ToolType]) end
     Hide(DeskTable[robotID][ToolType])
     Sleep(500)
     -- return to homepos
