@@ -500,7 +500,7 @@ function WaypointMgr.GameStart()
                     local gx, gy, gz = grid2world(i, j)
                     grid[i][j].waypoint = AddWaypoint(gx, gy, gz)
                 end
-                teamStartPosition[t] = GetNearestWaypoint2D(x, z)
+                teamStartPosition[t] = GetNearestWaypoint2D(x, z) --TODO
                 -- Add also the surrounding waypoints, to avoid failures in
                 -- TestMoveOrder() due to the already built HQ
                 local neighs = adj_grid_nodes(i, j)

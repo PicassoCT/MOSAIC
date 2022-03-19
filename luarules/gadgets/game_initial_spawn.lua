@@ -752,6 +752,17 @@ else
     end
 
     local timer3 = 30
+    local supportedAIs = {
+               ["Prometheus"] = true,
+               ["Chicken:"] = true,
+               ["DAI"] = true,
+               ["KAIK"] = true,
+               ["NullAI"] = true,
+               ["ScavengersAI"] = true,
+               ["newAI"] = true,
+               ["Spawner"] = true
+    }
+
     function gadget:DrawScreen()
         -- only support AI's:  NullAI, DAI and KAIK
         if enabled then
@@ -763,13 +774,7 @@ else
                         aiName = select(4, Spring.GetAIInfo(teams[i]))
                     end
                     if aiName and aiName ~= '' and
-                        not string.find(aiName, "Prometheus") and
-                        not string.find(aiName, "Chicken:") and
-                        not string.find(aiName, "DAI") and
-                        not string.find(aiName, "KAIK") and
-                        not string.find(aiName, "NullAI") and
-                        not string.find(aiName, "ScavengersAI") and
-                        not string.find(aiName, "newAI") then
+                        not supportedAIs[aiName] then
                         enabled = false
                         unsupportedAI = aiName
                     end

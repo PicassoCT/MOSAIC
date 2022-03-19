@@ -45,6 +45,7 @@ local GetTeamResources  = Spring.GetTeamResources
 local spGetUnitNearestEnemy = Spring.GetUnitNearestEnemy
 local spGetTeamUnitsByDefs = Spring.GetTeamUnitsByDefs
 local FIRE_AT_WILL = "fireatwill"
+local RETURN_FIRE = "returnfire"
 local randVal = random(2,6)
 -- members
 local lastWaypoint = 0
@@ -143,6 +144,15 @@ local function getEnemysAtTargetInRange(target, radius, myTeamID)
     return result
 end
 
+local function setUnitFireState(unitID, firestateStr)
+    local states = {}
+    states.holdfire = 0
+    states.returnfire = 1
+    states.fireatwill = 2
+    local fireState = states[lower(firestateStr)] or 0 
+    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {fireState}, {})
+end
+
 local function setUnitArrayFireState(unitsArray, firestateStr, nthUnit)
     local states = {}
     states.holdfire = 0
@@ -209,6 +219,7 @@ function CombatMgr.GameFrame(f)
             local orig = waypointMgr.GetNearestWaypoint2D(x, z)
             local unitArray, taxiUnitArray = {}, {}
             for u, _ in pairs(newUnits) do
+                setUnitFireState(u, RETURN_FIRE)
                 units[u] = target -- remember where we are going for UnitIdle
                 unitArray[#unitArray + 1] = u
                 local eta = GetUnitETA(u, target)
@@ -262,7 +273,7 @@ function CombatMgr.GameFrame(f)
 
                 if #unitArray % 2 == 1 then
                     GiveOrdersToUnitArray(orig, target, unitArray, CMD.FIGHT, normal, SQUAD_SPREAD)
-                    setUnitArrayFireState(unitArray, "returnfire", 1)
+                    setUnitArrayFireState(unitArray, RETURN_FIRE, 1)
                 else
                     local boolAssignedTargets = assignUnitsTargetsAtTarget(target, unitArray, normal, SQUAD_SPREAD)
                     if not boolAssignedTargets then

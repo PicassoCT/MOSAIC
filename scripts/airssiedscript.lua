@@ -47,23 +47,35 @@ function script.FireWeapon1()
     Spring.DestroyUnit(unitID, true, false)
  return true end
 
-function script.StartMoving()
-    Turn(center, x_axis, math.rad(40), 0)
+function unfold()
     spinT(TablesOfPiecesGroups["uprotor"], y_axis, 9500, 350)
     spinT(TablesOfPiecesGroups["downrotor"], y_axis, -8500, 350)
     turnT(TablesOfPiecesGroups["Arm"], y_axis, 0, 15)
 end
 
+function script.StartMoving()
+    Turn(center, x_axis, math.rad(40), 0)
+    StartThread(unfold)   
+end
+
 function script.StopMoving()
-    Turn(center, x_axis, math.rad(0), 0)
+    Turn(center, x_axis, math.rad(0), 0) 
+end
+
+function script.Activate()
+    StartThread(unfold)   
+    return 1
+end
+
+function fold()
     stopSpinT(TablesOfPiecesGroups["uprotor"], y_axis, math.pi)
     stopSpinT(TablesOfPiecesGroups["downrotor"], y_axis, math.pi)
     turnT(TablesOfPiecesGroups["Arm"], y_axis, 180, 1)
 end
-
-function script.Activate() return 1 end
-
-function script.Deactivate() return 0 end
+function script.Deactivate() 
+    StartThread(fold)
+    return 0 
+end
 
 function script.QueryBuildInfo() return center end
 

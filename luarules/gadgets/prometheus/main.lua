@@ -9,7 +9,7 @@
 function gadget:GetInfo()
 	return {
 		name = "Prometheus",
-		desc = "Configurable Reusable Artificial Intelligence Gadget for Mosaic",
+		desc = "Configurable Reusable Artificial Intelligence Gadget for MOSAIC",
 		author = "Tobi Vollebregt",
 		date = "2009-02-12",
 		license = "GNU General Public License",

@@ -1,6 +1,3 @@
-
-
-
 local groundturretssied =  Turret:New{
 	name = "Stationary Improvised Explosive Device",
 	Description = " MOSAIC Standardized  IED ",
