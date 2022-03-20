@@ -88,6 +88,15 @@ function isPlayerUnitNearby(unitID, range)
     return false
 end
 
+function getAllOfTypeNearUnit(unitID, typeTable, range)
+    return foreach(getAllNearUnit(unitID, range),
+                    function (id)
+                        if typeTable[Spring.GetUnitDefID(id)] then
+                            return id
+                        end
+                    end)
+end
+
 -- > Grabs every Unit in a circle, filters out the unitid or teamid if given
 function getAllInCircle(x, z, Range, unitID, teamid)
     if not x or not z then return {} end

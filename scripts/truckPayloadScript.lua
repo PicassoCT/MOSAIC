@@ -45,7 +45,6 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
-    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
@@ -53,5 +52,4 @@ function delayedAttachCivilianLoot()
     Sleep(500)
     civilianLootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
     attachPayload(civilianLootID, unitID)
-
 end

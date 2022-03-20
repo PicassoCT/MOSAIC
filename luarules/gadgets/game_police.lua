@@ -175,7 +175,7 @@ function getRandomHousePos()
 return pos.x + math.random(200,500)*randSign(), 0, pos.z+ math.random(200,500)*randSign()
 end
 
-function dispatchOfficer(victimID, attackerID )
+function dispatchOfficer(victimID, attackerID)
     if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
 
     officerID = getOfficer(victimID, attackerID)
@@ -191,7 +191,6 @@ function dispatchOfficer(victimID, attackerID )
             unitStates = Spring.GetUnitStates( victimID ) 
             if unitStates and unitStates.cloak == true then
                 attackerID = nil
-                Spring.Echo("dispatchOfficer:Attack was cloaked")
             end
         end
 
@@ -208,7 +207,11 @@ function dispatchOfficer(victimID, attackerID )
                 --Spring.Echo("")
             end
         elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
-            Command(officerID, "guard", victimID, {})
+            if GG.GlobalGameState == GameConfig.GameState.normal then
+               Command(officerID, "guard", victimID, {})
+            else
+                Command(officerID, "attack", victimID, {})
+            end
             return officerID
         elseif boolFoundSomething == false  then 
             x, y, z = spGetUnitPosition(officerID)
@@ -224,7 +227,13 @@ function dispatchOfficer(victimID, attackerID )
         Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
 
         if maRa() == true  or booleanDoesAttackerExistAlive == false then
-            Command(officerID, "go", {x = tx, y = ty, z = tz})
+            if GG.GlobalGameState == GameConfig.GameState.normal then
+                Command(officerID, "go", {x = tx, y = ty, z = tz})
+            else
+                --attack some house nearby
+                housesNearby = getAllOfTypeNearUnit(officerID, houseTypeTable, 300)
+                Command(officerID, "attack", {housesNearby[math.random(1,#housesNearby)]}, 4)
+            end
         else
             Command(officerID, "attack", {attackerID}, 4)
         end
