@@ -220,6 +220,11 @@ local function CalculateFrontline(myTeamID, myAllyTeamID, dilate)
 
     -- Release all the connections departing from the HQ
     local hq = teamStartPosition[myTeamID]
+    if hq == nil then
+        local x,y,z = Spring.GetTeamStartPosition(myTeamID) 
+        hq = GetNearestWaypoint2D(x, z)
+    end
+    
     blocked[hq] = nil
     for a, edge in pairs(hq.adj) do
         blocked[edge] = nil
@@ -500,7 +505,7 @@ function WaypointMgr.GameStart()
                     local gx, gy, gz = grid2world(i, j)
                     grid[i][j].waypoint = AddWaypoint(gx, gy, gz)
                 end
-                teamStartPosition[t] = GetNearestWaypoint2D(x, z) --TODO
+                teamStartPosition[t] = GetNearestWaypoint2D(x, z) 
                 -- Add also the surrounding waypoints, to avoid failures in
                 -- TestMoveOrder() due to the already built HQ
                 local neighs = adj_grid_nodes(i, j)

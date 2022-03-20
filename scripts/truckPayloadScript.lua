@@ -9,6 +9,16 @@ TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 myDefID = Spring.GetUnitDefID(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
+
+function attachPayload(payLoadID, id)
+    if payLoadID then
+           Spring.SetUnitAlwaysVisible(payLoadID,true)
+
+           Spring.UnitAttach(id, payLoadID, TablesOfPiecesGroups["RefugeeDeco"][math.random(1,#TablesOfPiecesGroups["RefugeeDeco"])])
+           return payLoadID
+    end
+end
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
@@ -22,6 +32,7 @@ function script.Create()
 
     if myDefID == UnitDefNames["truckpayloadrefugee"].id then
         showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
+        StartThread(delayedAttachCivilianLoot)
 
         for i=1, #TablesOfPiecesGroups["RefugeeDeco"] do
             if maRa() == true then
@@ -36,4 +47,11 @@ end
 function script.Killed(recentDamage, _)
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
+end
+
+function delayedAttachCivilianLoot()
+    Sleep(500)
+    civilianLootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
+    attachPayload(civilianLootID, unitID)
+
 end

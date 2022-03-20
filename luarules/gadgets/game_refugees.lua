@@ -179,11 +179,6 @@ function refugeeStream(frame)
        sx,sz = getEscapePoint((escapeeHash % 4) + 1)
        local id =  spawnUnit("truck_arab"..math.random(1,8), sx, sz)
        payloadID = loadRefugee(id, "truckpayloadrefugee")
-         if maRa() then 
-            lootID = createUnitAtUnit(payLoadID,"civilianloot" )
-            attachPayload(lootID, payLoadID)
-        end
-      
  
        refugeeTable[id]= id   
        Spring.SetUnitTooltip(id, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture , escapeeHash + math.random(0,1)*randSign()))

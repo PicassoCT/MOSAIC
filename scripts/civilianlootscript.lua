@@ -7,11 +7,14 @@ include "lib_Animation.lua"
 TablesOfPiecesGroups = {}
 
 center = piece "center"
+shownPiece= center
+barrel = piece "Loot024"
 
 function script.Create()
     hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    showOnePiece(TablesOfPiecesGroups["Loot"])
+    loot = showOnePiece(TablesOfPiecesGroups["Loot"])
+    shownPiece = TablesOfPiecesGroups["Loot"][loot]
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitBlocking (unitID, false,  false, false, false, true, false, false)
@@ -25,6 +28,9 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
+    if shownPiece == barrel then
+        spawnCegAtUnit(unitID, "bigbulletimpact")
+    end
     return 1
 end
 
