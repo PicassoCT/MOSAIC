@@ -1,9 +1,9 @@
-local AIR_SNIPER = AIRCRAFT:New{
+local AIR_ROCKET = AIRCRAFT:New{
 
 	name = "Predator VII",
-	Description = "sniper drone",
-	objectName = "air_plane_sniper.dae",
-	script = "airplanesniperscript.lua",
+	Description = "rocket drone",
+	objectName = "air_plane_rocket.dae",
+	script = "airplanerocketscript.lua",
 	buildPic = "air_sniper.png",
 	iconType = "air_sniper",
 	--floater = true,
@@ -28,7 +28,6 @@ local AIR_SNIPER = AIRCRAFT:New{
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
-	autoLand = false,
 	dontLand		 	= true,
 	Acceleration = 0.5,
 	MaxVelocity = 2.5,
@@ -56,6 +55,7 @@ local AIR_SNIPER = AIRCRAFT:New{
 	crashDrag =0.035,
 	fireState = 1,
 
+
 	Category = [[AIR]],
 	noChaseCategory = "GROUND BUILDING AIR",
 
@@ -65,19 +65,17 @@ local AIR_SNIPER = AIRCRAFT:New{
 	  },
 
 	weapons={	
-			[1]={name  = "sniperrifle",
-				onlyTargetCategory = [[GROUND BUILDING]],
+			[1]={name  = "s16rocket",
+				onlyTargetCategory = [[GROUND]],
 				turret= false
 			},
-			[2]={name  = "sniperrifle",
-				onlyTargetCategory = [[GROUND ]],			
-				turret= false			}
+		
 		},
 	
 }
 
 return lowerkeys({
 	--Temp
-	["air_plane_sniper"] = AIR_SNIPER:New(),
+	["air_plane_rocket"] = AIR_ROCKET:New(),
 	
 })

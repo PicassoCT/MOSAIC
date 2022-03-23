@@ -192,6 +192,7 @@ local antagonToProtagon = {
 	[UnitDefNames["nimrod"].id] = UnitDefNames["nimrod"].id,
 	[UnitDefNames["air_copter_antiarmor"].id] = UnitDefNames["air_copter_antiarmor"].id,
 	[UnitDefNames["air_copter_ssied"].id] = UnitDefNames["air_copter_ssied"].id,
+	[UnitDefNames["air_plane_rocket"].id] = UnitDefNames["air_plane_rocket"].id,
 	[UnitDefNames["air_plane_sniper"].id] = UnitDefNames["air_plane_sniper"].id,
 	[UnitDefNames["air_copter_aerosol_orgyanyl"].id] = UnitDefNames["air_copter_aerosol_orgyanyl"].id,
 	[UnitDefNames["air_copter_aerosol_wanderlost"].id] = UnitDefNames["air_copter_aerosol_wanderlost"].id,

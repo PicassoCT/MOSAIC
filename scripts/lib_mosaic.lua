@@ -659,6 +659,7 @@ function  getManualCivilianBuildingMaps(mapName)
                     "ground_turret_cm_antiarmor",
                     "air_copter_ssied",
                     "air_plane_sniper",
+                    "air_plane_rocket",
                     "air_copter_mg"
                 }
                 return getTypeTable(UnitDefNames, typeTable)

@@ -219,10 +219,6 @@ function dispatchOfficer(victimID, attackerID)
                 tx, ty, tz = x + math.random(500,1500)*randSign(), y, z + math.random(500,1500)*randSign();
             end
         end
-        assertNumberValid(tx)
-        assertNumberValid(tz)
-        assertInMap(tx, Game.mapSizeX)
-        assertInMap(tz, Game.mapSizeZ)
 
         Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
 
