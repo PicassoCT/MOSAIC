@@ -18,6 +18,7 @@ FireEmit1 = piece "FireEmit1"
 FireEmit2 = piece "FireEmit2"
 RocketPod = piece "RocketPod"
 TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+
 function unfold()
     SetSignalMask(SIG_FOLD)
     Signal(SIG_FOLD)
@@ -37,9 +38,7 @@ function fold()
     WTurn(TablesOfPiecesGroups["Wing"][2],z_axis, math.rad(0),1)
 
     WTurn(TablesOfPiecesGroups["Wing"][3],3, math.rad(0),1)
-    WTurn(TablesOfPiecesGroups["Wing"][4],3, math.rad(0),1)
-  
-  
+    WTurn(TablesOfPiecesGroups["Wing"][4],3, math.rad(0),1)  
     WTurn(RocketPod,z_axis, math.rad(0),1)
 end
 
@@ -85,47 +84,44 @@ function headingSoundSurveilance()
   end
 
 function script.Killed(recentDamage, _)
-    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
 --- -aimining & fire weapon
-function script.AimFromWeapon1() return FireEmit1 end
+function script.AimFromWeapon1() 
+    return FireEmit1 
+end
 
-function script.QueryWeapon1() return FireEmit1 end
+function script.QueryWeapon1() 
+    return FireEmit1 
+end
 
 counter =  #TablesOfPiecesGroups["Rocket"]
 function script.AimWeapon1(Heading, pitch)
      if counter == 1 then StartThread(reloadRoutine) end
-  
-
     return counter > 0 
 end
 
 function reloadRoutine()
     SetSignalMask(SIG_RELOAD)
     Signal(SIG_RELOAD)
+    WTurn(RocketPod,z_axis, math.rad(0),1)
     Sleep(60000)
     counter = #TablesOfPiecesGroups["Rocket"]
+    WTurn(RocketPod,z_axis, math.rad(-90),1)
+    showT(TablesOfPiecesGroups["Rocket"])
 end
 
-
-
-function script.FireWeapon1() 
+function script.FireWeapon1()
     counter = math.max(0, counter-1)
     hideT(TablesOfPiecesGroups["Rocket"])
-    showT(TablesOfPiecesGroups["Rocket"], 1, counter)
+    showT(TablesOfPiecesGroups["Rocket"], 1, counter)     
     return true
 end
 
 --- -aimining & fire weapon
-
 function script.StartMoving() 
-     
-
 end
-
-
 
 function script.StopMoving() end
 
@@ -140,8 +136,3 @@ function script.Deactivate()
     StartThread(fold)
     return 0
 end
-
-function script.QueryBuildInfo() return center end
-
-Spring.SetUnitNanoPieces(unitID, {center})
-

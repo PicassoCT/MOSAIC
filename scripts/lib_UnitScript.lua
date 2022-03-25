@@ -199,6 +199,18 @@ function getAllNearUnit(unitID, Range, teamid)
 end
 
 -- > Grabs every Unit in a circle, filters out the unitid
+function getAllNearUnitNotInTeam(unitID, Range, teamid)
+    px, py, pz = Spring.GetUnitPosition(unitID)
+    return foreach (getAllInCircle(px, pz, Range, unitID),
+            function(id)
+                if Spring.GetUnitTeam(id) ~= teamid then
+                    return id
+                end
+                end
+                )
+end
+
+-- > Grabs every Unit in a circle, filters out the unitid
 function getAllNearUnitSpherical(unitID, Range)
     px, py, pz = Spring.GetUnitPosition(unitID)
     return getAllInSphere(px, py, pz, Range, unitID)

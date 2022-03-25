@@ -8,6 +8,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 local myDefID = Spring.GetUnitDefID(unitID)
+local myTeamID = Spring.GetUnitTeam(unitID)
 local GameConfig = getGameConfig()
 local center = piece "center"
 local Turret = piece "Turret"
@@ -30,13 +31,10 @@ function script.Create()
     StartThread(foldControl)
     StartThread(guardSwivelTurret)
     StartThread(droneDefense)
-    -- StartThread(debugAimLoop, 5000, 0)
-    -- StartThread(debugAimLoop, 5000, 1)
-    -- StartThread(printOutWeapon, "machinegun")
 end
+
 function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
     x, y, z = Spring.GetUnitPosition(unitID)
-
     intercepted = math.ceil(math.min(#projectiles, maxIntercept))
     timePerProjectile = timeTotal / intercepted
     StartThread(fireFlowers, intercepted)
@@ -63,17 +61,42 @@ function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
     end
 end
 
+function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
+    x, y, z = Spring.GetUnitPosition(unitID)
+    intercepted = math.ceil(math.min(count(drones), maxIntercept))
+    timePerProjectile = timeTotal / intercepted
+    StartThread(fireFlowers, intercepted)
+    for droneID, wdefID in pairs(drones) do
+        if droneID then
+            px, py, pz = Spring.GetProjectilePosition (droneID)
+                if px then
+                    goalRad = convPointsToRad(x, z, px, pz)
+                    turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
+                    WaitForTurns(center)
+                    lastValueHeadingRad = goalRad
+                    EmitSfx(firingFrom, 256)
+                    EmitSfx(firingFrom, 1025)
+                    Spring.AddUnitDamage(droneID, 30)
+                    if intercepted == 0 then return end
+                end
+            intercepted = intercepted - 1
+        end
+    end
+end
+
 function droneDefense()
     local droneInterceptDistance = GameConfig.groundTurretDroneInterceptRate
     local spGetProjectileTeamID = Spring.GetProjectileTeamID
+    local spGetUnitDefID = Spring.GetUnitDefID
     local myTeamID = Spring.GetUnitTeam(unitID)
     local InterceptedProjectileTypes = getGroundTurretMGInterceptableProjectileTypes(WeaponDefs)
-
+    local interceptableDronesTypeTable = getInterceptableAirDroneTypes(UnitDefs)
+    
     while true do
         Sleep(250)
         if hasNoActiveAttackCommand(unitID) == true then
             projectilesToIntercept = {}
-           foreach(getProjectilesAroundUnit(unitID, droneInterceptDistance),
+            foreach(getProjectilesAroundUnit(unitID, droneInterceptDistance),
                 function(id)
                     teamID = spGetProjectileTeamID(id)
                     if teamID and teamID ~= myTeamID then
@@ -94,10 +117,22 @@ function droneDefense()
                 StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
                 Sleep(500)
                 boolDroneInterceptSaturated = false
+            else 
+                dronesToIntercept = {}
+                foreach(getAllNearUnitNotInTeam(unitID, droneInterceptDistance, myTeamID),
+                        function(id)
+                            defID = spGetUnitDefID(id)
+                            if interceptableDronesTypeTable[defID] then
+                                dronesToIntercept[id] = defID
+                            end
+                        end
+                        )
+                if count(dronesToIntercept) > 0 then
+                   StartThread(playDroneInterceptAnimation, dronesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
+                end
             end
         end
     end
-
 end
 
 function printOutWeapon(weaponName)

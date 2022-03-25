@@ -5,7 +5,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	
 	objectName = "air_copter_scoutlett.dae",
 
-	script = "placeholderscript.lua",
+	script = "aircopterscoutlettscript.lua",
 	buildPic = "air_antiarmour.png",
 	iconType = "air_antiarmour",
 	--floater = true,
@@ -65,21 +65,16 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	  },
 	  
 	 sfxtypes = {
-		explosiongenerators = {
-							"custom:bigbulletimpact"
-							  },
-				},
-
-					
-		},	
-
-			
+explosiongenerators = {
+						"custom:bigbulletimpact"
+					  },
+				},					
+}	
 
 
-}
 
 return lowerkeys({
 	--Temp
-	["air_copter_scoutlett"] = AIRC_COPTER_ANTIARMOR:New()
+	["air_copter_scoutlett"] = AIRC_COPTER_SCOUTLET:New()
 	
 })

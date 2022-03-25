@@ -665,6 +665,15 @@ function  getManualCivilianBuildingMaps(mapName)
                 return getTypeTable(UnitDefNames, typeTable)
         end
 
+        function getInterceptableAirDroneTypes(UnitDefs)
+                typeTable = {           
+                    "air_copter_ssied",
+                    "air_copter_mg",
+                    "air_copter_scoutlett"
+                }
+            return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
+        end
+
         function getRocketTransportableTypes(UnitDefs)
              local UnitDefNames = getUnitDefNames(UnitDefs)
 
