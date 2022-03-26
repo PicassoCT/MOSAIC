@@ -1,10 +1,8 @@
 
 local AIRC_COPTER_SCOUTLET = VTOL:New{
 	name = "Airborne Scout Copter ",
-	Description = "  ",
-	
+	Description = "  ",	
 	objectName = "air_copter_scoutlett.dae",
-
 	script = "aircopterscoutlettscript.lua",
 	buildPic = "air_antiarmour.png",
 	iconType = "air_antiarmour",
@@ -14,7 +12,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	buildCostEnergy = 0,
 	buildTime = 10,
 	--Health
-	maxDamage = 250,
+	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
 	Acceleration = 0.5,
@@ -27,6 +25,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	maneuverleashlength = 500,
 	turnRadius		  	= 42,
 	dontLand		 	= false,
+
 	MaxVelocity = 3.5,
 	MaxWaterDepth = 0,
 	MovementClass = "AIRUNIT",

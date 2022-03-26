@@ -68,7 +68,7 @@ function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
     StartThread(fireFlowers, intercepted)
     for droneID, wdefID in pairs(drones) do
         if droneID then
-            px, py, pz = Spring.GetProjectilePosition (droneID)
+            px, py, pz = Spring.GetUnitPosition(droneID)
                 if px then
                     goalRad = convPointsToRad(x, z, px, pz)
                     turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
@@ -76,7 +76,7 @@ function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
                     lastValueHeadingRad = goalRad
                     EmitSfx(firingFrom, 256)
                     EmitSfx(firingFrom, 1025)
-                    Spring.AddUnitDamage(droneID, 30)
+                    Spring.AddUnitDamage(droneID, 10)
                     if intercepted == 0 then return end
                 end
             intercepted = intercepted - 1
@@ -93,7 +93,6 @@ function droneDefense()
     local interceptableDronesTypeTable = getInterceptableAirDroneTypes(UnitDefs)
     
     while true do
-        Sleep(250)
         if hasNoActiveAttackCommand(unitID) == true then
             projectilesToIntercept = {}
             foreach(getProjectilesAroundUnit(unitID, droneInterceptDistance),
@@ -111,11 +110,12 @@ function droneDefense()
                     end
                 end
             )
-
+            boolPlayGunSound= false
             if projectilesToIntercept and count(projectilesToIntercept) > 0 then
                 boolDroneInterceptSaturated = true
                 StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
-                Sleep(500)
+                boolPlayGunSound = true
+
                 boolDroneInterceptSaturated = false
             else 
                 dronesToIntercept = {}
@@ -129,9 +129,15 @@ function droneDefense()
                         )
                 if count(dronesToIntercept) > 0 then
                    StartThread(playDroneInterceptAnimation, dronesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
+                    boolPlayGunSound = true
                 end
             end
+            if boolPlayGunSound == true then
+                StartThread(PlaySoundByUnitDefID, myDefID, "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
+            end
+            Sleep(250)
         end
+        Sleep(250)
     end
 end
 
@@ -292,7 +298,7 @@ end
 function script.FireWeapon1()
     StartThread(fireFlowers, 15)
     StartThread(PlaySoundByUnitDefID, myDefID,
-    "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 1)
+    "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
     boolGroundAiming = false
     StartThread(guardSwivelTurret)
     return true
