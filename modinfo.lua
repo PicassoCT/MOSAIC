@@ -11,8 +11,6 @@ local modinfo = {
 	modtype = "1",
 	--Perfectionism is the death of good things
 	depend = {
-		"cursors.sdz",
-		"Spring content v1"
 	}
 }
 
