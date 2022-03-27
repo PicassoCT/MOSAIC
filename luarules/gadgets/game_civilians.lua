@@ -443,6 +443,8 @@ end
 local startFrame = Spring.GetGameFrame() + 30*5
 function gadget:Initialize()
     -- Initialize global tables
+    Spring.SetConfigInt("HangTimeout", 303 )
+
     GG.CivilianTable = {}
     GG.DisguiseCivilianFor = {}
     GG.DiedPeacefully = {}
