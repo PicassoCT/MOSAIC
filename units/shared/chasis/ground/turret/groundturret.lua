@@ -195,9 +195,6 @@ local ground_turret_antiarmor =  Turret:New{
 	LeaveTracks = false, 
 	canCloak =false,
 	
-	cloakCost=0.0001,
-
-	minCloakDistance =  5,
 	onoffable=true,
 
 
@@ -235,7 +232,7 @@ local ground_turret_dronegrenades =  Turret:New{
 	Description = "Deploy Anit Person Flying Mini-Drones",
 	
 	objectName = "ground_turret_grenadeDrone.DAE",
-	script = "placeholderscript.lua",
+	script = "ground_turret_dronescript.lua",
 	buildPic = "ground_turret_rocket.png",
 	iconType = "ground_turret_rocket",
 	--floater = true,
@@ -294,7 +291,7 @@ local ground_turret_dronegrenades =  Turret:New{
 				
 	weapons = {
 		[1]={name  = "smartminedrone",
-			onlyTargetCategory = [[GROUND VEHICLE]],
+			onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 			},			
 		},	
 }
