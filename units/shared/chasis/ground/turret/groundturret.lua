@@ -294,7 +294,7 @@ local ground_turret_dronegrenades =  Turret:New{
 				
 	weapons = {
 		[1]={name  = "smartminedrone",
-			onlyTargetCategory = [[GROUND]],
+			onlyTargetCategory = [[GROUND VEHICLE]],
 			},			
 		},	
 }
@@ -319,7 +319,7 @@ local ground_turret_rocket =  Turret:New{
 	idleAutoHeal = 0,
 	--Movement
 	
-	 fireState=1,
+	fireState=3,
 	
 	FootprintX = 1,
 	FootprintZ = 1,

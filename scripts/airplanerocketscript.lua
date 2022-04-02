@@ -106,6 +106,7 @@ function reloadRoutine()
     SetSignalMask(SIG_RELOAD)
     Signal(SIG_RELOAD)
     WTurn(RocketPod,z_axis, math.rad(0),1)
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/eagle.wav", 1.0, 5000, 1)
     Sleep(60000)
     counter = #TablesOfPiecesGroups["Rocket"]
     WTurn(RocketPod,z_axis, math.rad(-90),1)

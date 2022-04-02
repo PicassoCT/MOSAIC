@@ -72,17 +72,26 @@ function script.AimWeapon1(Heading, pitch)
     return true
 end
 
-function script.FireWeapon1() return true end
+function script.FireWeapon1() 
+   StartThread(reactivateLaserShine)
+   return true
+end
+boolTargetLaserActive= true
+function reactivateLaserShine()
+    boolTargetLaserActive = false
+    Sleep(35000)
+    boolTargetLaserActive = true
+end
 
 --- -aimining & fire weapon
-function script.AimFromWeapon2() return FireEmit2 end
+function script.AimFromWeapon2() return Body end
 
-function script.QueryWeapon2() return FireEmit2 end
+function script.QueryWeapon2() return Body end
 
 function script.AimWeapon2(Heading, pitch)
     -- aiming animation: instantly turn the gun towards the enemy
 
-    return true
+    return boolTargetLaserActive
 end
 
 function script.FireWeapon2() return true end

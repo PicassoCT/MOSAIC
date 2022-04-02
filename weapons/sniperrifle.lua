@@ -43,6 +43,6 @@ local weaponDef = {
 	},	 
 	
 	smokeTrail = false,
-    CegTag = "targetlaserray",
+    CegTag = "shelltunnel",
 }
 return lowerkeys({[weaponName] = weaponDef})

@@ -69,9 +69,10 @@ local AIR_SNIPER = AIRCRAFT:New{
 				onlyTargetCategory = [[GROUND BUILDING]],
 				turret= false
 			},
-			[2]={name  = "sniperrifle",
-				onlyTargetCategory = [[GROUND ]],			
-				turret= false			}
+			[2]={name  = "targetlaser",
+				onlyTargetCategory = [[GROUND]],
+				turret= true
+			},
 		},
 	
 }

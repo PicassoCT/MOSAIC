@@ -69,6 +69,10 @@ local AIR_ROCKET = AIRCRAFT:New{
 				onlyTargetCategory = [[GROUND]],
 				turret= false
 			},
+			[2]={name  = "targetlaser",
+				onlyTargetCategory = [[GROUND]],
+				turret= true
+			},
 		
 		},
 	

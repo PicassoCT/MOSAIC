@@ -1,5 +1,5 @@
 return {
-  ["targetlaserray"] = {
+  ["shelltunnel"] = {
   
 	   alwaysvisible      = true,
 	  usedefaultexplosions = false,
@@ -11,22 +11,20 @@ return {
       class              = [[CBitmapMuzzleFlame]],
       count              = 1,
       ground             = true,
-      underwater         = 1,
+      underwater         = false,
       water              = true,
       properties = {
-        colormap           = [[0.7 0.0 0.0 0.01  
-        1 0 0 0.01 
-        1 0 0 0.01  
-        1 0 0 0.01 	 
-        1 0 0 0.01 	
-        0 0 0 0.01]],
+        colormap           = [[
+        0.0 0.025 0.035 0.25
+        0.0 0.025 0.035 0.25
+         ]],
         dir                = [[dir]],
         frontoffset        = 0,
         fronttexture       = [[empty]],
-        length             = -128,
-        sidetexture        = [[TouchGround]],
-        size               = -6,
-        sizegrowth         = 0.18,
+        length             = 82,
+        sidetexture        = [[shelltunnel]],
+        size               = -4,
+        sizegrowth         = 0,
         ttl                = 24,
       }
     },
