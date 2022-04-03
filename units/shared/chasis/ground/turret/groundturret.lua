@@ -232,7 +232,7 @@ local ground_turret_dronegrenades =  Turret:New{
 	Description = "Deploy Anit Person Flying Mini-Drones",
 	
 	objectName = "ground_turret_grenadeDrone.DAE",
-	script = "ground_turret_dronescript.lua",
+	script = "ground_turret_drone_script.lua",
 	buildPic = "ground_turret_rocket.png",
 	iconType = "ground_turret_rocket",
 	--floater = true,

@@ -6,7 +6,17 @@ include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+function delayedResetFirestate()
+ orgstate = getFireState(unitID)
+ Sleep(2500)
+ setFireState(unitID, orgstate)
+end
+
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+    StartThread(delayedResetFirestate)
+    setFireState(unitID, "fireatwill")
+return damage
+end
 
 center = piece "Body1"
 aimpiece = piece "Turret1"

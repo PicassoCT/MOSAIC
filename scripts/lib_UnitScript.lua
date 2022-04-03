@@ -1453,10 +1453,10 @@ function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orienta
  
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
-    
-    types = type(typeID)
-    assert(types)
-    assert(types=="string" or types == "number")
+
+    assert(typeID, " typeID is not of valid type for a unit is nil")
+    types = type(typeID)    
+    assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
     --Delme DebugCode
     id = Spring.CreateUnit(typeID, x + ox, y + oy, z + oz,
                              locOrientation, teamID, false, false, parentID)
@@ -6847,10 +6847,15 @@ function setFireState(unitID, fireState)
     if type(fireState) == "string" then
 
         states = {["holdfire"] = 0, ["returnfire"] = 1, ["fireatwill"] = 2}
-        fireState = states[string.lower(fireStateStr)] or 0
+        fireState = states[string.lower(fireState)] or 0
     end
 
     Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {fireState}, {})
+end
+
+function getFireState(unitID)
+    res = Spring.GetUnitStates(unitID)
+    return res.firestate
 end
 
 function setMoveState(unitID, moveState)

@@ -19,6 +19,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
     StartThread(guardSwivelTurret)
+    showT(TablesOfPiecesGroups["Projectile"])
 end
 
 boolAiming = false
@@ -64,6 +65,7 @@ function script.AimWeapon1(Heading, pitch)
 end
 
 function script.FireWeapon1()
+    showT(TablesOfPiecesGroups["Projectile"])
     hideT(TablesOfPiecesGroups["Projectile"], 1, rocketIndex)
     rocketIndex = rocketIndex + 1
     if rocketIndex > #TablesOfPiecesGroups["Projectile"] then

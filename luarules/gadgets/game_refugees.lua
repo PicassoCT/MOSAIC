@@ -130,7 +130,7 @@ function refugeeStream(frame)
     boolAtLeastOnePath = false
          foreach(refugeeTable,
             function(id)
-                if  id and  not spGetUnitIsDead(id) then return id end
+                if  id and  not spGetUnitIsDead(id) then return id else   refugeeTable[id] = nil end
             end,
              function(id) --stuckdetection
                     if not rStuck[id] then 
@@ -199,7 +199,7 @@ function militaryStream(frame)
     boolAtLeastOnePath = false
          foreach(militaryTable,           
             function(id)
-                if  id and not spGetUnitIsDead(id) then return id end
+                if  id and not spGetUnitIsDead(id) then return id else  militaryTable[id] = nil end 
             end,
              function(id) --stuckdetection
                     if not mStuck[id] then 

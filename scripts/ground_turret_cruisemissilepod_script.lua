@@ -297,7 +297,6 @@ function script.AimWeapon1(Heading, pitch)
     return currentLaunchState == "fire"
 end
 
-boolFired = false
 function script.FireWeapon1()   
     currentLaunchState = "reloading"
     return true

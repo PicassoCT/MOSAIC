@@ -32,10 +32,6 @@ local function GetTypeDependent(name, type, value)
     end
 end
 
-local function RestoreTypeDependent(name, type, value)
-    return SetTypeDependent(name, type, value)
-end
-
 local function SetTypeDependent(name, type, value)
     if type == "int" then
         return  Spring.SetConfigInt(name, value)
@@ -46,6 +42,10 @@ local function SetTypeDependent(name, type, value)
     if type == "string" then
         return  Spring.SetConfigString(name, value)
     end
+end
+
+local function RestoreTypeDependent(name, type, value)
+    return SetTypeDependent(name, type, value)
 end
 
 function widget:Initialize()

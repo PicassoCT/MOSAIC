@@ -11,15 +11,135 @@ local myDefID = Spring.GetUnitDefID(unitID)
 local myTeamID = Spring.GetUnitTeam(unitID)
 local GameConfig = getGameConfig()
 local center = piece "TurretBase"
-local Turret = piece "Torso"
-local aimpiece = piece "DroneMineLaunchProj"
+local Turret = piece "TurretHead"
+local aimpiece = piece "AimPiece"
 local aimingFrom = aimpiece
 local firingFrom = aimpiece
-
+local launchProjT
+local flyingProjT
+boolLaunchAnimationStarted = false
+boolLaunchAnimationCompleted = false
+currentLaunchState = "ready"
+SIG_LAUNCHANIMATION = 1
 function script.Create()
     resetAll(unitID)
+    Spin(Turret,y_axis, math.rad(42),0)
     Hide(aimpiece)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    launchProjT = TablesOfPiecesGroups["DroneMineLaunchProjFolded"]
+    flyingProjT = TablesOfPiecesGroups["DroneMineLaunchProjUnfolded"]
+    StartThread(launchStateMachineThread)
+end
+
+function projectileLaunch(i)
+    id = launchProjT[i]
+    flyid = flyingProjT[i]
+    Show(id)
+    WMove(id,y_axis, 500, 500*3)
+    Hide(id)
+    Show(flyid)
+    tx= math.random(45,90)
+    Turn(flyid,x_axis, math.rad(tx), 0.35)
+    for i=100, 1500, 150 do
+        Move(flyid,y_axis, i, i)
+        Sleep(100)
+    end
+    turnPieceRandDir(flyid,0.5)
+end
+
+function launchAnimation()
+    factor = 2.0
+    Signal(SIG_LAUNCHANIMATION)
+    SetSignalMask(SIG_LAUNCHANIMATION)
+    boolLaunchAnimationStarted = true
+    boolLaunchAnimationCompleted= false
+    for i=1, #launchProjT do
+        StartThread(projectileLaunch, i)
+        Sleep(250)
+    end
+    WaitForMoves(launchProjT)
+    Sleep(10)
+    WaitForMoves(flyingProjT)
+    boolLaunchAnimationCompleted = true
+end
+
+currentLaunchState = "ready"
+function launchStateMachineThread()
+            hideT(launchProjT)
+           hideT(flyingProjT)
+           resetT(launchProjT)
+           resetT(flyingProjT)
+           for i=1, #launchProjT do
+            id = launchProjT[i]
+            Move(id, y_axis, -100, 0)
+            Show(id)
+            WMove(id, y_axis, 0, 100)            
+           end
+    launchStateMachine = {}
+    launchStateMachine["ready"] =   function (frame, oldState, persPack)
+        persPack.launchingCounter = 0
+        resetT(launchProjT, 150)
+        resetT(flyingProjT, 150)
+        if boolFireRequest then
+            return "launching"
+        end
+        boolFireRequest = false
+        return "ready"
+    end
+
+   launchStateMachine["launching"] = function(frame, oldState, persPack)
+        if oldState == "ready" then
+            StartThread(launchAnimation)
+        end
+        if boolFireRequest == false then
+            persPack.launchingCounter = persPack.launchingCounter + 1
+        end
+
+        if boolFireRequest == true and boolLaunchAnimationCompleted == true then
+            return "fire"
+        end
+
+        if  persPack.launchingCounter > 50 and boolLaunchAnimationCompleted == true then
+            Signal(SIG_LAUNCHANIMATION)
+
+            return "ready"
+        end
+
+        boolFireRequest = false
+        return "launching"
+    end
+
+    launchStateMachine["fire"] = function (frame, oldState, persPack)
+        hideT(launchProjT)
+        hideT(flyingProjT)
+        return "fire"
+    end
+
+    launchStateMachine["reloading"] = function(frame, oldState, persPack)
+        boolFireRequest =false
+        if oldState == "fire" then   return "reloading" end
+           hideT(launchProjT)
+           hideT(flyingProjT)
+           resetT(launchProjT)
+           resetT(flyingProjT)
+           for i=1, #launchProjT do
+            id = launchProjT[i]
+            Move(id, y_axis, -100, 0)
+            Show(id)
+            WMove(id, y_axis, 0, 100)            
+           end
+       return "ready"
+    end
+
+    oldState = "ready"
+    persPack = {}
+    while true do
+        newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
+       -- echo("Launchstatemachine:"..currentLaunchState.."/"..oldState)
+        oldState = currentLaunchState
+        currentLaunchState = newState
+        Sleep(100)
+    end
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
@@ -34,17 +154,14 @@ function script.AimFromWeapon1() return firingFrom end
 function script.QueryWeapon1() return firingFrom end
 
 function script.AimWeapon1(Heading, pitch)
-    Show(firingFrom)
-    WMove(firingFrom,y_axis, 10, 20)
-    return true,
+    boolFireRequest= true
+    return currentLaunchState == "fire"
 end
 
 function script.FireWeapon1()
-    Hide(firingFrom)
-    reset(firingFrom)
+    currentLaunchState = "reloading"
     return true
 end
-
 
 function script.Activate() return 1 end
 
