@@ -117,7 +117,12 @@ function launchStateMachineThread()
 
     launchStateMachine["reloading"] = function(frame, oldState, persPack)
         boolFireRequest =false
-        if oldState == "fire" then   return "reloading" end
+        if oldState == "fire" then   
+            persPack.startFrame = frame
+            return "reloading" 
+        end
+
+        if frame > persPack.startFrame + 30 then
            hideT(launchProjT)
            hideT(flyingProjT)
            resetT(launchProjT)
@@ -128,7 +133,9 @@ function launchStateMachineThread()
             Show(id)
             WMove(id, y_axis, 0, 100)            
            end
-       return "ready"
+        return "ready"
+        end
+    return reloading
     end
 
     oldState = "ready"
