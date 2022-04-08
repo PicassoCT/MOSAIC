@@ -50,6 +50,14 @@ local ground_tank_day = Tank:New{
 					},
 					
 		},	
+
+	 sfxtypes = {
+				explosiongenerators = {
+				   "custom:dirt",     
+				   "custom:tankfireshockwave",     
+				   "custom:tankgunmuzzle",     
+						}
+				}	
 }
 
  ground_tank_night = Tank:New{
@@ -105,6 +113,14 @@ local ground_tank_day = Tank:New{
 					},
 					
 		},	
+		
+	 sfxtypes = {
+				explosiongenerators = {
+				   "custom:dirt",     
+				   "custom:tankfireshockwave",     
+				   "custom:tankgunmuzzle",     
+						}
+				}	
 }
 
 

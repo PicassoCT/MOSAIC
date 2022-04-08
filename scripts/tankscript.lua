@@ -5,6 +5,17 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
+FireEmit= piece"FireEmit"
+DustEmit= piece"DustEmit"
+center = piece "Body1"
+aimpiece = piece "Turret1"
+Cannon1 = piece "Cannon1"
+Shell = piece"Shell"
+SIG_RESETAIM = 1
+myDefID = Spring.GetUnitDefID(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
+gaiaTeamID = Spring.GetGaiaTeamID()
+lastTurretRotation = 0
 
 function delayedResetFirestate()
  orgstate = getFireState(unitID)
@@ -18,24 +29,20 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 return damage
 end
 
-center = piece "Body1"
-aimpiece = piece "Turret1"
-Cannon1 = piece "Cannon1"
-Shell = piece"Shell"
-SIG_RESETAIM = 1
-myDefID = Spring.GetUnitDefID(unitID)
-myTeamID = Spring.GetUnitTeam(unitID)
-gaiaTeamID = Spring.GetGaiaTeamID()
-lastTurretRotation = 0
+
 function script.Create()
+    Hide(DustEmit)
+    Hide(FireEmit)    
+    Hide(Shell)
 
     generatepiecesTableAndArrayCode(unitID)
-	Hide(Shell)
+
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     resetAll(unitID)
     if gaiaTeamID == myTeamID then
         Spring.SetUnitAlwaysVisible(unitID, true)
     end
+    StartThread(emitDustRotateWheels)
 end
 
 function script.Killed(recentDamage, _)
@@ -53,6 +60,18 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+boolMoving= false
+function emitDustRotateWheels()
+    while true do
+    Sleep(100)
+        while (boolMoving == true) do
+            de = math.ceil(math.random(240, 360))
+            Sleep(de)
+            EmitSfx(DustEmit, 1024)
+        end
+    end
+
+end
 --- -aimining & fire weapon
 function script.AimFromWeapon1() return aimpiece end
 
@@ -84,17 +103,23 @@ function script.AimWeapon1(Heading, pitch)
     return true
 end
 
+
 function script.FireWeapon1()
+    tP(FireEmit,5*45,0,10,0)
     Explode(Shell, SFX.FALL)
+    EmitSfx(FireEmit, 1026)
+    EmitSfx(FireEmit, 1025)
+    EmitSfx(FireEmit, 1024)
  return true 
 end
 
 function script.StartMoving()
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/drive_4_30.ogg",
                 1.0, 30000, 1)
+    boolMoving = true
 end
 
-function script.StopMoving() end
+function script.StopMoving() boolMoving=false end
 
 function script.Activate() return 1 end
 

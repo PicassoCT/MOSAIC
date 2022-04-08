@@ -19,7 +19,7 @@ end
 
 function getCegName()
 	echo("Cegspawn")
-	return "shelltunnel", 1000
+	return "tankgunmuzzle", 1000
 end
 center = piece "center"
 Quader04 = piece "Quader04"

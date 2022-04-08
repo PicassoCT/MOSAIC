@@ -19,14 +19,14 @@ local Civil = Civilian:New{
 		
 	weapons ={
 		[1]={name  = "ak47",
-				onlyTargetCategory = [[GROUND ARRESTABLE]],
+			 onlyTargetCategory = [[GROUND ARRESTABLE]],
 			},	
 		[2]={name  = "molotow",
-				onlyTargetCategory = [[GROUND]],
+			 onlyTargetCategory = [[GROUND]],
 			},
 		[3]={name  = "rpg7",
-					onlyTargetCategory = [[GROUND]],
-				},	
+			 onlyTargetCategory = [[GROUND]],
+			},	
 	},
 	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
