@@ -6945,6 +6945,32 @@ function spawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz,
     end
 end
 
+
+function spawnCegAtPieceGround(unitID, pieceId, cegname, offset, dx, dy, dz)
+    if not dx then -- default to upvector 
+        dx, dy, dz = 0, 1, 0
+    end
+
+    boolAdd = offset or 10
+
+    if not unitID then
+        error("lib_UnitScript::Not enough arguments to spawnCegAtPiece")
+    end
+    if not pieceId then
+        error("lib_UnitScript::Not enough arguments to spawnCegAtPiece")
+    end
+    if not cegname then
+        error("lib_UnitScript::Not enough arguments to spawnCegAtPiece")
+    end
+    x, y, z, mx, my, mz = Spring.GetUnitPiecePosDir(unitID, pieceId)
+    y= Spring.GetGroundHeight(x,z)
+
+    if y then
+        y = y + boolAdd
+        Spring.SpawnCEG(cegname, x, y, z, dx, dy, dz, 0, 0)
+    end
+end
+
 function spawnCegNearUnitGround(unitID, cegname, ox, oz) 
     dx, dy, dz = 0,1,0
     ox = ox or 0
@@ -6952,8 +6978,9 @@ function spawnCegNearUnitGround(unitID, cegname, ox, oz)
     x, y, z = Spring.GetUnitPosition(unitID)
     y= Spring.GetGroundHeight(x + ox ,z + oz )
     Spring.SpawnCEG(cegname, x +ox   , y , z+oz  , dx, dy, dz, 50, 0)
-
 end
+
+
 
 -- >Spawn CEG at unit
 function spawnCegAtUnit(unitID, cegname, xoffset, yoffset, zoffset, dx, dy, dz)

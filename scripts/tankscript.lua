@@ -108,8 +108,9 @@ function script.FireWeapon1()
     tP(FireEmit,5*45,0,10,0)
     Explode(Shell, SFX.FALL)
     EmitSfx(FireEmit, 1026)
-    EmitSfx(FireEmit, 1025)
     EmitSfx(FireEmit, 1024)
+    spawnCegAtPieceGround(unitID, FireEmit,"tankfireshockwave",0, 20, 0)
+    spawnCegAtPieceGround(unitID, FireEmit,"cburningwreckage",0, 20, 0)
  return true 
 end
 

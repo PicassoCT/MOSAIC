@@ -1,9 +1,7 @@
     -- trail_ar2
      
     return {
-      ["tankgunmuzzle"] = {
-
-           
+      ["tankgunmuzzle"] = {         
      
         bitmapmuzzleflame = {
           air                = true,
@@ -24,24 +22,8 @@
             sizegrowth         = 8,
             ttl                = 17,
           },
-        },
-          groundflash = {
-          air                = true,
-          alwaysvisible      = true,
-          circlealpha        = 0.6,
-          circlegrowth       = 6,
-          flashalpha         = 0.9,
-          flashsize          = 220,
-          ground             = true,
-          ttl                = 13,
-          water              = true,
-          color = {
-            [1]  = 1,
-            [2]  = 0.6,
-            [3]  = 0.2
-            ,
-          },
-        },
+        }
+  
    
      
     },

@@ -43,7 +43,6 @@ function guardSwivelTurret()
 end
 
 function script.Killed(recentDamage, _)
-
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end

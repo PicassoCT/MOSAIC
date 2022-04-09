@@ -47,8 +47,7 @@ local ground_tank_day = Tank:New{
 	weapons = {
 				[1]={name  = "tankcannon",
 					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-					
+			  },					
 		},	
 
 	 sfxtypes = {
@@ -58,7 +57,7 @@ local ground_tank_day = Tank:New{
 				   "custom:tankgunmuzzle",     
 						}
 				}	
-}
+	}
 
  ground_tank_night = Tank:New{
 		name = "Tank",
