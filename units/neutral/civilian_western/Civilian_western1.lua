@@ -13,7 +13,7 @@ local Civil = Civilian:New{
 	iconType = "civilian",
 	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks
-		normaltex = "unittextures/arab_civilian_normal.dds",
+		normaltex = "unittextures/western_civilian_normal.dds",
     },
 
 	

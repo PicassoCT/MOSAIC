@@ -1,10 +1,9 @@
-
 local Civil = Civilian:New{
 	--This class inherits alot from its 
 	name = "Western Civilian",
-		corpse = "bodybag",
+	corpse = "bodybag",
 	description = " innocent bystander <colateral>",
-	objectName        	= "civilian4_arab.dae",
+	objectName = "civilian2_western.dae",
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -14,13 +13,12 @@ local Civil = Civilian:New{
 	iconType = "civilian",
 	customparams = {
 		baseclass		= "Civilian", -- TODO: hacks
-		normaltex = "unittextures/arab_civilian_normal.dds",
+		normaltex = "unittextures/western_civilian_normal.dds",
     },
 
 	
-	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
-}
-
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]]
+ }
 
 return lowerkeys({
 	--Temp
