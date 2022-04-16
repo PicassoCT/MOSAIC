@@ -52,7 +52,9 @@ local RPG7Rocket
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
-if UnitDefs[myDefID].name == "civilian_western0" then
+pieceMap = Spring.GetUnitPieceMap (unitID)
+
+if pieceMap["Pistol"] and maRa() == true then
     gunsTable[#gunsTable + 1 ] = piece('Pistol')
     walkMotionExcludeTable[ShoppingBag]=ShoppingBag
     walkMotionExcludeTable[Handbag]=Handbag

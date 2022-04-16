@@ -228,7 +228,9 @@ function dispatchOfficer(victimID, attackerID)
             else
                 --attack some house nearby
                 housesNearby = getAllOfTypeNearUnit(officerID, houseTypeTable, 300)
-                Command(officerID, "attack", {housesNearby[math.random(1,#housesNearby)]}, 4)
+                if housesNearby and count(housesNearby) > 1 then
+                    Command(officerID, "attack", {housesNearby[math.random(1,#housesNearby)]}, 4)
+                end
             end
         else
             Command(officerID, "attack", {attackerID}, 4)

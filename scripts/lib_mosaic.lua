@@ -1023,7 +1023,7 @@ function  getManualCivilianBuildingMaps(mapName)
                         }
                     else
                         typeTable = {
-                          "civilian_western0"
+                          "civilian_western1","civilian_western2"
                         }
                     end
                 end                
