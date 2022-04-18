@@ -86,7 +86,10 @@ function script.AimWeapon1(Heading, pitch)
     return false
 end
 
-function script.FireWeapon1() return true end
+function script.FireWeapon1() 
+    spawnCegNearUnitGround(unitID, "railgunshine")
+    return true 
+end
 
 --- -aimining & fire weapon
 function script.AimFromWeapon2() return Icon2 end
@@ -111,7 +114,10 @@ function script.AimWeapon2(Heading, pitch)
     return true
 end
 
-function script.FireWeapon2() return true end
+function script.FireWeapon2() 
+    spawnCegNearUnitGround(unitID, "railgunshine")
+return true 
+end
 
 function script.StartBuilding() end
 

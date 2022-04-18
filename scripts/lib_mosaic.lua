@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.850" 
+            Version = "Alpha: 0.851" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -2349,7 +2349,7 @@ end
                                     end
 									
 									if maRa() == maRa() then
-										civilianDefID = randDict(civilianTypeTable)
+										civilianDefID = randDict(CivilianTypes)
 										gaiaTeamID = Spring.GetGaiaTeamID()
 										unitTable  = Spring.GetTeamUnitsByDefs ( gaiaTeamID, civilianDefID)
 										if unitTable and #unitTable > 1 then

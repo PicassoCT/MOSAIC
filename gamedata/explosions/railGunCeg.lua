@@ -15,6 +15,7 @@
 return {
 	["railgunceg"] = {
 		tealflash = {
+			alwaysVisible = true,
 			air = true,
 			class = [[CSimpleGroundFlash]],
 			count = 1,
@@ -29,6 +30,7 @@ return {
 			},
 		},
 		trail = {
+			alwaysVisible = true,
 			air = true,
 			class = [[CExpGenSpawner]],
 			count = 1,
@@ -42,6 +44,7 @@ return {
 			},
 		},
 		trail2 = {
+			alwaysVisible = true,
 			air = true,
 			class = [[CExpGenSpawner]],
 			count = 1,
@@ -60,6 +63,7 @@ return {
 	},
 	["gauss_ring_s"] = { 
 		tealring2 = {
+			alwaysVisible = true,
 			air = true,
 			class = [[CBitmapMuzzleFlame]],
 			count = 1,
@@ -79,16 +83,12 @@ return {
 				
 				ttl = 23,
 			},
-		},
-		
-		
-		
-		
-		
+		},		
 	},
 	
 	["gauss_ring_h"] = {
 		tealring = {
+			alwaysVisible = true,
 			air = true,
 			class = [[CBitmapMuzzleFlame]],
 			count = 1,
@@ -107,16 +107,5 @@ return {
 				ttl = 23,
 			},
 		},
-		
-		
-		
-		
-		
-		
-		
-		
 	}, 
-	
-	
-	
 }
