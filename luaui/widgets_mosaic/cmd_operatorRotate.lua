@@ -3,7 +3,7 @@ local versionNumber = "2.03"
 function widget:GetInfo()
     return 
 {        name = "operatorRotate",
-        desc = "rotates operators towards the mouse curser when selected",
+        desc = "rotates operators towards the mouse curser when selected for attack",
         author = "picassoct",
         date = "Jan,2008",
         license = "GNU GPL, v2 or later",
@@ -23,6 +23,8 @@ local oldValues = {x= 0, z = 0}
 local operativeAssetDefID = 0
 local operativeInvestigatorDefID = 0
 local operativePropagatorDefID = 0
+local CMD_ATTACK = CMD.ATTACK
+local CMD_FIGHT = CMD.FIGHT
 local OPTIONS = {   -- these will be loaded when switching style, but the style will overwrite the those values
 
     teamcolorOpacity                = 0.55,     -- how much teamcolor used for the base platter
@@ -72,9 +74,10 @@ end
 
 local   function serializeUnitIDTable(unitIDT)
             local retString =""
+            local seperator="|"
             if unitIDT then
                 for i=1,#unitIDT do
-                    retString = retString.. unitIDT[i].."|"
+                    retString = retString.. unitIDT[i]..seperator
                 end
             end
             return retString
@@ -95,13 +98,17 @@ function widget:Update(dt)
 
     local boolContainsOperators = selectedUnitsSorted[operativeAssetDefID] or selectedUnitsSorted[operativePropagatorDefID]  or selectedUnitsSorted[operativeInvestigatorDefID] 
     --check if selectedUnitsContainOperatives
-    if boolContainsOperators and selectedUnitsCount == 1 then
+     local index, cmdID = Spring.GetActiveCommand() 
+        boolAttackOrFightCmdActive = index ~= nil and (cmdID == CMD_ATTACK or cmdID == CMD_FIGHT)
+
+    if boolContainsOperators and selectedUnitsCount == 1 and boolAttackOrFightCmdActive then
        -- Spring.Echo("Selection contains Operators")
         -- Trace screen ray
         -- rotate them towards target
         local mouseX, mouseY = Spring.GetMouseState()
         local inMinimap = spIsAboveMiniMap(mouseX, mouseY)
         local targType, targID = spTraceScreenRay(mouseX, mouseY, true, inMinimap, false, false, 50)
+
         if targID then
          Spring.SendLuaRulesMsg("OPROTPOS|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3].."|"..
             serializeUnitIDTable(selectedUnitsSorted[operativeAssetDefID]).. "|" ..

@@ -440,7 +440,7 @@ end
 
 bRelativePixelSize = false
 function widget:Initialize()
-	
+	assert(true == false)
 	--Spring.SendCommands("hideinterface 1")
 	-- setup Chili
 	Chili = WG.Chili
