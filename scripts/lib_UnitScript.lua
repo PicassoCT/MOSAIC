@@ -5167,6 +5167,13 @@ end
 -- ======================================================================================
 -- Section: Random 
 -- ======================================================================================
+function getSafeRandom(T, default)
+    if not T then return default end 
+    if #T < 1 then return default end
+    if #T < 2 then return T[1] end
+    return T[math.random(1,#T)]
+end
+
 function getRandomElementRing(T)
     dice = sanitizeRandom(1, #T)
     for i = dice, #T do if T[i] then return T[i] end end

@@ -104,7 +104,6 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
             if  houseTypeTable[unitDefID] then
-                Spring.Echo("Destroyed house")
                 for _, team in pairs(Spring.GetTeamList()) do
 
                     if team ~= gaiaTeamID and team ~=attackerTeam then                    
