@@ -102,23 +102,40 @@ function script.AimWeapon1(Heading, pitch)
     return counter > 0 
 end
 
-function reloadRoutine()
-    SetSignalMask(SIG_RELOAD)
-    Signal(SIG_RELOAD)
-    WTurn(RocketPod,z_axis, math.rad(0),1)
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/eagle.wav", 1.0, 5000, 1)
-    Sleep(60000)
-    counter = #TablesOfPiecesGroups["Rocket"]
-    WTurn(RocketPod,z_axis, math.rad(-90),1)
-    showT(TablesOfPiecesGroups["Rocket"])
-end
-
 function script.FireWeapon1()
     counter = math.max(0, counter-1)
     hideT(TablesOfPiecesGroups["Rocket"])
     showT(TablesOfPiecesGroups["Rocket"], 1, counter)     
     return true
 end
+
+function script.AimFromWeapon2() return Body end
+
+function script.QueryWeapon2() return Body end
+
+boolTargetLaserActive = true
+function script.AimWeapon2(Heading, pitch)
+    -- aiming animation: instantly turn the gun towards the enemy
+
+    return boolTargetLaserActive
+end
+
+function script.FireWeapon2() return true end
+
+function reloadRoutine()
+    SetSignalMask(SIG_RELOAD)
+    Signal(SIG_RELOAD)
+    boolTargetLaserActive= false
+    WTurn(RocketPod,z_axis, math.rad(0),1)
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/eagle.wav", 1.0, 5000, 1)
+    Sleep(60000)
+    counter = #TablesOfPiecesGroups["Rocket"]
+    WTurn(RocketPod,z_axis, math.rad(-90),1)
+    showT(TablesOfPiecesGroups["Rocket"])
+    boolTargetLaserActive = true
+end
+
+
 
 --- -aimining & fire weapon
 function script.StartMoving() 
