@@ -737,7 +737,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     UnitDamageFuncT[stunpistoldWeaponDefID] =
         function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID,
-                 attackerID, attackerDefID, attackerTeam)
+                 attackerID, attackerDefID, attackerTeam,projectileID)
             -- stupidity edition
             if attackerID == unitID then
                 --spEcho("Interrogation:Aborted: attackerID == unitID")
@@ -787,7 +787,7 @@ if (gadgetHandler:IsSyncedCode()) then
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam,
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
-                                                attackerTeam)
+                                                attackerTeam,projectileID)
 
         if not attackerID then
             attackerID = Spring.GetUnitLastAttacker(unitID)
@@ -837,7 +837,7 @@ if (gadgetHandler:IsSyncedCode()) then
     UnitDamageFuncT[closeCombatWeaponDefID] = function(unitID, unitDefID, unitTeam,
         damage, paralyzer, weaponDefID,
         attackerID, attackerDefID,
-        attackerTeam)
+        attackerTeam,projectileID)
 
         if unitID == attackerID then return 0 end
 
@@ -855,7 +855,7 @@ if (gadgetHandler:IsSyncedCode()) then
     UnitDamageFuncT[nimrodRailungDefID] = function(unitID, unitDefID, unitTeam,
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
-                                                attackerTeam)
+                                                attackerTeam,projectileID)
 
                                             if houseTypeTable[unitDefID] then return 0 end
                                         end
@@ -863,32 +863,7 @@ if (gadgetHandler:IsSyncedCode()) then
     UnitDamageFuncT[godRodMarkerWeaponDefID] =   function(unitID, unitDefID, unitTeam,
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
-                                                attackerTeam)
-
-      
-        gx,gy, gz = Spring.GetUnitPosition(attackerID)
-        tx,ty, tz = Spring.GetUnitPosition(unitID)
-        v = makeVector(tx - gx, ty - gy, tz - gz)
-        v = normVector(v)
-        
-            local ImpactorParameter = {
-                                pos = { gx, gy - 50, gz },
-                               ["end"] = { tx, ty + 10, tz },
-                                speed = { v.x, v.y, v.z },
-                                owner = attackerID,
-                                team = attackerTeam,
-                                spread = { math.random(-5, 5), math.random(-5, 5), math.random(-5, 5) },
-                                ttl = 4000,
-                                error = { 0, 0, 0 },
-                                maxRange = 600,
-                                gravity = Game.gravity,
-                                startAlpha = 1,
-                                endAlpha = 1,
-                                model = "GodRod.s3o",
-                                cegTag = "impactor"
-                            }
-
-       projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
+                                                attackerTeam,projectileID)
 
     end
 
@@ -912,7 +887,8 @@ if (gadgetHandler:IsSyncedCode()) then
                                                         paralyzer, weaponDefID,
                                                         attackerID,
                                                         attackerDefID,
-                                                        attackerTeam)
+                                                        attackerTeam,
+                                                        projectileID)
             if resultDamage then return resultDamage end
         end
         
