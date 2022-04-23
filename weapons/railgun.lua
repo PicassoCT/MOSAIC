@@ -29,7 +29,7 @@ local weaponDef = {
 	noSelfDamage  = true,
 	--command
 	canAttackGround  = true,
-	
+	alwaysvisible= true,
     impulseBoost = 0,
     impulseFactor = 0,
     interceptedByShieldType = 0,
