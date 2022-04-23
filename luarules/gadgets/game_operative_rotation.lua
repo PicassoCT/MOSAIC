@@ -1,6 +1,6 @@
 function gadget:GetInfo()
     return {
-        name = "game Snipe Mini Game",
+        name = "operative rotation",
         desc = "This gadget handles the minigame",
         author = "",
         date = "Sep. 2008",
