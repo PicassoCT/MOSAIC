@@ -48,9 +48,11 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitDestroyed(unitID, unitDefID)
         if Satellites[unitID] then Satellites[unitID] = nil end
 
-        if SatelliteTypes[unitDefID] and unitDefID ~= ShrapnellCloudSatDefID then
+        if SatelliteTypes[unitDefID] and unitDefID ~= ShrapnellCloudSatDefID  then
             x,y,z = Spring.GetUnitPosition(unitID)
-           GG.UnitsToSpawn:PushCreateUnit("satelliteshrapnell", x, y, z, math.random(1, 4), gaiaTeamID)         
+            if GG.DiedPeacefully[unitID] == nil or GG.DiedPeacefully[unitID] == false then
+                GG.UnitsToSpawn:PushCreateUnit("satelliteshrapnell", x, y, z, math.random(1, 4), gaiaTeamID)         
+            end
         end
     end
 
