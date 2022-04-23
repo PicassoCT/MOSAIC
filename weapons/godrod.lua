@@ -20,9 +20,8 @@ local weaponDef = {
 	turnRate = 999000000,
 	turret = true,
 	tracks = true,
-
 	avoidFeature = true,
-	avoidGround = true,
+	avoidGround = false,
 
 	--flight behaviour
 	startVelocity  = 50,
@@ -39,13 +38,13 @@ local weaponDef = {
 
 	--visuals
 	alwaysVisible = true,
-	smokeTrail = false,
+	smokeTrail = true,
 	model = "GodRod.s3o",
 	explosionScar = true, 
  	cegTag = "impactor",
 	cameraShake =1.0,
     explosionGenerator = "custom:missile_explosion",
-    soundStart = "weapons/godrod/impactor.ogg"
+    --soundStart = "weapons/godrod/impactor.ogg"
 }
   
 return lowerkeys({ [weaponName] = weaponDef })

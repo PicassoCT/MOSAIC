@@ -20,30 +20,27 @@ local satteliteGodrod = Satellite:New{
 	upright= true,
 	canAttack = true,
 	canLand = false,
-    --canManualFire = true,
+
 
 	customParams			= {
 		helptext		= "Nuklear Option",
-		baseclass		= "Satellite", -- TODO: hacks
+		baseclass		= "Satellite", 
 		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	category = [[ORBIT]],
 	buildPic = "orbitalstrike_sat.png",
 	
-	usepiececollisionvolumes = false,
-	collisionVolumeType = "box",
-	collisionvolumescales = "5 25 5",
-	sightDistance		= 	125, 
+	usepiececollisionvolumes = true,
+
+	sightDistance		= 250 , 
 
 	fireState = 1,
 	weapons = {
 		[1]={
 			name  = "godrodmarkerweapon",   
-			--mainDir = "0 1 0",
-			--maxAngleDif = 90,
+			mainDir = {0.0, 1.0, 0.0},
 			onlyTargetCategory = [[GROUND BUILDING]]
-			},
-					
+			},					
 		},	
 		
 }

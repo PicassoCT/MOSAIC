@@ -1,5 +1,5 @@
 model = {
-	radius = 25.0,
+	radius = 10.0,
 	height = 40,
 	-- tex1 = "testtex1.dds",
 	-- tex2 = "testtex2.dds",
@@ -7,7 +7,7 @@ model = {
 	tex2 = "component_atlas_normal.dds",
 
 	--tex2 = "armtech_tex2.dds",
-	midpos = {0, 5, 0},
+	midpos = {0, 0, 0},
 	--rotAxisSigns = {-1, -1, -1}
 	--[[
 	pbr = {

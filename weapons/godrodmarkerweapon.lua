@@ -2,25 +2,24 @@
 local weaponName = "godrodmarkerweapon"
 local weaponDef = {
     name = "necessary cause springs aiming is a lovecraftian horror",
-    weaponType = [[Melee]],
+    weaponType = [[MissileLauncher]],
     --damage
     damage = {
         default = 1,
         HeavyArmor = 0,
     },
     avoidFriendly = false,
-
-
-
+    startVelocity  = 9999,
+    weaponVelocity = 9999,
     areaOfEffect = 1,
     --physics
 
     reloadtime = 30,
-    range = 1250,
-    --commandFire = true,
+    range = 2500,
+
 
     sprayAngle = 1,
-    tolerance = 1,
+    tolerance = 50,
     lineOfSight = false,  
     turret = true,
     craterMult = 0,     
@@ -33,6 +32,16 @@ local weaponDef = {
     rgbColor = [[0.0 0.0 0.0]],          
     size = 0.00001,
  
+    noSelfDamage = true,
+    areaOfEffect = 1,
+    --physics
+
+    tracks = false,
+    craterMult = 50,     
+    PredictBoost             =0.6,
+
+    
+
     ----------------------------------------------------------------
 }
 

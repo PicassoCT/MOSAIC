@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
-
+local spGetUnitPosition = Spring.GetUnitPosition
 TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -13,8 +13,10 @@ center = piece "center"
 Icon = piece "Icon"
 Packed = piece "Packed"
 GodRod = piece "GodRod"
+AimPiece = piece "AimPiece"
 NumberOfRods = 3
 function script.Create()
+    --Spring.Echo("Satellite godrod created")
 
     --Spin(center,y_axis,math.rad(5),0.5)
     if Icon then
@@ -24,7 +26,9 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(delayedShow)
+    StartThread(manuallyTargetingGodRod)
     Hide(GodRod)
+
 end
 
 function delayedShow()
@@ -35,32 +39,118 @@ function delayedShow()
     showAll(unitID)
     Hide(Packed)
     Hide(GodRod)
+    Hide(AimPiece)
+    Hide(Icon)
 end
 
 function script.Killed(recentDamage, _)
     return 1
 end
 
-function script.AimFromWeapon1() return center end
+function script.AimFromWeapon1() return AimPiece end
 
-function script.QueryWeapon1() return GodRod end
+function script.QueryWeapon1() return AimPiece end
 
 function script.AimWeapon1(Heading, pitch)
-    boolCanAim = (NumberOfRods > 0)
-   -- Spring.Echo("AimWeapon1 Sat GodRod".. toString(boolCanAim))
-
-    return boolCanAim
+    return  true
 end
 
 function script.FireWeapon1()
-    Hide(TablesOfPiecesGroups["GodRod"][NumberOfRods])
-    NumberOfRods = NumberOfRods - 1
-
     if NumberOfRods == 0 then
         Explode(center, SFX.SHATTER + SFX.FALL + SFX.FIRE)
         Spring.DestroyUnit(unitID, true, false)
     end
 end
+
+function getPositionFromParams(params)
+    if params[1] and params[2] and params[3] then return params[1], params[2],params[3] end
+
+    if doesUnitExistAlive(params[1]) then 
+        x,y,z = Spring.GetUnitPosition(params[1])
+        return x,y,z
+    end
+
+    x,y,z = Spring.GetUnitPosition(unitID)
+    return x,y,z
+end
+
+function manuallyTargetingGodRod()
+    while true do
+        x,y,z = spGetUnitPosition(unitID)
+        commands = Spring.GetUnitCommands(unitID, 1)
+        if commands and commands[1] then
+            command = commands[1]
+            if command and 
+                command.id == CMD.ATTACK or 
+                command.id == CMD.AREA_ATTACK or 
+                command.id == CMD.FIGHT then
+        
+            ax,ay, az = getPositionFromParams(command.params)
+
+            if distance(x,0 ,z, ax, 0, az) < GameConfig.Sattelite.GodRodDropDistance then
+
+                StartThread(dropGodRodAt, unitID,x,y,z)
+                Hide(TablesOfPiecesGroups["GodRod"][NumberOfRods])
+                NumberOfRods = NumberOfRods - 1
+                Sleep(GameConfig.Sattelite.GodRodReloadTimeInMs) 
+
+                if NumberOfRods <= 0 then
+                    GG.DiedPeacefully[unitID] = true
+                    Spring.DestroyUnit(unitID, true, false)
+                end
+
+            end
+        end
+        Sleep(100)
+    end
+end
+
+function dropGodRodAt(unitID, x,y,z)
+    tx,ty,tz = x,Spring.GetGroundHeight(x,z),z
+
+            local ImpactorParameter = {
+                                pos = { x,y,z},
+                               ["end"] = { tx, ty, tz },
+                                speed = { 0, 1, 0},
+                                owner = attackerID,
+                                team = attackerTeam,
+                                spread = { math.random(-5, 5), math.random(-5, 5), math.random(-5, 5) },
+                                ttl = GameConfig.Sattelite.GodRodTimeToImpactInMs,
+                                error = { 0, 0, 0 },
+                                maxRange = 600,
+                                gravity = Game.gravity,
+                                startAlpha = 0.5,
+                                endAlpha = 1,
+                                model = "GodRod.s3o",
+                                cegTag = "impactor"
+                            }
+
+       projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
+       if projectileID then
+        
+     
+          projectileEventStreamFunction = function (persPack)            
+                factor =  math.log(1.0 +(persPack.timeBudget /persPack.maxTime)) 
+                x,y,z = mix(startP[1], endP[1], factor),mix(startP[2], endP[2], factor),mix(startP[3], endP[3], factor)
+                Spring.SetProjectilePosition(persPack.projID,x ,y ,z)
+                return factor == 0, persPack
+           end
+
+           createStreamEventProjectile(projectileID, func,
+            1000/60, 
+            {
+            projID = projectileID, 
+            distanceToGo = y - ty, 
+            maxTime = GameConfig.Sattelite.GodRodTimeToImpactInMs,
+            timeBudget= GameConfig.Sattelite.GodRodTimeToImpactInMs,
+            startP={x, y, z},
+            endP = {tx,ty,tz}
+            }
+            )
+           Sleep(1000)
+           StartThread(PlaySoundByUnitDefID,myDefID, "sounds/weapons/godrod/impactor.ogg", 1.0, 4000, 5)
+        end
+   end
 
 function script.StartMoving() end
 
@@ -75,7 +165,6 @@ boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
-
         hideAll(unitID)
         Show(Icon)
         boolParked = true
@@ -84,6 +173,7 @@ function showHideIcon(boolCloaked)
         Hide(Icon)
         Hide(Packed)
         Hide(GodRod)
+        Hide(AimPiece)
         boolParked = false
     end
 end
