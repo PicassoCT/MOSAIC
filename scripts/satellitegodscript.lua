@@ -119,7 +119,7 @@ function dropGodRodAt(unitID, x,y,z)
     tx,ty,tz = x,Spring.GetGroundHeight(x,z),z
 
             local ImpactorParameter = {
-                                pos = { x,y,z},
+                                pos = { x,y+100,z},
                                ["end"] = { tx, ty, tz },
                                 speed = { 0, -1, 0},
                                 owner = unitID,
@@ -137,6 +137,7 @@ function dropGodRodAt(unitID, x,y,z)
 
        projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
        if projectileID then       
+            Sleep(3000)
            StartThread(PlaySoundByUnitDefID,myDefID, "sounds/weapons/godrod/impactor.wav", 1.0, GameConfig.Satellite.GodRodTimeToImpactInMs, 5)
         end
    end

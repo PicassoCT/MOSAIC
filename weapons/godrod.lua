@@ -7,7 +7,7 @@ local weaponDef = {
 
 	--damage
 	damage = {
-	default = 4200,
+	default = 5000,
 	},
 	noSelfDamage = true,
 	reloadtime = 30, -- seconds
@@ -24,11 +24,11 @@ local weaponDef = {
 	avoidGround = false,
 
 	--flight behaviour
-	startVelocity  = 0,
+	startVelocity  = 100,
 	
 	flightTime = 25.5 ,	
 	weaponVelocity = 4000,
-	weaponAcceleration = 10,
+	weaponAcceleration = 50,
 
 	--impact behaviour
 	impulseBoost            = 0,
