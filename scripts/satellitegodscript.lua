@@ -15,6 +15,8 @@ Packed = piece "Packed"
 GodRod = piece "GodRod"
 AimPiece = piece "AimPiece"
 NumberOfRods = 3
+myTeamID = Spring.GetUnitTeam(unitID)
+myDefID = Spring.GetUnitDefID(unitID)
 function script.Create()
     --Spring.Echo("Satellite godrod created")
 
@@ -74,25 +76,31 @@ function getPositionFromParams(params)
     return x,y,z
 end
 
-function manuallyTargetingGodRod()
-    while true do
-        x,y,z = spGetUnitPosition(unitID)
-        commands = Spring.GetUnitCommands(unitID, 1)
+function unitHasAttackCommand()
+    commands = Spring.GetUnitCommands(unitID, 1)
         if commands and commands[1] then
             command = commands[1]
             if command and 
                 command.id == CMD.ATTACK or 
                 command.id == CMD.AREA_ATTACK or 
                 command.id == CMD.FIGHT then
-        
-            ax,ay, az = getPositionFromParams(command.params)
+                ax,ay, az = getPositionFromParams(command.params)
+                return ax,ay,az 
+            end
+        end
+end
 
-            if distance(x,0 ,z, ax, 0, az) < GameConfig.Sattelite.GodRodDropDistance then
-
-                StartThread(dropGodRodAt, unitID,x,y,z)
-                Hide(TablesOfPiecesGroups["GodRod"][NumberOfRods])
-                NumberOfRods = NumberOfRods - 1
-                Sleep(GameConfig.Sattelite.GodRodReloadTimeInMs) 
+function manuallyTargetingGodRod()
+    while true do
+        x,y,z = spGetUnitPosition(unitID)
+     
+        ax,ay,az = unitHasAttackCommand()
+        if ax then
+            if distance(x,0 ,z, ax, 0, az) < GameConfig.Satellite.GodRodDropDistance then
+            StartThread(dropGodRodAt, unitID,x,y,z)
+            Hide(TablesOfPiecesGroups["GodRod"][NumberOfRods])
+            NumberOfRods = NumberOfRods - 1
+            Sleep(GameConfig.Satellite.GodRodReloadTimeInMs) 
 
                 if NumberOfRods <= 0 then
                     GG.DiedPeacefully[unitID] = true
@@ -105,19 +113,21 @@ function manuallyTargetingGodRod()
     end
 end
 
+ local impactorWeaponDefID = WeaponDefNames["godrod"].id
+
 function dropGodRodAt(unitID, x,y,z)
     tx,ty,tz = x,Spring.GetGroundHeight(x,z),z
 
             local ImpactorParameter = {
                                 pos = { x,y,z},
                                ["end"] = { tx, ty, tz },
-                                speed = { 0, 1, 0},
-                                owner = attackerID,
-                                team = attackerTeam,
+                                speed = { 0, -1, 0},
+                                owner = unitID,
+                                team = myTeamID,
                                 spread = { math.random(-5, 5), math.random(-5, 5), math.random(-5, 5) },
-                                ttl = GameConfig.Sattelite.GodRodTimeToImpactInMs,
+                                ttl = GameConfig.Satellite.GodRodTimeToImpactInMs,
                                 error = { 0, 0, 0 },
-                                maxRange = 600,
+                                maxRange = 3000,
                                 gravity = Game.gravity,
                                 startAlpha = 0.5,
                                 endAlpha = 1,
@@ -126,29 +136,8 @@ function dropGodRodAt(unitID, x,y,z)
                             }
 
        projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
-       if projectileID then
-        
-     
-          projectileEventStreamFunction = function (persPack)            
-                factor =  math.log(1.0 +(persPack.timeBudget /persPack.maxTime)) 
-                x,y,z = mix(startP[1], endP[1], factor),mix(startP[2], endP[2], factor),mix(startP[3], endP[3], factor)
-                Spring.SetProjectilePosition(persPack.projID,x ,y ,z)
-                return factor == 0, persPack
-           end
-
-           createStreamEventProjectile(projectileID, func,
-            1000/60, 
-            {
-            projID = projectileID, 
-            distanceToGo = y - ty, 
-            maxTime = GameConfig.Sattelite.GodRodTimeToImpactInMs,
-            timeBudget= GameConfig.Sattelite.GodRodTimeToImpactInMs,
-            startP={x, y, z},
-            endP = {tx,ty,tz}
-            }
-            )
-           Sleep(1000)
-           StartThread(PlaySoundByUnitDefID,myDefID, "sounds/weapons/godrod/impactor.ogg", 1.0, 4000, 5)
+       if projectileID then       
+           StartThread(PlaySoundByUnitDefID,myDefID, "sounds/weapons/godrod/impactor.wav", 1.0, GameConfig.Satellite.GodRodTimeToImpactInMs, 5)
         end
    end
 

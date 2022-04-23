@@ -243,7 +243,7 @@ function getGameConfig()
             uploadTimesMs = 8000,
             GodRodDropDistance = 50,
             GodRodReloadTimeInMs = 10000,
-            GodRodTimeToImpactInMs= 5000,
+            GodRodTimeToImpactInMs= 10000,
         },        
 
         -- Hiveminds & AiCores
@@ -1648,11 +1648,11 @@ function  getManualCivilianBuildingMaps(mapName)
                         eventFunction = function(id, frame, persPack)
                             nextFrame = frame + framerate
                             if persPack then
-                                if persPack.projectileID then
-                                    targetType = Spring.GetProjectileTarget(persPack.unitID)
+                                if projectileID then
+                                    targetType = Spring.GetProjectileDefID(projectileID)
 
-                                    if targetType then
-                                        echo("Aborting eventstream cause unit has died")
+                                    if not targetType then
+                                        echo("Aborting eventstream cause projectile has died")
                                         return nil, nil
                                     end
 

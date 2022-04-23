@@ -24,11 +24,11 @@ local weaponDef = {
 	avoidGround = false,
 
 	--flight behaviour
-	startVelocity  = 50,
+	startVelocity  = 0,
 	
 	flightTime = 25.5 ,	
 	weaponVelocity = 4000,
-	weaponAcceleration = 100,
+	weaponAcceleration = 10,
 
 	--impact behaviour
 	impulseBoost            = 0,
@@ -38,10 +38,11 @@ local weaponDef = {
 
 	--visuals
 	alwaysVisible = true,
-	smokeTrail = true,
+	smokeTrail = false,
 	model = "GodRod.s3o",
 	explosionScar = true, 
  	cegTag = "impactor",
+ 	noFriendlyCollide = true,
 	cameraShake =1.0,
     explosionGenerator = "custom:missile_explosion",
     --soundStart = "weapons/godrod/impactor.ogg"
