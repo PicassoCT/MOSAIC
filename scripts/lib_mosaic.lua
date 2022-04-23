@@ -241,6 +241,9 @@ function getGameConfig()
             shrapnellLifeTime = 7 * 60 * 1000,
             shrapnellDamagePerSecond = 1000,
             uploadTimesMs = 8000,
+            GodRodDropDistance = 50,
+            GodRodReloadTimeInMs = 10000,
+            GodRodTimeToImpactInMs= 5000,
         },        
 
         -- Hiveminds & AiCores
@@ -1609,6 +1612,46 @@ function  getManualCivilianBuildingMaps(mapName)
                                     boolDead = Spring.GetUnitIsDead(persPack.unitID)
 
                                     if boolDead and boolDead == true then
+                                        echo("Aborting eventstream cause unit has died")
+                                        return nil, nil
+                                    end
+
+                                    if not persPack.startFrame then
+                                        persPack.startFrame = frame + 1
+
+                                    end
+
+                                    nextFrame = frame + framerate
+                                end
+                            end
+
+                            boolDoneFor, persPack = persPack.functionToCall(persPack)
+                            if boolDoneFor and boolDoneFor == true then
+                                echo("Aborting eventstream cause function signalled completness")
+                                return nil
+                            end
+
+                            return nextFrame, persPack
+                        end
+
+                        GG.EventStream:CreateEvent(eventFunction, persPack,
+                        Spring.GetGameFrame() + 1)
+                    end
+
+                        -- > Creates a Eventstream Event bound to a Projectile
+                    function createStreamEventProjectile(projectileID, func, framerate, persPack)
+                        persPack.projectileID = projectileID
+                        persPack.startFrame = Spring.GetGameFrame() + 1
+                        persPack.functionToCall = func
+                        -- echo("Creating Stream Event")
+
+                        eventFunction = function(id, frame, persPack)
+                            nextFrame = frame + framerate
+                            if persPack then
+                                if persPack.projectileID then
+                                    targetType = Spring.GetProjectileTarget(persPack.unitID)
+
+                                    if targetType then
                                         echo("Aborting eventstream cause unit has died")
                                         return nil, nil
                                     end
