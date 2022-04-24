@@ -10,7 +10,7 @@ function widget:GetInfo()
     author    = "Anarchid, consulted and optimized by jK",
     date      = "november 2014",
     license   = "GNU GPL, v2 or later",
-    layer     = 991000,
+    layer     = 16,
     hidden = true,
     enabled   = true
   }
@@ -26,16 +26,16 @@ local enabled = true
 local mapcfg = {
 	custom = {
 	      clouds = {
-	         speed = 0.01, -- multiplier for speed of scrolling with wind
+	         speed = 0.03, -- multiplier for speed of scrolling with wind
 	         color    = {0.31, 0.309, 0.29}, -- diffuse color of the fog
 	         -- all altitude values can be either absolute, in percent, or "auto"
-	         height   = "90%", -- opacity of fog above and at this altitude will be zero
-	         bottom = 0, -- no fog below this altitude
-	         fade_alt = "30%"; -- fog will linearly fade away between this and "height", should be between height and bottom
-	         scale = 2550, -- how large will the clouds be
+	         height   = "100%", -- opacity of fog above and at this altitude will be zero
+	         bottom = -100, -- no fog below this altitude
+	         fade_alt = "90%"; -- fog will linearly fade away between this and "height", should be between height and bottom
+	         scale = 512, -- how large will the clouds be
 	         opacity = 0.9875, -- what it says
 	         clamp_to_map = false, -- whether fog volume is sliced to fit map, or spreads to horizon
-	         sun_penetration = 5, -- how much does the sun penetrate the fog
+	         sun_penetration = 10, -- how much does the sun penetrate the fog
 	      },
 	}
 }
@@ -297,6 +297,64 @@ function widget:Initialize()
 	end
 end
 
+function smokeDescriptorsChanged(newSmokeDescriptorsToAdd)
+		for i=1, #newSmokeDescriptorsToAdd do
+			storeSmokeSource(newSmokeDescriptorsToAdd[i].pos,
+											newSmokeDescriptorsToAdd[i].volumeDescriptor,
+											newSmokeDescriptorsToAdd[i].lifetimeReAddFrames)
+		end
+	end
+
+function fadeSmokeTexture(framesTimeIntervall)
+	local decayPerFrame = 0.001
+	local factor = 1.0 -(framesTimeIntervall/decayPerFrame)
+	-- iterate over texture
+		-- setTexture(x,y, factor * getTexture(x,y))
+end
+
+local smokeStored = {}
+function storeSmokeSource(pos, volumeDescriptor, lifetimeReAddFrames)
+	local smokeID = #smokeStored + 1
+	smokeStored[smokeID] = {pos= pos, volumeDescriptor= volumeDescriptor, lifetimeFrames= lifetimeReAddFrames}
+	return smokeID
+end
+
+function applyStoredSmoke(framesPassedBy)
+	for i= #smokeStored, 1, -1 do
+		addSmokeSourceToTexture(smokeStored[i])
+		smokeStored.lifetimeFrames= smokeStored.lifetimeFrames - framesPassedBy
+		if smokeStored.lifetimeFrames < 0 then
+			table.remove(smokeStored, i)
+		end
+	end
+end
+
+function clampToMapSize(value, maxMapSize)
+	value= math.max(1,value)
+	value = math.min(value, maxMapSize)
+	return value
+end
+
+function addSmokeSourceToTexture(smokeDescriptor)
+	local xStart,xEnd = smokeDescriptor.pos.x - smokeDescriptor.volumeDescriptor.radius,smokeDescriptor.pos.x + smokeDescriptor.volumeDescriptor.radius
+	local zStart,zEnd = smokeDescriptor.pos.z - smokeDescriptor.volumeDescriptor.radius,smokeDescriptor.pos.z + smokeDescriptor.volumeDescriptor.radius
+	xStart,xEnd = clampToMapSize(xStart),clampToMapSize(xEnd, mapSizeX)
+	zStart,zEnd = clampToMapSize(zStart),clampToMapSize(zEnd, mapSizeZ)
+	for x=xStart, xEnd do
+		for z=zStart, zEnd do
+			if inRadiusAround(x,z, smokeDescriptor.pos, smokeDescriptor.volumeDescriptor.radius) then
+				setTexture(x,z, getTexture(x,z) + volumeDescriptor.strength)
+			end
+		end
+	end
+end
+
+function postProcessSmokeTexture()
+	local decayPerFrame = 0.001
+	local factor = 1.0 -(framesTimeIntervall/decayPerFrame)
+	-- iterate over texture
+		-- setTexture(x,y, factor * getTexture(x,y))
+end
 
 function widget:Shutdown()
 	glDeleteTexture(depthTexture)
@@ -356,7 +414,7 @@ function widget:GameFrame()
 	offsetZ = offsetZ-dz*speed;
 
 	sunDir = {gl.GetSun('pos')}
-	sunCol = {gl.GetSun('diffuse')}
+	sunCol = {gl.GetSun('specular')}
 end
 
 widget:GameFrame()
@@ -369,10 +427,12 @@ function widget:DrawScreenEffects()
 	glTexture(false);
 end
 
-function widget:DrawScreenPost()
+function widget:DrawScreen()
+	glPushMatrix()
 	glBlending(false)
 	DrawFogNew()
 	glBlending(true)
+	glPopMatrix()
 end
 
 --------------------------------------------------------------------------------
