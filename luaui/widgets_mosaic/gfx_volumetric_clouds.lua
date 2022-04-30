@@ -10,13 +10,13 @@ function widget:GetInfo()
     author    = "Anarchid, consulted and optimized by jK",
     date      = "november 2014",
     license   = "GNU GPL, v2 or later",
-    layer     = 16,
+    layer     = 19,
     hidden = true,
-    enabled   = false
+    enabled   = true
   }
 end
 
-local enabled = true
+local enabled = false
 
 
 --------------------------------------------------------------------------------
