@@ -31,7 +31,7 @@ function playDepartureGong(offset)
 end
 
 function playAircraftSounds()
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 20000, 2)
+    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 120000, 1)
 end
 
 function setup()

@@ -66,7 +66,7 @@ local TutorialInfoTable= {
 
 	welcome = {
 
-		speach= "sounds/tutorial/welcomeAntagon.ogg",
+		speach= "sounds/tutorial/welcomeBuildSafeHouse.ogg",
 		active = true,
 		-- Antagon:
 		-- This is it. The City. The arena
@@ -162,7 +162,7 @@ protagon = {
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n The tutorial can be deactivated in the Widgetmanager (Press F11)",
 	},
 	welcome = {
-		speach= "sounds/tutorial/welcomeProtagon.ogg",
+		speach= "sounds/tutorial/welcomeBuildSafeHouse.ogg",
 		active = true,
 				--Protagon: 
 				-- Welcome to MOSAIC. Mobile Orbital Strategic AI Counter-Terrorism

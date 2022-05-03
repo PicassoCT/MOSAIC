@@ -62,19 +62,47 @@ local spGetMouseState          = Spring.GetMouseState
 local spGetMyTeamID            = Spring.GetMyTeamID
 local spGetSelectedUnits       = Spring.GetSelectedUnits
 local spGetSelectedUnitsCount  = Spring.GetSelectedUnitsCount
-local spGetSelectedUnitsCounts = Spring.GetSelectedUnitsCounts
+local spGetSelectedUnitsCounts = Spring.GetSelectedUnitsCounts 
 local spGetSelectedUnitsSorted = Spring.GetSelectedUnitsSorted
 local spGetTeamUnitsSorted     = Spring.GetTeamUnitsSorted
 local spSelectUnitArray        = Spring.SelectUnitArray
 local spSelectUnitMap          = Spring.SelectUnitMap
 local spSendCommands           = Spring.SendCommands
 local spIsGUIHidden            = Spring.IsGUIHidden
-
+local spGetUnitsInRectangle    = Spring.GetUnitsInRectangle
 local unitNames = {}
 local unitHumanNames = {}
 for unitDefID, unitDef in pairs(UnitDefs) do
   unitNames[unitDefID] = unitDef.name
   unitHumanNames[unitDefID] = unitDef.humanName
+end
+
+local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitPosition = Spring.GetUnitPosition
+local spTraceScreenRay = Spring.TraceScreenRay
+local sizeOfHouse = 256/2
+local myTeamID = spGetMyTeamID()
+local civilianHousesTypeTable = {}
+local civilianHousesName = {
+  ["house_western0"]=true,
+  ["house_arab0"]=true
+}
+local secretPluginsTypeTable = {}
+local secretPluginsName= {
+  ["antagonsafehouse"]=true,
+  ["protagonsafehouse"]=true,
+  ["propagandaserver"]=true,
+  ["assembly"]=true,
+  ["hivemind"]=true,
+  ["launcher"]=true,
+  ["launcherstep"]=true,
+  ["warheadfactory"]=true,
+  ["nimrod"]=true
+}
+
+for id, data in pairs(UnitDefs) do
+  if civilianHousesName[data.name] then civilianHousesTypeTable[id] = data end
+  if secretPluginsName[data.name] then secretPluginsTypeTable[id] = data end
 end
 
 -------------------------------------------------------------------------------
@@ -169,11 +197,44 @@ local selectedUnitsCounts = Spring.GetSelectedUnitsCounts()
 local selectionChanged = true
 function widget:SelectionChanged(sel)
   selectedUnits = sel
-  selectedUnitsCount = Spring.GetSelectedUnitsCount()
-  selectedUnitsCounts = Spring.GetSelectedUnitsCounts()
+  selectedUnitsCount = spGetSelectedUnitsCount()
+  selectedUnitsCounts = spGetSelectedUnitsCounts()
   selectionChanged = true
 end
 
+local function handleLeftClickRelease(mx,my, button)
+  local LeftClick = 1
+    if button == LeftClick then
+      Spring.Echo("Selection changed")
+      local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
+      if targType == 'unit' then
+          local defID = spGetUnitDefID(targID)
+          if civilianHousesTypeTable[defID] then
+            local x,y,z = 0,0,0
+             x,y,z = spGetUnitPosition(targID)
+            local xmin = x - sizeOfHouse 
+            local zmin = z - sizeOfHouse
+            local xmax = x + sizeOfHouse
+            local zmax = z + sizeOfHouse
+            local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,  zmax, myTeamID)
+            if unitsInRect and #unitsInRect then
+              for i=1, #unitsInRect do
+                local subUnitDefID = spGetUnitDefID(unitsInRect[i])
+                if secretPluginsTypeTable[subUnitDefID] then
+                  selectedUnitsCount = selectedUnitsCount + 1
+                  selectedUnitsCounts[subUnitDefID] = 1 
+                  selectionChanged = true
+                end
+              end
+            end
+          elseif secretPluginsTypeTable[defID] then
+                selectedUnitsCount = selectedUnitsCount + 1
+                selectedUnitsCounts[defID] = 1 
+                selectionChanged = true
+          end       
+      end       
+    end       
+end
 
 local vsx, vsy = widgetHandler:GetViewSizes()
 function widget:ViewResize(n_vsx,n_vsy)
@@ -601,7 +662,9 @@ end
 
 
 function widget:MouseRelease(x, y, button)
-    if WG['smartselect'] and not WG['smartselect'].updateSelection then return end
+  handleLeftClickRelease(x, y,  button)
+
+  if WG['smartselect'] and not WG['smartselect'].updateSelection then return end
   if (not activePress) then
     return -1
   end
