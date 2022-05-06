@@ -402,6 +402,7 @@ function  getManualCivilianBuildingMaps(mapName)
         assert(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
+            [UnitDefNames["objective_military_gyland"].id] = "water",
             [UnitDefNames["objective_refugeegyland"].id] = "water",
             [UnitDefNames["objective_factoryship"].id] = "water",
             [UnitDefNames["objective_refugeecamp"].id] = "land",
