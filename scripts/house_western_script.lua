@@ -323,11 +323,10 @@ function selectGroundBuildMaterial()
     nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
 
-    if GG.MapDefinedHouseType then
-        x,y,z = math.ceil(x), math.ceil(y), math.ceil(z)
-        if GG.MapDefinedHouseType[x] and GG.MapDefinedHouseType[x][z] then
-            return materialChoiceTable[materialChoiceTableReverse[GG.MapDefinedHouseType[x][z]]]
-        end
+    if getManualCivilianBuildingMaps(Game.mapName) then
+        mapeDependenHouseTypes = getMapDependentHouseTypes(Game.mapName)    
+        nice = math.random(3,4)
+        return materialChoiceTable[nice]
     end
 
     if not nice then nice = 1 end
