@@ -380,6 +380,7 @@ function spawnInitialHouses(frame)
            registerManuallyPlacedHouses() 
            boolInitialized = ( GG.MapCompletedBuildingPlacement and  (GG.MapCompletedBuildingPlacement == true))
            if boolInitialized == false then return end
+           regenerateRoutesTable()
            GG.CitySpawnComplete = true
            echo("spawnInitialHouses:Initialization completed")
         end

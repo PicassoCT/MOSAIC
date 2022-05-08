@@ -201,9 +201,8 @@ local function getCountryByCulture()
   end
 
   if culture == "international" then
-    local internationalCityCountries = {"Dubai", "Hong Kong",
-      "United States", "United Kingdom", "Japan"}
-    return internationalCityCountries[hash % #internationalCityCountries +1]
+    local internationalCityStates = {"Dubai", "Singapore", "Monaco"}
+    return internationalCityStates[((hash*69) % #internationalCityStates) +1]
   end
 end
 

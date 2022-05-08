@@ -49,11 +49,18 @@ local boolInitialized = false
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
+assert(TruckTypeTable)
+assert(#TruckTypeTable>0)
+
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
-local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
-                                     UnitDefs)
+assert(houseTypeTable)
+assert(#houseTypeTable>0)
+
+local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
+                                                            "civilian", UnitDefs)
+assert(civilianWalkingTypeTable)
+assert(#civilianWalkingTypeTable>0)
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
@@ -166,13 +173,13 @@ function spawnInitialPopulation(frame)
     -- great Grid of placeable Positions 
     if GG.CitySpawnComplete  then
         issueArrivedUnitsCommands()
-        regenerateRoutesTable()
         boolInitialized = true
     end
 end
 
 function getRandomSpawnNode()
     startNode = randT(RouteTabel)
+    if count(RouteTable) == 0 then regenerateRoutesTable() end
     attempts = 0
 
     while not doesUnitExistAlive(startNode) and attempts < 5 do
@@ -233,7 +240,8 @@ end
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
-       payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
+        Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
+        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
 
         return attachPayload(payLoadID, id)
     end
@@ -242,8 +250,9 @@ end
 function loadRefugee(id, loadType)
     if refugeeableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
-       payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-       return attachPayload(payLoadID, id)
+        Spring.Echo("createUnitAtUnit ".."game_civilians.lua")   
+        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
+        return attachPayload(payLoadID, id)
     end
 end
 
@@ -360,6 +369,9 @@ end
 function regenerateRoutesTable()
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
+    assert(TruckType)
+    assert(GG.BuildingTable)
+    assert(#GG.BuildingTable > 0)
     for thisBuildingID, data in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 
         newRouteTabel[thisBuildingID] = {}
         for otherID, oData in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 		

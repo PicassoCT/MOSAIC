@@ -41,7 +41,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 local teamID = SpawnedUnits[frame][i].teamID
                 local baseType = Type_BaseTypeMap[UnitDefs[unitDefID].name]
 
-                if objectiveTypeTable[unitDefID] then
+                if objectiveTypeTable[unitDefID] and objectiveTypeTable[unitDefID] == "land" then
                     baseType = "house"
                 end
 
