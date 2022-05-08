@@ -296,8 +296,7 @@ function getGameConfig()
     Cultures =  getAllCultures()
     GG.AllCultures = getAllCultures()
     GG.GameConfig = getGameConfig()
-    _G.GameConfig = getGameConfig()
-    
+    _G.GameConfig = getGameConfig()    
   
 
     -- ===================================================================================================================
@@ -315,15 +314,13 @@ function getGameConfig()
         }
     end
    
-
-
-function  getManualCivilianBuildingMaps(mapName)
-    mapName = string.lower(mapName)
-    ManualCivilianBuildingPlacement = {
-      ["mosaic_lastdayofdubai_v1"] = true
-    }
-    
-    if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
+    function  getManualCivilianBuildingMaps(mapName)
+        mapName = string.lower(mapName)
+        ManualCivilianBuildingPlacement = {
+          ["mosaic_lastdayofdubai_v1"] = true
+        }
+        
+        if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
    end
 
    function getPayloadTypes(UnitDefs)
@@ -794,14 +791,10 @@ function  getManualCivilianBuildingMaps(mapName)
                     ["house"] = {name = "house_arab", range = 0},
                     ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_arab", range = 8}},
-                ["international"] = {
-                    ["house"] = {name = "house_int", range = 0},
-                    ["civilian"] = {name = "civilian_int", range = 0},
-                    ["truck"] = {name = "truck_int", range = 3}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
-                    ["civilian"] = {name = "civilian_arab", range = 4},
-                    ["truck"] = {name = "truck_western", range = 2}},        
+                    ["civilian"] = {name = "civilian_western", range = 3},
+                    ["truck"] = {name = "truck_western", range = 3}},        
                 ["asian"] = {
                     ["house"] = {name = "house_western", range = -1},
                     ["civilian"] = {name = "civilian_arab", range = 4},
@@ -823,10 +816,21 @@ function  getManualCivilianBuildingMaps(mapName)
             end
 
             function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
-                local translation = getTranslation(cultureName)
-                assert(translation , "No translation for "..typeName.." in culture "..cultureName)
-                assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
-                return expandNameSubSetTable(translation[typeName], UnitDefs)
+                local translation = {}
+                if cultureName == Cultures.international then
+                    translationWestern = getTranslation(Cultures.western)
+                    translationArabic = getTranslation(Cultures.arabic)
+                    --translationAsian = getTranslation(Cultures.asian)
+                    westernUnitDefs = expandNameSubSetTable(translationWestern[typeName], UnitDefs)
+                    arabicUnitDefs = expandNameSubSetTable(translationArabic[typeName], UnitDefs)
+                    return mergeTables(westernUnitDefs, arabicUnitDefs)--, translationAsian
+                else
+                    translation = getTranslation(cultureName)
+                    assert(translation , "No translation for "..typeName.." in culture "..cultureName)
+                    assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
+                    return expandNameSubSetTable(translation[typeName], UnitDefs)
+                end
+            
             end
 
             function getRPGCarryingCivilianTypes(UnitDefs, culture)
@@ -849,7 +853,7 @@ function  getManualCivilianBuildingMaps(mapName)
                 end
 
                 if culturename == Cultures.international then
-                   return mergeTable(
+                   return mergeTables(
                         getRPGCarryingCivilianTypes(UnitDefs, Cultures.arabic),
                         getRPGCarryingCivilianTypes(UnitDefs, Cultures.western)
                         )
@@ -1027,10 +1031,29 @@ function  getManualCivilianBuildingMaps(mapName)
                         }
                     else
                         typeTable = {
-                          "civilian_western1","civilian_western2"
+                          "civilian_western1",
+                          "civilian_western2"
                         }
                     end
-                end                
+                end        
+
+                if GameConfig.instance.culture == "international" then  
+                    if sex == "male" then
+                        typeTable = {
+                            "civilian_arab1",
+                            "civilian_arab2",
+                            "civilian_western0"
+                        }
+                    else
+                        typeTable = {
+                            "civilian_arab0",
+                            "civilian_arab3",
+                            "civilian_western1",
+                            "civilian_western2"
+                        }
+                    end
+
+                end      
 
                 return getTypeTable(UnitDefNames, typeTable)
             end
@@ -1711,6 +1734,7 @@ function  getManualCivilianBuildingMaps(mapName)
                             x, y, z = Spring.GetUnitPosition(persPack.traitorID)
 
                             if doesUnitExistAlive(persPack.iconID) == false then
+                                Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:1741") 
                                 persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
                                     persPack.traitorID, x - 1,
                                 y + persPack.heightAbove, z)
@@ -2173,6 +2197,7 @@ end
             Spring.GetGameFrame() + 1)
 
         else
+            Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:2204") 
             parachutID =    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
 
             GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}
@@ -2682,6 +2707,14 @@ end
             return description
         end
 
+        function getMapDependentHouseTypes(mapName)
+            if string.find(string.lower(mapName), "dubai") then
+                return { "office", "white"}
+            end
+
+            return {}
+        end
+
         function getRandomCultureNames(culture)
             names = {
                 arabic = {
@@ -2749,7 +2782,7 @@ end
                     }
 		
 	         --merge all name types for international into superset
-		 international = {sur = {}, family = {}}
+		 international = {sur = {"hello"}, family = {"world"}}
 		  for culture, data in pairs(names) do
 		  	for nameType, names in pairs(data) do
 			   for i=1, #names do
@@ -2758,8 +2791,8 @@ end
 			end
 		  end
 
-                    return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
-                end
+return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
+end
 
 function getIdleTokken()
     if not GG.CurrentIdleNr then GG.CurrentIdleNr = 0 end
