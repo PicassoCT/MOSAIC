@@ -81,10 +81,12 @@ if (gadgetHandler:IsSyncedCode()) then
                     size = size - 1
                     echo("Spawn Test setup "..size)
                     spawnHouseID=randDict(spawnedSafeHouse)
+                    Spring.Echo("createUnitAtUnit ".."game_unittest.lua")      
                     trainedOperative = createUnitAtUnit(aiTeam,"operativeinvestigator", id, math.random(-40, 40), 0 ,  math.random(-40,40))
                     spawnedOperatives[trainedOperative] = trainedOperative
 
                     operativeCreatingNextSafeHouse = randDict(spawnedOperatives)
+                    Spring.Echo("createUnitAtUnit ".."game_unittest.lua")      
                     safehouseID = createUnitAtUnit(aiTeam, "antagonsafehouse", id, 0, 0, 0)
                     Spring.SetUnitAlwaysVisible(safehouseID, false)
                     spawnedSafeHouse[safehouseID] = safehouseID

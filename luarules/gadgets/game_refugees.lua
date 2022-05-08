@@ -66,7 +66,8 @@ end
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
-       payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
+        Spring.Echo("createUnitAtUnit ".."game_refugees.lua")   
+        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
 
         return attachPayload(payLoadID, id)
     end
@@ -75,8 +76,9 @@ end
 function loadRefugee(id, loadType)
     if refugeeAbleTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
-       payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-       return attachPayload(payLoadID, id)
+        Spring.Echo("createUnitAtUnit ".."game_refugees.lua") 
+        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
+        return attachPayload(payLoadID, id)
     end
 end
 

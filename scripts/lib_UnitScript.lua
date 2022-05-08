@@ -1426,6 +1426,7 @@ function getProjectilesAroundUnit(unitID, dist)
 
 function copyUnit(id, teamID, fatherID)
     ox, oy, oz = ox or 0, oy or 0, oz or 0
+    Spring.Echo("createUnitAtUnit ".."lib_UnitScript.lua:1430") 
     copyID = createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id, ox, oy, oz)
     transferUnitStatusToUnit(id, copyID)
     transferOrders(id, copyID)
@@ -1435,6 +1436,7 @@ end
 function transferUnitTeam(id, targetTeam) 
   Spring.TransferUnit(id, targetTeam) 
 end
+
 -- > Create a Unit at Piece of another Unit
 function createUnitAtPiece(id, typeID, Piece, team)
     x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(id, Piece)
@@ -1442,6 +1444,7 @@ function createUnitAtPiece(id, typeID, Piece, team)
     return Spring.CreateUnit(typeID, x, y, z, math.ceil(math.random(0, 3)),
                              teamID)
 end
+
 -- > Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orientation)
     assert(not parentID)

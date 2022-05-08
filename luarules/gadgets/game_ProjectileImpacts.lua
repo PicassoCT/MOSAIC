@@ -404,6 +404,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 
                 -- check if the icon is still there
                 if not persPack.IconID then
+                    Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),--teamID
                                           iconUnitTypeName, --typeID
@@ -413,6 +414,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                           0)   --orientation 
 
                     if persPack.IconID then
+                        Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")              
                         persPack.basePlateID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.IconID),--teamID
                                           "raidiconbaseplate", --typeID
@@ -602,7 +604,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check if the icon is still there
                 if not persPack.IconID then
                     --spEcho("Creating InterrogationIcon")
-
+                    Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")      
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, 
