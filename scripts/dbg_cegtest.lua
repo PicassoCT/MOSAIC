@@ -19,7 +19,7 @@ end
 
 function getCegName()
 	echo("Cegspawn")
-	return "railgunshine", 1000
+	return "railGunCeg", 1000
 end
 center = piece "center"
 Quader04 = piece "Quader04"
@@ -41,6 +41,8 @@ function script.Create()
 	echo(minimalAbsoluteDistance(-15,-15))
 	echo(minimalAbsoluteDistance(-15,15))
 	echo(minimalAbsoluteDistance(360,-270))
+	x,y,z = Spring.GetUnitPosition(unitID)
+	echo("Unit Position: "..x.."/"..y.."/"..z)
 end
 Body= piece"dronetest"
 InnerWing= piece"power"
