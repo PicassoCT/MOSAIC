@@ -104,17 +104,18 @@ function spawnUnit(defID, x, z)
     end
 end
 
-function setUpRefugeeWayPoints()
+function setUpRefugeeWayPoints(index)
     if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
-    for i = 1,4 do 
-        GG.CivilianEscapePointTable[i] = math.random(1,1000)/1000  
-    end
+    GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000  
 end
 
 function gadget:Initialize()
-    setUpRefugeeWayPoints()
+    for i=1,4 do
+        setUpRefugeeWayPoints(i)
+    end
 end
 
+indexOffset = 0
 function getEscapePoint(index)
     if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
     if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
@@ -123,12 +124,18 @@ function getEscapePoint(index)
     Spring.Echo("Unknown EscapePoint")
 end
 
+
 escapeeHash = getDetermenisticMapHash(Game)
 rStuck = {}
 refugeeTable = {}
 function refugeeStream(frame)
-    ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
+    ex,ez = getEscapePoint(((escapeeHash + 1 + indexOffset)%4)+1)
     ey = spGetGroundHeight(ex,ez)
+    if ey < 0 then
+        indexOffset = indexOffset +1
+    end
+
+  
     boolAtLeastOnePath = false
          foreach(refugeeTable,
             function(id)
@@ -157,12 +164,16 @@ function refugeeStream(frame)
                     spDestroyUnit(id, false, true)
                     refugeeTable[id] = nil
                     if rStuck[id].counter > MAX_STUCK_COUNTER then
-                        setUpRefugeeWayPoints()
-                        rStuck[id] = nil
+                       setUpRefugeeWayPoints(((escapeeHash + 1 + indexOffset)%4)+1)
+                       rStuck[id] = nil
                     end
                 else
-                     ex,ez = getEscapePoint(((escapeeHash + 1)%4)+1)
+  
+                     ex,ez = getEscapePoint(((escapeeHash + 1+ indexOffset)%4)+1)
                      ey = spGetGroundHeight(ex,ez)
+                     if ey < 0 then
+                        indexOffset = indexOffset +1
+                     end
                      offx, offz = math.random(25, 50) , math.random(25, 50) 
                      Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {"shift"})
                      Command(id, "go", {x = ex + offx,y = ey,z = ez + offz }, {})
@@ -174,11 +185,14 @@ function refugeeStream(frame)
             end
         )
     if not boolAtLeastOnePath then
-        setUpRefugeeWayPoints()
+        setUpRefugeeWayPoints(((escapeeHash + 1 + indexOffset)%4)+1)
     end
 
     if count(refugeeTable) < math.random(3,5) then
-       sx,sz = getEscapePoint((escapeeHash % 4) + 1)
+       sx,sz = getEscapePoint(((escapeeHash+ indexOffset) % 4) + 1)
+       if spGetGroundHeight(sx,sz) < 0 then
+            indexOffset = indexOffset +1
+       end
        local id =  spawnUnit("truck_arab"..math.random(1,8), sx, sz)
        payloadID = loadRefugee(id, "truckpayloadrefugee")
  
@@ -195,9 +209,11 @@ militaryTable = {}
 mStuck = {}
 militaryUnits = {"ground_truck_mg", "ground_tank_day","ground_truck_rocket","ground_truck_antiarmor",}
 function militaryStream(frame)
-    local ex,ez = getEscapePoint(((escapeeHash)%4)+1)
+    local ex,ez = getEscapePoint(((escapeeHash + indexOffset)%4)+1)
     local ey = spGetGroundHeight(ex,ez)
-
+    if ey < 0 then
+        indexOffset = indexOffset +1
+    end
     boolAtLeastOnePath = false
          foreach(militaryTable,           
             function(id)
@@ -227,7 +243,7 @@ function militaryStream(frame)
                     spDestroyUnit(id, false, true)
                     militaryTable[id] = nil
                     if mStuck[id].counter > MAX_STUCK_COUNTER then
-                        setUpRefugeeWayPoints()
+                        setUpRefugeeWayPoints(((escapeeHash + indexOffset)%4)+1)
                     end
                     mStuck[id] = nil              
                 else                    
@@ -242,12 +258,12 @@ function militaryStream(frame)
             end
         )
     if not boolAtLeastOnePath then
-        setUpRefugeeWayPoints()
+        setUpRefugeeWayPoints(((escapeeHash + indexOffset)%4)+1)
     end
 
     target =  math.max(0,math.random(3,5) - count(militaryTable))
     for i= 1, target, 1 do
-       local sx,sz = getEscapePoint(((escapeeHash + 1)%4)+1)
+       local sx,sz = getEscapePoint(((escapeeHash + indexOffset + 1)%4)+1)
        local id =  spawnUnit(militaryUnits[math.random(1,#militaryUnits)], sx, sz) 
        militaryTable[id]= id         
       
