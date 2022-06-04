@@ -121,9 +121,9 @@ local ignoredUnitDefs = {
 [UnitDefNames["raidiconbaseplate"].id]= true
 }
 
-if UnitDefNames["caesareagle"] then
-ignoredUnitDefs[UnitDefNames["caesareagle"].id]= true
-end
+if UnitDefNames["caesareagle"] then ignoredUnitDefs[UnitDefNames["caesareagle"].id]= true end
+if UnitDefNames["decobuilding"] then ignoredUnitDefs[UnitDefNames["decobuilding"].id]= true end
+if UnitDefNames["decoboat"] then ignoredUnitDefs[UnitDefNames["decoboat"].id]= true end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
