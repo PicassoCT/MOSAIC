@@ -155,6 +155,7 @@ end
 
 local function getCountryByCulture()
   local culture =  Spring.GetGameRulesParam ("culture") 
+  if not culture then return "Atlantian" end
   local hash = getDetermenisticHash()
   local region_countryMap = {}
   region_countryMap ={
@@ -234,6 +235,7 @@ function widget:Initialize()
   end)
   countryPhoneNr = "+0"
   local country = getCountryByCulture()
+  if not county then  countryPhoneNr = "VOICE OVER IP"; return end
   local hash = stringToHash(country)
   countryPhoneNr = countryPhoneNr..(hash%170).."-"
 end
