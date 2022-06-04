@@ -47,7 +47,7 @@ local culture = "todo"
 local function setAnchorsRelative(nvx, nvy)
   anchorx, anchory = nvx*0.9,nvy*0.15 
 end
-
+local boolDefinedByMap = false
 function widget:Initialize()
   startFrame = Spring.GetGameFrame() + 100
   endFrame = startFrame + (15*30)
@@ -55,6 +55,10 @@ function widget:Initialize()
   displayStaticFrame = startFrame+ displayStaticFrameIntervallLength
   vsx,vsy = Spring.GetViewGeometry()
   setAnchorsRelative(vsx,vsy)
+  if Game and  Game.mapName and string.find(string.lower(Game.mapName, "dubai")) then
+    boolDefinedByMap = true
+  end
+  
   culture = Spring.GetGameRulesParam ("culture") 
 end
 
@@ -7572,6 +7576,7 @@ end
 
 
 local function getCountryByCulture(culture, hash)
+   if boolDefinedByMap == true then return "Dubai" end
 
   local region_countryMap = {}
   region_countryMap ={
@@ -7626,7 +7631,7 @@ end
 
 local persistenCountry 
 local function getCountryNameByCulture(culture, hash)
-  if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
+   if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
 
   local country = getCountryByCulture(culture, hash)
   setCacheBy("country", country..", "..getRegionByCountry(country))
