@@ -49,18 +49,18 @@ local boolInitialized = false
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
-assert(TruckTypeTable)
-assert(#TruckTypeTable>0)
+assert(TruckTypeTable, tostring(TruckTypeTable))
+assert(count(TruckTypeTable) > 0, tostring(TruckTypeTable))
 
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 assert(houseTypeTable)
-assert(#houseTypeTable>0)
+assert(count(houseTypeTable) > 0)
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
 assert(civilianWalkingTypeTable)
-assert(#civilianWalkingTypeTable>0)
+assert(count(civilianWalkingTypeTable) > 0)
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
@@ -171,9 +171,12 @@ end
 --will not be called with boolInitialized true
 function spawnInitialPopulation(frame)  
     -- great Grid of placeable Positions 
-    if GG.CitySpawnComplete  then
+
+    if GG.CitySpawnComplete and GG.CitySpawnComplete == true then
+        checkReSpawnPopulation()
         issueArrivedUnitsCommands()
         boolInitialized = true
+        Spring.Echo("CitySpawnComplete and initialized")
     end
 end
 
@@ -220,6 +223,8 @@ function checkReSpawnPopulation()
                 civilianType = randDict(civilianWalkingTypeTable)
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
                                               goalNode)
+            else
+                echo("Found no startnode")
             end
         end
     else -- decimate arrived cvilians who are not DisguiseCivilianFor
@@ -367,11 +372,12 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
 end
 
 function regenerateRoutesTable()
+    Spring.Echo("Regenerating Routes Tabel")
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
     assert(TruckType)
     assert(GG.BuildingTable)
-    assert(#GG.BuildingTable > 0)
+    if #GG.BuildingTable > 0 then RouteTabel = newRouteTabel; return end
     for thisBuildingID, data in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 
         newRouteTabel[thisBuildingID] = {}
         for otherID, oData in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 		
