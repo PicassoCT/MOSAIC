@@ -786,6 +786,7 @@ function getGameConfig()
 
         --TODO Rewrite to make international all encompassing
         function getTranslation(cultureName)
+
             translation = {
                 ["arabic"] = {
                     ["house"] = {name = "house_arab", range = 0},
@@ -793,13 +794,14 @@ function getGameConfig()
                     ["truck"] = {name = "truck_arab", range = 8}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
-                    ["civilian"] = {name = "civilian_western", range = 3},
-                    ["truck"] = {name = "truck_western", range = 3}},        
+                    ["civilian"] = {name = "civilian_western", range = 2},
+                    ["truck"] = {name = "truck_western", range = 2}},        
                 ["asian"] = {
                     ["house"] = {name = "house_western", range = -1},
                     ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_western", range = -1}}
                 }
+                assert(translation[cultureName])
                 return translation[cultureName]
             end
 
@@ -823,14 +825,21 @@ function getGameConfig()
                     --translationAsian = getTranslation(Cultures.asian)
                     westernUnitDefs = expandNameSubSetTable(translationWestern[typeName], UnitDefs)
                     arabicUnitDefs = expandNameSubSetTable(translationArabic[typeName], UnitDefs)
-                    return mergeTables(westernUnitDefs, arabicUnitDefs)--, translationAsian
+
+                   local fullTable = {}
+                    for k, v in pairs(westernUnitDefs) do
+                        fullTable[k]= v
+                    end
+                    for k, v in pairs(arabicUnitDefs) do
+                        fullTable[k]= v
+                    end
+                    return fullTable--, translationAsian
                 else
                     translation = getTranslation(cultureName)
                     assert(translation , "No translation for "..typeName.." in culture "..cultureName)
                     assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
                     return expandNameSubSetTable(translation[typeName], UnitDefs)
-                end
-            
+                end            
             end
 
             function getRPGCarryingCivilianTypes(UnitDefs, culture)
@@ -888,7 +897,7 @@ function getGameConfig()
                 while i <= SubsetTable.range do
                     local key = SubsetTable.name..i
                     if UnitDefNames[key] then
-                        -- echo("adding "..SubsetTable.name..i)
+                       -- echo("adding "..SubsetTable.name..i)
                         --  assert(UnitDefNames[key].id)
                         expandedDictIdName[UnitDefNames[key].id] = key
                     end
@@ -2758,7 +2767,7 @@ end
                             "Leo", " Elias", "Oliver", "Eino", "Väinö", "Eeli", "Noel", "Leevi", "Onni", "Hugo",
                             "Emil", "Liam", "William", " Oliver", "Edvin", "Max", " Hugo", "Benjamin", "Elias", "Leo",
                             "Gabriel", " Louis", "Raphaël", " Jules", "Adam", "Lucas", "Léo", " Hugo", "Arthur", "Nathan",
-                            "Ben", " Jonas", "Leon", "Elias", "Finn", "Noah", "Paul", "Luis", "Lukas",
+                            "Ben", " Jonas", "Leon", "Elias", "Finn", "Noah", "Paul", "Luis", "Lukas", 
                             "Leonardo", "Francesco", "Alessandro", "Lorenzo", " Mattia", "Andrea", "Gabriele", "Riccardo", "Tommaso", "Edoardo",
                             "William", " Oskar", "Lucas", "Mathias", " Filip", "Oliver", "Jakob/Jacob", " Emil", "Noah", "Aksel", "Hugo", "Daniel",
                             "Martín", "Pablo", "Alejandro", "Lucas", "Álvaro", "Adrián", "Mateo", "David",
@@ -2782,14 +2791,22 @@ end
                     }
 		
 	         --merge all name types for international into superset
-		 international = {sur = {"hello"}, family = {"world"}}
-		  for culture, data in pairs(names) do
-		  	for nameType, names in pairs(data) do
-			   for i=1, #names do
-				international[nameType][#international[nameType]+1] = names[i]	
-			   end
-			end
-		  end
+          if culture == "international" then
+            if not GG.NameCacheInternational then
+              GG.NameCacheInternational ={}
+              GG.NameCacheInternational.sur = {}
+              GG.NameCacheInternational.family = {}
+    		  for culture, data in pairs(names) do
+                for i=1, #data.sur do
+                    GG.NameCacheInternational.sur[#GG.NameCacheInternational.sur+1] = data.sur[i]  
+                end
+                for i=1, #data.family do
+                    GG.NameCacheInternational.family[#GG.NameCacheInternational.family+1] = data.family[i]  
+                end
+    		  end
+            end
+            names.international = GG.NameCacheInternational
+          end
 
 return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
 end
