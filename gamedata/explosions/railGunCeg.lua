@@ -26,7 +26,7 @@ return {
 				size = 160,
 				sizegrowth = 0,
 				texture = [[groundflash]],
-				ttl = 10,
+				ttl = 25,
 			},
 		},
 		trail = {
