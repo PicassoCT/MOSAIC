@@ -21,12 +21,12 @@ local axisSign ={
 }
 
 if isInvestigator then
- Animations = include('animation_operativeinvestigator_female.lua') 
+	Animations = include('animation_operativeinvestigator_female.lua') 
 else
- Animations = include('animation_operativepropagator_male.lua') 
- x_axis = 1
- y_axis = 2
- z_axis = 3
+	Animations = include('animation_operativepropagator_male.lua') 
+ 	x_axis = 1
+ 	y_axis = 2
+ 	z_axis = 3
 end
 
 local center = piece('center');
@@ -397,6 +397,7 @@ function setupAnimation()
     
     for a,anim in pairs(Animations) do
         for i,keyframe in pairs(anim) do
+        	if type(keyframe) == "number" then echo("animation ".. a.."has no keyframes") end
             local commands = keyframe.commands;
             for k,command in pairs(commands) do
 				if command.p and type(command.p)== "string" then
