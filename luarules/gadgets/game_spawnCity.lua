@@ -26,7 +26,7 @@ local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
 local spRequestPath = Spring.RequestPath
 local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
-
+local spGetUnitDefID = Spring.GetUnitDefID
 local UnitDefNames = getUnitDefNames(UnitDefs)
 
 local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
@@ -48,42 +48,51 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
+assert(houseTypeTable[UnitDefNames["house_arab0"].id])
+
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 local boolHasCityCenter = false 
-local boolCachedMapManualPlacementResult
-local storedSpawnedUnits = {}
+local boolCachedMapManualPlacementResult = nil
+
+
+
 
 function isMapControlledBuildingPlacement(mapName)
-    if boolCachedMapManualPlacementResult then return boolCachedMapManualPlacementResult end
-    manualBuildingPlacingMaps = getManualObjectiveSpawnMapNames("manualBuildingPlacing")
-    if manualBuildingPlacingMaps[mapName] then
-        boolCachedMapManualPlacementResult = true
-    else
-        boolCachedMapManualPlacementResult = false
+    if boolCachedMapManualPlacementResult ~= nil then 
+        return boolCachedMapManualPlacementResult 
     end
+
+    boolCachedMapManualPlacementResult = string.find(string.lower(mapName), "dubai")
+    
     return boolCachedMapManualPlacementResult
 end
 
-function registerManuallyPlacedHouses() 
-    for id, data in pairs(storedSpawnedUnits) do
-        if doesUnitExistAlive(id) == true then
-            spSetUnitAlwaysVisible(id, true)
-            spSetUnitBlocking(id, false)
-            GG.BuildingTable[id] = {x = data.x, z = data.z }
-        end
-    end
-    storedSpawnedUnits = {} 
+allreadyRegistredBuilding = {}
+function registerManuallyPlacedHouses()      
+    counter = 0
+    foreach(Spring.GetAllUnits(),
+            function(id)
+                defID = spGetUnitDefID(id)
+                if houseTypeTable[defID] and not allreadyRegistredBuilding[id]then
+                    return id
+                end
+            end,
+            function(id)
+                allreadyRegistredBuilding[id] = true
+                spSetUnitAlwaysVisible(id, true)
+                spSetUnitBlocking(id, false)
+                x,y,z = Spring.GetUnitPosition(id)
+                GG.BuildingTable[id] = {x = x, z = z }
+                counter = counter + 1
+            end
+            )
+
+    return counter
 end
 
-function gadget:UnitCreated(unitID, unitDefID, teamID)
-    if teamID == gaiaTeamID and houseTypeTable[unitDefID] and isMapControlledBuildingPlacement(Game.mapName) == true then
-       x,y,z = spGetUnitPosition(unitID)
-       storedSpawnedUnits[unitID] = {x=x, y=y, z = z}
-    end
- end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
@@ -363,6 +372,7 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
 end
 
 --will not be called with boolInitialized true
+boolAtLeastOneManualPlacement = false
 function spawnInitialHouses(frame)
   
     -- great Grid of placeable Positions 
@@ -375,14 +385,17 @@ function spawnInitialHouses(frame)
                               )
             boolInitialized = true   
             GG.CitySpawnComplete = true
-            echo("spawnInitialHouses:Initialization completed")
+            echo("spawnInitialHouses: Default Initialization completed")
         else
-           registerManuallyPlacedHouses() 
-           boolInitialized = ( GG.MapCompletedBuildingPlacement and  (GG.MapCompletedBuildingPlacement == true))
+
+           registeredUnits = registerManuallyPlacedHouses() 
+           echo("Registering Units manually" ..registeredUnits.." and "..toString(GG.MapCompletedBuildingPlacement))
+           boolAtLeastOneManualPlacement = boolAtLeastOneManualPlacement or  registeredUnits > 0
+           boolInitialized = (boolAtLeastOneManualPlacement and Spring.GetGameFrame() > originalGameFrame and registeredUnits == 0)
            if boolInitialized == false then return end
            regenerateRoutesTable()
            GG.CitySpawnComplete = true
-           echo("spawnInitialHouses:Initialization completed")
+           echo("spawnInitialHouses: Manual Placement Initialization completed")
         end
 
         regenerateRoutesTable()
@@ -470,19 +483,21 @@ function spawnBuilding(defID, x, z,  boolInCityCenter)
         return id
     end
 end
-
+originalGameFrame = -math.huge
 function gadget:Initialize()
     -- Initialize global tables
-    GG.BuildingTable = {}
-    GG.innerCityCenter = {}
+    Spring.Echo(Game.mapName.. " is a map controlled city place map "..toString(isMapControlledBuildingPlacement(Game.mapName)))
+    if not  GG.BuildingTable then  GG.BuildingTable = {} end
+    if not  GG.innerCityCenter then  GG.innerCityCenter = {} end
+
+    GG.CitySpawnComplete = false
     GameConfig = getGameConfig()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
     foreach(Spring.GetAllUnits(),
             function(id) 
                 Spring.DestroyUnit(id, true, true) 
             end)
-
-
+originalGameFrame = Spring.GetGameFrame()
 end
 
 
