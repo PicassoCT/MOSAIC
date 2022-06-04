@@ -17,6 +17,17 @@ local Civil = Civilian:New{
 		normaltex = "unittextures/western_civilian_normal.dds",
     },
 
+		weapons ={
+		[1]={name  = "ak47",
+			 onlyTargetCategory = [[GROUND ARRESTABLE]],
+			},	
+		[2]={name  = "molotow",
+			 onlyTargetCategory = [[GROUND]],
+			},
+		[3]={name  = "rpg7",
+			 onlyTargetCategory = [[GROUND]],
+			},	
+	},
 	
 	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
