@@ -226,6 +226,7 @@ return {
         }
     },
     ["UPBODY_STANDING_PISTOL"] = {
+       { 
         ["time"] = 1,
         ["commands"] = {
             {["c"] = "turn", ["p"] = "Head", ["a"] = x_axis, ["t"] = 0.297505, ["s"] = 0.539443},
@@ -238,6 +239,7 @@ return {
             {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0.897152, ["s"] = 3.364319},
             {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = 1.389070, ["s"] = 5.209012},
             {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = -1.040511, ["s"] = 3.901918}
+            },
         },
         {
             ["time"] = 9,
@@ -896,7 +898,7 @@ return {
             }
         },
         {
-            ["time"] = 10,
+            ["time"] = 33,
             ["commands"] = {}
         }
     },
@@ -1134,7 +1136,7 @@ return {
             }
         },
         {
-            ["time"] = 10,
+            ["time"] = 33,
             ["commands"] = {}
         }
     }
