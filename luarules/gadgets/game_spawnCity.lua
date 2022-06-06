@@ -60,14 +60,8 @@ local boolCachedMapManualPlacementResult = nil
 
 
 
-function isMapControlledBuildingPlacement(mapName)
-    if boolCachedMapManualPlacementResult ~= nil then 
-        return boolCachedMapManualPlacementResult 
-    end
-
-    boolCachedMapManualPlacementResult = string.find(string.lower(mapName), "dubai")
-    
-    return boolCachedMapManualPlacementResult
+function isMapControlledBuildingPlacement()
+   return string.find(string.lower(Game.mapName), "dubai") ~= nil
 end
 
 allreadyRegistredBuilding = {}
@@ -377,7 +371,7 @@ function spawnInitialHouses(frame)
   
     -- great Grid of placeable Positions 
     if distributedPathValidationComplete(frame, 10) == true  then
-        if  isMapControlledBuildingPlacement(Game.mapName) == false then
+        if  isMapControlledBuildingPlacement() == false then
         -- spawn Buildings from MapCenter Outwards
         fromMapCenterOutwards(BuildingPlaceTable,
                               math.ceil(#BuildingPlaceTable/2),
@@ -385,6 +379,7 @@ function spawnInitialHouses(frame)
                               )
             boolInitialized = true   
             GG.CitySpawnComplete = true
+            regenerateRoutesTable()
             echo("spawnInitialHouses: Default Initialization completed")
         else
 
@@ -393,12 +388,10 @@ function spawnInitialHouses(frame)
            boolAtLeastOneManualPlacement = boolAtLeastOneManualPlacement or  registeredUnits > 0
            boolInitialized = (boolAtLeastOneManualPlacement and Spring.GetGameFrame() > originalGameFrame and registeredUnits == 0)
            if boolInitialized == false then return end
-           regenerateRoutesTable()
            GG.CitySpawnComplete = true
+            regenerateRoutesTable()
            echo("spawnInitialHouses: Manual Placement Initialization completed")
         end
-
-        regenerateRoutesTable()
     end
 end
 
@@ -486,7 +479,7 @@ end
 originalGameFrame = -math.huge
 function gadget:Initialize()
     -- Initialize global tables
-    Spring.Echo(Game.mapName.. " is a map controlled city place map "..toString(isMapControlledBuildingPlacement(Game.mapName)))
+    Spring.Echo(Game.mapName.. " is a map controlled city place map "..toString(isMapControlledBuildingPlacement()))
     if not  GG.BuildingTable then  GG.BuildingTable = {} end
     if not  GG.innerCityCenter then  GG.innerCityCenter = {} end
 
@@ -522,7 +515,6 @@ function gadget:GameFrame(frame)
         spawnInitialHouses(frame)
     elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
         countDownRespawnHouses(5)
-
         checkReSpawnHouses()
     end
 end

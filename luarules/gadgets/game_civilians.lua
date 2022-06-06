@@ -173,8 +173,10 @@ function spawnInitialPopulation(frame)
     -- great Grid of placeable Positions 
 
     if GG.CitySpawnComplete and GG.CitySpawnComplete == true then
+        regenerateRoutesTable()
         checkReSpawnPopulation()
         issueArrivedUnitsCommands()
+
         boolInitialized = true
         Spring.Echo("CitySpawnComplete and initialized")
     end
@@ -182,7 +184,7 @@ end
 
 function getRandomSpawnNode()
     startNode = randT(RouteTabel)
-    if count(RouteTable) == 0 then regenerateRoutesTable() end
+    
     attempts = 0
 
     while not doesUnitExistAlive(startNode) and attempts < 5 do
@@ -208,6 +210,8 @@ function checkReSpawnPopulation()
             end
         end
     end
+
+
 
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
 
@@ -245,7 +249,7 @@ end
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
-        Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
+--        Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
 
         return attachPayload(payLoadID, id)
@@ -255,7 +259,7 @@ end
 function loadRefugee(id, loadType)
     if refugeeableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo(id .. " is a loadable truck ")
-        Spring.Echo("createUnitAtUnit ".."game_civilians.lua")   
+        --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")   
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
         return attachPayload(payLoadID, id)
     end
