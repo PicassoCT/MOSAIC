@@ -55,9 +55,9 @@ function widget:Initialize()
   displayStaticFrame = startFrame+ displayStaticFrameIntervallLength
   vsx,vsy = Spring.GetViewGeometry()
   setAnchorsRelative(vsx,vsy)
-  if Game and  Game.mapName and string.find(string.lower(Game.mapName, "dubai")) then
-    boolDefinedByMap = true
-  end
+  --if Game and  Game.mapName and string.find(string.lower(Game.mapName, "dubai")) then
+  --  boolDefinedByMap = true
+  --end
   
   culture = Spring.GetGameRulesParam ("culture") 
 end
