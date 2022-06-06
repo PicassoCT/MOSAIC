@@ -29,7 +29,7 @@ local GAIA_ALLYTEAM_ID      -- initialized later on..
 local FLAG_RADIUS     = FLAG_RADIUS
 local WAYPOINT_RADIUS = FLAG_RADIUS
 local WAYPOINT_HEIGHT = 100
-local REF_UNIT_DEF = UnitDefNames["operativeasset"] -- Reference unit to check paths
+local REF_UNIT_DEF = UnitDefNames["civilian_arab0"] -- Reference unit to check paths
 -- We enforce the map waypoints are all traversed once each 10s
 local MAP_TRAVERSING_PERIOD = 310
 -- The frontlines are updated at least once each 10s
@@ -107,6 +107,7 @@ local function GetNearestWaypoint2D(x, z)
             nearest = p
         end
     end
+
     return nearest, minDist
 end
 
@@ -222,6 +223,7 @@ local function CalculateFrontline(myTeamID, myAllyTeamID, dilate)
     local hq = teamStartPosition[myTeamID]
     if hq == nil then
         local x,y,z = Spring.GetTeamStartPosition(myTeamID) 
+        if not x then x, y, z = math.random(1,99)*(Game.mapSizeX/100), 0, math.random(1,99)*(Game.mapSizeZ/100) end
         hq = GetNearestWaypoint2D(x, z)
     end
     
