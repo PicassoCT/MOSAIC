@@ -2206,7 +2206,7 @@ end
             Spring.GetGameFrame() + 1)
 
         else
-            Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:2204") 
+--            Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:2204") 
             parachutID =    createUnitAtUnit(Spring.GetUnitTeam(id), "air_parachut", id)
 
             GG.ParachutPassengers[parachutID] = {id = id, x = x, y = y, z = z}

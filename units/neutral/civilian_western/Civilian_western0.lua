@@ -12,7 +12,7 @@ local Civil = Civilian:New{
 
 	buildPic = "civilian.png",
 	iconType = "civilian",
-	customparams = {
+	customParams = {
 		baseclass		= "Civilian", -- TODO: hacks
 		normaltex = "unittextures/western_civilian_normal.dds",
     },

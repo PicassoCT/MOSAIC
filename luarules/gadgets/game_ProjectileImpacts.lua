@@ -604,7 +604,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check if the icon is still there
                 if not persPack.IconID then
                     --spEcho("Creating InterrogationIcon")
-                    Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")      
+--                    Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")      
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, 
