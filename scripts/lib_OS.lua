@@ -866,60 +866,92 @@ function debugAimLoop(sleepMS, weaponID)
     end
 end
 
-function vtolLoop(plane, restTimeMs, timeBetweenFlightsMs)
+function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
+    padX,padY,padZ = Spring.GetUnitPiecePosDir(unitID, plane)
+    if not GG.VTOLFlightPads then
+     GG.VTOLFlightPads = {} 
+    end
+    myPosition = #GG.VTOLFlightPads +1
+    GG.VTOLFlightPads[myPosition] = {x= padX, y= padY, z = padZ}
+    flyHight = 19000
 
     function showHidePlane(boolShow, plane)
-            if boolShow == true then
-                Show(plane)
-            else
-                Hide(plane)
-            end
+        if boolShow == true then
+            Show(plane)
+        else
+            Hide(plane)
         end
-
-    function movePlaneRandomLocationInTime(plane,  time)
-        rx,ry, rz = randSign()* math.random(3000,7000), 19000, randSign() * math.random(3000,7000)
-        syncMoveInTime(plane, rx,ry,rz, time)
     end
 
-    boolInAir = maRa()
-    if boolInAir == true then 
+    function convertWorldPosBackToUnitPos(unitID, wx, wy, wz)
+        _,ry,_ = Spring.GetUnitRotation(unitID)
+        ry = -ry --counterrotation 
+     
+        mwx, mwy, mwz = Spring.GetUnitPosition(unitID)
+
+        resx,resy, resz = wx - mwx, wy - mwy, wz - mwz
+        --mirrored 
+        resx, resz = rotationMatrix(0, 0, resx, resz, ry)
+        return resx,resy, resz
+    end
+
+    function movePlaneOverLocation(plane, location, time) 
+        t = GG.VTOLFlightPads[location]
+        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x,t.y + flyHight,t.z)      
+        syncMoveInTime(plane, rx,ry,rz, time)
+        return dice
+    end
+
+    function movePlaneToLocation(plane, location, time)    
+        t = GG.VTOLFlightPads[location]
+        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x,t.y ,t.z)       
+        syncMoveInTime(plane, rx,ry,rz, time)
+        return dice
+    end
+
+    boolStartRemote = maRa()
+    if boolStartRemote == true then 
         showHidePlane(false, plane)
     end
     lastValue = math.random(-180,180)
     Turn(plane,y_axis,math.rad(lastValue),0)
     Sleep(15000)
-
+    targetDice = math.random(1, #GG.VTOLFlightPads)
     while true do
-        if boolInAir == true then
+       
+        if boolStartRemote == true then
             randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs 
-            Sleep(randSleep)
-            movePlaneRandomLocationInTime(plane, 100)
-            WaitForMoves(plane)
+            Sleep(randSleep)              
+            movePlaneToLocation(plane, targetDice, 100)
             showHidePlane(true, plane)
+            movePlaneOverLocation(plane, targetDice, 9000) 
+            movePlaneOverLocation(plane, myPosition, 20000) 
+            WaitForMoves(plane)
             targetValue = math.random(0,180)*randSign()
             StartThread(turnInTime, plane, y_axis, targetValue, 7000, 0,lastValue,0 )
-            syncMoveInTime(plane, 0, 0, 0, 7000)
-             Sleep(7000)
+            movePlaneToLocation(plane, myPosition, 100)
             WaitForMoves(plane)
             lastValue = targetValue
          
-            boolInAir = false
+            boolStartRemote = false
             randSleep= (math.random(1,5)*1000) +restTimeMs
             Sleep(randSleep)
         else
+            targetDice = math.random(1, #GG.VTOLFlightPads)
             randSleep= (math.random(1,5)*1000) +restTimeMs
             Sleep(randSleep)
-            movePlaneRandomLocationInTime(plane, 8000)
-            Sleep(200)
+            movePlaneToLocation(plane, myPosition, 100)
             targetValue = math.random(0,90)*randSign()
-            StartThread(turnInTime, plane, y_axis, targetValue, 8000, 0,lastValue,0 )
+            Turn(plane,y_axis,math.rad(targetValue), 0)
+            Sleep(200)           
+            StartThread(turnInTime, plane, y_axis, 0, 8000, 0,lastValue,0 )
+            movePlaneOverLocation(plane, myPosition, 9000) 
             WaitForMoves(plane)
-            lastValue = targetValue
-            rx,rz = math.random(1,Game.mapSizeX)*randSign(), math.random(1,Game.mapSizeZ)*randSign()
-            syncMoveInTime(plane, rx, 19000, rz, 10000)
+            movePlaneOverLocation(plane, targetDice, 39000) 
+            movePlaneToLocation(plane, targetDice, 9000)            
             WaitForMoves(plane)
             showHidePlane(false, plane)
-            boolInAir = true
+            boolStartRemote = true
             randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs
             Sleep(randSleep)
         end

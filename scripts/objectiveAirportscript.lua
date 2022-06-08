@@ -55,6 +55,7 @@ function setup()
     for i = 1, #TablesOfPiecesGroups["AirCar"] do
         StartThread(
             vtolLoop,
+            unitID
             TablesOfPiecesGroups["AirCar"][i],
             math.random(5, 10) * 15 * 1000,
             math.random(10, 30) * 15 * 10000

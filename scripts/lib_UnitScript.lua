@@ -3991,7 +3991,7 @@ function sixPointInsideDetAlgo(x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6,
 end
 
 -- >Rotates a point around another Point
-function drehMatrix(x, y, zx, zy, degInRad)
+function rotationMatrix(x, y, zx, zy, degInRad)
     x = x - zx
     y = y - zy
     tempX = (math.cos(degInRad) * x) + ((-1.0 * math.sin(degInRad)) * y)
