@@ -88,29 +88,23 @@ end
 function turnTrailerLoop()
     turnRatePerSecondDegree = (300*0.16)/4
     while true do
-       message= ""
-       
         _,newHeading,_ = Spring.GetUnitRotation(unitID)
         if boolMoving == true  then
-            x,y,z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
-            goal= math.ceil(y*0.95)
+            x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+            goal = math.ceil(y * 0.95)
             Turn(PayloadCenter,y_axis, goal, 1.125)
-            message= "turnTrailerLoop correcting to zero"
         else
             if boolTurning == true then
-            px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
-            x,y,z = Spring.GetUnitPosition(unitID)
-            dx, dy, dz = px-x, py-y, pz-z
-            headRad = math.pi- math.atan2(dx, dz)
-            Turn(PayloadCenter,y_axis, headRad, 1)
-            message= "turnTrailerLoop turning"
+                px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
+                x,y,z = Spring.GetUnitPosition(unitID)
+                dx, dy, dz = px-x, py-y, pz-z
+                headRad = math.atan2(dx, dz)
+                Turn(PayloadCenter,y_axis, headRad, 1)
             end
-
         end
-     Spring.Echo(message)
+
     oldHeading = newHeading
     Sleep(250)
-
     end
 end
 
