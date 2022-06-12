@@ -960,12 +960,11 @@ end
 
 
 
-function headingChangeDetector(unitID, moveTreshold, boolTurnLeft, boolTurning, boolDebugPrintDiff)
+function headingChangeDetector(unitID,  boolTurnLeft, boolTurning, boolDebugPrintDiff)
     TurnCount = 0
     headingOfOld = Spring.GetUnitHeading(unitID)
-    oldx, _, oldz = Spring.GetUnitPosition(unitID)
     while true do
-        Sleep(500)
+        Sleep(250)
  
         tempHead = Spring.GetUnitHeading(unitID)
         if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end

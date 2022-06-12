@@ -795,7 +795,7 @@ function getGameConfig()
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
                     ["civilian"] = {name = "civilian_western", range = 2},
-                    ["truck"] = {name = "truck_western", range = 2}},        
+                    ["truck"] = {name = "truck_western", range = 3}},        
                 ["asian"] = {
                     ["house"] = {name = "house_western", range = -1},
                     ["civilian"] = {name = "civilian_arab", range = 4},
