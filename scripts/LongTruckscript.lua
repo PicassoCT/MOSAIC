@@ -87,24 +87,33 @@ end
 
 function turnTrailerLoop()
     turnRatePerSecondDegree = (300*0.16)/4
+    _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
     while true do
-        _,newHeading,_ = Spring.GetUnitRotation(unitID)
         if boolMoving == true  then
+
+          
             x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
             goal = math.ceil(y * 0.95)
             Turn(PayloadCenter,y_axis, goal, 1.125)
+            lastOrientation = goal
         else
             if boolTurning == true then
+        
                 px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
-                x,y,z = Spring.GetUnitPosition(unitID)
-                dx, dy, dz = px-x, py-y, pz-z
-                headRad = math.atan2(dx, dz)
+                x,y,z = Spring.GetUnitPiecePosDir(unitID, PayloadCenter)
+                dx,  dz = px-x, pz -z
+                if boolTurnLeft then
+                    headRad = math.atan2(dz, dx)
+                else
+                    headRad = math.atan2(dx, dz)
+                end
                 Turn(PayloadCenter,y_axis, headRad, 1)
+                lastOrientation = headRad
+            else    
+                Turn(PayloadCenter,y_axis, lastOrientation, 0)   
             end
         end
-
-    oldHeading = newHeading
-    Sleep(250)
+    Sleep(125)
     end
 end
 
@@ -112,17 +121,13 @@ function hcdetector()
     TurnCount = 0
     headingOfOld = Spring.GetUnitHeading(unitID)
     while true do
-        Sleep(250)
+        Sleep(50)
  
         tempHead = Spring.GetUnitHeading(unitID)
         if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
         if tempHead ~= headingOfOld then
-            TurnCount = TurnCount + 1
-            if TurnCount > 1 then
-                boolTurning = true
-            end
+            boolTurning = true
         else
-            TurnCount = 0
             boolTurning = false
         end
         boolTurnLeft = headingOfOld > tempHead
@@ -202,25 +207,23 @@ function monitorMoving()
     ox,oy,oz = spGetUnitPosition(unitID)
     nx,ny,nz = ox,oy,oz
     while true do
-        if boolMonitoring == true then
-            ox,oy,oz = nx,ny,nz         
-            nx,ny,nz = spGetUnitPosition(unitID)
+            ox,oy,oz = nx,ny,nz  
+            nx,ny,nz = spGetUnitPosition(unitID)        
             diff= math.abs(ox - nx) + math.abs(oz-nz) 
-
             if diff >  5  then
                 boolMoving = true
             else
                 boolMoving = false
             end
-        end
+    
         Sleep(125)
+    
     end
 end
 
 
 boolMoving = false
 function script.StartMoving()    
-    boolMonitoring = true
     Signal(SIG_HONK)
     spinT(TablesOfPiecesGroups["Wheel"], x_axis, 260, 0.3)
 end
@@ -229,7 +232,6 @@ function honkIfHorny()
     Signal(SIG_HONK)
     SetSignalMask(SIG_HONK)
     Sleep(250)
-    boolMonitoring = false
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", 1.0, 1000, 1)
     end

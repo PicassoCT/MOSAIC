@@ -1042,7 +1042,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 ToShowTable[#ToShowTable + 1] = element
 
                 if vtolDeco[element] then 
-                    StartThread(vtolLoop, unitID, vtolDeco[element], math.random(1,4)*60*1000, math.random(5,10)*60*10000)
+                    StartThread(vtolLoop, unitID, vtolDeco[element], math.random(1,4)*1000, math.random(5,10)*10000)
                 end
 
                 if countElements == 24 then return end

@@ -192,6 +192,7 @@ function refugeeStream(frame)
        sx,sz = getEscapePoint(((escapeeHash+ indexOffset) % 4) + 1)
        if spGetGroundHeight(sx,sz) < 0 then
             indexOffset = indexOffset +1
+            return
        end
        local id =  spawnUnit("truck_arab"..math.random(1,8), sx, sz)
        payloadID = loadRefugee(id, "truckpayloadrefugee")
@@ -213,6 +214,7 @@ function militaryStream(frame)
     local ey = spGetGroundHeight(ex,ez)
     if ey < 0 then
         indexOffset = indexOffset +1
+        return
     end
     boolAtLeastOnePath = false
          foreach(militaryTable,           

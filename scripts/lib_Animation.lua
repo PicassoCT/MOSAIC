@@ -614,13 +614,13 @@ function syncTurnInTime(piecename, x_goaldeg, y_goaldeg, z_goaldeg, timeMS,
 end
 
 -- > shortCut for SyncMovIn
-function mSyncIn(piecename, x_val, y_val, z_val, times)
-    syncMoveInTime(piecename, x_val, y_val, z_val, times)
+function mSyncIn(piecename, x_val, y_val, z_val, timeInMs)
+    syncMoveInTime(piecename, x_val, y_val, z_val, timeInMs)
 end
 
 -- > Move a piece so that it arrives at all axis on the given times
-function syncMoveInTime(piecename, x_val, y_val, z_val, times)
-    times = (math.abs(times) + 1) / 1000
+function syncMoveInTime(piecename, x_val, y_val, z_val, timeInMs)
+    times = (math.abs(timeInMs) + 1) / 1000
     mx, my, mz = UnitScript.GetPieceTranslation(piecename)
     xd, yd, zd = absDistance(mx, x_val), absDistance(my, y_val),
                  absDistance(mz, z_val)

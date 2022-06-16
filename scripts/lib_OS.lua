@@ -867,13 +867,16 @@ function debugAimLoop(sleepMS, weaponID)
 end
 
 function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
-    padX,padY,padZ = Spring.GetUnitPiecePosDir(unitID, plane)
+    padX, padY, padZ = Spring.GetUnitPiecePosDir(unitID, plane)
     if not GG.VTOLFlightPads then
      GG.VTOLFlightPads = {} 
     end
     myPosition = #GG.VTOLFlightPads +1
     GG.VTOLFlightPads[myPosition] = {x= padX, y= padY, z = padZ}
     flyHight = 19000
+    while #GG.VTOLFlightPads < 2 do
+        Sleep(1000)
+    end
 
     function showHidePlane(boolShow, plane)
         if boolShow == true then
@@ -897,16 +900,16 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
 
     function movePlaneOverLocation(plane, location, time) 
         t = GG.VTOLFlightPads[location]
-        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x,t.y + flyHight,t.z)      
+        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, t.y + flyHight, t.z)      
         syncMoveInTime(plane, rx,ry,rz, time)
-        return dice
+        return location
     end
 
     function movePlaneToLocation(plane, location, time)    
         t = GG.VTOLFlightPads[location]
         rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x,t.y ,t.z)       
         syncMoveInTime(plane, rx,ry,rz, time)
-        return dice
+        return location
     end
 
     boolStartRemote = maRa()
@@ -916,20 +919,28 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
     lastValue = math.random(-180,180)
     Turn(plane,y_axis,math.rad(lastValue),0)
     Sleep(15000)
-    targetDice = math.random(1, #GG.VTOLFlightPads)
-    while true do
-       
+    targetDice = math.random(1, #GG.VTOLFlightPads) 
+    while  targetDice == myPosition do 
+        Sleep(100)
+      targetDice = math.random(1, #GG.VTOLFlightPads) 
+    end  
+    while true do       
         if boolStartRemote == true then
+            echo("Flying  start Remote")
             randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs 
             Sleep(randSleep)              
             movePlaneToLocation(plane, targetDice, 100)
+             echo("Flying  Remote  At Location")
             showHidePlane(true, plane)
-            movePlaneOverLocation(plane, targetDice, 9000) 
-            movePlaneOverLocation(plane, myPosition, 20000) 
+            movePlaneOverLocation(plane, targetDice, 900) 
+            echo("Flying  Remote Over Location")
+            movePlaneOverLocation(plane, myPosition, 2000) 
+            echo("Flying  Remote Over Home")
             WaitForMoves(plane)
             targetValue = math.random(0,180)*randSign()
             StartThread(turnInTime, plane, y_axis, targetValue, 7000, 0,lastValue,0 )
             movePlaneToLocation(plane, myPosition, 100)
+            echo("Flying  Remote At Home")
             WaitForMoves(plane)
             lastValue = targetValue
          
@@ -938,17 +949,25 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
             Sleep(randSleep)
         else
             targetDice = math.random(1, #GG.VTOLFlightPads)
+            while  targetDice == myPosition do 
+                Sleep(100)
+                targetDice = math.random(1, #GG.VTOLFlightPads) 
+            end 
             randSleep= (math.random(1,5)*1000) +restTimeMs
             Sleep(randSleep)
             movePlaneToLocation(plane, myPosition, 100)
+             echo("Flying  At Home")
             targetValue = math.random(0,90)*randSign()
             Turn(plane,y_axis,math.rad(targetValue), 0)
             Sleep(200)           
             StartThread(turnInTime, plane, y_axis, 0, 8000, 0,lastValue,0 )
-            movePlaneOverLocation(plane, myPosition, 9000) 
+            movePlaneOverLocation(plane, myPosition, 900) 
+            echo("Flying   Over Home")
             WaitForMoves(plane)
-            movePlaneOverLocation(plane, targetDice, 39000) 
-            movePlaneToLocation(plane, targetDice, 9000)            
+            movePlaneOverLocation(plane, targetDice, 3900) 
+             echo("Flying   Over Location")
+            movePlaneToLocation(plane, targetDice, 900)   
+              echo("Flying   At Location")         
             WaitForMoves(plane)
             showHidePlane(false, plane)
             boolStartRemote = true

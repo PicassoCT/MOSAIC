@@ -47,7 +47,7 @@ local culture = "todo"
 local function setAnchorsRelative(nvx, nvy)
   anchorx, anchory = nvx*0.9,nvy*0.15 
 end
-local boolDefinedByMap = false
+
 function widget:Initialize()
   startFrame = Spring.GetGameFrame() + 100
   endFrame = startFrame + (15*30)
@@ -55,10 +55,7 @@ function widget:Initialize()
   displayStaticFrame = startFrame+ displayStaticFrameIntervallLength
   vsx,vsy = Spring.GetViewGeometry()
   setAnchorsRelative(vsx,vsy)
-  -- if Game and  Game.mapName and string.find(string.lower(Game.mapName, "dubai")) then
-  --  boolDefinedByMap = true
-  --end
-  
+
   culture = Spring.GetGameRulesParam ("culture") 
 end
 
@@ -7576,8 +7573,7 @@ end
 
 
 local function getCountryByCulture(culture, hash)
-   if boolDefinedByMap == true then return "Dubai" end
-
+  
   local region_countryMap = {}
   region_countryMap ={
     Africa = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea","Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda","Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde","Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},
@@ -7623,9 +7619,8 @@ local function getCountryByCulture(culture, hash)
   end
 
   if culture == "international" then
-    local internationalCityCountries = {"Dubai", "Hong Kong",
-      "United States", "United Kingdom", "Japan"}
-    return internationalCityCountries[hash % #internationalCityCountries +1]
+    local internationalCityCountries = {"Dubai"}-- "Hong Kong",      "United States", "United Kingdom", "Japan"}
+    return "Dubai" --internationalCityCountries[hash % #internationalCityCountries +1]
   end
 end
 
