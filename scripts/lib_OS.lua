@@ -879,11 +879,11 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
     myPosition = #GG.VTOLFlightPads
     GG.VTOLFlightPads.Lock = nil
 
-    echo(GG.VTOLFlightPads)
+    --echo(GG.VTOLFlightPads)
 
     while #GG.VTOLFlightPads < 2 do
         Sleep(1000)
-        echo(" Waiting for second")
+       -- echo(" Waiting for second")
     end
 
     function showHidePlane(boolShow, plane)
@@ -948,28 +948,28 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
  
     while true do       
         if boolStartRemote == true then
-            echo("Flying  start Remote")
-            randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs 
+            --echo("Flying  start Remote")
+            randSleep = (math.random(1,5)*1000) + timeBetweenFlightsMs 
             Sleep(randSleep) 
             --printLine(GG.VTOLFlightPads[targetDice], getFlyHeightTable(GG.VTOLFlightPads[targetDice]), "policelight", 10)  
             --printLine( getFlyHeightTable(GG.VTOLFlightPads[targetDice]), getFlyHeightTable(GG.VTOLFlightPads[myPosition]), "policelight", 10)    
             --printLine( getFlyHeightTable(GG.VTOLFlightPads[myPosition]), GG.VTOLFlightPads[myPosition], "policelight", 10)                          
             movePlaneToLocation(unitID, plane, targetDice, 100)
-
-             echo("Flying  Remote  At Location")
+            --echo("Flying  Remote  At Location")
             showHidePlane(true, plane)
             movePlaneOverLocation(unitID,plane, targetDice, 9000) 
 
-            echo("Flying  Remote Over Location")
-            movePlaneOverLocation(unitID,plane, myPosition, math.random(22,45)*1000) 
-            echo("Flying  Remote Over Home")
-
+            --echo("Flying  Remote Over Location")
+            movePlaneOverLocation(unitID,plane, myPosition, math.random(10,20)*1000) 
+            --echo("Flying  Remote Over Home")
+           
             targetValue = math.random(0,180)*randSign()
             StartThread(turnInTime, plane, y_axis, targetValue, 7000, 0,lastValue,0 )
-            reset(plane, 0.1)
-            movePlaneToLocation(unitID,plane, myPosition, 9000)
-            echo("Flying  Remote At Home")
+            reset(plane, 2.0)
             WaitForMoves(plane)
+            movePlaneToLocation(unitID,plane, myPosition, 9000)
+            --echo("Flying  Remote At Home")
+       
             lastValue = targetValue
          
             boolStartRemote = false
@@ -983,19 +983,19 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
             --printLine( getFlyHeightTable(GG.VTOLFlightPads[targetDice]), GG.VTOLFlightPads[targetDice], "policelight", 10)   
 
             Sleep(randSleep)
-            reset(plane, 0.1)            
-            echo("Flying  At Home")
+            reset(plane,0)          
+            --echo("Flying  At Home")
             targetValue = math.random(0,90)*randSign()
             Turn(plane,y_axis,math.rad(targetValue), 0)
             Sleep(200)           
             --StartThread(turnInTime, plane, y_axis, 0, 8000, 0,lastValue,0 )
             movePlaneOverLocation(unitID, plane, myPosition, 9000) 
-            echo("Flying   Over Home")
+            --echo("Flying   Over Home")
 
             movePlaneOverLocation(unitID, plane, targetDice, math.random(12,25)*1000) 
-            echo("Flying   Over Location")
+            --echo("Flying   Over Location")
             movePlaneToLocation(unitID, plane, targetDice, 9000)   
-            echo("Flying   At Location")         
+            --echo("Flying   At Location")         
             showHidePlane(false, plane)
             boolStartRemote = true
             randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs
