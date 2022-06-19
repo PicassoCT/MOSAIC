@@ -175,7 +175,7 @@ end
 shownPieces={}
 
 function script.Create()
-	Spring.Echo("Operative Propagator spawned")
+	--Spring.Echo("Operative Propagator spawned")
 	makeWeaponsTable()
 	GG.OperativesDiscovered[unitID] = nil
 

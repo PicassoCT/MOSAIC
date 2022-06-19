@@ -4916,8 +4916,7 @@ function assertT(ExampleTable, checkTable, checkFunctionTable)
             else -- valid type - lets check the value for correctness
                 if checkFunctionTable[key] then
                     if checkFunctionTable[key](value) == false then
-                        echo(
-                            "Error: Value is not fullfilling condition function")
+                        echo( "Error: Value is not fullfilling condition function")
                         return false
                     end
                     return true
