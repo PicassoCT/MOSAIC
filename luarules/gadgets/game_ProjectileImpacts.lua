@@ -85,7 +85,7 @@ if (gadgetHandler:IsSyncedCode()) then
     if not GG.houseHasSafeHouseTable then GG.houseHasSafeHouseTable = {} end
 
     function gadget:Initialize()
-        spEcho(GetInfo().name .. " Initialization started")
+        --spEcho(GetInfo().name .. " Initialization started")
         if not GG.houseHasSafeHouseTable then
             GG.houseHasSafeHouseTable = {}
         end 
@@ -97,7 +97,7 @@ if (gadgetHandler:IsSyncedCode()) then
       if not GG.raidStatus  then GG.raidStatus = {} end
       if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
 
-        spEcho(GetInfo().name .. " Initialization ended")
+        --spEcho(GetInfo().name .. " Initialization ended")
     end
 
     local panicWeapons = {
@@ -233,8 +233,14 @@ if (gadgetHandler:IsSyncedCode()) then
 
     GG.CloseCombatInvolved = {}
     function initiateCloseCombat(DamagedUnitID, AttackerID)
-        if not DamagedUnitID or not AttackerID then echo("No Attacker"); return end
-        if DamagedUnitID == AttackerID then echo("Self attack"); return end
+        if not DamagedUnitID or not AttackerID then 
+            --echo("No Attacker"); 
+            return 
+        end
+        if DamagedUnitID == AttackerID then 
+            --echo("Self attack"); 
+            return 
+        end
         
         if not doesUnitExistAlive(DamagedUnitID) or not doesUnitExistAlive(AttackerID) then
            -- echo("Unit is dead - no close combat")
@@ -414,7 +420,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                           0)   --orientation 
 
                     if persPack.IconID then
-                        Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")              
+                       --Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")              
                         persPack.basePlateID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.IconID),--teamID
                                           "raidiconbaseplate", --typeID
@@ -811,7 +817,7 @@ if (gadgetHandler:IsSyncedCode()) then
         -- Interrogation -- and not already Interrogated
         if ( RaidAbleType[unitDefID]) and
             currentlyInterrogationRunning(unitID, attacker) == false then
-            spEcho("Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
+            --spEcho("Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
             stunUnit(unitID, 2.0)
             raidEventStreamFunction(unitID, unitDefID, unitTeam,
                                              damage, paralyzer, weaponDefID,
