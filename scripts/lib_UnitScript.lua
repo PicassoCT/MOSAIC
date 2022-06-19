@@ -4718,12 +4718,12 @@ function wrapThreadStart(func)
 end
 
 -- > Prints a 3dLine
-function printLine(PosA, PosB, length)
-    availableLengths = {32}
-    if not availableLengths[length] then length = availableLengths[1] end
-    x, y, z = PosA.x, PosA.y, Posa.z
-    dx, dy, dz = PosA.x - PosB.x, PosA.y - PosB.y, PosA.z - PosB.z
-    Spring.SpawnCeg("line" .. length, x, y, z, dx, dy, dz)
+function printLine(PosA, PosB, cegname, steps )
+    local SpawnCeg = Spring.SpawnCEG
+    for i=1, 100, 100/steps do
+        MidPos = mixTable(PosA, PosB, i/100)
+        SpawnCeg(cegname, MidPos.x, MidPos.y, MidPos.z,0, 1, 0, 50, 0)
+    end
 end
 
 -- >allows for a script breakpoint via widget :TODO incomplete

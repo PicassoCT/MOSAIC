@@ -1734,7 +1734,7 @@ function getGameConfig()
                             end
 
                             if doesUnitExistAlive(persPack.traitorID) == false then
-                                echo("Double Agent died "..persPack.traitorID)
+                               -- echo("Double Agent died "..persPack.traitorID)
                                 destroyUnitConditional(persPack.iconID, false, true)
                                 GG.DoubleAgents[persPack.traitorID] = nil
                                 return boolEndFunction, nil
@@ -1743,7 +1743,7 @@ function getGameConfig()
                             x, y, z = Spring.GetUnitPosition(persPack.traitorID)
 
                             if doesUnitExistAlive(persPack.iconID) == false then
-                                Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:1741") 
+--                                Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:1741") 
                                 persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
                                     persPack.traitorID, x - 1,
                                 y + persPack.heightAbove, z)

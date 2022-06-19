@@ -50,7 +50,7 @@ end
 
 function delayedAttachCivilianLoot()
     Sleep(500)
-    Spring.Echo("createUnitAtUnit ".."truckPayloadScript.lua") 
+    --Spring.Echo("createUnitAtUnit ".."truckPayloadScript.lua") 
     civilianLootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
     attachPayload(civilianLootID, unitID)
 end
