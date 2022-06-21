@@ -154,7 +154,7 @@ local RecruitCivilian =
     category = [[NOTARGET]]
 }
 
-local StealMotorbike =
+local StealVehicle =
     Abstract:New {
     maxDamage = 500,
     mass = 500,
@@ -163,8 +163,8 @@ local StealMotorbike =
     explodeAs = "none",
     --orders
     buildTime = 3.0,
-    script = "stealMotorbikeScript.lua",
-    objectName = "civilian_motorbike.dae",
+    script = "StealVehicle.lua",
+    objectName = "stealVehicleIcon.dae",
     buildPic = "MotorBike.png",
     iconType = "recruitcivilian",
     buildingMask = 8,
@@ -531,7 +531,7 @@ return lowerkeys(
         --Temp
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),
-        ["stealmotorbike"] = StealMotorbike:New(),
+        ["stealvehicleicon"] = StealVehicle:New(),
         ["raidicon"] = RaidIcon:New(),
         ["raidiconbaseplate"] = RaidIconBasePlate:New(),
         ["recruitcivilian"] = RecruitCivilian:New(),

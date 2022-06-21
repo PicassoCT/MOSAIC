@@ -1,4 +1,4 @@
-include "createCorpse.lua"
+    include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -79,16 +79,6 @@ function recruiteLoop()
         function(id)
             recruitedDefID = spGetUnitDefID(id)
             x, y, z = spGetUnitPosition(id)
-
-            if TruckTypeTable[recruitedDefID] then
-               -- echo("Recruited truck")
-                ad = copyUnit(id, teamID, fatherID)
-                consumeAvailableRessourceUnit(unitID, "metal",
-                                              GameConfig.costs.RecruitingTruck)
-                Spring.SetUnitAlwaysVisible(id, false)
-                spDestroyUnit(id, false, true)
-                endIcon()
-            end
 
             if isNormalCivilian(id, recruitedDefID) == true then
                 --echo("Recruited normal civilian")

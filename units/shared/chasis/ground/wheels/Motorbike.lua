@@ -4,7 +4,7 @@ local MotorBike = Truck:New{
 	name = "Civilian Vehicle",
 	description = "locally assembled electric motorbike",
 	corpse				= "",
-	maxDamage = 500,
+	maxDamage = 250,
 			buildPic = "truck.png",
 			iconType = "truck",
 	mass = 500,
@@ -35,12 +35,12 @@ local MotorBike = Truck:New{
 	footprintX = 1,
 	footprintZ = 1,
 	script 			= "MotorBikeScript.lua",
-	objectName        	= "civilian_motorbike.dae",
+	objectName      = "civilian_motorbike.dae",
 
 	category = [[GROUND]],
 	
 	customparams = {
-		helptext		= "Motorbik",
+		helptext		= "Motorbike",
 		baseclass		= "Truck", -- TODO: hacks
 		normaltex = "unittextures/civilianMotorBike_normal.dds",
 	},
@@ -53,6 +53,6 @@ local MotorBike = Truck:New{
 
 return lowerkeys({
 	--Temp
-	["motorbike"]			 	= MotorBike:New(),
-	
+	["truck_arab8"]			 	= MotorBike:New(),
+	["truck_western4"]			= MotorBike:New(),
 })

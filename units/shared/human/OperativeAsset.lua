@@ -79,7 +79,7 @@ explodeAs				  = "none",
 		"ground_turret_ssied",
 		"ground_stickybomb",
 		"bribeicon",
-		"stealmotorbike",
+		"stealvehicleicon",
 		"air_parachut",
 	},
 	

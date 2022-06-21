@@ -429,6 +429,7 @@ function getGameConfig()
             [UnitDefNames["informationpayload"].id] = true,
             [UnitDefNames["physicspayload"].id] = true,
             [UnitDefNames["deaddropicon"].id] = true,
+            [UnitDefNames["stealvehicleicon"].id] = true,
         }
     end  
 
@@ -791,11 +792,11 @@ function getGameConfig()
                 ["arabic"] = {
                     ["house"] = {name = "house_arab", range = 0},
                     ["civilian"] = {name = "civilian_arab", range = 4},
-                    ["truck"] = {name = "truck_arab", range = 8}},
+                    ["truck"] = {name = "truck_arab", range = 9}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
                     ["civilian"] = {name = "civilian_western", range = 2},
-                    ["truck"] = {name = "truck_western", range = 3}},        
+                    ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
                     ["house"] = {name = "house_western", range = -1},
                     ["civilian"] = {name = "civilian_arab", range = 4},

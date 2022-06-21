@@ -58,7 +58,7 @@ local OperativePropagator = Human:New{
 		"air_copter_ssied",	
 		"barricade",
 		"air_parachut",
-		"stealmotorbike",
+		"stealvehicleicon",
 		"cybercrimeicon",
 		"recruitcivilian",	
 		"socialengineeringicon",
