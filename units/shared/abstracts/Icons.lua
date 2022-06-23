@@ -163,10 +163,10 @@ local StealVehicle =
     explodeAs = "none",
     --orders
     buildTime = 3.0,
-    script = "StealVehicle.lua",
+    script = "stealVehicleScript.lua",
     objectName = "stealVehicleIcon.dae",
-    buildPic = "MotorBike.png",
-    iconType = "recruitcivilian",
+    buildPic = "StealVehicleIcon.png",
+    iconType = "stealvehicleicon",
     buildingMask = 8,
     --
     name = "Motorbike",

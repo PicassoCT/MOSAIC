@@ -96,6 +96,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["truckpayload"].id]= true,
 [UnitDefNames["doubleagent"].id]= true,
 [UnitDefNames["interrogationicon"].id]= true,
+[UnitDefNames["stealvehicleicon"].id]= true,
 [UnitDefNames["raidicon"].id]= true,
 [UnitDefNames["snipeicon"].id]= true,
 [UnitDefNames["objectiveicon"].id]= true,

@@ -14,6 +14,7 @@ SIG_Kill = 16
 
 center = piece "center"
 attachPoint = piece"attachPoint"
+Civilian = piece"Civilian"
 motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
 Seat = piece "Seat"
 myDefID = Spring.GetUnitDefID(unitID)
@@ -138,6 +139,7 @@ function updateSteering()
 
     while true do
         if boolMoving == true and boolTurning == true then
+           Show(Civilian)
            if boolTurnLeft == true then
                 turnT(SteerParts, y_axis, -10, 1)
                 Turn(center,x_axis ,math.rad(-15*LeanFactor),1)
@@ -195,6 +197,7 @@ function delayedStop()
     Sleep(250)
     boolMoving = false
     StartThread(honkIfHorny)
+    Hide(Civilian)
 end
 
 function script.StopMoving() 

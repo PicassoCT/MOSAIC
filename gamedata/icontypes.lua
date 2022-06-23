@@ -45,6 +45,12 @@ size =1.5,
 radiusadjust = true,
     distance = 200,
 },
+stealvehicleicon = {
+bitmap = "icons/StealVehicleIcon.png",
+size =1.5,
+radiusadjust = true,
+    distance = 200,
+},
 nimrod = {
 bitmap = "icons/nimrod.png",
 size =1.5,
