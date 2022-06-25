@@ -155,6 +155,23 @@ function hideGun()
     Hide(silencer)
     Show(HolsteredGun)
  end
+ 
+ function hideFireArm()
+	Hide(lastShownWeapon)
+	if lastShownWeapon == Gun then
+		hideGun()
+	end
+end
+
+ function showFireArm()
+	Hide(Gun)
+	Hide(Pistol)
+	Hide(Silencer)
+	Show(lastShownWeapon)
+	if lastShownWeapon == Gun then
+		showGun()
+	end
+end
 
 function script.Create()
     makeWeaponsTable()
@@ -179,8 +196,20 @@ function script.Create()
     StartThread(runningReactor)
     StartThread(speedMonitoring)
     StartThread(closeCombatOS)
+    StartThread(gunVisibleOS)
 end
 
+function gunVisibleOS()
+while true do
+	Sleep(1000)
+		if not boolVisiblyForced and not boolAiming then
+			Sleep(3000)
+			hideFireArm()
+		else
+		-- TODDO Cause Fleeing People event
+		end
+	end
+end
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
 
 
@@ -942,6 +971,7 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 
 function pistolAimFunction(weaponID, heading, pitch)
     boolAiming = true
+	showFireArm()
     if boolWalking == true then
         setOverrideAnimationState(eAnimState.aiming, eAnimState.walking, true,
                                   nil, false)
@@ -956,6 +986,7 @@ end
 
 function gunAimFunction(weaponID, heading, pitch)
     boolAiming = true
+	showFireArm()
     if boolWalking == true then
         setOverrideAnimationState(eAnimState.aiming, eAnimState.walking, true,
                                   nil, false)
@@ -970,6 +1001,7 @@ end
 
 function sniperAimFunction(weaponID, heading, pitch)
     boolAiming = true
+	showFireArm()
     if boolWalking == true then
         setOverrideAnimationState(eAnimState.aiming, eAnimState.walking, true,
                                   nil, false)
@@ -1079,6 +1111,7 @@ function script.FireWeapon(weaponID)
     return WeaponsTable[weaponID].firefunc(weaponID, heading, pitch)
 end
 
+
 lastShownWeapon = Pistol
 function script.AimWeapon(weaponID, heading, pitch)
      if weaponID == 4 then 
@@ -1116,9 +1149,8 @@ function script.AimWeapon(weaponID, heading, pitch)
     -- if distance to target is smaller then 500 switch to pistol
 
     if dist < 250 then
-        hideGun()
-        Show(Pistol)
         lastShownWeapon = Pistol
+		showFireArm()
         boolPistol = true
         if weaponID == 1 then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
@@ -1128,9 +1160,8 @@ function script.AimWeapon(weaponID, heading, pitch)
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
         end
     else
-        Hide(Pistol)
-        showGun()
         lastShownWeapon = Gun
+		showFireArm()
         boolPistol = false
         if weaponID > 1 then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
@@ -1151,12 +1182,7 @@ function showHideIcon(boolCloaked)
         showAll(unitID)
         hideT(TablesOfPiecesGroups.HeadDeco)
         showT(shownPieces)
-        hideGun()
-        Hide(Pistol)
-        Show(lastShownWeapon)
-        if lastShownWeapon == Gun then 
-            showGun()
-        end
+        showFireArm()
         hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end
