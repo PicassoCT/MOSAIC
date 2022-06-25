@@ -350,7 +350,7 @@ function widget:Initialize()
   vsx, vsy = widgetHandler:GetViewSizes()
   
   for unitDefID, unitDef in pairs(UnitDefs) do
-    if (   string.find(unitDef.name, "truck")) and not string.find(unitDef.name, "payload")then
+    if (string.find(unitDef.name, "truck")) and not string.find(unitDef.name, "payload")then
       lightList[unitDefID] = true
     end
   end

@@ -3,18 +3,20 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
-
+GameConfig = getGameConfig()
 TablesOfPiecesGroups = {}
 Rotor = piece("Rotor")
 Icon = piece("Icon")
 Door = piece("Door")
 Leaver = piece("Leaver")
+TruckTypeTable = getTruckTypeTable(UnitDefs)
+gaiaTeamID = Spring.GetGaiaTeamID()
+
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 myTeamID = Spring.GetUnitTeam(unitID)
 Volume = piece "Volume"
 function script.Create()
-
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups)
     StartThread(animationLoop)

@@ -234,7 +234,7 @@ local function CalculateFrontline(myTeamID, myAllyTeamID, dilate)
         if not x then x, y, z = math.random(1,99)*(Game.mapSizeX/100), 0, math.random(1,99)*(Game.mapSizeZ/100) end
         hq = GetNearestWaypoint2D(x, z)
     end
-    assert(hq =~ nil)
+
     blocked[hq] = nil
     for a, edge in pairs(hq.adj) do
         blocked[edge] = nil

@@ -167,14 +167,13 @@ local StealVehicle =
     objectName = "stealVehicleIcon.dae",
     buildPic = "StealVehicleIcon.png",
     iconType = "stealvehicleicon",
-    buildingMask = 8,
     --
     name = "Motorbike",
     description = "steal from any house",
     -- Hack Infrastructure
     --CommandUnits (+10 Units)
     -- WithinCellsInterlinked (Recruit)
-    buildtime = 5,
+    buildtime = 2,
 
     minCloakDistance = 5,
     onoffable = true,

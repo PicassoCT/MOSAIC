@@ -46,7 +46,7 @@ function getGameConfig()
 
         --truck
         truckBreakTimeMinSec= 60,
-        truckBreakTimeMaxSec= 360,
+        truckBreakTimeMaxSec= 5*60,
 	
 		
         houseSizeX = 256,
@@ -720,12 +720,13 @@ function getGameConfig()
         function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == Cultures.arabic then
+            if culture == Cultures.arabic or culture == Cultures.international then
                 typeTable = {
                     "truck_arab6",
                     "truck_arab7",
                     "truck_arab8"
                 }
+
                 return getTypeTable(UnitDefNames, typeTable)
             end
 

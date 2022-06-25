@@ -773,6 +773,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     if  persPack.isTruck == true and persPack.hasBreaks == true then
         if  persPack.Break.startFrame < frame and 
             frame < persPack.Break.startFrame + persPack.Break.lengthFrames  then
+            --echo(myID.." is on a break for "..((persPack.Break.startFrame + persPack.Break.lengthFrames -frame)/30).." seconds")
             --Just stand there like a idiot
             return boolDone, nil, persPack
         end

@@ -18,6 +18,9 @@ Civilian = piece"Civilian"
 motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
 Seat = piece "Seat"
 myDefID = Spring.GetUnitDefID(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
+boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
+
 activeWheels = {}
 passenger = nil
 bikeType = math.random(1,3)
@@ -26,6 +29,16 @@ bikeType = math.random(1,3)
 LeanFactor = 1.0
 GameConfig = getGameConfig()
 
+STATE_STARTED = "STARTED"
+STATE_ENDED = "ENDED"
+function setCivilianUnitInternalStateMode(unitID, State)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     
+     GG.CivilianUnitInternalLogicActive[unitID] = State 
+ end
+boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
+boolIsPoliceTruck = myDefID == UnitDefNames["policetruck"].id
+ 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
     hideAll(unitID)
@@ -58,18 +71,11 @@ function script.Create()
         Show(piece("SteeringAddition3"))
     end
     StartThread(updateSteering)
-    setSpeedEnv(unitID, 0.0)
-    StartThread(pickUpOnceComplete)
-end
-
-function pickUpOnceComplete()
-    waitTillComplete(unitID)
-    if fatherID and doesUnitExistAlive(fatherID) == true then
-        TransportPickup(passengerID)
-    end
+    setSpeedEnv(unitID, 0.0)  
 end
 
 function script.TransportPickup(passengerID)
+	Hide(Civilian)
     if motorBikeLoadableTypeTable[Spring.GetUnitDefID(passengerID)] then
 		reset(center, math.pi)
         Signal(SIG_KILL)
@@ -131,7 +137,7 @@ function headChangeDetector( moveTreshold)
         headingOfOld = tempHead
     end
 end
-
+boolGaiaUnit = (Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID())
 boolMoving = false
 function updateSteering()
     StartThread(headChangeDetector, 3)   
@@ -139,7 +145,9 @@ function updateSteering()
 
     while true do
         if boolMoving == true and boolTurning == true then
-           Show(Civilian)
+           if boolGaiaUnit then
+                Show(Civilian)
+           end
            if boolTurnLeft == true then
                 turnT(SteerParts, y_axis, -10, 1)
                 Turn(center,x_axis ,math.rad(-15*LeanFactor),1)
@@ -176,10 +184,10 @@ function delayedRiseAndFall()
 end
 --- -aimining & fire weapon
 function script.StartMoving()
-        boolMoving = true
-        Signal(SIG_HONK)
-        spinT(activeWheels, x_axis, 260 * Signum, 0.3)
-        StartThread(delayedRiseAndFall)
+    boolMoving = true
+    Signal(SIG_HONK)
+    spinT(activeWheels, x_axis, 260 * Signum, 0.3)
+    StartThread(delayedRiseAndFall)
 end
 
 function honkIfHorny()
@@ -197,6 +205,7 @@ function delayedStop()
     Sleep(250)
     boolMoving = false
     StartThread(honkIfHorny)
+    Sleep(3000)
     Hide(Civilian)
 end
 
@@ -208,3 +217,38 @@ end
 function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
+
+function threadStateStarter()
+    Sleep(100)
+    while true do
+        if boolStartFleeing == true then
+            boolStartFleeing = false
+            StartThread(fleeEnemy, attackerID)
+        end
+        Sleep(250)   
+    end
+end
+
+function fleeEnemy(enemyID)
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    if not enemyID then 
+        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        return 
+    end
+
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
+        Sleep(500)
+    end
+
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+end
+
+attackerID = 0
+boolStartFleeing = false 
+function startFleeing(attackerID)
+    if not attackerID then return end
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    boolStartFleeing = true
+end

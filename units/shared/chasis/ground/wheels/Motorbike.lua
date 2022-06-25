@@ -2,7 +2,7 @@
 local MotorBike = Truck:New{
 	buildtime= 30,
 	name = "Civilian Vehicle",
-	description = "locally assembled electric motorbike",
+	description = "electric motorbike",
 	corpse				= "",
 	maxDamage = 250,
 			buildPic = "truck.png",
@@ -53,6 +53,6 @@ local MotorBike = Truck:New{
 
 return lowerkeys({
 	--Temp
-	["truck_arab8"]			 	= MotorBike:New(),
+	["truck_arab9"]			 	= MotorBike:New(),
 	["truck_western4"]			= MotorBike:New(),
 })
