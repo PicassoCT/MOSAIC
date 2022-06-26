@@ -812,6 +812,7 @@ function showFoldLaptop(boolUnfold)
 end
 
 function script.StartMoving()
+	Hide(Gun)
 	boolWalking = true
 	showFoldLaptop(false)
 	Turn(center,y_axis, math.rad(0), 12)
@@ -1025,6 +1026,7 @@ Spring.SetUnitNanoPieces(unitID, { Pistol })
 
 function aimAutoReset()
 	boolAiming = true
+	Show(Gun)
 	SetSignalMask(SIG_AIM)
 	Signal(SIG_AIM)
 	Sleep(100)

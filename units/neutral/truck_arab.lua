@@ -65,8 +65,15 @@ for i=0, 8 do
 	if i >=6 then
 		CivilianTruck.customparams.normaltex = "unittextures/truck_"..i.."_normal.dds"
 	end
+	if i>=6 and i <= 8 then
+		CivilianTruck.acceleration 		= 0.25
+		CivilianTruck.maxVelocity		= 2.25
+		CivilianTruck.brakeRate 		= 0.3	
+	end
+
 	CivilianTrucks["truck_arab"..i] = CivilianTruck:New()
 end
+
 
 return lowerkeys({
 	--Temp

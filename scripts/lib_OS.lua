@@ -1007,6 +1007,7 @@ end
 
 
 function headingChangeDetector(unitID,  boolTurnLeft, boolTurning, boolDebugPrintDiff)
+    assert(unitID)
     TurnCount = 0
     headingOfOld = Spring.GetUnitHeading(unitID)
     while true do
@@ -1023,8 +1024,10 @@ function headingChangeDetector(unitID,  boolTurnLeft, boolTurning, boolDebugPrin
             TurnCount = 0
             boolTurning = false
         end
-        boolTurnLeft = headingOfOld > tempHead
-        headingOfOld = tempHead
+        if tempHead ~= nil then
+            boolTurnLeft = headingOfOld > tempHead
+            headingOfOld = tempHead
+        end
     end
 end
 

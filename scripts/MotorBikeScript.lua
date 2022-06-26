@@ -2,10 +2,10 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
 include "lib_mosaic.lua"
-TablesOfPiecesGroups = {}
 
+TablesOfPiecesGroups = {}
+GameConfig = getGameConfig()
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
@@ -16,6 +16,7 @@ center = piece "center"
 attachPoint = piece"attachPoint"
 Civilian = piece"Civilian"
 motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
+truckTypeTable = getTruckTypeTable(UnitDefs)
 Seat = piece "Seat"
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
@@ -45,6 +46,8 @@ function script.Create()
     Show(TablesOfPiecesGroups["Bike"][bikeType])
     Show(TablesOfPiecesGroups["Steering"][bikeType])
     assert(TablesOfPiecesGroups["Steering"][bikeType])
+    if boolGaiaUnit then   Show(Civilian)   end
+
     SteerParts[#SteerParts +1 ]= TablesOfPiecesGroups["Steering"][bikeType]
 
     if bikeType == 1 then 
@@ -71,7 +74,9 @@ function script.Create()
         Show(piece("SteeringAddition3"))
     end
     StartThread(updateSteering)
-    setSpeedEnv(unitID, 0.0)  
+    if not boolGaiaUnit then
+        setSpeedEnv(unitID, 0.0)  
+    end
 end
 
 function script.TransportPickup(passengerID)
@@ -82,20 +87,26 @@ function script.TransportPickup(passengerID)
         setUnitValueExternal(passengerID, 'WANT_CLOAK', false)
         Spring.SetUnitNoSelect(passengerID, true)
         Spring.UnitAttach(unitID, passengerID, attachPoint)
-        setSpeedEnv(unitID, 1.0)
+        if not boolGaiaUnit then
+            setSpeedEnv(unitID, 1.0)
+        end
         passenger = passengerID
     end
 end
 
 function script.TransportDrop(passengerID, x, y, z)
+    if boolGaiaUnit then   Show(Civilian)   end
     if doesUnitExistAlive(passengerID) then
         passenger= nil
         Spring.UnitDetach(passengerID)
         px,py,pz = Spring.GetUnitPosition(unitID)
         Spring.SetUnitNoSelect(passengerID, false)
         Command("go", {x = px,y= py, z=pz}, {})
-        setSpeedEnv(unitID, 0.0)
-        StartThread(killAfterTime)
+
+        if not boolGaiaUnit then
+            setSpeedEnv(unitID, 0.0)
+            StartThread(killAfterTime)
+        end
     end
 end
 
