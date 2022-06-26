@@ -168,7 +168,6 @@ local StealVehicle =
     buildPic = "StealVehicleIcon.png",
     iconType = "stealvehicleicon",
     --
-    buildingMask = 65535,
     name = "Motorbike",
     description = "steal from any house",
     -- Hack Infrastructure

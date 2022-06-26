@@ -21,7 +21,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 areaDenyMapResolution = 16
-SAFEHOUSEBUILDING = 8
+SAFEHOUSEBUILDING = 9
 areaDenyMap = {}
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
