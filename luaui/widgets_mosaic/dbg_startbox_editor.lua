@@ -6,6 +6,7 @@ function widget:GetInfo() return {
 	license = "PD",
 	layer   = math.huge,
 	enabled = false,
+	hidden = true
 } end
 
 --[[ tl;dr

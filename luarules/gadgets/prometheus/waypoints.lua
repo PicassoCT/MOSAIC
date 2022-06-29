@@ -231,7 +231,11 @@ local function CalculateFrontline(myTeamID, myAllyTeamID, dilate)
     local hq = teamStartPosition[myTeamID]
     if hq == nil then
         local x,y,z = Spring.GetTeamStartPosition(myTeamID) 
-        if not x then x, y, z = math.random(1,99)*(Game.mapSizeX/100), 0, math.random(1,99)*(Game.mapSizeZ/100) end
+        if not x then             
+            x = math.random(1,99)*(Game.mapSizeX/100)
+            y = 0
+            z = math.random(1,99)*(Game.mapSizeZ/100) 
+        end
         hq = GetNearestWaypoint2D(x, z)
     end
 

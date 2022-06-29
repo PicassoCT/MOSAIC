@@ -309,6 +309,7 @@ function flyingMonitored()
 			WaitForTurns(TablesOfPiecesGroups)
 			reset(center)
             PlayAnimation("UPBODY_STANDING_PISTOL", {}, 2.0)
+            setOverrideAnimationState(eAnimState.standing, eAnimState.standing,  true, nil, true)
 		end
 		Sleep(100)
 	end
@@ -570,7 +571,16 @@ function conditionalFilterOutUpperBodyTable()
 	end
 end
 
-leftArmPosesT ={
+
+leftArmPosesPropagatorT ={
+{
+	UpArm2 ={math.random(-15,5),math.random(0,5)*randSign(),math.random(0,5)*randSign()},
+	LowArm2 ={math.random(0,15)*randSign(),math.random(0,15)*randSign(),math.random(0,15)*randSign()},
+	Hand2 ={0,0, 0},
+},
+}
+
+leftArmPosesInvestigatorT ={
 {
 	UpArm2 ={0,0, 35},
 	LowArm2 ={0,0, 0},
@@ -603,8 +613,12 @@ leftArmPosesT ={
 
 
 function leftArmPoses()
-
-	pose= leftArmPosesT[math.random(1,#leftArmPosesT)]
+	pose = nil
+	if isInvestigator then
+		pose= leftArmPosesInvestigatorT[math.random(1,#leftArmPosesInvestigatorT)]
+	else
+		pose= leftArmPosesPropagatorT[math.random(1,#leftArmPosesPropagatorT)]
+	end
 
 	Turn(UpArm2, x_axis, math.rad(pose.UpArm2[1]),10)
 	Turn(UpArm2, y_axis, math.rad(pose.UpArm2[2]),10)

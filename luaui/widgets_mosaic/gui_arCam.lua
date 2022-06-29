@@ -15,7 +15,7 @@ function widget:GetInfo()
 		date = "YearOfTheGNU on a to hot morning between Dubai and Shanghai",
 		license = "GNU GPL, v2 or later",
 		layer = math.huge,
-		hidden = false,
+		hidden = true,
 		handler = true,
 		enabled = false -- loaded by default?
 	}

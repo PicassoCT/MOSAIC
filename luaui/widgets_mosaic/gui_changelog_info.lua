@@ -6,7 +6,8 @@ return {
 	author  = "Floris",
 	date    = "August 2015",
 	layer   = -99990,
-	enabled = true,
+	enabled = false,
+	hidden = true
 }
 end
 

@@ -11,7 +11,8 @@ return {
 	license   = "GNU GPL, v2 or later",
 	layer     = -math.huge,
 	handler   = true,
-	enabled   = false  --  loaded by default?
+	enabled   = false,  --  loaded by default?
+	hidden 	  = true
 }
 end
 

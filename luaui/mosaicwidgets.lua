@@ -328,9 +328,13 @@ function widgetHandler:LoadOrderList()
     local tmp = {}
     setfenv(chunk, tmp)
     self.orderList = chunk()
+
     if (not self.orderList) then
-      self.orderList = {} -- safety
+      self.orderList = {
+        version = 0
+      } -- safety
     end
+
 	if (self.orderList.version or 0) < ORDER_VERSION then 
 		self.orderList = {}
 		self.orderList.version = ORDER_VERSION

@@ -11,8 +11,8 @@ function widget:GetInfo()
     date      = "november 2014",
     license   = "GNU GPL, v2 or later",
     layer     = 19,
-    hidden = true,
-    enabled   = true
+    hidden 		= true,
+    enabled   = false
   }
 end
 
