@@ -637,9 +637,10 @@ end
 
 function playUpperBodyIdleAnimation()
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
-		if selectedIdleFunction and uppperBodyAnimations[eAnimState.idle] and uppperBodyAnimations[eAnimState.idle][selectedIdleFunction] then
+		--if selectedIdleFunction and uppperBodyAnimations[eAnimState.idle] and uppperBodyAnimations[eAnimState.idle][selectedIdleFunction] then
+			echo("Playing Idle")
 			PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
-		end	
+		--end	
 end
 
 
@@ -654,23 +655,20 @@ UpperAnimationStateFunctions ={
                     end
                 end,
 [eAnimState.standing] = 	function () 
-							if boolFlying == true then  return eAnimState.standing end
+							echo("Idling")
+							if boolFlying == true then 	echo("Idling1"); return eAnimState.standing end
 
 							resetT(lowerBodyPieces, 10)
 
-							if boolPistol== true then							
-								PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)
-								if maRa()== true then leftArmPoses() end
+							if boolPistol== true then				
+					
+								Show(cigarett)			
+								PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)								
 							else
+					
 								PlayAnimation("UPBODY_STANDING_GUN", lowerBodyPieces, 3.0)
-								if maRa()== true then leftArmPoses() end
 							end
-								-- echo("UpperBody Standing")
-							if boolDecoupled == true then
-										if math.random(1,10) > 5 then
-										playUpperBodyIdleAnimation()							
-										end
-							 end
+							if maRa()== true then leftArmPoses() end
 
 								Sleep(30)	
 								return eAnimState.standing

@@ -90,11 +90,11 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Initialize()
-        Spring.Echo(GetInfo().name .. " Initialization ended")
+        --Spring.Echo(GetInfo().name .. " Initialization started ")
         if not GG.OperativesDiscovered then 
             GG.OperativesDiscovered = {} 
         end
         initalizeInheritanceManagement()
-        Spring.Echo(GetInfo().name .. " Initialization started")
+        --Spring.Echo(GetInfo().name .. " Initialization ended")
     end
 end

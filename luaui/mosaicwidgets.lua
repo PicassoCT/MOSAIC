@@ -335,15 +335,15 @@ function widgetHandler:LoadOrderList()
       } -- safety
     end
 
-	if (self.orderList.version or 0) < ORDER_VERSION then 
-		self.orderList = {}
-		self.orderList.version = ORDER_VERSION
-	end 
-	local detailLevel = Spring.GetConfigInt("widgetDetailLevel", 2)
-	if (self.orderList.lastWidgetDetailLevel ~= detailLevel) then
-		resetWidgetDetailLevel = true
-		self.orderList.lastWidgetDetailLevel = detailLevel
-	end 
+  	if (self.orderList.version or 0) < ORDER_VERSION then 
+  		self.orderList = {}
+  		self.orderList.version = ORDER_VERSION
+  	end 
+  	local detailLevel = Spring.GetConfigInt("widgetDetailLevel", 2)
+  	if (self.orderList.lastWidgetDetailLevel ~= detailLevel) then
+  		resetWidgetDetailLevel = true
+  		self.orderList.lastWidgetDetailLevel = detailLevel
+  	end 
   end
 end
 

@@ -642,22 +642,21 @@ end
 --
 
 do
-
--- make map of teams to allyTeams
--- this must contain not only AI teams, but also player teams!
-for _,t in ipairs(Spring.GetTeamList()) do
-    if (t ~= GAIA_TEAM_ID) then
-        teams[#teams + 1] = t
-        local _,_,_,_,_,at = Spring.GetTeamInfo(t)
-        teamToAllyteam[t] = at
+    -- make map of teams to allyTeams
+    -- this must contain not only AI teams, but also player teams!
+    for _,t in ipairs(Spring.GetTeamList()) do
+        if (t ~= GAIA_TEAM_ID) then
+            teams[#teams + 1] = t
+            local _,_,_,_,_,at = Spring.GetTeamInfo(t)
+            teamToAllyteam[t] = at
+        end
     end
+
+    -- find GAIA_ALLYTEAM_ID
+    local _,_,_,_,_,at = Spring.GetTeamInfo(GAIA_TEAM_ID)
+    GAIA_ALLYTEAM_ID = at
 end
 
--- find GAIA_ALLYTEAM_ID
-local _,_,_,_,_,at = Spring.GetTeamInfo(GAIA_TEAM_ID)
-GAIA_ALLYTEAM_ID = at
-
-end
 return WaypointMgr
 end
 
