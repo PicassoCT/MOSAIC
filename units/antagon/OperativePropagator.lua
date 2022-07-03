@@ -26,7 +26,7 @@ local OperativePropagator = Human:New{
 	CanMove = true,
 	CanPatrol = true,
 	CanStop = true,
-	script 				= "operativePropagatorInvestigatorScript.lua",
+	script 				= "operativePropagatorScript.lua",
 	objectName        	= "operative_propagator.dae",
 
 	

@@ -158,6 +158,7 @@ function hideGun()
  
  function hideFireArm()
 	Hide(lastShownWeapon)
+    Hide(silencer)
 	if lastShownWeapon == Gun then
 		hideGun()
 	end

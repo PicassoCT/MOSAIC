@@ -574,8 +574,18 @@ end
 
 leftArmPosesPropagatorT ={
 {
-	UpArm2 ={math.random(-15,5),math.random(0,5)*randSign(),math.random(0,5)*randSign()},
-	LowArm2 ={math.random(0,15)*randSign(),math.random(0,15)*randSign(),math.random(0,15)*randSign()},
+	UpArm2 ={math.rad(math.random(-15,5)),math.rad(math.random(0,5)*randSign()),math.rad(math.random(0,5)*randSign())},
+	LowArm2 ={math.rad(math.random(-15,5)),math.rad(math.random(0,5)*randSign()),math.rad(math.random(0,5)*randSign())},
+	Hand2 ={0,0, 0},
+},
+{
+	UpArm2 ={math.rad(math.random(-15,5)),math.rad(math.random(0,5)*randSign()),math.rad(math.random(0,5)*randSign())},
+	LowArm2 ={math.rad(math.random(-15,5)),math.rad(math.random(0,5)*randSign()),math.rad(math.random(0,5)*randSign())},
+	Hand2 ={0,0, 0},
+},
+{
+	UpArm2 ={math.rad(math.random(-15,5)),math.rad(math.random(0,5)*randSign()),math.rad(math.random(0,5)*randSign())},
+	LowArm2 ={math.rad(math.random(-15,5)),math.rad(math.random(0,5)*randSign()),math.rad(math.random(0,5)*randSign())},
 	Hand2 ={0,0, 0},
 },
 }
@@ -620,27 +630,25 @@ function leftArmPoses()
 		pose= leftArmPosesPropagatorT[math.random(1,#leftArmPosesPropagatorT)]
 	end
 
-	Turn(UpArm2, x_axis, math.rad(pose.UpArm2[1]),10)
-	Turn(UpArm2, y_axis, math.rad(pose.UpArm2[2]),10)
-	Turn(UpArm2, z_axis, math.rad(pose.UpArm2[3]),10)
+	Turn(UpArm2, x_axis, math.rad(pose.UpArm2[1] + math.random(-5,5)),10)
+	Turn(UpArm2, y_axis, math.rad(pose.UpArm2[2] + math.random(-5,5)),10)
+	Turn(UpArm2, z_axis, math.rad(pose.UpArm2[3] + math.random(-5,5)),10) 
+  
+ 	Turn(LowArm2, x_axis, math.rad(pose.LowArm2[1] + math.random(-5,5)),10)
+	Turn(LowArm2, y_axis, math.rad(pose.LowArm2[2] + math.random(-5,5)),10)
+	Turn(LowArm2, z_axis, math.rad(pose.LowArm2[3] + math.random(-5,5)),10)
 
-	Turn(LowArm2, x_axis, math.rad(pose.LowArm2[1]),10)
-	Turn(LowArm2, y_axis, math.rad(pose.LowArm2[2]),10)
-	Turn(LowArm2, z_axis, math.rad(pose.LowArm2[3]),10)
-
-	Turn(Hand2, x_axis, math.rad(pose.Hand2[1]),10)
-	Turn(Hand2, y_axis, math.rad(pose.Hand2[2]),10)
-	Turn(Hand2, z_axis, math.rad(pose.Hand2[3]),10)
+	Turn(Hand2, x_axis, math.rad(pose.Hand2[1] + math.random(-5,5)),10)
+	Turn(Hand2, y_axis, math.rad(pose.Hand2[2] + math.random(-5,5)),10)
+	Turn(Hand2, z_axis, math.rad(pose.Hand2[3] + math.random(-5,5)),10)
 
 	WaitForTurns(UpArm2,LowArm2, Hand2)
 end
 
 function playUpperBodyIdleAnimation()
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
-		--if selectedIdleFunction and uppperBodyAnimations[eAnimState.idle] and uppperBodyAnimations[eAnimState.idle][selectedIdleFunction] then
-			echo("Playing Idle")
-			PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
-		--end	
+		echo("Playing Idle")
+		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], lowerBodyPieces, math.random(1,5)/2.5)	
 end
 
 
@@ -655,20 +663,17 @@ UpperAnimationStateFunctions ={
                     end
                 end,
 [eAnimState.standing] = 	function () 
-							echo("Idling")
-							if boolFlying == true then 	echo("Idling1"); return eAnimState.standing end
+								echo("Idling")
+								if boolFlying == true then 	echo("Idling1"); return eAnimState.standing end
 
-							resetT(lowerBodyPieces, 10)
-
-							if boolPistol== true then				
-					
-								Show(cigarett)			
-								PlayAnimation("UPBODY_STANDING_PISTOL", lowerBodyPieces)								
-							else
-					
-								PlayAnimation("UPBODY_STANDING_GUN", lowerBodyPieces, 3.0)
-							end
-							if maRa()== true then leftArmPoses() end
+								resetT(lowerBodyPieces, 10)
+								boolDecoupled = true
+								while not boolAiming and not boolWalking and not boolFlying do			
+									playUpperBodyIdleAnimation()		
+									if maRa()== true then leftArmPoses() end
+									Sleep(30)
+								end
+						
 
 								Sleep(30)	
 								return eAnimState.standing
@@ -676,7 +681,7 @@ UpperAnimationStateFunctions ={
 [eAnimState.walking] = 	function () 
 								if boolFlying == true then return eAnimState.walking end
 								boolDecoupled = true
-									playUpperBodyIdleAnimation()
+								
 								boolDecoupled = false
 				
 						return eAnimState.walking
@@ -688,7 +693,7 @@ UpperAnimationStateFunctions ={
 [eAnimState.aiming] = 	function () 
 						Hide(FoldtopUnfolded)
 						Show(FoldtopFolded)
-						if boolPistol == true then
+						if boolPistol == true and isInvestigator then
 							PlayAnimation("UPBODY_AIM_PISTOL")
 						else	
 							PlayAnimation("UPBODY_AIMING", nil, 3.0)

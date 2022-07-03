@@ -25,7 +25,7 @@ local OperativeInvestigator = Human:New{
 	CanPatrol = true,
 	CanStop = true,
 
-	script 				= "operativePropagatorInvestigatorScript.lua",
+	script 				= "operativeInvestigatorScript.lua",
 	objectName        	= "operative_investigator.dae",
 
 		buildPic = "operativeinvestigator.png",
