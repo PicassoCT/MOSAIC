@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
-local defuseCapableUnitTypes = getOperativeTypeTable(Unitdefs)
+local defuseCapableUnitTypes = getDefusalCapableTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 local WarnText = piece"WarnText"
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)

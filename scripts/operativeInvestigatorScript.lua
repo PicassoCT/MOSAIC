@@ -663,8 +663,8 @@ UpperAnimationStateFunctions ={
                     end
                 end,
 [eAnimState.standing] = 	function () 
-								echo("Idling")
-								if boolFlying == true then 	echo("Idling1"); return eAnimState.standing end
+								--echo("Idling")
+								if boolFlying == true then 	 return eAnimState.standing end
 
 								resetT(lowerBodyPieces, 10)
 								boolDecoupled = true
@@ -674,7 +674,6 @@ UpperAnimationStateFunctions ={
 									Sleep(30)
 								end
 						
-
 								Sleep(30)	
 								return eAnimState.standing
 							end,

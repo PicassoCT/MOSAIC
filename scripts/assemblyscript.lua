@@ -431,7 +431,7 @@ end
 
 function buildAnimation(buildID)
     Signal(SIG_BUILD)
-    Spring.Echo("Build Animation started")
+    --Spring.Echo("Build Animation started")
     SetSignalMask(SIG_BUILD)
 
     StartThread(driveHome)
@@ -577,7 +577,7 @@ function buildAnimation(buildID)
         Sleep(10)
     end
 
-    Spring.Echo("Build Animation ended")
+    --Spring.Echo("Build Animation ended")
 end
 
 producedUnits={}

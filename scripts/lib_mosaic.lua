@@ -1226,6 +1226,26 @@ function getGameConfig()
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
+            function   getDefusalCapableTypeTable(UnitDefs)
+
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "civilianagent", "operativeasset", "operativepropagator",
+                    "operativeinvestigator","policetruck"
+                }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end(UnitDefs)
+
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "civilianagent", "operativeasset", "operativepropagator",
+                    "operativeinvestigator"
+                }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
             function getStreetDecorationTypeTable(UnitDefs)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 UnitDefNames = getUnitDefNames(UnitDefs)
@@ -1730,16 +1750,16 @@ function getGameConfig()
 
                             if persPack.boolDoneFor then return boolEndFunction, persPack end
 
-                            --wait till traitor is complete
-                            if isUnitComplete(persPack.traitorID) == false then
-                                return boolContinue, persPack
-                            end
-
                             if doesUnitExistAlive(persPack.traitorID) == false then
                                -- echo("Double Agent died "..persPack.traitorID)
                                 destroyUnitConditional(persPack.iconID, false, true)
                                 GG.DoubleAgents[persPack.traitorID] = nil
                                 return boolEndFunction, nil
+                            end
+
+                            --wait till traitor is complete
+                            if isUnitComplete(persPack.traitorID) == false then
+                                return boolContinue, persPack
                             end
 
                             x, y, z = Spring.GetUnitPosition(persPack.traitorID)
