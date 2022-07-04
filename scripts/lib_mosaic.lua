@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.860" 
+            Version = "Alpha: 0.861" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -1226,21 +1226,12 @@ function getGameConfig()
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
-            function   getDefusalCapableTypeTable(UnitDefs)
+            function getDefusalCapableTypeTable(UnitDefs)
 
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
                     "civilianagent", "operativeasset", "operativepropagator",
                     "operativeinvestigator","policetruck"
-                }
-
-                return getTypeTable(UnitDefNames, typeTable)
-            end(UnitDefs)
-
-                UnitDefNames = getUnitDefNames(UnitDefs)
-                typeTable = {
-                    "civilianagent", "operativeasset", "operativepropagator",
-                    "operativeinvestigator"
                 }
 
                 return getTypeTable(UnitDefNames, typeTable)

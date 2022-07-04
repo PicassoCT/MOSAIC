@@ -7618,20 +7618,18 @@ local function getCountryByCulture(culture, hash)
     end
   end
 
-  if culture == "international" then
-    local internationalCityCountries = {"Dubai"}-- "Hong Kong",      "United States", "United Kingdom", "Japan"}
-    return "Dubai" --internationalCityCountries[hash % #internationalCityCountries +1]
-  end
+  local internationalCityCountries = {"Dubai", "Hong Kong",  "United States", "United Kingdom", "Japan"}
+  return internationalCityCountries[(hash % #internationalCityCountries) +1]
 end
 
 local persistenCountry 
 local function getCountryNameByCulture(culture, hash)
-   if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
+    if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
 
-  local country = getCountryByCulture(culture, hash)
-  setCacheBy("country", country..", "..getRegionByCountry(country))
-  persistenCountry = country
-  return "Country: "..getCacheBy("country") 
+    local country = getCountryByCulture(culture, hash)
+    setCacheBy("country", country..", "..getRegionByCountry(country))
+    persistenCountry = country
+    return "Country: "..getCacheBy("country") 
 end
 
 local boolStartSound = false
