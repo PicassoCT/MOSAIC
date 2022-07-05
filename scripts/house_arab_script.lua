@@ -244,8 +244,9 @@ end
 
 function script.Killed(recentDamage, _)
     if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
-        Spring.DestroyUnit(unitID, false, true)
-    end    return 1
+        GG.UnitsToKill:PushKillUnit(GG.houseHasSafeHouseTable[unitID],false, true)
+    end    
+    return 1
 end
 
 function showOne(T, bNotDelayd)
