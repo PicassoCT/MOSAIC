@@ -419,7 +419,8 @@ local function playUnitExplaination()
  			(TutorialInfoTable.general[defID].active and TutorialInfoTable.general[defID].active == true)
 			 then
 				PlaySoundAndMarkUnit(defID, id)
-				TutorialInfoTable[defID].active = false
+				TutorialInfoTable[mySide][defID].active = false
+				TutorialInfoTable.general[defID].active = false
 				return true, TutorialInfoTable[defID].time
 			end	
 		end
