@@ -100,7 +100,15 @@ end
 local function GetNearestWaypoint2D(x, z)
     local minDist = 1.0e9
     local nearest
-    assert(waypoints[1])
+    if #waypoints < 1 then return 
+         local waypoint = {
+        x = x, y = 0, z = z, --position
+        adj = {},            --map of adjacent waypoints -> edge distance
+        flags = {},          --array of flag unitIDs
+        allyTeamUnitCount = {},
+        }
+        return waypoint
+    end
     local boolNotChecked = true
     local boolFoundNearest = false
 
