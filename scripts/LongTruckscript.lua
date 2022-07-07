@@ -86,12 +86,16 @@ end
  boolTurning = false
 
 function turnTrailerLoop()
+    local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
+    local spGetGroundHeight = Spring.GetGroundHeight
     turnRatePerSecondDegree = (300*0.16)/4
     _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+     px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+     val  = 0
     while true do
-        if boolMoving == true  then
 
-          
+
+        if boolMoving == true  then          
             x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
             goal = math.ceil(y * 0.95)
             Turn(PayloadCenter,y_axis, goal, 1.125)
@@ -100,10 +104,10 @@ function turnTrailerLoop()
             if boolTurning == true then
         
                 px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
-                x,y,z = Spring.GetUnitPiecePosDir(unitID, PayloadCenter)
+                x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
                 dx,  dz = px-x, pz -z
                 if boolTurnLeft then
-                    headRad = math.atan2(dz, dx)
+                    headRad = -math.pi + math.atan2(dz, dx)
                 else
                     headRad = math.atan2(dx, dz)
                 end
@@ -112,18 +116,31 @@ function turnTrailerLoop()
             else    
                 Turn(PayloadCenter,y_axis, lastOrientation, 0)   
             end
+        end     
+
+        if py > spGetGroundHeight(px,pz) then
+            val = val - 1
+        else
+            val = val + 1
         end
-    Sleep(125)
+        Turn(PayloadCenter, x_axis, math.rad(val), 0.1250)   
+
+        if boolMoving == true then
+            Sleep(125)
+        else
+            Sleep(50)
+        end
     end
 end
 
 function hcdetector()
     TurnCount = 0
-    headingOfOld = Spring.GetUnitHeading(unitID)
+    local spGetUnitHeading = Spring.GetUnitHeadin
+    headingOfOld = spGetUnitHeading(unitID)
     while true do
         Sleep(50)
  
-        tempHead = Spring.GetUnitHeading(unitID)
+        tempHead = spGetUnitHeading(unitID)
         if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
         if tempHead ~= headingOfOld then
             boolTurning = true
