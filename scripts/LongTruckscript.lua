@@ -94,18 +94,16 @@ function turnTrailerLoop()
      val  = 0
     while true do
 
-
+        px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
         if boolMoving == true  then          
             x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
             goal = math.ceil(y * 0.95)
             Turn(PayloadCenter,y_axis, goal, 1.125)
             lastOrientation = goal
         else
-            if boolTurning == true then
-        
-                px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
+            if boolTurning == true then                
                 x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
-                dx,  dz = px-x, pz -z
+                dx,  dz = px-x, pz-z
                 if boolTurnLeft then
                     headRad = -math.pi + math.atan2(dz, dx)
                 else
@@ -117,13 +115,17 @@ function turnTrailerLoop()
                 Turn(PayloadCenter,y_axis, lastOrientation, 0)   
             end
         end     
-
-        if py > spGetGroundHeight(px,pz) then
-            val = val - 1
+        Spring.Echo(py .. " vs "..spGetGroundHeight(px,pz) 
+            )
+        groundHeigth =   spGetGroundHeight(px,pz)
+        diff = math.max(math.abs((py - 7) -groundHeigth), 0.0125)
+        if py - 7 > groundHeigth then
+            val = val - (diff/10)
         else
-            val = val + 1
+            val = val + (diff/10)
         end
-        Turn(PayloadCenter, x_axis, math.rad(val), 0.1250)   
+        val = clamp( val, -10, 10)
+        Turn(PayloadCenter, x_axis, math.rad(val), diff/10)   
 
         if boolMoving == true then
             Sleep(125)
@@ -135,7 +137,7 @@ end
 
 function hcdetector()
     TurnCount = 0
-    local spGetUnitHeading = Spring.GetUnitHeadin
+    local spGetUnitHeading = Spring.GetUnitHeading
     headingOfOld = spGetUnitHeading(unitID)
     while true do
         Sleep(50)
