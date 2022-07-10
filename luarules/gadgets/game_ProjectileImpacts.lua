@@ -44,8 +44,8 @@ if (gadgetHandler:IsSyncedCode()) then
     local spEcho =  Spring.Echo --
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
-    local MobileInterrogateAbleType =
-        getMobileInterrogateAbleTypeTable(UnitDefs)
+    local MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
+    assert(MobileInterrogateAbleType[UnitDefNames["civilian_arab0"].id] ~= nil)
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
     local targetLaserWeaponDefID = WeaponDefNames["targetlaser"].id
@@ -747,6 +747,7 @@ if (gadgetHandler:IsSyncedCode()) then
         function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID,
                  attackerID, attackerDefID, attackerTeam,projectileID)
             -- stupidity edition
+            spEcho("Hit by interrogation weapon")
             if attackerID == unitID then
                 --spEcho("Interrogation:Aborted: attackerID == unitID")
                 return damage

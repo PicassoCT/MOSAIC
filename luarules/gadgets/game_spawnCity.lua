@@ -518,5 +518,17 @@ function gadget:GameFrame(frame)
         checkReSpawnHouses()
     end
 end
+--[[
+function getAITeam()
+    teams = getAITeams()
+    return teams[1]
+end
 
-
+--Debug
+function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
+    if unitTeam == gaiaTeamID and houseTypeTable[unitDefID] then
+        x,y,z = Spring.GetUnitPosition(unitID)
+        GG.UnitsToSpawn:PushCreateUnit("antagonsafehouse", x, y, z, 0, getAITeam())
+    end
+end
+--]]
