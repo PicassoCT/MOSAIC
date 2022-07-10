@@ -54,7 +54,22 @@ function getAllEnemyTeams(teamID, boolIncludeGaia)
             return tid
         end
     end) or {}
+end
 
+-- > get all AITeams
+function getAITeams()
+    teamList = Spring.GetTeamList()
+    AiTeams = {}
+    for i=1, #teamList do
+        teamID = teamList[i]
+        _, leader, isDead, isAiTeam, side, allyTeam,  incomeMultiplier, customTeamKeys = Spring.GetTeamInfo(teamID)
+        if isAiTeam then
+            AiTeams[#AiTeams+1] = teamID
+        end
+
+    end
+
+    return AiTeams or {}
 end
 
 function getRandomPlayerName()
@@ -6085,7 +6100,8 @@ end
 function getStrafingAirUnitsInT(T)
     returnTable = {}
     for i = 1, #T do
-        def = Spring.GetUnitDefID(T[i])
+        def = 
+        Spring.GetUnitDefID(T[i])
         if false == UnitDefs[def].isStrafingAirUnit then
             returnTable[#returnTable + 1] = T[i]
         end
@@ -7267,6 +7283,7 @@ function serializeTable(val, name, skipnewlines, depth)
 
     return tmp
 end
+
 function getDetThreeLetterAgency(hash)
     first = (hash % 16)
     second = ((hash +16) % 20)
