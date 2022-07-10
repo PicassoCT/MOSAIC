@@ -93,7 +93,6 @@ function turnTrailerLoop()
      px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
      val  = 0
     while true do
-
         px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
         if boolMoving == true  then          
             x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
@@ -115,8 +114,7 @@ function turnTrailerLoop()
                 Turn(PayloadCenter,y_axis, lastOrientation, 0)   
             end
         end     
-        Spring.Echo(py .. " vs "..spGetGroundHeight(px,pz) 
-            )
+
         groundHeigth =   spGetGroundHeight(px,pz)
         diff = math.max(math.abs((py - 7) -groundHeigth), 0.0125)
         if py - 7 > groundHeigth then
@@ -143,7 +141,7 @@ function hcdetector()
         Sleep(50)
  
         tempHead = spGetUnitHeading(unitID)
-        if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
+        --if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
         if tempHead ~= headingOfOld then
             boolTurning = true
         else
