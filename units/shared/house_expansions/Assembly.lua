@@ -60,7 +60,7 @@ local Assembly = Building:New{
 		 --copter  --jet -- bomber --long range rocket
 		
 			"air_copter_ssied",	"air_copter_mg","air_copter_antiarmor",  
-			"air_plane_sniper", "air_plane_rocket", "air_scoutlett",
+			"air_plane_sniper", "air_plane_rocket", "air_copter_scoutlett",
 	--ground
 		--turret --snake --walker(roach) --truck
 
