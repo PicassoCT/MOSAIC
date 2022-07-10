@@ -30,6 +30,8 @@ local FLAG_RADIUS     = FLAG_RADIUS
 local WAYPOINT_RADIUS = FLAG_RADIUS
 local WAYPOINT_HEIGHT = 100
 local REF_UNIT_DEF = UnitDefNames["civilian_arab0"] -- Reference unit to check paths
+local WESTERN_HOUSE_DEFID = UnitDefNames["house_western0"].id
+local ARAB_HOUSE_DEFID = UnitDefNames["house_arab0"].id
 -- We enforce the map waypoints are all traversed once each 10s
 local MAP_TRAVERSING_PERIOD = 310
 -- The frontlines are updated at least once each 10s
@@ -95,19 +97,21 @@ local function GetDist2D(x, z, p, q)
     return sqrt(dx * dx + dz * dz)
 end
 
+local function regenerateWaypoints() end
+
 
 -- Returns the nearest waypoint to point x, z, and the distance to it.
 local function GetNearestWaypoint2D(x, z)
     local minDist = 1.0e9
-    local nearest
-    if #waypoints < 1 then return 
-         local waypoint = {
+    local nearest = {
         x = x, y = 0, z = z, --position
         adj = {},            --map of adjacent waypoints -> edge distance
         flags = {},          --array of flag unitIDs
         allyTeamUnitCount = {},
-        }
-        return waypoint
+    }
+
+    if #waypoints < 2 then  
+        regenerateWaypoints()      
     end
     local boolNotChecked = true
     local boolFoundNearest = false
@@ -122,8 +126,6 @@ local function GetNearestWaypoint2D(x, z)
         end
     end
 
-    assert(boolFoundNearest == true)
-    assert(boolNotChecked == false)
     return nearest, minDist
 end
 
@@ -466,7 +468,64 @@ local function UpdateWaypoint(p)
         p.owner = nil
     end
 end
-    
+
+local function AddWaypointPerUnit(id)
+local x, y, z = GetUnitPosition(id)
+    if x and x ~= 0 then
+        -- Add a waypoint right there
+        local i, j = world2grid(x, z)
+        if not grid or not grid[i] or not grid[i][j] then return end
+
+        if grid[i][j].valid == nil then
+            grid[i][j].valid = true
+            local gx, gy, gz = grid2world(i, j)
+            grid[i][j].waypoint = AddWaypoint(gx, gy, gz)
+        end
+        teamStartPosition[t] = GetNearestWaypoint2D(x, z) 
+        -- Add also the surrounding waypoints, to avoid failures in
+        -- TestMoveOrder() due to the already built HQ
+        local neighs = adj_grid_nodes(i, j)
+        for _, neigh in ipairs(neighs) do
+            if grid[neigh[1]][neigh[2]].valid == nil then
+                grid[neigh[1]][neigh[2]].valid = true
+                local gx, gy, gz = grid2world(neigh[1], neigh[2])
+                grid[neigh[1]][neigh[2]].waypoint = AddWaypoint(gx, gy, gz)
+                AddConnection(grid[i][j].waypoint,
+                              grid[neigh[1]][neigh[2]].waypoint)
+                -- Add the adjacent grid nodes to the parsing queue
+                local candidates = adj_grid_nodes(neigh[1], neigh[2])
+                for _, c in ipairs(candidates) do
+                    if grid[c[1]][c[2]].valid == nil then
+                        parse_queue[#parse_queue + 1] = c
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function regenerateWaypoints()
+    Spring.Echo("Regenerating waypoints")
+    for _,t in ipairs(Spring.GetTeamList()) do
+        if (t ~= GAIA_TEAM_ID) then
+            local unitsSorted = Spring.GetTeamUnitsSorted(GAIA_TEAM_ID)
+            if unitsSorted[WESTERN_HOUSE_DEFID] ~= nil then
+                local westernHouses = unitsSorted[WESTERN_HOUSE_DEFID]
+                for i=1, #westernHouses do
+                    local id = westernHouses[i]
+                    AddWaypointPerUnit(id)
+                end
+            end
+            if unitsSorted[ARAB_HOUSE_DEFID] ~= nil then
+                local arabHouses = unitsSorted[ARAB_HOUSE_DEFID]
+                for i=1, #arabHouses do
+                    local id = arabHouses[i]
+                    AddWaypointPerUnit(id)
+                end
+            end       
+        end
+    end
+end  
     
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
