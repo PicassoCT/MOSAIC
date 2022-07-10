@@ -965,7 +965,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
            
             targetValue = math.random(0,180)*randSign()
             StartThread(turnInTime, plane, y_axis, targetValue, 7000, 0,lastValue,0 )
-            reset(plane, 2.0)
+            reset(plane, 200.0)
             WaitForMoves(plane)
             movePlaneToLocation(unitID,plane, myPosition, 9000)
             --echo("Flying  Remote At Home")
