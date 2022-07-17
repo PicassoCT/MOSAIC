@@ -1230,9 +1230,8 @@ function getGameConfig()
 
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                    "civilianagent", "operativeasset", "operativepropagator",
-                    "operativeinvestigator","policetruck"
-                }
+                            "civilianagent", "operativeasset", "operativepropagator", "operativeinvestigator"
+                             }
 
                 return getTypeTable(UnitDefNames, typeTable)
             end
