@@ -153,7 +153,7 @@ function HoloGrams()
     hideT(CasinoflickerGroup)
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
-    if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true then
+    if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if maRa()== true then
             hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
             if  contains(ToShowTable, hostPiece) == true then 

@@ -2736,6 +2736,15 @@ end
             return {}
         end
 
+        function mapOverideSinCity()
+            cityname = string.lower(Game.mapName)
+            if string.find(cityname, "dubai") then
+                return true
+            end
+
+            return false
+        end
+
         function getRandomCultureNames(culture)
             names = {
                 arabic = {
