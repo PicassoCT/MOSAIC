@@ -15,7 +15,7 @@ step = piece "step"
 -- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
 -- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 testOffset = 300
-stationaryDropRate = 2.0
+stationaryDropRate = 4.0
 travellingDropRate = 0.5
 dropRate = travellingDropRate
 
