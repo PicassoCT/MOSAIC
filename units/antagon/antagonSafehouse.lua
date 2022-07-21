@@ -30,7 +30,7 @@ local AntagonSafeHouse = Building:New{
 	blocking =false,
 	
 	showNanoFrame= true,
-	selfDestructCountdown = 3*60,
+	selfDestructCountdown = 5*60,
 
 	buildCostEnergy     = 2000,
 	buildCostMetal      = 2000,

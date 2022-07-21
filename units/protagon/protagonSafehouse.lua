@@ -55,7 +55,7 @@ local ProtagonSafeHouse =    Building:New{
   script =       "safehousescript.lua",
   objectName =            "safehouse.dae",
   fireState=1,
-  selfDestructCountdown = 3*60,
+  selfDestructCountdown = 6 *60,
 
   usepiececollisionvolumes = false,
   collisionVolumeType = "box",
