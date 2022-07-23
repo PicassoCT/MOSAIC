@@ -123,7 +123,7 @@ function turnTrailerLoop()
             val = val + (diff/10)
         end
         val = clamp( val, -10, 10)
-        Turn(PayloadCenter, x_axis, math.rad(val), diff/10)   
+        Turn(PayloadCenter, x_axis, math.rad(val), 0.981)   
 
         if boolMoving == true then
             Sleep(125)
