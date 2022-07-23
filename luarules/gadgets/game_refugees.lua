@@ -216,6 +216,13 @@ function militaryStream(frame)
         indexOffset = indexOffset +1
         return
     end
+
+    boolLocalMilitaryEngagement = (GameConfig.GameState.normal ~= GG.GlobalGameState)
+    if boolLocalMilitaryEngagement == true then        
+        ex,ez =  GG.DamageHeatMap:getHighestDangerLocation()
+        ey = spGetGroundHeight(ex,ez)
+    end
+
     boolAtLeastOnePath = false
          foreach(militaryTable,           
             function(id)

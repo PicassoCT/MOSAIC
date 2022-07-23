@@ -20,6 +20,21 @@ VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 local GameConfig = getGameConfig()
+local function getHighestDangerLocation(self)    
+    highestValues = {x=Game.mapSizeX*(math.random(25,50)/50),z = Game.mapSizeZ*(math.random(25,50)/50), value = math.huge*-1}
+    if #self.map > 0 then      
+        for x=1, #self.map do
+            if self.map[x] then
+                for z=1 #self.map[x] do
+                    if self.map[x][z] and self.map[x][z] > highestValues.value then
+                        highestValues = {x=x,z = z, value = self.map[x][z]}
+                    end
+                end
+            end
+        end
+    end
+    return highestValues.x, highestValues.z
+end
 
 local function getDangerAtLocation(self, x,z) 
     local zoneSeperatorSize = math.min(Game.mapSizeX, Game.mapSizeZ)/12
@@ -49,7 +64,9 @@ if GG.DamageHeatMap == nil then
     GG.DamageHeatMap = {map= {}, 
                         normalizationValue = 0,
                         addDamageAtLocation = addDamageAtLocation,
-                        getDangerAtLocation = getDangerAtLocation}
+                        getDangerAtLocation = getDangerAtLocation,
+                        getHighestDangerLocation = getHighestDangerLocation
+                    }
 end
 
 
