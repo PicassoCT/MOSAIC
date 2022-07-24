@@ -70,13 +70,15 @@ onImpact = {
 }
 
 onLastPointBeforeImpactSetTargetTo = {
-    [CruiseMissileAirstrikeWDefID] = function(projID) end,
-    [CruiseMissileTransportWDefID] = function(projID)
+    [CruiseMissileAirstrikeWDefID] = function(projID, redirectList) 
+        Spring.SetProjectileTarget(projID, redirectList.orgX, Spring.GetGroundHeight(redirectList.orgX, redirectList.orgZ) , redirectList.orgZ)
+    end,
+    [CruiseMissileTransportWDefID] = function(projID, redirectList)
         tx,ty,tz =  getProjectileTargetXYZ(projID)
-        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 900, tz)
+        Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz) + 900, tz)
  
     end,
-    [CruiseMissileAntiArmorWDefID] = function(projID) 
+    [CruiseMissileAntiArmorWDefID] = function(projID, redirectList) 
              tx,ty,tz =  getProjectileTargetXYZ(projID)
              px, py, pz = Spring.GetProjectilePosition(projID)
                     teamID = Spring.GetProjectileTeamID(projID)
@@ -197,7 +199,7 @@ cruiseMissileFunction = function(evtID, frame, persPack, startFrame)
             -- echo("Projectile ready to die")
             return nil, persPack
         elseif persPack.redirectIndex + 1 == #persPack.redirectList then
-            persPack.on_LastPointBeforeImpactSetTargetTo(projID)
+            persPack.on_LastPointBeforeImpactSetTargetTo(projID,persPack.redirectList)
         end
 
         persPack.redirectIndex = math.min(#persPack.redirectList,
@@ -225,7 +227,7 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
         local x, y, z = Spring.GetUnitPosition(proOwnerID)
         local resolution = 10
         local preCog = 1
-        redirectList = {}
+        redirectList = {orgX=tx, orgY=ty, orgZ= tz}
 
         for i = 1, resolution - 1, 1 do
             rx, rz = mix(tx, x, i / resolution), mix(tz, z, i / resolution)

@@ -22,18 +22,26 @@ raidResultStates = getRaidResultStates()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 Progresscenter = piece "Progresscenter"
-
-protagon_talk = {
+talk={
+protagon = {
+    "Team Standby", "Team Ready", "Go Go Go","Datastreams Isolated",
     "SkyCastle Ready", "Retro-Observation-Results", "TAC Plan has go",
-    "(dart sounds)", "away from the window", "to the wall", "drop it",
+    "<dart sounds>", "away from the window", "to the wall", "drop it",
     "Defeat device removed", "Subjects are dosed and stable",
+    "Conversation Mimicry in Progress",
     "System subverted", "Observation, Neutralization",
     "Encapsulated Cloud Interrogation ", "Individual Deprecation ",
-    "Sampling Artefacts", "FragPellets in Sit, HiSpeedCam, Upload (BOOM)",
-    "Investigating Distribution"
-}
+    "Sampling Artefacts", "FragPellets in Sit, HiSpeedCam, Upload. Now.", "Drug-Injections. Go.", "Memory-formation prevented", 
+    "Virtual Interrogation started", "Suspect is drained, deprecating.",
+    "Investigating Distribution", "Systemic Coordination Scenario 9", 
+    "Deadmans Killswitch Defused", "Allah al Akbar", "Communication jammed. Fallback to Pre-Scenariotrees",
+    "Extraction. Complete."
+},
 
-antagon_talk = {
+antagon = {
+    "Empire instead of the empire", "Allah al Akbar", "Jamming engaged",
+    "Death to the West", "Jamal, take them out-","Traitors and Treason to every word they say",
+    "Living the dream of sucking billionaire cock-", "Die Motherfuckers, die..",
     "-your guests torture people", "kings things, puppets and strings",
     "I m a old friend, i need the key for one day, to throw a suprise party..",
     "Suprise, Motherfuckers", "God is greater", "This must hurt so much ?",
@@ -44,6 +52,7 @@ antagon_talk = {
     "you would never betray them, but they already betrayed you",
     "You shouldnt have fucked her-", "And though i walk in the valley of death",
     "Fighting your fellow men, for mindcontrolling machines and stranger things.."
+}
 }
 
 DefenderWin = piece("DefenderWin")
@@ -75,6 +84,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
     StartThread(raidAnimationLoop)
+    StartThread(raidConversationLoop)
     -- StartThread(raidPercentage)
     whirl = TablesOfPiecesGroups["Whirl"]
     ring = TablesOfPiecesGroups["Ring"]
@@ -98,6 +108,16 @@ function script.Create()
     updateShownPoints(3, 3)
     hideT(TablesOfPiecesGroups["Corner"])
     StartThread(watchRaidIconTable)
+end
+
+function raidConversationLoop()
+    mySide  =getUnitSide(unitID)
+    while true do
+        line = talk[gmySide][math.random(1,#talk[mySide])]
+        say(line, 2500, { r = 1.0, g = 1.0, b = 1.0 }, { r = 1.0, g = 1.0, b = 1.0 }, "", unitID)
+
+        Sleep(150000)
+    end
 end
 
 function watchRaidIconTable()

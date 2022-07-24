@@ -4348,7 +4348,7 @@ function say(LineNameTimeT, timeToShowMs, NameColour, TextColour, OptionString,
     if type(LineNameTimeT) == "string" then
         Tables = {}
         Tables[1] = {
-            name = "speaker",
+            name = "",
             line = LineNameTimeT,
             DelayByLine = 500,
             Alpha = 1.0
