@@ -25,7 +25,7 @@ local function getHighestDangerLocation(self)
     if #self.map > 0 then      
         for x=1, #self.map do
             if self.map[x] then
-                for z=1 #self.map[x] do
+                for z=1, #self.map[x] do
                     if self.map[x][z] and self.map[x][z] > highestValues.value then
                         highestValues = {x=x,z = z, value = self.map[x][z]}
                     end
@@ -60,26 +60,19 @@ local function getDangerAtLocation(self, x,z)
     end
  end
 
-if GG.DamageHeatMap == nil then
+function gadget:Initialize()
     GG.DamageHeatMap = {map= {}, 
                         normalizationValue = 0,
                         addDamageAtLocation = addDamageAtLocation,
                         getDangerAtLocation = getDangerAtLocation,
                         getHighestDangerLocation = getHighestDangerLocation
                     }
+
 end
 
 
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer)
     x,y,z = Spring.GetUnitPosition(unitID)
     GG.DamageHeatMap:addDamageAtLocation(x,z, damage)
-end
-
-function gadget:Initialize()
-    GG.DamageHeatMap = {map= {}, 
-                        normalizationValue = 0,
-                        addDamageAtLocation = addDamageAtLocation,
-                        getDangerAtLocation = getDangerAtLocation
-                    }
 end
 

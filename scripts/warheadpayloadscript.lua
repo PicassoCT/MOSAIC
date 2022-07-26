@@ -19,11 +19,18 @@ local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDef
 
 function moveAItoLauncher()	
 	goal = unitID
+	Sleep(100)
+	truckID  = createUnitAtUnit(myTeamID, randDict(TruckTypeTable) , unitID)
+
+	if not truckID then
+		truckID = unitID
+	end
+
 	while goal == unitID do
 	smallestDistance = math.huge
 	foreach(Spring.GetTeamUnitsByDefs(myTeamID,launcherDefID),
 						function(id)
-							dist = distanceUnitToUnit(id, unitID)
+							dist = distanceUnitToUnit(id, truckID)
 							if dist < smallestDistance then 
 								smallestDistance = dist
 								goal = id
@@ -33,18 +40,14 @@ function moveAItoLauncher()
 			)
 
 	Sleep(250)
-	end
 
-		factor = 0.0
-	while true do
 		goalV= {}
-		goalV.x,goalV.y,goalV.z = Spring.GetUnitPosition(goal)
-		myPosV= {}
-		myPosV.x,myPosV.y,myPosV.z = Spring.GetUnitPosition(unitID)
-		resultV = mix(goalV, myPosV, factor)
-		Spring.SetUnitPosition(unitID, resultV.x, resultV.y, resultV.z)
-		factor = math.min(1.0, factor + 0.01)
-		Sleep(1000)
+		while goal ~= unitID and doesUnitExistAlive(goal) do
+
+			goalV.x,goalV.y,goalV.z = Spring.GetUnitPosition(goal)
+			Command(truckID, "go", goalV)		
+			Sleep(1000)
+		end
 	end
 end
 

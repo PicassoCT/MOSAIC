@@ -24,6 +24,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
     local operativeTypeTable = getOperativeTypeTable(UnitDefs)
+    local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 
     gaiaTeamID = Spring.GetGaiaTeamID()
 
@@ -36,9 +37,24 @@ if (gadgetHandler:IsSyncedCode()) then
                  --   Spring.Echo("operativeType Unit created - child of "..father)
                 end
             else
-                registerFather(unitTeam, unitid)
+                -- registering random father
+                father = nil
+                allUnitsSortedByDefID = Spring.GetTeamUnitsSorted(unitTeam) 
                 if operativeTypeTable[unitdefid] then
-                  --  Spring.Echo("Interrogatable Unit created - fatherless")
+                    for safehouseType, _ in pairs(safeHouseTypeTable) do
+                        if allUnitsSortedByDefID[safehouseType] and #allUnitsSortedByDefID[safehouseType]  > 0 then
+                           father =  getSafeRandom(allUnitsSortedByDefID[safehouseType])
+                        end
+                    end
+                else
+                    for operatorType, _ in pairs(operativeTypeTable) do
+                        if allUnitsSortedByDefID[safehouseType] and #allUnitsSortedByDefID[operatorType]  > 0 then
+                           father =  getSafeRandom(allUnitsSortedByDefID[operatorType])
+                        end
+                    end
+                end
+                if father then
+                    registerFather(unitTeam, father, unitid)
                 end
             end
 
