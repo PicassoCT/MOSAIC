@@ -647,7 +647,6 @@ end
 
 function playUpperBodyIdleAnimation()
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
-		echo("Playing Idle")
 		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], lowerBodyPieces, math.random(1,5)/2.5)	
 end
 

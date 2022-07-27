@@ -62,24 +62,41 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function getFairDropPointNear(unitDead, teamID)
-       AllOperatives  =  foreach(Spring.GetAllUnits(),
-                        function(id)
-                                    if operativeTypeTable[spGetUnitDefID(id)] then
-                                        return id
-                                    end
+        AllUnits =Spring.GetAllUnits()
+        AllOperatives= {}
+        AllHouses= {}
+
+        foreach(AllUnits,
+                    function(id)
+                                defID = spGetUnitDefID(id)
+                                if operativeTypeTable[defID] then
+                                    AllOperatives[id] = id
                                 end
-                                )
+                                if houseTypeTable[defID] then
+                                     AllHouses[id] = id
+                                end
+                            end
+                            )
+        }
+       
+       randHouse = randDict(AllHouses)
+
        maxdistance = 0
-       midpos= {x = 0, y = 0, z = 0}
+       hx,hy,hz = Spring.GetUnitPosition(randHouse)
+       midpos= {x = hx, y = hy, z = hz}
 
        for id in pairs(AllOperatives) do
             for ad in pairs(AllOperatives) do
                 if id ~= ad and spGetUnitTeam(id) ~= spGetUnitTeam(ad) then
                     if distanceUnitToUnit(id,ad) > maxdistance then
+                        a = {}
+                        b = {}
                         maxdistance =  distanceUnitToUnit(id,ad) 
                         a.x,a.y,a.z = spGetUnitPosition(id)
                         b.x,b.y,b.z = spGetUnitPosition(ad)
+                        if a.x and b.x then
                         midpos.x, midpos.y, midpos.z = getMidPoint(a, b)
+                        end
                     end
                 end
             end

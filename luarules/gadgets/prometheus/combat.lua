@@ -305,7 +305,7 @@ function CombatMgr.GameFrame(f)
                 if nrOfLaunchTargets > 1 then index = math.random(1, nrOfLaunchTargets) end
                 if  launcherTargets[index] then
                 local target = {x=0,y=0,z=0}
-                target.x,target.y,target.z = spGetUnitPosition( launcherTargets[index])
+                target.x,target.y,target.z = GetUnitPosition( launcherTargets[index])
                 taxiMgr.AddTransportMission({result[i]},
                                             {target.x, target.y, target.z})
                 end

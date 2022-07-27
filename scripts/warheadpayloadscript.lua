@@ -17,8 +17,18 @@ local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDef
  launcherDefID = UnitDefNames["launcher"].id
  boolIsAITeam = isTeamAITeam(Spring.GetUnitTeam(unitID))
 
+ function attachPayload(payLoadID, id)
+    if payLoadID then
+       pieceMap = Spring.GetUnitPieceMap(id)
+       assert(pieceMap["attachPoint"], "Truck has no attachpoint")
+       Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
+       return payLoadID
+    end
+end
+
 function moveAItoLauncher()	
 	goal = unitID
+	while true do
 	Sleep(100)
 	truckID  = createUnitAtUnit(myTeamID, randDict(TruckTypeTable) , unitID)
 
@@ -26,22 +36,25 @@ function moveAItoLauncher()
 		truckID = unitID
 	end
 
-	while goal == unitID do
-	smallestDistance = math.huge
-	foreach(Spring.GetTeamUnitsByDefs(myTeamID,launcherDefID),
-						function(id)
-							dist = distanceUnitToUnit(id, truckID)
-							if dist < smallestDistance then 
-								smallestDistance = dist
-								goal = id
-								return id
+		while goal == unitID do
+		smallestDistance = math.huge
+		foreach(Spring.GetTeamUnitsByDefs(myTeamID,launcherDefID),
+							function(id)
+								dist = distanceUnitToUnit(id, truckID)
+								if dist < smallestDistance then 
+									smallestDistance = dist
+									goal = id
+									return id
+								end
 							end
-						end
-			)
+				)
 
-	Sleep(250)
+		Sleep(250)
+		end
 
+		attachPayload(unitID, truckID)
 		goalV= {}
+
 		while goal ~= unitID and doesUnitExistAlive(goal) do
 
 			goalV.x,goalV.y,goalV.z = Spring.GetUnitPosition(goal)
@@ -144,13 +157,6 @@ end
 end
 
 --Explode on Impact
-function script.HitByWeapon(x, z, weaponDefID, damage) 
-    hp,maxHp= Spring.GetUnitHealth(unitID)
-        if hp - damage < maxHp/2 then
-           mightyBadaBoom()
-        end
-return damage
-end
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
 local myDefID = spGetUnitDefID(unitID)

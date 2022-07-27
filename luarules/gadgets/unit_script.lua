@@ -431,7 +431,7 @@ end
 function Spring.UnitScript.Hide(piece)
 
     if not piece then
-        Spring.Echo("No piecenumber in Hide() function")
+        assert(false, "No piecenumber in Hide() function ")      
         return
     elseif bool_GadgetDebug == true and type(piece) ~= "number" then
         Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..

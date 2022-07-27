@@ -755,6 +755,10 @@ local function FinishMorph(unitID, morphData)
   end
 
   containingHouseID = getContainingHouse(unitID)
+  if not doesUnitExistAlive(containingHouseID) then
+      GG.UnitsToKill:PushKillUnit(unitID, true, false)
+      return
+  end
   assert(containingHouseID)
   assert(doesUnitExistAlive(containingHouseID))
 
