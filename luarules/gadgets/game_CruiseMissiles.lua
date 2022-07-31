@@ -261,6 +261,14 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
             end
         end
 
+        redirectList[#redirectList + 1] =
+                    {
+                        targetX = tx,
+                        targetY = ty,
+                        targetZ = tz,
+                        targetType = string.byte("g")
+                    }
+
         GG.EventStream:CreateEvent(cruiseMissileFunction, {
             -- persistance Pack
             redirectIndex = 1,

@@ -1,6 +1,6 @@
 local InformationPayload = Abstract:New{
-	name 				= "Information Warfare Payload",
-	description 		= "circumvent security, hack & subvert the penetrated systems",
+	name 				= "Rocket Payload",
+	description 		= "Information payload",
 	maxDamage           = 5000,
 	mass                = 500,
 	buildtime			= 3*60,

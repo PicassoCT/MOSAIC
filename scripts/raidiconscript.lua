@@ -113,7 +113,7 @@ end
 function raidConversationLoop()
     mySide  =getUnitSide(unitID)
     while true do
-        line = talk[gmySide][math.random(1,#talk[mySide])]
+        line = talk[mySide][math.random(1,#talk[mySide])]
         say(line, 2500, { r = 1.0, g = 1.0, b = 1.0 }, { r = 1.0, g = 1.0, b = 1.0 }, "", unitID)
 
         Sleep(150000)

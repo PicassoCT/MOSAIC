@@ -1,4 +1,4 @@
-include "createCorpse.lua"
+include "lib_mosaic.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -6,7 +6,7 @@ include "lib_Animation.lua"
 TablesOfPiecesGroups = {}
 local defuseCapableUnitTypes = getDefusalCapableTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
-local WarnText = piece"WarnText"
+
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
@@ -16,6 +16,7 @@ local automationPayloadDisabledType = getAutomationPayloadDisabledType(UnitDefs)
 local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDefs)
  launcherDefID = UnitDefNames["launcher"].id
  boolIsAITeam = isTeamAITeam(Spring.GetUnitTeam(unitID))
+BaseRotor = piece"BaseRotor1"
 
  function attachPayload(payLoadID, id)
     if payLoadID then
@@ -28,10 +29,9 @@ end
 
 function moveAItoLauncher()	
 	goal = unitID
-	while true do
-	Sleep(100)
 	truckID  = createUnitAtUnit(myTeamID, randDict(TruckTypeTable) , unitID)
-
+	while true do
+	Sleep(1000)
 	if not truckID then
 		truckID = unitID
 	end
@@ -64,54 +64,50 @@ function moveAItoLauncher()
 	end
 end
 
-function mightyBadaBoom()
+function mightyBadaBoom(lastAttackerTeam)
 myDefID = Spring.GetUnitDefID(unitID)
 
 if UnitDefs[myDefID].name == "physicspayload" then
- x,y,z = Spring.GetUnitPosition(unitID)
-            weaponDefID = WeaponDefNames["godrod"].id
-                        local params = {
-                            pos = { x,  y + 10,  z},
-                           ["end"] = { x,  y+ 5,  z},
-                        speed = {0,0,0},
-                        spread = {0,0,0},
-                        error = {0,0,0},
-                        owner = unitID,
-                        team = myTeamID,
-                        ttl = 1,
-                        gravity = 1.0,
-                        tracking = unitID,
-                        maxRange = 9000,
-                        startAlpha = 0.0,
-                        endAlpha = 0.1,
-                        model = "emptyObjectIsEmpty.s3o",
-                        cegTag = ""
-                        }
+ 	x,y,z = Spring.GetUnitPosition(unitID)
+	weaponDefID = WeaponDefNames["godrod"].id
+	            local params = {
+	                pos = { x,  y + 10,  z},
+	               ["end"] = { x,  y+ 5,  z},
+	            speed = {0,0,0},
+	            spread = {0,0,0},
+	            error = {0,0,0},
+	            owner = unitID,
+	            team = myTeamID,
+	            ttl = 1,
+	            gravity = 1.0,
+	            tracking = unitID,
+	            maxRange = 9000,
+	            startAlpha = 0.0,
+	            endAlpha = 0.1,
+	            model = "emptyObjectIsEmpty.s3o",
+	            cegTag = ""
+	            }
 
-                        id=Spring.SpawnProjectile ( weaponDefID, params) 
-                        Spring.SetProjectileAlwaysVisible (id, true)
-                         protagonT = getAllTeamsOfType("protagon", UnitDefs)
-                         antagonT = getAllTeamsOfType("antagon", UnitDefs)
-                         local rubbleDefID = UnitDefNames["gcscrapheap"].id
+	            id=Spring.SpawnProjectile ( weaponDefID, params) 
+	            Spring.SetProjectileAlwaysVisible (id, true)
+	             protagonT = getAllTeamsOfType("protagon", UnitDefs)
+	             antagonT = getAllTeamsOfType("antagon", UnitDefs)
+	             local rubbleDefID = UnitDefNames["gcscrapheap"].id
 
-                         foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
-                         	function(id)
-                         		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
-                         			return id
-                         		end
-                         	end,
-						   function(id)
-	                            for tid, _ in pairs(protagonT) do
-	                                GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid,
-	                                                       id, {r=255,g=255,b=255})
-	                            end
-	                            for tid, _ in pairs(antagonT) do
-	                                GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid,
-	                                                       id, {r=255,g=255,b=255})
-	                            end
-
-							  Spring.DestroyUnit(id, true, false)
-							end)
+	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
+	             	function(id)
+	             		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
+	             			return id
+	             		end
+	             	end,
+				   function(id)						   		
+	                    for tid, _ in pairs(protagonT) do
+	                        GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid, id, {r=255,g=0,b=0})
+	                    end
+               
+					  Spring.DestroyUnit(id, true, false)
+					end
+					)
 
 end
 
@@ -157,10 +153,22 @@ end
 end
 
 --Explode on Impact
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+    hp,maxHp= Spring.GetUnitHealth(unitID)
+        if hp - damage < maxHp/2 then
+           lastAttacker = Spring.GetUnitLastAttacker(unitID)
+           attackerTeam = Spring.GetUnitTeam(lastAttacker)
+           mightyBadaBoom(attackerTeam)
+        end
+return damage
+end
+
+
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
 local myDefID = spGetUnitDefID(unitID)
-
+RepairDefuseRod = piece"RepairDefuseRod"
+HereBeDragons = piece"HereBeDragons"
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
@@ -171,7 +179,7 @@ function script.Create()
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
      StartThread(defuseStateMachine)
      hideT(TablesOfPiecesGroups["ProgressBars"])
-     hideT(TablesOfPiecesGroups["Rotor"])
+     hideT(TablesOfPiecesGroups["BaseRotor"])
      StartThread(PlaySoundByUnitDefID, myDefID,
                             "sounds/icons/warhead_created.ogg", 1,
                             500, 2)
@@ -239,139 +247,231 @@ function registerBombLocationAndProducer(unitID)
                 GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
             end
 
-function isTeamProtagon(teamID, defID)
-	  return (select(5, spGetTeamInfo(teamID)) == "protagon") or UnitDefs[defID].name == "operativeinvestigator"
-end   
-
-
 
 function displayProgressBar(timeInMs)
-  -- display the Progressbars																								
+  -- display the Progressbars		
+  		Show(BaseRotor)																						
         progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.Warhead.DefusalTimeMs))
         hideT(TablesOfPiecesGroups["ProgressBars"])
         showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
 end
 
-boolDefuseThreadRunning = false
+function getOperatorsNearby(unitID)
+	Allies = {}
+	Enemies = {}
+	foreach(getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance),
+				   function(id)			
+					   defID = spGetUnitDefID(id)
+					   pTeamID = spGetUnitTeam(id) 
+					   if defuseCapableUnitTypes[defID] then
+						  if pTeamID == myTeamID then
+						  	Allies[#Allies+1] = id
+						  else
+							Enemies[#Enemies+1] = id
+						  end
+					   end						
+					end						
+					)
+
+	return Allies, Enemies
+end
+
+function showWarHeadIcon()	
+	showT(TablesOfPiecesGroups["WarHead"])
+	Show(HereBeDragons)
+end
+
+openDistance = 500
+function openWarHeadDefusalRepair()
+	for i=2, #TablesOfPiecesGroups["WarHead"] do
+		Move(TablesOfPiecesGroups["WarHead"][i], y_axis, openDistance, 500)
+	end
+	WaitForMoves(TablesOfPiecesGroups["WarHead"])
+	Show(RepairDefuseRod)
+end
+
+function closeWarhead()
+	Hide(RepairDefuseRod)
+	resetT(TablesOfPiecesGroups["WarHead"], 500)	
+end
+
+function hideWarHeadIcon()
+	hideT(TablesOfPiecesGroups["WarHead"])
+end
+
+
+function showDefusalIcon()
+	hideAllLogos()
+	StartThread(openWarHeadDefusalRepair)
+	showT(TablesOfPiecesGroups["DefuseRotor"])
+	spinT(TablesOfPiecesGroups["DefuseRotor"],y_axis, 25, 5, 25)
+end
+
+function hideAllLogos()
+	hideT(TablesOfPiecesGroups["DefuseRotor"])
+	hideT(TablesOfPiecesGroups["RepairRotor"])
+	hideT(TablesOfPiecesGroups["DamagedRotor"])
+	hideT(TablesOfPiecesGroups["DormantRotor"])
+	Hide(BaseRotor)
+end
+
+function showRepairIcon()
+	hideAllLogos()
+	Show(BaseRotor)	
+	StartThread(openWarHeadDefusalRepair)
+	showT(TablesOfPiecesGroups["RepairRotor"],y_axis, 25, 5, 25)
+	spinT(TablesOfPiecesGroups["RepairRotor"],y_axis, 25, 5, 25)
+end
+
+function showDormantIcon()
+	hideAllLogos()
+	closeWarhead()
+	showT(TablesOfPiecesGroups["DormantRotor"])
+	spinT(TablesOfPiecesGroups["DormantRotor"],y_axis, 25, 5, 25)
+	Hide(BaseRotor)
+	hideT(TablesOfPiecesGroups["ProgressBars"])
+end
+
+function showDamagedIcon()
+	hideAllLogos()
+	Show(BaseRotor)	
+	openWarHeadDefusalRepair()
+	showT(TablesOfPiecesGroups["DamagedRotor"])
+	spinT(TablesOfPiecesGroups["DamagedRotor"],y_axis, 25, 5, 25)
+end
+
+
 defuseStatesMachine = {
     dormant =   function(oldState, frame, persPack)
                     nextState = "dormant"
-					
-					boolFoundSomething = false
-					
-					 foreach(getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance ),
-						   function(id)
-							   if boolFoundSomething == true then return end
-							   defID = spGetUnitDefID(id)
-							   	  teamID = spGetUnitTeam(id)
-								 if teamID ~= myTeamID and defuseCapableUnitTypes[defID] and isTeamProtagon(teamID, defID)  then -- 
-									boolFoundSomething = true
-									 persPack.defuserID = id 
-									  persPack.defuseTimeMs = GameConfig.Warhead.DefusalTimeMs 
-										showT(TablesOfPiecesGroups["Rotor"])
-										for i=1,#TablesOfPiecesGroups["Rotor"] do
-											val = math.random(15,50)
-											Spin(TablesOfPiecesGroups["Rotor"][i],y_axis,math.rad(val)*randSign(),0)
-										end
-										Spring.SetUnitAlwaysVisible(unitID, true)
-										nextState = "defuse_in_progress"
-										Hide(WarnText)
-								   end
-							end)
+
+					Allies, Enemies = getOperatorsNearby(unitID)
+
+					-- if both sides are nearby do nothing
+					if #Allies > 0 and #Enemies > 0 then
+						return "dormant", persPack
+					end
+
+
+					if #Enemies > 0 then
+						StartThread(showDefusalIcon)
+						Spring.SetUnitAlwaysVisible(unitID, true)
+						return "defuse_in_progress", persPack
+					end
+	
+					if #Allies > 0 and persPack.defuseTimeMs < GameConfig.Warhead.DefusalTimeMs then
+						StartThread(showRepairIcon)
+						Spring.SetUnitAlwaysVisible(unitID, true)
+						return "repair_in_progress", persPack
+					end
+
+					if persPack.defuseTimeMs < GameConfig.Warhead.DefusalTimeMs then
+
+						StartThread(showDamagedIcon)
+						return "kaputt", persPack
+					end					
 							
-						return nextState, persPack
+					return nextState, persPack
 					end,
 					
     defuse_in_progress= function(oldState, frame, persPack)
 						nextState = "defuse_in_progress"
-						if doesUnitExistAlive( persPack.defuserID) == false then
-							hideT(TablesOfPiecesGroups["Rotor"])
-			
-							return "decay_in_progress", persPack
+
+						Allies, Enemies = getOperatorsNearby(unitID)
+						if #Allies > 0 and #Enemies > 0 then
+							return "dormant", persPack
 						end
 						
-                        if distanceUnitToUnit( persPack.defuserID, unitID) > GameConfig.Warhead.DefusalStartDistance then
-                            if persPack.defuseTimeMs/ GameConfig.Warhead.DefusalTimeMs > 0.2 then
-							hideT(TablesOfPiecesGroups["Rotor"])		
-							Show(WarnText)				
-                             return "decay_in_progress", persPack
-                            else
-                                hideT(TablesOfPiecesGroups["Rotor"])		
-                                return "dormant", persPack
-                            end
+						if #Allies > 0 then
+							StartThread(showRepairIcon)
+							Spring.SetUnitAlwaysVisible(unitID, true)
+							return "repair_in_progress", persPack
 						end
-						persPack.defuseTimeMs = persPack.defuseTimeMs - 100
+
+						if #Enemies == 0 then
+							StartThread(showDamagedIcon)
+							Spring.SetUnitAlwaysVisible(unitID, true)
+							return "kaputt", persPack
+						end
+					
+                      	persPack.defuseTimeMs = persPack.defuseTimeMs - 100
 						
 						displayProgressBar( persPack.defuseTimeMs)
 						if  not persPack.soundStart and persPack.defuseTimeMs < 12000  then
 							persPack.soundStart = true
-					        StartThread(PlaySoundByUnitDefID, myDefID,
-                                    "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,
-                                    25000, 2)
+					        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,  25000, 2)
 						end
 
 						if persPack.defuseTimeMs <= 0 then --"defused"
 							-- show Graph
 							 registerBombLocationAndProducer(unitID)
 							-- Reward Defuser Team
-							GG.Bank:TransferToTeam(GameConfig.PayloadDefusedReward, Spring.GetUnitTeam(persPack.defuserID), persPack.defuserID, {r=255,g=255,b=255})
+							GG.Bank:TransferToTeam(GameConfig.PayloadDefusedReward, Spring.GetUnitTeam(Allies[1]), Allies[1], {r=255,g=255,b=255})
 							--DestroyUnit
 							Spring.DestroyUnit(unitID, false, true)
 						end
 
 							return nextState, persPack
 						end,
-		decay_in_progress= function(oldState, frame, persPack)
-			nextState = "decay_in_progress"
-			
+	repair_in_progress= function(oldState, frame, persPack)
+			nextState = "repair_in_progress"
+
+			Allies, Enemies = getOperatorsNearby(unitID)
+			if #Allies == 0 or #Allies > 0 and #Enemies > 0 then
+				StartThread(showDamagedIcon)
+				return "kaputt", persPack
+			end
+							
+	
 			persPack.defuseTimeMs = persPack.defuseTimeMs + 100
 			displayProgressBar(persPack.defuseTimeMs)
 			
 			if persPack.defuseTimeMs > GameConfig.Warhead.DefusalTimeMs then
-				mightyBadaBoom()
+				StartThread(showDormantIcon)
+				return "dormant", persPack
 			end
-			
-			boolFoundFoe = false
-			boolFoundFriend = false
-			 foreach(getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance ),
-			   function(id)
-				if boolFoundFoe or boolFoundFriend then return end
-		
-				   defID = spGetUnitDefID(id)
-				   pTeamID = spGetUnitTeam(id) 
-					 if pTeamID == myTeamID and defuseCapableUnitTypes[defID] and not boolFoundFriend then
-							hideT(TablesOfPiecesGroups["Rotor"])
-							boolFoundFriend = true
-							nextState = "dormant"
-							Hide(WarnText)
-					   end
-					   
-					  if  pTeamID ~= myTeamID and defuseCapableUnitTypes[defID] and not boolFoundFoe then
-							showT(TablesOfPiecesGroups["Rotor"])
-							boolFoundFoe = true
-							nextState = "defuse_in_progress"
-							Hide(WarnText)
-					   end
-				end)
+			 
 		
         return nextState, persPack
     end,
+
+    kaputt = function(oldState, frame, persPack)
+    	nextState = "kaputt"
+		Allies, Enemies = getOperatorsNearby(unitID)
+		if  #Allies > 0 and #Enemies > 0 then
+			return "kaputt", persPack
+		end
+
+		if  #Allies > 0  then
+			StartThread(showRepairIcon)
+			return "repair_in_progress", persPack
+		end
+
+		if  #Enemies > 0  then
+			StartThread(showDefusalIcon)
+			return "defuse_in_progress", persPack
+		end
+
+    	return nextState, persPack
+    end
   
 }
+
 
 --Reveal Productionplace, Propagandaplus
 
 function defuseStateMachine()
     myTeamID = Spring.GetUnitTeam(unitID)
     currentState = "dormant"
-    Hide(WarnText)
-    persPack={}
+    StartThread(showDormantIcon)
+    persPack={defuseTimeMs = GameConfig.Warhead.DefusalTimeMs}
     while true do
       newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
      -- if currentState ~= newState then	  echo("defuseStatesMachine in "..currentState) end
 	  currentState = newState
+	 -- echo("defuseStatesMachine alive: with "..currentState)
 	  Sleep(100)
-      if not Spring.GetUnitTransporter(unitID) then
+     	if not Spring.GetUnitTransporter(unitID) then
       	 --detect transports nearby and autoload
       	 boolLoaded = false
       	 foreach(getAllNearUnit(unitID, 75),
@@ -384,16 +484,12 @@ function defuseStateMachine()
 							boolLoaded= true
       	 				end
       	 			end
-
       	 		)
-
-      end
+     	end
     end
 end
 
 function script.Killed(recentDamage, _)
-
-    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 

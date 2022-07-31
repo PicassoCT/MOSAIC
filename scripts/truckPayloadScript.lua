@@ -13,10 +13,9 @@ myTeamID = Spring.GetUnitTeam(unitID)
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-           Spring.SetUnitAlwaysVisible(payLoadID,true)
-
-           Spring.UnitAttach(id, payLoadID, TablesOfPiecesGroups["RefugeeDeco"][math.random(1,#TablesOfPiecesGroups["RefugeeDeco"])])
-           return payLoadID
+       Spring.SetUnitAlwaysVisible(payLoadID,true)
+       Spring.UnitAttach(id, payLoadID, TablesOfPiecesGroups["RefugeeDeco"][math.random(1,#TablesOfPiecesGroups["RefugeeDeco"])])
+       return payLoadID
     end
 end
 

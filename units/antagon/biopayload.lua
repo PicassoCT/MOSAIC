@@ -1,6 +1,6 @@
 local BioWeaponsPayload = Abstract:New{
-	name 				= "Biological Warfare Payload",
-	description 		= "Snythetic Virus / Nano-tech Plague / Fungigenocide",
+	name 				= "Bio Rocket Payload (bring to launcher)",
+	description 		= "Snythetic Virus / Nano-tech Plague / Genocidefungi",
 	maxDamage           = 5000,
 	mass                = 500,
 	buildtime			= 3*60,

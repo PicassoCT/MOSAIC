@@ -77,8 +77,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                 end
                             end
                             )
-        }
-       
+               
        randHouse = randDict(AllHouses)
 
        maxdistance = 0

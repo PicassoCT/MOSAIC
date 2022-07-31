@@ -1462,6 +1462,7 @@ end
 
 -- > Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orientation)
+    if not typeID or not teamID then return end
     assert(not parentID)
     if isUnitAlive(otherID) == false then return end
     locOrientation = orientation 
@@ -1476,8 +1477,7 @@ function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orienta
     types = type(typeID)    
     assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
     --Delme DebugCode
-    id = Spring.CreateUnit(typeID, x + ox, y + oy, z + oz,
-                             locOrientation, teamID, false, false, parentID)
+    id = Spring.CreateUnit(typeID, x + ox, y + oy, z + oz, locOrientation, teamID, false, false, parentID)
 
     return id
 end
@@ -6753,6 +6753,8 @@ end
 
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
+    assert(id)
+    assert(command)
     local target = tarGet
 
     option = option  or {}

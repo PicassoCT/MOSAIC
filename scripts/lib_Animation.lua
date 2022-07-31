@@ -687,7 +687,8 @@ function spinT(Table, axis, rdeg, speed, degup)
     else
         for k, v in pairs(Table) do
             if v then
-                Spin(v, axis, math.rad(math.random(rdeg, degup)), speed)
+                val = math.random(rdeg, rdeg + degup)* randSign()
+                Spin(v, axis, math.rad(val), speed)
             end
         end
     end

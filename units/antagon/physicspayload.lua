@@ -1,5 +1,5 @@
 local PhysicsPayload = Abstract:New{
-	name 				= "Physical Warfare Payload",
+	name 				= "Rocket Payload (bring to launcher)",
 	description 		= "Collapse Fusion / Anti-Matter / Entanglement Warhead",
 	maxDamage           = 5000,
 	mass                = 500,

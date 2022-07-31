@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.862" 
+            Version = "Alpha: 0.863" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -276,7 +276,7 @@ function getGameConfig()
         -- Defusal Time 
         Warhead= {
                 DefusalTimeMs = 30*1000,
-                DefusalStartDistance = 50,
+                DefusalStartDistance = 75,
                 DefusalPunishment = -500,
                 automationPayloadStunTimeSeconds = 60,
         }
