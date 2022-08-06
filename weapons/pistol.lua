@@ -23,8 +23,7 @@ local weaponDef = {
     turret = true,
     craterMult = 0,
     burst = 3,
-    burstrate = 0.5,
-    soundStart = "weapons/pistol/pistolshot1.ogg",
+    burstrate = 0.5,    
     soundtrigger = 1,
     SweepFire = false,
     --apperance

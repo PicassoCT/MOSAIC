@@ -104,8 +104,7 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	                    for tid, _ in pairs(protagonT) do
 	                        GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid, id, {r=255,g=0,b=0})
 	                    end
-               
-					  Spring.DestroyUnit(id, true, false)
+               		  GG.UnitsToKill:PushDestroyUnit(id, true, false)
 					end
 					)
 
@@ -141,7 +140,7 @@ if UnitDefs[myDefID].name == "informationpayload" then
                               end  
 								
 							 if automationPayloadDestroyedType[defID] then
-                              	Spring.DestroyUnit(id, false, true)
+							 	GG.UnitsToKill:PushDestroyUnit(id, false, true)                             
                               	spawnCegAtUnit(id, "electric_explosion")
                               end
                         	end)

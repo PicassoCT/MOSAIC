@@ -168,8 +168,8 @@ local StealVehicle =
     buildPic = "StealVehicleIcon.png",
     iconType = "stealvehicleicon",
     --
-    name = "Motorbike",
-    description = "steal from any house",
+    name = "Steal Vehicle",
+    description = "carjack a civilian vehicle",
     -- Hack Infrastructure
     --CommandUnits (+10 Units)
     -- WithinCellsInterlinked (Recruit)

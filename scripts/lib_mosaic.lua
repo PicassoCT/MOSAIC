@@ -334,6 +334,35 @@ function getGameConfig()
     return getTypeTable(UnitDefNames, typeTable)
     end
 
+    function getVictoryStillPossibleTypeSets(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+
+    operator = {
+        "operativeinvestigator",
+        "operativepropagator"
+        }
+
+    safehouse = {
+        "antagonsafehouse",
+        "protagonsafehouse"
+        }
+
+    gameenders = {
+        "physicspayload",
+        "biopayload",
+        "informationpayload",
+        "launcher",
+        }
+
+
+    return {
+            getTypeTable(UnitDefNames, operator), 
+            getTypeTable(UnitDefNames, safehouse),
+            getTypeTable(UnitDefNames, gameenders), 
+            getPayloadTypes(UnitDefs)
+            }
+    end
+
     function getChemTrailInfluencedTypes(UnitDefs)
         assert(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)

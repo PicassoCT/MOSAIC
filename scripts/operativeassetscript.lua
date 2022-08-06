@@ -167,7 +167,7 @@ end
  function showFireArm()
 	Hide(Gun)
 	Hide(Pistol)
-	Hide(Silencer)
+	Hide(silencer)
 	Show(lastShownWeapon)
 	if lastShownWeapon == Gun then
 		showGun()
@@ -1033,6 +1033,11 @@ end
 function pistolFireFunction(weaponID)
     StartThread(visibleAfterWeaponsFireTimer)
     boolAiming = false
+    if boolCloaked == true then
+        Spring.PlaySoundFile("sounds/weapons/pistol/stealthpistol.ogg", 1.0)
+    else
+        Spring.PlaySoundFile("sounds/weapons/pistol/pistolshot"..math.random(1,3)..".ogg", 1.0)
+    end
     -- Explode(TablesOfPiecesGroups["Shell"][1], SFX.FALL + SFX.NO_HEATCLOUD)
     return true
 end

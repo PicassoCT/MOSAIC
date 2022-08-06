@@ -169,6 +169,7 @@ local GameStateMachine = {
     end
 }
 
+local gameStartFrame = Spring.GetGameFrame() +1
 function gadget:Initialize()
     Spring.Echo(GetInfo().name .. " Initialization started")
     setGlobalGameState(GameConfig.GameState.normal)
@@ -197,6 +198,7 @@ function gadget:Initialize()
         allyTeamAliveTeamsCount[allyTeamID] = teamCount
         if teamCount > 0 then aliveAllyTeamCount = aliveAllyTeamCount + 1 end
     end
+    gameStartFrame = Spring.GetGameFrame() +1
     Spring.Echo(GetInfo().name .. " Initialization ended")
 end
 
@@ -228,8 +230,7 @@ end
 
 local function AreAllyTeamsDoubleAllied(firstAllyTeamID, secondAllyTeamID)
     -- we need to check for both directions of alliance
-    return spAreTeamsAllied(firstAllyTeamID, secondAllyTeamID) and
-               spAreTeamsAllied(secondAllyTeamID, firstAllyTeamID)
+    return spAreTeamsAllied(firstAllyTeamID, secondAllyTeamID) and spAreTeamsAllied(secondAllyTeamID, firstAllyTeamID)
 end
 
 local function CheckSharedAllyVictoryEnd()
@@ -341,6 +342,35 @@ function constantCheck(frame)
             end
         end
     end
+
+    if frame + 100 > gameStartFrame then
+        local teams = Spring.GetTeamList()
+        for i = 1, #teams do
+            if TeamHasMinimumNecessaryToWin(teams[i])  == false then
+                Spring.KillTeam(teams[i])
+            end
+        end
+    end
+end
+local teamHadAtLeastOneUnit = {}
+local victoryStillPossibleTypeTables = getVictoryStillPossibleTypeSets(UnitDefs)
+function TeamHasMinimumNecessaryToWin(teamID)
+    if nil == teamHadAtLeastOneUnit[teamID] then      teamHadAtLeastOneUnit[teamID] = false end
+
+   teamDefIDsUnitTable = Spring.GetTeamUnitsSorted(teamID) 
+   for defID, unitCount in pairs(teamDefIDsUnitTable) do
+        if unitCount ~= 0  then
+            teamHadAtLeastOneUnit[teamID] = true
+            for i=1, #victoryStillPossibleTypeTables do
+                winningConditionUnitTypeSets = victoryStillPossibleTypeTables[i]
+                if winningConditionUnitTypeSets[defID] then
+                    return true
+                end
+            end
+        end
+   end
+
+   return teamHadAtLeastOneUnit[teamID]
 end
 
 oldState = "normal"
