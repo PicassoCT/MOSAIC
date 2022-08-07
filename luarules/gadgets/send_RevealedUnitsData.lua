@@ -15,11 +15,9 @@ if ( gadgetHandler:IsSyncedCode()) then
 
 VFS.Include("scripts/lib_OS.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
-VFS.Include("scripts/lib_Animation.lua")
-VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-local  boolTestGraph = true
+local  boolTestGraph = false
 
 function gadget:Initialize()
     if not GG.RevealedLocations then GG.RevealedLocations = {} end
@@ -85,14 +83,14 @@ local function updateLocationData()
             end
          end
         end
-         if not boolAtLeastOneAlive then
+         if boolAtLeastOneAlive == false then
             GG.RevealedLocations[nr] = nil
          end
     end
 
     if GG.RevealedLocations then
-        SendToUnsynced("HandleRevealedLocationUpdates", 
-		serializeTableToString(GG.RevealedLocations))
+        local TableCopy = GG.RevealedLocations
+        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(TableCopy))
     end
 end
 
@@ -114,7 +112,7 @@ function gadget:GameFrame(frame)
 
     if boolTestGraph == true and frame > 0 and frame % (60*30) == 0  then
         --Spring.Echo("Debugmode: adding TestLocation")
-        --addTestLocation()
+        addTestLocation()
     end
 end
 

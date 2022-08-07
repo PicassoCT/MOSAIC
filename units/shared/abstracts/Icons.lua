@@ -92,7 +92,7 @@ local DoubleAgent =
     --
     alwaysUpright = true,
     name = "DoubleAgent",
-    description = "Activate to turn sides",
+    description = "Decloak to turn sides",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -135,7 +135,7 @@ local RecruitCivilian =
     iconType = "recruitcivilian",
     --
     name = "Recruit civilian",
-    description = "- recruits a civilian for your team",
+    description = "- recruits a civilian for your side",
     -- Hack Infrastructure
     --CommandUnits (+10 Units)
     -- WithinCellsInterlinked (Recruit)

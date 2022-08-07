@@ -25,6 +25,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
     local operativeTypeTable = getOperativeTypeTable(UnitDefs)
     local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
+    local houseTypeTable = getHouseTypeTable(UnitDefs)
 
     gaiaTeamID = Spring.GetGaiaTeamID()
 

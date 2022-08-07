@@ -169,7 +169,7 @@ function getGameConfig()
         raid = {
             maxTimeToWait = 3 * 60 * 1000,
             maxRoundLength = 20 * 1000,
-            interrogationPropagandaPrice = 50,
+            interrogationPropagandaPrice = 1000,
 			revealGraphLifeTimeFrames = 5 * 60 * 30,
         },
 
@@ -1233,7 +1233,7 @@ function getGameConfig()
                 }
 
                 typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                    GameConfig.instance.culture, "civilian",
+                    GameConfig.instance.culture, "house",
                 UnitDefs))
 
                 return getTypeTable(UnitDefNames, typeTable)
@@ -1559,7 +1559,7 @@ function getGameConfig()
                 defID = Spring.GetUnitDefID(unitID)
                 if ProtagonUnitTypeList[defID] then return "protagon" end
                 if AntagonUnitTypeList[defID] then return "antagon" end
-                return "gaia"
+                return "protagon"
             end
 
             function getDecalMap(culture)

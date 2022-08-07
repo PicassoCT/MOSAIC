@@ -370,7 +370,7 @@ function TeamHasMinimumNecessaryToWin(teamID)
         end
    end
 
-   return teamHadAtLeastOneUnit[teamID]
+   return teamHadAtLeastOneUnit[teamID] == false
 end
 
 oldState = "normal"

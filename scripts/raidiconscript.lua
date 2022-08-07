@@ -111,8 +111,9 @@ function script.Create()
 end
 
 function raidConversationLoop()
-    mySide  =getUnitSide(unitID)
+    mySide  = getUnitSide(unitID)
     while true do
+        assert(talk[mySide],mySide)
         line = talk[mySide][math.random(1,#talk[mySide])]
         say(line, 2500, { r = 1.0, g = 1.0, b = 1.0 }, { r = 1.0, g = 1.0, b = 1.0 }, "", unitID)
 

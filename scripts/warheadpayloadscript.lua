@@ -104,7 +104,7 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	                    for tid, _ in pairs(protagonT) do
 	                        GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid, id, {r=255,g=0,b=0})
 	                    end
-               		  GG.UnitsToKill:PushDestroyUnit(id, true, false)
+               		  GG.UnitsToKill:PushKillUnit(id, true, false)
 					end
 					)
 
@@ -140,7 +140,7 @@ if UnitDefs[myDefID].name == "informationpayload" then
                               end  
 								
 							 if automationPayloadDestroyedType[defID] then
-							 	GG.UnitsToKill:PushDestroyUnit(id, false, true)                             
+							 	GG.UnitsToKill:PushKillUnit(id, false, true)                             
                               	spawnCegAtUnit(id, "electric_explosion")
                               end
                         	end)

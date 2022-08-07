@@ -235,9 +235,9 @@ function widget:Initialize()
   end)
   countryPhoneNr = "+0"
   local country = getCountryByCulture()
-  if not county then  countryPhoneNr = "VOICE OVER IP"; return end
+  if not county then  countryPhoneNr = ""; return end
   local hash = stringToHash(country)
-  countryPhoneNr = countryPhoneNr..(hash%170).."-"
+  countryPhoneNr = countryPhoneNr..(hash % 170).."-"
 end
 
 function widget:Shutdown()
@@ -364,6 +364,7 @@ function computeTeamColorOffsetByPlayer(teamID,hashUpper)
     teamColorPlayers[teamID][name]=colors
   end
 end
+
 local phoneCache = {}
 local function getCacheBy(identifier)
   if phoneCache[identifier] then return phoneCache[identifier] end
