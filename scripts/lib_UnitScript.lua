@@ -5085,6 +5085,12 @@ function echo(stringToEcho, ...)
     end
 end
 
+function conditionalEcho(active, message )
+    if active then
+        echo(message)
+    end
+end
+
 -- > prints a square 2dmap 
 function echo2DMap(tmap, squareSideDimension, valueSignMap)
     map = {}

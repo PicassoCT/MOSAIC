@@ -405,7 +405,7 @@ defuseStatesMachine = {
 							-- show Graph
 							 registerBombLocationAndProducer(unitID)
 							-- Reward Defuser Team
-							GG.Bank:TransferToTeam(GameConfig.PayloadDefusedReward, Spring.GetUnitTeam(Allies[1]), Allies[1], {r=255,g=255,b=255})
+							GG.Bank:TransferToTeam(GameConfig.PayloadDefusedReward, Spring.GetUnitTeam(Enemies[1]), Enemies[1], {r=255,g=255,b=255})
 							--DestroyUnit
 							Spring.DestroyUnit(unitID, false, true)
 						end

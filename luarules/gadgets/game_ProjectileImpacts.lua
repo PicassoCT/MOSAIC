@@ -13,7 +13,6 @@ end
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
-    --VFS.Include("scripts/lib_Animation.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
     if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
@@ -64,6 +63,8 @@ if (gadgetHandler:IsSyncedCode()) then
     Script.SetWatchWeapon(nimrodRailungDefID, true)
     local molotowDefID = WeaponDefNames["molotow"].id
     Script.SetWatchWeapon(molotowDefID, true)
+
+
 
     local FireWeapons = {
         [molotowDefID] = true
@@ -372,11 +373,12 @@ if (gadgetHandler:IsSyncedCode()) then
             GG.InterrogationTable[raidedSafeHouseOrHouse_ID][attackerID] = true
             -- Stun
             raidFunction = function(persPack)
-            --spEcho("raidEventStream  Ongoing")
+            boolDebugRaid = true
+            conditionalEcho(boolDebugRaid,"raidEventStream  Ongoing")
 
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.raidedSafeHouseOrHouse_ID) then
-                    --spEcho("failed check Target is still existing ")
+                    conditionalEcho(boolDebugRaid,"failed check Target is still existing ")
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     postRaidCleanup(persPack)
@@ -385,7 +387,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    --spEcho("failed   check wether the interrogator is still alive")
+                    conditionalEcho(boolDebugRaid,"failed   check wether the interrogator is still alive")
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     postRaidCleanup(persPack)
@@ -394,7 +396,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.RaidDistance then
-                    --spEcho("failed check distance is still okay5 ")
+                    conditionalEcho(boolDebugRaid,"failed check distance is still okay5 ")
                     if doesUnitExistAlive(persPack.IconID) == true then
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
@@ -438,7 +440,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         if GG.raidStatus[persPack.IconID] then  GG.raidStatus[persPack.IconID] = {} end
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = false
                     else
-                        --spEcho("Raid: No IconID")
+                        conditionalEcho(boolDebugRaid,"Raid: No IconID")
                         postRaidCleanup(persPack)
                         return true, persPack
                     end
@@ -451,9 +453,9 @@ if (gadgetHandler:IsSyncedCode()) then
                     local raidStateLocal = GG.raidStatus[persPack.IconID]
                     --echo("Animation completed")
                     --Aborted or EmptyHouse
-                    if raidStateLocal.result == raidResultStates.HouseEmpty then
+                    if raidStateLocal.result == raidResultStates.HouseEmpty or persPack.boolRaidedEmptyHouse then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
-                            --spEcho("Raided empty house")
+                            conditionalEcho(boolDebugRaid,"Raided empty house")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
@@ -476,7 +478,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if (raidStateLocal.state == raidStates.Aborted) or 
                         not allTeams or #allTeams <= 1 then 
                         -- Simulation mode
-                        --spEcho("Raid: Aborted ")
+                        conditionalEcho(boolDebugRaid,"Raid: Aborted ")
                         postRaidCleanup(persPack)
                         persPack.boolRaidHasEnded = true
                         return true, persPack
@@ -486,7 +488,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if raidStateLocal.state == raidStates.VictoryStateSet and
                         raidStateLocal.result == raidResultStates.AggressorWins       
                         then
-                        --spEcho("Raid was succesfull - childs of " .. persPack.raidedSafeHouseOrHouse_ID .. " are revealed")
+                        conditionalEcho(boolDebugRaid,"Raid was succesfull - childs of " .. persPack.raidedSafeHouseOrHouse_ID .. " are revealed")
                         unitTeam = spGetUnitTeam(persPack.raidedSafeHouseOrHouse_ID)
                         children = getChildrenOfUnit(unitTeam, persPack.raidedSafeHouseOrHouse_ID)
                         parent = getParentOfUnit(unitTeam, persPack.raidedSafeHouseOrHouse_ID)
@@ -517,7 +519,7 @@ if (gadgetHandler:IsSyncedCode()) then
          return false, persPack
         end
         
-            --spEcho("Starting Raid Event Stream")
+            echo("Starting Raid Event Stream")
             createStreamEvent(raidedSafeHouseOrHouse_ID, raidFunction, 31, {
                 interrogatorID = attackerID,
                 raidedSafeHouseOrHouse_ID = raidedSafeHouseOrHouse_ID,
