@@ -268,7 +268,7 @@ function getGroundHeigthGrid(x,z, Size)
 
    end
 
-  return  min, avg* (1/5), max 
+  return  min, avg/5, max 
 end
 
 -- > is a Unit Piece above ground
