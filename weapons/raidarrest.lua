@@ -8,7 +8,7 @@ local weaponDef = {
     Accuracy = 2000,
 
     --Physic/flight path
-    range = 256,
+    range = 15,
       burst                   = 20,
       burstrate               = 0.1,
     reloadtime = 120,
