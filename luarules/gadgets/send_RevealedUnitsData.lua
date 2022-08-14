@@ -68,7 +68,7 @@ local function addTestLocation()
 
   GG.RevealedLocations = locations
 end
-
+local storedRevealedLocationCount
 local function updateLocationData()
     for nr, LocationData in pairs(GG.RevealedLocations) do
         boolAtLeastOneAlive = false
@@ -90,8 +90,13 @@ local function updateLocationData()
 
     if GG.RevealedLocations then
         local TableCopy = GG.RevealedLocations
-        Spring.Echo("Updating RevealedLocations "..#GG.RevealedLocations)
+        
         SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(TableCopy))
+    end
+
+    if storedRevealedLocationCount ~= #GG.RevealedLocations then
+        storedRevealedLocationCount = #GG.RevealedLocations
+        Spring.Echo("Updating RevealedLocations "..#GG.RevealedLocations)
     end
 end
 

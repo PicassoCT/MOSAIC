@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 3,
+        layer = 1,
         version = 1,
         enabled = true
     }
@@ -22,16 +22,29 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitTeam = Spring.GetUnitTeam
 
-    local InterrogateableType = getInterrogateAbleTypeTable(UnitDefs)
-    local operativeTypeTable = getOperativeTypeTable(UnitDefs)
-    local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
-    local houseTypeTable = getHouseTypeTable(UnitDefs)
+    InterrogateableType = {}
+    operativeTypeTable = {}
+    safeHouseTypeTable = {}
+    houseTypeTable = {}
 
     gaiaTeamID = Spring.GetGaiaTeamID()
 
-    function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
+    function gadget:GameStart()
+    
+     assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
+     echo("InterrogateableType")
+     echo( InterrogateableType)
+     operativeTypeTable = getOperativeTypeTable(UnitDefs)
+     safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
+     houseTypeTable = getHouseTypeTable(UnitDefs)
+    end
 
-        if InterrogateableType[unitdefid] then
+    function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
+        Spring.Echo("UnitCreated:: game_treasonAndBetrayal:"..unitid.." - "..unitdefid)
+        assert(InterrogateableType)
+        assert(InterrogateableType)
+        if InterrogateableType[unitdefid] ~= nil then
+            Spring.Echo("InterrogateableType created")
             if father and doesUnitExistAlive(father) then
                 registerChild(unitTeam, father, unitid)
                 if operativeTypeTable[unitdefid] then
@@ -49,13 +62,14 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
                 else
                     for operatorType, _ in pairs(operativeTypeTable) do
-                        if allUnitsSortedByDefID[safehouseType] and #allUnitsSortedByDefID[operatorType]  > 0 then
+                        if allUnitsSortedByDefID[operatorType] and #allUnitsSortedByDefID[operatorType]  > 0 then
                            father =  getSafeRandom(allUnitsSortedByDefID[operatorType])
                         end
                     end
                 end
                 if father then
-                    registerFather(unitTeam, father, unitid)
+                    echo("Fatherless Unit registered with parent ")
+                    registerChild(unitTeam, father, unitid)
                 end
             end
 

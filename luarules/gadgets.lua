@@ -125,7 +125,6 @@ gadgetHandler = {
 -- they are setup in UpdateCallIns()
 local callInLists = {
     "Shutdown", "GamePreload", "GameStart", "GameOver", "GameID", "TeamDied",
-
     "GameFrame", "ViewResize", -- FIXME ?
     "TextCommand", -- FIXME ?
     "GotChatMsg", "RecvLuaMsg", -- Unit CallIns

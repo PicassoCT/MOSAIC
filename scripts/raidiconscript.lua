@@ -60,10 +60,12 @@ RaidSuccess = piece("RaidSuccess")
 RaidAborted = piece("RaidAborted")
 RaidEmpty = piece("RaidEmptz")
 raidNoUplink = piece("raidNoUplink")
-RaidUploadInProgressDish = piece("RaidUploadInProgressDish")
+
+
 local satelliteTypeTable = getSatteliteTypes(UnitDefs)
 
 function script.Create()
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitStealth(unitID, false)
     Spring.SetUnitNeutral(unitID, true)
@@ -77,12 +79,10 @@ function script.Create()
     Hide(RaidAborted)
     Hide(RaidEmpty)
     Hide(raidNoUplink)
-    Hide(RaidUploadInProgressDish)
 
 
-    generatepiecesTableAndArrayCode(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
+    hideT(TablesOfPiecesGroups["RaidUploadRotor"])
     StartThread(raidAnimationLoop)
     StartThread(raidConversationLoop)
     -- StartThread(raidPercentage)
@@ -158,17 +158,19 @@ function watchRaidIconTable()
     Sleep(1000)
     Hide(raidNoUplink)
 
-    UplinkAnimation()
 
 
     if GG.raidStatus[unitID] and GG.raidStatus[unitID].result  then
         local result = GG.raidStatus[unitID].result
         hideAll(unitID)
+        StartThread(playEndAnimation)
         if result ==  raidResultStates.Unknown then
              showRaidAbortedAnimation()
         elseif result == raidResultStates.DefenderWins then
+            StartThread(UplinkAnimation)
             showDefenderSuccesAnimation()
         elseif result == raidResultStates.AggressorWins then
+            StartThread(UplinkAnimation)
             showRaidSuccesAnimation()
         elseif  result == raidResultStates.HouseEmpty then
             showHouseEmptyAnimation()
@@ -178,7 +180,10 @@ function watchRaidIconTable()
     else
         showRaidAbortedAnimation()
     end
-    Sleep(1000)
+
+    Sleep(GameConfig.Satellite.uploadTimesMs)
+
+    boolRaidUploadInProgress = false
     GG.raidStatus[unitID].state =  raidStates.VictoryStateSet
     GG.raidStatus[unitID].boolAnimationComplete = true
     while true do
@@ -186,26 +191,36 @@ function watchRaidIconTable()
     end
 end
 
-function UplinkAnimation()
-    Show(RaidUploadInProgressDish)
-    times = GameConfig.Satellite.uploadTimesMs/1000
-    speed = 1500/1000 
+boolRaidUploadInProgress = false
 
-    for i=1, times do
+function UplinkAnimation()
+    boolRaidUploadInProgress = true
+    showT(TablesOfPiecesGroups["RaidUploadRotor"])    
+    spinT(TablesOfPiecesGroups["RaidUploadRotor"], z_axis, 42, 0, 0)  
+
+   while boolRaidUploadInProgress == true do
         hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
-        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, -500, 0)
+         for i=1,# TablesOfPiecesGroups["RaidUploadInProgress"] do
+            Move(TablesOfPiecesGroups["RaidUploadInProgress"][i],z_axis,  -100*i, 0)
+        end
         WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
         showT(TablesOfPiecesGroups["RaidUploadInProgress"])
-        moveT(TablesOfPiecesGroups["RaidUploadInProgress"],y_axis, 1000, speed )
+        for i=1,# TablesOfPiecesGroups["RaidUploadInProgress"] do
+            Move(TablesOfPiecesGroups["RaidUploadInProgress"][i],z_axis, 1500, 700)
+            Sleep(250)
+        end
         WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
-        Sleep(250)
+        Sleep(250)  
     end
-    Hide(RaidUploadInProgressDish)
+
+    hideT(TablesOfPiecesGroups["RaidUploadRotor"])
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
 end
 
 function popPieceUp(pieceID, speed)
     axis = z_axis
+    val= math.random(25,50)
+    Spin(pieceID,y_axis, math.rad(val),0)
     Move(pieceID, axis, -800, 0)
     Show(pieceID)
     WMove(pieceID, axis, 50, speed)
@@ -341,11 +356,7 @@ function shoveAllNonCombatantsOut()
     end
 end
 
-function raidAnimationLoop()
-    Sleep(1)
-    resetAll(unitID)
-    assert(type(ring) == "table", "Not a table")
-
+function waveSpins()
     index = 0
     foreach(ring, function(id)
         index = index + 1
@@ -362,6 +373,14 @@ function raidAnimationLoop()
         StartThread(waveSpin, id, math.random(1, 6), math.random(4, 800), 100,
                     true)
     end)
+
+end
+function raidAnimationLoop()
+    Sleep(1)
+    resetAll(unitID)
+    assert(type(ring) == "table", "Not a table")
+
+    StartThread(waveSpins)
 
     roundStep = math.ceil(GameConfig.raid.maxRoundLength / 100)
     hideT(step)
@@ -580,7 +599,7 @@ function playEndAnimation()
 end
 
 function script.Killed(recentDamage, _)
-    playEndAnimation()
+    StartThread(playEndAnimation)
     setAffiliatedHouseVisible()
 
     return 1

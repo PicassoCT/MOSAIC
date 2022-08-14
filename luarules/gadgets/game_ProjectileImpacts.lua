@@ -358,7 +358,16 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if GG.InterrogationTable[raidedSafeHouseOrHouse_ID] == nil then
             GG.InterrogationTable[raidedSafeHouseOrHouse_ID] = {}
+        else
+            --check if there are previous raids active
+            for raiders, boolRaidOngoing in pairs(GG.InterrogationTable[raidedSafeHouseOrHouse_ID]) do
+                if boolRaidOngoing == true then
+                    conditionalEcho(true, "House already has raid ongoing aborting")
+                    return
+                end
+            end
         end
+        
         if GG.InterrogationTable[raidedSafeHouseOrHouse_ID][attackerID] == nil then
             GG.InterrogationTable[raidedSafeHouseOrHouse_ID][attackerID] = false
         end

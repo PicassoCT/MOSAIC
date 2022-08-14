@@ -191,7 +191,7 @@ function getRandomSpawnNode()
         startNode = randT(RouteTabel)
         attempts = attempts + 1
     end
-    assert(startNode)
+    if not startNode then return nil end
 
     x, y, z = spGetUnitPosition(startNode)
 
@@ -286,20 +286,17 @@ function checkReSpawnTraffic()
         -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
-
-            goalNode = RouteTabel[startNode][math.random(1,
-                                                         #RouteTabel[startNode])]
-            TruckType = randDict(TruckTypeTable)
-            id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
-            if id  then
-                loadTruck(id, "truckpayload") 
+            if startNode then
+                goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
+                TruckType = randDict(TruckTypeTable)
+                id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
+                if id  then
+                    loadTruck(id, "truckpayload") 
+                end
             end
         end
     else
-        decimateArrivedCivilians(absDistance(
-                                     getNumberOfUnitsAtTime(
-                                         GameConfig.numberOfVehicles), counter),
-                                 TruckTypeTable)
+        decimateArrivedCivilians(absDistance( getNumberOfUnitsAtTime(GameConfig.numberOfVehicles), counter), TruckTypeTable)
     end
 end
 

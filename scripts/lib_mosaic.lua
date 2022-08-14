@@ -832,7 +832,7 @@ function getGameConfig()
                     ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_western", range = -1}}
                 }
-                assert(translation[cultureName])
+                assert(translation[cultureName], "no translation for "..cultureName)
                 return translation[cultureName]
             end
 
@@ -1020,7 +1020,7 @@ function getGameConfig()
 
 
             function getTruckTypeTable(UnitDefs)
-                return getCultureUnitModelTypes(GG.GameConfig.instance.culture, "truck", UnitDefs)
+                return getCultureUnitModelTypes(GG.GameConfig.instance.culture or getCultureName(), "truck", UnitDefs)
             end
 
             function getOperatorSex(UnitDefs, defID)
@@ -1175,36 +1175,39 @@ function getGameConfig()
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
-            function getInterrogateAbleTypeTable(UnitDefs)
+            function 
+                getInterrogateAbleTypeTable(UnitDefs)
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
-                local UnitDefNames = getUnitDefNames(UnitDefs)
-                typeTable = {
+                operatorTypeTable = {
                     "civilianagent", "operativeasset", "operativepropagator",
                     "operativeinvestigator", "antagonsafehouse", "protagonsafehouse",
                     "propagandaserver", "assembly", "launcher", "hivemind", "aicore"
                 }
-
-                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                assert(GameConfig.instance.culture)
+                typeTable = mergeTables(operatorTypeTable, getTypeUnitNameTable(
                     GameConfig.instance.culture, "civilian",
                 UnitDefs))
-
-                return getTypeTable(UnitDefNames, typeTable)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                resultTypeTable = getTypeTable(UnitDefNames, typeTable)
+                assert(resultTypeTable[UnitDefNames["operativeinvestigator"].id])
+                return resultTypeTable
             end
 
             function getMobileInterrogateAbleTypeTable(UnitDefs)
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
-                typeTable = {
+                InterrogatableTypeTable = {
                     "civilianagent", "operativeasset", "operativepropagator",
                     "operativeinvestigator"
                 }
 
-                typeTable = mergeTables(typeTable, getTypeUnitNameTable(
+                typeTable = mergeTables(InterrogatableTypeTable, getTypeUnitNameTable(
                     GameConfig.instance.culture, "civilian",
                 UnitDefs))
-
+                resultTypeTable = getTypeTable(getUnitDefNames(UnitDefs), typeTable)
+                assert(resultTypeTable[UnitDefNames["operativeinvestigator"].id])
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
