@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.863" 
+            Version = "Alpha: 0.865" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -168,7 +168,7 @@ function getGameConfig()
 
         raid = {
             maxTimeToWait = 3 * 60 * 1000,
-            maxRoundLength = 20 * 1000,
+            maxRoundLength = 15 * 1000,
             interrogationPropagandaPrice = 1000,
 			revealGraphLifeTimeFrames = 5 * 60 * 30,
         },
@@ -719,7 +719,10 @@ function getGameConfig()
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
                     "air_copter_ssied",
-                    "motorbike"
+                    "motorbike",
+                    "physicspayload",
+                    "biopayload",
+                    "informationpayload"
                 }
                 return getTypeTable(UnitDefNames, typeTable)
         end
@@ -849,6 +852,11 @@ function getGameConfig()
             end
 
             function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
+                if cultureName == nil then 
+                    cultureName = getCultureName()
+                    assert(cultureName)
+                end
+
                 local translation = {}
                 if cultureName == Cultures.international then
                     translationWestern = getTranslation(Cultures.western)
@@ -866,6 +874,7 @@ function getGameConfig()
                     end
                     return fullTable--, translationAsian
                 else
+                    assert(cultureName)
                     translation = getTranslation(cultureName)
                     assert(translation , "No translation for "..typeName.." in culture "..cultureName)
                     assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
@@ -2068,9 +2077,9 @@ end
         end
     end
 
-    function registerFather(teamID, parent)
+    function registerParent(teamID, parent)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
-        -- Spring.Echo("register Father of unit")
+        Spring.Echo("register Father of unit")
         if not GG.InheritanceTable[teamID][parent] then
             GG.InheritanceTable[teamID][parent] = {}
         end
@@ -2078,8 +2087,8 @@ end
 
     function registerChild(teamID, parent, childID)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
-        -- Spring.Echo("register Child child of unit")
-        registerFather(teamID, parent)
+        Spring.Echo("register Child child of unit")
+        registerParent(teamID, parent)
 
         GG.InheritanceTable[teamID][parent][childID] = true
     end
@@ -2181,6 +2190,10 @@ end
     end
 
     function registerRevealedUnitLocation(unitID)
+        assert(unitID)
+        assert(type(unitID) == "number")
+        assert(doesUnitExistAlive(unitID))
+        --echo("Entered registerRevealedUnitLocation")
         local Location = {}
         Location.x, Location.y, Location.z = Spring.GetUnitBasePosition(unitID)
         Location.teamID = Spring.GetUnitTeam(unitID)
@@ -2196,7 +2209,9 @@ end
             Location.revealedUnits[parent].defID = Spring.GetUnitDefID(parent)
             Location.revealedUnits[parent].boolIsParent = true
             Location.revealedUnits[parent].name = extractNameFromDescription(parent)
-            echo("registerRevealedUnitLocation: revealing parent "..parent)
+            --echo("registerRevealedUnitLocation: revealing parent "..parent)
+        else
+            --echo("Revealed unit does not have a parent")
         end
 
         local children = getChildrenOfUnit(Location.teamID, unitID)
@@ -2209,9 +2224,11 @@ end
                     Location.revealedUnits[childID].defID = Spring.GetUnitDefID(childID)
                     Location.revealedUnits[childID].boolIsParent = false
                     Location.revealedUnits[childID].name = extractNameFromDescription(childID)
-                    echo("registerRevealedUnitLocation: revealing child"..childID)
+                  --  echo("registerRevealedUnitLocation: revealing child"..childID)
                 end
             end
+        else
+            --echo("Revealed unit does not have children")
         end
 
         if not GG.RevealedLocations then GG.RevealedLocations = {} end

@@ -383,7 +383,7 @@ if (gadgetHandler:IsSyncedCode()) then
             -- Stun
             raidFunction = function(persPack)
             boolDebugRaid = true
-            conditionalEcho(boolDebugRaid,"raidEventStream  Ongoing")
+           -- conditionalEcho(boolDebugRaid,"raidEventStream  Ongoing")
 
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.raidedSafeHouseOrHouse_ID) then

@@ -39,7 +39,7 @@ onImpact = {
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz), tz)
     end,
 
-    [WeaponDefNames["cm_transport"].id] = function(projID, tx, ty, tz)     
+    [CruiseMissileTransportWDefID] = function(projID, tx, ty, tz)     
         px, py, pz = Spring.GetProjectilePosition(projID)
         projectileParent = Spring.GetProjectileOwnerID (projID)
         if projectileParent and  GG.CruiseMissileTransport and  GG.CruiseMissileTransport[projectileParent]  then
@@ -61,7 +61,7 @@ onImpact = {
             end           
         end
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 2000, tz)
-        delayedKillProjectile(projID, 5000)    
+        delayedKillProjectile(projID, 1000)    
     end,
 
     [CruiseMissileAntiArmorWDefID] = function(projID, tx, ty, tz)

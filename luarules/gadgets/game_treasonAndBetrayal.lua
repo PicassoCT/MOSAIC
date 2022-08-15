@@ -21,58 +21,75 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitPosition = Spring.GetUnitPosition
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitTeam = Spring.GetUnitTeam
+    boolLocalDebugActive = false
 
-    InterrogateableType = {}
-    operativeTypeTable = {}
-    safeHouseTypeTable = {}
-    houseTypeTable = {}
-
-    gaiaTeamID = Spring.GetGaiaTeamID()
-
-    function gadget:GameStart()
-    
-     assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
-     echo("InterrogateableType")
-     echo( InterrogateableType)
+    InterrogateableType =  getInterrogateAbleTypeTable(UnitDefs)
      operativeTypeTable = getOperativeTypeTable(UnitDefs)
      safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
      houseTypeTable = getHouseTypeTable(UnitDefs)
+
+    gaiaTeamID = Spring.GetGaiaTeamID()
+    StartUnitsByTeam = {}
+    function gadget:GameStart()    
+         StartUnitsByTeam = {}
+        allTeams = Spring.GetTeamList()
+        for i=1, #allTeams do
+            StartUnitsByTeam[allTeams[i]] = {}
+        end
+     assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
+     assert(safeHouseTypeTable[UnitDefNames["antagonsafehouse"].id])   
+     assert(houseTypeTable[UnitDefNames["house_arab0"].id])   
     end
 
+
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
-        Spring.Echo("UnitCreated:: game_treasonAndBetrayal:"..unitid.." - "..unitdefid)
-        assert(InterrogateableType)
-        assert(InterrogateableType)
-        if InterrogateableType[unitdefid] ~= nil then
-            Spring.Echo("InterrogateableType created")
+        if operativeTypeTable[unitdefid] and #StartUnitsByTeam[unitTeam] == 0 then
+           conditionalEcho(boolLocalDebugActive"Registering Start Unit")
+            registerParent(unitTeam, unitid)
+            StartUnitsByTeam[unitTeam][1] = unitid
+            return
+        end
+
+        if InterrogateableType[unitdefid] then
+            --Spring.Echo("InterrogateableType created")
             if father and doesUnitExistAlive(father) then
                 registerChild(unitTeam, father, unitid)
-                if operativeTypeTable[unitdefid] then
-                 --   Spring.Echo("operativeType Unit created - child of "..father)
-                end
+                conditionalEcho(boolLocalDebugActive,UnitDefs[unitdefid].name .. " created - child of "..father)
             else
-                -- registering random father
-                father = nil
-                allUnitsSortedByDefID = Spring.GetTeamUnitsSorted(unitTeam) 
-                if operativeTypeTable[unitdefid] then
-                    for safehouseType, _ in pairs(safeHouseTypeTable) do
-                        if allUnitsSortedByDefID[safehouseType] and #allUnitsSortedByDefID[safehouseType]  > 0 then
-                           father =  getSafeRandom(allUnitsSortedByDefID[safehouseType])
+                if operativeTypeTable[unitdefid] or safeHouseTypeTable[unitdefid] then
+                    conditionalEcho(boolLocalDebugActive,"Registering random father")
+                    -- registering random father
+                    local father = nil
+                    allUnitsSortedByDefID = Spring.GetTeamUnitsSorted(unitTeam)
+ 
+                    if operativeTypeTable[unitdefid] then
+                        for safehouseType, _ in pairs(safeHouseTypeTable) do
+                            conditionalEcho(boolLocalDebugActive,"Iteratted operatives: "..UnitDefs[safehouseType].name)
+                            local safeHousesOfTeam = allUnitsSortedByDefID[safehouseType]
+                            if safeHousesOfTeam then
+                               father =  getSafeRandom(safeHousesOfTeam)
+                               assert(father)
+                               break
+                            end
+                        end
+                    else --assumed safehouse
+                        for operatorType, _ in pairs(operativeTypeTable) do
+                            local operatorsOfTeam = allUnitsSortedByDefID[operatorType]
+                            if operatorsOfTeam then
+                                conditionalEcho(boolLocalDebugActive, operatorsOfTeam)
+                                father = getSafeRandom(operatorsOfTeam)
+                                assert(father)
+                               break
+                            end
                         end
                     end
-                else
-                    for operatorType, _ in pairs(operativeTypeTable) do
-                        if allUnitsSortedByDefID[operatorType] and #allUnitsSortedByDefID[operatorType]  > 0 then
-                           father =  getSafeRandom(allUnitsSortedByDefID[operatorType])
-                        end
+                  
+                    if father then
+                       conditionalEcho(boolLocalDebugActive,"Fatherless Unit "..unitid.." registered with random parent "..father)
+                       registerChild(unitTeam, father, unitid)
                     end
-                end
-                if father then
-                    echo("Fatherless Unit registered with parent ")
-                    registerChild(unitTeam, father, unitid)
                 end
             end
-
         end
     end
 

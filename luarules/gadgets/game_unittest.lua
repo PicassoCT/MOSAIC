@@ -101,7 +101,7 @@ if (gadgetHandler:IsSyncedCode()) then
         local safehouses = spawnedSafeHouse
         local operatives = spawnedOperatives
         root = randDict(operatives)
-        registerFather(aiTeam, root)
+        registerParent(aiTeam, root)
         newSafeHouse = randDict(allSafehouses)
         registerChild(aiTeam, newSafeHouse, root)
         operatives[root] = nil

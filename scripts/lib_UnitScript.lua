@@ -5192,9 +5192,22 @@ end
 -- ======================================================================================
 function getSafeRandom(T, default)
     if not T then return default end 
-    if #T < 1 then return default end
-    if #T < 2 then return T[1] end
-    return T[math.random(1,#T)]
+    countElements = count(T)
+
+    if countElements < 1 then return default end
+    if countElements < 2 then
+        for k,v in pairs(T) do
+            return v
+        end
+    end
+
+
+    local keyset = {}
+    for k in pairs(T) do
+        table.insert(keyset, k)
+    end
+-- now you can reliably return a random key
+    return T[keyset[math.random(#keyset)]]
 end
 
 function getRandomElementRing(T)

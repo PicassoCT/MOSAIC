@@ -197,8 +197,8 @@ local ground_truck_rocket = Truck:New{
 }
 
 local PoliceTruck = Truck:New{
-	name = "Police Vehicle",
-	description = "corrupt, chaotic - local authority",
+	name = "Police",
+	description = "Any Local Authority",
 	corpse				= "",
 	buildPic = "truck_police.png",
 	iconType = "truck_police",
