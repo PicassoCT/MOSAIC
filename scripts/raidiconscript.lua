@@ -86,8 +86,8 @@ function script.Create()
     Hide(PlacementPhase)
     Hide(EvaluationPhase)
     Hide(Satellite)
-    Spin(EvaluationPhase,z_axis,math.rad(-42))
-    Spin(PlacementPhase,z_axis,math.rad(42))
+    Spin(EvaluationPhase,z_axis,math.rad(-42),0)
+    Spin(PlacementPhase,z_axis,math.rad(42),0)
 
 
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
