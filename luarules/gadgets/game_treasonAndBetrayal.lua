@@ -44,7 +44,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
         if operativeTypeTable[unitdefid] and #StartUnitsByTeam[unitTeam] == 0 then
-           conditionalEcho(boolLocalDebugActive"Registering Start Unit")
+            conditionalEcho(boolLocalDebugActive,"Registering Start Unit")
             registerParent(unitTeam, unitid)
             StartUnitsByTeam[unitTeam][1] = unitid
             return

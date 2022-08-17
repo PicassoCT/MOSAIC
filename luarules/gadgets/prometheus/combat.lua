@@ -136,7 +136,7 @@ local function getEnemysAtTargetInRange(target, radius, myTeamID)
         for i=1, #unitsAtTarget do
             local unitTeamID = unitsAtTarget[i]
 
-            if unitTeamID ~= gaiaTeamID and unitTeamID ~= myTeamID and not Spring.IsUnitCloaked(unitsAtTarget[i]) then
+            if unitTeamID ~= gaiaTeamID and unitTeamID ~= myTeamID and not Spring.GetUnitIsCloaked(unitsAtTarget[i]) then
                 result[#result+1] = unitsAtTarget[i]
             end
         end

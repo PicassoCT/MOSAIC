@@ -60,6 +60,10 @@ RaidSuccess = piece("RaidSuccess")
 RaidAborted = piece("RaidAborted")
 RaidEmpty = piece("RaidEmptz")
 raidNoUplink = piece("raidNoUplink")
+PlacementPhase = piece("PlacementPhase")
+EvaluationPhase = piece("EvaluationPhase")
+Satellite = piece("Satellite")
+
 
 
 local satelliteTypeTable = getSatteliteTypes(UnitDefs)
@@ -79,6 +83,11 @@ function script.Create()
     Hide(RaidAborted)
     Hide(RaidEmpty)
     Hide(raidNoUplink)
+    Hide(PlacementPhase)
+    Hide(EvaluationPhase)
+    Hide(Satellite)
+    Spin(EvaluationPhase,z_axis,math.rad(-42))
+    Spin(PlacementPhase,z_axis,math.rad(42))
 
 
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
@@ -194,6 +203,7 @@ end
 boolRaidUploadInProgress = false
 
 function UplinkAnimation()
+    Show(Satellite)
     boolRaidUploadInProgress = true
     showT(TablesOfPiecesGroups["RaidUploadRotor"])    
     spinT(TablesOfPiecesGroups["RaidUploadRotor"], z_axis, 42, 0, 0)  
@@ -212,7 +222,6 @@ function UplinkAnimation()
         WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
         Sleep(250)  
     end
-
     hideT(TablesOfPiecesGroups["RaidUploadRotor"])
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
 end
@@ -387,7 +396,11 @@ function raidAnimationLoop()
     totalTime = 0
 
     while true do
-        if counter == 0 then placeWallAndDoors() end
+        if counter == 0 then 
+            Hide(EvaluationPhase)
+            Show(PlacementPhase)
+            placeWallAndDoors() 
+        end
         counter = (counter + 1)
         showPercent(counter)
 
@@ -501,6 +514,8 @@ function ringringUpOffset()
         if boolRoundEnd == false then
             ringUpOffset = -2000
         else
+            Show(EvaluationPhase)
+            Hide(PlacementPhase)
             ringUpOffset = 6000
         end
         if boolOldRoundEnd ~= boolRoundEnd then
@@ -572,6 +587,8 @@ end
 
 function playEndAnimation()
     Signal(SIG_WAVE)
+    Hide(EvaluationPhase)
+    Hide(PlacementPhase)
 
     foreach(whirl, function(id)
         runHide = function(id)
