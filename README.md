@@ -1,4 +1,5 @@
 # MOSAIC
+## Modular Ordanance Standardized Artifact Intelligence Combat
 
 A spies vs terrorists RTS game developed for the spring engine (www.springrts.com). 
 
