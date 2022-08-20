@@ -63,6 +63,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 AlreadyUsedPiece = {}
 center = piece "center"
+BasePillars = piece "BasePillar"
 
 pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
@@ -1193,9 +1194,8 @@ function buildBuilding()
          --echo(getScriptName() .. "buildDecorateLvl ended")
     end
     --echo(getScriptName() .. "addRoofDeocrate started")
-    addRoofDeocrate(3, 
-        getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),
-         materialColourName)
+    addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
+    Show(BasePillars)
         --echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
