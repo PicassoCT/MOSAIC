@@ -2515,6 +2515,39 @@ function removeDictFromDict(dA, dB)
     return returnTable
 end
 
+
+function mergeDictionarys(...)
+    local arg = arg;
+    if (not arg) then
+        arg = {...};
+        arg.n = #arg
+    end
+    Table = {}
+    if not arg then return end
+
+    for _, v in pairs(arg) do
+        if v and type(v) == "table" then
+            Table = DictionaryMergeDictionary(Table, v)
+        end
+    end
+
+    return Table
+end
+
+function DictionaryMergeDictionary(TA, TB)
+    T = {}
+
+    for k,v in pairs(TA) do
+        T[k]= v
+    end
+
+    for k,v in pairs(TB) do
+        T[k]= v
+    end    
+
+    return T
+end
+
 function pieceToPointT(piecesTable)
 
     if type(piecesTable) == "number" then
@@ -5066,9 +5099,10 @@ function echo(stringToEcho, ...)
         arg = {...};
         arg.n = #arg
     end
-    if stringToEcho then Spring.Echo(toString(stringToEcho)) end
-    if true then return end
-
+    if stringToEcho then 
+        Spring.Echo(toString(stringToEcho));
+    end
+ 
     if arg then
         for k, v in pairs(arg) do
             if k then
@@ -5083,6 +5117,17 @@ function echo(stringToEcho, ...)
             end
         end
     end
+end
+
+function echoTypeTable(t, UnitDefs)
+    tableString = "{"
+    for k,v in pairs(t) do
+        if UnitDefs[k] then
+        pair = UnitDefs[k].name .."->".. k
+        tableString = tableString .."\n"..pair
+        end
+    end
+echo(tableString.."\n}")
 end
 
 function conditionalEcho(active, message )
