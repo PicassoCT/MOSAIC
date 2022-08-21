@@ -24,7 +24,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetAllUnits = Spring.GetAllUnits
     local GameConfig = getGameConfig()
     local exemptFromRefundDefIds = getExemptFromRefundTypes(UnitDefs)
-    local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
+    local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture,
                                                 "house", UnitDefs)
     local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
     local AerosolTypes = getChemTrailTypes()

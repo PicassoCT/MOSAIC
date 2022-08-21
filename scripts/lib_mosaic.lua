@@ -490,7 +490,7 @@ function getGameConfig()
         retVal = {}
         for i = 1, #Stringtable do
             if not UnitDefNames[Stringtable[i]] then
-                --Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] .." does not exists")
+                Spring.Echo("Error: Unitdef of Unittype " .. Stringtable[i] .." does not exists")
             else
                 retVal[UnitDefNames[Stringtable[i]].id] = true
             end
@@ -744,7 +744,8 @@ function getGameConfig()
             local UnitDefNames = getUnitDefNames(UnitDefs)
 
             typeTable = {
-                "motorbike"
+                "truck_arab9",
+                "truck_western4"
             }
             return getTypeTable(UnitDefNames, typeTable)
         end
@@ -841,7 +842,7 @@ function getGameConfig()
 
             function getCultureUnitModelTypes(cultureName, typeName, UnitDefs)
                 UnitDefNames = getUnitDefNames(UnitDefs)
-                allNames = getCultureUnitModelNames(cultureName, typeName, UnitDefs)
+                allNames = getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)
                 result = {}
 
                 for num, name in pairs(allNames) do
@@ -851,7 +852,7 @@ function getGameConfig()
                 return result
             end
 
-            function getCultureUnitModelNames(cultureName, typeName, UnitDefs)
+            function getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)
                 if cultureName == nil then 
                     cultureName = getCultureName()
                     assert(cultureName)
@@ -859,18 +860,23 @@ function getGameConfig()
 
                 local translation = {}
                 if cultureName == Cultures.international then
-                    translationWestern = getTranslation(Cultures.western)
+                    translationWestern = getTranslation(Cultures.western)                    
                     translationArabic = getTranslation(Cultures.arabic)
-                    --translationAsian = getTranslation(Cultures.asian)
-                    westernUnitDefs = expandNameSubSetTable(translationWestern[typeName], UnitDefs)
-                    arabicUnitDefs = expandNameSubSetTable(translationArabic[typeName], UnitDefs)
 
-                   local fullTable = {}
-                    for k, v in pairs(westernUnitDefs) do
-                        fullTable[k]= v
+                    --translationAsian = getTranslation(Cultures.asian)
+                    DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs)
+                    assertNameTypeInTable(DicWesternNameDefID, typeName == "civilian" , "civilian_western0")
+  
+
+                    DictArabNameDefID = expandNameSubSet_Dict_NameDefID(translationArabic[typeName], UnitDefs)
+                    assertNameTypeInTable(DictArabNameDefID, typeName == "civilian" , "civilian_arab0")            
+
+                    local fullTable = {}
+                    for name,defID in pairs(DicWesternNameDefID) do
+                        fullTable[defID]= name
                     end
-                    for k, v in pairs(arabicUnitDefs) do
-                        fullTable[k]= v
+                     for name,defID in  pairs(DictArabNameDefID) do
+                        fullTable[defID]= name
                     end
                     return fullTable--, translationAsian
                 else
@@ -878,7 +884,14 @@ function getGameConfig()
                     translation = getTranslation(cultureName)
                     assert(translation , "No translation for "..typeName.." in culture "..cultureName)
                     assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
-                    return expandNameSubSetTable(translation[typeName], UnitDefs)
+
+                    DictDefIDNames = expandNameSubSet_Dict_NameDefID(translation[typeName], UnitDefs)
+                    --assert(count(expandedNamesTable) > 0, typeName .." --> ".. cultureName)
+                    local fullTable = {}
+                    for name,defID in pairs(DictDefIDNames) do
+                        fullTable[defID] = name
+                    end
+                    return fullTable
                 end            
             end
 
@@ -911,40 +924,46 @@ function getGameConfig()
 
             function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
                 assert(UnitDefs)
-                ID_Name_Map = {}
+                defID_Name_Map = {}
                 if culturename == Cultures.international then
-                    ID_Name_Map = mergeTables(
-                        getCultureUnitModelNames(Cultures.arabic, typeDesignation, UnitDefs),
-                        getCultureUnitModelNames(Cultures.western, typeDesignation, UnitDefs),
-                        getCultureUnitModelNames(Cultures.asian, typeDesignation, UnitDefs)
+                    defID_Name_Map = mergeDictionarys(
+                        getCultureUnitModelNames_Dict_DefIDName(Cultures.arabic, typeDesignation, UnitDefs),
+                        getCultureUnitModelNames_Dict_DefIDName(Cultures.western, typeDesignation, UnitDefs),
+                        getCultureUnitModelNames_Dict_DefIDName(Cultures.asian, typeDesignation, UnitDefs)
                         )
-
+                    --echo(getCultureUnitModelNames_Dict_DefIDName(Cultures.arabic, typeDesignation, UnitDefs))
+                    --echo(getCultureUnitModelNames_Dict_DefIDName(Cultures.western, typeDesignation, UnitDefs))
+                    --echo(getCultureUnitModelNames_Dict_DefIDName(Cultures.asian, typeDesignation, UnitDefs))
+                    --echo("getTypeUnitNameTable:")
+                    --echo(nr_ID_Map)
                 else
-                    ID_Name_Map = getCultureUnitModelNames(culturename, typeDesignation, UnitDefs)
+                    defID_Name_Map = getCultureUnitModelNames_Dict_DefIDName(culturename, typeDesignation, UnitDefs)
                 end
 
                 results = {}
-                for defID, name in pairs(ID_Name_Map) do table.insert(results, name) end
+                for DefID,name in pairs(defID_Name_Map) do 
+                    results[#results +1 ] = name
+                end
 
                 return results
             end
 
-            function expandNameSubSetTable(SubsetTable, UnitDefs)
+            function expandNameSubSet_Dict_NameDefID(SubsetTable, UnitDefs)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
 
-                local expandedDictIdName = {}
+                local expandedDictNameID = {}
                 local i = 0
                 while i <= SubsetTable.range do
                     local key = SubsetTable.name..i
                     if UnitDefNames[key] then
-                       -- echo("adding "..SubsetTable.name..i)
-                        --  assert(UnitDefNames[key].id)
-                        expandedDictIdName[UnitDefNames[key].id] = key
+                        --echo("adding "..SubsetTable.name..i)
+                        --assert(UnitDefNames[key].id, SubsetTable.name..i)
+                        expandedDictNameID[key] = UnitDefNames[key].id
                     end
                     i = i + 1
                 end
 
-                return expandedDictIdName
+                return expandedDictNameID
             end
 
             --TODO do a culture based merge
@@ -1207,17 +1226,20 @@ function getGameConfig()
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
-                InterrogatableTypeTable = {
+                InterrogatableOperativeNamesTypeTable = {
                     "civilianagent", "operativeasset", "operativepropagator",
                     "operativeinvestigator"
                 }
 
-                typeTable = mergeTables(InterrogatableTypeTable, getTypeUnitNameTable(
-                    GameConfig.instance.culture, "civilian",
-                UnitDefs))
-                resultTypeTable = getTypeTable(getUnitDefNames(UnitDefs), typeTable)
+                civilianTypeNamesTable = getTypeUnitNameTable( GameConfig.instance.culture, "civilian", UnitDefs)
+                assert(count(civilianTypeNamesTable)> 0)
+                echo(civilianTypeNamesTable)
+                interrogationNamesTable = mergeTables(InterrogatableOperativeNamesTypeTable, civilianTypeNamesTable )  
+                
+                resultTypeTable = getTypeTable(UnitDefNames, interrogationNamesTable)
                 assert(resultTypeTable[UnitDefNames["operativeinvestigator"].id])
-                return getTypeTable(UnitDefNames, typeTable)
+                assert(resultTypeTable[UnitDefNames["civilian_arab0"].id])
+                return resultTypeTable
             end
 
             function getRaidIconTypeTable(UnitDefs)
@@ -1253,7 +1275,7 @@ function getGameConfig()
 
             function getHouseTypeTable(UnitDefs, culturename)
                 assert(UnitDefs)
-                return getCultureUnitModelNames(culturename, "house", UnitDefs)
+                return getCultureUnitModelNames_Dict_DefIDName(culturename, "house", UnitDefs)
             end
 
             function getOperativeTypeTable(UnitDefs)

@@ -24,7 +24,7 @@ if (gadgetHandler:IsSyncedCode()) then
     --Optimization
     gaiaTeamID = Spring.GetGaiaTeamID()
     GameConfig = getGameConfig()
-    houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture, "house", UnitDefs)
+    houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture, "house", UnitDefs)
 
     function gadget:Initialize()
         initalizeInheritanceManagement()

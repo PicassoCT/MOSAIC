@@ -7197,8 +7197,8 @@ end
 
 function getMapCenter(Game)
     assert(Game)
-    assert(Game.mpaX)
-    assert(Game.mpaY)
+    assert(Game.mapX)
+    assert(Game.mapY)
     mapCenter = {x = Game.mapX / 2, z = Game.mapY / 2}
     return mapCenter
 end
@@ -7221,6 +7221,12 @@ function assertArguments(...)
                "Arg:" .. i .. " :Value not as expected" .. toString(expected) ..
                    " got " .. toString(actual))
         assert(expected == actual)
+    end
+end
+
+function assertNameTypeInTable(T, boolActive, Type)
+    if boolActive == true then
+        assert(T[Type])                        
     end
 end
 

@@ -8,8 +8,6 @@ include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 Irrigation1 = piece "Irrigation1"
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelNames(GameConfig.instance.culture,
-                                                "house", UnitDefs)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
