@@ -32,6 +32,11 @@ if (gadgetHandler:IsSyncedCode()) then
         yaw, pitch, roll = spGetUnitRotation(id)
         pitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
         spSetUnitRotation( id,  yaw,  pitch,  roll ) 
+        env = Spring.UnitScript.GetScriptEnv(id)
+        if env and env.ShowFireArmForTime then
+            udef = Spring.GetUnitDefID(k)
+            Spring.UnitScript.CallAsUnit(id,   showFireArm)
+        end      
     end
 
     function gadget:RecvLuaMsg(msg, playerID)

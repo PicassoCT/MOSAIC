@@ -124,6 +124,12 @@ function isNowInCloseCombat( arenaID)
     closeCombat= {arenaID = arenaID}
 end
 
+function showFireArm()
+	if not boolInClosedCombat then
+		Show(Gun)
+	end
+end
+
 function closeCombatOS()
     Sleep(5)
     oldState = 1

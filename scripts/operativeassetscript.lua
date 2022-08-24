@@ -168,10 +168,12 @@ end
 	Hide(Gun)
 	Hide(Pistol)
 	Hide(silencer)
-	Show(lastShownWeapon)
-	if lastShownWeapon == Gun then
-		showGun()
-	end
+    if not boolInClosedCombat then
+    	Show(lastShownWeapon)
+    	if lastShownWeapon == Gun then
+    		showGun()
+    	end
+    end
 end
 
 function script.Create()

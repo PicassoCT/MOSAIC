@@ -1432,7 +1432,7 @@ end
 function widgetHandler:CommandsChanged()
   widgetHandler:UpdateSelection() -- for selectionchanged
   self.inCommandsChanged = true
-  self.customCommands = {}
+  self.customCommands = {}  
   for _,w in ipairs(self.CommandsChangedList) do
     w:CommandsChanged()
   end

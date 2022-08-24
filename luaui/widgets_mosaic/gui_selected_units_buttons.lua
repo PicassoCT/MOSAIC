@@ -128,6 +128,8 @@ local mouseIcon = -1
 local currentDef = nil
 local prevUnitCount = spGetSelectedUnitsCounts()
 local alternativeUnitpics = false
+local antagonsafeHouseDefID
+local protagonsafeHouseDefID
 
 local hasAlternativeUnitpic = {}
 local unitBuildPic = {}
@@ -135,6 +137,13 @@ for id, def in pairs(UnitDefs) do
   unitBuildPic[id] = def.buildpicname
   if VFS.FileExists('unitpics/alternative/'..def.name..'.png') then
     hasAlternativeUnitpic[id] = true
+  end
+  if def.name == "antagonsafehouse" then
+    antagonsafeHouseDefID = id
+  end
+
+  if def.name == "protagonsafehouse" then
+    protagonsafeHouseDefID = id
   end
 end
 
@@ -191,6 +200,7 @@ local function updateGuishader()
 	end
 end
 
+
 local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local selectedUnitsCounts = Spring.GetSelectedUnitsCounts()
@@ -200,39 +210,41 @@ function widget:SelectionChanged(sel)
   selectedUnitsCount = spGetSelectedUnitsCount()
   selectedUnitsCounts = spGetSelectedUnitsCounts()
   selectionChanged = true
+  if selectedUnitsCounts[antagonsafeHouseDefID] or selectedUnitsCounts[protagonsafeHouseDefID] then
+    return selectedUnits
+  end
 end
 
-local function handleLeftClickRelease(mx,my, button)
+local function handleLeftClick(mx,my, button)
+     
   local LeftClick = 1
-    if button == LeftClick then
-      local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
-      if targType == 'unit' then
-          local defID = spGetUnitDefID(targID)
-          if civilianHousesTypeTable[defID] then
-            local x,y,z = 0,0,0
-             x,y,z = spGetUnitPosition(targID)
-            local xmin = x - sizeOfHouse 
-            local zmin = z - sizeOfHouse
-            local xmax = x + sizeOfHouse
-            local zmax = z + sizeOfHouse
-            local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,  zmax, myTeamID)
-            if unitsInRect and #unitsInRect then
-              for i=1, #unitsInRect do
-                local subUnitDefID = spGetUnitDefID(unitsInRect[i])
-                if secretPluginsTypeTable[subUnitDefID] then
-                  selectedUnitsCount = selectedUnitsCount + 1
-                  selectedUnitsCounts[subUnitDefID] = 1 
-                  selectionChanged = true
-                end
+  if button == LeftClick then
+    map={}
+    spSelectUnitArray(map) 
+    selectionChanged = true
+    local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
+    if targType == 'unit' then
+        local defID = spGetUnitDefID(targID)
+        if civilianHousesTypeTable[defID] then
+          local x,y,z = 0,0,0
+           x,y,z = spGetUnitPosition(targID)
+          local xmin = x - sizeOfHouse 
+          local zmin = z - sizeOfHouse
+          local xmax = x + sizeOfHouse
+          local zmax = z + sizeOfHouse
+          local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,  zmax, myTeamID)
+          if unitsInRect and #unitsInRect then
+            for i=1, #unitsInRect do
+              local subUnitDefID = spGetUnitDefID(unitsInRect[i])
+              if secretPluginsTypeTable[subUnitDefID] then
+                map={unitsInRect[i]}
+                spSelectUnitArray(map)       
               end
             end
-          elseif secretPluginsTypeTable[defID] then
-                selectedUnitsCount = selectedUnitsCount + 1
-                selectedUnitsCounts[defID] = 1 
-                selectionChanged = true
-          end       
-      end       
+          end
+        end       
     end       
+  end       
 end
 
 local vsx, vsy = widgetHandler:GetViewSizes()
@@ -362,7 +374,7 @@ function widget:Update(dt)
   end
 
   selChangedSec = selChangedSec + dt
-  if selectionChanged and selChangedSec>0.1 then
+  if selectionChanged and selChangedSec>0.1  then
     selChangedSec = 0
     selectionChanged = nil
     if picList then
@@ -587,12 +599,14 @@ end
 function widget:MousePress(x, y, button)
   mouseIcon = MouseOverIcon(x, y)
   activePress = (mouseIcon >= 0)
+  handleLeftClick(x, y,  button)
+
   return activePress
 end
 
 -------------------------------------------------------------------------------
 
-local function LeftMouseButton(unitDefID, unitTable)
+local function LeftMouseButtonReleased(unitDefID, unitTable)
   local alt, ctrl, meta, shift = spGetModKeyState()
   local acted = false
   if (not ctrl) then
@@ -613,13 +627,14 @@ local function LeftMouseButton(unitDefID, unitTable)
       spSelectUnitArray(units, shift)
     end
   end
+  Spring.Echo("Left Mouse Button up")
   if acted and playSounds then
     Spring.PlaySoundFile(leftclick, 0.75, 'ui')
   end
 end
 
 
-local function MiddleMouseButton(unitDefID, unitTable)
+local function MiddleMouseButtonReleased(unitDefID, unitTable)
   local alt, ctrl, meta, shift = spGetModKeyState()
   -- center the view
   if (ctrl) then
@@ -638,7 +653,7 @@ local function MiddleMouseButton(unitDefID, unitTable)
 end
 
 
-local function RightMouseButton(unitDefID, unitTable)
+local function RightMouseButtonReleased(unitDefID, unitTable)
   local alt, ctrl, meta, shift = spGetModKeyState()
   -- remove selected units of icon type
   local selUnits = spGetSelectedUnits()
@@ -661,7 +676,6 @@ end
 
 
 function widget:MouseRelease(x, y, button)
-  handleLeftClickRelease(x, y,  button)
 
   if WG['smartselect'] and not WG['smartselect'].updateSelection then return end
   if (not activePress) then
@@ -694,11 +708,11 @@ function widget:MouseRelease(x, y, button)
   local alt, ctrl, meta, shift = spGetModKeyState()
 
   if (button == 1) then
-    LeftMouseButton(unitDefID, unitTable)
+    LeftMouseButtonReleased(unitDefID, unitTable)
   elseif (button == 2) then
-    MiddleMouseButton(unitDefID, unitTable)
+    MiddleMouseButtonReleased(unitDefID, unitTable)
   elseif (button == 3) then
-    RightMouseButton(unitDefID, unitTable)
+    RightMouseButtonReleased(unitDefID, unitTable)
   end
 
   return -1
