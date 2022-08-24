@@ -205,7 +205,6 @@ end
 local function handleLeftClickRelease(mx,my, button)
   local LeftClick = 1
     if button == LeftClick then
-      Spring.Echo("Selection changed")
       local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
       if targType == 'unit' then
           local defID = spGetUnitDefID(targID)
