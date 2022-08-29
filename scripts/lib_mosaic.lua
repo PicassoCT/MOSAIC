@@ -234,6 +234,8 @@ function getGameConfig()
         LifeTimeBribeIcon = 60 * 1000,
         iconGroundOffset = 50,        
         iconHoverGroundOffset = 125,
+        iconBlackHoleComDeactivateRange = 1500,
+        LifeTimeBlackOutIcon = 5* 60 * 1000,
 
         Satellite = {
             iconDistance = 150,
@@ -248,7 +250,7 @@ function getGameConfig()
 
         -- Hiveminds & AiCores
         integrationRadius = 75,
-        maxTimeForSlowMotionRealTimeSeconds = 10,
+        maxNumberIntegratedIntoHive = 300,
         addSlowMoTimeInMsPerCitizen = 150,
 
         -- Aerosols
@@ -459,6 +461,7 @@ function getGameConfig()
             [UnitDefNames["physicspayload"].id] = true,
             [UnitDefNames["deaddropicon"].id] = true,
             [UnitDefNames["stealvehicleicon"].id] = true,
+            [UnitDefNames["blackouticon"].id] = true,
         }
     end  
 

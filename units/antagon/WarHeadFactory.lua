@@ -50,12 +50,12 @@ local WarHeadFactory = Building:New{
 		baseclass		= "Building", -- TODO: hacks
     },
 	
-		buildoptions = 
+	buildoptions = 
 	{
 		"physicspayload",
-		"informationpayload",
 		"biopayload"		
 	},
+
   category =  [[GROUND BUILDING RAIDABLE]],
 }
 

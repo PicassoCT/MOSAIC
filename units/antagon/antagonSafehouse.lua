@@ -73,13 +73,12 @@ local AntagonSafeHouse = Building:New{
 		"operativeasset",
 		"operativepropagator",
 		"civilianagent",
-		
-	--[[	"nimrod",
+		"nimrod",
 		"propagandaserver",
 		"assembly",
-		--"hivemind",
 		"launcher",
-		"warheadfactory"--]]
+		"warheadfactory",
+		"hivemind"
 		},
 	category = [[GROUND BUILDING RAIDABLE]],
 

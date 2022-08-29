@@ -2,13 +2,13 @@ local Hivemind = Building:New{
 	corpse				= "",
 	maxDamage           = 1500,
 	mass                = 500,
-	name = "Hivemind",
-	description = " humans linked together into a supra-intelligence <Allows use of SlowMotion>",
+	name = "Hivemind Supra Intelligence",
+	description = "Provides information warfare once assembled ("
 	buildPic = "hivemind.png",
 	iconType ="hivemind",
 	buildTime = 3*60,
+	buildCostEnergy     = 5000,
 	buildCostMetal      = 2500,
-	buildCostEnergy     = 500,
 
 	EnergyUse = 10,
 	MetalStorage = 0,
@@ -48,8 +48,16 @@ local Hivemind = Building:New{
 	cloakTimeout = 5,
 	selfDestructCountdown = 3*60,
 	category = [[GROUND BUILDING RAIDABLE]],
-
-
+	buildoptions = 
+	{
+		"informationpayload",		
+		"socialengineeringicon",
+		"blackouticon",
+		"cybercrimeicon",
+		"bribeicon"
+	},
+	workerTime = 1,
+	YardMap ="oooo oooo oooo oooo ",
 }
 
 local AICore = Building:New{
@@ -106,8 +114,7 @@ local AICore = Building:New{
 	cloakTimeout = 5,
 	selfDestructCountdown = 3*60,
 	category = [[GROUND BUILDING RAIDABLE]],
-
-
+	
 }
 
 

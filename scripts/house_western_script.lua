@@ -180,7 +180,7 @@ function HoloGrams()
     end
 end
 
-function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval)
+function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
     assert(flickerGroup)
     local fGroup = flickerGroup
 
@@ -190,21 +190,24 @@ function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, ma
         hideT(fGroup)
         assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
-        if boolHouseHidden == false then
-            theOneToShowT= {}
-            for x=1,math.random(1,3) do
-                theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
-            end
-
-            for i=1,(3000/flickerIntervall) do
-                if i % 2 == 0 then         showT(theOneToShowT) else hideT(theOneToShowT) end
-                if NoErrorFunction() == true then showT(theOneToShowT) end
-                for ax=1,3 do
-                    moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+        hours, minutes, seconds, percent = getDayTime()
+        if not boolDayLightSavings or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
+            if boolHouseHidden == false then
+                theOneToShowT= {}
+                for x=1,math.random(1,3) do
+                    theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
                 end
-                Sleep(flickerIntervall)
+
+                for i=1,(3000/flickerIntervall) do
+                    if i % 2 == 0 then         showT(theOneToShowT) else hideT(theOneToShowT) end
+                    if NoErrorFunction() == true then showT(theOneToShowT) end
+                    for ax=1,3 do
+                        moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+                    end
+                    Sleep(flickerIntervall)
+                end
+                hideT(theOneToShowT)
             end
-            hideT(theOneToShowT)
         end
         breakTime = math.random(1,maxInterval)*timeoutMs
         Sleep(breakTime)

@@ -8,7 +8,7 @@ TablesOfPiecesGroups = {}
 GameConfig = getGameConfig()
 
 IntegrationRadius = GameConfig.integrationRadius
-TIME_MAX = GameConfig.maxTimeForSlowMotionRealTimeSeconds * 1000
+TIME_MAX = GameConfig.maxNumberIntegratedIntoHive * 1000
 bodyMax = 128
 innerLimit = 96
 Icon = piece "Icon"

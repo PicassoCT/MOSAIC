@@ -86,7 +86,6 @@ local GameStateMachine = {
 
     ["normal"] = function(frame)
         if GG.Launchers then
-
             for teamID, launchersT in pairs(GG.Launchers) do
                 if teamID and launchersT then
                     for launcherID, data in pairs(launchersT) do
@@ -102,6 +101,7 @@ local GameStateMachine = {
                 end
             end
         end
+
         return GameConfig.GameState.normal
     end,
 
