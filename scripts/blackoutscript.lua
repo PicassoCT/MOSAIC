@@ -8,29 +8,62 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 myTeamID = Spring.GetUnitTeam(unitID)
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+
+ Spinner = piece"Spinner"
+ PercentRing = piece"PercentRing"
+ Cellphone = piece"Cellphone"
+ blackOuttedUnits_OriginalState = {}
 
 function script.Create()
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    StartThread(blackOutCycle)
-    StartThread(lifeTime, unitID, GameConfig.LifeTimeBribeIcon, true, false,
-     function() 
-        foreach(blackOuttedUnits_OriginalState,
-                function (id)
-                    if id then
-                        Spring.SetUnitNoSelect(id, blackOuttedUnits_OriginalState[id])
-                    end
-                end
-            )
-     end
-     )
+        TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+
+        Spring.SetUnitNeutral(unitID,true)
+        Spring.SetUnitBlocking(unitID,false)
+        Spring.MoveCtrl.Enable(unitID)
+        ox, oy, oz = Spring.GetUnitPosition(unitID)
+        Spring.SetUnitPosition(unitID, ox, oy + GameConfig.iconHoverGroundOffset, oz)
+
+        Spin(PercentRing,y_axis,math.rad(-22),0)
+
+        StartThread(animation)
+        StartThread(lifeTimeAnimation)
+
+        StartThread(lifeTime, unitID, GameConfig.LifeTimeBlackOutIcon, true, false )
 end
 
-blackOuttedUnits_OriginalState = {}
+function lifeTimeAnimation()
+    step = math.ceil(GameConfig.LifeTimeBlackOutIcon/#TablesOfPiecesGroups["Percentages"])
+    showT(TablesOfPiecesGroups["Percentages"])
+        for i=1, #TablesOfPiecesGroups["Percentages"] do
+            Sleep(step)
+            Hide(TablesOfPiecesGroups["Percentages"][i])           
+        end
+end
+
+function animation()
+    Spin(Spinner,y_axis, math.rad(42),0)
+    while true do
+        showT(TablesOfPiecesGroups["Com"])
+        for i=6, 0, -1 do            
+            Sleep(1000)
+            if TablesOfPiecesGroups["Com"][i] then
+                Hide(TablesOfPiecesGroups["Com"][i])
+            end
+        end
+        Sleep(5000)
+    end
+end
+
+
+function script.HitByWeapon(x, z, weaponDefID, damage) end
+
+
+
+
 
 function blackOutCycle()
     while true do  
-        unitsInCircle = getAllNearUnit(untiID,GameConfig.iconBlackHoleComDeactivateRange)
+        unitsInCircle = getAllNearUnit(unitID, GameConfig.iconBlackHoleComDeactivateRange)
         filteredUnitsInCircle = {}
         foreach(unitsInCircle,
                 function(id)
@@ -65,6 +98,16 @@ function blackOutCycle()
 end
 
 function script.Killed(recentDamage, _)
+
+    foreach(blackOuttedUnits_OriginalState,
+            function (id)
+                if id then
+                    Spring.SetUnitNoSelect(id, blackOuttedUnits_OriginalState[id])
+                end
+            end
+        )     
+
+
     return 1
 end
 

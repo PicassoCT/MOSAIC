@@ -1236,7 +1236,7 @@ function getGameConfig()
 
                 civilianTypeNamesTable = getTypeUnitNameTable( GameConfig.instance.culture, "civilian", UnitDefs)
                 assert(count(civilianTypeNamesTable)> 0)
-                echo(civilianTypeNamesTable)
+                --echo(civilianTypeNamesTable)
                 interrogationNamesTable = mergeTables(InterrogatableOperativeNamesTypeTable, civilianTypeNamesTable )  
                 
                 resultTypeTable = getTypeTable(UnitDefNames, interrogationNamesTable)

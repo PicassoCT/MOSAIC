@@ -61,7 +61,6 @@ local OperativeInvestigator = Human:New{
 		"air_parachut",
 		"stealvehicleicon",
 		"recruitcivilian",
-		"socialengineeringicon",
 		"cybercrimeicon"
 	},
 
