@@ -220,8 +220,8 @@ local function handleLeftClick(mx,my, button)
   local LeftClick = 1
   if button == LeftClick then
     map={}
-    spSelectUnitArray(map) 
-    selectionChanged = true
+    --spSelectUnitArray(map) 
+    --selectionChanged = true
     local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
     if targType == 'unit' then
         local defID = spGetUnitDefID(targID)
@@ -236,10 +236,10 @@ local function handleLeftClick(mx,my, button)
           if unitsInRect and #unitsInRect then
             for i=1, #unitsInRect do
               local subUnitDefID = spGetUnitDefID(unitsInRect[i])
-              if secretPluginsTypeTable[subUnitDefID] then
-                map={unitsInRect[i]}
-                spSelectUnitArray(map)       
-              end
+             -- if secretPluginsTypeTable[subUnitDefID] then
+             --   map={unitsInRect[i]}
+             --   spSelectUnitArray(map)       
+             -- end
             end
           end
         end       
@@ -599,7 +599,7 @@ end
 function widget:MousePress(x, y, button)
   mouseIcon = MouseOverIcon(x, y)
   activePress = (mouseIcon >= 0)
-  handleLeftClick(x, y,  button)
+  --handleLeftClick(x, y,  button)
 
   return activePress
 end
