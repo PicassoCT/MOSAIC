@@ -143,34 +143,54 @@ if (gadgetHandler:IsSyncedCode()) then
                 if currentElementsInTable < maxNr then
                     IdValueTable[newID] = newValue
                     return IdValueTable
+                else
+                    IdValueTable[id] = nil
+                    IdValueTable[newID] = newValue
+                    compressedTable = {}
+                    for k,v in pairs(IdValueTable) do
+                        if v then
+                            compressedTable[k] = v
+                        end
+                    end
+                    return compressedTable
                 end
             end
         end
+        return IdValueTable
     end
 
-    function   spawnMilitiaInHousesNearby(teamID, houseDestroyedID, houseDefID, attackerID)
+    cache = {}
+    function spawnMilitiaInHousesNearby(teamID, houseDestroyedID, houseDefID, attackerID)
         houseIDDistance = {}
         threeClosestHouses = {}
-        -- get list of all houses of the same type
-        foreach(Spring.GetTeamUnitsByDefs ( teamID, houseDefID) 
+        if not cache[houseDestroyedID] then
+            foreach(Spring.GetTeamUnitsByDefs ( teamID, houseDefID) 
                 function(id)
                     houseIDDistance[id] = distanceUnitToUnit(id, houseDestroyedID)
                     
                     for id, distances in pairs(threeClosestHouses) do
                         if houseIDDistance[id] < distances and id ~= houseDestroyedID then
-                            
+                            threeClosestHouses = pushSmallestIntoValueTable(threeClosestHouses,houseIDDistance[id],id, 3)
+                            return id
                         end
                     end
-                    
-                    return id
                 end    
-            )
+                )
+            cache[houseDestroyedID] = threeClosestHouses
+        else 
+            threeClosestHouses = cache[houseDestroyedID] 
+        end
 
-           --computate distance
-            -- select three
-              -- select one of them by random
-              -- GG:PushCreate(civilian agent, with parent)
-
+        minimaldistance = math.huge
+        minimalCandidate = nil
+        for candidate, distance in pairs(threeClosestHouses)do
+            if distance < minimaldistance then
+                minimaldistance = distance
+                minimalCandidate = candidate
+            end
+        end
+        x,y,z = Spring.GetUnitPosition(minimalCandidate)
+        GG.UnitsToSpawn:PushCreateUnit("civilianagent", x, y, z,  math.random(1, 4), teamID)
     end
 
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
@@ -358,9 +378,7 @@ else -- UNSYNCED
                             else
                                 gl.Text("\255\171\236\183 $ " .. valueT.message, sx, sy, 16, "od")
                                
-                            end
-
-                          
+                            end                          
                         end
                     end
                 end
