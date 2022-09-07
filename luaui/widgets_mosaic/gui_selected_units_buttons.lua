@@ -114,7 +114,7 @@ local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity",0.66) or 0.66) * 
 local bgcorner = ":l:LuaUI/images/bgcorner.png"
 local highlightImg = ":l:LuaUI/images/button-highlight.dds"
 
-local iconsPerRow = 16		-- not functional yet, I doubt I will put this in
+local iconsPerRow = 16    -- not functional yet, I doubt I will put this in
 
 local leftmouseColor = {1, 0.72, 0.25, 0.22}
 local middlemouseColor = {1, 1, 1, 0.16}
@@ -128,8 +128,6 @@ local mouseIcon = -1
 local currentDef = nil
 local prevUnitCount = spGetSelectedUnitsCounts()
 local alternativeUnitpics = false
-local antagonsafeHouseDefID
-local protagonsafeHouseDefID
 
 local hasAlternativeUnitpic = {}
 local unitBuildPic = {}
@@ -137,13 +135,6 @@ for id, def in pairs(UnitDefs) do
   unitBuildPic[id] = def.buildpicname
   if VFS.FileExists('unitpics/alternative/'..def.name..'.png') then
     hasAlternativeUnitpic[id] = true
-  end
-  if def.name == "antagonsafehouse" then
-    antagonsafeHouseDefID = id
-  end
-
-  if def.name == "protagonsafehouse" then
-    protagonsafeHouseDefID = id
   end
 end
 
@@ -162,8 +153,8 @@ local prevMouseIcon
 local hoverClock = nil
 
 local backgroundDimentions = {}
-local iconMargin = usedIconSizeX / 25		-- changed in ViewResize anyway
-local fontSize = iconSizeY * 0.28		-- changed in ViewResize anyway
+local iconMargin = usedIconSizeX / 25   -- changed in ViewResize anyway
+local fontSize = iconSizeY * 0.28   -- changed in ViewResize anyway
 local picList
 
 local playSounds = true
@@ -180,12 +171,12 @@ end
 
 
 local function updateGuishader()
-	if WG['guishader'] then
-		if not picList then
+  if WG['guishader'] then
+    if not picList then
             WG['guishader'].RemoveDlist('selectionbuttons')
             guishaderDisabled = true
         else
-			if backgroundDimentions[1] ~= nil then
+      if backgroundDimentions[1] ~= nil then
                 if dlistGuishader ~= nil then
                   WG['guishader'].RemoveDlist('selectionbuttons')
                   gl.DeleteList(dlistGuishader)
@@ -195,57 +186,49 @@ local function updateGuishader()
                   WG['guishader'].InsertDlist(dlistGuishader, 'selectionbuttons')
                 end)
                 guishaderDisabled = false
-			end
-		end
-	end
+      end
+    end
+  end
 end
 
+local function handleHouseSelected(selectionSet)
+    x,y,z = spGetUnitPosition(selectionSet[1])
+    Spring.Echo("handleHouseSelected 2")
+    local xmin = x - sizeOfHouse 
+    local zmin = z - sizeOfHouse
+    local xmax = x + sizeOfHouse
+    local zmax = z + sizeOfHouse
+    local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,  zmax, myTeamID)
+    if unitsInRect and #unitsInRect then
+      for i=1, #unitsInRect do
+        Spring.Echo("handleHouseSelected 3")
+        local subUnitDefID = spGetUnitDefID(unitsInRect[i])
+        if secretPluginsTypeTable[subUnitDefID] then
+          map={unitsInRect[i]}
+          spSelectUnitArray(map)  
+          Spring.Echo("handleHouseSelected 3")    
+        end     
+      end       
+    end             
+end
 
 local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local selectedUnitsCounts = Spring.GetSelectedUnitsCounts()
+local boolHouseSelected = false
 local selectionChanged = true
 function widget:SelectionChanged(sel)
-  selectedUnits = sel
+  Spring.Echo("Selection Changed")
+  selectedUnits = Spring.GetSelectedUnits()
   selectedUnitsCount = spGetSelectedUnitsCount()
   selectedUnitsCounts = spGetSelectedUnitsCounts()
-  selectionChanged = true
-  if selectedUnitsCounts[antagonsafeHouseDefID] or selectedUnitsCounts[protagonsafeHouseDefID] then
-    return selectedUnits
+
+  if selectedUnitsCount == 1 and civilianHousesTypeTable[spGetUnitDefID(selectedUnits[1])] then
+    boolHouseSelected = true
   end
+  selectionChanged = true
 end
 
-local function handleLeftClick(mx,my, button)
-     
-  local LeftClick = 1
-  if button == LeftClick then
-    map={}
-    --spSelectUnitArray(map) 
-    --selectionChanged = true
-    local targType, targID = spTraceScreenRay(mx, my, false, inMinimap)
-    if targType == 'unit' then
-        local defID = spGetUnitDefID(targID)
-        if civilianHousesTypeTable[defID] then
-          local x,y,z = 0,0,0
-           x,y,z = spGetUnitPosition(targID)
-          local xmin = x - sizeOfHouse 
-          local zmin = z - sizeOfHouse
-          local xmax = x + sizeOfHouse
-          local zmax = z + sizeOfHouse
-          local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,  zmax, myTeamID)
-          if unitsInRect and #unitsInRect then
-            for i=1, #unitsInRect do
-              local subUnitDefID = spGetUnitDefID(unitsInRect[i])
-             -- if secretPluginsTypeTable[subUnitDefID] then
-             --   map={unitsInRect[i]}
-             --   spSelectUnitArray(map)       
-             -- end
-            end
-          end
-        end       
-    end       
-  end       
-end
 
 local vsx, vsy = widgetHandler:GetViewSizes()
 function widget:ViewResize(n_vsx,n_vsy)
@@ -265,7 +248,7 @@ function widget:ViewResize(n_vsx,n_vsy)
   
   if picList then
     gl.DeleteList(picList)
-	picList = gl.CreateList(DrawPicList)
+  picList = gl.CreateList(DrawPicList)
   end
 end
 
@@ -363,6 +346,11 @@ end
 local uiOpacitySec = 0
 local selChangedSec = 0
 function widget:Update(dt)
+  if boolHouseSelected  then
+    handleHouseSelected(selectedUnits)
+    boolHouseSelected = false
+  end
+
   uiOpacitySec = uiOpacitySec + dt
   if uiOpacitySec>0.5 then
     uiOpacitySec = 0
@@ -374,7 +362,7 @@ function widget:Update(dt)
   end
 
   selChangedSec = selChangedSec + dt
-  if selectionChanged and selChangedSec>0.1  then
+  if selectionChanged and selChangedSec>0.1 then
     selChangedSec = 0
     selectionChanged = nil
     if picList then
@@ -390,6 +378,7 @@ end
 
 
 function widget:Initialize()
+  Spring.Echo("gui selected units buttons")
   WG['selunitbuttons'] = {}
   WG['selunitbuttons'].getAlternativeIcons = function()
     return alternativeUnitpics
@@ -482,7 +471,7 @@ function DrawPicList()
     if type(udid) == 'number' then
       if icon >= startFromIcon then
         --if icon % iconsPerRow == 0 then
-        --	row = row + 1
+        --  row = row + 1
         --end
         DrawUnitDefTexture(udid, icon, count, row)
         displayedIcon = displayedIcon + 1
@@ -541,27 +530,27 @@ end
 
 
 function RectRound(px,py,sx,sy,cs)
-	
-	local px,py,sx,sy,cs = math.floor(px),math.floor(py),math.ceil(sx),math.ceil(sy),math.floor(cs)
-	
-	glTexture(false)
-	glRect(px+cs, py, sx-cs, sy)
-	glRect(sx-cs, py+cs, sx, sy-cs)
-	glRect(px+cs, py+cs, px, sy-cs)
-	
-	if py <= 0 or px <= 0 then glTexture(false) else glTexture(bgcorner) end
-	glTexRect(px, py+cs, px+cs, py)		-- top left
-	
-	if py <= 0 or sx >= vsx then glTexture(false) else glTexture(bgcorner) end
-	glTexRect(sx, py+cs, sx-cs, py)		-- top right
-	
-	if sy >= vsy or px <= 0 then glTexture(false) else glTexture(bgcorner) end
-	glTexRect(px, sy-cs, px+cs, sy)		-- bottom left
-	
-	if sy >= vsy or sx >= vsx then glTexture(false) else glTexture(bgcorner) end
-	glTexRect(sx, sy-cs, sx-cs, sy)		-- bottom right
-	
-	glTexture(false)
+  
+  local px,py,sx,sy,cs = math.floor(px),math.floor(py),math.ceil(sx),math.ceil(sy),math.floor(cs)
+  
+  glTexture(false)
+  glRect(px+cs, py, sx-cs, sy)
+  glRect(sx-cs, py+cs, sx, sy-cs)
+  glRect(px+cs, py+cs, px, sy-cs)
+  
+  if py <= 0 or px <= 0 then glTexture(false) else glTexture(bgcorner) end
+  glTexRect(px, py+cs, px+cs, py)   -- top left
+  
+  if py <= 0 or sx >= vsx then glTexture(false) else glTexture(bgcorner) end
+  glTexRect(sx, py+cs, sx-cs, py)   -- top right
+  
+  if sy >= vsy or px <= 0 then glTexture(false) else glTexture(bgcorner) end
+  glTexRect(px, sy-cs, px+cs, sy)   -- bottom left
+  
+  if sy >= vsy or sx >= vsx then glTexture(false) else glTexture(bgcorner) end
+  glTexRect(sx, sy-cs, sx-cs, sy)   -- bottom right
+  
+  glTexture(false)
 end
 
 function DrawIconQuad(iconPos, color)
@@ -599,14 +588,12 @@ end
 function widget:MousePress(x, y, button)
   mouseIcon = MouseOverIcon(x, y)
   activePress = (mouseIcon >= 0)
-  --handleLeftClick(x, y,  button)
-
   return activePress
 end
 
 -------------------------------------------------------------------------------
 
-local function LeftMouseButtonReleased(unitDefID, unitTable)
+local function LeftMouseButton(unitDefID, unitTable)
   local alt, ctrl, meta, shift = spGetModKeyState()
   local acted = false
   if (not ctrl) then
@@ -627,14 +614,13 @@ local function LeftMouseButtonReleased(unitDefID, unitTable)
       spSelectUnitArray(units, shift)
     end
   end
-  Spring.Echo("Left Mouse Button up")
   if acted and playSounds then
     Spring.PlaySoundFile(leftclick, 0.75, 'ui')
   end
 end
 
 
-local function MiddleMouseButtonReleased(unitDefID, unitTable)
+local function MiddleMouseButton(unitDefID, unitTable)
   local alt, ctrl, meta, shift = spGetModKeyState()
   -- center the view
   if (ctrl) then
@@ -653,7 +639,7 @@ local function MiddleMouseButtonReleased(unitDefID, unitTable)
 end
 
 
-local function RightMouseButtonReleased(unitDefID, unitTable)
+local function RightMouseButton(unitDefID, unitTable)
   local alt, ctrl, meta, shift = spGetModKeyState()
   -- remove selected units of icon type
   local selUnits = spGetSelectedUnits()
@@ -676,7 +662,6 @@ end
 
 
 function widget:MouseRelease(x, y, button)
-
   if WG['smartselect'] and not WG['smartselect'].updateSelection then return end
   if (not activePress) then
     return -1
@@ -708,11 +693,11 @@ function widget:MouseRelease(x, y, button)
   local alt, ctrl, meta, shift = spGetModKeyState()
 
   if (button == 1) then
-    LeftMouseButtonReleased(unitDefID, unitTable)
+    LeftMouseButton(unitDefID, unitTable)
   elseif (button == 2) then
-    MiddleMouseButtonReleased(unitDefID, unitTable)
+    MiddleMouseButton(unitDefID, unitTable)
   elseif (button == 3) then
-    RightMouseButtonReleased(unitDefID, unitTable)
+    RightMouseButton(unitDefID, unitTable)
   end
 
   return -1

@@ -158,13 +158,13 @@ function HoloGrams()
         if maRa()== true then
             hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
             if  contains(ToShowTable, hostPiece) == true then 
-                StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4)
+                StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
             end
         end
 
         hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
         if contains(ToShowTable, hostCasinoPiece) == true then 
-            StartThread(flickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4)
+            StartThread(flickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
         end
 
     end
@@ -173,7 +173,7 @@ function HoloGrams()
         logo = showOne(TablesOfPiecesGroups["Office_Roof_Deco7Spin"])
         Spin(logo,_z_axis, math.rad(5),0)
         if maRa()== true then
-            StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2)
+            StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)
         else
             Show(logo)
         end

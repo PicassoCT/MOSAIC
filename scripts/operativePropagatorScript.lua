@@ -130,6 +130,11 @@ end
 	end
 end
 
+function externalAimFunction()
+    showFireArm()
+    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+end
+
 function closeCombatOS()
     Sleep(5)
     oldState = 1
@@ -560,7 +565,7 @@ end
 
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
 	boolDecoupled = boolDecoupledStates
-	locAnimationstateUpperOverride =AnimationstateUpperOverride
+	locAnimationstateUpperOverride = AnimationstateUpperOverride
 	locAnimationstateLowerOverride = AnimationstateLowerOverride
 	locBoolInstantOverride = boolInstantOverride or false
 	locConditionFunction = conditionFunction or (function() return true end)
@@ -769,6 +774,8 @@ function delayedStop()
 	Signal(SIG_STOP)
 	SetSignalMask(SIG_STOP) 
 	Sleep(50)
+	if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
+	GG.OperativeTurnTable[unitID] = nil
     for _,part in pairs (lowerBodyPieces) do
         reset(part, 10)
     end

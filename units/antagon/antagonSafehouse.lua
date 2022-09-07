@@ -55,7 +55,7 @@ local AntagonSafeHouse = Building:New{
 
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "100 70 100",
+	collisionvolumescales = "100 80 100",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 
 	script = "safehousescript.lua",

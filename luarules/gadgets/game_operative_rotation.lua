@@ -26,18 +26,28 @@ if (gadgetHandler:IsSyncedCode()) then
     local postRoundTimeInSeconds = 15
     local spGetUnitRotation = Spring.GetUnitRotation
     local spSetUnitRotation = Spring.SetUnitRotation
+    
+    function gadget:Initialize()
+        if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
+    end
 
     function rotateUnitTowardsPoint(id, positionT)
+
         x,y,z = spGetUnitPosition(id)
         yaw, pitch, roll = spGetUnitRotation(id)
         pitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
         spSetUnitRotation( id,  yaw,  pitch,  roll ) 
-        env = Spring.UnitScript.GetScriptEnv(id)
-        if env and env.ShowFireArmForTime then
-            udef = Spring.GetUnitDefID(k)
-            Spring.UnitScript.CallAsUnit(id,   showFireArm)
+        if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
+        if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < Spring.GetGameFrame()+30 then
+            GG.OperativeTurnTable[id] =Spring.GetGameFrame()
+            env = Spring.UnitScript.GetScriptEnv(id)
+            if env and env.externalAimFunction then
+                Spring.UnitScript.CallAsUnit(id,  env.externalAimFunction)
+            end      
         end      
     end
+
+
 
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "OPROTPOS") then

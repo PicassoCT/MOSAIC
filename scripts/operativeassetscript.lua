@@ -176,6 +176,11 @@ end
     end
 end
 
+function externalAimFunction()
+    showFireArm()
+    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+end
+
 function script.Create()
     makeWeaponsTable()
     GG.OperativesDiscovered[unitID] = nil
@@ -753,6 +758,8 @@ function delayedStop()
     Signal(SIG_STOP)
     SetSignalMask(SIG_STOP)
     Sleep(250)
+    if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
+    GG.OperativeTurnTable[unitID] = nil
     boolWalking = false
     -- Spring.Echo("Stopping")
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, true)
