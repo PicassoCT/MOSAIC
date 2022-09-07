@@ -121,6 +121,8 @@ if (gadgetHandler:IsSyncedCode()) then
                                           math.ceil(math.abs(GameConfig.costs.DestroyedHousePropanda * factor)))
                         addInSecond(team, unitID, "metal",
                                     math.ceil((GameConfig.costs.DestroyedHousePropanda * factor)))
+                        
+                        spawnMilitiaInHousesNearby(team, unitID)
 
                     end
                 end
@@ -132,6 +134,43 @@ if (gadgetHandler:IsSyncedCode()) then
 
             end
         end
+    end
+
+    function pushSmallestIntoValueTable(IdValueTable, newValue, newID, maxNr)
+        currentElementsInTable = count(IdValueTable)
+        for id, value in pairs(IdValueTable) do
+            if value < newValue then
+                if currentElementsInTable < maxNr then
+                    IdValueTable[newID] = newValue
+                    return IdValueTable
+                end
+            end
+        end
+    end
+
+    function   spawnMilitiaInHousesNearby(teamID, houseDestroyedID, houseDefID, attackerID)
+        houseIDDistance = {}
+        threeClosestHouses = {}
+        -- get list of all houses of the same type
+        foreach(Spring.GetTeamUnitsByDefs ( teamID, houseDefID) 
+                function(id)
+                    houseIDDistance[id] = distanceUnitToUnit(id, houseDestroyedID)
+                    
+                    for id, distances in pairs(threeClosestHouses) do
+                        if houseIDDistance[id] < distances and id ~= houseDestroyedID then
+                            
+                        end
+                    end
+                    
+                    return id
+                end    
+            )
+
+           --computate distance
+            -- select three
+              -- select one of them by random
+              -- GG:PushCreate(civilian agent, with parent)
+
     end
 
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
