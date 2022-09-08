@@ -33,7 +33,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if showHideIconTypes[unitDefID] then
             env = Spring.UnitScript.GetScriptEnv(unitID)
             if env and env.showHideIcon then
-                Spring.Echo("Calling Decloak for "..UnitDefs[unitDefID].name)
+               -- Spring.Echo("Calling Decloak for "..UnitDefs[unitDefID].name)
                 Spring.UnitScript.CallAsUnit(unitID, env.showHideIcon, false)
             end
         end

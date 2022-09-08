@@ -164,7 +164,7 @@ if (gadgetHandler:IsSyncedCode()) then
         houseIDDistance = {}
         threeClosestHouses = {}
         if not cache[houseDestroyedID] then
-            foreach(Spring.GetTeamUnitsByDefs ( teamID, houseDefID) 
+            foreach(Spring.GetTeamUnitsByDefs( teamID, houseDefID), 
                 function(id)
                     houseIDDistance[id] = distanceUnitToUnit(id, houseDestroyedID)
                     

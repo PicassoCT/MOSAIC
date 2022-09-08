@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.869" 
+            Version = "Alpha: 0.870" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -2104,7 +2104,7 @@ end
 
     function registerParent(teamID, parent)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
-        Spring.Echo("register Father of unit")
+       -- Spring.Echo("register Father of unit")
         if not GG.InheritanceTable[teamID][parent] then
             GG.InheritanceTable[teamID][parent] = {}
         end
@@ -2112,7 +2112,7 @@ end
 
     function registerChild(teamID, parent, childID)
         if not GG.InheritanceTable then initalizeInheritanceManagement() end
-        Spring.Echo("register Child child of unit")
+        --Spring.Echo("register Child child of unit")
         registerParent(teamID, parent)
 
         GG.InheritanceTable[teamID][parent][childID] = true
