@@ -169,6 +169,8 @@ end
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 
+local boolLeftClickActive = false
+local sX,sY = 0,0
 
 local function updateGuishader()
   if WG['guishader'] then
@@ -191,41 +193,35 @@ local function updateGuishader()
   end
 end
 
-local function handleHouseSelected(selectionSet)
-    x,y,z = spGetUnitPosition(selectionSet[1])
-    Spring.Echo("handleHouseSelected 2")
-    local xmin = x - sizeOfHouse 
-    local zmin = z - sizeOfHouse
-    local xmax = x + sizeOfHouse
-    local zmax = z + sizeOfHouse
-    local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,  zmax, myTeamID)
-    if unitsInRect and #unitsInRect then
-      for i=1, #unitsInRect do
-        Spring.Echo("handleHouseSelected 3")
-        local subUnitDefID = spGetUnitDefID(unitsInRect[i])
-        if secretPluginsTypeTable[subUnitDefID] then
-          map={unitsInRect[i]}
-          spSelectUnitArray(map)  
-          Spring.Echo("handleHouseSelected 3")    
-        end     
-      end       
+local function handleHouseSelected()
+    if sX then
+      local xmin = sX - sizeOfHouse 
+      local zmin = sY - sizeOfHouse
+      local xmax = sX + sizeOfHouse
+      local zmax = sY + sizeOfHouse
+      local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,zmax, myTeamID)
+
+      if unitsInRect then
+        for nr, id in ipairs(unitsInRect)  do
+          local subUnitDefID = spGetUnitDefID(id)
+          if secretPluginsTypeTable[subUnitDefID] then
+            map={id}
+            spSelectUnitArray(map)  
+          end     
+        end       
+      end             
     end             
 end
 
 local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local selectedUnitsCounts = Spring.GetSelectedUnitsCounts()
-local boolHouseSelected = false
+
 local selectionChanged = true
 function widget:SelectionChanged(sel)
-  Spring.Echo("Selection Changed")
   selectedUnits = Spring.GetSelectedUnits()
   selectedUnitsCount = spGetSelectedUnitsCount()
   selectedUnitsCounts = spGetSelectedUnitsCounts()
-
-  if selectedUnitsCount == 1 and civilianHousesTypeTable[spGetUnitDefID(selectedUnits[1])] then
-    boolHouseSelected = true
-  end
   selectionChanged = true
 end
 
@@ -346,11 +342,11 @@ end
 local uiOpacitySec = 0
 local selChangedSec = 0
 function widget:Update(dt)
-  if boolHouseSelected  then
-    handleHouseSelected(selectedUnits)
-    boolHouseSelected = false
+  if boolLeftClickActive == true then
+    Spring.Echo("LeftClickUpdate")
+    handleHouseSelected()
+    boolLeftClickActive = false
   end
-
   uiOpacitySec = uiOpacitySec + dt
   if uiOpacitySec>0.5 then
     uiOpacitySec = 0
@@ -588,6 +584,15 @@ end
 function widget:MousePress(x, y, button)
   mouseIcon = MouseOverIcon(x, y)
   activePress = (mouseIcon >= 0)
+  if button == 1  then
+    boolLeftClickActive = true
+    local selType,pos = spTraceScreenRay( x,y)
+    if selType == "unit" then
+      sX,_, sY = Spring.GetUnitPosition(pos)
+    elseif selType == "pos" then
+      sX,sY = pos.x, pos.z
+    end
+  end
   return activePress
 end
 
