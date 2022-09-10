@@ -77,7 +77,7 @@ local AntagonSafeHouse = Building:New{
 		"propagandaserver",
 		"assembly",
 		"launcher",
-		"warheadfactory",
+		"warheadfactory",		
 		"hivemind"
 		},
 	category = [[GROUND BUILDING RAIDABLE]],

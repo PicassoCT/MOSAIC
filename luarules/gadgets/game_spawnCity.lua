@@ -380,17 +380,17 @@ function spawnInitialHouses(frame)
             boolInitialized = true   
             GG.CitySpawnComplete = true
             regenerateRoutesTable()
-            echo("spawnInitialHouses: Default Initialization completed")
+            --echo("spawnInitialHouses: Default Initialization completed")
         else
 
            registeredUnits = registerManuallyPlacedHouses() 
-           echo("Registering Units manually" ..registeredUnits.." and "..toString(GG.MapCompletedBuildingPlacement))
+           --echo("Registering Units manually" ..registeredUnits.." and "..toString(GG.MapCompletedBuildingPlacement))
            boolAtLeastOneManualPlacement = boolAtLeastOneManualPlacement or  registeredUnits > 0
            boolInitialized = (boolAtLeastOneManualPlacement and Spring.GetGameFrame() > originalGameFrame and registeredUnits == 0)
            if boolInitialized == false then return end
            GG.CitySpawnComplete = true
-            regenerateRoutesTable()
-           echo("spawnInitialHouses: Manual Placement Initialization completed")
+           regenerateRoutesTable()
+           --echo("spawnInitialHouses: Manual Placement Initialization completed")
         end
     end
 end

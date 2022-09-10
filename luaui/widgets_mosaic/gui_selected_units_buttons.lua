@@ -225,7 +225,6 @@ function widget:SelectionChanged(sel)
   selectionChanged = true
 end
 
-
 local vsx, vsy = widgetHandler:GetViewSizes()
 function widget:ViewResize(n_vsx,n_vsy)
   vsx,vsy = Spring.GetViewGeometry()
@@ -244,7 +243,7 @@ function widget:ViewResize(n_vsx,n_vsy)
   
   if picList then
     gl.DeleteList(picList)
-  picList = gl.CreateList(DrawPicList)
+    picList = gl.CreateList(DrawPicList)
   end
 end
 
@@ -585,12 +584,14 @@ function widget:MousePress(x, y, button)
   mouseIcon = MouseOverIcon(x, y)
   activePress = (mouseIcon >= 0)
   if button == 1  then
-    boolLeftClickActive = true
+
     local selType,pos = spTraceScreenRay( x,y)
     if selType == "unit" then
-      sX,_, sY = Spring.GetUnitPosition(pos)
-    elseif selType == "pos" then
-      sX,sY = pos.x, pos.z
+      local defID = spGetUnitDefID(pos)
+      if civilianHousesTypeTable[defID] then
+        sX,_, sY = Spring.GetUnitPosition(pos)
+        boolLeftClickActive = true
+      end
     end
   end
   return activePress
