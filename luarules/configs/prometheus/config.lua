@@ -82,6 +82,6 @@ gadget.reservedFlagCappers = {
 -- This lists all the units (of all sides) that may be used to cap flags.
 -- NOTE: To be removed and automatically parsed
 gadget.flagCappers = UnitSet{
-	"operativeasset", "operativeinvestigator",
-	"operativepropagator", "civilianagent"
+	"operativeinvestigator",
+	"operativepropagator"
 }

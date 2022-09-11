@@ -116,7 +116,7 @@ function FlagsMgr.UnitFinished(unitID, unitDefID, unitTeam)
     if (unitCount < RESERVED_FLAG_CAPPERS) and (flagCappers[unitDefID] ~= nil) then
 
         if (UnitDefs[unitDefID].speed == 0) then return end
-
+        assert(type(unitID) == "number")
         units[unitID] = startpos
         if (not units[unitID]) then
             Log("No start position!")

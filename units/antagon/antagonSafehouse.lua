@@ -73,12 +73,7 @@ local AntagonSafeHouse = Building:New{
 		"operativeasset",
 		"operativepropagator",
 		"civilianagent",
-		"nimrod",
-		"propagandaserver",
-		"assembly",
-		"launcher",
-		"warheadfactory",		
-		"hivemind"
+		--Described in morphdefs
 		},
 	category = [[GROUND BUILDING RAIDABLE]],
 

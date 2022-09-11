@@ -72,11 +72,7 @@ local ProtagonSafeHouse =    Building:New{
     "operativeasset",
     "operativeinvestigator",
     "civilianagent",
-    "nimrod",
-    "propagandaserver",
-	 --"aicore",
-    "assembly",
-	 "blacksite"
+    --Described in morphdefs
   },
 
   category =  [[GROUND BUILDING RAIDABLE]],

@@ -97,11 +97,69 @@ local function GetDist2D(x, z, p, q)
     return sqrt(dx * dx + dz * dz)
 end
 
-local function regenerateWaypoints() end
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--  Waypoint prototype (Waypoint public interface)
+--  TODO: do I actually need this... ?
+--
 
+local Waypoint = {}
+Waypoint.__index = Waypoint
+
+function Waypoint:GetFriendlyUnitCount(myAllyTeamID)
+    return self.allyTeamUnitCount[myAllyTeamID] or 0
+end
+
+function Waypoint:GetEnemyUnitCount(myAllyTeamID)
+    local sum = 0
+    for at,count in pairs(self.allyTeamUnitCount) do
+        if (at ~= myAllyTeamID) then
+            sum = sum + count
+        end
+    end
+    return sum
+end
+
+function Waypoint:GetNextUncappedFlagByAllyTeam(myAllyTeamID)
+    local HouseHasSafeHouseTable = GG.houseHasSafeHouseTable
+    if HouseHasSafeHouseTable == nil then return false end
+    for _,f in pairs(self.flags) do
+        if (HouseHasSafeHouseTable[f] and GetUnitAllyTeam(HouseHasSafeHouseTable[f]) ~= myAllyTeamID) then
+            return f
+        end
+    end
+    return nil
+end
+
+function Waypoint:AreAllFlagsCappedByAllyTeam(myAllyTeamID)
+    local HouseHasSafeHouseTable = GG.houseHasSafeHouseTable
+    if HouseHasSafeHouseTable == nil then return false end
+
+    for _,f in pairs(self.flags) do
+        if (HouseHasSafeHouseTable[f] and GetUnitAllyTeam(HouseHasSafeHouseTable[f]) ~= myAllyTeamID) then
+            return false
+        end
+    end
+    return true
+end
+
+local function AddWaypoint(x, y, z)
+    local waypoint = {
+        x = x, y = y, z = z, --position
+        adj = {},            --map of adjacent waypoints -> edge distance
+        flags = {},          --array of flag unitIDs
+        allyTeamUnitCount = {},
+    }
+    setmetatable(waypoint, Waypoint)
+    waypoints[#waypoints+1] = waypoint
+    return waypoint
+end
 
 -- Returns the nearest waypoint to point x, z, and the distance to it.
 local function GetNearestWaypoint2D(x, z)
+    assert(x)
+    assert(z)
     local minDist = 1.0e9
     local nearest = {
         x = x, y = 0, z = z, --position
@@ -109,24 +167,76 @@ local function GetNearestWaypoint2D(x, z)
         flags = {},          --array of flag unitIDs
         allyTeamUnitCount = {},
     }
+--    Spring.Echo("Number of waypoints "..#waypoints)
 
-    if #waypoints < 2 then  
-        regenerateWaypoints()      
+     if #waypoints < 2 then  
+        return nearest   
     end
+
     local boolNotChecked = true
     local boolFoundNearest = false
 
     for _,p in ipairs(waypoints) do
         boolNotChecked = false
         local dist = GetDist2D(x, z, p.x, p.z)
-        if (dist < minDist) then
+        if (dist < minDist) and p ~= nil then
             minDist = dist
             nearest = p
             boolFoundNearest = true
         end
     end
-
+    assert(boolFoundNearest)
+    assert(type(nearest) == "table")
     return nearest, minDist
+end
+
+local function adj_grid_nodes(i, j)
+    local nodes = {}
+    for ii = i-1,i+1 do
+        if ii > 0 and ii <= n_grid_x then
+            for jj = j-1,j+1 do
+                if jj > 0 and jj <= n_grid_y and not (ii == i and jj == j) then
+                    nodes[#nodes + 1] = {ii, jj}
+                end
+            end
+        end
+    end
+    return nodes
+end
+
+local function AddWaypointPerUnit(id)
+local x, y, z = GetUnitPosition(id)
+    if x and x ~= 0 then
+        -- Add a waypoint right there
+        local i, j = world2grid(x, z)
+        if not grid or not grid[i] or not grid[i][j] then return end
+
+        if grid[i][j].valid == nil then
+            grid[i][j].valid = true
+            local gx, gy, gz = grid2world(i, j)
+            grid[i][j].waypoint = AddWaypoint(gx, gy, gz)
+        end
+        teamStartPosition[t] = GetNearestWaypoint2D(x, z) 
+        -- Add also the surrounding waypoints, to avoid failures in
+        -- TestMoveOrder() due to the already built HQ
+        local neighs = adj_grid_nodes(i, j)
+        for _, neigh in ipairs(neighs) do
+            if grid[neigh[1]][neigh[2]].valid == nil then
+                grid[neigh[1]][neigh[2]].valid = true
+                local gx, gy, gz = grid2world(neigh[1], neigh[2])
+                grid[neigh[1]][neigh[2]].waypoint = AddWaypoint(gx, gy, gz)
+                AddConnection(grid[i][j].waypoint,
+                              grid[neigh[1]][neigh[2]].waypoint)
+                -- Add the adjacent grid nodes to the parsing queue
+                local candidates = adj_grid_nodes(neigh[1], neigh[2])
+                for _, c in ipairs(candidates) do
+                    if grid[c[1]][c[2]].valid == nil then
+                        parse_queue[#parse_queue + 1] = c
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- This calculates the set of waypoints which are
@@ -344,87 +454,10 @@ local function world2grid(x, z)
            math.floor(z / WAYPOINT_RADIUS) + 1
 end
 
-local function adj_grid_nodes(i, j)
-    local nodes = {}
-    for ii = i-1,i+1 do
-        if ii > 0 and ii <= n_grid_x then
-            for jj = j-1,j+1 do
-                if jj > 0 and jj <= n_grid_y and not (ii == i and jj == j) then
-                    nodes[#nodes + 1] = {ii, jj}
-                end
-            end
-        end
-    end
-    return nodes
-end
 
 
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---
---  Waypoint prototype (Waypoint public interface)
---  TODO: do I actually need this... ?
---
 
-local Waypoint = {}
-Waypoint.__index = Waypoint
-
-function Waypoint:GetFriendlyUnitCount(myAllyTeamID)
-    return self.allyTeamUnitCount[myAllyTeamID] or 0
-end
-
-function Waypoint:GetEnemyUnitCount(myAllyTeamID)
-    local sum = 0
-    for at,count in pairs(self.allyTeamUnitCount) do
-        if (at ~= myAllyTeamID) then
-            sum = sum + count
-        end
-    end
-    return sum
-end
-
-function Waypoint:GetNextUncappedFlagByAllyTeam(myAllyTeamID)
-    for _,f in pairs(self.flags) do
-        if (GetUnitAllyTeam(f) ~= myAllyTeamID) then
-            return f
-        end
-    end
-    return nil
-end
-
-function Waypoint:AreAllFlagsCappedByAllyTeam(myAllyTeamID)
-    for _,f in pairs(self.flags) do
-        if (GetUnitAllyTeam(f) ~= myAllyTeamID) then
-            return false
-        end
-    end
-    return true
-end
-
-local function AddWaypoint(x, y, z)
-    local waypoint = {
-        x = x, y = y, z = z, --position
-        adj = {},            --map of adjacent waypoints -> edge distance
-        flags = {},          --array of flag unitIDs
-        allyTeamUnitCount = {},
-    }
-    setmetatable(waypoint, Waypoint)
-    waypoints[#waypoints+1] = waypoint
-    return waypoint
-end
-
-local function GetWaypointDist2D(a, b)
-    local dx = a.x - b.x
-    local dz = a.z - b.z
-    return sqrt(dx * dx + dz * dz)
-end
-
-local function AddConnection(a, b)
-    local edge = {dist = GetWaypointDist2D(a, b)}
-    a.adj[b] = edge
-    b.adj[a] = edge
-end
 
 local function UpdateWaypoint(p)
     p.flags = {}
@@ -469,64 +502,8 @@ local function UpdateWaypoint(p)
     end
 end
 
-local function AddWaypointPerUnit(id)
-local x, y, z = GetUnitPosition(id)
-    if x and x ~= 0 then
-        -- Add a waypoint right there
-        local i, j = world2grid(x, z)
-        if not grid or not grid[i] or not grid[i][j] then return end
 
-        if grid[i][j].valid == nil then
-            grid[i][j].valid = true
-            local gx, gy, gz = grid2world(i, j)
-            grid[i][j].waypoint = AddWaypoint(gx, gy, gz)
-        end
-        teamStartPosition[t] = GetNearestWaypoint2D(x, z) 
-        -- Add also the surrounding waypoints, to avoid failures in
-        -- TestMoveOrder() due to the already built HQ
-        local neighs = adj_grid_nodes(i, j)
-        for _, neigh in ipairs(neighs) do
-            if grid[neigh[1]][neigh[2]].valid == nil then
-                grid[neigh[1]][neigh[2]].valid = true
-                local gx, gy, gz = grid2world(neigh[1], neigh[2])
-                grid[neigh[1]][neigh[2]].waypoint = AddWaypoint(gx, gy, gz)
-                AddConnection(grid[i][j].waypoint,
-                              grid[neigh[1]][neigh[2]].waypoint)
-                -- Add the adjacent grid nodes to the parsing queue
-                local candidates = adj_grid_nodes(neigh[1], neigh[2])
-                for _, c in ipairs(candidates) do
-                    if grid[c[1]][c[2]].valid == nil then
-                        parse_queue[#parse_queue + 1] = c
-                    end
-                end
-            end
-        end
-    end
-end
 
-local function regenerateWaypoints()
-    Spring.Echo("Regenerating waypoints")
-    for _,t in ipairs(Spring.GetTeamList()) do
-        if (t ~= GAIA_TEAM_ID) then
-            local unitsSorted = Spring.GetTeamUnitsSorted(GAIA_TEAM_ID)
-            if unitsSorted[WESTERN_HOUSE_DEFID] ~= nil then
-                local westernHouses = unitsSorted[WESTERN_HOUSE_DEFID]
-                for i=1, #westernHouses do
-                    local id = westernHouses[i]
-                    AddWaypointPerUnit(id)
-                end
-            end
-            if unitsSorted[ARAB_HOUSE_DEFID] ~= nil then
-                local arabHouses = unitsSorted[ARAB_HOUSE_DEFID]
-                for i=1, #arabHouses do
-                    local id = arabHouses[i]
-                    AddWaypointPerUnit(id)
-                end
-            end       
-        end
-    end
-end  
-    
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --
@@ -538,7 +515,9 @@ function WaypointMgr.GetWaypoints()
 end
 
 function WaypointMgr.GetTeamStartPosition(myTeamID)
-    return teamStartPosition[myTeamID]
+    local x,y,z = Spring.GetTeamStartPosition(myTeamID) 
+    local startPos = GetNearestWaypoint2D(x, z) 
+    return startPos
 end
 
 function WaypointMgr.GetFrontline(myTeamID, myAllyTeamID)
@@ -569,6 +548,17 @@ WaypointMgr.GetNearestWaypoint2D = GetNearestWaypoint2D
 --
 --  The call-in routines
 --
+local function GetWaypointDist2D(a, b)
+    local dx = a.x - b.x
+    local dz = a.z - b.z
+    return sqrt(dx * dx + dz * dz)
+end
+
+local function AddConnection(a, b)
+    local edge = {dist = GetWaypointDist2D(a, b)}
+    a.adj[b] = edge
+    b.adj[a] = edge
+end
 
 function WaypointMgr.GameStart()
     -- Can not run this in the initialization code at the end of this file,
@@ -677,10 +667,12 @@ end
 
 function WaypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
     if isFlag[unitDefID] then
+       -- Spring.Echo("Flag created")
         -- This is O(n*m), with n = number of flags and m = number of waypoints.
         local x, y, z = GetUnitPosition(unitID)
+        AddWaypoint(x,y,z)    
         local p, dist = GetNearestWaypoint2D(x, z)
-        if (dist < FLAG_RADIUS) then
+        if p then
             p.flags[#p.flags+1] = unitID
             flags[unitID] = p
             Log("Flag ", unitID, " is near ", p.x, ", ", p.z)
