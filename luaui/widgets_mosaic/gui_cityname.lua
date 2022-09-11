@@ -48,6 +48,7 @@ local function setAnchorsRelative(nvx, nvy)
   anchorx, anchory = nvx*0.9,nvy*0.15 
 end
 
+local mapName = Game.mapName
 function widget:Initialize()
   startFrame = Spring.GetGameFrame() + 100
   endFrame = startFrame + (15*30)
@@ -131,8 +132,19 @@ local function setCacheBy(identifier, value)
   cache[identifier] = value
 end
 
+  local function getMapOverrideCitypart()
+    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
+    if foundDubai ~= nil then return "Trade center"  end
+  end
+
 local function getNeighbourhoodName(country, hash)
+
   if getCacheBy("neighbourhood") then return "District: "..getCacheBy("neighbourhood") end
+  local MapOverrideCitypart = getMapOverrideCitypart()
+  if MapOverrideCitypart ~= nil then
+    setCacheBy("neighbourhood", MapOverrideCitypart)
+    return "District: "..getCacheBy("neighbourhood")
+  end
 
   local DefaultNeighbourhoods ={"Harbour", "West", "South", "North", "Airport", "Slum", "Shantytowns", "Buisnessdistrict", "Promenade", "Beach", "District "..math.random(1,50)}
  local Neighbourhoods = { 
@@ -298,9 +310,18 @@ local function getNeighbourhoodName(country, hash)
   return "District: "..getCacheBy("neighbourhood") 
 end
 
+local function getMapOverrideCity()
+    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
+    if foundDubai ~= nil then return "Dubai"   end
+  end
+
 local function getCityNameByProvince(provincelocal, hash)
   if getCacheBy("city") then return "City: "..getCacheBy("city") end
-
+ local MapOverrideCity = getMapOverrideCity()
+  if MapOverrideCity ~= nil then
+    setCacheBy("city", MapOverrideCity)
+    return "City: "..getCacheBy("city")
+  end
 
   local province_city_map = {   
    ["Honiara"] = {"Honiara"},
@@ -7030,8 +7051,18 @@ local function getCityNameByProvince(provincelocal, hash)
   return "City: "..getCacheBy("city") 
 end
 
+  local function getMapOverrideProvince()
+    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
+    if foundDubai ~= nil then  return "Capital City"    end
+  end
+
 local function getProvinceNameBy(countrylocal,  hash)
   if getCacheBy("province") then return "Province: "..getCacheBy("province")  end
+  local mapOverrideProvince = getMapOverrideProvince()
+  if mapOverrideProvince ~= nil then
+    setCacheBy("province", mapOverrideProvince)
+    return "Province: "..getCacheBy("province") 
+  end
   
   local country_province_map = {
     ["Swaziland"] = {"Hhohho","Manzini","Lubombo","Shiselweni"},
@@ -7622,10 +7653,20 @@ local function getCountryByCulture(culture, hash)
   return internationalCityCountries[(hash % #internationalCityCountries) +1]
 end
 
+local function getMapOverrideCountry()
+    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
+    if foundDubai ~= nil then  return "Dhubay"   end
+  end
+
+
 local persistenCountry 
 local function getCountryNameByCulture(culture, hash)
     if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
-
+    local mapOverrideCountry = getMapOverrideCountry()
+    if mapOverrideCountry ~= nil then
+      setCacheBy("country",mapOverrideCountry)
+      return "Country: "..getCacheBy("country")
+    end
     local country = getCountryByCulture(culture, hash)
     setCacheBy("country", country..", "..getRegionByCountry(country))
     persistenCountry = country
@@ -7645,10 +7686,6 @@ function widget:DrawScreenEffects(vsx, vsy)
     local hash = getDetermenisticHash()
     local rawtimeStamp = getDayTimeString()
     local rawcountry = getCountryNameByCulture(culture ,hash)
-    local rawprovince = getProvinceNameBy(persistenCountry, hash)
-    local rawcityname = getCityNameByProvince(getCacheBy("province"), hash)
-
-    local rawcitypart = getNeighbourhoodName(persistenCountry,hash)
 
     for k, v in pairs(cache) do
       longestString = math.max(longestString, string.len(v))
@@ -7656,11 +7693,6 @@ function widget:DrawScreenEffects(vsx, vsy)
 
     local timestepFramesPerString = displayStaticFrameIntervallLength/longestString
     local timeStep = math.floor((currentFrame - startFrame)/timestepFramesPerString)
-
-    local timeStamp = getRollingString(rawtimeStamp, timeStep, currentFrame)
-    local citypart = getRollingString(rawcitypart, timeStep, currentFrame)
-    local cityname = getRollingString(rawcityname, timeStep, currentFrame)
-    local province = getRollingString(rawprovince, timeStep, currentFrame)
     local country = getRollingString(rawcountry, timeStep, currentFrame)
 
     if boolStartSound== false and timeStep == 2  then
