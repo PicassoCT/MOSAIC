@@ -122,7 +122,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         addInSecond(team, unitID, "metal",
                                     math.ceil((GameConfig.costs.DestroyedHousePropanda * factor)))
                         
-                        spawnMilitiaInHousesNearby(team, unitID)
+                        spawnMilitiaInHousesNearby(team, unitID, unitDefID)
 
                     end
                 end
@@ -160,7 +160,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     cache = {}
-    function spawnMilitiaInHousesNearby(teamID, houseDestroyedID, houseDefID, attackerID)
+    function spawnMilitiaInHousesNearby(teamID, houseDestroyedID, houseDefID)
         houseIDDistance = {}
         threeClosestHouses = {}
         if not cache[houseDestroyedID] then
