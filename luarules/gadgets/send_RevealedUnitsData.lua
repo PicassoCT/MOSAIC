@@ -96,7 +96,7 @@ local function updateLocationData()
 
     if storedRevealedLocationCount ~= #GG.RevealedLocations then
         storedRevealedLocationCount = #GG.RevealedLocations
-        Spring.Echo("Updating RevealedLocations "..#GG.RevealedLocations)
+--        Spring.Echo("Updating RevealedLocations "..#GG.RevealedLocations)
     end
 end
 

@@ -178,7 +178,7 @@ function spawnInitialPopulation(frame)
         issueArrivedUnitsCommands()
 
         boolInitialized = true
-        Spring.Echo("CitySpawnComplete and initialized")
+       -- Spring.Echo("CitySpawnComplete and initialized")
     end
 end
 
@@ -373,7 +373,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
 end
 
 function regenerateRoutesTable()
-    Spring.Echo("Regenerating Routes Tabel")
+   -- Spring.Echo("Regenerating Routes Tabel")
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
     assert(TruckType)

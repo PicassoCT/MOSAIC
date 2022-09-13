@@ -175,7 +175,8 @@ local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
             local randomizedPriority = math.random(0,3)
             local unitID = unitsArray[i]
             local enemyID = enemyUnitArray[((i+randomizedPriority) % #enemyUnitArray)+1]
-            Spring.Echo("Prometheus: Unit "..unitID.." assigned to attack "..enemyID)
+           -- Spring.Echo("Prometheus: Unit "..unitID.." assigned to attack "..enemyID)
+            Spring.GiveOrderToUnit(unitID, CMD.ATTACK, {enemyID}, {})
             GiveOrderToUnit(unitID, CMD.ATTACK, enemyID,  {"shift"})
             boolAssignedSuccesfully = true
         end
