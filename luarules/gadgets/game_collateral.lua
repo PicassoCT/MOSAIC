@@ -189,8 +189,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 minimalCandidate = candidate
             end
         end
-        x,y,z = Spring.GetUnitPosition(minimalCandidate)
-        GG.UnitsToSpawn:PushCreateUnit("civilianagent", x, y, z,  math.random(1, 4), teamID)
+        if minimalCandidate and doesUnitExistAlive(minimalCandidate) then
+            x,y,z = Spring.GetUnitPosition(minimalCandidate)
+            GG.UnitsToSpawn:PushCreateUnit("civilianagent", x, y, z,  math.random(1, 4), teamID)
+        end
     end
 
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
