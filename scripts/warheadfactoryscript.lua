@@ -11,6 +11,8 @@ center = piece "center"
 emitor = piece "center"
 Icon = piece "Icon"
 Rotor = piece "Rotor"
+IconScull = piece "IconScull"
+IconProj = piece "IconProj"
 
 GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -61,6 +63,12 @@ function script.Activate()
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)
     SetUnitValue(COB.INBUILDSTANCE, 1)
+    Show(IconScull)
+    val = math.random(1,4)*randSign()
+    Spin(IconScull,y_axis,math.rad(val),0.1)
+    Move(IconProj, x_axis, -15,0)    
+    Show(IconProj)
+    Move(IconProj, x_axis, 0,0.1)
     return 1
 end
 
@@ -76,9 +84,13 @@ function script.Deactivate()
     return 0
 end
 
-function script.StartBuilding() SetUnitValue(COB.INBUILDSTANCE, 1) end
+function script.StartBuilding() 
+    SetUnitValue(COB.INBUILDSTANCE, 1) 
+end
 
-function script.StopBuilding() SetUnitValue(COB.INBUILDSTANCE, 0) end
+function script.StopBuilding() 
+    SetUnitValue(COB.INBUILDSTANCE, 0) 
+end
 
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
@@ -86,8 +98,11 @@ function showHideIcon(boolCloaked)
     if boolCloaked == true then
         hideAll(unitID)
         Show(Icon)
+
     else
         showAll(unitID)
         Hide(Icon)
+        Hide(IconProj)
+        Hide(IconScull)
     end
 end

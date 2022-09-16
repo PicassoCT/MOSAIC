@@ -35,7 +35,7 @@ function preventBuildingNearPreexistingSafehouse()
                 defID = spGetUnitDefID(id)
                 if safeHouseTypeTable[defID] or safeHouseUpgradeTypeTable[defID] then
                     --we already have something in this building -- abort
-                boolResult=  true
+                    boolResult=  true
                 end
             end
             )
