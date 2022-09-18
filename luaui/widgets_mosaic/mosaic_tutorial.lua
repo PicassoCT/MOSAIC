@@ -2,14 +2,14 @@ local boolDebug = true
 
 function widget:GetInfo()
 	return {
-		name = "_Tutorial_",
+		name = "Tutorial",
 		desc = "Save the Noobs",
 		author = "A Noob to far",
 		version = "v1.1",
 		date = "Jul 18, 2009",
 		license = "GNU GPL, v2 or later",
 		layer = 3,
-		enabled = (Spring.GetConfigInt("mosaic_startupcounter",1) < 3 )-- loaded by default?
+		enabled = (Spring.GetConfigInt("mosaic_startupcounter",0) < 1 )-- loaded by default?
 	}
 end
 
@@ -31,25 +31,33 @@ local spSelUnitArray = Spring.SelectUnitArray
 local spGetUnitDefID = Spring.GetUnitDefID
 local spPlaySoundFile=Spring.PlaySoundFile
 
-local function getDefID(name)
-	   for udid, ud in pairs(UnitDefs) do
-		   	if ud.name == name then
-		   		return udid
-		   	end
+local 	function getDefID(name)
+	   		for udid, ud in pairs(UnitDefs) do
+		   		if ud.name == name then
+		   			return udid
+		   		end
+			end
 		end
-	Spring.Echo("tutorial:"..name.." not found in UnitDefs")
-end
 ---------------------------------------------------------------------------
 -- Data
 ---------------------------------------------------------------------------
 local boolOnAir = false
 local silentPlaceHolder="Placeholder"
-local boolTutorial= Spring.GetConfigInt("mosaic_startupcounter",1) < 3 or boolDebug
+local boolTutorialActive= Spring.GetConfigInt("mosaic_startupcounter", 0) < 1 or boolDebug
 local OperativePropagatorDefID = getDefID("operativepropagator")
 local OperativeInvestigatorDefID = getDefID("operativeinvestigator")
 local raidIconDefID = getDefID("raidicon")
 local mySide = "No valid side assigned"
 local operativeAssetDefID = getDefID("operativeasset")
+
+local spGetTeamUnitsCounts = Spring.GetTeamUnitsCounts
+local spGetPlayerInfo = Spring.GetPlayerInfo
+local spGetTeamInfo = Spring.GetTeamInfo
+local spGetMyPlayerID = Spring.GetMyPlayerID
+local startFrame = Spring.GetGameFrame()
+local window0
+local panel1
+local Chili
 
 local TutorialInfoTable= {
 	antagon = {
@@ -63,20 +71,14 @@ local TutorialInfoTable= {
 		time = 8000,
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n The tutorial can be deactivated in the Widgetmanager (Press F11)",
 	},
-
 	welcome = {
 
 		speach= "sounds/tutorial/welcomeBuildSafeHouse.ogg",
 		active = true,
-		-- Antagon:
-		-- This is it. The City. The arena
-		-- Filled with wulves, hyenas, tigers and bears- the chance to learn about human nature.
-		-- In the waning days of the ampire, they used to shell cities like this, if one soldier was killed, for weeks.
-		-- San Francisco brought a end to that.
-		-- This is why we are here. 
-		-- Build a safehouse and wait for further instructions
 
-			time = 26000,
+
+		time = 26000,
+		text = "Build safehouse"
 	},
 	----BuildUnits
 	[getDefID("operativepropagator")] = 
@@ -299,6 +301,100 @@ general = {
 
 }
 
+local function preProcesTutorialInfoTable()
+	local TutInfT = TutorialInfoTable
+	for k,v in ipairs(TutInfT.general) do
+	--	Spring.Echo("Preprocessing "..k.." -> "..v)
+		if  TutInfT.general[k].active == nil then TutInfT.general[k].active =  true end
+		if not TutInfT.general[k].time then TutInfT.general[k].time = 4000 end
+		if not TutInfT.general[k].speach then TutInfT.general[k].speach = silentPlaceHolder end
+	end	
+	for k,v in ipairs(TutInfT.protagon) do
+	--	Spring.Echo("Preprocessing "..k.." -> "..v)
+		if  TutInfT.protagon[k].active == nil then TutInfT.protagon[k].active =  true end
+		if not TutInfT.protagon[k].time then TutInfT.protagon[k].time = 4000 end
+		if not TutInfT.protagon[k].speach then TutInfT.protagon[k].speach = silentPlaceHolder end
+	end
+	for k,v in ipairs(TutInfT.antagon) do
+	--	Spring.Echo("Preprocessing "..k.." -> "..v)
+		if  TutInfT.antagon[k].active == nil then TutInfT.antagon[k].active =  true end
+		if not TutInfT.antagon[k].time then TutInfT.antagon[k].time = 4000 end
+		if not TutInfT.antagon[k].speach then TutInfT.antagon[k].speach = silentPlaceHolder end
+	end
+
+return TutInfT
+end
+
+TutorialInfoTable =	preProcesTutorialInfoTable()
+
+function widget:Initialize()	
+		Chili = WG.Chili
+		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",0) + 1 )
+
+		local myTeamID= spGetMyTeamID()
+		local playerID = spGetMyPlayerID()
+		local tname,_, tspec, myTeamID, tallyteam, tping, tcpu, tcountry, trank = spGetPlayerInfo(playerID)
+		mySide     = select(5, spGetTeamInfo(myTeamID)) 
+
+		if (mySide ~= nil and (mySide == "antagon" or mySide == "protagon")) == false then
+
+			if Spring.GetTeamUnitsByDefs(myTeamID, OperativePropagatorDefID) then
+				mySide = "antagon"
+			end
+			if Spring.GetTeamUnitsByDefs(myTeamID, OperativeInvestigatorDefID) then
+				mySide = "protagon"
+			end
+
+			if  (mySide ~= nil and (mySide == "antagon" or mySide == "protagon"))== false  then
+				mySide = "antagon"
+			end
+		end
+		TutorialInfoTable =	preProcesTutorialInfoTable()
+
+		local cs = {
+			Chili.Button:New{
+				x      = 20,
+				y      = 20,
+				caption = "Abort Tutorial",
+				OnClick = {function(self)
+							self.font:SetColor(0,1,0,1);
+							Spring.SetConfigInt("mosaic_startupcounter", 2)
+							boolTutorialActive = false
+							widgetHandler:RemoveWidget(self)
+							end
+							},
+			}
+		}
+
+		local window01 = Chili.Window:New{
+				caption = "Beginners Tutorial:",
+				x = 200,
+				y = 200,
+				clientWidth  = 150,
+				clientHeight = 50,
+				parent = Chili.Screen0,
+			}
+
+		local panel1 = Chili.StackPanel:New{
+				width = 100,
+				height = 50,
+				--resizeItems = false,
+				x=0, 
+				right=0,
+				y=0, 
+				bottom=0,
+				margin = {10, 10, 10, 10},
+				parent = window01,
+				children = cs,
+			}
+
+
+		startFrame = Spring.GetGameFrame()
+end
+
+
+
+
 ---------------------------------------------------------------------------
 -- Code
 ---------------------------------------------------------------------------
@@ -339,67 +435,11 @@ local function PlaySoundAndMarkUnit(defID, exampleUnit)
 			Spring.PlaySoundFile(TutorialInfoTable[mySide][defID].speach,1)
 		elseif TutorialInfoTable.general[defID].speach then
 			Spring.PlaySoundFile(TutorialInfoTable.general[defID].speach,1)
-		end
+		end	
 	end
 end
 
-local function preProcesTutorialInfoTable()
-	local TutInfT = TutorialInfoTable
-	for k,v in ipairs(TutInfT.general) do
-	--	Spring.Echo("Preprocessing "..k.." -> "..v)
-		if  TutInfT.general[k].active == nil then TutInfT.general[k].active =  true end
-		if not TutInfT.general[k].time then TutInfT.general[k].time = 4000 end
-		if not TutInfT.general[k].speach then TutInfT.general[k].speach = silentPlaceHolder end
-	end	
-	for k,v in ipairs(TutInfT.protagon) do
-	--	Spring.Echo("Preprocessing "..k.." -> "..v)
-		if  TutInfT.protagon[k].active == nil then TutInfT.protagon[k].active =  true end
-		if not TutInfT.protagon[k].time then TutInfT.protagon[k].time = 4000 end
-		if not TutInfT.protagon[k].speach then TutInfT.protagon[k].speach = silentPlaceHolder end
-	end
-	for k,v in ipairs(TutInfT.antagon) do
-	--	Spring.Echo("Preprocessing "..k.." -> "..v)
-		if  TutInfT.antagon[k].active == nil then TutInfT.antagon[k].active =  true end
-		if not TutInfT.antagon[k].time then TutInfT.antagon[k].time = 4000 end
-		if not TutInfT.antagon[k].speach then TutInfT.antagon[k].speach = silentPlaceHolder end
-	end
 
-return TutInfT
-end
-
-TutorialInfoTable =	preProcesTutorialInfoTable()
-
-local spGetTeamUnitsCounts = Spring.GetTeamUnitsCounts
-local spGetPlayerInfo = Spring.GetPlayerInfo
-local spGetTeamInfo = Spring.GetTeamInfo
-local spGetMyPlayerID = Spring.GetMyPlayerID
-local startFrame = Spring.GetGameFrame()
-
-function widget:Initialize()	
-	
-		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",1) + 1 )
-
-		local myTeamID= spGetMyTeamID()
-		local playerID = spGetMyPlayerID()
-		local tname,_, tspec, myTeamID, tallyteam, tping, tcpu, tcountry, trank = spGetPlayerInfo(playerID)
-		mySide     = select(5, spGetTeamInfo(myTeamID)) 
-
-		if (mySide ~= nil and (mySide == "antagon" or mySide == "protagon")) == false then
-
-			if Spring.GetTeamUnitsByDefs(myTeamID, OperativePropagatorDefID) then
-				mySide = "antagon"
-			end
-			if Spring.GetTeamUnitsByDefs(myTeamID, OperativeInvestigatorDefID) then
-				mySide = "protagon"
-			end
-
-			if  (mySide ~= nil and (mySide == "antagon" or mySide == "protagon"))== false  then
-				mySide = "antagon"
-			end
-		end
-		TutorialInfoTable =	preProcesTutorialInfoTable()
-		startFrame = Spring.GetGameFrame()
-end
 
 
 function widget:Shutdown()
@@ -436,7 +476,7 @@ function widget:GameFrame(t)
 	local timeOnAirMS = 0
 	if t > startFrame + 90 and t > OnAirTillTimeFrame then
 		boolOnAir = false 
-		if boolTutorial == true and  t % 10 == 0   then
+		if boolTutorialActive == true and  t % 10 == 0   then
 			boolOnAir, timeOnAirMS = PlayWelcomeConditional(t)
 			if boolOnAir == false then 
 				boolOnAir, timeOnAirMS = playUnitExplaination()
@@ -455,5 +495,10 @@ function widget:UnitCreated(unitID, unitDefID)
 			OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
 			TutorialInfoTable[raidIconDefID].active = false
 	end
+end
+
+
+function widget:Shutdown()
+	window0:Dispose()	
 end
 
