@@ -1186,11 +1186,11 @@ function getGameConfig()
 
                     if myDefID == UnitDefNames["antagonsafehouse"].id then
                         typeTable = {
-                            "nimrod", "propagandaserver", "assembly", "launcher", "hivemind", "warheadfactory"
+                            "nimrod", "propagandaserver", "assembly", "launcher", "hivemind", "warheadfactory", "blacksite"
                         }
                     else
                         typeTable = {
-                            "nimrod", "blacksite", "propagandaserver", "assembly", "aicore"
+                            "nimrod", "propagandaserver", "assembly", "aicore"
                         }
                     end
                 end

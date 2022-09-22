@@ -73,6 +73,10 @@ local AntagonSafeHouse = Building:New{
 		"operativeasset",
 		"operativepropagator",
 		"civilianagent",
+		"ground_walker_mg",
+		"ground_truck_ssied",
+		"truck_arab6", 
+		"ground_truck_assembly"
 		--Described in morphdefs
 		},
 	category = [[GROUND BUILDING RAIDABLE]],

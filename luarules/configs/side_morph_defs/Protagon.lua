@@ -27,15 +27,7 @@ local protagonDefs = {
 			text = 'Builds automated units',
 			facing = true,
 		},	
-		{
-			into = 'blacksite',
-			metal = 2500,
-			energy = 5000,
-			time = 10*60,
-			name = 'Blacksite',
-			text = 'Aerosol development and deploying',
-			facing = true,
-		},	
+		
 		
 	},
 	

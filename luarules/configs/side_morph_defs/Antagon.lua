@@ -19,15 +19,6 @@ local antagonDefs = {
 			facing = true,
 		},		
 		{
-			into = 'assembly',
-			metal = 2500,
-			energy = 5000,
-			time = 60,
-			name = 'Automatic Assembly',
-			text = 'Builds automated units',
-			facing = true,
-		},	
-		{
 			into = 'launcher',
 			metal = 5000,
 			energy = 5000,
@@ -45,8 +36,16 @@ local antagonDefs = {
 			text = 'Produces exponential tech warhead',
 			facing = true,
 		},
-
-			{
+		{
+			into = 'blacksite',
+			metal = 5000,
+			energy = 2500,
+			time = 7*60,
+			name = 'Blacksite',
+			text = 'Aerosol development and deploying',
+			facing = true,
+		},	
+		{
 			into = 'hivemind',
 			metal = 5000,
 			energy = 2500,
