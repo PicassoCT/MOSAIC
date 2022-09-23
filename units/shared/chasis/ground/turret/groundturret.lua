@@ -44,8 +44,8 @@ local groundturretssied =  Turret:New{
 	LeaveTracks = false, 
 	canCloak =true,
 	kamikaze = true,
-	kamikazeDistance  = 25,
-	kamikazeUseLOS = false,
+	kamikazeDistance  = 70,
+	kamikazeUseLOS = true,
 	
 	cloakCost=0.0001,
 
@@ -62,20 +62,14 @@ local groundturretssied =  Turret:New{
 	  normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 
+	 selfDestructAs  = "ssied",
 	 sfxtypes = {
 		explosiongenerators = {
 							"custom:bigbulletimpact",
 							"custom:tess"
 							  },
 				},
-	
-
 				
-				weapons = {
-				[1]={name  = "ssied",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},					
-		},	
 }
 
 local groundturretmg =  Turret:New{

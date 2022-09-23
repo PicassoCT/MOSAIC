@@ -72,7 +72,7 @@ local Assembly = Building:New{
 			 "ground_walker_mg","ground_walker_grenade", 	"ground_tank_day",
 			 --vehicles
 			 "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor",
-			 "ground_truck_rocket", "ground_truck_assembly", "truck_arab6", 
+			 "ground_truck_rocket", "ground_truck_assembly"
 			--tank 
 	
 	--weapon

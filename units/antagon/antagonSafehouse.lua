@@ -74,8 +74,8 @@ local AntagonSafeHouse = Building:New{
 		"operativepropagator",
 		"civilianagent",
 		"ground_walker_mg",
-		"ground_truck_ssied",
-		"truck_arab6", 
+		"air_copter_antiarmor",
+		"civilian_truck_ssied",
 		"ground_truck_assembly"
 		--Described in morphdefs
 		},

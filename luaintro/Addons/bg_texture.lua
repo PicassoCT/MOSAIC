@@ -18,16 +18,18 @@ local loadscreens = VFS.DirList("luaui/images/loadpictures/")
 val=os.clock()
 
 local backgroundTexture=loadscreens[ math.min(math.max(1,math.ceil(val%#loadscreens)),#loadscreens)]
-
-
-
+local oldBackGroundTexture = backgroundTexture
 local aspectRatio
-
 
 function addon.DrawLoadScreen()
 	if backgroundTexture then
 		local loadProgress = SG.GetLoadProgress()
-		
+		local loadSteps = math.ceil(loadProgress*10)
+		backgroundTexture=loadscreens[ math.min(math.max(1,math.ceil((val+loadSteps)%#loadscreens)),#loadscreens)]
+		if oldBackGroundTexture ~= backgroundTexture then
+			gl.DeleteTexture(oldBackGroundTexture)
+			oldBackGroundTexture=backgroundTexture
+		end
 		if not aspectRatio then
 			local texInfo = gl.TextureInfo(backgroundTexture)
 			if not texInfo then return end

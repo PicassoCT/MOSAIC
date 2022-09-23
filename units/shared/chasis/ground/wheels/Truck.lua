@@ -49,6 +49,55 @@ local ground_truck_mg = Truck:New{
 	
 }
 
+local civilian_truck_ssied = Truck:New{
+	buildtime= 80,
+	name = "SSIED Truck",
+	description = "Selfdriving explosive truck <Assault Vehicle>",
+		buildPic = "truck_iied.png",
+		iconType = "truck_iied",
+	corpse				= "",
+	maxDamage = 1500,
+	mass = 500,
+	buildCostEnergy = 500,
+	buildCostMetal = 250,
+	explodeAs			= "none",
+	--conType			= "infantry",
+	maxVelocity		= 3.5 , --14.3, --86kph/20
+	--maxReverseVelocity= 2.15,
+	acceleration = 1.7,
+	brakeRate = 0.1,
+	turninplace		= true,
+	footprintX = 1,
+	footprintZ = 1,
+	script 			= "Truckscript.lua",
+	objectName 	= "truck_arab0.dae",
+	movementClass   	= "VEHICLE",
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
+	category = [[GROUND]],
+	transportSize = 16,
+	transportCapacity = 2,
+	isFirePlatform  = true,
+	fireState = 1,
+	customparams = {
+		helptext		= "Military Truck/Technical",
+		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
+	},
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[GROUND]],
+				},
+			},	
+	
+		canAttack = true,
+	LeaveTracks = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,
+	
+}
+
 local ground_truck_ssied = Truck:New{
 	buildtime= 80,
 	name = "SSIED Truck",
@@ -259,6 +308,7 @@ return lowerkeys({
 	--Temp
 	["policetruck"]			 	= PoliceTruck:New(),
 	["ground_truck_mg"]		= ground_truck_mg:New(),
+	["civilian_truck_ssied"]	= civilian_truck_ssied:New(),
 	["ground_truck_ssied"]	= ground_truck_ssied:New(),
 	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New(),
 	["ground_truck_rocket"]	= ground_truck_rocket:New()	
