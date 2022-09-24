@@ -10,7 +10,8 @@ local Hivemind = Building:New{
 	buildCostEnergy     = 5000,
 	buildCostMetal      = 2500,
 
-	EnergyUse 			= 10,
+	UnitRestricted = 1,
+        EnergyUse 			= 10,
 	MetalStorage 		= 0,
 
 	EnergyMake 			= 0, 
@@ -80,7 +81,9 @@ local AICore = Building:New{
 	buildCostMetal      = 2500,
 	buildCostEnergy     = 500,
 
-	EnergyUse = 10,
+ 
+        UnitRestricted = 1,
+        EnergyUse = 10,
 	MetalStorage = 0,
 
 	EnergyMake = 0, 
