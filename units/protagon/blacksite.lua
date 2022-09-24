@@ -6,7 +6,8 @@ local BlackSite = Building:New{
 	buildCostMetal      = 2500,
 	explodeAs			= "none",
 
-	buildtime			= 2*60,
+	UnitRestricted = 1,
+        buildtime			= 2*60,
 	showNanoFrame		= true,
 	Builder 			= true,
 	nanocolor			= [[0.20 0.411 0.611]],--
