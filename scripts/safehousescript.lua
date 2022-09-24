@@ -58,7 +58,7 @@ end
 
 function killDelayed()
     Sleep(1)
-    echo("Killing due to being near a predecessor")
+    --echo("Killing due to being near a predecessor")
     destroyUnitConditional(unitID, false, true)
 end
 

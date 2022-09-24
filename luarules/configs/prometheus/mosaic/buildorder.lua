@@ -29,18 +29,7 @@ gadget.unitBuildOrderAntagon = UnitBag{
 --[[	operativepropagator = UnitArray{"antagonsafehouse"},
 	operativeinvestigator = UnitArray{"protagonsafehouse"},
 	--]]
-	assembly = UnitArray{
-			"ground_truck_mg", 
-			"ground_truck_ssied",
-			"ground_truck_antiarmor",
-			"air_copter_ssied",	
-			"air_copter_mg",
-			"air_copter_antiarmor",  	
-			"air_copter_antiarmor",  	
-			"ground_truck_assembly", 
-			"ground_tank_day",
-
-	},
+	
 	launcher = UnitArray{
 		"launcherstep",
 		"launcherstep",
@@ -60,8 +49,7 @@ gadget.unitBuildOrderAntagon = UnitBag{
 		"operativepropagator",
 		"civilianagent",
 		"civilianagent",
-		"propagandaserver",
-		"assembly",
+		"propagandaserver",		
 		"nimrod",
 		"launcher",
 	},
@@ -100,8 +88,7 @@ gadget.unitBuildOrderProtagon = UnitBag{
 		"civilianagent",
 		"propagandaserver",
 		"assembly",
-		"nimrod",
-		"blacksite",
+		"nimrod"
 	},
 	transportedassembly = UnitArray{
 		"ground_turret_mg",
@@ -117,17 +104,16 @@ gadget.baseBuildOrder = {
 		"propagandaserver",	
 		"antagonsafehouse",	
 		"propagandaserver",	
-		"assembly",	
 		"launcher",
-		"launcherstep"
+		"launcherstep",
+		"warheadfactory"
 	},
 	["protagon"] = UnitArray{
 		"protagonsafehouse",
 		"propagandaserver",
 		"protagonsafehouse"	,	
 		"propagandaserver",		
-		"assembly",
-		"blacksite"		
+		"assembly"	
 	},
 }
 
