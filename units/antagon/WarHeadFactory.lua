@@ -19,6 +19,7 @@ local WarHeadFactory = Building:New{
 	footprintX = 4,
 	footprintZ = 4,
 	buildingMask = 8,
+        UnitRestricted = 1,
 	
 	script 					= "warheadfactoryscript.lua",
 	objectName        	= "WarHeadFactory.dae",
