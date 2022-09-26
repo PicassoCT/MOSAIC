@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.879" 
+            Version = "Alpha: 0.880" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -462,6 +462,7 @@ function getGameConfig()
             [UnitDefNames["deaddropicon"].id] = true,
             [UnitDefNames["stealvehicleicon"].id] = true,
             [UnitDefNames["blackouticon"].id] = true,
+            [UnitDefNames["hijacksatteliteicon"].id] = true,
         }
     end  
 
@@ -633,7 +634,9 @@ function getGameConfig()
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
             typeTable = {
-                "satelliteanti", "satellitescan", "satellitegodrod",
+                "satelliteanti", 
+                "satellitescan", 
+                "satellitegodrod",
                 "satelliteshrapnell"
             }
             return getTypeTable(UnitDefNames, typeTable)

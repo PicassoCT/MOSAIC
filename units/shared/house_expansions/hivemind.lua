@@ -9,9 +9,8 @@ local Hivemind = Building:New{
 	buildTime 			= 3*60,
 	buildCostEnergy     = 5000,
 	buildCostMetal      = 2500,
-
-	UnitRestricted = 1,
-        EnergyUse 			= 10,
+	UnitRestricted 		= 1,
+    EnergyUse 			= 10,
 	MetalStorage 		= 0,
 
 	EnergyMake 			= 0, 
@@ -77,26 +76,24 @@ local AICore = Building:New{
 	description = " supra intelligent machine <Allows use of SlowMotion>",
 	buildPic = "ai.png",
 	iconType ="ai",
-	buildTime = 25,
+	buildTime 			= 3*60,
 	buildCostMetal      = 2500,
-	buildCostEnergy     = 500,
+	buildCostEnergy     = 500, 
+    UnitRestricted 		= 1,
+    EnergyUse 			= 10,
+	MetalStorage 		= 0,
 
- 
-        UnitRestricted = 1,
-        EnergyUse = 10,
-	MetalStorage = 0,
-
-	EnergyMake = 0, 
-	MakesMetal = 0, 
-	MetalMake = 0,	
+	EnergyMake 			= 0, 
+	MakesMetal 			= 0, 
+	MetalMake 			= 0,	
 	
-	acceleration = 0,
+	acceleration 		= 0,
 	
 	explodeAs			= "none",
-	buildingMask = 8,
-	footprintX = 8,
-	footprintZ = 8,
-	buildingMask = 8,
+	buildingMask 		= 8,
+	footprintX 			= 8,
+	footprintZ			= 8,
+	buildingMask 		= 8,
 	maxSlope = 50.0,
 	levelGround = false,
 	blocking =false,
@@ -125,6 +122,14 @@ local AICore = Building:New{
 	cloakTimeout = 5,
 	selfDestructCountdown = 3*60,
 	category = [[GROUND BUILDING RAIDABLE]],
+	buildoptions = 
+	{
+		--"slowmotionicon",		
+		"revealdoubleagent",	
+		"hijacksatelliteicon",	
+		"blackouticon",	
+		"bribeicon",
+	},
 	
 }
 

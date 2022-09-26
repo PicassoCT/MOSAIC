@@ -35,7 +35,6 @@ function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["body"])
-    StartThread(integrateNewMembers)
     StartThread(wiggleEye)
     StartThread(showState)
 end
@@ -51,31 +50,6 @@ function wiggleEye()
 end
 
 function script.Killed(recentDamage, _) return 1 end
-
-function integrateNewMembers()
-    instanciate()
-    x, y, z = Spring.GetUnitPosition(unitID)
-    local integrateAbleUnits = getMobileCivilianDefIDTypeTable(UnitDefs)
-    px, py, pz = Spring.GetUnitPosition(unitID)
-
-    while true do
-        foreach(getAllInCircle(x, z, IntegrationRadius), function(id)
-            if GG.DisguiseCivilianFor[id] then return nil end
-            return id
-        end, function(id)
-            if integrateAbleUnits[Spring.GetUnitDefID(id)] and
-                GG.HiveMind[teamID][unitID].rewindMilliSeconds < TIME_MAX then
-                GG.HiveMind[teamID][unitID].rewindMilliSeconds =
-                    GG.HiveMind[teamID][unitID].rewindMilliSeconds +
-                        GameConfig.addSlowMoTimeInMsPerCitizen
-                Spring.SetUnitPosition(id, px, py, pz)
-                Spring.DestroyUnit(id, false, true)
-            end
-        end)
-        Sleep(100)
-    end
-
-end
 
 heigthPagode = 369
 maxTurn = 6 * 90

@@ -88,9 +88,7 @@ function showState()
     oldLevel = level
     hideT(TablesOfPiecesGroups["body"])
     while true do
-
         level = membersIntegrated 
-
 
         if level ~= oldLevel then
             Spring.SetUnitTooltip(unitID, description .. level.. " / "..GameConfig.maxNumberIntegratedIntoHive ..")")

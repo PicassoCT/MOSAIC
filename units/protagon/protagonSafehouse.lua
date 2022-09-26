@@ -72,6 +72,7 @@ local ProtagonSafeHouse =    Building:New{
     "operativeasset",
     "operativeinvestigator",
     "civilianagent",
+    "aicore"
     --Described in morphdefs
   },
 

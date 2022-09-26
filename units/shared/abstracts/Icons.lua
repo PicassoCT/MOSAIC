@@ -37,6 +37,46 @@ local DeadDropIcon =
     category = "NOTARGET"
 }
 
+local HiJackSatteliteIcon =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 15000,
+    mass = 500,
+    buildCostEnergy = 5,
+    buildCostMetal = 5,
+    buildTime = 5*60,
+    canMove = true,
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+    MaxVelocity = 0,
+    --
+    alwaysUpright = true,
+    name = "Dead Drop",
+    description = "",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    CanMove = false,
+    CanPatrol = false,
+    CanStop = false,
+    script = "HiJackSatteliteIconscript.lua",
+    objectName = "HijackSatteliteIcon.dae",
+    buildPic = "placeholder.png",
+    iconType = "placeholder",
+
+    onOffable = false,
+
+
+    customparams = {
+        helptext = "",
+        baseclass = "Human" ,-- TODO: hacks
+        normaltex = "unittextures/component_atlas_normal.dds",
+    },
+    category = "NOTARGET"
+}
+
 local DestroyedObjective =
     Abstract:New {
     corpse = "",
@@ -114,6 +154,50 @@ local DoubleAgent =
 
     customparams = {
         helptext = "Civilian Agent working for the opposite site",
+        baseclass = "Human" ,-- TODO: hacks
+        normaltex = "unittextures/component_atlas_normal.dds",
+    },
+    category = "NOTARGET"
+}
+
+local RevealDoubleAgentsIcon =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 5,
+    buildCostMetal = 5,
+    canMove = true,
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+    MaxVelocity = 0,
+    --
+    alwaysUpright = true,
+    name = "Reveal DoubleAgents",
+    description = "Force all Double Agents in your ranks to reveal",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    CanMove = false,
+    CanPatrol = false,
+    CanStop = false,
+    script = "placeholder.lua",
+    objectName = "doubleagent.dae",
+    buildPic = "doubleagent.png",
+    iconType = "doubleagent",
+    canCloak = true,
+    cloakCost = 0.0001,
+    cloakCostMoving = 0.0001,
+    sightDistance = 50,
+    minCloakDistance = 0,
+    initCloaked = true,
+    onOffable = false,
+    decloakOnFire = false,
+
+    customparams = {
+        helptext = "",
         baseclass = "Human" ,-- TODO: hacks
         normaltex = "unittextures/component_atlas_normal.dds",
     },
@@ -529,6 +613,7 @@ local BlackOutIcon =
     category = "NOTARGET ABSTRACT"
 }
 
+
 local CyberCrime =
     Abstract:New {
     corpse = "",
@@ -570,6 +655,8 @@ local CyberCrime =
 return lowerkeys(
     {
         --Temp
+        ["hijacksatelliteicon"] = HiJackSatteliteIcon:New(),
+        ["revealdoubleagent"] = RevealDoubleAgentsIcon:New(),
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),
         ["stealvehicleicon"] = StealVehicle:New(),
