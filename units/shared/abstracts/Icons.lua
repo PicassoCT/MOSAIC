@@ -160,6 +160,50 @@ local DoubleAgent =
     category = "NOTARGET"
 }
 
+local ElectronicCounterMeasureIcon =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 5,
+    buildCostMetal = 5,
+    canMove = true,
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+    MaxVelocity = 0,
+    --
+    alwaysUpright = true,
+    name = "Electronic Counter Measures",
+    description = "Destroys a software entity of the enemy",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    CanMove = false,
+    CanPatrol = false,
+    CanStop = false,
+    script = "ecmscript.lua",
+    objectName = "ecm.dae",
+    buildPic = "placeholder.png",
+    iconType = "placeholder",
+    canCloak = false,
+    cloakCost = 0.0001,
+    cloakCostMoving = 0.0001,
+    sightDistance = 50,
+    minCloakDistance = 0,
+    onOffable = false,
+    decloakOnFire = false,
+    MaxSlope = 100,
+
+    customparams = {
+        helptext = "",
+        baseclass = "Human" ,-- TODO: hacks
+        normaltex = "unittextures/component_atlas_normal.dds",
+    },
+    category = "NOTARGET"
+}
+
 local RevealDoubleAgentsIcon =
     Abstract:New {
     corpse = "",
@@ -176,14 +220,14 @@ local RevealDoubleAgentsIcon =
     --
     alwaysUpright = true,
     name = "Reveal DoubleAgents",
-    description = "Force all Double Agents in your ranks to reveal",
+    description = "Force a Double Agent in your ranks to reveal",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
     CanMove = false,
     CanPatrol = false,
     CanStop = false,
-    script = "placeholder.lua",
+    script = "revealdoubleagentscript.lua",
     objectName = "doubleagent.dae",
     buildPic = "doubleagent.png",
     iconType = "doubleagent",
@@ -656,6 +700,7 @@ return lowerkeys(
     {
         --Temp
         ["hijacksatelliteicon"] = HiJackSatteliteIcon:New(),
+        ["ecmicon"] = ElectronicCounterMeasureIcon:New(),
         ["revealdoubleagent"] = RevealDoubleAgentsIcon:New(),
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),

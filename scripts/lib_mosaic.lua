@@ -444,6 +444,20 @@ function getGameConfig()
         }
     end
 
+    function getECMIconTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["bribeicon"].id] = true,
+            [UnitDefNames["socialengineeringicon"].id] = true,
+            [UnitDefNames["cybercrimeicon"].id] = true,       
+            [UnitDefNames["deaddropicon"].id] = true,
+            [UnitDefNames["stealvehicleicon"].id] = true,
+            [UnitDefNames["blackouticon"].id] = true,
+            [UnitDefNames["hijacksatteliteicon"].id] = true,
+            [UnitDefNames["ecmicon"].id] = true,
+        }
+    end  
+
     function getIconTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
@@ -463,6 +477,7 @@ function getGameConfig()
             [UnitDefNames["stealvehicleicon"].id] = true,
             [UnitDefNames["blackouticon"].id] = true,
             [UnitDefNames["hijacksatteliteicon"].id] = true,
+            [UnitDefNames["ecmicon"].id] = true,
         }
     end  
 
