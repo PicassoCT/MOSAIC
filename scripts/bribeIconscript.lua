@@ -18,7 +18,7 @@ function script.Create()
 
         Spring.SetUnitNeutral(unitID,true)
         Spring.SetUnitBlocking(unitID,false)
-        Spring.SetUnitNoSelect(unitID,true)
+        Spring.SetUnitNoSelect(unitID,false)
         Spring.MoveCtrl.Enable(unitID)
         ox, oy, oz = Spring.GetUnitPosition(unitID)
         Spring.SetUnitPosition(unitID, ox, oy + GameConfig.iconHoverGroundOffset, oz)
@@ -30,6 +30,7 @@ function script.Create()
                 Spin(id,y_axis,math.rad(value*randSign()),0)
             end
             )
+        StartThread(hoverAboveGround, unitID, gameConfig.iconHoverGroundOffset, 0.3)  
         StartThread(lifeTime, unitID, gameConfig.LifeTimeBribeIcon, true, false)
 end
 

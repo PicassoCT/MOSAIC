@@ -476,6 +476,14 @@ function spawnBuilding(defID, x, z,  boolInCityCenter)
         return id
     end
 end
+
+function killAllUnitsAtGamestart()
+ foreach(Spring.GetAllUnits(),
+            function(id) 
+                Spring.DestroyUnit(id, true, true) 
+            end)
+end
+
 originalGameFrame = -math.huge
 function gadget:Initialize()
     -- Initialize global tables
@@ -486,10 +494,7 @@ function gadget:Initialize()
     GG.CitySpawnComplete = false
     GameConfig = getGameConfig()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
-    foreach(Spring.GetAllUnits(),
-            function(id) 
-                Spring.DestroyUnit(id, true, true) 
-            end)
+    --killAllUnitsAtGamestart()
 originalGameFrame = Spring.GetGameFrame()
 end
 

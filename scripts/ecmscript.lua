@@ -9,12 +9,12 @@ myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 local ecmIconTypes = getECMIconTypes(UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+GameConfig= getGameConfig()
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+        StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 0.3)  
         Spring.SetUnitNeutral(unitID,true)
         Spring.SetUnitBlocking(unitID,false)
         Spring.MoveCtrl.Enable(unitID)

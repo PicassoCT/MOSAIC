@@ -14,7 +14,7 @@ local DeadDropIcon =
     --
     alwaysUpright = true,
     name = "Dead Drop",
-    description = "",
+    description = "Contains the secrets of a betrayed operative",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,

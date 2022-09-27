@@ -129,6 +129,7 @@ local AICore = Building:New{
 		"hijacksatelliteicon",	
 		"blackouticon",	
 		"bribeicon",
+		"ecmicon"
 	},
 	
 }

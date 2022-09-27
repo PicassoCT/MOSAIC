@@ -453,7 +453,7 @@ function getGameConfig()
             [UnitDefNames["deaddropicon"].id] = true,
             [UnitDefNames["stealvehicleicon"].id] = true,
             [UnitDefNames["blackouticon"].id] = true,
-            [UnitDefNames["hijacksatteliteicon"].id] = true,
+            [UnitDefNames["hijacksatelliteicon"].id] = true,
             [UnitDefNames["ecmicon"].id] = true,
         }
     end  
@@ -476,7 +476,7 @@ function getGameConfig()
             [UnitDefNames["deaddropicon"].id] = true,
             [UnitDefNames["stealvehicleicon"].id] = true,
             [UnitDefNames["blackouticon"].id] = true,
-            [UnitDefNames["hijacksatteliteicon"].id] = true,
+            [UnitDefNames["hijacksatelliteicon"].id] = true,
             [UnitDefNames["ecmicon"].id] = true,
         }
     end  

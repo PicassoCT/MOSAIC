@@ -9,41 +9,53 @@ myDefID = Spring.GetUnitDefID(unitID)
 myAllyTeamID = Spring.GetUnitAllyTeam(unitID)
 satelliteTypeTable = getSatteliteTypes(UnitDefs)
 myTeam = Spring.GetUnitTeam(unitID)
+center = piece("center")
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+GameConfig = getGameConfig()
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    Spring.SetUnitAlwaysVisible(unitID, true)
+    StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 0.3)  
     -- Spring.MoveCtrl.Enable(unitID,true)
     -- x,y,z =Spring.GetUnitPosition(unitID)
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
     StartThread(hijackObservationSatellite)
-    StartThread(uploadAnimation)
+    StartThread(uploadAnimation)  
 end
 
 function uploadAnimation()
+    Spin(center,y_axis,math.rad(42),0)
     index =1
     hideT(TablesOfPiecesGroups["Data"])
-    dist = 500000
-    speed = dist/#TablesOfPiecesGroups["Data"]
-    rest = math.ceil(dist/#TablesOfPiecesGroups["Data"])
+    dist = 26000
+    seconds= 2
+    speed = dist/seconds
+    rest = math.ceil((1/#TablesOfPiecesGroups["Data"])*1000*seconds)
+
     while(true) do
         WaitForMoves(TablesOfPiecesGroups["Data"])
         for index= 1, #TablesOfPiecesGroups["Data"] do
-        reset(TablesOfPiecesGroups["Data"][index],0)
-        Show(TablesOfPiecesGroups["Data"][index])
-        Move(TablesOfPiecesGroups["Data"][index],z_axis, dist,speed)
-        Sleep(rest)
+            reset(TablesOfPiecesGroups["Data"][index],0)
+            if maRa() then
+                Hide(TablesOfPiecesGroups["Data"][index])
+            else
+                Show(TablesOfPiecesGroups["Data"][index])
+                Move(TablesOfPiecesGroups["Data"][index],z_axis, dist,speed)
+            end
+            Sleep(rest)
         end
-
-    
+        val = math.random(5,150)
+        Sleep(val)    
     end
 end
 
 function hijackObservationSatellite()
     waitTillComplete(unitID)
     chosenSatellite = nil
-    while (chosenSatellite == nil) do
+
+    Sleep(2500)
+    while true do
         spySatellites = {}
         allSattelites = foreach(Spring.GetAllUnits(),
             function(id)
@@ -57,7 +69,9 @@ function hijackObservationSatellite()
                 if defID == spySatteliteDefID then
                     spySatellites[#spySatellites+1] = id
                 end
-                return id
+                if satelliteTypeTable[defID] then
+                    return id
+                end
             end
             )
         
@@ -70,10 +84,12 @@ function hijackObservationSatellite()
         end
         if chosenSatellite ~= nil then
           transferUnitTeam(chosenSatellite, myTeam)
+          Spring.DestroyUnit(unitID, false, true) 
         end
         Sleep(1000)
     end
-    Spring.DestroyUnit(unitID, false, true) 
+
+
 end
 
 
