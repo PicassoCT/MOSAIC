@@ -58,7 +58,8 @@ local Hivemind = Building:New{
 		"socialengineeringicon",
 		"blackouticon",
 		"cybercrimeicon",
-		"bribeicon"
+		"bribeicon",
+		"ecmicon"
 	},
 
 	customparams = {

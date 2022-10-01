@@ -53,7 +53,7 @@ local HiJackSatteliteIcon =
     MaxVelocity = 0,
     --
     alwaysUpright = true,
-    name = "Dead Drop",
+    name = "Hijack Sattelite Icon",
     description = "",
     levelGround = false,
     CanAttack = false,
@@ -67,8 +67,7 @@ local HiJackSatteliteIcon =
     iconType = "placeholder",
 
     onOffable = false,
-
-
+    
     customparams = {
         helptext = "",
         baseclass = "Human" ,-- TODO: hacks
@@ -165,43 +164,48 @@ local ElectronicCounterMeasureIcon =
     corpse = "",
     maxDamage = 500,
     mass = 500,
-    buildCostEnergy = 5,
-    buildCostMetal = 5,
+    buildCostEnergy = 1000,
+    buildCostMetal = 1500,
     canMove = true,
     explodeAs = "none",
-    Acceleration = 0,
-    BrakeRate = 0,
-    TurnRate = 0,
-    MaxVelocity = 0,
+    Acceleration = 0.1,
+    BrakeRate = 1.0,
+    TurnRate = 90000,
+    MaxVelocity = 1.0,
+    MovementClass = "VEHICLE",
     --
     alwaysUpright = true,
-    name = "Electronic Counter Measures",
+    name = "Electronic Counter Measure",
     description = "Destroys a software entity of the enemy",
     levelGround = false,
-    CanAttack = false,
+    CanAttack = true,
     CanGuard = false,
-    CanMove = false,
-    CanPatrol = false,
-    CanStop = false,
+    CanMove = true,
+    CanPatrol = true,
+    CanStop = true,
     script = "ecmscript.lua",
     objectName = "ecm.dae",
     buildPic = "placeholder.png",
     iconType = "placeholder",
     canCloak = false,
-    cloakCost = 0.0001,
-    cloakCostMoving = 0.0001,
     sightDistance = 50,
-    minCloakDistance = 0,
-    onOffable = false,
-    decloakOnFire = false,
+    onOffable = true,
+
     MaxSlope = 100,
 
     customparams = {
-        helptext = "",
-        baseclass = "Human" ,-- TODO: hacks
+        helptext = "Software to undo enemy software",
+        baseclass = "Abstract" ,-- TODO: hacks
         normaltex = "unittextures/component_atlas_normal.dds",
     },
-    category = "NOTARGET"
+
+    weapons = {
+            [1]={name  = "marker",
+                onlyTargetCategory = [[ABSTRACT]],
+                },
+            },  
+
+    category = "NOTARGET ABSTRACT"
 }
 
 local RevealDoubleAgentsIcon =
@@ -209,8 +213,8 @@ local RevealDoubleAgentsIcon =
     corpse = "",
     maxDamage = 500,
     mass = 500,
-    buildCostEnergy = 5,
-    buildCostMetal = 5,
+    buildCostEnergy = 500,
+    buildCostMetal = 1000,
     canMove = true,
     explodeAs = "none",
     Acceleration = 0,
@@ -435,10 +439,7 @@ local InterrogationIcon =
         helptext = "Interrogation in Progress",
         baseclass = "Human" -- TODO: hacks
 
-    },
-
-  
-       
+    },       
     category = "NOTARGET"
 }
 
@@ -564,7 +565,7 @@ local BribeIcon =
     MaxSlope = 100,
 
     customparams = {
-        helptext = "Sniper/Raid Icon",
+        helptext = "Bribe local authoritys into action ",
         baseclass = "Abstract" -- TODO: hacks
     },
     category = "NOTARGET ABSTRACT"
@@ -669,11 +670,8 @@ local CyberCrime =
     buildPic = "CyberCrimeIcon.png",
     iconType = "BribeIcon",
     explodeAs = "none",
-    Acceleration = 0,
-    BrakeRate = 0,
-    TurnRate = 0,
-    MaxVelocity = 0,
     buildingMask = 8,
+
     --
     description = " earn crypto for the cause via illicit means. Crime does pay.",
     levelGround = false,

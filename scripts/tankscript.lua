@@ -19,7 +19,7 @@ lastTurretRotation = 0
 
 function delayedResetFirestate()
  orgstate = getFireState(unitID)
- Sleep(2500)
+ Sleep(7500)
  setFireState(unitID, orgstate)
 end
 

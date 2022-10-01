@@ -1354,6 +1354,7 @@ end
 
 function transferStates(orgID, targID)
     State = Spring.GetUnitStates(orgID)
+    assert(targID)
     if State then
         setFireState(targID, State.firestate)
         setMoveState(targID, State.movestate)
@@ -4840,6 +4841,15 @@ function HideWrap(piecenr)
     end
 end
 
+function blinkPiece(pieceID, timeTotal, timeInterval)
+    for i=0, timeTotal, timeInterval*2 do
+        Show(pieceID)
+        Sleep(timeInterval)
+        Hide(pieceID)
+        Sleep(timeInterval)
+    end
+end
+
 function randHide(T)
     foreach(T, function(id)
         if math.random(0, 1) == 1 then
@@ -6695,6 +6705,28 @@ function gotoBuildPosOnceDone(unitID, delayMs)
     end
 end
 
+function GetUnitOrFeaturePosition(id)
+    if id <= Game.maxUnits then
+        return Spring.GetUnitPosition(id)
+    else
+        return -10,-10,-10
+    end
+end
+
+
+function GetCommandPos(command)   --- get the command position
+  if command.id < 0 or command.id == CMD.MOVE or command.id == CMD.REPAIR or command.id == CMD.RECLAIM or
+  command.id == CMD.RESURRECT or command.id == CMD.DGUN or command.id == CMD.GUARD or
+  command.id == CMD.FIGHT or command.id == CMD.ATTACK then
+    if table.getn(command.params) >= 3 then
+          return command.params[1], command.params[2], command.params[3]            
+      elseif table.getn(command.params) >= 1 then
+          return GetUnitOrFeaturePosition(command.params[1])
+      end   
+    end
+  return -10,-10,-10
+end
+
 function hasNoActiveAttackCommand(unitID)
     CommandTable =Spring.GetUnitCommands(unitID, 1)
     if CommandTable and CommandTable[1] then
@@ -6919,7 +6951,6 @@ function getUnitValueEnv(unitID, ValueName)
                                             Spring.UnitScript.GetUnitValue,
                                             cob[ValueName])
     end
-
 end
 
 function setUnitValueEnv(unitID, ValueName, value)
@@ -6931,10 +6962,10 @@ function setUnitValueEnv(unitID, ValueName, value)
                                             Spring.UnitScript.SetUnitValue,
                                             cob[ValueName], value)
     end
-
 end
 
 function setFireState(unitID, fireState)
+    assert(unitID)
     if type(fireState) == "string" then
 
         states = {["holdfire"] = 0, ["returnfire"] = 1, ["fireatwill"] = 2}

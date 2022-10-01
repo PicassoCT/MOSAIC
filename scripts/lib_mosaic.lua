@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.880" 
+            Version = "Alpha: 0.881" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -246,6 +246,7 @@ function getGameConfig()
             GodRodDropDistance = 50,
             GodRodReloadTimeInMs = 10000,
             GodRodTimeToImpactInMs= 10000,
+            SatteliteHijackTimeMs = 15000
         },        
 
         -- Hiveminds & AiCores
@@ -451,7 +452,6 @@ function getGameConfig()
             [UnitDefNames["socialengineeringicon"].id] = true,
             [UnitDefNames["cybercrimeicon"].id] = true,       
             [UnitDefNames["deaddropicon"].id] = true,
-            [UnitDefNames["stealvehicleicon"].id] = true,
             [UnitDefNames["blackouticon"].id] = true,
             [UnitDefNames["hijacksatelliteicon"].id] = true,
             [UnitDefNames["ecmicon"].id] = true,
@@ -1757,7 +1757,7 @@ function getGameConfig()
 
                             boolDoneFor, persPack = persPack.functionToCall(persPack)
                             if boolDoneFor and boolDoneFor == true then
-                                echo("Aborting eventstream cause function signalled completness")
+                                --echo("Aborting eventstream cause function signalled completness")
                                 return nil
                             end
 
@@ -1782,7 +1782,7 @@ function getGameConfig()
                                     targetType = Spring.GetProjectileDefID(projectileID)
 
                                     if not targetType then
-                                        echo("Aborting eventstream cause projectile has died")
+                                        --echo("Aborting eventstream cause projectile has died")
                                         return nil, nil
                                     end
 
@@ -1797,7 +1797,7 @@ function getGameConfig()
 
                             boolDoneFor, persPack = persPack.functionToCall(persPack)
                             if boolDoneFor and boolDoneFor == true then
-                                echo("Aborting eventstream cause function signalled completness")
+                           --     echo("Aborting eventstream cause function signalled completness")
                                 return nil
                             end
 
@@ -1809,8 +1809,8 @@ function getGameConfig()
                     end
 
                     function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
-                        attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is now a double agent for team "..teamToTurnTo
-                        echo(attachingTo)
+                       -- attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is now a double agent for team "..teamToTurnTo
+                       -- echo(attachingTo)
                         if not GG.DoubleAgents then GG.DoubleAgents = {} end
 
                         hoverAboveFunc = function(persPack)

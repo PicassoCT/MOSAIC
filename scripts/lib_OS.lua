@@ -456,7 +456,8 @@ end
 
 
 
-function hoverAboveGround(unitID, distanceToHover, step)
+function hoverAboveGround(unitID, distanceToHover, step, boolTurnTowardsGoal)
+if not step then step = 0.1 end
 local spGetGroundHeight = Spring.GetGroundHeight
 local spGetUnitPosition = Spring.GetUnitPosition
 Spring.MoveCtrl.Enable(unitID, true)
@@ -464,7 +465,7 @@ Spring.MoveCtrl.SetRotation(unitID, 0,0,0)
 
 	while true do
 		x,y,z = spGetUnitPosition(unitID)
-
+        orgx, orgz = x,z
         CommandTable = Spring.GetUnitCommands(unitID, 1)
         if CommandTable and CommandTable[1] and CommandTable[1].id ==  CMD.MOVE then
             cmd = CommandTable[1]
@@ -483,9 +484,17 @@ Spring.MoveCtrl.SetRotation(unitID, 0,0,0)
                         end
               end
         end
-        
-		gh = spGetGroundHeight(x,z)
-		Spring.MoveCtrl.SetPosition(unitID, x, math.max(0,gh) + distanceToHover, z)
+
+        if boolTurnTowardsGoal then
+            _,orgRot,_ = Spring.GetUnitRotation(unitID) 
+            rot = math.atan2(orgx-x, -(orgz-z))
+            rot = mix(rot, orgRot, 0.95)
+            Spring.MoveCtrl.SetRotation(unitID, 0,rot,0)
+        end
+        if x then
+		  gh = spGetGroundHeight(x,z)
+		  Spring.MoveCtrl.SetPosition(unitID, x, math.max(0,gh) + distanceToHover, z)
+        end
 		Sleep(29)
 	end
 end

@@ -112,6 +112,8 @@ end
 
 function script.Killed(recentDamage, _)
 	GG.SocialEngineers[unitID] = nil
+	Explode(center,  SFX.SHATTER)
+	Explode(Rotor,  SFX.SHATTER)
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end

@@ -6,10 +6,10 @@ include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
-myAllyTeamID = Spring.GetUnitAllyTeam(unitID)
 satelliteTypeTable = getSatteliteTypes(UnitDefs)
 myTeam = Spring.GetUnitTeam(unitID)
 center = piece("center")
+Sat = piece("Sat")
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 GameConfig = getGameConfig()
 
@@ -24,11 +24,13 @@ function script.Create()
     StartThread(uploadAnimation)  
 end
 
+SIG_DATA = 1
 function uploadAnimation()
+    SetSignalMask(SIG_DATA)
     Spin(center,y_axis,math.rad(42),0)
     index =1
     hideT(TablesOfPiecesGroups["Data"])
-    dist = 26000
+    dist = 26500
     seconds= 2
     speed = dist/seconds
     rest = math.ceil((1/#TablesOfPiecesGroups["Data"])*1000*seconds)
@@ -54,12 +56,12 @@ function hijackObservationSatellite()
     waitTillComplete(unitID)
     chosenSatellite = nil
 
-    Sleep(2500)
+    Sleep(GameConfig.Sattelite.SatteliteHijackTimeMs)
     while true do
         spySatellites = {}
         allSattelites = foreach(Spring.GetAllUnits(),
             function(id)
-                if Spring.GetUnitAllyTeam(id) ~= myAllyTeamID then
+                if Spring.GetUnitTeam(id) ~= myTeam then
                     return id
                 end
             end,
@@ -84,9 +86,13 @@ function hijackObservationSatellite()
         end
         if chosenSatellite ~= nil then
           transferUnitTeam(chosenSatellite, myTeam)
+          Signal(SIG_DATA)
+          hideT(TablesOfPiecesGroups["Data"])
+          blinkPiece(Sat, 5000, 500)
           Spring.DestroyUnit(unitID, false, true) 
         end
         Sleep(1000)
+
     end
 
 
@@ -94,7 +100,7 @@ end
 
 
 function script.Killed(recentDamage, _)
-
+    Explode(center,  SFX.SHATTER)
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end

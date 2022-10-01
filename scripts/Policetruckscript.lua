@@ -134,6 +134,8 @@ function isInActionInterval(frame)
 end
 
 function delayedSirens()
+    setFireState(unitID, 2)
+    setMoveState(unitID, 2)
     sleeptime = math.random(1, 10)
     Sleep(sleeptime * 1000)
     for i = 1, 3 do

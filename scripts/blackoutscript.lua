@@ -19,10 +19,7 @@ function script.Create()
 
         Spring.SetUnitNeutral(unitID,true)
         Spring.SetUnitBlocking(unitID,false)
-        Spring.MoveCtrl.Enable(unitID)
-        ox, oy, oz = Spring.GetUnitPosition(unitID)
-        Spring.SetUnitPosition(unitID, ox, oy + GameConfig.iconHoverGroundOffset, oz)
-
+        StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 1.0, false)    
         Spin(PercentRing,y_axis,math.rad(-22),0)
 
         StartThread(animation)
@@ -80,6 +77,7 @@ function blackOutCycle()
                 function(id)
                     blackOuttedUnits_OriginalState[id] = Spring.GetUnitNoSelect(id)
                     Spring.SetUnitNoSelect(id, true)
+                    Command(unitID, "stop")
                     filteredUnitsInCircle[id] = id
                 end
                 )
@@ -98,7 +96,7 @@ function blackOutCycle()
 end
 
 function script.Killed(recentDamage, _)
-
+    Explode(center, SFX.SHATTER)
     foreach(blackOuttedUnits_OriginalState,
             function (id)
                 if id then
