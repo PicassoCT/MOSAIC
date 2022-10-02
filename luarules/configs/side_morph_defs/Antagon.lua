@@ -50,7 +50,7 @@ local antagonDefs = {
 			metal = 5000,
 			energy = 2500,
 			time = 7*60,
-			name = 'Hivemind Supra Intelligence',
+			name = 'Hivemind',
 			text = "Provides information warfare once assembled",
 			facing = true,
 		},

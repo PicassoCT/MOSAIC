@@ -1,13 +1,13 @@
 local BlackSite = Building:New{
 	corpse				= "",
-	maxDamage           = 500,
+	maxDamage           = 1500,
 	mass                = 500,
 	buildCostEnergy     = 5000,
 	buildCostMetal      = 2500,
 	explodeAs			= "none",
 
 	UnitRestricted = 1,
-        buildtime			= 2*60,
+    buildtime			= 5*60,
 	showNanoFrame		= true,
 	Builder 			= true,
 	nanocolor			= [[0.20 0.411 0.611]],--

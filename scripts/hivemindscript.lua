@@ -68,7 +68,7 @@ end
 
 maxTurn = 6 * 90
 function showState()
-    Spring.SetUnitBuildSpeed ( unitID, 0.0)
+    --Spring.SetUnitBuildSpeed ( unitID, 0.25)
     description = "Provides information warfare("
     Spring.SetUnitTooltip(unitID, description .. level.. " / "..GameConfig.maxNumberIntegratedIntoHive ..")")
     bodyCount = count(TablesOfPiecesGroups["body"])
@@ -94,8 +94,8 @@ function showState()
             Spring.SetUnitTooltip(unitID, description .. level.. " / "..GameConfig.maxNumberIntegratedIntoHive ..")")
             oldLevel = level 
             showT(TablesOfPiecesGroups["body"], 1, (level/GameConfig.maxNumberIntegratedIntoHive) * #TablesOfPiecesGroups["body"]) 
-            workTimeToSet = clamp(0.0,level/GameConfig.maxNumberIntegratedIntoHive, 1.0)
-            Spring.SetUnitBuildSpeed ( unitID, workTimeToSet)
+            workTimeToSet = clamp(0.25,level/GameConfig.maxNumberIntegratedIntoHive, 1.0)
+            --Spring.SetUnitBuildSpeed ( unitID, workTimeToSet)
         end
        
         Sleep(100)
@@ -132,3 +132,5 @@ function script.StopBuilding()
 end
 
 function script.QueryBuildInfo() return center end
+
+Spring.SetUnitNanoPieces(unitID, {center})

@@ -242,19 +242,22 @@ end
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
-    if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
-        accumulatedCivilianDamage = accumulatedCivilianDamage + damage
-        officerID = dispatchOfficer(unitID, attackerID)
-        boolActionIntervalStart= true
-       --[[ if officerID and attackerID then
-            echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
-        end--]]
-    end
+    if attackerTeam and attackerTeam ~= gaiaTeamID then -- prevent police shooting itself and going full madhouse
+        if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
+            accumulatedCivilianDamage = accumulatedCivilianDamage + damage
+            officerID = dispatchOfficer(unitID, attackerID)
+            boolActionIntervalStart= true
+           --[[ if officerID and attackerID then
+                echo("officer ".. officerID.. " dispatched to protect "..unitID.. " from "..attackerID)
+            end--]]
+        end
+  
 
-    if PoliceTypes[unitDefID] then 
-        activePoliceUnitIds_DispatchTime[unitID] = GameConfig.policeMaxDispatchTime 
-        if attackerID and doesUnitExistAlive(attackerID) == true and maRa() then
-            Command(unitID, "attack", {attackerID}, 4)
+        if PoliceTypes[unitDefID] then 
+            activePoliceUnitIds_DispatchTime[unitID] = GameConfig.policeMaxDispatchTime 
+            if attackerID and doesUnitExistAlive(attackerID) == true and maRa() then
+                Command(unitID, "attack", {attackerID}, 4)
+            end
         end
     end
 end
