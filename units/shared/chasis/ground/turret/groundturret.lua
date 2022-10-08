@@ -25,7 +25,7 @@ local groundturretssied =  Turret:New{
 	MaxWaterDepth = 0,
 	MovementClass = "VEHICLE",
 
-	
+	sightDistance = 80,
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
 	activateWhenBuilt   	= true,
@@ -250,7 +250,7 @@ local ground_turret_dronegrenades =  Turret:New{
 
 	
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 250,
+	sightDistance = 350,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 	canSelfD = true,
@@ -315,13 +315,13 @@ local ground_turret_rocket =  Turret:New{
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
-	
+
 	MaxWaterDepth = 0,
 	MovementClass = "VEHICLE",
 
 	
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 250,
+	sightDistance = 650,
 	activateWhenBuilt   	= true,
 	cantBeTransported = false,
 	canSelfD = true,
@@ -392,7 +392,7 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
-	
+
 	MaxWaterDepth = 60,
 
 	usepiececollisionvolumes = false,

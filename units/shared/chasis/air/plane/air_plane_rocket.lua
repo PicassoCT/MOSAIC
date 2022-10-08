@@ -35,11 +35,12 @@ local AIR_ROCKET = AIRCRAFT:New{
 	MovementClass = "AIRUNIT",
 	TurnRate = 350,
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 250,
+	sightDistance = 400,
 	CanFly   = true,
 	activateWhenBuilt   	= true,
 	MaxSlope 					= 75,
 	--canHover=true,
+
 	CanAttack = true,
 	CanGuard = true,
 	CanMove = true,

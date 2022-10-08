@@ -28,7 +28,6 @@ bikeType = math.random(1,3)
  SteerParts = {}
  Signum = -1
 LeanFactor = 1.0
-GameConfig = getGameConfig()
 
 STATE_STARTED = "STARTED"
 STATE_ENDED = "ENDED"
@@ -206,7 +205,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", 1.0, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
     end
 end
 

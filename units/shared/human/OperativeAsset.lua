@@ -32,7 +32,8 @@ explodeAs				  = "none",
 	objectName        	= "operative_asset.dae",
 
 	onoffable = false,
-	  
+	  	
+	sightDistance = 400,
 		--cloaking behaviour
 	canCloak =true,
 	cloakCost=0.0001,

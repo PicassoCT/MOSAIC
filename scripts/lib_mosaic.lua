@@ -47,6 +47,7 @@ function getGameConfig()
         --truck
         truckBreakTimeMinSec= 60,
         truckBreakTimeMaxSec= 5*60,
+        truckHonkLoudness = 0.70,
 	
 		
         houseSizeX = 256,
@@ -211,6 +212,9 @@ function getGameConfig()
             gameover = "gameover",
             pacification = "pacification"
         },
+        --Molotov FireDamage
+        fireDamagePerFrame = 3,
+
         anarchySexCouplesEveryNSeconds = 3 * 60,
 
         TimeForInterceptionInFrames = 30 * 10,

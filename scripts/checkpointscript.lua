@@ -15,8 +15,6 @@ end
 -- aimpiece = piece "aimpiece"
 SIG_LIGHT = 1
 local myTeamID = Spring.GetUnitTeam(unitID)
-if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
-if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 
 function hideShowLamps(stage)
 	Signal(SIG_LIGHT)

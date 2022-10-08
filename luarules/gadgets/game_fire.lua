@@ -31,6 +31,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local STATE_STARTED = "STARTED"
     local STATE_ENDED = "ENDED"
     local GameConfig = getGameConfig()
+    local fireDamagePerFrame = GameConfig.fireDamagePerFrame
     local isPanicAble = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
@@ -66,7 +67,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                 if frame % 3 == 0 then
                                     spSpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
                                 end
-                                spAddUnitDamage(GG.OnFire[i][UnitID], 1)
+                                spAddUnitDamage(GG.OnFire[i][UnitID], fireDamagePerFrame)
                             end
                         else
                             Spring.SetUnitNoSelect(GG.OnFire[i][UnitID], false)

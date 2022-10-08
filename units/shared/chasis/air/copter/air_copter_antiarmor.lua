@@ -32,7 +32,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	MovementClass = "AIRUNIT",
 	TurnRate = 450,
 	nanocolor=[[0.20 0.411 0.611]],
-	sightDistance = 512 + 128,
+	sightDistance = 640,
 	CanFly   = true,
 	activateWhenBuilt = true,
 	MaxSlope  = 75,
@@ -77,14 +77,8 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 					},
 					
 		},	
-
-			
-
-
 }
 
 return lowerkeys({
-	--Temp
-	["air_copter_antiarmor"] = AIRC_COPTER_ANTIARMOR:New()
-	
+	["air_copter_antiarmor"] = AIRC_COPTER_ANTIARMOR:New()	
 })

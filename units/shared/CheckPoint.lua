@@ -38,7 +38,7 @@ local Checkpoint = Building:New{
 	showNanoFrame = true,
 	script 					= "checkpointscript.lua",
 	objectName        	= "CheckPoint.dae",
-
+	canCloak = false,
 	name = "Checkpoint",
 	description = " reveals any disguised unit",
 	buildPic = "CheckPoint.png",

@@ -20,6 +20,7 @@ myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 DetectPiece = piece"DetectPiece"
+GameConfig = getGameConfig()
 
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
@@ -186,7 +187,7 @@ function fleeEnemy(enemyID)
     end
 
     while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
+        runAwayFrom(unitID, enemyID, GameConfig.civilian.FleeDistance)
         Sleep(500)
     end
 
@@ -250,7 +251,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", 1.0, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
     end
 end
 

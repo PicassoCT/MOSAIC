@@ -8,19 +8,29 @@ SQUAD_SIZE = 1
 -- unit names must be lowercase!
 --minbuild requirements for safehouses
 gadget.minBuildRequirementProtagon = {
+	["air_copter_scoutlett"] = 1,
+	["air_copter_ssied"] = 1,
+	["air_copter_antiarmor"] = 1,
 	["operativeinvestigator"] = 1,
 	["protagonsafehouse"] = 3,
 	["propagandaserver"] = 1,
 	["operativeasset"] = 1,
-	["recruitcivilian"] = 1
+	["recruitcivilian"] = 1,
+	["stealvehicleicon"] = 1,
+	["cybercrimeicon"] = 1
 }
 
 gadget.minBuildRequirementAntagon = {
+	["air_copter_scoutlett"] = 1,
+	["air_copter_ssied"] = 1,
+	["air_copter_antiarmor"] = 1,
 	["operativepropagator"] = 1,
 	["antagonsafehouse"] = 3,
 	["propagandaserver"] = 1,
 	["operativeasset"] = 1,
-	["recruitcivilian"] = 1
+	["recruitcivilian"] = 1,
+	["stealvehicleicon"] = 1,
+	["cybercrimeicon"] = 1
 }
 
 -- Format: factory = { "unit to build 1", "unit to build 2", ... }
@@ -106,7 +116,7 @@ gadget.baseBuildOrder = {
 		"propagandaserver",	
 		"launcher",
 		"launcherstep",
-		"warheadfactory"
+		"hivemind"
 	},
 	["protagon"] = UnitArray{
 		"protagonsafehouse",
@@ -142,6 +152,6 @@ gadget.flagCappers = UnitSet{
 
 -- Number of units per side used to cap flags.
 gadget.reservedFlagCappers = {
-	protagon = 24,
-	antagon = 24
+	protagon = 4,
+	antagon = 4
 }

@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 
 LoadOutTypes = getTruckLoadOutTypeTable()
-
+GameConfig = getGameConfig()
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
@@ -241,7 +241,7 @@ function fleeEnemy(enemyID)
     end
 
     while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
+        runAwayFrom(unitID, enemyID, GameConfig.civilian.FleeDistance)
         Sleep(500)
     end
 
@@ -299,7 +299,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", 1.0, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.TruckHonkLoudness, 1000, 1)
     end
 end
 
