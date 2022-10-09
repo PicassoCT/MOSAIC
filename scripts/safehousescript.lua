@@ -88,6 +88,7 @@ function houseAttach()
         if GG.houseHasSafeHouseTable[houseID] and  doesUnitExistAlive(GG.houseHasSafeHouseTable[houseID]) then
             enemyTeamID = Spring.GetUnitTeam(GG.houseHasSafeHouseTable[houseID])
             waitTillComplete(GG.houseHasSafeHouseTable[houseID])
+            
             if  isUnitComplete(GG.houseHasSafeHouseTable[houseID]) and 
                 enemyTeamID ~= myTeamID and 
                 not Spring.AreTeamsAllied(myTeamID, enemyTeamID) then

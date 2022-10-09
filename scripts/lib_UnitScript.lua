@@ -6820,8 +6820,20 @@ function runAwayFromPlace(id, px, py, pz, distanceToRun)
 --[[    Spring.Echo("Running away from "..horrorID)--]]
 end
 
-function delayedCommand(id, command, target, option, framesToDelay)
+function sampleKeyFromDicct(T, ...)
+    local arg = {...}
+    arg.n = #arg
 
+    for i = 1, arg.n, 1 do
+        if T[arg[i]] then 
+            return T[arg[i]]
+        end
+    end
+end
+
+function delayedCommand(id, command, target, option, framesToDelay)
+    assert(id)
+    assert(command)
     persPack = {framesToDelay = framesToDelay}
     function delay(evtID, frame, persPack, startFrame)
         if frame >= startFrame + persPack.framesToDelay then
@@ -6850,7 +6862,7 @@ end
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
     assert(id)
-    assert(command)
+    assert(command, UnitDefs[Spring.GetUnitDefID(id)].name.." has invalid Command executed on it")
     local target = tarGet
 
     option = option  or {}

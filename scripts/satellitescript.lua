@@ -11,10 +11,10 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 GameConfig = getGameConfig()
 
 center = piece "center"
-Line001 = piece "Line001"
+
 Icon = piece "Icon"
 function script.Create()
-    Hide(Line001)
+
     Spin(center, y_axis, math.rad(1), 0.5)
     if Icon then
         Move(Icon, y_axis, GameConfig.Satellite.iconDistance, 0);
@@ -22,6 +22,7 @@ function script.Create()
     end
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    Spin(center,y_axis, math.rad(4),0)
     StartThread(delayedShow)
 end
 
@@ -33,7 +34,6 @@ function delayedShow()
     Explode(Packed, SFX.SHATTER)
     showAll(unitID)
     Hide(Packed)
-
 end
 
 function script.Killed(recentDamage, _)

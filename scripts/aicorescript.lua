@@ -44,7 +44,10 @@ function wiggleEye()
     while true do
         napTime = math.random(200, 2500)
         Sleep(napTime)
+
         EyeSpeed = math.random(20, 100) / 50
+        reset(Eye, EyeSpeed)
+        Sleep(500)
         turnPieceRandDir(Eye, EyeSpeed)
     end
 end

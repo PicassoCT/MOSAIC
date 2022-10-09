@@ -14,7 +14,7 @@ local ground_tank_day = Tank:New{
 	canGuard = true,
 	canStop = true,
 	fireState= 1,
-	
+	sightDistance = 250,
 	explodeAs			= "none",
 	maxVelocity		= 3.15*0.5 , --14.3, --86kph/20
 	maxReverseVelocity=  1.15,
@@ -69,7 +69,7 @@ local ground_tank_day = Tank:New{
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
 	buildTime = 5*60,
-	
+	sightDistance = 250,
 	canMove = true,
 	canAttack = true,
 	canGuard = true,

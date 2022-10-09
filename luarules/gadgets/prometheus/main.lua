@@ -210,9 +210,7 @@ function GetConfigData()
     end
     data.base_gann = base_gann.GetConfigData()
 
-    Script.LuaUI.CraigGetConfigData(CONFIG_FOLDER,
-                                    "prometheus.lua",
-                                    table.serialize(data))
+    Script.LuaUI.CraigGetConfigData(CONFIG_FOLDER,   "prometheus.lua",  table.serialize(data))
 end
 
 function CreateTeamGann(teamID)

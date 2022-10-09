@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.883" 
+            Version = "Alpha: 0.884" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -47,7 +47,7 @@ function getGameConfig()
         --truck
         truckBreakTimeMinSec= 60,
         truckBreakTimeMaxSec= 5*60,
-        truckHonkLoudness = 0.70,
+        truckHonkLoudness = 0.35,
 	
 		
         houseSizeX = 256,
@@ -1971,15 +1971,16 @@ function getGameConfig()
                             persPack.oldSyncedPos = {x = x, y = y, z = z}
                         end
                         -- Test Synced Unit Stopped
-
+                        agentTransportedByID = Spring.GetUnitTransporter(persPack.syncedID)
                         -- Transported
-                        if Spring.GetUnitTransporter(persPack.myID) ~= nil and not persPack.boolTransported then
+                        if agentTransportedByID and not persPack.boolTransported then
                             persPack.boolTransported = true
-							pieceMap = Spring.GetUnitPieceMap(persPack.myID)
-							Spring.UnitAttach(persPack.syncedID, persPack.myID, pieceMap["center"])		
+							pieceMap = Spring.GetUnitPieceMap(agentTransportedByID)
+                            centerPiece = sampleKeyFromDicct(pieceMap, "center", "anchor")
+							Spring.UnitAttach(agentTransportedByID, persPack.myID, centerPiece)		
                             return frame + 5, persPack
-                        elseif persPack.boolTransported == true then
-							Spring.UnitDetach(persPack.syncedID)
+                        elseif persPack.boolTransported == true and not agentTransportedByID then
+							Spring.UnitDetach(persPack.myID)
                             persPack.boolTransported = false
                         end
 

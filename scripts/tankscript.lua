@@ -92,14 +92,19 @@ function noLongerAiming()
     lastTurretRotation = 0
 end
 
+boolBarelyMoved = false
 function script.AimWeapon1(Heading, pitch)
     -- aiming animation: instantly turn the gun towards the enemy
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/rotate.ogg", 1.0,
-                1000, 1)
+    startFrame = Spring.GetGameFrame()
+    if not boolBarelyMoved  then
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/rotate.ogg", 1.0, 1000, 1)
+    end
     StartThread(noLongerAiming)
     WTurn(aimpiece, 2, Heading, 0.7)
     lastTurretRotation = math.deg(Heading)
     WTurn(Cannon1, 1, -pitch, 0.7)
+    endFrame = Spring.GetGameFrame()
+    boolBarelyMoved = (endFrame -startFrame) < 5
     return true
 end
 
@@ -110,7 +115,8 @@ function script.FireWeapon1()
     EmitSfx(FireEmit, 1026)
     EmitSfx(FireEmit, 1024)
     spawnCegAtPieceGround(unitID, FireEmit,"tankfireshockwave",0, 20, 0)
-    spawnCegAtPieceGround(unitID, FireEmit,"cburningwreckage",0, 20, 0)
+    spawnCegAtPieceGround(unitID, FireEmit,"bigbulletimpact",0, 20, 0)
+
  return true 
 end
 

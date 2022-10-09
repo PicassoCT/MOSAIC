@@ -11,7 +11,7 @@ local unitDef = {
 	buildCostEnergy = 50,
 	buildTime =1,
 	--Health
-	maxDamage = 66666,
+	maxDamage = 9999999999,
 	idleAutoHeal = 0,
 	--Movement
 
