@@ -6903,7 +6903,7 @@ function Command(id, command, tarGet, option)
     end
 
     if command == "repair" or command == "assist" or command == "guard" then
-        Spring.GiveOrderToUnit(id, CMD.GUARD, {target}, {"shift"})
+        Spring.GiveOrderToUnit(id, CMD.GUARD, {target}, option)
     end
 
     if command == "go" then

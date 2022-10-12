@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.884" 
+            Version = "Alpha: 0.885" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -48,7 +48,6 @@ function getGameConfig()
         truckBreakTimeMinSec= 60,
         truckBreakTimeMaxSec= 5*60,
         truckHonkLoudness = 0.35,
-	
 		
         houseSizeX = 256,
         houseSizeY = 16,
@@ -235,7 +234,7 @@ function getGameConfig()
         -- Icons
         socialEngineeringRange = 256,
         socialEngineerLifetimeMs = 3*60*1000,
-        LifeTimeBribeIcon = 60 * 1000,
+        LifeTimeBribeIcon = 2*60 * 1000,
         iconGroundOffset = 50,        
         iconHoverGroundOffset = 125,
         iconBlackHoleComDeactivateRange = 1500,

@@ -111,7 +111,7 @@ return {
         useairlos          = false,
       },
     },
-    groundflashA = {
+    groundflash = {
       air                = true,
       alwaysvisible      = true,
       circlealpha        = 0.164,
@@ -159,7 +159,7 @@ return {
       },
     },
 
-    groundflashB = {
+    groundflash = {
       air                = true,
       alwaysvisible      = true,
       circlealpha        = 0.6,

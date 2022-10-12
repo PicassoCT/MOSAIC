@@ -1,6 +1,6 @@
 function gadget:GetInfo()
     return {
-        name = "Police",
+        name = "Game_Police",
         desc = "Handles Police Spawn and dispatch ",
         author = "Picasso",
         date = "3rd of May 2010",
@@ -15,6 +15,8 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
+
+local boolDebugPolice = true
 
 local GameConfig = getGameConfig()
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -84,13 +86,14 @@ function getAnyHouseLocation()
             return randPos.x, 0, randPos.z
         end
     end
+    conditionalEcho(boolDebugPolice,"Could not find a valid house to spawn police at")
 
     return math.ceil((math.random(10,90)/100)*game.mapSizeX), 0, math.ceil((math.random(10,90)/100)*game.mapSizeZ)
 end
 
 function getPoliceSpawnLocation(suspect)
     if not suspect or type(suspect) ~= "number"  then
-        x,y,z =  getAnyHouseLocation()
+       x,y,z =  getAnyHouseLocation()
        return x,y,z 
     end
 
@@ -107,14 +110,23 @@ function getPoliceSpawnLocation(suspect)
     return sx, 0, sz
 end
 
+local lastVictimID = nil
 function gadget:UnitCreated(unitID, unitDefID, teamID)
     if PoliceTypes[unitDefID] then
+        x,y,z = Spring.GetUnitPosition(unitID)
+        conditionalEcho(boolDebugPolice, "Officer created at"..x.."/"..z)
         spSetUnitNeutral(unitID, false)        
         activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.Police.maxDispatchTime 
+        if lastVictimID and doesUnitExistAlive(lastVictimID) then
+            conditionalEcho(boolDebugPolice, "guarding "..lastVictimID)
+           tx,ty,tz =spGetUnitPosition(lastVictimID)
+            Command(unitID, "go", {x = tx, y = ty, z = tz}, {"shift"})    
+            Command(unitID, "go", {x=tx,y=ty, z=tz} )
+        end
     end
 
     if isOffenceIcon(UnitDefs, unitDefID) then
-        dispatchOfficer(unitID, unitID)
+        dispatchOfficer(unitID, unitID, true)
     end
 end
 
@@ -126,10 +138,10 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     end
 end
 
-
-function getOfficer(victimID, attackerID)
+function getOfficer(victimID, attackerID, boolBribeOverride)
+    lastVictimID = victimID
     local officerID = nil
-    if officersInReserve > 0 and  math.ceil(accumulatedCivilianDamage/100) > count(activePoliceUnitIds_DispatchTime) then
+    if officersInReserve > 0 and  (math.ceil(accumulatedCivilianDamage/100) > count(activePoliceUnitIds_DispatchTime)) or boolBribeOverride then
         px, py, pz = getPoliceSpawnLocation(attackerID)
         _, pos = randDict(GG.BuildingTable)
         if not px then px, py, pz = pos.x, 0, pos.z end
@@ -145,6 +157,7 @@ function getOfficer(victimID, attackerID)
             PoliceDamageCounter = PoliceDamageCounter - 2500
         end
 
+        conditionalEcho(boolDebugPolice, "Spawning Police Officer near "..px.."/"..pz)
         GG.UnitsToSpawn:PushCreateUnit(ptype, px, py, pz, direction,
                                  gaiaTeamID)
         officersInReserve = math.max(officersInReserve - 1, 0)
@@ -170,19 +183,29 @@ function getOfficer(victimID, attackerID)
     return officerID
 end
 
-function getRandomHousePos()
+function getRandomDispatchTargetPosition(officerID)
     id, pos = randDict(GG.BuildingTable)
-return pos.x + math.random(200,500)*randSign(), 0, pos.z+ math.random(200,500)*randSign()
+    if not pos then
+        nearestEnemy = Spring.GetUnitNearestEnemy(officerID)
+        if nearestEnemy then
+            pos = {}
+            pos.x,_, pos.z = Spring.GetUnitPosition(nearestEnemy)
+        end
+    end
+
+    return pos.x + math.random(GameConfig.houseSizeX/2, GameConfig.houseSizeX) * randSign(), 0, pos.z + math.random(GameConfig.houseSizeX/2, GameConfig.houseSizeX) * randSign()
 end
 
-function dispatchOfficer(victimID, attackerID)
+function dispatchOfficer(victimID, attackerID, boolBribeOverride)
+    echo("dispatching officer to help ".. victimID )
     if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
 
-    officerID = getOfficer(victimID, attackerID)
+    officerID = getOfficer(victimID, attackerID, boolBribeOverride)
     boolFoundSomething = false
     if officerID and doesUnitExistAlive(officerID) == true then
         -- Spring.AddUnitImpulse(officerID,15,0,0)
-        tx, ty, tz = getRandomHousePos()
+        tx, ty, tz = getRandomDispatchTargetPosition(officerID)
+
         if not attackerID or doesUnitExistAlive(attackerID) == false then attackerID = Spring.GetUnitLastAttacker(officerID) end
       
         if attackerID then 
@@ -202,12 +225,14 @@ function dispatchOfficer(victimID, attackerID)
             if x and x > 0 and z and z > 0 then
                 tx, ty, tz = x, y, z;
                 boolFoundSomething = true
-                --Spring.Echo("")
             end
         elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
+
             if GG.GlobalGameState == GameConfig.GameState.normal then
-               Command(officerID, "guard", victimID, {})
+                conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to guard ".. victimID)
+                Command(officerID, "guard", victimID, {})
             else
+                conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to attack ".. victimID)
                 Command(officerID, "attack", victimID, {})
             end
             return officerID
@@ -219,7 +244,7 @@ function dispatchOfficer(victimID, attackerID)
         end
 
         Command(officerID, "go", {x = tx, y = ty, z = tz}, {"shift"})
-
+        conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to go to ".. tx.."/"..tz)
         if maRa() == true  or booleanDoesAttackerExistAlive == false then
             if GG.GlobalGameState == GameConfig.GameState.normal then
                 Command(officerID, "go", {x = tx, y = ty, z = tz})
@@ -233,8 +258,12 @@ function dispatchOfficer(victimID, attackerID)
             end
         else
             Command(officerID, "attack", {attackerID}, 4)
+            conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to attack ".. attackerID)
         end
+
         return officerID
+    else
+        conditionalEcho(boolDebugPolice, "No officer found to dispatch")
     end   
 end
 
@@ -265,6 +294,7 @@ end
 local firstFrame = Spring.GetGameFrame()
 
 function gadget:Initialize()
+    Spring.Echo("gadget: Loading game_police")
     firstFrame = Spring.GetGameFrame() + 1
     GG.PoliceActionSoundInterVallStartFrame = firstFrame
 end

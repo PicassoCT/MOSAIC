@@ -865,20 +865,20 @@ function spawnDecoyCivilian()
 		--Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
 	
-			persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
-			if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
-			GG.DisguiseCivilianFor[civilianID]= unitID
-			if not GG.DiedPeacefully then GG.DiedPeacefully ={} end
-			GG.DiedPeacefully[civilianID] = false
+		persPack = {myID= civilianID, syncedID= unitID, startFrame = Spring.GetGameFrame()+1 }
+		if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
+		GG.DisguiseCivilianFor[civilianID]= unitID
+		if not GG.DiedPeacefully then GG.DiedPeacefully ={} end
+		GG.DiedPeacefully[civilianID] = false
 				
-			if civilianID then
-                transferUnitStatusToUnit(unitID, civilianID)
-				GG.EventStream:CreateEvent(
-				syncDecoyToAgent,
-				persPack,
-				Spring.GetGameFrame()+1
-				)
-			end
+		if civilianID then
+            transferUnitStatusToUnit(unitID, civilianID)
+			GG.EventStream:CreateEvent(
+			syncDecoyToAgent,
+			persPack,
+			Spring.GetGameFrame()+1
+			)
+		end
 	return 0
 end
 
