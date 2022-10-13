@@ -48,6 +48,7 @@ function getGameConfig()
         truckBreakTimeMinSec= 60,
         truckBreakTimeMaxSec= 5*60,
         truckHonkLoudness = 0.35,
+        chanceOfCivilianSpawningFromTruck = 0.65,
 		
         houseSizeX = 256,
         houseSizeY = 16,
@@ -237,7 +238,7 @@ function getGameConfig()
         LifeTimeBribeIcon = 2*60 * 1000,
         iconGroundOffset = 50,        
         iconHoverGroundOffset = 125,
-        iconBlackHoleComDeactivateRange = 1500,
+        iconBlackHoleComDeactivateRange = 630,
         LifeTimeBlackOutIcon = 5* 60 * 1000,
 
         Satellite = {
@@ -285,9 +286,11 @@ function getGameConfig()
                 DefusalStartDistance = 75,
                 DefusalPunishment = -500,
                 automationPayloadStunTimeSeconds = 60,
-        }
+        },
 
-
+        minutMS     = 60*1000,
+        hourMS      = 60*60*1000,
+        secondMS    = 1000,
     }
     end
 
@@ -720,11 +723,20 @@ function getGameConfig()
                 return getTypeTable(UnitDefNames, typeTable)
         end
 
+        function getStunnedInBlackOutUnitTypes(UnitDefs)
+                typeTable = {    
+                    "ground_turret_ssied",       
+                    "air_copter_scoutlett"
+                }
+            return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
+        end
+
         function getInterceptableAirDroneTypes(UnitDefs)
                 typeTable = {           
                     "air_copter_ssied",
                     "air_copter_mg",
-                    "air_copter_scoutlett"
+                    "air_copter_scoutlett",
+                    "air_copter_antiarmor"
                 }
             return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
         end
@@ -1614,7 +1626,7 @@ function getGameConfig()
             ProtagonUnitTypeList = getUnitCanBuildList(UnitDefNames["protagonsafehouse"].id)
             AntagonUnitTypeList = getUnitCanBuildList(UnitDefNames["antagonsafehouse"].id)
 
-            function getUnitSide(unitID)
+            function getUnitSideString(unitID)
                 defID = Spring.GetUnitDefID(unitID)
                 if ProtagonUnitTypeList[defID] then return "protagon" end
                 if AntagonUnitTypeList[defID] then return "antagon" end
@@ -2206,6 +2218,8 @@ end
             GG.InheritanceTable[teamID][unit] = nil
         end
     end
+
+
 
     function GetUnitDefRealRadius(udid)
       if not GG.realRadiusComputated then GG.realRadiusComputated = {} end

@@ -153,8 +153,7 @@ function rotations()
     Sleep(500)
     clockPiece = piece("StreetDeco06")
     if contains(ToShowTable, clockPiece) then
-        WTurn(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(180),
-              0)
+        WTurn(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(180), 0)
         showT(TablesOfPiecesGroups["StreetDeco6Sub"])
         Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(3), 10)
         Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2], z_axis, math.rad(36), 10)

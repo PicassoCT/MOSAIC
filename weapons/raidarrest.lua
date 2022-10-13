@@ -9,11 +9,11 @@ local weaponDef = {
 
     --Physic/flight path
     range                     = 175,
-      burst                   = 5,
-      burstrate               = 0.1,
+   -- burst                     = 5,
+   -- burstrate                 = 0.025,
     reloadtime                = 120,
-    flightTime                = 6,
-    startVelocity             = 10,
+    flightTime                = 10,
+    startVelocity             = 0.1,
     weaponAcceleration        = 10,
 
     BurnBlow = 0,
@@ -23,10 +23,10 @@ local weaponDef = {
     Turnrate                = 2000,
 
     turret                  = true,
-    weaponVelocity          = 420,
+    weaponVelocity          = 720,
     dance                   = 35,
-    wobble                  = 1500,
-    tolerance               = 512,
+    wobble                  = 150,
+    tolerance               = 25,
     trajectoryHeight        = 1.0,
     tracks = true,
 
@@ -35,6 +35,7 @@ local weaponDef = {
 
     --collision
     collideFriendly = false,
+    collideNeutral = true,
      
     --- -APPEARANCE
     smokeTrail = false,
@@ -49,7 +50,7 @@ local weaponDef = {
     damage = {
         default = 1
     },
-    areaOfEffect = 1,
+    areaOfEffect = 2,
     craterMult = 0,
 
     lineOfSight = true,

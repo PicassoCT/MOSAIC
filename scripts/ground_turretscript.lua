@@ -76,7 +76,7 @@ function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
                     lastValueHeadingRad = goalRad
                     EmitSfx(firingFrom, 256)
                     EmitSfx(firingFrom, 1025)
-                    Spring.AddUnitDamage(droneID, 10)
+                    Spring.AddUnitDamage(droneID, 50)
                     if intercepted == 0 then return end
                 end
             intercepted = intercepted - 1

@@ -8,8 +8,8 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	iconType = "air_antiarmour",
 	--floater = true,
 	--cost
-	buildCostMetal = 15,
-	buildCostEnergy = 0,
+	buildCostMetal = 50,
+	buildCostEnergy = 50,
 	buildTime = 10,
 	--Health
 	maxDamage = 50,
@@ -17,7 +17,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	--Movement
 	Acceleration = 0.5,
 	 fireState=-1,
-	BrakeRate = 1,
+	BrakeRate = 0.03,
 	FootprintX = 1,
 	FootprintZ = 1,
 

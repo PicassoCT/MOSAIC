@@ -1462,7 +1462,7 @@ function createUnitAtPiece(id, typeID, Piece, team)
 end
 
 -- > Create a Unit at another Unit
-function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orientation)
+function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, orientation, parentID)
     if not typeID or not teamID then return end
     assert(not parentID)
     if isUnitAlive(otherID) == false then return end
@@ -1478,9 +1478,11 @@ function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, parentID, orienta
     types = type(typeID)    
     assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
     --Delme DebugCode
-    id = Spring.CreateUnit(typeID, x + ox, y + oy, z + oz, locOrientation, teamID, false, false, parentID)
-
-    return id
+    if parentID then
+        return Spring.CreateUnit(typeID, x + ox, y + oy, z + oz, locOrientation, teamID, false, false, parentID)
+    else
+        return Spring.CreateUnit(typeID, x + ox, y + oy, z + oz, locOrientation, teamID, false, false)
+    end
 end
 
 function createUnitAtFeature(teamID, typeID, featureID, ox, oy, oz)

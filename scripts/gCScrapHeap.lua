@@ -12,6 +12,8 @@ distanceToGoDown = 90
 TablesOfPiecesGroups = {}
 function script.Killed() end
 
+
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     randHide(TablesOfPiecesGroups["scrapHeap"])
@@ -20,9 +22,21 @@ function script.Create()
     StartThread(waitForAnEnd)
 end
 
+boolSleepOnHit = false
+function script.HitByWeapon(x, z, weaponDefID, damage)
+    boolSleepOnHit = true
+    return damage
+end
+
 function waitForAnEnd()
     timeForMoveInSec = GameConfig.TimeForScrapHeapDisappearanceInMs / 30
     speed = distanceToGoDown / timeForMoveInSec
-    WMove(center, z_axis, -1 * distanceToGoDown, speed)
+    for i= 1, -1 * distanceToGoDown, -1 do
+        WMove(center, z_axis, i, speed)
+        if boolSleepOnHit then
+            Sleep(GameConfig.minutMS)
+            boolSleepOnHit = false
+        end
+    end
     Spring.DestroyUnit(unitID, true, false)
 end

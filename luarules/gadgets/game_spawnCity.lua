@@ -77,7 +77,8 @@ function registerManuallyPlacedHouses()
             function(id)
                 allreadyRegistredBuilding[id] = true
                 spSetUnitAlwaysVisible(id, true)
-                spSetUnitBlocking(id, false)
+                setCityBuildingBlocking(id)
+
                 x,y,z = Spring.GetUnitPosition(id)
                 GG.BuildingTable[id] = {x = x, z = z }
                 counter = counter + 1
@@ -126,6 +127,19 @@ function distributedPathValidationComplete(frame, elements)
     if startindex >= #BuildingPlaceTable then boolComplete = true end
 
     return boolComplete
+end
+
+function setCityBuildingBlocking(id)
+    isblocking= false
+    isSolidObjectCollidable=false
+    isProjectileCollidable= true
+    isRaySegmentCollidable = true
+    crushable = false
+    blockEnemyPushing= true
+    blockHeightChanges = true
+
+    spSetUnitBlocking( id,  isblocking, isSolidObjectCollidable,  isProjectileCollidable,  isRaySegmentCollidable ,  crushable , blockEnemyPushing,  blockHeightChanges ) 
+
 end
 
 function isOnRoad(cursorl)
@@ -471,7 +485,7 @@ function spawnBuilding(defID, x, z,  boolInCityCenter)
 
     if id then
         spSetUnitAlwaysVisible(id, true)
-        spSetUnitBlocking(id, false)
+        setCityBuildingBlocking(id)
         GG.BuildingTable[id] = {x = x, z = z}
         return id
     end

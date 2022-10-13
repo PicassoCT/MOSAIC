@@ -16,6 +16,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
 
     if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
+    boolDebugProjectile = true
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
     local GameConfig = getGameConfig()
@@ -86,7 +87,7 @@ if (gadgetHandler:IsSyncedCode()) then
     if not GG.houseHasSafeHouseTable then GG.houseHasSafeHouseTable = {} end
 
     function gadget:Initialize()
-        --spEcho(GetInfo().name .. " Initialization started")
+        --conditionalEcho(boolDebugProjectile,GetInfo().name .. " Initialization started")
         if not GG.houseHasSafeHouseTable then
             GG.houseHasSafeHouseTable = {}
         end 
@@ -98,7 +99,7 @@ if (gadgetHandler:IsSyncedCode()) then
       if not GG.raidStatus  then GG.raidStatus = {} end
       if not GG.HouseRaidIconMap  then GG.HouseRaidIconMap = {} end
 
-        --spEcho(GetInfo().name .. " Initialization ended")
+        --conditionalEcho(boolDebugProjectile,GetInfo().name .. " Initialization ended")
     end
 
     local panicWeapons = {
@@ -326,10 +327,10 @@ if (gadgetHandler:IsSyncedCode()) then
                                        iconUnitTypeName, civilianHouseID)
         boolRaidedEmptyHouse = (raidedSafeHouseOrHouse_ID == civilianHouseID )
 
-        --spEcho("raidEventStream  Called")
+        conditionalEcho(boolDebugProjectile,"Raid: EventStream  Called")
 
         postRaidCleanup =   function (persPack, boolDoesTargetExistAlive, boolDoesInterrogatorExistAlive)
-                                   -- Spring.Echo("Raid: CleanUp ")
+                                   conditionalEcho(boolDebugProjectile,"Raid: CleanUp ")
 
                                     if doesUnitExistAlive(persPack.civilianHouseID) == true then
                                         Spring.SetUnitHealth (persPack.civilianHouseID, {paralyze= 0})
@@ -362,7 +363,7 @@ if (gadgetHandler:IsSyncedCode()) then
             --check if there are previous raids active
             for raiders, boolRaidOngoing in pairs(GG.InterrogationTable[raidedSafeHouseOrHouse_ID]) do
                 if boolRaidOngoing == true then
-                    conditionalEcho(true, "House already has raid ongoing aborting")
+                    conditionalEcho(boolDebugProjectile, "Raid: House already has raid ongoing aborting")
                     return
                 end
             end
@@ -374,7 +375,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         --check if the attacker is not already engaged in another raid
         if isEngagedInAnotherRaidAlready(attackerID, raidedSafeHouseOrHouse_ID) == true then
-           -- spEcho("raidEventStream Aborted, previous Raid in Progress"..raidedSafeHouseOrHouse_ID)
+            conditionalEcho(boolDebugProjectile,"Raid: raidEventStream Aborted, previous Raid in Progress"..raidedSafeHouseOrHouse_ID)
             return true, persPack
         end
 
@@ -382,12 +383,12 @@ if (gadgetHandler:IsSyncedCode()) then
             GG.InterrogationTable[raidedSafeHouseOrHouse_ID][attackerID] = true
             -- Stun
             raidFunction = function(persPack)
-            boolDebugRaid = true
-           -- conditionalEcho(boolDebugRaid,"raidEventStream  Ongoing")
+            boolDebugProjectile = true
+           -- conditionalEcho(boolDebugProjectile,"raidEventStream  Ongoing")
 
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.raidedSafeHouseOrHouse_ID) then
-                    conditionalEcho(boolDebugRaid,"failed check Target is still existing ")
+                    conditionalEcho(boolDebugProjectile,"Raid: failed check Target is still existing ")
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     postRaidCleanup(persPack)
@@ -396,7 +397,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    conditionalEcho(boolDebugRaid,"failed   check wether the interrogator is still alive")
+                    conditionalEcho(boolDebugProjectile,"Raid: failed   check wether the interrogator is still alive")
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     postRaidCleanup(persPack)
@@ -405,7 +406,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.RaidDistance then
-                    conditionalEcho(boolDebugRaid,"failed check distance is still okay5 ")
+                    conditionalEcho(boolDebugProjectile,"Raid: failed check distance is still okay5 ")
                     if doesUnitExistAlive(persPack.IconID) == true then
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                     GG.raidStatus[persPack.IconID].boolInterogationComplete = true
@@ -422,34 +423,34 @@ if (gadgetHandler:IsSyncedCode()) then
                 
                 -- check if the icon is still there
                 if not persPack.IconID then
-                   -- Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")
+                  
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),--teamID
                                           iconUnitTypeName, --typeID
                                           persPack.civilianHouseID,  --otherID
                                           0,0,0,  -- ox, oy, oz
-                                          nil, --parentID
                                           0)   --orientation 
-
+                    conditionalEcho(boolDebugProjectile, "Raid: create Icon "..  persPack.IconID  .." at Unit "..persPack.civilianHouseID)
+                    
                     if persPack.IconID then
-                       --Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")              
+        
                         persPack.basePlateID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.IconID),--teamID
                                           "raidiconbaseplate", --typeID
                                           persPack.civilianHouseID,  --otherID
                                           0,0,0,  -- ox, oy, oz
-                                          nil, --parentID
                                           0)   --orientation 
+                        conditionalEcho(boolDebugProjectile,"Raid: create BaseplateIcon "..persPack.basePlateID .." at "..persPack.civilianHouseID )      
                         GG.myParent[persPack.basePlateID] = persPack.IconID
 
-                        --Spring.Echo("Raid: Registering RaidIcon to raidedSafeHouseOrHouse_ID "..persPack.raidedSafeHouseOrHouse_ID )
+                        conditionalEcho(boolDebugProjectile,"Raid: Registering RaidIcon to raidedSafeHouseOrHouse_ID "..persPack.raidedSafeHouseOrHouse_ID )
                         GG.HouseRaidIconMap[persPack.civilianHouseID] =  persPack.IconID
                         assert(GG.HouseRaidIconMap[persPack.civilianHouseID])
 
                         if GG.raidStatus[persPack.IconID] then  GG.raidStatus[persPack.IconID] = {} end
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = false
                     else
-                        conditionalEcho(boolDebugRaid,"Raid: No IconID")
+                        conditionalEcho(boolDebugProjectile,"Raid: No IconID")
                         postRaidCleanup(persPack)
                         return true, persPack
                     end
@@ -464,7 +465,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     --Aborted or EmptyHouse
                     if raidStateLocal.result == raidResultStates.HouseEmpty or persPack.boolRaidedEmptyHouse then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
-                            conditionalEcho(boolDebugRaid,"Raided empty house")
+                            conditionalEcho(boolDebugProjectile,"Raided empty house")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
@@ -487,7 +488,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if (raidStateLocal.state == raidStates.Aborted) or 
                         not allTeams or #allTeams <= 1 then 
                         -- Simulation mode
-                        conditionalEcho(boolDebugRaid,"Raid: Aborted ")
+                        conditionalEcho(boolDebugProjectile,"Raid: Aborted ")
                         postRaidCleanup(persPack)
                         persPack.boolRaidHasEnded = true
                         return true, persPack
@@ -497,7 +498,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if raidStateLocal.state == raidStates.VictoryStateSet and
                         raidStateLocal.result == raidResultStates.AggressorWins       
                         then
-                        conditionalEcho(boolDebugRaid,"Raid was succesfull - childs of " .. persPack.raidedSafeHouseOrHouse_ID .. " are revealed")
+                        conditionalEcho(boolDebugProjectile,"Raid: was succesfull - childs of " .. persPack.raidedSafeHouseOrHouse_ID .. " are revealed")
                         unitTeam = spGetUnitTeam(persPack.raidedSafeHouseOrHouse_ID)
                         children = getChildrenOfUnit(unitTeam, persPack.raidedSafeHouseOrHouse_ID)
                         parent = getParentOfUnit(unitTeam, persPack.raidedSafeHouseOrHouse_ID)
@@ -580,7 +581,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
          --check if the attacker is not already engaged in another raid
         if isEngagedInAnotherRaidAlready(attackerID, unitID) == true then
-            --spEcho("Interogation: raidEventStream Aborted, previous Raid in Progress"..unitID)
+            --conditionalEcho(boolDebugProjectile,"Interogation: raidEventStream Aborted, previous Raid in Progress"..unitID)
             return true, persPack
         end
 
@@ -592,21 +593,21 @@ if (gadgetHandler:IsSyncedCode()) then
           
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.unitID) then
-                    --spEcho("Interogation End: Target died")
+                    --conditionalEcho(boolDebugProjectile,"Interogation End: Target died")
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
                     return true, persPack
                 end
 
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
-                    --spEcho("Interrogation End: Interrogator died")
+                    --conditionalEcho(boolDebugProjectile,"Interrogation End: Interrogator died")
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
                     return true, persPack
                 end
 
                 -- check for external abort
                 if RaidExternalAbort[persPack.interrogatorID] == true then                    
-                    --spEcho("Interrogation End: Interrogator was shot at")
+                    --conditionalEcho(boolDebugProjectile,"Interrogation End: Interrogator was shot at")
                     RaidExternalAbort[persPack.interrogatorID] = nil                    
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
                     return true, persPack
@@ -615,15 +616,14 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
                     GameConfig.InterrogationDistance then
-                    --spEcho("Interogation End: Interrogator distance to big ")
+                    --conditionalEcho(boolDebugProjectile,"Interogation End: Interrogator distance to big ")
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)                        
                     return true, persPack
                 end
 
                 -- check if the icon is still there
                 if not persPack.IconID then
-                    --spEcho("Creating InterrogationIcon")
---                    Spring.Echo("createUnitAtUnit ".."game_ProjectileImpacts.lua")      
+                    --conditionalEcho(boolDebugProjectile,"createUnitAtUnit ".."game_ProjectileImpacts.lua")      
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, 
@@ -633,7 +633,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                           1)                         
                     
                     if not persPack.IconID then
-                          --spEcho("Creating InterrogationIcon failed")
+                          --conditionalEcho(boolDebugProjectile,"Creating InterrogationIcon failed")
                         updateInterrogatedStatus(persPack.unitID, false)
                         return true, persPack
                     end
@@ -649,14 +649,14 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
 
                 if GG.raidStatus[persPack.IconID].boolInterogationComplete == true then
-                    --spEcho("InterogationCompleted")
+                    --conditionalEcho(boolDebugProjectile,"InterogationCompleted")
                
                     if not GG.raidStatus[persPack.IconID].winningTeam then
                         -- succesfull interrogation
                         local allTeams = spGetTeamList()
                         if not allTeams or #allTeams <= 1 then
                             -- Simulation mode
-                            --spEcho( "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
+                            --conditionalEcho(boolDebugProjectile, "Interrogation: Aborting because no oponnent - sandbox or simulation mode")
                             postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)        
                             return true, persPack
                         end
@@ -664,7 +664,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         -- of a innocent person / innocent house
                         if innocentCivilianTypeTable[persPack.suspectDefID] or
                             persPack.houseTypeTable[persPack.suspectDefID] then
-                            --spEcho("Interrogated innocent - paying the price")
+                            --conditionalEcho(boolDebugProjectile,"Interrogated innocent - paying the price")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
@@ -687,19 +687,19 @@ if (gadgetHandler:IsSyncedCode()) then
                         end
                     end
 
-                    --spEcho("Interrogation was succesfull - childs of " .. persPack.unitID .. " are revealed")
+                    --conditionalEcho(boolDebugProjectile,"Interrogation was succesfull - childs of " .. persPack.unitID .. " are revealed")
                     unitTeam = spGetUnitTeam(persPack.unitID)
                     local children = getChildrenOfUnit(unitTeam, persPack.unitID)
                     local parent = getParentOfUnit(unitTeam, persPack.unitID)
-                   -- if not children then spEcho("Unit "..persPack.unitID.. " has no children") end
-                   -- if not parent then spEcho("Unit "..persPack.unitID.. " has no parent") end
+                   -- if not children then conditionalEcho(boolDebugProjectile,"Unit "..persPack.unitID.. " has no children") end
+                   -- if not parent then conditionalEcho(boolDebugProjectile,"Unit "..persPack.unitID.. " has no parent") end
                     GG.Bank:TransferToTeam(
                         GameConfig.raid.interrogationPropagandaPrice,
                         persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.unitID)
 
                     for childID, v in pairs(children) do
-                        --spEcho("Interrogation: Reavealing child " .. childID)
+                        --conditionalEcho(boolDebugProjectile,"Interrogation: Reavealing child " .. childID)
                         if doesUnitExistAlive(childID) == true then
                             spGiveOrderToUnit(childID, CMD.CLOAK, {}, {})
                             GG.OperativesDiscovered[childID] = true
@@ -708,7 +708,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
 
                     if doesUnitExistAlive(parent) == true then
-                        --spEcho("Interrogation: Reavealing parent " .. parent)
+                        --conditionalEcho(boolDebugProjectile,"Interrogation: Reavealing parent " .. parent)
                         spGiveOrderToUnit(parent, CMD.CLOAK, {}, {})
                         GG.OperativesDiscovered[parent] = true
                         spSetUnitAlwaysVisible(parent, true)
@@ -730,7 +730,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     spDestroyUnit(persPack.unitID, false, true)
                     spDestroyUnit(persPack.IconID, false, true)
                     GG.InterrogationTable[persPack.unitID][persPack.interrogatorID] =  nil
-                    --spEcho("Interrogation ended successfuly")
+                    --conditionalEcho(boolDebugProjectile,"Interrogation ended successfuly")
 
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)     
                     return true, persPack
@@ -739,7 +739,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 return false, persPack
             end
 
-            --spEcho("Starting Interrogation Event Stream")
+            --conditionalEcho(boolDebugProjectile,"Starting Interrogation Event Stream")
             createStreamEvent(unitID, interrogationFunction, 31, {
                 interrogatorID = attackerID,
                 unitID = unitID,
@@ -760,15 +760,15 @@ if (gadgetHandler:IsSyncedCode()) then
         function(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID,
                  attackerID, attackerDefID, attackerTeam,projectileID)
             -- stupidity edition
-            spEcho("Hit by interrogation weapon")
+            conditionalEcho(boolDebugProjectile,"Hit by interrogation weapon")
             if attackerID == unitID then
-                --spEcho("Interrogation:Aborted: attackerID == unitID")
+                --conditionalEcho(boolDebugProjectile,"Interrogation:Aborted: attackerID == unitID")
                 return damage
             end
 
             -- stupidity edition same team
             if attackerTeam == unitTeam then
-                --spEcho("Interrogation:Aborted: attackerTeam == unitTeam")
+                --conditionalEcho(boolDebugProjectile,"Interrogation:Aborted: attackerTeam == unitTeam")
                 return damage
             end
 
@@ -786,7 +786,7 @@ if (gadgetHandler:IsSyncedCode()) then
             if MobileInterrogateAbleType[unitDefID] and
                 currentlyInterrogationRunning(unitID, attackerID) == false and
                 attackerID ~= unitID then
-                --spEcho("Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
+                --conditionalEcho(boolDebugProjectile,"Interrogation: Start with " .. UnitDefs[unitDefID].name.."->"..unitID)
                 stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
                 setSpeedEnv(attackerID, 0.0)
                 RaidExternalAbort[attackerID] = false
@@ -811,29 +811,38 @@ if (gadgetHandler:IsSyncedCode()) then
                                                 attackerID, attackerDefID,
                                                 attackerTeam,projectileID)
 
-        echo("Raid weapon hits "..unitID .. " a ".. UnitDefs[unitDefID].name)
+        echo("Raid: Raid weapon hits "..unitID .. " a ".. UnitDefs[unitDefID].name)
         if not attackerID then
             attackerID = Spring.GetUnitLastAttacker(unitID)
         end
 
                 -- stupidity edition
-        if not attackerID then  spEcho("Raid: No valid attackerID derived"); return damage end
-        if attackerID == unitID  then   spEcho("Raid:Aborted: attackerID == unitID"); return damage end
+        if not attackerID then  conditionalEcho(boolDebugProjectile,"Raid: No valid attackerID derived"); return damage end
+        if attackerID == unitID  then   conditionalEcho(boolDebugProjectile,"Raid:Aborted: attackerID == unitID"); return damage end
         houseID = unitID
-        
+
+        if not houseTypeTable[unitDefID] then
+            echo("Raid: Hit not a house type. Aborted")
+            return
+        end
+
+
         -- make houses transparent if they have a safehouse
-        if houseTypeTable[unitDefID] and GG.houseHasSafeHouseTable[unitID] then
+        if  GG.houseHasSafeHouseTable[unitID] then
             stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
+            oldID = unitID
             unitID = GG.houseHasSafeHouseTable[unitID]
+            echo("Raided Unit ".. oldID.." is now:"..unitID)
             stunUnit(unitID, stunContainerUnitTimePeriodInSeconds)
             unitDefID = spGetUnitDefID(unitID)
             unitTeam = spGetUnitTeam(unitID)
         end
 
+
         -- Interrogation -- and not already Interrogated
         if ( RaidAbleType[unitDefID]) and
             currentlyInterrogationRunning(unitID, attacker) == false then
-            --spEcho("Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
+            conditionalEcho(boolDebugProjectile,"Raid of " .. UnitDefs[unitDefID].name.. " id: ".. unitID)
             stunUnit(unitID, 2.0)
             raidEventStreamFunction(unitID, unitDefID, unitTeam,
                                              damage, paralyzer, weaponDefID,
@@ -896,7 +905,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
         if weaponDefID and WeaponDef and WeaponDef[weaponDefID] then
-            Spring.Echo("UnitDamaged called with weapon"..WeaponDef[weaponDefID].name)
+            conditionalEcho(boolDebugProjectile,"UnitDamaged called with weapon"..WeaponDef[weaponDefID].name)
         end
 
         --If Interrogator abort running interrogation 

@@ -2,6 +2,8 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_mosaic.lua"
+
 --include "lib_Build.lua"
 
 myTeamID = Spring.GetUnitTeam(unitID)
@@ -23,7 +25,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 Progresscenter = piece "Progresscenter"
 talk={
-protagon = {
+["protagon"] = {
     "Team Standby", "Team Ready", "Go Go Go","Datastreams Isolated",
     "SkyCastle Ready", "Retro-Observation-Results", "TAC Plan has go",
     "<dart sounds>", "away from the window", "to the wall", "drop it",
@@ -38,7 +40,7 @@ protagon = {
     "Extraction. Complete."
 },
 
-antagon = {
+["antagon"] = {
     "Empire instead of the empire", "Allah al Akbar", "Jamming engaged",
     "Death to the West", "Jamal, take them out-","Traitors and Treason to every word they say",
     "Living the dream of sucking billionaire cock-", "Die Motherfuckers, die..",
@@ -120,13 +122,11 @@ function script.Create()
 end
 
 function raidConversationLoop()
-    mySide  = getUnitSide(unitID) or "protagon"
+    mySide  = string.lower(getUnitSideString(unitID))
     while true do
-        assert(talk[mySide],mySide)
         line = talk[mySide][math.random(1,#talk[mySide])]
         say(line, 2500, { r = 1.0, g = 1.0, b = 1.0 }, { r = 1.0, g = 1.0, b = 1.0 }, "", unitID)
-
-        Sleep(150000)
+        Sleep(15000)
     end
 end
 

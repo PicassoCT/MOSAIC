@@ -66,6 +66,7 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameCo
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
+local chanceOfCivilianSpawningFromTruck = GameConfig.chanceOfCivilianSpawningFromTruck
 
 
 function startInternalBehaviourOfState(unitID, name, ...)
@@ -428,8 +429,9 @@ end
 -- truck or Person
 function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
     --ocassionally spawn from arrived car
-    if math.random(0,100) > 95 and civilianWalkingTypeTable[defID] and  GG.UnitArrivedAtTarget and # GG.UnitArrivedAtTarget > 0 then
+    if (math.random(0,100)/100) > chanceOfCivilianSpawningFromTruck and civilianWalkingTypeTable[defID] and  GG.UnitArrivedAtTarget and # GG.UnitArrivedAtTarget > 0 then
         for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
+           conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
             if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
                 x,_,z = spGetUnitPosition(id)
                 break

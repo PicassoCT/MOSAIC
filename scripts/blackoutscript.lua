@@ -1,14 +1,15 @@
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
-include "lib_Animation.lua"
+include "lib_mosaic.lua"
 
 GameConfig = getGameConfig()
 TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 myTeamID = Spring.GetUnitTeam(unitID)
-
+stunnedInBlackOutUnitType = getStunnedInBlackOutUnitTypes(UnitDefs)
+local spGetUnitDefID = Spring.GetUnitDefID
  Spinner = piece"Spinner"
  PercentRing = piece"PercentRing"
  Cellphone = piece"Cellphone"
@@ -24,6 +25,7 @@ function script.Create()
 
         StartThread(animation)
         StartThread(lifeTimeAnimation)
+        StartThread(blackOutCycle)
 
         StartThread(lifeTime, unitID, GameConfig.LifeTimeBlackOutIcon, true, false )
 end
@@ -55,9 +57,6 @@ end
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
-
-
-
 function blackOutCycle()
     while true do  
         unitsInCircle = getAllNearUnit(unitID, GameConfig.iconBlackHoleComDeactivateRange)
@@ -75,6 +74,12 @@ function blackOutCycle()
                     end
                 end,
                 function(id)
+                    if stunnedInBlackOutUnitType[spGetUnitDefID(id)] then
+                        stunUnit(id, 10.0)
+                        spawnCegAtUnit(id, "electric_arc",0, 20, 0)
+                        return
+                    end
+
                     blackOuttedUnits_OriginalState[id] = Spring.GetUnitNoSelect(id)
                     Spring.SetUnitNoSelect(id, true)
                     Command(unitID, "stop")
