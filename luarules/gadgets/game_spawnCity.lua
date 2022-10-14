@@ -98,7 +98,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     end
     if houseTypeTable[unitDefID] then
       if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
-         spDestroyUnit(GG.houseHasSafeHouseTable[unitID],false, true)
+         spDestroyUnit(GG.houseHasSafeHouseTable[unitID], true, false)
          GG.houseHasSafeHouseTable[unitID] = nil
       end  
     end  

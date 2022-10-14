@@ -4,13 +4,14 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
+
 skyscrape = piece "skyscrape"
 center = piece "center"
 
 GameConfig = getGameConfig()
 distanceToGoDown = 90
 TablesOfPiecesGroups = {}
-function script.Killed() end
+function script.Killed()  end
 
 
 
@@ -24,18 +25,22 @@ end
 
 boolSleepOnHit = false
 function script.HitByWeapon(x, z, weaponDefID, damage)
+    rando = math.random(1, #TablesOfPiecesGroups["scrapHeap"])
+    if maRa() == maRa()then
+        Explode(TablesOfPiecesGroups["scrapHeap"][rando], SFX.SHATTER)
+    end
     boolSleepOnHit = true
     return damage
 end
 
 function waitForAnEnd()
-    timeForMoveInSec = GameConfig.TimeForScrapHeapDisappearanceInMs / 30
+    timeForMoveInSec = GameConfig.TimeForScrapHeapDisappearanceInMs/1000
     speed = distanceToGoDown / timeForMoveInSec
-   
+    Sleep(GameConfig.minutMS)
 
     for i= 1, -1 * distanceToGoDown, -1 do
         WMove(center, z_axis, i, speed)
-        while boolSleepOnHit == true or  GG.GlobalGameState ~= GameConfig.GameState.normal do
+        while boolSleepOnHit == true or GG.GlobalGameState ~= GameConfig.GameState.normal do
             Sleep(GameConfig.minutMS)
             boolSleepOnHit = false
         end            

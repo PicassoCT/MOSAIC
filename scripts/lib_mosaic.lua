@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.885" 
+            Version = "Alpha: 0.886" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -220,7 +220,7 @@ function getGameConfig()
         TimeForInterceptionInFrames = 30 * 10,
         TimeForPanicSpreadInFrames = 15 * 30,
         TimeForPacification = 30 * 90,
-        TimeForScrapHeapDisappearanceInMs = 3 * 60 * 30, -- 3 Minutes off line
+        TimeForScrapHeapDisappearanceInMs = 5 * 60 * 1000, -- 3 Minutes off line
 
         costs = {
             DestroyedHousePropanda = 5000,
@@ -1283,7 +1283,7 @@ function getGameConfig()
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
-                typeTable = {"raidicon", "snipeicon", "objectiveicon"}
+                typeTable = {"raidicon", "snipeicon", "objectiveicon","raidiconbaseplate"}
 
                 return getTypeTable(UnitDefNames, typeTable)
             end

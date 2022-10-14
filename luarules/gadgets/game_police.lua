@@ -197,7 +197,7 @@ function getRandomDispatchTargetPosition(officerID)
 end
 
 function dispatchOfficer(victimID, attackerID, boolBribeOverride)
-    echo("dispatching officer to help ".. victimID )
+    conditionalEcho(boolDebugPolice, "dispatching officer to help ".. victimID )
     if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
 
     officerID = getOfficer(victimID, attackerID, boolBribeOverride)
