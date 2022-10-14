@@ -22,7 +22,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
-
+	mass = 150,
 	steeringmode        = [[1]],
 	maneuverleashlength = 1380,
 	turnRadius		  	= 8,
@@ -51,7 +51,7 @@ local AIRC_COPTER_ANTIARMOR = VTOL:New{
 	ActivateWhenBuilt=1,
 	maxBank=0.4,
 	myGravity =0.5,
-	mass                = 150,
+
 	canSubmerge         = false,
 	useSmoothMesh 		= true,
 	collide             = true,

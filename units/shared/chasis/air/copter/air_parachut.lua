@@ -16,7 +16,7 @@ local AIR_PARACHUT = VTOL:New{
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	
+	mass = 25,
 	 fireState=1,
 	BrakeRate = 1,
 	FootprintX = 1,
@@ -50,7 +50,6 @@ local AIR_PARACHUT = VTOL:New{
 	ActivateWhenBuilt=1,
 	maxBank=0.4,
 	myGravity =0.5,
-	mass                = 150,
 	canSubmerge         = false,
 	useSmoothMesh 		=false,
 	collide             = true,

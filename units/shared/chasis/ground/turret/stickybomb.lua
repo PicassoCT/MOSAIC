@@ -15,7 +15,7 @@ local stickybomb =  Turret:New{
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	
+	mass = 100,
 	 fireState=1,
 	
 	FootprintX = 1,

@@ -241,10 +241,7 @@ function showPowerPoles()
     end
 end
 
-function script.Killed(recentDamage, _)
-    if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
-        GG.UnitsToKill:PushKillUnit(GG.houseHasSafeHouseTable[unitID],false, true)
-    end    
+function script.Killed(recentDamage, _) 
     return 1
 end
 

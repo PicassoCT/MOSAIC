@@ -5,7 +5,7 @@ local TruckAssembly = Truck:New{
 	corpse				= "",
 	
 	maxDamage = 500,
-	mass = 500,
+	mass = 5000,
     buildCostMetal = 2500,
     buildCostEnergy = 1250,
 	buildTime = 2*60,

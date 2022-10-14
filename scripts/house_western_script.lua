@@ -266,9 +266,6 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-    if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
-        GG.UnitsToKill:PushKillUnit(GG.houseHasSafeHouseTable[unitID],false, true)
-    end  
     return 1
 end
 

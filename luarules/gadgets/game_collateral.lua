@@ -203,6 +203,10 @@ if (gadgetHandler:IsSyncedCode()) then
             return damage
         end
 
+        if attackerTeam == gaiaTeamID then
+            return damage 
+        end
+
         -- civilian attacked by a not civilian
         if unitTeam == gaiaTeamID and attackerID and attackerTeam ~= unitTeam then
 

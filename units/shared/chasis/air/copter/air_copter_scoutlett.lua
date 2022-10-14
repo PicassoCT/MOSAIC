@@ -11,6 +11,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	buildCostMetal = 50,
 	buildCostEnergy = 50,
 	buildTime = 10,
+	mass = 50,
 	--Health
 	maxDamage = 50,
 	idleAutoHeal = 0,

@@ -31,12 +31,14 @@ end
 function waitForAnEnd()
     timeForMoveInSec = GameConfig.TimeForScrapHeapDisappearanceInMs / 30
     speed = distanceToGoDown / timeForMoveInSec
+   
+
     for i= 1, -1 * distanceToGoDown, -1 do
         WMove(center, z_axis, i, speed)
-        if boolSleepOnHit then
+        while boolSleepOnHit == true or  GG.GlobalGameState ~= GameConfig.GameState.normal do
             Sleep(GameConfig.minutMS)
             boolSleepOnHit = false
-        end
+        end            
     end
     Spring.DestroyUnit(unitID, true, false)
 end

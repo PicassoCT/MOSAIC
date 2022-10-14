@@ -16,7 +16,7 @@ local unitName = "civilianloot"
 	idleAutoHeal = 15,
 	autoheal=10,
 	--Movement
-	mass=500,
+	mass= 100,
 	upRight=true,
 	blocking=false,
 

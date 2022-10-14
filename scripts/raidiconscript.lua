@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 --include "lib_Build.lua"
 
 myTeamID = Spring.GetUnitTeam(unitID)
-
+GameConfig = getGameConfig()
 TablesOfPiecesGroups = {}
 whirl = {}
 ring = {}
@@ -20,6 +20,7 @@ DoorPost = {}
 Door = {}
 raidStates = getRaidStates()
 raidResultStates = getRaidResultStates()
+ecmIconTypes =  getECMIconTypes(UnitDefs)     
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
@@ -262,25 +263,23 @@ boolRoundEnd = false
 function setAffiliatedHouseInvisible()
     Sleep(100)
     boolFoundHouse  = false
-
-    houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
-    foreach(getAllNearUnit(unitID, GameConfig.houseSizeX-25), 
-        function(id)
-        if houseTypeTable[Spring.GetUnitDefID(id)] and boolFoundHouse == false then
-            myHouseID = id
+    for  houseID, raidIconID in pairs(GG.HouseRaidIconMap) do
+        if doesUnitExistAlive(houseID) and raidIconID and raidIconID == unitID then
+            myHouseID = houseID
             boolFoundHouse = true
+
             StartThread(mortallyDependant, unitID, myHouseID, 15, false, true)
-            env = Spring.UnitScript.GetScriptEnv(id)
+            env = Spring.UnitScript.GetScriptEnv(myHouseID)
             if env and env.hideHouse then
-                Spring.UnitScript.CallAsUnit(id, env.hideHouse)
+                Spring.UnitScript.CallAsUnit(myHouseID, env.hideHouse)
             end
-            ox, oy, oz = Spring.GetUnitPosition(id)
+            ox, oy, oz = Spring.GetUnitPosition(myHouseID)
             min, avg, max = getGroundHeigthGrid(ox,oz, 75) 
 
-            moveUnitToUnit(unitID, id,0, max - oy, 0)
-            return
+            moveUnitToUnit(unitID, myHouseID,0, max - oy, 0)
         end
-    end)
+    end
+
 end
 
 function setAffiliatedHouseVisible()
@@ -329,6 +328,7 @@ upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
 safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 raidIconTypeTable = getRaidIconTypeTable(UnitDefs)
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
+houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
 function shoveAllNonCombatantsOut()
     Sleep(1000)
     radius = 140
@@ -338,7 +338,9 @@ function shoveAllNonCombatantsOut()
         foreach(getAllNearUnit(unitID, radius), function(id)
             defID = Spring.GetUnitDefID(id)
             if houseTypeTable[defID] or upgradeTypeTable[defID] or
-                safeHouseTypeTable[defID] or raidIconTypeTable[defID] or
+                safeHouseTypeTable[defID] or 
+                raidIconTypeTable[defID] or
+                ecmIconTypes[defID] or
                 operativeTypeTable[defID] then
             else
                 return id

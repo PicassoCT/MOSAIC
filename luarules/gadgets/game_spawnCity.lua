@@ -96,6 +96,12 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
             rubbleHeapID = spawnRubbleHeapAt(unitID)
         end
     end
+    if houseTypeTable[unitDefID] then
+      if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
+         spDestroyUnit(GG.houseHasSafeHouseTable[unitID],false, true)
+         GG.houseHasSafeHouseTable[unitID] = nil
+      end  
+    end  
 end
 
 function spawnRubbleHeapAt(id)
@@ -541,13 +547,8 @@ end
 function getAITeam()
     teams = getAITeams()
     return teams[1]
-end
+end--]]
 
---Debug
-function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-    if unitTeam == gaiaTeamID and houseTypeTable[unitDefID] then
-        x,y,z = Spring.GetUnitPosition(unitID)
-        GG.UnitsToSpawn:PushCreateUnit("antagonsafehouse", x, y, z, 0, getAITeam())
-    end
-end
---]]
+
+
+  

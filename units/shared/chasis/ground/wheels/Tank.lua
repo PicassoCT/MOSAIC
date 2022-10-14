@@ -4,7 +4,7 @@ local ground_tank_day = Tank:New{
 	
 	corpse				= "",
 	maxDamage = 1250,
-	mass = 5000,
+	mass = 60000,
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
 	buildTime = 5*60,
@@ -65,7 +65,7 @@ local ground_tank_day = Tank:New{
 	
 	corpse				= "",
 	maxDamage = 1500,
-	mass = 5000,
+	mass = 60000,
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
 	buildTime = 5*60,

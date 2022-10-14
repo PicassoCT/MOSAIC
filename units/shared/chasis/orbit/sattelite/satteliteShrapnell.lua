@@ -14,7 +14,7 @@ local SatelliteShrapnell = Satellite:New{
 	acceleration 		= 1.7,
 	brakeRate 			= 0.1,
 	turninplace			= true,
-
+	
 	footprintX 			= 1,
 	footprintZ 			= 1,
 	script 				= "satelliteshrapnellcloudscript.lua",

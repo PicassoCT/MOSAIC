@@ -16,7 +16,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
 
     if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
-    boolDebugProjectile = true
+    --boolDebugProjectile = false
     local UnitDamageFuncT = {}
     local UnitDefNames = getUnitDefNames(UnitDefs)
     local GameConfig = getGameConfig()
@@ -87,7 +87,7 @@ if (gadgetHandler:IsSyncedCode()) then
     if not GG.houseHasSafeHouseTable then GG.houseHasSafeHouseTable = {} end
 
     function gadget:Initialize()
-        --conditionalEcho(boolDebugProjectile,GetInfo().name .. " Initialization started")
+        conditionalEcho(boolDebugProjectile,GetInfo().name .. " Initialization started")
         if not GG.houseHasSafeHouseTable then
             GG.houseHasSafeHouseTable = {}
         end 
@@ -431,9 +431,9 @@ if (gadgetHandler:IsSyncedCode()) then
                                           0,0,0,  -- ox, oy, oz
                                           0)   --orientation 
                     conditionalEcho(boolDebugProjectile, "Raid: create Icon "..  persPack.IconID  .." at Unit "..persPack.civilianHouseID)
-                    
+
                     if persPack.IconID then
-        
+                        GG.HouseRaidIconMap[persPack.civilianHouseID] =  persPack.IconID
                         persPack.basePlateID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.IconID),--teamID
                                           "raidiconbaseplate", --typeID
@@ -444,7 +444,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         GG.myParent[persPack.basePlateID] = persPack.IconID
 
                         conditionalEcho(boolDebugProjectile,"Raid: Registering RaidIcon to raidedSafeHouseOrHouse_ID "..persPack.raidedSafeHouseOrHouse_ID )
-                        GG.HouseRaidIconMap[persPack.civilianHouseID] =  persPack.IconID
+
                         assert(GG.HouseRaidIconMap[persPack.civilianHouseID])
 
                         if GG.raidStatus[persPack.IconID] then  GG.raidStatus[persPack.IconID] = {} end
@@ -853,6 +853,7 @@ if (gadgetHandler:IsSyncedCode()) then
             return damage
         end
     end
+
     function makeDisguiseUnitTransparent(unitID, unitDefID)
         if civilianWalkingTypeTable[unitDefID] then
             if GG.DisguiseCivilianFor then

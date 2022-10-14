@@ -5,7 +5,7 @@ local Civil = Civilian:New{
 		corpse = "bodybag",
 	description = " innocent bystander <colateral>",
 	objectName        	= "civilian0_western.dae",
-	
+	mass = 80,
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",

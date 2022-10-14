@@ -9,8 +9,8 @@ local weaponDef = {
 
     --Physic/flight path
     range                     = 175,
-   -- burst                     = 5,
-   -- burstrate                 = 0.025,
+    burst                     = 5,
+    burstrate                 = 0.025,
     reloadtime                = 120,
     flightTime                = 10,
     startVelocity             = 0.1,

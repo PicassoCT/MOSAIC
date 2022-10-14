@@ -24,7 +24,7 @@ local groundturretssied =  Turret:New{
 	
 	MaxWaterDepth = 0,
 	MovementClass = "VEHICLE",
-
+	mass = 1000,
 	sightDistance = 80,
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
@@ -77,7 +77,7 @@ local groundturretmg =  Turret:New{
 	Description = "Pillbox Emplacement ",
 	
 	objectName = "ground_turret_mg.dae",
-
+	mass = 2500,
 	
 	script = "ground_turretscript.lua",
 	buildPic = "ground_turret_mg.png",
@@ -161,7 +161,7 @@ local ground_turret_antiarmor =  Turret:New{
 	maxDamage = 50,
 	idleAutoHeal = 0,
 	--Movement
-	
+	mass = 750,
 	 fireState=1,
 	
 	FootprintX = 1,
@@ -224,7 +224,7 @@ local ground_turret_dronegrenades =  Turret:New{
 	--capable to one-time launch a projectile 
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
 	Description = "Deploy Anit Person Flying Mini-Drones",
-	
+	mass = 750,
 	objectName = "ground_turret_grenadeDrone.DAE",
 	script = "ground_turret_drone_script.lua",
 	buildPic = "ground_turret_rocket.png",
@@ -295,7 +295,7 @@ local ground_turret_rocket =  Turret:New{
 	--capable to one-time launch a projectile 
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
 	Description = "Deployed Anti Armor Projectile ",
-	
+	mass = 2500,
 	objectName = "ground_turret_missile.dae",
 	script = "ground_turret_rocketscript.lua",
 	buildPic = "ground_turret_rocket.png",
@@ -392,7 +392,7 @@ local ground_turret_cruisemissilepod =  Walker:New{
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
-
+	mass = 3000,
 	MaxWaterDepth = 60,
 
 	usepiececollisionvolumes = false,

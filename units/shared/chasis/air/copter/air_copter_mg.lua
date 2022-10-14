@@ -16,7 +16,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	maxDamage = 250,
 	idleAutoHeal = 0,
 	--Movement
-	
+	mass = 200,
 	fireState = -1,
 	BrakeRate = 1,
 	FootprintX = 1,
@@ -50,7 +50,6 @@ local AIRC_COPTER_MG = VTOL:New{
 	ActivateWhenBuilt=1,
 	maxBank=0.4,
 	myGravity =0.5,
-	mass                = 150,
 	canSubmerge         = false,
 	useSmoothMesh 		=false,
 	collide             = true,

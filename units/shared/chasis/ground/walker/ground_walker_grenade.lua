@@ -4,7 +4,7 @@ local ground_walker_grenade = Walker:New{
 	
 	corpse				= "",
 	maxDamage = 800,
-	mass = 600,
+	mass = 900,
 	buildCostEnergy = 500,
 	buildCostMetal =  500,
 	buildTime = 45,

@@ -4,7 +4,7 @@ local CivilianAgent = Human:New{
 
 	corpse = "bodybag",
 	maxDamage         	  = 500,
-	mass                = 500,
+	mass                = 100,
 	buildCostEnergy    	  = 150,
 	buildCostMetal     	  = 500,
 	canMove					  = true,

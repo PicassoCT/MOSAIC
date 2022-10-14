@@ -1,7 +1,7 @@
 local OperativeInvestigator = Human:New{
 	corpse = "bodybag",
-	maxDamage         	  = 500,
-	mass                = 500,
+	maxDamage         	  = 750,
+	mass                = 100,
 	buildCostEnergy    	  = 500,
 	buildCostMetal     	  = 2000,
 	MetalStorage = 5000,

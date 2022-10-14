@@ -1,6 +1,6 @@
 local OperativePropagator = Human:New{
-	maxDamage         	  = 500,
-	mass                = 500,
+	maxDamage         	  = 750,
+	mass                = 100,
 	buildCostEnergy    	  = 500,
 	buildCostMetal     	  = 2000,
 	buildPic = "operativepropagator.png",
