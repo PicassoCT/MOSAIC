@@ -55,7 +55,6 @@ function MoveUnit(id, px, py, pz, speed, ox, oy, oz)
     timeInMsSecond = dist / speed
     timeInto = 0
     while distance(p, u) > 0.1 do
-
         u.x, u.y, u.z = Spring.GetUnitPosition(id)
         v = mix(p, u, timeInto / timeInMsSecond)
         Spring.MoveCtrl.SetPosition(id, v.x + ox, v.y + oy, v.z + oz)

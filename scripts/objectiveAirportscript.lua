@@ -17,11 +17,12 @@ boolCirclingDone = false
 distanceUp = 80000
 ferryFreeTable = {}
 ferryTurnAxis = 3
-
+gaiaTeamID = Spring.GetGaiaTeamID()
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     setup()
     StartThread(comingAndGoing)
+    StartThread(advertisingBlimp)
 end
 
 function playDepartureGong(offset)
@@ -32,6 +33,17 @@ end
 
 function playAircraftSounds()
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 120000, 1)
+end
+
+function advertisingBlimp()
+    Sleep(100)
+    blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
+    while true do
+        if not doesUnitExistAlive(blimpID) then
+            blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
+        end
+        Sleep(1000)
+    end
 end
 
 function setup()
