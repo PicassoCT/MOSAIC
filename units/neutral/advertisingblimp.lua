@@ -63,11 +63,7 @@ local advertising_blimp = VTOL:New{
 	  	baseclass = "vtol",
 	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
-	 sfxtypes = {
-		explosiongenerators = {
-							"custom:bigbulletimpact"
-							  },
-				},
+	
 							
 
 

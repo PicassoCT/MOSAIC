@@ -42,6 +42,13 @@ local objective_geoengineering = Building:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 200 130",
 	category = [[GROUND BUILDING]],
+	
+	sfxtypes = {
+		explosiongenerators = {
+			"custom:sulfurinjection",			
+		},
+		
+	},
 
 }
 

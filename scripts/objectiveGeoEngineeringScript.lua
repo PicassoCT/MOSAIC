@@ -89,6 +89,7 @@ function vtolStartLanding(plane, rotor1, rotor2)
 end
 
 function turnWindSlow()
+    --StartThread(emitSulfur)
     while true do
         dx, dy, dz = Spring.GetWind()
         headRad = math.atan2(dx, dz)
@@ -99,8 +100,15 @@ function turnWindSlow()
         WaitForTurns(tether, blimp)
         Sleep(100)
     end
-
 end
+
+function emitSulfur()
+    while true do
+        spawnCegAtPiece(unitID, blimp, "sulfurinjection", 0, 1, 0, 0, true)
+        Sleep(3000)
+    end
+end
+
 function blinkLights()
     n = 1
     while true do

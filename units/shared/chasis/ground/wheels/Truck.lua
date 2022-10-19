@@ -284,6 +284,10 @@ local PoliceTruck = Truck:New{
 				[2]={
 					name  = "s16rocket",
 					onlyTargetCategory = [[AIR]],
+					},	
+				[3]={
+					name  = "teargasgrenade",
+					onlyTargetCategory = [[GROUND]],
 					},			
 	},	
 	

@@ -41,6 +41,8 @@ end
 function script.Create()
     echo(UnitDefs[myDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitCOBValue(unitID, COB.ACTIVATION, 1)
+    Spring.SetUnitNoSelect(unitID, true)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     -- Spring.MoveCtrl.Enable(unitID,true)
     -- x,y,z =Spring.GetUnitPosition(unitID)
@@ -51,15 +53,8 @@ function script.Create()
 end
 
 function flyTowardsPerson()
-    px,py,pz = Spring.GetUnitPosition(unitID)
-     Command(unitID, "go", {
-                                x = px + math.random(-20, 20),
-                                y = py,
-                                z = pz + math.random(-20, 20)
-                            }, {})
     Spring.AddUnitImpulse(unitID, 1, 10, 0)
     while true do  
-        if maRa() == maRa()then     
             T= foreach(Spring.GetTeamUnits(gaiaTeamID),
                 function(id)
                     defID = Spring.GetUnitDefID(id)
@@ -73,15 +68,16 @@ function flyTowardsPerson()
                 id = T[math.random(1,#T)]
                 px,py,pz = Spring.GetUnitPosition(id)
                 Spring.SetUnitMoveGoal(unitID, px,py+100,pz)
-                Command(unitID, "go", {x = px, y = py, z = pz}, {"shift"})
+                Command(unitID, "go", {x = px, y = py, z = pz}, {})
+                Command(unitID, "guard", {id}, {"shift"})
                 Command(unitID, "go", {
                                 x = px + math.random(-20, 20),
                                 y = py,
                                 z = pz + math.random(-20, 20)
                             }, {})
+
             end
-        end
-        Sleep(30000)
+        Sleep(10000)
     end
 end
 
@@ -113,6 +109,7 @@ function Advertising()
 end
 
 function script.Killed(recentDamage, _)
+    Spring.SetUnitCrashing ( unitID, true) 
     return 1
 end
 

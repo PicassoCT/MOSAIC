@@ -21,7 +21,7 @@ local weaponDef = {
 	
 	avoidFeature = false,
 	avoidGround = true,
-	collideNeutral = true,
+	collideNeutral = false,
 	collideGround = true,
 	commandFire = true,
 	canAttackGround = true,

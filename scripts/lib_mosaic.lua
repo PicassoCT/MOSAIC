@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.886" 
+            Version = "Alpha: 0.887" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -111,6 +111,8 @@ function getGameConfig()
           maxDispatchTime = 2000,
           minSpawnDistance = 2200,
         },
+
+        teargasRadius = 200,
 
         maxSirenSoundFiles = 7,
 

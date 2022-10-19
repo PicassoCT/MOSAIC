@@ -63,9 +63,9 @@ if (gadgetHandler:IsSyncedCode()) then
     local nimrodRailungDefID = WeaponDefNames["railgun"].id
     Script.SetWatchWeapon(nimrodRailungDefID, true)
     local molotowDefID = WeaponDefNames["molotow"].id
-    Script.SetWatchWeapon(molotowDefID, true)
-
-
+    Script.SetWatchWeapon(molotowDefID, true)   
+    local teargasgrenadeDefID = WeaponDefNames["teargasgrenade"].id
+    Script.SetWatchWeapon(teargasgrenadeDefID, true)   
 
     local FireWeapons = {
         [molotowDefID] = true
@@ -129,6 +129,9 @@ if (gadgetHandler:IsSyncedCode()) then
     [impactorWeaponDefID] =  function(weaponDefID, px, py, pz, AttackerID)
             id = Spring.CreateUnit("impactor", px, py, pz, 1, GaiaTeamID)
             Spring.SetUnitBlocking(id, false)
+    end,
+    [teargasgrenadeDefID] =  function(weaponDefID, px, py, pz, AttackerID)
+        tearGasCloudID = Spring.CreateUnit("teargascloud",px,py,pz, 1, GaiaTeamID)            
     end
   }
 

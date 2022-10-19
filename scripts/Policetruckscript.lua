@@ -12,6 +12,7 @@ myDefID = Spring.GetUnitDefID(unitID)
 TruckTypeTable = getTruckTypeTable(UnitDefs)
 boolIsCivilianTruck = (TruckTypeTable[myDefID] == nil)
 GameConfig = getGameConfig()
+boolIsCivilianUnit = Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID()
 
 SIG_LOUDNESOVERRIDE = 2
 
@@ -27,6 +28,7 @@ function showAndTell()
     end
 end
 
+boolTearGasGo = false
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, false)
@@ -35,6 +37,7 @@ function script.Create()
     showAndTell()
     StartThread(delayedSirens)
     StartThread(theySeeMeRollin)
+    StartThread(tearGasState)
 end
 
 function theySeeMeRollin()
@@ -171,10 +174,21 @@ function loudnessOverride()
 
     boolLoudnessOverrideActive = false
 end
-
+boolHasBeenHitBy= false
 function script.HitByWeapon(x, z, weaponDefID, damage)
     StartThread(loudnessOverride)
+    boolHasBeenHitBy = true
     return damage
+end
+
+function tearGasState()
+    while true do
+        if boolHasBeenHitBy == true and GG.GlobalGameState == GameConfig.GameState.anarchy then
+            boolHasBeenHitBy = false
+            boolTearGasGo = true
+        end
+        Sleep(1000)
+    end
 end
 
 function script.Killed(recentDamage, _)
@@ -211,3 +225,15 @@ function script.QueryWeapon2() return center end
 function script.AimWeapon2(Heading, pitch) return true end
 
 function script.FireWeapon2() return true end
+
+
+function script.AimFromWeapon3() return center end
+
+function script.QueryWeapon3() return center end
+
+function script.AimWeapon3(Heading, pitch) return boolTearGasGo or not boolIsCivilianUnit end
+
+function script.FireWeapon3() 
+    boolTearGasGo = false
+    return true 
+end

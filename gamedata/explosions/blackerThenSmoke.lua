@@ -13,22 +13,11 @@ poofoo = {
         alwaysvisible      = true,
            colormap           = [[0.1 0.2 0.6 0.25	0.1 0.1 0.3 0.25	]],
 		--colormap           = [[1 0.4 0.25 1     .02 .02 .02 0.01 .004 .004 .004 0.02		0 0 0 0.01]],
-        directional        = false,
-		
-			
-
-		
-		
-		
-		
-		
+        directional        = false,		
         emitrot            = 45,--45
         emitrotspread      = 12,--12
-	emitvector         = [[0, -1, 0]],
-      
-				gravity            = [[0, 0.4, 0]],
-	  
-	  
+				emitvector         = [[0, -1, 0]],      
+				gravity            = [[0, 0.4, 0]],	  
 
         numparticles       = 3,
         particlelife       = 65,
