@@ -9,6 +9,10 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture,
                                      "civilian", UnitDefs)
 
+local truckTypeTable = getCultureUnitModelTypes(
+                                     GameConfig.instance.culture,
+                                     "truck", UnitDefs)
+
 local timeTotal = 35*1000
 function script.Create()
   Spring.SetUnitAlwaysVisible(unitID,true)
@@ -18,11 +22,14 @@ function script.Create()
   StartThread(respawnCEG, unitID, timeTotal, true, false)
   StartThread(doDamage)
 end
-
+teargasCEGs = {
+                "teargas",
+                "teargasdark"
+                }
 function respawnCEG()
   while true do
-    spawnCegAtUnit(unitID, "teargas", 0, 15, 0 )
-    rest = math.random(7000,9000)
+    spawnCegAtUnit(unitID, teargasCEGs[math.random(1,#teargasCEGs)], 0, 15, 0 )
+    rest = math.random(5000,7000)
     Sleep(rest)
   end
 end
@@ -46,12 +53,14 @@ function doDamage()
     foreach(getAllInCircle(px,pz, GameConfig.teargasRadius, unitID),
                         function(id)
                            defID= spGetUnitDefID(id)
-                           if civilianWalkingTypeTable[defID] and not sentFleeing[id] then
+                           if civilianWalkingTypeTable[defID] then
                               stunUnit(id, 1.0)
                               reduced= math.random(0,3)/10
                               setSpeedEnv(id, reduced)
-                              sentFleeing[id] = id
                               StartThread(startInternalBehaviourOfState,id,"startFleeing", unitID)
+                           end
+                           if truckTypeTable[defID] then
+                                stunUnit(id, 4.0)
                            end
                         end
                         )

@@ -16,10 +16,13 @@ end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
-
+teargasCEGs = {
+                "teargas",
+                "teargasdark"
+                }
 function getCegName()
 	echo("Cegspawn")
-	return "teargas", 9000
+	return teargasCEGs[math.random(1,#teargasCEGs)], math.random(5000,7000)
 end
 center = piece "center"
 Quader04 = piece "Quader04"
