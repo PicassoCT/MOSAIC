@@ -3,7 +3,7 @@
 
 A spies vs terrorists RTS game developed for the spring engine (www.springrts.com). 
 
-![alt text](https://springrts.com/phpbb/download/file.php?mode=view&id=11526)
+![Simcity on BA DSD ](https://springrts.com/phpbb/download/file.php?mode=view&id=11526)
 
 Its the very near future, and on a planet ravaged by the disaster that is 9 billion people,
 there is a city that is doomed.
@@ -13,13 +13,18 @@ can cause damage once only wielded by superpowers.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen8.png "")
 
+
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen11.png "")
 
 
 All it takes is some backyard shed, with a homespun hyperfast missile and something new every day as payload.
-Your job, should you accept it, is - to either make the worst case happen (Antagon) or prevent the last disaster and give humanity one more day on this world (Protagon).
+Your job, should you accept it, is - 
 
-Be the man in the chair, you were bourne to be, in these hours of despair.
+to either make the worst case happen (Antagon) 
+
+or prevent the last disaster and give humanity one more day on this world (Protagon).
+
+Be the man in the chair, in these hours of despair.
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen15.png "")
 
@@ -32,6 +37,7 @@ In the cellars, backyards and safe-houses of the city, a hidden army grows.
 Eyes in the sky - cycle over the city, ever watchful for that one revealing misstep.
 
 Drones hum ready to take out the old-fashioned, bold & stupid.
+
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen2.png "")
 
 Cause its only ever one Raid, one Interrogation for your side to unravell the whole graph of trust and treason.
@@ -56,6 +62,7 @@ In 20 minutes it will strike on the other side of the world, in half that time t
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen14.png "")
 
+
 After that the hammer, comes down - on good and evil alike. 
 
 A nuke, a godrod.
@@ -63,8 +70,6 @@ A nuke, a godrod.
 Let there be light.
 
 A eye for a eye, a city for a city.
-
-
 
 How to play:
 1) Download and install https://springlobby.springrts.com/
