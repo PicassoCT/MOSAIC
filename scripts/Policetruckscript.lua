@@ -231,7 +231,8 @@ function script.AimFromWeapon3() return center end
 
 function script.QueryWeapon3() return center end
 
-function script.AimWeapon3(Heading, pitch) return boolTearGasGo or not boolIsCivilianUnit end
+function script.AimWeapon3(Heading, pitch) return boolTearGasGo --or not boolIsCivilianUnit 
+end
 
 function script.FireWeapon3() 
     boolTearGasGo = false
