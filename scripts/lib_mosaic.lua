@@ -2970,6 +2970,18 @@ function TODO(task)
     assert(true == false)
 end
 
+function isCrossway(detailXHash, detailZHash)
+    if detailZHash == 3 then
+        return true
+    end
+
+    if (detailXHash == 2 or detailXHash == 4) and maRa() then
+        return true
+    end
+
+    return false
+end   
+
 function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
     region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
     if not GG.StreetNameDict then
@@ -3018,7 +3030,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
                 "Wilhelmstraße",
                 "Raiffeisenstraße",
                 "Rathausgasse",
-                Doctorstreet,
+                "Doctorstreet",
                 "Hauptstraße",
                 "Schulstraße",
                 "Dorfstraße",
@@ -3180,7 +3192,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
                 "HaArba'a Street",
                 "HaMasger Street",
                 "HaYarkon Street",
-                Highway,
+                "Highway",
                 "Ibn Gabirol Street",
                 "Jerusalem Boulevard",
                 "Kaplan Street",
@@ -3323,14 +3335,12 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
         region = "NorthAmerica"
     end
 
-    if
-        detailXHash == 2 or (detailXHash == 4 and detailZHash == 3) or
-            (detailXHash == 4 and detailZHash == 2 and maRa()) or
-            (detailXHash == 4 and detailZHash == 4 and maRa())
-     then
+    if isCrossway((detailXHash%4)+1, (detailZHash %4) +1) then
         name = Streetnames[region][(detailXHash % #Streetnames[region]) + 1]
+        --name ="(Querstrasse:x="..detailXHash.."/z="..detailZHash..")"
     else
         name = Streetnames[region][(detailZHash % #Streetnames[region]) + 1]
+        --name ="(Laengstrasse:x="..detailXHash.."/z="..detailZHash..")"
     end
 
     if not GG.StreetNameDict[name] then
