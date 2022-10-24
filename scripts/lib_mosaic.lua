@@ -2976,19 +2976,19 @@ function TODO(task)
     assert(true == false)
 end
 
-function isCrossway(detailXHash, detailZHash)
+function isCrossway(detailXHash, detailZHash, boolInnerCityBlock)
     if detailZHash == 3 then
         return true
     end
 
-    if (detailXHash == 2 or detailXHash == 4) and maRa() then
+    if (detailXHash == 2 or detailXHash == 4) and (maRa() and boolInnerCityBlock) then
         return true
     end
 
     return false
 end   
 
-function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
+function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock)
     region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
     if not GG.StreetNameDict then
         GG.StreetNameDict = {}
@@ -3341,7 +3341,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game)
         region = "NorthAmerica"
     end
 
-    if isCrossway((detailXHash%4)+1, (detailZHash %4) +1) then
+    if isCrossway((detailXHash%4)+1, (detailZHash %4) +1, boolInnerCityBlock) then
         name = Streetnames[region][(detailXHash % #Streetnames[region]) + 1]
         --name ="(Querstrasse:x="..detailXHash.."/z="..detailZHash..")"
     else

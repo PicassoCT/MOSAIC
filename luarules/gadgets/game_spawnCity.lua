@@ -248,7 +248,7 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
                                         orgPosX + offsx * innerCityDim.x,
                                         orgPosZ + offsz * innerCityDim.z,
                                         true)
-                           setHouseStreetNameTooltip(houseID, (cursor.x*2) + offsx, (cursor.z*2) + offsz, Game)
+                           setHouseStreetNameTooltip(houseID, (cursor.x*2) + offsx, (cursor.z*2) + offsz, Game, true)
                 end
             end    
         end
@@ -371,7 +371,7 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                                           tmpCursor.x * houseStreetDim.x,
                                           tmpCursor.z * houseStreetDim.z, boolNearCityCenter)
                             numberOfBuildings = numberOfBuildings - 1
-                            setHouseStreetNameTooltip(houseID, nameCursor.x , nameCursor.z, Game)
+                            setHouseStreetNameTooltip(houseID, nameCursor.x , nameCursor.z, Game, true)
                             if boolNearCityCenter == true then
                                 fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
                             end
