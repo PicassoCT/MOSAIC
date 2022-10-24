@@ -49,6 +49,7 @@ function getGameConfig()
         truckBreakTimeMaxSec= 5*60,
         truckHonkLoudness = 0.35,
         chanceOfCivilianSpawningFromTruck = 0.65,
+		emergencyLocationTimeMs = 20 *1000,
 		
         houseSizeX = 256,
         houseSizeY = 16,
@@ -389,6 +390,11 @@ function getGameConfig()
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {[UnitDefNames["gcscrapheap"].id] = UnitDefNames["gcscrapheap"].id}
     end
+	
+	function registerEmergency(x, z)
+		if not GG.EmergencyPositions then GG.EmergencyPositions = {}end
+		GG.EmergencyPosition[#GG.EmergencyPosition+1] = {x=x, z=z}
+	 end
 
     function getPoliceTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)

@@ -51,6 +51,7 @@ local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
+local scrapHeapTypeTable =  getScrapheapTypeTable(UnitDefs)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 accumulatedCivilianDamage = 0
 
@@ -128,7 +129,13 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
     if isOffenceIcon(UnitDefs, unitDefID) then
         dispatchOfficer(unitID, unitID, true)
     end
+	
+	if scrapHeapTypeTable[unitDefID] then
+		x,_,z = spGetUnitPosition(unitID)
+		registerEmergency(x, z)
+	end
 end
+
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     if PoliceTypes[unitDefID] then
@@ -136,6 +143,11 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
         officersInReserve = math.min(officersInReserve + 1,maxNrPolice)
         PoliceDamageCounter= PoliceDamageCounter + 500
     end
+	
+	if civilianWalkingTypeTable[unitDefID] then
+		x,_,z = spGetUnitPosition(unitID)
+		registerEmergency(x, z)
+	end
 end
 
 function getOfficer(victimID, attackerID, boolBribeOverride)
