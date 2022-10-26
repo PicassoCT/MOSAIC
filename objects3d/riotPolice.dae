@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2022-10-23T19:51:59Z</created><keywords></keywords><modified>2022-10-23T19:51:59Z</modified><revision></revision><subject></subject><title></title><unit meter="1.000000" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2022-10-26T21:16:22Z</created><keywords></keywords><modified>2022-10-26T21:16:22Z</modified><revision></revision><subject></subject><title></title><unit meter="1.000000" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #22-image" name="Map #22"><init_from>file://Z:\MosaicDev\Development\Models\civilians\policeriot\Texture.psd</init_from></image>
   </library_images>
@@ -9,7 +9,6 @@
       <instance_effect url="#Material #8-fx"/>
     </material>
   </library_materials>
- 
   <library_geometries>
     <geometry id="center-lib" name="centerMesh">
       <mesh>

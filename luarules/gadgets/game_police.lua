@@ -47,7 +47,10 @@ local activePoliceUnitIds_Dispatchtime = {}
 local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 local CivAnimStates = getCivilianAnimationStates()
 local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
-
+local civilianWalkingTypeTable = getCultureUnitModelTypes(
+                                 GameConfig.instance.culture,
+                                 "civilian", 
+                                 UnitDefs)
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)

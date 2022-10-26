@@ -8,9 +8,12 @@ GameConfig = getGameConfig()
 TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+fireTruck = piece("container031")
+EMT = piece("container032")
+GarbageTruck = piece("container39")
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
+gaiaTeamID = Spring.GetGaiaTeamID()
 
 function attachPayload(payLoadID, id)
     if payLoadID then
@@ -42,10 +45,8 @@ function script.Create()
         end
     else
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
-	  boolIsFireTruckOrEMT = (displayedPiece == fireTruck or displayedPiece == EMT)
-	  if boolIsFireTruckOrEMT then
-		StartThread(fireTruckEmergencyBehaviour)
-	  end
+	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(fireTruckEmergencyBehaviour) end
+	  if displayedPiece == GarbageTruck then StartThread(GarbageTruckBehaviour) end
     end
 end
 
@@ -67,6 +68,24 @@ function getEmergency()
 	end
 end
 
+function GarbageTruckBehaviour()
+	Sleep(50)
+	garbageID
+	ox,_, oz = Spring.GetUnitPosition(unitID)
+	while true do
+		gx,gz = GetCurrentMoveGoal(unitID)
+		if gx and  gx ~= ox and gz ~= oz then
+			ox, oz = gx,gz
+			if garbageID and doesUnitExistAlive(garbageID)then
+				Spring.DestroyUnit(garbageID, false, true)
+			end
+			garbageID = Spring.CreateUnit("trashbin",gaiaTeamID ,gx, 0, gz, 0)
+		end
+		Sleep(5000)
+	end
+end
+
+local corpsePrideTable = {[FeatureDefNames["bodybag"].id] = true}
 function fireTruckEmergencyBehaviour()
 	Sleep(50)
 	while true do
@@ -79,6 +98,18 @@ function fireTruckEmergencyBehaviour()
 				Command("go", transporterID {x=x,y=0, z=z})
 				Sleep(2500)
 				intervallTime = intervallTime -2500
+			end
+			if displayedPiece == EMT then
+				T= getFeaturesInCircleAroundUnit(unitID, 50)
+				if T and #T > 0 then
+					foreach(T,
+						function(id)
+							if corpsePrideTable[Spring.GetFeatureDefID(id)] then
+								Spring.DestroyFeature(id)
+							end
+						end
+						)
+				end
 			end
 		 end
 		end

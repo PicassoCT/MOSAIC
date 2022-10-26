@@ -46,6 +46,20 @@ function script.Create()
     Hide(Visor)
     Hide(BeatDown)
     showRiotCop()
+
+end
+
+function animationTest()
+  while true do
+    for i=1,3 do
+      
+
+    end
+    Sleep(1000)
+    resetAll(unitID, 1.0)
+    WaitForTurns(TablesOfPiecesGroups)
+    Sleep(1000)
+
 end
 
 

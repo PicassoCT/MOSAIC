@@ -133,6 +133,14 @@ function getAllInCircle(x, z, Range, unitID, teamid)
 end
 
 -- > Grabs every Unit in a circle, filters out the unitid or teamid if given
+function getFeaturesInCircleAroundUnit(id, Range)
+    x,y,z = Spring.GetUnitPosition(id)
+    if not Range then assert(Range) end
+    T = Spring.GetFeaturesInCylinder (  x,  z, Range) 
+    return T
+end
+
+-- > Grabs every Unit in a circle, filters out the unitid or teamid if given
 function getAllInSphere(x, y, z, Range, unitID, teamid)
     if not x or not z then return {} end
     if not Range then assert(Range) end
@@ -6715,6 +6723,15 @@ function GetUnitOrFeaturePosition(id)
     end
 end
 
+function GetCurrentMoveGoal(unitID)
+    CommandTable = Spring.GetUnitCommands(unitID, 1)
+      if CommandTable and CommandTable[1] then
+              gx,_, gz = GetCommandPos(CommandTable[1])             
+                  if gx and gx ~= -10 or gz and gz ~= -10 then
+                    return gx, gz 
+                end
+      end
+end
 
 function GetCommandPos(command)   --- get the command position
   if command.id < 0 or command.id == CMD.MOVE or command.id == CMD.REPAIR or command.id == CMD.RECLAIM or
