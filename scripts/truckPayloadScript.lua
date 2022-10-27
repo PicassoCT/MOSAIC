@@ -57,8 +57,8 @@ end
 function getEmergency()
 	if GG.EmergencyPositions then
 		index = 0
-		if #GG.EmergencyPositions == 1 then index = 1
-		if #GG.EmergencyPositions > 1 then index = math.random(1,  #GG.EmergencyPositions)
+		if #GG.EmergencyPositions == 1 then index = 1 end
+		if #GG.EmergencyPositions > 1 then index = math.random(1,  #GG.EmergencyPositions) end
 		if index > 0 then
 			x, z = GG.EmergencyPositions[index].x,  GG.EmergencyPositions[index].z
 			local copy = GG.EmergencyPositions
@@ -79,7 +79,7 @@ function GarbageTruckBehaviour()
 			if garbageID and doesUnitExistAlive(garbageID)then
 				Spring.DestroyUnit(garbageID, false, true)
 			end
-			garbageID = Spring.CreateUnit("trashbin",gaiaTeamID ,gx, 0, gz, 0)
+			garbageID = Spring.CreateUnit("trashbin",gaiaTeamID ,gx, 0, gz, math.random(0,4))
 		end
 		Sleep(5000)
 	end

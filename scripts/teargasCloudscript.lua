@@ -22,6 +22,9 @@ function script.Create()
   StartThread(respawnCEG, unitID, timeTotal, true, false)
   StartThread(doDamage)
 end
+
+
+
 teargasCEGs = {
                 "teargas",
                 "teargasdark"
@@ -47,6 +50,25 @@ function startInternalBehaviourOfState(id, name, enemyID)
                                    enemyID)
   end
 end    
+policeOfficerID
+function spawnPolice()
+	Sleep(5000)
+	policeOfficerID = createUnitAtUnit(gaiaTeamID, "riotpolice", unitID, math.random(-10,10),0 , math.random(-10,10))
+	 StartThread(lifeTime, policeOfficerID, timeTotal  - 5000 -1000, false, true)
+	 while doesUnitExistAlive(policeOfficerID) do
+		T = foreach(getAllNearUnit(policeOfficerID, 120),
+				function(id)
+					defID = Spring.GetUnitDefID(id)
+					if civilianWalkingTypeTable[defID] and gaiaTeamID == Spring.GetUnitTeam(id) then
+						return id
+					end
+					end
+					)
+			Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
+			Sleep(1000)	 
+	 end
+
+end
 
 function doDamage()
   while true do
@@ -69,5 +91,6 @@ function doDamage()
 end
 
 function script.Killed(recentDamage, _)
+	if doesUnitExistAlive(policeOfficerID) then Spring.DestroyUnit(policeOfficerID, false, true) end
     return 1
 end
