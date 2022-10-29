@@ -392,8 +392,8 @@ function getGameConfig()
     end
 	
 	function registerEmergency(x, z)
-		if not GG.EmergencyPositions then GG.EmergencyPositions = {}end
-		GG.EmergencyPosition[#GG.EmergencyPosition+1] = {x=x, z=z}
+		if not GG.EmergencyPositions then GG.EmergencyPositions = {} end
+		GG.EmergencyPositions[#GG.EmergencyPositions+1] = {x=x, z=z}
 	 end
 
     function getPoliceTypes(UnitDefs)

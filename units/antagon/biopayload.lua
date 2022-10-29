@@ -9,18 +9,16 @@ local BioWeaponsPayload = Abstract:New{
 	explodeAs			= "none",
 	script 				= "warheadpayloadscript.lua",
 	objectName        	= "WarHeadIcon.dae",
-	buildPic = "biologicalpayload.png",
-
+	buildPic 			= "biologicalpayload.png",
+	alwaysupright		= true,
 	iconType 			= "launcher",
-	cantBeTransported = false,
-
-		alwaysUpright = true,
+	cantBeTransported 	= false,
 	MaxSlope 			= 100,
 
 	customparams = {
 		helptext		= "Launcher step",
 		baseclass		= "Abstract", 
-		normaltex = "unittextures/component_atlas_normal.dds",
+		normaltex 		= "unittextures/component_atlas_normal.dds",
     },
 	
 	category = [[GROUND]],

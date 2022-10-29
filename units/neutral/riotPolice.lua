@@ -16,11 +16,11 @@ local RiotPolice = Civilian:New{
 		baseclass		= "Civilian", -- TODO: hacks
 		normaltex = "unittextures/western_civilian_normal.dds",
     },
-		weapons={
-			[1]={name  = "policebatton", --prevents other weapon usage
-				onlyTargetCategory = [[GROUND]],
+	weapons={
+			[1]={name  = "policebatton", 
+				onlyTargetCategory = [[GROUND]]
 			},	
-			}
+			},
 
 	
 	category = [[GROUND ARRESTABLE]],

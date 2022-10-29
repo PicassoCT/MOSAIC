@@ -9,9 +9,9 @@ local PhysicsPayload = Abstract:New{
 	explodeAs			= "none",
 	script 				= "warheadpayloadscript.lua",
 	objectName        	= "WarHeadIcon.dae",
-	buildPic = "physicalpayload.png",
-	cantBeTransported = false,
-	
+	buildPic 			= "physicalpayload.png",
+	cantBeTransported 	= false,
+	alwaysupright		= true,
 	iconType 			= "launcher",
 	MaxSlope 			= 100,
 

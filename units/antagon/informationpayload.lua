@@ -9,19 +9,17 @@ local InformationPayload = Abstract:New{
 	explodeAs			= "none",
 	script 				= "warheadpayloadscript.lua",
 	objectName        	= "WarHeadIcon.dae",
-	buildPic = "intelligencepayload.png",
-
-		cantBeTransported = false,
+	buildPic 			= "intelligencepayload.png",
+	alwaysupright		= true,
+	cantBeTransported 	= false,
 	iconType 			= "launcher",
 
-	
-		alwaysUpright = true,
 	MaxSlope 			= 100,
 
 	customparams = {
 		helptext		= "Launcher step",
 		baseclass		= "Abstract", 
-		normaltex = "unittextures/component_atlas_normal.dds",
+		normaltex 		= "unittextures/component_atlas_normal.dds",
     },
 	
 	category = [[GROUND]],

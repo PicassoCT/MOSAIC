@@ -13,10 +13,9 @@ local weaponDef = {
     weaponVelocity = 9999,
     reloadtime = 90,
     range = 50,
+    burst = 3,
+    burstrate = 2.5,
     turret = true,
-
-    --  soundStart         = "",
-    --  soundtrigger=1,
 
     --apperance
     rgbColor = [[0 0 0 0]],

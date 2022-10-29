@@ -59,7 +59,7 @@ function animationTest()
     resetAll(unitID, 1.0)
     WaitForTurns(TablesOfPiecesGroups)
     Sleep(1000)
-
+  end
 end
 
 

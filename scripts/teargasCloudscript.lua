@@ -50,7 +50,9 @@ function startInternalBehaviourOfState(id, name, enemyID)
                                    enemyID)
   end
 end    
-policeOfficerID
+
+policeOfficerID = nil
+
 function spawnPolice()
 	Sleep(5000)
 	policeOfficerID = createUnitAtUnit(gaiaTeamID, "riotpolice", unitID, math.random(-10,10),0 , math.random(-10,10))

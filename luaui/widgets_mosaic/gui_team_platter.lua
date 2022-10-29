@@ -123,6 +123,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["closecombatarena"].id]= true,
 [UnitDefNames["raidiconbaseplate"].id]= true,
 [UnitDefNames["teargascloud"].id]= true,
+[UnitDefNames["trashbin"].id]= true,
 }
 
 if UnitDefNames["caesareagle"] then ignoredUnitDefs[UnitDefNames["caesareagle"].id]= true end

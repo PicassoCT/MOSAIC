@@ -45,7 +45,7 @@ function script.Create()
         end
     else
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
-	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(fireTruckEmergencyBehaviour) end
+	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(FireTruckEmergencyBehaviour) end
 	  if displayedPiece == GarbageTruck then StartThread(GarbageTruckBehaviour) end
     end
 end
@@ -70,7 +70,7 @@ end
 
 function GarbageTruckBehaviour()
 	Sleep(50)
-	garbageID
+	garbageID = nil
 	ox,_, oz = Spring.GetUnitPosition(unitID)
 	while true do
 		gx,gz = GetCurrentMoveGoal(unitID)
@@ -86,7 +86,7 @@ function GarbageTruckBehaviour()
 end
 
 local corpsePrideTable = {[FeatureDefNames["bodybag"].id] = true}
-function fireTruckEmergencyBehaviour()
+function FireTruckEmergencyBehaviour()
 	Sleep(50)
 	while true do
 		intervallTime = GameConfig.emergencyLocationTimeMs 
@@ -95,13 +95,13 @@ function fireTruckEmergencyBehaviour()
 		 transporterID = Spring.GetUnitTransporter(unitID)
 		 if transporterID then
 			while doesUnitExistAlive(transporterID) and intervallTime > 0 do
-				Command("go", transporterID {x=x,y=0, z=z})
+				Command("go", transporterID, {x=x,y=0, z=z})
 				Sleep(2500)
 				intervallTime = intervallTime -2500
 			end
 			if displayedPiece == EMT then
 				T= getFeaturesInCircleAroundUnit(unitID, 50)
-				if T and #T > 0 then
+				if T then
 					foreach(T,
 						function(id)
 							if corpsePrideTable[Spring.GetFeatureDefID(id)] then
