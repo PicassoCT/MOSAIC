@@ -2,7 +2,7 @@
 local weaponName = "policebatton"
 local weaponDef = {
     name = "CloseCombat",
-    weaponType = [[MELEE]], --Rifle
+    weaponType = [[Melee]], --Rifle
     --damage
     damage = {
         default = 10,

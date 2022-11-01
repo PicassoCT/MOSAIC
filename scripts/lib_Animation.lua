@@ -672,6 +672,16 @@ function spinRand(p, intervallLow, intervallUp, startspeed)
     end
 end
 
+function spinRandT(Table, axis, intervallLow, intervallUp, startspeed)
+    val = math.random(intervallLow, intervallUp)
+    foreach(Table,
+        function(id)
+            val = math.random(intervallLow, intervallUp)
+            Spin(id, axis, math.rad(val), startspeed or 0)
+        end
+        )
+end
+
 -- >Spins a Table
 function spinT(Table, axis, rdeg, speed, degup)
     if type(Table) == "number" then

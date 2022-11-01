@@ -8,6 +8,40 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 GameConfig = getGameConfig()
+BrothelSpin= piece("BrothelSpin")
+CasinoSpin= piece("CasinoSpin")
+Joy = piece("Joy")
+
+advertisingJingles = 
+{
+"lonely? Try NEXT DOOR™ from OmegaSoft. Let AI recreate your friends and family, in the room NEXT DOOR",
+"stressed? Let the Ettu™ Robobutler give you a massage. Relax, your worries are behind you",
+"boring? AIvid enriches your personality void with unique content. Be famous - with AIvid",
+"a new live awaits you Offworld. Leave earth for the edison protectorate on mars",
+"does fallout grow on you? Use Thanatol to neutralize environment caused cancers. Stay alive, with Thanatol",
+"feeling down? Try uForia, the drug recommended by the UN-DEA. Smile, its a good day",
+"generational debt to corporate got you down? Participate in the planetary lottery. Win freedom for your family",
+"nature is gone, but in the metaverse it lives on. Join today, for a VR-Getaway",
+"tune out the burning horizon with Armageddon Augmented Reality. Unseeing is believing",
+"shareholders of AirBoing, today the Mono DAO offers you 300 ether per share. Check your portfolio and stay in the green",
+"its a tough world, but your kids will be tougher. Prepare them with RNA-Vector treatments. Harder, smarter, make them stronger",
+"OceansideFoods™ famous Algae ramen are now back in several brand new flavors. Try chili bubblegum today! <fast>No microplatics, unlike our competitors</fast>",
+"Pollution is everywhere! But not in your home. Thanks to PolAirLock. PolAirLock, trust is good, but a over-pressure home is better",
+"everyone loves gamble Donkey. The massive multiplayer, snowball game, were the last one standing, becomes a billionaire. Its all in on red",
+"block traumatizing work-memories with Memblock, the only working selective memory blocker. Work hard, forget for today, Play hard anyway. <fast> Recommended by the PanASEA-Directorate</fast>",
+"buy Full-Organ-Life insurance. Harvested from healthy, young donors. Your organs may give up, but FOLI never does",
+"when love grows cold, load your lovers personality from the MetaCrypt, directly into the heating blanket. Keep them at your side.",
+"afraid of death? Allow MetaCrypt to reconstruct you for a afterlife. Join the DigitalSouls program, free of charge",
+"have your loved ones AddViral Braindamage from NeuralCon Join the Class Action lawsuit. You cant get them back, but you can get back at them.Get compensated now ",
+"dislike adds, install the NeuralCon AddBlocker. Become the Buddha, let them starve for attention",
+"want to be a genius, leave your signature on the planet? Join the Houston hivemind. Artists, Scientists, Visionarys united. From our hands flows cornucopia",
+"shy, anxious, in a dog eats dog world? Buy the Negotiator AI- become the social animal. A ToughBreak™ Softwarehive product",
+"[Comment: Failing AI Generated awkward Jingle, should still sound confident]:",
+"emulate more successful society members, who prefer beautiful, sexy, drink named soyLala. Get limited supply or miss out"
+}
+
+
+
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -39,17 +73,76 @@ function showOneOrNone(T)
 end
 
 function script.Create()
-    echo(UnitDefs[myDefID].name.."has placeholder script called")
+    --echo(UnitDefs[myDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitCOBValue(unitID, COB.ACTIVATION, 1)
-    Spring.SetUnitNoSelect(unitID, true)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
+   -- Spring.SetUnitNoSelect(unitID, true)
+     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
      StartThread(Advertising)
      StartThread(LightsBlink)
      StartThread(flyTowardsPerson)
+     StartThread(HoloGrams)
+     Hide(BrothelSpin)
+     Hide(CasinoSpin)
+end
+
+function HoloGrams()
+ 
+    
+    local brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
+    local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
+    local JoyFlickerGroup = TablesOfPiecesGroups["JoySpin"]
+    JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
+    hideT(brothelFlickerGroup)
+    hideT(CasinoflickerGroup)
+    hideT(JoyFlickerGroup)
+
+    Sleep(15000)
+    --sexxxy time
+    px,py,pz = Spring.GetUnitPosition(unitID)
+    if maRa() then
+        StartThread(flickerScript, brothelFlickerGroup, 5, 250, 4, true)
+    else
+        StartThread(JoyFlickerGroup, brothelFlickerGroup, 5, 250, 4, true)
+    end
+    val = math.random(5, 12)*randSign()
+    Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
+    StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
+    val = math.random(5, 12)*randSign()
+    Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
+end
+
+
+function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
+    assert(flickerGroup)
+    local fGroup = flickerGroup
+
+    flickerIntervall = math.ceil(1000/25)
+    
+    while true do
+        hideT(fGroup)
+        --assertRangeConsistency(fGroup, "flickerGroup")
+        Sleep(500)
+        hours, minutes, seconds, percent = getDayTime()
+        if (hours > 17 or hours < 7) then
+            theOneToShowT= {}
+            for x=1,math.random(1,3) do
+                theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
+            end
+
+            for i=1,(3000/flickerIntervall) do
+                if i % 2 == 0 then  showT(theOneToShowT) else hideT(theOneToShowT) end
+                if maRa()==maRa() then showT(theOneToShowT) end 
+                for ax=1,3 do
+                    moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+                end
+                Sleep(flickerIntervall)
+            end
+            hideT(theOneToShowT)
+        end
+        breakTime = math.random(1,maxInterval)*timeoutMs
+        Sleep(breakTime)
+    end
 end
 
 function flyTowardsPerson()

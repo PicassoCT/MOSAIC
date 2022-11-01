@@ -38,9 +38,11 @@ end
 function advertisingBlimp()
     Sleep(100)
     blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
+    Spring.AddUnitImpulse(blimpID, math.random(-5,5), 10, math.random(-5,5))
     while true do
         if not doesUnitExistAlive(blimpID) then
             blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
+            Spring.AddUnitImpulse(blimpID, math.random(-5,5), 10, math.random(-5,5))
         end
         Sleep(1000)
     end
