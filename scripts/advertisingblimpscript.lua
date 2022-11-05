@@ -11,6 +11,7 @@ GameConfig = getGameConfig()
 BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy")
+JoyRide = piece("JoyRide")
 
 advertisingJingles = 
 {
@@ -52,12 +53,8 @@ function showOne(T, bNotDelayd)
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
-        if c == dice then
-            if bNotDelayd and bNotDelayd == true then
-                Show(v)
-            else
-                ToShowTable[#ToShowTable + 1] = v
-            end
+        if c == dice then            
+            Show(v)            
             return v
         end
     end
@@ -78,12 +75,27 @@ function script.Create()
     Spring.SetUnitCOBValue(unitID, COB.ACTIVATION, 1)
    -- Spring.SetUnitNoSelect(unitID, true)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+     hideT(TablesOfPiecesGroups["Blimp"])
+     showOne(TablesOfPiecesGroups["Blimp"])
      StartThread(Advertising)
      StartThread(LightsBlink)
      StartThread(flyTowardsPerson)
      StartThread(HoloGrams)
+     StartThread(advertisingLoop)
      Hide(BrothelSpin)
      Hide(CasinoSpin)
+end
+
+function advertisingLoop()
+    Sleep(20000)
+    while true do
+        soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
+        StartThread(PlaySoundByUnitDefID, myDefID, soundFile, 1.0, 20000, 2)
+        minimum, maximum = 5*60*1000, 10*60*1000
+        restTime = math.random(minimum,maximum)
+        Sleep(restTime)
+    end
+
 end
 
 function HoloGrams()
@@ -93,6 +105,7 @@ function HoloGrams()
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     local JoyFlickerGroup = TablesOfPiecesGroups["JoySpin"]
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
+    JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideT(brothelFlickerGroup)
     hideT(CasinoflickerGroup)
     hideT(JoyFlickerGroup)
@@ -104,12 +117,39 @@ function HoloGrams()
         StartThread(flickerScript, brothelFlickerGroup, 5, 250, 4, true)
     else
         StartThread(JoyFlickerGroup, brothelFlickerGroup, 5, 250, 4, true)
+        StartThread(JoyAnimation)
     end
     val = math.random(5, 12)*randSign()
     Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
     StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
     val = math.random(5, 12)*randSign()
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
+end
+
+function JoyAnimation()
+    val = math.random(5, 12)*randSign()
+    Spin(TablesOfPiecesGroups["JoySpin"], z_axis, math.rad(val), 0.1)
+    while true do
+        Show(TablesOfPiecesGroups["JoySpin"][1])
+        Sleep(2500)
+        for i=2, #TablesOfPiecesGroups["JoySpin"] do
+            Show(TablesOfPiecesGroups["JoySpin"][i])
+            offsetValue = 50
+            offset = i* offsetValue
+            turnVal= (-1) * 15
+            animStepTime = 3
+            Move(TablesOfPiecesGroups["JoySpin"][1],y_axis, -offset, speed(offset, animStepTime))
+            Move(TablesOfPiecesGroups["JoySpin"][i],y_axis, offsetValue, speed(offsetValue, animStepTime))
+            Turn(TablesOfPiecesGroups["JoySpin"][i],y_axis, math.rad(turnVal), speed(turnVal, animStepTime))
+
+            WaitForTurns(TablesOfPiecesGroups["JoySpin"][1])
+            WaitForTurns(TablesOfPiecesGroups["JoySpin"][i])
+            WaitForMoves(TablesOfPiecesGroups["JoySpin"][1])
+        end
+        Sleep(1000)
+        hideT(TablesOfPiecesGroups["JoySpin"])
+        resetT(TablesOfPiecesGroups["JoySpin"])
+    end
 end
 
 
@@ -208,11 +248,11 @@ end
 
 function script.StartMoving() 
     val = math.random(5, 10)
-    turnT(TablesOfPiecesGroups["Control"],x_axis, math.rad(val), 0.5)
+    StartThread(turnT,TablesOfPiecesGroups["Control"],x_axis, math.rad(val), 3)
 end
 
 function script.StopMoving()
-    resetT(TablesOfPiecesGroups["Control"], 0.5)
+    StartThread(resetT,TablesOfPiecesGroups["Control"], 0.5)
  end
 
 function script.Activate() return 1 end
