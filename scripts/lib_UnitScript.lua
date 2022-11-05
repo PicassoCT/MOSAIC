@@ -6881,6 +6881,7 @@ end
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
     assert(id)
+    assert(type(id) == "number", id)
     assert(command, UnitDefs[Spring.GetUnitDefID(id)].name.." has invalid Command executed on it")
     local target = tarGet
 
@@ -6926,8 +6927,19 @@ function Command(id, command, tarGet, option)
     end
 
     if command == "go" then
-        Spring.GiveOrderToUnit(id, CMD.MOVE, {target.x, target.y, target.z},
+    	if target.x then
+        Spring.GiveOrderToUnit(id, CMD.MOVE, 
+                                {   target.x or target[1], 
+                                    target.y or target[2], 
+                                    target.z or target[3]},
                                option) -- {"shift"}
+                               else
+  		Spring.GiveOrderToUnit(id, CMD.MOVE, 
+                                {   target[1], 
+                                     target[2], 
+                                     target[3]},
+                               option)
+                               end
     end
 
     if command == "stop" then Spring.GiveOrderToUnit(id, CMD.STOP, {}, {}) end
@@ -7070,8 +7082,9 @@ function CEG_CLOUD(cegname, size, pos, lifetime, nr, densits, plifetime, swing,
 end
 
 function speed(distanceToCover, time)
-    if time = 0 then return 0 end
-    return distanceToCover/time
+    if time == 0 then return 0 end
+
+    return math.abs(distanceToCover/time)
 end
 -- > create a CEG at the given Piece with direction or piecedirectional Vector
 function spawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz,

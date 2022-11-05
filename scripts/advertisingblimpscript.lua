@@ -13,40 +13,8 @@ CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy")
 JoyRide = piece("JoyRide")
 
-advertisingJingles = 
-{
-"lonely? Try NEXT DOOR™ from OmegaSoft. Let AI recreate your friends and family, in the room NEXT DOOR",
-"stressed? Let the Ettu™ Robobutler give you a massage. Relax, your worries are behind you",
-"boring? AIvid enriches your personality void with unique content. Be famous - with AIvid",
-"a new live awaits you Offworld. Leave earth for the edison protectorate on mars",
-"does fallout grow on you? Use Thanatol to neutralize environment caused cancers. Stay alive, with Thanatol",
-"feeling down? Try uForia, the drug recommended by the UN-DEA. Smile, its a good day",
-"generational debt to corporate got you down? Participate in the planetary lottery. Win freedom for your family",
-"nature is gone, but in the metaverse it lives on. Join today, for a VR-Getaway",
-"tune out the burning horizon with Armageddon Augmented Reality. Unseeing is believing",
-"shareholders of AirBoing, today the Mono DAO offers you 300 ether per share. Check your portfolio and stay in the green",
-"its a tough world, but your kids will be tougher. Prepare them with RNA-Vector treatments. Harder, smarter, make them stronger",
-"OceansideFoods™ famous Algae ramen are now back in several brand new flavors. Try chili bubblegum today! <fast>No microplatics, unlike our competitors</fast>",
-"Pollution is everywhere! But not in your home. Thanks to PolAirLock. PolAirLock, trust is good, but a over-pressure home is better",
-"everyone loves gamble Donkey. The massive multiplayer, snowball game, were the last one standing, becomes a billionaire. Its all in on red",
-"block traumatizing work-memories with Memblock, the only working selective memory blocker. Work hard, forget for today, Play hard anyway. <fast> Recommended by the PanASEA-Directorate</fast>",
-"buy Full-Organ-Life insurance. Harvested from healthy, young donors. Your organs may give up, but FOLI never does",
-"when love grows cold, load your lovers personality from the MetaCrypt, directly into the heating blanket. Keep them at your side.",
-"afraid of death? Allow MetaCrypt to reconstruct you for a afterlife. Join the DigitalSouls program, free of charge",
-"have your loved ones AddViral Braindamage from NeuralCon Join the Class Action lawsuit. You cant get them back, but you can get back at them.Get compensated now ",
-"dislike adds, install the NeuralCon AddBlocker. Become the Buddha, let them starve for attention",
-"want to be a genius, leave your signature on the planet? Join the Houston hivemind. Artists, Scientists, Visionarys united. From our hands flows cornucopia",
-"shy, anxious, in a dog eats dog world? Buy the Negotiator AI- become the social animal. A ToughBreak™ Softwarehive product",
-"[Comment: Failing AI Generated awkward Jingle, should still sound confident]:",
-"emulate more successful society members, who prefer beautiful, sexy, drink named soyLala. Get limited supply or miss out"
-}
-
-
-
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
-function script.HitByWeapon(x, z, weaponDefID, damage) end
-
 function showOne(T, bNotDelayd)
     if not T then return end
     dice = math.random(1, count(T))
@@ -69,10 +37,19 @@ function showOneOrNone(T)
     end
 end
 
+function setUnitActive(boolWantActive)
+    if boolWantActive == true then
+        Spring.UnitScript.SetUnitValue(COB.ACTIVATION, 1)
+    else
+        Spring.UnitScript.SetUnitValue(COB.ACTIVATION, 0)
+    end
+end
+
 function script.Create()
     --echo(UnitDefs[myDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
-    Spring.SetUnitCOBValue(unitID, COB.ACTIVATION, 1)
+    setUnitActive(unitID, false)
+    setUnitActive(unitID, true)
    -- Spring.SetUnitNoSelect(unitID, true)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
      hideT(TablesOfPiecesGroups["Blimp"])
@@ -84,6 +61,7 @@ function script.Create()
      StartThread(advertisingLoop)
      Hide(BrothelSpin)
      Hide(CasinoSpin)
+
 end
 
 function advertisingLoop()
@@ -95,20 +73,71 @@ function advertisingLoop()
         restTime = math.random(minimum,maximum)
         Sleep(restTime)
     end
-
 end
 
-function HoloGrams()
+boolTurnLeft= false
+boolTurning = false
+boolMoving = false
+function headingChangeDetector(unitID)
+    assert(unitID)
+    TurnCount = 0
+    headingOfOld = Spring.GetUnitHeading(unitID)
+    while true do
+        Sleep(250)
  
-    
+        tempHead = Spring.GetUnitHeading(unitID)
+        if tempHead ~= headingOfOld then
+            TurnCount = TurnCount + 1
+            if TurnCount > 3 then
+                boolTurning = true
+            end
+        else
+            TurnCount = 0
+            boolTurning = false
+        end
+        if tempHead ~= nil then
+            boolTurnLeft = headingOfOld > tempHead
+            headingOfOld = tempHead
+        end
+    end
+end
+
+function controlDirectionRotors()
+    boolTurnLeft = false
+    boolTurning = false
+    StartThread(headingChangeDetector, unitID)
+    while true do
+        if boolTurning then
+            for i=1,#TablesOfPiecesGroups["Control"] do
+                if i % 2 == 0 then
+                    Turn(TablesOfPiecesGroups["Control"][i],y_axis, math.rad(10), 10)
+                else
+                    Turn(TablesOfPiecesGroups["Control"][i],y_axis, math.rad(-10), 10)
+                end
+            end
+        else
+            if boolMoving then
+                turnT(TablesOfPiecesGroups["Control"][i],y_axis, 10, 10)
+            else
+                resetT(TablesOfPiecesGroups["Control"], 0.5)
+            end
+        end
+        WaitForTurns(TablesOfPiecesGroups["Control"])
+        Sleep(500)
+    end
+end
+
+function HoloGrams()    
     local brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
-    local JoyFlickerGroup = TablesOfPiecesGroups["JoySpin"]
+    local JoyFlickerGroup = {}
+
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideT(brothelFlickerGroup)
     hideT(CasinoflickerGroup)
     hideT(JoyFlickerGroup)
+    hideT(TablesOfPiecesGroups["JoySpin"])
 
     Sleep(15000)
     --sexxxy time
@@ -116,7 +145,7 @@ function HoloGrams()
     if maRa() then
         StartThread(flickerScript, brothelFlickerGroup, 5, 250, 4, true)
     else
-        StartThread(JoyFlickerGroup, brothelFlickerGroup, 5, 250, 4, true)
+        StartThread(flickerScript, JoyFlickerGroup, 5, 250, 4, true)
         StartThread(JoyAnimation)
     end
     val = math.random(5, 12)*randSign()
@@ -126,25 +155,38 @@ function HoloGrams()
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
 end
 
-function JoyAnimation()
-    val = math.random(5, 12)*randSign()
-    Spin(TablesOfPiecesGroups["JoySpin"], z_axis, math.rad(val), 0.1)
-    while true do
-        Show(TablesOfPiecesGroups["JoySpin"][1])
-        Sleep(2500)
-        for i=2, #TablesOfPiecesGroups["JoySpin"] do
-            Show(TablesOfPiecesGroups["JoySpin"][i])
-            offsetValue = 50
-            offset = i* offsetValue
-            turnVal= (-1) * 15
-            animStepTime = 3
-            Move(TablesOfPiecesGroups["JoySpin"][1],y_axis, -offset, speed(offset, animStepTime))
-            Move(TablesOfPiecesGroups["JoySpin"][i],y_axis, offsetValue, speed(offsetValue, animStepTime))
-            Turn(TablesOfPiecesGroups["JoySpin"][i],y_axis, math.rad(turnVal), speed(turnVal, animStepTime))
+function script.HitByWeapon(x, z, weaponDefID, damage)
+    hp = Spring.GetUnitHealth(unitID)
+    if hp and hp - damage < 0 then
+        Spring.SetUnitCrashing(unitID, true)
+        SetUnitValue(COB.CRASHING, 1)
+        Spring.SetUnitNeutral(unitID, true)
+        Spring.SetUnitNoSelect(unitID, true)
+        return 0
+    end
+    return damage
+end
 
-            WaitForTurns(TablesOfPiecesGroups["JoySpin"][1])
-            WaitForTurns(TablesOfPiecesGroups["JoySpin"][i])
-            WaitForMoves(TablesOfPiecesGroups["JoySpin"][1])
+function JoyAnimation()
+    offsetValue = -70
+    turnVal= -17
+    animStepTime = 30
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        if (hours > 17 or hours < 7) then
+            Show(TablesOfPiecesGroups["JoySpin"][1])
+            Sleep(2500)
+            for i=2, #TablesOfPiecesGroups["JoySpin"] do
+                offset = i* offsetValue
+                Show(TablesOfPiecesGroups["JoySpin"][i])
+                Move(TablesOfPiecesGroups["JoySpin"][1],z_axis, -offsetValue* (i),speed(offsetValue* (i), animStepTime))
+                Move(TablesOfPiecesGroups["JoySpin"][i],z_axis, offsetValue, speed(offsetValue, animStepTime))
+                Turn(TablesOfPiecesGroups["JoySpin"][i],z_axis, math.rad(turnVal), speed(turnVal, animStepTime))
+
+                WaitForTurns(TablesOfPiecesGroups["JoySpin"][1])
+                WaitForTurns(TablesOfPiecesGroups["JoySpin"][i])
+                WaitForMoves(TablesOfPiecesGroups["JoySpin"][i])
+            end
         end
         Sleep(1000)
         hideT(TablesOfPiecesGroups["JoySpin"])
@@ -186,7 +228,7 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
 end
 
 function flyTowardsPerson()
-    Spring.AddUnitImpulse(unitID, 1, 10, 0)
+    Sleep(10)
     while true do  
             T= foreach(Spring.GetTeamUnits(gaiaTeamID),
                 function(id)
@@ -197,18 +239,11 @@ function flyTowardsPerson()
                 end
              )
             if #T > 1 then
-
                 id = T[math.random(1,#T)]
                 px,py,pz = Spring.GetUnitPosition(id)
                 Spring.SetUnitMoveGoal(unitID, px,py+100,pz)
-                Command(unitID, "go", {x = px, y = py, z = pz}, {})
-                Command(unitID, "guard", {id}, {"shift"})
-                Command(unitID, "go", {
-                                x = px + math.random(-20, 20),
-                                y = py,
-                                z = pz + math.random(-20, 20)
-                            }, {})
-
+                Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py +100, pz }, { })                
+                Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py+100, pz }, { "shift" })                
             end
         Sleep(10000)
     end
@@ -246,13 +281,13 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+
 function script.StartMoving() 
-    val = math.random(5, 10)
-    StartThread(turnT,TablesOfPiecesGroups["Control"],x_axis, math.rad(val), 3)
+    boolMoving = true
 end
 
 function script.StopMoving()
-    StartThread(resetT,TablesOfPiecesGroups["Control"], 0.5)
+    boolMoving = false
  end
 
 function script.Activate() return 1 end

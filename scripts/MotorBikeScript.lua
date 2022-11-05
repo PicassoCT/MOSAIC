@@ -100,7 +100,7 @@ function script.TransportDrop(passengerID, x, y, z)
         Spring.UnitDetach(passengerID)
         px,py,pz = Spring.GetUnitPosition(unitID)
         Spring.SetUnitNoSelect(passengerID, false)
-        Command("go", {x = px,y= py, z=pz}, {})
+        Command(unitID, "go", {x = px,y= py, z=pz}, {})
 
         if not boolGaiaUnit then
             setSpeedEnv(unitID, 0.0)

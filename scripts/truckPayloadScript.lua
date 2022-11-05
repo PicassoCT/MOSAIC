@@ -95,7 +95,7 @@ function FireTruckEmergencyBehaviour()
 		 transporterID = Spring.GetUnitTransporter(unitID)
 		 if transporterID then
 			while doesUnitExistAlive(transporterID) and intervallTime > 0 do
-				Command("go", transporterID, {x=x,y=0, z=z})
+				Command(transporterID, "go", transporterID, {x=x,y=0, z=z})
 				Sleep(2500)
 				intervallTime = intervallTime -2500
 			end

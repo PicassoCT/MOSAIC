@@ -36,13 +36,20 @@ function playAircraftSounds()
 end
 
 function advertisingBlimp()
+    x,z = math.ceil(Game.mapSizeX/2) , math.ceil(Game.mapSizeZ/2)
+    y = Spring.GetGroundHeight(x,z)
     Sleep(100)
     blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
-    Spring.AddUnitImpulse(blimpID, math.random(-5,5), 10, math.random(-5,5))
+    Spring.AddUnitImpulse(blimpID, math.random(10,15)*randSign(), 10, math.random(10,15)*randSign())
+    Sleep(100)
+    Spring.SetUnitMoveGoal(blimpID, x,y,z)
+    Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                
+
     while true do
         if not doesUnitExistAlive(blimpID) then
             blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
-            Spring.AddUnitImpulse(blimpID, math.random(-5,5), 10, math.random(-5,5))
+            Spring.AddUnitImpulse(blimpID, math.random(10,15)*randSign(), 10, math.random(10,15)*randSign())
+            Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                 
         end
         Sleep(1000)
     end
@@ -129,7 +136,7 @@ end
 function comingAndGoing()
     while true do
         arrival()
-        for i = 1, 6 do
+        for i = 1, 2 do
             touchDownTime = math.random(8, 18)
             StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
         end
