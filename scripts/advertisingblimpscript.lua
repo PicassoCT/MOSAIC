@@ -65,7 +65,8 @@ function script.Create()
 end
 
 function advertisingLoop()
-    Sleep(20000)
+    rest= (math.random(2,5)+(unitID%3))*10000
+    Sleep(rest)
     while true do
         soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
         StartThread(PlaySoundByUnitDefID, myDefID, soundFile, 1.0, 20000, 2)
@@ -241,9 +242,12 @@ function flyTowardsPerson()
             if #T > 1 then
                 id = T[math.random(1,#T)]
                 px,py,pz = Spring.GetUnitPosition(id)
-                Spring.SetUnitMoveGoal(unitID, px,py+100,pz)
-                Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py +100, pz }, { })                
-                Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py+100, pz }, { "shift" })                
+                if maRa() then
+                    Spring.SetUnitMoveGoal(unitID, px,py,pz)
+                    Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py , pz }, { })     
+                else
+                    Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py , pz }, { "shift"})     
+                end                          
             end
         Sleep(10000)
     end

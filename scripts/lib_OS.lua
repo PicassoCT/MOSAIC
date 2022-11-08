@@ -878,7 +878,8 @@ function debugAimLoop(sleepMS, weaponID)
     end
 end
 
-function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
+function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
+    fact = factor or 1.0
     padX, padY, padZ = Spring.GetUnitPosition(unitID)
 
     if GG.VTOLFlightPads == nil then
@@ -925,26 +926,23 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
         return resx * factor,resy, resz * factor
     end
 
-    function getFlyHeightTable(pos)
-        local Pos = pos
-        flyHight = math.random(500,1250)
-        Pos.y = Pos.y   + flyHight
-        return Pos
+    function getFlyHeightTable(x,z)
+        return Spring.GetGroundHeight(x,z) + math.random(500,1250)
     end
     
-    function movePlaneOverLocation(unitID, plane, location, timeInMS) 
+    function movePlaneOverLocation(unitID, plane, location, v) 
         flyHight = math.random(500,1250)
         t = GG.VTOLFlightPads[location]
-        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, t.y + flyHight, t.z)      
-        syncMoveInTime(plane, rx,ry,rz, timeInMS)
+        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, getFlyHeightTable(t.x,t.z), t.z)      
+        mP(plane, rx,ry,rz, v)
         WaitForMoves(plane)
         return location
     end
 
-    function movePlaneToLocation(unitID, plane, location, timeInMS)    
+    function movePlaneToLocation(unitID, plane, location, v)    
         t = GG.VTOLFlightPads[location]
-        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, t.y ,t.z)   
-        syncMoveInTime(plane, rx,ry,rz, timeInMS)
+        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, getFlyHeightTable(t.x,t.z) ,t.z)   
+        mP(plane, rx,ry,rz, v)
         WaitForMoves(plane)
         return location
     end
@@ -966,20 +964,20 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
             --printLine(GG.VTOLFlightPads[targetDice], getFlyHeightTable(GG.VTOLFlightPads[targetDice]), "policelight", 10)  
             --printLine( getFlyHeightTable(GG.VTOLFlightPads[targetDice]), getFlyHeightTable(GG.VTOLFlightPads[myPosition]), "policelight", 10)    
             --printLine( getFlyHeightTable(GG.VTOLFlightPads[myPosition]), GG.VTOLFlightPads[myPosition], "policelight", 10)                          
-            movePlaneToLocation(unitID, plane, targetDice, 100)
+            movePlaneToLocation(unitID, plane, targetDice, 0)
             --echo("Flying  Remote  At Location")
             showHidePlane(true, plane)
-            movePlaneOverLocation(unitID,plane, targetDice, 9000) 
+            movePlaneOverLocation(unitID,plane, targetDice, 90*fact) 
 
             --echo("Flying  Remote Over Location")
-            movePlaneOverLocation(unitID,plane, myPosition, math.random(10,20)*1000) 
+            movePlaneOverLocation(unitID,plane, myPosition, 220*fact) 
             --echo("Flying  Remote Over Home")
            
             targetValue = math.random(0,180)*randSign()
             StartThread(turnInTime, plane, y_axis, targetValue, 7000, 0,lastValue,0 )
             reset(plane, 200.0)
             WaitForMoves(plane)
-            movePlaneToLocation(unitID,plane, myPosition, 9000)
+            movePlaneToLocation(unitID,plane, myPosition, 90*fact)
             --echo("Flying  Remote At Home")
        
             lastValue = targetValue
@@ -1001,12 +999,12 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs)
             Turn(plane,y_axis,math.rad(targetValue), 0)
             Sleep(200)           
             --StartThread(turnInTime, plane, y_axis, 0, 8000, 0,lastValue,0 )
-            movePlaneOverLocation(unitID, plane, myPosition, 9000) 
+            movePlaneOverLocation(unitID, plane, myPosition, 90*fact) 
             --echo("Flying   Over Home")
 
-            movePlaneOverLocation(unitID, plane, targetDice, math.random(12,25)*1000) 
+            movePlaneOverLocation(unitID, plane, targetDice, 220*fact) 
             --echo("Flying   Over Location")
-            movePlaneToLocation(unitID, plane, targetDice, 9000)   
+            movePlaneToLocation(unitID, plane, targetDice, 90*fact)   
             --echo("Flying   At Location")         
             showHidePlane(false, plane)
             boolStartRemote = true

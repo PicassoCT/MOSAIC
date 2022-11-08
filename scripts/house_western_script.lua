@@ -1046,7 +1046,12 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
                 if vtolDeco[element] then 
                     minute=1--60
-                    StartThread(vtolLoop, unitID, vtolDeco[element], math.random(1,4) * minute * 1000, math.random(5,10) * minute * 1000)
+                    StartThread(vtolLoop, 
+                        unitID, --unitID, 
+                        vtolDeco[element],--plane,
+                        math.random(1,4) * minute * 1000, --restTimeMs,
+                        math.random(5,10) * minute * 1000, -- timeBetweenFlightsMs, 
+                        3)--factor)
                 end
 
                 if countElements == 24 then return end
