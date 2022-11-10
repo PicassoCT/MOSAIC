@@ -1,11 +1,11 @@
-local PhysicsPayload = Abstract:New{
+local PotemkinPayload = Abstract:New{
 	name 				= "Rocket Payload (bring to launcher)",
-	description 		= "Collapse Fusion / Anti-Matter / Entanglement Warhead",
+	description 		= "made pretend Warhead",
 	maxDamage           = 5000,
 	mass                = 5000,
 	buildtime			= 5*60,
-	buildCostMetal     	= 9000,
-	buildCostEnergy     = 9000,
+	buildCostMetal     	= 900,
+	buildCostEnergy     = 900,
 	explodeAs			= "none",
 	script 				= "warheadpayloadscript.lua",
 	objectName        	= "WarHeadIcon.dae",
@@ -26,6 +26,6 @@ local PhysicsPayload = Abstract:New{
 
 
 return lowerkeys({
-	["physicspayload"] = PhysicsPayload:New()
+	["potemkinpayload"] = PotemkinPayload:New()
 })
 
