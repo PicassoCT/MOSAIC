@@ -7081,10 +7081,10 @@ function CEG_CLOUD(cegname, size, pos, lifetime, nr, densits, plifetime, swing,
     end
 end
 
-function speed(distanceToCover, time)
-    if time == 0 then return 0 end
-
-    return math.abs(distanceToCover/time)
+function speed(distanceToCover, timeInMs)
+    if timeInMs == 0 then return 0 end
+    timeInFrames = (timeInMs/1000)*30
+    return math.abs(distanceToCover/timeInFrames)
 end
 -- > create a CEG at the given Piece with direction or piecedirectional Vector
 function spawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz,

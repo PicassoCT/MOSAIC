@@ -172,21 +172,22 @@ function JoyAnimation()
     offsetValue = -70
     turnVal= -17
     animStepTime = 30
+    JoySpinOrigin = TablesOfPiecesGroups["JoySpin"][1]
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if (hours > 17 or hours < 7) then
-            Show(TablesOfPiecesGroups["JoySpin"][1])
+            Show(JoySpinOrigin)
             Sleep(2500)
             for i=2, #TablesOfPiecesGroups["JoySpin"] do
                 offset = i* offsetValue
                 Show(TablesOfPiecesGroups["JoySpin"][i])
-                Move(TablesOfPiecesGroups["JoySpin"][1],z_axis, -offsetValue* (i),speed(offsetValue* (i), animStepTime))
+                Move(JoySpinOrigin,z_axis, -offsetValue* (i),speed(offsetValue* (i), animStepTime))
                 Move(TablesOfPiecesGroups["JoySpin"][i],z_axis, offsetValue, speed(offsetValue, animStepTime))
                 Turn(TablesOfPiecesGroups["JoySpin"][i],z_axis, math.rad(turnVal), speed(turnVal, animStepTime))
 
-                WaitForTurns(TablesOfPiecesGroups["JoySpin"][1])
                 WaitForTurns(TablesOfPiecesGroups["JoySpin"][i])
                 WaitForMoves(TablesOfPiecesGroups["JoySpin"][i])
+                WaitForMoves(JoySpinOrigin)
             end
         end
         Sleep(1000)

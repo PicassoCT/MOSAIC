@@ -40,15 +40,15 @@ function advertisingBlimp()
     y = Spring.GetGroundHeight(x,z)
     Sleep(100)
     blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
-    Spring.AddUnitImpulse(blimpID, math.random(100,150)*randSign(), 10, math.random(100,150)*randSign())
+    Spring.AddUnitImpulse(blimpID, math.random(10,15)*-1.0, 10, math.random(10,15)*-1)
     Sleep(100)
     Spring.SetUnitMoveGoal(blimpID, x,y,z)
     Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                
 
     while true do
         if not doesUnitExistAlive(blimpID) then
-            blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
-            Spring.AddUnitImpulse(blimpID, math.random(100,150)*randSign(), 10, math.random(100,150)*randSign())
+            blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50,create 0, 0)
+            Spring.AddUnitImpulse(blimpID, math.random(10,15)*-1, 10, math.random(10,15)*-1)
             Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                 
         end
         Sleep(1000)
