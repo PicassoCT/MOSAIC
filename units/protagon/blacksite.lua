@@ -57,7 +57,8 @@ local BlackSite = Building:New{
 		"air_copter_aerosol_wanderlost" ,
 		"air_copter_aerosol_tollwutox" , 
 		"air_copter_aerosol_depressol" ,
-		"biopayload"
+		"biopayload",
+		"potemkinpayload"
 		
 	},
   category =  [[GROUND BUILDING RAIDABLE]],

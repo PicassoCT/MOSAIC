@@ -54,7 +54,8 @@ local Hivemind = Building:New{
 	category 			= [[GROUND BUILDING RAIDABLE]],
 	buildoptions = 
 	{
-		"informationpayload",		
+		"informationpayload",	
+		"potemkinpayload",	
 		"socialengineeringicon",
 		"blackouticon",
 		"cybercrimeicon",

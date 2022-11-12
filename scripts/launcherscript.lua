@@ -22,7 +22,7 @@ stepIndex = 0
 rocketHeigth = 3400
 stepHeight = rocketHeigth / GameConfig.LaunchReadySteps
 rocket= piece"Step1"
-payLoadTypes= getPayloadTypes(UnitDefs)
+payLoadTypes= getLaunchablePayloadTypes(UnitDefs)
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
 

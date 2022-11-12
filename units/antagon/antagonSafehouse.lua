@@ -78,7 +78,8 @@ local AntagonSafeHouse = Building:New{
 		"air_copter_antiarmor",
 		"air_copter_scoutlett",
 		"civilian_truck_ssied",
-		"ground_truck_assembly"
+		"ground_truck_assembly",
+		"potemkinpayload"
 		--Described in morphdefs
 		},
 	category = [[GROUND BUILDING RAIDABLE]],

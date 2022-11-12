@@ -341,10 +341,23 @@ function getGameConfig()
     typeTable = {
         "biopayload",
         "physicspayload",
+        "informationpayload",
+        "potemkinpayload"
+        }
+    return getTypeTable(UnitDefNames, typeTable)
+    end
+
+  function getLaunchablePayloadTypes(UnitDefs)
+    local UnitDefNames = getUnitDefNames(UnitDefs)
+
+    typeTable = {
+        "biopayload",
+        "physicspayload",
         "informationpayload"
         }
     return getTypeTable(UnitDefNames, typeTable)
     end
+
 
     function getVictoryStillPossibleTypeSets(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
@@ -371,7 +384,7 @@ function getGameConfig()
             getTypeTable(UnitDefNames, operator), 
             getTypeTable(UnitDefNames, safehouse),
             getTypeTable(UnitDefNames, gameenders), 
-            getPayloadTypes(UnitDefs)
+            getLaunchablePayloadTypes(UnitDefs)
             }
     end
 
@@ -766,7 +779,8 @@ function getGameConfig()
                     "motorbike",
                     "physicspayload",
                     "biopayload",
-                    "informationpayload"
+                    "informationpayload",
+                    "potemkinpayload"
                 }
                 return getTypeTable(UnitDefNames, typeTable)
         end
