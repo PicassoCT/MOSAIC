@@ -47,7 +47,7 @@ function advertisingBlimp()
 
     while true do
         if not doesUnitExistAlive(blimpID) then
-            blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50,create 0, 0)
+            blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
             Spring.AddUnitImpulse(blimpID, math.random(10,15)*-1, 10, math.random(10,15)*-1)
             Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                 
         end
