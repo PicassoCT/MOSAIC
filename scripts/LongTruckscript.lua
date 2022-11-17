@@ -12,10 +12,10 @@ SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
 
-center = piece "TruckCenter"
-attachPoint = piece "attachPoint"
-TruckCenter = piece "TruckCenter"
-PayloadCenter = piece "PayloadCenter"
+center = piece("center")
+attachPoint = piece("attachPoint")
+TruckCenter = center
+PayloadCenter = piece("PayloadCenter")
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
@@ -67,21 +67,48 @@ function showOneOrAll(T)
     end
 end
 
+BusBack1 = piece("BusBack1")
+BusBack2 = piece("BusBack2")
 
 function showAndTell()
     Hide(attachPoint)
     Hide(center)
     Hide(TruckCenter)
     Hide(PayloadCenter)
+    Hide(BusBack1)
+    Hide(BusBack2)
+
+
+
+    hideT(TablesOfPiecesGroups["Truck"])
+    hideT(TablesOfPiecesGroups["Cabin"])
+    hideT(TablesOfPiecesGroups["BusDeco"])
+    hideT(TablesOfPiecesGroups["BusStationName"])
+
+    if TablesOfPiecesGroups["Truck"] then
+        myTruck =  showOne(TablesOfPiecesGroups["Truck"])
+
+        if  myTruck == TablesOfPiecesGroups["Truck"][3] or 
+            myTruck == TablesOfPiecesGroups["Truck"][4]
+        then --Bus
+            if myTruck == TablesOfPiecesGroups["Truck"][3] then 
+                Show(BusBack1)
+            end
+
+            if myTruck == TablesOfPiecesGroups["Truck"][4] then 
+                Show(BusBack2)
+            end
+            showOne(TablesOfPiecesGroups["BusDeco"])
+            showOne(TablesOfPiecesGroups["BusDeco"])
+            showOne(TablesOfPiecesGroups["BusStationName"])
+            return
+        end
+    end
 
     if TablesOfPiecesGroups["Cabin"] then
-        hideT(TablesOfPiecesGroups["Cabin"])
         showOne(TablesOfPiecesGroups["Cabin"])
     end
-    if TablesOfPiecesGroups["Truck"] then
-        hideT(TablesOfPiecesGroups["Truck"])
-        showOne(TablesOfPiecesGroups["Truck"])
-    end
+
 end
  boolTurnLeft = false
  boolTurning = false

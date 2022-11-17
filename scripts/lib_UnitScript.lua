@@ -6927,19 +6927,24 @@ function Command(id, command, tarGet, option)
     end
 
     if command == "go" then
-    	if target.x then
-        Spring.GiveOrderToUnit(id, CMD.MOVE, 
-                                {   target.x or target[1], 
-                                    target.y or target[2], 
-                                    target.z or target[3]},
-                               option) -- {"shift"}
-                               else
-  		Spring.GiveOrderToUnit(id, CMD.MOVE, 
-                                {   target[1], 
-                                     target[2], 
-                                     target[3]},
-                               option)
-                               end
+        targetType = type(target)
+        if targetType == "table" then
+        	if target.x then
+                Spring.GiveOrderToUnit(id, CMD.MOVE, 
+                                        {   target.x or target[1], 
+                                            target.y or target[2], 
+                                            target.z or target[3]
+                                        },
+                                       option) -- {"shift"}
+            else
+          		Spring.GiveOrderToUnit(id, CMD.MOVE, 
+                                        {   target[1], 
+                                             target[2], 
+                                             target[3]
+                                        },
+                                       option)
+            end
+        end
     end
 
     if command == "stop" then Spring.GiveOrderToUnit(id, CMD.STOP, {}, {}) end
@@ -7086,6 +7091,7 @@ function speed(distanceToCover, timeInMs)
     timeInFrames = (timeInMs/1000)*30
     return math.abs(distanceToCover/timeInFrames)
 end
+
 -- > create a CEG at the given Piece with direction or piecedirectional Vector
 function spawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz,
                          boolPieceDirectional)
