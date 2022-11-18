@@ -55,12 +55,12 @@ local AIR_PARACHUT = VTOL:New{
 	collide             = true,
 	crashDrag =0.035,
 
-	canCloak =true,
-	cloakCost=0.0001,
-	cloakCostMoving =0.0001,
-	cloakCostMoving = 0,
-	minCloakDistance = 0,
-	initCloaked = true,
+	canCloak =false,
+	--cloakCost=0.0001,
+	--cloakCostMoving =0.0001,
+	--cloakCostMoving = 0,
+	--minCloakDistance = 0,
+	--initCloaked = true,
 
 	Category = [[AIR]],
 

@@ -173,17 +173,22 @@ function JoyAnimation()
     turnVal= -17
     animStepTime = 1000
     JoySpinOrigin = TablesOfPiecesGroups["JoySpin"][1]
+
     while true do
+
         hours, minutes, seconds, percent = getDayTime()
         if (hours > 17 or hours < 7) then
+            Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             Show(JoySpinOrigin)
-            Sleep(2500)
-            OriginDistance = math.abs(offsetValue) * #TablesOfPiecesGroups["JoySpin"]
-            Move(JoySpinOrigin,z_axis, OriginDistance,speed(OriginDistance, animStepTime))
+            Sleep(2000)
+
+            scalar = 0.125*0.5*0.1
             for i=2, #TablesOfPiecesGroups["JoySpin"] do
                 offset = i* offsetValue
                 Show(TablesOfPiecesGroups["JoySpin"][i])
-                Move(TablesOfPiecesGroups["JoySpin"][i],z_axis, offsetValue, speed(offsetValue, animStepTime))
+                rootDistance = i* 70 * 2
+                Move(JoySpinOrigin, z_axis, rootDistance,speed(rootDistance, animStepTime*scalar))
+                Move(TablesOfPiecesGroups["JoySpin"][i],z_axis, offsetValue, speed(offsetValue, animStepTime*scalar))
                 Turn(TablesOfPiecesGroups["JoySpin"][i],z_axis, math.rad(turnVal), speed(turnVal, animStepTime))
 
                 WaitForTurns(TablesOfPiecesGroups["JoySpin"][i])
@@ -191,9 +196,17 @@ function JoyAnimation()
             end
             WaitForMoves(JoySpinOrigin)
         end
-        Sleep(1000)
+
         hideT(TablesOfPiecesGroups["JoySpin"])
-        resetT(TablesOfPiecesGroups["JoySpin"])
+        for i=1, #TablesOfPiecesGroups["JoySpin"] do
+            reset(TablesOfPiecesGroups["JoySpin"][i],0)
+        end
+        StopSpin(JoySpinOrigin,z_axis,0)
+        WaitForTurns(TablesOfPiecesGroups["JoySpin"])
+        WaitForMoves(TablesOfPiecesGroups["JoySpin"])   
+        DownDist = -70* #TablesOfPiecesGroups["JoySpin"] * 2
+        WMove(JoySpinOrigin,z_axis, DownDist, 0)
+        Sleep(10)
     end
 end
 
@@ -251,7 +264,7 @@ function flyTowardsPerson()
                     Spring.GiveOrderToUnit(unitID, CMD.PATROL, { px, py , pz }, { "shift"})     
                 end                          
             end
-        Sleep(10000)
+        Sleep(25000)
     end
 end
 

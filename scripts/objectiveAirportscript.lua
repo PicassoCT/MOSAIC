@@ -36,20 +36,18 @@ function playAircraftSounds()
 end
 
 function advertisingBlimp()
-    x,z = math.ceil(Game.mapSizeX/2) , math.ceil(Game.mapSizeZ/2)
-    y = Spring.GetGroundHeight(x,z)
+    ax,az = math.ceil(Game.mapSizeX/2) , math.ceil(Game.mapSizeZ/2)
+    ay = Spring.GetGroundHeight(x,z)
     Sleep(100)
     blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
     Spring.AddUnitImpulse(blimpID, math.random(5,15)*-6.0, 10, math.random(5,15)*-6)
     Sleep(100)
-    Spring.SetUnitMoveGoal(blimpID, x,y,z)
-    Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                
 
     while true do
-        if not doesUnitExistAlive(blimpID) then
+        if  doesUnitExistAlive(blimpID) == false then
             blimpID = createUnitAtUnit(gaiaTeamID, "advertising_blimp", unitID, 0, 50, 0, 0)
             Spring.AddUnitImpulse(blimpID, math.random(5,15)*-6, 10, math.random(5,15)*-6)
-            Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { x , y, z }, {})                 
+            Spring.GiveOrderToUnit(blimpID, CMD.PATROL, { ax , ay, az }, {})                 
         end
         Sleep(1000)
     end

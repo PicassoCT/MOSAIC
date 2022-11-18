@@ -77,6 +77,7 @@ function showAndTell()
     Hide(PayloadCenter)
     Hide(BusBack1)
     Hide(BusBack2)
+    Hide(DetectPiece)
 
 
 
@@ -98,6 +99,11 @@ function showAndTell()
             if myTruck == TablesOfPiecesGroups["Truck"][4] then 
                 Show(BusBack2)
             end
+            Move(TablesOfPiecesGroups["Wheel"][4],y_axis, 70, 0)
+            Move(TablesOfPiecesGroups["Wheel"][5],y_axis, 70, 0)
+            Move(TablesOfPiecesGroups["Wheel"][3],y_axis, 190, 0)
+            Move(TablesOfPiecesGroups["Wheel"][2],y_axis, 40, 0)
+            Move(TablesOfPiecesGroups["Wheel"][1],y_axis, 40, 0)
             showOne(TablesOfPiecesGroups["BusDeco"])
             showOne(TablesOfPiecesGroups["BusDeco"])
             showOne(TablesOfPiecesGroups["BusStationName"])
