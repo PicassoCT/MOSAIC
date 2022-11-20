@@ -320,8 +320,6 @@ function getNumberOfUnitsAtTime(value)
     return value * blendedFactor
 end
 
-
-
 function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     local Route = {}
 
