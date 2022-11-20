@@ -98,7 +98,8 @@ boolDecoupled = false
 boolFlying = false
 boolAiming = false
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
-
+local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
+                                                             "civilian", UnitDefs)
 boolInClosedCombat = false
 closeCombat= {}
 function isNowInCloseCombat( arenaID)
@@ -214,7 +215,7 @@ function instantParanoiaOS()
         Sleep(minutes)
         delayInMs = math.random(2,5)*1000
         timeToFollowInMs = math.random(8,21)*1000
-        StartThread(instantParanoia, unitID, 250, delayInMs, timeToFollowInMs)
+        StartThread(instantParanoia, unitID, 250, delayInMs, timeToFollowInMs, civilianWalkingTypeTable)
     end
 end
 

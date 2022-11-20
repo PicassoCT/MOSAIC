@@ -42,6 +42,10 @@ function getGameConfig()
         numberOfVehicles = math.ceil(60 * GG.unitFactor),
         numberOfPersons = math.ceil(75 * GG.unitFactor),
         nightCivilianReductionFactor = 0.125,
+        anarchyCarReductionFactor = 0.25,
+
+
+
         LoadDistributionMax = 5,
 
         --truck
@@ -2924,8 +2928,9 @@ end
 
 
 --civilian will follow an operative ocassionally for a short time
-function instantParanoia(operative, radius, delayInMs, timeToFollowInMs)
+function instantParanoia(operative, radius, delayInMs, timeToFollowInMs, civilianWalkingTypeTable)
     Sleep(delayInMs)
+    civilianWalkingTypeTable = getCivilianW
     local spGetUnitDefID = Spring.GetUnitDefID
     AllCandidates = foreach(getAllNearUnit(operative, radius, Spring.GetGaiaTeamID()),
                         function(id)
@@ -2939,10 +2944,10 @@ function instantParanoia(operative, radius, delayInMs, timeToFollowInMs)
         x,y,z = GetCurrentMoveGoal(operative)
         --TODO save move goal
         Command(follower, "stop")
-        Command(follower, "guard", {operative})
+        Command(follower, "guard", operative)
         Sleep(timeToFollowInMs)
         Command(follower, "stop")
-        Command(follower, "go",{x,y,z})
+        Command(follower, "go",{x,y,z}, {"shift"})
     end   
 
 end
