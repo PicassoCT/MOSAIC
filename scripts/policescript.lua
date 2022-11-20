@@ -39,14 +39,21 @@ function showCop()
 end
 
 function script.Create()
+    setupPrintf(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Riot-Face"])
+    printf(unitID)
     showOnePiece(TablesOfPiecesGroups["Riot-Face"], math.random(1,100))
     Hide(RiotShield)
+    printf(unitID)
     Hide(center)
+    printf(unitID)
     Hide(Visor)
+    printf(unitID)
     Hide(BeatDown)
+    printf(unitID)
     showRiotCop()
+    printf(unitID)
     setupAnimation()
 end
 
@@ -85,8 +92,7 @@ function setupAnimation()
     end
 end
 
-local animCmd = {['turn'] = Turn, ['move'] = Move};
-
+local animCmd = {['turn'] = Turn, ['move'] = Move}
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
@@ -195,3 +201,13 @@ function script.FireWeapon1()
 
 end
 
+
+function script.AimFromWeapon2() return BeatDown end
+
+function script.QueryWeapon2() return BeatDown end
+
+function script.AimWeapon2(Heading, pitch) return false end
+
+function script.FireWeapon2()
+  return true 
+end

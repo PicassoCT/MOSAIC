@@ -15,6 +15,7 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
+VFS.Include("scripts/lib_StaticString.lua")
 
 local GameConfig = getGameConfig()
 --if not Game.version then Game.version = GameConfig.instance.Version end
@@ -59,6 +60,8 @@ assert(count(houseTypeTable) > 0)
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
+
+local individualNamedTypes = getIndividualCulturalNamedTypes(UnitDefs)
 assert(civilianWalkingTypeTable)
 assert(count(civilianWalkingTypeTable) > 0)
 
@@ -129,6 +132,10 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
     if teamID == gaiaTeamID and unitDefID == closeCombatArenaDefID then
         makePasserBysLook(unitID)
         -- other gadgets worries about propaganda price
+    end
+
+    if individualNamedTypes[defID] then
+        setIndividualCivilianName(unitID)
     end
 end
 

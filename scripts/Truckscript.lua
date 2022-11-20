@@ -173,9 +173,11 @@ function loadLoadOutLoop()
     explosiveDefID = UnitDefNames["ground_turret_ssied"].id
 
     loadOutUnitID = createUnitAtUnit(myTeam, myLoadOutType, unitID, 0, 10, 0)
-    if boolGaiaUnit then Spring.SetUnitAlwaysVisible(loadOutUnitID,true) end
-    Spring.SetUnitNoSelect(loadOutUnitID, true)
-    Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
+    if doesUnitExistAlive(loadOutUnitID) then
+        if boolGaiaUnit then Spring.SetUnitAlwaysVisible(loadOutUnitID,true) end
+        Spring.SetUnitNoSelect(loadOutUnitID, true)
+        Spring.UnitAttach(unitID, loadOutUnitID, attachPoint)
+    end
 
     while myLoadOutType ~= explosiveDefID do
         Sleep(100)

@@ -124,10 +124,13 @@ function turnTrailerLoop()
     local spGetGroundHeight = Spring.GetGroundHeight
     turnRatePerSecondDegree = (300*0.16)/4
     _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
-     px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
-     val  = 0
+    px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+    val  = 0
+    oldPitch, oldYaw, OldRoll = Spring.GetUnitRotation(unitID)
     while true do
         px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
+        pitch,yaw,roll = Spring.GetUnitRotation(unitID)
+       -- echo("Unit  "..pitch.."/"..yaw.."/"..roll)
         if boolMoving == true  then          
             x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
             goal = math.ceil(y * 0.95)
@@ -156,14 +159,15 @@ function turnTrailerLoop()
         else
             val = val + (diff/10)
         end
-        val = clamp( val, -10, 10)
-        Turn(PayloadCenter, x_axis, math.rad(val), 0.981)   
+        radYaw = math.rad(clamp( val, -10, 5))
+        Turn(PayloadCenter, x_axis, radYaw, 0.881)   
 
         if boolMoving == true then
             Sleep(125)
         else
             Sleep(50)
         end
+        oldPitch, oldYaw, OldRoll = pitch, yaw, roll
     end
 end
 

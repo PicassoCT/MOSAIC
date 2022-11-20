@@ -183,7 +183,6 @@ function script.Create()
     setupAnimation()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,  nil, false)
-    setIndividualCivilianName(unitID)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
     StartThread(noCapesControl, LowArm1, LowArm2)

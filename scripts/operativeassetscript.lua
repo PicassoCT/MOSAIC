@@ -205,6 +205,17 @@ function script.Create()
     StartThread(speedMonitoring)
     StartThread(closeCombatOS)
     StartThread(gunVisibleOS)
+    StartThread(instantParanoiaOS)
+end
+
+function instantParanoiaOS()
+    while true do
+        minutes = math.random(3,12)*60*1000
+        Sleep(minutes)
+        delayInMs = math.random(2,5)*1000
+        timeToFollowInMs = math.random(8,21)*1000
+        StartThread(instantParanoia, unitID, 250, delayInMs, timeToFollowInMs)
+    end
 end
 
 function gunVisibleOS()

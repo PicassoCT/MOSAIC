@@ -67,7 +67,7 @@ end
 
 -- >CombinedWaitForMove
 function WMove(lib_piece, lib_axis, lib_distance, lib_speed)
-    assertAxis(lib_axis)
+    --assertAxis(lib_axis)
     Move(lib_piece, lib_axis, lib_distance, lib_speed)
     WaitForMove(lib_piece, lib_axis)
 end

@@ -86,6 +86,7 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
+local spGetUnitPosition = Spring.GetUnitPosition
 local loc_doesUnitExistAlive = doesUnitExistAlive
 GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
@@ -180,7 +181,7 @@ function script.Create()
     setupAnimation()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
-    setIndividualCivilianName(unitID)
+
     StartThread(threadStarter)
     StartThread(threadStateStarter)
     StartThread(headAnimationLoop)
@@ -223,6 +224,7 @@ both = {
         }
 
 }
+
 getIntervalOrDefault = function(pieceID, name)
     vR = getVectorTable(pieceID)
     degVal =  math.deg(math.atan2(vR.x,vR.z))
@@ -740,6 +742,27 @@ function chatting()
         end     
 
        headVal = math.random(-20,20)
+       if maRa() == maRa() then
+            T = foreach(getAllNearUnit(unitID, 150, gaiaTeamID),
+                        function(id)
+                            defID = spGetUnitDefID(id)
+                            if civilianWalkingTypeTable[id] then
+                                return id
+                            end
+                        end
+                        )
+            if #T > 1 then
+                lookAtHim = T[math.random(1, #T)]
+                x,y,z = spGetUnitPosition(lookAtHim)
+                mx,my,mz = spGetUnitPosition(unitID)
+                _,myRotation,_ = Spring.GetUnitRotation(unitID)
+                headVal = math.deg(myRotation -(math.atan2(x-mx, z-mz)))
+                echo(unitID.." looking at ".. lookAtHim.." with ".. headVal)
+            end
+
+       end
+
+       headVal = clamp(-20, headVal, 20)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
        chattingTime = chattingTime - 1500
@@ -1299,7 +1322,7 @@ UpperAnimationStateFunctions = {
     [eAnimState.catatonic] = function()
         PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),
                       catatonicBodyPieces)
-        return eAnimState.talking
+        return eAnimState.catatonic
     end,
     [eAnimState.talking] = function()
         if bodyConfig.boolLoaded == false then
