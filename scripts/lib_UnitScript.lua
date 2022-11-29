@@ -569,7 +569,13 @@ function showHide(id, bShow)
     else
         Hide(id)
     end
+end
 
+function showOneOfUnit(id)
+    if not unitID then unitID = id end
+    pieceList = Spring.GetUnitPieceList(unitID)
+    nrID = piece(getSafeRandom(pieceList,pieceList[1]))
+    Show(nrID)
 end
 
 -- > Shows all Pieces of a a Unit in 

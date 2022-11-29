@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.889" 
+            Version = "Alpha: 0.890" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -43,8 +43,6 @@ function getGameConfig()
         numberOfPersons = math.ceil(75 * GG.unitFactor),
         nightCivilianReductionFactor = 0.125,
         anarchyCarReductionFactor = 0.25,
-
-
 
         LoadDistributionMax = 5,
 
@@ -1379,7 +1377,11 @@ function getGameConfig()
                     "tree_arab1",
                     "innercitydeco_inter1",
                     "innercitydeco_inter2",
-                    "innercitydeco_inter3"
+                    "innercitydeco_inter3",
+                    "innercitydeco_arab",
+                    "innercitydeco_western",
+                    "innercitydeco_arab",
+
                 }
 
                 return getTypeTable(UnitDefNames, typeTable)
@@ -1403,7 +1405,9 @@ function getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 if culture == "arabic" then
                     return {
-                    [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 1, locationFunc = createSetMaxHeight}}
+                    [UnitDefNames["innercitydeco_inter4"].id] = {maxNr = 1, locationFunc = createSetMaxHeight}
+
+                        }
                 end
 
                 if culture == "international" then
@@ -1547,7 +1551,10 @@ function getGameConfig()
                 return {
                     [UnitDefNames["innercitydeco_inter1"].id] = true,
                     [UnitDefNames["innercitydeco_inter2"].id] = true,
-                    [UnitDefNames["innercitydeco_inter3"].id] = true
+                    [UnitDefNames["innercitydeco_inter3"].id] = true,
+                    [UnitDefNames["innercitydeco_arab"].id] = true,
+                    [UnitDefNames["innercitydeco_western"].id] = true,
+                    [UnitDefNames["innercitydeco_asian"].id] = true,
                 }
             end
 
