@@ -6,6 +6,9 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
+local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitPosition = Spring.GetUnitPosition
+local myDefID = spGetUnitDefID(unitID)
 
 -- local Scene = piece("Scene")
 local center = piece("center")
@@ -462,15 +465,82 @@ function genericSexPos()
     end
 end
 
+function setHealthOverLifetime(lifeTimeMsToLife)
+    lifeTimeMs = lifeTimeMsToLife
+    maxLifetime = lifeTimeMs 
+    while lifeTimeMs > 0 do
+        _,maxHealth = Spring.GetUnitHealth(unitID)
+        factor = (lifeTimeMs/maxLifetime)
+        newHealth = math.ceil(factor*maxHealth)
+        --echo("Health:"..newHealth.. " MaxHealth:"..maxHealth)
+        Spring.SetUnitHealth(unitID, newHealth)
+        Sleep(250)
+        lifeTimeMs = lifeTimeMs -250
+    end
+end
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    _, maxHealth = Spring.GetUnitHealth(unitID)
-    Spring.SetUnitHealth(unitID, {health = maxHealth})
+    Spring.SetUnitAlwaysVisible(unitID, true)
     StartThread(FuckFest)
     StartThread(lifeTime, unitID,
                 GG.GameConfig.Aerosols.orgyanyl.VictimLifetime, false, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
+    StartThread(creepingTowardsOneAnother)
+    StartThread(setHealthOverLifetime, GG.GameConfig.Aerosols.orgyanyl.VictimLifetime)
+end
+
+function creepingTowardsOneAnother()
+    lowestDistance= math.huge
+    otherID = unitID
+    while true do
+        foreach(getAllNearUnit(unitID, 500),
+                function(id)
+                    defID = spGetUnitDefID(id)
+                    if defID == myDefID then
+                        dis = distanceUnitToUnit(unitID, id)
+                        if dis < lowestDistance then 
+                            lowestDistance = dis
+                            otherID = id
+                        end
+                    end
+                end
+                )
+        Sleep(1000)
+        if otherID ~= unitID then
+            dis = distanceUnitToUnit(unitID, otherID)     
+            while doesUnitExistAlive(otherID) do
+                if dis < 35 then
+                    if unitID > otherID then
+                        --we Are top
+
+                        Spring.UnitAttach(unitID, otherID, p1_l_body)
+                        StartThread(creepingTowardsOneAnother)
+                        return
+                    else
+                      --we are bottom and out
+                       return
+                    end
+                end
+                allowedMoveDist = 0.25
+                factor =  allowedMoveDist/dis
+                vA = {}
+                vA.x, vA.y, vA.z = spGetUnitPosition(unitID)
+                vB = {}
+                vB.x, vB.y, vB.z = spGetUnitPosition(otherID)
+                newPos = mix(vA, vB, 1.0-factor)
+                Spring.SetUnitPosition(unitID, newPos.x, newPos.y, newPos.z)
+                dis = math.sqrt((vA.x-vB.x)^2 + (vA.y-vB.y)^2 + (vA.z-vB.z)^2)
+                Sleep(30)
+                if maRa() then
+                    Sleep(70)
+                end
+            end
+        else
+            return
+        end
+    end
 end
 
 function FuckFest()

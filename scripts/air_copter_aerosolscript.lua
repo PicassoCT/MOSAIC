@@ -101,12 +101,19 @@ function aerosolDeployCegs()
     local lisUnitFlying = isUnitFlying
 
     while true do
+        soundIntervall = 0
         while lisUnitFlying(unitID) == true and timeTank > 0 do
+            if soundIntervall == 0  then
+                StartThread(PlaySoundByUnitDefID)
+                StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/aerosol.wav", math.random(7,10)/10, 900, 3)
+            end
             EmitSfx(emitor, 1023 + defIDTypeTankMap[myDefID])
             Sleep(100)
             spinRand(emitor, -90, 90, 0.5)
             timeTank = timeTank - 100
             sprayTank()
+            soundIntervall = soundIntervall + 1 % 10
+
         end
         if timeTank <= 0 then
             Spring.SetUnitNoSelect(unitID, false, true)
@@ -130,17 +137,14 @@ function sprayTank()
                         function(id)
                             if alreadyChecked[id] then return end
 
-                             if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
+                            if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
                                     not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
                                 if setAerosolCivilianBehaviour(id,  aerosolTypeOfUnit) == true then
-                                               Spring.Echo(
-                                    "Unit " .. id ..
-                                        " is now under the influence of " ..
-                                        aerosolTypeOfUnit)
-                                GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit
-                                alreadyChecked[id] = id
-                                return id
-                              end
+                                    --Spring.Echo("Unit " .. id .." is now under the influence of " ..aerosolTypeOfUnit)
+                                    GG.AerosolAffectedCivilians[id] = aerosolTypeOfUnit
+                                    alreadyChecked[id] = id
+                                    return id
+                                end
                             end
                             alreadyChecked[id] = id
                         end)

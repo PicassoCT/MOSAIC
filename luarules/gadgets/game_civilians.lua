@@ -236,7 +236,7 @@ function checkReSpawnPopulation()
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
                                               goalNode)
             else
-                echo("Found no startnode")
+               -- echo("Found no startnode")
             end
         end
     else -- decimate arrived cvilians who are not DisguiseCivilianFor

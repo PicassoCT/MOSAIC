@@ -84,6 +84,14 @@ local myTeam = Spring.GetMyTeamID()
 local isSpec = Spring.GetSpectatingState() or Spring.IsReplay()
 local defeat = false
 unitExceptions ={}
+local unitExceptionsNames ={}
+unitExceptionsNames["air_parachut"] = true
+
+for defId, data in pairs(UnitDefs) do
+	if unitExceptionsNames[data.name] then
+		unitExceptions[defId] = data.name
+	end	
+end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function GetMusicType()

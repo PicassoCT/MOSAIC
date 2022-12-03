@@ -406,18 +406,15 @@ function bodyBuild()
 end
 
 function hideAllProps()
-
     Hide(MilitiaMask)
-    Hide(ak47)
+    Hide(ak47)    
     hideT(TablesOfPiecesGroups["Weapons"])
     Hide(molotow)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = false
-
     hideT(TablesOfPiecesGroups["cellphone"])
     Hide(cofee)
     Hide(cigarett)
-    Hide(cellphone)
     Hide(ShoppingBag)
     Hide(SittingBaby)
     Hide(trolley)

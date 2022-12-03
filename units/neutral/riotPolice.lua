@@ -6,6 +6,7 @@ local RiotPolice = Civilian:New{
 	description = " Riot police",
 	objectName        	= "riotPolice.dae",
 	mass = 100,
+	maxDamage = 1000,
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",

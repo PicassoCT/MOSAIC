@@ -4,7 +4,7 @@ local OrgyPair = {
 	description = " engaged in intercourse",
 	objectName        	= "orgy_pair.dae",
 
-	
+	maxDamage = 6666,
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 10 10",

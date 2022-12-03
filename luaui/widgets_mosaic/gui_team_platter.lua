@@ -110,9 +110,9 @@ local ignoredUnitDefs = {
 [UnitDefNames["innercitydeco_inter2"].id]= true,
 [UnitDefNames["innercitydeco_inter3"].id]= true,
 [UnitDefNames["innercitydeco_inter4"].id]= true,
-[UnitDefNames["innerCityDeco_arab"].id]= true,
-[UnitDefNames["innerCityDeco_asian"].id]= true,
-[UnitDefNames["innerCityDeco_western"].id]= true,
+[UnitDefNames["innercitydeco_arab"].id]= true,
+[UnitDefNames["innercitydeco_asian"].id]= true,
+[UnitDefNames["innercitydeco_western"].id]= true,
 [UnitDefNames["vehiclecorpse"].id]= true,
 [UnitDefNames["tankcorpse"].id]= true,
 [UnitDefNames["greenhouse"].id]= true,
@@ -127,6 +127,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["raidiconbaseplate"].id]= true,
 [UnitDefNames["teargascloud"].id]= true,
 [UnitDefNames["trashbin"].id]= true,
+[UnitDefNames["civilian_orgy_pair"].id]= true,
 }
 
 if UnitDefNames["caesareagle"] then ignoredUnitDefs[UnitDefNames["caesareagle"].id]= true end

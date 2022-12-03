@@ -6092,7 +6092,7 @@ function setupPrintf(unitID)
 end
 
 function printf(unitID, message)
-    if not GG.DebugPrintF or not GG.DebugPrintF[unitID] then setupPrintf() end
+    if not GG.DebugPrintF or not GG.DebugPrintF[unitID] then setupPrintf(unitID) end
     echo("Printf:Debug:"..GG.DebugPrintF[unitID]..":"..(message or " iterration"))
     GG.DebugPrintF[unitID] = GG.DebugPrintF[unitID] + 1
 end
