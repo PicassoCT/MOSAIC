@@ -2500,10 +2500,10 @@ end
                 return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
             end
 
-            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence)
-                assert(typeOfInfluence)
+            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight)
+                --assert(typeOfInfluence)
                 AerosolTypes = getChemTrailTypes()
-                assert(AerosolTypes[typeOfInfluence])
+                --assert(AerosolTypes[typeOfInfluence])
 
                 InfStates = getInfluencedStates()
                 CivilianTypes = getCivilianTypeTable(UnitDefs)
@@ -2517,15 +2517,13 @@ end
                         -- Init
                         if currentState == InfStates.Init then
                             val = math.random(10, 60) / 1000
-                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(),
-                            0000015)
+                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(), 0000015)
                             currentState = InfStates.PreOutbreak
                         end
 
                         if currentState == InfStates.PreOutbreak then
                             val = math.random(10, 60) / 1000
-                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(),
-                            0000015)
+                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(), 0000015)
 
                             al = Spring.GetUnitNearestAlly(unitID)
                             if al and CivilianTypes[Spring.GetUnitDefID(al)] then
@@ -2587,49 +2585,51 @@ end
                                     randPiece = Spring.GetUnitPieceMap(unitID)
                                     for i = 1, 3 do
                                         val = math.random(5, 35) / 100
-                                        spinT(Spring.GetUnitPieceMap(unitID), i, val * randSign(), val,
-                                        0.0032)
+                                        spinT(Spring.GetUnitPieceMap(unitID), i, val * randSign(), val, 0.0032)
                                     end
-									
-									if maRa() == maRa() then
-										civilianDefID = randDict(CivilianTypes)
-										gaiaTeamID = Spring.GetGaiaTeamID()
-										unitTable  = Spring.GetTeamUnitsByDefs ( gaiaTeamID, civilianDefID)
-										if unitTable and #unitTable > 1 then
-											UnitToFollow = getSafeRandom(unitTable,unitTable[1]) 
-                                            if unitID > UnitToFollow then
-                                            Command(unitID, "guard", UnitToFollow )
+
+                                    if maRa() == maRa() then
+                                        boolAssignedOrder = false
+                                        if maRa() then
+                                            civilianDefID = randDict(CivilianTypes)
+                                            gaiaTeamID = Spring.GetGaiaTeamID()
+                                            unitTable  = Spring.GetTeamUnitsByDefs ( gaiaTeamID, civilianDefID)
+                                            if unitTable and #unitTable > 1 then
+                                                UnitToFollow = getSafeRandom(unitTable,unitTable[1]) 
+                                                if unitID > UnitToFollow then
+                                                    Command(unitID, "guard", UnitToFollow )
+                                                    boolAssignedOrder = true
+                                                end
                                             end
-										end
-									end
+                                        end
+
+                                        if not boolAssignedOrder then
+                                            f = (Spring.GetGameFrame() %  (GG.GameConfig.Aerosols.wanderlost.VictimLiftime) / GG.GameConfig.Aerosols.wanderlost.VictimLiftime)
+                                            -- spiraling in towards nowhere
+                                            totaldistance = math.max(128, unitID % 900) *
+                                            math.sin(f * 2 * math.pi)
+                                            tx, tz = Rotate(totaldistance, 0, f * math.pi * 9)
+                                            x = x + tx
+                                            z = z + tz
+                                            Command(unitID, "go", {x = x, y = 0, z = z}, {})
+                                        end
+                                    end									
                                 end
 
-                                if gf % 81 == 0 then
+                                if gf % 90 == 0 then
                                     for i = 1, 3 do
                                         stopSpinT(Spring.GetUnitPieceMap(unitID), i)
-                                    end
-									
+                                    end									
                                 end
-								Todo Alternative Run In Circles
-                                f = (Spring.GetGameFrame() %
-                                GG.GameConfig.Aerosols.wanderlost.VictimLiftime) /
-                                GG.GameConfig.Aerosols.wanderlost.VictimLiftime
-                                -- spiraling in towards nowhere
-                                totaldistance = math.max(128, unitID % 900) *
-                                math.sin(f * 2 * math.pi)
-                                tx, tz = Rotate(totaldistance, 0, f * math.pi * 9)
-                                x = x + tx
-                                z = z + tz
-                                Command(unitID, "go", {x = x, y = 0, z = z}, {})
                             end
 
                             return currentState
                         end,                        
                         [AerosolTypes.tollwutox] = function(lastState, currentState, unitID)
                             if currentState == AerosolTypes.tollwutox then
-                                StartThread(lifeTime, unitID,
-                                    GG.GameConfig.Aerosols.tollwutox.VictimLiftime,
-                                false, true)
+                                StartThread(lifeTime, unitID, GG.GameConfig.Aerosols.tollwutox.VictimLiftime, false, true)
+                                if not GG.TollWutoxAfflicted then GG.TollWutoxAfflicted = {} end
+                                GG.TollWutoxAfflicted[unitID] = unitID
                                 currentState = InfStates.Init
                                 if math.random(0, 10) > 7 then
                                     currentState = InfStates.Standalone
@@ -2639,11 +2639,17 @@ end
                             gf = Spring.GetGameFrame()
                             attackDistance = 35
                             -- random shivers
-                            if gf % 30 == 0 and maRa() then
+                            if gf % 30 == 0 and gf % 90 ~= 0 and maRa() then
                                 for i = 1, 3 do
                                     val = (math.random(-100, 100) / 100) * 12
-                                    turnT(Spring.GetUnitPieceMap(unitID), i, math.rad(val),
-                                    30.125)
+                                    spinT(Spring.GetUnitPieceMap(unitID), i, math.rad(val), 30.125)
+                                end
+                            end
+
+                              if gf % 90 == 0 then
+                                for i = 1, 3 do
+                                    val = (math.random(-100, 100) / 100) * 12
+                                    stopSpinT(Spring.GetUnitPieceMap(unitID), i, 30.125)
                                 end
                             end
 
@@ -2651,65 +2657,43 @@ end
                             allyDistance = math.huge
 
                             local afflicted = GG.AerosolAffectedCivilians or {}
-                            T = foreach(getAllNearUnit(unitID, 750),
+                            T = foreach(
+                                getAllNearUnit(unitID, 750),
                                 function(id)
-                                    if afflicted[id] then
+                                    if afflicted[id] and GG.TollWutoxAfflicted[id] then
                                         return id
                                     end
                                 end
-                            )
+                                )
 
                             ad = Spring.GetUnitNearestAlly(unitID)
                             if T and #T > 1 then
-                                ad = T[math.random(1, #T)]
+                                ad = getSafeRandom(T, T[1])
                             end
-
+                            ed = Spring.GetUnitNearestEnemy(unitID)
                             if ad then
                                 allyDistance = distanceUnitToUnit(unitID, ad)
                             end
-                            ed = Spring.GetUnitNearestEnemy(unitID)
+                  
                             if ed then
                                 enemyDistance = distanceUnitToUnit(unitID, ed)
                             end
-                            Spring.SetUnitNeutral(unitID, false)
 
-                            if ed and (not ad or currentState == InfStates.Standalone) then
-                                Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
-                                if enemyDistance and enemyDistance < 20 then
-                                    foreach(getAllNearUnit(unitID, attackDistance),
-                                        function(id)
-                                            Spring.AddUnitDamage(id, 30)
-                                        end
-                                    )
-                                end
+                           
+
+                            if unitID > ad then
+                                Command(unitID, "guard", ad )
+                                Spring.SetUnitNeutral(unitID, false)
+                                if ed and (not ad or currentState == InfStates.Standalone) then
+                                    assaultAllNearby(ed) 
+                                    return currentState
+                                end                           
+                            else
+                                aid = ed or ad
+                                Command(unitID, "go", getUnitPosAsTargetTable(aid), {})
+                                assaultAllNearby(aid) 
                                 return currentState
                             end
-
-                            if ad and not ed then
-                                Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
-                                if enemyDistance and enemyDistance < 20 then
-                                    foreach(getAllNearUnit(unitID, attackDistance),
-                                        function(id)
-                                            Spring.AddUnitDamage(id, 30)
-                                        end
-                                    )
-                                end
-                                return currentState
-                            end
-
-                            if ad and ed then
-                                if enemyDistance > allyDistance or maRa() == true then
-                                    Command(unitID, "go", getUnitPosAsTargetTable(ed), {})
-                                    if distance(unitID, ed) < attackDistance then
-                                        Spring.AddUnitDamage(ed, 30)
-                                    end
-
-                                else
-                                    Command(unitID, "go", getUnitPosAsTargetTable(ad), {})
-                                end
-                            end
-
-                            return currentState
                         end,
                         [AerosolTypes.depressol] = function(lastState, currentState, unitID)
                             if currentState == AerosolTypes.depressol then
@@ -2728,6 +2712,30 @@ end
 
                     assert(InfluenceStateMachines[typeOfInfluence], typeOfInfluence)
                     return InfluenceStateMachines[typeOfInfluence]
+                end
+
+                function assaultAllNearby(aid)
+                    if enemyDistance and enemyDistance < 20 then
+                        closeCombatAnimation(center, ArmLeft, ArmRight)
+                        foreach(getAllNearUnit(unitID, attackDistance),
+                            function(id)
+                                Spring.AddUnitDamage(id, 30)
+                            end
+                        )
+                    end
+                end
+
+                function closeCombatAnimation(center, ArmLeft, ArmRight)
+                    tP(ArmLeft, 0, 90, 0, 90)
+                    tP(ArmRight,0,-90, 0, 90)
+                    WTurn(center,x_axis, math.rad(-15), 45)
+                    tP(ArmLeft, 180,90, 0, 90)
+                    tP(ArmRight, 180,-90, 0, 90)
+                    WMove(center,y_axis, 30, 90)
+                    Turn(ArmLeft,x_axis, math.rad(45), 90)
+                    Move(center,y_axis, 0, 90)
+                    Turn(center,x_axis, math.rad(0), 45)
+                    WTurn(ArmLeft,x_axis, math.rad(45), 90)
                 end
 
                 -- >StartThread(dustCloudPostExplosion,unitID,1,600,50,0,1,0)
