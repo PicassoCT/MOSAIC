@@ -2596,7 +2596,10 @@ end
 										gaiaTeamID = Spring.GetGaiaTeamID()
 										unitTable  = Spring.GetTeamUnitsByDefs ( gaiaTeamID, civilianDefID)
 										if unitTable and #unitTable > 1 then
-											x,y,z =  Spring.GetUnitPosition(unitTable[math.random(1,#unitTable)])
+											UnitToFollow = getSafeRandom(unitTable,unitTable[1]) 
+                                            if unitID > UnitToFollow then
+                                            Command(unitID, "guard", UnitToFollow )
+                                            end
 										end
 									end
                                 end
@@ -2607,7 +2610,7 @@ end
                                     end
 									
                                 end
-								
+								Todo Alternative Run In Circles
                                 f = (Spring.GetGameFrame() %
                                 GG.GameConfig.Aerosols.wanderlost.VictimLiftime) /
                                 GG.GameConfig.Aerosols.wanderlost.VictimLiftime
