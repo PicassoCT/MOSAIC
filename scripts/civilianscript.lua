@@ -182,16 +182,29 @@ function script.Create()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
 
-    StartThread(threadStarter)
-    StartThread(threadStateStarter)
-    StartThread(headAnimationLoop)
-    StartThread(speedControl)
-    StartThread(noCapesControl, LowArm1, LowArm2)
+    --StartThread(threadStarter)
+    --StartThread(threadStateStarter)
+    --StartThread(headAnimationLoop)f
+    --StartThread(speedControl)
+    --StartThread(noCapesControl, LowArm1, LowArm2)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
+    StartThread(testAnimation)
 
+end
+
+function testAnimation()
+    Sleep(500)
+  
+    while true do
+        closeCombatAnimation(UpBody, UpArm1, UpArm2, Head1)
+        WaitForTurns(upperBodyPieces)
+        WaitForTurns(lowerBodyPieces)
+
+    Sleep(2000)
+    end
 end
 
 function getVectorTable(pieceName)
@@ -318,17 +331,7 @@ function headAnimationLoop()
     end
 end
 
-function testAnimation()
-    Sleep(500)
-  
-    while true do
-        PlayAnimation("UPBODY_PRAY", {}, 1.0)
-        WaitForTurns(upperBodyPieces)
-        WaitForTurns(lowerBodyPieces)
 
-    Sleep(2000)
-    end
-end
 
 function attachLoot()
     transportID =  Spring.GetUnitIsTransporting(unitID) 
@@ -681,7 +684,7 @@ end
 
 function aeroSolStateBehaviour()
     --Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
-    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType, center, UpArm1, UpArm2)
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType, center, UpArm1, UpArm2, Head1)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true

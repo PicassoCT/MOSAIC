@@ -2500,7 +2500,7 @@ end
                 return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
             end
 
-            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight)
+            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head)
                 --assert(typeOfInfluence)
                 AerosolTypes = getChemTrailTypes()
                 --assert(AerosolTypes[typeOfInfluence])
@@ -2725,17 +2725,42 @@ end
                     end
                 end
 
-                function closeCombatAnimation(center, ArmLeft, ArmRight)
-                    tP(ArmLeft, 0, 90, 0, 90)
-                    tP(ArmRight,0,-90, 0, 90)
-                    WTurn(center,x_axis, math.rad(-15), 45)
-                    tP(ArmLeft, 180,90, 0, 90)
-                    tP(ArmRight, 180,-90, 0, 90)
-                    WMove(center,y_axis, 30, 90)
-                    Turn(ArmLeft,x_axis, math.rad(45), 90)
-                    Move(center,y_axis, 0, 90)
+                function headShake(shakeNr, Head)
+                    for i=1, shakeNr do
+                        val = math.random(5,15)
+                        Turn(Head, y_axis, math.rad(val)*randSign(),50)
+                        Sleep(150)
+                    end
+                end
+
+                function closeCombatAnimation(center, ArmLeft, ArmRight, Head)
+                    val = math.random(-95,-75)
+                    tP(ArmLeft, val,90, 0, 10)
+                    val = math.random(-95,-75)
+                    tP(ArmRight, val,-90, 0, 10)
+                    if maRa() then
+                        WTurn(center,x_axis, math.rad(10), 1.75)
+                    else
+                        Turn(center,x_axis, math.rad(10), 1.75)
+                        StartThread(headShake, 5, Head)
+                        Rest= 5*150
+                        Sleep(Rest)
+                    end
+                    tP(ArmLeft, -160,90, 0, 10)
+                    tP(ArmRight, -160,-90, 0, 10)
+                    WTurn(center,x_axis, math.rad(15), 0.75)
+                    WaitForTurns(ArmLeft,ArmRight, center)
+                    tP(ArmLeft, 0, 90, 0, 10)
+                    tP(ArmRight,0, -90, 0, 10)      
+                    StartThread(headShake, 3, Head)         
+                    WaitForTurns(ArmLeft,ArmRight, center)
                     Turn(center,x_axis, math.rad(0), 45)
-                    WTurn(ArmLeft,x_axis, math.rad(45), 90)
+                    WaitForTurns(ArmLeft,ArmRight, center)
+                    StartThread(headShake, 10, Head)
+                    val = math.random(-50,-35)
+                    tP(ArmLeft, val,90, 0, 10)
+                    val = math.random(-50,-35)
+                    tP(ArmRight, -40,-90, 0, 10)
                 end
 
                 -- >StartThread(dustCloudPostExplosion,unitID,1,600,50,0,1,0)
