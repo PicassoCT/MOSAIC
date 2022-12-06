@@ -684,7 +684,12 @@ end
 
 function aeroSolStateBehaviour()
     --Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
-    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType, center, UpArm1, UpArm2, Head1)
+    centerCopy= center
+    if  spGetUnitDefID(unitID) == UnitDefNames["civilian_arab4"] then
+        centerCopy = Head1
+    end
+
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType, centerCopy, UpArm1, UpArm2, Head1)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true
