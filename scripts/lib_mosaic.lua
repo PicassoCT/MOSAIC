@@ -2976,7 +2976,6 @@ end
 --civilian will follow an operative ocassionally for a short time
 function instantParanoia(operative, radius, delayInMs, timeToFollowInMs, civilianWalkingTypeTable)
     Sleep(delayInMs)
-    civilianWalkingTypeTable = getCivilianW
     local spGetUnitDefID = Spring.GetUnitDefID
     AllCandidates = foreach(getAllNearUnit(operative, radius, Spring.GetGaiaTeamID()),
                         function(id)

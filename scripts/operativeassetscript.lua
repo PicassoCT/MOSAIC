@@ -210,12 +210,16 @@ function script.Create()
 end
 
 function instantParanoiaOS()
+    walkingTypeTable = getCultureUnitModelTypes( GameConfig.instance.culture,  "civilian", UnitDefs)
+
     while true do
         minutes = math.random(3,12)*60*1000
         Sleep(minutes)
         delayInMs = math.random(2,5)*1000
         timeToFollowInMs = math.random(8,21)*1000
-        StartThread(instantParanoia, unitID, 250, delayInMs, timeToFollowInMs, civilianWalkingTypeTable)
+        if maRa() then              
+            StartThread(instantParanoia, unitID, 250, delayInMs, timeToFollowInMs, walkingTypeTable)
+        end
     end
 end
 
