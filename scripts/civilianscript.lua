@@ -182,11 +182,11 @@ function script.Create()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
 
-    --StartThread(threadStarter)
-    --StartThread(threadStateStarter)
-    --StartThread(headAnimationLoop)f
-    --StartThread(speedControl)
-    --StartThread(noCapesControl, LowArm1, LowArm2)
+    StartThread(threadStarter)
+    StartThread(threadStateStarter)
+    StartThread(headAnimationLoop)f
+    StartThread(speedControl)
+    StartThread(noCapesControl, LowArm1, LowArm2)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
@@ -689,7 +689,7 @@ function aeroSolStateBehaviour()
         centerCopy = Head1
     end
 
-    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType, centerCopy, UpArm1, UpArm2, Head1)
+    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType, center, UpArm1, UpArm2, Head1)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true
