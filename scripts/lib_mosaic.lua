@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.893" 
+            Version = "Alpha: 0.894" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -2686,12 +2686,14 @@ end
                                 Spring.SetUnitNeutral(unitID, false)
                                 if ed and (not ad or currentState == InfStates.Standalone) then
                                     assaultAllNearby(ed) 
+                                    Sleep(250)
                                     return currentState
                                 end                           
                             else
                                 aid = ed or ad
                                 Command(unitID, "go", getUnitPosAsTargetTable(aid), {})
                                 assaultAllNearby(aid) 
+                                Sleep(250)
                                 return currentState
                             end
                         end,
@@ -2720,6 +2722,7 @@ end
                         foreach(getAllNearUnit(unitID, attackDistance),
                             function(id)
                                 Spring.AddUnitDamage(id, 30)
+                                spawnCegAtUnit(id, "bloodslay")
                             end
                         )
                     end
