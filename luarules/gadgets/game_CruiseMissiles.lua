@@ -59,6 +59,11 @@ onImpact = {
              else
                 echo("game_cruisemissiles: Error to reconstituteUnitFromTable")
             end           
+        else
+            if projectileParent then
+                Spring.CreateUnit("air_parachut_dropdrone",px,py+50,pz, 0, Spring.GetUnitTeam(projectileParent))
+                Spring.CreateUnit("air_parachut_dropdrone",px,py+50,pz, 0, Spring.GetUnitTeam(projectileParent))
+            end
         end
         Spring.SetProjectileTarget(projID, tx, Spring.GetGroundHeight(tx, tz)+ 2000, tz)
         delayedKillProjectile(projID, 1000)    

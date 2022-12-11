@@ -224,7 +224,7 @@ function instantParanoiaOS()
 end
 
 function gunVisibleOS()
-while true do
+    while true do
 	Sleep(1000)
 		if not boolVisiblyForced and not boolAiming then
 			Sleep(3000)
@@ -234,7 +234,10 @@ while true do
 		end
 	end
 end
-function script.HitByWeapon(x, z, weaponDefID, damage) return damage end
+
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+    return damage 
+end
 
 
 function flyingPose(id)

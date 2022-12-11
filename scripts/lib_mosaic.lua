@@ -519,6 +519,14 @@ function getGameConfig()
         }
     end  
 
+
+    function getNeonTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+                [UnitDefNames["advertiseblimp"].id] = true,           
+                }
+    end  
+
     function getManualObjectiveSpawnMapNames()
         return {
             ["MOSAIC_LastDayOfDubai_V1"] = true
@@ -750,7 +758,8 @@ function getGameConfig()
                     "air_copter_ssied",
                     "air_plane_sniper",
                     "air_plane_rocket",
-                    "air_copter_mg"
+                    "air_copter_mg",
+                    "air_copter_mg",
                 }
                 return getTypeTable(UnitDefNames, typeTable)
         end
@@ -767,6 +776,7 @@ function getGameConfig()
                 typeTable = {           
                     "air_copter_ssied",
                     "air_copter_mg",
+                    "air_parachut_dropdrone",
                     "air_copter_scoutlett",
                     "air_copter_antiarmor"
                 }
@@ -2970,8 +2980,6 @@ function isCrossway(detailXHash, detailZHash, boolInnerCityBlock)
 
     return false
 end   
-
-
 
 --civilian will follow an operative ocassionally for a short time
 function instantParanoia(operative, radius, delayInMs, timeToFollowInMs, civilianWalkingTypeTable)

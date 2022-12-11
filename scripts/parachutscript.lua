@@ -33,49 +33,49 @@ function script.Create()
     assert(infantry)
     Hide(infantry)
     Hide(step)
-    for i = 1, 3 do
-        turnTableRand(TablesOfPiecesGroups["Rotator"], i, 360, -360, 0, true)
-    end
+
 
     foreach(TablesOfPiecesGroups["Rotator"],
-            function(id) StartThread(randShow, id) end)
+            function(id) 
+                StartThread(randShow, id) 
+            end
+            )
 end
+
+upDownAxis= 1
+function turnDownAndUp(id, rVal, downValue, downSpeed, upValue, upSpeed)
+    Turn(id, upAxisRotation, math.rad(rVal),0)    
+    Turn(id, upDownAxis, math.rad(downValue),downSpeed)
+    WaitForTurns(id)
+    Show(id)
+    Turn(id, upDownAxis, math.rad(upValue),upSpeed)
+end
+
+SignAge= 1
 
 function randShow(id)
     standardSpeed = math.pi / 10
-    while true do
-        rVal = math.random(200, 1000)
-        if maRa() == true then
-            if maRa() == true then
-                exoSpeed= math.random(31,150)/100
-                spinRand(id, -42, 42, exoSpeed)
-            else
-                reset(id)
-                rotVal = math.random(-360, 360)
-                Turn(id, y_axis, math.rad(rotVal), 0)
-                spinRand(id, -42, 42, standardSpeed)
-            end
+    upAxisRotation = 3
 
-            if maRa() == true then
-                Show(id)
-            else
-                Hide(id)
-            end
-            Sleep(rVal)
+    while true do
+        rVal = math.random(1, 360)
+        Show(id)
+        if boolStationary == true then
+            turnDownAndUp( id, rVal, math.random(-15, -10),0, math.random(0, 10), standardSpeed)
         else
-            if boolStationary == true then
-                Hide(id)
-                reset(id,0)
-                for i=1,3 do
-                        roundVal= math.random(0,15)
-                        Turn(id, i, math.rad(roundVal),0)
-                end
-                Show(id)
-                reset(id, standardSpeed)
-                WaitForTurns(id)
+           
+            if true then 
+                turnDownAndUp(id, rVal, math.random(-90, -45),0, math.random(-5, 0), standardSpeed)
+            else
+                timinRadMins = ((Spring.GetGameFrame()/30/60) % 1.0)*2 * math.pi
+                axeVal = (45 + math.sin(timinRadMins)*45)*-1
+                turnDownAndUp( id,rVal, axeVal, 0, math.random(-5, 0), standardSpeed)
             end
         end
-        Sleep(10)
+        
+        WaitForTurns(id)
+        Hide(id)
+        reset(id)
     end
 end
 

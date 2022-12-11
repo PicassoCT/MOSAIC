@@ -184,14 +184,14 @@ function script.Create()
 
     StartThread(threadStarter)
     StartThread(threadStateStarter)
-    StartThread(headAnimationLoop)f
+    StartThread(headAnimationLoop)
     StartThread(speedControl)
     StartThread(noCapesControl, LowArm1, LowArm2)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-    StartThread(testAnimation)
+
 
 end
 
