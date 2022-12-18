@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 0,
+        layer = 1,
         version = 1,
         enabled = true
     }
@@ -13,11 +13,12 @@ end
 
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
-    local neonTypeTable = getIconTypes(UnitDefs)
+    local neonTypeTable = getNeonTypes(UnitDefs)
 
     function gadget:UnitCreated(unitID, unitDefID)
+        --Spring.Echo("UNit Type " .. UnitDefs[unitDefID].name .. " created")
         if neonTypeTable[unitDefID] then
-            --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].namge .. " created")
+            Spring.Echo("Neon Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -33,45 +34,46 @@ else -- unsynced
 
     local vertexShader = 
     [[
-        #version 150 compatibility
         varying vec3 fNormal;
-        attribute vec3 normal;
-        uniform mat3 normalMatrix;
+        //uniform mat3 normalMatrix;
 
         void main() {
-            gl_Position = gl_Vertex;
-            //fNormal = normalize(normalMatrix * normal);
+            vNormal = vec3((gl_NormalMatrix * gl_Normal).xyz); 
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4( position, 1.0 );
+                 
         }
     ]]
 
     fragmentshader = [[
-    uniform float resx;
-    uniform float resy;
-    varying vec3 fNormal;
+    //uniform float resx;
+    //uniform float resy;
+    varying vec3 vNormal;
 
     void main() {
-      //float averageShadow = (fNormal.x*fNormal.x+fNormal.y*fNormal.y+fNormal.z+fNormal.z)/3.25;
-      //gl_FragColor = vec4(gl_FragColor * (1.0-averageShadow));
-      gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      float averageShadow = (vNormal.x * vNormal.x + vNormal.y * vNormal.y + vNormal.z + vNormal.z)/3.25;
+      gl_FragColor = vec4(gl_FragColor * (1.0-averageShadow));
+      --gl_FragColor = vec4(1.0, 0.0, 0.0, 1.00);
     }
     ]]
 
-    local uniformInt = {
-          resx = vsx,
-          resy = vsy
+    local uniformInt = {         
+        }
+    local uniformFloat = {         
         }
 
 
+
     local shaderTable = {
-        --vertex = vertexShader,
+      vertex = vertexShader,
       fragment = fragmentshader,
       uniformInt = uniformInt,
-      uniformFloat = {resx,resy}
+      uniformFloat = uniformFloat
     }
 
     
-
+    local boolShaderActive = true
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
+        Spring.Echo("NeonUnit registered")
         neonUnitTables[unitID] = typeDefID
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
     end
@@ -88,6 +90,7 @@ else -- unsynced
                 resyLocation = glGetUniformLocation(shaderProgram, "resy")
             end
         else
+            boolShaderActive = false
             Spring.Echo("<Neon Shader>: GLSL not supported.")
         end
 
@@ -96,6 +99,7 @@ else -- unsynced
         end
       
         if not shaderProgram and gl and gl.GetShaderLog then
+            boolShaderActive = false
             Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
         end
     end
@@ -110,13 +114,12 @@ else -- unsynced
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
-        if drawMode == 1 and neonUnitTables[unitID] then --normalDraw
+        if boolShaderActive and neonUnitTables[unitID] then -- drawMode == 1 and 
             glUseShader(shaderProgram)
-            glBlending(GL_SRC_ALPHA, GL_ONE)
+            --glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
-            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            --glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             glUseShader(0)
-            return true
         end       
     end
 

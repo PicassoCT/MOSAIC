@@ -480,6 +480,8 @@ function getGameConfig()
             [UnitDefNames["objective_combatoutpost"].id] = "land",
             [UnitDefNames["objective_transrapid"].id] = "land",
             [UnitDefNames["objective_airport"].id] = "land"
+            [UnitDefNames["objective_spaceport"].id] = "land"
+            [UnitDefNames["objective_pumpstation"].id] = "land"
         }
     end
 
@@ -523,7 +525,7 @@ function getGameConfig()
     function getNeonTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
-                [UnitDefNames["advertiseblimp"].id] = true,           
+                [UnitDefNames["advertising_blimp"].id] = true,           
                 }
     end  
 

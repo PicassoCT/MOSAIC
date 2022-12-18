@@ -13,8 +13,8 @@ local objective_spaceport = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "objectivePowerPlantScript.lua",
-	objectName       	= "objective_powerplant.dae",
+	script 					= "placeholder.lua",
+	objectName       	= "objective_spaceport.dae",
 
 	
 	
