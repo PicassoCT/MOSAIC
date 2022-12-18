@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2022-12-18T22:49:59Z</created><keywords></keywords><modified>2022-12-18T22:49:59Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2022-12-18T23:14:30Z</created><keywords></keywords><modified>2022-12-18T23:14:30Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #0-image" name="Map #0"><init_from>file://Z:\unittextures\component_atlas_diffuse.dds</init_from></image>
   </library_images>
@@ -77042,7 +77042,7 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="objective_pumpstation" name="objective_pumpstation">
-      <node name="center" id="center" sid="center"><matrix sid="matrix">1.000000 0.000000 0.000000 2.635813 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 -5.386947 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="_02 - Default" target="#_02 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
+      <node name="center" id="center" sid="center"><matrix sid="matrix">8.030455 0.000000 0.000000 2.635813 0.000000 0.000000 8.030455 79.879639 0.000000 -8.030455 0.000000 -5.386947 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="_02 - Default" target="#_02 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
     </visual_scene>
   </library_visual_scenes>
