@@ -479,8 +479,8 @@ function getGameConfig()
             [UnitDefNames["objective_artificialglacier"].id] = "land",
             [UnitDefNames["objective_combatoutpost"].id] = "land",
             [UnitDefNames["objective_transrapid"].id] = "land",
-            [UnitDefNames["objective_airport"].id] = "land"
-            [UnitDefNames["objective_spaceport"].id] = "land"
+            [UnitDefNames["objective_airport"].id] = "land",
+            [UnitDefNames["objective_spaceport"].id] = "land",
             [UnitDefNames["objective_pumpstation"].id] = "land"
         }
     end
