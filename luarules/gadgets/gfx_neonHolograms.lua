@@ -34,9 +34,11 @@ else -- unsynced
     local vertexShader = 
     [[
         #version 150 compatibility
-        varying vec3 vNormal;
-		varying vec3 vPosition;
+        varying vec3 vNormal;		
 		varying vec4 vColor;
+		varying vec2 vTexCoord;
+		varying vec3 vPosition;
+
 		attribute vec3 normal;
         uniform mat3 normalMatrix;
 
@@ -47,7 +49,8 @@ else -- unsynced
         }
     ]]
 	
---[[//---------------------------------------------------------------------------
+fragmentshader =[[
+//---------------------------------------------------------------------------
 #version 420 core
 // fragment shader
 //https://stackoverflow.com/questions/64837705/opengl-blurring
@@ -57,7 +60,7 @@ varying vec2 vTexCoord;
 varying vec3 vPosition;
 
 //declare uniforms
-uniform sampler2D u_texture;
+uniform sampler2D screencopy;
 uniform float resolution;
 uniform float radius;
 uniform vec2 dir;
@@ -79,29 +82,32 @@ void main() {
     //(0.0, 1.0) -> y-axis blur
     float hstep = dir.x;
     float vstep = dir.y;
-    
+    //vec2 texCoord = vec2(pixelx * int(gl_TexCoord[0].x / pixelx), pixely * int(gl_TexCoord[0].y / pixely));
+	//vec4 origColor = texture2D(screencopy, texCoord);
+		
     //apply blurring, using a 9-tap filter with predefined gaussian weights
     
-    sum += texture2D(u_texture, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
-    sum += texture2D(u_texture, vec2(tc.x - 3.0*blur*hstep, tc.y - 3.0*blur*vstep)) * 0.0540540541;
-    sum += texture2D(u_texture, vec2(tc.x - 2.0*blur*hstep, tc.y - 2.0*blur*vstep)) * 0.1216216216;
-    sum += texture2D(u_texture, vec2(tc.x - 1.0*blur*hstep, tc.y - 1.0*blur*vstep)) * 0.1945945946;
+    sum += texture2D(screencopy, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
+    sum += texture2D(screencopy, vec2(tc.x - 3.0*blur*hstep, tc.y - 3.0*blur*vstep)) * 0.0540540541;
+    sum += texture2D(screencopy, vec2(tc.x - 2.0*blur*hstep, tc.y - 2.0*blur*vstep)) * 0.1216216216;
+    sum += texture2D(screencopy, vec2(tc.x - 1.0*blur*hstep, tc.y - 1.0*blur*vstep)) * 0.1945945946;
     
-    sum += texture2D(u_texture, vec2(tc.x, tc.y)) * 0.2270270270;
+    sum += texture2D(screencopy, vec2(tc.x, tc.y)) * 0.2270270270;
     
-    sum += texture2D(u_texture, vec2(tc.x + 1.0*blur*hstep, tc.y + 1.0*blur*vstep)) * 0.1945945946;
-    sum += texture2D(u_texture, vec2(tc.x + 2.0*blur*hstep, tc.y + 2.0*blur*vstep)) * 0.1216216216;
-    sum += texture2D(u_texture, vec2(tc.x + 3.0*blur*hstep, tc.y + 3.0*blur*vstep)) * 0.0540540541;
-    sum += texture2D(u_texture, vec2(tc.x + 4.0*blur*hstep, tc.y + 4.0*blur*vstep)) * 0.0162162162;
+    sum += texture2D(screencopy, vec2(tc.x + 1.0*blur*hstep, tc.y + 1.0*blur*vstep)) * 0.1945945946;
+    sum += texture2D(screencopy, vec2(tc.x + 2.0*blur*hstep, tc.y + 2.0*blur*vstep)) * 0.1216216216;
+    sum += texture2D(screencopy, vec2(tc.x + 3.0*blur*hstep, tc.y + 3.0*blur*vstep)) * 0.0540540541;
+    sum += texture2D(screencopy, vec2(tc.x + 4.0*blur*hstep, tc.y + 4.0*blur*vstep)) * 0.0162162162;
 
     gl_FragColor = vColor * sum;
-	//Transparency 
+	 //Transparency 
 	 float hologramTransparency = 0.5 - sin(time + vPosition.z) * 0.25 - sin(2*time)*0.1;
+	 float averageShadow = (fNormal.x*fNormal.x+fNormal.y*fNormal.y+fNormal.z+fNormal.z)/4.0;	
 	 vec4((gl_FragColor * (1.0-averageShadow)).xyz, gl_FragColor.z * hologramTransparency);
 	 
 }
-//---------------------------------------------------------------------------]]
-
+//---------------------------------------------------------------------------
+]]
 
     fragmentshader = [[
 	uniform sampler2D screencopy;
@@ -110,9 +116,6 @@ void main() {
     varying vec3 fNormal;
 
     void main() {
-		//vec2 texCoord = vec2(pixelx * int(gl_TexCoord[0].x / pixelx), pixely * int(gl_TexCoord[0].y / pixely));
-		//vec4 origColor = texture2D(screencopy, texCoord);
-		//float averageShadow = (fNormal.x*fNormal.x+fNormal.y*fNormal.y+fNormal.z+fNormal.z)/3.25;
 		//gl_FragColor = vec4(gl_FragColor * (1.0-averageShadow));
 		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     }
@@ -122,16 +125,31 @@ void main() {
           resx = vsx,
           resy = vsy
         }
-
+	local uniformFloat = {
+		 resolution;
+		 radius; --TODO make z depth depending
+	local uniformTable ={
+		dir ={0, 0}--TODO
+	}
 
     local shaderTable = {
-        --vertex = vertexShader,
+      vertex = vertexShader,
       fragment = fragmentshader,
       uniformInt = uniformInt,
-      uniformFloat = {resx,resy}
-    }
+      uniformFloat = uniformFloat,
+	  uniforms = uniformTable
+    }    
+local screencopy
+function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
+	vsx, vsy = viewSizeX, viewSizeY
 
-    
+screencopy = gl.CreateTexture(vsx, vsy, {
+    border = false,
+    min_filter = GL.NEAREST,
+    mag_filter = GL.NEAREST,
+	})
+end
+
 
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
@@ -140,7 +158,16 @@ void main() {
 	
 	local resxLocation = nil
 	local resyLocation = nil
-    function gadget:Initialize()        
+	local resolution = 128
+    function gadget:Initialize() 
+		vsx, vsy = gadgetHandler:GetViewSizes()
+		gadget:ViewResize(vsx, vsy)
+		screencopy = gl.CreateTexture(vsx, vsy, {
+			border = false,
+			min_filter = GL.NEAREST,
+			mag_filter = GL.NEAREST,
+			})
+		
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
 
         if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
@@ -150,13 +177,10 @@ void main() {
             if shaderProgram then
                 resxLocation = glGetUniformLocation(shaderProgram, "resx")
                 resyLocation = glGetUniformLocation(shaderProgram, "resy")
+                resolution = glGetUniformLocation(shaderProgram, "resolution")
             end
         else
             Spring.Echo("<Neon Shader>: GLSL not supported.")
-        end
-
-        if gl and gl.GetShaderLog then
-            Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
         end
       
         if not shaderProgram and gl and gl.GetShaderLog then
@@ -172,7 +196,9 @@ void main() {
     local GL_ONE                 = GL.ONE
     local GL_ZERO                = GL.ZERO
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
-
+	function gadget:GameFrame()
+	  glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
+	end
     function gadget:DrawUnit(unitID, drawMode)
         if drawMode == 1 and neonUnitTables[unitID] then --normalDraw
             glUseShader(shaderProgram)
