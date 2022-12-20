@@ -472,6 +472,7 @@ function getGameConfig()
             [UnitDefNames["objective_military_gyland"].id] = "water",
             [UnitDefNames["objective_refugeegyland"].id] = "water",
             [UnitDefNames["objective_factoryship"].id] = "water",
+            [UnitDefNames["objective_spaceport_water"].id] = "water",
             [UnitDefNames["objective_refugeecamp"].id] = "land",
             [UnitDefNames["objective_powerplant"].id] = "land",
             [UnitDefNames["objective_geoengineering"].id] = "land",
@@ -480,7 +481,7 @@ function getGameConfig()
             [UnitDefNames["objective_combatoutpost"].id] = "land",
             [UnitDefNames["objective_transrapid"].id] = "land",
             [UnitDefNames["objective_airport"].id] = "land",
-            [UnitDefNames["objective_spaceport"].id] = "land",
+            [UnitDefNames["objective_spaceport_land"].id] = "land",   
             [UnitDefNames["objective_pumpstation"].id] = "land"
         }
     end
