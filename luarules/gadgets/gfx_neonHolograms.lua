@@ -117,18 +117,20 @@ void main() {
           resy = vsy
         }
 	local uniformFloat = {
-		 resolution;
-		 radius; --TODO make z depth depending
+		 resolution= 1024,
+		 radius = 128
+        }
+          --TODO make z depth depending
 	local uniformTable ={
 		dir ={0, 0}--TODO
 	}
 
     local shaderTable = {
-      vertex = vertexShader,
-      fragment = fragmentshader,
-      uniformInt = uniformInt,
-      uniformFloat = uniformFloat,
-	  uniforms = uniformTable
+      vertex        = vertexShader,
+      fragment      = fragmentshader,
+      uniformInt    = uniformInt,
+      uniformFloat  = uniformFloat,
+	  uniforms      = uniformTable
     }    
 local screencopy
 function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
