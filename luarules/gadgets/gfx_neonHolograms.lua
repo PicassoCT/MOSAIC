@@ -41,11 +41,14 @@ else -- unsynced
 
 		attribute vec3 normal;
         uniform mat3 normalMatrix;
+		uniform float time;
 
         void main() {
+            vNormal = normalize(normalMatrix * normal);
+			float normalYDistortion = sin(time);
             gl_Position = gl_Vertex;
+			gl_Position.xy = gl_Position.xy * vNormal.xy * (0.8 + (abs(sin(time))*0.2)*cos(time*2)); // Make the hologram waver in non heightdimension from time to time 
 			vPosition´= gl_Position;
-            //fNormal = normalize(normalMatrix * normal);
         }
     ]]
 	
@@ -64,6 +67,7 @@ uniform sampler2D screencopy;
 uniform float resolution;
 uniform float radius;
 uniform vec2 dir;
+uniform float time;
 
 void main() {
     //this will be our RGBA sum
@@ -99,28 +103,15 @@ void main() {
     sum += texture2D(screencopy, vec2(tc.x + 3.0*blur*hstep, tc.y + 3.0*blur*vstep)) * 0.0540540541;
     sum += texture2D(screencopy, vec2(tc.x + 4.0*blur*hstep, tc.y + 4.0*blur*vstep)) * 0.0162162162;
 
-    gl_FragColor = vColor * sum;
+     //gl_FragColor = vColor * sum;
 	 //Transparency 
 	 float hologramTransparency = 0.5 - sin(time + vPosition.z) * 0.25 - sin(2*time)*0.1;
 	 float averageShadow = (fNormal.x*fNormal.x+fNormal.y*fNormal.y+fNormal.z+fNormal.z)/4.0;	
-	 vec4((gl_FragColor * (1.0-averageShadow)).xyz, gl_FragColor.z * hologramTransparency);
+	 gl_FragColor= vec4((gl_FragColor * (1.0-averageShadow)).xyz, gl_FragColor.z * hologramTransparency);
 	 
 }
 //---------------------------------------------------------------------------
 ]]
-
-    fragmentshader = [[
-	uniform sampler2D screencopy;
-    uniform float resx;
-    uniform float resy;
-    varying vec3 fNormal;
-
-    void main() {
-		//gl_FragColor = vec4(gl_FragColor * (1.0-averageShadow));
-		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-    ]]
-
     local uniformInt = {
           resx = vsx,
           resy = vsy
