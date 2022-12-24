@@ -9,7 +9,7 @@ myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 x,y,z = Spring.GetUnitPosition(unitID)
-isSeaUnit = 0 < Spring.GetGroundHeight(x,z)
+isSeaUnit = 0 > Spring.GetGroundHeight(x,z)
 Ground = piece("Ground")
 Water = piece("Water")
 function script.Create()
@@ -28,13 +28,59 @@ function script.Create()
         Show(Ground)
         showT(TablesOfPiecesGroups["Chains"])
     end
+    StartThread(behaviourLoop)
 end
 --Booster1
 --Booster2
 --Booster2
 --SpaceX_Falcon_Heavy001
-function landBooster(booster)
+upaxis = y_axis
+boosterArrived = {}
+function landBooster( boosterNr)
+    booster, rocket =  TablesOfPiecesGroups["Booster"][boosterNr],TablesOfPiecesGroups["RocketRotator"][boosterNr]
+    WMove(booster, upaxis, 9000, 0)
+    WTurn(rocket, x_axis, math.rad(14), 0 )
+    Show(booster)
+    Turn (rocket, x_axis, math.rad(0), 0.0001 )
+    x= 1
+    for i=9000, 0, -100 do
+        WMove(booster, upaxis, 9000, 1000/x)
+        x  = x+1
+    end
+    boosterArrived[boosterNr] = true
+end
 
+function behaviourLoop()
+    while true do
+        boosterArrived = {}
+        for i=1, 3 do
+            StartThread(landBooster, i)
+        end
+
+        while not boosterArrived[1] or 
+              not boosterArrived[2] or 
+              not boosterArrived[3] do
+              Sleep(100)
+        end 
+        Move(TablesOfPiecesGroups["DroneShip"][1],x_axis, -500, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][2],x_axis, 500, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][3],z_axis, 500, 25)
+        WaitForMoves(TablesOfPiecesGroups["DroneShip"])
+        Show(FalconX)
+        hideT(TablesOfPiecesGroups["Booster"])
+        Move(TablesOfPiecesGroups["DroneShip"][1],x_axis, 0, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][2],x_axis, 0, 25)
+        WMove(TablesOfPiecesGroups["DroneShip"][3],z_axis, -500, 25)
+        Sleep(10000)
+        for i=1,9000, 100 do
+            WMove(FalconX, upaxis, i, 100*((i+1)/100))
+        end
+        Hide(FalconX)
+        reset(FalconX)
+        WMove(TablesOfPiecesGroups["DroneShip"][3],z_axis, 0, 25)
+        val = math.random(20,100)*1000
+        Sleep(val)
+    end
 end
 
 

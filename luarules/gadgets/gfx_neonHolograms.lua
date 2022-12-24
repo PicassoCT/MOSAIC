@@ -25,6 +25,7 @@ if (gadgetHandler:IsSyncedCode()) then
 else -- unsynced
     local glUseShader = gl.UseShader
     local glUniform = gl.Uniform
+    local glUniformArray = gl.UniformArray
     local glCopyToTexture = gl.CopyToTexture
     local glUseShader = gl.UseShader
     local glGetUniformLocation = gl.GetUniformLocation
@@ -61,9 +62,9 @@ else -- unsynced
         uniform float time;
 
         void main() {
-            vNormal = normalize(normalMatrix * normal);
+            vNormal = gl_Normal;
 			float normalYDistortion = sin(time);
-            gl_Position = gl_Vertex;
+            gl_Position = gl_ModelViewMatrix * gl_Vertex;
 			gl_Position.xy = gl_Position.xy * vNormal.xy * (0.8 + (abs(sin(time))*0.2)*cos(time*2)); // Make the hologram waver in non heightdimension from time to time 
 			vPosition = gl_Position.xyz;
         }
@@ -132,13 +133,14 @@ fragmentshader =[[
     ]]
     local uniformInt = {
           screencopy = 0,
-          resx = vsx,
-          resy = vsy
         }
 	local uniformFloat = {
 		 resolution= 1024,
-		 radius = 128
+		 radius = 128,
+         resx = vsx,
+         resy = vsy
         }
+
           --TODO make z depth depending
 	local uniformTable ={
 		dir ={0, 0}--TODO
@@ -197,18 +199,29 @@ fragmentshader =[[
             Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
         end
     end
-
+    local boolInitializeShader = false
     function gadget:DrawScreenEffects()
-      glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
+        boolInitializeShader = false
     end
 
     function gadget:DrawUnit(unitID, drawMode)
-        if drawMode == 1 and neonUnitTables[unitID] then --normalDraw
+        
+        if drawMode == 1 and neonUnitTables[unitID] then --normalDraw 
             glUseShader(shaderProgram)
-            --glBlending(GL_SRC_ALPHA, GL_ONE)
+            if boolInitializeShader == false then
+                boolInitializeShader = true
+                glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
+                glTexture(0, screencopy)
+                resxLocation = glGetUniformLocation(shaderProgram, "resx")
+                resyLocation = glGetUniformLocation(shaderProgram, "resy")
+                resolution = glGetUniformLocation(shaderProgram, "resolution")
+                radius = glGetUniformLocation(shaderProgram, "radius")       
+            end
+            
+            glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
-           -- glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glUseShader(0)
+            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glUseShader(0)     
         end       
     end
 
