@@ -13,10 +13,10 @@ end
 
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
-    local neonTypeTable = getIconTypes(UnitDefs)
+    local neonHologramTypeTable = getHologramTypes(UnitDefs)
 
     function gadget:UnitCreated(unitID, unitDefID)
-        if neonTypeTable[unitDefID] then
+        if neonHologramTypeTable[unitDefID] then
             --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].namge .. " created")
             SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
@@ -199,29 +199,23 @@ fragmentshader =[[
             Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
         end
     end
-    local boolInitializeShader = false
+
     function gadget:DrawScreenEffects()
-        boolInitializeShader = false
+        glTexture(0, screencopy)
+        glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
+        resxLocation = glGetUniformLocation(shaderProgram, "resx")
+        resyLocation = glGetUniformLocation(shaderProgram, "resy")
+        resolution = glGetUniformLocation(shaderProgram, "resolution")
+        radius = glGetUniformLocation(shaderProgram, "radius")       
     end
 
-    function gadget:DrawUnit(unitID, drawMode)
-        
+    function gadget:DrawUnit(unitID, drawMode)        
         if drawMode == 1 and neonUnitTables[unitID] then --normalDraw 
-            glUseShader(shaderProgram)
-            if boolInitializeShader == false then
-                boolInitializeShader = true
-                glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
-                glTexture(0, screencopy)
-                resxLocation = glGetUniformLocation(shaderProgram, "resx")
-                resyLocation = glGetUniformLocation(shaderProgram, "resy")
-                resolution = glGetUniformLocation(shaderProgram, "resolution")
-                radius = glGetUniformLocation(shaderProgram, "radius")       
-            end
-            
-            glBlending(GL_SRC_ALPHA, GL_ONE)
+           -- glUseShader(shaderProgram)
+            glBlending(GL_SRC_ALPHA, GL_ONE)            
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glUseShader(0)     
+           -- glUseShader(0)     
         end       
     end
 

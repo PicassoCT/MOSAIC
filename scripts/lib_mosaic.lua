@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.894" 
+            Version = "Alpha: 0.895" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -522,13 +522,21 @@ function getGameConfig()
         }
     end  
 
-
-    function getNeonTypes(UnitDefs)
+    function getHologramTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
-                [UnitDefNames["advertising_blimp"].id] = true,           
+                    [UnitDefNames["advertising_blimp_hologram"].id] = true,           
+                    [UnitDefNames["house_western_hologram_buisness"].id] = true,           
+                    [UnitDefNames["house_western_hologram_casino"].id] = true,           
+                    [UnitDefNames["house_western_hologram_brothel"].id] = true,           
                 }
     end  
+
+    function attachHologramToUnitPiece(unitID, holoDefID, pieceID)
+        id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
+        Spring.UnitAttach(id,unitID, pieceID)
+        return id
+    end
 
     function getManualObjectiveSpawnMapNames()
         return {

@@ -6,36 +6,14 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 GameConfig = getGameConfig()
-BrothelSpin= piece("BrothelSpin")
-CasinoSpin= piece("CasinoSpin")
-Joy = piece("Joy")
-JoyRide = piece("JoyRide")
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
-function showOne(T, bNotDelayd)
-    if not T then return end
-    dice = math.random(1, count(T))
-    c = 0
-    for k, v in pairs(T) do
-        if k and v then c = c + 1 end
-        if c == dice then            
-            Show(v)            
-            return v
-        end
-    end
-end
 
-function showOneOrNone(T)
-    if not T then return end
-    if math.random(1, 100) > 50 then
-        return showOne(T, true)
-    else
-        return
-    end
-end
+HoloCenter = piece("HoloCenter")
 
 function setUnitActive(boolWantActive)
     if boolWantActive == true then
@@ -57,21 +35,22 @@ function script.Create()
      StartThread(Advertising)
      StartThread(LightsBlink)
      StartThread(flyTowardsPerson)
-     StartThread(HoloGrams)
+
      StartThread(advertisingLoop)
-     Hide(BrothelSpin)
-     Hide(CasinoSpin)
+
 
 end
 
 function advertisingLoop()
     rest= (math.random(2,5)+(unitID%3))*10000
     Sleep(rest)
+    holoID = attachHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter)
+
     while true do
         soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
         StartThread(PlaySoundByUnitDefID, myDefID, soundFile, 1.0, 20000, 2)
         minimum, maximum = 5*60*1000, 10*60*1000
-        restTime = math.random(minimum,maximum)
+        restTime = math.random(minimum, maximum)
         Sleep(restTime)
     end
 end

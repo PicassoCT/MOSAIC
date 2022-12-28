@@ -158,59 +158,19 @@ function HoloGrams()
         if maRa()== true then
             hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
             if  contains(ToShowTable, hostPiece) == true then 
-                StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+                holoID = attachHologramToUnitPiece(unitID, "house_western_hologram_brothel", hostPiece)
+            end
+        else
+            hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
+            if contains(ToShowTable, hostCasinoPiece) == true then 
+                holoID = attachHologramToUnitPiece(unitID, "house_western_hologram_casino", hostCasinoPiece)
             end
         end
-
-        hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
-        if contains(ToShowTable, hostCasinoPiece) == true then 
-            StartThread(flickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
-        end
-
     end
 
     if contains(ToShowTable, logoPiece) then 
         logo = showOne(TablesOfPiecesGroups["Office_Roof_Deco7Spin"])
-        Spin(logo,_z_axis, math.rad(5),0)
-        if maRa()== true then
-            StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)
-        else
-            Show(logo)
-        end
-    end
-end
-
-function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
-    assert(flickerGroup)
-    local fGroup = flickerGroup
-
-    flickerIntervall = math.ceil(1000/25)
-
-    while true do
-        hideT(fGroup)
-        assertRangeConsistency(fGroup, "flickerGroup")
-        Sleep(500)
-        hours, minutes, seconds, percent = getDayTime()
-        if not boolDayLightSavings or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
-            if boolHouseHidden == false then
-                theOneToShowT= {}
-                for x=1,math.random(1,3) do
-                    theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
-                end
-
-                for i=1,(3000/flickerIntervall) do
-                    if i % 2 == 0 then         showT(theOneToShowT) else hideT(theOneToShowT) end
-                    if NoErrorFunction() == true then showT(theOneToShowT) end
-                    for ax=1,3 do
-                        moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
-                    end
-                    Sleep(flickerIntervall)
-                end
-                hideT(theOneToShowT)
-            end
-        end
-        breakTime = math.random(1,maxInterval)*timeoutMs
-        Sleep(breakTime)
+        holoID = attachHologramToUnitPiece(unitID, "house_western_hologram_buisness", logo)
     end
 end
 
