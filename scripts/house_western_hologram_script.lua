@@ -4,6 +4,9 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
+buisness_spin = piece("buisness_spin")
+brothel_spin = piece("brothel_spin")
+casino_spin = piece("casino_spin")
 local TablesOfPiecesGroups = {}
 
 myDefID = Spring.GetUnitDefID(unitID)
@@ -15,7 +18,6 @@ local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
 
-
 GameConfig = getGameConfig()
 
 function timeOfDay()
@@ -25,6 +27,14 @@ function timeOfDay()
 end
 
 function script.Create()
+    Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitNeutral(unitID, true)
+    Spring.SetUnitNoSelect(unitID, true)
+    Spring.SetUnitBlocking(unitID, false)
+    hideAll(unitID)
+    Hide(buisness_spin)
+    Hide(brothel_spin)
+    Hide(casino_spin)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(HoloGrams)
 end
@@ -40,21 +50,21 @@ function HoloGrams()
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if boolIsBrothel then
-            StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+           StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
         end
   
-        if  boolIsCasino then 
-            StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+        if boolIsCasino then 
+           StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
         end
     end
 
     if boolIsBuisness then 
-        logo = showOne(TablesOfPiecesGroups["Office_Roof_Deco7Spin"])
+        logo = showOne(TablesOfPiecesGroups["buisness_holo"])
         Spin(logo,_z_axis, math.rad(5),0)
         if maRa()== true then
-            StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)
+           StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)
         else
-            Show(logo)
+           Show(logo)
         end
     end
 end
@@ -93,18 +103,14 @@ function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, ma
     end
 end
 
-function showOne(T, bNotDelayd)
+function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
-        if c == dice then
-            if bNotDelayd and bNotDelayd == true then
-                Show(v)
-            else
-                ToShowTable[#ToShowTable + 1] = v
-            end
+        if c == dice then          
+            Show(v)          
             return v
         end
     end

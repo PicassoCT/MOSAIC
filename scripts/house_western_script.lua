@@ -158,19 +158,18 @@ function HoloGrams()
         if maRa()== true then
             hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
             if  contains(ToShowTable, hostPiece) == true then 
-                holoID = attachHologramToUnitPiece(unitID, "house_western_hologram_brothel", hostPiece)
+                holoID = moveCtrlHologramToUnitPiece(unitID, "house_western_hologram_brothel", hostPiece)
             end
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
-                holoID = attachHologramToUnitPiece(unitID, "house_western_hologram_casino", hostCasinoPiece)
+                holoID = moveCtrlHologramToUnitPiece(unitID, "house_western_hologram_casino", hostCasinoPiece)
             end
         end
     end
 
     if contains(ToShowTable, logoPiece) then 
-        logo = showOne(TablesOfPiecesGroups["Office_Roof_Deco7Spin"])
-        holoID = attachHologramToUnitPiece(unitID, "house_western_hologram_buisness", logo)
+        holoID = moveCtrlHologramToUnitPiece(unitID, "house_western_hologram_buisness", logo)
     end
 end
 

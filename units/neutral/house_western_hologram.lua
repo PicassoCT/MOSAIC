@@ -22,7 +22,7 @@ local house_western_hologram = Abstract:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 60 130",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
-	category = [[GROUND BUILDING RAIDABLE]],
+	category = [[NOTARGET ABSTRACT]],
 
 }
 

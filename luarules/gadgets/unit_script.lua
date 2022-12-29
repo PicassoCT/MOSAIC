@@ -344,7 +344,7 @@ function Spring.UnitScript.Sleep(milliseconds)
     if not activeThread then
         local ud = UnitDefs[Spring.GetUnitDefID(activeUnit.unitID)]
         Spring.Log(gadget:GetInfo().name, LOG.WARNING,
-                   "UnitDef: " .. ud.name .. "has a unthreaded Sleep")
+                   "UnitDef: " .. ud.name .. " has a unthreaded Sleep")
     end
 
     zzz[#zzz + 1] = activeThread

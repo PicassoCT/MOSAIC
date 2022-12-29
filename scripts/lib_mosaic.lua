@@ -535,6 +535,25 @@ function getGameConfig()
     function attachHologramToUnitPiece(unitID, holoDefID, pieceID)
         id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
         Spring.UnitAttach(id,unitID, pieceID)
+        Spring.SetUnitAlwaysVisible(id, true)
+        Spring.SetUnitNeutral(id, true)
+        Spring.SetUnitNoSelect(id, true)
+        Spring.SetUnitBlocking(id, false)
+
+        return id
+    end
+
+    function moveCtrlHologramToUnitPiece(unitID, holoDefID, pieceID)
+        id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
+        Spring.MoveCtrl.Enable(id, true)
+        px, py, pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
+        Spring.MoveCtrl.SetPosition(id, px, py, pz)
+        
+        Spring.SetUnitAlwaysVisible(id, true)
+        Spring.SetUnitNeutral(id, true)
+        Spring.SetUnitNoSelect(id, true)
+        Spring.SetUnitBlocking(id, false, false, false, false, false)
+        Spring.SetUnitBlocking(unitID, false, false, false, false, false) 
         return id
     end
 

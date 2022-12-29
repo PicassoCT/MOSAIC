@@ -5,7 +5,7 @@ local advertising_blimp_hologram = Abstract:New{
 	objectName = "advertiseblimp_hologram.DAE",
 
 	script = "advertisingblimphologramscript.lua",
-
+	mass = 0,
 	--floater = true,
 	--cost	
 	--Health

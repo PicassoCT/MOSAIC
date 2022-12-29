@@ -11,6 +11,9 @@ BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy")
 JoyRide = piece("JoyRide")
+local boolDebugScript = true
+
+offset = 80
 
 function showOne(T, bNotDelayd)
     if not T then return end
@@ -48,19 +51,6 @@ function script.Create()
 
 end
 
-function advertisingLoop()
-    rest= (math.random(2,5)+(unitID%3))*10000
-    Sleep(rest)
-    while true do
-        soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
-        StartThread(PlaySoundByUnitDefID, myDefID, soundFile, 1.0, 20000, 2)
-        minimum, maximum = 5*60*1000, 10*60*1000
-        restTime = math.random(minimum,maximum)
-        Sleep(restTime)
-    end
-end
-
-
 function HoloGrams()    
     local brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
@@ -83,9 +73,11 @@ function HoloGrams()
         StartThread(JoyAnimation)
     end
     val = math.random(5, 12)*randSign()
+    Move(BrothelSpin,_z_axis, -offset,0)
     Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
     StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
     val = math.random(5, 12)*randSign()
+    Move(CasinoSpin,_z_axis, -offset,0)
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
 end
 
@@ -100,7 +92,7 @@ function JoyAnimation()
     while true do
 
         hours, minutes, seconds, percent = getDayTime()
-        if (hours > 17 or hours < 7) then
+        if boolDebugScript or (hours > 17 or hours < 7) then
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             Show(JoySpinOrigin)
             Sleep(2000)
@@ -145,7 +137,7 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
         --assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
-        if (hours > 17 or hours < 7) then
+        if boolDebugScript or (hours > 17 or hours < 7) then
             theOneToShowT= {}
             for x=1,math.random(1,3) do
                 theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]

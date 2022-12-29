@@ -23,7 +23,6 @@ function script.Create()
     showT(TablesOfPiecesGroups["Capsule"])
     showT(TablesOfPiecesGroups["Gauntry"])
     if isSeaUnit then
-
     else
         Show(Ground)
         showT(TablesOfPiecesGroups["Chains"])
@@ -36,8 +35,8 @@ end
 --SpaceX_Falcon_Heavy001
 upaxis = y_axis
 boosterArrived = {}
-function landBooster( boosterNr)
-    booster, rocket =  TablesOfPiecesGroups["Booster"][boosterNr],TablesOfPiecesGroups["RocketRotator"][boosterNr]
+function landBooster( boosterNr, booster, rocket)
+    boosterArrived[boosterNr] = false
     WMove(booster, upaxis, 9000, 0)
     WTurn(rocket, x_axis, math.rad(14), 0 )
     Show(booster)
@@ -54,23 +53,24 @@ function behaviourLoop()
     while true do
         boosterArrived = {}
         for i=1, 3 do
-            StartThread(landBooster, i)
+            StartThread(landBooster, i, piece("Booster"..i), piece("RocketRotator00"..i))
         end
+        Sleep(500)
 
         while not boosterArrived[1] or 
               not boosterArrived[2] or 
               not boosterArrived[3] do
               Sleep(100)
         end 
-        Move(TablesOfPiecesGroups["DroneShip"][1],x_axis, -500, 25)
-        Move(TablesOfPiecesGroups["DroneShip"][2],x_axis, 500, 25)
-        Move(TablesOfPiecesGroups["DroneShip"][3],z_axis, 500, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][1],z_axis, -500, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][2],z_axis, 500, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][3],x_axis, 500, 25)
         WaitForMoves(TablesOfPiecesGroups["DroneShip"])
         Show(FalconX)
         hideT(TablesOfPiecesGroups["Booster"])
-        Move(TablesOfPiecesGroups["DroneShip"][1],x_axis, 0, 25)
-        Move(TablesOfPiecesGroups["DroneShip"][2],x_axis, 0, 25)
-        WMove(TablesOfPiecesGroups["DroneShip"][3],z_axis, -500, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][1],z_aBoosterxis, 0, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][2],z_axis, 0, 25)
+        WMove(TablesOfPiecesGroups["DroneShip"][3],x_axis, -500, 25)
         Sleep(10000)
         for i=1,9000, 100 do
             WMove(FalconX, upaxis, i, 100*((i+1)/100))

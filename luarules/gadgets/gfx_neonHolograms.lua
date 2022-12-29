@@ -22,13 +22,23 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    function gadget:UnitDestroyed(unitID, unitDefID)
+        if neonHologramTypeTable[unitDefID] then
+            --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].namge .. " created")
+            SendToUnsynced("unsetUnitNeonLuaDraw", unitID, unitDefID)
+        end
+    end
+
 else -- unsynced
     local glUseShader = gl.UseShader
     local glUniform = gl.Uniform
     local glUniformArray = gl.UniformArray
     local glCopyToTexture = gl.CopyToTexture
+    local glTexture = gl.Texture
+    local glTexRect = gl.TexRect
     local glUseShader = gl.UseShader
     local glGetUniformLocation = gl.GetUniformLocation
+    local GL_DEPTH_COMPONENT24 = 0x81A6
     local glUnitRaw = gl.UnitRaw
     local glBlending = gl.Blending
     local glScale = gl.Scale
@@ -36,6 +46,7 @@ else -- unsynced
     local shaderProgram = {}
     local vsx, vsy = 1600, 1200
     local screencopy
+    local depthtex
     local diffTime = 0
 
     local GL_SRC_ALPHA           = GL.SRC_ALPHA
@@ -56,6 +67,7 @@ else -- unsynced
 		varying vec3 vPosition;
 
 		uniform sampler2D screencopy;
+        uniform sampler2D depthtex;
         uniform float resolution;
         uniform float radius;
         uniform vec2 dir;
@@ -83,6 +95,7 @@ fragmentshader =[[
 
     //declare uniforms
     uniform sampler2D screencopy;
+    uniform sampler2D depthtex;
     uniform float resolution;
     uniform float radius;
     uniform vec2 dir;
@@ -133,6 +146,7 @@ fragmentshader =[[
     ]]
     local uniformInt = {
           screencopy = 0,
+          depthtex = 1,
         }
 	local uniformFloat = {
 		 resolution= 1024,
@@ -152,11 +166,17 @@ fragmentshader =[[
       uniformInt    = uniformInt,
       uniformFloat  = uniformFloat,
 	  uniforms      = uniformTable
-    }    
-
+    }   
 
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
+
+    depthtex = gl.CreateTexture(vsx,vsy, {
+        border = false,
+        format = GL_DEPTH_COMPONENT24,
+        min_filter = GL.NEAREST,
+        mag_filter = GL.NEAREST,
+    })
 
     screencopy = gl.CreateTexture(vsx, vsy, {
         border = false,
@@ -164,22 +184,38 @@ fragmentshader =[[
         mag_filter = GL.NEAREST,
     	})
     end
+    local counterNeonUnits = 0
+    local function unsetUnitNeonLuaDraw(callname, unitID, typeDefID)
+        neonUnitTables[unitID] = nil
+        counterNeonUnits= counterNeonUnits -1
+    end
+
 
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
+        counterNeonUnits= counterNeonUnits +1
     end	
 
     function gadget:Initialize() 
 		vsx, vsy = gadgetHandler:GetViewSizes()
 		gadget:ViewResize(vsx, vsy)
+
 		screencopy = gl.CreateTexture(vsx, vsy, {
 			border = false,
 			min_filter = GL.NEAREST,
 			mag_filter = GL.NEAREST,
 			})
+        
+        depthtex = gl.CreateTexture(vsx,vsy, {
+            border = false,
+            format = GL_DEPTH_COMPONENT24,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
+        })
 		
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
+        gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
 
         if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
         
@@ -200,9 +236,14 @@ fragmentshader =[[
         end
     end
 
+    local perFrameCounterCopy = 0
     function gadget:DrawScreenEffects()
-        glTexture(0, screencopy)
+        perFrameCounterCopy = counterNeonUnits
         glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
+        glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy)
+        glTexture(0, screencopy)
+        glTexture(1, depthtex)
+
         resxLocation = glGetUniformLocation(shaderProgram, "resx")
         resyLocation = glGetUniformLocation(shaderProgram, "resy")
         resolution = glGetUniformLocation(shaderProgram, "resolution")
@@ -211,11 +252,18 @@ fragmentshader =[[
 
     function gadget:DrawUnit(unitID, drawMode)        
         if drawMode == 1 and neonUnitTables[unitID] then --normalDraw 
-           -- glUseShader(shaderProgram)
+            perFrameCounterCopy = perFrameCounterCopy -1
+            --glUseShader(shaderProgram)
             glBlending(GL_SRC_ALPHA, GL_ONE)            
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-           -- glUseShader(0)     
+            --glUseShader(0)     
+            if perFrameCounterCopy == 0 then
+                --glTexRect(0,vsy,vsx,0)
+                --glTexRect(1,vsy,vsx,0)
+                --glTexture(0, false)
+                --glTexture(1, false)
+            end
         end       
     end
 

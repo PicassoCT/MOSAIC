@@ -15,6 +15,28 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.
 
 HoloCenter = piece("HoloCenter")
 
+function showOne(T, bNotDelayd)
+    if not T then return end
+    dice = math.random(1, count(T))
+    c = 0
+    for k, v in pairs(T) do
+        if k and v then c = c + 1 end
+        if c == dice then            
+            Show(v)            
+            return v
+        end
+    end
+end
+
+function showOneOrNone(T)
+    if not T then return end
+    if math.random(1, 100) > 50 then
+        return showOne(T, true)
+    else
+        return
+    end
+end
+
 function setUnitActive(boolWantActive)
     if boolWantActive == true then
         Spring.UnitScript.SetUnitValue(COB.ACTIVATION, 1)
@@ -28,23 +50,20 @@ function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     setUnitActive(unitID, false)
     setUnitActive(unitID, true)
-   -- Spring.SetUnitNoSelect(unitID, true)
+     --Spring.SetUnitNoSelect(unitID, true)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
      hideT(TablesOfPiecesGroups["Blimp"])
      showOne(TablesOfPiecesGroups["Blimp"])
      StartThread(Advertising)
      StartThread(LightsBlink)
      StartThread(flyTowardsPerson)
-
      StartThread(advertisingLoop)
-
-
 end
 
 function advertisingLoop()
     rest= (math.random(2,5)+(unitID%3))*10000
     Sleep(rest)
-    holoID = attachHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter)
+    StartThread(attachHologram)
 
     while true do
         soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
@@ -53,6 +72,18 @@ function advertisingLoop()
         restTime = math.random(minimum, maximum)
         Sleep(restTime)
     end
+end
+
+function attachHologram()
+    
+    holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter)
+
+    while true do
+        Sleep(45)
+        px,py,pz = Spring.GetUnitPosition(unitID)
+        Spring.MoveCtrl.SetPosition(holoID, px,py,pz)
+    end
+
 end
 
 boolTurnLeft= false
