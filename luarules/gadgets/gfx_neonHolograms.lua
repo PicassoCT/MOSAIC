@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -43,7 +43,8 @@ else -- unsynced
     local glBlending = gl.Blending
     local glScale = gl.Scale
     local startTimer = Spring.GetTimer()
-    local shaderProgram = {}
+    local shaderFirstPass = {}
+    local shaderSecondPass = {}
     local vsx, vsy = 1600, 1200
     local screencopy
     local depthtex
@@ -58,7 +59,7 @@ else -- unsynced
     local radius = 16
     local resolution = 128
     local neonUnitTables = {}
-    local vertexShader = 
+    local vertexShaderFirstPass = 
     [[
         #version 150 compatibility
         varying vec3 vNormal;		
@@ -82,7 +83,7 @@ else -- unsynced
         }
     ]]
 	
-fragmentshader =[[
+fragmentShaderFirstPass =[[
     //---------------------------------------------------------------------------
     #version 150 compatibility
     // fragment shader
@@ -160,9 +161,9 @@ fragmentshader =[[
 		dir ={0, 0}--TODO
 	}
 
-    local shaderTable = {
-      vertex        = vertexShader,
-      fragment      = fragmentshader,
+    local shaderDataFirstPass = {
+      vertex        = vertexShaderFirstPass,
+      fragment      = fragmentShaderFirstPass,
       uniformInt    = uniformInt,
       uniformFloat  = uniformFloat,
 	  uniforms      = uniformTable
@@ -220,18 +221,23 @@ fragmentshader =[[
         if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
         
         if gl.CreateShader then     
-            shaderProgram = gl.CreateShader(shaderTable)
-            if shaderProgram then
-                resxLocation = glGetUniformLocation(shaderProgram, "resx")
-                resyLocation = glGetUniformLocation(shaderProgram, "resy")
-                resolution = glGetUniformLocation(shaderProgram, "resolution")
-                radius = glGetUniformLocation(shaderProgram, "radius")
+            shaderFirstPass = gl.CreateShader(shaderDataFirstPass)
+            if shaderFirstPass then
+                resxLocation = glGetUniformLocation(shaderFirstPass, "resx")
+                resyLocation = glGetUniformLocation(shaderFirstPass, "resy")
+                resolution = glGetUniformLocation(shaderFirstPass, "resolution")
+            end
+
+            shaderSecondPass = gl.CreateShader(shaderDataSecondPass)
+            if shaderSecondPass then
+                resxLocation = glGetUniformLocation(shaderSecondPass, "resx")
+                resyLocation = glGetUniformLocation(shaderSecondPass, "resy")
             end
         else
             Spring.Echo("<Neon Shader>: GLSL not supported.")
         end
       
-        if not shaderProgram and gl and gl.GetShaderLog then
+        if not shaderFirstPass and gl and gl.GetShaderLog then
             Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
         end
     end
@@ -244,32 +250,34 @@ fragmentshader =[[
         glTexture(0, screencopy)
         glTexture(1, depthtex)
 
-        resxLocation = glGetUniformLocation(shaderProgram, "resx")
-        resyLocation = glGetUniformLocation(shaderProgram, "resy")
-        resolution = glGetUniformLocation(shaderProgram, "resolution")
-        radius = glGetUniformLocation(shaderProgram, "radius")       
+        resxLocation = glGetUniformLocation(shaderFirstPass, "resx")
+        resyLocation = glGetUniformLocation(shaderFirstPass, "resy")
+        resolution = glGetUniformLocation(shaderFirstPass, "resolution")
+        radius = glGetUniformLocation(shaderFirstPass, "radius")       
     end
 
     function gadget:DrawUnit(unitID, drawMode)        
         if drawMode == 1 and neonUnitTables[unitID] then --normalDraw 
             perFrameCounterCopy = perFrameCounterCopy -1
-            --glUseShader(shaderProgram)
+            glUseShader(shaderFirstPass)
             glBlending(GL_SRC_ALPHA, GL_ONE)            
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            --glUseShader(0)     
+            glUseShader(0)     
             if perFrameCounterCopy == 0 then
+                glUseShader(shaderSecondPass)
                 --glTexRect(0,vsy,vsx,0)
                 --glTexRect(1,vsy,vsx,0)
                 --glTexture(0, false)
                 --glTexture(1, false)
+                glUseShader(0)
             end
         end       
     end
 
     function gadget:Shutdown()
-        if shaderProgram then
-            gl.DeleteShader(shaderProgram)
+        if shaderFirstPass then
+            gl.DeleteShader(shaderFirstPass)
         end
     end
 end
