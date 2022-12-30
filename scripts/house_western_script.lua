@@ -155,21 +155,19 @@ function HoloGrams()
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
-        if maRa()== true then
-            hostPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
-            if  contains(ToShowTable, hostPiece) == true then 
-                holoID = moveCtrlHologramToUnitPiece(unitID, "house_western_hologram_brothel", hostPiece)
-            end
+        hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
+        if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece)
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
-                holoID = moveCtrlHologramToUnitPiece(unitID, "house_western_hologram_casino", hostCasinoPiece)
+                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece)
             end
         end
     end
 
     if contains(ToShowTable, logoPiece) then 
-        holoID = moveCtrlHologramToUnitPiece(unitID, "house_western_hologram_buisness", logo)
+        StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logo)
     end
 end
 

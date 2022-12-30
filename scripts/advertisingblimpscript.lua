@@ -75,15 +75,13 @@ function advertisingLoop()
 end
 
 function attachHologram()
-    
     holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter)
 
     while true do
         Sleep(45)
         px,py,pz = Spring.GetUnitPosition(unitID)
-        Spring.MoveCtrl.SetPosition(holoID, px,py,pz)
+        Spring.MoveCtrl.SetPosition(holoID, px+1,py-1,pz+1)
     end
-
 end
 
 boolTurnLeft= false

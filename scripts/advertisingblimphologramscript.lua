@@ -73,11 +73,11 @@ function HoloGrams()
         StartThread(JoyAnimation)
     end
     val = math.random(5, 12)*randSign()
-    Move(BrothelSpin,_z_axis, -offset,0)
+    Move(BrothelSpin, z_axis, -offset,0)
     Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
     StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
     val = math.random(5, 12)*randSign()
-    Move(CasinoSpin,_z_axis, -offset,0)
+    Move(CasinoSpin, z_axis, -offset,0)
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
 end
 

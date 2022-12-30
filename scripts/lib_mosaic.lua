@@ -519,6 +519,10 @@ function getGameConfig()
             [UnitDefNames["blackouticon"].id] = true,
             [UnitDefNames["hijacksatelliteicon"].id] = true,
             [UnitDefNames["ecmicon"].id] = true,
+            [UnitDefNames["advertising_blimp_hologram"].id] = true,           
+            [UnitDefNames["house_western_hologram_buisness"].id] = true,           
+            [UnitDefNames["house_western_hologram_casino"].id] = true,           
+            [UnitDefNames["house_western_hologram_brothel"].id] = true,           
         }
     end  
 
@@ -538,22 +542,43 @@ function getGameConfig()
         Spring.SetUnitAlwaysVisible(id, true)
         Spring.SetUnitNeutral(id, true)
         Spring.SetUnitNoSelect(id, true)
-        Spring.SetUnitBlocking(id, false)
-
+        isblocking = false
+        isSolidObjectCollidable = false
+        isProjectileCollidable = false
+        isRaySegmentCollidable = false
+        crushable = false
+        blockEnemyPushing = false
+        blockHeightChanges = false
+        Spring.SetUnitBlocking(id, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable , crushable, blockEnemyPushing, blockHeightChanges ) 
+        Spring.SetUnitBlocking(unitID, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable, crushable, blockEnemyPushing, blockHeightChanges ) 
+        
         return id
     end
 
     function moveCtrlHologramToUnitPiece(unitID, holoDefID, pieceID)
+        assert(pieceID)
+        Sleep(10)
+        WaitForMoves(pieceID)
+        Sleep(500)
         id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
         Spring.MoveCtrl.Enable(id, true)
         px, py, pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
+        echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
         Spring.MoveCtrl.SetPosition(id, px, py, pz)
         
         Spring.SetUnitAlwaysVisible(id, true)
         Spring.SetUnitNeutral(id, true)
         Spring.SetUnitNoSelect(id, true)
-        Spring.SetUnitBlocking(id, false, false, false, false, false)
-        Spring.SetUnitBlocking(unitID, false, false, false, false, false) 
+        isblocking= false
+        isSolidObjectCollidable=false
+        isProjectileCollidable= false
+        isRaySegmentCollidable = false
+        crushable = false
+        blockEnemyPushing= false
+        blockHeightChanges = false
+        Spring.SetUnitBlocking(id, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable , crushable, blockEnemyPushing, blockHeightChanges ) 
+        Spring.SetUnitBlocking(unitID, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable, crushable, blockEnemyPushing, blockHeightChanges ) 
+        
         return id
     end
 

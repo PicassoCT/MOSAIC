@@ -38,6 +38,13 @@ local advertising_blimp = VTOL:New{
 	activateWhenBuilt   	= true,
 	MaxSlope 				= 75,
 	hoverAttack = true,
+	turninplace		= true,
+	
+	transportSize = 16,
+	transportCapacity = 1,
+	isFirePlatform  = true, 
+	usepiececollisionvolumes = false,
+
 	--canHover=true,
 	CanAttack = true,
 	CanGuard = true,
@@ -53,7 +60,7 @@ local advertising_blimp = VTOL:New{
 	cruiseAlt = 314,
 	canSubmerge         = false,
 	useSmoothMesh 		=false,
-	collide             = true,
+	collide             = false,
 	crashDrag =0.035,
 
 	Category = [[AIR]],

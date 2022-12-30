@@ -62,6 +62,7 @@ function HoloGrams()
         logo = showOne(TablesOfPiecesGroups["buisness_holo"])
         Spin(logo,_z_axis, math.rad(5),0)
         if maRa()== true then
+           Show(logo)
            StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)
         else
            Show(logo)
@@ -80,8 +81,7 @@ function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, ma
         assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
-        if not boolDayLightSavings or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
-            if boolHouseHidden == false then
+        if boolDebugHologram or not boolDayLightSavings or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
                 theOneToShowT= {}
                 for x=1,math.random(1,3) do
                     theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
@@ -96,7 +96,6 @@ function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, ma
                     Sleep(flickerIntervall)
                 end
                 hideT(theOneToShowT)
-            end
         end
         breakTime = math.random(1,maxInterval)*timeoutMs
         Sleep(breakTime)
