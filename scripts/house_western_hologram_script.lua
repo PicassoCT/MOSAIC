@@ -18,6 +18,8 @@ local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
 
+rotatorTable ={}
+
 GameConfig = getGameConfig()
 
 function timeOfDay()
@@ -40,12 +42,20 @@ function script.Create()
 end
 
 function HoloGrams()
+    rotatorTable[#rotatorTable+1] = piece("brothel_spin")
+    rotatorTable[#rotatorTable+1] = piece("casino_spin")
+    rotatorTable[#rotatorTable+1] = piece("buisness_spin")
+    for i=1, 3 do
+        val = math.random(10,42)/10*randSign()
+        Spin(rotatorTable[i], 2, math.rad(val), 0)
+    end
     Sleep(15000)
     
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
+
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
@@ -60,7 +70,7 @@ function HoloGrams()
 
     if boolIsBuisness then 
         logo = showOne(TablesOfPiecesGroups["buisness_holo"])
-        Spin(logo,_z_axis, math.rad(5),0)
+        Spin(logo,z_axis, math.rad(5),0)
         if maRa()== true then
            Show(logo)
            StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)

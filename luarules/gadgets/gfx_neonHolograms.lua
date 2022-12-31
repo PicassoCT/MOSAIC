@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -284,11 +284,11 @@ fragmentShaderFirstPass =[[
                 resolution = glGetUniformLocation(shaderFirstPass, "resolution")
             end
 
-            shaderSecondPass = gl.CreateShader(shaderDataSecondPass)
-            if shaderSecondPass then
-                resxLocation = glGetUniformLocation(shaderSecondPass, "resx")
-                resyLocation = glGetUniformLocation(shaderSecondPass, "resy")
-            end
+            --shaderSecondPass = gl.CreateShader(shaderDataSecondPass)
+            --if shaderSecondPass then
+            --    resxLocation = glGetUniformLocation(shaderSecondPass, "resx")
+            --    resyLocation = glGetUniformLocation(shaderSecondPass, "resy")
+            --end
         else
             Spring.Echo("<Neon Shader>: GLSL not supported.")
         end

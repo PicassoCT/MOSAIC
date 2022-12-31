@@ -563,7 +563,7 @@ function getGameConfig()
         id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
         Spring.MoveCtrl.Enable(id, true)
         px, py, pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
-        echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
+        --echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
         Spring.MoveCtrl.SetPosition(id, px, py, pz)
         
         Spring.SetUnitAlwaysVisible(id, true)

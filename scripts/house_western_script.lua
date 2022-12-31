@@ -167,7 +167,7 @@ function HoloGrams()
     end
 
     if contains(ToShowTable, logoPiece) then 
-        StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logo)
+        StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece)
     end
 end
 
