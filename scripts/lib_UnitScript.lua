@@ -4752,6 +4752,11 @@ function RotateAroundPoint(x, z, Rad, Px, Pz)
     return (x * cosinus + z * -sinus) + Px, (x * sinus + z * cosinus) + Pz
 end
 
+function delayedSpin(pieceName, axis, value, speeds, restTime)
+    Sleep(restTime)
+    Spin(pieceName, axis, value, speeds)
+end
+
 -- ======================================================================================
 -- Deprecated VectorOperations 
 -- for more recent implementations see lib_type

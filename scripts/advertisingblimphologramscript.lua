@@ -138,20 +138,20 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
         if boolDebugScript or (hours > 17 or hours < 7) then
-            theOneToShowT= {}
+            toShowTableT= {}
             for x=1,math.random(1,3) do
-                theOneToShowT[#theOneToShowT+1] = fGroup[math.random(1,#fGroup)]
+                toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
             end
 
             for i=1,(3000/flickerIntervall) do
-                if i % 2 == 0 then  showT(theOneToShowT) else hideT(theOneToShowT) end
-                if maRa()==maRa() then showT(theOneToShowT) end 
+                if i % 2 == 0 then  showT(toShowTableT) else hideT(toShowTableT) end
+                if maRa()==maRa() then showT(toShowTableT) end 
                 for ax=1,3 do
                     moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
                 end
                 Sleep(flickerIntervall)
             end
-            hideT(theOneToShowT)
+            hideT(toShowTableT)
         end
         breakTime = math.random(1,maxInterval)*timeoutMs
         Sleep(breakTime)

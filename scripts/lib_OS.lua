@@ -888,7 +888,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
 
     while (GG.VTOLFlightPads.Lock ~= nil) do Sleep(100) end
     GG.VTOLFlightPads.Lock = unitID
-    GG.VTOLFlightPads[#GG.VTOLFlightPads +1] = {x = padX, y = padY, z = padZ}    
+    GG.VTOLFlightPads[#GG.VTOLFlightPads +1] = {x = padX, y = padY, z = padZ, unitID= unitID, plane = plane}    
     myPosition = #GG.VTOLFlightPads
     GG.VTOLFlightPads.Lock = nil
 
@@ -912,39 +912,39 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
         return targetDice
     end
 
-    function convertWorldPosBackToUnitPos(unitID, wx, wy, wz)
-        factor = 33
-        _,ry,_ = Spring.GetUnitRotation(unitID)
-        ry = -ry --counterrotation 
-     
-        mwx, mwy, mwz = Spring.GetUnitPosition(unitID)
-
-        resx, resy, resz = wx - mwx, wy - mwy, wz - mwz
-        --mirrored 
-        resx, resz = rotationMatrix(resx,resz,0,0 , ry)
-
-        return resx * factor,resy, resz * factor
+    function startPlaneFromLocation(unitID, plane, locationIndex, v) 
+        Hide(plane)
+        location = GG.VTOLFlightPads[locationIndex]
+        gaiaTeamID = Spring.GetGaiaTeamID()
+        planeID = Spring.CreateUnit( "house_vtol", location.x, location.y, location.z, 1, gaiaTeamID)
+        if planeID then
+            Spring.SetUnitAlwaysVisible(planeID, true)
+            Spring.SetUnitNeutral(planeID, true)
+            Spring.SetUnitNoSelect(planeID, true)
+        end
+        return planeID
     end
 
-    function getFlyHeightTable(x,z)
-        return Spring.GetGroundHeight(x,z) + math.random(500,1250)
-    end
-    
-    function movePlaneOverLocation(unitID, plane, location, v) 
-        flyHight = math.random(500,1250)
-        t = GG.VTOLFlightPads[location]
-        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, getFlyHeightTable(t.x,t.z), t.z)      
-        mP(plane, rx,ry,rz, v)
-        WaitForMoves(plane)
-        return location
-    end
-
-    function movePlaneToLocation(unitID, plane, location, v)    
-        t = GG.VTOLFlightPads[location]
-        rx,ry,rz = convertWorldPosBackToUnitPos(unitID, t.x, getFlyHeightTable(t.x,t.z) ,t.z)   
-        mP(plane, rx,ry,rz, v)
-        WaitForMoves(plane)
-        return location
+    function movePlaneToLocation(planeID, locationIndex, v)    
+        location = GG.VTOLFlightPads[locationIndex]
+        while doesUnitExistAlive(planeID) do
+            Command(planeID, "go", location)
+            Sleep(1000)
+            x,y,z = Spring.GetUnitPosition(planeID)
+            if distance({x=x,y=y,z=z },location) < 200 then
+                Spring.MoveCtrl.Enable(planeID, true)
+                for i=1, 1000,5 do
+                    targetPos = mixTable({x= location.x, y= location.y, z= location.z }, 
+                        {x=x,y=y,z=z },
+                         i/1000)
+                    Spring.MoveCtrl.SetPosition(planeID, targetPos.x, targetPos.y, targetPos.z)
+                    Sleep(120)
+                end
+                Spring.DestroyUnit(planeID, true, false)
+                return true
+            end            
+        end
+        return false
     end
 
     boolStartRemote = maRa()
@@ -957,60 +957,23 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
     targetDice = getRandomPostionNotMine(myPosition)
  
     while true do       
-        if boolStartRemote == true then
-            --echo("Flying  start Remote")
-            randSleep = (math.random(1,5)*1000) + timeBetweenFlightsMs 
-            Sleep(randSleep) 
-            --printLine(GG.VTOLFlightPads[targetDice], getFlyHeightTable(GG.VTOLFlightPads[targetDice]), "policelight", 10)  
-            --printLine( getFlyHeightTable(GG.VTOLFlightPads[targetDice]), getFlyHeightTable(GG.VTOLFlightPads[myPosition]), "policelight", 10)    
-            --printLine( getFlyHeightTable(GG.VTOLFlightPads[myPosition]), GG.VTOLFlightPads[myPosition], "policelight", 10)                          
-            movePlaneToLocation(unitID, plane, targetDice, 0)
-            --echo("Flying  Remote  At Location")
-            showHidePlane(true, plane)
-            movePlaneOverLocation(unitID,plane, targetDice, 90*fact) 
+        targetDice = getRandomPostionNotMine(myPosition)
+        randSleep= (math.random(1,5)*1000) + restTimeMs
 
-            --echo("Flying  Remote Over Location")
-            movePlaneOverLocation(unitID,plane, myPosition, 220*fact) 
-            --echo("Flying  Remote Over Home")
-           
-            targetValue = math.random(0,180)*randSign()
-            StartThread(turnInTime, plane, y_axis, targetValue, 7000, 0,lastValue,0 )
-            reset(plane, 200.0)
-            WaitForMoves(plane)
-            movePlaneToLocation(unitID,plane, myPosition, 90*fact)
-            --echo("Flying  Remote At Home")
-       
-            lastValue = targetValue
-         
-            boolStartRemote = false
-            randSleep= (math.random(1,5)*1000) +restTimeMs
-            Sleep(randSleep)
-        else
-            targetDice = getRandomPostionNotMine(myPosition)
-            randSleep= (math.random(1,5)*1000) + restTimeMs
-            --printLine(GG.VTOLFlightPads[myPosition], getFlyHeightTable(GG.VTOLFlightPads[myPosition]), "policelight", 10)  
-            --printLine( getFlyHeightTable(GG.VTOLFlightPads[myPosition]), getFlyHeightTable(GG.VTOLFlightPads[targetDice]), "policelight", 10)    
-            --printLine( getFlyHeightTable(GG.VTOLFlightPads[targetDice]), GG.VTOLFlightPads[targetDice], "policelight", 10)   
+        Sleep(randSleep)
+        reset(plane,0)          
+        --echo("Flying  At Home")
+        targetValue = math.random(0,90)*randSign()
+        Turn(plane,y_axis,math.rad(targetValue), 0)
+        Sleep(200)           
+        planeID = startPlaneFromLocation(unitID, plane, myPosition) 
 
-            Sleep(randSleep)
-            reset(plane,0)          
-            --echo("Flying  At Home")
-            targetValue = math.random(0,90)*randSign()
-            Turn(plane,y_axis,math.rad(targetValue), 0)
-            Sleep(200)           
-            --StartThread(turnInTime, plane, y_axis, 0, 8000, 0,lastValue,0 )
-            movePlaneOverLocation(unitID, plane, myPosition, 90*fact) 
-            --echo("Flying   Over Home")
-
-            movePlaneOverLocation(unitID, plane, targetDice, 220*fact) 
-            --echo("Flying   Over Location")
-            movePlaneToLocation(unitID, plane, targetDice, 90*fact)   
-            --echo("Flying   At Location")         
-            showHidePlane(false, plane)
-            boolStartRemote = true
-            randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs
-            Sleep(randSleep)
-        end
+        movePlaneToLocation(planeID, targetDice) 
+   
+        showHidePlane(false, plane)
+        boolStartRemote = true
+        randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs
+        Sleep(randSleep)
     end
 end
 

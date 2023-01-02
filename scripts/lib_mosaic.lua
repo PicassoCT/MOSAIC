@@ -577,8 +577,7 @@ function getGameConfig()
         blockEnemyPushing= false
         blockHeightChanges = false
         Spring.SetUnitBlocking(id, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable , crushable, blockEnemyPushing, blockHeightChanges ) 
-        Spring.SetUnitBlocking(unitID, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable, crushable, blockEnemyPushing, blockHeightChanges ) 
-        
+    
         return id
     end
 
