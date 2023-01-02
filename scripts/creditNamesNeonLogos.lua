@@ -21,5 +21,6 @@ return {
  "JoachimSchulz",
  "Bruno auzet",
  "harouli",
- "ramston"
+ "ramston",
+ "Pix"
 }

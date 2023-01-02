@@ -11,13 +11,14 @@ buisness_spin = piece("buisness_spin")
 brothel_spin = piece("brothel_spin")
 casino_spin = piece("casino_spin")
 local TablesOfPiecesGroups = {}
+boolDebugHologram = true
 
 myDefID = Spring.GetUnitDefID(unitID)
 boolIsCasino= UnitDefNames["house_western_hologram_casino"].id == myDefID
 boolIsBrothel= UnitDefNames["house_western_hologram_brothel"].id == myDefID
 boolIsBuisness= UnitDefNames["house_western_hologram_buisness"].id == myDefID 
 sizeDownLetter = 200
-sizeSpacingLetter = 100
+sizeSpacingLetter = 140
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -52,12 +53,13 @@ function HoloGrams()
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
     rotatorTable[#rotatorTable+1] = piece("buisness_spin")
-    if boolIsBuisness == false then
-        for i=1, 3 do
-            val = math.random(10,42)/10*randSign()
-            Spin(rotatorTable[i], y_axis, math.rad(val), 0)
-        end
-    end
+    
+    val = math.random(10,42)/10*randSign()
+    Spin(rotatorTable[1], y_axis, math.rad(val), 0)
+    val = math.random(10,42)/10*randSign()
+    Spin(rotatorTable[2], y_axis, math.rad(val), 0)
+    val = math.random(10,42)/10*randSign()
+    --Spin(rotatorTable[3], 2, math.rad(val), 0)
     Sleep(15000)
     
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
@@ -69,16 +71,26 @@ function HoloGrams()
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if boolIsBrothel then
-           StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+           StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+            if maRa()  then
+                for i=1, #TablesOfPiecesGroups["Japanese"] do
+                    if maRa()then
+                        Show(TablesOfPiecesGroups["Japanese"][i])
+                        val= math.random(10,42)*randSign()
+                        Spin(TablesOfPiecesGroups["Japanese"][i],2,math.rad(val),0)
+                    end
+                end
+            end
+
             if maRa() then
                 addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
-                nilNeonSigns()
-                return 
             end
+            nilNeonSigns()
+            return 
         end
   
         if boolIsCasino then 
-           StartThread(flickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+           StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
                 nilNeonSigns()
@@ -89,19 +101,26 @@ function HoloGrams()
 
     if boolIsBuisness then 
         logo = showOne(TablesOfPiecesGroups["buisness_holo"])
+        restaurant = piece("buisness_holo18")
+        restaurantSpin = piece("buisness_holo18Spin")
         Spin(logo,z_axis, math.rad(5),0)
-        if maRa()== true then
-           Show(logo)
-           StartThread(flickerScript, {logo}, function() return math.random(1,100) > 25; end, 0.5, 30, 2, false)
-        else
-           Show(logo)
-        end
         if maRa() then
-            addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+            if maRa()== true then
+               Show(logo)
+               if (logo == restaurant) then
+                    Show(restaurantSpin)
+                    Spin(restaurantSpin,y_axis, math.rad(-42),0)
+                    addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])
+               end
+            end
         else
-            if maRa() == maRa()then
-                addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
-            end           
+            if maRa() then
+                addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+            else
+                if maRa() == maRa()then
+                    addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
+                end           
+            end
         end
         nilNeonSigns()
         return 
@@ -109,12 +128,12 @@ function HoloGrams()
  
 end
 
-function flickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
+function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
     assert(flickerGroup)
     local fGroup = flickerGroup
 
     flickerIntervall = math.ceil(1000/25)
-
+ 
     while true do
         hideT(fGroup)
         assertRangeConsistency(fGroup, "flickerGroup")
@@ -190,6 +209,10 @@ function addHologramLetters( myMessage)
     rowIndex= 0
     columnIndex= 0
 
+    val = math.random(5,45)
+    text_spin = piece("text_spin")
+    Spin(text_spin, y_axis, math.rad(val),0)
+
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
@@ -210,12 +233,18 @@ function addHologramLetters( myMessage)
                             rowIndex= rowIndex +1
                         end
                         Move(pieceName,axis, sizeSpacingLetter*(columnIndex-1), 0)
-                        if boolSpinning then
-                            val = math.random(10,42)/10
-                            StartThread(delayedSpin, pieceName, 2, math.rad(val), 0, i*100)
+                        if boolSpinning and boolUpright then
+                            val = i *5
+                            Turn(pieceName, 2, math.rad(val), 0)
                         end
                     end
                 end
+            end
+        else
+            if boolUpRight then
+                rowIndex= rowIndex +1
+            else
+                columnIndex = columnIndex+1
             end
         end
     end
