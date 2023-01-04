@@ -58,6 +58,7 @@ function script.Create()
      StartThread(LightsBlink)
      StartThread(flyTowardsPerson)
      StartThread(advertisingLoop)
+     StartThread(limitToMapLimits)
 end
 
 function advertisingLoop()
@@ -74,6 +75,20 @@ function advertisingLoop()
     end
 end
 
+function limitToMapLimits()
+    while true do
+        Sleep(1000)
+        x,y,z = Spring.GetUnitPosition(unitID)
+        cx = clamp(1,x, Game.mapSizeX-1)
+        cz = clamp(1,z, Game.mapSizeZ-1)
+        if cx ~= x or cz ~= z then
+            Spring.MoveCtrl.Enable(unitID, true)
+            Spring.MoveCtrl.SetPosition(cx, y, cz)
+            Spring.MoveCtrl.Enable(unitID, false) 
+            break           
+        end
+    end
+end
 function attachHologram()
     holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter)
     isblocking= false
@@ -84,7 +99,7 @@ function attachHologram()
     blockEnemyPushing= false
     blockHeightChanges = false
     Spring.SetUnitBlocking(unitID, isblocking, isSolidObjectCollidable, isProjectileCollidable, isRaySegmentCollidable, crushable, blockEnemyPushing, blockHeightChanges ) 
-       
+    
     while true do
         Sleep(45)
         px,py,pz = Spring.GetUnitPosition(unitID)

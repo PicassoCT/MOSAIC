@@ -4,7 +4,7 @@ local house_vtol = VTOL:New{
 
 	objectName = "house_western_vtol.dae",
 
-	script = "placeholder.lua",
+	script = "housevtolscript.lua",
 	
 	--floater = true,
 	--cost

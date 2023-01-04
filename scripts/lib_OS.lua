@@ -931,6 +931,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
             Command(planeID, "go", location)
             Sleep(1000)
             x,y,z = Spring.GetUnitPosition(planeID)
+            assert(location)
             if distance({x=x,y=y,z=z },location) < 200 then
                 Spring.MoveCtrl.Enable(planeID, true)
                 for i=1, 1000,5 do

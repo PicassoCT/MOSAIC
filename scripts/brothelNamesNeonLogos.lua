@@ -157,5 +157,6 @@ return {
 "Hard Dick",
 "TEARS IN RAIN",
 "Bunga Bunga",
-"Bi Bis Bar"
+"Bi Bis Bar",
+"Penicchio"
 }

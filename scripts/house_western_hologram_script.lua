@@ -17,8 +17,8 @@ myDefID = Spring.GetUnitDefID(unitID)
 boolIsCasino= UnitDefNames["house_western_hologram_casino"].id == myDefID
 boolIsBrothel= UnitDefNames["house_western_hologram_brothel"].id == myDefID
 boolIsBuisness= UnitDefNames["house_western_hologram_buisness"].id == myDefID 
-sizeDownLetter = 200
-sizeSpacingLetter = 140
+sizeDownLetter = 225
+sizeSpacingLetter = 175
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -81,10 +81,7 @@ function HoloGrams()
                     end
                 end
             end
-
-            if maRa() then
-                addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
-            end
+            addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
             nilNeonSigns()
             return 
         end
@@ -100,20 +97,69 @@ function HoloGrams()
     end
 
     if boolIsBuisness then 
-        logo = showOne(TablesOfPiecesGroups["buisness_holo"])
-        restaurant = piece("buisness_holo18")
-        restaurantSpin = piece("buisness_holo18Spin")
-        Spin(logo,z_axis, math.rad(5),0)
-        if maRa() then
-            if maRa()== true then
-               Show(logo)
-               if (logo == restaurant) then
-                    Show(restaurantSpin)
-                    Spin(restaurantSpin,y_axis, math.rad(-42),0)
-                    addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])
-               end
+        logo = nil
+        boolDone = false
+        if not GG.HoloLogoRegister  then GG.HoloLogoRegister = {}  end   
+
+        lowestIndex= nil
+        lowestCounter = math.huge
+        start = math.random(1,#TablesOfPiecesGroups["buisness_holo"])
+        for i=start, #TablesOfPiecesGroups["buisness_holo"] do
+            element = TablesOfPiecesGroups["buisness_holo"][i]
+            if not GG.HoloLogoRegister[element] then
+                GG.HoloLogoRegister[element] = 1
+                logo = element
+                boolDone = true
+                break
+            elseif GG.HoloLogoRegister[element] < lowestCounter then
+                lowestIndex = element
+                lowestCounter = GG.HoloLogoRegister[element]
             end
+        end
+
+        if not boolDone then
+            for i=1, start do
+                element = TablesOfPiecesGroups["buisness_holo"][i]
+                if not GG.HoloLogoRegister[element] then
+                    GG.HoloLogoRegister[element] = 1
+                    logo = element
+                    boolDone = true
+                    break
+                elseif GG.HoloLogoRegister[element] < lowestCounter then
+                    lowestIndex = element
+                    lowestCounter = GG.HoloLogoRegister[element]
+                end
+            end
+        end
+
+        if not boolDone then
+            logo = lowestIndex
+            GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] + 1
+        end
+
+
+        spinLogos = {
+                    [piece("buisness_holo18")] = "buisness_holo18",
+                    [piece("buisness_holo19")] = "buisness_holo19",
+                    [piece("buisness_holo22")] = "buisness_holo22"
+                    }
+
+        Spin(logo,y_axis, math.rad(5),0)
+        if maRa() then
+            Show(logo)
+           if (spinLogos[logo]) then
+                logoTableName = spinLogos[logo].."Spin"
+                for i=1, #TablesOfPiecesGroups[logoTableName] do
+                    if maRa() then
+                        spinLogoPiece = TablesOfPiecesGroups[logoTableName][i]
+                        Show(spinLogoPiece)
+                        Spin(spinLogoPiece,y_axis, math.rad(-42),0)
+                    end
+                end
+                addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+           end
         else
+            Hide(logo)
             if maRa() then
                 addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
             else
@@ -127,6 +173,7 @@ function HoloGrams()
     end
  
 end
+
 
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
     assert(flickerGroup)
@@ -211,8 +258,9 @@ function addHologramLetters( myMessage)
 
     val = math.random(5,45)
     text_spin = piece("text_spin")
-    Spin(text_spin, y_axis, math.rad(val),0)
-
+    if boolSpinning then
+        Spin(text_spin, y_axis, math.rad(val),0)
+    end
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
@@ -227,12 +275,12 @@ function addHologramLetters( myMessage)
                     pieceName = TablesOfPiecesGroups[letter][counter[letter]] 
                     if pieceName then                     
                         Show(pieceName)
+                        Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
                         if columnIndex > 10 or boolUpRight then
-                            Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
                             columnIndex= 0
                             rowIndex= rowIndex +1
                         end
-                        Move(pieceName,axis, sizeSpacingLetter*(columnIndex-1), 0)
+                        Move(pieceName,axis, -sizeSpacingLetter*(columnIndex-1), 0)
                         if boolSpinning and boolUpright then
                             val = i *5
                             Turn(pieceName, 2, math.rad(val), 0)
