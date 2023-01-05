@@ -152,6 +152,11 @@ function HoloGrams()
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
+
+    if contains(ToShowTable, logoPiece) then 
+        StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece)
+    end
+
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
@@ -166,9 +171,7 @@ function HoloGrams()
         end
     end
 
-    if contains(ToShowTable, logoPiece) then 
-        StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece)
-    end
+  
 end
 
 officeWallElementsTable = {}

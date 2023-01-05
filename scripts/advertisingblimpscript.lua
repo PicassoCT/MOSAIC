@@ -82,9 +82,9 @@ function limitToMapLimits()
         cx = clamp(1,x, Game.mapSizeX-1)
         cz = clamp(1,z, Game.mapSizeZ-1)
         if cx ~= x or cz ~= z then
-            Spring.MoveCtrl.Enable(unitID, true)
+            Spring.MoveCtrl.Enable(unitID)
             Spring.MoveCtrl.SetPosition(cx, y, cz)
-            Spring.MoveCtrl.Enable(unitID, false) 
+            Spring.MoveCtrl.Disable(unitID) 
             break           
         end
     end

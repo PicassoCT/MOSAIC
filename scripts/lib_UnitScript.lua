@@ -3486,17 +3486,16 @@ end
 -- >returns the 2 norm of a vector
 function distance(x, y, z, xa, ya, za)
     if not x or not y then
-        assert(true == false, "No value given to distance");
-        return nil;
+        echo("No valid value given to distance")
+        return nil
     end
 
-    if type(x) == "table" then
+    if not z then
         if x.x then
             return distance(x.x, x.y, x.z, y.x, y.y, y.z)
         else
             return distance(x[1], x[2], x[3], y[1], y[2], y[3])
         end
-
     end
 
     if xa ~= nil and ya ~= nil and za ~= nil then

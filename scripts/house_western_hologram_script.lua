@@ -87,7 +87,7 @@ function HoloGrams()
         end
   
         if boolIsCasino then 
-           StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+           StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
                 nilNeonSigns()
@@ -186,9 +186,9 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
-        if boolDebugHologram or not boolDayLightSavings or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
+        if boolDayLightSavings == nil or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
                 toShowTableT= {}
-                for x=1,math.random(1,3) do
+                for x=1,math.random(1,5) do
                     toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
                 end
 
@@ -240,7 +240,8 @@ function showOneOrAll(T)
         return showOne(T)
     else
         for num, val in pairs(T) do 
-            ToShowTable[#ToShowTable + 1] = val end
+            Show(val)
+        end
         return
     end
 end
@@ -276,11 +277,12 @@ function addHologramLetters( myMessage)
                     if pieceName then                     
                         Show(pieceName)
                         Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
-                        if columnIndex > 10 or boolUpRight then
+                        Move(pieceName,axis, -sizeSpacingLetter*(columnIndex), 0)
+                        if boolUpRight then
                             columnIndex= 0
                             rowIndex= rowIndex +1
                         end
-                        Move(pieceName,axis, -sizeSpacingLetter*(columnIndex-1), 0)
+                        
                         if boolSpinning and boolUpright then
                             val = i *5
                             Turn(pieceName, 2, math.rad(val), 0)
@@ -289,11 +291,8 @@ function addHologramLetters( myMessage)
                 end
             end
         else
-            if boolUpRight then
-                rowIndex= rowIndex +1
-            else
-                columnIndex = columnIndex+1
-            end
+            rowIndex= rowIndex +1
+            columnIndex= 0
         end
     end
 end

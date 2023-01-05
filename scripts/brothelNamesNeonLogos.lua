@@ -1,5 +1,11 @@
 return {
  "XXX",
+ "Young hearts",
+ "Oh god put it in",
+ "YES Yes Oh MY GOD",
+ "Fuck me hard",
+ "Singles near you",
+ "Shaking legs",
  "Moneyhoney",
  "Wild Ride",
  "Queen of hearts",
@@ -141,9 +147,11 @@ return {
 "Lehmitz",
 "Pyama Bar",
 "Heiermanns",
-"Story",
+"What the fuck Story",
 "Das Buero",
 "Klapsmuehle",
+"Laufhaus",
+"I got it from Agnes",
 "St Pauli",
 "Titty Twister",
 "Bierbar",
@@ -158,5 +166,12 @@ return {
 "TEARS IN RAIN",
 "Bunga Bunga",
 "Bi Bis Bar",
-"Penicchio"
+"Penicchio",
+"Hard time",
+"Small favours",
+"Bene Fits",
+"Spice Girls",
+"Sleezy",
+"dripping wet",
+"Spank me daddy"
 }

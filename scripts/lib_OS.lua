@@ -886,10 +886,16 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
      GG.VTOLFlightPads = {Lock = nil} 
     end
 
-    while (GG.VTOLFlightPads.Lock ~= nil) do Sleep(100) end
-    GG.VTOLFlightPads.Lock = unitID
-    GG.VTOLFlightPads[#GG.VTOLFlightPads +1] = {x = padX, y = padY, z = padZ, unitID= unitID, plane = plane}    
-    myPosition = #GG.VTOLFlightPads
+    while GG.VTOLFlightPads.Lock ~= unitID do
+        while (GG.VTOLFlightPads.Lock ~= nil) do 
+            Sleep(100) 
+        end        
+        GG.VTOLFlightPads.Lock = unitID
+        if GG.VTOLFlightPads.Lock and GG.VTOLFlightPads.Lock == unitID then       break end
+        Sleep(100)
+    end
+    myPosition = #GG.VTOLFlightPads +1
+    GG.VTOLFlightPads[myPosition] = {x = padX, y = padY, z = padZ, unitID= unitID, plane = plane}       
     GG.VTOLFlightPads.Lock = nil
 
     --echo(GG.VTOLFlightPads)
@@ -909,6 +915,11 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
 
     function getRandomPostionNotMine(myPosition)
         targetDice = math.random(1, #GG.VTOLFlightPads)
+        while targetDice == myPosition and type(GG.VTOLFlightPads[targetDice]) ~= "table" do
+            Sleep(100)
+            targetDice = math.random(1, #GG.VTOLFlightPads)
+        end
+
         return targetDice
     end
 
