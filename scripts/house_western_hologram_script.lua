@@ -49,6 +49,26 @@ function nilNeonSigns()
     buisnessNeonSigns = nil
     creditNeonSigns= nil
 end
+
+function japaneseNightTimes(boolDayLightSavings)
+    interval = math.random(1,5)*60*1000
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        if ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
+              for i=1, #TablesOfPiecesGroups["Japanese"] do
+                    if maRa()then
+                        Show(TablesOfPiecesGroups["Japanese"][i])
+                        val= math.random(10,42)*randSign()
+                        Spin(TablesOfPiecesGroups["Japanese"][i],2,math.rad(val),0)
+                    end
+                end                
+        else
+            hideT(TablesOfPiecesGroups["Japanese"])
+        end
+        Sleep(interval)
+    end
+end
+
 function HoloGrams()
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
@@ -71,15 +91,9 @@ function HoloGrams()
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if boolIsBrothel then
-           StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+           StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, 5)
             if maRa()  then
-                for i=1, #TablesOfPiecesGroups["Japanese"] do
-                    if maRa()then
-                        Show(TablesOfPiecesGroups["Japanese"][i])
-                        val= math.random(10,42)*randSign()
-                        Spin(TablesOfPiecesGroups["Japanese"][i],2,math.rad(val),0)
-                    end
-                end
+              StartThread(japaneseNightTimes, true)
             end
             addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
             nilNeonSigns()
@@ -87,7 +101,7 @@ function HoloGrams()
         end
   
         if boolIsCasino then 
-           StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true)
+           StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.sqrt(#CasinoflickerGroup))
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
                 nilNeonSigns()
@@ -137,16 +151,15 @@ function HoloGrams()
             GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] + 1
         end
 
-
         spinLogos = {
-                    [piece("buisness_holo18")] = "buisness_holo18",
-                    [piece("buisness_holo19")] = "buisness_holo19",
-                    [piece("buisness_holo22")] = "buisness_holo22"
+                        [piece("buisness_holo18")] = "buisness_holo18",
+                        [piece("buisness_holo19")] = "buisness_holo19",
+                        [piece("buisness_holo22")] = "buisness_holo22"
                     }
 
         Spin(logo,y_axis, math.rad(5),0)
+        Show(logo)
         if maRa() then
-            Show(logo)
            if (spinLogos[logo]) then
                 logoTableName = spinLogos[logo].."Spin"
                 for i=1, #TablesOfPiecesGroups[logoTableName] do
@@ -159,13 +172,10 @@ function HoloGrams()
                 addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
            end
         else
-            Hide(logo)
-            if maRa() then
-                addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+            if maRa() == maRa() then
+                addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
             else
-                if maRa() == maRa()then
-                    addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
-                end           
+                addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
             end
         end
         nilNeonSigns()
@@ -175,9 +185,11 @@ function HoloGrams()
 end
 
 
-function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
+function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings, minImum, minMaximum)
     assert(flickerGroup)
     local fGroup = flickerGroup
+    if not minImum then minImum = 2 end 
+    if not minMaximum then minMaximum = #flickerGroup end
 
     flickerIntervall = math.ceil(1000/25)
  
@@ -188,7 +200,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         hours, minutes, seconds, percent = getDayTime()
         if boolDayLightSavings == nil or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
                 toShowTableT= {}
-                for x=1,math.random(1,5) do
+                for x=1,math.random(minImum,minMaximum) do
                     toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
                 end
 

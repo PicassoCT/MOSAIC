@@ -42,7 +42,11 @@ decoChances = {
     grafiti = 0.6
 }
 
-logoPiece = piece("Office_Roof_Deco07")
+logoPieces = {
+                [piece("Office_Roof_Deco07")] = true, 
+                [piece("Office_Roof_Deco02")] = true
+            }
+
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
 materialChoiceTableReverse = {classic= 1, ghetto = 2, office=3, white=4}
 
@@ -153,8 +157,10 @@ function HoloGrams()
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
 
-    if contains(ToShowTable, logoPiece) then 
-        StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece)
+    for logoPiece,v in pairs(logoPieces)do
+        if contains(ToShowTable, logoPiece) then 
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece)
+        end
     end
 
     --sexxxy time
@@ -998,7 +1004,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
 
-                if element ~= logoPiece then
+                if not logoPieces[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end
             

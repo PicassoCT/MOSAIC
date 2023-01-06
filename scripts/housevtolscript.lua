@@ -10,10 +10,9 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function script.Create()
-    echo(UnitDefs[myDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    StartThread(lifeTime, unitID,  60 * 1000, true, false,
+    StartThread(lifeTime, unitID,  math.random(1,2)* 60 * 1000, true, false,
                   function()
                     Spring.MoveCtrl.Enable(unitID, true)
                     for i=1, 200 do
@@ -23,7 +22,7 @@ function script.Create()
                         if h + 10 > y then
                             break
                         end
-                        Spring.MoveCtrl.SetPosition(x,y,z)
+                        Spring.MoveCtrl.SetPosition(unitID, x,y,z)
                         Sleep(30)
                     end
                     Spring.MoveCtrl.Enable(unitID, false)

@@ -939,8 +939,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
     function movePlaneToLocation(planeID, locationIndex, v)    
         location = GG.VTOLFlightPads[locationIndex]
         while doesUnitExistAlive(planeID) do
-            Command(planeID, "go", location)
-            Sleep(1000)
+            Command(planeID, "go", location)           
             x,y,z = Spring.GetUnitPosition(planeID)
             assert(location)
             if distance({x=x,y=y,z=z },location) < 200 then
@@ -950,11 +949,12 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
                         {x=x,y=y,z=z },
                          i/1000)
                     Spring.MoveCtrl.SetPosition(planeID, targetPos.x, targetPos.y, targetPos.z)
-                    Sleep(120)
+                    Sleep(30)
                 end
                 Spring.DestroyUnit(planeID, true, false)
                 return true
-            end            
+            end   
+            Sleep(1000)         
         end
         return false
     end
