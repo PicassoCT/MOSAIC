@@ -85,7 +85,8 @@ function limitToMapLimits()
             Spring.MoveCtrl.Enable(unitID)
             Spring.MoveCtrl.SetPosition(cx, y, cz)
             Spring.MoveCtrl.Disable(unitID) 
-            break           
+            Spring.AddUnitImpulse(unitID, 0.0, 1.0, 0.0)
+            Spring.SetUnitMoveGoal(unitID, math.random(1,Game.mapSizeX), y, math.random(1,Game.mapSizeZ))                 
         end
     end
 end

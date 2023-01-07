@@ -51,21 +51,53 @@ function nilNeonSigns()
 end
 
 function japaneseNightTimes(boolDayLightSavings)
-    interval = math.random(1,5)*60*1000
+    interval = math.random(1,3)*60*1000
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
-              for i=1, #TablesOfPiecesGroups["Japanese"] do
-                    if maRa()then
-                        Show(TablesOfPiecesGroups["Japanese"][i])
-                        val= math.random(10,42)*randSign()
-                        Spin(TablesOfPiecesGroups["Japanese"][i],2,math.rad(val),0)
-                    end
-                end                
+            showTellTable = {}
+            for i=1, #TablesOfPiecesGroups["Japanese"] do
+                Sleep(500)
+                hologramPiece= TablesOfPiecesGroups["Japanese"][i] 
+                if maRa()then 
+                    showTellTable[hologramPiece] = hologramPiece
+                    val= math.random(10,42)*randSign()
+                    Spin(hologramPiece,  2, math.rad(val),0)
+                else
+                    Hide(hologramPiece)
+                end
+            end
+
+            showT(showTellTable)
+            Sleep(30000)
+            resetT(TablesOfPiecesGroups["Japanese"], 1.2)
+            WaitForTurns(TablesOfPiecesGroups["Japanese"])                     
         else
             hideT(TablesOfPiecesGroups["Japanese"])
+            Sleep(interval)
         end
-        Sleep(interval)
+      
+    end
+end
+
+function showWallDayTime(name)
+
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        if (hours > 18 or hours < 7) then     
+            for i=1, #TablesOfPiecesGroups[name] do
+                if maRa() then
+                    Show(TablesOfPiecesGroups[name][i])
+                end
+            end 
+            while (hours > 18 or hours < 7) do
+                hours, minutes, seconds, percent = getDayTime()
+                Sleep(5000)
+            end
+            hideT(TablesOfPiecesGroups[name])
+        end
+    val = math.random(25, 45)*1000
+    Sleep(val)
     end
 end
 
@@ -91,7 +123,10 @@ function HoloGrams()
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if boolIsBrothel then
-           StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, 5)
+            if maRa() then
+              StartThread(showWallDayTime, "BrothelWall")
+            end
+            StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, 5)
             if maRa()  then
               StartThread(japaneseNightTimes, true)
             end
@@ -111,6 +146,9 @@ function HoloGrams()
     end
 
     if boolIsBuisness then 
+        if maRa() then
+            StartThread(showWallDayTime, "BuisnessWall")
+        end
         logo = nil
         boolDone = false
         if not GG.HoloLogoRegister  then GG.HoloLogoRegister = {}  end   
@@ -146,9 +184,13 @@ function HoloGrams()
             end
         end
 
-        if not boolDone then
+        if  not boolDone then
             logo = lowestIndex
-            GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] + 1
+            GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] +1
+        end
+
+        if maRa() == maRa() then    
+            logo = piece("buisness_holo18")
         end
 
         spinLogos = {
@@ -192,16 +234,20 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
     if not minMaximum then minMaximum = #flickerGroup end
 
     flickerIntervall = math.ceil(1000/25)
- 
+    boolNewDay = true
+    toShowTableT= {}
     while true do
         hideT(fGroup)
         assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
         if boolDayLightSavings == nil or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
-                toShowTableT= {}
-                for x=1,math.random(minImum,minMaximum) do
-                    toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
+                if boolNewDay == true then
+                    toShowTableT= {}
+                    for x=1,math.random(minImum,minMaximum) do
+                        toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
+                    end
+                    boolNewDay = false
                 end
 
                 for i=1,(3000/flickerIntervall) do
@@ -217,6 +263,8 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
                     Sleep(flickerIntervall)
                 end
                 hideT(toShowTableT)
+        else
+            boolNewDay = true
         end
         breakTime = math.random(1,maxInterval)*timeoutMs
         Sleep(breakTime)

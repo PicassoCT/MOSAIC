@@ -159,7 +159,7 @@ function HoloGrams()
 
     for logoPiece,v in pairs(logoPieces)do
         if contains(ToShowTable, logoPiece) then 
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece)
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, true)
         end
     end
 
@@ -168,7 +168,8 @@ function HoloGrams()
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece)
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, true)
+
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
