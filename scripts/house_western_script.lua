@@ -9,6 +9,7 @@ local grafitiMessages =  include('grafitiMessages.lua')
 function getScriptName() return "house_western_script.lua::" end
 
 local TablesOfPiecesGroups = {}
+decoPieceUsedOrientation = {}
 factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
@@ -43,8 +44,9 @@ decoChances = {
 }
 
 logoPieces = {
-                [piece("Office_Roof_Deco07")] = true, 
-                [piece("Office_Roof_Deco02")] = true
+                [piece("ClassicWhiteOffice_Roof_Deco05")] = true, 
+                [piece("ClassicWhiteOffice_Roof_Deco01")] = true,
+                [piece("ClassicWhiteOffice_Roof_Deco03")] = true
             }
 
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
@@ -159,7 +161,8 @@ function HoloGrams()
 
     for logoPiece,v in pairs(logoPieces)do
         if contains(ToShowTable, logoPiece) then 
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, true)
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece])
+            break
         end
     end
 
@@ -168,12 +171,12 @@ function HoloGrams()
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, true)
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece])
 
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
-                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece)
+                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, 0)
             end
         end
     end
@@ -939,7 +942,10 @@ function showSubsAnimateSpins(pieceGroupName, nr)
         Spin(pieceName_pieceNr[spinName] , y_axis, math.rad(direction), math.pi)
     end
 end
-
+logoPiecesToHide = {
+                [piece("Office_Roof_Deco07")] = true, 
+                [piece("Office_Roof_Deco02")] = true
+            }
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     if materialColourName == "Office" and maRa() then
@@ -969,6 +975,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
+                decoPieceUsedOrientation[element] = rotation
                 if countElements == 24 then break end
                 showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
             end
@@ -1005,7 +1012,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
 
-                if not logoPieces[element] then
+                if not logoPiecesToHide[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end
             

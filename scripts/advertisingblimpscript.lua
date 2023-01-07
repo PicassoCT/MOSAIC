@@ -76,6 +76,9 @@ function advertisingLoop()
 end
 
 function limitToMapLimits()
+    Sleep(3000)
+    Spring.AddUnitImpulse(unitID, 0.0, 1.0, 0.0)
+    Spring.SetUnitMoveGoal(unitID, math.random(1,Game.mapSizeX), 150, math.random(1,Game.mapSizeZ))                 
     while true do
         Sleep(1000)
         x,y,z = Spring.GetUnitPosition(unitID)
@@ -91,7 +94,7 @@ function limitToMapLimits()
     end
 end
 function attachHologram()
-    holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter)
+    holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter, 0)
     isblocking= false
     isSolidObjectCollidable=false
     isProjectileCollidable= false
