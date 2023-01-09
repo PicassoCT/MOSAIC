@@ -15,7 +15,7 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
-VFS.Include("scripts/lib_StaticString.lua")
+VFS.Include("scripts/lib_staticstring.lua")
 
 local GameConfig = getGameConfig()
 --if not Game.version then Game.version = GameConfig.instance.Version end

@@ -1036,8 +1036,8 @@ normalBehavourStateMachine = {
         end
 
         -- Going home   
-        Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {})
-        Command(unitID, go, {x = home.x, y = home.y, z = home.z}, {"shift"})
+        Command(unitID, "go", {x = home.x, y = home.y, z = home.z}, {})
+        Command(unitID, "go", {x = home.x, y = home.y, z = home.z}, {"shift"})
 
     end,
     [GameConfig.GameState.anarchy] = function(lastState, currentState)

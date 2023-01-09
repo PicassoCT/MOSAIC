@@ -15,7 +15,7 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
-VFS.Include("scripts/lib_StaticString.lua")
+VFS.Include("scripts/lib_staticstring.lua")
 
 local GameConfig = getGameConfig()
 --if not Game.version then Game.version = GameConfig.instance.Version end
@@ -133,9 +133,9 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
         makePasserBysLook(unitID)
         -- other gadgets worries about propaganda price
     end
-
-    if individualNamedTypes[defID] then
-        setIndividualCivilianName(unitID)
+  
+    if individualNamedTypes[unitDefID] then
+        name = setIndividualCivilianName(unitID, GG.GameConfig.instance.culture)
     end
 end
 

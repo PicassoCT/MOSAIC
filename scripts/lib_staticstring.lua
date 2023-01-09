@@ -369,10 +369,10 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
 end
 
 
-function setIndividualCivilianName(id)
-    description = "Civilian : "..getRandomCultureNames(GG.GameConfig.instance.culture) .. " <colateral>"
+function setIndividualCivilianName(id, culture)
+    description = "Civilian : "..getRandomCultureNames(culture) .. " <colateral>"
     Spring.SetUnitTooltip(id, description)
-    return description
+   return description
 end
 
  function getRandomCultureNames(culture)
