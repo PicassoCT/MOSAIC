@@ -184,13 +184,19 @@ function HoloGrams()
             end
         end
 
-        if  not boolDone then
+        if not boolDone then
+            echo("Found no index for logo, selecting lowest")
             logo = lowestIndex
-            GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] +1
+            GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] +1      
+        end
+        
+        if not GG.RestaurantCounter then GG.RestaurantCounter = 0 end
+        if GG.RestaurantCounter < 4 and (maRa()== maRa()) then    
+            logo = piece("buisness_holo18")
         end
 
-        if maRa() == maRa() then    
-            logo = piece("buisness_holo18")
+        if logo == piece("buisness_holo18") then            
+            GG.RestaurantCounter = GG.RestaurantCounter + 1
         end
 
         spinLogos = {

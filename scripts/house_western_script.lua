@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
+local spGetUnitPosition = Spring.GetUnitPosition
 
 local grafitiMessages =  include('grafitiMessages.lua')
 
@@ -53,7 +54,7 @@ materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
 materialChoiceTableReverse = {classic= 1, ghetto = 2, office=3, white=4}
 
 vtolDeco= {}
-x, y, z = Spring.GetUnitPosition(unitID)
+x, y, z = spGetUnitPosition(unitID)
 geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
               (z - (z - math.floor(z)))
 -- Spring.Echo("House geohash:"..geoHash)
@@ -87,7 +88,7 @@ BuildDeco = {}
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
-    x, y, z = Spring.GetUnitPosition(unitID)
+    x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
 
     math.randomseed(x + y + z)
@@ -167,7 +168,7 @@ function HoloGrams()
     end
 
     --sexxxy time
-    px,py,pz = Spring.GetUnitPosition(unitID)
+    px,py,pz = spGetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
@@ -923,6 +924,31 @@ function showOneOrAllOfTablePieceGroup(name)
     end
 end
 
+function getRotationFromPiece(pieceID)
+    px,py,pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
+    tx, tz = x- px, z- pz
+    norm = math.max(math.abs(tx),math.abs(tz))
+    tx,tz = tx/norm, tz/norm
+
+    if tx >= 1 then
+        return 0
+    end
+
+    if tz >= 1 then
+        return 90
+    end
+
+    if tx <= -1 then
+        return 180
+    end
+
+    if tz <= -1 then
+        return 270
+    end
+
+    return math.random(1,4) * 90
+end
+
 function showSubsAnimateSpins(pieceGroupName, nr)
     local subName = pieceGroupName .. nr .. "Sub"
   --  Spring.Echo("SubGroupName "..subName)
@@ -975,7 +1001,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
-                decoPieceUsedOrientation[element] = rotation
+                decoPieceUsedOrientation[element] = getRotationFromPiece(element)
                 if countElements == 24 then break end
                 showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
             end
@@ -983,7 +1009,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     countElements = 0
-    local decoMaterial =   getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
+    local decoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
     local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
     --echo("addRoofDecorate:", T)
 

@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.897" 
+            Version = "Alpha: 0.898" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -559,7 +559,10 @@ function getGameConfig()
         assert(pieceID)
         Sleep(10)
         WaitForMoves(pieceID)
-        if not orientation then orientation = 0 end
+        if not orientation then 
+            echo("Defaulting to zero orientation for hologram")
+            orientation = 0 
+        end
         Sleep(500)
   
         id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
@@ -568,7 +571,8 @@ function getGameConfig()
         px, py, pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
         --echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
         Spring.MoveCtrl.SetPosition(id, px, py, pz)
-        Spring.MoveCtrl.SetRotation(id, rx, orientation, rz)
+        Spring.Echo("moveCtrlHologramToUnitPiece orientation "..orientation)     
+        Spring.MoveCtrl.SetRotation(id, rx, math.rad(orientation), rz)
         Spring.SetUnitAlwaysVisible(id, true)
         Spring.SetUnitNeutral(id, true)
         Spring.SetUnitNoSelect(id, true)
