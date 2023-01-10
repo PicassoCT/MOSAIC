@@ -130,8 +130,7 @@ function rotations()
     Sleep(500)
     clockPiece = piece("WhiteClassic_Street_Floor_Deco2")
     if contains(ToShowTable, clockPiece) then
-        WTurn(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(180),
-              0)
+        WTurn(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(180), 0)
         showT(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"])
         Spin(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(3), 10)
         Spin(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][2], z_axis, math.rad(36), 10)
@@ -162,6 +161,7 @@ function HoloGrams()
 
     for logoPiece,v in pairs(logoPieces)do
         if contains(ToShowTable, logoPiece) then 
+            if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece])
             break
         end
@@ -172,8 +172,8 @@ function HoloGrams()
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
+            if not decoPieceUsedOrientation[hostBrothelPiece] then echo( unitID..":"..pieceNameMap[hostBrothelPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece])
-
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
@@ -927,22 +927,23 @@ end
 function getRotationFromPiece(pieceID)
     px,py,pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
     tx, tz = x- px, z- pz
+  
     norm = math.max(math.abs(tx),math.abs(tz))
     tx,tz = tx/norm, tz/norm
 
-    if tx >= 1 then
+    if tx >= 1.0 then
         return 0
     end
 
-    if tz >= 1 then
+    if tz >= 1.0 then
         return 90
     end
 
-    if tx <= -1 then
+    if tx <= -1.0 then
         return 180
     end
 
-    if tz <= -1 then
+    if tz <= -1.0 then
         return 270
     end
 
@@ -972,6 +973,7 @@ logoPiecesToHide = {
                 [piece("Office_Roof_Deco07")] = true, 
                 [piece("Office_Roof_Deco02")] = true
             }
+pieceNameMap = Spring.GetUnitPieceList( unitID ) 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     if materialColourName == "Office" and maRa() then
@@ -1002,6 +1004,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
+                echo(unitID..":Piece "..pieceNameMap[element].." has orientation vector ("..decoPieceUsedOrientation[element]..")")
+
                 if countElements == 24 then break end
                 showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
             end

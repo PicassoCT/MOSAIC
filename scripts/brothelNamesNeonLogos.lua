@@ -197,5 +197,6 @@ return {
 "The spoiled Whip",
 "Pain and Leather",
 "Dominance",
-"Doms and Subs"
+"Doms and Subs",
+"Double Penetration"
 }

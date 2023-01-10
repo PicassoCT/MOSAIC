@@ -2829,9 +2829,11 @@ validator = function(id)
 end
 
 function contains(T, key)
-    if T[key] then return true end
-
-    for i = 1, #T do if T[i] and T[i] == key then return true end end
+    for index, value in ipairs(T) do
+        if value == key then
+            return true
+        end
+    end
 
     return false
 end

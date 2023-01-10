@@ -50,19 +50,19 @@ function nilNeonSigns()
     creditNeonSigns= nil
 end
 
-function japaneseNightTimes(boolDayLightSavings)
+function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
     interval = math.random(1,3)*60*1000
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
             showTellTable = {}
-            for i=1, #TablesOfPiecesGroups["Japanese"] do
+            for i=1, #TablesOfPiecesGroups[name] do
                 Sleep(500)
-                hologramPiece= TablesOfPiecesGroups["Japanese"][i] 
+                hologramPiece= TablesOfPiecesGroups[name][i] 
                 if maRa()then 
                     showTellTable[hologramPiece] = hologramPiece
                     val= math.random(10,42)*randSign()
-                    Spin(hologramPiece,  2, math.rad(val),0)
+                    Spin(hologramPiece,  axisToRotateAround, math.rad(val),0)
                 else
                     Hide(hologramPiece)
                 end
@@ -70,10 +70,10 @@ function japaneseNightTimes(boolDayLightSavings)
 
             showT(showTellTable)
             Sleep(30000)
-            resetT(TablesOfPiecesGroups["Japanese"], 1.2)
-            WaitForTurns(TablesOfPiecesGroups["Japanese"])                     
+            resetT(TablesOfPiecesGroups[name], 1.2)
+            WaitForTurns(TablesOfPiecesGroups[name])                     
         else
-            hideT(TablesOfPiecesGroups["Japanese"])
+            hideT(TablesOfPiecesGroups[name])
             Sleep(interval)
         end
       
@@ -105,19 +105,21 @@ function HoloGrams()
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
     rotatorTable[#rotatorTable+1] = piece("buisness_spin")
+    rotatorTable[#rotatorTable+1] = piece("general_spin")
     
     val = math.random(10,42)/10*randSign()
     Spin(rotatorTable[1], y_axis, math.rad(val), 0)
     val = math.random(10,42)/10*randSign()
     Spin(rotatorTable[2], y_axis, math.rad(val), 0)
     val = math.random(10,42)/10*randSign()
-    --Spin(rotatorTable[3], 2, math.rad(val), 0)
+    Spin(rotatorTable[4], y_axis, math.rad(val), 0)
     Sleep(15000)
     
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
+    StartThread(holoGramNightTimes, true, "GeneralDeco", _y_axis)
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
@@ -128,7 +130,7 @@ function HoloGrams()
             end
             StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, 5)
             if maRa()  then
-              StartThread(japaneseNightTimes, true)
+              StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
             end
             addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
             nilNeonSigns()
@@ -228,10 +230,8 @@ function HoloGrams()
         end
         nilNeonSigns()
         return 
-    end
- 
+    end 
 end
-
 
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings, minImum, minMaximum)
     assert(flickerGroup)
@@ -337,7 +337,7 @@ function addHologramLetters( myMessage)
             end            
             counter[letter] = counter[letter] + 1 
 
-            if counter[letter] < 3 then                 
+            if counter[letter] < 4 then                 
                 if TablesOfPiecesGroups[letter] and counter[letter] and TablesOfPiecesGroups[letter][counter[letter]] then
                     pieceName = TablesOfPiecesGroups[letter][counter[letter]] 
                     if pieceName then                     
