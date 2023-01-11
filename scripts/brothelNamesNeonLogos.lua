@@ -198,5 +198,12 @@ return {
 "Pain and Leather",
 "Dominance",
 "Doms and Subs",
-"Double Penetration"
+"Double Penetration",
+"DisgussThing",
+"Put it in",
+"Take it",
+"stepbro what are you doing",
+"stepbro im stuck",
+"Rhythmic",
+"inoutin",
 }

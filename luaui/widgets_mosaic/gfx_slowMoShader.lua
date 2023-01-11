@@ -10,10 +10,10 @@ function widget:GetInfo()
                 date      = "21 12 2012",
                 license   = "xxx",     
                 layer     =  1,
-                	handler   = true,
-   		enabled   = true  --  loaded by default?
-				-- hidden 	  = true
-        }
+                handler   = true,
+   							enabled   = true  --  loaded by default?
+								-- hidden 	  = true
+        				}
 end
 ----------------------------------------------------------------------------------------------------
 
