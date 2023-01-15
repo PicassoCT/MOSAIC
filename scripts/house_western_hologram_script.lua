@@ -11,7 +11,7 @@ buisness_spin = piece("buisness_spin")
 brothel_spin = piece("brothel_spin")
 casino_spin = piece("casino_spin")
 local TablesOfPiecesGroups = {}
-boolDebugHologram = true
+local boolDebugHologram = false
 
 myDefID = Spring.GetUnitDefID(unitID)
 boolIsCasino= UnitDefNames["house_western_hologram_casino"].id == myDefID
@@ -38,6 +38,7 @@ function script.Create()
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
+    resetAll(unitID)
     hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(HoloGrams)
@@ -54,7 +55,7 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
     interval = math.random(1,3)*60*1000
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
+        if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) then
             showTellTable = {}
             for i=1, #TablesOfPiecesGroups[name] do
                 Sleep(500)
@@ -62,7 +63,9 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
                 if maRa()then 
                     showTellTable[hologramPiece] = hologramPiece
                     val= math.random(10,42)*randSign()
-                    Spin(hologramPiece,  axisToRotateAround, math.rad(val),0)
+                    if axisToRotateAround then
+                        Spin(hologramPiece,  axisToRotateAround, math.rad(val),0)
+                    end
                 else
                     Hide(hologramPiece)
                 end
@@ -84,7 +87,7 @@ function showWallDayTime(name)
 
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if (hours > 18 or hours < 7) then     
+        if (hours > 18 or hours < 7 or boolDebugHologram) then     
             for i=1, #TablesOfPiecesGroups[name] do
                 if maRa() then
                     Show(TablesOfPiecesGroups[name][i])
@@ -112,18 +115,21 @@ function HoloGrams()
     val = math.random(10,42)/10*randSign()
     Spin(rotatorTable[2], y_axis, math.rad(val), 0)
     val = math.random(10,42)/10*randSign()
-    Spin(rotatorTable[4], y_axis, math.rad(val), 0)
+    Spin(rotatorTable[4], 2, math.rad(val), 0)
     Sleep(15000)
     
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
-    StartThread(holoGramNightTimes, true, "GeneralDeco", _y_axis)
+
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
+        if maRa() then
+            StartThread(holoGramNightTimes, true, "GeneralDeco", nil)
+        end
         if boolIsBrothel then
             if maRa() then
               StartThread(showWallDayTime, "BrothelWall")
@@ -199,6 +205,7 @@ function HoloGrams()
 
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
+            StartThread(holoGramNightTimes, true, "GeneralDeco", nil)
         end
 
         spinLogos = {

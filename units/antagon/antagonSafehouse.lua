@@ -15,6 +15,7 @@ local AntagonSafeHouse = Building:New{
 	nanocolor=[[0.20 0.411 0.611]],
 	CanReclaim=false,	
 	canAssist = false,
+	canMove = true,
 	fullHealthFactory = true,
 	workerTime = 1,
 	showNanoSpray = false,

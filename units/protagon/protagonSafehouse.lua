@@ -33,7 +33,7 @@ local ProtagonSafeHouse =    Building:New{
 
   buildCostEnergy =        2000,
   buildCostMetal =         2000,
-
+  canMove = true,
 	EnergyStorage = 1000,
 	EnergyUse = 0,
 	MetalStorage = 1000,

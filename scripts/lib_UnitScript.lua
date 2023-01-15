@@ -5516,7 +5516,10 @@ end
 function Command(id, command, tarGet, option)
     assert(id)
     assert(type(id) == "number", id)
-    assert(command ~= nil, UnitDefs[Spring.GetUnitDefID(id)].name.." has invalid Command executed on it")
+
+    defID= Spring.GetUnitDefID(id)
+    assert(defID)
+    assert(command ~= nil, UnitDefs[defID].name.." has invalid Command executed on it")
     local target = tarGet
 
     option = option  or {}

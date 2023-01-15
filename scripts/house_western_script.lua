@@ -153,7 +153,7 @@ end
 
 function HoloGrams()
     Sleep(15000)
-    
+    if maRa() == maRa() and not  isNearCityCenter(px,pz, GameConfig) then return end
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
@@ -1004,7 +1004,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
-                echo(unitID..":Piece "..pieceNameMap[element].." has orientation vector ("..decoPieceUsedOrientation[element]..")")
+                --echo(unitID..":Piece "..pieceNameMap[element].." has orientation vector ("..decoPieceUsedOrientation[element]..")")
 
                 if countElements == 24 then break end
                 showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
