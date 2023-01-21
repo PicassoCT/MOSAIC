@@ -152,7 +152,11 @@ function rotations()
 end
 
 function HoloGrams()
-    Sleep(15000)
+    while   boolDoneShowing == false do
+        Sleep(100)
+    end
+    rest= (7 + math.random(1,7))*1000
+    Sleep(rest)
     if maRa() == maRa() and not  isNearCityCenter(px,pz, GameConfig) then return end
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
@@ -162,7 +166,8 @@ function HoloGrams()
     for logoPiece,v in pairs(logoPieces)do
         if contains(ToShowTable, logoPiece) then 
             if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece])
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
+            echo(unitID..":orientation "..decoPieceUsedOrientation[logoPiece])
             break
         end
     end
@@ -173,11 +178,13 @@ function HoloGrams()
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
             if not decoPieceUsedOrientation[hostBrothelPiece] then echo( unitID..":"..pieceNameMap[hostBrothelPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece])
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece] )
+            echo(unitID..":orientation "..decoPieceUsedOrientation[hostBrothelPiece])
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
-                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, 0)
+                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
+                echo(unitID..":orientation "..decoPieceUsedOrientation[hostCasinoPiece])
             end
         end
     end
@@ -926,28 +933,29 @@ end
 
 function getRotationFromPiece(pieceID)
     px,py,pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
-    tx, tz = x- px, z- pz
+    ox,oy,oz = Spring.GetUnitPosition(unitID)
+    tx, tz =  px-ox, pz-oz
   
     norm = math.max(math.abs(tx),math.abs(tz))
-    tx,tz = tx/norm, tz/norm
+    tx,tz = tx/norm, (tz/norm)
 
-    if tx >= 1.0 then
+    if tx >= 0.99  then
         return 0
     end
 
-    if tz >= 1.0 then
-        return 90
-    end
-
-    if tx <= -1.0 then
+    if tx <= -0.99  then
         return 180
     end
 
-    if tz <= -1.0 then
-        return 270
+    if tz >= 0.99 then
+        return 90
+    end  
+
+    if tz <= -0.99 then
+        return -90
     end
 
-    return math.random(1,4) * 90
+    return nil
 end
 
 function showSubsAnimateSpins(pieceGroupName, nr)
@@ -1004,7 +1012,6 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
-                --echo(unitID..":Piece "..pieceNameMap[element].." has orientation vector ("..decoPieceUsedOrientation[element]..")")
 
                 if countElements == 24 then break end
                 showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
@@ -1041,7 +1048,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
-
+                decoPieceUsedOrientation[element] = getRotationFromPiece(element)
                 if not logoPiecesToHide[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end

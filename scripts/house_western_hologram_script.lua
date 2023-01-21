@@ -33,6 +33,8 @@ function timeOfDay()
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
 
+Direction = piece("Direction")
+
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
@@ -42,6 +44,7 @@ function script.Create()
     hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(HoloGrams)
+    StartThread(holoGramRain)
 end
 
 function nilNeonSigns()
@@ -49,6 +52,66 @@ function nilNeonSigns()
     casinoNamesNeonSigns = nil
     buisnessNeonSigns = nil
     creditNeonSigns= nil
+end
+function RainDrop(pieceID, delayMS, speed)
+    maxDistance = 4000
+    Sleep(delayMS)
+    x,z = math.random(30,maxDistance)*randSign(), math.random(30,maxDistance)*randSign()
+    y = math.sqrt(x^2 + z^2)
+    Move(pieceID, x_axis, x, 0)
+    Move(pieceID, z_axis, z, 0)
+    Move(pieceID, y_axis, y, 0)
+    Show(pieceID)
+    --Spin(pieceID, y_axis, math.rad(42),0)
+    WMove(pieceID, y_axis, 0, speed)
+    Hide(pieceID)
+end
+
+function holoRain(Name, speed)
+    groupName = Name.."Rain"
+    for i=1,#TablesOfPiecesGroups[groupName] do
+        delay= math.random(0,5)*100
+        StartThread(RainDrop,TablesOfPiecesGroups[groupName][i], delay, speed)
+    end
+end
+
+RainCenter = piece("RainCenter")
+function holoGramRain()
+    Sleep(100)
+    speed= 2000
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        if (hours > 19 or hours < 6) then
+            GG.boolRainyNight = maRa()
+            if not GG.RainyNight then
+                GG.RainyNight = {
+                                 x = math.random(1,15)*randSign(),
+                                 z = math.random(1,15)*randSign()
+                                 }
+            end
+            boolRainyNight = GG.boolRainyNight
+            if boolRainyNight then
+                Turn(RainCenter,x_axis,math.rad(GG.RainyNight.x),0)
+                Turn(RainCenter,z_axis,math.rad(GG.RainyNight.z),0)
+                while(hours > 19 or hours < 6) do
+                    hours, minutes, seconds, percent = getDayTime()
+                    if boolIsBrothel then
+                        holoRain("Brothel", speed)
+                    end
+                    if boolIsBuisness then
+                        holoRain("Buisness", speed)
+                    end
+                    if maRa() == maRa() then
+                        holoRain("Neutral", speed)
+                    end
+                    Sleep(1000)
+                end
+
+            end
+           
+        end
+        Sleep(1000)
+    end
 end
 
 function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
@@ -64,7 +127,7 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
                     showTellTable[hologramPiece] = hologramPiece
                     val= math.random(10,42)*randSign()
                     if axisToRotateAround then
-                        Spin(hologramPiece,  axisToRotateAround, math.rad(val),0)
+                        Spin(hologramPiece, axisToRotateAround, math.rad(val),0)
                     end
                 else
                     Hide(hologramPiece)
@@ -105,6 +168,7 @@ function showWallDayTime(name)
 end
 
 function HoloGrams()
+
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
     rotatorTable[#rotatorTable+1] = piece("buisness_spin")
@@ -145,6 +209,10 @@ function HoloGrams()
   
         if boolIsCasino then 
            StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.sqrt(#CasinoflickerGroup))
+            if maRa() then
+              StartThread(showWallDayTime, "CasinoWall")
+            end
+
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
                 nilNeonSigns()

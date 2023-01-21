@@ -554,25 +554,26 @@ function getGameConfig()
         
         return id
     end
-
+    
+    
     function moveCtrlHologramToUnitPiece(parentID, holoDefID, pieceID, orientation)
+        orientation =math.rad(orientation)
+
         assert(pieceID)
         Sleep(10)
+   
         WaitForMoves(pieceID)
-        if orientation == nil then 
-            echo("Defaulting to zero orientation for hologram "..holoDefID)
-            orientation = 0 
-        end
+        echo(holoDefID.." has rotation "..toString(orientation))
         Sleep(500)
   
-        id = createUnitAtUnit(Spring.GetUnitTeam(parentID), holoDefID, parentID)
-        rx,ry,rz = Spring.GetUnitRotation(id)
+        id = createUnitAtUnit(Spring.GetUnitTeam(parentID), holoDefID, parentID, 0,0,0,0)
+    
         Spring.MoveCtrl.Enable(id, true)
         px, py, pz = Spring.GetUnitPiecePosDir(parentID, pieceID)
         --echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
+        Spring.MoveCtrl.SetRotation(id, 0,  orientation, 0)
         Spring.MoveCtrl.SetPosition(id, px, py, pz)
-        Spring.Echo("moveCtrlHologramToUnitPiece orientation "..orientation)     
-        Spring.MoveCtrl.SetRotation(id, rx, math.rad(orientation), rz)
+
         Spring.SetUnitAlwaysVisible(id, true)
         Spring.SetUnitNeutral(id, true)
         Spring.SetUnitNoSelect(id, true)
