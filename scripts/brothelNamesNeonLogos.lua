@@ -207,6 +207,9 @@ return {
 "Rhythmic",
 "inoutin",
 "Sloppy joes",
-"RedRocketRiddinHood",
-"Nietzsches Whip"
+"RedRocketRiddinGood",
+"Nietzsches Whip",
+"The Nutcracker",
+"The Hardcore",
+"Creamy Twinky"
 }

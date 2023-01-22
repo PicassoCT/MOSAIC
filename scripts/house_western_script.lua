@@ -167,7 +167,6 @@ function HoloGrams()
         if contains(ToShowTable, logoPiece) then 
             if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
-            echo(unitID..":orientation "..decoPieceUsedOrientation[logoPiece])
             break
         end
     end
@@ -179,12 +178,10 @@ function HoloGrams()
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
             if not decoPieceUsedOrientation[hostBrothelPiece] then echo( unitID..":"..pieceNameMap[hostBrothelPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece] )
-            echo(unitID..":orientation "..decoPieceUsedOrientation[hostBrothelPiece])
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
                 StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
-                echo(unitID..":orientation "..decoPieceUsedOrientation[hostCasinoPiece])
             end
         end
     end

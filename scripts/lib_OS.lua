@@ -881,7 +881,7 @@ end
 function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
     fact = factor or 1.0
     padX, padY, padZ = Spring.GetUnitPosition(unitID)
-
+    GameConfig = getGameConfig()
     if GG.VTOLFlightPads == nil then
      GG.VTOLFlightPads = {Lock = nil} 
     end
@@ -924,6 +924,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
     end
 
     function startPlaneFromLocation(unitID, plane, locationIndex, v) 
+
         Hide(plane)
         location = GG.VTOLFlightPads[locationIndex]
         gaiaTeamID = Spring.GetGaiaTeamID()
@@ -967,7 +968,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
     Turn(plane,y_axis,math.rad(lastValue),0)
     Sleep(15000)
     targetDice = getRandomPostionNotMine(myPosition)
- 
+    if not GG.VTOLCounter then GG.VTOLCounter= 0 end
     while true do       
         targetDice = getRandomPostionNotMine(myPosition)
         randSleep= (math.random(1,5)*1000) + restTimeMs
@@ -977,11 +978,16 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
         --echo("Flying  At Home")
         targetValue = math.random(0,90)*randSign()
         Turn(plane,y_axis,math.rad(targetValue), 0)
-        Sleep(200)           
+        Sleep(200)        
+
+        while GG.VTOLCounter > GameConfig.vtolInAirMax do
+            Sleep(1000)
+        end   
+        GG.VTOLCounter = GG.VTOLCounter + 1
         planeID = startPlaneFromLocation(unitID, plane, myPosition) 
 
         movePlaneToLocation(planeID, targetDice) 
-   
+        GG.VTOLCounter = GG.VTOLCounter - 1
         showHidePlane(false, plane)
         boolStartRemote = true
         randSleep= (math.random(1,5)*1000) + timeBetweenFlightsMs

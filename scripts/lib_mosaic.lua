@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.900" 
+            Version = "Alpha: 0.901" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -206,6 +206,7 @@ function getGameConfig()
         chanceOfInterceptOneIn = 25,
         reloadTimeMS = 5*60*1000,            
         },
+        vtolInAirMax = 6,
 
         
         -- Game States
@@ -563,7 +564,7 @@ function getGameConfig()
         Sleep(10)
    
         WaitForMoves(pieceID)
-        echo(holoDefID.." has rotation "..toString(orientation))
+--        echo(holoDefID.." has rotation "..toString(orientation))
         Sleep(500)
   
         id = createUnitAtUnit(Spring.GetUnitTeam(parentID), holoDefID, parentID, 0,0,0,0)

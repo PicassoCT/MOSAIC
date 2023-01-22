@@ -33,7 +33,7 @@ function timeOfDay()
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
 
-Direction = piece("Direction")
+--Direction = piece("Direction")
 
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
@@ -55,15 +55,16 @@ function nilNeonSigns()
 end
 function RainDrop(pieceID, delayMS, speed)
     maxDistance = 4000
+    downAxis = 2
     Sleep(delayMS)
     x,z = math.random(30,maxDistance)*randSign(), math.random(30,maxDistance)*randSign()
-    y = math.sqrt(x^2 + z^2)
-    Move(pieceID, x_axis, x, 0)
-    Move(pieceID, z_axis, z, 0)
-    Move(pieceID, y_axis, y, 0)
+    y = math.sqrt((maxDistance-x)^2 + (maxDistance-z)^2)
+    Move(pieceID, 1, x, 0)
+    Move(pieceID, 3, z, 0)
+    Move(pieceID, downAxis, y, 0)
     Show(pieceID)
-    --Spin(pieceID, y_axis, math.rad(42),0)
-    WMove(pieceID, y_axis, 0, speed)
+    --Spin(pieceID, downAxis, math.rad(42),0)
+    WMove(pieceID, downAxis, 0, speed)
     Hide(pieceID)
 end
 
@@ -78,7 +79,7 @@ end
 RainCenter = piece("RainCenter")
 function holoGramRain()
     Sleep(100)
-    speed= 2000
+    speed= 3141
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if (hours > 19 or hours < 6) then
@@ -106,9 +107,7 @@ function holoGramRain()
                     end
                     Sleep(1000)
                 end
-
-            end
-           
+            end           
         end
         Sleep(1000)
     end
@@ -198,7 +197,7 @@ function HoloGrams()
             if maRa() then
               StartThread(showWallDayTime, "BrothelWall")
             end
-            StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, 5)
+            StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, math.random(5,7))
             if maRa()  then
               StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
             end
@@ -208,7 +207,7 @@ function HoloGrams()
         end
   
         if boolIsCasino then 
-           StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.sqrt(#CasinoflickerGroup))
+           StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
             if maRa() then
               StartThread(showWallDayTime, "CasinoWall")
             end
