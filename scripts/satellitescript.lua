@@ -24,6 +24,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spin(center,y_axis, math.rad(4),0)
     StartThread(delayedShow)
+    StartThread(threeBeepLoop)
 end
 
 function delayedShow()
@@ -48,16 +49,40 @@ function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
 
+function threeBeepLoop()
+    while true do
+        Sleep(1000)
+        if boolBeep then
+            if boolParked == false then
+            for i=1,3 do 
+                Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0/i)
+                Sleep(1000)
+            end
+            else
+            for i=3,1,-1 do 
+                Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0/i)
+                Sleep(1000)
+            end
+            end
+        boolBeep = false
+        end
+    end
+end
+
+boolParked = false
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
-        Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0)
+
         hideAll(unitID)
+        boolParked = true
         Show(Icon)
+        boolBeep = true
     else
-        Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0)
         showAll(unitID)
         Hide(Icon)
+        boolParked = false
+        boolBeep = true
     end
 end

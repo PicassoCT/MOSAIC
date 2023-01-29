@@ -42,6 +42,7 @@ function script.Create()
 
     StartThread(delayedShow)
     StartThread(observeTeamChange)
+    StartThread(threeBeepLoop)
 end
 
 function observeTeamChange()
