@@ -14,8 +14,7 @@ end
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
-    iconTypeTable = getIconTypes(UnitDefs)
-
+    local iconTypeTable = getIconTypes(UnitDefs)
     local GameConfig = getGameConfig()
 
     function gadget:UnitCreated(unitID, unitDefID)
@@ -42,10 +41,8 @@ else -- unsynced
 
     local glUnitRaw = gl.UnitRaw
     local glBlending = gl.Blending
-    local glScale = gl.Scale
     local GL_SRC_ALPHA           = GL.SRC_ALPHA
     local GL_ONE                 = GL.ONE
-    local GL_ZERO                = GL.ZERO
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
@@ -54,10 +51,6 @@ else -- unsynced
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             return true
-        end
-
-        if drawMode ~= 1 and iconTables[unitID]  then --shadowDraw
-        return false
         end
     end
 end

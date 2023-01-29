@@ -297,7 +297,7 @@ fragmentShaderFirstPass =[[
             Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
         end
     end
-
+--[[
     local perFrameCounterCopy = 0
     function gadget:DrawScreenEffects()
         perFrameCounterCopy = counterNeonUnits
@@ -336,4 +336,5 @@ fragmentShaderFirstPass =[[
             gl.DeleteShader(shaderFirstPass)
         end
     end
+    ]]
 end

@@ -79,7 +79,7 @@ end
 RainCenter = piece("RainCenter")
 function holoGramRain()
     Sleep(100)
-    speed= 3141
+    speed= math.pi*2000
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if (hours > 19 or hours < 6) then
@@ -119,10 +119,12 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
         hours, minutes, seconds, percent = getDayTime()
         if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) then
             showTellTable = {}
+            counter = math.random(4, 6)
             for i=1, #TablesOfPiecesGroups[name] do
                 Sleep(500)
                 hologramPiece= TablesOfPiecesGroups[name][i] 
-                if maRa()then 
+                if maRa() and counter > 0 then 
+                    counter = counter - 1
                     showTellTable[hologramPiece] = hologramPiece
                     val= math.random(10,42)*randSign()
                     if axisToRotateAround then
@@ -149,9 +151,11 @@ function showWallDayTime(name)
 
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if (hours > 18 or hours < 7 or boolDebugHologram) then     
+        if (hours > 18 or hours < 7 or boolDebugHologram) then 
+            counter = math.random(4,7)    
             for i=1, #TablesOfPiecesGroups[name] do
-                if maRa() then
+                if maRa() and TablesOfPiecesGroups[name][i] and counter > 0 then
+                        counter = counter - 1
                     Show(TablesOfPiecesGroups[name][i])
                 end
             end 
@@ -159,7 +163,11 @@ function showWallDayTime(name)
                 hours, minutes, seconds, percent = getDayTime()
                 Sleep(5000)
             end
-            hideT(TablesOfPiecesGroups[name])
+            for i=1, #TablesOfPiecesGroups[name] do
+                Hide(TablesOfPiecesGroups[name][i])
+                rest= ((i % 3)+1)*1000
+                Sleep(rest)
+            end
         end
     val = math.random(25, 45)*1000
     Sleep(val)
@@ -318,7 +326,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
     toShowTableT= {}
     while true do
         hideT(fGroup)
-        assertRangeConsistency(fGroup, "flickerGroup")
+        assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
         if boolDayLightSavings == nil or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then

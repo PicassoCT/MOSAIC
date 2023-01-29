@@ -29,6 +29,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(delayedShow)
     StartThread(manuallyTargetingGodRod)
+    StartThread(threeBeepLoop)
     Hide(GodRod)
 
 end
@@ -150,6 +151,27 @@ function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
 
+boolBeep = false
+function threeBeepLoop()
+    while true do
+        Sleep(1000)
+        if boolBeep then
+            if boolParked == false then
+            for i=1,3 do 
+                Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0/i)
+                Sleep(1000)
+            end
+            else
+            for i=3,1,-1 do 
+                Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0/i)
+                Sleep(1000)
+            end
+            end
+        boolBeep = false
+        end
+    end
+end
+
 boolParked= false
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
@@ -157,7 +179,9 @@ function showHideIcon(boolCloaked)
     if boolCloaked == true then
         hideAll(unitID)
         Show(Icon)
+
         boolParked = true
+        boolBeep = true
     else
         showAll(unitID)
         Hide(Icon)
@@ -165,5 +189,6 @@ function showHideIcon(boolCloaked)
         Hide(GodRod)
         Hide(AimPiece)
         boolParked = false
+        boolBeep = true
     end
 end

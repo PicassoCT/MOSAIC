@@ -211,5 +211,12 @@ return {
 "Nietzsches Whip",
 "The Nutcracker",
 "The Hardcore",
-"Creamy Twinky"
+"Creamy Twinky",
+"Horny jail",
+"Pascals Palace",
+"Pornstarbucks",
+"Maid Cafe",
+"Lolita Love",
+"Hentai heaven",
+
 }

@@ -52,10 +52,11 @@ boolLocalCloaked = false
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
-
+        Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0)
         hideAll(unitID)
         Show(Icon)
     else
+        Spring.PlaySoundFile("sounds/satellite/beep.wav", 1.0)
         showAll(unitID)
         Hide(Icon)
     end

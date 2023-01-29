@@ -514,6 +514,7 @@ function getGameConfig()
             [UnitDefNames["destroyedobjectiveicon"].id] = true,
             [UnitDefNames["biopayload"].id] = true,
             [UnitDefNames["informationpayload"].id] = true,
+            [UnitDefNames["potemkinpayload"].id] = true,
             [UnitDefNames["physicspayload"].id] = true,
             [UnitDefNames["deaddropicon"].id] = true,
             [UnitDefNames["stealvehicleicon"].id] = true,
