@@ -425,7 +425,8 @@ function getGameConfig()
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
             [UnitDefNames["policetruck"].id] = true,
-            [UnitDefNames["ground_tank_night"].id] = true
+            [UnitDefNames["ground_tank_night"].id] = true,
+            [UnitDefNames["house_spinner"].id] = true
         }
     end 
 
@@ -526,6 +527,13 @@ function getGameConfig()
             [UnitDefNames["house_western_hologram_casino"].id] = true,           
             [UnitDefNames["house_western_hologram_brothel"].id] = true,           
         }
+    end  
+
+    function getCivilianVTOLTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+                    [UnitDefNames["house_vtol"].id] = true     
+                }
     end  
 
     function getHologramTypes(UnitDefs)
@@ -1215,6 +1223,10 @@ function getGameConfig()
                 else
                     return "female"
                 end
+            end
+
+            function isANormalDay()
+                return GG.GlobalGameState == GG.GameConfig.GameState.normal
             end
 
             function getCivlianDisguiseBySexTypeTable(UnitDefs, sex)

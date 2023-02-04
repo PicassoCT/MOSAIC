@@ -923,12 +923,13 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
         return targetDice
     end
 
-    function startPlaneFromLocation(unitID, plane, locationIndex, v) 
+    function startPlaneFromLocation(unitID, plane, locationIndex) 
 
         Hide(plane)
         location = GG.VTOLFlightPads[locationIndex]
         gaiaTeamID = Spring.GetGaiaTeamID()
-        planeID = Spring.CreateUnit( "house_vtol", location.x, location.y, location.z, 1, gaiaTeamID)
+        vtolTypes = getCivilianVTOLTypes(UnitDefs)
+        planeID = Spring.CreateUnit( randDict(vtolTypes), location.x, location.y, location.z, 1, gaiaTeamID)
         if planeID then
             Spring.SetUnitAlwaysVisible(planeID, true)
             Spring.SetUnitNeutral(planeID, true)

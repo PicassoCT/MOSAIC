@@ -82,7 +82,7 @@ function holoGramRain()
     speed= math.pi*2000
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if (hours > 19 or hours < 6) then
+        if (hours > 19 or hours < 6) and isANormalDay() then
             GG.boolRainyNight = maRa()
             if not GG.RainyNight then
                 GG.RainyNight = {
@@ -117,7 +117,7 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
     interval = math.random(1,3)*60*1000
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) then
+        if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
             showTellTable = {}
             counter = math.random(4, 6)
             for i=1, #TablesOfPiecesGroups[name] do
@@ -151,7 +151,7 @@ function showWallDayTime(name)
 
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if (hours > 18 or hours < 7 or boolDebugHologram) then 
+        if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
             counter = math.random(4,7)    
             for i=1, #TablesOfPiecesGroups[name] do
                 if maRa() and TablesOfPiecesGroups[name][i] and counter > 0 then
@@ -329,7 +329,8 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
-        if boolDayLightSavings == nil or ( boolDayLightSavings == true and (hours > 17 or hours < 7)) then
+        if boolDayLightSavings == nil or ( boolDayLightSavings == true and 
+            (hours > 17 or hours < 7)) and isANormalDay() then
                 if boolNewDay == true then
                     toShowTableT= {}
                     for x=1,math.random(minImum,minMaximum) do
