@@ -283,17 +283,12 @@ function HoloGrams()
             StartThread(holoGramNightTimes, true, "GeneralDeco", nil)
         end
 
-        spinLogos = {
-                        [piece("buisness_holo18")] = "buisness_holo18",
-                        [piece("buisness_holo19")] = "buisness_holo19",
-                        [piece("buisness_holo22")] = "buisness_holo22"
-                    }
-
         Spin(logo,y_axis, math.rad(5),0)
         Show(logo)
         if maRa() then
-           if (spinLogos[logo]) then
-                logoTableName = spinLogos[logo].."Spin"
+           pieceName = getUnitPieceName(unitID, logo)
+           logoTableName = pieceName.."Spin"
+           if TablesOfPiecesGroups[logoTableName] then                
                 for i=1, #TablesOfPiecesGroups[logoTableName] do
                     if maRa() then
                         spinLogoPiece = TablesOfPiecesGroups[logoTableName][i]
