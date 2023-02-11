@@ -115,15 +115,17 @@ end
 
 function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
     interval = math.random(1,3)*60*1000
+    alreadyShowing = {}
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
             showTellTable = {}
-            counter = math.random(4, 6)
+            counter = math.random(3, 7)
             for i=1, #TablesOfPiecesGroups[name] do
                 Sleep(500)
-                hologramPiece= TablesOfPiecesGroups[name][i] 
-                if maRa() and counter > 0 then 
+                hologramPiece= randDict(TablesOfPiecesGroups[name])
+                if not alreadyShowing[hologramPiece] and counter > 0 then 
+                    alreadyShowing[hologramPiece]= true
                     counter = counter - 1
                     showTellTable[hologramPiece] = hologramPiece
                     val= math.random(10,42)*randSign()
