@@ -68,6 +68,9 @@ function advertisingLoop()
 
     while true do
         soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
+        if maRa() == maRa() then
+            soundFile = "sounds/advertising/blimp.ogg"
+        end
         StartThread(PlaySoundByUnitDefID, myDefID, soundFile, 1.0, 20000, 2)
         minimum, maximum = 5*60*1000, 10*60*1000
         restTime = math.random(minimum, maximum)
