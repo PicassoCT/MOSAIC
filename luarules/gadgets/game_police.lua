@@ -16,7 +16,7 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-local boolDebugPolice = false
+local boolDebugPolice = true
 
 local GameConfig = getGameConfig()
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -122,7 +122,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID)
         spSetUnitNeutral(unitID, false)        
         activePoliceUnitIds_DispatchTime[unitID] =  GameConfig.Police.maxDispatchTime 
         if lastVictimID and doesUnitExistAlive(lastVictimID) then
-            conditionalEcho(boolDebugPolice, "guarding "..lastVictimID)
+            conditionalEcho(boolDebugPolice, "guarding "..lastVictimID.. " a "..getTypeName(lastVictimID))
            tx,ty,tz =spGetUnitPosition(lastVictimID)
             Command(unitID, "go", {x = tx, y = ty, z = tz}, {"shift"})    
             Command(unitID, "go", {x=tx,y=ty, z=tz} )
@@ -212,7 +212,7 @@ function getRandomDispatchTargetPosition(officerID)
 end
 
 function dispatchOfficer(victimID, attackerID, boolBribeOverride)
-    conditionalEcho(boolDebugPolice, "dispatching officer to help ".. victimID )
+    conditionalEcho(boolDebugPolice, "dispatching officer to help ".. victimID .. " a "..getTypeName(victimID))
     if not attackerID then attackerID = Spring.GetUnitLastAttacker(victimID) end
 
     officerID = getOfficer(victimID, attackerID, boolBribeOverride)
@@ -244,11 +244,8 @@ function dispatchOfficer(victimID, attackerID, boolBribeOverride)
         elseif boolFoundSomething == false and victimID and doesUnitExistAlive(victimID) == true then 
 
             if GG.GlobalGameState == GameConfig.GameState.normal then
-                conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to guard ".. victimID)
+                conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to guard ".. victimID .. " a "..getTypeName(victimID))
                 Command(officerID, "guard", victimID, {})
-            else
-                conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to attack ".. victimID)
-                Command(officerID, "attack", victimID, {})
             end
             return officerID
         elseif boolFoundSomething == false  then 
@@ -273,7 +270,7 @@ function dispatchOfficer(victimID, attackerID, boolBribeOverride)
             end
         else
             Command(officerID, "attack", {attackerID}, 4)
-            conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to attack ".. attackerID)
+            conditionalEcho(boolDebugPolice,"Dispatch Unit ".. officerID.. " to attack ".. attackerID .. " a "..getTypeName(attackerID))
         end
 
         return officerID

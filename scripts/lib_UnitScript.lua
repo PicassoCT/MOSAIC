@@ -2500,6 +2500,11 @@ function getNthElementT(T, nth)
     end
 end
 
+function getTypeName(unitID)
+    defID = Spring.GetUnitDefID(unitID)
+    return UnitDefs[defID].name
+end
+
 -- >Retrieves a random element from a Dictionary
 function randDict(Dict)
     if not Dict then return end

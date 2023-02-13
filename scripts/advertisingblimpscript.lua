@@ -61,6 +61,13 @@ function script.Create()
      StartThread(limitToMapLimits)
 end
 
+function advertiseTimeOfDay(hour)
+    if hour > 2 and hour < 7 then
+        return false
+    end
+   return true
+end
+
 function advertisingLoop()
     rest= (math.random(2,5)+(unitID%3))*10000
     Sleep(rest)
@@ -68,7 +75,8 @@ function advertisingLoop()
 
     while true do
         soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
-        if maRa() == maRa() then
+        hours, minutes, seconds, percent = getDayTime()
+        if maRa() == maRa() and advertiseTimeOfDay(hours) then
             soundFile = "sounds/advertising/blimp.ogg"
         end
         StartThread(PlaySoundByUnitDefID, myDefID, soundFile, 1.0, 20000, 2)
