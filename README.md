@@ -62,14 +62,15 @@ In 20 minutes it will strike on the other side of the world, in half that time t
 
 ![](https://github.com/PicassoCT/MOSAIC/blob/master/luaui/images/loadpictures/LoadScreen14.png "")
 
+A eye for a eye, a city for a city.
 
-After that the hammer, comes down - on good and evil alike. 
+After that the hammer, comes down hard and fast - on good and evil alike. 
 
 A nuke, a godrod.
 
 Let there be light.
 
-A eye for a eye, a city for a city.
+
 
 How to play:
 1) Download and install https://springlobby.springrts.com/
