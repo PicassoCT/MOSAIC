@@ -53,6 +53,7 @@ function nilNeonSigns()
     buisnessNeonSigns = nil
     creditNeonSigns= nil
 end
+
 function RainDrop(pieceID, delayMS, speed)
     maxDistance = 4000
     downAxis = 2
