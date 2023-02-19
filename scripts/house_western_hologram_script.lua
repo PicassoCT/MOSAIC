@@ -17,8 +17,8 @@ myDefID = Spring.GetUnitDefID(unitID)
 boolIsCasino= UnitDefNames["house_western_hologram_casino"].id == myDefID
 boolIsBrothel= UnitDefNames["house_western_hologram_brothel"].id == myDefID
 boolIsBuisness= UnitDefNames["house_western_hologram_buisness"].id == myDefID 
-sizeDownLetter = 225
-sizeSpacingLetter = 175
+sizeDownLetter = 350
+sizeSpacingLetter = 300
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -283,7 +283,7 @@ function HoloGrams()
 
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
-            StartThread(holoGramNightTimes, true, "GeneralDeco", nil)
+            StartThread(holoGramNightTimes, true, "GeneralDeco")
         end
 
         Spin(logo,y_axis, math.rad(5),0)

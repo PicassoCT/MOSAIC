@@ -356,7 +356,7 @@ function bodyBuild()
     showOnePiece(TablesOfPiecesGroups["Head"], unitID)
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
-    if TablesOfPiecesGroups["Suit"] and maRa() == true then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Suit"] and not (maRa() == maRa()) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
 
 

@@ -218,5 +218,9 @@ return {
 "Maid Cafe",
 "Lolita Love",
 "Hentai heaven",
-
+"Buttstuff",
+"Creampies",
+"Cherrypies",
+"Like warm apple pie",
+"Krystall Boyd",
 }
