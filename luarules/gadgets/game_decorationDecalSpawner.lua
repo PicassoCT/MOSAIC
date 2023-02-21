@@ -60,22 +60,26 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     ID = 0
                     if T and count(T) > 2 then
-                        nrElement = math.random(1, #defIDDecalNameMap[baseType]
-                                                    .urban)
+                        nrElement = math.random(1, #defIDDecalNameMap[baseType].urban)
                         ID = defIDDecalNameMap[baseType].urban[nrElement]
                     else
-                        nrElement = math.random(1, #defIDDecalNameMap[baseType]
-                                                    .rural)
+                        nrElement = math.random(1, #defIDDecalNameMap[baseType].rural)
                         ID = defIDDecalNameMap[baseType].rural[nrElement]
                     end
 
-                    GG.UnitsToSpawn:PushCreateUnit(ID, x, y, z,
-                                                   math.random(1, 4), gaiaTeamID)
+                    if  isNotNearOcean(x,z, 200) then
+                        GG.UnitsToSpawn:PushCreateUnit(ID, x, y, z, math.random(1, 4), gaiaTeamID)
+                    end
                 end
             end
         end
 
         SpawnedUnits[frame] = nil
+    end
+
+    function isNotNearOcean(x,z, Size)
+        min, avg, max = getGroundHeigthGrid(x,z, Size)
+        return not(min <= 0)
     end
 
     function gadget:UnitCreated(unitID, unitDefID, teamID)

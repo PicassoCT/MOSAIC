@@ -8,8 +8,13 @@ local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local creditNeonSigns = include('creditNamesNeonLogos.lua')
 buisness_spin = piece("buisness_spin")
+wallSpin = piece("wallSpin")
+RainCenter = piece("RainCenter")
+general_spin = piece("general_spin")
+text_spin = piece("text_spin")
 brothel_spin = piece("brothel_spin")
 casino_spin = piece("casino_spin")
+spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TablesOfPiecesGroups = {}
 local boolDebugHologram = false
 
@@ -45,6 +50,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(HoloGrams)
     StartThread(holoGramRain)
+    hideT(spins)
 end
 
 function nilNeonSigns()
