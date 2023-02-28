@@ -926,5 +926,20 @@ return {
 "YORK",
 "YUM",
 "ZALE",
-"ZIONS"   
+"ZIONS",
+  "Geranium","Central","Disfrutar","Diverxo","Pujol","Asador Etxebarri","A Casa do Porco",
+  "Lido VIII IV","Quintonil","Le Calandre","Maido","Uliassi","Steirereck","Don Julio","Reale",
+  "Castel di Sangro","Elkano","Getaria","Nobelhart And Schmutzig","Alchemist","Piazza Duomo",
+  "Den","Mugaritz","Septime","The Jane","The Chairman","Frantzén","Restaurant Tim Raue",
+  "Hof Van Cleve","Le Clarence","St Hubertus","Florilege","Arpege","Mayta","Atomix",
+  "Hisa Franko","The Clove Club","Odette","Fyn","Jordnaer","Sorn","Schloss Schauenstein",
+  "La Cime","Quique Dacosta","Borago","Le ernardin","Narisawa","Belcanto","Oteque","Leo",
+  "Restaurant Frantzen","Alchemist","Schloss Schauenstein","Lido eightyfour","Etxebarri",
+  "Noma Two Point O",
+  "Daniel Berlin","Victors Fine Dining","De Librije","Ernst","Hotel de Ville",
+  "Regis et Jacques Marcon","Troisgros","Flocons de Sel","Schwarzwaldstube",
+  "Gilles Goujon Auberge de Vieux Puits","Waldhotel Sonnora","Cheval Blanc",
+  "Alain Ducasse Louis XV","L Ambroisie","Trattoria Trippa","Estimar","Ganbara","Dos Pebrots",
+  "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI",
+  "Dr. Re. Phill"
 }

@@ -184,9 +184,7 @@ function HoloGrams()
                 StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
             end
         end
-    end
-
-  
+    end  
 end
 
 officeWallElementsTable = {}

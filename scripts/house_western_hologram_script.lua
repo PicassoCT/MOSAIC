@@ -14,6 +14,9 @@ general_spin = piece("general_spin")
 text_spin = piece("text_spin")
 brothel_spin = piece("brothel_spin")
 casino_spin = piece("casino_spin")
+JLantern = piece("JLantern")
+Hide(JLantern)
+
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TablesOfPiecesGroups = {}
 local boolDebugHologram = false
@@ -39,6 +42,19 @@ function timeOfDay()
 end
 
 --Direction = piece("Direction")
+
+function showSubSpins(pieceID)
+    pieceName = getUnitPieceName(unitID, pieceID)
+    subSpinPieceName = pieceName.."Spin"    
+   if TablesOfPiecesGroups[subSpinPieceName] then  
+        hideT(TablesOfPiecesGroups[subSpinPieceName] )              
+        for i=1, #TablesOfPiecesGroups[subSpinPieceName] do
+            spinPiece = TablesOfPiecesGroups[subSpinPieceName][i]
+            Show(spinPiece)
+            Spin(spinPiece,y_axis, math.rad(-42),0)
+        end
+    end
+end
 
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
@@ -127,10 +143,10 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
         hours, minutes, seconds, percent = getDayTime()
         if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
             showTellTable = {}
-            counter = math.random(3, 7)
+            counter = math.random(3, 6)
             for i=1, #TablesOfPiecesGroups[name] do
                 Sleep(500)
-                hologramPiece= randDict(TablesOfPiecesGroups[name])
+                _, hologramPiece= randDict(TablesOfPiecesGroups[name])
                 if not alreadyShowing[hologramPiece] and counter > 0 then 
                     alreadyShowing[hologramPiece]= true
                     counter = counter - 1
@@ -164,8 +180,9 @@ function showWallDayTime(name)
             counter = math.random(4,7)    
             for i=1, #TablesOfPiecesGroups[name] do
                 if maRa() and TablesOfPiecesGroups[name][i] and counter > 0 then
-                        counter = counter - 1
+                    counter = counter - 1
                     Show(TablesOfPiecesGroups[name][i])
+                    showSubSpins(TablesOfPiecesGroups[name][i])
                 end
             end 
             while (hours > 18 or hours < 7) do
@@ -197,18 +214,19 @@ function HoloGrams()
     val = math.random(10,42)/10*randSign()
     Spin(rotatorTable[4], 2, math.rad(val), 0)
     Sleep(15000)
+
     
     local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
 
-
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if maRa() then
             StartThread(holoGramNightTimes, true, "GeneralDeco", nil)
+            StartThread(addJHologramLetters)
         end
         if boolIsBrothel then
             if maRa() then
@@ -217,6 +235,7 @@ function HoloGrams()
             StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, math.random(5,7))
             if maRa()  then
               StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
+              StartThread(addJHologramLetters)
             end
             addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
             nilNeonSigns()
@@ -227,6 +246,7 @@ function HoloGrams()
            StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
             if maRa() then
               StartThread(showWallDayTime, "CasinoWall")
+              StartThread(addJHologramLetters)
             end
 
             if maRa() then
@@ -250,9 +270,11 @@ function HoloGrams()
         start = math.random(1,#TablesOfPiecesGroups["buisness_holo"])
         for i=start, #TablesOfPiecesGroups["buisness_holo"] do
             element = TablesOfPiecesGroups["buisness_holo"][i]
+
             if not GG.HoloLogoRegister[element] then
                 GG.HoloLogoRegister[element] = 1
                 logo = element
+                showSubSpins(element)
                 boolDone = true
                 break
             elseif GG.HoloLogoRegister[element] < lowestCounter then
@@ -267,6 +289,7 @@ function HoloGrams()
                 if not GG.HoloLogoRegister[element] then
                     GG.HoloLogoRegister[element] = 1
                     logo = element
+                    showSubSpins(element)
                     boolDone = true
                     break
                 elseif GG.HoloLogoRegister[element] < lowestCounter then
@@ -277,7 +300,7 @@ function HoloGrams()
         end
 
         if not boolDone then
-            echo("Found no index for logo, selecting lowest")
+            --echo("Found no index for logo, selecting lowest")
             logo = lowestIndex
             GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] +1      
         end
@@ -446,6 +469,44 @@ function addHologramLetters( myMessage)
         else
             rowIndex= rowIndex +1
             columnIndex= 0
+        end
+    end
+end
+
+function addJHologramLetters()
+    if maRa() == maRa() then return end
+    message = {}
+    for i=1,6 do
+        message[i] = math.random(1,41)
+    end
+    axis= 2
+    boolUpRight = maRa()
+    if boolUpRight then
+        _,background = randDict(TablesOfPiecesGroups["JUpright"])
+    else
+        _,background = randDict(TablesOfPiecesGroups["JHorizontal"])
+    end
+     Show(background)
+    downIndex = 1
+    --echo("Adding Grafiti with message:" ..myMessage)
+    counter={}
+    stringlength = 6
+    rowIndex= 0
+    columnIndex= 0
+
+    val = math.random(5,45)
+    for i=1, stringlength do
+        if TablesOfPiecesGroups["JLetter"][message[i]] then
+            local pieceName = TablesOfPiecesGroups["JLetter"][message[i]]                   
+            Show(pieceName)
+            Move(pieceName, 3,  -sizeDownLetter*rowIndex, 0)
+            Move(pieceName,axis, sizeSpacingLetter*(columnIndex), 0)
+            if boolUpRight then
+                columnIndex= 0
+                rowIndex= rowIndex +1
+            else           
+                columnIndex = columnIndex +1
+            end
         end
     end
 end

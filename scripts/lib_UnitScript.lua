@@ -2511,7 +2511,10 @@ function randDict(Dict)
     if lib_boolDebug == true then assert(type(Dict) == "table") end
 
     countDict = count(Dict)
-    if countDict == 0 then return end
+    if countDict == 0 then 
+        echo("Dictionary is empty")
+     return 
+    end
     randElement = 1
     if countDict > 1 then randElement = math.random(1, countDict) end
 
@@ -2521,7 +2524,10 @@ function randDict(Dict)
         anyKey = k
         if index == randElement and k and v then return k, v end
         index = inc(index)
-        if index > countDict then return nil end
+        if index > countDict then 
+            echo("Dicitionary index is overshooting")
+            return nil 
+        end
     end
     
     return anyKey, Dict[anyKey]
