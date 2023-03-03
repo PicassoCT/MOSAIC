@@ -136,7 +136,10 @@ function holoGramRain()
     end
 end
 
-function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround)
+function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
+    if max == nil then
+        max = 6
+    end
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     while true do
@@ -200,6 +203,8 @@ function showWallDayTime(name)
     end
 end
 
+
+boolGeneralDecoSet= false
 function HoloGrams()
 
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
@@ -225,7 +230,7 @@ function HoloGrams()
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if maRa() then
-            StartThread(holoGramNightTimes, true, "GeneralDeco", nil)
+            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 4)
             StartThread(addJHologramLetters)
         end
         if boolIsBrothel then
@@ -312,7 +317,7 @@ function HoloGrams()
 
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
-            StartThread(holoGramNightTimes, true, "GeneralDeco")
+            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 6)
             StartThread(addJHologramLetters)
         end
 
