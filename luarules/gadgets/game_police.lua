@@ -16,7 +16,7 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-local boolDebugPolice = true
+local boolDebugPolice = false
 
 local GameConfig = getGameConfig()
 local spGetUnitPosition = Spring.GetUnitPosition

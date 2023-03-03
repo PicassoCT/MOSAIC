@@ -8,8 +8,8 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	iconType = "air_antiarmour",
 	--floater = true,
 	--cost
-	buildCostMetal = 50,
-	buildCostEnergy = 50,
+	buildCostMetal = 25,
+	buildCostEnergy = 25,
 	buildTime = 10,
 	mass = 50,
 	--Health
@@ -57,12 +57,18 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	collide             = true,
 	crashDrag = 0.035,
 
-	Category = [[AIR]],
+	Category = [[AIR SCOUTLETT]],
 
 	  customParams = {
 	  	baseclass ="vtol",
 	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
+
+	 		weapons={
+			[1]={name  = "antiairkamikaze", --prevents other weapon usage
+				onlyTargetCategory = [[AIR SCOUTLETT]],
+			},				
+			},
 	  
 	 sfxtypes = {
 explosiongenerators = {

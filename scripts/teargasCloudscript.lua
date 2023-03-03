@@ -69,7 +69,6 @@ function spawnPolice()
 			Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
 			Sleep(1000)	 
 	 end
-
 end
 
 function doDamage()

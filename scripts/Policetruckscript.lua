@@ -28,6 +28,27 @@ function showAndTell()
     end
 end
 
+policeOfficerID = nil
+
+function spawnRiotPolice()
+    if not doesUnitExistAlive(policeOfficerID) then
+    policeOfficerID = createUnitAtUnit(gaiaTeamID, "riotpolice", unitID, math.random(-10,10),0 , math.random(-10,10))
+     StartThread(lifeTime, policeOfficerID, timeTotal  - 5000 -1000, false, true)
+     while doesUnitExistAlive(policeOfficerID) do
+        T = foreach(getAllNearUnit(policeOfficerID, 120),
+                function(id)
+                    defID = Spring.GetUnitDefID(id)
+                    if civilianWalkingTypeTable[defID] and gaiaTeamID == Spring.GetUnitTeam(id) then
+                        return id
+                    end
+                    end
+                    )
+            Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
+            Sleep(1000)  
+     end
+    end
+end
+
 boolTearGasGo = true
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
@@ -185,7 +206,7 @@ function tearGasState()
     while true do
         if boolHasBeenHitBy == true and GG.GlobalGameState == GameConfig.GameState.anarchy then
             boolHasBeenHitBy = false
-            boolTearGasGo = true
+            StartThread(spawnRiotPolice)
         end
         Sleep(1000)
     end

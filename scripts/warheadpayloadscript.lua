@@ -460,12 +460,14 @@ defuseStatesMachine = {
 --Reveal Productionplace, Propagandaplus
 
 function defuseStateMachine()
+	if not GG.WarHeadState then GG.WarHeadState = {} end
     myTeamID = Spring.GetUnitTeam(unitID)
     currentState = "dormant"
     StartThread(showDormantIcon)
     persPack={defuseTimeMs = GameConfig.Warhead.DefusalTimeMs}
     while true do
-      newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
+     newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
+     GG.WarHeadState[unitID] = newState
      -- if currentState ~= newState then	  echo("defuseStatesMachine in "..currentState) end
 	  currentState = newState
 	 -- echo("defuseStatesMachine alive: with "..currentState)

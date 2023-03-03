@@ -6,7 +6,7 @@ function gadget:GetInfo()
         date = "2.2.2009",
         license = "GPL2.1",
         layer = 50,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -45,8 +45,8 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitCreated(UnitID, whatever)
-        local types = Spring.GetUnitDefID(UnitID);
-        if zeppelins[type] then zeppelin_waiting[UnitID] = types end
+        local type = Spring.GetUnitDefID(UnitID);
+        if zeppelins[type] then zeppelin_waiting[UnitID] = type end
     end
 
     function gadget:UnitDestroyed(UnitID, whatever)
@@ -84,7 +84,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if f % 20 < 1 then
             for zid, zepp in pairs(zeppelin) do
-                local x, y, z = spGetUnitVectors(zid)
+                local x, y, z = spGetUnitVector(zid)
                 local ux, uy, uz = spGetUnitPosition(zid)
                 local vx, vy, vz = spGetUnitVelocity(zid)
                 local dx, dy, dz = spGetUnitDirection(zid)

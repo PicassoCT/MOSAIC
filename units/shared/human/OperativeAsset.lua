@@ -9,14 +9,13 @@ local OperativeAsset = Human:New{
 	buildCostMetal     	 	 = 2000,
 	MetalStorage 			 = 1500,
 
-	buildDistance = 200,
-explodeAs				  = "none",
-
-	Acceleration = 0.8,
+	buildDistance 			 = 200,
+	explodeAs				 = "none",
+	Acceleration 			 = 0.8,
 	BrakeRate = 0.6,
 	TurnRate = 1200,
 	MaxVelocity = 4.4,
-	buildtime	= 2 * 60,
+	buildtime	= 1 * 60,
 	workerTime = 0.5,
 	--orders
 	canMove	= true,

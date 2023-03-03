@@ -2466,7 +2466,7 @@ end
         end
     end
 
-     function delayedKillProjectile(id, timeInMS)            
+    function delayedKillProjectile(id, timeInMS)            
 
             delayedKill = function(evtID, frame, persPack, startFrame)
                 ttl = Spring.GetProjectileTimeToLive ( persPack.id) 

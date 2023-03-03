@@ -129,5 +129,6 @@ return {
   "Regis et Jacques Marcon","Troisgros","Flocons de Sel","Schwarzwaldstube",
   "Gilles Goujon Auberge de Vieux Puits","Waldhotel Sonnora","Cheval Blanc",
   "Alain Ducasse Louis XV","L Ambroisie","Trattoria Trippa","Estimar","Ganbara","Dos Pebrots",
-  "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI"
+  "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI", "gamblingproblem",
+  "Big spender"
 }

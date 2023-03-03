@@ -313,6 +313,7 @@ function HoloGrams()
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
             StartThread(holoGramNightTimes, true, "GeneralDeco")
+            StartThread(addJHologramLetters)
         end
 
         Spin(logo,y_axis, math.rad(5),0)

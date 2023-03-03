@@ -1,6 +1,9 @@
+include "lib_UnitScript.lua"
+include "lib_mosaic.lua"
 
 uprotor = piece "uprotor"
 lowrotor = piece "lowrotor"
+center = piece "Scoutlett"
 
 local SIG_SCOUTLET = 2
 
@@ -54,3 +57,21 @@ function script.Deactivate()
     return 0 
 end
 
+
+
+function script.AimFromWeapon(weaponID)
+    return center
+end
+
+function script.QueryWeapon(weaponID)
+    return center
+end
+
+function script.FireWeapon(weaponID)
+    return true
+end
+
+
+function script.AimWeapon(weaponID, heading, pitch)
+    return true
+end

@@ -1682,6 +1682,11 @@ end
 -- ======================================================================================
 -- Section: Syntax additions and Tableoperations
 -- ======================================================================================
+function delayedExecution(timeToSleep, func, ...)
+    Sleep(timeToSleep)
+    func(...)
+end
+
 function getRandomElementFromTable(Table)
     if #Table == 0 then return nil end
     if #Table == 1 then return Table[1]end
