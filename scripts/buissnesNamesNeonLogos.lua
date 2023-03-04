@@ -941,5 +941,6 @@ return {
   "Gilles Goujon Auberge de Vieux Puits","Waldhotel Sonnora","Cheval Blanc",
   "Alain Ducasse Louis XV","L Ambroisie","Trattoria Trippa","Estimar","Ganbara","Dos Pebrots",
   "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI",
-  "Dr. Re. Phill"
+  "Dr. Re. Phill", "cortex implants", "new soft", "mind wäre", "neural link", "new world games", "coil engine", "armatec", "protagon", "antagon", 
+"horizons", "spinner vtol refit", "wet bulb ac", "mistakes were made" 
 }
