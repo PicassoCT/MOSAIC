@@ -130,5 +130,5 @@ return {
   "Gilles Goujon Auberge de Vieux Puits","Waldhotel Sonnora","Cheval Blanc",
   "Alain Ducasse Louis XV","L Ambroisie","Trattoria Trippa","Estimar","Ganbara","Dos Pebrots",
   "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI", "gamblingproblem",
-  "Big spender"
+  "Big spender", "holdfoldthem", "slevin", "sinkhole", "dollars to rage" "dreams in smoke", "smoke and mirrors" 
 }
