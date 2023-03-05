@@ -57,6 +57,8 @@ local OperativePropagator = Human:New{
 		"antagonsafehouse",
 		"air_copter_ssied",	
 		"air_copter_scoutlett",	
+		"checkpoint",
+		"spycam",
 		"barricade",
 		"air_parachut",
 		"stealvehicleicon",

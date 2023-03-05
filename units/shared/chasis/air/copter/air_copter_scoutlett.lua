@@ -57,7 +57,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	collide             = true,
 	crashDrag = 0.035,
 
-	Category = [[AIR SCOUTLETT]],
+	Category = [[AIR SURVEILANCE]],
 
 	  customParams = {
 	  	baseclass ="vtol",
@@ -66,7 +66,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 
 	 		weapons={
 			[1]={name  = "antiairkamikaze", --prevents other weapon usage
-				onlyTargetCategory = [[AIR SCOUTLETT]],
+				onlyTargetCategory = [[AIR SURVEILANCE]],
 			},				
 			},
 	  
