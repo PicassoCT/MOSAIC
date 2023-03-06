@@ -55,14 +55,15 @@ local OperativePropagator = Human:New{
 	buildoptions = 
 	{
 		"antagonsafehouse",
-		"air_copter_ssied",	
-		"air_copter_scoutlett",	
 		"checkpoint",
-		"spycam",
 		"barricade",
-		"air_parachut",
-		"stealvehicleicon",
+
+		"spycam",
+		"air_copter_scoutlett",			
 		"cybercrimeicon",
+
+		"air_parachut",
+		"stealvehicleicon",		
 		"recruitcivilian"		
 	},
 

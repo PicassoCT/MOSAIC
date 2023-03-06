@@ -71,9 +71,12 @@ local ProtagonSafeHouse =    Building:New{
   buildoptions =  {
     "operativeasset",
     "operativeinvestigator",
-    "civilianagent",
-    "aicore"
+    "civilianagent",    
+    "ground_turret_sniper",
     --Described in morphdefs
+    --propagandaserver
+    --nimrod
+    --assembly
   },
 
   category =  [[GROUND BUILDING RAIDABLE]],

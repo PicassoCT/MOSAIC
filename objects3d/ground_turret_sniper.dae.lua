@@ -1,9 +1,9 @@
 model = {
-	radius = 25.0,
-	height = 40,
+	radius = 20.0,
+	height = 50,
 	--tex1 = "Jeffy_Diffuse+TeamColor.dds",
-	tex1 = "CheckPoint_diffuse.dds",
-	tex2 = "CheckPoint_normal.dds",
+	tex1 = "component_atlas_diffuse.dds",
+	tex2 = "component_atlas_normal.dds",
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
 	--rotAxisSigns = {-1, -1, -1}

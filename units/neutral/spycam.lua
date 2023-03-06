@@ -1,7 +1,7 @@
 
 local SpyCam = Building:New{
 	corpse				= "",
-	maxDamage           = 100,
+	maxDamage           = 10,
 	mass                = 500,
 	buildCostEnergy     = 100,
 	buildCostMetal      = 50,
@@ -9,15 +9,11 @@ local SpyCam = Building:New{
 
 
 	buildTime =    3,
-	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]], --
 	CanReclaim=false,	
 
 	workerTime = 0.065,
-	YardMap =    [[oo
-				   oo
-				   oo
-				   oo]],
+	YardMap =    [[o]],
 	buildingMask = 8,
 	maxSlope = 50.0,
 	levelGround = false,
@@ -28,8 +24,8 @@ local SpyCam = Building:New{
 	footprintX = 1,
 	footprintZ = 1,
 	showNanoFrame= true,
-	script 					= "placeholder.lua",
-	objectName        	= "placeholder.s3o",
+	script 					= "spycamscript.lua",
+	objectName        	= "spycam.dae",
 
 	name = "Camera",
 	description = " watches & surveils",
@@ -48,6 +44,6 @@ local SpyCam = Building:New{
 
 return lowerkeys({
 	--Temp
-	["spycam"] = Spycam:New(),
+	["spycam"] = SpyCam:New(),
 	
 })

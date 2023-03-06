@@ -13,54 +13,27 @@ local GameConfig = getGameConfig()
 local center = piece "center"
 local Turret = piece "Turret"
 local aimpiece = piece "aimpiece"
+local Shell = piece "Shell"
 local aimingFrom = Turret
 local firingFrom = aimpiece
 local groundFeetSensors = {}
 local SIG_GUARDMODE = 1
 local boolDroneInterceptSaturated = false
 local cruiseMissileProjectileType =  getCruiseMissileProjectileTypes(WeaponDefs)
-local boolIsSniper = UnitDefs[myDefID].name =="ground_turret_sniper"
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     resetAll(unitID)
     Hide(aimpiece)
+    Hide(Shell)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     groundFeetSensors = TablesOfPiecesGroups["GroundSensor"]
     hideT(TablesOfPiecesGroups["GroundSensor"])
     hideT(TablesOfPiecesGroups["TBase"])
     StartThread(foldControl)
     StartThread(guardSwivelTurret)
-    StartThread(droneDefense)
 end
 
-function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    intercepted = math.ceil(math.min(#projectiles, maxIntercept))
-    timePerProjectile = timeTotal / intercepted
-    StartThread(fireFlowers, intercepted)
-    for projID, wdefID in pairs(projectiles) do
-        if projID then
-            if not cruiseMissileProjectileType[wDefID] or 
-                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.CruiseMissile.chanceOfInterceptOneIn) == 1  then
-                px, py, pz = Spring.GetProjectilePosition (projID)
-                if px then
-
-                    goalRad = convPointsToRad(x, z, px, pz)
-                    turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
-                    WaitForTurns(center)
-                    lastValueHeadingRad = goalRad
-                    EmitSfx(firingFrom, 256)
-                    EmitSfx(firingFrom, 1025)
-                    Spring.DeleteProjectile (projID)
-                    Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
-                    if intercepted == 0 then return end
-                end
-                intercepted = intercepted - 1
-            end
-        end
-    end
-end
 
 function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
     x, y, z = Spring.GetUnitPosition(unitID)
@@ -82,63 +55,6 @@ function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
                 end
             intercepted = intercepted - 1
         end
-    end
-end
-
-function droneDefense()
-    local droneInterceptDistance = GameConfig.groundTurretDroneInterceptRate
-    local spGetProjectileTeamID = Spring.GetProjectileTeamID
-    local spGetUnitDefID = Spring.GetUnitDefID
-    local myTeamID = Spring.GetUnitTeam(unitID)
-    local InterceptedProjectileTypes = getGroundTurretMGInterceptableProjectileTypes(WeaponDefs)
-    local interceptableDronesTypeTable = getInterceptableAirDroneTypes(UnitDefs)
-    
-    while true do
-        if hasNoActiveAttackCommand(unitID) == true then
-            projectilesToIntercept = {}
-            foreach(getProjectilesAroundUnit(unitID, droneInterceptDistance),
-                function(id)
-                    teamID = spGetProjectileTeamID(id)
-                    if teamID and teamID ~= myTeamID then
-                        return id
-                    end
-                end,
-                function (id)
-                    weaponDef = Spring.GetProjectileDefID(id)
-                    if weaponDef and InterceptedProjectileTypes[weaponDef] then
-                        projectilesToIntercept[id] = weaponDef
-                        return id
-                    end
-                end
-            )
-            boolPlayGunSound= false
-            if projectilesToIntercept and count(projectilesToIntercept) > 0 then
-                boolDroneInterceptSaturated = true
-                StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
-                boolPlayGunSound = true
-
-                boolDroneInterceptSaturated = false
-            else 
-                dronesToIntercept = {}
-                foreach(getAllNearUnitNotInTeam(unitID, droneInterceptDistance, myTeamID),
-                        function(id)
-                            defID = spGetUnitDefID(id)
-                            if interceptableDronesTypeTable[defID] then
-                                dronesToIntercept[id] = defID
-                            end
-                        end
-                        )
-                if count(dronesToIntercept) > 0 then
-                   StartThread(playDroneInterceptAnimation, dronesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
-                    boolPlayGunSound = true
-                end
-            end
-            if boolPlayGunSound == true then
-                StartThread(PlaySoundByUnitDefID, myDefID, "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
-            end
-            Sleep(250)
-        end
-        Sleep(250)
     end
 end
 
@@ -196,7 +112,8 @@ currentDeg = {
     [1] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
     [2] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
     [3] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0},
-[4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}}
+    [4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}
+    }
 
 function turnFeedToGround(nr)
     axis = y_axis
@@ -267,12 +184,11 @@ function fold()
     WaitForTurns(TablesOfPiecesGroups["LowLeg"])
     WaitForTurns(TablesOfPiecesGroups["UpLeg"])
     setNotDone()
-
 end
 
 function script.Killed(recentDamage, _)
-
-    -- createCorpseCUnitGeneric(recentDamage)
+    EmitSfx(center, 1024)
+    EmitSfx(Turret, 1024)
     return 1
 end
 
@@ -285,57 +201,21 @@ boolGroundAiming = false
 lastValueHeadingRad = 0
 function script.AimWeapon1(Heading, pitch)
     Signal(SIG_GUARDMODE)
-    if boolDroneInterceptSaturated == true then return false end
     -- aiming animation: instantly turn the gun towards the enemy
-    boolGroundAiming = true
     Turn(center, y_axis, Heading, math.pi)
     lastValueHeadingRad = Heading
     Turn(Turret, x_axis, -pitch, math.pi)
     WaitForTurns(center, Turret)
-    boolGroundAiming = false
-    return not boolDroneInterceptSaturated
+    return true
 end
 
 function script.FireWeapon1()
-    StartThread(fireFlowers, 15)
-    StartThread(PlaySoundByUnitDefID, myDefID,
-    "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
-    boolGroundAiming = false
+    EmitSfx(firingFrom, 1025)
+    Explode(Shell, SFX.FALL + SFX.NO_HEATCLOUD)
     StartThread(guardSwivelTurret)
     return true
 end
 
-function script.AimFromWeapon2() return aimingFrom end
-
-function script.QueryWeapon2() return firingFrom end
-
-function script.AimWeapon2(Heading, pitch)
-    Signal(SIG_GUARDMODE)
-    if boolDroneInterceptSaturated == true then return false end
-    if boolGroundAiming == false then
-        -- aiming animation: instantly turn the gun towards the enemy
-
-        Turn(center, y_axis, Heading, math.pi)
-        Turn(Turret, x_axis, -pitch, math.pi)
-        WaitForTurns(center, Turret)
-        return true
-    end
-end
-
-function script.FireWeapon2()
-    StartThread(fireFlowers, 15)
-    StartThread(PlaySoundByUnitDefID, myDefID,
-    "sounds/weapons/machinegun/salvo2.ogg", 1.0, 5000, 1)
-    StartThread(guardSwivelTurret)
-    return true
-end
-
-function fireFlowers(itterations)
-    for i = 1, itterations do
-        EmitSfx(firingFrom, 1025)
-        Sleep(120)
-    end
-end
 
 function script.StartMoving() end
 

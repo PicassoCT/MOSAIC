@@ -25,11 +25,6 @@ end
 
 boolSleepOnHit = false
 function script.HitByWeapon(x, z, weaponDefID, damage)
-    rando = math.random(1, #TablesOfPiecesGroups["scrapHeap"])
-    if maRa() == maRa()then
-        Explode(TablesOfPiecesGroups["scrapHeap"][rando], SFX.SHATTER)
-    end
-    boolSleepOnHit = true
     return damage
 end
 

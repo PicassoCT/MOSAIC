@@ -571,6 +571,11 @@ function showHide(id, bShow)
     end
 end
 
+function showOneOfTable(pieceList)
+    nrID = piece(getSafeRandom(pieceList,pieceList[1]))
+    Show(nrID)
+end
+
 function showOneOfUnit(id)
     if not unitID then unitID = id end
     pieceList = Spring.GetUnitPieceList(unitID)

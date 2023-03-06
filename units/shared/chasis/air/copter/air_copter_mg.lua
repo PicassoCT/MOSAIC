@@ -17,7 +17,7 @@ local AIRC_COPTER_MG = VTOL:New{
 	idleAutoHeal = 0,
 	--Movement
 	mass = 200,
-	fireState = -1,
+	fireState=1,
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,

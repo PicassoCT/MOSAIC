@@ -26,11 +26,11 @@ local Barricade = Building:New{
 	footprintX = 2,
 	footprintZ = 4,
 	showNanoFrame= true,
-	script 					= "placeholder.lua",
+	script 					= "barricadescript.lua",
 	objectName        	= "barricade.dae",
 	pushResistant = true,
 
-	name = "Burned Out Car",
+	name = "Add hoc fortification",
 	description = " divides & conquers",
 	buildPic = "Brehmerwall.png",
 	

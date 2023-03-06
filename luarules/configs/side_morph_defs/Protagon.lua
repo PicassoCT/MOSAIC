@@ -26,8 +26,7 @@ local protagonDefs = {
 			name = 'Automatic Assembly',
 			text = 'Builds automated units',
 			facing = true,
-		},	
-		
+		},			
 		
 	},
 	

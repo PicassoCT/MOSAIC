@@ -75,13 +75,23 @@ local AntagonSafeHouse = Building:New{
 		"operativepropagator",
 		"civilianagent",
 		"ground_walker_mg",
+		"ground_turret_sniper",
 		"ground_walker_grenade",
 		"air_copter_antiarmor",
 		"air_copter_scoutlett",
+		"air_copter_ssied",	
 		"civilian_truck_ssied",
 		"ground_truck_assembly",
 		"potemkinpayload"
 		--Described in morphdefs
+		--propagandaserver
+		--nimrod
+		--launcher
+		--warheadfactory
+		--blacksite
+		--hivemind
+
+
 		},
 	category = [[GROUND BUILDING RAIDABLE]],
 

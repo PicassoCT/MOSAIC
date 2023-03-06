@@ -142,6 +142,74 @@ local groundturretmg =  Turret:New{
 		},	
 }
 
+local ground_turret_sniper =  Turret:New{
+	name = "Stationary Snipersentry",
+	Description = "Pillbox Emplacement ",
+	
+	objectName = "ground_turret_sniper.dae",
+	mass = 2500,
+	
+	script = "groundturretsniperscript.lua",
+	buildPic = "ground_turret_mg.png",
+	iconType = "ground_turret_mg",
+
+	--cost
+	buildCostEnergy  = 550,
+	buildCostMetal= 750,
+	buildTime = 55,
+	--Health
+	maxDamage = 1500,
+	idleAutoHeal = 0,
+	--Movement
+	alwaysUpright=false,
+	fireState=1,
+	
+	FootprintX = 1,
+	FootprintZ = 1,
+	maxSlope = 50,
+	
+	MaxWaterDepth = 0,
+	MovementClass = "VEHICLE",
+
+	nanocolor=[[0.20 0.411 0.611]],
+	sightDistance = 300,
+
+	cantBeTransported = false,
+
+	usepiececollisionvolumes = false,
+	--collisionVolumeType = "box",
+	--collisionvolumescales = "5 15 5",
+
+	CanAttack = true,
+	canFight  = true,
+	CanGuard = true,
+	CanMove = true,
+	CanPatrol = true,
+	Canstop  = true,
+	canCloak = false,
+	
+	Category = [[GROUND]],
+
+	  customParams = {
+	 	 baseclass = "turret",
+	 	 normaltex = "unittextures/component_atlas_normal.dds",
+	  },
+
+	 sfxtypes = {
+		explosiongenerators = {
+								"custom:bigbulletimpact",
+								"custom:gunmuzzle"
+							  },
+				},
+				
+		weapons = {
+		[1]={name  = "sniperrifle",
+				onlyTargetCategory = [[GROUND BUILDING]],
+				turret= false
+			},		
+		},	
+}
+
 local ground_turret_antiarmor =  Turret:New{
 	name = "Deployed Anti Tank",
 	-- This is a anti-tank drone body, deployed after flight
@@ -481,6 +549,7 @@ return lowerkeys(
 	["ground_turret_mg"] = groundturretmg:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New()	,
 	["ground_turret_rocket"] = ground_turret_rocket:New(),
-	["ground_turret_dronegrenade"] = ground_turret_dronegrenades:New() 
+	["ground_turret_dronegrenade"] = ground_turret_dronegrenades:New(),
+	["ground_turret_sniper"] = ground_turret_sniper:New() 
 
 })
