@@ -179,7 +179,7 @@ function animationLoop(name, speeds)
 end
 
 function script.StartMoving() 
-  StartThread(animationLoop, "FULLBODY_WALKING", )
+  StartThread(animationLoop, "FULLBODY_WALKING", 2)
 end
 
 function script.StopMoving() 
