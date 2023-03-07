@@ -403,9 +403,6 @@ function setupAnimation()
         for i, keyframe in pairs(anim) do
             local commands = keyframe.commands;
             for k, command in pairs(commands) do
-                if command.p then
-
-                end
                 if command.p and type(command.p) == "string" then
                     command.p = map[command.p]
                 end

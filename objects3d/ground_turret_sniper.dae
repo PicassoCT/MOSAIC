@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2023-03-06T15:15:15Z</created><keywords></keywords><modified>2023-03-06T15:15:15Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2023-03-07T12:33:15Z</created><keywords></keywords><modified>2023-03-07T12:33:15Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #30-image" name="Map #30"><init_from>file://Z:\MosaicDev\Development\Models\components\tex\DiffuseMaterialAtlasV2.psd</init_from></image>
   </library_images>
@@ -9,7 +9,51 @@
       <instance_effect url="#logo-fx"/>
     </material>
   </library_materials>
-  
+  <library_effects>
+    <effect id="logo-fx" name="logo">
+      <profile_COMMON>
+        <technique sid="standard">
+          <phong>
+            <emission>
+              <color sid="emission">0.000000  0.000000 0.000000 1.000000</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0.223529  0.223529 0.223529 1.000000</color>
+            </ambient>
+            <diffuse>
+              <texture texture="Map #30-image" texcoord="CHANNEL0">
+                <extra>
+                  <technique profile="MAYA">
+                    <wrapU sid="wrapU0">TRUE</wrapU>
+                    <wrapV sid="wrapV0">TRUE</wrapV>
+                    <blend_mode>ADD</blend_mode>
+                  </technique>
+                </extra>
+              </texture>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.603000  0.603000 0.603000 1.000000</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">1.414214</float>
+            </shininess>
+            <reflective>
+              <color sid="reflective">0.000000  0.000000 0.000000 1.000000</color>
+            </reflective>
+            <reflectivity>
+              <float sid="reflectivity">1.000000</float>
+            </reflectivity>
+            <transparent opaque="RGB_ZERO">
+              <color sid="transparent">1.000000  1.000000 1.000000 1.000000</color>
+            </transparent>
+            <transparency>
+              <float sid="transparency">0.000000</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
   <library_geometries>
     <geometry id="Base-lib" name="BaseMesh">
       <mesh>
@@ -28207,39 +28251,39 @@
       <mesh>
         <source id="Shell-POSITION">
           <float_array id="Shell-POSITION-array" count="99">
-5.688445 0.000000 0.000000
--0.000000 -0.000001 5.688445
--5.688445 0.000000 -0.000000
-0.000000 0.000001 -5.688445
-4.021275 -0.000001 4.021275
--4.021275 -0.000001 4.021275
--4.021275 0.000001 -4.021275
-4.021275 0.000001 -4.021275
--0.000000 -70.695465 -0.000009
-5.688445 -59.710163 -0.000009
-4.021275 -59.710163 4.021266
--0.000000 -59.710163 5.688437
--4.021275 -59.710163 4.021266
--5.688445 -59.710163 -0.000009
--4.021275 -59.710163 -4.021284
-0.000000 -59.710163 -5.688454
-4.021275 -59.710163 -4.021283
-4.510254 -65.376266 -0.000008
-3.188388 -65.376266 3.188380
--0.000000 -65.376266 4.510246
--3.188388 -65.376266 3.188380
--4.510254 -65.376266 -0.000008
--3.188388 -65.376266 -3.188396
-0.000000 -65.376266 -4.510262
-3.188388 -65.376266 -3.188396
-4.510254 -70.695465 -0.000009
-3.188388 -70.695465 3.188380
--0.000000 -70.695465 4.510245
--3.188388 -70.695465 3.188380
--4.510254 -70.695465 -0.000009
--3.188388 -70.695465 -3.188397
-0.000000 -70.695465 -4.510263
-3.188388 -70.695465 -3.188396
+0.106506 0.000000 -0.000000
+0.000000 0.026465 0.103166
+-0.106506 -0.000000 0.000000
+-0.000000 -0.026465 -0.103166
+0.075291 0.018708 0.072930
+-0.075291 0.018708 0.072930
+-0.075291 -0.018708 -0.072930
+0.075291 -0.018708 -0.072930
+0.000000 -1.282137 0.328898
+0.106506 -1.082907 0.277791
+0.075292 -1.064199 0.350721
+0.000000 -1.056443 0.380957
+-0.075291 -1.064199 0.350721
+-0.106506 -1.082907 0.277791
+-0.075291 -1.101616 0.204861
+0.000000 -1.109372 0.174625
+0.075291 -1.101616 0.204861
+0.084447 -1.185668 0.304152
+0.059697 -1.170835 0.361977
+0.000000 -1.164685 0.385950
+-0.059697 -1.170835 0.361977
+-0.084447 -1.185668 0.304152
+-0.059697 -1.200501 0.246327
+0.000000 -1.206651 0.222354
+0.059697 -1.200501 0.246327
+0.084447 -1.282137 0.328898
+0.059697 -1.267304 0.386723
+0.000000 -1.261154 0.410697
+-0.059697 -1.267304 0.386723
+-0.084447 -1.282137 0.328898
+-0.059697 -1.296971 0.271074
+0.000000 -1.303120 0.247100
+0.059697 -1.296971 0.271074
 </float_array>
           <technique_common>
             <accessor source="#Shell-POSITION-array" count="33" stride="3">
@@ -28251,192 +28295,192 @@
         </source>
         <source id="Shell-Normal0">
           <float_array id="Shell-Normal0-array" count="558">
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
-0.000000 -1.000000 0.000000
+0.000000 -0.968637 0.248479
+0.000000 -0.968638 0.248478
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968638 0.248478
+0.000000 -0.968637 0.248479
+0.000000 -0.968638 0.248478
+0.000000 -0.968638 0.248478
+0.000000 -0.968638 0.248474
+0.000000 -0.968638 0.248478
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968638 0.248478
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
+0.000000 -0.968637 0.248479
 1.000000 0.000000 -0.000000
-0.707107 -0.000000 0.707107
-0.703573 -0.099856 0.703573
-0.703573 -0.099856 0.703573
-0.995000 -0.099877 -0.000000
+0.707107 0.175701 0.684930
+0.703573 0.078099 0.706318
+0.703573 0.078099 0.706318
+0.995000 -0.096744 0.024817
 1.000000 0.000000 -0.000000
-0.707107 -0.000000 0.707107
-0.000000 -0.000000 1.000000
--0.000000 -0.099877 0.995000
--0.000000 -0.099877 0.995000
-0.703573 -0.099856 0.703573
-0.707107 -0.000000 0.707107
-0.000000 -0.000000 1.000000
--0.707107 -0.000000 0.707107
--0.703573 -0.099856 0.703573
--0.703573 -0.099856 0.703573
--0.000000 -0.099877 0.995000
-0.000000 -0.000000 1.000000
--0.707107 -0.000000 0.707107
+0.707107 0.175701 0.684930
+0.000001 0.248478 0.968637
+0.000000 0.150492 0.988611
+0.000000 0.150492 0.988611
+0.703573 0.078099 0.706318
+0.707107 0.175701 0.684930
+0.000001 0.248478 0.968637
+-0.707107 0.175701 0.684930
+-0.703573 0.078099 0.706319
+-0.703573 0.078099 0.706319
+0.000000 0.150492 0.988611
+0.000001 0.248478 0.968637
+-0.707107 0.175701 0.684930
 -1.000000 -0.000000 0.000000
--0.995000 -0.099877 -0.000000
--0.995000 -0.099877 -0.000000
--0.703573 -0.099856 0.703573
--0.707107 -0.000000 0.707107
+-0.995000 -0.096745 0.024818
+-0.995000 -0.096745 0.024818
+-0.703573 0.078099 0.706319
+-0.707107 0.175701 0.684930
 -1.000000 -0.000000 0.000000
--0.707107 0.000000 -0.707107
--0.703573 -0.099856 -0.703573
--0.703573 -0.099856 -0.703573
--0.995000 -0.099877 -0.000000
+-0.707107 -0.175701 -0.684930
+-0.703573 -0.271547 -0.656694
+-0.703573 -0.271547 -0.656694
+-0.995000 -0.096745 0.024818
 -1.000000 -0.000000 0.000000
--0.707107 0.000000 -0.707107
--0.000000 0.000000 -1.000000
-0.000000 -0.099877 -0.995000
-0.000000 -0.099877 -0.995000
--0.703573 -0.099856 -0.703573
--0.707107 0.000000 -0.707107
--0.000000 0.000000 -1.000000
-0.707107 0.000000 -0.707107
-0.703573 -0.099856 -0.703573
-0.703573 -0.099856 -0.703573
-0.000000 -0.099877 -0.995000
--0.000000 0.000000 -1.000000
-0.707107 0.000000 -0.707107
+-0.707107 -0.175701 -0.684930
+-0.000000 -0.248478 -0.968637
+-0.000000 -0.343981 -0.938977
+-0.000000 -0.343981 -0.938977
+-0.703573 -0.271547 -0.656694
+-0.707107 -0.175701 -0.684930
+-0.000000 -0.248478 -0.968637
+0.707107 -0.175701 -0.684930
+0.703573 -0.271546 -0.656695
+0.703573 -0.271546 -0.656695
+-0.000000 -0.343981 -0.938977
+-0.000000 -0.248478 -0.968637
+0.707107 -0.175701 -0.684930
 1.000000 0.000000 -0.000000
-0.995000 -0.099877 -0.000000
-0.995000 -0.099877 -0.000000
-0.703573 -0.099856 -0.703573
-0.707107 0.000000 -0.707107
-0.995000 -0.099877 -0.000000
-0.703573 -0.099856 0.703573
-0.703203 -0.104932 0.703203
-0.703203 -0.104932 0.703203
-0.994476 -0.104964 -0.000000
-0.995000 -0.099877 -0.000000
-0.703573 -0.099856 0.703573
--0.000000 -0.099877 0.995000
-0.000000 -0.104964 0.994476
-0.000000 -0.104964 0.994476
-0.703203 -0.104932 0.703203
-0.703573 -0.099856 0.703573
--0.000000 -0.099877 0.995000
--0.703573 -0.099856 0.703573
--0.703203 -0.104932 0.703203
--0.703203 -0.104932 0.703203
-0.000000 -0.104964 0.994476
--0.000000 -0.099877 0.995000
--0.703573 -0.099856 0.703573
--0.995000 -0.099877 -0.000000
--0.994476 -0.104964 -0.000000
--0.994476 -0.104964 -0.000000
--0.703203 -0.104932 0.703203
--0.703573 -0.099856 0.703573
--0.995000 -0.099877 -0.000000
--0.703573 -0.099856 -0.703573
--0.703203 -0.104932 -0.703203
--0.703203 -0.104932 -0.703203
--0.994476 -0.104964 -0.000000
--0.995000 -0.099877 -0.000000
--0.703573 -0.099856 -0.703573
-0.000000 -0.099877 -0.995000
-0.000000 -0.104964 -0.994476
-0.000000 -0.104964 -0.994476
--0.703203 -0.104932 -0.703203
--0.703573 -0.099856 -0.703573
-0.000000 -0.099877 -0.995000
-0.703573 -0.099856 -0.703573
-0.703203 -0.104932 -0.703203
-0.703203 -0.104932 -0.703203
-0.000000 -0.104964 -0.994476
-0.000000 -0.099877 -0.995000
-0.703573 -0.099856 -0.703573
-0.995000 -0.099877 -0.000000
-0.994476 -0.104964 -0.000000
-0.994476 -0.104964 -0.000000
-0.703203 -0.104932 -0.703203
-0.703573 -0.099856 -0.703573
-0.994476 -0.104964 -0.000000
-0.703203 -0.104932 0.703203
-0.707107 -0.000000 0.707107
-0.707107 -0.000000 0.707107
-1.000000 -0.000000 -0.000000
-0.994476 -0.104964 -0.000000
-0.703203 -0.104932 0.703203
-0.000000 -0.104964 0.994476
-0.000000 -0.000000 1.000000
-0.000000 -0.000000 1.000000
-0.707107 -0.000000 0.707107
-0.703203 -0.104932 0.703203
-0.000000 -0.104964 0.994476
--0.703203 -0.104932 0.703203
--0.707107 -0.000000 0.707107
--0.707107 -0.000000 0.707107
-0.000000 -0.000000 1.000000
-0.000000 -0.104964 0.994476
--0.703203 -0.104932 0.703203
--0.994476 -0.104964 -0.000000
--1.000000 0.000000 -0.000000
--1.000000 0.000000 -0.000000
--0.707107 -0.000000 0.707107
--0.703203 -0.104932 0.703203
--0.994476 -0.104964 -0.000000
--0.703203 -0.104932 -0.703203
--0.707107 0.000000 -0.707107
--0.707107 0.000000 -0.707107
--1.000000 0.000000 -0.000000
--0.994476 -0.104964 -0.000000
--0.703203 -0.104932 -0.703203
-0.000000 -0.104964 -0.994476
-0.000000 0.000000 -1.000000
-0.000000 0.000000 -1.000000
--0.707107 0.000000 -0.707107
--0.703203 -0.104932 -0.703203
-0.000000 -0.104964 -0.994476
-0.703203 -0.104932 -0.703203
-0.707107 0.000000 -0.707107
-0.707107 0.000000 -0.707107
-0.000000 0.000000 -1.000000
-0.000000 -0.104964 -0.994476
-0.703203 -0.104932 -0.703203
-0.994476 -0.104964 -0.000000
-1.000000 -0.000000 -0.000000
-1.000000 -0.000000 -0.000000
-0.707107 0.000000 -0.707107
-0.703203 -0.104932 -0.703203
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
-0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
--0.000000 1.000000 0.000000
+0.995000 -0.096744 0.024817
+0.995000 -0.096744 0.024817
+0.703573 -0.271546 -0.656695
+0.707107 -0.175701 -0.684930
+0.995000 -0.096744 0.024817
+0.703573 0.078099 0.706318
+0.703203 0.073089 0.707222
+0.703203 0.073089 0.707222
+0.994476 -0.101672 0.026081
+0.995000 -0.096744 0.024817
+0.703573 0.078099 0.706318
+0.000000 0.150492 0.988611
+0.000001 0.145434 0.989368
+0.000001 0.145434 0.989368
+0.703203 0.073089 0.707222
+0.703573 0.078099 0.706318
+0.000000 0.150492 0.988611
+-0.703573 0.078099 0.706319
+-0.703203 0.073089 0.707222
+-0.703203 0.073089 0.707222
+0.000001 0.145434 0.989368
+0.000000 0.150492 0.988611
+-0.703573 0.078099 0.706319
+-0.995000 -0.096745 0.024818
+-0.994476 -0.101672 0.026082
+-0.994476 -0.101672 0.026082
+-0.703203 0.073089 0.707222
+-0.703573 0.078099 0.706319
+-0.995000 -0.096745 0.024818
+-0.703573 -0.271547 -0.656694
+-0.703204 -0.276372 -0.655075
+-0.703204 -0.276372 -0.655075
+-0.994476 -0.101672 0.026082
+-0.995000 -0.096745 0.024818
+-0.703573 -0.271547 -0.656694
+-0.000000 -0.343981 -0.938977
+-0.000000 -0.348778 -0.937205
+-0.000000 -0.348778 -0.937205
+-0.703204 -0.276372 -0.655075
+-0.703573 -0.271547 -0.656694
+-0.000000 -0.343981 -0.938977
+0.703573 -0.271546 -0.656695
+0.703203 -0.276372 -0.655076
+0.703203 -0.276372 -0.655076
+-0.000000 -0.348778 -0.937205
+-0.000000 -0.343981 -0.938977
+0.703573 -0.271546 -0.656695
+0.995000 -0.096744 0.024817
+0.994476 -0.101672 0.026081
+0.994476 -0.101672 0.026081
+0.703203 -0.276372 -0.655076
+0.703573 -0.271546 -0.656695
+0.994476 -0.101672 0.026081
+0.703203 0.073089 0.707222
+0.707107 0.175701 0.684930
+0.707107 0.175701 0.684930
+1.000000 0.000000 -0.000000
+0.994476 -0.101672 0.026081
+0.703203 0.073089 0.707222
+0.000001 0.145434 0.989368
+0.000001 0.248478 0.968637
+0.000001 0.248478 0.968637
+0.707107 0.175701 0.684930
+0.703203 0.073089 0.707222
+0.000001 0.145434 0.989368
+-0.703203 0.073089 0.707222
+-0.707106 0.175701 0.684930
+-0.707106 0.175701 0.684930
+0.000001 0.248478 0.968637
+0.000001 0.145434 0.989368
+-0.703203 0.073089 0.707222
+-0.994476 -0.101672 0.026082
+-1.000000 -0.000000 0.000000
+-1.000000 -0.000000 0.000000
+-0.707106 0.175701 0.684930
+-0.703203 0.073089 0.707222
+-0.994476 -0.101672 0.026082
+-0.703204 -0.276372 -0.655075
+-0.707107 -0.175701 -0.684930
+-0.707107 -0.175701 -0.684930
+-1.000000 -0.000000 0.000000
+-0.994476 -0.101672 0.026082
+-0.703204 -0.276372 -0.655075
+-0.000000 -0.348778 -0.937205
+-0.000000 -0.248478 -0.968637
+-0.000000 -0.248478 -0.968637
+-0.707107 -0.175701 -0.684930
+-0.703204 -0.276372 -0.655075
+-0.000000 -0.348778 -0.937205
+0.703203 -0.276372 -0.655076
+0.707107 -0.175701 -0.684930
+0.707107 -0.175701 -0.684930
+-0.000000 -0.248478 -0.968637
+-0.000000 -0.348778 -0.937205
+0.703203 -0.276372 -0.655076
+0.994476 -0.101672 0.026081
+1.000000 0.000000 -0.000000
+1.000000 0.000000 -0.000000
+0.707107 -0.175701 -0.684930
+0.703203 -0.276372 -0.655076
+-0.000000 0.968637 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968638 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968637 -0.248478
+-0.000000 0.968637 -0.248478
 </float_array>
           <technique_common>
             <accessor source="#Shell-Normal0-array" count="186" stride="3">
@@ -107733,7 +107777,7 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="ground_turret_sniper" name="ground_turret_sniper">
-      <node name="Base" id="Base" sid="Base"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Base-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="center" id="center" sid="center"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.596984 -0.000000 1.000000 0.000000 2.236511 -0.000000 0.000000 1.000000 831.736328 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Turret" id="Turret" sid="Turret"><matrix sid="matrix">1.000000 -0.000000 -0.000000 0.597233 0.000000 0.968638 -0.248478 2.753959 0.000000 0.248478 0.968637 48.859497 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Turret-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="aimpiece" id="aimpiece" sid="aimpiece"><matrix sid="matrix">-0.000000 0.000002 -3.002725 31.026478 -2.900409 0.777162 0.000001 -457.480652 0.777162 2.900410 0.000002 213.182922 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#aimpiece-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Shell" id="Shell" sid="Shell"><matrix sid="matrix">1.000000 -0.000000 0.000000 13.829846 -0.000000 0.968637 0.248479 48.958771 -0.000000 -0.248478 0.968638 85.040039 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Shell-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="TBase1" id="TBase1" sid="TBase1"><matrix sid="matrix">-0.000000 0.000000 -3.002725 -111.155884 -3.002725 0.000001 0.000000 -132.843201 0.000001 3.002725 0.000000 195.029053 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase1-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg001" id="UpLeg001" sid="UpLeg001"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.675888 0.000000 1.000000 0.000000 0.349823 -0.000000 -0.000000 1.000000 8.794220 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg001-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg01" id="LowLeg01" sid="LowLeg01"><matrix sid="matrix">0.000000 -0.333031 0.000000 23.646511 -0.000000 0.000000 0.333031 155.134430 -0.333031 -0.000000 0.000000 -0.002502 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg01-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor1" id="GroundSensor1" sid="GroundSensor1"><matrix sid="matrix">-0.000001 0.000000 1.000000 26.480110 1.000000 0.000000 0.000001 -21.278564 -0.000000 1.000000 -0.000000 -528.831177 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor1-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node><node name="TBase002" id="TBase002" sid="TBase002"><matrix sid="matrix">-0.000000 0.000000 -3.002725 214.015747 -3.002725 0.000001 0.000000 -129.258270 0.000001 3.002725 0.000000 195.029053 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase002-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg02" id="UpLeg02" sid="UpLeg02"><matrix sid="matrix">1.000000 0.000000 0.000000 -1.306458 0.000000 1.000000 0.000000 0.372322 -0.000000 -0.000000 1.000000 14.689255 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg02-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg02" id="LowLeg02" sid="LowLeg02"><matrix sid="matrix">0.000000 -0.333031 0.000000 23.783657 -0.000000 0.000000 0.333031 155.046158 -0.333031 -0.000000 0.000000 -0.002441 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg02-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor2" id="GroundSensor2" sid="GroundSensor2"><matrix sid="matrix">-0.000001 0.000000 1.000000 27.533539 1.000000 0.000000 0.000001 -26.345108 -0.000000 1.000000 -0.000000 -528.633545 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor2-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node><node name="TBase003" id="TBase003" sid="TBase003"><matrix sid="matrix">-0.000000 0.000000 -3.002725 214.015747 -3.002725 0.000001 0.000000 165.886078 0.000001 3.002725 0.000000 195.028992 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase003-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg03" id="UpLeg03" sid="UpLeg03"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.069672 0.000000 1.000000 0.000000 0.532867 -0.000000 -0.000000 1.000000 13.214371 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg03-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg03" id="LowLeg03" sid="LowLeg03"><matrix sid="matrix">0.000000 -0.333031 0.000000 -23.717712 -0.000000 0.000000 0.333031 154.751602 -0.333031 -0.000000 0.000000 0.002865 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg03-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor3" id="GroundSensor3" sid="GroundSensor3"><matrix sid="matrix">-0.000001 0.000000 1.000000 23.120575 1.000000 0.000000 0.000001 10.868301 -0.000000 1.000000 -0.000000 -528.230774 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor3-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node><node name="TBase004" id="TBase004" sid="TBase004"><matrix sid="matrix">-0.000000 0.000000 -3.002725 -116.293823 -3.002725 0.000001 0.000000 165.886078 0.000001 3.002725 0.000000 195.028992 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase004-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg004" id="UpLeg004" sid="UpLeg004"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.231037 0.000000 1.000000 0.000000 0.171471 -0.000000 -0.000000 1.000000 10.332733 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg004-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg04" id="LowLeg04" sid="LowLeg04"><matrix sid="matrix">0.000000 -0.333031 0.000000 -23.549526 -0.000000 0.000000 0.333031 155.140457 -0.333031 -0.000000 0.000000 0.002743 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg04-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor4" id="GroundSensor4" sid="GroundSensor4"><matrix sid="matrix">-0.000001 0.000000 1.000000 21.159653 1.000000 0.000000 0.000001 10.888809 -0.000000 1.000000 -0.000000 -528.313171 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor4-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node></node>
+      <node name="Base" id="Base" sid="Base"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Base-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="center" id="center" sid="center"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.596984 -0.000000 1.000000 0.000000 2.236511 -0.000000 0.000000 1.000000 831.736328 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#center-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Turret" id="Turret" sid="Turret"><matrix sid="matrix">1.000000 -0.000000 -0.000000 0.597233 0.000000 0.968638 -0.248478 2.753959 0.000000 0.248478 0.968637 48.859497 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Turret-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="aimpiece" id="aimpiece" sid="aimpiece"><matrix sid="matrix">-0.000000 0.000002 -3.002725 31.026478 -2.900409 0.777162 0.000001 -457.480652 0.777162 2.900410 0.000002 213.182922 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#aimpiece-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Shell" id="Shell" sid="Shell"><matrix sid="matrix">1.000000 0.000000 -0.000000 13.829850 -0.000000 1.000000 0.000000 48.958771 0.000000 0.000000 1.000000 85.040039 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Shell-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node><node name="TBase1" id="TBase1" sid="TBase1"><matrix sid="matrix">-0.000000 0.000000 -3.002725 -111.155884 -3.002725 0.000001 0.000000 -132.843201 0.000001 3.002725 0.000000 195.029053 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase1-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg001" id="UpLeg001" sid="UpLeg001"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.675888 0.000000 1.000000 0.000000 0.349823 -0.000000 -0.000000 1.000000 8.794220 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg001-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg01" id="LowLeg01" sid="LowLeg01"><matrix sid="matrix">0.000000 -0.333031 0.000000 23.646511 -0.000000 0.000000 0.333031 155.134430 -0.333031 -0.000000 0.000000 -0.002502 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg01-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor1" id="GroundSensor1" sid="GroundSensor1"><matrix sid="matrix">-0.000001 0.000000 1.000000 26.480110 1.000000 0.000000 0.000001 -21.278564 -0.000000 1.000000 -0.000000 -528.831177 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor1-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node><node name="TBase002" id="TBase002" sid="TBase002"><matrix sid="matrix">-0.000000 0.000000 -3.002725 214.015747 -3.002725 0.000001 0.000000 -129.258270 0.000001 3.002725 0.000000 195.029053 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase002-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg02" id="UpLeg02" sid="UpLeg02"><matrix sid="matrix">1.000000 0.000000 0.000000 -1.306458 0.000000 1.000000 0.000000 0.372322 -0.000000 -0.000000 1.000000 14.689255 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg02-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg02" id="LowLeg02" sid="LowLeg02"><matrix sid="matrix">0.000000 -0.333031 0.000000 23.783657 -0.000000 0.000000 0.333031 155.046158 -0.333031 -0.000000 0.000000 -0.002441 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg02-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor2" id="GroundSensor2" sid="GroundSensor2"><matrix sid="matrix">-0.000001 0.000000 1.000000 27.533539 1.000000 0.000000 0.000001 -26.345108 -0.000000 1.000000 -0.000000 -528.633545 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor2-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node><node name="TBase003" id="TBase003" sid="TBase003"><matrix sid="matrix">-0.000000 0.000000 -3.002725 214.015747 -3.002725 0.000001 0.000000 165.886078 0.000001 3.002725 0.000000 195.028992 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase003-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg03" id="UpLeg03" sid="UpLeg03"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.069672 0.000000 1.000000 0.000000 0.532867 -0.000000 -0.000000 1.000000 13.214371 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg03-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg03" id="LowLeg03" sid="LowLeg03"><matrix sid="matrix">0.000000 -0.333031 0.000000 -23.717712 -0.000000 0.000000 0.333031 154.751602 -0.333031 -0.000000 0.000000 0.002865 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg03-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor3" id="GroundSensor3" sid="GroundSensor3"><matrix sid="matrix">-0.000001 0.000000 1.000000 23.120575 1.000000 0.000000 0.000001 10.868301 -0.000000 1.000000 -0.000000 -528.230774 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor3-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node><node name="TBase004" id="TBase004" sid="TBase004"><matrix sid="matrix">-0.000000 0.000000 -3.002725 -116.293823 -3.002725 0.000001 0.000000 165.886078 0.000001 3.002725 0.000000 195.028992 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#TBase004-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpLeg004" id="UpLeg004" sid="UpLeg004"><matrix sid="matrix">1.000000 0.000000 0.000000 -0.231037 0.000000 1.000000 0.000000 0.171471 -0.000000 -0.000000 1.000000 10.332733 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#UpLeg004-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowLeg04" id="LowLeg04" sid="LowLeg04"><matrix sid="matrix">0.000000 -0.333031 0.000000 -23.549526 -0.000000 0.000000 0.333031 155.140457 -0.333031 -0.000000 0.000000 0.002743 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#LowLeg04-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="GroundSensor4" id="GroundSensor4" sid="GroundSensor4"><matrix sid="matrix">-0.000001 0.000000 1.000000 21.159653 1.000000 0.000000 0.000001 10.888809 -0.000000 1.000000 -0.000000 -528.313171 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#GroundSensor4-lib"><bind_material><technique_common><instance_material symbol="logo" target="#logo"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node></node></node>
       <node name="Torso" id="Torso" sid="Torso"><matrix sid="matrix">1.676400 0.000000 0.000000 -794.999756 0.000000 0.000000 1.676400 2763.653320 0.000000 -1.676400 0.000000 -2581.785889 0.000000 0.000000 0.000000 1.000000</matrix><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="UpArm1" id="UpArm1" sid="UpArm1"><matrix sid="matrix">1.000000 0.000000 0.000000 -182.698151 0.000000 1.000000 0.000000 40.969727 0.000000 0.000000 1.000000 295.736084 0.000000 0.000000 0.000000 1.000000</matrix><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="LowArm1" id="LowArm1" sid="LowArm1"><matrix sid="matrix">1.000000 0.000000 0.000000 -237.502014 0.000000 1.000000 0.000000 2.048706 0.000000 0.000000 1.000000 -11.363159 0.000000 0.000000 0.000000 1.000000</matrix><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node></node>
       <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
     </visual_scene>

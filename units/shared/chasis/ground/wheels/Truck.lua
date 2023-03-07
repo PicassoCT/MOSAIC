@@ -284,20 +284,13 @@ local PoliceTruck = Truck:New{
 				[2]={
 					name  = "s16rocket",
 					onlyTargetCategory = [[AIR]],
-					},	
-				[3]={
-					name  = "teargasgrenade",
-					onlyTargetCategory = [[GROUND]],
-					},			
+					}		
 	},	
 	
 	LeaveTracks = true,
 	trackType ="armst_tracks",
 	trackStrength=12,
 	trackWidth =28,
-	
-
-	
 
 	category = [[GROUND]],
 	
@@ -310,10 +303,10 @@ local PoliceTruck = Truck:New{
 
 return lowerkeys({
 	--Temp
-	["policetruck"]			 	= PoliceTruck:New(),
-	["ground_truck_mg"]		= ground_truck_mg:New(),
+	["policetruck"]				= PoliceTruck:New(),
+	["ground_truck_mg"]			= ground_truck_mg:New(),
 	["civilian_truck_ssied"]	= civilian_truck_ssied:New(),
-	["ground_truck_ssied"]	= ground_truck_ssied:New(),
+	["ground_truck_ssied"]		= ground_truck_ssied:New(),
 	["ground_truck_antiarmor"]	= ground_truck_antiarmor:New(),
-	["ground_truck_rocket"]	= ground_truck_rocket:New()	
+	["ground_truck_rocket"]		= ground_truck_rocket:New()	
 })

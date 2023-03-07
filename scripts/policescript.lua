@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_mosaic.lua"
 
 local Animations = include('animations_police.lua')
 local GameConfig = getGameConfig()
@@ -38,24 +39,21 @@ function showCop()
   Show(BeatDown)
 end
 
+local timeTotal = GameConfig.LifeTimeRiotPoliceSeconds *1000
 function script.Create()
     setupPrintf(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideT(TablesOfPiecesGroups["Riot-Face"])
-    printf(unitID)
-    showOnePiece(TablesOfPiecesGroups["Riot-Face"], math.random(1,100))
-    Hide(RiotShield)
-    printf(unitID)
-    Hide(center)
-    printf(unitID)
-    Hide(Visor)
-    printf(unitID)
-    Hide(BeatDown)
-    printf(unitID)
-    showRiotCop()
-    printf(unitID)
     setupAnimation()
+    hideT(TablesOfPiecesGroups["Riot-Face_"])
+    showOnePiece(TablesOfPiecesGroups["Riot-Face_"], math.random(1,100))
+    Hide(RiotShield)
+    Hide(center)
+    Hide(Visor)
+    Hide(BeatDown)
+    showRiotCop()
+    StartThread(lifeTime, unitID, timeTotal  - 5000 -1000, false, true)
 end
+
 
 function setupAnimation()
     local map = Spring.GetUnitPieceMap(unitID);
@@ -68,14 +66,17 @@ function setupAnimation()
     local offsets = constructSkeleton(unitID, center, {0, 0, 0});
 
     for a, anim in pairs(Animations) do
+        echo("Setting up animation "..a)
         for i, keyframe in pairs(anim) do
             local commands = keyframe.commands;
             for k, command in pairs(commands) do
-                if command.p then
 
-                end
                 if command.p and type(command.p) == "string" then
-                    command.p = map[command.p]
+                    if not map[command.p] then
+                        echo("Piecemap does not contain ".. command.p )
+                    else
+                        command.p = map[command.p]
+                    end
                 end
                 -- -Spring.Echo("Piece "..command.p.." maps to "..getUnitPieceName(unitID, command.p))
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
@@ -86,7 +87,7 @@ function setupAnimation()
                         command.t - (offsets[command.p][command.a]);
                 end
 
-                Animations[a][i]['commands'][k].a = switchAxis(command.a)
+                --Animations[a][i]['commands'][k].a = switchAxis(command.a)
             end
         end
     end
@@ -123,10 +124,11 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             if not cmd.t then cmd.t = 0 end
 
             if not piecesToFilterOutTable[cmd.p] then
-                animCmd[cmd.c](cmd.p, cmd.a,
-                               axisSign[cmd.a] * (cmd.t + randoffset),
-                               cmd.s * speedFactor)
-
+                if type(cmd.p) == "string" then
+                    echo("Unit piece is not valid: " ..cmd.p)
+                else
+                    animCmd[cmd.c](cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset),  cmd.s * speedFactor)
+                end
             end
         end
         if (i < #anim) then
@@ -167,21 +169,21 @@ function script.Killed(recentDamage, _)
 end
 
 SIG_ANIMATION = 2
-function animationLoop(name)
+function animationLoop(name, speeds)
   Signal(SIG_ANIMATION)
   SetSignalMask(SIG_ANIMATION)
   while true do
-    PlayAnimation(name,{},math.random(75,100)/100)
+    PlayAnimation(name,{}, speeds)
     Sleep(1)
   end
 end
 
 function script.StartMoving() 
-  StartThread(animationLoop, "FULLBODY_WALKING")
+  StartThread(animationLoop, "FULLBODY_WALKING", )
 end
 
 function script.StopMoving() 
-  StartThread(animationLoop, "FULLBODY_STANDING_IDLE")
+  StartThread(animationLoop, "FULLBODY_STANDING_IDLE",math.random(75,100)/100)
 end
 
 function script.Activate() return 1 end

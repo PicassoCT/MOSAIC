@@ -154,11 +154,11 @@ local ground_turret_sniper =  Turret:New{
 	iconType = "ground_turret_mg",
 
 	--cost
-	buildCostEnergy  = 550,
-	buildCostMetal= 750,
-	buildTime = 55,
+	buildCostEnergy  = 900,
+	buildCostMetal= 1500,
+	buildTime = 90,
 	--Health
-	maxDamage = 1500,
+	maxDamage = 1200,
 	idleAutoHeal = 0,
 	--Movement
 	alwaysUpright=false,

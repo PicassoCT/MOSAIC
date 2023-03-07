@@ -32,24 +32,23 @@ policeOfficerID = nil
 
 function spawnRiotPolice()
     if not doesUnitExistAlive(policeOfficerID) then
-    policeOfficerID = createUnitAtUnit(gaiaTeamID, "riotpolice", unitID, math.random(-10,10),0 , math.random(-10,10))
-     StartThread(lifeTime, policeOfficerID, timeTotal  - 5000 -1000, false, true)
-     while doesUnitExistAlive(policeOfficerID) do
-        T = foreach(getAllNearUnit(policeOfficerID, 120),
-                function(id)
-                    defID = Spring.GetUnitDefID(id)
-                    if civilianWalkingTypeTable[defID] and gaiaTeamID == Spring.GetUnitTeam(id) then
-                        return id
-                    end
-                    end
-                    )
-            Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
-            Sleep(1000)  
-     end
+        policeOfficerID = createUnitAtUnit(gaiaTeamID, "riotpolice", unitID, math.random(-10,10),0 , math.random(-10,10))
+         while doesUnitExistAlive(policeOfficerID) do
+            T = foreach(getAllNearUnit(policeOfficerID, 120),
+                    function(id)
+                        defID = Spring.GetUnitDefID(id)
+                        if civilianWalkingTypeTable[defID] and gaiaTeamID == Spring.GetUnitTeam(id) then
+                            return id
+                        end
+                        end
+                        )
+                Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
+                Sleep(1000)  
+         end
     end
 end
 
-boolTearGasGo = true
+
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, false)
@@ -247,15 +246,3 @@ function script.AimWeapon2(Heading, pitch) return true end
 
 function script.FireWeapon2() return true end
 
-
-function script.AimFromWeapon3() return center end
-
-function script.QueryWeapon3() return center end
-
-function script.AimWeapon3(Heading, pitch) return boolTearGasGo --or not boolIsCivilianUnit 
-end
-
-function script.FireWeapon3() 
-    boolTearGasGo = false
-    return true 
-end

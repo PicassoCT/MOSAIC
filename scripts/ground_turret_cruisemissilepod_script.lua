@@ -210,9 +210,8 @@ function launchAnimation()
     WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
     WTurn(PodTop, z_axis, math.rad(179), math.pi * 3)
     WMove(rocketPiece, y_axis, 500*factor, 250*factor)
-    WMove(rocketPiece, y_axis, 1000*factor, 1000*factor)
     showHideDependantOnType(false)
-    WMove(rocketPiece, y_axis, 3000*factor, 1000*factor)
+    WMove(rocketPiece, y_axis, 1000*factor, 1000*factor)    
     boolLaunchAnimationCompleted = true
 end
 

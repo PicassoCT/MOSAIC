@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.906" 
+            Version = "Alpha: 0.907" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -57,7 +57,7 @@ function getGameConfig()
         houseSizeY = 16,
         houseSizeZ = 256,
         innerCitySize = 1024,
-
+        
         minimalMoveDistanceElseStuck = 140,
   
         allyWaySizeX = 25,
@@ -222,7 +222,7 @@ function getGameConfig()
         fireDamagePerFrame = 3,
 
         anarchySexCouplesEveryNSeconds = 3 * 60,
-
+        LifeTimeRiotPoliceSeconds = 35,
         TimeForInterceptionInFrames = 30 * 10,
         TimeForPanicSpreadInFrames = 15 * 30,
         TimeForPacification = 30 * 90,

@@ -9,51 +9,7 @@
       <instance_effect url="#Material #8-fx"/>
     </material>
   </library_materials>
-  <library_effects>
-    <effect id="Material #8-fx" name="Material #8">
-      <profile_COMMON>
-        <technique sid="standard">
-          <phong>
-            <emission>
-              <color sid="emission">0.000000  0.000000 0.000000 1.000000</color>
-            </emission>
-            <ambient>
-              <color sid="ambient">0.181698  0.064052 0.172547 1.000000</color>
-            </ambient>
-            <diffuse>
-              <texture texture="Map #22-image" texcoord="CHANNEL0">
-                <extra>
-                  <technique profile="MAYA">
-                    <wrapU sid="wrapU0">TRUE</wrapU>
-                    <wrapV sid="wrapV0">TRUE</wrapV>
-                    <blend_mode>ADD</blend_mode>
-                  </technique>
-                </extra>
-              </texture>
-            </diffuse>
-            <specular>
-              <color sid="specular">0.045000  0.045000 0.045000 1.000000</color>
-            </specular>
-            <shininess>
-              <float sid="shininess">5.656854</float>
-            </shininess>
-            <reflective>
-              <color sid="reflective">0.000000  0.000000 0.000000 1.000000</color>
-            </reflective>
-            <reflectivity>
-              <float sid="reflectivity">1.000000</float>
-            </reflectivity>
-            <transparent opaque="RGB_ZERO">
-              <color sid="transparent">1.000000  1.000000 1.000000 1.000000</color>
-            </transparent>
-            <transparency>
-              <float sid="transparency">0.000000</float>
-            </transparency>
-          </phong>
-        </technique>
-      </profile_COMMON>
-    </effect>
-  </library_effects>
+
   <library_geometries>
     <geometry id="center-lib" name="centerMesh">
       <mesh>
