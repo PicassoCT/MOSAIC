@@ -19,7 +19,7 @@ local groundFeetSensors = {}
 local SIG_GUARDMODE = 1
 local boolDroneInterceptSaturated = false
 local cruiseMissileProjectileType =  getCruiseMissileProjectileTypes(WeaponDefs)
-local boolIsSniper = UnitDefs[myDefID].name =="ground_turret_sniper"
+local boolIsSniper = (UnitDefs[myDefID].name == "ground_turret_sniper")
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)

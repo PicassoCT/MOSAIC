@@ -32,7 +32,7 @@ local _y_axis = 2
 local _z_axis = 3
 
 rotatorTable ={}
-
+SIG_HOLO = 1
 GameConfig = getGameConfig()
 
 function timeOfDay()
@@ -64,13 +64,35 @@ function script.Create()
     resetAll(unitID)
     hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    deployHologram()
+    hideT(spins)
+    StartThread(checkForBlackOut)
+end
+
+function deployHologram()
     StartThread(HoloGrams)
     StartThread(holoGramRain)
-    hideT(spins)
+end
+
+function checkForBlackOut()
+    while true do
+        if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
+            if GG.BlackOutDeactivationTime[unitID] > (Spring.GetGameFrame() - 5*30) then
+                Signal(SIG_HOLO)
+                Sleep(500)
+                hideAll(unitID)
+                restTime = 5*60*1000
+                Sleep(restTime)
+                deployHologram()
+                GG.BlackOutDeactivationTime[unitID] = nil
+            end
+        end
+    Sleep(1000)
+    end
 end
 
 function nilNeonSigns()
-   brothelNamesNeonSigns = nil
+    brothelNamesNeonSigns = nil
     casinoNamesNeonSigns = nil
     buisnessNeonSigns = nil
     creditNeonSigns= nil
@@ -101,6 +123,7 @@ end
 
 RainCenter = piece("RainCenter")
 function holoGramRain()
+    SetSignalMask(SIG_HOLO)
     Sleep(100)
     speed= math.pi*2000
     while true do
@@ -206,6 +229,7 @@ end
 
 boolGeneralDecoSet= false
 function HoloGrams()
+    SetSignalMask(SIG_HOLO)
 
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")

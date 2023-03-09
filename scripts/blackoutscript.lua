@@ -9,6 +9,7 @@ myDefID = Spring.GetUnitDefID(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 myTeamID = Spring.GetUnitTeam(unitID)
 stunnedInBlackOutUnitType = getStunnedInBlackOutUnitTypes(UnitDefs)
+hologramTypeTable = getHologramTypes(UnitDefs)
 local spGetUnitDefID = Spring.GetUnitDefID
  Spinner = piece"Spinner"
  PercentRing = piece"PercentRing"
@@ -74,10 +75,16 @@ function blackOutCycle()
                     end
                 end,
                 function(id)
-                    if stunnedInBlackOutUnitType[spGetUnitDefID(id)] then
+                    defID = spGetUnitDefID(id)
+                    if stunnedInBlackOutUnitType[defID] then
                         stunUnit(id, 10.0)
-                        spawnCegAtUnit(id, "electric_arc",0, 20, 0)
+                        spawnCegAtUnit(id, "electric_arc",0, 20, 0)                     
                         return
+                    end
+
+                    if hologramTypeTable[defID] then
+                        if not GG.BlackOutDeactivationTime then GG.BlackOutDeactivationTime = {} end
+                        GG.BlackOutDeactivationTime[id] = Spring.GetGameFrame()
                     end
 
                     blackOuttedUnits_OriginalState[id] = Spring.GetUnitNoSelect(id)

@@ -64,17 +64,15 @@ local Assembly = Building:New{
 	--ground
 		--turret --snake --walker(roach) --truck
 
-			"ground_turret_ssied",	"ground_turret_mg",	"ground_turret_antiarmor",
+			"ground_turret_mg",	"ground_turret_antiarmor","ground_turret_ssied",	
 			--walkers
 			 "ground_turret_cm_airstrike",	"ground_turret_cm_antiarmor", "ground_turret_cm_transport", 
 			 --turrets
-			 "ground_turret_dronegrenade" , "ground_turret_rocket","ground_tumbleweedspyder",
-			 "ground_walker_mg","ground_walker_grenade", 	"ground_tank_day",
+			 "ground_turret_dronegrenade" , "ground_turret_rocket", "ground_truck_assembly",
+			 --walkers
+			 "ground_walker_mg","ground_walker_grenade", "ground_tank_day",
 			 --vehicles
-			 "ground_truck_mg", "ground_truck_ssied", "ground_truck_antiarmor",
-			 "ground_truck_rocket", "ground_truck_assembly"
-			--tank 
-	
+			 "ground_truck_mg", "ground_truck_antiarmor", "ground_truck_rocket", 
 	--weapon
 			
 	 --ssied --rocket --gattling --sniperrifle --mortar --anit-projectile -- anti-launch 

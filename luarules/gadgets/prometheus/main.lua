@@ -255,6 +255,7 @@ end
 function gadget:GamePreload()
     -- This is executed BEFORE headquarters / commander is spawned
     Log("gadget:GamePreload")
+    Spring.Echo("gadet:GamePreload:GetConfigData")
     GetConfigData()
     waypointMgr = CreateWaypointMgr()
 end
@@ -301,6 +302,7 @@ end
 
 function gadget:GameFrame(f)
     if gadget.IsTraining() and Spring.GetGameSeconds() > training_time then
+        Spring.Echo("gadet:GameFrame:GetConfigData1")
         GetConfigData()
         Spring.Quit()
     end
@@ -326,6 +328,7 @@ function gadget:GameFrame(f)
     end
     if f > firstFrame  then
 	    if f % SAVE_PERIOD < 0.01 then
+        Spring.Echo("gadet:GameFrame:GetConfigData2")
 		GetConfigData()
 	    end
         if not  waypointMgr.GameFrame then

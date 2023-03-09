@@ -839,7 +839,12 @@ function getGameConfig()
         function getStunnedInBlackOutUnitTypes(UnitDefs)
                 typeTable = {    
                     "ground_turret_ssied",       
-                    "air_copter_scoutlett"
+                    "ground_turret_mg",       
+                    "ground_turret_sniper",       
+                    "ground_walker_mg",       
+                    "ground_walker_grenade",       
+                    "air_copter_antiarmor",       
+                    "air_copter_scoutlett",
                 }
             return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
         end

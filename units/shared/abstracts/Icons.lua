@@ -294,7 +294,7 @@ local StealVehicle =
     buildCostMetal = 250,
     explodeAs = "none",
     --orders
-    buildTime = 3.0,
+    buildTime = 1.0,
     script = "stealVehicleScript.lua",
     objectName = "stealVehicleIcon.dae",
     buildPic = "StealVehicleIcon.png",
@@ -657,7 +657,6 @@ local BlackOutIcon =
     },
     category = "NOTARGET ABSTRACT"
 }
-
 
 local CyberCrime =
     Abstract:New {

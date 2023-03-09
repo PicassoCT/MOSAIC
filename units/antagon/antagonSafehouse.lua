@@ -74,14 +74,20 @@ local AntagonSafeHouse = Building:New{
 		"operativeasset",
 		"operativepropagator",
 		"civilianagent",
+
 		"ground_walker_mg",
 		"ground_turret_sniper",
 		"ground_walker_grenade",
-		"air_copter_antiarmor",
-		"air_copter_scoutlett",
-		"air_copter_ssied",	
+
+		"ground_tumbleweedspyder",
 		"civilian_truck_ssied",
 		"ground_truck_assembly",
+
+		"air_copter_antiarmor",
+		"air_copter_ssied",
+		"air_copter_scoutlett",
+			
+	
 		"potemkinpayload"
 		--Described in morphdefs
 		--propagandaserver

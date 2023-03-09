@@ -55,12 +55,15 @@ local OperativeAsset = Human:New{
 			[1]={name  = "pistol",
 				onlyTargetCategory = [[GROUND AIR]],
 				noChaseCategory = [[GROUND AIR]],
+				badTargetCategory = [[RAIDABLE]]
 			},
 			[2]={name  = "submachingegun",
 				onlyTargetCategory = [[GROUND AIR]],
+				badTargetCategory = [[RAIDABLE]]
 			},
 			[3]={name  = "sniperrifle",
 				onlyTargetCategory = [[GROUND]],
+				badTargetCategory = [[RAIDABLE]]
 			},
 			[4]={name  = "closecombat",
 				onlyTargetCategory = [[CLOSECOMBATABLE]],
@@ -81,6 +84,7 @@ local OperativeAsset = Human:New{
 		"bribeicon",
 		"stealvehicleicon",
 		"air_parachut",
+		"rooftopicon",
 	},
 	
 	customParams = {
