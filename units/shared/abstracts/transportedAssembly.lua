@@ -44,21 +44,12 @@ local unitDef = {
     workerTime = 0.54,
     buildoptions = {
         --air
-        --copter  --jet -- bomber --long range rocket
-
-        "air_copter_ssied",
-        "air_copter_mg",
-        "air_copter_antiarmor",
-        --ground
-        --turret --snake --walker(roach) --truck
-        "ground_turret_ssied",
-        "ground_turret_mg",
-        "ground_walker_mg",
-        "ground_walker_grenade",
-        "ground_turret_cm_airstrike",
-
-        "ground_turret_cm_transport",
-        "brehmerwall"
+        "air_copter_mg", "air_copter_antiarmor", "air_copter_ssied",        
+        "air_plane_sniper", "air_plane_rocket","air_copter_scoutlett",
+        --ground    
+        "ground_turret_mg", "ground_turret_antiarmor", "ground_turret_ssied",
+        "ground_walker_mg", "ground_walker_grenade", "brehmerwall",
+        "ground_turret_cm_airstrike", "ground_turret_cm_transport", "ground_turret_cm_antiarmor",
     },
     usebuildinggrounddecal = false,
     Category = [[NOTARGET]],

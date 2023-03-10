@@ -1,5 +1,5 @@
 ---http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "sniperrifle"
+local weaponName = "slowsniperrifle"
 local weaponDef = {
 	name = "barret-s64",
 
@@ -16,7 +16,7 @@ local weaponDef = {
 	weaponAcceleration = 100,
 	tracks = false,
 	weaponVelocity = 2450,
-	reloadtime = 90,
+	reloadtime = 3*60,
 	range = 950,
 	sprayAngle = 1,
 	tolerance = 50,

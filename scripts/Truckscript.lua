@@ -7,6 +7,7 @@ include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 
 LoadOutTypes = getTruckLoadOutTypeTable()
+NotTruckLoadableUnitType = getNotTruckLoadableTypeTable(UnitDefs)
 GameConfig = getGameConfig()
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
@@ -204,11 +205,16 @@ end
 
 local passenger
 function script.TransportPickup(passengerID)
-    if boolIsCivilianTruck then
-        Spring.SetUnitNoSelect(passengerID, true)
-        Spring.UnitAttach(unitID, passengerID, attachPoint)
-        passenger = passengerID
-        StartThread(tranferOrdersToLoadedUnit, passengerID)
+    if passengerID then
+        defID = Spring.GetUnitDefID(passengerID)
+        if NotTruckLoadableUnitType[defID] then return end
+
+        if  boolIsCivilianTruck then
+            Spring.SetUnitNoSelect(passengerID, true)
+            Spring.UnitAttach(unitID, passengerID, attachPoint)
+            passenger = passengerID
+            StartThread(tranferOrdersToLoadedUnit, passengerID)
+        end
     end
 end
 

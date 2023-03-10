@@ -51,8 +51,16 @@ function showSubSpins(pieceID)
         for i=1, #TablesOfPiecesGroups[subSpinPieceName] do
             spinPiece = TablesOfPiecesGroups[subSpinPieceName][i]
             Show(spinPiece)
-            Spin(spinPiece,y_axis, math.rad(-42),0)
+            Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
         end
+    end
+end
+
+function hideSubSpins(pieceID)
+    pieceName = getUnitPieceName(unitID, pieceID)
+    subSpinPieceName = pieceName.."Spin"    
+    if TablesOfPiecesGroups[subSpinPieceName] then  
+        hideT(TablesOfPiecesGroups[subSpinPieceName]) 
     end
 end
 
@@ -199,33 +207,36 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
 end
 
 function showWallDayTime(name)
-
     while true do
         hours, minutes, seconds, percent = getDayTime()
         if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
             counter = math.random(4,7)    
-            for i=1, #TablesOfPiecesGroups[name] do
-                if maRa() and TablesOfPiecesGroups[name][i] and counter > 0 then
+            while counter > 0 do
+                _, element = randDict(TablesOfPiecesGroups[name])
+                if element then
                     counter = counter - 1
-                    Show(TablesOfPiecesGroups[name][i])
-                    showSubSpins(TablesOfPiecesGroups[name][i])
+                    Show(element)
+                    showSubSpins(element)
                 end
-            end 
+                Sleep(10)   
+            end         
+        
             while (hours > 18 or hours < 7) do
                 hours, minutes, seconds, percent = getDayTime()
                 Sleep(5000)
             end
+
             for i=1, #TablesOfPiecesGroups[name] do
                 Hide(TablesOfPiecesGroups[name][i])
+                hideSubSpins(TablesOfPiecesGroups[name][i])
                 rest= ((i % 3)+1)*1000
                 Sleep(rest)
             end
         end
-    val = math.random(25, 45)*1000
-    Sleep(val)
+        val = math.random(25, 45)*1000
+        Sleep(val)
     end
 end
-
 
 boolGeneralDecoSet= false
 function HoloGrams()
@@ -350,10 +361,11 @@ function HoloGrams()
         if maRa() then
            pieceName = getUnitPieceName(unitID, logo)
            logoTableName = pieceName.."Spin"
-           if TablesOfPiecesGroups[logoTableName] then                
+           if TablesOfPiecesGroups[logoTableName] then   
                 for i=1, #TablesOfPiecesGroups[logoTableName] do
+                    _, element = randDict(TablesOfPiecesGroups[logoTableName])             
                     if maRa() then
-                        spinLogoPiece = TablesOfPiecesGroups[logoTableName][i]
+                        spinLogoPiece = element
                         Show(spinLogoPiece)
                         Spin(spinLogoPiece,y_axis, math.rad(-42),0)
                     end

@@ -48,7 +48,7 @@ function script.StartMoving()
 end
 
 function script.StopMoving()
-    if not boolDeployed then StopSpin(center, x_axis, 0.1) end
+    if not boolDeployed then StopSpin(center, x_axis, 1) end
 end
 
 function script.Activate()

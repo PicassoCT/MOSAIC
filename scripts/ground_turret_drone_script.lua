@@ -14,7 +14,7 @@ local center = piece "TurretBase"
 local Turret = piece "TurretHead"
 local aimpiece = piece "AimPiece"
 local aimingFrom = aimpiece
-local firingFrom = aimpiece
+local firingFrom = aimpiecexoglflaogog
 local launchProjT
 local flyingProjT
 boolLaunchAnimationStarted = false
@@ -29,6 +29,7 @@ function script.Create()
     launchProjT = TablesOfPiecesGroups["DroneMineLaunchProjFolded"]
     flyingProjT = TablesOfPiecesGroups["DroneMineLaunchProjUnfolded"]
     StartThread(launchStateMachineThread)
+    Turn(Turret, x_axis, math.rad(40),0)
 end
 
 function projectileLaunch(i)
@@ -161,6 +162,8 @@ function script.AimFromWeapon1() return firingFrom end
 function script.QueryWeapon1() return firingFrom end
 
 function script.AimWeapon1(Heading, pitch)
+    Turn(Turret, x_axis, math.rad(40),0)
+    WTurn(Turret, y_axis, Heading,0)
     boolFireRequest= true
     return currentLaunchState == "fire"
 end

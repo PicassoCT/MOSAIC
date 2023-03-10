@@ -84,7 +84,7 @@ local OperativeAsset = Human:New{
 		"bribeicon",
 		"stealvehicleicon",
 		"air_parachut",
-		"rooftopicon",
+		"air_copter_scoutlett"
 	},
 	
 	customParams = {

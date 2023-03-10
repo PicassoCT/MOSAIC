@@ -159,7 +159,7 @@ function turnTrailerLoop()
         else
             val = val + (diff/10)
         end
-        radYaw = math.rad(clamp( val, -10, 5))
+        radYaw = math.rad(clamp( val, -5, 5))
         Turn(PayloadCenter, x_axis, radYaw, 0.881)   
 
         if boolMoving == true then

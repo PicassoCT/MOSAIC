@@ -1,6 +1,6 @@
 local AIR_SNIPER = AIRCRAFT:New{
 
-	name = "Predator VII",
+	name = "Argus III",
 	Description = "sniper drone",
 	objectName = "air_plane_sniper.dae",
 	script = "airplanesniperscript.lua",
@@ -79,6 +79,5 @@ local AIR_SNIPER = AIRCRAFT:New{
 
 return lowerkeys({
 	--Temp
-	["air_plane_sniper"] = AIR_SNIPER:New(),
-	
+	["air_plane_sniper"] = AIR_SNIPER:New(),	
 })

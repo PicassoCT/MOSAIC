@@ -58,30 +58,17 @@ local Assembly = Building:New{
 	--chassis
 	--air
 		 --copter  --jet -- bomber --long range rocket
-		
-			"air_copter_ssied",	"air_copter_mg","air_copter_antiarmor",  
-			"air_plane_sniper", "air_plane_rocket", "air_copter_scoutlett",
+		"air_copter_scoutlett", "ground_truck_assembly", "ground_turret_cm_transport",
+		"air_copter_mg","air_copter_antiarmor", "air_copter_ssied",			 
 	--ground
-		--turret --snake --walker(roach) --truck
-
-			"ground_turret_mg",	"ground_turret_antiarmor","ground_turret_ssied",	
-			--walkers
-			 "ground_turret_cm_airstrike",	"ground_turret_cm_antiarmor", "ground_turret_cm_transport", 
-			 --turrets
-			 "ground_turret_dronegrenade" , "ground_turret_rocket", "ground_truck_assembly",
-			 --walkers
-			 "ground_walker_mg","ground_walker_grenade", "ground_tank_day",
-			 --vehicles
-			 "ground_truck_mg", "ground_truck_antiarmor", "ground_truck_rocket", 
+		--turrets
+		"ground_turret_mg",	"ground_turret_antiarmor","ground_turret_ssied",			
+		"ground_turret_dronegrenade" , "ground_turret_rocket", "ground_turret_sniper",
+		--walkers
+		"ground_walker_mg","ground_walker_grenade", "ground_tank_day",
+		--vehicles
+		"ground_truck_mg", "ground_truck_antiarmor", "ground_truck_rocket", 
 	--weapon
-			
-	 --ssied --rocket --gattling --sniperrifle --mortar --anit-projectile -- anti-launch 
-	 
-	 --scan -- jam 
-	 
-	 --transport -only works for bomber, copter and longrange rocket
-	
-
 	},
 	
 	category = [[GROUND BUILDING RAIDABLE]],

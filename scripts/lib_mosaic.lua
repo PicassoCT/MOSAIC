@@ -35,7 +35,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
-            Version = "Alpha: 0.908" 
+            Version = "Alpha: 0.909" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -1206,6 +1206,12 @@ function getGameConfig()
 
             function getTruckTypeTable(UnitDefs)
                 return getCultureUnitModelTypes(GG.GameConfig.instance.culture or getCultureName(), "truck", UnitDefs)
+            end
+
+            function getNotTruckLoadableTypeTable(UnitDefs)
+
+                return mergeTables(getTruckTypeTable(UnitDefs))
+
             end
 
             function getOperatorSex(UnitDefs, defID)

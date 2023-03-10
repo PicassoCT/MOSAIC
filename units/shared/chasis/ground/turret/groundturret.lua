@@ -202,7 +202,7 @@ local ground_turret_sniper =  Turret:New{
 							  },
 				},
 				
-		weapons = {
+	weapons = {
 		[1]={name  = "slowsniperrifle",
 				onlyTargetCategory = [[GROUND BUILDING]],
 				turret= false
