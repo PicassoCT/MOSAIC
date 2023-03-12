@@ -169,21 +169,22 @@ end
 
 function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
     if max == nil then
-        max = 6
+        max = 5
     end
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        if ( boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
+        if (boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellTable = {}
-            counter = math.random(3, 6)
+            hcounter = math.random(3, 6)
             for i=1, #TablesOfPiecesGroups[name] do
                 Sleep(500)
                 _, hologramPiece= randDict(TablesOfPiecesGroups[name])
-                if not alreadyShowing[hologramPiece] and counter > 0 then 
+                if not alreadyShowing[hologramPiece] and hcounter > 0 then 
                     alreadyShowing[hologramPiece]= true
-                    counter = counter - 1
+                    hcounter = hcounter - 1
                     showTellTable[hologramPiece] = hologramPiece
                     val= math.random(10,42)*randSign()
                     if axisToRotateAround then
@@ -195,9 +196,10 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
             end
 
             showT(showTellTable)
-            Sleep(30000)
+            Sleep(90000)
             resetT(TablesOfPiecesGroups[name], 1.2)
-            WaitForTurns(TablesOfPiecesGroups[name])                     
+            WaitForTurns(TablesOfPiecesGroups[name]) 
+            hideT(showTellTable)                    
         else
             hideT(TablesOfPiecesGroups[name])
             Sleep(interval)
@@ -237,7 +239,7 @@ function showWallDayTime(name)
         Sleep(val)
     end
 end
-
+symmetryPiece = piece("buisness_holo064")
 boolGeneralDecoSet= false
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
@@ -265,7 +267,7 @@ function HoloGrams()
     px,py,pz = Spring.GetUnitPosition(unitID)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         if maRa() then
-            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 4)
+            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 3)
             StartThread(addJHologramLetters)
         end
         if boolIsBrothel then
@@ -352,8 +354,13 @@ function HoloGrams()
 
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
-            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 6)
+            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 5)
             StartThread(addJHologramLetters)
+        end
+
+        if logo == symmetryPiece then
+            shapeSymmetry(symmetryPiece)
+            return            
         end
 
         Spin(logo,y_axis, math.rad(5),0)
@@ -382,6 +389,33 @@ function HoloGrams()
         nilNeonSigns()
         return 
     end 
+end
+
+function shapeSymmetry(logo)
+    for i=1, 9 do
+        if not (maRa() == maRa()) or i < 4 then
+            pieceName = "Symmetry0"..i
+            symPieceName = "Symmetry0"..(i + 10)
+            a = piece(pieceName)
+            b = piece(symPieceName)
+            randVal = math.random(1,8)*randSign()*45
+            Show(a)
+            Turn(a, x_axis, math.rad(randVal), 0)
+            Show(b)
+            orgVal = 0 
+            if i == 1 then orgVal = 180 end
+            symValue =  orgVal -randVal
+            Turn(b, x_axis, math.rad(symValue), 0)
+        end
+    end
+    if not maRa() then
+     Show(logo)
+    end
+    if maRa() == maRa() then
+        addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
+    else
+        addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+    end
 end
 
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings, minImum, minMaximum)

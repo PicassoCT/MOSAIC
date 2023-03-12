@@ -46,7 +46,7 @@ return {
  "The Manc Bar",
 "Bodega Bar",
 "Baccara go go",
-"Altantic Bar",
+"Atlantic Bar",
 "Pattaya Bar",
 "Buzzin Bar",
 "Dont tell mama",
@@ -228,5 +228,9 @@ return {
 "Stays in",
 "Cumcrust",
 "Buttplug",
-"PEARLYCHAINsaw"
+"PEARLYCHAINsaw",
+"No tell Motel",
+"No vacancy",
+"Viagra Club",
+"Striptease"
 }
