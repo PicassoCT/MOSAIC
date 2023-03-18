@@ -11,6 +11,7 @@ function getScriptName() return "house_western_script.lua::" end
 
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
+boolIsCombinatorial = (maRa() == maRa()) == maRa()
 factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
@@ -295,7 +296,7 @@ function removeElementFromBuildMaterial(element, buildMaterial)
     return result
 end
 
-function selectGroundBuildMaterial()
+function selectGroundBuildMaterial(boolRedo)
     nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
 
@@ -306,6 +307,10 @@ function selectGroundBuildMaterial()
     end
 
     if not nice then nice = 1 end
+
+    if boolRedo then
+        return materialColourName[math.random(1,4)]
+    end
     return  materialChoiceTable[nice]
 end
 
@@ -1194,6 +1199,9 @@ function buildBuilding()
     --echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
     --echo(getScriptName() .. "buildDecorateGroundLvl ended")
+    if boolIsCombinatorial then
+        materialColourName = selectGroundBuildMaterial(true)
+    end
 
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
