@@ -17,6 +17,30 @@ casino_spin = piece("casino_spin")
 JLantern = piece("JLantern")
 Hide(JLantern)
 
+tldrum = piece "tldrum"
+dancepivot = piece "dancepivot"
+deathpivot = piece "deathpivot"
+tigLil = piece "tigLil"
+tlHead = piece "tlHead"
+tlhairup = piece "tlhairup"
+tlhairdown = piece "tlhairdown"
+tlarm = piece "tlarm"
+tlarmr = piece "tlarmr"
+tllegUp = piece "tllegUp"
+tllegLow = piece "tllegLow"
+tllegUpR = piece "tllegUpR"
+tllegLowR = piece "tllegLowR"
+tlpole = piece "tlpole"
+tlflute = piece "tlflute"
+
+DirectionArcPoint = piece "DirectionArcPoint"
+BallArcPoint = piece "BallArcPoint"
+handr = piece "handr"
+handl = piece "handl"
+ball = piece "ball"
+
+--local Animations = include('animation_hologram.lua')
+
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TablesOfPiecesGroups = {}
 local boolDebugHologram = false
@@ -75,6 +99,80 @@ function script.Create()
     deployHologram()
     hideT(spins)
     StartThread(checkForBlackOut)
+    StartThread(grid)
+    StartThread(clock)
+end
+
+local hours, minutes, seconds, percent = getDayTime()
+function clock()
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        Sleep(1000)
+    end
+end
+
+allGrids = nil
+
+function getGrid()
+    if not allGrids then    
+        allGrids = {}
+        allGrids[#allGrids+1] = TablesOfPiecesGroups["BrothelGrid"][1]
+        allGrids[#allGrids+1] = TablesOfPiecesGroups["BuisnessGrid"][1]
+        allGrids[#allGrids+1] = TablesOfPiecesGroups["CasinoGrid"][1]
+    
+        allGrids[#allGrids+1] = TablesOfPiecesGroups["BrothelGrid"][2]
+        allGrids[#allGrids+1] = TablesOfPiecesGroups["BuisnessGrid"][2]
+        allGrids[#allGrids+1] = TablesOfPiecesGroups["CasinoGrid"][2]
+    end
+
+    if boolIsBrothel then
+        return TablesOfPiecesGroups["BrothelGrid"][math.random(1,2)]
+    end
+
+    if (maRa()== maRa())== maRa()then
+        return getSafeRandom(allGrids, allGrids[1])
+    end
+    if boolIsBuisness then
+        return TablesOfPiecesGroups["BuisnessGrid"][math.random(1,2)]
+    end
+
+    if boolIsCasino then
+        return TablesOfPiecesGroups["CasinoGrid"][math.random(1,2)]
+    end    
+end
+
+
+function grid()
+    Sleep(100)
+    while true do
+        if (hours > 19 or hours < 6) then
+            theGrid = getGrid()
+            upVal=math.random(3,4)
+            lowVal= math.random(0,2)
+            Show(theGrid)
+            Sleep(33)
+            for i= lowVal, upVal do 
+                Turn(theGrid, y_axis, math.rad(i*90),0)
+                Sleep(33)
+                if maRa()then
+                    Sleep(66)
+                end
+            end
+            for i= upVal, lowVal, -1 do 
+                Turn(theGrid, y_axis, math.rad(i*90),0)
+                Sleep(33)
+                if maRa()then
+                    Sleep(66)
+                end
+            end
+            if maRa() == maRa() then
+                Sleep(500)
+            end
+            Hide(theGrid)
+        end
+
+        Sleep(33)
+    end
 end
 
 function deployHologram()
@@ -129,13 +227,13 @@ function holoRain(Name, speed)
     end
 end
 
+hours, minutes, seconds, percent = 0,0,0,0
 RainCenter = piece("RainCenter")
 function holoGramRain()
     SetSignalMask(SIG_HOLO)
     Sleep(100)
     speed= math.pi*2000
     while true do
-        hours, minutes, seconds, percent = getDayTime()
         if (hours > 19 or hours < 6) and isANormalDay() then
             GG.boolRainyNight = maRa()
             if not GG.RainyNight then
@@ -174,7 +272,6 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     while true do
-        hours, minutes, seconds, percent = getDayTime()
         if (boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellTable = {}
@@ -209,9 +306,12 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
 end
 
 function showWallDayTime(name)
+    wallGrid = TablesOfPiecesGroups["WallGrid"][math.random(1,#TablesOfPiecesGroups["WallGrid"])]
     while true do
-        hours, minutes, seconds, percent = getDayTime()
         if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
+            if maRa() then
+                Show(wallGrid)
+            end
             counter = math.random(4,7)    
             while counter > 0 do
                 _, element = randDict(TablesOfPiecesGroups[name])
@@ -224,8 +324,18 @@ function showWallDayTime(name)
             end         
         
             while (hours > 18 or hours < 7) do
-                hours, minutes, seconds, percent = getDayTime()
-                Sleep(5000)
+                wallRest= math.ceil(math.random(100,1000))
+                Sleep(wallRest)
+                val = math.random(0,3)* 90
+                offsetVal= val + math.random(-10,10)/10
+                Turn(wallGrid,x_axis, math.rad(offsetVal) , 0)
+                WTurn(wallGrid,x_axis, math.rad(val) , 0.25)
+                if maRa() == maRa() then
+                    Move(wallGrid,y_axis, math.random(5, 50),10)
+                else
+                    mVal = (math.sin((hours/24)*math.pi*2)+1)*25
+                    Move(wallGrid,y_axis, mVal,25)
+                end
             end
 
             for i=1, #TablesOfPiecesGroups[name] do
@@ -234,6 +344,7 @@ function showWallDayTime(name)
                 rest= ((i % 3)+1)*1000
                 Sleep(rest)
             end
+            Hide(wallGrid)
         end
         val = math.random(25, 45)*1000
         Sleep(val)
@@ -392,7 +503,7 @@ function HoloGrams()
 end
 
 function shapeSymmetry(logo)
-    for i=1, 9 do
+    for i=1, 10 do
         if not (maRa() == maRa()) or i < 4 then
             pieceName = "Symmetry0"..i
             symPieceName = "Symmetry0"..(i + 10)
@@ -431,7 +542,6 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         hideT(fGroup)
         assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
-        hours, minutes, seconds, percent = getDayTime()
         if boolDayLightSavings == nil or ( boolDayLightSavings == true and 
             (hours > 17 or hours < 7)) and isANormalDay() then
                 if boolNewDay == true then
