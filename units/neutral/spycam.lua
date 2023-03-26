@@ -22,7 +22,7 @@ local Spycam = Building:New{
 	script 				= "spycamscript.lua",
 	objectName        	= "spycam.dae",
 
-	name = "Camera",
+	name = "Arguseye Camera",
 	description = " watches & surveils",
 	buildPic = "Placeholder.png",
 	
