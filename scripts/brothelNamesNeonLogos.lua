@@ -1,4 +1,5 @@
 return {
+ "KARAOKE",
  "XXX",
  "Young hearts",
  "Oh god put it in",

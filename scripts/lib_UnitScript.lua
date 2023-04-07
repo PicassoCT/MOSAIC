@@ -2670,6 +2670,20 @@ function echoT(T, layer)
 end
 
 -- > debugEchoT(
+function getDetermenisticHash()
+  local accumulated = 0
+  local mapName = Game.mapName
+  local mapNameLength = string.len(mapName)
+
+  for i=1, mapNameLength do
+    accumulated = accumulated + string.byte(mapName,i)
+  end
+
+  accumulated = accumulated + Game.mapSizeX
+  accumulated = accumulated + Game.mapSizeZ
+  return accumulated
+end
+
 
 function stringToHash(hashString)
     totalValue = 0
@@ -4243,6 +4257,10 @@ end
 -- ======================================================================================
 -- Section: Random 
 -- ======================================================================================
+function getDeterministicRandom(hash, maximum)
+    return hash % maximum
+end
+
 function getSafeRandom(T, default)
     if not T then return default end 
     countElements = count(T)

@@ -15,6 +15,7 @@ text_spin = piece("text_spin")
 brothel_spin = piece("brothel_spin")
 casino_spin = piece("casino_spin")
 JLantern = piece("JLantern")
+
 Hide(JLantern)
 
 tldrum = piece "tldrum"
@@ -58,6 +59,12 @@ local _z_axis = 3
 rotatorTable ={}
 SIG_HOLO = 1
 GameConfig = getGameConfig()
+
+
+function HideAssert(pieceID)
+    assert(pieceID)
+    Hide(pieceID)
+end
 
 function timeOfDay()
     WholeDay = GameConfig.daylength
@@ -168,7 +175,7 @@ function grid()
             if maRa() == maRa() then
                 Sleep(500)
             end
-            Hide(theGrid)
+            HideAssert(theGrid)
         end
 
         Sleep(33)
@@ -216,7 +223,7 @@ function RainDrop(pieceID, delayMS, speed)
     Show(pieceID)
     --Spin(pieceID, downAxis, math.rad(42),0)
     WMove(pieceID, downAxis, 0, speed)
-    Hide(pieceID)
+    HideAssert(pieceID)
 end
 
 function holoRain(Name, speed)
@@ -288,7 +295,7 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
                         Spin(hologramPiece, axisToRotateAround, math.rad(val),0)
                     end
                 else
-                    Hide(hologramPiece)
+                    HideAssert(hologramPiece)
                 end
             end
 
@@ -339,12 +346,12 @@ function showWallDayTime(name)
             end
 
             for i=1, #TablesOfPiecesGroups[name] do
-                Hide(TablesOfPiecesGroups[name][i])
+                HideAssert(TablesOfPiecesGroups[name][i])
                 hideSubSpins(TablesOfPiecesGroups[name][i])
                 rest= ((i % 3)+1)*1000
                 Sleep(rest)
             end
-            Hide(wallGrid)
+            HideAssert(wallGrid)
         end
         val = math.random(25, 45)*1000
         Sleep(val)

@@ -2626,4 +2626,80 @@ function initFlyingCars(numberOfActors)
 end
 
 -- ================================================================================================================
+
+function cyclicBlink(pieceID, signal, name, timeInMs)
+    SetSignalMask(signal)
+    while true do
+        Hide(pieceID)
+        Sleep(timeInMs)
+        Show(pieceID)
+        Sleep(timeInMs)
+    end
+end
+
+function cyclicMove(pieceID, signal, name, axis, distanceUp, distanceDown, speed, restTime)
+    SetSignalMask(signal)
+    while true do
+        Move(pieceID, axis, distanceUp, speed)
+        Sleep(restTime)
+        Move(pieceID, axis, distanceDown, speed)
+        Sleep(restTime)
+    end
+end
+
+function cyclicWaitMove(pieceID, signal, name, axis, distanceUp, distanceDown, speed)
+    SetSignalMask(signal)
+    while true do
+        WMove(pieceID, axis, distanceDown, speed)
+        Sleep(1)
+        WMove(pieceID, axis, distanceUp, speed)
+        Sleep(1)
+    end
+end
+
+function cyclicMoveInTime(pieceID, signal, name, axis, distanceUp, distanceDown, timeToMove)
+    SetSignalMask(signal)
+    velocityUp = distanceUp/(timeToMove/1000)
+    velocityDown = distanceDown/(timeToMove/1000)
+    while true do
+        WMove(pieceID, axis, distanceDown, velocityDown)
+        Sleep(1)
+        WMove(pieceID, axis, distanceUp, velocityUp)
+        Sleep(1)
+    end
+end
+
+function cyclicTurn(pieceID, signal, name,  axis, distanceUp, distanceDown, speed)
+    SetSignalMask(signal)
+    while true do
+        WTurn(pieceID, axis, math.rad(distanceUp), speed)
+        Sleep(1)
+        WMove(pieceID, axis, math.rad(distanceDown), speed)
+        Sleep(1)
+    end
+end
+
+
+local cyclicLoopFunctions = {
+    blink = cyclicBlink,
+    move = cyclicMove,
+    wmove = cyclicWaitMove,
+    moveInTime = cyclicMoveInTime,
+    turn = cyclicTurn
+}
+
+
+function startPieceOS(pieceName, Signal)
+    pieceID = piece(pieceName)
+
+    for i=1, #cyclicLoopFunctions[pieceName] do
+        dataSet = cyclicLoopFunctions[pieceName][i]
+        cyclicFunction = cyclicLoopFunctions[dataSet[1]]
+        StartThread(cyclicFunction, pieceID, Signal, table.unpack(dataSet))
+        
+    end
+end
+
+
+
 -- ================================================================================================================

@@ -575,6 +575,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
         if   string.find(name, "sub") == nil and
               string.find(name, "spin")  == nil  then
                 boolFullfilledConditions= true
+                assert(materialColourName)
                 boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
                 if boolContainsMaterialName == true or boolContainsNoOtherName == true then

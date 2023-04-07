@@ -92,10 +92,7 @@ function hijackObservationSatellite()
           Spring.DestroyUnit(unitID, false, true) 
         end
         Sleep(1000)
-
     end
-
-
 end
 
 

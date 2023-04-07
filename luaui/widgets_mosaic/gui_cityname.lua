@@ -99,6 +99,25 @@ local function getDetermenisticHash()
   return accumulated
 end
 
+local function GetRegionByHash(mapHash)
+  local allRegions = 9
+  local result = mapHash % allRegions
+  local resultMap = {
+    [0] = "CityState",
+    [1] = "MiddleEast",
+    [2] = "CentralAsia",
+    [3] = "Africa",
+    [4] = "Europe",
+    [5] = "NorthAmerica",
+    [6] = "SouthAmerica",
+    [7] = "SouthEastAsia",
+    [8] = "CentralAsia",
+      }
+
+      return resultMap[result]
+  end
+
+
 local function getHashDate(startYear)
   local hash = getDetermenisticHash()
   local year = startYear + (hash % 25)
@@ -7565,48 +7584,11 @@ local function getProvinceNameBy(countrylocal,  hash)
 end
 
 
-local function getRegionByCountry( country)
-  local region_countryMap = {}
-  region_countryMap ={
-    ["Africa"] = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea",
-    "Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda",
-  "Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde",
-"Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},
-    ["Middle East"] = {"Tunisia","Libya","Sudan","Syria","Saudi Arabia","Jordan","Kuwait","Brunei","Algeria","Turkey","Iran","Lebanon","Qatar",
-    "West Bank","United Arab Emirates","Israel","Bahrain","Gaza Strip","Armenia","Iraq","Oman","Yemen","Egypt","Morocco","Pakistan", 
-  "Western Sahara", "Mauritania"},
-    ["Central Asia"] = {"Bhutan","Tajikistan","Iran","Georgia","Nepal","Azerbaijan","Russia","Kyrgyzstan","Afghanistan","Turkmenistan",
-    "Pakistan","Uzbekistan","Mongolia","Kazakhstan"},
-    ["Europe"] = {"Cyprus","Belarus","Slovakia","Greece","Hungary","Montenegro","Macedonia","Kosovo","Sweden","Luxembourg","Belgium",
-    "Slovenia","Albania","Turkey","Serbia","Ukraine","France","Liechtenstein","United Kingdom","Iceland","Italy","Czechia","Andorra",
-  "Poland","Netherlands","Croatia","Russia","Malta","Germany","Ireland","Portugal","Monaco","Norway","Vatican City","Finland","Bulgaria",
-"Moldova","Estonia","Lithuania","Latvia", "Switzerland","Romania","San Marino","Isle Of Man","Spain","Denmark","Austria","Gibraltar",
-"Bosnia And Herzegovina"},
-    ["North America"] = {"United States","Panama","Canada","Greenland","Jersey","Village of Islands","El Salvador","Mexico",},
-    ["South America"] = {"Belize","Jamaica","Venezuela","Guyana","Equatorial Guinea","Argentina","Brazil","Peru","Ecuador","Honduras",
-    "Nicaragua","Bermuda","Bolivia","Cuba","Puerto Rico","Cayman Islands","Chile","Uruguay","Dominican Republic","Costa Rica","French Guiana",
-  "Sint Maarten","Mauritius","Saint Lucia","New Caledonia","Paraguay","Guatemala","Barbados","Colombia","French Polynesia"},
-    ["South East Asia"] = {"Bangladesh","Papua New Guinea","Myanmar","Cambodia","Australia","Thailand","Korea","China","Vietnam",
-    "New Zealand","Sri Lanka","Guadeloupe","Taiwan","Malaysia","Macau", "Wallis And Futuna","Grenada","Laos","Anguilla","Christmas Island",
-  "Pitcairn Islands","Guam","Singapore","Hong Kong","Japan","Philippines","Indonesia"}
-  }
-
-  for region, countries in pairs(region_countryMap) do
-    for nr, currentCountry in pairs(countries) do
-      if currentCountry == country then 
-        return region 
-      end
-    end
-  end 
-
-  return "Conflicted Region" 
-end
-
-
-local function getCountryByCulture(culture, hash)
+local function getCountryByRegion(region, hash)
   
   local region_countryMap = {}
   region_countryMap ={
+    CityStates = {"Redmond","Mare Silentio Company","Singapore", "London", "Dubai", "Hong Kong", "Shanghai", "Lagos", "Falklandia", "Thielon Arcology", "Panama Inc", "Kaliningrad"},
     Africa = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea","Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda","Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde","Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},
     MiddleEast = {"Tunisia","Libya","Sudan","Syria","Saudi Arabia","Jordan","Kuwait","Brunei","Algeria","Turkey","Iran","Lebanon","Qatar","West Bank","United Arab Emirates","Israel","Bahrain","Gaza Strip","Armenia","Iraq","Oman","Yemen","Egypt","Morocco","Pakistan", "Western Sahara", "Mauritania"},
     CentralAsia = {"Bhutan","Tajikistan","Iran","Georgia","Nepal","Azerbaijan","Russia","Kyrgyzstan","Afghanistan","Turkmenistan","Pakistan","Uzbekistan","Mongolia","Kazakhstan"},
@@ -7616,41 +7598,7 @@ local function getCountryByCulture(culture, hash)
     SouthEastAsia = {"Bangladesh","Papua New Guinea","Myanmar","Cambodia","Australia","Thailand","Korea","China","Vietnam","New Zealand","Sri Lanka","Guadeloupe","Taiwan","Malaysia","Macau", "Wallis And Futuna","Grenada","Laos","Anguilla","Christmas Island","Pitcairn Islands","Guam","Singapore","Hong Kong","Japan","Philippines","Indonesia" }
   }
 
-  if culture == "arabic" then
-    if hash % 3 == 0 then
-      return region_countryMap.MiddleEast[((hash*69) % #region_countryMap.MiddleEast) +1 ]
-    end
-    if hash % 3 == 1 then
-      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ]
-    end
-    if hash % 3 == 2 then
-      return region_countryMap.Africa[((hash*69) % #region_countryMap.Africa) +1 ]
-    end
-  end
-
-  if culture == "western" then 
-    if hash % 3 == 0 then
-      return region_countryMap.Europe[((hash*69) % #region_countryMap.Europe) +1 ]
-    end
-    if hash % 3 == 1 then
-      return region_countryMap.NorthAmerica[((hash*69) % #region_countryMap.NorthAmerica) +1 ]
-    end
-    if hash % 3 == 2 then
-      return region_countryMap.SouthAmerica[((hash*69) % #region_countryMap.SouthAmerica) +1 ]
-    end
-  end
-
-  if culture == "asian" then
-    if hash % 2 == 0 then
-      return region_countryMap.SouthEastAsia[((hash*69) % #region_countryMap.SouthEastAsia) +1 ]
-    end
-    if hash % 2 == 1 then
-      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ]
-    end
-  end
-
-  local internationalCityCountries = {"Dubai", "Hong Kong",  "United States", "United Kingdom", "Japan"}
-  return internationalCityCountries[(hash % #internationalCityCountries) +1]
+  return region_countryMap[region][((hash*69) % #region_countryMap[region]) +1 ]   
 end
 
 local function getMapOverrideCountry()
@@ -7660,15 +7608,15 @@ local function getMapOverrideCountry()
 
 
 local persistenCountry 
-local function getCountryNameByCulture(culture, hash)
+local function getCountryNameByRegion(region, hash)
     if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
     local mapOverrideCountry = getMapOverrideCountry()
     if mapOverrideCountry ~= nil then
       setCacheBy("country",mapOverrideCountry)
       return "Country: "..getCacheBy("country")
     end
-    local country = getCountryByCulture(culture, hash)
-    setCacheBy("country", country..", "..getRegionByCountry(country))
+    local country = getCountryByRegion(region, hash)
+    setCacheBy("country", country..", "..region)
     persistenCountry = country
     return "Country: "..getCacheBy("country") 
 end
@@ -7685,7 +7633,8 @@ function widget:DrawScreenEffects(vsx, vsy)
     end
     local hash = getDetermenisticHash()
     local rawtimeStamp = getDayTimeString()
-    local rawcountry = getCountryNameByCulture(culture ,hash)
+    local region    = GetRegionByHash(hash)
+    local rawcountry = getCountryNameByRegion(region, hash)
 
     for k, v in pairs(cache) do
       longestString = math.max(longestString, string.len(v))
@@ -7701,10 +7650,10 @@ function widget:DrawScreenEffects(vsx, vsy)
     end
 
     local timeStamp = getRollingString(getDayTimeString(), timeStep, currentFrame)
-    local citypart = getRollingString(getNeighbourhoodName(persistenCountry, hash), timeStep, currentFrame)        
-    local country = getRollingString(getCountryNameByCulture(culture, hash), timeStep, currentFrame)
-    local province = getRollingString(getProvinceNameBy(persistenCountry ,hash), timeStep, currentFrame)
-    local cityname = getRollingString(getCityNameByProvince(getCacheBy("province"), hash), timeStep, currentFrame)
+    local citypart  = getRollingString(getNeighbourhoodName(persistenCountry, hash), timeStep, currentFrame)        
+    local country   = getRollingString(getCountryNameByRegion(region, hash), timeStep, currentFrame)
+    local province  = getRollingString(getProvinceNameBy(persistenCountry ,hash), timeStep, currentFrame)
+    local cityname  = getRollingString(getCityNameByProvince(getCacheBy("province"), hash), timeStep, currentFrame)
 
 
     local textCol = {0.124, 200/255, 255/255, 0.9*fadeOutFactor}

@@ -13,13 +13,79 @@ function  getMapCultureMap(mapName)
     }
 
     if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end
- end
+end
 
- function getInstanceCultureOrDefaultToo(defaultCulture) 
+function GetRegionByHash(mapHash)
+  allRegions = 9
+  result = mapHash % allRegions
+  resultMap = {
+    [0] = "City States",
+    [1] = "Middle East",
+    [2] = "Central Asia",
+    [3] = "Africa",
+    [4] = "Europe",
+    [5] = "North America",
+    [6] = "South America",
+    [7] = "South East Asia",
+    [8] = "Central Asia",
+      }
+
+      return resultMap[result]
+  end
+
+  function GetRegionCulturePercentages(region)
+      resultMap = {}
+      resultMap["City States"] = {
+        arabic = 0.04,
+        international= 0.5,
+        western = 0.23, 
+        asian = 0.23
+         }
+      resultMap["Middle East"] = {arabic = 0.75, international= 0.10, western = 0.10, asian = 0.05}
+      resultMap["Central Asia"] = {arabic = 0.35, international= 0.05, western = 0.10, asian = 0.50}
+      resultMap["Africa"] = {arabic = 0.50, international= 0.30, western = 0.10, asian = 0.10}
+      resultMap["Europe"] = {arabic = 0.10, international= 0.30, western = 0.50, asian = 0.10}
+      resultMap["North America"] = {arabic = 0.05, international= 0.15, western = 0.70, asian = 0.10}
+      resultMap["South America"] = {arabic = 0.15, international= 0.55, western = 0.15, asian = 0.15}
+      resultMap["South East Asia"] = {arabic = 0.05, international= 0.20, western = 0.05, asian = 0.7}
+      resultMap["Central Asia"] = {arabic = 0.50, international= 0.20, western = 0.05, asian = 0.25}
+      return resultMap[region]
+  end
+
+
+  function getCultureByRegionOrDefault(hash, percentages)
+      dice = getDeterministicRandom(hash, 100)
+      sumedUp= 0
+      for culture, likelihood in pairs(percentages) do
+          if ((dice >= sumedUp * 100) and (dice <= (sumedUp + likelihood) * 100)) then
+            echo("GetCultureByRegion:" .. culture)
+            return culture
+          else
+              sumedUp = sumedUp + likelihood
+          end
+      end
+
+      echo("defaulting to random non deterministic culture")
+      return randDict(percentages)
+  end
+
+function GetCultureByRegion(mapName)
+    mapHash = stringToHash(mapName)
+    region = GetRegionByHash(mapHash)
+    percentages = GetRegionCulturePercentages(region)
+
+    return getCultureByRegionOrDefault(mapHash, percentages)
+end
+
+function getInstanceCultureOrDefaultToo() 
     if GG.InstanceCulture then return GG.InstanceCulture end
     
-    mapDependentCulture = getMapCultureMap(Game.mapName)    
-    GG.InstanceCulture =  mapDependentCulture or defaultCulture
+    mapDependentCulture = getMapCultureMap(Game.mapName)  
+    if mapDependentCulture then  
+        GG.InstanceCulture = mapDependentCulture
+    else 
+        GG.InstanceCulture =  GetCultureByRegion(Game.mapName)
+    end
     
     return GG.InstanceCulture
 end
@@ -34,7 +100,7 @@ end
 function getGameConfig()
     return {
         instance = {
-            culture = getInstanceCultureOrDefaultToo(getModOptionCulture() or GG.AllCultures.arabic), -- "international", "western", "asia", "arabic"
+            culture = getInstanceCultureOrDefaultToo(), -- "international", "western", "asian", "arabic"
             Version = "Alpha: 0.910" 
         },
 
@@ -327,6 +393,16 @@ function getGameConfig()
             ["tollwutox"] = "tollwutox",
             ["depressol"] = "depressol"
         }
+    end
+
+    function stringToHash(hashString)
+        totalValue = 0
+        for i = 1, string.len(hashString) do
+            local c = hashString:sub(i, i)
+            totalValue = totalValue + string.byte(c, 1)
+        end
+
+        return totalValue
     end
    
     function  getManualCivilianBuildingMaps(mapName)

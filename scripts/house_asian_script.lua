@@ -21,6 +21,27 @@ local cubeDim = {
     heigth = factor * 14.84 + heightoffset,
     roofHeigth = 700
 }
+
+local SIG_SUBANIMATIONS 2
+
+pieceCyclicOSTable = {
+    ["PieceName"] = {
+                    {"turn", y_axis, 49, 3},
+                    {"move", x_axis, 49, 3, 500},
+                    {"blink", 750 }
+                    },      
+}
+
+function initAllPieces()
+    Signal(SIG_SUBANIMATIONS)
+    for pieceName, set in pairs ( pieceCyclicOSTable) do
+        startPieceOS(pieceName, SIG_SUBANIMATIONS)
+    end
+end
+
+
+MapPieceIDName = Spring.GetUnitPieceMap(unitID)
+
 supriseChances = {
     roof = 0.5,
     yard = 0.6,
@@ -544,6 +565,8 @@ function getElasticTable(...)
 
     return resulT
 end
+
+
 
 function nameContainsMaterial(name, materialColourName)
     if not name or name == "" then
