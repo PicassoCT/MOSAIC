@@ -472,6 +472,8 @@ function HoloGrams()
 
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
+            symbol = math.random(8,11)
+            Show(TablesOfPiecesGroups["buisness_holo18Spin"][symbol])
             StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 5)
             StartThread(addJHologramLetters)
         end
