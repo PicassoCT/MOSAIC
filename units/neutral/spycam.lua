@@ -13,7 +13,7 @@ local Spycam = Building:New{
 	maxSlope = 50.0,
 	levelGround = false,
 	blocking =false,
-
+	sightDistance = 100,
 	upright  = false,
 
 	footprintX = 1,
