@@ -5054,6 +5054,10 @@ function getTransportsInT(T)
     return returnTable
 end
 
+function isTransport(id)
+    def = Spring.GetUnitDefID(id)
+    return UnitDefs[def].isTransport
+end
 -- >filters Out Immobile Units
 function getImmobileInT(T, UnitDefs)
     returnTable = {}
@@ -5553,6 +5557,8 @@ function isTransported(unitID)
     transporterID = Spring.GetUnitTransporter(unitID)
     return (transporterID ~= nil)
 end
+
+
 
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
