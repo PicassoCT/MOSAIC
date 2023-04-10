@@ -11,7 +11,7 @@ innerLimit = 96
 center = piece "center"
 Icon = piece "Icon"
 
-teamID = Spring.GetUnitTeam(unitID)
+myTeamID = Spring.GetUnitTeam(unitID)
 level = 0
 
 function script.Create()
@@ -48,13 +48,17 @@ function integrateNewMembers()
         if  membersIntegrated < GameConfig.maxNumberIntegratedIntoHive  then
         foreach(getAllInCircle(x, z, IntegrationRadius), 
             function(id)
+                team = Spring.GetUnitTeam(id)
+                if team == myTeamID then
+                    return nil
+                end
                 if GG.DisguiseCivilianFor[id] then
                   return GG.DisguiseCivilianFor[id]
                 end
                 return id
             end, 
             function(id)
-                if integrateAbleUnits[Spring.GetUnitDefID(id)] then           
+                if integrateAbleUnits[Spring.GetUnitDefID(id)] and not isTransport(id) then           
                     Spring.SetUnitPosition(id, px, py, pz)
                     Spring.DestroyUnit(id, false, true)
                     membersIntegrated = membersIntegrated  + 1
