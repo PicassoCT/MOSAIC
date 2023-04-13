@@ -233,5 +233,15 @@ return {
 "No tell Motel",
 "No vacancy",
 "Viagra Club",
-"Striptease"
+"Striptease",
+"Station One",
+"Miss Saigon",
+"Lucky Look",
+"sahara",
+"sixtynine",
+"knock knock bar",
+"massages",
+"tatoos",
+"crazy night",
+"bui vien"
 }
