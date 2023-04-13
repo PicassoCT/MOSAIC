@@ -95,19 +95,44 @@ function hideSubSpins(pieceID)
     end
 end
 
-function script.Create()
-    Spring.SetUnitAlwaysVisible(unitID, true)
-    Spring.SetUnitNeutral(unitID, true)
-    Spring.SetUnitNoSelect(unitID, true)
-    Spring.SetUnitBlocking(unitID, false)
+SIG_CORE = 2
+function restartHologram()
+    Signal(SIG_CORE)
+    SetSignalMask(SIG_CORE)
     resetAll(unitID)
     hideAll(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     deployHologram()
     hideT(spins)
     StartThread(checkForBlackOut)
     StartThread(grid)
     StartThread(clock)
+end
+
+function script.Create()
+    Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitNeutral(unitID, true)
+    Spring.SetUnitNoSelect(unitID, true)
+    Spring.SetUnitBlocking(unitID, false)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    restartHologram()
+    StartThread(emergencyWatcher)
+end
+
+function emergencyWatcher()
+    while true do
+        if GG.GlobalGameState ~= GameConfig.GameState.normal then
+            Signal(SIG_CORE)
+            hideAll(unitID)
+            while GG.GlobalGameState ~= GameConfig.GameState.normal do
+               --TODO
+                Sleep(1000)
+            end
+            hideAll(unitID)
+            restartHologram()
+        end
+        Sleep(3000)
+    end
+
 end
 
 local hours, minutes, seconds, percent = getDayTime()
