@@ -118,13 +118,22 @@ function script.Create()
     StartThread(emergencyWatcher)
 end
 
+function ShowEmergencyElements () 
+  if maRa() then Show(EmergencyIcon)  end
+  ShowOne(TableOfPiecegroups["EmergencyPillar"]) 
+  if maRa() then
+    element=ShowOne(TableOfPiecegroups["EmergencyMessage" ]) 
+    Spin(element , y_axis, math.rad(42), 0)
+  end
+end
+
 function emergencyWatcher()
     while true do
         if GG.GlobalGameState ~= GameConfig.GameState.normal then
             Signal(SIG_CORE)
             hideAll(unitID)
+            ShowEmergencyElements() 
             while GG.GlobalGameState ~= GameConfig.GameState.normal do
-               --TODO
                 Sleep(1000)
             end
             hideAll(unitID)
