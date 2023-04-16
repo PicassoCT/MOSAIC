@@ -2703,3 +2703,14 @@ end
 
 
 -- ================================================================================================================
+
+function LightChain(elementGroup, modMax, restTimeMs)
+    LightChainIndex = 1
+    while true do
+        element = elementGroup[LightChainIndex]
+        if element then  Show(element) end
+        Sleep(restTimeMs)
+        if element then  Hide(element)  end
+        LightChainIndex = (LightChainIndex % modMax) + 1
+    end
+end

@@ -2587,7 +2587,7 @@ end
 function tableCopy(orig)
     local orig_type = type(orig)
     local copy
-    if orig_type == 'table' then
+    if orig_type == "table" then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
             copy[tableCopy(orig_key)] = tableCopy(orig_value)
