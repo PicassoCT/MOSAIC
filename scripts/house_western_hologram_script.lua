@@ -569,6 +569,9 @@ function HoloGrams()
         else
             if maRa() == maRa() then
                 addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
+                if maRa()==maRa()then
+                    StartThread(LightChain, TablesOfPiecesGroups["Techno"], 4, 110)
+                end
             else
                 addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
             end
