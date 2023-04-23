@@ -359,19 +359,10 @@ function holoGramRain()
     end
     while true do
         if (hours > 19 or hours < 6) and isANormalDay() then
-            GG.boolRainyNight = maRa()
-            if not GG.RainyNight then
-                GG.RainyNight = {
-                                 x = math.random(1,15)*randSign(),
-                                 z = math.random(1,15)*randSign()
-                                 }
-            end
-            boolRainyNight = GG.boolRainyNight
-            if boolRainyNight then
-                Turn(RainCenter,x_axis,math.rad(GG.RainyNight.x),0)
-                Turn(RainCenter,z_axis,math.rad(GG.RainyNight.z),0)
+            if isRaining(hours) then
+                Turn(RainCenter,x_axis,math.rad(GG.RainDirection.x),0)
+                Turn(RainCenter,z_axis,math.rad(GG.RainDirection.z),0)
                 while(hours > 19 or hours < 6) do
-                    hours, minutes, seconds, percent = getDayTime()
                     if boolIsBrothel then
                         holoRain("Brothel", speed)
                     end

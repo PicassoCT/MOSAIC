@@ -1084,6 +1084,10 @@ function getGameConfig()
                 return result
             end
 
+            function getWesternUnitTypeMap(typeName, UnitDefs)
+                return getCultureUnitModelTypes("western", typeName, UnitDefs)
+            end
+
             function getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)
                 if cultureName == nil then 
                     cultureName = getCultureName()
@@ -1310,6 +1314,23 @@ function getGameConfig()
                 else
                     return "female"
                 end
+            end
+
+            function isRaining(hour)
+                if GG.boolRainyArea == nil then
+                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0                   
+                end
+                if not GG.boolRainyArea then return false end
+
+                 if not GG.RainDirection then
+                        GG.RainDirection = {
+                                         x = math.random(1,15) * randSign(),
+                                         z = math.random(1,15) * randSign()
+                                         }
+                end
+                if not hour then hour = getDayTime() end
+                -- but does it rain right now
+                return getDeterministicRandom(hour, 4) % 2 == 0
             end
 
             function isANormalDay()
