@@ -2,70 +2,85 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
+
 local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local creditNeonSigns = include('creditNamesNeonLogos.lua')
-buisness_spin = piece("buisness_spin")
-wallSpin = piece("wallSpin")
-RainCenter = piece("RainCenter")
-general_spin = piece("general_spin")
-text_spin = piece("text_spin")
-brothel_spin = piece("brothel_spin")
-casino_spin = piece("casino_spin")
-JLantern = piece("JLantern")
 
+local hours  =0
+local minutes=0
+local seconds=0
+local percent=0
+
+local buisness_spin = piece("buisness_spin")
+local wallSpin = piece("wallSpin")
+local RainCenter = piece("RainCenter")
+local general_spin = piece("general_spin")
+local text_spin = piece("text_spin")
+local brothel_spin = piece("brothel_spin")
+local casino_spin = piece("casino_spin")
+local JLantern = piece("JLantern")
+local idleAnimations = {}
+local technoAnimations = {}
 Hide(JLantern)
 
-tldrum = piece "tldrum"
-dancepivot = piece "dancepivot"
-deathpivot = piece "deathpivot"
-tigLil = piece "tigLil"
-assert(tigLil)
-tlHead = piece "tlHead"
-assert(tlHead)
-tlhairup = piece "tlhairup"
-assert(tlhairup)
-tlhairdown = piece "tlhairdown"
-assert(tlhairdown)
-tlarm = piece "tlarm"
-assert(tlarm)
-tlarmr = piece "tlarmr"
-assert(tlarmr)
-tllegUp = piece "tllegUp"
-assert(tllegUp)
-tllegLow = piece "tllegLow"
-assert(tllegUp)
-tllegUpR = piece "tllegUpR"
-assert(tllegUpR)
-tllegLowR = piece "tllegLowR"
-assert(tllegLowR)
-tlpole = piece "tlpole"
-assert(tlpole)
-tlflute = piece "tlflute"
-assert(tlflute)
+local tldrum = piece "tldrum"
+local dancepivot = piece "dancepivot"
+local deathpivot = piece "deathpivot"
+local tigLil = piece "tigLil"
+local tlHead = piece "tlHead"
+local tlhairup = piece "tlhairup"
+local tlhairdown = piece "tlhairdown"
+local tlarm = piece "tlarm"
+local tlarmr = piece "tlarmr"
+local tllegUp = piece "tllegUp"
+local tllegLow = piece "tllegLow"
+local tllegLowR = piece "tllegLowR"
+local tllegUpR = piece "tllegUpR"
+local tlpole = piece "tlpole"
+local tlflute = piece "tlflute"
+
 
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
 handr = piece "handr"
 handl = piece "handl"
 ball = piece "ball"
+tigLilHoloPices = {
+    tldrum ,
+    dancepivot, 
+    deathpivot ,
+    tigLil ,
+    tlHead ,
+    tlhairup, 
+    tlhairdown ,
+    tlarm,
+    tlarmr, 
+    tllegUp,
+    tllegLow, 
+    tllegLowR, 
+    tllegUpR ,
+    tlpole ,
+    tlflute,
+    handr,
+    handl,
+    ball
+}
 
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
-local TablesOfPiecesGroups = {}
+local TableOfPiecesGroups = {}
 local boolDebugHologram = false
 
 myDefID = Spring.GetUnitDefID(unitID)
-boolIsCasino= UnitDefNames["house_western_hologram_casino"].id == myDefID
-boolIsBrothel= UnitDefNames["house_western_hologram_brothel"].id == myDefID
-boolIsBuisness= UnitDefNames["house_western_hologram_buisness"].id == myDefID 
-sizeDownLetter = 350
+local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == myDefID
+local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == myDefID
+local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == myDefID 
+sizeDownLetter  = 350
 sizeSpacingLetter = 300
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
-
 
 rotatorTable ={}
 local SIG_HOLO = 1
@@ -75,24 +90,55 @@ local SIG_INCIRCLE = 8
 local SIG_TALKHEAD = 16
 local SIG_GESTE = 32
 local SIG_ONTHEMOVE = 64
+local SIG_TIGLIL = 128
 GameConfig = getGameConfig()
 
+function tiglLilLoop()
+    if unitID % 5 ~= 0 then return end
+    if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
+    if count(GG.TiglilHoloTable) > 3 and not GG.TiglilHoloTable[unitID]  then  return end
 
+    GG.TiglilHoloTable[unitID] = unitID
 
-function dancingTiglil()
     while true do
+        if (hours > 20 or hours < 6) then
+            if boolIsBuisness or boolIsCasino then
+                StartThread(dancingTiglil, technoAnimations, true)
+            else
+                StartThread(dancingTiglil, idleAnimations)
+            end
+            while  (hours > 20 or hours < 6) do
+                Sleep(30000)
+            end
+            Signal(SIG_TIGLIL)
+            Hide(tlpole)
+            Hide(tldrum)
+            Hide(tlflute)
+            hideT(TableOfPiecesGroups["GlowStick"])
+            hideT(tigLilHoloPices)
+        end
+        Sleep(9000)
+    end
+end
+
+function dancingTiglil(animations, boolTechno)
+    SetSignalMask(SIG_TIGLIL)
+    if boolTechno then
+        showOne(TableOfPiecesGroups["GlowStick"])
+        showOne(TableOfPiecesGroups["GlowStick"])
+    end
+
+    while (hours > 20 or hours < 6) do
         TigLilSetup()
         Signal(SIG_GESTE)
         Signal(SIG_TALKHEAD)
         rest = math.random(512, 4096)
         Sleep(rest)
-        idleAnimations[math.random(1,#idleAnimations)]()
+        animations[math.random(1,#animations)]()
     end
 end
 
-
 function HideAssert(pieceID)
-    --assert(pieceID)
     Hide(pieceID)
 end
 
@@ -107,10 +153,10 @@ end
 function showSubSpins(pieceID)
    pieceName = getUnitPieceName(unitID, pieceID)
    subSpinPieceName = pieceName.."Spin"    
-   if TablesOfPiecesGroups[subSpinPieceName] then  
-    hideT(TablesOfPiecesGroups[subSpinPieceName] )              
-    for i=1, #TablesOfPiecesGroups[subSpinPieceName] do
-        spinPiece = TablesOfPiecesGroups[subSpinPieceName][i]
+   if TableOfPiecesGroups[subSpinPieceName] then  
+    hideT(TableOfPiecesGroups[subSpinPieceName] )              
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do
+        spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
         Show(spinPiece)
         Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
     end
@@ -120,11 +166,10 @@ end
 function hideSubSpins(pieceID)
     pieceName = getUnitPieceName(unitID, pieceID)
     subSpinPieceName = pieceName.."Spin"    
-    if TablesOfPiecesGroups[subSpinPieceName] then  
-        hideT(TablesOfPiecesGroups[subSpinPieceName]) 
+    if TableOfPiecesGroups[subSpinPieceName] then  
+        hideT(TableOfPiecesGroups[subSpinPieceName]) 
     end
 end
-
 
 function restartHologram()
     Signal(SIG_CORE)
@@ -135,6 +180,7 @@ function restartHologram()
     hideT(spins)
     StartThread(checkForBlackOut)
     StartThread(clock)
+    StartThread(tiglLilLoop)
 end
 
 function script.Create()
@@ -142,9 +188,8 @@ function script.Create()
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
     restartHologram()
-    StartThread(dancingTiglil)
     StartThread(grid)
     StartThread(emergencyWatcher)
 
@@ -154,8 +199,8 @@ function ShowEmergencyElements ()
   EmergencyText = piece("EmergencyText")
   if maRa() then Show(EmergencyIcon) end
   Show(EmergencyText)
-  showOne(TablesOfPiecesGroups["EmergencyPillar"]) 
-  element=showOne(TablesOfPiecesGroups["EmergencyMessage" ]) 
+  showOne(TableOfPiecesGroups["EmergencyPillar"]) 
+  element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
   Spin(element , y_axis, math.rad(randSign() * 42), 0)
 end
 
@@ -190,28 +235,28 @@ allGrids = nil
 function getGrid()
     if not allGrids then    
         allGrids = {}
-        allGrids[#allGrids+1] = TablesOfPiecesGroups["BrothelGrid"][1]
-        allGrids[#allGrids+1] = TablesOfPiecesGroups["BuisnessGrid"][1]
-        allGrids[#allGrids+1] = TablesOfPiecesGroups["CasinoGrid"][1]
+        allGrids[#allGrids+1] = TableOfPiecesGroups["BrothelGrid"][1]
+        allGrids[#allGrids+1] = TableOfPiecesGroups["BuisnessGrid"][1]
+        allGrids[#allGrids+1] = TableOfPiecesGroups["CasinoGrid"][1]
     
-        allGrids[#allGrids+1] = TablesOfPiecesGroups["BrothelGrid"][2]
-        allGrids[#allGrids+1] = TablesOfPiecesGroups["BuisnessGrid"][2]
-        allGrids[#allGrids+1] = TablesOfPiecesGroups["CasinoGrid"][2]
+        allGrids[#allGrids+1] = TableOfPiecesGroups["BrothelGrid"][2]
+        allGrids[#allGrids+1] = TableOfPiecesGroups["BuisnessGrid"][2]
+        allGrids[#allGrids+1] = TableOfPiecesGroups["CasinoGrid"][2]
     end
 
     if boolIsBrothel then
-        return TablesOfPiecesGroups["BrothelGrid"][math.random(1,2)]
+        return TableOfPiecesGroups["BrothelGrid"][math.random(1,2)]
     end
 
     if (maRa()== maRa())== maRa()then
         return getSafeRandom(allGrids, allGrids[1])
     end
     if boolIsBuisness then
-        return TablesOfPiecesGroups["BuisnessGrid"][math.random(1,2)]
+        return TableOfPiecesGroups["BuisnessGrid"][math.random(1,2)]
     end
 
     if boolIsCasino then
-        return TablesOfPiecesGroups["CasinoGrid"][math.random(1,2)]
+        return TableOfPiecesGroups["CasinoGrid"][math.random(1,2)]
     end    
 end
 
@@ -220,6 +265,9 @@ function grid()
     Sleep(100)
     while true do
         if (hours > 19 or hours < 6) then
+
+
+
             theGrid = getGrid()
             upVal=math.random(3,4)
             lowVal= math.random(0,2)
@@ -295,18 +343,20 @@ end
 
 function holoRain(Name, speed)
     groupName = Name.."Rain"
-    for i=1,#TablesOfPiecesGroups[groupName] do
+    for i=1,#TableOfPiecesGroups[groupName] do
         delay= math.random(0,5)*100
-        StartThread(RainDrop,TablesOfPiecesGroups[groupName][i], delay, speed)
+        StartThread(RainDrop,TableOfPiecesGroups[groupName][i], delay, speed)
     end
 end
 
-hours, minutes, seconds, percent = 0,0,0,0
 RainCenter = piece("RainCenter")
 function holoGramRain()
     SetSignalMask(SIG_HOLO)
     Sleep(100)
     speed= math.pi*2000
+    if unitID % 3 == 0 then
+        StartThread(glowWormFlight, 5.0)
+    end
     while true do
         if (hours > 19 or hours < 6) and isANormalDay() then
             GG.boolRainyNight = maRa()
@@ -350,9 +400,9 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellTable = {}
             hcounter = math.random(3, 6)
-            for i=1, #TablesOfPiecesGroups[name] do
+            for i=1, #TableOfPiecesGroups[name] do
                 Sleep(500)
-                _, hologramPiece= randDict(TablesOfPiecesGroups[name])
+                _, hologramPiece= randDict(TableOfPiecesGroups[name])
                 if not alreadyShowing[hologramPiece] and hcounter > 0 then 
                     alreadyShowing[hologramPiece]= true
                     hcounter = hcounter - 1
@@ -368,19 +418,123 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
 
             showT(showTellTable)
             Sleep(90000)
-            resetT(TablesOfPiecesGroups[name], 1.2)
-            WaitForTurns(TablesOfPiecesGroups[name]) 
+            resetT(TableOfPiecesGroups[name], 1.2)
+            WaitForTurns(TableOfPiecesGroups[name]) 
             hideT(showTellTable)                    
         else
-            hideT(TablesOfPiecesGroups[name])
+            hideT(TableOfPiecesGroups[name])
             Sleep(interval)
         end
       
     end
 end
 
+function fadeIn(piecesTable, rest)
+    for i = 1, #piecesTable do
+        hideT(piecesTable)
+        assert(piecesTable[i], i.." not in piecesTable")
+        Show(piecesTable[i])
+        Sleep(rest)
+    end
+end
+
+function fadeOut(piecesTable, rest)
+    --dissappearing
+    for i =  #piecesTable, 1, -1 do
+        hideT(piecesTable)
+        assert(piecesTable[i], i.." not in piecesTable")
+        Show(piecesTable[i])
+        Sleep(rest)
+    end
+end
+
+function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
+    -- appear
+    fadeIn(piecesTable, fadeInTimeMs/#piecesTable)
+
+    --lifeTime
+    if maRa() then
+        Sleep(lifeTimeMs)
+    else-- flicker
+        fadeOut(piecesTable, lifeTimeMs/(#piecesTable/2))
+        fadeIn(piecesTable, lifeTimeMs/(#piecesTable/2))
+    end
+
+    fadeOut(piecesTable, fadeOutTimeMs/(#piecesTable))
+    hideT(piecesTable)
+end
+
+
+function disAppearGlowWormSwarm( fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
+    for i=1, #TableOfPiecesGroups["GlowSwarm"] do
+        if maRa() then
+            mx,my,mz = math.random(-5,5), math.random(-5,5) , math.random(-5,5)
+            mP(TableOfPiecesGroups["GlowSwarm"][i], mx,my,mz, 0.5)
+            StartThread(disAppearGlowWorm, {TableOfPiecesGroups["GlowSwarm"][i]}, math.random(0,fadeInTimeMs), math.random(0, lifeTimeMs), math.random(0, fadeOutTimeMs))
+        end
+    end
+end
+
+function glowWormFlight(speed)
+    speed = 5
+    local glowWormCenter = piece("GlowMove")
+    local heightDiff = 25
+    local fadeInTimeMs = 1000
+    local lifeTimeMs =  2500
+    local fadeOutTimeMs = 1000
+    local targetHeight = 0
+    posX, posY,posZ = 0,0,0
+    intervalLength = math.random(5, 10)
+
+    hideT(TableOfPiecesGroups["GlowSwarm"])
+    targetHeight = math.random(0,heightDiff)
+    posX = math.random(0, 500)*randSign() 
+    intervalLength = math.random(5, 10)
+    subPart = intervalLength/4
+    fadeInTimeMs = math.ceil(subPart*750*math.random(1,2))
+    lifeTimeMs =  math.ceil(subPart*2*1000)
+    fadeOutTimeMs = math.ceil(subPart*750*math.random(1,2))
+    for i=1, #TableOfPiecesGroups["GlowSwarm"] do 
+        spinRand( TableOfPiecesGroups["GlowSwarm"][i], -42, 42, speed)
+    end
+
+    while true do
+        if (hours > 19 or hours < 6) then
+            timeInSeconds = (Spring.GetGameFrame()/30) % 90
+
+            if math.ceil(timeInSeconds) % 15 == 0 then
+                hideT(TableOfPiecesGroups["GlowWorm"])
+                hideT(TableOfPiecesGroups["GlowSwarm"])
+                targetHeight = math.random(0,heightDiff)
+                posX = math.random(0, 500)*randSign() 
+                intervalLength = math.random(5, 10)
+                subPart = intervalLength/4
+                fadeInTimeMs = math.ceil(subPart*750*math.random(1,2))
+                lifeTimeMs =  math.ceil(subPart*2*1000)
+                fadeOutTimeMs = math.ceil(subPart*750*math.random(1,2))
+                for i=1, #TableOfPiecesGroups["GlowSwarm"] do 
+                    spinRand( TableOfPiecesGroups["GlowSwarm"][i], -42, 42, math.random(0, speed))
+                end
+            end
+
+            posY = math.abs(math.sin(timeInSeconds*math.pi))*targetHeight
+            posZ = math.cos(timeInSeconds*math.pi)
+            mP(glowWormCenter, posX, posY, posZ, 50)
+
+            if timeInSeconds % intervalLength < 1.0 then
+                if maRa() then
+                    StartThread(disAppearGlowWorm, TableOfPiecesGroups["GlowWorm"],fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
+                else
+                    StartThread(disAppearGlowWormSwarm,fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
+                end
+            end
+        end
+        Sleep(1000)
+    end
+end
+
 function showWallDayTime(name)
-    wallGrid = TablesOfPiecesGroups["WallGrid"][math.random(1,#TablesOfPiecesGroups["WallGrid"])]
+    wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
         if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
             if maRa() then
@@ -388,7 +542,7 @@ function showWallDayTime(name)
             end
             counter = math.random(4,7)    
             while counter > 0 do
-                _, element = randDict(TablesOfPiecesGroups[name])
+                _, element = randDict(TableOfPiecesGroups[name])
                 if element then
                     counter = counter - 1
                     Show(element)
@@ -412,9 +566,9 @@ function showWallDayTime(name)
                 end
             end
 
-            for i=1, #TablesOfPiecesGroups[name] do
-                HideAssert(TablesOfPiecesGroups[name][i])
-                hideSubSpins(TablesOfPiecesGroups[name][i])
+            for i=1, #TableOfPiecesGroups[name] do
+                HideAssert(TableOfPiecesGroups[name][i])
+                hideSubSpins(TableOfPiecesGroups[name][i])
                 rest= ((i % 3)+1)*1000
                 Sleep(rest)
             end
@@ -443,8 +597,8 @@ function HoloGrams()
     Sleep(15000)
 
     
-    local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
-    local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
+    local flickerGroup = TableOfPiecesGroups["BrothelFlicker"]
+    local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
     hideT(flickerGroup)
     hideT(CasinoflickerGroup)
 
@@ -494,9 +648,9 @@ function HoloGrams()
 
         lowestIndex= nil
         lowestCounter = math.huge
-        start = math.random(1,#TablesOfPiecesGroups["buisness_holo"])
-        for i=start, #TablesOfPiecesGroups["buisness_holo"] do
-            element = TablesOfPiecesGroups["buisness_holo"][i]
+        start = math.random(1,#TableOfPiecesGroups["buisness_holo"])
+        for i=start, #TableOfPiecesGroups["buisness_holo"] do
+            element = TableOfPiecesGroups["buisness_holo"][i]
 
             if not GG.HoloLogoRegister[element] then
                 GG.HoloLogoRegister[element] = 1
@@ -512,7 +666,7 @@ function HoloGrams()
 
         if not boolDone then
             for i=1, start do
-                element = TablesOfPiecesGroups["buisness_holo"][i]
+                element = TableOfPiecesGroups["buisness_holo"][i]
                 if not GG.HoloLogoRegister[element] then
                     GG.HoloLogoRegister[element] = 1
                     logo = element
@@ -540,7 +694,7 @@ function HoloGrams()
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
             symbol = math.random(8,11)
-            Show(TablesOfPiecesGroups["buisness_holo18Spin"][symbol])
+            Show(TableOfPiecesGroups["buisness_holo18Spin"][symbol])
             StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 5)
             StartThread(addJHologramLetters)
         end
@@ -555,9 +709,9 @@ function HoloGrams()
         if maRa() then
            pieceName = getUnitPieceName(unitID, logo)
            logoTableName = pieceName.."Spin"
-           if TablesOfPiecesGroups[logoTableName] then   
-                for i=1, #TablesOfPiecesGroups[logoTableName] do
-                    _, element = randDict(TablesOfPiecesGroups[logoTableName])             
+           if TableOfPiecesGroups[logoTableName] then   
+                for i=1, #TableOfPiecesGroups[logoTableName] do
+                    _, element = randDict(TableOfPiecesGroups[logoTableName])             
                     if maRa() then
                         spinLogoPiece = element
                         Show(spinLogoPiece)
@@ -569,8 +723,8 @@ function HoloGrams()
         else
             if maRa() == maRa() then
                 addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
-                if maRa()==maRa()then
-                    StartThread(LightChain, TablesOfPiecesGroups["Techno"], 4, 110)
+                if maRa() then
+                    StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
                 end
             else
                 addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
@@ -693,7 +847,7 @@ function addHologramLetters( myMessage)
     boolUpRight = maRa()
     if boolUpRight and boolIsBrothel then
         if maRa() == maRa() then
-            StartThread(LightChain, TablesOfPiecesGroups["LightChain"], 4, math.random(700,1200))
+            StartThread(LightChain, TableOfPiecesGroups["LightChain"], 4, math.random(700,1200))
         end
     end
     boolSpinning = maRa()
@@ -712,15 +866,15 @@ function addHologramLetters( myMessage)
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
-        if letter ~= " " and TablesOfPiecesGroups[letter] then
+        if letter ~= " " and TableOfPiecesGroups[letter] then
             if not counter[letter] then 
                 counter[letter] = 0 
             end            
             counter[letter] = counter[letter] + 1 
 
             if counter[letter] < 4 then                 
-                if TablesOfPiecesGroups[letter] and counter[letter] and TablesOfPiecesGroups[letter][counter[letter]] then
-                    pieceName = TablesOfPiecesGroups[letter][counter[letter]] 
+                if TableOfPiecesGroups[letter] and counter[letter] and TableOfPiecesGroups[letter][counter[letter]] then
+                    pieceName = TableOfPiecesGroups[letter][counter[letter]] 
                     if pieceName then                     
                         Show(pieceName)
                         Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
@@ -753,9 +907,9 @@ function addJHologramLetters()
     axis= 2
     boolUpRight = maRa()
     if boolUpRight then
-        _,background = randDict(TablesOfPiecesGroups["JUpright"])
+        _,background = randDict(TableOfPiecesGroups["JUpright"])
     else
-        _,background = randDict(TablesOfPiecesGroups["JHorizontal"])
+        _,background = randDict(TableOfPiecesGroups["JHorizontal"])
     end
      Show(background)
     downIndex = 1
@@ -767,8 +921,8 @@ function addJHologramLetters()
 
     val = math.random(5,45)
     for i=1, stringlength do
-        if TablesOfPiecesGroups["JLetter"][message[i]] then
-            local pieceName = TablesOfPiecesGroups["JLetter"][message[i]]                   
+        if TableOfPiecesGroups["JLetter"][message[i]] then
+            local pieceName = TableOfPiecesGroups["JLetter"][message[i]]                   
             Show(pieceName)
             Move(pieceName, 3,  -sizeDownLetter*rowIndex, 0)
             Move(pieceName,axis, sizeSpacingLetter*(columnIndex), 0)
@@ -785,100 +939,103 @@ end
 
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
 
-function TigLilSetup()
+function TigLilSetup()    
+    echo("dancing tilgil a1")
     Hide(tlpole)
-    Hide(tlsparksemit)
-    Hide(tlsparksemit2)
     Hide(deathpivot)
     Hide(tldrum)
-    Hide(tlharp)
+    --Hide(tlharp)
     Hide(tlflute)
     Hide(ball)
     Hide(handr)
+    echo("dancing tilgil a2")
     Hide(handl)
+    Show(tigLil)
     Show(tlHead)
     Show(tlhairup)
     Show(tlhairdown)
     Show(tlarm)
     Show(tlarmr)
+    echo("dancing tilgil a3")
     Show(tllegUp)
     Show(tllegLow)
     Show(tllegUpR)
-                    Show(tllegLowR)
+    Show(tllegLowR)
+    echo("dancing tilgil a4")
 
     Turn(tigLil, y_axis, math.rad(0), 4)
-        Turn(tigLil, z_axis, math.rad(0), 4)
-        Turn(tlHead, x_axis, math.rad(0), 4)
-        Turn(tlHead, y_axis, math.rad(0), 4)
-        Turn(tlHead, z_axis, math.rad(0), 4)
-        Turn(tlhairup, x_axis, math.rad(-74), 2)
-        Turn(tlhairup, y_axis, math.rad(0), 2)
-        Turn(tlhairup, z_axis, math.rad(0), 2)
-        Turn(tlhairdown, x_axis, math.rad(-19), 3)
-        Turn(tllegUp, x_axis, math.rad(0), 3)
-        Turn(tllegUp, y_axis, math.rad(0), 3)
-        Turn(tllegUp, z_axis, math.rad(0), 2)
-        Turn(tllegLow, x_axis, math.rad(0), 2)
-        Turn(tllegLow, y_axis, math.rad(0), 2)
-        Turn(tllegLow, z_axis, math.rad(0), 2)
-        Turn(tllegUpR, x_axis, math.rad(0), 3)
-        Turn(tllegUpR, y_axis, math.rad(0), 2)
-        Turn(tllegUpR, z_axis, math.rad(0), 4)
-        Turn(tllegLowR, x_axis, math.rad(0), 2)
-        Turn(tllegLowR, y_axis, math.rad(0), 2)
-        Turn(tllegLowR, z_axis, math.rad(0), 2)
-        Turn(tlarmr, y_axis, math.rad(0), 3)
+    Turn(tigLil, z_axis, math.rad(0), 4)
+    Turn(tlHead, x_axis, math.rad(0), 4)
+    Turn(tlHead, y_axis, math.rad(0), 4)
+    Turn(tlHead, z_axis, math.rad(0), 4)
+    Turn(tlhairup, x_axis, math.rad(-74), 2)
+    Turn(tlhairup, y_axis, math.rad(0), 2)
+    Turn(tlhairup, z_axis, math.rad(0), 2)
+    Turn(tlhairdown, x_axis, math.rad(-19), 3)
+    Turn(tllegUp, x_axis, math.rad(0), 3)
+    Turn(tllegUp, y_axis, math.rad(0), 3)
+    Turn(tllegUp, z_axis, math.rad(0), 2)
+    Turn(tllegLow, x_axis, math.rad(0), 2)
+    Turn(tllegLow, y_axis, math.rad(0), 2)
+    Turn(tllegLow, z_axis, math.rad(0), 2)
+    Turn(tllegUpR, x_axis, math.rad(0), 3)
+    Turn(tllegUpR, y_axis, math.rad(0), 2)
+    Turn(tllegUpR, z_axis, math.rad(0), 4)
+    Turn(tllegLowR, x_axis, math.rad(0), 2)
+    Turn(tllegLowR, y_axis, math.rad(0), 2)
+    Turn(tllegLowR, z_axis, math.rad(0), 2)
+    Turn(tlarmr, y_axis, math.rad(0), 3)
 
-        Turn(tlarmr, z_axis, math.rad(0), 3)
+    Turn(tlarmr, z_axis, math.rad(0), 3)
+    echo("dancing tilgil a5")
 
-
-        Turn(tlarmr, x_axis, math.rad(0), 3)
-
-
-        Turn(tlarm, y_axis, math.rad(0), 4)
-
-        Turn(tlarm, z_axis, math.rad(0), 3)
-        Turn(tlarm, x_axis, math.rad(0), 3)
-
-        WaitForTurn(tigLil, y_axis)
-        WaitForTurn(tigLil, z_axis)
-        WaitForTurn(tlHead, x_axis)
-        WaitForTurn(tlHead, y_axis)
-        WaitForTurn(tlHead, z_axis)
-        WaitForTurn(tlhairup, x_axis)
-        WaitForTurn(tlhairup, y_axis)
-        WaitForTurn(tlhairup, z_axis)
-        WaitForTurn(tlhairdown, x_axis)
-        WaitForTurn(tllegUp, x_axis)
-        WaitForTurn(tllegUp, y_axis)
-        WaitForTurn(tllegUp, z_axis)
-        WaitForTurn(tllegLow, x_axis)
-        WaitForTurn(tllegLow, y_axis)
-        WaitForTurn(tllegLow, z_axis)
-        WaitForTurn(tllegUpR, x_axis)
-        WaitForTurn(tllegUpR, y_axis)
-        WaitForTurn(tllegUpR, z_axis)
-        WaitForTurn(tllegLowR, x_axis)
-        WaitForTurn(tllegLowR, y_axis)
-        WaitForTurn(tllegLowR, z_axis)
-        WaitForTurn(tlarmr, y_axis)
-
-        WaitForTurn(tlarmr, z_axis)
+    Turn(tlarmr, x_axis, math.rad(0), 3)
 
 
-        WaitForTurn(tlarmr, x_axis)
+    Turn(tlarm, y_axis, math.rad(0), 4)
+
+    Turn(tlarm, z_axis, math.rad(0), 3)
+    Turn(tlarm, x_axis, math.rad(0), 3)
+
+    WaitForTurn(tigLil, y_axis)
+    WaitForTurn(tigLil, z_axis)
+    WaitForTurn(tlHead, x_axis)
+    WaitForTurn(tlHead, y_axis)
+    WaitForTurn(tlHead, z_axis)
+    WaitForTurn(tlhairup, x_axis)
+    WaitForTurn(tlhairup, y_axis)
+    WaitForTurn(tlhairup, z_axis)
+    WaitForTurn(tlhairdown, x_axis)
+    WaitForTurn(tllegUp, x_axis)
+    WaitForTurn(tllegUp, y_axis)
+    WaitForTurn(tllegUp, z_axis)
+    WaitForTurn(tllegLow, x_axis)
+    WaitForTurn(tllegLow, y_axis)
+    WaitForTurn(tllegLow, z_axis)
+    WaitForTurn(tllegUpR, x_axis)
+    WaitForTurn(tllegUpR, y_axis)
+    WaitForTurn(tllegUpR, z_axis)
+    WaitForTurn(tllegLowR, x_axis)
+    WaitForTurn(tllegLowR, y_axis)
+    WaitForTurn(tllegLowR, z_axis)
+    WaitForTurn(tlarmr, y_axis)
+
+    WaitForTurn(tlarmr, z_axis)
 
 
-        WaitForTurn(tlarm, y_axis)
+    WaitForTurn(tlarmr, x_axis)
 
-        WaitForTurn(tlarm, z_axis)
 
-        WaitForTurn(tlarm, x_axis)
+    WaitForTurn(tlarm, y_axis)
 
-        legs_down()
+    WaitForTurn(tlarm, z_axis)
 
-        --changebookmark 
-        Sleep(285)
+    WaitForTurn(tlarm, x_axis)
+    echo("dancing tilgil a6")
+    legs_down()
+    echo("dancing tilgil a7")
+    --changebookmark 
+    Sleep(285)
 end
 
 --------------------- IdleStance10-Fucntions-------
@@ -1162,13 +1319,8 @@ function drumClapOverhead()
 end
 
 function drumClapFront()
-
-
-
-
     Turn(tigLil, x_axis, math.rad(25), 3)
     Turn(tigLil, z_axis, math.rad(0), 4)
-
 
     Turn(tlHead, x_axis, math.rad(55), 4)
     Turn(tlHead, y_axis, math.rad(-6), 4)
@@ -1396,54 +1548,14 @@ function drumClapFront()
     Turn(tllegLowR, y_axis, math.rad(0), 4)
     Turn(tllegLowR, z_axis, math.rad(0), 4)
 
-
-
-
-    WaitForTurn(tigLil, x_axis)
-    WaitForTurn(tigLil, z_axis)
-
-
-    WaitForTurn(tlHead, x_axis)
-    WaitForTurn(tlHead, y_axis)
-    WaitForTurn(tlHead, z_axis)
-
-
-    --WaitForTurn(tlhairup,x_axis)
-
-    --WaitForTurn(tlhairup,y_axis)
-
-    --WaitForTurn(tlhairup,z_axis)
-
-
-
-    --WaitForTurn(tlhairdown,x_axis)
-
-    WaitForTurn(tlarm, x_axis)
-    WaitForTurn(tlarm, y_axis)
-    WaitForTurn(tlarm, z_axis)
-
-
-    WaitForTurn(tlarmr, x_axis)
-    WaitForTurn(tlarmr, y_axis)
-    WaitForTurn(tlarmr, z_axis)
-
-
-    WaitForTurn(tllegUp, x_axis)
-    WaitForTurn(tllegUp, y_axis)
-    WaitForTurn(tllegUp, z_axis)
-
-    WaitForTurn(tllegLow, x_axis)
-    WaitForTurn(tllegLow, y_axis)
-    WaitForTurn(tllegLow, z_axis)
-    WaitForTurn(tllegUpR, x_axis)
-    WaitForTurn(tllegUpR, y_axis)
-    WaitForTurn(tllegUpR, z_axis)
-
-    WaitForTurn(tllegLowR, x_axis)
-    WaitForTurn(tllegLowR, y_axis)
-    WaitForTurn(tllegLowR, z_axis)
-
-
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
 
     Sleep(60)
 end
@@ -1489,42 +1601,14 @@ function danceEnd()
 
     Turn(tllegLowR, x_axis, math.rad(0), 3)
 
-    WaitForTurn(tigLil, x_axis)
-    WaitForTurn(tigLil, y_axis)
-    WaitForTurn(tigLil, z_axis)
-
-
-    WaitForTurn(tlHead, x_axis)
-    WaitForTurn(tlHead, y_axis)
-    WaitForTurn(tlHead, z_axis)
-
-    WaitForTurn(tlhairup, x_axis)
-    WaitForTurn(tlhairup, y_axis)
-    WaitForTurn(tlhairup, z_axis)
-
-    WaitForTurn(tlhairdown, x_axis)
-
-    WaitForTurn(tlarm, x_axis)
-    WaitForTurn(tlarm, y_axis)
-    WaitForTurn(tlarm, z_axis)
-
-    WaitForTurn(tlarmr, x_axis)
-    WaitForTurn(tlarmr, y_axis)
-    WaitForTurn(tlarmr, z_axis)
-
-
-    WaitForTurn(tllegUp, x_axis)
-    WaitForTurn(tllegUp, y_axis)
-    WaitForTurn(tllegUp, z_axis)
-
-    WaitForTurn(tllegLow, x_axis)
-
-
-    WaitForTurn(tllegUpR, x_axis)
-    WaitForTurn(tllegUpR, y_axis)
-    WaitForTurn(tllegUpR, z_axis)
-
-    WaitForTurn(tllegLowR, x_axis)
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
 
 
 
@@ -1562,38 +1646,14 @@ function danceEnd()
 
     Turn(tllegLowR, x_axis, math.rad(0), 3)
 
-
-    WaitForTurn(tlHead, x_axis)
-    WaitForTurn(tlHead, y_axis)
-    WaitForTurn(tlHead, z_axis)
-
-    WaitForTurn(tlhairup, x_axis)
-    WaitForTurn(tlhairup, y_axis)
-    WaitForTurn(tlhairup, z_axis)
-
-    WaitForTurn(tlhairdown, x_axis)
-
-    WaitForTurn(tlarm, x_axis)
-    WaitForTurn(tlarm, y_axis)
-    WaitForTurn(tlarm, z_axis)
-
-    WaitForTurn(tlarmr, x_axis)
-    WaitForTurn(tlarmr, y_axis)
-    WaitForTurn(tlarmr, z_axis)
-
-
-    WaitForTurn(tllegUp, x_axis)
-    WaitForTurn(tllegUp, y_axis)
-    WaitForTurn(tllegUp, z_axis)
-
-    WaitForTurn(tllegLow, x_axis)
-
-
-    WaitForTurn(tllegUpR, x_axis)
-    WaitForTurn(tllegUpR, y_axis)
-    WaitForTurn(tllegUpR, z_axis)
-
-    WaitForTurn(tllegLowR, x_axis)
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
 
     Move(tigLil, y_axis, -8, 19)
 
@@ -1646,55 +1706,16 @@ function danceEnd()
 
     Turn(tlhairdown, x_axis, math.rad(-49), 3)
     WaitForMove(tigLil, y_axis)
-
-    WaitForTurn(tigLil, x_axis)
-    WaitForTurn(tigLil, y_axis)
-    WaitForTurn(tigLil, z_axis)
-
-
-    WaitForTurn(tlHead, x_axis)
-    WaitForTurn(tlHead, y_axis)
-    WaitForTurn(tlHead, z_axis)
-
-    WaitForTurn(tlhairup, x_axis)
-    WaitForTurn(tlhairup, y_axis)
-    WaitForTurn(tlhairup, z_axis)
-
-    WaitForTurn(tlhairdown, x_axis)
-
-    WaitForTurn(tlarm, x_axis)
-    WaitForTurn(tlarm, y_axis)
-    WaitForTurn(tlarm, z_axis)
-
-    WaitForTurn(tlarmr, x_axis)
-    WaitForTurn(tlarmr, y_axis)
-    WaitForTurn(tlarmr, z_axis)
-
-
-    WaitForTurn(tllegUp, x_axis)
-    WaitForTurn(tllegUp, y_axis)
-    WaitForTurn(tllegUp, z_axis)
-
-    WaitForTurn(tllegLow, x_axis)
-
-
-    WaitForTurn(tllegUpR, x_axis)
-    WaitForTurn(tllegUpR, y_axis)
-    WaitForTurn(tllegUpR, z_axis)
-
-    WaitForTurn(tllegLowR, x_axis)
-
-
-
-    WaitForTurn(tlHead, x_axis)
-    WaitForTurn(tlHead, y_axis)
-    WaitForTurn(tlHead, z_axis)
-
-    WaitForTurn(tlhairup, x_axis)
-    WaitForTurn(tlhairup, y_axis)
-    WaitForTurn(tlhairup, z_axis)
-
-    WaitForTurn(tlhairdown, x_axis)
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
 
     Move(tigLil, y_axis, 0, 12)
 
@@ -1862,7 +1883,7 @@ end
 
 function talkingHead()
     Signal(SIG_TALKHEAD)
-
+    howlong = math.random(2,12)
     SetSignalMask(SIG_TALKHEAD)
     while (true) do
         for tlH = 0, howlong, 1 do
@@ -2017,35 +2038,16 @@ function danceTurnRight()
         Turn(tllegUpR, z_axis, math.rad(-7), 3)
         Turn(tllegLow, x_axis, math.rad(27), 4)
 
-
-        WaitForTurn(tlHead, x_axis)
-        WaitForTurn(tlHead, y_axis)
-        WaitForTurn(tlhairup, y_axis)
-
-        WaitForTurn(tlhairup, x_axis)
-        WaitForTurn(tlhairup, z_axis)
-
-        WaitForTurn(tlhairdown, x_axis)
-
-        WaitForTurn(tlarm, y_axis)
-        WaitForTurn(tlarm, z_axis)
-
-        WaitForTurn(tlarmr, x_axis)
-        WaitForTurn(tlarmr, y_axis)
-        WaitForTurn(tlarmr, z_axis)
-
-
-        WaitForTurn(tllegUp, x_axis)
-        WaitForTurn(tllegUp, y_axis)
-        WaitForTurn(tllegUp, z_axis)
-
-        WaitForTurn(tllegLow, x_axis)
-
-
-        WaitForTurn(tllegUpR, x_axis)
-        WaitForTurn(tllegUpR, y_axis)
-        WaitForTurn(tllegUpR, z_axis)
-        WaitForTurn(tllegLow, x_axis)
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
     end
 end
 
@@ -2139,10 +2141,6 @@ end
 function onTheMove()
     for k=1, 5 do
 
-        if k==1 then
-            StartThread(PlaySoundByUnitDefID,myDefID, "sounds/tiglil/tgdance.wav", 0.75, 3000, 1, 0)
-        end
-
         if math.random(0, 1) ==1 then
             drumClapOverhead()
         else
@@ -2218,203 +2216,6 @@ function spagat()
     WaitForTurns(tigLil,tlhairdown,tlhairup, tlHead,tlarm,tlarmr,tllegUp,tllegLow,tllegUpR,tllegLowR)
 end
 
---[[
-function handclapHigh(clapnumber)
-    Signal(SIG_CLAP1)
-    SetSignalMask(SIG_CLAP1)
-    for itterator = 1, clapnumber, 1 do
-
-        --Hand Standyposition
-
-        Turn(tlarmr,x_axis,math.rad(16 ),3)
-        Turn(tlarmr,y_axis,math.rad(-32),3)
-        Turn(tlarmr,z_axis,math.rad(88),3)
-
-
-        Turn(tlarm,x_axis,math.rad(188),3)
-        Turn(tlarm,y_axis,math.rad(63),3)
-        Turn(tlarm,z_axis,math.rad(58),3)
-
-        WaitForTurn(tlarmr,x_axis)
-        WaitForTurn(tlarmr,y_axis)
-        WaitForTurn(tlarmr,z_axis)
-
-
-        WaitForTurn(tlarm,x_axis)
-        WaitForTurn(tlarm,y_axis)
-        WaitForTurn(tlarm,z_axis)
-
-
-
-
-        -- Hands together
-
-        aynRandOM=math.random(28,38)
-        Turn(tlHead,x_axis,math.rad(aynRandOM),3)
-        Turn(tlhairdown,x_axis,math.rad(-98),3)
-        Turn(tlhairdown,x_axis,math.rad(-1),3)
-
-        Turn(tlarmr,x_axis,math.rad(16 ),3)
-        Turn(tlarmr,y_axis,math.rad(15),3)--i
-        Turn(tlarmr,z_axis,math.rad(114),3)--i
-
-
-        Turn(tlarm,x_axis,math.rad(154),3)
-        Turn(tlarm,y_axis,math.rad(180),3)
-        Turn(tlarm,z_axis,math.rad(75),3)--i
-
-        WaitForTurn(tlHead,x_axis)
-        WaitForTurn(tlhairdown,x_axis)
-        WaitForTurn(tlhairdown,x_axis)
-
-        WaitForTurn(tlarmr,x_axis)
-        WaitForTurn(tlarmr,y_axis)
-        WaitForTurn(tlarmr,z_axis)
-
-
-        WaitForTurn(tlarm,x_axis)
-        WaitForTurn(tlarm,y_axis)
-        WaitForTurn(tlarm,z_axis)
-        Sleep(40)
-
-        --Hand Standyposition
-
-        Turn(tlarmr,x_axis,math.rad(16 ),3)
-        Turn(tlarmr,y_axis,math.rad(-32),3)
-        Turn(tlarmr,z_axis,math.rad(88),3)
-
-
-        Turn(tlarm,x_axis,math.rad(188),3)
-        Turn(tlarm,y_axis,math.rad(63),3)
-        Turn(tlarm,z_axis,math.rad(58),3)
-
-        aynRandOM=math.random(12,20)
-        Turn(tlHead,x_axis,math.rad(aynRandOM),3)
-        Turn(tlhairup,x_axis,math.rad(-71),3)
-        Turn(tlhairdown,x_axis,math.rad(-27),3)
-
-        WaitForTurn(tlarmr,x_axis)
-        WaitForTurn(tlarmr,y_axis)
-        WaitForTurn(tlarmr,z_axis)
-
-
-        WaitForTurn(tlarm,x_axis)
-        WaitForTurn(tlarm,y_axis)
-        WaitForTurn(tlarm,z_axis)
-
-
-        WaitForTurn(tlHead,x_axis)
-        WaitForTurn(tlhairup,x_axis)
-        WaitForTurn(tlhairdown,x_axis)
-
-
-
-
-
-
-
-
-
-
-
-    end
-
-
-end
-
-
-function handclapLow(clapnumber)
-    Signal(SIG_CLAP2)
-    SetSignalMask(SIG_CLAP2)
-    for itterator = 1, clapnumber, 1 do
-        aynRandOM=math.random(28,38)
-        Turn(tlHead,x_axis,math.rad(aynRandOM),3)
-        Turn(tlhairdown,x_axis,math.rad(-98),3)
-        Turn(tlhairdown,x_axis,math.rad(-1),3)
-
-        --Hand Standyposition
-
-        Turn(tlarmr,x_axis,math.rad(-124),7)
-        Turn(tlarmr,y_axis,math.rad(-148),6)--i
-        Turn(tlarmr,z_axis,math.rad(72),3)
-
-
-        Turn(tlarm,x_axis,math.rad(-124),6)
-        Turn(tlarm,y_axis,math.rad(135),7)--i
-        Turn(tlarm,z_axis,math.rad(-63),3)--i
-        WaitForTurn(tlHead,x_axis)
-        WaitForTurn(tlhairdown,x_axis)
-        WaitForTurn(tlhairdown,x_axis)
-
-
-
-        WaitForTurn(tlarmr,x_axis)
-        WaitForTurn(tlarmr,y_axis)
-        WaitForTurn(tlarmr,z_axis)
-
-
-        WaitForTurn(tlarm,x_axis)
-        WaitForTurn(tlarm,y_axis)
-        WaitForTurn(tlarm,z_axis)
-        -- Hands together
-        Turn(tlarmr,x_axis,math.rad(-124),7)
-        Turn(tlarmr,y_axis,math.rad(-175),7)--i
-        Turn(tlarmr,z_axis,math.rad(72),7)
-
-
-        Turn(tlarm,x_axis,math.rad(-124),7)
-        Turn(tlarm,y_axis,math.rad(165),7)
-        Turn(tlarm,z_axis,math.rad(-63),7)--i
-        WaitForTurn(tlarmr,x_axis)
-        WaitForTurn(tlarmr,y_axis)
-        WaitForTurn(tlarmr,z_axis)
-
-
-        WaitForTurn(tlarm,x_axis)
-        WaitForTurn(tlarm,y_axis)
-        WaitForTurn(tlarm,z_axis)
-
-
-        Sleep(40)
-        --Hand Standyposition
-
-        Turn(tlarmr,x_axis,math.rad(-124),5)
-        Turn(tlarmr,y_axis,math.rad(-148),5)--i
-        Turn(tlarmr,z_axis,math.rad(72),3)
-
-        aynRandOM=math.random(12,20)
-        Turn(tlHead,x_axis,math.rad(aynRandOM),3)
-        Turn(tlhairup,x_axis,math.rad(-71),3)
-        Turn(tlhairdown,x_axis,math.rad(-27),3)
-
-
-        Turn(tlarm,x_axis,math.rad(-124),5)
-        Turn(tlarm,y_axis,math.rad(135),5)
-        Turn(tlarm,z_axis,math.rad(-63),3)--i
-
-        WaitForTurn(tlarmr,x_axis)
-        WaitForTurn(tlarmr,y_axis)
-        WaitForTurn(tlarmr,z_axis)
-
-
-        WaitForTurn(tlHead,x_axis)
-        WaitForTurn(tlhairup,x_axis)
-        WaitForTurn(tlhairdown,x_axis)
-
-
-        WaitForTurn(tlarm,x_axis)
-        WaitForTurn(tlarm,y_axis)
-        WaitForTurn(tlarm,z_axis)
-
-
-        aynRandOM=math.random(50,175)
-        Sleep(aynRandOM)
-
-    end
-
-
-end
-]] --
 
 function armswing()
     SetSignalMask(SIG_SWING)
@@ -2452,36 +2253,41 @@ end
 
 
 function  legs_down()
+    --printf(unitID, "legs_down")
     Hide(tlpole)
     Hide(tldrum)
+        --printf(unitID, "legs_down")
     Hide(tlflute)
-    Hide(tlharp)
-    Hide(tldancedru)
-    Move(tldancedru, y_axis, 0, 60)
-    Move(tldancedru, x_axis, 0, 60)
-    Move(tldancedru, z_axis, 0, 60)
+    --Hide(tldancedru)
+        --printf(unitID, "legs_down")
+    --Move(tldancedru, y_axis, 0, 60)
+    --Move(tldancedru, x_axis, 0, 60)
+    --Move(tldancedru, z_axis, 0, 60)
     Move(tlHead, y_axis, 0, 60)
     Move(tlHead, x_axis, 0, 60)
     Move(tlHead, z_axis, 0, 60)
+    --printf(unitID, "legs_down")
     Move(tlarm, y_axis, 0, 60)
     Move(tlarm, x_axis, 0, 60)
     Move(tlarm, z_axis, 0, 60)
     Move(tlarmr, y_axis, 0, 60)
     Move(tlarmr, x_axis, 0, 60)
     Move(tlarmr, z_axis, 0, 60)
+    --printf(unitID, "legs_down")
     Move(tldrum, y_axis, 0, 60)
     Move(tldrum, x_axis, 0, 60)
     Move(tldrum, z_axis, 0, 60)
-    Turn(tlharp, x_axis, math.rad(0), 45)
-    Turn(tlharp, y_axis, math.rad(0), 45)
-    Turn(tlharp, z_axis, math.rad(0), 45)
+    --printf(unitID, "legs_down")
+    --Turn(tlharp, x_axis, math.rad(0), 45)
+    --Turn(tlharp, y_axis, math.rad(0), 45)
+    --Turn(tlharp, z_axis, math.rad(0), 45)
     Turn(tlflute, x_axis, math.rad(0), 45)
     Turn(tlflute, y_axis, math.rad(0), 45)
     Turn(tlflute, z_axis, math.rad(0), 45)
-    reset(MoveBall)
+    reset(ball)
     reset(BallArcPoint)
     Hide(ball)
-    
+    --printf(unitID, "legs_down")
     StopSpin(tigLil, y_axis)
     StopSpin(tigLil, z_axis)
     StopSpin(tigLil, x_axis)
@@ -2489,6 +2295,7 @@ function  legs_down()
     Move(deathpivot, y_axis, 0, 60)
     Move(deathpivot, x_axis, 0, 60)
     Move(deathpivot, z_axis, 0, 60)
+    --printf(unitID, "legs_down")
     Turn(dancepivot, x_axis, math.rad(0), 45)
     Turn(dancepivot, y_axis, math.rad(0), 45)
     Turn(dancepivot, z_axis, math.rad(0), 45)
@@ -2506,6 +2313,7 @@ function  legs_down()
     Turn(tlHead, z_axis, math.rad(0), 2)
     Turn(tlhairup, x_axis, math.rad(-74), 2)
     Turn(tlhairup, y_axis, math.rad(0), 2)
+    --printf(unitID, "legs_down")
     Turn(tlhairup, z_axis, math.rad(0), 2)
     Turn(tlhairdown, x_axis, math.rad(-19), 3)
     Turn(tllegUp, x_axis, math.rad(0), 2)
@@ -2521,12 +2329,12 @@ function  legs_down()
     Turn(tllegLowR, y_axis, math.rad(0), 2)
     Turn(tllegLowR, z_axis, math.rad(0), 2)
     Sleep(75)
- 
+    --printf(unitID, "legs_down")
 end
 
 
 function idle_stance5()
-
+    echo("idle_stance5")
     Turn(tigLil, x_axis, math.rad(-37), 2)
     Turn(tlHead, x_axis, math.rad(-38), 2)
     Turn(tlhairup, x_axis, math.rad(-18), 4)
@@ -2786,7 +2594,7 @@ end
 
 --like a bitch over troubled water (expandable)
 function idle_stance4()
-
+echo("idle_stance4")
     Turn(tlarm, z_axis, math.rad(-90), 3)
     Turn(tllegUp, x_axis, math.rad(-40), 2)
     Turn(tllegUp, y_axis, math.rad(-80), 2)
@@ -2841,39 +2649,16 @@ function idle_stance4()
         Turn(tllegUpR, z_axis, math.rad(0), 2)
 
         Turn(tllegLowR, x_axis, math.rad(28), 3)
-        WaitForTurn(tigLil, x_axis)
-
-        WaitForTurn(tigLil, y_axis)
-        WaitForTurn(tigLil, z_axis)
-
-        WaitForTurn(tlHead, x_axis)
-        WaitForTurn(tlHead, y_axis)
-        WaitForTurn(tlHead, z_axis)
-
-        WaitForTurn(tlhairup, x_axis)
-        WaitForTurn(tlhairup, y_axis)
-        WaitForTurn(tlhairup, z_axis)
-
-        WaitForTurn(tlhairdown, x_axis)
-
-        WaitForTurn(tlarm, x_axis)
-        WaitForTurn(tlarm, y_axis)
-        WaitForTurn(tlarm, z_axis)
-
-        WaitForTurn(tlarmr, x_axis)
-        WaitForTurn(tlarmr, y_axis)
-        WaitForTurn(tlarmr, z_axis)
-
-        WaitForTurn(tllegUp, x_axis)
-        WaitForTurn(tllegUp, y_axis)
-        WaitForTurn(tllegUp, z_axis)
-        WaitForTurn(tllegLow, x_axis)
-
-        WaitForTurn(tllegUpR, x_axis)
-        WaitForTurn(tllegUpR, y_axis)
-        WaitForTurn(tllegUpR, z_axis)
-
-        WaitForTurn(tllegLowR, x_axis)
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
         Sleep(2024)
 
         Turn(tigLil, x_axis, math.rad(1), 12)
@@ -2909,39 +2694,16 @@ function idle_stance4()
         Turn(tllegUpR, z_axis, math.rad(0), 3)
 
         Turn(tllegLowR, x_axis, math.rad(28), 3)
-        WaitForTurn(tigLil, x_axis)
-
-        WaitForTurn(tigLil, y_axis)
-        WaitForTurn(tigLil, z_axis)
-
-        WaitForTurn(tlHead, x_axis)
-        WaitForTurn(tlHead, y_axis)
-        WaitForTurn(tlHead, z_axis)
-
-        WaitForTurn(tlhairup, x_axis)
-        WaitForTurn(tlhairup, y_axis)
-        WaitForTurn(tlhairup, z_axis)
-
-        WaitForTurn(tlhairdown, x_axis)
-
-        WaitForTurn(tlarm, x_axis)
-        WaitForTurn(tlarm, y_axis)
-        WaitForTurn(tlarm, z_axis)
-
-        WaitForTurn(tlarmr, x_axis)
-        WaitForTurn(tlarmr, y_axis)
-        WaitForTurn(tlarmr, z_axis)
-
-        WaitForTurn(tllegUp, x_axis)
-        WaitForTurn(tllegUp, y_axis)
-        WaitForTurn(tllegUp, z_axis)
-        WaitForTurn(tllegLow, x_axis)
-
-        WaitForTurn(tllegUpR, x_axis)
-        WaitForTurn(tllegUpR, y_axis)
-        WaitForTurn(tllegUpR, z_axis)
-
-        WaitForTurn(tllegLowR, x_axis)
+       WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
 
 
         Turn(tigLil, x_axis, math.rad(90), 12)
@@ -2977,45 +2739,23 @@ function idle_stance4()
         Turn(tllegUpR, z_axis, math.rad(0), 2)
 
         Turn(tllegLowR, x_axis, math.rad(-8), 3)
-        WaitForTurn(tigLil, x_axis)
-
-        WaitForTurn(tigLil, y_axis)
-        WaitForTurn(tigLil, z_axis)
-
-        WaitForTurn(tlHead, x_axis)
-        WaitForTurn(tlHead, y_axis)
-        WaitForTurn(tlHead, z_axis)
-
-        WaitForTurn(tlhairup, x_axis)
-        WaitForTurn(tlhairup, y_axis)
-        WaitForTurn(tlhairup, z_axis)
-
-        WaitForTurn(tlhairdown, x_axis)
-
-        WaitForTurn(tlarm, x_axis)
-        WaitForTurn(tlarm, y_axis)
-        WaitForTurn(tlarm, z_axis)
-
-        WaitForTurn(tlarmr, x_axis)
-        WaitForTurn(tlarmr, y_axis)
-        WaitForTurn(tlarmr, z_axis)
-
-        WaitForTurn(tllegUp, x_axis)
-        WaitForTurn(tllegUp, y_axis)
-        WaitForTurn(tllegUp, z_axis)
-        WaitForTurn(tllegLow, x_axis)
-
-        WaitForTurn(tllegUpR, x_axis)
-        WaitForTurn(tllegUpR, y_axis)
-        WaitForTurn(tllegUpR, z_axis)
-
-        WaitForTurn(tllegLowR, x_axis)
+     WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
 
         legs_down()
     end
 end
 
 function idle_stance2()
+    echo("idle_stance2")
     rand = math.random(0, 2)
     if rand == 1 then
         Turn(tlarmr, y_axis, math.rad(-85), 3)
@@ -3715,6 +3455,7 @@ function idle_stance2()
 end
 
 function idle_stance3()
+    echo("idle_stance3")
     rand = math.random(0, 1)
     if rand == 1 then
         Turn(tlarm, z_axis, math.rad(-52), 4)
@@ -3867,7 +3608,7 @@ function idle_stance3()
 end
 
 function idle_stance()
-
+echo("idle_stance")
     Turn(tlHead, y_axis, math.rad(-38), 3)
     WaitForTurn(tlHead, y_axis)
     Turn(tlHead, y_axis, math.rad(20), 2)
@@ -4346,7 +4087,7 @@ function idle_stance()
 end
 
 function idle_stance6()
-
+    echo("idle_stance6")
     Turn(tlHead, x_axis, math.rad(-29), 3)
     Turn(tlHead, x_axis, math.rad(29), 3)
 
@@ -4382,24 +4123,16 @@ function idle_stance6()
 
 
 
-
-    WaitForTurn(tlhairup, x_axis)
-    WaitForTurn(tlarm, x_axis)
-    WaitForTurn(tlarm, y_axis)
-    WaitForTurn(tlarm, z_axis)
-
-    WaitForTurn(tlarmr, x_axis)
-    WaitForTurn(tlarmr, y_axis)
-    WaitForTurn(tlarmr, z_axis)
-
-
-    WaitForTurn(tllegUp, x_axis)
-    WaitForTurn(tllegUp, y_axis)
-    WaitForTurn(tllegLow, x_axis)
-
-    WaitForTurn(tllegUpR, x_axis)
-    WaitForTurn(tllegUpR, y_axis)
-    WaitForTurn(tllegLowR, x_axis)
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
 
 
     Sleep(550)
@@ -4442,26 +4175,16 @@ function idle_stance6()
         Turn(tllegLowR, x_axis, math.rad(41), 9)
 
         --wait&sleep
-
-
-        WaitForTurn(tlHead, x_axis)
-
-        WaitForTurn(tlarm, x_axis)
-        WaitForTurn(tlarm, y_axis)
-        WaitForTurn(tlarm, z_axis)
-
-        WaitForTurn(tlarmr, x_axis)
-        WaitForTurn(tlarmr, y_axis)
-        WaitForTurn(tlarmr, z_axis)
-
-        WaitForTurn(tllegUp, x_axis)
-        WaitForTurn(tllegUp, y_axis)
-        WaitForTurn(tllegLow, x_axis)
-
-        WaitForTurn(tllegUpR, x_axis)
-        WaitForTurn(tllegUpR, y_axis)
-        WaitForTurn(tllegLowR, x_axis)
-
+    WaitForTurns(tigLil)
+    WaitForTurns(tlHead)
+    WaitForTurns(tlarm)
+    WaitForTurns(tlarmr)
+    WaitForTurns(tllegUp)
+    WaitForTurns(tllegLow)
+    WaitForTurns(tllegUpR)
+    WaitForTurns(tllegLowR)
+    WaitForTurns(tlhairup)
+    WaitForTurns(tlhairdown)
 
 
         WaitForMove(tigLil, y_axis)
@@ -4816,34 +4539,16 @@ function idle_stance6()
                     Turn(tllegLowR, x_axis, math.rad(135), 1)
                     Turn(tllegLowR, y_axis, math.rad(0), 1)
                     Turn(tllegLowR, z_axis, math.rad(0), 1)
-                    WaitForTurn(tlHead, x_axis)
-
-
-                    WaitForTurn(tlarm, y_axis)
-
-                    WaitForTurn(tlarm, x_axis)
-                    WaitForTurn(tlarm, z_axis)
-
-
-                    WaitForTurn(tlarmr, y_axis)
-                    WaitForTurn(tlarmr, x_axis)
-                    WaitForTurn(tlarmr, z_axis)
-
-                    WaitForTurn(tllegUp, x_axis)
-                    --i
-                    WaitForTurn(tllegUp, z_axis)
-                    WaitForTurn(tllegLow, x_axis)
-                    --i
-                    WaitForTurn(tllegLow, z_axis)
-
-                    WaitForTurn(tllegUpR, x_axis)
-                    --i
-                    WaitForTurn(tllegUpR, y_axis)
-                    --i
-                    WaitForTurn(tllegUpR, z_axis)
-                    WaitForTurn(tllegLowR, x_axis)
-                    WaitForTurn(tllegLowR, y_axis)
-                    WaitForTurn(tllegLowR, z_axis)
+                    WaitForTurns(tigLil)
+                    WaitForTurns(tlHead)
+                    WaitForTurns(tlarm)
+                    WaitForTurns(tlarmr)
+                    WaitForTurns(tllegUp)
+                    WaitForTurns(tllegLow)
+                    WaitForTurns(tllegUpR)
+                    WaitForTurns(tllegLowR)
+                    WaitForTurns(tlhairup)
+                    WaitForTurns(tlhairdown)
                     boolinPosition = true
                 end
 
@@ -4995,7 +4700,7 @@ end
 
 --rest&sleep
 function idle_stance7()
-
+echo("idle_stance7")
 
 
     --SitUp Position Legs Sidewayfold
@@ -5165,40 +4870,16 @@ function idle_stance7()
             Turn(tllegLowR, x_axis, math.rad(0), 3)
             Turn(tllegLowR, x_axis, math.rad(0), 3)
             Turn(tllegLowR, x_axis, math.rad(0), 3)
-            WaitForTurn(tigLil, x_axis)
-            WaitForTurn(tigLil, y_axis)
-            WaitForTurn(tigLil, z_axis)
-
-            WaitForTurn(tlarm, x_axis)
-            WaitForTurn(tlarm, y_axis)
-            WaitForTurn(tlarm, z_axis)
-
-            WaitForTurn(tlarmr, x_axis)
-            WaitForTurn(tlarmr, y_axis)
-            WaitForTurn(tlarmr, z_axis)
-
-            WaitForTurn(tlHead, x_axis)
-            WaitForTurn(tlHead, y_axis)
-            WaitForTurn(tlarm, x_axis)
-            WaitForTurn(tlarm, y_axis)
-            WaitForTurn(tlarm, z_axis)
-
-            WaitForTurn(tlhairup, x_axis)
-            WaitForTurn(tlhairup, y_axis)
-            WaitForTurn(tlhairup, z_axis)
-
-            WaitForTurn(tllegUp, x_axis)
-            WaitForTurn(tllegUp, y_axis)
-            WaitForTurn(tllegUp, z_axis)
-            WaitForTurn(tllegLow, x_axis)
-
-            WaitForTurn(tllegUpR, x_axis)
-            WaitForTurn(tllegUpR, y_axis)
-            WaitForTurn(tllegUpR, z_axis)
-
-            WaitForTurn(tllegLowR, x_axis)
-            WaitForTurn(tllegLowR, x_axis)
-            WaitForTurn(tllegLowR, x_axis)
+            WaitForTurns(tigLil)
+            WaitForTurns(tlHead)
+            WaitForTurns(tlarm)
+            WaitForTurns(tlarmr)
+            WaitForTurns(tllegUp)
+            WaitForTurns(tllegLow)
+            WaitForTurns(tllegUpR)
+            WaitForTurns(tllegLowR)
+            WaitForTurns(tlhairup)
+            WaitForTurns(tlhairdown)
             Sleep(50)
             Sleep(8096)
 
@@ -5322,6 +5003,7 @@ function idle_stance7()
 end
 
 function idle_stance8()
+    echo("idle_stance8")
     spagat()
     legs_down()
     tempThrower = math.random(1, 7)
@@ -5388,6 +5070,7 @@ end
 
 --clapstance
 function idle_stance9()
+    echo("idle_stance9")
     --Clap
 
     Turn(tigLil, x_axis, math.rad(-16), 3)
@@ -5501,12 +5184,6 @@ function idle_stance9()
             WaitForTurn(tlhairdown, x_axis)
         end
 
-
-
-
-
-
-
         Sleep(50)
     end
     if (decider == 1) then
@@ -5597,9 +5274,6 @@ function idle_stance9()
 
         Sleep(50)
     end
-
-
-
 
     --HandWave
 
@@ -5701,6 +5375,7 @@ function danceInCircle()
 end
 --dancestance
 function idle_stance_10()
+    echo("idle_stance10")
 
         --------------------------------------- Preparations--------------------------
         Turn(tlarm, x_axis, math.rad(0), 4)
@@ -5722,14 +5397,14 @@ function idle_stance_10()
      -- searchmebookmark
         -- do
         tempTurnRandA = math.random(75, 105)
-        Turn(dancepivot, y_axis, math.rad(tempTurnRandA), 0.35)       
+        Turn(dancepivot, y_axis, math.rad(-tempTurnRandA), 0.35)       
         whileInTurn(dancepivot,y_axis,onTheMove)
 
         danceInCircle()
         
 
         tempTurnRandB = math.random(160, 190)
-        Turn(dancepivot, y_axis, math.rad(tempTurnRandB), 0.35)
+        Turn(dancepivot, y_axis, math.rad(-tempTurnRandB), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
         
@@ -5739,7 +5414,7 @@ function idle_stance_10()
      
 
         tempTurnRandC = math.random(245, 290)
-        Turn(dancepivot, y_axis, math.rad(tempTurnRandC), 0.35)
+        Turn(dancepivot, y_axis, math.rad(-tempTurnRandC), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
  
@@ -5747,7 +5422,7 @@ function idle_stance_10()
         danceInCircle()
 
         
-        Turn(dancepivot, y_axis, math.rad(360), 0.35)      
+        Turn(dancepivot, y_axis, math.rad(-360), 0.35)      
         whileInTurn(dancepivot,y_axis,onTheMove)
 
 
@@ -5765,6 +5440,7 @@ end
 
 --headshake
 function idle_stance_12()
+    echo("idle_stance12")
     legs_down()
     sign = randSign()
     mP(tigLil, 0, -9.4, 1.3, 17)
@@ -5808,7 +5484,7 @@ end
 
 --allmost like sex
 function idle_stance13()
-
+echo("idle_stance13")
     ramming = math.random(9, 22)
     factor = 17 / 22
     for i = 1, ramming do
@@ -5860,6 +5536,7 @@ function idle_stance13()
 end
 --strike a pose
 function idle_stance16()
+    echo("idle_stance16")
     pose = 1
     if pose ==1 then
     
@@ -5870,7 +5547,7 @@ end
 
 --giving it to here
 function idle_stance15()
-
+echo("idle_stance15")
     askingForARamjob = math.random(9, 22)
     factor = 17 / 22
      mP(tigLil, 0, -7, -0.8, 12)
@@ -5931,6 +5608,7 @@ end
 
 --yoga
 function idle_stance14()
+    echo("idle_stance14")
     yoga = math.random(1, 14)
     if yoga == 1 then
         mP(tigLil, 0, -5, 0, 9)
@@ -6173,6 +5851,7 @@ end
 
 --Tango
 function idle_stance17()
+    echo("idle_stance17")
 orgDirection=0
 
 for t=1,6 do
@@ -6651,11 +6330,11 @@ local function drumPosePoledancin(mspeed, tspeed, addUp)
         tSyncIn(tllegLowR,  142,0,0,250)
         WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
         Spin(deathpivot, y_axis, math.rad(140), 90)
-        Spin(tldancedru, y_axis, math.rad(-140), 90)
+        --Spin(tldancedru, y_axis, math.rad(-140), 90)
         mSyncIn(tigLil,     0,addUp-21,0,8000)
         WaitForMoves(tigLil)
         StopSpin(deathpivot, y_axis)
-        StopSpin(tldancedru, y_axis)
+        --StopSpin(tldancedru, y_axis)
         Hide(tlpole)
     
 
@@ -6700,11 +6379,11 @@ local function idle_stance11()
         WaitForTurn(tlarmr, z_axis)
         WaitForMove(tldrum, z_axis)
         Hide(tldrum)
-        Show(tldancedru)
+        --Show(tldancedru)
         ---------------------------------------------------
         mspeed = 1
         growBeatBox = math.random(-3, 18)
-        Move(tldancedru, y_axis, growBeatBox, math.abs(growBeatBox/3))
+        --Move(tldancedru, y_axis, growBeatBox, math.abs(growBeatBox/3))
         growBeatBox = growBeatBox + 3
         addUp = growBeatBox
         Move(tigLil, y_axis, growBeatBox, math.abs(growBeatBox/3))
@@ -6851,18 +6530,18 @@ local function idle_stance11()
                 Turn(tlarmr, x_axis, math.rad(-208.99992370605), tspeed)
                 Turn(tlarmr, y_axis, math.rad(52.000022888184), tspeed)
                 Turn(tlarmr, z_axis, math.rad(202.90002441406), tspeed)
-                Move(tlsparksemit, x_axis, 0, mspeed)
+             --[[   Move(tlsparksemit, x_axis, 0, mspeed)
                 Move(tlsparksemit, y_axis, 0, mspeed)
                 Move(tlsparksemit, z_axis, 0, mspeed)
                 Turn(tlsparksemit, x_axis, math.rad(0), tspeed)
                 Turn(tlsparksemit, y_axis, math.rad(0), tspeed)
-                Turn(tlsparksemit, z_axis, math.rad(0), tspeed)
-                Move(tlharp, x_axis, 0, mspeed)
-                Move(tlharp, y_axis, 0, mspeed)
-                Move(tlharp, z_axis, 0, mspeed)
-                Turn(tlharp, x_axis, math.rad(0), tspeed)
-                Turn(tlharp, y_axis, math.rad(0), tspeed)
-                Turn(tlharp, z_axis, math.rad(0), tspeed)
+                Turn(tlsparksemit, z_axis, math.rad(0), tspeed)--]]
+                --Move(tlharp, x_axis, 0, mspeed)
+                --Move(tlharp, y_axis, 0, mspeed)
+                --Move(tlharp, z_axis, 0, mspeed)
+                --Turn(tlharp, x_axis, math.rad(0), tspeed)
+                --Turn(tlharp, y_axis, math.rad(0), tspeed)
+                --Turn(tlharp, z_axis, math.rad(0), tspeed)
                 Move(tllegUp, x_axis, 0, mspeed)
                 Move(tllegUp, y_axis, 0, mspeed)
                 Move(tllegUp, z_axis, 0, mspeed)
@@ -6924,12 +6603,12 @@ local function idle_stance11()
                 Turn(tlarm, x_axis, math.rad(67.999992370605), tspeed)
                 Turn(tlarm, y_axis, math.rad(20), tspeed)
                 Turn(tlarm, z_axis, math.rad(-16.000001907349), tspeed)
-                Move(tlsparksemit2, x_axis, 0, mspeed)
+           --[[     Move(tlsparksemit2, x_axis, 0, mspeed)
                 Move(tlsparksemit2, y_axis, 0, mspeed)
                 Move(tlsparksemit2, z_axis, 0, mspeed)
                 Turn(tlsparksemit2, x_axis, math.rad(0), tspeed)
                 Turn(tlsparksemit2, y_axis, math.rad(0), tspeed)
-                Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)
+                Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)--]]
                 Move(tldrum, x_axis, 0, mspeed)
                 Move(tldrum, y_axis, 0, mspeed)
                 Move(tldrum, z_axis, 0, mspeed)
@@ -6942,18 +6621,18 @@ local function idle_stance11()
                 Turn(tlarmr, x_axis, math.rad(-204.99995422363), tspeed)
                 Turn(tlarmr, y_axis, math.rad(52.000022888184), tspeed)
                 Turn(tlarmr, z_axis, math.rad(202.90002441406), tspeed)
-                Move(tlsparksemit, x_axis, 0, mspeed)
+--[[                Move(tlsparksemit, x_axis, 0, mspeed)
                 Move(tlsparksemit, y_axis, 0, mspeed)
                 Move(tlsparksemit, z_axis, 0, mspeed)
                 Turn(tlsparksemit, x_axis, math.rad(0), tspeed)
                 Turn(tlsparksemit, y_axis, math.rad(0), tspeed)
-                Turn(tlsparksemit, z_axis, math.rad(0), tspeed)
-                Move(tlharp, x_axis, 0, mspeed)
-                Move(tlharp, y_axis, 0, mspeed)
-                Move(tlharp, z_axis, 0, mspeed)
-                Turn(tlharp, x_axis, math.rad(0), tspeed)
-                Turn(tlharp, y_axis, math.rad(0), tspeed)
-                Turn(tlharp, z_axis, math.rad(0), tspeed)
+                Turn(tlsparksemit, z_axis, math.rad(0), tspeed)--]]
+                --Move(tlharp, x_axis, 0, mspeed)
+                --Move(tlharp, y_axis, 0, mspeed)
+                --Move(tlharp, z_axis, 0, mspeed)
+                --Turn(tlharp, x_axis, math.rad(0), tspeed)
+                --Turn(tlharp, y_axis, math.rad(0), tspeed)
+                --Turn(tlharp, z_axis, math.rad(0), tspeed)
                 Move(tllegUp, x_axis, 0, mspeed)
                 Move(tllegUp, y_axis, 0, mspeed)
                 Move(tllegUp, z_axis, 0, mspeed)
@@ -7030,12 +6709,12 @@ local function idle_stance11()
                 Turn(tlarm, x_axis, math.rad(-159.99998474121), 15)
                 Turn(tlarm, y_axis, math.rad(109.99998474121), 10)
                 Turn(tlarm, z_axis, math.rad(0), tspeed)
-                Move(tlsparksemit2, x_axis, 0, mspeed)
+             --[[   Move(tlsparksemit2, x_axis, 0, mspeed)
                 Move(tlsparksemit2, y_axis, 0, mspeed)
                 Move(tlsparksemit2, z_axis, 0, mspeed)
                 Turn(tlsparksemit2, x_axis, math.rad(0), tspeed)
                 Turn(tlsparksemit2, y_axis, math.rad(0), tspeed)
-                Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)
+                Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)--]]
                 Move(tldrum, x_axis, 0, mspeed)
                 Move(tldrum, y_axis, 0, mspeed)
                 Move(tldrum, z_axis, 0, mspeed)
@@ -7048,18 +6727,18 @@ local function idle_stance11()
                 Turn(tlarmr, x_axis, math.rad(-167.69998168945), 16)
                 Turn(tlarmr, y_axis, math.rad(-99.999984741211), 10)
                 Turn(tlarmr, z_axis, math.rad(10.000001907349), tspeed)
-                Move(tlsparksemit, x_axis, 0, mspeed)
+--[[                Move(tlsparksemit, x_axis, 0, mspeed)
                 Move(tlsparksemit, y_axis, 0, mspeed)
                 Move(tlsparksemit, z_axis, 0, mspeed)
                 Turn(tlsparksemit, x_axis, math.rad(0), tspeed)
                 Turn(tlsparksemit, y_axis, math.rad(0), tspeed)
-                Turn(tlsparksemit, z_axis, math.rad(0), tspeed)
-                Move(tlharp, x_axis, 0, mspeed)
-                Move(tlharp, y_axis, 0, mspeed)
-                Move(tlharp, z_axis, 0, mspeed)
-                Turn(tlharp, x_axis, math.rad(0), tspeed)
-                Turn(tlharp, y_axis, math.rad(0), tspeed)
-                Turn(tlharp, z_axis, math.rad(0), tspeed)
+                Turn(tlsparksemit, z_axis, math.rad(0), tspeed)--]]
+                --Move(tlharp, x_axis, 0, mspeed)
+                --Move(tlharp, y_axis, 0, mspeed)
+                --Move(tlharp, z_axis, 0, mspeed)
+                --Turn(tlharp, x_axis, math.rad(0), tspeed)
+                --Turn(tlharp, y_axis, math.rad(0), tspeed)
+                --Turn(tlharp, z_axis, math.rad(0), tspeed)
                 Move(tllegUp, x_axis, 0, mspeed)
                 Move(tllegUp, y_axis, 0, mspeed)
                 Move(tllegUp, z_axis, 0, mspeed)
@@ -7142,12 +6821,12 @@ local function idle_stance11()
                     Turn(tlarmr, y_axis, math.rad(-103.99999237061), 10)
                     Turn(tlarmr, z_axis, math.rad(18), tspeed)
 
-                    Move(tlharp, x_axis, 0, mspeed)
-                    Move(tlharp, y_axis, 0, mspeed)
-                    Move(tlharp, z_axis, 0, mspeed)
-                    Turn(tlharp, x_axis, math.rad(0), tspeed)
-                    Turn(tlharp, y_axis, math.rad(0), tspeed)
-                    Turn(tlharp, z_axis, math.rad(0), tspeed)
+                    --Move(tlharp, x_axis, 0, mspeed)
+                    --Move(tlharp, y_axis, 0, mspeed)
+                    --Move(tlharp, z_axis, 0, mspeed)
+                    --Turn(tlharp, x_axis, math.rad(0), tspeed)
+                    --Turn(tlharp, y_axis, math.rad(0), tspeed)
+                    --Turn(tlharp, z_axis, math.rad(0), tspeed)
                     Move(tllegUp, x_axis, 0, mspeed)
                     Move(tllegUp, y_axis, 0, mspeed)
                     Move(tllegUp, z_axis, 0, mspeed)
@@ -7210,12 +6889,12 @@ local function idle_stance11()
                     Turn(tlarm, x_axis, math.rad(-159.99998474121), 16) --159
                     Turn(tlarm, y_axis, math.rad(86.999984741211), tspeed)
                     Turn(tlarm, z_axis, math.rad(41), tspeed)
-                    Move(tlsparksemit2, x_axis, 0, mspeed)
+                   --[[ Move(tlsparksemit2, x_axis, 0, mspeed)
                     Move(tlsparksemit2, y_axis, 0, mspeed)
                     Move(tlsparksemit2, z_axis, 0, mspeed)
                     Turn(tlsparksemit2, x_axis, math.rad(0), tspeed)
                     Turn(tlsparksemit2, y_axis, math.rad(0), tspeed)
-                    Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)
+                    Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)--]]
                     Move(tldrum, x_axis, 0, mspeed)
                     Move(tldrum, y_axis, 0, mspeed)
                     Move(tldrum, z_axis, 0, mspeed)
@@ -7228,18 +6907,18 @@ local function idle_stance11()
                     Turn(tlarmr, x_axis, math.rad(-167.69998168945), 16)
                     Turn(tlarmr, y_axis, math.rad(-93.999992370605), 10)
                     Turn(tlarmr, z_axis, math.rad(-41.999996185303), 4)
-                    Move(tlsparksemit, x_axis, 0, mspeed)
+                   --[[ Move(tlsparksemit, x_axis, 0, mspeed)
                     Move(tlsparksemit, y_axis, 0, mspeed)
                     Move(tlsparksemit, z_axis, 0, mspeed)
                     Turn(tlsparksemit, x_axis, math.rad(0), tspeed)
                     Turn(tlsparksemit, y_axis, math.rad(0), tspeed)
-                    Turn(tlsparksemit, z_axis, math.rad(0), tspeed)
-                    Move(tlharp, x_axis, 0, mspeed)
-                    Move(tlharp, y_axis, 0, mspeed)
-                    Move(tlharp, z_axis, 0, mspeed)
-                    Turn(tlharp, x_axis, math.rad(0), tspeed)
-                    Turn(tlharp, y_axis, math.rad(0), tspeed)
-                    Turn(tlharp, z_axis, math.rad(0), tspeed)
+                    Turn(tlsparksemit, z_axis, math.rad(0), tspeed)--]]
+                    --Move(tlharp, x_axis, 0, mspeed)
+                    --Move(tlharp, y_axis, 0, mspeed)
+                    --Move(tlharp, z_axis, 0, mspeed)
+                    --Turn(tlharp, x_axis, math.rad(0), tspeed)
+                    --Turn(tlharp, y_axis, math.rad(0), tspeed)
+                    --Turn(tlharp, z_axis, math.rad(0), tspeed)
                     Move(tllegUp, x_axis, 0, mspeed)
                     Move(tllegUp, y_axis, 0, mspeed)
                     Move(tllegUp, z_axis, 0, mspeed)
@@ -7313,12 +6992,12 @@ local function idle_stance11()
         Turn(tlarm, x_axis, math.rad(174.99989318848), tspeed)
         Turn(tlarm, y_axis, math.rad(110.99998474121), tspeed)
         Turn(tlarm, z_axis, math.rad(20), tspeed)
-        Move(tlsparksemit2, x_axis, 0, mspeed)
+--[[        Move(tlsparksemit2, x_axis, 0, mspeed)
         Move(tlsparksemit2, y_axis, 0, mspeed)
         Move(tlsparksemit2, z_axis, 0, mspeed)
         Turn(tlsparksemit2, x_axis, math.rad(0), tspeed)
         Turn(tlsparksemit2, y_axis, math.rad(0), tspeed)
-        Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)
+        Turn(tlsparksemit2, z_axis, math.rad(0), tspeed)--]]
         Move(tldrum, x_axis, 0, mspeed)
         Move(tldrum, y_axis, 0, mspeed)
         Move(tldrum, z_axis, 0, mspeed)
@@ -7332,12 +7011,12 @@ local function idle_stance11()
         Turn(tlarmr, y_axis, math.rad(-99.999984741211), tspeed)
         Turn(tlarmr, z_axis, math.rad(-10), tspeed)
 
-        Move(tlharp, x_axis, 0, mspeed)
-        Move(tlharp, y_axis, 0, mspeed)
-        Move(tlharp, z_axis, 0, mspeed)
-        Turn(tlharp, x_axis, math.rad(0), tspeed)
-        Turn(tlharp, y_axis, math.rad(0), tspeed)
-        Turn(tlharp, z_axis, math.rad(0), tspeed)
+        --Move(tlharp, x_axis, 0, mspeed)
+        --Move(tlharp, y_axis, 0, mspeed)
+        --Move(tlharp, z_axis, 0, mspeed)
+        --Turn(tlharp, x_axis, math.rad(0), tspeed)
+        --Turn(tlharp, y_axis, math.rad(0), tspeed)
+        --Turn(tlharp, z_axis, math.rad(0), tspeed)
         Move(tllegUp, x_axis, 0, mspeed)
         Move(tllegUp, y_axis, 0, mspeed)
         Move(tllegUp, z_axis, 0, mspeed)
@@ -7395,12 +7074,12 @@ local function idle_stance11()
         WaitForTurn(tlarm, x_axis)
         WaitForTurn(tlarm, y_axis)
         WaitForTurn(tlarm, z_axis)
-        WaitForMove(tlsparksemit2, x_axis)
+--[[        WaitForMove(tlsparksemit2, x_axis)
         WaitForMove(tlsparksemit2, y_axis)
         WaitForMove(tlsparksemit2, z_axis)
         WaitForTurn(tlsparksemit2, x_axis)
         WaitForTurn(tlsparksemit2, y_axis)
-        WaitForTurn(tlsparksemit2, z_axis)
+        WaitForTurn(tlsparksemit2, z_axis)--]]
         WaitForMove(tldrum, x_axis)
         WaitForMove(tldrum, y_axis)
         WaitForMove(tldrum, z_axis)
@@ -7413,18 +7092,18 @@ local function idle_stance11()
         WaitForTurn(tlarmr, x_axis)
         WaitForTurn(tlarmr, y_axis)
         WaitForTurn(tlarmr, z_axis)
-        WaitForMove(tlsparksemit, x_axis)
+--[[        WaitForMove(tlsparksemit, x_axis)
         WaitForMove(tlsparksemit, y_axis)
         WaitForMove(tlsparksemit, z_axis)
         WaitForTurn(tlsparksemit, x_axis)
         WaitForTurn(tlsparksemit, y_axis)
-        WaitForTurn(tlsparksemit, z_axis)
-        WaitForMove(tlharp, x_axis)
-        WaitForMove(tlharp, y_axis)
-        WaitForMove(tlharp, z_axis)
-        WaitForTurn(tlharp, x_axis)
-        WaitForTurn(tlharp, y_axis)
-        WaitForTurn(tlharp, z_axis)
+        WaitForTurn(tlsparksemit, z_axis)--]]
+        --WaitForMove(tlharp, x_axis)
+        --WaitForMove(tlharp, y_axis)
+        --WaitForMove(tlharp, z_axis)
+        --WaitForTurn(tlharp, x_axis)
+        --WaitForTurn(tlharp, y_axis)
+        --WaitForTurn(tlharp, z_axis)
         WaitForMove(tllegUp, x_axis)
         WaitForMove(tllegUp, y_axis)
         WaitForMove(tllegUp, z_axis)
@@ -7480,7 +7159,7 @@ local function idle_stance11()
             Sleep(sleepingBeau)
         end
     end
-    Hide(tlharp)
+    --Hide(tlharp)
 end
 
 --feeding the horse
@@ -7551,12 +7230,12 @@ boolBallAttached = false
 function attachBallToPiece(hand)
     SetSignalMask(SIG_BALL)
     
-    reset(MoveBall)
+    reset(ball)
     reset(BallArcPoint)
     reset(ball)
     boolBallAttached=true
     while boolBallAttached == true do
-        movePieceToPiece(unitID, MoveBall, hand, 10 )
+        movePieceToPiece(unitID, ball, hand, 10 )
         Sleep(10)
     end
 end
@@ -7708,11 +7387,9 @@ teamID = Spring.GetUnitTeam(unitID)
 
 function Setup()
     Hide(tlpole)
-    Hide(tlsparksemit)
-    Hide(tlsparksemit2)
     Hide(deathpivot)
     Hide(tldrum)
-    Hide(tlharp)
+    --Hide(tlharp)
     Hide(tlflute)
     Hide(ball)
     Hide(handr)
@@ -7827,9 +7504,9 @@ end
 function walk()
     Hide(tldrum)
     Hide(tlflute)
-    Hide(tlharp)
-    Hide(tldancedru)
-    boolBladeWhirlStarted= false
+    --Hide(tlharp)
+    --Hide(tldancedru)
+
     dice= math.random(0,40)
 
     legs_down()
@@ -7844,38 +7521,13 @@ function walk()
 
     SetSignalMask(SIG_WALK)
     while (true) do
-    if dice < 30 then
-        tradWalk()
-    else
-        shakeWalk()
-    end
-
+        if dice < 30 then
+            tradWalk()
+        else
+            shakeWalk()
+        end
     end
 end
-
-local idleAnimations = {}
-
-idleAnimations[#idleAnimations +1] = idle_stance
-idleAnimations[#idleAnimations +1] = idle_stance2
-idleAnimations[#idleAnimations +1] = idle_stance3
-idleAnimations[#idleAnimations +1] = idle_stance4
-idleAnimations[#idleAnimations +1] = idle_stance5
-idleAnimations[#idleAnimations +1] = idle_stance6
-idleAnimations[#idleAnimations +1] = idle_stance7
-idleAnimations[#idleAnimations +1] = idle_stance8
-idleAnimations[#idleAnimations +1] = idle_stance9
-idleAnimations[#idleAnimations +1] = idle_stance_10
-idleAnimations[#idleAnimations +1] = idle_stance11
-idleAnimations[#idleAnimations +1] = idle_stance_12
-idleAnimations[#idleAnimations +1] = idle_stance13
-idleAnimations[#idleAnimations +1] = idle_stance14
-idleAnimations[#idleAnimations +1] = idle_stance15
-idleAnimations[#idleAnimations +1] = idle_playBall
-idleAnimations[#idleAnimations +1] = idle_stance18
-idleAnimations[#idleAnimations +1] = idle_stance17
-idleAnimations[#idleAnimations +1] = strikeAPose
-                
-
 
 function hairInWind(offset)
     Signal(SIG_HAIR)
@@ -7893,7 +7545,7 @@ function hairInWind(offset)
     end
 end
 
-poseFunction={
+local poseFunction={
     function()
         mSyncIn(tigLil,0,-6,0,550)
         StartThread(hairInWind,-45)
@@ -7947,16 +7599,90 @@ poseFunction={
         tSyncIn(tllegLowR,107,0,0,550)
         WaitForMoves(tigLil)
         WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
+    end,}
+
+local technoPosesFunction={
+    function()
+        mSyncIn(tigLil,0,-6,0,550)
+        StartThread(hairInWind,0)
+        tSyncIn(tlHead,0,0,0,550)
+        tSyncIn(tlarm,0,-60,90,550)
+        tSyncIn(tlarmr,0,80,90,550)
+        tSyncIn(tllegUp,0,0,0,550)
+        tSyncIn(tllegLow,0,0,0,550)
+        tSyncIn(tllegUpR,0,0,0,550)
+        tSyncIn(tllegLowR,0,0,0,550)
+        WaitForMoves(tigLil)
+        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
     end,
-    
+    function()
+        mSyncIn(tigLil,0,12,0,550)
+        StartThread(hairInWind,0)
+        tSyncIn(tlHead,0,0,0,550)
+        tSyncIn(tlarm,0,60,90,550)
+        tSyncIn(tlarmr,0,-80,90,550)
+        tSyncIn(tllegUp,0,0,0,550)
+        tSyncIn(tllegLow,0,0,0,550)
+        tSyncIn(tllegUpR,0,0,0,550)
+        tSyncIn(tllegLowR,0,0,0,550)
+        WaitForMoves(tigLil)
+        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
+    end,
+    function()
+        mSyncIn(tigLil,0,-6,0,550)
+        StartThread(hairInWind,0)
+        tSyncIn(tlHead,0,0,0,550)
+        tSyncIn(tlarm,0,-80,90,550)
+        tSyncIn(tlarmr,0,80,90,550)
+        tSyncIn(tllegUp,0,0,0,550)
+        tSyncIn(tllegLow,0,0,0,550)
+        tSyncIn(tllegUpR,0,0,0,550)
+        tSyncIn(tllegLowR,0,0,0,550)
+        WaitForMoves(tigLil)
+        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
+    end,
+    function()
+        mSyncIn(tigLil,0,12,0,550)
+        StartThread(hairInWind,0)
+        tSyncIn(tlHead,0,0,0,550)
+        tSyncIn(tlarm,-90,0,15,550)
+        tSyncIn(tlarmr,90,-180,-15,550)
+        tSyncIn(tllegUp,0,0,0,550)
+        tSyncIn(tllegLow,0,0,0,550)
+        tSyncIn(tllegUpR,0,0,0,550)
+        tSyncIn(tllegLowR,0,0,0,550)
+        WaitForMoves(tigLil)
+        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
+    end,
+    function()
+        upDown= math.random(8,12)*randSign()
+        mSyncIn(tigLil,0,12,0,550)
+        lookDir = math.random(-45,45)
+        StartThread(hairInWind,lookDir)
+        tSyncIn(tlHead,0,lookDir,0,550)   
+        lVal= math.random(0,10)    
+        tSyncIn(tllegUp,-lVal,0,0,550)
+        tSyncIn(tllegLow,lVal,0,0,550)
+        rVal= math.random(0,10)   
+        tSyncIn(tllegUpR,-rVal,0,0,550)
+        tSyncIn(tllegLowR,rVal,0,0,550)
+        WaitForMoves(tigLil)
+        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
+    end,
 }
 
-
-function strikeAPose()
-    poseSelector=math.random(1,#poseFunction)
-    poseFunction[poseSelector]()
-
-    Sleep(42000)
+function strikeAPose(boolTechno)
+    strikePosFunction = poseFunction
+    if boolTechno then
+        strikePosFunction = technoPosesFunction
+    end
+    poseSelector=math.random(1,#strikePosFunction)
+    strikePosFunction[poseSelector]()
+    time = math.random(15,40)*1000
+    if boolTechno then
+        time = 1000
+    end
+    Sleep(time)
     Signal(SIG_HAIR)
 end
 
@@ -8236,5 +7962,29 @@ function waitPosition()
 end
 
 
+idleAnimations[#idleAnimations +1] = idle_stance
+idleAnimations[#idleAnimations +1] = idle_stance2
+idleAnimations[#idleAnimations +1] = idle_stance3
+idleAnimations[#idleAnimations +1] = idle_stance4
+idleAnimations[#idleAnimations +1] = idle_stance5
+idleAnimations[#idleAnimations +1] = idle_stance6
+idleAnimations[#idleAnimations +1] = idle_stance7
+idleAnimations[#idleAnimations +1] = idle_stance8
+idleAnimations[#idleAnimations +1] = idle_stance9
+idleAnimations[#idleAnimations +1] = idle_stance_10
+idleAnimations[#idleAnimations +1] = idle_stance11
+idleAnimations[#idleAnimations +1] = idle_stance_12
+idleAnimations[#idleAnimations +1] = idle_stance13
+idleAnimations[#idleAnimations +1] = idle_stance14
+idleAnimations[#idleAnimations +1] = idle_stance15
+idleAnimations[#idleAnimations +1] = idle_playBall
+idleAnimations[#idleAnimations +1] = idle_stance18
+idleAnimations[#idleAnimations +1] = idle_stance17
+idleAnimations[#idleAnimations +1] = strikeAPose
+
+technoAnimations[#technoAnimations +1] = strikeAPose
+technoAnimations[#technoAnimations +1] = idle_stance_10
+technoAnimations[#technoAnimations +1] = idle_stance
+                
 
 
