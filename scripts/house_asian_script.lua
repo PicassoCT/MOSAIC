@@ -4,7 +4,6 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
-
 local grafitiMessages =  include('grafitiMessages.lua')
 
 function getScriptName() return "house_western_script.lua::" end
@@ -378,10 +377,10 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     return DecoMaterial, Deco
 end
 
-function getRandomBuildMaterial(buildMaterial, name, x, z)
+function getRandomBuildMaterial(buildMaterial, name, index, x, z)
 
     if not buildMaterial then
---        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
+        --echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
     end
     if not type(buildMaterial) == "table" then
@@ -403,12 +402,23 @@ function getRandomBuildMaterial(buildMaterial, name, x, z)
             return piecenum
         end
     else
+        -- try index variant first |1|2|3|4|5|6|
+        if maRa() and index then
+            moduloIndex = index % 6 + 1
+
+            for num, piecenum in pairs(buildMaterial)
+                if num % moduloIndex == 0 and not AlreadyUsedPiece[piecenum]  then
+                    AlreadyUsedPiece[piecenum] = true
+                    return piecenum, num
+                end
+            end
+        end
 
         dice = math.random(1, total)
         total = 0
         for num, piecenum in pairs(buildMaterial) do
-            if (not AlreadyUsedPiece[piecenum] and type(num) == "number" and
-                type(piecenum) == "number") then
+            --if not type(num) == "number" and type(piecenum) == "number" then continue end
+            if (not AlreadyUsedPiece[piecenum] and num and piecenum then
                 total = total + 1
                 if total == dice then
                     AlreadyUsedPiece[piecenum] = true
@@ -566,8 +576,6 @@ function getElasticTable(...)
     return resulT
 end
 
-
-
 function nameContainsMaterial(name, materialColourName)
     if not name or name == "" then
         return true, true 
@@ -672,7 +680,6 @@ function buildDecorateGroundLvl()
     local DoorDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Door","Deco"}, {})
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Door"})
 
-
     boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
 
     --echo("House_wester_nColour:"..materialColourName)
@@ -692,10 +699,10 @@ function buildDecorateGroundLvl()
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName )
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index )
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index )
                 Sleep(1)
             end
 
@@ -798,10 +805,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, xLoc, zLoc)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc)
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, xLoc, zLoc)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc)
                 Sleep(1)
             end
 
@@ -1017,9 +1024,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof")
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof", index)
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof")
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof", index)
                 Sleep(1)
             end
 
@@ -1049,16 +1056,16 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
 
     for i = 1, 37, 1 do
+        local index = i
         partOfPlan, xLoc, zLoc = getLocationInPlan(i, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco")
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index)
             while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco")
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index)
                 Sleep(1)
             end
-
 
             if element and chancesAre(10) < decoChances.roof then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
