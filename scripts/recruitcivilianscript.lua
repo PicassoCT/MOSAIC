@@ -67,8 +67,7 @@ function recruiteLoop()
         end, 
         function(id)
             if isDisguisedRecruitableCivilian(id) == true then
-                if spGetUnitTeam(GG.DisguiseCivilianFor[id]) ~=
-                    recruitingTeam then
+                if spGetUnitTeam(GG.DisguiseCivilianFor[id]) ~= myTeam then
                     return GG.DisguiseCivilianFor[id] -- make unit transparent
                 else
                     return -- swallow disguised civilians of our own operatives

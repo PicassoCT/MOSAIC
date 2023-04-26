@@ -191,19 +191,22 @@ function script.Create()
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
-
-
+    StartThread(rainyDayCare)
 end
 
-function testAnimation()
-    Sleep(500)
-  
-    while true do
-        closeCombatAnimation(UpBody, UpArm1, UpArm2, Head1)
-        WaitForTurns(upperBodyPieces)
-        WaitForTurns(lowerBodyPieces)
-
-    Sleep(2000)
+function rainyDayCare()
+    westernCivilainDefIDTypeTable = getWesternUnitTypeMap("civilian", UnitDefs)
+    if not westernCivilainDefIDTypeTable[myDefID] then return end
+    Umbrella = piece("Umbrella")
+    while Umbrella do
+        if isRaining() then
+            while isRaining() do
+                Show(Umbrella)
+                Sleep(5000)
+            end
+            Hide(Umbrella)
+        end
+        Sleep(5000)
     end
 end
 

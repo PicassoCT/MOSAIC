@@ -40,7 +40,7 @@ local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
-
+local spGetGameFrame = Spring.GetGameFrame
 
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
@@ -91,7 +91,7 @@ local SIG_TALKHEAD = 16
 local SIG_GESTE = 32
 local SIG_ONTHEMOVE = 64
 local SIG_TIGLIL = 128
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 
 function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
@@ -144,7 +144,7 @@ end
 
 function timeOfDay()
     WholeDay = GameConfig.daylength
-    timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
+    timeFrame = spGetGameFrame() + (WholeDay * 0.25)
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
 
@@ -192,8 +192,8 @@ function script.Create()
     restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
-
 end
+
 EmergencyIcon = piece("EmergencyIcon")
 function ShowEmergencyElements () 
   EmergencyText = piece("EmergencyText")
@@ -210,7 +210,7 @@ function emergencyWatcher()
             Signal(SIG_CORE)
             hideAll(unitID)
             ShowEmergencyElements()
-            echo("emergency mode active") 
+            --echo("emergency mode active") 
             while GG.GlobalGameState ~= GameConfig.GameState.normal do
                 Sleep(1000)
             end
@@ -219,7 +219,6 @@ function emergencyWatcher()
         end
         Sleep(3000)
     end
-
 end
 
 local hours, minutes, seconds, percent = getDayTime()
@@ -265,9 +264,6 @@ function grid()
     Sleep(100)
     while true do
         if (hours > 19 or hours < 6) then
-
-
-
             theGrid = getGrid()
             upVal=math.random(3,4)
             lowVal= math.random(0,2)
@@ -292,7 +288,6 @@ function grid()
             end
             HideAssert(theGrid)
         end
-
         Sleep(33)
     end
 end
@@ -305,7 +300,7 @@ end
 function checkForBlackOut()
     while true do
         if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
-            if GG.BlackOutDeactivationTime[unitID] > (Spring.GetGameFrame() - 5*30) then
+            if GG.BlackOutDeactivationTime[unitID] > (spGetGameFrame() - 5*30) then
                 Signal(SIG_HOLO)
                 Sleep(500)
                 hideAll(unitID)
@@ -359,19 +354,10 @@ function holoGramRain()
     end
     while true do
         if (hours > 19 or hours < 6) and isANormalDay() then
-            GG.boolRainyNight = maRa()
-            if not GG.RainyNight then
-                GG.RainyNight = {
-                                 x = math.random(1,15)*randSign(),
-                                 z = math.random(1,15)*randSign()
-                                 }
-            end
-            boolRainyNight = GG.boolRainyNight
-            if boolRainyNight then
-                Turn(RainCenter,x_axis,math.rad(GG.RainyNight.x),0)
-                Turn(RainCenter,z_axis,math.rad(GG.RainyNight.z),0)
+            if isRaining(hours) then
+                Turn(RainCenter,x_axis,math.rad(GG.RainDirection.x),0)
+                Turn(RainCenter,z_axis,math.rad(GG.RainDirection.z),0)
                 while(hours > 19 or hours < 6) do
-                    hours, minutes, seconds, percent = getDayTime()
                     if boolIsBrothel then
                         holoRain("Brothel", speed)
                     end
@@ -500,7 +486,7 @@ function glowWormFlight(speed)
 
     while true do
         if (hours > 19 or hours < 6) then
-            timeInSeconds = (Spring.GetGameFrame()/30) % 90
+            timeInSeconds = (spGetGameFrame()/30) % 90
 
             if math.ceil(timeInSeconds) % 15 == 0 then
                 hideT(TableOfPiecesGroups["GlowWorm"])
@@ -628,7 +614,11 @@ function HoloGrams()
             if maRa() then
               StartThread(showWallDayTime, "CasinoWall")
               StartThread(addJHologramLetters)
+              if maRa() then
+                StartThread(fireWorks)
+              end
             end
+           
 
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
@@ -733,6 +723,76 @@ function HoloGrams()
         nilNeonSigns()
         return 
     end 
+end
+
+function fireWorksSet(fireSet, maxDistance, speed)
+    distanceX = math.random(maxDistance*0.75 ,maxDistance)*randSign()
+    distanceZ = math.random(maxDistance*0.75 ,maxDistance)*randSign()
+    distanceY = math.random(maxDistance*0.75 ,maxDistance)*randSign()
+    for num, id in pairs(fireSet) do
+
+        mP(id, distanceX, distanceY, distanceZ, speed)
+        turnPieceRandDir(id, 0)    
+        spinRand(id,-10, 10, 0.25)
+        Show(id)
+    end
+end
+
+function fireWorks()
+    local FireWorksCenter = piece("FireWorksCenter")
+    FireWorksTableB = TableOfPiecesGroups["BlueSpark"]
+    FireWorksTableR = TableOfPiecesGroups["RedSpark"]
+    FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
+    upaxis = 2
+
+    while true do
+        while (hours > 20 or hours < 6) do
+            Show(FireWorksCenter)
+            reset(FireWorksCenter)
+            resetT(FireWorksTableB)
+            resetT(FireWorksTableR)
+            resetT(FireWorksTableY)
+            updistance = 3000
+
+            spreaddistance = 750 
+            fOffsetX=math.random(1000,2500)*randSign()
+            fOffsetZ=math.random(1000,2500)*randSign()
+            Move(FireWorksCenter, 1, fOffsetX,0)
+            Move(FireWorksCenter, 3, fOffsetZ,0)
+            WMove(FireWorksCenter, upaxis, updistance, 1000.5)
+            --Show and Expand
+
+             speed = math.random(25,35)
+            if maRa() then
+               fireWorksSet(FireWorksTableB, spreaddistance, spreaddistance)
+            end     
+
+            if maRa() then
+                fireWorksSet(FireWorksTableR, spreaddistance, spreaddistance)
+            end
+            
+            if maRa() then
+                fireWorksSet(FireWorksTableY, spreaddistance, spreaddistance)
+            end
+            Hide( FireWorksCenter)          
+            WMove(FireWorksCenter, upaxis, updistance - 200, 250.5)
+            WMove(FireWorksCenter, upaxis, updistance - 1000, 500.5)
+            Move(FireWorksCenter, upaxis, updistance - 2000, 750)
+            Sleep(800) 
+            Move(FireWorksCenter, upaxis, 0, 1000)
+            for i=1, #FireWorksTableB do
+                Hide(FireWorksTableB[i])
+                Hide(FireWorksTableR[i])
+                Hide(FireWorksTableY[i])
+                Sleep(200)
+            end     
+            WMove(FireWorksCenter, upaxis, 0, 1000)
+            timeBetweenShots= math.random(4,10)*1000
+            Sleep(1000)     
+
+        end
+    Sleep(5000)
+    end
 end
 
 function shapeSymmetry(logo)
@@ -940,7 +1000,7 @@ end
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
 
 function TigLilSetup()    
-    echo("dancing tilgil a1")
+    --echo("dancing tilgil a1")
     Hide(tlpole)
     Hide(deathpivot)
     Hide(tldrum)
@@ -948,7 +1008,7 @@ function TigLilSetup()
     Hide(tlflute)
     Hide(ball)
     Hide(handr)
-    echo("dancing tilgil a2")
+    --echo("dancing tilgil a2")
     Hide(handl)
     Show(tigLil)
     Show(tlHead)
@@ -956,12 +1016,12 @@ function TigLilSetup()
     Show(tlhairdown)
     Show(tlarm)
     Show(tlarmr)
-    echo("dancing tilgil a3")
+    --echo("dancing tilgil a3")
     Show(tllegUp)
     Show(tllegLow)
     Show(tllegUpR)
     Show(tllegLowR)
-    echo("dancing tilgil a4")
+    --echo("dancing tilgil a4")
 
     Turn(tigLil, y_axis, math.rad(0), 4)
     Turn(tigLil, z_axis, math.rad(0), 4)
@@ -987,7 +1047,7 @@ function TigLilSetup()
     Turn(tlarmr, y_axis, math.rad(0), 3)
 
     Turn(tlarmr, z_axis, math.rad(0), 3)
-    echo("dancing tilgil a5")
+    --echo("dancing tilgil a5")
 
     Turn(tlarmr, x_axis, math.rad(0), 3)
 
@@ -1031,9 +1091,9 @@ function TigLilSetup()
     WaitForTurn(tlarm, z_axis)
 
     WaitForTurn(tlarm, x_axis)
-    echo("dancing tilgil a6")
+    --echo("dancing tilgil a6")
     legs_down()
-    echo("dancing tilgil a7")
+    --echo("dancing tilgil a7")
     --changebookmark 
     Sleep(285)
 end
@@ -2334,7 +2394,7 @@ end
 
 
 function idle_stance5()
-    echo("idle_stance5")
+    --echo("idle_stance5")
     Turn(tigLil, x_axis, math.rad(-37), 2)
     Turn(tlHead, x_axis, math.rad(-38), 2)
     Turn(tlhairup, x_axis, math.rad(-18), 4)
@@ -2594,7 +2654,7 @@ end
 
 --like a bitch over troubled water (expandable)
 function idle_stance4()
-echo("idle_stance4")
+--echo("idle_stance4")
     Turn(tlarm, z_axis, math.rad(-90), 3)
     Turn(tllegUp, x_axis, math.rad(-40), 2)
     Turn(tllegUp, y_axis, math.rad(-80), 2)
@@ -2755,7 +2815,7 @@ echo("idle_stance4")
 end
 
 function idle_stance2()
-    echo("idle_stance2")
+    --echo("idle_stance2")
     rand = math.random(0, 2)
     if rand == 1 then
         Turn(tlarmr, y_axis, math.rad(-85), 3)
@@ -3455,7 +3515,7 @@ function idle_stance2()
 end
 
 function idle_stance3()
-    echo("idle_stance3")
+    --echo("idle_stance3")
     rand = math.random(0, 1)
     if rand == 1 then
         Turn(tlarm, z_axis, math.rad(-52), 4)
@@ -3608,7 +3668,7 @@ function idle_stance3()
 end
 
 function idle_stance()
-echo("idle_stance")
+--echo("idle_stance")
     Turn(tlHead, y_axis, math.rad(-38), 3)
     WaitForTurn(tlHead, y_axis)
     Turn(tlHead, y_axis, math.rad(20), 2)
@@ -4087,7 +4147,7 @@ echo("idle_stance")
 end
 
 function idle_stance6()
-    echo("idle_stance6")
+    --echo("idle_stance6")
     Turn(tlHead, x_axis, math.rad(-29), 3)
     Turn(tlHead, x_axis, math.rad(29), 3)
 
@@ -5003,7 +5063,7 @@ echo("idle_stance7")
 end
 
 function idle_stance8()
-    echo("idle_stance8")
+    --echo("idle_stance8")
     spagat()
     legs_down()
     tempThrower = math.random(1, 7)
@@ -5070,7 +5130,7 @@ end
 
 --clapstance
 function idle_stance9()
-    echo("idle_stance9")
+    --echo("idle_stance9")
     --Clap
 
     Turn(tigLil, x_axis, math.rad(-16), 3)
@@ -5375,7 +5435,7 @@ function danceInCircle()
 end
 --dancestance
 function idle_stance_10()
-    echo("idle_stance10")
+    --echo("idle_stance10")
 
         --------------------------------------- Preparations--------------------------
         Turn(tlarm, x_axis, math.rad(0), 4)
@@ -5440,7 +5500,7 @@ end
 
 --headshake
 function idle_stance_12()
-    echo("idle_stance12")
+    --echo("idle_stance12")
     legs_down()
     sign = randSign()
     mP(tigLil, 0, -9.4, 1.3, 17)
@@ -5536,7 +5596,7 @@ echo("idle_stance13")
 end
 --strike a pose
 function idle_stance16()
-    echo("idle_stance16")
+    --echo("idle_stance16")
     pose = 1
     if pose ==1 then
     
@@ -5608,7 +5668,7 @@ end
 
 --yoga
 function idle_stance14()
-    echo("idle_stance14")
+    --echo("idle_stance14")
     yoga = math.random(1, 14)
     if yoga == 1 then
         mP(tigLil, 0, -5, 0, 9)
@@ -5851,7 +5911,7 @@ end
 
 --Tango
 function idle_stance17()
-    echo("idle_stance17")
+    --echo("idle_stance17")
 orgDirection=0
 
 for t=1,6 do
@@ -7372,17 +7432,13 @@ end,
 
 
 local function idle_playBall()
-ballDice = math.random(1,4)
-ballIdleFunctions[ballDice]()
-legs_down()
-resetBall()
-Hide(ball)
+    ballDice = math.random(1,4)
+    ballIdleFunctions[ballDice]()
+    legs_down()
+    resetBall()
+    Hide(ball)
 end
 --eggspawn --tigLil and SkinFantry
-
-experienceSoFar = Spring.GetUnitExperience(unitID)
-teamID = Spring.GetUnitTeam(unitID)
-
 
 
 function Setup()
@@ -7529,13 +7585,14 @@ function walk()
     end
 end
 
+
 function hairInWind(offset)
     Signal(SIG_HAIR)
     SetSignalMask(SIG_HAIR)
     auslenkung= math.random(20,35)
     while true do
         TurnTowardsWind(tlhairup, math.pi, 50)
-        sinA= (((Spring.GetGameFrame())%60)/60)* 2*math.pi
+        sinA= (((spGetGameFrame())%60)/60)* 2*math.pi
     
         sinA,saint = math.sin(sinA)*auslenkung,math.sin(sinA+math.pi/8)*auslenkung
         Turn(tlhairup,x_axis,math.rad(sinA+offset), 50)
