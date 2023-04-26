@@ -198,11 +198,11 @@ function rainyDayCare()
     westernCivilainDefIDTypeTable = getWesternUnitTypeMap("civilian", UnitDefs)
     if not westernCivilainDefIDTypeTable[myDefID] then return end
     Umbrella = piece("Umbrella")
-    while true do
+    while Umbrella do
         if isRaining() then
             while isRaining() do
                 Show(Umbrella)
-                Sleep(1000)
+                Sleep(5000)
             end
             Hide(Umbrella)
         end
