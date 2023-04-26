@@ -1318,7 +1318,9 @@ function getGameConfig()
 
             function isRaining(hour)
                 if GG.boolRainyArea == nil then
-                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0                   
+                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0      
+                    GG.boolRainyArea = true
+                    echo("Is a Rainy area: "..toString( GG.boolRainyArea))             
                 end
                 if not GG.boolRainyArea then return false end
 
@@ -1328,9 +1330,14 @@ function getGameConfig()
                                          z = math.random(1,15) * randSign()
                                          }
                 end
+
                 if not hour then hour = getDayTime() end
-                -- but does it rain right now
-                return getDeterministicRandom(hour, 4) % 2 == 0
+                dayLengthFrames = GG.GameConfig.daylength
+                frames = Spring.GetGameFrame()
+
+                dayNr = frames/ dayLengthFrames
+
+                return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
             end
 
             function isANormalDay()
