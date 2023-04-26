@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
 local grafitiMessages =  include('grafitiMessages.lua')
-
+local continousFundamentals = maRa() == maRa()
 function getScriptName() return "house_western_script.lua::" end
 
 local TablesOfPiecesGroups = {}
@@ -377,7 +377,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     return DecoMaterial, Deco
 end
 
-function getRandomBuildMaterial(buildMaterial, name, index, x, z)
+function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceContinousUsage)
 
     if not buildMaterial then
         --echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
@@ -402,8 +402,8 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z)
             return piecenum
         end
     else
-        -- try index variant first |1|2|3|4|5|6|
-        if maRa() and index then
+        -- try index variant first |1|2|3|4|5|6| making it continous
+        if (maRa() or boolForceContinousUsage) and index then
             moduloIndex = index % 6 + 1
 
             for num, piecenum in pairs(buildMaterial)
@@ -413,7 +413,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z)
                 end
             end
         end
-
+        -- return randomized elements
         dice = math.random(1, total)
         total = 0
         for num, piecenum in pairs(buildMaterial) do
@@ -699,10 +699,12 @@ function buildDecorateGroundLvl()
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index )
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, AlreadyUsedPiece[piecenum] = true
+            return piecenum, num )
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index )
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, AlreadyUsedPiece[piecenum] = true
+                return piecenum, num )
                 Sleep(1)
             end
 
