@@ -14,8 +14,8 @@ local house_asian = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 				= "placeholder.lua",
-	objectName       	= "house_asian.dae",
+	script 				= "house_asian_script.lua",
+	objectName       	= "house_western.dae",
 
 	
 	
