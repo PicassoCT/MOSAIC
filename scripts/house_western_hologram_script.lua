@@ -40,7 +40,7 @@ local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
-
+local spGetGameFrame = Spring.GetGameFrame
 
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
@@ -91,7 +91,7 @@ local SIG_TALKHEAD = 16
 local SIG_GESTE = 32
 local SIG_ONTHEMOVE = 64
 local SIG_TIGLIL = 128
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 
 function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
@@ -144,7 +144,7 @@ end
 
 function timeOfDay()
     WholeDay = GameConfig.daylength
-    timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
+    timeFrame = spGetGameFrame() + (WholeDay * 0.25)
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
 
@@ -300,7 +300,7 @@ end
 function checkForBlackOut()
     while true do
         if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
-            if GG.BlackOutDeactivationTime[unitID] > (Spring.GetGameFrame() - 5*30) then
+            if GG.BlackOutDeactivationTime[unitID] > (spGetGameFrame() - 5*30) then
                 Signal(SIG_HOLO)
                 Sleep(500)
                 hideAll(unitID)
@@ -486,7 +486,7 @@ function glowWormFlight(speed)
 
     while true do
         if (hours > 19 or hours < 6) then
-            timeInSeconds = (Spring.GetGameFrame()/30) % 90
+            timeInSeconds = (spGetGameFrame()/30) % 90
 
             if math.ceil(timeInSeconds) % 15 == 0 then
                 hideT(TableOfPiecesGroups["GlowWorm"])
@@ -615,10 +615,10 @@ function HoloGrams()
               StartThread(showWallDayTime, "CasinoWall")
               StartThread(addJHologramLetters)
               if maRa() then
-              
+                StartThread(fireWorks)
               end
             end
-            StartThread(fireWorks)
+           
 
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
@@ -7432,17 +7432,13 @@ end,
 
 
 local function idle_playBall()
-ballDice = math.random(1,4)
-ballIdleFunctions[ballDice]()
-legs_down()
-resetBall()
-Hide(ball)
+    ballDice = math.random(1,4)
+    ballIdleFunctions[ballDice]()
+    legs_down()
+    resetBall()
+    Hide(ball)
 end
 --eggspawn --tigLil and SkinFantry
-
-experienceSoFar = Spring.GetUnitExperience(unitID)
-teamID = Spring.GetUnitTeam(unitID)
-
 
 
 function Setup()
@@ -7589,13 +7585,14 @@ function walk()
     end
 end
 
+
 function hairInWind(offset)
     Signal(SIG_HAIR)
     SetSignalMask(SIG_HAIR)
     auslenkung= math.random(20,35)
     while true do
         TurnTowardsWind(tlhairup, math.pi, 50)
-        sinA= (((Spring.GetGameFrame())%60)/60)* 2*math.pi
+        sinA= (((spGetGameFrame())%60)/60)* 2*math.pi
     
         sinA,saint = math.sin(sinA)*auslenkung,math.sin(sinA+math.pi/8)*auslenkung
         Turn(tlhairup,x_axis,math.rad(sinA+offset), 50)
