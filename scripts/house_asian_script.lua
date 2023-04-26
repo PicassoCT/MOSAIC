@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
 local grafitiMessages =  include('grafitiMessages.lua')
-local continousFundamentals = maRa() == maRa()
+local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_western_script.lua::" end
 
 local TablesOfPiecesGroups = {}
@@ -377,7 +377,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     return DecoMaterial, Deco
 end
 
-function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceContinousUsage)
+function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceContinousUsage, level)
 
     if not buildMaterial then
         --echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
@@ -402,14 +402,31 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
             return piecenum
         end
     else
-        -- try index variant first |1|2|3|4|5|6| making it continous
-        if (maRa() or boolForceContinousUsage) and index then
-            moduloIndex = index % 6 + 1
+        if level and boolForceContinousUsage and index then        
+            if level == 0 then
+            -- try index variant first |1|2|3|4|5|6| making it continous at ground level
+                if maRa() then
+                    moduloIndex = index % 6 + 1
 
-            for num, piecenum in pairs(buildMaterial)
-                if num % moduloIndex == 0 and not AlreadyUsedPiece[piecenum]  then
-                    AlreadyUsedPiece[piecenum] = true
-                    return piecenum, num
+                    for num, piecenum in pairs(buildMaterial)
+                        if (num % 6)+1 == moduloIndex and not AlreadyUsedPiece[piecenum]  then
+                            AlreadyUsedPiece[piecenum] = true
+                            return piecenum, num
+                        end
+                    end
+                end
+            end
+
+            if maRa() and level > 0 then
+                if maRa() then
+                    moduloIndex = index % (level+1) + 1
+
+                    for num, piecenum in pairs(buildMaterial)
+                        if (num % 6)+1 == moduloIndex and not AlreadyUsedPiece[piecenum]  then
+                            AlreadyUsedPiece[piecenum] = true
+                            return piecenum, num
+                        end
+                    end
                 end
             end
         end
@@ -699,19 +716,18 @@ function buildDecorateGroundLvl()
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, AlreadyUsedPiece[piecenum] = true
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
             return piecenum, num )
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, AlreadyUsedPiece[piecenum] = true
-                return piecenum, num )
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
+                return piecenum, num 
                 Sleep(1)
             end
 
             if element then
                 countElements = countElements + 1
-                buildMaterial = removeElementFromBuildMaterial(element,
-                                                               buildMaterial)
+                buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 ToShowTable[#ToShowTable + 1] = element
@@ -807,10 +823,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc, boolContinousFundamental, Level)
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc, boolContinousFundamental, Level)
                 Sleep(1)
             end
 
@@ -906,10 +922,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard")
+    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index)
     attempts = 0
     while not element and attempts < countedElements do
-        element, nr = getRandomBuildMaterial(buildMaterial, "backyard")
+        element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index)
         Sleep(1)
         attempts = attempts + 1
     end
