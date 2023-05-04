@@ -151,7 +151,7 @@ return {
 "Lehmitz",
 "Pyama Bar",
 "Heiermanns",
-"What the fuck Story",
+"WTF Stories",
 "Das Buero",
 "Klapsmuehle",
 "Laufhaus",
@@ -244,5 +244,18 @@ return {
 "tatoos",
 "crazy night",
 "bui vien",
-"hard days night"
+"hard days night",
+"cumbucket",
+"shaky legs",
+"fuck it senselass",
+"unlubed",
+"Superpenetrator",
+"pene al dente",
+"Ballsdeep",
+"Eyes Rolledback",
+"Barebackrodeo",
+"Speared Snack",
+"The outback",
+"Shaftedskirt",
+"Horny Roses"
 }

@@ -131,5 +131,5 @@ return {
   "Alain Ducasse Louis XV","L Ambroisie","Trattoria Trippa","Estimar","Ganbara","Dos Pebrots",
   "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI", "gamblingproblem",
   "Big spender", "holdfoldthem", "slevin", "sinkhole", "dollars to rage",
-  "dreams in smoke", "smoke and mirrors" 
+  "dreams in smoke", "smoke and mirrors", "slot", "pachinko", "daitoyo", "nobuta"
 }

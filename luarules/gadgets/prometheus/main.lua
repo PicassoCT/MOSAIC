@@ -328,8 +328,8 @@ function gadget:GameFrame(f)
     end
     if f > firstFrame  then
 	    if f % SAVE_PERIOD < 0.01 then
-        Spring.Echo("gadet:GameFrame:GetConfigData2")
-		GetConfigData()
+        --Spring.Echo("gadet:GameFrame:GetConfigData2")
+		--GetConfigData()
 	    end
         if not  waypointMgr.GameFrame then
             waypointMgr = CreateWaypointMgr()
