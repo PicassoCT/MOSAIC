@@ -6,6 +6,7 @@ return {
  "YES Yes Oh MY GOD",
  "Fuck me hard",
  "Singles near you",
+ "Daddyissues",
  "Shaking legs",
  "Moneyhoney",
  "Wild Ride",
@@ -255,5 +256,11 @@ return {
 "the swing",
 "eyes rolled back",
 "legs shaking"
-"Yes she moaned"
+"Yes she moaned",
+"kabukicho shinjuku",
+"Crabs clams",
+"herpes derpas",
+"No regrats",
+"U R Moma",
+"UR SISTER MISTER"
 }

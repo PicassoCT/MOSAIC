@@ -132,5 +132,5 @@ return {
   "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI", "gamblingproblem",
   "Big spender", "holdfoldthem", "slevin", "sinkhole", "dollars to rage",
   "dreams in smoke", "smoke and mirrors" , "house rising sun",
-  "Red and Black", "Concrete horseshoes", "four leave clover"
+  "Red and Black", "Concrete horseshoes", "four leave clover", "BingoBongo"
 }
