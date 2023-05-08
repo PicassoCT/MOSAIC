@@ -942,5 +942,5 @@ return {
   "Alain Ducasse Louis XV","L Ambroisie","Trattoria Trippa","Estimar","Ganbara","Dos Pebrots",
   "El Quim","Al Kostat","Le Baratin","Lyles","Suculent","Bodega CVI",
   "Dr. Re. Phill", "cortex implants", "new soft", "mind wäre", "neural link", "new world games", "coil engine", "armatec", "protagon", "antagon", 
-"horizons", "spinner vtol refit", "wet bulb ac", "mistakes were made" 
+"horizons", "spinner vtol refit", "wet bulb ac", "mistakes were made", "militech", "arasaka", "moonchies"
 }

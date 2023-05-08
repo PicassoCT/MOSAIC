@@ -222,7 +222,7 @@ return {
 "Buttstuff",
 "Creampies",
 "Cherrypies",
-"Like warm apple pie",
+"warm apple pie",
 "Krystall Boyd",
 "DingDong",
 "What happens in",
@@ -244,5 +244,15 @@ return {
 "tatoos",
 "crazy night",
 "bui vien",
-"hard days night"
+"hard days night",
+"ann all",
+"spearfished starfish",
+"brutal asshole",
+"Best bad option",
+"Dickblisters",
+"Braindance",
+"gagballroom",
+"the swing",
+"eyes rolled back",
+"legs shaking"
 }
