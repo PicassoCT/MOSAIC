@@ -255,4 +255,5 @@ return {
 "the swing",
 "eyes rolled back",
 "legs shaking"
+"Yes she moaned"
 }
