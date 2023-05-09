@@ -152,7 +152,7 @@ return {
 "Lehmitz",
 "Pyama Bar",
 "Heiermanns",
-"What the fuck Story",
+"WTF Stories",
 "Das Buero",
 "Klapsmuehle",
 "Laufhaus",
@@ -263,4 +263,17 @@ return {
 "No regrats",
 "U R Moma",
 "UR SISTER MISTER"
+"cumbucket",
+"shaky legs",
+"fuck it senselass",
+"unlubed",
+"Superpenetrator",
+"pene al dente",
+"Ballsdeep",
+"Eyes Rolledback",
+"Barebackrodeo",
+"Speared Snack",
+"The outback",
+"Shaftedskirt",
+"Horny Roses"
 }

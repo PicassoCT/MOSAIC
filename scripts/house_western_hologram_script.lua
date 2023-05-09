@@ -904,6 +904,9 @@ end
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessage)
     axis= 2
+    startValue = 0
+    if boolIsCasino  then startValue = 2 end
+    if boolIsBrothel  then startValue = 3 end
     boolUpRight = maRa()
     if boolUpRight and boolIsBrothel then
         if maRa() == maRa() then
@@ -928,12 +931,12 @@ function addHologramLetters( myMessage)
         local letter = string.upper(string.sub(myMessage,i,i))
         if letter ~= " " and TableOfPiecesGroups[letter] then
             if not counter[letter] then 
-                counter[letter] = 0 
+                counter[letter] = startValue 
             end            
             counter[letter] = counter[letter] + 1 
+            if counter[letter] > 4 then counter[letter] = 1 end
 
-            if counter[letter] < 4 then                 
-                if TableOfPiecesGroups[letter] and counter[letter] and TableOfPiecesGroups[letter][counter[letter]] then
+            if TableOfPiecesGroups[letter] and counter[letter] and TableOfPiecesGroups[letter][counter[letter]] then
                     pieceName = TableOfPiecesGroups[letter][counter[letter]] 
                     if pieceName then                     
                         Show(pieceName)
@@ -949,7 +952,6 @@ function addHologramLetters( myMessage)
                             Turn(pieceName, 2, math.rad(val), 0)
                         end
                     end
-                end
             end
         else
             rowIndex= rowIndex +1
@@ -4760,7 +4762,7 @@ end
 
 --rest&sleep
 function idle_stance7()
-echo("idle_stance7")
+    --echo("idle_stance7")
 
 
     --SitUp Position Legs Sidewayfold
@@ -5544,7 +5546,7 @@ end
 
 --allmost like sex
 function idle_stance13()
-echo("idle_stance13")
+--echo("idle_stance13")
     ramming = math.random(9, 22)
     factor = 17 / 22
     for i = 1, ramming do
@@ -5607,7 +5609,7 @@ end
 
 --giving it to here
 function idle_stance15()
-echo("idle_stance15")
+    --echo("idle_stance15")
     askingForARamjob = math.random(9, 22)
     factor = 17 / 22
      mP(tigLil, 0, -7, -0.8, 12)
@@ -7014,7 +7016,7 @@ local function idle_stance11()
 
     if rand == 2 then
         --harp a darp
-        Show(tlharp)
+--        Show(tlharp)
         mspeed = 5
         tspeed = 0.5
 
@@ -7072,7 +7074,7 @@ local function idle_stance11()
         Turn(tlarmr, z_axis, math.rad(-10), tspeed)
 
         --Move(tlharp, x_axis, 0, mspeed)
-        --Move(tlharp, y_axis, 0, mspeed)
+        --Move(, y_axis, 0, mspeed)
         --Move(tlharp, z_axis, 0, mspeed)
         --Turn(tlharp, x_axis, math.rad(0), tspeed)
         --Turn(tlharp, y_axis, math.rad(0), tspeed)
