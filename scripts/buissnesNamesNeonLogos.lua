@@ -51,6 +51,6 @@ return {
   "Dr. Re. Phill", "cortex implants", "newsoft", "mind ware", "neural link", "new world games", "coil engine", "armatec", "protagon", "antagon", 
   "horizons", "spinner vtol refit", "wet bulb ac", "mistakes were made", "militech", "arasaka", "moonchies", "imperial buisness machines", "mangine",
   "barherith shaders", "floris microcode", "Licho Lounge", "Anarchid AIs","tokyu stay", "The Akiba", "Laox", "Edon", "ONODEN","Matsumoto kiuto",
-"AOKI", "AISAN", "GALLERIA", "ATTAGIRL", "Tiffanys", "GAP", "Yamaha", "UnderArmor", "Anello", "trico", "Intimissi", "WEGO", "OH Mycafe", "IQOS", "RITUALS", "UNIQLO","OWNDAYS", "ZARA", "McDonalds","ASAHI","CANMAKE","TSUTAYA", "KURA", "LAOX","ITO EN", "KIRIN", "NUKUNUKU", "YAKIZEN", "PUB CALLEBASE","DOSPARA", "MINEO","NAMCO", "DUTY FREE SHOPPING", "KABUCHIKO TOWER", "KABUKI CAFE", "NAN KURU NAISA", "Softmap"
+"AOKI", "AISAN", "GALLERIA", "ATTAGIRL", "Tiffanys", "GAP", "Yamaha", "UnderArmor", "Anello", "trico", "Intimissi", "WEGO", "OH Mycafe", "IQOS", "RITUALS", "UNIQLO","OWNDAYS", "ZARA", "McDonalds","ASAHI","CANMAKE","TSUTAYA", "KURA", "LAOX","ITO EN", "KIRIN", "NUKUNUKU", "YAKIZEN", "PUB CALLEBASE","DOSPARA", "MINEO","NAMCO", "DUTY FREE SHOPPING", "KABUCHIKO TOWER", "KABUKI CAFE", "NAN KURU NAISA", "Softmap","Monkado", "fujiusoft"
 }
 
