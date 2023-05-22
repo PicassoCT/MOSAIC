@@ -275,5 +275,6 @@ return {
 "Speared Snack",
 "The outback",
 "Shaftedskirt",
-"Horny Roses"
+"Horny Roses",
+"flicker bean"
 }
