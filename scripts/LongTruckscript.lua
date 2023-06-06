@@ -92,6 +92,7 @@ function showAndTell()
         if  myTruck == TablesOfPiecesGroups["Truck"][3] or 
             myTruck == TablesOfPiecesGroups["Truck"][4]
         then --Bus
+            GG.BusesTable[unitID] = unitID
             if myTruck == TablesOfPiecesGroups["Truck"][3] then 
                 Show(BusBack1)
             end

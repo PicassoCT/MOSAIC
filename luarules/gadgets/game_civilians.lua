@@ -43,12 +43,13 @@ local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
 
 local closeCombatArenaDefID = UnitDefNames["closecombatarena"].id
 
+GG.BusesTable = {}
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
 
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
-local BusesTable = {}
+
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
 assert(TruckTypeTable, tostring(TruckTypeTable))
@@ -56,7 +57,7 @@ assert(count(TruckTypeTable) > 0, tostring(TruckTypeTable))
 
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
-local BusTypeTable = getBusPayLoadTypeTable(UnitDefs)
+
 assert(houseTypeTable)
 assert(count(houseTypeTable) > 0)
 
@@ -122,8 +123,8 @@ function makePasserBysLook(unitID)
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-	if BusesTable[unitID] then
-	   BusesTable[unitID] =  nil
+	if GG.BusesTable[unitID] then
+	   GG.BusesTable[unitID] =  nil
 	end
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
@@ -133,9 +134,6 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 end
 
 function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
-   if teamID == gaiaTeamID and BusTypeTable[unitDefID] then
-     	BusesTable[unitID] = unitID	
-   end
     -- if bble
     if teamID == gaiaTeamID and unitDefID == closeCombatArenaDefID then
         makePasserBysLook(unitID)

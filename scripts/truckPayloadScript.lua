@@ -24,6 +24,9 @@ function attachPayload(payLoadID, id)
 end
 boolIsFireTruckOrEMT = false
 displayedPiece = center
+busPieces = {}
+
+
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.SetUnitNeutral(unitID,true)
@@ -32,6 +35,12 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID,true)
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    busPieces[TablesOfPiecesGroups["container"][41]] = TablesOfPiecesGroups["container"][41]
+    busPieces[TablesOfPiecesGroups["container"][42]] = TablesOfPiecesGroups["container"][42]
+    busPieces[TablesOfPiecesGroups["container"][40]] = TablesOfPiecesGroups["container"][40]
+    busPieces[TablesOfPiecesGroups["container"][35]] = TablesOfPiecesGroups["container"][35]
+    busPieces[TablesOfPiecesGroups["container"][34]] = TablesOfPiecesGroups["container"][34]
+    busPieces[TablesOfPiecesGroups["container"][33]] = TablesOfPiecesGroups["container"][33]
     hideAll(unitID)
 
     if myDefID == UnitDefNames["truckpayloadrefugee"].id then
@@ -47,6 +56,9 @@ function script.Create()
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
 	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(FireTruckEmergencyBehaviour) end
 	  if displayedPiece == GarbageTruck then StartThread(GarbageTruckBehaviour) end
+	  if busPieces[displayedPiece] then
+	  	GG.BusesTable[unitID] = unitID
+	  end
     end
 end
 
