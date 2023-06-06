@@ -281,7 +281,40 @@ function showOneOrAll(T)
     end
 end
 
-function selectBase() showOne(TablesOfPiecesGroups["base"], true) end
+
+function showDeployRobot()
+    if math.random(1,10) > 8 then
+        RobotShed = piece"RobotShed"
+        Robot_Service = piece"Robot_Service"
+        Robot_Portal = piece"Robot_Portal"
+        Show(RobotShed)
+        Show(Robot_Service)
+        Show(Robot_Portal)
+
+        while true do
+            dist = cubeDim.length* math.random(0,5)*-1
+            distUp = cubeDim.heigth* math.random(0,3)
+            for i=1, math.random(2,4) do
+                WMove(Robot_Portal,x_axis, dist, dist/5)
+                WMove(Robot_Service,y_axis, distUp, distUp/5)
+                WorkTime = math.random(10, 25)*1000
+                Sleep(WorkTime)
+            end
+            WMove(Robot_Portal,x_axis, 0, 50)
+            WMove(Robot_Service,y_axis, 0, 50)
+            Sleep(60000)
+        end
+    end
+end
+
+function selectBase() 
+    showOne(TablesOfPiecesGroups["base"], true)
+    if maRa() and not isNotNearOcean(x,z, cubeDim.length*5)  or isOnSteepHill(x,z, cubeDim.length*5)then
+        BasePillar = piece("BasePillar")
+        Show(BasePillar)
+    end
+    StartThread(showDeployRobot)
+ end
 
 function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
 
