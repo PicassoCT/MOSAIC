@@ -255,14 +255,14 @@ return {
 "gagballroom",
 "the swing",
 "eyes rolled back",
-"legs shaking"
+"legs shaking",
 "Yes she moaned",
 "kabukicho shinjuku",
 "Crabs clams",
 "herpes derpas",
 "No regrats",
 "U R Moma",
-"UR SISTER MISTER"
+"UR SISTER MISTER",
 "cumbucket",
 "shaky legs",
 "fuck it senselass",
@@ -276,5 +276,6 @@ return {
 "The outback",
 "Shaftedskirt",
 "Horny Roses",
-"flicker bean"
+"flicker bean",
+"Club King"
 }
