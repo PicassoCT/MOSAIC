@@ -260,6 +260,16 @@ function AttachUnitToPieceNearImpact(toAttachUnitID, AttackerID, px, py, pz,
     end)
 end
 
+  function isNotNearOcean(x,z, Size)
+    min, avg, max = getGroundHeigthGrid(x,z, Size)
+    return not(min <= 0)
+  end
+
+  function isOnSteepHill(x,z, Size)
+    min, avg, max = getGroundHeigthGrid(x,z, Size)
+    return not(min <= avg - 10)
+  end
+
 function getGroundHeigthGrid(x,z, Size)
   avg = Spring.GetGroundHeight(x, z)
   min = avg
