@@ -91,3 +91,4 @@ Using Ivands PBR Shader:
 
  Using various licensed music files, please read the documentation in the music folder
  
+ PS: Be aware that some of the music files in this project are not falling under the GPLC or creative commons. Same goes for the civilian human & vehicle models. 
