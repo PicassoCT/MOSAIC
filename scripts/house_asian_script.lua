@@ -2,6 +2,9 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+
+IDGroupsDirection = { "a", "u", "l"}
+
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
 local grafitiMessages =  include('grafitiMessages.lua')
@@ -38,6 +41,57 @@ function initAllPieces()
     end
 end
 
+function getIDGroupsForType(buildingType, directionToFilter)
+allMatchingGroups = {}
+searchTerm = "ID_"
+if directionToFilter then
+	searchTerm = searchTerm..directionToFilter
+end
+	for groupName,v in pairs(TablesOfPiecesGroups) do
+		if startsWith(groupName, directionToFilter) then
+			if groupName:find(buildingType) then
+				allMatchingGroups[groupName] = v
+			end
+		 end
+	end
+	return allMatchingGroups
+end
+
+function hasUnitSequentialElements(id)
+	return id % 2 == 0
+end
+
+function isInPositionSequence(roundNr, level)
+	maxIntervallLength = 6
+	if not hasUnitSequentialElements(unitID) return false end
+	
+	IdType = select(IDGroupsDirection, getDeterministicRandom(unitID, 2)+1)
+	
+	if IdType == "u" or ( IdType == "a" and maRa()) then
+		return  getDeterministicRandom(roundNr,unitID) % 4 == 0, "u"
+	end
+	
+	if IdType == "l" or IdType == "a" then
+		if getDeterministicRandom(unitID, 4) == level then return false end
+	
+		intervalStart = getDeterministicRandom(unitID, 20 -maxIntervallLength)
+		intervalLength = math.random(2, maxIntervallLength)
+		if roundNr >= intervalStart and roundNr <= intervalStart+ intervalLength then return true, "l" end
+		return false
+	end
+	return false
+end
+
+function getDeterministicPieceID(unitID, buildMaterialType, typeID,  roundNr, level)
+	buildingGroups = getIDGroupsForType(buildMaterialType, typeID)
+	index = getDeterministicRandom(unitID,  #buildingGroups-1) + 1
+	for k, v in pairs(buildingGroups) do
+		index = index -1
+		if index == 0 then
+		return v
+		end
+	end
+end
 
 MapPieceIDName = Spring.GetUnitPieceMap(unitID)
 
