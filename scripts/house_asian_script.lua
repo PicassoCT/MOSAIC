@@ -82,8 +82,7 @@ function isInPositionSequence(roundNr, level)
 	return false
 end
 
-function getDeterministicPieceID(unitID, buildMaterialType, typeID,  roundNr, level)
-	buildingGroups = getIDGroupsForType(buildMaterialType, typeID)
+function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
 	index = getDeterministicRandom(unitID,  #buildingGroups-1) + 1
 	for k, v in pairs(buildingGroups) do
 		index = index -1
@@ -125,8 +124,8 @@ logoPieces = {
                 [piece("ClassicWhiteOffice_Roof_Deco03")] = true
             }
 
-materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
-materialChoiceTableReverse = {classic= 1, ghetto = 2, office=3, white=4}
+materialChoiceTable = {"Pod", "Industrial", "Trad", "Office"}
+materialChoiceTableReverse = {pod= 1, industrial = 2, , trad=3, office=4}
 
 vtolDeco= {}
 x, y, z = spGetUnitPosition(unitID)
@@ -159,6 +158,7 @@ function timeOfDay()
 end
 
 BuildDeco = {}
+buildingGroups = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -178,12 +178,12 @@ function script.Create()
         end
 
     vtolDeco = {
-        [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][1]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco1Sub"][1],
-        [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][3]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco3Sub"][1],
-        [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][5]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco5Sub"][1]
+       -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][1]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco1Sub"][1],
+       -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][3]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco3Sub"][1],
+       -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][5]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco5Sub"][1]
     }
 
-    BuildDeco = TablesOfPiecesGroups["BuildDeco"]
+    --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     StartThread(rotations)
     StartThread(HoloGrams)
@@ -263,42 +263,12 @@ function HoloGrams()
 end
 
 officeWallElementsTable = {}
-function mapOfficeWalls()
-    for i = 1,5 do officeWallElementsTable[i] = {} end
 
-    for k = 1, 12 do
-        officeWallElementsTable[1][#officeWallElementsTable[1]+1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
-    end
-
-    for k = 13, 25 do
-        officeWallElementsTable[2][#officeWallElementsTable[2]+1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
-    end 
-
-    for k = 26, 38 do
-        officeWallElementsTable[3][#officeWallElementsTable[3]+1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
-    end  
-
-    for k = 39, 52 do
-        officeWallElementsTable[4][#officeWallElementsTable[4] + 1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
-    end  
-
-    for k = 53, 60 do
-        officeWallElementsTable[5][#officeWallElementsTable[5] + 1] = TablesOfPiecesGroups["OfficeWallBlock"][k]
-    end
-end
 
 function getDeterministicOfficeWall(x,z)
-    if #officeWallElementsTable == 0 then mapOfficeWalls() end
+    officeWallIndex = -- TODO circular count 1.. 20
 
-    officeWallIndex = ((math.ceil(x)+ math.ceil(z))% 5) +1
-
-    for i=1, #officeWallElementsTable[officeWallIndex] do
-        if officeWallElementsTable[officeWallIndex][i] then
-            local retElement = officeWallElementsTable[officeWallIndex][i]
-            officeWallElementsTable[officeWallIndex][i] = nil
-            return retElement
-        end
-    end
+   buildingGroups
 end
 
 function buildHouse()
@@ -431,75 +401,51 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     return DecoMaterial, Deco
 end
 
+function convertIndexToRoundNr(index)
+roundNrTable =
+{1,  	2, 		3,		 4, 	5, 		6,
+20,		nil,	 nil, 	nil, 	nil,	7,
+19,		nil,	 nil, 	nil, 	nil,	8,
+18,		nil,	 nil, 	nil, 	nil,	9,
+17,		nil,	 nil, 	nil, 	nil,	10,
+16,		15,	 	14, 	13, 	12,		11,
+}
+return roundNrTable[index]
+end
+
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceContinousUsage, level)
 
     if not buildMaterial then
-        --echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
+        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
     end
     if not type(buildMaterial) == "table" then
-   --[[     echo(
-            getScriptName() .. "getRandomBuildMaterial: Got not a table, got" ..
-                type(buildMaterial) .. "instead");--]]
+		echo( getScriptName() .. "getRandomBuildMaterial: Got not a table, got" ..   type(buildMaterial) .. "instead");
         return
     end
     total = count(buildMaterial)
     if total == 0 and #buildMaterial == 0 then
-     --   echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
-        return
+      echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
+      return
     end
-
-    if  x and z and name == "Office"  then
-        piecenum = getDeterministicOfficeWall(x,z)
-        if (piecenum and not AlreadyUsedPiece[piecenum] ) then
-            AlreadyUsedPiece[piecenum] = true
-            return piecenum
-        end
-    else
-        if level and boolForceContinousUsage and index then        
-            if level == 0 then
-            -- try index variant first |1|2|3|4|5|6| making it continous at ground level
-                if maRa() then
-                    moduloIndex = index % 6 + 1
-
-                    for num, piecenum in pairs(buildMaterial)
-                        if (num % 6)+1 == moduloIndex and not AlreadyUsedPiece[piecenum]  then
-                            AlreadyUsedPiece[piecenum] = true
-                            return piecenum, num
-                        end
-                    end
-                end
-            end
-
-            if maRa() and level > 0 then
-                if maRa() then
-                    moduloIndex = index % (level+1) + 1
-
-                    for num, piecenum in pairs(buildMaterial)
-                        if (num % 6)+1 == moduloIndex and not AlreadyUsedPiece[piecenum]  then
-                            AlreadyUsedPiece[piecenum] = true
-                            return piecenum, num
-                        end
-                    end
-                end
-            end
-        end
-        -- return randomized elements
-        dice = math.random(1, total)
-        total = 0
-        for num, piecenum in pairs(buildMaterial) do
-            --if not type(num) == "number" and type(piecenum) == "number" then continue end
-            if (not AlreadyUsedPiece[piecenum] and num and piecenum then
-                total = total + 1
-                if total == dice then
-                    AlreadyUsedPiece[piecenum] = true
-                    return piecenum, num
-                end
-            end
-        end
-    end
---    Spring.Echo(getScriptName() .. "getRandomBuildMaterial: No Part selected ")
+	
+	roundNr = isInPositionSequence(convertIndexToRoundNr(index), z) 
+	if roundNr then
+		 getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
+	
+	end
+	
+	--TODO Pick Random Buildmaterial
+   startIndex = math.random(1,#buildMaterial)
+   for num, piecenum in pairs(buildMaterial) do
+		startIndex = startIndex -1
+       if startIndex == 0 and not AlreadyUsedPiece[piecenum]  then
+			AlreadyUsedPiece[piecenum] = true
+			return piecenum, num
+		end
+   end
 end
+
 
 NotInPlanIndeces = {}
 if maRa() == true then
@@ -745,16 +691,13 @@ end
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
-    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Door"})
+	buildingGroups = getIDGroupsForType(buildMaterialType)
+    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
 
-    local DoorMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Door"}, {"Deco"})
-    local DoorDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Door","Deco"}, {})
-    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Door"})
-
-    boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
+    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Street"})
 
     --echo("House_wester_nColour:"..materialColourName)
-    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block"}, {"Wall"}) 
+    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
     assert(buildMaterial)
     assert(#buildMaterial > 0)
     countElements = 0
@@ -790,11 +733,7 @@ function buildDecorateGroundLvl()
                     return materialColourName
                 end
 
-                if boolHasGrafiti == true and chancesAre(10) > 0.9 then 
-                    boolHasGrafiti = false
-                    rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-                    addGrafiti(xRealLoc, zRealLoc, rotation ,  _y_axis)
-                end
+        
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
@@ -859,7 +798,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     if string.lower(materialGroupName) == string.lower("office") then
         WindowWallMaterial = {}
         WindowDecoMaterial = {}
-        yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Ghetto"})
+        yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Industrial"})
     end
 
    -- echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
@@ -1332,13 +1271,13 @@ Spring.SetUnitNanoPieces(unitID, {center})
 
 function addGrafiti(x,z, turnV,  axis)
     playerName = getRandomPlayerName()
-    Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],1, x, 0)
-    Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],2, 0, 0)
-    Move(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, z, 0)
+    Move(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],1, x, 0)
+    Move(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],2, 0, 0)
+    Move(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],3, z, 0)
     boolTurnGraphiti = maRa()
     turnValue = turnV + 180*randSign() + 180 * randSign()
-    Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
---[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
+    Turn(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
+--[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
     myMessage = string.gsub(myMessage, "Ü", playerName or "")
     --echo("Adding Grafiti with message:" ..myMessage)
