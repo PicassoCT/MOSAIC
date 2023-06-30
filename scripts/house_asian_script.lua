@@ -401,6 +401,13 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     return DecoMaterial, Deco
 end
 
+function getIDFromPieceName(name)
+nameSplit = split(name, "_")
+typeID =  string.sub(nameSplit[2], 1, 1)
+group = string.tonumber(string.sub(nameSplit[2],2))
+return typeID, group
+end
+
 function convertIndexToRoundNr(index)
 roundNrTable =
 {1,  	2, 		3,		 4, 	5, 		6,
