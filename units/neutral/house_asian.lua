@@ -15,7 +15,7 @@ local house_asian = Building:New{
 	FootprintX = 8,
 	FootprintZ = 8,
 	script 				= "house_asian_script.lua",
-	objectName       	= "house_western.dae",
+	objectName       	= "house_asian.dae",
 
 	
 	
@@ -31,7 +31,7 @@ local house_asian = Building:New{
 	
 
 	customparams = {	
-		normaltex = "unittextures/house_asia_normal.dds",
+		normaltex = "unittextures/house_asian_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },
