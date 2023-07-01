@@ -239,9 +239,9 @@ function checkReSpawnPopulation()
             if x and startNode then
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 civilianType = randDict(civilianWalkingTypeTable)
-		if math.random(1,10) > 9 then
-			x,_,z = spGetUnitPosition(BusesTable[math.random(1,#BusesTable)]
-		end
+        		if GG.BusesTable  and #GG.BusesTable > 0 and math.random(1,10) > 9 then
+        			x,_,z = spGetUnitPosition(GG.BusesTable[math.random(1,#GG.BusesTable)])
+        		end
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
                                               goalNode)
             else

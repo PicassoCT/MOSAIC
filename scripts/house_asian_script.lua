@@ -3,11 +3,13 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-IDGroupsDirection = { "a", "u", "l"}
+IDGroupsDirection = { 
+    "a", --ambigous
+    "u", --upright
+    "l"} -- lengthwise
 
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
-local grafitiMessages =  include('grafitiMessages.lua')
 local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_western_script.lua::" end
 
@@ -24,7 +26,7 @@ local cubeDim = {
     roofHeigth = 700
 }
 
-local SIG_SUBANIMATIONS 2
+local SIG_SUBANIMATIONS = 2
 
 pieceCyclicOSTable = {
     ["PieceName"] = {
@@ -48,7 +50,7 @@ if directionToFilter then
 	searchTerm = searchTerm..directionToFilter
 end
 	for groupName,v in pairs(TablesOfPiecesGroups) do
-		if startsWith(groupName, directionToFilter) then
+		if startsWith(groupName, searchTerm) then
 			if groupName:find(buildingType) then
 				allMatchingGroups[groupName] = v
 			end
@@ -63,7 +65,7 @@ end
 
 function isInPositionSequence(roundNr, level)
 	maxIntervallLength = 6
-	if not hasUnitSequentialElements(unitID) return false end
+	if not hasUnitSequentialElements(unitID) then return false end
 	
 	IdType = select(IDGroupsDirection, getDeterministicRandom(unitID, 2)+1)
 	
@@ -119,13 +121,14 @@ decoChances = {
 }
 
 logoPieces = {
-                [piece("ClassicWhiteOffice_Roof_Deco05")] = true, 
-                [piece("ClassicWhiteOffice_Roof_Deco01")] = true,
-                [piece("ClassicWhiteOffice_Roof_Deco03")] = true
+                [piece("Roof01")] = true, 
+                [piece("Roof02")] = true,
+                [piece("Roof03")] = true,
+                [piece("Roof28")] = true
             }
 
 materialChoiceTable = {"Pod", "Industrial", "Trad", "Office"}
-materialChoiceTableReverse = {pod= 1, industrial = 2, , trad=3, office=4}
+materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 
 vtolDeco= {}
 x, y, z = spGetUnitPosition(unitID)
@@ -144,7 +147,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 AlreadyUsedPiece = {}
 center = piece "center"
-BasePillars = piece "BasePillar"
 
 pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
@@ -168,14 +170,6 @@ function script.Create()
 
     math.randomseed(x + y + z)
     StartThread(buildHouse)
-
-        for i=1,5 do
-            pericodicRotationYPieces[TablesOfPiecesGroups["_Street_Wall_Deco"..i.."Sub"][1]] = 42 *randSign()
-        end
-
-        for i=1,3 do
-            pericodicRotationYPieces[TablesOfPiecesGroups["_StreetYard_Wall_Deco"..i.."Sub"][1]] = 42*randSign()
-        end
 
     vtolDeco = {
        -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][1]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco1Sub"][1],
@@ -203,14 +197,8 @@ function rotations()
     end
 
     Sleep(500)
-    clockPiece = piece("WhiteClassic_Street_Floor_Deco2")
-    if contains(ToShowTable, clockPiece) then
-        WTurn(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(180), 0)
-        showT(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"])
-        Spin(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][1], z_axis, math.rad(3), 10)
-        Spin(TablesOfPiecesGroups["WhiteClassic_Street_Floor_Deco2Sub"][2], z_axis, math.rad(36), 10)
-    end
 
+  
     periodicMovementFunc = function(p, value)
         while true do
             Sleep(500);
@@ -226,49 +214,25 @@ function rotations()
     end
 end
 
-function HoloGrams()
-    while   boolDoneShowing == false do
-        Sleep(100)
-    end
-    rest= (7 + math.random(1,7))*1000
-    Sleep(rest)
-    if maRa() == maRa() and not  isNearCityCenter(px,pz, GameConfig) then return end
-    local flickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
-    local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
-    hideT(flickerGroup)
-    hideT(CasinoflickerGroup)
-
-    for logoPiece,v in pairs(logoPieces)do
-        if contains(ToShowTable, logoPiece) then 
-            if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
-            break
-        end
-    end
-
-    --sexxxy time
-    px,py,pz = spGetUnitPosition(unitID)
-    if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
-        hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
-        if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
-            if not decoPieceUsedOrientation[hostBrothelPiece] then echo( unitID..":"..pieceNameMap[hostBrothelPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece] )
-        else
-            hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
-            if contains(ToShowTable, hostCasinoPiece) == true then 
-                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
-            end
-        end
-    end  
-end
 
 officeWallElementsTable = {}
 
+function showHoloWall()
 
-function getDeterministicOfficeWall(x,z)
-    officeWallIndex = -- TODO circular count 1.. 20
-
-   buildingGroups
+    step = 6*4
+    index = math.random(0,#TablesOfPiecesGroups["HoloTile"]/step)
+    if maRa() == maRa() then
+        for i=index * step,  (index+1) * step, 1 do
+            if (maRa() == maRa()) ~= maRa() then
+                Hide(TablesOfPiecesGroups["HoloTile"][i])
+            else
+                Show(TablesOfPiecesGroups["HoloTile"][i])
+                ToShowTable[#ToShowTable + 1] = TablesOfPiecesGroups["HoloTile"][i]
+            end
+        end
+        return    
+    end
+    showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
 end
 
 function buildHouse()
@@ -324,10 +288,51 @@ function showOneOrAll(T)
         return
     end
 end
+function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
+    AllCandiDates = {}
+    MaterialCandiDates = {}
+    pieceList = Spring.GetUnitPieceList(unitID)
+    for nr,name in pairs(pieceList) do
+        if mustInclude then
+            for include=1, #mustInclude do
+                if mustInclude[include] and not string.find(name, mustInclude[include]) then
+                    return 
+                end
+            end
+        end
+        if mustExclude then
+            for exclude=1, #mustExclude do
+                if mustExclude[exclude] and string.find(name, mustExclude[exclude]) then
+                    return 
+                end
+            end
+        end
+        
+        table.insert(AllCandiDates, nr)
+        if string.find(name,materialName) then
+            table.insert(MaterialCandiDates, nr)
+        end 
+    end
+    if #MaterialCandiDates > 0 then
+        return getSafeRandom(MaterialCandiDates, MaterialCandiDates[1])
+    end
 
-function selectBase() showOne(TablesOfPiecesGroups["base"], true) end
+    return getSafeRandom(AllCandiDates, AllCandiDates[1])    
+end
 
-function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
+function selectBase(materialType) 
+    piecesTable = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
+    if piecesTable then
+        showOne(piecesTable, true) 
+    end
+end
+
+function selectBackYard(materialType) 
+    piecesTable = getMaterialBaseNameOrDefault(materialType, {"Base", "Deco"}, {})
+    if piecesTable then
+        showOneOrNone(TablesOfPiecesGroups[materialBaseDecoName]) 
+    end
+end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
     local result = foreach(buildMaterial,
@@ -718,14 +723,12 @@ function buildDecorateGroundLvl()
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
         if partOfPlan == true then
-            xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
-                                 -centerP.z + (zLoc * cubeDim.length)
+            xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
-            return piecenum, num )
 
             while not element do
                 element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
-                return piecenum, num 
+                if element then break end
                 Sleep(1)
             end
 
@@ -738,9 +741,7 @@ function buildDecorateGroundLvl()
 
                 if countElements == 24 then
                     return materialColourName
-                end
-
-        
+                end        
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
@@ -1026,8 +1027,6 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 logoPiecesToHide = {
-                [piece("Office_Roof_Deco07")] = true, 
-                [piece("Office_Roof_Deco02")] = true
             }
 pieceNameMap = Spring.GetUnitPieceList( unitID ) 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
@@ -1126,32 +1125,13 @@ function showHouse() boolHouseHidden = false; showT(ToShowTable) end
 
 function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
 
-Bucket1= piece("Bucket1")
-
 function ropeLoop()
 Sleep(10)
 
-hideT(TablesOfPiecesGroups["Rope"])
-Show(Bucket1)
     while boolDoneShowing == false do
-         WaitForTurns(TablesOfPiecesGroups["BuildCrane"][1])
-        for i=1,#TablesOfPiecesGroups["Rope"] do
-            Show(TablesOfPiecesGroups["Rope"][i])
-            WMove(Bucket1,_z_axis, -450*i, 200)
-        end
-        WaitForTurns(TablesOfPiecesGroups["BuildCrane"][1])
-
-        for i=#TablesOfPiecesGroups["Rope"], 0, -1 do
-            if TablesOfPiecesGroups["Rope"][i] then
-                hideT(TablesOfPiecesGroups["Rope"])
-                Show(TablesOfPiecesGroups["Rope"][i])
-            end
-            WMove(Bucket1,_z_axis, -450*i, 200)
-        end
+    
      Sleep(50)
     end
-Hide(Bucket1)
-hideT(TablesOfPiecesGroups["Rope"])
 end
 
 Icon = piece("Icon")
@@ -1159,87 +1139,22 @@ Icon = piece("Icon")
 function buildAnimation()
    
     Show(Icon)
-    for i=1, #TablesOfPiecesGroups["BuildDeco"] do
-        if maRa() == true then
-            Show(TablesOfPiecesGroups["BuildDeco"][i])
-        end
-    end
-
-    local builT = TablesOfPiecesGroups["Build"]
-    axis = _z_axis
-
-    if Spring.GetGameSeconds() < 10 then
-        hideT(builT)
-        hideT(TablesOfPiecesGroups["Build01Sub"])
-        hideT(TablesOfPiecesGroups["BuildCrane"])
-
-        while boolDoneShowing == false do Sleep(100) end
-        showT(ToShowTable)
-        hideT(TablesOfPiecesGroups["BuildDeco"])
-        Hide(Bucket1)
-        hideT(TablesOfPiecesGroups["Rope"])
-        Hide(Icon)
-        return
-    end
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
+    while boolDoneShowing == false do Sleep(100) end
     Hide(Icon)
-    StartThread(ropeLoop)
-    local builT = TablesOfPiecesGroups["Build"]
-
-    for i = 1, 3 do 
-        WMove(builT[i], axis, i * -2000/3, 0) 
-    end
-
-    moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
-
-    WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
-    WaitForMoves(builT)
-    showT(builT)
-    showT(TablesOfPiecesGroups["Build01Sub"])
-    showT(TablesOfPiecesGroups["BuildCrane"])
-
-    moveSyncInTimeT(builT, 0, 0, 0, 5000)
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
-    
-    foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
-        craneFunction = function(id)
-            while true do
-                target = math.random(-120, 120)
-                WTurn(id, y_axis, math.rad(target), math.pi / 10)
-                WaitForMoves(Bucket1)
-                Sleep(500)
-            end
-        end
-
-        StartThread(craneFunction, id)
-    end)
-
     Sleep(15000)
     while boolDoneShowing == false do Sleep(100) end
     showT(ToShowTable)
-
-    for i = 1, 3 do
-        Move(builT[i], axis, i * -cubeDim.heigth * 10, 3 * math.pi)
-    end
-
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -3200, 0, 8000)
-    moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, -3200, 0, 8000)
-    Sleep(1000)
-    hideT(TablesOfPiecesGroups["BuildCrane"])
-     Hide(Bucket1)
-     hideT(TablesOfPiecesGroups["Rope"])
-    Sleep(7000)
-    WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
-    WaitForMoves(builT)
-    hideT(builT)
-    hideT(TablesOfPiecesGroups["Build01Sub"])
-    hideT(TablesOfPiecesGroups["BuildCrane"])
-    hideT(TablesOfPiecesGroups["BuildDeco"])
 end
 
 function buildBuilding()
-    --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
+    if randChance(5) then
+        showOne(TablesOfPiecesGroups["StandAlone"], true)
+        boolDoneShowing = true
+        return
+    end
+    --echo(getScriptName() .. "buildBuilding")
+    
     --echo(getScriptName() .. "selectBase")
     selectBase()
     --echo(getScriptName() .. "selectBackYard")
@@ -1262,7 +1177,10 @@ function buildBuilding()
     end
     --echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
-    Show(BasePillars)
+    if randChance(25) then
+        showHoloWall()
+    end
+
         --echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
@@ -1276,53 +1194,4 @@ function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
 
-function addGrafiti(x,z, turnV,  axis)
-    playerName = getRandomPlayerName()
-    Move(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],1, x, 0)
-    Move(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],2, 0, 0)
-    Move(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],3, z, 0)
-    boolTurnGraphiti = maRa()
-    turnValue = turnV + 180*randSign() + 180 * randSign()
-    Turn(TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
---[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Industrial_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
-    myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
-    myMessage = string.gsub(myMessage, "Ü", playerName or "")
-    --echo("Adding Grafiti with message:" ..myMessage)
-    counter={}
-    stringlength = string.len(myMessage)
 
-    for i=1, stringlength do
-        local letter = string.upper(string.sub(myMessage,i,i))
-        if letter ~= " " then
-            if not counter[letter] then 
-                counter[letter] = 0 
-            end            
-            counter[letter] = counter[letter] + 1 
-
-            if counter[letter] < 3 then 
-                Turnfactor = math.atan((i/stringlength)*math.pi*2)
-                if maRa() == true then
-                    Turnfactor = math.sin((i/stringlength)*math.pi*2)
-                elseif maRa() == true then
-                    Turnfactor = math.cos((i/stringlength)*math.pi*2)
-                end
-
-                if TablesOfPiecesGroups["Graphiti_"..letter] and counter[letter] and TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] then
-                pieceName = TablesOfPiecesGroups["Graphiti_"..letter][counter[letter]] 
-                if pieceName then 
-                    ToShowTable[#ToShowTable + 1] = pieceName
-                    Show(pieceName)
-                    Move(pieceName,axis, 70*(i-1), 0)
-                    if i > 10 then
-                     Move(pieceName,axis, 70*(i-10), 0)
-                     Move(pieceName, 3, -100, 0)
-                    end
-                    if boolTurnGraphiti == true then
-                        Turn(pieceName , 1, math.rad(Turnfactor*10),0)
-                    end
-                end
-                end
-            end
-        end
-    end
-end

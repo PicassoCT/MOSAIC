@@ -2367,6 +2367,10 @@ function createGlobalTableFromAcessString(FormatString, assignedValue, ...)
     return loadstring(PreFix .. "==" .. asignedValue)()
 end
 
+function startsWith(str, start)
+   return str:sub(1, #start) == start
+end
+
 -- > Creates a Table and initializes it with default value
 function makeTable(default, xDimension, yDimension, zDimension,
                    boolNegativeMirror)
