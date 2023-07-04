@@ -50,8 +50,8 @@ if directionToFilter then
 	searchTerm = searchTerm..directionToFilter
 end
 	for groupName,v in pairs(TablesOfPiecesGroups) do
-		if startsWith(groupName, searchTerm) then
-			if groupName:find(buildingType) then
+		if buildingType and startsWith(groupName, searchTerm) then
+			if string.find(groupName, buildingType) then
 				allMatchingGroups[groupName] = v
 			end
 		 end
@@ -67,7 +67,7 @@ function isInPositionSequence(roundNr, level)
 	maxIntervallLength = 6
 	if not hasUnitSequentialElements(unitID) then return false end
 	
-	IdType = select(IDGroupsDirection, getDeterministicRandom(unitID, 2)+1)
+	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 2)+1]
 	
 	if IdType == "u" or ( IdType == "a" and maRa()) then
 		return  getDeterministicRandom(roundNr,unitID) % 4 == 0, "u"
@@ -180,7 +180,6 @@ function script.Create()
     --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     StartThread(rotations)
-    StartThread(HoloGrams)
 end
 
 function rotations()
@@ -285,33 +284,39 @@ function showOneOrAll(T)
     else
         for num, val in pairs(T) do 
             ToShowTable[#ToShowTable + 1] = val end
-        return
+        return val
     end
 end
 function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
     AllCandiDates = {}
     MaterialCandiDates = {}
     pieceList = Spring.GetUnitPieceList(unitID)
-    for nr,name in pairs(pieceList) do
-        if mustInclude then
-            for include=1, #mustInclude do
-                if mustInclude[include] and not string.find(name, mustInclude[include]) then
-                    return 
+    for nr = 1, #pieceList do
+        name = pieceList[nr]
+        if name then
+            boolNope = false
+            if mustInclude then
+                for include=1, #mustInclude do
+                    if mustInclude[include] and not string.find(name, mustInclude[include]) then
+                        boolNope = true
+                    end
                 end
             end
-        end
-        if mustExclude then
-            for exclude=1, #mustExclude do
-                if mustExclude[exclude] and string.find(name, mustExclude[exclude]) then
-                    return 
+            if mustExclude then
+                for exclude=1, #mustExclude do
+                    if mustExclude[exclude] and string.find(name, mustExclude[exclude]) then
+                        boolNope = true
+                    end
                 end
             end
+
+            if not boolNope then 
+                table.insert(AllCandiDates, nr)
+                if string.find(name, materialName) then
+                    table.insert(MaterialCandiDates, nr)
+                end 
+            end
         end
-        
-        table.insert(AllCandiDates, nr)
-        if string.find(name,materialName) then
-            table.insert(MaterialCandiDates, nr)
-        end 
     end
     if #MaterialCandiDates > 0 then
         return getSafeRandom(MaterialCandiDates, MaterialCandiDates[1])
@@ -322,6 +327,7 @@ end
 
 function selectBase(materialType) 
     piecesTable = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
+    echo("Bases: "..toString(piecesTable))
     if piecesTable then
         showOne(piecesTable, true) 
     end
@@ -329,6 +335,7 @@ end
 
 function selectBackYard(materialType) 
     piecesTable = getMaterialBaseNameOrDefault(materialType, {"Base", "Deco"}, {})
+    echo("BaseDeco: "..toString(piecesTable))
     if piecesTable then
         showOneOrNone(TablesOfPiecesGroups[materialBaseDecoName]) 
     end
@@ -638,19 +645,22 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                 boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
                 if boolContainsMaterialName == true or boolContainsNoOtherName == true then
-
-                for i=1, #mustContainTable do
-                    if string.find(name, string.lower(mustContainTable[i])) == nil then
-                        boolFullfilledConditions = false
-                        break
-                    end  
+                if mustContainTable then
+                    for i=1, #mustContainTable do
+                        if string.find(name, string.lower(mustContainTable[i])) == nil then
+                            boolFullfilledConditions = false
+                            break
+                        end  
+                    end
                 end
 
                 if boolFullfilledConditions == true then
-                    for j=1, #mustNotContainTable do
-                        if string.find(name, string.lower(mustNotContainTable[j])) then
-                        boolFullfilledConditions = false
-                        break
+                    if mustNotContainTable then
+                        for j=1, #mustNotContainTable do
+                            if string.find(name, string.lower(mustNotContainTable[j])) then
+                            boolFullfilledConditions = false
+                            break
+                            end
                         end
                     end
 
@@ -1156,11 +1166,13 @@ function buildBuilding()
     --echo(getScriptName() .. "buildBuilding")
     
     --echo(getScriptName() .. "selectBase")
-    selectBase()
-    --echo(getScriptName() .. "selectBackYard")
-    selectBackYard()
+
     --echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
+
+    selectBase(materialColourName)
+    --echo(getScriptName() .. "selectBackYard")
+    selectBackYard(materialColourName)
     --echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
         materialColourName = selectGroundBuildMaterial(true)
