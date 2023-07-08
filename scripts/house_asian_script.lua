@@ -11,7 +11,7 @@ IDGroupsDirection = {
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
-function getScriptName() return "house_western_script.lua::" end
+function getScriptName() return "house_asian_script.lua::" end
 
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
@@ -44,11 +44,11 @@ function initAllPieces()
 end
 
 function getIDGroupsForType(buildingType, directionToFilter)
-allMatchingGroups = {}
-searchTerm = "ID_"
-if directionToFilter then
-	searchTerm = searchTerm..directionToFilter
-end
+    allMatchingGroups = {}
+    searchTerm = "ID_"
+    if directionToFilter then
+    	searchTerm = searchTerm..directionToFilter
+    end
 	for groupName,v in pairs(TablesOfPiecesGroups) do
 		if buildingType and startsWith(groupName, searchTerm) then
 			if string.find(groupName, buildingType) then
@@ -85,7 +85,8 @@ function isInPositionSequence(roundNr, level)
 end
 
 function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
-	index = getDeterministicRandom(unitID,  #buildingGroups-1) + 1
+	assert(buildingGroups)
+    index = getDeterministicRandom(unitID,  #buildingGroups-1) + 1
 	for k, v in pairs(buildingGroups) do
 		index = index -1
 		if index == 0 then
@@ -190,8 +191,8 @@ function rotations()
             WTurn(p, y_axis, math.rad(dir), math.pi / 250);
         end
     end
+    assert(pericodicRotationYPieces)
     for k, v in pairs(pericodicRotationYPieces) do
-
         StartThread(periodicFunc, k,v)
     end
 
@@ -207,7 +208,7 @@ function rotations()
             WaitForMoves(p)
         end
     end
-
+    assert(pericodicMovingZPieces)
     for k, v in pairs(pericodicMovingZPieces) do
         StartThread(periodicMovementFunc, k, v)
     end
@@ -254,6 +255,7 @@ function showOne(T, bNotDelayd)
     if not T then return end
     dice = math.random(1, count(T))
     c = 0
+    assert(T)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then
@@ -282,6 +284,7 @@ function showOneOrAll(T)
     if chancesAre(10) > 0.5 then
         return showOne(T)
     else
+        assert(T)
         for num, val in pairs(T) do 
             ToShowTable[#ToShowTable + 1] = val end
         return val
@@ -325,19 +328,25 @@ function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
     return getSafeRandom(AllCandiDates, AllCandiDates[1])    
 end
 
+function showRegPiece(pID)
+    Show(pID)
+    ToShowTable[#ToShowTable + 1] = pID
+end
+
 function selectBase(materialType) 
-    piecesTable = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
-    echo("Bases: "..toString(piecesTable))
-    if piecesTable then
-        showOne(piecesTable, true) 
+    basePiece = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
+    if basePiece then
+        showRegPiece(basePiece)       
+        echo("BasePiece: ".. getPieceName(unitID, basePiece))
     end
 end
 
 function selectBackYard(materialType) 
-    piecesTable = getMaterialBaseNameOrDefault(materialType, {"Base", "Deco"}, {})
-    echo("BaseDeco: "..toString(piecesTable))
-    if piecesTable then
-        showOneOrNone(TablesOfPiecesGroups[materialBaseDecoName]) 
+    yardDecoPice = getMaterialBaseNameOrDefault(materialType, {"Base", "Deco"}, {})
+
+    echo("BaseDeco: "..toString(yardDecoPice))
+    if yardDecoPice then
+         showRegPiece(yardDecoPice)       
     end
 end
 
@@ -456,6 +465,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
 	
 	--TODO Pick Random Buildmaterial
    startIndex = math.random(1,#buildMaterial)
+   assert(buildMaterial)
    for num, piecenum in pairs(buildMaterial) do
 		startIndex = startIndex -1
        if startIndex == 0 and not AlreadyUsedPiece[piecenum]  then
@@ -595,6 +605,7 @@ function getElasticTable(...)
     local arg = arg;
     if (not arg) then arg = {...} end
     resulT = {}
+    assert(arg)
     for _, searchterm in pairs(arg) do
         for k, v in pairs(TablesOfPiecesGroups) do
             if string.find(string.lower(k), string.lower(searchterm)) and
@@ -637,6 +648,7 @@ end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
     local resultTable = {}
+    assert(TablesOfPiecesGroups)
     for nameUp,data in pairs(TablesOfPiecesGroups) do
         local name = string.lower(nameUp)
         if   string.find(name, "sub") == nil and
@@ -1158,42 +1170,43 @@ end
 
 function buildBuilding()
     StartThread(buildAnimation)
+    echo(getScriptName() .. "buildBuilding")
     if randChance(5) then
         showOne(TablesOfPiecesGroups["StandAlone"], true)
         boolDoneShowing = true
         return
     end
-    --echo(getScriptName() .. "buildBuilding")
+ 
     
     --echo(getScriptName() .. "selectBase")
 
-    --echo(getScriptName() .. "buildDecorateGroundLvl started")
+    echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
 
     selectBase(materialColourName)
-    --echo(getScriptName() .. "selectBackYard")
+    echo(getScriptName() .. "selectBackYard")
     selectBackYard(materialColourName)
-    --echo(getScriptName() .. "buildDecorateGroundLvl ended")
+    echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
         materialColourName = selectGroundBuildMaterial(true)
     end
 
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
-        --echo(getScriptName() .. "buildDecorateLvl start")
+        echo(getScriptName() .. "buildDecorateLvl start")
         _, buildMaterial = buildDecorateLvl(i,
                                             materialColourName,
                                             buildMaterial
                                             )
-         --echo(getScriptName() .. "buildDecorateLvl ended")
+         echo(getScriptName() .. "buildDecorateLvl ended")
     end
-    --echo(getScriptName() .. "addRoofDeocrate started")
+    echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
     if randChance(25) then
         showHoloWall()
     end
 
-        --echo(getScriptName() .. "addRoofDeocrate ended")
+    echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
 

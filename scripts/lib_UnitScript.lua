@@ -7,8 +7,8 @@ Section: Initializing Functions
 Section: Landscape/Pathing Getter/Setters
 Section: Syntax additions and Tableoperations
 Section: Geometry/Math functions
-Section : Code Generation 
-Section : String Operations
+Section: Code Generation 
+Section: String Operations
 Section: Debug Tools 
 Section: Random 
 Section: Physics 
@@ -6104,6 +6104,11 @@ end
 function deserializeStringToTable(str)
   local f = loadstring(str)
   return f()
+end
+
+function getPieceName(unitID, pieceID)
+    pieceID_NameMap=Spring.GetUnitPieceList(unitID) 
+    return pieceID_NameMap[pieceID]
 end
 
 function serializeTableToString(table)
