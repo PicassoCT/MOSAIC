@@ -16,14 +16,14 @@ function getScriptName() return "house_asian_script.lua::" end
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
 boolIsCombinatorial = (maRa() == maRa()) == maRa()
-factor = 40
+factor = 35
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 local cubeDim = {
     length = factor * 14.4 * 1.45,
     heigth = factor * 14.84 + heightoffset,
-    roofHeigth = 700
+    roofHeigth = 50
 }
 
 local SIG_SUBANIMATIONS = 2
@@ -647,11 +647,13 @@ function nameContainsMaterial(name, materialColourName)
 end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
-    local resultTable = {}
+    resultTable = {}
     assert(TablesOfPiecesGroups)
-    for nameUp,data in pairs(TablesOfPiecesGroups) do
+    materialColourName = string.lower(materialColourName)
+    for nameUp,data in pairs(TablesOfPiecesGroups) do        
         local name = string.lower(nameUp)
-        if   string.find(name, "sub") == nil and
+        echo("Searching in "..name .. " for ".. materialColourName.." - " ..toString(mustContainTable)..toString(mustNotContainTable))
+        if string.find(name, "sub") == nil and
               string.find(name, "spin")  == nil  then
                 boolFullfilledConditions= true
                 boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
@@ -684,6 +686,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                         else
                           resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
                         end
+                        echo("Found and added")
                     end
                 end
                 end
@@ -728,7 +731,7 @@ function buildDecorateGroundLvl()
 	buildingGroups = getIDGroupsForType(buildMaterialType)
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
 
-    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Street"})
+    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
 
     --echo("House_wester_nColour:"..materialColourName)
     local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
@@ -800,8 +803,7 @@ function buildDecorateGroundLvl()
             -- BackYard
             if chancesAre(10) < decoChances.yard then
                 rotation = getWallBackyardDeocrationRotation(index)
-                yardMaterial, yardDeco =
-                    decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
+                yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
                 if yardDeco then
                     Turn(yardDeco, _z_axis, math.rad(rotation), 0)
                 end
@@ -941,7 +943,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
-
+    assert(buildMaterial)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
@@ -1078,7 +1080,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
                 WaitForMoves(element)
-                Turn(element, _z_axis, math.rad(rotation), 0)
+                Turn(element, _z_axis, math.rad(rotation +90), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
@@ -1182,6 +1184,7 @@ function buildBuilding()
 
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
+    echo("House_Asian: "..materialColourName)
 
     selectBase(materialColourName)
     echo(getScriptName() .. "selectBackYard")
