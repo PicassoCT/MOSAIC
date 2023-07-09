@@ -648,17 +648,19 @@ end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
     resultTable = {}
-    assert(TablesOfPiecesGroups)
+    echo(getScriptName().."getMaterialElementsContaingNotContaining:"..materialColourName)
+    echo(getScriptName()..toString(mustContainTable))
+    echo(getScriptName()..toString(mustNotContainTable))
+
     materialColourName = string.lower(materialColourName)
     for nameUp,data in pairs(TablesOfPiecesGroups) do        
         local name = string.lower(nameUp)
-        echo("Searching in "..name .. " for ".. materialColourName.." - " ..toString(mustContainTable)..toString(mustNotContainTable))
-        if string.find(name, "sub") == nil and
-              string.find(name, "spin")  == nil  then
-                boolFullfilledConditions= true
-                boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
+        if  string.find(name, "sub") == nil and
+            string.find(name, "spin")  == nil  then
+            boolFullfilledConditions= true
+            boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
-                if boolContainsMaterialName == true or boolContainsNoOtherName == true then
+            if boolContainsMaterialName == true or boolContainsNoOtherName == true then
                 if mustContainTable then
                     for i=1, #mustContainTable do
                         if string.find(name, string.lower(mustContainTable[i])) == nil then
@@ -668,7 +670,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                     end
                 end
 
-                if boolFullfilledConditions == true then
+                if  boolFullfilledConditions == true then
                     if mustNotContainTable then
                         for j=1, #mustNotContainTable do
                             if string.find(name, string.lower(mustNotContainTable[j])) then
@@ -686,10 +688,10 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                         else
                           resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
                         end
-                        echo("Found and added")
+                        echo("getMaterialElementsContaingNotContaining:Found and added")
                     end
                 end
-                end
+            end
         end
     end
     return resultTable
@@ -1093,7 +1095,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     local decoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
     local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
-    --echo("addRoofDecorate:", T)
+    echo("addRoofDecorate:", T)
 
 
     for i = 1, 37, 1 do
