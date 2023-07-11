@@ -361,7 +361,7 @@ function removeElementFromBuildMaterial(element, buildMaterial)
     return result
 end
 
-function selectGroundBuildMaterial(boolRedo)
+function selectGroundBuildMaterial()
     nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
 
@@ -737,6 +737,10 @@ function buildDecorateGroundLvl()
 
     --echo("House_wester_nColour:"..materialColourName)
     local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
+
+    If hasUnitSequentialElements(unitID) and isInPositionSequence(roundNr, level) then 
+	echo("sequential build material selected") 
+    end
     assert(buildMaterial)
     assert(#buildMaterial > 0)
     countElements = 0
