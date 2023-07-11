@@ -779,25 +779,6 @@ function buildDecorateGroundLvl()
                         showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
                     end
                 end
-
-                if chancesAre(10) < decoChances.door then
-                    axis = _z_axis
-                    DoorMaterial, Door = DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, 0 , materialColourName)
-                   
-                    if Door then
-                        Turn(Door, axis, math.rad(rotation), 0)
-                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[Door])
-                        if chancesAre(10) < decoChances.door then
-                        DoorDecoMaterial, DoorDeco =
-                            DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                              DoorDecoMaterial, 0, materialColourName)
-                            if DoorDeco then
-                                Turn(DoorDeco, axis, math.rad(rotation), 0)
-                                showSubsAnimateSpinsByPiecename(pieceName_pieceNr[DoorDeco]) 
-                            end
-                        end
-                    end
-                end
             end
         end
 
@@ -835,8 +816,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Industrial"})
     end
 
-   -- echo(getScriptName() .. count(WindowWallMaterial) .. "|" ..
-     --        count(yardMaterial) .. "|" .. count(streetWallMaterial))
+    echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
 
     countElements = 0
 
