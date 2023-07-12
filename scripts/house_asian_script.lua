@@ -459,8 +459,9 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
 	
 	roundNr = isInPositionSequence(convertIndexToRoundNr(index), z) 
 	if roundNr then
-		 getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
-	
+            echo("resorting to sequence") 
+            piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
+	    return piecenum, num
 	end
 	
 	--TODO Pick Random Buildmaterial
@@ -740,7 +741,7 @@ function buildDecorateGroundLvl()
 
     If hasUnitSequentialElements(unitID) and isInPositionSequence(roundNr, level) then 
 	echo("sequential build material selected") 
-    end
+
     assert(buildMaterial)
     assert(#buildMaterial > 0)
     countElements = 0
@@ -753,7 +754,6 @@ function buildDecorateGroundLvl()
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
-        if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
 
