@@ -87,7 +87,7 @@ end
 function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
 	assert(buildingGroups)
     index = getDeterministicRandom(unitID,  #buildingGroups-1) + 1
-	for k, v in pairs(buildingGroups) do
+	for tableInternalIndex, v in pairs(buildingGroups) do
 		index = index -1
 		if index == 0 then
 		return v
@@ -464,8 +464,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
 	    return piecenum, num
 	end
 	
-	--TODO Pick Random Buildmaterial
-   startIndex = math.random(1,#buildMaterial)
+   startIndex = getSafeRandom(buildMaterial, buildMaterial[1]) 
    assert(buildMaterial)
    for num, piecenum in pairs(buildMaterial) do
 		startIndex = startIndex -1
@@ -739,9 +738,6 @@ function buildDecorateGroundLvl()
     --echo("House_wester_nColour:"..materialColourName)
     local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
 
-    If hasUnitSequentialElements(unitID) and isInPositionSequence(roundNr, level) then 
-	echo("sequential build material selected") 
-
     assert(buildMaterial)
     assert(#buildMaterial > 0)
     countElements = 0
@@ -755,10 +751,10 @@ function buildDecorateGroundLvl()
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
+            local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
+                element = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
                 if element then break end
                 Sleep(1)
             end
@@ -834,10 +830,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc, boolContinousFundamental, Level)
+            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc, boolContinousFundamental, Level)
 
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc, boolContinousFundamental, Level)
+                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc, boolContinousFundamental, Level)
                 Sleep(1)
             end
 
@@ -941,7 +937,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
         attempts = attempts + 1
     end
 
-    if attempts >= countedElements then return buildMaterial end
+    if attempts >= countedElements then 
+        echo("Failed to decorate yard")
+        return buildMaterial 
+    end
 
     buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 
