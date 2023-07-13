@@ -174,9 +174,9 @@ function script.Create()
     StartThread(buildHouse)
 
     vtolDeco = {
-       -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][1]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco1Sub"][1],
-       -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][3]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco3Sub"][1],
-       -- [TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco"][5]]=TablesOfPiecesGroups["ClassicWhiteOffice_Roof_Deco5Sub"][1]
+        [TablesOfPiecesGroups["RoofDeco"][1]]=TablesOfPiecesGroups["RoofDeco"][1],
+        [TablesOfPiecesGroups["RoofDeco"][2]]=TablesOfPiecesGroups["RoofDeco"][2],
+        [TablesOfPiecesGroups["RoofDeco"][3]]=TablesOfPiecesGroups["RoofDeco"][3]
     }
 
     --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
