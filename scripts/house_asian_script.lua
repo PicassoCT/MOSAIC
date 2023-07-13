@@ -66,6 +66,7 @@ end
 function isInPositionSequence(roundNr, level)
 	maxIntervallLength = 6
 	if not hasUnitSequentialElements(unitID) then return false end
+    if not roundNr then echo("invalid roundnr "); return false end
 	
 	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 2)+1]
 	
@@ -396,9 +397,9 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
 
     y_offset = yoffset or 0
     attempts = 0
-    local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
+    local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall", xRealLoc, zRealLoc, level)
     while not Deco and attempts < countedElements do
-        Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
+        Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall", xRealLoc, zRealLoc, level)
         Sleep(1)
         attempts = attempts + 1
     end
@@ -750,37 +751,36 @@ function buildDecorateGroundLvl()
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
-            xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
+        xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
+        local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc, boolContinousFundamental, 0)
 
-            while not element do
-                element = getRandomBuildMaterial(buildMaterial, materialColourName, index, nil, nil, boolContinousFundamental, 0)
-                if element then break end
-                Sleep(1)
-            end
+        while not element do
+            element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc, boolContinousFundamental, 0)
+            if element then break end
+            Sleep(1)
+        end
 
-            if element then
-                countElements = countElements + 1
-                buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-                Move(element, _x_axis, xRealLoc, 0)
-                Move(element, _z_axis, zRealLoc, 0)
-                ToShowTable[#ToShowTable + 1] = element
+        if element then
+            countElements = countElements + 1
+            buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+            Move(element, _x_axis, xRealLoc, 0)
+            Move(element, _z_axis, zRealLoc, 0)
+            ToShowTable[#ToShowTable + 1] = element
 
-                if countElements == 24 then
-                    return materialColourName
-                end        
+            if countElements == 24 then
+                return materialColourName
+            end        
 
-                if chancesAre(10) < decoChances.street then
-                    rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-                    StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                          StreetDecoMaterial, 0, materialColourName)
-                    if StreetDeco then
-                        Turn(StreetDeco, 3, math.rad(rotation), 0)
-                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
-                    end
+            if chancesAre(10) < decoChances.street then
+                rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+                StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0,
+                                      StreetDecoMaterial, 0, materialColourName)
+                if StreetDeco then
+                    Turn(StreetDeco, 3, math.rad(rotation), 0)
+                    showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
                 end
             end
-        end
+        end  
 
         if isBackYardWall(index) == true then
             -- BackYard
@@ -929,10 +929,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index)
+    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc, nil, Level)
     attempts = 0
     while not element and attempts < countedElements do
-        element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index)
+        element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc, nil, Level)
         Sleep(1)
         attempts = attempts + 1
     end
@@ -1050,9 +1050,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof", index)
+            local element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof", index, xLoc, zLoc, nil, Level)
             while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof", index)
+                element, nr = getRandomBuildMaterial(buildMaterial, materialColourName.."roof", index, xLoc, zLoc,  nil, Level)
                 Sleep(1)
             end
 
@@ -1087,9 +1087,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index)
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc)
             while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index)
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc)
                 Sleep(1)
             end
 
