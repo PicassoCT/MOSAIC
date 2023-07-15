@@ -133,5 +133,6 @@ return {
   "Big spender", "holdfoldthem", "slevin", "sinkhole", "dollars to rage",
   "dreams in smoke", "smoke and mirrors" , "house rising sun",
   "Red and Black", "Concrete horseshoes", "four leave clover", "BingoBongo",
-  "dreams in smoke", "smoke and mirrors", "slot", "pachinko", "daitoyo", "nobuta", "yellowflag"
+  "dreams in smoke", "smoke and mirrors", "slot", "pachinko", "daitoyo", "nobuta", "yellowflag",
+  "Inas Piano"
 }
