@@ -318,5 +318,6 @@ return {
 "The Midnight Trance",
 "The Veiled Oasis",
 "The Velvet Reverie",
+"FuckBunny"
 
 }
