@@ -611,6 +611,9 @@ function HoloGrams()
   
         if boolIsCasino then 
            StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
+           if maRa() == maRa() then
+                StartThread(dragonDance) 
+           end
             if maRa() then
               StartThread(showWallDayTime, "CasinoWall")
               StartThread(addJHologramLetters)
@@ -723,6 +726,23 @@ function HoloGrams()
         nilNeonSigns()
         return 
     end 
+end
+
+function dragonDance()
+    echo("Start Dragon Dan")
+
+    while true do
+        if (hours > 20 or hours < 6) then
+            showT(TableOfPiecesGroups["Dragon"])
+            for i=1, #TableOfPiecesGroups["Dragon"] do
+                val= math.sin((minutes+i*5)/60)*math.pi
+                Turn(TableOfPiecesGroups["Dragon"][i],y_axis, math.rad(val), 0.5)
+            end
+        else
+            hideT(TableOfPiecesGroups["Dragon"])
+        end
+        Sleep(1000)
+    end
 end
 
 function fireWorksSet(fireSet, maxDistance, speed)
