@@ -611,9 +611,7 @@ function HoloGrams()
   
         if boolIsCasino then 
            StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
-           if maRa() == maRa() then
-                StartThread(dragonDance) 
-           end
+      
             if maRa() then
               StartThread(showWallDayTime, "CasinoWall")
               StartThread(addJHologramLetters)
@@ -729,17 +727,29 @@ function HoloGrams()
 end
 
 function dragonDance()
+    local DragonTable = TableOfPiecesGroups["Dragon"]
+    local DragonHead = DragonTable[1]
+    dx,dz = math.random(-200,200),math.random(-200,200)
     echo("Start Dragon Dan")
-
     while true do
-        if (hours > 20 or hours < 6) then
-            showT(TableOfPiecesGroups["Dragon"])
-            for i=1, #TableOfPiecesGroups["Dragon"] do
-                val= math.sin((minutes+i*5)/60)*math.pi
-                Turn(TableOfPiecesGroups["Dragon"][i],y_axis, math.rad(val), 0.5)
+        if (hours > 20 or hours < 6)  then
+            showT(DragonTable)
+            interval = 2 * math.pi
+            step = interval / #DragonTable
+            while (hours > 20 or hours < 6)  do
+                --movement                   
+                Move(DragonHead,1, dx, 50)
+                Move(DragonHead,3, dz, 50)       
+                --rotations
+                times = percent*30
+                for i=1, #DragonTable do
+                    val = math.sin(times * step * i)
+                    Turn(DragonTable[i], 3, val, 0.1)
+                end
+                Sleep(250)
             end
-        else
-            hideT(TableOfPiecesGroups["Dragon"])
+            hideT(DragonTable)
+            dx,dz = math.random(-200,200),math.random(-200,200)
         end
         Sleep(1000)
     end
@@ -764,6 +774,10 @@ function fireWorks()
     FireWorksTableR = TableOfPiecesGroups["RedSpark"]
     FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
     upaxis = 2
+
+    if maRa() == maRa() then
+        StartThread(dragonDance) 
+    end
 
     while true do
         while (hours > 20 or hours < 6) do

@@ -41,7 +41,7 @@ return {
 	"BLAME THE JEWS",
 	"KKK",
 	"BLACK POWER",
-	"Killing fields"
+	"Killing fields",
 	"WHITE POWER",
 	"NO POWER",
 	"KILL &Ü",
@@ -92,7 +92,7 @@ return {
 	"JEWISH",
 	"HINDUISM",
 	"ISLAM",
-	"RAINBOWPOWER"
+	"RAINBOWPOWER",
 	"SOCIAL TERROR & FOOD",
 	"QWERTY IS NOT CRIMEA",
 	"GROUPGROUPIE",
