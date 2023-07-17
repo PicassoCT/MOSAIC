@@ -99,15 +99,14 @@ end
 MapPieceIDName = Spring.GetUnitPieceMap(unitID)
 
 supriseChances = {
-    roof = 0.5,
+    roof = 0.35,
     yard = 0.6,
     yardwall = 0.4,
     street = 0.5,
     powerpoles = 0.5,
     door = 0.6,
     windowwall = 0.7,
-    streetwall = 0.5,
-    grafiti = 0.2
+    streetwall = 0.5
 
 }
 decoChances = {
@@ -118,8 +117,7 @@ decoChances = {
     powerpoles = 0.5,
     door = 0.6,
     windowwall = 0.5,
-    streetwall = 0.1,
-    grafiti = 0.6
+    streetwall = 0.1
 }
 
 logoPieces = {
