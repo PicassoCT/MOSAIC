@@ -618,8 +618,7 @@ function HoloGrams()
               if maRa() then
                 StartThread(fireWorks)
               end
-            end
-           
+            end           
 
             if maRa() then
                 addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
@@ -730,7 +729,7 @@ function dragonDance()
     local DragonTable = TableOfPiecesGroups["Dragon"]
     local DragonHead = DragonTable[1]
     dx,dz = math.random(-200,200),math.random(-200,200)
-    echo("Start Dragon Dan")
+
     while true do
         if (hours > 20 or hours < 6)  then
             showT(DragonTable)
@@ -960,6 +959,7 @@ function addHologramLetters( myMessage)
     if boolSpinning then
         Spin(text_spin, y_axis, math.rad(val),0)
     end
+    allLetters = {}    
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
@@ -971,28 +971,79 @@ function addHologramLetters( myMessage)
             if counter[letter] > 4 then counter[letter] = 1 end
 
             if TableOfPiecesGroups[letter] and counter[letter] and TableOfPiecesGroups[letter][counter[letter]] then
-                    pieceName = TableOfPiecesGroups[letter][counter[letter]] 
-                    if pieceName then                     
-                        Show(pieceName)
-                        Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
-                        Move(pieceName,axis, -sizeSpacingLetter*(columnIndex), 0)
-                        if boolUpRight then
-                            columnIndex= 0
-                            rowIndex= rowIndex +1
-                        end
-                        
-                        if boolSpinning and boolUpright then
-                            val = i *5
-                            Turn(pieceName, 2, math.rad(val), 0)
-                        end
+               
+                pieceName = TableOfPiecesGroups[letter][counter[letter]] 
+                if pieceName then     
+                    table.insert(allLetters, pieceName)                
+                    Show(pieceName)
+                    Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
+                    Move(pieceName,axis, -sizeSpacingLetter*(columnIndex), 0)
+                    if boolUpRight then
+                        columnIndex= 0
+                        rowIndex= rowIndex +1
                     end
+                    
+                    if boolSpinning and boolUpright then
+                        val = i *5
+                        Turn(pieceName, 2, math.rad(val), 0)
+                    end
+                end
             end
         else
             rowIndex= rowIndex +1
             columnIndex= 0
         end
     end
+
+    if maRa() and maRa() then 
+        --TextAnimation
+        if maRa() then
+            StartThread(SinusLetter, allLetters)
+        else
+            StartThread(CrossLetters, allLetters)
+        end
+    end 
 end
+
+backdropAxis = x_axis
+function SinusLetter(allLetters)
+        direction =  randSign()
+    while true do
+        for i=1, 10 do
+            timeStep = i * math.pi/#allLetters
+            for j=1, #allLetters do
+                Move(allLetters[j],backdropAxis, 500 * math.sin(timeStep*j)*direction, 500)
+            end
+            Sleep(500)
+        end
+        rest = math.random(4, 16)*500
+        Sleep(rest)
+    end
+end
+
+function CrossLetters(allLetters)
+
+    direction =  randSign()
+    while true do
+        -- Reset
+        for i=1, #allLetters do
+            id =allLetters[i]
+            Move(id, backdropAxis, math.random(250,500)*direction, 0)
+            Hide(id)
+        end
+        for i=1, #allLetters do
+            id =allLetters[i]
+            Move(id, backdropAxis,0, 1600)
+            Show(id)
+            WaitForMoves(id)
+        end
+
+      
+        rest = math.random(4, 16)*500
+        Sleep(rest)
+    end
+end
+
 
 function addJHologramLetters()
     if maRa() == maRa() then return end
