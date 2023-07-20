@@ -33,6 +33,7 @@ end
 --Booster2
 --Booster2
 --SpaceX_Falcon_Heavy001
+FalconX = piece("FalconX")
 upaxis = y_axis
 boosterArrived = {}
 function landBooster( boosterNr, booster, rocket)
