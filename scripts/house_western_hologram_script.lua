@@ -996,16 +996,29 @@ function addHologramLetters( myMessage)
     end
 
     if maRa() and maRa() then 
+		allFunctions = {SinusLetter, CrossLetters, BlibLetters}
         --TextAnimation
-        if maRa() then
-            StartThread(SinusLetter, allLetters)
-        else
-            StartThread(CrossLetters, allLetters)
-        end
+		StartThread(allFunctions[math.random(1,#allFunctions)],allLetters)        
     end 
 end
 
 backdropAxis = x_axis
+function HideBlib(allLetters)
+        direction =  randSign()
+    while true do
+		--Setup
+		 for j=1, #allLetters do
+				Hide(allLetters[j])
+                WMove(allLetters[j],backdropAxis, 150, 300)
+				Show(allLetters[j])
+				Move(allLetters[j],backdropAxis, 0, 600)				
+         end
+		
+        rest = math.random(4, 16)*500
+        Sleep(rest)
+    end
+end
+
 function SinusLetter(allLetters)
         direction =  randSign()
     while true do
