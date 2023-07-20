@@ -959,7 +959,8 @@ function addHologramLetters( myMessage)
     if boolSpinning then
         Spin(text_spin, y_axis, math.rad(val),0)
     end
-    allLetters = {}    
+    allLetters = {} 
+    posLetters = {}   
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
@@ -978,6 +979,7 @@ function addHologramLetters( myMessage)
                     Show(pieceName)
                     Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
                     Move(pieceName,axis, -sizeSpacingLetter*(columnIndex), 0)
+                    posLetters[pieceName]= {0,-sizeSpacingLetter*(columnIndex),  -1*sizeDownLetter*rowIndex }
                     if boolUpRight then
                         columnIndex= 0
                         rowIndex= rowIndex +1
@@ -996,65 +998,132 @@ function addHologramLetters( myMessage)
     end
 
     if maRa() and maRa() then 
-		allFunctions = {SinusLetter, CrossLetters, BlibLetters}
+		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards}
         --TextAnimation
-		StartThread(allFunctions[math.random(1,#allFunctions)],allLetters)        
+        while true do
+		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
+            Sleep(100)
+        end
     end 
 end
 
 backdropAxis = x_axis
-function HideBlib(allLetters)
-        direction =  randSign()
-    while true do
-		--Setup
-		 for j=1, #allLetters do
-				Hide(allLetters[j])
-                WMove(allLetters[j],backdropAxis, 150, 300)
-				Show(allLetters[j])
-				Move(allLetters[j],backdropAxis, 0, 600)				
-         end
-		
-        rest = math.random(4, 16)*500
-        Sleep(rest)
-    end
+spindropAxis = y_axis
+function resetSpinDrop(allLetters)
+
+         foreach(allLetters,
+        function(id)   
+                StopSpin(id, spindropAxis, math.rad(15), 15)     
+                Turn(id, spindropAxis, math.rad(0), 15)    
+        end)
+end
+
+function SpiralUpwards(allLetters, posLetters)
+
+    hideT(allLetters)
+    foreach(allLetters,
+        function(id)
+                Move(id, 3, posLetters[id][3] - 5000, 0)     
+                Spin(id, spindropAxis, math.rad(42), 15)     
+        end)
+    Sleep(1000)
+
+    foreach(allLetters,
+        function(id)
+            Show(id)
+            Move(id,3, posLetters[id][3], 2500)
+            Sleep(250)
+        end)
+    WaitForMoves(allLetters)
+    Sleep(2000)   
+
+    resetSpinDrop(allLetters)
+    WaitForTurns(allLetters)
+end
+
+
+function SwarmLetters(allLetters, posLetters)
+    foreach(allLetters,
+        function(id)
+            for i=1,3 do
+                Move(id, i, posLetters[id][i]+ math.random(0,1000)*randSign(), 0)
+            end            
+        end)
+    Sleep(1000)
+
+    foreach(allLetters,
+        function(id)
+            for i=1,3 do
+                Move(id, i, posLetters[id][i], 350)            
+            end
+            Show(id)
+        end)
+    WaitForMoves(allLetters)
+    Sleep(2000)
+    hideT(allLetters)
+end
+
+function SpinLetters(allLetters)
+    foreach(allLetters,
+        function(id)
+            rval = math.random(-360,360)
+        Spin(id, spindropAxis, math.rad(rval), 15)
+        Show(id)
+        end)
+    Sleep(1000)
+    resetSpinDrop(allLetters)    
+    WaitForTurns(allLetters)
+    hideT(allLetters)
+    Sleep(2000)
+end
+
+function HideLetters(allLetters)
+    direction =  randSign()
+    --Setup
+     for j=1, #allLetters do
+    		Hide(allLetters[j])
+            WMove(allLetters[j],backdropAxis, 150, 300)
+    		Show(allLetters[j])
+    		Move(allLetters[j],backdropAxis, 0, 600)				
+     end
+
+    rest = math.random(4, 16)*500
+    Sleep(rest)
 end
 
 function SinusLetter(allLetters)
-        direction =  randSign()
-    while true do
-        for i=1, 10 do
-            timeStep = i * math.pi/#allLetters
-            for j=1, #allLetters do
-                Move(allLetters[j],backdropAxis, 500 * math.sin(timeStep*j)*direction, 500)
-            end
-            Sleep(500)
+    direction =  randSign()
+    for i=1, 10 do
+        timeStep = i * math.pi/#allLetters
+        for j=1, #allLetters do
+            Move(allLetters[j],backdropAxis, 500 * math.sin(timeStep*j)*direction, 500)
         end
-        rest = math.random(4, 16)*500
-        Sleep(rest)
+        Sleep(500)
+    end
+    rest = math.random(4, 16)*500
+    Sleep(rest)
+    for j=1, #allLetters do
+        WMove(allLetters[j],backdropAxis, 0, 500)
     end
 end
 
 function CrossLetters(allLetters)
-
     direction =  randSign()
-    while true do
-        -- Reset
-        for i=1, #allLetters do
-            id =allLetters[i]
-            Move(id, backdropAxis, math.random(250,500)*direction, 0)
-            Hide(id)
-        end
-        for i=1, #allLetters do
-            id =allLetters[i]
-            Move(id, backdropAxis,0, 1600)
-            Show(id)
-            WaitForMoves(id)
-        end
-
-      
-        rest = math.random(4, 16)*500
-        Sleep(rest)
+    -- Reset
+    for i=1, #allLetters do
+        id =allLetters[i]
+        Move(id, backdropAxis, math.random(250,500)*direction, 0)
+        Hide(id)
     end
+    for i=1, #allLetters do
+        id =allLetters[i]
+        Move(id, backdropAxis,0, 1600)
+        Show(id)
+        WaitForMoves(id)
+    end
+
+    rest = math.random(4, 16)*500
+    Sleep(rest)
 end
 
 
