@@ -1032,10 +1032,16 @@ function syncToFront(allLetters)
 	hideT(allLetters)
     --Setup
     for j=1, #allLetters do
-		WMove(allLetters[j],backdropAxis, 500 + math.sin((j/#allLetters)*math.pi)*50, 0)
-		Move(allLetters[j],backdropAxis, 0, 600)				
-    end
+		WMove(allLetters[j],backdropAxis, -500 + math.sin((j/#allLetters)*(math.pi/2))*50, 0)			
+    end    
 	showT(allLetters)
+	for j=1, #allLetters do
+		WMove(allLetters[j],backdropAxis, 150 + math.cos((j/#allLetters)*(math.pi/2))*50, 250)			
+    end
+	for j=1, #allLetters do
+		WMove(allLetters[j],backdropAxis,0, 150)			
+    end
+
 	WaitForMoves(allLetters)
     rest = math.random(4, 16)*500
     Sleep(rest)
