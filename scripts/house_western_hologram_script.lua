@@ -998,7 +998,7 @@ function addHologramLetters( myMessage)
     end
 
     if maRa() and maRa() then 
-		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards}
+		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLicker, syncToFront}
         --TextAnimation
         while true do
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
@@ -1009,6 +1009,38 @@ end
 
 backdropAxis = x_axis
 spindropAxis = y_axis
+function randomFlicker(allLetters)
+	if (hours > 17 or hours < 7) and isANormalDay() then
+		for i=1,(3000/flickerIntervall) do
+			if i % 2 == 0 then      
+			   showT(allLetters) 
+			else
+				hideT(allLetters) 
+			end
+			if NoErrorFunction() == true then showT(allLetters) end
+			for ax=1,3 do
+				moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+			end
+			Sleep(flickerIntervall)
+		end
+		hideT(allLetters)  
+	end		
+end
+
+function syncToFront(allLetters)
+    direction =  randSign()
+	hideT(allLetters)
+    --Setup
+    for j=1, #allLetters do
+		WMove(allLetters[j],backdropAxis, 500 + math.sin((j/#allLetters)*math.pi)*50, 0)
+		Move(allLetters[j],backdropAxis, 0, 600)				
+    end
+	showT(allLetters)
+	WaitForMoves(allLetters)
+    rest = math.random(4, 16)*500
+    Sleep(rest)
+end
+
 function resetSpinDrop(allLetters)
 
          foreach(allLetters,
