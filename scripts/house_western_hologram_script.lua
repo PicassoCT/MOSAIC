@@ -998,7 +998,7 @@ function addHologramLetters( myMessage)
     end
 
     if maRa() and maRa() then 
-		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLicker, syncToFront, consoleLetters}
+		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters}
         --TextAnimation
         while true do
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
@@ -1009,7 +1009,23 @@ end
 
 backdropAxis = x_axis
 spindropAxis = y_axis
-function randomFlicker(allLetters)
+function randRestLetters(allLetters,posLetters)
+    hideT(allLetters)
+    resetT(allLetters)
+
+    interVall = math.random(1,15)*1000
+    Sleep(interVall)
+    foreach(allLetters,
+            function(id)
+              for axis=1,3 do
+                Move(id, axis, posLetters[id][axis], 0)
+               end
+               Show(id)
+            end)
+end
+
+
+function randomFLickerLetters(allLetters, posLetters)
 	if (hours > 17 or hours < 7) and isANormalDay() then
 		for i=1,(3000/flickerIntervall) do
 			if i % 2 == 0 then      
@@ -1017,17 +1033,27 @@ function randomFlicker(allLetters)
 			else
 				hideT(allLetters) 
 			end
-			if NoErrorFunction() == true then showT(allLetters) end
-			for ax=1,3 do
-				moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
-			end
-			Sleep(flickerIntervall)
+
+            foreach(allLetters,
+            function(id)
+              for axis=1,3 do
+                Move(id, axis, posLetters[id][axis] + math.random(-1*errorDrift,errorDrift), 100)
+               end
+            end)
+            Sleep(flickerIntervall)
 		end
 		hideT(allLetters)  
+        foreach(allLetters,
+            function(id)
+              for axis=1,3 do
+                Move(id, axis, posLetters[id][axis], 15)
+               end
+               Show(id)
+            end)
 	end		
 end
 
-function syncToFront(allLetters)
+function syncToFrontLetters(allLetters)
     direction =  randSign()
 	hideT(allLetters)
     --Setup
@@ -1047,23 +1073,23 @@ function syncToFront(allLetters)
     Sleep(rest)
 end
 
-function consoleLetters(allLetters, orgPos) 
+function consoleLetters(allLetters, posLetters)
   
-foreach(allLetters,
-function(id)
-  reset(id,0)
-  Hide(id)
-end)
+    foreach(allLetters,
+    function(id)
+      reset(id,0)
+      Hide(id)
+    end)
 
---TODO CLEANUP
-foreach(allLetters,
-function(id)
-  for axis=1,3 do
-    Move(id, axis, orgPos[id][axis], 15)
-   end
-   Show(id)
-end)
+    foreach(allLetters,
+    function(id)
+      for axis=1,3 do
+        Move(id, axis, posLetters[id][axis], 15)
+       end
+       Show(id)
+    end)
 end
+
 function resetSpinDrop(allLetters)
 
          foreach(allLetters,
