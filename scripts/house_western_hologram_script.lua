@@ -998,7 +998,7 @@ function addHologramLetters( myMessage)
     end
 
     if maRa() and maRa() then 
-		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLicker, syncToFront}
+		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLicker, syncToFront, consoleLetters}
         --TextAnimation
         while true do
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
@@ -1047,6 +1047,23 @@ function syncToFront(allLetters)
     Sleep(rest)
 end
 
+function consoleLetters(allLetters, orgPos) 
+  
+foreach(allLetters,
+function(id)
+  reset(id,0)
+  Hide(id)
+end)
+
+--TODO CLEANUP
+foreach(allLetters,
+function(id)
+  for axis=1,3 do
+    Move(id, axis, orgPos[id][axis], 15)
+   end
+   Show(id)
+end)
+end
 function resetSpinDrop(allLetters)
 
          foreach(allLetters,
