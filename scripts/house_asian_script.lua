@@ -94,7 +94,8 @@ function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  rou
 	for tableInternalIndex, v in pairs(buildingGroups) do
 		index = index -1
 		if index <= 0 and v then
-            if typeID == "a" or typeID == "u" then
+	           echo("choosing table ".. tableInternalIndex.. "") 
+            if typeID == "a" or typeID == "u" and maRa() then
     		    return v[level + (roundNr% count(v)) +  1]
     		else
                 return v[(roundNr% count(v)) +  1]
