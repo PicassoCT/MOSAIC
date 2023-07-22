@@ -49,9 +49,11 @@ function getIDGroupsForType(buildingType, directionToFilter)
     if directionToFilter then
     	searchTerm = searchTerm..directionToFilter
     end
+    echo("Searching for ID Groups for type "..buildingType)
 	for groupName,v in pairs(TablesOfPiecesGroups) do
 		if buildingType and startsWith(groupName, searchTerm) then
-			if string.find(groupName, buildingType) then
+			if string.find(groupName, buildingType) and not string.find(groupName, "Sub")then
+                echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
 				allMatchingGroups[groupName] = v
 			end
 		 end
@@ -87,12 +89,17 @@ end
 
 function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
 	assert(buildingGroups)
-    index = getDeterministicRandom(unitID,  #buildingGroups-1) + 1
+    assert(count(buildingGroups) > 0)
+    index = getDeterministicRandom(unitID,  count(buildingGroups) - 1) + 1
 	for tableInternalIndex, v in pairs(buildingGroups) do
 		index = index -1
-		if index == 0 then
-		return v
-		end
+		if index <= 0 and v then
+            if typeID == "a" or typeID == "u" then
+    		    return v[level + (roundNr% count(v)) +  1]
+    		else
+                return v[(roundNr% count(v)) +  1]
+            end
+        end
 	end
 end
 
@@ -458,7 +465,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
 	
 	roundNr = isInPositionSequence(convertIndexToRoundNr(index), z) 
 	if roundNr then
-            echo("resorting to sequence") 
+            echo("resorting to sequence for level " ..level.. "for material " ..name) 
             piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
 	    return piecenum, num
 	end
@@ -729,7 +736,7 @@ end
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
-	buildingGroups = getIDGroupsForType(buildMaterialType)
+	buildingGroups = getIDGroupsForType(materialColourName)
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
 
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
@@ -763,6 +770,8 @@ function buildDecorateGroundLvl()
             buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
             Move(element, _x_axis, xRealLoc, 0)
             Move(element, _z_axis, zRealLoc, 0)
+            rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+            Turn(element, 3, math.rad(rotation), 0)
             ToShowTable[#ToShowTable + 1] = element
 
             if countElements == 24 then
@@ -1063,7 +1072,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
                 WaitForMoves(element)
-                Turn(element, _z_axis, math.rad(rotation +90), 0)
+                Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 

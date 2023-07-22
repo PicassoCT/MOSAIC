@@ -1026,7 +1026,8 @@ end
 
 
 function randomFLickerLetters(allLetters, posLetters)
-	if (hours > 17 or hours < 7) and isANormalDay() then
+    flickerIntervall = math.ceil(1000/25)
+	if (hours > 17 or hours < 7) then
 		for i=1,(3000/flickerIntervall) do
 			if i % 2 == 0 then      
 			   showT(allLetters) 
@@ -1141,7 +1142,6 @@ function SwarmLetters(allLetters, posLetters)
         end)
     WaitForMoves(allLetters)
     Sleep(2000)
-    hideT(allLetters)
 end
 
 function SpinLetters(allLetters)
