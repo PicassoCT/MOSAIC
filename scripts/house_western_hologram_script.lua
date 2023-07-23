@@ -1026,6 +1026,7 @@ end
 
 
 function randomFLickerLetters(allLetters, posLetters)
+    errorDrift = math.random(2,7)
     flickerIntervall = math.ceil(1000/25)
 	if (hours > 17 or hours < 7) then
 		for i=1,(3000/flickerIntervall) do

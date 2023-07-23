@@ -49,11 +49,11 @@ function getIDGroupsForType(buildingType, directionToFilter)
     if directionToFilter then
     	searchTerm = searchTerm..directionToFilter
     end
-    echo("Searching for ID Groups for type "..buildingType)
+    --echo("Searching for ID Groups for type "..buildingType)
 	for groupName,v in pairs(TablesOfPiecesGroups) do
 		if buildingType and startsWith(groupName, searchTerm) then
 			if string.find(groupName, buildingType) and not string.find(groupName, "Sub")then
-                echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
+                --echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
 				allMatchingGroups[groupName] = v
 			end
 		 end
@@ -94,10 +94,15 @@ function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  rou
 	for tableInternalIndex, v in pairs(buildingGroups) do
 		index = index -1
 		if index <= 0 and v then
+            local selectedPiece 
             if typeID == "a" or typeID == "u" then
-    		    return v[level + (roundNr% count(v)) +  1]
+    		    selectedPiece = v[level + (roundNr% count(v)) +  1]
     		else
-                return v[(roundNr% count(v)) +  1]
+                selectedPiece = v[(roundNr% count(v)) +  1]
+            end
+            if selectedPiece then
+                echo("Selecting sequence piece "..getPieceName(unitID, selectedPiece))
+                return selectedPiece
             end
         end
 	end
@@ -463,10 +468,13 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
       return
     end
 	
-	roundNr = isInPositionSequence(convertIndexToRoundNr(index), z) 
-	if roundNr then
+    roundNr = convertIndexToRoundNr(index)
+	isInRoundNr = isInPositionSequence(roundNr, z) 
+	if isInRoundNr then
+             startIndex = getSafeRandom(buildMaterial, buildMaterial[1])   
             echo("resorting to sequence for level " ..level.. "for material " ..name) 
             piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
+
 	    return piecenum, num
 	end
 	
@@ -694,7 +702,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                         else
                           resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
                         end
-                        echo("getMaterialElementsContaingNotContaining:Found and added")
+                        --echo("getMaterialElementsContaingNotContaining:Found and added")
                     end
                 end
             end
@@ -933,6 +941,7 @@ end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     assert(buildMaterial)
+    assert(Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
@@ -960,7 +969,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 
     pieceGroupName = getPieceGroupName(element)
 
-    showSubsAnimateSpins(pieceGroupName, nr)
+    showSubsAnimateSpins(pieceGroupName, 1)
 
     ToShowTable[#ToShowTable + 1] = element
 
@@ -1024,6 +1033,10 @@ function getRotationFromPiece(pieceID)
 end
 
 function showSubsAnimateSpins(pieceGroupName, nr)
+    if not nr then 
+        echo("Subpiece nr not given")
+        return 
+    end
     local subName = pieceGroupName .. nr .. "Sub"
   --  Spring.Echo("SubGroupName "..subName)
     showOneOrAllOfTablePieceGroup(subName)
@@ -1042,14 +1055,15 @@ function showSubsAnimateSpins(pieceGroupName, nr)
         Spin(pieceName_pieceNr[spinName] , y_axis, math.rad(direction), math.pi)
     end
 end
-logoPiecesToHide = {
-            }
+
+logoPiecesToHide = {}
 pieceNameMap = Spring.GetUnitPieceList( unitID ) 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     if materialColourName == "Office" and maRa() then
         decoChances.roof = 0.65 
     end
+    assert(Level)
 
     for i = 1, 37, 1 do
         local index = i
@@ -1094,9 +1108,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc)
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc, Level)
             while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc)
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc, Level)
                 Sleep(1)
             end
 

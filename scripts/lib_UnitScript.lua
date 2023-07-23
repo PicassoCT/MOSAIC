@@ -6108,7 +6108,7 @@ end
 
 function getPieceName(unitID, pieceID)
     pieceID_NameMap=Spring.GetUnitPieceList(unitID) 
-    return pieceID_NameMap[pieceID]
+    return toString(pieceID_NameMap[pieceID])
 end
 
 function serializeTableToString(table)

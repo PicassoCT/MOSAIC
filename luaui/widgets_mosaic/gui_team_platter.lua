@@ -123,6 +123,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["house_arab0"].id]= true,
 [UnitDefNames["air_parachut"].id]= true,
 [UnitDefNames["house_western0"].id]= true,
+[UnitDefNames["house_asian0"].id]= true,
 [UnitDefNames["closecombatarena"].id]= true,
 [UnitDefNames["raidiconbaseplate"].id]= true,
 [UnitDefNames["teargascloud"].id]= true,
