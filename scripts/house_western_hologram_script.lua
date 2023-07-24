@@ -998,7 +998,7 @@ function addHologramLetters( myMessage)
     end
 
     if maRa() and maRa() then 
-		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters}
+		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix}
         --TextAnimation
         while true do
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
@@ -1023,7 +1023,6 @@ function randRestLetters(allLetters,posLetters)
                Show(id)
             end)
 end
-
 
 function randomFLickerLetters(allLetters, posLetters)
     errorDrift = math.random(2,7)
@@ -1100,6 +1099,28 @@ function resetSpinDrop(allLetters)
                 Turn(id, spindropAxis, math.rad(0), 15)    
         end)
 end
+
+function dnaHelix(allLetters)
+	index = 1
+    foreach(allLetters,
+        function(id)
+			val = (index/ #allLetters) * 2 * 2 * math.pi
+			Turn(id, spindropAxis, math.rad(val), 0)    
+			Spin(id, spindropAxis, math.rad(42), 15)   
+			Show(id)			
+			index = index +1
+        end)
+		Sleep(9000)
+	
+	foreach(allLetters,
+        function(id)
+			StopSpin(id, spindropAxis)
+			WTurn(id, spindropAxis, math.rad(0), 15) 
+        end)
+	Sleep(5000)
+	
+end
+
 
 function SpiralUpwards(allLetters, posLetters)
 

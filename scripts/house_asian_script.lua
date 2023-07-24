@@ -49,11 +49,11 @@ function getIDGroupsForType(buildingType, directionToFilter)
     if directionToFilter then
     	searchTerm = searchTerm..directionToFilter
     end
-    --echo("Searching for ID Groups for type "..buildingType)
+    echo("Searching for ID Groups for type "..buildingType)
 	for groupName,v in pairs(TablesOfPiecesGroups) do
 		if buildingType and startsWith(groupName, searchTerm) then
 			if string.find(groupName, buildingType) and not string.find(groupName, "Sub")then
-                --echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
+                echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
 				allMatchingGroups[groupName] = v
 			end
 		 end
@@ -702,7 +702,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                         else
                           resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
                         end
-                        --echo("getMaterialElementsContaingNotContaining:Found and added")
+                        echo("getMaterialElementsContaingNotContaining:Found and added")
                     end
                 end
             end
@@ -1108,9 +1108,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc, Level)
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc)
             while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc, Level)
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco", index, xLoc, zLoc)
                 Sleep(1)
             end
 
@@ -1165,7 +1165,7 @@ function buildAnimation()
     Hide(Icon)
     Sleep(15000)
     while boolDoneShowing == false do Sleep(100) end
-    showHouse()
+    showT(ToShowTable)
 end
 
 function buildBuilding()
