@@ -1155,14 +1155,6 @@ function showHouse() boolHouseHidden = false; showT(ToShowTable) end
 
 function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
 
-function ropeLoop()
-Sleep(10)
-
-    while boolDoneShowing == false do
-    
-     Sleep(50)
-    end
-end
 
 Icon = piece("Icon")
 
@@ -1173,7 +1165,7 @@ function buildAnimation()
     Hide(Icon)
     Sleep(15000)
     while boolDoneShowing == false do Sleep(100) end
-    showT(ToShowTable)
+    showHouse()
 end
 
 function buildBuilding()
