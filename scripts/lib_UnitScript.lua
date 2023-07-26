@@ -4127,16 +4127,35 @@ function randHide(T)
     end)
 end
 
+--> echos out once per frame
+function echoBurst(stringToEcho)
+if not GG.Burst then GG.Burst = {} end
+gameFrame = Spring.GetGameFrame()
 
+if not GG.Burst[gameFrame] then
+	if not(GG.Burst[gameFrame -1]) then
+		echoT(GG.Burst[gameFrame -1])
+		GG.Burst[gameFrame -1] = nil
+		end
+	GG.Burst[gameFrame] = {}
+end
+GG.Burst[gameFrame][#GG.Burst[gameFrame]+1] = stringToEcho
+end
+
+boolBurst= true
 -- > echos out strings
 function echo(stringToEcho, ...)
+	if boolBurst then
+		return echoBurst(stringToEcho, ...)	 
+	end
+	
     local arg = arg;
     if (not arg) then
         arg = {...};
         arg.n = #arg
     end
     if stringToEcho then 
-        Spring.Echo(toString(stringToEcho));
+		Spring.Echo(toString(stringToEcho));
     end
  
     if arg then
