@@ -16,8 +16,8 @@ local MotorBike = Truck:New{
 	--maxReverseVelocity= 2.15,
 	movementClass   	= "VEHICLE",
 	acceleration = 1.7,
-	brakeRate = 0.1,
-	turninplace		= false,
+	brakeRate = 0.02,
+	turninplace		= true,
 	
 	transportSize = 16,
 	transportCapacity = 1,
