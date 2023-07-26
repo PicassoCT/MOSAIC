@@ -23,7 +23,7 @@ rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 local cubeDim = {
-    length = factor * 14.4 * 1.45,
+    length = factor * 23,
     heigth = factor * 14.84 + heightoffset,
     roofHeigth = 50
 }
@@ -770,10 +770,10 @@ function buildDecorateGroundLvl()
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
         xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-        local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc, boolContinousFundamental, 0)
+        local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0)
 
         while not element do
-            element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc, boolContinousFundamental, 0)
+            element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0)
             if element then break end
             Sleep(1)
         end
@@ -851,10 +851,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, boolContinousFundamental)
+            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level)
 
             while not element do
-                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, boolContinousFundamental)
+                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level)
                 Sleep(1)
             end
 

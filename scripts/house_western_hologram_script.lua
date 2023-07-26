@@ -1085,10 +1085,13 @@ function consoleLetters(allLetters, posLetters)
     foreach(allLetters,
     function(id)
       for axis=1,3 do
-        Move(id, axis, posLetters[id][axis], 15)
+        Move(id, axis, posLetters[id][axis], 150)
        end
        Show(id)
     end)
+    Sleep(100)
+    WaitForMoves(allLetters)
+    Sleep(5000)
 end
 
 function resetSpinDrop(allLetters)
