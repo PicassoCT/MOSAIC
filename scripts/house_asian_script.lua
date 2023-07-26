@@ -18,6 +18,8 @@ decoPieceUsedOrientation = {}
 boolIsCombinatorial = (maRa() == maRa()) == maRa()
 factor = 35
 heightoffset = 90
+
+rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 local cubeDim = {
@@ -547,42 +549,42 @@ function isBackYardWall(index)
 end
 
 function getWallBackyardDeocrationRotation(index)
-    if index == 1 or index == 6 or index == 31 or index == 36 then return 0 end
+    if index == 1 or index == 6 or index == 31 or index == 36 then return 0 + rotationOffset end
 
-    if index > 1 and index < 6 then return 270 end
+    if index > 1 and index < 6 then return 270 + rotationOffset end
 
-    if index > 31 and index < 36 then return 90 end
+    if index > 31 and index < 36 then return 90 + rotationOffset end
 
-    if (index % 6) == 0 then return 180 end
+    if (index % 6) == 0 then return 180 + rotationOffset end
 
-    if (index % 6) == 1 then return 0 end
+    if (index % 6) == 1 then return 0 + rotationOffset end
 
-    return 0
+    return 0 + rotationOffset
 end
 
 function getOutsideFacingRotationOfBlockFromPlan(index)
 
     if (index > 30 and index < 37) then
-        if (index == 31) then return 270 - math.random(0, 1) * 90 end
+        if (index == 31) then return 270 - math.random(0, 1) * 90 + rotationOffset end
 
-        if (index == 36) then return 270 + math.random(0, 1) * 90 end
+        if (index == 36) then return 270 + math.random(0, 1) * 90 + rotationOffset end
 
-        return 270
+        return 270 + rotationOffset
     end
 
     if (index > 0 and index < 7) then
-        if (index == 1) then return 90 + math.random(0, 1) * 90 end
+        if (index == 1) then return 90 + math.random(0, 1) * 90 + rotationOffset end
 
-        if (index == 6) then return 90 - math.random(0, 1) * 90 end
+        if (index == 6) then return 90 - math.random(0, 1) * 90 + rotationOffset end
 
-        return 90
+        return 90 + rotationOffset
     end
 
-    if ((index % 6) == 1 and (index < 31 and index > 6)) then return 180 end
+    if ((index % 6) == 1 and (index < 31 and index > 6)) then return 180 + rotationOffset end
 
-    if ((index % 6) == 0 and (index < 31 and index > 6)) then return 0 end
+    if ((index % 6) == 0 and (index < 31 and index > 6)) then return 0 + rotationOffset end
 
-    return 0
+    return 0 + rotationOffset
 end
 
 function getStreetWallDecoRotation(index)
