@@ -1195,11 +1195,8 @@ function buildBuilding()
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start")
-        _, buildMaterial = buildDecorateLvl(i,
-                                            materialColourName,
-                                            buildMaterial
-                                            )
-         echo(getScriptName() .. "buildDecorateLvl ended")
+        _, buildMaterial = buildDecorateLvl(i, materialColourName, buildMaterial)
+        echo(getScriptName() .. "buildDecorateLvl ended")
     end
     echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
