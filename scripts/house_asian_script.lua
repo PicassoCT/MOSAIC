@@ -38,6 +38,39 @@ pieceCyclicOSTable = {
                     },      
 }
 
+supriseChances = {
+    roof = 0.35,
+    yard = 0.6,
+    yardwall = 0.4,
+    street = 0.5,
+    powerpoles = 0.5,
+    door = 0.6,
+    windowwall = 0.7,
+    streetwall = 0.5
+
+}
+decoChances = {
+    roof = 0.2,
+    yard = 0.1,
+    yardwall = 0.4,
+    street = 0.1,
+    powerpoles = 0.5,
+    door = 0.6,
+    windowwall = 0.5,
+    streetwall = 0.1
+}
+
+logoPieces = {
+                [piece("Roof01")] = true, 
+                [piece("Roof02")] = true,
+                [piece("Roof03")] = true,
+                [piece("Roof28")] = true
+            }
+
+MapPieceIDName = Spring.GetUnitPieceMap(unitID)
+materialChoiceTable = {"Pod", "Industrial", "Trad", "Office"}
+materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
+
 function initAllPieces()
     Signal(SIG_SUBANIMATIONS)
     for pieceName, set in pairs ( pieceCyclicOSTable) do
@@ -110,44 +143,11 @@ function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  rou
 	end
 end
 
-MapPieceIDName = Spring.GetUnitPieceMap(unitID)
 
-supriseChances = {
-    roof = 0.35,
-    yard = 0.6,
-    yardwall = 0.4,
-    street = 0.5,
-    powerpoles = 0.5,
-    door = 0.6,
-    windowwall = 0.7,
-    streetwall = 0.5
-
-}
-decoChances = {
-    roof = 0.2,
-    yard = 0.1,
-    yardwall = 0.4,
-    street = 0.1,
-    powerpoles = 0.5,
-    door = 0.6,
-    windowwall = 0.5,
-    streetwall = 0.1
-}
-
-logoPieces = {
-                [piece("Roof01")] = true, 
-                [piece("Roof02")] = true,
-                [piece("Roof03")] = true,
-                [piece("Roof28")] = true
-            }
-
-materialChoiceTable = {"Pod", "Industrial", "Trad", "Office"}
-materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 
 vtolDeco= {}
-x, y, z = spGetUnitPosition(unitID)
-geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
-              (z - (z - math.floor(z)))
+gx, gy, gz = spGetUnitPosition(unitID)
+geoHash = (gx - (gx - math.floor(gx))) + (gy - (gy - math.floor(gy))) + (gz - (gz - math.floor(gz)))
 -- Spring.Echo("House geohash:"..geoHash)
 if geoHash % 3 == 1 then decoChances = supriseChances end
 centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
@@ -209,9 +209,7 @@ function rotations()
         StartThread(periodicFunc, k,v)
     end
 
-    Sleep(500)
-
-  
+    Sleep(500)  
     periodicMovementFunc = function(p, value)
         while true do
             Sleep(500);
@@ -226,9 +224,6 @@ function rotations()
         StartThread(periodicMovementFunc, k, v)
     end
 end
-
-
-officeWallElementsTable = {}
 
 function showHoloWall()
 
@@ -303,6 +298,7 @@ function showOneOrAll(T)
         return val
     end
 end
+
 function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
     AllCandiDates = {}
     MaterialCandiDates = {}
@@ -377,7 +373,6 @@ end
 function selectGroundBuildMaterial()
     nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
-
     if getManualCivilianBuildingMaps(Game.mapName) then
         mapeDependenHouseTypes = getMapDependentHouseTypes(Game.mapName)    
         nice = math.random(3,4)
@@ -436,22 +431,30 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
 end
 
 function getIDFromPieceName(name)
-nameSplit = split(name, "_")
-typeID =  string.sub(nameSplit[2], 1, 1)
-group = string.tonumber(string.sub(nameSplit[2],2))
-return typeID, group
+    nameSplit = split(name, "_")
+    typeID =  string.sub(nameSplit[2], 1, 1)
+    group = string.tonumber(string.sub(nameSplit[2],2))
+    return typeID, group
 end
 
-function convertIndexToRoundNr(index)
-roundNrTable =
-{1,  	2, 		3,		 4, 	5, 		6,
-20,		nil,	 nil, 	nil, 	nil,	7,
-19,		nil,	 nil, 	nil, 	nil,	8,
-18,		nil,	 nil, 	nil, 	nil,	9,
-17,		nil,	 nil, 	nil, 	nil,	10,
-16,		15,	 	14, 	13, 	12,		11,
-}
-return roundNrTable[index]
+local roundNrTable =
+    {1,     2,      3,       4,     5,      6,
+    20,     nil,     nil,   nil,    nil,    7,
+    19,     nil,     nil,   nil,    nil,    8,
+    18,     nil,     nil,   nil,    nil,    9,
+    17,     nil,     nil,   nil,    nil,    10,
+    16,     15,     14,     13,     12,     11,
+    }
+function convertIndexToRoundNr(groupIndex)    
+    return roundNrTable[groupIndex]
+end
+
+function notString(boolHigan)
+    if boolHigan == true then
+        return ""
+    end
+
+    return " not "
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceContinousUsage, level)
@@ -469,14 +472,15 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
       echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
       return
     end
-	
+
     roundNr = convertIndexToRoundNr(index)
 	isInRoundNr = isInPositionSequence(roundNr, z) 
+    echo("index:"..index.. " is"..notString(isInRoundNr).. " in a ID group with ".. roundNr)
 	if isInRoundNr then
-             startIndex = getSafeRandom(buildMaterial, buildMaterial[1])   
-            echo("resorting to sequence for level " ..level.. "for material " ..name) 
-            piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
+            startIndex = getSafeRandom(buildMaterial, buildMaterial[1])   
 
+            piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
+                        echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. MapPieceIDName[piecenum].." selected") 
 	    return piecenum, num
 	end
 	
@@ -490,7 +494,6 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, boolForceConti
 		end
    end
 end
-
 
 NotInPlanIndeces = {}
 if maRa() == true then
