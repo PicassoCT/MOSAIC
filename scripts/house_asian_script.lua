@@ -4,7 +4,6 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 IDGroupsDirection = { 
-    "a", --ambigous
     "u", --upright
     "l"} -- lengthwise
 
@@ -106,12 +105,12 @@ function isInPositionSequence(roundNr, level)
     if not roundNr then echo("invalid roundnr "); return false end
 	
 	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 2)+1]
-	
-	if IdType == "u" or ( IdType == "a" and maRa()) then
+
+	if IdType == "u" then
 		return  getDeterministicRandom(roundNr,unitID) % 4 == 0, IdType
 	end
 	
-	if IdType == "l" or IdType == "a" then
+	if IdType == "l"  then
 		if getDeterministicRandom(unitID, 4) == level then return false end
 	
 		intervalStart = getDeterministicRandom(unitID, 20 -maxIntervallLength)
@@ -129,24 +128,29 @@ function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  rou
     assert(count(buildingGroups) > 0)
     assertType(typeID, "string")
     while true do
+		-- if deterministic in unit and deterministic in piece length
         index = getDeterministicRandom(unitID,  count(buildingGroups) - 1) + 1
     	for tableInternalIndex, v in pairs(buildingGroups) do
     		index = index -1
+			selectionindex = 0
     		if index <= 0 and v then
                 selectedPiece = nil
-                if typeID == "a" or typeID == "u" then
-        		    selectedPiece = v[level + (roundNr% count(v)) +  1]
+                if typeID == "u" then
+					selectionindex = (roundNr) % count(v)) + 1
+        		    selectedPiece = v[selectionindex]
         		else
-                    selectedPiece = v[(roundNr% count(v)) +  1]
+					selectionindex = ((roundNr + level) % count(v)) + 1
+                    selectedPiece = v[selectionindex]
                 end
                 if selectedPiece then
-                    echo("Selecting sequence piece "..getPieceName(unitID, selectedPiece))
+                    echo("Selecting sequence piece ".. getPieceName(unitID, selectedPiece).." at index:"..index.. " and selection index"..selectionindex)
                     return selectedPiece
                 end
             end
     	end
-        echo("getDeterministicSequencePieceID failed -> retry")
-    Sleep(100)
+        
+		echo("getDeterministicSequencePieceID failed -> retry")
+		Sleep(100)
     end
 end
 
@@ -497,16 +501,16 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
 	end
 	
     echo("Falling back on non id material ")
-   startIndex = getSafeRandom(buildMaterial, buildMaterial[1]) 
+    startIndex = getSafeRandom(buildMaterial, buildMaterial[1]) 
 
-   for num, piecenum in pairs(buildMaterial) do
+	for num, piecenum in pairs(buildMaterial) do
 		startIndex = startIndex -1
-       if startIndex == 0 and not AlreadyUsedPiece[piecenum]  then
+	   if startIndex == 0 and not AlreadyUsedPiece[piecenum]  then
 			AlreadyUsedPiece[piecenum] = true
 			return piecenum, num
 		end
-   end
-     echo(" Returning nil in getRandomBuildMaterial ".. toString(context)) 
+	end
+     echo(" Returning nil in getRandomBuildMaterial in context".. toString(context)) 
    return
 end
 
