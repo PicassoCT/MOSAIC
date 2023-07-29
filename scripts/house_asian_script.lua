@@ -108,7 +108,7 @@ function isInPositionSequence(roundNr, level)
 	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 2)+1]
 	
 	if IdType == "u" or ( IdType == "a" and maRa()) then
-		return  getDeterministicRandom(roundNr,unitID) % 4 == 0, "u"
+		return  getDeterministicRandom(roundNr,unitID) % 4 == 0, IdType
 	end
 	
 	if IdType == "l" or IdType == "a" then
@@ -116,7 +116,9 @@ function isInPositionSequence(roundNr, level)
 	
 		intervalStart = getDeterministicRandom(unitID, 20 -maxIntervallLength)
 		intervalLength = math.random(2, maxIntervallLength)
-		if roundNr >= intervalStart and roundNr <= intervalStart+ intervalLength then return true, "l" end
+		if roundNr >= intervalStart and roundNr <= intervalStart+ intervalLength then 
+            return true, "l" 
+        end
 		return false
 	end
 	return false
@@ -125,22 +127,27 @@ end
 function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
 	assert(buildingGroups)
     assert(count(buildingGroups) > 0)
-    index = getDeterministicRandom(unitID,  count(buildingGroups) - 1) + 1
-	for tableInternalIndex, v in pairs(buildingGroups) do
-		index = index -1
-		if index <= 0 and v then
-            local selectedPiece 
-            if typeID == "a" or typeID == "u" then
-    		    selectedPiece = v[level + (roundNr% count(v)) +  1]
-    		else
-                selectedPiece = v[(roundNr% count(v)) +  1]
+    assertType(typeID, "string")
+    while true do
+        index = getDeterministicRandom(unitID,  count(buildingGroups) - 1) + 1
+    	for tableInternalIndex, v in pairs(buildingGroups) do
+    		index = index -1
+    		if index <= 0 and v then
+                selectedPiece = nil
+                if typeID == "a" or typeID == "u" then
+        		    selectedPiece = v[level + (roundNr% count(v)) +  1]
+        		else
+                    selectedPiece = v[(roundNr% count(v)) +  1]
+                end
+                if selectedPiece then
+                    echo("Selecting sequence piece "..getPieceName(unitID, selectedPiece))
+                    return selectedPiece
+                end
             end
-            if selectedPiece then
-                echo("Selecting sequence piece "..getPieceName(unitID, selectedPiece))
-                return selectedPiece
-            end
-        end
-	end
+    	end
+        echo("getDeterministicSequencePieceID failed -> retry")
+    Sleep(100)
+    end
 end
 
 
@@ -458,7 +465,7 @@ function notString(boolHigan)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level)
-
+    echo("Getting  Random Material")
     if not buildMaterial then
         echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
@@ -474,16 +481,21 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level)
     end
 
     roundNr = convertIndexToRoundNr(index)
-	isInRoundNr = isInPositionSequence(roundNr, z) 
-    echo("index:"..index.. " is"..notString(isInRoundNr).. " in a ID group with ".. roundNr)
-	if isInRoundNr then
-            startIndex = getSafeRandom(buildMaterial, buildMaterial[1])   
+	isInRoundNr, typeID = isInPositionSequence(roundNr, z) 
 
+	if isInRoundNr then
+            echo("index:"..index.. " is"..notString(isInRoundNr).. " in a ID group with ".. roundNr)
+            startIndex = getSafeRandom(buildMaterial, buildMaterial[1])   
             piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
-                        echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. MapPieceIDName[piecenum].." selected") 
-	    return piecenum, num
+            if piecenum then
+                if MapPieceIDName[piecenum] then
+                echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+                end
+	           return piecenum, num
+           end
 	end
 	
+    echo("Falling back on non id material ")
    startIndex = getSafeRandom(buildMaterial, buildMaterial[1]) 
    assert(buildMaterial)
    for num, piecenum in pairs(buildMaterial) do
@@ -948,6 +960,7 @@ end
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     assert(buildMaterial)
     assert(Level)
+
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 

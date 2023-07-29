@@ -6038,6 +6038,10 @@ function assertNameTypeInTable(T, boolActive, Type)
     end
 end
 
+function assertType(x, typeDescription)
+    assert(type(x) == typeDescription, "variable "..toString(x).. " is not of type ".. typeDescription)
+end
+
 function assertNumberValid(nr)
     assert(nr ~=  math.huge)
     assert(nr ~= -math.huge)

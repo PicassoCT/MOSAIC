@@ -1098,8 +1098,12 @@ function getGameConfig()
                 if cultureName == Cultures.international then
                     translationWestern = getTranslation(Cultures.western)                    
                     translationArabic = getTranslation(Cultures.arabic)
+                    translationAsian = getTranslation(Cultures.asian)
 
                     --translationAsian = getTranslation(Cultures.asian)
+                    DicAsianNameDefID = expandNameSubSet_Dict_NameDefID(translationAsian[typeName], UnitDefs)
+                    assertNameTypeInTable(DicAsianNameDefID, typeName == "house" , "house_asian0")
+
                     DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs)
                     assertNameTypeInTable(DicWesternNameDefID, typeName == "civilian" , "civilian_western0")
   
@@ -1108,6 +1112,9 @@ function getGameConfig()
                     assertNameTypeInTable(DictArabNameDefID, typeName == "civilian" , "civilian_arab0")            
 
                     local fullTable = {}
+                    for name,defID in pairs(DicAsianNameDefID) do                       
+                        fullTable[defID]= name
+                    end
                     for name,defID in pairs(DicWesternNameDefID) do
                         fullTable[defID]= name
                     end
