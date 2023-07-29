@@ -18,7 +18,7 @@ decoPieceUsedOrientation = {}
 boolIsCombinatorial = (maRa() == maRa()) == maRa()
 factor = 35
 heightoffset = 90
-
+U
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
@@ -464,7 +464,7 @@ function notString(boolHigan)
     return " not "
 end
 
-function getRandomBuildMaterial(buildMaterial, name, index, x, z, level)
+function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context)
     echo("Getting  Random Material")
     if not buildMaterial then
         echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
@@ -506,7 +506,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level)
 			return piecenum, num
 		end
    end
-     echo(" Returning nil in getRandomBuildMaterial ")
+     echo(" Returning nil in getRandomBuildMaterial ".. toString(context)) 
    return
 end
 
@@ -786,10 +786,10 @@ function buildDecorateGroundLvl()
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
         xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-        local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0)
+        local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
 
         while not element do
-            element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0)
+            element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
             Sleep(1)
         end
 
@@ -867,10 +867,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level)
+            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
 
             while not element do
-                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level)
+                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
                 Sleep(1)
             end
 
@@ -968,10 +968,10 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc, Level)
+    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc, Level, "decorateBackYard" )
     attempts = 0
     while not element and attempts < countedElements do
-        element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc,  Level)
+        element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc,  Level, "decorate Backyard") 
         Sleep(1)
         attempts = attempts + 1
     end
@@ -1105,10 +1105,10 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
 
-            local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level)
+            local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level, " addRoofDeocrate") 
             attempts = 5 
             while not element and attempts > 0 do
-                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level)
+                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level, " addRoofDeocrate" )
                 Sleep(1)
                 attempts = attempts -1
             end
@@ -1142,10 +1142,10 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level)
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level, "addRoofDeco") 
             while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level)
-                Sleep(1)
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level, "addRoofDeco") 
+                Sleep(1)"
             end
 
             if element and chancesAre(10) < decoChances.roof then
