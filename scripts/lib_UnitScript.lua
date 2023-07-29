@@ -4133,7 +4133,7 @@ if not GG.Burst then GG.Burst = {} end
 gameFrame = Spring.GetGameFrame()
 
 if not GG.Burst[gameFrame] then
-	if not(GG.Burst[gameFrame -1]) then
+	if (GG.Burst[gameFrame -1]) then
 		echoT(GG.Burst[gameFrame -1])
 		GG.Burst[gameFrame -1] = nil
 		end
@@ -4142,7 +4142,7 @@ end
 GG.Burst[gameFrame][#GG.Burst[gameFrame]+1] = stringToEcho
 end
 
-boolBurst= true
+boolBurst= false
 -- > echos out strings
 function echo(stringToEcho, ...)
 	if boolBurst then
