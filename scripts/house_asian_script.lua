@@ -17,7 +17,8 @@ decoPieceUsedOrientation = {}
 boolIsCombinatorial = (maRa() == maRa()) == maRa()
 factor = 35
 heightoffset = 90
-U
+maxNrAttempts = 2
+
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
@@ -414,15 +415,18 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     if countedElements <= 0 then return DecoMaterial end
 
     y_offset = yoffset or 0
-    attempts = 0
+    attempts = maxNrAttempts
     local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall", xRealLoc, zRealLoc, level)
-    while not Deco and attempts < countedElements do
+    while not Deco and attempts  > 0 do
         Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall", xRealLoc, zRealLoc, level)
         Sleep(1)
-        attempts = attempts + 1
+        attempts = attempts  - 1
     end
 
-    if attempts >= countedElements then return DecoMaterial end
+    if attempts  == 0 then
+       echo("DecorateBlockWall: ran out of attempts")
+        return DecoMaterial
+    end
 
     if Deco then
         DecoMaterial = removeElementFromBuildMaterial(Deco, DecoMaterial)
@@ -499,8 +503,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
 	           return piecenum, num
            end
 	end
-	
-    echo("Falling back on non id material ")
+
     startIndex = getSafeRandom(buildMaterial, buildMaterial[1]) 
 
 	for num, piecenum in pairs(buildMaterial) do
@@ -686,7 +689,6 @@ end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
     resultTable = {}
-    echo(getScriptName().."getMaterialElementsContaingNotContaining:"..materialColourName)
     echo(getScriptName()..toString(mustContainTable))
     echo(getScriptName()..toString(mustNotContainTable))
 
@@ -726,12 +728,12 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                         else
                           resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
                         end
-                        echo("getMaterialElementsContaingNotContaining:Found and added")
                     end
                 end
             end
         end
     end
+    echo("getMaterialElementsContaingNotContaining:"..materialColourName.." / "..toString(mustContainTable), resultTable)
     return resultTable
 end
 
@@ -767,7 +769,6 @@ end
 
 function buildDecorateGroundLvl()
     echo(getScriptName()..":buildDecorateLvl")
-    Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
 	buildingGroups = getIDGroupsForType(materialColourName)
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
@@ -792,9 +793,15 @@ function buildDecorateGroundLvl()
         xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
         local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
 
-        while not element do
+        while not element and attempts > 0 do
             element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
             Sleep(1)
+            attempts = attempts -1
+        end
+
+        if attempts == 0 then 
+            echo(getScriptName() .. "buildDecorateGroundLvl: element selection failed for ".. materialColourName)
+            return materialColourName
         end
 
         if element then
@@ -871,11 +878,16 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
-
-            while not element do
+            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level,, "buildDecorateLvl" )
+            attempts = maxNrAttempts
+            while not element and attempts > 0 do
                 element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
                 Sleep(1)
+            end
+            
+            if attempts == 0 then 
+                echo(getScriptName() .. "buildDecorateLvl: element selection failed for "..materialColourName)
+                return materialColourName
             end
 
             if element then
@@ -972,17 +984,16 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc, Level, "decorateBackYard" )
-    attempts = 0
-    while not element and attempts < countedElements do
-        element, nr = getRandomBuildMaterial(buildMaterial, "backyard", index, xLoc, zLoc,  Level, "decorate Backyard") 
+    local element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc, Level,"decorateBackYard" )
+    attempts = maxNrAttempts
+    while not element and attempts > 0 do
+        element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc,  Level,"decorateBackYard" )
         Sleep(1)
-        attempts = attempts + 1
+        attempts = attempts -1
     end
-
-    if attempts >= countedElements then 
-        echo("Failed to decorate yard")
-        return buildMaterial 
+    if attempts == 0 then 
+        echo(getScriptName() .. "decorateBackYard: element selection failed for "..materialColourName)
+        return buildMaterial
     end
 
     buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
@@ -1110,11 +1121,15 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
 
             local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level, " addRoofDeocrate") 
-            attempts = 5 
+            attempts = maxNrAttempts
             while not element and attempts > 0 do
-                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level, " addRoofDeocrate" )
-                Sleep(1)
+                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level," addRoofDeocrate") 
                 attempts = attempts -1
+            end
+
+            if attempts == 0 then 
+                echo(getScriptName() .. "decorateBackYard:roofMaterial element selection failed for "..materialColourName)
+                return materialColourName
             end
 
             if element then
@@ -1147,9 +1162,15 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
             local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level, "addRoofDeco") 
-            while not element do
+            attempts = maxNrAttempts
+            while not element and attempts > 0 do
                 element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level, "addRoofDeco") 
-                Sleep(1)"
+                attempts = attempts -1
+            end
+
+            if attempts == 0 then 
+                echo(getScriptName() .. "decorateBackYard:roofDecoMaterials element selection failed for "..materialColourName)
+                return materialColourName
             end
 
             if element and chancesAre(10) < decoChances.roof then
