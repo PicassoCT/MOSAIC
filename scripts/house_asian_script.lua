@@ -100,62 +100,33 @@ function hasUnitSequentialElements(id)
 	return id % 2 == 0
 end
 
-function isInPositionSequence(roundNr, level)
+function isInPositionSequenceGetPieceID(roundNr, level)
 	maxIntervallLength = 6
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundnr "); return false end
 	
-	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 2)+1]
+	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
 
-	if IdType == "u" then
-		return  getDeterministicRandom(roundNr,unitID) % 4 == 0, IdType
-	end
-	
-	if IdType == "l"  then
-		if getDeterministicRandom(unitID, 4) == level then return false end
-	
-		intervalStart = getDeterministicRandom(unitID, 20 -maxIntervallLength)
-		intervalLength = math.random(2, maxIntervallLength)
-		if roundNr >= intervalStart and roundNr <= intervalStart+ intervalLength then 
-            return true, "l" 
+	if IdType == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
+		index = getDeterministicRandom(unitID  + roundNr,  count(buildingGroups) - 1) + 1
+        if buildingGroups[index][level]then
+            return true, buildingGroups[index][level]
+        else
+            return false
         end
-		return false
 	end
+	
+	if IdType == "l"  and unitID % 2 == 0 then
+        index = getDeterministicRandom(unitID  ,  count(buildingGroups) - 1) + 1
+        if buildingGroups[index][roundNr] then 
+            return true, buildingGroups[index][roundNr]
+        else
+            return false
+        end
+	end
+
 	return false
 end
-
-function getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
-	assert(buildingGroups)
-    assert(count(buildingGroups) > 0)
-    assertType(typeID, "string")
-    while true do
-		-- if deterministic in unit and deterministic in piece length
-        index = getDeterministicRandom(unitID,  count(buildingGroups) - 1) + 1
-    	for tableInternalIndex, v in pairs(buildingGroups) do
-    		index = index -1
-			selectionindex = 0
-    		if index <= 0 and v then
-                selectedPiece = nil
-                if typeID == "u" then
-					selectionindex = (roundNr) % count(v)) + 1
-        		    selectedPiece = v[selectionindex]
-        		else
-					selectionindex = ((roundNr + level) % count(v)) + 1
-                    selectedPiece = v[selectionindex]
-                end
-                if selectedPiece then
-                    echo("Selecting sequence piece ".. getPieceName(unitID, selectedPiece).." at index:"..index.. " and selection index"..selectionindex)
-                    return selectedPiece
-                end
-            end
-    	end
-        
-		echo("getDeterministicSequencePieceID failed -> retry")
-		Sleep(100)
-    end
-end
-
-
 
 vtolDeco= {}
 gx, gy, gz = spGetUnitPosition(unitID)
@@ -473,7 +444,7 @@ function notString(boolHigan)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context)
-    echo("Getting  Random Material")
+    --echo("Getting  Random Material")
     if not buildMaterial then
         echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
@@ -491,17 +462,13 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
     assert(buildMaterial[1])
 
     roundNr = convertIndexToRoundNr(index)
-	isInRoundNr, typeID = isInPositionSequence(roundNr, z) 
+	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, z) 
 
-	if isInRoundNr then
-            echo("index:"..index.. " is"..notString(isInRoundNr).. " in a ID group with ".. roundNr)
-            piecenum, num = getDeterministicSequencePieceID(unitID, buildMaterialType, typeID,  roundNr, level)
-            if piecenum then
-                if MapPieceIDName[piecenum] then
-                echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
-                end
-	           return piecenum, num
-           end
+	if isInRoundNr and piecenum then
+        if MapPieceIDName[piecenum] then
+        echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+        end
+       return piecenum, num
 	end
 
     startIndex = getSafeRandom(buildMaterial, buildMaterial[1]) 
@@ -513,7 +480,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
 			return piecenum, num
 		end
 	end
-     echo(" Returning nil in getRandomBuildMaterial in context".. toString(context)) 
+    --echo(" Returning nil in getRandomBuildMaterial in context".. toString(context)) 
    return
 end
 
@@ -688,6 +655,8 @@ function nameContainsMaterial(name, materialColourName)
 end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
+    if not mustContainTable then mustContainTable = {} end
+    if not mustNotContainTable  then mustNotContainTable = {} end
     resultTable = {}
     echo(getScriptName()..toString(mustContainTable))
     echo(getScriptName()..toString(mustNotContainTable))
@@ -786,16 +755,15 @@ function buildDecorateGroundLvl()
         Sleep(1)
 
         local index = i
-        --echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
+        echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
         xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
         local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
-
+        attempts = maxNrAttempts
         while not element and attempts > 0 do
             element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
-            Sleep(1)
             attempts = attempts -1
         end
 
@@ -878,7 +846,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level,, "buildDecorateLvl" )
+            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
             attempts = maxNrAttempts
             while not element and attempts > 0 do
                 element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
