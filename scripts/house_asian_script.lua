@@ -100,26 +100,37 @@ function hasUnitSequentialElements(id)
 	return id % 2 == 0
 end
 
+function getDeterministicLengthwisePieceGroundIndex(unitID, level, deterministicPersistentCounter)
+
+PieceGroupIndex = getDeterministicRandom(unitID + instanceIndex + level,  count(buildingGroups) - 1) + 1	
+return PieceGroupIndex
+end
+
+deterministicPersistentCounter= 0
 function isInPositionSequenceGetPieceID(roundNr, level)
 	maxIntervallLength = 6
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundnr "); return false end
 	
-	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
-
-	if IdType == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
-		index = getDeterministicRandom(unitID  + roundNr,  count(buildingGroups) - 1) + 1
-        if buildingGroups[index][level]then
-            return true, buildingGroups[index][level]
+	Direction = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
+	--upright
+	if Direction == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
+		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  count(buildingGroups) - 1) + 1
+        if buildingGroups[PieceGroupIndex][level]then
+            return true, buildingGroups[PieceGroupIndex][level]
         else
             return false
         end
 	end
 	
-	if IdType == "l"  and unitID % 2 == 0 then
-        index = getDeterministicRandom(unitID  ,  count(buildingGroups) - 1) + 1
-        if buildingGroups[index][roundNr] then 
-            return true, buildingGroups[index][roundNr]
+	--lengthwise
+	if Direction == "l"  and hasUnitSequentialElements(unitID) then
+		--TODO how to get deterministic random lengthwise - currently once per level 
+        PieceGroupIndex = getDeterministicRandom(unitID  + level,  count(buildingGroups) - 1) + 1
+		instanceIndex = math.floor( deterministicPersistentCounter  / 6)
+        if buildingGroups[PieceGroupIndex + instanceIndex][roundNr] then 
+			deterministicPersistentCounter = deterministicPersistentCounter +1
+            return true, buildingGroups[PieceGroupIndex + instanceIndex][roundNr]
         else
             return false
         end
