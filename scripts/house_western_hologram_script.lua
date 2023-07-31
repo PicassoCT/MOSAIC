@@ -322,6 +322,7 @@ function nilNeonSigns()
 end
 
 function RainDrop(pieceID, delayMS, speed)
+	if not pieceID then return end
     maxDistance = 4000
     downAxis = 2
     Sleep(delayMS)
@@ -339,8 +340,8 @@ end
 function holoRain(Name, speed)
     groupName = Name.."Rain"
     for i=1,#TableOfPiecesGroups[groupName] do
-        delay= math.random(0,5)*100
-        StartThread(RainDrop,TableOfPiecesGroups[groupName][i], delay, speed)
+        delay= math.random(1,10)*50
+		StartThread(RainDrop,TableOfPiecesGroups[groupName][i], delay, speed)
     end
 end
 
