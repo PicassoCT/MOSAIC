@@ -100,26 +100,39 @@ function hasUnitSequentialElements(id)
 	return id % 2 == 0
 end
 
+function getDeterministicLengthwisePieceGroundIndex(unitID, level, deterministicPersistentCounter)
+
+PieceGroupIndex = getDeterministicRandom(unitID + instanceIndex + level,  count(buildingGroups) - 1) + 1	
+return PieceGroupIndex
+end
+
+deterministicPersistentCounter= 0
+--TODO check buildingGroups has material Dimensions
+--TODO check buildMaterials are used elsewhere and its flat
 function isInPositionSequenceGetPieceID(roundNr, level)
 	maxIntervallLength = 6
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundnr "); return false end
 	
-	IdType = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
-
-	if IdType == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
-		index = getDeterministicRandom(unitID  + roundNr,  count(buildingGroups) - 1) + 1
-        if buildingGroups[index][level]then
-            return true, buildingGroups[index][level]
+	Direction = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
+	--upright
+	if Direction == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
+		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  count(buildingGroups) - 1) + 1
+        if buildingGroups[PieceGroupIndex][level]then
+            return true, buildingGroups[PieceGroupIndex][level]
         else
             return false
         end
 	end
 	
-	if IdType == "l"  and unitID % 2 == 0 then
-        index = getDeterministicRandom(unitID  ,  count(buildingGroups) - 1) + 1
-        if buildingGroups[index][roundNr] then 
-            return true, buildingGroups[index][roundNr]
+	--lengthwise
+	if Direction == "l"  and hasUnitSequentialElements(unitID) then
+		--TODO how to get deterministic random lengthwise - currently once per level 
+        PieceGroupIndex = getDeterministicRandom(unitID  + level,  count(buildingGroups) - 1) + 1
+		instanceIndex = math.floor( deterministicPersistentCounter  / 6)
+        if buildingGroups[PieceGroupIndex + instanceIndex][roundNr] then 
+			deterministicPersistentCounter = deterministicPersistentCounter +1
+            return true, buildingGroups[PieceGroupIndex + instanceIndex][roundNr]
         else
             return false
         end
@@ -464,10 +477,11 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
     roundNr = convertIndexToRoundNr(index)
 	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, z) 
 
-	if isInRoundNr and piecenum then
+	if isInRoundNr and piecenum and not AlreadyUsedPiece[piecenum] then
         if MapPieceIDName[piecenum] then
         echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
         end
+        AlreadyUsedPiece[piecenum] = true
        return piecenum, num
 	end
 
@@ -702,7 +716,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
             end
         end
     end
-    echo("getMaterialElementsContaingNotContaining:"..materialColourName.." / "..toString(mustContainTable), resultTable)
+    echo("getMaterialElementsContaingNotContaining:"..materialColourName.." / "..toString(mustContainTable))
     return resultTable
 end
 
@@ -736,16 +750,15 @@ function searchElasticWithoutMaterial(forbiddenMaterial, ...)
     return resulT
 end
 
-function buildDecorateGroundLvl()
+function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLvl")
-    local materialColourName = selectGroundBuildMaterial()
-	buildingGroups = getIDGroupsForType(materialColourName)
+
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
 
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
 
     --echo("House_wester_nColour:"..materialColourName)
-    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
+    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName) 
 
     assert(buildMaterial)
     assert(#buildMaterial > 0)
@@ -954,17 +967,19 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 
     local element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc, Level,"decorateBackYard" )
     attempts = maxNrAttempts
+
+
     while not element and attempts > 0 do
         element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc,  Level,"decorateBackYard" )
         Sleep(1)
         attempts = attempts -1
     end
+    buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+    
     if attempts == 0 then 
-        echo(getScriptName() .. "decorateBackYard: element selection failed for "..materialColourName)
+        echo(getScriptName() .. "decorateBackYard: element selection failed for "..buildMaterial)
         return buildMaterial
     end
-
-    buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
 
     -- rotation = math.random(0,4) *90
     xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
@@ -1206,9 +1221,10 @@ function buildBuilding()
  
     
     --echo(getScriptName() .. "selectBase")
-
+    materialColourName = selectGroundBuildMaterial()
+    buildingGroups = getIDGroupsForType(materialColourName)
     echo(getScriptName() .. "buildDecorateGroundLvl started")
-    materialColourName = buildDecorateGroundLvl()
+    buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: "..materialColourName)
 
     selectBase(materialColourName)
@@ -1222,7 +1238,7 @@ function buildBuilding()
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start")
-        _, buildMaterial = buildDecorateLvl(i, materialColourName, buildMaterial)
+        --_, buildMaterial = buildDecorateLvl(i, materialColourName, buildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
