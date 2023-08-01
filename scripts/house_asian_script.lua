@@ -16,7 +16,7 @@ local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
 factor = 35
 heightoffset = 90
-maxNrAttempts = 2
+maxNrAttempts = 20
 
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
@@ -117,9 +117,17 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	Direction = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
 	--upright
 	if Direction == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
-		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  count(buildingGroups) - 1) + 1
-        if buildingGroups[PieceGroupIndex][level]then
-            return true, buildingGroups[PieceGroupIndex][level]
+		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  #buildingGroups - 1) + 1
+        groupName = nil
+        for name, group in pairs(buildingGroups) do
+            PieceGroupIndex = PieceGroupIndex -1
+            if PieceGroupIndex == 0 then
+                groupName = name
+                break
+            end
+        end
+        if buildingGroups[groupName][level]then
+            return true, buildingGroups[groupName][level]
         else
             return false
         end
@@ -128,11 +136,21 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	--lengthwise
 	if Direction == "l"  then
 		--TODO how to get deterministic random lengthwise - currently once per level 
-        PieceGroupIndex = getDeterministicRandom(unitID  + level,  count(buildingGroups) - 1) + 1
-		instanceIndex = math.floor( deterministicPersistentCounter  / 6)
-        if buildingGroups[PieceGroupIndex + instanceIndex][roundNr] then 
+        instanceIndex = math.floor( deterministicPersistentCounter  / 6)
+        PieceGroupIndex = (getDeterministicRandom(unitID  + level,  #buildingGroups - 1) + 1 )+instanceIndex
+        groupName = nil
+        for name, group in pairs(buildingGroups) do
+            PieceGroupIndex = PieceGroupIndex -1
+            if PieceGroupIndex == 0 then
+                groupName = name
+                break
+            end
+        end
+
+		
+        if buildingGroups[groupName][roundNr] then 
 			deterministicPersistentCounter = deterministicPersistentCounter +1
-            return true, buildingGroups[PieceGroupIndex + instanceIndex][roundNr]
+            return true, buildingGroups[groupName ][roundNr]
         else
             return false
         end
@@ -758,7 +776,7 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
 
     --echo("House_wester_nColour:"..materialColourName)
-    local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor") 
+    local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
 
     assert(floorBuildMaterial)
     assert(#floorBuildMaterial > 0)
@@ -775,7 +793,7 @@ function buildDecorateGroundLvl(materialColourName)
         xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
         local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
         attempts = maxNrAttempts
-        while not element and attempts > 0 do
+        while not element  do
             element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
             attempts = attempts -1
         end
@@ -811,7 +829,7 @@ function buildDecorateGroundLvl(materialColourName)
 
         if isBackYardWall(index) == true then
             -- BackYard
-            if chancesAre(10) < decoChances.yard then
+            if yardMaterial and chancesAre(10) < decoChances.yard then
                 rotation = getWallBackyardDeocrationRotation(index)
                 yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
                 if yardDeco then
@@ -834,14 +852,14 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     assert(Level)
     --assert(#buildMaterial >0 )
 
-    local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Wall"}, {"Deco"})  
-    local WindowDecoMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
+    --local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Wall"}, {"Deco"})  
+    --local WindowDecoMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
     local yardMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {})
     local streetWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Street", "Wall"}, {})
-	assert(#WindowDecoMaterial > 0)
-	assert(#WindowWallMaterial  > 0)
-	assert(#yardMaterial > 0)
-	assert(#streetWallMaterial > 0)
+	--assert(#WindowDecoMaterial > 0)
+	--assert(#WindowWallMaterial  > 0)
+
+	--assert(#streetWallMaterial > 0)
 
     if string.lower(materialGroupName) == string.lower("office") then
         WindowWallMaterial = {}
@@ -849,7 +867,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Industrial"})
     end
 
-    echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
+    --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
 
     countElements = 0
 
@@ -889,7 +907,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 -- echo("Adding Element to level"..Level)
                 ToShowTable[#ToShowTable + 1] = element
 
-                if chancesAre(10) < decoChances.windowwall then
+--[[                if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     -- echo("Adding Window decoration to"..Level)
                     WindowWallMaterial, Window =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowWallMaterial, 0, materialGroupName)
@@ -906,7 +924,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
                 end
 
-                end
+                end--]]
 
                 if countElements == 24 then
                     return materialGroupName, buildMaterial
@@ -981,7 +999,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
     
     if attempts == 0 then 
-        echo(getScriptName() .. "decorateBackYard: element selection failed for "..buildMaterial)
+        echo(getScriptName() .. "decorateBackYard: element selection failed for ".. toString(buildMaterial))
         return buildMaterial
     end
 
@@ -1239,7 +1257,7 @@ function buildBuilding()
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Floor", "Deco"})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
-        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+      -- _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
