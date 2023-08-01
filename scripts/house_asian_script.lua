@@ -110,6 +110,7 @@ deterministicPersistentCounter= 0
 --TODO check buildingGroups has material Dimensions
 --TODO check buildMaterials are used elsewhere and its flat
 function isInPositionSequenceGetPieceID(roundNr, level)
+	if not hasUnitSequentialElements(unitID) then return false end
 	maxIntervallLength = 6
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundnr "); return false end
@@ -126,7 +127,7 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	end
 	
 	--lengthwise
-	if Direction == "l"  and hasUnitSequentialElements(unitID) then
+	if Direction == "l"  then
 		--TODO how to get deterministic random lengthwise - currently once per level 
         PieceGroupIndex = getDeterministicRandom(unitID  + level,  count(buildingGroups) - 1) + 1
 		instanceIndex = math.floor( deterministicPersistentCounter  / 6)
@@ -475,7 +476,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
     assert(buildMaterial[1])
 
     roundNr = convertIndexToRoundNr(index)
-	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, z) 
+	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level) 
 
 	if isInRoundNr and piecenum and not AlreadyUsedPiece[piecenum] then
         if MapPieceIDName[piecenum] then
@@ -758,10 +759,10 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
 
     --echo("House_wester_nColour:"..materialColourName)
-    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName) 
+    local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor") 
 
-    assert(buildMaterial)
-    assert(#buildMaterial > 0)
+    assert(floorBuildMaterial)
+    assert(#floorBuildMaterial > 0)
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -773,10 +774,10 @@ function buildDecorateGroundLvl(materialColourName)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
 
         xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-        local element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
+        local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
         attempts = maxNrAttempts
         while not element and attempts > 0 do
-            element = getRandomBuildMaterial(buildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
+            element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
             attempts = attempts -1
         end
 
@@ -787,7 +788,7 @@ function buildDecorateGroundLvl(materialColourName)
 
         if element then
             countElements = countElements + 1
-            buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+            floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
             Move(element, _x_axis, xRealLoc, 0)
             Move(element, _z_axis, zRealLoc, 0)
             rotation = getOutsideFacingRotationOfBlockFromPlan(index)
@@ -1091,7 +1092,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     for name, group in pairs(TablesOfPiecesGroups) do
         if string.find(string.lower(name), "roof") and not string.find(string.lower(name), "sub")  then
             for i=1, #group do
-                echo("Add addRoofDeocrate: group"..name )
+                --echo("Add addRoofDeocrate: group"..name )
                 roofMaterial[#roofMaterial+1] = group[i]
             end
         end
@@ -1107,7 +1108,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             attempts = maxNrAttempts
             while not element and attempts > 0 do
                 element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level," addRoofDeocrate") 
-                attempts = attempts -1
+                attempts = attempts - 1
             end
 
             if attempts == 0 then 
@@ -1235,10 +1236,10 @@ function buildBuilding()
         materialColourName = selectGroundBuildMaterial(true)
     end
 
-    local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
+    local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Floor", "Deco"})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start")
-        --_, buildMaterial = buildDecorateLvl(i, materialColourName, buildMaterial)
+        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
