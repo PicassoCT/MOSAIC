@@ -14,7 +14,6 @@ function getScriptName() return "house_asian_script.lua::" end
 
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
-boolIsCombinatorial = (maRa() == maRa()) == maRa()
 factor = 35
 heightoffset = 90
 maxNrAttempts = 2
@@ -752,7 +751,7 @@ function searchElasticWithoutMaterial(forbiddenMaterial, ...)
 end
 
 function buildDecorateGroundLvl(materialColourName)
-    echo(getScriptName()..":buildDecorateLvl")
+    echo(getScriptName()..":buildDecorateLGroundLvl")
 
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
 
@@ -794,7 +793,7 @@ function buildDecorateGroundLvl(materialColourName)
             rotation = getOutsideFacingRotationOfBlockFromPlan(index)
             Turn(element, 3, math.rad(rotation), 0)
             ToShowTable[#ToShowTable + 1] = element
-
+			echo("Placed GroundLevel element "..i)
             if countElements == 24 then
                 return materialColourName
             end        
@@ -839,6 +838,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     local WindowDecoMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
     local yardMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {})
     local streetWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Street", "Wall"}, {})
+	assert(#WindowDecoMaterial > 0)
+	assert(#WindowWallMaterial  > 0)
+	assert(#yardMaterial > 0)
+	assert(#streetWallMaterial > 0)
 
     if string.lower(materialGroupName) == string.lower("office") then
         WindowWallMaterial = {}
@@ -909,7 +912,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     return materialGroupName, buildMaterial
                 end
             end
-
+			
             if chancesAre(10) < decoChances.streetwall and
                 count(streetWallMaterial) > 0 then
                 assert(type(streetWallMaterial) == "table")
@@ -1220,25 +1223,22 @@ function buildBuilding()
         return
     end
  
-    
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
     buildingGroups = getIDGroupsForType(materialColourName)
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
-    echo("House_Asian: "..materialColourName)
+    echo("House_Asian: buildDecorateGroundLvl ended with ")
 
+    echo(getScriptName() .. "selectBase")
     selectBase(materialColourName)
     echo(getScriptName() .. "selectBackYard")
     selectBackYard(materialColourName)
-    echo(getScriptName() .. "buildDecorateGroundLvl ended")
-    if boolIsCombinatorial then
-        materialColourName = selectGroundBuildMaterial(true)
-    end
+    
 
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Floor", "Deco"})
     for i = 1, 2 do
-        echo(getScriptName() .. "buildDecorateLvl start")
+        echo(getScriptName() .. "buildDecorateLvl start "..i)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
