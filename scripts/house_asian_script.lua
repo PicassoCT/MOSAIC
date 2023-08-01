@@ -758,7 +758,7 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
 
     --echo("House_wester_nColour:"..materialColourName)
-    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {}) 
+    local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName) 
 
     assert(buildMaterial)
     assert(#buildMaterial > 0)
