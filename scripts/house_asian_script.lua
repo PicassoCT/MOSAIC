@@ -122,7 +122,7 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	Direction = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
 	--upright
 	if Direction == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
-		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  #buildingGroupsUpright - 1) + 1
+		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  #buildingGroupsUpright ) + 1
         groupName = nil
         for name, group in pairs(buildingGroupsUpright) do
             PieceGroupIndex = PieceGroupIndex -1
@@ -141,8 +141,7 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	--lengthwise
 	if Direction == "l"  then
 		--TODO how to get deterministic random lengthwise - currently once per level 
-        instanceIndex = math.floor( deterministicPersistentCounter  / 6)
-        PieceGroupIndex = (getDeterministicRandom(unitID  + level,  #buildingGroupsLength - 1) + 1 )+instanceIndex
+        PieceGroupIndex = (getDeterministicRandom(unitID  + level + deterministicPersistentCounter,  #buildingGroupsLength) + 1 ) 
         groupName = nil
         for name, group in pairs(buildingGroupsLength) do
             PieceGroupIndex = PieceGroupIndex -1
@@ -153,9 +152,9 @@ function isInPositionSequenceGetPieceID(roundNr, level)
         end
 
         if buildingGroupsLength[groupName][roundNr] then 
-			deterministicPersistentCounter = deterministicPersistentCounter +1
             return true, buildingGroupsLength[groupName ][roundNr]
         else
+			deterministicPersistentCounter = deterministicPersistentCounter + 1
             return false
         end
 	end

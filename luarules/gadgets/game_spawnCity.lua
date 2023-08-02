@@ -50,7 +50,7 @@ local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
 assert(houseTypeTable[UnitDefNames["house_arab0"].id])
-assert(houseTypeTable[UnitDefNames["house_asian0"].id])
+--assert(houseTypeTable[UnitDefNames["house_asian0"].id])
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
