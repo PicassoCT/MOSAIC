@@ -77,20 +77,25 @@ function initAllPieces()
     end
 end
 
-function getIDGroupsForType(buildingType, directionToFilter)
+function getIDGroupsForType(buildingType, ID_DirectionsToFilter)
     allMatchingGroups = {}
+	searchTerms= {}
     searchTerm = "ID_"
-    if directionToFilter then
-    	searchTerm = searchTerm..directionToFilter
+    if ID_DirectionsToFilter then
+		for i=1,#ID_DirectionsToFilter do
+			searchTerms[#searchTerms +1] = searchTerm..ID_DirectionsToFilter[i]
+		end
     end
     echo("Searching for ID Groups for type "..buildingType)
 	for groupName,v in pairs(TablesOfPiecesGroups) do
-		if buildingType and startsWith(groupName, searchTerm) then
+		for i=1,#searchTerms do
+		if buildingType and startsWith(groupName, searchTerms[i]) then
 			if string.find(groupName, buildingType) and not string.find(groupName, "Sub")then
                 echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
 				allMatchingGroups[groupName] = v
 			end
 		 end
+		end
 	end
 	return allMatchingGroups
 end
@@ -117,17 +122,17 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	Direction = IDGroupsDirection[getDeterministicRandom(unitID, 1)+1]
 	--upright
 	if Direction == "u" and getDeterministicRandom(roundNr, 3) % 2 == 0 then
-		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  #buildingGroups - 1) + 1
+		PieceGroupIndex = getDeterministicRandom(unitID  + roundNr,  #buildingGroupsUpright - 1) + 1
         groupName = nil
-        for name, group in pairs(buildingGroups) do
+        for name, group in pairs(buildingGroupsUpright) do
             PieceGroupIndex = PieceGroupIndex -1
             if PieceGroupIndex == 0 then
                 groupName = name
                 break
             end
         end
-        if buildingGroups[groupName][level]then
-            return true, buildingGroups[groupName][level]
+        if buildingGroupsUpright[groupName][level]then
+            return true, buildingGroupsUpright[groupName][level]
         else
             return false
         end
@@ -137,9 +142,9 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	if Direction == "l"  then
 		--TODO how to get deterministic random lengthwise - currently once per level 
         instanceIndex = math.floor( deterministicPersistentCounter  / 6)
-        PieceGroupIndex = (getDeterministicRandom(unitID  + level,  #buildingGroups - 1) + 1 )+instanceIndex
+        PieceGroupIndex = (getDeterministicRandom(unitID  + level,  #buildingGroupsLength - 1) + 1 )+instanceIndex
         groupName = nil
-        for name, group in pairs(buildingGroups) do
+        for name, group in pairs(buildingGroupsLength) do
             PieceGroupIndex = PieceGroupIndex -1
             if PieceGroupIndex == 0 then
                 groupName = name
@@ -147,10 +152,9 @@ function isInPositionSequenceGetPieceID(roundNr, level)
             end
         end
 
-		
-        if buildingGroups[groupName][roundNr] then 
+        if buildingGroupsLength[groupName][roundNr] then 
 			deterministicPersistentCounter = deterministicPersistentCounter +1
-            return true, buildingGroups[groupName ][roundNr]
+            return true, buildingGroupsLength[groupName ][roundNr]
         else
             return false
         end
@@ -188,7 +192,8 @@ function timeOfDay()
 end
 
 BuildDeco = {}
-buildingGroups = {}
+buildingGroupsUpright = {}
+buildingGroupsLength = {}
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -491,7 +496,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
     end
 
     assert(buildMaterial[1])
-
+	--TODO Move to total seperate function, this thing is neither random nor connected with the buildMaterial handed to the function
     roundNr = convertIndexToRoundNr(index)
 	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level) 
 
@@ -878,14 +883,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialGroupName)
         xRealLoc, zRealLoc = xLoc, zLoc
-        if partOfPlan == true then
+        if partOfPlan then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
             attempts = maxNrAttempts
             while not element and attempts > 0 do
                 element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
-                Sleep(1)
             end
             
             if attempts == 0 then 
@@ -1243,7 +1247,8 @@ function buildBuilding()
  
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
-    buildingGroups = getIDGroupsForType(materialColourName)
+    buildingGroupsUpright = getIDGroupsForType(materialColourName, {"u", "a"})
+    buildingGroupsLength = getIDGroupsForType(materialColourName, {"l","a"})
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
