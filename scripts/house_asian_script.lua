@@ -115,7 +115,7 @@ deterministicPersistentCounter= 0
 --TODO check buildMaterials are used elsewhere and its flat
 function isInPositionSequenceGetPieceID(roundNr, level)
 	if not hasUnitSequentialElements(unitID) then return false end
-	maxIntervallLength = 6
+	
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundnr "); return false end
 	
@@ -150,10 +150,15 @@ function isInPositionSequenceGetPieceID(roundNr, level)
                 break
             end
         end
-
+		
+		if buildingGroupsLength[groupName][roundNr] and inToShowDict(buildingGroupsLength[groupName][roundNr]) then
+			return false
+		end
+		
+		-- existence
         if buildingGroupsLength[groupName][roundNr] then 
-            return true, buildingGroupsLength[groupName ][roundNr]
-        else
+            return true, buildingGroupsLength[groupName][roundNr]
+        else -- non existence
 			deterministicPersistentCounter = deterministicPersistentCounter + 1
             return false
         end
@@ -253,7 +258,7 @@ function showHoloWall()
                 Hide(TablesOfPiecesGroups["HoloTile"][i])
             else
                 Show(TablesOfPiecesGroups["HoloTile"][i])
-                ToShowTable[#ToShowTable + 1] = TablesOfPiecesGroups["HoloTile"][i]
+				addToShowTable( TablesOfPiecesGroups["HoloTile"][i])
             end
         end
         return    
@@ -288,7 +293,7 @@ function showOne(T, bNotDelayd)
             if bNotDelayd and bNotDelayd == true then
                 Show(v)
             else
-                ToShowTable[#ToShowTable + 1] = v
+				addToShowTable(v)
             end
             return v
         end
@@ -312,7 +317,8 @@ function showOneOrAll(T)
     else
         assert(T)
         for num, val in pairs(T) do 
-            ToShowTable[#ToShowTable + 1] = val end
+			addToShowTable(val)
+		end
         return val
     end
 end
@@ -357,7 +363,7 @@ end
 
 function showRegPiece(pID)
     Show(pID)
-    ToShowTable[#ToShowTable + 1] = pID
+	addToShowTable(pID)
 end
 
 function selectBase(materialType) 
@@ -439,8 +445,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
         Move(Deco, _x_axis, xRealLoc, 0)
         Move(Deco, _y_axis, level * cubeDim.heigth + y_offset, 0)
         Move(Deco, _z_axis, zRealLoc, 0)
-
-        ToShowTable[#ToShowTable + 1] = Deco
+		addToShowTable(Deco)
         piecename = getPieceGroupName(Deco)
     end
 
@@ -667,6 +672,16 @@ function getElasticTable(...)
     return resulT
 end
 
+function inToShowDict(element)
+	return toShowDict[element]
+end
+
+toShowDict = {}
+function addToShowTable(element)
+	ToShowTable[#ToShowTable + 1] = element	
+	toShowDict[element] = true
+end
+
 function nameContainsMaterial(name, materialColourName)
     if not name or name == "" then
         return true, true 
@@ -814,7 +829,7 @@ function buildDecorateGroundLvl(materialColourName)
             Move(element, _z_axis, zRealLoc, 0)
             rotation = getOutsideFacingRotationOfBlockFromPlan(index)
             Turn(element, 3, math.rad(rotation), 0)
-            ToShowTable[#ToShowTable + 1] = element
+            addToShowTable(element)
 			echo("Placed GroundLevel element "..i)
             if countElements == 24 then
                 return materialColourName
@@ -908,8 +923,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
-                ToShowTable[#ToShowTable + 1] = element
-
+				addToShowTable(element)
+				
 --[[                if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     -- echo("Adding Window decoration to"..Level)
@@ -1016,8 +1031,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     pieceGroupName = getPieceGroupName(element)
 
     showSubsAnimateSpins(pieceGroupName, 1)
-
-    ToShowTable[#ToShowTable + 1] = element
+	addToShowTable(element)
 
     return buildMaterial, element
 end
@@ -1047,7 +1061,7 @@ function showOneOrAllOfTablePieceGroup(name)
   if TablesOfPiecesGroups[name] then
         showOneOrAll(TablesOfPiecesGroups[name])
     elseif pieceName_pieceNr[name..1] then
-        ToShowTable[#ToShowTable + 1] = pieceName_pieceNr[name..1]
+		addToShowTable(pieceName_pieceNr[name..1])
     end
 end
 
@@ -1150,7 +1164,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
-                ToShowTable[#ToShowTable + 1] = element
+				addToShowTable(element)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
                 if countElements == 24 then break end
@@ -1196,9 +1210,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 if not logoPiecesToHide[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end
-            
-                ToShowTable[#ToShowTable + 1] = element
-
+				addToShowTable(element)
+                
                 if vtolDeco[element] then 
                     minute=1--60
                     StartThread(vtolLoop, 
