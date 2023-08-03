@@ -850,7 +850,7 @@ function buildDecorateGroundLvl(materialColourName)
 
         if isBackYardWall(index) == true then
             -- BackYard
-            if yardMaterial and chancesAre(10) < decoChances.yard then
+            if yardMaterial and count(yardMaterial) > 0 and  chancesAre(10) < decoChances.yard then
                 rotation = getWallBackyardDeocrationRotation(index)
                 yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
                 if yardDeco then
