@@ -80,16 +80,16 @@ end
 function getIDGroupsForType(buildingType, ID_DirectionsToFilter)
     allMatchingGroups = {}
 	searchTerms= {}
-    searchTerm = "ID_"
+
     if ID_DirectionsToFilter then
 		for i=1,#ID_DirectionsToFilter do
-			searchTerms[#searchTerms +1] = searchTerm..ID_DirectionsToFilter[i]
+			searchTerms[#searchTerms +1] = ID_DirectionsToFilter[i]
 		end
     end
     echo("Searching for ID Groups for type "..buildingType)
 	for groupName,v in pairs(TablesOfPiecesGroups) do
 		for i=1,#searchTerms do
-		if buildingType and startsWith(groupName, searchTerms[i]) then
+		if buildingType and startsWith(string.lower(groupName), string.lower(searchTerms[i])) then
 			if string.find(groupName, buildingType) and not string.find(groupName, "Sub")then
                 echo("Adding id Group with name:"..groupName.." and ".. #v.." members")
 				allMatchingGroups[groupName] = v
@@ -133,7 +133,8 @@ function isInPositionSequenceGetPieceID(roundNr, level)
                 break
             end
         end
-        if buildingGroupsUpright[groupName][level]then
+
+        if groupName and buildingGroupsUpright[groupName][level] then
             return true, buildingGroupsUpright[groupName][level]
         else
             return false
@@ -1260,8 +1261,8 @@ function buildBuilding()
  
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
-    buildingGroupsUpright = getIDGroupsForType(materialColourName, {"u", "a"})
-    buildingGroupsLength = getIDGroupsForType(materialColourName, {"l","a"})
+    buildingGroupsUpright = getIDGroupsForType(materialColourName, {"ID_u", "ID_a"})
+    buildingGroupsLength = getIDGroupsForType(materialColourName, {"ID_l","ID_a"})
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
@@ -1275,7 +1276,7 @@ function buildBuilding()
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Floor", "Deco"})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
-      -- _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
