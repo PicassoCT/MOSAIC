@@ -712,8 +712,6 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
     if not mustContainTable then mustContainTable = {} end
     if not mustNotContainTable  then mustNotContainTable = {} end
     resultTable = {}
-    echo(getScriptName()..toString(mustContainTable))
-    echo(getScriptName()..toString(mustNotContainTable))
 
     materialColourName = string.lower(materialColourName)
     for nameUp,data in pairs(TablesOfPiecesGroups) do        
@@ -756,39 +754,9 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
             end
         end
     end
-    echo("getMaterialElementsContaingNotContaining:"..materialColourName.." / "..toString(mustContainTable))
     return resultTable
 end
 
-function searchElasticWithoutMaterial(forbiddenMaterial, ...)
-    local arg = arg;
-    if (not arg) then arg = {...} end
-    resulT = {}
-    for _, searchterm in pairs(arg) do
-        for k, v in pairs(TablesOfPiecesGroups) do
-            if string.find(string.lower(k), string.lower(searchterm)) and
-                string.find(string.lower(k), "sub") == nil and
-                string.find(string.lower(k), "_ncl1_") == nil then
-                boolContainsForbiddenWords = false
-                for nr, term in pairs(forbiddenMaterial) do
-                    if string.find(string.lower(k), string.lower(term)) then
-                        boolContainsForbiddenWords = true
-                    end              
-                end
-
-                if boolContainsForbiddenWords == true then break end
-
-                if TablesOfPiecesGroups[k] then
-                    for num, piecenum in pairs(TablesOfPiecesGroups[k]) do
-                        resulT[#resulT + 1] = piecenum
-                    end
-                end
-            end
-        end
-    end
-
-    return resulT
-end
 
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
@@ -832,7 +800,7 @@ function buildDecorateGroundLvl(materialColourName)
             Move(element, _z_axis, zRealLoc, 0)
             rotation = getOutsideFacingRotationOfBlockFromPlan(index)
             Turn(element, 3, math.rad(rotation), 0)
-            addToShowTable(element, xLoc, zLoc,i)
+            addToShowTable(element, xLoc, zLoc, i)
 			echo("Placed GroundLevel element "..i)
             if countElements == 24 then
                 return materialColourName
