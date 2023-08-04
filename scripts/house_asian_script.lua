@@ -133,11 +133,12 @@ function isInPositionSequenceGetPieceID(roundNr, level)
                 break
             end
         end
-
-        if groupName and buildingGroupsUpright[groupName][level] then
+	
+        if groupName and buildingGroupsUpright[groupName] then
+	    return false
+	end
+        if buildingGroupsUpright[groupName][level] then
             return true, buildingGroupsUpright[groupName][level]
-        else
-            return false
         end
 	end
 	
@@ -145,7 +146,7 @@ function isInPositionSequenceGetPieceID(roundNr, level)
 	if Direction == "l"  then
         PieceGroupIndex = (getDeterministicRandom(unitID  + level + deterministicPersistentCounter,  #buildingGroupsLength) + 1 ) 
   
-        for name, group in pairs(buildingGroupsLength) do
+        for name, group in pairs(buildingGrousLength) do
             PieceGroupIndex = PieceGroupIndex -1
             if PieceGroupIndex == 0 then
                 groupName = name
@@ -161,8 +162,7 @@ function isInPositionSequenceGetPieceID(roundNr, level)
         if buildingGroupsLength[groupName][roundNr] then 
             return true, buildingGroupsLength[groupName][roundNr]
         else -- non existence
-			deterministicPersistentCounter = deterministicPersistentCounter + 1
-            return false
+		deterministicPersistentCounter = deterministicPersistentCounter + 1
         end
 	end
 
