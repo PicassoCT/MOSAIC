@@ -447,7 +447,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
         Move(Deco, _x_axis, xRealLoc, 0)
         Move(Deco, _y_axis, level * cubeDim.heigth + y_offset, 0)
         Move(Deco, _z_axis, zRealLoc, 0)
-		addToShowTable(Deco)
+		addToShowTable(Deco, xLoc, zLoc)
         piecename = getPieceGroupName(Deco)
     end
 
@@ -497,7 +497,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
     end
     total = count(buildMaterial)
     if total == 0 and #buildMaterial == 0 then
-      echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
+      echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..oame)
       return
     end
 
@@ -679,7 +679,8 @@ function inToShowDict(element)
 end
 
 toShowDict = {}
-function addToShowTable(element)
+function addToShowTable(element, indeX, indeY, addition)
+	echo("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".. toString(addition))
 	ToShowTable[#ToShowTable + 1] = element	
 	toShowDict[element] = true
 end
@@ -831,7 +832,7 @@ function buildDecorateGroundLvl(materialColourName)
             Move(element, _z_axis, zRealLoc, 0)
             rotation = getOutsideFacingRotationOfBlockFromPlan(index)
             Turn(element, 3, math.rad(rotation), 0)
-            addToShowTable(element)
+            addToShowTable(element, xLoc, zLoc,i)
 			echo("Placed GroundLevel element "..i)
             if countElements == 24 then
                 return materialColourName
@@ -925,7 +926,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
-				addToShowTable(element)
+				addToShowTable(element, xLoc, zLoc) -- Todo Smart Argument grab, argument grab via NN the best available match.
 				
 --[[                if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
@@ -1033,7 +1034,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     pieceGroupName = getPieceGroupName(element)
 
     showSubsAnimateSpins(pieceGroupName, 1)
-	addToShowTable(element)
+	addToShowTable(element, xLoc, zLoc)
 
     return buildMaterial, element
 end
@@ -1166,7 +1167,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
-				addToShowTable(element)
+				addToShowTable(element, xLoc, zLoc)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
                 if countElements == 24 then break end
@@ -1212,7 +1213,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 if not logoPiecesToHide[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end
-				addToShowTable(element)
+				addToShowTable(element, xLoc, zLoc)
                 
                 if vtolDeco[element] then 
                     minute=1--60
