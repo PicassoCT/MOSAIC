@@ -547,7 +547,7 @@ if maRa() == true then
 end
     
 
-boolOpenBuilding = maRa() == true
+boolOpenBuilding = maRa()
 
 -- x:0-6 z:0-6
 function getLocationInPlan(index, materialColourName)
@@ -792,12 +792,12 @@ end
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
-    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Yard"})
+    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Deco", "Floor"}, {"Yard"})
 
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
 
     --echo("House_wester_nColour:"..materialColourName)
-    local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Floor"}) 
+    local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Deco", "Yard"}) 
 
     assert(floorBuildMaterial)
     assert(#floorBuildMaterial > 0)
