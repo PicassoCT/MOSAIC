@@ -683,49 +683,54 @@ function nameContainsMaterial(name, materialColourName)
     return boolContainsMaterialName, boolContainsNoOtherName
 end
 
+function nameIsMajorGroup(name)
+    return not(string.find(name, "sub") or string.find(name, "spin") or string.find(name, "base"))
+    -- body
+end
+
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
     if not mustContainTable then mustContainTable = {} end
     if not mustNotContainTable  then mustNotContainTable = {} end
     resultTable = {}
 
     materialColourName = string.lower(materialColourName)
-    for nameUp,data in pairs(PureTablesOfPiecesGroups) do        
-        name = string.lower(nameUp)
+    for nameUp,data in pairs(TablesOfPiecesGroups) do        
+        local name = string.lower(nameUp)
+        boolIsMajorGroup = nameIsMajorGroup(name)
+        boolFullfilledConditions= true
+        boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
-            boolFullfilledConditions= true
-            boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
+        if boolContainsMaterialName == true or boolContainsNoOtherName == true and boolIsMajorGroup == true then
+            if mustContainTable then
+                for i=1, #mustContainTable do
+                    if string.find(name, string.lower(mustContainTable[i])) == nil then
+                        boolFullfilledConditions = false
+                        break
+                    end  
+                end
+            end
 
-            if boolContainsMaterialName == true or boolContainsNoOtherName == true then
-                if mustContainTable then
-                    for i=1, #mustContainTable do
-                        if string.find(name, string.lower(mustContainTable[i])) == nil then
-                            boolFullfilledConditions = false
-                            break
-                        end  
+            if  boolFullfilledConditions == true then
+                if mustNotContainTable then
+                    for j=1, #mustNotContainTable do
+                        if string.find(name, string.lower(mustNotContainTable[j])) then
+                        boolFullfilledConditions = false
+                        break
+                        end
                     end
                 end
 
-                if  boolFullfilledConditions == true then
-                    if mustNotContainTable then
-                        for j=1, #mustNotContainTable do
-                            if string.find(name, string.lower(mustNotContainTable[j])) then
-                            boolFullfilledConditions = false
-                            break
-                            end
+                if boolFullfilledConditions == true then
+                    if type(TablesOfPiecesGroups[nameUp]) == "table" then
+                        for h=1, #TablesOfPiecesGroups[nameUp] do
+                            resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp][h]
                         end
-                    end
-
-                    if boolFullfilledConditions == true then
-                        if type(TablesOfPiecesGroups[nameUp]) == "table" then
-                            for h=1, #TablesOfPiecesGroups[nameUp] do
-                                resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp][h]
-                            end
-                        else
-                          resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
-                        end
+                    else
+                      resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
                     end
                 end
             end
+            
     end
     return resultTable
 end
