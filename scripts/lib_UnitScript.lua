@@ -1722,6 +1722,20 @@ function toBool(val)
     return false
 end
 
+function getNthDictElement(Dict, nr)
+    index = 0
+    for key, value in pairs(Dict) do
+        index = index + 1
+        if index ==  nr then
+            return key, value
+        end
+    end
+
+    if nr > count(Dict) then
+        return getNthDictElement(Dict, nr % count(Dict))
+    end     
+end     
+
 function axToKey(axis)
     if axis == 1 then return "x" end
     if axis == 2 then return "y" end
@@ -4298,10 +4312,10 @@ function getSafeRandom(T, default)
     if not T then return default end 
     countElements = count(T)
 
-    if countElements < 1 then return default end
+    if countElements < 1 then return default, 1 end
     if countElements < 2 then
         for k,v in pairs(T) do
-            return v
+            return v, k
         end
     end
 
@@ -4311,7 +4325,8 @@ function getSafeRandom(T, default)
         table.insert(keyset, k)
     end
 -- now you can reliably return a random key
-    return T[keyset[math.random(#keyset)]]
+    rkey = keyset[math.random(#keyset)]
+    return T[rkey], rkey
 end
 
 function getRandomElementRing(T)

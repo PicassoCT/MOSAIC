@@ -16,8 +16,6 @@ function stats(...)
     for i = 1, #arg, 2 do echo(arg[i] .. " is " .. toString(arg[i + 1])) end
 end
 
-
-
 function recursiveCheckTable(Tables, maxNrEntry, boolListEntryNr)
     local count = 0
     for key, entry in pairs(Tables) do
