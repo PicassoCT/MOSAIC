@@ -19,9 +19,11 @@ heightoffset = 90
 maxNrAttempts = 20
 
 BuildDeco = {}
-buildingGroupsUpright = {}
-buildingGroupsLength = {}
-buildingGroupsLengthRoof = {}
+
+buildingGroupsFloor = {Upright = {}, Length = {}}
+buildingGroupsLevel = {Upright = {}, Length = {}}
+buildingGroupsRoof = {Upright = {}, Length = {}}
+
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
@@ -81,43 +83,65 @@ function initAllPieces()
     end
 end
 
-function getGroupsByNameDict(buildingType, mustContainTable, mustNotContainTable)
+function getIDGroupsForType(buildingType, MustContainOne, MustContainAll, MustContainNone)
+	MustContainOne = MustContainOne or {}
+	MustContainAll = MustContainAll or {}
+	MustContainNone = MustContainNone or {}
+
     allMatchingGroups = {}
-	searchTerms= {}
-
-    NotSearchTerms= {"sub","spin"}
-    if mustNotContainTable then
-        for i=1, #mustNotContainTable do
-            NotSearchTerms[#NotSearchTerms +1] = string.lower(mustNotContainTable[i])
-        end
+    MustContainAtLeastOneTerm = {}
+	MustContainAllSearchTerms= {}
+    MustNotContainSearchTerms= {sub = true, spin = true}
+	
+    for i=1, #MustContainOne do
+        MustContainAtLeastOneTerm[string.lower(MustContainOne[i])] =  true
     end
 
-    if mustContainTable then
-		for i=1,#mustContainTable do
-			searchTerms[#searchTerms +1] = string.lower(mustContainTable[i])
+    for i=1, #MustContainNone do
+        MustNotContainSearchTerms[string.lower(MustContainNone[i])] =  true
+    end
+
+    if MustContainAll then
+		for i=1,#MustContainAll do
+			MustContainAllSearchTerms[string.lower(MustContainAll[i])] = true
 		end
+		MustContainAllSearchTerms[string.lower(buildingType)] = true
     end
 
-    searchTerms[#searchTerms +1] = string.lower(buildingType)
     echo("Searching for ID Groups for type "..buildingType)
 	for groupName, v in pairs(TablesOfPiecesGroups) do
         groupNameLower = string.lower(groupName)
-        boolForbiddenWordFound= false
-        for k=1, #NotSearchTerms do
-            if string.find(groupNameLower, NotSearchTerms[k]) then 
-                boolForbiddenWordFound = true
-            end
-        end
-        if boolForbiddenWordFound == false then
-            if string.find(groupNameLower, buildingType)  then
-                for i=1,#searchTerms do
-                    if string.find(groupNameLower, searchTerms[i]) then
-                    echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
-                        allMatchingGroups[groupName] = v
-                    end        
-                end
-            end
-        end
+
+        boolFoundAtLeastOne = false
+		for keyword,_ in pairs(MustContaintAtLeastOneTerm) do
+			if string.find(groupNameLower, keyword) then
+				boolFoundAtLeastOne = true
+				break
+			end
+		end		
+		if not boolFoundAtLeastOne then break end
+
+		boolContainedAll = true
+		for keyword,_ in pairs(MustContainAllSearchTerms) do
+			if not string.find(groupNameLower, keyword) then
+				boolContainedAll = false
+				break
+			end
+		end
+		if not boolContainedAll then break end
+
+		boolContainedForbidden = false
+		for keyword,_ in pairs(MustNotContainSearchTerms) do
+			if not string.find(groupNameLower, keyword) then
+				boolContainedForbidden = true
+				break
+			end
+		end
+
+		if boolContainedForbidden then break end
+
+ 		echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
+        allMatchingGroups[groupName] = v        
     end
 
 	return allMatchingGroups
@@ -133,53 +157,54 @@ deterministicPersistentCounter= 0
 deterministicPersistentIndex= 1
 --TODO check buildingGroups has material Dimensions
 --TODO check buildMaterials are used elsewhere and its flat
-function isInPositionSequenceGetPieceID(roundNr, level)
+function isInPositionSequenceGetPieceID(roundNr, level, buildingGroups)
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundNr "); return false end
 	level= level +1
 	Direction = IDGroupsDirection[(unitID %2) +1]
 	groupName = nil
 	--upright
-
-	if Direction == "u"  then
-		--if getDeterministicRandom(unitID+roundNr, 3) % 2 == 0 then return false end
-        maxIDGroups = count(buildingGroupsUpright)
-        assert(maxIDGroups > 1, toString(buildingGroupsUpright))
-		PieceGroupIndex = getDeterministicRandom(unitID + roundNr, maxIDGroups) + 1
-        groupName, group = getNthDictElement(buildingGroupsUpright, PieceGroupIndex)
-        echo("PieceGroupIndex:"..PieceGroupIndex)
-	    if  not groupName or not group or not group[level] then
-            return false
-        else
-            return true, group[level]
-        end
-	end
-	
-	--lengthwise
-	if Direction == "l"  then
-        maxIDGroups = count(buildingGroupsLength)
-        assert(maxIDGroups > 1)
-        PieceGroupIndex = (getDeterministicRandom(unitID + deterministicPersistentCounter, maxIDGroups) + 1 ) 
-        echo("PieceGroupIndex:"..PieceGroupIndex)
-        groupName, group = getNthDictElement(buildingGroupsLength, PieceGroupIndex)
-        
-        if  not groupName or not group or not group[deterministicPersistentIndex] then
-            deterministicPersistentCounter = deterministicPersistentCounter + 1
-            deterministicPersistentIndex= 1
-            return false
-        end
-
-		if group[deterministicPersistentIndex] and inToShowDict(group[deterministicPersistentIndex]) then
-            deterministicPersistentIndex = deterministicPersistentIndex +1
-            return false
+	if buildingGroups then
+		if Direction == "u"  then
+			--if getDeterministicRandom(unitID+roundNr, 3) % 2 == 0 then return false end
+			maxIDGroups = count(buildingGroups.Upright)
+			assert(maxIDGroups > 1, toString(buildingGroups.Upright))
+			PieceGroupIndex = getDeterministicRandom(unitID + roundNr, maxIDGroups) + 1
+			groupName, group = getNthDictElement(buildingGroups.Upright, PieceGroupIndex)
+			echo("PieceGroupIndex:"..PieceGroupIndex)
+			if  not groupName or not group or not group[level] then
+				return false
+			else
+				return true, group[level]
+			end
 		end
+		
+		--lengthwise
+		if Direction == "l"  then
+			maxIDGroups = count(buildingGroups.Length)
+			assert(maxIDGroups > 1)
+			PieceGroupIndex = (getDeterministicRandom(unitID + deterministicPersistentCounter, maxIDGroups) + 1 ) 
+			echo("PieceGroupIndex:"..PieceGroupIndex)
+			groupName, group = getNthDictElement(buildingGroups.Length, PieceGroupIndex)
+			
+			if  not groupName or not group or not group[deterministicPersistentIndex] then
+				deterministicPersistentCounter = deterministicPersistentCounter + 1
+				deterministicPersistentIndex= 1
+				return false
+			end
 
-		-- existence
-        if group[deterministicPersistentIndex] then 
-            value =group[deterministicPersistentIndex]
-            deterministicPersistentIndex = deterministicPersistentIndex +1
-            return true, value, deterministicPersistentIndex
-        end
+			if group[deterministicPersistentIndex] and inToShowDict(group[deterministicPersistentIndex]) then
+				deterministicPersistentIndex = deterministicPersistentIndex +1
+				return false
+			end
+
+			-- existence
+			if group[deterministicPersistentIndex] then 
+				value =group[deterministicPersistentIndex]
+				deterministicPersistentIndex = deterministicPersistentIndex +1
+				return true, value, deterministicPersistentIndex
+			end
+		end
 	end
 
 	return false
@@ -497,7 +522,7 @@ function notString(boolHigan)
     return " not "
 end
 
-function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context)
+function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
     --echo("Getting  Random Material")
     if not buildMaterial then
         echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
@@ -517,7 +542,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, context
     roundNr = convertIndexToRoundNr(index)
     if roundNr then
         echo("Derived ".. toString(roundNr).." from "..toString(index))
-    	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level) 
+    	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, buildingGroups) 
 
     	if isInRoundNr and piecenum then
             echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
@@ -752,11 +777,8 @@ end
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
-    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Deco", "Floor"}, {"Yard"})
-
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
-
-    --echo("House_wester_nColour:"..materialColourName)
+    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Deco", "Floor"}, {"Yard"})
     local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Deco", "Yard"}) 
     boolFoundSomething= false
     foreach(floorBuildMaterial,
@@ -778,10 +800,10 @@ function buildDecorateGroundLvl(materialColourName)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
         if partOfPlan then 
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
+            local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor)
             attempts = maxNrAttempts
             while not element  do
-                element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, "buildDecorateGroundLvl" )
+                element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor )
                 attempts = attempts -1
             end
 
@@ -869,10 +891,10 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
+            local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel )
             attempts = maxNrAttempts
             while not element and attempts > 0 and not inToShowDict(element) do
-                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, "buildDecorateLvl" )
+                element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel)
             end
             
             if attempts == 0 then 
@@ -974,12 +996,12 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc, Level,"decorateBackYard" )
+    local element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc, Level )
     attempts = maxNrAttempts
 
 
     while not element and attempts > 0 do
-        element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc,  Level,"decorateBackYard" )
+        element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc,  Level )
         Sleep(1)
         attempts = attempts -1
     end
@@ -1152,10 +1174,10 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level, "addRoofDeco") 
+            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level) 
             attempts = maxNrAttempts
             while not element and attempts > 0 do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level, "addRoofDeco") 
+                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level) 
                 attempts = attempts -1
             end
 
@@ -1228,11 +1250,11 @@ function buildBuilding()
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
     materialColourName = "pod"
-    buildingGroupsUpright = getGroupsByNameDict(materialColourName, {"ID_u", "ID_a"}, {"Roof", "Base", "Deco"})
-    buildingGroupsLength = getGroupsByNameDict(materialColourName, {"ID_l","ID_a"}, {"Roof","Base", "Deco"})
-    buildingGroupsLengthRoof = getGroupsByNameDict(materialColourName, {"ID_l","ID_a"}, {"Wall", "Floor", "Base", "Deco"})
-    assert(buildingGroupsUpright["ID_a20_Industrial_Pod_Wall"])
-    assert(buildingGroupsLength["ID_a20_Industrial_Pod_Wall"])
+    buildingGroupsFloor.Upright = getIDGroupsForType(materialColourName, {"ID_u", "ID_a"},  {"Floor"}})
+    buildingGroupsFloor.Length = getIDGroupsForType(materialColourName, {"ID_l", "ID_a"},  {"Floor"})
+	buildingGroupsLevel.Upright = getIDGroupsForType(materialColourName, {"ID_u", "ID_a",{}, {"Floor"}})
+    buildingGroupsLevel.Length = getIDGroupsForType(materialColourName, {"ID_l", "ID_a"}, {},{"Floor"})
+	
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
