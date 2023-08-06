@@ -21,12 +21,13 @@ maxNrAttempts = 20
 BuildDeco = {}
 buildingGroupsUpright = {}
 buildingGroupsLength = {}
+buildingGroupsLengthRoof = {}
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 local cubeDim = {
-    length = factor * 23,
-    heigth = factor * 14.84 + heightoffset,
+    length = factor * 22,
+    heigth = factor * 14.44 + heightoffset,
     roofHeigth = 50
 }
 
@@ -70,7 +71,7 @@ logoPieces = {
             }
 
 MapPieceIDName = Spring.GetUnitPieceList(unitID)
-materialChoiceTable = {"Pod", "Industrial", "Trad", "Office"}
+materialChoiceTable = {"pod", "industrial", "trad", "office"}
 materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 
 function initAllPieces()
@@ -80,23 +81,42 @@ function initAllPieces()
     end
 end
 
-function getIDGroupsForType(buildingType, ID_DirectionsToFilter)
+function getGroupsByNameDict(buildingType, mustContainTable, mustNotContainTable)
     allMatchingGroups = {}
 	searchTerms= {}
 
-    if ID_DirectionsToFilter then
-		for i=1,#ID_DirectionsToFilter do
-			searchTerms[#searchTerms +1] = string.lower(ID_DirectionsToFilter[i])
+    NotSearchTerms= {"sub","spin"}
+    if mustNotContainTable then
+        for i=1, #mustNotContainTable do
+            NotSearchTerms[#NotSearchTerms +1] = string.lower(mustNotContainTable[i])
+        end
+    end
+
+    if mustContainTable then
+		for i=1,#mustContainTable do
+			searchTerms[#searchTerms +1] = string.lower(mustContainTable[i])
 		end
     end
+
+    searchTerms[#searchTerms +1] = string.lower(buildingType)
     echo("Searching for ID Groups for type "..buildingType)
-	for groupName,v in pairs(PureTablesOfPiecesGroups) do
+	for groupName, v in pairs(TablesOfPiecesGroups) do
         groupNameLower = string.lower(groupName)
-        for i=1,#searchTerms do
-            if string.find(groupNameLower, searchTerms[i]) then
-            echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
-                allMatchingGroups[groupName] = v
-            end        
+        boolForbiddenWordFound= false
+        for k=1, #NotSearchTerms do
+            if string.find(groupNameLower, NotSearchTerms[k]) then 
+                boolForbiddenWordFound = true
+            end
+        end
+        if boolForbiddenWordFound == false then
+            if string.find(groupNameLower, buildingType)  then
+                for i=1,#searchTerms do
+                    if string.find(groupNameLower, searchTerms[i]) then
+                    echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
+                        allMatchingGroups[groupName] = v
+                    end        
+                end
+            end
         end
     end
 
@@ -193,15 +213,8 @@ function timeOfDay()
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
 
-PureTablesOfPiecesGroups = {}
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    for name, group in pairs(TablesOfPiecesGroups) do
-        sName = string.lower(name)
-        if (string.find(sName, "sub") or string.find(sName, "spin") or string.find(sName,"base")) == false then
-            PureTablesOfPiecesGroups[name] = group
-        end
-    end
 
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
@@ -545,7 +558,7 @@ boolOpenBuilding = maRa()
 
 -- x:0-6 z:0-6
 function getLocationInPlan(index, materialColourName)
-    if materialColourName == "Office" and boolOpenBuilding and NotInPlanIndeces[index] then return false, 0,0 end
+    if materialColourName == "office" and boolOpenBuilding and NotInPlanIndeces[index] then return false, 0,0 end
 
     if index < 7 then return true, (index - 1), 0 end
 
@@ -703,7 +716,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
         if boolContainsMaterialName == true or boolContainsNoOtherName == true and boolIsMajorGroup == true then
             if mustContainTable then
                 for i=1, #mustContainTable do
-                    if string.find(name, string.lower(mustContainTable[i])) == nil then
+                    if not string.find(name, string.lower(mustContainTable[i])) == nil then
                         boolFullfilledConditions = false
                         break
                     end  
@@ -714,8 +727,8 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                 if mustNotContainTable then
                     for j=1, #mustNotContainTable do
                         if string.find(name, string.lower(mustNotContainTable[j])) then
-                        boolFullfilledConditions = false
-                        break
+                            boolFullfilledConditions = false
+                            break
                         end
                     end
                 end
@@ -730,7 +743,7 @@ function getMaterialElementsContaingNotContaining(materialColourName, mustContai
                     end
                 end
             end
-            
+        end  
     end
     return resultTable
 end
@@ -745,9 +758,15 @@ function buildDecorateGroundLvl(materialColourName)
 
     --echo("House_wester_nColour:"..materialColourName)
     local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Deco", "Yard"}) 
-
-    assert(floorBuildMaterial)
-    assert(#floorBuildMaterial > 0)
+    boolFoundSomething= false
+    foreach(floorBuildMaterial,
+        function(id)
+            if string.find(MapPieceIDName[id], "ID_a20_Industrial_Pod_Wall") then 
+                boolFoundSomething = true
+            end
+        end
+        )
+    assert(boolFoundSomething == true)
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -784,10 +803,9 @@ function buildDecorateGroundLvl(materialColourName)
                     return materialColourName
                 end        
 
-                if chancesAre(10) < decoChances.street then
+                if false and chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-                    StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                          StreetDecoMaterial, 0, materialColourName)
+                    StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
                         showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
@@ -795,7 +813,7 @@ function buildDecorateGroundLvl(materialColourName)
                 end
             end  
 
-            if isBackYardWall(index) == true then
+            if false and isBackYardWall(index) == true then
                 -- BackYard
                 if yardMaterial and yardMaterial[1] and count(yardMaterial) > 0 and  chancesAre(10) < decoChances.yard then
                     rotation = getWallBackyardDeocrationRotation(index)
@@ -834,7 +852,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     if string.lower(materialGroupName) == string.lower("office") then
         WindowWallMaterial = {}
         WindowDecoMaterial = {}
-        yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Industrial", "Base"})
+        yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"industrial", "base"})
     end
 
     --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
@@ -900,7 +918,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 end
             end
 			
-            if chancesAre(10) < decoChances.streetwall and
+            if false and chancesAre(10) < decoChances.streetwall and
                 count(streetWallMaterial) > 0 then
                 assert(type(streetWallMaterial) == "table")
                 assert(index)
@@ -1072,7 +1090,7 @@ pieceNameMap = Spring.GetUnitPieceList( unitID )
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     echo(getScriptName()..":-->addRoofDeocrate")
     countElements = 0
-    if materialColourName == "Office" and maRa() then
+    if materialColourName == "office" and maRa() then
         decoChances.roof = 0.65 
     end
     assert(Level)
@@ -1210,8 +1228,11 @@ function buildBuilding()
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
     materialColourName = "pod"
-    buildingGroupsUpright = getIDGroupsForType(materialColourName, {"ID_u", "ID_a"})
-    buildingGroupsLength = getIDGroupsForType(materialColourName, {"ID_l","ID_a"})
+    buildingGroupsUpright = getGroupsByNameDict(materialColourName, {"ID_u", "ID_a"}, {"Roof", "Base", "Deco"})
+    buildingGroupsLength = getGroupsByNameDict(materialColourName, {"ID_l","ID_a"}, {"Roof","Base", "Deco"})
+    buildingGroupsLengthRoof = getGroupsByNameDict(materialColourName, {"ID_l","ID_a"}, {"Wall", "Floor", "Base", "Deco"})
+    assert(buildingGroupsUpright["ID_a20_Industrial_Pod_Wall"])
+    assert(buildingGroupsLength["ID_a20_Industrial_Pod_Wall"])
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
@@ -1219,7 +1240,7 @@ function buildBuilding()
     echo(getScriptName() .. "selectBase")
     selectBase(materialColourName)
     echo(getScriptName() .. "selectBackYard")
-    selectBackYard(materialColourName)
+    --selectBackYard(materialColourName)
     
 
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Floor","Roof", "Deco", "Base"})
@@ -1232,7 +1253,7 @@ function buildBuilding()
     materialTable = getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         echo(getScriptName() .. "addRoofDeocrate started")
-        addRoofDeocrate(3, materialTable, materialColourName)
+       -- addRoofDeocrate(3, materialTable, materialColourName)
     end
     if randChance(25) then
         showHoloWall()
