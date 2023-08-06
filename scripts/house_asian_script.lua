@@ -83,7 +83,7 @@ function initAllPieces()
     end
 end
 
-function getIDGroupsForType(buildingType, MustContainOne, MustContainAll, MustContainNone)
+function getIDGroupsForType( MustContainOne, MustContainAll, MustContainNone)
 	MustContainOne = MustContainOne or {}
 	MustContainAll = MustContainAll or {}
 	MustContainNone = MustContainNone or {}
@@ -91,7 +91,7 @@ function getIDGroupsForType(buildingType, MustContainOne, MustContainAll, MustCo
     allMatchingGroups = {}
     MustContainAtLeastOneTerm = {}
 	MustContainAllSearchTerms= {}
-    MustNotContainSearchTerms= {sub = true, spin = true}
+    MustNotContainSearchTerms= {["sub"] = true, ["spin"] = true ["base"] = true }
 	
     for i=1, #MustContainOne do
         MustContainAtLeastOneTerm[string.lower(MustContainOne[i])] =  true
@@ -101,25 +101,21 @@ function getIDGroupsForType(buildingType, MustContainOne, MustContainAll, MustCo
         MustNotContainSearchTerms[string.lower(MustContainNone[i])] =  true
     end
 
-    if MustContainAll then
-		for i=1,#MustContainAll do
-			MustContainAllSearchTerms[string.lower(MustContainAll[i])] = true
-		end
-		MustContainAllSearchTerms[string.lower(buildingType)] = true
-    end
+    for i=1,#MustContainAll do
+		MustContainAllSearchTerms[string.lower(MustContainAll[i])] = true
+	end
 
-    echo("Searching for ID Groups for type "..buildingType)
 	for groupName, v in pairs(TablesOfPiecesGroups) do
         groupNameLower = string.lower(groupName)
 
         boolFoundAtLeastOne = false
-		for keyword,_ in pairs(MustContaintAtLeastOneTerm) do
+		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
 			if string.find(groupNameLower, keyword) then
 				boolFoundAtLeastOne = true
 				break
 			end
 		end		
-		if not boolFoundAtLeastOne then break end
+		if boolFoundAtLeastOne == false then break end
 
 		boolContainedAll = true
 		for keyword,_ in pairs(MustContainAllSearchTerms) do
@@ -128,7 +124,7 @@ function getIDGroupsForType(buildingType, MustContainOne, MustContainAll, MustCo
 				break
 			end
 		end
-		if not boolContainedAll then break end
+		if boolContainedAll == false then break end
 
 		boolContainedForbidden = false
 		for keyword,_ in pairs(MustNotContainSearchTerms) do
@@ -138,7 +134,7 @@ function getIDGroupsForType(buildingType, MustContainOne, MustContainAll, MustCo
 			end
 		end
 
-		if boolContainedForbidden then break end
+		if boolContainedForbidden == true then break end
 
  		echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
         allMatchingGroups[groupName] = v        
@@ -524,6 +520,9 @@ end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
     --echo("Getting  Random Material")
+    if buildingGroups then
+        assert(type(buildingGroups)== "table")
+    end
     if not buildMaterial then
         echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
@@ -1250,10 +1249,14 @@ function buildBuilding()
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
     materialColourName = "pod"
-    buildingGroupsFloor.Upright = getIDGroupsForType(materialColourName, {"ID_u", "ID_a"},  {"Floor"}})
-    buildingGroupsFloor.Length = getIDGroupsForType(materialColourName, {"ID_l", "ID_a"},  {"Floor"})
-	buildingGroupsLevel.Upright = getIDGroupsForType(materialColourName, {"ID_u", "ID_a",{}, {"Floor"}})
-    buildingGroupsLevel.Length = getIDGroupsForType(materialColourName, {"ID_l", "ID_a"}, {},{"Floor"})
+    buildingGroupsFloor.Upright = getIDGroupsForType( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"})
+    buildingGroupsFloor.Length = getIDGroupsForType( {"ID_l", "ID_a"},  {"Floor", materialColourName}, {"Roof"})
+	buildingGroupsLevel.Upright = getIDGroupsForType({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
+    buildingGroupsLevel.Length = getIDGroupsForType( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
+    assert(count( buildingGroupsLevel.Length)> 0)
+    assert(count( buildingGroupsLevel.Upright)> 0)
+    assert(count( buildingGroupsFloor.Upright)> 0)
+    assert(count( buildingGroupsFloor.Length)> 0)
 	
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
@@ -1268,7 +1271,7 @@ function buildBuilding()
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Floor","Roof", "Deco", "Base"})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
-        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        --_, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
