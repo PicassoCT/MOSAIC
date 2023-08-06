@@ -589,7 +589,8 @@ end
 function showOneOfUnit(id)
     if not unitID then unitID = id end
     pieceList = Spring.GetUnitPieceList(unitID)
-    nrID = piece(getSafeRandom(pieceList,pieceList[1]))
+
+    nrID = piece(pieceList[math.random(1,#pieceList)])
     Show(nrID)
 end
 
