@@ -108,33 +108,35 @@ function getIDGroupsForType( MustContainOne, MustContainAll, MustContainNone)
 	for groupName, v in pairs(TablesOfPiecesGroups) do
         groupNameLower = string.lower(groupName)
 
-        boolFoundAtLeastOne = false
-		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
-			if string.find(groupNameLower, keyword) then
-				boolFoundAtLeastOne = true
-				break
-			end
-		end		
-		if boolFoundAtLeastOne == false then break end
-
-		boolContainedAll = true
-		for keyword,_ in pairs(MustContainAllSearchTerms) do
-			if not string.find(groupNameLower, keyword) then
-				boolContainedAll = false
-				break
-			end
-		end
-		if boolContainedAll == false then break end
-
 		boolContainedForbidden = false
 		for keyword,_ in pairs(MustNotContainSearchTerms) do
-			if not string.find(groupNameLower, keyword) then
+			if string.find(groupNameLower, keyword) then
+				echo("Did find forbidden".. keyword.." in "..groupNameLower)
 				boolContainedForbidden = true
 				break
 			end
 		end
+		if boolContainedForbidden then break end
 
-		if boolContainedForbidden == true then break end
+        boolFoundAtLeastOne = false
+		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
+			if string.find(groupNameLower, keyword) then
+				echo("Found optional ".. keyword.." in "..groupNameLower)
+				boolFoundAtLeastOne = true
+				break
+			end
+		end		
+		if not boolFoundAtLeastOne then break end
+
+		boolContainedAll = true
+		for keyword,_ in pairs(MustContainAllSearchTerms) do
+			if not string.find(groupNameLower, keyword) then
+				echo("Did not find essential ".. keyword.." in "..groupNameLower)
+				boolContainedAll = false
+				break
+			end
+		end
+		if not boolContainedAll then break end
 
  		echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
         allMatchingGroups[groupName] = v        
@@ -370,13 +372,15 @@ function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
                 for include=1, #mustInclude do
                     if mustInclude[include] and not string.find(name, mustInclude[include]) then
                         boolNope = true
+						break
                     end
                 end
             end
-            if mustExclude then
+            if mustExclude  and not boolNope then
                 for exclude=1, #mustExclude do
                     if mustExclude[exclude] and string.find(name, mustExclude[exclude]) then
                         boolNope = true
+						break
                     end
                 end
             end
@@ -1253,10 +1257,10 @@ function buildBuilding()
     buildingGroupsFloor.Length = getIDGroupsForType( {"ID_l", "ID_a"},  {"Floor", materialColourName}, {"Roof"})
 	buildingGroupsLevel.Upright = getIDGroupsForType({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsLevel.Length = getIDGroupsForType( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
-    assert(count( buildingGroupsLevel.Length)> 0)
-    assert(count( buildingGroupsLevel.Upright)> 0)
-    assert(count( buildingGroupsFloor.Upright)> 0)
-    assert(count( buildingGroupsFloor.Length)> 0)
+    assert(count(buildingGroupsLevel.Length)> 0)
+    assert(count(buildingGroupsLevel.Upright)> 0)
+    assert(count(buildingGroupsFloor.Upright)> 0)
+    assert(count(buildingGroupsFloor.Length)> 0)
 	
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
@@ -1265,8 +1269,7 @@ function buildBuilding()
     echo(getScriptName() .. "selectBase")
     selectBase(materialColourName)
     echo(getScriptName() .. "selectBackYard")
-    --selectBackYard(materialColourName)
-    
+    --selectBackYard(materialColourName)    
 
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Floor","Roof", "Deco", "Base"})
     for i = 1, 2 do
