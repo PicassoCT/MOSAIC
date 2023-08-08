@@ -151,6 +151,76 @@ function getIDGroupsForType( MustContainOne, MustContainAll, MustContainNone)
 	return allMatchingGroups
 end
 
+
+function getBuildingMaterialContaininNotContaining( MustContainOne, MustContainAll, MustContainNone)
+    if not MustContainOne then MustContainOne = {} end
+    if not MustContainAll then MustContainAll = {} end
+    if not MustContainNone then MustContainNone = {} end
+
+
+    buildMaterial = {}
+    MustContainAtLeastOneTerm = {}
+	MustContainAllSearchTerms= {}
+    MustNotContainSearchTerms= {}
+    MustNotContainSearchTerms["sub"] = true
+    MustNotContainSearchTerms["spin"] = true
+    MustNotContainSearchTerms["base"] = true 
+	
+    for i=1, #MustContainOne do
+        MustContainAtLeastOneTerm[string.lower(MustContainOne[i])] =  true
+    end
+
+    for i=1, #MustContainNone do
+        MustNotContainSearchTerms[string.lower(MustContainNone[i])] =  true
+    end
+
+    for i=1,#MustContainAll do
+		MustContainAllSearchTerms[string.lower(MustContainAll[i])] = true
+	end
+
+	for groupName, v in pairs(TablesOfPiecesGroups) do
+        groupNameLower = string.lower(groupName)
+
+		boolContainedForbidden = false
+		for keyword,_ in pairs(MustNotContainSearchTerms) do
+			if string.find(groupNameLower, keyword) then
+				--echo("Did find forbidden".. keyword.." in "..groupNameLower)
+				boolContainedForbidden = true
+				break
+			end
+		end
+		if boolContainedForbidden  == false then  
+
+        boolFoundAtLeastOne = false
+		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
+			if string.find(groupNameLower, keyword) then
+				--echo("Found optional ".. keyword.." in "..groupNameLower)
+				boolFoundAtLeastOne = true
+				break
+			end
+		end		
+		if  boolFoundAtLeastOne == true then  
+
+		boolContainedAll = true
+		for keyword,_ in pairs(MustContainAllSearchTerms) do
+			if not string.find(groupNameLower, keyword) then
+				--echo("Did not find essential ".. keyword.." in "..groupNameLower)
+				boolContainedAll = false
+				break
+			end
+		end
+		if  boolContainedAll == true then 
+
+ 		--echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
+        buildMaterial[#buidMaterial +1] = v    
+        end; end;  end;
+    end
+
+	return buildMaterial
+end
+
+
+
 function hasUnitSequentialElements(id)
 	return id % 2 == 0 or true
 end
@@ -695,7 +765,7 @@ end
 
 
 function inToShowDict(element)
-	return toShowDict[element]
+	return toShowDict[element] ~= nil
 end
 
 toShowDict = {}
@@ -707,88 +777,12 @@ function addToShowTable(element, indeX, indeY, addition)
 	toShowDict[element] = true
 end
 
-function nameContainsMaterial(name, materialColourName)
-    if not name or name == "" then
-        return true, true 
-    end
-    
-    name = string.lower(name)
-    materialColourName = string.lower(materialColourName)
-    print(name)
-    
-    boolContainsMaterialName =  (string.find(name, materialColourName) ~= nil)
-    boolContainsNoOtherName = true
-    matColour ={"office", "pod", "industrial", "trad"}
-
-    for i=1,#matColour do
-        if not (matColour[i] == materialColourName) and string.find(name, matColour[i]) ~= nil then
-          boolContainsNoOtherName = false
-          break
-         end
-    end
-
-    return boolContainsMaterialName, boolContainsNoOtherName
-end
-
-function nameIsMajorGroup(name)
-    return not(string.find(name, "sub") or string.find(name, "spin") or string.find(name, "base"))
-    -- body
-end
-
-function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
-    if not mustContainTable then mustContainTable = {} end
-    if not mustNotContainTable  then mustNotContainTable = {} end
-    resultTable = {}
-
-    materialColourName = string.lower(materialColourName)
-    for nameUp,data in pairs(TablesOfPiecesGroups) do        
-        local name = string.lower(nameUp)
-        boolIsMajorGroup = nameIsMajorGroup(name)
-        boolFullfilledConditions= true
-        boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
-
-        if boolContainsMaterialName == true or boolContainsNoOtherName == true and boolIsMajorGroup == true then
-            if mustContainTable then
-                for i=1, #mustContainTable do
-                    if not string.find(name, string.lower(mustContainTable[i])) == nil then
-                        boolFullfilledConditions = false
-                        break
-                    end  
-                end
-            end
-
-            if  boolFullfilledConditions == true then
-                if mustNotContainTable then
-                    for j=1, #mustNotContainTable do
-                        if string.find(name, string.lower(mustNotContainTable[j])) then
-                            boolFullfilledConditions = false
-                            break
-                        end
-                    end
-                end
-
-                if boolFullfilledConditions == true then
-                    if type(TablesOfPiecesGroups[nameUp]) == "table" then
-                        for h=1, #TablesOfPiecesGroups[nameUp] do
-                            resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp][h]
-                        end
-                    else
-                      resultTable[#resultTable + 1] = TablesOfPiecesGroups[nameUp]
-                    end
-                end
-            end
-        end  
-    end
-    return resultTable
-end
-
-
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
-    local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
-    local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Deco", "Floor"}, {"Yard"})
-    local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Deco", "Yard"}) 
+    local yardMaterial = getBuildingMaterialContaininNotContaining({}, {materialColourName, "Yard","Deco"})
+    local StreetDecoMaterial = getBuildingMaterialContaininNotContaining({}, {materialColourName, "Deco", "Floor"}, {"Yard"})
+    local floorBuildMaterial = getBuildingMaterialContaininNotContaining({}, {materialColourName}, {"Roof", "Base", "Deco", "Yard"}) 
 --[[    boolFoundSomething= false
     foreach(floorBuildMaterial,
         function(id)
@@ -811,7 +805,7 @@ function buildDecorateGroundLvl(materialColourName)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor)
             attempts = maxNrAttempts
-            while not element  do
+            while not element  and not inToShowDict(element) do
                 element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor )
                 attempts = attempts -1
             end
@@ -870,20 +864,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     assert(Level)
     --assert(#buildMaterial >0 )
 
-
-    --local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Wall"}, {"Deco"})  
-    --local WindowDecoMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
-    local yardMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"Base"})
-    local streetWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Street", "Wall"}, {"Base"})
-	--assert(#WindowDecoMaterial > 0)
-	--assert(#WindowWallMaterial  > 0)
+    local yardMaterial = getBuildingMaterialContaininNotContaining(materialGroupName, {"Yard", "Wall"}, {"Base"})
+    local streetWallMaterial = getBuildingMaterialContaininNotContaining(materialGroupName, {"Street", "Wall"}, {"Base"})
 
 	--assert(#streetWallMaterial > 0)
 
     if string.lower(materialGroupName) == string.lower("office") then
-        WindowWallMaterial = {}
-        WindowDecoMaterial = {}
-        yardMaterial =  getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {"industrial", "base"})
+        yardMaterial =  getBuildingMaterialContaininNotContaining( {},{materialGroupName,"Yard", "Wall"}, {"industrial", "base"})
     end
 
     --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
@@ -925,25 +912,6 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 -- echo("Adding Element to level"..Level)
 				addToShowTable(element, xLoc, zLoc) -- Todo Smart Argument grab, argument grab via NN the best available match.
 				
---[[                if chancesAre(10) < decoChances.windowwall then
-                    rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-                    -- echo("Adding Window decoration to"..Level)
-                    WindowWallMaterial, Window =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowWallMaterial, 0, materialGroupName)
-                    if Window then
-                        Turn(Window, _z_axis, math.rad(rotation), 0)
-                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[Window])
-                    end
-                if chancesAre(10) < decoChances.windowwall then
-                    WindowDecoMaterial, WindowDeco =    DecorateBlockWall(xRealLoc, zRealLoc, Level,  WindowDecoMaterial, 0, materialGroupName)
-                    if WindowDeco then
-                      Turn(WindowDeco, _z_axis, math.rad(rotation), 0)
-                      showSubsAnimateSpinsByPiecename(pieceNr_pieceName[WindowDeco])
-                    end
-
-                end
-
-                end--]]
-
                 if countElements == 24 then
                     return materialGroupName, buildMaterial
                 end
@@ -1174,7 +1142,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     countElements = 0
-    local decoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {})
+    local decoMaterial = getBuildingMaterialContaininNotContaining(materialColourName, {"Roof", "Deco"}, {})
     local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
 
     for i = 1, 37, 1 do
@@ -1263,11 +1231,7 @@ function buildBuilding()
     buildingGroupsFloor.Length = getIDGroupsForType( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
 	buildingGroupsLevel.Upright = getIDGroupsForType({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsLevel.Length = getIDGroupsForType( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
-    --assert(buildingGroupsLevel.Length["ID_a25_Office_pod_Wall"])
-    --assert(buildingGroupsLevel.Upright["ID_a25_Office_pod_Wall"])
-    --assert(buildingGroupsFloor.Upright["ID_a25_Office_pod_Wall"])
-    --assert(buildingGroupsFloor.Length["ID_a25_Office_pod_Wall"])
-	
+   
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
@@ -1277,14 +1241,14 @@ function buildBuilding()
     echo(getScriptName() .. "selectBackYard")
     --selectBackYard(materialColourName)    
 
-    local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Floor","Roof", "Deco", "Base"})
-    for i = 1, 2 do
+    local levelBuildMaterial = getBuildingMaterialContaininNotContaining({}, {materialColourName}, {"Floor","Roof", "Deco", "Base"})
+	for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
-    materialTable = getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {"Floor","Base"})
+	materialTable = getBuildingMaterialContaininNotContaining({}, {materialColourName, "Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         echo(getScriptName() .. "addRoofDeocrate started")
         addRoofDeocrate(3, materialTable, materialColourName)
