@@ -84,14 +84,19 @@ function initAllPieces()
 end
 
 function getIDGroupsForType( MustContainOne, MustContainAll, MustContainNone)
-	MustContainOne = MustContainOne or {}
-	MustContainAll = MustContainAll or {}
-	MustContainNone = MustContainNone or {}
+    echo("Entering: getIDGroupsForType")
+    if not MustContainOne then MustContainOne = {} end
+    if not MustContainAll then MustContainAll = {} end
+    if not MustContainNone then MustContainNone = {} end
+
 
     allMatchingGroups = {}
     MustContainAtLeastOneTerm = {}
 	MustContainAllSearchTerms= {}
-    MustNotContainSearchTerms= {["sub"] = true, ["spin"] = true ["base"] = true }
+    MustNotContainSearchTerms= {}
+    MustNotContainSearchTerms["sub"] = true
+    MustNotContainSearchTerms["spin"] = true
+    MustNotContainSearchTerms["base"] = true 
 	
     for i=1, #MustContainOne do
         MustContainAtLeastOneTerm[string.lower(MustContainOne[i])] =  true
@@ -111,35 +116,36 @@ function getIDGroupsForType( MustContainOne, MustContainAll, MustContainNone)
 		boolContainedForbidden = false
 		for keyword,_ in pairs(MustNotContainSearchTerms) do
 			if string.find(groupNameLower, keyword) then
-				echo("Did find forbidden".. keyword.." in "..groupNameLower)
+				--echo("Did find forbidden".. keyword.." in "..groupNameLower)
 				boolContainedForbidden = true
 				break
 			end
 		end
-		if boolContainedForbidden then break end
+		if boolContainedForbidden  == false then  
 
         boolFoundAtLeastOne = false
 		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
 			if string.find(groupNameLower, keyword) then
-				echo("Found optional ".. keyword.." in "..groupNameLower)
+				--echo("Found optional ".. keyword.." in "..groupNameLower)
 				boolFoundAtLeastOne = true
 				break
 			end
 		end		
-		if not boolFoundAtLeastOne then break end
+		if  boolFoundAtLeastOne == true then  
 
 		boolContainedAll = true
 		for keyword,_ in pairs(MustContainAllSearchTerms) do
 			if not string.find(groupNameLower, keyword) then
-				echo("Did not find essential ".. keyword.." in "..groupNameLower)
+				--echo("Did not find essential ".. keyword.." in "..groupNameLower)
 				boolContainedAll = false
 				break
 			end
 		end
-		if not boolContainedAll then break end
+		if  boolContainedAll == true then 
 
- 		echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
-        allMatchingGroups[groupName] = v        
+ 		--echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
+        allMatchingGroups[groupName] = v    
+        end; end;  end;
     end
 
 	return allMatchingGroups
@@ -246,7 +252,7 @@ function script.Create()
     StartThread(buildHouse)
 
     vtolDeco = {
-       --[TablesOfPiecesGroups["Roof"][1]]=TablesOfPiecesGroups["Roof"][1],
+        --[TablesOfPiecesGroups["Roof"][1]]=TablesOfPiecesGroups["Roof"][1],
         --[TablesOfPiecesGroups["Roof"][2]]=TablesOfPiecesGroups["Roof"][2],
         --[TablesOfPiecesGroups["Roof"][3]]=TablesOfPiecesGroups["Roof"][3]
     }
@@ -467,9 +473,9 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
 
     y_offset = yoffset or 0
     attempts = maxNrAttempts
-    local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall", xRealLoc, zRealLoc, level)
+    local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName, xRealLoc, zRealLoc, level)
     while not Deco and attempts  > 0 do
-        Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall", xRealLoc, zRealLoc, level)
+        Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName, xRealLoc, zRealLoc, level)
         Sleep(1)
         attempts = attempts  - 1
     end
@@ -524,9 +530,9 @@ end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
     --echo("Getting  Random Material")
-    if buildingGroups then
+--[[    if buildingGroups then
         assert(type(buildingGroups)== "table")
-    end
+    end--]]
     if not buildMaterial then
         echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
         return
@@ -783,7 +789,7 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Deco"})
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Deco", "Floor"}, {"Yard"})
     local floorBuildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {}, {"Roof", "Deco", "Yard"}) 
-    boolFoundSomething= false
+--[[    boolFoundSomething= false
     foreach(floorBuildMaterial,
         function(id)
             if string.find(MapPieceIDName[id], "ID_a20_Industrial_Pod_Wall") then 
@@ -791,7 +797,7 @@ function buildDecorateGroundLvl(materialColourName)
             end
         end
         )
-    assert(boolFoundSomething == true)
+    assert(boolFoundSomething == true)--]]
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -1136,10 +1142,10 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
 
-            local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level, " addRoofDeocrate") 
+            local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
             attempts = maxNrAttempts
             while not element and attempts > 0 do
-                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level," addRoofDeocrate") 
+                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level) 
                 attempts = attempts - 1
             end
 
@@ -1252,15 +1258,15 @@ function buildBuilding()
  
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
-    materialColourName = "pod"
+     materialColourName = "office"
     buildingGroupsFloor.Upright = getIDGroupsForType( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"})
-    buildingGroupsFloor.Length = getIDGroupsForType( {"ID_l", "ID_a"},  {"Floor", materialColourName}, {"Roof"})
+    buildingGroupsFloor.Length = getIDGroupsForType( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
 	buildingGroupsLevel.Upright = getIDGroupsForType({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsLevel.Length = getIDGroupsForType( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
-    assert(count(buildingGroupsLevel.Length)> 0)
-    assert(count(buildingGroupsLevel.Upright)> 0)
-    assert(count(buildingGroupsFloor.Upright)> 0)
-    assert(count(buildingGroupsFloor.Length)> 0)
+    --assert(buildingGroupsLevel.Length["ID_a25_Office_pod_Wall"])
+    --assert(buildingGroupsLevel.Upright["ID_a25_Office_pod_Wall"])
+    --assert(buildingGroupsFloor.Upright["ID_a25_Office_pod_Wall"])
+    --assert(buildingGroupsFloor.Length["ID_a25_Office_pod_Wall"])
 	
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
@@ -1274,14 +1280,14 @@ function buildBuilding()
     local levelBuildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {}, {"Floor","Roof", "Deco", "Base"})
     for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
-        --_, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
     materialTable = getMaterialElementsContaingNotContaining(materialColourName, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         echo(getScriptName() .. "addRoofDeocrate started")
-       -- addRoofDeocrate(3, materialTable, materialColourName)
+        addRoofDeocrate(3, materialTable, materialColourName)
     end
     if randChance(25) then
         showHoloWall()
