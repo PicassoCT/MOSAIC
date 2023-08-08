@@ -82,9 +82,16 @@ function initAllPieces()
         startPieceOS(pieceName, SIG_SUBANIMATIONS)
     end
 end
+function getNameFilteredDictionary( MustContainOne, MustContainAll, MustContainNone)
+    return getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNone, true)
+end
+
+function getNameFilteredTable( MustContainOne, MustContainAll, MustContainNone)
+    return getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNone, false)
+end
+
 
 function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNone, boolGetNameGroupedDict)
-    echo("Entering: getNameFilteredTableDict")
     if not MustContainOne then MustContainOne = {} end
     if not MustContainAll then MustContainAll = {} end
     if not MustContainNone then MustContainNone = {} end
@@ -144,11 +151,11 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 		if  boolContainedAll == true then 
 
  		--echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
-        if boolGetNameGroupedDict then
+        if boolGetNameGroupedDict == true then
 			allMatchingGroups[groupName] = v    
 		else
-			for index,pieceNUm in pairs(v) do
-				allMatchingGroups[#allMatchingGroups + 1] = pieceNum
+			for p=1, #v do
+				allMatchingGroups[#allMatchingGroups + 1] = v[p]
 			end
 		end
         end; end;  end;
@@ -534,7 +541,7 @@ function notString(boolHigan)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
-    --echo("Getting  Random Material")
+    echo("Getting  Random Material")
 --[[    if buildingGroups then
         assert(type(buildingGroups)== "table")
     end--]]
@@ -548,7 +555,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     end
     total = count(buildMaterial)
     if total == 0 and #buildMaterial == 0 then
-      echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..oame)
+      echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
       return
     end
 
@@ -715,10 +722,10 @@ end
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
-    local yardMaterial = getNameFilteredTableDict({}, {materialColourName, "Yard","Deco"})
-    local StreetDecoMaterial = getNameFilteredTableDict({}, {materialColourName, "Deco", "Floor"}, {"Yard"})
-    local floorBuildMaterial = getNameFilteredTableDict({}, {materialColourName}, {"Roof", "Base", "Deco", "Yard"}) 
-
+    local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco"}, {})
+    local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor"}, {"Yard"})
+    local floorBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Roof", "Base", "Deco", "Yard"}) 
+   
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -732,7 +739,7 @@ function buildDecorateGroundLvl(materialColourName)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor)
             attempts = maxNrAttempts
-            while not element  and not inToShowDict(element) do
+            while  (not element  or  inToShowDict(element)) and attempts > 0 do
                 element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor )
                 attempts = attempts -1
             end
@@ -790,13 +797,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     assert(type(buildMaterial)== "table")
     assert(Level)
 
-    local yardMaterial = getNameFilteredTableDict({}, {materialGroupName, "Yard", "Wall"}, {"Base"})
-    local streetWallMaterial = getNameFilteredTableDict({}, {materialGroupName, "Street", "Wall"}, {"Base"})
+    local yardMaterial = getNameFilteredTable({materialGroupName}, {"Yard", "Wall"}, {"Base"})
+    local streetWallMaterial = getNameFilteredTable({materialGroupName}, { "Street", "Wall"}, {"Base"})
 
 	--assert(#streetWallMaterial > 0)
 
     if string.lower(materialGroupName) == string.lower("office") then
-        yardMaterial =  getNameFilteredTableDict( {},{materialGroupName,"Yard", "Wall"}, {"industrial", "base"})
+        yardMaterial =  getNameFilteredTable( {materialGroupName},{"Yard", "Wall"}, {"industrial", "base"})
     end
 
     --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
@@ -815,8 +822,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                                  -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel )
             attempts = maxNrAttempts
-            while not element and attempts > 0 and not inToShowDict(element) do
+            while (not element  or  inToShowDict(element)) and attempts > 0 do
                 element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel)
+                attempts = attempts-1
             end
             
             if attempts == 0 then 
@@ -892,7 +900,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
-    echo(getScriptName()..":decorateBackYard")
+    echo(getScriptName()..":decorateBackYard")  
     assert(buildMaterial)
     assert(Level)
 
@@ -903,7 +911,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     attempts = maxNrAttempts
 
 
-    while not element and attempts > 0 do
+    while (not element or inToShowDict(element)) and attempts > 0 do
         element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc,  Level )
         Sleep(1)
         attempts = attempts -1
@@ -1037,7 +1045,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
             local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
             attempts = maxNrAttempts
-            while not element and attempts > 0 do
+            while (not element or inToShowDict(element)) and attempts > 0 do
                 element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level) 
                 attempts = attempts - 1
             end
@@ -1067,7 +1075,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     countElements = 0
-    local decoMaterial = getNameFilteredTableDict({materialColourName}, {"Roof", "Deco"}, {})
+    local decoMaterial = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {})
     local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
 
     for i = 1, 37, 1 do
@@ -1078,7 +1086,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                                  -centerP.z + (zLoc * cubeDim.length)
             local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level) 
             attempts = maxNrAttempts
-            while not element and attempts > 0 do
+            while (not element or inToShowDict(element)) and attempts > 0 do
                 element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level) 
                 attempts = attempts -1
             end
@@ -1151,29 +1159,29 @@ function buildBuilding()
  
     --echo(getScriptName() .. "selectBase")
     materialColourName = selectGroundBuildMaterial()
-    -- materialColourName = "office"
-    buildingGroupsFloor.Upright = getNameFilteredTableDict( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"}, true)
-    buildingGroupsFloor.Length = getNameFilteredTableDict( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"}, true)
-	buildingGroupsLevel.Upright = getNameFilteredTableDict({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"}, true)
-    buildingGroupsLevel.Length = getNameFilteredTableDict( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"}, true)
-   
+    --materialColourName = "office"
+    buildingGroupsFloor.Upright = getNameFilteredDictionary( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"})
+    buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
+	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
+    buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
+
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
 
     echo(getScriptName() .. "selectBase")
-    selectBase(materialColourName)
+    --selectBase(materialColourName)
     echo(getScriptName() .. "selectBackYard")
     --selectBackYard(materialColourName)    
 
-    local levelBuildMaterial = getNameFilteredTableDict({}, {materialColourName}, {"Floor","Roof", "Deco", "Base"}, false)
+    local levelBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Floor","Roof", "Deco"})
 	for i = 1, 2 do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
-	materialTable = getNameFilteredTableDict({}, {materialColourName, "Roof", "Deco"}, {"Floor","Base"})
+	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         echo(getScriptName() .. "addRoofDeocrate started")
         addRoofDeocrate(3, materialTable, materialColourName)
