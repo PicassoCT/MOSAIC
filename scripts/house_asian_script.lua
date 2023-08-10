@@ -424,7 +424,7 @@ function showRegPiece(pID)
 end
 
 function selectBase(materialType) 
-    basePiece = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
+    basePiece = getMaterialBaseNameOrDefault({}, {"Base"}, {"Deco"})
     if basePiece then
         showRegPiece(basePiece)       
         echo("BasePiece: ".. getPieceName(unitID, basePiece))
@@ -1170,9 +1170,9 @@ function buildBuilding()
     echo("House_Asian: buildDecorateGroundLvl ended with ")
 
     echo(getScriptName() .. "selectBase")
-    --selectBase(materialColourName)
+    selectBase(materialColourName)
     echo(getScriptName() .. "selectBackYard")
-    --selectBackYard(materialColourName)    
+    selectBackYard(materialColourName)    
 
     local levelBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Floor","Roof", "Deco"})
 	for i = 1, 2 do
