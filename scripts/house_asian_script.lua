@@ -797,16 +797,16 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     assert(type(buildMaterial)== "table")
     assert(Level)
 
-    local yardMaterial = getNameFilteredTable({materialGroupName}, {"Yard", "Wall"}, {"Base"})
-    local streetWallMaterial = getNameFilteredTable({materialGroupName}, { "Street", "Wall"}, {"Base"})
+    local yardMaterial = getNameFilteredTable({}, {"Yard", "Deco"}, {"Street", "Floor", "Roof"}) -- TODO materialGroupName
+    local streetWallDecoMaterial = getNameFilteredTable({}, {"Street", "Deco"}, {"Yard", "Floor", "Roof"}) -- TODO materialGroupName
 
-	--assert(#streetWallMaterial > 0)
+	--assert(#streetWallDecoMaterial > 0)
 
-    if string.lower(materialGroupName) == string.lower("office") then
-        yardMaterial =  getNameFilteredTable( {materialGroupName},{"Yard", "Wall"}, {"industrial", "base"})
+    if string.lower(materialGroupName) == "office" then
+        yardMaterial = getNameFilteredTable( {materialGroupName},{"Yard", "Wall"}, {"industrial"})
     end
 
-    --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallMaterial))
+    --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallDecoMaterial))
 
     countElements = 0
 
@@ -851,19 +851,18 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 end
             end
 			
-            if false and chancesAre(10) < decoChances.streetwall and
-                count(streetWallMaterial) > 0 then
-                assert(type(streetWallMaterial) == "table")
+            if chancesAre(10) < decoChances.streetwall and count(streetWallDecoMaterial) > 0 then
+                assert(type(streetWallDecoMaterial) == "table")
                 assert(index)
                 assert(xRealLoc)
                 assert(zRealLoc)
-                -- assert(count(streetWallMaterial) > 0)
+                -- assert(count(streetWallDecoMaterial) > 0)
                 assert(Level)
-                assert(streetWallMaterial)
+                assert(streetWallDecoMaterial)
 
-                streetWallMaterial, streetWallDeco =
+                streetWallDecoMaterial, streetWallDeco =
                     DecorateBlockWall(xRealLoc, zRealLoc, Level,
-                                      streetWallMaterial, 0, materialGroupName)
+                                      streetWallDecoMaterial, 0, materialGroupName)
 
                 if streetWallDeco then
                     rotation = getStreetWallDecoRotation(index)
