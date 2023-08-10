@@ -424,7 +424,7 @@ function showRegPiece(pID)
 end
 
 function selectBase(materialType) 
-    basePiece = getMaterialBaseNameOrDefault({}, {"Base"}, {"Deco"})
+    basePiece = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
     if basePiece then
         showRegPiece(basePiece)       
         echo("BasePiece: ".. getPieceName(unitID, basePiece))
