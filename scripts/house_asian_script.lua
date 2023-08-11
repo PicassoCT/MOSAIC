@@ -456,6 +456,9 @@ function selectGroundBuildMaterial()
 
     if not nice then nice = math.random(1,4) end
 
+    if boolRedo then
+        return materialColourName[math.random(1,4)]
+    end
     return  materialChoiceTable[nice]
 end
 
@@ -714,8 +717,8 @@ function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco"}, {})
-    local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor"}, {"Yard"})
-    local floorBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Roof", "Base", "Deco", "Yard"}) 
+    local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
+    local floorBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Roof", "Deco", "Yard"}) 
    
     countElements = 0
 
@@ -753,7 +756,7 @@ function buildDecorateGroundLvl(materialColourName)
                     return materialColourName
                 end        
 
-                if false and chancesAre(10) < decoChances.street then
+                if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
@@ -763,7 +766,7 @@ function buildDecorateGroundLvl(materialColourName)
                 end
             end  
 
-            if false and isBackYardWall(index) == true then
+            if isBackYardWall(index) == true then
                 -- BackYard
                 if yardMaterial and yardMaterial[1] and count(yardMaterial) > 0 and  chancesAre(10) < decoChances.yard then
                     rotation = getWallBackyardDeocrationRotation(index)
