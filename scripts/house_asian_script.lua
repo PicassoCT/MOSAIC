@@ -797,8 +797,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     assert(type(buildMaterial)== "table")
     assert(Level)
 
-    local yardMaterial = getNameFilteredTable({}, {"Yard", "Deco"}, {"Street", "Floor", "Roof"}) -- TODO materialGroupName
-    local streetWallDecoMaterial = getNameFilteredTable({}, {"Street", "Deco"}, {"Yard", "Floor", "Roof"}) -- TODO materialGroupName
+    local yardMaterial = getNameFilteredTable({}, {"Yard", "Deco"}, { "Floor", "Roof"}) -- TODO materialGroupName
+    local streetWallDecoMaterial = getNameFilteredTable({}, {"Street", "Deco"}, { "Floor", "Roof"}) -- TODO materialGroupName
 
 	--assert(#streetWallDecoMaterial > 0)
 
@@ -1174,7 +1174,8 @@ function buildBuilding()
     selectBackYard(materialColourName)    
 
     local levelBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Floor","Roof", "Deco"})
-	for i = 1, 2 do
+    height = math.random(2,3)
+	for i = 1, height do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
