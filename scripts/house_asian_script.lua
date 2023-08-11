@@ -803,7 +803,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 	--assert(#streetWallDecoMaterial > 0)
 
     if string.lower(materialGroupName) == "office" then
-        yardMaterial = getNameFilteredTable( {materialGroupName},{"Yard", "Wall"}, {"industrial"})
+        yardMaterial = getNameFilteredTable( {materialGroupName},{"Yard", "Wall"}, {"trad","industrial"})
     end
 
     --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallDecoMaterial))
@@ -851,7 +851,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 end
             end
 			
-            if chancesAre(10) < decoChances.streetwall and count(streetWallDecoMaterial) > 0 then
+            if chancesAre(10) < decoChances.streetwall and #streetWallDecoMaterial > 0 then
                 assert(type(streetWallDecoMaterial) == "table")
                 assert(index)
                 assert(xRealLoc)
@@ -1184,7 +1184,7 @@ function buildBuilding()
 	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         echo(getScriptName() .. "addRoofDeocrate started")
-        addRoofDeocrate(3, materialTable, materialColourName)
+        addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
     if randChance(25) then
         showHoloWall()
