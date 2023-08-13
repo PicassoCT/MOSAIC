@@ -7,6 +7,13 @@ IDGroupsDirection = {
     "u", --upright
     "l"} -- lengthwise
 
+
+IDGroups_Trad_Office_Direction = { 
+    "u", --upright
+    "u", --upright
+    "l"} -- lengthwise
+
+
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
@@ -120,7 +127,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 	for groupName, v in pairs(TablesOfPiecesGroups) do
         groupNameLower = string.lower(groupName)
 
-		boolContainedForbidden = false
+		boolContainedForbidden = false 
 		for keyword,_ in pairs(MustNotContainSearchTerms) do
 			if string.find(groupNameLower, keyword) then
 				--echo("Did find forbidden".. keyword.." in "..groupNameLower)
@@ -128,9 +135,9 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 				break
 			end
 		end
-		if boolContainedForbidden  == false then  
+		if boolContainedForbidden  == false  then  
 
-        boolFoundAtLeastOne = false
+        boolFoundAtLeastOne = false 
 		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
 			if string.find(groupNameLower, keyword) then
 				--echo("Found optional ".. keyword.." in "..groupNameLower)
@@ -138,7 +145,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 				break
 			end
 		end		
-		if  boolFoundAtLeastOne == true then  
+		if  boolFoundAtLeastOne == true  or #MustContainAtLeastOneTerm == 0 then  
 
 		boolContainedAll = true
 		for keyword,_ in pairs(MustContainAllSearchTerms) do
@@ -173,11 +180,16 @@ deterministicPersistentCounter= 0
 deterministicPersistentIndex= 1
 --TODO check buildingGroups has material Dimensions
 --TODO check buildMaterials are used elsewhere and its flat
-function isInPositionSequenceGetPieceID(roundNr, level, buildingGroups)
+function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGroups)
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundNr "); return false end
 	level= level +1
-	Direction = IDGroupsDirection[(unitID %2) +1]
+	Direction = IDGroupsDirection[(unitID % #IDGroupsDirection) +1]
+    --materialType = "trad"
+    if materialType == "office" or materialType == "trad" then
+        Direction = IDGroups_Trad_Office_Direction[(unitID % #IDGroups_Trad_Office_Direction) +1]
+    end
+    
 	groupName = nil
 	--upright
 	if buildingGroups then
@@ -304,7 +316,8 @@ function rotations()
 end
 
 function showHoloWall()
-
+    resetT(TablesOfPiecesGroups["HoloTile"])
+    hideT(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
     index = math.random(0,#TablesOfPiecesGroups["HoloTile"]/step)
     if maRa() == maRa() then
@@ -535,7 +548,7 @@ function notString(boolHigan)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
-    echo("Getting  Random Material")
+ --   echo("Getting  Random Material")
 --[[    if buildingGroups then
         assert(type(buildingGroups)== "table")
     end--]]
@@ -557,7 +570,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     roundNr = convertIndexToRoundNr(index)
     if roundNr then
         echo("Derived ".. toString(roundNr).." from "..toString(index))
-    	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, buildingGroups) 
+    	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
     	if isInRoundNr and piecenum then
             echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
@@ -716,7 +729,7 @@ end
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
-    local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco"}, {})
+    local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
     local floorBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Roof", "Deco", "Yard"}) 
    
@@ -768,8 +781,8 @@ function buildDecorateGroundLvl(materialColourName)
 
             if isBackYardWall(index) == true then
                 -- BackYard
-                if yardMaterial and yardMaterial[1] and count(yardMaterial) > 0 and  chancesAre(10) < decoChances.yard then
-                    rotation = getWallBackyardDeocrationRotation(index)
+                if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
+                    rotation = getWallBackyardDeocrationRotation(index) + math.random(-10,10)/10
                     yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
                     if yardDeco then
                         Turn(yardDeco, _z_axis, math.rad(rotation), 0)
@@ -784,15 +797,17 @@ end
 
 function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
 
+lvlPlaced = {}
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
-    echo(getScriptName()..":buildDecorateLvl"..Level)
+    echo(getScriptName()..":buildDecorateLvl"..Level.." for "..materialGroupName)
     Sleep(1)
     assert(buildMaterial)
     assert(type(buildMaterial)== "table")
     assert(Level)
+    lvlPlaced = {}
 
-    local yardMaterial = getNameFilteredTable({}, {"Yard", "Deco"}, { "Floor", "Roof"}) -- TODO materialGroupName
-    local streetWallDecoMaterial = getNameFilteredTable({}, {"Street", "Deco"}, { "Floor", "Roof"}) -- TODO materialGroupName
+    local yardMaterial = getNameFilteredTable({}, {"Yard", "Deco"}, { "Floor", "Roof", "Base"}) -- TODO materialGroupName
+    local streetWallDecoMaterial = getNameFilteredTable({}, {"Street", "Deco"}, { "Floor", "Roof", "Base"}) -- TODO materialGroupName
 
 	--assert(#streetWallDecoMaterial > 0)
 
@@ -835,6 +850,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
+                lvlPlaced[index] = element
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
@@ -845,23 +861,22 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 end
             end
 			
-            if chancesAre(10) < decoChances.streetwall and #streetWallDecoMaterial > 0 then
+            if chancesAre(10) < decoChances.streetwall  then
                 assert(type(streetWallDecoMaterial) == "table")
                 assert(index)
                 assert(xRealLoc)
                 assert(zRealLoc)
-                -- assert(count(streetWallDecoMaterial) > 0)
+                assert(count(streetWallDecoMaterial) > 0)
                 assert(Level)
                 assert(streetWallDecoMaterial)
 
-                streetWallDecoMaterial, streetWallDeco =
-                    DecorateBlockWall(xRealLoc, zRealLoc, Level,
-                                      streetWallDecoMaterial, 0, materialGroupName)
-
+                streetWallDecoMaterial, streetWallDeco = DecorateBlockWall(xRealLoc, zRealLoc, Level, streetWallDecoMaterial, 0, materialGroupName)
+                echo("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
                 if streetWallDeco then
-                    rotation = getStreetWallDecoRotation(index)
+                    rotation = getStreetWallDecoRotation(index)+ (math.random(-10,10) / 20)
                     Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
+                    addToShowTable(streetWallDeco)
                 end
             end
         end
@@ -878,7 +893,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
                 yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level)
                 assert(type(yardMaterial) == "table")
-
+             echo("Decorating yard walls with "..toString(pieceID_NameMap[yardWall]))
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
                     Turn(yardWall, _z_axis, math.rad(rotation), 0)
@@ -1020,15 +1035,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
     assert(Level)
 
-    roofMaterial = {}
-    for name, group in pairs(TablesOfPiecesGroups) do
-        if string.find(string.lower(name), "roof") and not string.find(string.lower(name), "sub")  then
-            for i=1, #group do
-                --echo("Add addRoofDeocrate: group"..name )
-                roofMaterial[#roofMaterial+1] = group[i]
-            end
-        end
-    end
+    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco"}) -- TODO materialGroupName
 
     for i = 1, 37, 1 do
         local index = i
@@ -1053,9 +1060,15 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
                                                                roofMaterial)
+
+                offset = 0
+                --offset if one of the last level was not placed due to offset
+                if not lvlPlaced[i] then
+                    offset = -cubeDim.heigth 
+                end
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
+                Move(element, _y_axis, Level * cubeDim.heigth - 0.5 + offset, 0)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
 				addToShowTable(element, xLoc, zLoc)
