@@ -162,7 +162,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 			allMatchingGroups[groupName] = v    
 		else
 			for p=1, #v do
-				allMatchingGroups[#allMatchingGroups + 1] = v[p]
+			allMatchingGroups[#allMatchingGroups + 1] = v[p]
 			end
 		end
         end; end;  end;
@@ -548,7 +548,10 @@ function notString(boolHigan)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
- --   echo("Getting  Random Material")
+       --todo assert in seperate perversion that errors out
+	assert(buildMaterial) 
+	assert(#build Material >0) 
+	--   echo("Getting  Random Material")
 --[[    if buildingGroups then
         assert(type(buildingGroups)== "table")
     end--]]
