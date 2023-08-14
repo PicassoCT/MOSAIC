@@ -200,7 +200,7 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 			PieceGroupIndex = getDeterministicRandom(unitID + roundNr, maxIDGroups) + 1
 			groupName, group = getNthDictElement(buildingGroups.Upright, PieceGroupIndex)
 			echo("PieceGroupIndex:"..PieceGroupIndex)
-			if  not groupName or not group or not group[level] then
+			if  not groupName or not group or not group[level] or inToShowDict(group[level]) then
 				return false
 			else
 				return true, group[level]
@@ -578,6 +578,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     	end
     end
 
+    if #buildMaterial > 0 then echo( "No materials left for "..name.. " at level ".. toString(level)); return end
     piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
 	if not inToShowDict(piecenum)  then
 		return piecenum, num
@@ -765,12 +766,14 @@ function buildDecorateGroundLvl(materialColourName)
                 Turn(element, 3, math.rad(rotation), 0)
                 addToShowTable(element, xLoc, zLoc, i)
     			echo("Placed GroundLevel element "..i)
+                showSubsAnimateSpinsByPiecename(pieceName_pieceNr[element]) 
                 if countElements == 24 then
                     return materialColourName
                 end        
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
@@ -783,7 +786,7 @@ function buildDecorateGroundLvl(materialColourName)
                 -- BackYard
                 if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
                     rotation = getWallBackyardDeocrationRotation(index) + math.random(-10,10)/10
-                    yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
+                    yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0, materialColourName)
                     if yardDeco then
                         Turn(yardDeco, _z_axis, math.rad(rotation), 0)
                     end
@@ -801,7 +804,7 @@ lvlPlaced = {}
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     echo(getScriptName()..":buildDecorateLvl"..Level.." for "..materialGroupName)
     Sleep(1)
-    assert(buildMaterial)
+    assert(buildMaterial, "no material table in" ..Level.." for "..materialGroupName)
     assert(type(buildMaterial)== "table")
     assert(Level)
     lvlPlaced = {}
@@ -891,7 +894,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 assert(Level)
                 assert(yardMaterial)
 
-                yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level)
+                yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level, materialGroupName)
                 assert(type(yardMaterial) == "table")
              echo("Decorating yard walls with "..toString(pieceID_NameMap[yardWall]))
                 if yardWall then
@@ -907,7 +910,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     return materialGroupName, buildMaterial
 end
 
-function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
+function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
     echo(getScriptName()..":decorateBackYard")  
     assert(buildMaterial)
     assert(Level)
@@ -915,12 +918,12 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc, Level )
+    local element, nr = getRandomBuildMaterial(buildMaterial, name, index, xLoc, zLoc, Level)
     attempts = maxNrAttempts
 
 
     while (not element or inToShowDict(element)) and attempts > 0 do
-        element, nr = getRandomBuildMaterial(buildMaterial, "yard", index, xLoc, zLoc,  Level )
+        element, nr = getRandomBuildMaterial(buildMaterial, name, index, xLoc, zLoc, Level)
         Sleep(1)
         attempts = attempts -1
     end
@@ -1030,7 +1033,7 @@ pieceNameMap = Spring.GetUnitPieceList( unitID )
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     echo(getScriptName()..":-->addRoofDeocrate")
     countElements = 0
-    if materialColourName == "office" and maRa() then
+    if materialColourName == "pod" and maRa() then
         decoChances.roof = 0.65 
     end
     assert(Level)
@@ -1167,8 +1170,8 @@ function buildBuilding()
     materialColourName = selectGroundBuildMaterial()
     --materialColourName = "office"
     buildingGroupsFloor.Upright = getNameFilteredDictionary( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"})
-    buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
+    buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
 
     echo(getScriptName() .. "buildDecorateGroundLvl started")
@@ -1180,7 +1183,7 @@ function buildBuilding()
     echo(getScriptName() .. "selectBackYard")
     selectBackYard(materialColourName)    
 
-    local levelBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Floor","Roof", "Deco"})
+    local levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
     height = math.random(2,3)
 	for i = 1, height do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
