@@ -72,9 +72,38 @@ function PieceLight(unitID, piecename, cegname, delayTime)
     end
 end
 
+function assertTableNotEmpty(name)
+    assertTable(name)
+    assert(#name > 0, "table is empty")
+end
+
+function assertDictNotEmpty(name)
+    assertDict(name)
+    assert(count(name) > 0, "table is empty")
+end
+
+function assertTable(name)
+    assertType(name, "table")
+end
+
+function assertDict(name)
+    assertType(name, "table")
+    for k,v in pairs(name) do
+        if type(k) ~= "number" then
+            return 
+        end
+    end
+    assert(true== false, "Not a dictionary ")
+end
+
+
 function assertFunction(name)
-    assert(type(name) == "function",
-           "value of type " .. type(name) .. " is not a function")
+    assertType(name, "function")
+end
+
+
+function assertType(name, types)
+    assert(type(name) == types, "value of type " .. type(name) .. " is not a "..types)  
 end
 
 function wrapThreadStart(func)

@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_debug.lua"
 
 IDGroupsDirection = { 
     "u", --upright
@@ -18,12 +19,15 @@ IDGroups_Trad_Office_Direction = {
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_asian_script.lua::" end
+function lecho(...)
+    echo(getScriptName(), ...)
+end
 
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
 factor = 35
 heightoffset = 90
-maxNrAttempts = 20
+maxNrAttempts = 40
 
 BuildDeco = {}
 
@@ -180,6 +184,7 @@ deterministicPersistentCounter= 0
 deterministicPersistentIndex= 1
 --TODO check buildingGroups has material Dimensions
 --TODO check buildMaterials are used elsewhere and its flat
+
 function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGroups)
 	if not hasUnitSequentialElements(unitID) then return false end
     if not roundNr then echo("invalid roundNr "); return false end
@@ -322,11 +327,13 @@ function showHoloWall()
     index = math.random(0,#TablesOfPiecesGroups["HoloTile"]/step)
     if maRa() == maRa() then
         for i=index * step,  (index+1) * step, 1 do
-            if (maRa() == maRa()) ~= maRa() then
-                Hide(TablesOfPiecesGroups["HoloTile"][i])
-            else
-                Show(TablesOfPiecesGroups["HoloTile"][i])
-				addToShowTable( TablesOfPiecesGroups["HoloTile"][i])
+            if TablesOfPiecesGroups["HoloTile"][i] then
+                if (maRa() == maRa()) ~= maRa() then
+                    Hide(TablesOfPiecesGroups["HoloTile"][i])
+                else
+                    Show(TablesOfPiecesGroups["HoloTile"][i])
+    				addToShowTable( TablesOfPiecesGroups["HoloTile"][i], "showHoloWall", i)
+                end
             end
         end
         return    
@@ -361,7 +368,7 @@ function showOne(T, bNotDelayd)
             if bNotDelayd and bNotDelayd == true then
                 Show(v)
             else
-				addToShowTable(v)
+				addToShowTable(v, "showOne", k)
             end
             return v
         end
@@ -385,7 +392,7 @@ function showOneOrAll(T)
     else
         assert(T)
         for num, val in pairs(T) do 
-			addToShowTable(val)
+			addToShowTable(val, "showOneOrAll", num)
 		end
         return val
     end
@@ -425,15 +432,17 @@ function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
         end
     end
     if #MaterialCandiDates > 0 then
-        return getSafeRandom(MaterialCandiDates, MaterialCandiDates[1])
+        value, key = getSafeRandom(MaterialCandiDates, MaterialCandiDates[1])
+        return value, key
     end
 
-    return getSafeRandom(AllCandiDates, AllCandiDates[1])    
+    value, key =  getSafeRandom(AllCandiDates, AllCandiDates[1])    
+    return value, key
 end
 
 function showRegPiece(pID)
     Show(pID)
-	addToShowTable(pID)
+	addToShowTable(pID, "showRegPiece", pID)
 end
 
 function selectBase(materialType) 
@@ -548,28 +557,33 @@ function notString(boolHigan)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
+    --assertTableNotEmpty(buildMaterial)
+    --if buildingGroups then 
+    --    assertDictNotEmpty(buildingGroups)
+    --end
  --   echo("Getting  Random Material")
 --[[    if buildingGroups then
         assert(type(buildingGroups)== "table")
     end--]]
     if not buildMaterial then
-        echo(getScriptName() .. "getRandomBuildMaterial: Got no table "..name);
+        echo(getScriptName() .. "getRandomBuildMateria: Got no table "..name);
         return
     end
     if not type(buildMaterial) == "table" then
-		echo( getScriptName() .. "getRandomBuildMaterial: Got not a table, got" ..   type(buildMaterial) .. "instead");
+		echo( getScriptName() .. "getRandomBuildMateria: Got not a table, got" ..   type(buildMaterial) .. "instead");
         return
     end
-    total = count(buildMaterial)
-    if total == 0 and #buildMaterial == 0 then
-      echo(getScriptName() .. "getRandomBuildMaterial: Got a empty table "..name)
+
+    if count(buildMaterial) == 0 and #buildMaterial == 0 then
+      echo(getScriptName() .. "getRandomBuildMateria: Got a empty table "..name)
+      echo( "No materials left for "..name.. " at level ".. toString(level))
       return
     end
 
 	--TODO Move to total separate function, this thing is neither random nor connected with the buildMaterial handed to the function
     roundNr = convertIndexToRoundNr(index)
     if roundNr then
-        echo("Derived ".. toString(roundNr).." from "..toString(index))
+        --echo("Derived ".. toString(roundNr).." from "..toString(index))
     	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
     	if isInRoundNr and piecenum then
@@ -578,13 +592,13 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     	end
     end
 
-    if #buildMaterial > 0 then echo( "No materials left for "..name.. " at level ".. toString(level)); return end
     piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
 	if not inToShowDict(piecenum)  then
+        echo("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
 		return piecenum, num
 	end
 
-    --echo(" Returning nil in getRandomBuildMaterial in context".. toString(context)) 
+    --echo(" Returning nil in getRandomBuildMateria in context".. toString(context)) 
    return
 end
 
@@ -732,18 +746,18 @@ function buildDecorateGroundLvl(materialColourName)
 
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
-    local floorBuildMaterial = getNameFilteredTable({materialColourName}, {}, {"Roof", "Deco", "Yard"}) 
-   
+    local floorBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"}) 
+    echo("floorBuildMaterial", floorBuildMaterial)
     countElements = 0
 
     for i = 1, 37, 1 do
-        Sleep(1)
 
         local index = i
-        echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
+        --echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
-        if partOfPlan then 
+        if partOfPlan == true then 
+
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor)
             attempts = maxNrAttempts
@@ -753,11 +767,13 @@ function buildDecorateGroundLvl(materialColourName)
             end
 
             if attempts == 0 then 
-                echo(getScriptName() .. "buildDecorateGroundLvl: element selection failed for ".. materialColourName)
+                echo(getScriptName() .. "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index)
                 return materialColourName
             end
 
             if element then
+                assert(xRealLoc)
+                assert(zRealLoc)
                 countElements = countElements + 1
                 floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
@@ -765,7 +781,7 @@ function buildDecorateGroundLvl(materialColourName)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                 Turn(element, 3, math.rad(rotation), 0)
                 addToShowTable(element, xLoc, zLoc, i)
-    			echo("Placed GroundLevel element "..i)
+    			echo("Placed GroundLevel element at "..i)
                 showSubsAnimateSpinsByPiecename(pieceName_pieceNr[element]) 
                 if countElements == 24 then
                     return materialColourName
@@ -773,7 +789,6 @@ function buildDecorateGroundLvl(materialColourName)
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
@@ -879,7 +894,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     rotation = getStreetWallDecoRotation(index)+ (math.random(-10,10) / 20)
                     Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
-                    addToShowTable(streetWallDeco)
+                    addToShowTable(streetWallDeco, xLoc, zLoc)
                 end
             end
         end
@@ -974,7 +989,7 @@ function showOneOrAllOfTablePieceGroup(name)
   if TablesOfPiecesGroups[name] then
         showOneOrAll(TablesOfPiecesGroups[name])
     elseif pieceName_pieceNr[name..1] then
-		addToShowTable(pieceName_pieceNr[name..1])
+		addToShowTable(pieceName_pieceNr[name..1], "showOneOrAllOfTablePieceGroup", name)
     end
 end
 
@@ -1173,6 +1188,10 @@ function buildBuilding()
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
+    echo("buildingGroupsFloor.Upright", buildingGroupsFloor.Upright)
+    echo("buildingGroupsFloor.Length", buildingGroupsFloor.Length)
+    echo("buildingGroupsLevel.Length", buildingGroupsLevel.Length)
+    echo("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
 
     echo(getScriptName() .. "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
@@ -1197,6 +1216,7 @@ function buildBuilding()
         addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
     if randChance(25) then
+        Sleep(50)
         showHoloWall()
     end
 
