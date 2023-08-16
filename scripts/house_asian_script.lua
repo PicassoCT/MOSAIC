@@ -1168,6 +1168,26 @@ function buildAnimation()
     showT(ToShowTable)
 end
 
+function longTermHidingThread(tiles)
+	dice = getDeterministicRandom(unitID, #tiles) +1
+	Hide(tiles[dice])
+	restTime = math.random(1,100)*1000
+	Sleep(restTime)
+	Show(tiles[dice])
+end
+
+function allShiverThread(tiles)
+	for k, v in pairs(tiles) do
+		mP(v, math.random(-100,100), math.random(-100,100),  math.random(-100,100), 5)
+	end
+	Sleep(1000)
+	for k, v in pairs(tiles) do
+		mP(v, 0, 0, 0, 5)
+	end
+end
+
+
+
 function buildBuilding()
     StartThread(buildAnimation)
     echo(getScriptName() .. "buildBuilding")
