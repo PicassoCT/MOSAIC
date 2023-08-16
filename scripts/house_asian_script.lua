@@ -320,7 +320,57 @@ function rotations()
     end
 end
 
+function turnPixelOff(pixel)
+	Turn(pixel, y_axis, math.rad(180),0)
+end
+
+function HoloFlicker(tiles)
+	holoDecoFunctions= {}
+		--dead pixel
+	holoDecoFunctions[1]= 	function(tiles) 
+								one = math.random(1,#tiles)
+								turnPixelOff(tiles[one])
+								restTimeMs = (math.random(1,100)/100)*1000
+								Sleep(restTimeMs)
+								reset(tiles[one])
+							end	
+
+	--whole wall flicker dead
+	holoDecoFunctions[2]= 	function(tiles)
+								for k, v in pairs(tiles) do
+									turnPixelOff(v)
+								end
+								restTimeMs = (math.random(1,500)/100)*1000
+								Sleep(restTimeMs)
+								resetT(tiles)
+							end	
+		--short dead line
+	holoDecoFunctions[3]= 	function(tiles)
+								for i=1,#tiles, 6 do
+									for j=i, i+6 do
+									turnPixelOff(tiles[j])
+									end						
+									restTimeMs = (math.random(1,100)/100)*1000
+									Sleep(restTimeMs)
+									for j=i, i+6 do
+									reset(tiles[j])
+									end									
+								end
+							end	
+	while true do
+		resetT(tiles)
+		showT(tiles)
+		dice= math.random(1,3)
+		holoDecoFunctions[dice](tiles)
+		
+		
+		
+		
+	end
+end
+
 function showHoloWall()
+	HoloPieces = {}
     resetT(TablesOfPiecesGroups["HoloTile"])
     hideT(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
@@ -331,14 +381,17 @@ function showHoloWall()
                 if (maRa() == maRa()) ~= maRa() then
                     Hide(TablesOfPiecesGroups["HoloTile"][i])
                 else
+					HoloPieces[#HoloPieces +1] = TablesOfPiecesGroups["HoloTile"][i]
                     Show(TablesOfPiecesGroups["HoloTile"][i])
     				addToShowTable( TablesOfPiecesGroups["HoloTile"][i], "showHoloWall", i)
                 end
             end
         end
+		StartThread(HoloFlicker, HoloPieces)
         return    
     end
-    showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
+    --TODO the engine has a problem, right here and then. No error on erroneous access, just dead function and worser still, post processing shutd
+	--showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
 end
 
 function buildHouse()
