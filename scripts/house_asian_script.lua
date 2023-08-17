@@ -63,8 +63,8 @@ supriseChances = {
     door = 0.6,
     windowwall = 0.7,
     streetwall = 0.5
-
 }
+
 decoChances = {
     roof = 0.2,
     yard = 0.1,
@@ -77,10 +77,10 @@ decoChances = {
 }
 
 logoPieces = {
-                [piece("Roof01")] = true, 
-                [piece("Roof02")] = true,
-                [piece("Roof03")] = true,
-                [piece("Roof28")] = true
+                [piece("Office_Pod_Industrial_Roof10")] = true, 
+                [piece("Office_Pod_Industrial_Roof02")] = true,
+                [piece("Office_Pod_Industrial_Roof01")] = true,
+                [piece("Roof77")] = true
             }
 
 MapPieceIDName = Spring.GetUnitPieceList(unitID)
@@ -281,9 +281,9 @@ function script.Create()
     StartThread(buildHouse)
 
     vtolDeco = {
-        --[TablesOfPiecesGroups["Roof"][1]]=TablesOfPiecesGroups["Roof"][1],
-        --[TablesOfPiecesGroups["Roof"][2]]=TablesOfPiecesGroups["Roof"][2],
-        --[TablesOfPiecesGroups["Roof"][3]]=TablesOfPiecesGroups["Roof"][3]
+        ["ID_l100_Industrial_RoofBlock1"] = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
+        ["Roof01"] = TablesOfPiecesGroups["Roof01Sub"][1],
+        ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][5]     
     }
 
     --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
@@ -321,13 +321,15 @@ function rotations()
 end
 
 function turnPixelOff(pixel)
+    if pixel then
 	Turn(pixel, y_axis, math.rad(180),0)
+    end
 end
 
 function HoloFlicker(tiles)
 	holoDecoFunctions= {}
 		--dead pixel
-	holoDecoFunctions[1]= 	function(tiles) 
+	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles) 
 								one = math.random(1,#tiles)
 								turnPixelOff(tiles[one])
 								restTimeMs = (math.random(1,100)/100)*1000
@@ -336,7 +338,7 @@ function HoloFlicker(tiles)
 							end	
 
 	--whole wall flicker dead
-	holoDecoFunctions[2]= 	function(tiles)
+	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
 								for k, v in pairs(tiles) do
 									turnPixelOff(v)
 								end
@@ -345,7 +347,7 @@ function HoloFlicker(tiles)
 								resetT(tiles)
 							end	
 		--short dead line
-	holoDecoFunctions[3]= 	function(tiles)
+	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
 								for i=1,#tiles, 6 do
 									for j=i, i+6 do
 									turnPixelOff(tiles[j])
@@ -357,15 +359,47 @@ function HoloFlicker(tiles)
 									end									
 								end
 							end	
+
+	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
+			dice = getDeterministicRandom(unitID, #tiles) +1
+			Hide(tiles[dice])
+			restTime = math.random(1,100)*1000
+			Sleep(restTime)
+			Show(tiles[dice])
+		end
+
+	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
+			for k, v in pairs(tiles) do
+				mP(v, math.random(-100,100), math.random(-100,100),  math.random(-100,100), 5)
+			end
+			WaitForMoves(tiles)
+			Sleep(1000)
+			for k, v in pairs(tiles) do
+				mP(v, 0, 0, 0, 5)
+			end
+		end	
+		
+	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
+			axis = math.random(1,3)
+			for i=1, #tiles do
+				fraction = (((i%6)+1)/6)*45
+				Turn(tiles[i], axis, fraction, 5)
+			end
+			WaitForTurns(tiles)
+			Sleep(1000)
+			for i=1, #tiles do
+				Turn(tiles[i], axis, 0, 5)
+			end
+			WaitForTurns(tiles)
+		end
+		
 	while true do
 		resetT(tiles)
 		showT(tiles)
-		dice= math.random(1,3)
+		dice= math.random(1, #holoDecoFunctions)
 		holoDecoFunctions[dice](tiles)
-		
-		
-		
-		
+
+		Sleep(10000)
 	end
 end
 
@@ -531,9 +565,6 @@ function selectGroundBuildMaterial()
 
     if not nice then nice = math.random(1,4) end
 
-    if boolRedo then
-        return materialColourName[math.random(1,4)]
-    end
     return  materialChoiceTable[nice]
 end
 
@@ -1219,24 +1250,6 @@ function buildAnimation()
     Hide(Icon)
     while boolDoneShowing == false do Sleep(100) end
     showT(ToShowTable)
-end
-
-function longTermHidingThread(tiles)
-	dice = getDeterministicRandom(unitID, #tiles) +1
-	Hide(tiles[dice])
-	restTime = math.random(1,100)*1000
-	Sleep(restTime)
-	Show(tiles[dice])
-end
-
-function allShiverThread(tiles)
-	for k, v in pairs(tiles) do
-		mP(v, math.random(-100,100), math.random(-100,100),  math.random(-100,100), 5)
-	end
-	Sleep(1000)
-	for k, v in pairs(tiles) do
-		mP(v, 0, 0, 0, 5)
-	end
 end
 
 
