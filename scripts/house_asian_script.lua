@@ -283,7 +283,7 @@ function script.Create()
     vtolDeco = {
         ["ID_l100_Industrial_RoofBlock1"] = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
         ["Roof01"] = TablesOfPiecesGroups["Roof01Sub"][1],
-        ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][5]     
+        ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
     }
 
     --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
@@ -346,7 +346,7 @@ function HoloFlicker(tiles)
 								Sleep(restTimeMs)
 								resetT(tiles)
 							end	
-		--short dead line
+	--short dead line
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
 								for i=1,#tiles, 6 do
 									for j=i, i+6 do
@@ -359,37 +359,28 @@ function HoloFlicker(tiles)
 									end									
 								end
 							end	
-
+	--Hide one Tile
 	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
 			dice = getDeterministicRandom(unitID, #tiles) +1
-			Hide(tiles[dice])
+			tileFallingOff = tiles[dice]
+			WMove(tileFallingOff,y_axis, -100, 100)
+			Hide(tileFallingOff)
 			restTime = math.random(1,100)*1000
 			Sleep(restTime)
-			Show(tiles[dice])
+			reset(tileFallingOff)
+			Show(tileFallingOff)
 		end
-
+	--scaleflair effect
 	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
-			for k, v in pairs(tiles) do
-				mP(v, math.random(-100,100), math.random(-100,100),  math.random(-100,100), 5)
-			end
-			WaitForMoves(tiles)
-			Sleep(1000)
-			for k, v in pairs(tiles) do
-				mP(v, 0, 0, 0, 5)
-			end
-		end	
-		
-	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
-			axis = math.random(1,3)
+			axis = x_axis
 			for i=1, #tiles do
 				fraction = (((i%6)+1)/6)*45
+				Move(tiles[i], z_axis, 15, 15)
 				Turn(tiles[i], axis, fraction, 5)
 			end
 			WaitForTurns(tiles)
-			Sleep(1000)
-			for i=1, #tiles do
-				Turn(tiles[i], axis, 0, 5)
-			end
+			Sleep(5000)
+			resetT(tiles, 15)
 			WaitForTurns(tiles)
 		end
 		
