@@ -739,17 +739,7 @@ function isBackYardWall(index)
 end
 
 function getWallBackyardDeocrationRotation(index)
-    if index == 1 or index == 6 or index == 31 or index == 36 then return 0 + rotationOffset end
-
-    if index > 1 and index < 6 then return 270 + rotationOffset end
-
-    if index > 31 and index < 36 then return 90 + rotationOffset end
-
-    if (index % 6) == 0 then return 180 + rotationOffset end
-
-    if (index % 6) == 1 then return 0 + rotationOffset end
-
-    return 0 + rotationOffset
+return getOutsideFacingRotationOfBlockFromPlan(index) + 180 + (math.random(-10,10) / 20)
 end
 
 function getOutsideFacingRotationOfBlockFromPlan(index)
@@ -775,36 +765,6 @@ function getOutsideFacingRotationOfBlockFromPlan(index)
     if ((index % 6) == 0 and (index < 31 and index > 6)) then return 0 + rotationOffset end
 
     return 0 + rotationOffset
-end
-
-function getStreetWallDecoRotation(index)
-    offset = 180
-
-    if (index > 30 and index < 37) then
-        if (index == 31) then return offset + 90 - math.random(0, 1) * 90 end
-
-        if (index == 36) then return offset + 90 + math.random(0, 1) * 90 end
-
-        return offset + 90
-    end
-
-    if (index > 0 and index < 7) then
-        if (index == 1) then return offset + 270 + math.random(0, 1) * 90 end
-
-        if (index == 6) then return offset + 270 - math.random(0, 1) * 90 end
-
-        return offset + 270
-    end
-
-    if ((index % 6) == 1 and (index < 31 and index > 6)) then
-        return offset + 0
-    end
-
-    if ((index % 6) == 0 and (index < 31 and index > 6)) then
-        return offset + 180
-    end
-
-    return offset
 end
 
 
@@ -971,7 +931,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 streetWallDecoMaterial, streetWallDeco = DecorateBlockWall(xRealLoc, zRealLoc, Level, streetWallDecoMaterial, 0, materialGroupName)
                 echo("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
                 if streetWallDeco then
-                    rotation = getStreetWallDecoRotation(index)+ (math.random(-10,10) / 20)
+					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
                     addToShowTable(streetWallDeco, xLoc, zLoc)
