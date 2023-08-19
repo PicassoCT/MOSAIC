@@ -331,10 +331,18 @@ function HoloFlicker(tiles)
 		--dead pixel
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles) 
 								one = math.random(1,#tiles)
-								turnPixelOff(tiles[one])
-								restTimeMs = (math.random(1,100)/100)*1000
-								Sleep(restTimeMs)
-								reset(tiles[one])
+                                for i=1,5 do
+								    turnPixelOff(tiles[one])
+								    restTimeMs = 250*i
+								    Sleep(restTimeMs)
+								    reset(tiles[one])
+                                    Sleep(restTimeMs)
+                                end
+                                    turnPixelOff(tiles[one])
+                                    restTimeMs = (math.random(1,100)/100)*10000
+                                    Sleep(restTimeMs)
+                                    reset(tiles[one])
+                                    Sleep(restTimeMs)
 							end	
 
 	--whole wall flicker dead
@@ -342,7 +350,7 @@ function HoloFlicker(tiles)
 								for k, v in pairs(tiles) do
 									turnPixelOff(v)
 								end
-								restTimeMs = (math.random(1,500)/100)*1000
+								restTimeMs = (math.random(1,500)/100)*10000
 								Sleep(restTimeMs)
 								resetT(tiles)
 							end	
@@ -350,12 +358,12 @@ function HoloFlicker(tiles)
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
 								for i=1,#tiles, 6 do
 									for j=i, i+6 do
-									turnPixelOff(tiles[j])
+									   turnPixelOff(tiles[j])
 									end						
 									restTimeMs = (math.random(1,100)/100)*1000
 									Sleep(restTimeMs)
 									for j=i, i+6 do
-									reset(tiles[j])
+									   reset(tiles[j])
 									end									
 								end
 							end	
@@ -365,14 +373,14 @@ function HoloFlicker(tiles)
 			tileFallingOff = tiles[dice]
 			WMove(tileFallingOff,y_axis, -100, 100)
 			Hide(tileFallingOff)
-			restTime = math.random(1,100)*1000
+			restTime = math.random(1,100)*25000
 			Sleep(restTime)
 			reset(tileFallingOff)
 			Show(tileFallingOff)
 		end
 	--scaleflair effect
 	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
-			axis = x_axis
+			axis = z_axis
 			for i=1, #tiles do
 				fraction = (((i%6)+1)/6)*45
 				Move(tiles[i], z_axis, 15, 15)
@@ -388,7 +396,9 @@ function HoloFlicker(tiles)
 		resetT(tiles)
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
-		holoDecoFunctions[dice](tiles)
+		echo("HololWallFunction"..dice)
+        holoDecoFunctions[dice](tiles)
+
 
 		Sleep(10000)
 	end
@@ -1248,7 +1258,7 @@ function buildBuilding()
         echo(getScriptName() .. "addRoofDeocrate started")
         addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
-    if randChance(25) then
+    if randChance(25) or true then
         Sleep(50)
         showHoloWall()
     end
