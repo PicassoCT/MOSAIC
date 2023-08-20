@@ -853,6 +853,7 @@ function buildDecorateGroundLvl(materialColourName)
 
             if attempts == 0 then 
                 echo(getScriptName() .. "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index)
+                assert(true == false)
                 return materialColourName
             end
 
