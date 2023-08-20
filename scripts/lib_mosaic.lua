@@ -123,6 +123,7 @@ function getGameConfig()
         houseSizeY = 16,
         houseSizeZ = 256,
         innerCitySize = 1024,
+        innerCityNeonStreet = 512,
         
         minimalMoveDistanceElseStuck = 140,
   
@@ -723,8 +724,9 @@ function getGameConfig()
     end
 	
     function isNearCityCenter(x,z, GameConfig)
-        if not GG.innerCityCenter then return false end
-        return distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) < GameConfig.innerCitySize
+        if not GG.innerCityCenter then return false, math.huge end
+        distanceToCityCenter = distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) 
+        return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter
     end
 
   function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)

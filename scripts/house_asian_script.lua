@@ -289,6 +289,40 @@ function script.Create()
     --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
 
     StartThread(rotations)
+    StartThread(HoloGrams)
+end
+
+
+function HoloGrams()
+    while   boolDoneShowing == false do
+        Sleep(100)
+    end
+    rest= (7 + math.random(1,7))*1000
+    Sleep(rest)
+    if maRa() == maRa() and not  isNearCityCenter(px,pz, GameConfig) then return end
+
+
+    for logoPiece,v in pairs(logoPieces)do
+        if contains(ToShowTable, logoPiece) then 
+            if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
+            break
+        end
+    end
+
+    px,py,pz = spGetUnitPosition(unitID)
+    boolIsNearCityCenter, distanceToCenter = isNearCityCenter(px,pz, GameConfig)
+    if getDeterministicCityOfSin(getCultureName(), Game)== true and boolIsNearCityCenter == true or mapOverideSinCity() then
+        hostPiece =  logoPieces
+        if maRa()== true and contains(ToShowTable, hostPiece) == true then
+            if not decoPieceUsedOrientation[hostPiece] then echo( unitID..":"..pieceNameMap[hostPiece].." has no value assigned to it") end
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostPiece, decoPieceUsedOrientation[hostPiece] )
+        else 
+            if contains(ToShowTable, hostPiece) == true then 
+                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostPiece, decoPieceUsedOrientation[hostPiece] )
+            end
+        end
+    end  
 end
 
 function rotations()
@@ -331,19 +365,22 @@ function HoloFlicker(tiles)
 		--dead pixel
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles) 
 								one = math.random(1,#tiles)
-                                for i=1,5 do
-								    turnPixelOff(tiles[one])
-								    restTimeMs = 250*i
-								    Sleep(restTimeMs)
-								    reset(tiles[one])
-                                    Sleep(restTimeMs)
-                                end
-                                    turnPixelOff(tiles[one])
-                                    restTimeMs = (math.random(1,100)/100)*10000
-                                    Sleep(restTimeMs)
-                                    reset(tiles[one])
-                                    Sleep(restTimeMs)
-							end	
+                                tile =tiles[one]
+                                if tile then
+                                    for i=1,5 do
+    								    turnPixelOff(tile)
+    								    restTimeMs = 250*i
+    								    Sleep(restTimeMs)
+    								    reset(tile)
+                                        Sleep(restTimeMs)
+                                    end
+                                        turnPixelOff(tile)
+                                        restTimeMs = (math.random(1,100)/100)*10000
+                                        Sleep(restTimeMs)
+                                        reset(tile)
+                                        Sleep(restTimeMs)
+							     end	
+                            end 
 
 	--whole wall flicker dead
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
@@ -371,25 +408,32 @@ function HoloFlicker(tiles)
 	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
 			dice = getDeterministicRandom(unitID, #tiles) +1
 			tileFallingOff = tiles[dice]
-			WMove(tileFallingOff,y_axis, -100, 100)
-			Hide(tileFallingOff)
-			restTime = math.random(1,100)*25000
-			Sleep(restTime)
-			reset(tileFallingOff)
-			Show(tileFallingOff)
+            if tileFallingOff then
+    			WMove(tileFallingOff,y_axis, -10, 100)
+    			Hide(tileFallingOff)
+    			restTime = math.random(1,100)*25000
+    			Sleep(restTime)
+    			reset(tileFallingOff)
+    			Show(tileFallingOff)
+            end
 		end
 	--scaleflair effect
 	holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
-			axis = z_axis
+			axis = y_axis
 			for i=1, #tiles do
-				fraction = (((i%6)+1)/6)*45
-				Move(tiles[i], z_axis, 15, 15)
-				Turn(tiles[i], axis, fraction, 5)
+                factor = ((i%6)+1)/6
+				fraction = factor* 45
+				Move(tiles[i], z_axis, factor *-20 , 15)
+				Turn(tiles[i], axis, math.rad(fraction), 5)
 			end
 			WaitForTurns(tiles)
 			Sleep(5000)
-			resetT(tiles, 15)
+			for i=1, #tiles do
+                Move(tiles[i], z_axis, 0 , 15)
+                Turn(tiles[i], axis,0, 5)
+            end
 			WaitForTurns(tiles)
+            WaitForMoves(tiles)
 		end
 		
 	while true do
@@ -820,10 +864,13 @@ function buildDecorateGroundLvl(materialColourName)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+                assert(rotation)
                 Turn(element, 3, math.rad(rotation), 0)
                 addToShowTable(element, xLoc, zLoc, i)
     			echo("Placed GroundLevel element at "..i)
-                showSubsAnimateSpinsByPiecename(pieceName_pieceNr[element]) 
+                if( pieceNr_pieceName[element] ) then
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
+                end                
                 if countElements == 24 then
                     return materialColourName
                 end        
@@ -833,7 +880,9 @@ function buildDecorateGroundLvl(materialColourName)
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
-                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
+                        if( pieceNr_pieceName[StreetDeco] ) then
+                            showSubsAnimateSpinsByPiecename(pieceNr_pieceName[StreetDeco]) 
+                        end
                     end
                 end
             end  
@@ -877,6 +926,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallDecoMaterial))
 
     countElements = 0
+    px,py,pz = spGetUnitPosition(unitID)
+    boolIsNearCityCenter, distanceToCenter = isNearCityCenter(px,pz, GameConfig)
 
     for i = 1, 37, 1 do
         Sleep(1)
@@ -901,8 +952,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
 
             if element then
-                showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
-
+                if pieceNr_pieceName[element] then
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
+                end
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
                                                                buildMaterial)
@@ -920,7 +972,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 end
             end
 			
-            if chancesAre(10) < decoChances.streetwall  then
+            if chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet then
                 assert(type(streetWallDecoMaterial) == "table")
                 assert(index)
                 assert(xRealLoc)
@@ -934,7 +986,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if streetWallDeco then
 					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
-                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
+                    if pieceNr_pieceName[streetWallDeco]then
+                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
+                    end
                     addToShowTable(streetWallDeco, xLoc, zLoc)
                 end
             end
@@ -956,7 +1010,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
                     Turn(yardWall, _z_axis, math.rad(rotation), 0)
-                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[yardWall])
+                    if pieceNr_pieceName[yardWall] then
+                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[yardWall])
+                    end
                 end
             end
         end
@@ -1084,7 +1140,6 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
-logoPiecesToHide = {}
 pieceNameMap = Spring.GetUnitPieceList( unitID ) 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     echo(getScriptName()..":-->addRoofDeocrate")
@@ -1134,7 +1189,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
                 if countElements == 24 then break end
-                showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
+                if pieceNr_pieceName[element] then
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
+                end
             end
         end
     end
@@ -1173,7 +1230,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
-                if not logoPiecesToHide[element] then
+                if pieceNr_pieceName[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end
 				addToShowTable(element, xLoc, zLoc)
