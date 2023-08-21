@@ -1156,6 +1156,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         local index = i
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
         if partOfPlan == true then
+            assert(xLoc)
+            assert(zLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
 
             local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
@@ -1295,7 +1297,7 @@ function buildBuilding()
     echo("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
 
     echo(getScriptName() .. "buildDecorateGroundLvl started")
-    buildDecorateGroundLvl(materialColourName)
+    --buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
 
     echo(getScriptName() .. "selectBase")
@@ -1307,7 +1309,7 @@ function buildBuilding()
     height = math.random(2,3)
 	for i = 1, height do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
-        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+    --    _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
