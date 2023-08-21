@@ -290,11 +290,8 @@ function script.Create()
         ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
     }
 
-    --BuildDeco = TablesOfPiecesGroups["BuildDeco"]
-
     StartThread(rotations)
-    StartThread(HoloGrams)
-	
+    StartThread(HoloGrams)	
 end
 
 
@@ -890,6 +887,7 @@ function buildDecorateGroundLvl(materialColourName)
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+					assert(rotatation)
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
@@ -904,6 +902,7 @@ function buildDecorateGroundLvl(materialColourName)
                 -- BackYard
                 if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
                     rotation = getWallBackyardDeocrationRotation(index) + math.random(-10,10)/10
+					assert(rotation)
                     yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0, materialColourName)
                     if yardDeco then
                         Turn(yardDeco, _z_axis, math.rad(rotation), 0)
@@ -950,6 +949,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialGroupName)
         xRealLoc, zRealLoc = xLoc, zLoc
         if partOfPlan then
+			assert(xRealLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel )
@@ -976,6 +976,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
                 lvlPlaced[index] = element
                 WaitForMoves(element)
+				assert(rotation)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
 				addToShowTable(element, xLoc, zLoc) -- Todo Smart Argument grab, argument grab via NN the best available match.
@@ -998,6 +999,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 echo("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
                 if streetWallDeco then
 					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+					assert(rotation)
                     Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
                     if pieceNr_pieceName[streetWallDeco]then
                         showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
@@ -1022,7 +1024,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
              echo("Decorating yard walls with "..toString(pieceID_NameMap[yardWall]))
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
-                    Turn(yardWall, _z_axis, math.rad(rotation), 0)
+                    assert(rotation)
+					Turn(yardWall, _z_axis, math.rad(rotation), 0)
                     if pieceNr_pieceName[yardWall] then
                         showSubsAnimateSpinsByPiecename(pieceNr_pieceName[yardWall])
                     end
@@ -1052,13 +1055,13 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
         Sleep(1)
         attempts = attempts -1
     end
-    buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-    
+   
     if attempts == 0 then 
         echo(getScriptName() .. "decorateBackYard: element selection failed for ".. toString(buildMaterial))
         return buildMaterial
     end
-
+	buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
+    
     -- rotation = math.random(0,4) *90
     xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                          -centerP.z + (zLoc * cubeDim.length)
