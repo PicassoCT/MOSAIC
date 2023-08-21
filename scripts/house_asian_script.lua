@@ -14,6 +14,7 @@ IDGroups_Trad_Office_Direction = {
     "u", --upright
     "l"} -- lengthwise
 
+--Riesenrad
 
 --include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -47,11 +48,12 @@ local cubeDim = {
 local SIG_SUBANIMATIONS = 2
 
 pieceCyclicOSTable = {
-    ["PieceName"] = {
+  --[[  ["PieceName"] = {
                     {"turn", y_axis, 49, 3},
                     {"move", x_axis, 49, 3, 500},
                     {"blink", 750 }
-                    },      
+                    }, 
+]]					
 }
 
 supriseChances = {
@@ -76,7 +78,7 @@ decoChances = {
     streetwall = 0.1
 }
 
-logoPieces = {
+holoPieces = {
                 [piece("Office_Pod_Industrial_Roof10")] = true, 
                 [piece("Office_Pod_Industrial_Roof02")] = true,
                 [piece("Office_Pod_Industrial_Roof01")] = true,
@@ -90,7 +92,9 @@ materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 function initAllPieces()
     Signal(SIG_SUBANIMATIONS)
     for pieceName, set in pairs ( pieceCyclicOSTable) do
-        startPieceOS(pieceName, SIG_SUBANIMATIONS)
+		if pieceName_pieceNr[pieceName] and toShowDict[pieceName_pieceNr[pieceName]] then
+			startPieceOS(pieceName, SIG_SUBANIMATIONS)
+		end
     end
 end
 function getNameFilteredDictionary( MustContainOne, MustContainAll, MustContainNone)
@@ -290,6 +294,7 @@ function script.Create()
 
     StartThread(rotations)
     StartThread(HoloGrams)
+	
 end
 
 
@@ -302,7 +307,7 @@ function HoloGrams()
     if maRa() == maRa() and not  isNearCityCenter(px,pz, GameConfig) then return end
 
 
-    for logoPiece,v in pairs(logoPieces)do
+    for logoPiece,v in pairs(holoPieces)do
         if contains(ToShowTable, logoPiece) then 
             if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
@@ -313,7 +318,14 @@ function HoloGrams()
     px,py,pz = spGetUnitPosition(unitID)
     boolIsNearCityCenter, distanceToCenter = isNearCityCenter(px,pz, GameConfig)
     if getDeterministicCityOfSin(getCultureName(), Game)== true and boolIsNearCityCenter == true or mapOverideSinCity() then
-        hostPiece =  logoPieces
+        hostPiece =  nil
+		for k,v in pairs(holoPieces) do
+			if maRa() then
+				hostPiece= k
+			end
+		end
+		if not hostPiece then return end
+		
         if maRa()== true and contains(ToShowTable, hostPiece) == true then
             if not decoPieceUsedOrientation[hostPiece] then echo( unitID..":"..pieceNameMap[hostPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostPiece, decoPieceUsedOrientation[hostPiece] )
@@ -1325,6 +1337,7 @@ function buildBuilding()
 
     echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
+	initAllPieces()
 end
 
 
