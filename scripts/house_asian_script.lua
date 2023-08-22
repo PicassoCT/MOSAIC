@@ -16,7 +16,6 @@ IDGroups_Trad_Office_Direction = {
 
 --Riesenrad
 
---include "lib_Build.lua"
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_asian_script.lua::" end
@@ -59,7 +58,7 @@ pieceCyclicOSTable = {
 supriseChances = {
     roof = 0.35,
     yard = 0.6,
-    yardwall = 0.4,
+    yardWall = 0.4,
     street = 0.5,
     powerpoles = 0.5,
     door = 0.6,
@@ -70,7 +69,7 @@ supriseChances = {
 decoChances = {
     roof = 0.2,
     yard = 0.1,
-    yardwall = 0.4,
+    yardWall = 0.4,
     street = 0.1,
     powerpoles = 0.5,
     door = 0.6,
@@ -656,6 +655,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
         Move(Deco, _x_axis, xRealLoc, 0)
         Move(Deco, _y_axis, level * cubeDim.heigth + y_offset, 0)
         Move(Deco, _z_axis, zRealLoc, 0)
+		WaitForMoves(Deco)
 		addToShowTable(Deco, xLoc, zLoc)
         piecename = getPieceGroupName(Deco)
     end
@@ -853,10 +853,10 @@ function buildDecorateGroundLvl(materialColourName)
         if partOfPlan == true then 
 
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
-            local element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor)
+            local element, nr = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor)
             attempts = maxNrAttempts
             while  (not element  or  inToShowDict(element)) and attempts > 0 do
-                element = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor )
+                element, nr = getRandomBuildMaterial(floorBuildMaterial, materialColourName, index, xLoc, zLoc,  0, buildingGroupsFloor )
                 attempts = attempts -1
             end
 
@@ -873,9 +873,11 @@ function buildDecorateGroundLvl(materialColourName)
                 floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
+				WaitForMoves(element)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                 assert(rotation)
-                Turn(element, 3, math.rad(rotation), 0)
+                WTurn(element, 3, math.rad(rotation), 0)
+	
                 addToShowTable(element, xLoc, zLoc, i)
     			echo("Placed GroundLevel element at "..i)
                 if( pieceNr_pieceName[element] ) then
@@ -890,22 +892,24 @@ function buildDecorateGroundLvl(materialColourName)
 					assert(rotatation)
                     StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
-                        Turn(StreetDeco, 3, math.rad(rotation), 0)
-                        if( pieceNr_pieceName[StreetDeco] ) then
+                        WTurn(StreetDeco, 3, math.rad(rotation), 0)
+
+                        if(pieceNr_pieceName[StreetDeco]) then
                             showSubsAnimateSpinsByPiecename(pieceNr_pieceName[StreetDeco]) 
                         end
                     end
                 end
             end  
 
-            if isBackYardWall(index) == true then
+            if isBackYardWall(i) == true then
                 -- BackYard
                 if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
-                    rotation = getWallBackyardDeocrationRotation(index) + math.random(-10,10)/10
+                    rotation = getWallBackyardDeocrationRotation(i) + math.random(-10,10)/10
 					assert(rotation)
-                    yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0, materialColourName)
+                    yardMaterial, yardDeco = decorateBackYard(i, xLoc, zLoc, yardMaterial, 0, materialColourName)
                     if yardDeco then
-                        Turn(yardDeco, _z_axis, math.rad(rotation), 0)
+                        WTurn(yardDeco, _z_axis, math.rad(rotation), 0)
+						
                     end
                 end
             end
@@ -950,8 +954,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         xRealLoc, zRealLoc = xLoc, zLoc
         if partOfPlan then
 			assert(xRealLoc)
-            xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
-                                 -centerP.z + (zLoc * cubeDim.length)
+            xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel )
             attempts = maxNrAttempts
             while (not element  or  inToShowDict(element)) and attempts > 0 do
@@ -977,7 +980,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 lvlPlaced[index] = element
                 WaitForMoves(element)
 				assert(rotation)
-                Turn(element, _z_axis, math.rad(rotation), 0)
+                WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
 				addToShowTable(element, xLoc, zLoc) -- Todo Smart Argument grab, argument grab via NN the best available match.
 				
@@ -1000,7 +1003,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if streetWallDeco then
 					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
 					assert(rotation)
-                    Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
+                    WTurn(streetWallDeco, _z_axis, math.rad(rotation), 0)
+
                     if pieceNr_pieceName[streetWallDeco]then
                         showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
                     end
@@ -1012,7 +1016,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if isBackYardWall(index) == true then
             -- BackYard
 
-            if chancesAre(10) < decoChances.yard and xLoc and zLoc then
+            if chancesAre(10) < decoChances.yardWall and xLoc and zLoc then
                 assert(type(yardMaterial) == "table")
                 assert(index)
 
@@ -1025,7 +1029,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
                     assert(rotation)
-					Turn(yardWall, _z_axis, math.rad(rotation), 0)
+					WTurn(yardWall, _z_axis, math.rad(rotation), 0)
+			
                     if pieceNr_pieceName[yardWall] then
                         showSubsAnimateSpinsByPiecename(pieceNr_pieceName[yardWall])
                     end
@@ -1063,12 +1068,11 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
 	buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
     
     -- rotation = math.random(0,4) *90
-    xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
-                         -centerP.z + (zLoc * cubeDim.length)
+    xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
     Move(element, _x_axis, xRealLoc, 0)
     Move(element, _z_axis, zRealLoc, 0)
     Move(element, _y_axis, Level * cubeDim.heigth, 0)
-
+	WaitForMoves(element)
     pieceGroupName = getPieceGroupName(element)
 
     showSubsAnimateSpins(pieceGroupName, 1)
@@ -1202,7 +1206,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5 + offset, 0)
                 WaitForMoves(element)
-                Turn(element, _z_axis, math.rad(rotation), 0)
+                WTurn(element, _z_axis, math.rad(rotation), 0)
 				addToShowTable(element, xLoc, zLoc)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
@@ -1246,7 +1250,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _y_axis,
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
-                Turn(element, _z_axis, math.rad(rotation), 0)
+                WTurn(element, _z_axis, math.rad(rotation), 0)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
                 if pieceNr_pieceName[element] then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
