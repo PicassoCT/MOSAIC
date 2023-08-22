@@ -737,6 +737,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
 end
 
 NotInPlanIndeces = {}
+
 if maRa() == true then
     notindex = math.random(2,5)
     NotInPlanIndeces[notindex] = true 
@@ -754,13 +755,13 @@ if maRa() == true then
         NotInPlanIndeces[notindex] = true 
     end
 end
-    
+
 
 boolOpenBuilding = maRa()
 
 -- x:0-6 z:0-6
 function getLocationInPlan(index, materialColourName)
-    if materialColourName == "office" and boolOpenBuilding and NotInPlanIndeces[index] then return false, 0,0 end
+    if materialColourName == "office" and boolOpenBuilding and NotInPlanIndeces[index] then return false, math.huge, math.huge end
 
     if index < 7 then return true, (index - 1), 0 end
 
@@ -774,7 +775,7 @@ function getLocationInPlan(index, materialColourName)
         return true, 5, math.floor((index - 1) / 6.0)
     end
 
-    return false, 0, 0
+    return false, math.huge, math.huge
 end
 
 function isBackYardWall(index)
@@ -827,10 +828,10 @@ function inToShowDict(element)
 end
 
 toShowDict = {}
-function addToShowTable(element, indeX, indeY, addition)
+function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
     assert(element)
     assert(MapPieceIDName[element])
-	echo("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".. toString(addition))
+	echo("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
 	ToShowTable[#ToShowTable + 1] = element	
 	toShowDict[element] = true
 end	
@@ -874,7 +875,8 @@ function buildDecorateGroundLvl(materialColourName)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
 				WaitForMoves(element)
-                rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+                rotation = getOutsideFacingRotationOfBlockFromPlan(i)
+
                 assert(rotation)
                 WTurn(element, 3, math.rad(rotation), 0)
 	
@@ -885,31 +887,30 @@ function buildDecorateGroundLvl(materialColourName)
                 end                
                 if countElements == 24 then
                     return materialColourName
-                end        
+                end 
+
 
                 if chancesAre(10) < decoChances.street then
-                    rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-					assert(rotatation)
-                    StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
-                    if StreetDeco then
-                        WTurn(StreetDeco, 3, math.rad(rotation), 0)
-
-                        if(pieceNr_pieceName[StreetDeco]) then
-                            showSubsAnimateSpinsByPiecename(pieceNr_pieceName[StreetDeco]) 
+                    rotation = getOutsideFacingRotationOfBlockFromPlan(i)
+                    assert(rotation)
+                        StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
+                        if StreetDeco then
+                            Turn(StreetDeco, 3, math.rad(rotation), 0)
+                            if( pieceNr_pieceName[StreetDeco] ) then
+                                showSubsAnimateSpinsByPiecename(pieceNr_pieceName[StreetDeco]) 
+                            end
                         end
-                    end
                 end
-            end  
-
-            if isBackYardWall(i) == true then
-                -- BackYard
-                if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
-                    rotation = getWallBackyardDeocrationRotation(i) + math.random(-10,10)/10
-					assert(rotation)
-                    yardMaterial, yardDeco = decorateBackYard(i, xLoc, zLoc, yardMaterial, 0, materialColourName)
-                    if yardDeco then
-                        WTurn(yardDeco, _z_axis, math.rad(rotation), 0)
-						
+              
+                if isBackYardWall(i) == true then
+                    -- BackYard
+                    if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
+                        rotation = getWallBackyardDeocrationRotation(i) + math.random(-10,10)/10
+    					assert(rotation)
+                        yardMaterial, yardDeco = decorateBackYard(i, xLoc, zLoc, yardMaterial, 0, materialColourName)
+                        if yardDeco then
+                            Turn(yardDeco, _z_axis, math.rad(rotation), 0)
+                        end
                     end
                 end
             end
@@ -952,7 +953,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialGroupName)
         xRealLoc, zRealLoc = xLoc, zLoc
-        if partOfPlan then
+        if partOfPlan == true then
 			assert(xRealLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel )
@@ -972,8 +973,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
                 end
                 countElements = countElements + 1
-                buildMaterial = removeElementFromBuildMaterial(element,
-                                                               buildMaterial)
+                buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
@@ -982,33 +982,32 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 				assert(rotation)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
-				addToShowTable(element, xLoc, zLoc) -- Todo Smart Argument grab, argument grab via NN the best available match.
+				addToShowTable(element, xLoc, zLoc, index, xRealLoc, zRealLoc)
 				
                 if countElements == 24 then
                     return materialGroupName, buildMaterial
-                end
-            end
+                end          
 			
-            if chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet then
-                assert(type(streetWallDecoMaterial) == "table")
-                assert(index)
-                assert(xRealLoc)
-                assert(zRealLoc)
-                assert(count(streetWallDecoMaterial) > 0)
-                assert(Level)
-                assert(streetWallDecoMaterial)
+                if chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet then
+                    assert(type(streetWallDecoMaterial) == "table")
+                    assert(index)
+                    assert(xRealLoc)
+                    assert(zRealLoc)
+                    assert(count(streetWallDecoMaterial) > 0)
+                    assert(Level)
+                    assert(streetWallDecoMaterial)
 
-                streetWallDecoMaterial, streetWallDeco = DecorateBlockWall(xRealLoc, zRealLoc, Level, streetWallDecoMaterial, 0, materialGroupName)
-                echo("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
-                if streetWallDeco then
-					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-					assert(rotation)
-                    WTurn(streetWallDeco, _z_axis, math.rad(rotation), 0)
-
-                    if pieceNr_pieceName[streetWallDeco]then
-                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
+                    streetWallDecoMaterial, streetWallDeco = DecorateBlockWall(xRealLoc, zRealLoc, Level, streetWallDecoMaterial, 0, materialGroupName)
+                    echo("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
+                    if streetWallDeco then
+    					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
+    					assert(rotation)
+                        Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
+                        if pieceNr_pieceName[streetWallDeco]then
+                            showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
+                        end
+                        addToShowTable(streetWallDeco, xLoc, zLoc)
                     end
-                    addToShowTable(streetWallDeco, xLoc, zLoc)
                 end
             end
         end
@@ -1310,13 +1309,13 @@ function buildBuilding()
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
-    echo("buildingGroupsFloor.Upright", buildingGroupsFloor.Upright)
-    echo("buildingGroupsFloor.Length", buildingGroupsFloor.Length)
-    echo("buildingGroupsLevel.Length", buildingGroupsLevel.Length)
-    echo("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
+    --echo("buildingGroupsFloor.Upright", buildingGroupsFloor.Upright)
+    --echo("buildingGroupsFloor.Length", buildingGroupsFloor.Length)
+    --echo("buildingGroupsLevel.Length", buildingGroupsLevel.Length)
+    --echo("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
 
     echo(getScriptName() .. "buildDecorateGroundLvl started")
-    --buildDecorateGroundLvl(materialColourName)
+    buildDecorateGroundLvl(materialColourName)
     echo("House_Asian: buildDecorateGroundLvl ended with ")
 
     echo(getScriptName() .. "selectBase")
@@ -1328,7 +1327,7 @@ function buildBuilding()
     height = math.random(2,3)
 	for i = 1, height do
         echo(getScriptName() .. "buildDecorateLvl start "..i)
-    --    _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         echo(getScriptName() .. "buildDecorateLvl ended")
     end
 
