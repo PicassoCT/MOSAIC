@@ -28,6 +28,7 @@ decoPieceUsedOrientation = {}
 factor = 35
 heightoffset = 90
 maxNrAttempts = 40
+boolEnableExtra = false
 
 BuildDeco = {}
 
@@ -893,7 +894,7 @@ function buildDecorateGroundLvl(materialColourName)
                 end 
 
 
-                if chancesAre(10) < decoChances.street then
+                if boolEnableExtra and chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                     assert(rotation)
                         StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
@@ -905,7 +906,7 @@ function buildDecorateGroundLvl(materialColourName)
                         end
                 end
               
-                if isBackYardWall(i) == true then
+                if boolEnableExtra and isBackYardWall(i) == true then
                     -- BackYard
                     if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
                         rotation = getWallBackyardDeocrationRotation(i) + math.random(-10,10)/10
@@ -991,7 +992,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     return materialGroupName, buildMaterial
                 end          
 			
-                if chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet then
+                if boolEnableExtra and (chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet) then
                     assert(type(streetWallDecoMaterial) == "table")
                     assert(index)
                     assert(xRealLoc)
@@ -1015,9 +1016,8 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
         end
 
-        if isBackYardWall(index) == true then
+        if boolEnableExtra and isBackYardWall(index) == true then
             -- BackYard
-
             if chancesAre(10) < decoChances.yardWall and xLoc and zLoc then
                 assert(type(yardMaterial) == "table")
                 assert(index)
@@ -1242,7 +1242,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 return materialColourName
             end
 
-            if element and chancesAre(10) < decoChances.roof then
+            if boolEnableExtra and (element and chancesAre(10) < decoChances.roof ) then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 decoMaterial = removeElementFromBuildMaterial(element,
