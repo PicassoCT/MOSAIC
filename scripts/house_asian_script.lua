@@ -836,6 +836,9 @@ function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
 	toShowDict[element] = true
 end	
 
+--Problem is sometimes pieces are shown- allocated that should be shown in place ?
+--They are not moved, the gaps go unfilled, the shown parts have no sub or spins
+
 function buildDecorateGroundLvl(materialColourName)
     echo(getScriptName()..":buildDecorateLGroundLvl")
 
