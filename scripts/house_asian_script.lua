@@ -18,9 +18,16 @@ IDGroups_Trad_Office_Direction = {
 
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
-function getScriptName() return "house_asian_script.lua::" end
+function getScriptName() return "house_asian_script:: " end
 function lecho(...)
-    echo(getScriptName(), ...)
+	toStringBuild = ""	
+	arg = {...};
+	arg.n = #arg
+	for k,v in pairs(arg) do
+		toStringBuild = toStringBuild ..",".. toString(v)
+	end
+  
+    echo(getScriptName()..toStringBuild)
 end
 
 local TablesOfPiecesGroups = {}
@@ -30,12 +37,12 @@ heightoffset = 90
 maxNrAttempts = 40
 boolEnableExtra = false
 
-BuildDeco = {}
-
-buildingGroupsFloor = {Upright = {}, Length = {}}
-buildingGroupsLevel = {Upright = {}, Length = {}}
-buildingGroupsRoof = {Upright = {}, Length = {}}
-
+local buildingGroupsFloor = {Upright = {}, Length = {}}
+local buildingGroupsLevel = {Upright = {}, Length = {}}
+local buildingGroupsRoof = {Upright = {}, Length = {}}
+center = piece "center"
+Icon = piece("Icon")
+	
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
@@ -88,6 +95,56 @@ holoPieces = {
 MapPieceIDName = Spring.GetUnitPieceList(unitID)
 materialChoiceTable = {"pod", "industrial", "trad", "office"}
 materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
+vtolDeco= {}
+gx, gy, gz = spGetUnitPosition(unitID)
+geoHash = (gx - (gx - math.floor(gx))) + (gy - (gy - math.floor(gy))) + (gz - (gz - math.floor(gz)))
+-- Spring.Echo("House geohash:"..geoHash)
+if geoHash % 3 == 1 then decoChances = supriseChances end
+centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
+ToShowTable = {}
+
+local _x_axis = 1
+local _y_axis = 2
+local _z_axis = 3
+
+local deterministicPersistentCounter= 0
+local deterministicPersistentIndex= 1
+local GameConfig = getGameConfig()
+local lvlPlaced = {}
+local roundNrTable =
+    {1,     2,      3,       4,     5,      6,
+    20,     nil,     nil,   nil,    nil,    7,
+    19,     nil,     nil,   nil,    nil,    8,
+    18,     nil,     nil,   nil,    nil,    9,
+    17,     nil,     nil,   nil,    nil,    10,
+    16,     15,     14,     13,     12,     11,
+    }
+--First instance initialisation
+NotInPlanIndeces = {}
+
+if maRa() == true then
+    notindex = math.random(2,5)
+    NotInPlanIndeces[notindex] = true 
+    if maRa()== true then
+        notindex = math.min(notindex+1,5)
+        NotInPlanIndeces[notindex] = true 
+    end
+end
+
+if maRa() == true then
+    notindex=  math.random(32,35)
+    NotInPlanIndeces[notindex] = true 
+    if maRa()== false then
+        notindex = math.min(notindex+1,35)
+        NotInPlanIndeces[notindex] = true 
+    end
+end
+
+boolOpenBuilding = maRa()
+boolDoneShowing = false
+boolHouseHidden = false
+Spring.SetUnitNanoPieces(unitID, {center})
+
 
 function initAllPieces()
     Signal(SIG_SUBANIMATIONS)
@@ -97,6 +154,7 @@ function initAllPieces()
 		end
     end
 end
+
 function getNameFilteredDictionary( MustContainOne, MustContainAll, MustContainNone)
     return getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNone, true)
 end
@@ -104,7 +162,6 @@ end
 function getNameFilteredTable( MustContainOne, MustContainAll, MustContainNone)
     return getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNone, false)
 end
-
 
 function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNone, boolGetNameGroupedDict)
     if not MustContainOne then MustContainOne = {} end
@@ -138,7 +195,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 		boolContainedForbidden = false 
 		for keyword,_ in pairs(MustNotContainSearchTerms) do
 			if string.find(groupNameLower, keyword) then
-				--echo("Did find forbidden".. keyword.." in "..groupNameLower)
+				--lecho("Did find forbidden".. keyword.." in "..groupNameLower)
 				boolContainedForbidden = true
 				break
 			end
@@ -148,7 +205,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
         boolFoundAtLeastOne = false 
 		for keyword,_ in pairs(MustContainAtLeastOneTerm) do
 			if string.find(groupNameLower, keyword) then
-				--echo("Found optional ".. keyword.." in "..groupNameLower)
+				--lecho("Found optional ".. keyword.." in "..groupNameLower)
 				boolFoundAtLeastOne = true
 				break
 			end
@@ -158,14 +215,14 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 		boolContainedAll = true
 		for keyword,_ in pairs(MustContainAllSearchTerms) do
 			if not string.find(groupNameLower, keyword) then
-				--echo("Did not find essential ".. keyword.." in "..groupNameLower)
+				--lecho("Did not find essential ".. keyword.." in "..groupNameLower)
 				boolContainedAll = false
 				break
 			end
 		end
 		if  boolContainedAll == true then 
 
- 		--echo("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
+ 		--lecho("Adding id Group with name:"..groupNameLower.." and ".. #v.." members")
         if boolGetNameGroupedDict == true then
 			allMatchingGroups[groupName] = v    
 		else
@@ -179,19 +236,13 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 	return allMatchingGroups
 end
 
-
 function hasUnitSequentialElements(id)
 	return id % 2 == 0 or true
 end
 
-deterministicPersistentCounter= 0
-deterministicPersistentIndex= 1
---TODO check buildingGroups has material Dimensions
---TODO check buildMaterials are used elsewhere and its flat
-
 function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGroups)
 	if not hasUnitSequentialElements(unitID) then return false end
-    if not roundNr then echo("invalid roundNr "); return false end
+    if not roundNr then lecho("invalid roundNr "); return false end
 	level= level +1
 	Direction = IDGroupsDirection[(unitID % #IDGroupsDirection) +1]
     --materialType = "trad"
@@ -208,7 +259,7 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 			assert(maxIDGroups > 1, toString(buildingGroups.Upright))
 			PieceGroupIndex = getDeterministicRandom(unitID + roundNr, maxIDGroups) + 1
 			groupName, group = getNthDictElement(buildingGroups.Upright, PieceGroupIndex)
-			echo("PieceGroupIndex:"..PieceGroupIndex)
+			lecho("PieceGroupIndex:"..PieceGroupIndex)
 			if  not groupName or not group or not group[level] or inToShowDict(group[level]) then
 				return false
 			else
@@ -221,7 +272,7 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 			maxIDGroups = count(buildingGroups.Length)
 			assert(maxIDGroups > 1)
 			PieceGroupIndex = (getDeterministicRandom(unitID + deterministicPersistentCounter, maxIDGroups) + 1 ) 
-			echo("PieceGroupIndex:"..PieceGroupIndex)
+			lecho("PieceGroupIndex:"..PieceGroupIndex)
 			groupName, group = getNthDictElement(buildingGroups.Length, PieceGroupIndex)
 			
 			if  not groupName or not group or not group[deterministicPersistentIndex] then
@@ -247,28 +298,6 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 	return false
 end
 
-vtolDeco= {}
-gx, gy, gz = spGetUnitPosition(unitID)
-geoHash = (gx - (gx - math.floor(gx))) + (gy - (gy - math.floor(gy))) + (gz - (gz - math.floor(gz)))
--- Spring.Echo("House geohash:"..geoHash)
-if geoHash % 3 == 1 then decoChances = supriseChances end
-centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
-ToShowTable = {}
-
-local _x_axis = 1
-local _y_axis = 2
-local _z_axis = 3
-
-function script.HitByWeapon(x, z, weaponDefID, damage) end
-
-AlreadyUsedPiece = {}
-center = piece "center"
-
-pericodicRotationYPieces = {}
-pericodicMovingZPieces = {}
-
-GameConfig = getGameConfig()
-
 function timeOfDay()
     WholeDay = GameConfig.daylength
     timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
@@ -290,10 +319,8 @@ function script.Create()
         ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
     }
 
-    StartThread(rotations)
     StartThread(HoloGrams)	
 end
-
 
 function HoloGrams()
     while   boolDoneShowing == false do
@@ -306,7 +333,7 @@ function HoloGrams()
 
     for logoPiece,v in pairs(holoPieces)do
         if contains(ToShowTable, logoPiece) then 
-            if not decoPieceUsedOrientation[logoPiece] then echo(unitID..":"..pieceNameMap[logoPiece].." has no value assigned to it") end
+            if not decoPieceUsedOrientation[logoPiece] then lecho(unitID..":"..pieceID_NameMap[logoPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
             break
         end
@@ -324,7 +351,7 @@ function HoloGrams()
 		if not hostPiece then return end
 		
         if maRa()== true and contains(ToShowTable, hostPiece) == true then
-            if not decoPieceUsedOrientation[hostPiece] then echo( unitID..":"..pieceNameMap[hostPiece].." has no value assigned to it") end
+            if not decoPieceUsedOrientation[hostPiece] then lecho( unitID..":"..pieceID_NameMap[hostPiece].." has no value assigned to it") end
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostPiece, decoPieceUsedOrientation[hostPiece] )
         else 
             if contains(ToShowTable, hostPiece) == true then 
@@ -332,35 +359,6 @@ function HoloGrams()
             end
         end
     end  
-end
-
-function rotations()
-    periodicFunc = function(p, v)
-        while true do
-            Sleep(500);
-            dir = (v*randSign() ) or math.random(-45, 45);
-            WTurn(p, y_axis, math.rad(dir), math.pi / 250);
-        end
-    end
-    assert(pericodicRotationYPieces)
-    for k, v in pairs(pericodicRotationYPieces) do
-        StartThread(periodicFunc, k,v)
-    end
-
-    Sleep(500)  
-    periodicMovementFunc = function(p, value)
-        while true do
-            Sleep(500);
-            Move(p, _x_axis, math.rad(value), 5);
-            WaitForMoves(p)
-            Move(p, _x_axis, math.rad(0), 5);
-            WaitForMoves(p)
-        end
-    end
-    assert(pericodicMovingZPieces)
-    for k, v in pairs(pericodicMovingZPieces) do
-        StartThread(periodicMovementFunc, k, v)
-    end
 end
 
 function turnPixelOff(pixel)
@@ -449,7 +447,7 @@ function HoloFlicker(tiles)
 		resetT(tiles)
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
-		echo("HololWallFunction"..dice)
+		lecho("HololWallFunction"..dice)
         holoDecoFunctions[dice](tiles)
 
 
@@ -590,14 +588,14 @@ function selectBase(materialType)
     basePiece = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
     if basePiece then
         showRegPiece(basePiece)       
-        echo("BasePiece: ".. getPieceName(unitID, basePiece))
+        lecho("BasePiece: ".. getPieceName(unitID, basePiece))
     end
 end
 
 function selectBackYard(materialType) 
     yardDecoPice = getMaterialBaseNameOrDefault(materialType, {"Base", "Deco"}, {})
 
-    echo("BaseDeco: "..toString(yardDecoPice))
+    lecho("BaseDeco: "..toString(yardDecoPice))
     if yardDecoPice then
          showRegPiece(yardDecoPice)       
     end
@@ -647,7 +645,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     end
 
     if attempts  == 0 then
-       echo("DecorateBlockWall: ran out of attempts")
+       lecho("DecorateBlockWall: ran out of attempts")
         return DecoMaterial
     end
 
@@ -675,24 +673,8 @@ function getIDFromPieceName(name)
     return typeID, group
 end
 
-local roundNrTable =
-    {1,     2,      3,       4,     5,      6,
-    20,     nil,     nil,   nil,    nil,    7,
-    19,     nil,     nil,   nil,    nil,    8,
-    18,     nil,     nil,   nil,    nil,    9,
-    17,     nil,     nil,   nil,    nil,    10,
-    16,     15,     14,     13,     12,     11,
-    }
 function convertIndexToRoundNr(groupIndex)    
     return roundNrTable[groupIndex]
-end
-
-function notString(boolHigan)
-    if boolHigan == true then
-        return ""
-    end
-
-    return " not "
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
@@ -701,64 +683,41 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
         assert(type(buildingGroups)== "table")
     end--]]
     if not buildMaterial then
-        echo(getScriptName() .. "getRandomBuildMateria: Got no table "..name);
+        lecho("getRandomBuildMateria: Got no table "..name);
         return
     end
     if not type(buildMaterial) == "table" then
-		echo( getScriptName() .. "getRandomBuildMateria: Got not a table, got" ..   type(buildMaterial) .. "instead");
+		lecho( "getRandomBuildMateria: Got not a table, got" ..   type(buildMaterial) .. "instead");
         return
     end
 
     if count(buildMaterial) == 0 and #buildMaterial == 0 then
-      echo(getScriptName() .. "getRandomBuildMateria: Got a empty table "..name)
-      echo( "No materials left for "..name.. " at level ".. toString(level))
+      lecho("getRandomBuildMateria: Got a empty table "..name)
+      lecho( "No materials left for "..name.. " at level ".. toString(level))
       return
     end
 
 	--TODO Move to total separate function, this thing is neither random nor connected with the buildMaterial handed to the function
     roundNr = convertIndexToRoundNr(index)
     if roundNr then
-        --echo("Derived ".. toString(roundNr).." from "..toString(index))
+        --lecho("Derived ".. toString(roundNr).." from "..toString(index))
     	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
     	if isInRoundNr and piecenum then
-            echo("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+            lecho("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
            return piecenum
     	end
     end
 
     piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
 	if not inToShowDict(piecenum)  then
-        echo("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+        lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
 		return piecenum, num
 	end
 
-    --echo(" Returning nil in getRandomBuildMateria in context".. toString(context)) 
+    --lecho(" Returning nil in getRandomBuildMateria in context".. toString(context)) 
    return
 end
-
-NotInPlanIndeces = {}
-
-if maRa() == true then
-    notindex = math.random(2,5)
-    NotInPlanIndeces[notindex] = true 
-    if maRa()== true then
-        notindex = math.min(notindex+1,5)
-        NotInPlanIndeces[notindex] = true 
-    end
-end
-
-if maRa() == true then
-    notindex=  math.random(32,35)
-    NotInPlanIndeces[notindex] = true 
-    if maRa()== false then
-        notindex = math.min(notindex+1,35)
-        NotInPlanIndeces[notindex] = true 
-    end
-end
-
-
-boolOpenBuilding = maRa()
 
 -- x:0-6 z:0-6
 function getLocationInPlan(index, materialColourName)
@@ -823,7 +782,6 @@ function getOutsideFacingRotationOfBlockFromPlan(index)
     return 0 + rotationOffset
 end
 
-
 function inToShowDict(element)
 	return toShowDict[element] ~= nil
 end
@@ -832,7 +790,7 @@ toShowDict = {}
 function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
     assert(element)
     assert(MapPieceIDName[element])
-	echo("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
+	lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
 	ToShowTable[#ToShowTable + 1] = element	
 	toShowDict[element] = true
 end	
@@ -841,18 +799,18 @@ end
 --They are not moved, the gaps go unfilled, the shown parts have no sub or spins
 
 function buildDecorateGroundLvl(materialColourName)
-    echo(getScriptName()..":buildDecorateLGroundLvl")
+    lecho(":buildDecorateLGroundLvl")
 
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
     local floorBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"}) 
-    echo("floorBuildMaterial", floorBuildMaterial)
+    lecho("floorBuildMaterial", floorBuildMaterial)
     countElements = 0
 
     for i = 1, 37, 1 do
 
         local index = i
-        --echo(getScriptName() .. "buildDecorateGroundLvl" .. i)
+        --lecho( "buildDecorateGroundLvl" .. i)
         rotation = getOutsideFacingRotationOfBlockFromPlan(index)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
         if partOfPlan == true then 
@@ -866,7 +824,7 @@ function buildDecorateGroundLvl(materialColourName)
             end
 
             if attempts == 0 then 
-                echo(getScriptName() .. "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index)
+                lecho( "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index)
                 assert(true == false)
                 return materialColourName
             end
@@ -885,7 +843,7 @@ function buildDecorateGroundLvl(materialColourName)
                 WTurn(element, 3, math.rad(rotation), 0)
 	
                 addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
-    			echo("Placed GroundLevel element at "..i)
+    			lecho("Placed GroundLevel element at "..i)
                 if( pieceNr_pieceName[element] ) then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
                 end                
@@ -926,9 +884,8 @@ end
 
 function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
 
-lvlPlaced = {}
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
-    echo(getScriptName()..":buildDecorateLvl"..Level.." for "..materialGroupName)
+    lecho(":buildDecorateLvl"..Level.." for "..materialGroupName)
     Sleep(1)
     assert(buildMaterial, "no material table in" ..Level.." for "..materialGroupName)
     assert(type(buildMaterial)== "table")
@@ -944,7 +901,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         yardMaterial = getNameFilteredTable( {materialGroupName},{"Yard", "Wall"}, {"trad","industrial"})
     end
 
-    --echo(getScriptName() .. count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallDecoMaterial))
+    --lecho( count(WindowWallMaterial) .. "|" .. count(yardMaterial) .. "|" .. count(streetWallDecoMaterial))
 
     countElements = 0
     px,py,pz = spGetUnitPosition(unitID)
@@ -968,7 +925,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
             
             if attempts == 0 then 
-                echo(getScriptName() .. "buildDecorateLvl: element selection failed for "..materialColourName)
+                lecho( "buildDecorateLvl: element selection failed for "..materialColourName)
                 return materialColourName
             end
 
@@ -985,7 +942,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 WaitForMoves(element)
 				assert(rotation)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
-                -- echo("Adding Element to level"..Level)
+                -- lecho("Adding Element to level"..Level)
 				addToShowTable(element, xLoc, zLoc, index, xRealLoc, zRealLoc)
 				
                 if countElements == 24 then
@@ -1002,7 +959,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     assert(streetWallDecoMaterial)
 
                     streetWallDecoMaterial, streetWallDeco = DecorateBlockWall(xRealLoc, zRealLoc, Level, streetWallDecoMaterial, 0, materialGroupName)
-                    echo("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
+                    lecho("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
                     if streetWallDeco then
     					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
     					assert(rotation)
@@ -1027,7 +984,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 
                 yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level, materialGroupName)
                 assert(type(yardMaterial) == "table")
-             echo("Decorating yard walls with "..toString(pieceID_NameMap[yardWall]))
+             lecho("Decorating yard walls with "..toString(pieceID_NameMap[yardWall]))
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
                     assert(rotation)
@@ -1046,7 +1003,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
-    echo(getScriptName()..":decorateBackYard")  
+    lecho(":decorateBackYard")  
     assert(buildMaterial)
     assert(Level)
 
@@ -1064,7 +1021,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
     end
    
     if attempts == 0 then 
-        echo(getScriptName() .. "decorateBackYard: element selection failed for ".. toString(buildMaterial))
+        lecho( "decorateBackYard: element selection failed for ".. toString(buildMaterial))
         return buildMaterial
     end
 	buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
@@ -1141,7 +1098,7 @@ end
 
 function showSubsAnimateSpins(pieceGroupName, nr)
     if not nr then 
-        echo("Subpiece nr not given")
+        lecho("Subpiece nr not given")
         return 
     end
     local subName = pieceGroupName .. nr .. "Sub"
@@ -1162,9 +1119,8 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
-pieceNameMap = Spring.GetUnitPieceList( unitID ) 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
-    echo(getScriptName()..":-->addRoofDeocrate")
+    lecho(":-->addRoofDeocrate")
     countElements = 0
     if materialColourName == "pod" and maRa() then
         decoChances.roof = 0.65 
@@ -1189,7 +1145,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             end
 
             if attempts == 0 then 
-                echo(getScriptName() .. "decorateBackYard:roofMaterial element selection failed for "..materialColourName)
+                lecho("decorateBackYard:roofMaterial element selection failed for "..materialColourName)
                 return materialColourName
             end
 
@@ -1238,7 +1194,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             end
 
             if attempts == 0 then 
-                echo(getScriptName() .. "decorateBackYard:roofDecoMaterials element selection failed for "..materialColourName)
+                lecho( "decorateBackYard:roofDecoMaterials element selection failed for "..materialColourName)
                 return materialColourName
             end
 
@@ -1275,15 +1231,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 end
 
-boolDoneShowing = false
-boolHouseHidden = false
-
 function showHouse() boolHouseHidden = false; showT(ToShowTable) end
 
 function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
-
-
-Icon = piece("Icon")
 
 function buildAnimation()
    
@@ -1294,49 +1244,47 @@ function buildAnimation()
     showT(ToShowTable)
 end
 
-
-
 function buildBuilding()
     StartThread(buildAnimation)
-    echo(getScriptName() .. "buildBuilding")
+    lecho( "buildBuilding")
     if randChance(5) then
         showOne(TablesOfPiecesGroups["StandAlone"], true)
         boolDoneShowing = true
         return
     end
  
-    --echo(getScriptName() .. "selectBase")
+    --lecho( "selectBase")
     materialColourName = selectGroundBuildMaterial()
     --materialColourName = "office"
     buildingGroupsFloor.Upright = getNameFilteredDictionary( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"})
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
-    --echo("buildingGroupsFloor.Upright", buildingGroupsFloor.Upright)
-    --echo("buildingGroupsFloor.Length", buildingGroupsFloor.Length)
-    --echo("buildingGroupsLevel.Length", buildingGroupsLevel.Length)
-    --echo("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
+    --lecho("buildingGroupsFloor.Upright", buildingGroupsFloor.Upright)
+    --lecho("buildingGroupsFloor.Length", buildingGroupsFloor.Length)
+    --lecho("buildingGroupsLevel.Length", buildingGroupsLevel.Length)
+    --lecho("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
 
-    echo(getScriptName() .. "buildDecorateGroundLvl started")
+    lecho( "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
-    echo("House_Asian: buildDecorateGroundLvl ended with ")
+    lecho("House_Asian: buildDecorateGroundLvl ended with ")
 
-    echo(getScriptName() .. "selectBase")
+    lecho( "selectBase")
     selectBase(materialColourName)
-    echo(getScriptName() .. "selectBackYard")
+    lecho( "selectBackYard")
     selectBackYard(materialColourName)    
 
     local levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
     height = math.random(2,3)
 	for i = 1, height do
-        echo(getScriptName() .. "buildDecorateLvl start "..i)
+        lecho( "buildDecorateLvl start "..i)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
-        echo(getScriptName() .. "buildDecorateLvl ended")
+        lecho( "buildDecorateLvl ended")
     end
 
 	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
-        echo(getScriptName() .. "addRoofDeocrate started")
+        lecho( "addRoofDeocrate started")
         addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
     if randChance(25) or true then
@@ -1344,11 +1292,10 @@ function buildBuilding()
         showHoloWall()
     end
 
-    echo(getScriptName() .. "addRoofDeocrate ended")
+    lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
 	initAllPieces()
 end
-
 
 function script.Activate() return 1 end
 
@@ -1356,6 +1303,6 @@ function script.Deactivate() return 0 end
 
 function script.QueryBuildInfo() return center end
 
-Spring.SetUnitNanoPieces(unitID, {center})
+function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
