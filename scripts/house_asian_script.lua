@@ -880,7 +880,7 @@ function buildDecorateGroundLvl(materialColourName)
                 assert(rotation)
                 WTurn(element, 3, math.rad(rotation), 0)
 	
-                addToShowTable(element, xLoc, zLoc, i)
+                addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
     			echo("Placed GroundLevel element at "..i)
                 if( pieceNr_pieceName[element] ) then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
