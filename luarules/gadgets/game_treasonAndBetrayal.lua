@@ -38,9 +38,10 @@ if (gadgetHandler:IsSyncedCode()) then
         end
      assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
      assert(safeHouseTypeTable[UnitDefNames["antagonsafehouse"].id])   
-	 if GameConfig.instance.culture == TODO
-     --assert(houseTypeTable[UnitDefNames["house_arab0"].id])   only valid if culture is 
-    end
+	 if GameConfig.instance.culture == "arab" then
+		assert(houseTypeTable[UnitDefNames["house_arab0"].id])   only valid if culture is 
+	 end
+	end
 
 
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
