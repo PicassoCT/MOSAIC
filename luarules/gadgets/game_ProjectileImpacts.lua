@@ -45,7 +45,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
     local MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
-    assert(MobileInterrogateAbleType[UnitDefNames["civilian_arab0"].id] ~= nil)
+    if GameConfig.instance.culture == "arabic" then
+        assert(MobileInterrogateAbleType[UnitDefNames["civilian_arab0"].id] ~= nil)
+    end
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
     local targetLaserWeaponDefID = WeaponDefNames["targetlaser"].id

@@ -332,7 +332,6 @@ end
 function selectGroundBuildMaterial(boolRedo)
     nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
-
     if getManualCivilianBuildingMaps(Game.mapName) then
         mapeDependenHouseTypes = getMapDependentHouseTypes(Game.mapName)    
         nice = math.random(3,4)
@@ -342,7 +341,7 @@ function selectGroundBuildMaterial(boolRedo)
     if not nice then nice = 1 end
 
     if boolRedo then
-        return materialColourName[math.random(1,4)]
+        return materialChoiceTable[math.random(1,4)]
     end
     return  materialChoiceTable[nice]
 end
@@ -603,12 +602,13 @@ end
 
 function getMaterialElementsContaingNotContaining(materialColourName, mustContainTable, mustNotContainTable)
     local resultTable = {}
+    assert(materialColourName)
     for nameUp,data in pairs(TablesOfPiecesGroups) do
         local name = string.lower(nameUp)
         if   string.find(name, "sub") == nil and
               string.find(name, "spin")  == nil  then
                 boolFullfilledConditions= true
-                assert(materialColourName)
+          
                 boolContainsMaterialName, boolContainsNoOtherName =  nameContainsMaterial(name, materialColourName)
 
                 if boolContainsMaterialName == true or boolContainsNoOtherName == true then
@@ -677,6 +677,7 @@ end
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
+    assert(materialColourName)
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Door"})
 
     local DoorMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Door"}, {"Deco"})
@@ -782,7 +783,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     assert(buildMaterial)
     assert(type(buildMaterial)== "table")
     --assert(#buildMaterial >0 )
-
+    assert(materialGroupName)
     local WindowWallMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Wall"}, {"Deco"})  
     local WindowDecoMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Window", "Deco"}, {})  
     local yardMaterial = getMaterialElementsContaingNotContaining(materialGroupName, {"Yard", "Wall"}, {})

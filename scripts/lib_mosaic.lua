@@ -724,7 +724,7 @@ function getGameConfig()
     end
 	
     function isNearCityCenter(x,z, GameConfig)
-        if not GG.innerCityCenter then return false, math.huge end
+        if not GG.innerCityCenter or not GG.innerCityCenter.x then return false, math.huge end
         distanceToCityCenter = distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) 
         return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter
     end
@@ -766,7 +766,8 @@ function getGameConfig()
     end
 
     function getLocationHash(x,z, maxs)
-        return ((x + z) % (maxs or 4) + 1)
+        maxs = maxs or 4
+        return (((x + z) % maxs) + 1)
     end
 
     function getBuildingTypeHash(unitID, maxType)
@@ -1527,7 +1528,9 @@ function getGameConfig()
                 
                 resultTypeTable = getTypeTable(UnitDefNames, interrogationNamesTable)
                 assert(resultTypeTable[UnitDefNames["operativeinvestigator"].id])
-                assert(resultTypeTable[UnitDefNames["civilian_arab0"].id])
+                if GG.GameConfig.instance.culture == Cultures.arabic then
+                    assert(resultTypeTable[UnitDefNames["civilian_arab0"].id])
+                end
                 return resultTypeTable
             end
 
