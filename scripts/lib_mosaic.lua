@@ -797,7 +797,16 @@ function getGameConfig()
 
     function getCultureDependantRandomOffsets(culture, loc)
         districtOffset = getLocationHash(math.ceil(loc.x / 1000), math.ceil(loc.z / 1000), 4)
-        if culture == Cultures.arabic then
+          if culture == Cultures.asian then
+            rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
+            return {
+                xRandOffset = 50,
+                zRandOffset = 50,
+                districtOffset = districtOffset,
+                districtRotationDeg = rotDegOffset
+            }
+        end
+		if culture == Cultures.arabic then
             rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 20,

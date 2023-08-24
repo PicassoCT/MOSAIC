@@ -250,11 +250,13 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
         for offsz = -1, 1, 1 do
             if isOnInnerCityGridBlock(cursor, offsx, offsz) == true then                
                 if  hasAlreadyBuilding(orgPosX + (offsx * innerCityDim.x),  orgPosZ + offsz * innerCityDim.z, 35) == false  then
-                          houseID = spawnBuilding(buildingType, 
-                                        orgPosX + offsx * innerCityDim.x,
-                                        orgPosZ + offsz * innerCityDim.z,
-                                        true)
+						houseID = spawnBuilding(buildingType, 
+									orgPosX + offsx * innerCityDim.x,
+									orgPosZ + offsz * innerCityDim.z,
+									true)
+						if houseID then
                            setHouseStreetNameTooltip(houseID, (cursor.x*2) + offsx, (cursor.z*2) + offsz, Game, true)
+						end
                 end
             end    
         end
@@ -309,25 +311,29 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
                 buildingType = randDict(houseTypeTable)
                 houseID = spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
-                setHouseStreetNameTooltip(houseID, cursor.x*2 , cursor.z*2, Game)
+				if houseID then
+					setHouseStreetNameTooltip(houseID, cursor.x*2 , cursor.z*2, Game)
 
-                numberOfBuildings = numberOfBuildings - 1
-                BuildingPlaceT[cursor.x][cursor.z] = false
-                boolFirstPlaced = true
-                if boolNearCityCenter == true then
-                     fillGapsWithInnerCityBlocks(cursor,  buildingType)
+					numberOfBuildings = numberOfBuildings - 1
+					BuildingPlaceT[cursor.x][cursor.z] = false
+					boolFirstPlaced = true
+					if boolNearCityCenter == true then
+						 fillGapsWithInnerCityBlocks(cursor,  buildingType)
+					end
                 end
             end
 
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
                 buildingType = randDict(houseTypeTable)
                 houseID = spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
-                setHouseStreetNameTooltip(houseID, mirror.x*2 , mirror.z*2, Game)
-                --echo("Placed Single Mirror")
-                numberOfBuildings = numberOfBuildings - 1
-                BuildingPlaceT[mirror.x][mirror.z] = false
-                if boolMirrorNearCityCenter == true then
-                     fillGapsWithInnerCityBlocks(mirror,  buildingType)
+                if houseID then
+					setHouseStreetNameTooltip(houseID, mirror.x*2 , mirror.z*2, Game)
+					--echo("Placed Single Mirror")
+					numberOfBuildings = numberOfBuildings - 1
+					BuildingPlaceT[mirror.x][mirror.z] = false
+					if boolMirrorNearCityCenter == true then
+						 fillGapsWithInnerCityBlocks(mirror,  buildingType)
+					end
                 end
             end
 
@@ -376,13 +382,15 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                             houseID = spawnBuilding(buildingType,
                                           tmpCursor.x * houseStreetDim.x,
                                           tmpCursor.z * houseStreetDim.z, boolNearCityCenter)
-                            numberOfBuildings = numberOfBuildings - 1
-                            setHouseStreetNameTooltip(houseID, nameCursor.x , nameCursor.z, Game, true)
-                            if boolNearCityCenter == true then
-                                fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
-                            end
+							if houseID then
+								numberOfBuildings = numberOfBuildings - 1
+								setHouseStreetNameTooltip(houseID, nameCursor.x , nameCursor.z, Game, true)
+								if boolNearCityCenter == true then
+									fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
+								end
 
-                            BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
+								BuildingPlaceT[tmpCursor.x][tmpCursor.z] = false
+							end
                         end
                     end
                 end
