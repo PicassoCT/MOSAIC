@@ -39,7 +39,7 @@ if (gadgetHandler:IsSyncedCode()) then
      assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
      assert(safeHouseTypeTable[UnitDefNames["antagonsafehouse"].id])   
 	 if GameConfig.instance.culture == "arab" then
-		assert(houseTypeTable[UnitDefNames["house_arab0"].id])   only valid if culture is 
+		assert(houseTypeTable[UnitDefNames["house_arab0"].id])  -- only valid if culture is active
 	 end
 	end
 

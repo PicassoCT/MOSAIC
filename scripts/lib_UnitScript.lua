@@ -4311,15 +4311,16 @@ end
 function getSafeRandom(T, default)
     if not T then return default end 
     countElements = count(T)
-
+	
     if countElements < 1 then return default, 1 end
-    if countElements < 2 then
+    if countElements == 1 then
+		--return first element
+		echo("Table has only one element, picking first")
         for k,v in pairs(T) do
-            return v, k
+            return v, 1
         end
     end
-
-
+	--Just one huge WTF to lua, in order to have a working random one needs to permanently copy tables
     local keyset = {}
     for k in pairs(T) do
         table.insert(keyset, k)
