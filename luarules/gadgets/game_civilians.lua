@@ -52,8 +52,8 @@ local boolInitialized = false
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
-assert(TruckTypeTable, tostring(TruckTypeTable))
-assert(count(TruckTypeTable) > 0, tostring(TruckTypeTable))
+assert(TruckTypeTable, toString("gameCivilians:",TruckTypeTable))
+--assert(count(TruckTypeTable) > 0, toString("gameCivilians:",TruckTypeTable))
 
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)

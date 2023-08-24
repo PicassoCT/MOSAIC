@@ -49,9 +49,13 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
-assert(houseTypeTable[UnitDefNames["house_arab0"].id])
---assert(houseTypeTable[UnitDefNames["house_asian0"].id])
+if GameConfig.instance.culture == "arab" then
+	assert(houseTypeTable[UnitDefNames["house_arab0"].id])
+end
 
+if GameConfig.instance.culture == "asian" then
+	assert(houseTypeTable[UnitDefNames["house_asian0"].id])
+end
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
@@ -488,6 +492,7 @@ function spawnBuilding(defID, x, z,  boolInCityCenter)
     offset = {xRandOffset = 0, zRandOffset = 0}
     if not boolInCityCenter  then
          offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
+		 if not offset then return end
     end
     id = spawnUnit(defID, x + math.random(-1 * offset.xRandOffset, offset.xRandOffset), 
                           z + math.random(-1 * offset.zRandOffset, offset.zRandOffset))

@@ -4309,24 +4309,26 @@ function getDeterministicRandom(hash, maximum)
 end
 
 function getSafeRandom(T, default)
-    if not T then return default end 
-    countElements = count(T)
-	
-    if countElements < 1 then return default, 1 end
-    if countElements == 1 then
-		--return first element
-		echo("Table has only one element, picking first")
-        for k,v in pairs(T) do
-            return v, 1
-        end
-    end
+    if not T then 
+		return default, nil 
+	end 
+
+    if count(T) < 1 then 
+		return default, nil 
+	end
+
 	--Just one huge WTF to lua, in order to have a working random one needs to permanently copy tables
     local keyset = {}
     for k in pairs(T) do
         table.insert(keyset, k)
     end
+	
+	if #keyset == 1 then 
+		return T[keyset[1]], keyset[1] 
+	end
+	
 -- now you can reliably return a random key
-    rkey = keyset[math.random(#keyset)]
+    rkey = keyset[math.random(1,#keyset)]
     return T[rkey], rkey
 end
 
