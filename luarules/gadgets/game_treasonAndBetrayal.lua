@@ -38,7 +38,8 @@ if (gadgetHandler:IsSyncedCode()) then
         end
      assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
      assert(safeHouseTypeTable[UnitDefNames["antagonsafehouse"].id])   
-     assert(houseTypeTable[UnitDefNames["house_arab0"].id])   
+	 if GameConfig.instance.culture == TODO
+     --assert(houseTypeTable[UnitDefNames["house_arab0"].id])   only valid if culture is 
     end
 
 
