@@ -315,8 +315,8 @@ function script.Create()
 
     vtolDeco = {
         ["ID_l100_Industrial_RoofBlock1"] = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
-        ["Roof01"] = TablesOfPiecesGroups["Roof1Sub"][1],
-        ["Roof05"] = TablesOfPiecesGroups["Roof5Sub"][1]     
+        ["Roof01"] = TablesOfPiecesGroups["Roof01Sub"][1],
+        ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
     }
 
     StartThread(HoloGrams)	
@@ -688,7 +688,6 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
 		lecho( "getRandomBuildMateria: Got not a table, got" ..   type(buildMaterial) .. "instead");
         return
     end
-
     if count(buildMaterial) == 0 and #buildMaterial == 0 then
       lecho("getRandomBuildMateria: Got a empty table "..name)
       lecho( "No materials left for "..name.. " at level ".. toString(level))
@@ -706,11 +705,13 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
            return piecenum
     	end
     end
-
-    piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
-	if not inToShowDict(piecenum)  then
-        lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
-		return piecenum, num
+	
+	if buildMaterial[1] then
+		piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
+		if piecenum and not inToShowDict(piecenum)  then
+			lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+			return piecenum, num
+		end
 	end
 
     --lecho(" Returning nil in getRandomBuildMateria in context".. toString(context)) 
