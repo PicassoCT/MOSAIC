@@ -92,7 +92,7 @@ holoPieces = {
                 [piece("Roof77")] = true
             }
 
-MapPieceIDName = Spring.GetUnitPieceList(unitID)
+pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 materialChoiceTable = {"pod", "industrial", "trad", "office"}
 materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 vtolDeco= {}
@@ -701,7 +701,8 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
     	if isInRoundNr and piecenum then
-            lecho("stooping to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+			assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned by sequence")
+            lecho("stooping to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
            return piecenum
     	end
     end
@@ -709,7 +710,8 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
 	if buildMaterial[1] then
 		piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
 		if piecenum and not inToShowDict(piecenum)  then
-			lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+			assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned randomized material")
+			lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
 			return piecenum, num
 		end
 	end
@@ -788,8 +790,8 @@ end
 toShowDict = {}
 function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
     assert(element)
-    assert(MapPieceIDName[element])
-	--lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
+    assert(pieceID_NameMap[element])
+	--lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
 	ToShowTable[#ToShowTable + 1] = element	
 	toShowDict[element] = true
 end	
@@ -841,10 +843,10 @@ function buildDecorateGroundLvl(materialColourName)
                 WTurn(element, 3, math.rad(rotation), 0)
 	
                 addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
-                lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(0))
+                lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(0))
     
                 if( pieceNr_pieceName[element] ) then
-                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
+                 --   showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
                 end                
                 if countElements == 24 then
                     return materialColourName
@@ -943,7 +945,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- lecho("Adding Element to level"..Level)
 				addToShowTable(element, xLoc, zLoc, index, xRealLoc, zRealLoc)
-				lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(Level))
+				lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(Level))
                 if countElements == 24 then
                     return materialGroupName, buildMaterial
                 end          
