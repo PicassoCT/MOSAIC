@@ -87,8 +87,8 @@ decoChances = {
 
 holoPieces = {
                 [piece("Office_Pod_Industrial_Roof10")] = true, 
-                [piece("Office_Pod_Industrial_Roof02")] = true,
-                [piece("Office_Pod_Industrial_Roof01")] = true,
+                [piece("Office_Pod_Industrial_Roof2")] = true,
+                [piece("Office_Pod_Industrial_Roof1")] = true,
                 [piece("Roof77")] = true
             }
 
@@ -315,8 +315,8 @@ function script.Create()
 
     vtolDeco = {
         ["ID_l100_Industrial_RoofBlock1"] = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
-        ["Roof01"] = TablesOfPiecesGroups["Roof01Sub"][1],
-        ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
+        ["Roof01"] = TablesOfPiecesGroups["Roof1Sub"][1],
+        ["Roof05"] = TablesOfPiecesGroups["Roof5Sub"][1]     
     }
 
     StartThread(HoloGrams)	
@@ -496,7 +496,7 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
-function showOne(T, bNotDelayd)
+function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
     c = 0
@@ -504,11 +504,7 @@ function showOne(T, bNotDelayd)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then
-            if bNotDelayd and bNotDelayd == true then
-                Show(v)
-            else
-				addToShowTable(v, "showOne", k)
-            end
+			addToShowTable(v, "showOne", k)
             return v
         end
     end
@@ -517,7 +513,7 @@ end
 function showOneOrNone(T)
     if not T then return end
     if math.random(1, 100) > 50 then
-        return showOne(T, true)
+        return showOne(T)
     else
         return
     end
@@ -529,7 +525,6 @@ function showOneOrAll(T)
     if chancesAre(10) > 0.5 then
         return showOne(T)
     else
-        assert(T)
         for num, val in pairs(T) do 
 			addToShowTable(val, "showOneOrAll", num)
 		end
@@ -633,7 +628,9 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
     countedElements = count(DecoMaterial)
     piecename = ""
     materialGroupName = materialGroupName or "GroupNameUndefined"
-    if countedElements <= 0 then return DecoMaterial end
+    if countedElements <= 0 then 
+        return DecoMaterial, nil
+    end
 
     y_offset = yoffset or 0
     attempts = maxNrAttempts
@@ -646,7 +643,7 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
 
     if attempts  == 0 then
        lecho("DecorateBlockWall: ran out of attempts")
-        return DecoMaterial
+        return DecoMaterial, nil
     end
 
     if Deco then
@@ -657,11 +654,12 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
 		WaitForMoves(Deco)
 		addToShowTable(Deco, xLoc, zLoc)
         piecename = getPieceGroupName(Deco)
+        if piecename then
+            showSubsAnimateSpinsByPiecename(piecename)
+        end
     end
 
-    if TablesOfPiecesGroups[piecename .. nr .. "Sub"] then
-        showOneOrAll(TablesOfPiecesGroups[piecename .. nr .. "Sub"])
-    end
+
 
     return DecoMaterial, Deco
 end
@@ -704,7 +702,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
     	if isInRoundNr and piecenum then
-            lecho("resorting to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
+            lecho("stooping to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(MapPieceIDName[piecenum]).." selected") 
            return piecenum
     	end
     end
@@ -754,7 +752,7 @@ function isBackYardWall(index)
 end
 
 function getWallBackyardDeocrationRotation(index)
-return getOutsideFacingRotationOfBlockFromPlan(index) + 180 + (math.random(-10,10) / 20)
+    return getOutsideFacingRotationOfBlockFromPlan(index) + 180 + (math.random(-10,10) / 20)
 end
 
 function getOutsideFacingRotationOfBlockFromPlan(index)
@@ -790,7 +788,7 @@ toShowDict = {}
 function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
     assert(element)
     assert(MapPieceIDName[element])
-	lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
+	--lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
 	ToShowTable[#ToShowTable + 1] = element	
 	toShowDict[element] = true
 end	
@@ -804,7 +802,7 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
     local floorBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"}) 
-    lecho("floorBuildMaterial", floorBuildMaterial)
+    --lecho("floorBuildMaterial", floorBuildMaterial)
     countElements = 0
 
     for i = 1, 37, 1 do
@@ -825,7 +823,6 @@ function buildDecorateGroundLvl(materialColourName)
 
             if attempts == 0 then 
                 lecho( "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index)
-                assert(true == false)
                 return materialColourName
             end
 
@@ -843,7 +840,8 @@ function buildDecorateGroundLvl(materialColourName)
                 WTurn(element, 3, math.rad(rotation), 0)
 	
                 addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
-    			lecho("Placed GroundLevel element at "..i)
+                lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(0))
+    
                 if( pieceNr_pieceName[element] ) then
                     showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
                 end                
@@ -944,7 +942,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- lecho("Adding Element to level"..Level)
 				addToShowTable(element, xLoc, zLoc, index, xRealLoc, zRealLoc)
-				
+				lecho("Piece placed:"..toString(MapPieceIDName[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(Level))
                 if countElements == 24 then
                     return materialGroupName, buildMaterial
                 end          
@@ -1032,9 +1030,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
     Move(element, _z_axis, zRealLoc, 0)
     Move(element, _y_axis, Level * cubeDim.heigth, 0)
 	WaitForMoves(element)
-    pieceGroupName = getPieceGroupName(element)
-
-    showSubsAnimateSpins(pieceGroupName, 1)
+    showSubsAnimateSpinsByPiecename(pieceID_NameMap[element], 1)
 	addToShowTable(element, xLoc, zLoc)
 
     return buildMaterial, element
@@ -1270,22 +1266,22 @@ function buildBuilding()
     lecho("House_Asian: buildDecorateGroundLvl ended with ")
 
     lecho( "selectBase")
-    selectBase(materialColourName)
+    --selectBase(materialColourName)
     lecho( "selectBackYard")
-    selectBackYard(materialColourName)    
+    --selectBackYard(materialColourName)    
 
     local levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
     height = math.random(2,3)
 	for i = 1, height do
         lecho( "buildDecorateLvl start "..i)
-        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        --_, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         lecho( "buildDecorateLvl ended")
     end
 
 	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         lecho( "addRoofDeocrate started")
-        addRoofDeocrate(height + 1, materialTable, materialColourName)
+       -- addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
     if randChance(25) or true then
         Sleep(50)
