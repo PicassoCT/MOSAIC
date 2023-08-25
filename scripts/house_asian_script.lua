@@ -306,7 +306,7 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+	assertPieceNamesUnique(unitID)
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
 
@@ -830,6 +830,7 @@ function buildDecorateGroundLvl(materialColourName)
             end
 
             if element then
+				assert(pieceID_NameMap[element], "element nr "..toString(element).." is not a valid piece")
                 assert(xRealLoc)
                 assert(zRealLoc)
                 countElements = countElements + 1

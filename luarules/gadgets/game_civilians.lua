@@ -399,8 +399,7 @@ function regenerateRoutesTable()
         for otherID, oData in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 		
             if thisBuildingID ~= otherID and
                 isRouteTraversable(TruckType, thisBuildingID, otherID) then
-                newRouteTabel[thisBuildingID][#newRouteTabel[thisBuildingID] + 1] =
-                    otherID
+                newRouteTabel[thisBuildingID][#newRouteTabel[thisBuildingID] + 1] = otherID
             end
         end
     end

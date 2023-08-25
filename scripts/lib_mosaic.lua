@@ -1078,7 +1078,7 @@ function getGameConfig()
                 ["asian"] = {
                     ["house"] = {name = "house_asian", range = 0},
                     ["civilian"] = {name = "civilian_arab", range = 4},
-                    ["truck"] = {name = "truck_western", range = -1}}
+                    ["truck"] = {name = "truck_western", range = 4}}
                 }
                 assert(translation[cultureName], "no translation for "..cultureName)
                 return translation[cultureName]
