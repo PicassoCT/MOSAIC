@@ -1073,3 +1073,16 @@ function unitDescriptionGenerator(Unit, UnitDefNames)
 
     return OfTheString
 end
+
+
+function assertPieceNamesUnique(unitID)
+	pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+	countMap ={}
+	for id, name in pairs(pieceID_NameMap) do
+		if not countMap[name] then countMap[name]  = 0 end
+		countMap[name]  = countMap[name]  +1
+	end
+	for name, value in pairs(countMap) do
+		assert(value and value < 2 , "Piece "..name.." exists twice in unit "..unitID)
+	end
+end
