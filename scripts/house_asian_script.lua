@@ -297,7 +297,11 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 	return false
 end
 
-
+function timeOfDay()
+    WholeDay = GameConfig.daylength
+    timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
+    return ((timeFrame % (WholeDay)) / (WholeDay))
+end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -363,7 +367,7 @@ function turnPixelOff(pixel)
 end
 
 function HoloFlicker(tiles,alttiles)
-    if not tiles or #tiles < 2 then return end
+    if not tiles or #tilese < 2 then return end
 	holoDecoFunctions= {}
 		--dead pixel
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
@@ -381,9 +385,7 @@ function HoloFlicker(tiles,alttiles)
                                         turnPixelOff(tile)
                                         restTimeMs = (math.random(1,100)/100)*10000
                                         Sleep(restTimeMs)
-                                        for i=1, #tiles do
-											reset(tiles[i])
-										end
+                                        reset(tile)
                                         Sleep(restTimeMs)
 							     end	
                             end 
@@ -395,9 +397,7 @@ function HoloFlicker(tiles,alttiles)
 								end
 								restTimeMs = (math.random(1,500)/100)*10000
 								Sleep(restTimeMs)
-								for i=1, #tiles do
-									reset(tiles[i])
-								end
+								resetT(tiles)
 							end	
 	--short dead line
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
@@ -456,22 +456,15 @@ function HoloFlicker(tiles,alttiles)
                                     turnPixelOff(v)
                                 end
                                 showT(alttiles)
-								for i=1, #alttiles do
-									reset(alttiles[i])
-								end
-   
+                                resetT(alttiles)
                                 restTimeMs = (math.random(1,500)/100)*10000
                                 Sleep(restTimeMs)
                                 hideT(alttiles)
                                 showT(tiles)
-                              	for i=1, #tiles do
-									reset(tiles[i])
-								end
+                                resetT(tiles)
                             end 
 	while true do
-		for i=1, #tiles do
-			reset(tiles[i])
-		end
+		resetT(tiles)
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
 		--lecho("HololWallFunction"..dice)
@@ -482,7 +475,8 @@ end
 
 function showHoloWall()
 	HoloPieces = {}
-    AltHoloPieces = {}    
+    AltHoloPieces = {}
+    resetT(TablesOfPiecesGroups["HoloTile"])
     hideT(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
     hindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
@@ -505,8 +499,9 @@ function showHoloWall()
             ai= ai+1
         end
 
-		HoloFlicker(HoloPieces, AltHoloPieces)
-        
+		if #HoloPieces > 2 then
+			HoloFlicker(HoloPieces, AltHoloPieces)
+		end    
     end
     --TODO the engine has a problem, right here and then. No error on erroneous access, just dead function and worser still, post processing shutd
 	--showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
@@ -517,10 +512,6 @@ function buildHouse()
     hideAll(unitID)
     Sleep(1)
     buildBuilding()
-    if randChance(25)  then
-       Sleep(500)
-       StartThread(showHoloWall)
-    end
 end
 
 function absdiff(value, compval)
@@ -1174,34 +1165,6 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
-function nightAndDay(dayNightPieceNameDict)
-    while boolDoneShowing == false do Sleep(100) end
-
-    while true do
-        hours, minutes, seconds, percent = getDayTime()
-        Sleep(15000)
-        if hours > 19 then 
-            for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
-                randSleep= math.random(1,10)*1000
-                Sleep(randSleep)
-                if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
-                if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
-            end
-
-            while hours > 19 or hours < 6 do
-                Sleep(5000)
-                hours, minutes, seconds, percent = getDayTime()
-            end
-            for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
-                randSleep= math.random(1,10)*1000
-                Sleep(randSleep)
-                if pieceName_pieceNr[dayPieceName] then Show(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
-                if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
-            end
-        end
-    end
-end
-
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     lecho(":-->addRoofDeocrate")
     countElements = 0
@@ -1209,8 +1172,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         decoChances.roof = 0.65 
     end
     assert(Level)
-    dayNightPieceNameDict = {}
-    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"}) -- TODO materialGroupName
+
+    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco"}) -- TODO materialGroupName
 
     for i = 1, 37, 1 do
         local index = i
@@ -1235,10 +1198,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             if element then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
-                buildMaterial = removeElementFromBuildMaterial(element, roofMaterial)
-                if string.find(string.lower(pieceID_NameMap[element]), "day") then
-                    dayNightPieceNameDict[pieceID_NameMap[element]] = replaceStr(pieceID_NameMap[element], "Day", "Night")
-                end
+                buildMaterial = removeElementFromBuildMaterial(element,
+                                                               roofMaterial)
 
                 offset = 0
                 --offset if one of the last level was not placed due to offset
@@ -1259,10 +1220,6 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 end
             end
         end
-    end
-
-    if count(dayNightPieceNameDict) > 0 then
-        StartThread(nightAndDay, dayNightPieceNameDict)
     end
 
     countElements = 0
@@ -1331,6 +1288,11 @@ function buildAnimation()
     Hide(Icon)
     while boolDoneShowing == false do Sleep(100) end
     showT(ToShowTable)
+	    
+	if randChance(25) or true then
+       Sleep(500)
+       showHoloWall()
+    end
 end
 
 function buildBuilding()
@@ -1372,6 +1334,7 @@ function buildBuilding()
         lecho( "addRoofDeocrate started")
         addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
+
 
     lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
