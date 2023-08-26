@@ -20,14 +20,14 @@ local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_asian_script:: " end
 function lecho(...)
-	toStringBuild = ""	
-	arg = {...};
-	arg.n = #arg
-	for k,v in pairs(arg) do
-		toStringBuild = toStringBuild ..",".. toString(v)
-	end
-  
-    echo(getScriptName()..toStringBuild)
+	--toStringBuild = ""	
+	--arg = {...};
+	--arg.n = #arg
+	--for k,v in pairs(arg) do
+	--	toStringBuild = toStringBuild ..",".. toString(v)
+	--end
+  --
+    --echo(getScriptName()..toStringBuild)
 end
 
 local TablesOfPiecesGroups = {}
@@ -35,7 +35,6 @@ decoPieceUsedOrientation = {}
 factor = 35
 heightoffset = 90
 maxNrAttempts = 40
-boolEnableExtra = false
 
 local buildingGroupsFloor = {Upright = {}, Length = {}}
 local buildingGroupsLevel = {Upright = {}, Length = {}}
@@ -368,10 +367,13 @@ function turnPixelOff(pixel)
 end
 
 function HoloFlicker(tiles)
+    if not tiles or #tilese < 2 then return end
 	holoDecoFunctions= {}
 		--dead pixel
-	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles) 
+	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)              
+                                
 								one = math.random(1,#tiles)
+                                if not tiles[one] then return end
                                 tile =tiles[one]
                                 if tile then
                                     for i=1,5 do
@@ -447,7 +449,7 @@ function HoloFlicker(tiles)
 		resetT(tiles)
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
-		lecho("HololWallFunction"..dice)
+		--lecho("HololWallFunction"..dice)
         holoDecoFunctions[dice](tiles)
 
 
@@ -460,9 +462,9 @@ function showHoloWall()
     resetT(TablesOfPiecesGroups["HoloTile"])
     hideT(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
-    index = math.random(0,#TablesOfPiecesGroups["HoloTile"]/step)
+    hindex = math.random(0,6)
     if maRa() == maRa() then
-        for i=index * step,  (index+1) * step, 1 do
+        for i=hindex * step,  (hindex+1) * step, 1 do
             if TablesOfPiecesGroups["HoloTile"][i] then
                 if (maRa() == maRa()) ~= maRa() then
                     Hide(TablesOfPiecesGroups["HoloTile"][i])
@@ -805,6 +807,16 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
     local floorBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"}) 
+    assertPieceDictValue(unitID, floorBuildMaterial, "GroundLvl:buildMaterial")
+    assertPieceDictValue(unitID, StreetDecoMaterial, "GroundLvl:buildMaterial")
+    assertPieceDictValue(unitID, yardMaterial, "GroundLvl:buildMaterial")
+    for name, group in pairs(buildingGroupsFloor.Upright) do
+    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsFloor.Upright:"..name)
+    end    
+    for name, group in pairs(buildingGroupsFloor.Length) do
+    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsFloor.Length:"..name)
+    end
+
     --lecho("floorBuildMaterial", floorBuildMaterial)
     countElements = 0
 
@@ -825,19 +837,21 @@ function buildDecorateGroundLvl(materialColourName)
             end
 
             if attempts == 0 then 
-                lecho( "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index)
+                lecho( "buildDecorateGroundLvl: element selection failed for ".. materialColourName.. " at "..index, floorBuildMaterial, buildingGroupsFloor)
                 return materialColourName
             end
 
             if element then
 				assert(pieceID_NameMap[element], "element nr "..toString(element).." is not a valid piece")
-                assert(xRealLoc)
-                assert(zRealLoc)
+                assert(type(xRealLoc)=="number")
+                assert(type(zRealLoc)=="number")
+       
                 countElements = countElements + 1
                 floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
 				WaitForMoves(element)
+                Sleep(1)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
 
                 assert(rotation)
@@ -847,14 +861,14 @@ function buildDecorateGroundLvl(materialColourName)
                 lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(0))
     
                 if( pieceNr_pieceName[element] ) then
-                 --   showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
+                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element]) 
                 end                
                 if countElements == 24 then
                     return materialColourName
                 end 
 
 
-                if boolEnableExtra and chancesAre(10) < decoChances.street then
+                if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                     assert(rotation)
                         StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
@@ -866,7 +880,7 @@ function buildDecorateGroundLvl(materialColourName)
                         end
                 end
               
-                if boolEnableExtra and isBackYardWall(i) == true then
+                if  isBackYardWall(i) == true then
                     -- BackYard
                     if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
                         rotation = getWallBackyardDeocrationRotation(i) + math.random(-10,10)/10
@@ -891,6 +905,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     Sleep(1)
     assert(buildMaterial, "no material table in" ..Level.." for "..materialGroupName)
     assert(type(buildMaterial)== "table")
+    assertPieceDictValue(unitID, buildMaterial, "GroundLvl:buildMaterial")
+    for name, group in pairs(buildingGroupsLevel.Upright) do
+    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsLevel.Upright:"..name)
+    end    
+    for name, group in pairs(buildingGroupsLevel.Length) do
+    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsLevel.Length:"..name)
+    end
     assert(Level)
     lvlPlaced = {}
 
@@ -951,7 +972,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     return materialGroupName, buildMaterial
                 end          
 			
-                if boolEnableExtra and (chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet) then
+                if (chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet) then
                     assert(type(streetWallDecoMaterial) == "table")
                     assert(index)
                     assert(xRealLoc)
@@ -975,7 +996,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
         end
 
-        if boolEnableExtra and isBackYardWall(index) == true then
+        if  isBackYardWall(index) == true then
             -- BackYard
             if chancesAre(10) < decoChances.yardWall and xLoc and zLoc then
                 assert(type(yardMaterial) == "table")
@@ -1198,7 +1219,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 return materialColourName
             end
 
-            if boolEnableExtra and (element and chancesAre(10) < decoChances.roof ) then
+            if  (element and chancesAre(10) < decoChances.roof ) then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 decoMaterial = removeElementFromBuildMaterial(element,
@@ -1260,36 +1281,32 @@ function buildBuilding()
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
     buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
-    --lecho("buildingGroupsFloor.Upright", buildingGroupsFloor.Upright)
-    --lecho("buildingGroupsFloor.Length", buildingGroupsFloor.Length)
-    --lecho("buildingGroupsLevel.Length", buildingGroupsLevel.Length)
-    --lecho("buildingGroupsLevel.Upright", buildingGroupsLevel.Upright)
 
     lecho( "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
     lecho("House_Asian: buildDecorateGroundLvl ended with ")
 
     lecho( "selectBase")
-    --selectBase(materialColourName)
+    selectBase(materialColourName)
     lecho( "selectBackYard")
-    --selectBackYard(materialColourName)    
+    selectBackYard(materialColourName)    
 
     local levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
     height = math.random(2,3)
 	for i = 1, height do
         lecho( "buildDecorateLvl start "..i)
-        --_, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         lecho( "buildDecorateLvl ended")
     end
 
 	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
         lecho( "addRoofDeocrate started")
-       -- addRoofDeocrate(height + 1, materialTable, materialColourName)
+        addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
     if randChance(25) or true then
-        Sleep(50)
-        showHoloWall()
+       Sleep(500)
+       --showHoloWall()
     end
 
     lecho( "addRoofDeocrate ended")

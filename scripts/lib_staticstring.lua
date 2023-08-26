@@ -342,6 +342,28 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "Youai Road",
                 "Huzhu Road",
                 "Zhongyuan Road"
+            },
+            International = {
+                "Main Street",
+                "Elm Street",
+                "Maple Avenue",
+                "Oak Lane",
+                "Pine Street",
+                "Willow Road",
+                "Cedar Avenue",
+                "Park Avenue",
+                "River Street",
+                "Sunset Boulevard",
+                "Forest Drive",
+                "Meadow Lane",
+                "Lakeview Terrace",
+                "Valley Road",
+                "Mountain Avenue",
+                "Sunrise Avenue",
+                "Central Avenue",
+                "High Street",
+                "Broad Avenue",
+                "Green Street"
             }
         }
     end

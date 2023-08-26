@@ -1086,3 +1086,11 @@ function assertPieceNamesUnique(unitID)
 		assert(value and value < 2 , "Piece "..name.." exists twice in unit "..unitID)
 	end
 end
+
+function assertPieceDictValue(unitID, T, name)
+    pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+
+    for _,id in pairs(T) do
+        assert(pieceID_NameMap[id], "Piece with id "..id .. " in table ".. name .." is invalid")
+    end
+end

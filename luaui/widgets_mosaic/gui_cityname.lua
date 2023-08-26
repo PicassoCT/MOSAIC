@@ -101,9 +101,8 @@ end
 
 local function GetRegionByHash(mapHash)
   local allRegions = 9
-  local result = mapHash % allRegions
-  local resultMap = {
-    [0] = "CityState",
+  local result = (mapHash % allRegions)+1
+  local resultMap = {    
     [1] = "MiddleEast",
     [2] = "CentralAsia",
     [3] = "Africa",
@@ -112,6 +111,7 @@ local function GetRegionByHash(mapHash)
     [6] = "SouthAmerica",
     [7] = "SouthEastAsia",
     [8] = "CentralAsia",
+    [9] = "CityState"
       }
 
       return resultMap[result]
@@ -7084,6 +7084,17 @@ local function getProvinceNameBy(countrylocal,  hash)
   end
   
   local country_province_map = {
+    ["Redmond"] ={"Washington"},
+    ["Mare Silentio Company"]={"Texas"},
+    ["London"] = {"London"}, 
+    ["Dubai"]={"Dubayy"}, 
+    ["Hong Kong"] = {"Guangdong"}, 
+    ["Shanghai"] = {"Ningbo"}, 
+    ["Lagos"] = {"Ile-de-France"}, 
+    ["Falklandia"] = {"Bulacan","Uusimaa"},
+     ["Thielon Arcology"] ={"Punjab", "Tokyo"}, 
+     ["Panama Inc"]={"osaka","Jakarta"},
+      ["Kaliningrad"]={"Belgorodskaya Oblast", "Dolnośląskie"},
     ["Swaziland"] = {"Hhohho","Manzini","Lubombo","Shiselweni"},
     ["Honduras"] = {"Francisco Morazan","Cortes","Atlantida","Comayagua","Yoro","Choluteca","Copan","Lempira","La Paz","Olancho","Colón",
 "Santa Barbara","Intibuca","Valle","El Paraiso","Islas de la Bahia","Ocotepeque","Gracias a Dios"},
@@ -7259,8 +7270,8 @@ local function getProvinceNameBy(countrylocal,  hash)
     ["Russia"] = {"Moskva","Sankt-Peterburg","Novosibirskaya Oblast’","Sverdlovskaya Oblast’","Nizhegorodskaya Oblast’","Tatarstan","Chelyabinskaya Oblast’","Omskaya Oblast’","Samarskaya Oblast’","Rostovskaya Oblast’","Bashkortostan",
 "Krasnoyarskiy Kray","Voronezhskaya Oblast’","Permskiy Kray","Volgogradskaya Oblast’","Krasnodarskiy Kray","Saratovskaya Oblast’","Tyumenskaya Oblast’","Udmurtiya","Altayskiy Kray","Ul’yanovskaya Oblast’","Irkutskaya Oblast’",
 "Khabarovskiy Kray","Yaroslavskaya Oblast’","Primorskiy Kray","Dagestan","Tomskaya Oblast’","Orenburgskaya Oblast’","Kemerovskaya Oblast’","Ryazanskaya Oblast’","Astrakhanskaya Oblast’","Penzenskaya Oblast’","Lipetskaya Oblast’",
-"Kirovskaya Oblast’","Chuvashiya","Tul’skaya Oblast’","Kaliningradskaya Oblast’","Moskovskaya Oblast’","Kurskaya Oblast’","Stavropol’skiy Kray","Buryatiya","Tverskaya Oblast’","Ivanovskaya Oblast’","Bryanskaya Oblast’",
-"Belgorodskaya Oblast’","Khanty-Mansiyskiy Avtonomnyy Okrug-Yugra","Vladimirskaya Oblast’","Arkhangel’skaya Oblast’","Zabaykal’skiy Kray","Kaluzhskaya Oblast’","Smolenskaya Oblast’","Kurganskaya Oblast’","Vologodskaya Oblast’","Mordoviya","Orlovskaya Oblast’",
+"Kirovskaya Oblast","Chuvashiya","Tul’skaya Oblast’","Kaliningradskaya Oblast’","Moskovskaya Oblast’","Kurskaya Oblast’","Stavropol’skiy Kray","Buryatiya","Tverskaya Oblast’","Ivanovskaya Oblast’","Bryanskaya Oblast’",
+"Belgorodskaya Oblast","Khanty-Mansiyskiy Avtonomnyy Okrug-Yugra","Vladimirskaya Oblast’","Arkhangel’skaya Oblast’","Zabaykal’skiy Kray","Kaluzhskaya Oblast’","Smolenskaya Oblast’","Kurganskaya Oblast’","Vologodskaya Oblast’","Mordoviya","Orlovskaya Oblast’",
 "North Ossetia","Sakha (Yakutiya)","Murmanskaya Oblast’","Tambovskaya Oblast’","Chechnya","Kareliya","Kostromskaya Oblast’","Mariy-El","Kabardino-Balkariya","Komi","Amurskaya Oblast’",
 "Novgorodskaya Oblast’","Pskovskaya Oblast’","Sakhalinskaya Oblast’","Khakasiya","Kamchatskiy Kray","Adygeya","Karachayevo-Cherkesiya","Ingushetiya","Tyva","Yamalo-Nenetskiy Avtonomnyy Okrug","Kalmykiya",
 "Magadanskaya Oblast’","Yevreyskaya Avtonomnaya Oblast’","Altay","Nenetskiy Avtonomnyy Okrug","Leningradskaya Oblast’","Chukotskiy Avtonomnyy Okrug"},
@@ -7588,7 +7599,7 @@ local function getCountryByRegion(region, hash)
   
   local region_countryMap = {}
   region_countryMap ={
-    CityStates = {"Redmond","Mare Silentio Company","Singapore", "London", "Dubai", "Hong Kong", "Shanghai", "Lagos", "Falklandia", "Thielon Arcology", "Panama Inc", "Kaliningrad"},
+    CityState = {"Redmond","Mare Silentio Company","Singapore", "London", "Dubai", "Hong Kong", "Shanghai", "Lagos", "Falklandia", "Thielon Arcology", "Panama Inc", "Kaliningrad"},
     Africa = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea","Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda","Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde","Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},
     MiddleEast = {"Tunisia","Libya","Sudan","Syria","Saudi Arabia","Jordan","Kuwait","Brunei","Algeria","Turkey","Iran","Lebanon","Qatar","West Bank","United Arab Emirates","Israel","Bahrain","Gaza Strip","Armenia","Iraq","Oman","Yemen","Egypt","Morocco","Pakistan", "Western Sahara", "Mauritania"},
     CentralAsia = {"Bhutan","Tajikistan","Iran","Georgia","Nepal","Azerbaijan","Russia","Kyrgyzstan","Afghanistan","Turkmenistan","Pakistan","Uzbekistan","Mongolia","Kazakhstan"},
