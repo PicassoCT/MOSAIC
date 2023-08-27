@@ -4,7 +4,7 @@ local unitDef = {
 	name = "cegtestunit",
 	Description = "Testing the Cegs all day long",
 	objectName = "placeholder.s3o",
-	script = "dbg_cegtest.lua",
+	script = "placeholder.lua",
 	buildPic = "placeholder.png",
 	levelGround =false,
 	--cost

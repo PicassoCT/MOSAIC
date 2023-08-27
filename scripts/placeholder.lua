@@ -17,6 +17,8 @@ function script.Create()
     -- x,y,z =Spring.GetUnitPosition(unitID)
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
     -- StartThread(AnimationTest)
+    x,y,z = Spring.GetUnitPosition(unitID)
+    echo("{name = \"house_asian0\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
 end
 
 
