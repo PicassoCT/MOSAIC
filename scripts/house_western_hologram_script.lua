@@ -527,11 +527,11 @@ function showWallDayTime(name)
             if maRa() then
                 Show(wallGrid)
             end
-            counter = math.random(4,7)    
-            while counter > 0 do
+            encounter = math.random(4,7)    
+            while encounter > 0 do
                 _, element = randDict(TableOfPiecesGroups[name])
                 if element then
-                    counter = counter - 1
+                    encounter = encounter - 1
                     Show(element)
                     showSubSpins(element)
                 end

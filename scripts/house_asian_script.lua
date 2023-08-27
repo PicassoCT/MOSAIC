@@ -366,12 +366,11 @@ function turnPixelOff(pixel)
     end
 end
 
-function HoloFlicker(tiles)
+function HoloFlicker(tiles,alttiles)
     if not tiles or #tilese < 2 then return end
 	holoDecoFunctions= {}
 		--dead pixel
-	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)              
-                                
+	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
 								one = math.random(1,#tiles)
                                 if not tiles[one] then return end
                                 tile =tiles[one]
@@ -444,39 +443,64 @@ function HoloFlicker(tiles)
 			WaitForTurns(tiles)
             WaitForMoves(tiles)
 		end
-		
+	--whole wall flicker dead
+    holoDecoFunctions[#holoDecoFunctions+1]= function(tiles, alttiles)
+                                for k, v in pairs(tiles) do
+                                    turnPixelOff(v)                                    
+                                end
+                                WaitForTurns(tiles)                                
+                                restTimeMs = (math.random(1,500)/100)*10000
+                                Sleep(restTimeMs)
+                                hideT(tiles)
+                                for k, v in pairs(alttiles) do
+                                    turnPixelOff(v)
+                                end
+                                showT(alttiles)
+                                resetT(alttiles)
+                                restTimeMs = (math.random(1,500)/100)*10000
+                                Sleep(restTimeMs)
+                                hideT(alttiles)
+                                showT(tiles)
+                                resetT(tiles)
+                            end 
 	while true do
 		resetT(tiles)
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
 		--lecho("HololWallFunction"..dice)
-        holoDecoFunctions[dice](tiles)
-
-
+        holoDecoFunctions[dice](tiles, alttiles)
 		Sleep(10000)
 	end
 end
 
 function showHoloWall()
 	HoloPieces = {}
+    AltHoloPieces = {}
     resetT(TablesOfPiecesGroups["HoloTile"])
     hideT(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
-    hindex = math.random(0,6)
+    hindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
+    althindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
     if maRa() == maRa() then
+            ai= althindex * step
         for i=hindex * step,  (hindex+1) * step, 1 do
             if TablesOfPiecesGroups["HoloTile"][i] then
                 if (maRa() == maRa()) ~= maRa() then
                     Hide(TablesOfPiecesGroups["HoloTile"][i])
                 else
 					HoloPieces[#HoloPieces +1] = TablesOfPiecesGroups["HoloTile"][i]
+                    if TablesOfPiecesGroups["HoloTile"][ai] then
+                        AltHoloPieces[#AltHoloPieces +1] = TablesOfPiecesGroups["HoloTile"][ai]
+                    end
                     Show(TablesOfPiecesGroups["HoloTile"][i])
     				addToShowTable( TablesOfPiecesGroups["HoloTile"][i], "showHoloWall", i)
                 end
             end
+            ai= ai+1
         end
-		StartThread(HoloFlicker, HoloPieces)
-        return    
+
+		HoloFlicker(HoloPieces, AltHoloPieces)
+        
     end
     --TODO the engine has a problem, right here and then. No error on erroneous access, just dead function and worser still, post processing shutd
 	--showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
@@ -487,6 +511,10 @@ function buildHouse()
     hideAll(unitID)
     Sleep(1)
     buildBuilding()
+    if randChance(25) or true then
+       Sleep(500)
+      -- StartThread(showHoloWall)
+    end
 end
 
 function absdiff(value, compval)
@@ -1303,10 +1331,6 @@ function buildBuilding()
     if materialTable and count(materialTable) > 0 then
         lecho( "addRoofDeocrate started")
         addRoofDeocrate(height + 1, materialTable, materialColourName)
-    end
-    if randChance(25) or true then
-       Sleep(500)
-       --showHoloWall()
     end
 
     lecho( "addRoofDeocrate ended")
