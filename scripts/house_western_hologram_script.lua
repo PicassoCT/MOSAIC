@@ -950,7 +950,7 @@ function addHologramLetters( myMessage)
     boolSpinning = maRa()
     downIndex = 1
     --echo("Adding Grafiti with message:" ..myMessage)
-    counter={}
+    lettercounter={}
     stringlength = string.len(myMessage)
     rowIndex= 0
     columnIndex= 0
@@ -966,15 +966,15 @@ function addHologramLetters( myMessage)
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
         if letter ~= " " and TableOfPiecesGroups[letter] then
-            if not counter[letter] then 
-                counter[letter] = startValue 
+            if not lettercounter[letter] then 
+                lettercounter[letter] = startValue 
             end            
-            counter[letter] = counter[letter] + 1 
-            if counter[letter] > 4 then counter[letter] = 1 end
+            lettercounter[letter] = lettercounter[letter] + 1 
+            if lettercounter[letter] > 4 then lettercounter[letter] = 1 end
 
-            if TableOfPiecesGroups[letter] and counter[letter] and TableOfPiecesGroups[letter][counter[letter]] then
+            if TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                
-                pieceName = TableOfPiecesGroups[letter][counter[letter]] 
+                pieceName = TableOfPiecesGroups[letter][lettercounter[letter]] 
                 if pieceName then     
                     table.insert(allLetters, pieceName)                
                     Show(pieceName)
@@ -1250,7 +1250,6 @@ function addJHologramLetters()
      Show(background)
     downIndex = 1
     --echo("Adding Grafiti with message:" ..myMessage)
-    counter={}
     stringlength = 6
     rowIndex= 0
     columnIndex= 0

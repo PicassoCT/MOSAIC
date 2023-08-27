@@ -44,6 +44,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "Ebertstraße",
                 "Frankfurter Allee",
                 "Brienner Straße",
+                "Frauenbruennl Straße"
                 "Schönhauser Allee",
                 "Wilhelmstraße",
                 "Raiffeisenstraße",

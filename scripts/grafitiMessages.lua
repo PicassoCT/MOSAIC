@@ -171,5 +171,11 @@ return {
     "FORBODING ANGLE",
     "AF",
     "CUBEX",
-    "ANARCHID" 
+    "ANARCHID",
+    "EA NASIRS COPPPER SUX",
+    "Bonkers like Elon",
+    "World is burning",
+    "Nowhere to run too",
+    "End of the line",
+    "end of times"
 }
