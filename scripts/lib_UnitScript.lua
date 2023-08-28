@@ -2268,14 +2268,23 @@ function showT(l_tableName, l_lowLimit, l_upLimit, l_delay)
         end
 
     else
-        for i = 1, table.getn(l_tableName), 1 do
-            if l_tableName[i] then Show(l_tableName[i]) end
-        end
-
         for k,v in pairs(l_tableName)do
-          Show(v)
+			if v then
+				Show(v)
+			end
         end
     end
+end
+
+function showD(l_tableName, l_delay)
+    if not l_tableName then
+        Spring.Echo("No dictionary given as argument for showD")
+        return
+    end
+
+	for k,v in pairs(l_tableName)do
+	  Show(k)
+	end  
 end
 
 function subSetT(T, elementToSelect)

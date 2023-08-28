@@ -385,7 +385,9 @@ function HoloFlicker(tiles,alttiles)
                                         turnPixelOff(tile)
                                         restTimeMs = (math.random(1,100)/100)*10000
                                         Sleep(restTimeMs)
-                                        reset(tile)
+                                        for i=1, #tiles do
+											reset(tiles[i])
+										end
                                         Sleep(restTimeMs)
 							     end	
                             end 
@@ -397,7 +399,9 @@ function HoloFlicker(tiles,alttiles)
 								end
 								restTimeMs = (math.random(1,500)/100)*10000
 								Sleep(restTimeMs)
-								resetT(tiles)
+								for i=1, #tiles do
+									reset(tiles[i])
+								end
 							end	
 	--short dead line
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
@@ -456,15 +460,22 @@ function HoloFlicker(tiles,alttiles)
                                     turnPixelOff(v)
                                 end
                                 showT(alttiles)
-                                resetT(alttiles)
+								for i=1, #alttiles do
+									reset(alttiles[i])
+								end
+   
                                 restTimeMs = (math.random(1,500)/100)*10000
                                 Sleep(restTimeMs)
                                 hideT(alttiles)
                                 showT(tiles)
-                                resetT(tiles)
+                              	for i=1, #tiles do
+									reset(tiles[i])
+								end
                             end 
 	while true do
-		resetT(tiles)
+		for i=1, #tiles do
+			reset(tiles[i])
+		end
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
 		--lecho("HololWallFunction"..dice)
@@ -513,7 +524,7 @@ function buildHouse()
     buildBuilding()
     if randChance(25) or true then
        Sleep(500)
-      -- StartThread(showHoloWall)
+       StartThread(showHoloWall)
     end
 end
 
