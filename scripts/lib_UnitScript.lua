@@ -2302,6 +2302,10 @@ function safeAccessTable(T, a, b, c)
     return T
 end
 
+function replaceStr(str, sub, replacement)
+    return string.gsub(str, sub, replacement)
+end
+
 function split(inputstr, sep)
     if sep == nil then sep = "%s" end
     local t = {}
@@ -3994,6 +3998,19 @@ function prepSpeach(Speach, Names, Limits, Alphas, DefaultSleepBylines)
     end
 
     return T, true
+end
+
+
+function split(inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t={} ; i=1
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        t[i] = str
+        i = i + 1
+    end
+    return t
 end
 
 -- > Forms a Tree from handed over Table

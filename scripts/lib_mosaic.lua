@@ -1994,7 +1994,7 @@ function getGameConfig()
                         hours = math.floor((Frame / DAYLENGTH) * 24)
                         minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
                         seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
-                        return hours, minutes, seconds, percent
+                        return hours, minutes, seconds, percent --= getDayTime()
                     end
 
                     function isRushHour()

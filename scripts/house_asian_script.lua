@@ -297,11 +297,7 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 	return false
 end
 
-function timeOfDay()
-    WholeDay = GameConfig.daylength
-    timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
-    return ((timeFrame % (WholeDay)) / (WholeDay))
-end
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -367,7 +363,7 @@ function turnPixelOff(pixel)
 end
 
 function HoloFlicker(tiles,alttiles)
-    if not tiles or #tilese < 2 then return end
+    if not tiles or #tiles < 2 then return end
 	holoDecoFunctions= {}
 		--dead pixel
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
@@ -486,8 +482,7 @@ end
 
 function showHoloWall()
 	HoloPieces = {}
-    AltHoloPieces = {}
-    resetT(TablesOfPiecesGroups["HoloTile"])
+    AltHoloPieces = {}    
     hideT(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
     hindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
@@ -522,7 +517,7 @@ function buildHouse()
     hideAll(unitID)
     Sleep(1)
     buildBuilding()
-    if randChance(25) or true then
+    if randChance(25)  then
        Sleep(500)
        StartThread(showHoloWall)
     end
@@ -1179,6 +1174,34 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
+function nightAndDay(dayNightPieceNameDict)
+    while boolDoneShowing == false do Sleep(100) end
+
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        Sleep(15000)
+        if hours > 19 then 
+            for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
+                randSleep= math.random(1,10)*1000
+                Sleep(randSleep)
+                if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
+                if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
+            end
+
+            while hours > 19 or hours < 6 do
+                Sleep(5000)
+                hours, minutes, seconds, percent = getDayTime()
+            end
+            for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
+                randSleep= math.random(1,10)*1000
+                Sleep(randSleep)
+                if pieceName_pieceNr[dayPieceName] then Show(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
+                if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
+            end
+        end
+    end
+end
+
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     lecho(":-->addRoofDeocrate")
     countElements = 0
@@ -1186,8 +1209,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         decoChances.roof = 0.65 
     end
     assert(Level)
-
-    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco"}) -- TODO materialGroupName
+    dayNightPieceNameDict = {}
+    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"}) -- TODO materialGroupName
 
     for i = 1, 37, 1 do
         local index = i
@@ -1212,8 +1235,10 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             if element then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
-                buildMaterial = removeElementFromBuildMaterial(element,
-                                                               roofMaterial)
+                buildMaterial = removeElementFromBuildMaterial(element, roofMaterial)
+                if string.find(string.lower(pieceID_NameMap[element]), "day") then
+                    dayNightPieceNameDict[pieceID_NameMap[element]] = replaceStr(pieceID_NameMap[element], "Day", "Night")
+                end
 
                 offset = 0
                 --offset if one of the last level was not placed due to offset
@@ -1234,6 +1259,10 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 end
             end
         end
+    end
+
+    if count(dayNightPieceNameDict) > 0 then
+        StartThread(nightAndDay, dayNightPieceNameDict)
     end
 
     countElements = 0
