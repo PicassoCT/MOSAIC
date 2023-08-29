@@ -462,6 +462,10 @@ end
                             "Novák", "Horvath", "Nowak", "Kazlauskas", "Bērziņš", "Ivanov", "Zajac", "Melnyk", "Popa", "Nagy", "Novak", "Horvat", "Petrović",
                             "Hodžić", "Hoxha", "Dimitrov", "Milevski", "Papadopoulos", "Öztürk", "Martin", "Smith"
                         }},
+					asian= {
+					sur ={"Tanaka","Wong","Patel","Kim","Gupta","Nakamura","Li","Sharma","Nguyen","Yamamoto","Desai","Tan","Chen","Singh","Chen","Nakamura","Rahman","Patel","Park","Choudhury","Shah","Takahashi","Rahman","Suzuki","Kapoor"},
+					family = {"Kai","Mei Ling","Raj","Ji-Yeon","Aarav","Sakura","Jia","Rohan","Hana","Kazuki","Leela","Hiroshi","Ying","Arjun","Ying Yue","Haruki","Zara","Aditi","Sora","Ravi","Meera","Tatsuya","Aisha","Yuki","Rahul","DB:Error:404"}
+					}
                     }
 		
 	         --merge all name types for international into superset
@@ -481,6 +485,8 @@ end
             end
             names.international = GG.NameCacheInternational
           end
+
+if math.random(1,100) == 42 then return "PWNED byHaxxor"end
 
 return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
 end

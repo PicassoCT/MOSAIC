@@ -392,6 +392,23 @@ function HoloFlicker(tiles,alttiles)
 							     end	
                             end 
 
+	--Send Pixel drifting upwards
+	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
+								function moveUpardwsFlicker(tile)
+									Show(tile)
+									dist = math.random(100,250)
+									Move(tile, y_axis,  dist, 25)	
+									WaitForMoves(tile)
+									Hide(tile)
+									reset(tile)
+								end
+								for k, v in pairs(tiles) do
+									StartThread(moveUpardwsFlicker, v)
+								end
+								Sleep(250)
+								WaitForMoves(tiles)
+								Sleep(10000)
+							end
 	--whole wall flicker dead
 	holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
 								for k, v in pairs(tiles) do
