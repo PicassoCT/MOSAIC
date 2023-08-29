@@ -50,10 +50,6 @@ end
 
 function launchAnimation()
     factor = 2.0
-    Signal(SIG_LAUNCHANIMATION)
-    SetSignalMask(SIG_LAUNCHANIMATION)
-    boolLaunchAnimationStarted = true
-    boolLaunchAnimationCompleted= false
     for i=1, #launchProjT do
         StartThread(projectileLaunch, i)
         Sleep(250)
@@ -61,7 +57,6 @@ function launchAnimation()
     WaitForMoves(launchProjT)
     Sleep(10)
     WaitForMoves(flyingProjT)
-    boolLaunchAnimationCompleted = true
 end
 
 currentLaunchState = "ready"
@@ -90,23 +85,13 @@ function launchStateMachineThread()
 
    launchStateMachine["launching"] = function(frame, oldState, persPack)
         if oldState == "ready" then
-            StartThread(launchAnimation)
-        end
-        if boolFireRequest == false then
-            persPack.launchingCounter = persPack.launchingCounter + 1
-        end
-
-        if boolFireRequest == true and boolLaunchAnimationCompleted == true then
+            launchAnimation()
+            boolFireRequest = false
             return "fire"
         end
 
-        if  persPack.launchingCounter > 50 and boolLaunchAnimationCompleted == true then
-            Signal(SIG_LAUNCHANIMATION)
 
-            return "ready"
-        end
 
-        boolFireRequest = false
         return "launching"
     end
 
@@ -140,6 +125,7 @@ function launchStateMachineThread()
     end
 
     oldState = "ready"
+    currentLaunchState= "ready"
     persPack = {}
     while true do
         newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
@@ -162,8 +148,8 @@ function script.AimFromWeapon1() return firingFrom end
 function script.QueryWeapon1() return firingFrom end
 
 function script.AimWeapon1(Heading, pitch)
-    Turn(Turret, x_axis, math.rad(40),0)
-    WTurn(Turret, y_axis, Heading,0)
+    Turn(Turret, y_axis, math.rad(40),0)
+    WTurn(Turret, z_axis, Heading,0)
     boolFireRequest= true
     return currentLaunchState == "fire"
 end

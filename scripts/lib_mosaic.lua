@@ -9,7 +9,8 @@
 function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
     mapToCultureDictionary = {
-      ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international   
+      ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international, 
+      ["dsdr 3.99"] = GG.AllCultures.arabic   
     }
 
     if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end

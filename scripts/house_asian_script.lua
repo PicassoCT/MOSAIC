@@ -958,7 +958,7 @@ function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     lecho(":buildDecorateLvl"..Level.." for "..materialGroupName)
     Sleep(1)
-    assert(buildMaterial, "no material table in" ..Level.." for "..materialGroupName)
+
     assert(type(buildMaterial)== "table")
     assertPieceDictValue(unitID, buildMaterial, "GroundLvl:buildMaterial")
     for name, group in pairs(buildingGroupsLevel.Upright) do
@@ -1385,11 +1385,16 @@ function buildBuilding()
     lecho( "selectBackYard")
     selectBackYard(materialColourName)    
 
-    local levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
+    levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
+
     height = math.random(2,3)
 	for i = 1, height do
         lecho( "buildDecorateLvl start "..i)
+        assert(levelBuildMaterial, "no material table in" ..i.." for "..materialColourName)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
+        if not levelBuildMaterial then
+            levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco"})
+        end
         lecho( "buildDecorateLvl ended")
     end
 
