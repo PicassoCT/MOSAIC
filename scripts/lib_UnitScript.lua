@@ -6231,3 +6231,38 @@ function printf(unitID, message)
     echo("Printf:Debug:"..GG.DebugPrintF[unitID]..":"..(message or " iterration"))
     GG.DebugPrintF[unitID] = GG.DebugPrintF[unitID] + 1
 end
+
+
+function houseAddDestructionTable(OrgT, Level, pID)
+if not OrgT[Level] then OrgT[Level] = {}end
+OrgT[Level][#OrgT[Level] +1] =  pid
+return OrgT
+end
+
+function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
+	hideAll(id)
+	speed= 9.8
+	for i=#LevelPieces, 1, -1 do
+		for k= 1, #LevelPieces[i] do
+			Show(LevelPieces[i][k])
+			Move(LevelPieces[i][k], y_axis, 0, speed)
+			turnPieceRandDir(LevelPieces[i][k], 0.1)
+		end
+		Sleep(i*1000)
+	end
+	
+	while(speed < maxSpeed)do
+		speed = speed + 9.8
+		for i=#LevelPieces, 1, -1 do
+			for k= 1, #LevelPieces[i] do
+				Move(LevelPieces[i][k], y_axis, 0, speed)
+			end
+		end
+		Sleep(1000)
+	end
+	Sleep(500)
+	for i=#LevelPieces, 1, -1 do
+		WaitForMoves(LevelPieces[i])
+		hideT(LevelPieces[i])
+	end
+end

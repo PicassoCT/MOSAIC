@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
+LevelPieces = {}
 
 local myDefID = Spring.GetUnitDefID(unitID)
 local spGetGroundHeight = Spring.GetGroundHeight
@@ -242,6 +243,7 @@ function showPowerPoles()
 end
 
 function script.Killed(recentDamage, _) 
+    houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
     return 1
 end
 
@@ -643,7 +645,6 @@ function buildDecorateGroundLvl()
             end
 
             if element then
-
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
                                                                buildMaterial)
@@ -651,7 +652,7 @@ function buildDecorateGroundLvl()
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] , 0)
                 ToShowTable[#ToShowTable + 1] = element
-
+				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
                 if countElements == 24 then
                     return materialColourName
                 end
@@ -738,6 +739,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
                 ToShowTable[#ToShowTable + 1] = element
+				LevelPieces = houseAddDestructionTable(LevelPieces, Level+1, element)
 
                 if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)

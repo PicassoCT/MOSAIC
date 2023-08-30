@@ -8,7 +8,7 @@ local spGetUnitPosition = Spring.GetUnitPosition
 local grafitiMessages =  include('grafitiMessages.lua')
 
 function getScriptName() return "house_western_script.lua::" end
-
+LevelPieces = {}
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
 boolIsCombinatorial = (maRa() == maRa()) == maRa()
@@ -240,7 +240,8 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-    return 1
+    houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
+	return 1
 end
 
 function showOne(T, bNotDelayd)
@@ -718,7 +719,7 @@ function buildDecorateGroundLvl()
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 ToShowTable[#ToShowTable + 1] = element
-
+				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
                 if countElements == 24 then
                     return materialColourName
                 end
@@ -830,7 +831,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
                 ToShowTable[#ToShowTable + 1] = element
-
+				LevelPieces = houseAddDestructionTable(LevelPieces, Level+1, element)
                 if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     -- echo("Adding Window decoration to"..Level)
