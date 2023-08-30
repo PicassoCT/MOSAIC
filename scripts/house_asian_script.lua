@@ -29,7 +29,7 @@ function lecho(...)
   --
     --echo(getScriptName()..toStringBuild)
 end
-
+LevelPieces = {}
 local TablesOfPiecesGroups = {}
 decoPieceUsedOrientation = {}
 factor = 35
@@ -490,14 +490,14 @@ function HoloFlicker(tiles,alttiles)
 								end
                             end 
 	while true do
+		Sleep(10000)
 		for i=1, #tiles do
 			reset(tiles[i])
 		end
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
-		--lecho("HololWallFunction"..dice)
+		lecho("HololWallFunction"..dice)
         holoDecoFunctions[dice](tiles, alttiles)
-		Sleep(10000)
 	end
 end
 
@@ -550,6 +550,17 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
+	for i=#LevelPieces, 1, -1 do
+		for k= 1, #LevelPieces[i] do
+			Move(LevelPieces[i][k], y_axis, 0, 9.81)
+			turnPieceRandDir(LevelPieces[i][k], 0.1)
+		end
+		Sleep(i*1000)
+	end
+	for i=#LevelPieces, 1, -1 do
+		WaitForMoves(LevelPieces[i])
+		hideT(LevelPieces[i])
+	end
     return 1
 end
 
@@ -858,7 +869,7 @@ end
 
 function buildDecorateGroundLvl(materialColourName)
     lecho(":buildDecorateLGroundLvl")
-
+	LevelPieces[1] = {}
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
     local floorBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"}) 
@@ -911,7 +922,7 @@ function buildDecorateGroundLvl(materialColourName)
 
                 assert(rotation)
                 WTurn(element, 3, math.rad(rotation), 0)
-	
+				LevelPieces[1][#LevelPieces[0] +1] = element
                 addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
                 lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(0))
     
@@ -958,6 +969,7 @@ function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     lecho(":buildDecorateLvl"..Level.." for "..materialGroupName)
     Sleep(1)
+	LevelPieces[Level+1] = {}
 
     assert(type(buildMaterial)== "table")
     assertPieceDictValue(unitID, buildMaterial, "GroundLvl:buildMaterial")
@@ -1021,6 +1033,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 				assert(rotation)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- lecho("Adding Element to level"..Level)
+				LevelPieces[Level+1] [#LevelPieces[Level+1] +1] = element
 				addToShowTable(element, xLoc, zLoc, index, xRealLoc, zRealLoc)
 				lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(Level))
                 if countElements == 24 then
@@ -1224,6 +1237,8 @@ function nightAndDay(dayNightPieceNameDict)
 end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
+	LevelPieces[#LevelPieces+1] = {}
+
     lecho(":-->addRoofDeocrate")
     countElements = 0
     if materialColourName == "pod" and maRa() then
@@ -1271,6 +1286,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5 + offset, 0)
                 WaitForMoves(element)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
+				LevelPieces[#LevelPieces][#LevelPieces[#LevelPieces]+1] = element
 				addToShowTable(element, xLoc, zLoc)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
