@@ -6240,6 +6240,7 @@ return OrgT
 end
 
 function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
+	echo("Start house destruction")
 	hideAll(id)
 	speed= 9.8
 	for i=#LevelPieces, 1, -1 do
@@ -6247,6 +6248,9 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 			Show(LevelPieces[i][k])
 			Move(LevelPieces[i][k], y_axis, 0, speed)
 			turnPieceRandDir(LevelPieces[i][k], 0.1)
+			if maRa() == maRa() then
+				Explode(LevelPieces[i][k], SFX.SHATTER + SFX.NO_HEATCLOUD)
+			end
 		end
 		Sleep(i*1000)
 	end
@@ -6260,9 +6264,10 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 		end
 		Sleep(1000)
 	end
-	Sleep(500)
+	Sleep(5000)
 	for i=#LevelPieces, 1, -1 do
 		WaitForMoves(LevelPieces[i])
 		hideT(LevelPieces[i])
 	end
+	echo("End house destruction")
 end
