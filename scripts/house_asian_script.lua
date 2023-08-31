@@ -51,6 +51,7 @@ local cubeDim = {
     roofHeigth = 50
 }
 
+dayNightPieceNames = {}
 local SIG_SUBANIMATIONS = 2
 
 pieceCyclicOSTable = {
@@ -1234,7 +1235,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
     assert(Level)
 
-    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco"}) -- TODO materialGroupName
+    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"}) -- TODO materialGroupName
 
     for i = 1, 37, 1 do
         local index = i
@@ -1261,7 +1262,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element, roofMaterial)
                 if string.find(string.lower(pieceID_NameMap[element]), "day") then
-                    dayNightPieceNameDict[pieceID_NameMap[element]] = replaceStr(pieceID_NameMap[element], "Day", "Night")
+                    dayNightPieceNames[pieceID_NameMap[element]] = replaceStr(pieceID_NameMap[element], "Day", "Night")
                 end
 
                 offset = 0
@@ -1286,8 +1287,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         end
     end
 
-    if count(dayNightPieceNameDict) > 0 then
-        StartThread(nightAndDay, dayNightPieceNameDict)
+    if count(dayNightPieceNames) > 0 then
+        StartThread(nightAndDay, dayNightPieceNames)
     end
 
     countElements = 0

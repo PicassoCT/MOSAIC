@@ -900,8 +900,7 @@ function getGameConfig()
                     "ground_turret_ssied",
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
-                    "objective_powerplant",                   
-                    "motorbike"
+                    "objective_powerplant"
                 }
                 return getTypeTable(UnitDefNames, typeTable)
         end
@@ -963,7 +962,6 @@ function getGameConfig()
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
                     "air_copter_ssied",
-                    "motorbike",
                     "physicspayload",
                     "biopayload",
                     "informationpayload",

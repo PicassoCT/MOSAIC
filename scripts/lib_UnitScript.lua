@@ -6252,7 +6252,7 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 	end
 	
 	while(speed < maxSpeed)do
-		speed = speed + 9.8
+		speed = math.min(speed + 9.8, maxSpeed)
 		for i=#LevelPieces, 1, -1 do
 			for k= 1, #LevelPieces[i] do
 				Move(LevelPieces[i][k], y_axis, 0, speed)
