@@ -83,13 +83,15 @@ function noLongerAiming()
     Signal(SIG_RESETAIM)
     SetSignalMask(SIG_RESETAIM)
     boolNoLongerAiming = false
-    Sleep(5000)
+    Sleep(10000)
     boolNoLongerAiming = true
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/rotate.ogg", 0.8,
-                1000, 1)
-    WTurn(aimpiece, 2, 0, 0.5)
-    WTurn(Cannon1, 1, 0, 0.5)
-    lastTurretRotation = 0
+    if maRa() then
+        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/tank/rotate.ogg", 0.8,
+                    1000, 1)
+        WTurn(aimpiece, 2, 0, 0.5)
+        WTurn(Cannon1, 1, 0, 0.5)
+        lastTurretRotation = 0
+    end
 end
 
 boolBarelyMoved = false

@@ -35,10 +35,10 @@ local weaponDef = {
     avoidFeature = true,
     avoidGround = true,
     avoidFriendly = true,
-    collideFriendly = true,
+    collideFriendly = false,
     collideEnemy  = true,
     collideNeutral  = true,
-    collideGround = true,
+    collideGround = false,
 
     heightMod = 0.5,
 

@@ -13,8 +13,9 @@ local GameConfig = getGameConfig()
 local center = piece "TurretBase"
 local Turret = piece "TurretHead"
 local aimpiece = piece "AimPiece"
+local firepiece = piece "FirePiece"
 local aimingFrom = aimpiece
-local firingFrom = aimpiecexoglflaogog
+local firingFrom = firepiece
 local launchProjT
 local flyingProjT
 boolLaunchAnimationStarted = false
@@ -36,7 +37,7 @@ function projectileLaunch(i)
     id = launchProjT[i]
     flyid = flyingProjT[i]
     Show(id)
-    WMove(id,y_axis, 500, 500*3)
+    WMove(id,y_axis, 500, 500*5)
     Hide(id)
     Show(flyid)
     tx= math.random(45,90)
@@ -61,7 +62,7 @@ end
 
 currentLaunchState = "ready"
 function launchStateMachineThread()
-            hideT(launchProjT)
+           hideT(launchProjT)
            hideT(flyingProjT)
            resetT(launchProjT)
            resetT(flyingProjT)
@@ -148,8 +149,8 @@ function script.AimFromWeapon1() return firingFrom end
 function script.QueryWeapon1() return firingFrom end
 
 function script.AimWeapon1(Heading, pitch)
-    Turn(Turret, x_axis, math.rad(40),0)
-    WTurn(Turret, y_axis, Heading,0)
+    Turn(Turret, y_axis, math.rad(40),0)
+    WTurn(Turret, x_axis, Heading,0)
     boolFireRequest= true
     return currentLaunchState == "fire"
 end

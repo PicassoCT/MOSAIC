@@ -1203,13 +1203,15 @@ function nightAndDay(dayNightPieceNameDict)
 
     while true do
         hours, minutes, seconds, percent = getDayTime()
-        Sleep(15000)
+        Sleep(5000)
         if hours > 19 then 
             for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
                 randSleep= math.random(1,10)*1000
                 Sleep(randSleep)
+                if maRa() then
                 if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
                 if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
+                end
             end
 
             while hours > 19 or hours < 6 do
