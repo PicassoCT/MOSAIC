@@ -148,8 +148,8 @@ function script.AimFromWeapon1() return firingFrom end
 function script.QueryWeapon1() return firingFrom end
 
 function script.AimWeapon1(Heading, pitch)
-    Turn(Turret, y_axis, math.rad(40),0)
-    WTurn(Turret, z_axis, Heading,0)
+    Turn(Turret, x_axis, math.rad(40),0)
+    WTurn(Turret, y_axis, Heading,0)
     boolFireRequest= true
     return currentLaunchState == "fire"
 end

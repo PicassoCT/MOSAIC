@@ -1,10 +1,14 @@
 - Glow Shader for neon holograms
 - rainshader for floor vectors.. Depthmap
-- Asian podbuildings
+- building destruction animation
+- grenadedrones no self damage/turrets
+- self-revealing of operators
+- all maps tested through
+- normaltexture for asian buildings
+- performance optimization
+
 - no alpha texture
-- basebuildings: construction, parkhouse, Neonstripes (Shanghai look) Refinery look, sewer look
 - testgame:AI vs AI. 
 - test
-- _ x rename to Trad_Pod_Floor09
 
 
