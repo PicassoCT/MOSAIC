@@ -659,11 +659,8 @@ function buildDecorateGroundLvl()
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-                    StreetDecoMaterial, StreetDeco =
-                        DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                          StreetDecoMaterial, gridOffset[xLoc][zLoc])
+                    StreetDecoMaterial, StreetDeco = DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, gridOffset[xLoc][zLoc])
                     Turn(StreetDeco, 3, math.rad(rotation), 0)
-
                 end
 
                 if chancesAre(10) < decoChances.door then
@@ -672,9 +669,7 @@ function buildDecorateGroundLvl()
                         DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorMaterial, gridOffset[xLoc][zLoc])
                     Turn(Door, axis, math.rad(rotation), 0)
                     if chancesAre(10) < decoChances.door then
-                        DoorDecoMaterial, DoorDeco =
-                            DecorateBlockWall(xRealLoc, zRealLoc, 0,
-                                              DoorDecoMaterial, gridOffset[xLoc][zLoc] )
+                        DoorDecoMaterial, DoorDeco = DecorateBlockWall(xRealLoc, zRealLoc, 0, DoorDecoMaterial, gridOffset[xLoc][zLoc] )
                         if DoorDeco then
                             Turn(DoorDeco, axis, math.rad(rotation), 0)
                         end
@@ -689,8 +684,7 @@ function buildDecorateGroundLvl()
 
             if chancesAre(10) < decoChances.yard then
                 rotation = getWallBackyardDeocrationRotation(index)
-                yardMaterial, yardDeco =
-                    decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
+                yardMaterial, yardDeco = decorateBackYard(index, xLoc, zLoc, yardMaterial, 0)
                 if yardDeco then
                     Turn(yardDeco, _z_axis, math.rad(rotation), 0)
                 end

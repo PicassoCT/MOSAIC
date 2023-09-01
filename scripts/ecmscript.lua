@@ -9,6 +9,7 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 local ecmIconTypes = getECMIconTypes(UnitDefs)
+local stunnableUnitTypes = getStunnedInBlackOutUnitTypes(UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 GameConfig= getGameConfig()
 speedfactor = 2.0
@@ -24,13 +25,16 @@ function script.Create()
      StartThread(eatAIcon)
 end
 
-
 function eatAIcon()
     boolFoundSomething = false
     while true do
         foreach(getAllNearUnit(unitID, 100),
             function (id)
                 defID = Spring.GetUnitDefID(id)
+				--stun all blackout stunable Units in Range
+				if stunnableUnitTypes[defID] then
+					stunUnit(unitID, 0.5)
+				end
                 if ecmIconTypes[defID] then
                     return id
                 end
@@ -39,7 +43,6 @@ function eatAIcon()
                 if Spring.GetUnitTeam(id) ~= myTeamID then
                     Explode(center,  SFX.SHATTER)
                     Spring.DestroyUnit(id, false, true)
-
                 end
             end
             )
@@ -144,11 +147,9 @@ function hoverAboveGrounds( distanceToHover, step, boolTurnTowardsGoal)
 end
 
 function script.StartMoving() 
- 
 end
 
 function script.StopMoving() 
-
 end
 
 function script.Activate() return 1 end
@@ -162,5 +163,3 @@ function script.QueryWeapon1() return center end
 function script.AimWeapon1(Heading, pitch) return false end
 
 function script.FireWeapon1() return false end
-
-

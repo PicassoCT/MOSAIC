@@ -33,34 +33,35 @@ function script.Create()
     Turn(Turret, x_axis, math.rad(40),0)
 end
 
-function projectileLaunch(i)
+function projectileLaunch(i, factor)
     id = launchProjT[i]
     flyid = flyingProjT[i]
     Show(id)
-    WMove(id,y_axis, 500, 500*5)
+    WMove(id,y_axis, 500, 500*factor)
     Hide(id)
     Show(flyid)
-    tx= math.random(45,90)
-    Turn(flyid,x_axis, math.rad(tx), 0.35)
     for i=100, 1500, 150 do
-        Move(flyid,y_axis, i, i)
+        Move(flyid,y_axis, i, factor)
         Sleep(100)
     end
-    turnPieceRandDir(flyid,0.5)
+    turnPieceRandDir(flyid, 0.5)
 end
 
 function launchAnimation()
-    factor = 2.0
+	allLaunched = false
+    factor = 5.0
     for i=1, #launchProjT do
-        StartThread(projectileLaunch, i)
+        StartThread(projectileLaunch, i,factor)
         Sleep(250)
     end
     WaitForMoves(launchProjT)
     Sleep(10)
     WaitForMoves(flyingProjT)
+	allLaunched = true
 end
 
 currentLaunchState = "ready"
+allLaunched = false
 function launchStateMachineThread()
            hideT(launchProjT)
            hideT(flyingProjT)
@@ -80,13 +81,18 @@ function launchStateMachineThread()
         if boolFireRequest then
             return "launching"
         end
-        boolFireRequest = false
         return "ready"
     end
 
    launchStateMachine["launching"] = function(frame, oldState, persPack)
         if oldState == "ready" then
             launchAnimation()
+			while not allLaunched do
+				Sleep(50
+			end
+			allLaunched = false
+			hideT(launchProjT)
+			hideT(flyingProjT)
             boolFireRequest = false
             return "fire"
         end
@@ -97,8 +103,6 @@ function launchStateMachineThread()
     end
 
     launchStateMachine["fire"] = function (frame, oldState, persPack)
-        hideT(launchProjT)
-        hideT(flyingProjT)
         return "fire"
     end
 
@@ -129,9 +133,9 @@ function launchStateMachineThread()
     currentLaunchState= "ready"
     persPack = {}
     while true do
-        newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
-       -- echo("Launchstatemachine:"..currentLaunchState.."/"..oldState)
         oldState = currentLaunchState
+		newState = launchStateMachine[currentLaunchState](Spring.GetGameFrame(), oldState, persPack)
+       -- echo("Launchstatemachine:"..currentLaunchState.."/"..oldState)
         currentLaunchState = newState
         Sleep(100)
     end
