@@ -641,7 +641,7 @@ UpperAnimationStateFunctions ={
 
 								resetT(lowerBodyPieces, 10)										
 								if maRa()== true then StartThread(leftArmPoses)	 end
-								echo("Playing Idle Animation for OperativePropagator")
+								
 								StartThread(PlayAnimation,uppperBodyAnimations[eAnimState.idle][math.random(1,#uppperBodyAnimations[eAnimState.idle])], lowerBodyPieces, math.random(1,5)/2.5)			
 								WaitForTurns(UpArm2,UpArm1,LowArm2, LowArm1)
 

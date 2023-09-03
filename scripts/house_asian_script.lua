@@ -15,7 +15,22 @@ IDGroups_Trad_Office_Direction = {
     "l"} -- lengthwise
 
 --Riesenrad
+pieceLimits = {
+    ["Office_Pod_BaseAddition"] = 2
+}
 
+function isWithinPieceLimits(pieceID)
+    name = pieceID_NameMap[pieceID]
+    if not pieceLimits[name]  then return true end
+    if not GG.house_asian_pieces_used then GG.house_asian_pieces_used  = {} end
+    if not GG.house_asian_pieces_used[name] then GG.house_asian_pieces_used[name]  = 0 end
+
+    if GG.house_asian_pieces_used[name] < pieceLimits[name] then
+        GG.house_asian_pieces_used[name] = GG.house_asian_pieces_used[name] +1
+        return true
+    end
+    return false
+end
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_asian_script:: " end
@@ -41,6 +56,7 @@ local buildingGroupsLevel = {Upright = {}, Length = {}}
 local buildingGroupsRoof = {Upright = {}, Length = {}}
 center = piece "center"
 Icon = piece("Icon")
+ErrorIcon = piece("ErrorIcon")
 	
 rotationOffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
@@ -55,12 +71,11 @@ dayNightPieceNames = {}
 local SIG_SUBANIMATIONS = 2
 
 pieceCyclicOSTable = {
-  --[[  ["PieceName"] = {
-                    {"turn", y_axis, 49, 3},
-                    {"move", x_axis, 49, 3, 500},
-                    {"blink", 750 }
+   ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
+                    {"turn", y_axis, 20, 3},
+                    {"turn", y_axis, -20, 3},                 
                     }, 
-]]					
+				
 }
 
 supriseChances = {
@@ -640,9 +655,13 @@ end
 
 function selectBase(materialType) 
     basePiece = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
-    if basePiece then
+    while basePiece do
+    if basePiece and isWithinPieceLimits(basePiece) then
         showRegPiece(basePiece)       
         lecho("BasePiece: ".. getPieceName(unitID, basePiece))
+        return
+    end
+    basePiece = getMaterialBaseNameOrDefault(materialType, {"Base"}, {"Deco"})
     end
 end
 
@@ -766,14 +785,14 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     	end
     end
 	
-	if buildMaterial[1] then
-		piecenum, num = getSafeRandom(buildMaterial, buildMaterial[1]) 
-		if piecenum and not inToShowDict(piecenum)  then
-			assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned randomized material")
-			lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
-			return piecenum, num
-		end
+	
+	piecenum, num = getSafeRandom(buildMaterial, ErrorIcon) 
+	if piecenum and not inToShowDict(piecenum)  then
+		assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned randomized material")
+		lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
+		return piecenum, num
 	end
+
 
     --lecho(" Returning nil in getRandomBuildMateria in context".. toString(context)) 
    return
@@ -1378,9 +1397,9 @@ function buildBuilding()
     --lecho( "selectBase")
     materialColourName = selectGroundBuildMaterial()
     --materialColourName = "office"
-    buildingGroupsFloor.Upright = getNameFilteredDictionary( {"ID_u", "ID_a"},  { materialColourName}, {"Roof"})
+    buildingGroupsFloor.Upright = getNameFilteredDictionary( {"ID_u", "ID_a"},  { materialColourName}, {"Roof", "Deco"})
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
-    buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof"})
+    buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof", "Deco"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
 
     lecho( "buildDecorateGroundLvl started")

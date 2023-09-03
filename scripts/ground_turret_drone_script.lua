@@ -88,7 +88,7 @@ function launchStateMachineThread()
         if oldState == "ready" then
             launchAnimation()
 			while not allLaunched do
-				Sleep(50
+				Sleep(50)
 			end
 			allLaunched = false
 			hideT(launchProjT)
