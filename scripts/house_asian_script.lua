@@ -8,7 +8,6 @@ IDGroupsDirection = {
     "u", --upright
     "l"} -- lengthwise
 
-
 IDGroups_Trad_Office_Direction = { 
     "u", --upright
     "u", --upright
@@ -19,18 +18,6 @@ pieceLimits = {
     ["Office_Pod_BaseAddition"] = 2
 }
 
-function isWithinPieceLimits(pieceID)
-    name = pieceID_NameMap[pieceID]
-    if not pieceLimits[name]  then return true end
-    if not GG.house_asian_pieces_used then GG.house_asian_pieces_used  = {} end
-    if not GG.house_asian_pieces_used[name] then GG.house_asian_pieces_used[name]  = 0 end
-
-    if GG.house_asian_pieces_used[name] < pieceLimits[name] then
-        GG.house_asian_pieces_used[name] = GG.house_asian_pieces_used[name] +1
-        return true
-    end
-    return false
-end
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
 function getScriptName() return "house_asian_script:: " end
@@ -160,6 +147,54 @@ boolDoneShowing = false
 boolHouseHidden = false
 Spring.SetUnitNanoPieces(unitID, {center})
 
+function isWithinPieceLimits(pieceID)
+    name = pieceID_NameMap[pieceID]
+    if not pieceLimits[name]  then return true end
+    if not GG.house_asian_pieces_used then GG.house_asian_pieces_used  = {} end
+    if not GG.house_asian_pieces_used[name] then GG.house_asian_pieces_used[name]  = 0 end
+
+    if GG.house_asian_pieces_used[name] < pieceLimits[name] then
+        GG.house_asian_pieces_used[name] = GG.house_asian_pieces_used[name] +1
+        return true
+    end
+    return false
+end
+
+function factoryAnimation(spinPiece, upPiece, lavaContainer, moltenPiecesT)
+	rotationArc= 180 / #moltenPiecesT
+	containerOffsetValue = 9000 --TODO
+
+	while true do
+		--starting
+		if maRa()== maRa() then
+			reset(spinPiece, 0)
+			--Arriving molten metall containerAnimation
+			startValue = randSign()* containerOffsetValue
+			Move(lavaContainer,x_axis, startValue, 0)
+			Show(lavaContainer)
+			WMove(lavaContainer,x_axis, 0, 10)
+			--Blobanimation
+			--Giesserei
+			for i=1, #moltenPiecesT do
+				Show(upPiece)
+				Move(upPiece, y_axis, -20, 0)
+				WMove(upPiece, y_axis, 0, 5)
+				Show(moltenPiecesT[i])
+				Hide(upPiece)
+				WTurn(spinPiece, y_axis, math.rad(i*rotationArc),10)
+			end
+		-- ending
+			offset = math.rad(#moltenPiecesT*rotationArc)
+			for i=1, #moltenPiecesT do
+				--craneAnimation
+				Hide(moltenPiecesT[i])
+				WTurn(spinPiece, y_axis, math.rad(offset + i* rotationArc), 10)
+			end
+		end
+
+	Sleep(500)
+	end
+end
 
 function initAllPieces()
     Signal(SIG_SUBANIMATIONS)
