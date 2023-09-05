@@ -17,6 +17,7 @@ IDGroups_Trad_Office_Direction = {
 pieceLimits = {
     ["Office_Pod_BaseAddition"] = 2
 }
+pieceCyclicOSTable = {}
 
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
@@ -57,13 +58,7 @@ local cubeDim = {
 dayNightPieceNames = {}
 local SIG_SUBANIMATIONS = 2
 
-pieceCyclicOSTable = {
-   ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
-                    {"turn", y_axis, 20, 3},
-                    {"turn", y_axis, -20, 3},                 
-                    }, 
-				
-}
+
 
 supriseChances = {
     roof = 0.35,
@@ -163,7 +158,7 @@ end
 function factoryAnimation(spinPiece, upPiece, lavaContainer, moltenPiecesT)
 	rotationArc= 180 / #moltenPiecesT
 	containerOffsetValue = 9000 --TODO
-
+    moltenMax = 8 
 	while true do
 		--starting
 		if maRa()== maRa() then
@@ -175,7 +170,7 @@ function factoryAnimation(spinPiece, upPiece, lavaContainer, moltenPiecesT)
 			WMove(lavaContainer,x_axis, 0, 10)
 			--Blobanimation
 			--Giesserei
-			for i=1, #moltenPiecesT do
+			for i=1, moltenMax do
 				Show(upPiece)
 				Move(upPiece, y_axis, -20, 0)
 				WMove(upPiece, y_axis, 0, 5)
@@ -185,7 +180,7 @@ function factoryAnimation(spinPiece, upPiece, lavaContainer, moltenPiecesT)
 			end
 		-- ending
 			offset = math.rad(#moltenPiecesT*rotationArc)
-			for i=1, #moltenPiecesT do
+			for i=1, moltenMax do
 				--craneAnimation
 				Hide(moltenPiecesT[i])
 				WTurn(spinPiece, y_axis, math.rad(offset + i* rotationArc), 10)
@@ -197,10 +192,25 @@ function factoryAnimation(spinPiece, upPiece, lavaContainer, moltenPiecesT)
 end
 
 function initAllPieces()
+    pieceCyclicOSTable = {
+   ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
+                    {"turn", y_axis, 20, 3},
+                    {"turn", y_axis, -20, 3},                 
+                    },    
+    ["ID_l100_Industrial_RoofBlock3Sub1"] = {
+                    {"move", x_axis, 30, 3},
+                    {"move", x_axis, -30, 3},                 
+                    }, 
+    ["ID_l100_Industrial_RooflBlock2"] = {
+        {"func",factoryAnimation, piece("ID_l100_Industrial_RoofBlock2Spin1"), piece("ID_l100_Industrial_RoofBlock2Raise"),TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]}
+        }
+                
+    }
+
     Signal(SIG_SUBANIMATIONS)
-    for pieceName, set in pairs ( pieceCyclicOSTable) do
+    for pieceName, set in pairs (pieceCyclicOSTable) do
 		if pieceName_pieceNr[pieceName] and toShowDict[pieceName_pieceNr[pieceName]] then
-			startPieceOS(pieceName, SIG_SUBANIMATIONS)
+			startPieceOS(pieceName, SIG_SUBANIMATIONS, table.unpack(set))
 		end
     end
 end

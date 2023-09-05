@@ -2679,6 +2679,18 @@ function cyclicTurn(pieceID, signal, name,  axis, distanceUp, distanceDown, spee
     end
 end
 
+function executeFunctionTable(pieceID, Signal, ...)
+    local arg = arg;
+    if (not arg) then
+        arg = {...};
+        arg.n = #arg
+    end
+    SetSignalMask(Signal)
+    while true do
+        arg[1](arg)
+        Sleep(1)
+    end
+end
 
 local cyclicLoopFunctions = {
     blink = cyclicBlink,
@@ -2686,6 +2698,7 @@ local cyclicLoopFunctions = {
     wmove = cyclicWaitMove,
     moveInTime = cyclicMoveInTime,
     turn = cyclicTurn
+    func = executeFunctionTable
 }
 
 
