@@ -1168,7 +1168,7 @@ function getGameConfig()
                     return getTypeTable(UnitDefNames, typeTable)
                 end
 
-                if culturename == Cultures.international then
+                if culturename == Cultures.international or culturename == Cultures.asian then
                    return mergeTables(
                         getRPGCarryingCivilianTypes(UnitDefs, Cultures.arabic),
                         getRPGCarryingCivilianTypes(UnitDefs, Cultures.western)
@@ -1974,6 +1974,33 @@ function getGameConfig()
                                 "house_arab_decal16", 
                                 "house_arab_decal17",
                                 "house_arab_decal19"                       
+                            }}
+                            }
+                end
+				
+				if culture == "asian" then
+                    return {
+                        ["house"] = {
+                        rural = {
+                                "house_western_decal9",
+                                "house_western_decal11",
+                                "house_western_decal3",
+                                "house_western_decal4",  
+                                "house_western_decal10",
+                            },
+                        urban = {
+                                "house_western_decal1",
+                                "house_western_decal2",
+                                "house_western_decal5",
+                                "house_western_decal6",
+                                "house_western_decal7",
+                                "house_western_decal8",
+                                "house_western_decal14",
+                                "house_western_decal12",
+                                "house_western_decal13",
+                                "house_western_decal10",                           
+                                "house_western_decal15",   
+                                "house_western_decal9"                
                             }}
                             }
                 end

@@ -640,9 +640,10 @@ UpperAnimationStateFunctions ={
 								if boolFlying == true then return eAnimState.standing end
 
 								resetT(lowerBodyPieces, 10)										
-								if maRa()== true then StartThread(leftArmPoses)	 end
-								
-								StartThread(PlayAnimation,uppperBodyAnimations[eAnimState.idle][math.random(1,#uppperBodyAnimations[eAnimState.idle])], lowerBodyPieces, math.random(1,5)/2.5)			
+								if maRa() then StartThread(leftArmPoses)	 end
+								for i=1,math.random(2,3) do
+									PlayAnimation( uppperBodyAnimations[eAnimState.idle][math.random(1,#uppperBodyAnimations[eAnimState.idle])], lowerBodyPieces, math.random(1,5)/2.5)			
+								end
 								WaitForTurns(UpArm2,UpArm1,LowArm2, LowArm1)
 
 								Sleep(30)	
@@ -821,7 +822,7 @@ function spawnDecoyCivilian()
 		if civilianID ~= nil and doesUnitExistAlive(civilianID) == true then return end
 
 		x,y,z= Spring.GetUnitPosition(unitID)
-		civilianID = Spring.CreateUnit(disguiseDefID, x + randSign()*5 , y, z+ randSign()*5 , 1, Spring.GetGaiaTeamID())
+		civilianID = Spring.CreateUnit(disguiseDefID, x + randSign() * 5 , y, z+ randSign() * 5 , 1, Spring.GetGaiaTeamID())
 		transferUnitStatusToUnit(unitID,civilianID)
 		--Spring.SetUnitNoSelect(civilianID, true)
 		Spring.SetUnitAlwaysVisible(civilianID, true)
