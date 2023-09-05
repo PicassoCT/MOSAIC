@@ -155,8 +155,13 @@ function isWithinPieceLimits(pieceID)
     return false
 end
 
-function factoryAnimation(spinPiece, upPiece, lavaContainer, moltenPiecesT)
-	rotationArc= 180 / #moltenPiecesT
+function factoryAnimation(pieceID, Signal, set)
+    spinPiece = set[1]
+    upPiece = set[2]
+    lavaContainer = set[3] 
+    moltenPiecesT = set[4]
+    Show(spinPiece)
+    rotationArc= 180 / #moltenPiecesT
 	containerOffsetValue = 9000 --TODO
     moltenMax = 8 
 	while true do
@@ -201,8 +206,9 @@ function initAllPieces()
                     {"move", x_axis, 30, 3},
                     {"move", x_axis, -30, 3},                 
                     }, 
-    ["ID_l100_Industrial_RooflBlock2"] = {
-        {"func",factoryAnimation, piece("ID_l100_Industrial_RoofBlock2Spin1"), piece("ID_l100_Industrial_RoofBlock2Raise"),TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]}
+    ["ID_l100_Industrial_RoofBlock2"] = 
+        {
+            {"func", factoryAnimation, piece("ID_l100_Industrial_RoofBlock2Spin1"), piece("ID_l100_Industrial_RoofBlock2Raise"),TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]}
         }
                 
     }
@@ -210,7 +216,7 @@ function initAllPieces()
     Signal(SIG_SUBANIMATIONS)
     for pieceName, set in pairs (pieceCyclicOSTable) do
 		if pieceName_pieceNr[pieceName] and toShowDict[pieceName_pieceNr[pieceName]] then
-			startPieceOS(pieceName, SIG_SUBANIMATIONS, table.unpack(set))
+			startPieceOS(pieceName, SIG_SUBANIMATIONS, set)
 		end
     end
 end
@@ -1477,9 +1483,9 @@ function buildBuilding()
 
     lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
-    industrpiece = piece("ID_l100_Industrial_RooflBlock2")
+    industrpiece = piece("ID_l100_Industrial_RoofBlock2")
     addToShowTable(industrpiece)
-    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[industrpiece])
+    reset(industrpiece)
 	initAllPieces()
 end
 

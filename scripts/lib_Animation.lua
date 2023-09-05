@@ -2627,7 +2627,7 @@ end
 
 -- ================================================================================================================
 
-function cyclicBlink(pieceID, signal, name, timeInMs)
+function cyclicBlink(pieceID, signal, timeInMs)
     SetSignalMask(signal)
     while true do
         Hide(pieceID)
@@ -2637,7 +2637,7 @@ function cyclicBlink(pieceID, signal, name, timeInMs)
     end
 end
 
-function cyclicMove(pieceID, signal, name, axis, distanceUp, distanceDown, speed, restTime)
+function cyclicMove(pieceID, signal, axis, distanceUp, distanceDown, speed, restTime)
     SetSignalMask(signal)
     while true do
         Move(pieceID, axis, distanceUp, speed)
@@ -2647,7 +2647,7 @@ function cyclicMove(pieceID, signal, name, axis, distanceUp, distanceDown, speed
     end
 end
 
-function cyclicWaitMove(pieceID, signal, name, axis, distanceUp, distanceDown, speed)
+function cyclicWaitMove(pieceID, signal, axis, distanceUp, distanceDown, speed)
     SetSignalMask(signal)
     while true do
         WMove(pieceID, axis, distanceDown, speed)
@@ -2657,7 +2657,7 @@ function cyclicWaitMove(pieceID, signal, name, axis, distanceUp, distanceDown, s
     end
 end
 
-function cyclicMoveInTime(pieceID, signal, name, axis, distanceUp, distanceDown, timeToMove)
+function cyclicMoveInTime(pieceID, signal, axis, distanceUp, distanceDown, timeToMove)
     SetSignalMask(signal)
     velocityUp = distanceUp/(timeToMove/1000)
     velocityDown = distanceDown/(timeToMove/1000)
@@ -2669,7 +2669,7 @@ function cyclicMoveInTime(pieceID, signal, name, axis, distanceUp, distanceDown,
     end
 end
 
-function cyclicTurn(pieceID, signal, name,  axis, distanceUp, distanceDown, speed)
+function cyclicTurn(pieceID, signal,  axis, distanceUp, distanceDown, speed)
     SetSignalMask(signal)
     while true do
         WTurn(pieceID, axis, math.rad(distanceUp), speed)
@@ -2679,7 +2679,7 @@ function cyclicTurn(pieceID, signal, name,  axis, distanceUp, distanceDown, spee
     end
 end
 
-function executeFunctionTable(pieceID, Signal, ...)
+function cyclicExecuteFunction(pieceID, Signal, ...)
     local arg = arg;
     if (not arg) then
         arg = {...};
@@ -2697,20 +2697,15 @@ local cyclicLoopFunctions = {
     move = cyclicMove,
     wmove = cyclicWaitMove,
     moveInTime = cyclicMoveInTime,
-    turn = cyclicTurn
-    func = executeFunctionTable
+    turn = cyclicTurn,
+    func = cyclicExecuteFunction
 }
 
 
-function startPieceOS(pieceName, Signal)
+function startPieceOS(pieceName, Signal,dataSet)
     pieceID = piece(pieceName)
-
-    for i=1, #cyclicLoopFunctions[pieceName] do
-        dataSet = cyclicLoopFunctions[pieceName][i]
-        cyclicFunction = cyclicLoopFunctions[dataSet[1]]
-        StartThread(cyclicFunction, pieceID, Signal, table.unpack(dataSet))
-        
-    end
+    Show(pieceID)
+    cyclicLoopFunctions[dataSet[1]]( pieceID, Signal, table.select(2, table.unpack(dataSet)))
 end
 
 

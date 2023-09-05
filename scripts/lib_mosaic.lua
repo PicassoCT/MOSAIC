@@ -1411,6 +1411,23 @@ function getGameConfig()
                     end
 
                 end      
+                if GameConfig.instance.culture == "asian" then  
+                    if sex == "male" then
+                        typeTable = {
+                            "civilian_arab1",
+                            "civilian_arab2",
+                            "civilian_western0"
+                        }
+                    else
+                        typeTable = {
+                            "civilian_arab0",
+                            "civilian_arab3",
+                            "civilian_western1",
+                            "civilian_western2"
+                        }
+                    end
+
+                end      
 
                 return getTypeTable(UnitDefNames, typeTable)
             end
