@@ -1477,6 +1477,9 @@ function buildBuilding()
 
     lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
+    industrpiece = piece("ID_l100_Industrial_RooflBlock2")
+    addToShowTable(industrpiece)
+    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[industrpiece])
 	initAllPieces()
 end
 
