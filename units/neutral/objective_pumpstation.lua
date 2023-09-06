@@ -13,7 +13,7 @@ local objective_pumpstation = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "placeholder.lua",
+	script 					= "null.lua",
 	objectName       	= "objective_pumpstation.dae",
 
 	
