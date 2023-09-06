@@ -2702,10 +2702,13 @@ local cyclicLoopFunctions = {
 }
 
 
-function startPieceOS(pieceName, Signal,dataSet)
+function startPieceOS(pieceName, Signal, setOfLoopTasks)
     pieceID = piece(pieceName)
     Show(pieceID)
-    cyclicLoopFunctions[dataSet[1]]( pieceID, Signal, table.select(2, table.unpack(dataSet)))
+	for i=1, #setOfLoopTasks do
+		task = setOfLoopTasks[i]
+		StartThread(cyclicLoopFunctions[task.func], pieceID, Signal, table.unpack(task.arg))	
+	end
 end
 
 

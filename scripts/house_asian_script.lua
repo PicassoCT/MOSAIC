@@ -157,9 +157,13 @@ end
 
 function factoryAnimation(pieceID, Signal, set)
     spinPiece = set[1]
+	assertType(spinPiece, "number")
     upPiece = set[2]
+	assertType(upPiece,"number")
     lavaContainer = set[3] 
     moltenPiecesT = set[4]
+	assertType(lavaContainer, "number")
+	assertType(moltenPiecesT, "table")
     Show(spinPiece)
     rotationArc= 180 / #moltenPiecesT
 	containerOffsetValue = 9000 --TODO
@@ -199,18 +203,21 @@ end
 function initAllPieces()
     pieceCyclicOSTable = {
    ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
-                    {"turn", y_axis, 20, 3},
-                    {"turn", y_axis, -20, 3},                 
+                    {func= "turn", arg = { y_axis, -20, 20, 3}}0,                 
                     },    
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
-                    {"move", x_axis, 30, 3},
-                    {"move", x_axis, -30, 3},                 
+                    {func = "move", arg = {x_axis, -30, 30, 3}},
+                 
                     }, 
     ["ID_l100_Industrial_RoofBlock2"] = 
         {
-            {"func", factoryAnimation, piece("ID_l100_Industrial_RoofBlock2Spin1"), piece("ID_l100_Industrial_RoofBlock2Raise"),TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]}
+            {func="func", arg= {factoryAnimation, 
+								piece("ID_l100_Industrial_RoofBlock2Spin1"), 
+								piece("ID_l100_Industrial_RoofBlock2Raise"),
+								TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]
+								}
+								}
         }
-                
     }
 
     Signal(SIG_SUBANIMATIONS)
