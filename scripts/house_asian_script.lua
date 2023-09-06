@@ -206,7 +206,7 @@ function initAllPieces()
                     {func= "turn", arg = { y_axis, -20, 20, 3}}0,                 
                     },    
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
-                    {func = "move", arg = {x_axis, -30, 30, 3}},
+                    {func = "move", arg = {x_axis, -30, 30,  3}},
                  
                     }, 
     ["ID_l100_Industrial_RoofBlock2"] = 
