@@ -155,7 +155,7 @@ function isWithinPieceLimits(pieceID)
     return false
 end
 
-function factoryAnimation(pieceID, Signal, set)
+function factoryAnimation( set)
     spinPiece = set[1]
 	assertType(spinPiece, "number")
     upPiece = set[2]
@@ -203,7 +203,7 @@ end
 function initAllPieces()
     pieceCyclicOSTable = {
    ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
-                    {func= "turn", arg = { y_axis, -20, 20, 3}}0,                 
+                    {func= "turn", arg = { y_axis, -20, 20, 3}},                 
                     },    
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
                     {func = "move", arg = {x_axis, -30, 30,  3}},
@@ -211,9 +211,10 @@ function initAllPieces()
                     }, 
     ["ID_l100_Industrial_RoofBlock2"] = 
         {
-            {func="func", arg= {factoryAnimation, 
+            {func="func", arg= {method = factoryAnimation, 
 								piece("ID_l100_Industrial_RoofBlock2Spin1"), 
 								piece("ID_l100_Industrial_RoofBlock2Raise"),
+                                TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][9],
 								TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]
 								}
 								}

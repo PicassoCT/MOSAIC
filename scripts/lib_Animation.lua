@@ -2627,8 +2627,9 @@ end
 
 -- ================================================================================================================
 
-function cyclicBlink(pieceID, signal, timeInMs)
+function cyclicBlink(pieceID, signal, arg)
     SetSignalMask(signal)
+    timeInMs = arg[1]
     while true do
         Hide(pieceID)
         Sleep(timeInMs)
@@ -2637,8 +2638,9 @@ function cyclicBlink(pieceID, signal, timeInMs)
     end
 end
 
-function cyclicMove(pieceID, signal, axis, distanceUp, distanceDown, speed, restTime)
+function cyclicMove(pieceID, signal, arg)
     SetSignalMask(signal)
+    axis, distanceUp, distanceDown, speed = arg[1], arg[2],arg[3], arg[4]
     while true do
         Move(pieceID, axis, distanceUp, speed)
         Sleep(restTime)
@@ -2647,8 +2649,9 @@ function cyclicMove(pieceID, signal, axis, distanceUp, distanceDown, speed, rest
     end
 end
 
-function cyclicWaitMove(pieceID, signal, axis, distanceUp, distanceDown, speed)
+function cyclicWaitMove(pieceID, signal, arg)
     SetSignalMask(signal)
+    axis, distanceUp, distanceDown, speed = arg[1], arg[2],arg[3], arg[4]
     while true do
         WMove(pieceID, axis, distanceDown, speed)
         Sleep(1)
@@ -2657,8 +2660,9 @@ function cyclicWaitMove(pieceID, signal, axis, distanceUp, distanceDown, speed)
     end
 end
 
-function cyclicMoveInTime(pieceID, signal, axis, distanceUp, distanceDown, timeToMove)
+function cyclicMoveInTime(pieceID, signal, arg)
     SetSignalMask(signal)
+    axis, distanceUp, distanceDown, speed = arg[1], arg[2],arg[3], arg[4]
     velocityUp = distanceUp/(timeToMove/1000)
     velocityDown = distanceDown/(timeToMove/1000)
     while true do
@@ -2669,8 +2673,9 @@ function cyclicMoveInTime(pieceID, signal, axis, distanceUp, distanceDown, timeT
     end
 end
 
-function cyclicTurn(pieceID, signal,  axis, distanceUp, distanceDown, speed)
+function cyclicTurn(pieceID, signal,  arg)
     SetSignalMask(signal)
+    axis, distanceUp, distanceDown, speed = arg[1], arg[2],arg[3], arg[4]
     while true do
         WTurn(pieceID, axis, math.rad(distanceUp), speed)
         Sleep(1)
@@ -2679,15 +2684,10 @@ function cyclicTurn(pieceID, signal,  axis, distanceUp, distanceDown, speed)
     end
 end
 
-function cyclicExecuteFunction(pieceID, Signal, ...)
-    local arg = arg;
-    if (not arg) then
-        arg = {...};
-        arg.n = #arg
-    end
+function cyclicExecuteFunction(pieceID, Signal, arg)
     SetSignalMask(Signal)
     while true do
-        arg[1](arg)
+        arg.method(arg)
         Sleep(1)
     end
 end
@@ -2707,7 +2707,7 @@ function startPieceOS(pieceName, Signal, setOfLoopTasks)
     Show(pieceID)
 	for i=1, #setOfLoopTasks do
 		task = setOfLoopTasks[i]
-		StartThread(cyclicLoopFunctions[task.func], pieceID, Signal, table.unpack(task.arg))	
+		StartThread(cyclicLoopFunctions[task.func], pieceID, Signal, task.arg)	
 	end
 end
 
