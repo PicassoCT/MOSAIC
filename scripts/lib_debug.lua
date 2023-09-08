@@ -78,7 +78,7 @@ function assertTableNotEmpty(name)
 end
 
 function assertTableRange(T, from, to, typeExpected)
-    assert(Table(T))
+    assertTable(T)
     results= {}
     for i=from, to, (from-to)/math.abs(from-to) do
         if T[i] then

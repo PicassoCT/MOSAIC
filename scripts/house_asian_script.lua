@@ -161,27 +161,30 @@ end
 
 function factoryAnimation( set)
     spinPiece = set.spinPiece
-    assert(spinPiece)
+    assert(pieceID_NameMap[spinPiece])
     upPiece = set.upPiece
-    assert(upPiece)
+    assert(pieceID_NameMap[upPiece])
     lavaContainer = set.lavaContainer
-    assert(lavaContainer)
+    assert(pieceID_NameMap[lavaContainer])
     moltenPiecesT = set.moltenPiecesT
     assert(moltenPiecesT)
     Show(spinPiece)
+	printf(unitID, "house:asian: factoryAnimation")
     rotationArc= 180 / #moltenPiecesT
 	containerOffsetValue = 9000 --TODO
 
 	while true do
 		--starting
 		if maRa()== maRa() then
-            echo("Starting Molten loop")
+			printf(unitID, "house:asian: factoryAnimation")
+			
 			reset(spinPiece, 0)
 			--Arriving molten metall containerAnimation
 			startValue = randSign()* containerOffsetValue
 			Move(lavaContainer,x_axis, startValue, 0)
 			Show(lavaContainer)
 			WMove(lavaContainer,x_axis, 0, 10)
+			printf(unitID, "house:asian: factoryAnimation")
 			--Blobanimation
 			--Giesserei
 			for i=1, #moltenPiecesT do
@@ -193,12 +196,14 @@ function factoryAnimation( set)
 				WTurn(spinPiece, y_axis, math.rad(i*rotationArc),10)
 			end
 		-- ending
+		printf(unitID, "house:asian: factoryAnimation")
 			offset = math.rad(#moltenPiecesT*rotationArc)
 			for i=1, #moltenPiecesT do
 				--craneAnimation
 				Hide(moltenPiecesT[i])
 				WTurn(spinPiece, y_axis, math.rad(offset + i* rotationArc), 10)
 			end
+			printf(unitID, "house:asian: factoryAnimation")
 		end
 
 	Sleep(500)
