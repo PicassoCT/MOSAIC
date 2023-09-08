@@ -155,22 +155,27 @@ function isWithinPieceLimits(pieceID)
     return false
 end
 
+function weldingAnimation(set)
+
+end
+
 function factoryAnimation( set)
-    spinPiece = set[1]
-	assertType(spinPiece, "number")
-    upPiece = set[2]
-	assertType(upPiece,"number")
-    lavaContainer = set[3] 
-    moltenPiecesT = set[4]
-	assertType(lavaContainer, "number")
-	assertType(moltenPiecesT, "table")
+    spinPiece = set.spinPiece
+    assert(spinPiece)
+    upPiece = set.upPiece
+    assert(upPiece)
+    lavaContainer = set.lavaContainer
+    assert(lavaContainer)
+    moltenPiecesT = set.moltenPiecesT
+    assert(moltenPiecesT)
     Show(spinPiece)
     rotationArc= 180 / #moltenPiecesT
 	containerOffsetValue = 9000 --TODO
-    moltenMax = 8 
+
 	while true do
 		--starting
 		if maRa()== maRa() then
+            echo("Starting Molten loop")
 			reset(spinPiece, 0)
 			--Arriving molten metall containerAnimation
 			startValue = randSign()* containerOffsetValue
@@ -179,7 +184,7 @@ function factoryAnimation( set)
 			WMove(lavaContainer,x_axis, 0, 10)
 			--Blobanimation
 			--Giesserei
-			for i=1, moltenMax do
+			for i=1, #moltenPiecesT do
 				Show(upPiece)
 				Move(upPiece, y_axis, -20, 0)
 				WMove(upPiece, y_axis, 0, 5)
@@ -189,7 +194,7 @@ function factoryAnimation( set)
 			end
 		-- ending
 			offset = math.rad(#moltenPiecesT*rotationArc)
-			for i=1, moltenMax do
+			for i=1, #moltenPiecesT do
 				--craneAnimation
 				Hide(moltenPiecesT[i])
 				WTurn(spinPiece, y_axis, math.rad(offset + i* rotationArc), 10)
@@ -201,6 +206,8 @@ function factoryAnimation( set)
 end
 
 function initAllPieces()
+    assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 10, "number")
+    assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
     pieceCyclicOSTable = {
    ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
                     {func= "turn", arg = { y_axis, -20, 20, 3}},                 
@@ -211,13 +218,32 @@ function initAllPieces()
                     }, 
     ["ID_l100_Industrial_RoofBlock2"] = 
         {
-            {func="func", arg= {method = factoryAnimation, 
-								piece("ID_l100_Industrial_RoofBlock2Spin1"), 
-								piece("ID_l100_Industrial_RoofBlock2Raise"),
-                                TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][9],
-								TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"]
-								}
-								}
+            {   func="func", 
+                arg= {
+                    method = factoryAnimation, 
+    				spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
+    				upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
+                    grabPiece = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][9],
+                    lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
+    				moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
+    				}
+			}
+        },
+     ["ID_l100_Industrial_RoofBlock1"] = 
+        {
+            {   func="func", 
+                arg= {
+                    method = weldingAnimation, 
+                    elevator = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][25],
+                    rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
+                    finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
+                    elevator = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
+                    robot1T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
+                    robot2T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
+                    robot3T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
+                    robot4T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
+                    }
+            }
         }
     }
 

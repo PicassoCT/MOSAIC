@@ -77,6 +77,23 @@ function assertTableNotEmpty(name)
     assert(#name > 0, "table is empty")
 end
 
+function assertTableRange(T, from, to, typeExpected)
+    assert(Table(T))
+    results= {}
+    for i=from, to, (from-to)/math.abs(from-to) do
+        if T[i] then
+            if type(T[i]) ~= typeExpected then
+                results[i] = "Member "..i.. " is not of expected type got " ..toString( type(T[i]) ) .." instead "
+            end
+        else
+            results[i] = "Member "..i.. " does not exist "
+        end
+    end
+    if #results > 0 then
+        assert(nil, "assertTableRange failed with"..toString(results))
+    end
+end
+
 function assertDictNotEmpty(name)
     assertDict(name)
     assert(count(name) > 0, "table is empty")

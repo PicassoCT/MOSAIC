@@ -1697,6 +1697,14 @@ end
 -- ======================================================================================
 -- Section: Syntax additions and Tableoperations
 -- ======================================================================================
+function getSubRangeTable(T, min, max)
+    subT={}
+    for i=min,max do
+        subT[#subT+1]= T[i]
+    end
+    return subT
+end
+
 function delayedExecution(timeToSleep, func, ...)
     Sleep(timeToSleep)
     func(...)
