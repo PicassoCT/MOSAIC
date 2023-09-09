@@ -705,6 +705,7 @@ function HoloFlicker(tiles,alttiles)
 									reset(tiles[i])
 								end
                             end 
+	mergedTiles = mergeTables(tiles, alttiles)
 	while true do
 		Sleep(10000)
 		for i=1, #tiles do
@@ -713,7 +714,8 @@ function HoloFlicker(tiles,alttiles)
 		showT(tiles)
 		dice= math.random(1, #holoDecoFunctions)
 		lecho("HololWallFunction"..dice)
-        holoDecoFunctions[dice](tiles, alttiles)
+		hideConditional(mergedTiles)
+		holoDecoFunctions[dice](tiles, alttiles)
 	end
 end
 
@@ -804,6 +806,15 @@ function showOneOrAll(T)
 		end
         return val
     end
+end
+
+function hideConditional(T)
+	if boolHouseHidden then
+		hideT(T)
+		while boolHouseHidden do
+			Sleep(1000)
+		end
+	end
 end
 
 function getMaterialBaseNameOrDefault(materialName, mustInclude, mustExclude)
@@ -1417,33 +1428,46 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
+function hideBoth(T1, T2)
+hideT(T1)
+hideT(T2)
+end
 function nightAndDay(dayNightPieceNameDict)
     while boolDoneShowing == false do Sleep(100) end
 
+	daynightPieces = {}
+	for k,v in pairs(dayNightPieceNameDict) do
+		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[k]
+		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[v]
+	end
+	
     while true do
         hours, minutes, seconds, percent = getDayTime()
         Sleep(5000)
-        if hours > 19 then 
-            for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
-                randSleep= math.random(1,10)*1000
-                Sleep(randSleep)
-                if maRa() then
-                if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
-                if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
-                end
-            end
-
-            while hours > 19 or hours < 6 do
-                Sleep(5000)
-                hours, minutes, seconds, percent = getDayTime()
-            end
-            for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
-                randSleep= math.random(1,10)*1000
-                Sleep(randSleep)
-                if pieceName_pieceNr[dayPieceName] then Show(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
-                if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
-            end
-        end
+		hideConditional(daynightPieces)
+			if hours > 19 then 
+				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
+					randSleep= math.random(1,10)*1000
+					Sleep(randSleep)
+					if maRa() then
+					if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
+					if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
+					end
+				end
+	
+				while hours > 19 or hours < 6 do
+					Sleep(5000)
+					hours, minutes, seconds, percent = getDayTime()
+					hideConditional(dayPices, nightPieces)
+				end
+				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
+					randSleep= math.random(1,10)*1000
+					Sleep(randSleep)
+					if pieceName_pieceNr[dayPieceName] then Show(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
+					if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
+				end
+			end
+		end
     end
 end
 
