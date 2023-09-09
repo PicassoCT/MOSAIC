@@ -1297,7 +1297,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
         end
     end
-    Spring.Echo("Completed buildDecorateLvl")
+    lecho("Completed buildDecorateLvl")
    
     return materialGroupName, buildMaterial
 end
