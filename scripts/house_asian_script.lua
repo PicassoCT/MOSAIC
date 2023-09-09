@@ -156,7 +156,97 @@ function isWithinPieceLimits(pieceID)
 end
 
 function weldingAnimation(set)
+    robotTable = {}
+    robotTable[#robotTable+1] = set.robot1T
+    robotTable[#robotTable+1] = set.robot2T
+    robotTable[#robotTable+1] = set.robot3T
+    robotTable[#robotTable+1] = set.robot4T
 
+    while (true) do
+        Show(set.elevator)
+        WMove(set.elevator,y_axis, 0, 10)
+        Show(set.rawWorks)
+        showT(set.doors)
+        showT(set.robot1T)
+        showT(set.robot2T)
+        showT(set.robot3T)
+        showT(set.robot4T)
+
+        resetT(set.robot1T,1)
+        resetT(set.robot2T,1)
+        resetT(set.robot3T,1)
+        resetT(set.robot4T,1)
+        workSteps = math.random(7,15)
+        for i=1, workSteps do
+            for robot=1, #robotTable do
+                boolForward = (robot + i % 2) == 0
+                for axe=1, #robotTable[robot] do
+                    if forward then
+                        if axe == 3 then
+                            val = math.random(30,60)
+                            Turn(robotTable[robot][3],x_axis, math.rad(val), 1)
+                            Turn(robotTable[robot][4],x_axis, math.rad(val), 1)
+                        end
+                        if axe == 5 then
+                            val = math.random(0,70)
+                            Turn(robotTable[robot][axe],x_axis, math.rad(val), 1)
+                        end
+
+                        if axe == 6 then
+                            val= math.random(-90,90)                   
+                            Turn(robotTable[robot][axe],y_axis, math.rad(val), 1)
+                        end                        
+                    else
+                        if axe == 2 then
+                            Turn(robotTable[robot][axe],y_axis, math.rad(robot*90 + math.random(-90,90)), 1)
+                        end
+                        if axe == 3 then
+                            val = math.random(-70,-10)
+                            Turn(robotTable[robot][3],x_axis, math.rad(val), 1)
+                            Turn(robotTable[robot][4],x_axis, math.rad(val*-2), 1)
+                        end
+
+                        if axe == 5 then
+                            val = math.random(0,70)
+                            Turn(robotTable[robot][axe],x_axis, math.rad(val), 1)
+                        end
+
+                        if axe == 6 then
+                            val= math.random(-90,90)                   
+                            Turn(robotTable[robot][axe],y_axis, math.rad(val), 1)
+                        end    
+                    end
+                end
+            end
+            Sleep(3000)
+        end
+        Sleep(500)
+        for robot=1, #robotTable do
+            for axe=1, #robotTable[robot] do
+                reset(robotTable[robot][axe],1)
+            end
+        end
+
+        Move(set.elevator,y_axis, 85 , 10)
+        Turn(set.doors[1],x_axis, math.rad(-110),1)
+        Turn(set.doors[2],x_axis, math.rad(-110),1)
+        Sleep(4000)
+        Hide(set.rawWorks)
+        Show(set.finalWorks)
+        WaitForMoves(set.elevator, y_axis)
+        Move(set.elevator,y_axis, 0 , 4)
+        WMove(set.finalWorks,y_axis, 150, 35)
+        Turn(set.finalWorks,x_axis, math.rad(-20),0.1)
+        Move(set.finalWorks, z_axis, 720, 100)
+        WMove(set.finalWorks,y_axis, 600, 100)
+        Hide(set.finalWorks)
+        reset(set.finalWorks)
+        Sleep(5000)
+        Turn(set.doors[1],x_axis, math.rad(0),1)
+        Turn(set.doors[2],x_axis, math.rad(0),1)
+        Move(set.elevator,y_axis, 0 , 5)
+        Sleep(5000)
+    end
 end
 
 function factoryAnimation( set)
@@ -167,43 +257,58 @@ function factoryAnimation( set)
     lavaContainer = set.lavaContainer
     assert(pieceID_NameMap[lavaContainer])
     moltenPiecesT = set.moltenPiecesT
+    grabPiece = set.grabPiece
+    Show(grabPiece)
     assert(moltenPiecesT)
     Show(spinPiece)
-	printf(unitID, "house:asian: factoryAnimation")
+    pickedPiece= set.pickedPiece
     rotationArc= 180 / #moltenPiecesT
-	containerOffsetValue = 9000 --TODO
+	containerOffsetValue = 70 --TODO
 
 	while true do
 		--starting
-		if maRa()== maRa() then
-			printf(unitID, "house:asian: factoryAnimation")
-			
-			reset(spinPiece, 0)
+		if maRa()== maRa() then			
+			Turn(spinPiece,y_axis, 0, 0)
 			--Arriving molten metall containerAnimation
 			startValue = randSign()* containerOffsetValue
 			Move(lavaContainer,x_axis, startValue, 0)
 			Show(lavaContainer)
-			WMove(lavaContainer,x_axis, 0, 10)
-			printf(unitID, "house:asian: factoryAnimation")
-			--Blobanimation
+			WMove(lavaContainer,x_axis, -50, 10)
+
 			--Giesserei
 			for i=1, #moltenPiecesT do
 				Show(upPiece)
-				Move(upPiece, y_axis, -20, 0)
-				WMove(upPiece, y_axis, 0, 5)
+				Move(upPiece, y_axis, -2, 0)
+				WMove(upPiece, y_axis, 2.5, 1)
 				Show(moltenPiecesT[i])
 				Hide(upPiece)
-				WTurn(spinPiece, y_axis, math.rad(i*rotationArc),10)
+				WTurn(spinPiece, y_axis, math.rad(i*rotationArc),1)
 			end
+            Move(lavaContainer,x_axis, containerOffsetValue*-1, 10)
 		-- ending
-		printf(unitID, "house:asian: factoryAnimation")
-			offset = math.rad(#moltenPiecesT*rotationArc)
+			offset = #moltenPiecesT*rotationArc
 			for i=1, #moltenPiecesT do
+                Show(moltenPiecesT[1])
+                WMove(grabPiece,x_axis,0, 10)
+                Show(pickedPiece)
 				--craneAnimation
-				Hide(moltenPiecesT[i])
-				WTurn(spinPiece, y_axis, math.rad(offset + i* rotationArc), 10)
+				Hide(moltenPiecesT[1])
+                WMove(grabPiece,y_axis, -15, 10)
+                Turn(pickedPiece,_x_axis, math.rad(35),15)
+                WMove(pickedPiece,y_axis, -15, 20)
+                Hide(pickedPiece)
+                reset(pickedPiece,0)
+				WTurn(spinPiece, y_axis, math.rad(offset + rotationArc - 0.5*rotationArc), 1)
+                --reset
+                hideT(moltenPiecesT)
+                showT(moltenPiecesT, 1,#moltenPiecesT -(i-1) )              
+                WTurn(spinPiece, y_axis, math.rad(offset  - 0.5*rotationArc), 0)
+                Sleep(100)
 			end
-			printf(unitID, "house:asian: factoryAnimation")
+            hideT(moltenPiecesT)
+            WTurn(spinPiece, y_axis, math.rad(offset), 1)
+            WTurn(spinPiece, y_axis, math.rad(270), 1)
+            WTurn(spinPiece, y_axis, math.rad(360), 1)
 		end
 
 	Sleep(500)
@@ -214,39 +319,43 @@ function initAllPieces()
     assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 10, "number")
     assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
     pieceCyclicOSTable = {
-   ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
-                    {func= "turn", arg = { y_axis, -20, 20, 3}},                 
+    ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
+                    {func= "wturn", arg = { y_axis, -20, 20, 0.1}},                 
                     },    
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
-                    {func = "move", arg = {x_axis, -30, 30,  3}},
-                 
+                    {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
+                    },   
+    ["Roof093Sub1"] = {
+                    {func = "wmove", arg = {y_axis, -30, 5,  15}},                 
                     }, 
     ["ID_l100_Industrial_RoofBlock2"] = 
-        {
-            {   func="func", 
-                arg= {
-                    method = factoryAnimation, 
-    				spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
-    				upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
-                    grabPiece = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][9],
-                    lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
-    				moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
+                    {
+                    {   func="func", 
+                        arg= {
+                        method = factoryAnimation, 
+    				    spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
+    				    upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
+                        grabPiece = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][9],
+                        pickedPiece = piece("ID_l100_Industrial_RoofBlock2Grab"),
+                        lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
+    				    moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
     				}
 			}
         },
      ["ID_l100_Industrial_RoofBlock1"] = 
-        {
-            {   func="func", 
-                arg= {
-                    method = weldingAnimation, 
-                    elevator = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][25],
-                    rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
-                    finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
-                    elevator = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
-                    robot1T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
-                    robot2T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
-                    robot3T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
-                    robot4T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
+                    {
+                    {
+                       func="func", 
+                        arg= {
+                        method = weldingAnimation, 
+                        elevator = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][25],
+                        rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
+                        finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
+                        doors = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
+                        robot1T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
+                        robot2T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
+                        robot3T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
+                        robot4T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
                     }
             }
         }
@@ -254,7 +363,8 @@ function initAllPieces()
 
     Signal(SIG_SUBANIMATIONS)
     for pieceName, set in pairs (pieceCyclicOSTable) do
-		if pieceName_pieceNr[pieceName] and toShowDict[pieceName_pieceNr[pieceName]] then
+		if pieceName_pieceNr[pieceName] and inToShowDict(pieceName_pieceNr[pieceName]) then
+            echo("Starting Piece OS for "..pieceName)
 			startPieceOS(pieceName, SIG_SUBANIMATIONS, set)
 		end
     end
@@ -1318,8 +1428,8 @@ function nightAndDay(dayNightPieceNameDict)
                 randSleep= math.random(1,10)*1000
                 Sleep(randSleep)
                 if maRa() then
-                if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
-                if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
+                if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
+                if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
                 end
             end
 
@@ -1330,8 +1440,8 @@ function nightAndDay(dayNightPieceNameDict)
             for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
                 randSleep= math.random(1,10)*1000
                 Sleep(randSleep)
-                if pieceName_pieceNr[dayPieceName] then Show(pieceName_pieceNr[dayPieceName])else echo("No dayPieceName for"..dayPieceName)end
-                if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) else echo("No nightPieceName for"..nightPieceName)end
+                if pieceName_pieceNr[dayPieceName] then Show(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
+                if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
             end
         end
     end
@@ -1522,9 +1632,7 @@ function buildBuilding()
 
     lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
-    industrpiece = piece("ID_l100_Industrial_RoofBlock2")
-    addToShowTable(industrpiece)
-    reset(industrpiece)
+
 	initAllPieces()
 end
 
