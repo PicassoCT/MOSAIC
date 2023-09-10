@@ -48,6 +48,7 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
+local houeArabicDefID = UnitDefNames["house_arab0"].id
 
 if GameConfig.instance.culture == "arab" then
 	assert(houseTypeTable[UnitDefNames["house_arab0"].id])
@@ -474,8 +475,9 @@ function isRouteTraversable(defID, unitA, unitB)
     return path ~= nil
 end
 
-function getCultureDependentDiretion(culture)
+function getCultureDependentDirection(culture, defID)
     if culture == "arabic" then return 0 end
+    if defID == houeArabicDefID then return 0 end
     
     return math.max(1, math.floor(math.random(1, 3)))
  end
@@ -486,7 +488,7 @@ function spawnUnit(defID, x, z)
                  " with no coords")
     end
     
-    dir = getCultureDependentDiretion(GameConfig.instance.culture)
+    dir = getCultureDependentDirection(GameConfig.instance.culture, defID)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 

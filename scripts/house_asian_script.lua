@@ -249,17 +249,52 @@ function weldingAnimation(set)
     end
 end
 
+function oilrigAnimation(set)
+   
+
+    jack1 = set.jack1 
+    jack2 = set.jack2      
+    piston1 = set.piston1  
+    piston2 = set.piston2  
+    swing1 = set.swing1    
+    swing2 = set.swing2    
+    crank1 = set.crank1    
+    crank2 = set.crank2    
+    Show(jack1)
+    Show(jack2)
+    Show(piston1)
+    Show(piston2)
+    Show(swing1)
+    Show(swing2)
+    Show(crank1)
+    Show(crank2)
+    lenghtaxis= z_axis
+    Spin(swing1,z_axis, math.rad(360/4),0)
+    Spin(crank1,z_axis, math.rad(-360/4),0)
+    Spin(swing2,z_axis, math.rad(-360/4),0)
+    Spin(crank2,z_axis, math.rad(360/4),0)
+    while true do
+        Turn(jack2, z_axis, math.rad(-28),math.rad(28)/2)
+        Turn(jack1, z_axis, math.rad(28),math.rad(28)/2)
+        Move(piston1,y_axis, 0, 5)      
+        Move(piston2,y_axis, 22, 5)
+
+        Sleep(2000)
+        Turn(jack1, z_axis, math.rad(0),math.rad(28)/2)
+        Turn(jack2, z_axis, math.rad(0),math.rad(28)/2)  
+        Move(piston2,y_axis, 0, 5)    
+        Move(piston1,y_axis, 22, 5)
+        Sleep(2000)
+    end
+end
+
 function factoryAnimation( set)
     spinPiece = set.spinPiece
-    assert(pieceID_NameMap[spinPiece])
     upPiece = set.upPiece
-    assert(pieceID_NameMap[upPiece])
     lavaContainer = set.lavaContainer
-    assert(pieceID_NameMap[lavaContainer])
     moltenPiecesT = set.moltenPiecesT
     grabPiece = set.grabPiece
     Show(grabPiece)
-    assert(moltenPiecesT)
     Show(spinPiece)
     pickedPiece= set.pickedPiece
     rotationArc= 180 / #moltenPiecesT
@@ -293,7 +328,7 @@ function factoryAnimation( set)
                 Show(pickedPiece)
 				--craneAnimation
 				Hide(moltenPiecesT[1])
-                WMove(grabPiece,y_axis, -15, 10)
+                WMove(grabPiece, x_axis, -15, 10)
                 Turn(pickedPiece,_x_axis, math.rad(35),15)
                 WMove(pickedPiece,y_axis, -15, 20)
                 Hide(pickedPiece)
@@ -316,11 +351,17 @@ function factoryAnimation( set)
 end
 
 function initAllPieces()
-    assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 10, "number")
-    assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
+    
+  --  assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
     pieceCyclicOSTable = {
+    ["Industrial_Pod_Wall5Sub1"] = {
+                    {func= "wturn", arg = { z_axis,-45, 45, 0.001}},                 
+                    },       
+        ["Pod_Office_Industrial_Wall1Spin1"] = {
+                    {func= "wturn", arg = { z_axis,-90, 90, 0.1}},                 
+                    },    
     ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
-                    {func= "wturn", arg = { y_axis, -20, 20, 0.1}},                 
+                    {func= "wturn", arg = { y_axis, -math.random(20,90), math.random(20,90), 0.1}},                 
                     },    
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
                     {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
@@ -328,19 +369,35 @@ function initAllPieces()
     ["Roof093Sub1"] = {
                     {func = "wmove", arg = {y_axis, -30, 5,  15}},                 
                     }, 
-    ["ID_l100_Industrial_RoofBlock2"] = 
+    ["Industrial_Floor1"] = 
+                    {
+                        {   func="func", 
+                            arg= {
+                            method = oilrigAnimation, 
+                            jack1 =  piece("Industrial_Floor1Sub1")    ,
+                            jack2 = piece("Industrial_Floor1Sub5"),
+                            piston1 =  piece("Industrial_Floor1Sub2"),
+                            piston2 = piece("Industrial_Floor1Sub6"),
+                            swing1 =  piece("Industrial_Floor1Sub3"),
+                            swing2 =  piece("Industrial_Floor1Sub7"),
+                            crank1 =  piece("Industrial_Floor1Sub4"),
+                            crank2 =  piece("Industrial_Floor1Sub8")    				   
+        				}
+    			        }
+                    },    
+        ["ID_l100_Industrial_RoofBlock2"] = 
                     {
                     {   func="func", 
                         arg= {
                         method = factoryAnimation, 
-    				    spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
-    				    upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
-                        grabPiece = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][9],
+                        spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
+                        upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
+                        grabPiece = piece("ID_l100_Industrial_RoofBlock2Sub9"),
                         pickedPiece = piece("ID_l100_Industrial_RoofBlock2Grab"),
                         lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
-    				    moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
-    				}
-			}
+                        moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
+                    }
+            }
         },
      ["ID_l100_Industrial_RoofBlock1"] = 
                     {
@@ -364,7 +421,6 @@ function initAllPieces()
     Signal(SIG_SUBANIMATIONS)
     for pieceName, set in pairs (pieceCyclicOSTable) do
 		if pieceName_pieceNr[pieceName] and inToShowDict(pieceName_pieceNr[pieceName]) then
-            echo("Starting Piece OS for "..pieceName)
 			startPieceOS(pieceName, SIG_SUBANIMATIONS, set)
 		end
     end
@@ -1428,10 +1484,7 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
-function hideBoth(T1, T2)
-hideT(T1)
-hideT(T2)
-end
+
 function nightAndDay(dayNightPieceNameDict)
     while boolDoneShowing == false do Sleep(100) end
 
@@ -1458,7 +1511,7 @@ function nightAndDay(dayNightPieceNameDict)
 				while hours > 19 or hours < 6 do
 					Sleep(5000)
 					hours, minutes, seconds, percent = getDayTime()
-					hideConditional(dayPices, nightPieces)
+					hideConditional(daynightPieces)
 				end
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
 					randSleep= math.random(1,10)*1000
@@ -1467,9 +1520,9 @@ function nightAndDay(dayNightPieceNameDict)
 					if pieceName_pieceNr[nightPieceName] then Hide(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
 				end
 			end
-		end
-    end
+	end
 end
+
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
 	
