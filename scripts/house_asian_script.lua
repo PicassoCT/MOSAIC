@@ -357,7 +357,7 @@ function initAllPieces()
     ["Industrial_Pod_Wall5Sub1"] = {
                     {func= "wturn", arg = { z_axis,-45, 45, 0.001}},                 
                     },       
-        ["Pod_Office_Industrial_Wall1Spin1"] = {
+    ["Pod_Office_Industrial_Wall1Spin1"] = {
                     {func= "wturn", arg = { z_axis,-90, 90, 0.1}},                 
                     },    
     ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
@@ -370,50 +370,50 @@ function initAllPieces()
                     {func = "wmove", arg = {y_axis, -30, 5,  15}},                 
                     }, 
     ["Industrial_Floor1"] = 
-                    {
-                        {   func="func", 
-                            arg= {
-                            method = oilrigAnimation, 
-                            jack1 =  piece("Industrial_Floor1Sub1")    ,
-                            jack2 = piece("Industrial_Floor1Sub5"),
-                            piston1 =  piece("Industrial_Floor1Sub2"),
-                            piston2 = piece("Industrial_Floor1Sub6"),
-                            swing1 =  piece("Industrial_Floor1Sub3"),
-                            swing2 =  piece("Industrial_Floor1Sub7"),
-                            crank1 =  piece("Industrial_Floor1Sub4"),
-                            crank2 =  piece("Industrial_Floor1Sub8")    				   
-        				}
-    			        }
-                    },    
+        {
+            {   func="func", 
+                arg= {
+                method = oilrigAnimation, 
+                jack1 =  piece("Industrial_Floor1Sub1")    ,
+                jack2 = piece("Industrial_Floor1Sub5"),
+                piston1 =  piece("Industrial_Floor1Sub2"),
+                piston2 = piece("Industrial_Floor1Sub6"),
+                swing1 =  piece("Industrial_Floor1Sub3"),
+                swing2 =  piece("Industrial_Floor1Sub7"),
+                crank1 =  piece("Industrial_Floor1Sub4"),
+                crank2 =  piece("Industrial_Floor1Sub8")    				   
+			}
+	        }
+        },    
         ["ID_l100_Industrial_RoofBlock2"] = 
-                    {
-                    {   func="func", 
-                        arg= {
-                        method = factoryAnimation, 
-                        spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
-                        upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
-                        grabPiece = piece("ID_l100_Industrial_RoofBlock2Sub9"),
-                        pickedPiece = piece("ID_l100_Industrial_RoofBlock2Grab"),
-                        lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
-                        moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
-                    }
+        {
+            {   func="func", 
+                arg= {
+                method = factoryAnimation, 
+                spinPiece= piece("ID_l100_Industrial_RoofBlock2Spin1"), 
+                upPiece= piece("ID_l100_Industrial_RoofBlock2Raise"),
+                grabPiece = piece("ID_l100_Industrial_RoofBlock2Sub9"),
+                pickedPiece = piece("ID_l100_Industrial_RoofBlock2Grab"),
+                lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
+                moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
+                }
             }
         },
      ["ID_l100_Industrial_RoofBlock1"] = 
-                    {
-                    {
-                       func="func", 
-                        arg= {
-                        method = weldingAnimation, 
-                        elevator = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][25],
-                        rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
-                        finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
-                        doors = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
-                        robot1T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
-                        robot2T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
-                        robot3T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
-                        robot4T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
-                    }
+        {
+            {
+                func="func", 
+                arg= {
+                method = weldingAnimation, 
+                elevator = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][25],
+                rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
+                finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
+                doors = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
+                robot1T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
+                robot2T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
+                robot3T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
+                robot4T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
+                }
             }
         }
     }
