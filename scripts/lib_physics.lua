@@ -279,15 +279,18 @@ function PseudoPhysix(piecename, pearthTablePiece, nrOfCollissions,
     end
 end
 
-function groundHugDay(name)
+function placePieceOnGround(unitID, pieceID, speeds)
     sx, sy, sz = Spring.GetUnitPosition(unitID)
     globalHeightUnit = Spring.GetGroundHeight(sx, sz)
-    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, name)
+    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, pieceID)
     myHeight = Spring.GetGroundHeight(x, z)
     heightdifference = math.abs(globalHeightUnit - myHeight)
     if myHeight < globalHeightUnit then
         heightdifference = -1 * heightdifference
     end
+	
+	Move(pieceID, y_axis, heightdifference, speeds or 0)
+    WaitForMove(pieceID, y_axis)
     return heightdifference
 end
 
@@ -310,7 +313,7 @@ function fallingPhysPieces(pName, ivec, ovec)
     spawnCegAtPiece(unitID, pName, "dirt")
 
     while reducefactor > 0.001 and t > 5 do
-        local groundHug = groundHugDay(pName)
+        local groundHug = placePieceOnGround(unitID, pName)
         mSyncIn(pName, tx + tx * reducefactor - offVec.x, groundHug - offVec.y,
                 tz + tz * reducefactor - offVec.z, t)
 
