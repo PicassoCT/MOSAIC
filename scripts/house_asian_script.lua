@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_debug.lua"
+include "lib_physics.lua"
 
 IDGroupsDirection = { 
     "u", --upright
@@ -277,12 +278,12 @@ function oilrigAnimation(set)
         Turn(jack2, z_axis, math.rad(-28),math.rad(28)/2)
         Turn(jack1, z_axis, math.rad(28),math.rad(28)/2)
         Move(piston1,y_axis, 0, 5)      
-        Move(piston2,y_axis, 22, 5)
+        Move(piston2,y_axis, 0, 5)
 
         Sleep(2000)
         Turn(jack1, z_axis, math.rad(0),math.rad(28)/2)
         Turn(jack2, z_axis, math.rad(0),math.rad(28)/2)  
-        Move(piston2,y_axis, 0, 5)    
+        Move(piston2,y_axis, 22, 5)    
         Move(piston1,y_axis, 22, 5)
         Sleep(2000)
     end
@@ -1663,7 +1664,7 @@ function buildAnimation()
 end
 
 function addGroundPlaceables()
-	placeAbles =  getNameFilteredDictionary( {},  { materialColourName, "Placeable"}, {})
+	placeAbles =  getNameFilteredDictionary( {},  { "Placeable"}, {})
 	if Placeable and count(placeAbles) > 0 then
 	groundPiecesToPlace= 5
 		while groundPiecesToPlace > 0 do
@@ -1671,6 +1672,7 @@ function addGroundPlaceables()
 			if not inToShowDict(randPlaceAbleID) then
 				placePieceOnGround(unitID, randPlaceAbleID, 0)
 				addToShowTable(randPlaceAbleID)
+                Show(randPlaceAbleID)    
 			end	
 			groundPiecesToPlace= groundPiecesToPlace -1
 		end
