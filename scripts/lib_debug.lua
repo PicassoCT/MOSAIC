@@ -118,7 +118,6 @@ function assertFunction(name)
     assertType(name, "function")
 end
 
-
 function assertType(name, types)
     assert(type(name) == types, "value of type " .. type(name) .. " is not a "..types)  
 end
@@ -142,11 +141,11 @@ end
 function stopScript(name)
     lib_boolOnce = false
     while true do
-        Sleep(3000)
-        if lib_boolOnce == false then
+		if lib_boolOnce == false then
             lib_boolOnce = true
             Spring.Echo("Script at " .. name .. " has stopped")
         end
+		Sleep(3000)
     end
 end
 

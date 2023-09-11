@@ -1662,6 +1662,22 @@ function buildAnimation()
     end
 end
 
+function addGroundPlaceables()
+	placeAbles =  getNameFilteredDictionary( {},  { materialColourName, "Placeable"}, {})
+	if Placeable and count(placeAbles) > 0 then
+	groundPiecesToPlace= 5
+		while groundPiecesToPlace > 0 do
+			randPlaceAbleID = getSafeRandom(placeAbles)
+			if not inToShowDict(randPlaceAbleID) then
+				placePieceOnGround(unitID, randPlaceAbleID, 0)
+				addToShowTable(randPlaceAbleID)
+			end	
+			groundPiecesToPlace= groundPiecesToPlace -1
+		end
+	
+	end
+end
+
 function buildBuilding()
     StartThread(buildAnimation)
     lecho( "buildBuilding")
@@ -1679,35 +1695,37 @@ function buildBuilding()
     buildingGroupsFloor.Length = getNameFilteredDictionary( {"ID_l", "ID_a"},  { materialColourName}, {"Roof", "Deco"})
     buildingGroupsLevel.Length = getNameFilteredDictionary( {"ID_l", "ID_a"}, {materialColourName},{"Floor", "Roof", "Deco"})
 
-    lecho( "buildDecorateGroundLvl started")
+    --lecho( "buildDecorateGroundLvl started")
     buildDecorateGroundLvl(materialColourName)
-    lecho("House_Asian: buildDecorateGroundLvl ended with ")
+    --lecho("House_Asian: buildDecorateGroundLvl ended with ")
 
-    lecho( "selectBase")
+    --lecho( "selectBase")
     selectBase(materialColourName)
-    lecho( "selectBackYard")
+    --lecho( "selectBackYard")
     selectBackYard(materialColourName)    
 
     levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
 
     height = math.random(2,3)
 	for i = 1, height do
-        lecho( "buildDecorateLvl start "..i)
-        assert(levelBuildMaterial, "no material table in" ..i.." for "..materialColourName)
+      --  lecho( "buildDecorateLvl start "..i)
+      --  assert(levelBuildMaterial, "no material table in" ..i.." for "..materialColourName)
         _, levelBuildMaterial = buildDecorateLvl(i, materialColourName, levelBuildMaterial)
         if not levelBuildMaterial then
             levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco"})
         end
-        lecho( "buildDecorateLvl ended")
+        --lecho( "buildDecorateLvl ended")
     end
 
 	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
     if materialTable and count(materialTable) > 0 then
-        lecho( "addRoofDeocrate started")
+        --lecho( "addRoofDeocrate started")
         addRoofDeocrate(height + 1, materialTable, materialColourName)
     end
+	
+	addGroundPlaceables()
 
-    lecho( "addRoofDeocrate ended")
+    --lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
 
 	initAllPieces()
