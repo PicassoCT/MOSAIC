@@ -241,7 +241,7 @@ function weldingAnimation(set)
         Move(set.finalWorks, z_axis, 720, 100)
         WMove(set.finalWorks,y_axis, 600, 100)
         Hide(set.finalWorks)
-        reset(set.finalWorks)
+        reset(set.finalWorks,0)
         Sleep(5000)
         Turn(set.doors[1],x_axis, math.rad(0),1)
         Turn(set.doors[2],x_axis, math.rad(0),1)
@@ -1664,9 +1664,9 @@ function buildAnimation()
 end
 
 function addGroundPlaceables()
-	placeAbles =  getNameFilteredDictionary( {},  { "Placeable"}, {})
+	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
 	if Placeable and count(placeAbles) > 0 then
-	groundPiecesToPlace= 5
+	groundPiecesToPlace= math.random(1,5)
 		while groundPiecesToPlace > 0 do
 			randPlaceAbleID = getSafeRandom(placeAbles)
 			if not inToShowDict(randPlaceAbleID) then
