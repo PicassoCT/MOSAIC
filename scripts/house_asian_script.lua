@@ -1241,7 +1241,9 @@ function buildDecorateGroundLvl(materialColourName)
     return materialColourName
 end
 
-function chancesAre(outOfX) return (math.random(0, outOfX) / outOfX) end
+function chancesAre(outOfX) 
+	return (math.random(0, outOfX) / outOfX) 
+end
 
 function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     lecho(":buildDecorateLvl"..Level.." for "..materialGroupName)
@@ -1485,7 +1487,6 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
-
 function nightAndDay(dayNightPieceNameDict)
     while boolDoneShowing == false do Sleep(100) end
 
@@ -1523,7 +1524,6 @@ function nightAndDay(dayNightPieceNameDict)
 			end
 	end
 end
-
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
 	
@@ -1663,20 +1663,26 @@ function buildAnimation()
     end
 end
 
-function addGroundPlaceables()
+function addGroundPlaceables(materialName)
 	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
-	if Placeable and count(placeAbles) > 0 then
+	roofDecos = getNameFilteredTable( {materialName},  { "Roof", "Deco"}, {})
+	if placeAbles and count(placeAbles) > 0 then
 	groundPiecesToPlace= math.random(1,5)
+	randPlaceAbleID = ""
 		while groundPiecesToPlace > 0 do
-			randPlaceAbleID = getSafeRandom(placeAbles)
-			if not inToShowDict(randPlaceAbleID) then
+		if maRa()==maRa() == maRa() then
+			randPlaceAbleID = getSafeRandom(roofDecos)
+		else
+			randPlaceAbleID = getSafeRandom(placeAbles)			
+		end
+			if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
 				placePieceOnGround(unitID, randPlaceAbleID, 0)
 				addToShowTable(randPlaceAbleID)
                 Show(randPlaceAbleID)    
 			end	
-			groundPiecesToPlace= groundPiecesToPlace -1
-		end
-	
+		
+			groundPiecesToPlace = groundPiecesToPlace -1
+		end	
 	end
 end
 
