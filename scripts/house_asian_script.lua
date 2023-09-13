@@ -1665,15 +1665,8 @@ end
 
 function addGroundPlaceables(materialName)
 	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
-	handPickedPieceNames = {"churchRoofPiece", "arenaPieceID", "drumbarrelPieces"} --TODO No subpieces or spinpieces, but piece can have sub or spinpieces
-	handPickedPieces ={}
-	for i=1,#handPickedPieces do
-		pieceID = piece(handPickedPieceNames[i])
-		if pieceID and not inToShowDict(pieceID) then
-			handPickedPieces[#handPickedPieces +1] = pieceID
-		end
-	end
-	placeAbles = mergeTables(placeAbles, handPickedPieces)
+
+	
 	if placeAbles and count(placeAbles) > 0 then
 	groundPiecesToPlace= math.random(1,5)
 	randPlaceAbleID = ""
@@ -1681,6 +1674,10 @@ function addGroundPlaceables(materialName)
 
 			randPlaceAbleID = getSafeRandom(placeAbles)			
 			if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
+                px= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+                pz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+                WMove(randPlaceAbleID,3, px, 0)
+                WMove(randPlaceAbleID,1, pz, 0)
 				placePieceOnGround(unitID, randPlaceAbleID, 0)
 				addToShowTable(randPlaceAbleID)
                 Show(randPlaceAbleID)    
