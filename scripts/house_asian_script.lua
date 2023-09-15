@@ -1665,26 +1665,24 @@ end
 
 function addGroundPlaceables(materialName)
 	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
-
-	
 	if placeAbles and count(placeAbles) > 0 then
-	groundPiecesToPlace= math.random(1,5)
-	randPlaceAbleID = ""
-		while groundPiecesToPlace > 0 do
+		groundPiecesToPlace= math.random(1,5)
+		randPlaceAbleID = ""
+			while groundPiecesToPlace > 0 do
 
-			randPlaceAbleID = getSafeRandom(placeAbles)			
-			if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
-                px= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-                pz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-                WMove(randPlaceAbleID,3, px, 0)
-                WMove(randPlaceAbleID,1, pz, 0)
-				placePieceOnGround(unitID, randPlaceAbleID, 0)
-				addToShowTable(randPlaceAbleID)
-                Show(randPlaceAbleID)    
+				randPlaceAbleID = getSafeRandom(placeAbles)			
+				if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
+					px= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+					pz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+					WMove(randPlaceAbleID,3, px, 0)
+					WMove(randPlaceAbleID,1, pz, 0)
+					placePieceOnGround(unitID, randPlaceAbleID, 0)
+					addToShowTable(randPlaceAbleID)
+					Show(randPlaceAbleID)    
+				end	
+			
+				groundPiecesToPlace = groundPiecesToPlace -1
 			end	
-		
-			groundPiecesToPlace = groundPiecesToPlace -1
-		end	
 	end
 end
 
