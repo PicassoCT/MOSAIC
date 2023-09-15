@@ -1,6 +1,5 @@
 include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
---include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
 
@@ -36,7 +35,6 @@ function bodyBuilder()
 			Turn(TablesOfPiecesGroups["Cable"][i], x_axis, math.rad(rVal),0)
 		end
 	end
-
 end
 
  
