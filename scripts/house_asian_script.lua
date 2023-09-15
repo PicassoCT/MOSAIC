@@ -1535,7 +1535,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     assert(Level)
 
     roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"}) -- TODO materialGroupName
-
+	IDQueueRunning = nil
     for i = 1, 37, 1 do
         local index = i
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
@@ -1543,20 +1543,40 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             assert(xLoc)
             assert(zLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
-
-            local element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
-            attempts = maxNrAttempts
-            while (not element or inToShowDict(element)) and attempts > 0 do
-                element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level) 
-                attempts = attempts - 1
-            end
-
-            if attempts == 0 then 
-                lecho("decorateBackYard:roofMaterial element selection failed for "..materialColourName)
-                return materialColourName
-            end
-
+			
+			local element, nr
+			if IDQueueRunning then
+				for name,id in pairs(IDQueueRunning) do
+					if not inToShowDict(id) then
+						element = id
+						break
+					end
+				end
+				if not element then IDQueueRunning = nil end --exhausted the Queue
+			end
+			
+			if element then
+				element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
+				attempts = maxNrAttempts
+				while (not element or inToShowDict(element)) and attempts > 0 do
+					element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level) 
+					attempts = attempts - 1
+				end
+				
+				if attempts == 0 then 
+					lecho("decorateBackYard:roofMaterial element selection failed for "..materialColourName)
+					return materialColourName
+				end				
+			end
+			
             if element then
+				pieceName =  pieceID_NameMap[element]
+				if pieceName and string.find(pieceName, "ID_a") or string.find(pieceName, "ID_l") and maRa() then
+					pieceName= removeTrailingNumbersFromName(pieceName)
+					if TablesOfPiecesGroups[pieceName] then
+					IDQueueRunning = TablesOfPiecesGroups[pieceName]
+					end
+				end
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element, roofMaterial)
