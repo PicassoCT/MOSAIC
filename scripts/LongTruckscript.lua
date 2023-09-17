@@ -270,10 +270,8 @@ function monitorMoving()
                 boolMoving = true
             else
                 boolMoving = false
-            end
-    
-        Sleep(125)
-    
+            end    
+        Sleep(125)    
     end
 end
 

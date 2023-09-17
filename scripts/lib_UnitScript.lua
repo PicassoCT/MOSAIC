@@ -2473,6 +2473,16 @@ function shiftMap(Map, sizeX, sizeZ, offX, offZ, default)
     return shiftedMap
 end
 
+function removeTrailingNumbersFromName(str)
+    for i =  string.len(str), 1, -1 do
+        character = string.sub(str, i, i)
+        asciiByteValue = string.byte(character)
+        if (asciiByteValue > 47 and asciiByteValue <58) == false then
+            return string.sub(str, 1, i)
+        end
+    end
+end
+
 -- >Creates a table of piecenamed enumerated strings
 function makeTableOfPieceNames(l_name, l_nr, l_startnr, l_piecefoonction)
     local T = {}

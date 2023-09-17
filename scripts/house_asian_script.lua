@@ -351,6 +351,32 @@ function factoryAnimation( set)
 	end
 end
 
+function stampMill(set)
+    movePiece =  set.movePiece
+    stamp1 = set.stamp1
+    Show(stamp1)
+    stamp2 =  set.stamp2
+    Show(stamp2)
+    mPs = set.moltenPiecesT
+    preStamped = {mPs[3],mPs[4],mPs[6],mPs[11],mPs[8], mPs[12]} --3,4,6,11,8, 12
+    postStamped={mPs[3],mPs[5],mPs[10],mPs[8], mPs[12]}--3,5,10, 8, 12
+    while true do
+        hideT(preStamped)
+        showT(postStamped)       
+        Move(stamp1, y_axis, 15, 1.5)
+        Move(stamp2, y_axis, 15, 1.5)
+        Sleep(1000)
+        WMove(movePiece,_x_axis, 10, 1)
+        showT(preStamped)
+        hideT(postStamped)
+        reset(movePiece, 0)
+        Move(stamp1, y_axis, 0, 30)
+        Move(stamp2, y_axis, 0, 30)
+        WMove(stamp1, y_axis, 0, 30)
+        WMove(stamp2, y_axis, 0, 30)
+    end
+end
+
 function initAllPieces()
     
   --  assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
@@ -367,9 +393,18 @@ function initAllPieces()
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
                     {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
                     },   
-    ["Roof093Sub1"] = {
-                    {func = "wmove", arg = {y_axis, -30, 5,  15}},                 
-                    }, 
+    ["ID_l100_Industrial_RoofBlock4"] = 
+            {
+                {   func="func", 
+                    arg= {
+                    method = stampMill, 
+                    movePiece =  piece("ID_l100_Industrial_RoofBlock4Sub3")    ,
+                    stamp1 = piece("ID_l100_Industrial_RoofBlock4Sub1"),
+                    stamp2 =  piece("ID_l100_Industrial_RoofBlock4Sub1"),
+                    moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"], 3, #TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"])         
+                    },
+                }
+            },    
     ["Industrial_Floor1"] = 
         {
             {   func="func", 
@@ -1526,7 +1561,8 @@ function nightAndDay(dayNightPieceNameDict)
 end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
-	
+	if not GG.house_asian_piece_counter then GG.house_asian_piece_counter = {} end
+
     lecho(":-->addRoofDeocrate")
     countElements = 0
     if materialColourName == "pod" and maRa() then
@@ -1544,22 +1580,21 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             assert(zLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
 			
-			local element, nr
+			element = nil
 			if IDQueueRunning then
 				for name,id in pairs(IDQueueRunning) do
-					if not inToShowDict(id) then
+					if not element and not inToShowDict(id) then
 						element = id
-						break
 					end
 				end
 				if not element then IDQueueRunning = nil end --exhausted the Queue
 			end
 			
-			if element then
-				element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
+			if not element then
+				element = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc, Level) 
 				attempts = maxNrAttempts
 				while (not element or inToShowDict(element)) and attempts > 0 do
-					element, nr = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level) 
+					element = getRandomBuildMaterial(roofMaterial, materialColourName, index, xLoc, zLoc,   Level) 
 					attempts = attempts - 1
 				end
 				
@@ -1571,12 +1606,18 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 			
             if element then
 				pieceName =  pieceID_NameMap[element]
-				if pieceName and string.find(pieceName, "ID_a") or string.find(pieceName, "ID_l") and maRa() then
-					pieceName= removeTrailingNumbersFromName(pieceName)
+				if pieceName and (string.find(pieceName, "ID_a") or string.find(pieceName, "ID_l")) and maRa() == maRa() then
+					pieceName = removeTrailingNumbersFromName(pieceName)
+                    if not GG.house_asian_piece_counter[pieceName] then GG.house_asian_piece_counter[pieceName] = 0 end
+
 					if TablesOfPiecesGroups[pieceName] then
-					IDQueueRunning = TablesOfPiecesGroups[pieceName]
+
+					   IDQueueRunning = TablesOfPiecesGroups[pieceName]
+                       GG.house_asian_piece_counter[pieceName]= GG.house_asian_piece_counter[pieceName] +1
+                       if GG.house_asian_piece_counter[pieceName] > GameConfig.houseNumberOfSameRoofIDGroupsPerCity then IDQueueRunning = nil end
 					end
 				end
+
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element, roofMaterial)

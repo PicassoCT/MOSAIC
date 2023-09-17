@@ -125,6 +125,7 @@ function getGameConfig()
         houseSizeZ = 256,
         innerCitySize = 1024,
         innerCityNeonStreet = 512,
+        houseNumberOfSameRoofIDGroupsPerCity= 4,
         
         minimalMoveDistanceElseStuck = 140,
   
