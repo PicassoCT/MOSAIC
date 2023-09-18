@@ -331,7 +331,7 @@ function factoryAnimation( set)
 				Hide(moltenPiecesT[1])
                 WMove(grabPiece, x_axis, -15, 10)
                 Turn(pickedPiece,_x_axis, math.rad(35),15)
-                WMove(pickedPiece,y_axis, -15, 20)
+                WMove(pickedPiece, y_axis, -30, 30)
                 Hide(pickedPiece)
                 reset(pickedPiece,0)
 				WTurn(spinPiece, y_axis, math.rad(offset + rotationArc - 0.5*rotationArc), 1)
@@ -363,17 +363,17 @@ function stampMill(set)
     while true do
         hideT(preStamped)
         showT(postStamped)       
-        Move(stamp1, y_axis, 15, 1.5)
-        Move(stamp2, y_axis, 15, 1.5)
+			Move(stamp1, y_axis, 15, 1.5)
+			Move(stamp2, y_axis, 15, 1.5)
         Sleep(1000)
-        WMove(movePiece,_x_axis, 10, 1)
+			WMove(movePiece, x_axis, 10, 1)
         showT(preStamped)
         hideT(postStamped)
         reset(movePiece, 0)
-        Move(stamp1, y_axis, 0, 30)
-        Move(stamp2, y_axis, 0, 30)
-        WMove(stamp1, y_axis, 0, 30)
-        WMove(stamp2, y_axis, 0, 30)
+			Move(stamp1, y_axis, 0, 30)
+			Move(stamp2, y_axis, 0, 30)
+			WMove(stamp1, y_axis, 0, 30)
+			WMove(stamp2, y_axis, 0, 30)
     end
 end
 
@@ -1459,7 +1459,7 @@ function showSubsAnimateSpinsByPiecename(piecename)
             if string.len(pieceGroupName) > 0 and type(nr) == "number" then
              showSubsAnimateSpins(pieceGroupName, nr)
             end
-        break
+			break
         end
     end
 end
@@ -1795,6 +1795,7 @@ function buildBuilding()
 	addGroundPlaceables()
 
     --lecho( "addRoofDeocrate ended")
+	addToShowTable(piece("ID_l100_Industrial_RoofBlock4"))
     boolDoneShowing = true
 
 	initAllPieces()
