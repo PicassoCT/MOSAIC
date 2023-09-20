@@ -19,6 +19,14 @@ pieceLimits = {
     ["Office_Pod_BaseAddition"] = 2
 }
 pieceCyclicOSTable = {}
+hideDuringDayPieces= {"Office_Pod_Industrial_Roof3Spin1",
+ "Office_Pod_Industrial_Roof3Spin2", 
+"Office_Pod_Industrial_Roof2Spin1",
+"Office_Pod_Industrial_Roof2Spin2",
+"Office_Pod_Industrial_Roof1Spin1",
+"Office_Pod_Industrial_Roof1Spin2",
+"Office_Pod_Industrial_Roof14Spin1",
+"Office_Pod_Industrial_Roof14Spin2"}
 
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
@@ -277,14 +285,15 @@ function oilrigAnimation(set)
     while true do
         Turn(jack2, z_axis, math.rad(-28),math.rad(28)/2)
         Turn(jack1, z_axis, math.rad(28),math.rad(28)/2)
-        Move(piston1,y_axis, 0, 5)      
-        Move(piston2,y_axis, 0, 5)
+        Move(piston2,y_axis, 22, 5)    
+        Move(piston1,y_axis, 22, 5)
 
         Sleep(2000)
         Turn(jack1, z_axis, math.rad(0),math.rad(28)/2)
         Turn(jack2, z_axis, math.rad(0),math.rad(28)/2)  
-        Move(piston2,y_axis, 22, 5)    
-        Move(piston1,y_axis, 22, 5)
+        Move(piston1,y_axis, 0, 5)      
+        Move(piston2,y_axis, 0, 5)
+
         Sleep(2000)
     end
 end
@@ -329,7 +338,7 @@ function factoryAnimation( set)
                 Show(pickedPiece)
 				--craneAnimation
 				Hide(moltenPiecesT[1])
-                WMove(grabPiece, x_axis, -15, 10)
+                WMove(grabPiece, y_axis, -15, 10)
                 Turn(pickedPiece,_x_axis, math.rad(35),15)
                 WMove(pickedPiece, y_axis, -30, 30)
                 Hide(pickedPiece)
@@ -352,24 +361,27 @@ function factoryAnimation( set)
 end
 
 function stampMill(set)
+    offset= 2
     movePiece =  set.movePiece
     stamp1 = set.stamp1
     Show(stamp1)
     stamp2 =  set.stamp2
     Show(stamp2)
     mPs = set.moltenPiecesT
-    preStamped = {mPs[3],mPs[4],mPs[6],mPs[11],mPs[8], mPs[12]} --3,4,6,11,8, 12
-    postStamped={mPs[3],mPs[5],mPs[10],mPs[8], mPs[12]}--3,5,10, 8, 12
+    preStamped = {mPs[3-offset],mPs[4-offset],mPs[6-offset],mPs[7-offset],mPs[9-offset], mPs[10-offset]} --3,4,6,11,8, 12
+    postStamped={mPs[3-offset],mPs[5-offset],mPs[6-offset],mPs[8-offset], mPs[9-offset]}--3,5,10, 8, 12
     while true do
         hideT(preStamped)
-        showT(postStamped)       
+        showT(postStamped)
+            --Move(mPs[10-offset], x_axis, 10, 1)       
 			Move(stamp1, y_axis, 15, 1.5)
 			Move(stamp2, y_axis, 15, 1.5)
         Sleep(1000)
-			WMove(movePiece, x_axis, 10, 1)
+			WMove(movePiece, x_axis, 20, 3)
         showT(preStamped)
         hideT(postStamped)
         reset(movePiece, 0)
+        reset(mPs[10-offset], 0)
 			Move(stamp1, y_axis, 0, 30)
 			Move(stamp2, y_axis, 0, 30)
 			WMove(stamp1, y_axis, 0, 30)
@@ -382,10 +394,10 @@ function initAllPieces()
   --  assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
     pieceCyclicOSTable = {
     ["Industrial_Pod_Wall5Sub1"] = {
-                    {func= "wturn", arg = { z_axis,-45, 45, 0.001}},                 
+                    {func= "wturn", arg = { y_axis,-45, 45, 0.001}},                 
                     },       
     ["Pod_Office_Industrial_Wall1Spin1"] = {
-                    {func= "wturn", arg = { z_axis,-90, 90, 0.1}},                 
+                    {func= "wturn", arg = { y_axis,-24, 25, 0.1}},                 
                     },    
     ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
                     {func= "wturn", arg = { y_axis, -math.random(20,90), math.random(20,90), 0.1}},                 
@@ -400,7 +412,7 @@ function initAllPieces()
                     method = stampMill, 
                     movePiece =  piece("ID_l100_Industrial_RoofBlock4Sub3")    ,
                     stamp1 = piece("ID_l100_Industrial_RoofBlock4Sub1"),
-                    stamp2 =  piece("ID_l100_Industrial_RoofBlock4Sub1"),
+                    stamp2 =  piece("ID_l100_Industrial_RoofBlock4Sub2"),
                     moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"], 3, #TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"])         
                     },
                 }
@@ -1530,12 +1542,23 @@ function nightAndDay(dayNightPieceNameDict)
 		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[k]
 		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[v]
 	end
-	
+    
+	local hideDuringDayPiecesopy= hideDuringDayPieces
+    hideDuringDayPieces= {}
+    for nr, name in pairs(hideDuringDayPiecesopy) do
+        pieceNr = pieceName_pieceNr[name]
+        if pieceNr and inToShowDict(pieceNr) then
+            hideDuringDayPieces[#hideDuringDayPieces+1] = pieceNr
+        end
+    end
+    hideT(hideDuringDayPieces)
     while true do
         hours, minutes, seconds, percent = getDayTime()
         Sleep(5000)
 		hideConditional(daynightPieces)
 			if hours > 19 then 
+                showT(hideDuringDayPieces)
+
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
 					randSleep= math.random(1,10)*1000
 					Sleep(randSleep)
@@ -1550,6 +1573,7 @@ function nightAndDay(dayNightPieceNameDict)
 					hours, minutes, seconds, percent = getDayTime()
 					hideConditional(daynightPieces)
 				end
+                hideT(hideDuringDayPieces)
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
 					randSleep= math.random(1,10)*1000
 					Sleep(randSleep)
@@ -1795,7 +1819,6 @@ function buildBuilding()
 	addGroundPlaceables()
 
     --lecho( "addRoofDeocrate ended")
-	addToShowTable(piece("ID_l100_Industrial_RoofBlock4"))
     boolDoneShowing = true
 
 	initAllPieces()
