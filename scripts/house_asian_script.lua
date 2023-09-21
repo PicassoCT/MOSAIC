@@ -26,7 +26,10 @@ hideDuringDayPieces= {"Office_Pod_Industrial_Roof3Spin1",
 "Office_Pod_Industrial_Roof1Spin1",
 "Office_Pod_Industrial_Roof1Spin2",
 "Office_Pod_Industrial_Roof14Spin1",
-"Office_Pod_Industrial_Roof14Spin2"}
+"Office_Pod_Industrial_Roof14Spin2",
+"Office_Pod_Industrial_Roof15Spin1",
+"Office_Pod_Industrial_Roof15Spin2"
+}
 
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
@@ -973,6 +976,7 @@ function selectBase(materialType)
     while basePiece do
     if basePiece and isWithinPieceLimits(basePiece) then
         showRegPiece(basePiece)       
+        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[basePiece])
         lecho("BasePiece: ".. getPieceName(unitID, basePiece))
         return
     end
@@ -1572,6 +1576,7 @@ function nightAndDay(dayNightPieceNameDict)
 					Sleep(5000)
 					hours, minutes, seconds, percent = getDayTime()
 					hideConditional(daynightPieces)
+                    hideConditional(hideDuringDayPieces)
 				end
                 hideT(hideDuringDayPieces)
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
