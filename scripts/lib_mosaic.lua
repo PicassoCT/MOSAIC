@@ -2024,6 +2024,13 @@ function getGameConfig()
                 end
 
             end
+			
+			function isNight()
+                hours, minutes, seconds, percent = getDayTime()			
+				return hours > 19 and hours < 6
+			end
+			
+			
 
                     function isPrayerTime()
                         hours, minutes, seconds, percent = getDayTime()

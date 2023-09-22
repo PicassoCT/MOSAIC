@@ -397,7 +397,9 @@ function initAllPieces()
   --  assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
     pieceCyclicOSTable = {
     ["Industrial_Pod_Wall5Sub1"] = {
-                    {func= "wturn", arg = { y_axis,-45, 45, 0.001}},                 
+                    {
+					func= "wturn", 
+					arg = { y_axis,-45, 45, 0.001, boolRestAtNight= true}},                 
                     },       
     ["Pod_Office_Industrial_Wall1Spin1"] = {
                     {func= "wturn", arg = { y_axis,-24, 25, 0.1}},                 
