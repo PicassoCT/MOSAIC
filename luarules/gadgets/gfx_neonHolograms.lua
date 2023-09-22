@@ -57,174 +57,243 @@ else -- unsynced
     local resxLocation = nil
     local resyLocation = nil
     local neonUnitTables = {}
-    local vertexShaderFirstPass = 
-    [[
-        #version 150 compatibility
-        varying vec3 vPositionWorld;
-        varying vec3 vNormal;
 
-		uniform sampler2D screentex;
-     
-        uniform vec2 dir;
-        uniform float time;
+-------Shader--FirstPass -----------------------------------------------------------
+local neoFragmenShaderFirstPass= [[
+/**
+* Example Fragment Shader
+* Sets the color and alpha of the pixel by setting gl_FragColor
+*/
 
-        float scaleTimeFullHalf()
-        {
-            return (2.0 +sin(time))/2.0;
-        }
+// Set the precision for data types used in this shader
+precision highp float;
+precision highp int;
 
-        float shiver(float posy, float scalar, float size) 
-        {
-            if (sin(posy + time) < size)
-            { return 1.0;};
-            
-            float renormalizedTime = sin(posy +time);
-            
-            return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
-        }
+// Default THREE.js uniforms available to both fragment and vertex shader
+uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat3 normalMatrix;
 
-        void main() 
-        {
-            // To pass variables to the fragment shader, you assign them here in the
-            // main function. Traditionally you name the varying with vAttributeName
-            vNormal = normal;
-            vUv = uv;
-            vUv2 = uv2;
-            vec4 pos =(  modelMatrix * vec4(position,0));
-            vPositionWorld =  pos.xyz;
-     
-            vNormal = normalMatrix * normal;
-            vec3 posCopy = position;
-            posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(posCopy, 1.0);           
-        }
-    ]]
-	
-fragmentShaderFirstPass =[[
-    //---------------------------------------------------------------------------
-    #version 150 compatibility
-    // fragment shader
-    //https://stackoverflow.com/questions/64837705/opengl-blurring
-    //"in" attributes from our vertex shader
-    varying vec3 vPosition;
-    varying vec3 vNormal;
+// Default uniforms provided by ShaderFrog.
+uniform vec3 cameraPosition;
+uniform float time;
+//declare uniforms
+uniform sampler2D screencopy;
+uniform float resolution;
+uniform float radius;
+uniform vec2 dir;
 
-    //declare uniforms
-    uniform sampler2D screentex;
-    uniform sampler2D depthtex;
-    uniform vec2 dir;
-    uniform float time;
 
-    float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
+// A uniform unique to this shader. You can modify it to the using the form
+// below the shader preview. Any uniform you add is automatically given a form
+uniform vec3 color;
+uniform vec3 lightPosition;
+
+// Example varyings passed from the vertex shader
+varying vec3 vPositionWorld;
+varying vec3 vNormal;
+
+varying vec2 vUv;
+varying vec2 vUv2;
+varying vec2 vTexCoord;
+
+float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
+{
+    return sin((posOffset* posOffsetScale) +time * timeSpeedScale);
+}
+
+float getCosineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
+{
+    return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
+}
+
+void writeLightRaysToTexture(vec2 originPoint, vec4 color, float pixelDistance, float intensityFactor, vec2 maxResolution)
+{
+    int indexX= int( originPoint.x - pixelDistance < 0.0 ?   0.0 : originPoint.x - pixelDistance);
+    int endx= int(originPoint.x + pixelDistance > maxResolution.x ?   maxResolution.x : originPoint.x + pixelDistance);
+    int indexZ= int(originPoint.y - pixelDistance < 0.0 ?   0.0 : originPoint.y - pixelDistance);
+    int endz= int( originPoint.y + pixelDistance > maxResolution.y ?   maxResolution.y : originPoint.y + pixelDistance);
+
+    for (int ix = -16; ix < 16; ix++) 
     {
-        return sin((posOffset* posOffsetScale) +time * timeSpeedScale);
-    }
+         for (int iz = -16; iz < 16; iz++) 
+         {
+           vec2 point = vec2(indexX + ix, indexZ + iz);
+           float distFactor = distance(originPoint, point )/pixelDistance;
+           vec4 col =   texture2D(screencopy, point);
+           col += (color*distFactor* intensityFactor); 
 
-    float getCosineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
-    {
-        return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
-    }
-
-    void writeLightRaysToTexture(vec2 originPoint, vec4 color, float pixelDistance, float intensityFactor, vec2 maxResolution)
-    {
-        int indexX= int( originPoint.x - pixelDistance < 0.0 ?   0.0 : originPoint.x - pixelDistance);
-        int endx= int(originPoint.x + pixelDistance > maxResolution.x ?   maxResolution.x : originPoint.x + pixelDistance);
-        int indexZ= int(originPoint.y - pixelDistance < 0.0 ?   0.0 : originPoint.y - pixelDistance);
-        int endz= int( originPoint.y + pixelDistance > maxResolution.y ?   maxResolution.y : originPoint.y + pixelDistance);
-
-        for (int ix = -16; ix < 16; ix++) 
-        {
-             for (int iz = -16; iz < 16; iz++) 
-             {
-               vec2 point = vec2(indexX + ix, indexZ + iz);
-               float distFactor = distance(originPoint, point )/pixelDistance;
-               vec4 col =   texture2D(screentex, point);
-               col += (color*distFactor* intensityFactor); 
-            }
         }
     }
+}
 
-    vec4 getGlowColorBorderPixel(vec4 lightSourceColor, vec4 pixelColor, float dist, float maxRes){
-        float factor = 1.0/(dist-(1.0/float(maxRes)));
-        return mix(lightSourceColor, pixelColor, factor);
-    }
+vec4 getGlowColorBorderPixel(vec4 lightSourceColor, vec4 pixelColor, float dist, float maxRes){
+    float factor = 1.0/(dist-(1.0/float(maxRes)));
+    return mix(lightSourceColor, pixelColor, factor);
+}
 
-    void writeLightRayToTexture(vec4 lightSourceColor){
-        for (int x = -16; x < 16; x++)
+void writeLightRayToTexture(vec4 lightSourceColor){
+    for (int x = -16; x < 16; x++)
+    {
+        for (int z = -16; z < 16; z++)
         {
-            for (int z = -16; z < 16; z++)
-            {
-                vec2 pixelCoord = vec2(gl_FragCoord) + vec2(x,z);
-                float dist = length(vec2(x,z));
-                //screentex[int(pixelCoord.x)][int(pixelCoord.z)] =
-                getGlowColorBorderPixel(lightSourceColor, texture2D( screentex,  pixelCoord), dist, 16.0);
-            }
+            vec2 pixelCoord = vec2(gl_FragCoord) + vec2(x,z);
+            float dist = length(vec2(x,z));
+            //screencopy[int(pixelCoord.x)][int(pixelCoord.z)] =
+            getGlowColorBorderPixel(lightSourceColor, texture2D( screencopy,  pixelCoord), dist, 16.0);
         }
     }
+}
+    
+vec4 addBorderGlowToColor(vec4 color, float averageShadow){
+    float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
+    vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
+    color.xyz =  color.xyz + overlayAlpha.xyz;
+    
+    if (overlayAlpha.x > 0.5){
+          color.a = mix(color.a, overlayAlpha.a, color.x );
+    }
+
+    return color;
+}    
+
+void main() {
+
+      //this will be our RGBA sumt
+        vec4 sum = vec4(0.0);
         
-    vec4 addBorderGlowToColor(vec4 color, float averageShadow){
-        float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
-        vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
-        color.xyz =  color.xyz + overlayAlpha.xyz;
+        //our original texcoord for this fragment
+        vec2 tc = vTexCoord;
         
-        if (overlayAlpha.x > 0.5){
-              color.a = mix(color.a, overlayAlpha.a, color.x );
-        }
+        //the amount to blur, i.e. how far off center to sample from 
+        //1.0 -> blur by one pixel
+        //2.0 -> blur by two pixels, etc.
+        float blur = radius/resolution; 
+        
+        //the direction of our blur
+        //(1.0, 0.0) -> x-axis blur
+        //(0.0, 1.0) -> y-axis blur
+        float hstep = dir.x;
+        float vstep = dir.y;
 
-        return color;
-    }    
+    		
+        //apply blurring, using a 9-tap filter with predefined gaussian weights
+        
+        sum += texture2D(screencopy, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
 
-    vec4 getBluredColor(vec4 sampleBlurColor)
-    {
-        sampleBlurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
-        sampleBlurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
-        sampleBlurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-        sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-        return sampleBlurColor
-    }
+ 	
+ 	     float averageShadow = (vNormal.x*vNormal.x+vNormal.y*vNormal.y+vNormal.z+vNormal.z)/4.0;	
+    	 
+    	 //Transparency 
+    	 float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
+    	                                0.5 
+    	                                +  abs(0.3*getSineWave(vPositionWorld.y, 0.10,  time*6.0,  0.10))
+    	                                - abs(  getSineWave(vPositionWorld.y, 1.0,  time,  0.2))
+    	                                + 0.4*abs(  getSineWave(vPositionWorld.y, 0.5,  time,  0.3))
+    	                                - 0.15*abs(  getCosineWave(vPositionWorld.y, 0.75,  time,  0.5))
+    	                                + 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
+    	                                ); 
 
-    void main() {      
-            float averageShadow = (vNormal.x*vNormal.x+vNormal.y*vNormal.y+vNormal.z+vNormal.z)/4.0;   
-             
-            //Transparency 
-            float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
-                                            0.5 
-                                            + abs(0.3 * getSineWave(vPositionWorld.y, 0.10,  time*6.0,  0.10))
-                                            - abs(getSineWave(vPositionWorld.y, 1.0,  time,  0.2))
-                                            + 0.4 * abs(getSineWave(vPositionWorld.y, 0.5,  time,  0.3))
-                                            - 0.15 *abs(getCosineWave(vPositionWorld.y, 0.75,  time,  0.5))
-                                            + 0.15 * getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
-                                            ); 
+    	gl_FragColor= vec4((color.xyz + color* (1.0-averageShadow)).xyz, max((1.0 - averageShadow) , color.z * hologramTransparency)) ;
+    	vec4 sampleBLurColor = gl_FragColor;
+    	sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
+	    sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
+	    sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
+	    sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
+	    gl_FragColor = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow);
+	     
+    	 
+}
+]]
+local neoVertexShaderFirstPass = [[/**
+* Example Vertex Shader
+* Sets the position of the vertex by setting gl_Position
+*/
 
-            gl_FragColor= vec4((color.xyz + color* (1.0-averageShadow)).xyz, max((1.0 - averageShadow) , color.z * hologramTransparency)) ;
-            vec4 sampleBlurColor = getBluredColor(gl_FragColor);
-            gl_FragColor = addBorderGlowToColor(sampleBlurColor* gl_FragColor, averageShadow);
-            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-             
-    }
-    //---------------------------------------------------------------------------
-    ]]
-    local uniformInt = {
+// Set the precision for data types used in this shader
+precision highp float;
+precision highp int;
+
+// Default THREE.js uniforms available to both fragment and vertex shader
+uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat3 normalMatrix;
+
+// Default uniforms provided by ShaderFrog.
+uniform vec3 cameraPosition;
+uniform float time;
+
+// Default attributes provided by THREE.js. Attributes are only available in the
+// vertex shader. You can pass them to the fragment shader using varyings
+attribute vec3 position;
+attribute vec3 normal;
+attribute vec2 uv;
+attribute vec2 uv2;
+
+// Examples of variables passed from vertex to fragment shader
+varying vec3 vPositionWorld;
+varying vec3 vNormal;
+varying vec2 vUv;
+varying vec2 vUv2;
+varying vec2 vTexCoord;
+
+float scaleTimeFullHalf(){
+    return (2.0 +sin(time))/2.0;
+}
+
+float shiver(float posy, float scalar, float size) {
+    if (sin(posy + time) < size)
+    { return 1.0;};
+    
+    float renormalizedTime = sin(posy +time);
+    
+    return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
+}
+void main() {
+
+    // To pass variables to the fragment shader, you assign them here in the
+    // main function. Traditionally you name the varying with vAttributeName
+    vNormal = normal;
+    vUv = uv;
+    vUv2 = uv2;
+    vec4 pos =(  modelMatrix * vec4(position,0));
+    vPositionWorld =  pos.xyz;
+    vTexCoord.xy= position.xy;
+    vNormal = normalMatrix * normal;
+    vec3 posCopy = position;
+	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(posCopy, 1.0);
+	//	gl_Position.xz = gl_Position.xz* ((8.0 - sin(gl_Position.y + time * (1.0 +abs(cos(time)))))/8.0);
+}]]
+local uniformIntFirstPass = {
           screentex = 0
         }
-	local uniformFloat = {
+local uniformFloatFirstPass = {
          resx = vsx,
          resy = vsy
         }
 
           --TODO make z depth depending
-	local uniformTable ={
+local uniformTableFirstPass ={
 		dir ={0, 0}--TODO
 	}
 
-    local shaderDataFirstPass = {
-      vertex        = vertexShaderFirstPass,
-      fragment      = fragmentShaderFirstPass,
-      uniformInt    = uniformInt,
-      uniformFloat  = uniformFloat,
-	  uniforms      = uniformTable
+local shaderDataFirstPass = {
+      vertex        = neoVertexShaderFirstPass,
+      fragment      = neoFragmenShaderFirstPass,
+      uniformInt    = uniformIntFirstPass,
+      uniformFloat  = uniformFloatFirstPass,
+	  uniforms      = uniformTableFirstPass
     }   
+-------------------------------------------------------------------------------------
 
+-------Shader--2ndPass -----------------------------------------------------------
+--Glow Reflection etc.
+--Execution of the shader
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
 
@@ -246,7 +315,6 @@ fragmentShaderFirstPass =[[
         neonUnitTables[unitID] = nil
         counterNeonUnits= counterNeonUnits -1
     end
-
 
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
@@ -284,11 +352,11 @@ fragmentShaderFirstPass =[[
                 resolution = glGetUniformLocation(shaderFirstPass, "resolution")
             end
 
-            --shaderSecondPass = gl.CreateShader(shaderDataSecondPass)
-            --if shaderSecondPass then
-            --    resxLocation = glGetUniformLocation(shaderSecondPass, "resx")
-            --    resyLocation = glGetUniformLocation(shaderSecondPass, "resy")
-            --end
+            shaderSecondPass = gl.CreateShader(shaderDataSecondPass)
+            if shaderSecondPass then
+                resxLocation = glGetUniformLocation(shaderSecondPass, "resx")
+                resyLocation = glGetUniformLocation(shaderSecondPass, "resy")
+            end
         else
             Spring.Echo("<Neon Shader>: GLSL not supported.")
         end
