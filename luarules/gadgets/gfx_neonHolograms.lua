@@ -7,67 +7,96 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = false
+        enabled = true
     }
 end
 
 if (gadgetHandler:IsSyncedCode()) then
+    local engineVersion = 104 -- just filled this in here incorrectly but old engines arent used anyway
+    if Engine and Engine.version then
+        local function Split(s, separator)
+            local results = {}
+            for part in s:gmatch("[^" .. separator .. "]+") do
+                results[#results + 1] = part
+            end
+            return results
+        end
+        engineVersion = Split(Engine.version, '-')
+        if engineVersion[2] ~= nil and engineVersion[3] ~= nil then
+            engineVersion = tonumber(string.gsub(engineVersion[1], '%.', '') ..
+                                         engineVersion[2])
+        else
+            engineVersion = tonumber(Engine.version)
+        end
+    end
+
+    -- set minimun engine version
+    local unsupportedEngine = true
+    local enabled = false
+    local minEngineVersionTitle = '104.0.1-1455'
+    if ( 104.0 < engineVersion  and engineVersion >= 105)  then
+        unsupportedEngine = false
+        enabled = true
+        Spring.Echo("gadget Neon Hologram Rendering is enabled")
+    end
+
+
+
     VFS.Include("scripts/lib_mosaic.lua")
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
 
     function gadget:UnitCreated(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].namge .. " created")
+            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].namge .. " created")
             SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].namge .. " created")
+            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].namge .. " created")
             SendToUnsynced("unsetUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
 
 else -- unsynced
-    local glUseShader = gl.UseShader
-    local glUniform = gl.Uniform
-    local glUniformArray = gl.UniformArray
-    local glCopyToTexture = gl.CopyToTexture
-    local glTexture = gl.Texture
-    local glTexRect = gl.TexRect
-    local glUseShader = gl.UseShader
-    local glGetUniformLocation = gl.GetUniformLocation
-    local GL_DEPTH_COMPONENT24 = 0x81A6
-    local glUnitRaw = gl.UnitRaw
-    local glBlending = gl.Blending
-    local glScale = gl.Scale
-    local startTimer = Spring.GetTimer()
-    local shaderFirstPass = {}
-    local shaderSecondPass = {}
-    local vsx, vsy = 1600, 1200
-    local screentex
-    local depthtex
-    local diffTime = 0
 
-    local GL_SRC_ALPHA           = GL.SRC_ALPHA
-    local GL_ONE                 = GL.ONE
-    local GL_ZERO                = GL.ZERO
-    local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
-    local resxLocation = nil
-    local resyLocation = nil
+    local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
+    local spGetVisibleUnits = Spring.GetVisibleUnits
+    local spGetTeamColor = Spring.GetTeamColor
+
+    local glGetSun = gl.GetSun
+
+    local glDepthTest = gl.DepthTest
+    local glCulling = gl.Culling
+    local glBlending = gl.Blending
+
+    local glPushPopMatrix = gl.PushPopMatrix
+    local glPushMatrix = gl.PushMatrix
+    local glPopMatrix = gl.PopMatrix
+    local glUnitMultMatrix = gl.UnitMultMatrix
+    local glUnitPieceMultMatrix = gl.UnitPieceMultMatrix
+    local glUnitPiece = gl.UnitPiece
+    local glTexture = gl.Texture
+    local glUnitShapeTextures = gl.UnitShapeTextures
+
+    local GL_BACK  = GL.BACK
+    local GL_FRONT = GL.FRONT
     local neonUnitTables = {}
 
 -------Shader--FirstPass -----------------------------------------------------------
 local neoFragmenShaderFirstPass= [[
-/**
-* Example Fragment Shader
-* Sets the color and alpha of the pixel by setting gl_FragColor
-*/
+void main() {  
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);        
+         
+}]]
+
+local fragOrg= [[
 
 // Set the precision for data types used in this shader
 precision highp float;
 precision highp int;
+
 
 // Default THREE.js uniforms available to both fragment and vertex shader
 uniform mat4 modelMatrix;
@@ -160,7 +189,7 @@ vec4 addBorderGlowToColor(vec4 color, float averageShadow){
 }    
 
 void main() {
-
+      
       //this will be our RGBA sumt
         vec4 sum = vec4(0.0);
         
@@ -203,14 +232,19 @@ void main() {
 	    sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 	    sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 	    gl_FragColor = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow);
+        
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 	     
     	 
 }
 ]]
-local neoVertexShaderFirstPass = [[/**
-* Example Vertex Shader
-* Sets the position of the vertex by setting gl_Position
-*/
+
+local neoVertexShaderFirstPass = [[
+void main() {    
+}
+]]
+
+org= [[
 
 // Set the precision for data types used in this shader
 precision highp float;
@@ -253,8 +287,9 @@ float shiver(float posy, float scalar, float size) {
     
     return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
 }
-void main() {
 
+void main() {
+    
     // To pass variables to the fragment shader, you assign them here in the
     // main function. Traditionally you name the varying with vAttributeName
     vNormal = normal;
@@ -268,27 +303,20 @@ void main() {
 	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
     gl_Position = projectionMatrix * modelViewMatrix * vec4(posCopy, 1.0);
 	//	gl_Position.xz = gl_Position.xz* ((8.0 - sin(gl_Position.y + time * (1.0 +abs(cos(time)))))/8.0);
+    
+    gl_Position = position;
 }]]
-local uniformIntFirstPass = {
-          screentex = 0
-        }
-local uniformFloatFirstPass = {
-         resx = vsx,
-         resy = vsy
-        }
-
-          --TODO make z depth depending
-local uniformTableFirstPass ={
-		dir ={0, 0}--TODO
-	}
-
-local shaderDataFirstPass = {
-      vertex        = neoVertexShaderFirstPass,
-      fragment      = neoFragmenShaderFirstPass,
-      uniformInt    = uniformIntFirstPass,
-      uniformFloat  = uniformFloatFirstPass,
-	  uniforms      = uniformTableFirstPass
-    }   
+local neonHologramShader
+local glowReflectHologramShader
+local vsx, vsy
+local SO_NODRAW_FLAG = 0
+local SO_OPAQUE_FLAG = 1
+local SO_ALPHAF_FLAG = 2
+local SO_REFLEC_FLAG = 4
+local SO_REFRAC_FLAG = 8
+local SO_SHOPAQ_FLAG = 16
+local SO_SHTRAN_FLAG = 32
+local SO_DRICON_FLAG = 128
 -------------------------------------------------------------------------------------
 
 -------Shader--2ndPass -----------------------------------------------------------
@@ -319,6 +347,8 @@ local shaderDataFirstPass = {
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
+        local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG +SO_REFLEC_FLAG  +SO_REFRAC_FLAG + SO_DRICON_FLAG 
+        Spring.SetUnitEngineDrawMask(unitID, drawMask)
         counterNeonUnits= counterNeonUnits +1
     end	
 
@@ -326,83 +356,70 @@ local shaderDataFirstPass = {
 		vsx, vsy = gadgetHandler:GetViewSizes()
 		gadget:ViewResize(vsx, vsy)
 
-		screentex = gl.CreateTexture(vsx, vsy, {
-			border = false,
-			min_filter = GL.NEAREST,
-			mag_filter = GL.NEAREST,
-			})
-        
-        depthtex = gl.CreateTexture(vsx,vsy, {
-            border = false,
-            format = GL_DEPTH_COMPONENT24,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST,
-        })
-		
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
 
-        if not gl.CreateShader then Spring.Echo("No gl.CreateShader existing") end
-        
-        if gl.CreateShader then     
-            shaderFirstPass = gl.CreateShader(shaderDataFirstPass)
-            if shaderFirstPass then
-                resxLocation = glGetUniformLocation(shaderFirstPass, "resx")
-                resyLocation = glGetUniformLocation(shaderFirstPass, "resy")
-                resolution = glGetUniformLocation(shaderFirstPass, "resolution")
-            end
+        neonHologramShader = LuaShader({
+            vertex = neoVertexShaderFirstPass,
+            fragment = neoFragmenShaderFirstPass,
+            uniformInt = {
+                tex1 = 0,
+                tex2 = 1,
+                normalTex = 2,
+                reflectTex = 3,
+            },
+            uniformFloat = {
+            },
+        }, "Neon Hologram Shader")
+        neonHologramShader:Initialize()
 
-            shaderSecondPass = gl.CreateShader(shaderDataSecondPass)
-            if shaderSecondPass then
-                resxLocation = glGetUniformLocation(shaderSecondPass, "resx")
-                resyLocation = glGetUniformLocation(shaderSecondPass, "resy")
-            end
-        else
-            Spring.Echo("<Neon Shader>: GLSL not supported.")
-        end
-      
-        if not shaderFirstPass and gl and gl.GetShaderLog then
-            Spring.Log(gadget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
-        end
-    end
---[[
-    local perFrameCounterCopy = 0
-    function gadget:DrawScreenEffects()
-        perFrameCounterCopy = counterNeonUnits
-        glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
-        --glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy)
-        glTexture(0, screentex)
-        --glTexture(1, depthtex)
-
-        resxLocation = glGetUniformLocation(shaderFirstPass, "resx")
-        resyLocation = glGetUniformLocation(shaderFirstPass, "resy")
-
-        radius = glGetUniformLocation(shaderFirstPass, "radius")       
+ --[[       glowReflectHologramShader = LuaShader({
+            vertex = glowReflectVertexShader,
+            fragment = glowReflectFragmentShader,
+            uniformInt = {
+                tex1 = 0,
+                tex2 = 1,
+                normalTex = 2,
+                reflectTex = 3,
+            },
+            uniformFloat = {
+            },
+        }, "Glow Reflect Shader")     
+        glowReflectHologramShader:Initialize()--]]
+ 
     end
 
-    function gadget:DrawUnit(unitID, drawMode)        
-        if drawMode == 1 and neonUnitTables[unitID] then --normalDraw 
-            perFrameCounterCopy = perFrameCounterCopy -1
-            glUseShader(shaderFirstPass)
-            glBlending(GL_SRC_ALPHA, GL_ONE)            
-            glUnitRaw(unitID, true)
-            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glUseShader(0)     
-            if perFrameCounterCopy == 0 then
-                glUseShader(shaderSecondPass)
-                --glTexRect(0,vsy,vsx,0)
-                --glTexRect(1,vsy,vsx,0)
-                --glTexture(0, false)
-                --glTexture(1, false)
-                glUseShader(0)
+
+    local function RenderNeonUnits()
+        if counterNeonUnits == 0 then
+            return
+        end
+
+
+        glDepthTest(true)
+
+        neonHologramShader:ActivateWith(
+        function()     
+
+            neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+
+            for id, typeDefID in pairs(neonUnitTables) do
+                local unitID = id            
+                local unitDefID = typeDefID
             end
-        end       
+        end)
+
+        glDepthTest(false)
+        glCulling(false)
+    end
+
+    function gadget:DrawWorld()
+        RenderNeonUnits()
     end
 
     function gadget:Shutdown()
-        if shaderFirstPass then
-            gl.DeleteShader(shaderFirstPass)
-        end
+        neonHologramShader:Finalize()
+        gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
+        gadgetHandler:RemoveChatAction("unsetUnitNeonLuaDraw")
     end
-    ]]
 end

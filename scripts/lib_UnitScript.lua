@@ -698,7 +698,7 @@ end
 -- > return the Name of a UnitPiece as String
 function getUnitPieceName(unitID, pieceNum)
     pieceList = Spring.GetUnitPieceList(unitID)
-    return pieceList[pieceNum]
+    return pieceList[pieceNum] or "No such Piece"
 end
 
 -- > Returns a Map of Pieces and there Position in World Coords
@@ -1163,10 +1163,6 @@ function getNamePieceNumDict(unitID, piecefunction)
     return returnTable
 end
 
-function getUnitPieceName(unitID, nr)
-list = Spring.GetUnitPieceList(unitID)
-  return list[nr] or "NotAExistingPiece"
-end
 
 -- >Gets the Height of a Unit
 function getunitHeight(UnitId)

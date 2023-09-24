@@ -15,32 +15,6 @@ VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-local engineVersion = 104 -- just filled this in here incorrectly but old engines arent used anyway
-if Engine and Engine.version then
-    local function Split(s, separator)
-        local results = {}
-        for part in s:gmatch("[^" .. separator .. "]+") do
-            results[#results + 1] = part
-        end
-        return results
-    end
-    engineVersion = Split(Engine.version, '-')
-    if engineVersion[2] ~= nil and engineVersion[3] ~= nil then
-        engineVersion = tonumber(string.gsub(engineVersion[1], '%.', '') ..
-                                     engineVersion[2])
-    else
-        engineVersion = tonumber(Engine.version)
-    end
-end
-
--- set minimun engine version
-local unsupportedEngine = true
-local enabled = false
-local minEngineVersionTitle = '104.0.1-1455'
-if (engineVersion < 1000 and engineVersion >= 105) or engineVersion >= 104011455 then
-    unsupportedEngine = false
-    enabled = true
-end
 
 enabled = true -- todo remove 
 

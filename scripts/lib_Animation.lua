@@ -2649,7 +2649,6 @@ end
 function cyclicWaitMove(pieceID, signal, arg)
     axis, distanceUp, distanceDown, speed = arg[1], arg[2],arg[3], arg[4]
     Show(pieceID)
-    while true do
         WMove(pieceID, axis, distanceDown, speed)
         Sleep(1)
         WMove(pieceID, axis, distanceUp, speed)

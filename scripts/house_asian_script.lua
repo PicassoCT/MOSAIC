@@ -19,8 +19,9 @@ pieceLimits = {
     ["Office_Pod_BaseAddition"] = 2
 }
 pieceCyclicOSTable = {}
-hideDuringDayPieces= {"Office_Pod_Industrial_Roof3Spin1",
- "Office_Pod_Industrial_Roof3Spin2", 
+hideDuringDayPieces= {
+"Office_Pod_Industrial_Roof3Spin1",
+"Office_Pod_Industrial_Roof3Spin2", 
 "Office_Pod_Industrial_Roof2Spin1",
 "Office_Pod_Industrial_Roof2Spin2",
 "Office_Pod_Industrial_Roof1Spin1",
@@ -28,7 +29,12 @@ hideDuringDayPieces= {"Office_Pod_Industrial_Roof3Spin1",
 "Office_Pod_Industrial_Roof14Spin1",
 "Office_Pod_Industrial_Roof14Spin2",
 "Office_Pod_Industrial_Roof15Spin1",
-"Office_Pod_Industrial_Roof15Spin2"
+"Office_Pod_Industrial_Roof15Spin2",
+"Office_Pod_Industrial_Roof16Spin1",
+"Office_Pod_Industrial_Roof16Spin2",
+"Office_Pod_Industrial_Roof16Spin3",
+"Office_Pod_Industrial_Roof16Spin4",
+"Office_Pod_Industrial_Roof16Spin5",
 }
 
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -1766,8 +1772,9 @@ function addGroundPlaceables(materialName)
 				if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
 					px= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
 					pz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-					WMove(randPlaceAbleID,3, px, 0)
-					WMove(randPlaceAbleID,1, pz, 0)
+					WMove(randPlaceAbleID,3, pz, 0)
+					WMove(randPlaceAbleID,1, px, 0)
+                    Sleep(1)
 					placePieceOnGround(unitID, randPlaceAbleID, 0)
 					addToShowTable(randPlaceAbleID)
 					Show(randPlaceAbleID)    

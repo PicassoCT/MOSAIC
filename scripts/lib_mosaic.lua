@@ -102,7 +102,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(), -- "international", "western", "asian", "arabic"
-            Version = "Alpha: 0.913" 
+            Version = "Alpha: 0.914" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -601,10 +601,10 @@ function getGameConfig()
             [UnitDefNames["blackouticon"].id] = true,
             [UnitDefNames["hijacksatelliteicon"].id] = true,
             [UnitDefNames["ecmicon"].id] = true,
-            [UnitDefNames["advertising_blimp_hologram"].id] = true,           
+          --[[  [UnitDefNames["advertising_blimp_hologram"].id] = true,           
             [UnitDefNames["house_western_hologram_buisness"].id] = true,           
             [UnitDefNames["house_western_hologram_casino"].id] = true,           
-            [UnitDefNames["house_western_hologram_brothel"].id] = true,           
+            [UnitDefNames["house_western_hologram_brothel"].id] = true,           --]]
         }
     end  
 
