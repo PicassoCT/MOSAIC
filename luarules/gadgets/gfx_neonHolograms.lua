@@ -102,7 +102,6 @@ precision highp int;
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
 uniform mat3 normalMatrix;
 
 // Default uniforms provided by ShaderFrog.
@@ -254,7 +253,6 @@ precision highp int;
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
 uniform mat3 normalMatrix;
 
 // Default uniforms provided by ShaderFrog.
@@ -317,6 +315,7 @@ local SO_REFRAC_FLAG = 8
 local SO_SHOPAQ_FLAG = 16
 local SO_SHTRAN_FLAG = 32
 local SO_DRICON_FLAG = 128
+local sunChanged = false
 -------------------------------------------------------------------------------------
 
 -------Shader--2ndPass -----------------------------------------------------------
@@ -347,7 +346,7 @@ local SO_DRICON_FLAG = 128
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
-        local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG +SO_REFLEC_FLAG  +SO_REFRAC_FLAG + SO_DRICON_FLAG 
+        local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
         Spring.SetUnitEngineDrawMask(unitID, drawMask)
         counterNeonUnits= counterNeonUnits +1
     end	
@@ -395,13 +394,30 @@ local SO_DRICON_FLAG = 128
             return
         end
 
+        if sunChanged then
+                glassShader:SetUniformFloatArrayAlways("pbrParams", {
+                Spring.GetConfigFloat("tonemapA", 4.8),
+                Spring.GetConfigFloat("tonemapB", 0.8),
+                Spring.GetConfigFloat("tonemapC", 3.35),
+                Spring.GetConfigFloat("tonemapD", 1.0),
+                Spring.GetConfigFloat("tonemapE", 1.15),
+                Spring.GetConfigFloat("envAmbient", 0.3),
+                Spring.GetConfigFloat("unitSunMult", 1.35),
+                Spring.GetConfigFloat("unitExposureMult", 1.0),
+            })
+            sunChanged = false
+        end
 
         glDepthTest(true)
 
         neonHologramShader:ActivateWith(
         function()     
 
-            neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+            neonHologramShader:SetUniformMatrix("modelMatrix","") --TODO
+            neonHologramShader:SetUniformMatrix("modelViewMatrix","")--TODO
+            neonHologramShader:SetUniformMatrix("projectionMatrix","")--TODO
+            neonHologramShader:SetUniformMatrix("normalMatrix","")--TODO
+            neonHologramShader:SetUniformMatrix("viewMat", "viewinverse")--TODO
 
             for id, typeDefID in pairs(neonUnitTables) do
                 local unitID = id            
