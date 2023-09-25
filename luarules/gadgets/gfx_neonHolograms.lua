@@ -86,14 +86,40 @@ else -- unsynced
 
 -------Shader--FirstPass -----------------------------------------------------------
 local neoFragmenShaderFirstPass= [[
-void main() {  
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);        
-         
-}]]
 
-local fragOrg= [[
+mat4 screenView;
+    mat4 screenProj;
+    mat4 screenViewProj;
+
+    mat4 cameraView;
+    mat4 cameraProj;
+    mat4 cameraViewProj;
+    mat4 cameraBillboardView;
+
+    mat4 cameraViewInv;
+    mat4 cameraProjInv;
+    mat4 cameraViewProjInv;
+
+    mat4 shadowView;
+    mat4 shadowProj;
+    mat4 shadowViewProj;
+
+    mat4 orthoProj01;
+
+    // transforms for [0] := Draw, [1] := DrawInMiniMap, [2] := Lua DrawInMiniMap
+    mat4 mmDrawView; //world to MM
+    mat4 mmDrawProj; //world to MM
+    mat4 mmDrawViewProj; //world to MM
+
+    mat4 mmDrawIMMView; //heightmap to MM
+    mat4 mmDrawIMMProj; //heightmap to MM
+    mat4 mmDrawIMMViewProj; //heightmap to MM
+
+    mat4 mmDrawDimView; //mm dims
+    mat4 mmDrawDimProj; //mm dims
+    mat4 mmDrawDimViewProj; //mm dims
+
 #version 150 compatibility
-
 // Set the precision for data types used in this shader
 precision highp float;
 precision highp int;
@@ -101,12 +127,11 @@ precision highp int;
 
 // Default THREE.js uniforms available to both fragment and vertex shader
 uniform mat4 modelMatrix;
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat3 normalMatrix;
+uniform mat4 modelViewMatrix = cameraView* modelMatrix;
+uniform mat4 projectionMatrix = modelMatrix*cameraViewProj;
+uniform mat3 normalMatrix = cameraView * transpose(inverse(modelMatrix));;
 
 // Default uniforms provided by ShaderFrog.
-uniform vec3 cameraPosition;
 uniform float time;
 //declare uniforms
 uniform sampler2D screencopy;
@@ -240,11 +265,6 @@ void main() {
 ]]
 
 local neoVertexShaderFirstPass = [[
-void main() {    
-}
-]]
-
-org= [[
 #version 150 compatibility
 
 // Set the precision for data types used in this shader
@@ -258,7 +278,6 @@ uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
 
 // Default uniforms provided by ShaderFrog.
-uniform vec3 cameraPosition;
 uniform float time;
 
 // Default attributes provided by THREE.js. Attributes are only available in the
@@ -372,6 +391,29 @@ local sunChanged = false
             uniformFloat = {
             },
         }, "Neon Hologram Shader")
+
+--[[uniform float time;
+//declare uniforms
+uniform sampler2D screencopy;
+uniform float resolution;
+uniform float radius;
+uniform vec2 dir;
+
+
+// A uniform unique to this shader. You can modify it to the using the form
+// below the shader preview. Any uniform you add is automatically given a form
+uniform vec3 color;
+uniform vec3 lightPosition;
+
+// Example varyings passed from the vertex shader
+varying vec3 vPositionWorld;
+varying vec3 vNormal;
+
+varying vec2 vUv;
+varying vec2 vUv2;
+varying vec2 vTexCoord;
+]]
+
         neonHologramShader:Initialize()
 
  --[[       glowReflectHologramShader = LuaShader({
@@ -414,13 +456,6 @@ local sunChanged = false
 
         neonHologramShader:ActivateWith(
         function()     
-
-            neonHologramShader:SetUniformMatrix("modelMatrix","") --TODO
-            neonHologramShader:SetUniformMatrix("modelViewMatrix","")--TODO
-            neonHologramShader:SetUniformMatrix("projectionMatrix","")--TODO
-            neonHologramShader:SetUniformMatrix("normalMatrix","")--TODO
-            neonHologramShader:SetUniformMatrix("viewMat", "view")--TODO
-
             for id, typeDefID in pairs(neonUnitTables) do
                 local unitID = id            
                 local unitDefID = typeDefID
