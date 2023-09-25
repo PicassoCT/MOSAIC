@@ -92,6 +92,7 @@ void main() {
 }]]
 
 local fragOrg= [[
+#version 150 compatibility
 
 // Set the precision for data types used in this shader
 precision highp float;
@@ -244,6 +245,7 @@ void main() {
 ]]
 
 org= [[
+#version 150 compatibility
 
 // Set the precision for data types used in this shader
 precision highp float;
@@ -417,7 +419,7 @@ local sunChanged = false
             neonHologramShader:SetUniformMatrix("modelViewMatrix","")--TODO
             neonHologramShader:SetUniformMatrix("projectionMatrix","")--TODO
             neonHologramShader:SetUniformMatrix("normalMatrix","")--TODO
-            neonHologramShader:SetUniformMatrix("viewMat", "viewinverse")--TODO
+            neonHologramShader:SetUniformMatrix("viewMat", "view")--TODO
 
             for id, typeDefID in pairs(neonUnitTables) do
                 local unitID = id            
