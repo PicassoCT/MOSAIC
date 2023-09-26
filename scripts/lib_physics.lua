@@ -288,9 +288,9 @@ function placePieceOnGround(unitID, pieceID, speeds)
     if myHeight < globalHeightUnit then
         heightdifference = -1 * heightdifference
     end
-    if lib_boolDebug then
-        echo("Moving "..getUnitPieceName(unitID, pieceID).." moved to height:".. heightdifference)
-	end
+
+--    echo("Moving "..getUnitPieceName(unitID, pieceID).." moved to height:".. heightdifference.. " at worldpos :"..x.."/"..z)
+
     
 	Move(pieceID, 2, heightdifference, speeds or 0)
     WaitForMove(pieceID, 2)

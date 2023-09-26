@@ -47,14 +47,14 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].namge .. " created")
+            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].namge .. " created")
+            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("unsetUnitNeonLuaDraw", unitID, unitDefID)
         end
     end

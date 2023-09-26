@@ -19,17 +19,20 @@ pieceLimits = {
     ["Office_Pod_BaseAddition"] = 2
 }
 pieceCyclicOSTable = {}
-hideDuringDayPieces= {
+hideDuringDayPieceNames= {
 "Office_Pod_Industrial_Roof3Spin1",
 "Office_Pod_Industrial_Roof3Spin2", 
 "Office_Pod_Industrial_Roof2Spin1",
 "Office_Pod_Industrial_Roof2Spin2",
 "Office_Pod_Industrial_Roof1Spin1",
 "Office_Pod_Industrial_Roof1Spin2",
+
 "Office_Pod_Industrial_Roof14Spin1",
 "Office_Pod_Industrial_Roof14Spin2",
+
 "Office_Pod_Industrial_Roof15Spin1",
 "Office_Pod_Industrial_Roof15Spin2",
+
 "Office_Pod_Industrial_Roof16Spin1",
 "Office_Pod_Industrial_Roof16Spin2",
 "Office_Pod_Industrial_Roof16Spin3",
@@ -414,6 +417,9 @@ function initAllPieces()
                     {func= "wturn", arg = { y_axis, -math.random(20,90), math.random(20,90), 0.1}},                 
                     },    
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
+                    {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
+                    },       
+    ["ID_l100_Industrial_RoofBlock3Sub2"] = {
                     {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
                     },   
     ["ID_l100_Industrial_RoofBlock4"] = 
@@ -1555,12 +1561,16 @@ function nightAndDay(dayNightPieceNameDict)
 		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[v]
 	end
     
-	local hideDuringDayPiecesopy= hideDuringDayPieces
+
     hideDuringDayPieces= {}
-    for nr, name in pairs(hideDuringDayPiecesopy) do
-        pieceNr = pieceName_pieceNr[name]
-        if pieceNr and inToShowDict(pieceNr) then
-            hideDuringDayPieces[#hideDuringDayPieces+1] = pieceNr
+    for nr, name in pairs(hideDuringDayPieceNames) do
+        if not pieceName_pieceNr[name] then 
+            echo("Not a real piecename "..name) 
+        else
+            pieceNr = pieceName_pieceNr[name]
+            if pieceNr and inToShowDict(pieceNr) then
+                hideDuringDayPieces[#hideDuringDayPieces+1] = pieceNr
+            end
         end
     end
     hideT(hideDuringDayPieces)
