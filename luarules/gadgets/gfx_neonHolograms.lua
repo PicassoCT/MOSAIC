@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -64,6 +64,7 @@ else -- unsynced
     local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
+    local screencopy
 
     local glGetSun = gl.GetSun
 
@@ -79,6 +80,7 @@ else -- unsynced
     local glUnitPiece = gl.UnitPiece
     local glTexture = gl.Texture
     local glUnitShapeTextures = gl.UnitShapeTextures
+    local glCopyToTexture = gl.CopyToTexture
 
     local GL_BACK  = GL.BACK
     local GL_FRONT = GL.FRONT
@@ -135,15 +137,8 @@ uniform mat3 normalMatrix = cameraView * transpose(inverse(modelMatrix));;
 uniform float time;
 //declare uniforms
 uniform sampler2D screencopy;
-uniform float resolution;
-uniform float radius;
-uniform vec2 dir;
 
-
-// A uniform unique to this shader. You can modify it to the using the form
-// below the shader preview. Any uniform you add is automatically given a form
-uniform vec3 color;
-uniform vec3 lightPosition;
+float radius = 16.0;
 
 // Example varyings passed from the vertex shader
 varying vec3 vPositionWorld;
@@ -224,13 +219,13 @@ void main() {
         //the amount to blur, i.e. how far off center to sample from 
         //1.0 -> blur by one pixel
         //2.0 -> blur by two pixels, etc.
-        float blur = radius/resolution; 
+        float blur = radius/1024.0; 
         
         //the direction of our blur
         //(1.0, 0.0) -> x-axis blur
         //(0.0, 1.0) -> y-axis blur
-        float hstep = dir.x;
-        float vstep = dir.y;
+        float hstep = 0.1;
+        float vstep = 1.0;
 
     		
         //apply blurring, using a 9-tap filter with predefined gaussian weights
@@ -250,7 +245,7 @@ void main() {
     	                                + 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
     	                                ); 
 
-    	gl_FragColor= vec4((color.xyz + color* (1.0-averageShadow)).xyz, max((1.0 - averageShadow) , color.z * hologramTransparency)) ;
+    	gl_FragColor= vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).xyz, max((1.0 - averageShadow) , gl_FragColor.z * hologramTransparency)) ;
     	vec4 sampleBLurColor = gl_FragColor;
     	sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 	    sampleBLurColor += texture2D( screencopy, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
@@ -327,7 +322,7 @@ void main() {
 }]]
 local neonHologramShader
 local glowReflectHologramShader
-local vsx, vsy
+local vsx, vsy,vpx,vpy
 local SO_NODRAW_FLAG = 0
 local SO_OPAQUE_FLAG = 1
 local SO_ALPHAF_FLAG = 2
@@ -342,21 +337,40 @@ local sunChanged = false
 -------Shader--2ndPass -----------------------------------------------------------
 --Glow Reflection etc.
 --Execution of the shader
+    function gadget:Initialize()
+        depthtex = gl.CreateTexture(vsx,vsy, {
+            border = false,
+            format = GL_DEPTH_COMPONENT24,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
+        })
+
+        screencopy= gl.CreateTexture(vsx,vsy, {
+            target = target,
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s   = GL.CLAMP_TO_EDGE,
+            wrap_t   = GL.CLAMP_TO_EDGE,
+          })
+    end
+
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
+        depthtex = gl.CreateTexture(vsx,vsy, {
+            border = false,
+            format = GL_DEPTH_COMPONENT24,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
+        })
 
-    depthtex = gl.CreateTexture(vsx,vsy, {
-        border = false,
-        format = GL_DEPTH_COMPONENT24,
-        min_filter = GL.NEAREST,
-        mag_filter = GL.NEAREST,
-    })
+        screencopy= gl.CreateTexture(vsx,vsy, {
+            target = target,
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s   = GL.CLAMP_TO_EDGE,
+            wrap_t   = GL.CLAMP_TO_EDGE,
+          })
 
-    screentex = gl.CreateTexture(vsx, vsy, {
-        border = false,
-        min_filter = GL.NEAREST,
-        mag_filter = GL.NEAREST,
-    	})
     end
     local counterNeonUnits = 0
     local function unsetUnitNeonLuaDraw(callname, unitID, typeDefID)
@@ -372,13 +386,17 @@ local sunChanged = false
         counterNeonUnits= counterNeonUnits +1
     end	
 
-    function gadget:Initialize() 
-		vsx, vsy = gadgetHandler:GetViewSizes()
-		gadget:ViewResize(vsx, vsy)
 
+    local InitializeTextures()
+        vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
+    end
+
+    function gadget:Initialize() 
+		
+		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
-
+        InitializeTextures()
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
             fragment = neoFragmenShaderFirstPass,
@@ -389,21 +407,15 @@ local sunChanged = false
                 reflectTex = 3,
             },
             uniformFloat = {
+                time = Spring.GetGameFrame()/30.0
             },
         }, "Neon Hologram Shader")
 
---[[uniform float time;
-//declare uniforms
-uniform sampler2D screencopy;
-uniform float resolution;
-uniform float radius;
-uniform vec2 dir;
+--[[
 
 
 // A uniform unique to this shader. You can modify it to the using the form
 // below the shader preview. Any uniform you add is automatically given a form
-uniform vec3 color;
-uniform vec3 lightPosition;
 
 // Example varyings passed from the vertex shader
 varying vec3 vPositionWorld;
@@ -415,21 +427,6 @@ varying vec2 vTexCoord;
 ]]
 
         neonHologramShader:Initialize()
-
- --[[       glowReflectHologramShader = LuaShader({
-            vertex = glowReflectVertexShader,
-            fragment = glowReflectFragmentShader,
-            uniformInt = {
-                tex1 = 0,
-                tex2 = 1,
-                normalTex = 2,
-                reflectTex = 3,
-            },
-            uniformFloat = {
-            },
-        }, "Glow Reflect Shader")     
-        glowReflectHologramShader:Initialize()--]]
- 
     end
 
 
@@ -437,9 +434,10 @@ varying vec2 vTexCoord;
         if counterNeonUnits == 0 then
             return
         end
-
+        glCopyToTexture(screencopy, 0, 0, vpx, vpy, vsx, vsy)
+        neonHologramShader:Activate()
         if sunChanged then
-                glassShader:SetUniformFloatArrayAlways("pbrParams", {
+                neonHologramShader:SetUniformFloatArrayAlways("pbrParams", {
                 Spring.GetConfigFloat("tonemapA", 4.8),
                 Spring.GetConfigFloat("tonemapB", 0.8),
                 Spring.GetConfigFloat("tonemapC", 3.35),
@@ -461,9 +459,12 @@ varying vec2 vTexCoord;
                 local unitDefID = typeDefID
             end
         end)
-
+        neonHologramShader:Deactivate()
         glDepthTest(false)
         glCulling(false)
+    end
+    function gadget:GameFrame(frame)
+        neonHologramShader:SetUniformFloat("time", frame/30.0)
     end
 
     function gadget:DrawWorld()

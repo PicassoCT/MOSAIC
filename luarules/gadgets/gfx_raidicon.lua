@@ -20,8 +20,14 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitCreated(unitID, unitDefID)
         if iconTypeTable[unitDefID] then
             --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
-            SendToUnsynced("setUnitLuaDraw", unitID, unitDefID)
-            SendToUnsynced("unsetUnitLuaDraw", unitID, unitDefID)
+            SendToUnsynced("setIconLuaDraw", unitID, unitDefID)           
+        end
+    end
+
+    function gadget:UnitDestroyed(unitID, unitDefID)
+        if iconTypeTable[unitDefID] then
+            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
+            SendToUnsynced("unsetIconLuaDraw", unitID, unitDefID)
         end
     end
 
@@ -53,10 +59,8 @@ else -- unsynced
     end
 
     function gadget:Initialize()
-        --Spring.Echo(GetInfo().name .. " Initialization started")
-        gadgetHandler:AddSyncAction("setUnitLuaDraw", setUnitLuaDraw)
-        gadgetHandler:AddSyncAction("unsetUnitLuaDraw", unsetUnitLuaDraw)
-        --Spring.Echo(GetInfo().name .. " Initialization ended")
+        gadgetHandler:AddSyncAction("setIconLuaDraw", setUnitLuaDraw)
+        gadgetHandler:AddSyncAction("unsetIconLuaDraw", unsetUnitLuaDraw)        
     end
 
     local glUnitRaw = gl.UnitRaw
@@ -66,10 +70,10 @@ else -- unsynced
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
-        if drawMode == 1 and iconTables[unitID] then --transparent draw
+        if  iconTables[unitID] then --transparent draw
 
-            gl.DepthTest(true)
-            gl.DepthMask(true)
+            --gl.DepthTest(true)
+            --gl.DepthMask(true)
             glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)

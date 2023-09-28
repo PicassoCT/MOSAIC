@@ -1573,6 +1573,7 @@ function nightAndDay(dayNightPieceNameDict)
             end
         end
     end
+    
     hideT(hideDuringDayPieces)
     while true do
         hours, minutes, seconds, percent = getDayTime()
