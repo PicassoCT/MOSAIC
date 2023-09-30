@@ -12,6 +12,10 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
+
+    VFS.Include("scripts/lib_mosaic.lua")    
+    local neonHologramTypeTable = getHologramTypes(UnitDefs)
+    assert(neonHologramTypeTable)
     local engineVersion = 104 -- just filled this in here incorrectly but old engines arent used anyway
     if Engine and Engine.version then
         local function Split(s, separator)
@@ -40,11 +44,6 @@ if (gadgetHandler:IsSyncedCode()) then
         Spring.Echo("gadget Neon Hologram Rendering is enabled")
     end
 
-
-
-    VFS.Include("scripts/lib_mosaic.lua")
-    local neonHologramTypeTable = getHologramTypes(UnitDefs)
-
     function gadget:UnitCreated(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
             Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
@@ -65,6 +64,7 @@ else -- unsynced
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
     local screencopy
+    local depthtex
 
     local glGetSun = gl.GetSun
 
@@ -337,23 +337,6 @@ local sunChanged = false
 -------Shader--2ndPass -----------------------------------------------------------
 --Glow Reflection etc.
 --Execution of the shader
-    function gadget:Initialize()
-        depthtex = gl.CreateTexture(vsx,vsy, {
-            border = false,
-            format = GL_DEPTH_COMPONENT24,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST,
-        })
-
-        screencopy= gl.CreateTexture(vsx,vsy, {
-            target = target,
-            min_filter = GL.LINEAR,
-            mag_filter = GL.LINEAR,
-            wrap_s   = GL.CLAMP_TO_EDGE,
-            wrap_t   = GL.CLAMP_TO_EDGE,
-          })
-    end
-
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
         depthtex = gl.CreateTexture(vsx,vsy, {
@@ -387,16 +370,31 @@ local sunChanged = false
     end	
 
 
-    local InitializeTextures()
+    local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
+        depthtex = gl.CreateTexture(vsx,vsy, {
+            border = false,
+            format = GL_DEPTH_COMPONENT24,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
+        })
+
+        screencopy= gl.CreateTexture(vsx,vsy, {
+            target = target,
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s   = GL.CLAMP_TO_EDGE,
+            wrap_t   = GL.CLAMP_TO_EDGE,
+          })
+
     end
 
     function gadget:Initialize() 
-		
+		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
-        InitializeTextures()
+
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
             fragment = neoFragmenShaderFirstPass,
