@@ -14,18 +14,22 @@ end
 if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
-    local iconTypeTable = getIconTypes(UnitDefs)
+    local transparentTypeTable = getIconTypes(UnitDefs)
+    local engineVersion = getEngineVersion()
+    if (engineVersion <= 105.0) then
+        transparentTypeTable = mergeDictionarys(transparentTypeTable, getHologramTypes(UnitDefs))
+    end
     local GameConfig = getGameConfig()
 
     function gadget:UnitCreated(unitID, unitDefID)
-        if iconTypeTable[unitDefID] then
+        if transparentTypeTable[unitDefID] then
             --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setIconLuaDraw", unitID, unitDefID)           
         end
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
-        if iconTypeTable[unitDefID] then
+        if transparentTypeTable[unitDefID] then
             Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("unsetIconLuaDraw", unitID, unitDefID)
         end
@@ -77,7 +81,7 @@ else -- unsynced
             glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            return true
+            return true 
         end
     end
 end

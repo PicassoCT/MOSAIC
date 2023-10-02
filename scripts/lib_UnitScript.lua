@@ -6282,3 +6282,22 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 	end
 	echo("End house destruction")
 end
+
+function getEngineVersion()
+     if Engine and Engine.version then
+        local function Split(s, separator)
+            local results = {}
+            for part in s:gmatch("[^" .. separator .. "]+") do
+                results[#results + 1] = part
+            end
+            return results
+        end
+        engineVersion = Split(Engine.version, '-')
+        if engineVersion[2] ~= nil and engineVersion[3] ~= nil then
+            return tonumber(string.gsub(engineVersion[1], '%.', '') ..
+                                         engineVersion[2])
+        else
+            return tonumber(Engine.version)
+        end
+    end
+end
