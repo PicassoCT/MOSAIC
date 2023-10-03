@@ -1,3 +1,4 @@
+--Fragmentshader
 return [[
     #version 150 compatibility
     // Set the precision for data types used in this shader
@@ -49,12 +50,10 @@ uniform sampler2D screencopy;
 
 float radius = 16.0;
 
-// Example varyings passed from the vertex shader
+// Varyings passed from the vertex shader
 in vec3 vPositionWorld;
 in vec3 vNormal;
-
 in vec2 vUv;
-in vec2 vUv2;
 in vec2 vTexCoord;
 
 float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)

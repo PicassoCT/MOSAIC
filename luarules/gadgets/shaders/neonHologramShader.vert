@@ -15,18 +15,15 @@ return [[
     // Default uniforms provided by ShaderFrog.
     uniform float time;
 
-    // Default attributes provided by THREE.js. Attributes are only available in the
     // vertex shader. You can pass them to the fragment shader using varyings
     in vec3 position;
     in vec3 normal;
     in vec2 uv;
-    in vec2 uv2;
 
-    // Examples of variables passed from vertex to fragment shader
+    // Variables passed from vertex to fragment shader
     out vec3 vPositionWorld;
     out vec3 vNormal;
     out vec2 vUv;
-    out vec2 vUv2;
     out vec2 vTexCoord;
 
     float scaleTimeFullHalf(){
@@ -48,7 +45,6 @@ return [[
         // main function. Traditionally you name the varying with vAttributeName
         vNormal = normal;
         vUv = uv;
-        vUv2 = uv2;
         vec4 pos =(  modelMatrix * vec4(position,0));
         vPositionWorld =  pos.xyz;
         vTexCoord.xy= position.xy;

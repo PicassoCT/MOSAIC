@@ -73,8 +73,8 @@ else -- unsynced
     local neonUnitTables = {}
 
 -------Shader--FirstPass -----------------------------------------------------------
-local neoVertexShaderFirstPass =  VFS.Include("LuaRules/Gadgets/shaders/neonHologramShader.vert")
-local neoFragmenShaderFirstPass= = VFS.Include("LuaRules/Gadgets/shaders/neonHologramShader.frag")
+local neoVertexShaderFirstPass = VFS.Include("LuaRules/Gadgets/shaders/neonHologramShader.vert")
+local neoFragmenShaderFirstPass= VFS.Include("LuaRules/Gadgets/shaders/neonHologramShader.frag")
 local neonHologramShader
 local glowReflectHologramShader
 local vsx, vsy,vpx,vpy
@@ -160,8 +160,16 @@ local sunChanged = false
                 reflectTex = 3,
             },
             uniformFloat = {
-                time = Spring.GetGameFrame()/30.0
+                time = Spring.GetGameFrame()/30.0,
+                vPositionWorld = {0.0,0.0,0.0},
+                vNormal = {0.0,0.0,0.0},
+                vUv = {0.0,0.0},
+                vUv2 = {0.0,0.0},
+                vTexCoord = {0.0,0.0},
             },
+            uniformVec3 = {
+               
+            }
         }, "Neon Hologram Shader")
 
         compileResult = neonHologramShader:Initialize()
@@ -169,14 +177,15 @@ local sunChanged = false
     end
 
     local boolActivated = false
+    local boolDoesCompile= true
     local function RenderNeonUnits()
-        if counterNeonUnits == 0 then
+        if counterNeonUnits == 0 or not boolDoesCompile then
             return
         end
         glCopyToTexture(screencopy, 0, 0, vpx, vpy, vsx, vsy)
         if not boolActivated then
-            neonHologramShader:Initialize()
-            boolActivated = true
+            boolDoesCompile = neonHologramShader:Initialize()
+            if not boolDoesCompile then return end
         end
         if sunChanged then
                 neonHologramShader:SetUniformFloatArrayAlways("pbrParams", {
