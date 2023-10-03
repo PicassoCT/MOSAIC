@@ -153,23 +153,28 @@ local sunChanged = false
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
             fragment = neoFragmenShaderFirstPass,
+            textures = {
+                    [0] = tex1,
+                    [1] = tex2,
+                    [2] = normalTex,
+                    [3] = reflectTex,
+                    [4] = screenTex,
+                    [5] = depthTex
+                },            
             uniformInt = {
                 tex1 = 0,
                 tex2 = 1,
                 normalTex = 2,
                 reflectTex = 3,
+                screenTex= 4,
+                depthTex= 5
             },
+
             uniformFloat = {
                 time = Spring.GetGameFrame()/30.0,
                 vPositionWorld = {0.0,0.0,0.0},
-                vNormal = {0.0,0.0,0.0},
-                vUv = {0.0,0.0},
-                vUv2 = {0.0,0.0},
-                vTexCoord = {0.0,0.0},
+                uv = {0.0,0.0},                
             },
-            uniformVec3 = {
-               
-            }
         }, "Neon Hologram Shader")
 
         compileResult = neonHologramShader:Initialize()
