@@ -89,7 +89,7 @@ return [[  #version 150 compatibility
             vec4 sum = vec4(0.0);
             
             //our original texcoord for this fragment
-            vec2 tc = vTexCoord;
+            vec2 tc = gl_TexCoord[0];
             
             //the amount to blur, i.e. how far off center to sample from 
             //1.0 -> blur by one pixel
