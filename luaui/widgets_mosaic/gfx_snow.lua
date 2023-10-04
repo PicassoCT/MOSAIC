@@ -18,6 +18,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+VFS.Include("scripts/lib_mosaic.lua")
 
 local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()
@@ -36,7 +37,7 @@ local windMultiplier			= 4.5
 local maxWindSpeed				= 25		-- to keep it real
 local gameFrameCountdown		= 120		-- on launch: wait this many frames before adjusting the average fps calc
 local particleScaleMultiplier	= 1
-
+local gravityFactor = 4.0
 -- pregame info message
 local autoReduce = true
 local fadetime = 13
@@ -47,47 +48,38 @@ local fpsDifference 			= (maxFps-minFps)/particleSteps		-- fps difference need b
 
 local snowTexFolder = "luaui/images/snow/"
 
-local snowKeywords = {'snow','frozen','cold','winter','ice','icy','arctic','frost','melt','glacier','mosh_pit','blindside','northernmountains','amarante','cervino'}
 
-local snowMaps = {}
-
--- disable for maps that have a keyword but are not snowmaps
-snowMaps['sacrifice_v1'] = false
-
--- disable for maps already containing a snow widget
-snowMaps['xenolithic_v4'] = false
-snowMaps['thecoldplace'] = false
 
 
 local particleTypes = {}
 table.insert(particleTypes, {
-		texture = 'snow1.dds',
-		gravity = 50,
+		texture = 'rain1.dds',
+		gravity = 50 *gravityFactor,
 		scale = 5500
 })
 table.insert(particleTypes, {
-		texture = 'snow2.dds',
-		gravity = 44,
+		texture = 'rain2.dds',
+		gravity = 44*gravityFactor,
 		scale = 5500
 })
 table.insert(particleTypes, {
-		texture = 'snow3.dds',
-		gravity = 58,
+		texture = 'rain3.dds',
+		gravity = 58*gravityFactor,
 		scale = 5500
 })
 table.insert(particleTypes, {
-		texture = 'snow4.dds',
-		gravity = 62,
+		texture = 'rain4.dds',
+		gravity = 62*gravityFactor,
 		scale = 6600
 })
 table.insert(particleTypes, {
-		texture = 'snow5.dds',
-		gravity = 47,
+		texture = 'rain1.dds',
+		gravity = 47*gravityFactor,
 		scale = 6600
 })
 table.insert(particleTypes, {
-		texture = 'snow6.dds',
-		gravity = 54,
+		texture = 'rain2.dds',
+		gravity = 54*gravityFactor,
 		scale = 6600
 })
 
@@ -376,26 +368,7 @@ function widget:Initialize()
 	
 	startOsClock = os.clock()
 	-- check for keywords
-	local keywordFound = false
-	for _,keyword in pairs(snowKeywords) do
-		if string.find(currentMapname, keyword) then
-			enabled = true
-			keywordFound = true
-			break
-		end
-	end
-	-- check for remembered snow state
-	if snowMaps[currentMapname] ~= nil then
-		if snowMaps[currentMapname] == true then
-			enabled = true
-		elseif snowMaps[currentMapname] == false then
-			enabled = false
-		end
-	end
-	-- save enabled snow state
-	if enabled and keywordFound then
-		snowMaps[currentMapname] = true
-	end
+
 	
 	getWindSpeed()
 	init()
@@ -406,6 +379,9 @@ end
 
 local widgetDisabledSnow = false
 function widget:GameFrame(gameFrame)
+	if gameFrame % 90 == 0 then
+		enabled  = isRaining()
+	end
 	if gameFrame == 1 then
 		gameStarted = true
 		if drawinfolist ~= nil then

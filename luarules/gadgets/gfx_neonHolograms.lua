@@ -110,6 +110,7 @@ local sunChanged = false
           })
 
     end
+
     local counterNeonUnits = 0
     local function unsetUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = nil
