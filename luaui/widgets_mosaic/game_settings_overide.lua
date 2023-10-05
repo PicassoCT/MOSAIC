@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
 	  name = "Overrides settings for mosaic",
-        desc = "& Restore settings after gameend",
+        desc = "Store & Restore settings after gameend",
 		author = "Pica",
 		date = "April 2020",
 		license = "GNU GPL, v2 or later",
@@ -57,7 +57,7 @@ function widget:Initialize()
 end
 
 function widget:Shutdown()
-    for systemSetting, value in pairs(systemPreMosaicStart) do
-        RestoreTypeDependent(systemSetting, userConfigMosaic[systemSetting].type, value)
+    for systemSettingName, configSetting in pairs(systemPreMosaicStart) do
+        RestoreTypeDependent(systemSettingName, systemPreMosaicStart[systemSettingName].type, configSetting.value)
     end
 end

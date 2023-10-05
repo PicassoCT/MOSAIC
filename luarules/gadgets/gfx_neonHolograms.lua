@@ -73,8 +73,8 @@ else -- unsynced
     local neonUnitTables = {}
 
 -------Shader--FirstPass -----------------------------------------------------------
-local neoVertexShaderFirstPass = VFS.Include("LuaRules/Gadgets/shaders/neonHologramShader.vert")
-local neoFragmenShaderFirstPass= VFS.Include("LuaRules/Gadgets/shaders/neonHologramShader.frag")
+local neoVertexShaderFirstPass = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
+local neoFragmenShaderFirstPass=  VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
 local neonHologramShader
 local glowReflectHologramShader
 local vsx, vsy,vpx,vpy
