@@ -127,5 +127,5 @@
 		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 		//gl_FragColor.xyz = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
 		
-		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0).xyz;  
+		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);  
 	}

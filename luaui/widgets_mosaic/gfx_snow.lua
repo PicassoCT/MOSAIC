@@ -18,7 +18,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-VFS.Include("scripts/lib_mosaic.lua")
+
 
 local fontfile = LUAUI_DIRNAME .. "fonts/" .. Spring.GetConfigString("bar_font", "Poppins-Regular.otf")
 local vsx,vsy = Spring.GetViewGeometry()
@@ -376,6 +376,47 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+-- > debugEchoT(
+local function getDetermenisticHash()
+  local accumulated = 0
+  local mapName = Game.mapName
+  local mapNameLength = string.len(mapName)
+
+  for i=1, mapNameLength do
+    accumulated = accumulated + string.byte(mapName,i)
+  end
+
+  accumulated = accumulated + Game.mapSizeX
+  accumulated = accumulated + Game.mapSizeZ
+  return accumulated
+end
+
+ local DAYLENGTH = 28800
+local function getDayTime()
+	local morningOffset = (DAYLENGTH / 2)
+	local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+	local percent = Frame / DAYLENGTH
+	local hours = math.floor((Frame / DAYLENGTH) * 24)
+	local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+	local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+	return hours, minutes, seconds, percent
+end
+
+ local boolRainyArea
+ local function isRaining()
+                if boolRainyArea == nil then
+                    boolRainyArea = getDetermenisticHash() % 2 == 0 
+                end
+                if not boolRainyArea then return false end
+
+                local hour = getDayTime() 
+                local dayNr = Spring.GetGameFrame()/ DAYLENGTH
+
+                return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
+   end
+
+
 
 local widgetDisabledSnow = false
 function widget:GameFrame(gameFrame)

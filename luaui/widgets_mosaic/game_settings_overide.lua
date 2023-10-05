@@ -57,7 +57,10 @@ function widget:Initialize()
 end
 
 function widget:Shutdown()
-    for systemSettingName, configSetting in pairs(systemPreMosaicStart) do
-        RestoreTypeDependent(systemSettingName, systemPreMosaicStart[systemSettingName].type, configSetting.value)
+    for systemSettingName, values in pairs(systemPreMosaicStart) do
+        local configSetting = values
+        if configSetting then
+            RestoreTypeDependent(configSetting.name, configSetting.type, configSetting.value)
+        end
     end
 end
