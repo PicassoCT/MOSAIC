@@ -26,7 +26,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local SO_SHTRAN_FLAG = 32
     local SO_DRICON_FLAG = 128
 
-	if (engineVersion <= 105.0) then
+	if (engineVersion <= 105.0 or false) then
         transparentTypeTable = mergeDictionarys(transparentTypeTable, getHologramTypes(UnitDefs))
     end
     local GameConfig = getGameConfig()
@@ -35,12 +35,11 @@ if (gadgetHandler:IsSyncedCode()) then
         if transparentTypeTable[unitDefID] then
             --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setIconLuaDraw", unitID, unitDefID)           
-			Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
+
 			local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG +SO_REFLEC_FLAG  +SO_REFRAC_FLAG + SO_DRICON_FLAG
 			if engineVersion > 105.0 then
 				Spring.SetUnitEngineDrawMask(unitID, drawMask)
 			end
-		
 		end
     end
 
@@ -59,7 +58,7 @@ else -- unsynced
 
     local function setUnitLuaDraw(callname, unitID, typeDefID)
         iconTables[unitID] = typeDefID
-        
+		Spring.UnitRendering.SetUnitLuaDraw(unitID, true)	
     end
 
     local function unsetUnitLuaDraw(callname, unitID, typeDefID)
@@ -80,9 +79,6 @@ else -- unsynced
 
     function gadget:DrawUnit(unitID, drawMode)
         if  iconTables[unitID] then --transparent draw
-
-            --gl.DepthTest(true)
-            --gl.DepthMask(true)
             glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
