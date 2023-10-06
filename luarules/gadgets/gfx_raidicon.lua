@@ -16,7 +16,17 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
     local transparentTypeTable = getIconTypes(UnitDefs)
     local engineVersion = getEngineVersion()
-    if (engineVersion <= 105.0) then
+    local engine = 106.0
+    local SO_NODRAW_FLAG = 0
+    local SO_OPAQUE_FLAG = 1
+    local SO_ALPHAF_FLAG = 2
+    local SO_REFLEC_FLAG = 4
+    local SO_REFRAC_FLAG = 8
+    local SO_SHOPAQ_FLAG = 16
+    local SO_SHTRAN_FLAG = 32
+    local SO_DRICON_FLAG = 128
+
+	if (engineVersion <= 105.0) then
         transparentTypeTable = mergeDictionarys(transparentTypeTable, getHologramTypes(UnitDefs))
     end
     local GameConfig = getGameConfig()
@@ -25,7 +35,13 @@ if (gadgetHandler:IsSyncedCode()) then
         if transparentTypeTable[unitDefID] then
             --Spring.Echo("Icon Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setIconLuaDraw", unitID, unitDefID)           
-        end
+			Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
+			local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG +SO_REFLEC_FLAG  +SO_REFRAC_FLAG + SO_DRICON_FLAG
+			if engineVersion > 105.0 then
+				Spring.SetUnitEngineDrawMask(unitID, drawMask)
+			end
+		
+		end
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
@@ -37,24 +53,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
 else -- unsynced
 
-
-    local SO_NODRAW_FLAG = 0
-    local SO_OPAQUE_FLAG = 1
-    local SO_ALPHAF_FLAG = 2
-    local SO_REFLEC_FLAG = 4
-    local SO_REFRAC_FLAG = 8
-    local SO_SHOPAQ_FLAG = 16
-    local SO_SHTRAN_FLAG = 32
-    local SO_DRICON_FLAG = 128
-
+	
     local iconTables = {}
     local isRaidIconTable = {}
 
     local function setUnitLuaDraw(callname, unitID, typeDefID)
         iconTables[unitID] = typeDefID
-        Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
-        local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG +SO_REFLEC_FLAG  +SO_REFRAC_FLAG + SO_DRICON_FLAG
-        Spring.SetUnitEngineDrawMask(unitID, drawMask)
+        
     end
 
     local function unsetUnitLuaDraw(callname, unitID, typeDefID)

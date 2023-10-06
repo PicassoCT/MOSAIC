@@ -121,7 +121,9 @@ local sunChanged = false
         neonUnitTables[unitID] = typeDefID
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
         local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
-        Spring.SetUnitEngineDrawMask(unitID, drawMask)
+        if engine > 105.0 then
+			Spring.SetUnitEngineDrawMask(unitID, drawMask)
+		end
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -153,7 +155,7 @@ local sunChanged = false
 
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
-            fragment = neoFragmenShaderFirstPass,
+            --fragment = neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
