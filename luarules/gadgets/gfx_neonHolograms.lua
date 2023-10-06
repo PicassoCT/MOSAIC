@@ -12,6 +12,14 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
+	local SO_NODRAW_FLAG = 0
+	local SO_OPAQUE_FLAG = 1
+	local SO_ALPHAF_FLAG = 2
+	local SO_REFLEC_FLAG = 4
+	local SO_REFRAC_FLAG = 8
+	local SO_SHOPAQ_FLAG = 16
+	local SO_SHTRAN_FLAG = 32
+	local SO_DRICON_FLAG = 128
 
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
@@ -31,6 +39,10 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitID, unitDefID)        
         if neonHologramTypeTable[unitDefID] then
+			local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
+			if engineVersion > 105.0 then
+				Spring.SetUnitEngineDrawMask(unitID, drawMask)
+			end
             Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
@@ -78,14 +90,6 @@ local neoFragmenShaderFirstPass=  VFS.LoadFile("LuaRules/Gadgets/shaders/neonHol
 local neonHologramShader
 local glowReflectHologramShader
 local vsx, vsy,vpx,vpy
-local SO_NODRAW_FLAG = 0
-local SO_OPAQUE_FLAG = 1
-local SO_ALPHAF_FLAG = 2
-local SO_REFLEC_FLAG = 4
-local SO_REFRAC_FLAG = 8
-local SO_SHOPAQ_FLAG = 16
-local SO_SHTRAN_FLAG = 32
-local SO_DRICON_FLAG = 128
 local sunChanged = false
 -------------------------------------------------------------------------------------
 
@@ -120,13 +124,9 @@ local sunChanged = false
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
-        local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
-        if engine > 105.0 then
-			Spring.SetUnitEngineDrawMask(unitID, drawMask)
-		end
+       
         counterNeonUnits= counterNeonUnits + 1
     end	
-
 
     local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()

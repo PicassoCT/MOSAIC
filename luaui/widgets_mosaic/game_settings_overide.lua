@@ -49,9 +49,11 @@ local function RestoreTypeDependent(name, type, value)
 end
 
 function widget:Initialize()
+	--store only changed old Value
+
     for name, values in  pairs(userConfigMosaic) do
         local configSetting = values
-        systemPreMosaicStart[name] = GetTypeDependent(configSetting.name, configSetting.type, configSetting.value)
+        systemPreMosaicStart[name] = { value = GetTypeDependent(configSetting.name, configSetting.type, configSetting.value), name = name, type = configSetting.type }
         SetTypeDependent(configSetting.name, configSetting.type, configSetting.value)
     end
 end
