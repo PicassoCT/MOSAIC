@@ -1,8 +1,6 @@
     #version 150 compatibility
     //Fragmentshader
     // Set the precision for data types used in this shader
-    precision highp float;
-    precision highp int;
 
 
     // Default uniforms provided by ShaderFrog.

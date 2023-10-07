@@ -1,8 +1,7 @@
     #version 150 compatibility
     //VertexShader
     // Set the precision for data types used in this shader
-    precision highp float;
-    precision highp int;
+
 
     uniform mat4 modelMatrix;
     uniform mat4 modelViewMatrix;

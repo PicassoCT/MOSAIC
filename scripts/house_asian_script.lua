@@ -350,7 +350,7 @@ function factoryAnimation( set)
                 Show(pickedPiece)
 				--craneAnimation
 				Hide(moltenPiecesT[1])
-                WMove(grabPiece, y_axis, -15, 10)
+                WMove(grabPiece, x_axis, -15, 10)
                 Turn(pickedPiece,_x_axis, math.rad(35),15)
                 WMove(pickedPiece, y_axis, -30, 30)
                 Hide(pickedPiece)

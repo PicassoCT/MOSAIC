@@ -37,15 +37,27 @@ if (gadgetHandler:IsSyncedCode()) then
         Spring.Echo("gadget Neon Hologram Rendering is enabled")
     end
 
-    function gadget:UnitCreated(unitID, unitDefID)        
-        if neonHologramTypeTable[unitDefID] then
-			local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
-			if engineVersion > 105.0 then
-				Spring.SetUnitEngineDrawMask(unitID, drawMask)
-			end
+    function gadget:Initialize()
+        allUnits = Spring.GetAllUnits()
+        for _,id in pairs(allUnits) do
+            unitDefID = Spring.GetUnitDefID(id)
+            registerUnitIfHolo(id, unitDefID)
+        end
+    end
+
+    function registerUnitIfHolo(unitID, unitDefID)
+         if neonHologramTypeTable[unitDefID] then
+            local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
+            if engineVersion > 105.0 then
+                Spring.SetUnitEngineDrawMask(unitID, drawMask)
+            end
             Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
             SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
+    end
+
+    function gadget:UnitCreated(unitID, unitDefID)        
+       registerUnitIfHolo(unitID, unitDefID)
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
@@ -58,14 +70,12 @@ if (gadgetHandler:IsSyncedCode()) then
 else -- unsynced
 
     local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
-    assert(LuaShader)
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
     local screencopy
     local depthtex
 
     local glGetSun = gl.GetSun
-
     local glDepthTest = gl.DepthTest
     local glCulling = gl.Culling
     local glBlending = gl.Blending
@@ -123,8 +133,7 @@ local sunChanged = false
 
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = typeDefID
-        Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
-       
+        Spring.UnitRendering.SetUnitLuaDraw(unitID, true)       
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -147,6 +156,16 @@ local sunChanged = false
 
     end
 
+local fragmentShader = 
+[[
+
+void main() 
+{
+    gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
+}
+]]
+
+
     function gadget:Initialize() 
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
@@ -155,7 +174,7 @@ local sunChanged = false
 
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
-            --fragment = neoFragmenShaderFirstPass,
+            fragment =  fragmentShader,--neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
@@ -185,16 +204,21 @@ local sunChanged = false
     end
 
     local boolActivated = false
-    local boolDoesCompile= true
+
     local function RenderNeonUnits()
         if counterNeonUnits == 0 or not boolDoesCompile then
             return
         end
-        glCopyToTexture(screencopy, 0, 0, vpx, vpy, vsx, vsy)
+
         if not boolActivated then
+            local boolDoesCompile = true
             boolDoesCompile = neonHologramShader:Initialize()
             if not boolDoesCompile then return end
+            boolActivated= true
         end
+
+        glCopyToTexture(screencopy, 0, 0, vpx, vpy, vsx, vsy)
+
         if sunChanged then
                 neonHologramShader:SetUniformFloatArrayAlways("pbrParams", {
                 Spring.GetConfigFloat("tonemapA", 4.8),
@@ -212,21 +236,18 @@ local sunChanged = false
         glDepthTest(true)
 
         neonHologramShader:ActivateWith(
-        function()     
+        function()    
             for id, typeDefID in pairs(neonUnitTables) do
                 local unitID = id            
                 local unitDefID = typeDefID
             end
         end)
+        neonHologramShader:SetUniformFloat("time", Spring.GetGameFrame()/30.0)
         neonHologramShader:Deactivate()
         glDepthTest(false)
         glCulling(false)
     end
-    function gadget:GameFrame(frame)
-        if boolActivated then
-            neonHologramShader:SetUniformFloat("time", frame/30.0)
-        end
-    end
+
 
     function gadget:DrawWorld()
         RenderNeonUnits()
