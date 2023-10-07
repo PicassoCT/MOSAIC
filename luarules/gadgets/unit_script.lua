@@ -430,7 +430,7 @@ end
 
 function Spring.UnitScript.Hide(piece)
     local activeUnit = GetActiveUnit()
-    pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+    pieceID_NameMap = Spring.GetUnitPieceList(activeUnit)
     assert(pieceID[piece], piece)
 
     if not piece then
