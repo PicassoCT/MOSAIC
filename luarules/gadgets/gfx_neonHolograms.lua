@@ -95,12 +95,12 @@ else -- unsynced
     local neonUnitTables = {}
 
 -------Shader--FirstPass -----------------------------------------------------------
-local neoVertexShaderFirstPass = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
-local neoFragmenShaderFirstPass=  VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
-local neonHologramShader
-local glowReflectHologramShader
-local vsx, vsy,vpx,vpy
-local sunChanged = false
+    local neoVertexShaderFirstPass = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
+    local neoFragmenShaderFirstPass=  VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
+    local neonHologramShader
+    local glowReflectHologramShader
+    local vsx, vsy,vpx,vpy
+    local sunChanged = false
 -------------------------------------------------------------------------------------
 
 -------Shader--2ndPass -----------------------------------------------------------
@@ -126,13 +126,21 @@ local sunChanged = false
     end
 
     local counterNeonUnits = 0
+    local neonHoloParts= {}
     local function unsetUnitNeonLuaDraw(callname, unitID, typeDefID)
         neonUnitTables[unitID] = nil
         counterNeonUnits= counterNeonUnits - 1
     end
 
     local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
-        neonUnitTables[unitID] = typeDefID
+        neonUnitTables[#neonUnitTables +1] = {id = unitID, defID =  typeDefID}
+        if not neonHoloParts[typeDefID] then
+            pieceList = Spring.GetUnitPieceList(unitID)
+            for pieceID, pieceName in ipairs(pieceList) do
+                --Spring.Echo(UnitDefs[unitDefID].name,unitID, unitDefID, pieceID, pieceName)
+                table.insert(neonHoloParts[unitDefID], pieceID)
+            end
+        end
         Spring.UnitRendering.SetUnitLuaDraw(unitID, true)       
         counterNeonUnits= counterNeonUnits + 1
     end	
@@ -156,16 +164,38 @@ local sunChanged = false
 
     end
 
-local fragmentShader = 
-[[
+    local fragmentShader = 
+    [[
+        void main() 
+        {
+            gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
+        }
+    ]]
 
-void main() 
-{
-    gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
-}
-]]
+    local function UpdateShader()
+        --glCopyToTexture(screencopy, 0, 0, vpx, vpy, vsx, vsy)
+        neonHologramShader:ActivateWith(
+         function()    
+            --variables
+            if sunChanged then
+                    neonHologramShader:SetUniformFloatArrayAlways("pbrParams", {
+                    Spring.GetConfigFloat("tonemapA", 4.8),
+                    Spring.GetConfigFloat("tonemapB", 0.8),
+                    Spring.GetConfigFloat("tonemapC", 3.35),
+                    Spring.GetConfigFloat("tonemapD", 1.0),
+                    Spring.GetConfigFloat("tonemapE", 1.15),
+                    Spring.GetConfigFloat("envAmbient", 0.3),
+                    Spring.GetConfigFloat("unitSunMult", 1.35),
+                    Spring.GetConfigFloat("unitExposureMult", 1.0),
+                })
+                sunChanged = false
+            end
+            neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
 
+        end)
+    end
 
+   local boolActivated = false
     function gadget:Initialize() 
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
@@ -199,50 +229,64 @@ void main()
             },
         }, "Neon Hologram Shader")
 
-        compileResult = neonHologramShader:Initialize()
-        Spring.Echo(compileResult)
+        boolActivated = neonHologramShader:Initialize()
+        if not boolActivated then 
+                Spring.Echo("Neon shader did not compile")
+                gadgetHandler:RemoveGadget(self)
+                return 
+        end
+
+        UpdateShader()
     end
 
-    local boolActivated = false
-
+ 
+    local boolDoesCompile = false
     local function RenderNeonUnits()
-        if counterNeonUnits == 0 or not boolDoesCompile then
+
+        if counterNeonUnits == 0 or not boolActivated then
             return
-        end
+        end    
 
-        if not boolActivated then
-            local boolDoesCompile = true
-            boolDoesCompile = neonHologramShader:Initialize()
-            if not boolDoesCompile then return end
-            boolActivated= true
-        end
+        glDepthTest(true)      
 
-        glCopyToTexture(screencopy, 0, 0, vpx, vpy, vsx, vsy)
-
-        if sunChanged then
-                neonHologramShader:SetUniformFloatArrayAlways("pbrParams", {
-                Spring.GetConfigFloat("tonemapA", 4.8),
-                Spring.GetConfigFloat("tonemapB", 0.8),
-                Spring.GetConfigFloat("tonemapC", 3.35),
-                Spring.GetConfigFloat("tonemapD", 1.0),
-                Spring.GetConfigFloat("tonemapE", 1.15),
-                Spring.GetConfigFloat("envAmbient", 0.3),
-                Spring.GetConfigFloat("unitSunMult", 1.35),
-                Spring.GetConfigFloat("unitExposureMult", 1.0),
-            })
-            sunChanged = false
-        end
-
-        glDepthTest(true)
+        UpdateShader()
 
         neonHologramShader:ActivateWith(
-        function()    
-            for id, typeDefID in pairs(neonUnitTables) do
-                local unitID = id            
-                local unitDefID = typeDefID
+        function()   
+            --variables
+           for i = 1, #neonUnitTables do
+            local unitID = neonUnitTables[i].id
+            local neonHoloDef = neonUnitTables[i].defID
+            local neonHoloParts = neonHoloParts[neonHoloDef]
+            glUnitShapeTextures(neonHoloParts, true)
+            --glTexture(2, normalMaps[unitDefID])
+
+            glCulling(GL_FRONT)
+            for j = 1, #neonHoloParts do
+                local pieceID = neonHoloParts[j]
+                glPushMatrix()
+                    glUnitMultMatrix(unitID)
+                    glUnitPieceMultMatrix(unitID, pieceID)
+                    glUnitPiece(unitID, pieceID)
+                glPopMatrix()
             end
+
+            glCulling(GL_BACK)
+            for j = 1, #neonHoloDef do
+                local pieceID = neonHoloDef[j]
+                glPushMatrix()
+                    glUnitMultMatrix(unitID)
+                    glUnitPieceMultMatrix(unitID, pieceID)
+                    glUnitPiece(unitID, pieceID)
+                glPopMatrix()
+            end
+
+        end
+
+
+         
         end)
-        neonHologramShader:SetUniformFloat("time", Spring.GetGameFrame()/30.0)
+
         neonHologramShader:Deactivate()
         glDepthTest(false)
         glCulling(false)

@@ -416,8 +416,7 @@ function Spring.UnitScript.Signal(mask)
     if type(mask) == "number" then
         for _, thread in pairs(activeUnit.threads) do
             local signal_mask = thread.signal_mask
-            if (type(signal_mask) == "number" and bit_and(signal_mask, mask) ~=
-                0 and thread.container) then
+            if signal_mask and (bit_and(signal_mask, mask) ~= 0 and thread.container) then
                 RemoveTableElement(thread.container, thread)
             end
         end
@@ -431,19 +430,13 @@ function Spring.UnitScript.Signal(mask)
 end
 
 function Spring.UnitScript.Hide(piece)
-    local activeUnit = GetActiveUnit()
-    pieceID_NameMap = Spring.GetUnitPieceList(activeUnit)
-    assert(pieceID[piece], piece)
-
     if not piece then
-        assert(false, "No piecenumber in Hide() function ")      
+        local activeUnit = GetActiveUnit()
+        local defID = Spring.GetUnitDefID(activeUnit.unitID)
+        Spring.Echo("Invalid PieceNumber in "..UnitDefs[defID].name)
         return
-    elseif bool_GadgetDebug == true and type(piece) ~= "number" then
-        Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..
-                        type(piece) .. " instead")
-
     end
-
+   
     return sp_SetPieceVisibility(piece, false)
 end
 

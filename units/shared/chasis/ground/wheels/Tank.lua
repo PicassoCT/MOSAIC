@@ -36,7 +36,7 @@ local ground_tank_day = Tank:New{
 	crushStrength = 4800,
 	iconType ="ground_tank_day",
 	collisionVolumeType = "box",
-	collisionvolumescales = "70 50 70",
+	collisionvolumescales = "70 50 150",
 	
 	customparams = {
 		normaltex = "unittextures/tank_day_normal.dds",
@@ -98,7 +98,7 @@ local ground_tank_day = Tank:New{
 	iconType = "ground_tank_night",
 	
 	collisionVolumeType = "box",
-	collisionvolumescales = "70 50 70",
+	collisionvolumescales = "70 50 150",
 	
 	customparams = {
 		normaltex = "unittextures/tank_day_normal.dds",

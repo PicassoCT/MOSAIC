@@ -48,8 +48,26 @@ local fpsDifference 			= (maxFps-minFps)/particleSteps		-- fps difference need b
 
 local snowTexFolder = "luaui/images/snow/"
 
+-- > debugEchoT(
+local function getDetermenisticHash()
+  local accumulated = 0
+  local mapName = Game.mapName
+  local mapNameLength = string.len(mapName)
 
+  for i=1, mapNameLength do
+    accumulated = accumulated + string.byte(mapName,i)
+  end
 
+  accumulated = accumulated + Game.mapSizeX
+  accumulated = accumulated + Game.mapSizeZ
+  return accumulated
+end
+
+local function isRainyArea()
+		return getDetermenisticHash() % 2 == 0 
+end
+
+local snowMaps = {}
 
 local particleTypes = {}
 table.insert(particleTypes, {
@@ -313,7 +331,6 @@ function getWindSpeed()
 end
 
 function widget:Initialize()
-
 	WG['snow'] = {}
 	WG['snow'].getSnowMap = function()
 		if enabled or widgetDisabledSnow then
@@ -369,7 +386,8 @@ function widget:Initialize()
 	startOsClock = os.clock()
 	-- check for keywords
 
-	
+	snowMaps[Game.mapName] = isRainyArea()
+		
 	getWindSpeed()
 	init()
 end
@@ -377,20 +395,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- > debugEchoT(
-local function getDetermenisticHash()
-  local accumulated = 0
-  local mapName = Game.mapName
-  local mapNameLength = string.len(mapName)
 
-  for i=1, mapNameLength do
-    accumulated = accumulated + string.byte(mapName,i)
-  end
-
-  accumulated = accumulated + Game.mapSizeX
-  accumulated = accumulated + Game.mapSizeZ
-  return accumulated
-end
 
  local DAYLENGTH = 28800
 local function getDayTime()
@@ -403,10 +408,11 @@ local function getDayTime()
 	return hours, minutes, seconds, percent
 end
 
+
  local boolRainyArea
  local function isRaining()
                 if boolRainyArea == nil then
-                    boolRainyArea = getDetermenisticHash() % 2 == 0 
+                    boolRainyArea = isRainyArea()
                 end
                 if not boolRainyArea then return false end
 

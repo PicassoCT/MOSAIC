@@ -25,7 +25,7 @@ local casino_spin = piece("casino_spin")
 local JLantern = piece("JLantern")
 local idleAnimations = {}
 local technoAnimations = {}
-Hide(JLantern)
+
 
 local tldrum = piece "tldrum"
 assert(tldrum)
@@ -96,6 +96,33 @@ local SIG_GESTE = 32
 local SIG_ONTHEMOVE = 64
 local SIG_TIGLIL = 128
 local GameConfig = getGameConfig()
+
+local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+
+--[[function showCheck(pieceID)
+    isValidPiece(pieceID)
+    Show(pieceID)
+end
+
+function isValidPiece(pieceID)
+    if not pieceID then assert(false, toString(pieceID))end
+    if not pieceID_NameMap[pieceID] then assert(false, toString(pieceID)) end  
+    return true  
+end
+
+function hideCheck(pieceID)
+    isValidPiece(pieceID)
+    Hide(pieceID)
+end
+
+Hide(JLantern)
+
+function isValidPieceTable(T)
+    for k,v in pairs(T) do
+        isValidPiece(v)
+    end
+end
+--]]
 
 function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
@@ -203,7 +230,7 @@ function ShowEmergencyElements ()
   EmergencyText = piece("EmergencyText")
   if maRa() then Show(EmergencyIcon) end
   Show(EmergencyText)
-  showOne(TableOfPiecesGroups["EmergencyPillar"]) 
+  id = showOne(TableOfPiecesGroups["EmergencyPillar"]) 
   element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
   Spin(element , y_axis, math.rad(randSign() * 42), 0)
 end
@@ -245,6 +272,9 @@ function getGrid()
         allGrids[#allGrids+1] = TableOfPiecesGroups["BrothelGrid"][2]
         allGrids[#allGrids+1] = TableOfPiecesGroups["BuisnessGrid"][2]
         allGrids[#allGrids+1] = TableOfPiecesGroups["CasinoGrid"][2]
+        for i=1, #allGrids do
+            assert(allGrids[i])
+        end
     end
 
     if boolIsBrothel then
@@ -290,6 +320,7 @@ function grid()
             if maRa() == maRa() then
                 Sleep(500)
             end
+
             HideAssert(theGrid)
         end
         Sleep(33)
@@ -410,9 +441,10 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
             showT(showTellTable)
             Sleep(90000)
             resetT(TableOfPiecesGroups[name], 1.2)
-            WaitForTurns(TableOfPiecesGroups[name]) 
+            WaitForTurns(TableOfPiecesGroups[name])   
             hideT(showTellTable)                    
         else
+
             hideT(TableOfPiecesGroups[name])
             Sleep(interval)
         end
@@ -476,6 +508,9 @@ function glowWormFlight(speed)
     local targetHeight = 0
     posX, posY,posZ = 0,0,0
     intervalLength = math.random(5, 10)
+    for i=1, #TableOfPiecesGroups["GlowSwarm"] do
+        assert(TableOfPiecesGroups["GlowSwarm"][i])
+    end
 
     hideT(TableOfPiecesGroups["GlowSwarm"])
     targetHeight = math.random(0,heightDiff)
@@ -699,7 +734,8 @@ function HoloGrams()
             return            
         end
 
-        Spin(logo,y_axis, math.rad(5),0)
+        Spin(logo,y_axis, math.rad(5),0)     
+           
         Show(logo)
         if maRa() then
            pieceName = getUnitPieceName(unitID, logo)
@@ -910,7 +946,7 @@ function showOne(T)
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
-        if c == dice then          
+        if c == dice then   
             Show(v)          
             return v
         end

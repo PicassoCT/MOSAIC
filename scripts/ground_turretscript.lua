@@ -196,7 +196,7 @@ currentDeg = {
     [1] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
     [2] = {val = -50, dirUp = -1, lastDir = 1, countSwitches = 0},
     [3] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0},
-[4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}}
+    [4] = {val = 50, dirUp = 1, lastDir = -1, countSwitches = 0}}
 
 function turnFeedToGround(nr)
     axis = y_axis
