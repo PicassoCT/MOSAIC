@@ -16,7 +16,9 @@ local percent=0
 local buisness_spin = piece("buisness_spin")
 local wallSpin = piece("wallSpin")
 local RainCenter = piece("RainCenter")
+assert(RainCenter)
 local general_spin = piece("general_spin")
+assert(general_spin)
 local text_spin = piece("text_spin")
 local brothel_spin = piece("brothel_spin")
 local casino_spin = piece("casino_spin")
@@ -26,6 +28,7 @@ local technoAnimations = {}
 Hide(JLantern)
 
 local tldrum = piece "tldrum"
+assert(tldrum)
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -35,6 +38,7 @@ local tlhairdown = piece "tlhairdown"
 local tlarm = piece "tlarm"
 local tlarmr = piece "tlarmr"
 local tllegUp = piece "tllegUp"
+assert(tllegUp)
 local tllegLow = piece "tllegLow"
 local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
