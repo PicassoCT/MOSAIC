@@ -1043,7 +1043,7 @@ function addHologramLetters( myMessage)
         --TextAnimation
         while true do
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
-            Sleep(100)
+            Sleep(10000)
         end
     end 
 end
