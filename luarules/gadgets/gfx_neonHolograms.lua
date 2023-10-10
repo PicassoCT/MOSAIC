@@ -207,6 +207,8 @@ else -- unsynced
             },
 
             uniformFloat = {
+                viewPosX = 0,
+                viewPosY = 0,
                 time = Spring.GetGameFrame()/30.0,
                 vPositionWorld = {0.0,0.0,0.0},
                 uv = {0.0,0.0},                
@@ -234,9 +236,17 @@ else -- unsynced
       
         neonHologramShader:ActivateWith(
             function()   
+                neonHologramShader:SetUniform("viewPosX", vpx)
+                neonHologramShader:SetUniform("viewPosY", vpy)
 
-                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+                neonHologramShader:SetUniformMatrix("modelViewMatrix", "view")
+                neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
+                neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+                neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
 
+
+
+                --
                 neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
                 --variables
                 for i = 1, #neonUnitTables do
@@ -266,7 +276,10 @@ else -- unsynced
                         glPopMatrix()
                     end
                     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                end         
+                end  
+
+           
+
             end
         )
      

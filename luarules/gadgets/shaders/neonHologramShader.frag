@@ -3,6 +3,12 @@
     // Set the precision for data types used in this shader
 
 
+    uniform mat4 modelMatrix;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
+    uniform mat3 normalMatrix;
+
+
     // Default uniforms provided by ShaderFrog.
     uniform float time;
     //declare uniforms
@@ -12,7 +18,9 @@
     uniform sampler2D reflectTex;
     uniform sampler2D screenTex;
     uniform sampler2D depthTex;
-
+    
+    uniform float viewPosX;
+    uniform float viewPosY;
     float radius = 16.0;
 
     // Varyings passed from the vertex shader

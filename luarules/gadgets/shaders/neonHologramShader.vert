@@ -3,10 +3,21 @@
     // Set the precision for data types used in this shader
 
 
+    uniform sampler2D tex1;
+    uniform sampler2D tex2;
+    uniform sampler2D normalTex;
+    uniform sampler2D reflectTex;
+    uniform sampler2D screenTex;
+    uniform sampler2D depthTex;
+    
     uniform mat4 modelMatrix;
     uniform mat4 modelViewMatrix;
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
+
+
+    uniform float viewPosX;
+    uniform float viewPosY;
 
     // Default uniforms provided by ShaderFrog.
     uniform float time;
