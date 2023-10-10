@@ -80,6 +80,12 @@ else -- unsynced
     local glCulling = gl.Culling
     local glBlending = gl.Blending
 
+    local GL_SRC_ALPHA           = GL.SRC_ALPHA
+    local GL_ONE                 = GL.ONE
+    local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA     
+    local GL_BACK  = GL.BACK
+    local GL_FRONT = GL.FRONT
+
     local glPushPopMatrix = gl.PushPopMatrix
     local glPushMatrix = gl.PushMatrix
     local glPopMatrix = gl.PopMatrix
@@ -90,8 +96,6 @@ else -- unsynced
     local glUnitShapeTextures = gl.UnitShapeTextures
     local glCopyToTexture = gl.CopyToTexture
 
-    local GL_BACK  = GL.BACK
-    local GL_FRONT = GL.FRONT
     local neonUnitTables = {}
     local glUnitShapeTextures = gl.UnitShapeTextures
 -------Shader--FirstPass -----------------------------------------------------------
@@ -142,7 +146,7 @@ else -- unsynced
                 table.insert(neonHoloParts[typeDefID], pieceID)
             end
         end
-        Spring.UnitRendering.SetUnitLuaDraw(unitID, true)       
+        --Spring.UnitRendering.SetUnitLuaDraw(unitID, true)       
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -227,18 +231,21 @@ else -- unsynced
         end    
 
         glDepthTest(true)      
-
+      
         neonHologramShader:ActivateWith(
             function()   
+
+                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+
                 neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
                 --variables
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
                     local neonHoloDef = neonUnitTables[i].defID
                     local neonHoloParts = neonHoloParts[neonHoloDef]
-                    --glUnitShapeTextures(neonHoloDef, true)
+                    glUnitShapeTextures(neonHoloDef, true)
                     --glTexture(2, normalMaps[unitDefID])
-
+                    glBlending(GL_SRC_ALPHA, GL_ONE)
                     glCulling(GL_FRONT)
                     for j = 1, #neonHoloParts do
                         local pieceID = neonHoloParts[j]
@@ -258,10 +265,11 @@ else -- unsynced
                             glUnitPiece(unitID, pieceID)
                         glPopMatrix()
                     end
+                    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 end         
             end
         )
-
+     
         glDepthTest(false)
         glCulling(false)
     end
