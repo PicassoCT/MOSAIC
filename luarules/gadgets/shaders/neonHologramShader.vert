@@ -14,7 +14,7 @@
     uniform mat4 modelViewMatrix;
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
-
+    uniform mat4 viewInvMat;
 
     uniform float viewPosX;
     uniform float viewPosY;
@@ -23,9 +23,12 @@
     uniform float time;
 
     // Variables passed from vertex to fragment shader
-    out vec3 vPositionWorld;
-    out vec3 vWorldNormal;
-    out vec2 vTexCoord;
+    out Data {
+        vec3 viewCameraDir;
+        vec3 vPositionWorld;
+        vec3 vWorldNormal;
+        vec2 vTexCoord;
+        };
 
     float scaleTimeFullHalf(){
         return (2.0 +sin(time))/2.0;
@@ -41,13 +44,16 @@
     }
 
     void main() {
-        
-        // To pass variables to the fragment shader, you assign them here in the
-        // main function. Traditionally you name the varying with vAttributeName
-
         vPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
-        vTexCoord.xy= gl_TexCoord[0].st;
-        vWorldNormal = normalMatrix * gl_Normal;
+        vTexCoord.xy=  gl_MultiTexCoord0.xy;
+
+        vWorldNormal = gl_Vertex.xyz* mat3(viewInvMat) * (gl_NormalMatrix * gl_Normal);
+
+        vec4 worldVertPos = viewInvMat * (gl_ModelViewMatrix * gl_Vertex);
+        vec4 worldCamPos = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
+
+        viewCameraDir = worldCamPos.xyz - worldVertPos.xyz;
+
         vec3 posCopy = gl_Vertex.xyz;
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
         gl_Position = projectionMatrix * modelViewMatrix * vec4(posCopy, 1.0);

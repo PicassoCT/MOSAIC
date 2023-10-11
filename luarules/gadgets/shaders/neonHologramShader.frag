@@ -7,7 +7,7 @@
     uniform mat4 modelViewMatrix;
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
-
+    uniform mat4 viewInvMat;
 
     // Default uniforms provided by ShaderFrog.
     uniform float time;
@@ -24,10 +24,13 @@
     float radius = 16.0;
 
     // Varyings passed from the vertex shader
-    in vec3 vPositionWorld;
-    in vec3 vWorldNormal;
-    in vec2 vTexCoord;
-
+    in Data {
+        vec3 viewCameraDir;
+        vec3 vPositionWorld;
+        vec3 vWorldNormal;
+        vec2 vTexCoord;
+        };
+        
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
     {
         return sin((posOffset* posOffsetScale) +time * timeSpeedScale);
