@@ -91,11 +91,12 @@
         return color;
     }    
 	
+	float fBorderFactor= 0.95f;
 	float getBorderGradient(float x){
-		if (x >= 0.0 && x < 0.1){
+		if (x >= 0.0 && x < (1.0-fBorderFactor)){
 			return x*1.0;
 		}
-		if (x > 0.9 && x <= 1.0){
+		if (x > fBorderFactor && x <= 1.0){
 			return (x-1.0)*-1.0;
 		}
 		return 1.0;
@@ -147,15 +148,12 @@
 										+ 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
 										); 
 
-		//gl_FragColor= (vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).xyz , max((1.0 - averageShadow) , gl_FragColor.z * hologramTransparency*getPixelAlphaFactor(gl_FragCoord)))).xyz ;
-		//vec4 sampleBLurColor.xyz = gl_FragColor;
-		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
-		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
-		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-		//gl_FragColor.xyz = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
+		gl_FragColor= (vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).xyz , max((1.0 - averageShadow) , gl_FragColor.z * hologramTransparency*getPixelAlphaFactor(gl_FragCoord)))).xyz ;
+		vec4 sampleBLurColor.xyz = gl_FragColor;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
+		gl_FragColor.xyz = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
 		
-		//TODO Trenchcoats
-		
-		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);  
 	}
