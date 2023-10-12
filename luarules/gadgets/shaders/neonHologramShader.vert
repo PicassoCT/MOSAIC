@@ -24,15 +24,12 @@
 
     // Variables passed from vertex to fragment shader
     out Data {
-        vec3 viewCameraDir;
+        vec3 vViewCameraDir;
         vec3 vPositionWorld;
         vec3 vWorldNormal;
         vec2 vTexCoord;
         };
 
-    float scaleTimeFullHalf(){
-        return (2.0 +sin(time))/2.0;
-    }
 
     float shiver(float posy, float scalar, float size) {
         if (sin(posy + time) < size)
@@ -46,13 +43,12 @@
     void main() {
         vPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
         vTexCoord.xy=  gl_MultiTexCoord0.xy;
-
         vWorldNormal = gl_Vertex.xyz* mat3(viewInvMat) * (gl_NormalMatrix * gl_Normal);
 
         vec4 worldVertPos = viewInvMat * (gl_ModelViewMatrix * gl_Vertex);
         vec4 worldCamPos = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
 
-        viewCameraDir = worldCamPos.xyz - worldVertPos.xyz;
+        vViewCameraDir = worldCamPos.xyz - worldVertPos.xyz;
 
         vec3 posCopy = gl_Vertex.xyz;
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));

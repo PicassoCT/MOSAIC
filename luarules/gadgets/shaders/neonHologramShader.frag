@@ -25,7 +25,7 @@
 
     // Varyings passed from the vertex shader
     in Data {
-        vec3 viewCameraDir;
+        vec3 vViewCameraDir;
         vec3 vPositionWorld;
         vec3 vWorldNormal;
         vec2 vTexCoord;
@@ -90,6 +90,25 @@
 
         return color;
     }    
+	
+	float getBorderGradient(float x){
+		if (x >= 0.0 && x < 0.1){
+			return x*1.0;
+		}
+		if (x > 0.9 && x <= 1.0){
+			return (x-1.0)*-1.0;
+		}
+		return 1.0;
+	}
+	
+	float getPixelAlphaFactor(vec2 coord)
+	{
+		float xScale= getBorderGradient(coord.x);
+		float yScale= getBorderGradient(coord.y);
+		return (xScale+yScale)/2.0;		
+	}
+	
+	
 
     void main() 
 	{	
@@ -128,13 +147,15 @@
 										+ 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
 										); 
 
-		//gl_FragColor= (vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).xyz , max((1.0 - averageShadow) , gl_FragColor.z * hologramTransparency))).xyz ;
+		//gl_FragColor= (vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).xyz , max((1.0 - averageShadow) , gl_FragColor.z * hologramTransparency*getPixelAlphaFactor(gl_FragCoord)))).xyz ;
 		//vec4 sampleBLurColor.xyz = gl_FragColor;
 		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 		//sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 		//gl_FragColor.xyz = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
+		
+		//TODO Trenchcoats
 		
 		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);  
 	}
