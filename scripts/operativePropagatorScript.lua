@@ -184,7 +184,7 @@ function showBody()
 end
 
 shownPieces={}
-
+boolTrenchCoatActive = false
 function script.Create()
 	--Spring.Echo("Operative Propagator spawned")
 	makeWeaponsTable()
@@ -194,6 +194,7 @@ function script.Create()
 	hideAll(unitID)
 	hideT(TablesOfPiecesGroups["SoftRobot"])	
 	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
+	StartThread(trenchCoateAnimation)
 	showBody()
 	setupAnimation()
     Show(FoldtopUnfolded)
@@ -210,6 +211,38 @@ function script.Create()
     StartThread(transportControl)
     StartThread(cloakIfAIPlayer)
     StartThread(testAnimation)
+end
+
+function trenchCoateAnimation()
+	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
+	boolFoundTrenchCoat= false
+	for a=1, #shownPieces do
+		if shownPieces[a] == TablesOfPiecesGroups["HeadDeco"][7] then
+			boolFoundTrenchCoat= true
+		end
+	end
+	if not boolFoundTrenchCoat then return end
+
+	local trenchCoatTable = {}
+	trenchCoatTable[#trenchCoatTable+1] = piece ("HeadDeco7")
+	for i=1,#TablesOfPiecesGroups["SoftRobot"] do
+		trenchCoatTable[#trenchCoatTable + 1] = TablesOfPiecesGroups["SoftRobot"][i]
+	end
+	
+	walkCycleLengthMs= math.ceil((45/30)*1000)
+	stepLength= math.ceil(walkCycleLengthMs/#trenchCoatTable)
+	while true do
+	hideT(trenchCoatTable)
+	Show(trenchCoatTable[math.random(1,2)])
+		while boolWalking do
+			for x= #trenchCoatTable, 1, -1 do
+				hideT(trenchCoatTable)	
+				Show(trenchCoatTable[x])
+				Sleep(stepLength)
+			end			
+		end
+	Sleep(250)
+	end
 end
 
 function testAnimation()

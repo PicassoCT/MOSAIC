@@ -188,7 +188,7 @@ else -- unsynced
 
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
-            fragment =  fragmentShader,--neoFragmenShaderFirstPass,
+            fragment =  neoFragmenShaderFirstPass, --fragmentShader
             textures = {
                     [0] = tex1,
                     [1] = tex2,
@@ -239,6 +239,7 @@ else -- unsynced
                 neonHologramShader:SetUniform("viewPosX", vpx)
                 neonHologramShader:SetUniform("viewPosY", vpy)
 
+                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformMatrix("modelViewMatrix", "view")
                 neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
                 neonHologramShader:SetUniformMatrix("modelMatrix", "model")

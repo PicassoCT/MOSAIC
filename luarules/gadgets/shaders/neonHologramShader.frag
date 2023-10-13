@@ -148,12 +148,12 @@
 										+ 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
 										); 
 
-		gl_FragColor= (vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).xyz , max((1.0 - averageShadow) , gl_FragColor.z * hologramTransparency*getPixelAlphaFactor(gl_FragCoord)))).xyz ;
+		gl_FragColor = vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).rgb , hologramTransparency * getPixelAlphaFactor(gl_FragCoord)));
 		vec4 sampleBLurColor.xyz = gl_FragColor;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-		gl_FragColor.xyz = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
+		gl_FragColor.rgb = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
 		
 	}
