@@ -20,14 +20,11 @@ local axisSign ={
 	[z_axis]=1,
 }
 
-if isInvestigator then
-	Animations = include('animation_operativeinvestigator_female.lua') 
-else
-	Animations = include('animation_operativepropagator_male.lua') 
- 	x_axis = 1
- 	y_axis = 2
- 	z_axis = 3
-end
+
+Animations = include('animation_operativepropagator_male.lua') 
+x_axis = 1
+y_axis = 2
+z_axis = 3
 
 local center = piece('center');
 local Torso = piece('Torso');
