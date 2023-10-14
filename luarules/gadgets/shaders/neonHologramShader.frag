@@ -129,7 +129,6 @@
 		//(0.0, 1.0) -> y-axis blur
 		float hstep = 0.1;
 		float vstep = 1.0;
-
 			
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
 		
@@ -148,12 +147,13 @@
 										+ 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
 										); 
 
-		gl_FragColor = vec4((gl_FragColor.xyz + gl_FragColor* (1.0-averageShadow)).rgb , hologramTransparency * getPixelAlphaFactor(gl_FragCoord)));
-		vec4 sampleBLurColor.xyz = gl_FragColor;
+		vec4 rgbaColCopy = vec4((gl_FragColor.rgb + gl_FragColor* (1.0-averageShadow)).rgb , 
+                                hologramTransparency * getPixelAlphaFactor(gl_FragCoord));
+		vec4 sampleBLurColor.xyz = rgbaColCopy.rgb;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-		gl_FragColor.rgb = addBorderGlowToColor(sampleBLurColor* gl_FragColor, averageShadow).xyz;
+		gl_FragColor.rgb = addBorderGlowToColor(sampleBLurColor* rgbaColCopy, averageShadow).rgb;
 		
 	}

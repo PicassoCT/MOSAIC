@@ -221,7 +221,11 @@ function trenchCoateAnimation()
 	if not boolFoundTrenchCoat then return end
 
 	local trenchCoatTable = {}
+	local idleTrenchCoatTable = {}
 	trenchCoatTable[#trenchCoatTable+1] = piece ("HeadDeco7")
+	idleTrenchCoatTable[#idleTrenchCoatTable+1] = TablesOfPiecesGroups["SoftRobot"][1]
+	idleTrenchCoatTable[#idleTrenchCoatTable+1] = piece ("HeadDeco7")
+	idleTrenchCoatTable[#idleTrenchCoatTable+1] = TablesOfPiecesGroups["SoftRobot"][math.floor(#TablesOfPiecesGroups["SoftRobot"]/2)]
 	for i=1,#TablesOfPiecesGroups["SoftRobot"] do
 		trenchCoatTable[#trenchCoatTable + 1] = TablesOfPiecesGroups["SoftRobot"][i]
 	end
@@ -230,7 +234,7 @@ function trenchCoateAnimation()
 	stepLength= math.ceil(walkCycleLengthMs/#trenchCoatTable)
 	while true do
 	hideT(trenchCoatTable)
-	Show(trenchCoatTable[math.random(1,2)])
+	Show(idleTrenchCoatTable[math.random(1,3)])
 		while boolWalking do
 			for x= #trenchCoatTable, 1, -1 do
 				hideT(trenchCoatTable)	
@@ -238,7 +242,14 @@ function trenchCoateAnimation()
 				Sleep(stepLength)
 			end			
 		end
-	Sleep(250)
+	val= math.random(200,400)
+	Sleep(val)
+	if maRa() then
+		while not boolWalking and maRa() do
+			val= math.random(500,1000)
+			Sleep(val)
+		end
+	end
 	end
 end
 
@@ -465,6 +476,7 @@ local animCmd = {['turn']=Turn,['move']=Move};
 
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
+	echo("PlayAnimation "..animname)
 	local speedFactor = speed or 1.0
 	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
 	assert(animname, "animation name is nil")
@@ -497,6 +509,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t*33* math.abs(1/speedFactor)); -- sleep works on milliseconds
         end
     end
+    echo("End PlayAnimation "..animname)
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -562,9 +575,10 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 end
 
 function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverride)
+	Spring.Echo("setAnimationState :".. AnimationstateUpperOverride.." / "..AnimationstateLowerOverride)
 	-- if we are already animating correctly early out
 	if AnimationstateUpperOverride == UpperAnimationState and AnimationstateLowerOverride == LowerAnimationState then return end
-
+	
 	Signal(SIG_ANIM)
 	SetSignalMask(SIG_ANIM)
 
@@ -612,43 +626,44 @@ function conditionalFilterOutUpperBodyTable()
 end
 
 
-leftArmPosesPropagatorT ={
-{
-	UpArm2 ={math.random(-10,0),math.random(0,30),0},
-	LowArm2 ={math.rad(math.random(-5,5)),math.rad(math.random(5,5)*randSign()),math.rad(math.random(5,5)*randSign())},
-	Hand2 ={0,0, 0},
-},
-{
-	UpArm2 ={math.random(-10,0),math.random(0,30),0},
-	LowArm2 ={math.rad(math.random(-5,5)),math.rad(math.random(5,5)*randSign()),math.rad(math.random(5,5)*randSign())},
-	Hand2 ={0,0, 0},
-},
-{
-	UpArm2 ={math.random(-10,0),math.random(0,30),0},
-	LowArm2 ={math.rad(math.random(-5,5)),math.rad(math.random(5,5)*randSign()),math.rad(math.random(5,5)*randSign())},
-	Hand2 ={0,0, 0},
-},
-
-}
 
 
-function leftArmPoses()
+function leftArmPoses(speed)
 	pose = nil
+	leftArmPosesPropagatorT ={
+	{
+		UpArm2 ={0,math.random(60,80), math.random(-10,35)},
+		LowArm2 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+		Hand2 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+	},
+	{
+		UpArm2 ={math.random(-10,0),math.random(60,80),math.random(-10,35)},
+		LowArm2 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad( math.random(35,55))},
+		Hand2 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+	},
+	{
+		UpArm2 ={math.random(-10,0),math.random(45,80),math.random(-10,35)},
+		LowArm2 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+		Hand2 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+	},
+
+	}
+
 
 	pose= leftArmPosesPropagatorT[math.random(1,#leftArmPosesPropagatorT)]
 
 
-	Turn(UpArm2, x_axis, math.rad(pose.UpArm2[1] ),10)
-	Turn(UpArm2, y_axis, math.rad(pose.UpArm2[2] ),10)
-	Turn(UpArm2, z_axis, math.rad(pose.UpArm2[3] ),10) 
+	Turn(UpArm2, x_axis, math.rad(pose.UpArm2[1] ),speed)
+	Turn(UpArm2, y_axis, math.rad(pose.UpArm2[2] ),speed)
+	Turn(UpArm2, z_axis, math.rad(pose.UpArm2[3] ),speed) 
   
- 	Turn(LowArm2, x_axis, math.rad(pose.LowArm2[1] ),10)
-	Turn(LowArm2, y_axis, math.rad(pose.LowArm2[2] ),10)
-	Turn(LowArm2, z_axis, math.rad(pose.LowArm2[3] ),10)
+ 	Turn(LowArm2, x_axis, math.rad(pose.LowArm2[1] ),speed)
+	Turn(LowArm2, y_axis, math.rad(pose.LowArm2[2] ),speed)
+	Turn(LowArm2, z_axis, math.rad(pose.LowArm2[3] ),speed)
 
-	Turn(Hand2, x_axis, math.rad(pose.Hand2[1] + math.random(-5,5)),10)
-	Turn(Hand2, y_axis, math.rad(pose.Hand2[2] + math.random(-5,5)),10)
-	Turn(Hand2, z_axis, math.rad(pose.Hand2[3] + math.random(-5,5)),10)
+	Turn(Hand2, x_axis, math.rad(pose.Hand2[1] + math.random(-5,5)),speed)
+	Turn(Hand2, y_axis, math.rad(pose.Hand2[2] + math.random(-5,5)),speed)
+	Turn(Hand2, z_axis, math.rad(pose.Hand2[3] + math.random(-5,5)),speed)
 
 	WaitForTurns(UpArm2,LowArm2, Hand2)
 end
@@ -669,19 +684,28 @@ UpperAnimationStateFunctions ={
 								
 								if boolFlying == true then return eAnimState.standing end
 
-								resetT(lowerBodyPieces, 10)										
-								if maRa() then StartThread(leftArmPoses)	 end
-								for i=1,math.random(2,3) do
-									PlayAnimation( uppperBodyAnimations[eAnimState.idle][math.random(1,#uppperBodyAnimations[eAnimState.idle])], lowerBodyPieces, math.random(1,5)/2.5)			
-								end
-								WaitForTurns(UpArm2,UpArm1,LowArm2, LowArm1)
-
-								Sleep(30)	
+								resetT(lowerBodyPieces, 10)									
+							
+								Spring.Echo("Idle Animation0")	
+								StartThread(leftArmPoses, math.pi)
+								while true do 		
+									Spring.Echo("Idle Animation1")	
+									if maRa() then
+										StartThread(leftArmPoses, math.pi)	
+									end
+									Spring.Echo("Idle Animation2")	
+									if maRa() then
+										StartThread(PlayAnimation,	 uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/10))		
+									end
+									Spring.Echo("Idle Animation3")	
+									Sleep(250)
+								end --not boolWalking and not boolAiming and  not boolFlying do	
+								Spring.Echo("Idle Animation4")	
 								return eAnimState.standing
 							end,
 [eAnimState.walking] = 	function () 
+								Spring.Echo(unitID.." walking")
 								if boolFlying == true then return eAnimState.walking end
-								boolDecoupled = true
 								
 								boolDecoupled = false
 				
@@ -725,10 +749,11 @@ LowerAnimationStateFunctions ={
 					end,
 [eAnimState.aiming] = 	function () 
 						AimDelay=AimDelay+100
-						if boolWalking == true  or AimDelay < 1000 then
+						Spring.Echo("AimDelay:"..AimDelay)
+						if boolWalking == true  or AimDelay > 400 then
 							AimDelay=0	
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)	
-						elseif AimDelay > 1000 then		
+						elseif AimDelay <= 400 then		
 
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.standing]),upperBodyPieces)	
 						end
@@ -743,6 +768,7 @@ boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
 
 function animationStateMachineLower(AnimationTable)
+Spring.Echo("Resetting lower AnimationState")
 Signal(SIG_LOW)
 SetSignalMask(SIG_LOW)
 
@@ -775,6 +801,7 @@ boolUpperStateWaitForEnd = false
 boolUpperAnimationEnded = false
 
 function animationStateMachineUpper(AnimationTable)
+Spring.Echo("Resetting upper Animationstate")
 Signal(SIG_UP)
 SetSignalMask(SIG_UP)
 

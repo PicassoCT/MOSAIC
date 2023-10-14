@@ -1,3 +1,4 @@
+deg_180 = math.pi 
 deg_90 = math.pi / 2
 deg_45 = math.pi / 4
 deg_1 = math.pi / 180
@@ -336,10 +337,12 @@ return {
                 {["c"] = "turn", ["p"] = "Head", ["a"] = z_axis, ["t"] = 0.099185, ["s"] = 0.330618},
                 {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = -2.033535, ["s"] = 6.728948},
                 {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0.600600, ["s"] = 2.002000},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0.919197, ["s"] = 3.063989},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = 0.538720, ["s"] = 1.956091},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0.813661, ["s"] = 2.712203},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = 0.566307, ["s"] = 1.887688},
+
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = -deg_90 + 45*deg_1, ["s"] = turnInFrames(deg_90, 10)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 10)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] =  -deg_1*45, ["s"] = turnInFrames(deg_1 * 90, 10)},
+
                 {["c"] = "turn", ["p"] = "LowLeg1", ["a"] = x_axis, ["t"] = 0.353032, ["s"] = 1.176775},
                 {["c"] = "turn", ["p"] = "LowLeg1", ["a"] = y_axis, ["t"] = -0.012349, ["s"] = 0.041164},
                 {["c"] = "turn", ["p"] = "LowLeg1", ["a"] = z_axis, ["t"] = 0.014587, ["s"] = 0.048625},
@@ -349,12 +352,16 @@ return {
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = x_axis, ["t"] = 0.074331, ["s"] = 0.247769},
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = y_axis, ["t"] = 0.024029, ["s"] = 0.080096},
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = -0.312098, ["s"] = 0.616572},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] = 0.711152, ["s"] = 2.412574},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = -0.165007, ["s"] = 0.550023},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = -1.505929, ["s"] = 4.983986},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = 0.550961, ["s"] = 1.836536},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] = -0.509318, ["s"] = 1.697728},
+                
+                 {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0, ["s"] = turnInFrames(deg_90, 10)},
+              
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = -deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 10)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] =  deg_90, ["s"] = turnInFrames(deg_90, 10)},
+  
+               
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = x_axis, ["t"] = -0.236313, ["s"] = 0.787709},
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = y_axis, ["t"] = 0.050453, ["s"] = 0.168177},
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = z_axis, ["t"] = -0.012144, ["s"] = 0.040480},
@@ -367,19 +374,21 @@ return {
         {
             ["time"] = 1,
             ["commands"] = {
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = deg_90, ["s"] = turnInFrames(deg_90, 7)},
+                --leg back
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
                 {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = 0, ["s"] = 0},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = deg_90, ["s"] = turnInFrames(deg_90, 7)},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] = 0, ["s"] = 0},
-                
-				-- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = -0.406704, ["s"] = 1.367092},
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0.153870, ["s"] = 0.230979},
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = -0.017747, ["s"] = 0.565807},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = -0.443590, ["s"] = 0.047497},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = -0.255137, ["s"] = 0.037705},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] = -0.928573, ["s"] = 0.816568},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = -deg_90 + 45*deg_1, ["s"] = turnInFrames(deg_90, 25)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 26)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] =  -deg_1*45, ["s"] = turnInFrames(deg_1 * 90, 25)},
+          
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = deg_180 -deg_90, ["s"] = turnInFrames(deg_90, 26)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = -deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 26)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] =  -deg_1 * 90, ["s"] = turnInFrames(deg_1 * 90, 26)},
+
                 {["c"] = "turn", ["p"] = "Head", ["a"] = x_axis, ["t"] = 0.035718, ["s"] = 0.259406},
                 {["c"] = "turn", ["p"] = "Head", ["a"] = y_axis, ["t"] = -0.000000, ["s"] = 0.000000},
                 {["c"] = "turn", ["p"] = "Head", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000},
@@ -394,12 +403,8 @@ return {
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = x_axis, ["t"] = 0.417320, ["s"] = 0.965469},
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = y_axis, ["t"] = -0.000000, ["s"] = 0.000000},
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = -1.201905, ["s"] = 1.320127},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0.093030, ["s"] = 0.471551},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0.234130, ["s"] = 0.521126},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] = 0.382364, ["s"] = 1.696787},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = 0.416138, ["s"] = 0.208180},
+               
+
                 {["c"] = "move", ["p"] = "UpLeg1", ["a"] = y_axis, ["t"] = 12.656071, ["s"] = 0.536826},
                 {["c"] = "move", ["p"] = "UpLeg1", ["a"] = z_axis, ["t"] = -17.869265, ["s"] = 0.004766},
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = x_axis, ["t"] = -0.772826, ["s"] = 0.905053},
@@ -438,13 +443,7 @@ return {
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000},
                 {["c"] = "turn", ["p"] = "LowLeg2", ["a"] = x_axis, ["t"] = 1.209847, ["s"] = 0.849635},
                 {["c"] = "turn", ["p"] = "LowLeg2", ["a"] = y_axis, ["t"] = -0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "LowLeg2", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000},
-                -- {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = -0.462902, ["s"] = 0.791789},
-                -- {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = -0.329427, ["s"] = 0.452632},
-                -- {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0.687382, ["s"] = 0.485628},
-                -- {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] = 0.372478, ["s"] = 0.148287},
-                -- {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                -- {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = 0.487169, ["s"] = 1.065467},
+                {["c"] = "turn", ["p"] = "LowLeg2", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000},              
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = x_axis, ["t"] = 0.282113, ["s"] = 1.270517},
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = y_axis, ["t"] = -0.000000, ["s"] = 0.000000},
                 {["c"] = "turn", ["p"] = "UpLeg1", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000}
@@ -453,20 +452,12 @@ return {
         {
             ["time"] = 11,
             ["commands"] = {
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = -1.815468, ["s"] = 3.018780},
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = -0.803064, ["s"] = 2.050573},
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = 0.293865, ["s"] = 0.667739},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = 0.808971, ["s"] = 2.505123},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = 0.636933, ["s"] = 1.784140},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] = -0.065480, ["s"] = 1.726186}
+            
             }
         },
         {
             ["time"] = 12,
             ["commands"] = {
-                -- {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] = -0.494213, ["s"] = 1.000028},
-                -- {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                -- {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = 0.277866, ["s"] = 0.241503},
                 {["c"] = "turn", ["p"] = "backpack", ["a"] = x_axis, ["t"] = 0.177517, ["s"] = 0.044401},
                 {["c"] = "turn", ["p"] = "backpack", ["a"] = y_axis, ["t"] = -0.000000, ["s"] = 0.000000},
                 {["c"] = "turn", ["p"] = "backpack", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000}
@@ -499,9 +490,6 @@ return {
         {
             ["time"] = 25,
             ["commands"] = {
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = -1.247377, ["s"] = 1.420227},
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = -0.261631, ["s"] = 1.353582},
-                -- {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = -0.017848, ["s"] = 0.779282},
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = x_axis, ["t"] = -0.663260, ["s"] = 1.387405},
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
                 {["c"] = "turn", ["p"] = "UpLeg2", ["a"] = z_axis, ["t"] = -0.000000, ["s"] = 0.000000},
@@ -516,9 +504,22 @@ return {
         {
             ["time"] = 26,
             ["commands"] = {
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = -0.459422, ["s"] = 2.002727},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = -0.267705, ["s"] = 1.428377},
-                -- {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] = -0.656383, ["s"] = 0.933006}
+                --leg front
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = -deg_1*70, ["s"] = turnInFrames(deg_1*70, 20)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 20)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] =  deg_1*70, ["s"] = turnInFrames(deg_1 * 70, 20)},
+
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = deg_90 +45*deg_1, ["s"] = turnInFrames(deg_90, 20)},
+              
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = -deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 20)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] =  deg_1*45, ["s"] = turnInFrames(deg_1 * 90, 20)},
+  
             }
         },
         {
@@ -879,20 +880,23 @@ return {
             ["time"] = 1,
             ["commands"] = {
                 {["c"] = "turn", ["p"] = "Head", ["a"] = z_axis, ["t"] = deg_1*16, ["s"] = 0.330618},
-                 {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = -deg_45 -1.201905, ["s"] = 1.320127},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0.093030, ["s"] = 0.471551},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0.234130, ["s"] = 0.521126},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =  0.382364, ["s"] = 1.696787},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = (30.0*deg_1) +0.416138, ["s"] = 0.208180},
-               
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = deg_90*2+ deg_45*1.75,["s"] = 4.983986},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = -deg_90 , ["s"] = 1.836536},
-                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] = deg_90*2, ["s"] = 1.697728},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = 0.538720, ["s"] = 1.956091},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0.813661, ["s"] = 2.712203},
-                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = 0.566307, ["s"] = 1.887688},
 
+               
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0, ["s"] = turnInFrames(deg_90, 10)},
+              
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = -deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 10)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] =  deg_90, ["s"] = turnInFrames(deg_90, 10)},
+  
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = -deg_90 + 45*deg_1, ["s"] = turnInFrames(deg_90, 25)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] = deg_1*45, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = deg_1 * 60, ["s"] = turnInFrames(deg_1 * 80, 26)},
+
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] =  -deg_1*60, ["s"] = turnInFrames(deg_1 * 90, 25)},
                 
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = deg_1*-16, ["s"] = 0.616572},
  
@@ -910,13 +914,12 @@ return {
             ["time"] = 1,
             ["commands"] = {
                 {["c"] = "turn", ["p"] = "Head", ["a"] = z_axis, ["t"] = 0, ["s"] = 0.330618},
-                 {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = -deg_45 -1.201905, ["s"] = 1.320127},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0.093030, ["s"] = 0.471551},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0.234130, ["s"] = 0.521126},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =  0.382364, ["s"] = 1.696787},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = (30.0*deg_1) +0.416138, ["s"] = 0.208180},
-               
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 1.320127},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = 1.471551},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0, ["s"] = 1.521126},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =  0.382364, ["s"] = 3.696787},     
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = (30.0*deg_1) +0.416138, ["s"] = 3.208180},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 2.000000},
                 
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = 0, ["s"] = 0.616572},
  
@@ -928,12 +931,7 @@ return {
             ["time"] = 33,
             ["commands"] = {
                 {["c"] = "turn", ["p"] = "Head", ["a"] = z_axis, ["t"] = -10, ["s"] = 0.330618},
-                 {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = -deg_90 -1.201905, ["s"] = 2.320127},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0.093030, ["s"] = 0.471551},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0.234130, ["s"] = 0.521126},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =  deg_1*-20 + 0.382364, ["s"] = 1.696787},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 0.000000},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = (100.0*deg_1) +0.416138, ["s"] = 2.208180},
+
                
                 
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = 0, ["s"] = 0.616572},
@@ -945,22 +943,27 @@ return {
         {
             ["time"] = 66,
             ["commands"] = {
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = turnInFrames(0, 60)},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = turnInFrames(0, 60)},
+                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = deg_90 +45*deg_1, ["s"] = turnInFrames(deg_90, 60)},
+              
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =0, ["s"] = turnInFrames(0, 60)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = -deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 60)},
+                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] =  deg_1*45, ["s"] = turnInFrames(deg_1 * 90, 60)},
      
-           {["c"] = "turn", ["p"] = "UpArm1", ["a"] = y_axis, ["t"] = 0.000000, ["s"] = 3.000000},
+         
             }
         },
         {
             ["time"] = 80,
             ["commands"] = {
                 {["c"] = "turn", ["p"] = "Head", ["a"] = z_axis, ["t"] = 0, ["s"] = 0.330618},
-               
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = x_axis, ["t"] = 0, ["s"] = 1.320127},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = y_axis, ["t"] = 0, ["s"] = 1.471551},
-                {["c"] = "turn", ["p"] = "LowArm1", ["a"] = z_axis, ["t"] = 0, ["s"] = 1.521126},
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = x_axis, ["t"] =  0.382364, ["s"] = 3.696787},
-     
-                {["c"] = "turn", ["p"] = "UpArm1", ["a"] = z_axis, ["t"] = (30.0*deg_1) +0.416138, ["s"] = 3.208180},
-               
+                 {["c"] = "turn", ["p"] = "LowArm2", ["a"] = x_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = y_axis, ["t"] = 0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "LowArm2", ["a"] = z_axis, ["t"] = 0, ["s"] = turnInFrames(deg_90, 25)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = x_axis, ["t"] =0, ["s"] = 0},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = y_axis, ["t"] = deg_1 * 80, ["s"] = turnInFrames(deg_1 * 80, 26)},
+                {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] =  -deg_1*25, ["s"] = turnInFrames(deg_1 * 90, 25)},
                 
                 {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = 0, ["s"] = 0.616572},
 

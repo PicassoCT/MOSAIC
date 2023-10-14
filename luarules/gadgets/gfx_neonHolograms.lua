@@ -72,8 +72,8 @@ else -- unsynced
     local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
-    local screencopy
-    local depthtex
+    local screenTex
+    local depthTex
 
     local glGetSun = gl.GetSun
     local glDepthTest = gl.DepthTest
@@ -112,14 +112,14 @@ else -- unsynced
 --Execution of the shader
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
-        depthtex = gl.CreateTexture(vsx,vsy, {
+        depthTex = gl.CreateTexture(vsx,vsy, {
             border = false,
             format = GL_DEPTH_COMPONENT24,
             min_filter = GL.NEAREST,
             mag_filter = GL.NEAREST,
         })
 
-        screencopy= gl.CreateTexture(vsx,vsy, {
+        screenTex= gl.CreateTexture(vsx,vsy, {
             target = target,
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
@@ -152,14 +152,14 @@ else -- unsynced
 
     local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
-        depthtex = gl.CreateTexture(vsx,vsy, {
+        depthTex = gl.CreateTexture(vsx,vsy, {
             border = false,
             format = GL_DEPTH_COMPONENT24,
             min_filter = GL.NEAREST,
             mag_filter = GL.NEAREST,
         })
 
-        screencopy= gl.CreateTexture(vsx,vsy, {
+        screenTex= gl.CreateTexture(vsx,vsy, {
             target = target,
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
