@@ -40,7 +40,8 @@
         return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
     }
 
-    void main() {
+    void main() 
+    {
         vPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
         vTexCoord.xy=  gl_MultiTexCoord0.xy;
         vWorldNormal = gl_Vertex.xyz* mat3(viewInvMat) * (gl_NormalMatrix * gl_Normal);

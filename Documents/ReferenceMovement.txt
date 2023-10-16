@@ -1,3 +1,0 @@
-right arm, male, -90 to 90, x_axis, front to back rotation
-left arm, female, y_axis 90 to -90, low to up rotation
-right arm, female, z_axis, low to up , 0 to -180
