@@ -107,8 +107,6 @@
 		float yScale= getBorderGradient(coord.y);
 		return (xScale+yScale)/2.0;		
 	}
-	
-	
 
     void main() 
 	{	
