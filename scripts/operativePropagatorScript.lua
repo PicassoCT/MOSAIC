@@ -680,31 +680,26 @@ UpperAnimationStateFunctions ={
                         return eAnimState.standing
                     end
                 end,
-[eAnimState.standing] = 	function () 
-								
+[eAnimState.standing] = 	function () 								
 								if boolFlying == true then return eAnimState.standing end
-
-								resetT(lowerBodyPieces, 10)									
-							
-								Spring.Echo("Idle Animation0")	
+								resetT(lowerBodyPieces, 10)							
 								StartThread(leftArmPoses, math.pi)
 								while true do 		
-									Spring.Echo("Idle Animation1")	
+	
 									if maRa() then
 										StartThread(leftArmPoses, math.pi)	
 									end
-									Spring.Echo("Idle Animation2")	
+
 									if maRa() then
-										StartThread(PlayAnimation,	 uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/10))		
+										StartThread(PlayAnimation,	 uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
 									end
-									Spring.Echo("Idle Animation3")	
+
 									Sleep(250)
 								end --not boolWalking and not boolAiming and  not boolFlying do	
-								Spring.Echo("Idle Animation4")	
+	
 								return eAnimState.standing
 							end,
 [eAnimState.walking] = 	function () 
-								Spring.Echo(unitID.." walking")
 								if boolFlying == true then return eAnimState.walking end
 								
 								boolDecoupled = false

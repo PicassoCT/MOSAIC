@@ -22,5 +22,10 @@ return {
  "Bruno auzet",
  "harouli",
  "ramston",
- "Pix"
+ "Pix",
+ "Upright",
+ "soundflakes",
+ "StafBeats",
+ "harlemdaw",
+ "Cyclez"
 }
