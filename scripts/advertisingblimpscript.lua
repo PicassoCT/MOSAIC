@@ -12,7 +12,7 @@ GameConfig = getGameConfig()
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
-
+local maxSoundFiles = 47
 HoloCenter = piece("HoloCenter")
 
 function showOne(T, bNotDelayd)
@@ -74,7 +74,7 @@ function advertisingLoop()
     StartThread(attachHologram)
 
     while true do
-        soundFile = "sounds/advertising/advertisement"..math.random(1,23)..".ogg"
+        soundFile = "sounds/advertising/advertisement"..math.random(1,maxSoundFiles)..".ogg"
         loudness= 1.0
         hours, minutes, seconds, percent = getDayTime()
         if maRa() == maRa() and advertiseTimeOfDay(hours) then

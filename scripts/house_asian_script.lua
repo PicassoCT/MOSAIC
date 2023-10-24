@@ -1502,9 +1502,9 @@ function showOneOrAllOfTablePieceGroup(name)
 end
 
 function getRotationFromPiece(pieceID)
-    px,py,pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
+    tx,ty,tz = Spring.GetUnitPiecePosDir(unitID, pieceID)
     ox,oy,oz = Spring.GetUnitPosition(unitID)
-    tx, tz =  px-ox, pz-oz
+    tx, tz =  tx-ox, tz-oz
   
     norm = math.max(math.abs(tx),math.abs(tz))
     tx,tz = tx/norm, (tz/norm)
@@ -1765,7 +1765,7 @@ function buildAnimation()
     while boolDoneShowing == false do Sleep(100) end
     showT(ToShowTable)
 	    
-	if randChance(25) then
+	if randChance(25) and isNearCityCenter(px,pz, GameConfig) then
        Sleep(500)
        showHoloWall()
     end
@@ -1780,10 +1780,10 @@ function addGroundPlaceables(materialName)
 
 				randPlaceAbleID = getSafeRandom(placeAbles)			
 				if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
-					px= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-					pz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-					WMove(randPlaceAbleID,3, pz, 0)
-					WMove(randPlaceAbleID,1, px, 0)
+					opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+					opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+					WMove(randPlaceAbleID,3, opz, 0)
+					WMove(randPlaceAbleID,1, opx, 0)
                     Sleep(1)
 					placePieceOnGround(unitID, randPlaceAbleID, 0)
 					addToShowTable(randPlaceAbleID)
