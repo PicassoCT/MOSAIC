@@ -53,7 +53,5 @@
 
         vec3 posCopy = gl_Vertex.xyz;
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
-        gl_Vertex = gl_ModelViewProjectionMatrix  * gl_ModelViewMatrix * vec4(posCopy, 1.0);
-    	gl_Vertex.xz = gl_Vertex.xz* ((8.0 - sin(gl_Position.y + time * (1.0 +abs(cos(time)))))/8.0);
-		gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    	gl_Position = (posCopy * gl_ModelViewProjectionMatrix).xyz  ;
 	}
