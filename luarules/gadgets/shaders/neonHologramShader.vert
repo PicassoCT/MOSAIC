@@ -42,16 +42,21 @@
 
     void main() 
     {
+		//TODO Loads of dead code, no idea how this worked? 
+		//Calculate the world position of the vertex
         vPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
-        vTexCoord.xy=  gl_MultiTexCoord0.xy;
+		//Texture coordinates are passed on to the fragment?
+		vTexCoord.xy=  gl_MultiTexCoord0.xy;
+		//Calculate the worldNormal used to calculate a average model self-normal-shadow?
         vWorldNormal = gl_Vertex.xyz* mat3(viewInvMat) * (gl_NormalMatrix * gl_Normal);
-
+		//Calculate the world Vertex Position ? Operation Order wrong?
         vec4 worldVertPos = viewInvMat * (gl_ModelViewMatrix * gl_Vertex);
-        vec4 worldCamPos = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
+        //Crap, just crap
+		vec4 worldCamPos = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
 
         vViewCameraDir = worldCamPos.xyz - worldVertPos.xyz;
 
         vec3 posCopy = gl_Vertex.xyz;
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
-    	gl_Position = (posCopy * gl_ModelViewProjectionMatrix).xyz  ;
+    	gl_Position = (vec4(posCopy, 1.0) * gl_ModelViewProjectionMatrix).xyz  ;
 	}
