@@ -19,12 +19,14 @@
     uniform sampler2D screenTex;
     uniform sampler2D depthTex;
     
-    uniform float viewPosX;
-    uniform float viewPosY;
+ 
     float radius = 16.0;
+
 
     // Varyings passed from the vertex shader
     in Data {
+        float viewPosX;
+        float viewPosY;
         vec3 vViewCameraDir;
         vec3 vPositionWorld;
         vec3 vWorldNormal;

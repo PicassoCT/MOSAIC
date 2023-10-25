@@ -916,6 +916,7 @@ function getGameConfig()
                     "ground_turret_cm_airstrike",
                     "ground_turret_cm_transport",
                     "ground_turret_cm_antiarmor",
+                    "ground_turret_cm_airtransport",
                     "air_copter_ssied",
                     "air_plane_sniper",
                     "air_plane_rocket",
@@ -1841,6 +1842,7 @@ function getGameConfig()
                     "cm_airstrike",
                     "cm_transport",
                     "cm_antiarmor",
+                    "cm_airtransport",
                     }
                 return getWeaponTypeTable(WeaponDefs, TypeTable)
             end 
@@ -1850,6 +1852,7 @@ function getGameConfig()
                     "cm_airstrike",
                     "cm_transport",
                     "cm_antiarmor",
+                    "cm_airtransport",
                 }
                 return getWeaponTypeTable(WeaponDefs, TypeTable)
             end

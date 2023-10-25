@@ -12,7 +12,7 @@ GameConfig = getGameConfig()
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
-local maxSoundFiles = 47
+local maxSoundFiles = 55
 HoloCenter = piece("HoloCenter")
 
 function showOne(T, bNotDelayd)

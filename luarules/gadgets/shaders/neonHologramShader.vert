@@ -16,14 +16,13 @@
     uniform mat3 normalMatrix;
     uniform mat4 viewInvMat;
 
-    uniform float viewPosX;
-    uniform float viewPosY;
 
-    // Default uniforms provided by ShaderFrog.
-    uniform float time;
 
     // Variables passed from vertex to fragment shader
     out Data {
+        float time;
+        float viewPosX;
+        float viewPosY;
         vec3 vViewCameraDir;
         vec3 vPositionWorld;
         vec3 vWorldNormal;
@@ -58,5 +57,5 @@
 
         vec3 posCopy = gl_Vertex.xyz;
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
-    	gl_Position = (vec4(posCopy, 1.0) * gl_ModelViewProjectionMatrix).xyz  ;
+    	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0)  ;
 	}

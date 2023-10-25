@@ -476,7 +476,7 @@ local animCmd = {['turn']=Turn,['move']=Move};
 
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
-	echo("PlayAnimation "..animname)
+	--echo("PlayAnimation "..animname)
 	local speedFactor = speed or 1.0
 	if not piecesToFilterOutTable then piecesToFilterOutTable ={} end
 	assert(animname, "animation name is nil")
@@ -509,7 +509,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t*33* math.abs(1/speedFactor)); -- sleep works on milliseconds
         end
     end
-    echo("End PlayAnimation "..animname)
+   -- echo("End PlayAnimation "..animname)
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -575,7 +575,7 @@ function deferedOverrideAnimationState( AnimationstateUpperOverride, Animationst
 end
 
 function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverride)
-	Spring.Echo("setAnimationState :".. AnimationstateUpperOverride.." / "..AnimationstateLowerOverride)
+	--Spring.Echo("setAnimationState :".. AnimationstateUpperOverride.." / "..AnimationstateLowerOverride)
 	-- if we are already animating correctly early out
 	if AnimationstateUpperOverride == UpperAnimationState and AnimationstateLowerOverride == LowerAnimationState then return end
 	
@@ -744,7 +744,7 @@ LowerAnimationStateFunctions ={
 					end,
 [eAnimState.aiming] = 	function () 
 						AimDelay=AimDelay+100
-						Spring.Echo("AimDelay:"..AimDelay)
+						--Spring.Echo("AimDelay:"..AimDelay)
 						if boolWalking == true  or AimDelay > 400 then
 							AimDelay=0	
 							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)	
@@ -763,7 +763,7 @@ boolLowerStateWaitForEnd = false
 boolLowerAnimationEnded = false
 
 function animationStateMachineLower(AnimationTable)
-Spring.Echo("Resetting lower AnimationState")
+--Spring.Echo("Resetting lower AnimationState")
 Signal(SIG_LOW)
 SetSignalMask(SIG_LOW)
 
@@ -796,7 +796,7 @@ boolUpperStateWaitForEnd = false
 boolUpperAnimationEnded = false
 
 function animationStateMachineUpper(AnimationTable)
-Spring.Echo("Resetting upper Animationstate")
+--Spring.Echo("Resetting upper Animationstate")
 Signal(SIG_UP)
 SetSignalMask(SIG_UP)
 

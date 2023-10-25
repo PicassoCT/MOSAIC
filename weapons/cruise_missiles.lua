@@ -58,6 +58,12 @@ Missile.name = "cruisemissile antiarmour"
 CruiseMissiles["cm_antiarmor"] = Missile
 
 local Missile = weaponDef
+Missile.model = "cm_walker_proj.s3o"
+Missile.name = "cruisemissile plane drone"
+Missile.name = "transports a plane drone"
+CruiseMissiles["cm_airtransport"] = Missile
+
+local Missile = weaponDef
 Missile.model = "cm_turret_ssied_proj.s3o"
 Missile.name = "cruisemissile transport"
 Missile.name = "transports all transportable units"
