@@ -27,5 +27,6 @@ return {
  "soundflakes",
  "StafBeats",
  "harlemdaw",
- "Cyclez"
+ "Cyclez",
+ "sakebeats"
 }
