@@ -16,8 +16,7 @@ local Assembly = Building:New{
 	YardMap 			="yyyy yyyy yyyy yyyy ",
 	MetalStorage 		= 2500,
 	buildingMask 		= 8,
-	footprintX 			= 4,
-	footprintZ 			= 4,
+	
 	maxSlope 			= 50.0,
 	levelGround 		= false,
 	blocking 			= false,
@@ -58,16 +57,16 @@ local Assembly = Building:New{
 	--chassis
 	--air
 		 --copter  --jet -- bomber --long range rocket
-		"air_copter_scoutlett", "ground_truck_assembly", "ground_turret_cm_transport",
-		"air_copter_mg","air_copter_antiarmor", "air_copter_ssied",			 
+		"air_copter_scoutlett", 		"ground_truck_assembly", 	"ground_turret_cm_transport",
+		"air_copter_mg",				"air_copter_antiarmor", 	"air_copter_ssied",			 
 	--ground
 		--turrets
-		"ground_turret_mg",	"ground_turret_antiarmor","ground_turret_ssied",			
-		"ground_turret_dronegrenade" , "ground_turret_rocket", "ground_turret_sniper",
+		"ground_turret_mg",				"ground_turret_antiarmor",	"ground_turret_ssied",			
+		"ground_turret_dronegrenade" , 	"ground_turret_rocket", 	"ground_turret_sniper",
 		--walkers
-		"ground_walker_mg","ground_walker_grenade", "ground_tank_day",
+		"ground_walker_mg",				"ground_walker_grenade", 	"ground_tank_day",
 		--vehicles
-		"ground_truck_mg", "ground_truck_antiarmor", "ground_truck_rocket", 
+		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket", 
 	--weapon
 	},
 	

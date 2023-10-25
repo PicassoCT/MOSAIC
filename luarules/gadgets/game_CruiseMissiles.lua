@@ -21,12 +21,14 @@ VFS.Include("scripts/lib_mosaic.lua")
 local GameConfig = getGameConfig()
 local cruiseMissileWeapons = {}
 local CruiseMissileTransportWDefID = WeaponDefNames["cm_transport"].id
+local CruiseMissileAirTransportWDefID = WeaponDefNames["cm_airtransport"].id
 local CruiseMissileAirstrikeWDefID = WeaponDefNames["cm_airstrike"].id
 local CruiseMissileAntiArmorWDefID = WeaponDefNames["cm_antiarmor"].id
 
  cruiseMissileWeapons[CruiseMissileTransportWDefID] = true
  cruiseMissileWeapons[CruiseMissileAirstrikeWDefID] = true
  cruiseMissileWeapons[CruiseMissileAntiArmorWDefID] = true
+ cruiseMissileWeapons[CruiseMissileAirTransportWDefID] = true
  
 
 local TruckTypeTable = getTruckTypeTable(UnitDefs)
@@ -75,6 +77,13 @@ onImpact = {
 }
 
 onLastPointBeforeImpactSetTargetTo = {
+	[CruiseMissileAirTransportWDefID] = function(projID, redirectList) 
+		projectileParent = Spring.GetProjectileOwnerID (projID)
+		px, py, pz = Spring.GetProjectilePosition(projID)
+		id= Spring.CreateUnit("air_plane_rocket",px,py,pz, 0, Spring.GetUnitTeam(projectileParent))
+		Spring.SetUnitMoveGoal(id, px + 5, py + 50, pz +5)
+		delayedKillProjectile(projID, 100)    
+	end,
     [CruiseMissileAirstrikeWDefID] = function(projID, redirectList) 
         Spring.SetProjectileTarget(projID, redirectList.orgX, Spring.GetGroundHeight(redirectList.orgX, redirectList.orgZ) , redirectList.orgZ)
     end,
