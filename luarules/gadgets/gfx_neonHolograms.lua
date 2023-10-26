@@ -238,12 +238,13 @@ else -- unsynced
             function()   
                 neonHologramShader:SetUniform("viewPosX", vpx)
                 neonHologramShader:SetUniform("viewPosY", vpy)
-
-                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                neonHologramShader:SetUniformMatrix("modelViewMatrix", "view")
                 neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
-                neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+                neonHologramShader:SetUniformMatrix("viewMat", "view")
                 neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
+				
+                --neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+
 
 
 
