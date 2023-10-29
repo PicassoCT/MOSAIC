@@ -10,6 +10,12 @@
     uniform sampler2D screenTex;
     uniform sampler2D depthTex;
     
+    uniform float time;
+    uniform float viewPosX;
+    uniform float viewPosY;
+
+
+
     uniform mat4 modelMatrix;
     uniform mat4 viewMat;
     uniform mat4 projectionMatrix;
@@ -18,15 +24,14 @@
 
 
 
+
     // Variables passed from vertex to fragment shader
     out Data {
-        float time;
-        float viewPosX;
-        float viewPosY;
-        vec3 vViewCameraDir;
-        vec3 vPositionWorld;
-        vec3 vWorldNormal;
-        vec2 vTexCoord;
+            vec3 vViewCameraDir;
+            vec3 vWorldNormal;
+            vec2 vTexCoord;
+            vec3 vPixelPositionWorld;
+            vec4 vCamPositionWorld;
         };
 
 
@@ -43,7 +48,7 @@
     {
 		//TODO Loads of dead code, no idea how this worked? 
 		//Calculate the world position of the vertex
-        vPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
+        vPixelPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
 		//Texture coordinates are passed on to the fragment?
 		vTexCoord.xy=  gl_MultiTexCoord0.xy;
 		//Calculate the worldNormal used to calculate a average model self-normal-shadow?
@@ -51,9 +56,9 @@
 		//Calculate the world Vertex Position ? Operation Order wrong?
         vec4 worldVertPos = viewInvMat * (gl_ModelViewMatrix * gl_Vertex);
         //Crap, just crap
-		vec4 worldCamPos = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
+		vCamPositionWorld = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
 
-        vViewCameraDir = worldCamPos.xyz - worldVertPos.xyz;
+        vViewCameraDir = vCamPositionWorld.xyz - worldVertPos.xyz;
 
         vec3 posCopy = gl_Vertex.xyz;
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));

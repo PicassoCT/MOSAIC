@@ -209,9 +209,7 @@ else -- unsynced
             uniformFloat = {
                 viewPosX = 0,
                 viewPosY = 0,
-                time = Spring.GetGameFrame()/30.0,
-                vPositionWorld = {0.0,0.0,0.0},
-                uv = {0.0,0.0},                
+                time = Spring.GetGameFrame()/30.0,                     
             },
         }, "Neon Hologram Shader")
 

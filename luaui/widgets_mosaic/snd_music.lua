@@ -291,7 +291,7 @@ function widget:Update(dt)
 			if (totalKilled >= warThreshold) then
 				musicType = 'war'
 			elseif (totalKilled <= peaceThreshold) then
-				if isNight()
+				if isNight() then
 					musicType = 'peace_night'
 				else
 					musicType = 'peace_day'
