@@ -13,7 +13,7 @@
     uniform float time;
     uniform float viewPosX;
     uniform float viewPosY;
-
+    uniform vec3 unitCenterPosition;
 
 
     uniform mat4 modelMatrix;
@@ -30,6 +30,7 @@
             vec3 vViewCameraDir;
             vec3 vWorldNormal;
             vec2 vTexCoord;
+            vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
             vec4 vCamPositionWorld;
         };
@@ -44,11 +45,29 @@
         return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
     }
 
+void CreateSphericalUVs(vec3 worldPosition)
+{
+    vec3 vertex =  unitCenterPosition-worldPosition;
+    // Step 1: Normalize the vector
+    vec3 normalizedVector = normalize(vertex);
+
+    // Step 2: Convert to spherical coordinates (longitude and latitude)
+    float longitude = atan(normalizedVector.y, normalizedVector.x);
+    float latitude = acos(normalizedVector.z);
+
+    // Step 3: Map spherical coordinates to UV coordinates
+
+    vSphericalUVs.x = (longitude + PI) / (2.0 * PI);
+    vSphericalUVs.y = latitude / PI;
+}
+
+
     void main() 
     {
 		//TODO Loads of dead code, no idea how this worked? 
 		//Calculate the world position of the vertex
         vPixelPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
+        CreateSphericalUVs(vPixelPositionWorld);
 		//Texture coordinates are passed on to the fragment?
 		vTexCoord.xy=  gl_MultiTexCoord0.xy;
 		//Calculate the worldNormal used to calculate a average model self-normal-shadow?
