@@ -70,7 +70,7 @@ local looping = false
 local paused = false
 local lastTrackTime = -1
 
-local warTracks, peaceTracks, briefingTracks, victoryTracks, defeatTracks
+local warTracks, peaceDayTracks, peaceNightTracks, briefingTracks, victoryTracks, defeatTracks
 
 local firstTime = false
 local wasPaused = false
@@ -98,6 +98,24 @@ local function GetMusicType()
 	return musicType
 end
 
+
+local function getDayTime()
+    local DAYLENGTH =28800
+    local morningOffset = (DAYLENGTH / 2)
+    local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+    local percent = Frame / DAYLENGTH
+    local hours = math.floor((Frame / DAYLENGTH) * 24)
+    local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+    local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+    return hours, minutes, seconds, percent --= getDayTime()
+end
+
+local function isNight()
+   	local hours, minutes, seconds, percent = getDayTime()			
+	return hours > 19 and hours < 6
+end
+
+
 local function StartLoopingTrack(trackInit, trackLoop)
 	if not (VFS.FileExists(trackInit) and VFS.FileExists(trackLoop)) then
 		Spring.Log(widget:GetInfo().name, LOG.ERROR, "Missing one or both tracks for looping")
@@ -115,8 +133,8 @@ end
 
 
 local function StartTrack(track)
-	if not peaceTracks then
-		Spring.Echo("Missing peaceTracks file, no music started")
+	if not peaceDayTracks then
+		Spring.Echo("Missing peaceDayTracks file, no music started")
 		return
 	end
 
@@ -126,8 +144,8 @@ local function StartTrack(track)
 	
 	local newTrack = previousTrack
 	if musicType == 'custom' then
-		previousTrackType = "peace"
-		musicType = "peace"
+		previousTrackType = "peace_day"
+		musicType = "peace_day"
 	end
 	if track then
 		newTrack = track	-- play specified track
@@ -139,9 +157,12 @@ local function StartTrack(track)
 				if (#briefingTracks == 0) then return end
 				newTrack = briefingTracks[ #briefingTracks -math.random(1, #briefingTracks-1)]
 				musicType = "briefing"
-			elseif musicType == 'peace' then
-				if (#peaceTracks == 0) then return end
-				newTrack = peaceTracks[math.random(1, #peaceTracks)]
+			elseif musicType == 'peace_day' then
+				if (#peaceDayTracks == 0) then return end
+				newTrack = peaceDayTracks[math.random(1, #peaceDayTracks)]
+			elseif musicType == 'peace_night' then
+				if (#peaceNightTracks == 0) then return end
+				newTrack = peaceNightTracks[math.random(1, #peaceNightTracks)]
 			elseif musicType == 'war' then
 				if (#warTracks == 0) then return end
 				newTrack = warTracks[math.random(1, #warTracks)]
@@ -206,7 +227,8 @@ function widget:Update(dt)
 		if VFS.FileExists(PLAYLIST_FILE, VFS.RAW_FIRST) then
 			local tracks = VFS.Include(PLAYLIST_FILE, nil, VFS.RAW_FIRST)
 			warTracks = tracks.war
-			peaceTracks = tracks.peace
+			peaceDayTracks = tracks.peace
+			peaceNightTracks = tracks.peace
 			briefingTracks = tracks.briefing
 			victoryTracks = tracks.victory
 			defeatTracks = tracks.defeat
@@ -214,7 +236,8 @@ function widget:Update(dt)
 		
 		local vfsMode = (options.useIncludedTracks.value and VFS.RAW_FIRST) or VFS.RAW
 		warTracks	= warTracks or VFS.DirList('sounds/music/war/', '*.ogg', vfsMode)
-		peaceTracks	= peaceTracks or VFS.DirList('sounds/music/peace/', '*.ogg', vfsMode)
+		peaceDayTracks	= peaceDayTracks or VFS.DirList('sounds/music/peace/', '*.ogg', vfsMode)
+		peaceNightTracks = peaceNightTracks or  VFS.DirList('sounds/music/peace/night/', '*.ogg', vfsMode)
 		briefingTracks  = briefingTracks or VFS.DirList('sounds/music/briefing/', '*.ogg', vfsMode)
 		victoryTracks	= victoryTracks or VFS.DirList('sounds/music/victory/', '*.ogg', vfsMode)
 		defeatTracks	= defeatTracks or VFS.DirList('sounds/music/defeat/', '*.ogg', vfsMode)
@@ -264,11 +287,15 @@ function widget:Update(dt)
 		end
 		dethklok[1] = 0 -- empty the first row
 		
-		if (musicType == 'war' or musicType == 'peace') then
+		if (musicType == 'war' or string.find(musicType,"peace") ) then
 			if (totalKilled >= warThreshold) then
 				musicType = 'war'
 			elseif (totalKilled <= peaceThreshold) then
-				musicType = 'peace'
+				if isNight() then
+					musicType = 'peace_night'
+				else
+					musicType = 'peace_day'
+				end
 			end
 		end
 		
@@ -424,7 +451,7 @@ function widget:Initialize()
 	-- Spring.Echo(math.random(), math.random())
 	-- Spring.Echo(os.clock())
  
-	-- for TrackName,TrackDef in pairs(peaceTracks) do
+	-- for TrackName,TrackDef in pairs(peaceDayTracks) do
 		-- Spring.Echo("Track: " .. TrackDef)	
 	-- end
 	--math.randomseed(os.clock()* 101.01)--lurker wants you to burn in hell rgn

@@ -4,13 +4,16 @@
 
 
     uniform mat4 modelMatrix;
-    uniform mat4 modelViewMatrix;
+    uniform mat4 viewMat;
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
     uniform mat4 viewInvMat;
 
     // Default uniforms provided by ShaderFrog.
-    uniform float time;
+     uniform float time;
+    uniform float viewPosX;
+    uniform float viewPosY;
+
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -21,16 +24,15 @@
     
  
     float radius = 16.0;
-
+    float DISTANCE_VISIBILITY_PIXEL_WORLD = 100.0;
 
     // Varyings passed from the vertex shader
     in Data {
-        float viewPosX;
-        float viewPosY;
         vec3 vViewCameraDir;
-        vec3 vPositionWorld;
         vec3 vWorldNormal;
+        vec3 vPixelPositionWorld;
         vec2 vTexCoord;
+        vec4 vCamPositionWorld;
         };
         
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
@@ -38,6 +40,7 @@
         return sin((posOffset* posOffsetScale) +time * timeSpeedScale);
     }
 
+    
     float getCosineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
     {
         return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
@@ -91,25 +94,111 @@
         }
 
         return color;
-    }    
+    }     
+
 	
-	float fBorderFactor= 0.95f;
-	float getBorderGradient(float x){
-		if (x >= 0.0 && x < (1.0-fBorderFactor)){
-			return x*1.0;
-		}
-		if (x > fBorderFactor && x <= 1.0){
-			return (x-1.0)*-1.0;
-		}
-		return 1.0;
-	}
-	
-	float getPixelAlphaFactor(vec2 coord)
+	float getPixelColumnFactor(vec3 camWorldCoordinates, vec3 worldCoordinates, float columAlpha)
 	{
-		float xScale= getBorderGradient(coord.x);
-		float yScale= getBorderGradient(coord.y);
-		return (xScale+yScale)/2.0;		
+        //if its to far away no pixels are visible
+        float distanceToCam = distance(camWorldCoordinates, worldCoordinates);
+        if (distanceToCam > DISTANCE_VISIBILITY_PIXEL_WORLD) { return 0.0; }
+
+        return 1.0 - ( distanceToCam/ DISTANCE_VISIBILITY_PIXEL_WORLD);
 	}
+
+bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSize){
+    if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
+       uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize )   { return true;}
+      
+    if (uvCoord.x > effectEnd -glowSize && uvCoord.x < effectEnd  &&
+       uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize )   { return true;}
+      
+    if (uvCoord.x > effectEnd -glowSize && uvCoord.x < effectEnd  &&
+       uvCoord.y >  effectEnd -glowSize && uvCoord.y < effectEnd )   { return true;}
+
+    if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
+       uvCoord.y >  effectEnd -glowSize && uvCoord.y < effectEnd )   { return true;}
+    return false;
+}
+
+vec4 dissolveIntoPixel(vec3 col, vec2 uvCoord, vec3 camPos, vec3 worldPosition)
+{      
+    float distanceTotal= distance(worldPosition, camPos);
+    float distFactor = min(1.0, max(distanceTotal, 0.015));
+    
+    float empyAreaScale = distFactor;//max(0.01, min(1.0, distanceToCam/100.0));
+    float minTransparency = 0.7;
+    float maxTransparency = 0.1;
+    
+    float dynamicBorderSize = 0.250;
+    float UnitSize = 0.015;
+    float UnitHalf = UnitSize * 0.5;
+    vec2 uvMod = vec2(mod(uvCoord.x, UnitSize), mod(uvCoord.y, UnitSize));
+        
+    float pixelSize = UnitSize* 0.5;
+    float pixelHalf = pixelSize *0.5;
+    float glowBorderSize = ((UnitSize - pixelSize)/2.0)*empyAreaScale;
+    float EffectFullSize = pixelSize + 2.0 *glowBorderSize;
+    
+    float effectStart = (UnitSize - EffectFullSize)* 0.5;
+    float pixelStart = UnitHalf - pixelSize;
+    float effectEnd = (UnitSize - effectStart);
+    float pixelEnd =  UnitHalf + pixelSize;
+    
+    if (uvMod.x <  effectStart|| uvMod.x > effectEnd||
+        uvMod.y <  effectStart|| uvMod.y > effectEnd
+    )
+    {            
+        return vec4(0.0, 0.0, 0.0, 0.0);
+    }
+    
+    if (isCornerCase(uvMod,  effectStart, effectEnd, glowBorderSize) == true)
+    {
+        return vec4 (col.rgb*distFactor, distFactor);
+    }
+    
+    
+    if (uvMod.x >= (UnitHalf - pixelHalf) && uvMod.x <= (UnitHalf + pixelHalf) &&
+        uvMod.y >=( UnitHalf - pixelHalf) && uvMod.y <= (UnitHalf + pixelHalf) 
+    )
+    {
+        return vec4 (col.rgb, minTransparency);
+    }    
+
+    if (uvMod.x >= effectStart && uvMod.x <= effectStart +  glowBorderSize 
+    &&     uvMod.y > pixelStart && uvMod.y < pixelEnd
+    )
+    {
+        float willItBlend = (uvMod.x -effectStart)/glowBorderSize;
+        return vec4 (col.rgb, mix( maxTransparency, minTransparency, willItBlend));
+    }
+    
+    if (uvMod.x >= UnitHalf + pixelHalf && uvMod.x <= effectEnd &&
+       uvMod.y > pixelStart && uvMod.y < pixelEnd
+    )
+    {
+        float willItBlend = abs(uvMod.x -(effectEnd - glowBorderSize))/glowBorderSize;
+        return vec4 (col.rgb,  mix( minTransparency, maxTransparency, willItBlend));
+    }
+    
+    if (uvMod.y >= effectStart && uvMod.y <= effectStart +  glowBorderSize &&
+      uvMod.x > pixelStart && uvMod.x < pixelEnd
+    )
+    {
+        float willItBlend = abs(uvMod.y -effectStart)/glowBorderSize;
+        return vec4 (col.rgb,  mix( maxTransparency,minTransparency, willItBlend));
+    }
+    
+    if (uvMod.y >= UnitHalf + pixelHalf && uvMod.y <= effectEnd &&
+      uvMod.x > pixelStart && uvMod.x < pixelEnd
+    )
+    {
+        float willItBlend = abs(uvMod.y -(effectEnd - glowBorderSize))/glowBorderSize;
+        return vec4 (col.rgb, mix( minTransparency,maxTransparency, willItBlend));      
+    }
+    
+return vec4(0.0, 0.0, 0.0, 0.0);
+}
 
     void main() 
 	{	
@@ -140,20 +229,31 @@
 		//Transparency 
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
-										+  abs(0.3*getSineWave(vPositionWorld.y, 0.10,  time*6.0,  0.10))
-										- abs(  getSineWave(vPositionWorld.y, 1.0,  time,  0.2))
-										+ 0.4*abs(  getSineWave(vPositionWorld.y, 0.5,  time,  0.3))
-										- 0.15*abs(  getCosineWave(vPositionWorld.y, 0.75,  time,  0.5))
-										+ 0.15*  getCosineWave(vPositionWorld.y, 0.5,  time,  2.0)
+										+  abs(0.3*getSineWave(vPixelPositionWorld.y, 0.10,  time*6.0,  0.10))
+										- abs(  getSineWave(vPixelPositionWorld.y, 1.0,  time,  0.2))
+										+ 0.4*abs(  getSineWave(vPixelPositionWorld.y, 0.5,  time,  0.3))
+										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y, 0.75,  time,  0.5))
+										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
 										); 
 
-		vec4 rgbaColCopy = vec4((gl_FragColor + gl_FragColor* (1.0-averageShadow)).rgb , 
-                                hologramTransparency * getPixelAlphaFactor(vec2(gl_FragCoord)));
+
+        vec4 rgbaColCopy = vec4((gl_FragColor + gl_FragColor * (1.0-averageShadow)).rgb , hologramTransparency);
+        
 		vec4 sampleBLurColor = rgbaColCopy.rgba;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) )/256.0 ) * 0.3162162162;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )/256.0 ) * 0.0702702703;
-		gl_FragColor.rgb = addBorderGlowToColor(sampleBLurColor* rgbaColCopy, averageShadow).rgb;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+        vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor* rgbaColCopy, averageShadow);
+        vec4 finalColor = borderGlowColor;
+        finalColor.a = 1.0;
+        float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
+        if (distanceTotal  < 1.0)
+        {            
+            finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b), vec2(gl_FragCoord), vCamPositionWorld.xyz ,vPixelPositionWorld);
+        }
+
+		gl_FragColor.rgb = finalColor.rgb
 		
 	}
+

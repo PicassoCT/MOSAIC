@@ -81,8 +81,20 @@ ground_turret_cruisemissilepod.weapons  = {
 											}
 										}
 CruiseMissilePods["ground_turret_cm_airstrike"] = ground_turret_cruisemissilepod:New()
-CruiseMissilePods["ground_turret_cm_airstrike"].name = "HiMars ATTACMs"
+CruiseMissilePods["ground_turret_cm_airstrike"].name = "MOSAIC HiMars ATTACMs"
 CruiseMissilePods["ground_turret_cm_airstrike"].description = " fires a cruise missile at location"
+
+
+
+ground_turret_cruisemissilepod.weapons  = {
+											[1] = { name =  "cm_airtransport"	,																							
+													onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
+											}
+										}
+CruiseMissilePods["ground_turret_cm_airtransport"] = ground_turret_cruisemissilepod:New()
+CruiseMissilePods["ground_turret_cm_airtransport"].name = "Sniper Drone Fast Deploy Cruise Missile"
+CruiseMissilePods["ground_turret_cm_airtransport"].description = " fires a sniper air drone atop a cruise missile"
+
 
 ground_turret_cruisemissilepod.weapons  = {
 											[1] = { name =  "cm_transport"	,											
@@ -113,5 +125,6 @@ return lowerkeys(
 	["ground_turret_cm_airstrike"] = CruiseMissilePods["ground_turret_cm_airstrike"],
 	["ground_turret_cm_transport"] = CruiseMissilePods["ground_turret_cm_transport"],
 	["ground_turret_cm_antiarmor"] = CruiseMissilePods["ground_turret_cm_antiarmor"],
+	["ground_turret_cm_airtransport"] = CruiseMissilePods["ground_turret_cm_airtransport"],
 	
 })

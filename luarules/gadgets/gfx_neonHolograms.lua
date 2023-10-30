@@ -209,9 +209,7 @@ else -- unsynced
             uniformFloat = {
                 viewPosX = 0,
                 viewPosY = 0,
-                time = Spring.GetGameFrame()/30.0,
-                vPositionWorld = {0.0,0.0,0.0},
-                uv = {0.0,0.0},                
+                time = Spring.GetGameFrame()/30.0,                     
             },
         }, "Neon Hologram Shader")
 
@@ -238,12 +236,13 @@ else -- unsynced
             function()   
                 neonHologramShader:SetUniform("viewPosX", vpx)
                 neonHologramShader:SetUniform("viewPosY", vpy)
-
-                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                neonHologramShader:SetUniformMatrix("modelViewMatrix", "view")
                 neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
-                neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+                neonHologramShader:SetUniformMatrix("viewMat", "view")
                 neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
+				
+                --neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+
 
 
 
