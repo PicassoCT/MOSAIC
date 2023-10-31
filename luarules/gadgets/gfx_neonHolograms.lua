@@ -209,7 +209,8 @@ else -- unsynced
             uniformFloat = {
                 viewPosX = 0,
                 viewPosY = 0,
-                time = Spring.GetGameFrame()/30.0,                     
+                time = Spring.GetGameFrame()/30.0,    
+                 unitCenterPosition = {0,0,0},                 
             },
         }, "Neon Hologram Shader")
 
@@ -236,6 +237,7 @@ else -- unsynced
             function()   
                 neonHologramShader:SetUniform("viewPosX", vpx)
                 neonHologramShader:SetUniform("viewPosY", vpy)
+             
                 neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
                 neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformMatrix("viewMat", "view")
@@ -251,6 +253,8 @@ else -- unsynced
                 --variables
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
+                    px,py,pz = Spring.GetUnitPosition()
+                    neonHologramShader:SetUniform("unitCenterPosition", {px,py, pz})
                     local neonHoloDef = neonUnitTables[i].defID
                     local neonHoloParts = neonHoloParts[neonHoloDef]
                     glUnitShapeTextures(neonHoloDef, true)

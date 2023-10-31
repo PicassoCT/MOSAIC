@@ -8,6 +8,7 @@
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
     uniform mat4 viewInvMat;
+    uniform vec3 unitCenterPosition;
 
     // Default uniforms provided by ShaderFrog.
      uniform float time;
@@ -30,6 +31,7 @@
     in Data {
         vec3 vViewCameraDir;
         vec3 vWorldNormal;
+        vec2 vSphericalUVs;
         vec3 vPixelPositionWorld;
         vec2 vTexCoord;
         vec4 vCamPositionWorld;
@@ -250,7 +252,7 @@ return vec4(0.0, 0.0, 0.0, 0.0);
         float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
         if (distanceTotal  < 1.0)
         {            
-            finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b), vec2(gl_FragCoord), vCamPositionWorld.xyz ,vPixelPositionWorld);
+            finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
 
 		gl_FragColor.rgb = finalColor.rgb
