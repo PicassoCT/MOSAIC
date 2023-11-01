@@ -241,14 +241,14 @@ else -- unsynced
                 neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformMatrix("viewMat", "view")
                 neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
-				--neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+				neonHologramShader:SetUniformMatrix("modelMatrix", "model")
 
                 --
                 --variables
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
                     local px,py,pz = Spring.GetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
+                   -- neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
 
                     local neonHoloDef = neonUnitTables[i].defID
                     local neonHoloParts = neonHoloParts[neonHoloDef]

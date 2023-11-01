@@ -397,8 +397,8 @@ end
 
 
 
- local DAYLENGTH = 28800
-local function getDayTime()
+  local DAYLENGTH = 28800
+  local function getDayTime()
 	local morningOffset = (DAYLENGTH / 2)
 	local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
 	local percent = Frame / DAYLENGTH
@@ -416,8 +416,9 @@ end
                 end
                 if not boolRainyArea then return false end
 
-                local hour = getDayTime() 
-                local dayNr = Spring.GetGameFrame()/ DAYLENGTH
+                local hours = getDayTime() 
+                local gameFrames = Spring.GetGameFrame()
+                local dayNr = gameFrames/ DAYLENGTH
 
                 return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
    end
