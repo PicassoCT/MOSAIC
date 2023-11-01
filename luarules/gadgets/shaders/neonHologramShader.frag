@@ -2,19 +2,6 @@
     //Fragmentshader
     // Set the precision for data types used in this shader
 
-
-    uniform mat4 modelMatrix;
-    uniform mat4 viewMat;
-    uniform mat4 projectionMatrix;
-    uniform mat3 normalMatrix;
-    uniform mat4 viewInvMat;
-    uniform vec3 unitCenterPosition;
-
-    // Default uniforms provided by ShaderFrog.
-     uniform float time;
-    uniform float viewPosX;
-    uniform float viewPosY;
-
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -22,7 +9,17 @@
     uniform sampler2D reflectTex;
     uniform sampler2D screenTex;
     uniform sampler2D depthTex;
-    
+
+    uniform float time;
+    uniform float viewPosX;
+    uniform float viewPosY;
+    uniform float unitCenterPosition[3];
+
+    //uniform mat4 modelMatrix;
+    uniform mat4 viewMat;
+    uniform mat4 projectionMatrix;
+    uniform mat3 normalMatrix;
+    uniform mat4 viewInvMat;    
  
     float radius = 16.0;
     float DISTANCE_VISIBILITY_PIXEL_WORLD = 100.0;
@@ -126,7 +123,7 @@ bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSi
 vec4 dissolveIntoPixel(vec3 col, vec2 uvCoord, vec3 camPos, vec3 worldPosition)
 {      
     float distanceTotal= distance(worldPosition, camPos);
-    float distFactor = min(1.0, max(distanceTotal, 0.015));
+    float distFactor = min(1.0, max(distanceTotal, 0.001));
     
     float empyAreaScale = distFactor;//max(0.01, min(1.0, distanceToCam/100.0));
     float minTransparency = 0.7;
@@ -249,13 +246,13 @@ return vec4(0.0, 0.0, 0.0, 0.0);
         vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor* rgbaColCopy, averageShadow);
         vec4 finalColor = borderGlowColor;
         finalColor.a = 1.0;
+
         float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
         if (distanceTotal  < 1.0)
         {            
             finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
 
-		gl_FragColor.rgb = finalColor.rgb
-		
+		gl_FragColor.rgb = finalColor.rgb;		
 	}
 

@@ -2,7 +2,7 @@
     //VertexShader
     // Set the precision for data types used in this shader
 
-
+    //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
     uniform sampler2D normalTex;
@@ -13,25 +13,23 @@
     uniform float time;
     uniform float viewPosX;
     uniform float viewPosY;
-    uniform vec3 unitCenterPosition;
+    uniform  float unitCenterPosition[3];
 
-
-    uniform mat4 modelMatrix;
+    //uniform mat4 modelMatrix;
     uniform mat4 viewMat;
     uniform mat4 projectionMatrix;
     uniform mat3 normalMatrix;
     uniform mat4 viewInvMat;
 
-
-
+   const float PI = 3.1415926535897932384626433832795;
 
     // Variables passed from vertex to fragment shader
     out Data {
             vec3 vViewCameraDir;
             vec3 vWorldNormal;
-            vec2 vTexCoord;
             vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
+            vec2 vTexCoord;
             vec4 vCamPositionWorld;
         };
 
@@ -47,7 +45,7 @@
 
 void CreateSphericalUVs(vec3 worldPosition)
 {
-    vec3 vertex =  unitCenterPosition-worldPosition;
+    vec3 vertex =  vec3(unitCenterPosition[0],unitCenterPosition[1],unitCenterPosition[2])-worldPosition;
     // Step 1: Normalize the vector
     vec3 normalizedVector = normalize(vertex);
 
@@ -66,7 +64,8 @@ void CreateSphericalUVs(vec3 worldPosition)
     {
 		//TODO Loads of dead code, no idea how this worked? 
 		//Calculate the world position of the vertex
-        vPixelPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
+        //vPixelPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
+        vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
         CreateSphericalUVs(vPixelPositionWorld);
 		//Texture coordinates are passed on to the fragment?
 		vTexCoord.xy=  gl_MultiTexCoord0.xy;
