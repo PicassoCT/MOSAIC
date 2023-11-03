@@ -437,6 +437,8 @@ function widget:GameFrame(gameFrame)
 		end
 	end
 
+	enabled = true
+
 	if not enabled and not widgetDisabledSnow then return end
 	
 	if gameFrameCountdown <= 0 then
