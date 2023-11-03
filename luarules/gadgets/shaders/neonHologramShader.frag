@@ -11,15 +11,15 @@
     uniform sampler2D depthTex;
 
     uniform float time;
-    uniform float viewPosX;
-    uniform float viewPosY;
+    //uniform float viewPosX;
+    //uniform float viewPosY;
     uniform float unitCenterPosition[3];
 
     //uniform mat4 modelMatrix;
-    uniform mat4 viewMat;
-    uniform mat4 projectionMatrix;
-    uniform mat3 normalMatrix;
-    uniform mat4 viewInvMat;    
+    //uniform mat4 viewMat;
+    //uniform mat4 projectionMatrix;
+    //uniform mat3 normalMatrix;
+    //uniform mat4 viewInvMat;    
  
     float radius = 16.0;
     float DISTANCE_VISIBILITY_PIXEL_WORLD = 100.0;

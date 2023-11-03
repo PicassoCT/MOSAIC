@@ -16,10 +16,10 @@
     uniform  float unitCenterPosition[3];
 
     //uniform mat4 modelMatrix;
-    uniform mat4 viewMat;
-    uniform mat4 projectionMatrix;
-    uniform mat3 normalMatrix;
-    uniform mat4 viewInvMat;
+    //uniform mat4 viewMat;
+    //uniform mat4 projectionMatrix;
+    //uniform mat3 normalMatrix;
+    //uniform mat4 viewInvMat;
 
    const float PI = 3.1415926535897932384626433832795;
 
@@ -70,11 +70,11 @@ void CreateSphericalUVs(vec3 worldPosition)
 		//Texture coordinates are passed on to the fragment?
 		vTexCoord.xy=  gl_MultiTexCoord0.xy;
 		//Calculate the worldNormal used to calculate a average model self-normal-shadow?
-        vWorldNormal = gl_Vertex.xyz* mat3(viewInvMat) * (gl_NormalMatrix * gl_Normal);
+        vWorldNormal = gl_Vertex.xyz* mat3(gl_ModelViewMatrixInverseTranspose) * (gl_NormalMatrix * gl_Normal);
 		//Calculate the world Vertex Position ? Operation Order wrong?
-        vec4 worldVertPos = viewInvMat * (gl_ModelViewMatrix * gl_Vertex);
+        vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
         //Crap, just crap
-		vCamPositionWorld = viewInvMat * vec4(0.0, 0.0, 0.0, 1.0);
+		vCamPositionWorld = gl_ModelViewMatrixInverseTranspose * vec4(0.0, 0.0, 0.0, 1.0);
 
         vViewCameraDir = vCamPositionWorld.xyz - worldVertPos.xyz;
 

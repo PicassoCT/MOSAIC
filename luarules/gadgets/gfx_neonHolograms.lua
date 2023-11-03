@@ -233,15 +233,15 @@ else -- unsynced
       
         neonHologramShader:ActivateWith(
             function()   
-                neonHologramShader:SetUniform("viewPosX", vpx)
-                neonHologramShader:SetUniform("viewPosY", vpy)
+                --neonHologramShader:SetUniform("viewPosX", vpx)
+                --neonHologramShader:SetUniform("viewPosY", vpy)
                 neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
               
-                neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
-                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                neonHologramShader:SetUniformMatrix("viewMat", "view")
-                neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
-				neonHologramShader:SetUniformMatrix("modelMatrix", "model")
+                --neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
+                --neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+                --neonHologramShader:SetUniformMatrix("viewMat", "view")
+                --neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
+				--neonHologramShader:SetUniformMatrix("modelMatrix", "model")
 
                 --
                 --variables
