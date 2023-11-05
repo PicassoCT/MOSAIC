@@ -1,20 +1,20 @@
 
 function widget:GetInfo()
   return {
-    name      = "Snow",
-    desc      = "Lets it automaticly snow on snow maps! - also togglable with /snow  (remembers per map)",
+    name      = "Rain",
+    desc      = "Lets it automaticly rain",
     author    = "Floris (original: trepan, Argh)",
     date      = "29 may 2015",
     license   = "GNU GPL, v2 or later",
     layer     = -24,
-    enabled   = true  --  loaded by default?
+    enabled   = false  --  loaded by default?
   }
 end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
--- /snow    -- toggles snow on current map (also remembers this)
+-- /rain    -- toggles snow on current map (also remembers this)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -372,7 +372,7 @@ function widget:Initialize()
 	
 	drawinfolist = gl.CreateList( function()
 		local text = "Snowing less when FPS gets lower \n"
-		local text2 = "/snow to toggle snow... for this map \n".."disable 'Snow' widget... for all maps "
+		local text2 = "/rain to toggle raom... for this map \n".."disable 'Snow' widget... for all maps "
 		local fontSize = 30
 		--local textWidth = font:GetTextWidth(text)*fontSize
 		local textHeight = font:GetTextHeight(text)*fontSize
