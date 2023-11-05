@@ -218,6 +218,7 @@ else -- unsynced
                 gadgetHandler:RemoveGadget(self)
                 return 
         end
+        Spring.Echo("Neon shader did compile")
 
     end
 
@@ -248,7 +249,7 @@ else -- unsynced
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
                     local px,py,pz = Spring.GetUnitPosition(unitID)
-                   -- neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
+                    neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
 
                     local neonHoloDef = neonUnitTables[i].defID
                     local neonHoloParts = neonHoloParts[neonHoloDef]
