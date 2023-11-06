@@ -15,12 +15,6 @@
     uniform float viewPosY;
     uniform  float unitCenterPosition[3];
 
-    //uniform mat4 modelMatrix;
-    //uniform mat4 viewMat;
-    //uniform mat4 projectionMatrix;
-    //uniform mat3 normalMatrix;
-    //uniform mat4 viewInvMat;
-
    const float PI = 3.1415926535897932384626433832795;
 
     // Variables passed from vertex to fragment shader
@@ -64,7 +58,6 @@ void CreateSphericalUVs(vec3 worldPosition)
     {
 		//TODO Loads of dead code, no idea how this worked? 
 		//Calculate the world position of the vertex
-        //vPixelPositionWorld =  (  modelMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
         vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
         CreateSphericalUVs(vPixelPositionWorld);
 		//Texture coordinates are passed on to the fragment?

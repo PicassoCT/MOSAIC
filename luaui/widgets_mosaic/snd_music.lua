@@ -174,6 +174,9 @@ local function StartTrack(track)
 		-- Spring.Echo(key, val)	
 	-- end
 	firstFade = false
+	if newTrack ~= previousTrack then
+		Spring.Echo("Playing track:".. newTrack)
+	end
 	previousTrack = newTrack
 	
 	-- if (oggInfo.comments.TITLE and oggInfo.comments.TITLE) then
@@ -364,6 +367,8 @@ function widget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer)
 	if unitExceptions[unitDefID] then
 		return
 	end
+
+
 	
 	if (damage < 1.5) then return end
 	local PlayerTeam = Spring.GetMyTeamID()
@@ -388,6 +393,10 @@ function widget:UnitDestroyed(unitID, unitDefID, teamID)
 	if unitExceptions[unitDefID] then
 		return
 	end
+
+	local attackerID =  Spring.GetUnitLastAttacker(unitID)
+	if attackerID == nil then return end
+
 	local unitWorth = 50
 	if (UnitDefs[unitDefID].metalCost > 500) then
 		unitWorth = 200
