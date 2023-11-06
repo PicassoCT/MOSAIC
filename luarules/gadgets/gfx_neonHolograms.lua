@@ -48,7 +48,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
             local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
-            if engineVersion > 105.0 then
+            if engineVersion > 105.0 and  Spring.SetUnitEngineDrawMask then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
             end
             Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
@@ -188,7 +188,7 @@ else -- unsynced
 
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
-            fragment =  neoFragmenShaderFirstPass, --fragmentShader
+            fragment =  fragmentShader , --neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
