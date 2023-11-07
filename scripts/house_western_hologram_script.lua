@@ -45,6 +45,7 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
+local qrcode = piece"buisness_holo056"
 
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
@@ -732,6 +733,15 @@ function HoloGrams()
         if logo == symmetryPiece then
             shapeSymmetry(symmetryPiece)
             return            
+        end
+
+        if logo == qrcode then 
+            for i=1, #TablesOfPiecesGroups["buisness_holo56Spin"] do
+                if TablesOfPiecesGroups["buisness_holo56Spin"][i] and maRa() then
+                    Show(TablesOfPiecesGroups["buisness_holo56Spin"][i])
+                end
+            end
+
         end
 
         Spin(logo,y_axis, math.rad(5),0)     
