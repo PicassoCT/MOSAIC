@@ -97,8 +97,92 @@ local SIG_GESTE = 32
 local SIG_ONTHEMOVE = 64
 local SIG_TIGLIL = 128
 local GameConfig = getGameConfig()
-
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+local cachedCopy ={}
+local lastFrame = Spring.GetGameFrame()
+function updateCheckCache()
+  frame = Spring.GetGameFrame()
+  if frame ~= lastFrame then 
+    GG.VisibleUnitPieces[unitID] = cachedCopy
+    lastFrame = frame
+  end
+end
+
+function ShowReg(pieceID)
+    Show(pieceID)
+    table.insert(cachedCopy, pieceID)
+    updateCheckCache()
+end
+
+
+function HideReg(pieceID)
+    Hide(pieceID)  
+    for i=1, #copy do
+        if copy[i] == pieceID then
+            table.remove(cachedCopy, i)
+        end
+    end
+    updateCheckCache()
+end
+
+-- > Hide all Pieces of a Unit
+function hideAllReg(id)
+    if not unitID then unitID = id end
+
+    pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do HideReg(v) end
+end
+
+-- > Hides a PiecesTable, 
+function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    if not l_tableName then return end
+    assert( type(l_tableName) == "table" , UnitDefs[Spring.GetUnitDefID(unitID)].name.." has invalid hideT")
+    boolDebugActive =  (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
+
+    if l_lowLimit and l_upLimit then
+        for i = l_upLimit, l_lowLimit, -1 do
+            if l_tableName[i] then
+                HideReg(l_tableName[i])
+            elseif boolDebugActive == true then
+                echo("In HideT, table " .. l_lowLimit ..
+                         " contains a empty entry")
+            end
+
+            if l_delay and l_delay > 0 then Sleep(l_delay) end
+        end
+
+    else
+        for i = 1, table.getn(l_tableName), 1 do
+            if l_tableName[i] then
+                HideReg(l_tableName[i])
+            elseif boolDebugActive == true then
+                echo("In HideT, table " .. l_lowLimit .. " contains a empty entry")
+            end
+        end
+    end
+end
+
+-- >Shows a Pieces Table
+function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    if not l_tableName then
+        Spring.Echo("No table given as argument for showT")
+        return
+    end
+
+    if l_lowLimit and l_upLimit then
+        for i = l_lowLimit, l_upLimit, 1 do
+            if l_tableName[i] then ShowReg(l_tableName[i]) end
+            if l_delay and l_delay > 0 then Sleep(l_delay) end
+        end
+
+    else
+        for k,v in pairs(l_tableName)do
+            if v then
+                ShowReg(v)
+            end
+        end
+    end
+end
 
 --[[function showCheck(pieceID)
     isValidPiece(pieceID)
@@ -146,8 +230,8 @@ function tiglLilLoop()
             Hide(tlpole)
             Hide(tldrum)
             Hide(tlflute)
-            hideT(TableOfPiecesGroups["GlowStick"])
-            hideT(tigLilHoloPices)
+            hideTReg(TableOfPiecesGroups["GlowStick"])
+            hideTReg(tigLilHoloPices)
         end
         Sleep(9000)
     end
@@ -186,10 +270,10 @@ function showSubSpins(pieceID)
    pieceName = getUnitPieceName(unitID, pieceID)
    subSpinPieceName = pieceName.."Spin"    
    if TableOfPiecesGroups[subSpinPieceName] then  
-    hideT(TableOfPiecesGroups[subSpinPieceName] )              
+    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
         spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
-        Show(spinPiece)
+        ShowReg(spinPiece)
         Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
     end
    end
@@ -199,7 +283,7 @@ function hideSubSpins(pieceID)
     pieceName = getUnitPieceName(unitID, pieceID)
     subSpinPieceName = pieceName.."Spin"    
     if TableOfPiecesGroups[subSpinPieceName] then  
-        hideT(TableOfPiecesGroups[subSpinPieceName]) 
+        hideTReg(TableOfPiecesGroups[subSpinPieceName]) 
     end
 end
 
@@ -207,9 +291,9 @@ function restartHologram()
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
     resetAll(unitID)
-    hideAll(unitID)
+    hideAllReg(unitID)
     deployHologram()
-    hideT(spins)
+    hideTReg(spins)
     StartThread(checkForBlackOut)
     StartThread(clock)
     StartThread(tiglLilLoop)
@@ -229,8 +313,8 @@ end
 EmergencyIcon = piece("EmergencyIcon")
 function ShowEmergencyElements () 
   EmergencyText = piece("EmergencyText")
-  if maRa() then Show(EmergencyIcon) end
-  Show(EmergencyText)
+  if maRa() then ShowReg(EmergencyIcon) end
+  ShowReg(EmergencyText)
   id = showOne(TableOfPiecesGroups["EmergencyPillar"]) 
   element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
   Spin(element , y_axis, math.rad(randSign() * 42), 0)
@@ -302,7 +386,7 @@ function grid()
             theGrid = getGrid()
             upVal=math.random(3,4)
             lowVal= math.random(0,2)
-            Show(theGrid)
+            ShowReg(theGrid)
             Sleep(33)
             for i= lowVal, upVal do 
                 Turn(theGrid, y_axis, math.rad(i*90),0)
@@ -367,7 +451,7 @@ function RainDrop(pieceID, delayMS, speed)
     Move(pieceID, 1, x, 0)
     Move(pieceID, 3, z, 0)
     Move(pieceID, downAxis, y, 0)
-    Show(pieceID)
+    ShowReg(pieceID)
     --Spin(pieceID, downAxis, math.rad(42),0)
     WMove(pieceID, downAxis, 0, speed)
     HideAssert(pieceID)
@@ -439,14 +523,14 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
                 end
             end
 
-            showT(showTellTable)
+            showTReg(showTellTable)
             Sleep(90000)
             resetT(TableOfPiecesGroups[name], 1.2)
             WaitForTurns(TableOfPiecesGroups[name])   
-            hideT(showTellTable)                    
+            hideTReg(showTellTable)                    
         else
 
-            hideT(TableOfPiecesGroups[name])
+            hideTReg(TableOfPiecesGroups[name])
             Sleep(interval)
         end
       
@@ -455,9 +539,9 @@ end
 
 function fadeIn(piecesTable, rest)
     for i = 1, #piecesTable do
-        hideT(piecesTable)
+        hideTReg(piecesTable)
         assert(piecesTable[i], i.." not in piecesTable")
-        Show(piecesTable[i])
+        ShowReg(piecesTable[i])
         Sleep(rest)
     end
 end
@@ -465,9 +549,9 @@ end
 function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
-        hideT(piecesTable)
+        hideTReg(piecesTable)
         assert(piecesTable[i], i.." not in piecesTable")
-        Show(piecesTable[i])
+        ShowReg(piecesTable[i])
         Sleep(rest)
     end
 end
@@ -485,7 +569,7 @@ function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
     end
 
     fadeOut(piecesTable, fadeOutTimeMs/(#piecesTable))
-    hideT(piecesTable)
+    hideTReg(piecesTable)
 end
 
 
@@ -513,7 +597,7 @@ function glowWormFlight(speed)
         assert(TableOfPiecesGroups["GlowSwarm"][i])
     end
 
-    hideT(TableOfPiecesGroups["GlowSwarm"])
+    hideTReg(TableOfPiecesGroups["GlowSwarm"])
     targetHeight = math.random(0,heightDiff)
     posX = math.random(0, 500)*randSign() 
     intervalLength = math.random(5, 10)
@@ -530,8 +614,8 @@ function glowWormFlight(speed)
             timeInSeconds = (spGetGameFrame()/30) % 90
 
             if math.ceil(timeInSeconds) % 15 == 0 then
-                hideT(TableOfPiecesGroups["GlowWorm"])
-                hideT(TableOfPiecesGroups["GlowSwarm"])
+                hideTReg(TableOfPiecesGroups["GlowWorm"])
+                hideTReg(TableOfPiecesGroups["GlowSwarm"])
                 targetHeight = math.random(0,heightDiff)
                 posX = math.random(0, 500)*randSign() 
                 intervalLength = math.random(5, 10)
@@ -565,14 +649,14 @@ function showWallDayTime(name)
     while true do
         if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
             if maRa() then
-                Show(wallGrid)
+                ShowReg(wallGrid)
             end
             encounter = math.random(4,7)    
             while encounter > 0 do
                 _, element = randDict(TableOfPiecesGroups[name])
                 if element then
                     encounter = encounter - 1
-                    Show(element)
+                    ShowReg(element)
                     showSubSpins(element)
                 end
                 Sleep(10)   
@@ -626,8 +710,8 @@ function HoloGrams()
     
     local flickerGroup = TableOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
-    hideT(flickerGroup)
-    hideT(CasinoflickerGroup)
+    hideTReg(flickerGroup)
+    hideTReg(CasinoflickerGroup)
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
@@ -725,7 +809,7 @@ function HoloGrams()
         if logo == piece("buisness_holo18") then            
             GG.RestaurantCounter = GG.RestaurantCounter + 1
             symbol = math.random(8,11)
-            Show(TableOfPiecesGroups["buisness_holo18Spin"][symbol])
+            ShowReg(TableOfPiecesGroups["buisness_holo18Spin"][symbol])
             StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 5)
             StartThread(addJHologramLetters)
         end
@@ -738,7 +822,7 @@ function HoloGrams()
         if logo == qrcode then 
             for i=1, #TablesOfPiecesGroups["buisness_holo56Spin"] do
                 if TablesOfPiecesGroups["buisness_holo56Spin"][i] and maRa() then
-                    Show(TablesOfPiecesGroups["buisness_holo56Spin"][i])
+                    ShowReg(TablesOfPiecesGroups["buisness_holo56Spin"][i])
                 end
             end
 
@@ -746,7 +830,7 @@ function HoloGrams()
 
         Spin(logo,y_axis, math.rad(5),0)     
            
-        Show(logo)
+        ShowReg(logo)
         if maRa() then
            pieceName = getUnitPieceName(unitID, logo)
            logoTableName = pieceName.."Spin"
@@ -755,7 +839,7 @@ function HoloGrams()
                     _, element = randDict(TableOfPiecesGroups[logoTableName])             
                     if maRa() then
                         spinLogoPiece = element
-                        Show(spinLogoPiece)
+                        ShowReg(spinLogoPiece)
                         Spin(spinLogoPiece,y_axis, math.rad(-42),0)
                     end
                 end
@@ -783,7 +867,7 @@ function dragonDance()
 
     while true do
         if (hours > 20 or hours < 6)  then
-            showT(DragonTable)
+            showTReg(DragonTable)
             interval = 2 * math.pi
             step = interval / #DragonTable
             while (hours > 20 or hours < 6)  do
@@ -798,7 +882,7 @@ function dragonDance()
                 end
                 Sleep(250)
             end
-            hideT(DragonTable)
+            hideTReg(DragonTable)
             dx,dz = math.random(-200,200),math.random(-200,200)
         end
         Sleep(1000)
@@ -814,7 +898,7 @@ function fireWorksSet(fireSet, maxDistance, speed)
         mP(id, distanceX, distanceY, distanceZ, speed)
         turnPieceRandDir(id, 0)    
         spinRand(id,-10, 10, 0.25)
-        Show(id)
+        ShowReg(id)
     end
 end
 
@@ -831,7 +915,7 @@ function fireWorks()
 
     while true do
         while (hours > 20 or hours < 6) do
-            Show(FireWorksCenter)
+            ShowReg(FireWorksCenter)
             reset(FireWorksCenter)
             resetT(FireWorksTableB)
             resetT(FireWorksTableR)
@@ -858,16 +942,16 @@ function fireWorks()
             if maRa() then
                 fireWorksSet(FireWorksTableY, spreaddistance, spreaddistance)
             end
-            Hide( FireWorksCenter)          
+            HideReg( FireWorksCenter)          
             WMove(FireWorksCenter, upaxis, updistance - 200, 250.5)
             WMove(FireWorksCenter, upaxis, updistance - 1000, 500.5)
             Move(FireWorksCenter, upaxis, updistance - 2000, 750)
             Sleep(800) 
             Move(FireWorksCenter, upaxis, 0, 1000)
             for i=1, #FireWorksTableB do
-                Hide(FireWorksTableB[i])
-                Hide(FireWorksTableR[i])
-                Hide(FireWorksTableY[i])
+                HideReg(FireWorksTableB[i])
+                HideReg(FireWorksTableR[i])
+                HideReg(FireWorksTableY[i])
                 Sleep(200)
             end     
             WMove(FireWorksCenter, upaxis, 0, 1000)
@@ -887,9 +971,9 @@ function shapeSymmetry(logo)
             a = piece(pieceName)
             b = piece(symPieceName)
             randVal = math.random(1,8)*randSign()*45
-            Show(a)
+            ShowReg(a)
             Turn(a, x_axis, math.rad(randVal), 0)
-            Show(b)
+            ShowReg(b)
             orgVal = 0 
             if i == 1 then orgVal = 180 end
             symValue =  orgVal -randVal
@@ -897,7 +981,7 @@ function shapeSymmetry(logo)
         end
     end
     if not maRa() then
-     Show(logo)
+     ShowReg(logo)
     end
     if maRa() == maRa() then
         addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
@@ -916,7 +1000,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
     boolNewDay = true
     toShowTableT= {}
     while true do
-        hideT(fGroup)
+        hideTReg(fGroup)
         assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
         if boolDayLightSavings == nil or ( boolDayLightSavings == true and 
@@ -931,17 +1015,17 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 
                 for i=1,(3000/flickerIntervall) do
                     if i % 2 == 0 then      
-                       showT(toShowTableT) 
+                       showTReg(toShowTableT) 
                     else
-                        hideT(toShowTableT) 
+                        hideTReg(toShowTableT) 
                     end
-                    if NoErrorFunction() == true then showT(toShowTableT) end
+                    if NoErrorFunction() == true then showTReg(toShowTableT) end
                     for ax=1,3 do
                         moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
                     end
                     Sleep(flickerIntervall)
                 end
-                hideT(toShowTableT)
+                hideTReg(toShowTableT)
         else
             boolNewDay = true
         end
@@ -957,7 +1041,7 @@ function showOne(T)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then   
-            Show(v)          
+            ShowReg(v)          
             return v
         end
     end
@@ -979,7 +1063,7 @@ function showOneOrAll(T)
         return showOne(T)
     else
         for num, val in pairs(T) do 
-            Show(val)
+            ShowReg(val)
         end
         return
     end
@@ -1027,7 +1111,7 @@ function addHologramLetters( myMessage)
                 pieceName = TableOfPiecesGroups[letter][lettercounter[letter]] 
                 if pieceName then     
                     table.insert(allLetters, pieceName)                
-                    Show(pieceName)
+                    ShowReg(pieceName)
                     Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
                     Move(pieceName,axis, -sizeSpacingLetter*(columnIndex), 0)
                     posLetters[pieceName]= {0,-sizeSpacingLetter*(columnIndex),  -1*sizeDownLetter*rowIndex }
@@ -1061,7 +1145,7 @@ end
 backdropAxis = x_axis
 spindropAxis = y_axis
 function randRestLetters(allLetters,posLetters)
-    hideT(allLetters)
+    hideTReg(allLetters)
     resetT(allLetters)
 
     interVall = math.random(1,15)*1000
@@ -1071,7 +1155,7 @@ function randRestLetters(allLetters,posLetters)
               for axis=1,3 do
                 Move(id, axis, posLetters[id][axis], 0)
                end
-               Show(id)
+               ShowReg(id)
             end)
 end
 
@@ -1081,9 +1165,9 @@ function randomFLickerLetters(allLetters, posLetters)
 	if (hours > 17 or hours < 7) then
 		for i=1,(3000/flickerIntervall) do
 			if i % 2 == 0 then      
-			   showT(allLetters) 
+			   showTReg(allLetters) 
 			else
-				hideT(allLetters) 
+				hideTReg(allLetters) 
 			end
 
             foreach(allLetters,
@@ -1094,25 +1178,25 @@ function randomFLickerLetters(allLetters, posLetters)
             end)
             Sleep(flickerIntervall)
 		end
-		hideT(allLetters)  
+		hideTReg(allLetters)  
         foreach(allLetters,
             function(id)
               for axis=1,3 do
                 Move(id, axis, posLetters[id][axis], 15)
                end
-               Show(id)
+               ShowReg(id)
             end)
 	end		
 end
 
 function syncToFrontLetters(allLetters)
     direction =  randSign()
-	hideT(allLetters)
+	hideTReg(allLetters)
     --Setup
     for j=1, #allLetters do
 		WMove(allLetters[j],backdropAxis, -500 + math.sin((j/#allLetters)*(math.pi/2))*50, 0)			
     end    
-	showT(allLetters)
+	showTReg(allLetters)
 	for j=1, #allLetters do
 		WMove(allLetters[j],backdropAxis, 150 + math.cos((j/#allLetters)*(math.pi/2))*50, 250)			
     end
@@ -1130,7 +1214,7 @@ function consoleLetters(allLetters, posLetters)
     foreach(allLetters,
     function(id)
       reset(id,0)
-      Hide(id)
+      HideReg(id)
     end)
 
     foreach(allLetters,
@@ -1138,7 +1222,7 @@ function consoleLetters(allLetters, posLetters)
       for axis=1,3 do
         Move(id, axis, posLetters[id][axis], 150)
        end
-       Show(id)
+       ShowReg(id)
     end)
     Sleep(100)
     WaitForMoves(allLetters)
@@ -1161,7 +1245,7 @@ function dnaHelix(allLetters)
 			val = (index/ #allLetters) * 2 * 2 * math.pi
 			Turn(id, spindropAxis, math.rad(val), 0)    
 			Spin(id, spindropAxis, math.rad(42), 15)   
-			Show(id)			
+			ShowReg(id)			
 			index = index +1
         end)
 		Sleep(9000)
@@ -1178,7 +1262,7 @@ end
 
 function SpiralUpwards(allLetters, posLetters)
 
-    hideT(allLetters)
+    hideTReg(allLetters)
     foreach(allLetters,
         function(id)
                 Move(id, 3, posLetters[id][3] - 5000, 0)     
@@ -1188,7 +1272,7 @@ function SpiralUpwards(allLetters, posLetters)
 
     foreach(allLetters,
         function(id)
-            Show(id)
+            ShowReg(id)
             Move(id,3, posLetters[id][3], 2500)
             Sleep(250)
         end)
@@ -1214,7 +1298,7 @@ function SwarmLetters(allLetters, posLetters)
             for i=1,3 do
                 Move(id, i, posLetters[id][i], 350)            
             end
-            Show(id)
+            ShowReg(id)
         end)
     WaitForMoves(allLetters)
     Sleep(2000)
@@ -1225,12 +1309,12 @@ function SpinLetters(allLetters)
         function(id)
             rval = math.random(-360,360)
         Spin(id, spindropAxis, math.rad(rval), 15)
-        Show(id)
+        ShowReg(id)
         end)
     Sleep(1000)
     resetSpinDrop(allLetters)    
     WaitForTurns(allLetters)
-    hideT(allLetters)
+    hideTReg(allLetters)
     Sleep(2000)
 end
 
@@ -1238,9 +1322,9 @@ function HideLetters(allLetters)
     direction =  randSign()
     --Setup
      for j=1, #allLetters do
-    		Hide(allLetters[j])
+    		HideReg(allLetters[j])
             WMove(allLetters[j],backdropAxis, 150, 300)
-    		Show(allLetters[j])
+    		ShowReg(allLetters[j])
     		Move(allLetters[j],backdropAxis, 0, 600)				
      end
 
@@ -1270,12 +1354,12 @@ function CrossLetters(allLetters)
     for i=1, #allLetters do
         id =allLetters[i]
         Move(id, backdropAxis, math.random(250,500)*direction, 0)
-        Hide(id)
+        HideReg(id)
     end
     for i=1, #allLetters do
         id =allLetters[i]
         Move(id, backdropAxis,0, 1600)
-        Show(id)
+        ShowReg(id)
         WaitForMoves(id)
     end
 
@@ -1297,7 +1381,7 @@ function addJHologramLetters()
     else
         _,background = randDict(TableOfPiecesGroups["JHorizontal"])
     end
-     Show(background)
+     ShowReg(background)
     downIndex = 1
     --echo("Adding Grafiti with message:" ..myMessage)
     stringlength = 6
@@ -1308,7 +1392,7 @@ function addJHologramLetters()
     for i=1, stringlength do
         if TableOfPiecesGroups["JLetter"][message[i]] then
             local pieceName = TableOfPiecesGroups["JLetter"][message[i]]                   
-            Show(pieceName)
+            ShowReg(pieceName)
             Move(pieceName, 3,  -sizeDownLetter*rowIndex, 0)
             Move(pieceName,axis, sizeSpacingLetter*(columnIndex), 0)
             if boolUpRight then
@@ -1326,26 +1410,26 @@ end
 
 function TigLilSetup()    
     --echo("dancing tilgil a1")
-    Hide(tlpole)
-    Hide(deathpivot)
-    Hide(tldrum)
-    --Hide(tlharp)
-    Hide(tlflute)
-    Hide(ball)
-    Hide(handr)
+    HideReg(tlpole)
+    HideReg(deathpivot)
+    HideReg(tldrum)
+    --HideReg(tlharp)
+    HideReg(tlflute)
+    HideReg(ball)
+    HideReg(handr)
     --echo("dancing tilgil a2")
-    Hide(handl)
-    Show(tigLil)
-    Show(tlHead)
-    Show(tlhairup)
-    Show(tlhairdown)
-    Show(tlarm)
-    Show(tlarmr)
+    HideReg(handl)
+    ShowReg(tigLil)
+    ShowReg(tlHead)
+    ShowReg(tlhairup)
+    ShowReg(tlhairdown)
+    ShowReg(tlarm)
+    ShowReg(tlarmr)
     --echo("dancing tilgil a3")
-    Show(tllegUp)
-    Show(tllegLow)
-    Show(tllegUpR)
-    Show(tllegLowR)
+    ShowReg(tllegUp)
+    ShowReg(tllegLow)
+    ShowReg(tllegUpR)
+    ShowReg(tllegLowR)
     --echo("dancing tilgil a4")
 
     Turn(tigLil, y_axis, math.rad(0), 4)
@@ -2639,11 +2723,11 @@ end
 
 function  legs_down()
     --printf(unitID, "legs_down")
-    Hide(tlpole)
-    Hide(tldrum)
+    HideReg(tlpole)
+    HideReg(tldrum)
         --printf(unitID, "legs_down")
-    Hide(tlflute)
-    --Hide(tldancedru)
+    HideReg(tlflute)
+    --HideReg(tldancedru)
         --printf(unitID, "legs_down")
     --Move(tldancedru, y_axis, 0, 60)
     --Move(tldancedru, x_axis, 0, 60)
@@ -2671,7 +2755,7 @@ function  legs_down()
     Turn(tlflute, z_axis, math.rad(0), 45)
     reset(ball)
     reset(BallArcPoint)
-    Hide(ball)
+    HideReg(ball)
     --printf(unitID, "legs_down")
     StopSpin(tigLil, y_axis)
     StopSpin(tigLil, z_axis)
@@ -5395,7 +5479,7 @@ function idle_stance8()
     Turn(tlarm, x_axis, math.rad(-7), 3)
     Turn(tlarm, y_axis, math.rad(-138), 2)
     Turn(tlarm, z_axis, math.rad(52), 2)
-    Show(tldrum)
+    ShowReg(tldrum)
     Sleep(50)
     WaitForTurn(tlarm, z_axis)
     Turn(tlarm, x_axis, math.rad(0), 3)
@@ -5450,7 +5534,7 @@ function idle_stance8()
 
     Turn(tlarm, y_axis, math.rad(-138), 2)
     Turn(tlarm, z_axis, math.rad(-52), 3)
-    Hide(tldrum)
+    HideReg(tldrum)
 end
 
 --clapstance
@@ -5771,7 +5855,7 @@ function idle_stance_10()
         Turn(tlarm, y_axis, math.rad(-138), 11)
         Turn(tlarm, z_axis, math.rad(52), 4)
         WaitForTurn(tlarm, y_axis)
-        Show(tldrum)
+        ShowReg(tldrum)
         Sleep(150)
         Turn(tlarm, x_axis, math.rad(0), 4)
         Turn(tlarm, y_axis, math.rad(0), 4)
@@ -5818,7 +5902,7 @@ function idle_stance_10()
     Signal(SIG_ONTHEMOVE)
     Signal(SIG_INCIRCLE)
     danceEnd()
-    Hide(tldrum)
+    HideReg(tldrum)
     Sleep(250)
     legs_down()
 end
@@ -6700,7 +6784,7 @@ local function drumPosePoledancin(mspeed, tspeed, addUp)
         addUp = addUp + 12
         mSyncIn(tigLil,     5,addUp,-3,250)
         tSyncIn(tigLil,     0,0,-90,250)
-        Show(tlpole)
+        ShowReg(tlpole)
         tSyncIn(tlHead,     6,0,-9,250)
         tSyncIn(tlhairup,   -57,90,17,250)
         tSyncIn(tlhairdown, 0,0,0,250)
@@ -6720,7 +6804,7 @@ local function drumPosePoledancin(mspeed, tspeed, addUp)
         WaitForMoves(tigLil)
         StopSpin(deathpivot, y_axis)
         --StopSpin(tldancedru, y_axis)
-        Hide(tlpole)
+        HideReg(tlpole)
     
 
 end
@@ -6735,7 +6819,7 @@ local function idle_stance11()
         --drum&base
 
         --plant drum
-        Show(tldrum)
+        ShowReg(tldrum)
         Turn(tlarm, x_axis, math.rad(-129.99998474121), tspeed)
         Turn(tlarm, y_axis, math.rad(60.000003814697), tspeed)
         Turn(tlarm, z_axis, math.rad(39.099998474121), tspeed)
@@ -6763,8 +6847,8 @@ local function idle_stance11()
         Turn(tlarmr, z_axis, math.rad(43.000003814697), tspeed)
         WaitForTurn(tlarmr, z_axis)
         WaitForMove(tldrum, z_axis)
-        Hide(tldrum)
-        --Show(tldancedru)
+        HideReg(tldrum)
+        --ShowReg(tldancedru)
         ---------------------------------------------------
         mspeed = 1
         growBeatBox = math.random(-3, 18)
@@ -6952,7 +7036,7 @@ local function idle_stance11()
                 Turn(tllegLowR, y_axis, math.rad(0), tspeed)
                 Turn(tllegLowR, z_axis, math.rad(0), tspeed)
 
-                Show(tlflute)
+                ShowReg(tlflute)
                 Sleep(950)
 
                 Turn(tigLil, x_axis, math.rad(0), tspeed)
@@ -7050,11 +7134,11 @@ local function idle_stance11()
             Move(tlarm, x_axis, 0, 4)
             Move(tlarm, y_axis, 0, 4)
             Move(tlarm, z_axis, 0, 4)
-            Hide(tlflute)
+            HideReg(tlflute)
         end
         if randOneZero == 0 then
             --querTr򴥍
-            Show(tlflute)
+            ShowReg(tlflute)
 
             jamin = math.random(5, 19)
             for ot = 0, jamin, 1 do
@@ -7333,13 +7417,13 @@ local function idle_stance11()
                 end
             end
 
-            Hide(tlflute)
+            HideReg(tlflute)
         end
     end
 
     if rand == 2 then
         --harp a darp
---        Show(tlharp)
+--        ShowReg(tlharp)
         mspeed = 5
         tspeed = 0.5
 
@@ -7544,7 +7628,7 @@ local function idle_stance11()
             Sleep(sleepingBeau)
         end
     end
-    --Hide(tlharp)
+    --HideReg(tlharp)
 end
 
 --feeding the horse
@@ -7650,13 +7734,13 @@ end
 ballIdleFunctions = {
 [1] = function()-- catch and hold
     resetBall()
-    Show(ball)
+    ShowReg(ball)
     ballIdleFunctions[5]()
     tP(tlarm,0,88,22,2)
     tP(tlarmr,0,-92,-22,2)
     WaitForTurns(tlarm,tlarmr)
     Sleep(3000)
-    Hide(ball)
+    HideReg(ball)
 
     end,
 [2] = function()-- keep up
@@ -7701,7 +7785,7 @@ ballIdleFunctions = {
     ballIdleFunctions[6]()
 
     resetBall()
-    Hide(ball)
+    HideReg(ball)
 end,
 [4] = function()--volley
     resetBall()
@@ -7710,7 +7794,7 @@ end,
     arcLength=math.random(45,180)
     arcDir = math.random(-35,35)
     setupBallArc(value, arcDir, arcLength)
-    Show(ball)
+    ShowReg(ball)
     tP(tlarm,0,88,54,2)
     tP(tlarmr,0,-92,-52,2)
     WTurn(BallArcPoint,x_axis, math.rad(0),0.981)
@@ -7725,7 +7809,7 @@ end,
         arcLength=math.random(45,180)
         arcDir = math.random(-35,35)
         setupBallArc(value, arcDir, arcLength)
-        Show(ball)
+        ShowReg(ball)
         WTurn(BallArcPoint,x_axis, math.rad(0),0.981)   
     end,
     [6] = function() -- kick ball
@@ -7761,20 +7845,20 @@ local function idle_playBall()
     ballIdleFunctions[ballDice]()
     legs_down()
     resetBall()
-    Hide(ball)
+    HideReg(ball)
 end
 --eggspawn --tigLil and SkinFantry
 
 
 function Setup()
-    Hide(tlpole)
-    Hide(deathpivot)
-    Hide(tldrum)
-    --Hide(tlharp)
-    Hide(tlflute)
-    Hide(ball)
-    Hide(handr)
-    Hide(handl)
+    HideReg(tlpole)
+    HideReg(deathpivot)
+    HideReg(tldrum)
+    --HideReg(tlharp)
+    HideReg(tlflute)
+    HideReg(ball)
+    HideReg(handr)
+    HideReg(handl)
 end
 
 function tradWalk()
@@ -7883,10 +7967,10 @@ end
 
 --- WALKING -
 function walk()
-    Hide(tldrum)
-    Hide(tlflute)
-    --Hide(tlharp)
-    --Hide(tldancedru)
+    HideReg(tldrum)
+    HideReg(tlflute)
+    --HideReg(tlharp)
+    --HideReg(tldancedru)
 
     dice= math.random(0,40)
 
