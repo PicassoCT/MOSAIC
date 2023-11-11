@@ -3,10 +3,10 @@ function widget:GetInfo()
   return {
     name      = "Rain",
     desc      = "Lets it automaticly rain",
-    author    = "Floris (original: trepan, Argh)",
-    date      = "29 may 2015",
+    author    = "Picasso",
+    date      = "2023",
     license   = "GNU GPL, v2 or later",
-    layer     = -24,
+    layer     = 0,
     enabled   = true  --  loaded by default?
   }
 end
@@ -36,6 +36,7 @@ local glBlending           = gl.Blending
 local glTranslate          = gl.Translate
 local glCallList           = gl.CallList
 local glDepthTest          = gl.DepthTest
+local glCopyToTexture			 = gl.CopyToTexture
 local glCreateList         = gl.CreateList
 local glDeleteList         = gl.DeleteList
 local glTexture            = gl.Texture
@@ -57,6 +58,9 @@ local GL_POINTS = GL.POINTS
 local boolRainActive = false
 local pausedTime = 0
 local lastFrametime = Spring.GetTimer()
+local raincanvasTex = nil
+local depthTex = nil
+local startOsClock
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -74,57 +78,77 @@ function init()
 	end
 	--https://www.shadertoy.com/view/wd2GDG inspiration
 	local fragmentShader = [[
-											  	#version 150 compatibility
+											  	#version 150 compatibility											 
+											  	uniform sampler2D raincanvasTex;
+										  		uniform sampler2D depthTex;
 											  	uniform float time;		
-													uniform vec3 camPos;
-
+													uniform vec3 camWorldPos;
+													uniform vec2 viewPortSize;
+											
+									in Data {
+											  		vec4 accumulatedLightColorRay;
+											  	 };
 													void main(void)
 													{
-														gl_FragColor = vec4(0.0,1.0,1.0, 1.0);
+														vec2 uv = gl_FragCoord.xy / viewPortSize;
+														gl_FragColor = texture2D(depthTex, uv); 
 													}
 												]]
 
 	local vertexShader = [[
 										  	#version 150 compatibility
+										  	uniform sampler2D raincanvasTex;
+										  	uniform sampler2D depthTex;
 												uniform float time;		
-												uniform vec3 camPos;
 
-												out {
+												uniform vec3 camWorldPos;
+												uniform vec2 viewPortSize;
+
+								out Data {
 											  		vec4 accumulatedLightColorRay;
-											  		};
+											  	};
 											  
-											  void rainRayPixel(vec2 camPixel, vec3 worldVector)
+											vec4 rainPixel(vec3 worldPos, float time, int randSeed)
+											{
+												//rainPixel
+											return vec4(1.0,0.0,0.0,0.5);
+												//Check for lightsourcecloseness
+											}	
+
+											  void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
 											  {
+												vec3 worldPosPixel = vec3 (1.0,2.0,3.0);
+												int randSeed= 42;
 											  	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
-											  	for depthresolution 
-											  	{
-											  	    accumulatedColor = rainPixel(vec3 worldPos, float time, int randSeed)
-											  	}
-											  }
-
-											  vec4 rainPixel(vec3 worldPos, float time, int randSeed)
-											  {
-											  	//rainPixel
-
-											  	//Check for lightsourcecloseness
-											  }	
+											  	//for depthresolution 
+											  	//{
+											  	    accumulatedColor = accumulatedColor + rainPixel(worldPosPixel,  time, randSeed);
+												//}
+											  }											  
 
 												void main(void)
 												{
-													vec3 pos = (gl_Vertex);
-													vec4 eyePos = gl_ModelViewMatrix * vec4(pos, 1.0);
-													vec3 scalePos = vec3(gl_Vertex) * scale;
+											
+													vec4 eyePos = gl_ModelViewMatrix * vec4(gl_Vertex.xyz, 1.0);
 													gl_Position = gl_ProjectionMatrix * eyePos;
 												}
 											  ]]
+local uniformInt = {
+	  raincanvasTex = 0,
+	  depthTex = 1
+	}
 
-	shader = glCreateShader({
+local shader = glCreateShader({
 		fragment = fragmentShader,
 		vertex = vertexShader,
+		uniformInt = uniformInt,
 		uniform = {
 			time   = diffTime,
 			scale  = 0,
-			camPos = {0,0,0},
+			camWorldPos = {0,0,0},
+		},
+		uniformFloat = {
+			viewPortSize = {vsx, vsy},
 		},
 	})
 
@@ -136,12 +160,15 @@ function init()
 	end
 	
 	shaderTimeLoc			= glGetUniformLocation(shader, 'time')
-	shaderCamPosLoc			= glGetUniformLocation(shader, 'camPos')
+	shaderCamPosLoc		= glGetUniformLocation(shader, 'camWorldPos')
 end
 
 
 function widget:Initialize()
 	init()
+	vsx, vsy = widgetHandler:GetViewSizes()
+	widget:ViewResize(vsx, vsy)
+	startOsClock = os.clock()
 end
 
 --------------------------------------------------------------------------------
@@ -195,11 +222,42 @@ function widget:GameFrame(gameFrame)
 end
 
 function widget:Shutdown()
+	glDeleteTexture(0, raincanvasTex)
+	glDeleteTexture(1, depthTex)
 	enabled = false
 end
 
+function widget:ViewResize(viewSizeX, viewSizeY)
+	vsx, vsy = viewSizeX, viewSizeY
+
+	raincanvasTex = gl.CreateTexture(vsx, vsy, {
+	    border = false,
+	    min_filter = GL.NEAREST,
+	    mag_filter = GL.NEAREST,
+		})
+
+  depthTex = gl.CreateTexture(vsx,vsy, {
+            border = false,
+            format = GL_DEPTH_COMPONENT24,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
+        })
+end
+
+function widget:Shutdown()
+	if glDeleteTexture then
+		glDeleteTexture(raincanvasTex or "")
+		glDeleteTexture(depthTex or "")
+	end
+
+	if shader then
+		gl.DeleteShader(shader)
+	end
+end
+	
+
 function widget:DrawWorld()
-	if not boolRainActive then return end
+	--if not boolRainActive then return end
 
 	local _, _, isPaused = Spring.GetGameSpeed()
 	if isPaused then
@@ -209,19 +267,23 @@ function widget:DrawWorld()
 	lastFrametime = Spring.GetTimer()
 	if os.clock() - startOsClock > 0.5 then		-- delay to prevent no textures being shown
 		if shader ~= nil  then
-			glUseShader(shader)	
+			glCopyToTexture("depthTex", 0, 0, 0, 0, vsx, vsy) -- the original screen image	
 			camX,camY,camZ = Spring.GetCameraPosition()
 			diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
 
 			glUniform(shaderTimeLoc,diffTime * 1)
 			glUniform(shaderCamPosLoc, camX, camY, camZ)
-			
-			glDepthTest(true)
-			glBlending(GL.SRC_ALPHA, GL.ONE)
-						
+			glTexture(0, raincanvasTex)
+			glTexture(1, depthTex)
+	  	glUseShader(shader)	
+	  	glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)  
+	  	glTexRect(0,vsy,vsx,0)	  
+			glBlending(GL.SRC_ALPHA, GL.ONE)						
 			local osClock = os.clock()
 			local timePassed = osClock - prevOsClock
 			prevOsClock = osClock
+			glTexture(0, false)
+			glTexture(1, false)
 			glResetState()
 			glUseShader(0)
 		end
