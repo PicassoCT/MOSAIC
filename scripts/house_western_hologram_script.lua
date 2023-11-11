@@ -100,9 +100,13 @@ local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopy ={}
 local lastFrame = Spring.GetGameFrame()
+
+
+
 function updateCheckCache()
-  frame = Spring.GetGameFrame()
+  local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
+    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
     GG.VisibleUnitPieces[unitID] = cachedCopy
     lastFrame = frame
   end
@@ -117,9 +121,10 @@ end
 
 function HideReg(pieceID)
     Hide(pieceID)  
-    for i=1, #copy do
-        if copy[i] == pieceID then
+    for i=1, #cachedCopy do
+        if cachedCopy[i] == pieceID then
             table.remove(cachedCopy, i)
+            break
         end
     end
     updateCheckCache()
