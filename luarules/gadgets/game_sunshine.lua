@@ -257,8 +257,8 @@ if gadgetHandler:IsSyncedCode() then
 
         if math.random(1, 10) > 5 and
             (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) and
-            GameConfig.instance.culture == "arabic" or
-            GameConfig.instance.culture == "international"
+            (GameConfig.instance.culture == "arabic" or
+            GameConfig.instance.culture == "international")
              then
             Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer" ..
                                      math.random(1, 3) .. ".ogg", 0.9)

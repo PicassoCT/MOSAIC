@@ -66,7 +66,7 @@ local options = {
         desc   = 'How much buildings the city contains. 1.0 = 150',
         type   = 'number',
         section= 'mapsettings',
-        def    = 0.8,
+        def    = 0.7,
         min    = 0.1,
         max    = 10.0,
         step   = 0.1,
