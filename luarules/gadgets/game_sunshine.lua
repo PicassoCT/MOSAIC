@@ -170,8 +170,7 @@ if gadgetHandler:IsSyncedCode() then
 
     function setSunArc(frame)
         local resultVec = makeVector(0.5, math.abs(
-                                         math.cos(
-                                             (frame % DAYLENGTH) / DAYLENGTH)),
+                                         math.sin(math.pi*((frame % DAYLENGTH) / DAYLENGTH))),
                                      0.3)
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
@@ -258,7 +257,9 @@ if gadgetHandler:IsSyncedCode() then
 
         if math.random(1, 10) > 5 and
             (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) and
-            GameConfig.instance.culture == "arabic" then
+            GameConfig.instance.culture == "arabic" or
+            GameConfig.instance.culture == "international"
+             then
             Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer" ..
                                      math.random(1, 3) .. ".ogg", 0.9)
         end

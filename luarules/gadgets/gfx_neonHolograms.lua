@@ -20,6 +20,12 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHOPAQ_FLAG = 16
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
+    local myTeamID = Spring.GetMyTeamID()
+    local myAllyTeamID = Spring.GetMyAllyTeamID() 
+    function gadget:PlayerChanged(playerID)
+        myAllyTeamID = Spring.GetMyAllyTeamID()
+        myTeamID = Spring.GetMyTeamID()
+    end
 
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
@@ -45,25 +51,62 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    local function serializePiecesTableTostring(t)
+        local result = ""
+        for i=1, #t do
+            result = result.."|"..t
+        end
+        return t
+    end
+
+    local allNeonUnits= {}
+    local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
             local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
             if engineVersion > 105.0 and  Spring.SetUnitEngineDrawMask then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
             end
-            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
-            SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
+            SendToUnsynced("setUnitNeonLuaDraw", unitID, serializePiecesTableTostring({}) )             
+            allNeonUnits[#allNeonUnits+1]= unitID
+           -- Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
+           -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
+    end
+
+    function gadget:GameFrame()
+        local result = {}
+        local VisibleUnitPieces = GG.VisibleUnitPieces
+        for id, value in pairs(neonUnitDataTransfer) do
+            if value and VisibleUnitPieces[value] then
+                SendToUnsynced("setUnitNeonLuaDraw", id, serializePiecesTableTostring(VisibleUnitPieces[value]) )                
+            end
+        end       
     end
 
     function gadget:UnitCreated(unitID, unitDefID)        
        registerUnitIfHolo(unitID, unitDefID)
     end
 
+   function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
+        if neonHologramTypeTable[unitDefID] and CallAsTeam(myTeamID, Spring.IsUnitVisible, unitID, nil, false) then
+            neonUnitDataTransfer[unitID] = unitID
+        end
+    end
+
+    function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+        if neonHologramTypeTable[unitDefID] and not CallAsTeam(myTeamID, Spring.IsUnitVisible, unitID, nil, false) then
+            neonUnitDataTransfer[unitID] = nil
+        end
+    end
+
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
-            SendToUnsynced("unsetUnitNeonLuaDraw", unitID, unitDefID)
+            for i=1,#allNeonUnits do
+                if allNeonUnits[i] == unitID then
+                    table.remove(allNeonUnits, i)
+                end
+            end
         end
     end
 
@@ -105,6 +148,7 @@ else -- unsynced
     local glowReflectHologramShader
     local vsx, vsy,vpx,vpy
     local sunChanged = false
+
 -------------------------------------------------------------------------------------
 
 -------Shader--2ndPass -----------------------------------------------------------
@@ -131,22 +175,18 @@ else -- unsynced
 
     local counterNeonUnits = 0
     local neonHoloParts= {}
-    local function unsetUnitNeonLuaDraw(callname, unitID, typeDefID)
-        neonUnitTables[unitID] = nil
-        counterNeonUnits= counterNeonUnits - 1
+
+    local function splitToNumberedArray(msg,sep)
+        local s=sep or '|'
+        local t={}
+        for e in string.gmatch(msg..s,'([^%'..s..']+)%'..s) do
+            t[#t+1] = tonumber(e)
+        end
+        return t
     end
 
-    local function setUnitNeonLuaDraw(callname, unitID, typeDefID)
-        neonUnitTables[#neonUnitTables +1] = {id = unitID, defID =  typeDefID}
-        if not neonHoloParts[typeDefID] then
-            neonHoloParts[typeDefID] = {}
-            local pieceList = Spring.GetUnitPieceList(unitID)
-            for pieceID, pieceName in ipairs(pieceList) do
-                --Spring.Echo(UnitDefs[unitDefID].name,unitID, unitDefID, pieceID, pieceName)
-                table.insert(neonHoloParts[typeDefID], pieceID)
-            end
-        end
-        --Spring.UnitRendering.SetUnitLuaDraw(unitID, true)       
+    local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
+        neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = splitToNumberedArray(listOfVisibleUnitPieces)} 
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -177,14 +217,12 @@ else -- unsynced
         }
     ]]
 
-
-
    local boolActivated = false
     function gadget:Initialize() 
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
-        gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
+
 
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
@@ -234,25 +272,15 @@ else -- unsynced
       
         neonHologramShader:ActivateWith(
             function()   
-                --neonHologramShader:SetUniform("viewPosX", vpx)
-                --neonHologramShader:SetUniform("viewPosY", vpy)
                 neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
-              
-                --neonHologramShader:SetUniformMatrix("projectionMatrix", "projection")
-                --neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                --neonHologramShader:SetUniformMatrix("viewMat", "view")
-                --neonHologramShader:SetUniformMatrix("normalMatrix", "normal")
-				--neonHologramShader:SetUniformMatrix("modelMatrix", "model")
-
-                --
+                
                 --variables
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
                     local px,py,pz = Spring.GetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
-
-                    local neonHoloDef = neonUnitTables[i].defID
-                    local neonHoloParts = neonHoloParts[neonHoloDef]
+                   
+                    local neonHoloParts = neonUnitTables[i].pieces
                     glUnitShapeTextures(neonHoloDef, true)
                     --glTexture(2, normalMaps[unitDefID])
                     glBlending(GL_SRC_ALPHA, GL_ONE)
@@ -276,17 +304,13 @@ else -- unsynced
                         glPopMatrix()
                     end
                     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                end  
-
-           
-
+                end
             end
         )
      
         glDepthTest(false)
         glCulling(false)
     end
-
 
     function gadget:DrawWorld()
         RenderNeonUnits()
@@ -295,6 +319,5 @@ else -- unsynced
     function gadget:Shutdown()
         neonHologramShader:Finalize()
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
-        gadgetHandler:RemoveChatAction("unsetUnitNeonLuaDraw")
     end
 end
