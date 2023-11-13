@@ -61,7 +61,7 @@ local lastFrametime = Spring.GetTimer()
 local raincanvasTex = nil
 local depthTex = nil
 local startOsClock
-
+local shaderFilePath = "luaui/widgets_mosaic/shader"
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -77,63 +77,9 @@ function init()
 		return
 	end
 	--https://www.shadertoy.com/view/wd2GDG inspiration
-	local fragmentShader = [[
-											  	#version 150 compatibility											 
-											  	uniform sampler2D raincanvasTex;
-										  		uniform sampler2D depthTex;
-											  	uniform float time;		
-													uniform vec3 camWorldPos;
-													uniform vec2 viewPortSize;
-											
-									in Data {
-											  		vec4 accumulatedLightColorRay;
-											  	 };
-													void main(void)
-													{
-														vec2 uv = gl_FragCoord.xy / viewPortSize;
-														gl_FragColor = texture2D(depthTex, uv); 
-													}
-												]]
-
-	local vertexShader = [[
-										  	#version 150 compatibility
-										  	uniform sampler2D raincanvasTex;
-										  	uniform sampler2D depthTex;
-												uniform float time;		
-
-												uniform vec3 camWorldPos;
-												uniform vec2 viewPortSize;
-
-								out Data {
-											  		vec4 accumulatedLightColorRay;
-											  	};
-											  
-											vec4 rainPixel(vec3 worldPos, float time, int randSeed)
-											{
-												//rainPixel
-											return vec4(1.0,0.0,0.0,0.5);
-												//Check for lightsourcecloseness
-											}	
-
-											  void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
-											  {
-												vec3 worldPosPixel = vec3 (1.0,2.0,3.0);
-												int randSeed= 42;
-											  	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
-											  	//for depthresolution 
-											  	//{
-											  	    accumulatedColor = accumulatedColor + rainPixel(worldPosPixel,  time, randSeed);
-												//}
-											  }											  
-
-												void main(void)
-												{
-											
-													vec4 eyePos = gl_ModelViewMatrix * vec4(gl_Vertex.xyz, 1.0);
-													gl_Position = gl_ProjectionMatrix * eyePos;
-												}
-											  ]]
-local uniformInt = {
+	local fragmentShader = VFS.Include(shaderFilePath.."rainShader.frag")
+	local vertexShader = VFS.Include(shaderFilePath.."rainShader.vert")
+	local uniformInt = {
 	  raincanvasTex = 0,
 	  depthTex = 1
 	}
