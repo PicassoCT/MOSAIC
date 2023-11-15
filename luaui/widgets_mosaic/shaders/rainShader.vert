@@ -88,6 +88,7 @@ void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
 		accumulatedColor = accumulatedColor + rainPixel(worldPosPixel,  time, randSeed);	
 	}
 	
+	accumulatedColor += getNoiseShiftedBackgroundColor(time, pixelCoord, lightingfactor,  rainThreshold);
 	return accumulatedColor;
 }											  
 
