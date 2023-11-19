@@ -77,8 +77,8 @@ function init()
 		return
 	end
 	--https://www.shadertoy.com/view/wd2GDG inspiration
-	local fragmentShader = VFS.Include(shaderFilePath.."rainShader.frag")
-	local vertexShader = VFS.Include(shaderFilePath.."rainShader.vert")
+	local fragmentShader = VFS.Include(shaderFilePath.."rainShader.frag", nil, VFS.RAW_FIRST)
+	local vertexShader = VFS.Include(shaderFilePath.."rainShader.vert", nil, VFS.RAW_FIRST)
 	local uniformInt = {
 	  raincanvasTex = 0,
 	  depthTex = 1
