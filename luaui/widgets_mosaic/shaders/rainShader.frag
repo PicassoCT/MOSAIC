@@ -130,8 +130,8 @@ float looksUpwardPercentage(vec3 viewDirection)
 
 vec4 addRainDropsShader(vec4 originalColor, float time, vec2 uv)
 {
-	
-}
+	return vec4(1.0,0.0,0.0,1.0)*originalColor;
+} 
 
 void main(void)
 {
