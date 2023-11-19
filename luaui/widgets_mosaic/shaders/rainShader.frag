@@ -9,6 +9,8 @@
 
 uniform sampler2D raincanvasTex;
 uniform sampler2D depthTex;
+uniform sampler2D origTex;
+
 uniform float time;		
 uniform float rainDensity;
 uniform int maxLightSources;
@@ -16,7 +18,6 @@ uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
 uniform vec4 lightSources[20];
 
-	
 in Data {
 			vec3 vfragWorldPos;
 		 };
@@ -143,7 +144,7 @@ void main(void)
 	vec4 accumulatedLightColorRay = rainRayPixel(TODO); 
 	vec4 backGroundLightIntersect = rayHoloGramLight(rainDensity, depthValueAtPos);
 	float upwardnessFactor = looksUpwardPercentage(viewDirection);
-	vec4 origColor = texture2D(origColorTex, uv);
+	vec4 origColor = texture2D(raincanvasTex, uv);
 	vec4 downWardrainColor = (origColor * depthValueAtPos)+ accumulatedLightColorRay + backGroundLightIntersect; 
 	vec4 upWardrainColor = origColor;
 	if (upwardnessFactor > 0.5)

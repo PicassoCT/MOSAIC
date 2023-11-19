@@ -213,7 +213,8 @@ function widget:DrawWorld()
 	lastFrametime = Spring.GetTimer()
 	if os.clock() - startOsClock > 0.5 then		-- delay to prevent no textures being shown
 		if shader ~= nil  then
-			glCopyToTexture("depthTex", 0, 0, 0, 0, vsx, vsy) -- the original screen image	
+			glCopyToTexture("depthTex", 0, 0, 0, 0, vsx, vsy) -- the depth texture	
+			glCopyToTexture("raincanvasTex", 0, 0, 0, 0, vsx, vsy) -- the original screen image	
 			camX,camY,camZ = Spring.GetCameraPosition()
 			diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
 
