@@ -4,7 +4,8 @@
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 15
 #define E_CONST 2.718281828459045235360287471352
-#defione TOTAL_SCAN_DISTANCE = 800
+#define TOTAL_SCAN_DISTANCE = 800
+#define COL_RED vec4(1.0,0.0,0.0,1.0)
 
 uniform sampler2D raincanvasTex;
 uniform sampler2D depthTex;
@@ -130,8 +131,8 @@ float looksUpwardPercentage(vec3 viewDirection)
 
 vec4 addRainDropsShader(vec4 originalColor, float time, vec2 uv)
 {
-	return vec4(1.0,0.0,0.0,1.0)*originalColor;
-} 
+	return COL_RED;
+}
 
 void main(void)
 {
