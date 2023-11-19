@@ -128,6 +128,11 @@ float looksUpwardPercentage(vec3 viewDirection)
 	return dot(normalize(viewDirection), upwardVec);
 }
 
+vec4 addRainDropsShader(vec4 originalColor, float time, vec2 uv)
+{
+	
+}
+
 void main(void)
 {
 	vec3 viewDirection = normalize(cameraWorldPos - vfragWorldPos);
@@ -137,11 +142,12 @@ void main(void)
 	vec4 accumulatedLightColorRay = rainRayPixel(TODO); 
 	vec4 backGroundLightIntersect = rayHoloGramLight(rainDensity, depthValueAtPos);
 	float upwardnessFactor = looksUpwardPercentage(viewDirection);
-	vec4 downWardrainColor = (vec4(0.5, 0.5, 0.25, 1.0) *depthValueAtPos)+ accumulatedLightColorRay + backGroundLightIntersect; 
-	vec4 upWardrainColor = vec3(0.0, 0.0,0.0, 1.0);
+	vec4 origColor = texture2D(origColorTex, uv);
+	vec4 downWardrainColor = (origColor * depthValueAtPos)+ accumulatedLightColorRay + backGroundLightIntersect; 
+	vec4 upWardrainColor = origColor;
 	if (upwardnessFactor > 0.5)
 	{
-		upWardrainColor = getRainDropsShader(time, uv);
+		upWardrainColor = addRainDropsShader(origColor, time, uv);
 		upWardrainColor = mix(downWardrainColor, upWardrainColor, upwardnessFactor - 0.5);
 	}	
 	else //no Raindrops blended in
