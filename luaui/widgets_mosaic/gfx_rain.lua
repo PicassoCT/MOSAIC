@@ -28,43 +28,56 @@ local shader
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local spGetGameFrame       = Spring.GetGameFrame
-local glBeginEnd           = gl.BeginEnd
-local glVertex             = gl.Vertex
-local glColor              = gl.Color
-local glBlending           = gl.Blending
-local glTranslate          = gl.Translate
-local glCallList           = gl.CallList
-local glDepthTest          = gl.DepthTest
+local spGetGameFrame        = Spring.GetGameFrame
+local glBeginEnd            = gl.BeginEnd
+local glVertex              = gl.Vertex
+local glColor               = gl.Color
+local glBlending            = gl.Blending
+local glTranslate           = gl.Translate
+local glCallList            = gl.CallList
+local glDepthTest           = gl.DepthTest
 local glCopyToTexture			 = gl.CopyToTexture
-local glCreateList         = gl.CreateList
-local glDeleteList         = gl.DeleteList
-local glTexture            = gl.Texture
-local glGetShaderLog       = gl.GetShaderLog
-local glCreateShader       = gl.CreateShader
-local glDeleteShader       = gl.DeleteShader
-local glUseShader          = gl.UseShader
-local glUniformMatrix      = gl.UniformMatrix
-local glUniformInt         = gl.UniformInt
-local glUniform            = gl.Uniform
-local glGetUniformLocation = gl.GetUniformLocation
-local glGetActiveUniforms  = gl.GetActiveUniforms
-local glBeginEnd = gl.BeginEnd
-local glPointSprite = gl.PointSprite
-local glPointSize = gl.PointSize
-local glPointParameter = gl.PointParameter
-local glResetState = gl.ResetState
-local GL_POINTS = GL.POINTS
-local boolRainActive = false
-local pausedTime = 0
-local lastFrametime = Spring.GetTimer()
-local raincanvasTex = nil
-local depthTex = nil
-local startOsClock
-local shaderFilePath = "luaui/widgets_mosaic/shader/"
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
+local glCreateList          = gl.CreateList
+local glDeleteList          = gl.DeleteList
+local glTexture             = gl.Texture
+local glGetShaderLog        = gl.GetShaderLog
+local glCreateShader        = gl.CreateShader
+local glDeleteShader        = gl.DeleteShader
+local glUseShader           = gl.UseShader
+local glUniformMatrix       = gl.UniformMatrix
+local glUniformInt          = gl.UniformInt
+local glUniform             = gl.Uniform
+local glGetUniformLocation 	= gl.GetUniformLocation
+local glGetActiveUniforms   = gl.GetActiveUniforms
+local glBeginEnd 			= gl.BeginEnd
+local glPointSprite 		= gl.PointSprite
+local glPointSize 			= gl.PointSize
+local glPointParameter 		= gl.PointParameter
+local glResetState 			= gl.ResetState
+local GL_POINTS 			= GL.POINTS
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Variables
+local boolRainActive 		= false
+local pausedTime 			= 0
+local lastFrametime 	    = Spring.GetTimer()
+local raincanvasTex 		= nil
+local depthTex 				= nil
+local startOsClock
+local shaderFilePath 		= "luaui/widgets_mosaic/shader/"
+local DAYLENGTH 			= 28800
+local rainDensity 			=  0.5
+local shaderTimeLoc			
+local shaderRainDensityLoc	
+local shaderCamPosLoc		
+local shaderMaxLightSrcLoc	
+local shaderLightSourcescLoc
+local boolRainyArea 		= false
+local maxLightSources 		= 0
+local shaderLightSources 	= {}
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function init()
 	
@@ -80,11 +93,11 @@ function init()
 	local fragmentShader = VFS.Include(shaderFilePath.."rainShader.frag", nil, VFS.RAW_FIRST)
 	local vertexShader = VFS.Include(shaderFilePath.."rainShader.vert", nil, VFS.RAW_FIRST)
 	local uniformInt = {
-	  raincanvasTex = 0,
-	  depthTex = 1
-	}
+			raincanvasTex = 0,
+			depthTex = 1
+			}
 
-local shader = glCreateShader({
+	local shader = glCreateShader({
 		fragment = fragmentShader,
 		vertex = vertexShader,
 		uniformInt = uniformInt,
@@ -105,9 +118,13 @@ local shader = glCreateShader({
 		return
 	end
 	
-	shaderTimeLoc			= glGetUniformLocation(shader, 'time')
+	shaderTimeLoc		= glGetUniformLocation(shader, 'time')
+	shaderRainDensityLoc= glGetUniformLocation(shader, 'rainDensity')
 	shaderCamPosLoc		= glGetUniformLocation(shader, 'camWorldPos')
+	shaderMaxLightSrcLoc= glGetUniformLocation(shader, 'maxLightSources')
+	shaderLightSourcescLoc= glGetUniformLocation(shader, 'lightSources')
 end
+
 
 
 function widget:Initialize()
@@ -137,7 +154,6 @@ local function isRainyArea()
 		return getDetermenisticHash() % 2 == 0 
 end
 
-local DAYLENGTH = 28800
 local function getDayTime()
 				local morningOffset = (DAYLENGTH / 2)
 				local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
@@ -148,23 +164,21 @@ local function getDayTime()
 				return hours, minutes, seconds, percent
 			end
 
+local function isRaining()
+			if boolRainyArea == nil then
+				boolRainyArea = isRainyArea()
+			end
+			if not boolRainyArea then return false end
 
- local boolRainyArea
- local function isRaining()
-                if boolRainyArea == nil then
-                    boolRainyArea = isRainyArea()
-                end
-                if not boolRainyArea then return false end
+			local hours = getDayTime() 
+			local gameFrames = Spring.GetGameFrame()
+			local dayNr = gameFrames/ DAYLENGTH
 
-                local hours = getDayTime() 
-                local gameFrames = Spring.GetGameFrame()
-                local dayNr = gameFrames/ DAYLENGTH
-
-                return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
-   end
+			return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
+end
 
 function widget:GameFrame(gameFrame)
-		boolRainActive  = isRaining()
+	boolRainActive  = isRaining()
 end
 
 function widget:Shutdown()
@@ -200,7 +214,6 @@ function widget:Shutdown()
 		gl.DeleteShader(shader)
 	end
 end
-	
 
 function widget:DrawWorld()
 	--if not boolRainActive then return end
@@ -218,8 +231,12 @@ function widget:DrawWorld()
 			camX,camY,camZ = Spring.GetCameraPosition()
 			diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
 
-			glUniform(shaderTimeLoc,diffTime * 1)
+			glUniform(shaderTimeLoc, diffTime * 1)
 			glUniform(shaderCamPosLoc, camX, camY, camZ)
+			glUniform(shaderRainDensityLoc, rainDensity * 1)
+			glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
+			glUniform(shaderLightSourcescLoc, shaderLightSources)
+
 			glTexture(0, raincanvasTex)
 			glTexture(1, depthTex)
 	  	glUseShader(shader)	
