@@ -20,7 +20,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHOPAQ_FLAG = 16
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
-    local myTeamID = Spring.GetMyTeamID()
+    local myTeamID = Spring.GetMyTeamID () 
     local myAllyTeamID = Spring.GetMyAllyTeamID() 
     function gadget:PlayerChanged(playerID)
         myAllyTeamID = Spring.GetMyAllyTeamID()

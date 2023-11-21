@@ -65,7 +65,7 @@ local lastFrametime 	    = Spring.GetTimer()
 local raincanvasTex 		= nil
 local depthTex 				= nil
 local startOsClock
-local shaderFilePath 		= "luaui/widgets_mosaic/shader/"
+local shaderFilePath 		= "luaui/widgets_mosaic/shaders/"
 local DAYLENGTH 			= 28800
 local rainDensity 			=  0.5
 local shaderTimeLoc			
