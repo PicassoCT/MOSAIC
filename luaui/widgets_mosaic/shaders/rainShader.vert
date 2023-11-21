@@ -18,6 +18,6 @@ void main(void)
 {	
 	vec4 eyePos = gl_ModelViewMatrix * vec4(gl_Vertex.xyz, 1.0);
 	//if cam goes upwards go to raindrop shader
-    gl_Position =  gl_ModelViewProjectionMatrix * vec4(camPosition, 1.0);
-    vfragWorldPos = (gl_ModelViewMatrix * vec4(camPosition, 1.0)).xyz;
+    gl_Position =  gl_ModelViewProjectionMatrix * vec4(camWorldPos, 1.0);
+    vfragWorldPos = (gl_ModelViewMatrix * vec4(camWorldPos, 1.0)).xyz;
 }

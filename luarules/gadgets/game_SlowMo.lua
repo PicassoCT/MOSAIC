@@ -228,6 +228,7 @@ else -- Unsynced
     local formerCommandTable = {}
     local alt, ctrl, meta, shift, left, right = 0, 0, 0, 0, 0, 0
     local side
+    local myTeam
     -- deactivate mouse icon
 
     local boolShaderActive = false

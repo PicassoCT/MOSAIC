@@ -11,11 +11,12 @@ function gadget:GetInfo()
     }
 end
 
-local myTeamID = 0
-local myAllyTeamID = 0
-local frameGameStart = math.huge
+
 
 if (gadgetHandler:IsSyncedCode()) then
+    local frameGameStart = math.huge      
+    local myAllyTeamID = 0
+    local myTeam = 0
 	local SO_NODRAW_FLAG = 0
 	local SO_OPAQUE_FLAG = 1
 	local SO_ALPHAF_FLAG = 2
@@ -27,7 +28,9 @@ if (gadgetHandler:IsSyncedCode()) then
  
     function gadget:PlayerChanged(playerID)
         myAllyTeamID = Spring.GetMyAllyTeamID()
-        myTeamID = Spring.GetMyTeamID()
+        if Spring.GetMyTeamID then
+            myTeam = Spring.GetMyTeamID()
+        end
     end
 
     VFS.Include("scripts/lib_mosaic.lua")    
@@ -48,7 +51,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:Initialize()
         myAllyTeamID = 0--Spring.GetMyAllyTeamID()
-        myTeamID = Spring.GetMyTeamID () 
+        if Spring.GetMyTeamID then
+            myTeam = Spring.GetMyTeamID () 
+        end
         allUnits = Spring.GetAllUnits()
         for _,id in pairs(allUnits) do
             unitDefID = Spring.GetUnitDefID(id)
@@ -96,13 +101,13 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] and CallAsTeam(myTeamID, Spring.IsUnitVisible, unitID, nil, false) then
+        if neonHologramTypeTable[unitDefID] and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
             neonUnitDataTransfer[unitID] = unitID
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] and not CallAsTeam(myTeamID, Spring.IsUnitVisible, unitID, nil, false) then
+        if neonHologramTypeTable[unitDefID] and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
             neonUnitDataTransfer[unitID] = nil
         end
     end
@@ -155,6 +160,7 @@ else -- unsynced
     local glowReflectHologramShader
     local vsx, vsy,vpx,vpy
     local sunChanged = false
+    local myTeam = 0
 
 -------------------------------------------------------------------------------------
 
