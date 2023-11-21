@@ -47,7 +47,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Initialize()
-        myAllyTeamID = Spring.GetMyAllyTeamID()
+        myAllyTeamID = 0--Spring.GetMyAllyTeamID()
         myTeamID = Spring.GetMyTeamID () 
         allUnits = Spring.GetAllUnits()
         for _,id in pairs(allUnits) do
