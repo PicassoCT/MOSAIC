@@ -11,6 +11,10 @@ function gadget:GetInfo()
     }
 end
 
+local myTeamID = 0
+local myAllyTeamID = 0
+local frameGameStart = math.huge
+
 if (gadgetHandler:IsSyncedCode()) then
 	local SO_NODRAW_FLAG = 0
 	local SO_OPAQUE_FLAG = 1
@@ -20,8 +24,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHOPAQ_FLAG = 16
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
-    local myTeamID = Spring.GetMyTeamID () 
-    local myAllyTeamID = Spring.GetMyAllyTeamID() 
+ 
     function gadget:PlayerChanged(playerID)
         myAllyTeamID = Spring.GetMyAllyTeamID()
         myTeamID = Spring.GetMyTeamID()
@@ -44,6 +47,8 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Initialize()
+        myAllyTeamID = Spring.GetMyAllyTeamID()
+        myTeamID = Spring.GetMyTeamID () 
         allUnits = Spring.GetAllUnits()
         for _,id in pairs(allUnits) do
             unitDefID = Spring.GetUnitDefID(id)
@@ -74,14 +79,16 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    function gadget:GameFrame()
-        local result = {}
-        local VisibleUnitPieces = GG.VisibleUnitPieces
-        for id, value in pairs(neonUnitDataTransfer) do
-            if value and VisibleUnitPieces[value] then
-                SendToUnsynced("setUnitNeonLuaDraw", id, serializePiecesTableTostring(VisibleUnitPieces[value]) )                
-            end
-        end       
+    function gadget:GameFrame(frame)
+		if frame > frameGameStart then
+			local result = {}
+			local VisibleUnitPieces = GG.VisibleUnitPieces
+			for id, value in pairs(neonUnitDataTransfer) do
+				if value and VisibleUnitPieces[value] then
+					SendToUnsynced("setUnitNeonLuaDraw", id, serializePiecesTableTostring(VisibleUnitPieces[value]) )                
+				end
+			end       
+		end
     end
 
     function gadget:UnitCreated(unitID, unitDefID)        
@@ -222,7 +229,7 @@ else -- unsynced
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
-
+		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
             vertex = neoVertexShaderFirstPass,
