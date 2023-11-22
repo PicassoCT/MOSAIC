@@ -6,6 +6,10 @@
 #define E_CONST 2.718281828459045235360287471352
 #define TOTAL_SCAN_DISTANCE = 800
 #define COL_RED vec4(1.0,0.0,0.0,1.0)
+#define MAX_HEIGTH_RAIN 512.0
+#define RAIN_DROP_LENGTH 15.0
+#define RAIN_COLOR vec4(0.0, 1.0, 0.0, 1.0)
+#define VEC_TODO vec3(1.0, 0.5, 0.5)
 
 uniform sampler2D raincanvasTex;
 uniform sampler2D depthTex;
@@ -23,13 +27,13 @@ in Data {
 		 };
 
  
-vec4 rainPixel(vec3 pixelCoord, float time, int randSeed, float rainDensity, float windFactor)
+vec4 rainPixel(vec3 pixelCoord, float time, int randSeed, float localRainDensity, float windFactor)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = Texture2D(deterministicRandom);
-	if (noiseValue > (1.0 -rainDensity))// A raindrop in pixel
+	float noiseValue = texture2D(deterministicRandom);
+	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
 		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* maxHeight;
@@ -54,10 +58,11 @@ vec4  color + strength.a
 */
 vec4 checkGetLightForPixel(vec3 pixelWorld)
 {
-	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0)
-	for (int i=0; i < maxLightSources; i+=2)
+	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
+	int i=0;
+	for ( i=0; i < maxLightSources; i+=2)
 	{
-		float lightSourceDistance = distance(pixelWorld, lightSources[i].xyz)
+		float lightSourceDistance = distance(pixelWorld, lightSources[i].xyz);
 		if ( lightSourceDistance < lightSources[i].a)
 		{
 			lightColorAddition += lightSources[i+1].rgba * (1.0-exp(-lightSourceDistance));
@@ -66,7 +71,7 @@ vec4 checkGetLightForPixel(vec3 pixelWorld)
 	return lightColorAddition;
 }
 
-vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float rainDensity)
+vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRainDensity)
 {
 	//check if intersects with depth map (max)
 
@@ -75,10 +80,10 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float rainDensi
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
 	float noiseValue = Texture2D(deterministicRandom);
-	if (noiseValue > (1.0 -rainDensity))// A raindrop in pixel
+	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
-		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* maxHeight;
+		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
 		float distanceToDropCenter = distance(dropCenterZ, pixelCoord.z);
 		if (dropCenterZ < pixelCoord.z && distanceToDropCenter < RAIN_DROP_LENGTH )
 		{
@@ -96,12 +101,11 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float rainDensi
 void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
 {
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
-
-	vec3 camToWorldPixelVector = vec3(TODO)
+	vec3 camToWorldPixelVector = VEC_TODO;
 	//für diesen Pixel im Weltkoordinatensystem gerastert vor der Kamera
-	vec3 startPixel = vec3 (TODO);
-
-	for (int i= 0; i < MAX_DEPTH_RESOLUTION; i++) 
+	vec3 startPixel = VEC_TODO;
+	int i= 0;
+	for (i= 0; i < MAX_DEPTH_RESOLUTION; i++) 
 	{
 		float factor = (float)(i/MAX_DEPTH_RESOLUTION);
 		float scanFactor =  exp((factor)/(1.0- E_CONST)*TOTAL_SCAN_DISTANCE;
@@ -116,12 +120,12 @@ void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
 	return accumulatedColor;
 }											  
 
-vec4 rayHoloGramLight(float depthValueAtPos )
+vec4 rayHoloGramLight(float localRainDensity, float depthValueAtPos )
 {
 	//TODO Prompt - I have a depthTextureMap, a CameraPixel + vector
 	//How to computate the Position of that pixel in the world where the ray intersects 
 	vec3 intersectPixel= vec3(TODO);
-	return checkGetLightForPixel(intersectPixel) * rainDensity;
+	return checkGetLightForPixel(intersectPixel) * localRainDensity;
 }
 
 float looksUpwardPercentage(vec3 viewDirection)
@@ -156,7 +160,4 @@ void main(void)
 	{
 		gl_FragColor = downWardrainColor;
 	}
-	
 }
-										
-										

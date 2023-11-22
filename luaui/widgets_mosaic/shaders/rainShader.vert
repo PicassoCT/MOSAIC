@@ -7,7 +7,6 @@ uniform int maxLightSources;
 uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
 uniform float rainDensity;
-	
 
 
 out Data {
