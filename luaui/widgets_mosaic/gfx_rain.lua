@@ -64,6 +64,7 @@ local pausedTime 			= 0
 local lastFrametime 	    = Spring.GetTimer()
 local raincanvasTex 		= nil
 local depthTex 				= nil
+local noiseTex				= nil
 local startOsClock
 local shaderFilePath 		= "luaui/widgets_mosaic/shaders/"
 local DAYLENGTH 			= 28800
@@ -76,6 +77,9 @@ local shaderLightSourcescLoc
 local boolRainyArea 		= false
 local maxLightSources 		= 0
 local shaderLightSources 	= {}
+local noiseTexture = ":n:LuaUI/images/noise.png"
+local canvasRainTextureID 	= 0
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -94,7 +98,8 @@ function init()
 	local vertexShader = VFS.LoadFile(shaderFilePath.."rainShader.vert")
 	local uniformInt = {
 			raincanvasTex = 0,
-			depthTex = 1
+			depthTex = 1,
+			noiseTex = 2
 			}
 
 	local shader = glCreateShader({
@@ -119,7 +124,7 @@ function init()
 	end
 	
 	maxDepthWorldLoc		= glGetUniformLocation(shader, 'maxDepthWorld')
-	shaderTimeLoc		= glGetUniformLocation(shader, 'time')
+	shaderTimeLoc		= glGetUniformLocation(shader, 'time')
 	shaderRainDensityLoc= glGetUniformLocation(shader, 'rainDensity')
 	shaderCamPosLoc		= glGetUniformLocation(shader, 'camWorldPos')
 	shaderMaxLightSrcLoc= glGetUniformLocation(shader, 'maxLightSources')
@@ -185,6 +190,7 @@ end
 function widget:Shutdown()
 	glDeleteTexture(0, raincanvasTex)
 	glDeleteTexture(1, depthTex)
+	glDeleteTexture(2, noiseTex)
 	enabled = false
 end
 
@@ -196,8 +202,8 @@ function widget:ViewResize(viewSizeX, viewSizeY)
 	    min_filter = GL.NEAREST,
 	    mag_filter = GL.NEAREST,
 		})
-
-  depthTex = gl.CreateTexture(vsx,vsy, {
+	
+	depthTex = gl.CreateTexture(vsx,vsy, {
             border = false,
             format = GL_DEPTH_COMPONENT24,
             min_filter = GL.NEAREST,
@@ -209,6 +215,7 @@ function widget:Shutdown()
 	if glDeleteTexture then
 		glDeleteTexture(raincanvasTex or "")
 		glDeleteTexture(depthTex or "")
+		glDeleteTexture(noiseTex or "")
 	end
 
 	if shader then
@@ -241,9 +248,11 @@ function widget:DrawWorld()
 
 			glTexture(0, raincanvasTex)
 			glTexture(1, depthTex)
+			glTexture(2,noiseTex)
+
 	  	glUseShader(shader)	
 	  	glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)  
-	  	glTexRect(0,vsy,vsx,0)	  
+	  	glTexRect(canvasRainTextureID, vsy, vsx, 0)	  
 			glBlending(GL.SRC_ALPHA, GL.ONE)						
 			local osClock = os.clock()
 			local timePassed = osClock - prevOsClock

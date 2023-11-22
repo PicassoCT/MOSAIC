@@ -13,7 +13,7 @@
 
 uniform sampler2D raincanvasTex;
 uniform sampler2D depthTex;
-uniform sampler2D origTex;
+uniform sampler2D noiseTex;
 
 uniform float time;		
 uniform float rainDensity;
@@ -28,12 +28,12 @@ in Data {
 		 };
 
  
-vec4 rainPixel(vec3 pixelCoord, float time, int randSeed, float localRainDensity, float windFactor)
+vec4 rainPixel(vec3 pixelCoord, float time, float localRainDensity, float windFactor)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = texture2D(deterministicRandom);
+	float noiseValue = texture2D(noiseTex, deterministicRandom);
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
@@ -80,7 +80,7 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 	vec4 colorToShift = vec4(gl_FragColor);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = Texture2D(deterministicRandom);
+	float noiseValue = Texture2D(noiseTex, deterministicRandom);
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
@@ -90,16 +90,14 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 		{
 			// rain drop 
 			colorToShift += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH);
-
 			colorToShift += checkGetLightForPixel(pixelCoord);
 		}
 	}
-	
 	return colorToShift;
 }
 
 // TODO: Problem der Regen ist in festen Bändern vor der Kamera, flackert evtl wenn sich die Kamera verschiebt
-void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
+void rainRayPixel(vec2 camPixel, vec3 worldVector)
 {
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
 	vec3 camToWorldPixelVector = VEC_TODO;
@@ -113,20 +111,23 @@ void rainRayPixel(vec2 camPixel, vec3 worldVector, float time)
 		vec3 newWorldPixelToCheck = startPixel * (camToWorldPixelVector * scanFactor);
 		// deterministic trace a ray back into world for log lightfalloff  in depth resolution
 	
-		//check if there is rain that pixel (x,y,z)   by time, coords and randomseed + windblow (sin(time))
-
-		accumulatedColor = accumulatedColor + rainPixel(newWorldPixelToCheck,  time);	
+		//check if there is rain that pixel (x,y,z)   by time, coords  + windblow (sin(time))
+		accumulatedColor = accumulatedColor + rainPixel(newWorldPixelToCheck);	
 	}
-	
 	return accumulatedColor;
 }											  
 
-vec4 rayHoloGramLight(float localRainDensity, float depthValueAtPos )
+vec4 rayHoloGramLightBackround(vec2 TexCoord, float localRainDensity, float depthValueAtRay )
 {
-	//TODO Prompt - I have a depthTextureMap, a CameraPixel + vector
-	//How to computate the Position of that pixel in the world where the ray intersects 
-	vec3 intersectPixel= vec3(TODO);
-	return checkGetLightForPixel(intersectPixel) * localRainDensity;
+	vec4 clipSpacePosition = vec4(TexCoord * 2.0 - 1.0, z, 1.0);
+    vec4 viewSpacePosition = gl_ProjectionMatrixInverse * clipSpacePosition;
+
+    // Perspective division
+    viewSpacePosition /= viewSpacePosition.w;
+
+    vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
+
+	return checkGetLightForPixel(worldSpacePosition) * localRainDensity;
 }
 
 float looksUpwardPercentage(vec3 viewDirection)
@@ -135,7 +136,7 @@ float looksUpwardPercentage(vec3 viewDirection)
 	return dot(normalize(viewDirection), upwardVec);
 }
 
-vec4 addRainDropsShader(vec4 originalColor, float time, vec2 uv)
+vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 {
 	return COL_RED;
 }
@@ -149,17 +150,16 @@ void main(void)
 {
 	vec3 viewDirection = normalize(cameraWorldPos - vfragWorldPos);
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
-	float depthValueAtPos = avg(vec3(texture2D(depthTex, uv)) * maxDepthWorld;	
-
-	vec4 accumulatedLightColorRay = rainRayPixel(TODO); 
-	vec4 backGroundLightIntersect = rayHoloGramLight(rainDensity, depthValueAtPos);
+	float depthValueAtPixel = vec3(texture2D(depthTex, uv).r *  2.0f - 1.0f;;	
+	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
+	vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
 	float upwardnessFactor = looksUpwardPercentage(viewDirection);
 	vec4 origColor = vec4(texture2D(raincanvasTex, uv), 1.0);
 	vec4 downWardrainColor = (origColor)+ accumulatedLightColorRay + backGroundLightIntersect; 
 	vec4 upWardrainColor = origColor;
 	if (upwardnessFactor > 0.5)
 	{
-		upWardrainColor = addRainDropsShader(origColor, time, uv);
+		upWardrainColor = addRainDropsShader(origColor, uv);
 		upWardrainColor = mix(downWardrainColor, upWardrainColor, upwardnessFactor - 0.5);
 		gl_FragColor = upWardrainColor;
 	}	
