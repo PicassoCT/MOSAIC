@@ -119,6 +119,7 @@ void rainRayPixel(vec2 camPixel, vec3 worldVector)
 
 vec4 rayHoloGramLightBackround(vec2 TexCoord, float localRainDensity, float depthValueAtRay )
 {
+	//Basis: https://stackoverflow.com/questions/32227283/getting-world-position-from-depth-buffer-value
 	vec4 clipSpacePosition = vec4(TexCoord * 2.0 - 1.0, z, 1.0);
     vec4 viewSpacePosition = gl_ProjectionMatrixInverse * clipSpacePosition;
 
