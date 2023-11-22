@@ -17,37 +17,14 @@ uniform sampler2D noiseTex;
 
 uniform float time;		
 uniform float rainDensity;
-uniform float maxDepthWorld;
 uniform int maxLightSources;
 uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
-uniform vec4 lightSources[20];
+
 
 in Data {
 			vec3 vfragWorldPos;
 		 };
-
- 
-vec4 rainPixel(vec3 pixelCoord, float time, float localRainDensity, float windFactor)
-{
-	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
-	float zAxisTime =  sin(time);
-	float noiseValue = texture2D(noiseTex, deterministicRandom);
-	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
-	{
-		//How far along z is it via time and does that intersect
-		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* maxHeight;
-		float distanceToDropCenter = distance(dropCenterZ, pixelCoord.z);
-		if (dropCenterZ < pixelCoord.z && distanceToDropCenter < RAIN_DROP_LENGTH )
-		{
-			// rain drop 
-			vec4 lightFactor = checkGetLightForPixel(pixelCoord);
-			pixelColor += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-		}
-	}
-	return pixelColor;
-}	
 
 
 //Lightsource description 
@@ -57,6 +34,8 @@ vec4  position + distance
 vec4  color + strength.a
 }
 */
+uniform vec4 lightSources[20];
+
 vec4 checkGetLightForPixel(vec3 pixelWorld)
 {
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
@@ -71,6 +50,27 @@ vec4 checkGetLightForPixel(vec3 pixelWorld)
 	}
 	return lightColorAddition;
 }
+ 
+vec4 rainPixel(vec3 pixelCoord, float time, float localRainDensity, float windFactor)
+{
+	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
+	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
+	float zAxisTime =  sin(time);
+	float noiseValue = (texture2D(noiseTex, deterministicRandom)).r;
+	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
+	{
+		//How far along z is it via time and does that intersect
+		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
+		float distanceToDropCenter = distance(dropCenterZ, pixelCoord.z);
+		if (dropCenterZ < pixelCoord.z && distanceToDropCenter < RAIN_DROP_LENGTH )
+		{
+			// rain drop 
+			vec4 lightFactor = checkGetLightForPixel(pixelCoord);
+			pixelColor += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+		}
+	}
+	return pixelColor;
+}	
 
 vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRainDensity)
 {
@@ -80,7 +80,7 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 	vec4 colorToShift = vec4(gl_FragColor);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = Texture2D(noiseTex, deterministicRandom);
+	float noiseValue = texture2D(noiseTex, deterministicRandom);
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
@@ -97,7 +97,7 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 }
 
 // TODO: Problem der Regen ist in festen Bändern vor der Kamera, flackert evtl wenn sich die Kamera verschiebt
-void rainRayPixel(vec2 camPixel, vec3 worldVector)
+vec4 rainRayPixel(vec2 camPixel, vec3 worldVector)
 {
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
 	vec3 camToWorldPixelVector = VEC_TODO;
@@ -107,7 +107,7 @@ void rainRayPixel(vec2 camPixel, vec3 worldVector)
 	for (i= 0; i < MAX_DEPTH_RESOLUTION; i++) 
 	{
 		float factor = (float)(i/MAX_DEPTH_RESOLUTION);
-		float scanFactor =  exp((factor)/(1.0- E_CONST)*TOTAL_SCAN_DISTANCE;
+		float scanFactor =  exp((factor)/(1.0- E_CONST))*TOTAL_SCAN_DISTANCE;
 		vec3 newWorldPixelToCheck = startPixel * (camToWorldPixelVector * scanFactor);
 		// deterministic trace a ray back into world for log lightfalloff  in depth resolution
 	
@@ -120,13 +120,13 @@ void rainRayPixel(vec2 camPixel, vec3 worldVector)
 vec4 rayHoloGramLightBackround(vec2 TexCoord, float localRainDensity, float depthValueAtRay )
 {
 	//Basis: https://stackoverflow.com/questions/32227283/getting-world-position-from-depth-buffer-value
-	vec4 clipSpacePosition = vec4(TexCoord * 2.0 - 1.0, z, 1.0);
+	vec4 clipSpacePosition = vec4(TexCoord * 2.0 - 1.0, depthValueAtRay, 1.0);
     vec4 viewSpacePosition = gl_ProjectionMatrixInverse * clipSpacePosition;
 
     // Perspective division
     viewSpacePosition /= viewSpacePosition.w;
 
-    vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
+    vec4 worldSpacePosition = cameraViewInv * viewSpacePosition;
 
 	return checkGetLightForPixel(worldSpacePosition) * localRainDensity;
 }

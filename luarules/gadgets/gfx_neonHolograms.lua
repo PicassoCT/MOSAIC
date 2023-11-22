@@ -27,7 +27,9 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
  
     function gadget:PlayerChanged(playerID)
-        myAllyTeamID = Spring.GetMyAllyTeamID()
+        if Spring.GetMyAllyTeamID then
+            myAllyTeamID = Spring.GetMyAllyTeamID()
+        end
         if Spring.GetMyTeamID then
             myTeam = Spring.GetMyTeamID()
         end
@@ -77,7 +79,9 @@ if (gadgetHandler:IsSyncedCode()) then
             if engineVersion > 105.0 and  Spring.SetUnitEngineDrawMask then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
             end
-            SendToUnsynced("setUnitNeonLuaDraw", unitID, serializePiecesTableTostring({}) )             
+            local emptyTable = {}
+            local stringToSend = serializePiecesTableTostring(emptyTable)
+            SendToUnsynced("setUnitNeonLuaDraw", unitID,  stringToSend )             
             allNeonUnits[#allNeonUnits+1]= unitID
            -- Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
@@ -90,7 +94,8 @@ if (gadgetHandler:IsSyncedCode()) then
 			local VisibleUnitPieces = GG.VisibleUnitPieces
 			for id, value in pairs(neonUnitDataTransfer) do
 				if value and VisibleUnitPieces[value] then
-					SendToUnsynced("setUnitNeonLuaDraw", id, serializePiecesTableTostring(VisibleUnitPieces[value]) )                
+                    local serializedStringToSend =serializePiecesTableTostring(VisibleUnitPieces[value])
+					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
 				end
 			end       
 		end
