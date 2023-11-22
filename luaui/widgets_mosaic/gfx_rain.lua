@@ -118,7 +118,8 @@ function init()
 		return
 	end
 	
-	shaderTimeLoc		= glGetUniformLocation(shader, 'time')
+	maxDepthWorldLoc		= glGetUniformLocation(shader, 'maxDepthWorld')
+	shaderTimeLoc		= glGetUniformLocation(shader, 'time')
 	shaderRainDensityLoc= glGetUniformLocation(shader, 'rainDensity')
 	shaderCamPosLoc		= glGetUniformLocation(shader, 'camWorldPos')
 	shaderMaxLightSrcLoc= glGetUniformLocation(shader, 'maxLightSources')
@@ -231,6 +232,7 @@ function widget:DrawWorld()
 			camX,camY,camZ = Spring.GetCameraPosition()
 			diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
 
+			glUniform(maxDepthWorldLoc, 1024)
 			glUniform(shaderTimeLoc, diffTime * 1)
 			glUniform(shaderCamPosLoc, camX, camY, camZ)
 			glUniform(shaderRainDensityLoc, rainDensity * 1)
