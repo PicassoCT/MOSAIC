@@ -139,16 +139,21 @@ vec4 addRainDropsShader(vec4 originalColor, float time, vec2 uv)
 	return COL_RED;
 }
 
+float avg(vec3 val)
+{
+return sqrt(val.x*val.x + val.y*val.y + val.z *val.z);
+}
+
 void main(void)
 {
 	vec3 viewDirection = normalize(cameraWorldPos - vfragWorldPos);
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
-	float depthValueAtPos = texture2D(depthTex, uv);	
+	float depthValueAtPos = avg(vec3(texture2D(depthTex, uv));	
 
 	vec4 accumulatedLightColorRay = rainRayPixel(TODO); 
 	vec4 backGroundLightIntersect = rayHoloGramLight(rainDensity, depthValueAtPos);
 	float upwardnessFactor = looksUpwardPercentage(viewDirection);
-	vec4 origColor = texture2D(raincanvasTex, uv);
+	vec4 origColor = vec4(texture2D(raincanvasTex, uv), 1.0);
 	vec4 downWardrainColor = (origColor * depthValueAtPos)+ accumulatedLightColorRay + backGroundLightIntersect; 
 	vec4 upWardrainColor = origColor;
 	if (upwardnessFactor > 0.5)
