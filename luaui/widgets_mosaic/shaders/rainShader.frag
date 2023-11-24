@@ -128,7 +128,7 @@ vec4 rayHoloGramLightBackround(vec2 TexCoord, float localRainDensity, float dept
 
     // Perspective division
     viewSpacePosition /= viewSpacePosition.w;
-    mat4 cameraViewInv = inverse(gl_ProjectionMatrix);
+    mat4 cameraViewInv = inverse(gl_ViewMatrix);
     vec4 worldSpacePosition = cameraViewInv * viewSpacePosition;
 
 	return checkGetLightForPixel(worldSpacePosition.xyz) * localRainDensity;
