@@ -12,7 +12,7 @@ function widget:GetInfo()
                 layer     = math.huge,
                 handler   = true, -- used widget handlers
                 enabled   = false, -- loaded by default,
-				-- hidden 	  = true
+		hidden 	  = true
         }
 end
 ----------------------------------------------------------------------------------------------------
