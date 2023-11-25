@@ -825,9 +825,9 @@ function HoloGrams()
         end
 
         if logo == qrcode then 
-            for i=1, #TablesOfPiecesGroups["buisness_holo56Spin"] do
-                if TablesOfPiecesGroups["buisness_holo56Spin"][i] and maRa() then
-                    ShowReg(TablesOfPiecesGroups["buisness_holo56Spin"][i])
+            for i=1, #TableOfPiecesGroups["buisness_holo56Spin"] do
+                if TableOfPiecesGroups["buisness_holo56Spin"][i] and maRa() then
+                    ShowReg(TableOfPiecesGroups["buisness_holo56Spin"][i])
                 end
             end
 
