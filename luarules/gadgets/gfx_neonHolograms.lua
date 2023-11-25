@@ -195,7 +195,7 @@ else -- unsynced
     end
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
-        neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = splitToNumberedArray(listOfVisibleUnitPieces)} 
+        neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = splitToNumberedArray(listOfVisibleUnitPiecesString)} 
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -278,6 +278,7 @@ else -- unsynced
                 --variables
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
+                    local neonHoloDef = Spring.GetUnitDefID(unitID)
                     local px,py,pz = Spring.GetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
                    
