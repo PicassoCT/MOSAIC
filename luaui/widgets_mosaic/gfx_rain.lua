@@ -7,7 +7,7 @@ function widget:GetInfo()
     date      = "2023",
     license   = "GNU GPL, v2 or later",
     layer     = 0,
-    enabled   = true  --  loaded by default?
+    enabled   = false  --  loaded by default?
   }
 end
 
@@ -250,7 +250,7 @@ function widget:DrawWorld()
 
 	  	glUseShader(shader)	
 	  	glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)  
-	  	glTexRect(canvasRainTextureID, vsy, vsx, 0)	  
+	  	--glTexRect(canvasRainTextureID, vsy, vsx, 0)	  
 			glBlending(GL.SRC_ALPHA, GL.ONE)						
 			local osClock = os.clock()
 			local timePassed = osClock - prevOsClock

@@ -8,7 +8,6 @@
     uniform sampler2D normalTex;
     uniform sampler2D reflectTex;
     uniform sampler2D screenTex;
-    uniform sampler2D depthTex;
 
     uniform float time;
     //uniform vec2 viewPortSize;

@@ -11,12 +11,10 @@ function gadget:GetInfo()
     }
 end
 
-
-
 if (gadgetHandler:IsSyncedCode()) then
     local frameGameStart = math.huge      
     local myAllyTeamID = 0
-    local myTeam = 0
+    local myTeam = nil
 	local SO_NODRAW_FLAG = 0
 	local SO_OPAQUE_FLAG = 1
 	local SO_ALPHAF_FLAG = 2
@@ -80,9 +78,9 @@ if (gadgetHandler:IsSyncedCode()) then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
             end
             local emptyTable = {}
-            local stringToSend = serializePiecesTableTostring(emptyTable)
-            SendToUnsynced("setUnitNeonLuaDraw", unitID,  stringToSend )             
-            allNeonUnits[#allNeonUnits+1]= unitID
+            local stringToSend = ""
+            SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
+            allNeonUnits[#allNeonUnits + 1]= unitID
            -- Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
@@ -93,8 +91,8 @@ if (gadgetHandler:IsSyncedCode()) then
 			local result = {}
 			local VisibleUnitPieces = GG.VisibleUnitPieces
 			for id, value in pairs(neonUnitDataTransfer) do
-				if value and VisibleUnitPieces[value] then
-                    local serializedStringToSend =serializePiecesTableTostring(VisibleUnitPieces[value])
+				if id and value and VisibleUnitPieces[value] then
+                    local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
 					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
 				end
 			end       
@@ -106,13 +104,13 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+        if neonHologramTypeTable[unitDefID] and myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
             neonUnitDataTransfer[unitID] = unitID
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+        if neonHologramTypeTable[unitDefID] and  myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
             neonUnitDataTransfer[unitID] = nil
         end
     end
@@ -133,7 +131,7 @@ else -- unsynced
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
     local screenTex
-    local depthTex
+ 
 
     local glGetSun = gl.GetSun
     local glDepthTest = gl.DepthTest
@@ -160,12 +158,11 @@ else -- unsynced
     local glUnitShapeTextures = gl.UnitShapeTextures
 -------Shader--FirstPass -----------------------------------------------------------
     local neoVertexShaderFirstPass = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
-    local neoFragmenShaderFirstPass=  VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
+    local neoFragmenShaderFirstPass= VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
     local neonHologramShader
     local glowReflectHologramShader
     local vsx, vsy,vpx,vpy
     local sunChanged = false
-    local myTeam = 0
 
 -------------------------------------------------------------------------------------
 
@@ -174,12 +171,6 @@ else -- unsynced
 --Execution of the shader
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
-        depthTex = gl.CreateTexture(vsx,vsy, {
-            border = false,
-            format = GL_DEPTH_COMPONENT24,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST,
-        })
 
         screenTex= gl.CreateTexture(vsx,vsy, {
             target = target,
@@ -194,10 +185,10 @@ else -- unsynced
     local counterNeonUnits = 0
     local neonHoloParts= {}
 
-    local function splitToNumberedArray(msg,sep)
-        local s=sep or '|'
+    local function splitToNumberedArray(msg)
+        local message = msg..'|'
         local t={}
-        for e in string.gmatch(msg..s,'([^%'..s..']+)%'..s) do
+        for e in string.gmatch(message,'([^%|]+)%|') do
             t[#t+1] = tonumber(e)
         end
         return t
@@ -210,12 +201,6 @@ else -- unsynced
 
     local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
-        depthTex = gl.CreateTexture(vsx,vsy, {
-            border = false,
-            format = GL_DEPTH_COMPONENT24,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST,
-        })
 
         screenTex= gl.CreateTexture(vsx,vsy, {
             target = target,
@@ -250,16 +235,14 @@ else -- unsynced
                     [1] = tex2,
                     [2] = normalTex,
                     [3] = reflectTex,
-                    [4] = screenTex,
-                    [5] = depthTex
+                    [4] = screenTex
                 },            
             uniformInt = {
                 tex1 = 0,
                 tex2 = 1,
                 normalTex = 2,
                 reflectTex = 3,
-                screenTex= 4,
-                depthTex= 5
+                screenTex= 4
             },
             uniformFloat = {
                 viewPosX = 0,
