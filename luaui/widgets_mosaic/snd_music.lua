@@ -231,7 +231,7 @@ function widget:Update(dt)
 			local tracks = VFS.Include(PLAYLIST_FILE, nil, VFS.RAW_FIRST)
 			warTracks = tracks.war
 			peaceDayTracks = tracks.peace
-			peaceNightTracks = tracks.peace
+			peaceNightTracks = tracks.night
 			briefingTracks = tracks.briefing
 			victoryTracks = tracks.victory
 			defeatTracks = tracks.defeat
@@ -328,7 +328,7 @@ function widget:Update(dt)
 			--Spring.SetSoundStreamVolume( playedTime/5)
 		--end
 		--Spring.Echo(previousTrackType, musicType)
-		if ( previousTrackType == "peace" and musicType == 'war' )
+		if ( string.find(previousTrackType, "peace") and musicType == 'war' )
 		 or (playedTime >= totalTime)	-- both zero means track stopped
 		 and not(haltMusic or looping) then
 			previousTrackType = musicType
@@ -349,7 +349,7 @@ function widget:GameStart()
 	if not gameStarted then
 		gameStarted = true
 		previousTrackType = musicType
-		musicType = "peace"
+		musicType = "peace_day"
 		StartTrack()
 	end
 	

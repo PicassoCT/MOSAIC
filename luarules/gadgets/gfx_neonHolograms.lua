@@ -23,6 +23,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHOPAQ_FLAG = 16
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
+    local boolOverride = true
  
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
@@ -33,8 +34,13 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    function HEAD()
+        return "Neon Hologram Rendering: "
+    end
+
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
+
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
     assert(neonHologramTypeTable)
     local engineVersion = getEngineVersion()
@@ -46,7 +52,7 @@ if (gadgetHandler:IsSyncedCode()) then
     if ( 104.0 < engineVersion  and engineVersion >= 105)  then
         unsupportedEngine = false
         enabled = true
-        Spring.Echo("gadget Neon Hologram Rendering is enabled")
+        echo(HEAD().."is enabled")
     end
 
     function gadget:Initialize()
@@ -73,6 +79,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
+            echo(HEAD().."registering holo unit")
             local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
             if engineVersion > 105.0 and  Spring.SetUnitEngineDrawMask then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
@@ -90,12 +97,16 @@ if (gadgetHandler:IsSyncedCode()) then
 		if frame > frameGameStart then
 			local result = {}
 			local VisibleUnitPieces = GG.VisibleUnitPieces
+            if count(neonUnitDataTransfer) > 0 then
+                 echo(HEAD().."Sending Neon Hologram unit data")
+            SendToUnsynced("resetUnitNeonLuaDraw")       
 			for id, value in pairs(neonUnitDataTransfer) do
 				if id and value and VisibleUnitPieces[value] then
                     local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
 					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
 				end
 			end       
+            end
 		end
     end
 
@@ -104,20 +115,30 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] and myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-            neonUnitDataTransfer[unitID] = unitID
+    assert(unitDefID)
+    assert(UnitDefs[unitDefID])
+        if neonHologramTypeTable[unitDefID] then
+            echo(HEAD().."Neon Hologram unit has entered LOS")
+            if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+                echo("Neon Hologram unit has entered LOS of myTeam")
+                neonUnitDataTransfer[unitID] = unitID
+            end
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] and  myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-            neonUnitDataTransfer[unitID] = nil
+        if neonHologramTypeTable[unitDefID] then
+            echo(HEAD().."Neon Hologram unit has left LOS")
+            if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
+                    neonUnitDataTransfer[unitID] = nil
+            end
         end
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            for i=1,#allNeonUnits do
+            echo(HEAD().."Neon Hologram unit has entered LOS")
+            for i=#allNeonUnits, 1, -1 do
                 if allNeonUnits[i] == unitID then
                     table.remove(allNeonUnits, i)
                 end
@@ -163,6 +184,8 @@ else -- unsynced
     local glowReflectHologramShader
     local vsx, vsy,vpx,vpy
     local sunChanged = false
+    local spGetUnitDefID = Spring.GetUnitDefID
+    local spGetUnitPosition = Spring.GetUnitPosition
 
 -------------------------------------------------------------------------------------
 
@@ -199,6 +222,12 @@ else -- unsynced
         counterNeonUnits= counterNeonUnits + 1
     end	
 
+   local function resetUnitNeonLuaDraw(callname)
+        neonUnitTables = {} 
+        counterNeonUnits= 0
+    end 
+    
+
     local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
 
@@ -212,6 +241,16 @@ else -- unsynced
 
     end
 
+    local vertexShader = 
+    [[
+       #version 150 compatibility
+
+        void main() {
+            vec3 posCopy = gl_Vertex;
+            posCopy.z = sin(time)*posCopy.z
+            gl_Position = posCopy;
+        }
+    ]]
     local fragmentShader = 
     [[
         void main() 
@@ -225,10 +264,11 @@ else -- unsynced
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
+        gadgetHandler:AddSyncAction("resetUnitNeonLuaDraw", resetUnitNeonLuaDraw)
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
-            vertex = neoVertexShaderFirstPass,
+            vertex = vertexShader, --neoVertexShaderFirstPass,
             fragment =  fragmentShader , --neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
@@ -253,11 +293,11 @@ else -- unsynced
 
         boolActivated = neonHologramShader:Initialize()
         if not boolActivated then 
-                Spring.Echo("Neon shader did not compile")
+                Spring.Echo("NeonShader:: did not compile")
                 gadgetHandler:RemoveGadget(self)
                 return 
         end
-        Spring.Echo("Neon shader did compile")
+        Spring.Echo("NeonShader:: did compile")
 
     end
 
@@ -266,21 +306,22 @@ else -- unsynced
     local function RenderNeonUnits()
 
         if counterNeonUnits == 0 or not boolActivated then
+            Spring.Echo("Rendering no Neon Units with n-units "..counterNeonUnits)
             return
         end    
 
-        glDepthTest(true)      
-      
+        glDepthTest(true)  
         neonHologramShader:ActivateWith(
             function()   
                 neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
                 
                 --variables
                 for i = 1, #neonUnitTables do
-                    local unitID = neonUnitTables[i].id
-                    local neonHoloDef = Spring.GetUnitDefID(unitID)
-                    local px,py,pz = Spring.GetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArrayAlways("unitCenterPosition",  {px,py, pz})
+                    local unitID = neonUnitTables[i].id                    
+              
+                    local neonHoloDef = spGetUnitDefID(unitID)
+                    local px,py,pz = spGetUnitPosition(unitID)
+                    neonHologramShader:SetUniformFloatArray("unitCenterPosition",  {px,py, pz})
                    
                     local neonHoloParts = neonUnitTables[i].pieces
                     glUnitShapeTextures(neonHoloDef, true)
@@ -319,7 +360,9 @@ else -- unsynced
     end
 
     function gadget:Shutdown()
+        echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
+        gadgetHandler.RemoveSyncAction("resetUnitNeonLuaDraw")
     end
 end

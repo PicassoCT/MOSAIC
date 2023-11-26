@@ -121,6 +121,7 @@ end
 
 function HideReg(pieceID)
     Hide(pieceID)  
+    --TODO make dictionary for efficiency
     for i=1, #cachedCopy do
         if cachedCopy[i] == pieceID then
             table.remove(cachedCopy, i)
