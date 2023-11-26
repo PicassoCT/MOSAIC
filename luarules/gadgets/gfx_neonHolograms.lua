@@ -244,15 +244,19 @@ else -- unsynced
     local vertexShader = 
     [[
        #version 150 compatibility
+        uniform float time;
 
         void main() {
-            vec3 posCopy = gl_Vertex;
-            posCopy.z = sin(time)*posCopy.z
+            vec4 posCopy = gl_Vertex;
+            posCopy.z = sin(time)*posCopy.z;
             gl_Position = posCopy;
         }
     ]]
     local fragmentShader = 
     [[
+        #version 150 compatibility
+        uniform float time;
+        
         void main() 
         {
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
@@ -360,7 +364,7 @@ else -- unsynced
     end
 
     function gadget:Shutdown()
-        echo("NeonShader:: shutting down gadget")
+        Spring.echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("resetUnitNeonLuaDraw")
