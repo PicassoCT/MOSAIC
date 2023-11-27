@@ -121,7 +121,7 @@ function getGameConfig()
 		emergencyLocationTimeMs = 20 *1000,
 		
         houseSizeX = 256,
-        houseSizeY = 16,
+        houseSizeY = 64,
         houseSizeZ = 256,
         innerCitySize = 1024,
         innerCityNeonStreet = 512,
