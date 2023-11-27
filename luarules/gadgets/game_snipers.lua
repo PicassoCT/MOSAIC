@@ -42,17 +42,19 @@ function getParent(childID)
 
 end
 
-function SetUnitPosition(operativeID)
-		x,y, z = Spring.GetUnitPosition(operativeID)
-		y= y + gameConfig.houseSizeY
-		Spring.MoveCtrl.Enable(operativeID)
-		Spring.MoveCtrl.SetPosition(operativeID, x, y, z)
+function SetUnitPosition(iconID, operativeID)
+ 	env = Spring.UnitScript.GetScriptEnv(iconID)
+        if env and env.TransportPickup then
+            Spring.UnitScript.CallAsUnit(iconID, env.TransportPickup, operativeID)
+        end
 end
 
 function gadget:UnitFinished(unitID, unitDefID)
 	if unitDefID == sniperIconDefID then
+		Spring.SetUnitNoSelect(unitID, true)
 		parentID =  getParent(unitID)
 		sniperIcons[unitID] = parentID
+		SetUnitPosition(unitID, parentID)
 		setSpeedEnv(parentID, 0.0)
 	end
 end
@@ -61,16 +63,15 @@ function hasMoveCommand(operativeID)
 	return false
 end
 
-function handleCloseCombatHouseInterrogated(operativeID)
---TODO
-end
+
 
 function gadget:GameFrame(frame)
 	if count(sniperIcons) > 0 then
-		for iconID, operativeID in pairs(sniper do
-			if existsAlive(iconID) and existsAlive(operativeID) then
+		for iconID, operativeID in pairs(sniperIcons) do
+			if operativeID and  existsAlive(iconID) and existsAlive(operativeID) then
 				if hasMoveCommand(operativeID) or handleCloseCombatHouseInterrogated then --TODO otherDisruptions then
 					--destroy Icon
+
 					Spring.DestroyUnit(iconID,false, true)
 					--resume ordinary unit physics
 					Spring.MoveCtrl.Disable(operativeID)
