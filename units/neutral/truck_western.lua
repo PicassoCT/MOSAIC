@@ -75,7 +75,7 @@ CivilianTrucks["truck_western3"].turninplace 			= true
 CivilianTrucks["truck_western3"].acceleration = 0.25
 CivilianTrucks["truck_western3"].maxVelocity		= 2.5
 CivilianTrucks["truck_western3"].brakeRate = 0.3
-CivilianTrucks["truck_western3"].mass = 9000
+CivilianTrucks["truck_western3"].mass = 90000
 
 return lowerkeys({
 	--Temp
