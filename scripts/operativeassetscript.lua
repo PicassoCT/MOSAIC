@@ -1025,7 +1025,13 @@ function gunAimFunction(weaponID, heading, pitch)
     return true
 end
 
+boolTransportedBySniperIcon = false
+function setTransportedBySniperIcon(TransportedBySniperIcon)
+	boolTransportedBySniperIcon = TransportedBySniperIcon
+end
+
 function sniperAimFunction(weaponID, heading, pitch)
+	if not boolTransportedBySniperIcon then return false end
     boolAiming = true
 	showFireArm()
     if boolWalking == true then
