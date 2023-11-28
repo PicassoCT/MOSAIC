@@ -530,45 +530,6 @@ local ObjectiveIcon =
 }
 
 
-local DeploySniperRifleIcon =
-    Abstract:New {
-    corpse = "",
-    maxDamage = 500,
-    mass = 500,
-    buildCostEnergy = 5,
-    buildCostMetal = 5,
-    canMove = true,
-    buildPic = "",
-    iconType = "SniperIcon",
-    explodeAs = "none",
-    Acceleration = 0,
-    BrakeRate = 0,
-    TurnRate = 0,
-	buildingMask = 8,
-    MaxVelocity = 0,
-    --
-    description = "Deploy sniper rifle on the roof ",
-    levelGround = false,
-    CanAttack = false,
-    CanGuard = false,
-    name = "SniperIcon",
-    CanMove = true,
-    CanPatrol = true,
-    CanStop = true,
-    script = "sniperIconScript.lua",
-    objectName = "sniperIcon.dae",
-	cantBeTransported 	= true,
-	alwaysupright		= true,
-	transportCapacity = 1,
-    onoffable = true,
-    activatewhenbuilt = true,
-    customparams = {
-        helptext = "Sniper Operator Icon",
-        baseclass = "Abstract" -- TODO: hacks
-    },
-    category = "NOTARGET ABSTRACT"
-}
-
 local BribeIcon =
     Abstract:New {
     corpse = "",
@@ -733,6 +694,48 @@ local CyberCrime =
     },
     category = "NOTARGET ABSTRACT"
 }
+
+
+local DeploySniperRifleIcon =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 5,
+    buildCostMetal = 5,
+    canMove = true,
+    buildPic = "",
+    iconType = "SniperIcon",
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+	buildingMask = 8,
+    MaxVelocity = 0,
+    --
+    description = "Deploy sniper rifle on the roof ",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    name = "SniperIcon",
+    CanMove = true,
+    CanPatrol = true,
+    CanStop = true,
+    script = "sniperIconScript.lua",
+    objectName = "sniperIcon.dae",
+	cantBeTransported 	= true,
+	isFirePlatform = true,
+	alwaysupright		= true,
+	transportCapacity = 1,
+    onoffable = true,
+    activatewhenbuilt = true,
+    customparams = {
+        helptext = "Sniper Operator Icon",
+        baseclass = "Abstract" -- TODO: hacks
+    },
+    category = "NOTARGET ABSTRACT"
+}
+
 return lowerkeys(
     {
         --Temp
