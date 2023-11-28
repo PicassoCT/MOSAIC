@@ -89,7 +89,7 @@ function init()
 	if enabled == false then return end
 	
 	if (glCreateShader == nil) then
-		Spring.Echo("[Snow widget:Initialize] no shader support")
+		Spring.Echo("[Rain widget:Initialize] no shader support")
 		widgetHandler:RemoveWidget(self)
 		return
 	end

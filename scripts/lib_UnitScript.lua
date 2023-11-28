@@ -5496,6 +5496,16 @@ function GetCurrentMoveGoal(unitID)
       end
 end
 
+function GetMoveGoal(unitID)
+    CommandTable = Spring.GetUnitCommands(unitID, 1)
+      if CommandTable and CommandTable[1] and  (command.id < 0 or command.id == CMD.MOVE)  then
+              gx,_, gz = GetCommandPos(CommandTable[1])             
+                  if gx and gx ~= -10 or gz and gz ~= -10 then
+                    return gx, gz 
+                end
+      end
+end
+
 function GetCommandPos(command)   --- get the command position
   if command.id < 0 or command.id == CMD.MOVE or command.id == CMD.REPAIR or command.id == CMD.RECLAIM or
   command.id == CMD.RESURRECT or command.id == CMD.DGUN or command.id == CMD.GUARD or
