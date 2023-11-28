@@ -529,6 +529,44 @@ local ObjectiveIcon =
     category = "NOTARGET ABSTRACT"
 }
 
+
+local DeploySniperRifleIcon =
+    Abstract:New {
+    corpse = "",
+    maxDamage = 500,
+    mass = 500,
+    buildCostEnergy = 5,
+    buildCostMetal = 5,
+    canMove = true,
+    buildPic = "",
+    iconType = "interrogationicon",
+    explodeAs = "none",
+    Acceleration = 0,
+    BrakeRate = 0,
+    TurnRate = 0,
+	buildingMask = 8,
+
+    MaxVelocity = 0,
+    --
+    description = "Deploy sniper rifle on the roof ",
+    levelGround = false,
+    CanAttack = false,
+    CanGuard = false,
+    name = "Raidunit",
+    CanMove = true,
+    CanPatrol = true,
+    CanStop = true,
+    script = "sniperIconScript.lua",
+    objectName = "sniperIcon.dae",
+    onoffable = true,
+    activatewhenbuilt = true,
+    customparams = {
+        helptext = "Sniper/Raid Icon",
+        baseclass = "Abstract" -- TODO: hacks
+    },
+    category = "NOTARGET ABSTRACT"
+}
+
 local BribeIcon =
     Abstract:New {
     corpse = "",
@@ -712,6 +750,7 @@ return lowerkeys(
         ["cybercrimeicon"] = CyberCrime:New(),
         ["destroyedobjectiveicon"] = DestroyedObjective:New(),
         ["deaddropicon"] = DeadDropIcon:New(),
-        ["blackouticon"] = BlackOutIcon:New()
+        ["blackouticon"] = BlackOutIcon:New(),
+        ["sniperrifleicon"] = DeploySniperRifleIcon:New(),
     }
 )
