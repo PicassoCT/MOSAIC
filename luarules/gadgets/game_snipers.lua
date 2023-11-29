@@ -15,32 +15,12 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
-VFS.Include("scripts/lib_staticstring.lua")
 
-local GameConfig = getGameConfig()
---if not Game.version then Game.version = GameConfig.instance.Version end
-local spGetUnitPosition = Spring.GetUnitPosition
-local spGetUnitDefID = Spring.GetUnitDefID
-local spGetUnitTeam = Spring.GetUnitTeam
-local spGetUnitHealth = Spring.GetUnitHealth
-local spGetGameFrame = Spring.GetGameFrame
-local spGetGroundHeight = Spring.GetGroundHeight
-local spGetUnitNearestAlly = Spring.GetUnitNearestAlly
-
-local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
-local spSetUnitNoSelect = Spring.SetUnitNoSelect
-local spRequestPath = Spring.RequestPath
-local spCreateUnit = Spring.CreateUnit
-local spDestroyUnit = Spring.DestroyUnit
 
 local UnitDefNames = getUnitDefNames(UnitDefs)
 
 local sniperIconDefID = UnitDefNames["sniperrifleicon"].id
 local sniperIcons = {}
-
-function getParent(childID)
-
-end
 
 function SetUnitPosition(iconID, operativeID)
  	env = Spring.UnitScript.GetScriptEnv(iconID)
@@ -51,37 +31,9 @@ end
 
 function gadget:UnitFinished(unitID, unitDefID)
 	if unitDefID == sniperIconDefID then
-		Spring.SetUnitNoSelect(unitID, true)
-		parentID =  getParent(unitID)
 		sniperIcons[unitID] = parentID
 		SetUnitPosition(unitID, parentID)
-		setSpeedEnv(parentID, 0.0)
 	end
-end
-
-function hasMoveCommand(operativeID)
-	return false
-end
-
-
-
-function gadget:GameFrame(frame)
-	if count(sniperIcons) > 0 then
-		for iconID, operativeID in pairs(sniperIcons) do
-			if operativeID and  existsAlive(iconID) and existsAlive(operativeID) then
-				if hasMoveCommand(operativeID) or handleCloseCombatHouseInterrogated then --TODO otherDisruptions then
-					--destroy Icon
-
-					Spring.DestroyUnit(iconID,false, true)
-					--resume ordinary unit physics
-					Spring.MoveCtrl.Disable(operativeID)
-					sniperIcons[iconID] = nil
-				end
-			end
-		--move Operator up, allow it to walk on the roof, expand view, activate rifle
-		-- check Move Commands, on Move Command, destroy Icon, remove Unit
-		
-	end    
 end
 
 
