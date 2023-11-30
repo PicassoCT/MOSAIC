@@ -25,32 +25,35 @@ function script.Create()
     Hide(attachPoint)
 	StartThread(threadStarter)
 end
-function isWithinBuilding(personOnRoof, mx mz)
-	
+function checkIsWithinBuilding()
+	groundMask = TODO_getGroundMask
+	if not Spring.Bitwise.And(groundMask, 8) then
+		Spring.DestroyUnit(unitID, true, false)
+		TransportDrop(storePassengerID)
+	end
 
+end
+
+function handleCommandTransfer(passengerID)
+
+--TODO copy from car
 end
 
 
 function threadStarter()
 	while true do
-		while storePassengerID do
-			if doesUnitExistAlive(storePassengerID) then
-				mx,mz = GetMoveGoal(storePassengerID)
-				if mx then
-					-- isWithinBuilding - move Icon
-					if isWithinBuilding(storePassengerID, mx,mz) then
-						Command("go", unitID, {mx, 0, mz})
-					else
-					-- is outside drop
-						TransportDrop(storePassengerID)
-					end
-				end				
+		if storePassengerID then
+			StartThread(handleCommandTransfer, storePassengerID)
+			while storePassengerID do
+				if doesUnitExistAlive(storePassengerID) then	
+					--set Move goal
+					checkIsWithinBuilding()
+				end
+				Sleep(100)
 			end
-		Sleep(100)
 		end
 	Sleep(1000)
 	end
-
 end
 
 

@@ -700,7 +700,7 @@ local DeploySniperRifleIcon =
     Abstract:New {
     corpse = "",
     maxDamage = 500,
-    mass = 500,
+    mass = 90000,
     buildCostEnergy = 5,
     buildCostMetal = 5,
     canMove = true,
@@ -711,7 +711,11 @@ local DeploySniperRifleIcon =
     BrakeRate = 0,
     TurnRate = 0,
 	buildingMask = 8,
-    MaxVelocity = 0,
+    Acceleration = 0.8,
+	BrakeRate = 0.6,
+	TurnRate = 1200,
+	MaxVelocity = 4.4,
+
     --
     description = "Deploy sniper rifle on the roof ",
     levelGround = false,
@@ -726,7 +730,15 @@ local DeploySniperRifleIcon =
 	cantBeTransported 	= true,
 	isFirePlatform = true,
 	alwaysupright		= true,
+	transportSize = 16,
 	transportCapacity = 1,
+
+	usepiececollisionvolumes = false,
+	FootprintX = 1,
+	FootprintZ = 1,
+	cantBeTransported = false,
+	transportSize = 1,
+	
     onoffable = true,
     activatewhenbuilt = true,
     customparams = {
