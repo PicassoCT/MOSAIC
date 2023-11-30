@@ -719,11 +719,11 @@ local DeploySniperRifleIcon =
     --
     description = "Deploy sniper rifle on the roof ",
     levelGround = false,
-    CanAttack = false,
+    CanAttack = true,
     CanGuard = false,
     name = "SniperIcon",
     CanMove = true,
-    CanPatrol = true,
+    CanPatrol = false,
     CanStop = true,
     script = "sniperIconScript.lua",
     objectName = "sniperIcon.dae",
@@ -736,7 +736,7 @@ local DeploySniperRifleIcon =
 	usepiececollisionvolumes = false,
 	FootprintX = 1,
 	FootprintZ = 1,
-	cantBeTransported = false,
+
 	transportSize = 1,
 	
     onoffable = true,
