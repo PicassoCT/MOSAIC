@@ -31,6 +31,12 @@ function checkIsWithinBuilding()
 		Spring.DestroyUnit(unitID, true, false)
 		TransportDrop(storePassengerID)
 	end
+	
+	foreach( getAllNearUnit(unitID),
+			function(id)
+				TODO
+			end)
+	
 
 end
 

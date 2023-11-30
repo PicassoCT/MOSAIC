@@ -22,6 +22,8 @@ local UnitDefNames = getUnitDefNames(UnitDefs)
 local sniperIconDefID = UnitDefNames["sniperrifleicon"].id
 local sniperIcons = {}
 
+
+
 function SetUnitPosition(iconID, operativeID)
  	env = Spring.UnitScript.GetScriptEnv(iconID)
         if env and env.TransportPickup then
