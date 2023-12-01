@@ -697,7 +697,7 @@ local CyberCrime =
 
 
 local DeploySniperRifleIcon =
-    Abstract:New {
+    Human:New {
     corpse = "",
     maxDamage = 500,
     mass = 90000,
@@ -715,8 +715,6 @@ local DeploySniperRifleIcon =
 	BrakeRate = 0.6,
 	TurnRate = 1200,
 	MaxVelocity = 4.4,
-
-    --
     description = "Deploy sniper rifle on the roof ",
     levelGround = false,
     CanAttack = true,

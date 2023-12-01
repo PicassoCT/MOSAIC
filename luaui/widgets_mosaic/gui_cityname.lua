@@ -7064,8 +7064,10 @@ local function getCityNameByProvince(provincelocal, hash)
 ["Gloucestershire"] = {"Cheltenham","Stroud","Tewkesbury","Quedgeley","Bishops Cleeve","Lydney","Cam","Stonehouse","Dursley","Wotton-under-Edge","Tetbury",
 "Newent","Cirencester","Churchdown","Hucclecote","Charlton Kings","Coleford","Cinderford","Chalford","Brockworth","Nailsworth","Tidenham",
       },
-["Ahuachapan"] = {"Ahuachapan","Atiquizaya","Tacuba","Guaymango","Concepcion de Ataco"}}
-
+["Ahuachapan"] = {"Ahuachapan","Atiquizaya","Tacuba","Guaymango","Concepcion de Ataco"},
+ ["Ningbo"]={"Hangzhou","Taizhou","Jinhua","Shaoxing","Jiaxing","Wenzhou","Huzhou","Quzhou","Lishui","Xushan"}
+}
+  if not province_city_map[provincelocal] then Spring.Echo("Not a valid province ".. provincelocal) end
   setCacheBy("city", province_city_map[provincelocal][(hash % #province_city_map[provincelocal])+1 ])
   return "City: "..getCacheBy("city") 
 end

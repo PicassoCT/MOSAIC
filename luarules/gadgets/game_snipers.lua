@@ -16,12 +16,9 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-
-local UnitDefNames = getUnitDefNames(UnitDefs)
-
+UnitDefNames = getUnitDefNames(UnitDefs)
 local sniperIconDefID = UnitDefNames["sniperrifleicon"].id
 local sniperIcons = {}
-
 
 
 function SetUnitPosition(iconID, operativeID)
