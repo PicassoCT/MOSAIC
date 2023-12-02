@@ -364,7 +364,7 @@ else -- unsynced
     end
 
     function gadget:Shutdown()
-        Spring.echo("NeonShader:: shutting down gadget")
+        Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("resetUnitNeonLuaDraw")

@@ -2403,6 +2403,31 @@ function getRegionByCulture(culture, hash)
   end
 end
 
+function getAzimuthByRegion(culture, hash)
+    returnHash= 0
+    minimum = 0
+    _, region = getCountryByCulture(culture, hash)
+    region_azimuthMap ={
+        Africa = {min = 60, max= 90, sign= -1},
+        MiddleEast = {min= 75, max= 85, sign = randSign()},
+        CentralAsia = {min= 60, max= 80, sign = 1},
+        Europe = {min = 55, max=75, sign= 1},
+        NorthAmerica = {min= 60, max= 80, sign= 1},
+        SouthAmerica = {min = 70, max=89, sign = -1},
+        SouthEastAsia = { min= 75, max = 90, sign= -1 },
+        International = {min= 45, max= 89, sign = randSign()}
+        }
+
+    if not region_azimuthMap[region] then
+        region = "International"
+    end
+
+    minimum = region_azimuthMap[region].min
+    maximum = region_azimuthMap[region].max
+
+    return ((hash % maximum)% minimum) + minimum, region_azimuthMap[region].sign
+end
+
 function getCountryByCulture(culture, hash)
 
   region_countryMap ={
@@ -2417,41 +2442,41 @@ function getCountryByCulture(culture, hash)
 
   if culture == "arabic" then
     if hash % 3 == 0 then
-      return region_countryMap.MiddleEast[((hash*69) % #region_countryMap.MiddleEast) +1 ]
+      return region_countryMap.MiddleEast[((hash*69) % #region_countryMap.MiddleEast) +1 ], "MiddleEast"
     end
     if hash % 3 == 1 then
-      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ]
+      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ], "CentralAsia"
     end
     if hash % 3 == 2 then
-      return region_countryMap.Africa[((hash*69) % #region_countryMap.Africa) +1 ]
+      return region_countryMap.Africa[((hash*69) % #region_countryMap.Africa) +1 ], "Africa"
     end
   end
 
   if culture == "western" then 
     if hash % 3 == 0 then
-      return region_countryMap.Europe[((hash*69) % #region_countryMap.Europe) +1 ]
+      return region_countryMap.Europe[((hash*69) % #region_countryMap.Europe) +1 ], "Europe"
     end
     if hash % 3 == 1 then
-      return region_countryMap.NorthAmerica[((hash*69) % #region_countryMap.NorthAmerica) +1 ]
+      return region_countryMap.NorthAmerica[((hash*69) % #region_countryMap.NorthAmerica) +1 ], "NorthAmerica"
     end
     if hash % 3 == 2 then
-      return region_countryMap.SouthAmerica[((hash*69) % #region_countryMap.SouthAmerica) +1 ]
+      return region_countryMap.SouthAmerica[((hash*69) % #region_countryMap.SouthAmerica) +1 ], "SouthAmerica"
     end
   end
 
   if culture == "asian" then
     if hash % 2 == 0 then
-      return region_countryMap.SouthEastAsia[((hash*69) % #region_countryMap.SouthEastAsia) +1 ]
+      return region_countryMap.SouthEastAsia[((hash*69) % #region_countryMap.SouthEastAsia) +1 ], "SouthEastAsia"
     end
     if hash % 2 == 1 then
-      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ]
+      return region_countryMap.CentralAsia[((hash*69) % #region_countryMap.CentralAsia) +1 ],"CentralAsia"
     end
   end
 
   if culture == "international" then
     internationalCityCountries = {"Dubai", "Hong Kong",
       "United States", "United Kingdom", "Japan"}
-    return internationalCityCountries[hash % #internationalCityCountries +1]
+    return internationalCityCountries[hash % #internationalCityCountries +1], "International"
   end
 end
 

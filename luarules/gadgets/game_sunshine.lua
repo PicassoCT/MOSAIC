@@ -16,14 +16,19 @@ if gadgetHandler:IsSyncedCode() then
     ---------------- SYNCED---------------
     VFS.Include("scripts/lib_mosaic.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
+    VFS.Include("scripts/lib_Type.lua")
     GameConfig = getGameConfig()
 
-    DAYLENGTH = GameConfig.daylength
+    local DAYLENGTH = GameConfig.daylength
     local EVERY_NTH_FRAME = 32
+    local AXIAL_TILT_ANGLE = 70
+    local EquatorialDirectionSign = 1
     -- ==========================WhereTheSunDontShines============================
     -- Initialses the sun control and sets the inital arc
     function gadget:GameStart()
         -- Spring.SetSunManualControl(true)
+        AXIAL_TILT_ANGLE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+        echo("game_daycycle: sun anzimuth:"..AXIAL_TILT_ANGLE)
         setSunArc(1)
     end
 
@@ -168,27 +173,34 @@ if gadgetHandler:IsSyncedCode() then
 
     function getcloudColor(percent) return factor(getsunColor(percent), 0.3) end
 
-    function setSunArc(frame)
-        
-        local SUN_MOVE_SPEED = 360.0 / (DAY_LENGTH / 2.0)  -- Degrees per second
+    function normalizeVector(vec)
+        local length = math.sqrt(vec.x^2 + vec.y^2 + vec.z^2)
+        vec.x = vec.x/length
+        vec.y = vec.y/length
+        vec.z = vec.z/length
+        return vec
+    end
 
-        -- Time of day (increment this over time)
-        local current_time = 0.0
+
+    function setSunArc(daytimeFrames)
+        
+        local SUN_MOVE_SPEED = 360.0 / (DAYLENGTH / 2.0)  -- Degrees per second
 
         -- Calculate azimuth angle based on time of day
-        local azimuth = (current_time * SUN_MOVE_SPEED) % 360.0
+        local azimuth = (daytimeFrames * SUN_MOVE_SPEED) % 360.0
+
+        local regional_variation = math.cos(math.rad((daytimeFrames / DAYLENGTH) * 360.0 + AXIAL_TILT_ANGLE))
 
         -- Adjust elevation angle for sunrise and sunset effect
-        local elevation = abs(math.sin(math.rad(current_time * SUN_MOVE_SPEED)))
+        local elevation = math.abs(math.sin(math.rad(daytimeFrames * SUN_MOVE_SPEED)))* regional_variation
 
         -- Convert to Cartesian coordinates
         local x = math.cos(math.rad(elevation)) * math.cos(math.rad(azimuth))
         local y = math.cos(math.rad(elevation)) * math.sin(math.rad(azimuth))
-        local z = math.sin(math.rad(elevation))
-
+        local z = math.sin(math.rad(elevation))*EquatorialDirectionSign
 
         -- Normalize the vector
-        local resultVec = rangeClampVector(Vector:new(x,y,z))
+        local resultVec = normalizeVector(makeVector(x, y, z))
 
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
