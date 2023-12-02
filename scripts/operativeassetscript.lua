@@ -44,6 +44,11 @@ speedCloaked            = GameConfig.assetCloakedSpeedReduction
 speedRunning            = GameConfig.assetSpeedRunning
 speedWalking            = GameConfig.assetSpeedWalking
 local runningTimeInMS = 0
+local gaiaTeamID = Spring.GetGaiaTeamID()
+local houseTypeTable = getHouseTypeTable(Unitdefs)
+local climbAbleHouseTypeTable = getClimbableHouseTypeTable(Unitdefs)
+westernHouseDefID= UnitDefNames["house_western0"].id
+
 
 local scriptEnv = {
     center = center,
@@ -91,12 +96,13 @@ lowerBodyPieces = {
 }
 
 shownPieces={}
-boolWalking = false
-boolTurning = false
-boolTurnLeft = false
-boolDecoupled = false
-boolFlying = false
-boolAiming = false
+local boolWalking = false
+local boolTurning = false
+local boolTurnLeft = false
+local boolDecoupled = false
+local boolFlying = false
+local boolAiming = false
+local boolOnRoof = false
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                              "civilian", UnitDefs)
@@ -744,6 +750,7 @@ UpperAnimationState = eAnimState.standing
 boolUpperStateWaitForEnd = false
 boolUpperAnimationEnded = false
 
+
 function animationStateMachineUpper(AnimationTable)
     Signal(SIG_UP)
     SetSignalMask(SIG_UP)
@@ -782,7 +789,49 @@ function delayedStop()
     Turn(center,x_axis, math.rad(0), 12)
 end
 
+function isInBuilding()
+    boolOnAtLeastOneRoof= false
+    ux,uy,uz = Spring.GetUnitPosition(unitID)
+    resultDefID= nil
+    foreach( 
+            getAllNearUnit(unitID, GameConfig.houseSizeX, gaiaTeamID),
+            function(id)
+                defID= Spring.GetUnitDefID(id)
+                if climbAbleHouseTypeTable[defID]then 
+                    if IsOnPremisesOfBuilding(unitID, id, GameConfig.houseSizeX) then
+                        boolOnAtLeastOneRoof = true
+                        resultDefID = defID
+                    end
+                    return id
+                end
+            end
+            )
+     return boolOnAtLeastOneRoof, ux, uy, uz, resultDefID
+end
+    
+function houseHeightAt(ux,uz, buildingDefID)
+    gh = spGetGroundHeight(ux,uz)
+    defaultHeight = GameConfig.houseSizeY * 3
+    if buildingDefID == westernHouseDefID then
+        defaultHeight = GameConfig.houseSizeY * 4
+    end
+    return defaultHeight
+end
+
+function onRoof()
+    Signal(SIG_ROOF_TOP)
+    SetSignalMask(SIG_ROOF_TOP)
+    boolInBuilding, ux,uy, uz, defID = isInBuilding()
+    while boolInBuilding do
+        Spring.SetUnitPosition(unitID, ux, houseHeightAt(ux,uz, defID), uz)
+        Sleep(15)
+        boolInBuilding, ux,uy, uz, defID = isInBuilding()
+    end
+    boolOnRoof= false
+end
+
 function script.StartMoving()
+    if boolOnRoof then StartThread(OnRoof) end
     boolWalking = true
     Turn(center, y_axis, math.rad(5), 12)
 
@@ -1025,10 +1074,6 @@ function gunAimFunction(weaponID, heading, pitch)
     return true
 end
 
-boolTransportedBySniperIcon = false
-function setTransportedBySniperIcon(TransportedBySniperIcon)
-	boolTransportedBySniperIcon = TransportedBySniperIcon
-end
 
 function sniperAimFunction(weaponID, heading, pitch)
 	if not boolTransportedBySniperIcon then return false end

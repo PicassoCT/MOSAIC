@@ -1588,6 +1588,17 @@ function getGameConfig()
                 return getCultureUnitModelNames_Dict_DefIDName(culturename, "house", UnitDefs)
             end
 
+            function getClimbableHouseTypeTable(UnitDefs)
+
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                    "house_wester0", "house_arab0"
+                }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+
             function getOperativeTypeTable(UnitDefs)
 
                 UnitDefNames = getUnitDefNames(UnitDefs)
@@ -3268,5 +3279,23 @@ function instantParanoia(operative, radius, delayInMs, timeToFollowInMs, civilia
         Command(follower, "stop")
         Command(follower, "go",{x,y,z}, {"shift"})
     end   
+end
 
+function IsOnPremisesOfBuilding(unitID, houseID, houseSize)
+    ux, uy, uz = Spring.GetUnitPosition(unitID)
+    local blockSize = houseSize/6
+    local halfBlockSize = blockSize/2
+    local hx,hy,hz = Spring.GetUnitPosition(houseID)
+    local minXLimit, maxXLimit = ux - (2.5*blockSize) ,ux + (2.5*blockSize) 
+    local minZLimit, maxZLimit = uz - (2.5*blockSize) ,uz + (2.5*blockSize) 
+    if hx > minXLimit - halfsize and hx < minXLimit + halfsize  and
+       hz > minZLimit - halfsize and hz < minZLimit + halfsize  then
+
+       if  hx < minXLimit + halfsize and hx > minXLimit - halfsize  and
+            hz < minZLimit + halfsize and hz > minZLimit - halfsize  then
+            return false
+       end
+       return true
+    end
+    return false
 end

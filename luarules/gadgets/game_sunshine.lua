@@ -169,9 +169,27 @@ if gadgetHandler:IsSyncedCode() then
     function getcloudColor(percent) return factor(getsunColor(percent), 0.3) end
 
     function setSunArc(frame)
-        local resultVec = makeVector(0.5, math.abs(
-                                         math.sin(math.pi*((frame % DAYLENGTH) / DAYLENGTH))),
-                                     0.3)
+        
+        local SUN_MOVE_SPEED = 360.0 / (DAY_LENGTH / 2.0)  -- Degrees per second
+
+        -- Time of day (increment this over time)
+        local current_time = 0.0
+
+        -- Calculate azimuth angle based on time of day
+        local azimuth = (current_time * SUN_MOVE_SPEED) % 360.0
+
+        -- Adjust elevation angle for sunrise and sunset effect
+        local elevation = abs(math.sin(math.rad(current_time * SUN_MOVE_SPEED)))
+
+        -- Convert to Cartesian coordinates
+        local x = math.cos(math.rad(elevation)) * math.cos(math.rad(azimuth))
+        local y = math.cos(math.rad(elevation)) * math.sin(math.rad(azimuth))
+        local z = math.sin(math.rad(elevation))
+
+
+        -- Normalize the vector
+        local resultVec = rangeClampVector(Vector:new(x,y,z))
+
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
 

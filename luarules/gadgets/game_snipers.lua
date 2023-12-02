@@ -16,23 +16,42 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
+local sniperIconDefID = nil
 UnitDefNames = getUnitDefNames(UnitDefs)
-local sniperIconDefID = UnitDefNames["sniperrifleicon"].id
-local sniperIcons = {}
+for i=1,#UnitDefs do
+	if UnitDefs[i].name == sniperrifleicon then
+		sniperIconDefID = UnitDefs[i].id
+	end
+end
+
+function setEnvironmentRooftop(assetID)
+	
+    env = Spring.UnitScript.GetScriptEnv(assetID)
+
+    if env and env.onRooftop then
+       result= Spring.UnitScript.CallAsUnit(assetID, 
+                                     env.onRooftop
+                                     ))
+    end
+end
 
 
-function SetUnitPosition(iconID, operativeID)
- 	env = Spring.UnitScript.GetScriptEnv(iconID)
-        if env and env.TransportPickup then
-            Spring.UnitScript.CallAsUnit(iconID, env.TransportPickup, operativeID)
-        end
+function gadget:Initialize()
+	if  GG.myParent == nil then 
+		GG.myParent = {}
+	end
 end
 
 function gadget:UnitFinished(unitID, unitDefID)
 	if unitDefID == sniperIconDefID then
-		sniperIcons[unitID] = parentID
-		SetUnitPosition(unitID, parentID)
+		Spring.SetUnitNoSelect(unitID)
+		moveUnitToUnit(GG.myParent[unitID], unitID)
+		setEnvironmentRooftop(GG.myParent[unitID])
 	end
 end
 
-
+function unction gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
+	if unitDefID == sniperIconDefID then
+ 		GG.myParent[unitID] = builderID
+ 	end
+end
