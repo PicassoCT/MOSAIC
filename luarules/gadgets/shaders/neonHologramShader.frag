@@ -11,7 +11,7 @@
 
     uniform float time;
     //uniform vec2 viewPortSize;
-    uniform float unitCenterPosition[3];
+    uniform vec3 unitCenterPosition;
     float radius = 16.0;
     float DISTANCE_VISIBILITY_PIXEL_WORLD = 100.0;
 

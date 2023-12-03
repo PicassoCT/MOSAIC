@@ -13,7 +13,7 @@
     uniform float time;
     uniform float viewPosX;
     uniform float viewPosY;
-    uniform  float unitCenterPosition[3];
+    uniform  vec3 unitCenterPosition;
 
    const float PI = 3.1415926535897932384626433832795;
 

@@ -29,6 +29,7 @@ if gadgetHandler:IsSyncedCode() then
         -- Spring.SetSunManualControl(true)
         AXIAL_TILT_ANGLE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.instance.culture, getDetermenisticMapHash(Game))
         echo("game_daycycle: sun anzimuth:"..AXIAL_TILT_ANGLE)
+        echo("game_daycycle: equatorial direction sign:"..EquatorialDirectionSign)
         setSunArc(1)
     end
 
@@ -195,9 +196,9 @@ if gadgetHandler:IsSyncedCode() then
         local elevation = math.abs(math.sin(math.rad(daytimeFrames * SUN_MOVE_SPEED)))* regional_variation
 
         -- Convert to Cartesian coordinates
-        local x = math.cos(math.rad(elevation)) * math.cos(math.rad(azimuth))
-        local y = math.cos(math.rad(elevation)) * math.sin(math.rad(azimuth))
-        local z = math.sin(math.rad(elevation))*EquatorialDirectionSign
+        local x = math.cos(math.rad(elevation)) * math.cos(math.rad(azimuth)) * EquatorialDirectionSign
+        local y = math.cos(math.rad(elevation)) * math.sin(math.rad(azimuth)) * EquatorialDirectionSign
+        local z = math.sin(math.rad(elevation)) 
 
         -- Normalize the vector
         local resultVec = normalizeVector(makeVector(x, y, z))
