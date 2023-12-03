@@ -31,7 +31,7 @@ function setEnvironmentRooftop(assetID)
     if env and env.onRooftop then
        result= Spring.UnitScript.CallAsUnit(assetID, 
                                      env.onRooftop
-                                     ))
+                                     )
     end
 end
 
@@ -50,7 +50,7 @@ function gadget:UnitFinished(unitID, unitDefID)
 	end
 end
 
-function unction gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
+function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 	if unitDefID == sniperIconDefID then
  		GG.myParent[unitID] = builderID
  	end

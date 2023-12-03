@@ -206,6 +206,7 @@ else -- unsynced
     end
 
     local counterNeonUnits = 0
+    local oldCounterNeonUnits = 0
     local neonHoloParts= {}
 
     local function splitToNumberedArray(msg)
@@ -309,8 +310,13 @@ else -- unsynced
     local boolDoesCompile = false
     local function RenderNeonUnits()
 
-        if counterNeonUnits == 0 or not boolActivated then
+        if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
+            oldCounterNeonUnits= counterNeonUnits
             Spring.Echo("Rendering no Neon Units with n-units "..counterNeonUnits)
+        end
+
+        if counterNeonUnits == 0 or not boolActivated then
+
             return
         end    
 

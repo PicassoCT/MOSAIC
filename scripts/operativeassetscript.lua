@@ -45,8 +45,8 @@ speedRunning            = GameConfig.assetSpeedRunning
 speedWalking            = GameConfig.assetSpeedWalking
 local runningTimeInMS = 0
 local gaiaTeamID = Spring.GetGaiaTeamID()
-local houseTypeTable = getHouseTypeTable(Unitdefs)
-local climbAbleHouseTypeTable = getClimbableHouseTypeTable(Unitdefs)
+local houseTypeTable = getHouseTypeTable(UnitDefs)
+local climbAbleHouseTypeTable = getClimbableHouseTypeTable(Unitefs)
 westernHouseDefID= UnitDefNames["house_western0"].id
 
 
@@ -103,6 +103,11 @@ local boolDecoupled = false
 local boolFlying = false
 local boolAiming = false
 local boolOnRoof = false
+function onRooftop()
+    boolOnRoof = true
+    boolStartRooTopThread= true
+end
+
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                              "civilian", UnitDefs)
@@ -512,11 +517,16 @@ local locAnimationstateLowerOverride
 local locBoolInstantOverride
 local locConditionFunction
 local boolStartThread = false
+boolStartRooTopThread = false
 boolPistol = true
 
 function threadStarter()
     Sleep(100)
     while true do
+        if boolStartRooTopThread == true then
+            boolStartRooTopThread = false
+            StartThread(OnRoof)
+        end
         if boolStartThread == true then
             boolStartThread = false
             StartThread(deferedOverrideAnimationState,

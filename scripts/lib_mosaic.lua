@@ -1592,7 +1592,7 @@ function getGameConfig()
 
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                    "house_wester0", "house_arab0"
+                    "house_western0", "house_arab0"
                 }
 
                 return getTypeTable(UnitDefNames, typeTable)

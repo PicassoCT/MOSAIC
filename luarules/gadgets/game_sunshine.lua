@@ -21,14 +21,14 @@ if gadgetHandler:IsSyncedCode() then
 
     local DAYLENGTH = GameConfig.daylength
     local EVERY_NTH_FRAME = 32
-    local AXIAL_TILT_ANGLE = 70
+    local REGIONAL_MAX_ALTITUDE = 70
     local EquatorialDirectionSign = 1
     -- ==========================WhereTheSunDontShines============================
     -- Initialses the sun control and sets the inital arc
     function gadget:GameStart()
         -- Spring.SetSunManualControl(true)
-        AXIAL_TILT_ANGLE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.instance.culture, getDetermenisticMapHash(Game))
-        echo("game_daycycle: sun anzimuth:"..AXIAL_TILT_ANGLE)
+        REGIONAL_MAX_ALTITUDE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+        echo("game_daycycle: sun anzimuth:"..REGIONAL_MAX_ALTITUDE)
         echo("game_daycycle: equatorial direction sign:"..EquatorialDirectionSign)
         setSunArc(1)
     end
@@ -182,26 +182,31 @@ if gadgetHandler:IsSyncedCode() then
         return vec
     end
 
-
     function setSunArc(daytimeFrames)
-        
+        daytimeFrames= daytimeFrames + DAYLENGTH*0.5
+        local dayFactor = (daytimeFrames % DAYLENGTH) /DAYLENGTH
+        if dayFactor < 0.25 or dayFactor > 0.75 then return end -- not setting sun
+        dayFactor = (dayFactor - 0.25) * 2.0
+
         local SUN_MOVE_SPEED = 360.0 / (DAYLENGTH / 2.0)  -- Degrees per second
 
         -- Calculate azimuth angle based on time of day
         local azimuth = (daytimeFrames * SUN_MOVE_SPEED) % 360.0
 
-        local regional_variation = math.cos(math.rad((daytimeFrames / DAYLENGTH) * 360.0 + AXIAL_TILT_ANGLE))
-
-        -- Adjust elevation angle for sunrise and sunset effect
-        local elevation = math.abs(math.sin(math.rad(daytimeFrames * SUN_MOVE_SPEED)))* regional_variation
+        -- Adjust elevation angle for sunrise and sunset effect 
+        local elevation = math.abs(math.sin(dayFactor*math.pi))* REGIONAL_MAX_ALTITUDE
 
         -- Convert to Cartesian coordinates
-        local x = math.cos(math.rad(elevation)) * math.cos(math.rad(azimuth)) * EquatorialDirectionSign
-        local y = math.cos(math.rad(elevation)) * math.sin(math.rad(azimuth)) * EquatorialDirectionSign
-        local z = math.sin(math.rad(elevation)) 
+        local rElevation = math.rad(elevation)
+        local rAzimuth= math.rad(azimuth)
+        local resultVec = {
+            x= math.cos(rElevation) * math.cos(rAzimuth),
+            y=(math.cos(rElevation) * math.sin(rAzimuth)) * EquatorialDirectionSign,
+            z= math.sin(rElevation)
+            }
 
         -- Normalize the vector
-        local resultVec = normalizeVector(makeVector(x, y, z))
+        local resultVec = normalizeVector(resultVec)
 
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
