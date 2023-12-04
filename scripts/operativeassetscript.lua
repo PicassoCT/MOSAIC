@@ -15,6 +15,7 @@ SIG_LOW = 32
 SIG_FIRE_VISIBLITY = 64
 SIG_DELAYEDRECLOAK = 128
 SIG_STAB = 256
+SIG_ROOF_TOP = 512
 local Animations = include('animation_assasin_male.lua')
 
 local center = piece('center');
@@ -841,7 +842,7 @@ function onRoof()
 end
 
 function script.StartMoving()
-    if boolOnRoof then StartThread(OnRoof) end
+    if boolOnRoof then StartThread(onRoof) end
     boolWalking = true
     Turn(center, y_axis, math.rad(5), 12)
 

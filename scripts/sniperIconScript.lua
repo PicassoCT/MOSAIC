@@ -16,6 +16,7 @@ local ux,uy,uz = Spring.GetUnitPosition(unitID)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    Spring.SetUnitNoSelect(unitID, true)
     Hide(attachPoint)
 end
 

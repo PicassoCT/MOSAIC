@@ -19,7 +19,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 local sniperIconDefID = nil
 UnitDefNames = getUnitDefNames(UnitDefs)
 for i=1,#UnitDefs do
-	if UnitDefs[i].name == sniperrifleicon then
+	if UnitDefs[i].name == "sniperrifleicon" then
 		sniperIconDefID = UnitDefs[i].id
 	end
 end
@@ -32,6 +32,7 @@ function setEnvironmentRooftop(assetID)
        result= Spring.UnitScript.CallAsUnit(assetID, 
                                      env.onRooftop
                                      )
+       echo("Called unit on rooftop")
     end
 end
 
@@ -44,7 +45,7 @@ end
 
 function gadget:UnitFinished(unitID, unitDefID)
 	if unitDefID == sniperIconDefID then
-		Spring.SetUnitNoSelect(unitID)
+		Spring.SetUnitNoSelect(unitID, true)
 		moveUnitToUnit(GG.myParent[unitID], unitID)
 		setEnvironmentRooftop(GG.myParent[unitID])
 	end
@@ -53,5 +54,6 @@ end
 function gadget:UnitCreated(unitID, unitDefID, teamID, builderID)
 	if unitDefID == sniperIconDefID then
  		GG.myParent[unitID] = builderID
+ 		Spring.Echo("Setting my parent for ".. builderID)
  	end
 end
