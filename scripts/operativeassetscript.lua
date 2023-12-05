@@ -526,7 +526,7 @@ function threadStarter()
     while true do
         if boolStartRooTopThread == true then
             boolStartRooTopThread = false
-            StartThread(OnRoof)
+            StartThread(onRoof)
         end
         if boolStartThread == true then
             boolStartThread = false

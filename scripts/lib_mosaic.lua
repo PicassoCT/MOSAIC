@@ -3309,7 +3309,7 @@ end
 function IsOnPremisesOfBuilding(unitID, houseID, houseSize)
     ux, uy, uz = Spring.GetUnitPosition(unitID)
     local blockSize = houseSize/6
-    local halfBlockSize = blockSize/2
+    local halfsize = blockSize/2
     local hx,hy,hz = Spring.GetUnitPosition(houseID)
     local minXLimit, maxXLimit = ux - (2.5*blockSize) ,ux + (2.5*blockSize) 
     local minZLimit, maxZLimit = uz - (2.5*blockSize) ,uz + (2.5*blockSize) 
