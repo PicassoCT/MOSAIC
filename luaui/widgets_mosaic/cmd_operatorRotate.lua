@@ -67,6 +67,8 @@ end
 local selChangedSec = 0
 local selectedUnitsSorted = Spring.GetSelectedUnitsSorted()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
+local operatorID
+
 function widget:SelectionChanged(sel)
     checkSelectionChanges = true
    -- Spring.Echo("Selection changed")
@@ -110,12 +112,38 @@ function widget:Update(dt)
         local targType, targID = spTraceScreenRay(mouseX, mouseY, true, inMinimap, false, false, 50)
 
         if targID then
+            operatorID = targID[1]
          Spring.SendLuaRulesMsg("OPROTPOS|" .. targID[1] .. "|" .. targID[2] .. "|" .. targID[3].."|"..
             serializeUnitIDTable(selectedUnitsSorted[operativeAssetDefID]).. "|" ..
             serializeUnitIDTable(selectedUnitsSorted[operativePropagatorDefID]).. "|" ..
             serializeUnitIDTable(selectedUnitsSorted[operativeInvestigatorDefID]).. "|" )
         end
-     end
+    else
+        operatorID = nil
+    end
+end
+
+local function onRightClickOnBuilding(operatorID, houseID,x,y,z)
+    local cx, cy, cz = Spring.GetCameraPosition ( ) 
+    Spring.SendLuaRulesMsg("SET_SNIPER_POS_|"..operatorID.."|"..houseID.."|"..x.."|"..y.."|"..z.."|"..cx.."|"..cy.."|"..cz)
+end
+
+function widget:MousePress(x, y, button)
+    if button == 2 then --right
+        if operatorID then
+        --Spring.TraceScreenRay ( number mouseX, number mouseY, [, bool onlyCoords [, bool useMinimap [, bool includeSky [, bool ignoreWater [, number D ]]]]] ) 
+        local targType, targID = spTraceScreenRay(x, y, true, false, false, false, 50)
+            if targetType == "unit" then
+                local houseID = targID[1]
+                   local desc, args = spTraceScreenRay(mouseX, mouseY, true)
+                   local x = args[1]
+                   local y = args[2]
+                   local z = args[3]
+
+                onRightClickOnBuilding(operatorID, targID[1], x, y, z, cx,cy,cz)
+            end
+        end
+    end
 end
 
 function widget:GetConfigData(data)
@@ -128,8 +156,8 @@ function widget:GetConfigData(data)
 end
 
 function widget:SetConfigData(data)
-    OPTIONS.spotterOpacity              = data.spotterOpacity           or OPTIONS.spotterOpacity
-    OPTIONS.baseOpacity             = data.baseOpacity              or OPTIONS.baseOpacity
-    OPTIONS.teamcolorOpacity            = data.teamcolorOpacity         or OPTIONS.teamcolorOpacity
+    OPTIONS.spotterOpacity     = data.spotterOpacity    or OPTIONS.spotterOpacity
+    OPTIONS.baseOpacity        = data.baseOpacity       or OPTIONS.baseOpacity
+    OPTIONS.teamcolorOpacity   = data.teamcolorOpacity  or OPTIONS.teamcolorOpacity
 end
 

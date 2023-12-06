@@ -820,29 +820,20 @@ function isInBuilding()
      return boolOnAtLeastOneRoof, ux, uy, uz, resultDefID
 end
     
-function houseHeightAt(ux,uz, buildingDefID)
-    gh = spGetGroundHeight(ux,uz)
-    defaultHeight = GameConfig.houseSizeY * 3
-    if buildingDefID == westernHouseDefID then
-        defaultHeight = GameConfig.houseSizeY * 4
-    end
-    return defaultHeight
-end
+
 
 function onRoof()
     Signal(SIG_ROOF_TOP)
     SetSignalMask(SIG_ROOF_TOP)
-    boolInBuilding, ux,uy, uz, defID = isInBuilding()
-    while boolInBuilding do
-        Spring.SetUnitPosition(unitID, ux, houseHeightAt(ux,uz, defID), uz)
+    boolHasMoveCommand = getUnitMoveGoal(unitID)
+    while not boolHasMoveCommand do
         Sleep(15)
-        boolInBuilding, ux,uy, uz, defID = isInBuilding()
+       boolHasMoveCommand = getUnitMoveGoal(unitID)
     end
     boolOnRoof= false
 end
 
 function script.StartMoving()
-    if boolOnRoof then StartThread(onRoof) end
     boolWalking = true
     Turn(center, y_axis, math.rad(5), 12)
 

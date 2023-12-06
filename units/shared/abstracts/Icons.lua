@@ -696,55 +696,6 @@ local CyberCrime =
 }
 
 
-local DeploySniperRifleIcon =
-    Human:New {
-    corpse = "",
-    maxDamage = 500,
-    mass = 90000,
-    buildCostEnergy = 5,
-    buildCostMetal = 5,
-    canMove = true,
-    buildPic = "sniperIcon.png",
-    iconType = "SniperIcon",
-    explodeAs = "none",
-    Acceleration = 0,
-    BrakeRate = 0,
-    TurnRate = 0,
-	buildingMask = 8,
-    Acceleration = 0.8,
-	BrakeRate = 0.6,
-	TurnRate = 1200,
-	MaxVelocity = 4.4,
-    description = "Deploy sniper rifle on the roof ",
-    levelGround = false,
-    CanAttack = true,
-    CanGuard = false,
-    name = "SniperIcon",
-    CanMove = true,
-    CanPatrol = false,
-    CanStop = true,
-    script = "sniperIconScript.lua",
-    objectName = "sniperIcon.dae",
-	cantBeTransported 	= true,
-	isFirePlatform = true,
-	alwaysupright		= true,
-	transportSize = 16,
-	transportCapacity = 1,
-
-	usepiececollisionvolumes = false,
-	FootprintX = 1,
-	FootprintZ = 1,
-
-	transportSize = 1,
-	
-    onoffable = true,
-    activatewhenbuilt = true,
-    customparams = {
-        helptext = "Sniper Operator Icon",
-        baseclass = "Abstract" -- TODO: hacks
-    },
-    category = "NOTARGET ABSTRACT"
-}
 
 return lowerkeys(
     {
@@ -765,7 +716,6 @@ return lowerkeys(
         ["cybercrimeicon"] = CyberCrime:New(),
         ["destroyedobjectiveicon"] = DestroyedObjective:New(),
         ["deaddropicon"] = DeadDropIcon:New(),
-        ["blackouticon"] = BlackOutIcon:New(),
-        ["sniperrifleicon"] = DeploySniperRifleIcon:New(),
+        ["blackouticon"] = BlackOutIcon:New()
     }
 )
