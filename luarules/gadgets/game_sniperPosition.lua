@@ -16,6 +16,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
 
     -- variables
+    local GameConfig = getGameConfig()
 
     local spGetUnitPosition = Spring.GetUnitPosition
     
@@ -53,6 +54,9 @@ if (gadgetHandler:IsSyncedCode()) then
             T = split(msg, "|")
             unitSelected    = tonumber(T[2])
             unitToAttachTo= tonumber(T[3])
+            if distance(unitSelected, unitToAttachTo) > GameConfig.SniperAttachMaxDistance then
+                return
+            end
             defID = spGetUnitDefID(unitToAttachTo)
             if houseTypeTable[defID] then
                 x,y,z = T[4],T[5],T[6]

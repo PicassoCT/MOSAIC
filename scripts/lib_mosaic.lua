@@ -133,7 +133,7 @@ function getGameConfig()
         allyWaySizeZ = 25,
         bonusFirstUnitMoney_S = 12,
         maxParallelIdleAnimations = 20,
-
+        SniperAttachMaxDistance = 120,
         agentConfig = {
             recruitmentRange = 60,
             raidWeaponDownTimeInSeconds = 60,
