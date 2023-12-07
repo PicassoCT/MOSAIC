@@ -1000,7 +1000,7 @@ function script.QueryBuildInfo() return center end
 Spring.SetUnitNanoPieces(unitID, {center})
 
 
-function traceRayRooftop( vec)
+function traceRayRooftop( vector_position, vector_direction)
 	return GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 end
 
