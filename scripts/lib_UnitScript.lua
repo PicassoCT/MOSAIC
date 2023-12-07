@@ -6325,7 +6325,7 @@ function distanceClosestPoint(dot_product, vector_position, vector_direction, or
 
 end
 
-function GetPieceIntersect(unitID, RoofTopPieces, vector_position, vector_direction)
+function GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 	local RooftopClosestPiece = -1
 	local RooftopMinDistance = math.huge
 	local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir

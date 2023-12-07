@@ -1858,5 +1858,5 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function traceRayRooftop( vec)
-	return GetPieceIntersect(unitID, RoofTopPieces, vec)
+	return  GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 end
