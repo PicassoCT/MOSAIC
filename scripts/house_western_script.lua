@@ -1315,6 +1315,7 @@ function addGrafiti(x,z, turnV,  axis)
     end
 end
 
-function traceRayRooftop(id, vec)
+function traceRayRooftop( vec)
 	--TODO RayTrace through RoofTopPieces CollissionVolumen
+	return GetPieceIntersect(unitID, RoofTopPieces, vec)
 end

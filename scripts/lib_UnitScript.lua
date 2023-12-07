@@ -6311,3 +6311,37 @@ function getEngineVersion()
         end
     end
 end
+
+function distanceClosestPoint(dot_product, vector_position, vector_direction, org_position)
+
+        local closest_point = {
+            vector_position[1] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[1],
+            vector_position[2] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[2],
+            vector_position[3] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[3]
+        }
+
+
+       return math.sqrt((org_position[1] - closest_point[1])^2 + (org_position[2] - closest_point[2])^2 + (org_position[3] - closest_point[3])^2)
+
+end
+
+function GetPieceIntersect(unitID, RoofTopPieces, vector_position, vector_direction)
+	local RooftopClosestPiece = -1
+	local RooftopMinDistance = math.huge
+	local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
+	
+	foreach(RoofTopPieces,
+			function (pieceID)
+				x,y,z = spGetUnitPiecePosDir(unitID, pieceID)
+				position = {x,y,z}
+				position_vector = { x-vector_position[1],y-vector_position[2],z-vector_position[3]}
+		        local dot_product = vector_position[1] * vector_direction[1] + vector_position[2] * vector_direction[2] + vector_position[3] * vector_direction[3]
+				local distanceToPos = distanceClosestPoint(dot_product, position_vector, vector_direction, position)
+				if distanceToPos < RooftopMinDistance then
+					RooftopMinDistance= distanceToPos
+					RooftopClosestPiece= pieceID
+				end
+			end
+			)
+	return RooftopClosestPiece
+end

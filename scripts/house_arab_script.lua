@@ -999,7 +999,7 @@ function script.QueryBuildInfo() return center end
 Spring.SetUnitNanoPieces(unitID, {center})
 
 
-function traceRayRooftop(id, vec)
-	--TODO RayTrace through RoofTopPieces CollissionVolumen
+function traceRayRooftop( vec)
+	return GetPieceIntersect(unitID, RoofTopPieces, vec)	
 end
 
