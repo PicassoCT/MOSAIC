@@ -17,10 +17,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- variables
     local GameConfig = getGameConfig()
-
+	local operativeAssetDefID = UnitDefNames["operativeasset"].id
     local spGetUnitPosition = Spring.GetUnitPosition
     
-
     local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
     local spGetUnitDefID = Spring.GetUnitDefID
     local spDestroyUnit = Spring.DestroyUnit
@@ -28,10 +27,19 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitRotation = Spring.GetUnitRotation
     local spSetUnitRotation = Spring.SetUnitRotation
     
-    function gadget:Initialize()
+    function getEnvironmentAttachToRooftopPiece(buildingID, vecRay)
+        env = Spring.UnitScript.GetScriptEnv(buildingID)
+
+        if env and env.traceRayRooftop then
+           pieceID= Spring.UnitScript.CallAsUnit(assetID, 
+                                         env.traceRayRooftop,
+										 vecRay
+                                         )
+           echo("Called house traceRay")
+		   return pieceID
+        end
     end
-
-
+	
     function setEnvironmentAttachToRooftop(assetID, building, pieceID)
         Spring.UnitAttach(assetID, buildingID, pieceID)
         
@@ -46,7 +54,9 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function getPieceToAttach(id, x,y,z, cx, cy,cz)
-
+		vecRay = Vector:new(x-cx, y- cy, z- cz)
+		vecRay:Normalize()
+		return getEnvironmentAttachToRooftopPiece(id, vecRay)		
     end
 
     function gadget:RecvLuaMsg(msg, playerID)
@@ -57,10 +67,12 @@ if (gadgetHandler:IsSyncedCode()) then
             if distance(unitSelected, unitToAttachTo) > GameConfig.SniperAttachMaxDistance then
                 return
             end
+			operativeDefID = spGetUnitDefID(unitSelected)
             defID = spGetUnitDefID(unitToAttachTo)
-            if houseTypeTable[defID] then
+            if operativeDefID == operativeAssetDefID and houseTypeTable[defID] then
                 x,y,z = T[4],T[5],T[6]
                 cx,cy,cz= T[7],T[8],T[9]
+				
                 pieceToAttachTo= getPieceToAttach(unitToAttachTo, x,y,z, cx, cy, cz)
                 if pieceToAttachTo then 
                     setEnvironmentAttachToRooftop(unitSelected, unitToAttachTo, pieceToAttachTo)            

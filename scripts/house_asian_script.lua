@@ -1857,3 +1857,6 @@ function script.QueryBuildInfo() return center end
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
+function traceRayRooftop(id, vec)
+	--TODO RayTrace through RoofTopPieces CollissionVolumen - put it in lib_unitscript
+end
