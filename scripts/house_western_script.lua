@@ -1018,6 +1018,7 @@ logoPiecesToHide = {
                 [piece("Office_Roof_Deco02")] = true
             }
 pieceNameMap = Spring.GetUnitPieceList( unitID ) 
+local RoofTopPieces = {}
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     if materialColourName == "Office" and maRa() then
@@ -1041,6 +1042,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
                                                                buildMaterial)
+                RoofTopPieces[#RoofTopPieces +1] = element
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
@@ -1315,6 +1317,6 @@ function addGrafiti(x,z, turnV,  axis)
     end
 end
 
-function traceRayRooftop( vec)
+function traceRayRooftop( vector_position, vector_direction)
 	return GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 end

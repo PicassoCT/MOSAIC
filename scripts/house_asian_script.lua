@@ -1606,7 +1606,7 @@ function nightAndDay(dayNightPieceNameDict)
 			end
 	end
 end
-
+local RoofTopPieces = {}
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
 	if not GG.house_asian_piece_counter then GG.house_asian_piece_counter = {} end
 
@@ -1677,6 +1677,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 if not lvlPlaced[i] then
                     offset = -cubeDim.heigth 
                 end
+                RoofTopPieces[#RoofTopPieces+1]= element
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5 + offset, 0)
@@ -1857,6 +1858,6 @@ function script.QueryBuildInfo() return center end
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
-function traceRayRooftop( vec)
+function traceRayRooftop(  vector_position, vector_direction)
 	return  GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 end

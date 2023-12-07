@@ -53,9 +53,8 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    function getPieceToAttach(id, x,y,z, cx, cy,cz)
-		vecRay = Vector:new(x-cx, y- cy, z- cz)
-		vecRay:Normalize()
+    function getPieceToAttach(id, vec_position, vec_direction)
+		
 		return getEnvironmentAttachToRooftopPiece(id, vecRay)		
     end
 
@@ -72,8 +71,11 @@ if (gadgetHandler:IsSyncedCode()) then
             if operativeDefID == operativeAssetDefID and houseTypeTable[defID] then
                 x,y,z = T[4],T[5],T[6]
                 cx,cy,cz= T[7],T[8],T[9]
-				
-                pieceToAttachTo= getPieceToAttach(unitToAttachTo, x,y,z, cx, cy, cz)
+				vec_direction = Vector:new(x-cx, y- cy, z- cz)
+                vec_position = Vector:new(x, y, z)
+                vec_direction:Normalize()
+                vec_position:Normalize()
+                pieceToAttachTo = getPieceToAttach(unitToAttachTo, vec_position, vec_direction)
                 if pieceToAttachTo then 
                     setEnvironmentAttachToRooftop(unitSelected, unitToAttachTo, pieceToAttachTo)            
                 end
