@@ -125,13 +125,13 @@ end
 
 local function onRightClickOnBuilding(operatorID, houseID,x,y,z)
     local cx, cy, cz = Spring.GetCameraPosition ( ) 
-    Spring.Echo("Rightclick-> SET_SNIPER_POS_")
+    Spring.Echo("Rightclick-> SET_SNIPER_POS_WIDGET")
     Spring.SendLuaRulesMsg("SET_SNIPER_POS_|"..operatorID.."|"..houseID.."|"..x.."|"..y.."|"..z.."|"..cx.."|"..cy.."|"..cz)
 end
 
 function widget:MousePress(x, y, button)
     if button == 2 then --right
-        Spring.Echo("Rightclick")
+        Spring.Echo("Rightclick->MousePress")
         if operatorID then
             Spring.Echo("Rightclick-> Operator defined")
         --Spring.TraceScreenRay ( number mouseX, number mouseY, [, bool onlyCoords [, bool useMinimap [, bool includeSky [, bool ignoreWater [, number D ]]]]] ) 
