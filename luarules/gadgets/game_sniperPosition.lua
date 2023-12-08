@@ -54,21 +54,24 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function getPieceToAttach(id, vec_position, vec_direction)
-		
+		Spring.Echo("Rightclick->RecvLuaMsg:getEnvironmentAttachToRooftopPiece")
 		return getEnvironmentAttachToRooftopPiece(id, vecRay)		
     end
 
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "SET_SNIPER_POS_") then --OPROTPOS
+		  Spring.Echo("Rightclick->RecvLuaMsg:SET_SNIPER_POS_")
             T = split(msg, "|")
             unitSelected    = tonumber(T[2])
             unitToAttachTo= tonumber(T[3])
             if distance(unitSelected, unitToAttachTo) > GameConfig.SniperAttachMaxDistance then
+				Spring.Echo("Rightclick->RecvLuaMsg:Distance exceeded")
                 return
             end
 			operativeDefID = spGetUnitDefID(unitSelected)
             defID = spGetUnitDefID(unitToAttachTo)
             if operativeDefID == operativeAssetDefID and houseTypeTable[defID] then
+				Spring.Echo("Rightclick->RecvLuaMsg:Operative Found")
                 x,y,z = T[4],T[5],T[6]
                 cx,cy,cz= T[7],T[8],T[9]
 				vec_direction = Vector:new(x-cx, y- cy, z- cz)
@@ -77,6 +80,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 vec_position:Normalize()
                 pieceToAttachTo = getPieceToAttach(unitToAttachTo, vec_position, vec_direction)
                 if pieceToAttachTo then 
+					Spring.Echo("Rightclick->RecvLuaMsg:setEnvironmentAttachToRooftop")
                     setEnvironmentAttachToRooftop(unitSelected, unitToAttachTo, pieceToAttachTo)            
                 end
             end
