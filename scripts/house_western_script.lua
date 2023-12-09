@@ -91,7 +91,6 @@ function script.Create()
 
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
-
     math.randomseed(x + y + z)
     StartThread(buildHouse)
 
@@ -1042,11 +1041,12 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element,
                                                                buildMaterial)
-                RoofTopPieces[#RoofTopPieces +1] = element
+               
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5, 0)
                 WaitForMoves(element)
+                RoofTopPieces[i]= element
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
@@ -1085,6 +1085,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _y_axis,
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
+                RoofTopPieces[i]= element
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
                 if not logoPiecesToHide[element] then
@@ -1316,6 +1317,7 @@ function addGrafiti(x,z, turnV,  axis)
         end
     end
 end
+
 
 function traceRayRooftop( vector_position, vector_direction)
 	return GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)

@@ -1677,11 +1677,12 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 if not lvlPlaced[i] then
                     offset = -cubeDim.heigth 
                 end
-                RoofTopPieces[#RoofTopPieces+1]= element
+            
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth - 0.5 + offset, 0)
                 WaitForMoves(element)
+                RoofTopPieces[i]= element
                 WTurn(element, _z_axis, math.rad(rotation), 0)
 				LevelPieces = houseAddDestructionTable(LevelPieces, #LevelPieces+1, element)
 				addToShowTable(element, xLoc, zLoc)
@@ -1731,6 +1732,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _y_axis,
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
+                RoofTopPieces[i]= element
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
                 if pieceNr_pieceName[element] then

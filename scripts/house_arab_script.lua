@@ -857,7 +857,7 @@ function addRoofDeocrate(Level, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth - 0.5, 0)
-                RoofTopPieces[#RoofTopPieces+1]= element
+                RoofTopPieces[i]= element
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 ToShowTable[#ToShowTable + 1] = element
@@ -889,6 +889,7 @@ function addRoofDeocrate(Level, buildMaterial)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] +
                      Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
+                RoofTopPieces[i]= element
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 piecename = getPieceGroupName(element)
                 if TablesOfPiecesGroups[piecename .. nr .. "Sub"] then

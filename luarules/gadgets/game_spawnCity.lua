@@ -12,7 +12,7 @@ function gadget:GetInfo()
 end
 
 if (not gadgetHandler:IsSyncedCode()) then return false end
-
+local boolDebug = true
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
@@ -554,18 +554,17 @@ function countDownRespawnHouses(framesToSubstract)
 end
 
 function gadget:GameFrame(frame)
-    if boolInitialized == false then
-        spawnInitialHouses(frame)
-    elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-        countDownRespawnHouses(5)
-        checkReSpawnHouses()
+    if not boolDebug then
+        if boolInitialized == false then
+            spawnInitialHouses(frame)
+        elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
+            countDownRespawnHouses(5)
+            checkReSpawnHouses()
+        end
+    else
+        
     end
 end
---[[
-function getAITeam()
-    teams = getAITeams()
-    return teams[1]
-end--]]
 
 
 

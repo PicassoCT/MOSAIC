@@ -17,7 +17,7 @@ SIG_DELAYEDRECLOAK = 128
 SIG_STAB = 256
 SIG_ROOF_TOP = 512
 local Animations = include('animation_assasin_male.lua')
-
+boolStartRoofTopThread = false
 local center = piece('center');
 local Torso = piece('Torso');
 local Pistol = piece('Pistol');
@@ -105,8 +105,9 @@ local boolFlying = false
 local boolAiming = false
 local boolOnRoof = false
 function onRooftop()
+    --Spring.Echo("Is on Rooftop")
     boolOnRoof = true
-    boolStartRooTopThread= true
+    boolStartRoofTopThread= true
 end
 
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
@@ -127,7 +128,7 @@ function closeCombatOS()
     setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
     while true do
         if boolInClosedCombat then
-            Spring.Echo("Operativeasset: Is now in close combat")
+            --Spring.Echo("Operativeasset: Is now in close combat")
             while(doesUnitExistAlive(closeCombat.arenaID))do
                 newState = math.random(1,3) 
                 if newState ~= oldState then
@@ -140,7 +141,7 @@ function closeCombatOS()
                 oldState = newState
                 Sleep(500)
             end
-            Spring.Echo("Operativeasset: Is leaving close combat")
+            --Spring.Echo("Operativeasset: Is leaving close combat")
             boolInClosedCombat = false 
         end
     Sleep(250)
@@ -294,7 +295,7 @@ function runFor(TimeInMS)
     runningTimeInMS = runningTimeInMS - TimeInMS
     if runningTimeInMS <= 101 then
         boolRunningTimeOut = true
-         echo("Running Timeout true")
+         --echo("Running Timeout true")
     end
 end
 
@@ -356,17 +357,22 @@ function breathing()
 
 end
 
+local boolFlying = false
+function script.Falling()
+    boolFlying = Spring.GetUnitTransporter(unitID) == nil
+end
+
+function script.Landed()
+    boolFlying = false
+end
+
 --gives the first unit of this type a parachut and drops it
 function flyingMonitored()
 	while true do
-		boolFlying, posH, groundH = isUnitFlying(unitID)
-		if boolFlying == true then
-		
+		if boolFlying == true then		
 			while(boolFlying == true) do
 				Sleep(100)
-				boolFlying, posH, groundH = isUnitFlying(unitID)
 				flyingPose(unitID)
-
 			end
 			WaitForTurns(TablesOfPiecesGroups)
 			reset(center)
@@ -518,15 +524,16 @@ local locAnimationstateLowerOverride
 local locBoolInstantOverride
 local locConditionFunction
 local boolStartThread = false
-boolStartRooTopThread = false
+
 boolPistol = true
 
 function threadStarter()
     Sleep(100)
     while true do
-        if boolStartRooTopThread == true then
-            boolStartRooTopThread = false
+        if boolStartRoofTopThread == true then
+            boolStartRoofTopThread = false
             StartThread(onRoof)
+            --echo("Start Thread on Roof")
         end
         if boolStartThread == true then
             boolStartThread = false
@@ -825,11 +832,14 @@ end
 function onRoof()
     Signal(SIG_ROOF_TOP)
     SetSignalMask(SIG_ROOF_TOP)
-    boolHasMoveCommand = getUnitMoveGoal(unitID)
+    --echo("operative: on Roof")
+    boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
     while not boolHasMoveCommand do
         Sleep(15)
-       boolHasMoveCommand = getUnitMoveGoal(unitID)
+       boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
     end
+    Spring.UnitDetach(unitID)
+    --echo("operative: off Roof")
     boolOnRoof= false
 end
 
@@ -1078,7 +1088,7 @@ end
 
 
 function sniperAimFunction(weaponID, heading, pitch)
-	if not boolTransportedBySniperIcon then return false end
+	if not boolOnRoof then return false end
     boolAiming = true
 	showFireArm()
     if boolWalking == true then

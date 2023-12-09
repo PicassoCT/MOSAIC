@@ -125,25 +125,19 @@ end
 
 local function onRightClickOnBuilding(operatorID, houseID,x,y,z)
     local cx, cy, cz = Spring.GetCameraPosition ( ) 
-    Spring.Echo("Rightclick-> SET_SNIPER_POS_WIDGET")
     Spring.SendLuaRulesMsg("SET_SNIPER_POS_|"..operatorID.."|"..houseID.."|"..x.."|"..y.."|"..z.."|"..cx.."|"..cy.."|"..cz)
 end
 
 function widget:MousePress(x, y, button)
-    if button == 2 then --right
-        Spring.Echo("Rightclick->MousePress")
-        if operatorID then
-            Spring.Echo("Rightclick-> Operator defined")
-        --Spring.TraceScreenRay ( number mouseX, number mouseY, [, bool onlyCoords [, bool useMinimap [, bool includeSky [, bool ignoreWater [, number D ]]]]] ) 
-        local targType, targID = spTraceScreenRay(x, y, true, false, false, false, 50)
-            if targetType == "unit" then
-                local houseID = targID[1]
-                   local desc, args = spTraceScreenRay(mouseX, mouseY, true)
-                   local x = args[1]
-                   local y = args[2]
-                   local z = args[3]
-
-                onRightClickOnBuilding(operatorID, targID[1], x, y, z, cx,cy,cz)
+    if button == 3 then --right
+        local selUnitsSorted = Spring.GetSelectedUnitsSorted()
+        if selUnitsSorted[operativeAssetDefID] and #selUnitsSorted[operativeAssetDefID] == 1 then
+            local operativeID = selUnitsSorted[operativeAssetDefID][1] 
+            local targType, houseID = spTraceScreenRay(x, y, false, false, false, false, 50)
+            if targType == "unit" then
+                local desc, coords = spTraceScreenRay(x, y, true)
+                Spring.Echo("Garrissoning")
+                onRightClickOnBuilding(operativeID, houseID, coords[1],coords[2], coords[3])
             end
         end
     end

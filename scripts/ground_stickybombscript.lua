@@ -1,12 +1,10 @@
-include "createCorpse.lua"
-include "lib_OS.lua"
+
 include "lib_UnitScript.lua"
-include "lib_Animation.lua"
-include "lib_Build.lua"
+include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 stickyBombTimeMs = 5000
-maxDamagePerUnit = 800
+maxDamagePerUnit = 1150
 maxDamageDistance = 150
 stickyCircle = 150
 
@@ -91,7 +89,8 @@ function attachAndBlow()
     end
 
     x, y, z = Spring.GetUnitPosition(unitID)
-
+    rand = math.random(1, GameConfig.maxNrExplosionSoundFiles)
+    Spring.PlaySoundFile("sounds/explosions/Explosion"..rand..".ogg", 1.0)
     Spring.SpawnCEG("bigbulletimpact", x, y + 25, z, 0, 1, 0, 50, 0)
     EmitSfx(center, 1024)
 

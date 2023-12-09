@@ -16,7 +16,8 @@ local house_arab = Building:New{
 	script 					= "house_arab_script.lua",
 	objectName       	= "house_arab.dae",
 
-	
+
+	isFirePlatform  = true, 
 	
 	YardMap =  [[yyyyyyyy
 				yyyyyyyy
@@ -42,7 +43,7 @@ local house_arab = Building:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 50 130",
 	collisionVolumeOffsets  = {0.0, 15.0,  0.0},
-	category = [[GROUND BUILDING RAIDABLE]],
+	category = [[BUILDING RAIDABLE]],
 
 }
 

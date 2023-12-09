@@ -144,8 +144,8 @@ local function StartTrack(track)
 	
 	local newTrack = previousTrack
 	if musicType == 'custom' then
-		previousTrackType = "peace_day"
-		musicType = "peace_day"
+		previousTrackType = "peace_night"
+		musicType = "peace_night"
 	end
 	if track then
 		newTrack = track	-- play specified track

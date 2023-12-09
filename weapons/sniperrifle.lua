@@ -14,7 +14,7 @@ local weaponDef = {
 	--physics
 	startVelocity  = 2400,
 	weaponAcceleration = 100,
-	tracks = false,
+	
 	weaponVelocity = 2450,
 	reloadtime = 40,
 	range = 964,
@@ -25,12 +25,15 @@ local weaponDef = {
 	craterMult = 50,	 
 	PredictBoost			 =0.6,
 	soundtrigger=1,
-	
+	--behaviour
+	commandFire= true,
+	tracks = false,
+	avoidFriendly = true,
+	avoidNeutral = true,
 	--appearance
 	rgbColor = [[0.5 0.5 0.5]],		 	 
 	size = 12,
 
-	avoidFriendly = true,
 	
 
 	----------------------------------------------------------------

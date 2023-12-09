@@ -918,8 +918,9 @@ function transformUnitInto(oldID, unitType, setVel, boolKill, parentID,
 end
 
 -- > Get Unit Target if a Move.Cmd was issued
-function getUnitMoveGoal(unitID)
-    local cmds = Spring.GetCommandQueue(unitID, 4)
+function getUnitMoveGoal(unitID, depth)
+    local ldepth = depth or 4
+    local cmds = Spring.GetCommandQueue(unitID, ldepth)
     local i = #cmds
     for i = #cmds, 1, -1 do
         if cmds[i].id and cmds[i].id == CMD.MOVE and cmds[i].params then
@@ -6312,36 +6313,56 @@ function getEngineVersion()
     end
 end
 
-function distanceClosestPoint(dot_product, vector_position, vector_direction, org_position)
+function find_closest_position(positions, vector_start, vector_direction)
+    local closest_position = nil
+    local min_distance = math.huge
 
-        local closest_point = {
-            vector_position[1] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[1],
-            vector_position[2] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[2],
-            vector_position[3] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[3]
+    -- Calculate the direction vector
+
+    for _, position in ipairs(positions) do
+        -- Calculate the vector from vector_start to the position
+        local position_vector = {
+            position[1] - vector_start[1],
+            position[2] - vector_start[2],
+            position[3] - vector_start[3]
         }
 
+        -- Calculate the dot product to project the position vector onto the direction vector
+        local dot_product = position_vector[1] * vector_direction[1] + position_vector[2] * vector_direction[2] + position_vector[3] * vector_direction[3]
 
-       return math.sqrt((org_position[1] - closest_point[1])^2 + (org_position[2] - closest_point[2])^2 + (org_position[3] - closest_point[3])^2)
+        -- Calculate the closest point on the line
+        local closest_point = {
+            vector_start[1] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[1],
+            vector_start[2] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[2],
+            vector_start[3] + (dot_product / (vector_direction[1]^2 + vector_direction[2]^2 + vector_direction[3]^2)) * vector_direction[3]
+        }
 
+        -- Calculate the distance between the position and the closest point on the line
+        local distance = math.sqrt((position[1] - closest_point[1])^2 + (position[2] - closest_point[2])^2 + (position[3] - closest_point[3])^2)
+
+        if distance < min_distance then
+            min_distance = distance
+            closest_position = position
+        end
+    end
+
+    return closest_position
 end
+
 
 function GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 	local RooftopClosestPiece = -1
 	local RooftopMinDistance = math.huge
 	local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
-	
+	positions = {}
 	foreach(RoofTopPieces,
 			function (pieceID)
 				x,y,z = spGetUnitPiecePosDir(unitID, pieceID)
-				position = {x,y,z}
-				position_vector = { x-vector_position[1],y-vector_position[2],z-vector_position[3]}
-		        local dot_product = vector_position[1] * vector_direction[1] + vector_position[2] * vector_direction[2] + vector_position[3] * vector_direction[3]
-				local distanceToPos = distanceClosestPoint(dot_product, position_vector, vector_direction, position)
-				if distanceToPos < RooftopMinDistance then
-					RooftopMinDistance= distanceToPos
-					RooftopClosestPiece= pieceID
-				end
+				positions[#positions+1] = {x,y,z, pieceID}
 			end
-			)
-	return RooftopClosestPiece
+			) 
+
+    resultPos= find_closest_position(positions, vector_position, vector_direction)
+
+	return resultPos[4]
 end

@@ -133,7 +133,7 @@ function getGameConfig()
         allyWaySizeZ = 25,
         bonusFirstUnitMoney_S = 12,
         maxParallelIdleAnimations = 20,
-        SniperAttachMaxDistance = 120,
+        SniperAttachMaxDistance = 256,
         agentConfig = {
             recruitmentRange = 60,
             raidWeaponDownTimeInSeconds = 60,
@@ -151,6 +151,7 @@ function getGameConfig()
             RewardCyle = 30 * 60, -- /30 frames = 1 seconds
             Reward = 20
         },
+        maxNrExplosionSoundFiles = 14,
         -- civilianbehaviour
         civilian = {
           GatheringBehaviourIntervalFrames = 3 * 60 * 30,

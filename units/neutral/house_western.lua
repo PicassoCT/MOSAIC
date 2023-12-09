@@ -17,8 +17,7 @@ local house_western = Building:New{
 	script 				= "house_western_script.lua",
 	objectName       	= "house_western.dae",
 
-	
-	
+
 		
 	YardMap =  [[yyyyyyyy
 				yyyyyyyy
@@ -44,7 +43,7 @@ local house_western = Building:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 60 130",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
-	category = [[GROUND BUILDING RAIDABLE]],
+	category = [[BUILDING RAIDABLE]],
 
 }
 
