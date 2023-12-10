@@ -112,7 +112,7 @@ end
 
 local function isNight()
    	local hours, minutes, seconds, percent = getDayTime()			
-	return hours > 19 and hours < 6
+	return hours > 19 or hours < 6
 end
 
 

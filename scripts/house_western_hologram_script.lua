@@ -16,9 +16,9 @@ local percent=0
 local buisness_spin = piece("buisness_spin")
 local wallSpin = piece("wallSpin")
 local RainCenter = piece("RainCenter")
-assert(RainCenter)
+--assert(RainCenter)
 local general_spin = piece("general_spin")
-assert(general_spin)
+--assert(general_spin)
 local text_spin = piece("text_spin")
 local brothel_spin = piece("brothel_spin")
 local casino_spin = piece("casino_spin")
@@ -28,7 +28,7 @@ local technoAnimations = {}
 
 
 local tldrum = piece "tldrum"
-assert(tldrum)
+--assert(tldrum)
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -38,7 +38,7 @@ local tlhairdown = piece "tlhairdown"
 local tlarm = piece "tlarm"
 local tlarmr = piece "tlarmr"
 local tllegUp = piece "tllegUp"
-assert(tllegUp)
+--assert(tllegUp)
 local tllegLow = piece "tllegLow"
 local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
@@ -101,13 +101,10 @@ local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopy ={}
 local lastFrame = Spring.GetGameFrame()
 
-
-
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    Spring.Echo("Updating VisibleUnitPieces:"..toString(cachedCopy)4)
     GG.VisibleUnitPieces[unitID] = cachedCopy
     lastFrame = frame
   end
@@ -118,7 +115,6 @@ function ShowReg(pieceID)
     table.insert(cachedCopy, pieceID)
     updateCheckCache()
 end
-
 
 function HideReg(pieceID)
     Hide(pieceID)  
@@ -143,7 +139,7 @@ end
 -- > Hides a PiecesTable, 
 function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then return end
-    assert( type(l_tableName) == "table" , UnitDefs[Spring.GetUnitDefID(unitID)].name.." has invalid hideT")
+    --assert( type(l_tableName) == "table" , UnitDefs[Spring.GetUnitDefID(unitID)].name.." has invalid hideT")
     boolDebugActive =  (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
 
     if l_lowLimit and l_upLimit then
@@ -365,7 +361,7 @@ function getGrid()
         allGrids[#allGrids+1] = TableOfPiecesGroups["BuisnessGrid"][2]
         allGrids[#allGrids+1] = TableOfPiecesGroups["CasinoGrid"][2]
         for i=1, #allGrids do
-            assert(allGrids[i])
+            --assert(allGrids[i])
         end
     end
 
@@ -547,7 +543,7 @@ end
 function fadeIn(piecesTable, rest)
     for i = 1, #piecesTable do
         hideTReg(piecesTable)
-        assert(piecesTable[i], i.." not in piecesTable")
+        --assert(piecesTable[i], i.." not in piecesTable")
         ShowReg(piecesTable[i])
         Sleep(rest)
     end
@@ -557,7 +553,7 @@ function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
         hideTReg(piecesTable)
-        assert(piecesTable[i], i.." not in piecesTable")
+        --assert(piecesTable[i], i.." not in piecesTable")
         ShowReg(piecesTable[i])
         Sleep(rest)
     end
@@ -601,7 +597,7 @@ function glowWormFlight(speed)
     posX, posY,posZ = 0,0,0
     intervalLength = math.random(5, 10)
     for i=1, #TableOfPiecesGroups["GlowSwarm"] do
-        assert(TableOfPiecesGroups["GlowSwarm"][i])
+        --assert(TableOfPiecesGroups["GlowSwarm"][i])
     end
 
     hideTReg(TableOfPiecesGroups["GlowSwarm"])
@@ -998,7 +994,7 @@ function shapeSymmetry(logo)
 end
 
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings, minImum, minMaximum)
-    assert(flickerGroup)
+    --assert(flickerGroup)
     local fGroup = flickerGroup
     if not minImum then minImum = 2 end 
     if not minMaximum then minMaximum = #flickerGroup end
@@ -1008,7 +1004,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
     toShowTableT= {}
     while true do
         hideTReg(fGroup)
-        assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
+        --assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
         if boolDayLightSavings == nil or ( boolDayLightSavings == true and 
             (hours > 17 or hours < 7)) and isANormalDay() then

@@ -95,18 +95,18 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then
-			local result = {}
-			local VisibleUnitPieces = GG.VisibleUnitPieces
             if count(neonUnitDataTransfer) > 0 then
-            SendToUnsynced("resetUnitNeonLuaDraw")       
-			for id, value in pairs(neonUnitDataTransfer) do
-                echo(HEAD().."Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[value] ))
-				if id and value and VisibleUnitPieces[value] then
-                    local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
-                    Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)
-					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
-				end
-			end       
+                echo(HEAD().."Visible Units:"..toString(neonUnitDataTransfer))
+                local VisibleUnitPieces = GG.VisibleUnitPieces
+                SendToUnsynced("resetUnitNeonLuaDraw")       
+    			for id, value in pairs(neonUnitDataTransfer) do
+                    echo(HEAD().."Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
+    				if id and value and VisibleUnitPieces[id] then
+                        local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
+                        Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)
+    					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
+    				end
+    			end                
             end
 		end
     end
@@ -212,7 +212,7 @@ else -- unsynced
 
     local function splitToNumberedArray(msg)
         local message = msg..'|'
-        local t={}
+        local t = {}
         for e in string.gmatch(message,'([^%|]+)%|') do
             t[#t+1] = tonumber(e)
         end
@@ -221,7 +221,8 @@ else -- unsynced
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
         Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
-        neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = splitToNumberedArray(listOfVisibleUnitPiecesString)} 
+        local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
+        neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = piecesTable} 
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -248,6 +249,9 @@ else -- unsynced
     [[
        #version 150 compatibility
         uniform float time;
+        uniform vec3 unitCenterPosition;
+        uniform float viewPosX;
+        uniform float viewPosY;
 
         void main() {
             vec4 posCopy = gl_Vertex;
@@ -259,13 +263,16 @@ else -- unsynced
     [[
         #version 150 compatibility
         uniform float time;
-        
+        uniform vec3 unitCenterPosition;
+        uniform float viewPosX;
+        uniform float viewPosY;
+
         void main() 
         {
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
         }
     ]]
-
+ 
    local boolActivated = false
     function gadget:Initialize() 
 		InitializeTextures()
@@ -292,9 +299,9 @@ else -- unsynced
                 screenTex= 4
             },
             uniformFloat = {
-                viewPosX = 0,
-                viewPosY = 0,
-                time = Spring.GetGameFrame()/30.0,           
+                --viewPosX = 0,
+                --viewPosY = 0,
+                --time = Spring.GetGameSeconds(),           
             },
         }, "Neon Hologram Shader")
 
@@ -304,6 +311,7 @@ else -- unsynced
                 gadgetHandler:RemoveGadget(self)
                 return 
         end
+   
         Spring.Echo("NeonShader:: did compile")
 
     end
@@ -318,30 +326,33 @@ else -- unsynced
         end
 
         if counterNeonUnits == 0 or not boolActivated then
-
             return
         end    
 
         glDepthTest(true)  
+
         neonHologramShader:ActivateWith(
             function()   
-                neonHologramShader:SetUniform("time", Spring.GetGameFrame()/30.0)
-                
+                --neonHologramShader:SetUniformFloat("viewPosX", vsx)
+                --neonHologramShader:SetUniformFloat("viewPosY", vsy)
+                --neonHologramShader:SetUniformFloat("time", Spring.GetGameSeconds() )
+                glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
                 for i = 1, #neonUnitTables do
-                    local unitID = neonUnitTables[i].id                    
-              
+                    local unitID = neonUnitTables[i].id
                     local neonHoloDef = spGetUnitDefID(unitID)
                     local px,py,pz = spGetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArray("unitCenterPosition",  {px,py, pz})
+                    local unitCenterPosition = {px,py, pz}
+                    --neonHologramShader:SetUniformFloatArray("unitCenterPosition", unitCenterPosition)
                    
-                    local neonHoloParts = neonUnitTables[i].pieces
+                    --local neonHoloParts = neonUnitTables[i].pieces
+                    local neonHoloParts = Spring.GetUnitPieceList(unitID)
                     glUnitShapeTextures(neonHoloDef, true)
                     --glTexture(2, normalMaps[unitDefID])
-                    glBlending(GL_SRC_ALPHA, GL_ONE)
+                  
                     glCulling(GL_FRONT)
                     for j = 1, #neonHoloParts do
-                        local pieceID = neonHoloParts[j]
+                        local pieceID = j -- neonHoloParts[j]
                         glPushMatrix()
                             glUnitMultMatrix(unitID)
                             glUnitPieceMultMatrix(unitID, pieceID)
@@ -351,18 +362,18 @@ else -- unsynced
 
                     glCulling(GL_BACK)
                     for j = 1, #neonHoloParts do
-                        local pieceID = neonHoloParts[j]
+                        local pieceID = j --neonHoloParts[j]
                         glPushMatrix()
                             glUnitMultMatrix(unitID)
                             glUnitPieceMultMatrix(unitID, pieceID)
                             glUnitPiece(unitID, pieceID)
                         glPopMatrix()
-                    end
-                    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                    end   
                 end
+                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)            
             end
         )
-     
+     neonHologramShader:Deactivate()
         glDepthTest(false)
         glCulling(false)
     end
