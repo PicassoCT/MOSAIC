@@ -72,7 +72,7 @@ if (gadgetHandler:IsSyncedCode()) then
         for i=1, #t do
             result = result.."|"..t
         end
-        return t
+        return result
     end
 
     local allNeonUnits= {}
@@ -98,11 +98,12 @@ if (gadgetHandler:IsSyncedCode()) then
 			local result = {}
 			local VisibleUnitPieces = GG.VisibleUnitPieces
             if count(neonUnitDataTransfer) > 0 then
-                 echo(HEAD().."Sending Neon Hologram unit data")
             SendToUnsynced("resetUnitNeonLuaDraw")       
 			for id, value in pairs(neonUnitDataTransfer) do
+                echo(HEAD().."Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[value] ))
 				if id and value and VisibleUnitPieces[value] then
                     local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
+                    Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)
 					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
 				end
 			end       
@@ -178,8 +179,8 @@ else -- unsynced
     local neonUnitTables = {}
     local glUnitShapeTextures = gl.UnitShapeTextures
 -------Shader--FirstPass -----------------------------------------------------------
-    local neoVertexShaderFirstPass = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
-    local neoFragmenShaderFirstPass= VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
+    local neoVertexShaderFirstPass  = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
+    local neoFragmenShaderFirstPass = VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
     local neonHologramShader
     local glowReflectHologramShader
     local vsx, vsy,vpx,vpy
@@ -219,6 +220,7 @@ else -- unsynced
     end
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
+        Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
         neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = splitToNumberedArray(listOfVisibleUnitPiecesString)} 
         counterNeonUnits= counterNeonUnits + 1
     end	
@@ -242,7 +244,7 @@ else -- unsynced
 
     end
 
-    local vertexShader = 
+    local defaultVertexShader = 
     [[
        #version 150 compatibility
         uniform float time;
@@ -253,7 +255,7 @@ else -- unsynced
             gl_Position = posCopy;
         }
     ]]
-    local fragmentShader = 
+    local defaultTestFragmentShader = 
     [[
         #version 150 compatibility
         uniform float time;
@@ -273,8 +275,8 @@ else -- unsynced
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
-            vertex = vertexShader, --neoVertexShaderFirstPass,
-            fragment =  fragmentShader , --neoFragmenShaderFirstPass,
+            vertex = defaultVertexShader, --neoVertexShaderFirstPass,
+            fragment =  defaultTestFragmentShader , --neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
