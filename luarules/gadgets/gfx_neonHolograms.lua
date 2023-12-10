@@ -221,6 +221,7 @@ else -- unsynced
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
         Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
+        Spring.UnitRendering.SetUnitLuaDraw(unitID)   
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
         neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = piecesTable} 
         counterNeonUnits= counterNeonUnits + 1
@@ -294,9 +295,8 @@ else -- unsynced
             uniformInt = {
                 tex1 = 0,
                 tex2 = 1,
-                normalTex = 2,
-                reflectTex = 3,
-                screenTex= 4
+                reflectTex = 2,
+                screenTex= 3
             },
             uniformFloat = {
                 --viewPosX = 0,
@@ -319,7 +319,9 @@ else -- unsynced
  
     local boolDoesCompile = false
     local function RenderNeonUnits()
-
+        glTexture(0, "$tex1")
+        glTexture(1, "$tex2")
+        glTexture(2, "$reflection")
         if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
             oldCounterNeonUnits= counterNeonUnits
             Spring.Echo("Rendering no Neon Units with n-units "..counterNeonUnits)
@@ -376,11 +378,17 @@ else -- unsynced
      neonHologramShader:Deactivate()
         glDepthTest(false)
         glCulling(false)
+        glTexture(0, false)
+        glTexture(1, false)
+        glTexture(2, false)
+        glTexture(3, false)
+
     end
 
     function gadget:DrawWorld()
         RenderNeonUnits()
     end
+
 
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
