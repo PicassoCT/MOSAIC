@@ -107,6 +107,7 @@ function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
+    Spring.Echo("Updating VisibleUnitPieces:"..toString(cachedCopy)4)
     GG.VisibleUnitPieces[unitID] = cachedCopy
     lastFrame = frame
   end
