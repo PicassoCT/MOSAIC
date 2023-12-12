@@ -28,7 +28,8 @@
         };
 
 
-    float shiver(float posy, float scalar, float size) {
+float shiver(float posy, float scalar, float size)
+{
         if (sin(posy + time) < size)
         { return 1.0;};
         
