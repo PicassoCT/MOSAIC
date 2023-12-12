@@ -163,10 +163,11 @@ void main(void)
 	vec4 origColor = texture2D(raincanvasTex, uv);
 	vec4 downWardrainColor = (origColor)+ accumulatedLightColorRay + backGroundLightIntersect; 
 	vec4 upWardrainColor = origColor;
+	//if player looks upward mix drawing rain and start drawing drops on the camera
 	if (upwardnessFactor > 0.5)
 	{
 		upWardrainColor = addRainDropsShader(origColor, uv);
-		upWardrainColor = mix(downWardrainColor, upWardrainColor, upwardnessFactor - 0.5);
+		upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
 		gl_FragColor = upWardrainColor;
 	}	
 	else //no Raindrops blended in
