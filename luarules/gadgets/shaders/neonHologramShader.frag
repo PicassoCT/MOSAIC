@@ -224,9 +224,10 @@ return vec4(0.0, 0.0, 0.0, 0.0);
 										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
 										); 
 
-
+                                        
         vec4 rgbaColCopy = vec4((gl_FragColor + gl_FragColor * (1.0-averageShadow)).rgb , hologramTransparency);
         
+        //Calculate the gaussian blur that will have to do for glow
 		vec4 sampleBLurColor = rgbaColCopy.rgba;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
@@ -236,6 +237,7 @@ return vec4(0.0, 0.0, 0.0, 0.0);
         vec4 finalColor = borderGlowColor;
         finalColor.a = 1.0;
 
+        //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
         float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
         if (distanceTotal  < 1.0)
         {            

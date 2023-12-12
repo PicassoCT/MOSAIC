@@ -7,7 +7,8 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = true
+        enabled = false,
+        hidden = true,
     }
 end
 
@@ -354,7 +355,7 @@ else -- unsynced
                   
                     glCulling(GL_FRONT)
                     for j = 1, #neonHoloParts do
-                        local pieceID = j -- neonHoloParts[j]
+                        local pieceID = neonHoloParts[j]
                         glPushMatrix()
                             glUnitMultMatrix(unitID)
                             glUnitPieceMultMatrix(unitID, pieceID)
@@ -364,7 +365,7 @@ else -- unsynced
 
                     glCulling(GL_BACK)
                     for j = 1, #neonHoloParts do
-                        local pieceID = j --neonHoloParts[j]
+                        local pieceID = neonHoloParts[j]
                         glPushMatrix()
                             glUnitMultMatrix(unitID)
                             glUnitPieceMultMatrix(unitID, pieceID)

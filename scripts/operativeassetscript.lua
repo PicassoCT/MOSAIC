@@ -834,10 +834,12 @@ function onRoof()
     SetSignalMask(SIG_ROOF_TOP)
     --echo("operative: on Roof")
     boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
+    boolVisiblyForced= true
     while not boolHasMoveCommand do
         Sleep(15)
        boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
     end
+    boolVisiblyForced = false
     Spring.UnitDetach(unitID)
     --echo("operative: off Roof")
     boolOnRoof= false
