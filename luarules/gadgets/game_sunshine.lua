@@ -30,7 +30,6 @@ if gadgetHandler:IsSyncedCode() then
         REGIONAL_MAX_ALTITUDE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.instance.culture, getDetermenisticMapHash(Game))
         echo("game_daycycle: sun anzimuth:"..REGIONAL_MAX_ALTITUDE)
         echo("game_daycycle: equatorial direction sign:"..EquatorialDirectionSign)
-        setSunArc(1)
     end
 
     -- multiplies all members of a table by a factor

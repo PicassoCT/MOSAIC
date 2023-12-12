@@ -28,7 +28,8 @@
         };
 
 
-    float shiver(float posy, float scalar, float size) {
+float shiver(float posy, float scalar, float size)
+{
         if (sin(posy + time) < size)
         { return 1.0;};
         
@@ -72,6 +73,7 @@ void CreateSphericalUVs(vec3 worldPosition)
         vViewCameraDir = vCamPositionWorld.xyz - worldVertPos.xyz;
 
         vec3 posCopy = gl_Vertex.xyz;
+        //We shiver the polygons to the side ocassionally in ripples
     	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
     	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0)  ;
 	}
