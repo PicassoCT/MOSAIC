@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = false,
+        enabled = Spring.Utilities.IsCurrentVersionNewerThan(105, 500),
         hidden = true,
     }
 end
@@ -148,7 +148,8 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-else -- unsynced
+-----------------------------------------------------------------------------------------------------------------------------------------------
+else -- unsynced ------------------------------------------------------------------------------------------------------------------------------
 
     local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
     local spGetVisibleUnits = Spring.GetVisibleUnits
