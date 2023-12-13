@@ -153,8 +153,8 @@ else -- unsynced
     local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
-    local screenTex
- 
+    local spGetUnitDefID = Spring.GetUnitDefID
+    local spGetUnitPosition = Spring.GetUnitPosition
 
     local glGetSun = gl.GetSun
     local glDepthTest = gl.DepthTest
@@ -176,19 +176,15 @@ else -- unsynced
     local glTexture = gl.Texture
     local glUnitShapeTextures = gl.UnitShapeTextures
     local glCopyToTexture = gl.CopyToTexture
-
-    local neonUnitTables = {}
     local glUnitShapeTextures = gl.UnitShapeTextures
 -------Shader--FirstPass -----------------------------------------------------------
     local neoVertexShaderFirstPass  = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
     local neoFragmenShaderFirstPass = VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
     local neonHologramShader
-    local glowReflectHologramShader
+    local screenTex 
     local vsx, vsy,vpx,vpy
     local sunChanged = false
-    local spGetUnitDefID = Spring.GetUnitDefID
-    local spGetUnitPosition = Spring.GetUnitPosition
-
+    local neonUnitTables = {}
 -------------------------------------------------------------------------------------
 
 -------Shader--2ndPass -----------------------------------------------------------
@@ -249,7 +245,9 @@ else -- unsynced
 
     local defaultVertexShader = 
     [[
-       #version 150 compatibility
+       #version 430 compatibility
+       #line 100249
+
         uniform float time;
         uniform vec3 unitCenterPosition;
         uniform float viewPosX;
@@ -263,7 +261,9 @@ else -- unsynced
     ]]
     local defaultTestFragmentShader = 
     [[
-        #version 150 compatibility
+        #version 430 compatibility
+        #line 200265
+        
         uniform float time;
         uniform vec3 unitCenterPosition;
         uniform float viewPosX;
@@ -314,15 +314,11 @@ else -- unsynced
         end
    
         Spring.Echo("NeonShader:: did compile")
-
     end
-
  
     local boolDoesCompile = false
     local function RenderNeonUnits()
-        glTexture(0, "$tex1")
-        glTexture(1, "$tex2")
-        glTexture(2, "$reflection")
+
         if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
             oldCounterNeonUnits= counterNeonUnits
             Spring.Echo("Rendering no Neon Units with n-units "..counterNeonUnits)
@@ -330,12 +326,15 @@ else -- unsynced
 
         if counterNeonUnits == 0 or not boolActivated then
             return
-        end    
+        end   
 
+        glTexture(0, "$tex1")
+        glTexture(1, "$tex2")
+        glTexture(2, "$reflection") 
         glDepthTest(true)  
 
         neonHologramShader:ActivateWith(
-            function()   
+        function()   
                 --neonHologramShader:SetUniformFloat("viewPosX", vsx)
                 --neonHologramShader:SetUniformFloat("viewPosY", vsy)
                 --neonHologramShader:SetUniformFloat("time", Spring.GetGameSeconds() )
@@ -375,15 +374,15 @@ else -- unsynced
                 end
                 glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)            
             end
+
+            glTexture(0, false)
+            glTexture(1, false)
+            glTexture(2, false)
+            glTexture(3, false)
         )
-     neonHologramShader:Deactivate()
+
         glDepthTest(false)
         glCulling(false)
-        glTexture(0, false)
-        glTexture(1, false)
-        glTexture(2, false)
-        glTexture(3, false)
-
     end
 
     function gadget:DrawWorld()
