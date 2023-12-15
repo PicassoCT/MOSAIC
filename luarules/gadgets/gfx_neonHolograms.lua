@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = Spring.Utilities.IsCurrentVersionNewerThan(105, 500),
+        enabled = Spring.Utilities.IsCurrentVersionNewerThan(105, 500) and false,
         hidden = true,
     }
 end
@@ -373,13 +373,12 @@ else -- unsynced ---------------------------------------------------------------
                         glPopMatrix()
                     end   
                 end
-                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)            
-            end
-
+            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
             glTexture(0, false)
             glTexture(1, false)
             glTexture(2, false)
-            glTexture(3, false)
+            glTexture(3, false)        
+            end         
         )
 
         glDepthTest(false)
