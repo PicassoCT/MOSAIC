@@ -299,6 +299,13 @@ function widget:Shutdown()
         gl.DeleteShader(rainShader)
     end
 end
+local function prepareTextures()
+    Spring.Echo("Preparing Texture start")
+    glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy)
+    glCopyToTexture(depthTex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+    glCopyToTexture(raincanvasTex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
+    Spring.Echo("Preparing Texture end")
+end
 
 function widget:DrawScreenEffects()
     Spring.Echo("Enter DrawScreenEffects")
@@ -320,9 +327,7 @@ function widget:DrawScreenEffects()
         return 
     else
         Spring.Echo("Using rain shader")
-        --glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
-        --glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-        --glCopyToTexture(raincanvastex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
+        prepareTextures()
 
         camX, camY, camZ = Spring.GetCameraPosition()
         diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
