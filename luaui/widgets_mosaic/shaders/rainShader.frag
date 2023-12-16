@@ -1,4 +1,5 @@
-#version 150 compatibility											 
+#version 150 compatibility	
+#line 100002										 
 
 #define PI 3.14159265359
 #define PI_HALF (PI*0.5)
@@ -11,9 +12,10 @@
 #define RAIN_COLOR vec4(0.0, 1.0, 0.0, 1.0)
 #define VEC_TODO vec3(1.0, 0.5, 0.5)
 
-uniform sampler2D raincanvasTex;
-uniform sampler2D depthTex;
-uniform sampler2D noiseTex;
+uniform sampler2D screentex;
+uniform sampler2D raincanvastex;
+uniform sampler2D depthtex;
+uniform sampler2D noisetex;
 
 uniform float time;		
 uniform float rainDensity;
@@ -21,11 +23,9 @@ uniform int maxLightSources;
 uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
 
-
 in Data {
 			vec3 vfragWorldPos;
 		 };
-
 
 //Lightsource description 
 /*
@@ -56,7 +56,7 @@ vec4 rainPixel(vec3 pixelCoord, float localRainDensity)
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = (texture2D(noiseTex, deterministicRandom)).r;
+	float noiseValue = (texture2D(noisetex, deterministicRandom)).r;
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
@@ -80,7 +80,7 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 	vec4 colorToShift = vec4(gl_FragColor);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = (texture2D(noiseTex, deterministicRandom)).r;
+	float noiseValue = (texture2D(noisetex, deterministicRandom)).r;
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
@@ -155,12 +155,12 @@ void main(void)
 	vec3 viewDirection = normalize(camWorldPos - vfragWorldPos);
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
 	float depthValueAtPixel = 0.0;
-	depthValueAtPixel = (texture2D(depthTex, uv)).r *  2.0f - 1.0f;	
+	depthValueAtPixel = (texture2D(depthtex, uv)).r *  2.0f - 1.0f;	
 	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
 	vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = looksUpwardPercentage(viewDirection);
-	vec4 origColor = texture2D(raincanvasTex, uv);
+	vec4 origColor = texture2D(raincanvastex, uv);
 	vec4 downWardrainColor = (origColor)+ accumulatedLightColorRay + backGroundLightIntersect; 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera

@@ -5,7 +5,7 @@ function widget:GetInfo()
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
-        layer = 1,
+        layer = 3,
         enabled = true, --  loaded by default?
         handler = true
     }
@@ -21,17 +21,14 @@ end
 
 -- > debugEchoT(
 
-local shader = nil
+local rainShader = nil
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local spGetGameFrame = Spring.GetGameFrame
 local glBeginEnd = gl.BeginEnd
 local glVertex = gl.Vertex
-local glColor = gl.Color
 local glBlending = gl.Blending
-local glTranslate = gl.Translate
-local glCallList = gl.CallList
 local glDepthTest = gl.DepthTest
 local glCopyToTexture = gl.CopyToTexture
 local glCreateList = gl.CreateList
@@ -45,13 +42,8 @@ local glUniformMatrix = gl.UniformMatrix
 local glUniformInt = gl.UniformInt
 local glUniform = gl.Uniform
 local glGetUniformLocation = gl.GetUniformLocation
-local glGetActiveUniforms = gl.GetActiveUniforms
-local glBeginEnd = gl.BeginEnd
-local glPointSprite = gl.PointSprite
-local glPointSize = gl.PointSize
-local glPointParameter = gl.PointParameter
 local glResetState = gl.ResetState
-local GL_POINTS = GL.POINTS
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -59,10 +51,10 @@ local GL_POINTS = GL.POINTS
 local boolRainActive = false
 local pausedTime = 0
 local lastFrametime = Spring.GetTimer()
-local raincanvasTex = nil
-local depthTex = nil
-local noiseTex = nil
-local screenTex = nil
+local raincanvastex = nil
+local depthtex = nil
+local noisetex = nil
+local screentex = nil
 local startOsClock
 local shaderFilePath = "luaui/widgets_mosaic/shaders/"
 local DAYLENGTH = 28800
@@ -71,13 +63,14 @@ local shaderTimeLoc
 local shaderRainDensityLoc
 local shaderCamPosLoc
 local shaderMaxLightSrcLoc
-local shaderLightSourcescLoc
+local shaderLightSourcescLoc 
 local boolRainyArea = false
 local maxLightSources = 0
 local shaderLightSources = {}
-local noiseTextureFilePath = ":n:LuaUI/images/noise.png"
+local noisetextureFilePath = ":n:LuaUI/images/noise.png"
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
+local cam = {}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -86,10 +79,10 @@ local vsx, vsy = Spring.GetViewGeometry()
        #version 150 compatibility
        #line 100087
 
-        uniform sampler2D raincanvasTex;
-        uniform sampler2D screenTex;
-        uniform sampler2D depthTex;
-        uniform sampler2D noiseTex;
+        uniform sampler2D raincanvastex;
+        uniform sampler2D screentex;
+        uniform sampler2D depthtex;
+        uniform sampler2D noisetex;
 
         uniform float time;
         //uniform vec3 unitCenterPosition;
@@ -107,10 +100,10 @@ local vsx, vsy = Spring.GetViewGeometry()
         #version 150 compatibility
         #line 200103
 
-        uniform sampler2D raincanvasTex;
-        uniform sampler2D screenTex;
-        uniform sampler2D depthTex;
-        uniform sampler2D noiseTex;
+        uniform sampler2D raincanvastex;
+        uniform sampler2D screentex;
+        uniform sampler2D depthtex;
+        uniform sampler2D noisetex;
         
         uniform float time;
         //uniform vec3 unitCenterPosition;
@@ -126,8 +119,8 @@ local vsx, vsy = Spring.GetViewGeometry()
 
 function widget:ViewResize(viewSizeX, viewSizeY)
     vsx, vsy = viewSizeX, viewSizeY
-    noiseTex = gl.Texture(0, noiseTextureFilePath)
-    raincanvasTex =
+    noisetex = gl.Texture(0, noisetextureFilePath)
+    raincanvastex =
         gl.CreateTexture(
         vsx,
         vsy,
@@ -137,13 +130,13 @@ function widget:ViewResize(viewSizeX, viewSizeY)
             mag_filter = GL.NEAREST
         }
     )
-    if raincanvasTex == nil then
-        Spring.Echo("No raincanvasTex - aborting")       
+    if raincanvastex == nil then
+        Spring.Echo("No raincanvastex - aborting")       
         widgetHandler:RemoveWidget(self)
         return
     end
 
-    depthTex =
+    depthtex =
         gl.CreateTexture(
         vsx,
         vsy,
@@ -154,13 +147,13 @@ function widget:ViewResize(viewSizeX, viewSizeY)
             mag_filter = GL.NEAREST
         }
     )
-    if depthTex == nil then
-        Spring.Echo("No depthTex - aborting")
+    if depthtex == nil then
+        Spring.Echo("No depthtex - aborting")
         widgetHandler:RemoveWidget(self)
         return
     end
 
-    screenTex =
+    screentex =
         gl.CreateTexture(
         vsx,
         vsy,
@@ -172,7 +165,7 @@ function widget:ViewResize(viewSizeX, viewSizeY)
         wrap_t = GL.CLAMP_TO_EDGE,
         }
     )
-    if screenTex == nil then
+    if screentex == nil then
         Spring.Echo("No screen Tex - aborting")
         widgetHandler:RemoveWidget(self)
         return 
@@ -194,13 +187,13 @@ local function init()
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") --defaultTestFragmentShader
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") --defaultVertexShader
     local uniformInt = {
-        raincanvasTex = 0,
-        depthTex = 1,
-        noiseTex = 2,
-        screenTex = 3
+        raincanvastex = 0,
+        depthtex = 1,
+        noisetex = 2,
+        screentex = 3
     }
 
-    shader =
+    rainShader =
         glCreateShader(
         {
             fragment = fragmentShader,
@@ -217,7 +210,7 @@ local function init()
         }
     )
 
-    if (shader == nil) then
+    if (rainShader == nil) then
         Spring.Echo("gfx_rain:Initialize] particle shader compilation failed")
         Spring.Echo(glGetShaderLog())
         widgetHandler:RemoveWidget(self)
@@ -226,11 +219,11 @@ local function init()
         Spring.Echo("gfx_rain: Shader compiled: "..glGetShaderLog())
     end
 
-    shaderTimeLoc = glGetUniformLocation(shader, "time")
-    shaderRainDensityLoc = glGetUniformLocation(shader, "rainDensity")
-    shaderCamPosLoc = glGetUniformLocation(shader, "camWorldPos")
-    shaderMaxLightSrcLoc = glGetUniformLocation(shader, "maxLightSources")
-    shaderLightSourcescLoc = glGetUniformLocation(shader, "lightSources")
+    shaderTimeLoc = glGetUniformLocation(rainShader, "time")
+    shaderRainDensityLoc = glGetUniformLocation(rainShader, "rainDensity")
+    shaderCamPosLoc = glGetUniformLocation(rainShader, "camWorldPos")
+    shaderMaxLightSrcLoc = glGetUniformLocation(rainShader, "maxLightSources")
+    shaderLightSourcescLoc = glGetUniformLocation(rainShader, "lightSources")
 
     Spring.Echo("gfx_rain:Initialize ended")
 end
@@ -286,29 +279,29 @@ function widget:Update(dt)
 end
 
 function widget:Shutdown()
-    glDeleteTexture(0, raincanvasTex)
-    glDeleteTexture(1, depthTex)
-    glDeleteTexture(2, noiseTex)
-    glDeleteTexture(3, screenTex)
+    glDeleteTexture(0, raincanvastex)
+    glDeleteTexture(1, depthtex)
+    glDeleteTexture(2, noisetex)
+    glDeleteTexture(3, screentex)
     enabled = false
 end
 
 
 function widget:Shutdown()
     if glDeleteTexture then
-        glDeleteTexture(raincanvasTex or "")
-        glDeleteTexture(depthTex or "")
-        glDeleteTexture(noiseTex or "")
-        glDeleteTexture(screenTex or "")
+        glDeleteTexture(raincanvastex or "")
+        glDeleteTexture(depthtex or "")
+        glDeleteTexture(noisetex or "")
+        glDeleteTexture(screentex or "")
     end
 
-    if shader then
-        gl.DeleteShader(shader)
+    if rainShader then
+        gl.DeleteShader(rainShader)
     end
 end
 
 function widget:DrawScreenEffects()
-           -- Spring.Echo("Using rain shader1")
+    Spring.Echo("Enter DrawScreenEffects")
     --if boolRainActive == false then
     --            Spring.Echo("Using rain shader2")
     --    return
@@ -322,28 +315,26 @@ function widget:DrawScreenEffects()
     --end
 
     lastFrametime = Spring.GetTimer()
-
-
-    if shader == nil then 
+    if rainShader == nil then 
         Spring.Echo("No Shader")
         return 
     else
-
         Spring.Echo("Using rain shader")
-        --glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy)
-        --glCopyToTexture(depthTex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-        --glCopyToTexture(raincanvasTex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
+        --glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
+        --glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+        --glCopyToTexture(raincanvastex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
 
         camX, camY, camZ = Spring.GetCameraPosition()
         diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
 
-        glUniform(shaderTimeLoc, diffTime * 1)
-        glUniform(shaderCamPosLoc, camX, camY, camZ)
-        glUniform(shaderRainDensityLoc, rainDensity * 1)
+        glUniform(shaderTimeLoc, diffTime )
+        glUniform(shaderCamPosLoc,  {camX, camY, camZ})
+        glUniform(shaderRainDensityLoc, rainDensity )
         glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
         glUniform(shaderLightSourcescLoc, shaderLightSources)
        
         glUseShader(shaderProgram)
+		--draw the result as rectangle (with transparency in gui space)
         glTexRect(0,vsy,vsx,0)
 
         --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
@@ -352,12 +343,14 @@ function widget:DrawScreenEffects()
         local osClock = os.clock()
         local timePassed = osClock - prevOsClock
         prevOsClock = osClock
-        glTexRect(0,vsy,vsx,0)
-        glTexture(0, false)
+
+        
+		glTexture(0, false)
         glTexture(1, false)
         glTexture(2, false)
         glTexture(3, false)
-        glResetState()
+        
+		glResetState()
         glUseShader(0)
     end
     
