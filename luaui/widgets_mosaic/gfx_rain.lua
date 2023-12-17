@@ -67,7 +67,7 @@ local shaderLightSourcescLoc
 local boolRainyArea = false
 local maxLightSources = 0
 local shaderLightSources = {}
-local noisetextureFilePath = ":n:LuaUI/images/noise.png"
+local noisetextureFilePath = ":l:LuaUI/images/noise.png"
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
@@ -119,7 +119,7 @@ local cam = {}
 
 function widget:ViewResize(viewSizeX, viewSizeY)
     vsx, vsy = viewSizeX, viewSizeY
-    noisetex = gl.Texture(0, noisetextureFilePath)
+ 
     raincanvastex =
         gl.CreateTexture(
         vsx,
@@ -172,6 +172,9 @@ function widget:ViewResize(viewSizeX, viewSizeY)
     else
         widgetHandler:UpdateCallIn("DrawScreenEffects")
     end
+
+    noisetex = gl.Texture(2, noisetextureFilePath)
+
 end
 
 local function init()
@@ -301,9 +304,9 @@ function widget:Shutdown()
 end
 local function prepareTextures()
     Spring.Echo("Preparing Texture start")
-    glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy)
-    glCopyToTexture(depthTex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-    glCopyToTexture(raincanvasTex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
+    glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
+    glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+    glCopyToTexture(raincanvastex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
     Spring.Echo("Preparing Texture end")
 end
 
