@@ -67,7 +67,7 @@ local shaderLightSourcescLoc
 local boolRainyArea = false
 local maxLightSources = 0
 local shaderLightSources = {}
-local noisetextureFilePath = ":l:LuaUI/images/noise.png"
+local noisetextureFilePath = ":l:luaui/images/noise.png"
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
@@ -173,7 +173,7 @@ function widget:ViewResize(viewSizeX, viewSizeY)
         widgetHandler:UpdateCallIn("DrawScreenEffects")
     end
 
-    noisetex = gl.Texture(2, noisetextureFilePath)
+    noisetex = glTexture(2, noisetextureFilePath)
 
 end
 
@@ -227,7 +227,9 @@ local function init()
     shaderCamPosLoc = glGetUniformLocation(rainShader, "camWorldPos")
     shaderMaxLightSrcLoc = glGetUniformLocation(rainShader, "maxLightSources")
     shaderLightSourcescLoc = glGetUniformLocation(rainShader, "lightSources")
-
+      for i=1,maxLightSources do
+        shaderLightSourcescLoc[i] = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
+      end
     Spring.Echo("gfx_rain:Initialize ended")
 end
 
@@ -248,8 +250,7 @@ local function getDetermenisticHash()
 end
 
 local function isRainyArea()
-    return true
---    return getDetermenisticHash() % 2 == 0
+    return getDetermenisticHash() % 2 == 0
 end
 
 local function getDayTime()
@@ -278,17 +279,8 @@ local function isRaining()
 end
 
 function widget:Update(dt)
-    boolRainActive = isRaining()
+    boolRainActive = true --isRaining()
 end
-
-function widget:Shutdown()
-    glDeleteTexture(0, raincanvastex)
-    glDeleteTexture(1, depthtex)
-    glDeleteTexture(2, noisetex)
-    glDeleteTexture(3, screentex)
-    enabled = false
-end
-
 
 function widget:Shutdown()
     if glDeleteTexture then
@@ -315,10 +307,13 @@ local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
 
     glUniform(shaderTimeLoc, diffTime )
-    glUniform(shaderCamPosLoc,  cam)
+    glUniform(shaderCamPosLoc,  cam[1], cam[2], cam[3])
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
-    glUniform(shaderLightSourcescLoc, shaderLightSources)     
+
+      for i=1,maxLightSources do
+        glUniform( shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0 )
+      end
 end
 
 local function DrawRain()
@@ -375,10 +370,6 @@ function widget:DrawScreenEffects()
         cleanUp()
     end
     
-end
-
-function widget:ViewResize(newX, newY)
-    vsx, vsy = newX, newY
 end
 
 function widget:Initialize()
