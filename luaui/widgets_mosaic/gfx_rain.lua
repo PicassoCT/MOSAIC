@@ -307,6 +307,35 @@ local function prepareTextures()
     Spring.Echo("Preparing Texture end")
 end
 
+local function updateUniforms()
+    cam[1], cam[2], cam[3] = Spring.GetCameraPosition()
+    diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
+
+    glUniform(shaderTimeLoc, diffTime )
+    glUniform(shaderCamPosLoc,  cam)
+    glUniform(shaderRainDensityLoc, rainDensity )
+    glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
+    glUniform(shaderLightSourcescLoc, shaderLightSources)     
+end
+
+local function DrawRain()
+        glUseShader(shaderProgram)
+        --draw the result as rectangle (with transparency in gui space)
+        --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+        glTexRect(0,vsy,vsx,0)
+        --glBlending(GL.SRC_ALPHA, GL.ONE)
+end
+
+local function cleanUp()
+        glTexture(0, false)
+        glTexture(1, false)
+        glTexture(2, false)
+        glTexture(3, false)
+        
+        glResetState()
+        glUseShader(0)
+end
+
 function widget:DrawScreenEffects()
     Spring.Echo("Enter DrawScreenEffects")
     --if boolRainActive == false then
@@ -328,35 +357,19 @@ function widget:DrawScreenEffects()
     else
         Spring.Echo("Using rain shader")
         prepareTextures()
+        upateUniforms()
 
-        camX, camY, camZ = Spring.GetCameraPosition()
-        diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
+       DrawRain()
 
-        glUniform(shaderTimeLoc, diffTime )
-        glUniform(shaderCamPosLoc,  {camX, camY, camZ})
-        glUniform(shaderRainDensityLoc, rainDensity )
-        glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
-        glUniform(shaderLightSourcescLoc, shaderLightSources)
-       
-        glUseShader(shaderProgram)
-		--draw the result as rectangle (with transparency in gui space)
-        glTexRect(0,vsy,vsx,0)
 
-        --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
         --glTexRect(canvasRainTextureID, vsy, vsx, 0)
-        --glBlending(GL.SRC_ALPHA, GL.ONE)
+
         local osClock = os.clock()
         local timePassed = osClock - prevOsClock
         prevOsClock = osClock
 
         
-		glTexture(0, false)
-        glTexture(1, false)
-        glTexture(2, false)
-        glTexture(3, false)
-        
-		glResetState()
-        glUseShader(0)
+        cleanUp()
     end
     
 end
