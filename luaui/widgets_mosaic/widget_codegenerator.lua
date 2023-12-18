@@ -20,7 +20,8 @@ local fragmentFileName= "fragmentFileName.frag"
 local vertexFileName= "fragmentFileName.vert"
 local fragmentShader =  VFS.LoadFile(shaderDirectoryPath .. fragmentFileName) 
 local vertexShader = VFS.LoadFile(shaderDirectoryPath .. vertexFileName)
-
+local vert_uniforms, vert_varyings = parseShader(vertexShader)
+local frag_uniforms, frag_varyings = parseShader(fragmentShader)
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -41,11 +42,11 @@ local function parseShader(shaderCode)
     return uniforms, varyings
 end
 
-
-local vert_uniforms, vert_varyings = parseShader(vertexShader)
-local frag_uniforms, frag_varyings = parseShader(fragmentShader)
-
-
+local samplerType_Name_DataMap = {}
+local Name_DataMap = {}
+local function registerUniform()
+	--TODO
+end
 
 local function codegen()
     Spring.Echo("Begin_Generated_WidgetCode_________________________________________________________________")
@@ -56,35 +57,34 @@ local function codegen()
     local VAR_UNIFORM_INT = {}
     local VAR_UNIFORM_FLOAT = {}
     local VAR_UNIFORM_ALL = {}
+	
     --Uniforms:
-    for _, uniform in ipairs(uniforms) do
-        Spring.Echo(string.format("Type: %s, DataType: %s, Name: %s", uniform.type, uniform.dataType, uniform.name))
-
+    for _, uniform in ipairs(vert_uniforms) do
+        Spring.Echo(string.format("Type: %s, DataType: %s, Name: %s", vert_uniforms.type, vert_uniforms.dataType, vert_uniforms.name))
+    end	
+	for _, uniform in ipairs(frag_uniforms) do
+        Spring.Echo(string.format("Type: %s, DataType: %s, Name: %s", frag_uniforms.type, frag_uniforms.dataType, frag_uniforms.name))
     end
+
 
     --TODO
 
     --Varyings
-    for _, varying in ipairs(varyings) do
-        Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", varying.direction, varying.dataType, varying.name))
+    for _, varying in ipairs(vert_varyings) do
+        Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", vert_varyings.direction, vert_varyings.dataType, vert_varyings.name))
     end
-
-
+	for _, varying in ipairs(frag_varyings) do
+        Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", frag_varyings.direction, frag_varyings.dataType, frag_varyings.name))
+    end
 
     local VAR_TEXTURE_LIST = {}
     local VAR_TEXTURE_INIT_CODE = ""
 
-
-
     local VAR_UPDATE_UNIFORMS_PER_FRAME = ""
     local VAR_SHADER_CALL_CODE_GENERATED = ""
 
-
-
-
-
     Spring.Echo(codeGen)
-    Spring.Echo("_End_Generated_WidgetCode_________________________________________________________________")
+    Spring.Echo("End__Generated_WidgetCode_________________________________________________________________")
 end
 
 
