@@ -41,11 +41,18 @@ local function parseShader(shaderCode)
 
     return uniforms, varyings
 end
-
-local samplerType_Name_DataMap = {}
+local textureName_dataMap = {}
+local uniformType_Name_DataMap = {}
 local Name_DataMap = {}
-local function registerUniform()
-	--TODO
+local function registerUniform(data)
+	Name_DataMap[data.name] = data
+	local typeD = data.dataType
+	if typeD == "sampler2D" then
+		textureName_dataMap[data.name] = data
+	else
+		if uniformType_Name_DataMap[typeD] == nil then uniformType_Name_DataMap[typeD] = {}
+		uniformType_Name_DataMap[typeD][data.name] = data
+	end
 end
 
 local function codegen()
@@ -54,24 +61,28 @@ local function codegen()
     codeGen = string.replace(codeGen, "VAR_VERT_CODE", vertexShader)
     codeGen = string.replace(codeGen, "VAR_FRAG_CODE", fragmentShader)
 
-    local VAR_UNIFORM_INT = {}
-    local VAR_UNIFORM_FLOAT = {}
-    local VAR_UNIFORM_ALL = {}
 	
     --Uniforms:
     for _, uniform in ipairs(vert_uniforms) do
+		registerUniform(unfiorm)
         Spring.Echo(string.format("Type: %s, DataType: %s, Name: %s", vert_uniforms.type, vert_uniforms.dataType, vert_uniforms.name))
     end	
 	for _, uniform in ipairs(frag_uniforms) do
+		registerUniform(unfiorm)
         Spring.Echo(string.format("Type: %s, DataType: %s, Name: %s", frag_uniforms.type, frag_uniforms.dataType, frag_uniforms.name))
     end
+	
+	--TODO Code generated
+    local VAR_UNIFORM_INT = {}
+    local VAR_UNIFORM_FLOAT = {}
+    local VAR_UNIFORM_ALL = {}
 
 
-    --TODO
-
+	-- Varyings only check the back and forth is in order
     --Varyings
     for _, varying in ipairs(vert_varyings) do
         Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", vert_varyings.direction, vert_varyings.dataType, vert_varyings.name))
+		--TODO assert as in in varying_frag
     end
 	for _, varying in ipairs(frag_varyings) do
         Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", frag_varyings.direction, frag_varyings.dataType, frag_varyings.name))
