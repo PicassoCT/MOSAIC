@@ -1,6 +1,6 @@
 function widget:GetInfo()
     return {
-        name = "aRain",
+        name = "_Rain",
         desc = "Lets it automaticly rain",
         author = "Picasso",
         date = "2023",
@@ -172,9 +172,6 @@ function widget:ViewResize(viewSizeX, viewSizeY)
     else
         widgetHandler:UpdateCallIn("DrawScreenEffects")
     end
-
-    noisetex = glTexture(2, noisetextureFilePath)
-
 end
 
 local function init()
@@ -295,6 +292,7 @@ function widget:Shutdown()
     end
 end
 local function prepareTextures()
+    noisetex = glTexture(2, noisetextureFilePath)
     Spring.Echo("Preparing Texture start")
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
