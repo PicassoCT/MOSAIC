@@ -73,20 +73,22 @@ local function codegen()
     end
 	
 	--TODO Code generated
-    local VAR_UNIFORM_INT = {}
-    local VAR_UNIFORM_FLOAT = {}
+    local VAR_UNIFORM_INT = "{"
+	for name, dataset in pairs(uniformType_Name_DataMap["int"]) do
+		VAR_UNIFORM_INT = VAR_UNIFORM_INT .."\n"..name.." = TODO_AddInitial_Int_Value, "
+	end
+	VAR_UNIFORM_INT= VAR_UNIFORM_INT.."}"
+	codeGen = string.replace(codeGen, "VAR_UNIFORM_INT", VAR_UNIFORM_INT)
+	
+    local VAR_UNIFORM_FLOAT = "{"
+	for name, dataset in pairs(uniformType_Name_DataMap["float"]) do
+		VAR_UNIFORM_FLOAT = VAR_UNIFORM_FLOAT .."\n"..name.." = TODO_AddInitial_Float_Value, "
+	end
+	VAR_UNIFORM_FLOAT= VAR_UNIFORM_FLOAT.."}"
+	codeGen = string.replace(codeGen, "VAR_UNIFORM_FLOAT", VAR_UNIFORM_FLOAT)
+	
     local VAR_UNIFORM_ALL = {}
-
-
-	-- Varyings only check the back and forth is in order
-    --Varyings
-    for _, varying in ipairs(vert_varyings) do
-        Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", vert_varyings.direction, vert_varyings.dataType, vert_varyings.name))
-		--TODO assert as in in varying_frag
-    end
-	for _, varying in ipairs(frag_varyings) do
-        Spring.Echo(string.format("Direction: %s, DataType: %s, Name: %s", frag_varyings.direction, frag_varyings.dataType, frag_varyings.name))
-    end
+	
 
     local VAR_TEXTURE_LIST = {}
     local VAR_TEXTURE_INIT_CODE = ""
