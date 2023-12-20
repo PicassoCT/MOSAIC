@@ -100,9 +100,11 @@ function widget:Shutdown()
     end
 end
 
-function widget:DrawScreenEffects()
+function widget:DRAWCALLNAME()
     VAR_UPDATE_UNIFORMS_PER_FRAME
 
-    VAR_SHADER_CALL_CODE_GENERATED
+    VAR_SHADER_CALL_CODE_GENERATED_START
+	--TODO DO_SOMETHING_WITH IT
+	VAR_SHADER_CALL_CODE_GENERATED_END
 end
 ]]
