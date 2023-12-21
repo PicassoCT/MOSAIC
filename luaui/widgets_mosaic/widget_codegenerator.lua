@@ -124,8 +124,8 @@ local function codegen()
 	
 
     local VAR_UPDATE_UNIFORMS_PER_FRAME = "TODO"
-	local VAR_SHADER_CALL_CODE_GENERATED_START = "
-		glTexture(barGlowCenterTexture)"
+	local VAR_SHADER_CALL_CODE_GENERATED_START = [[
+													glTexture(NAME)]]
 		for name, data in pairs(textureName_dataMap) do
 		VAR_SHADER_CALL_CODE_GENERATED_START = VAR_TEXTURE_INIT_CODE.. "glTexture("..name..")"
 	end
