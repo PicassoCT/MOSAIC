@@ -318,81 +318,76 @@ else -- unsynced
     end
 
  
+local function RenderNeonUnits()
 
-local function ExecuteDrawPass(drawPass)
-	local myAllyTeamID = Spring.GetMyAllyTeamID()
-	local _, fullView = Spring.GetSpectatingState()
-	for shaderId, data in pairs(unitDrawBins[drawPass]) do
-		for _, texAndObj in pairs(data) do
-			for bp, tex in pairs(texAndObj.textures) do
-				gl.Texture(bp, tex)
-			end
+        if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
+            oldCounterNeonUnits= counterNeonUnits
+            Spring.Echo("Rendering no Neon Units with n-units "..counterNeonUnits)
+        end
 
-			unitIDs = {}
-			for unitID, _ in pairs(texAndObj.objects) do
-				if ((spGetUnitDrawFlag(unitID, 1) % 2) == 1) and not spGetUnitIsCloaked(unitID) then
-					unitIDs[#unitIDs + 1] = unitID
-				end
-			end
-			
-			if #unitIDs > 0 then
-				SetFixedStatePre(drawPass, shaderId)
+        if counterNeonUnits == 0 or not boolActivated then
+            return
+        end   
 
-				ibo:InstanceDataFromUnitIDs(unitIDs, 6) --id = 6, name = "instData"
-				vao:ClearSubmission()
-				vao:AddUnitsToSubmission(unitIDs)
+        glTexture(0, "$tex1")
+        glTexture(1, "$tex2")
+        glTexture(2, "$reflection") 
+        glDepthTest(true)  
 
-				gl.UseShader(shaderId)
-				SetShaderUniforms(drawPass, shaderId)
-				vao:Submit()
-				gl.UseShader(0)
+        neonHologramShader:ActivateWith(
+        function()   
+                --neonHologramShader:SetUniformFloat("viewPosX", vsx)
+                --neonHologramShader:SetUniformFloat("viewPosY", vsy)
+                --neonHologramShader:SetUniformFloat("time", Spring.GetGameSeconds() )
+                glBlending(GL_SRC_ALPHA, GL_ONE)
+                --variables
+                for i = 1, #neonUnitTables do
+                    local unitID = neonUnitTables[i].id
+                    local neonHoloDef = spGetUnitDefID(unitID)
+                    local px,py,pz = spGetUnitPosition(unitID)
+                    local unitCenterPosition = {px,py, pz}
+                    --neonHologramShader:SetUniformFloatArray("unitCenterPosition", unitCenterPosition)
+                   
+                    --local neonHoloParts = neonUnitTables[i].pieces
+                    local neonHoloParts = Spring.GetUnitPieceList(unitID)
+                    glUnitShapeTextures(neonHoloDef, true)
+                    --glTexture(2, normalMaps[unitDefID])
+                  
+                    glCulling(GL_FRONT)
+                    for j = 1, #neonHoloParts do
+                        local pieceID = neonHoloParts[j]
+                        glPushMatrix()
+                            glUnitMultMatrix(unitID)
+                            glUnitPieceMultMatrix(unitID, pieceID)
+                            glUnitPiece(unitID, pieceID)
+                        glPopMatrix()
+                    end
 
-				SetFixedStatePost(drawPass, shaderId)
+                    glCulling(GL_BACK)
+                    for j = 1, #neonHoloParts do
+                        local pieceID = neonHoloParts[j]
+                        glPushMatrix()
+                            glUnitMultMatrix(unitID)
+                            glUnitPieceMultMatrix(unitID, pieceID)
+                            glUnitPiece(unitID, pieceID)
+                        glPopMatrix()
+                    end   
+                end
+            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
+            glTexture(0, false)
+            glTexture(1, false)
+            glTexture(2, false)
+            glTexture(3, false)        
+            end         
+        )
 
-				for bp, tex in pairs(texAndObj.textures) do
-					gl.Texture(bp, false)
-				end
-			end
-		end
-	end
-end
+        glDepthTest(false)
+        glCulling(false)
+    end
 
-  
-  
-function gadget:DrawOpaqueUnitsLua(deferredPass, drawReflection, drawRefraction)
-	local drawPass = 1 --opaque
-
-	if deferredPass then
-		drawPass = 0
-	end
-
-	if drawReflection then
-		drawPass = 1 + 4
-	end
-
-	if drawRefraction then
-		drawPass = 1 + 8
-	end
-
-	--Spring.Echo("drawPass", drawPass)
-	ExecuteDrawPass(drawPass)
-end
-
-function gadget:DrawAlphaUnitsLua(drawReflection, drawRefraction)
-	local drawPass = 2 --alpha
-
-	if drawReflection then
-		drawPass = 2 + 4
-	end
-
-	if drawRefraction then
-		drawPass = 2 + 8
-	end
-
-	--Spring.Echo("drawPass", drawPass)
-	ExecuteDrawPass(drawPass)
-end
-
+    function gadget:DrawOpaqueUnitsLua(deferredPass, drawReflection, drawRefraction)
+        RenderNeonUnits()
+    end
 
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")

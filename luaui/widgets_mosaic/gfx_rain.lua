@@ -25,25 +25,52 @@ local rainShader = nil
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local spGetGameFrame = Spring.GetGameFrame
-local glBeginEnd = gl.BeginEnd
-local glVertex = gl.Vertex
-local glBlending = gl.Blending
-local glDepthTest = gl.DepthTest
-local glCopyToTexture = gl.CopyToTexture
-local glCreateList = gl.CreateList
-local glDeleteList = gl.DeleteList
-local glTexture = gl.Texture
-local glGetShaderLog = gl.GetShaderLog
-local glCreateShader = gl.CreateShader
-local glDeleteShader = gl.DeleteShader
-local glUseShader = gl.UseShader
-local glUniformMatrix = gl.UniformMatrix
-local glUniformInt = gl.UniformInt
-local glUniform = gl.Uniform
-local glGetUniformLocation = gl.GetUniformLocation
-local glResetState = gl.ResetState
 
+local GL_MODELVIEW           = GL.MODELVIEW
+local GL_NEAREST             = GL.NEAREST
+local GL_ONE                 = GL.ONE
+local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
+local GL_PROJECTION          = GL.PROJECTION
+local GL_QUADS               = GL.QUADS
+local GL_SRC_ALPHA           = GL.SRC_ALPHA
+local glBeginEnd             = gl.BeginEnd
+local glBlending             = gl.Blending
+local glCallList             = gl.CallList
+local glColor                = gl.Color
+local glColorMask            = gl.ColorMask
+local glCopyToTexture        = gl.CopyToTexture
+local glCreateList           = gl.CreateList
+local glCreateShader         = gl.CreateShader
+local glCreateTexture        = gl.CreateTexture
+local glDeleteShader         = gl.DeleteShader
+local glDeleteTexture        = gl.DeleteTexture
+local glDepthMask            = gl.DepthMask
+local glDepthTest            = gl.DepthTest
+local glGetMatrixData        = gl.GetMatrixData
+local glGetShaderLog         = gl.GetShaderLog
+local glGetUniformLocation   = gl.GetUniformLocation
+local glGetViewSizes         = gl.GetViewSizes
+local glLoadIdentity         = gl.LoadIdentity
+local glLoadMatrix           = gl.LoadMatrix
+local glMatrixMode           = gl.MatrixMode
+local glMultiTexCoord        = gl.MultiTexCoord
+local glPopMatrix            = gl.PopMatrix
+local glPushMatrix           = gl.PushMatrix
+local glRenderToTexture      = gl.RenderToTexture
+local glResetMatrices        = gl.ResetMatrices
+local glTexCoord             = gl.TexCoord
+local glTexture              = gl.Texture
+local glRect                 = gl.Rect
+local glUniform              = gl.Uniform
+local glUniformMatrix        = gl.UniformMatrix
+local glUseShader            = gl.UseShader
+local glVertex               = gl.Vertex
+local glTranslate            = gl.Translate
+local spGetCameraPosition    = Spring.GetCameraPosition
+local spGetCameraVectors     = Spring.GetCameraVectors
+local spGetWind              = Spring.GetWind
+local time                   = Spring.GetGameSeconds
+local spGetDrawFrame         = Spring.GetDrawFrame
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -73,6 +100,12 @@ local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+    local function errorOutIfNotInitialized(value, name)
+        if value == nil then
+            Spring.Echo("No "..name.." - aborting")
+            widgetHandler:RemoveWidget(self)
+        end
+    end
 
     local defaultVertexShader = 
     [[
@@ -118,23 +151,34 @@ local cam = {}
 
 
 function widget:ViewResize(viewSizeX, viewSizeY)
-    vsx, vsy = viewSizeX, viewSizeY
- 
+    vsx, vsy = viewSizeX, viewSizeY 
+
+    if (depthtex) then
+        glDeleteTexture(depthtex)
+    end
+    
+    if (raincanvastex) then
+        glDeleteTexture(raincanvastex)
+    end
+
+     if (screentex) then
+        glDeleteTexture(screentex)
+    end
+
+
     raincanvastex =
         gl.CreateTexture(
         vsx,
         vsy,
         {
-            border = false,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE,
+            wrap_t = GL.CLAMP_TO_EDGE,
+            fbo = true,
         }
     )
-    if raincanvastex == nil then
-        Spring.Echo("No raincanvastex - aborting")       
-        widgetHandler:RemoveWidget(self)
-        return
-    end
+    errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
 
     depthtex =
         gl.CreateTexture(
@@ -147,11 +191,7 @@ function widget:ViewResize(viewSizeX, viewSizeY)
             mag_filter = GL.NEAREST
         }
     )
-    if depthtex == nil then
-        Spring.Echo("No depthtex - aborting")
-        widgetHandler:RemoveWidget(self)
-        return
-    end
+    errorOutIfNotInitialized(depthtex, "depthtex not existing")    
 
     screentex =
         gl.CreateTexture(
@@ -165,32 +205,24 @@ function widget:ViewResize(viewSizeX, viewSizeY)
         wrap_t = GL.CLAMP_TO_EDGE,
         }
     )
-    if screentex == nil then
-        Spring.Echo("No screen Tex - aborting")
-        widgetHandler:RemoveWidget(self)
-        return 
-    else
-        widgetHandler:UpdateCallIn("DrawScreenEffects")
-    end
+    errorOutIfNotInitialized(screentex, "screentex not existing")       
+    widgetHandler:UpdateCallIn("DrawScreenEffects")  
 end
 
 local function init()
     Spring.Echo("gfx_rain:Initialize")
     -- abort if not enabled
 
-    if (glCreateShader == nil) then
-        Spring.Echo("[Rain widget:Initialize] no shader support")
-        widgetHandler:RemoveWidget(self)
-        return
-    end
+    errorOutIfNotInitialized(glCreateShader, "no shader support")
+
     --https://www.shadertoy.com/view/wd2GDG inspiration
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") --defaultTestFragmentShader
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") --defaultVertexShader
     local uniformInt = {
-        raincanvastex = 0,
-        depthtex = 1,
-        noisetex = 2,
-        screentex = 3
+        depthtex = 0,
+        noisetex = 1,
+        screentex = 2,
+        raincanvastex = 3,
     }
 
     rainShader =
@@ -219,13 +251,13 @@ local function init()
         Spring.Echo("gfx_rain: Shader compiled: "..glGetShaderLog())
     end
 
-    shaderTimeLoc = glGetUniformLocation(rainShader, "time")
-    shaderRainDensityLoc = glGetUniformLocation(rainShader, "rainDensity")
-    shaderCamPosLoc = glGetUniformLocation(rainShader, "camWorldPos")
-    shaderMaxLightSrcLoc = glGetUniformLocation(rainShader, "maxLightSources")
-    shaderLightSourcescLoc = glGetUniformLocation(rainShader, "lightSources")
+    shaderTimeLoc                   = glGetUniformLocation(rainShader, "time")
+    shaderRainDensityLoc            = glGetUniformLocation(rainShader, "rainDensity")
+    shaderCamPosLoc                 = glGetUniformLocation(rainShader, "camWorldPos")
+    shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
+    shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
       for i=1,maxLightSources do
-        shaderLightSourcescLoc[i] = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
+        shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
     Spring.Echo("gfx_rain:Initialize ended")
 end
@@ -314,12 +346,53 @@ local function updateUniforms()
       end
 end
 
+local function renderToTextureFunc()
+    -- render a full screen quad
+    glTexture(0, depthTexture)
+    glTexture(0, false)
+    glTexture(1,":l:luaui/images/rgbnoise.png");
+    glTexture(1, false)
+
+    gl.TexRect(-1, -1, 1, 1, 0, 0, 1, 1)
+end
+
 local function DrawRain()
-        glUseShader(shaderProgram)
-        --draw the result as rectangle (with transparency in gui space)
-        --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-        glTexRect(0,vsy,vsx,0)
-        --glBlending(GL.SRC_ALPHA, GL.ONE)
+   if boolRainActive == false then return  end
+
+    local _, _, isPaused = Spring.GetGameSpeed()
+    if isPaused then
+       pausedTime = pausedTime + Spring.DiffTimers(Spring.GetTimer(), lastFrametime)
+       return
+    end
+
+    lastFrametime = Spring.GetTimer()
+
+    prepareTextures()
+    upateUniforms()
+
+    DrawRain()
+
+    local osClock = os.clock()
+    local timePassed = osClock - prevOsClock
+    prevOsClock = osClock        
+    glRenderToTexture(raincanvastex, renderToTextureFunc);
+    cleanUp()    
+end
+
+function widget:DrawScreen()
+    glPushMatrix()
+    glBlending(false)
+    DrawRain()
+    glBlending(true)
+    glPopMatrix()
+end
+
+
+function widget:DrawScreenEffects()
+    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
+    glTexture(raincanvasetex);
+    gl.TexRect(0,0,vsx,vsy,0,0,1,1);
+    glTexture(false);
 end
 
 local function cleanUp()
@@ -333,41 +406,23 @@ local function cleanUp()
 end
 
 function widget:DrawScreenEffects()
-    Spring.Echo("Enter DrawScreenEffects")
-    --if boolRainActive == false then
-    --            Spring.Echo("Using rain shader2")
-    --    return
-    --end
+
+    if boolRainActive == false then return  end
 
     local _, _, isPaused = Spring.GetGameSpeed()
-    --if isPaused then
-    --    pausedTime = pausedTime + Spring.DiffTimers(Spring.GetTimer(), lastFrametime)
-    --            Spring.Echo("Using rain shader3")
-    --    return
-    --end
+    if isPaused then
+       pausedTime = pausedTime + Spring.DiffTimers(Spring.GetTimer(), lastFrametime)
+       return
+    end
 
     lastFrametime = Spring.GetTimer()
-    if rainShader == nil then 
-        Spring.Echo("No Shader")
-        return 
-    else
-        Spring.Echo("Using rain shader")
-        prepareTextures()
-        upateUniforms()
 
-       DrawRain()
+    DrawRain()
 
-
-        --glTexRect(canvasRainTextureID, vsy, vsx, 0)
-
-        local osClock = os.clock()
-        local timePassed = osClock - prevOsClock
-        prevOsClock = osClock
-
-        
-        cleanUp()
-    end
-    
+    local osClock = os.clock()
+    local timePassed = osClock - prevOsClock
+    prevOsClock = osClock        
+    cleanUp()    
 end
 
 function widget:Initialize()
