@@ -341,9 +341,9 @@ local function updateUniforms()
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
 
-      for i=1,maxLightSources do
-        glUniform( shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0 )
-      end
+    for i=1,maxLightSources do
+      glUniform( shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0 )
+    end
 end
 
 local function renderToTextureFunc()
@@ -352,7 +352,6 @@ local function renderToTextureFunc()
     glTexture(0, false)
     glTexture(1,":l:luaui/images/rgbnoise.png");
     glTexture(1, false)
-
     gl.TexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 
