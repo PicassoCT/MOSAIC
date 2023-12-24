@@ -1,20 +1,15 @@
 function widget:GetInfo()
     return {
-        name = "_Rain",
+        name = "Rain",
         desc = "Lets it automaticly rain",
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
-        layer = 3,
+        layer = 19,
         enabled = true, --  loaded by default?
-        handler = true
+        hidden = true
     }
 end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
--- /rain    -- toggles snow on current map (also remembers this)
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -58,6 +53,7 @@ local glPopMatrix            = gl.PopMatrix
 local glPushMatrix           = gl.PushMatrix
 local glRenderToTexture      = gl.RenderToTexture
 local glResetMatrices        = gl.ResetMatrices
+local glResetState           = gl.ResetState
 local glTexCoord             = gl.TexCoord
 local glTexture              = gl.Texture
 local glRect                 = gl.Rect
@@ -98,73 +94,75 @@ local noisetextureFilePath = ":l:luaui/images/noise.png"
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
+local prevOsClock = os.clock()
+local startTimer = Spring.GetTimer()
+local diffTime = 0
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-    local function errorOutIfNotInitialized(value, name)
-        if value == nil then
-            Spring.Echo("No "..name.." - aborting")
-            widgetHandler:RemoveWidget(self)
-        end
+local function errorOutIfNotInitialized(value, name)
+    if value == nil then
+        Spring.Echo("No "..name.." - aborting")
+        widgetHandler:RemoveWidget(self)
     end
+end
 
-    local defaultVertexShader = 
-    [[
-       #version 150 compatibility
-       #line 100087
+local defaultVertexShader = 
+[[
+   #version 150 compatibility
+   #line 100087
 
-        uniform sampler2D raincanvastex;
-        uniform sampler2D screentex;
-        uniform sampler2D depthtex;
-        uniform sampler2D noisetex;
+    uniform sampler2D raincanvastex;
+    uniform sampler2D screentex;
+    uniform sampler2D depthtex;
+    uniform sampler2D noisetex;
 
-        uniform float time;
-        //uniform vec3 unitCenterPosition;
-        //uniform float viewPosX;
-        //uniform float viewPosY;
+    uniform float time;
+    //uniform vec3 unitCenterPosition;
+    //uniform float viewPosX;
+    //uniform float viewPosY;
 
-        void main() {
-            vec4 posCopy = gl_Vertex;
-            posCopy.z = sin(time)*posCopy.z;
-            gl_Position = posCopy;
-        }
-    ]]
-    local defaultTestFragmentShader = 
-    [[
-        #version 150 compatibility
-        #line 200103
+    void main() {
+        vec4 posCopy = gl_Vertex;
+        posCopy.z = sin(time)*posCopy.z;
+        gl_Position = posCopy;
+    }
+]]
+local defaultTestFragmentShader = 
+[[
+    #version 150 compatibility
+    #line 200103
 
-        uniform sampler2D raincanvastex;
-        uniform sampler2D screentex;
-        uniform sampler2D depthtex;
-        uniform sampler2D noisetex;
-        
-        uniform float time;
-        //uniform vec3 unitCenterPosition;
-        //uniform float viewPosX;
-        //uniform float viewPosY;
+    uniform sampler2D raincanvastex;
+    uniform sampler2D screentex;
+    uniform sampler2D depthtex;
+    uniform sampler2D noisetex;
+    
+    uniform float time;
+    //uniform vec3 unitCenterPosition;
+    //uniform float viewPosX;
+    //uniform float viewPosY;
 
-        void main() 
-        {
-            gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
-        }
-    ]]
+    void main() 
+    {
+        gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
+    }
+]]
 
 
-function widget:ViewResize(viewSizeX, viewSizeY)
-    vsx, vsy = viewSizeX, viewSizeY 
+function widget:ViewResize()
+    vsx, vsy = gl.GetViewSizes()
 
-    if (depthtex) then
+    if (depthtex ~= nil ) then
         glDeleteTexture(depthtex)
     end
     
-    if (raincanvastex) then
+    if (raincanvastex ~= nil ) then
         glDeleteTexture(raincanvastex)
     end
 
-     if (screentex) then
+     if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
     end
-
 
     raincanvastex =
         gl.CreateTexture(
@@ -207,6 +205,12 @@ function widget:ViewResize(viewSizeX, viewSizeY)
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
     widgetHandler:UpdateCallIn("DrawScreenEffects")  
+end
+widget:ViewResize()
+
+function widget:Update()
+    widgetHandler:RemoveWidgetCallIn("Update", self)
+    startTimer = Spring.GetTimer()
 end
 
 local function init()
@@ -313,10 +317,10 @@ end
 
 function widget:Shutdown()
     if glDeleteTexture then
-        glDeleteTexture(raincanvastex or "")
         glDeleteTexture(depthtex or "")
         glDeleteTexture(noisetex or "")
         glDeleteTexture(screentex or "")
+        glDeleteTexture(raincanvastex or "")
     end
 
     if rainShader then
@@ -334,64 +338,26 @@ end
 
 local function updateUniforms()
     cam[1], cam[2], cam[3] = Spring.GetCameraPosition()
-    diffTime = Spring.DiffTimers(lastFrametime, startTimer) - pausedTime
+    diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
+    diffTime = diffTime - pausedTime
 
     glUniform(shaderTimeLoc, diffTime )
-    glUniform(shaderCamPosLoc,  cam[1], cam[2], cam[3])
+    glUniform(shaderCamPosLoc, cam[1], cam[2], cam[3])
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
 
     for i=1,maxLightSources do
-      glUniform( shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0 )
+      glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
     end
 end
 
 local function renderToTextureFunc()
     -- render a full screen quad
-    glTexture(0, depthTexture)
+    glTexture(0, depthtex)
     glTexture(0, false)
     glTexture(1,":l:luaui/images/rgbnoise.png");
     glTexture(1, false)
     gl.TexRect(-1, -1, 1, 1, 0, 0, 1, 1)
-end
-
-local function DrawRain()
-   if boolRainActive == false then return  end
-
-    local _, _, isPaused = Spring.GetGameSpeed()
-    if isPaused then
-       pausedTime = pausedTime + Spring.DiffTimers(Spring.GetTimer(), lastFrametime)
-       return
-    end
-
-    lastFrametime = Spring.GetTimer()
-
-    prepareTextures()
-    upateUniforms()
-
-    DrawRain()
-
-    local osClock = os.clock()
-    local timePassed = osClock - prevOsClock
-    prevOsClock = osClock        
-    glRenderToTexture(raincanvastex, renderToTextureFunc);
-    cleanUp()    
-end
-
-function widget:DrawScreen()
-    glPushMatrix()
-    glBlending(false)
-    DrawRain()
-    glBlending(true)
-    glPopMatrix()
-end
-
-
-function widget:DrawScreenEffects()
-    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
-    glTexture(raincanvasetex);
-    gl.TexRect(0,0,vsx,vsy,0,0,1,1);
-    glTexture(false);
 end
 
 local function cleanUp()
@@ -404,13 +370,55 @@ local function cleanUp()
         glUseShader(0)
 end
 
+local function DrawRain()
+   if boolRainActive == false then return  end
+
+    local _, _, isPaused = Spring.GetGameSpeed()
+    if isPaused then
+       local timerNow = Spring.GetTimer()
+       pausedTime = pausedTime + Spring.DiffTimers(now, lastFrametime)
+       return
+    end
+
+    lastFrametime = Spring.GetTimer()
+
+    prepareTextures()
+
+    glUseShader(rainShader)
+    updateUniforms()
+    local osClock = os.clock()
+    local timePassed = osClock - prevOsClock
+    prevOsClock = osClock      
+    Spring.Echo("ReDrawing the rain")  
+    glRenderToTexture(raincanvastex, renderToTextureFunc);
+    cleanUp()    
+end
+
+function widget:DrawScreen()
+    glPushMatrix()
+    glBlending(false)
+    DrawRain()
+    glBlending(true)
+    glPopMatrix()
+end
+
+function widget:DrawScreenEffects()
+    Spring.Echo("Drawing the rain picture")
+    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
+    glTexture(raincanvasetex);
+    gl.TexRect(0,0,vsx,vsy,0,0,1,1);
+    glTexture(false);
+end
+
+
 function widget:DrawScreenEffects()
 
     if boolRainActive == false then return  end
 
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused then
-       pausedTime = pausedTime + Spring.DiffTimers(Spring.GetTimer(), lastFrametime)
+       local currentTime = Spring.GetTimer() 
+       pausedTime = pausedTime + Spring.DiffTimers(currentTime, lastFrametime)
        return
     end
 
@@ -425,10 +433,11 @@ function widget:DrawScreenEffects()
 end
 
 function widget:Initialize()
-    init()
-    vsx, vsy = widgetHandler:GetViewSizes()
-    widget:ViewResize(vsx, vsy)
+    lastFrametime = Spring.GetTimer()
     startOsClock = os.clock()
+    init()
+    widget:ViewResize()
+
 end
 
 --------------------------------------------------------------------------------

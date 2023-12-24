@@ -11,8 +11,8 @@ function widget:GetInfo()
     date      = "november 2014",
     license   = "GNU GPL, v2 or later",
     layer     = 19,
-    hidden 		= true,
-    enabled   = false
+    hidden 		= false,
+    enabled   = true
   }
 end
 
@@ -29,9 +29,9 @@ local mapcfg = {
 	         speed = 0.03, -- multiplier for speed of scrolling with wind
 	         color    = {0.31, 0.309, 0.29}, -- diffuse color of the fog
 	         -- all altitude values can be either absolute, in percent, or "auto"
-	         height   = "100%", -- opacity of fog above and at this altitude will be zero
-	         bottom = -100, -- no fog below this altitude
-	         fade_alt = "90%"; -- fog will linearly fade away between this and "height", should be between height and bottom
+	         height   = "50%", -- opacity of fog above and at this altitude will be zero
+	         bottom = 0, -- no fog below this altitude
+	         fade_alt = "30%"; -- fog will linearly fade away between this and "height", should be between height and bottom
 	         scale = 512, -- how large will the clouds be
 	         opacity = 0.9875, -- what it says
 	         clamp_to_map = false, -- whether fog volume is sliced to fit map, or spreads to horizon
