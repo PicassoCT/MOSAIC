@@ -12,7 +12,7 @@ function gadget:GetInfo()
 end
 
 if (not gadgetHandler:IsSyncedCode()) then return false end
-local boolDebug = true
+local boolDebug = false
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
