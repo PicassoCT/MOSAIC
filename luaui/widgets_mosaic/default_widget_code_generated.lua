@@ -1,4 +1,4 @@
-[[
+return [[
 function widget:GetInfo()
     return {
         name = "Name of the widget",
