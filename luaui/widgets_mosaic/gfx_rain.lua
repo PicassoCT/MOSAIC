@@ -5,7 +5,7 @@ function widget:GetInfo()
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
-        layer = 19,
+        layer = math.huge,
         enabled = true, --  loaded by default?
         hidden = true
     }
@@ -166,8 +166,8 @@ function widget:ViewResize()
 
     raincanvastex =
         gl.CreateTexture(
-        vsx,
-        vsy,
+        vsx/3,
+        vsy/3,
         {
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
@@ -316,6 +316,11 @@ function widget:Update(dt)
 end
 
 function widget:Shutdown()
+    glTexture(0, false)
+    glTexture(1, false)
+    glTexture(2, false)
+    glTexture(3, false)
+
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
         glDeleteTexture(noisetex or "")
@@ -328,12 +333,10 @@ function widget:Shutdown()
     end
 end
 local function prepareTextures()
-    noisetex = glTexture(2, noisetextureFilePath)
-    Spring.Echo("Preparing Texture start")
+    --Spring.Echo("Preparing Texture start")
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-    glCopyToTexture(raincanvastex, 0, 0, 0, 0, vsx, vsy) -- the original screen image
-    Spring.Echo("Preparing Texture end")
+   -- Spring.Echo("Preparing Texture end")
 end
 
 local function updateUniforms()
@@ -361,13 +364,10 @@ local function renderToTextureFunc()
 end
 
 local function cleanUp()
-        glTexture(0, false)
-        glTexture(1, false)
-        glTexture(2, false)
-        glTexture(3, false)
-        
-        glResetState()
-        glUseShader(0)
+
+    
+    glResetState()
+    glUseShader(0)
 end
 
 local function DrawRain()
@@ -395,24 +395,6 @@ local function DrawRain()
 end
 
 function widget:DrawScreen()
-    glPushMatrix()
-    glBlending(false)
-    DrawRain()
-    glBlending(true)
-    glPopMatrix()
-end
-
-function widget:DrawScreenEffects()
-    Spring.Echo("Drawing the rain picture")
-    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
-    glTexture(raincanvasetex);
-    gl.TexRect(0,0,vsx,vsy,0,0,1,1);
-    glTexture(false);
-end
-
-
-function widget:DrawScreenEffects()
-
     if boolRainActive == false then return  end
 
     local _, _, isPaused = Spring.GetGameSpeed()
@@ -424,13 +406,26 @@ function widget:DrawScreenEffects()
 
     lastFrametime = Spring.GetTimer()
 
+    glPushMatrix()
+    glBlending(false)
     DrawRain()
+    glBlending(true)
+    glPopMatrix()
 
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
     prevOsClock = osClock        
-    cleanUp()    
 end
+
+function widget:DrawScreenEffects()
+    Spring.Echo("Drawing the rain picture")
+    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
+    glTexture(raincanvastex);
+    gl.TexRect(0, 0, vsx, vsy, 0, 0, 1, 1);
+    glTexture(false);
+    glBlending(false)
+end
+
 
 function widget:Initialize()
     lastFrametime = Spring.GetTimer()

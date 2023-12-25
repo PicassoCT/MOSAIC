@@ -45,15 +45,17 @@ local textureName_dataMap = {}
 local uniformType_Name_DataMap = {}
 local Name_DataMap = {}
 local function registerUniform(data)
-	Name_DataMap[data.name] = data
-	local typeD = data.dataType
-	if typeD == "sampler2D" then
-		textureName_dataMap[data.name] = data
-	else
-		if uniformType_Name_DataMap[typeD] == nil then uniformType_Name_DataMap[typeD] = {}
-		uniformType_Name_DataMap[typeD][data.name] = data
+		Name_DataMap[data.name] = data
+		local typeD = data.dataType
+		if typeD == "sampler2D" then
+			textureName_dataMap[data.name] = data
+		else
+			if uniformType_Name_DataMap[typeD] == nil then 
+				uniformType_Name_DataMap[typeD] = {}
+			end
+			uniformType_Name_DataMap[typeD][data.name] = data
+		end
 	end
-end
 
 local function codegen()
     Spring.Echo("Begin_Generated_WidgetCode_________________________________________________________________")
