@@ -14,7 +14,7 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local codeGen = "luaui/default_widget_code_generated.lua"
+local codeGen = "luaui/default_widget_code_generated.lub"
 local shaderDirectoryPath = "luaui/shaders/"
 local fragmentFileName= "fragmentFileName.frag"
 local vertexFileName= "fragmentFileName.vert"
