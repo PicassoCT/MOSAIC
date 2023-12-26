@@ -166,8 +166,8 @@ function widget:ViewResize()
 
     raincanvastex =
         gl.CreateTexture(
-        vsx/3,
-        vsy/3,
+        vsx,
+        vsy,
         {
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
@@ -421,7 +421,7 @@ function widget:DrawScreenEffects()
     Spring.Echo("Drawing the rain picture")
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
     glTexture(raincanvastex);
-    gl.TexRect(0, 0, vsx, vsy, 0, 0, 1, 1);
+    glTexRect(0, vsy, vsx, 0)
     glTexture(false);
     glBlending(false)
 end
