@@ -147,15 +147,25 @@ vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 
 float avg(vec3 val)
 {
-return sqrt(val.x*val.x + val.y*val.y + val.z *val.z);
+	return sqrt(val.x*val.x + val.y*val.y + val.z *val.z);
+}
+
+vec4 getTextureColor(vec2 uv)
+{
+	return texture2D(noisetex, uv);
 }
 
 void main(void)
 {
+
 	vec3 viewDirection = normalize(camWorldPos - vfragWorldPos);
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
 	float depthValueAtPixel = 0.0;
 	depthValueAtPixel = (texture2D(depthtex, uv)).r *  2.0f - 1.0f;	
+
+	gl_FragColor =  getTextureColor(uv);
+	if (1) {return;}
+	
 	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
 	vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
 	float upwardnessFactor = 0.0;
@@ -174,5 +184,6 @@ void main(void)
 	{
 		gl_FragColor = downWardrainColor;
 	}
-	gl_FragColor = vec4(1.0,1.0,0.0,0.5);
+
+	//gl_FragColor = vec4(1.0,1.0,0.0,0.5);
 }

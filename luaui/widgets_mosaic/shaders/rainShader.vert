@@ -22,4 +22,5 @@ void main(void)
 	//if cam goes upwards go to raindrop shader
     //gl_Position =  gl_ModelViewProjectionMatrix * vec4(camWorldPos, 1.0);
     vfragWorldPos = (gl_ModelViewMatrix * vec4(camWorldPos, 1.0)).xyz;
+    gl_Position = gl_Vertex;
 }

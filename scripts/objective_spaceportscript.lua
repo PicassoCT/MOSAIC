@@ -8,6 +8,7 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
+padDistance = 450
 x,y,z = Spring.GetUnitPosition(unitID)
 isSeaUnit = 0 > Spring.GetGroundHeight(x,z)
 Ground = piece("Ground")
@@ -63,24 +64,23 @@ function behaviourLoop()
               not boosterArrived[3] do
               Sleep(100)
         end 
-        Move(TablesOfPiecesGroups["DroneShip"][1],z_axis, -400, 25)
-        Move(TablesOfPiecesGroups["DroneShip"][2],z_axis, 400, 25)
-        Move(TablesOfPiecesGroups["DroneShip"][3],x_axis, 400, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][1],z_axis, -padDistance, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][2],z_axis, padDistance, 25)
+        Move(TablesOfPiecesGroups["DroneShip"][3],x_axis, padDistance, 25)
         WaitForMoves(TablesOfPiecesGroups["DroneShip"])
         Show(FalconX)
         hideT(TablesOfPiecesGroups["Booster"])
         Move(TablesOfPiecesGroups["DroneShip"][1],z_axis, 0, 25)
         Move(TablesOfPiecesGroups["DroneShip"][2],z_axis, 0, 25)
-        WMove(TablesOfPiecesGroups["DroneShip"][3],x_axis, 800, 25)
+        WMove(TablesOfPiecesGroups["DroneShip"][3],x_axis, padDistance*2, 25)
         Sleep(10000)
         for i=1,9000, 100 do
             WMove(FalconX, upaxis, i, 100*((i+1)/100))
         end
         Hide(FalconX)
         reset(FalconX)
-        WMove(TablesOfPiecesGroups["DroneShip"][3],z_axis, 0, 25)
-        val = math.random(20,100)*1000
-        Sleep(val)
+        WMove(TablesOfPiecesGroups["DroneShip"][3],x_axis, 0, 25)
+        Sleep(5000)
     end
 end
 

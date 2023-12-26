@@ -56,6 +56,7 @@ local glResetMatrices        = gl.ResetMatrices
 local glResetState           = gl.ResetState
 local glTexCoord             = gl.TexCoord
 local glTexture              = gl.Texture
+local glTexRect              = gl.TexRect
 local glRect                 = gl.Rect
 local glUniform              = gl.Uniform
 local glUniformMatrix        = gl.UniformMatrix
@@ -127,7 +128,7 @@ local defaultVertexShader =
         gl_Position = posCopy;
     }
 ]]
-local defaultTestFragmentShader = 
+local defaultFragmentShader = 
 [[
     #version 150 compatibility
     #line 200103
@@ -220,8 +221,10 @@ local function init()
     errorOutIfNotInitialized(glCreateShader, "no shader support")
 
     --https://www.shadertoy.com/view/wd2GDG inspiration
-    local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") --defaultTestFragmentShader
-    local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") --defaultVertexShader
+    local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") 
+    local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") 
+    Spring.Echo("FragmentShader".. fragmentShader)
+    Spring.Echo("VertexShader".. vertexShader)
     local uniformInt = {
         depthtex = 0,
         noisetex = 1,
@@ -394,13 +397,36 @@ local function DrawRain()
     cleanUp()    
 end
 
+
+
+function widget:DrawScreenEffects()
+    Spring.Echo("Drawing the rain picture")
+    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
+    glTexture(raincanvastex);
+    glTexRect(0, vsy, vsx, 0)
+    glTexture(false);
+end
+
+
+function widget:Initialize()
+    lastFrametime = Spring.GetTimer()
+    startOsClock = os.clock()
+    init()
+    widget:ViewResize()
+
+end
+
 function widget:DrawScreen()
-    if boolRainActive == false then return  end
+    if boolRainActive == false then
+        Spring.Echo("Rain not active")
+        return  
+    end
 
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused then
        local currentTime = Spring.GetTimer() 
        pausedTime = pausedTime + Spring.DiffTimers(currentTime, lastFrametime)
+       Spring.Echo("Paused")
        return
     end
 
@@ -416,24 +442,5 @@ function widget:DrawScreen()
     local timePassed = osClock - prevOsClock
     prevOsClock = osClock        
 end
-
-function widget:DrawScreenEffects()
-    Spring.Echo("Drawing the rain picture")
-    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
-    glTexture(raincanvastex);
-    glTexRect(0, vsy, vsx, 0)
-    glTexture(false);
-    glBlending(false)
-end
-
-
-function widget:Initialize()
-    lastFrametime = Spring.GetTimer()
-    startOsClock = os.clock()
-    init()
-    widget:ViewResize()
-
-end
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
