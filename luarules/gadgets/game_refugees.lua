@@ -55,6 +55,7 @@ Spring.Echo("Game:Civilians: Map is a failed state ".. toString(isFailedState))
 
 function attachPayload(payLoadID, id)
     if payLoadID then
+           echo("Attaching payload to refugee")
            Spring.SetUnitAlwaysVisible(payLoadID,true)
            pieceMap = Spring.GetUnitPieceMap(id)
            assert(pieceMap["attachPoint"], "Truck has no attachpoint")
@@ -75,7 +76,7 @@ end
 
 function loadRefugee(id, loadType)
     if refugeeAbleTruckType[spGetUnitDefID(id)] then
-        --Spring.Echo(id .. " is a loadable truck ")
+        Spring.Echo(id .. " is a refugee loadable truck ")
         --Spring.Echo("createUnitAtUnit ".."game_refugees.lua") 
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
         return attachPayload(payLoadID, id)

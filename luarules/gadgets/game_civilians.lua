@@ -260,6 +260,8 @@ function attachPayload(payLoadID, id)
        assert(pieceMap["attachPoint"], "Truck has no attachpoint")
        Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
        return payLoadID
+    else
+        Spring.Echo("Not a valid payload")
     end
 end
 
@@ -275,7 +277,6 @@ end
 
 function loadRefugee(id, loadType)
     if refugeeableTruckType[spGetUnitDefID(id)] then
-        --Spring.Echo(id .. " is a loadable truck ")
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")   
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
         return attachPayload(payLoadID, id)

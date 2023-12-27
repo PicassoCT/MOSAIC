@@ -164,6 +164,7 @@ void main(void)
 	depthValueAtPixel = (texture2D(depthtex, uv)).r *  2.0f - 1.0f;	
 
 	gl_FragColor =  getTextureColor(uv);
+	gl_FragColor.a = 0.5;
 	if (1) {return;}
 	
 	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
