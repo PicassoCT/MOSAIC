@@ -23,8 +23,11 @@ uniform int maxLightSources;
 uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
 
+
+
 in Data {
-			vec3 vfragWorldPos;
+			vec3 fragVertexPosition;
+			vec3 viewDirection;
 		 };
 
 //Lightsource description 
@@ -157,20 +160,19 @@ vec4 getTextureColor(vec2 uv)
 
 void main(void)
 {
-
-	vec3 viewDirection = normalize(camWorldPos - vfragWorldPos);
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
 	float depthValueAtPixel = 0.0;
 	depthValueAtPixel = (texture2D(depthtex, uv)).r *  2.0f - 1.0f;	
+	gl_FragColor = vec4(depthValueAtPixel,depthValueAtPixel,depthValueAtPixel, 0.95);
+	if (1==1)return;
 
-	gl_FragColor =  getTextureColor(uv);
-	gl_FragColor.a = 0.5;
-	if (1) {return;}
 	
 	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
 	vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = looksUpwardPercentage(viewDirection);
+
+
 	vec4 origColor = texture2D(raincanvastex, uv);
 	vec4 downWardrainColor = (origColor)+ accumulatedLightColorRay + backGroundLightIntersect; 
 	vec4 upWardrainColor = origColor;

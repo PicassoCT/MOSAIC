@@ -85,6 +85,7 @@ local DAYLENGTH = 28800
 local rainDensity = 0.5
 local shaderTimeLoc
 local shaderRainDensityLoc
+local viewPortSizeLoc
 local shaderCamPosLoc
 local shaderMaxLightSrcLoc
 local shaderLightSourcescLoc 
@@ -184,7 +185,6 @@ function widget:ViewResize()
         vsx,
         vsy,
         {
-            border = false,
             format = GL_DEPTH_COMPONENT24,
             min_filter = GL.NEAREST,
             mag_filter = GL.NEAREST
@@ -255,9 +255,10 @@ local function init()
         widgetHandler:RemoveWidget(self)
         return
     else
-        Spring.Echo("gfx_rain: Shader compiled: "..glGetShaderLog())
+        Spring.Echo("gfx_rain: Shader compiled: ")
     end
 
+    viewPortSizeLoc                 = glGetUniformLocation(rainShader, "viewPortSize")
     shaderTimeLoc                   = glGetUniformLocation(rainShader, "time")
     shaderRainDensityLoc            = glGetUniformLocation(rainShader, "rainDensity")
     shaderCamPosLoc                 = glGetUniformLocation(rainShader, "camWorldPos")
@@ -319,11 +320,6 @@ function widget:Update(dt)
 end
 
 function widget:Shutdown()
-    glTexture(0, false)
-    glTexture(1, false)
-    glTexture(2, false)
-    glTexture(3, false)
-
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
         glDeleteTexture(noisetex or "")
@@ -347,6 +343,7 @@ local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
 
+    glUniform(viewPortSizeLoc, vsx, vsy )
     glUniform(shaderTimeLoc, diffTime )
     glUniform(shaderCamPosLoc, cam[1], cam[2], cam[3])
     glUniform(shaderRainDensityLoc, rainDensity )
@@ -392,7 +389,7 @@ local function DrawRain()
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
     prevOsClock = osClock      
-    Spring.Echo("ReDrawing the rain")  
+--[[    Spring.Echo("ReDrawing the rain")  --]]
     glRenderToTexture(raincanvastex, renderToTextureFunc);
     cleanUp()    
 end
@@ -400,7 +397,7 @@ end
 
 
 function widget:DrawScreenEffects()
-    Spring.Echo("Drawing the rain picture")
+--[[    Spring.Echo("Drawing the rain picture")--]]
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
     glTexture(raincanvastex);
     glTexRect(0, vsy, vsx, 0)
