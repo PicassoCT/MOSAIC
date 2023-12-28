@@ -999,7 +999,7 @@ function getGameConfig()
         function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == Cultures.arabic or culture == Cultures.international then
+            if culture == Cultures.arabic  then
                 typeTable = {
                     "truck_arab6",
                     "truck_arab7",
@@ -1042,6 +1042,13 @@ function getGameConfig()
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
 
+            if culture == Cultures.asian then
+                return   getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
+            end
+            if culture == Cultures.western then
+                return   getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western)
+            end
+
             return {}
         end
 
@@ -1054,12 +1061,19 @@ function getGameConfig()
                 end
             end
 
+            if culture == Cultures.western then
+                return   getRuralAreaFeatureUnitsNameTable(UnitDefs, TruckTypeTable, Cultures.western)
+            end
+
+            if culture == Cultures.asian then
+                return   getRuralAreaFeatureUnitsNameTable(UnitDefs, TruckTypeTable, Cultures.asian)
+            end
 
             if culture == Cultures.international then
-                    return mergeTables(
-                        getRuralAreaFeatureUnitsNameTable( Cultures.arabic, housesNearby),
-                        getRuralAreaFeatureUnitsNameTable( Cultures.western, housesNearby),
-                        getRuralAreaFeatureUnitsNameTable( Cultures.asian, housesNearby))
+                return mergeTables(
+                    getRuralAreaFeatureUnitsNameTable( Cultures.arabic, housesNearby),
+                    getRuralAreaFeatureUnitsNameTable( Cultures.western, housesNearby),
+                    getRuralAreaFeatureUnitsNameTable( Cultures.asian, housesNearby))
             end
 
             return {}
