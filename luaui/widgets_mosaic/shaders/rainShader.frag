@@ -10,19 +10,22 @@
 #define MAX_HEIGTH_RAIN 512.0
 #define RAIN_DROP_LENGTH 15.0
 #define RAIN_COLOR vec4(0.0, 1.0, 0.0, 1.0)
-#define VEC_TODO vec3(1.0, 0.5, 0.5)
 
-uniform sampler2D screentex;
-uniform sampler2D raincanvastex;
+#define RED vec4(1.0, 0.0, 0.0, 0.25)
+#define GREEN vec4(0.0, 1.0, 0.0, 0.25)
+#define BLUE vec4(0.0, 0.0, 1.0, 0.25)
+
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
+uniform sampler2D screentex;
+uniform sampler2D raincanvastex;
 
 uniform float time;		
 uniform float rainDensity;
 uniform int maxLightSources;
 uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
-
+uniform mat4 viewProjectionInv;
 
 
 in Data {
@@ -53,12 +56,31 @@ vec4 checkGetLightForPixel(vec3 pixelWorld)
 	}
 	return lightColorAddition;
 }
+
+vec4 rainbowValue(float value)
+{
+	vec4 red = RED;
+	vec4 blue = BLUE;
+	vec4 green = GREEN;
+
+	if (value > 200.0)
+	{
+		return mix(red, blue, value/200.0f);
+	}
+	else 
+	{
+		return mix(blue, green , value/2048.0f);
+	}
+}
  
 vec4 rainPixel(vec3 pixelCoord, float localRainDensity)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
 	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
+	if(1==1)
+	return rainbowValue(pixelCoord.z);
+
 	float noiseValue = (texture2D(noisetex, deterministicRandom)).r;
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
@@ -99,25 +121,45 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 	return colorToShift;
 }
 
+vec3 getPixelWorldPos( vec2 uv)
+{
+	float z = texture2D(depthtex, uv).x;
+	vec4 ppos;
+	ppos.xyz = vec3(uv, z) * 2. - 1.;
+	ppos.a   = 1.;
+	vec4 worldPos4 = viewProjectionInv * ppos;
+	worldPos4.xyz /= worldPos4.w;
+
+	if (z == 1.0) {
+		vec3 forward = normalize(worldPos4.xyz - camWorldPos);
+		float a = max(-camWorldPos.y, camWorldPos.y) / forward.y;
+		return camWorldPos + forward.xyz * abs(a);
+	}
+
+	return worldPos4.xyz;
+}
+
+
 // TODO: Problem der Regen ist in festen Bändern vor der Kamera, flackert evtl wenn sich die Kamera verschiebt
-vec4 rainRayPixel(vec2 camPixel, vec3 worldVector)
+vec4 rainRayPixel(vec2 camPixel, vec3 viewDirection)
 {
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
-	vec3 camToWorldPixelVector = VEC_TODO;
+	vec3 startPixel =  getPixelWorldPos(camPixel);
 	float scanFactor = 0.0;
 	float factor = 0.0;
 	//für diesen Pixel im Weltkoordinatensystem gerastert vor der Kamera
-	vec3 startPixel = VEC_TODO;
+
 	int i= 0;
 	for (i= 0; i < MAX_DEPTH_RESOLUTION; i++) 
 	{
 		factor = (float(i)/MAX_DEPTH_RESOLUTION);
-		scanFactor =  float(exp((factor)/(1.0- E_CONST)) * TOTAL_SCAN_DISTANCE);
-		vec3 newWorldPixelToCheck = startPixel * (camToWorldPixelVector * scanFactor);
+		scanFactor =  float(exp((factor)/(1.0 - E_CONST)) * TOTAL_SCAN_DISTANCE);
+		vec3 newWorldPixelToCheck = startPixel * (viewDirection * scanFactor);
 		// deterministic trace a ray back into world for log lightfalloff  in depth resolution
 	
 		//check if there is rain that pixel (x,y,z)   by time, coords  + windblow (sin(time))
 		accumulatedColor = accumulatedColor + rainPixel(newWorldPixelToCheck, 0.5f);	
+
 
 	}
 	return accumulatedColor;
@@ -125,16 +167,9 @@ vec4 rainRayPixel(vec2 camPixel, vec3 worldVector)
 
 vec4 rayHoloGramLightBackround(vec2 TexCoord, float localRainDensity, float depthValueAtRay )
 {
-	//Basis: https://stackoverflow.com/questions/32227283/getting-world-position-from-depth-buffer-value
-	vec4 clipSpacePosition = vec4(TexCoord * 2.0 - 1.0, depthValueAtRay, 1.0);
-    vec4 viewSpacePosition = gl_ProjectionMatrixInverse * clipSpacePosition;
+    vec3 worldSpacePosition = getPixelWorldPos(TexCoord);
 
-    // Perspective division
-    viewSpacePosition /= viewSpacePosition.w;
-    mat4 viewMatrixInv = inverse(gl_ModelViewMatrix);
-    vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
-
-	return checkGetLightForPixel(worldSpacePosition.xyz) * localRainDensity;
+	return checkGetLightForPixel(worldSpacePosition) * localRainDensity;
 }
 
 float looksUpwardPercentage(vec3 viewDirection)
@@ -153,31 +188,31 @@ float avg(vec3 val)
 	return sqrt(val.x*val.x + val.y*val.y + val.z *val.z);
 }
 
-vec4 getTextureColor(vec2 uv)
-{
-	return texture2D(noisetex, uv);
-}
-
 void main(void)
 {
-	vec2 uv = gl_FragCoord.xy / viewPortSize;
-	float depthValueAtPixel = 0.0;
-	depthValueAtPixel = (texture2D(depthtex, uv)).r *  2.0f - 1.0f;	
-	gl_FragColor = vec4(depthValueAtPixel,depthValueAtPixel,depthValueAtPixel, 0.95);
-	if (1==1)return;
 
+	vec2 uv = gl_FragCoord.xy / viewPortSize;
+	vec4 origColor = texture2D(screentex, uv);
+	float depthValueAtPixel = 0.0;
+	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
 	
 	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
-	vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
+	//vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
+	vec4 backGroundLightIntersect = vec4(0.0,0.0,0.0, 0.05);
+
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = looksUpwardPercentage(viewDirection);
 
 
-	vec4 origColor = texture2D(raincanvastex, uv);
 	vec4 downWardrainColor = (origColor)+ accumulatedLightColorRay + backGroundLightIntersect; 
+	//downWardrainColor.a = 0.5; //DELME DEBUG
+	if( 1== 1)
+			gl_FragColor = downWardrainColor;
+			return;
+
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera
-	if (upwardnessFactor > 0.5)
+	if (upwardnessFactor > 0.45)
 	{
 		upWardrainColor = addRainDropsShader(origColor, uv);
 		upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
@@ -187,6 +222,4 @@ void main(void)
 	{
 		gl_FragColor = downWardrainColor;
 	}
-
-	//gl_FragColor = vec4(1.0,1.0,0.0,0.5);
 }

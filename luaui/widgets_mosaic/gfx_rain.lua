@@ -92,13 +92,14 @@ local shaderLightSourcescLoc
 local boolRainyArea = false
 local maxLightSources = 0
 local shaderLightSources = {}
-local noisetextureFilePath = ":l:luaui/images/noise.png"
+local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
 local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()
 local diffTime = 0
+local uniformViewPrjInv
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -107,49 +108,6 @@ local function errorOutIfNotInitialized(value, name)
         widgetHandler:RemoveWidget(self)
     end
 end
-
-local defaultVertexShader = 
-[[
-   #version 150 compatibility
-   #line 100087
-
-    uniform sampler2D raincanvastex;
-    uniform sampler2D screentex;
-    uniform sampler2D depthtex;
-    uniform sampler2D noisetex;
-
-    uniform float time;
-    //uniform vec3 unitCenterPosition;
-    //uniform float viewPosX;
-    //uniform float viewPosY;
-
-    void main() {
-        vec4 posCopy = gl_Vertex;
-        posCopy.z = sin(time)*posCopy.z;
-        gl_Position = posCopy;
-    }
-]]
-local defaultFragmentShader = 
-[[
-    #version 150 compatibility
-    #line 200103
-
-    uniform sampler2D raincanvastex;
-    uniform sampler2D screentex;
-    uniform sampler2D depthtex;
-    uniform sampler2D noisetex;
-    
-    uniform float time;
-    //uniform vec3 unitCenterPosition;
-    //uniform float viewPosX;
-    //uniform float viewPosY;
-
-    void main() 
-    {
-        gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
-    }
-]]
-
 
 function widget:ViewResize()
     vsx, vsy = gl.GetViewSizes()
@@ -197,7 +155,6 @@ function widget:ViewResize()
         vsx,
         vsy,
         {
-        fbo = true, 
         min_filter = GL.LINEAR, 
         mag_filter = GL.LINEAR,
         wrap_s = GL.CLAMP_TO_EDGE, 
@@ -264,6 +221,7 @@ local function init()
     shaderCamPosLoc                 = glGetUniformLocation(rainShader, "camWorldPos")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
     shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
+    uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
       for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
@@ -348,7 +306,7 @@ local function updateUniforms()
     glUniform(shaderCamPosLoc, cam[1], cam[2], cam[3])
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
-
+    glUniformMatrix(uniformViewPrjInv,  "viewprojectioninverse")
     for i=1,maxLightSources do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
     end
@@ -358,9 +316,11 @@ local function renderToTextureFunc()
     -- render a full screen quad
     glTexture(0, depthtex)
     glTexture(0, false)
-    glTexture(1,":l:luaui/images/rgbnoise.png");
-    glTexture(1, false)
-    gl.TexRect(-1, -1, 1, 1, 0, 0, 1, 1)
+    glTexture(1, noisetextureFilePath);
+    glTexture(1, false)    
+    glTexture(2, screentex);
+    glTexture(2, false)
+    glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 
 local function cleanUp()

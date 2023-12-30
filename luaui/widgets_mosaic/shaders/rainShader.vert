@@ -11,6 +11,7 @@ uniform int maxLightSources;
 uniform vec3 camWorldPos;
 uniform vec2 viewPortSize;
 uniform float rainDensity;
+uniform mat4 viewProjectionInv;
 
 out Data {
 			vec3 fragVertexPosition;
