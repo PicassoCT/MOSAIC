@@ -323,9 +323,7 @@ local function renderToTextureFunc()
     glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 
-local function cleanUp()
-
-    
+local function cleanUp()    
     glResetState()
     glUseShader(0)
 end

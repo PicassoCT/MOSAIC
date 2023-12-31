@@ -5,7 +5,7 @@
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 15
 #define E_CONST 2.718281828459045235360287471352
-#define TOTAL_SCAN_DISTANCE 800.0f
+#define TOTAL_SCAN_DISTANCE 8192.0f
 #define COL_RED vec4(1.0,0.0,0.0,1.0)
 #define MAX_HEIGTH_RAIN 512.0
 #define RAIN_DROP_LENGTH 15.0
@@ -139,6 +139,25 @@ vec3 getPixelWorldPos( vec2 uv)
 	return worldPos4.xyz;
 }
 
+Vec4 convertHeightToColor(float value) {
+    Vec4 color;
+
+    // Adjust these parameters for the desired gradient
+    float minVal = -500.0;
+    float maxVal = 8192.0;
+
+    // Map the value to the range [0, 1]
+    float t = (value - minVal) / (maxVal - minVal);
+    
+    // Use a sine function for a smooth oscillating gradient
+    color.r = 0.5f + 0.5f * sin(2.0f * M_PI * t);
+    color.g = 0.5f + 0.5f * sin(2.0f * M_PI * (t + 1.0f / 3.0f));
+    color.b = 0.5f + 0.5f * sin(2.0f * M_PI * (t + 2.0f / 3.0f));
+    color.a = 1.0f / MAX_DEPTH_RESOLUTION ; // Alpha channel, you can adjust it if needed
+
+    return color;
+}
+
 
 // TODO: Problem der Regen ist in festen Bändern vor der Kamera, flackert evtl wenn sich die Kamera verschiebt
 vec4 rainRayPixel(vec2 camPixel, vec3 viewDirection)
@@ -158,7 +177,7 @@ vec4 rainRayPixel(vec2 camPixel, vec3 viewDirection)
 		// deterministic trace a ray back into world for log lightfalloff  in depth resolution
 	
 		//check if there is rain that pixel (x,y,z)   by time, coords  + windblow (sin(time))
-		accumulatedColor = accumulatedColor + rainPixel(newWorldPixelToCheck, 0.5f);	
+		accumulatedColor = accumulatedColor + convertHeightToColor(newWorldPixelToCheck.y);//rainPixel(newWorldPixelToCheck, 0.5f);	
 
 
 	}
@@ -204,8 +223,8 @@ void main(void)
 	upwardnessFactor = looksUpwardPercentage(viewDirection);
 
 
-	vec4 downWardrainColor = (origColor)+ accumulatedLightColorRay + backGroundLightIntersect; 
-	//downWardrainColor.a = 0.5; //DELME DEBUG
+	vec4 downWardrainColor = (origColor);//+ accumulatedLightColorRay + backGroundLightIntersect; 
+	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 	if( 1== 1)
 			gl_FragColor = downWardrainColor;
 			return;
@@ -214,7 +233,6 @@ void main(void)
 	//if player looks upward mix drawing rain and start drawing drops on the camera
 	if (upwardnessFactor > 0.45)
 	{
-		upWardrainColor = addRainDropsShader(origColor, uv);
 		upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
 		gl_FragColor = upWardrainColor;
 	}	
