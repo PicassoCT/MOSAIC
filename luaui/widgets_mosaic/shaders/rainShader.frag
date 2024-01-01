@@ -139,8 +139,9 @@ vec3 getPixelWorldPos( vec2 uv)
 	return worldPos4.xyz;
 }
 
-Vec4 convertHeightToColor(float value) {
-    Vec4 color;
+vec4 convertHeightToColor(float value) 
+{
+    vec4 color;
 
     // Adjust these parameters for the desired gradient
     float minVal = -500.0;
@@ -150,9 +151,9 @@ Vec4 convertHeightToColor(float value) {
     float t = (value - minVal) / (maxVal - minVal);
     
     // Use a sine function for a smooth oscillating gradient
-    color.r = 0.5f + 0.5f * sin(2.0f * M_PI * t);
-    color.g = 0.5f + 0.5f * sin(2.0f * M_PI * (t + 1.0f / 3.0f));
-    color.b = 0.5f + 0.5f * sin(2.0f * M_PI * (t + 2.0f / 3.0f));
+    color.r = 0.5f + 0.5f * sin(2.0f * PI * time);
+    color.g = 0.5f + 0.5f * sin(2.0f * PI * (time + 1.0f / 3.0f));
+    color.b = 0.5f + 0.5f * sin(2.0f * PI * (time + 2.0f / 3.0f));
     color.a = 1.0f / MAX_DEPTH_RESOLUTION ; // Alpha channel, you can adjust it if needed
 
     return color;
@@ -211,13 +212,15 @@ void main(void)
 {
 
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
-	vec4 origColor = texture2D(screentex, uv);
 	float depthValueAtPixel = 0.0;
+	vec4 origColor = vec4(1.0,0.0,0.0,0.5);
+	origColor =  texture2D(screentex, uv);
+
 	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
 	
 	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
 	//vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
-	vec4 backGroundLightIntersect = vec4(0.0,0.0,0.0, 0.05);
+	vec4 backGroundLightIntersect = vec4(1.0, 0.0, 0.0, 0.5);
 
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = looksUpwardPercentage(viewDirection);
@@ -240,4 +243,5 @@ void main(void)
 	{
 		gl_FragColor = downWardrainColor;
 	}
+	gl_FragColor.a = 1.0;
 }

@@ -1,7 +1,7 @@
 function widget:GetInfo()
     return {
-        name = "Rain",
-        desc = "Lets it automaticly rain",
+        name = "Raymarched Rain",
+        desc = "Lets it rain",
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
@@ -15,8 +15,15 @@ end
 --------------------------------------------------------------------------------
 
 -- > debugEchoT(
-
+local boolDebugActive = true
 local rainShader = nil
+
+--------------------------------------------------------------------------------
+--------------------------Configuration Components -----------------------------
+local shaderFilePath = "luaui/widgets_mosaic/shaders/"
+local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
+local DAYLENGTH = 28800
+local rainDensity = 0.5
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -80,9 +87,6 @@ local depthtex = nil
 local noisetex = nil
 local screentex = nil
 local startOsClock
-local shaderFilePath = "luaui/widgets_mosaic/shaders/"
-local DAYLENGTH = 28800
-local rainDensity = 0.5
 local shaderTimeLoc
 local shaderRainDensityLoc
 local viewPortSizeLoc
@@ -92,7 +96,6 @@ local shaderLightSourcescLoc
 local boolRainyArea = false
 local maxLightSources = 0
 local shaderLightSources = {}
-local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
@@ -274,7 +277,9 @@ local function isRaining()
 end
 
 function widget:Update(dt)
-    boolRainActive = true --isRaining()
+    if boolDebugActive then boolRainActive = true; return end
+
+    boolRainActive = isRaining()
 end
 
 function widget:Shutdown()
@@ -291,6 +296,7 @@ function widget:Shutdown()
 end
 local function prepareTextures()
     --Spring.Echo("Preparing Texture start")
+
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
    -- Spring.Echo("Preparing Texture end")
@@ -326,6 +332,9 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
+    glTexture(0, false)
+    glTexture(1, false)
+    glTexture(2, false)
 end
 
 local function DrawRain()
@@ -355,11 +364,11 @@ end
 
 
 function widget:DrawScreenEffects()
---[[    Spring.Echo("Drawing the rain picture")--]]
-    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) -- in theory not needed but sometimes evil widgets disable it w/o reenabling it
+    glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
     glTexture(raincanvastex);
     glTexRect(0, vsy, vsx, 0)
     glTexture(false);
+    glBlending(false)
 end
 
 
