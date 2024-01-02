@@ -5,7 +5,7 @@ function widget:GetInfo()
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
-        layer = math.huge,
+        layer = 20,
         enabled = true, --  loaded by default?
         hidden = true
     }
@@ -38,6 +38,7 @@ local GL_SRC_ALPHA           = GL.SRC_ALPHA
 local glBeginEnd             = gl.BeginEnd
 local glBlending             = gl.Blending
 local glCallList             = gl.CallList
+local glClear                = gl.Clear
 local glColor                = gl.Color
 local glColorMask            = gl.ColorMask
 local glCopyToTexture        = gl.CopyToTexture
@@ -320,13 +321,11 @@ end
 
 local function renderToTextureFunc()
     -- render a full screen quad
+    glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
     glTexture(0, depthtex)
-    glTexture(0, false)
     glTexture(1, noisetextureFilePath);
-    glTexture(1, false)    
     glTexture(2, screentex);
-    glTexture(2, false)
-    glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
+    glTexRect(0, vsy, vsx, 0, 0, 0, 1, 1)
 end
 
 local function cleanUp()    
@@ -361,18 +360,21 @@ local function DrawRain()
     cleanUp()    
 end
 
-
-
 function widget:DrawScreenEffects()
-    glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+
+    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
+    --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
     glTexture(raincanvastex);
     glTexRect(0, vsy, vsx, 0)
     glTexture(false);
-    glBlending(false)
 end
 
 
 function widget:Initialize()
+    if (not gl.RenderToTexture) then --super bad graphic driver
+        return
+    end
+
     lastFrametime = Spring.GetTimer()
     startOsClock = os.clock()
     init()
