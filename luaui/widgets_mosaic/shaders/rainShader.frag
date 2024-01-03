@@ -141,24 +141,17 @@ vec3 getPixelWorldPos( vec2 uv)
 	return worldPos4.xyz;
 }
 
-vec4 convertHeightToColor(float value) 
+vec4 convertHeightToColor(vec3 value) 
 {
-    vec4 color;
 
-    // Adjust these parameters for the desired gradient
-    float minVal = -500.0;
-    float maxVal = 8192.0;
+    if (value.z < 150.0f)
+    {
 
-    // Map the value to the range [0, 1]
-    float t = (value - minVal) / (maxVal - minVal);
-    
-    // Use a sine function for a smooth oscillating gradient
-    color.r = 0.5f + 0.5f * sin(2.0f * PI * time);
-    color.g = 0.5f + 0.5f * sin(2.0f * PI * (time + 1.0f / 3.0f));
-    color.b = 0.5f + 0.5f * sin(2.0f * PI * (time + 2.0f / 3.0f));
-    color.a = 1.0f / MAX_DEPTH_RESOLUTION ; // Alpha channel, you can adjust it if needed
+    	if (mod(value.x, 64.0) < 3.0) return RED;
+    	if (mod(value.y ,64.0) < 3.0) return GREEN;
 
-    return color;
+    }
+   return vec4(0.0,0.0,0.0,0.0);
 }
 
 
@@ -180,7 +173,7 @@ vec4 rainRayPixel(vec2 camPixel, vec3 viewDirection)
 		// deterministic trace a ray back into world for log lightfalloff  in depth resolution
 	
 		//check if there is rain that pixel (x,y,z)   by time, coords  + windblow (sin(time))
-		accumulatedColor = accumulatedColor + convertHeightToColor(newWorldPixelToCheck.y);//rainPixel(newWorldPixelToCheck, 0.5f);	
+		accumulatedColor = accumulatedColor + convertHeightToColor(newWorldPixelToCheck);//rainPixel(newWorldPixelToCheck, 0.5f);	
 
 
 	}
@@ -215,8 +208,8 @@ void main(void)
 
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
 	float depthValueAtPixel = 0.0;
-	vec4 origColor = vec4(1.0,0.0,0.0,0.5);
-	origColor =  texture2D(screentex, uv);
+	vec4 origColor = vec4(0.0,0.0,0.0,1.0);
+	//origColor =  texture2D(screentex, uv);
 
 	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
 	
