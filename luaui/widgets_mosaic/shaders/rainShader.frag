@@ -72,6 +72,8 @@ vec4 rainbowValue(float value)
 		return mix(blue, green , value/2048.0f);
 	}
 }
+
+REFLECTIONMARCH
  
 vec4 rainPixel(vec3 pixelCoord, float localRainDensity)
 {

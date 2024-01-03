@@ -184,6 +184,8 @@ local function init()
     --https://www.shadertoy.com/view/wd2GDG inspiration
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") 
+    local fragmentShaderAddSource = VFS.LoadFile(shaderFilePath .. "rainShaderReflectionSource.c") 
+	fragmentShader = string.replace(fragmentShader, "REFLECTIONMARCH", fragmentShaderAddSource)
     Spring.Echo("FragmentShader".. fragmentShader)
     Spring.Echo("VertexShader".. vertexShader)
     local uniformInt = {
