@@ -23,7 +23,7 @@ uniform sampler2D raincanvastex;
 uniform float time;		
 uniform float rainDensity;
 uniform int maxLightSources;
-uniform vec3 camWorldPos;
+uniform vec3 eyePos;
 uniform vec2 viewPortSize;
 uniform mat4 viewProjectionInv;
 
@@ -32,6 +32,32 @@ in Data {
 			vec3 fragVertexPosition;
 			vec3 viewDirection;
 		 };
+
+struct Ray {
+	vec3 Origin;
+	vec3 Dir;
+};
+
+struct AABB {
+	vec3 Min;
+	vec3 Max;
+};
+
+bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
+{
+	vec3 invR = 1.0 / r.Dir;
+	vec3 tbot = invR * (aabb.Min - r.Origin);
+	vec3 ttop = invR * (aabb.Max - r.Origin);
+	vec3 tmin = min(ttop, tbot);
+	vec3 tmax = max(ttop, tbot);
+	vec2 t = max(tmin.xx, tmin.yz);
+	t0 = max(0.,max(t.x, t.y));
+	t  = min(tmax.xx, tmax.yz);
+	t1 = min(t.x, t.y);
+	//return (t0 <= t1) && (t1 >= 0.);
+	return (abs(t0) <= t1);
+}
+
 
 //Lightsource description 
 /*
@@ -42,13 +68,13 @@ vec4  color + strength.a
 */
 uniform vec4 lightSources[20];
 
-vec4 checkGetLightForPixel(vec3 pixelWorld)
+vec4 RayMarchBackgroundLight(vec3 Position)
 {
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
 	int i=0;
 	for ( i=0; i < maxLightSources; i+=2)
 	{
-		float lightSourceDistance = distance(pixelWorld, lightSources[i].xyz);
+		float lightSourceDistance = distance(Position, lightSources[i].xyz);
 		if ( lightSourceDistance < lightSources[i].a)
 		{
 			lightColorAddition += lightSources[i+1].rgba * (1.0-exp(-lightSourceDistance));
@@ -92,7 +118,7 @@ vec4 rainPixel(vec3 pixelCoord, float localRainDensity)
 		if (dropCenterZ < pixelCoord.z && distanceToDropCenter < RAIN_DROP_LENGTH )
 		{
 			// rain drop 
-			vec4 lightFactor = checkGetLightForPixel(pixelCoord);
+			vec4 lightFactor = RayMarchBackgroundLight(pixelCoord);
 			pixelColor += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 		}
 	}
@@ -117,7 +143,7 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 		{
 			// rain drop 
 			colorToShift += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH);
-			colorToShift += checkGetLightForPixel(pixelCoord);
+			colorToShift += RayMarchBackgroundLight(pixelCoord);
 		}
 	}
 	return colorToShift;
@@ -133,9 +159,9 @@ vec3 getPixelWorldPos( vec2 uv)
 	worldPos4.xyz /= worldPos4.w;
 
 	if (z == 1.0) {
-		vec3 forward = normalize(worldPos4.xyz - camWorldPos);
-		float a = max(-camWorldPos.y, camWorldPos.y) / forward.y;
-		return camWorldPos + forward.xyz * abs(a);
+		vec3 forward = normalize(worldPos4.xyz - eyePos);
+		float a = max(-eyePos.y, eyePos.y) / forward.y;
+		return eyePos + forward.xyz * abs(a);
 	}
 
 	return worldPos4.xyz;
@@ -143,50 +169,32 @@ vec3 getPixelWorldPos( vec2 uv)
 
 vec4 convertHeightToColor(vec3 value) 
 {
+	if (value.z > 250.0) return vec4(0.0,0.0,0.0,0.0);
 
-    if (value.z < 150.0f)
-    {
+    	if (mod(value.x, 64.0) < 5.0) return RED;
+    	if (mod(value.y ,64.0) < 5.0) return GREEN;
 
-    	if (mod(value.x, 64.0) < 3.0) return RED;
-    	if (mod(value.y ,64.0) < 3.0) return GREEN;
-
-    }
    return vec4(0.0,0.0,0.0,0.0);
 }
 
-
-// TODO: Problem der Regen ist in festen Bändern vor der Kamera, flackert evtl wenn sich die Kamera verschiebt
-vec4 rainRayPixel(vec2 camPixel, vec3 viewDirection)
+vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 {
+	float l = length(end - start);
+	const float numsteps = MAX_DEPTH_RESOLUTION;
+	const float tstep = 1. / numsteps;
+	float depth = min(l , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
-	vec3 startPixel =  getPixelWorldPos(camPixel);
-	float scanFactor = 0.0;
-	float factor = 0.0;
-	//für diesen Pixel im Weltkoordinatensystem gerastert vor der Kamera
 
-	int i= 0;
-	for (i= 0; i < MAX_DEPTH_RESOLUTION; i++) 
-	{
-		factor = (float(i)/MAX_DEPTH_RESOLUTION);
-		scanFactor =  float(exp((factor)/(1.0 - E_CONST)) * TOTAL_SCAN_DISTANCE);
-		vec3 newWorldPixelToCheck = startPixel * (viewDirection * scanFactor);
-		// deterministic trace a ray back into world for log lightfalloff  in depth resolution
-	
-		//check if there is rain that pixel (x,y,z)   by time, coords  + windblow (sin(time))
-		accumulatedColor = accumulatedColor + convertHeightToColor(newWorldPixelToCheck);//rainPixel(newWorldPixelToCheck, 0.5f);	
+	for (float t=0.0; t<=1.0; t+=tstep) {
+		vec3  pos = mix(start, end, t);
 
-
+		accumulatedColor = accumulatedColor + convertHeightToColor(pos); //rainPixel(pos, 0.5f);	
+		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
+
 	return accumulatedColor;
-}											  
-
-vec4 rayHoloGramLightBackround(vec2 TexCoord, float localRainDensity, float depthValueAtRay )
-{
-    vec3 worldSpacePosition = getPixelWorldPos(TexCoord);
-
-	return checkGetLightForPixel(worldSpacePosition) * localRainDensity;
 }
-
+											  
 float looksUpwardPercentage(vec3 viewDirection)
 {
 	vec3 upwardVec = vec3(0.0, 1.0, 0.0);
@@ -203,25 +211,50 @@ float avg(vec3 val)
 	return sqrt(val.x*val.x + val.y*val.y + val.z *val.z);
 }
 
+vec3 GetWorldPos(in vec2 screenpos)
+{
+	float z = texture2D(depthtex, screenpos).x;
+	vec4 ppos;
+	ppos.xyz = vec3(screenpos, z) * 2. - 1.;
+	ppos.a   = 1.;
+	vec4 worldPos4 = viewProjectionInv * ppos;
+	worldPos4.xyz /= worldPos4.w;
+
+	if (z == 1.0) {
+		vec3 forward = normalize(worldPos4.xyz - eyePos);
+		float a =  eyePos.y / forward.y;
+		return eyePos + forward.xyz * abs(a);
+	}
+
+	return worldPos4.xyz;
+}
+
 void main(void)
 {
 
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
+	vec3 worldPos = GetWorldPos(uv);
 	float depthValueAtPixel = 0.0;
-	vec4 origColor = vec4(0.0,0.0,0.0,1.0);
+	vec4 origColor = vec4(0.0,0.0,0.0,0.5);
 	//origColor =  texture2D(screentex, uv);
+	float t1, t2;
 
 	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
-	
-	vec4 accumulatedLightColorRay = rainRayPixel(uv,  viewDirection); 
-	//vec4 backGroundLightIntersect = rayHoloGramLightBackround(uv, rainDensity, depthValueAtPixel);
-	vec4 backGroundLightIntersect = vec4(1.0, 0.0, 0.0, 0.5);
+
+	Ray r;
+	r.Origin = eyePos;
+	r.Dir = worldPos - eyePos;
+	t1 = clamp(t1, 0.0, 1.0);
+	t2 = clamp(t2, 0.0, 1.0);
+	vec3 startPos = viewDirection * t1 + eyePos;
+	vec3 endPos   = viewDirection * t2 + eyePos;
+
+	vec4 accumulatedLightColorRay = RayMarchRainBackgroundLight(startPos,  endPos); 
 
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = looksUpwardPercentage(viewDirection);
 
-
-	vec4 downWardrainColor = (origColor);//+ accumulatedLightColorRay + backGroundLightIntersect; 
+	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay ;
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 	if( 1== 1)
 			gl_FragColor = downWardrainColor;

@@ -8,7 +8,7 @@ uniform sampler2D noisetex;
 
 uniform float time;		
 uniform int maxLightSources;
-uniform vec3 camWorldPos;
+uniform vec3 eyePos;
 uniform vec2 viewPortSize;
 uniform float rainDensity;
 uniform mat4 viewProjectionInv;
@@ -20,11 +20,8 @@ out Data {
  
 void main(void)
 {	
-
-	vec4 eyePos = gl_ModelViewMatrix * vec4(gl_Vertex.xyz, 1.0);
 	//if cam goes upwards go to raindrop shader
 
     fragVertexPosition = gl_Vertex.xyz;
-    viewDirection = normalize(camWorldPos - eyePos.xyz);
     gl_Position = gl_Vertex;
 }

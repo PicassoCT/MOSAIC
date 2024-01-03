@@ -91,7 +91,7 @@ local startOsClock
 local shaderTimeLoc
 local shaderRainDensityLoc
 local viewPortSizeLoc
-local shaderCamPosLoc
+local uniformEyePos
 local shaderMaxLightSrcLoc
 local shaderLightSourcescLoc 
 local boolRainyArea = false
@@ -184,8 +184,8 @@ local function init()
     --https://www.shadertoy.com/view/wd2GDG inspiration
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") 
-    local fragmentShaderAddSource = VFS.LoadFile(shaderFilePath .. "rainShaderReflectionSource.c") 
-	fragmentShader = string.replace(fragmentShader, "REFLECTIONMARCH", fragmentShaderAddSource)
+    --local fragmentShaderAddSource = VFS.LoadFile(shaderFilePath .. "rainShaderReflectionSource.c") 
+	--fragmentShader = string.replace(fragmentShader, "REFLECTIONMARCH", fragmentShaderAddSource)
     Spring.Echo("FragmentShader".. fragmentShader)
     Spring.Echo("VertexShader".. vertexShader)
     local uniformInt = {
@@ -224,7 +224,7 @@ local function init()
     viewPortSizeLoc                 = glGetUniformLocation(rainShader, "viewPortSize")
     shaderTimeLoc                   = glGetUniformLocation(rainShader, "time")
     shaderRainDensityLoc            = glGetUniformLocation(rainShader, "rainDensity")
-    shaderCamPosLoc                 = glGetUniformLocation(rainShader, "camWorldPos")
+    uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
     shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
@@ -298,21 +298,17 @@ function widget:Shutdown()
     end
 end
 local function prepareTextures()
-    --Spring.Echo("Preparing Texture start")
-
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-   -- Spring.Echo("Preparing Texture end")
 end
 
 local function updateUniforms()
-    cam[1], cam[2], cam[3] = Spring.GetCameraPosition()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
 
     glUniform(viewPortSizeLoc, vsx, vsy )
     glUniform(shaderTimeLoc, diffTime )
-    glUniform(shaderCamPosLoc, cam[1], cam[2], cam[3])
+    glUniform(uniformEyePos,  Spring.GetCameraPosition())
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
     glUniformMatrix(uniformViewPrjInv,  "viewprojectioninverse")
@@ -323,7 +319,7 @@ end
 
 local function renderToTextureFunc()
     -- render a full screen quad
-    glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
+    --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
     glTexture(0, depthtex)
     glTexture(1, noisetextureFilePath);
     glTexture(2, screentex);
