@@ -327,7 +327,7 @@ local function renderToTextureFunc()
     glTexture(0, depthtex)
     glTexture(1, noisetextureFilePath);
     glTexture(2, screentex);
-    glTexRect(0, vsy, vsx, 0, 0, 0, 1, 1)
+    glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 
 local function cleanUp()    
