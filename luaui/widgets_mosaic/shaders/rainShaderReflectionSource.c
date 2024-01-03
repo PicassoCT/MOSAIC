@@ -30,5 +30,4 @@ vec4 RaymarchReflection(vec3 sourcePixel, vec3 rayDirection)
 		float distance = distance(sourcePixel, pixelPos); 
 		return sampler2D(screentex, uvPixelCoord) * 1/sqrt(distance);
 	}
-	return vec4 (0.0, 0.0, 0.0, 1.0);
-}
+	return vec4 (0.0, 0.0, 0.0, 1.0); 
