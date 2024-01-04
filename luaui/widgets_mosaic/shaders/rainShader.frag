@@ -73,39 +73,34 @@ vec4 RayMarchBackgroundLight(vec3 Position)
 	return lightColorAddition;
 }
 
-vec4 rainbowValue(float value)
+vec4 GetPositionalGradient(vec3 pos, int axis)
 {
-	vec4 red = RED;
-	vec4 blue = BLUE;
-	vec4 green = GREEN;
-
-	if (value > 200.0)
-	{
-		return mix(red, blue, value/200.0f);
-	}
-	else 
-	{
-		return mix(blue, green , value/2048.0f);
-	}
+	if (axis ==1) return mix(RED, BLACK, mod(pos.x, 1.0));
+	if (axis ==2) return mix(BLUE, BLACK, mod(pos.y, 1.0));
+	if (axis ==3) return mix(GREEN, BLACK, mod(pos.z, 1.0));
+}
+vec4 debugValueVisualize(vec3 pos)
+{
+	return GetPositionalGradient(pos,1) + GetPositionalGradient(pos, 2) + GetPositionalGradient(pos, 3);
 }
 
 //REFLECTIONMARCH 
  
-vec4 rainPixel(vec3 pixelCoord, float localRainDensity)
+vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
-	float zAxisTime =  sin(time);
-	if(1==1)
-	return rainbowValue(pixelCoord.z);
+	vec2 deterministicRandomUV = vec2(mod(pixelCoord.x, 256.0), mod(pixelCoord.z, 256.0));
+	float yAxisTime =  sin(time);
+	//DELME Debug
+	return debugValueVisualize(pixelCoord);
 
 	float noiseValue = (texture2D(noisetex, deterministicRandom)).r;
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
-		//How far along z is it via time and does that intersect
-		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
+		//How far along y is it via time and does that intersect
+		float dropCenterY = sin(PI_HALF + mod((yAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
 		float distanceToDropCenter = distance(dropCenterZ, pixelCoord.z);
-		if (dropCenterZ < pixelCoord.z && distanceToDropCenter < RAIN_DROP_LENGTH )
+		if (dropCenterY < pixelCoord.y && distanceToDropCenter < RAIN_DROP_LENGTH )
 		{
 			// rain drop 
 			vec4 lightFactor = RayMarchBackgroundLight(pixelCoord);
@@ -179,9 +174,9 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
-		vec3 pos = mix(start, end, t);
+		vec3 pxlPosWorld = mix(start, end, t);
 
-		accumulatedColor = accumulatedColor + convertHeightToColor(pos); //rainPixel(pos, 0.5f);	
+		accumulatedColor = accumulatedColor + renderRainPixel(pxlPosWorld, 0.5f);	
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
 
