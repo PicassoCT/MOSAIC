@@ -94,7 +94,7 @@ float colToVal(vec4 col, float scale)
 float getDeterministicRandomValue(vec3 pixelCoord)
 {
 	vec2 deterministicRandomUV = vec2(mod(pixelCoord.x, 256.0), mod(pixelCoord.z, 256.0));
-	vec4 noiseValueColor =  (sampler2D(noisetex, deterministicRandomUV));
+	vec4 noiseValueColor =  (texture2D(noisetex, deterministicRandomUV));
 	return colToVal(noiseValueColor, 1.0);
 } 
  
