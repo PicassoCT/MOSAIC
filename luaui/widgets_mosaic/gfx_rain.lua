@@ -104,6 +104,11 @@ local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()
 local diffTime = 0
 local uniformViewPrjInv
+local GL_DEPTH_BITS = 0x0D56
+local GL_DEPTH_COMPONENT   = 0x1902
+local GL_DEPTH_COMPONENT16 = 0x81A5
+local GL_DEPTH_COMPONENT24 = 0x81A6
+local GL_DEPTH_COMPONENT32 = 0x81A7
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -144,8 +149,8 @@ function widget:ViewResize()
 
     depthtex =
         gl.CreateTexture(
-        vsx,
-        vsy,
+            vsx,
+            vsy,
         {
             format = GL_DEPTH_COMPONENT24,
             min_filter = GL.NEAREST,
@@ -299,7 +304,9 @@ function widget:Shutdown()
 end
 local function prepareTextures()
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
+    glTexture(screentex)
     glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+    glTexture(depthtex)
 end
 
 local function updateUniforms()
@@ -320,9 +327,7 @@ end
 local function renderToTextureFunc()
     -- render a full screen quad
     --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
-    glTexture(0, depthtex)
     glTexture(1, noisetextureFilePath);
-    glTexture(2, screentex);
     glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 
@@ -347,14 +352,14 @@ local function DrawRain()
     lastFrametime = Spring.GetTimer()
 
     prepareTextures()
-
     glUseShader(rainShader)
     updateUniforms()
-    local osClock = os.clock()
-    local timePassed = osClock - prevOsClock
-    prevOsClock = osClock      
+    
 --[[    Spring.Echo("ReDrawing the rain")  --]]
     glRenderToTexture(raincanvastex, renderToTextureFunc);
+    local osClock = os.clock()
+    local timePassed = osClock - prevOsClock
+    prevOsClock = osClock  
     cleanUp()    
 end
 
