@@ -11,9 +11,10 @@
 #define RAIN_DROP_LENGTH 15.0
 #define RAIN_COLOR vec4(0.0, 1.0, 0.0, 1.0)
 
-#define RED vec4(1.0, 0.0, 0.0, 0.25)
-#define GREEN vec4(0.0, 1.0, 0.0, 0.25)
-#define BLUE vec4(0.0, 0.0, 1.0, 0.25)
+#define RED vec4(1.0, 0.0, 0.0, 0.125)
+#define GREEN vec4(0.0, 1.0, 0.0, 0.125)
+#define BLUE vec4(0.0, 0.0, 1.0, 0.125)
+#define BLACK vec4(0.0, 0.0, 0.0, 0.125)
 
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
@@ -84,22 +85,33 @@ vec4 debugValueVisualize(vec3 pos)
 	return GetPositionalGradient(pos,1) + GetPositionalGradient(pos, 2) + GetPositionalGradient(pos, 3);
 }
 
+float colToVal(vec4 col, float scale)
+{
+	return ((col.r + col.b + col.g + col.a) /4.0)* scale;
+}
 //REFLECTIONMARCH 
+ 
+float getDeterministicRandomValue(vec3 pixelCoord)
+{
+	vec2 deterministicRandomUV = vec2(mod(pixelCoord.x, 256.0), mod(pixelCoord.z, 256.0));
+	vec4 noiseValueColor =  (sampler2D(noisetex, deterministicRandomUV));
+	return colToVal(noiseValueColor, 1.0);
+} 
  
 vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-	vec2 deterministicRandomUV = vec2(mod(pixelCoord.x, 256.0), mod(pixelCoord.z, 256.0));
+
 	float yAxisTime =  sin(time);
 	//DELME Debug
 	return debugValueVisualize(pixelCoord);
-
-	float noiseValue = (texture2D(noisetex, deterministicRandom)).r;
+	
+	float noiseValue = getDeterministicRandomValue(pixelCoord);
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along y is it via time and does that intersect
 		float dropCenterY = sin(PI_HALF + mod((yAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
-		float distanceToDropCenter = distance(dropCenterZ, pixelCoord.z);
+		float distanceToDropCenter = distance(dropCenterY, pixelCoord.y);
 		if (dropCenterY < pixelCoord.y && distanceToDropCenter < RAIN_DROP_LENGTH )
 		{
 			// rain drop 
@@ -116,9 +128,8 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 
 	//TODO: Move this whole thing into the pixelshader, cause no background Color here
 	vec4 colorToShift = vec4(gl_FragColor);
-	vec2 deterministicRandom = vec2(pixelCoord.x, pixelCoord.y);
 	float zAxisTime =  sin(time);
-	float noiseValue = (texture2D(noisetex, deterministicRandom)).r;
+	float noiseValue = getDeterministicRandomValue(pixelCoord);
 	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
 	{
 		//How far along z is it via time and does that intersect
@@ -154,11 +165,8 @@ vec3 getPixelWorldPos( vec2 uv)
 
 vec4 convertHeightToColor(vec3 value) 
 {
-	
-
-    	if (mod(value.z, 64.0) < 5.0) return RED;
-    	if (mod(value.x ,64.0) < 5.0) return GREEN;
-
+	if (mod(value.z, 1.0) < 0.1) return RED;
+	if (mod(value.x ,1.0) < 0.1) return GREEN;
    return vec4(0.0,0.0,0.0,0.0);
 }
 
@@ -216,10 +224,6 @@ vec3 GetWorldPos(in vec2 screenpos)
 
 	return worldPos4.xyz;
 }
-struct AABB {
-	vec3 Min;
-	vec3 Max;
-};
 
 bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 {
