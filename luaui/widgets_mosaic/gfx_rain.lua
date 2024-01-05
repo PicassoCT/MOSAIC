@@ -209,7 +209,7 @@ local function init()
             uniform = {
                 time = diffTime,
                 scale = 0,
-                camWorldPos = {0, 0, 0}
+                eyePos = {0, 0, 0}
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy}

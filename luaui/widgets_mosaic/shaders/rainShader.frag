@@ -15,7 +15,7 @@
 #define GREEN vec4(0.0, 1.0, 0.0, 0.125)
 #define BLUE vec4(0.0, 0.0, 1.0, 0.125)
 #define BLACK vec4(0.0, 0.0, 0.0, 0.125)
-
+const float noiseTexSizeInv = 1.0 / 256.0;
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
@@ -29,15 +29,13 @@ uniform vec2 viewPortSize;
 uniform mat4 viewProjectionInv;
 
 
-const vec3 vAA = vec3(-300000.0, 0.0, -300000.0);
-const vec3 vBB = vec3( 300000.0, 9000.0,  300000.0);
-
-
-
 in Data {
 			vec3 fragVertexPosition;
 			vec3 viewDirection;
 		 };
+		 
+const vec3 vMinima = vec3(-300000.0, -100.0, -300000.0);
+const vec3 vMaxima = vec3( 300000.0, 9000.0,  300000.0);
 
 struct Ray {
 	vec3 Origin;
@@ -48,7 +46,6 @@ struct AABB {
 	vec3 Min;
 	vec3 Max;
 };
-
 
 //Lightsource description 
 /*
@@ -80,34 +77,39 @@ vec4 GetPositionalGradient(vec3 pos, int axis)
 	if (axis ==2) return mix(BLUE, BLACK, mod(pos.y, 1.0));
 	if (axis ==3) return mix(GREEN, BLACK, mod(pos.z, 1.0));
 }
+
 vec4 debugValueVisualize(vec3 pos)
 {
-	return GetPositionalGradient(pos,1) + GetPositionalGradient(pos, 2) + GetPositionalGradient(pos, 3);
+	vec4 colorResult = vec4(0.);
+	colorResult += GetPositionalGradient(pos,1);
+	colorResult += GetPositionalGradient(pos,2);
+	colorResult += GetPositionalGradient(pos,3);
+	colorResult.a = 0.25;
+	return  colorResult;
 }
 
-float colToVal(vec4 col, float scale)
-{
-	return ((col.r + col.b + col.g + col.a) /4.0)* scale;
-}
+
 //REFLECTIONMARCH 
  
-float getDeterministicRandomValue(vec3 pixelCoord)
+float getDeterministicRandomValue(in vec3 x)
 {
-	vec2 deterministicRandomUV = vec2(mod(pixelCoord.x, 256.0), mod(pixelCoord.z, 256.0));
-	vec4 noiseValueColor =  (texture2D(noisetex, deterministicRandomUV));
-	return colToVal(noiseValueColor, 1.0);
-} 
+	vec3 p = floor(x);
+	vec3 f = fract(x);
+	f = f*f*(3.0-2.0*f);
+	vec2 uv = (p.xz + vec2(37.0,17.0)*p.y) + f.xz;
+	vec2 rg = texture2D( noisetex, (uv + 0.5) * noiseTexSizeInv).yx;
+	return smoothstep(0.5, 0.5 , mix( rg.x, rg.y, f.y ));
+}
  
 vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-
 	float yAxisTime =  sin(time);
 	//DELME Debug
 	return debugValueVisualize(pixelCoord);
-	
+	/*
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
-	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
+	if (noiseValue > localRainDensity)// A raindrop in pixel
 	{
 		//How far along y is it via time and does that intersect
 		float dropCenterY = sin(PI_HALF + mod((yAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
@@ -120,6 +122,7 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 		}
 	}
 	return pixelColor;
+	*/
 }	
 
 vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRainDensity)
@@ -165,8 +168,8 @@ vec3 getPixelWorldPos( vec2 uv)
 
 vec4 convertHeightToColor(vec3 value) 
 {
-	if (mod(value.z, 1.0) < 0.1) return RED;
-	if (mod(value.x ,1.0) < 0.1) return GREEN;
+	if (mod(value.z, 5.0) < 0.5) return RED;
+	if (mod(value.x ,5.0) < 0.5) return GREEN;
    return vec4(0.0,0.0,0.0,0.0);
 }
 
@@ -191,7 +194,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	return accumulatedColor;
 }
 											  
-float looksUpwardPercentage(vec3 viewDirection)
+float looksUpwardPercentage()
 {
 	vec3 upwardVec = vec3(0.0, 1.0, 0.0);
 	return dot(normalize(viewDirection), upwardVec);
@@ -249,8 +252,8 @@ void main(void)
 	float depthValueAtPixel = 0.0;
 	vec4 origColor = vec4(0.0,0.0,0.0,0.5);
 	AABB box;
-	box.Min = vAA;
-	box.Max = vBB;
+	box.Min = vMinima;
+	box.Max = vMaxima;
 	float t1, t2;
 
 	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
@@ -271,7 +274,7 @@ void main(void)
 	vec4 accumulatedLightColorRay = RayMarchRainBackgroundLight(startPos,  endPos); 
 
 	float upwardnessFactor = 0.0;
-	upwardnessFactor = looksUpwardPercentage(viewDirection);
+	upwardnessFactor = looksUpwardPercentage();
 
 	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay ;
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG

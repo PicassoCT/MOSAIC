@@ -24,4 +24,5 @@ void main(void)
 
     fragVertexPosition = gl_Vertex.xyz;
     gl_Position = gl_Vertex;
+    viewDirection = normalize(gl_Position.xyz - eyePos);
 }
