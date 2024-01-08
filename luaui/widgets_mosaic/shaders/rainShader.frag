@@ -7,7 +7,8 @@
 #define E_CONST 2.718281828459045235360287471352
 #define TOTAL_SCAN_DISTANCE 8192.0f
 #define COL_RED vec4(1.0,0.0,0.0,1.0)
-#define MAX_HEIGTH_RAIN 512.0
+#define MAX_HEIGTH_RAIN 2048.0
+#define MIN_HEIGHT_RAIN 0.0
 #define RAIN_DROP_LENGTH 15.0
 #define RAIN_COLOR vec4(0.0, 1.0, 0.0, 1.0)
 
@@ -15,7 +16,11 @@
 #define GREEN vec4(0.0, 1.0, 0.0, 0.125)
 #define BLUE vec4(0.0, 0.0, 1.0, 0.125)
 #define BLACK vec4(0.0, 0.0, 0.0, 0.125)
-const float noiseTexSizeInv = 1.0 / 256.0;
+const float noiseTexSizeInv = 1.0 / 512.0;
+const float scale = 1./512.0;		 
+const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
+const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
+
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
@@ -28,14 +33,10 @@ uniform vec3 eyePos;
 uniform vec2 viewPortSize;
 uniform mat4 viewProjectionInv;
 
-
 in Data {
 			vec3 fragVertexPosition;
 			vec3 viewDirection;
 		 };
-		 
-const vec3 vMinima = vec3(-300000.0, -100.0, -300000.0);
-const vec3 vMaxima = vec3( 300000.0, 9000.0,  300000.0);
 
 struct Ray {
 	vec3 Origin;
@@ -78,6 +79,13 @@ vec4 GetPositionalGradient(vec3 pos, int axis)
 	if (axis ==3) return mix(GREEN, BLACK, mod(pos.z, 1.0));
 }
 
+vec4 getPixelGrid(vec3 value) 
+{
+	if (mod(value.z, 1.0) < 0.5) return RED;
+	if (mod(value.x ,1.0) < 0.5) return GREEN;
+   return vec4(0.0,0.0,0.0,0.0);
+}
+
 vec4 debugValueVisualize(vec3 pos)
 {
 	vec4 colorResult = vec4(0.);
@@ -85,7 +93,7 @@ vec4 debugValueVisualize(vec3 pos)
 	colorResult += GetPositionalGradient(pos,2);
 	colorResult += GetPositionalGradient(pos,3);
 	colorResult.a = 0.25;
-	return  colorResult;
+	return  colorResult * getPixelGrid(pos);
 }
 
 
@@ -105,8 +113,8 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
 	float yAxisTime =  sin(time);
-	//DELME Debug
-	return debugValueVisualize(pixelCoord);
+
+	return debugValueVisualize(pixelCoord);	//DELME Debug
 	/*
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
 	if (noiseValue > localRainDensity)// A raindrop in pixel
@@ -166,16 +174,9 @@ vec3 getPixelWorldPos( vec2 uv)
 	return worldPos4.xyz;
 }
 
-vec4 convertHeightToColor(vec3 value) 
-{
-	if (mod(value.z, 5.0) < 0.5) return RED;
-	if (mod(value.x ,5.0) < 0.5) return GREEN;
-   return vec4(0.0,0.0,0.0,0.0);
-}
 
 vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 {	
-	return convertHeightToColor(end);
 
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
@@ -185,9 +186,10 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
-		vec3 pxlPosWorld = mix(start, end, t);
+		vec3 pxlPosWorld = mix(start, end, t) * scale;
 
 		accumulatedColor = accumulatedColor + renderRainPixel(pxlPosWorld, 0.5f);	
+		//accumulatedColor = accumulatedColor + getPixelGrid(pxlPosWorld)*0.5;	
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
 
@@ -276,7 +278,7 @@ void main(void)
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = looksUpwardPercentage();
 
-	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay ;
+	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay *0.125;
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 
 

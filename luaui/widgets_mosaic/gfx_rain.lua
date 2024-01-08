@@ -77,6 +77,7 @@ local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
 
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Variables
@@ -315,7 +316,7 @@ local function updateUniforms()
 
     glUniform(viewPortSizeLoc, vsx, vsy )
     glUniform(shaderTimeLoc, diffTime )
-    glUniform(uniformEyePos,  Spring.GetCameraPosition())
+    glUniform(uniformEyePos,  spGetCameraPosition())
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
     glUniformMatrix(uniformViewPrjInv,  "viewprojectioninverse")
