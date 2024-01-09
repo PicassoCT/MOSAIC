@@ -7,7 +7,7 @@ function widget:GetInfo()
         license = "GNU GPL, v2 or later",
         layer = 20,
         enabled = true, --  loaded by default?
-        hidden = true
+        hidden = false
     }
 end
 
@@ -84,7 +84,6 @@ local spGetDrawFrame         = Spring.GetDrawFrame
 local boolRainActive = false
 local pausedTime = 0
 local lastFrametime = Spring.GetTimer()
-local raincanvastex = nil
 local depthtex = nil
 local noisetex = nil
 local screentex = nil
@@ -153,7 +152,8 @@ function widget:ViewResize()
             vsx,
             vsy,
         {
-            format = GL_DEPTH_COMPONENT24,
+            border = false,
+            format = GL_DEPTH_COMPONENT32F,
             min_filter = GL.NEAREST,
             mag_filter = GL.NEAREST
         }
@@ -303,12 +303,7 @@ function widget:Shutdown()
         gl.DeleteShader(rainShader)
     end
 end
-local function prepareTextures()
-    glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
-    glTexture(screentex)
-    glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-    glTexture(depthtex)
-end
+
 
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
@@ -338,6 +333,19 @@ local function cleanUp()
     glTexture(0, false)
     glTexture(1, false)
     glTexture(2, false)
+    glTexture(3, false)
+    glBlending(true)
+    glPopMatrix()
+end
+
+local function prepare()
+    glPushMatrix()
+    glBlending(false)
+    glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+    glTexture(0, depthtex)
+    glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
+    glTexture(1, screentex)
+
 end
 
 local function DrawRain()
@@ -351,8 +359,7 @@ local function DrawRain()
     end
 
     lastFrametime = Spring.GetTimer()
-
-    prepareTextures()
+    prepare()
     glUseShader(rainShader)
     updateUniforms()
     
@@ -368,9 +375,9 @@ function widget:DrawScreenEffects()
 
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-    glTexture(raincanvastex);
+    glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
-    glTexture(false);
+    glTexture(0, false);
 end
 
 

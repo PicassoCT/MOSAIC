@@ -2,7 +2,7 @@
 #line 200002
 
 uniform sampler2D screentex;
-uniform sampler2D raincanvastex;
+
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 

@@ -16,15 +16,17 @@
 #define GREEN vec4(0.0, 1.0, 0.0, 0.125)
 #define BLUE vec4(0.0, 0.0, 1.0, 0.125)
 #define BLACK vec4(0.0, 0.0, 0.0, 0.125)
-const float noiseTexSizeInv = 1.0 / 512.0;
-const float scale = 1./512.0;		 
+#define SCAN_SCALE 64.0
+#define RAIN_THICKNESS_INV (1./(MAX_HEIGTH_RAIN-MIN_HEIGHT_RAIN))
+const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
+const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
 
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
-uniform sampler2D raincanvastex;
+
 
 uniform float time;		
 uniform float rainDensity;
@@ -74,26 +76,19 @@ vec4 RayMarchBackgroundLight(vec3 Position)
 
 vec4 GetPositionalGradient(vec3 pos, int axis)
 {
-	if (axis ==1) return mix(RED, BLACK, mod(pos.x, 1.0));
-	if (axis ==2) return mix(BLUE, BLACK, mod(pos.y, 1.0));
-	if (axis ==3) return mix(GREEN, BLACK, mod(pos.z, 1.0));
-}
-
-vec4 getPixelGrid(vec3 value) 
-{
-	if (mod(value.z, 1.0) < 0.5) return RED;
-	if (mod(value.x ,1.0) < 0.5) return GREEN;
-   return vec4(0.0,0.0,0.0,0.0);
+	if (axis ==1) return mix(RED, BLACK, mod(pos.x, SCAN_SCALE));
+	if (axis ==2) return mix(BLUE, BLACK, mod(pos.y, SCAN_SCALE));
+	if (axis ==3) return mix(GREEN, BLACK, mod(pos.z, SCAN_SCALE));
 }
 
 vec4 debugValueVisualize(vec3 pos)
 {
 	vec4 colorResult = vec4(0.);
 	colorResult += GetPositionalGradient(pos,1);
-	colorResult += GetPositionalGradient(pos,2);
-	colorResult += GetPositionalGradient(pos,3);
-	colorResult.a = 0.25;
-	return  colorResult * getPixelGrid(pos);
+	//colorResult += GetPositionalGradient(pos,2);
+	//colorResult += GetPositionalGradient(pos,3);
+	colorResult.a = 0.125;
+	return  colorResult ;
 }
 
 
@@ -111,11 +106,12 @@ float getDeterministicRandomValue(in vec3 x)
  
 vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {
-	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-	float yAxisTime =  sin(time);
-
 	return debugValueVisualize(pixelCoord);	//DELME Debug
 	/*
+	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
+	float yAxisTime =  sin(time);
+	if (yAxisTime < 0.0 ) yAxisTime = 1.0 - abs(yAxisTime);
+
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
 	if (noiseValue > localRainDensity)// A raindrop in pixel
 	{
@@ -181,18 +177,18 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
-	float depth = min(l , 1.5);
+	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
 
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
-		vec3 pxlPosWorld = mix(start, end, t) * scale;
+		vec3 pxlPosWorld = mix(start, end, t) * SCAN_SCALE;
 
 		accumulatedColor = accumulatedColor + renderRainPixel(pxlPosWorld, 0.5f);	
-		//accumulatedColor = accumulatedColor + getPixelGrid(pxlPosWorld)*0.5;	
+	
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
-
+	accumulatedColor.a *= tstep * 0.125f * depth;
 	return accumulatedColor;
 }
 											  
@@ -223,7 +219,7 @@ vec3 GetWorldPos(in vec2 screenpos)
 
 	if (z == 1.0) {
 		vec3 forward = normalize(worldPos4.xyz - eyePos);
-		float a =  eyePos.y / forward.y;
+		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
 		return eyePos + forward.xyz * abs(a);
 	}
 
@@ -245,20 +241,31 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 	return (abs(t0) <= t1);
 }
 
+vec4 getRainbow(vec2 uv){
+	uv = normalize(uv);
+	vec4 result  = mix(RED, mix(BLUE, GREEN, uv.y), uv.x);
+	result.a = 0.75;
+	return result;
+}
+
 
 void main(void)
 {
-
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
 	vec3 worldPos = GetWorldPos(uv);
-	float depthValueAtPixel = 0.0;
+	gl_FragColor = texture2D(screentex, uv)*0.5;
+	float z = texture2D(depthtex, uv).x;
+	gl_FragColor *= vec4(z, z, z, 0.5);
+	return;
+
+	float depthValueAtPixel = 0.0;	
+	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
 	vec4 origColor = vec4(0.0,0.0,0.0,0.5);
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
 	float t1, t2;
 
-	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
 
 	Ray r;
 	r.Origin = eyePos;
@@ -268,17 +275,18 @@ void main(void)
 	vec3 startPos = viewDirection * t1 + eyePos;
 	vec3 endPos   = viewDirection * t2 + eyePos;
 
-	if (!IntersectBox(r, box, t1, t2)) {
+	if (!IntersectBox(r, box, t1, t2))
+	{
 		gl_FragColor = vec4(0.);
 		return;
 	}
 
 	vec4 accumulatedLightColorRay = RayMarchRainBackgroundLight(startPos,  endPos); 
 
-	float upwardnessFactor = 0.0;
-	upwardnessFactor = looksUpwardPercentage();
+	//float upwardnessFactor = 0.0;
+	//upwardnessFactor = looksUpwardPercentage();
 
-	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay *0.125;
+	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay ;
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 
 
@@ -295,4 +303,5 @@ void main(void)
 	//}
 
 	gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
+	
 }
