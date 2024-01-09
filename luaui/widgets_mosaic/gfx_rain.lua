@@ -153,7 +153,7 @@ function widget:ViewResize()
             vsy,
         {
             border = false,
-            format = GL_DEPTH_COMPONENT32F,
+            format = GL_DEPTH_COMPONENT32,
             min_filter = GL.NEAREST,
             mag_filter = GL.NEAREST
         }
@@ -333,19 +333,15 @@ local function cleanUp()
     glTexture(0, false)
     glTexture(1, false)
     glTexture(2, false)
-    glTexture(3, false)
     glBlending(true)
-    glPopMatrix()
 end
 
 local function prepare()
-    glPushMatrix()
     glBlending(false)
     glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-    glTexture(0, depthtex)
+    glTexture(depthtex)
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
-    glTexture(1, screentex)
-
+    glTexture(screentex)
 end
 
 local function DrawRain()
@@ -362,8 +358,7 @@ local function DrawRain()
     prepare()
     glUseShader(rainShader)
     updateUniforms()
-    
---[[    Spring.Echo("ReDrawing the rain")  --]]
+
     glRenderToTexture(raincanvastex, renderToTextureFunc);
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
@@ -372,9 +367,8 @@ local function DrawRain()
 end
 
 function widget:DrawScreenEffects()
-
+    --glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
-    --glBlending(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
     glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
     glTexture(0, false);
@@ -395,7 +389,6 @@ end
 
 function widget:DrawScreen()
     if boolRainActive == false then
-        Spring.Echo("Rain not active")
         return  
     end
 

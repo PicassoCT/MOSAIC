@@ -10,7 +10,9 @@
 #define MAX_HEIGTH_RAIN 2048.0
 #define MIN_HEIGHT_RAIN 0.0
 #define RAIN_DROP_LENGTH 15.0
-#define RAIN_COLOR vec4(0.0, 1.0, 0.0, 1.0)
+
+#define RAIN_COLORA vec4(0.019, 0.615, 0.823, 1.0)
+#define RAIN_COLORB vec4(0.639, 0.807, 0.92, 1.0)
 
 #define RED vec4(1.0, 0.0, 0.0, 0.125)
 #define GREEN vec4(0.0, 1.0, 0.0, 0.125)
@@ -26,7 +28,6 @@ const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
-
 
 uniform float time;		
 uniform float rainDensity;
@@ -50,6 +51,11 @@ struct AABB {
 	vec3 Max;
 };
 
+vec4 GetDeterminiticRainColor(float value)
+{
+	return mix(RAIN_COLORA, RAIN_COLORB, value);
+}
+
 //Lightsource description 
 /*
 {
@@ -63,7 +69,7 @@ vec4 RayMarchBackgroundLight(vec3 Position)
 {
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
 	int i=0;
-	for ( i=0; i < maxLightSources; i+=2)
+	for (i=0; i < maxLightSources; i+=2)
 	{
 		float lightSourceDistance = distance(Position, lightSources[i].xyz);
 		if ( lightSourceDistance < lightSources[i].a)
@@ -74,47 +80,54 @@ vec4 RayMarchBackgroundLight(vec3 Position)
 	return lightColorAddition;
 }
 
-vec4 GetPositionalGradient(vec3 pos, int axis)
+bool IsInGridPoint(vec3 pos, float size, float space)
 {
-	if (axis ==1) return mix(RED, BLACK, mod(pos.x, SCAN_SCALE));
-	if (axis ==2) return mix(BLUE, BLACK, mod(pos.y, SCAN_SCALE));
-	if (axis ==3) return mix(GREEN, BLACK, mod(pos.z, SCAN_SCALE));
-}
 
-vec4 debugValueVisualize(vec3 pos)
-{
-	vec4 colorResult = vec4(0.);
-	colorResult += GetPositionalGradient(pos,1);
-	//colorResult += GetPositionalGradient(pos,2);
-	//colorResult += GetPositionalGradient(pos,3);
-	colorResult.a = 0.125;
-	return  colorResult ;
+	return ((mod(pos.x, space) < size) &&   (mod(pos.y, space) < size)  && (mod(pos.z, space) < size)) ;
 }
 
 
 //REFLECTIONMARCH 
  
-float getDeterministicRandomValue(in vec3 x)
+float getDeterministicRandomValue(in vec3 pos)
 {
-	vec3 p = floor(x);
-	vec3 f = fract(x);
-	f = f*f*(3.0-2.0*f);
-	vec2 uv = (p.xz + vec2(37.0,17.0)*p.y) + f.xz;
-	vec2 rg = texture2D( noisetex, (uv + 0.5) * noiseTexSizeInv).yx;
-	return smoothstep(0.5, 0.5 , mix( rg.x, rg.y, f.y ));
+	vec2 uv = floor(pos.xz);
+	vec4 data = texture2D( noisetex, uv);
+	return data.x;
+}
+
+float GetYAxisTime()
+{
+	float yAxisTime =  sin(time);
+	if (yAxisTime < 0.0 ) yAxisTime = 1.0 - abs(yAxisTime);
+	return yAxisTime;
+}
+
+
+vec4 getUVRainbow(vec2 uv){
+	uv = normalize(uv);
+	vec4 result  = mix(RED, mix(BLUE, GREEN, uv.y), uv.x);
+	result.a = 0.75;
+	return result;
 }
  
 vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
-{
-	return debugValueVisualize(pixelCoord);	//DELME Debug
-	/*
+{	
+	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-	float yAxisTime =  sin(time);
-	if (yAxisTime < 0.0 ) yAxisTime = 1.0 - abs(yAxisTime);
-
+	float yAxisTime = GetYAxisTime();
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
+
+	
+	////if (IsInGridPoint(pixelCoord, 20.0, abs(sin(time))*64.0))
+	////{
+	////	pixelColor = getUVRainbow(pixelCoord.xz);
+	////}
+
 	if (noiseValue > localRainDensity)// A raindrop in pixel
 	{
+		pixelColor = texture2D( noisetex,  pixelCoord.xz);
+		/*
 		//How far along y is it via time and does that intersect
 		float dropCenterY = sin(PI_HALF + mod((yAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
 		float distanceToDropCenter = distance(dropCenterY, pixelCoord.y);
@@ -122,13 +135,14 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 		{
 			// rain drop 
 			vec4 lightFactor = RayMarchBackgroundLight(pixelCoord);
-			pixelColor += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+			pixelColor += vec4(RAIN_COLOR.rgb, 1.0);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 		}
+		*/
 	}
-	return pixelColor;
-	*/
+	return pixelColor;	
 }	
 
+/*
 vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRainDensity)
 {
 	//check if intersects with depth map (max)
@@ -151,10 +165,11 @@ vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRain
 	}
 	return colorToShift;
 }
+*/
 
 vec3 getPixelWorldPos( vec2 uv)
 {
-	float z = texture2D(depthtex, uv).x;
+	float z = texture2D(depthtex, uv).z;
 	vec4 ppos;
 	ppos.xyz = vec3(uv, z) * 2. - 1.;
 	ppos.a   = 1.;
@@ -170,10 +185,15 @@ vec3 getPixelWorldPos( vec2 uv)
 	return worldPos4.xyz;
 }
 
+vec4 GetGradient(vec3 uvx, float distance){
+	uvx = normalize(uvx);
+	vec4 result  = mix(BLACK, mix(RED, mix(BLUE, GREEN, uvx.x), uvx.y),uvx.z);
+	result.a = distance;
+	return result;
+}
 
 vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 {	
-
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
@@ -182,13 +202,16 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
-		vec3 pxlPosWorld = mix(start, end, t) * SCAN_SCALE;
+		vec3 pxlPosWorld = mix(start, end, t);
 
-		accumulatedColor = accumulatedColor + renderRainPixel(pxlPosWorld, 0.5f);	
-	
+		//if (IsInGrid(pxlPosWorld, 5.0, 512.0))
+		//{
+			accumulatedColor += renderRainPixel(pxlPosWorld, 0.5f)*tstep; //GetGradient(pxlPosWorld, tstep);//			
+		//}
+
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
-	accumulatedColor.a *= tstep * 0.125f * depth;
+	
 	return accumulatedColor;
 }
 											  
@@ -210,7 +233,7 @@ float avg(vec3 val)
 
 vec3 GetWorldPos(in vec2 screenpos)
 {
-	float z = texture2D(depthtex, screenpos).x;
+	float z = texture2D(depthtex, screenpos).z;
 	vec4 ppos;
 	ppos.xyz = vec3(screenpos, z) * 2. - 1.;
 	ppos.a   = 1.;
@@ -241,26 +264,14 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 	return (abs(t0) <= t1);
 }
 
-vec4 getRainbow(vec2 uv){
-	uv = normalize(uv);
-	vec4 result  = mix(RED, mix(BLUE, GREEN, uv.y), uv.x);
-	result.a = 0.75;
-	return result;
-}
-
-
 void main(void)
 {
 	vec2 uv = gl_FragCoord.xy / viewPortSize;
 	vec3 worldPos = GetWorldPos(uv);
-	gl_FragColor = texture2D(screentex, uv)*0.5;
-	float z = texture2D(depthtex, uv).x;
-	gl_FragColor *= vec4(z, z, z, 0.5);
-	return;
 
-	float depthValueAtPixel = 0.0;	
-	depthValueAtPixel = (texture2D(depthtex, uv)).x;	
-	vec4 origColor = vec4(0.0,0.0,0.0,0.5);
+	float depthValueAtPixel = texture2D(depthtex, uv).z;
+
+	vec4 origColor = texture2D(screentex, uv);
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -270,10 +281,6 @@ void main(void)
 	Ray r;
 	r.Origin = eyePos;
 	r.Dir = worldPos - eyePos;
-	t1 = clamp(t1, 0.0, 1.0);
-	t2 = clamp(t2, 0.0, 1.0);
-	vec3 startPos = viewDirection * t1 + eyePos;
-	vec3 endPos   = viewDirection * t2 + eyePos;
 
 	if (!IntersectBox(r, box, t1, t2))
 	{
@@ -281,12 +288,16 @@ void main(void)
 		return;
 	}
 
-	vec4 accumulatedLightColorRay = RayMarchRainBackgroundLight(startPos,  endPos); 
+	t1 = clamp(t1, 0.0, 1.0);
+	t2 = clamp(t2, 0.0, 1.0);
+	vec3 startPos = r.Dir * t1 + eyePos;
+	vec3 endPos   = r.Dir * t2 + eyePos;
 
+	vec4 accumulatedLightColorRayDownward = RayMarchRainBackgroundLight(startPos,  endPos); 
+	accumulatedLightColorRayDownward.a = 0.75;
 	//float upwardnessFactor = 0.0;
 	//upwardnessFactor = looksUpwardPercentage();
 
-	vec4 downWardrainColor = (origColor) + accumulatedLightColorRay ;
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 
 
@@ -299,9 +310,9 @@ void main(void)
 	//}	
 	//else //no Raindrops blended in
 	//{
-		gl_FragColor = downWardrainColor;
+		gl_FragColor = accumulatedLightColorRayDownward; 
 	//}
 
-	gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
+	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
 	
 }
