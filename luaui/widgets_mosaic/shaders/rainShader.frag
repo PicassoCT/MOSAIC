@@ -53,7 +53,7 @@ struct AABB {
 
 vec4 GetDeterminiticRainColor(float value)
 {
-	return mix(RAIN_COLORA, RAIN_COLORB, value);
+	return mix(RAIN_COLORA, RAIN_COLORB, mod(value,1.01));
 }
 
 //Lightsource description 
@@ -91,14 +91,13 @@ bool IsInGridPoint(vec3 pos, float size, float space)
  
 float getDeterministicRandomValue(in vec3 pos)
 {
-	vec2 uv = floor(pos.xz);
-	vec4 data = texture2D( noisetex, uv);
-	return data.x;
+	vec4 data = texture2D( noisetex, pos.xz);
+	return data.r;
 }
 
-float GetYAxisTime()
+float GetYAxisTime(float offset)
 {
-	float yAxisTime =  sin(time);
+	float yAxisTime =  sin(time + offset);
 	if (yAxisTime < 0.0 ) yAxisTime = 1.0 - abs(yAxisTime);
 	return yAxisTime;
 }
@@ -115,30 +114,24 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {	
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = vec4(0.0,0.0,0.0,0.0);
-	float yAxisTime = GetYAxisTime();
+
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
+	float yAxisTime = GetYAxisTime(noiseValue);
 
+
+	//pixelColor = GetDeterminiticRainColor(noiseValue) * texture2D( noisetex,  pixelCoord.xz);
 	
-	////if (IsInGridPoint(pixelCoord, 20.0, abs(sin(time))*64.0))
-	////{
-	////	pixelColor = getUVRainbow(pixelCoord.xz);
-	////}
-
-	if (noiseValue > localRainDensity)// A raindrop in pixel
+	//How far along y is it via time and does that intersect
+	float dropCenterY = yAxisTime * MAX_HEIGTH_RAIN;
+	float distanceToDropCenter = distance(dropCenterY, pixelCoord.y);
+	if ( yAxisTime > 0.9)
 	{
-		pixelColor = texture2D( noisetex,  pixelCoord.xz);
-		/*
-		//How far along y is it via time and does that intersect
-		float dropCenterY = sin(PI_HALF + mod((yAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
-		float distanceToDropCenter = distance(dropCenterY, pixelCoord.y);
-		if (dropCenterY < pixelCoord.y && distanceToDropCenter < RAIN_DROP_LENGTH )
-		{
-			// rain drop 
-			vec4 lightFactor = RayMarchBackgroundLight(pixelCoord);
-			pixelColor += vec4(RAIN_COLOR.rgb, 1.0);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-		}
-		*/
+		// rain drop 
+		//vec4 lightFactor = RayMarchBackgroundLight(pixelCoord);
+		pixelColor += vec4(GetDeterminiticRainColor(noiseValue).rgb, 0.10);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	}
+	
+	
 	return pixelColor;	
 }	
 
