@@ -11,8 +11,11 @@
 #define MIN_HEIGHT_RAIN 0.0
 #define RAIN_DROP_LENGTH 15.0
 
-#define RAIN_COLORA vec4(0.019, 0.615, 0.823, 1.0)
-#define RAIN_COLORB vec4(0.639, 0.807, 0.92, 1.0)
+
+#define COL_RAIN_HIGH vec4(0.019, 0.615, 0.823, 0.10)
+#define COL_RAIN_DARK vec4(17.0/255.0, 18.0/255.0, 69.0/255.0, 0.10);
+#define COL_RAIN_CITYGLOW vec4(133.0/255.0, 50.0/255.0, 20.0/255.0, 0.10);
+
 
 #define RED vec4(1.0, 0.0, 0.0, 0.125)
 #define GREEN vec4(0.0, 1.0, 0.0, 0.125)
@@ -51,9 +54,23 @@ struct AABB {
 	vec3 Max;
 };
 
-vec4 GetDeterminiticRainColor(float value)
+
+vec4 getDeterministicColorOffset(vec3 position)
+{ 
+	#define OFFSET_COL = vec4(0.025,0.025,0.025, 0.0)
+	float avg = avg(position);
+	return mix(OFFSET_COL*-1, OFFSET_COL, avg);
+}
+
+vec4 GetDeterminiticRainColor(vec3 pxlPos,  float distanceToCityCore)
 {
-	return mix(RAIN_COLORA, RAIN_COLORB, mod(value,1.01));
+	vec4 detRandomRainColOffset =getDeterministicColorOffset(pxlPos);
+	vec4 rainHighColor = COL_RAIN_HIGH + detRandomRainColOffset;
+	float cityGlowFactor = distanceToCityCore/CITY_GLOW_MAX_DISTANCE;
+	vec4 outsideCityRainCol = mix(rainHighColor, COL_RAIN_DARK, pxlPos.y);
+	vec4 insideCityRainCol = mix(rainHighColor, COL_RAIN_CITYGLOW, pxlPos.y);
+
+	return mix (outsideCityRainCol, insideCityRainCol, cityGlowFactor);
 }
 
 //Lightsource description 
@@ -117,10 +134,8 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
 	float yAxisTime = GetYAxisTime(noiseValue);
+	float cityCoreDistance = distance(pixelCoord, cityCenter);
 
-
-	//pixelColor = GetDeterminiticRainColor(noiseValue) * texture2D( noisetex,  pixelCoord.xz);
-	
 	//How far along y is it via time and does that intersect
 	float dropCenterY = yAxisTime * MAX_HEIGTH_RAIN;
 	float distanceToDropCenter = distance(dropCenterY, pixelCoord.y);
@@ -128,7 +143,7 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 	{
 		// rain drop 
 		//vec4 lightFactor = RayMarchBackgroundLight(pixelCoord);
-		pixelColor += vec4(GetDeterminiticRainColor(noiseValue).rgb, 0.10);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+		pixelColor += vec4(GetDeterminiticRainColor(pixelCoord, cityCoreDistance).rgb, 0.10);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	}
 	
 	

@@ -94,6 +94,7 @@ local viewPortSizeLoc
 local uniformEyePos
 local shaderMaxLightSrcLoc
 local shaderLightSourcescLoc 
+local cityCenterLoc
 local boolRainyArea = false
 local maxLightSources = 0
 local shaderLightSources = {}
@@ -109,6 +110,7 @@ local GL_DEPTH_COMPONENT   = 0x1902
 local GL_DEPTH_COMPONENT16 = 0x81A5
 local GL_DEPTH_COMPONENT24 = 0x81A6
 local GL_DEPTH_COMPONENT32 = 0x81A7
+local innerCityCenter = {0,0,0}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -214,6 +216,7 @@ local function init()
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy}
+                cityCenter = {0,0,0}
             }
         }
     )
@@ -228,6 +231,7 @@ local function init()
     end
 
     viewPortSizeLoc                 = glGetUniformLocation(rainShader, "viewPortSize")
+    cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     shaderTimeLoc                   = glGetUniformLocation(rainShader, "time")
     shaderRainDensityLoc            = glGetUniformLocation(rainShader, "rainDensity")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
@@ -285,6 +289,14 @@ local function isRaining()
     return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
 end
 
+function setInnerCityPosition()
+    --GG.innerCityCenter.x, 0,  GG.innerCityCenter.z
+    innerCityCenter[1] = math.random(512, 512)
+    innerCityCenter[3] = math.random(512, 512)
+
+end
+
+
 function widget:Update(dt)
     if boolDebugActive then boolRainActive = true; return end
 
@@ -308,7 +320,7 @@ end
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
-
+    glUniform(cityCenterLoc, innerCityCenter[1], 0, innerCityCenter[3])
     glUniform(viewPortSizeLoc, vsx, vsy )
     glUniform(shaderTimeLoc, diffTime )
     glUniform(uniformEyePos,  spGetCameraPosition())
