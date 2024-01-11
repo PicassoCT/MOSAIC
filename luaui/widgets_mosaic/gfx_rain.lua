@@ -111,6 +111,8 @@ local GL_DEPTH_COMPONENT16 = 0x81A5
 local GL_DEPTH_COMPONENT24 = 0x81A6
 local GL_DEPTH_COMPONENT32 = 0x81A7
 local innerCityCenter = {0,0,0}
+local percentTime
+local timePercentLoc
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -210,6 +212,7 @@ local function init()
             vertex = vertexShader,
             uniformInt = uniformInt,
             uniform = {
+                timePercent = 0,
                 time = diffTime,
                 scale = 0,
                 eyePos = {0, 0, 0}
@@ -230,6 +233,7 @@ local function init()
         Spring.Echo("gfx_rain: Shader compiled: ")
     end
 
+    timePercentLoc                 = glGetUniformLocation(rainShader, "timePercent")
     viewPortSizeLoc                 = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     shaderTimeLoc                   = glGetUniformLocation(rainShader, "time")
@@ -282,24 +286,44 @@ local function isRaining()
         return false
     end
 
-    local hours = getDayTime()
+    local hours,_,_, timePercent = getDayTime()
+    percentTime = timePercent
     local gameFrames = Spring.GetGameFrame()
     local dayNr = gameFrames / DAYLENGTH
 
     return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
 end
 
-function setInnerCityPosition()
-    --GG.innerCityCenter.x, 0,  GG.innerCityCenter.z
-    innerCityCenter[1] = math.random(512, 512)
-    innerCityCenter[3] = math.random(512, 512)
+local function split(self, delimiter)
+  local result = { }
+  local from  = 1
+  local delim_from, delim_to = string.find( self, delimiter, from  )
+  while delim_from do
+    table.insert( result, string.sub( self, from , delim_from-1 ) )
+    from  = delim_to + 1
+    delim_from, delim_to = string.find( self, delimiter, from  )
+  end
+  table.insert( result, string.sub( self, from  ) )
+  return result
+end
 
+local function setInnerCityPosition()
+    --GG.innerCityCenter.x, 0,  GG.innerCityCenter.z
+    local gameRules = Spring.GetGameRulesParams ( )
+    if gameRules["innerCityCenter"] then
+        local result = split(gameRules["innerCityCenter"], "|")
+        innerCityCenter[1] = tonumber(result[1])
+        innerCityCenter[3] = tonumber(result[2])
+    else
+        innerCityCenter[1] = Game.mapSizeX/2
+        innerCityCenter[3] = Game.mapSizeZ/2
+    end
 end
 
 
 function widget:Update(dt)
+    setInnerCityPosition()
     if boolDebugActive then boolRainActive = true; return end
-
     boolRainActive = isRaining()
 end
 
@@ -320,6 +344,7 @@ end
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
+    glUniform(timePercentLoc, timePercent)
     glUniform(cityCenterLoc, innerCityCenter[1], 0, innerCityCenter[3])
     glUniform(viewPortSizeLoc, vsx, vsy )
     glUniform(shaderTimeLoc, diffTime )

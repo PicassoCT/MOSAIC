@@ -349,6 +349,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
                 else
                     GG.innerCityCenter.x = mirror.x*houseStreetDim.x
                     GG.innerCityCenter.z = mirror.z*houseStreetDim.z
+                    Spring.SetGameRulesParam ( "innerCityCenter", GG.innerCityCenter.x.."|"..GG.innerCityCenter.z ) 
                     boolMirrorNearCityCenter = true
                 end
              --   echo("Citycenter at:"..GG.innerCityCenter.x .." / "..GG.innerCityCenter.z)

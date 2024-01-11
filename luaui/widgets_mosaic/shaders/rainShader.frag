@@ -1,24 +1,27 @@
 #version 150 compatibility	
-#line 100002										 
+#line 100001										 
 
 #define PI 3.14159265359
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 20.0
 #define E_CONST 2.718281828459045235360287471352
-#define TOTAL_SCAN_DISTANCE 8192.0f
-#define COL_RED vec4(1.0,0.0,0.0,1.0)
-#define MAX_HEIGTH_RAIN 2048.0f
-#define MIN_HEIGHT_RAIN 0.0f
-#define LENGTH_RAIN (2048.0f)
+#define TOTAL_SCAN_DISTANCE 8192.0
+
+#define MAX_HEIGTH_RAIN 2048.0
+#define MIN_HEIGHT_RAIN 0.0
+#define LENGTH_RAIN (2048.0)
 #define RAIN_DROP_LENGTH 32.0
-#define OFFSET_COL_MIN vec4(-0.05, -0.05, -0.05, 0.1)
-#define OFFSET_COL_MAX vec4(0.05, 0.05, 0.05, 0.1)
-
-
-#define COL_RAIN_HIGH vec4(0.019, 0.615, 0.823, 0.10)
-#define COL_RAIN_DARK vec4(0.06, 0.07, 0.27, 0.10)
-#define COL_RAIN_CITYGLOW vec4(0.52.0, 0.19, 0.07, 0.10)
-#define CITY_GLOW_MAX_DISTANCE 2048.0f
+#define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
+#define OFFSET_COL_MAX vec4(0.05,0.05,0.05,0.1)
+//DayColors
+#define DAY_RAIN_HIGH_COL vec4(0.83,0.908,0.925,0.015)
+#define DAY_RAIN_DARK_COL vec4(0.26,0.27,0.37,0.10)
+#define DAY_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,0.10)
+//NightColors
+#define NIGHT_RAIN_HIGH_COL vec4(0.63,0.808,0.925,0.025)
+#define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,0.10)
+#define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,0.10)
+#define CITY_GLOW_MAX_DISTANCE 2048.0
 
 #define RED vec4(1.0, 0.0, 0.0, 0.125)
 #define GREEN vec4(0.0, 1.0, 0.0, 0.125)
@@ -26,6 +29,7 @@
 #define BLACK vec4(0.0, 0.0, 0.0, 0.125)
 #define SCAN_SCALE 64.0
 #define RAIN_THICKNESS_INV (1./(LENGTH_RAIN))
+
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
@@ -38,6 +42,7 @@ uniform sampler2D screentex;
 uniform float time;		
 uniform float rainDensity;
 uniform int maxLightSources;
+uniform float timePercent;
 uniform vec3 eyePos;
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
@@ -58,8 +63,6 @@ struct AABB {
 	vec3 Max;
 };
 
-
-
 float deterministicFactor(vec3 val)
 {
 	return mod((abs(val.x) + abs(val.y))/2.0, 1.0);
@@ -71,16 +74,29 @@ vec4 getDeterministicColorOffset(vec3 position)
 	return mix(OFFSET_COL_MIN, OFFSET_COL_MAX, randomFactor);
 }
 
-vec4 GetDeterminiticRainColor(vec3 pxlPos)
+vec4 GetDeterminiticRainColor(vec3 pxlPos )
 {
 	float distanceToCityCore = distance(pxlPos, cityCenter);
 	vec4 detRandomRainColOffset =getDeterministicColorOffset(pxlPos);
-	vec4 rainHighColor = COL_RAIN_HIGH + detRandomRainColOffset;
-	float cityGlowFactor = distanceToCityCore/ CITY_GLOW_MAX_DISTANCE;
-	vec4 outsideCityRainCol = mix(rainHighColor, COL_RAIN_DARK, pxlPos.y/ LENGTH_RAIN);
-	vec4 insideCityRainCol = mix(rainHighColor, COL_RAIN_CITYGLOW, pxlPos.y/ LENGTH_RAIN);
+  	vec4 outsideCityRainCol;
+	vec4 insideCityRainCol;
+	float outsideFactor = pxlPos.y/ LENGTH_RAIN;
+	float cityGlowFactor = max(0.0, min(1.0,distanceToCityCore/ CITY_GLOW_MAX_DISTANCE));
 
-	return mix (outsideCityRainCol, insideCityRainCol, cityGlowFactor);
+  	if (timePercent < 0.25 || timePercent > 0.75 )
+  	{ // Night
+		vec4 rainHighColor = NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
+		outsideCityRainCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, outsideFactor);
+		insideCityRainCol = mix(rainHighColor, NIGHT_RAIN_CITYGLOW_COL, outsideFactor);
+	}
+	else
+	{
+		vec4 rainHighColor = DAY_RAIN_HIGH_COL + detRandomRainColOffset;
+		outsideCityRainCol = mix(rainHighColor, DAY_RAIN_DARK_COL, outsideFactor);
+		insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, outsideFactor);
+		
+	}
+	return mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);
 }
 
 //Lightsource description 
@@ -145,13 +161,15 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 	float noiseValue = getDeterministicRandomValue(pixelCoord);
 	float yAxisTime = GetYAxisTime(noiseValue);
 
+	//If noise is below treshold
+	if (noiseValue > localRainDensity) return pixelColor;
 
 	//How far along y is it via time and does that intersect
 	float dropCenterY = yAxisTime * MAX_HEIGTH_RAIN;
-	if (dropCenterY > pixelCoord.y ) return pixelColor;
+	//if (dropCenterY > pixelCoord.y ) return pixelColor;
 
 	float distanceToDropCenter = distance(dropCenterY, pixelCoord.y);
-	float dropAlphaFactor = 1.0 - min(distanceToDropCenter/RAIN_DROP_LENGTH, 1.0)*0.10;
+	float dropAlphaFactor =  0.55;//(1.0 -  min(distanceToDropCenter/RAIN_DROP_LENGTH, 1.0)) * 0.10;
 
 
 		// rain drop 
@@ -222,7 +240,8 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		vec3 pxlPosWorld = mix(start, end, t);
-
+		//pxlPosWorld.x = trunc(pxlPosWorld.x);
+		//pxlPosWorld.z = trunc(pxlPosWorld.z);
 		//if (IsInGrid(pxlPosWorld, 5.0, 512.0))
 		//{
 			accumulatedColor += renderRainPixel(pxlPosWorld, 0.5f) * tstep; //GetGradient(pxlPosWorld, tstep);//			
@@ -230,6 +249,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
+	accumulatedColor.a = min(0.30, accumulatedColor.a);
 	
 	return accumulatedColor;
 }
@@ -242,7 +262,7 @@ float looksUpwardPercentage()
 
 vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 {
-	return COL_RED;
+	return RED;
 }
 
 
@@ -291,7 +311,6 @@ void main(void)
 	box.Min = vMinima;
 	box.Max = vMaxima;
 	float t1, t2;
-
 
 	Ray r;
 	r.Origin = eyePos;

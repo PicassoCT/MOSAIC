@@ -1,5 +1,5 @@
 #version 150 compatibility
-#line 200002
+#line 200001
 
 uniform sampler2D screentex;
 
@@ -13,6 +13,7 @@ uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform float rainDensity;
 uniform mat4 viewProjectionInv;
+uniform float timePercent;
 
 out Data {
 			vec3 fragVertexPosition;
