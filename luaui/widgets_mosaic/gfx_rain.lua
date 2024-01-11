@@ -215,7 +215,7 @@ local function init()
                 eyePos = {0, 0, 0}
             },
             uniformFloat = {
-                viewPortSize = {vsx, vsy}
+                viewPortSize = {vsx, vsy},
                 cityCenter = {0,0,0}
             }
         }

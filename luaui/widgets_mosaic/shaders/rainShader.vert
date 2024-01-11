@@ -10,6 +10,7 @@ uniform float time;
 uniform int maxLightSources;
 uniform vec3 eyePos;
 uniform vec2 viewPortSize;
+uniform vec3 cityCenter;
 uniform float rainDensity;
 uniform mat4 viewProjectionInv;
 
