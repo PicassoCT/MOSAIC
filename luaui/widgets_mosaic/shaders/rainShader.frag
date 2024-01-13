@@ -32,8 +32,8 @@
 #define RAIN_THICKNESS_INV (1./(TOTAL_LENGTH_RAIN))
 #define RAIN_DROP_DIAMTER 1.0
 #define RAIN_DROP_LENGTH 3.20
-#define RAIN_DROP_EMPTYSPACE 25.0
-#define SPEED_OF_RAIN_FALL 1.0
+#define RAIN_DROP_EMPTYSPACE 4.0
+#define SPEED_OF_RAIN_FALL 3.0
 
 
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
@@ -145,14 +145,31 @@ float getDeterministicRandomValuePerPosition(in vec3 pos)
 	return data.r;
 }
 
-
-float GetYAxisRainPulseFactor(float offsetTimeFactor)
+float GetPulseFromIntervall(float currentIntervallShiftPos, float intervallLength, float pulseStart, float pulseEnd)
 {
-	float yAxisTime = mod(SPEED_OF_RAIN_FALL * (time) ,  SPEED_OF_RAIN_FALL * RAIN_DROP_EMPTYSPACE);
-	float pulseStart = yAxisTime - offsetTimeFactor;
-	if (pulseStart  >  RAIN_DROP_LENGTH  || pulseStart > 0.0){ return 0.0;}
-	//Impulse
-	return (1.0 - (pulseStart/RAIN_DROP_LENGTH)) ;
+	currentIntervallShiftPos = mod(currentIntervallShiftPos, intervallLength);
+	if (currentIntervallShiftPos > pulseEnd) return 0.0;
+	if (currentIntervallShiftPos < pulseStart)return 0.0;
+
+	return(currentIntervallShiftPos - pulseStart)/(pulseEnd - pulseStart);
+}
+
+float getTimeWiseOffset(float offset, float scale)
+{
+	if (offset < 0.5)
+	{
+		return offset *scale*2. * -1.0;
+	}
+if (offset >= 0.5)
+	{
+		return (offset-0.5) * scale*2.0 ;
+	}
+
+}
+
+float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor)
+{
+	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH , 0.0, 3.0 );
 }
 
 vec4 getUVRainbow(vec2 uv){
@@ -175,16 +192,16 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord);
-	if(noiseValue > localRainDensity) return NONE;
+	if(noiseValue < localRainDensity) return NONE;
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc);
 
-	float yAxisPulseFactor = GetYAxisRainPulseFactor(noiseValueTruncated);
+	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValueTruncated);
 
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	//vec2 uv = gl_FragCoord.xy / viewPortSize;
-	//pixelColor.rgb = getUVRainbow(uv).rgb;
+	vec2 uv = gl_FragCoord.xy / viewPortSize;
+	pixelColor.rgb = getUVRainbow(uv).rgb;
 	return pixelColor;	
 }	
 
