@@ -113,6 +113,7 @@ local GL_DEPTH_COMPONENT32 = 0x81A7
 local innerCityCenter = {0,0,0}
 local percentTime
 local timePercentLoc
+local timePercent = 0
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -344,6 +345,7 @@ end
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
+    --Spring.Echo("Time passed:"..diffTime)
     glUniform(timePercentLoc, timePercent)
     glUniform(cityCenterLoc, innerCityCenter[1], 0, innerCityCenter[3])
     glUniform(viewPortSizeLoc, vsx, vsy )
@@ -433,7 +435,7 @@ function widget:DrawScreen()
     if isPaused then
        local currentTime = Spring.GetTimer() 
        pausedTime = pausedTime + Spring.DiffTimers(currentTime, lastFrametime)
-       Spring.Echo("Paused")
+       
        return
     end
 
