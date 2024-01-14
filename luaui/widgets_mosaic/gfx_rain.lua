@@ -88,10 +88,7 @@ local depthtex = nil
 local noisetex = nil
 local screentex = nil
 local startOsClock
-local shaderTimeLoc
-local shaderRainDensityLoc
-local viewPortSizeLoc
-local uniformEyePos
+
 local shaderMaxLightSrcLoc
 local shaderLightSourcescLoc 
 local cityCenterLoc
@@ -116,6 +113,13 @@ local timePercentLoc
 local timePercent = 0
 local sunDir = {0,0,0}
 local sunCol = {1,0,0}
+local uniformSundir
+local uniformSunColor
+local uniformEyePos
+local uniformTime
+local uniformRainDensity
+local uniformViewPortSize
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -222,7 +226,9 @@ local function init()
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
-                cityCenter = {0,0,0}
+                cityCenter = {0,0,0},
+                sundir = {0,0,0},
+                suncolor = {0,0,0}
             }
         }
     )
@@ -236,17 +242,17 @@ local function init()
         Spring.Echo("gfx_rain: Shader compiled: ")
     end
 
-    timePercentLoc                 = glGetUniformLocation(rainShader, "timePercent")
-    viewPortSizeLoc                 = glGetUniformLocation(rainShader, "viewPortSize")
+    timePercentLoc                  = glGetUniformLocation(rainShader, "timePercent")
+    uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
-    shaderTimeLoc                   = glGetUniformLocation(rainShader, "time")
-    shaderRainDensityLoc            = glGetUniformLocation(rainShader, "rainDensity")
+    uniformTime                     = glGetUniformLocation(rainShader, "time")
+    uniformRainDensity              = glGetUniformLocation(rainShader, "rainDensity")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
     shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
-        uniformSundir       = glGetUniformLocation(depthShader, 'sundir')
-            uniformSunColor     = glGetUniformLocation(depthShader, 'suncolor')
+    uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
+    uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
       for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
@@ -352,10 +358,10 @@ local function updateUniforms()
     --Spring.Echo("Time passed:"..diffTime)
     glUniform(timePercentLoc, timePercent)
     glUniform(cityCenterLoc, innerCityCenter[1], 0, innerCityCenter[3])
-    glUniform(viewPortSizeLoc, vsx, vsy )
-    glUniform(shaderTimeLoc, diffTime )
+    glUniform(uniformViewPortSize, vsx, vsy )
+    glUniform(uniformTime, diffTime )
     glUniform(uniformEyePos,  spGetCameraPosition())
-    glUniform(shaderRainDensityLoc, rainDensity )
+    glUniform(uniformRainDensity, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);

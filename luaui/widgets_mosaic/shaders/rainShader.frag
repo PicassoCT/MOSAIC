@@ -12,7 +12,7 @@
 #define TOTAL_LENGTH_RAIN (2048.0)
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
-#define OFFSET_COL_MAX vec4(0.05,0.05,0.05,0.1)
+#define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
 //DayColors
 #define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
 #define DAY_RAIN_DARK_COL vec4(0.26,0.27,0.37,1.0)
@@ -33,7 +33,7 @@
 #define RAIN_DROP_DIAMTER 1.0
 #define RAIN_DROP_LENGTH 3.20
 #define RAIN_DROP_EMPTYSPACE 4.0
-#define SPEED_OF_RAIN_FALL 3.0
+#define SPEED_OF_RAIN_FALL 2.0
 
 
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
@@ -82,30 +82,44 @@ vec4 getDeterministicColorOffset(vec3 position)
 	return mix(OFFSET_COL_MIN, OFFSET_COL_MAX, randomFactor);
 }
 
+float getDayPercent()
+{
+	if (timePercent < 0.25 || timePercent > 0.75)
+	{
+		return 0.0;
+	}else
+	{
+		return (timePercent - 0.25) * 2.0;
+	}	
+}
+
 vec4 GetDeterminiticRainColor(vec3 pxlPos )
 {
 	float distanceToCityCore = distance(pxlPos, cityCenter);
 	vec4 detRandomRainColOffset =getDeterministicColorOffset(pxlPos);
   	vec4 outsideCityRainCol;
+  	vec4 rainHighColor;
 	vec4 insideCityRainCol;
+	vec4 glowMixedColNight;
+	vec4 glowMixedColDay;
 	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
 	float cityGlowFactor = distanceToCityCore/ CITY_GLOW_MAX_DISTANCE;
 	cityGlowFactor = max(0.0, min(1.0, cityGlowFactor));
 
-  	if (timePercent < 0.25 || timePercent > 0.75)
-  	{ // Night
-		vec4 rainHighColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
+  	// Night
+		rainHighColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
 		outsideCityRainCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
 		insideCityRainCol = mix(rainHighColor, NIGHT_RAIN_CITYGLOW_COL, depthOfDropFactor);
-	}
-	else
-	{
-		vec4 rainHighColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
+		glowMixedColNight = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);
+	
+	//Day
+		rainHighColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
 		outsideCityRainCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
-		insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, depthOfDropFactor);		
-	}
+		insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, depthOfDropFactor);	
+		glowMixedColDay = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);	
+	
 
-	return mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);
+	return mix(glowMixedColDay, glowMixedColNight, getDayPercent());
 }
 
 //Lightsource description 
@@ -147,13 +161,18 @@ float getDeterministicRandomValuePerPosition(in vec3 pos)
 	return data.r;
 }
 
+float GetSinCurve( float pulseValue)
+{
+	return sin(PI_HALF * 0.5 + (pulseValue * PI_HALF));
+}
+
 float GetPulseFromIntervall(float currentIntervallShiftPos, float intervallLength, float pulseStart, float pulseEnd)
 {
 	currentIntervallShiftPos = mod(currentIntervallShiftPos, intervallLength);
 	if (currentIntervallShiftPos > pulseEnd) return 0.0;
 	if (currentIntervallShiftPos < pulseStart)return 0.0;
 
-	return(currentIntervallShiftPos - pulseStart)/(pulseEnd - pulseStart);
+	return GetSinCurve((currentIntervallShiftPos - pulseStart)/(pulseEnd - pulseStart));
 }
 
 float getTimeWiseOffset(float offset, float scale)
@@ -198,11 +217,11 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc);
 
-	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValueTruncated);
+	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue);
 
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	vec2 uv = gl_FragCoord.xy / viewPortSize;
-	pixelColor.rgb = getUVRainbow(uv).rgb;
+	//vec2 uv = gl_FragCoord.xy / viewPortSize;
+	//pixelColor.rgb = getUVRainbow(uv).rgb;
 	return pixelColor;	
 }	
 
@@ -362,7 +381,7 @@ void main(void)
 	upwardnessFactor = looksUpwardPercentage();
 
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
-	//if (upwardnessFactor < 0.1 )accumulatedLightColorRayDownward.a = 0.10;
+	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )accumulatedLightColorRayDownward.a = min(0.35,accumulatedLightColorRayDownward.a);
 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera
