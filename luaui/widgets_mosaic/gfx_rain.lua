@@ -114,6 +114,8 @@ local innerCityCenter = {0,0,0}
 local percentTime
 local timePercentLoc
 local timePercent = 0
+local sunDir = {0,0,0}
+local sunCol = {1,0,0}
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
@@ -243,6 +245,8 @@ local function init()
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
     shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
+        uniformSundir       = glGetUniformLocation(depthShader, 'sundir')
+            uniformSunColor     = glGetUniformLocation(depthShader, 'suncolor')
       for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
@@ -353,6 +357,9 @@ local function updateUniforms()
     glUniform(uniformEyePos,  spGetCameraPosition())
     glUniform(shaderRainDensityLoc, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
+    glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
+    glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
+
     glUniformMatrix(uniformViewPrjInv,  "viewprojectioninverse")
     for i=1,maxLightSources do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
@@ -450,6 +457,11 @@ function widget:DrawScreen()
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
     prevOsClock = osClock        
+end
+
+function widget:GameFrame()
+    sunDir = {gl.GetSun('pos')}
+    sunCol = {gl.GetSun('specular')}
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

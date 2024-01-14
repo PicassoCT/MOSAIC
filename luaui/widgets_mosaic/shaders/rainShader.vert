@@ -14,6 +14,8 @@ uniform vec3 cityCenter;
 uniform float rainDensity;
 uniform mat4 viewProjectionInv;
 uniform float timePercent;
+uniform vec3 sundir;
+uniform vec3 suncolor;
 
 out Data {
 			vec3 fragVertexPosition;

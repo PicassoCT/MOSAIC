@@ -14,11 +14,11 @@
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.05,0.05,0.05,0.1)
 //DayColors
-#define DAY_RAIN_HIGH_COL vec4(0.83,0.908,0.925,1.0)
+#define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
 #define DAY_RAIN_DARK_COL vec4(0.26,0.27,0.37,1.0)
 #define DAY_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
 //NightColors
-#define NIGHT_RAIN_HIGH_COL vec4(0.63,0.808,0.925,1.0)
+#define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
 #define CITY_GLOW_MAX_DISTANCE 2048.0
@@ -50,6 +50,8 @@ uniform float rainDensity;
 uniform int maxLightSources;
 uniform float timePercent;
 uniform vec3 eyePos;
+uniform vec3 sundir;
+uniform vec3 suncolor;
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
@@ -92,13 +94,13 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 
   	if (timePercent < 0.25 || timePercent > 0.75)
   	{ // Night
-		vec4 rainHighColor = NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
+		vec4 rainHighColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
 		outsideCityRainCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
 		insideCityRainCol = mix(rainHighColor, NIGHT_RAIN_CITYGLOW_COL, depthOfDropFactor);
 	}
 	else
 	{
-		vec4 rainHighColor = DAY_RAIN_HIGH_COL + detRandomRainColOffset;
+		vec4 rainHighColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
 		outsideCityRainCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
 		insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, depthOfDropFactor);		
 	}
@@ -158,18 +160,17 @@ float getTimeWiseOffset(float offset, float scale)
 {
 	if (offset < 0.5)
 	{
-		return offset *scale*2. * -1.0;
+		return offset * scale * -2.0;
 	}
-if (offset >= 0.5)
+	if (offset >= 0.5)
 	{
-		return (offset-0.5) * scale*2.0 ;
+		return (offset-0.5) * scale * 2.0 ;
 	}
-
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor)
 {
-	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH , 0.0, 3.0 );
+	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH , 0.0, RAIN_DROP_LENGTH );
 }
 
 vec4 getUVRainbow(vec2 uv){
