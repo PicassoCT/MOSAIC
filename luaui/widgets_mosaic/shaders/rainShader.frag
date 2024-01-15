@@ -28,14 +28,14 @@
 #define GREEN vec4(0.0, 1.0, 0.0, 1.0)
 #define BLUE vec4(0.0, 0.0, 1.0, 1.0)
 #define BLACK vec4(0.0, 0.0, 0.0, 1.0)
-#define IDENTITY vec4(1.0,1.0,1.0,1.0);
+#define IDENTITY vec4(1.0,1.0,1.0,1.0)
 #define SCAN_SCALE 64.0
 #define RAIN_THICKNESS_INV (1./(TOTAL_LENGTH_RAIN))
-#define RAIN_DROP_DIAMTER 1.0
-#define RAIN_DROP_LENGTH 3.20
-#define RAIN_DROP_EMPTYSPACE 4.0
-#define SPEED_OF_RAIN_FALL 2.0
-#define 
+#define RAIN_DROP_DIAMTER 0.06
+#define RAIN_DROP_LENGTH 0.12
+#define RAIN_DROP_EMPTYSPACE 1.0
+#define SPEED_OF_RAIN_FALL (0.06f * 1666.6f)
+
 
 
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
@@ -190,7 +190,7 @@ float getTimeWiseOffset(float offset, float scale)
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
 {
-	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH , 0.0, RAIN_DROP_LENGTH );
+	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH + RAIN_DROP_EMPTYSPACE , 0.0, RAIN_DROP_LENGTH );
 }
 
 vec4 getUVRainbow(vec2 uv){
@@ -208,22 +208,22 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
 }
 
  
-vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
+vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 {	
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
 	vec4 randData;
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
-	if(noiseValue < localRainDensity) return NONE;
+	//if(mod(pixelCoord.x, 5.0) < 2.0) return NONE;
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && randData.g + randData.b > 0.65) pixelColor = min(pixelColor * 1.3, IDENTITY);
+	if (yAxisPulseFactor > 0.95 && itteration == 1) pixelColor = pixelColor + IDENTITY*0.5;
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	//vec2 uv = gl_FragCoord.xy / viewPortSize;
-	//pixelColor.rgb = getUVRainbow(uv).rgb;
+	vec2 uv = gl_FragCoord.xy / viewPortSize;
+	pixelColor.rgb = getUVRainbow(uv).rgb;
 	return pixelColor;	
 }	
 
@@ -284,15 +284,16 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	const float tstep = 1. / numsteps;
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
-
+	int itteration= 0;
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		vec3 pxlPosWorld = mix(start, end, t);
 	
 		//if (IsInGrid(pxlPosWorld, 5.0, 512.0))
 		//{
-			accumulatedColor += renderRainPixel(pxlPosWorld, 0.5f) * tstep; //GetGradient(pxlPosWorld, tstep);//			
+			accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep; //GetGradient(pxlPosWorld, tstep);//			
 		//}
+		itteration++;
 
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 	}
