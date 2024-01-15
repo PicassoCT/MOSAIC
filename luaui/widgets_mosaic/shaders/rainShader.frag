@@ -28,12 +28,14 @@
 #define GREEN vec4(0.0, 1.0, 0.0, 1.0)
 #define BLUE vec4(0.0, 0.0, 1.0, 1.0)
 #define BLACK vec4(0.0, 0.0, 0.0, 1.0)
+#define IDENTITY vec4(1.0,1.0,1.0,1.0);
 #define SCAN_SCALE 64.0
 #define RAIN_THICKNESS_INV (1./(TOTAL_LENGTH_RAIN))
 #define RAIN_DROP_DIAMTER 1.0
 #define RAIN_DROP_LENGTH 3.20
 #define RAIN_DROP_EMPTYSPACE 4.0
 #define SPEED_OF_RAIN_FALL 2.0
+#define 
 
 
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
@@ -96,7 +98,7 @@ float getDayPercent()
 vec4 GetDeterminiticRainColor(vec3 pxlPos )
 {
 	float distanceToCityCore = distance(pxlPos, cityCenter);
-	vec4 detRandomRainColOffset =getDeterministicColorOffset(pxlPos);
+	vec4 detRandomRainColOffset = getDeterministicColorOffset(pxlPos);
   	vec4 outsideCityRainCol;
   	vec4 rainHighColor;
 	vec4 insideCityRainCol;
@@ -107,17 +109,16 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 	cityGlowFactor = max(0.0, min(1.0, cityGlowFactor));
 
   	// Night
-		rainHighColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
-		outsideCityRainCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
-		insideCityRainCol = mix(rainHighColor, NIGHT_RAIN_CITYGLOW_COL, depthOfDropFactor);
-		glowMixedColNight = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);
+	rainHighColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
+	outsideCityRainCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
+	insideCityRainCol = mix(rainHighColor, NIGHT_RAIN_CITYGLOW_COL, depthOfDropFactor);
+	glowMixedColNight = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);
 	
 	//Day
-		rainHighColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
-		outsideCityRainCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
-		insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, depthOfDropFactor);	
-		glowMixedColDay = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);	
-	
+	rainHighColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
+	outsideCityRainCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
+	insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, depthOfDropFactor);	
+	glowMixedColDay = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);	
 
 	return mix(glowMixedColDay, glowMixedColNight, getDayPercent());
 }
@@ -155,9 +156,9 @@ bool IsInGridPoint(vec3 pos, float size, float space)
 
 //REFLECTIONMARCH 
  
-float getDeterministicRandomValuePerPosition(in vec3 pos)
+float getDeterministicRandomValuePerPosition(in vec3 pos, out vec4 rdata)
 {
-	vec4 data = texture2D( noisetex, pos.xz);
+	vec4 data = texture2D(noisetex, pos.xz);
 	return data.r;
 }
 
@@ -187,7 +188,7 @@ float getTimeWiseOffset(float offset, float scale)
 	}
 }
 
-float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor)
+float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
 {
 	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH , 0.0, RAIN_DROP_LENGTH );
 }
@@ -211,14 +212,15 @@ vec4 renderRainPixel(vec3 pixelCoord, float localRainDensity)
 {	
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
-	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord);
+	vec4 randData;
+	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
 	if(noiseValue < localRainDensity) return NONE;
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
+	vec4 randDataTruncated;
+	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 
-	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc);
-
-	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue);
-
+	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
+	if (yAxisPulseFactor > 0.95 && randData.g + randData.b > 0.65) pixelColor = min(pixelColor * 1.3, IDENTITY);
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	//vec2 uv = gl_FragCoord.xy / viewPortSize;
 	//pixelColor.rgb = getUVRainbow(uv).rgb;
@@ -347,7 +349,7 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 
 void main(void)
 {
-	vec2 uv = gl_FragCoord.xy / viewPortSize;
+	vec2 uv = gl_FragCoord.xy / viewPortSize;	
 	//gl_FragColor = getUVRainbow(uv);
 	//return;
 	vec3 worldPos = GetWorldPos(uv);
