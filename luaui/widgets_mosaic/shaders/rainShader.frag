@@ -21,8 +21,8 @@
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
-#define MM 0.01f
-#define CITY_GLOW_MAX_DISTANCE (MM * 1000.0)*1024.0)
+#define METER 0.0025
+#define CITY_GLOW_MAX_DISTANCE (2048.0 * METER)
 
 #define NONE vec4(0.0,0.0,0.0,0.0);
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
