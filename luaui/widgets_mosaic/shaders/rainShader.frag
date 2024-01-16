@@ -21,7 +21,8 @@
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
-#define CITY_GLOW_MAX_DISTANCE 2048.0
+#define MM 0.01f
+#define CITY_GLOW_MAX_DISTANCE (MM * 1000.0)*1024.0)
 
 #define NONE vec4(0.0,0.0,0.0,0.0);
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
@@ -31,11 +32,10 @@
 #define IDENTITY vec4(1.0,1.0,1.0,1.0)
 #define SCAN_SCALE 64.0
 #define RAIN_THICKNESS_INV (1./(TOTAL_LENGTH_RAIN))
-#define RAIN_DROP_DIAMTER 0.06
+#define RAIN_DROP_DIAMTER (0.06)
 #define RAIN_DROP_LENGTH 0.12
 #define RAIN_DROP_EMPTYSPACE 1.0
 #define SPEED_OF_RAIN_FALL (0.06f * 1666.6f)
-
 
 
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
@@ -214,16 +214,15 @@ vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
 	vec4 randData;
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
-	//if(mod(pixelCoord.x, 5.0) < 2.0) return NONE;
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && itteration == 1) pixelColor = pixelColor + IDENTITY*0.5;
+	if (yAxisPulseFactor > 0.95 && itteration <= 1) pixelColor += IDENTITY * 0.5f;
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	vec2 uv = gl_FragCoord.xy / viewPortSize;
-	pixelColor.rgb = getUVRainbow(uv).rgb;
+	//vec2 uv = gl_FragCoord.xy / viewPortSize;
+	//pixelColor.rgb = getUVRainbow(uv).rgb;
 	return pixelColor;	
 }	
 
