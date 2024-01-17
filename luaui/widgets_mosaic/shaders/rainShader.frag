@@ -85,9 +85,9 @@ struct AABB {
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
-float isInIntervallAround(float value, float targetValue, float intervall)
+bool isInIntervallAround(float value, float targetValue, float intervall)
 {
-	return value +intervall >= targetValue || value - intervall <= targetValue;
+	return value +intervall >= targetValue && value - intervall <= targetValue;
 }
 
 float deterministicFactor(vec3 val)
@@ -209,6 +209,7 @@ vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflect
 	//Get Intersect point of zmap
 	//Trace back to screenray and get uv
 	//return texture2D(screentex, uv) ; //apply Rain Ripple Vector
+	return NONE;
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -279,9 +280,9 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
-	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
+	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	int itteration= 0;
-	int lastIterration = (int) ((t-tstep)/tstep);
+	int lastIterration =  int((1.0-tstep)/tstep);
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		vec3 pxlPosWorld = mix(start, end, t);
@@ -341,7 +342,7 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 	return (abs(t0) <= t1);
 }
 
-vec4 GetRainShadowFromScreenTex(vec2 uv) 
+vec4 GetRainCoronaFromScreenTex(vec2 uv) 
 {
 	//if its infinity - it doesnt have a rainshadow
 
@@ -392,9 +393,9 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	if (isInIntervallAround(upwardnessFactor, 1.0, 0.125 ))
+	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
-		accumulatedLightColorRayDownward += getRainShadowFromScreenTex();
+		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex(uv);
 	}
 
 	vec4 upWardrainColor = origColor;
