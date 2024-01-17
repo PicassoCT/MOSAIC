@@ -58,6 +58,15 @@ uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 
+//Lightsource description 
+/*
+{
+vec4  position + distance
+vec4  color + strength.a
+}
+*/
+uniform vec4 lightSources[20];
+
 in Data {
 			vec3 fragVertexPosition;
 			vec3 viewDirection;
@@ -123,15 +132,6 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 	return mix(glowMixedColDay, glowMixedColNight, getDayPercent());
 }
 
-//Lightsource description 
-/*
-{
-vec4  position + distance
-vec4  color + strength.a
-}
-*/
-uniform vec4 lightSources[20];
-
 vec4 RayMarchBackgroundLight(vec3 Position)
 {
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
@@ -187,6 +187,19 @@ float getTimeWiseOffset(float offset, float scale)
 		return (offset-0.5) * scale * 2.0 ;
 	}
 }
+vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes)
+{
+	//check if groundnormal is upwards vector
+		//if not return NONE;
+		
+	//Depending on pixelpos.xz
+		// Get Rain RippleVector https://www.shadertoy.com/view/ldfyzl
+	
+	//Rotate vector around Point
+	//Get Intersect point of zmap
+	//Trace back to screenray and get uv
+	//return texture2D(screentex, uv) ; //apply Rain Ripple Vector
+}
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
 {
@@ -206,7 +219,6 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
 	pixelPos.xz = pixelPos.xz - mod(pixelPos.xz, RAIN_DROP_DIAMTER);
 	return pixelPos;
 }
-
  
 vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 {	
@@ -225,31 +237,6 @@ vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 	//pixelColor.rgb = getUVRainbow(uv).rgb;
 	return pixelColor;	
 }	
-
-/*
-vec4 getNoiseShiftedBackgroundColor(float time, vec3 pixelCoord, float localRainDensity)
-{
-	//check if intersects with depth map (max)
-
-	//TODO: Move this whole thing into the pixelshader, cause no background Color here
-	vec4 colorToShift = vec4(gl_FragColor);
-	float zAxisTime =  sin(time);
-	float noiseValue = getDeterministicRandomValue(pixelCoord);
-	if (noiseValue > (1.0 -localRainDensity))// A raindrop in pixel
-	{
-		//How far along z is it via time and does that intersect
-		float dropCenterZ = sin(PI_HALF + mod((zAxisTime * (PI_HALF)), PI_HALF))* MAX_HEIGTH_RAIN;
-		float distanceToDropCenter = distance(dropCenterZ, pixelCoord.z);
-		if (dropCenterZ < pixelCoord.z && distanceToDropCenter < RAIN_DROP_LENGTH )
-		{
-			// rain drop 
-			colorToShift += vec4(RAIN_COLOR.rgb, distanceToDropCenter/ RAIN_DROP_LENGTH);
-			colorToShift += RayMarchBackgroundLight(pixelCoord);
-		}
-	}
-	return colorToShift;
-}
-*/
 
 vec3 getPixelWorldPos( vec2 uv)
 {
@@ -287,14 +274,9 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		vec3 pxlPosWorld = mix(start, end, t);
-	
-		//if (IsInGrid(pxlPosWorld, 5.0, 512.0))
-		//{
-			accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep; //GetGradient(pxlPosWorld, tstep);//			
-		//}
+		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
 		itteration++;
-
-		//accumulatedColor += RayMarchBackgroundLight(pos);
+		accumulatedColor += RayMarchBackgroundLight(pos);
 	}
 	//Prevent the rain from pixelating
 
@@ -313,7 +295,6 @@ vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 	return RED;
 }
 
-
 vec3 GetWorldPos(in vec2 screenpos)
 {
 	float z = texture2D(depthtex, screenpos).z;
@@ -323,12 +304,12 @@ vec3 GetWorldPos(in vec2 screenpos)
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
 
-	if (z == 1.0) {
+	if (z == 1.0) 
+	{
 		vec3 forward = normalize(worldPos4.xyz - eyePos);
 		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
 		return eyePos + forward.xyz * abs(a);
 	}
-
 	return worldPos4.xyz;
 }
 
