@@ -82,6 +82,14 @@ struct AABB {
 	vec3 Max;
 };
 
+
+//Various helper functions && Tools //////////////////////////////////////////////////////////
+
+float isInIntervallAround(float value, float targetValue, float intervall)
+{
+	return value +intervall >= targetValue || value - intervall <= targetValue;
+}
+
 float deterministicFactor(vec3 val)
 {
 	return mod((abs(val.x) + abs(val.y))/2.0, 1.0);
@@ -103,6 +111,8 @@ float getDayPercent()
 		return (timePercent - 0.25) * 2.0;
 	}	
 }
+
+//Various helper functions && Tools //////////////////////////////////////////////////////////
 
 vec4 GetDeterminiticRainColor(vec3 pxlPos )
 {
@@ -271,12 +281,15 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0,0.0,0.0);
 	int itteration= 0;
+	int lastIterration = (int) ((t-tstep)/tstep);
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		vec3 pxlPosWorld = mix(start, end, t);
 		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
+		//accumulatedColor += RayMarchBackgroundLight(pos);
+		//if (itteration == lastIterration) 
+			//accumulatedColor += GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes);
 		itteration++;
-		accumulatedColor += RayMarchBackgroundLight(pos);
 	}
 	//Prevent the rain from pixelating
 
@@ -328,6 +341,15 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 	return (abs(t0) <= t1);
 }
 
+vec4 GetRainShadowFromScreenTex(vec2 uv) 
+{
+	//if its infinity - it doesnt have a rainshadow
+
+	// In stormy days and nights, a rainstorm wil throw rain splattering back on impact, 
+	// grainshadowenerating a while noisy shadow about surfaces hit by rain
+	return NONE;//DELME
+}
+
 void main(void)
 {
 	vec2 uv = gl_FragCoord.xy / viewPortSize;	
@@ -364,7 +386,16 @@ void main(void)
 	upwardnessFactor = looksUpwardPercentage();
 
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
-	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )accumulatedLightColorRayDownward.a = min(0.35,accumulatedLightColorRayDownward.a);
+	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )
+	{
+		accumulatedLightColorRayDownward = getUVRainbow(uv); //DELME Debug
+		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
+	}
+
+	if (isInIntervallAround(upwardnessFactor, 1.0, 0.125 ))
+	{
+		accumulatedLightColorRayDownward += getRainShadowFromScreenTex();
+	}
 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera
