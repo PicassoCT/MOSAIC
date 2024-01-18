@@ -7,9 +7,11 @@
 #define E_CONST 2.718281828459045235360287471352
 #define TOTAL_SCAN_DISTANCE 8192.0
 
-#define MAX_HEIGTH_RAIN 2048.0
+#define METER 0.0025
+#define MAX_HEIGTH_RAIN 192.0
 #define MIN_HEIGHT_RAIN 0.0
-#define TOTAL_LENGTH_RAIN (2048.0)
+#define TOTAL_LENGTH_RAIN (192.0)
+#define CITY_GLOW_MAX_DISTANCE (2048.0 * METER)
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
@@ -21,8 +23,6 @@
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
-#define METER 0.0025
-#define CITY_GLOW_MAX_DISTANCE (2048.0 * METER)
 
 #define NONE vec4(0.0,0.0,0.0,0.0);
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
@@ -36,7 +36,6 @@
 #define RAIN_DROP_LENGTH 0.12
 #define RAIN_DROP_EMPTYSPACE 1.0
 #define SPEED_OF_RAIN_FALL (0.06f * 1666.6f)
-
 
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
