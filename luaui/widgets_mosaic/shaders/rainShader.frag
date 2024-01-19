@@ -41,6 +41,7 @@ const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
+float depthValue = 0;
 
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
@@ -197,7 +198,8 @@ float getTimeWiseOffset(float offset, float scale)
 	}
 }
 vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes)
-{
+{	
+
 	//check if groundnormal is upwards vector
 		//if not return NONE;
 		
@@ -310,14 +312,14 @@ vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 
 vec3 GetWorldPos(in vec2 screenpos)
 {
-	float z = texture2D(depthtex, screenpos).z;
+	depthValue = texture2D(depthtex, screenpos).z;
 	vec4 ppos;
-	ppos.xyz = vec3(screenpos, z) * 2. - 1.;
+	ppos.xyz = vec3(screenpos, depthValue) * 2. - 1.;
 	ppos.a   = 1.;
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
 
-	if (z == 1.0) 
+	if (depthValue == 1.0) 
 	{
 		vec3 forward = normalize(worldPos4.xyz - eyePos);
 		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
@@ -367,11 +369,7 @@ vec4 GetRainCoronaFromScreenTex(vec2 uv)
 void main(void)
 {
 	vec2 uv = gl_FragCoord.xy / viewPortSize;	
-	//gl_FragColor = getUVRainbow(uv);
-	//return;
 	vec3 worldPos = GetWorldPos(uv);
-
-	//float depthValueAtPixel = texture2D(depthtex, uv).z;
 
 	vec4 origColor = texture2D(screentex, uv);
 	AABB box;
@@ -425,4 +423,4 @@ void main(void)
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
 	
-}
+}x
