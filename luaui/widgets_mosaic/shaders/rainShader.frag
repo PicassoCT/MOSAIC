@@ -43,6 +43,7 @@ const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
 float depthValue = 0;
 
+
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
@@ -81,7 +82,10 @@ struct AABB {
 	vec3 Min;
 	vec3 Max;
 };
-
+//Global Variables					//////////////////////////////////////////////////////////
+vec2 uv;
+vec3 worldPos;
+vec4 dephtValueAtPixel;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
@@ -163,9 +167,7 @@ bool IsInGridPoint(vec3 pos, float size, float space)
 	return ((mod(pos.x, space) < size) &&   (mod(pos.y, space) < size)  && (mod(pos.z, space) < size)) ;
 }
 
-
-//REFLECTIONMARCH 
- 
+//REFLECTIONMARCH  
 float getDeterministicRandomValuePerPosition(in vec3 pos, out vec4 rdata)
 {
 	vec4 data = texture2D(noisetex, pos.xz);
@@ -197,20 +199,36 @@ float getTimeWiseOffset(float offset, float scale)
 		return (offset-0.5) * scale * 2.0 ;
 	}
 }
-vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes)
-{	
 
-	//check if groundnormal is upwards vector
-		//if not return NONE;
-		
-	//Depending on pixelpos.xz
-		// Get Rain RippleVector https://www.shadertoy.com/view/ldfyzl
-	
-	//Rotate vector around Point
-	//Get Intersect point of zmap
-	//Trace back to screenray and get uv
-	//return texture2D(screentex, uv) ; //apply Rain Ripple Vector
-	return NONE;
+vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes)
+{
+	vec4 ndcCoords = vec4(uv * 2.0 - 1.0, dephtValueAtPixel.r * 2.0 - 1.0, 1.0);
+	vec4 viewCoords = viewProjectionInv * ndcCoords;
+	vec3 worldCoords = (inverseViewMatrix * viewCoords).xyz;
+	mat3 rotationAroundZAxis = mat3( -1,  0,  0,
+									  0, -1,  0,
+									  0,  0,  1);
+
+	// Compute partial derivatives
+	vec3 dx = dFdx(worldCoords);
+	vec3 dy = dFdy(worldCoords);
+
+	// Compute normal
+	vec3 normal = normalize(cross(dx, dy))*rotationAroundZAxis;
+
+	vec3 newPosition =  pixelPos * normal;
+
+
+	// Transform the new world position to view space
+	vec4 newViewCoords = viewMatrix * vec4(newPosition, 1.0);
+
+	// Transform the view space position to clip space
+	vec4 newClipCoords = projectionMatrix * newViewCoords;
+
+	// Transform the clip space position to NDC
+	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;
+
+	return texture2D(screentex, newNDCCoords)
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -250,7 +268,7 @@ vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 	return pixelColor;	
 }	
 
-vec3 getPixelWorldPos( vec2 uv)
+vec3 getPixelWorldPos(vec2 uv)
 {
 	float z = texture2D(depthtex, uv).z;
 	vec4 ppos;
@@ -310,11 +328,11 @@ vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 	return RED;
 }
 
-vec3 GetWorldPos(in vec2 screenpos)
+void GetWorldPos()
 {
-	depthValue = texture2D(depthtex, screenpos).z;
+	dephtValueAtPixel= texture2D(depthtex, uv);
 	vec4 ppos;
-	ppos.xyz = vec3(screenpos, depthValue) * 2. - 1.;
+	ppos.xyz = vec3(screenpos, dephtValueAtPixel.r) * 2. - 1.;
 	ppos.a   = 1.;
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
@@ -325,7 +343,7 @@ vec3 GetWorldPos(in vec2 screenpos)
 		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
 		return eyePos + forward.xyz * abs(a);
 	}
-	return worldPos4.xyz;
+	worldPos = worldPos4.xyz;
 }
 
 bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
@@ -348,7 +366,7 @@ float getAvgValueCol(vec4 col)
 	return sqrt(col.r*col.r + col.g * col.g + col.r * col.r);
 }
 
-vec4 GetRainCoronaFromScreenTex(vec2 uv) 
+vec4 GetRainCoronaFromScreenTex() 
 {
 	vec4 upUv = uv;
 	upUv.x += 5;
@@ -359,8 +377,6 @@ vec4 GetRainCoronaFromScreenTex(vec2 uv)
 	float avgUp = getAvgValueCol(colorAtUpPixel);
 
 	if (avgDown > avgUp && avgDown-avgUp > 0.25) return GREEN;
-
-
 	if (avgDown < avgUp && avgUp - avgDown > 0.25) return BLUE;
 
 	return NONE;//DELME
@@ -368,8 +384,8 @@ vec4 GetRainCoronaFromScreenTex(vec2 uv)
 
 void main(void)
 {
-	vec2 uv = gl_FragCoord.xy / viewPortSize;	
-	vec3 worldPos = GetWorldPos(uv);
+	uv = gl_FragCoord.xy / viewPortSize;	
+	GetWorldPos(uv);
 
 	vec4 origColor = texture2D(screentex, uv);
 	AABB box;
@@ -406,7 +422,7 @@ void main(void)
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
-		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex(uv);
+		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
 	}
 
 	vec4 upWardrainColor = origColor;
