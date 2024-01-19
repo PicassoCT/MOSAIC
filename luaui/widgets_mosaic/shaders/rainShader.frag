@@ -162,9 +162,7 @@ bool IsInGridPoint(vec3 pos, float size, float space)
 	return ((mod(pos.x, space) < size) &&   (mod(pos.y, space) < size)  && (mod(pos.z, space) < size)) ;
 }
 
-
-//REFLECTIONMARCH 
- 
+//REFLECTIONMARCH  
 float getDeterministicRandomValuePerPosition(in vec3 pos, out vec4 rdata)
 {
 	vec4 data = texture2D(noisetex, pos.xz);
@@ -196,8 +194,13 @@ float getTimeWiseOffset(float offset, float scale)
 		return (offset-0.5) * scale * 2.0 ;
 	}
 }
+
 vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes)
 {
+
+	mat4 rotation = mat4(-1,  0  0
+ 0 -1  0
+ 0  0  1)
 	//check if groundnormal is upwards vector
 		//if not return NONE;
 		
@@ -248,7 +251,7 @@ vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 	return pixelColor;	
 }	
 
-vec3 getPixelWorldPos( vec2 uv)
+vec3 getPixelWorldPos(vec2 uv)
 {
 	float z = texture2D(depthtex, uv).z;
 	vec4 ppos;
