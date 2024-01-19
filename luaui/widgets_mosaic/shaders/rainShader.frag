@@ -439,4 +439,4 @@ void main(void)
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
 	
-}x
+}
