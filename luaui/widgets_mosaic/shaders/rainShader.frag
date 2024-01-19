@@ -344,12 +344,26 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 	return (abs(t0) <= t1);
 }
 
+float getAvgValueCol(vec4 col)
+{
+	return sqrt(col.r*col.r + col.g * col.g + col.r * col.r);
+}
+
 vec4 GetRainCoronaFromScreenTex(vec2 uv) 
 {
-	//if its infinity - it doesnt have a rainshadow
+	vec4 upUv = uv;
+	upUv.x += 5;
+	vec4 colorAtPixel = texture2D(screentex, uv);
+	vec4 colorAtUpPixel = texture2D(screentex, upUv);
 
-	// In stormy days and nights, a rainstorm wil throw rain splattering back on impact, 
-	// grainshadowenerating a while noisy shadow about surfaces hit by rain
+	float avgDown = getAvgValueCol(colorAtPixel);
+	float avgUp = getAvgValueCol(colorAtUpPixel);
+
+	if (avgDown > avgUp && avgDown-avgUp > 0.25) return GREEN;
+
+
+	if (avgDown < avgUp && avgUp - avgDown > 0.25) return BLUE;
+
 	return NONE;//DELME
 }
 
@@ -402,7 +416,7 @@ void main(void)
 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera
-	//if (upwardnessFactor > 0.45)
+	//if (upwardnessFactor > 0.45)GetRainCoronaFromScreenTex
 	//{
 	//	upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
 	//	gl_FragColor = upWardrainColor;
