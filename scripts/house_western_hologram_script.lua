@@ -470,7 +470,6 @@ end
 
 RainCenter = piece("RainCenter")
 function holoGramRain()
-    SetSignalMask(SIG_HOLO)
     Sleep(100)
     speed= math.pi*2000
     if unitID % 3 == 0 then
@@ -493,6 +492,10 @@ function holoGramRain()
                     end
                     Sleep(1000)
                 end
+            else
+                hideT(TableOfPiecesGroups["BuisnessRain"])
+                hideT(TableOfPiecesGroups["NeutralRain"])
+                hideT(TableOfPiecesGroups["BrothelRain"])
             end           
         end
         Sleep(1000)
