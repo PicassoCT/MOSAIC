@@ -88,6 +88,7 @@ local depthtex = nil
 local noisetex = nil
 local screentex = nil
 local normaltex = nil
+local raincanvastex = nil
 local startOsClock
 
 local shaderMaxLightSrcLoc
@@ -178,7 +179,20 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
-    
+      
+    raincanvastex =
+        gl.CreateTexture(
+        vsx,
+        vsy,
+        {
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE,
+            wrap_t = GL.CLAMP_TO_EDGE,
+            fbo = true,
+        }
+    )
+    errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
 
     local commonTexOpts = {
         target = GL_TEXTURE_2D,
@@ -220,6 +234,7 @@ local function init()
         noisetex = 1,
         screentex = 2,
         normaltex = 3,
+        raincanvastex = 4,
     }
 
     rainShader =
@@ -405,8 +420,8 @@ local function prepare()
     glTexture(depthtex)
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
-    glCopyToTexture(normaltex, 0, 0, 0, 0, vsx, vsy)
-    glTexture(normaltex)
+    glTexture(normaltex, "$map_gbuffer_normtex")
+
 end
 
 local function DrawRain()
@@ -424,7 +439,7 @@ local function DrawRain()
     glUseShader(rainShader)
     updateUniforms()
 
-    glRenderToTexture(nil, renderToTextureFunc);
+    glRenderToTexture(raincanvastex, renderToTextureFunc);
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
     prevOsClock = osClock  
@@ -432,9 +447,9 @@ local function DrawRain()
 end
 
 function widget:DrawScreenEffects()
-    --glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
-    glTexture(0, nil)
+    --glTexture(4, raincanvastex)
+    glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
     glTexture(0, false);
 end

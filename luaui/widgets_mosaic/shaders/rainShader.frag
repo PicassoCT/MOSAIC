@@ -229,7 +229,7 @@ float getTimeWiseOffset(float offset, float scale)
 
 vec4 GetGroundReflection(vec3 pixelPos)
 {
-
+	return vec4(viewNormal, 1.0);
 	return getVectorColor(viewNormal);
 	/*
 	vec3 newPosition =  pixelPos * normal;
@@ -401,7 +401,7 @@ void main(void)
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
 	viewNormal = texture(normaltex, uv).xyz;
-	
+
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -424,7 +424,8 @@ void main(void)
 	pixelDir = normalize(startPos - endPos);
 
 	vec4 accumulatedLightColorRayDownward = RayMarchRainBackgroundLight(startPos,  endPos); 
-	gl_FragColor = accumulatedLightColorRayDownward;
+	accumulatedLightColorRayDownward.a = 0.85;
+	gl_FragColor = accumulatedLightColorRayDownward; 
 	return;
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
