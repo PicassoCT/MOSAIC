@@ -87,6 +87,7 @@ local lastFrametime = Spring.GetTimer()
 local depthtex = nil
 local noisetex = nil
 local screentex = nil
+local normaltex = nil
 local startOsClock
 
 local shaderMaxLightSrcLoc
@@ -109,6 +110,11 @@ local GL_DEPTH_COMPONENT   = 0x1902
 local GL_DEPTH_COMPONENT16 = 0x81A5
 local GL_DEPTH_COMPONENT24 = 0x81A6
 local GL_DEPTH_COMPONENT32 = 0x81A7
+local GL_RGB8_SNORM = 0x8F96
+local GL_RGBA8 = 0x8058
+local GL_FUNC_ADD = 0x8006
+local GL_FUNC_REVERSE_SUBTRACT = 0x800B
+
 local innerCityCenter = {0,0,0}
 local percentTime
 local timePercentLoc
@@ -121,7 +127,6 @@ local uniformEyePos
 local uniformTime
 local uniformRainDensity
 local uniformViewPortSize
-local gbuffFuseViewNormalTex
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -138,34 +143,18 @@ function widget:ViewResize()
     if (depthtex ~= nil ) then
         glDeleteTexture(depthtex)
     end
-    
-    if (raincanvastex ~= nil ) then
-        glDeleteTexture(raincanvastex)
-    end
+
 
      if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
+    end   
+
+    if (normaltex ~= nil  ) then
+        glDeleteTexture(normaltex)
     end
 
-        gbuffFuseViewNormalTex = gl.CreateTexture(vsx, vsy, commonTexOpts)
-
-
-    raincanvastex =
-        gl.CreateTexture(
-        vsx,
-        vsy,
-        {
-            min_filter = GL.LINEAR,
-            mag_filter = GL.LINEAR,
-            wrap_s = GL.CLAMP_TO_EDGE,
-            wrap_t = GL.CLAMP_TO_EDGE,
-            fbo = true,
-        }
-    )
-    errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
-
     depthtex =
-        gl.CreateTexture(
+        glCreateTexture(
             vsx,
             vsy,
         {
@@ -178,7 +167,7 @@ function widget:ViewResize()
     errorOutIfNotInitialized(depthtex, "depthtex not existing")    
 
     screentex =
-        gl.CreateTexture(
+        glCreateTexture(
         vsx,
         vsy,
         {
@@ -189,6 +178,21 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
+    
+
+    local commonTexOpts = {
+        target = GL_TEXTURE_2D,
+        border = false,
+        min_filter = GL.NEAREST,
+        mag_filter = GL.NEAREST,
+
+        wrap_s = GL.CLAMP_TO_EDGE,
+        wrap_t = GL.CLAMP_TO_EDGE,
+    }
+    commonTexOpts.format = GL_RGB8_SNORM
+    normaltex = glCreateTexture(vsx, vsy, commonTexOpts)
+    errorOutIfNotInitialized(normaltex, "normaltex not existing")   
+
     widgetHandler:UpdateCallIn("DrawScreenEffects")  
 end
 widget:ViewResize()
@@ -215,7 +219,7 @@ local function init()
         depthtex = 0,
         noisetex = 1,
         screentex = 2,
-        raincanvastex = 3,
+        normaltex = 3,
     }
 
     rainShader =
@@ -339,7 +343,6 @@ local function setInnerCityPosition()
     end
 end
 
-
 function widget:Update(dt)
     setInnerCityPosition()
     if boolDebugActive then boolRainActive = true; return end
@@ -351,14 +354,12 @@ function widget:Shutdown()
         glDeleteTexture(depthtex or "")
         glDeleteTexture(noisetex or "")
         glDeleteTexture(screentex or "")
-        glDeleteTexture(raincanvastex or "")
     end
 
     if rainShader then
         gl.DeleteShader(rainShader)
     end
 end
-
 
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
@@ -382,12 +383,6 @@ local function updateUniforms()
     end
 end
 
-        --case hashString("viewprojection"       ): { return LUAMATRICES_VIEWPROJECTION       ; } break;
-        --case hashString("viewinverse"          ): { return LUAMATRICES_VIEWINVERSE          ; } break;
-        --case hashString(    "projectioninverse"): { return LUAMATRICES_PROJECTIONINVERSE    ; } break;
-        --case hashString("viewprojectioninverse"): { return LUAMATRICES_VIEWPROJECTIONINVERSE; } break;
-
-
 local function renderToTextureFunc()
     -- render a full screen quad
     --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
@@ -410,6 +405,8 @@ local function prepare()
     glTexture(depthtex)
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
+    glCopyToTexture(normaltex, 0, 0, 0, 0, vsx, vsy)
+    glTexture(normaltex)
 end
 
 local function DrawRain()
@@ -427,7 +424,7 @@ local function DrawRain()
     glUseShader(rainShader)
     updateUniforms()
 
-    glRenderToTexture(raincanvastex, renderToTextureFunc);
+    glRenderToTexture(nil, renderToTextureFunc);
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
     prevOsClock = osClock  
@@ -437,11 +434,10 @@ end
 function widget:DrawScreenEffects()
     --glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
-    glTexture(0, raincanvastex)
+    glTexture(0, nil)
     glTexRect(0, vsy, vsx, 0)
     glTexture(0, false);
 end
-
 
 function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
@@ -469,7 +465,6 @@ function widget:DrawScreen()
     end
 
     lastFrametime = Spring.GetTimer()
-
     glPushMatrix()
     glBlending(false)
     DrawRain()

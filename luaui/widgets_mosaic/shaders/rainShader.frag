@@ -48,7 +48,7 @@ float depthValue = 0;
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
-uniform sampler2D viewNormalTex;
+uniform sampler2D normaltex;
 
 uniform float time;		
 uniform float rainDensity;
@@ -229,21 +229,8 @@ float getTimeWiseOffset(float offset, float scale)
 
 vec4 GetGroundReflection(vec3 pixelPos)
 {
-	vec4 ndcCoords = vec4(uv * 2.0 - 1.0, dephtValueAtPixel.r * 2.0 - 1.0, 1.0);
-	vec4 viewCoords = viewProjectionInv * ndcCoords;
-	vec3 worldCoords = (viewInv * viewCoords).xyz;
 
-	// Compute partial derivatives
-	vec3 dx = dFdx(worldCoords);
-	vec3 dy = dFdy(worldCoords);
-
-	// Compute normal
-	vec3 normal = normalize(cross(dx, dy)) ;
-
-	// how close is normal to upwards vector 
-	float upFactor = GetUpwardnessFactorOfVector(normal);
-	//if (upFactor < 0.9) { return NONE;}
-	return getVectorColor(normal);
+	return getVectorColor(viewNormal);
 	/*
 	vec3 newPosition =  pixelPos * normal;
 
@@ -325,7 +312,6 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
-	viewNormal = texture(viewNormalTex, uv).xyz;
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	int itteration = 0;
 	int lastIterration =  int((1.0-tstep)/tstep);
@@ -414,7 +400,8 @@ void main(void)
 	uv = gl_FragCoord.xy / viewPortSize;	
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
-
+	viewNormal = texture(normaltex, uv).xyz;
+	
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -437,7 +424,8 @@ void main(void)
 	pixelDir = normalize(startPos - endPos);
 
 	vec4 accumulatedLightColorRayDownward = RayMarchRainBackgroundLight(startPos,  endPos); 
-	return accumulatedLightColorRayDownward;
+	gl_FragColor = accumulatedLightColorRayDownward;
+	return;
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
 
