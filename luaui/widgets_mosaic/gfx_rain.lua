@@ -102,6 +102,8 @@ local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()
 local diffTime = 0
 local uniformViewPrjInv
+local uniformViewInv
+local uniformViewProjection
 local GL_DEPTH_BITS = 0x0D56
 local GL_DEPTH_COMPONENT   = 0x1902
 local GL_DEPTH_COMPONENT16 = 0x81A5
@@ -119,6 +121,7 @@ local uniformEyePos
 local uniformTime
 local uniformRainDensity
 local uniformViewPortSize
+local gbuffFuseViewNormalTex
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -143,6 +146,9 @@ function widget:ViewResize()
      if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
     end
+
+        gbuffFuseViewNormalTex = gl.CreateTexture(vsx, vsy, commonTexOpts)
+
 
     raincanvastex =
         gl.CreateTexture(
@@ -251,6 +257,8 @@ local function init()
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
     shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
+    uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
+    uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
       for i=1,maxLightSources do
@@ -366,11 +374,19 @@ local function updateUniforms()
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
 
-    glUniformMatrix(uniformViewPrjInv,  "viewprojectioninverse")
+    glUniformMatrix(uniformViewPrjInv    ,  "viewprojectioninverse")
+    glUniformMatrix(uniformViewInv        ,     "viewinverse")
+    glUniformMatrix(uniformViewProjection, "viewprojection")
     for i=1,maxLightSources do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
     end
 end
+
+        --case hashString("viewprojection"       ): { return LUAMATRICES_VIEWPROJECTION       ; } break;
+        --case hashString("viewinverse"          ): { return LUAMATRICES_VIEWINVERSE          ; } break;
+        --case hashString(    "projectioninverse"): { return LUAMATRICES_PROJECTIONINVERSE    ; } break;
+        --case hashString("viewprojectioninverse"): { return LUAMATRICES_VIEWPROJECTIONINVERSE; } break;
+
 
 local function renderToTextureFunc()
     -- render a full screen quad

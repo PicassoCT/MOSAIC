@@ -13,6 +13,8 @@ uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform float rainDensity;
 uniform mat4 viewProjectionInv;
+uniform mat4 viewInv;
+uniform mat4 viewProjection;
 uniform float timePercent;
 uniform vec3 sundir;
 uniform vec3 suncolor;

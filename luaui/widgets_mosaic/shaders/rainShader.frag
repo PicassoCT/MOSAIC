@@ -41,12 +41,14 @@ const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
+const vec3 upwardVector = vec3(0.0, 1.0, 0.0);
 float depthValue = 0;
 
 
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
+uniform sampler2D viewNormalTex;
 
 uniform float time;		
 uniform float rainDensity;
@@ -58,7 +60,10 @@ uniform vec3 suncolor;
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
+uniform mat4 viewProjection;
+uniform mat4 viewInv;
 
+//Struc Definition				//////////////////////////////////////////////////////////
 //Lightsource description 
 /*
 {
@@ -86,6 +91,9 @@ struct AABB {
 vec2 uv;
 vec3 worldPos;
 vec4 dephtValueAtPixel;
+vec3 pixelDir;
+vec4 origColor;
+vec3 viewNormal;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
@@ -114,6 +122,24 @@ float getDayPercent()
 	{
 		return (timePercent - 0.25) * 2.0;
 	}	
+}
+
+vec4 getVectorColor(vec3 vector){
+	vec4 result  = mix(RED,  BLACK, vector.y);
+	result.a = 0.75;
+	return result;
+}
+
+vec4 getUVRainbow(vec2 uv){
+	uv = normalize(uv);
+	vec4 result  = mix(RED, mix(BLUE, GREEN, uv.y), uv.x);
+	result.a = 0.75;
+	return result;
+}
+
+float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
+{
+	return dot(normalize(vectorToCompare), upwardVector);
 }
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
@@ -198,37 +224,42 @@ float getTimeWiseOffset(float offset, float scale)
 	{
 		return (offset-0.5) * scale * 2.0 ;
 	}
+	return 0.0;
 }
 
-vec4 GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes)
+vec4 GetGroundReflection(vec3 pixelPos)
 {
 	vec4 ndcCoords = vec4(uv * 2.0 - 1.0, dephtValueAtPixel.r * 2.0 - 1.0, 1.0);
 	vec4 viewCoords = viewProjectionInv * ndcCoords;
-	vec3 worldCoords = (inverseViewMatrix * viewCoords).xyz;
-	mat3 rotationAroundZAxis = mat3( -1,  0,  0,
-									  0, -1,  0,
-									  0,  0,  1);
+	vec3 worldCoords = (viewInv * viewCoords).xyz;
 
 	// Compute partial derivatives
 	vec3 dx = dFdx(worldCoords);
 	vec3 dy = dFdy(worldCoords);
 
 	// Compute normal
-	vec3 normal = normalize(cross(dx, dy))*rotationAroundZAxis;
+	vec3 normal = normalize(cross(dx, dy)) ;
 
+	// how close is normal to upwards vector 
+	float upFactor = GetUpwardnessFactorOfVector(normal);
+	//if (upFactor < 0.9) { return NONE;}
+	return getVectorColor(normal);
+	/*
 	vec3 newPosition =  pixelPos * normal;
 
 
 	// Transform the new world position to view space
-	vec4 newViewCoords = viewMatrix * vec4(newPosition, 1.0);
+	vec4 newViewCoords = viewProjection * vec4(newPosition, 1.0);
 
 	// Transform the view space position to clip space
 	vec4 newClipCoords = projectionMatrix * newViewCoords;
 
 	// Transform the clip space position to NDC
 	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;
-
-	return texture2D(screentex, newNDCCoords)
+	
+	return texture2D(screentex, newNDCCoords);
+	*/
+	return NONE;
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -236,12 +267,7 @@ float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData
 	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH + RAIN_DROP_EMPTYSPACE , 0.0, RAIN_DROP_LENGTH );
 }
 
-vec4 getUVRainbow(vec2 uv){
-	uv = normalize(uv);
-	vec4 result  = mix(RED, mix(BLUE, GREEN, uv.y), uv.x);
-	result.a = 0.75;
-	return result;
-}
+
 
 vec3 truncatePosition(in vec3 pixelPosTrunc)
 {
@@ -299,29 +325,30 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
+	viewNormal = texture(viewNormalTex, uv).xyz;
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
-	int itteration= 0;
+	int itteration = 0;
 	int lastIterration =  int((1.0-tstep)/tstep);
+	vec3 pxlPosWorld;
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
-		vec3 pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
+		pxlPosWorld = mix(start, end, t);
+		//accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
 		//accumulatedColor += RayMarchBackgroundLight(pos);
-		//if (itteration == lastIterration) 
-			//accumulatedColor += GetGroundReflection(float pixelRain, vec3 pixelPos, vec3 dir, float reflectivenes);
+		if (itteration == lastIterration) 
+		{
+			accumulatedColor += GetGroundReflection(pxlPosWorld);
+		}
+	
 		itteration++;
 	}
 	//Prevent the rain from pixelating
 
 	//accumulatedColor.a = max(0.25, accumulatedColor.a);
-	return accumulatedColor;
+	return GetGroundReflection(pxlPosWorld);
 }
 											  
-float looksUpwardPercentage()
-{
-	vec3 upwardVec = vec3(0.0, 1.0, 0.0);
-	return dot(normalize(viewDirection), upwardVec);
-}
+
 
 vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 {
@@ -330,9 +357,9 @@ vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
 
 void GetWorldPos()
 {
-	dephtValueAtPixel= texture2D(depthtex, uv);
+	dephtValueAtPixel = texture2D(depthtex, uv);
 	vec4 ppos;
-	ppos.xyz = vec3(screenpos, dephtValueAtPixel.r) * 2. - 1.;
+	ppos.xyz = vec3(uv, dephtValueAtPixel.r) * 2. - 1.; 
 	ppos.a   = 1.;
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
@@ -341,7 +368,8 @@ void GetWorldPos()
 	{
 		vec3 forward = normalize(worldPos4.xyz - eyePos);
 		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
-		return eyePos + forward.xyz * abs(a);
+		worldPos = eyePos + forward.xyz * abs(a);
+		return;
 	}
 	worldPos = worldPos4.xyz;
 }
@@ -368,12 +396,11 @@ float getAvgValueCol(vec4 col)
 
 vec4 GetRainCoronaFromScreenTex() 
 {
-	vec4 upUv = uv;
-	upUv.x += 5;
-	vec4 colorAtPixel = texture2D(screentex, uv);
+	vec2 upUv = uv;
+	upUv.x += 0.1;
 	vec4 colorAtUpPixel = texture2D(screentex, upUv);
 
-	float avgDown = getAvgValueCol(colorAtPixel);
+	float avgDown = getAvgValueCol(origColor);
 	float avgUp = getAvgValueCol(colorAtUpPixel);
 
 	if (avgDown > avgUp && avgDown-avgUp > 0.25) return GREEN;
@@ -385,9 +412,9 @@ vec4 GetRainCoronaFromScreenTex()
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;	
-	GetWorldPos(uv);
+	GetWorldPos();
+	origColor = texture2D(screentex, uv);
 
-	vec4 origColor = texture2D(screentex, uv);
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -407,22 +434,22 @@ void main(void)
 	t2 = clamp(t2, 0.0, 1.0);
 	vec3 startPos = r.Dir * t1 + eyePos;
 	vec3 endPos   = r.Dir * t2 + eyePos;
+	pixelDir = normalize(startPos - endPos);
 
 	vec4 accumulatedLightColorRayDownward = RayMarchRainBackgroundLight(startPos,  endPos); 
-
+	return accumulatedLightColorRayDownward;
 	float upwardnessFactor = 0.0;
-	upwardnessFactor = looksUpwardPercentage();
+	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
 
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )
 	{
-		accumulatedLightColorRayDownward = getUVRainbow(uv); //DELME Debug
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
-		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
+	//	accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
 	}
 
 	vec4 upWardrainColor = origColor;
