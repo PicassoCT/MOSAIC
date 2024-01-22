@@ -93,7 +93,7 @@ vec3 worldPos;
 vec4 dephtValueAtPixel;
 vec3 pixelDir;
 vec4 origColor;
-vec3 viewNormal;
+vec3 groundViewNormal;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
@@ -229,10 +229,13 @@ float getTimeWiseOffset(float offset, float scale)
 
 vec4 GetGroundReflection(vec3 pixelPos)
 {
-	return vec4(viewNormal, 1.0);
-	return getVectorColor(viewNormal);
+
+
+	if (groundViewNormal.g < 0.95) return NONE;
+
+	return BLUE;
 	/*
-	vec3 newPosition =  pixelPos * normal;
+	vec3 newPosition =  pixelPos * groundViewNormal*;
 
 
 	// Transform the new world position to view space
@@ -244,9 +247,10 @@ vec4 GetGroundReflection(vec3 pixelPos)
 	// Transform the clip space position to NDC
 	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;
 	
-	return texture2D(screentex, newNDCCoords);
-	*/
+	return texture2D(screentex, newNDCCoords) + ripple;
+	
 	return NONE;
+	*/
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -330,8 +334,8 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	}
 	//Prevent the rain from pixelating
 
-	//accumulatedColor.a = max(0.25, accumulatedColor.a);
-	return GetGroundReflection(pxlPosWorld);
+	accumulatedColor.a = max(0.25, accumulatedColor.a);
+	return accumulatedColor;
 }
 											  
 
@@ -400,7 +404,7 @@ void main(void)
 	uv = gl_FragCoord.xy / viewPortSize;	
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
-	viewNormal = texture(normaltex, uv).xyz;
+	groundViewNormal = texture(normaltex, uv).xyz;
 
 	AABB box;
 	box.Min = vMinima;
@@ -424,9 +428,7 @@ void main(void)
 	pixelDir = normalize(startPos - endPos);
 
 	vec4 accumulatedLightColorRayDownward = RayMarchRainBackgroundLight(startPos,  endPos); 
-	accumulatedLightColorRayDownward.a = 0.85;
-	gl_FragColor = accumulatedLightColorRayDownward; 
-	return;
+
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
 
