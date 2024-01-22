@@ -420,7 +420,7 @@ local function prepare()
     glTexture(depthtex)
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
-    glTexture(normaltex, "$map_gbuffer_normtex")
+    glTexture(3, "$map_gbuffer_normtex")
 
 end
 
