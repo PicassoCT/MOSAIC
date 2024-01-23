@@ -1,6 +1,6 @@
 #version 150 compatibility	
 #line 100001										 
-
+//Defines //////////////////////////////////////////////////////////
 #define PI 3.14159265359
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 20.0
@@ -36,7 +36,18 @@
 #define RAIN_DROP_LENGTH 0.12
 #define RAIN_DROP_EMPTYSPACE 1.0
 #define SPEED_OF_RAIN_FALL (0.06f * 1666.6f)
+// Maximum number of cells a ripple can cross.
+#define MAX_RADIUS 2
+// Set to 1 to hash twice. Slower, but less patterns.
+#define DOUBLE_HASH 0
 
+// Hash functions shamefully stolen from:
+// https://www.shadertoy.com/view/4djSRW
+#define HASHSCALE1 .1031
+#define HASHSCALE3 vec3(.1031, .1030, .0973)
+
+
+//Constants aka defines for the weak /////////////////////////////////////
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
@@ -44,7 +55,7 @@ const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
 const vec3 upwardVector = vec3(0.0, 1.0, 0.0);
 float depthValue = 0;
 
-
+//Uniforms
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
@@ -96,6 +107,21 @@ vec4 origColor;
 vec3 groundViewNormal;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
+
+float hash12(vec2 p)
+{
+	vec3 p3  = fract(vec3(p.xyx) * HASHSCALE1);
+    p3 += dot(p3, p3.yzx + 19.19);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+vec2 hash22(vec2 p)
+{
+	vec3 p3 = fract(vec3(p.xyx) * HASHSCALE3);
+    p3 += dot(p3, p3.yzx+19.19);
+    return fract((p3.xx+p3.yz)*p3.zy);
+
+}
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
 {
@@ -242,41 +268,10 @@ vec3 rotateAroundCenter(float rAngle, vec3 rotationCenter, vec3 position)
    return rotationCenter + rotatedOffset;
 }
 
-
-/*
-Hashcode
-
-// Maximum number of cells a ripple can cross.
-#define MAX_RADIUS 2
-
-// Set to 1 to hash twice. Slower, but less patterns.
-#define DOUBLE_HASH 0
-
-// Hash functions shamefully stolen from:
-// https://www.shadertoy.com/view/4djSRW
-#define HASHSCALE1 .1031
-#define HASHSCALE3 vec3(.1031, .1030, .0973)
-
-float hash12(vec2 p)
+vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs) 
 {
-	vec3 p3  = fract(vec3(p.xyx) * HASHSCALE1);
-    p3 += dot(p3, p3.yzx + 19.19);
-    return fract((p3.x + p3.y) * p3.z);
-}
-
-vec2 hash22(vec2 p)
-{
-	vec3 p3 = fract(vec3(p.xyx) * HASHSCALE3);
-    p3 += dot(p3, p3.yzx+19.19);
-    return fract((p3.xx+p3.yz)*p3.zy);
-
-}
-
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
-    float resolution = 10. * exp2(-3.*iMouse.x/iResolution.x);
-	vec2 uv = fragCoord.xy / iResolution.y * resolution;
-    vec2 p0 = floor(uv);
+    float resolution = 10. * exp2(-3.* -0.1);
+	vec2 p0 = floor(groundUVs);
 
     vec2 circles = vec2(0.);
     for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
@@ -307,12 +302,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*iTime + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color = texture(iChannel0, uv/resolution - intensity*n.xy).rgb + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
-	fragColor = vec4(color, 1.0);
+    vec3 color = pondColor.rgb * intensity + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
+    return vec4(color, pondColor.a);
+
 }
-
-
-*/
 
 vec4 GetGroundReflection(vec3 pixelPos)
 {
@@ -334,10 +328,12 @@ vec4 GetGroundReflection(vec3 pixelPos)
 	// Transform the clip space position to NDC
 	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;
 	
-	return texture2D(screentex, newNDCCoords) + ripple;
+	return  + ripple;
 	
 	return NONE;
 	*/
+	vec4 mirroredReflection = texture2D(screentex, newNDCCoords);
+	return GetGroundPondRainRipples( mirroredReflection, pixePols.xz);
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
