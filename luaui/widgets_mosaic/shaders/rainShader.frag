@@ -227,6 +227,22 @@ float getTimeWiseOffset(float offset, float scale)
 	return 0.0;
 }
 
+vec3 rotateAroundCenter(float rAngle, vec3 rotationCenter, vec3 position)
+{
+	vec3 offset = position - rotationCenter;
+
+	float angle = radians(rAngle);
+    mat3 rotationMatrix = mat3(
+        cos(angle), -sin(angle), 0.0,
+        sin(angle),  cos(angle), 0.0,
+        0.0,         0.0,        1.0);
+
+    vec3 rotatedOffset = rotationMatrix * offset;
+   
+   return rotationCenter + rotatedOffset;
+}
+
+
 vec4 GetGroundReflection(vec3 pixelPos)
 {
 
@@ -234,9 +250,9 @@ vec4 GetGroundReflection(vec3 pixelPos)
 	if (groundViewNormal.g < 0.95) return NONE;
 
 	return BLUE;
-	/*
-	vec3 newPosition =  pixelPos * groundViewNormal*;
 
+	/*
+	vec3 newPosition =  rotateAroundCenter(180.0, pixelPos, eyePos);
 
 	// Transform the new world position to view space
 	vec4 newViewCoords = viewProjection * vec4(newPosition, 1.0);
