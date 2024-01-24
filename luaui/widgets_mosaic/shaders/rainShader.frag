@@ -178,8 +178,6 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 	vec4 outsideCityRainDayCol;
 	vec4 outsideCityRainNightCol;
 	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
-	float cityGlowFactor = distanceToCityCore/ CITY_GLOW_MAX_DISTANCE;
-	cityGlowFactor = max(0.0, min(1.0, cityGlowFactor));
 
   	// Night
 	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
@@ -194,7 +192,7 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
 }
 
-vec4 RayMarchBackgroundLight(vec3 Position)
+vec4 renderBackGroundLight(vec3 Position)
 {
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
 	int i=0;
@@ -393,8 +391,9 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		//accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
-		//accumulatedColor += RayMarchBackgroundLight(pos);
+		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
+		accumulatedColor += renderBackGroundLight(pxlPosWorld);
+		
 		if (itteration == lastIterration) 
 		{
 			accumulatedColor += GetGroundReflectionRipples(pxlPosWorld);
