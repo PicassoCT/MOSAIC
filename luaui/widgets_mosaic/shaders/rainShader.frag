@@ -181,12 +181,12 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 
   	// Night
 	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
-	outsideCityRainNightCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
+	outsideCityRainNightCol = mix(rainHighNightColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
 	;
 	
 	//Day
 	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
-	outsideCityRainDayCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
+	outsideCityRainDayCol = mix(rainHighDayColor	, DAY_RAIN_DARK_COL, depthOfDropFactor);
 	
 
 	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
@@ -265,7 +265,7 @@ vec3 rotateAroundCenter(float rAngle, vec3 rotationCenter, vec3 position)
 vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs) 
 {
     float resolution = 10. * exp2(-3.* -0.1);
-	vec2 p0 = floor(groundUVs);
+	vec2 p0 = floor(groundUVs*10.0);
 
     vec2 circles = vec2(0.);
     for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
@@ -280,7 +280,7 @@ vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs)
             #endif
             vec2 p = pi + hash22(hsh);
 
-            float t = fract(0.3*iTime + hash12(hsh));
+            float t = fract(0.3*time + hash12(hsh));
             vec2 v = p - uv;
             float d = length(v) - (float(MAX_RADIUS) + 1.)*t;
 
@@ -294,17 +294,17 @@ vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs)
     }
     circles /= float((MAX_RADIUS*2+1)*(MAX_RADIUS*2+1));
 
-    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*iTime + 0.5)*2.-1.)));
+    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*(time) + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color = pondColor.rgb * intensity + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    vec3 color = 0.5*RED.rgb  + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
     //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
-    return vec4(color, pondColor.a);
+    return vec4(color, 0.75);
 
 }
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
-	if (groundViewNormal.g > 0.99) return RED*sin(time);
+	if (groundViewNormal.g < 0.995) return NONE;
 
 	vec3 newPosition =  rotateAroundCenter(180.0, pixelPos, eyePos);
 
@@ -312,13 +312,14 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	vec4 newViewCoords = viewProjection * vec4(newPosition, 1.0);
 
 	// Transform the view space position to clip space
-	vec4 newClipCoords = projectionMatrix * newViewCoords;
+	vec4 newClipCoords = gl_ProjectionMatrix * newViewCoords;
 
 	// Transform the clip space position to NDC
 	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;	
 
 	vec4 mirroredReflection = texture2D(screentex, newNDCCoords);
-	return GetGroundPondRainRipples( mirroredReflection, pixePols.xz);
+	//return BLUE * GetGroundPondRainRipples( mirroredReflection, pixelPos.xz).a;
+	return GetGroundPondRainRipples( mirroredReflection, pixelPos.xz);
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -391,8 +392,8 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=0.0; t<=1.0; t+=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
-		accumulatedColor += renderBackGroundLight(pxlPosWorld);
+		//accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
+		//accumulatedColor += renderBackGroundLight(pxlPosWorld);
 		
 		if (itteration == lastIterration) 
 		{
@@ -403,7 +404,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	}
 	//Prevent the rain from pixelating
 
-	accumulatedColor.a = max(0.25, accumulatedColor.a);
+	//accumulatedColor.a = max(0.25, accumulatedColor.a);
 	return accumulatedColor;
 }
 											  
