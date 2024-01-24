@@ -308,15 +308,10 @@ vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs)
 
 }
 
-vec4 GetGroundReflection(vec3 pixelPos)
+vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
-
-
 	if (groundViewNormal.g > 0.99) return RED*sin(time);
 
-	return NONE;
-
-	/*
 	vec3 newPosition =  rotateAroundCenter(180.0, pixelPos, eyePos);
 
 	// Transform the new world position to view space
@@ -326,12 +321,8 @@ vec4 GetGroundReflection(vec3 pixelPos)
 	vec4 newClipCoords = projectionMatrix * newViewCoords;
 
 	// Transform the clip space position to NDC
-	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;
-	
-	return  + ripple;
-	
-	return NONE;
-	*/
+	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;	
+
 	vec4 mirroredReflection = texture2D(screentex, newNDCCoords);
 	return GetGroundPondRainRipples( mirroredReflection, pixePols.xz);
 }
@@ -410,7 +401,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 		//accumulatedColor += RayMarchBackgroundLight(pos);
 		if (itteration == lastIterration) 
 		{
-			accumulatedColor += GetGroundReflection(pxlPosWorld);
+			accumulatedColor += GetGroundReflectionRipples(pxlPosWorld);
 		}
 	
 		itteration++;
