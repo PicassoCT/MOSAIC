@@ -172,7 +172,6 @@ float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 
 vec4 GetDeterminiticRainColor(vec3 pxlPos )
 {
-	float distanceToCityCore = distance(pxlPos, cityCenter);
 	vec4 detRandomRainColOffset = getDeterministicColorOffset(pxlPos);
 	vec4 rainHighDayColor;
 	vec4 rainHighNightColor;
