@@ -174,28 +174,25 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 {
 	float distanceToCityCore = distance(pxlPos, cityCenter);
 	vec4 detRandomRainColOffset = getDeterministicColorOffset(pxlPos);
-  	vec4 outsideCityRainCol;
-  	vec4 rainHighColor;
-	vec4 insideCityRainCol;
-	vec4 glowMixedColNight;
-	vec4 glowMixedColDay;
+	vec4 rainHighDayColor;
+	vec4 rainHighNightColor;
+	vec4 outsideCityRainDayCol;
+	vec4 outsideCityRainNightCol;
 	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
 	float cityGlowFactor = distanceToCityCore/ CITY_GLOW_MAX_DISTANCE;
 	cityGlowFactor = max(0.0, min(1.0, cityGlowFactor));
 
   	// Night
-	rainHighColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
-	outsideCityRainCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
-	insideCityRainCol = mix(rainHighColor, NIGHT_RAIN_CITYGLOW_COL, depthOfDropFactor);
-	glowMixedColNight = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);
+	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
+	outsideCityRainNightCol = mix(rainHighColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
+	;
 	
 	//Day
-	rainHighColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
-	outsideCityRainCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
-	insideCityRainCol = mix(rainHighColor, DAY_RAIN_CITYGLOW_COL, depthOfDropFactor);	
-	glowMixedColDay = mix(outsideCityRainCol, insideCityRainCol, cityGlowFactor);	
+	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
+	outsideCityRainDayCol = mix(rainHighColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
+	
 
-	return mix(glowMixedColDay, glowMixedColNight, getDayPercent());
+	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
 }
 
 vec4 RayMarchBackgroundLight(vec3 Position)
