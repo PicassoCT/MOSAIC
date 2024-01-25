@@ -263,7 +263,7 @@ vec3 rotateAroundCenter(float rAngle, vec3 rotationCenter, vec3 position)
    return rotationCenter + rotatedOffset;
 }
 
-vec4 GetGroundPondRainRipples(vec4 orgColor, vec2 groundUVs) 
+vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {
     float resolution = 10. * exp2(-3.* -0.1);
 	vec2 p0 = floor(groundUVs / MAP_SCALE); 
@@ -297,7 +297,7 @@ vec4 GetGroundPondRainRipples(vec4 orgColor, vec2 groundUVs)
 
     float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*(time) + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color = BLACK + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    vec3 color = BLACK.rgb + suncolor.rgb * 5.* pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
     //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
     return vec4(color, 1.0);
 
@@ -319,8 +319,8 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;	
 
 	vec4 mirroredReflection = texture2D(screentex, newNDCCoords);
-	//return BLUE * GetGroundPondRainRipples( mirroredReflection, pixelPos.xz).a;
-	return mirroredReflection + GetGroundPondRainRipples( pixelPos.xz);
+	
+	return mirroredReflection * 0.5 + GetGroundPondRainRipples( pixelPos.xz);
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -387,24 +387,15 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	const float tstep = 1. / numsteps;
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
-	int itteration = 0;
-	int lastIterration =  int((1.0-tstep)/tstep);
+	accumulatedColor = GetGroundReflectionRipples(end);
 	vec3 pxlPosWorld;
-	for (float t=0.0; t<=1.0; t+=tstep) 
+	for (float t=1.0; t>=0.; t-=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		//accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
+		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld);
-		
-		if (itteration == lastIterration) 
-		{
-			accumulatedColor += GetGroundReflectionRipples(pxlPosWorld);
-		}
-	
-		itteration++;
 	}
 	//Prevent the rain from pixelating
-
 	//accumulatedColor.a = max(0.25, accumulatedColor.a);
 	return accumulatedColor;
 }
