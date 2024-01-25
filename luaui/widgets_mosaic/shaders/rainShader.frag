@@ -11,7 +11,8 @@
 #define MAX_HEIGTH_RAIN 192.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (192.0)
-#define CITY_GLOW_MAX_DISTANCE (2048.0 * METER)
+#define MAP_SCALE (4096.0 / 5.0)
+
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
@@ -262,10 +263,10 @@ vec3 rotateAroundCenter(float rAngle, vec3 rotationCenter, vec3 position)
    return rotationCenter + rotatedOffset;
 }
 
-vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs) 
+vec4 GetGroundPondRainRipples(vec4 orgColor, vec2 groundUVs) 
 {
     float resolution = 10. * exp2(-3.* -0.1);
-	vec2 p0 = floor(groundUVs*10.0);
+	vec2 p0 = floor(groundUVs / MAP_SCALE); 
 
     vec2 circles = vec2(0.);
     for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
@@ -296,9 +297,9 @@ vec4 GetGroundPondRainRipples(vec4 pondColor, vec2 groundUVs)
 
     float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*(time) + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color = 0.5*RED.rgb  + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    vec3 color = BLACK + 5.*pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
     //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
-    return vec4(color, 0.75);
+    return vec4(color, 1.0);
 
 }
 
@@ -319,7 +320,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(screentex, newNDCCoords);
 	//return BLUE * GetGroundPondRainRipples( mirroredReflection, pixelPos.xz).a;
-	return GetGroundPondRainRipples( mirroredReflection, pixelPos.xz);
+	return mirroredReflection + GetGroundPondRainRipples( pixelPos.xz);
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
