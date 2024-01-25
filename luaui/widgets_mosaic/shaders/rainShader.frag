@@ -337,7 +337,7 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
 	return pixelPos;
 }
  
-vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
+vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity)
 {	
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
@@ -346,9 +346,8 @@ vec4 renderRainPixel(int itteration, vec3 pixelCoord, float localRainDensity)
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
-
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && itteration <= 1) pixelColor += IDENTITY * 0.5f;
+	if (yAxisPulseFactor > 0.95 && RainHighlight) pixelColor += IDENTITY * 0.5f;
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	//vec2 uv = gl_FragCoord.xy / viewPortSize;
 	//pixelColor.rgb = getUVRainbow(uv).rgb;
@@ -385,6 +384,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
+	bool highlight = mod(uv.x, 0.05) < 0.0001 && mod(uv.y, 0.05) < 0.0001;
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
@@ -392,7 +392,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=1.0; t>=0.; t-=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixel(itteration, pxlPosWorld, 0.5f) * tstep;
+		accumulatedColor += renderRainPixel(highlight, pxlPosWorld, 0.5f) * tstep;
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld);
 	}
 	//Prevent the rain from pixelating
