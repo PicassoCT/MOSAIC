@@ -12,7 +12,8 @@
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (192.0)
 #define MAP_SCALE (4096.0 / 5.0)
-
+#define MIRRORED_REFLECTION_FACTOR 0.45f
+#define ADD_POND_RIPPLE_FACTOR 0.75f
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
@@ -24,7 +25,6 @@
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
-#define SKYCOL vec4(skycol, 1.0)
 
 #define NONE vec4(0.0,0.0,0.0,0.0);
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
@@ -62,7 +62,8 @@ uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
-uniform sampler2D skyboxtext;
+uniform sampler2D skyboxtex;
+
 
 uniform float time;		
 uniform float rainDensity;
@@ -71,7 +72,7 @@ uniform float timePercent;
 uniform vec3 eyePos;
 uniform vec3 sundir;
 uniform vec3 suncolor;
-unfirom vec3 skycolor;
+
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
@@ -126,6 +127,16 @@ vec2 hash22(vec2 p)
     p3 += dot(p3, p3.yzx+19.19);
     return fract((p3.xx+p3.yz)*p3.zy);
 
+}
+
+float noise(in vec3 x)
+{
+	vec3 p = floor(x);
+	vec3 f = fract(x);
+	f = f*f*(3.0-2.0*f);
+	vec2 uv = (p.xz + vec2(37.0,17.0)*p.y) + f.xz;
+	vec2 rg = texture2D( noisetex, (uv + 0.5) * noiseTexSizeInv).yx;
+	return smoothstep(0.5 - noiseCloudness, 0.5 + noiseCloudness, mix( rg.x, rg.y, f.y ));
 }
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
@@ -252,20 +263,6 @@ float getTimeWiseOffset(float offset, float scale)
 	return 0.0;
 }
 
-vec3 rotateAroundCenter(float rAngle, vec3 rotationCenter, vec3 position)
-{
-	vec3 offset = position - rotationCenter;
-
-	float angle = radians(rAngle);
-    mat3 rotationMatrix = mat3(
-        cos(angle), -sin(angle), 0.0,
-        sin(angle),  cos(angle), 0.0,
-        0.0,         0.0,        1.0);
-
-    vec3 rotatedOffset = rotationMatrix * offset;
-   
-   return rotationCenter + rotatedOffset;
-}
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {
@@ -302,8 +299,19 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
     float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*(time) + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
     vec3 color = BLACK.rgb + suncolor.rgb * 5.* pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    //Reflection texture lookup to expensive
     //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
     return vec4(color, 1.0);
+
+}
+
+vec2 getSkyboxUVs(vec3 pos)
+{
+	vec3 reflectionDir = pixelDir;
+	// Mirror around pos z-axis
+
+	//translate vector to unfolded cube uv coords
+
 
 }
 
@@ -311,7 +319,8 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
 	if (groundViewNormal.g < 0.995) return NONE;
 
-	vec3 newPosition =  rotateAroundCenter(180.0, pixelPos, eyePos);
+	vec2 skyboxUV = 
+	vec3 newPosition =  getSkyboxUVs(pixelPos);
 
 	// Transform the new world position to view space
 	vec4 newViewCoords = viewProjection * vec4(newPosition, 1.0);
@@ -324,7 +333,9 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(skyboxtex, newNDCCoords);
 	
-	return SKYCOL*0.5 +  mirroredReflection * 0.5 + GetGroundPondRainRipples( pixelPos.xz);
+	return		MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
+				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples( pixelPos.xz);
+
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -381,6 +392,11 @@ vec4 GetGradient(vec3 uvx, float distance){
 	return result;
 }
 
+vec4 renderFogClouds(vec3 pixelPos)
+{
+	//TODO transfer volume_fog code
+}
+
 vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
@@ -395,7 +411,8 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	{
 		pxlPosWorld = mix(start, end, t);
 		accumulatedColor += renderRainPixel(highlight, pxlPosWorld, 0.5f) * tstep;
-		//accumulatedColor += renderBackGroundLight(pxlPosWorld);
+		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
+		accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
 	//Prevent the rain from pixelating
 	//accumulatedColor.a = max(0.25, accumulatedColor.a);

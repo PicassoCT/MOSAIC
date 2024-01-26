@@ -96,7 +96,7 @@ local shaderLightSourcescLoc
 local cityCenterLoc
 local boolRainyArea = false
 local maxLightSources = 0
-local shaderLightSources = {}
+local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local cam = {}
@@ -235,7 +235,8 @@ local function init()
         noisetex = 1,
         screentex = 2,
         normaltex = 3,
-        raincanvastex = 4
+        raincanvastex = 4,
+        skyboxtex = 5
     }
 
     rainShader =
@@ -254,8 +255,7 @@ local function init()
                 viewPortSize = {vsx, vsy},
                 cityCenter  = {0,0,0},
                 sundir      = {0,0,0},
-                suncolor    = {0,0,0},
-                skycolor    = {0,0,0}
+                suncolor    = {0,0,0}
             }
         }
     )
@@ -282,7 +282,6 @@ local function init()
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
-    uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
       for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
@@ -498,7 +497,6 @@ end
 function widget:GameFrame()
     sunDir = {gl.GetSun('pos')}
     sunCol = {gl.GetSun('specular')}
-    skyCol = {gl.GetAtmosphere("skyColor")}
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
