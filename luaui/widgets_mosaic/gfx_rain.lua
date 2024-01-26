@@ -424,7 +424,6 @@ local function prepare()
     glTexture(screentex)
     glTexture(3, "$map_gbuffer_normtex")
     glTexture(5, "$sky_reflection")
-
 end
 
 local function DrawRain()

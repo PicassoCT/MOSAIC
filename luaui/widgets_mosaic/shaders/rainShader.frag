@@ -6,12 +6,15 @@
 #define MAX_DEPTH_RESOLUTION 20.0
 #define E_CONST 2.718281828459045235360287471352
 #define TOTAL_SCAN_DISTANCE 8192.0
+#define RAIN_RIPPLE_SCALE (4096.0 / 5.0)
+#define WORLD_POS_SCALE (1./(4096.0 / 5.0))
+#define WORLD_POS_OFFSET (1./(4096.0 / 5.0))
 
 #define METER 0.0025
 #define MAX_HEIGTH_RAIN 192.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (192.0)
-#define MAP_SCALE (4096.0 / 5.0)
+
 #define MIRRORED_REFLECTION_FACTOR 0.45f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
 
@@ -214,7 +217,7 @@ vec4 renderBackGroundLight(vec3 Position)
 	int i=0;
 	for (i=0; i < maxLightSources; i+=2)
 	{
-		float lightSourceDistance = distance(Position, lightSources[i].xyz);
+		float lightSourceDistance = distance(Position, (lightSources[i].xyz*WORLD_POS_SCALE)+WORLD_POS_OFFSET));
 		if ( lightSourceDistance < lightSources[i].a)
 		{
 			lightColorAddition += lightSources[i+1].rgba * (1.0-exp(-lightSourceDistance));
@@ -267,7 +270,7 @@ float getTimeWiseOffset(float offset, float scale)
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {
     float resolution = 10. * exp2(-3.* -0.1);
-	vec2 p0 = floor(groundUVs / MAP_SCALE); 
+	vec2 p0 = floor(groundUVs / RAIN_RIPPLE_SCALE); 
 
     vec2 circles = vec2(0.);
     for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
@@ -305,33 +308,58 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
 
 }
 
+vec2 calculateCubemapUV(vec3 direction) {
+    vec3 absDirection = abs(direction);
+    float ma;
+    vec2 uv;
+
+    if (absDirection.x >= absDirection.y && absDirection.x >= absDirection.z) {
+        ma = 0.5 / absDirection.x;
+        if (direction.x > 0.0) {
+            uv = vec2(0.5 - direction.z * ma, 0.5 - direction.y * ma);
+        } else {
+            uv = vec2(0.5 + direction.z * ma, 0.5 - direction.y * ma);
+        }
+    } else if (absDirection.y >= absDirection.x && absDirection.y >= absDirection.z) {
+        ma = 0.5 / absDirection.y;
+        if (direction.y > 0.0) {
+            uv = vec2(0.5 + direction.x * ma, 0.5 + direction.z * ma);
+        } else {
+            uv = vec2(0.5 + direction.x * ma, 0.5 - direction.z * ma);
+        }
+    } else {
+        ma = 0.5 / absDirection.z;
+        if (direction.z > 0.0) {
+            uv = vec2(0.5 + direction.x * ma, 0.5 - direction.y * ma);
+        } else {
+            uv = vec2(0.5 - direction.x * ma, 0.5 - direction.y * ma);
+        }
+    }
+
+    return uv;
+}
+
 vec2 getSkyboxUVs(vec3 pos)
 {
-	vec3 reflectionDir = pixelDir;
+	float const angle = radians(180.0);
+    mat3 rotationMatrixYAxis = mat3(
+        cos(angle), -sin(angle), 0.0,
+        sin(angle),  cos(angle), 0.0,
+        0.0,         0.0,        1.0);
+
+	vec3 reflectionDir = rotationMatrixYAxis *pixelDir;
 	// Mirror around pos z-axis
 
-	//translate vector to unfolded cube uv coords
-
-
+	return calculateCubemapUV(reflectionDir);
 }
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
 	if (groundViewNormal.g < 0.995) return NONE;
 
-	vec2 skyboxUV = 
-	vec3 newPosition =  getSkyboxUVs(pixelPos);
+	vec2 skyboxUV =  getSkyboxUVs(pixelPos);
 
-	// Transform the new world position to view space
-	vec4 newViewCoords = viewProjection * vec4(newPosition, 1.0);
-
-	// Transform the view space position to clip space
-	vec4 newClipCoords = gl_ProjectionMatrix * newViewCoords;
-
-	// Transform the clip space position to NDC
-	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;	
-
-	vec4 mirroredReflection = texture2D(skyboxtex, newNDCCoords);
+	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
 	return		MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
 				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples( pixelPos.xz);
@@ -394,7 +422,7 @@ vec4 GetGradient(vec3 uvx, float distance){
 
 vec4 renderFogClouds(vec3 pixelPos)
 {
-	//TODO transfer volume_fog code
+	return BLACK;
 }
 
 vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
