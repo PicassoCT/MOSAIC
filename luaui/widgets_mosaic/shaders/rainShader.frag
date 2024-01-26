@@ -24,6 +24,7 @@
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
+#define SKYCOL vec4(skycol, 1.0)
 
 #define NONE vec4(0.0,0.0,0.0,0.0);
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
@@ -61,6 +62,7 @@ uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
+uniform sampler2D skyboxtext;
 
 uniform float time;		
 uniform float rainDensity;
@@ -69,11 +71,13 @@ uniform float timePercent;
 uniform vec3 eyePos;
 uniform vec3 sundir;
 uniform vec3 suncolor;
+unfirom vec3 skycolor;
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 viewInv;
+
 
 //Struc Definition				//////////////////////////////////////////////////////////
 //Lightsource description 
@@ -318,9 +322,9 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	// Transform the clip space position to NDC
 	vec2 newNDCCoords = (newClipCoords.xy / newClipCoords.w + 1.0) * 0.5;	
 
-	vec4 mirroredReflection = texture2D(screentex, newNDCCoords);
+	vec4 mirroredReflection = texture2D(skyboxtex, newNDCCoords);
 	
-	return mirroredReflection * 0.5 + GetGroundPondRainRipples( pixelPos.xz);
+	return SKYCOL*0.5 +  mirroredReflection * 0.5 + GetGroundPondRainRipples( pixelPos.xz);
 }
 
 float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
@@ -349,8 +353,6 @@ vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
 	if (yAxisPulseFactor > 0.95 && RainHighlight) pixelColor += IDENTITY * 0.5f;
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	//vec2 uv = gl_FragCoord.xy / viewPortSize;
-	//pixelColor.rgb = getUVRainbow(uv).rgb;
 	return pixelColor;	
 }	
 

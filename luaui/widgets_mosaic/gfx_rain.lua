@@ -121,7 +121,8 @@ local percentTime
 local timePercentLoc
 local timePercent = 0
 local sunDir = {0,0,0}
-local sunCol = {1,0,0}
+local sunCol = {0,0,0}
+local skyCol = {0,0,0}
 local uniformSundir
 local uniformSunColor
 local uniformEyePos
@@ -234,7 +235,7 @@ local function init()
         noisetex = 1,
         screentex = 2,
         normaltex = 3,
-        raincanvastex = 4,
+        raincanvastex = 4
     }
 
     rainShader =
@@ -251,9 +252,10 @@ local function init()
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
-                cityCenter = {0,0,0},
-                sundir = {0,0,0},
-                suncolor = {0,0,0}
+                cityCenter  = {0,0,0},
+                sundir      = {0,0,0},
+                suncolor    = {0,0,0},
+                skycolor    = {0,0,0}
             }
         }
     )
@@ -280,6 +282,7 @@ local function init()
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
+    uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
       for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
@@ -381,7 +384,6 @@ local function updateUniforms()
     diffTime = diffTime - pausedTime
     --Spring.Echo("Time passed:"..diffTime)
     glUniform(timePercentLoc, timePercent)
-    glUniform(cityCenterLoc, innerCityCenter[1], 0, innerCityCenter[3])
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
     glUniform(uniformEyePos,  spGetCameraPosition())
@@ -389,6 +391,7 @@ local function updateUniforms()
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
+    glUniform(uniformSunColor, skyCol[1], skyCol[2], skyCol[3]);
 
     glUniformMatrix(uniformViewPrjInv    ,  "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        ,     "viewinverse")
@@ -421,6 +424,7 @@ local function prepare()
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
     glTexture(3, "$map_gbuffer_normtex")
+    glTexture(5, "$sky_reflection")
 
 end
 
@@ -494,6 +498,7 @@ end
 function widget:GameFrame()
     sunDir = {gl.GetSun('pos')}
     sunCol = {gl.GetSun('specular')}
+    skyCol = {gl.GetAtmosphere("skyColor")}
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
