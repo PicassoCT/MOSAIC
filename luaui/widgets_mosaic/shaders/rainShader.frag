@@ -267,11 +267,16 @@ float getTimeWiseOffset(float offset, float scale)
 	return 0.0;
 }
 
+float getRippleHighlight(vec2 uvDistort)
+{
+return 5.0 * pow(clamp(dot(uvDistort, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.)
+}
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {    
 	 float resolution = 0.001;
-	vec2 p0 = floor(groundUVs/ resolution); 
+	vec2 p0 = floor(groundUVs ); 
+	float speed = time/100.0;
 
     vec2 circles = vec2(0.);
     for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
@@ -286,7 +291,7 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
             #endif
             vec2 p = pi + hash22(hsh);
 
-            float t = fract(0.3*time + hash12(hsh));
+            float t = fract(speed + hash12(hsh));
             vec2 v = p - uv;
             float d = length(v) - (float(MAX_RADIUS) + 1.)*t;
 
@@ -300,13 +305,14 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
     }
     circles /= float((MAX_RADIUS * 2 + 1)*(MAX_RADIUS * 2 +1));
 
-    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract( mod(0.05*(time), 1.0)))));
-    vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color =  texture(screentex, uv/resolution - intensity*n.xy).rgb 
-    			  + 5.* pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.); 
+    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract( mod(speed, 1.0)))));
+    vec3 uvDistort = vec3(circles, sqrt(1. - dot(circles, circles)));
+    vec3 color =  RED.rgb  	+ getRippleHighlight(vec2 uvDistort);
+    						//+ texture(screentex, uv - intensity * uvDistort.xz).rgb 
+    			 ; 
     //Reflection texture lookup to expensive
     //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
-    return vec4(color, 1.0);
+    return vec4(color, 0.25);
 }
 
 vec2 calculateCubemapUV(vec3 direction) {
@@ -354,9 +360,10 @@ vec2 getSkyboxUVs(vec3 pos)
 	return calculateCubemapUV(reflectionDir);
 }
 
-vec4 checkers(vec3 pos)
+vec4 checkers(vec3 pos, float xOffset)
 {
-	float modFactor= 0.25;
+	pos.x += xOffset;
+	float modFactor= 1.0;
 	vec3 res = mod(pos, vec3(modFactor));
 	if (res.x < modFactor/2 && res.z < modFactor/2) return RED;
 	if (res.x > modFactor/2 && res.z > modFactor/2) return RED;
@@ -367,14 +374,14 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
 	if (groundViewNormal.g < 0.995) return NONE;
 
-	//return checkers(pixelPos);
+	//return checkers(pixelPos, time/10.0);
 
 	vec2 skyboxUV =  getSkyboxUVs(pixelPos);
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	return		BLUE +//MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
-				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples( pixelPos.xz);
+	return		//MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
+				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples( pixelPos.xy);
 
 }
 
@@ -382,7 +389,6 @@ float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData
 {
 	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH + RAIN_DROP_EMPTYSPACE , 0.0, RAIN_DROP_LENGTH );
 }
-
 
 
 vec3 truncatePosition(in vec3 pixelPosTrunc)

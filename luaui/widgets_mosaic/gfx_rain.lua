@@ -5,7 +5,7 @@ function widget:GetInfo()
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
-        layer = -1,
+        layer = 1,
         enabled = true, --  loaded by default?
         hidden = false
     }
@@ -468,7 +468,7 @@ function widget:Initialize()
 
 end
 
-function widget:DrawScreen()
+function widget:DrawWorld()
     if boolRainActive == false then
         return  
     end
