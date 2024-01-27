@@ -118,31 +118,33 @@ vec3 groundViewNormal;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
-float hash12(vec2 p)
+vec3 hash3( vec2 p )
 {
-	vec3 p3  = fract(vec3(p.xyx) * HASHSCALE1);
-    p3 += dot(p3, p3.yzx + 19.19);
-    return fract((p3.x + p3.y) * p3.z);
+    vec3 q = vec3( dot(p,vec2(127.1,311.7)), 
+				   dot(p,vec2(269.5,183.3)), 
+				   dot(p,vec2(419.2,371.9)) );
+	return fract(sin(q)*43758.5453);
 }
 
-vec2 hash22(vec2 p)
+float noise( in vec2 x)
 {
-	vec3 p3 = fract(vec3(p.xyx) * HASHSCALE3);
-    p3 += dot(p3, p3.yzx+19.19);
-    return fract((p3.xx+p3.yz)*p3.zy);
-
+    vec2 p = floor(x);
+    vec2 f = fract(x);
+		
+	float va = 0.0;
+    for( int j=-2; j<=2; j++ )
+    for( int i=-2; i<=2; i++ )
+    {
+        vec2 g = vec2( float(i),float(j) );
+		vec3 o = hash3( p + g );
+		vec2 r = g - f + o.xy;
+		float d = sqrt(dot(r,r))volumetric fog;
+	    float ripple = max(mix(smoothstep(0.99,0.999,max(cos(d - time * 2. + (o.x + o.y) * 5.0), 0.)), 0., d), 0.);
+        va += ripple;
+    }
+	
+    return va;
 }
-
-float noise(in vec3 x)
-{
-	vec3 p = floor(x);
-	vec3 f = fract(x);
-	f = f*f*(3.0-2.0*f);
-	vec2 uv = (p.xz + vec2(37.0,17.0)*p.y) + f.xz;
-	vec2 rg = texture2D( noisetex, (uv + 0.5) * noiseTexSizeInv).yx;
-	return smoothstep(0.5 - noiseCloudness, 0.5 + noiseCloudness, mix( rg.x, rg.y, f.y ));
-}
-
 bool isInIntervallAround(float value, float targetValue, float intervall)
 {
 	return value +intervall >= targetValue && value - intervall <= targetValue;
@@ -267,52 +269,13 @@ float getTimeWiseOffset(float offset, float scale)
 	return 0.0;
 }
 
-float getRippleHighlight(vec2 uvDistort)
-{
-return 5.0 * pow(clamp(dot(uvDistort, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.)
-}
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
-{    
-	 float resolution = 0.001;
-	vec2 p0 = floor(groundUVs ); 
-	float speed = time/100.0;
-
-    vec2 circles = vec2(0.);
-    for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
-    {
-        for (int i = -MAX_RADIUS; i <= MAX_RADIUS; ++i)
-        {
-			vec2 pi = p0 + vec2(i, j);
-            #if DOUBLE_HASH
-            vec2 hsh = hash22(pi);
-            #else
-            vec2 hsh = pi;
-            #endif
-            vec2 p = pi + hash22(hsh);
-
-            float t = fract(speed + hash12(hsh));
-            vec2 v = p - uv;
-            float d = length(v) - (float(MAX_RADIUS) + 1.)*t;
-
-            float h = 1e-3;
-            float d1 = d - h;
-            float d2 = d + h;
-            float p1 = sin(31.*d1) * smoothstep(-0.6, -0.3, d1) * smoothstep(0., -0.3, d1);
-            float p2 = sin(31.*d2) * smoothstep(-0.6, -0.3, d2) * smoothstep(0., -0.3, d2);
-            circles += 0.5 * normalize(v) * ((p2 - p1) / (2. * h) * (1. - t) * (1. - t));
-        }
-    }
-    circles /= float((MAX_RADIUS * 2 + 1)*(MAX_RADIUS * 2 +1));
-
-    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract( mod(speed, 1.0)))));
-    vec3 uvDistort = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color =  RED.rgb  	+ getRippleHighlight(vec2 uvDistort);
-    						//+ texture(screentex, uv - intensity * uvDistort.xz).rgb 
-    			 ; 
-    //Reflection texture lookup to expensive
-    //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
-    return vec4(color, 0.25);
+{   
+	float f = noise( 12.0*uv) * smoothstep(0.0,0.2, sin(groundUVs.x*3.151592) * sin(groundUVs.y * 3.141592));
+	vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
+	vec3 reflectedLight = dot(normal, sundir) * suncolor ;
+    return vec4(reflectedLight, 0.25);
 }
 
 vec2 calculateCubemapUV(vec3 direction) {
@@ -369,6 +332,8 @@ vec4 checkers(vec3 pos, float xOffset)
 	if (res.x > modFactor/2 && res.z > modFactor/2) return RED;
 	return GREEN;
 }
+
+
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
@@ -437,11 +402,65 @@ vec4 GetGradient(vec3 uvx, float distance){
 	result.a = distance;
 	return result;
 }
+///////////////////////////////////FOG ///////////////////////////////////////////////////////////
+#define VOLUME_FOG_DENSITY         0.02
+#define VOLUME_BRIGHTNESS_CLAMP    0.3
+
+#define VOLUME_RES                 0.5
+#define VOLUME_MAX_STEPS           16
+
+#define VOLUME_USE_NOISE           YES
+#define VOLUME_ANIMATE_NOISE       YES
+
+#define VOLUME_USE_BILATERAL_BLUR  YES
+#define VOLUME_BLUR_SIZE           0.0025
+#define VOLUME_BLUR_QUALITY        2.0
+#define VOLUME_BLUR_DIRECTIONS     8.0
+
+#define VOLUME_USE_TAA             YES
+#define VOLUME_DEBUG_TAA           NO
+#define VOLUME_TAA_MAX_REUSE       0.9
+#define VOLUME_TAA_MAX_DIST        0.5
 
 vec4 renderFogClouds(vec3 pixelPos)
 {
+	/*
+  	float startOffset = 0.0;
+
+    #if VOLUME_USE_NOISE == 1
+    int frame = 0;
+        #if VOLUME_ANIMATE_NOISE == 1
+            frame = iFrame % 64;
+        #endif
+    
+    float goldenRatio = 1.61803398875;
+    float invGoldenRatio = 1.0/goldenRatio;
+    
+    float blue = texture(iChannel1, pixel / 1024.0f).r;
+    startOffset = blue * 1.0;
+    startOffset = fract(blue + float(frame) * invGoldenRatio);
+    #endif
+
+    float fogLitPercent = 0.0;
+    for (int i = 0; i < VOLUME_MAX_STEPS; ++i) {
+        float rayPercent = (startOffset + float(i)) / float(VOLUME_MAX_STEPS);
+        float rayStep = rayPercent * hitDistance;
+        
+        vec3 o = ro + rd * rayStep;
+        Hit h = trace(o, l, 64, FAR_PLANE, SURF_HIT);
+        
+        fogLitPercent = mix(fogLitPercent, (h.dist >= FAR_PLANE) ? 1.0 : 0.0, 1.0f / float(i+1));
+    }
+    
+    vec3 fogColor = mix(vec3(0, 0, 0), lightColor, fogLitPercent);
+    float absorb = exp(-hitDistance * VOLUME_FOG_DENSITY);
+    
+    // return mix(fogColor, vec3(0, 0, 0), absorb);
+    return clamp(1.-absorb, 0.0, VOLUME_BRIGHTNESS_CLAMP) * fogColor;
+	*/
 	return BLACK;
 }
+
 
 vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 {	
