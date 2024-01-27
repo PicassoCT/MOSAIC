@@ -53,6 +53,7 @@
 
 
 //Constants aka defines for the weak /////////////////////////////////////
+const float noiseCloudness= float(0.7) * 0.5;
 const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
@@ -217,7 +218,7 @@ vec4 renderBackGroundLight(vec3 Position)
 	int i=0;
 	for (i=0; i < maxLightSources; i+=2)
 	{
-		float lightSourceDistance = distance(Position, (lightSources[i].xyz*WORLD_POS_SCALE)+WORLD_POS_OFFSET));
+		float lightSourceDistance = distance(Position, (lightSources[i].xyz*WORLD_POS_SCALE) + WORLD_POS_OFFSET);
 		if ( lightSourceDistance < lightSources[i].a)
 		{
 			lightColorAddition += lightSources[i+1].rgba * (1.0-exp(-lightSourceDistance));
@@ -268,9 +269,9 @@ float getTimeWiseOffset(float offset, float scale)
 
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
-{
-    float resolution = 10. * exp2(-3.* -0.1);
-	vec2 p0 = floor(groundUVs / RAIN_RIPPLE_SCALE); 
+{    
+	 float resolution = 0.001;
+	vec2 p0 = floor(groundUVs/ resolution); 
 
     vec2 circles = vec2(0.);
     for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j)
@@ -297,15 +298,15 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
             circles += 0.5 * normalize(v) * ((p2 - p1) / (2. * h) * (1. - t) * (1. - t));
         }
     }
-    circles /= float((MAX_RADIUS*2+1)*(MAX_RADIUS*2+1));
+    circles /= float((MAX_RADIUS * 2 + 1)*(MAX_RADIUS * 2 +1));
 
-    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05*(time) + 0.5)*2.-1.)));
+    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract( mod(0.05*(time), 1.0)))));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 color = BLACK.rgb + suncolor.rgb * 5.* pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    vec3 color =  texture(screentex, uv/resolution - intensity*n.xy).rgb 
+    			  + 5.* pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.); 
     //Reflection texture lookup to expensive
     //texture(iChannel0, uv/resolution - intensity*n.xy).rgb 	fragColor = vec4(color, 1.0);
     return vec4(color, 1.0);
-
 }
 
 vec2 calculateCubemapUV(vec3 direction) {
@@ -341,7 +342,7 @@ vec2 calculateCubemapUV(vec3 direction) {
 
 vec2 getSkyboxUVs(vec3 pos)
 {
-	float const angle = radians(180.0);
+	const float  angle = radians(180.0);
     mat3 rotationMatrixYAxis = mat3(
         cos(angle), -sin(angle), 0.0,
         sin(angle),  cos(angle), 0.0,
@@ -353,15 +354,26 @@ vec2 getSkyboxUVs(vec3 pos)
 	return calculateCubemapUV(reflectionDir);
 }
 
+vec4 checkers(vec3 pos)
+{
+	float modFactor= 0.25;
+	vec3 res = mod(pos, vec3(modFactor));
+	if (res.x < modFactor/2 && res.z < modFactor/2) return RED;
+	if (res.x > modFactor/2 && res.z > modFactor/2) return RED;
+	return GREEN;
+}
+
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
 	if (groundViewNormal.g < 0.995) return NONE;
+
+	//return checkers(pixelPos);
 
 	vec2 skyboxUV =  getSkyboxUVs(pixelPos);
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	return		MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
+	return		BLUE +//MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
 				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples( pixelPos.xz);
 
 }
@@ -434,6 +446,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
+	return accumulatedColor;
 	vec3 pxlPosWorld;
 	for (float t=1.0; t>=0.; t-=tstep) 
 	{
