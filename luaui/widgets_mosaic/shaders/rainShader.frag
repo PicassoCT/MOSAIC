@@ -362,7 +362,7 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
 	return pixelPos;
 }
  
-vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity)
+vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity, float onePixelfactor)
 {	
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
@@ -372,9 +372,10 @@ vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && RainHighlight) pixelColor += IDENTITY * 0.5f;
+	if (yAxisPulseFactor > 0.95 && RainHighlight) return pixelColor;
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	return pixelColor;	
+	
+	return pixelColor* onePixelfactor;	
 }	
 
 vec3 getPixelWorldPos(vec2 uv)
@@ -475,7 +476,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=1.0; t>=0.; t-=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixel(highlight, pxlPosWorld, 0.5f) * tstep;
+		accumulatedColor += renderRainPixel(highlight && (t >= 0) , pxlPosWorld, 0.5f, tstep);
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
 		accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
