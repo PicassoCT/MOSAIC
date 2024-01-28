@@ -271,10 +271,10 @@ float getTimeWiseOffset(float offset, float scale)
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {   
-	float f = noise( 12.0*uv) * smoothstep(0.0,0.2, sin(groundUVs.x*3.151592) * sin(groundUVs.y * 3.141592));
+	float f = noise( 128.0*uv) * smoothstep(0.0,0.2, sin(groundUVs.x*3.151592) * sin(groundUVs.y * 3.141592));
 	vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
-	vec3 reflectedLight = dot(normal, sundir) ;
-    return vec4(reflectedLight, 0.75);
+	//vec3 reflectedLight = dot(normal, sundir) ;
+    return vec4(normal, 0.75);
 }
 
 vec2 calculateCubemapUV(vec3 direction) {
