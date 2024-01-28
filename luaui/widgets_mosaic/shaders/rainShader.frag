@@ -126,7 +126,7 @@ vec3 hash3( vec2 p )
 	return fract(sin(q)*43758.5453);
 }
 
-float noise( in vec2 x)
+float noise( in vec2 x, float speed)
 {
     vec2 p = floor(x);
     vec2 f = fract(x);
@@ -139,7 +139,7 @@ float noise( in vec2 x)
 		vec3 o = hash3( p + g );
 		vec2 r = g - f + o.xy;
 		float d = sqrt(dot(r,r));
-	    float ripple = max(mix(smoothstep(0.99,0.999,max(cos(d - time * 2. + (o.x + o.y) * 5.0), 0.)), 0., d), 0.);
+	    float ripple = max(mix(smoothstep(0.99,0.999,max(cos(d - time*speed * 2. + (o.x + o.y) * 5.0), 0.)), 0., d), 0.);
         va += ripple;
     }
 	
@@ -271,10 +271,11 @@ float getTimeWiseOffset(float offset, float scale)
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {   
-	float f = noise( 128.0*uv) * smoothstep(0.0,0.2, sin(groundUVs.x*3.151592) * sin(groundUVs.y * 3.141592));
+	float f = noise(  128.0 * uv, 0.5) * smoothstep(0.0,0.2, sin(groundUVs.x*PI) * sin(groundUVs.y * PI));
 	vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
-	 float dotProduct = max(dot(normal, normalize(sundir)), 0.0)
-	vec3 reflectedLight = suncolor * dotProduct ;
+	return vec4(normal, 1.0);
+	float dotProduct = max(dot(normal, normalize(sundir)), 0.0);
+	vec3 reflectedLight =  vec3(dotProduct)*2.0;
     return vec4(reflectedLight, 0.75);
 }
 
@@ -345,7 +346,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	return		BLUE*0.25 +//MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
+	return		MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
 				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
 
 }
