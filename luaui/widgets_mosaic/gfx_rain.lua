@@ -468,6 +468,15 @@ function widget:Initialize()
 
 end
 
+--[[
+Draw Rain Reflection once:
+8:53 PM]ivand: Spring.SetMapShadingTexture("$ssmf_specular", luaTex) and Spring.SetMapShadingTexture("$ssmf_sky_refl", luaTex) look relevant 
+[8:55 PM]ivand: $ssmf_sky_refl specifically controls how strong the reflection is
+[8:56 PM]ivand: So make a lua texture with FBO, draw the default $ssmf_sky_refl there and with shader modulate it as much as you want
+[8:56 PM]ivand: Then Spring.SetMapShadingTexture("$ssmf_sky_refl", luaTex) (once) 
+
+]]
+
 function widget:DrawWorld()
     if boolRainActive == false then
         return  
