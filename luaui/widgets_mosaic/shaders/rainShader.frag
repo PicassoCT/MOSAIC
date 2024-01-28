@@ -15,7 +15,7 @@
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (192.0)
 
-#define MIRRORED_REFLECTION_FACTOR 0.45f
+#define MIRRORED_REFLECTION_FACTOR 0.55f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
@@ -268,15 +268,20 @@ float getTimeWiseOffset(float offset, float scale)
 	}
 	return 0.0;
 }
+float getZoomFactor()
+{
+	return max(1.0, eyePos.y / 128.0);
+}
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {   
-	float f = noise(  128.0 * uv, 0.5) * smoothstep(0.0,0.2, sin(groundUVs.x*PI) * sin(groundUVs.y * PI));
+	float zoomFactor = getZoomFactor();
+	float f = noise(  zoomFactor * 64.0 * uv, 0.6125); 
 	vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
-	return vec4(normal, 1.0);
-	float dotProduct = max(dot(normal, normalize(sundir)), 0.0);
-	vec3 reflectedLight =  vec3(dotProduct)*2.0;
-    return vec4(reflectedLight, 0.75);
+	float avgVal= (normal.x+normal.y+normal.z)/3.0;
+	return vec4(vec3(avgVal), 0.75);
+	float dotProduct = max(dot(normal, sundir), 0.0);
+	return vec4(vec3(dotProduct), 0.75);
 }
 
 vec2 calculateCubemapUV(vec3 direction) {
@@ -346,7 +351,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	return		MIRRORED_REFLECTION_FACTOR * mirroredReflection  + 
+	return		MIRRORED_REFLECTION_FACTOR * BLUE*0.5  + 
 				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
 
 }
@@ -366,7 +371,9 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
  
 vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity, float onePixelfactor)
 {	
-	//return mix(RED,BLACK, abs(sin(time +pixelCoord.z)) );
+	if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
+	onePixelfactor= 0.125;
+	//return mix(RED,BLACK, abs(sin(time +pixelCoord.y)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
 	vec4 randData;
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
@@ -374,10 +381,10 @@ vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && RainHighlight) return pixelColor;
+	if (yAxisPulseFactor > 0.95 && RainHighlight) return  IDENTITY;
 	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	
-	return pixelColor* onePixelfactor;	
+	return pixelColor * onePixelfactor ;	
 }	
 
 vec3 getPixelWorldPos(vec2 uv)
@@ -473,14 +480,14 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
-	return accumulatedColor;
+
 	vec3 pxlPosWorld;
-	for (float t=1.0; t>=0.; t-=tstep) 
+	for (float t=1.0; t > 0.0; t -=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixel(highlight && (t >= 0) , pxlPosWorld, 0.5f, tstep);
+		accumulatedColor += renderRainPixel(highlight && (t-tstep < 0) , pxlPosWorld, 0.5f, tstep);
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
-		accumulatedColor +=  renderFogClouds(pxlPosWorld);
+		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
 	//Prevent the rain from pixelating
 	//accumulatedColor.a = max(0.25, accumulatedColor.a);
