@@ -291,13 +291,14 @@ else -- unsynced
                     [1] = tex2,
                     [2] = normalTex,
                     [3] = reflectTex,
-                    [4] = screenTex
+                    [4] = screentex
                 },            
             uniformInt = {
                 tex1 = 0,
                 tex2 = 1,
-                reflectTex = 2,
-                screenTex= 3
+                normaltex = 2,
+                reflecttex = 3,
+                screentex= 4
             },
             uniformFloat = {
                 --viewPosX = 0,
@@ -314,7 +315,6 @@ else -- unsynced
         end
    
         Spring.Echo("NeonShader:: did compile")
-
     end
 
  
@@ -331,14 +331,15 @@ local function RenderNeonUnits()
 
         glTexture(0, "$tex1")
         glTexture(1, "$tex2")
-        glTexture(2, "$reflection") 
+        glTexture(2, "$normal") 
+        glTexture(3, "$reflection") 
         glDepthTest(true)  
 
         neonHologramShader:ActivateWith(
         function()   
-                --neonHologramShader:SetUniformFloat("viewPosX", vsx)
-                --neonHologramShader:SetUniformFloat("viewPosY", vsy)
-                --neonHologramShader:SetUniformFloat("time", Spring.GetGameSeconds() )
+                neonHologramShader:SetUniformFloat("viewPosX", vsx)
+                neonHologramShader:SetUniformFloat("viewPosY", vsy)
+                neonHologramShader:SetUniformFloat("time", Spring.GetGameSeconds() )
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
                 for i = 1, #neonUnitTables do
@@ -351,8 +352,7 @@ local function RenderNeonUnits()
                     --local neonHoloParts = neonUnitTables[i].pieces
                     local neonHoloParts = Spring.GetUnitPieceList(unitID)
                     glUnitShapeTextures(neonHoloDef, true)
-                    --glTexture(2, normalMaps[unitDefID])
-                  
+                    
                     glCulling(GL_FRONT)
                     for j = 1, #neonHoloParts do
                         local pieceID = neonHoloParts[j]
@@ -378,6 +378,7 @@ local function RenderNeonUnits()
             glTexture(1, false)
             glTexture(2, false)
             glTexture(3, false)        
+            glTexture(4, false)        
             end         
         )
 

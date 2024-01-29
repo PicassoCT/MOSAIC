@@ -1,7 +1,7 @@
     #version 150 compatibility
     //Fragmentshader
     // Set the precision for data types used in this shader
-
+    #define RED vec4(1.0, 0.0,0.0, 0.5);
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -195,7 +195,8 @@
         {            
             finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
-
+        gl_FragColor.a = RED; //DEBUG DELME
+        return;
 		gl_FragColor.rgb = finalColor.rgb;		
 	}
 
