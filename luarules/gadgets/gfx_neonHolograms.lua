@@ -25,7 +25,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
- 
+    local uniformViewPortSize 
+
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
             myAllyTeamID = Spring.GetMyAllyTeamID()
@@ -80,7 +81,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."registering holo unit")
+            echo(HEAD().."start registering holo unit")
             local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
             if engineVersion > 105.0 and  Spring.SetUnitEngineDrawMask then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
@@ -89,7 +90,7 @@ if (gadgetHandler:IsSyncedCode()) then
             local stringToSend = ""
             SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
             allNeonUnits[#allNeonUnits + 1]= unitID
-           -- Spring.Echo("Hologram Type " .. UnitDefs[unitDefID].name .. " created")
+            echo(" Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -97,15 +98,14 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then
             if count(neonUnitDataTransfer) > 0 then
-                echo(HEAD().."Visible Units:"..toString(neonUnitDataTransfer))
                 local VisibleUnitPieces = GG.VisibleUnitPieces
                 SendToUnsynced("resetUnitNeonLuaDraw")       
     			for id, value in pairs(neonUnitDataTransfer) do
-                    echo(HEAD().."Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
+                    echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
     				if id and value and VisibleUnitPieces[id] then
                         local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
-                        Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)
-    					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )                
+    					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )       
+                        echo("Complete:setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)         
     				end
     			end                
             end
@@ -153,7 +153,7 @@ else -- unsynced
     local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
-    local screenTex
+    local screentex = nil
  
 
     local glGetSun = gl.GetSun
@@ -197,7 +197,7 @@ else -- unsynced
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
 
-        screenTex= gl.CreateTexture(vsx,vsy, {
+        screentex= gl.CreateTexture(vsx,vsy, {
             target = target,
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
@@ -237,7 +237,11 @@ else -- unsynced
     local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
 
-        screenTex= gl.CreateTexture(vsx,vsy, {
+        if (screentex ~= nil  ) then
+            glDeleteTexture(screentex)
+        end  
+
+        screentex= gl.CreateTexture(vsx,vsy, {
             target = target,
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
@@ -284,8 +288,8 @@ else -- unsynced
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
-            vertex = defaultVertexShader, --neoVertexShaderFirstPass,
-            fragment =  defaultTestFragmentShader , --neoFragmenShaderFirstPass,
+            vertex =  neoVertexShaderFirstPass,
+            fragment =  neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
@@ -301,7 +305,7 @@ else -- unsynced
                 screentex= 4
             },
             uniformFloat = {
-                --viewPosX = 0,
+                viewPortSize = {vsx, vsy},
                 --viewPosY = 0,
                 --time = Spring.GetGameSeconds(),           
             },
@@ -314,6 +318,7 @@ else -- unsynced
                 return 
         end
    
+       uniformViewPortSize             = glGetUniformLocation(neonHologramShader, "viewPortSize")
         Spring.Echo("NeonShader:: did compile")
     end
 
@@ -333,13 +338,14 @@ local function RenderNeonUnits()
         glTexture(1, "$tex2")
         glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
+        glUniform(uniformViewPortSize, vsx, vsy )
+        glUniform(uniformTime, Spring.GetGameSeconds() )
+        glCopyToTexture()
         glDepthTest(true)  
 
         neonHologramShader:ActivateWith(
         function()   
-                neonHologramShader:SetUniformFloat("viewPosX", vsx)
-                neonHologramShader:SetUniformFloat("viewPosY", vsy)
-                neonHologramShader:SetUniformFloat("time", Spring.GetGameSeconds() )
+
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
                 for i = 1, #neonUnitTables do
