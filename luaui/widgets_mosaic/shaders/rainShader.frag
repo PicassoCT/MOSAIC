@@ -29,6 +29,7 @@
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
 
+#define Y_NORMAL_CUTOFFVALUE 0.995
 #define NONE vec4(0.0,0.0,0.0,0.0);
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
 #define GREEN vec4(0.0, 1.0, 0.0, 1.0)
@@ -66,6 +67,7 @@ uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
+uniform sampler2D normalunittex;
 uniform sampler2D skyboxtex;
 
 
@@ -343,7 +345,7 @@ vec4 checkers(vec3 pos, float xOffset)
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
-	if (groundViewNormal.g < 0.995) return NONE;
+	if (groundViewNormal.g < Y_NORMAL_CUTOFFVALUE) return NONE;
 
 	//return checkers(pixelPos, time/10.0);
 
@@ -480,7 +482,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
-
+	return accumulatedColor; //DELME 
 	vec3 pxlPosWorld;
 	for (float t=1.0; t > 0.0; t -=tstep) 
 	{
@@ -561,7 +563,13 @@ void main(void)
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
 	groundViewNormal = texture(normaltex, uv).xyz;
+	vec4 unitViewNormal = texture(normalunittex, uv);
+	//gl_FragColor = vec4(vec3(unitViewNormal.a), 0.75);
+	//return;
 
+	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) groundViewNormal = unitViewNormal.rgb;
+	//gl_FragColor = vec4(groundViewNormal, 0.75);
+	//return;
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;

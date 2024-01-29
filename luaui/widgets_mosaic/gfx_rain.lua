@@ -88,6 +88,7 @@ local depthtex = nil
 local noisetex = nil
 local screentex = nil
 local normaltex = nil
+local normalunittex = nil
 local raincanvastex = nil
 local startOsClock
 
@@ -154,6 +155,9 @@ function widget:ViewResize()
     if (normaltex ~= nil  ) then
         glDeleteTexture(normaltex)
     end
+   if (normalunittex ~= nil  ) then
+        glDeleteTexture(normalunittex)
+    end
 
     depthtex =
         glCreateTexture(
@@ -205,8 +209,12 @@ function widget:ViewResize()
         wrap_t = GL.CLAMP_TO_EDGE,
     }
     commonTexOpts.format = GL_RGB8_SNORM
+
     normaltex = glCreateTexture(vsx, vsy, commonTexOpts)
     errorOutIfNotInitialized(normaltex, "normaltex not existing")   
+    
+    normalunittex = glCreateTexture(vsx, vsy, commonTexOpts)
+    errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
 
     widgetHandler:UpdateCallIn("DrawScreenEffects")  
 end
@@ -235,8 +243,9 @@ local function init()
         noisetex = 1,
         screentex = 2,
         normaltex = 3,
-        raincanvastex = 4,
-        skyboxtex = 5
+        normalunittex= 4,
+        raincanvastex = 5,
+        skyboxtex = 6
     }
 
     rainShader =
@@ -423,7 +432,8 @@ local function prepare()
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
     glTexture(3, "$map_gbuffer_normtex")
-    glTexture(5, "$sky_reflection")
+    glTexture(4, "$model_gbuffer_normtex")
+    glTexture(6, "$sky_reflection")
 end
 
 local function DrawRain()
