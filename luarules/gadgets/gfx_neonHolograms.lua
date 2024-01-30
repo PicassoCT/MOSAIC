@@ -25,16 +25,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
-    local uniformViewPortSize 
-    local GL_DEPTH_BITS = 0x0D56
-    local GL_DEPTH_COMPONENT   = 0x1902
-    local GL_DEPTH_COMPONENT16 = 0x81A5
-    local GL_DEPTH_COMPONENT24 = 0x81A6
-    local GL_DEPTH_COMPONENT32 = 0x81A7
-    local GL_RGB8_SNORM = 0x8F96
-    local GL_RGBA8 = 0x8058
-    local GL_FUNC_ADD = 0x8006
-    local GL_FUNC_REVERSE_SUBTRACT = 0x800B
+
 
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
@@ -159,35 +150,47 @@ if (gadgetHandler:IsSyncedCode()) then
 
 else -- unsynced
 
-    local LuaShader = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
-    local spGetVisibleUnits = Spring.GetVisibleUnits
-    local spGetTeamColor = Spring.GetTeamColor
-    local screentex = nil
-    local afterglowbuffertex = nil
+    local LuaShader                 = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
+    local spGetVisibleUnits         = Spring.GetVisibleUnits
+    local spGetTeamColor            = Spring.GetTeamColor
 
-    local glGetSun = gl.GetSun
-    local glDepthTest = gl.DepthTest
-    local glCulling = gl.Culling
-    local glBlending = gl.Blending
 
-    local GL_SRC_ALPHA           = GL.SRC_ALPHA
-    local GL_ONE                 = GL.ONE
-    local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA     
-    local GL_BACK  = GL.BACK
-    local GL_FRONT = GL.FRONT
-
-    local glPushPopMatrix = gl.PushPopMatrix
-    local glPushMatrix = gl.PushMatrix
-    local glPopMatrix = gl.PopMatrix
-    local glUnitMultMatrix = gl.UnitMultMatrix
-    local glUnitPieceMultMatrix = gl.UnitPieceMultMatrix
-    local glUnitPiece = gl.UnitPiece
-    local glTexture = gl.Texture
-    local glUnitShapeTextures = gl.UnitShapeTextures
-    local glCopyToTexture = gl.CopyToTexture
-
-    local neonUnitTables = {}
-    local glUnitShapeTextures = gl.UnitShapeTextures
+    local glGetSun                  = gl.GetSun
+    local glDepthTest               = gl.DepthTest
+    local glCulling                 = gl.Culling
+    local glBlending                = gl.Blending
+    
+    local GL_SRC_ALPHA              = GL.SRC_ALPHA
+    local GL_ONE                    = GL.ONE
+    local GL_ONE_MINUS_SRC_ALPHA    = GL.ONE_MINUS_SRC_ALPHA     
+    local GL_BACK                   = GL.BACK
+    local GL_FRONT                  = GL.FRONT
+    local uniformViewPortSize 
+    local uniformTime
+    local GL_DEPTH_BITS = 0x0D56
+    local GL_DEPTH_COMPONENT   = 0x1902
+    local GL_DEPTH_COMPONENT16 = 0x81A5
+    local GL_DEPTH_COMPONENT24 = 0x81A6
+    local GL_DEPTH_COMPONENT32 = 0x81A7
+    local GL_RGB8_SNORM = 0x8F96
+    local GL_RGBA8 = 0x8058
+    local GL_FUNC_ADD = 0x8006
+    local GL_FUNC_REVERSE_SUBTRACT = 0x800B
+    
+    local glPushPopMatrix           = gl.PushPopMatrix
+    local glPushMatrix              = gl.PushMatrix
+    local glPopMatrix               = gl.PopMatrix
+    local glUnitMultMatrix          = gl.UnitMultMatrix
+    local glUnitPieceMultMatrix     = gl.UnitPieceMultMatrix
+    local glUnitPiece               = gl.UnitPiece
+    local glTexture                 = gl.Texture
+    local glUnitShapeTextures       = gl.UnitShapeTextures
+    local glCopyToTexture           = gl.CopyToTexture
+    local glCreateTexture           = gl.CreateTexture
+    local glDeleteTexture           = gl.DeleteTexture
+    local neonUnitTables            = {}
+    local glUnitShapeTextures       = gl.UnitShapeTextures
+    local glGetUniformLocation      = gl.GetUniformLocation
 -------Shader--FirstPass -----------------------------------------------------------
     local neoVertexShaderFirstPass  = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
     local neoFragmenShaderFirstPass = VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
@@ -197,6 +200,8 @@ else -- unsynced
     local sunChanged = false
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitPosition = Spring.GetUnitPosition
+    local screentex = nil
+    local afterglowbuffertex = nil
 
 -------------------------------------------------------------------------------------
 
@@ -250,7 +255,7 @@ else -- unsynced
             glDeleteTexture(screentex)
         end  
 
-        screentex= gl.CreateTexture(vsx,vsy, 
+        screentex= glCreateTexture(vsx,vsy, 
             {
             target = target,
             min_filter = GL.LINEAR,
@@ -320,8 +325,8 @@ else -- unsynced
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
-            vertex =  neoVertexShaderFirstPass,
-            fragment =  neoFragmenShaderFirstPass,
+            vertex =  defaultVertexShader, --neoVertexShaderFirstPass,
+            fragment = defaultTestFragmentShader,-- neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
@@ -355,6 +360,7 @@ else -- unsynced
         end
    
        uniformViewPortSize = glGetUniformLocation(neonHologramShader, "viewPortSize")
+       uniformTime = glGetUniformLocation(neonHologramShader, "time")
        glTexture(6, false)
        Spring.Echo("NeonShader:: did compile")
     end
@@ -367,6 +373,7 @@ local function RenderNeonUnits()
         end
 
         if counterNeonUnits == 0 or not boolActivated then
+            Spring.Echo("Rendering no Neon Units cause no units")
             return
         end   
 

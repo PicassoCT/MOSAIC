@@ -355,8 +355,7 @@ local function split(self, delimiter)
   return result
 end
 
-function widget:Update(dt)
-    setInnerCityPosition()
+function widget:Update(dt)   
     if boolDebugActive then boolRainActive = true; return end
     boolRainActive = isRaining()
 end
