@@ -26,6 +26,15 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
     local uniformViewPortSize 
+    local GL_DEPTH_BITS = 0x0D56
+    local GL_DEPTH_COMPONENT   = 0x1902
+    local GL_DEPTH_COMPONENT16 = 0x81A5
+    local GL_DEPTH_COMPONENT24 = 0x81A6
+    local GL_DEPTH_COMPONENT32 = 0x81A7
+    local GL_RGB8_SNORM = 0x8F96
+    local GL_RGBA8 = 0x8058
+    local GL_FUNC_ADD = 0x8006
+    local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
@@ -105,7 +114,7 @@ if (gadgetHandler:IsSyncedCode()) then
     				if id and value and VisibleUnitPieces[id] then
                         local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
     					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )       
-                        echo("Complete:setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)         
+                        echo(HEAD().."Complete:setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)         
     				end
     			end                
             end
@@ -122,7 +131,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if neonHologramTypeTable[unitDefID] then
             echo(HEAD().."Neon Hologram unit has entered LOS")
             if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                echo("Neon Hologram unit has entered LOS of myTeam")
+                echo(HEAD().."Neon Hologram unit has entered LOS of myTeam")
                 neonUnitDataTransfer[unitID] = unitID
             end
         end
@@ -154,7 +163,7 @@ else -- unsynced
     local spGetVisibleUnits = Spring.GetVisibleUnits
     local spGetTeamColor = Spring.GetTeamColor
     local screentex = nil
- 
+    local afterglowbuffertex = nil
 
     local glGetSun = gl.GetSun
     local glDepthTest = gl.DepthTest
@@ -241,13 +250,36 @@ else -- unsynced
             glDeleteTexture(screentex)
         end  
 
-        screentex= gl.CreateTexture(vsx,vsy, {
+        screentex= gl.CreateTexture(vsx,vsy, 
+            {
             target = target,
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
             wrap_s   = GL.CLAMP_TO_EDGE,
             wrap_t   = GL.CLAMP_TO_EDGE,
-          })
+            })
+
+        afterglowbuffertex = glCreateTexture(vsx,vsy,
+            {
+            min_filter = GL.LINEAR, 
+            mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE, 
+            wrap_t = GL.CLAMP_TO_EDGE,
+            }
+        )
+
+    local commonTexOpts = {
+        target = GL_TEXTURE_2D,
+        border = false,
+        min_filter = GL.NEAREST,
+        mag_filter = GL.NEAREST,
+
+        wrap_s = GL.CLAMP_TO_EDGE,
+        wrap_t = GL.CLAMP_TO_EDGE,
+    }
+    commonTexOpts.format = GL_RGB8_SNORM
+
+    normalunittex = glCreateTexture(vsx, vsy, commonTexOpts)
 
     end
 
@@ -293,16 +325,20 @@ else -- unsynced
             textures = {
                     [0] = tex1,
                     [1] = tex2,
-                    [2] = normalTex,
-                    [3] = reflectTex,
-                    [4] = screentex
+                    [2] = normaltex,
+                    [3] = reflecttex,
+                    [4] = screentex,
+                    [5] = normalunittex,
+                    [6] = afterglowbuffertex,
                 },            
             uniformInt = {
                 tex1 = 0,
                 tex2 = 1,
                 normaltex = 2,
                 reflecttex = 3,
-                screentex= 4
+                screentex= 4,
+                normalunittex= 5,
+                afterglowbuffer=6
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
@@ -318,11 +354,11 @@ else -- unsynced
                 return 
         end
    
-       uniformViewPortSize             = glGetUniformLocation(neonHologramShader, "viewPortSize")
-        Spring.Echo("NeonShader:: did compile")
+       uniformViewPortSize = glGetUniformLocation(neonHologramShader, "viewPortSize")
+       glTexture(6, false)
+       Spring.Echo("NeonShader:: did compile")
     end
 
- 
 local function RenderNeonUnits()
 
         if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
@@ -338,8 +374,10 @@ local function RenderNeonUnits()
         glTexture(1, "$tex2")
         glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
+        glTexture(5, "$model_gbuffer_normtex") 
         glUniform(uniformViewPortSize, vsx, vsy )
         glUniform(uniformTime, Spring.GetGameSeconds() )
+
         glCopyToTexture()
         glDepthTest(true)  
 
@@ -385,6 +423,8 @@ local function RenderNeonUnits()
             glTexture(2, false)
             glTexture(3, false)        
             glTexture(4, false)        
+            glTexture(5, false)        
+   
             end         
         )
 

@@ -117,7 +117,6 @@ local GL_RGBA8 = 0x8058
 local GL_FUNC_ADD = 0x8006
 local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
-local innerCityCenter = {0,0,0}
 local percentTime
 local timePercentLoc
 local timePercent = 0
@@ -354,19 +353,6 @@ local function split(self, delimiter)
   end
   table.insert( result, string.sub( self, from  ) )
   return result
-end
-
-local function setInnerCityPosition()
-    --GG.innerCityCenter.x, 0,  GG.innerCityCenter.z
-    local gameRules = Spring.GetGameRulesParams ( )
-    if gameRules["innerCityCenter"] then
-        local result = split(gameRules["innerCityCenter"], "|")
-        innerCityCenter[1] = tonumber(result[1])
-        innerCityCenter[3] = tonumber(result[2])
-    else
-        innerCityCenter[1] = Game.mapSizeX/2
-        innerCityCenter[3] = Game.mapSizeZ/2
-    end
 end
 
 function widget:Update(dt)

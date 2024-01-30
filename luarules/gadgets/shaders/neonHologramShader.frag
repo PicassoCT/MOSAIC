@@ -5,12 +5,13 @@
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
-    uniform sampler2D normalTex;
-    uniform sampler2D reflectTex;
-    uniform sampler2D screenTex;
+    uniform sampler2D normaltex;
+    uniform sampler2D reflecttex;
+    uniform sampler2D screentex;
+    uniform sampler2D normalunittex;
 
     uniform float time;
-    //uniform vec2 viewPortSize;
+    uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
     float radius = 16.0;
     float DISTANCE_VISIBILITY_PIXEL_WORLD = 100.0;
@@ -18,7 +19,6 @@
     // Varyings passed from the vertex shader
     in Data {
         vec3 vViewCameraDir;
-        vec3 vWorldNormal;
         vec2 vSphericalUVs;
         vec3 vPixelPositionWorld;
         vec2 vTexCoord;
@@ -35,19 +35,22 @@
         return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
     }
 
-    vec4 addBorderGlowToColor(vec4 color, float averageShadow){
+    vec4 addBorderGlowToColor(vec4 color, float averageShadow)
+    {
         float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
         vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
         color.xyz =  color.xyz + overlayAlpha.xyz;
         
-        if (overlayAlpha.x > 0.5){
+        if (overlayAlpha.x > 0.5)
+        {
             color.a = mix(color.a, overlayAlpha.a, color.x );
         }
 
         return color;
     }
 
-    bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSize){
+    bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSize)
+    {
         if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
            uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize )   { return true;}
           
@@ -86,7 +89,7 @@
         float effectEnd = (UnitSize - effectStart);
         float pixelEnd =  UnitHalf + pixelSize;
         
-        if (uvMod.x <  effectStart|| uvMod.x > effectEnd||
+        if (uvMod.x <  effectStart|| uvMod.x > effectEnd ||
             uvMod.y <  effectStart|| uvMod.y > effectEnd
         )
         {            
@@ -160,9 +163,9 @@
 		float vstep = 1.0;
 			
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
-		
+        uv = gl_FragCoord.xy / viewPortSize;   
+		vWorldNormal = texture2D(normaltex, uv);
 		sum += texture2D(screenTex, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
-
 	
 		float averageShadow = (vWorldNormal.x*vWorldNormal.x+vWorldNormal.y*vWorldNormal.y+vWorldNormal.z+vWorldNormal.z)/4.0;   
 		
@@ -175,7 +178,6 @@
 										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y, 0.75,  time,  0.5))
 										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
 										); 
-
                                         
         vec4 rgbaColCopy = vec4((gl_FragColor + gl_FragColor * (1.0-averageShadow)).rgb , hologramTransparency);
         
@@ -191,12 +193,14 @@
 
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
         float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
-        if (distanceTotal  < 1.0)
+        if (distanceTotal < 1.0)
         {            
             finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
-        gl_FragColor.a = RED; //DEBUG DELME
+        gl_FragColor = RED; //DEBUG DELME
         return;
 		gl_FragColor.rgb = finalColor.rgb;		
+        afterglowbuffertex = afterglowbuffertex * 0.9;
+        afterglowbuffertex += gl_FragCoord;
 	}
 

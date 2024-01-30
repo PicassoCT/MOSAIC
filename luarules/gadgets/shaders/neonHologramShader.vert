@@ -5,38 +5,34 @@
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
-    uniform sampler2D normalTex;
-    uniform sampler2D reflectTex;
-    uniform sampler2D screenTex;
+    uniform sampler2D normaltex;
+    uniform sampler2D reflecttex;
+    uniform sampler2D screentex;
+    uniform sampler2D normalunittex;
 
     
     uniform float time;
-    uniform float viewPosX;
-    uniform float viewPosY;
+
     uniform  vec3 unitCenterPosition;
 
    const float PI = 3.1415926535897932384626433832795;
 
     // Variables passed from vertex to fragment shader
-    out Data {
-            vec3 vViewCameraDir;
-            vec3 vWorldNormal;
+    out Data {      
             vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
-            vec2 vTexCoord;
-            vec4 vCamPositionWorld;
         };
 
 
 float shiver(float posy, float scalar, float size)
 {
-        if (sin(posy + time) < size)
-        { return 1.0;};
-        
-        float renormalizedTime = sin(posy +time);
-        
-        return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
-    }
+    if (sin(posy + time) < size)
+    { return 1.0;};
+    
+    float renormalizedTime = sin(posy +time);
+    
+    return scalar*((renormalizedTime-(1.0 + (size/2.0)))/ (size/2.0));
+}
 
 void CreateSphericalUVs(vec3 worldPosition)
 {
@@ -54,26 +50,17 @@ void CreateSphericalUVs(vec3 worldPosition)
     vSphericalUVs.y = latitude / PI;
 }
 
-
-    void main() 
-    {
-		//TODO Loads of dead code, no idea how this worked? 
-		//Calculate the world position of the vertex
-        vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
-        CreateSphericalUVs(vPixelPositionWorld);
-		//Texture coordinates are passed on to the fragment?
-		vTexCoord.xy=  gl_MultiTexCoord0.xy;
-		//Calculate the worldNormal used to calculate a average model self-normal-shadow?
-        vWorldNormal = gl_Vertex.xyz* mat3(gl_ModelViewMatrixInverseTranspose) * (gl_NormalMatrix * gl_Normal);
-		//Calculate the world Vertex Position ? Operation Order wrong?
-        vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
-        //Crap, just crap
-		vCamPositionWorld = gl_ModelViewMatrixInverseTranspose * vec4(0.0, 0.0, 0.0, 1.0);
-
-        vViewCameraDir = vCamPositionWorld.xyz - worldVertPos.xyz;
-
-        vec3 posCopy = gl_Vertex.xyz;
-        //We shiver the polygons to the side ocassionally in ripples
-    	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
-    	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0)  ;
-	}
+void main() 
+{
+	//TODO Loads of dead code, no idea how this worked? 
+	//Calculate the world position of the vertex
+    vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
+    CreateSphericalUVs(vPixelPositionWorld);
+	//Calculate the world Vertex Position ? Operation Order wrong?
+    vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
+    
+    vec3 posCopy = gl_Vertex.xyz;
+    //We shiver the polygons to the side ocassionally in ripples
+	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0)  ;
+}
