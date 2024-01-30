@@ -14,7 +14,6 @@
     uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
     float radius = 16.0;
-    float DISTANCE_VISIBILITY_PIXEL_WORLD = 100.0;
 
     // Varyings passed from the vertex shader
     in Data {
@@ -165,6 +164,7 @@
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
         uv = gl_FragCoord.xy / viewPortSize;   
 		vWorldNormal = texture2D(normaltex, uv);
+        vec4 vUnitNormal = texture2D(normalunittex, uv);
 		sum += texture2D(screenTex, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
 	
 		float averageShadow = (vWorldNormal.x*vWorldNormal.x+vWorldNormal.y*vWorldNormal.y+vWorldNormal.z+vWorldNormal.z)/4.0;   
@@ -181,7 +181,7 @@
                                         
         vec4 rgbaColCopy = vec4((gl_FragColor + gl_FragColor * (1.0-averageShadow)).rgb , hologramTransparency);
         
-        //Calculate the gaussian blur that will have to do for glow
+        //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
 		vec4 sampleBLurColor = rgbaColCopy.rgba;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
@@ -199,8 +199,16 @@
         }
         gl_FragColor = RED; //DEBUG DELME
         return;
-		gl_FragColor.rgb = finalColor.rgb;		
-        afterglowbuffertex = afterglowbuffertex * 0.9;
-        afterglowbuffertex += gl_FragCoord;
+		gl_FragColor.rgb = finalColor.rgb;
+        
+        //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
+        //apply afterglow buffer decay
+        afterglowbuffertex.rgb = afterglowbuffertex.rgb * 0.9;
+        if (vUnitNormal.a > 0.5) //TODO move to seperate method
+        {
+            afterglowbuffertex += gl_FragCoord * 0.9;
+        }
+        gl_FragColor.rgb += afterglowbuffertex;
+        
 	}
 
