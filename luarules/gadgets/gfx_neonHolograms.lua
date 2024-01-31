@@ -361,7 +361,6 @@ else -- unsynced
                 return 
         end
 
-       glTexture(6, false)
        Spring.Echo("NeonShader:: did compile")
     end
 
