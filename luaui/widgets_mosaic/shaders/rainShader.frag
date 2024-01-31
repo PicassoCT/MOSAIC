@@ -14,6 +14,8 @@
 #define MAX_HEIGTH_RAIN 192.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (192.0)
+#define INTERVALLLENGTH_DISTANCE 20.0
+#define INTERVALLLENGTH_TIME_SEC 5.5
 
 #define MIRRORED_REFLECTION_FACTOR 0.55f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
@@ -39,7 +41,7 @@
 #define SCAN_SCALE 64.0
 #define RAIN_THICKNESS_INV (1./(TOTAL_LENGTH_RAIN))
 #define RAIN_DROP_DIAMTER (0.06)
-#define RAIN_DROP_LENGTH 0.12
+#define RAIN_DROP_LENGTH 5.12
 #define RAIN_DROP_EMPTYSPACE 1.0
 #define SPEED_OF_RAIN_FALL (0.06f * 1666.6f)
 // Maximum number of cells a ripple can cross.
@@ -249,14 +251,7 @@ float GetSinCurve( float pulseValue)
 	return sin(PI_HALF * 0.5 + (pulseValue * PI_HALF));
 }
 
-float GetPulseFromIntervall(float currentIntervallShiftPos, float intervallLength, float pulseStart, float pulseEnd)
-{
-	currentIntervallShiftPos = mod(currentIntervallShiftPos, intervallLength);
-	if (currentIntervallShiftPos > pulseEnd) return 0.0;
-	if (currentIntervallShiftPos < pulseStart)return 0.0;
 
-	return GetSinCurve((currentIntervallShiftPos - pulseStart)/(pulseEnd - pulseStart));
-}
 
 float getTimeWiseOffset(float offset, float scale)
 {
@@ -355,14 +350,25 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	
 	return		MIRRORED_REFLECTION_FACTOR * BLUE*0.5  + 
 				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
-
 }
 
-float GetYAxisRainPulseFactor(float yAxis, float offsetTimeFactor, vec4 randData)
+float GetYAxisRainPulseFactor(float heigth, float offsetTimeFactor, vec4 randData)
 {
-	return GetPulseFromIntervall(SPEED_OF_RAIN_FALL * time + getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH + RAIN_DROP_EMPTYSPACE , 0.0, RAIN_DROP_LENGTH );
-}
+	//TODO at random location and random times, have the rain wane
+	// getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH + RAIN_DROP_EMPTYSPACE , 0.0, RAIN_DROP_LENGTH );
 
+	//make it stupid.. sawtooth pulses
+	float timeOffset = time + offsetTimeFactor;
+	float sawTooth = mod(timeOffset, INTERVALLLENGTH_TIME_SEC)/ INTERVALLLENGTH_TIME_SEC;
+	float position = mod(height, INTERVALLLENGTH_DISTANCE)/INTERVALLLENGTH_DISTANCE;
+
+	if (abs(position - sawTooth) < 0.1)
+	{
+		return 1.0 - abs(position - sawTooth);
+	}
+
+	return 0.0;
+}
 
 vec3 truncatePosition(in vec3 pixelPosTrunc)
 {
@@ -383,8 +389,8 @@ vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && RainHighlight) return  IDENTITY;
-	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+	if (yAxisPulseFactor > 0.95 && RainHighlight) return  vec4(1.0, 1.0, 1.0, 0.75);
+	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor * 035);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	
 	return pixelColor * onePixelfactor ;	
 }	
