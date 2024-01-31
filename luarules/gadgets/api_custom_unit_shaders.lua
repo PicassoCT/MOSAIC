@@ -213,17 +213,12 @@ local function _CompileMaterialShaders(rendering)
                     mat_src.standardUniforms =
                         {
                             cameraloc = luaShader:GetUniformLocation("camera"),
-                            camerainvloc = luaShader:GetUniformLocation(
-                                "cameraInv"),
-                            cameraposloc = luaShader:GetUniformLocation(
-                                "cameraPos"),
-                            shadowmatrixloc = luaShader:GetUniformLocation(
-                                "shadowMatrix"),
-                            shadowparamsloc = luaShader:GetUniformLocation(
-                                "shadowParams"),
+                            camerainvloc = luaShader:GetUniformLocation("cameraInv"),
+                            cameraposloc = luaShader:GetUniformLocation("cameraPos"),
+                            shadowmatrixloc = luaShader:GetUniformLocation("shadowMatrix"),
+                            shadowparamsloc = luaShader:GetUniformLocation("shadowParams"),
                             sunposloc = luaShader:GetUniformLocation("sunPos"),
-                            simframeloc = luaShader:GetUniformLocation(
-                                "simFrame")
+                            simframeloc = luaShader:GetUniformLocation("simFrame")
                         }
                 end)
                 luaShader:SetActiveStateIgnore(true)

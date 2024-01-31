@@ -302,6 +302,7 @@ else -- unsynced
             gl_Position = posCopy;
         }
     ]]
+
     local defaultTestFragmentShader = 
     [[
         #version 150 compatibility
@@ -348,7 +349,8 @@ else -- unsynced
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
                 --viewPosY = 0,
-                --time = Spring.GetGameSeconds(),           
+                time = Spring.GetGameSeconds(),           
+                unitCenterPosition = {0,0,0}
             },
         }, "Neon Hologram Shader")
 
@@ -358,9 +360,7 @@ else -- unsynced
                 gadgetHandler:RemoveGadget(self)
                 return 
         end
-   
-       uniformViewPortSize = glGetUniformLocation(neonHologramShader, "viewPortSize")
-       uniformTime = glGetUniformLocation(neonHologramShader, "time")
+
        glTexture(6, false)
        Spring.Echo("NeonShader:: did compile")
     end
@@ -382,9 +382,9 @@ local function RenderNeonUnits()
         glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
         glTexture(5, "$model_gbuffer_normtex") 
-        glUniform(uniformViewPortSize, vsx, vsy )
-        glUniform(uniformTime, Spring.GetGameSeconds() )
 
+        neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
+        neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
         glCopyToTexture()
         glDepthTest(true)  
 
@@ -396,9 +396,8 @@ local function RenderNeonUnits()
                 for i = 1, #neonUnitTables do
                     local unitID = neonUnitTables[i].id
                     local neonHoloDef = spGetUnitDefID(unitID)
-                    local px,py,pz = spGetUnitPosition(unitID)
-                    local unitCenterPosition = {px,py, pz}
-                    --neonHologramShader:SetUniformFloatArray("unitCenterPosition", unitCenterPosition)
+
+                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", spGetUnitPosition(unitID))
                    
                     --local neonHoloParts = neonUnitTables[i].pieces
                     local neonHoloParts = Spring.GetUnitPieceList(unitID)
