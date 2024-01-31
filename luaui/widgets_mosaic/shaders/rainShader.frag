@@ -11,11 +11,11 @@
 #define WORLD_POS_OFFSET (1./(4096.0 / 5.0))
 
 #define METER 0.0025
-#define MAX_HEIGTH_RAIN 192.0
+#define MAX_HEIGTH_RAIN 1024.0
 #define MIN_HEIGHT_RAIN 0.0
-#define TOTAL_LENGTH_RAIN (192.0)
-#define INTERVALLLENGTH_DISTANCE 20.0
-#define INTERVALLLENGTH_TIME_SEC 5.5
+#define TOTAL_LENGTH_RAIN (1024.0)
+#define INTERVALLLENGTH_DISTANCE 30.0
+#define INTERVALLLENGTH_TIME_SEC 25.0
 
 #define MIRRORED_REFLECTION_FACTOR 0.55f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
@@ -43,7 +43,7 @@
 #define RAIN_DROP_DIAMTER (0.06)
 #define RAIN_DROP_LENGTH 5.12
 #define RAIN_DROP_EMPTYSPACE 1.0
-#define SPEED_OF_RAIN_FALL (0.06f * 1666.6f)
+
 // Maximum number of cells a ripple can cross.
 #define MAX_RADIUS 2
 // Set to 1 to hash twice. Slower, but less patterns.
@@ -360,11 +360,11 @@ float GetYAxisRainPulseFactor(float heigth, float offsetTimeFactor, vec4 randDat
 	//make it stupid.. sawtooth pulses
 	float timeOffset = time + offsetTimeFactor;
 	float sawTooth = mod(timeOffset, INTERVALLLENGTH_TIME_SEC)/ INTERVALLLENGTH_TIME_SEC;
-	float position = mod(height, INTERVALLLENGTH_DISTANCE)/INTERVALLLENGTH_DISTANCE;
+	float position = mod(heigth, INTERVALLLENGTH_DISTANCE)/INTERVALLLENGTH_DISTANCE;
 
 	if (abs(position - sawTooth) < 0.1)
 	{
-		return 1.0 - abs(position - sawTooth);
+		return 1.0 ;
 	}
 
 	return 0.0;
@@ -379,7 +379,7 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
  
 vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity, float onePixelfactor)
 {	
-	if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
+	//if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
 	onePixelfactor= 0.125;
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.y)) );
 	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
@@ -388,11 +388,11 @@ vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
-	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelColor.y, noiseValue, randData);
-	if (yAxisPulseFactor > 0.95 && RainHighlight) return  vec4(1.0, 1.0, 1.0, 0.75);
-	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor * 035);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelCoord.y, noiseValue * 2.0 * INTERVALLLENGTH_TIME_SEC, randData);
+	if (RainHighlight) return vec4(1.0, 1.0, 1.0, 0.85 *onePixelfactor);
+	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor *onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	
-	return pixelColor * onePixelfactor ;	
+	return pixelColor ;	
 }	
 
 vec3 getPixelWorldPos(vec2 uv)
@@ -484,16 +484,17 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
-	bool highlight = mod(uv.x, 0.05) < 0.0001 && mod(uv.y, 0.05) < 0.0001;
+	
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
-	return accumulatedColor; //DELME 
+	 //return accumulatedColor;DELME 
 	vec3 pxlPosWorld;
 	for (float t=1.0; t > 0.0; t -=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixel(highlight && (t-tstep < 0) , pxlPosWorld, 0.5f, tstep);
+		bool highlight = mod(pxlPosWorld.x, 0.5) < 0.0025 && mod(pxlPosWorld.z, 0.5) < 0.0025;
+		accumulatedColor += renderRainPixel(highlight , pxlPosWorld, 0.5f, tstep);
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
@@ -502,13 +503,6 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	return accumulatedColor;
 }
 											  
-
-
-vec4 addRainDropsShader(vec4 originalColor, vec2 uv)
-{
-	return RED;
-}
-
 void GetWorldPos()
 {
 	dephtValueAtPixel = texture2D(depthtex, uv);
