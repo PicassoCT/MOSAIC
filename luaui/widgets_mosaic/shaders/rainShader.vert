@@ -1,10 +1,13 @@
 #version 150 compatibility
 #line 200001
 
-uniform sampler2D screentex;
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
+uniform sampler2D screentex;
 uniform sampler2D normaltex;
+uniform sampler2D normalunittex;
+uniform sampler2D skyboxtex;
+uniform vec4 lightSources[20];
 
 uniform float time;		
 uniform int maxLightSources;

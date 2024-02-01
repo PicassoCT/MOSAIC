@@ -100,7 +100,9 @@ if (gadgetHandler:IsSyncedCode()) then
         for i=1, #unitIDTable do
             local x,y,z = Spring.GetUnitPosition(unitIDTable[i])
             ---pos.xyz, light.rgb, light strength TODO missing
-            totalMessage = totalMessage..x.."/"..y.."/"..z.."/"
+            local full = 1.0
+            local empty = 0.0
+            totalMessage = totalMessage..x.."/"..y.."/"..z.."/"..full.."/"..empty.."/"empty.."/"..(5.0)
         end
         Spring.SetGameRulesParam("dynamic_lights", totalMessage)
     end

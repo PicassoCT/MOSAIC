@@ -93,7 +93,7 @@ local raincanvastex = nil
 local startOsClock
 
 local shaderMaxLightSrcLoc
-local shaderLightSourcescLoc 
+local shaderLightSourcescLoc  = {}
 local cityCenterLoc
 local boolRainyArea = false
 local maxLightSources = 20
@@ -287,7 +287,7 @@ local function init()
     uniformRainDensity              = glGetUniformLocation(rainShader, "rainDensity")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
-    shaderLightSourcescLoc          = glGetUniformLocation(rainShader, "lightSources")
+
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
     uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
@@ -382,8 +382,8 @@ vec4  color + strength.a
 }
 ]]
 local lightIDCounter = 0 
-function addLightSources(positionWorld, color, strength, )
-    indexPosition = lightSourceIndex + 2
+local function addLightSources(positionWorld, color, strength )
+    indexPosition = lightSourceIndex 
     indexColor = indexPosition +1
     lightIDCounter= lightIDCounter +1
     shaderLightSourcescLoc[indexPosition] = {positionWorld[0], positionWorld[1], positionWorld[2], strength}
@@ -392,7 +392,11 @@ function addLightSources(positionWorld, color, strength, )
     return lightIDCounter
 end
 
-function removeLightSources(id)
+local function resetLightSources()
+    lightSourceIndex = 0
+end
+
+local function removeLightSources(id)
     for i=1,maxLightSources-2, 2 do
         if  shaderLightSourcescLoc[i + 1][4] == id then
             --compress
@@ -413,7 +417,7 @@ local function updateUniforms()
     glUniform(uniformTime, diffTime )
     glUniform(uniformEyePos, spGetCameraPosition())
     glUniform(uniformRainDensity, rainDensity )
-    glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
+    glUniform(shaderMaxLightSrcLoc, math.floor(lightSourceIndex))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
@@ -531,12 +535,21 @@ function widget:DrawWorld()
 end
 
 local function splitStringIntoPositonColorStrength(dynLightPosString)
-    --split string into data
-    --pos.xyz, light.rgb, light strength
     local splitResult = split(dynLightPosString, '/')
-    resetDynLights()
+    resetLightSources()
     for i=1, #splitResult, 7 do
-        addLights(TODO)
+        local x,y,z = 
+        addLightSources({
+                        tonumber(splitResult[i]),
+                        tonumber(splitResult[i+1]),
+                        tonumber(splitResult[i+2])
+                        }, 
+                        {
+                        tonumber(splitResult[i+3]),
+                        tonumber(splitResult[i+4]),
+                        tonumber(splitResult[i+5])     
+                        }, 
+                        tonumber(splitResult[i+6]))
     end
 end
 

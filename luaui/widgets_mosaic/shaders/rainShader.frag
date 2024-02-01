@@ -5,17 +5,16 @@
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 20.0
 #define E_CONST 2.718281828459045235360287471352
-#define TOTAL_SCAN_DISTANCE 8192.0
-#define RAIN_RIPPLE_SCALE (4096.0 / 5.0)
-#define WORLD_POS_SCALE (1./(4096.0 / 5.0))
-#define WORLD_POS_OFFSET (1./(4096.0 / 5.0))
+
+#define WORLD_POS_SCALE (1.0)
+#define WORLD_POS_OFFSET vec3(0,0,0)
 
 #define METER 0.0025
 #define MAX_HEIGTH_RAIN 1024.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (1024.0)
 #define INTERVALLLENGTH_DISTANCE 30.0
-#define INTERVALLLENGTH_TIME_SEC 25.0
+#define INTERVALLLENGTH_TIME_SEC 1.0
 
 #define MIRRORED_REFLECTION_FACTOR 0.55f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
@@ -71,7 +70,7 @@ uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
 uniform sampler2D skyboxtex;
-
+uniform vec4 lightSources[20];
 
 uniform float time;		
 uniform float rainDensity;
@@ -97,7 +96,7 @@ vec4  position + strength
 vec4  color + id
 }
 */
-uniform vec4 lightSources[20];
+
 
 in Data {
 			vec3 fragVertexPosition;
@@ -197,24 +196,30 @@ float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
-vec4 GetDeterminiticRainColor(vec3 pxlPos )
+vec4 GetDeterministicRainColor(vec3 pxlPos )
 {
 	vec4 detRandomRainColOffset = getDeterministicColorOffset(pxlPos);
 	vec4 rainHighDayColor;
 	vec4 rainHighNightColor;
 	vec4 outsideCityRainDayCol;
 	vec4 outsideCityRainNightCol;
+
+	//if (mod(detRandomRainColOffset.x*10.0, 1.0) < 0.5 ) return RED;
+
+	//basically rain deeper down needs to be slightly darker
+	float darkenFactor = mix(0.85, 1.0, (pxlPos +pxlPos).y/MAX_HEIGTH_RAIN);
 	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
 
   	// Night
 	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
 	outsideCityRainNightCol = mix(rainHighNightColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
+	outsideCityRainNightCol.rgb *= darkenFactor;
 	;
 	
 	//Day
 	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
 	outsideCityRainDayCol = mix(rainHighDayColor	, DAY_RAIN_DARK_COL, depthOfDropFactor);
-	
+	outsideCityRainDayCol.rgb *= darkenFactor;
 
 	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
 }
@@ -225,8 +230,8 @@ vec4 renderBackGroundLight(vec3 Position)
 	
 	for (int i=0; i < maxLightSources; i+=2)
 	{
-		float lightSourceDistance = distance(Position, (lightSources[i].xyz*WORLD_POS_SCALE) + WORLD_POS_OFFSET);
-		float distanceToFallToZeroFromStrength =  lightSources[i].a / (1 + (distance*distance)) ; //TODO 
+		float lightSourceDistance = distance(Position, (lightSources[i].xyz * WORLD_POS_SCALE) + WORLD_POS_OFFSET);
+		float distanceToFallToZeroFromStrength =  lightSources[i].a / (1 + (lightSourceDistance*lightSourceDistance)) ; //TODO 
 		if ( lightSourceDistance < distanceToFallToZeroFromStrength)
 		{
 			float distanceFactor =  max(0,(1.0-exp(-lightSourceDistance)));
@@ -386,15 +391,15 @@ vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity
 	//if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
 	onePixelfactor= 0.125;
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.y)) );
-	vec4 pixelColor = GetDeterminiticRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
+	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
 	vec4 randData;
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 	vec4 randDataTruncated;
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelCoord.y, noiseValue * 2.0 * INTERVALLLENGTH_TIME_SEC, randData);
-	if (RainHighlight) return vec4(1.0, 1.0, 1.0, 0.85 *onePixelfactor);
-	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor *onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+	if (RainHighlight) return vec4(1.0, 1.0, 1.0, 0.85 * onePixelfactor);
+	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor * onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	
 	return pixelColor ;	
 }	
@@ -560,6 +565,7 @@ vec4 GetRainCoronaFromScreenTex()
 
 	return NONE;//DELME
 }
+
 
 void main(void)
 {
