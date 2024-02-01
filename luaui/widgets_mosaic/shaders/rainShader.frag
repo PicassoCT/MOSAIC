@@ -80,6 +80,7 @@ uniform float timePercent;
 uniform vec3 eyePos;
 uniform vec3 sundir;
 uniform vec3 suncolor;
+uniform vec3 skycolor;
 
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;

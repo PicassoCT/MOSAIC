@@ -96,7 +96,8 @@ local shaderMaxLightSrcLoc
 local shaderLightSourcescLoc 
 local cityCenterLoc
 local boolRainyArea = false
-local maxLightSources = 0
+local maxLightSources = 20
+local lightSourceIndex = 0
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
@@ -125,6 +126,7 @@ local sunCol = {0,0,0}
 local skyCol = {0,0,0}
 local uniformSundir
 local uniformSunColor
+local uniformSkyColor
 local uniformEyePos
 local uniformTime
 local uniformRainDensity
@@ -263,7 +265,8 @@ local function init()
                 viewPortSize = {vsx, vsy},
                 cityCenter  = {0,0,0},
                 sundir      = {0,0,0},
-                suncolor    = {0,0,0}
+                suncolor    = {0,0,0},
+                skycolor    = {0,0,0},
             }
         }
     )
@@ -290,6 +293,7 @@ local function init()
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
+    uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
       for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
@@ -371,6 +375,26 @@ function widget:Shutdown()
         gl.DeleteShader(rainShader)
     end
 end
+--[[
+{
+vec4  position + distance ?? TODO: distance is a factor of physics, as in strenght of light source * log of distnace?
+vec4  color + strength.a
+}
+]]
+local lightIDCounter = 0 
+function addLightSources(positionWorld, color)
+    indexPosition = lightSourceIndex + 2
+    indexColor = indexPosition +1
+    lightIDCounter= lightIDCounter +1
+    shaderLightSourcescLoc[indexPosition] = {positionWorld[0], positionWorld[1], positionWorld[2], lightIDCounter}
+    shaderLightSourcescLoc[indexColor] = {color[0], color[1], color[2], color[3]}
+    lightSourceIndex = lightSourceIndex + 2
+    return lightIDCounter
+end
+
+function removeLightSources()
+    --TODO 
+end
 
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
@@ -384,13 +408,14 @@ local function updateUniforms()
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
-    glUniform(uniformSunColor, skyCol[1], skyCol[2], skyCol[3]);
+    glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
 
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
     for i=1,maxLightSources do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
+      glUniform(shaderLightSourcescLoc[i + 1] ,0.0, 0.0, 0.0)
     end
 end
 
