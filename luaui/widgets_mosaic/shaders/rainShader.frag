@@ -93,8 +93,8 @@ uniform mat4 viewInv;
 //Lightsource description 
 /*
 {
-vec4  position + distance
-vec4  color + strength.a
+vec4  position + strength
+vec4  color + id
 }
 */
 uniform vec4 lightSources[20];
@@ -222,13 +222,16 @@ vec4 GetDeterminiticRainColor(vec3 pxlPos )
 vec4 renderBackGroundLight(vec3 Position)
 {
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
-	int i=0;
-	for (i=0; i < maxLightSources; i+=2)
+	
+	for (int i=0; i < maxLightSources; i+=2)
 	{
 		float lightSourceDistance = distance(Position, (lightSources[i].xyz*WORLD_POS_SCALE) + WORLD_POS_OFFSET);
-		if ( lightSourceDistance < lightSources[i].a)
+		float distanceToFallToZeroFromStrength =  lightSources[i].a / (1 + (distance*distance)) ; //TODO 
+		if ( lightSourceDistance < distanceToFallToZeroFromStrength)
 		{
-			lightColorAddition += lightSources[i+1].rgba * (1.0-exp(-lightSourceDistance));
+			float distanceFactor =  max(0,(1.0-exp(-lightSourceDistance)));
+			lightColorAddition.rgb += lightSources[i+1].rgb * distanceFactor;
+			lightColorAddition. a  += lightSources[i].a /distanceFactor;
 		}
 	}
 	return lightColorAddition;

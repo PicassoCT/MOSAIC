@@ -382,18 +382,26 @@ vec4  color + strength.a
 }
 ]]
 local lightIDCounter = 0 
-function addLightSources(positionWorld, color)
+function addLightSources(positionWorld, color, strength, )
     indexPosition = lightSourceIndex + 2
     indexColor = indexPosition +1
     lightIDCounter= lightIDCounter +1
-    shaderLightSourcescLoc[indexPosition] = {positionWorld[0], positionWorld[1], positionWorld[2], lightIDCounter}
-    shaderLightSourcescLoc[indexColor] = {color[0], color[1], color[2], color[3]}
+    shaderLightSourcescLoc[indexPosition] = {positionWorld[0], positionWorld[1], positionWorld[2], strength}
+    shaderLightSourcescLoc[indexColor] = {color[0], color[1], color[2], color[3], lightIDCounter}
     lightSourceIndex = lightSourceIndex + 2
     return lightIDCounter
 end
 
-function removeLightSources()
-    --TODO 
+function removeLightSources(id)
+    for i=1,maxLightSources-2, 2 do
+        if  shaderLightSourcescLoc[i + 1][4] == id then
+            --compress
+            for start =i, maxLightSources, 2 do
+                shaderLightSourcescLoc[i] = shaderLightSourcescLoc[i+2]
+                shaderLightSourcescLoc[i+ 1] = shaderLightSourcescLoc[i+2 +1]
+            end
+        end
+    end
 end
 
 local function updateUniforms()
@@ -403,7 +411,7 @@ local function updateUniforms()
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
-    glUniform(uniformEyePos,  spGetCameraPosition())
+    glUniform(uniformEyePos, spGetCameraPosition())
     glUniform(uniformRainDensity, rainDensity )
     glUniform(shaderMaxLightSrcLoc, math.floor(maxLightSources))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
@@ -413,7 +421,7 @@ local function updateUniforms()
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
-    for i=1,maxLightSources do
+    for i=1,maxLightSources, 2 do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
       glUniform(shaderLightSourcescLoc[i + 1] ,0.0, 0.0, 0.0)
     end
