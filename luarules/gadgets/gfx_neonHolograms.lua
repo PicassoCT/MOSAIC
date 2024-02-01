@@ -95,12 +95,24 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    local function transferDynamicLights(unitIDTable)
+        local totalMessage = ""
+        for i=1, #unitIDTable do
+            local x,y,z = Spring.GetUnitPosition(unitIDTable[i])
+            ---pos.xyz, light.rgb, light strength TODO missing
+            totalMessage = totalMessage..x.."/"..y.."/"..z.."/"
+        end
+        Spring.SetGameRulesParam("dynamic_lights", totalMessage)
+    end
+
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then
             if count(neonUnitDataTransfer) > 0 then
+                local UnitsDynGlow = {}
                 local VisibleUnitPieces = GG.VisibleUnitPieces
                 SendToUnsynced("resetUnitNeonLuaDraw")       
     			for id, value in pairs(neonUnitDataTransfer) do
+                    table.insert(UnitsDynGlow, id)
                     echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
     				if id and value and VisibleUnitPieces[id] then
                         local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
@@ -111,6 +123,8 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 		end
     end
+
+
 
     function gadget:UnitCreated(unitID, unitDefID)        
        registerUnitIfHolo(unitID, unitDefID)

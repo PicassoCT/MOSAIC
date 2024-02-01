@@ -530,9 +530,20 @@ function widget:DrawWorld()
     prevOsClock = osClock        
 end
 
+local function splitStringIntoPositonColorStrength(dynLightPosString)
+    --split string into data
+    --pos.xyz, light.rgb, light strength
+    local splitResult = split(dynLightPosString, '/')
+    resetDynLights()
+    for i=1, #splitResult, 7 do
+        addLights(TODO)
+    end
+end
+
 function widget:GameFrame()
     sunDir = {gl.GetSun('pos')}
     sunCol = {gl.GetSun('specular')}
+    local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
