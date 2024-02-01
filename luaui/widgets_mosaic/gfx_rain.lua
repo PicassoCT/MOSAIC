@@ -386,9 +386,9 @@ local function updateUniforms()
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSunColor, skyCol[1], skyCol[2], skyCol[3]);
 
-    glUniformMatrix(uniformViewPrjInv    ,  "viewprojectioninverse")
-    glUniformMatrix(uniformViewInv        ,     "viewinverse")
-    glUniformMatrix(uniformViewProjection, "viewprojection")
+    glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
+    glUniformMatrix(uniformViewInv        , "viewinverse")
+    glUniformMatrix(uniformViewProjection , "viewprojection")
     for i=1,maxLightSources do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
     end
