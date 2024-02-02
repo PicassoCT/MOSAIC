@@ -373,7 +373,7 @@ float GetYAxisRainPulseFactor(float heigth, float offsetTimeFactor, vec4 randDat
 
 	if (abs(position - sawTooth) < 0.1)
 	{
-		return 1.0 ;
+		return 1.0 - abs(position - sawTooth)  ;
 	}
 
 	return 0.0;
@@ -385,22 +385,53 @@ vec3 truncatePosition(in vec3 pixelPosTrunc)
 	pixelPos.xz = pixelPos.xz - mod(pixelPos.xz, RAIN_DROP_DIAMTER);
 	return pixelPos;
 }
+
+float windWaveMasking(vec3 pixelPos)
+{
+	pixelPos.xz = pixelPos.xz - vec2(time/30.0);
+	pixelPos.xz = pixelPos.xz * 0.005;
+	return abs(sin(time/10.0)*0.125 - texture2D(noisetex, pixelPos.xz).r);
+}
+
+vec4 fuerstPueckler(vec3 pixelCoord)
+{
+	float odd = mod(pixelCoord.z, 3.0);
+	if (odd < 1.0) return vec4(GREEN.rgb, 0.25);
+	if (odd < 2.0) return vec4(RED.rgb, 0.25);
+	if (odd <= 3.0) return vec4(BLUE.rgb, 0.25);
+
+	return NONE;
+}
+
  
-vec4 renderRainPixel(bool RainHighlight, vec3 pixelCoord, float localRainDensity, float onePixelfactor)
+vec4 renderRainPixel( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor)
 {	
+	if(windWaveMasking(pixelCoord) < 0.35) return NONE;
+	//return fuerstPueckler(pixelCoord);
 	//if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
-	onePixelfactor= 0.125;
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.y)) );
 	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
 	vec4 randData;
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
+
+
+	bool RainHighlight = false;
+	RainHighlight = (noiseValue > 0.65); 
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
 	vec4 randDataTruncated;
+
 	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
 	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelCoord.y, noiseValue * 2.0 * INTERVALLLENGTH_TIME_SEC, randData);
-	if (RainHighlight) return vec4(1.0, 1.0, 1.0, 0.85 * onePixelfactor);
-	pixelColor = vec4(pixelColor.rgb * yAxisPulseFactor, yAxisPulseFactor * onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	
+
+	if (RainHighlight && yAxisPulseFactor > 0.95)
+	{
+		//return RED;
+	 	vec4 brightRainDrop = vec4(1.0, 1.0, 1.0, 0.45 );	
+		brightRainDrop.rgb *=  (0.5 + closeNessCameraFactor/0.5);
+		return brightRainDrop;
+	} 
+	pixelColor = vec4(pixelColor.rgb * closeNessCameraFactor  , yAxisPulseFactor* onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+	//return NONE;
 	return pixelColor ;	
 }	
 
@@ -488,6 +519,7 @@ vec4 renderFogClouds(vec3 pixelPos)
 }
 
 
+
 vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
@@ -502,8 +534,8 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=1.0; t > 0.0; t -=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		bool highlight = mod(pxlPosWorld.x, 0.5) < 0.0025 && mod(pxlPosWorld.z, 0.5) < 0.0025;
-		accumulatedColor += renderRainPixel(highlight , pxlPosWorld, 0.5f, tstep);
+
+		accumulatedColor += renderRainPixel( pxlPosWorld, 0.5f, tstep, t);
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
