@@ -348,7 +348,7 @@ vec4 checkers(vec3 pos, float xOffset)
 bool rivulet(vec3 pixelPos)
 {
 	if (abs(sin(pixelPos.x) - pixelPos.z) < 0.35) return true;
-	if (abs(cos(pixelPos.x) - pixelPos.z) < 0.35) return true;
+	if (abs(cos(pixelPos.z) - pixelPos.x) < 0.35) return true;
 	return false;
 }
 
@@ -373,7 +373,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	vec4 returnColor =	MIRRORED_REFLECTION_FACTOR * BLUE*0.5  + 
+	vec4 returnColor =	MIRRORED_REFLECTION_FACTOR * BLUE * 0.5  + 
 						ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
 
 	return mix(NONE, returnColor, groundMixFactor);
