@@ -345,11 +345,27 @@ vec4 checkers(vec3 pos, float xOffset)
 	return GREEN;
 }
 
-
+bool rivulet(vec3 pixelPos)
+{
+	if (abs(sin(pixelPos.x) - pixelPos.z) < 0.35) return true;
+	if (abs(cos(pixelPos.x) - pixelPos.z) < 0.35) return true;
+	return false;
+}
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
-	if (groundViewNormal.g < Y_NORMAL_CUTOFFVALUE) return NONE;
+	bool rivuletRunning = false;
+	float groundMixFactor = 1.0;
+	if (groundViewNormal.g < Y_NORMAL_CUTOFFVALUE) 
+	{
+		//rivulets
+		if (!(groundViewNormal.g  > 0.95)) return NONE;
+
+
+		rivuletRunning =rivulet(pixelPos* 0.1);
+		if (!rivuletRunning) return NONE;
+		groundMixFactor= (groundViewNormal.g - 0.95)/0.05;
+	}
 
 	//return checkers(pixelPos, time/10.0);
 
@@ -357,8 +373,10 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	return		MIRRORED_REFLECTION_FACTOR * BLUE*0.5  + 
-				ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
+	vec4 returnColor =	MIRRORED_REFLECTION_FACTOR * BLUE*0.5  + 
+						ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
+
+	return mix(NONE, returnColor, groundMixFactor);
 }
 
 float GetYAxisRainPulseFactor(float heigth, float offsetTimeFactor, vec4 randData)
@@ -404,7 +422,7 @@ vec4 fuerstPueckler(vec3 pixelCoord)
 }
 
  
-vec4 renderRainPixel( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor)
+vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor)
 {	
 	if(windWaveMasking(pixelCoord) < 0.35) return NONE;
 	//return fuerstPueckler(pixelCoord);
@@ -425,12 +443,10 @@ vec4 renderRainPixel( vec3 pixelCoord, float localRainDensity, float onePixelfac
 
 	if (RainHighlight && yAxisPulseFactor > 0.95)
 	{
-		//return RED;
-	 	vec4 brightRainDrop = vec4(1.0, 1.0, 1.0, onePixelfactor*2 );	
-		brightRainDrop.rgb *=  (0.5 + closeNessCameraFactor/0.5);
+	 	vec4 brightRainDrop =  vec4(suncolor.rgb, onePixelfactor*2 );	
 		return brightRainDrop;
 	} 
-	pixelColor = vec4(pixelColor.rgb * closeNessCameraFactor  , onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+	pixelColor = vec4(pixelColor.rgb  , onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 	//return NONE;
 	return pixelColor ;	
 }	
@@ -535,7 +551,7 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	{
 		pxlPosWorld = mix(start, end, t);
 
-		accumulatedColor += renderRainPixel( pxlPosWorld, 0.5f, tstep*0.5, t);
+		//accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.5f, tstep*0.5, t);
 		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
