@@ -9,14 +9,14 @@
 #define WORLD_POS_SCALE (1.0)
 #define WORLD_POS_OFFSET vec3(0,0,0)
 
-#define METER 0.0025
+
 #define MAX_HEIGTH_RAIN 1024.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (1024.0)
 #define INTERVALLLENGTH_DISTANCE 30.0
 #define INTERVALLLENGTH_TIME_SEC 1.0
 
-#define MIRRORED_REFLECTION_FACTOR 0.55f
+#define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
@@ -279,6 +279,16 @@ float getZoomFactor()
 	return max(1.0, eyePos.y / 128.0);
 }
 
+vec4 checkers(vec3 pos, float xOffset)
+{
+	pos.x += xOffset;
+	float modFactor= 1.0;
+	vec3 res = mod(pos, vec3(modFactor));
+	if (res.x < modFactor/2 && res.z < modFactor/2) return RED;
+	if (res.x > modFactor/2 && res.z > modFactor/2) return RED;
+	return GREEN;
+}
+
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
 {   
 	float zoomFactor = getZoomFactor();
@@ -335,17 +345,10 @@ vec2 getSkyboxUVs(vec3 pos)
 	return calculateCubemapUV(reflectionDir);
 }
 
-vec4 checkers(vec3 pos, float xOffset)
-{
-	pos.x += xOffset;
-	float modFactor= 1.0;
-	vec3 res = mod(pos, vec3(modFactor));
-	if (res.x < modFactor/2 && res.z < modFactor/2) return RED;
-	if (res.x > modFactor/2 && res.z > modFactor/2) return RED;
-	return GREEN;
-}
 
-bool rivulet(vec3 pixelPos)
+
+//TODO getMapTexture UVs 
+bool getRivuletMask(vec3 pixelPos)
 {
 	if (abs(sin(pixelPos.x) - pixelPos.z) < 0.35) return true;
 	if (abs(cos(pixelPos.z) - pixelPos.x) < 0.35) return true;
@@ -362,7 +365,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 		if (!(groundViewNormal.g  > 0.95)) return NONE;
 
 
-		rivuletRunning =rivulet(pixelPos* 0.1);
+		rivuletRunning = getRivuletMask(pixelPos* 0.1);
 		if (!rivuletRunning) return NONE;
 		groundMixFactor= (groundViewNormal.g - 0.95)/0.05;
 	}
@@ -373,7 +376,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
 	
-	vec4 returnColor =	MIRRORED_REFLECTION_FACTOR * BLUE * 0.5  + 
+	vec4 returnColor =	MIRRORED_REFLECTION_FACTOR * BLUE  + 
 						ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
 
 	return mix(NONE, returnColor, groundMixFactor);
@@ -422,7 +425,7 @@ vec4 fuerstPueckler(vec3 pixelCoord)
 }
 
  
-vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor)
+vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor, vec4 additiveLightValue)
 {	
 	if(windWaveMasking(pixelCoord) < 0.35) return NONE;
 	//return fuerstPueckler(pixelCoord);
@@ -550,9 +553,9 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=1.0; t > 0.0; t -=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-
-		//accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.5f, tstep*0.5, t);
-		//accumulatedColor += renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
+		vec4 lightValue = renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
+		//accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.5f, tstep*0.5, t, lightValue);
+		
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
 	//Prevent the rain from pixelating
