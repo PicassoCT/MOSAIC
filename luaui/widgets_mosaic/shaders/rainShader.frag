@@ -435,7 +435,6 @@ vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePix
 	vec4 randData;
 	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
 
-
 	bool RainHighlight = false;
 	RainHighlight = (noiseValue > 0.65); 
 	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
@@ -446,11 +445,11 @@ vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePix
 
 	if (RainHighlight && yAxisPulseFactor > 0.95)
 	{
-	 	vec4 brightRainDrop =  vec4(suncolor.rgb, onePixelfactor*2 );	
+	 	vec4 brightRainDrop =  vec4(mix(suncolor.rgb ,additiveLightValue.rgb, 0.5), onePixelfactor * 2 );	
 		return brightRainDrop;
 	} 
-	pixelColor = vec4(pixelColor.rgb  , onePixelfactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-	//return NONE;
+	pixelColor = vec4(mix(pixelColor.rgb, additiveLightValue.rgb, 0.5) , max(onePixelfactor, additiveLightValue.a);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+
 	return pixelColor ;	
 }	
 
