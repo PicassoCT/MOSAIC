@@ -1775,6 +1775,8 @@ function buildAnimation()
 end
 
 function addGroundPlaceables(materialName)
+    x,y,z = Spring.GetUnitPosition(unitID)
+    globalHeightUnit = Spring.GetGroundHeight(x, z)
 	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
 	if placeAbles and count(placeAbles) > 0 then
 		groundPiecesToPlace= math.random(1,5)
@@ -1788,7 +1790,12 @@ function addGroundPlaceables(materialName)
 					WMove(randPlaceAbleID,3, opz, 0)
 					WMove(randPlaceAbleID,1, opx, 0)
                     Sleep(1)
-					placePieceOnGround(unitID, randPlaceAbleID, 0)
+                    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
+                    myHeight = Spring.GetGroundHeight(x, z)
+                    heightdifference = math.abs(globalHeightUnit - myHeight)
+                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
+
+
 					addToShowTable(randPlaceAbleID)
 					Show(randPlaceAbleID)    
 				end	

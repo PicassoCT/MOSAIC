@@ -99,12 +99,15 @@ if (gadgetHandler:IsSyncedCode()) then
         local totalMessage = ""
         for i=1, #unitIDTable do
             local x,y,z = Spring.GetUnitPosition(unitIDTable[i])
+            if x ~= nil then
             ---pos.xyz, light.rgb, light strength TODO missing
             local full = 1.0
             local empty = 0.0
-            totalMessage = totalMessage..x.."/"..y.."/"..z.."/"..full.."/"..empty.."/"empty.."/"..(5.0)
+            totalMessage = x.."/"..y.."/"..z.."/"..full.."/"..empty.."/"..empty.."/5.0"
+            Spring.SetGameRulesParam("dynamic_lights", totalMessage)
+            end
         end
-        Spring.SetGameRulesParam("dynamic_lights", totalMessage)
+      
     end
 
     function gadget:GameFrame(frame)
@@ -258,11 +261,10 @@ else -- unsynced
         counterNeonUnits= counterNeonUnits + 1
     end	
 
-   local function resetUnitNeonLuaDraw(callname)
+    local function resetUnitNeonLuaDraw(callname)
         neonUnitTables = {} 
         counterNeonUnits= 0
-    end 
-    
+    end    
 
     local function InitializeTextures()
         vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
@@ -333,7 +335,7 @@ else -- unsynced
         }
     ]]
  
-   local boolActivated = false
+    local boolActivated = false
     function gadget:Initialize() 
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
@@ -380,7 +382,7 @@ else -- unsynced
        Spring.Echo("NeonShader:: did compile")
     end
 
-local function RenderNeonUnits()
+    local function RenderNeonUnits()
 
         if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
             oldCounterNeonUnits= counterNeonUnits

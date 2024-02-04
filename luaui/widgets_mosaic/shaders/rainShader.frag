@@ -31,7 +31,7 @@
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
 
 #define Y_NORMAL_CUTOFFVALUE 0.995
-#define NONE vec4(0.0,0.0,0.0,0.0);
+#define NONE vec4(0.0,0.0,0.0,0.0)
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
 #define GREEN vec4(0.0, 1.0, 0.0, 1.0)
 #define BLUE vec4(0.0, 0.0, 1.0, 1.0)
@@ -244,7 +244,6 @@ vec4 renderBackGroundLight(vec3 Position)
 
 bool IsInGridPoint(vec3 pos, float size, float space)
 {
-
 	return ((mod(pos.x, space) < size) &&   (mod(pos.y, space) < size)  && (mod(pos.z, space) < size)) ;
 }
 
@@ -260,8 +259,6 @@ float GetSinCurve( float pulseValue)
 	return sin(PI_HALF * 0.5 + (pulseValue * PI_HALF));
 }
 
-
-
 float getTimeWiseOffset(float offset, float scale)
 {
 	if (offset < 0.5)
@@ -274,6 +271,7 @@ float getTimeWiseOffset(float offset, float scale)
 	}
 	return 0.0;
 }
+
 float getZoomFactor()
 {
 	return max(1.0, eyePos.y / 128.0);
@@ -345,13 +343,14 @@ vec2 getSkyboxUVs(vec3 pos)
 	return calculateCubemapUV(reflectionDir);
 }
 
-
-
 //TODO getMapTexture UVs 
 bool getRivuletMask(vec3 pixelPos)
 {
-	if (abs(sin(pixelPos.x) - pixelPos.z) < 0.35) return true;
-	if (abs(cos(pixelPos.z) - pixelPos.x) < 0.35) return true;
+	vec2 rivUv = pixelPos.xz;
+	rivUv.x += sin(time*0.00125);
+	rivUv.y += cos(time*0.00125);
+	float value = (texture2D(noisetex, rivUv)).r;
+	if ((value) > 0.255 )return true;
 	return false;
 }
 
@@ -365,21 +364,18 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 		if (!(groundViewNormal.g  > 0.95)) return NONE;
 
 
-		rivuletRunning = getRivuletMask(pixelPos* 0.1);
+		rivuletRunning = getRivuletMask(groundViewNormal); //TODO get ground coord 
 		if (!rivuletRunning) return NONE;
 		groundMixFactor= (groundViewNormal.g - 0.95)/0.05;
 	}
 
 	//return checkers(pixelPos, time/10.0);
+	vec4 mirroredReflection = texture2D(skyboxtex, getSkyboxUVs(pixelPos));
 
-	vec2 skyboxUV =  getSkyboxUVs(pixelPos);
-
-	vec4 mirroredReflection = texture2D(skyboxtex, skyboxUV);
+	return mix(NONE,
+			  MIRRORED_REFLECTION_FACTOR * BLUE  + ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz),
+			  groundMixFactor);
 	
-	vec4 returnColor =	MIRRORED_REFLECTION_FACTOR * BLUE  + 
-						ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz);
-
-	return mix(NONE, returnColor, groundMixFactor);
 }
 
 float GetYAxisRainPulseFactor(float heigth, float offsetTimeFactor, vec4 randData)
@@ -427,7 +423,9 @@ vec4 fuerstPueckler(vec3 pixelCoord)
  
 vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor, vec4 additiveLightValue)
 {	
-	if(windWaveMasking(pixelCoord) < 0.35) return NONE;
+	return NONE;
+
+	//if(windWaveMasking(pixelCoord) < 0.35) return NONE;
 	//return fuerstPueckler(pixelCoord);
 	//if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
 	//return mix(RED,BLACK, abs(sin(time +pixelCoord.y)) );
@@ -448,7 +446,8 @@ vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePix
 	 	vec4 brightRainDrop =  vec4(mix(suncolor.rgb ,additiveLightValue.rgb, 0.5), onePixelfactor * 2 );	
 		return brightRainDrop;
 	} 
-	pixelColor = vec4(mix(pixelColor.rgb, additiveLightValue.rgb, 0.5) , max(onePixelfactor, additiveLightValue.a);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
+	pixelColor = vec4(mix(pixelColor.rgb, additiveLightValue.rgb, 0.5) ,
+					 max(onePixelfactor, additiveLightValue.a )* yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
 
 	return pixelColor ;	
 }	
@@ -552,8 +551,9 @@ vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
 	for (float t=1.0; t > 0.0; t -=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		vec4 lightValue = renderBackGroundLight(pxlPosWorld); TODO depends on transfer function
-		//accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.5f, tstep*0.5, t, lightValue);
+		vec4 backgroundLightValue = renderBackGroundLight(pxlPosWorld); 
+		backgroundLightValue = NONE;
+		accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.5f, tstep*0.5, t, backgroundLightValue);
 		
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
