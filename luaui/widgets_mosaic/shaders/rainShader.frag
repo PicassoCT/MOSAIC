@@ -154,6 +154,10 @@ bool isInIntervallAround(float value, float targetValue, float intervall)
 	return value +intervall >= targetValue && value - intervall <= targetValue;
 }
 
+bool isAbsInIntervallAround(float value, float targetValue, float intervall)
+{
+	return abs(value) +intervall >= abs(targetValue) && abs(value) - intervall <= abs(targetValue);
+}
 float deterministicFactor(vec3 val)
 {
 	return mod((abs(val.x) + abs(val.y))/2.0, 1.0);
@@ -343,15 +347,20 @@ vec2 getSkyboxUVs(vec3 pos)
 	return calculateCubemapUV(reflectionDir);
 }
 
-//TODO getMapTexture UVs 
 bool getRivuletMask(vec3 pixelPos)
 {
-	vec2 rivUv = pixelPos.xz;
+	vec2 rivUv = pixelPos.xz*0.1;
 	rivUv.x += sin(time*0.00125);
 	rivUv.y += cos(time*0.00125);
-	float value = (texture2D(noisetex, rivUv)).r;
-	if ((value) > 0.255 )return true;
-	return false;
+
+	float sinX = sin(rivUv.x);
+	float cosX = cos(rivUv.x);
+	float sizeIntervall = 0.125;
+
+return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
+		isAbsInIntervallAround(cosX, rivUv.y, sizeIntervall) ||	
+		isAbsInIntervallAround( 1/sinX, rivUv.y, sizeIntervall) ||	
+		isAbsInIntervallAround( 1/cosX, rivUv.y, sizeIntervall));
 }
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
