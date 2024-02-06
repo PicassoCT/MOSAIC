@@ -101,6 +101,7 @@ local lightSourceIndex = 0
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
+local rainPicPath     = ":lr256,256:luaui/images/snow/rain5.png"
 local cam = {}
 local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()
@@ -246,7 +247,8 @@ local function init()
         normaltex = 3,
         normalunittex= 4,
         raincanvastex = 5,
-        skyboxtex = 6
+        skyboxtex = 6,
+        raintex = 7
     }
 
     rainShader =
@@ -421,7 +423,7 @@ local function updateUniforms()
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
-
+    glTexture(7, rainPicPath)
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")

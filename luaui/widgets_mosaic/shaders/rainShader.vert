@@ -7,6 +7,7 @@ uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
 uniform sampler2D skyboxtex;
+uniform sampler2D raintex;
 uniform vec4 lightSources[20];
 
 uniform float time;		

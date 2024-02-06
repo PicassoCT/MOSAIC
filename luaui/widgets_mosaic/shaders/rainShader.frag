@@ -70,6 +70,8 @@ uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
 uniform sampler2D skyboxtex;
+uniform sampler2D raintex;
+
 uniform vec4 lightSources[20];
 
 uniform float time;		
@@ -119,6 +121,7 @@ vec4 dephtValueAtPixel;
 vec3 pixelDir;
 vec4 origColor;
 vec3 groundViewNormal;
+float cameraZoomFactor;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
@@ -186,9 +189,9 @@ vec4 getVectorColor(vec3 vector){
 	return result;
 }
 
-vec4 getUVRainbow(vec2 uv){
-	uv = normalize(uv);
-	vec4 result  = mix(RED, mix(BLUE, GREEN, uv.y), uv.x);
+vec4 getUVRainbow(vec2 uvs){
+	uvs = normalize(uvs);
+	vec4 result  = mix(RED, mix(BLUE, GREEN, uvs.y), uvs.x);
 	result.a = 0.75;
 	return result;
 }
@@ -252,11 +255,7 @@ bool IsInGridPoint(vec3 pos, float size, float space)
 }
 
 //REFLECTIONMARCH  
-float getDeterministicRandomValuePerPosition(in vec3 pos, out vec4 rdata)
-{
-	vec4 data = texture2D(noisetex, pos.xz);
-	return data.r;
-}
+
 
 float GetSinCurve( float pulseValue)
 {
@@ -305,32 +304,32 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
 vec2 calculateCubemapUV(vec3 direction) {
     vec3 absDirection = abs(direction);
     float ma;
-    vec2 uv;
+    vec2 uvs;
 
     if (absDirection.x >= absDirection.y && absDirection.x >= absDirection.z) {
         ma = 0.5 / absDirection.x;
         if (direction.x > 0.0) {
-            uv = vec2(0.5 - direction.z * ma, 0.5 - direction.y * ma);
+            uvs = vec2(0.5 - direction.z * ma, 0.5 - direction.y * ma);
         } else {
-            uv = vec2(0.5 + direction.z * ma, 0.5 - direction.y * ma);
+            uvs = vec2(0.5 + direction.z * ma, 0.5 - direction.y * ma);
         }
     } else if (absDirection.y >= absDirection.x && absDirection.y >= absDirection.z) {
         ma = 0.5 / absDirection.y;
         if (direction.y > 0.0) {
-            uv = vec2(0.5 + direction.x * ma, 0.5 + direction.z * ma);
+            uvs = vec2(0.5 + direction.x * ma, 0.5 + direction.z * ma);
         } else {
-            uv = vec2(0.5 + direction.x * ma, 0.5 - direction.z * ma);
+            uvs = vec2(0.5 + direction.x * ma, 0.5 - direction.z * ma);
         }
     } else {
         ma = 0.5 / absDirection.z;
         if (direction.z > 0.0) {
-            uv = vec2(0.5 + direction.x * ma, 0.5 - direction.y * ma);
+            uvs = vec2(0.5 + direction.x * ma, 0.5 - direction.y * ma);
         } else {
-            uv = vec2(0.5 - direction.x * ma, 0.5 - direction.y * ma);
+            uvs = vec2(0.5 - direction.x * ma, 0.5 - direction.y * ma);
         }
     }
 
-    return uv;
+    return uvs;
 }
 
 vec2 getSkyboxUVs(vec3 pos)
@@ -347,15 +346,18 @@ vec2 getSkyboxUVs(vec3 pos)
 	return calculateCubemapUV(reflectionDir);
 }
 
-bool getRivuletMask(vec3 pixelPos)
+bool getRivuletMask(vec3 normalAtPos)
 {
-	vec2 rivUv = pixelPos.xz*0.1;
-	rivUv.x += sin(time*0.00125);
-	rivUv.y += cos(time*0.00125);
+	float treshold = 0.01;
+	if ((abs(normalAtPos.x) < treshold || abs(normalAtPos.y) < treshold || abs(normalAtPos.z) < treshold)) return false;
+
+	vec2 rivUv = normalAtPos.xz;
+	rivUv.x +=  0.125 *  sin(time*0.01)* cos(time*0.021);
+	rivUv.y +=  0.125 * cos((time)*0.01) *sin(time*0.042);
 
 	float sinX = sin(rivUv.x);
 	float cosX = cos(rivUv.x);
-	float sizeIntervall = 0.125;
+	float sizeIntervall = 0.25* (0.25 + abs(0.25*sin(time*0.0125)));
 
 return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 		isAbsInIntervallAround(cosX, rivUv.y, sizeIntervall) ||	
@@ -375,7 +377,8 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 		rivuletRunning = getRivuletMask(groundViewNormal); //TODO get ground coord 
 		if (!rivuletRunning) return NONE;
-		groundMixFactor= (groundViewNormal.g - 0.95)/0.05;
+
+		groundMixFactor= (abs(groundViewNormal.r) + abs(groundViewNormal.g) + abs(groundViewNormal.b))/1.73205;
 	}
 
 	//return checkers(pixelPos, time/10.0);
@@ -387,23 +390,6 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	
 }
 
-float GetYAxisRainPulseFactor(float heigth, float offsetTimeFactor, vec4 randData)
-{
-	//TODO at random location and random times, have the rain wane
-	// getTimeWiseOffset(offsetTimeFactor, RAIN_DROP_LENGTH), RAIN_DROP_LENGTH + RAIN_DROP_EMPTYSPACE , 0.0, RAIN_DROP_LENGTH );
-
-	//make it stupid.. sawtooth pulses
-	float timeOffset = time + offsetTimeFactor;
-	float sawTooth = mod(timeOffset, INTERVALLLENGTH_TIME_SEC)/ INTERVALLLENGTH_TIME_SEC;
-	float position = mod(heigth, INTERVALLLENGTH_DISTANCE)/INTERVALLLENGTH_DISTANCE;
-
-	if (abs(position - sawTooth) < 0.1)
-	{
-		return 1.0 - abs(position - sawTooth)  ;
-	}
-
-	return 0.0;
-}
 
 vec3 truncatePosition(in vec3 pixelPosTrunc)
 {
@@ -432,40 +418,22 @@ vec4 fuerstPueckler(vec3 pixelCoord)
  
 vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor, vec4 additiveLightValue)
 {	
-	return NONE;
-
+	//return NONE;
 	//if(windWaveMasking(pixelCoord) < 0.35) return NONE;
-	//return fuerstPueckler(pixelCoord);
-	//if (mod(pixelCoord.x, 1.0)< 0.1 && mod(pixelCoord.z, 1.0) < 0.1) return RED;
-	//return mix(RED,BLACK, abs(sin(time +pixelCoord.y)) );
+
+	vec2 rainUv = vec2(pixelCoord.xz)* closeNessCameraFactor;
+	rainUv.x += time; 
+	vec4 rainMask= texture2D(raintex, rainUv);
+	rainMask.a = rainMask.r;
 	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
-	vec4 randData;
-	float noiseValue = getDeterministicRandomValuePerPosition(pixelCoord, randData);
-
-	bool RainHighlight = false;
-	RainHighlight = (noiseValue > 0.65); 
-	vec3 pixelCoordTrunc = truncatePosition(pixelCoord);
-	vec4 randDataTruncated;
-
-	float noiseValueTruncated = getDeterministicRandomValuePerPosition(pixelCoordTrunc, randDataTruncated);
-	float yAxisPulseFactor = GetYAxisRainPulseFactor(pixelCoord.y, noiseValue * 2.0 * INTERVALLLENGTH_TIME_SEC, randData);
-
-	if (RainHighlight && yAxisPulseFactor > 0.95)
-	{
-	 	vec4 brightRainDrop =  vec4(mix(suncolor.rgb ,additiveLightValue.rgb, 0.5), onePixelfactor * 2 );	
-		return brightRainDrop;
-	} 
-	pixelColor = vec4(mix(pixelColor.rgb, additiveLightValue.rgb, 0.5) ,
-					 max(onePixelfactor, additiveLightValue.a )* yAxisPulseFactor);// distanceToDropCenter/ RAIN_DROP_LENGTH) ;
-
-	return pixelColor ;	
+	return vec4(rainMask.rgb *  ((suncolor.rgb + pixelColor.rgb)*0.5), rainMask.r);
 }	
 
-vec3 getPixelWorldPos(vec2 uv)
+vec3 getPixelWorldPos(vec2 uvs)
 {
-	float z = texture2D(depthtex, uv).z;
+	float z = texture2D(depthtex, uvs).z;
 	vec4 ppos;
-	ppos.xyz = vec3(uv, z) * 2. - 1.;
+	ppos.xyz = vec3(uvs, z) * 2. - 1.;
 	ppos.a   = 1.;
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
@@ -546,7 +514,7 @@ vec4 renderFogClouds(vec3 pixelPos)
 
 
 
-vec4 RayMarchRainBackgroundLight(in vec3 start, in vec3 end)
+vec4 RayMarchCompose(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
@@ -635,7 +603,7 @@ void main(void)
 	vec4 unitViewNormal = texture(normalunittex, uv);
 	//gl_FragColor = vec4(vec3(unitViewNormal.a), 0.75);
 	//return;
-
+	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) groundViewNormal = unitViewNormal.rgb;
 	//gl_FragColor = vec4(groundViewNormal, 0.75);
 	//return;
@@ -660,7 +628,7 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	vec4 accumulatedLightColorRayDownward = RayMarchRainBackgroundLight(startPos,  endPos); 
+	vec4 accumulatedLightColorRayDownward = RayMarchCompose(startPos,  endPos); 
 
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
