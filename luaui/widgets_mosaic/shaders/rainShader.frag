@@ -110,6 +110,11 @@ struct Ray {
 	vec3 Dir;
 };
 
+struct ColorResult{
+	vec4 color;
+	bool earlyOut;
+};
+
 struct AABB {
 	vec3 Min;
 	vec3 Max;
@@ -232,12 +237,26 @@ vec4 GetDeterministicRainColor(vec3 pxlPos )
 	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
 }
 
+vec4 fuerstPueckler(vec3 pixelCoord)
+{
+	float odd = mod(pixelCoord.z, 3.0);
+	if (odd < 1.0) return vec4(GREEN.rgb, 0.25);
+	if (odd < 2.0) return vec4(RED.rgb, 0.25);
+	if (odd <= 3.0) return vec4(BLUE.rgb, 0.25);
+
+	return NONE;
+}
+
 vec4 renderBackGroundLight(vec3 Position)
 {	
-	if (distance(Position, vec3(1) < 0.9))
+	if (distance(Position, vec3(1.0)) < 0.9)
+	{
 		return fuerstPueckler(Position);//DEBUG DELME
+	}
 	else
+	{
 		return NONE;
+	}
 	//TODO Problem with the distances and positions not in worldspace - this needs fixing
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
 	
@@ -411,21 +430,21 @@ float windWaveMasking(vec3 pixelPos)
 	return abs(sin(time/10.0)*0.125 - texture2D(noisetex, pixelPos.xz).r);
 }
 
-vec4 fuerstPueckler(vec3 pixelCoord)
-{
-	float odd = mod(pixelCoord.z, 3.0);
-	if (odd < 1.0) return vec4(GREEN.rgb, 0.25);
-	if (odd < 2.0) return vec4(RED.rgb, 0.25);
-	if (odd <= 3.0) return vec4(BLUE.rgb, 0.25);
 
-	return NONE;
-}
  
-vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor, out bool boolEarlyOut)
+ColorResult renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor)
 {	
 	//mask out windwaves
-	if(windWaveMasking(pixelCoord) < localRainDensity) return NONE;
-	vec4 additiveLightValue = renderBackGroundLight(pxlPosWorld);
+	ColorResult result;
+	result.earlyOut = false;
+	
+	if(windWaveMasking(pixelCoord) < localRainDensity)
+	{
+		result.color = NONE;
+		return result;
+	} 
+
+	vec4 additiveLightValue = renderBackGroundLight(pixelCoord);
 
 	vec2 scaleFactor = vec2(0.5, 0.5 *screenScaleFactorY);
 	vec2 rainUv = vec2(pixelCoord.xz)*  scaleFactor * closenessCameraFactor;
@@ -433,8 +452,9 @@ vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closen
 	vec4 rainMask= texture2D(raintex, rainUv);
 	rainMask.a = rainMask.r;
 	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);
-	boolEarlyOut = rainMask.r > 0.75;
-	return vec4(rainMask.rgb *  ((suncolor.rgb + pixelColor.rgb)*0.5), rainMask.r);
+	result.earlyOut = rainMask.r > 0.75;
+	result.color = vec4(rainMask.rgb *  ((suncolor.rgb + pixelColor.rgb)*0.5) + additiveLightValue.rgb, rainMask.r);
+	return result ;
 }	
 
 vec3 getPixelWorldPos(vec2 uvs)
@@ -532,11 +552,14 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	accumulatedColor = GetGroundReflectionRipples(end);
 	 //return accumulatedColor;DELME 
 	vec3 pxlPosWorld;
+	ColorResult result;
 	for (float t=0.0; t > 1.0; t +=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t), out boolEarlyOut );
-		if (boolEarlyOut)break;
+
+		result = renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t));
+		accumulatedColor += result.color;
+		//if (result.earlyOut){break;}
 		
 		accumulatedColor +=  renderFogClouds(pxlPosWorld, tstep*0.5);
 	}
