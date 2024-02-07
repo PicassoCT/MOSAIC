@@ -122,6 +122,7 @@ vec3 pixelDir;
 vec4 origColor;
 vec3 groundViewNormal;
 float cameraZoomFactor;
+float screenScaleFactorY = 0.1;
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
@@ -414,18 +415,20 @@ vec4 fuerstPueckler(vec3 pixelCoord)
 
 	return NONE;
 }
-
  
-vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float onePixelfactor, float closeNessCameraFactor, vec4 additiveLightValue)
+vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor, vec4 additiveLightValue, out bool boolEarlyOut)
 {	
 	//return NONE;
-	//if(windWaveMasking(pixelCoord) < 0.35) return NONE;
+	if(windWaveMasking(pixelCoord) < localRainDensity) return NONE;
+	float scaleFactor = 0.5;
+	vec2 rainUv = vec2(pixelCoord.xz)*  scaleFactor * closenessCameraFactor;
+	rainUv.y *= screenScaleFactorY;
 
-	vec2 rainUv = vec2(pixelCoord.xz)* closeNessCameraFactor;
 	rainUv.x += time; 
 	vec4 rainMask= texture2D(raintex, rainUv);
 	rainMask.a = rainMask.r;
 	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
+	boolEarlyOut = rainMask.r > 0.75;
 	return vec4(rainMask.rgb *  ((suncolor.rgb + pixelColor.rgb)*0.5), rainMask.r);
 }	
 
@@ -525,12 +528,13 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	accumulatedColor = GetGroundReflectionRipples(end);
 	 //return accumulatedColor;DELME 
 	vec3 pxlPosWorld;
-	for (float t=1.0; t > 0.0; t -=tstep) 
+	for (float t=0.0; t > 1.0; t +=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
 		vec4 backgroundLightValue = renderBackGroundLight(pxlPosWorld); 
 		backgroundLightValue = NONE;
-		accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.5f, tstep*0.5, t, backgroundLightValue);
+		accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t), backgroundLightValue, out boolEarlyOut );
+		if (boolEarlyOut)break;
 		
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
 	}
@@ -597,6 +601,7 @@ vec4 GetRainCoronaFromScreenTex()
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;	
+	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
 	groundViewNormal = texture(normaltex, uv).xyz;
