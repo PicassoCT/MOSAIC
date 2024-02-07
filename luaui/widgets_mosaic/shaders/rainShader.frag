@@ -233,7 +233,12 @@ vec4 GetDeterministicRainColor(vec3 pxlPos )
 }
 
 vec4 renderBackGroundLight(vec3 Position)
-{
+{	
+	if (distance(Position, vec3(1) < 0.9))
+		return fuerstPueckler(Position);//DEBUG DELME
+	else
+		return NONE;
+	//TODO Problem with the distances and positions not in worldspace - this needs fixing
 	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
 	
 	for (int i=0; i < maxLightSources; i+=2)
@@ -416,18 +421,18 @@ vec4 fuerstPueckler(vec3 pixelCoord)
 	return NONE;
 }
  
-vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor, vec4 additiveLightValue, out bool boolEarlyOut)
+vec4 renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor, out bool boolEarlyOut)
 {	
-	//return NONE;
+	//mask out windwaves
 	if(windWaveMasking(pixelCoord) < localRainDensity) return NONE;
-	float scaleFactor = 0.5;
-	vec2 rainUv = vec2(pixelCoord.xz)*  scaleFactor * closenessCameraFactor;
-	rainUv.y *= screenScaleFactorY;
+	vec4 additiveLightValue = renderBackGroundLight(pxlPosWorld);
 
+	vec2 scaleFactor = vec2(0.5, 0.5 *screenScaleFactorY);
+	vec2 rainUv = vec2(pixelCoord.xz)*  scaleFactor * closenessCameraFactor;
 	rainUv.x += time; 
 	vec4 rainMask= texture2D(raintex, rainUv);
 	rainMask.a = rainMask.r;
-	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);//vec4(0.0,0.0,0.0,0.0);
+	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);
 	boolEarlyOut = rainMask.r > 0.75;
 	return vec4(rainMask.rgb *  ((suncolor.rgb + pixelColor.rgb)*0.5), rainMask.r);
 }	
@@ -476,8 +481,9 @@ vec4 GetGradient(vec3 uvx, float distance){
 #define VOLUME_TAA_MAX_REUSE       0.9
 #define VOLUME_TAA_MAX_DIST        0.5
 
-vec4 renderFogClouds(vec3 pixelPos)
+vec4 renderFogClouds(vec3 pixelPos, float stepComponent)
 {
+	return vec4(IDENTITY.rgb, stepComponent);
 	/*
   	float startOffset = 0.0;
 
@@ -515,8 +521,6 @@ vec4 renderFogClouds(vec3 pixelPos)
 	return BLACK;
 }
 
-
-
 vec4 RayMarchCompose(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
@@ -531,12 +535,10 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	for (float t=0.0; t > 1.0; t +=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
-		vec4 backgroundLightValue = renderBackGroundLight(pxlPosWorld); 
-		backgroundLightValue = NONE;
-		accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t), backgroundLightValue, out boolEarlyOut );
+		accumulatedColor += renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t), out boolEarlyOut );
 		if (boolEarlyOut)break;
 		
-		//accumulatedColor +=  renderFogClouds(pxlPosWorld);
+		accumulatedColor +=  renderFogClouds(pxlPosWorld, tstep*0.5);
 	}
 	//Prevent the rain from pixelating
 	//accumulatedColor.a = max(0.25, accumulatedColor.a);
