@@ -158,6 +158,7 @@ float noise( in vec2 x, float speed)
 	
     return va;
 }
+
 bool isInIntervallAround(float value, float targetValue, float intervall)
 {
 	return value +intervall >= targetValue && value - intervall <= targetValue;
@@ -415,7 +416,6 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	
 }
 
-
 vec3 truncatePosition(in vec3 pixelPosTrunc)
 {
 	vec3 pixelPos = pixelPosTrunc;
@@ -429,8 +429,6 @@ float windWaveMasking(vec3 pixelPos)
 	pixelPos.xz = pixelPos.xz * 0.005;
 	return abs(sin(time/10.0)*0.125 - texture2D(noisetex, pixelPos.xz).r);
 }
-
-
  
 ColorResult renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor)
 {	
@@ -438,22 +436,28 @@ ColorResult renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float
 	ColorResult result;
 	result.earlyOut = false;
 	
+	/*
 	if(windWaveMasking(pixelCoord) < localRainDensity)
 	{
 		result.color = NONE;
 		return result;
 	} 
+	*/
 
 	vec4 additiveLightValue = renderBackGroundLight(pixelCoord);
 
-	vec2 scaleFactor = vec2(0.5, 0.5 *screenScaleFactorY);
-	vec2 rainUv = vec2(pixelCoord.xz)*  scaleFactor * closenessCameraFactor;
-	rainUv.x += time; 
+	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)*2.0; 
+	float truncatedZ = pixelCoord.z- mod(pixelCoord.z, 0.25);
+	vec2 rainUv = vec2(pixelCoord.x, truncatedZ)*scaleFactor;//vec2(pixelCoord.x, truncatedZ) *  scaleFactor ;
+	rainUv.y = -1.0 * rainUv.y - time * 2.0; 
 	vec4 rainMask= texture2D(raintex, rainUv);
+	result.color = rainMask;
+
 	rainMask.a = rainMask.r;
 	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);
 	result.earlyOut = rainMask.r > 0.75;
-	result.color = vec4(rainMask.rgb *  ((suncolor.rgb + pixelColor.rgb)*0.5) + additiveLightValue.rgb, rainMask.r);
+
+	result.color = vec4( ((suncolor.rgb*0.25 + pixelColor.rgb*0.75)) , max(1.0, rainMask.r));
 	return result ;
 }	
 
@@ -550,18 +554,18 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
-	 //return accumulatedColor;DELME 
+
 	vec3 pxlPosWorld;
-	ColorResult result;
-	for (float t=0.0; t > 1.0; t +=tstep) 
+
+	for (float t=0.0; t < 1.0; t +=tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
 
-		result = renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t));
+		ColorResult result = renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t));
 		accumulatedColor += result.color;
-		//if (result.earlyOut){break;}
+		if (result.earlyOut){break;}
 		
-		accumulatedColor +=  renderFogClouds(pxlPosWorld, tstep*0.5);
+		//accumulatedColor +=  renderFogClouds(pxlPosWorld, tstep*0.5);
 	}
 	//Prevent the rain from pixelating
 	//accumulatedColor.a = max(0.25, accumulatedColor.a);

@@ -6,7 +6,7 @@ function widget:GetInfo()
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = 1,
-        enabled = true, --  loaded by default?
+        enabled = false, --  loaded by default?
         hidden = false
     }
 end
@@ -101,7 +101,7 @@ local lightSourceIndex = 0
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
-local rainPicPath     = ":lr256,256:luaui/images/snow/rain5.png"
+local rainPicPath     = ":i256,256:luaui/images/snow/rain5.png"
 local cam = {}
 local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()

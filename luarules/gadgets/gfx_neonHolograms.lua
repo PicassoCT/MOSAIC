@@ -455,7 +455,7 @@ else -- unsynced
         glCulling(false)
     end
 
-    function gadget:DrawOpaqueUnitsLua(deferredPass, drawReflection, drawRefraction)
+    function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
         RenderNeonUnits()
     end
 
@@ -466,3 +466,8 @@ else -- unsynced
         gadgetHandler.RemoveSyncAction("resetUnitNeonLuaDraw")
     end
 end
+
+
+--[[
+unit_cloak_shield.lua in zero-k
+]]
