@@ -129,8 +129,6 @@ if (gadgetHandler:IsSyncedCode()) then
 		end
     end
 
-
-
     function gadget:UnitCreated(unitID, unitDefID)        
        registerUnitIfHolo(unitID, unitDefID)
     end
@@ -255,9 +253,8 @@ else -- unsynced
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
         Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
-        Spring.UnitRendering.SetUnitLuaDraw(unitID)   
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
-        neonUnitTables[#neonUnitTables +1] = {id = unitID, pieces = piecesTable} 
+        neonUnitTables[unitID] = {id = unitID, pieces = piecesTable} 
         counterNeonUnits= counterNeonUnits + 1
     end	
 
@@ -407,17 +404,16 @@ else -- unsynced
 
         neonHologramShader:ActivateWith(
         function()   
-
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
-                for i = 1, #neonUnitTables do
-                    local unitID = neonUnitTables[i].id
+                for unitID, data in pairs(neonUnitTables) do
+                    local unitID = data.id
                     local neonHoloDef = spGetUnitDefID(unitID)
 
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", spGetUnitPosition(unitID))
                    
                     --local neonHoloParts = neonUnitTables[i].pieces
-                    local neonHoloParts = Spring.GetUnitPieceList(unitID)
+                    local neonHoloParts = data.pieces -- Spring.GetUnitPieceList(unitID)
                     glUnitShapeTextures(neonHoloDef, true)
                     
                     glCulling(GL_FRONT)
@@ -440,14 +436,13 @@ else -- unsynced
                         glPopMatrix()
                     end   
                 end
-            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
-            glTexture(0, false)
-            glTexture(1, false)
-            glTexture(2, false)
-            glTexture(3, false)        
-            glTexture(4, false)        
-            glTexture(5, false)        
-   
+                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
+                glTexture(0, false)
+                glTexture(1, false)
+                glTexture(2, false)
+                glTexture(3, false)        
+                glTexture(4, false)        
+                glTexture(5, false)       
             end         
         )
 
