@@ -27,7 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local SO_DRICON_FLAG = 128
 
 	if (engineVersion < 105.0 ) then
-        transparentTypeTable = mergeDictionarys(transparentTypeTable, getHologramTypes(UnitDefs))
+        transparentTypeTable = mergeDictionarys(transparentTypeTable)
     end
     local GameConfig = getGameConfig()
 
