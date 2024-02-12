@@ -15,6 +15,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     local transparentTypeTable = getIconTypes(UnitDefs)
+   
     local engineVersion = getEngineVersion()
     local engine = 106.0
     local SO_NODRAW_FLAG = 0
@@ -27,7 +28,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local SO_DRICON_FLAG = 128
 
 	if (engineVersion < 105.0 ) then
-        transparentTypeTable = mergeDictionarys(transparentTypeTable)
+        transparentTypeTable = transparentTypeTable
     end
     local GameConfig = getGameConfig()
 

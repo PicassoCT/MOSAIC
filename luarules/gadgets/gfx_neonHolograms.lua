@@ -468,8 +468,14 @@ else -- unsynced
         glCulling(false)
     end
 
-    function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
-        RenderNeonUnits()
+    function gadget:DrawUnit(unitID, drawMode)
+          if neonUnitTables[unitID] then
+              glUseShader(neonHologramShader)
+              glBlending(GL_SRC_ALPHA, GL_ONE)
+              glUnitRaw(unitID, true)
+              glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+              return true
+          end
     end
 
     function gadget:Shutdown()
