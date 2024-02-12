@@ -186,15 +186,15 @@ else -- unsynced
     local GL_FRONT                  = GL.FRONT
     local uniformViewPortSize 
     local uniformTime
-    local GL_DEPTH_BITS = 0x0D56
-    local GL_DEPTH_COMPONENT   = 0x1902
-    local GL_DEPTH_COMPONENT16 = 0x81A5
-    local GL_DEPTH_COMPONENT24 = 0x81A6
-    local GL_DEPTH_COMPONENT32 = 0x81A7
-    local GL_RGB8_SNORM = 0x8F96
-    local GL_RGBA8 = 0x8058
-    local GL_FUNC_ADD = 0x8006
-    local GL_FUNC_REVERSE_SUBTRACT = 0x800B
+    local GL_DEPTH_BITS             = 0x0D56
+    local GL_DEPTH_COMPONENT        = 0x1902
+    local GL_DEPTH_COMPONENT16      = 0x81A5
+    local GL_DEPTH_COMPONENT24      = 0x81A6
+    local GL_DEPTH_COMPONENT32      = 0x81A7
+    local GL_RGB8_SNORM             = 0x8F96
+    local GL_RGBA8                  = 0x8058
+    local GL_FUNC_ADD               = 0x8006
+    local GL_FUNC_REVERSE_SUBTRACT  = 0x800B
     
     local glPushPopMatrix           = gl.PushPopMatrix
     local glPushMatrix              = gl.PushMatrix
@@ -250,7 +250,6 @@ else -- unsynced
     end
 
     local counterNeonUnits = 0
-    local oldCounterNeonUnits = 0
     local neonHoloParts= {}
 
     local function splitToNumberedArray(msg)
@@ -358,25 +357,23 @@ else -- unsynced
             vertex =  defaultVertexShader, --neoVertexShaderFirstPass,
             fragment = defaultTestFragmentShader,-- neoFragmenShaderFirstPass,
             textures = {
-      --[[          [0] = tex1,
+                    [0] = tex1,
                     [1] = tex2,
-                    [2] = normaltex,
-                    [3] = reflecttex,
-                    [4] = screentex,
-                    [5] = normalunittex,
-                    [6] = afterglowbuffertex,--]]
+                    [2] = reflecttex,
+                    [3] = screentex,
+                    [4] = normalunittex,
+                    [5] = afterglowbuffertex
                 },       
             uniform = {
                 time =  Spring.GetGameSeconds(),
             },     
             uniformInt = {
-           --[[ tex1            = 0,
+                tex1            = 0,
                 tex2            = 1,
-                normaltex       = 2,
-                reflecttex      = 3,
-                screentex       = 4,
-                normalunittex   = 5,
-                afterglowbuffer = 6--]]
+                reflecttex      = 2,
+                screentex       = 3,
+                normalunittex   = 4,
+                afterglowbuffer = 5
             },
             uniformFloat = {
               --[[  viewPortSize = {vsx, vsy},                 
@@ -398,7 +395,6 @@ else -- unsynced
 
         glTexture(0, "$tex1")
         glTexture(1, "$tex2")
-        glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
         glTexture(5, "$model_gbuffer_normtex") 
 
@@ -410,12 +406,11 @@ else -- unsynced
         neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
         neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
 
-        local neonHoloDef = spGetUnitDefID(unitID)
+        --local neonHoloDef = spGetUnitDefID(unitID)
         local x,y,z = spGetUnitPosition(unitID)
         neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })
 
-
-        glUnitShapeTextures(neonHoloDef, true)
+        --glUnitShapeTextures(neonHoloDef, true)
 
         glCulling(GL_FRONT)
         for j = 1, #neonHoloParts do
@@ -436,16 +431,14 @@ else -- unsynced
                 glUnitPiece(unitID, pieceID)
             glPopMatrix()
         end   
-        glUnitShapeTextures(neonHoloDef, false)
+        --glUnitShapeTextures(neonHoloDef, false)
         
-
         glTexture(0, false)
         glTexture(1, false)
         glTexture(2, false)
         glTexture(3, false)        
         glTexture(4, false)        
         glTexture(5, false)      
-
 
         glDepthTest(false)
         glCulling(false)
@@ -465,6 +458,12 @@ else -- unsynced
         end
     end
 
+    function gadge:Update(dt)
+       if counterNeonUnits == 0 or not boolActivated then
+            echo("No units to draw or  not activated")
+        end 
+    end
+
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
@@ -472,8 +471,3 @@ else -- unsynced
         gadgetHandler.RemoveSyncAction("resetUnitNeonLuaDraw")
     end
 end
-
-
---[[
-unit_cloak_shield.lua in zero-k
-]]
