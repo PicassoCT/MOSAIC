@@ -26,7 +26,11 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
 
+    VFS.Include("luarules/utilities/UnitRendering.lua", nil, VFS.MOD .. VFS.BASE)
 
+    VFS.Include("scripts/lib_mosaic.lua")    
+    VFS.Include("scripts/lib_UnitScript.lua")    
+    
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
             myAllyTeamID = Spring.GetMyAllyTeamID()
@@ -40,8 +44,6 @@ if (gadgetHandler:IsSyncedCode()) then
         return "Neon Hologram Rendering: "
     end
 
-    VFS.Include("scripts/lib_mosaic.lua")    
-    VFS.Include("scripts/lib_UnitScript.lua")    
 
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
     assert(neonHologramTypeTable)
@@ -91,6 +93,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
             local emptyTable = {}
             local stringToSend = ""
+            Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
             SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
             allNeonUnits[#allNeonUnits + 1]= unitID
             echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
@@ -456,12 +459,6 @@ else -- unsynced
               glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
               return true
         end
-    end
-
-    function gadge:Update(dt)
-       if counterNeonUnits == 0 or not boolActivated then
-            echo("No units to draw or  not activated")
-        end 
     end
 
     function gadget:Shutdown()
