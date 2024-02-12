@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = false,
+        enabled = true,
         hidden = true,
     }
 end
@@ -46,7 +46,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
     assert(neonHologramTypeTable)
     local engineVersion = getEngineVersion()
-
+    echo(HEAD().." have engine version: "..engineVersion)
     -- set minimun engine version
     local unsupportedEngine = true
     local enabled = false
@@ -85,14 +85,15 @@ if (gadgetHandler:IsSyncedCode()) then
          if neonHologramTypeTable[unitDefID] then
             echo(HEAD().."start registering holo unit")
             local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
-            if engineVersion > 105.0 and  Spring.SetUnitEngineDrawMask then
+            if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
                 Spring.SetUnitEngineDrawMask(unitID, drawMask)
+                echo(HEAD().." Setting unit engine drawMask")
             end
             local emptyTable = {}
             local stringToSend = ""
             SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
             allNeonUnits[#allNeonUnits + 1]= unitID
-            echo(" Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
+            echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -209,6 +210,7 @@ else -- unsynced
     local neonUnitTables            = {}
     local glUnitShapeTextures       = gl.UnitShapeTextures
     local glGetUniformLocation      = gl.GetUniformLocation
+    local glUnit                    = gl.Unit
 -------Shader--FirstPass -----------------------------------------------------------
     local neoVertexShaderFirstPass  = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
     local neoFragmenShaderFirstPass = VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
@@ -307,16 +309,15 @@ else -- unsynced
     [[
        #version 150 compatibility
         uniform float time;
-        uniform vec3 unitCenterPosition;
-        uniform vec2 viewPortSize;
-
-        uniform sampler2D tex1;
-        uniform sampler2D tex2;
-        uniform sampler2D normaltex;
-        uniform sampler2D reflecttex;
-        uniform sampler2D screentex;
-        uniform sampler2D normalunittex;
-        uniform sampler2D afterglowbuffertex; 
+        //uniform vec3 unitCenterPosition;
+        //uniform vec2 viewPortSize;
+        //uniform sampler2D tex1;
+        //uniform sampler2D tex2;
+        //uniform sampler2D normaltex;
+        //uniform sampler2D reflecttex;
+        //uniform sampler2D screentex;
+        //uniform sampler2D normalunittex;
+        //uniform sampler2D afterglowbuffertex; 
         
         void main() {
             vec4 posCopy = gl_Vertex;
@@ -329,16 +330,15 @@ else -- unsynced
     [[
         #version 150 compatibility
         uniform float time;
-        uniform vec3 unitCenterPosition;
-        uniform vec2 viewPortSize;
-
-        uniform sampler2D tex1;
-        uniform sampler2D tex2;
-        uniform sampler2D normaltex;
-        uniform sampler2D reflecttex;
-        uniform sampler2D screentex;
-        uniform sampler2D normalunittex;
-        uniform sampler2D afterglowbuffertex;
+        //uniform vec3 unitCenterPosition;
+        //uniform vec2 viewPortSize;
+        //uniform sampler2D tex1;
+        //uniform sampler2D tex2;
+        //uniform sampler2D normaltex;
+        //uniform sampler2D reflecttex;
+        //uniform sampler2D screentex;
+        //uniform sampler2D normalunittex;
+        //uniform sampler2D afterglowbuffertex;
 
         void main() 
         {
@@ -358,28 +358,29 @@ else -- unsynced
             vertex =  defaultVertexShader, --neoVertexShaderFirstPass,
             fragment = defaultTestFragmentShader,-- neoFragmenShaderFirstPass,
             textures = {
-                    [0] = tex1,
+      --[[          [0] = tex1,
                     [1] = tex2,
                     [2] = normaltex,
                     [3] = reflecttex,
                     [4] = screentex,
                     [5] = normalunittex,
-                    [6] = afterglowbuffertex,
-                },            
+                    [6] = afterglowbuffertex,--]]
+                },       
+            uniform = {
+                time =  Spring.GetGameSeconds(),
+            },     
             uniformInt = {
-                tex1            = 0,
+           --[[ tex1            = 0,
                 tex2            = 1,
                 normaltex       = 2,
                 reflecttex      = 3,
                 screentex       = 4,
                 normalunittex   = 5,
-                afterglowbuffer = 6
+                afterglowbuffer = 6--]]
             },
             uniformFloat = {
-                viewPortSize = {vsx, vsy},
-                --viewPosY = 0,
-                time = Spring.GetGameSeconds(),           
-                unitCenterPosition = {0,0,0}
+              --[[  viewPortSize = {vsx, vsy},                 
+                unitCenterPosition = {0,0,0}--]]
             },
         }, "Neon Hologram Shader")
 
@@ -397,19 +398,19 @@ else -- unsynced
 
         if counterNeonUnits ~= oldCounterNeonUnits  and counterNeonUnits then
             oldCounterNeonUnits= counterNeonUnits
-            Spring.Echo("Rendering new Neon Units with n-units "..counterNeonUnits)
+            Spring.Echo("NeonShader::Rendering new Neon Units with n-units "..counterNeonUnits)
         end
 
         if counterNeonUnits == 0 or not boolActivated then
-            Spring.Echo("Rendering no Neon Units cause no units")
+            Spring.Echo("NeonShader::Rendering no Neon Units cause no units")
             return
         end   
 
-        glTexture(0, "$tex1")
+--[[        glTexture(0, "$tex1")
         glTexture(1, "$tex2")
         glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
-        glTexture(5, "$model_gbuffer_normtex") 
+        glTexture(5, "$model_gbuffer_normtex") --]]
 
        
         glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
@@ -417,41 +418,41 @@ else -- unsynced
 
         neonHologramShader:ActivateWith(
         function()   
-                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
-                neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
+                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
+                --[[   neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )--]]
                 glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
                 --variables
-                Spring.Echo("Start drawing units")
+                --Spring.Echo("Start drawing units")
                 for _, data in pairs(neonUnitTables) do
                     local unitID = data.id
                     local neonHoloDef = spGetUnitDefID(unitID)
                     local x,y,z = spGetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })
-
+                    --[[neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })--]]
+                   glUnit (unitID)
                     --local neonHoloParts = neonUnitTables[i].pieces
-                    local neonHoloParts = data.pieces 
-                    glUnitShapeTextures(neonHoloDef, true)
-                
-                    glCulling(GL_FRONT)
-                    for j = 1, #neonHoloParts do
-                        local pieceID = neonHoloParts[j]
-                        glPushMatrix()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        glPopMatrix()
-                    end
-
-                    glCulling(GL_BACK)
-                    for j = 1, #neonHoloParts do
-                        local pieceID = neonHoloParts[j]
-                        glPushMatrix()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        glPopMatrix()
-                    end   
-                    glUnitShapeTextures(neonHoloDef, false)
+                    --local neonHoloParts = data.pieces 
+                    --glUnitShapeTextures(neonHoloDef, true)
+--                
+                    --glCulling(GL_FRONT)
+                    --for j = 1, #neonHoloParts do
+                        --local pieceID = neonHoloParts[j]
+                        --glPushMatrix()
+                            --glUnitMultMatrix(unitID)
+                            --glUnitPieceMultMatrix(unitID, pieceID)
+                            --glUnitPiece(unitID, pieceID)
+                        --glPopMatrix()
+                    --end
+--
+                    --glCulling(GL_BACK)
+                    --for j = 1, #neonHoloParts do
+                        --local pieceID = neonHoloParts[j]
+                        --glPushMatrix()
+                            --glUnitMultMatrix(unitID)
+                            --glUnitPieceMultMatrix(unitID, pieceID)
+                            --glUnitPiece(unitID, pieceID)
+                        --glPopMatrix()
+                    --end   
+                    --glUnitShapeTextures(neonHoloDef, false)
                 end
                 glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
                 glTexture(0, false)
@@ -459,7 +460,7 @@ else -- unsynced
                 glTexture(2, false)
                 glTexture(3, false)        
                 glTexture(4, false)        
-                glTexture(5, false)       
+                glTexture(5, false)      
             end         
         )
 
