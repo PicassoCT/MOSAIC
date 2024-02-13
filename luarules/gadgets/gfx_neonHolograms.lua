@@ -454,8 +454,7 @@ else -- unsynced
                         glPopMatrix()
                     end   
                     glUnitShapeTextures(neonHoloDef, false)
-                end
-    
+                end    
             end         
         )
         glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
