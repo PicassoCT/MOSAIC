@@ -85,14 +85,14 @@ if (gadgetHandler:IsSyncedCode()) then
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
             echo(HEAD().."start registering holo unit")
-            local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
             if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
-                Spring.SetUnitEngineDrawMask(unitID, drawMask)
+               -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
+               -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
                 echo(HEAD().." Setting unit engine drawMask")
             end
             local emptyTable = {}
             local stringToSend = ""
-            Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
+           -- Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
             SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
             allNeonUnits[#allNeonUnits + 1]= unitID
             echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
@@ -256,6 +256,7 @@ else -- unsynced
     local counterNeonUnits = 0
     local neonHoloParts= {}
 
+
     local function splitToNumberedArray(msg)
         local message = msg..'|'
         local t = {}
@@ -264,6 +265,7 @@ else -- unsynced
         end
         return t
     end
+
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
         Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
@@ -470,7 +472,7 @@ else -- unsynced
     end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
-    function gadget:.DrawUnitsPostDeferred()
+    function gadget:DrawUnitsPostDeferred()
         RenderAllNeonUnits()
     end
 
