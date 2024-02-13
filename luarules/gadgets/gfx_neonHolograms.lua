@@ -376,8 +376,9 @@ else -- unsynced
                 tex2            = 1,
                 reflecttex      = 2,
                 screentex       = 3,
-                normalunittex   = 4,
-                afterglowbuffer = 5
+                afterglowbuffer = 4,
+                normalunittex   = 5
+
             },
             uniformFloat = {
               --[[  viewPortSize = {vsx, vsy},                 
@@ -395,7 +396,7 @@ else -- unsynced
        Spring.Echo("NeonShader:: did compile")
     end
 
-    local function RenderNeonUnits()
+    local function RenderAllNeonUnits()
 
         if counterNeonUnits ~= oldCounterNeonUnits and counterNeonUnits then
             oldCounterNeonUnits= counterNeonUnits
@@ -468,9 +469,11 @@ else -- unsynced
         glCulling(false)
     end
 
-    function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
-        RenderNeonUnits()
+    --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
+    function gadget:.DrawUnitsPostDeferred()
+        RenderAllNeonUnits()
     end
+
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
