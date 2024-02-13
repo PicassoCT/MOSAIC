@@ -26,7 +26,6 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
 
-    VFS.Include("luarules/utilities/UnitRendering.lua", nil, VFS.MOD .. VFS.BASE)
 
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
@@ -173,7 +172,10 @@ if (gadgetHandler:IsSyncedCode()) then
 
 else -- unsynced
 
-    local LuaShader                 = VFS.Include("LuaRules/Gadgets/Include/LuaShader.lua")
+    local LuaShader                 = VFS.Include("luarules/gadgets/include/LuaShader.lua")
+    local neoVertexShaderFirstPass  = VFS.LoadFile ("luarules/gadgets/shaders/neonHologramShader.vert")
+    local neoFragmenShaderFirstPass = VFS.LoadFile("luarules/gadgets/shaders/neonHologramShader.frag")
+
     local spGetVisibleUnits         = Spring.GetVisibleUnits
     local spGetTeamColor            = Spring.GetTeamColor
 
@@ -215,8 +217,7 @@ else -- unsynced
     local glGetUniformLocation      = gl.GetUniformLocation
     local glUnit                    = gl.Unit
 -------Shader--FirstPass -----------------------------------------------------------
-    local neoVertexShaderFirstPass  = VFS.LoadFile ("LuaRules/Gadgets/shaders/neonHologramShader.vert")
-    local neoFragmenShaderFirstPass = VFS.LoadFile("LuaRules/Gadgets/shaders/neonHologramShader.frag")
+
     local neonHologramShader
     local glowReflectHologramShader
     local vsx, vsy,vpx,vpy
@@ -394,73 +395,83 @@ else -- unsynced
        Spring.Echo("NeonShader:: did compile")
     end
 
-    local function RenderNeonUnit(unitID, neonHoloParts)  
+    local function RenderNeonUnits()
+
+        if counterNeonUnits ~= oldCounterNeonUnits and counterNeonUnits then
+            oldCounterNeonUnits= counterNeonUnits
+            Spring.Echo("Rendering new Neon Units with n-units ".. counterNeonUnits)
+        end
+
+        if counterNeonUnits == 0 or not boolActivated then
+            Spring.Echo("Rendering no Neon Units cause no units")
+            return
+        end   
 
         glTexture(0, "$tex1")
         glTexture(1, "$tex2")
+        glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
         glTexture(5, "$model_gbuffer_normtex") 
-
        
         glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
         glDepthTest(true)  
-        Spring.Echo("NeonShader::Rendering  Neon Unit ".. unitID)
-  
-        neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
-        neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
+        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        --local neonHoloDef = spGetUnitDefID(unitID)
-        local x,y,z = spGetUnitPosition(unitID)
-        neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })
+        neonHologramShader:ActivateWith(
+        function()   
+                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
+                neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
 
-        --glUnitShapeTextures(neonHoloDef, true)
+                --variables
+                Spring.Echo("Start drawing units")
+                for _, data in pairs(neonUnitTables) do
+                    local unitID = data.id
+                    local neonHoloDef = spGetUnitDefID(unitID)
+                    local x,y,z = spGetUnitPosition(unitID)
+                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })
 
-        glCulling(GL_FRONT)
-        for j = 1, #neonHoloParts do
-            local pieceID = neonHoloParts[j]
-            glPushMatrix()
-                glUnitMultMatrix(unitID)
-                glUnitPieceMultMatrix(unitID, pieceID)
-                glUnitPiece(unitID, pieceID)
-            glPopMatrix()
-        end
+                    --local neonHoloParts = neonUnitTables[i].pieces
+                    local neonHoloParts = data.pieces 
+                    glUnitShapeTextures(neonHoloDef, true)
+                
+                    glCulling(GL_FRONT)
+                    for j = 1, #neonHoloParts do
+                        local pieceID = neonHoloParts[j]
+                        glPushMatrix()
+                            glUnitMultMatrix(unitID)
+                            glUnitPieceMultMatrix(unitID, pieceID)
+                            glUnitPiece(unitID, pieceID)
+                        glPopMatrix()
+                    end
 
-        glCulling(GL_BACK)
-        for j = 1, #neonHoloParts do
-            local pieceID = neonHoloParts[j]
-            glPushMatrix()
-                glUnitMultMatrix(unitID)
-                glUnitPieceMultMatrix(unitID, pieceID)
-                glUnitPiece(unitID, pieceID)
-            glPopMatrix()
-        end   
-        --glUnitShapeTextures(neonHoloDef, false)
-        
+                    glCulling(GL_BACK)
+                    for j = 1, #neonHoloParts do
+                        local pieceID = neonHoloParts[j]
+                        glPushMatrix()
+                            glUnitMultMatrix(unitID)
+                            glUnitPieceMultMatrix(unitID, pieceID)
+                            glUnitPiece(unitID, pieceID)
+                        glPopMatrix()
+                    end   
+                    glUnitShapeTextures(neonHoloDef, false)
+                end
+    
+            end         
+        )
+        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
         glTexture(0, false)
         glTexture(1, false)
         glTexture(2, false)
         glTexture(3, false)        
         glTexture(4, false)        
-        glTexture(5, false)      
-
+        glTexture(5, false)   
         glDepthTest(false)
         glCulling(false)
     end
 
-    function gadget:DrawUnit(unitID, drawMode)
-        if counterNeonUnits == 0 or not boolActivated then
-            return
-        end 
-
-        if neonUnitTables[unitID] then
-              glUseShader(neonHologramShader)
-              glBlending(GL_SRC_ALPHA, GL_ONE)
-              RenderNeonUnit(unitID, neonUnitTables[unitID].pieces)
-              glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-              return true
-        end
+    function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
+        RenderNeonUnits()
     end
-
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
