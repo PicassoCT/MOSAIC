@@ -85,6 +85,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
             echo(HEAD().."start registering holo unit")
+            Spring.SetUnitNoDraw(unitID, true)
             if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
                -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
                -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
@@ -92,8 +93,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
             local emptyTable = {}
             local stringToSend = ""
-            Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
-            Spring.SetUnitNoDraw(unitID, true)
+
             SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
             allNeonUnits[#allNeonUnits + 1]= unitID
             echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
@@ -257,7 +257,6 @@ else -- unsynced
     local counterNeonUnits = 0
     local neonHoloParts= {}
 
-
     local function splitToNumberedArray(msg)
         local message = msg..'|'
         local t = {}
@@ -267,9 +266,10 @@ else -- unsynced
         return t
     end
 
-
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
         Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
+        Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
+
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
         neonUnitTables[unitID] = {id = unitID, pieces = piecesTable} 
         counterNeonUnits= counterNeonUnits + 1
@@ -400,7 +400,6 @@ else -- unsynced
     end
 
     local function RenderAllNeonUnits()
-
         if counterNeonUnits ~= oldCounterNeonUnits and counterNeonUnits then
             oldCounterNeonUnits= counterNeonUnits
             Spring.Echo("Rendering new Neon Units with n-units ".. counterNeonUnits)
