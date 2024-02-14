@@ -92,7 +92,8 @@ if (gadgetHandler:IsSyncedCode()) then
             end
             local emptyTable = {}
             local stringToSend = ""
-           -- Spring.UnitRendering.SetUnitLuaDraw(unitID, true)
+            Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
+            Spring.SetUnitNoDraw(unitID, true)
             SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
             allNeonUnits[#allNeonUnits + 1]= unitID
             echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
