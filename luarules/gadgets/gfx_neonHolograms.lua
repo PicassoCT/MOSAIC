@@ -400,16 +400,16 @@ else -- unsynced
     end
 
     local function RenderAllNeonUnits()
-        if counterNeonUnits ~= oldCounterNeonUnits and counterNeonUnits then
-            oldCounterNeonUnits= counterNeonUnits
-            Spring.Echo("Rendering new Neon Units with n-units ".. counterNeonUnits)
-        end
+
 
         if counterNeonUnits == 0 or not boolActivated then
             Spring.Echo("Rendering no Neon Units cause no units")
             return
-        end   
+        end 
+        gl.ResetMatrices()
+        gl.ResetState()
 
+        Spring.Echo("Start drawing units")
         glTexture(0, "$tex1")
         glTexture(1, "$tex2")
         glTexture(2, "$normal") 
@@ -424,39 +424,41 @@ else -- unsynced
         function()   
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
-
+   
                 --variables
-                Spring.Echo("Start drawing units")
+
                 for _, data in pairs(neonUnitTables) do
+
                     local unitID = data.id
+                    Spring.Echo("Start drawing unit:"..unitID)
                     local neonHoloDef = spGetUnitDefID(unitID)
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })
 
                     --local neonHoloParts = neonUnitTables[i].pieces
-                    local neonHoloParts = data.pieces 
-                    glUnitShapeTextures(neonHoloDef, true)
-                
-                    glCulling(GL_FRONT)
-                    for j = 1, #neonHoloParts do
-                        local pieceID = neonHoloParts[j]
-                        glPushMatrix()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        glPopMatrix()
-                    end
-
-                    glCulling(GL_BACK)
-                    for j = 1, #neonHoloParts do
-                        local pieceID = neonHoloParts[j]
-                        glPushMatrix()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        glPopMatrix()
-                    end   
-                    glUnitShapeTextures(neonHoloDef, false)
+                    local neonHoloParts = data.pieces --Spring.GetUnitPieces(unitID)
+                   --glUnitShapeTextures(neonHoloDef, true)
+                    gl.UnitRaw(unitID, true)
+                    --glCulling(GL_FRONT)
+                    --for j = 1, #neonHoloParts do
+                    --    local pieceID = neonHoloParts[j]
+                    --    glPushMatrix()
+                    --        glUnitMultMatrix(unitID)
+                    --        glUnitPieceMultMatrix(unitID, pieceID)
+                    --        glUnitPiece(unitID, pieceID)
+                    --    glPopMatrix()
+                    --end
+--
+--                    --glCulling(GL_BACK)
+--                    --for j = 1, #neonHoloParts do
+--                    --    local pieceID = neonHoloParts[j]
+--                    --    glPushMatrix()
+--                    --        glUnitMultMatrix(unitID)
+--                    --        glUnitPieceMultMatrix(unitID, pieceID)
+--                    --        glUnitPiece(unitID, pieceID)
+--                    --    glPopMatrix()
+                    --end   
+                    --glUnitShapeTextures(neonHoloDef, false)
                 end    
             end         
         )
@@ -472,7 +474,7 @@ else -- unsynced
     end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
-    function gadget:DrawUnitsPostDeferred()
+    function gadget:DrawWorld()
         RenderAllNeonUnits()
     end
 

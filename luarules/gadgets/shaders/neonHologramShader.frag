@@ -142,15 +142,6 @@
     return vec4(0.0, 0.0, 0.0, 0.0);
     }
 
-    float InSighlineGlowBrighter()
-    {
-        vec3 normal = vWorldNormal* -1.5;
-        //check the distance to cameraspace coordinates
-
-        //calculate glowfactor
-
-    }
-
     void main() 
 	{	
 		//this will be our RGBA sumt
