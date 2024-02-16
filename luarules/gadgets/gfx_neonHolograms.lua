@@ -13,6 +13,10 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
+    
+    VFS.Include("scripts/lib_mosaic.lua")    
+    VFS.Include("scripts/lib_UnitScript.lua")    
+
     local frameGameStart = math.huge      
     local myAllyTeamID = 0
     local myTeam = nil
@@ -25,10 +29,6 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
-
-
-    VFS.Include("scripts/lib_mosaic.lua")    
-    VFS.Include("scripts/lib_UnitScript.lua")    
     
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
@@ -316,6 +316,7 @@ else -- unsynced
     [[
        #version 150 compatibility
         uniform float time;
+        uniform mat4 viewInvMat;
         //uniform vec3 unitCenterPosition;
         //uniform vec2 viewPortSize;
         //uniform sampler2D tex1;
@@ -337,6 +338,7 @@ else -- unsynced
     [[
         #version 150 compatibility
         uniform float time;
+        uniform mat4 viewInvMat;
         //uniform vec3 unitCenterPosition;
         //uniform vec2 viewPortSize;
         //uniform sampler2D tex1;
@@ -402,63 +404,59 @@ else -- unsynced
 
     local function RenderAllNeonUnits()
 
-
         if counterNeonUnits == 0 or not boolActivated then
             Spring.Echo("Rendering no Neon Units cause no units")
             return
         end 
 
-        Spring.Echo("Start drawing units")
         glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
         glTexture(5, "$model_gbuffer_normtex") 
        
         glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-        gl.DepthTest(true)
-        gl.DepthMask(false)
+        glDepthTest(true)
+        glDepthMask(false)
+        glCulling(GL_BACK)
 
         glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         neonHologramShader:ActivateWith(
-        function()   
-
+            function()  
+                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
    
                 --variables
-
                 for _, data in pairs(neonUnitTables) do
-
                     local unitID = data.id
+                    local neonHoloParts = data.pieces
                     Spring.Echo("Start drawing unit:"..unitID)
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
                     local x,y,z = spGetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z })
+                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
 
-                    --local neonHoloParts = neonUnitTables[i].pieces
-                    local neonHoloParts = data.pieces --Spring.GetUnitPieces(unitID)
+                    glCulling(GL_FRONT)
+                    for  _, pieceID in ipairs(neonHoloParts)do
 
-                   -- glCulling(GL_FRONT)
-                    for  _,pieceID in ipairs(neonHoloParts)do
-               
                       glPushPopMatrix( function()
                             glUnitMultMatrix(unitID)
                             glUnitPieceMultMatrix(unitID, pieceID)
                             glUnitPiece(unitID, pieceID)
                         end)
                     end
-
-                   -- glCulling(GL_BACK)
-                  --  for _,pieceID in ipairs(neonHoloParts)do
-                  --    glPushPopMatrix( function()
-                  --          glUnitMultMatrix(unitID)
-                  --          glUnitPieceMultMatrix(unitID, pieceID)
-                  --          glUnitPiece(unitID, pieceID)
-                  --      end)
-                  --  end
+                --[[        
+                    glCulling(GL_BACK)
+                    for _,pieceID in ipairs(neonHoloParts)do
+                      glPushPopMatrix( function()
+                            glUnitMultMatrix(unitID)
+                            glUnitPieceMultMatrix(unitID, pieceID)
+                            glUnitPiece(unitID, pieceID)
+                        end)
+                    end
                     --glUnitShapeTextures(neonHoloDef, false)
+                    ]]
                 end    
             end         
         )
