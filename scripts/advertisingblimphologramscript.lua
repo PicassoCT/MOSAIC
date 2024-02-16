@@ -12,8 +12,95 @@ CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy")
 JoyRide = piece("JoyRide")
 local boolDebugScript = true
+local lastFrame = Spring.GetGameFrame()
+
+function updateCheckCache()
+  local frame = Spring.GetGameFrame()
+  if frame ~= lastFrame then 
+    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
+    GG.VisibleUnitPieces[unitID] = cachedCopy
+    lastFrame = frame
+  end
+end
 
 offset = 80
+function ShowReg(pieceID)
+    Show(pieceID)
+    table.insert(cachedCopy, pieceID)
+    updateCheckCache()
+end
+
+function HideReg(pieceID)
+    Hide(pieceID)  
+    --TODO make dictionary for efficiency
+    for i=1, #cachedCopy do
+        if cachedCopy[i] == pieceID then
+            table.remove(cachedCopy, i)
+            break
+        end
+    end
+    updateCheckCache()
+end
+
+
+-- > Hide all Pieces of a Unit
+function hideAllReg(id)
+    if not unitID then unitID = id end
+
+    pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do HideReg(v) end
+end
+
+-- > Hides a PiecesTable, 
+function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    if not l_tableName then return end
+    --assert( type(l_tableName) == "table" , UnitDefs[Spring.GetUnitDefID(unitID)].name.." has invalid hideT")
+    boolDebugActive =  (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
+
+    if l_lowLimit and l_upLimit then
+        for i = l_upLimit, l_lowLimit, -1 do
+            if l_tableName[i] then
+                HideReg(l_tableName[i])
+            elseif boolDebugActive == true then
+                echo("In HideT, table " .. l_lowLimit ..
+                         " contains a empty entry")
+            end
+
+            if l_delay and l_delay > 0 then Sleep(l_delay) end
+        end
+
+    else
+        for i = 1, table.getn(l_tableName), 1 do
+            if l_tableName[i] then
+                HideReg(l_tableName[i])
+            elseif boolDebugActive == true then
+                echo("In HideT, table " .. l_lowLimit .. " contains a empty entry")
+            end
+        end
+    end
+end
+
+-- >Shows a Pieces Table
+function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    if not l_tableName then
+        Spring.Echo("No table given as argument for showT")
+        return
+    end
+
+    if l_lowLimit and l_upLimit then
+        for i = l_lowLimit, l_upLimit, 1 do
+            if l_tableName[i] then ShowReg(l_tableName[i]) end
+            if l_delay and l_delay > 0 then Sleep(l_delay) end
+        end
+
+    else
+        for k,v in pairs(l_tableName)do
+            if v then
+                ShowReg(v)
+            end
+        end
+    end
+end
 
 function showOne(T, bNotDelayd)
     if not T then return end
@@ -22,7 +109,7 @@ function showOne(T, bNotDelayd)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then            
-            Show(v)            
+            ShowReg(v)            
             return v
         end
     end
@@ -46,8 +133,8 @@ function script.Create()
     Spring.SetUnitBlocking(unitID, false)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
      StartThread(HoloGrams)
-     Hide(BrothelSpin)
-     Hide(CasinoSpin)
+     HideReg(BrothelSpin)
+     HideReg(CasinoSpin)
 
 end
 
@@ -58,10 +145,10 @@ function HoloGrams()
 
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
-    hideT(brothelFlickerGroup)
-    hideT(CasinoflickerGroup)
-    hideT(JoyFlickerGroup)
-    hideT(TablesOfPiecesGroups["JoySpin"])
+    hideTReg(brothelFlickerGroup)
+    hideTReg(CasinoflickerGroup)
+    hideTReg(JoyFlickerGroup)
+    hideTReg(TablesOfPiecesGroups["JoySpin"])
 
     Sleep(15000)
     --sexxxy time
@@ -94,13 +181,13 @@ function JoyAnimation()
         hours, minutes, seconds, percent = getDayTime()
         if boolDebugScript or (hours > 17 or hours < 7) then
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
-            Show(JoySpinOrigin)
+            ShowReg(JoySpinOrigin)
             Sleep(2000)
 
             scalar = 0.125*0.5*0.1
             for i=2, #TablesOfPiecesGroups["JoySpin"] do
                 offset = i* offsetValue
-                Show(TablesOfPiecesGroups["JoySpin"][i])
+                ShowReg(TablesOfPiecesGroups["JoySpin"][i])
                 rootDistance = i* 70 * 2
                 Move(JoySpinOrigin, z_axis, rootDistance,speed(rootDistance, animStepTime*scalar))
                 Move(TablesOfPiecesGroups["JoySpin"][i],z_axis, offsetValue, speed(offsetValue, animStepTime*scalar))
@@ -112,7 +199,7 @@ function JoyAnimation()
             WaitForMoves(JoySpinOrigin)
         end
 
-        hideT(TablesOfPiecesGroups["JoySpin"])
+        hideTReg(TablesOfPiecesGroups["JoySpin"])
         for i=1, #TablesOfPiecesGroups["JoySpin"] do
             reset(TablesOfPiecesGroups["JoySpin"][i],0)
         end
@@ -133,7 +220,7 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
     flickerIntervall = math.ceil(1000/25)
     
     while true do
-        hideT(fGroup)
+        hideTReg(fGroup)
         --assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
         hours, minutes, seconds, percent = getDayTime()
@@ -144,14 +231,14 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
             end
 
             for i=1,(3000/flickerIntervall) do
-                if i % 2 == 0 then  showT(toShowTableT) else hideT(toShowTableT) end
-                if maRa()==maRa() then showT(toShowTableT) end 
+                if i % 2 == 0 then  showTReg(toShowTableT) else hideTReg(toShowTableT) end
+                if maRa()==maRa() then showTReg(toShowTableT) end 
                 for ax=1,3 do
                     moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
                 end
                 Sleep(flickerIntervall)
             end
-            hideT(toShowTableT)
+            hideTReg(toShowTableT)
         end
         breakTime = math.random(1,maxInterval)*timeoutMs
         Sleep(breakTime)

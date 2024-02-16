@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = false,
+        enabled = true,
         hidden = true,
     }
 end
@@ -17,7 +17,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
 
-    local frameGameStart = math.huge      
+    local frameGameStart = Spring.GetGameFrame()     
     local myAllyTeamID = 0
     local myTeam = nil
 	local SO_NODRAW_FLAG = 0
@@ -72,13 +72,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local function serializePiecesTableTostring(t)
-        local result = ""
-        for i=1, #t do
-            result = result.."|"..t
-        end
-        return result
-    end
 
     local allNeonUnits= {}
     local neonUnitDataTransfer = {}
@@ -94,7 +87,7 @@ if (gadgetHandler:IsSyncedCode()) then
             local emptyTable = {}
             local stringToSend = ""
 
-            SendToUnsynced("setUnitNeonLuaDraw", unitID, stringToSend)             
+   
             allNeonUnits[#allNeonUnits + 1]= unitID
             echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
@@ -115,22 +108,35 @@ if (gadgetHandler:IsSyncedCode()) then
         end
       
     end
-
+    local function serializePiecesTableTostring(t)
+        result = ""
+        for i=1, #t do
+            result = result.."|"..t[i]
+        end
+        return result
+    end
+    local cachedUnitPieces = {}
+    local oldneonUnitDataTransfer = {}
     function gadget:GameFrame(frame)
-		if frame > frameGameStart then
-            if count(neonUnitDataTransfer) > 0 then
-                local UnitsDynGlow = {}
-                local VisibleUnitPieces = GG.VisibleUnitPieces
-                SendToUnsynced("resetUnitNeonLuaDraw")       
-    			for id, value in pairs(neonUnitDataTransfer) do
-                    table.insert(UnitsDynGlow, id)
-                    echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
-    				if id and value and VisibleUnitPieces[id] then
-                        local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
-    					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )       
-                        echo(HEAD().."Complete:setUnitNeonLuaDraw:"..unitID..":"..serializedStringToSend)         
-    				end
-    			end                
+		if frame > frameGameStart then           
+            if count(neonUnitDataTransfer) > 0 then            
+                local VisibleUnitPieces = GG.VisibleUnitPieces   
+                if VisibleUnitPieces then
+        			for id, value in pairs(neonUnitDataTransfer) do
+                        -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
+        				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id]then
+                            local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
+                            cachedUnitPieces[id] = VisibleUnitPieces[value]
+        					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )              
+        				end
+        			end 
+                    for id, value in pairs(oldneonUnitDataTransfer) do
+                        if not neonUnitDataTransfer[id] then
+                            SendToUnsynced("unsetUnitNeonLuaDraw", id)       
+                        end
+                    end
+                    oldneonUnitDataTransfer = neonUnitDataTransfer      
+                end      
             end
 		end
     end
@@ -172,7 +178,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
 else -- unsynced
-
+    local DAYLENGTH = 28800
     local LuaShader                 = VFS.Include("luarules/gadgets/include/LuaShader.lua")
     local neoVertexShaderFirstPass  = VFS.LoadFile ("luarules/gadgets/shaders/neonHologramShader.vert")
     local neoFragmenShaderFirstPass = VFS.LoadFile("luarules/gadgets/shaders/neonHologramShader.frag")
@@ -182,6 +188,7 @@ else -- unsynced
 
     local glGetSun                  = gl.GetSun
     local glDepthTest               = gl.DepthTest
+    local glDepthMask               = gl.DepthMask
     local glCulling                 = gl.Culling
     local glBlending                = gl.Blending
     
@@ -229,6 +236,15 @@ else -- unsynced
     local afterglowbuffertex = nil
 
 -------------------------------------------------------------------------------------
+local function getDayTime()
+    local morningOffset = (DAYLENGTH / 2)
+    local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+    local percent = Frame / DAYLENGTH
+    local hours = math.floor((Frame / DAYLENGTH) * 24)
+    local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+    local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+    return hours, minutes, seconds, percent
+end
 
 -------Shader--2ndPass -----------------------------------------------------------
 --Glow Reflection etc.
@@ -268,17 +284,17 @@ else -- unsynced
     end
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
-        Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
+        --Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
-        neonUnitTables[unitID] = {id = unitID, pieces = piecesTable} 
+        neonUnitTables[unitID] =  piecesTable
         counterNeonUnits= counterNeonUnits + 1
     end	
 
-    local function resetUnitNeonLuaDraw(callname)
-        neonUnitTables = {} 
-        counterNeonUnits= 0
+    local function unsetUnitNeonLuaDraw(callname, unitID)
+        neonUnitTables[unitID] = nil
+        counterNeonUnits= counterNeonUnits - 1
     end    
 
     local function InitializeTextures()
@@ -316,6 +332,7 @@ else -- unsynced
     [[
        #version 150 compatibility
         uniform float time;
+        uniform float timepercent;
         uniform mat4 viewInvMat;
         //uniform vec3 unitCenterPosition;
         //uniform vec2 viewPortSize;
@@ -326,7 +343,9 @@ else -- unsynced
         //uniform sampler2D screentex;
         //uniform sampler2D normalunittex;
         //uniform sampler2D afterglowbuffertex; 
-        
+        out Data {
+            vec2 uv;
+        };
         void main() {
             vec4 posCopy = gl_Vertex;
             uv = gl_MultiTexCoord0.xy;
@@ -338,6 +357,18 @@ else -- unsynced
     [[
         #version 150 compatibility
         uniform float time;
+        uniform float timepercent;
+        in Data {
+            vec2 uv;
+        };
+
+        float getLightAmp()
+        {
+            if (timepercent < 0.25 || timepercent > 0.75) return 0.9;
+
+            return 0.75;
+        }
+
         uniform mat4 viewInvMat;
         //uniform vec3 unitCenterPosition;
         //uniform vec2 viewPortSize;
@@ -351,7 +382,8 @@ else -- unsynced
 
         void main() 
         {
-            gl_FragColor = vec4( tex1.rgb, 0.5);
+            vec4 tex1Color = texture(tex1, uv);
+            gl_FragColor = vec4( tex1Color.rgb * getLightAmp() , 0.5);
         }
     ]]
  
@@ -360,7 +392,7 @@ else -- unsynced
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
-        gadgetHandler:AddSyncAction("resetUnitNeonLuaDraw", resetUnitNeonLuaDraw)
+        gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", resetUnitNeonLuaDraw)
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
@@ -376,6 +408,7 @@ else -- unsynced
                 },       
             uniform = {
                 time =  Spring.GetGameSeconds(),
+                timepercent = 0.5
             },     
             uniformInt = {
                 tex1            = 0,
@@ -417,27 +450,26 @@ else -- unsynced
         glDepthTest(true)
         glDepthMask(false)
         glCulling(GL_BACK)
-
-        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        local _,_,_,timepercent = getDayTime()
 
         neonHologramShader:ActivateWith(
             function()  
                 neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+                neonHologramShader:SetUniformFloat("timepercent",  timepercent)
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
-   
+                glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
-                for _, data in pairs(neonUnitTables) do
-                    local unitID = data.id
-                    local neonHoloParts = data.pieces
-                    Spring.Echo("Start drawing unit:"..unitID)
+                for unitID, neonHoloParts in pairs(neonUnitTables) do
+
+                   -- Spring.Echo("Start drawing unit:"..unitID)
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
 
-                    --glCulling(GL_FRONT)
+                    glCulling(GL_FRONT)
                     for  _, pieceID in ipairs(neonHoloParts)do
 
                       glPushPopMatrix( function()
@@ -446,7 +478,7 @@ else -- unsynced
                             glUnitPiece(unitID, pieceID)
                         end)
                     end
-                --[[        
+                       
                     glCulling(GL_BACK)
                     for _,pieceID in ipairs(neonHoloParts)do
                       glPushPopMatrix( function()
@@ -456,19 +488,19 @@ else -- unsynced
                         end)
                     end
                     --glUnitShapeTextures(neonHoloDef, false)
-                    ]]
+                    
                 end    
+                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
+                --Cleanup
+                glTexture(0, false)
+                glTexture(1, false)
+                glTexture(2, false)
+                glTexture(3, false)        
+                glTexture(4, false)        
+                glTexture(5, false) 
+                glDepthTest(false)
             end         
         )
-        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
-       --Cleanup
-        glTexture(0, false)
-        glTexture(1, false)
-        glTexture(2, false)
-        glTexture(3, false)        
-        glTexture(4, false)        
-        glTexture(5, false)   
-        glDepthTest(false)
     end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
@@ -480,6 +512,6 @@ else -- unsynced
         Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
-        gadgetHandler.RemoveSyncAction("resetUnitNeonLuaDraw")
+        gadgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
     end
 end

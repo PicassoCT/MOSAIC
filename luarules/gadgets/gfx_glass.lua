@@ -6,7 +6,7 @@ function gadget:GetInfo()
         date      = "2019",
         license   = "PD",
         layer     = 0,
-        enabled   = true,
+        enabled   = false,
     }
 end
 
@@ -40,7 +40,16 @@ else
     local glUnitPieceMultMatrix = gl.UnitPieceMultMatrix
     local glUnitPiece = gl.UnitPiece
     local glTexture = gl.Texture
-
+    local glDepthTest               = gl.DepthTest
+    local glCulling                 = gl.Culling
+    local glBlending                = gl.Blending
+    local GL_BACK                   = GL.BACK
+    local GL_FRONT                  = GL.FRONT
+    local GL_SRC_ALPHA              = GL.SRC_ALPHA
+    local GL_ONE                    = GL.ONE
+    local GL_ONE_MINUS_SRC_ALPHA    = GL.ONE_MINUS_SRC_ALPHA     
+    local GL_BACK                   = GL.BACK
+    local GL_FRONT                  = GL.FRONT
     -----------------------------------------------------------------
     -- Shader sources
     -----------------------------------------------------------------
@@ -121,7 +130,7 @@ else
         float HdotN = clamp(dot(H, N), 0.0, 1.0);
         reflColor += SUN_SPEC_MULT * sunSpecular * pow(HdotN, 16.0);
         float fresnel = R0v + (1.0 - R0v) * pow((1.0 - NdotV), 5.0);
-        gl_FragColor.rgb = diffColor + fresnel * reflColor;
+        gl_FragColor.rgb = diffColor + fresnel * reflColor*0.5;
         gl_FragColor.a = 0.5;// tex2Color.a;
     }
     ]]
@@ -227,7 +236,7 @@ local function UpdateGlassUnits(unitID)
 
                 sunChanged = false
             end
-
+             glBlending(GL_SRC_ALPHA, GL_ONE)
             for unitID, _ in pairs(glassUnits) do
                 local unitDefID = udIDs[unitID]
                 local teamID = teamIDs[unitID]
@@ -242,7 +251,16 @@ local function UpdateGlassUnits(unitID)
 
                     local tr, tg, tb, ta = spGetTeamColor(teamID) -- TODO optimize
                     glassShader:SetUniformFloat("teamColor", tr, tg, tb, ta)
-
+               glCulling(GL_FRONT)
+                    for _, pieceID in ipairs(glassUnitDefs[unitDefID]) do --go over pieces list
+                        glPushPopMatrix( function()
+                            glUnitMultMatrix(unitID)
+                            glUnitPieceMultMatrix(unitID, pieceID)
+                            glUnitPiece(unitID, pieceID)
+                        end)
+                    end
+                
+                glCulling(GL_BACK)
                     for _, pieceID in ipairs(glassUnitDefs[unitDefID]) do --go over pieces list
                         glPushPopMatrix( function()
                             glUnitMultMatrix(unitID)
@@ -251,12 +269,11 @@ local function UpdateGlassUnits(unitID)
                         end)
                     end
 
-
                 glTexture(0, false)
                 glTexture(1, false)
                 glTexture(2, false)
             end
-
+            glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             glTexture(3, false)
         end)
     end
