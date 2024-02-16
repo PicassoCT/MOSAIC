@@ -9,6 +9,7 @@
     uniform sampler2D reflecttex;
     uniform sampler2D screentex;
     uniform sampler2D normalunittex;
+    uniform sampler2D afterglowbuffertex;
 
     uniform float time;
     uniform vec2 viewPortSize;

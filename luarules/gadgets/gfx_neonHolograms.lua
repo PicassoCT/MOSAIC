@@ -7,7 +7,7 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 0,
         version = 1,
-        enabled = true,
+        enabled = false,
         hidden = true,
     }
 end
@@ -319,7 +319,7 @@ else -- unsynced
         uniform mat4 viewInvMat;
         //uniform vec3 unitCenterPosition;
         //uniform vec2 viewPortSize;
-        //uniform sampler2D tex1;
+        uniform sampler2D tex1;
         //uniform sampler2D tex2;
         //uniform sampler2D normaltex;
         //uniform sampler2D reflecttex;
@@ -341,7 +341,7 @@ else -- unsynced
         uniform mat4 viewInvMat;
         //uniform vec3 unitCenterPosition;
         //uniform vec2 viewPortSize;
-        //uniform sampler2D tex1;
+        uniform sampler2D tex1;
         //uniform sampler2D tex2;
         //uniform sampler2D normaltex;
         //uniform sampler2D reflecttex;

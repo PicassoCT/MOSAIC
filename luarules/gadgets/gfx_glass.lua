@@ -6,7 +6,7 @@ function gadget:GetInfo()
         date      = "2019",
         license   = "PD",
         layer     = 0,
-        enabled   = false,
+        enabled   = true,
     }
 end
 
@@ -122,7 +122,7 @@ else
         reflColor += SUN_SPEC_MULT * sunSpecular * pow(HdotN, 16.0);
         float fresnel = R0v + (1.0 - R0v) * pow((1.0 - NdotV), 5.0);
         gl_FragColor.rgb = diffColor + fresnel * reflColor;
-        gl_FragColor.a = tex2Color.a;
+        gl_FragColor.a = 0.5;// tex2Color.a;
     }
     ]]
 
