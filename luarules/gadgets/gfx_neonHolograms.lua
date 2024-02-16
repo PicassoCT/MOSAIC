@@ -351,7 +351,7 @@ else -- unsynced
 
         void main() 
         {
-            gl_FragColor = vec4( 1.0, 0.0, 0.0, 0.5);
+            gl_FragColor = vec4( tex1.rgb, 0.5);
         }
     ]]
  
@@ -437,7 +437,7 @@ else -- unsynced
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
 
-                    glCulling(GL_FRONT)
+                    --glCulling(GL_FRONT)
                     for  _, pieceID in ipairs(neonHoloParts)do
 
                       glPushPopMatrix( function()
@@ -461,6 +461,7 @@ else -- unsynced
             end         
         )
         glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
+       --Cleanup
         glTexture(0, false)
         glTexture(1, false)
         glTexture(2, false)
@@ -468,7 +469,6 @@ else -- unsynced
         glTexture(4, false)        
         glTexture(5, false)   
         glDepthTest(false)
-        glCulling(false)
     end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
