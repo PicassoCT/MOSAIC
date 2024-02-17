@@ -1,4 +1,5 @@
     #version 150 compatibility
+    #line 20002
     //Fragmentshader
     // Set the precision for data types used in this shader
     #define RED vec4(1.0, 0.0,0.0, 0.5);
@@ -12,9 +13,13 @@
     uniform sampler2D afterglowbuffertex;
 
     uniform float time;
+    uniform float timepercent;
     uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
+
     float radius = 16.0;
+    vec2 pixelCoord;
+    vec4 vWorldNormal;
 
     // Varyings passed from the vertex shader
     in Data {
@@ -24,6 +29,16 @@
         vec2 vTexCoord;
         vec4 vCamPositionWorld;
         };
+
+    float getLightPercentageFactorByTime()
+    {
+        //Night
+        if (timepercent < 0.25 || timepercent > 0.75) return 0.9;
+
+        //day
+        return 0.75;
+    }
+
         
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
     {
@@ -163,10 +178,10 @@
 		float vstep = 1.0;
 			
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
-        uv = gl_FragCoord.xy / viewPortSize;   
-		vWorldNormal = texture2D(normaltex, uv);
-        vec4 vUnitNormal = texture2D(normalunittex, uv);
-		sum += texture2D(screenTex, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
+        pixelCoord = gl_FragCoord.xy / viewPortSize;   
+		vWorldNormal = texture2D(normaltex, pixelCoord);
+        vec4 vUnitNormal = texture2D(normalunittex, pixelCoord);
+		sum += texture2D(screentex, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
 	
 		float averageShadow = (vWorldNormal.x*vWorldNormal.x+vWorldNormal.y*vWorldNormal.y+vWorldNormal.z+vWorldNormal.z)/4.0;   
 		
@@ -184,10 +199,10 @@
         
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
 		vec4 sampleBLurColor = rgbaColCopy.rgba;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-		sampleBLurColor += texture2D( screenTex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
         vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * rgbaColCopy, averageShadow);
         vec4 finalColor = borderGlowColor;
         finalColor.a = 1.0;
@@ -198,18 +213,19 @@
         {            
             finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
-        gl_FragColor = RED; //DEBUG DELME
-        return;
+
 		gl_FragColor.rgb = finalColor.rgb;
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //apply afterglow buffer decay
-        afterglowbuffertex.rgb = afterglowbuffertex.rgb * 0.9;
+        /*     afterglowbuffertex.rgb = afterglowbuffertex.rgb * 0.9;
         if (vUnitNormal.a > 0.5) //TODO move to seperate method
         {
             afterglowbuffertex += gl_FragCoord * 0.9;
         }
         gl_FragColor.rgb += afterglowbuffertex;
+        */
+        gl_FragColor.rgb *= getLightPercentageFactorByTime();
         
 	}
 

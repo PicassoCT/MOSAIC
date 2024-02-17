@@ -13,7 +13,7 @@ Joy = piece("Joy")
 JoyRide = piece("JoyRide")
 local boolDebugScript = true
 local lastFrame = Spring.GetGameFrame()
-
+local cachedCopy = {}
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 

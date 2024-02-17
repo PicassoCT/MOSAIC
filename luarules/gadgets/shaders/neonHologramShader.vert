@@ -1,4 +1,5 @@
     #version 150 compatibility
+    #line 100002
     //VertexShader
     // Set the precision for data types used in this shader
 
@@ -13,7 +14,7 @@
 
     
     uniform float time;
-
+    uniform float timepercent;
     uniform  vec3 unitCenterPosition;
 
    const float PI = 3.1415926535897932384626433832795;

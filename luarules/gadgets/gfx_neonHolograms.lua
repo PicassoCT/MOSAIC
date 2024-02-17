@@ -383,7 +383,8 @@ end
         void main() 
         {
             vec4 tex1Color = texture(tex1, uv);
-            gl_FragColor = vec4( tex1Color.rgb * getLightAmp() , 0.5);
+            gl_FragColor = vec4( tex1Color.rgb  , 1.0);
+            //gl_FragColor = vec4( tex1Color.rgb * getLightAmp() , 0.5);
         }
     ]]
  
@@ -396,8 +397,8 @@ end
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
-            vertex =  defaultVertexShader, --neoVertexShaderFirstPass,
-            fragment = defaultTestFragmentShader,-- neoFragmenShaderFirstPass,
+            vertex =   neoVertexShaderFirstPass,
+            fragment =  neoFragmenShaderFirstPass,
             textures = {
                     [0] = tex1,
                     [1] = tex2,
@@ -462,7 +463,6 @@ end
                 --variables
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
 
-                   -- Spring.Echo("Start drawing unit:"..unitID)
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
@@ -487,9 +487,8 @@ end
                             glUnitPiece(unitID, pieceID)
                         end)
                     end
-                    --glUnitShapeTextures(neonHoloDef, false)
-                    
-                end    
+                end  
+
                 glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
                 --Cleanup
                 glTexture(0, false)
