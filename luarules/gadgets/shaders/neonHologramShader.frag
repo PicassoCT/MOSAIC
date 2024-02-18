@@ -159,6 +159,7 @@
 
     void main() 
 	{	
+    
 		//this will be our RGBA sumt
 		vec4 sum = vec4(0.0);
 		
@@ -183,7 +184,9 @@
 		sum += texture2D(screentex, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
 	
 		float averageShadow = (vWorldNormal.x*vWorldNormal.x+vWorldNormal.y*vWorldNormal.y+vWorldNormal.z+vWorldNormal.z)/4.0;   
-		
+		gl_FragColor = RED;
+        gl_FragColor.rgb = RED.rgb * averageShadow;
+        return;
 		//Transparency 
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
