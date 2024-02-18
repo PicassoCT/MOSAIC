@@ -353,7 +353,7 @@ end
         }
     ]]
 
-    local defaultTestFragmentShader = 
+    local defaultFragmentShader = 
     [[
         #version 150 compatibility
         uniform float time;
@@ -397,8 +397,8 @@ end
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({
-            vertex =   neoVertexShaderFirstPass,
-            fragment =  neoFragmenShaderFirstPass,
+            vertex =   neoVertexShaderFirstPass, --defaultVertexShader
+            fragment = neoFragmenShaderFirstPass,--defaultFragmentShader
             textures = {
                     [0] = tex1,
                     [1] = tex2,

@@ -23,7 +23,6 @@
 
     // Varyings passed from the vertex shader
     in Data {
-        vec3 vViewCameraDir;
         vec2 vSphericalUVs;
         vec3 vPixelPositionWorld;
         vec2 vTexCoord;

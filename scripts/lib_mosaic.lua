@@ -563,7 +563,6 @@ function getGameConfig()
             [UnitDefNames["objective_combatoutpost"].id] = "land",
             [UnitDefNames["objective_transrapid"].id] = "land",
             [UnitDefNames["objective_airport"].id] = "land",
-            [UnitDefNames["objective_spaceport_land"].id] = "land",   
             [UnitDefNames["objective_pumpstation"].id] = "land"
         }
     end

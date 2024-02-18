@@ -23,6 +23,8 @@
     out Data {      
             vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
+            vec2 vTexCoord;
+            vec4 vCamPositionWorld;
         };
 
 
