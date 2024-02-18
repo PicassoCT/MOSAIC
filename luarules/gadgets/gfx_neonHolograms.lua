@@ -434,6 +434,12 @@ end
 
        Spring.Echo("NeonShader:: did compile")
     end
+    local holoDefID = nil
+    for i=1,#UnitDefs do
+        if UnitDefs[i].name == "house_western_hologram_brothel" then
+            holoDefID =  UnitDefs[i].id
+        end
+    end       
 
     local function RenderAllNeonUnits()
 
@@ -450,6 +456,7 @@ end
         glDepthMask(false)
         glCulling(GL_BACK)
         local _,_,_,timepercent = getDayTime()
+        Spring.Echo("Texture 1:"..string.format("%%%d:0", holoDefID)) --TODO find out why there is not proper texture loaded
 
         neonHologramShader:ActivateWith(
             function()  
@@ -458,13 +465,15 @@ end
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
                 neonHologramShader:SetUniformFloatArray("vCamPositionWorld", Spring.GetCameraPosition() )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
+
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
+                glTexture(0, string.format("%%%d:0", holoDefID))
+                glTexture(1, string.format("%%%d:1", holoDefID))
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
 
                     local unitDefID = spGetUnitDefID(unitID)
-                    glTexture(0, string.format("%%%d:0", unitDefID))
-                    glTexture(1, string.format("%%%d:1", unitDefID))
+
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
 

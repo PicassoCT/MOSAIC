@@ -185,7 +185,8 @@
 		//sum += texture2D(screentex, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
 	
 		float averageShadow = (normal.x*normal.x + normal.y*normal.y + normal.z*normal.z)/4.0;   
-
+        //gl_FragColor = vec4(normal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
+        //return;
 		//Transparency 
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
@@ -197,7 +198,8 @@
 										); 
         vec4 orgCol = texture2D(tex1, uv);
         vec4 rgbaColCopy = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency);
-        
+        gl_FragColor = orgCol + RED * 0.1;//, (1.0-averageShadow));
+        //return;
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
 		vec4 sampleBLurColor = rgbaColCopy.rgba;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
