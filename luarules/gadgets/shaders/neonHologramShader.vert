@@ -9,12 +9,12 @@
     uniform sampler2D normaltex;
     uniform sampler2D reflecttex;
     uniform sampler2D screentex;
-    uniform sampler2D normalunittex;
     uniform sampler2D afterglowbuffertex;
 
     
     uniform float time;
     uniform float timepercent;
+    uniform vec2 viewPortSize;
     uniform  vec3 unitCenterPosition;
 
    const float PI = 3.1415926535897932384626433832795;
@@ -23,8 +23,7 @@
     out Data {      
             vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
-            vec2 vTexCoord;
-            vec4 vCamPositionWorld;
+            vec3 normal;
         };
 
 
@@ -56,6 +55,9 @@ void CreateSphericalUVs(vec3 worldPosition)
 
 void main() 
 {
+
+    normal = gl_NormalMatrix * gl_Normal;
+  
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
     vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;

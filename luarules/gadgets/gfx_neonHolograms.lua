@@ -402,9 +402,9 @@ end
             textures = {
                     [0] = tex1,
                     [1] = tex2,
-                    [2] = reflecttex,
-                    [3] = screentex,
-                    [4] = normalunittex,
+                    [2] = normaltex,
+                    [3] = reflecttex,
+                    [4] = screentex,
                     [5] = afterglowbuffertex
                 },       
             uniform = {
@@ -412,17 +412,16 @@ end
                 timepercent = 0.5
             },     
             uniformInt = {
-                tex1            = 0,
-                tex2            = 1,
-                reflecttex      = 2,
-                screentex       = 3,
-                afterglowbuffer = 4,
-                normalunittex   = 5
-
+                tex1 = 0,
+                tex2 = 1,
+                normaltex = 2,
+                reflecttex = 3,
+                screentex = 4,
+                afterglowbuffertex = 5
             },
             uniformFloat = {
-              --[[  viewPortSize = {vsx, vsy},                 
-                unitCenterPosition = {0,0,0}--]]
+               viewPortSize = {vsx, vsy},                 
+              unitCenterPosition = {0,0,0}
             },
         }, "Neon Hologram Shader")
 
@@ -445,7 +444,6 @@ end
 
         glTexture(2, "$normal") 
         glTexture(3, "$reflection") 
-        glTexture(5, "$model_gbuffer_normtex") 
        
         glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
         glDepthTest(true)
@@ -458,6 +456,7 @@ end
                 neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformFloat("timepercent",  timepercent)
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
+                neonHologramShader:SetUniformFloatArray("vCamPositionWorld", Spring.GetCameraPosition() )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
@@ -496,7 +495,6 @@ end
                 glTexture(2, false)
                 glTexture(3, false)        
                 glTexture(4, false)        
-                glTexture(5, false) 
                 glDepthTest(false)
             end         
         )
