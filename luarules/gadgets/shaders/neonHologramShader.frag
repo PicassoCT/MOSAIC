@@ -3,6 +3,7 @@
     //Fragmentshader
     // Set the precision for data types used in this shader
     #define RED vec4(1.0, 0.0,0.0, 0.5)
+    #define NONE vec4(0.)
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -21,13 +22,13 @@
         vec2 vSphericalUVs;
         vec3 vPixelPositionWorld;
         vec3 normal;
+        vec3 sphericalNormal;
         };
 
     //GLOBAL VARIABLES/////
 
     float radius = 16.0;
     vec2 pixelCoord;
-    vec4 vWorldNormal;
 
     //////////////////////
 
@@ -183,9 +184,9 @@
         pixelCoord = gl_FragCoord.xy / viewPortSize;   
 
 		//sum += texture2D(screentex, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
-	
-		float averageShadow = (normal.x*normal.x + normal.y*normal.y + normal.z*normal.z)/4.0;   
-        //gl_FragColor = vec4(normal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
+	    vec3 hyNormal = mix(normal, sphericalNormal, 0.5);
+		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z*hyNormal.z)/4.0;   
+        //gl_FragColor = vec4(ĥyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
         //return;
 		//Transparency 
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
@@ -196,20 +197,19 @@
 										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y, 0.75,  time,  0.5))
 										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
 										); 
-        vec4 orgCol = texture2D(tex1, uv);
-        vec4 rgbaColCopy = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency);
+        vec4 orgCol = texture2D(tex1, uv) +RED * 0.1; //DebugMe DelMe
+        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency);
         gl_FragColor = orgCol + RED * 0.1;//, (1.0-averageShadow));
         //return;
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
-		vec4 sampleBLurColor = rgbaColCopy.rgba;
+		vec4 sampleBLurColor = colWithBorderGlow.rgba;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-        vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * rgbaColCopy, averageShadow);
+        vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * colWithBorderGlow, averageShadow);
         vec4 finalColor = borderGlowColor;
-        finalColor.a = 1.0;
-
+        
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
         float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
         if (distanceTotal < 1.0)
@@ -220,9 +220,10 @@
 		gl_FragColor.rgb = finalColor.rgb;
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
-        //apply afterglow buffer decay
+        //similar to a very bright lightsource shining on retina leaving afterimages
+        //
         /*     afterglowbuffertex.rgb = afterglowbuffertex.rgb * 0.9;
-        if (normal.a > 0.5) //TODO move to seperate method
+        if (hyNormal != NONE) 
         {
             afterglowbuffertex += gl_FragCoord * 0.9;
         }

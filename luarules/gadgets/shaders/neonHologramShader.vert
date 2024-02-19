@@ -24,6 +24,7 @@
             vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
             vec3 normal;
+            vec3 sphericalNormal;
         };
 
 
@@ -42,7 +43,7 @@ void CreateSphericalUVs(vec3 worldPosition)
     vec3 vertex =  vec3(unitCenterPosition[0],unitCenterPosition[1],unitCenterPosition[2])-worldPosition;
     // Step 1: Normalize the vector
     vec3 normalizedVector = normalize(vertex);
-    normal = normalizedVector;
+    sphericalNormal = normalizedVector;
     // Step 2: Convert to spherical coordinates (longitude and latitude)
     float longitude = atan(normalizedVector.y, normalizedVector.x);
     float latitude = acos(normalizedVector.z);
@@ -56,7 +57,7 @@ void CreateSphericalUVs(vec3 worldPosition)
 void main() 
 {
 
-    //normal = gl_NormalMatrix * gl_Normal;
+    normal = gl_NormalMatrix * gl_Normal;
   
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
