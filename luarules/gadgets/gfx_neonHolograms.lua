@@ -319,6 +319,7 @@ end
 
         afterglowbuffertex = glCreateTexture(vsx,vsy,
             {
+            fbo = true,
             min_filter = GL.LINEAR, 
             mag_filter = GL.LINEAR,
             wrap_s = GL.CLAMP_TO_EDGE, 
