@@ -417,8 +417,7 @@ end
                 tex2 = 1,
                 normaltex = 2,
                 reflecttex = 3,
-                screentex = 4,
-                afterglowbuffertex = 5
+                screentex = 4
             },
             uniformFloat = {
                viewPortSize = {vsx, vsy},                 
@@ -468,8 +467,9 @@ end
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
-                glTexture(0, string.format("%%%d:0", holoDefID))
-                glTexture(1, string.format("%%%d:1", holoDefID))
+                glTexture(0, "unittextures/house_europe_diffuse.dds")
+                glTexture(1, "unittextures/house_europe_normal.dds")
+
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
 
                     local unitDefID = spGetUnitDefID(unitID)
