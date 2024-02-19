@@ -437,7 +437,7 @@ end
     end
     local holoDefID = nil
     for i=1,#UnitDefs do
-        if UnitDefs[i].name == "house_western_hologram_brothel" then
+        if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id
         end
     end       
@@ -456,8 +456,7 @@ end
         glDepthTest(true)
         glDepthMask(false)
         glCulling(GL_BACK)
-        local _,_,_,timepercent = getDayTime()
-        Spring.Echo("Texture 1:"..string.format("%%%d:0", holoDefID)) --TODO find out why there is not proper texture loaded
+
 
         neonHologramShader:ActivateWith(
             function()  
