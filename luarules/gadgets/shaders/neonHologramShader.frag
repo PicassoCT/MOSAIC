@@ -221,7 +221,7 @@
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        //
+        //TODO make buffer fbo , current approach does not work
         /*     afterglowbuffertex.rgb = afterglowbuffertex.rgb * 0.9;
         if (hyNormal != NONE) 
         {
