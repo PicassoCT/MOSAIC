@@ -549,8 +549,7 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
-	
-	float depth = min(l * RAIN_THICKNESS_INV , 1.5);
+
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
 
@@ -613,16 +612,15 @@ float getAvgValueCol(vec4 col)
 vec4 GetRainCoronaFromScreenTex() 
 {
 	vec2 upUv = uv;
-	upUv.x += 0.1;
-	vec4 colorAtUpPixel = texture2D(screentex, upUv);
-
-	float avgDown = getAvgValueCol(origColor);
-	float avgUp = getAvgValueCol(colorAtUpPixel);
-
-	if (avgDown > avgUp && avgDown-avgUp > 0.25) return GREEN;
-	if (avgDown < avgUp && avgUp - avgDown > 0.25) return BLUE;
-
-	return NONE;//DELME
+	upUv.x -= 2;
+	vec3 groundBelowNormal= texture(normaltex, upUv).xyz;
+	vec3 unitViewNormal = texture(normalunittex, upUv).xyz;
+	if (unitViewNormal.rgb != BLACK.rgb) groundBelowNormal = unitViewNormal.rgb;
+	if (groundBelowNormal.g >  Y_NORMAL_CUTOFFVALUE) 
+	{
+		return vec4( 1.0, 1.0, 1.0, 0.125);
+	}
+	return NONE;
 }
 
 
@@ -649,21 +647,20 @@ void main(void)
 	r.Origin = eyePos;
 	r.Dir = worldPos - eyePos;
 
-	/*
 	if (!IntersectBox(r, box, t1, t2))
 	{
 		gl_FragColor = vec4(0.);
 		return;
 	}
-	*/
 
 	t1 = clamp(t1, 0.0, 1.0);
 	t2 = clamp(t2, 0.0, 1.0);
-	vec3 startPos =  eyePos;
-	vec3 endPos   = r.Dir * 1.0 + eyePos;
+	vec3 startPos = r.Dir * t1 + eyePos;
+	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	vec4 accumulatedLightColorRayDownward = RayMarchCompose(startPos,  endPos); 
+	vec4 accumulatedLightColorRayDownward = RayMarchCompose(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
+
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
 
@@ -675,7 +672,7 @@ void main(void)
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
-	//	accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
+		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
 	}
 
 	vec4 upWardrainColor = origColor;
