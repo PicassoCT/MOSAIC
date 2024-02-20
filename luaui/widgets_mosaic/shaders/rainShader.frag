@@ -412,8 +412,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	return mix(NONE,
 			  MIRRORED_REFLECTION_FACTOR * BLUE  + ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz),
-			  groundMixFactor);
-	
+			  groundMixFactor);	
 }
 
 vec3 truncatePosition(in vec3 pixelPosTrunc)
@@ -557,7 +556,7 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 
 	vec3 pxlPosWorld;
 
-	for (float t=0.0; t < 1.0; t +=tstep) 
+	for (float t=0.0; t < 1.0; t += tstep) 
 	{
 		pxlPosWorld = mix(start, end, t);
 
@@ -650,20 +649,21 @@ void main(void)
 	r.Origin = eyePos;
 	r.Dir = worldPos - eyePos;
 
+	/*
 	if (!IntersectBox(r, box, t1, t2))
 	{
 		gl_FragColor = vec4(0.);
 		return;
 	}
+	*/
 
 	t1 = clamp(t1, 0.0, 1.0);
 	t2 = clamp(t2, 0.0, 1.0);
-	vec3 startPos = r.Dir * t1 + eyePos;
-	vec3 endPos   = r.Dir * t2 + eyePos;
+	vec3 startPos =  eyePos;
+	vec3 endPos   = r.Dir * 1.0 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
 	vec4 accumulatedLightColorRayDownward = RayMarchCompose(startPos,  endPos); 
-
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
 
