@@ -23,6 +23,7 @@
         vec3 vPixelPositionWorld;
         vec3 normal;
         vec3 sphericalNormal;
+        vec2 orgColUv;
         };
 
     //GLOBAL VARIABLES/////
@@ -185,7 +186,7 @@
 
 		//sum += texture2D(screentex, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
 	    vec3 hyNormal = mix(normal, sphericalNormal, 0.5);
-		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z*hyNormal.z)/4.0;   
+		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/4.0;   
         //gl_FragColor = vec4(ĥyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
         //return;
 		//Transparency 
@@ -197,9 +198,12 @@
 										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y, 0.75,  time,  0.5))
 										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
 										); 
-        vec4 orgCol = texture2D(tex1, uv) +RED * 0.1; //DebugMe DelMe
-        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency);
-        gl_FragColor = orgCol + RED * 0.1;//, (1.0-averageShadow));
+        vec4 orgCol = texture(tex1, orgColUv); //DebugMe DelMe  max((1.0 - averageShadow) , color.z * hologramTransparency)
+        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , max((1.0 - averageShadow) , orgCol.z * hologramTransparency));
+        gl_FragColor = vec4(vec3(averageShadow), 1.0);
+        return;
+
+        //gl_FragColor = colWithBorderGlow + RED * 0.1;//, (1.0-averageShadow));
         //return;
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
 		vec4 sampleBLurColor = colWithBorderGlow.rgba;

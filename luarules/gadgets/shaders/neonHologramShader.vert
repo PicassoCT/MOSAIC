@@ -25,6 +25,7 @@
             vec3 vPixelPositionWorld;
             vec3 normal;
             vec3 sphericalNormal;
+            vec2 orgColUv;
         };
 
 
@@ -58,7 +59,7 @@ void main()
 {
 
     normal = gl_NormalMatrix * gl_Normal;
-  
+    orgColUv = gl_MultiTexCoord0.xy;
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
     vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
