@@ -212,6 +212,7 @@
         //</DEBUG DELME>
 
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
+        // TODO: sampling should be not applied to per unit shader - but should be applied to screenspace shader on afterglowbuffer
 		vec4 sampleBLurColor = colWithBorderGlow.rgba;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
