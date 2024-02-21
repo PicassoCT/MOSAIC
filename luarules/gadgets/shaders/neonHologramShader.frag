@@ -190,8 +190,8 @@
 		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
         
         //<DEBUG DELME>
-        gl_FragColor = vec4(hyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
-        return;
+        //gl_FragColor = vec4(hyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
+        //return;
         //</DEBUG DELME>
 
 		//Transparency 
@@ -207,8 +207,8 @@
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , max((1.0 - averageShadow) , orgCol.z * hologramTransparency));
         
         //<DEBUG DELME>
-        gl_FragColor = colWithBorderGlow + RED * 0.1;
-        return;
+        //gl_FragColor = colWithBorderGlow + RED * 0.1;
+        //return;
         //</DEBUG DELME>
 
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
@@ -222,8 +222,8 @@
         vec4 finalColor = borderGlowColor;
         
         //<DEBUG DELME>
-        gl_FragColor = sampleBLurColor;
-        return;
+        //gl_FragColor = sampleBLurColor;
+        //return;
         //</DEBUG DELME>
 
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
