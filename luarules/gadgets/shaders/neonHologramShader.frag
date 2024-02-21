@@ -4,6 +4,7 @@
     // Set the precision for data types used in this shader
     #define RED vec4(1.0, 0.0,0.0, 0.5)
     #define NONE vec4(0.)
+    #define PI 3.14159f
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -185,10 +186,14 @@
         pixelCoord = gl_FragCoord.xy / viewPortSize;   
 
 		//sum += texture2D(screentex, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
-	    vec3 hyNormal = mix(normal, sphericalNormal, 0.5);
-		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/4.0;   
-        //gl_FragColor = vec4(ĥyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
-        //return;
+	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
+		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
+        
+        //<DEBUG DELME>
+        gl_FragColor = vec4(hyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
+        return;
+        //</DEBUG DELME>
+
 		//Transparency 
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
@@ -200,11 +205,12 @@
 										); 
         vec4 orgCol = texture(tex1, orgColUv); //DebugMe DelMe  max((1.0 - averageShadow) , color.z * hologramTransparency)
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , max((1.0 - averageShadow) , orgCol.z * hologramTransparency));
-        gl_FragColor = vec4(vec3(averageShadow), 1.0);
+        
+        //<DEBUG DELME>
+        gl_FragColor = colWithBorderGlow + RED * 0.1;
         return;
+        //</DEBUG DELME>
 
-        //gl_FragColor = colWithBorderGlow + RED * 0.1;//, (1.0-averageShadow));
-        //return;
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
 		vec4 sampleBLurColor = colWithBorderGlow.rgba;
 		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
@@ -214,6 +220,11 @@
         vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * colWithBorderGlow, averageShadow);
         vec4 finalColor = borderGlowColor;
         
+        //<DEBUG DELME>
+        gl_FragColor = sampleBLurColor;
+        return;
+        //</DEBUG DELME>
+
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
         float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
         if (distanceTotal < 1.0)
