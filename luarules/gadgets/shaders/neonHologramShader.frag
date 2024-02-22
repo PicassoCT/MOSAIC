@@ -228,8 +228,8 @@
         {            
             finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
-
-		gl_FragColor.rgb = finalColor.rgb;
+  
+		gl_FragColor = finalColor;
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
