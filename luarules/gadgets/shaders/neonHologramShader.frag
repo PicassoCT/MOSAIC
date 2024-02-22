@@ -165,9 +165,6 @@
     void main() 
 	{	
     
-		//this will be our RGBA sumt
-		vec4 sum = vec4(0.0);
-		
 		//our original texcoord for this fragment
 		vec2 uv =  gl_FragCoord.xy / viewPortSize;    
 		
@@ -185,7 +182,6 @@
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
         pixelCoord = gl_FragCoord.xy / viewPortSize;   
 
-		//sum += texture2D(screentex, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
 	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
 		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
         

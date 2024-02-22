@@ -448,10 +448,6 @@ end
             return
         end 
 
-        glTexture(2, "$normal") 
-        glTexture(3, "$reflection") 
-       
-        glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
         glDepthTest(true)
         glDepthMask(false)
         glCulling(GL_BACK)
@@ -459,6 +455,10 @@ end
 
         neonHologramShader:ActivateWith(
             function()  
+                glTexture(2, "$normal") 
+                glTexture(3, "$reflection") 
+                glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+
                 neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformFloat("timepercent",  timepercent)
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
@@ -498,6 +498,7 @@ end
                     end
                 end  
 
+
                 glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
                 --Cleanup
                 glTexture(0, false)
@@ -509,6 +510,10 @@ end
             end         
         )
     end
+
+    --TODO: Draw Texture Rectangle for glowy shine around the drawn pieces + afterglowbuffertex
+    --Shader does not apply to it
+
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
