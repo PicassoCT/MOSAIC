@@ -3,7 +3,7 @@ local birdswarm = AIRCRAFT:New{
 	name = "Birds",
 	Description = "",
 	objectName = "birdswarm.dae",
-	script = "birdswarmscript.lua",
+	script = "pidgeonswarmscript.lua",
 	--script = "pieceMaker.lua",
 
 	--floater = true,

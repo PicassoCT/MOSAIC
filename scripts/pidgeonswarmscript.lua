@@ -7,7 +7,8 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 
-
+local Birds = {rotator = piece("Rotator")}
+local numberOfBirds = 6
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(observer)
@@ -21,7 +22,41 @@ function script.Create()
     for i = 1, numberOfBirds, 1 do
         StartThread(birdOS, i)
     end
+--Bird, Bird, Bird is the word
+    for i = 1, numberOfBirds, 1 do
 
+        LandPiece = piece("B" .. i)
+        LFoot = piece("LP" .. i )
+        RFoot = piece("LP" .. i )
+        Land = {
+            [1] = LandPiece,
+            [2] = LFoot,
+            [3] = RFoot
+        }
+        AirPiece = piece("B" .. i)
+        LWing = piece("RW" .. i)
+        RWing = piece("LW" .. i)
+
+        Air = {
+            [1] = AirPiece,
+            [2] = LWing,
+            [3] = RWing
+        }
+        
+ 
+      
+
+        Birds[i] = {
+            Land = Land,
+            Air = Air,
+
+            sRot = AirPiece,
+            bRot = AirPiece,
+            boolAnimating = false,
+            boolFlying = false,
+            boolStillActive = true
+        }
+    end
     Spring.SetUnitAlwaysVisible(unitID, true)
 
 end
@@ -48,48 +83,11 @@ function observer()
 end
 
 
-bigRot1 = piece "bigRot1"
-smallRot1 = piece "smallRot1"
+bigRot1 = piece "Rot1"
+smallRot1 = piece "Rot002"
 
 RengerateInterval= 25000
---Bird, Bird, Bird is the word
-local Birds = {rotator = piece("Rotator")}
-local numberOfBirds = 5
-for i = 1, numberOfBirds, 1 do
 
-    LandPiece = piece("Land" .. i)
-    LFoot = piece("L" .. i .. "1")
-    RFoot = piece("L" .. i .. "2")
-    Land = {
-        [1] = LandPiece,
-        [2] = LFoot,
-        [3] = RFoot
-    }
-    AirPiece = piece("Fly" .. i)
-    LWing = piece("RW" .. i)
-    RWing = piece("LW" .. i)
-
-    Air = {
-        [1] = AirPiece,
-        [2] = LWing,
-        [3] = RWing
-    }
-    
-    Center = piece("cent" .. i)
-    smallRot = piece("smallRot" .. i)
-    bigRot = piece("bigRot" .. i)
-
-    Birds[i] = {
-        Land = Land,
-        Air = Air,
-        Center = Center,
-        sRot = smallRot,
-        bRot = bigRot,
-        boolAnimating = false,
-        boolFlying = false,
-        boolStillActive = true
-    }
-end
 
 function HideBird(nr)
     Hide(Birds[nr].Air[1])
