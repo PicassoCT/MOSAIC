@@ -1,12 +1,11 @@
-local unitName = "birdswarm"
 
-local unitDef = {
+local birdswarm = AIRCRAFT:New{
 	name = "Birds",
 	Description = "",
 	objectName = "birdswarm.dae",
 	script = "birdswarmscript.lua",
 	--script = "pieceMaker.lua",
-	buildPic = "jwatchbird.png",
+
 	--floater = true,
 	--cost
 	buildCostMetal = 2260,
@@ -27,7 +26,7 @@ local unitDef = {
 	dontLand		 	= false,
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 30,
-	MovementClass = "Default2x2",
+	MovementClass = "AIRUNIT",
 	TurnRate = 150,
 	nanocolor=[[0 0.9 0.9]],
 	sightDistance = 500,
@@ -68,4 +67,7 @@ local unitDef = {
 	
 }
 
-return lowerkeys({ [unitName] = unitDef })
+return lowerkeys({
+	--Temp
+	["birdswarm"] = birdswarm:New(),	
+})
