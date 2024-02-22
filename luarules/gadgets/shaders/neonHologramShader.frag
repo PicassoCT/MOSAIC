@@ -165,9 +165,6 @@
     void main() 
 	{	
     
-		//this will be our RGBA sumt
-		vec4 sum = vec4(0.0);
-		
 		//our original texcoord for this fragment
 		vec2 uv =  gl_FragCoord.xy / viewPortSize;    
 		
@@ -185,13 +182,12 @@
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
         pixelCoord = gl_FragCoord.xy / viewPortSize;   
 
-		//sum += texture2D(screentex, vec2(uv.x - 4.0*blur*hstep, uv.y - 4.0*blur*vstep)) * 0.0162162162;
 	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
 		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
         
         //<DEBUG DELME>
-        gl_FragColor = vec4(hyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
-        return;
+        //gl_FragColor = vec4(hyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
+        //return;
         //</DEBUG DELME>
 
 		//Transparency 
@@ -207,8 +203,8 @@
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , max((1.0 - averageShadow) , orgCol.z * hologramTransparency));
         
         //<DEBUG DELME>
-        gl_FragColor = colWithBorderGlow + RED * 0.1;
-        return;
+        //gl_FragColor = colWithBorderGlow + RED * 0.1;
+        //return;
         //</DEBUG DELME>
 
         //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
@@ -222,8 +218,8 @@
         vec4 finalColor = borderGlowColor;
         
         //<DEBUG DELME>
-        gl_FragColor = sampleBLurColor;
-        return;
+        //gl_FragColor = sampleBLurColor;
+        //return;
         //</DEBUG DELME>
 
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
