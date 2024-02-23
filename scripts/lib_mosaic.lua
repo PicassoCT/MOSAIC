@@ -1624,6 +1624,22 @@ function getGameConfig()
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
+            function getAnimalTypeNumbers(animalName)
+                return {
+                    [UnitDefNames["birdswarm"].id] = 3
+                }
+            end
+
+            function getAnimalTypeTables(UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                            "birdswarm"
+                            }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            
+            end
+
             function getDefusalCapableTypeTable(UnitDefs)
 
                 UnitDefNames = getUnitDefNames(UnitDefs)

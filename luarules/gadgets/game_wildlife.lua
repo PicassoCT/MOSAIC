@@ -32,14 +32,27 @@ local spSetUnitNoSelect = Spring.SetUnitNoSelect
 local spRequestPath = Spring.RequestPath
 local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
-
-
+local animalTypes = getAnimalTypeTables(UnitDefs)
+local animalMaxNumbers = getAnim
 function gadget:GameFrame(frame)
+    if frame > 0 and frame % 101 == 0 then
+        checkRespawnAnimals()
+    end
 end
 
-function gadget:Initialize()
-    -- if a map with animals
-        -- get location of animal
-            --spawn the animal
-                -- ocassionally check wether still alive
+function checkRespawnAnimals()
+ allUnitsCounter = --TODO GetAllUnitsCounted
+    foreach(animalTypes,
+            function(animalTypeDefID)
+                -- we have more animals defined as max
+                if getAnimalTypeNumbers(animalTypeDefID) > allUnitsCounter[animalTypeDefID] then
+                    --spawn near citycenter
+                    if GG.innerCityCenter  then
+                        x,z = math.random(200, 1000)*randSign(), math.random(200, 1000)*randSign()
+                        Spring.CreateUnit(animalTypeDefID, GG.innerCityCenter.x + x, GG.innerCityCenter.y, GG.innerCityCenter.z+z, 0, Spring.GetGaiaTeamID())      
+                    end
+                end
+            end
+            )
 end
+
