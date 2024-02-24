@@ -63,7 +63,7 @@ void main()
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
     vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
-    CreateSphericalUVs(vPixelPositionWorld);
+
 	//Calculate the world Vertex Position ? Operation Order wrong?
     vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
     
@@ -71,4 +71,5 @@ void main()
     //We shiver the polygons to the side ocassionally in ripples
 	posCopy.xz = posCopy.xz - 32.0 * (shiver(posCopy.y, 0.16, 0.95));
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
+    CreateSphericalUVs(gl_Position);
 }
