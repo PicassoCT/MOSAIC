@@ -5,9 +5,9 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 1,
+        layer = 2,
         version = 1,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -39,17 +39,18 @@ function gadget:GameFrame(frame)
         checkRespawnAnimals()
     end
 end
+local gaiaTeamID =  Spring.GetGaiaTeamID()
 
 function checkRespawnAnimals()
- allUnitsCounter = --TODO GetAllUnitsCounted
-    foreach(animalTypes,
+    allUnitsCounter = Spring.GetTeamUnitsCounts(gaiaTeamID)
+    foreach( animalTypes,
             function(animalTypeDefID)
                 -- we have more animals defined as max
                 if getAnimalTypeNumbers(animalTypeDefID) > allUnitsCounter[animalTypeDefID] then
                     --spawn near citycenter
                     if GG.innerCityCenter  then
                         x,z = math.random(200, 1000)*randSign(), math.random(200, 1000)*randSign()
-                        Spring.CreateUnit(animalTypeDefID, GG.innerCityCenter.x + x, GG.innerCityCenter.y, GG.innerCityCenter.z+z, 0, Spring.GetGaiaTeamID())      
+                        Spring.CreateUnit(animalTypeDefID, GG.innerCityCenter.x + x, GG.innerCityCenter.y, GG.innerCityCenter.z+z, 0, gaiaTeamID)      
                     end
                 end
             end

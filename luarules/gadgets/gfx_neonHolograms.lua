@@ -329,63 +329,53 @@ end
 
     end
 
-    local defaultVertexShader = 
+    local afterglowVertexShader = 
     [[
        #version 150 compatibility
-        uniform float time;
-        uniform float timepercent;
-        uniform mat4 viewInvMat;
-        //uniform vec3 unitCenterPosition;
-        //uniform vec2 viewPortSize;
-        uniform sampler2D tex1;
-        //uniform sampler2D tex2;
-        //uniform sampler2D normaltex;
-        //uniform sampler2D reflecttex;
-        //uniform sampler2D screentex;
-        //uniform sampler2D normalunittex;
-        //uniform sampler2D afterglowbuffertex; 
+
+        uniform sampler2D afterglowbuffertex; 
         out Data {
             vec2 uv;
         };
         void main() {
-            vec4 posCopy = gl_Vertex;
             uv = gl_MultiTexCoord0.xy;
             gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
         }
     ]]
 
-    local defaultFragmentShader = 
+    local afterglowFragmentShader = 
     [[
         #version 150 compatibility
-        uniform float time;
-        uniform float timepercent;
+
+        uniform sampler2D afterglowbuffertex; 
         in Data {
             vec2 uv;
         };
-
-        float getLightAmp()
+          
+        vec4 addBorderGlowToColor(vec4 color, float averageShadow)
         {
-            if (timepercent < 0.25 || timepercent > 0.75) return 0.9;
+            float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
+            vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
+            color.xyz =  color.xyz + overlayAlpha.xyz;
+            
+            if (overlayAlpha.x > 0.5)
+            {
+                color.a = mix(color.a, overlayAlpha.a, color.x );
+            }
 
-            return 0.75;
+            return color;
         }
-
-        uniform mat4 viewInvMat;
-        //uniform vec3 unitCenterPosition;
-        //uniform vec2 viewPortSize;
-        uniform sampler2D tex1;
-        //uniform sampler2D tex2;
-        //uniform sampler2D normaltex;
-        //uniform sampler2D reflecttex;
-        //uniform sampler2D screentex;
-        //uniform sampler2D normalunittex;
-        //uniform sampler2D afterglowbuffertex;
 
         void main() 
         {
-            vec4 tex1Color = texture(tex1, uv);
-            gl_FragColor = vec4( tex1Color.rgb  , 1.0);
-            //gl_FragColor = vec4( tex1Color.rgb * getLightAmp() , 0.5);
+            vec4 sampleBLurColor =  texture2D( afterglowbuffertex, uv);
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+            vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * colWithBorderGlow, averageShadow);
+            vec4 finalColor = borderGlowColor;    
+            gl_FragColor = finalColor;
         }
     ]]
  
@@ -420,8 +410,9 @@ end
                 screentex = 4
             },
             uniformFloat = {
-               viewPortSize = {vsx, vsy},                 
-              unitCenterPosition = {0,0,0}
+              viewPortSize = {vsx, vsy},                 
+              unitCenterPosition = {0,0,0},
+              vCamPositionWorld = {0,0,0}
             },
         }, "Neon Hologram Shader")
 
@@ -462,7 +453,8 @@ end
                 neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformFloat("timepercent",  timepercent)
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
-                neonHologramShader:SetUniformFloatArray("vCamPositionWorld", Spring.GetCameraPosition() )
+                local cx,cy,cz  = Spring.GetCameraPosition()
+                neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
@@ -477,6 +469,7 @@ end
 
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
+
 
                     glCulling(GL_FRONT)
                     for  _, pieceID in ipairs(neonHoloParts)do

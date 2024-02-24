@@ -69,6 +69,6 @@ void main()
     
     vec3 posCopy = gl_Vertex.xyz;
     //We shiver the polygons to the side ocassionally in ripples
-	posCopy.xz = posCopy.xz - 0.15 * (shiver(posCopy.y, 0.16, 0.95));
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0)  ;
+	posCopy.xz = posCopy.xz - 32.0 * (shiver(posCopy.y, 0.16, 0.95));
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
 }
