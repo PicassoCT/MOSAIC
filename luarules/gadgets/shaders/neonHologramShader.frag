@@ -196,7 +196,7 @@
         return;
         //</DEBUG DELME>
 
-        /*
+        
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
         float distanceTotal= distance(vPixelPositionWorld.xyz, vCamPositionWorld.xyz);
         if (distanceTotal < 1.0)
@@ -205,7 +205,7 @@
         }
   
 		gl_FragColor = finalColor;
-        */
+        
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages

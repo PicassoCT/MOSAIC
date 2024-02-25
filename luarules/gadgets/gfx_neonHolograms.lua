@@ -149,9 +149,9 @@ if (gadgetHandler:IsSyncedCode()) then
     assert(unitDefID)
     assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."Neon Hologram unit has entered LOS")
+           -- echo(HEAD().."Neon Hologram unit has entered LOS")
             if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                echo(HEAD().."Neon Hologram unit has entered LOS of myTeam")
+                --echo(HEAD().."Neon Hologram unit has entered LOS of myTeam")
                 neonUnitDataTransfer[unitID] = unitID
             end
         end
@@ -159,7 +159,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."Neon Hologram unit has left LOS")
+            --echo(HEAD().."Neon Hologram unit has left LOS")
             if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
                     neonUnitDataTransfer[unitID] = nil
             end
@@ -168,7 +168,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."Neon Hologram unit has entered LOS")
+            --echo(HEAD().."Neon Hologram unit has entered LOS")
             for i=#allNeonUnits, 1, -1 do
                 if allNeonUnits[i] == unitID then
                     table.remove(allNeonUnits, i)
@@ -435,7 +435,7 @@ end
     local function RenderAllNeonUnits()
 
         if counterNeonUnits == 0 or not boolActivated then
-            Spring.Echo("Rendering no Neon Units cause no units")
+            --Spring.Echo("Rendering no Neon Units cause no units")
             return
         end 
 
