@@ -17,7 +17,7 @@
     uniform float timepercent;
     uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
-    uniform vec4 vCamPositionWorld;
+    uniform vec3 vCamPositionWorld;
     // Varyings passed from the vertex shader
     in Data {
         vec2 vSphericalUVs;
@@ -37,7 +37,7 @@
     float getLightPercentageFactorByTime()
     {
         //Night
-        if (timepercent < 0.25 || timepercent > 0.75) return 0.45;
+        if (timepercent < 0.25 || timepercent > 0.75) return 0.15;
 
         //day
         return 0.75;
@@ -178,19 +178,21 @@
         //</DEBUG DELME>
 
 		//Transparency 
-        float sfactor = 0.01;
+        float sfactor = 0.1;
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
-										+  abs(0.3*getSineWave(vPixelPositionWorld.y*sfactor, 0.10,  time*6.0,  0.10))
-										- abs(  getSineWave(vPixelPositionWorld.y*sfactor, 1.0,  time,  0.2))
-										+ 0.4*abs(  getSineWave(vPixelPositionWorld.y*sfactor, 0.5,  time,  0.3))
-										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y*sfactor, 0.75,  time,  0.5))
-										+ 0.15*  getCosineWave(vPixelPositionWorld.y*sfactor, 0.5,  time,  2.0)
+										+  abs(0.3*getSineWave(vPixelPositionWorld.y * sfactor, 0.10,  time * 6.0,  0.10))
+										- abs(  getSineWave(vPixelPositionWorld.y * sfactor, 1.0,  time,  0.2))
+										+ 0.4*abs(  getSineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  0.3))
+										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y * sfactor, 0.75,  time,  0.5))
+										+ 0.15*  getCosineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  2.0)
 										); 
         vec4 orgCol = texture(tex1, orgColUv); //DebugMe DelMe  max((1.0 - averageShadow) , color.z * hologramTransparency)
-        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , max((1.0 - averageShadow) , orgCol.z * hologramTransparency )); //
-        vec4 finalColor = colWithBorderGlow;       
-        
+        // max((1.0 - averageShadow) , orgCol.z * hologramTransparency )
+        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
+    
+        gl_FragColor = colWithBorderGlow;
+        /*
         //<DEBUG DELME>
         gl_FragColor = colWithBorderGlow;
         return;
@@ -205,7 +207,7 @@
         }
   
 		gl_FragColor = finalColor;
-        
+        */
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
@@ -217,7 +219,7 @@
         gl_FragColor.rgb += afterglowbuffercol;
         //texture2D(afterglowbuffertex, uv) =  afterglowbuffercol;
         */
-        //gl_FragColor.rgb *= getLightPercentageFactorByTime();
+        gl_FragColor.rgb *=  getLightPercentageFactorByTime();
         
 	}
 

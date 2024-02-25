@@ -45,9 +45,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
-    assert(neonHologramTypeTable)
+    --assert(neonHologramTypeTable)
     local engineVersion = getEngineVersion()
-    echo(HEAD().." have engine version: "..engineVersion)
+    --echo(HEAD().." have engine version: "..engineVersion)
     -- set minimun engine version
     local unsupportedEngine = true
     local enabled = false
@@ -55,7 +55,7 @@ if (gadgetHandler:IsSyncedCode()) then
     if ( 104.0 < engineVersion  and engineVersion >= 105)  then
         unsupportedEngine = false
         enabled = true
-        echo(HEAD().."is enabled")
+        --echo(HEAD().."is enabled")
     end
 
     function gadget:Initialize()
@@ -77,19 +77,19 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."start registering holo unit")
+            --echo(HEAD().."start registering holo unit")
             Spring.SetUnitNoDraw(unitID, true)
             if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
                -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
                -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
-                echo(HEAD().." Setting unit engine drawMask")
+              --  echo(HEAD().." Setting unit engine drawMask")
             end
             local emptyTable = {}
             local stringToSend = ""
 
    
             allNeonUnits[#allNeonUnits + 1]= unitID
-            echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
+            --echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -284,7 +284,7 @@ end
     end
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
-        --Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
+
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
@@ -450,12 +450,14 @@ end
                 glTexture(3, "$reflection") 
                 glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
 
-                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                neonHologramShader:SetUniformFloat("timepercent",  timepercent)
-                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
-                local cx,cy,cz  = Spring.GetCameraPosition()
+               -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
+                neonHologramShader:SetUniformFloat("timepercent",  timepercent)
+                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds())
+
+                local cx,cy,cz  = Spring.GetCameraPosition()
+     
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
@@ -468,7 +470,7 @@ end
                     glTexture(1, string.format("%%%d:1", unitDefID))
 
                     local x,y,z = spGetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
+                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
 
 
                     glCulling(GL_FRONT)

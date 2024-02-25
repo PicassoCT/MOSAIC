@@ -15,7 +15,8 @@
     uniform float time;
     uniform float timepercent;
     uniform vec2 viewPortSize;
-    uniform  vec3 unitCenterPosition;
+    uniform vec3 vCamPositionWorld;
+    uniform vec3 unitCenterPosition;
 
    const float PI = 3.1415926535897932384626433832795;
 
@@ -62,7 +63,7 @@ void main()
     orgColUv = gl_MultiTexCoord0.xy;
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
-    vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
+    //vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
 
 	//Calculate the world Vertex Position ? Operation Order wrong?
     vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
@@ -71,5 +72,6 @@ void main()
     //We shiver the polygons to the side ocassionally in ripples
 	posCopy.y = posCopy.y - 4.0 * (shiver(posCopy.y, 0.5, 0.95));
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
+    vPixelPositionWorld = gl_Position.xyz;
     CreateSphericalUVs(gl_Position.xyz);
 }
