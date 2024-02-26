@@ -1448,6 +1448,13 @@ function getGameConfig()
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
+            function getWildLifeTypes(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                return {
+                    [UnitDefNames["birdswarm"].id] = "air"
+                }            
+            end
+
             function getMobileCivilianDefIDTypeTable(UnitDefs)
                 assert(UnitDefs)
                 GameConfig = getGameConfig()

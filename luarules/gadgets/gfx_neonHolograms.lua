@@ -417,7 +417,8 @@ end
                 tex2 = 1,
                 normaltex = 2,
                 reflecttex = 3,
-                screentex = 4
+                screentex = 4,
+                typeDefID =0
             },
             uniformFloat = {
                viewPortSize = {vsx, vsy},                 
@@ -434,12 +435,23 @@ end
 
        Spring.Echo("NeonShader:: did compile")
     end
+
+    local typeDefIDMap = 
+    {
+        ["house_western_hologram_buisness"] = 1,
+        ["house_western_hologram_casino"] = 2,
+        ["house_western_hologram_brothel"] = 3
+        TODO
+    }
+
     local holoDefID = nil
     for i=1,#UnitDefs do
         if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id
         end
     end       
+
+
 
     local function RenderAllNeonUnits()
 
@@ -468,9 +480,8 @@ end
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
 
-
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-
+                    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))

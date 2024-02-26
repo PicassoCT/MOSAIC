@@ -18,6 +18,7 @@
     uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
     uniform vec4 vCamPositionWorld;
+    uniform int typeDefID;
     // Varyings passed from the vertex shader
     in Data {
         vec2 vSphericalUVs;
@@ -43,6 +44,16 @@
         return 0.75;
     }
 
+    float cubicPixels(vec3 position)
+    {
+
+        bool isEmpty = position.x % 3.0  < 0.5 && position.y % 3.0  < 0.5 && position.z % 3.0  < 0.5;
+
+        if (isEmpty) return 0.0;
+
+
+        return getLightPercentageFactorByTime();
+    }
         
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
     {
@@ -199,8 +210,24 @@
 										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y, 0.75,  time,  0.5))
 										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
 										); 
+
+
         vec4 orgCol = texture(tex1, orgColUv); //DebugMe DelMe  max((1.0 - averageShadow) , color.z * hologramTransparency)
-        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , max((1.0 - averageShadow) , orgCol.z * hologramTransparency));
+
+        if (typeDefID == 1) //buisness hologram
+        {
+            hologramTransparency= max((1.0 - averageShadow) , orgCol.z * hologramTransparency)
+        }
+        if (typeDefID == 2) //casino hologram
+        {
+             hologramTransparency = cubicPixels(vPixelPositionWorld);
+        }
+        if (typeDefID == 3) //bro tell hologram
+        {
+             hologramTransparency = max(abs(sin(time), hologramTransparency));
+        }
+
+        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow), hologramTransparency);
         
         //<DEBUG DELME>
         //gl_FragColor = colWithBorderGlow + RED * 0.1;
