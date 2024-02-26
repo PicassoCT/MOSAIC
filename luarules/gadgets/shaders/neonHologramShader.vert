@@ -17,6 +17,7 @@
     uniform vec2 viewPortSize;
     uniform vec3 vCamPositionWorld;
     uniform vec3 unitCenterPosition;
+    uniform int typeDefID;
 
    const float PI = 3.1415926535897932384626433832795;
 
@@ -70,7 +71,7 @@ void main()
     
     vec3 posCopy = gl_Vertex.xyz;
     //We shiver the polygons to the side ocassionally in ripples
-	posCopy.y = posCopy.y - 4.0 * (shiver(posCopy.y, 0.5, 0.95));
+	posCopy.y = posCopy.y * (1.0* (shiver(posCopy.y, 0.5, 0.95)));
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
     vPixelPositionWorld = gl_Position.xyz;
     CreateSphericalUVs(gl_Position.xyz);

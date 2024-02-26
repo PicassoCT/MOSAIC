@@ -18,6 +18,7 @@
     uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
     uniform vec3 vCamPositionWorld;
+    uniform int typeDefID;
     // Varyings passed from the vertex shader
     in Data {
         vec2 vSphericalUVs;
@@ -54,6 +55,15 @@
         return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
     }
 
+    float cubicTransparency(vec3 position) 
+    {
+        float cubeSize= 3.0;
+        if (mod(position.x, cubeSize) < 1.0 && mod(position.y, cubeSize) < 1.0 && mod(position.x, cubeSize) < 1.0)
+        {
+            return abs(0.25 + sin(time)*0.5)*getLightPercentageFactorByTime();         
+        }
+        return getLightPercentageFactorByTime();
+    }
 
     bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSize)
     {
@@ -178,7 +188,7 @@
         //</DEBUG DELME>
 
 		//Transparency 
-        float sfactor = 0.1;
+        float sfactor = 4.0;
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
 										+  abs(0.3*getSineWave(vPixelPositionWorld.y * sfactor, 0.10,  time * 6.0,  0.10))
@@ -189,6 +199,23 @@
 										); 
         vec4 orgCol = texture(tex1, orgColUv); //DebugMe DelMe  max((1.0 - averageShadow) , color.z * hologramTransparency)
         // max((1.0 - averageShadow) , orgCol.z * hologramTransparency )
+
+        if (typeDefID == 1) //casino
+        {
+           hologramTransparency = cubicTransparency(vPixelPositionWorld.xyz);
+        }
+        if (typeDefID == 2) //brothel
+        {
+           hologramTransparency = mix(hologramTransparency, abs(sin(time)), 0.75);
+        }
+
+        /*if (typeDefID == 3) //buisness 
+        {
+         //unaltered
+        }
+        */
+
+
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
     
         gl_FragColor = colWithBorderGlow;

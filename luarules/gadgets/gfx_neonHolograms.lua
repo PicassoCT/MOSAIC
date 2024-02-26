@@ -407,7 +407,8 @@ end
                 tex2 = 1,
                 normaltex = 2,
                 reflecttex = 3,
-                screentex = 4
+                screentex = 4,
+                typeDefID = 0
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
@@ -425,8 +426,17 @@ end
 
        Spring.Echo("NeonShader:: did compile")
     end
+    local holoDefIDTypeIDMap = {}
+    holoNameTypeIDMap = {
+        ["house_western_hologram_casino"]=1,
+        ["house_western_hologram_brothel"]=2,
+        ["house_western_hologram_buisness"]=3
+    }
     local holoDefID = nil
     for i=1,#UnitDefs do
+        if holoNameTypeIDMap[UnitDefs[i].name] then
+            holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] or 1 
+        end
         if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id
         end
@@ -456,6 +466,7 @@ end
                 neonHologramShader:SetUniformFloat("timepercent",  timepercent)
                 neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds())
 
+
                 local cx,cy,cz  = Spring.GetCameraPosition()
      
 
@@ -468,7 +479,7 @@ end
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
-
+                    neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
 
