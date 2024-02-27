@@ -429,7 +429,7 @@ end
     for i=1,#UnitDefs do
         if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
             holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
-            echo(HEAD().." Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
+            Spring.Echo("gfx_neonHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
         end
         if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id
@@ -459,12 +459,10 @@ end
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                 neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
-                neonHologramShader:SetUniformFloat("timepercent",  timepercent)
-                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds())
-
 
                 local cx,cy,cz  = Spring.GetCameraPosition()
-     
+                local timeSeconds = Spring.GetGameSeconds()
+
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
@@ -477,7 +475,9 @@ end
                     neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
-
+                     local timePercentOffset = unitID/DAYLENGTH
+                    neonHologramShader:SetUniformFloat("timepercent",  (timepercent + timePercentOffset)% 1.0)
+                    neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
 
                     glCulling(GL_FRONT)
                     for  _, pieceID in ipairs(neonHoloParts)do

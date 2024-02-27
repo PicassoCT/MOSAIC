@@ -3,6 +3,8 @@
     //Fragmentshader
     // Set the precision for data types used in this shader
     #define RED vec4(1.0, 0.0,0.0, 0.5)
+    #define GREEN vec4(0.0, 1.0,0.0, 0.5)
+    #define BLUE vec4(0.0, 0.0,1.0, 0.5)
     #define NONE vec4(0.)
     #define PI 3.14159f
     //declare uniforms
@@ -57,8 +59,8 @@
 
     float cubicTransparency(vec3 position) 
     {
-        float cubeSize= 3.0;
-        if (mod(position.x, cubeSize) < 1.0 && mod(position.y, cubeSize) < 1.0 && mod(position.x, cubeSize) < 1.0)
+        float cubeSize= 2.0;
+        if (mod(position.x, cubeSize) < 0.5 || mod(position.y, cubeSize) < 0.5 || (position.x, cubeSize) < 0.5)
         {         
             return abs(0.35 + abs(sin(time))*0.5)*getLightPercentageFactorByTime();         
         }
@@ -184,7 +186,7 @@
         
 		//Transparency 
         float sfactor = 4.0;
-		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
+		float hologramTransparency =   max(mod(sin(time)*0.1, 0.75), //0.25
 										0.5 
 										+  abs(0.3*getSineWave(vPixelPositionWorld.y * sfactor, 0.10,  time * 6.0,  0.10))
 										- abs(  getSineWave(vPixelPositionWorld.y * sfactor, 1.0,  time,  0.2))
@@ -207,11 +209,12 @@
            hologramTransparency = mix(hologramTransparency, abs(sin(time)), 0.75);
         }
 
-        /*if (typeDefID == 3) //buisness 
+        if (typeDefID == 3) //buisness 
         {
-         //unaltered
+            //unaltered
+            orgCol.rgb = GREEN.rgb;
         }
-        */
+        
 
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
     
