@@ -45,9 +45,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
-    --assert(neonHologramTypeTable)
     local engineVersion = getEngineVersion()
-    --echo(HEAD().." have engine version: "..engineVersion)
+
     -- set minimun engine version
     local unsupportedEngine = true
     local enabled = false
@@ -55,7 +54,6 @@ if (gadgetHandler:IsSyncedCode()) then
     if ( 104.0 < engineVersion  and engineVersion >= 105)  then
         unsupportedEngine = false
         enabled = true
-        --echo(HEAD().."is enabled")
     end
 
     function gadget:Initialize()
@@ -77,19 +75,16 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
-            --echo(HEAD().."start registering holo unit")
             Spring.SetUnitNoDraw(unitID, true)
             if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
                -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
                -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
-              --  echo(HEAD().." Setting unit engine drawMask")
             end
             local emptyTable = {}
             local stringToSend = ""
 
    
             allNeonUnits[#allNeonUnits + 1]= unitID
-            --echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -149,9 +144,7 @@ if (gadgetHandler:IsSyncedCode()) then
     assert(unitDefID)
     assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
-           -- echo(HEAD().."Neon Hologram unit has entered LOS")
             if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                --echo(HEAD().."Neon Hologram unit has entered LOS of myTeam")
                 neonUnitDataTransfer[unitID] = unitID
             end
         end
@@ -159,7 +152,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            --echo(HEAD().."Neon Hologram unit has left LOS")
             if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
                     neonUnitDataTransfer[unitID] = nil
             end
@@ -168,7 +160,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            --echo(HEAD().."Neon Hologram unit has entered LOS")
             for i=#allNeonUnits, 1, -1 do
                 if allNeonUnits[i] == unitID then
                     table.remove(allNeonUnits, i)
@@ -178,7 +169,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
 else -- unsynced
-    local DAYLENGTH = 28800
+    local DAYLENGTH                 = 28800
     local LuaShader                 = VFS.Include("luarules/gadgets/include/LuaShader.lua")
     local neoVertexShaderFirstPass  = VFS.LoadFile ("luarules/gadgets/shaders/neonHologramShader.vert")
     local neoFragmenShaderFirstPass = VFS.LoadFile("luarules/gadgets/shaders/neonHologramShader.frag")
@@ -408,11 +399,7 @@ end
                 normaltex = 2,
                 reflecttex = 3,
                 screentex = 4,
-<<<<<<< HEAD
-                typeDefID =0
-=======
                 typeDefID = 0
->>>>>>> origin/master
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
@@ -430,28 +417,19 @@ end
 
        Spring.Echo("NeonShader:: did compile")
     end
-<<<<<<< HEAD
 
-    local typeDefIDMap = 
-    {
-        ["house_western_hologram_buisness"] = 1,
-        ["house_western_hologram_casino"] = 2,
-        ["house_western_hologram_brothel"] = 3
-        TODO
-    }
-
-=======
     local holoDefIDTypeIDMap = {}
     holoNameTypeIDMap = {
-        ["house_western_hologram_casino"]=1,
-        ["house_western_hologram_brothel"]=2,
-        ["house_western_hologram_buisness"]=3
+        ["house_western_hologram_casino"]   =   1,
+        ["house_western_hologram_brothel"]  =   2,
+        ["house_western_hologram_buisness"] =   3
     }
->>>>>>> origin/master
+
     local holoDefID = nil
     for i=1,#UnitDefs do
-        if holoNameTypeIDMap[UnitDefs[i].name] then
-            holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] or 1 
+        if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
+            holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
+            echo(HEAD().." Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
         end
         if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id
