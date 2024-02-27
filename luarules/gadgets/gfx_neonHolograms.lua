@@ -45,9 +45,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
-    assert(neonHologramTypeTable)
+    --assert(neonHologramTypeTable)
     local engineVersion = getEngineVersion()
-    echo(HEAD().." have engine version: "..engineVersion)
+    --echo(HEAD().." have engine version: "..engineVersion)
     -- set minimun engine version
     local unsupportedEngine = true
     local enabled = false
@@ -55,7 +55,7 @@ if (gadgetHandler:IsSyncedCode()) then
     if ( 104.0 < engineVersion  and engineVersion >= 105)  then
         unsupportedEngine = false
         enabled = true
-        echo(HEAD().."is enabled")
+        --echo(HEAD().."is enabled")
     end
 
     function gadget:Initialize()
@@ -77,19 +77,19 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."start registering holo unit")
+            --echo(HEAD().."start registering holo unit")
             Spring.SetUnitNoDraw(unitID, true)
             if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
                -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
                -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
-                echo(HEAD().." Setting unit engine drawMask")
+              --  echo(HEAD().." Setting unit engine drawMask")
             end
             local emptyTable = {}
             local stringToSend = ""
 
    
             allNeonUnits[#allNeonUnits + 1]= unitID
-            echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
+            --echo(HEAD().." Registering Hologram Type " .. UnitDefs[unitDefID].name .. " completed")
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -149,9 +149,9 @@ if (gadgetHandler:IsSyncedCode()) then
     assert(unitDefID)
     assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."Neon Hologram unit has entered LOS")
+           -- echo(HEAD().."Neon Hologram unit has entered LOS")
             if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                echo(HEAD().."Neon Hologram unit has entered LOS of myTeam")
+                --echo(HEAD().."Neon Hologram unit has entered LOS of myTeam")
                 neonUnitDataTransfer[unitID] = unitID
             end
         end
@@ -159,7 +159,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."Neon Hologram unit has left LOS")
+            --echo(HEAD().."Neon Hologram unit has left LOS")
             if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
                     neonUnitDataTransfer[unitID] = nil
             end
@@ -168,7 +168,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            echo(HEAD().."Neon Hologram unit has entered LOS")
+            --echo(HEAD().."Neon Hologram unit has entered LOS")
             for i=#allNeonUnits, 1, -1 do
                 if allNeonUnits[i] == unitID then
                     table.remove(allNeonUnits, i)
@@ -284,7 +284,7 @@ end
     end
 
     local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
-        --Spring.Echo("setUnitNeonLuaDraw:"..unitID..":"..listOfVisibleUnitPiecesString)
+
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
@@ -329,63 +329,53 @@ end
 
     end
 
-    local defaultVertexShader = 
+    local afterglowVertexShader = 
     [[
        #version 150 compatibility
-        uniform float time;
-        uniform float timepercent;
-        uniform mat4 viewInvMat;
-        //uniform vec3 unitCenterPosition;
-        //uniform vec2 viewPortSize;
-        uniform sampler2D tex1;
-        //uniform sampler2D tex2;
-        //uniform sampler2D normaltex;
-        //uniform sampler2D reflecttex;
-        //uniform sampler2D screentex;
-        //uniform sampler2D normalunittex;
-        //uniform sampler2D afterglowbuffertex; 
+
+        uniform sampler2D afterglowbuffertex; 
         out Data {
             vec2 uv;
         };
         void main() {
-            vec4 posCopy = gl_Vertex;
             uv = gl_MultiTexCoord0.xy;
             gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
         }
     ]]
 
-    local defaultFragmentShader = 
+    local afterglowFragmentShader = 
     [[
         #version 150 compatibility
-        uniform float time;
-        uniform float timepercent;
+
+        uniform sampler2D afterglowbuffertex; 
         in Data {
             vec2 uv;
         };
-
-        float getLightAmp()
+          
+        vec4 addBorderGlowToColor(vec4 color, float averageShadow)
         {
-            if (timepercent < 0.25 || timepercent > 0.75) return 0.9;
+            float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
+            vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
+            color.xyz =  color.xyz + overlayAlpha.xyz;
+            
+            if (overlayAlpha.x > 0.5)
+            {
+                color.a = mix(color.a, overlayAlpha.a, color.x );
+            }
 
-            return 0.75;
+            return color;
         }
-
-        uniform mat4 viewInvMat;
-        //uniform vec3 unitCenterPosition;
-        //uniform vec2 viewPortSize;
-        uniform sampler2D tex1;
-        //uniform sampler2D tex2;
-        //uniform sampler2D normaltex;
-        //uniform sampler2D reflecttex;
-        //uniform sampler2D screentex;
-        //uniform sampler2D normalunittex;
-        //uniform sampler2D afterglowbuffertex;
 
         void main() 
         {
-            vec4 tex1Color = texture(tex1, uv);
-            gl_FragColor = vec4( tex1Color.rgb  , 1.0);
-            //gl_FragColor = vec4( tex1Color.rgb * getLightAmp() , 0.5);
+            vec4 sampleBLurColor =  texture2D( afterglowbuffertex, uv);
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+            vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * colWithBorderGlow, averageShadow);
+            vec4 finalColor = borderGlowColor;    
+            gl_FragColor = finalColor;
         }
     ]]
  
@@ -418,11 +408,16 @@ end
                 normaltex = 2,
                 reflecttex = 3,
                 screentex = 4,
+<<<<<<< HEAD
                 typeDefID =0
+=======
+                typeDefID = 0
+>>>>>>> origin/master
             },
             uniformFloat = {
-               viewPortSize = {vsx, vsy},                 
-              unitCenterPosition = {0,0,0}
+              viewPortSize = {vsx, vsy},                 
+              unitCenterPosition = {0,0,0},
+              vCamPositionWorld = {0,0,0}
             },
         }, "Neon Hologram Shader")
 
@@ -435,6 +430,7 @@ end
 
        Spring.Echo("NeonShader:: did compile")
     end
+<<<<<<< HEAD
 
     local typeDefIDMap = 
     {
@@ -444,8 +440,19 @@ end
         TODO
     }
 
+=======
+    local holoDefIDTypeIDMap = {}
+    holoNameTypeIDMap = {
+        ["house_western_hologram_casino"]=1,
+        ["house_western_hologram_brothel"]=2,
+        ["house_western_hologram_buisness"]=3
+    }
+>>>>>>> origin/master
     local holoDefID = nil
     for i=1,#UnitDefs do
+        if holoNameTypeIDMap[UnitDefs[i].name] then
+            holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] or 1 
+        end
         if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id
         end
@@ -456,7 +463,7 @@ end
     local function RenderAllNeonUnits()
 
         if counterNeonUnits == 0 or not boolActivated then
-            Spring.Echo("Rendering no Neon Units cause no units")
+            --Spring.Echo("Rendering no Neon Units cause no units")
             return
         end 
 
@@ -471,11 +478,15 @@ end
                 glTexture(3, "$reflection") 
                 glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
 
-                neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                neonHologramShader:SetUniformFloat("timepercent",  timepercent)
-                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds() )
-                neonHologramShader:SetUniformFloatArray("vCamPositionWorld", Spring.GetCameraPosition() )
+               -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
+                neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
+                neonHologramShader:SetUniformFloat("timepercent",  timepercent)
+                neonHologramShader:SetUniformFloat("time",  Spring.GetGameSeconds())
+
+
+                local cx,cy,cz  = Spring.GetCameraPosition()
+     
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
@@ -485,9 +496,10 @@ end
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
-
+                    neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
                     local x,y,z = spGetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x,y,z})
+                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
+
 
                     glCulling(GL_FRONT)
                     for  _, pieceID in ipairs(neonHoloParts)do

@@ -33,8 +33,7 @@ local birdswarm = AIRCRAFT:New{
 	CanFly = true,
 	
 	--canHover=true,
-	CanAttack = true,
-	CanGuard = true,
+
 	CanMove = true,
 	CanPatrol = true,
 	Canstop = true,

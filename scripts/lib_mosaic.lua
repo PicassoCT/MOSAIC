@@ -102,7 +102,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(), -- "international", "western", "asian", "arabic"
-            Version = "Alpha: 0.915" 
+            Version = "Alpha: 0.916" 
         },
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
@@ -1629,6 +1629,23 @@ function getGameConfig()
                 }
 
                 return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getAnimalTypeNumbers(UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                return {
+                    [UnitDefNames["birdswarm"].id] = 3
+                }
+            end
+
+            function getAnimalTypeTables(UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {
+                            "birdswarm"
+                            }
+
+                return getTypeTable(UnitDefNames, typeTable)
+            
             end
 
             function getDefusalCapableTypeTable(UnitDefs)

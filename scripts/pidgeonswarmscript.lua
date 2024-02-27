@@ -9,17 +9,24 @@ TablesOfPiecesGroups = {}
 
 local Birds = {rotator = piece("Rotator")}
 local numberOfBirds = 6
+birdStart = 1
+birdEnd  = 3
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(observer)
     hideT(Spring.GetUnitPieceList(unitID))
-   
-    for i = 1, #Birds, 1 do
+    if maRa() then
+        birdStart = 4
+        birdEnd = 7
+    end
+    Hide(piece("Rot1"))
+    Hide(piece("Rot002"))
+    for i = birdStart, birdEnd, 1 do
         showLand(i)
     end
 
     StartThread(posBools)
-    for i = 1, numberOfBirds, 1 do
+    for i = birdStart, birdEnd, 1 do
         StartThread(birdOS, i)
     end
 --Bird, Bird, Bird is the word
@@ -41,11 +48,9 @@ function script.Create()
             [1] = AirPiece,
             [2] = LWing,
             [3] = RWing
-        }
-        
+        }      
  
       
-
         Birds[i] = {
             Land = Land,
             Air = Air,
@@ -58,6 +63,7 @@ function script.Create()
         }
     end
     Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitNeutral(unitID, true)   
 
 end
 

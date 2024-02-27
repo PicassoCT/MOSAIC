@@ -17,7 +17,8 @@
     uniform float timepercent;
     uniform vec2 viewPortSize;
     uniform vec3 unitCenterPosition;
-    uniform vec4 vCamPositionWorld;
+    uniform vec3 vCamPositionWorld;
+
     uniform int typeDefID;
     // Varyings passed from the vertex shader
     in Data {
@@ -38,21 +39,10 @@
     float getLightPercentageFactorByTime()
     {
         //Night
-        if (timepercent < 0.25 || timepercent > 0.75) return 0.9;
+        if (timepercent < 0.25 || timepercent > 0.75) return 0.15;
 
         //day
         return 0.75;
-    }
-
-    float cubicPixels(vec3 position)
-    {
-
-        bool isEmpty = position.x % 3.0  < 0.5 && position.y % 3.0  < 0.5 && position.z % 3.0  < 0.5;
-
-        if (isEmpty) return 0.0;
-
-
-        return getLightPercentageFactorByTime();
     }
         
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
@@ -65,18 +55,14 @@
         return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
     }
 
-    vec4 addBorderGlowToColor(vec4 color, float averageShadow)
+    float cubicTransparency(vec3 position) 
     {
-        float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
-        vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
-        color.xyz =  color.xyz + overlayAlpha.xyz;
-        
-        if (overlayAlpha.x > 0.5)
+        float cubeSize= 3.0;
+        if (mod(position.x, cubeSize) < 1.0 && mod(position.y, cubeSize) < 1.0 && mod(position.x, cubeSize) < 1.0)
         {
-            color.a = mix(color.a, overlayAlpha.a, color.x );
+            return abs(0.25 + sin(time)*0.5)*getLightPercentageFactorByTime();         
         }
-
-        return color;
+        return getLightPercentageFactorByTime();
     }
 
     bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSize)
@@ -196,67 +182,56 @@
 	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
 		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
         
-        //<DEBUG DELME>
-        //gl_FragColor = vec4(hyNormal, 1.0) + RED * 0.1;//, (1.0-averageShadow));
-        //return;
-        //</DEBUG DELME>
-
 		//Transparency 
+        float sfactor = 4.0;
 		float hologramTransparency =   max(mod(sin(time), 0.75), //0.25
 										0.5 
-										+  abs(0.3*getSineWave(vPixelPositionWorld.y, 0.10,  time*6.0,  0.10))
-										- abs(  getSineWave(vPixelPositionWorld.y, 1.0,  time,  0.2))
-										+ 0.4*abs(  getSineWave(vPixelPositionWorld.y, 0.5,  time,  0.3))
-										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y, 0.75,  time,  0.5))
-										+ 0.15*  getCosineWave(vPixelPositionWorld.y, 0.5,  time,  2.0)
+										+  abs(0.3*getSineWave(vPixelPositionWorld.y * sfactor, 0.10,  time * 6.0,  0.10))
+										- abs(  getSineWave(vPixelPositionWorld.y * sfactor, 1.0,  time,  0.2))
+										+ 0.4*abs(  getSineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  0.3))
+										- 0.15*abs(  getCosineWave(vPixelPositionWorld.y * sfactor, 0.75,  time,  0.5))
+										+ 0.15*  getCosineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  2.0)
 										); 
 
 
         vec4 orgCol = texture(tex1, orgColUv); //DebugMe DelMe  max((1.0 - averageShadow) , color.z * hologramTransparency)
 
-        if (typeDefID == 1) //buisness hologram
+        // max((1.0 - averageShadow) , orgCol.z * hologramTransparency )
+
+        if (typeDefID == 1) //casino
         {
-            hologramTransparency= max((1.0 - averageShadow) , orgCol.z * hologramTransparency)
+           hologramTransparency = cubicTransparency(vPixelPositionWorld.xyz);
         }
-        if (typeDefID == 2) //casino hologram
+        if (typeDefID == 2) //brothel
         {
-             hologramTransparency = cubicPixels(vPixelPositionWorld);
-        }
-        if (typeDefID == 3) //bro tell hologram
-        {
-             hologramTransparency = max(abs(sin(time), hologramTransparency));
+           hologramTransparency = mix(hologramTransparency, abs(sin(time)), 0.75);
         }
 
-        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow), hologramTransparency);
+        /*if (typeDefID == 3) //buisness 
+        {
+         //unaltered
+        }
+        */
+
+        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
+    
+        gl_FragColor = colWithBorderGlow;
         
+        /*
         //<DEBUG DELME>
-        //gl_FragColor = colWithBorderGlow + RED * 0.1;
-        //return;
+        gl_FragColor = colWithBorderGlow;
+        return;
         //</DEBUG DELME>
-
-        //Calculate the gaussian blur that will have to do for glow TODO move to seperate method - cleanup
-        // TODO: sampling should be not applied to per unit shader - but should be applied to screenspace shader on afterglowbuffer
-		vec4 sampleBLurColor = colWithBorderGlow.rgba;
-		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)+vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-		sampleBLurColor += texture2D( screentex, ( vec2(gl_FragCoord)-vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-        vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * colWithBorderGlow, averageShadow);
-        vec4 finalColor = borderGlowColor;
         
-        //<DEBUG DELME>
-        //gl_FragColor = sampleBLurColor;
-        //return;
-        //</DEBUG DELME>
-
         //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
-        float distanceTotal= distance(vPixelPositionWorld, vCamPositionWorld.xyz);
+        float distanceTotal= distance(vPixelPositionWorld.xyz, vCamPositionWorld.xyz);
         if (distanceTotal < 1.0)
         {            
             finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
         }
   
 		gl_FragColor = finalColor;
+        */
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
@@ -268,7 +243,6 @@
         gl_FragColor.rgb += afterglowbuffercol;
         //texture2D(afterglowbuffertex, uv) =  afterglowbuffercol;
         */
-        //gl_FragColor.rgb *= getLightPercentageFactorByTime();
-        
+        gl_FragColor.rgb *=  getLightPercentageFactorByTime();        
 	}
 
