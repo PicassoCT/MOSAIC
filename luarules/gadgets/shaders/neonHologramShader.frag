@@ -59,10 +59,8 @@
     {
         float cubeSize= 3.0;
         if (mod(position.x, cubeSize) < 1.0 && mod(position.y, cubeSize) < 1.0 && mod(position.x, cubeSize) < 1.0)
-        {
-            
-
-            return abs(0.25 + sin(time)*0.5)*getLightPercentageFactorByTime();         
+        {         
+            return abs(0.35 + abs(sin(time))*0.5)*getLightPercentageFactorByTime();         
         }
         return getLightPercentageFactorByTime();
     }
