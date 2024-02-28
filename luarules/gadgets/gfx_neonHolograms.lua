@@ -462,7 +462,7 @@ end
 
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
-
+                local _,_,_, timepercent = getDayTime()
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
@@ -475,8 +475,8 @@ end
                     neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
                     local x,y,z = spGetUnitPosition(unitID)
                     neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
-                     local timePercentOffset = unitID/DAYLENGTH
-                    neonHologramShader:SetUniformFloat("timepercent",  (timepercent + timePercentOffset)% 1.0)
+                     local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
+                    neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
                     neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
 
                     glCulling(GL_FRONT)
