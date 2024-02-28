@@ -40,11 +40,7 @@
 
     float getLightPercentageFactorByTime()
     {
-        //Night
-        if (timepercent < 0.25 || timepercent > 0.75) return 0.15;
-
-        //day
-        return 0.75;
+        return mix(0.15, 0.75,(1 + sin(timePercent * 2 * PI)) * 0.5);
     }
         
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
@@ -83,83 +79,6 @@
         return false;
     }
 
-    vec4 dissolveIntoPixel(vec3 col, vec2 uvCoord, vec3 camPos, vec3 worldPosition)
-    {      
-        float distanceTotal= distance(worldPosition, camPos);
-        float distFactor = min(1.0, max(distanceTotal, 0.001));
-        
-        float empyAreaScale = distFactor;//max(0.01, min(1.0, distanceToCam/100.0));
-        float minTransparency = 0.7;
-        float maxTransparency = 0.1;
-        
-        float dynamicBorderSize = 0.250;
-        float UnitSize = 0.015;
-        float UnitHalf = UnitSize * 0.5;
-        vec2 uvMod = vec2(mod(uvCoord.x, UnitSize), mod(uvCoord.y, UnitSize));
-            
-        float pixelSize = UnitSize* 0.5;
-        float pixelHalf = pixelSize *0.5;
-        float glowBorderSize = ((UnitSize - pixelSize)/2.0)*empyAreaScale;
-        float EffectFullSize = pixelSize + 2.0 *glowBorderSize;
-        
-        float effectStart = (UnitSize - EffectFullSize)* 0.5;
-        float pixelStart = UnitHalf - pixelSize;
-        float effectEnd = (UnitSize - effectStart);
-        float pixelEnd =  UnitHalf + pixelSize;
-        
-        if (uvMod.x <  effectStart|| uvMod.x > effectEnd ||
-            uvMod.y <  effectStart|| uvMod.y > effectEnd
-        )
-        {            
-            return vec4(0.0, 0.0, 0.0, 0.0);
-        }
-        
-        if (isCornerCase(uvMod,  effectStart, effectEnd, glowBorderSize) == true)
-        {
-            return vec4 (col.rgb*distFactor, distFactor);
-        }
-            
-        if (uvMod.x >= (UnitHalf - pixelHalf) && uvMod.x <= (UnitHalf + pixelHalf) &&
-            uvMod.y >=( UnitHalf - pixelHalf) && uvMod.y <= (UnitHalf + pixelHalf) 
-        )
-        {
-            return vec4 (col.rgb, minTransparency);
-        }    
-
-        if (uvMod.x >= effectStart && uvMod.x <= effectStart +  glowBorderSize 
-        &&     uvMod.y > pixelStart && uvMod.y < pixelEnd
-        )
-        {
-            float willItBlend = (uvMod.x -effectStart)/glowBorderSize;
-            return vec4 (col.rgb, mix( maxTransparency, minTransparency, willItBlend));
-        }
-        
-        if (uvMod.x >= UnitHalf + pixelHalf && uvMod.x <= effectEnd &&
-           uvMod.y > pixelStart && uvMod.y < pixelEnd
-        )
-        {
-            float willItBlend = abs(uvMod.x -(effectEnd - glowBorderSize))/glowBorderSize;
-            return vec4 (col.rgb,  mix( minTransparency, maxTransparency, willItBlend));
-        }
-        
-        if (uvMod.y >= effectStart && uvMod.y <= effectStart +  glowBorderSize &&
-          uvMod.x > pixelStart && uvMod.x < pixelEnd
-        )
-        {
-            float willItBlend = abs(uvMod.y -effectStart)/glowBorderSize;
-            return vec4 (col.rgb,  mix( maxTransparency,minTransparency, willItBlend));
-        }
-        
-        if (uvMod.y >= UnitHalf + pixelHalf && uvMod.y <= effectEnd &&
-          uvMod.x > pixelStart && uvMod.x < pixelEnd
-        )
-        {
-            float willItBlend = abs(uvMod.y -(effectEnd - glowBorderSize))/glowBorderSize;
-            return vec4 (col.rgb, mix( minTransparency,maxTransparency, willItBlend));      
-        }
-        
-    return vec4(0.0, 0.0, 0.0, 0.0);
-    }
 
     float GetHologramTransparency() 
     { 
@@ -222,22 +141,6 @@
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
     
         gl_FragColor = colWithBorderGlow;
-        
-        /*
-        //<DEBUG DELME>
-        gl_FragColor = colWithBorderGlow;
-        return;
-        //</DEBUG DELME>
-        
-        //Colour is determined - now compute the distance to the camera and dissolve into pixels when to close up
-        float distanceTotal= distance(vPixelPositionWorld.xyz, vCamPositionWorld.xyz);
-        if (distanceTotal < 1.0)
-        {            
-            finalColor = dissolveIntoPixel(vec3(finalColor.r, finalColor.g, finalColor.b),  vSphericalUVs, vCamPositionWorld.xyz ,vPixelPositionWorld);
-        }
-  
-		gl_FragColor = finalColor;
-        */
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
