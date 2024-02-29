@@ -7,6 +7,8 @@
     #define BLUE vec4(0.0, 0.0,1.0, 0.5)
     #define NONE vec4(0.)
     #define PI 3.14159f
+
+    //////////////////////    //////////////////////    //////////////////////    //////////////////////
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -31,12 +33,12 @@
         vec2 orgColUv;
         };
 
-    //GLOBAL VARIABLES/////
+    //GLOBAL VARIABLES/////    //////////////////////    //////////////////////    //////////////////////
 
     float radius = 16.0;
     vec2 pixelCoord;
 
-    //////////////////////
+    //////////////////////    //////////////////////    //////////////////////    //////////////////////
 
     float getLightPercentageFactorByTime()
     {
@@ -56,9 +58,11 @@
     float cubicTransparency(vec3 position) 
     {
         float cubeSize= 2.0;
-        if (mod(position.x, cubeSize) < 0.5 || mod(position.y, cubeSize) < 0.5 || (position.x, cubeSize) < 0.5)
+        if (mod(position.x, cubeSize) < 0.5 || 
+            mod(position.y, cubeSize) < 0.5 || 
+            mod(position.x, cubeSize) < 0.5)
         {         
-            return abs(0.35 + abs(sin(time))*0.5)*getLightPercentageFactorByTime();         
+            return abs(0.35 + abs(sin(time)) * 0.5) * getLightPercentageFactorByTime();         
         }
         return getLightPercentageFactorByTime();
     }
@@ -79,7 +83,6 @@
         return false;
     }
 
-
     float GetHologramTransparency() 
     { 
         float sfactor = 4.0; //scaling factor position
@@ -99,7 +102,7 @@
         }
         if (typeDefID == 2) //brothel
         {
-           hologramTransparency = mix(hologramTransparency + baseInterferenceRipples, abs(sin(time)), 0.75);
+           hologramTransparency = mix(baseInterferenceRipples, (2 + sin(time)) * 0.5, 0.5);
         }
 
         if (typeDefID == 3) //buisness 
