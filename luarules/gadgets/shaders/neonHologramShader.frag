@@ -55,12 +55,11 @@
         return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
     }
 
-    float cubicTransparency(vec3 position) 
+    float cubicTransparency(vec2 position) 
     {
         float cubeSize= 2.0;
         if (mod(position.x, cubeSize) < 0.5 || 
-            mod(position.y, cubeSize) < 0.5 || 
-            mod(position.x, cubeSize) < 0.5)
+            mod(position.y, cubeSize) < 0.5 )
         {         
             return abs(0.35 + abs(sin(time)) * 0.5) * getLightPercentageFactorByTime();         
         }
@@ -98,7 +97,7 @@
 
         if (typeDefID == 1) //casino
         {
-           hologramTransparency = cubicTransparency(vPixelPositionWorld.xyz);
+           hologramTransparency = cubicTransparency(vSphericalUVs);
         }
         if (typeDefID == 2) //brothel
         {
