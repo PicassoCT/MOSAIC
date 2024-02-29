@@ -141,19 +141,15 @@
         
         vec4 orgCol = texture(tex1, orgColUv); 
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
-    
+        
+        colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
         gl_FragColor = colWithBorderGlow;
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        /*vec4 afterglowbuffercol =  texture2D(afterglowbuffertex, uv) * 0.9;
-        if (hyNormal != NONE.rgb) 
-        {
-            afterglowbuffercol += gl_FragCoord * 0.9;
-        }
-        gl_FragColor.rgb += afterglowbuffercol;
-        //texture2D(afterglowbuffertex, uv) =  afterglowbuffercol;
-        */
-        gl_FragColor.rgb *=  getLightPercentageFactorByTime();        
+        //Is storing for pieces anyway TODO find out write to framebuffer object syntax
+        //sampler2D(afterglowbuffertex, gl_FragCoord, gl_FragColor);
+        
+            
 	}
 

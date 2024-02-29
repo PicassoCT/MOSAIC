@@ -343,29 +343,15 @@ end
             vec2 uv;
         };
           
-        vec4 addBorderGlowToColor(vec4 color, float averageShadow)
-        {
-            float rim = smoothstep(0.4, 1.0, 1.0 - averageShadow)*2.0;
-            vec4 overlayAlpha = vec4( clamp(rim, 0.0, 1.0)  * vec3(1.0, 1.0, 1.0), 1.0 );
-            color.xyz =  color.xyz + overlayAlpha.xyz;
-            
-            if (overlayAlpha.x > 0.5)
-            {
-                color.a = mix(color.a, overlayAlpha.a, color.x );
-            }
-
-            return color;
-        }
-
         void main() 
-        {
+        {   
             vec4 sampleBLurColor =  texture2D( afterglowbuffertex, uv);
+            //TODO write back to sampler texture2D( afterglowbuffertex, uv) *0.9;
             sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
             sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
             sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
             sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-            vec4 borderGlowColor = addBorderGlowToColor(sampleBLurColor * colWithBorderGlow, averageShadow);
-            vec4 finalColor = borderGlowColor;    
+
             gl_FragColor = finalColor;
         }
     ]]
