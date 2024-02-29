@@ -105,8 +105,10 @@ function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    GG.VisibleUnitPieces[unitID] = cachedCopy
-    lastFrame = frame
+    if GG.VisibleUnitPieces[unitID] ~= cachedCopy then
+        GG.VisibleUnitPieces[unitID] = cachedCopy
+        lastFrame = frame
+    end
   end
 end
 
@@ -129,9 +131,7 @@ function HideReg(pieceID)
 end
 
 -- > Hide all Pieces of a Unit
-function hideAllReg(id)
-    if not unitID then unitID = id end
-
+function hideAllReg()
     pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
@@ -255,10 +255,6 @@ function dancingTiglil(animations, boolTechno)
         Sleep(rest)
         animations[math.random(1,#animations)]()
     end
-end
-
-function HideAssert(pieceID)
-    Hide(pieceID)
 end
 
 function timeOfDay()
@@ -409,7 +405,7 @@ function grid()
                 Sleep(500)
             end
 
-            HideAssert(theGrid)
+            HideReg(theGrid)
         end
         Sleep(33)
     end
@@ -457,7 +453,7 @@ function RainDrop(pieceID, delayMS, speed)
     ShowReg(pieceID)
     --Spin(pieceID, downAxis, math.rad(42),0)
     WMove(pieceID, downAxis, 0, speed)
-    HideAssert(pieceID)
+    HideReg(pieceID)
 end
 
 function holoRain(Name, speed)
@@ -525,7 +521,7 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
                         Spin(hologramPiece, axisToRotateAround, math.rad(val),0)
                     end
                 else
-                    HideAssert(hologramPiece)
+                    HideReg(hologramPiece)
                 end
             end
 
@@ -544,8 +540,8 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
 end
 
 function fadeIn(piecesTable, rest)
+    hideTReg(piecesTable)
     for i = 1, #piecesTable do
-        hideTReg(piecesTable)
         --assert(piecesTable[i], i.." not in piecesTable")
         ShowReg(piecesTable[i])
         Sleep(rest)
@@ -555,11 +551,11 @@ end
 function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
-        hideTReg(piecesTable)
         --assert(piecesTable[i], i.." not in piecesTable")
-        ShowReg(piecesTable[i])
+        Hide(piecesTable[i])
         Sleep(rest)
     end
+    hideTReg(piecesTable)
 end
 
 function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
@@ -684,12 +680,12 @@ function showWallDayTime(name)
             end
 
             for i=1, #TableOfPiecesGroups[name] do
-                HideAssert(TableOfPiecesGroups[name][i])
+                HideReg(TableOfPiecesGroups[name][i])
                 hideSubSpins(TableOfPiecesGroups[name][i])
                 rest= ((i % 3)+1)*1000
                 Sleep(rest)
             end
-            HideAssert(wallGrid)
+            HideReg(wallGrid)
         end
         val = math.random(25, 45)*1000
         Sleep(val)

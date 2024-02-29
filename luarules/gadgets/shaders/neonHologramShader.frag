@@ -42,7 +42,7 @@
 
     float getLightPercentageFactorByTime()
     {
-        return mix(0.15, 0.75,(1 + sin(timepercent * 2 * PI)) * 0.5);
+        return mix(0.35, 0.75,(1 + sin(timepercent * 2 * PI)) * 0.5);
     }
         
     float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
