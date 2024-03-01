@@ -11,7 +11,7 @@ local house_asian_hologram = Abstract:New{
 
 	
 	
-cubicTransparency
+
 	customparams = {	
 		normaltex = "unittextures/house_asian_normal.dds",
 		helptext			= "Civilian Building",
