@@ -622,6 +622,7 @@ function getGameConfig()
                     [UnitDefNames["house_western_hologram_buisness"].id] = true,           
                     [UnitDefNames["house_western_hologram_casino"].id] = true,           
                     [UnitDefNames["house_western_hologram_brothel"].id] = true,           
+                    [UnitDefNames["house_asian_hologram_buisness"].id] = true,           
                 }
     end  
 

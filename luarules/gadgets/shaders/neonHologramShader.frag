@@ -99,7 +99,7 @@
         {
            hologramTransparency = cubicTransparency(vSphericalUVs);
         }
-        if (typeDefID == 2) //brothel
+        if (typeDefID == 2 || typeDefID == 4) //brothel || asian buisness
         {
            hologramTransparency = mix(baseInterferenceRipples, (2 + sin(time)) * 0.5, 0.5);
         }

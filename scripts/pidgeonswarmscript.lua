@@ -62,6 +62,9 @@ function script.Create()
             boolStillActive = true
         }
     end
+    x,y,z = Spring.GetUnitPosition(unitID)
+    x,z = x + math.random(20,50)*randSign(),z + math.random(20,50)*randSign()
+    command(unitID, "go" ,{x,y,z})
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)   
 
@@ -70,7 +73,7 @@ end
 boolThreatend = false
 function observer()
 	while true do
-		boolThreatend = false
+		boolThreatend = (maRa() == maRa()) == (maRa() == maRa()) 
 		foreach(
 			getAllNearUnit(unitID, 150),
 			function(id)
@@ -239,11 +242,11 @@ boolOnTheFly = false
 
 
 function script.StartMoving()
-boolOnTheFly = true
+    boolOnTheFly = true
 end
 
 function script.StopMoving()
-boolOnTheFly = false
+    boolOnTheFly = false
 end
 
 

@@ -408,7 +408,8 @@ end
     holoNameTypeIDMap = {
         ["house_western_hologram_casino"]   =   1,
         ["house_western_hologram_brothel"]  =   2,
-        ["house_western_hologram_buisness"] =   3
+        ["house_western_hologram_buisness"] =   3,
+        ["house_asian_hologram_buisness"] =   4,
     }
 
     local holoDefID = nil

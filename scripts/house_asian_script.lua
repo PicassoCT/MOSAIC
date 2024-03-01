@@ -669,7 +669,7 @@ function HoloGrams()
     for logoPiece,v in pairs(holoPieces)do
         if contains(ToShowTable, logoPiece) then 
             if not decoPieceUsedOrientation[logoPiece] then lecho(unitID..":"..pieceID_NameMap[logoPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_asian_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
             break
         end
     end
