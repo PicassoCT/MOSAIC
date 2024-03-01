@@ -323,13 +323,13 @@ function emergencyWatcher()
     while true do
         if GG.GlobalGameState ~= GameConfig.GameState.normal then
             Signal(SIG_CORE)
-            hideAll(unitID)
+            hideAllReg(unitID)
             ShowEmergencyElements()
             --echo("emergency mode active") 
             while GG.GlobalGameState ~= GameConfig.GameState.normal do
                 Sleep(1000)
             end
-            hideAll(unitID)
+            hideAllReg(unitID)
             restartHologram()
         end
         Sleep(3000)

@@ -20,24 +20,8 @@ pieceLimits = {
 }
 pieceCyclicOSTable = {}
 hideDuringDayPieceNames= {
-    "Office_Pod_Industrial_Roof3Spin1",
-    "Office_Pod_Industrial_Roof3Spin2", 
-    "Office_Pod_Industrial_Roof2Spin1",
-    "Office_Pod_Industrial_Roof2Spin2",
-    "Office_Pod_Industrial_Roof1Spin1",
-    "Office_Pod_Industrial_Roof1Spin2",
-
     "Office_Pod_Industrial_Roof14Spin1",
-    "Office_Pod_Industrial_Roof14Spin2",
-
-    "Office_Pod_Industrial_Roof15Spin1",
-    "Office_Pod_Industrial_Roof15Spin2",
-
-    "Office_Pod_Industrial_Roof16Spin1",
-    "Office_Pod_Industrial_Roof16Spin2",
-    "Office_Pod_Industrial_Roof16Spin3",
-    "Office_Pod_Industrial_Roof16Spin4",
-    "Office_Pod_Industrial_Roof16Spin5",
+    "Office_Pod_Industrial_Roof14Spin2"
 }
 
 local spGetUnitPosition = Spring.GetUnitPosition
