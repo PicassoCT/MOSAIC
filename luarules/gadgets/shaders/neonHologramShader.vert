@@ -69,7 +69,10 @@ void main()
     
     vec3 posCopy = gl_Vertex.xyz;
     //We shiver the polygons to the side ocassionally in ripples
-	posCopy.y = posCopy.y +  (shiver(posCopy.y, 0.5, 0.95));
+    if (mod(time, 45.0) < 9.0)
+    {
+	   posCopy.y = posCopy.y +  (shiver(posCopy.y, 0.5, 0.95));
+    }
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
     vPixelPositionWorld = gl_Position.xyz;
     CreateSphericalUVs(gl_Position.xyz);

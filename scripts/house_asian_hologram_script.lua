@@ -3,9 +3,6 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
-local creditNeonSigns = include('creditNamesNeonLogos.lua')
-
 local hours  =0
 local minutes=0
 local seconds=0
@@ -16,6 +13,9 @@ local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopy ={}
 local lastFrame = Spring.GetGameFrame()
 local TableOfPiecesGroups = {}
+local crossRotatePiece1 =  piece("HoloSpin72")
+local crossRotatePiece2 =  piece("HoloSpin74")
+local jumpScareRotor = piece("jumpScareRotor")
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
@@ -111,26 +111,7 @@ end
 
 --Direction = piece("Direction")
 
-function showSubSpins(pieceID)
-   pieceName = getUnitPieceName(unitID, pieceID)
-   subSpinPieceName = pieceName.."Spin"    
-   if TableOfPiecesGroups[subSpinPieceName] then  
-    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
-    for i=1, #TableOfPiecesGroups[subSpinPieceName] do
-        spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
-        ShowReg(spinPiece)
-        Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
-    end
-   end
-end
 
-function hideSubSpins(pieceID)
-    pieceName = getUnitPieceName(unitID, pieceID)
-    subSpinPieceName = pieceName.."Spin"    
-    if TableOfPiecesGroups[subSpinPieceName] then  
-        hideTReg(TableOfPiecesGroups[subSpinPieceName]) 
-    end
-end
 
 function restartHologram()
     Signal(SIG_CORE)
@@ -138,7 +119,6 @@ function restartHologram()
     resetAll(unitID)
     hideAllReg(unitID)
     deployHologram()
-    hideTReg(spins)
     StartThread(checkForBlackOut)
     StartThread(clock)
 end
@@ -170,46 +150,57 @@ spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
  
-    if maRa() then      
-        logoPiece = randDict(deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"]))
+     
+        logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
         ShowReg(logoPiece)
-    else
+
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do
-            spinPiece = randDict(deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloSpin"]), TableOfPiecesGroups["HoloSpin"]))
+            spinPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloSpin"]), TableOfPiecesGroups["HoloSpin"])
             table.insert(spinPieces, spinPiece)
         end
 
-        jumpScare = unitID % 5
-        for i=1, jumpScare, 1 do
-            jumpScare = randDict(deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["JumpScare"]), TableOfPiecesGroups["JumpScare"]))
+        jumpScareNr = unitID % 5
+        for i=1, jumpScareNr, 1 do
+            jumpScare = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["JumpScare"]), TableOfPiecesGroups["JumpScare"])
             table.insert(jumpScarePieces, jumpScare)
         end        
+end
+
+function moveJumpScare(id)
+    reset(id)
+    if maRa() then
+        Turn(id, y_axis, math.rad(math.random(1,4)*90), 0)
     end
+    ShowReg(id)
+    Move(id, x_axis, math.random(5000,15000), math.random(1000,4000))
+    WaitForMoves(id)
+    val = math.random(1000,8000)
+    Sleep(val)
+    HideReg(id)
 end
 
 function HoloGrams()
-    SetSignal(SIG_HOLO)
+    Signal(SIG_HOLO)
     SetSignalMask(SIG_HOLO)
     deterministiceSetup()
+    Spin(crossRotatePiece1, z_axis, math.rad(42), 0)
+    Spin(crossRotatePiece2, z_axis, math.rad(42), 0)
+
     while true do
         if logoPiece then
             ShowReg(logoPiece)
         end
         for i=1, #spinPieces do
             ShowReg(spinPieces[i])
-            Spin(spinPieces[i], y_axis, math.rad(math.random(20,40) * randSign()) , math.pi)
+            Spin(spinPieces[i], y_axis, math.rad(math.random(5,10) * randSign()) , math.pi/3)
         end
-
-        for i=1, #jumpScare do
-            reset(jumpScare[i])
-            ShowReg(jumpScare[i])
-            WTurn(jumpScare[i], y_axis, math.rad(math.random(20,40) * randSign()) ,0)
-            Move(jumpScare[i], z_axis, math.random(100,400), math.random(1000,4000))
-            WaitForMoves(jumpScare[i])
+        WTurn(jumpScareRotor, y_axis, math.rad(math.random(0,180) * randSign()) ,0)
+        for i=1, #jumpScarePieces do
+            StartThread(moveJumpScare, jumpScarePieces[i])
         end
-
-        Sleep(1000)
+        
+        Sleep(9000)
     end
 end
 
@@ -227,13 +218,9 @@ function checkForBlackOut()
             end
         end
     Sleep(1000)
-    HoloGramsend
+    end
 end
 
-function nilNeonSigns()
-    buisnessNeonSigns = nil
-    creditNeonSigns= nil
-end
 
 function fadeIn(piecesTable, rest)
     hideTReg(piecesTable)

@@ -4474,8 +4474,7 @@ end
 function randT(Table)
     sizeOf = #Table
     if sizeOf == 0 then
-        sizeOf = count(Table)
-        if sizeOf > 0 then return randDict(Table) end
+        if count(Table) > 0 then return randDict(Table) end
         return
     end
     

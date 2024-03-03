@@ -20,8 +20,6 @@ pieceLimits = {
 }
 pieceCyclicOSTable = {}
 hideDuringDayPieceNames= {
-    "Office_Pod_Industrial_Roof14Spin1",
-    "Office_Pod_Industrial_Roof14Spin2"
 }
 
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -354,6 +352,16 @@ function factoryAnimation( set)
 	Sleep(500)
 	end
 end
+boolInvisibleCranes = maRa()
+cranePiece = piece("ID_a1_Office_Industrial_Pod_Wall3")
+function craneAnimation(set)
+    if boolInvisibleCranes then 
+        Hide (set.movePiece) 
+        Hide(cranePiece)
+    end
+    WTurn(set.movePiece, y_axis, -math.random(20,90), 0.1)
+    Sleep(10000)
+end
 
 function stampMill(set)
     offset= 2
@@ -396,9 +404,16 @@ function initAllPieces()
     ["Pod_Office_Industrial_Wall1Spin1"] = {
                     {func= "wturn", arg = { y_axis,-24, 25, 0.1}},                 
                     },    
-    ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] = {
-                    {func= "wturn", arg = { y_axis, -math.random(20,90), math.random(20,90), 0.1}},                 
-                    },    
+    ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] =
+                    {
+                        {   func="func", 
+                            arg= {
+                            method = craneAnimation, 
+                            movePiece =  piece("ID_a1_Office_Industrial_Pod_Wall3Sub1")    ,          
+                             }
+                        }
+                    },
+   
     ["ID_l100_Industrial_RoofBlock3Sub1"] = {
                     {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
                     },       
