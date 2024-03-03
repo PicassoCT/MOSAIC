@@ -170,7 +170,7 @@ end
 function moveJumpScare(id)
     reset(id)
     if maRa() then
-        Turn(id, y_axis, math.rad(math.random(1,4)*90), 0)
+        Turn(id, y_axis, math.rad(90), 0)
     end
     ShowReg(id)
     Move(id, x_axis, math.random(5000,15000), math.random(1000,4000))
