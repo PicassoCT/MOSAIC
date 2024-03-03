@@ -12,6 +12,7 @@ local hours  =0
 local minutes=0
 local seconds=0
 local percent=0
+hours, minutes, seconds, percent = getDayTime()
 
 local buisness_spin = piece("buisness_spin")
 local wallSpin = piece("wallSpin")
@@ -105,10 +106,8 @@ function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    if GG.VisibleUnitPieces[unitID] ~= cachedCopy then
-        GG.VisibleUnitPieces[unitID] = cachedCopy
-        lastFrame = frame
-    end
+    GG.VisibleUnitPieces[unitID] = cachedCopy
+    lastFrame = frame
   end
 end
 
@@ -336,7 +335,7 @@ function emergencyWatcher()
     end
 end
 
-local hours, minutes, seconds, percent = getDayTime()
+
 function clock()
     while true do
         hours, minutes, seconds, percent = getDayTime()
@@ -434,6 +433,7 @@ function checkForBlackOut()
 end
 
 function nilNeonSigns()
+    --free loaded tables
     brothelNamesNeonSigns = nil
     casinoNamesNeonSigns = nil
     buisnessNeonSigns = nil
@@ -467,7 +467,7 @@ end
 RainCenter = piece("RainCenter")
 function holoGramRain()
     Sleep(100)
-    speed= math.pi*2000
+    speed = math.pi*2000
     if unitID % 3 == 0 then
         StartThread(glowWormFlight, 5.0)
     end
@@ -717,7 +717,8 @@ function HoloGrams()
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
-    if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
+    if mapOverideSinCity() or
+       getDeterministicCityOfSin(getCultureName(), Game) == true and isNearCityCenter(px,pz, GameConfig) == true  then
         if maRa() then
             StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 3)
             StartThread(addJHologramLetters)
@@ -1005,12 +1006,12 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         hideTReg(fGroup)
         --assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
-        if boolDayLightSavings == nil or ( boolDayLightSavings == true and 
-            (hours > 17 or hours < 7)) and isANormalDay() then
+        if boolDayLightSavings == nil or 
+            ( boolDayLightSavings == true and (hours > 17 or hours < 7)) and isANormalDay() then
                 if boolNewDay == true then
                     toShowTableT= {}
-                    for x=1,math.random(minImum,minMaximum) do
-                        toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
+                    for x=1, math.random(minImum, minMaximum) do
+                        toShowTableT[#toShowTableT+1] = fGroup[math.random(1, #fGroup)]
                     end
                     boolNewDay = false
                 end
@@ -1031,7 +1032,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         else
             boolNewDay = true
         end
-        breakTime = math.random(1,maxInterval)*timeoutMs
+        breakTime = math.random(1, maxInterval) * timeoutMs
         Sleep(breakTime)
     end
 end
