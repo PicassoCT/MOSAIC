@@ -303,6 +303,10 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    for name, tables in pairs(TablesOfPiecesGroups)do
+        echo("Name:"..name .. "->".. count(tables))
+
+    end
     restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
@@ -552,7 +556,7 @@ function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
         --assert(piecesTable[i], i.." not in piecesTable")
-        Hide(piecesTable[i])
+        HideReg(piecesTable[i])
         Sleep(rest)
     end
     hideTReg(piecesTable)
@@ -571,7 +575,6 @@ function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
     end
 
     fadeOut(piecesTable, fadeOutTimeMs/(#piecesTable))
-    hideTReg(piecesTable)
 end
 
 
@@ -647,6 +650,7 @@ function glowWormFlight(speed)
 end
 
 function showWallDayTime(name)
+    echo("Starting wall ".. name)
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
         if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
