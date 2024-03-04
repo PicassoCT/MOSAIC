@@ -304,7 +304,7 @@ function script.Create()
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
     for name, tables in pairs(TablesOfPiecesGroups)do
-        echo("Name:"..name .. "->".. count(tables))
+        echo("Hologram: TableOfPiecesGroups["..name .. "].size = ".. count(tables))
 
     end
     restartHologram()
@@ -660,6 +660,7 @@ function showWallDayTime(name)
             encounter = math.random(4,7)    
             while encounter > 0 do
                 _, element = randDict(TableOfPiecesGroups[name])
+                    echo("Selecting  wall element ".. p)
                 if element then
                     encounter = encounter - 1
                     ShowReg(element)

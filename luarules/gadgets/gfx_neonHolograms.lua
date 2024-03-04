@@ -128,7 +128,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
         			for id, value in pairs(neonUnitDataTransfer) do
-                        printUnitPiecesVisible(id, value)
+                        printUnitPiecesVisible(id, value) --DELME
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id]then
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
