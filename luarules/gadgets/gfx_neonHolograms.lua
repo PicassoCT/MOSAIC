@@ -110,6 +110,16 @@ if (gadgetHandler:IsSyncedCode()) then
         end
         return result
     end
+
+    local function printUnitPiecesVisible(id, piecesTable)
+        local stringResult = "Debug: gfx_neonHologram: Unit:"..id
+        local pieceNameMap = Spring.GetUnitPieceList(id)
+        for i=1, #piecesTable do
+            stringResult = stringResult .. "|" .. pieceNameMap[piecesTable[i]]
+        end
+        echo(stringResult)
+    end
+
     local cachedUnitPieces = {}
     local oldneonUnitDataTransfer = {}
     function gadget:GameFrame(frame)
@@ -428,14 +438,12 @@ end
     local function RenderAllNeonUnits()
 
         if counterNeonUnits == 0 or not boolActivated then
-            --Spring.Echo("Rendering no Neon Units cause no units")
             return
         end 
 
         glDepthTest(true)
         glDepthMask(false)
         glCulling(GL_BACK)
-
 
         neonHologramShader:ActivateWith(
             function()  
