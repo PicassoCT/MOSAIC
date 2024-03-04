@@ -127,7 +127,6 @@ if (gadgetHandler:IsSyncedCode()) then
             if count(neonUnitDataTransfer) > 0 then            
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
-
         			for id, value in pairs(neonUnitDataTransfer) do
                         printUnitPiecesVisible(id, value)
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
