@@ -166,6 +166,7 @@ end
 
 -- >Shows a Pieces Table
 function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    assert(l_tableName)
     if not l_tableName then
         Spring.Echo("No table given as argument for showT")
         return
@@ -303,7 +304,7 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    for name, tables in pairs(TablesOfPiecesGroups)do
+    for name, tables in pairs(TableOfPiecesGroups)do
         echo("Hologram: TableOfPiecesGroups["..name .. "].size = ".. count(tables))
 
     end
@@ -901,6 +902,7 @@ function fireWorksSet(fireSet, maxDistance, speed)
     distanceX = math.random(maxDistance*0.75 ,maxDistance)*randSign()
     distanceZ = math.random(maxDistance*0.75 ,maxDistance)*randSign()
     distanceY = math.random(maxDistance*0.75 ,maxDistance)*randSign()
+    assert(fireSet)
     for num, id in pairs(fireSet) do
 
         mP(id, distanceX, distanceY, distanceZ, speed)
@@ -1046,6 +1048,7 @@ function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
     c = 0
+    assert(T)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then   

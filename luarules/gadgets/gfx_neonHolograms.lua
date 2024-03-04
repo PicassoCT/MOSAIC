@@ -124,13 +124,14 @@ if (gadgetHandler:IsSyncedCode()) then
     local oldneonUnitDataTransfer = {}
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
-            if count(neonUnitDataTransfer) > 0 then            
+            if count(neonUnitDataTransfer) > 0 then
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
         			for id, value in pairs(neonUnitDataTransfer) do
-                        printUnitPiecesVisible(id, value) --DELME
+                        --DELME       
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
-        				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id]then
+        				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
+                            printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
                             cachedUnitPieces[id] = VisibleUnitPieces[value]
         					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )              

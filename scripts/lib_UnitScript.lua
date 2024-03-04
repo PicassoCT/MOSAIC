@@ -4214,7 +4214,9 @@ function echo(stringToEcho, ...)
                     echoT(v)
                     Spring.Echo("}")
                 else
-                    Spring.Echo(keyString .. "»" .. toString(v))
+                    if (keyString ~= "n") then
+                        Spring.Echo(keyString .. "»" .. toString(v))
+                    end
                 end
             end
         end
