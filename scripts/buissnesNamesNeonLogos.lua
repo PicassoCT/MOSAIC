@@ -117,6 +117,23 @@ return {
  "Sect of Crimson Ouroboros",
  "Solitary Sanctum of Labyrinthine Wisdom",
  "Enshrouded Synod of Ruinous Divination",
- "Fellowship of Obsidian Paradox"
+ "Fellowship of Obsidian Paradox",
+ "Gravitas Inc",
+ "Inside Joke AG",
+ "PalindromordnilaP",
+ "Wiener Winner Incorporated",
+ "Breakfast club",
+ "Warezsoft",
+ "No refunds",
+ "Amozan Originals",
+ "Knock Off",
+ "Ponzi Pyramids",
+ "Bugs Busters",
+ "Uncle Enzo",
+ "The Mafia- True Family",
+ "Singularity Decorporated",
+ "MadAddMe",
+ "Titanic Security",
+ "Neural Ink"
 }
 
