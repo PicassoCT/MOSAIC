@@ -244,7 +244,7 @@ return {
 "Universal Shipping",
 "Deep Space Engineering",
 "Samura Industries",
-"Kishiro Technologies"
+"Kishiro Technologies",
 "Kruger Minerals",
 "Dauman Heavy Construction",
 "Borderworld Exports",
@@ -393,8 +393,9 @@ return {
 "United Delivery Services ",
 "Universal Containers",
 "Worldwide Air Courier ",
-"IRobot"
+"IRobot",
 "IForAnI Industries",
 "IOrgSin",
-
+"Come in find out",
+"Share and enjoy"
 }

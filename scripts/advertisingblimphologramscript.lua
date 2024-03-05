@@ -11,7 +11,7 @@ BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy")
 JoyRide = piece("JoyRide")
-local boolDebugScript = true
+local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
 local cachedCopy = {}
 function updateCheckCache()

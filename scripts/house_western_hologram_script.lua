@@ -76,7 +76,7 @@ tigLilHoloPices = {
 
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TableOfPiecesGroups = {}
-local boolDebugHologram = false
+local boolDebugHologram = true
 
 myDefID = Spring.GetUnitDefID(unitID)
 local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == myDefID
@@ -625,17 +625,16 @@ function glowWormFlight(speed)
 end
 
 function showWallDayTime(name)
-    echo("Starting wall ".. name)
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
-        if (hours > 18 + randSing() or hours < 7 or boolDebugHologram) and isANormalDay() then 
+        randOffset =  randSign() 
+        if (hours > 18 +randOffset or hours < 7 or boolDebugHologram) and isANormalDay() then 
             if maRa() then
                 ShowReg(wallGrid)
             end
             encounter = math.random(4,7)    
             while encounter > 0 do
                 _, element = randDict(TableOfPiecesGroups[name])
-                    echo("Selecting  wall element ".. p)
                 if element then
                     encounter = encounter - 1
                     ShowReg(element)
@@ -644,7 +643,7 @@ function showWallDayTime(name)
                 Sleep(10)   
             end         
         
-            while (hours > 18 or hours < 7) do
+            while (hours > 18 +randOffset or hours < 7) do
                 wallRest= math.ceil(math.random(100,1000))
                 Sleep(wallRest)
                 val = math.random(0,3)* 90
@@ -671,6 +670,7 @@ function showWallDayTime(name)
         Sleep(val)
     end
 end
+
 symmetryPiece = piece("buisness_holo064")
 boolGeneralDecoSet= false
 function HoloGrams()

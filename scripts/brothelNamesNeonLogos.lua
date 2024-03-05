@@ -318,6 +318,12 @@ return {
 "The Midnight Trance",
 "The Veiled Oasis",
 "The Velvet Reverie",
-"FuckBunny"
+"FuckBunny",
+"Fister Robot",
+"Mister Fister",
+"Oraloracles",
+"paige noo",
+
+
 
 }

@@ -185,7 +185,7 @@ function HoloGrams()
     SetSignalMask(SIG_HOLO)
     deterministiceSetup()
     Spin(crossRotatePiece1, z_axis, math.rad(42), 0)
-    Spin(crossRotatePiece2, z_axis, math.rad(42), 0)
+    Spin(crossRotatePiece2, x_axis, math.rad(42), 0)
 
     while true do
         if logoPiece then
