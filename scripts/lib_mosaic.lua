@@ -1376,6 +1376,8 @@ function getGameConfig()
             end
 
             function isANormalDay()
+                --DEBUG DELME
+                if true then return true end
                 return GG.GlobalGameState == GG.GameConfig.GameState.normal
             end
 

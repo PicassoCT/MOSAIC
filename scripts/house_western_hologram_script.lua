@@ -493,7 +493,6 @@ function holoGramRain()
                     end
                     Sleep(1000)
                 end
-            else
                 hideT(TableOfPiecesGroups["BuisnessRain"])
                 hideT(TableOfPiecesGroups["NeutralRain"])
                 hideT(TableOfPiecesGroups["BrothelRain"])
@@ -654,7 +653,7 @@ function showWallDayTime(name)
     echo("Starting wall ".. name)
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
-        if (hours > 18 or hours < 7 or boolDebugHologram) and isANormalDay() then 
+        if (hours > 18 + randSing() or hours < 7 or boolDebugHologram) and isANormalDay() then 
             if maRa() then
                 ShowReg(wallGrid)
             end
