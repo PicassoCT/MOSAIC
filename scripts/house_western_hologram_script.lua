@@ -187,31 +187,6 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
---[[function showCheck(pieceID)
-    isValidPiece(pieceID)
-    Show(pieceID)
-end
-
-function isValidPiece(pieceID)
-    if not pieceID then assert(false, toString(pieceID))end
-    if not pieceID_NameMap[pieceID] then assert(false, toString(pieceID)) end  
-    return true  
-end
-
-function hideCheck(pieceID)
-    isValidPiece(pieceID)
-    Hide(pieceID)
-end
-
-Hide(JLantern)
-
-function isValidPieceTable(T)
-    for k,v in pairs(T) do
-        isValidPiece(v)
-    end
-end
---]]
-
 function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
