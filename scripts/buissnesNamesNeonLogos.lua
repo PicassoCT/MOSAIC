@@ -1,5 +1,22 @@
 
 return {
+"work smart not hard",
+"Fitness for all",
+"Whatever Inc"
+"InCogitoErgoSum Inc",
+"NotSus AG",
+"Painless Implants",
+"inout put",
+"drugs and hugs",
+"waverthin inc",
+"skate bored",
+"bungee cutter inc",
+"minimum risk jnssurance",
+"dermal doc",
+"bulletwounds hospital",
+"ripper doc",
+"painless surgery",
+"lowprice body alterations",
 "WEYLAND YUTANI","CYBERDYNE","NAKAMURA","NAKATOMA","TENCENT","ECOM","EM","A G ","ABBOTT","ABERCROMBIE","ABM","ACE","ACT","ACTERNA","ADAMS",
 "ADC","ADELPHIA","ADMINISTAFF,","ADOBE","ADOLPH","ADVANCE","ADVANCED","ADVANCEPCS,","ADVANTICA","AETNA","AFFILIATED","AFLAC","AGCO","AGILENT",
 "AGWAY","APARTMENT","AIR","AIRBORNE,","AIRGAS,","AK","ALASKA","ALBERTO CULVER","ALBERTSON S,","ALCOA","ALLEGHANY","ALLEGHENY","ALLEGHENY",

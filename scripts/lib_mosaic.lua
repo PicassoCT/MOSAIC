@@ -768,7 +768,7 @@ function getGameConfig()
         return getMapNameHash(Game) + getCultureHash()
     end
 
-    function getLocationHash(x,z, maxs)
+    function getLocationHash(x, z, maxs)
         maxs = maxs or 4
         return (((x + z) % maxs) + 1)
     end
