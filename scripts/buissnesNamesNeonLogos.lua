@@ -395,7 +395,20 @@ return {
 "Worldwide Air Courier ",
 "IRobot",
 "IForAnI Industries",
-"IOrgSin",
+"ISin Org",
 "Come in find out",
-"Share and enjoy"
+"Share and enjoy",
+"gatugo oldfolkshome",
+"ghul ag",
+"Doordash",
+"Taskrabbid",
+"BringIt Inc",
+"Cream of the Crop",
+"Mardigrass INC",
+"Help me Im an enslaved intern",
+"CTHULU INC",
+"Heatwave Inc",
+"GlobalHarming Eng",
+"GeoEngineering"
+
 }
