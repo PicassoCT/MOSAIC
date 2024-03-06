@@ -417,7 +417,7 @@ function nilNeonSigns()
     brothelNamesNeonSigns = nil
     casinoNamesNeonSigns = nil
     buisnessNeonSigns = nil
-    creditNeonSigns= nil
+    creditNeonSigns = nil
 end
 
 function RainDrop(pieceID, delayMS, speed)
@@ -447,15 +447,16 @@ end
 RainCenter = piece("RainCenter")
 function holoGramRain()
     Sleep(100)
-    speed = math.pi*2000
+    speed = math.pi * 2000
     if unitID % 3 == 0 then
         StartThread(glowWormFlight, 5.0)
     end
     while true do
         if (hours > 19 or hours < 6) and isANormalDay() then
-            if isRaining(hours) then
-                Turn(RainCenter,x_axis,math.rad(GG.RainDirection.x),0)
-                Turn(RainCenter,z_axis,math.rad(GG.RainDirection.z),0)
+            rainDirectioinCopy = GG.RainDirection
+            if isRaining(hours) and rainDirectioinCopy then
+                Turn(RainCenter,x_axis,math.rad(rainDirectioinCopy.x),0)
+                Turn(RainCenter,z_axis,math.rad(rainDirectioinCopy.z),0)
                 while(hours > 19 or hours < 6) do
                     if boolIsBrothel then
                         holoRain("Brothel", speed)
@@ -492,12 +493,12 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
                 Sleep(500)
                 _, hologramPiece= randDict(TableOfPiecesGroups[name])
                 if not alreadyShowing[hologramPiece] and hcounter > 0 then 
-                    alreadyShowing[hologramPiece]= true
+                    alreadyShowing[hologramPiece] = true
                     hcounter = hcounter - 1
                     showTellTable[hologramPiece] = hologramPiece
-                    val= math.random(10,42)*randSign()
+                    val= math.random(10,42) * randSign()
                     if axisToRotateAround then
-                        Spin(hologramPiece, axisToRotateAround, math.rad(val),0)
+                        Spin(hologramPiece, axisToRotateAround, math.rad(val), 0)
                     end
                 else
                     HideReg(hologramPiece)
@@ -510,29 +511,26 @@ function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
             WaitForTurns(TableOfPiecesGroups[name])   
             hideTReg(showTellTable)                    
         else
-
             hideTReg(TableOfPiecesGroups[name])
             Sleep(interval)
         end
-      
+       Sleep(10)
     end
 end
 
 function fadeIn(piecesTable, rest)
     hideTReg(piecesTable)
     for i = 1, #piecesTable do
-        --assert(piecesTable[i], i.." not in piecesTable")
-        ShowReg(piecesTable[i])
         Sleep(rest)
+        ShowReg(piecesTable[i])
     end
 end
 
 function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
-        --assert(piecesTable[i], i.." not in piecesTable")
-        HideReg(piecesTable[i])
         Sleep(rest)
+        HideReg(piecesTable[i])
     end
     hideTReg(piecesTable)
 end
@@ -672,7 +670,7 @@ function showWallDayTime(name)
 end
 
 symmetryPiece = piece("buisness_holo064")
-boolGeneralDecoSet= false
+
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
 
@@ -712,7 +710,7 @@ function HoloGrams()
               StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
               StartThread(addJHologramLetters)
             end
-            addHologramLetters(brothelNamesNeonSigns[math.random(1,#brothelNamesNeonSigns)])
+            addHologramLetters(brothelNamesNeonSigns[math.random(1, #brothelNamesNeonSigns)])
             nilNeonSigns()
             return 
         end
@@ -729,7 +727,7 @@ function HoloGrams()
             end           
 
             if maRa() then
-                addHologramLetters(casinoNamesNeonSigns[math.random(1,#casinoNamesNeonSigns)])         
+                addHologramLetters(casinoNamesNeonSigns[math.random(1, #casinoNamesNeonSigns)])         
                 nilNeonSigns()
                 return 
             end
@@ -826,16 +824,16 @@ function HoloGrams()
                         Spin(spinLogoPiece,y_axis, math.rad(-42),0)
                     end
                 end
-                addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+                addHologramLetters(buisnessNeonSigns[math.random(1, #buisnessNeonSigns)])
            end
         else
             if maRa() == maRa() then
-                addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
+                addHologramLetters(creditNeonSigns[math.random(1, #creditNeonSigns)])
                 if maRa() then
                     StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
                 end
             else
-                addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+                addHologramLetters(buisnessNeonSigns[math.random(1, #buisnessNeonSigns)])
             end
         end
         nilNeonSigns()

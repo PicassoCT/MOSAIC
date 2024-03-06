@@ -409,6 +409,9 @@ return {
 "CTHULU INC",
 "Heatwave Inc",
 "GlobalHarming Eng",
-"GeoEngineering"
+"GeoEngineering",
+"Xitters clogged",
+"Xenu inc",
+
 
 }

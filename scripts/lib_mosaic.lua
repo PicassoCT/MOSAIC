@@ -1355,6 +1355,7 @@ function getGameConfig()
                 if GG.boolRainyArea == nil then
                     GG.boolRainyArea = getDetermenisticHash() % 2 == 0      
                     GG.boolRainyArea = true
+                    echo("DELME Debug Setting override isRaining()")
                     echo("Is a Rainy area: "..toString( GG.boolRainyArea))             
                 end
                 if not GG.boolRainyArea then return false end
@@ -1377,6 +1378,7 @@ function getGameConfig()
 
             function isANormalDay()
                 --DEBUG DELME
+                echo("DELME Debug Setting override isANormalDay()")
                 if true then return true end
                 return GG.GlobalGameState == GG.GameConfig.GameState.normal
             end
