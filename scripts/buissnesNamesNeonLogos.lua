@@ -2,7 +2,7 @@
 return {
 "work smart not hard",
 "Fitness for all",
-"Whatever Inc"
+"Whatever Inc",
 "InCogitoErgoSum Inc",
 "NotSus AG",
 "Painless Implants",

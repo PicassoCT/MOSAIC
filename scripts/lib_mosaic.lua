@@ -3286,9 +3286,10 @@ end
             if string.find(cityname, "dubai") then
                 return true
             end
-            if string.find(cityname, "dsd") then
+            if string.find(cityname, "dsdr") then
                 return true
             end
+            
             return false
         end
 

@@ -266,10 +266,10 @@ function restartHologram()
     SetSignalMask(SIG_CORE)
     resetAll(unitID)
     hideAllReg(unitID)
-    deployHologram()
-    hideTReg(spins)
-    StartThread(checkForBlackOut)
     StartThread(clock)
+    deployHologram()    
+    hideTReg(spins)
+    StartThread(checkForBlackOut)    
     StartThread(tiglLilLoop)
 end
 
@@ -478,14 +478,14 @@ function holoGramRain()
     end
 end
 
-function holoGramNightTimes(boolDayLightSavings, name, axisToRotateAround, max)
+function holoGramNightTimes( name, axisToRotateAround, max)
     if max == nil then
         max = 5
     end
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     while true do
-        if (boolDayLightSavings == true and (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
+        if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellTable = {}
             hcounter = math.random(3, 6)
@@ -671,6 +671,49 @@ end
 
 symmetryPiece = piece("buisness_holo064")
 
+function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval,  minImum, minMaximum)
+    --assert(flickerGroup)
+    local fGroup = flickerGroup
+    if not minImum then minImum = 2 end 
+    if not minMaximum then minMaximum = #flickerGroup end
+
+    flickerIntervall = 60--math.ceil(1000/25)
+    boolNewDay = true
+    toShowTableT= {}
+    while true do
+        hideTReg(fGroup)
+        --assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
+        Sleep(500)
+        if( (hours > 17 or hours < 7)) and isANormalDay() then
+                if boolNewDay == true then
+                    toShowTableT= {}
+                    for x=1, math.random(minImum, minMaximum) do
+                        toShowTableT[#toShowTableT+1] = fGroup[math.random(1, #fGroup)]
+                    end
+                    boolNewDay = false
+                end
+
+                for i=1,(3000/flickerIntervall) do
+                    if i % 2 == 0 then      
+                       showTReg(toShowTableT) 
+                    else
+                        hideTReg(toShowTableT) 
+                    end
+                    if NoErrorFunction() == true then showTReg(toShowTableT) end
+                    for ax=1,3 do
+                        moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+                    end
+                    Sleep(flickerIntervall)
+                end
+                hideTReg(toShowTableT)
+        else
+            boolNewDay = true
+        end
+        breakTime = math.random(1, maxInterval) * timeoutMs
+        Sleep(breakTime)
+    end
+end
+
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
 
@@ -693,7 +736,7 @@ function HoloGrams()
     hideTReg(flickerGroup)
     hideTReg(CasinoflickerGroup)
     
-    StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 3)
+    StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
     
     --sexxxy time
     if boolIsBrothel then
@@ -702,10 +745,10 @@ function HoloGrams()
           echo("Is blogo2")
           StartThread(showWallDayTime, "BrothelWall")
         end
-        StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, math.random(5,7))
+        StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4,  2, math.random(5,7))
         if maRa()  then
           echo("Is blogo3")
-          StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
+          StartThread(holoGramNightTimes, "Japanese", _y_axis)
           StartThread(addJHologramLetters)
         end
         addHologramLetters(brothelNamesNeonSigns[math.random(1, #brothelNamesNeonSigns)])
@@ -714,7 +757,7 @@ function HoloGrams()
     end
   
     if boolIsCasino then 
-        StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
+        StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4,  3, math.random(4,7))
     
         if maRa() then
           StartThread(showWallDayTime, "CasinoWall")
@@ -790,7 +833,7 @@ function HoloGrams()
             GG.RestaurantCounter = GG.RestaurantCounter + 1
             symbol = math.random(8,11)
             ShowReg(TableOfPiecesGroups["buisness_holo18Spin"][symbol])
-            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 5)
+            StartThread(holoGramNightTimes, "GeneralDeco", nil, 5)
             StartThread(addJHologramLetters)
         end
 
@@ -968,50 +1011,6 @@ function shapeSymmetry(logo)
         addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
     else
         addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
-    end
-end
-
-function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval, boolDayLightSavings, minImum, minMaximum)
-    --assert(flickerGroup)
-    local fGroup = flickerGroup
-    if not minImum then minImum = 2 end 
-    if not minMaximum then minMaximum = #flickerGroup end
-
-    flickerIntervall = math.ceil(1000/25)
-    boolNewDay = true
-    toShowTableT= {}
-    while true do
-        hideTReg(fGroup)
-        --assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
-        Sleep(500)
-        if boolDayLightSavings == nil or 
-            ( boolDayLightSavings == true and (hours > 17 or hours < 7)) and isANormalDay() then
-                if boolNewDay == true then
-                    toShowTableT= {}
-                    for x=1, math.random(minImum, minMaximum) do
-                        toShowTableT[#toShowTableT+1] = fGroup[math.random(1, #fGroup)]
-                    end
-                    boolNewDay = false
-                end
-
-                for i=1,(3000/flickerIntervall) do
-                    if i % 2 == 0 then      
-                       showTReg(toShowTableT) 
-                    else
-                        hideTReg(toShowTableT) 
-                    end
-                    if NoErrorFunction() == true then showTReg(toShowTableT) end
-                    for ax=1,3 do
-                        moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
-                    end
-                    Sleep(flickerIntervall)
-                end
-                hideTReg(toShowTableT)
-        else
-            boolNewDay = true
-        end
-        breakTime = math.random(1, maxInterval) * timeoutMs
-        Sleep(breakTime)
     end
 end
 
