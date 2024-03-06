@@ -692,49 +692,48 @@ function HoloGrams()
     local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
     hideTReg(flickerGroup)
     hideTReg(CasinoflickerGroup)
-
+    
+    StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 3)
+    
     --sexxxy time
-    px,py,pz = Spring.GetUnitPosition(unitID)
-    if mapOverideSinCity() or
-       getDeterministicCityOfSin(getCultureName(), Game) == true and isNearCityCenter(px,pz, GameConfig) == true  then
+    if boolIsBrothel then
+        echo("Is blogo0")       
         if maRa() then
-            StartThread(holoGramNightTimes, true, "GeneralDeco", nil, 3)
-            StartThread(addJHologramLetters)
+          echo("Is blogo2")
+          StartThread(showWallDayTime, "BrothelWall")
         end
-        if boolIsBrothel then
-            if maRa() then
-              StartThread(showWallDayTime, "BrothelWall")
-            end
-            StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, math.random(5,7))
-            if maRa()  then
-              StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
-              StartThread(addJHologramLetters)
-            end
-            addHologramLetters(brothelNamesNeonSigns[math.random(1, #brothelNamesNeonSigns)])
+        StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 2, math.random(5,7))
+        if maRa()  then
+          echo("Is blogo3")
+          StartThread(holoGramNightTimes, true, "Japanese", _y_axis)
+          StartThread(addJHologramLetters)
+        end
+        addHologramLetters(brothelNamesNeonSigns[math.random(1, #brothelNamesNeonSigns)])
+        nilNeonSigns()
+        return 
+    end
+  
+    if boolIsCasino then 
+        StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
+    
+        if maRa() then
+          StartThread(showWallDayTime, "CasinoWall")
+          StartThread(addJHologramLetters)
+          if maRa() then
+            StartThread(fireWorks)
+          end
+        end           
+        if maRa() then
+            addHologramLetters(casinoNamesNeonSigns[math.random(1, #casinoNamesNeonSigns)])         
             nilNeonSigns()
             return 
         end
-  
-        if boolIsCasino then 
-           StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4, true, 3, math.random(4,7))
-      
-            if maRa() then
-              StartThread(showWallDayTime, "CasinoWall")
-              StartThread(addJHologramLetters)
-              if maRa() then
-                StartThread(fireWorks)
-              end
-            end           
-
-            if maRa() then
-                addHologramLetters(casinoNamesNeonSigns[math.random(1, #casinoNamesNeonSigns)])         
-                nilNeonSigns()
-                return 
-            end
-        end
     end
+    
 
     if boolIsBuisness then 
+
+
         if maRa() then
             StartThread(showWallDayTime, "BuisnessWall")
         end

@@ -781,6 +781,9 @@ function getGameConfig()
     end
 
     function getDeterministicCityOfSin(culture, Game)
+        mapOverrideSinCity = mapOverideSinCity() 
+        if mapOverideSinCity == true then return true end
+
         chash = getCultureMapNameHash(Game)
         if culture == Cultures.arabic then  --2/10
             return chash % 10 < 2
