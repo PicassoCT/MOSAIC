@@ -106,26 +106,27 @@ function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    GG.VisibleUnitPieces[unitID] = cachedCopy
+        cachedTable = {}
+        for k,v in pairs(cachedCopy) do
+            if v then 
+                table.insert(cachedTable, v)
+            end
+        end
+    GG.VisibleUnitPieces[unitID] = cachedTable
     lastFrame = frame
   end
 end
 
 function ShowReg(pieceID)
     Show(pieceID)
-    table.insert(cachedCopy, pieceID)
+    cachedCopy[pieceID] = pieceID
     updateCheckCache()
 end
 
 function HideReg(pieceID)
     Hide(pieceID)  
     --TODO make dictionary for efficiency
-    for i=1, #cachedCopy do
-        if cachedCopy[i] == pieceID then
-            table.remove(cachedCopy, i)
-            break
-        end
-    end
+    cachedCopy[pieceID] = nil
     updateCheckCache()
 end
 
@@ -684,7 +685,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
         hideTReg(fGroup)
         --assertRangeConsistency(fGroup, "flickerGroup"..getUnitPieceName(unitID, fGroup[1]))
         Sleep(500)
-        if( (hours > 17 or hours < 7)) and isANormalDay() then
+        if (hours > 17 or hours < 7) and isANormalDay() then
                 if boolNewDay == true then
                     toShowTableT= {}
                     for x=1, math.random(minImum, minMaximum) do

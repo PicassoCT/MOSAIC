@@ -14,34 +14,33 @@ JoyRide = piece("JoyRide")
 local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
 local cachedCopy = {}
+
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    GG.VisibleUnitPieces[unitID] = cachedCopy
+        cachedTable = {}
+        for k,v in pairs(cachedCopy) do
+            if v then 
+                table.insert(cachedTable, v)
+            end
+        end
+    GG.VisibleUnitPieces[unitID] = cachedTable
     lastFrame = frame
   end
 end
 
-offset = 80
 function ShowReg(pieceID)
     Show(pieceID)
-    table.insert(cachedCopy, pieceID)
+    cachedCopy[pieceID] = pieceID
     updateCheckCache()
 end
 
 function HideReg(pieceID)
     Hide(pieceID)  
-    --TODO make dictionary for efficiency
-    for i=1, #cachedCopy do
-        if cachedCopy[i] == pieceID then
-            table.remove(cachedCopy, i)
-            break
-        end
-    end
+    cachedCopy[pieceID] = nil
     updateCheckCache()
 end
-
 
 -- > Hide all Pieces of a Unit
 function hideAllReg(id)
