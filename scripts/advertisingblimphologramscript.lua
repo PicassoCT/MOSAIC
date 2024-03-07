@@ -211,11 +211,17 @@ function JoyAnimation()
     end
 end
 
+function justShowScript(T)
+    showTReg(T)
+    while true do
+        Sleep(1000)
+    end
+end
 
 function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
     assert(flickerGroup)
     local fGroup = flickerGroup
-
+    justShowScript(fGroup)
     flickerIntervall = math.ceil(1000/25)
     
     while true do

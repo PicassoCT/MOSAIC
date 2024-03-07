@@ -672,9 +672,16 @@ end
 
 symmetryPiece = piece("buisness_holo064")
 
+function justShowScript(T)
+    showTReg(T)
+    while true do
+        Sleep(1000)
+    end
+end
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval,  minImum, minMaximum)
     --assert(flickerGroup)
     local fGroup = flickerGroup
+    justShowScript(flickerGroup)
     if not minImum then minImum = 2 end 
     if not minMaximum then minMaximum = #flickerGroup end
 
