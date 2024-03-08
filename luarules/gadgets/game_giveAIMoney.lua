@@ -11,11 +11,6 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
-    VFS.Include("scripts/lib_OS.lua")
-    VFS.Include("scripts/lib_UnitScript.lua")
-    VFS.Include("scripts/lib_Animation.lua")
-    VFS.Include("scripts/lib_Build.lua")
-    VFS.Include("scripts/lib_mosaic.lua")
 
     everyNthFrame = math.floor(0.5*60*30)
 

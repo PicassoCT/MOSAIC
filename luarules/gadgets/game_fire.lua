@@ -21,9 +21,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spAddUnitDamage = Spring.AddUnitDamage
     local spGetGroundNormal =Spring.GetGroundNormal
 
-    VFS.Include("scripts/lib_OS.lua", nil, VFSMODE)
     VFS.Include("scripts/lib_UnitScript.lua", nil, VFSMODE)
-    VFS.Include("scripts/lib_Build.lua", nil, VFSMODE)
     VFS.Include("scripts/lib_mosaic.lua", nil, VFSMODE)
     local UnitID = 1
     local Heat = 2

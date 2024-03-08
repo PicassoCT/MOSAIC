@@ -11,15 +11,12 @@ function gadget:GetInfo()
     }
 end
 
-VFS.Include("scripts/lib_OS.lua")
-VFS.Include("scripts/lib_UnitScript.lua")
-VFS.Include("scripts/lib_Animation.lua")
-VFS.Include("scripts/lib_Build.lua")
-VFS.Include("scripts/lib_mosaic.lua")
 
 -- modified the script: only corpses with the customParam "featuredecaytime" will disappear
 
 if (gadgetHandler:IsSyncedCode()) then
+
+    VFS.Include("scripts/lib_mosaic.lua")
     local GameConfig = getGameConfig()
 
     function gadget:RecvLuaMsg(msg, playerID)

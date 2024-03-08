@@ -12,10 +12,7 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
-    VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
-    VFS.Include("scripts/lib_Animation.lua")
-    VFS.Include("scripts/lib_Build.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     local GameConfig = getGameConfig()
     local Type_BaseTypeMap = getUnitType_BaseTypeMap(UnitDefs,
@@ -73,7 +70,6 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
             end
         end
-
         SpawnedUnits[frame] = nil
     end
 

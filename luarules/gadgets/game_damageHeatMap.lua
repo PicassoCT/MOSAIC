@@ -13,10 +13,7 @@ end
 
 if (not gadgetHandler:IsSyncedCode()) then return false end
 
-VFS.Include("scripts/lib_OS.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
-VFS.Include("scripts/lib_Animation.lua")
-VFS.Include("scripts/lib_Build.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 local GameConfig = getGameConfig()

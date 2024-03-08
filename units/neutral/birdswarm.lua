@@ -54,9 +54,7 @@ local birdswarm = AIRCRAFT:New{
 	customParams = {},
 	sfxtypes = {
 		explosiongenerators = {
-			"custom:flyingfeather",
-			"custom:bloodspray",		
-			"custom:dirt",		
+
 			
 			
 		},

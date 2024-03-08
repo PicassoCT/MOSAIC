@@ -325,7 +325,14 @@ return {
 "Oraloracles",
 "paige noo",
 "paige yes",
-"horny jail"
+"horny jail",
+"Market penetration",
+"Sexlife on steroids",
+"hump the stilts kin",
+"k Inkoperated",
+"horndog"
+
+
 
 
 
