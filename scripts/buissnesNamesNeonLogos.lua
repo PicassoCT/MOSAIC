@@ -441,6 +441,10 @@ return {
 "Free hongkong",
 "Taiwan",
 "Tianmien square"
+"Eplosive growth Inc",
+"Pump n Dump stock",
+"Scam Inc",
+"Mafia Omerta"
 
 
 }

@@ -27,7 +27,5 @@ local house_asian_hologram = Abstract:New{
 }
 
 return lowerkeys({
-	--Temp
-	["house_asian_hologram_buisness"] = house_asian_hologram:New(),
-	
+	["house_asian_hologram_buisness"] = house_asian_hologram:New(),	
 })

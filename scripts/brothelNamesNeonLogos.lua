@@ -170,6 +170,7 @@ return {
 "Hard Dick",
 "TEARS IN RAIN",
 "Bunga Bunga",
+"Bunga Bunga club",
 "Bi Bis Bar",
 "Penicchio",
 "Hard time",
@@ -323,6 +324,8 @@ return {
 "Mister Fister",
 "Oraloracles",
 "paige noo",
+"paige yes",
+"horny jail"
 
 
 

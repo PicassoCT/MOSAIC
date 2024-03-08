@@ -146,9 +146,14 @@
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
         
         colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
-        if (typeDefID == 1) //casino
+        if (typeDefID == 1 || typeDefID == 4) //casino
         {
             colWithBorderGlow.rgb = mix(colWithBorderGlow.rgb, vSphericalUVs.rgb, abs(sin(time))/10.0);
+        }
+        if (typeDefID == 2) //brothel
+        {
+            float colHighLights = (-0.5 + ((abs(vSphericalUVs.x) + abs(vSphericalUVs.y))/2.0))/10.0;
+            colWithBorderGlow.rgb += colHighLights;
         }
         gl_FragColor = colWithBorderGlow;
         
