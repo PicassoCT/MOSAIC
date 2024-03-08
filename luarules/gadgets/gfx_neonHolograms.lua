@@ -131,7 +131,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         --DELME       
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
-                            printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
+                           -- printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
                             cachedUnitPieces[id] = VisibleUnitPieces[value]
         					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )              

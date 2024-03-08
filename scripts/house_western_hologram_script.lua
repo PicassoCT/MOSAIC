@@ -281,8 +281,7 @@ function script.Create()
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
     for name, tables in pairs(TableOfPiecesGroups)do
-        echo("Hologram: TableOfPiecesGroups["..name .. "].size = ".. count(tables))
-
+    --    echo("Hologram: TableOfPiecesGroups["..name .. "].size = ".. count(tables))
     end
     restartHologram()
     StartThread(grid)
@@ -672,17 +671,11 @@ end
 
 symmetryPiece = piece("buisness_holo064")
 
-function justShowScript(T)
-    showTReg(T)
-    while true do
-        Sleep(1000)
-    end
-end
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval,  minImum, minMaximum)
     --assert(flickerGroup)
     local fGroup = flickerGroup
-    justShowScript(flickerGroup)
-    if not minImum then minImum = 2 end 
+
+    if not minImum then minImum = 1 end 
     if not minMaximum then minMaximum = #flickerGroup end
 
     flickerIntervall = 60--math.ceil(1000/25)
@@ -747,15 +740,12 @@ function HoloGrams()
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
     
     --sexxxy time
-    if boolIsBrothel then
-        echo("Is blogo0")       
+    if boolIsBrothel then   
         if maRa() then
-          echo("Is blogo2")
           StartThread(showWallDayTime, "BrothelWall")
         end
         StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4,  2, math.random(5,7))
         if maRa()  then
-          echo("Is blogo3")
           StartThread(holoGramNightTimes, "Japanese", _y_axis)
           StartThread(addJHologramLetters)
         end

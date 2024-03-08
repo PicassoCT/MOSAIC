@@ -123,7 +123,7 @@ function getGameConfig()
         houseSizeX = 256,
         houseSizeY = 64,
         houseSizeZ = 256,
-        innerCitySize = 1024,
+        innerCitySize = 2048,
         innerCityNeonStreet = 512,
         houseNumberOfSameRoofIDGroupsPerCity= 4,
         
@@ -1381,8 +1381,8 @@ function getGameConfig()
 
             function isANormalDay()
                 --DEBUG DELME
-                echo("DELME Debug Setting override isANormalDay()")
-                if true then return true end
+                --echo("DELME Debug Setting override isANormalDay()")
+                --if true then return true end
                 return GG.GlobalGameState == GG.GameConfig.GameState.normal
             end
 
