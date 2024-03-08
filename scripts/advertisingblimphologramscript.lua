@@ -158,6 +158,7 @@ function HoloGrams()
         StartThread(flickerScript, JoyFlickerGroup, 5, 250, 4, true)
         StartThread(JoyAnimation)
     end
+    offset= 70
     val = math.random(5, 12)*randSign()
     Move(BrothelSpin, z_axis, -offset,0)
     Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
@@ -211,17 +212,11 @@ function JoyAnimation()
     end
 end
 
-function justShowScript(T)
-    showTReg(T)
-    while true do
-        Sleep(1000)
-    end
-end
+
 
 function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
     assert(flickerGroup)
     local fGroup = flickerGroup
-    justShowScript(fGroup)
     flickerIntervall = math.ceil(1000/25)
     
     while true do
@@ -237,9 +232,9 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
 
             for i=1,(3000/flickerIntervall) do
                 if i % 2 == 0 then  showTReg(toShowTableT) else hideTReg(toShowTableT) end
-                if maRa()==maRa() then showTReg(toShowTableT) end 
+                if maRa()== maRa() then showTReg(toShowTableT) end 
                 for ax=1,3 do
-                    moveT(fGroup, ax, math.random(-1*errorDrift,errorDrift),100)
+                    moveT(fGroup, ax, math.random(-1 * errorDrift, errorDrift),100)
                 end
                 Sleep(flickerIntervall)
             end
