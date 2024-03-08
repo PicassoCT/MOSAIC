@@ -488,15 +488,16 @@ function holoGramNightTimes( name, axisToRotateAround, max)
     while true do
         if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
-            showTellTable = {}
+            showTellDict= {}
             hcounter = math.random(3, 6)
+            assert(#TableOfPiecesGroups[name] > 0, name)
             for i=1, #TableOfPiecesGroups[name] do
                 Sleep(500)
                 _, hologramPiece= randDict(TableOfPiecesGroups[name])
                 if not alreadyShowing[hologramPiece] and hcounter > 0 then 
                     alreadyShowing[hologramPiece] = true
                     hcounter = hcounter - 1
-                    showTellTable[hologramPiece] = hologramPiece
+                    showTellDict[hologramPiece] = hologramPiece
                     val= math.random(10,42) * randSign()
                     if axisToRotateAround then
                         Spin(hologramPiece, axisToRotateAround, math.rad(val), 0)
@@ -506,11 +507,11 @@ function holoGramNightTimes( name, axisToRotateAround, max)
                 end
             end
 
-            showTReg(showTellTable)
+            showTReg(showTellDict)
             Sleep(90000)
             resetT(TableOfPiecesGroups[name], 1.2)
             WaitForTurns(TableOfPiecesGroups[name])   
-            hideTReg(showTellTable)                    
+            hideTReg(showTellDict)                    
         else
             hideTReg(TableOfPiecesGroups[name])
             Sleep(interval)
