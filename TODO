@@ -1,12 +1,14 @@
-- Glow Shader for neon holograms
 - rainshader for floor vectors.. Depthmap
 - building destruction animation
 - grenadedrones no self damage/turrets
 - self-revealing of operators
 - all maps tested through
+- selfilu windows for buildings
 - normaltexture for asian buildings
 - performance optimization
-
+- operator drop in water
+- vannishing safehouses on upgrade
+- minigame debbugging
 - no alpha texture
 - testgame:AI vs AI. 
 - test

@@ -134,6 +134,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["house_western_hologram_buisness"].id]= true,
 [UnitDefNames["house_asian_hologram_buisness"].id]= true,
 [UnitDefNames["advertising_blimp_hologram"].id]= true,
+[UnitDefNames["advertising_blimp"].id]= true,
 [UnitDefNames["house_vtol"].id]= true,
 [UnitDefNames["house_spinner"].id]= true,
 [UnitDefNames["birdswarm"].id]= true,
