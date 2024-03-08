@@ -97,11 +97,14 @@
 
         if (typeDefID == 1) //casino
         {
-           hologramTransparency = cubicTransparency(vSphericalUVs);
+           vec3 normedSphericalUvs = normalize(vSphericalUVs);
+           float sphericalUVsValue = (normedSphericalUvs.x+ normedSphericalUvs.y)/2.0;
+           
+           hologramTransparency = mix(mod(sphericalUVsValue +baseInterferenceRipples, 1.0), cubicTransparency(vSphericalUVs), 0.9);;
         }
         if (typeDefID == 2 || typeDefID == 4) //brothel || asian buisness
         {
-           hologramTransparency = mix(baseInterferenceRipples, (2 + sin(time)) * 0.5, 0.5);
+            hologramTransparency = mix(baseInterferenceRipples , (2 + sin(time)) * 0.5, 0.5);
         }
 
         if (typeDefID == 3) //buisness 
@@ -143,6 +146,10 @@
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
         
         colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
+        if (typeDefID == 1) //casino
+        {
+            colWithBorderGlow.rgb = mix(colWithBorderGlow.rgb, vSphericalUVs.rgb, abs(sin(time))/10.0);
+        }
         gl_FragColor = colWithBorderGlow;
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
