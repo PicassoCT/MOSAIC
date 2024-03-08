@@ -8,6 +8,11 @@
     #define NONE vec4(0.)
     #define PI 3.14159f
 
+    #define CASINO 1
+    #define BROTHEL 2
+    #define BUISNESS 3
+    #define ASIAN 4
+
     //////////////////////    //////////////////////    //////////////////////    //////////////////////
     //declare uniforms
     uniform sampler2D tex1;
@@ -95,26 +100,47 @@
                                         + 0.15 * getCosineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  2.0)
                                         ); 
 
-        if (typeDefID == 1) //casino
+        if (typeDefID == CASINO) //casino
         {
-           vec3 normedSphericalUvs = normalize(vSphericalUVs);
-           float sphericalUVsValue = (normedSphericalUvs.x+ normedSphericalUvs.y)/2.0;
-           
-           hologramTransparency = mix(mod(sphericalUVsValue +baseInterferenceRipples, 1.0), cubicTransparency(vSphericalUVs), 0.9);;
+           vec3 normedSphericalUvs = normalize(sphericalNormal);
+           float sphericalUVsValue = (normedSphericalUvs.x + normedSphericalUvs.y)/2.0;           
+           hologramTransparency = mix(mod(sphericalUVsValue + baseInterferenceRipples, 1.0), cubicTransparency(vSphericalUVs), 0.9);
         }
-        if (typeDefID == 2 || typeDefID == 4) //brothel || asian buisness
+        if (typeDefID == BROTHEL || typeDefID == ASIAN) //brothel || asian buisness
         {
-            hologramTransparency = mix(baseInterferenceRipples , (2 + sin(time)) * 0.5, 0.5);
+            float averageShadow = (sphericalNormal.x*sphericalNormal.x+sphericalNormal.y*sphericalNormal.y+sphericalNormal.z+sphericalNormal.z)/4.0;    
+            hologramTransparency = max(0.2, mix(baseInterferenceRipples , (2 + sin(time)) * 0.55, 0.5) + averageShadow);
         }
 
-        if (typeDefID == 3) //buisness 
+        if (typeDefID == BUISNESS) //buisness 
         {
-            //unaltered
             hologramTransparency = baseInterferenceRipples;
         }
         return hologramTransparency;
     }
 
+    vec3 applyColorAberation(vec3 col)
+    {
+        if (typeDefID == CASINO || typeDefID == ASIAN) //casino
+        {
+            return mix(col, sphericalNormal, max(sin(time), 0.0)/10.0);
+        }
+        if (typeDefID == BROTHEL) //brothel
+        {
+            float colHighLights = (-0.5 + ((abs(sphericalNormal.x) + abs(sphericalNormal.z))/2.0))/10.0;
+            return col + colHighLights;
+        }
+
+        if (typeDefID == BUISNESS) 
+        {
+            if (timepercent < 0.25 && mod(time, 60) < 0.1)
+            {
+                return sphericalNormal; //glitchy
+            }          
+        }
+
+        return col;
+    }
 
     void main() 
 	{	
@@ -139,22 +165,16 @@
         //build hybrid normals
 	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
 		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
-        
+
         float hologramTransparency = GetHologramTransparency(); 
         
         vec4 orgCol = texture(tex1, orgColUv); 
         vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
         
         colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
-        if (typeDefID == 1 || typeDefID == 4) //casino
-        {
-            colWithBorderGlow.rgb = mix(colWithBorderGlow.rgb, vSphericalUVs.rgb, abs(sin(time))/10.0);
-        }
-        if (typeDefID == 2) //brothel
-        {
-            float colHighLights = (-0.5 + ((abs(vSphericalUVs.x) + abs(vSphericalUVs.y))/2.0))/10.0;
-            colWithBorderGlow.rgb += colHighLights;
-        }
+
+        colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
+
         gl_FragColor = colWithBorderGlow;
         
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures

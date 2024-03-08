@@ -440,7 +440,7 @@ return {
 "Zappataristocrat",
 "Free hongkong",
 "Taiwan",
-"Tianmien square"
+"Tianmien square",
 "Eplosive growth Inc",
 "Pump n Dump stock",
 "Scam Inc",
