@@ -2583,7 +2583,7 @@ function randDict(Dict)
         if index == randElement and k and v then return k, v end
         index = inc(index)
         if index > countDict then 
-            echo("Dicitionary index is overshooting")
+            echo("Dictionary index is overshooting")
             return nil 
         end
     end
