@@ -29,6 +29,7 @@ local OperativeAsset = Human:New{
 	CanStop = true,
 	script 				= "operativeassetscript.lua",
 	objectName        	= "operative_asset.dae",
+	floater = true,
 
 	onoffable = false,
 	  	

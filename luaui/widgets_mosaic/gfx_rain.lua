@@ -6,7 +6,7 @@ function widget:GetInfo()
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = 1,
-        enabled = false, --  loaded by default?
+        enabled = true, --  loaded by default?
         hidden = false
     }
 end
@@ -76,7 +76,7 @@ local spGetCameraVectors     = Spring.GetCameraVectors
 local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
-
+local rainPercentage         = 0.0
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -121,6 +121,7 @@ local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
 local percentTime
 local timePercentLoc
+local rainPercentLoc
 local timePercent = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
@@ -283,6 +284,7 @@ local function init()
     end
 
     timePercentLoc                  = glGetUniformLocation(rainShader, "timePercent")
+    rainPercentLoc                  = glGetUniformLocation(rainShader, "rainPercent")
     uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
@@ -333,6 +335,7 @@ local function getDayTime()
 end
 
 local function isRaining()
+    if true then return true end
     if boolRainyArea == nil then
         boolRainyArea = isRainyArea()
     end
@@ -363,7 +366,12 @@ end
 
 function widget:Update(dt)   
     if boolDebugActive then boolRainActive = true; return end
-    boolRainActive = isRaining()
+    if sin(((Spring.GetGameFrame%DAYLENGTH)/DAYLENGTH)*math.pi) > 0 then--isRaining() then
+        echo("Its raining")
+        rainPercentage = math.min(1.0, rainPercentage + 0.01)
+    else
+        rainPercentage = math.max(0.0, rainPercentage - 0.01)
+    end
 end
 
 function widget:Shutdown()
@@ -414,6 +422,7 @@ local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
     --Spring.Echo("Time passed:"..diffTime)
+    glUniform(rainPercentLoc, rainPercentage)
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )

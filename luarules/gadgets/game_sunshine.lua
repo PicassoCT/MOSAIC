@@ -193,14 +193,16 @@ if gadgetHandler:IsSyncedCode() then
         local azimuth = (daytimeFrames * SUN_MOVE_SPEED) % 360.0
 
         -- Adjust elevation angle for sunrise and sunset effect 
-        local elevation = math.abs(math.sin(dayFactor*math.pi))* REGIONAL_MAX_ALTITUDE
+        local elevation = math.abs(math.sin(dayFactor*math.pi))* REGIONAL_MAX_ALTITUDE 
+
+        elevation = math.max(1, math.min(90.0, math.abs(elevation)))
 
         -- Convert to Cartesian coordinates
         local rElevation = math.rad(elevation)
-        local rAzimuth= math.rad(azimuth)
+        local rAzimuth = math.rad(azimuth)
         local resultVec = {
             x= math.cos(rElevation) * math.cos(rAzimuth),
-            y=(math.cos(rElevation) * math.sin(rAzimuth)) * EquatorialDirectionSign,
+            y=(math.cos(rElevation) * math.sin(rAzimuth)), --
             z= math.sin(rElevation)
             }
 

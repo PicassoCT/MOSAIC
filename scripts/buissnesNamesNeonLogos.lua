@@ -444,7 +444,9 @@ return {
 "Eplosive growth Inc",
 "Pump n Dump stock",
 "Scam Inc",
-"Mafia Omerta"
-
+"Mafia Omerta",
+"Spacewave cosmic relaxotion",
+"Ferro Plastics",
+"Rhodan industires"
 
 }

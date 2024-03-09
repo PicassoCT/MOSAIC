@@ -11,9 +11,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 center = piece "anchor"
 infantry = piece "Infantrz"
 step = piece "step"
-
--- if not aimpiece then echo("Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no aimpiece") end
--- if not center then echo("Unit of type"..UnitDefs[Spring.GetUnitDefID(unitID)].name .. " has no center") end
 testOffset = 300
 stationaryDropRate = 2.0
 travellingDropRate = 0.5
@@ -33,7 +30,6 @@ function script.Create()
     assert(infantry)
     Hide(infantry)
     Hide(step)
-
 
     foreach(TablesOfPiecesGroups["Rotator"],
             function(id) 
@@ -146,7 +142,7 @@ function fallingDown()
     Spring.UnitAttach(unitID, passengerID, step)
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
 
-    while isPieceAboveGround(unitID, center, 15) == true do
+    while isPieceAboveGroundOrWater(unitID, center, 15) == true do    
         x, y, z = Spring.GetUnitPosition(unitID)
         xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
         Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)

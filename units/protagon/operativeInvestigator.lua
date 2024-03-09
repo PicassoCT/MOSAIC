@@ -15,6 +15,7 @@ local OperativeInvestigator = Human:New{
 	BrakeRate = 0.3,
 	TurnRate = 900,
 	MaxVelocity = 2.2,
+	floater = true,	
 	
 	--orders
 	canMove	= true,

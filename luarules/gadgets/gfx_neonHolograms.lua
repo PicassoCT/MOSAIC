@@ -255,7 +255,7 @@ end
     function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
     	vsx, vsy = viewSizeX, viewSizeY
 
-        screentex= gl.CreateTexture(vsx,vsy, {
+        screentex= glCreateTexture(vsx,vsy, {
             target = target,
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,

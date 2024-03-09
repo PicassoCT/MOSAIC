@@ -17,6 +17,7 @@ local OperativePropagator = Human:New{
 	metalMake  = 3,
 	energyMake = 1,
 	buildtime = 60,
+	floater = true,
 	
 	--orders
 	canMove					  = true,

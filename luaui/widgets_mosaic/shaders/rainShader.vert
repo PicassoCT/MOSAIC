@@ -20,6 +20,7 @@ uniform mat4 viewProjectionInv;
 uniform mat4 viewInv;
 uniform mat4 viewProjection;
 uniform float timePercent;
+uniform float rainPercent;
 uniform vec3 sundir;
 uniform vec3 suncolor;
 

@@ -298,6 +298,16 @@ function isPieceAboveGround(unitID, pieceName, offset)
     return false, x, z
 end
 
+-- > is a Unit Piece above ground
+function isPieceAboveGroundOrWater(unitID, pieceName, offset)
+    offset = offset or 0
+    x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceName)
+    gh = Spring.GetGroundHeight(x, z) + offset
+    if gh < 0 then return true end
+    if gh < y then return true, x, z end
+    return false, x, z
+end
+
 -- > Gets the MaxSpeed Of A unit
 function getMaxSpeed(unitID, UnitDefs)
     uDefID = Spring.GetUnitDefID(unitID)

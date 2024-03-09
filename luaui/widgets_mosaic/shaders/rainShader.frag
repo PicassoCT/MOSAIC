@@ -78,6 +78,7 @@ uniform float time;
 uniform float rainDensity;
 uniform int maxLightSources;
 uniform float timePercent;
+uniform float rainPercent;
 uniform vec3 eyePos;
 uniform vec3 sundir;
 uniform vec3 suncolor;
@@ -684,7 +685,7 @@ void main(void)
 	//}	
 	//else //no Raindrops blended in
 	//{
-		gl_FragColor = accumulatedLightColorRayDownward; 
+		gl_FragColor = mix(accumulatedLightColorRayDownward, RED ,rainPercentLoc); 
 	//}
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
