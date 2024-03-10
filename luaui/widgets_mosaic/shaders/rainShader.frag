@@ -239,42 +239,7 @@ vec4 GetDeterministicRainColor(vec3 pxlPos )
 	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
 }
 
-vec4 fuerstPueckler(vec3 pixelCoord)
-{
-	float odd = mod(pixelCoord.z, 3.0);
-	if (odd < 1.0) return vec4(GREEN.rgb, 0.25);
-	if (odd < 2.0) return vec4(RED.rgb, 0.25);
-	if (odd <= 3.0) return vec4(BLUE.rgb, 0.25);
 
-	return NONE;
-}
-
-vec4 renderBackGroundLight(vec3 Position)
-{	
-	if (distance(Position, vec3(1.0)) < 0.9)
-	{
-		return fuerstPueckler(Position);//DEBUG DELME
-	}
-	else
-	{
-		return NONE;
-	}
-	//TODO Problem with the distances and positions not in worldspace - this needs fixing
-	vec4 lightColorAddition = vec4(0.0, 0.0, 0.0 ,0.0);
-	
-	for (int i=0; i < maxLightSources; i+=2)
-	{
-		float lightSourceDistance = distance(Position, (lightSources[i].xyz * WORLD_POS_SCALE) + WORLD_POS_OFFSET);
-		float distanceToFallToZeroFromStrength =  lightSources[i].a / (1 + (lightSourceDistance*lightSourceDistance)) ; //TODO 
-		if ( lightSourceDistance < distanceToFallToZeroFromStrength)
-		{
-			float distanceFactor =  max(0,(1.0-exp(-lightSourceDistance)));
-			lightColorAddition.rgb += lightSources[i+1].rgb * distanceFactor;
-			lightColorAddition. a  += lightSources[i].a /distanceFactor;
-		}
-	}
-	return lightColorAddition;
-}
 
 bool IsInGridPoint(vec3 pos, float size, float space)
 {
@@ -282,39 +247,9 @@ bool IsInGridPoint(vec3 pos, float size, float space)
 }
 
 //REFLECTIONMARCH  
-
-
-float GetSinCurve( float pulseValue)
-{
-	return sin(PI_HALF * 0.5 + (pulseValue * PI_HALF));
-}
-
-float getTimeWiseOffset(float offset, float scale)
-{
-	if (offset < 0.5)
-	{
-		return offset * scale * -2.0;
-	}
-	if (offset >= 0.5)
-	{
-		return (offset-0.5) * scale * 2.0 ;
-	}
-	return 0.0;
-}
-
 float getZoomFactor()
 {
 	return max(1.0, eyePos.y / 128.0);
-}
-
-vec4 checkers(vec3 pos, float xOffset)
-{
-	pos.x += xOffset;
-	float modFactor= 1.0;
-	vec3 res = mod(pos, vec3(modFactor));
-	if (res.x < modFactor/2 && res.z < modFactor/2) return RED;
-	if (res.x > modFactor/2 && res.z > modFactor/2) return RED;
-	return GREEN;
 }
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs) 
@@ -355,8 +290,7 @@ vec2 calculateCubemapUV(vec3 direction) {
             uvs = vec2(0.5 - direction.x * ma, 0.5 - direction.y * ma);
         }
     }
-
-    return uvs;
+	return uvs;
 }
 
 vec2 getSkyboxUVs(vec3 pos)
@@ -416,75 +350,8 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 			  groundMixFactor);	
 }
 
-vec3 truncatePosition(in vec3 pixelPosTrunc)
-{
-	vec3 pixelPos = pixelPosTrunc;
-	pixelPos.xz = pixelPos.xz - mod(pixelPos.xz, RAIN_DROP_DIAMTER);
-	return pixelPos;
-}
 
-float windWaveMasking(vec3 pixelPos)
-{
-	pixelPos.xz = pixelPos.xz - vec2(time/30.0);
-	pixelPos.xz = pixelPos.xz * 0.005;
-	return abs(sin(time/10.0)*0.125 - texture2D(noisetex, pixelPos.xz).r);
-}
- 
-ColorResult renderRainPixelAtPos( vec3 pixelCoord, float localRainDensity, float closenessCameraFactor)
-{	
-	//mask out windwaves
-	ColorResult result;
-	result.earlyOut = false;
-	
-	/*
-	if(windWaveMasking(pixelCoord) < localRainDensity)
-	{
-		result.color = NONE;
-		return result;
-	} 
-	*/
 
-	vec4 additiveLightValue = renderBackGroundLight(pixelCoord);
-
-	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)*2.0; 
-	float truncatedZ = pixelCoord.z- mod(pixelCoord.z, 0.25);
-	vec2 rainUv = vec2(pixelCoord.x, truncatedZ)*scaleFactor;//vec2(pixelCoord.x, truncatedZ) *  scaleFactor ;
-	rainUv.y = -1.0 * rainUv.y - time * 2.0; 
-	vec4 rainMask= texture2D(raintex, rainUv);
-	result.color = rainMask;
-
-	rainMask.a = rainMask.r;
-	vec4 pixelColor = GetDeterministicRainColor(pixelCoord);
-	result.earlyOut = rainMask.r > 0.75;
-
-	result.color = vec4( ((suncolor.rgb*0.25 + pixelColor.rgb*0.75)) , max(1.0, rainMask.r));
-	return result ;
-}	
-
-vec3 getPixelWorldPos(vec2 uvs)
-{
-	float z = texture2D(depthtex, uvs).z;
-	vec4 ppos;
-	ppos.xyz = vec3(uvs, z) * 2. - 1.;
-	ppos.a   = 1.;
-	vec4 worldPos4 = viewProjectionInv * ppos;
-	worldPos4.xyz /= worldPos4.w;
-
-	if (z == 1.0) {
-		vec3 forward = normalize(worldPos4.xyz - eyePos);
-		float a = max(-eyePos.y, eyePos.y) / forward.y;
-		return eyePos + forward.xyz * abs(a);
-	}
-
-	return worldPos4.xyz;
-}
-
-vec4 GetGradient(vec3 uvx, float distance){
-	uvx = normalize(uvx);
-	vec4 result  = mix(BLACK, mix(RED, mix(BLUE, GREEN, uvx.x), uvx.y),uvx.z);
-	result.a = distance;
-	return result;
-}
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
 #define VOLUME_FOG_DENSITY         0.02
 #define VOLUME_BRIGHTNESS_CLAMP    0.3
@@ -505,45 +372,7 @@ vec4 GetGradient(vec3 uvx, float distance){
 #define VOLUME_TAA_MAX_REUSE       0.9
 #define VOLUME_TAA_MAX_DIST        0.5
 
-vec4 renderFogClouds(vec3 pixelPos, float stepComponent)
-{
-	return vec4(IDENTITY.rgb, stepComponent);
-	/*
-  	float startOffset = 0.0;
 
-    #if VOLUME_USE_NOISE == 1
-    int frame = 0;
-        #if VOLUME_ANIMATE_NOISE == 1
-            frame = iFrame % 64;
-        #endif
-    
-    float goldenRatio = 1.61803398875;
-    float invGoldenRatio = 1.0/goldenRatio;
-    
-    float blue = texture(iChannel1, pixel / 1024.0f).r;
-    startOffset = blue * 1.0;
-    startOffset = fract(blue + float(frame) * invGoldenRatio);
-    #endif
-
-    float fogLitPercent = 0.0;
-    for (int i = 0; i < VOLUME_MAX_STEPS; ++i) {
-        float rayPercent = (startOffset + float(i)) / float(VOLUME_MAX_STEPS);
-        float rayStep = rayPercent * hitDistance;
-        
-        vec3 o = ro + rd * rayStep;
-        Hit h = trace(o, l, 64, FAR_PLANE, SURF_HIT);
-        
-        fogLitPercent = mix(fogLitPercent, (h.dist >= FAR_PLANE) ? 1.0 : 0.0, 1.0f / float(i+1));
-    }
-    
-    vec3 fogColor = mix(vec3(0, 0, 0), lightColor, fogLitPercent);
-    float absorb = exp(-hitDistance * VOLUME_FOG_DENSITY);
-    
-    // return mix(fogColor, vec3(0, 0, 0), absorb);
-    return clamp(1.-absorb, 0.0, VOLUME_BRIGHTNESS_CLAMP) * fogColor;
-	*/
-	return BLACK;
-}
 
 vec4 RayMarchCompose(in vec3 start, in vec3 end)
 {	
@@ -554,20 +383,6 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
 	accumulatedColor = GetGroundReflectionRipples(end);
 
-	vec3 pxlPosWorld;
-
-	for (float t=0.0; t < 1.0; t += tstep) 
-	{
-		pxlPosWorld = mix(start, end, t);
-
-		//ColorResult result = renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t));
-		//accumulatedColor += result.color;
-		//if (result.earlyOut){break;}
-		
-		//accumulatedColor +=  renderFogClouds(pxlPosWorld, tstep*0.5);
-	}
-	//Prevent the rain from pixelating
-	//accumulatedColor.a = max(0.25, accumulatedColor.a);
 	return accumulatedColor;
 }
 											  
@@ -625,6 +440,17 @@ vec4 GetRainCoronaFromScreenTex()
 }
 
 
+vec3 mergeGroundViewNormal()
+{
+	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
+	{
+		if (unitViewNormal.g  > 0.95)
+		{
+			groundViewNormal = unitViewNormal.rgb;
+		}		
+	}
+}
+
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;	
@@ -636,9 +462,8 @@ void main(void)
 	//gl_FragColor = vec4(vec3(unitViewNormal.a), 0.75);
 	//return;
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) groundViewNormal = unitViewNormal.rgb;
-	//gl_FragColor = vec4(groundViewNormal, 0.75);
-	//return;
+	mergeGroundViewNormal();
+
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -680,6 +505,7 @@ void main(void)
 	//if player looks upward mix drawing rain and start drawing drops on the camera
 	//if (upwardnessFactor > 0.45)GetRainCoronaFromScreenTex
 	//{
+	//https://www.youtube.com/watch?v=W0_zQ-WdxH4
 	//	upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
 	//	gl_FragColor = upWardrainColor;
 	//}	
