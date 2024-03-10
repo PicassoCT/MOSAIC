@@ -560,9 +560,9 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 	{
 		pxlPosWorld = mix(start, end, t);
 
-		ColorResult result = renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t));
-		accumulatedColor += result.color;
-		if (result.earlyOut){break;}
+		//ColorResult result = renderRainPixelAtPos( pxlPosWorld, 0.25f, (1.0-t));
+		//accumulatedColor += result.color;
+		//if (result.earlyOut){break;}
 		
 		//accumulatedColor +=  renderFogClouds(pxlPosWorld, tstep*0.5);
 	}
@@ -685,7 +685,7 @@ void main(void)
 	//}	
 	//else //no Raindrops blended in
 	//{
-		gl_FragColor = mix(accumulatedLightColorRayDownward, RED ,rainPercentLoc); 
+		gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,rainPercent); 
 	//}
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));

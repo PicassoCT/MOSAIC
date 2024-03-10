@@ -76,7 +76,7 @@ local spGetCameraVectors     = Spring.GetCameraVectors
 local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
-local rainPercentage         = 0.0
+
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -122,6 +122,7 @@ local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 local percentTime
 local timePercentLoc
 local rainPercentLoc
+local rainPercent = 0.0
 local timePercent = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
@@ -220,15 +221,14 @@ function widget:ViewResize()
     errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
 
     widgetHandler:UpdateCallIn("DrawScreenEffects")  
+    widgetHandler:UpdateCallIn("Update")  
 end
 widget:ViewResize()
 
-function widget:Update()
-    widgetHandler:RemoveWidgetCallIn("Update", self)
-    startTimer = Spring.GetTimer()
-end
+
 
 local function init()
+    startTimer = Spring.GetTimer()
     Spring.Echo("gfx_rain:Initialize")
     -- abort if not enabled
 
@@ -366,11 +366,13 @@ end
 
 function widget:Update(dt)   
     if boolDebugActive then boolRainActive = true; return end
-    if sin(((Spring.GetGameFrame%DAYLENGTH)/DAYLENGTH)*math.pi) > 0 then--isRaining() then
+    if math.sin(((Spring.GetGameSeconds()%60)/60)*math.pi*2) > 0 then--isRaining() then
         echo("Its raining")
-        rainPercentage = math.min(1.0, rainPercentage + 0.01)
+        boolRainActive = true
+        rainPercent = math.min(1.0, rainPercent + 0.01)
     else
-        rainPercentage = math.max(0.0, rainPercentage - 0.01)
+        boolRainActive = false
+        rainPercent = math.max(0.0, rainPercent - 0.01)
     end
 end
 
@@ -422,7 +424,7 @@ local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
     --Spring.Echo("Time passed:"..diffTime)
-    glUniform(rainPercentLoc, rainPercentage)
+    glUniform(rainPercentLoc, rainPercent)
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
