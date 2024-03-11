@@ -451,6 +451,28 @@ vec3 mergeGroundViewNormal()
 	}
 }
 
+vec4 drawRainPlane(vec2 uv, bool depthDrawActive, int depthDraw, float rainspeed, float timeOffset)
+{	
+	//draw in depth first
+	vec4 backGroundRain = vec4(0.);
+	if (depthDrawActive)
+	{
+	//TODO Not a solution
+	for (int i=0; i< depthDraw;i++)
+	 backGroundRain += drawRainPlane(uv* (1/i), false, 0, rainspeed, TODOGetDeterministicTimeOffset)
+	}
+
+	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)*2.0; 
+	vec2 rainUv = uv * scaleFactor;
+	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
+	vec4 rainMask= texture2D(raintex, rainUv);
+
+	//+ RainColor 
+	//GetDeterministicRainColor();
+	return backGroundRain + rainMask;
+	
+}
+
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;	
@@ -459,8 +481,7 @@ void main(void)
 	origColor = texture2D(screentex, uv);
 	groundViewNormal = texture(normaltex, uv).xyz;
 	vec4 unitViewNormal = texture(normalunittex, uv);
-	//gl_FragColor = vec4(vec3(unitViewNormal.a), 0.75);
-	//return;
+
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	mergeGroundViewNormal();
 
@@ -496,6 +517,8 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
+	drawRainPlane(uv);
+
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
 		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
@@ -503,7 +526,7 @@ void main(void)
 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera
-	//if (upwardnessFactor > 0.45)GetRainCoronaFromScreenTex
+	//if (upwardnessFactor > 0.45)
 	//{
 	//https://www.youtube.com/watch?v=W0_zQ-WdxH4
 	//	upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
