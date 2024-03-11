@@ -299,7 +299,7 @@ local function init()
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
     uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
       for i=1,maxLightSources do
-        shaderLightSourcescLoc[i]   = gl.GetUniformLocation(rainShader,"lightSources["..(i-1).."]")
+        shaderLightSourcescLoc[i]   = glGetUniformLocation(rainShader,"lightSources["..(i-1).."]")
       end
     Spring.Echo("gfx_rain:Initialize ended")
 end

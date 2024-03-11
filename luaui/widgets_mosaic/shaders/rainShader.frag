@@ -211,7 +211,7 @@ float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
-vec4 GetDeterministicRainColor( )
+vec4 GetDeterministicRainColor( vec2 uvx)
 {
 	vec4 rainHighDayColor;
 	vec4 rainHighNightColor;
@@ -219,8 +219,8 @@ vec4 GetDeterministicRainColor( )
 	vec4 outsideCityRainNightCol;
 
 	//basically rain deeper down needs to be slightly darker
-	float darkenFactor = mix(0.85, 1.0, (pxlPos +pxlPos).y/MAX_HEIGTH_RAIN);
-	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
+	float darkenFactor = mix(0.85, 1.0, uvx.y/viewPortSize.y);
+	float depthOfDropFactor = min(1.0, uvx.y/ viewPortSize.y);
 
   	// Night
 	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL;
@@ -437,37 +437,46 @@ vec4 GetRainCoronaFromScreenTex()
 }
 
 
-vec3 mergeGroundViewNormal()
+void mergeGroundViewNormal(vec4 UnitViewNormal)
 {
-	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
+	if (UnitViewNormal.rgb != BLACK.rgb && UnitViewNormal.a > 0.5) 
 	{
-		if (unitViewNormal.g  > 0.95)
+		if (UnitViewNormal.g  > 0.95)
 		{
-			groundViewNormal = unitViewNormal.rgb;
+			groundViewNormal = UnitViewNormal.rgb;
 		}		
 	}
 }
 
-vec4 drawRainInSpainOnPlane(vec2 uv, bool depthDrawActive, int depthDraw, float rainspeed, float timeOffset)
-{	
-	//draw in depth first
-	vec4 backGroundRain = vec4(0.);
-	if (depthDrawActive)
-	{
-		for (int i = 0; i < depthDraw; i++)
-		{
-			vec2 uvScaled = uv* (1/i);
-		 	backGroundRain += drawRainPlane(uvScaled, false, i, rainspeed, deterministicFactor(uvScaled));
-		}
-	}
-
+vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
+{
 	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)*2.0; 
 	vec2 rainUv = uv * scaleFactor;
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-	vec4 rainMask= texture2D(raintex, rainUv);
+	return texture2D(raintex, rainUv);
+}
 
-	return (backGroundRain + rainMask) * GetDeterministicRainColor();
+vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
+{	
+	//draw in depth first
+	vec4 backGroundRain = vec4(0.);
+
+	vec2 uvScaled = uv* (1/16);
+	float detFactor = deterministicFactor(uvScaled)
+	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
+
+	uvScaled = uv* (1/8);
+	detFactor = deterministicFactor(uvScaled)
+	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
 	
+	uvScaled = uv* (1/4);
+	detFactor = deterministicFactor(uvScaled)
+	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
+
+	detFactor = deterministicFactor(uv)
+	backGroundRain += getRainTexture(uv, rainspeed, detFactor );
+
+	return (backGroundRain + rainMask) * GetDeterministicRainColor(rainUv);	
 }
 
 vec2 transformUvToPlane(vec2 uv)
@@ -484,10 +493,10 @@ void main(void)
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
 	groundViewNormal = texture(normaltex, uv).xyz;
-	vec4 unitViewNormal = texture(normalunittex, uv);
-
+	vec4 UnitViewNormal = texture(normalunittex, uv);
+	mergeGroundViewNormal(UnitViewNormal);
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-	mergeGroundViewNormal();
+
 
 	AABB box;
 	box.Min = vMinima;
@@ -521,7 +530,8 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	drawRainInSpainOnPlane(transformUvToPlane(uv);
+	vec2 transformedUV = transformUvToPlane(uv);
+	drawRainInSpainOnPlane(transformedUV, true, 3, 2.0, 0.5);
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{

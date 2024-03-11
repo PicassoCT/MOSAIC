@@ -145,7 +145,7 @@ function fallingDown()
     while isPieceAboveGroundOrWater(unitID, center, 15) == true do    
         x, y, z = Spring.GetUnitPosition(unitID)
         xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
-        Spring.MoveCtrl.SetPosition(unitID, x + xOff, math.max(y - dropRate, 10) , z + zOff)
+        Spring.MoveCtrl.SetPosition(unitID, x + xOff, math.max(y - dropRate, math.max(0, Spring.GetGroundHeight(x,z) + 5)) , z + zOff)
         Sleep(1)
     end
 

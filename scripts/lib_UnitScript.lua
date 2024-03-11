@@ -303,7 +303,7 @@ function isPieceAboveGroundOrWater(unitID, pieceName, offset)
     offset = offset or 0
     x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceName)
     gh = Spring.GetGroundHeight(x, z) + offset
-    if gh < 0 then return true end
+    if gh < 0 then return true,x,z end
     if gh < y then return true, x, z end
     return false, x, z
 end
