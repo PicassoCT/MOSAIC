@@ -218,23 +218,22 @@ vec4 GetDeterministicRainColor( )
 	vec4 outsideCityRainDayCol;
 	vec4 outsideCityRainNightCol;
 
-
 	//basically rain deeper down needs to be slightly darker
 	float darkenFactor = mix(0.85, 1.0, (pxlPos +pxlPos).y/MAX_HEIGTH_RAIN);
 	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
 
   	// Night
-	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL ;
+	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL;
 	outsideCityRainNightCol = mix(rainHighNightColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
 	outsideCityRainNightCol.rgb *= darkenFactor;
 	;
 	
 	//Day
-	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL ;
-	outsideCityRainDayCol = mix(rainHighDayColor	, DAY_RAIN_DARK_COL, depthOfDropFactor);
+	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL;
+	outsideCityRainDayCol = mix(rainHighDayColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
 	outsideCityRainDayCol.rgb *= darkenFactor;
 
-	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent());
+	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent()  );
 }
 
 
@@ -455,9 +454,11 @@ vec4 drawRainInSpainOnPlane(vec2 uv, bool depthDrawActive, int depthDraw, float 
 	vec4 backGroundRain = vec4(0.);
 	if (depthDrawActive)
 	{
-	//TODO Not a solution
-	for (int i=0; i< depthDraw;i++)
-	 backGroundRain += drawRainPlane(uv* (1/i), false, 0, rainspeed, TODOGetDeterministicTimeOffset)
+		for (int i = 0; i < depthDraw; i++)
+		{
+			vec2 uvScaled = uv* (1/i);
+		 	backGroundRain += drawRainPlane(uvScaled, false, i, rainspeed, deterministicFactor(uvScaled));
+		}
 	}
 
 	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)*2.0; 
@@ -471,7 +472,9 @@ vec4 drawRainInSpainOnPlane(vec2 uv, bool depthDrawActive, int depthDraw, float 
 
 vec2 transformUvToPlane(vec2 uv)
 {
-	return uv;
+	vec2 uvZSpace = uv;
+	//kamera 2d -> Projetziert auf KameraCoord -> Cone
+	return uvZSpace;
 }
 
 void main(void)
