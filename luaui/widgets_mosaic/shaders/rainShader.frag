@@ -169,12 +169,12 @@ bool isAbsInIntervallAround(float value, float targetValue, float intervall)
 {
 	return abs(value) +intervall >= abs(targetValue) && abs(value) - intervall <= abs(targetValue);
 }
-float deterministicFactor(vec3 val)
+float deterministicFactor(vec2 val)
 {
 	return mod((abs(val.x) + abs(val.y))/2.0, 1.0);
 }
 
-vec4 getDeterministicColorOffset(vec3 position)
+vec4 getDeterministicColorOffset(vec2 position)
 { 
 	float randomFactor = deterministicFactor(position);
 	return mix(OFFSET_COL_MIN, OFFSET_COL_MAX, randomFactor);
@@ -211,28 +211,26 @@ float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
-vec4 GetDeterministicRainColor(vec3 pxlPos )
+vec4 GetDeterministicRainColor( )
 {
-	vec4 detRandomRainColOffset = getDeterministicColorOffset(pxlPos);
 	vec4 rainHighDayColor;
 	vec4 rainHighNightColor;
 	vec4 outsideCityRainDayCol;
 	vec4 outsideCityRainNightCol;
 
-	//if (mod(detRandomRainColOffset.x*10.0, 1.0) < 0.5 ) return RED;
 
 	//basically rain deeper down needs to be slightly darker
 	float darkenFactor = mix(0.85, 1.0, (pxlPos +pxlPos).y/MAX_HEIGTH_RAIN);
 	float depthOfDropFactor = min(1.0, pxlPos.y/ TOTAL_LENGTH_RAIN);
 
   	// Night
-	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL + detRandomRainColOffset;
+	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL ;
 	outsideCityRainNightCol = mix(rainHighNightColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
 	outsideCityRainNightCol.rgb *= darkenFactor;
 	;
 	
 	//Day
-	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL + detRandomRainColOffset;
+	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL ;
 	outsideCityRainDayCol = mix(rainHighDayColor	, DAY_RAIN_DARK_COL, depthOfDropFactor);
 	outsideCityRainDayCol.rgb *= darkenFactor;
 
@@ -451,7 +449,7 @@ vec3 mergeGroundViewNormal()
 	}
 }
 
-vec4 drawRainPlane(vec2 uv, bool depthDrawActive, int depthDraw, float rainspeed, float timeOffset)
+vec4 drawRainInSpainOnPlane(vec2 uv, bool depthDrawActive, int depthDraw, float rainspeed, float timeOffset)
 {	
 	//draw in depth first
 	vec4 backGroundRain = vec4(0.);
@@ -467,10 +465,13 @@ vec4 drawRainPlane(vec2 uv, bool depthDrawActive, int depthDraw, float rainspeed
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	vec4 rainMask= texture2D(raintex, rainUv);
 
-	//+ RainColor 
-	//GetDeterministicRainColor();
-	return backGroundRain + rainMask;
+	return (backGroundRain + rainMask) * GetDeterministicRainColor();
 	
+}
+
+vec2 transformUvToPlane(vec2 uv)
+{
+	return uv;
 }
 
 void main(void)
@@ -517,7 +518,7 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	drawRainPlane(uv);
+	drawRainInSpainOnPlane(transformUvToPlane(uv);
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
