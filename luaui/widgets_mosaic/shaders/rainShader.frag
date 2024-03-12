@@ -103,7 +103,7 @@ vec4  color + id
 
 in Data {
 			vec3 fragVertexPosition;
-			vec3 viewDirection;
+			vec3 viewDirection;			
 		 };
 
 struct Ray {
@@ -469,7 +469,7 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	detFactor = deterministicFactor(uvScaled)
 	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
 	
-	uvScaled = uv* (1/4);
+	uvScaled = uv* (1/3);
 	detFactor = deterministicFactor(uvScaled)
 	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
 
@@ -479,12 +479,28 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	return (backGroundRain + rainMask) * GetDeterministicRainColor(rainUv);	
 }
 
-vec2 transformUvToPlane(vec2 uv)
+#define  CYLINDER_DISTANCE 1024.0
+vec2 calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, vec2 uv) 
 {
-	vec2 uvZSpace = uv;
-	//kamera 2d -> Projetziert auf KameraCoord -> Cone
-	return uvZSpace;
+    // Step 1: Calculate the intersection point of the view direction with the cylinder
+    vec3 intersectionPoint = cameraPosition + viewDirection * CYLINDER_DISTANCE;
+
+    // Step 2: Calculate the direction from the camera position to the intersection point
+    vec3 directionToIntersection = intersectionPoint - cameraPosition;
+
+    // Step 3: Convert direction to cylindrical coordinates
+    float theta = atan(directionToIntersection.y, directionToIntersection.x);
+    float height = directionToIntersection.z;
+    
+    // Step 4: Calculate the texture UV coordinates
+    // Normalize theta to [0, 1] and height to [0, 1]
+    float u = (theta + PI) / (2.0 * PI);
+    float v = height / cylinderHeight; // Assuming you know the height of the cylinder
+
+    return vec2(u, v);
 }
+
+
 
 void main(void)
 {
@@ -530,8 +546,9 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	vec2 transformedUV = transformUvToPlane(uv);
-	drawRainInSpainOnPlane(transformedUV, true, 3, 2.0, 0.5);
+	vec2 cylinderUVs = calculateCylinderUV(eyePos, viewDirection, uv);
+
+	drawRainInSpainOnPlane(cylinderUVs, true, 3, 2.0, 0.5);
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
