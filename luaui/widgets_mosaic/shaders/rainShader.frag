@@ -440,17 +440,21 @@ vec4 GetRainCoronaFromScreenTex()
 void mergeGroundViewNormal(vec4 UnitViewNormal)
 {
 	if (UnitViewNormal.rgb != BLACK.rgb && UnitViewNormal.a > 0.5) 
-	{
+	{			
+		groundViewNormal = UnitViewNormal.rgb;
+		/*
+		TODO: If in silouett
 		if (UnitViewNormal.g  > 0.95)
 		{
 			groundViewNormal = UnitViewNormal.rgb;
-		}		
+		}
+		*/		
 	}
 }
 
 vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
 {
-	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)*2.0; 
+	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)* 0.001; 
 	vec2 rainUv = uv * scaleFactor;
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	return texture2D(raintex, rainUv);
@@ -461,25 +465,26 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	//draw in depth first
 	vec4 backGroundRain = vec4(0.);
 
-	vec2 uvScaled = uv* (1/16);
-	float detFactor = deterministicFactor(uvScaled)
-	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
+	vec2 uvScaled = uv;
+	float detFactor = deterministicFactor(uvScaled);
+	//backGroundRain += getRainTexture(uvScaled, rainspeed + detFactor/10.0, detFactor );
+//
+	//uvScaled = uv* (1/8);
+	//detFactor = deterministicFactor(uvScaled);
+	//backGroundRain += getRainTexture(uvScaled, rainspeed+ detFactor/10.0 , detFactor );
+	//
+	//uvScaled = uv* (1/3);
+	//detFactor = deterministicFactor(uvScaled);
+	//backGroundRain += getRainTexture(uvScaled, rainspeed+ detFactor/10.0, detFactor );
 
-	uvScaled = uv* (1/8);
-	detFactor = deterministicFactor(uvScaled)
-	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
-	
-	uvScaled = uv* (1/3);
-	detFactor = deterministicFactor(uvScaled)
-	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
-
-	detFactor = deterministicFactor(uv)
-	backGroundRain += getRainTexture(uv, rainspeed, detFactor );
-
-	return (backGroundRain + rainMask) * GetDeterministicRainColor(rainUv);	
+	detFactor = deterministicFactor(uv);
+	backGroundRain = getRainTexture(uv, rainspeed, detFactor)* RED;
+	backGroundRain.a = backGroundRain.r;
+	return backGroundRain * 0.1 ;// * GetDeterministicRainColor(uv);	
 }
 
-#define  CYLINDER_DISTANCE 1024.0
+#define  CYLINDER_DISTANCE 512.0
+#define CYLINDER_HEIGHT 4000.0
 vec2 calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, vec2 uv) 
 {
     // Step 1: Calculate the intersection point of the view direction with the cylinder
@@ -495,7 +500,7 @@ vec2 calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, vec2 uv)
     // Step 4: Calculate the texture UV coordinates
     // Normalize theta to [0, 1] and height to [0, 1]
     float u = (theta + PI) / (2.0 * PI);
-    float v = height / cylinderHeight; // Assuming you know the height of the cylinder
+    float v = height / CYLINDER_HEIGHT; // Assuming you know the height of the cylinder
 
     return vec2(u, v);
 }
@@ -548,7 +553,7 @@ void main(void)
 
 	vec2 cylinderUVs = calculateCylinderUV(eyePos, viewDirection, uv);
 
-	drawRainInSpainOnPlane(cylinderUVs, true, 3, 2.0, 0.5);
+	accumulatedLightColorRayDownward += drawRainInSpainOnPlane(cylinderUVs,  2.0, 0.5);
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{

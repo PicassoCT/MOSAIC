@@ -330,11 +330,16 @@ return {
 "Sexlife on steroids",
 "hump the stilts kin",
 "k Inkoperated",
-"horndog"
+"horndog",
 "Crystall Boyd",
 "Mary Auryn Jane",
-"Riley Railed"
-
-
+"Riley Railed",
+"Hard fuck",
+"NO Fucks given",
+"Outstanding Impounding"
+"Squirty Oysters",
+"Tentive tentacles",
+"Octopussy",
+"Vagina Expansions"
 
 }
