@@ -469,7 +469,7 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	detFactor = deterministicFactor(uvScaled)
 	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
 	
-	uvScaled = uv* (1/3);
+	uvScaled = uv* (1/4);
 	detFactor = deterministicFactor(uvScaled)
 	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
 
