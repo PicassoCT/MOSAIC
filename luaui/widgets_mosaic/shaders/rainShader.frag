@@ -463,7 +463,10 @@ vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
 vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 {	
 	//draw in depth first
-	vec4 backGroundRain = vec4(0.);
+	//DELME Testcode
+	vec4 backGroundRain = vec4(0.0, 0.0,0,0.5);
+	backGroundRain.r = mod(uv, 1.0);
+	backGroundRain.g = mod(uv, 1.0);
 
 	vec2 uvScaled = uv;
 	float detFactor = deterministicFactor(uvScaled);
@@ -477,9 +480,9 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	//detFactor = deterministicFactor(uvScaled);
 	//backGroundRain += getRainTexture(uvScaled, rainspeed+ detFactor/10.0, detFactor );
 
-	detFactor = deterministicFactor(uv);
-	backGroundRain = getRainTexture(uv, rainspeed, detFactor)* RED;
-	backGroundRain.a = backGroundRain.r;
+	//detFactor = deterministicFactor(uv);
+	//backGroundRain = getRainTexture(uv, rainspeed, detFactor)* RED;
+	//backGroundRain.a = backGroundRain.r;
 	return backGroundRain * 0.1 ;// * GetDeterministicRainColor(uv);	
 }
 
@@ -552,12 +555,12 @@ void main(void)
 	}
 
 	vec2 cylinderUVs = calculateCylinderUV(eyePos, viewDirection, uv);
-
-	accumulatedLightColorRayDownward += drawRainInSpainOnPlane(cylinderUVs,  2.0, 0.5);
+	cylinderUVs = cylinderUVs* 100.0; //scale up
+	accumulatedLightColorRayDownward = drawRainInSpainOnPlane(cylinderUVs,  2.0, 0.5);
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
-		accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
+		//accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
 	}
 
 	vec4 upWardrainColor = origColor;
