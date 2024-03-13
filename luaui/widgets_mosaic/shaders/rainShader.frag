@@ -465,19 +465,19 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	//draw in depth first
 	//DELME Testcode
 	vec4 backGroundRain = vec4(0.0, 0.0,0,0.5);
-	backGroundRain.r = mod(uv, 1.0);
-	backGroundRain.g = mod(uv, 1.0);
+	backGroundRain.r = mod(uv.x, 1.0);
+	backGroundRain.g = mod(uv.y, 1.0);
+	return backGroundRain;
 
-	vec2 uvScaled = uv;
-	float detFactor = deterministicFactor(uvScaled);
-	backGroundRain = getRainTexture(uvScaled, rainspeed, detFactor );
+	float detFactor = deterministicFactor(uv);
+	backGroundRain = getRainTexture(uv, rainspeed, detFactor );
 
 	return backGroundRain ;// * GetDeterministicRainColor(uv);	
 }
 
-struct cylinderUVResult = {
-	vec2 result,
-	bool exists
+struct cylinderUVResult {
+	vec2 result;
+	bool exists;
 };
 
 cylinderUVResult calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, float cylinderDiameter, float cylinderHeight, vec2 uv) 
@@ -503,24 +503,22 @@ cylinderUVResult calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, fl
     // Normalize theta to [0, 1] and height to [0, 1]
     float u = (theta + PI) / (2.0 * PI);
     float v = height / cylinderHeight; // Assuming you know the height of the cylinder
-    value.result=vec2(u, v)
+    value.result= vec2(u, v);
     return value;
 }
 
-float cylinderDiameterArray[4] = {
-100.0,
+
+float cylinderDiameterArray[4] = float[4](100.0,
 200.0,
 400.0, 
-800.0
-}
+800.0);
 
-
-float cylinderHeightArray[4] = {
-100.0,
+float cylinderHeightArray[4] = float[4](100.0,
 200.0,
 400.0, 
-800.0
-}
+800.0);
+
+
 vec4 calculateRainCylinderColors ()
 {
 	for (int i=0; i< 3; i++)
@@ -530,9 +528,11 @@ vec4 calculateRainCylinderColors ()
 		cylinderHeightArray[3-i],  
 		uv); 
 	if (value.exists)
-		vec4 rainDropCol = drawRainInSpainOnPlane(value.result,  2.0, 0.5);
-		if (rainDropCol.a > 0)
-			return rainDropCol; //Early out
+		{
+		vec4 rainDropCol;
+		rainDropCol = drawRainInSpainOnPlane(value.result,  2.0, 0.5);
+		if (rainDropCol.a > 0) return rainDropCol; //Early out
+		}
 	}
 	return BLACK;
 }
@@ -547,7 +547,6 @@ void main(void)
 	vec4 UnitViewNormal = texture(normalunittex, uv);
 	mergeGroundViewNormal(UnitViewNormal);
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-
 
 	AABB box;
 	box.Min = vMinima;

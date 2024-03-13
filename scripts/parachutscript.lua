@@ -141,12 +141,18 @@ function fallingDown()
 
     Spring.UnitAttach(unitID, passengerID, step)
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
-
-    while isPieceAboveGroundOrWater(unitID, center, 15) == true do    
-        x, y, z = Spring.GetUnitPosition(unitID)
+    boolsIsAboveGround, x, z, y, gh =isPieceAboveGround(unitID, center, 15) 
+    while boolsIsAboveGround == true do    
         xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
-        Spring.MoveCtrl.SetPosition(unitID, x + xOff, math.max(y - dropRate, math.max(0, Spring.GetGroundHeight(x,z) + 5)) , z + zOff)
+        oldMoveGoal = moveGoalY
+        moveGoalY =  math.max(y - dropRate, 0)
+        if gh < 0 then 
+            moveGoalY = oldMoveGoal
+        end
+
+        Spring.MoveCtrl.SetPosition(unitID, x + xOff, moveGoalY , z + zOff)
         Sleep(1)
+        boolsIsAboveGround, x, z, y, gh =isPieceAboveGround(unitID, center, 15) 
     end
 
     Spring.UnitDetach(passengerID)
