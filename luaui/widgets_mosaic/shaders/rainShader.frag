@@ -470,60 +470,72 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 
 	vec2 uvScaled = uv;
 	float detFactor = deterministicFactor(uvScaled);
-	//backGroundRain += getRainTexture(uvScaled, rainspeed + detFactor/10.0, detFactor );
-//
-	//uvScaled = uv* (1/8);
-	//detFactor = deterministicFactor(uvScaled);
-	//backGroundRain += getRainTexture(uvScaled, rainspeed+ detFactor/10.0 , detFactor );
-	//
-	//uvScaled = uv* (1/3);
-	//detFactor = deterministicFactor(uvScaled);
-	//backGroundRain += getRainTexture(uvScaled, rainspeed+ detFactor/10.0, detFactor );
+	backGroundRain = getRainTexture(uvScaled, rainspeed, detFactor );
 
-<<<<<<< HEAD
-	uvScaled = uv* (1/8);
-	detFactor = deterministicFactor(uvScaled)
-	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
-	
-	uvScaled = uv* (1/4);
-	detFactor = deterministicFactor(uvScaled)
-	backGroundRain += getRainTexture(uvScaled, rainspeed, detFactor );
-
-	detFactor = deterministicFactor(uv)
-	backGroundRain += getRainTexture(uv, rainspeed, detFactor );
-
-	return (backGroundRain + rainMask) * GetDeterministicRainColor(rainUv);	
-=======
-	//detFactor = deterministicFactor(uv);
-	//backGroundRain = getRainTexture(uv, rainspeed, detFactor)* RED;
-	//backGroundRain.a = backGroundRain.r;
-	return backGroundRain * 0.1 ;// * GetDeterministicRainColor(uv);	
->>>>>>> 8eecd87f0b80bdce12cdd9a7766dcffe356545fe
+	return backGroundRain ;// * GetDeterministicRainColor(uv);	
 }
 
-#define  CYLINDER_DISTANCE 512.0
-#define CYLINDER_HEIGHT 4000.0
-vec2 calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, vec2 uv) 
+struct cylinderUVResult = {
+	vec2 result,
+	bool exists
+};
+
+cylinderUVResult calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, float cylinderDiameter, float cylinderHeight, vec2 uv) 
 {
+	cylinderUVResult value;
+	value.exists = false;
     // Step 1: Calculate the intersection point of the view direction with the cylinder
-    vec3 intersectionPoint = cameraPosition + viewDirection * CYLINDER_DISTANCE;
+    vec3 intersectionPoint = cameraPosition + viewDirection * cylinderDiameter;
 
     // Step 2: Calculate the direction from the camera position to the intersection point
     vec3 directionToIntersection = intersectionPoint - cameraPosition;
 
     // Step 3: Convert direction to cylindrical coordinates
-    float theta = atan(directionToIntersection.y, directionToIntersection.x);
-    float height = directionToIntersection.z;
+    float theta = atan(directionToIntersection.z, directionToIntersection.x);
+    float height = directionToIntersection.y;
+    if (height < cameraPosition.y-cylinderHeight)
+    {
+    	return value; 
+    }
+    value.exists = true;
     
     // Step 4: Calculate the texture UV coordinates
     // Normalize theta to [0, 1] and height to [0, 1]
     float u = (theta + PI) / (2.0 * PI);
-    float v = height / CYLINDER_HEIGHT; // Assuming you know the height of the cylinder
+    float v = height / cylinderHeight; // Assuming you know the height of the cylinder
+    value.result=vec2(u, v)
+    return value;
+}
 
-    return vec2(u, v);
+float cylinderDiameterArray[4] = {
+100.0,
+200.0,
+400.0, 
+800.0
 }
 
 
+float cylinderHeightArray[4] = {
+100.0,
+200.0,
+400.0, 
+800.0
+}
+vec4 calculateRainCylinderColors ()
+{
+	for (int i=0; i< 3; i++)
+	{
+	cylinderUVResult value =  calculateCylinderUV(eyePos,  viewDirection, 
+		cylinderDiameterArray[i], 
+		cylinderHeightArray[3-i],  
+		uv); 
+	if (value.exists)
+		vec4 rainDropCol = drawRainInSpainOnPlane(value.result,  2.0, 0.5);
+		if (rainDropCol.a > 0)
+			return rainDropCol; //Early out
+	}
+	return BLACK;
+}
 
 void main(void)
 {
@@ -569,9 +581,7 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	vec2 cylinderUVs = calculateCylinderUV(eyePos, viewDirection, uv);
-	cylinderUVs = cylinderUVs* 100.0; //scale up
-	accumulatedLightColorRayDownward = drawRainInSpainOnPlane(cylinderUVs,  2.0, 0.5);
+	accumulatedLightColorRayDownward += calculateRainCylinderColors();
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
