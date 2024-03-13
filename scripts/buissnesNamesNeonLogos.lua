@@ -449,6 +449,10 @@ return {
 "Ferro Plastics",
 "Rhodan industires",
 "country garden",
-"Ever green"
-
+"Ever green",
+"Godde Inc",
+"Your happiness is our profit",
+"Your Integrity Will be Safe with Us!",
+"Happy Smiles at Doles Dinnery!",
+"Boeing What goes up must come down",
 }
