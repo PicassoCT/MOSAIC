@@ -411,13 +411,15 @@ function checkForBlackOut()
     Sleep(1000)
     end
 end
-
+boolIsEverChanging= math.random(1,20) == 10
 function nilNeonSigns()
     --free loaded tables
-    brothelNamesNeonSigns = nil
-    casinoNamesNeonSigns = nil
-    buisnessNeonSigns = nil
-    creditNeonSigns = nil
+    if not boolIsEverChanging then
+        brothelNamesNeonSigns = nil
+        casinoNamesNeonSigns = nil
+        buisnessNeonSigns = nil
+        creditNeonSigns = nil
+    end
 end
 
 function RainDrop(pieceID, delayMS, speed)
@@ -750,7 +752,7 @@ function HoloGrams()
           StartThread(holoGramNightTimes, "Japanese", _y_axis)
           StartThread(addJHologramLetters)
         end
-        addHologramLetters(brothelNamesNeonSigns[math.random(1, #brothelNamesNeonSigns)])
+        addHologramLetters(brothelNamesNeonSigns)
         nilNeonSigns()
         return 
     end
@@ -766,7 +768,7 @@ function HoloGrams()
           end
         end           
         if maRa() then
-            addHologramLetters(casinoNamesNeonSigns[math.random(1, #casinoNamesNeonSigns)])         
+            addHologramLetters(casinoNamesNeonSigns)         
             nilNeonSigns()
             return 
         end
@@ -865,16 +867,16 @@ function HoloGrams()
                         Spin(spinLogoPiece,y_axis, math.rad(-42),0)
                     end
                 end
-                addHologramLetters(buisnessNeonSigns[math.random(1, #buisnessNeonSigns)])
+                addHologramLetters(buisnessNeonSigns)
            end
         else
             if maRa() == maRa() then
-                addHologramLetters(creditNeonSigns[math.random(1, #creditNeonSigns)])
+                addHologramLetters(creditNeonSigns)
                 if maRa() then
                     StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
                 end
             else
-                addHologramLetters(buisnessNeonSigns[math.random(1, #buisnessNeonSigns)])
+                addHologramLetters(buisnessNeonSigns)
             end
         end
         nilNeonSigns()
@@ -1007,9 +1009,9 @@ function shapeSymmetry(logo)
      ShowReg(logo)
     end
     if maRa() == maRa() then
-        addHologramLetters(creditNeonSigns[math.random(1,#creditNeonSigns)])
+        addHologramLetters(creditNeonSigns)
     else
-        addHologramLetters(buisnessNeonSigns[math.random(1,#buisnessNeonSigns)])
+        addHologramLetters(buisnessNeonSigns)
     end
 end
 
@@ -1049,10 +1051,10 @@ function showOneOrAll(T)
     end
 end
 
---myMessage = neonSigns[math.random(1,#neonSigns)]
-function addHologramLetters( myMessage)
+function setupMessage(myMessages)
     axis= 2
     startValue = 0
+    myMessage = myMessages[math.random(1,#myMessages)]
     if boolIsCasino  then startValue = 2 end
     if boolIsBrothel  then startValue = 3 end
     boolUpRight = maRa()
@@ -1062,17 +1064,18 @@ function addHologramLetters( myMessage)
         end
     end
     boolSpinning = maRa()
+
     downIndex = 1
-    --echo("Adding Grafiti with message:" ..myMessage)
     lettercounter={}
     stringlength = string.len(myMessage)
     rowIndex= 0
     columnIndex= 0
 
-    val = math.random(5,45)
-    text_spin = piece("text_spin")
     if boolSpinning then
-        Spin(text_spin, y_axis, math.rad(val),0)
+        spinner =  piece("text_spin")
+        reset(spinner)
+        val = math.random(5,45)
+        Spin(spinner, y_axis, math.rad(val),0)
     end
     allLetters = {} 
     posLetters = {}   
@@ -1111,13 +1114,23 @@ function addHologramLetters( myMessage)
             columnIndex= 0
         end
     end
+    return allLetters, posLetters
+end
+
+--myMessage = neonSigns[math.random(1,#neonSigns)]
+function addHologramLetters( myMessages)
+    
+    allLetters, posLetters = setupMessage(myMessages)
 
     if maRa() and maRa() then 
-		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix}
+		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
         --TextAnimation
         while true do
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
             Sleep(10000)
+            if boolIsEverChanging then
+                 allLetters, posLetters = setupMessage(myMessages)
+            end
         end
     end 
 end
@@ -1239,6 +1252,26 @@ function dnaHelix(allLetters)
 	
 end
 
+function circleProject(allLetters, posLetters)
+    circumference = #allLetters * sizeSpacingLetter
+    local radius = circumference / (2 * math.pi)
+    radiant = (math.pi *2)/#allLetters
+    hideTReg(allLetters)
+    resetT(allLetters, 0)
+
+    for i=1,#allLetters do
+        pID=allLetters[i]
+        radiantVal = math.rad(radiant*i)
+        ShowReg(pID)
+        local xr = radius * math.cos(radiantVal)
+        local yr = radius * math.sin(radiantVal)
+
+        Move(pID,x_axis,xr, math.abs(xr)/2.0)
+        Move(pID,z_axis,yr, math.abs(yr)/2.0)
+        Turn(pID,y_axis, radiantVal, 0)
+        Sleep(200)
+    end
+end
 
 function SpiralUpwards(allLetters, posLetters)
 
@@ -1346,6 +1379,7 @@ function CrossLetters(allLetters)
     rest = math.random(4, 16)*500
     Sleep(rest)
 end
+
 
 
 function addJHologramLetters()
