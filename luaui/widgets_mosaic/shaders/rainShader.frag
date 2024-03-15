@@ -484,6 +484,7 @@ cylinderUVResult calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, fl
 {
 	cylinderUVResult value;
 	value.exists = false;
+	value.result = vec2(0.);
     // Step 1: Calculate the intersection point of the view direction with the cylinder
     vec3 intersectionPoint = cameraPosition + viewDirection * cylinderDiameter;
 
@@ -503,7 +504,8 @@ cylinderUVResult calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, fl
     // Normalize theta to [0, 1] and height to [0, 1]
     float u = (theta + PI) / (2.0 * PI);
     float v = height / cylinderHeight; // Assuming you know the height of the cylinder
-    value.result= vec2(u, v);
+    value.result.x = u; 
+    value.result.y = v;
     return value;
 }
 
@@ -531,10 +533,10 @@ vec4 calculateRainCylinderColors ()
 		{
 		vec4 rainDropCol;
 		rainDropCol = drawRainInSpainOnPlane(value.result,  2.0, 0.5);
-		if (rainDropCol.a > 0) return rainDropCol; //Early out
+		if (rainDropCol.a > 0) return vec4(0.);//return rainDropCol; //Early out
 		}
 	}
-	return BLACK;
+	return vec4(0.);
 }
 
 void main(void)
