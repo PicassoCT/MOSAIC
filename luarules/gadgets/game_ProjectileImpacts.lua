@@ -50,8 +50,8 @@ if (gadgetHandler:IsSyncedCode()) then
     end
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
 
-    local targetLaserWeaponDefID = WeaponDefNames["targetlaser"].id
-    Script.SetWatchWeapon(targetLaserWeaponDefID, true)  
+    --local targetLaserWeaponDefID = WeaponDefNames["targetlaser"].id
+    --Script.SetWatchWeapon(targetLaserWeaponDefID, true)  
     local closeCombatWeaponDefID = WeaponDefNames["closecombat"].id
     Script.SetWatchWeapon(closeCombatWeaponDefID, true)  
     local godRodMarkerWeaponDefID = WeaponDefNames["godrodmarkerweapon"].id

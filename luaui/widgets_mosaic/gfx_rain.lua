@@ -221,7 +221,7 @@ function widget:ViewResize()
     errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
 
     widgetHandler:UpdateCallIn("DrawScreenEffects")  
-    widgetHandler:UpdateCallIn("Update")  
+
 end
 widget:ViewResize()
 
@@ -231,7 +231,7 @@ local function init()
     startTimer = Spring.GetTimer()
     Spring.Echo("gfx_rain:Initialize")
     -- abort if not enabled
-
+    widgetHandler:UpdateCallIn("Update")  
     errorOutIfNotInitialized(glCreateShader, "no shader support")
 
     --https://www.shadertoy.com/view/wd2GDG inspiration
@@ -260,6 +260,7 @@ local function init()
             uniformInt = uniformInt,
             uniform = {
                 timePercent = 0,
+                rainPercent= 0,
                 time = diffTime,
                 scale = 0,
                 eyePos = {0, 0, 0}
@@ -334,8 +335,7 @@ local function getDayTime()
     return hours, minutes, seconds, percent
 end
 
-local function isRaining()
-    if true then return true end
+local function isRaining()   
     if boolRainyArea == nil then
         boolRainyArea = isRainyArea()
     end
@@ -365,14 +365,13 @@ local function split(self, delimiter)
 end
 
 function widget:Update(dt)   
-    if boolDebugActive then boolRainActive = true; return end
-    if math.sin(((Spring.GetGameSeconds()%60)/60)*math.pi*2) > 0 then--isRaining() then
-        echo("Its raining")
-        boolRainActive = true
-        rainPercent = math.min(1.0, rainPercent + 0.01)
+    --if boolDebugActive then  return end
+    if isRaining() == true then--isRaining() then
+        Spring.Echo("Its raining "..dt)
+        rainPercent = math.min(1.0, rainPercent + 0.02)
     else
-        boolRainActive = false
-        rainPercent = math.max(0.0, rainPercent - 0.01)
+        Spring.Echo("Its stopping to rain "..dt)
+        rainPercent = math.max(0.0, rainPercent - 0.02)
     end
 end
 
@@ -472,8 +471,6 @@ local function prepare()
 end
 
 local function DrawRain()
-   if boolRainActive == false then return  end
-
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused then
        local timerNow = Spring.GetTimer()
@@ -523,9 +520,6 @@ Draw Rain Reflection once:
 ]]
 
 function widget:DrawWorld()
-    if boolRainActive == false then
-        return  
-    end
 
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused then

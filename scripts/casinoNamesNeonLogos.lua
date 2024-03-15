@@ -187,5 +187,5 @@ return {
 "Mutation Manifesto: Genetic Symphony",
 "Regime Rhythm: Order Opera",
 "Resistance Refrain: Rebellion Rondo",
-"Data Dystopia: Techno Tragedy",
+"Data Dystopia: Techno Tragedy"
 }

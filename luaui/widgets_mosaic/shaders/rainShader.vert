@@ -1,6 +1,7 @@
 #version 150 compatibility
 #line 200001
 
+//Uniforms
 uniform sampler2D depthtex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
@@ -8,21 +9,24 @@ uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
 uniform sampler2D skyboxtex;
 uniform sampler2D raintex;
+
 uniform vec4 lightSources[20];
 
 uniform float time;		
-uniform int maxLightSources;
-uniform vec3 eyePos;
-uniform vec2 viewPortSize;
-uniform vec3 cityCenter;
 uniform float rainDensity;
-uniform mat4 viewProjectionInv;
-uniform mat4 viewInv;
-uniform mat4 viewProjection;
+uniform int maxLightSources;
 uniform float timePercent;
 uniform float rainPercent;
+uniform vec3 eyePos;
 uniform vec3 sundir;
 uniform vec3 suncolor;
+uniform vec3 skycolor;
+
+uniform vec2 viewPortSize;
+uniform vec3 cityCenter;
+uniform mat4 viewProjectionInv;
+uniform mat4 viewProjection;
+uniform mat4 viewInv;
 
 out Data {
 			vec3 fragVertexPosition;

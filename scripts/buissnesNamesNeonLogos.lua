@@ -588,7 +588,7 @@ return {
 " Synchronize mind and machine",
 "Circuitry Correction: SynapseSavior Serum ",
 " Purge the errors from your system",
-"Implant Recovery Program: MindReset Protocol ",,
+"Implant Recovery Program: MindReset Protocol ",
 " Reset to a functional state",
 "Implant Sanity Restoration: NeuroStabilize Therapy ",
 "Stabilize neural pathways",
@@ -611,5 +611,5 @@ return {
 " Harmonize mind and machine",
 "Implant Anomaly Correction: MindFix Protocol ",
 "Fix the anomalies within"
-,
+}
 

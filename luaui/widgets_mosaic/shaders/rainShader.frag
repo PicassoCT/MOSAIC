@@ -599,7 +599,7 @@ void main(void)
 	//}	
 	//else //no Raindrops blended in
 	//{
-		gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,rainPercent); 
+		gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,1.0 - rainPercent); 
 	//}
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));

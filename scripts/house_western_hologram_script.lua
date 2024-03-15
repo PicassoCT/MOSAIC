@@ -8,20 +8,11 @@ myDefID = Spring.GetUnitDefID(unitID)
 local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == myDefID
 local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == myDefID
 local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == myDefID 
-local buisnessNeonSigns = {}
-local casinoNamesNeonSigns = {}
-local brothelNamesNeonSigns = {}
-local creditNeonSigns =  include('creditNamesNeonLogos.lua')
-if boolIsBuisness then
-    buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
-end
-if boolIsCasino then
-    casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
-end
-if boolIsBrothel then
-    brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
-end
 
+local creditNeonSigns =  include('creditNamesNeonLogos.lua')
+local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
+local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
+local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 
 local hours  =0
 local minutes=0
@@ -1128,7 +1119,7 @@ end
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessages)
-    
+    assert(myMessages)
     allLetters, posLetters = setupMessage(myMessages)
 
     if maRa() and maRa() then 
