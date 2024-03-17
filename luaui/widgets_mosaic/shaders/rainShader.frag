@@ -75,7 +75,7 @@ uniform sampler2D raintex;
 uniform vec4 lightSources[20];
 
 uniform float time;		
-uniform float rainDensity;
+
 uniform int maxLightSources;
 uniform float timePercent;
 uniform float rainPercent;
@@ -236,8 +236,6 @@ vec4 GetDeterministicRainColor( vec2 uvx)
 	return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent()  );
 }
 
-
-
 bool IsInGridPoint(vec3 pos, float size, float space)
 {
 	return ((mod(pos.x, space) < size) &&   (mod(pos.y, space) < size)  && (mod(pos.z, space) < size)) ;
@@ -260,7 +258,8 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
 	return vec4(vec3(dotProduct), 0.75);
 }
 
-vec2 calculateCubemapUV(vec3 direction) {
+vec2 calculateCubemapUV(vec3 direction) 
+{
     vec3 absDirection = abs(direction);
     float ma;
     vec2 uvs;
@@ -369,8 +368,6 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 #define VOLUME_TAA_MAX_REUSE       0.9
 #define VOLUME_TAA_MAX_DIST        0.5
 
-
-
 vec4 RayMarchCompose(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
@@ -436,7 +433,6 @@ vec4 GetRainCoronaFromScreenTex()
 	return NONE;
 }
 
-
 void mergeGroundViewNormal(vec4 UnitViewNormal)
 {
 	if (UnitViewNormal.rgb != BLACK.rgb && UnitViewNormal.a > 0.5) 
@@ -471,7 +467,6 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 
 	float detFactor = deterministicFactor(uv);
 	backGroundRain = getRainTexture(uv, rainspeed, detFactor );
-
 	return backGroundRain ;// * GetDeterministicRainColor(uv);	
 }
 
@@ -480,25 +475,20 @@ struct cylinderUVResult {
 	bool exists;
 };
 
-cylinderUVResult calculateCylinderUV(vec3 cameraPosition, vec3 viewDirection, float cylinderDiameter, float cylinderHeight, vec2 uv) 
+cylinderUVResult calculateCylinderUV(vec3 viewDirection, float cylinderDiameter, float cylinderHeight, vec2 uv) 
 {
 	cylinderUVResult value;
-	value.exists = false;
+	value.exists = true;
 	value.result = vec2(0.);
     // Step 1: Calculate the intersection point of the view direction with the cylinder
-    vec3 intersectionPoint = cameraPosition + viewDirection * cylinderDiameter;
+    vec3 intersectionPoint = viewDirection * cylinderDiameter;
 
     // Step 2: Calculate the direction from the camera position to the intersection point
-    vec3 directionToIntersection = intersectionPoint - cameraPosition;
+    vec3 directionToIntersection = intersectionPoint ;
 
     // Step 3: Convert direction to cylindrical coordinates
     float theta = atan(directionToIntersection.z, directionToIntersection.x);
     float height = directionToIntersection.y;
-    if (height < cameraPosition.y-cylinderHeight)
-    {
-    	return value; 
-    }
-    value.exists = true;
     
     // Step 4: Calculate the texture UV coordinates
     // Normalize theta to [0, 1] and height to [0, 1]
@@ -525,7 +515,7 @@ vec4 calculateRainCylinderColors ()
 {
 	for (int i=0; i< 3; i++)
 	{
-	cylinderUVResult value =  calculateCylinderUV(eyePos,  viewDirection, 
+	cylinderUVResult value =  calculateCylinderUV(  viewDirection, 
 		cylinderDiameterArray[i], 
 		cylinderHeightArray[3-i],  
 		uv); 
@@ -533,7 +523,7 @@ vec4 calculateRainCylinderColors ()
 		{
 		vec4 rainDropCol;
 		rainDropCol = drawRainInSpainOnPlane(value.result,  2.0, 0.5);
-		if (rainDropCol.a > 0) return vec4(0.);//return rainDropCol; //Early out
+		if (rainDropCol.a > 0) return rainDropCol;//return rainDropCol; //Early out
 		}
 	}
 	return vec4(0.);
@@ -599,7 +589,7 @@ void main(void)
 	//}	
 	//else //no Raindrops blended in
 	//{
-		gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,1.0 - rainPercent); 
+		gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,1.0 -rainPercent); 
 	//}
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));

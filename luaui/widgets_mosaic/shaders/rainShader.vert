@@ -13,7 +13,6 @@ uniform sampler2D raintex;
 uniform vec4 lightSources[20];
 
 uniform float time;		
-uniform float rainDensity;
 uniform int maxLightSources;
 uniform float timePercent;
 uniform float rainPercent;

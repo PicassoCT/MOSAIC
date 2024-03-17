@@ -1849,9 +1849,9 @@ function getGameConfig()
                     [UnitDefNames["innercitydeco_inter1"].id] = true,
                     [UnitDefNames["innercitydeco_inter2"].id] = true,
                     [UnitDefNames["innercitydeco_inter3"].id] = true,
-                    [UnitDefNames["innercitydeco_arab"].id] = true,
-                    [UnitDefNames["innercitydeco_western"].id] = true,
-                    [UnitDefNames["innercitydeco_asian"].id] = true,
+                    --[UnitDefNames["innercitydeco_arab"].id] = true,
+                    --[UnitDefNames["innercitydeco_western"].id] = true,
+                    --[UnitDefNames["innercitydeco_asian"].id] = true,
                 }
             end
 

@@ -23,7 +23,6 @@ local rainShader = nil
 local shaderFilePath = "luaui/widgets_mosaic/shaders/"
 local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
 local DAYLENGTH = 28800
-local rainDensity = 0.5
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -132,7 +131,6 @@ local uniformSunColor
 local uniformSkyColor
 local uniformEyePos
 local uniformTime
-local uniformRainDensity
 local uniformViewPortSize
 
 --------------------------------------------------------------------------------
@@ -289,7 +287,6 @@ local function init()
     uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
-    uniformRainDensity              = glGetUniformLocation(rainShader, "rainDensity")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
 
@@ -366,12 +363,11 @@ end
 
 function widget:Update(dt)   
     --if boolDebugActive then  return end
-    if isRaining() == true then--isRaining() then
-        Spring.Echo("Its raining "..dt)
-        rainPercent = math.min(1.0, rainPercent + 0.02)
+    if isRaining() == true   then--isRaining() then
+        Spring.Echo("Its raining "..rainPercent)
+        rainPercent = math.min(1.0, rainPercent + 0.005)
     else
-        Spring.Echo("Its stopping to rain "..dt)
-        rainPercent = math.max(0.0, rainPercent - 0.02)
+        rainPercent = math.max(0.0, rainPercent - 0.005)
     end
 end
 
@@ -428,7 +424,7 @@ local function updateUniforms()
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
     glUniform(uniformEyePos, spGetCameraPosition())
-    glUniform(uniformRainDensity, rainDensity )
+
     glUniform(shaderMaxLightSrcLoc, math.floor(lightSourceIndex))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
