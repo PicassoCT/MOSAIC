@@ -450,19 +450,17 @@ void mergeGroundViewNormal(vec4 UnitViewNormal)
 
 vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
 {
-	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)* 0.001; 
-	vec2 rainUv = uv * scaleFactor;
+	//vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)* 0.001; 
+	vec2 rainUv = uv ;//* scaleFactor;
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	return texture2D(raintex, rainUv);
 }
 
 vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 {	
-
 	vec4 backGroundRain = vec4(0.0, 0.0,0,0.5);
 
-	float detFactor = deterministicFactor(uv);
-	backGroundRain = getRainTexture(uv, rainspeed, 0.0 );
+	backGroundRain = getRainTexture(uv, rainspeed, 0.0 + timeOffset);
  	
 	return backGroundRain;// * GetDeterministicRainColor(uv);	
 }
@@ -471,33 +469,45 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 
 vec2 calculateCylinderUV(vec3 direction, float uscale, float vscale) 
 {
-	direction = normalize(direction);
-    // Step 1: Convert direction vector to spherical coordinates
-    float theta = atan(direction.y, direction.x);
-    float phi = acos(direction.z);
+     vec3 cylinderAxis = vec3(0.0, 1.0, 0.0);
 
-    // Step 2: Map spherical coordinates to UV coordinates
-    float u = (theta + PI) / (2.0 * PI);
-    float v = phi / PI;
+     vec3 rotationAxis = cross(viewDirection, cylinderAxis);
 
-    return vec2(u*uscale, v*vscale);
+     float rotationAngle = acos(dot(viewDirection, cylinderAxis));
+
+     vec3 alignedDirection = normalize(mat3(cos(rotationAngle) + rotationAxis.x * rotationAxis.x * (1.0 - cos(rotationAngle)),
+                                            rotationAxis.x * rotationAxis.y * (1.0 - cos(rotationAngle)) - rotationAxis.z * sin(rotationAngle),
+                                            rotationAxis.x * rotationAxis.z * (1.0 - cos(rotationAngle)) + rotationAxis.y * sin(rotationAngle),
+                                            rotationAxis.y * rotationAxis.x * (1.0 - cos(rotationAngle)) + rotationAxis.z * sin(rotationAngle),
+                                            cos(rotationAngle) + rotationAxis.y * rotationAxis.y * (1.0 - cos(rotationAngle)),
+                                            rotationAxis.y * rotationAxis.z * (1.0 - cos(rotationAngle)) - rotationAxis.x * sin(rotationAngle),
+                                            rotationAxis.z * rotationAxis.x * (1.0 - cos(rotationAngle)) - rotationAxis.y * sin(rotationAngle),
+                                            rotationAxis.z * rotationAxis.y * (1.0 - cos(rotationAngle)) + rotationAxis.x * sin(rotationAngle),
+                                            cos(rotationAngle) + rotationAxis.z * rotationAxis.z * (1.0 - cos(rotationAngle))) * viewDirection);
+
+    float angle = atan(alignedDirection.x, alignedDirection.z);
+
+    float u = (angle + PI) / (2.0 * PI);
+
+    // Map the height of the pixel to the range [0, 1]
+    // You may need to adjust this based on your specific setup
+    float v = gl_FragCoord.y / resolution.y;
+
+    return vec2(u *uscale, v * vscale);
 }
 
 
 vec4 debug_uv_color(vec2 uv) {
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.35);// Use UV coordinates to generate a color
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
 }
 
 vec4 calculateRainCylinderColors ()
 {
-	for (int i=0; i< 3; i++)
-	{
-		float scale = 10.0;
-		vec2 uvs = calculateCylinderUV(viewDirection, scale, scale); 	
-		return debug_uv_color(uvs);
-		//return drawRainInSpainOnPlane(uvs,  2.0, 0.5);//return rainDropCol; //Early out
-	}
-	return vec4(0.);
+	float scale = 1.0;
+	vec2 uvs = calculateCylinderUV(viewDirection, scale, scale); 	
+	return debug_uv_color(uvs);
+	float randDet = 0.0;
+	//return drawRainInSpainOnPlane(uvs,  0.001, randDet);//return rainDropCol; //Early out
 }
 
 void main(void)
