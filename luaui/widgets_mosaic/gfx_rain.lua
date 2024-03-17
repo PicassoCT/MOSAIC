@@ -96,6 +96,7 @@ local shaderLightSourcescLoc  = {}
 local cityCenterLoc
 local boolRainyArea = false
 local maxLightSources = 20
+local rainChangeIntervalSeconds = 90
 local lightSourceIndex = 0
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
@@ -363,12 +364,15 @@ end
 
 function widget:Update(dt)   
     --if boolDebugActive then  return end
+    local percentChange  = rainChangeIntervalSeconds/dt
     if isRaining() == true   then--isRaining() then
         Spring.Echo("Its raining "..rainPercent)
-        rainPercent = math.min(1.0, rainPercent + 0.005)
+
+        rainPercent = math.min(1.0, rainPercent + percentChange)
     else
-        rainPercent = math.max(0.0, rainPercent - 0.005)
+        rainPercent = math.max(0.0, rainPercent - percentChange)
     end
+    rainPercent = 1.0
 end
 
 function widget:Shutdown()

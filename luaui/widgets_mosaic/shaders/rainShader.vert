@@ -38,5 +38,5 @@ void main(void)
 
     fragVertexPosition = gl_Vertex.xyz;
     gl_Position = gl_Vertex;
-    viewDirection = normalize(gl_Position.xyz - eyePos);
+    viewDirection = (inverse(viewProjection) * vec4(0, 0, 1.0, 1.0)).xyz;
 }

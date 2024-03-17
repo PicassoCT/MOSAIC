@@ -1,7 +1,7 @@
 #version 150 compatibility	
 #line 100001										 
 //Defines //////////////////////////////////////////////////////////
-#define PI 3.14159265359
+#define PI 3.1415926535897932384626433832795
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 20.0
 #define E_CONST 2.718281828459045235360287471352
@@ -458,73 +458,44 @@ vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
 
 vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 {	
-	//draw in depth first
-	//DELME Testcode
+
 	vec4 backGroundRain = vec4(0.0, 0.0,0,0.5);
-	backGroundRain.r = mod(uv.x, 1.0);
-	backGroundRain.g = mod(uv.y, 1.0);
-	return backGroundRain;
 
 	float detFactor = deterministicFactor(uv);
-	backGroundRain = getRainTexture(uv, rainspeed, detFactor );
-	return backGroundRain ;// * GetDeterministicRainColor(uv);	
+	backGroundRain = getRainTexture(uv, rainspeed, 0.0 );
+ 	
+	return backGroundRain;// * GetDeterministicRainColor(uv);	
 }
 
-struct cylinderUVResult {
-	vec2 result;
-	bool exists;
-};
 
-cylinderUVResult calculateCylinderUV(vec3 viewDirection, float cylinderDiameter, float cylinderHeight, vec2 uv) 
+
+vec2 calculateCylinderUV(vec3 direction, float uscale, float vscale) 
 {
-	cylinderUVResult value;
-	value.exists = true;
-	value.result = vec2(0.);
-    // Step 1: Calculate the intersection point of the view direction with the cylinder
-    vec3 intersectionPoint = viewDirection * cylinderDiameter;
+	direction = normalize(direction);
+    // Step 1: Convert direction vector to spherical coordinates
+    float theta = atan(direction.y, direction.x);
+    float phi = acos(direction.z);
 
-    // Step 2: Calculate the direction from the camera position to the intersection point
-    vec3 directionToIntersection = intersectionPoint ;
-
-    // Step 3: Convert direction to cylindrical coordinates
-    float theta = atan(directionToIntersection.z, directionToIntersection.x);
-    float height = directionToIntersection.y;
-    
-    // Step 4: Calculate the texture UV coordinates
-    // Normalize theta to [0, 1] and height to [0, 1]
+    // Step 2: Map spherical coordinates to UV coordinates
     float u = (theta + PI) / (2.0 * PI);
-    float v = height / cylinderHeight; // Assuming you know the height of the cylinder
-    value.result.x = u; 
-    value.result.y = v;
-    return value;
+    float v = phi / PI;
+
+    return vec2(u*uscale, v*vscale);
 }
 
 
-float cylinderDiameterArray[4] = float[4](100.0,
-200.0,
-400.0, 
-800.0);
-
-float cylinderHeightArray[4] = float[4](100.0,
-200.0,
-400.0, 
-800.0);
-
+vec4 debug_uv_color(vec2 uv) {
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.35);// Use UV coordinates to generate a color
+}
 
 vec4 calculateRainCylinderColors ()
 {
 	for (int i=0; i< 3; i++)
 	{
-	cylinderUVResult value =  calculateCylinderUV(  viewDirection, 
-		cylinderDiameterArray[i], 
-		cylinderHeightArray[3-i],  
-		uv); 
-	if (value.exists)
-		{
-		vec4 rainDropCol;
-		rainDropCol = drawRainInSpainOnPlane(value.result,  2.0, 0.5);
-		if (rainDropCol.a > 0) return rainDropCol;//return rainDropCol; //Early out
-		}
+		float scale = 10.0;
+		vec2 uvs = calculateCylinderUV(viewDirection, scale, scale); 	
+		return debug_uv_color(uvs);
+		//return drawRainInSpainOnPlane(uvs,  2.0, 0.5);//return rainDropCol; //Early out
 	}
 	return vec4(0.);
 }
@@ -572,7 +543,7 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	accumulatedLightColorRayDownward += calculateRainCylinderColors();
+	accumulatedLightColorRayDownward = calculateRainCylinderColors();
 
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
