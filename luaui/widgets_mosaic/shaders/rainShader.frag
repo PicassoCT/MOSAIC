@@ -64,7 +64,8 @@ const vec3 upwardVector = vec3(0.0, 1.0, 0.0);
 float depthValue = 0;
 
 //Uniforms
-uniform sampler2D depthtex;
+uniform sampler2D modelDepthTex;
+uniform sampler2D mapDepthTex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
@@ -89,6 +90,7 @@ uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 viewInv;
+uniform mat4 viewMatrix;
 
 
 //Struc Definition				//////////////////////////////////////////////////////////
@@ -126,7 +128,7 @@ vec3 worldPos;
 vec4 dephtValueAtPixel;
 vec3 pixelDir;
 vec4 origColor;
-vec3 groundViewNormal;
+vec3 viewNormal;
 float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
 
@@ -326,16 +328,16 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
 	bool rivuletRunning = false;
 	float groundMixFactor = 1.0;
-	if (groundViewNormal.g < Y_NORMAL_CUTOFFVALUE) 
+	if (viewNormal.g < Y_NORMAL_CUTOFFVALUE) 
 	{
 		//rivulets
-		if (!(groundViewNormal.g  > 0.95)) return NONE;
+		if (!(viewNormal.g  > 0.95)) return NONE;
 
 
-		rivuletRunning = getRivuletMask(groundViewNormal); //TODO get ground coord 
+		rivuletRunning = getRivuletMask(viewNormal); //TODO get ground coord 
 		if (!rivuletRunning) return NONE;
 
-		groundMixFactor= (abs(groundViewNormal.r) + abs(groundViewNormal.g) + abs(groundViewNormal.b))/1.73205;
+		groundMixFactor= (abs(viewNormal.r) + abs(viewNormal.g) + abs(viewNormal.b))/1.73205;
 	}
 
 	//return checkers(pixelPos, time/10.0);
@@ -382,7 +384,7 @@ vec4 RayMarchCompose(in vec3 start, in vec3 end)
 											  
 void GetWorldPos()
 {
-	dephtValueAtPixel = texture2D(depthtex, uv);
+	dephtValueAtPixel = texture2D(mapDepthTex, uv);
 	vec4 ppos;
 	ppos.xyz = vec3(uv, dephtValueAtPixel.r) * 2. - 1.; 
 	ppos.a   = 1.;
@@ -433,19 +435,15 @@ vec4 GetRainCoronaFromScreenTex()
 	return NONE;
 }
 
-void mergeGroundViewNormal(vec4 UnitViewNormal)
+vec3 mergeGroundViewNormal()
 {
-	if (UnitViewNormal.rgb != BLACK.rgb && UnitViewNormal.a > 0.5) 
-	{			
-		groundViewNormal = UnitViewNormal.rgb;
-		/*
-		TODO: If in silouett
-		if (UnitViewNormal.g  > 0.95)
-		{
-			groundViewNormal = UnitViewNormal.rgb;
-		}
-		*/		
-	}
+	float modelDepth = texture(modelDepthTex, uv).r;
+	float mapDepth = texture(mapDepthTex, uv).r;
+	float modelOccludesMap = float(modelDepth < mapDepth);
+	vec3 mapNormal = texture(normaltex, uv).xyz;
+	vec3 modelNormal = texture(normalunittex, uv).xyz;
+
+	return mix(mapNormal, modelNormal, modelOccludesMap);
 }
 
 vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
@@ -491,7 +489,7 @@ vec2 calculateCylinderUV(vec3 direction, float uscale, float vscale)
 
     // Map the height of the pixel to the range [0, 1]
     // You may need to adjust this based on your specific setup
-    float v = gl_FragCoord.y / resolution.y;
+    float v = gl_FragCoord.y / viewPortSize.y;
 
     return vec2(u *uscale, v * vscale);
 }
@@ -503,11 +501,12 @@ vec4 debug_uv_color(vec2 uv) {
 
 vec4 calculateRainCylinderColors ()
 {
+	//return vec4(normalize(viewDirection), 0.8);
 	float scale = 1.0;
 	vec2 uvs = calculateCylinderUV(viewDirection, scale, scale); 	
-	return debug_uv_color(uvs);
+	//return debug_uv_color(uvs);
 	float randDet = 0.0;
-	//return drawRainInSpainOnPlane(uvs,  0.001, randDet);//return rainDropCol; //Early out
+	return drawRainInSpainOnPlane(uvs,  0.001, randDet);//return rainDropCol; //Early out
 }
 
 void main(void)
@@ -516,9 +515,8 @@ void main(void)
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
-	groundViewNormal = texture(normaltex, uv).xyz;
-	vec4 UnitViewNormal = texture(normalunittex, uv);
-	mergeGroundViewNormal(UnitViewNormal);
+
+	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 
 	AABB box;
@@ -554,7 +552,7 @@ void main(void)
 	}
 
 	accumulatedLightColorRayDownward = calculateRainCylinderColors();
-
+	gl_FragColor =accumulatedLightColorRayDownward;
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
 		//accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
@@ -570,7 +568,7 @@ void main(void)
 	//}	
 	//else //no Raindrops blended in
 	//{
-		gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,1.0 -rainPercent); 
+		//gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,1.0 -rainPercent); 
 	//}
 
 	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));

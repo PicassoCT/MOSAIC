@@ -83,7 +83,8 @@ local spGetDrawFrame         = Spring.GetDrawFrame
 local boolRainActive = false
 local pausedTime = 0
 local lastFrametime = Spring.GetTimer()
-local depthtex = nil
+local mapDepthTex = nil
+local modelDepthTex = nil
 local noisetex = nil
 local screentex = nil
 local normaltex = nil
@@ -146,10 +147,13 @@ end
 function widget:ViewResize()
     vsx, vsy = gl.GetViewSizes()
 
-    if (depthtex ~= nil ) then
-        glDeleteTexture(depthtex)
+    if (modelDepthTex ~= nil ) then
+        glDeleteTexture(modelDepthTex)
     end
 
+    if (mapDepthTex ~= nil ) then
+        glDeleteTexture(mapDepthTex)
+    end
 
      if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
@@ -162,7 +166,7 @@ function widget:ViewResize()
         glDeleteTexture(normalunittex)
     end
 
-    depthtex =
+    modelDepthTex =
         glCreateTexture(
             vsx,
             vsy,
@@ -173,7 +177,20 @@ function widget:ViewResize()
             mag_filter = GL.NEAREST
         }
     )
-    errorOutIfNotInitialized(depthtex, "depthtex not existing")    
+    errorOutIfNotInitialized(modelDepthTex, "modelDepthTex not existing")    
+
+    mapDepthTex =
+        glCreateTexture(
+            vsx,
+            vsy,
+        {
+            border = false,
+            format = GL_DEPTH_COMPONENT32,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST
+        }
+    )
+    errorOutIfNotInitialized(mapDepthTex, "mapDepthTex not existing")    
 
     screentex =
         glCreateTexture(
@@ -241,14 +258,15 @@ local function init()
     --Spring.Echo("FragmentShader".. fragmentShader)
     --Spring.Echo("VertexShader".. vertexShader)
     local uniformInt = {
-        depthtex = 0,
-        noisetex = 1,
-        screentex = 2,
-        normaltex = 3,
-        normalunittex= 4,
-        raincanvastex = 5,
-        skyboxtex = 6,
-        raintex = 7
+        modelDepthTex = 0,
+        mapDepthTex = 1,
+        noisetex = 2,
+        screentex = 3,
+        normaltex = 4,
+        normalunittex= 5,
+        raincanvastex = 6,
+        skyboxtex = 7,
+        raintex = 8
     }
 
     rainShader =
@@ -293,6 +311,7 @@ local function init()
 
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
     uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
+    uniformViewMatrix               = glGetUniformLocation(rainShader, 'viewMatrix')
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
@@ -437,6 +456,7 @@ local function updateUniforms()
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
+    glUniformMatrix(uniformViewMatrix     , "view")
     for i=1,maxLightSources, 2 do
       glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
       glUniform(shaderLightSourcescLoc[i + 1] ,0.0, 0.0, 0.0)
@@ -461,8 +481,10 @@ end
 
 local function prepare()
     glBlending(false)
-    glCopyToTexture(depthtex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
-    glTexture(depthtex)
+    
+    glTexture(modelDepthTex,  "$model_gbuffer_zvaltex")
+    glCopyToTexture(mapDepthTex, 0, 0, 0, 0, vsx, vsy) 
+    glTexture(mapDepthTex,"$map_gbuffer_normtex")
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
     glTexture(3, "$map_gbuffer_normtex")
