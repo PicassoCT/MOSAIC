@@ -273,9 +273,9 @@ function restartHologram()
           location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
         for i=1, #sloganNamesNeonSigns do
             if maRa() then
-                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Cityname>",location_cityname)
+                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<CityName>",location_cityname)
             else
-                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Cityname>",location_citypart)
+                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<CityName>",location_citypart)
             end
         end
 
