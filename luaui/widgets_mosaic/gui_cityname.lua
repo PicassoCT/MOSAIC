@@ -49,16 +49,7 @@ local function setAnchorsRelative(nvx, nvy)
 end
 
 local mapName = Game.mapName
-function widget:Initialize()
-  startFrame = Spring.GetGameFrame() + 100
-  endFrame = startFrame + (15*30)
-  displayStaticFrameIntervallLength = math.ceil(0.3*(endFrame - startFrame))
-  displayStaticFrame = startFrame+ displayStaticFrameIntervallLength
-  vsx,vsy = Spring.GetViewGeometry()
-  setAnchorsRelative(vsx,vsy)
 
-  culture = Spring.GetGameRulesParam ("culture") 
-end
 
 function widget:Shutdown()
 end
@@ -7639,17 +7630,6 @@ end
 local boolStartSound = false
 local longestString = 2
 
-function widget:Initialize()
-    local hash = getDetermenisticHash()
-    local region    = GetRegionByHash(hash)
-    local country   = getCountryNameByRegion(region, hash)
-    local citypart  = getNeighbourhoodName(country, hash)
-    local province  = getProvinceNameBy(persistenCountry ,hash)
-    local cityname  = getCityNameByProvince(getCacheBy("province"), hash)
-
-    local locationString = "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
-    Spring.SendLuaRulesMsg(locationString)
-end
 
 function widget:DrawScreenEffects(vsx, vsy)
   local currentFrame = Spring.GetGameFrame()
@@ -7725,5 +7705,26 @@ function widget:DrawScreenEffects(vsx, vsy)
 
 
   end
+end
+
+function widget:Initialize()
+  startFrame = Spring.GetGameFrame() + 100
+  endFrame = startFrame + (15*30)
+  displayStaticFrameIntervallLength = math.ceil(0.3*(endFrame - startFrame))
+  displayStaticFrame = startFrame+ displayStaticFrameIntervallLength
+  vsx,vsy = Spring.GetViewGeometry()
+  setAnchorsRelative(vsx,vsy)
+
+  culture = Spring.GetGameRulesParam ("culture") 
+
+  local hash = getDetermenisticHash()
+  local region    = GetRegionByHash(hash)
+  local country   = getCountryNameByRegion(region, hash)
+  local citypart  = getNeighbourhoodName(country, hash)
+  local province  = getProvinceNameBy(persistenCountry ,hash)
+  local cityname  = getCityNameByProvince(getCacheBy("province"), hash)
+
+  local locationString = "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
+  Spring.SendLuaRulesMsg(locationString)
 end
 

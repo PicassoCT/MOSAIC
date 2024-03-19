@@ -53,6 +53,8 @@ function GetRegionByHash(mapHash)
       return resultMap[region]
   end
 
+  function none()
+
   function getLocation()
         location = GG.Location
         if location then
@@ -87,7 +89,7 @@ function GetCultureByRegion(mapName)
     return getCultureByRegionOrDefault(mapHash, percentages)
 end
 
-function getCityName()
+
 
 function getInstanceCultureOrDefaultToo() 
     if GG.InstanceCulture then return GG.InstanceCulture end

@@ -468,12 +468,15 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 vec2 calculateCylinderUV(vec3 direction, float uscale, float vscale) 
 {
      vec3 cylinderAxis = vec3(0.0, 1.0, 0.0);
+    
+    // Transform the view direction into world space
+    vec3 worldViewDirection = (viewMatrix * vec4(viewDirection, 0.0)).xyz;
 
-     vec3 rotationAxis = cross(viewDirection, cylinderAxis);
+    vec3 rotationAxis = cross(worldViewDirection, cylinderAxis);
 
-     float rotationAngle = acos(dot(viewDirection, cylinderAxis));
+    float rotationAngle = acos(dot(worldViewDirection, cylinderAxis));
 
-     vec3 alignedDirection = normalize(mat3(cos(rotationAngle) + rotationAxis.x * rotationAxis.x * (1.0 - cos(rotationAngle)),
+    vec3 alignedDirection = normalize(mat3(cos(rotationAngle) + rotationAxis.x * rotationAxis.x * (1.0 - cos(rotationAngle)),
                                             rotationAxis.x * rotationAxis.y * (1.0 - cos(rotationAngle)) - rotationAxis.z * sin(rotationAngle),
                                             rotationAxis.x * rotationAxis.z * (1.0 - cos(rotationAngle)) + rotationAxis.y * sin(rotationAngle),
                                             rotationAxis.y * rotationAxis.x * (1.0 - cos(rotationAngle)) + rotationAxis.z * sin(rotationAngle),
@@ -501,12 +504,16 @@ vec4 debug_uv_color(vec2 uv) {
 
 vec4 calculateRainCylinderColors ()
 {
+
+	//if (abs(normalize(viewDirection).y) > 0.8) return NONE;
 	//return vec4(normalize(viewDirection), 0.8);
 	float scale = 1.0;
-	vec2 uvs = calculateCylinderUV(viewDirection, scale, scale); 	
+	//vec2 uvs = calculateCylinderUV(viewDirection, scale, scale); 	
+
 	//return debug_uv_color(uvs);
 	float randDet = 0.0;
-	return drawRainInSpainOnPlane(uvs,  0.001, randDet);//return rainDropCol; //Early out
+
+	return drawRainInSpainOnPlane(normalize(viewDirection).xy,  0.0001, randDet);//return rainDropCol; //Early out
 }
 
 void main(void)

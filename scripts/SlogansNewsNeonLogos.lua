@@ -57,6 +57,7 @@ return {
     "We are all in this together, says billionaire halfway around the world",
     "Suspected exponential terror cell in <CityName>",
     "Plans to build a REDACTED are underway says Antagon",
-    "World threatends to bomb <CityName> should rocket fly",
+    "World threatends to bomb <CityName> should antagon launch",
+    "Body dragged through the streets of <CityName>"
     
 }
