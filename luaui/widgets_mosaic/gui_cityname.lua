@@ -7639,6 +7639,18 @@ end
 local boolStartSound = false
 local longestString = 2
 
+function widget:Initialize()
+    local hash = getDetermenisticHash()
+    local region    = GetRegionByHash(hash)
+    local country   = getCountryNameByRegion(region, hash)
+    local citypart  = getNeighbourhoodName(country, hash)
+    local province  = getProvinceNameBy(persistenCountry ,hash)
+    local cityname  = getCityNameByProvince(getCacheBy("province"), hash)
+
+    local locationString = "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
+    Spring.SendLuaRulesMsg(locationString)
+end
+
 function widget:DrawScreenEffects(vsx, vsy)
   local currentFrame = Spring.GetGameFrame()
   if currentFrame >= startFrame and currentFrame < endFrame + fadeOutPhaseFrames then 

@@ -53,8 +53,13 @@ function GetRegionByHash(mapHash)
       return resultMap[region]
   end
 
-  function getCityName()
-    assert(todo_GetVariable)
+  function getLocation()
+        location = GG.Location
+        if location then
+            return location.region, location.country, location.province, location.cityname, location.citypart
+        else
+            return "location.region", "location.country"," location.province"," location.cityname"," location.citypart"
+        end
   end
 
 

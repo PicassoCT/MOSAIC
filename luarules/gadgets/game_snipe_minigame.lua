@@ -665,6 +665,17 @@ if (gadgetHandler:IsSyncedCode()) then
     GG.DisplayedSniperIconParent = {}
     local lastSniperIconID
     function gadget:RecvLuaMsg(msg, playerID)
+        if msg and string.find(msg, "LOCATION:") then
+            local location  = split(msg, "|")
+            GG.Location = {
+                --  "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
+                region = location[2]
+                country = location[3]
+                province = location[4]
+                cityname = location[5]
+                citypart = location[6]
+            }
+        end
         if msg and string.find(msg, "SPWN") then
           --  echo("game_snipe_minigame.lua: Recieved SPWN message 1")
             t = split(msg, "|")

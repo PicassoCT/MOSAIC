@@ -13,9 +13,7 @@ local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SloganNewsNeonLogos.lua')
-for i=1, #sloganNamesNeonSigns do
-    sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Cityname>", getCityName())
-end
+
 
 local hours  =0
 local minutes=0
@@ -268,7 +266,22 @@ function hideSubSpins(pieceID)
     end
 end
 
+boolJustOnce= true
 function restartHologram()
+    Sleep(500)
+        if boolIsEverChanging and boolJustOnce then
+          location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+        for i=1, #sloganNamesNeonSigns do
+            if maRa() then
+                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Cityname>",location_cityname)
+            else
+                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Cityname>",location_citypart)
+            end
+        end
+
+        buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
+        boolJustOnce = false
+    end
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
     resetAll(unitID)
@@ -286,9 +299,7 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    for name, tables in pairs(TableOfPiecesGroups)do
-    --    echo("Hologram: TableOfPiecesGroups["..name .. "].size = ".. count(tables))
-    end
+
     restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
@@ -418,14 +429,11 @@ function checkForBlackOut()
     end
 end
 boolIsEverChanging= math.random(1,20) == 10 or true
-if boolIsEverChanging then
-    buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
-end
+
 function nilNeonSigns()
     --free loaded tables
         brothelNamesNeonSigns = nil
         casinoNamesNeonSigns = nil
-        buisnessNeonSigns = nil
         creditNeonSigns = nil
 
 end
