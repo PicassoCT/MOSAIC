@@ -53,6 +53,10 @@ function GetRegionByHash(mapHash)
       return resultMap[region]
   end
 
+  function getCityName()
+    assert(todo_GetVariable)
+  end
+
 
   function getCultureByRegionOrDefault(hash, percentages)
       dice = getDeterministicRandom(hash, 100)
@@ -77,6 +81,8 @@ function GetCultureByRegion(mapName)
 
     return getCultureByRegionOrDefault(mapHash, percentages)
 end
+
+function getCityName()
 
 function getInstanceCultureOrDefaultToo() 
     if GG.InstanceCulture then return GG.InstanceCulture end
