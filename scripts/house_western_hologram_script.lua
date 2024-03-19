@@ -1126,11 +1126,11 @@ end
 function restoreMessageOriginalPosition(message, posLetters)
     foreach(message,
         function(id)
-            Move(id, 1, posLetters[1], 0)
-            Move(id,2, posLetters[2], 0)
-            Move(id, 3, posLetters[3], 0)
-        end)
-
+            Move(id, 1, posLetters[id][1], 0)
+            Move(id, 2, posLetters[id][2], 0)
+            Move(id, 3, posLetters[id][3], 0)
+            end
+        )
 end
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]

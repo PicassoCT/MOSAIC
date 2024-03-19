@@ -2,7 +2,8 @@
 #line 200001
 
 //Uniforms
-uniform sampler2D depthtex;
+uniform sampler2D modelDepthTex;
+uniform sampler2D mapDepthTex;
 uniform sampler2D noisetex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
@@ -26,6 +27,7 @@ uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 viewInv;
+uniform mat4 viewMatrix;
 
 out Data {
 			vec3 fragVertexPosition;
@@ -38,6 +40,12 @@ void main(void)
 
     fragVertexPosition = gl_Vertex.xyz;
     gl_Position = gl_Vertex;
-    viewDirection = normalize((inverse(viewProjection) * vec4(0, 0, 1.0, 1.0)).xyz);
+    //viewDirection = normalize(gl_Position.xyz - eyePos);
+    //viewDirection = normalize((viewProjectionInv * vec4(0, 0, 1.0, 1.0)).xyz);
+    //viewDirection = gl_Normal.xyz; 
+    //viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
+ 	//viewDirection      = normalize( (gl_ModelViewMatrix * gl_Vertex).xyz - eyePos);
+ 	viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
+
 
 }
