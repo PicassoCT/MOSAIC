@@ -58,6 +58,10 @@ return {
     "Suspected exponential terror cell in <CityName>",
     "Plans to build a REDACTED are underway says Antagon",
     "World threatends to bomb <CityName> should antagon launch",
-    "Body dragged through the streets of <CityName>"
-    
+    "Body dragged through the streets of <CityName>",
+    "<Suspect> suspected of terrorism" ,
+    "citizen <Suspect> wounded in firefight" ,
+    "<Suspect> wins famous online championship",
+    "City hunts <Suspect>. Antagon connection suspected ",
+    "Scandal <Suspect> involved. Next News full hour"
 }

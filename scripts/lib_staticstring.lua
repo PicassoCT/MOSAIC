@@ -30,7 +30,11 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "High Street",
                 "Station Street",
                 "Main Street",
-                "Grand Canal Way"
+                "Grand Canal Way",
+                "MacMansion Road",
+                "Woolworth alley",
+                "Buy N Large Ring",
+                "Wallmartstreet"
             },
             Europe = {
                 "Deichstraße",
@@ -393,7 +397,9 @@ end
 
 
 function setIndividualCivilianName(id, culture)
-    description = "Civilian : "..getRandomCultureNames(culture) .. " <colateral>"
+    name = getRandomCultureNames(culture)
+    GG.LastAssignedName = name
+    description = "Civilian : ".. name .. " <colateral>"
     Spring.SetUnitTooltip(id, description)
    return description
 end

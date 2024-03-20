@@ -463,43 +463,6 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 	return backGroundRain;// * GetDeterministicRainColor(uv);	
 }
 
-/*
-
-void main()
-{
-    // Define the center of the cylinder
-    vec3 cylinderCenter = eyePos + viewDirection * cylinderHeight * 0.5;
-
-    // Calculate the vector from the camera to the current fragment
-    vec3 fragmentToEye = normalize(eyePos - vec3(TexCoords, 0.0));
-
-    // Calculate the vector from the fragment to the center of the cylinder
-    vec3 fragmentToCenter = normalize(cylinderCenter - vec3(TexCoords, 0.0));
-
-    // Calculate the distance from the fragment to the center of the cylinder
-    float distanceToCenter = length(cylinderCenter - vec3(TexCoords, 0.0));
-
-    // Calculate the radius of the cylinder
-    float cylinderRadius = cylinderDiameter * 0.5;
-
-    // Determine if the fragment is inside the cylinder
-    bool insideCylinder = distanceToCenter <= cylinderRadius;
-
-    // Determine the orientation of the cylinder
-    vec3 upVector = vec3(0.0, 0.0, 1.0); // Assuming cylinder is always oriented upright
-
-    // Calculate the angle between the fragment's direction and the up vector
-    float angle = dot(fragmentToCenter, upVector);
-
-    // Apply red-green chessboard pattern
-    vec2 chessboardCoords = abs(mod(TexCoords * 10.0, 2.0) - 1.0);
-
-    // If inside the cylinder and upright, color green, otherwise color red
-    vec3 color = (insideCylinder && abs(angle) > 0.95) ? vec3(chessboardCoords.x, chessboardCoords.y, 0.0) : vec3(1.0, 0.0, 0.0);
-
-    FragColor = vec4(color, 1.0);
-}
-*/
 
 vec4 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDiameter, float uscale, float vscale) 
 {
@@ -537,7 +500,7 @@ vec4 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDia
     //vec2 cylinderUV = vec2(atan(fragmentToCenter.y, fragmentToCenter.x) / (2.0 * PI) + 0.5, (fragmentToCenter.z + 0.5) * cylinderHeight);
 	//cylinderUV.u *= uscale;
 	//cylinderUV.v *= vscale;
-//
+
     //return cylinderUV;
 }
 

@@ -271,7 +271,11 @@ function restartHologram()
     Sleep(500)
         if boolIsEverChanging and boolJustOnce then
           location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+          lastAssignedName = GG.LastAssignedName
         for i=1, #sloganNamesNeonSigns do
+            if lastAssignedName then
+                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Suspect>", lastAssignedName )
+            end
             if maRa() then
                 sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<CityName>",location_cityname)
             else
