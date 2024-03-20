@@ -53,7 +53,7 @@ function GetRegionByHash(mapHash)
       return resultMap[region]
   end
 
-  function none()
+
 
   function getLocation()
         location = GG.Location

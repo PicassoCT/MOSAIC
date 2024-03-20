@@ -12,7 +12,7 @@ local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == my
 local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
-local sloganNamesNeonSigns = include('SloganNewsNeonLogos.lua')
+local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 
 
 local hours  =0
@@ -274,12 +274,12 @@ function restartHologram()
           lastAssignedName = GG.LastAssignedName
         for i=1, #sloganNamesNeonSigns do
             if lastAssignedName then
-                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<Suspect>", lastAssignedName )
+                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<Suspect>", lastAssignedName )
             end
             if maRa() then
-                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<CityName>",location_cityname)
+                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_cityname)
             else
-                sloganNamesNeonSigns[i] = string.replace(sloganNamesNeonSigns[i], "<CityName>",location_citypart)
+                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_citypart)
             end
         end
 

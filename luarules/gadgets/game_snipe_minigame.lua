@@ -669,11 +669,11 @@ if (gadgetHandler:IsSyncedCode()) then
             local location  = split(msg, "|")
             GG.Location = {
                 --  "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
-                region = location[2]
-                country = location[3]
-                province = location[4]
-                cityname = location[5]
-                citypart = location[6]
+                region = location[2],
+                country = location[3],
+                province = location[4],
+                cityname = location[5],
+                citypart = location[6],
             }
         end
         if msg and string.find(msg, "SPWN") then

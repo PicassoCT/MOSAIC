@@ -448,8 +448,8 @@ vec3 mergeGroundViewNormal()
 
 vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
 {
-	//vec2 scaleFactor = vec2(screenScaleFactorY, 1.0)* 0.001; 
-	vec2 rainUv = uv ;//* scaleFactor;
+	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0); 
+	vec2 rainUv = uv * scaleFactor;
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	return texture2D(raintex, rainUv);
 }
@@ -460,23 +460,23 @@ vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
 
 	backGroundRain = getRainTexture(uv, rainspeed, 0.0 + timeOffset);
  	
-	return backGroundRain;// * GetDeterministicRainColor(uv);	
+	return backGroundRain* GetDeterministicRainColor(uv);	
 }
 
 
-vec4 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDiameter, float uscale, float vscale) 
+vec2 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDiameter, float uscale, float vscale) 
 {
 	 // Define the center of the cylinder
     vec3 cylinderCenter = eyePos + viewDirection * cylinderHeight * 0.5;
 
     // Calculate the vector from the camera to the current fragment
-    vec3 fragmentToEye = normalize(eyePos - vec3(TexCoords, 0.0));
+    vec3 fragmentToEye = normalize(eyePos - vec3(uv, 0.0));
 
     // Calculate the vector from the fragment to the center of the cylinder
-    vec3 fragmentToCenter = normalize(cylinderCenter - vec3(TexCoords, 0.0));
+    vec3 fragmentToCenter = normalize(cylinderCenter - vec3(uv, 0.0));
 
     // Calculate the distance from the fragment to the center of the cylinder
-    float distanceToCenter = length(cylinderCenter - vec3(TexCoords, 0.0));
+    float distanceToCenter = length(cylinderCenter - vec3(uv, 0.0));
 
     // Calculate the radius of the cylinder
     float cylinderRadius = cylinderDiameter * 0.5;
@@ -491,17 +491,17 @@ vec4 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDia
     float angle = dot(fragmentToCenter, upVector);
 
     // Apply red-green chessboard pattern
-    vec2 chessboardCoords = abs(mod(TexCoords * 10.0, 2.0) - 1.0);
+    vec2 chessboardCoords = abs(mod(uv * 10.0, 2.0) - 1.0);
 
     // If inside the cylinder and upright, color green, otherwise color red
-    vec3 color = (insideCylinder && abs(angle) > 0.95) ? GREEN.rgb : RED.rgb;
-    return vec4(color, 1.0);
+   // vec3 color = (insideCylinder && abs(angle) > 0.95) ? GREEN.rgb : RED.rgb;
+   // return vec4(color, 1.0);
 
-    //vec2 cylinderUV = vec2(atan(fragmentToCenter.y, fragmentToCenter.x) / (2.0 * PI) + 0.5, (fragmentToCenter.z + 0.5) * cylinderHeight);
-	//cylinderUV.u *= uscale;
-	//cylinderUV.v *= vscale;
+    vec2 cylinderUV = vec2(atan(fragmentToCenter.y, fragmentToCenter.x) / (2.0 * PI) + 0.5, (fragmentToCenter.z + 0.5) * cylinderHeight);
+	cylinderUV.x *=  uscale;
+	cylinderUV.y *=  vscale;
 
-    //return cylinderUV;
+    return cylinderUV;
 }
 
 
@@ -513,14 +513,14 @@ vec4 calculateRainCylinderColors ()
 {
 	//if (abs(normalize(viewDirection).y) > 0.8) return NONE;
 	//return vec4(normalize(viewDirection), 0.8);
-	float scale = 1.0;
+	float scale = 100.0;
 	//vec2 uvs =
-	return calculateCylinderUV(viewDirection, 2048.0, 512.0,  scale, scale); 	
+	vec2 resultUV=  calculateCylinderUV(viewDirection, 2048.0 * 2 * PI, 2048.0,  scale, scale); 	
 
 	//return debug_uv_color(uvs);
 	float randDet = 0.0;
 
-	//return drawRainInSpainOnPlane(normalize(viewDirection).xy,  0.0001, randDet);
+	return drawRainInSpainOnPlane(resultUV,  1, randDet);
 }
 
 void main(void)
