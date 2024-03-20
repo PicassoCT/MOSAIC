@@ -531,7 +531,7 @@ vec4 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDia
     vec2 chessboardCoords = abs(mod(TexCoords * 10.0, 2.0) - 1.0);
 
     // If inside the cylinder and upright, color green, otherwise color red
-    vec3 color = (insideCylinder && abs(angle) > 0.95) ? vec3(chessboardCoords.x, chessboardCoords.y, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 color = (insideCylinder && abs(angle) > 0.95) ? GREEN.rgb : RED.rgb;
     return vec4(color, 1.0);
 
     //vec2 cylinderUV = vec2(atan(fragmentToCenter.y, fragmentToCenter.x) / (2.0 * PI) + 0.5, (fragmentToCenter.z + 0.5) * cylinderHeight);
@@ -548,7 +548,6 @@ vec4 debug_uv_color(vec2 uv) {
 
 vec4 calculateRainCylinderColors ()
 {
-
 	//if (abs(normalize(viewDirection).y) > 0.8) return NONE;
 	//return vec4(normalize(viewDirection), 0.8);
 	float scale = 1.0;
