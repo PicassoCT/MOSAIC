@@ -45,7 +45,7 @@ void main(void)
     //viewDirection = gl_Normal.xyz; 
     //viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
  	//viewDirection      = normalize( (gl_ModelViewMatrix * gl_Vertex).xyz - eyePos);
- 	viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
+ 	viewDirection = eyePos - (viewMatrix * vec4(gl_Vertex.xyz, 1.0)).xyz;
 
 
 }
