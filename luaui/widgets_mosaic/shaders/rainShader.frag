@@ -490,13 +490,6 @@ vec2 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDia
     // Calculate the angle between the fragment's direction and the up vector
     float angle = dot(fragmentToCenter, upVector);
 
-    // Apply red-green chessboard pattern
-    vec2 chessboardCoords = abs(mod(uv * 10.0, 2.0) - 1.0);
-
-    // If inside the cylinder and upright, color green, otherwise color red
-   // vec3 color = (insideCylinder && abs(angle) > 0.95) ? GREEN.rgb : RED.rgb;
-   // return vec4(color, 1.0);
-
     vec2 cylinderUV = vec2(atan(fragmentToCenter.y, fragmentToCenter.x) / (2.0 * PI) + 0.5, (fragmentToCenter.z + 0.5) * cylinderHeight);
 	cylinderUV.x *=  uscale;
 	cylinderUV.y *=  vscale;
