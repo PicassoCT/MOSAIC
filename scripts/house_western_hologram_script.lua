@@ -13,6 +13,7 @@ local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
+local brothelsloganNamesNeonSigns = include('SlogansBrothelNeonLogos.lua')
 
 
 local hours  =0
@@ -277,22 +278,30 @@ end
 boolJustOnce= true
 function restartHologram()
     Sleep(500)
-        if boolIsEverChanging and boolJustOnce then
-            location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
-      
-            for i=1, #sloganNamesNeonSigns do
-                if lastAssignedName then
-                    sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<Suspect>", getDramatisPersona())
-                end
-                if maRa() then
-                    sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_cityname)
-                else
-                    sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_citypart)
-                end
+
+    if boolIsEverChanging and boolJustOnce then
+        location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+
+        if boolIsBrothel then 
+            for i=1, #brothelsloganNamesNeonSigns do
+                brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
             end
-            buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
-            boolJustOnce = false
+             brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
+             brothelsloganNamesNeonSigns = nil
         end
+  
+        for i=1, #sloganNamesNeonSigns do
+            sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
+            if maRa() then
+                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_cityname)
+            else
+                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_citypart)
+            end
+        end
+        buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
+        sloganNamesNeonSigns= nil
+        boolJustOnce = false
+    end
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
     resetAll(unitID)
@@ -443,10 +452,20 @@ boolIsEverChanging= math.random(1,20) == 10 or true
 
 function nilNeonSigns()
     --free loaded tables
-        brothelNamesNeonSigns = nil
+    if boolIsBrothel then
         casinoNamesNeonSigns = nil
         creditNeonSigns = nil
+    end
 
+    if boolIsBuisness then
+        brothelNamesNeonSigns = nil
+        casinoNamesNeonSigns = nil
+    end
+
+    if boolIsCasino then
+        brothelNamesNeonSigns = nil
+        creditNeonSigns = nil
+    end 
 end
 
 function RainDrop(pieceID, delayMS, speed)
