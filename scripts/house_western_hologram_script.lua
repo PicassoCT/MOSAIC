@@ -266,26 +266,33 @@ function hideSubSpins(pieceID)
     end
 end
 
+function getDramatisPersona()
+    if maRa() then
+        return getRandomPlayerName()
+    else
+        return GG.LastAssignedName or "Annonymous"
+    end
+end
+
 boolJustOnce= true
 function restartHologram()
     Sleep(500)
         if boolIsEverChanging and boolJustOnce then
-          location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
-          lastAssignedName = GG.LastAssignedName
-        for i=1, #sloganNamesNeonSigns do
-            if lastAssignedName then
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<Suspect>", lastAssignedName )
+            location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+      
+            for i=1, #sloganNamesNeonSigns do
+                if lastAssignedName then
+                    sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<Suspect>", getDramatisPersona())
+                end
+                if maRa() then
+                    sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_cityname)
+                else
+                    sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_citypart)
+                end
             end
-            if maRa() then
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_cityname)
-            else
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<CityName>", location_citypart)
-            end
+            buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
+            boolJustOnce = false
         end
-
-        buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
-        boolJustOnce = false
-    end
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
     resetAll(unitID)
