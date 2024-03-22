@@ -39,13 +39,10 @@ void main(void)
 	//if cam goes upwards go to raindrop shader
 
     fragVertexPosition = gl_Vertex.xyz;
-    gl_Position = gl_Vertex;
-    //viewDirection = normalize(gl_Position.xyz - eyePos);
-    //viewDirection = normalize((viewProjectionInv * vec4(0, 0, 1.0, 1.0)).xyz);
-    //viewDirection = gl_Normal.xyz; 
-    //viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
- 	//viewDirection      = normalize( (gl_ModelViewMatrix * gl_Vertex).xyz - eyePos);
- 	viewDirection = eyePos - (viewMatrix * vec4(gl_Vertex.xyz, 1.0)).xyz;
 
+    gl_Position = gl_Vertex;
+
+    vec4 worldPosition =  gl_ModelViewMatrix * gl_Position;
+    viewDirection = normalize(worldPosition.xyz -eyePos);
 
 }

@@ -39,5 +39,6 @@ return {,
     "Why resist temptation, <suspect>? Our establishment offers everything you desire and more.",
     "Life's too short for regrets, <suspect>. Come inside and let us show you a good time.",
     "Ready for an adventure, <suspect>? Our establishment is waiting to fulfill your every desire.",
-    "Thirsty? Refresh here <suspect>"
+    "Thirsty? Refresh here <suspect>",
+    "Hello sailor <suspect>"
 }
