@@ -13,7 +13,7 @@ local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
-local brothelsloganNamesNeonSigns = include('SlogansBrothelNeonLogos.lua')
+local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 
 
 local hours  =0
