@@ -39,5 +39,7 @@ void main(void)
 	//if cam goes upwards go to raindrop shader
     gl_Position = gl_Vertex;
     //procues a noralized vector showing the camera direction
-    viewDirection = normalize(gl_Normal.xyz);  
+    //vec4 worldPosition =  gl_ModelViewMatrix * gl_Position;
+    viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
+    //viewDirection = normalize(viewProjectionInv* vec4(eyeDir,1)).xyz;
 }

@@ -446,12 +446,10 @@ vec3 mergeGroundViewNormal()
 	return mix(mapNormal, modelNormal, modelOccludesMap);
 }
 
-vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
+vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
-	vec2 scaleFactor = vec2(screenScaleFactorY, 1.0); 
-	vec2 rainUv = uv * scaleFactor;
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-	return texture2D(raintex, rainUv);
+	return (texture2D(raintex, rainUv));
 }
 
 
@@ -460,32 +458,23 @@ vec4 debug_uv_color(vec2 uv) {
     return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
 }
 
-vec4 calculateRainCylinderColors ()
-{
-	float scale = 1.0;
-	   // Convert uv to a direction vector in camera space
-    vec3 rayDir = normalize(vec3(uv, -1.0)); // Assuming the near plane is at -1
+vec4 drawRainInSpainOnPlane( float rainspeed)
+{	
+  	vec3 viewDir = viewDirection;
+    float phi = atan(viewDir.x, viewDir.x);
+    float theta = acos(viewDir.z);
 
-    // Calculate the intersection point with the plane
-    // Define the plane in camera space (you can adjust the parameters accordingly)
-    vec3 planeNormal = vec3(0.0, 0.0, 1.0); // Vertical plane normal
-    vec3 planePoint = vec3(0.0, 0.0, 0.0);  // Point on the plane (adjust as needed)
+    // Map spherical coordinates to UV space
+    float u = (phi + PI) / (2.0 * PI);
+    float v = theta / PI;
 
-    // Calculate the intersection point using ray-plane intersection formula
-    float denom = dot(planeNormal, rayDir);
-    if (abs(denom) > 0.0001) { // Ensure ray is not parallel to the plane
-        float t = dot(planePoint - eyePos, planeNormal) / denom;
-        vec3 intersectionPoint = eyePos + t * rayDir;
+    vec2 rainUV = vec2(u * 100,v * 100);
 
-        // Convert intersection point back to uv coordinates on the plane
-        vec2 verticalUV = vec2(intersectionPoint.x, intersectionPoint.y); // Assuming plane is aligned with xy plane
-
-      return NONE + getRainTexture( verticalUV*0.01, 1.0, 0);	
-    }
-    
-    // Return a default value if ray is parallel to the plane
-    return NONE;
+	vec4 raindropColor = getRainTexture(rainUV, 0.1, 0);
+ 	
+	return vec4(raindropColor.rgb, 0.75);// * GetDeterministicRainColor(rainUV) ;	
 }
+
 
 void main(void)
 {
@@ -529,7 +518,7 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	accumulatedLightColorRayDownward = calculateRainCylinderColors();
+	accumulatedLightColorRayDownward = drawRainInSpainOnPlane(1.0);
 	gl_FragColor =accumulatedLightColorRayDownward;
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{
