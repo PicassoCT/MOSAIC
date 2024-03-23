@@ -266,12 +266,14 @@ function hideSubSpins(pieceID)
         hideTReg(TableOfPiecesGroups[subSpinPieceName]) 
     end
 end
-
+    
+rPlayerName = getRandomPlayerName()
 function getDramatisPersona()
-    if maRa() then
-        return getRandomPlayerName()
+
+    if maRa() and rPlayerName then
+        return rPlayerName
     else
-        return GG.LastAssignedName or "Annonymous"
+        return GG.LastAssignedName or "ANON"
     end
 end
 
@@ -448,7 +450,7 @@ function checkForBlackOut()
     Sleep(1000)
     end
 end
-boolIsEverChanging= math.random(1,20) == 10 or true
+boolIsEverChanging= math.random(1,10) == 5 
 
 function nilNeonSigns()
     --free loaded tables
@@ -1095,7 +1097,19 @@ function showOneOrAll(T)
     end
 end
 
+function hideResetAllPieces()
+    letters = {"A","B","C","D","E","F","G","H","I","J","K","M","N","L","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
+    for i=1, #letters do
+        local letter = letters[i]
+        if TableOfPiecesGroups[letter] then
+            resetT(TableOfPiecesGroups[letter])
+            hideTReg(TableOfPiecesGroups[letter])
+        end
+    end
+end
+
 function setupMessage(myMessages)
+    hideResetAllPieces()
     axis= 2
     startValue = 0
     myMessage = myMessages[math.random(1,#myMessages)]
@@ -1173,14 +1187,13 @@ end
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessages)  
+    assert(myMessages)
     allLetters, posLetters = setupMessage(myMessages)
 
     if maRa() and maRa() then 
 		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
         --TextAnimation
-        if boolIsEverChanging == false then
-            nilNeonSigns()
-        end
+
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
@@ -1194,21 +1207,6 @@ end
 
 backdropAxis = x_axis
 spindropAxis = y_axis
-function randRestLetters(allLetters,posLetters)
-    hideTReg(allLetters)
-    resetT(allLetters)
-
-    interVall = math.random(1,15)*1000
-    Sleep(interVall)
-    foreach(allLetters,
-            function(id)
-              for axis=1,3 do
-                Move(id, axis, posLetters[id][axis], 0)
-               end
-               ShowReg(id)
-            end)
-end
-
 function randomFLickerLetters(allLetters, posLetters)
     errorDrift = math.random(2,7)
     flickerIntervall = math.ceil(1000/25)
