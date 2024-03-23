@@ -12,9 +12,9 @@ local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == my
 local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
+local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
-
 
 local hours  =0
 local minutes=0
@@ -289,7 +289,7 @@ function restartHologram()
                 brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
             end
              brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
-             brothelsloganNamesNeonSigns = nil
+             assert(brothelNamesNeonSigns)
         end
   
         for i=1, #sloganNamesNeonSigns do
@@ -301,7 +301,7 @@ function restartHologram()
             end
         end
         buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
-        sloganNamesNeonSigns= nil
+        assert(buisnessNeonSigns)
         boolJustOnce = false
     end
     Signal(SIG_CORE)
@@ -450,25 +450,8 @@ function checkForBlackOut()
     Sleep(1000)
     end
 end
-boolIsEverChanging= math.random(1,10) == 5 
 
-function nilNeonSigns()
-    --free loaded tables
-    if boolIsBrothel then
-        casinoNamesNeonSigns = nil
-        creditNeonSigns = nil
-    end
-
-    if boolIsBuisness then
-        brothelNamesNeonSigns = nil
-        casinoNamesNeonSigns = nil
-    end
-
-    if boolIsCasino then
-        brothelNamesNeonSigns = nil
-        creditNeonSigns = nil
-    end 
-end
+boolIsEverChanging= math.random(1,10) < 3 
 
 function RainDrop(pieceID, delayMS, speed)
 	if not pieceID then return end
@@ -768,7 +751,9 @@ end
 
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
-
+    assert(brothelNamesNeonSigns)
+    assert(buisnessNeonSigns)
+    assert(buisnessNeonSigns)
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
     rotatorTable[#rotatorTable+1] = piece("buisness_spin")
@@ -1109,6 +1094,7 @@ function hideResetAllPieces()
 end
 
 function setupMessage(myMessages)
+    assert(myMessages)
     hideResetAllPieces()
     axis= 2
     startValue = 0
@@ -1187,7 +1173,7 @@ end
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessages)  
-    assert(myMessages)
+
     allLetters, posLetters = setupMessage(myMessages)
 
     if maRa() and maRa() then 

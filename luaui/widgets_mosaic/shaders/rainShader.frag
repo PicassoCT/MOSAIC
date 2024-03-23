@@ -81,6 +81,7 @@ uniform int maxLightSources;
 uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
+uniform vec3 eyeDir;
 uniform vec3 sundir;
 uniform vec3 suncolor;
 uniform vec3 skycolor;
@@ -104,7 +105,6 @@ vec4  color + id
 
 
 in Data {
-			vec3 fragVertexPosition;
 			vec3 viewDirection;			
 		 };
 
@@ -454,48 +454,6 @@ vec4 getRainTexture(vec2 uv, float rainspeed, float timeOffset)
 	return texture2D(raintex, rainUv);
 }
 
-vec4 drawRainInSpainOnPlane(vec2 uv, float rainspeed, float timeOffset)
-{	
-	vec4 backGroundRain = vec4(0.0, 0.0,0,0.5);
-
-	backGroundRain = getRainTexture(uv, rainspeed, 0.0 + timeOffset);
- 	
-	return backGroundRain* GetDeterministicRainColor(uv);	
-}
-
-
-vec2 calculateCylinderUV(vec3 direction, float cylinderHeight, float cylinderDiameter, float uscale, float vscale) 
-{
-	 // Define the center of the cylinder
-    vec3 cylinderCenter = eyePos + viewDirection * cylinderHeight * 0.5;
-
-    // Calculate the vector from the camera to the current fragment
-    vec3 fragmentToEye = normalize(eyePos - vec3(uv, 0.0));
-
-    // Calculate the vector from the fragment to the center of the cylinder
-    vec3 fragmentToCenter = normalize(cylinderCenter - vec3(uv, 0.0));
-
-    // Calculate the distance from the fragment to the center of the cylinder
-    float distanceToCenter = length(cylinderCenter - vec3(uv, 0.0));
-
-    // Calculate the radius of the cylinder
-    float cylinderRadius = cylinderDiameter * 0.5;
-
-    // Determine if the fragment is inside the cylinder
-    bool insideCylinder = distanceToCenter <= cylinderRadius;
-
-    // Determine the orientation of the cylinder
-    vec3 upVector = vec3(0.0, 0.0, 1.0); // Assuming cylinder is always oriented upright
-
-    // Calculate the angle between the fragment's direction and the up vector
-    float angle = dot(fragmentToCenter, upVector);
-
-    vec2 cylinderUV = vec2(atan(fragmentToCenter.y, fragmentToCenter.x) / (2.0 * PI) + 0.5, (fragmentToCenter.z + 0.5) * cylinderHeight);
-	cylinderUV.x *=  uscale;
-	cylinderUV.y *=  vscale;
-
-    return cylinderUV;
-}
 
 
 vec4 debug_uv_color(vec2 uv) {
@@ -504,16 +462,29 @@ vec4 debug_uv_color(vec2 uv) {
 
 vec4 calculateRainCylinderColors ()
 {
-	//if (abs(normalize(viewDirection).y) > 0.8) return NONE;
-	//return vec4(normalize(viewDirection), 0.8);
-	float scale = 100.0;
-	//vec2 uvs =
-	vec2 resultUV=  calculateCylinderUV(viewDirection, 2048.0 * 2 * PI, 2048.0,  scale, scale); 	
+	float scale = 1.0;
+	   // Convert uv to a direction vector in camera space
+    vec3 rayDir = normalize(vec3(uv, -1.0)); // Assuming the near plane is at -1
 
-	//return debug_uv_color(uvs);
-	float randDet = 0.0;
+    // Calculate the intersection point with the plane
+    // Define the plane in camera space (you can adjust the parameters accordingly)
+    vec3 planeNormal = vec3(0.0, 0.0, 1.0); // Vertical plane normal
+    vec3 planePoint = vec3(0.0, 0.0, 0.0);  // Point on the plane (adjust as needed)
 
-	return drawRainInSpainOnPlane(resultUV,  1, randDet);
+    // Calculate the intersection point using ray-plane intersection formula
+    float denom = dot(planeNormal, rayDir);
+    if (abs(denom) > 0.0001) { // Ensure ray is not parallel to the plane
+        float t = dot(planePoint - eyePos, planeNormal) / denom;
+        vec3 intersectionPoint = eyePos + t * rayDir;
+
+        // Convert intersection point back to uv coordinates on the plane
+        vec2 verticalUV = vec2(intersectionPoint.x, intersectionPoint.y); // Assuming plane is aligned with xy plane
+
+      return NONE + getRainTexture( verticalUV*0.01, 1.0, 0);	
+    }
+    
+    // Return a default value if ray is parallel to the plane
+    return NONE;
 }
 
 void main(void)

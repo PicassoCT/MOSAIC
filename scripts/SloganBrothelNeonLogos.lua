@@ -18,7 +18,7 @@ return {
     "Cum inside, <suspect>, and let us cater to your every whim.",
     "Remember the last time you fucked her into oblvion <suspect>",
     "Eager and waiting.",
-    " Drooling for the pounding",
+    " Astounding, yet Drooling for the pounding",
     "Do you still have those scratchmarks <suspect>",
     "Feeling lonely, <suspect>?",
     " Our girls are here to keep you company and make you feel alive <suspect>.",
@@ -67,12 +67,12 @@ return {
     "Feeling adventurous, <suspect>?",
     "World ends, go out with a bang <suspect>",
     "You won't find satisfaction elsewhere, <suspect>.",
-    "She can swallow a whole soysausage <suspect> ",
+    "She can swallow a whole bannana <suspect> ",
     "Looking for companionship, <suspect>? ",
     "She seduce you <suspect>",
     "We saw you look <suspect>. Hard times",
     "Ready for an adventure, <suspect>?",
     " Our establishment is waiting to fulfill your every desire.",
     "Thirsty? Enter the oasis <suspect>",
-    "Hello sailor <suspect>. "
+    "Hello sailor <suspect>."
 }

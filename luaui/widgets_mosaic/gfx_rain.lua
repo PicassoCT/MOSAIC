@@ -75,6 +75,7 @@ local spGetCameraVectors     = Spring.GetCameraVectors
 local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
+local spGetCameraDirection   = Spring.GetCameraDirection
 
 
 --------------------------------------------------------------------------------
@@ -132,6 +133,7 @@ local uniformSundir
 local uniformSunColor
 local uniformSkyColor
 local uniformEyePos
+local unformEyeDirection
 local uniformTime
 local uniformViewPortSize
 
@@ -280,7 +282,8 @@ local function init()
                 rainPercent= 0,
                 time = diffTime,
                 scale = 0,
-                eyePos = {0, 0, 0}
+                eyePos = {0, 0, 0},
+                eyeDir = {0, 0, 0}
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
@@ -307,6 +310,7 @@ local function init()
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
+    unformEyeDirection            = glGetUniformLocation(rainShader, "eyeDir")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
 
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
@@ -447,12 +451,13 @@ local function updateUniforms()
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
     glUniform(uniformEyePos, spGetCameraPosition())
+    glUniform(unformEyeDirection, spGetCameraDirection ( ) )
 
     glUniform(shaderMaxLightSrcLoc, math.floor(lightSourceIndex))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
-    glTexture(7, rainPicPath)
+    glTexture(8, rainPicPath)
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")

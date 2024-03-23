@@ -21,6 +21,7 @@ uniform vec3 eyePos;
 uniform vec3 sundir;
 uniform vec3 suncolor;
 uniform vec3 skycolor;
+uniform vec3 eyeDir;
 
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
@@ -30,19 +31,13 @@ uniform mat4 viewInv;
 uniform mat4 viewMatrix;
 
 out Data {
-			vec3 fragVertexPosition;
 			vec3 viewDirection;
 		};
  
 void main(void)
 {	
 	//if cam goes upwards go to raindrop shader
-
-    fragVertexPosition = gl_Vertex.xyz;
-
     gl_Position = gl_Vertex;
-
-    vec4 worldPosition =  gl_ModelViewMatrix * gl_Position;
-    viewDirection = normalize(worldPosition.xyz -eyePos);
-
+    //procues a noralized vector showing the camera direction
+    viewDirection = normalize(gl_Normal.xyz);  
 }
