@@ -2133,8 +2133,8 @@ function resetAll(unitID)
         WaitForMoves(v)
     end
 end
--- >Reset a Table of Pieces at speed
 
+-- >Reset a Table of Pieces at speed
 function resetT(tableName, speed, boolShowAll, boolWait, boolIstantUpdate,
                 interValStart, interValEnd)
     lboolWait = boolWait or false
