@@ -446,21 +446,21 @@ vec3 mergeGroundViewNormal()
 	return mix(mapNormal, modelNormal, modelOccludesMap);
 }
 
+vec4 debug_uv_color(vec2 uv) {
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
+}
+
 vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	return (texture2D(raintex, rainUv));
 }
 
-
-
-vec4 debug_uv_color(vec2 uv) {
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
-}
-
 vec4 drawRainInSpainOnPlane( float rainspeed)
 {	
-  	vec3 viewDir = viewDirection;
+	float scaleFactor = 1.0;
+	float rainSpeed = 0.1;
+  	vec3 viewDir = viewDirection.xzy;
     float phi = atan(viewDir.x, viewDir.x);
     float theta = acos(viewDir.z);
 
@@ -468,13 +468,12 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
     float u = (phi + PI) / (2.0 * PI);
     float v = theta / PI;
 
-    vec2 rainUV = vec2(u * 100,v * 100);
+    vec2 rainUV =  vec2(u * scaleFactor,v * scaleFactor);
 
-	vec4 raindropColor = getRainTexture(rainUV, 0.1, 0);
+	vec4 raindropColor = getRainTexture(uv, 0.1, 0);
  	
 	return vec4(raindropColor.rgb, 0.75);// * GetDeterministicRainColor(rainUV) ;	
 }
-
 
 void main(void)
 {
