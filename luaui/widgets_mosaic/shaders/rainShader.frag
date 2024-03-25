@@ -449,9 +449,7 @@ vec3 mergeGroundViewNormal()
 	return worldNormal;
 }
 
-vec4 debug_uv_color(vec2 uv) {
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
-}
+
 
 vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
@@ -479,12 +477,15 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
 
     // Adjust the rotated UV back to its original position
     rotatedUV += 0.5;
-
-	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, timeOffset);
-	vec4 backGroundRoundDropColor = getRainTexture(rotatedUV * 10.0 *vec2(1.0, 2.0), rainspeed * 0.1, deterministicFactor(eyePos.xz));
+    debug_uv_color(rotatedUV);
+	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, eyePos.y);
+	vec4 backGroundRoundDropColor = getRainTexture(rotatedUV * 10.0 *vec2(1.0, 2.0), rainspeed * 0.1, eyePos.y + deterministicFactor(eyePos.xz));
  	raindropColor += backGroundRoundDropColor;
 
 	return vec4(raindropColor.rgb, 0.75)  * GetDeterministicRainColor(rotatedUV) ;	
+}
+vec4 debug_uv_color(vec2 uv) {
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
 }
 
 void testRenderTexture()
@@ -499,9 +500,6 @@ void main(void)
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
-
-	testRenderTexture();
-	return;
 
 	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));

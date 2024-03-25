@@ -1158,7 +1158,7 @@ function setupMessage(myMessages)
             columnIndex= 0
         end
     end
-    return allLetters, posLetters
+    return allLetters, posLetters, myMessage
 end
 
 function restoreMessageOriginalPosition(message, posLetters)
@@ -1185,8 +1185,8 @@ function addHologramLetters( myMessages)
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
             Sleep(10000)
             if boolIsEverChanging == true then
-                Spring.Echo("Changing message")
-                allLetters, posLetters = setupMessage(myMessages)
+                allLetters, posLetters, newMessage = setupMessage(myMessages)
+                Spring.Echo("Changing message to "newMessage)
             end
         end
     end 

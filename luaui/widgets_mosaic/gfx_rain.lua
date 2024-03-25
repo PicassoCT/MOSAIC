@@ -217,7 +217,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
-    Spring.Echo("ScreentexIndex:" screentex)
+    Spring.Echo("ScreentexIndex:".. screentex)
     raincanvastex =
         gl.CreateTexture(
         vsx,
@@ -231,7 +231,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
-
+    Spring.Echo("RaincanvastexIndex:".. raincanvastex)
     local commonTexOpts = {
         target = GL_TEXTURE_2D,
         border = false,
