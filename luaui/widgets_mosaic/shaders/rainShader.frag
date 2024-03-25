@@ -18,6 +18,7 @@
 
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
+#define NORM2SNORM(value) (value * 2.0 - 1.0)
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
@@ -437,13 +438,17 @@ vec4 GetRainCoronaFromScreenTex()
 
 vec3 mergeGroundViewNormal()
 {
-	float modelDepth = texture(modelDepthTex, uv).r;
-	float mapDepth = texture(mapDepthTex, uv).r;
+	float modelDepth = texture(modelDepthTex, uv).x;
+	float mapDepth = texture(mapDepthTex, uv).x;
 	float modelOccludesMap = float(modelDepth < mapDepth);
+
 	vec3 mapNormal = texture(normaltex, uv).xyz;
 	vec3 modelNormal = texture(normalunittex, uv).xyz;
 
-	return mix(mapNormal, modelNormal, modelOccludesMap);
+	vec3 worldNormal =  mix(mapNormal, modelNormal, modelOccludesMap);
+	worldNormal = NORM2SNORM(worldNormal);
+	worldNormal = normalize(worldNormal);
+	return worldNormal;
 }
 
 vec4 debug_uv_color(vec2 uv) {
@@ -453,12 +458,15 @@ vec4 debug_uv_color(vec2 uv) {
 vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-	return (texture2D(raintex, rainUv));
+	vec4 rainColor = texture2D(raintex, rainUv);
+	vec4 resultColor = vec4(vec3(1.0-rainColor.r), abs(1- rainColor.r));
+	return resultColor;
 }
 
 vec4 drawRainInSpainOnPlane( float rainspeed)
 {	
-	float scaleFactor = 1.0;
+	float uscaleFactor = 1.0;
+	float vscaleFactor = 0.5;
 	float rainSpeed = 0.1;
   	vec3 viewDir = viewDirection.xzy;
     float phi = atan(viewDir.x, viewDir.x);
@@ -468,12 +476,18 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
     float u = (phi + PI) / (2.0 * PI);
     float v = theta / PI;
 
-    vec2 rainUV =  vec2(u * scaleFactor,v * scaleFactor);
+    vec2 rainUV =  vec2(u * uscaleFactor,v * vscaleFactor);
 
-	vec4 raindropColor = getRainTexture(uv, 0.1, 0);
+	vec4 raindropColor = getRainTexture(uv* vec2(uscaleFactor,vscaleFactor), 1.0, 0);
  	
-	return vec4(raindropColor.rgb, 0.75);// * GetDeterministicRainColor(rainUV) ;	
+	return vec4(raindropColor.rgb, 0.75) * GetDeterministicRainColor(rainUV) ;	
 }
+
+void testRenderTexture()
+{	
+	vec3 color = vec3(texture(mapDepthTex, uv ).a);
+	gl_FragColor = vec4( color , 0.9);
+}	
 
 void main(void)
 {
@@ -481,6 +495,9 @@ void main(void)
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
+
+	testRenderTexture();
+	return;
 
 	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
@@ -517,7 +534,7 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	accumulatedLightColorRayDownward = drawRainInSpainOnPlane(1.0);
+	//accumulatedLightColorRayDownward += drawRainInSpainOnPlane(1.0);
 	gl_FragColor =accumulatedLightColorRayDownward;
 	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
 	{

@@ -32,6 +32,7 @@ uniform mat4 viewMatrix;
 
 out Data {
 			vec3 viewDirection;
+			vec4 worldpos;
 		};
  
 void main(void)
@@ -42,4 +43,6 @@ void main(void)
     //vec4 worldPosition =  gl_ModelViewMatrix * gl_Position;
     viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
     //viewDirection = normalize(viewProjectionInv* vec4(eyeDir,1)).xyz;
+    worldpos= viewProjectionInv * vec4(vec3(gl_TexCoord[0].st,  texture2D(mapDepthTex,gl_TexCoord[0].st ).x) * 2.0 - 1.0, 1.0);
+    worldpos.xyz = worldpos.xyz / worldpos.w;// YAAAY this works!
 }

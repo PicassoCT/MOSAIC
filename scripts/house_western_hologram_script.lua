@@ -1176,7 +1176,7 @@ function addHologramLetters( myMessages)
 
     allLetters, posLetters = setupMessage(myMessages)
 
-    if maRa() and maRa() then 
+    if maRa() and maRa() or boolIsEverChanging then 
 		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
         --TextAnimation
 
@@ -1184,8 +1184,9 @@ function addHologramLetters( myMessages)
             restoreMessageOriginalPosition(allLetters, posLetters)
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
             Sleep(10000)
-            if boolIsEverChanging then
-                 allLetters, posLetters = setupMessage(myMessages)
+            if boolIsEverChanging == true then
+                Spring.Echo("Changing message")
+                allLetters, posLetters = setupMessage(myMessages)
             end
         end
     end 

@@ -137,6 +137,15 @@ local uniformEyePos
 local unformEyeDirection
 local uniformTime
 local uniformViewPortSize
+local modelDepthTexIndex = 0
+local mapDepthTexIndex = 1
+local noisetexIndex = 2
+local screentexIndex = 3
+local normaltexIndex = 4
+local normalunittexIndex= 5
+local raincanvastexIndex = 6
+local skyboxtexIndex = 7
+local raintexIndex = 8
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -150,25 +159,26 @@ end
 function widget:ViewResize()
     vsx, vsy = gl.GetViewSizes()
 
-    if (modelDepthTex ~= nil ) then
+  --[[  if (modelDepthTex ~= nil ) then
         glDeleteTexture(modelDepthTex)
     end
 
     if (mapDepthTex ~= nil ) then
         glDeleteTexture(mapDepthTex)
-    end
+    end--]]
 
-     if (screentex ~= nil  ) then
+    if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
     end   
 
     if (normaltex ~= nil  ) then
         glDeleteTexture(normaltex)
     end
-   if (normalunittex ~= nil  ) then
+
+    if (normalunittex ~= nil  ) then
         glDeleteTexture(normalunittex)
     end
-
+--[[
     modelDepthTex =
         glCreateTexture(
             vsx,
@@ -194,7 +204,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(mapDepthTex, "mapDepthTex not existing")    
-
+]]
     screentex =
         glCreateTexture(
         vsx,
@@ -207,7 +217,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
-      
+    Spring.Echo("ScreentexIndex:" screentex)
     raincanvastex =
         gl.CreateTexture(
         vsx,
@@ -261,15 +271,15 @@ local function init()
     --Spring.Echo("FragmentShader".. fragmentShader)
     --Spring.Echo("VertexShader".. vertexShader)
     local uniformInt = {
-        modelDepthTex = 0,
-        mapDepthTex = 1,
-        noisetex = 2,
-        screentex = 3,
-        normaltex = 4,
-        normalunittex= 5,
-        raincanvastex = 6,
-        skyboxtex = 7,
-        raintex = 8
+        modelDepthTex = modelDepthTexIndex,
+        mapDepthTex = mapDepthTexIndex,
+        noisetex = noisetexIndex,
+        screentex = screentexIndex,
+        normaltex = normaltexIndex,
+        normalunittex= normalunittexIndex,
+        raincanvastex = raincanvastexIndex,
+        skyboxtex = skyboxtexIndex,
+        raintex = raintexIndex
     }
 
     rainShader =
@@ -311,7 +321,7 @@ local function init()
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
-    unformEyeDirection            = glGetUniformLocation(rainShader, "eyeDir")
+    unformEyeDirection              = glGetUniformLocation(rainShader, "eyeDir")
     shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
 
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
@@ -321,9 +331,9 @@ local function init()
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
     uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
-      for i=1,maxLightSources do
+    for i=1,maxLightSources do
         shaderLightSourcescLoc[i]   = glGetUniformLocation(rainShader,"lightSources["..(i-1).."]")
-      end
+    end
     Spring.Echo("gfx_rain:Initialize ended")
 end
 
@@ -472,31 +482,51 @@ end
 local function renderToTextureFunc()
     -- render a full screen quad
     --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
-    glTexture(1, noisetextureFilePath);
+    --glTexture(noisetexIndex, noisetextureFilePath);
     glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
+--[[
+        modelDepthTex = 0,
+        mapDepthTex = 1,
+        noisetex = 2,
+        screentex = 3,
+        normaltex = 4,
+        normalunittex= 5,
+        raincanvastex = 6,
+        skyboxtex = 7,
+        raintex = 8s
+]]
+
 
 local function cleanUp()    
     glResetState()
     glUseShader(0)
-    glTexture(0, false)
-    glTexture(1, false)
-    glTexture(2, false)
     glBlending(true)
 end
 
 local function prepare()
     glBlending(false)
-    
-    glTexture(modelDepthTex,  "$model_gbuffer_zvaltex")
-    glCopyToTexture(mapDepthTex, 0, 0, 0, 0, vsx, vsy) 
-    glTexture(mapDepthTex,"$map_gbuffer_normtex")
+
+    glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
+    glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
+    glTexture(noisetexIndex, noisetextureFilePath);
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
-    glTexture(3, "$map_gbuffer_normtex")
-    glTexture(4, "$model_gbuffer_normtex")
-    glTexture(6, "$sky_reflection")
+    glTexture(normaltexIndex,"$map_gbuffer_normtex")
+    glTexture(normalunittexIndex,"$model_gbuffer_normtex")
+    glTexture(skyboxtexIndex,"$sky_reflection")
 end
+--[[
+        modelDepthTex = 0,??
+        mapDepthTex = 1, ??
+        noisetex = 2,--
+        screentex = 3, ??
+        normaltex = 4, --
+        normalunittex= 5,--
+        raincanvastex = 6,
+        skyboxtex = 7,
+        raintex = 8
+]]
 
 local function DrawRain()
     local _, _, isPaused = Spring.GetGameSpeed()
