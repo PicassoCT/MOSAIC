@@ -311,8 +311,7 @@ local function init()
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
-    unformEyeDirection            = glGetUniformLocation(rainShader, "eyeDir")
-    shaderMaxLightSrcLoc            = glGetUniformLocation(rainShader, "maxLightSources")
+    unformEyeDirection              = glGetUniformLocation(rainShader, "eyeDir")
 
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
     uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
@@ -321,9 +320,6 @@ local function init()
     uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
     uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
-      for i=1,maxLightSources do
-        shaderLightSourcescLoc[i]   = glGetUniformLocation(rainShader,"lightSources["..(i-1).."]")
-      end
     Spring.Echo("gfx_rain:Initialize ended")
 end
 
@@ -410,38 +406,7 @@ function widget:Shutdown()
         gl.DeleteShader(rainShader)
     end
 end
---[[
-{
-vec4  position + distance ?? TODO: distance is a factor of physics, as in strenght of light source * log of distnace?
-vec4  color + strength.a
-}
-]]
-local lightIDCounter = 0 
-local function addLightSources(positionWorld, color, strength )
-    indexPosition = lightSourceIndex 
-    indexColor = indexPosition +1
-    lightIDCounter= lightIDCounter +1
-    shaderLightSourcescLoc[indexPosition] = {positionWorld[0], positionWorld[1], positionWorld[2], strength}
-    shaderLightSourcescLoc[indexColor] = {color[0], color[1], color[2], color[3], lightIDCounter}
-    lightSourceIndex = lightSourceIndex + 2
-    return lightIDCounter
-end
 
-local function resetLightSources()
-    lightSourceIndex = 0
-end
-
-local function removeLightSources(id)
-    for i=1,maxLightSources-2, 2 do
-        if  shaderLightSourcescLoc[i + 1][4] == id then
-            --compress
-            for start =i, maxLightSources, 2 do
-                shaderLightSourcescLoc[i] = shaderLightSourcescLoc[i+2]
-                shaderLightSourcescLoc[i+ 1] = shaderLightSourcescLoc[i+2 +1]
-            end
-        end
-    end
-end
 
 local function updateUniforms()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
@@ -463,10 +428,7 @@ local function updateUniforms()
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
     glUniformMatrix(uniformViewMatrix     , "view")
-    for i=1,maxLightSources, 2 do
-      glUniform(shaderLightSourcescLoc[i] ,0.0, 0.0, 0.0)
-      glUniform(shaderLightSourcescLoc[i + 1] ,0.0, 0.0, 0.0)
-    end
+
 end
 
 local function renderToTextureFunc()
@@ -569,24 +531,6 @@ function widget:DrawWorld()
     prevOsClock = osClock        
 end
 
-local function splitStringIntoPositonColorStrength(dynLightPosString)
-    local splitResult = split(dynLightPosString, '/')
-    resetLightSources()
-    for i=1, #splitResult, 7 do
-        local x,y,z = 
-        addLightSources({
-                        tonumber(splitResult[i]),
-                        tonumber(splitResult[i+1]),
-                        tonumber(splitResult[i+2])
-                        }, 
-                        {
-                        tonumber(splitResult[i+3]),
-                        tonumber(splitResult[i+4]),
-                        tonumber(splitResult[i+5])     
-                        }, 
-                        tonumber(splitResult[i+6]))
-    end
-end
 
 function widget:GameFrame()
     sunDir = {gl.GetSun('pos')}

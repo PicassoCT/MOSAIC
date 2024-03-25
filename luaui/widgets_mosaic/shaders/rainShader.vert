@@ -11,10 +11,8 @@ uniform sampler2D normalunittex;
 uniform sampler2D skyboxtex;
 uniform sampler2D raintex;
 
-uniform vec4 lightSources[20];
 
 uniform float time;		
-uniform int maxLightSources;
 uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
