@@ -478,8 +478,7 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
 
     // Cross product to find the rotation axis
     vec3 rotationAxis = cross(uvDirection, -normalize(eyePos));
-
-	vec4 backGroundRoundDropColor2 = getRainTexture(rotatedUV * 8.0 *vec2(1.0, 2.0), rainspeed * (1/8), eyePos.y + determinis
+    
     // Rotate the uv coordinates around the rotation axis
     mat2 rotationMatrix = mat2(cos(rotationAngle), sin(rotationAngle), -sin(rotationAngle), cos(rotationAngle));
     vec2 rotatedUV = rotationMatrix * (uv - 0.5);
@@ -488,10 +487,7 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
     rotatedUV += 0.5;
 
 	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, eyePos.y);
-	vec4 backGroundRoundDropColor1 = getRainTexture(rotatedUV * 4.0 *vec2(1.0, 2.0), rainspeed * (1/4), eyePos.y + deterministicFactor(eyePos.xz));
-	vec4 backGroundRoundDropColor2 = getRainTexture(rotatedUV * 8.0 *vec2(1.0, 2.0), rainspeed * (1/8), eyePos.y + deterministicFactor(eyePos.xz+42));
- 	raindropColor += (backGroundRoundDropColor1 +backGroundRoundDropColor2);
-
+	
 	return vec4(raindropColor.rgb, 0.5)  * GetDeterministicRainColor(rotatedUV) ;	
 }
 
