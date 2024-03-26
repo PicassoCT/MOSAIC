@@ -456,22 +456,20 @@ vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 
 vec4 drawRainInSpainOnPlane( float rainspeed)
 {	
-	  // Calculate the direction vector from eye position to the UV point
-    vec3 uvDirection = normalize(vec3(uv - 0.5, 1.0)); // assuming UV coordinates are normalized to [0, 1] range
+	// Calculate the camera's right and up vectors
+	vec3 cameraUp = vec3(0.0, 1.0, 0.0); 
+    vec3 cameraRight = normalize(cross(cameraUp, eyeDir));
+    // Up vector in world space
 
-    // Calculate the rotation angle between the uvDirection and the camera direction
-    float dotProd = dot(uvDirection, normalize(-eyePos));
-    float rotationAngle = acos(dotProd);
+    // Calculate the rotation matrix
+    mat3 rotationMatrix = mat3(
+        cameraRight.x, cameraUp.x, eyeDir.x,
+        cameraRight.y, cameraUp.y, eyeDir.y,
+        cameraRight.z, cameraUp.z, eyeDir.z
+    );
 
-    // Cross product to find the rotation axis
-    vec3 rotationAxis = cross(uvDirection, -normalize(eyePos));
-
-    // Rotate the uv coordinates around the rotation axis
-    mat2 rotationMatrix = mat2(cos(rotationAngle), sin(rotationAngle), -sin(rotationAngle), cos(rotationAngle));
-    vec2 rotatedUV = rotationMatrix * (uv - 0.5);
-
-    // Adjust the rotated UV back to its original position
-    rotatedUV += 0.5;
+    // Apply the rotation to the UV coordinates
+    vex2 rotatedUV = (rotationMatrix * vec3(uv, 0.0)).xy;
 
 	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, timeOffset);
 	vec4 backGroundRoundDropColor = getRainTexture(rotatedUV * 10.0 *vec2(1.0, 2.0), rainspeed * 0.1, deterministicFactor(eyePos.xz));
