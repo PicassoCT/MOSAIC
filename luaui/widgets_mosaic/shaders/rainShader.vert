@@ -1,5 +1,7 @@
 #version 150 compatibility
 #line 200001
+#define NORM2SNORM(value) (value * 2.0 - 1.0)
+#define SNORM2NORM(value) (value * 0.5 + 0.5)
 
 //Uniforms
 uniform sampler2D modelDepthTex;
@@ -31,6 +33,7 @@ uniform mat4 viewMatrix;
 out Data {
 			vec3 viewDirection;
 			vec4 worldpos;
+			noperspective vec2 v_screenUV;
 		};
  
 void main(void)
@@ -43,4 +46,5 @@ void main(void)
     //viewDirection = normalize(viewProjectionInv* vec4(eyeDir,1)).xyz;
     worldpos= viewProjectionInv * vec4(vec3(gl_TexCoord[0].st,  texture2D(mapDepthTex,gl_TexCoord[0].st ).x) * 2.0 - 1.0, 1.0);
     worldpos.xyz = worldpos.xyz / worldpos.w;// YAAAY this works!
+    v_screenUV = SNORM2NORM(gl_Position.xy / gl_Position.w);
 }

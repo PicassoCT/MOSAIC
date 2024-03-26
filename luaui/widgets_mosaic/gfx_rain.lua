@@ -122,11 +122,13 @@ local GL_RGBA8 = 0x8058
 local GL_FUNC_ADD = 0x8006
 local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
-local percentTime
 local timePercentLoc
 local rainPercentLoc
 local rainPercent = 0.0
 local timePercent = 0
+local hours = 12
+local minutes = 0
+local seconds = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
 local skyCol = {0,0,0}
@@ -371,8 +373,6 @@ local function isRaining()
         return false
     end
 
-    local hours,_,_, timePercent = getDayTime()
-    percentTime = timePercent
     local gameFrames = Spring.GetGameFrame()
     local dayNr = gameFrames / DAYLENGTH
 
@@ -432,7 +432,7 @@ local function updateUniforms()
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
-    glTexture(8, rainPicPath)
+
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
@@ -441,9 +441,6 @@ local function updateUniforms()
 end
 
 local function renderToTextureFunc()
-    -- render a full screen quad
-    --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
-    glTexture(noisetexIndex, noisetextureFilePath);
     glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 --[[
@@ -465,7 +462,7 @@ local function cleanUp()
     glBlending(true)
 end
 
-local function prepare()
+local function prepareTextures()
     glBlending(false)
 
     glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
@@ -475,19 +472,9 @@ local function prepare()
     glTexture(screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")
     glTexture(normalunittexIndex,"$model_gbuffer_normtex")
-    glTexture(skyboxtexIndex,"$sky_reflection")
+    glTexture(skyboxtexIndex,"$reflection")
+    glTexture(raintexIndex, rainPicPath)
 end
---[[
-        modelDepthTex = 0,??
-        mapDepthTex = 1, ??
-        noisetex = 2,--
-        screentex = 3, ??
-        normaltex = 4, --
-        normalunittex= 5,--
-        raincanvastex = 6,
-        skyboxtex = 7,
-        raintex = 8
-]]
 
 local function DrawRain()
     local _, _, isPaused = Spring.GetGameSpeed()
@@ -498,7 +485,7 @@ local function DrawRain()
     end
 
     lastFrametime = Spring.GetTimer()
-    prepare()
+    prepareTextures()
     glUseShader(rainShader)
     updateUniforms()
 
@@ -511,7 +498,6 @@ end
 
 function widget:DrawScreenEffects()
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
-    --glTexture(4, raincanvastex)
     glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
     glTexture(0, false);
@@ -553,6 +539,7 @@ end
 
 
 function widget:GameFrame()
+    hours,minutes,seconds, timePercent = getDayTime()
     sunDir = {gl.GetSun('pos')}
     sunCol = {gl.GetSun('specular')}
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")

@@ -1037,9 +1037,7 @@ function getGameConfig()
 
         function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
-            local UnitDefNames = getUnitDefNames(UnitDefs)
-            if culture == Cultures.arabic then
-                typeTable = {
+                    typeTable = {
                     "truck_arab1",
                     "truck_arab2",
                     "truck_arab3",
@@ -1048,21 +1046,26 @@ function getGameConfig()
                     "truck_arab6",
                     "truck_arab7"
                 }
-                return getTypeTable(UnitDefNames, typeTable)
+                arabicTruckTypeTable = getTypeTable(UnitDefNames, typeTable)
+            local UnitDefNames = getUnitDefNames(UnitDefs)
+            if culture == Cultures.arabic then
+                return arabicTruckTypeTable
             end
 
             if culture == Cultures.international then
                     return mergeTables(
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
+                        arabicTruckTypeTable,
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
 
             if culture == Cultures.asian then
-                return   getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian)
+                return mergeTables(arabicTruckTypeTable,
+                   getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
             if culture == Cultures.western then
-                return   getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western)
+                return mergeTables(arabicTruckTypeTable,
+                   getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western))
             end
 
             return {}

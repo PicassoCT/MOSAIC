@@ -104,7 +104,9 @@ vec4  color + id
 
 
 in Data {
-			vec3 viewDirection;			
+			vec3 viewDirection;
+			vec4 worldpos;
+			noperspective vec2 v_screenUV;
 		 };
 
 struct Ray {
@@ -183,13 +185,14 @@ vec4 getDeterministicColorOffset(vec2 position)
 
 float getDayPercent()
 {
-	if (timePercent < 0.25 || timePercent > 0.75)
+	if (timePercent < 0.5)
 	{
-		return 0.0;
-	}else
+		return timePercent * 2.0;
+	}
+	else
 	{
-		return (timePercent - 0.25) * 2.0;
-	}	
+		1-((timePercent - 0.5)*2.0);
+	}
 }
 
 vec4 getVectorColor(vec3 vector){
@@ -476,6 +479,7 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
     // Cross product to find the rotation axis
     vec3 rotationAxis = cross(uvDirection, -normalize(eyePos));
 
+	vec4 backGroundRoundDropColor2 = getRainTexture(rotatedUV * 8.0 *vec2(1.0, 2.0), rainspeed * (1/8), eyePos.y + determinis
     // Rotate the uv coordinates around the rotation axis
     mat2 rotationMatrix = mat2(cos(rotationAngle), sin(rotationAngle), -sin(rotationAngle), cos(rotationAngle));
     vec2 rotatedUV = rotationMatrix * (uv - 0.5);
@@ -484,17 +488,17 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
     rotatedUV += 0.5;
 
 	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, eyePos.y);
-	vec4 backGroundRoundDropColor = getRainTexture(rotatedUV * 10.0 *vec2(1.0, 2.0), rainspeed * 0.1, eyePos.y + deterministicFactor(eyePos.xz));
- 	raindropColor += backGroundRoundDropColor;
+	vec4 backGroundRoundDropColor1 = getRainTexture(rotatedUV * 4.0 *vec2(1.0, 2.0), rainspeed * (1/4), eyePos.y + deterministicFactor(eyePos.xz));
+	vec4 backGroundRoundDropColor2 = getRainTexture(rotatedUV * 8.0 *vec2(1.0, 2.0), rainspeed * (1/8), eyePos.y + deterministicFactor(eyePos.xz+42));
+ 	raindropColor += (backGroundRoundDropColor1 +backGroundRoundDropColor2);
 
-	return vec4(raindropColor.rgb, 0.75)  * GetDeterministicRainColor(rotatedUV) ;	
+	return vec4(raindropColor.rgb, 0.5)  * GetDeterministicRainColor(rotatedUV) ;	
 }
 
 
-void testRenderTexture()
+void testRenderColor(vec3 color)
 {	
-	vec3 color = texture(normaltex, uv).rgb;
-	gl_FragColor = vec4( color , 0.9);
+	gl_FragColor = vec4( color , 1.0);
 }	
 
 void main(void)
@@ -506,8 +510,13 @@ void main(void)
 
 	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-	testRenderTexture();
-	return;
+	//testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
+	//testRenderColor(mix(texture(normalunittex,  uv).rgb, 
+	//					texture(normaltex,  uv).rgb, 
+	//					mod(timePercent*4,1.0)));
+	//testRenderColor(GetDeterministicRainColor(uv).rgb);
+	//testRenderColor(viewNormal);
+	//return;
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
