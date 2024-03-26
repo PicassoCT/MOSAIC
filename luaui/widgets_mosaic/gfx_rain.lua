@@ -122,11 +122,13 @@ local GL_RGBA8 = 0x8058
 local GL_FUNC_ADD = 0x8006
 local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
-local percentTime
 local timePercentLoc
 local rainPercentLoc
 local rainPercent = 0.0
 local timePercent = 0
+local hours = 12
+local minutes = 0
+local seconds = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
 local skyCol = {0,0,0}
@@ -137,6 +139,15 @@ local uniformEyePos
 local unformEyeDirection
 local uniformTime
 local uniformViewPortSize
+local modelDepthTexIndex = 0
+local mapDepthTexIndex = 1
+local noisetexIndex = 2
+local screentexIndex = 3
+local normaltexIndex = 4
+local normalunittexIndex= 5
+local raincanvastexIndex = 6
+local skyboxtexIndex = 7
+local raintexIndex = 8
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -150,25 +161,26 @@ end
 function widget:ViewResize()
     vsx, vsy = gl.GetViewSizes()
 
-    if (modelDepthTex ~= nil ) then
+  --[[  if (modelDepthTex ~= nil ) then
         glDeleteTexture(modelDepthTex)
     end
 
     if (mapDepthTex ~= nil ) then
         glDeleteTexture(mapDepthTex)
-    end
+    end--]]
 
-     if (screentex ~= nil  ) then
+    if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
     end   
 
     if (normaltex ~= nil  ) then
         glDeleteTexture(normaltex)
     end
-   if (normalunittex ~= nil  ) then
+
+    if (normalunittex ~= nil  ) then
         glDeleteTexture(normalunittex)
     end
-
+--[[
     modelDepthTex =
         glCreateTexture(
             vsx,
@@ -194,7 +206,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(mapDepthTex, "mapDepthTex not existing")    
-
+]]
     screentex =
         glCreateTexture(
         vsx,
@@ -207,7 +219,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
-      
+    Spring.Echo("ScreentexIndex:".. screentex)
     raincanvastex =
         gl.CreateTexture(
         vsx,
@@ -221,7 +233,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
-
+    Spring.Echo("RaincanvastexIndex:".. raincanvastex)
     local commonTexOpts = {
         target = GL_TEXTURE_2D,
         border = false,
@@ -261,15 +273,15 @@ local function init()
     --Spring.Echo("FragmentShader".. fragmentShader)
     --Spring.Echo("VertexShader".. vertexShader)
     local uniformInt = {
-        modelDepthTex = 0,
-        mapDepthTex = 1,
-        noisetex = 2,
-        screentex = 3,
-        normaltex = 4,
-        normalunittex= 5,
-        raincanvastex = 6,
-        skyboxtex = 7,
-        raintex = 8
+        modelDepthTex = modelDepthTexIndex,
+        mapDepthTex = mapDepthTexIndex,
+        noisetex = noisetexIndex,
+        screentex = screentexIndex,
+        normaltex = normaltexIndex,
+        normalunittex= normalunittexIndex,
+        raincanvastex = raincanvastexIndex,
+        skyboxtex = skyboxtexIndex,
+        raintex = raintexIndex
     }
 
     rainShader =
@@ -361,8 +373,6 @@ local function isRaining()
         return false
     end
 
-    local hours,_,_, timePercent = getDayTime()
-    percentTime = timePercent
     local gameFrames = Spring.GetGameFrame()
     local dayNr = gameFrames / DAYLENGTH
 
@@ -419,11 +429,10 @@ local function updateUniforms()
     glUniform(uniformEyePos, spGetCameraPosition())
     glUniform(unformEyeDirection, spGetCameraDirection ( ) )
 
-    glUniform(shaderMaxLightSrcLoc, math.floor(lightSourceIndex))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
-    glTexture(8, rainPicPath)
+
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
@@ -432,32 +441,39 @@ local function updateUniforms()
 end
 
 local function renderToTextureFunc()
-    -- render a full screen quad
-    --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
-    glTexture(1, noisetextureFilePath);
     glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
+--[[
+        modelDepthTex = 0,
+        mapDepthTex = 1,
+        noisetex = 2,
+        screentex = 3,
+        normaltex = 4,
+        normalunittex= 5,
+        raincanvastex = 6,
+        skyboxtex = 7,
+        raintex = 8s
+]]
+
 
 local function cleanUp()    
     glResetState()
     glUseShader(0)
-    glTexture(0, false)
-    glTexture(1, false)
-    glTexture(2, false)
     glBlending(true)
 end
 
-local function prepare()
+local function prepareTextures()
     glBlending(false)
-    
-    glTexture(modelDepthTex,  "$model_gbuffer_zvaltex")
-    glCopyToTexture(mapDepthTex, 0, 0, 0, 0, vsx, vsy) 
-    glTexture(mapDepthTex,"$map_gbuffer_normtex")
+
+    glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
+    glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
+    glTexture(noisetexIndex, noisetextureFilePath);
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
-    glTexture(3, "$map_gbuffer_normtex")
-    glTexture(4, "$model_gbuffer_normtex")
-    glTexture(6, "$sky_reflection")
+    glTexture(normaltexIndex,"$map_gbuffer_normtex")
+    glTexture(normalunittexIndex,"$model_gbuffer_normtex")
+    glTexture(skyboxtexIndex,"$reflection")
+    glTexture(raintexIndex, rainPicPath)
 end
 
 local function DrawRain()
@@ -469,7 +485,7 @@ local function DrawRain()
     end
 
     lastFrametime = Spring.GetTimer()
-    prepare()
+    prepareTextures()
     glUseShader(rainShader)
     updateUniforms()
 
@@ -482,7 +498,6 @@ end
 
 function widget:DrawScreenEffects()
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
-    --glTexture(4, raincanvastex)
     glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
     glTexture(0, false);
@@ -499,15 +514,6 @@ function widget:Initialize()
     widget:ViewResize()
 
 end
-
---[[
-Draw Rain Reflection once:
-8:53 PM]ivand: Spring.SetMapShadingTexture("$ssmf_specular", luaTex) and Spring.SetMapShadingTexture("$ssmf_sky_refl", luaTex) look relevant 
-[8:55 PM]ivand: $ssmf_sky_refl specifically controls how strong the reflection is
-[8:56 PM]ivand: So make a lua texture with FBO, draw the default $ssmf_sky_refl there and with shader modulate it as much as you want
-[8:56 PM]ivand: Then Spring.SetMapShadingTexture("$ssmf_sky_refl", luaTex) (once) 
-
-]]
 
 function widget:DrawWorld()
 
@@ -533,6 +539,7 @@ end
 
 
 function widget:GameFrame()
+    hours,minutes,seconds, timePercent = getDayTime()
     sunDir = {gl.GetSun('pos')}
     sunCol = {gl.GetSun('specular')}
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")

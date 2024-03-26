@@ -18,6 +18,7 @@
 
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
+#define NORM2SNORM(value) (value * 2.0 - 1.0)
 
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
@@ -103,7 +104,9 @@ vec4  color + id
 
 
 in Data {
-			vec3 viewDirection;			
+			vec3 viewDirection;
+			vec4 worldpos;
+			noperspective vec2 v_screenUV;
 		 };
 
 struct Ray {
@@ -182,13 +185,14 @@ vec4 getDeterministicColorOffset(vec2 position)
 
 float getDayPercent()
 {
-	if (timePercent < 0.25 || timePercent > 0.75)
+	if (timePercent < 0.5)
 	{
-		return 0.0;
-	}else
+		return timePercent * 2.0;
+	}
+	else
 	{
-		return (timePercent - 0.25) * 2.0;
-	}	
+		1-((timePercent - 0.5)*2.0);
+	}
 }
 
 vec4 getVectorColor(vec3 vector){
@@ -435,23 +439,32 @@ vec4 GetRainCoronaFromScreenTex()
 
 vec3 mergeGroundViewNormal()
 {
-	float modelDepth = texture(modelDepthTex, uv).r;
-	float mapDepth = texture(mapDepthTex, uv).r;
+	float modelDepth = texture(modelDepthTex, uv).x;
+	float mapDepth = texture(mapDepthTex, uv).x;
 	float modelOccludesMap = float(modelDepth < mapDepth);
+
 	vec3 mapNormal = texture(normaltex, uv).xyz;
 	vec3 modelNormal = texture(normalunittex, uv).xyz;
 
-	return mix(mapNormal, modelNormal, modelOccludesMap);
+	vec3 worldNormal =  mix(mapNormal, modelNormal, modelOccludesMap);
+	worldNormal = NORM2SNORM(worldNormal);
+	worldNormal = normalize(worldNormal);
+	return worldNormal;
 }
 
-vec4 debug_uv_color(vec2 uv) {
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
-}
+
 
 vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-	return (texture2D(raintex, rainUv));
+	vec4 rainColor = texture2D(raintex, rainUv);
+	vec4 resultColor = vec4(vec3(1.0-rainColor.r), abs(1- rainColor.r));
+	return resultColor;
+}
+
+vec4 debug_uv_color(vec2 uv) 
+{
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
 }
 
 vec4 drawRainInSpainOnPlane( float rainspeed)
@@ -468,15 +481,26 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
         cameraRight.z, cameraUp.z, eyeDir.z
     );
 
-    // Apply the rotation to the UV coordinates
-    vex2 rotatedUV = (rotationMatrix * vec3(uv, 0.0)).xy;
+    // Cross product to find the rotation axis
+    vec3 rotationAxis = cross(uvDirection, -normalize(eyePos));
+    
+    // Rotate the uv coordinates around the rotation axis
+    mat2 rotationMatrix = mat2(cos(rotationAngle), sin(rotationAngle), -sin(rotationAngle), cos(rotationAngle));
+    vec2 rotatedUV = rotationMatrix * (uv - 0.5);
 
-	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, timeOffset);
-	vec4 backGroundRoundDropColor = getRainTexture(rotatedUV * 10.0 *vec2(1.0, 2.0), rainspeed * 0.1, deterministicFactor(eyePos.xz));
- 	raindropColor += backGroundRoundDropColor;
+    // Adjust the rotated UV back to its original position
+    rotatedUV += 0.5;
 
-	return vec4(raindropColor.rgb, 1.0 -raindropColor.r) * GetDeterministicRainColor(rotatedUV) ;	
+	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, eyePos.y);
+	
+	return vec4(raindropColor.rgb, 0.5)  * GetDeterministicRainColor(rotatedUV) ;	
 }
+
+
+void testRenderColor(vec3 color)
+{	
+	gl_FragColor = vec4( color , 1.0);
+}	
 
 void main(void)
 {
@@ -487,7 +511,13 @@ void main(void)
 
 	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-
+	//testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
+	//testRenderColor(mix(texture(normalunittex,  uv).rgb, 
+	//					texture(normaltex,  uv).rgb, 
+	//					mod(timePercent*4,1.0)));
+	//testRenderColor(GetDeterministicRainColor(uv).rgb);
+	//testRenderColor(viewNormal);
+	//return;
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
