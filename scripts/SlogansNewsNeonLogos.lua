@@ -129,7 +129,19 @@ return {
     "Hollywood's Hottest Scandal: <suspect>",
     "Not that good a player <suspect> dissed by opponents",
     "Infidelity Shockwave: <suspect> Accused of Cheating with Best Friend's Partner",
-    "Paparazzi Stakeout: <suspect>'s Late-Night Rendezvous Raises Eyebrows"
+    "Paparazzi Stakeout: <suspect>'s Late-Night Rendezvous Raises Eyebrows",
+    "<suspect> accused of virtual heist tactics.",
+    "<suspect>'s gaming skills evident in Ponzi scheme.",
+    "<suspect> fails to level up on tax evasion.",
+    "<suspect>'s hacking resembles gaming.",
+    "<suspect> attempts real estate cheat codes.",
+    "Regulators slam <suspect>'s gaming-like investments.",
+    "<suspect> uses boss fight tactics in fraud.",
+    "<suspect> tries speedrun bank robbery.",
+    "<suspect> relies on respawn for fraud.",
+    "<suspect> fails game over evasion tactic."
+
+
     https://www.mediamarkt.de/de/product/_asus-rog-strix-g17-g713pv-hx048w-notebook-mit-173-zoll-display-amd-ryzentm-9-prozessor-16-gb-ram-1-tb-ssd-nvidia-geforce-rtx-4060-schwarz-grau-2864601.html
 
 }
