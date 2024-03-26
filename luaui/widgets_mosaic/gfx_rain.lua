@@ -429,7 +429,6 @@ local function updateUniforms()
     glUniform(uniformEyePos, spGetCameraPosition())
     glUniform(unformEyeDirection, spGetCameraDirection ( ) )
 
-    glUniform(shaderMaxLightSrcLoc, math.floor(lightSourceIndex))
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
@@ -444,7 +443,7 @@ end
 local function renderToTextureFunc()
     -- render a full screen quad
     --glClear (GL.COLOR_BUFFER_BIT,0,0,0,0 )
-    --glTexture(noisetexIndex, noisetextureFilePath);
+    glTexture(noisetexIndex, noisetextureFilePath);
     glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
 --[[
@@ -529,15 +528,6 @@ function widget:Initialize()
     widget:ViewResize()
 
 end
-
---[[
-Draw Rain Reflection once:
-8:53 PM]ivand: Spring.SetMapShadingTexture("$ssmf_specular", luaTex) and Spring.SetMapShadingTexture("$ssmf_sky_refl", luaTex) look relevant 
-[8:55 PM]ivand: $ssmf_sky_refl specifically controls how strong the reflection is
-[8:56 PM]ivand: So make a lua texture with FBO, draw the default $ssmf_sky_refl there and with shader modulate it as much as you want
-[8:56 PM]ivand: Then Spring.SetMapShadingTexture("$ssmf_sky_refl", luaTex) (once) 
-
-]]
 
 function widget:DrawWorld()
 

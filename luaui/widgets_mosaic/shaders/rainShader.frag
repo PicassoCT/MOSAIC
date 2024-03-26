@@ -459,6 +459,11 @@ vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 	return resultColor;
 }
 
+vec4 debug_uv_color(vec2 uv) 
+{
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
+}
+
 vec4 drawRainInSpainOnPlane( float rainspeed)
 {	
 	  // Calculate the direction vector from eye position to the UV point
@@ -477,20 +482,18 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
 
     // Adjust the rotated UV back to its original position
     rotatedUV += 0.5;
-    debug_uv_color(rotatedUV);
+
 	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, eyePos.y);
 	vec4 backGroundRoundDropColor = getRainTexture(rotatedUV * 10.0 *vec2(1.0, 2.0), rainspeed * 0.1, eyePos.y + deterministicFactor(eyePos.xz));
  	raindropColor += backGroundRoundDropColor;
 
 	return vec4(raindropColor.rgb, 0.75)  * GetDeterministicRainColor(rotatedUV) ;	
 }
-vec4 debug_uv_color(vec2 uv) {
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
-}
+
 
 void testRenderTexture()
 {	
-	vec3 color = vec3(texture(mapDepthTex, uv ).a);
+	vec3 color = texture(normaltex, uv).rgb;
 	gl_FragColor = vec4( color , 0.9);
 }	
 
@@ -503,7 +506,8 @@ void main(void)
 
 	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-
+	testRenderTexture();
+	return;
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
