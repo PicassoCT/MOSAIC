@@ -387,4 +387,5 @@ return {
 "Unlock Passion: Pleasure Portico",
 "Unveil Fantasy: Scarlet Serenity",
 "Escape Reality: Pleasure Pinnacle",
+"Tentacle goes where ",
 }

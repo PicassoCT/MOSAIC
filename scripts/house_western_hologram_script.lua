@@ -1185,8 +1185,7 @@ function addHologramLetters( myMessages)
 		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
             Sleep(10000)
             if boolIsEverChanging == true then
-                allLetters, posLetters, newMessage = setupMessage(myMessages)
-                Spring.Echo("Changing message to "newMessage)
+                allLetters, posLetters, newMessage = setupMessage(myMessages)                
             end
         end
     end 

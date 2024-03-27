@@ -98,13 +98,16 @@ return {
     "<suspect> Accused of Espionage",
     "<suspect> Allegedly Leaked Classified Information",
     "Family of <suspect> Speaks Out",
+    "Family of <suspect> Freaks Out",
+    "Family denounces <suspect> ",
     "Brother of <suspect> Claims Innocence ",
+    "<suspect> always was a pervert",
     "Former Military Officer <suspect> Arrested for Illicit Arms Dealing",
     "<suspect> Breaks Silence in Interogation",
     "<suspect> Issues Statement from Jail Cell, Proclaims Innocence",
     "Shocking Affair Exposed with <suspect>",
     " <suspect> Caught in Love Triangle with Celebrity Couple",
-    "Paparazzi Capture <suspect> "
+    "Paparazzi Capture <suspect> ",
     "<suspect> caught in Secret Romantic Getaway",
     "Scandal Rocks <cityName>",
     "<suspect> Accused of Cheating on Longtime Partner",
@@ -112,7 +115,7 @@ return {
     "<suspect> Spotted Leaving Hotel with Mystery Lover",
     "Breakup Drama: <suspect> Accused of Stealing Partner",
     "<suspect>'s Steamy Texts with Conspirators Leaked ",
-    "<suspect>'s Romantic Liaisons Exposed"
+    "<suspect>'s Romantic Liaisons Exposed",
     "<suspect> Details of Secret Relationships Revealed",
     "Couplecrisis: <suspect> and Partner's Marriage on the Rocks",
     "Reality Star <suspect> shits himself in public",
@@ -139,6 +142,7 @@ return {
     "<suspect> uses boss fight tactics in fraud.",
     "<suspect> tries speedrun bank robbery.",
     "<suspect> relies on respawn for fraud.",
-    "<suspect> fails game over evasion tactic."
+    "<suspect> fails game over evasion tactic.",
+    "<suspect> is just not godde enough"
  
 }

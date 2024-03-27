@@ -61,6 +61,7 @@ const float scale = 1./SCAN_SCALE;
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
 const vec3 upwardVector = vec3(0.0, 1.0, 0.0);
+const float sixSeconds = 6.0;
 float depthValue = 0;
 
 //Uniforms
@@ -472,13 +473,13 @@ float generate_wave(float period) {
 
 vec4 getDroplettTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
-	const float sixSeconds = 6.0;
+
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	float scaleDownFactor = ((mod(time,sixSeconds)/sixSeconds)*0.9)+ 0.1;
 	rainUv = rainUv * scaleDownFactor;
 	vec4 rainColor = texture2D(rainDroplettTex, rainUv);
 	vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
-	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds))
+	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds));
 	return resultColor;
 }
 
@@ -515,7 +516,7 @@ vec4 debug_uv_color(vec2 uv)
 }
 
 float cosineSimilarity(vec3 v1, vec3 v2) {
-    return dotProduct(v1, v2) / (length(v1) * length(v2));
+    return dot(v1, v2) / (length(v1) * length(v2));
 }
 
 float calculateLightReflectionFactor() 
@@ -541,7 +542,7 @@ float calculateLightReflectionFactor()
 
 vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
 {
-	return getDroplettTexture(roatedUV, rainspeed)
+	return getDroplettTexture(roatedUV, rainspeed, eyePos.y);
 }
 
 vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
@@ -618,7 +619,7 @@ void main(void)
 
 	vec2 rotatedUV = getRoatedUV();
 	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.3))
+											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.3)),
 											1.0 -upwardnessFactor) ;
 
 

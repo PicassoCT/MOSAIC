@@ -141,7 +141,7 @@ local uniformTime
 local uniformViewPortSize
 local modelDepthTexIndex = 0
 local mapDepthTexIndex = 1
-local noisetexIndex = 2
+local rainDroplettTexIndex = 2
 local screentexIndex = 3
 local normaltexIndex = 4
 local normalunittexIndex= 5
@@ -275,7 +275,7 @@ local function init()
     local uniformInt = {
         modelDepthTex = modelDepthTexIndex,
         mapDepthTex = mapDepthTexIndex,
-        rainDroplettTex = rainDroplettexIndex,
+        rainDroplettTex = rainDroplettTexIndex,
         screentex = screentexIndex,
         normaltex = normaltexIndex,
         normalunittex= normalunittexIndex,
@@ -467,7 +467,7 @@ local function prepareTextures()
 
     glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
     glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
-    glTexture(rainDroplettexIndex, rainDroplettextureFilePath);
+    glTexture(rainDroplettTexIndex, rainDroplettextureFilePath);
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")
