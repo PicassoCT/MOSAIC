@@ -143,6 +143,11 @@ return {
     "<suspect> tries speedrun bank robbery.",
     "<suspect> relies on respawn for fraud.",
     "<suspect> fails game over evasion tactic.",
-    "<suspect> is just not godde enough"
+    "<suspect> is just not godde enough",
+    "Buy <suspect> brand food",
+    "Smoke <suspect> cosmetics",
+    --todo more/better snappy slogans
+    "Nota game <suspect>",
+    
  
 }
