@@ -148,6 +148,6 @@ return {
     "Smoke <suspect> cosmetics",
     --todo more/better snappy slogans
     "Nota game <suspect>",
-    
+    "sell <suspect>s attention for adds"
  
 }

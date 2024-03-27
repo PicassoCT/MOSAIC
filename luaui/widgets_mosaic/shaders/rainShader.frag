@@ -1,27 +1,28 @@
 #version 150 compatibility	
 #line 100001										 
 //Defines //////////////////////////////////////////////////////////
+//CONSTANTS
 #define PI 3.1415926535897932384626433832795
 #define PI_HALF (PI*0.5)
 #define MAX_DEPTH_RESOLUTION 20.0
 #define E_CONST 2.718281828459045235360287471352
+#define NONE vec4(0.0,0.0,0.0,0.0)
+#define RED vec4(1.0, 0.0, 0.0, 1.0)
+#define GREEN vec4(0.0, 1.0, 0.0, 1.0)
+#define BLUE vec4(0.0, 0.0, 1.0, 1.0)
+#define BLACK vec4(0.0, 0.0, 0.0, 1.0)
+#define IDENTITY vec4(1.0,1.0,1.0,1.0)
 
-#define WORLD_POS_SCALE (1.0)
-#define WORLD_POS_OFFSET vec3(0,0,0)
 
-
+//CONFIGUREABLES
+#define DROPLETT_BASE_SCALE 4.0
 #define MAX_HEIGTH_RAIN 1024.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (1024.0)
 #define INTERVALLLENGTH_DISTANCE 30.0
 #define INTERVALLLENGTH_TIME_SEC 1.0
+#define Y_NORMAL_CUTOFFVALUE 0.995
 
-#define MIRRORED_REFLECTION_FACTOR 0.275f
-#define ADD_POND_RIPPLE_FACTOR 0.75f
-#define NORM2SNORM(value) (value * 2.0 - 1.0)
-
-#define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
-#define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
 //DayColors
 #define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
 #define DAY_RAIN_DARK_COL vec4(0.26,0.27,0.37,1.0)
@@ -31,18 +32,16 @@
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
 
-#define Y_NORMAL_CUTOFFVALUE 0.995
-#define NONE vec4(0.0,0.0,0.0,0.0)
-#define RED vec4(1.0, 0.0, 0.0, 1.0)
-#define GREEN vec4(0.0, 1.0, 0.0, 1.0)
-#define BLUE vec4(0.0, 0.0, 1.0, 1.0)
-#define BLACK vec4(0.0, 0.0, 0.0, 1.0)
-#define IDENTITY vec4(1.0,1.0,1.0,1.0)
+float depthValue = 0;
+
+#define MIRRORED_REFLECTION_FACTOR 0.275f
+#define ADD_POND_RIPPLE_FACTOR 0.75f
+#define NORM2SNORM(value) (value * 2.0 - 1.0)
+
+#define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
+#define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
 #define SCAN_SCALE 64.0
-#define RAIN_THICKNESS_INV (1./(TOTAL_LENGTH_RAIN))
-#define RAIN_DROP_DIAMTER (0.06)
-#define RAIN_DROP_LENGTH 5.12
-#define RAIN_DROP_EMPTYSPACE 1.0
+
 
 // Maximum number of cells a ripple can cross.
 #define MAX_RADIUS 2
@@ -62,7 +61,6 @@ const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
 const vec3 upwardVector = vec3(0.0, 1.0, 0.0);
 const float sixSeconds = 6.0;
-float depthValue = 0;
 
 //Uniforms
 uniform sampler2D modelDepthTex;
@@ -473,10 +471,9 @@ float generate_wave(float period) {
 
 vec4 getDroplettTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
-
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-	float scaleDownFactor = ((mod(time,sixSeconds)/sixSeconds)*0.9)+ 0.1;
-	rainUv = rainUv * scaleDownFactor;
+	float scaleDownFactor = ((mod(time, sixSeconds)/sixSeconds)*0.9)+ 0.1;
+	rainUv = rainUv * DROPLETT_BASE_SCALE * scaleDownFactor;
 	vec4 rainColor = texture2D(rainDroplettTex, rainUv);
 	vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
 	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds));
@@ -486,7 +483,7 @@ vec4 getDroplettTexture(vec2 rainUv, float rainspeed, float timeOffset)
 vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-	vec4 rainColor = texture2D(raintex, rainUv);
+	vec4 rainColor = texture2D(raintex , rainUv);
 	vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
 	return resultColor;
 }
@@ -579,12 +576,7 @@ void main(void)
 	viewNormal = mergeGroundViewNormal();
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	//testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
-	//testRenderColor(mix(texture(normalunittex,  uv).rgb, 
-	//					texture(normaltex,  uv).rgb, 
-	//					mod(timePercent*4,1.0)));
-	//testRenderColor(GetDeterministicRainColor(uv).rgb);
-	//testRenderColor(viewNormal);
-	//return;
+	
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -607,7 +599,7 @@ void main(void)
 	pixelDir = normalize(startPos - endPos);
 
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
-
+	//TODO: Mirror the world
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection); //[0..1] 1 being up
 
@@ -618,13 +610,12 @@ void main(void)
 	}
 
 	vec2 rotatedUV = getRoatedUV();
+	//TODO BlendOver to dropplets on camera lens when looking up, runspeed equals 1.0 - upwardnessFactor
 	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
 											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.3)),
 											1.0 -upwardnessFactor) ;
 
-
 	gl_FragColor =accumulatedLightColorRayDownward;
-
 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera
