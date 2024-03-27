@@ -6,7 +6,7 @@
 //Uniforms
 uniform sampler2D modelDepthTex;
 uniform sampler2D mapDepthTex;
-uniform sampler2D noisetex;
+uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;

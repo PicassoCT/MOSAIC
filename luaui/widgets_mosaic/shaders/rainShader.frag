@@ -57,7 +57,6 @@
 
 //Constants aka defines for the weak /////////////////////////////////////
 const float noiseCloudness= float(0.7) * 0.5;
-const float noiseTexSizeInv = 1.0 / SCAN_SCALE;
 const float scale = 1./SCAN_SCALE;		 
 const vec3 vMinima = vec3(-300000.0, MIN_HEIGHT_RAIN, -300000.0);
 const vec3 vMaxima = vec3( 300000.0, MAX_HEIGTH_RAIN,  300000.0);
@@ -67,7 +66,7 @@ float depthValue = 0;
 //Uniforms
 uniform sampler2D modelDepthTex;
 uniform sampler2D mapDepthTex;
-uniform sampler2D noisetex;
+uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
@@ -372,7 +371,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 #define VOLUME_TAA_MAX_REUSE       0.9
 #define VOLUME_TAA_MAX_DIST        0.5
 
-vec4 RayMarchCompose(in vec3 start, in vec3 end)
+vec4 GetGroundReflection(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
 	const float numsteps = MAX_DEPTH_RESOLUTION;
@@ -437,8 +436,12 @@ vec4 GetRainCoronaFromScreenTex()
 	return NONE;
 }
 
-vec3 mergeGroundViewNormal()
+vec3 mergeGroundViewNormal() 
 {
+	vec4 unitViewNormal = texture(normalunittex, uv);
+	vec4 groundViewNormal= texture(normaltex, uv);
+
+	/*
 	float modelDepth = texture(modelDepthTex, uv).x;
 	float mapDepth = texture(mapDepthTex, uv).x;
 	float modelOccludesMap = float(modelDepth < mapDepth);
@@ -449,26 +452,46 @@ vec3 mergeGroundViewNormal()
 	vec3 worldNormal =  mix(mapNormal, modelNormal, modelOccludesMap);
 	worldNormal = NORM2SNORM(worldNormal);
 	worldNormal = normalize(worldNormal);
-	return worldNormal;
+	*/
+	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
+		{
+			if (unitViewNormal.g  > 0.95)
+			{
+				return unitViewNormal.rgb;
+			}		
+		}
+
+	return groundViewNormal.rgb;
 }
 
+float generate_wave(float period) {
+    float frequency = 1.0 / period; // Calculate frequency
+    float phase = sin(2 * PI * frequency * time); // Calculate phase using sine function
+    return 0.5 * (1 + phase); // Scale and shift the sine wave to be between 0 and 1
+}
 
+vec4 getDroplettTexture(vec2 rainUv, float rainspeed, float timeOffset)
+{
+	const float sixSeconds = 6.0;
+	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
+	float scaleDownFactor = ((mod(time,sixSeconds)/sixSeconds)*0.9)+ 0.1;
+	rainUv = rainUv * scaleDownFactor;
+	vec4 rainColor = texture2D(rainDroplettTex, rainUv);
+	vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
+	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds))
+	return resultColor;
+}
 
 vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 {
 	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
 	vec4 rainColor = texture2D(raintex, rainUv);
-	vec4 resultColor = vec4(vec3(1.0-rainColor.r), abs(1- rainColor.r));
+	vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
 	return resultColor;
 }
 
-vec4 debug_uv_color(vec2 uv) 
+vec2 getRoatedUV()
 {
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
-}
-
-vec4 drawRainInSpainOnPlane( float rainspeed)
-{	
 	// Calculate the camera's right and up vectors
 	vec3 cameraUp = vec3(0.0, 1.0, 0.0); 
     vec3 cameraRight = normalize(cross(cameraUp, eyeDir));
@@ -481,19 +504,57 @@ vec4 drawRainInSpainOnPlane( float rainspeed)
         cameraRight.z, cameraUp.z, eyeDir.z
     );
 
-    // Cross product to find the rotation axis
-    vec3 rotationAxis = cross(uvDirection, -normalize(eyePos));
+    // Apply the rotation to the UV coordinates       
+    vec3 rotatedUV = (rotationMatrix * vec3(uv, 0.0)) ;
+    return rotatedUV.xy;
+}
+
+vec4 debug_uv_color(vec2 uv) 
+{
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
+}
+
+float cosineSimilarity(vec3 v1, vec3 v2) {
+    return dotProduct(v1, v2) / (length(v1) * length(v2));
+}
+
+float calculateLightReflectionFactor() 
+{
+    // Normalize the input vectors
+    vec3 vSun = normalize(sundir);
+    vec3 vEye = normalize(eyeDir);
     
-    // Rotate the uv coordinates around the rotation axis
-    mat2 rotationMatrix = mat2(cos(rotationAngle), sin(rotationAngle), -sin(rotationAngle), cos(rotationAngle));
-    vec2 rotatedUV = rotationMatrix * (uv - 0.5);
+    // Calculate the angle between the sun direction and the eye direction
+    float angleCos = dot(vSun, vEye);
+    
+    // Ensure the angleCos is within the range [-1, 1] to avoid numerical errors
+    angleCos = clamp(angleCos, -1.0, 1.0);
+    
+    // Calculate the reflection coefficient using the angle between the vectors
+    float reflection = pow(angleCos, 4.0); // Adjust the exponent as needed
+    
+    // Clamp the reflection value between 0 and 1
+    reflection = clamp(reflection, 0.0, 1.0);
+    
+    return reflection;
+}
 
-    // Adjust the rotated UV back to its original position
-    rotatedUV += 0.5;
+vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
+{
+	return getDroplettTexture(roatedUV, rainspeed)
+}
 
-	vec4 raindropColor = getRainTexture(rotatedUV, rainspeed, eyePos.y);
-	
-	return vec4(raindropColor.rgb, 0.5)  * GetDeterministicRainColor(rotatedUV) ;	
+vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
+{
+	vec2 scale = vec2(8.0, 4.0);
+	vec4 raindropColor = getRainTexture(rotatedUV.xy * scale, rainspeed, eyePos.y);
+	vec4 finalColor =vec4(raindropColor.rgb, raindropColor.a*0.6)  * GetDeterministicRainColor(rotatedUV.xy);
+	float sunlightReflectionFactor = calculateLightReflectionFactor();
+	if (sunlightReflectionFactor > 0.1) 
+	{
+		return mix( vec4(1.0), finalColor, sunlightReflectionFactor);
+	}
+	return  finalColor;	
 }
 
 
@@ -501,6 +562,11 @@ void testRenderColor(vec3 color)
 {	
 	gl_FragColor = vec4( color , 1.0);
 }	
+
+vec4 screen(vec4 a, vec4 b)
+{
+	return vec4(1.)-(vec4(1.)-a)*(vec4(1.)-b);
+}
 
 void main(void)
 {
@@ -539,10 +605,10 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	vec4 accumulatedLightColorRayDownward = RayMarchCompose(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
+	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 
 	float upwardnessFactor = 0.0;
-	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection);
+	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection); //[0..1] 1 being up
 
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )
@@ -550,12 +616,14 @@ void main(void)
 		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
 	}
 
-	accumulatedLightColorRayDownward = drawRainInSpainOnPlane(1.0);
+	vec2 rotatedUV = getRoatedUV();
+	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
+											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.3))
+											1.0 -upwardnessFactor) ;
+
+
 	gl_FragColor =accumulatedLightColorRayDownward;
-	if (isInIntervallAround(upwardnessFactor, 0.5, 0.125 ))
-	{
-		//accumulatedLightColorRayDownward += GetRainCoronaFromScreenTex();
-	}
+
 
 	vec4 upWardrainColor = origColor;
 	//if player looks upward mix drawing rain and start drawing drops on the camera

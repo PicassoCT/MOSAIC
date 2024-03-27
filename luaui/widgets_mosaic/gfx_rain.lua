@@ -21,7 +21,6 @@ local rainShader = nil
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
 local shaderFilePath = "luaui/widgets_mosaic/shaders/"
-local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
 local DAYLENGTH = 28800
 
 --------------------------------------------------------------------------------
@@ -104,6 +103,7 @@ local shaderLightSources = {} --TODO Needs a transfer function from worldspace t
 local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local rainPicPath     = ":i256,256:luaui/images/snow/rain5.png"
+local rainDroplettextureFilePath    = ":i256,256:luaui/images/snow/rain_droplets.png"
 --local rainPicPath     = ":i256,256:luaui/images/ecostats/cross_inv.png"
 local cam = {}
 local prevOsClock = os.clock()
@@ -275,7 +275,7 @@ local function init()
     local uniformInt = {
         modelDepthTex = modelDepthTexIndex,
         mapDepthTex = mapDepthTexIndex,
-        noisetex = noisetexIndex,
+        rainDroplettTex = rainDroplettexIndex,
         screentex = screentexIndex,
         normaltex = normaltexIndex,
         normalunittex= normalunittexIndex,
@@ -408,7 +408,7 @@ end
 function widget:Shutdown()
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
-        glDeleteTexture(noisetex or "")
+        glDeleteTexture(rainDroplettex or "")
         glDeleteTexture(screentex or "")
     end
 
@@ -446,7 +446,7 @@ end
 --[[
         modelDepthTex = 0,
         mapDepthTex = 1,
-        noisetex = 2,
+        rainDroplettex = 2,
         screentex = 3,
         normaltex = 4,
         normalunittex= 5,
@@ -467,7 +467,7 @@ local function prepareTextures()
 
     glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
     glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
-    glTexture(noisetexIndex, noisetextureFilePath);
+    glTexture(rainDroplettexIndex, rainDroplettextureFilePath);
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glTexture(screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")

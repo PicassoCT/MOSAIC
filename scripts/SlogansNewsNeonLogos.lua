@@ -140,8 +140,5 @@ return {
     "<suspect> tries speedrun bank robbery.",
     "<suspect> relies on respawn for fraud.",
     "<suspect> fails game over evasion tactic."
-
-
-    https://www.mediamarkt.de/de/product/_asus-rog-strix-g17-g713pv-hx048w-notebook-mit-173-zoll-display-amd-ryzentm-9-prozessor-16-gb-ram-1-tb-ssd-nvidia-geforce-rtx-4060-schwarz-grau-2864601.html
-
+ 
 }
