@@ -8,13 +8,12 @@
 
 #define WORLD_POS_SCALE (1.0)
 #define WORLD_POS_OFFSET vec3(0,0,0)
-
-
 #define MAX_HEIGTH_RAIN 1024.0
 #define MIN_HEIGHT_RAIN 0.0
 #define TOTAL_LENGTH_RAIN (1024.0)
 #define INTERVALLLENGTH_DISTANCE 30.0
 #define INTERVALLLENGTH_TIME_SEC 1.0
+
 
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
@@ -31,6 +30,7 @@
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
 
+#define DROPLETT_SCALE 16.0
 #define Y_NORMAL_CUTOFFVALUE 0.995
 #define NONE vec4(0.0,0.0,0.0,0.0)
 #define RED vec4(1.0, 0.0, 0.0, 1.0)
@@ -43,16 +43,6 @@
 #define RAIN_DROP_DIAMTER (0.06)
 #define RAIN_DROP_LENGTH 5.12
 #define RAIN_DROP_EMPTYSPACE 1.0
-
-// Maximum number of cells a ripple can cross.
-#define MAX_RADIUS 2
-// Set to 1 to hash twice. Slower, but less patterns.
-#define DOUBLE_HASH 0
-
-// Hash functions shamefully stolen from:
-// https://www.shadertoy.com/view/4djSRW
-#define HASHSCALE1 .1031
-#define HASHSCALE3 vec3(.1031, .1030, .0973)
 
 
 //Constants aka defines for the weak /////////////////////////////////////
@@ -71,7 +61,7 @@ uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
-uniform sampler2D skyboxtex;
+uniform sampler2D noisetex;
 uniform sampler2D raintex;
 
 
@@ -81,9 +71,9 @@ uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
 uniform vec3 eyeDir;
-uniform vec3 sundir;
+uniform vec3 sunDir;
 uniform vec3 suncolor;
-uniform vec3 skycolor;
+uniform vec3 sunPos;
 
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
@@ -94,14 +84,6 @@ uniform mat4 viewMatrix;
 
 
 //Struc Definition				//////////////////////////////////////////////////////////
-//Lightsource description 
-/*
-{
-vec4  position + strength
-vec4  color + id
-}
-*/
-
 
 in Data {
 			vec3 viewDirection;
@@ -123,6 +105,24 @@ struct AABB {
 	vec3 Min;
 	vec3 Max;
 };
+//Debug Code         				//////////////////////////////////////////////////////////
+vec4 debug_getUVRainbow(vec2 uvs){
+	uvs = normalize(uvs);
+	vec4 result  = mix(RED, mix(BLUE, GREEN, uvs.y), uvs.x);
+	result.a = 0.75;
+	return result;
+}
+
+vec4 debug_uv_color(vec2 uv) 
+{
+    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
+}
+
+void debug_testRenderColor(vec3 color)
+{	
+	gl_FragColor = vec4( color , 1.0);
+}	
+
 //Global Variables					//////////////////////////////////////////////////////////
 vec2 uv;
 vec3 worldPos;
@@ -132,6 +132,17 @@ vec4 origColor;
 vec3 viewNormal;
 float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
+bool  NormalIsOnGround = false;
+bool  NormalIsOnUnit = false;
+vec4 screen(vec4 a, vec4 b)
+{
+	return vec4(1.)-(vec4(1.)-a)*(vec4(1.)-b);
+}
+
+vec4 dodge(vec4 bottom, vec4 top)
+{
+	return bottom + top;
+}
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
 
@@ -201,13 +212,6 @@ vec4 getVectorColor(vec3 vector){
 	return result;
 }
 
-vec4 getUVRainbow(vec2 uvs){
-	uvs = normalize(uvs);
-	vec4 result  = mix(RED, mix(BLUE, GREEN, uvs.y), uvs.x);
-	result.a = 0.75;
-	return result;
-}
-
 float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 {
 	return dot(normalize(vectorToCompare), upwardVector);
@@ -258,54 +262,10 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
 	vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
 	float avgVal= (normal.x+normal.y+normal.z)/3.0;
 	return vec4(vec3(avgVal), 0.75);
-	float dotProduct = max(dot(normal, sundir), 0.0);
+	float dotProduct = max(dot(normal, sunDir), 0.0);
 	return vec4(vec3(dotProduct), 0.75);
 }
 
-vec2 calculateCubemapUV(vec3 direction) 
-{
-    vec3 absDirection = abs(direction);
-    float ma;
-    vec2 uvs;
-
-    if (absDirection.x >= absDirection.y && absDirection.x >= absDirection.z) {
-        ma = 0.5 / absDirection.x;
-        if (direction.x > 0.0) {
-            uvs = vec2(0.5 - direction.z * ma, 0.5 - direction.y * ma);
-        } else {
-            uvs = vec2(0.5 + direction.z * ma, 0.5 - direction.y * ma);
-        }
-    } else if (absDirection.y >= absDirection.x && absDirection.y >= absDirection.z) {
-        ma = 0.5 / absDirection.y;
-        if (direction.y > 0.0) {
-            uvs = vec2(0.5 + direction.x * ma, 0.5 + direction.z * ma);
-        } else {
-            uvs = vec2(0.5 + direction.x * ma, 0.5 - direction.z * ma);
-        }
-    } else {
-        ma = 0.5 / absDirection.z;
-        if (direction.z > 0.0) {
-            uvs = vec2(0.5 + direction.x * ma, 0.5 - direction.y * ma);
-        } else {
-            uvs = vec2(0.5 - direction.x * ma, 0.5 - direction.y * ma);
-        }
-    }
-	return uvs;
-}
-
-vec2 getSkyboxUVs(vec3 pos)
-{
-	const float  angle = radians(180.0);
-    mat3 rotationMatrixYAxis = mat3(
-        cos(angle), -sin(angle), 0.0,
-        sin(angle),  cos(angle), 0.0,
-        0.0,         0.0,        1.0);
-
-	vec3 reflectionDir = rotationMatrixYAxis *pixelDir;
-	// Mirror around pos z-axis
-
-	return calculateCubemapUV(reflectionDir);
-}
 
 bool getRivuletMask(vec3 normalAtPos)
 {
@@ -325,6 +285,65 @@ return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 		isAbsInIntervallAround( 1/sinX, rivUv.y, sizeIntervall) ||	
 		isAbsInIntervallAround( 1/cosX, rivUv.y, sizeIntervall));
 }
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Plastic Shrink Wrap  //
+#define OFFSET_X 1
+#define OFFSET_Y 1
+#define DEPTH	 5.5
+
+vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
+{
+	vec2 ouv = (uv + vec2(x, y)) / iChannelResolution[0].xy;
+	vec4 normal = getGroundViewNormal(ouv, out IsOnGround, out IsOnUnit);
+	if (IsOnGround || IsOnUnit) return normal.rgb;
+	return NONE.rgb;
+}
+
+float luminance(vec3 c)
+{
+	return dot(c, vec3(.2126, .7152, .0722));
+}
+
+vec3 GetNormals(in vec2 fragCoord)
+{
+	float R = abs(luminance(sampleNormal( OFFSET_X,0, fragCoord)));
+	float L = abs(luminance(sampleNormal(-OFFSET_X,0, fragCoord)));
+	float D = abs(luminance(sampleNormal(0, OFFSET_Y, fragCoord)));
+	float U = abs(luminance(sampleNormal(0,-OFFSET_Y, fragCoord)));
+				 
+	float X = (L-R) * .5;
+	float Y = (U-D) * .5;
+
+	return normalize(vec3(X, Y, 1. / DEPTH));
+}
+
+vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
+{
+	vec3 n = GetNormals(uv);	
+	vec3 color = viewNormal * dot(n, normalize(sunPos - pixelWorldPos));
+    float e = 64.;
+	color += pow(clamp(dot(normalize(reflect(sunPos - pixelWorldPos, n)), 
+					   normalize(pixelWorldPos - eyePos)), 0., 1.), e);	
+	return vec4(color, 1);
+}
+
+vec4 getReflection()
+{    
+    // Get the normal from the normal texture
+    vec3 normal = texture(normaltex, uv).xyz;
+
+    // Calculate the reflection vector
+    vec3 viewDir = normalize(vec3(uv - 0.5, 1.0));
+    vec3 reflectionDir = reflect(viewDir, normal);
+
+    // Reflect the texture coordinates
+    vec2 reflectionTexCoord = uv - reflectionDir.xy * 0.1; // Adjust the reflection offset as needed
+
+    // Sample the screen texture with the reflected coordinates
+    return texture(screentex, reflectionTexCoord);
+}
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
@@ -342,35 +361,16 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 		groundMixFactor= (abs(viewNormal.r) + abs(viewNormal.g) + abs(viewNormal.b))/1.73205;
 	}
 
-	//return checkers(pixelPos, time/10.0);
-	vec4 mirroredReflection = texture2D(skyboxtex, getSkyboxUVs(pixelPos));
-
+	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
+	workingColorLayer =  mix(baseBlueColor,  GetShrinkWrappedSheen(pixelPos), 0.86);
+	workingColorLayer =  dodge(baseBlueColor,  getReflection());		
+ 	workingColorLayer = dodge(baseBlueColor, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	return mix(NONE,
-			  MIRRORED_REFLECTION_FACTOR * BLUE  + ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz),
+			   workingColorLayer,
 			  groundMixFactor);	
 }
 
-
-
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
-#define VOLUME_FOG_DENSITY         0.02
-#define VOLUME_BRIGHTNESS_CLAMP    0.3
-
-#define VOLUME_RES                 0.5
-#define VOLUME_MAX_STEPS           16
-
-#define VOLUME_USE_NOISE           YES
-#define VOLUME_ANIMATE_NOISE       YES
-
-#define VOLUME_USE_BILATERAL_BLUR  YES
-#define VOLUME_BLUR_SIZE           0.0025
-#define VOLUME_BLUR_QUALITY        2.0
-#define VOLUME_BLUR_DIRECTIONS     8.0
-
-#define VOLUME_USE_TAA             YES
-#define VOLUME_DEBUG_TAA           NO
-#define VOLUME_TAA_MAX_REUSE       0.9
-#define VOLUME_TAA_MAX_DIST        0.5
 
 vec4 GetGroundReflection(in vec3 start, in vec3 end)
 {	
@@ -378,7 +378,7 @@ vec4 GetGroundReflection(in vec3 start, in vec3 end)
 	const float numsteps = MAX_DEPTH_RESOLUTION;
 	const float tstep = 1. / numsteps;
 
-	vec4 accumulatedColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec4 accumulatedColor = NONE;
 	accumulatedColor = GetGroundReflectionRipples(end);
 
 	return accumulatedColor;
@@ -423,44 +423,23 @@ float getAvgValueCol(vec4 col)
 	return sqrt(col.r*col.r + col.g * col.g + col.r * col.r);
 }
 
-vec4 GetRainCoronaFromScreenTex() 
+vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit) 
 {
-	vec2 upUv = uv;
-	upUv.x -= 2;
-	vec3 groundBelowNormal= texture(normaltex, upUv).xyz;
-	vec3 unitViewNormal = texture(normalunittex, upUv).xyz;
-	if (unitViewNormal.rgb != BLACK.rgb) groundBelowNormal = unitViewNormal.rgb;
-	if (groundBelowNormal.g >  Y_NORMAL_CUTOFFVALUE) 
-	{
-		return vec4( 1.0, 1.0, 1.0, 0.125);
-	}
-	return NONE;
-}
+	vec4 unitViewNormal = texture(normalunittex, theUV);
+	vec4 groundViewNormal= texture(normaltex, theUV);
 
-vec3 mergeGroundViewNormal() 
-{
-	vec4 unitViewNormal = texture(normalunittex, uv);
-	vec4 groundViewNormal= texture(normaltex, uv);
-
-	/*
-	float modelDepth = texture(modelDepthTex, uv).x;
-	float mapDepth = texture(mapDepthTex, uv).x;
-	float modelOccludesMap = float(modelDepth < mapDepth);
-
-	vec3 mapNormal = texture(normaltex, uv).xyz;
-	vec3 modelNormal = texture(normalunittex, uv).xyz;
-
-	vec3 worldNormal =  mix(mapNormal, modelNormal, modelOccludesMap);
-	worldNormal = NORM2SNORM(worldNormal);
-	worldNormal = normalize(worldNormal);
-	*/
+	IsOnGround = groundViewNormal != BLACK;
+	IsOnUnit = false;
 	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
+	{
+		IsOnUnit = true;
+		IsOnGround = false;
+		if (unitViewNormal.g  > 0.95)
 		{
-			if (unitViewNormal.g  > 0.95)
-			{
-				return unitViewNormal.rgb;
-			}		
-		}
+			IsOnGround = true;
+			return unitViewNormal.rgb;
+		}		
+	}
 
 	return groundViewNormal.rgb;
 }
@@ -494,15 +473,14 @@ vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
 vec2 getRoatedUV()
 {
 	// Calculate the camera's right and up vectors
-	vec3 cameraUp = vec3(0.0, 1.0, 0.0); 
-    vec3 cameraRight = normalize(cross(cameraUp, eyeDir));
+    vec3 cameraRight = normalize(cross(upwardVector, eyeDir));
     // Up vector in world space
 
     // Calculate the rotation matrix
     mat3 rotationMatrix = mat3(
-        cameraRight.x, cameraUp.x, eyeDir.x,
-        cameraRight.y, cameraUp.y, eyeDir.y,
-        cameraRight.z, cameraUp.z, eyeDir.z
+        cameraRight.x, upwardVector.x, eyeDir.x,
+        cameraRight.y, upwardVector.y, eyeDir.y,
+        cameraRight.z, upwardVector.z, eyeDir.z
     );
 
     // Apply the rotation to the UV coordinates       
@@ -510,19 +488,16 @@ vec2 getRoatedUV()
     return rotatedUV.xy;
 }
 
-vec4 debug_uv_color(vec2 uv) 
-{
-    return vec4(uv.x, uv.y, 1.0 - uv.x * uv.y, 0.5);// Use UV coordinates to generate a color
-}
 
-float cosineSimilarity(vec3 v1, vec3 v2) {
+
+float vectorDirectionSimilarity(vec3 v1, vec3 v2) {
     return dot(v1, v2) / (length(v1) * length(v2));
 }
 
 float calculateLightReflectionFactor() 
 {
     // Normalize the input vectors
-    vec3 vSun = normalize(sundir);
+    vec3 vSun = normalize(sunDir);
     vec3 vEye = normalize(eyeDir);
     
     // Calculate the angle between the sun direction and the eye direction
@@ -542,32 +517,22 @@ float calculateLightReflectionFactor()
 
 vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
 {
-	return getDroplettTexture(roatedUV, rainspeed, eyePos.y);
+	return getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y);
 }
 
 vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 {
 	vec2 scale = vec2(8.0, 4.0);
 	vec4 raindropColor = getRainTexture(rotatedUV.xy * scale, rainspeed, eyePos.y);
-	vec4 finalColor =vec4(raindropColor.rgb, raindropColor.a*0.6)  * GetDeterministicRainColor(rotatedUV.xy);
+	vec4 finalColor =vec4(raindropColor.rgb, raindropColor.a)  * GetDeterministicRainColor(rotatedUV.xy);
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		return mix( vec4(1.0), finalColor, sunlightReflectionFactor);
+		return mix( vec4(suncolor, finalColor.a), finalColor, sunlightReflectionFactor);
 	}
 	return  finalColor;	
 }
 
-
-void testRenderColor(vec3 color)
-{	
-	gl_FragColor = vec4( color , 1.0);
-}	
-
-vec4 screen(vec4 a, vec4 b)
-{
-	return vec4(1.)-(vec4(1.)-a)*(vec4(1.)-b);
-}
 
 void main(void)
 {
@@ -576,14 +541,14 @@ void main(void)
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
 
-	viewNormal = mergeGroundViewNormal();
+	viewNormal = GetGroundViewNormal(uv, out  NormalIsOnGround, out  NormalIsOnUnit);
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-	//testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
-	//testRenderColor(mix(texture(normalunittex,  uv).rgb, 
+	//debug_testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
+	//debug_testRenderColor(mix(texture(normalunittex,  uv).rgb, 
 	//					texture(normaltex,  uv).rgb, 
 	//					mod(timePercent*4,1.0)));
-	//testRenderColor(GetDeterministicRainColor(uv).rgb);
-	//testRenderColor(viewNormal);
+	//debug_testRenderColor(GetDeterministicRainColor(uv).rgb);
+	//debug_testRenderColor(viewNormal);
 	//return;
 	AABB box;
 	box.Min = vMinima;
@@ -609,7 +574,7 @@ void main(void)
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 
 	float upwardnessFactor = 0.0;
-	upwardnessFactor = GetUpwardnessFactorOfVector(viewDirection); //[0..1] 1 being up
+	upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up
 
 	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
 	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )
@@ -618,10 +583,11 @@ void main(void)
 	}
 
 	vec2 rotatedUV = getRoatedUV();
+	
 	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.3)),
+											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
 											1.0 -upwardnessFactor) ;
-
+	
 
 	gl_FragColor =accumulatedLightColorRayDownward;
 

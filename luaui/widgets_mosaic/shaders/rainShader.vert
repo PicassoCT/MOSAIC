@@ -10,7 +10,7 @@ uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
-uniform sampler2D skyboxtex;
+uniform sampler2D noisetex;
 uniform sampler2D raintex;
 
 
@@ -18,9 +18,9 @@ uniform float time;
 uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
-uniform vec3 sundir;
+uniform vec3 sunDir;
 uniform vec3 suncolor;
-uniform vec3 skycolor;
+uniform vec3 sunPos;
 uniform vec3 eyeDir;
 
 uniform vec2 viewPortSize;

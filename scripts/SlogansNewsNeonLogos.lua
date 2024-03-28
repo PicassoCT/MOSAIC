@@ -143,6 +143,9 @@ return {
     "<suspect> tries speedrun bank robbery.",
     "<suspect> relies on respawn for fraud.",
     "<suspect> fails game over evasion tactic.",
-    "<suspect> is just not godde enough"
+    "<suspect> is just not godde enough",
+    "try spring classic",
+    "recoil is the new spring",
+    "Drama baby The community must life"
  
 }

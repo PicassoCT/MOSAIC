@@ -21,6 +21,7 @@ local rainShader = nil
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
 local shaderFilePath = "luaui/widgets_mosaic/shaders/"
+local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
 local DAYLENGTH = 28800
 
 --------------------------------------------------------------------------------
@@ -75,6 +76,7 @@ local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
 local spGetCameraDirection   = Spring.GetCameraDirection
+local eyex,eyey,eyez = 0,0,0
 
 
 --------------------------------------------------------------------------------
@@ -104,7 +106,6 @@ local canvasRainTextureID = 0
 local vsx, vsy = Spring.GetViewGeometry()
 local rainPicPath     = ":i256,256:luaui/images/snow/rain5.png"
 local rainDroplettextureFilePath    = ":i256,256:luaui/images/snow/rain_droplets.png"
---local rainPicPath     = ":i256,256:luaui/images/ecostats/cross_inv.png"
 local cam = {}
 local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()
@@ -131,10 +132,10 @@ local minutes = 0
 local seconds = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
-local skyCol = {0,0,0}
+local sunPos = {0,0,0}
 local uniformSundir
 local uniformSunColor
-local uniformSkyColor
+local uniformSunPos
 local uniformEyePos
 local unformEyeDirection
 local uniformTime
@@ -146,7 +147,7 @@ local screentexIndex = 3
 local normaltexIndex = 4
 local normalunittexIndex= 5
 local raincanvastexIndex = 6
-local skyboxtexIndex = 7
+local noisetexIndex = 7
 local raintexIndex = 8
 
 --------------------------------------------------------------------------------
@@ -173,40 +174,6 @@ function widget:ViewResize()
         glDeleteTexture(screentex)
     end   
 
-    if (normaltex ~= nil  ) then
-        glDeleteTexture(normaltex)
-    end
-
-    if (normalunittex ~= nil  ) then
-        glDeleteTexture(normalunittex)
-    end
---[[
-    modelDepthTex =
-        glCreateTexture(
-            vsx,
-            vsy,
-        {
-            border = false,
-            format = GL_DEPTH_COMPONENT32,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST
-        }
-    )
-    errorOutIfNotInitialized(modelDepthTex, "modelDepthTex not existing")    
-
-    mapDepthTex =
-        glCreateTexture(
-            vsx,
-            vsy,
-        {
-            border = false,
-            format = GL_DEPTH_COMPONENT32,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST
-        }
-    )
-    errorOutIfNotInitialized(mapDepthTex, "mapDepthTex not existing")    
-]]
     screentex =
         glCreateTexture(
         vsx,
@@ -251,12 +218,10 @@ function widget:ViewResize()
     normalunittex = glCreateTexture(vsx, vsy, commonTexOpts)
     errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
 
-    widgetHandler:UpdateCallIn("DrawScreenEffects")  
-
+    widgetHandler:UpdateCallIn("DrawScreenEffects")
 end
+
 widget:ViewResize()
-
-
 
 local function init()
     startTimer = Spring.GetTimer()
@@ -280,7 +245,7 @@ local function init()
         normaltex = normaltexIndex,
         normalunittex= normalunittexIndex,
         raincanvastex = raincanvastexIndex,
-        skyboxtex = skyboxtexIndex,
+        noisetex = noisetexIndex,
         raintex = raintexIndex
     }
 
@@ -301,9 +266,9 @@ local function init()
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
                 cityCenter  = {0,0,0},
-                sundir      = {0,0,0},
+                sunDir      = {0,0,0},
                 suncolor    = {0,0,0},
-                skycolor    = {0,0,0},
+                sunPos      = {0,0,0},
             }
         }
     )
@@ -329,9 +294,9 @@ local function init()
     uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
     uniformViewMatrix               = glGetUniformLocation(rainShader, 'viewMatrix')
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
-    uniformSundir                   = glGetUniformLocation(rainShader, 'sundir')
+    uniformSundir                   = glGetUniformLocation(rainShader, 'sunDir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
-    uniformSkyColor                 = glGetUniformLocation(rainShader, 'skycolor')
+    uniformSunPos                   = glGetUniformLocation(rainShader, 'sunPos')
     Spring.Echo("gfx_rain:Initialize ended")
 end
 
@@ -431,7 +396,7 @@ local function updateUniforms()
 
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
-    glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
+    glUniform(uniformSunPos, sunPos[1], sunPos[2], sunPos[3]);
 
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
     glUniformMatrix(uniformViewInv        , "viewinverse")
@@ -451,10 +416,9 @@ end
         normaltex = 4,
         normalunittex= 5,
         raincanvastex = 6,
-        skyboxtex = 7,
+        noisetex = 7,
         raintex = 8s
 ]]
-
 
 local function cleanUp()    
     glResetState()
@@ -472,7 +436,7 @@ local function prepareTextures()
     glTexture(screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")
     glTexture(normalunittexIndex,"$model_gbuffer_normtex")
-    glTexture(skyboxtexIndex,"$reflection")
+    glTexture(noisetexIndex, noisetextureFilePath);
     glTexture(raintexIndex, rainPicPath)
 end
 
@@ -537,11 +501,18 @@ function widget:DrawWorld()
     prevOsClock = osClock        
 end
 
+local function computeSunVector()
+    local eyePos = {spGetCameraPosition()}
+    sunDir = {eyePos[1]-sunPos[1],eyePos[2]-sunPos[2], eyePos[3] - sunPos[3]}
+end
 
 function widget:GameFrame()
     hours,minutes,seconds, timePercent = getDayTime()
-    sunDir = {gl.GetSun('pos')}
     sunCol = {gl.GetSun('specular')}
+    sunPos = {gl.GetSun('pos')}
+    computeSunVector()
+    Spring.Echo("Sunposition:"..sunPos)
+
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
 end
 --------------------------------------------------------------------------------

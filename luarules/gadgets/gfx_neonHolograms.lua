@@ -402,7 +402,7 @@ end
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
               unitCenterPosition = {0,0,0},
-              vCamPositionWorld = {0,0,0}
+              --vCamPositionWorld = {0,0,0}
             },
         }, "Neon Hologram Shader")
 
@@ -454,7 +454,7 @@ end
                 glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-                neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
+               --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
                 neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
 
                 local cx,cy,cz  = Spring.GetCameraPosition()
