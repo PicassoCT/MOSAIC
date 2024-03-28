@@ -146,6 +146,12 @@ return {
     "<suspect> is just not godde enough",
     "try spring classic",
     "recoil is the new spring",
-    "Drama baby The community must life"
+    "Drama baby The community must life",
+    "Buy <suspect> brand food",
+    "Smoke <suspect> cosmetics",
+    --todo more/better snappy slogans
+    "Nota game <suspect>",
+    "sell <suspect>s attention for adds"
+
  
 }
