@@ -504,6 +504,7 @@ end
 local function computeSunVector()
     local eyePos = {spGetCameraPosition()}
     sunDir = {eyePos[1]-sunPos[1],eyePos[2]-sunPos[2], eyePos[3] - sunPos[3]}
+
 end
 
 function widget:GameFrame()
@@ -511,7 +512,7 @@ function widget:GameFrame()
     sunCol = {gl.GetSun('specular')}
     sunPos = {gl.GetSun('pos')}
     computeSunVector()
-    Spring.Echo("Sunposition:"..sunPos)
+    Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3])
 
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
 end

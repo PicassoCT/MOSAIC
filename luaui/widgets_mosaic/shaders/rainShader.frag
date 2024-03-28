@@ -22,6 +22,7 @@
 #define INTERVALLLENGTH_DISTANCE 30.0
 #define INTERVALLLENGTH_TIME_SEC 1.0
 #define Y_NORMAL_CUTOFFVALUE 0.995
+#define DROPLETT_SCALE 6.0
 
 //DayColors
 #define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
@@ -208,6 +209,11 @@ float getDayPercent()
 	}
 }
 
+float getRandomFactor(vec2 factor)
+{
+	return texture2D(noisetex, factor).r;
+}
+
 vec4 getVectorColor(vec3 vector){
 	vec4 result  = mix(RED,  BLACK, vector.y);
 	result.a = 0.75;
@@ -293,10 +299,33 @@ return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 #define OFFSET_Y 1
 #define DEPTH	 5.5
 
+vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit) 
+{
+	vec4 unitViewNormal = texture(normalunittex, theUV);
+	vec4 groundViewNormal= texture(normaltex, theUV);
+
+	IsOnGround = groundViewNormal != BLACK;
+	IsOnUnit = false;
+	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
+	{
+		IsOnUnit = true;
+		IsOnGround = false;
+		if (unitViewNormal.g  > 0.95)
+		{
+			IsOnGround = true;
+			return unitViewNormal.rgb;
+		}		
+	}
+
+	return groundViewNormal.rgb;
+}
+
 vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 {
-	vec2 ouv = (uv + vec2(x, y)) / iChannelResolution[0].xy;
-	vec4 normal = getGroundViewNormal(ouv, out IsOnGround, out IsOnUnit);
+	vec2 ouv = (uv + vec2(x, y)) / viewPortSize.xy;
+	bool IsOnGround = false;
+	bool IsOnUnit = false;
+	vec3 normal = GetGroundViewNormal(ouv,  IsOnGround, IsOnUnit);
 	if (IsOnGround || IsOnUnit) return normal.rgb;
 	return NONE.rgb;
 }
@@ -364,9 +393,9 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	}
 
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-	workingColorLayer =  mix(baseBlueColor,  GetShrinkWrappedSheen(pixelPos), 0.86);
-	workingColorLayer =  dodge(baseBlueColor,  getReflection());		
- 	workingColorLayer = dodge(baseBlueColor, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
+	workingColorLayer = mix(workingColorLayer,  GetShrinkWrappedSheen(pixelPos), 0.86);
+	workingColorLayer = dodge(workingColorLayer,  getReflection()* getRandomFactor(eyePos.xz -pixelPos.xz));		
+ 	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	return mix(NONE,
 			   workingColorLayer,
 			  groundMixFactor);	
@@ -423,27 +452,6 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 float getAvgValueCol(vec4 col)
 {
 	return sqrt(col.r*col.r + col.g * col.g + col.r * col.r);
-}
-
-vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit) 
-{
-	vec4 unitViewNormal = texture(normalunittex, theUV);
-	vec4 groundViewNormal= texture(normaltex, theUV);
-
-	IsOnGround = groundViewNormal != BLACK;
-	IsOnUnit = false;
-	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
-	{
-		IsOnUnit = true;
-		IsOnGround = false;
-		if (unitViewNormal.g  > 0.95)
-		{
-			IsOnGround = true;
-			return unitViewNormal.rgb;
-		}		
-	}
-
-	return groundViewNormal.rgb;
 }
 
 float generate_wave(float period) {
@@ -536,8 +544,7 @@ void main(void)
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	GetWorldPos();
 	origColor = texture2D(screentex, uv);
-
-	viewNormal = GetGroundViewNormal(uv, out  NormalIsOnGround, out  NormalIsOnUnit);
+	viewNormal = GetGroundViewNormal(uv,  NormalIsOnGround,  NormalIsOnUnit);
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	//debug_testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
 	AABB box;
@@ -575,24 +582,13 @@ void main(void)
 	vec2 rotatedUV = getRoatedUV();
 
 	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-											screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
-											1.0 -upwardnessFactor) ;
+											GREEN, //screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
+											min(upwardnessFactor*2.0, 1.0) 
+											) ;
 
 	gl_FragColor =accumulatedLightColorRayDownward;
 
 	vec4 upWardrainColor = origColor;
-	//if player looks upward mix drawing rain and start drawing drops on the camera
-	//if (upwardnessFactor > 0.45)
-	//{
 	//https://www.youtube.com/watch?v=W0_zQ-WdxH4
-	//	upWardrainColor = mix(downWardrainColor, upWardrainColor, (upwardnessFactor - 0.5) * 2.0);
-	//	gl_FragColor = upWardrainColor;
-	//}	
-	//else //no Raindrops blended in
-	//{
-		//gl_FragColor = mix(accumulatedLightColorRayDownward, vec4(0.) ,1.0 -rainPercent); 
-	//}
 
-	//gl_FragColor.a *= smoothstep(gl_Fog.end * 10.0, gl_Fog.start, length(worldPos - eyePos));
-	
 }
