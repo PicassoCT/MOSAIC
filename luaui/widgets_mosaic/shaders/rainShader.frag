@@ -594,9 +594,9 @@ void main(void)
 	}
 
 	vec2 rotatedUV = getRoatedUV();
-
+	//TODO, should pulsate depending on look vector due to the dropletss
 	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-										   screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
+										   GREEN, //screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
 											min(upwardnessFactor*2.0, 1.0) 
 											) ;
 
