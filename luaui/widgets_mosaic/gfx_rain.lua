@@ -186,7 +186,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
-    Spring.Echo("ScreentexIndex:".. screentex)
+
     raincanvastex =
         gl.CreateTexture(
         vsx,
@@ -331,6 +331,7 @@ local function getDayTime()
 end
 
 local function isRaining()   
+
     if boolRainyArea == nil then
         boolRainyArea = isRainyArea()
     end
@@ -358,16 +359,17 @@ local function split(self, delimiter)
 end
 
 function widget:Update(dt)   
-    --if boolDebugActive then  return end
+    if boolDebugActive then  
+        rainPercent = 1.0
+        return 
+    end
     local percentChange  = rainChangeIntervalSeconds/dt
     if isRaining() == true   then--isRaining() then
         Spring.Echo("Its raining "..rainPercent)
-
         rainPercent = math.min(1.0, rainPercent + percentChange)
     else
         rainPercent = math.max(0.0, rainPercent - percentChange)
     end
-    rainPercent = 1.0
 end
 
 function widget:Shutdown()
@@ -433,7 +435,7 @@ local function prepareTextures()
     glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
     glTexture(rainDroplettTexIndex, rainDroplettextureFilePath);
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
-    glTexture(screentex)
+    glTexture(screentexIndex, screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")
     glTexture(normalunittexIndex,"$model_gbuffer_normtex")
     glTexture(noisetexIndex, noisetextureFilePath);
@@ -512,8 +514,7 @@ function widget:GameFrame()
     sunCol = {gl.GetSun('specular')}
     sunPos = {gl.GetSun('pos')}
     computeSunVector()
-    Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3])
-
+    --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
 end
 --------------------------------------------------------------------------------

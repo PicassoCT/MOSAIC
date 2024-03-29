@@ -121,7 +121,6 @@ void debug_testRenderColor(vec3 color)
 	gl_FragColor = vec4( color , 1.0);
 }
 
-
 //Global Variables					//////////////////////////////////////////////////////////
 vec2 uv;
 vec3 worldPos;
@@ -301,8 +300,8 @@ return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 
 vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit) 
 {
-	vec4 unitViewNormal = texture(normalunittex, theUV);
-	vec4 groundViewNormal= texture(normaltex, theUV);
+	vec4 unitViewNormal = texture2D(normalunittex, theUV);
+	vec4 groundViewNormal= texture2D(normaltex, theUV);
 
 	IsOnGround = groundViewNormal != BLACK;
 	IsOnUnit = false;
@@ -314,7 +313,8 @@ vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit)
 		{
 			IsOnGround = true;
 			return unitViewNormal.rgb;
-		}		
+		}	
+	return unitViewNormal.rgb;	
 	}
 
 	return groundViewNormal.rgb;
@@ -360,18 +360,16 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 
 vec4 getReflection()
 {    
-    // Get the normal from the normal texture
-    vec3 normal = texture(normaltex, uv).xyz;
 
     // Calculate the reflection vector
     vec3 viewDir = normalize(vec3(uv - 0.5, 1.0));
-    vec3 reflectionDir = reflect(viewDir, normal);
+    vec3 reflectionDir = reflect(viewDir, viewNormal);
 
     // Reflect the texture coordinates
     vec2 reflectionTexCoord = uv - reflectionDir.xy * 0.1; // Adjust the reflection offset as needed
 
     // Sample the screen texture with the reflected coordinates
-    return texture(screentex, reflectionTexCoord);
+    return texture2D(screentex, reflectionTexCoord);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -460,14 +458,41 @@ float generate_wave(float period) {
     return 0.5 * (1 + phase); // Scale and shift the sine wave to be between 0 and 1
 }
 
-vec4 getDroplettTexture(vec2 rainUv, float rainspeed, float timeOffset)
+float calculateLightReflectionFactor() 
 {
-	rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
+    // Normalize the input vectors
+    vec3 vSun = normalize(sunDir);
+    vec3 vEye = normalize(eyeDir);
+    
+    // Calculate the angle between the sun direction and the eye direction
+    float angleCos = dot(vSun, vEye);
+    
+    // Ensure the angleCos is within the range [-1, 1] to avoid numerical errors
+    angleCos = clamp(angleCos, -1.0, 1.0);
+    
+    // Calculate the reflection coefficient using the angle between the vectors
+    float reflection = pow(angleCos, 4.0); // Adjust the exponent as needed
+    
+    // Clamp the reflection value between 0 and 1
+    reflection = clamp(reflection, 0.0, 1.0);
+    
+    return reflection;
+}
+
+vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
+{
+	rotatedUV.y = -1.0 * rotatedUV.y - (time + timeOffset) * rainspeed; 
 	float scaleDownFactor = ((mod(time, sixSeconds)/sixSeconds)*0.9)+ 0.1;
-	rainUv = rainUv * scaleDownFactor;
-	vec4 rainColor = texture2D(rainDroplettTex, rainUv);
-	vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
+	rotatedUV = rotatedUV * scaleDownFactor;
+	vec4 rainColor = texture2D(rainDroplettTex, rotatedUV);
+	vec4 resultColor = rainColor * GetDeterministicRainColor(rotatedUV.xy);
 	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds));
+	float sunlightReflectionFactor = calculateLightReflectionFactor();
+	if (sunlightReflectionFactor > 0.1) 
+	{
+		return mix( vec4(suncolor, rainColor.a), rainColor, sunlightReflectionFactor);
+	}
+
 	return resultColor;
 }
 
@@ -497,28 +522,6 @@ vec2 getRoatedUV()
     return rotatedUV.xy;
 }
 
-
-float calculateLightReflectionFactor() 
-{
-    // Normalize the input vectors
-    vec3 vSun = normalize(sunDir);
-    vec3 vEye = normalize(eyeDir);
-    
-    // Calculate the angle between the sun direction and the eye direction
-    float angleCos = dot(vSun, vEye);
-    
-    // Ensure the angleCos is within the range [-1, 1] to avoid numerical errors
-    angleCos = clamp(angleCos, -1.0, 1.0);
-    
-    // Calculate the reflection coefficient using the angle between the vectors
-    float reflection = pow(angleCos, 4.0); // Adjust the exponent as needed
-    
-    // Clamp the reflection value between 0 and 1
-    reflection = clamp(reflection, 0.0, 1.0);
-    
-    return reflection;
-}
-
 vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
 {
 	return getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y);
@@ -543,10 +546,21 @@ void main(void)
 	uv = gl_FragCoord.xy / viewPortSize;	
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	GetWorldPos();
-	origColor = texture2D(screentex, uv);
+
 	viewNormal = GetGroundViewNormal(uv,  NormalIsOnGround,  NormalIsOnUnit);
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-	//debug_testRenderColor(texture(mapDepthTex,  vec2(gl_TexCoord[0])).rgb);
+	//Debug code
+	/*
+	if (NormalIsOnUnit)
+	{
+		vec3 result = texture2D(modelDepthTex, uv).rgb;
+		debug_testRenderColor(result.rgb);
+	}else
+	{
+		gl_FragColor = NONE;
+	}
+	return;
+	*/
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;
@@ -556,7 +570,7 @@ void main(void)
 	r.Origin = eyePos;
 	r.Dir = worldPos - eyePos;
 
-	if (!IntersectBox(r, box, t1, t2))
+	if (!IntersectBox(r, box, t1, t2))	
 	{
 		gl_FragColor = vec4(0.);
 		return;
@@ -582,13 +596,13 @@ void main(void)
 	vec2 rotatedUV = getRoatedUV();
 
 	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-											GREEN, //screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
+										   screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
 											min(upwardnessFactor*2.0, 1.0) 
 											) ;
 
-	gl_FragColor =accumulatedLightColorRayDownward;
+	gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
 
-	vec4 upWardrainColor = origColor;
+	//vec4 upWardrainColor = origColor;
 	//https://www.youtube.com/watch?v=W0_zQ-WdxH4
 
 }

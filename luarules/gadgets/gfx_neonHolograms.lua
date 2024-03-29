@@ -335,7 +335,7 @@ end
     local afterglowVertexShader = 
     [[
        #version 150 compatibility
-
+        uniform vec2 viewPortSize;
         uniform sampler2D afterglowbuffertex; 
         out Data {
             vec2 uv;
@@ -349,7 +349,7 @@ end
     local afterglowFragmentShader = 
     [[
         #version 150 compatibility
-
+        uniform vec2 viewPortSize;
         uniform sampler2D afterglowbuffertex; 
         in Data {
             vec2 uv;
