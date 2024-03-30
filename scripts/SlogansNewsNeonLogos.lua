@@ -152,6 +152,6 @@ return {
     --todo more/better snappy slogans
     "Nota game <suspect>",
     "sell <suspect>s attention for adds"
-
+    "git workflow horrible. Linus shot into sun."
  
 }
