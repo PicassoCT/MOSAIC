@@ -84,7 +84,7 @@ uniform mat4 viewMatrix;
 
 in Data {
 			vec3 viewDirection;
-			vec4 worldpos;
+			vec4 fragWorldPos;
 			noperspective vec2 v_screenUV;
 		 };
 
@@ -223,7 +223,8 @@ vec4 getVectorColor(vec3 vector){
 
 float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 {
-	return dot(normalize(vectorToCompare), upwardVector);
+	float vector=  dot(normalize(vectorToCompare), upwardVector);
+	return (vector+1.0)/2.0;
 }
 
 //Various helper functions && Tools //////////////////////////////////////////////////////////
@@ -362,18 +363,33 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 	return vec4(color, 1);
 }
 
-vec4 getReflection()
+//TODO: Test
+vec4 getReflection(vec3 worldPos)
 {    
+    // Calculate reflection direction
+    vec3 reflectDir = reflect(viewDirection, normalize(viewNormal)); // Calculate reflection direction
 
-    // Calculate the reflection vector
-    vec3 viewDir = normalize(vec3(uv - 0.5, 1.0));
-    vec3 reflectionDir = reflect(viewDir, viewNormal);
+    // Calculate the reflected position
+    vec3 reflectedPos = gl_FragCoord.xyz + reflectDir;
 
-    // Reflect the texture coordinates
-    vec2 reflectionTexCoord = uv - reflectionDir.xy * 0.1; // Adjust the reflection offset as needed
+    // Sample the z-buffer value of the reflected position
+    float reflectedDepth = texture2D(dephtCopyTex, reflectedPos.xy).r;
 
-    // Sample the screen texture with the reflected coordinates
-    return texture2D(screentex, reflectionTexCoord);
+    // Perform depth testing
+    float sceneDepth = gl_FragCoord.z;
+    if (reflectedDepth <= sceneDepth) {
+        // Sample the reflected scene color
+        vec3 reflectedColor = texture2D(screentex, reflectedPos.xy).rgb;
+        retur vec4(GREEN.rgb,  getRandomFactor(worldPos.xz));
+        //return vec4(reflectedColor, getRandomFactor(worldPos.xz));
+    } 
+    else 
+    {
+        // Fragment is behind existing scene fragments, discard it
+        return NONE;
+    }
+
+	return  NONE;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -396,11 +412,18 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
 	workingColorLayer = mix(workingColorLayer,  GetShrinkWrappedSheen(pixelPos), 0.86);
-	workingColorLayer = dodge(workingColorLayer,  getReflection()* getRandomFactor(eyePos.xz -pixelPos.xz));		
+	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos)* getRandomFactor(eyePos.xz -pixelPos.xz));		
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
-	return mix(NONE,
-			   workingColorLayer,
-			  groundMixFactor);	
+	
+	vec4 maskedColor= mix(	NONE,
+			   				workingColorLayer,
+			  				groundMixFactor);
+
+	//clamp alpha
+	maskedColor = max(0.15, min(0.42, maskedColor.a));
+	//accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
+	
+	return maskedColor;
 }
 
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
@@ -584,19 +607,16 @@ void main(void)
 	float upwardnessFactor = 0.0;
 	upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up
 
-	//downWardrainColor =  downWardrainColor + vec4(0.25,0.0,0.0,0.0); //DELME DEBUG
-	if (upwardnessFactor < 0.1 || eyePos.y > 1024.0 )
-	{
-		accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
-	}
 
 	vec2 rotatedUV = getRoatedUV();
 	//TODO, should pulsate depending on look vector due to the dropletss
-	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-										   GREEN, //screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
-											min(upwardnessFactor*2.0, 1.0) 
-											) ;
 
+	
+	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
+										    screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
+											upwardnessFactor 
+											) ;
+	
 	gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
 
 	//vec4 upWardrainColor = origColor;
