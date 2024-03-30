@@ -388,4 +388,7 @@ return {
 "Unveil Fantasy: Scarlet Serenity",
 "Escape Reality: Pleasure Pinnacle",
 "Tentacle goes where ",
+"Porta Potty Palace",
+"Feets of grace",
+"Leather and whips",
 }
