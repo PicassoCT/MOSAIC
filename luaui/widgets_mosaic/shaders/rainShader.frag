@@ -32,13 +32,12 @@
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
 #define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
 #define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
-
-float depthValue = 0;
-
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
-#define NORM2SNORM(value) (value * 2.0 - 1.0)
 
+//Functions
+#define NORM2SNORM(value) (value * 2.0 - 1.0)
+#define lind(value) (fract(0.2* (1.0/(1.0 - value))))
 #define OFFSET_COL_MIN vec4(-0.05,-0.05,-0.05,0.1)
 #define OFFSET_COL_MAX vec4(0.15,0.15,0.15,0.1)
 #define SCAN_SCALE 64.0
@@ -61,7 +60,7 @@ uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
 uniform sampler2D noisetex;
 uniform sampler2D raintex;
-
+uniform sampler2D dephtCopyTex;
 
 
 uniform float time;		
@@ -124,10 +123,13 @@ void debug_testRenderColor(vec3 color)
 //Global Variables					//////////////////////////////////////////////////////////
 vec2 uv;
 vec3 worldPos;
-vec4 dephtValueAtPixel;
+vec4 mapDepth;
+vec4 depthAtPixel;
+vec4 modelDepth;
 vec3 pixelDir;
 vec4 origColor;
 vec3 viewNormal;
+
 float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
 bool  NormalIsOnGround = false;
@@ -304,17 +306,19 @@ vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit)
 	vec4 groundViewNormal= texture2D(normaltex, theUV);
 
 	IsOnGround = groundViewNormal != BLACK;
-	IsOnUnit = false;
+	IsOnUnit = false;	
+	IsOnGround = true;
 	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
 	{
+		if (mapDepth.r < modelDepth.r  )
+		{
+			IsOnUnit = false;
+			IsOnGround = true;
+			return groundViewNormal.rgb;
+		}
 		IsOnUnit = true;
 		IsOnGround = false;
-		if (unitViewNormal.g  > 0.95)
-		{
-			IsOnGround = true;
-			return unitViewNormal.rgb;
-		}	
-	return unitViewNormal.rgb;	
+		return unitViewNormal.rgb;	
 	}
 
 	return groundViewNormal.rgb;
@@ -415,14 +419,14 @@ vec4 GetGroundReflection(in vec3 start, in vec3 end)
 											  
 void GetWorldPos()
 {
-	dephtValueAtPixel = texture2D(mapDepthTex, uv);
+
 	vec4 ppos;
-	ppos.xyz = vec3(uv, dephtValueAtPixel.r) * 2. - 1.; 
+	ppos.xyz = vec3(uv, depthAtPixel.r) * 2. - 1.; 
 	ppos.a   = 1.;
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
 
-	if (depthValue == 1.0) 
+	if (depthAtPixel == 1.0) 
 	{
 		vec3 forward = normalize(worldPos4.xyz - eyePos);
 		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
@@ -543,24 +547,17 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 
 void main(void)
 {
-	uv = gl_FragCoord.xy / viewPortSize;	
+	uv = gl_FragCoord.xy / viewPortSize;
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
-	GetWorldPos();
+	mapDepth = texture2D(mapDepthTex,uv).rrrr;
+	modelDepth = texture2D(modelDepthTex,uv).rrrr;
+	depthAtPixel =  texture2D(dephtCopyTex, uv);
 
+	GetWorldPos();
 	viewNormal = GetGroundViewNormal(uv,  NormalIsOnGround,  NormalIsOnUnit);
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	//Debug code
-	/*
-	if (NormalIsOnUnit)
-	{
-		vec3 result = texture2D(modelDepthTex, uv).rgb;
-		debug_testRenderColor(result.rgb);
-	}else
-	{
-		gl_FragColor = NONE;
-	}
-	return;
-	*/
+
 	AABB box;
 	box.Min = vMinima;
 	box.Max = vMaxima;

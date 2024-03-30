@@ -12,6 +12,7 @@ uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
 uniform sampler2D noisetex;
 uniform sampler2D raintex;
+uniform sampler2D dephtCopyTex;
 
 
 uniform float time;		

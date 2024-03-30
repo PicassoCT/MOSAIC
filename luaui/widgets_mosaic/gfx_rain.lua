@@ -92,6 +92,7 @@ local screentex = nil
 local normaltex = nil
 local normalunittex = nil
 local raincanvastex = nil
+local depthCopyTex= nil
 local startOsClock
 
 local shaderMaxLightSrcLoc
@@ -103,7 +104,7 @@ local rainChangeIntervalSeconds = 90
 local lightSourceIndex = 0
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
-local vsx, vsy = Spring.GetViewGeometry()
+local vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
 local rainPicPath     = ":i256,256:luaui/images/snow/rain5.png"
 local rainDroplettextureFilePath    = ":i256,256:luaui/images/snow/rain_droplets.png"
 local cam = {}
@@ -118,6 +119,7 @@ local GL_DEPTH_COMPONENT   = 0x1902
 local GL_DEPTH_COMPONENT16 = 0x81A5
 local GL_DEPTH_COMPONENT24 = 0x81A6
 local GL_DEPTH_COMPONENT32 = 0x81A7
+
 local GL_RGB8_SNORM = 0x8F96
 local GL_RGBA8 = 0x8058
 local GL_FUNC_ADD = 0x8006
@@ -140,15 +142,16 @@ local uniformEyePos
 local unformEyeDirection
 local uniformTime
 local uniformViewPortSize
-local modelDepthTexIndex = 0
-local mapDepthTexIndex = 1
-local rainDroplettTexIndex = 2
-local screentexIndex = 3
-local normaltexIndex = 4
-local normalunittexIndex= 5
-local raincanvastexIndex = 6
-local noisetexIndex = 7
-local raintexIndex = 8
+local modelDepthTexIndex    = 0
+local mapDepthTexIndex      = 1
+local rainDroplettTexIndex  = 2
+local screentexIndex        = 3
+local normaltexIndex        = 4
+local normalunittexIndex    = 5
+local raincanvastexIndex    = 6
+local noisetexIndex         = 7
+local raintexIndex          = 8
+local dephtCopyTexIndex     = 9
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -172,7 +175,19 @@ function widget:ViewResize()
 
     if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
+    end     
+
+    if (depthCopyTex ~= nil  ) then
+        glDeleteTexture(depthCopyTex)
     end   
+
+    depthCopyTex =   gl.CreateTexture(vsx,vsy, {
+        target = GL_TEXTURE_2D,
+        format = GL_DEPTH_COMPONENT,
+        min_filter = GL.NEAREST,
+        mag_filter = GL.NEAREST,
+    })
+    errorOutIfNotInitialized(depthCopyTex, "depthCopyTex not existing")    
 
     screentex =
         glCreateTexture(
@@ -246,7 +261,8 @@ local function init()
         normalunittex= normalunittexIndex,
         raincanvastex = raincanvastexIndex,
         noisetex = noisetexIndex,
-        raintex = raintexIndex
+        raintex = raintexIndex,
+        dephtCopyTex = dephtCopyTexIndex
     }
 
     rainShader =
@@ -425,6 +441,9 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
+    --for i=0, dephtCopyTexIndex do
+    --    gl.Texture(i, false)
+    --end
     glBlending(true)
 end
 
@@ -440,13 +459,15 @@ local function prepareTextures()
     glTexture(normalunittexIndex,"$model_gbuffer_normtex")
     glTexture(noisetexIndex, noisetextureFilePath);
     glTexture(raintexIndex, rainPicPath)
+    glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
+    glTexture(dephtCopyTexIndex, depthCopyTex)
 end
 
 local function DrawRain()
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused then
        local timerNow = Spring.GetTimer()
-       pausedTime = pausedTime + Spring.DiffTimers(now, lastFrametime)
+       pausedTime = pausedTime + Spring.DiffTimers(now, lastFrametime)       
        return
     end
 
@@ -492,11 +513,11 @@ function widget:DrawWorld()
     end
 
     lastFrametime = Spring.GetTimer()
-    glPushMatrix()
+    --glPushMatrix()
     glBlending(false)
     DrawRain()
     glBlending(true)
-    glPopMatrix()
+    --glPopMatrix()
 
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
