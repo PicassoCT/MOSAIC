@@ -152,6 +152,7 @@ return {
     --todo more/better snappy slogans
     "Nota game <suspect>",
     "sell <suspect>s attention for adds",
-    "Russindian orbitals"
+    "Russindian orbitals ejects <suspect>",
+    "Ifinite growth possible says <suspect>"
  
 }

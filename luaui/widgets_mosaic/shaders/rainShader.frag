@@ -228,7 +228,28 @@ float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 	return (vector+1.0)/2.0;
 }
 
-//Various helper functions && Tools //////////////////////////////////////////////////////////
+vec3 SobelNormalFromScreen(vec2 uvx)
+{
+    // Sample the grayscale texture
+    float center = texture(textureSampler, uv).r;
+    
+    // Sample the surrounding pixels
+    float left = texture(screentex, uvx - vec2(1.0 / viewPortSize.x, 0)).r;
+    float right = texture(screentex, uvx + vec2(1.0 / viewPortSize.x, 0)).r;
+    float top = texture(screentex, uvx + vec2(0, 1.0 / viewPortSize.y)).r;
+    float bottom = texture(screentex, uvx - vec2(0, 1.0 / viewPortSize.y)).r;
+
+    // Calculate the gradients using Sobel operator
+    float dX = (right - left) * 0.5;
+    float dY = (top - bottom) * 0.5;
+
+    // Normalize the gradients and create a normal vector
+    vec3 normal = normalize(vec3(dX, dY, 1.0));
+
+    return normal;
+    // Convert the normal from [-1,1] to [0,1] range
+    //normal = normal * 0.5 + 0.5;
+}
 
 vec4 GetDeterministicRainColor( vec2 uvx)
 {
@@ -356,7 +377,9 @@ vec3 GetNormals(in vec2 fragCoord)
 
 vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 {
-	vec3 n = GetNormals(uv);	
+	vec3 n = GetNormals(uv);
+	//Add screen normals to add detail
+	n +=  0.1 * SobelNormalFromScreen(uv);
 	vec3 actualSunPos = sunPos*8192.0;
 	vec3 color = viewNormal * dot(n, normalize(actualSunPos - pixelWorldPos));
     float e = 64.;
@@ -364,11 +387,38 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 					   normalize(pixelWorldPos - eyePos)), 0., 1.), e);	
 
 	float greyValue = 0.2989* color.r + 0.5870* color.g + 0.1140 *color.b;
-	return vec4(vec3(greyValue)*skyCol, 1);
+	return vec4(vec3(greyValue * skyCol), 1);
 }
 
 vec4 getReflection(vec3 worldPos)
 {    
+	/* TODO reflect
+ 	// Calculate reflection direction
+    vec3 viewDir = normalize(gl_FragCoord.xyz - cameraPosition); // Calculate view direction
+    vec3 normal = vec3(0.0, 1.0, 0.0); // Assuming ground is flat, normal is (0,1,0)
+    vec3 reflectDir = reflect(viewDir, normalize(normal)); // Calculate reflection direction
+
+    // Calculate the reflected position
+    vec2 texCoords = gl_FragCoord.xy / vec2(textureSize(sceneTexture, 0)); // Normalize coordinates
+    vec2 reflectedCoords = texCoords + reflectDir.xy * 0.1; // Adjust for reflection
+
+    // Sample depth from the depth texture
+    float depthValue = texture2D(depthTexture, reflectedCoords).r;
+
+    // Calculate the depth of the reflected fragment
+    float reflectedDepth = gl_FragCoord.z - cameraPosition.z;
+
+    // Check if the reflected fragment is occluded
+    if (reflectedDepth > depthValue) {
+        // Fragment is occluded, return black
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    } else {
+        // Fragment is not occluded, sample color from the scene texture
+        vec4 reflectedColor = texture2D(sceneTexture, reflectedCoords);
+        gl_FragColor = reflectedColor;
+    }
+	*/
+	RETURN RED;
     // Calculate reflection direction
     vec3 reflectDir = reflect(viewDirection, normalize(viewNormal)); // Calculate reflection direction
 
