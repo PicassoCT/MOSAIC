@@ -22,7 +22,8 @@
 #define INTERVALLLENGTH_DISTANCE 30.0
 #define INTERVALLLENGTH_TIME_SEC 1.0
 #define Y_NORMAL_CUTOFFVALUE 0.995
-#define DROPLETT_SCALE 6.0
+#define Y_NORMAL_BLEND_OVER_CUTOFFVALUE 0.993
+#define DROPLETT_SCALE 8.0
 
 //DayColors
 #define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
@@ -135,6 +136,7 @@ float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
 bool  NormalIsOnGround = false;
 bool  NormalIsOnUnit = false;
+bool NormalIsWaterPuddle = false;
 vec4 screen(vec4 a, vec4 b)
 {
 	return vec4(1.)-(vec4(1.)-a)*(vec4(1.)-b);
@@ -225,19 +227,18 @@ vec4 getVectorColor(vec3 vector){
 float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
 {
 	float vector=  dot(normalize(vectorToCompare), upwardVector);
-	return (vector+1.0)/2.0;
+	return (vector+1.0);
 }
 
 vec3 SobelNormalFromScreen(vec2 uvx)
 {
-    // Sample the grayscale texture
-    float center = texture(textureSampler, uv).r;
-    
+	if (!NormalIsWaterPuddle) return BLACK.rgb;
+   
     // Sample the surrounding pixels
-    float left = texture(screentex, uvx - vec2(1.0 / viewPortSize.x, 0)).r;
-    float right = texture(screentex, uvx + vec2(1.0 / viewPortSize.x, 0)).r;
-    float top = texture(screentex, uvx + vec2(0, 1.0 / viewPortSize.y)).r;
-    float bottom = texture(screentex, uvx - vec2(0, 1.0 / viewPortSize.y)).r;
+    float left = texture2D(screentex, uvx - vec2(1.0 / viewPortSize.x, 0)).r;
+    float right = texture2D(screentex, uvx + vec2(1.0 / viewPortSize.x, 0)).r;
+    float top = texture2D(screentex, uvx + vec2(0, 1.0 / viewPortSize.y)).r;
+    float bottom = texture2D(screentex, uvx - vec2(0, 1.0 / viewPortSize.y)).r;
 
     // Calculate the gradients using Sobel operator
     float dX = (right - left) * 0.5;
@@ -323,7 +324,7 @@ return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 #define OFFSET_Y 1
 #define DEPTH	 5.5
 
-vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit) 
+vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, out bool IsWaterPuddle) 
 {
 	vec4 unitViewNormal = texture2D(normalunittex, theUV);
 	vec4 groundViewNormal= texture2D(normaltex, theUV);
@@ -331,6 +332,7 @@ vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit)
 	IsOnGround = groundViewNormal != BLACK;
 	IsOnUnit = false;	
 	IsOnGround = true;
+	IsWaterPuddle =groundViewNormal.g >= Y_NORMAL_CUTOFFVALUE || (groundViewNormal.g > Y_NORMAL_BLEND_OVER_CUTOFFVALUE && getRandomFactor(worldPos.xz) < 0.5);
 	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
 	{
 		if (mapDepth.r < modelDepth.r  )
@@ -341,6 +343,7 @@ vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit)
 		}
 		IsOnUnit = true;
 		IsOnGround = false;
+		IsWaterPuddle =unitViewNormal.g > Y_NORMAL_CUTOFFVALUE;
 		return unitViewNormal.rgb;	
 	}
 
@@ -352,7 +355,8 @@ vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 	vec2 ouv = (uv + vec2(x, y)) / viewPortSize.xy;
 	bool IsOnGround = false;
 	bool IsOnUnit = false;
-	vec3 normal = GetGroundViewNormal(ouv,  IsOnGround, IsOnUnit);
+	bool IsWaterPuddle = false;
+	vec3 normal = GetGroundViewNormal(ouv,  IsOnGround, IsOnUnit,IsWaterPuddle);
 	if (IsOnGround || IsOnUnit) return normal.rgb;
 	return NONE.rgb;
 }
@@ -418,7 +422,7 @@ vec4 getReflection(vec3 worldPos)
         gl_FragColor = reflectedColor;
     }
 	*/
-	RETURN RED;
+
     // Calculate reflection direction
     vec3 reflectDir = reflect(viewDirection, normalize(viewNormal)); // Calculate reflection direction
 
@@ -439,7 +443,7 @@ vec4 getReflection(vec3 worldPos)
     else 
     {
         // Fragment is behind existing scene fragments, discard it
-        return NONE;
+        return BLACK;
     }
 
 	return  NONE;
@@ -451,7 +455,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
 	bool rivuletRunning = false;
 	float groundMixFactor = 1.0;
-	if (viewNormal.g < Y_NORMAL_CUTOFFVALUE) 
+	if (!NormalIsWaterPuddle) 
 	{
 		//rivulets
 		if (!(viewNormal.g  > 0.95)) return NONE;
@@ -564,12 +568,13 @@ vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
 	float scaleDownFactor = ((mod(time, sixSeconds)/sixSeconds)*0.9)+ 0.1;
 	rotatedUV = rotatedUV * scaleDownFactor;
 	vec4 rainColor = texture2D(rainDroplettTex, rotatedUV);
+	rainColor = vec4(1.0 - rainColor.r);
 	vec4 resultColor = rainColor * GetDeterministicRainColor(rotatedUV.xy);
 	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds));
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		return mix( vec4(sunCol, rainColor.a), rainColor, sunlightReflectionFactor);
+		return vec4(mix( sunCol.rgb, resultColor.rgb, sunlightReflectionFactor), resultColor.a) ;
 	}
 
 	return resultColor;
@@ -629,7 +634,8 @@ void main(void)
 	depthAtPixel =  texture2D(dephtCopyTex, uv);
 
 	GetWorldPos();
-	viewNormal = GetGroundViewNormal(uv,  NormalIsOnGround,  NormalIsOnUnit);
+	viewNormal = GetGroundViewNormal(uv,  NormalIsOnGround,  NormalIsOnUnit, NormalIsWaterPuddle);
+
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	//Debug code
 
@@ -660,16 +666,16 @@ void main(void)
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 
 	float upwardnessFactor = 0.0;
-	upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up
+	upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up orthogonal to ground and upwards
 
 
 	vec2 rotatedUV = getRoatedUV();
 	//TODO, should pulsate depending on look vector due to the dropletss
 
 	
-	accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
+	accumulatedLightColorRayDownward = mix( screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
 										    screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
-											upwardnessFactor 
+											1.0-upwardnessFactor 
 											) ;
 	
 	gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
