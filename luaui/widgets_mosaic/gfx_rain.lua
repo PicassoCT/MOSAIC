@@ -134,9 +134,11 @@ local minutes = 0
 local seconds = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
+local skyCol = {0,0,0}
 local sunPos = {0,0,0}
 local uniformSundir
 local uniformSunColor
+local uniformSkyColor
 local uniformSunPos
 local uniformEyePos
 local unformEyeDirection
@@ -283,7 +285,8 @@ local function init()
                 viewPortSize = {vsx, vsy},
                 cityCenter  = {0,0,0},
                 sunDir      = {0,0,0},
-                suncolor    = {0,0,0},
+                sunCol    = {0,0,0},
+                skyCol    = {0,0,0},
                 sunPos      = {0,0,0},
             }
         }
@@ -311,7 +314,8 @@ local function init()
     uniformViewMatrix               = glGetUniformLocation(rainShader, 'viewMatrix')
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sunDir')
-    uniformSunColor                 = glGetUniformLocation(rainShader, 'suncolor')
+    uniformSunColor                 = glGetUniformLocation(rainShader, 'sunCol')
+    uniformSkyColor                 = glGetUniformLocation(rainShader, 'skyCol')
     uniformSunPos                   = glGetUniformLocation(rainShader, 'sunPos')
     Spring.Echo("gfx_rain:Initialize ended")
 end
@@ -414,6 +418,7 @@ local function updateUniforms()
 
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
+    glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
     glUniform(uniformSunPos, sunPos[1], sunPos[2], sunPos[3]);
 
     glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
@@ -532,8 +537,10 @@ end
 
 function widget:GameFrame()
     hours,minutes,seconds, timePercent = getDayTime()
-    sunCol = {gl.GetSun('specular')}
+    sunCol = {gl.GetAtmosphere("sunColor")}
+    skyCol = {gl.GetAtmosphere("skyColor")}
     sunPos = {gl.GetSun('pos')}
+
     computeSunVector()
     --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")

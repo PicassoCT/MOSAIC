@@ -69,8 +69,9 @@ uniform float rainPercent;
 uniform vec3 eyePos;
 uniform vec3 eyeDir;
 uniform vec3 sunDir;
-uniform vec3 suncolor;
+uniform vec3 sunCol;
 uniform vec3 sunPos;
+uniform vec3 skyCol;
 
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
@@ -241,13 +242,13 @@ vec4 GetDeterministicRainColor( vec2 uvx)
 	float depthOfDropFactor = min(1.0, uvx.y/ viewPortSize.y);
 
   	// Night
-	rainHighNightColor =  vec4(suncolor, 1.0) * NIGHT_RAIN_HIGH_COL;
+	rainHighNightColor =  vec4(sunCol, 1.0) * NIGHT_RAIN_HIGH_COL;
 	outsideCityRainNightCol = mix(rainHighNightColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
 	outsideCityRainNightCol.rgb *= darkenFactor;
 	;
 	
 	//Day
-	rainHighDayColor =  vec4(suncolor, 1.0) * DAY_RAIN_HIGH_COL;
+	rainHighDayColor =  vec4(sunCol, 1.0) * DAY_RAIN_HIGH_COL;
 	outsideCityRainDayCol = mix(rainHighDayColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
 	outsideCityRainDayCol.rgb *= darkenFactor;
 
@@ -356,14 +357,16 @@ vec3 GetNormals(in vec2 fragCoord)
 vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 {
 	vec3 n = GetNormals(uv);	
-	vec3 color = viewNormal * dot(n, normalize(sunPos - pixelWorldPos));
+	vec3 actualSunPos = sunPos*8192.0;
+	vec3 color = viewNormal * dot(n, normalize(actualSunPos - pixelWorldPos));
     float e = 64.;
-	color += pow(clamp(dot(normalize(reflect(sunPos - pixelWorldPos, n)), 
+	color += pow(clamp(dot(normalize(reflect(actualSunPos - pixelWorldPos, n)), 
 					   normalize(pixelWorldPos - eyePos)), 0., 1.), e);	
-	return vec4(color, 1);
+
+	float greyValue = 0.2989* color.r + 0.5870* color.g + 0.1140 *color.b;
+	return vec4(vec3(greyValue)*skyCol, 1);
 }
 
-//TODO: Test
 vec4 getReflection(vec3 worldPos)
 {    
     // Calculate reflection direction
@@ -380,7 +383,7 @@ vec4 getReflection(vec3 worldPos)
     if (reflectedDepth <= sceneDepth) {
         // Sample the reflected scene color
         vec3 reflectedColor = texture2D(screentex, reflectedPos.xy).rgb;
-        retur vec4(GREEN.rgb,  getRandomFactor(worldPos.xz));
+        return vec4(RED.rgb,  getRandomFactor(worldPos.xz));
         //return vec4(reflectedColor, getRandomFactor(worldPos.xz));
     } 
     else 
@@ -411,7 +414,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	}
 
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-	workingColorLayer = mix(workingColorLayer,  GetShrinkWrappedSheen(pixelPos), 0.86);
+	workingColorLayer = mix(workingColorLayer,  GetShrinkWrappedSheen(pixelPos), 0.55);
 	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos)* getRandomFactor(eyePos.xz -pixelPos.xz));		
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	
@@ -420,8 +423,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 			  				groundMixFactor);
 
 	//clamp alpha
-	maskedColor = max(0.15, min(0.42, maskedColor.a));
-	//accumulatedLightColorRayDownward.a = min(0.25,accumulatedLightColorRayDownward.a);
+	maskedColor.a = max(0.15, min(0.25, maskedColor.a));
 	
 	return maskedColor;
 }
@@ -517,7 +519,7 @@ vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		return mix( vec4(suncolor, rainColor.a), rainColor, sunlightReflectionFactor);
+		return mix( vec4(sunCol, rainColor.a), rainColor, sunlightReflectionFactor);
 	}
 
 	return resultColor;
@@ -562,7 +564,7 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		return mix( vec4(suncolor, finalColor.a), finalColor, sunlightReflectionFactor);
+		return mix( vec4(sunCol, finalColor.a), finalColor, sunlightReflectionFactor);
 	}
 	return  finalColor;	
 }
@@ -601,6 +603,9 @@ void main(void)
 	vec3 startPos = r.Dir * t1 + eyePos;
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
+
+	//gl_FragColor =  GetShrinkWrappedSheen(endPos);
+	//return;
 
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 

@@ -20,9 +20,10 @@ uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
 uniform vec3 sunDir;
-uniform vec3 suncolor;
+uniform vec3 sunCol;
 uniform vec3 sunPos;
 uniform vec3 eyeDir;
+uniform vec3 skyCol;
 
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
