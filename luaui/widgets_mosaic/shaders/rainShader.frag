@@ -399,13 +399,14 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 	return vec4(vec3(greyValue * skyCol), 1);
 }
 
+
 vec4 getReflection(vec3 worldPos)
 {  
-	// Calculate reflection direction
  	// Calculate reflection direction
     vec3 viewDir = normalize(gl_FragCoord.xyz - eyePos); // Calculate view direction
-    vec3 normal = viewNormal; // Assuming ground is flat, normal is (0,1,0)
-    vec3 reflectDir = reflect(viewDir, normalize(normal)); // Calculate reflection direction
+
+    // Assuming ground is flat, normal is (0,1,0)
+    vec3 reflectDir = reflect(viewDir, viewNormal); // Calculate reflection direction
 
     // Calculate the reflected position
     vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
@@ -421,40 +422,15 @@ vec4 getReflection(vec3 worldPos)
     if (reflectedDepth > depthValue) {
         // Fragment is occluded, return black
        	return NONE;
-    } else {
+    } else 
+    {
         // Fragment is not occluded, sample color from the scene texture
         vec4 reflectedColor = texture2D(screentex, reflectedCoords);
-        return reflectedColor;
-    }
-
-	/*
-	 // Calculate reflection direction
-    vec3 reflectDir = reflect(viewDirection, normalize(viewNormal)); // Calculate reflection direction
-
-    // Calculate the reflected position
-    vec3 reflectedPos = gl_FragCoord.xyz + reflectDir;
-
-    // Sample the z-buffer value of the reflected position
-    float reflectedDepth = texture2D(dephtCopyTex, reflectedPos.xy).r;
-
-    // Perform depth testing
-    float sceneDepth = gl_FragCoord.z;
-    if (reflectedDepth <= sceneDepth) {
-        // Sample the reflected scene color
-        vec3 reflectedColor = texture2D(screentex, reflectedPos.xy).rgb;
-        return vec4(reflectedColor, getRandomFactor(worldPos.xz));
-    } 
-    else 
-    {
-        // Fragment is behind existing scene fragments, discard it
-        return BLACK;
-    }
-
-	return  NONE;
-	*/
+        reflectedColor.a = 0.5;
+        return reflectedColor*RED;
+    }	
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
-
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
@@ -474,7 +450,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
 	workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));
-	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos)* getRandomFactor(eyePos.xz -pixelPos.xz));		
+	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos));		
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	
 	vec4 maskedColor= mix(	NONE,
@@ -668,8 +644,9 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	//gl_FragColor =  GetShrinkWrappedSheen(endPos);
-	//return;
+	gl_FragColor = getReflection(worldPos);
+	//gl_FragColor = lind(depthAtPixel.rrrr);
+	return;
 
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 
