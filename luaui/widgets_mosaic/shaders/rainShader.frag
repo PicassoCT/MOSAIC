@@ -181,6 +181,11 @@ float noise( in vec2 x, float speed)
     return va;
 }
 
+float absinthTime()
+{
+	return abs(sin(time));
+}
+
 bool isInIntervallAround(float value, float targetValue, float intervall)
 {
 	return value +intervall >= targetValue && value - intervall <= targetValue;
@@ -332,7 +337,7 @@ vec3 GetGroundViewNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, out
 	IsOnGround = groundViewNormal != BLACK;
 	IsOnUnit = false;	
 	IsOnGround = true;
-	IsWaterPuddle =groundViewNormal.g >= Y_NORMAL_CUTOFFVALUE || (groundViewNormal.g > Y_NORMAL_BLEND_OVER_CUTOFFVALUE && getRandomFactor(worldPos.xz) < 0.5);
+	IsWaterPuddle =groundViewNormal.g >= Y_NORMAL_CUTOFFVALUE ;
 	if (unitViewNormal.rgb != BLACK.rgb && unitViewNormal.a > 0.5) 
 	{
 		if (mapDepth.r < modelDepth.r  )
@@ -383,7 +388,7 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 {
 	vec3 n = GetNormals(uv);
 	//Add screen normals to add detail
-	n +=  0.1 * SobelNormalFromScreen(uv);
+	n =  n+ SobelNormalFromScreen(uv);
 	vec3 actualSunPos = sunPos*8192.0;
 	vec3 color = viewNormal * dot(n, normalize(actualSunPos - pixelWorldPos));
     float e = 64.;
@@ -395,35 +400,35 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 }
 
 vec4 getReflection(vec3 worldPos)
-{    
-	/* TODO reflect
+{  
+	// Calculate reflection direction
  	// Calculate reflection direction
-    vec3 viewDir = normalize(gl_FragCoord.xyz - cameraPosition); // Calculate view direction
-    vec3 normal = vec3(0.0, 1.0, 0.0); // Assuming ground is flat, normal is (0,1,0)
+    vec3 viewDir = normalize(gl_FragCoord.xyz - eyePos); // Calculate view direction
+    vec3 normal = viewNormal; // Assuming ground is flat, normal is (0,1,0)
     vec3 reflectDir = reflect(viewDir, normalize(normal)); // Calculate reflection direction
 
     // Calculate the reflected position
-    vec2 texCoords = gl_FragCoord.xy / vec2(textureSize(sceneTexture, 0)); // Normalize coordinates
+    vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
     vec2 reflectedCoords = texCoords + reflectDir.xy * 0.1; // Adjust for reflection
 
     // Sample depth from the depth texture
-    float depthValue = texture2D(depthTexture, reflectedCoords).r;
+    float depthValue = texture2D(dephtCopyTex, reflectedCoords).r;
 
     // Calculate the depth of the reflected fragment
-    float reflectedDepth = gl_FragCoord.z - cameraPosition.z;
+    float reflectedDepth = depthAtPixel.r - eyePos.z;
 
     // Check if the reflected fragment is occluded
     if (reflectedDepth > depthValue) {
         // Fragment is occluded, return black
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+       	return NONE;
     } else {
         // Fragment is not occluded, sample color from the scene texture
-        vec4 reflectedColor = texture2D(sceneTexture, reflectedCoords);
-        gl_FragColor = reflectedColor;
+        vec4 reflectedColor = texture2D(screentex, reflectedCoords);
+        return reflectedColor;
     }
-	*/
 
-    // Calculate reflection direction
+	/*
+	 // Calculate reflection direction
     vec3 reflectDir = reflect(viewDirection, normalize(viewNormal)); // Calculate reflection direction
 
     // Calculate the reflected position
@@ -437,8 +442,7 @@ vec4 getReflection(vec3 worldPos)
     if (reflectedDepth <= sceneDepth) {
         // Sample the reflected scene color
         vec3 reflectedColor = texture2D(screentex, reflectedPos.xy).rgb;
-        return vec4(RED.rgb,  getRandomFactor(worldPos.xz));
-        //return vec4(reflectedColor, getRandomFactor(worldPos.xz));
+        return vec4(reflectedColor, getRandomFactor(worldPos.xz));
     } 
     else 
     {
@@ -447,6 +451,7 @@ vec4 getReflection(vec3 worldPos)
     }
 
 	return  NONE;
+	*/
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -468,7 +473,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	}
 
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-	workingColorLayer = mix(workingColorLayer,  GetShrinkWrappedSheen(pixelPos), 0.55);
+	workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));
 	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos)* getRandomFactor(eyePos.xz -pixelPos.xz));		
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	
@@ -565,7 +570,7 @@ float calculateLightReflectionFactor()
 vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
 {
 	rotatedUV.y = -1.0 * rotatedUV.y - (time + timeOffset) * rainspeed; 
-	float scaleDownFactor = ((mod(time, sixSeconds)/sixSeconds)*0.9)+ 0.1;
+	float scaleDownFactor = ((mod(time + timeOffset, sixSeconds)/sixSeconds)*0.9)+ 0.1;
 	rotatedUV = rotatedUV * scaleDownFactor;
 	vec4 rainColor = texture2D(rainDroplettTex, rotatedUV);
 	rainColor = vec4(1.0 - rainColor.r);
@@ -608,7 +613,9 @@ vec2 getRoatedUV()
 
 vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
 {
-	return getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y);
+	vec4 droplettTex = getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y);
+	droplettTex += getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y + sixSeconds/2.0);
+	return droplettTex;
 }
 
 vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
@@ -617,6 +624,7 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 	vec4 raindropColor = getRainTexture(rotatedUV.xy * scale, rainspeed, eyePos.y);
 	vec4 finalColor =vec4(raindropColor.rgb, raindropColor.a)  * GetDeterministicRainColor(rotatedUV.xy);
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
+	finalColor.a *= 2.0;
 	if (sunlightReflectionFactor > 0.1) 
 	{
 		return mix( vec4(sunCol, finalColor.a), finalColor, sunlightReflectionFactor);

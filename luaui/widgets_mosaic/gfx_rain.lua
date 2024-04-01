@@ -76,7 +76,7 @@ local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
 local spGetCameraDirection   = Spring.GetCameraDirection
-local eyex,eyey,eyez = 0,0,0
+local eyex,eyey,eyez         = 0,0,0
 
 
 --------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ local seconds = 0
 local sunDir = {0,0,0}
 local sunCol = {0,0,0}
 local skyCol = {0,0,0}
-local sunPos = {0,0,0}
+local sunPos = {0.0,0.0, 1.0}
 local uniformSundir
 local uniformSunColor
 local uniformSkyColor
@@ -287,7 +287,7 @@ local function init()
                 sunDir      = {0,0,0},
                 sunCol    = {0,0,0},
                 skyCol    = {0,0,0},
-                sunPos      = {0,0,0},
+                sunPos      = {0,0,1},
             }
         }
     )
@@ -540,7 +540,8 @@ function widget:GameFrame()
     sunCol = {gl.GetAtmosphere("sunColor")}
     skyCol = {gl.GetAtmosphere("skyColor")}
     sunPos = {gl.GetSun('pos')}
-
+    --Spring.Echo("Time:"..hours..":"..minutes..":"..seconds)
+    --Spring.Echo("Sunpos:"..sunPos[1]..":"..sunPos[2]..":"..sunPos[3])
     computeSunVector()
     --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
