@@ -154,12 +154,16 @@ return {
     "sell <suspect>s attention for adds",
     "Russindian orbitals ejects <suspect>",
     "Ifinite growth possible says <suspect>",
-    "Bunkered rich besieged in newzealandia",
+    "Bunkered down billionaires besieged in newzealandia",
     "Revolutionary Slogan Loading Error",
     "Millions dead in <cityName>",
     "Mercy not an option says <suspect>",
     "<suspect> gone gonzo says partner",
+    "Try refreshing crack.",
+    "In turbulent times survive with vilolent crimes INC",
+    "Revolutionarys resort to cannibalism after eating supply chain",
     
+
 
  
 }

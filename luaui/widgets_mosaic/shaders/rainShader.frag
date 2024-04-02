@@ -402,15 +402,17 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 
 vec4 getReflection(vec3 worldPos)
 {  
+	vec3 viewSpaceCameraPos = vec3 (viewPortSize/2.0, gl_FragCoord.z + 1.0);
  	// Calculate reflection direction
-    vec3 viewDir = normalize(gl_FragCoord.xyz - eyePos); // Calculate view direction
+    vec3 viewDir = normalize(gl_FragCoord.xyz - viewSpaceCameraPos); // Calculate view direction
 
     // Assuming ground is flat, normal is (0,1,0)
-    vec3 reflectDir = reflect(viewDir, viewNormal); // Calculate reflection direction
+    vec3 reflectDir = reflect(normal(viewDir), normal(viewNormal)); // Calculate reflection direction
 
     // Calculate the reflected position
     vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
     vec2 reflectedCoords = texCoords + reflectDir.xy * 0.1; // Adjust for reflection
+
 
     // Sample depth from the depth texture
     float depthValue = texture2D(dephtCopyTex, reflectedCoords).r;
