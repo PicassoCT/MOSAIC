@@ -399,36 +399,85 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 	return vec4(vec3(greyValue * skyCol), 1);
 }
 
+float rayMarchForRefletion(vec3 rayOrigin, vec3 rayDirection, float minDistance, float maxDistance)
+{
+
+    // Define marching parameters
+
+    float marchStep = 0.1; // Step size for marching
+
+    // Initialize variables
+    float currentDistance = 0.0;
+    float depthValue;
+
+    // March along the ray until reaching maximum distance
+    while (int i = 0; i < 10; i++) // Maximum iterations to avoid infinite loops
+    {
+        vec3 samplePoint = rayOrigin + rayDirection * currentDistance;
+        vec2 texCoords = samplePoint.xy / viewPortSize; // Convert sample point to texture coordinates
+
+        // Sample depth from the depth texture
+        depthValue = texture2D(depthCopyTex, texCoords).r;
+
+        // Check if the depth value indicates an intersection
+        if (depthValue < samplePoint.z)
+        {
+            // Intersected with the scene geometry, return the current distance
+            return currentDistance;
+        }
+    	
+    	// Calculate step size exponentially increasing with distance
+        float step = minStep + (1.0 - exp(-currentDistance / 10.0)) * (maxDistance - minStep);
+
+        // Increment the distance
+        currentDistance += step;
+
+
+        // Break if reached the maximum distance
+        if (currentDistance >= maxDistance)
+        {
+            break;
+        }
+    }
+
+    // Return a large value if no intersection found within the maximum distance
+    return maxDistance;
+}
+
 
 vec4 getReflection(vec3 worldPos)
 {  
 	vec3 viewSpaceCameraPos = vec3 (viewPortSize/2.0, gl_FragCoord.z + 1.0);
  	// Calculate reflection direction
-    vec3 viewDir = normalize(gl_FragCoord.xyz - viewSpaceCameraPos); // Calculate view direction
+    vec3 viewDir = normalize(gl_FragCoord.xyz - eyePos); // Calculate view direction
 
-    // Assuming ground is flat, normal is (0,1,0)
     vec3 reflectDir = reflect(normal(viewDir), normal(viewNormal)); // Calculate reflection direction
+
+    // calculate the intersection distance with the depthmap for given worldpos
+	intersectionDistance = rayMarchForRefletion(worldPos,reflectDir, MAX_RAY_MARCH_DISTANCE);
+
+	float distanceFactor = sqrt(intersectionDistance)/intersectionDistance;
 
     // Calculate the reflected position
     vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
-    vec2 reflectedCoords = texCoords + reflectDir.xy * 0.1; // Adjust for reflection
-
+    vec2 reflectedCoords = texCoords + reflectDir.xy * intersectionDistance // Adjust for reflection
 
     // Sample depth from the depth texture
-    float depthValue = texture2D(dephtCopyTex, reflectedCoords).r;
-
-    // Calculate the depth of the reflected fragment
-    float reflectedDepth = depthAtPixel.r - eyePos.z;
+    float reflectedDepth = texture2D(dephtCopyTex, reflectedCoords).r;
+    float emissionStrength = texture2D(emissionTex, reflectedCoords).r/255.0;
 
     // Check if the reflected fragment is occluded
-    if (reflectedDepth > depthValue) {
+    if (reflectedDepth > depthAtPixel) 
+    {
         // Fragment is occluded, return black
        	return NONE;
-    } else 
+    } 
+    else 
     {
+    	strengthValue = distanceFactor * emissionStrength;
         // Fragment is not occluded, sample color from the scene texture
         vec4 reflectedColor = texture2D(screentex, reflectedCoords);
-        reflectedColor.a = 0.5;
+        reflectedColor.a = strengthValue;
         return reflectedColor*RED;
     }	
 }
