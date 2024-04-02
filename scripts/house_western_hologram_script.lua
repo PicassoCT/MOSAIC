@@ -1096,6 +1096,7 @@ end
 function setupMessage(myMessages)
     assert(myMessages)
     hideResetAllPieces()
+    spinner =  piece("text_spin")
     axis= 2
     startValue = 0
     myMessage = myMessages[math.random(1,#myMessages)]
@@ -1107,6 +1108,7 @@ function setupMessage(myMessages)
             StartThread(LightChain, TableOfPiecesGroups["LightChain"], 4, math.random(700,1200))
         end
     end
+
     boolSpinning = maRa()
 
     downIndex = 1
@@ -1116,11 +1118,17 @@ function setupMessage(myMessages)
     columnIndex= 0
 
     if boolSpinning then
-        spinner =  piece("text_spin")
+
         reset(spinner)
         val = math.random(5,45)
         Spin(spinner, y_axis, math.rad(val),0)
     end
+
+    if boolUpRight then
+        lengthOfString = math.abs(stringlength - 15) --letters that it is default over ground
+        Move(spinner, y_axis, lengthOfString * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
+    end
+
     allLetters = {} 
     posLetters = {}   
     for i=1, stringlength do

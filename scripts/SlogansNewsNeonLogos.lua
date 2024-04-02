@@ -153,6 +153,13 @@ return {
     "Nota game <suspect>",
     "sell <suspect>s attention for adds",
     "Russindian orbitals ejects <suspect>",
-    "Ifinite growth possible says <suspect>"
+    "Ifinite growth possible says <suspect>",
+    "Bunkered rich besieged in newzealandia",
+    "Revolutionary Slogan Loading Error",
+    "Millions dead in <cityName>",
+    "Mercy not an option says <suspect>",
+    "<suspect> gone gonzo says partner",
+    
+
  
 }
