@@ -1125,8 +1125,9 @@ function setupMessage(myMessages)
     end
 
     if boolUpRight then
-        lengthOfString = math.abs(stringlength - 15) --letters that it is default over ground
-        Move(spinner, y_axis, lengthOfString * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
+        if stringlength > 10 then        
+            Move(spinner, y_axis,(stringlength-10) * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
+        end
     end
 
     allLetters = {} 
