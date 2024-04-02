@@ -15,6 +15,7 @@
 
 
 //CONFIGUREABLES
+#define MAX_RAY_MARCH_DISTANCE 250.0
 #define DROPLETT_BASE_SCALE 4.0
 #define MAX_HEIGTH_RAIN 1024.0
 #define MIN_HEIGHT_RAIN 0.0
@@ -411,13 +412,13 @@ float rayMarchForRefletion(vec3 rayOrigin, vec3 rayDirection, float minDistance,
     float depthValue;
 
     // March along the ray until reaching maximum distance
-    while (int i = 0; i < 10; i++) // Maximum iterations to avoid infinite loops
+    for (int i = 0; i < 10; i++) // Maximum iterations to avoid infinite loops
     {
         vec3 samplePoint = rayOrigin + rayDirection * currentDistance;
         vec2 texCoords = samplePoint.xy / viewPortSize; // Convert sample point to texture coordinates
 
         // Sample depth from the depth texture
-        depthValue = texture2D(depthCopyTex, texCoords).r;
+        depthValue = texture2D(dephtCopyTex, texCoords).r;
 
         // Check if the depth value indicates an intersection
         if (depthValue < samplePoint.z)
@@ -427,7 +428,7 @@ float rayMarchForRefletion(vec3 rayOrigin, vec3 rayDirection, float minDistance,
         }
     	
     	// Calculate step size exponentially increasing with distance
-        float step = minStep + (1.0 - exp(-currentDistance / 10.0)) * (maxDistance - minStep);
+        float step = minDistance + (1.0 - exp(-currentDistance / 10.0)) * (maxDistance - minDistance);
 
         // Increment the distance
         currentDistance += step;
@@ -451,10 +452,10 @@ vec4 getReflection(vec3 worldPos)
  	// Calculate reflection direction
     vec3 viewDir = normalize(gl_FragCoord.xyz - eyePos); // Calculate view direction
 
-    vec3 reflectDir = reflect(normal(viewDir), normal(viewNormal)); // Calculate reflection direction
+    vec3 reflectDir = reflect(normalize(viewDir), normalize(viewNormal)); // Calculate reflection direction
 
     // calculate the intersection distance with the depthmap for given worldpos
-	intersectionDistance = rayMarchForRefletion(worldPos,reflectDir, MAX_RAY_MARCH_DISTANCE);
+	intersectionDistance = rayMarchForRefletion(worldPos,reflectDir, 0.1, MAX_RAY_MARCH_DISTANCE);
 
 	float distanceFactor = sqrt(intersectionDistance)/intersectionDistance;
 
@@ -464,7 +465,7 @@ vec4 getReflection(vec3 worldPos)
 
     // Sample depth from the depth texture
     float reflectedDepth = texture2D(dephtCopyTex, reflectedCoords).r;
-    float emissionStrength = texture2D(emissionTex, reflectedCoords).r/255.0;
+    float emissionStrength = texture2D(noisetex, reflectedCoords).r;
 
     // Check if the reflected fragment is occluded
     if (reflectedDepth > depthAtPixel) 
