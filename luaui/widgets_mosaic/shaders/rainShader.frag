@@ -392,7 +392,7 @@ vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 	bool IsOnGround = false;
 	bool IsOnUnit = false;
 	bool IsWaterPuddle = false;
-	vec3 normal = GetGroundVertexNormal(ouv,  IsOnGround, IsOnUnit,IsWaterPuddle);
+	vec3 normal = GetGroundVertexNormal(ouv,  IsOnGround, IsOnUnit, IsWaterPuddle);
 	if (IsOnGround || IsOnUnit) return normal.rgb;
 	return NONE.rgb;
 }
@@ -464,6 +464,12 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
             {
                 if (abs(curUV.z - curDepth) < DepthCheckBias)
                 {
+                	bool IsOnGround = false;
+                	bool IsOnUnit = false;
+                	bool IsPuddle = false
+
+                	vec3 normal = GetGroundVertexNormal(curUV,  IsOnGround,  IsOnUnit, IsPuddle);
+                	if (normal == BLACK.rgb || IsPuddle || IsOnGround) return RED;
                     return texture2D(screentex, curUV.xy);
                 }
                 curDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
@@ -495,38 +501,6 @@ vec4 getReflection(vec3 reflectionPosition)
     return NONE;
 }
 
-vec4 getReflections(vec3 worldPos)
-{  
-	if (!NormalIsWaterPuddle) return NONE;
- 	// Calculate reflection direction
-    vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
-
-    // Assuming ground is flat, normal is (0,1,0)
-    vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
-
-    // Calculate the reflected position
-    vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
-    vec2 reflectedCoords = texCoords + reflectDir.xy * 0.08; // Adjust for reflection
-
-    // Sample depth from the depth texture
-    float depthValue = texture2D(dephtCopyTex, reflectedCoords).r;
-
-    // Calculate the depth of the reflected fragment
-    float reflectedDepth = depthAtPixel.r - eyePos.z;
-
-    // Check if the reflected fragment is occluded
-    if (reflectedDepth < depthValue) 
-    {
-    	if (getRandomFactor(worldPos.xz /512.0) < rainPercent)
-    	{
-        // Fragment is not occluded, sample color from the scene texture
-        vec4 reflectedColor = texture2D(screentex, reflectedCoords);
-        reflectedColor.a = 0.5;
-        return reflectedColor ;
-        }
-    }	
-    return NONE;
-}
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
