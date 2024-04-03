@@ -454,31 +454,30 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
 	// Now loop
     for (int i = 0; i < loops; i++)
     {
-            // Update the Current Position of the Ray
-            curPos = reflectionPosition + reflectDir * curLength ;
-            // Get the UV Coordinates of the current Ray
-            curUV = GetUVAtPosInView(curPos);
-            // The Depth of the Current Pixel
-            float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
-            for (int i = 0; i < 4; i++)
+        // Update the Current Position of the Ray
+        curPos = reflectionPosition + reflectDir * curLength ;
+        // Get the UV Coordinates of the current Ray
+        curUV = GetUVAtPosInView(curPos);
+        // The Depth of the Current Pixel
+        float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
+        for (int i = 0; i < 4; i++)
+        {
+            if (abs(curUV.z - curDepth) < DepthCheckBias)
             {
-                if (abs(curUV.z - curDepth) < DepthCheckBias)
-                {
-                	bool IsOnGround = false;
-                	bool IsOnUnit = false;
-                	bool IsPuddle = false
+            	bool IsOnGround = false;
+            	bool IsOnUnit = false;
+            	bool IsPuddle = false;
 
-                	vec3 normal = GetGroundVertexNormal(curUV,  IsOnGround,  IsOnUnit, IsPuddle);
-                	if (normal == BLACK.rgb || IsPuddle || IsOnGround) return RED;
-                    return texture2D(screentex, curUV.xy);
-                }
-                curDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
+            	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle);
+            	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) return NONE;
+                return texture2D(screentex, curUV.xy);
             }
+            curDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
+        }
 
-            // Get the New Position and Vector
-            vec3 newPos = GetWorldPosAtUV(curUV.xy, curDepth );
-            curLength = length(reflectionPosition - newPos);
-        
+        // Get the New Position and Vector
+        vec3 newPos = GetWorldPosAtUV(curUV.xy, curDepth );
+        curLength = length(reflectionPosition - newPos);        
     }
     return NONE;
 }
