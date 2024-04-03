@@ -342,7 +342,7 @@ local uiOpacitySec = 0
 local selChangedSec = 0
 function widget:Update(dt)
   if boolLeftClickActive == true then
-    Spring.Echo("LeftClickUpdate")
+--    Spring.Echo("LeftClickUpdate")
     handleHouseSelected()
     boolLeftClickActive = false
   end

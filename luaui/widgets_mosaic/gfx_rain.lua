@@ -142,6 +142,7 @@ local uniformSkyColor
 local uniformSunPos
 local uniformEyePos
 local unformEyeDirection
+local uniformProjection
 local uniformTime
 local uniformViewPortSize
 local modelDepthTexIndex    = 0
@@ -313,6 +314,7 @@ local function init()
     uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
     uniformViewMatrix               = glGetUniformLocation(rainShader, 'viewMatrix')
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
+    uniformProjection               = glGetUniformLocation(rainShader, 'projection')
     uniformSundir                   = glGetUniformLocation(rainShader, 'sunDir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'sunCol')
     uniformSkyColor                 = glGetUniformLocation(rainShader, 'skyCol')
@@ -425,6 +427,7 @@ local function updateUniforms()
     glUniformMatrix(uniformViewInv        , "viewinverse")
     glUniformMatrix(uniformViewProjection , "viewprojection")
     glUniformMatrix(uniformViewMatrix     , "view")
+    glUniformMatrix(uniformProjection     , "projection")
 
 end
 

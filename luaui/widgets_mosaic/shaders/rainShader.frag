@@ -79,6 +79,7 @@ uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
+uniform mat4 projection;
 uniform mat4 viewInv;
 uniform mat4 viewMatrix;
 
@@ -185,6 +186,35 @@ float noise( in vec2 x, float speed)
 float absinthTime()
 {
 	return abs(sin(time));
+}
+
+vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
+{
+
+	vec4 ppos;
+	ppos.xyz = vec3(uvs, depthPixel) * 2. - 1.; 
+	ppos.a   = 1.;
+	vec4 worldPos4 = viewProjectionInv * ppos;
+	worldPos4.xyz /= worldPos4.w;
+
+	if (depthAtPixel == 1.0) 
+	{
+		vec3 forward = normalize(worldPos4.xyz - eyePos);
+		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
+		return eyePos + forward.xyz * abs(a);		
+	}
+	return worldPos4.xyz;
+}
+
+vec3  GetUVAtPosInView(vec3 worldPos)
+{
+	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
+
+	 // Convert to normalized device coordinates
+    vec3 ndcPosition = clipSpacePosition.xyz / clipSpacePosition.w;
+	vec2 ruv = vec2(ndcPosition.x * 0.5 + 0.5, ndcPosition.y * -0.5 + 0.5);
+
+	return vec3(ruv.x, ruv.y, texture2D(dephtCopyTex, ruv));
 }
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
@@ -400,183 +430,74 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 	return vec4(vec3(greyValue * skyCol), 1);
 }
  
-vec4 rayMarchForRefletion( vec3 eyePosToPivotDir, float minDistance, float maxDistance)
+const vec2 SAMPLE_OFFSETS[4] = vec2[4](
+    vec2(1.0, 0.0),  // Right
+    vec2(-1.0, 0.0), // Left
+    vec2(0.0, 1.0),  // Up
+    vec2(0.0, -1.0)  // Down
+);
+
+vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
 {
-	float maxDistance = 15;
-	float resolution  = 0.3;
-	int   steps       = 10;
-	float thickness   = 0.5;
-	vec2 texCoord = gl_FragCoord.xy / viewPortSize;
-	vec4 reflectedPos = vec4(0.); //uv
-  if (  eyePosToPivotDir.w <= 0.0
-    
-     ) { return NONE;}
+	const float DepthCheckBias = 0.001;
+	int loops = 3;
+	// The Current Position in 3D
+	vec3 curPos = vec3(0.);
+	vec2 HalfPixel = vec2(0.5 / viewPortSize.x, 0.5 / viewPortSize.y);
+	 
+	// The Current UV
+	vec3 curUV = vec3(0.);
+	 
+	// The Current Length
+	float curLength = 1;
 
-	vec3 unitEyePosToPivotDir = normalize(eyePosToPivotDir.xyz); //unitPositionFrom
-	vec3 groundNormal         = normalize(vertexNormal); // normal
-	vec3 pivot           	  = normalize(reflect(unitEyePosToPivotDir, groundNormal));
-  	vec4 positionTo = eyePosToPivotDir; //positionTo
+	// Now loop
+    for (int i = 0; i < loops; i++)
+    {
+            // Update the Current Position of the Ray
+            curPos = reflectionPosition + reflectDir * curLength ;
+            // Get the UV Coordinates of the current Ray
+            curUV = GetUVAtPosInView(curPos);
+            // The Depth of the Current Pixel
+            float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
+            for (int i = 0; i < 4; i++)
+            {
+                if (abs(curUV.z - curDepth) < DepthCheckBias)
+                {
+                    return texture2D(screentex, curUV.xy);
+                }
+                curDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
+            }
 
-    vec4 startView = vec4(eyePosToPivotDir.xyz + (pivot *           0), 1);
-  	vec4 endView   = vec4(eyePosToPivotDir.xyz + (pivot * maxDistance), 1);
-    
-	vec4 startFrag = startView;
-	// Project to screen space.
-	startFrag      = viewProjection * startFrag;
-	// Perform the perspective divide.
-	startFrag.xyz /= startFrag.w;
-	// Convert the screen-space XY coordinates to UV coordinates.
-	startFrag.xy   = startFrag.xy * 0.5 + 0.5;
-	// Convert the UV coordinates to fragment/pixel coordnates.
-	startFrag.xy  *= viewPortSize;
-
-	vec4 endFrag = endView;
-	endFrag      = viewProjection * endFrag;
-	endFrag.xyz /= endFrag.w;
-	endFrag.xy   = endFrag.xy * 0.5 + 0.5;
-	endFrag.xy  *= viewPortSize;
-
-
-  vec2 frag  = startFrag.xy;
-       reflectedPos.xy = frag / texSize;
-
-  float deltaX    = endFrag.x - startFrag.x;
-  float deltaY    = endFrag.y - startFrag.y;
-  float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
-  float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
-  vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
-
-  float search0 = 0;
-  float search1 = 0;
-
-  int hit0 = 0;
-  int hit1 = 0;
-
-  float viewDistance = startView.y;
-  float depth        = thickness;
-
-  float i = 0;
-
-  for (i = 0; i < int(delta); ++i) {
-    frag      += increment;
-    reflectedPos.xy      = frag / viewPortSize;
-    positionTo =  vec4(reflectedPos.x, texture2D(depthCopyTex, reflectedPos.xy), reflectedPos.z, 1.0);
-
-    search1 =
-      mix
-        ( (frag.y - startFrag.y) / deltaY
-        , (frag.x - startFrag.x) / deltaX
-        , useX
-        );
-
-    search1 = clamp(search1, 0.0, 1.0);
-
-    viewDistance = (startView.y * endView.y) / mix(endView.y, startView.y, search1);
-    depth        = viewDistance - positionTo.y;
-
-    if (depth > 0 && depth < thickness) {
-      hit0 = 1;
-      break;
-    } else {
-      search0 = search1;
+            // Get the New Position and Vector
+            vec3 newPos = GetWorldPosAtUV(curUV.xy, curDepth );
+            curLength = length(reflectionPosition - newPos);
+        
     }
-  }
-
-  search1 = search0 + ((search1 - search0) / 2.0);
-
-  steps *= hit0;
-
-  for (i = 0; i < steps; ++i) {
-    frag       = mix(startFrag.xy, endFrag.xy, search1);
-    reflectedPos.xy      = frag / viewPortSize;
-    positionTo = vec4(reflectedPos.x, texture2D(depthCopyTex, reflectedPos.xy), reflectedPos.z, 1.0);
-
-    viewDistance = (startView.y * endView.y) / mix(endView.y, startView.y, search1);
-    depth        = viewDistance - positionTo.y;
-
-    if (depth > 0 && depth < thickness) {
-      hit1 = 1;
-      search1 = search0 + ((search1 - search0) / 2);
-    } else {
-      float temp = search1;
-      search1 = search1 + ((search1 - search0) / 2);
-      search0 = temp;
-    }
-  }
-
-  float visibility =
-      hit1
-    * positionTo.w
-    * ( 1
-      - max
-         ( dot(-unitEyePosToPivotDir, pivot)
-         , 0
-         )
-      )
-    * ( 1
-      - clamp
-          ( depth / thickness
-          , 0
-          , 1
-          )
-      )
-    * ( 1
-      - clamp
-          (   length(positionTo - positionFrom)
-            / maxDistance
-          , 0
-          , 1
-          )
-      )
-    * (reflectedPos.x < 0 || reflectedPos.x > 1 ? 0 : 1)
-    * (reflectedPos.y < 0 || reflectedPos.y > 1 ? 0 : 1);
-
-  visibility = clamp(visibility, 0, 1);
-
-  reflectedPos.ba = vec2(visibility);
-
-  return texture2D(screentex, reflectedPos.xz);
+    return NONE;
 }
 
-vec4 getReflection(vec3 worldPos)
+vec4 getReflection(vec3 reflectionPosition)
 {
+	if (!NormalIsWaterPuddle) return NONE;
+
+	if (getRandomFactor(reflectionPosition.xz /512.0) < rainPercent) //Puddles
+    {
  	// Calculate reflection direction
-    vec3 viewDir = normalize(gl_FragCoord.xyz - eyePos); // Calculate view direction
+    vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
 
-    vec3 reflectDir = reflect(normalize(viewDir), normalize(vertexNormal)); // Calculate reflection direction
+    // Assuming ground is flat, normal is (0,1,0)
+    vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
 
-    // calculate the intersection distance with the depthmap for given worldpos
-	float intersectionDistance = rayMarchForRefletion(worldPos,reflectDir, 0.1, MAX_RAY_MARCH_DISTANCE);
-
-	float distanceFactor = sqrt(intersectionDistance)/intersectionDistance;
-
-    // Calculate the reflected position
-    vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
-    vec2 reflectedCoords = texCoords + reflectDir.xy * intersectionDistance; // Adjust for reflection
-
-    // Sample depth from the depth texture
-    float reflectedDepth = texture2D(dephtCopyTex, reflectedCoords).r;
-    float emissionStrength = texture2D(noisetex, reflectedCoords).r;
-
-    // Check if the reflected fragment is occluded
-    if (reflectedDepth > depthAtPixel.r) 
-    {
-        // Fragment is occluded, return black
-       	return NONE;
-    } 
-    else 
-    {
-    	float strengthValue = distanceFactor * emissionStrength;
-        // Fragment is not occluded, sample color from the scene texture
-        vec4 reflectedColor = texture2D(screentex, reflectedCoords);
-        reflectedColor.a = 0.5;
-        return reflectedColor*RED;
+  	return rayMarchForRefletion(reflectionPosition,  reflectDir);
+    	
     }	
+    return NONE;
 }
 
-/*
-vec4 getReflectionBackUp (vec3 worldPos)
+vec4 getReflections(vec3 worldPos)
 {  
+	if (!NormalIsWaterPuddle) return NONE;
  	// Calculate reflection direction
     vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
 
@@ -585,8 +506,7 @@ vec4 getReflectionBackUp (vec3 worldPos)
 
     // Calculate the reflected position
     vec2 texCoords = gl_FragCoord.xy / viewPortSize; // Normalize coordinates
-    vec2 reflectedCoords = texCoords + reflectDir.xy * 0.008; // Adjust for reflection
-
+    vec2 reflectedCoords = texCoords + reflectDir.xy * 0.08; // Adjust for reflection
 
     // Sample depth from the depth texture
     float depthValue = texture2D(dephtCopyTex, reflectedCoords).r;
@@ -595,17 +515,18 @@ vec4 getReflectionBackUp (vec3 worldPos)
     float reflectedDepth = depthAtPixel.r - eyePos.z;
 
     // Check if the reflected fragment is occluded
-    if (reflectedDepth > depthValue) {
-        // Fragment is occluded, return black
-       	return NONE;
-    } else 
+    if (reflectedDepth < depthValue) 
     {
+    	if (getRandomFactor(worldPos.xz /512.0) < rainPercent)
+    	{
         // Fragment is not occluded, sample color from the scene texture
         vec4 reflectedColor = texture2D(screentex, reflectedCoords);
         reflectedColor.a = 0.5;
-        return reflectedColor*RED;
+        return reflectedColor ;
+        }
     }	
-}*/
+    return NONE;
+}
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
@@ -652,25 +573,9 @@ vec4 GetGroundReflection(in vec3 start, in vec3 end)
 
 	return accumulatedColor;
 }
-											  
-void GetWorldPos()
-{
 
-	vec4 ppos;
-	ppos.xyz = vec3(uv, depthAtPixel.r) * 2. - 1.; 
-	ppos.a   = 1.;
-	vec4 worldPos4 = viewProjectionInv * ppos;
-	worldPos4.xyz /= worldPos4.w;
+	
 
-	if (depthAtPixel == 1.0) 
-	{
-		vec3 forward = normalize(worldPos4.xyz - eyePos);
-		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
-		worldPos = eyePos + forward.xyz * abs(a);
-		return;
-	}
-	worldPos = worldPos4.xyz;
-}
 
 bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 {
@@ -792,8 +697,8 @@ void main(void)
 	mapDepth = texture2D(mapDepthTex,uv).rrrr;
 	modelDepth = texture2D(modelDepthTex,uv).rrrr;
 	depthAtPixel =  texture2D(dephtCopyTex, uv);
+	worldPos = GetWorldPosAtUV(uv, depthAtPixel.r);
 
-	GetWorldPos();
 	vertexNormal = GetGroundVertexNormal(uv,  NormalIsOnGround,  NormalIsOnUnit, NormalIsWaterPuddle);
 
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
@@ -820,9 +725,9 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	gl_FragColor = getReflection(worldPos);
+	//gl_FragColor = getReflection(worldPos);
 	//gl_FragColor = lind(depthAtPixel.rrrr);
-	return;
+	//return;
 
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 
