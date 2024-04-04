@@ -438,7 +438,7 @@ const vec2 SAMPLE_OFFSETS[4] = vec2[4](
 vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
 {
 	const float DepthCheckBias = 0.001;
-	int loops = 3;
+	int loops = 10;
 	// The Current Position in 3D
 	vec3 curPos = vec3(0.);
 	vec2 HalfPixel = vec2(0.5 / viewPortSize.x, 0.5 / viewPortSize.y);
@@ -469,6 +469,7 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
             	bool IsPuddle = false;
 
             	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle);
+            	//Detect the sky and avoid reflecting rooftops
             	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) {return RED;}
                 return texture2D(screentex, curUV.xy);
             }
