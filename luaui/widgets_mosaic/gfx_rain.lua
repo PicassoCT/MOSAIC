@@ -20,9 +20,9 @@ local rainShader = nil
 
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
-local shaderFilePath = "luaui/widgets_mosaic/shaders/"
-local noisetextureFilePath = ":l:luaui/images/rgbnoise.png"
-local DAYLENGTH = 28800
+local shaderFilePath        = "luaui/widgets_mosaic/shaders/"
+local noisetextureFilePath  = ":l:luaui/images/rgbnoise.png"
+local DAYLENGTH             = 28800
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -105,9 +105,8 @@ local lightSourceIndex = 0
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasRainTextureID = 0
 local vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
-local rainPicPath     = ":i256,256:luaui/images/snow/rain5.png"
+local rainPicPath                   = ":i256,256:luaui/images/snow/rain5.png"
 local rainDroplettextureFilePath    = ":i256,256:luaui/images/snow/rain_droplets.png"
-local cam = {}
 local prevOsClock = os.clock()
 local startTimer = Spring.GetTimer()
 local diffTime = 0
@@ -510,10 +509,15 @@ function widget:Initialize()
 
 end
 
+local function cameraIsUnchanged()
+    local newCamPos = {Spring.GetCameraPosition()}
+    return newCamPos == eyePos
+    end
+
 function widget:DrawWorld()
 
     local _, _, isPaused = Spring.GetGameSpeed()
-    if isPaused then
+    if isPaused and cameraIsUnchanged()then
        local currentTime = Spring.GetTimer() 
        pausedTime = pausedTime + Spring.DiffTimers(currentTime, lastFrametime)
        

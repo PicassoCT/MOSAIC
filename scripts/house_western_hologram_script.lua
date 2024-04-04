@@ -25,9 +25,7 @@ hours, minutes, seconds, percent = getDayTime()
 local buisness_spin = piece("buisness_spin")
 local wallSpin = piece("wallSpin")
 local RainCenter = piece("RainCenter")
---assert(RainCenter)
 local general_spin = piece("general_spin")
---assert(general_spin)
 local text_spin = piece("text_spin")
 local brothel_spin = piece("brothel_spin")
 local casino_spin = piece("casino_spin")
@@ -35,9 +33,7 @@ local JLantern = piece("JLantern")
 local idleAnimations = {}
 local technoAnimations = {}
 
-
 local tldrum = piece "tldrum"
---assert(tldrum)
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -47,7 +43,6 @@ local tlhairdown = piece "tlhairdown"
 local tlarm = piece "tlarm"
 local tlarmr = piece "tlarmr"
 local tllegUp = piece "tllegUp"
---assert(tllegUp)
 local tllegLow = piece "tllegLow"
 local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
@@ -85,7 +80,6 @@ tigLilHoloPices = {
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TableOfPiecesGroups = {}
 local boolDebugHologram = true
-
 
 sizeDownLetter  = 350
 sizeSpacingLetter = 300
@@ -300,7 +294,7 @@ function restartHologram()
                 sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_citypart)
             end
         end
-        buisnessNeonSigns = mergeTables(buisnessNeonSigns, sloganNamesNeonSigns)
+        buisnessNeonSigns =  sloganNamesNeonSigns
         assert(buisnessNeonSigns)
         boolJustOnce = false
     end
@@ -1191,8 +1185,10 @@ function addHologramLetters( myMessages)
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
-		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters)        
-            Sleep(10000)
+		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters) 
+            WaitForMoves(allLetters)       
+            restTime = math.max(5000, #allLetters*150)
+            Sleep(restTime)
             if boolIsEverChanging == true then
                 allLetters, posLetters, newMessage = setupMessage(myMessages)                
             end
