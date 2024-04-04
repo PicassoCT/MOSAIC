@@ -154,6 +154,8 @@ local raincanvastexIndex    = 6
 local noisetexIndex         = 7
 local raintexIndex          = 8
 local dephtCopyTexIndex     = 9
+local eyePos = {spGetCameraPosition()}
+local eyeDir = {spGetCameraDirection()}
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -284,7 +286,6 @@ local function init()
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
                 cityCenter  = {0,0,0},
-                sunDir      = {0,0,0},
                 sunCol    = {0,0,0},
                 skyCol    = {0,0,0},
                 sunPos      = {0,0,1},
@@ -314,7 +315,6 @@ local function init()
     uniformViewMatrix               = glGetUniformLocation(rainShader, 'viewMatrix')
     uniformViewProjection           = glGetUniformLocation(rainShader, 'viewProjection')
     uniformProjection               = glGetUniformLocation(rainShader, 'projection')
-    uniformSundir                   = glGetUniformLocation(rainShader, 'sunDir')
     uniformSunColor                 = glGetUniformLocation(rainShader, 'sunCol')
     uniformSkyColor                 = glGetUniformLocation(rainShader, 'skyCol')
     uniformSunPos                   = glGetUniformLocation(rainShader, 'sunPos')
@@ -414,8 +414,10 @@ local function updateUniforms()
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
-    glUniform(uniformEyePos, spGetCameraPosition())
-    glUniform(unformEyeDirection, spGetCameraDirection ( ) )
+    eyePos = {spGetCameraPosition()}
+    glUniform(uniformEyePos, eyePos)
+    eyeDir = {spGetCameraDirection()}
+    glUniform(unformEyeDirection, eyeDir )
 
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
@@ -510,8 +512,12 @@ function widget:Initialize()
 end
 
 local function cameraIsUnchanged()
-    local newCamPos = {Spring.GetCameraPosition()}
-    return newCamPos == eyePos
+    local newCamPos = {spGetCameraPosition()}
+    local newCamDir = {spGetCameraDirection()}
+        if newCamPos ~= eyePos then return false end
+
+        if  newCamDir ~= eyeDir then return false end
+        return true
     end
 
 function widget:DrawWorld()
@@ -520,7 +526,6 @@ function widget:DrawWorld()
     if isPaused and cameraIsUnchanged()then
        local currentTime = Spring.GetTimer() 
        pausedTime = pausedTime + Spring.DiffTimers(currentTime, lastFrametime)
-       
        return
     end
 
@@ -536,11 +541,6 @@ function widget:DrawWorld()
     prevOsClock = osClock        
 end
 
-local function computeSunVector()
-    local eyePos = {spGetCameraPosition()}
-    sunDir = {eyePos[1]-sunPos[1],eyePos[2]-sunPos[2], eyePos[3] - sunPos[3]}
-
-end
 
 function widget:GameFrame()
     hours,minutes,seconds, timePercent = getDayTime()
@@ -549,7 +549,6 @@ function widget:GameFrame()
     sunPos = {gl.GetSun('pos')}
     --Spring.Echo("Time:"..hours..":"..minutes..":"..seconds)
     --Spring.Echo("Sunpos:"..sunPos[1]..":"..sunPos[2]..":"..sunPos[3])
-    computeSunVector()
     --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 
     local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
 end

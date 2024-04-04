@@ -19,7 +19,6 @@ uniform float time;
 uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
-uniform vec3 sunDir;
 uniform vec3 sunCol;
 uniform vec3 sunPos;
 uniform vec3 eyeDir;

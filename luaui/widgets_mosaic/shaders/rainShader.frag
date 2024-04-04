@@ -70,7 +70,6 @@ uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
 uniform vec3 eyeDir;
-uniform vec3 sunDir;
 uniform vec3 sunCol;
 uniform vec3 sunPos;
 uniform vec3 skyCol;
@@ -133,7 +132,7 @@ vec4 modelDepth;
 vec3 pixelDir;
 vec4 origColor;
 vec3 vertexNormal;
-
+vec3 sunDir;
 float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
 bool  NormalIsOnGround = false;
@@ -579,7 +578,7 @@ float generate_wave(float period) {
 float calculateLightReflectionFactor() 
 {
     // Normalize the input vectors
-    vec3 vSun = normalize(sunDir);
+    vec3 vSun = normalize(sunPos);
     vec3 vEye = normalize(eyeDir);
     
     // Calculate the angle between the sun direction and the eye direction
@@ -666,6 +665,7 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;
+	sunDir = sunPos; //its normalized
 	screenScaleFactorY = viewPortSize.x/viewPortSize.y;
 	mapDepth = texture2D(mapDepthTex,uv).rrrr;
 	modelDepth = texture2D(modelDepthTex,uv).rrrr;

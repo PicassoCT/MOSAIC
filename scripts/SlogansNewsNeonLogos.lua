@@ -250,7 +250,12 @@ return {
 "The shaft ! True Penis prolonging",
 "Buy! Consume! Die!",
 "Outrageous atrocity by other empire",
-"Heroic atrocitys by our empire",
+"Heroic actons taken by our empire",
+"Subverted Subversion found in Institution"
+
+-- 3d model holograms
+-- spinable rouletttable
+-- 
 
  
 }
