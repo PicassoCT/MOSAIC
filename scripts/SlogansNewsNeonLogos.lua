@@ -251,11 +251,18 @@ return {
 "Buy! Consume! Die!",
 "Outrageous atrocity by other empire",
 "Heroic actons taken by our empire",
-"Subverted Subversion found in Institution"
+"Subverted Subversion found in Institution",
+"Third Responsibilityrevolution",
+"Corruption huntsmen bring back head of company",
+"DAO Droneswarm piracy returns",
+"Donate to starving preppers",
+"Medlle east goes madmax again",
+"Annual purge coming up",
+"Memetic disease awareness month",
+"Geezer Gonoreha Not for all money in the world",
+"Moon colonies putting spring in your step"
 
--- 3d model holograms
+-- 3d model holograms house_asian_hologram
 -- spinable rouletttable
--- 
-
- 
+-- basketball rotating, falling in
 }

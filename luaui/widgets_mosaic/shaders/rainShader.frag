@@ -208,12 +208,11 @@ vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 vec3  GetUVAtPosInView(vec3 worldPos)
 {
 	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
-
-	 // Convert to normalized device coordinates
+	// Convert to normalized device coordinates
     vec3 ndcPosition = clipSpacePosition.xyz / clipSpacePosition.w;
 	vec2 ruv = vec2(ndcPosition.x * 0.5 + 0.5, ndcPosition.y * -0.5 + 0.5);
 
-	return vec3(ruv.x, ruv.y, texture2D(dephtCopyTex, ruv));
+	return vec3(ruv.x, ruv.y, ndcPosition.z);
 }
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
@@ -458,27 +457,29 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
         // Get the UV Coordinates of the current Ray
         curUV = GetUVAtPosInView(curPos);
         // The Depth of the Current Pixel
-        float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
-        for (int i = 0; i < 4; i++)
+        float backgroundDepth = texture2D(dephtCopyTex, curUV.xy).r;
+
+        //Sobelsample at cursor
+        for (int j = 0; j < 4; j++)
         {
-            if (abs(curUV.z - curDepth) < DepthCheckBias)
+            if (abs(curUV.z - backgroundDepth) < DepthCheckBias)
             {
             	bool IsOnGround = false;
             	bool IsOnUnit = false;
             	bool IsPuddle = false;
 
             	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle);
-            	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) return NONE;
+            	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) {return RED;}
                 return texture2D(screentex, curUV.xy);
             }
-            curDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
+            backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
         }
 
         // Get the New Position and Vector
-        vec3 newPos = GetWorldPosAtUV(curUV.xy, curDepth );
+        vec3 newPos = GetWorldPosAtUV(curUV.xy, backgroundDepth );
         curLength = length(reflectionPosition - newPos);        
     }
-    return NONE;
+    return GREEN;
 }
 
 vec4 getReflection(vec3 reflectionPosition)
