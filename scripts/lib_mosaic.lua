@@ -45,7 +45,7 @@ function GetRegionByHash(mapHash)
       resultMap["Middle East"] = {arabic = 0.75, international= 0.10, western = 0.10, asian = 0.05}
       resultMap["Central Asia"] = {arabic = 0.35, international= 0.05, western = 0.10, asian = 0.50}
       resultMap["Africa"] = {arabic = 0.50, international= 0.30, western = 0.10, asian = 0.10}
-      resultMap["Europe"] = {arabic = 0.10, international= 0.30, western = 0.50, asian = 0.10}
+      resultMap["Europe"] = {arabic = 0.00, international= 0.5, western = 0.50, asian = 0.00}
       resultMap["North America"] = {arabic = 0.05, international= 0.15, western = 0.70, asian = 0.10}
       resultMap["South America"] = {arabic = 0.15, international= 0.55, western = 0.15, asian = 0.15}
       resultMap["South East Asia"] = {arabic = 0.05, international= 0.20, western = 0.05, asian = 0.7}
@@ -81,8 +81,24 @@ function GetRegionByHash(mapHash)
       return randDict(percentages)
   end
 
-function GetCultureByRegion(mapName)
-    mapHash = stringToHash(mapName)
+function getDetermenisticMapHash(Game)
+    assert(Game)
+    local accumulated = 0
+    local mapName = Game.mapName
+    local mapNameLength = string.len(mapName)
+
+    for i=1, mapNameLength do
+        accumulated = accumulated + string.byte(mapName,i)
+    end
+
+    accumulated = accumulated + Game.mapSizeX
+    accumulated = accumulated + Game.mapSizeZ
+    return accumulated
+end
+
+
+function GetCultureByRegion(Game)
+    mapHash = getDetermenisticMapHash(Game)
     region = GetRegionByHash(mapHash)
     percentages = GetRegionCulturePercentages(region)
 
@@ -98,7 +114,7 @@ function getInstanceCultureOrDefaultToo()
     if mapDependentCulture then  
         GG.InstanceCulture = mapDependentCulture
     else 
-        GG.InstanceCulture =  GetCultureByRegion(Game.mapName)
+        GG.InstanceCulture =  GetCultureByRegion(Game)
     end
     
     return GG.InstanceCulture
@@ -484,6 +500,8 @@ function getGameConfig()
             }
     end
 
+
+
     function getChemTrailInfluencedTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
 
@@ -762,19 +780,6 @@ function getGameConfig()
        return stringToHash(Game.mapName)
     end
 
-    function getDetermenisticMapHash(Game)
-       accumulated = 0
-       mapName = Game.mapName
-       mapNameLength = string.len(mapName)
-
-      for i=1, mapNameLength do
-        accumulated = accumulated + string.byte(mapName,i)
-      end
-
-      accumulated = accumulated + Game.mapSizeX
-      accumulated = accumulated + Game.mapSizeZ
-      return accumulated
-    end
 
 
     function getCultureMapNameHash(Game)   

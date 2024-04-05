@@ -1081,20 +1081,22 @@ function showOneOrAll(T)
     end
 end
 
-function hideResetAllPieces()
+function hideResetAllLetters()
     letters = {"A","B","C","D","E","F","G","H","I","J","K","M","N","L","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
     for i=1, #letters do
-        local letter = letters[i]
+        local letter = letters[i] 
         if TableOfPiecesGroups[letter] then
             resetT(TableOfPiecesGroups[letter])
             hideTReg(TableOfPiecesGroups[letter])
+        else
+            echo("hideResetAllLetters failed for:"..letter)
         end
     end
 end
 
 function setupMessage(myMessages)
     assert(myMessages)
-    hideResetAllPieces()
+    hideResetAllLetters()
     spinner =  piece("text_spin")
     axis= 2
     startValue = 0

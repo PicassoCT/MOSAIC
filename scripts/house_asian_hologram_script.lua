@@ -225,6 +225,7 @@ function deterministiceSetup()
         else
             logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
             ShowReg(logoPiece)
+            Spin(logoPiece, y_axis, math.rad(0.2*randSign()), 0)
         end
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do
