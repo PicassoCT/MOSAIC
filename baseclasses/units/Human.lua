@@ -13,6 +13,20 @@ local Human = Unit:New{
     },
 }
 
+local HumanSwim = Unit:New{
+	activateWhenBuilt   	= true,
+	canMove					= true,
+	category 				= "GROUND",
+	noChaseCategory		 	= "AIR BUILDING",
+	onoffable        		= true,
+	script					= "Civillian.lua",
+	upright					= true,
+	usepiececollisionvolumes = true,
+	movementClass   		= "BIPEDALSWIM",
+	customparams = {
+    },
+}
+
 
 -- Mechs ----
 local Civilian = Human:New{
@@ -57,5 +71,6 @@ corpse					  = "",
 return {
 	Human = Human,
 	Civilian = Civilian,
+	HumanSwim = HumanSwim
 
 }

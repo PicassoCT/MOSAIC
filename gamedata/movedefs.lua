@@ -29,6 +29,17 @@ local moveDefs 	=	 {
 		crushStrength	=	25,
 		heatmapping		=	false,
 	},
+	{
+		name			=	"BIPEDALSWIM",
+		footprintX		=	1,
+		footprintZ 		=	1,
+		maxWaterDepth	=	5,
+		maxSlope		=	36,
+		maxwaterdepth 	= 5000,
+		depthmod 		= 0,
+		crushStrength	=	25,
+		heatmapping		=	false,
+	},
 		{
 		name			=	"QUADRUPED",
 		footprintX		=	2,

@@ -1,4 +1,4 @@
-local OperativePropagator = Human:New{
+local OperativePropagator = HumanSwim:New{
 	maxDamage         	  = 750,
 	mass                = 100,
 	buildCostEnergy    	  = 500,

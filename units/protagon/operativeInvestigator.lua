@@ -1,4 +1,4 @@
-local OperativeInvestigator = Human:New{
+local OperativeInvestigator = HumanSwim:New{
 	corpse = "bodybag",
 	maxDamage         	  = 750,
 	mass                = 100,
