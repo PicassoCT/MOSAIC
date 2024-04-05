@@ -25,22 +25,23 @@ Icon = piece "Icon"
 
 function preventBuildingNearPreexistingSafehouse()
     boolResult = false
-    foreach(getAllNearUnit(unitID, 100),
-            function(id)
-                if spGetUnitTeam(id) == myTeamID and id ~= unitID then 
-                    return id
-                end
-            end,
-            function(id)
-                defID = spGetUnitDefID(id)
-                if safeHouseTypeTable[defID] or safeHouseUpgradeTypeTable[defID] then
-                    --we already have something in this building -- abort
-                    boolResult=  true
-                end
+    foreach(
+        getAllNearUnit(unitID, 100),
+        function(id)
+            if spGetUnitTeam(id) == myTeamID and id ~= unitID then 
+                return id
             end
-            )
+        end,
+        function(id)
+            defID = spGetUnitDefID(id)
+            if safeHouseTypeTable[defID] or safeHouseUpgradeTypeTable[defID] then
+                --we already have something in this building -- abort
+                boolResult=  true
+            end
+        end
+        )
     
-        return boolResult
+    return boolResult
 end
 
 function script.Create()
@@ -58,7 +59,7 @@ end
 
 function killDelayed()
     Sleep(1)
-    --echo("Killing due to being near a predecessor")
+    echo("Killing due to being near a predecessor")
     destroyUnitConditional(unitID, false, true)
 end
 
@@ -115,7 +116,6 @@ function houseAttach()
     end)
 end
 
-local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, Spring.GetUnitDefID(unitID))
 local safeHouseTypes = getSafeHouseTypeTable(UnitDefs)
 local houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
 

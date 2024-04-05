@@ -473,7 +473,7 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
             	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) {return RED;}
                 return texture2D(screentex, curUV.xy);
             }
-            backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[i].xy * HalfPixel * 2.0)).r;
+            backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[j].xy * HalfPixel * 2.0)).r;
         }
 
         // Get the New Position and Vector

@@ -864,7 +864,7 @@ function HoloGrams()
             StartThread(addJHologramLetters)
         end
 
-        if logo == symmetryPiece then
+        if logo == symmetryPiece or true then --DELME DEBUG
             shapeSymmetry(symmetryPiece)
             return            
         end
@@ -1014,20 +1014,24 @@ function fireWorks()
 end
 
 function shapeSymmetry(logo)
+    echo("Start symmetry logo"..unitID)
     for i=1, 10 do
         if not (maRa() == maRa()) or i < 4 then
             pieceName = "Symmetry0"..i
             symPieceName = "Symmetry0"..(i + 10)
-            a = piece(pieceName)
-            b = piece(symPieceName)
+            ap = piece(pieceName)
+            bp = piece(symPieceName)
+            assert(ap)
+            assert(bp)
             randVal = math.random(1,8)*randSign()*45
-            ShowReg(a)
-            Turn(a, x_axis, math.rad(randVal), 0)
-            ShowReg(b)
+            ShowReg(ap)
+            WTurn(ap, x_axis, math.rad(randVal), 0)
+
             orgVal = 0 
             if i == 1 then orgVal = 180 end
             symValue =  orgVal -randVal
-            Turn(b, x_axis, math.rad(symValue), 0)
+            ShowReg(bp)
+            WTurn(bp, x_axis, math.rad(symValue), 0)
         end
     end
     if not maRa() then
@@ -1038,6 +1042,7 @@ function shapeSymmetry(logo)
     else
         addHologramLetters(buisnessNeonSigns)
     end
+    echo("End symmetry logo"..unitID)
 end
 
 function showOne(T)
@@ -1129,7 +1134,7 @@ function setupMessage(myMessages)
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
-        if letter ~= " " and TableOfPiecesGroups[letter] then
+        if TableOfPiecesGroups[letter] then
             if not lettercounter[letter] then 
                 lettercounter[letter] = startValue 
             end            
@@ -1157,8 +1162,11 @@ function setupMessage(myMessages)
                 end
             end
         else
-            rowIndex= rowIndex +1
-            columnIndex= 0
+            if letter == " " then
+                rowIndex= rowIndex +1
+                columnIndex= 0
+            end
+            --all other letters lead to a column increment
         end
     end
     return allLetters, posLetters, myMessage

@@ -414,10 +414,8 @@ local function updateUniforms()
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
-    eyePos = {spGetCameraPosition()}
-    glUniform(uniformEyePos, eyePos)
-    eyeDir = {spGetCameraDirection()}
-    glUniform(unformEyeDirection, eyeDir )
+    glUniform(uniformEyePos, {spGetCameraPosition()})
+    glUniform(unformEyeDirection, {spGetCameraDirection()} )
 
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
@@ -547,6 +545,9 @@ function widget:GameFrame()
     sunCol = {gl.GetAtmosphere("sunColor")}
     skyCol = {gl.GetAtmosphere("skyColor")}
     sunPos = {gl.GetSun('pos')}
+
+    eyePos = {spGetCameraPosition()}
+    eyeDir =  {spGetCameraDirection()} 
     --Spring.Echo("Time:"..hours..":"..minutes..":"..seconds)
     --Spring.Echo("Sunpos:"..sunPos[1]..":"..sunPos[2]..":"..sunPos[3])
     --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 

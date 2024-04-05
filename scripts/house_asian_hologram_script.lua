@@ -16,6 +16,13 @@ local TableOfPiecesGroups = {}
 local crossRotatePiece1 =  piece("HoloSpin72")
 local crossRotatePiece2 =  piece("HoloSpin74")
 local jumpScareRotor = piece("jumpScareRotor")
+local hours, minutes, seconds, percent = getDayTime()
+function clock()
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        Sleep(1000)
+    end
+end
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
@@ -121,6 +128,59 @@ function restartHologram()
     deployHologram()
     StartThread(checkForBlackOut)
     StartThread(clock)
+    StartThread(grid)
+    StartThread(showStreetSigns)
+end
+
+
+allGrids = nil
+
+function showStreetSigns()
+    foreach(TableOfPiecesGroups["StreetSigns"],
+        function(id)
+            if maRa() then
+                ShowReg(id)
+            end
+        end)
+end
+
+
+function grid()
+    Sleep(100)
+    while true do
+        if (hours > 19 or hours < 6) then
+            theGrid = TableOfPiecesGroups["Grid"]
+            boolFlip = maRa()
+            upVal=math.random(3,4)
+            lowVal= math.random(1,2)
+            if boolFlip then Turn(theGrid[1],x_axis, math.rad(180),0) end
+            Sleep(33)
+            for i= lowVal, upVal do 
+                HideReg(theGrid)
+                ShowReg(theGrid[i])
+                Turn(theGrid[i], y_axis, math.rad(i*90),0)
+                Sleep(33)
+                if maRa()then
+                    Sleep(66)
+                end
+            end
+            for i= upVal, lowVal, -1 do 
+                HideReg(theGrid)
+                ShowReg(theGrid[i])
+                Turn(theGrid[i], y_axis, math.rad(i*90),0)
+                Sleep(33)
+                if maRa()then
+                    Sleep(66)
+                end
+            end
+            if maRa() == maRa() then
+                Sleep(500)
+            end
+            if boolFlip then Turn(theGrid[1],x_axis, math.rad(0),0) end
+
+        end
+        Sleep(33)
+    end
 end
 
 function script.Create()
@@ -132,17 +192,27 @@ function script.Create()
     restartHologram()
 end
 
-local hours, minutes, seconds, percent = getDayTime()
-function clock()
-    while true do
-        hours, minutes, seconds, percent = getDayTime()
-        Sleep(1000)
-    end
-end
-
-
 function deployHologram()
     StartThread(HoloGrams)
+end
+
+function shapeSymmetry()
+    for i=1, 10 do
+        if not (maRa() == maRa()) or i < 4 then
+            pieceName = "Symmetry0"..i
+            symPieceName = "Symmetry0"..(i + 10)
+            a = piece(pieceName)
+            b = piece(symPieceName)
+            randVal = math.random(1,8)*randSign()*45
+            ShowReg(a)
+            Turn(a, x_axis, math.rad(randVal), 0)
+            ShowReg(b)
+            orgVal = 0 
+            if i == 1 then orgVal = 180 end
+            symValue =  orgVal -randVal
+            Turn(b, x_axis, math.rad(symValue), 0)
+        end
+    end
 end
 
 logoPiece = nil
@@ -150,10 +220,12 @@ spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
  
-     
-        logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
-        ShowReg(logoPiece)
-
+        if maRa()==maRa() then
+           shapeSymmetry()
+        else
+            logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
+            ShowReg(logoPiece)
+        end
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do
             spinPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloSpin"]), TableOfPiecesGroups["HoloSpin"])

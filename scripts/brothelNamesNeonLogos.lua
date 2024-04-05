@@ -467,4 +467,7 @@ return {
 "Izklaides klubs",
 "Lobustuskoht",
 "Mitsye vidpochynku",
+"The whamasutra",
+"Like animals",
+"All night long"
 }
