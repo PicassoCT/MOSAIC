@@ -468,7 +468,6 @@ return {
 "country garden",
 "Ever green",
 "Godde Inc",
-
 "Sunset Asylums",
 "A void Asylums",
 "Goone FOR GuuD",
@@ -509,8 +508,18 @@ return {
 "TrickyTrove INC",
 "Misleadify INC",
 "BEAUTY AND BLADE INC",
-"Nota esxcult"
-
-
+"Nota sexcult",
+"Sinnisteer Gmbh",
+"Devolution Inc",
+"Smartgit Inc",
+"Best of worlds AG",
+"Hyperfluid Change",
+"Carinna Cocaina",
+"Sourcefort",
+"Hippiehunting Safaris",
+"Prepperhunting Safaris",
+"WetBulbbelttours",
+"Your companyname here",
+"St Mein Ruecken"
 }
 

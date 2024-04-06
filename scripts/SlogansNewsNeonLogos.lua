@@ -305,6 +305,10 @@ return {
 "Find Freedom: BeyondBorders Travel",
 "Transform Your Reality: AlterTech",
 "Guard Your Identity: CyberShield VPN",
+"Check this before you wreck yourself",
+"Hikkikomori retreat closes forever",
+"FourtyTwo blaze it",
+
 -- spinable rouletttable
 -- basketball rotating, falling in
 }
