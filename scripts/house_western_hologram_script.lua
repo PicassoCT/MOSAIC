@@ -1141,9 +1141,13 @@ function setupMessage(myMessages)
                 lettercounter[letter] = startValue 
             end            
             lettercounter[letter] = lettercounter[letter] + 1 
-            if lettercounter[letter] > 4 then lettercounter[letter] = 1 end
+            boolContinue = true
+            if lettercounter[letter] > #TableOfPiecesGroups[letter] then 
+                columnIndex= columnIndex +1
+                boolContinue =false
+            end
 
-            if TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
+            if boolContinue and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                
                 pieceName = TableOfPiecesGroups[letter][lettercounter[letter]] 
                 if pieceName then     

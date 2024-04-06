@@ -22,7 +22,7 @@ local HumanSwim = Unit:New{
 	script					= "Civillian.lua",
 	upright					= true,
 	usepiececollisionvolumes = true,
-	movementClass   		= "BIPEDALSWIM",
+	movementClass   		= "BIPEDAL",
 	customparams = {
     },
 }

@@ -1,9 +1,7 @@
 local moveDefs 	=	 {
-		
-	
-
 		{
 		name			=	"VEHICLE",
+		footprintZ		=	3,
 		footprintX		=	3,
 		maxWaterDepth	=	10,
 		maxSlope		=	20,
@@ -30,17 +28,6 @@ local moveDefs 	=	 {
 		heatmapping		=	false,
 	},
 	{
-		name			=	"BIPEDALSWIM",
-		footprintX		=	1,
-		footprintZ 		=	1,
-		maxWaterDepth	=	5,
-		maxSlope		=	36,
-		maxwaterdepth 	= 5000,
-		depthmod 		= 0,
-		crushStrength	=	25,
-		heatmapping		=	false,
-	},
-		{
 		name			=	"QUADRUPED",
 		footprintX		=	2,
 		footprintZ 		=	2,
@@ -51,6 +38,7 @@ local moveDefs 	=	 {
 	},
 	{
 		name			=	"AIRUNIT",
+		footprintZ		=	2,
 		footprintX		=	2,
 		maxWaterDepth	=	2,
 		maxSlope		=	100,

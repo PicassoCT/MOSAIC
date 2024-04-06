@@ -1,4 +1,4 @@
-local OperativeAsset = HumanSwim:New{
+local OperativeAsset = Human:New{
 
 	name = "Operative Assset",
 	description= "Assasination Operative <stealth Assasin>",
