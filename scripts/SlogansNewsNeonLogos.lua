@@ -260,7 +260,11 @@ return {
 "Annual purge coming up",
 "Memetic disease awareness month",
 "Geezer Gonoreha Not for all money in the world",
-"Moon colonies putting spring in your step"
+"Moon colonies putting spring in your step",
+"You cant just write an shit",
+"File not found",
+"Rest API unresolved error",
+"Shameless smut citywide",
 
 -- 3d model holograms house_asian_hologram
 -- spinable rouletttable
