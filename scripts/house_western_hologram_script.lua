@@ -1016,7 +1016,6 @@ function fireWorks()
 end
 
 function shapeSymmetry(logo)
-
     Sleep(500)
     resetT(TableOfPiecesGroups["Symmetry"])
     hideTReg(TableOfPiecesGroups["Symmetry"])
@@ -1049,7 +1048,6 @@ function shapeSymmetry(logo)
     else
         addHologramLetters(buisnessNeonSigns)
     end
-    echo("End symmetry logo"..unitID)
 end
 
 function showOne(T)
@@ -1369,7 +1367,9 @@ function SpiralUpwards(allLetters, posLetters)
     foreach(allLetters,
         function(id)
             ShowReg(id)
-            Move(id,3, posLetters[id][3], 2500)
+            for k=1, #posLetters[id] do
+                Move(id,3, posLetters[id][k][3], 2500)
+            end
             Sleep(250)
         end)
     WaitForMoves(allLetters)
@@ -1393,8 +1393,10 @@ function SwarmLetters(allLetters, posLetters)
 
     foreach(allLetters,
         function(id)
-            for i=1,3 do
-                Move(id, i, posLetters[id][i], 350)            
+            for k=1, #posLetters[id] do
+                for i=1,3 do
+                    Move(id, i, posLetters[id][k][i], 350)            
+                end
             end
             ShowReg(id)
         end)
