@@ -700,9 +700,9 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	//gl_FragColor = getReflection(worldPos);
+	gl_FragColor = RED;//getReflection(worldPos);
 	//gl_FragColor = lind(depthAtPixel.rrrr);
-	//return;
+	return;
 
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 

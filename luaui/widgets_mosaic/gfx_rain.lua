@@ -280,8 +280,6 @@ local function init()
                 rainPercent= 0,
                 time = diffTime,
                 scale = 0,
-                eyePos = {0, 0, 0},
-                eyeDir = {0, 0, 0}
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
@@ -289,6 +287,8 @@ local function init()
                 sunCol    = {0,0,0},
                 skyCol    = {0,0,0},
                 sunPos      = {0,0,1},
+                eyePos = {0, 0, 0},
+                eyeDir = {0, 0, 0}
             }
         }
     )
@@ -308,7 +308,7 @@ local function init()
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
     uniformEyePos                   = glGetUniformLocation(rainShader, "eyePos")
-    unformEyeDirection              = glGetUniformLocation(rainShader, "eyeDir")
+    unformEyeDir                    = glGetUniformLocation(rainShader, "eyeDir")
 
     uniformViewPrjInv               = glGetUniformLocation(rainShader, 'viewProjectionInv')
     uniformViewInv                  = glGetUniformLocation(rainShader, 'viewInv')
@@ -414,8 +414,10 @@ local function updateUniforms()
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
-    glUniform(uniformEyePos, {spGetCameraPosition()})
-    glUniform(unformEyeDirection, {spGetCameraDirection()} )
+    local eyePos = {spGetCameraPosition()}
+    glUniform(uniformEyePos,eyePos[1],eyePos[2], eyePos[3] )
+    local eyeDir = {spGetCameraDirection()}
+    glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )
 
     glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);

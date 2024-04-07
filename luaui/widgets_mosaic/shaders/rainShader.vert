@@ -15,19 +15,20 @@ uniform sampler2D raintex;
 uniform sampler2D dephtCopyTex;
 
 
-uniform float time;		
+uniform float time;     
 uniform float timePercent;
 uniform float rainPercent;
 uniform vec3 eyePos;
+uniform vec3 eyeDir;
 uniform vec3 sunCol;
 uniform vec3 sunPos;
-uniform vec3 eyeDir;
 uniform vec3 skyCol;
 
 uniform vec2 viewPortSize;
 uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
+uniform mat4 projection;
 uniform mat4 viewInv;
 uniform mat4 viewMatrix;
 

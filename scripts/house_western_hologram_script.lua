@@ -1,5 +1,5 @@
-include "createCorpse.lua"
 include "lib_OS.lua"
+include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
@@ -142,9 +142,9 @@ local function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     boolDebugActive =  (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
 
     if l_lowLimit and l_upLimit then
-        for i = l_upLimit, l_lowLimit, -1 do
-            if l_tableName[i] then
-                HideReg(l_tableName[i])
+        for ik = l_upLimit, l_lowLimit, -1 do
+            if l_tableName[ik] then
+                HideReg(l_tableName[ik])
             elseif boolDebugActive == true then
                 echo("In HideT, table " .. l_lowLimit ..
                          " contains a empty entry")
@@ -154,9 +154,9 @@ local function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
         end
 
     else
-        for i = 1, table.getn(l_tableName), 1 do
-            if l_tableName[i] then
-                HideReg(l_tableName[i])
+        for ik = 1, table.getn(l_tableName), 1 do
+            if l_tableName[ik] then
+                HideReg(l_tableName[ik])
             elseif boolDebugActive == true then
                 echo("In HideT, table " .. l_lowLimit .. " contains a empty entry")
             end
@@ -173,8 +173,8 @@ local function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 
     if l_lowLimit and l_upLimit then
-        for i = l_lowLimit, l_upLimit, 1 do
-            if l_tableName[i] then ShowReg(l_tableName[i]) end
+        for ij = l_lowLimit, l_upLimit, 1 do
+            if l_tableName[i] then ShowReg(l_tableName[ij]) end
             if l_delay and l_delay > 0 then Sleep(l_delay) end
         end
 
@@ -232,17 +232,12 @@ function dancingTiglil(animations, boolTechno)
     end
 end
 
-function timeOfDay()
-    WholeDay = GameConfig.daylength
-    timeFrame = spGetGameFrame() + (WholeDay * 0.25)
-    return ((timeFrame % (WholeDay)) / (WholeDay))
-end
 
 --Direction = piece("Direction")
 
 function showSubSpins(pieceID)
-   pieceName = getUnitPieceName(unitID, pieceID)
-   subSpinPieceName = pieceName.."Spin"    
+   local subspinName = getUnitPieceName(unitID, pieceID)
+   subSpinPieceName = subspinName.."Spin"    
    if TableOfPiecesGroups[subSpinPieceName] then  
     hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
@@ -254,8 +249,8 @@ function showSubSpins(pieceID)
 end
 
 function hideSubSpins(pieceID)
-    pieceName = getUnitPieceName(unitID, pieceID)
-    subSpinPieceName = pieceName.."Spin"    
+    local subPieceName = getUnitPieceName(unitID, pieceID)
+    subSpinPieceName = subPieceName.."Spin"    
     if TableOfPiecesGroups[subSpinPieceName] then  
         hideTReg(TableOfPiecesGroups[subSpinPieceName]) 
     end
@@ -271,12 +266,8 @@ function getDramatisPersona()
     end
 end
 
-boolJustOnce= true
-function restartHologram()
-    Sleep(500)
-
-    if boolIsEverChanging and boolJustOnce then
-        location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+function mergePersonalizeMessages()
+  location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
 
         if boolIsBrothel then 
             for i=1, #brothelsloganNamesNeonSigns do
@@ -296,12 +287,22 @@ function restartHologram()
         end
         buisnessNeonSigns =  sloganNamesNeonSigns
         assert(buisnessNeonSigns)
-        boolJustOnce = false
-    end
+end
+
+boolJustOnce= true
+function restartHologram()
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
+
+    Sleep(500)
     resetAll(unitID)
     hideAllReg(unitID)
+
+    if boolIsEverChanging and boolJustOnce then
+        mergePersonalizeMessages()
+        boolJustOnce = false
+    end
+   
     StartThread(clock)
     deployHologram()    
     hideTReg(spins)
@@ -321,14 +322,14 @@ function script.Create()
     StartThread(emergencyWatcher)
 end
 
-EmergencyIcon = piece("EmergencyIcon")
 function ShowEmergencyElements () 
-  EmergencyText = piece("EmergencyText")
-  if maRa() then ShowReg(EmergencyIcon) end
-  ShowReg(EmergencyText)
-  id = showOne(TableOfPiecesGroups["EmergencyPillar"]) 
-  element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
-  Spin(element , y_axis, math.rad(randSign() * 42), 0)
+    EmergencyIcon = piece("EmergencyIcon")
+    EmergencyText = piece("EmergencyText")
+    if maRa() then ShowReg(EmergencyIcon) end
+    ShowReg(EmergencyText)
+    id = showOne(TableOfPiecesGroups["EmergencyPillar"]) 
+    element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
+    Spin(element , y_axis, math.rad(randSign() * 42), 0)
 end
 
 function emergencyWatcher()
@@ -802,8 +803,6 @@ function HoloGrams()
     
 
     if boolIsBuisness then 
-
-
         if maRa() then
             StartThread(showWallDayTime, "BuisnessWall")
         end
@@ -865,7 +864,10 @@ function HoloGrams()
         end
 
         if logo == symmetryPiece or true then --DELME DEBUG
+        while true do 
             shapeSymmetry(symmetryPiece)
+            Sleep(1000)
+        end
             return            
         end
 
@@ -882,8 +884,8 @@ function HoloGrams()
            
         ShowReg(logo)
         if maRa() then
-           pieceName = getUnitPieceName(unitID, logo)
-           logoTableName = pieceName.."Spin"
+           local logoName = getUnitPieceName(unitID, logo)
+           logoTableName = logoName.."Spin"
            if TableOfPiecesGroups[logoTableName] then   
                 for i=1, #TableOfPiecesGroups[logoTableName] do
                     _, element = randDict(TableOfPiecesGroups[logoTableName])             
@@ -1014,22 +1016,27 @@ function fireWorks()
 end
 
 function shapeSymmetry(logo)
-    echo("Start symmetry logo"..unitID)
-    for i=1, 10 do
-        if not (maRa() == maRa()) or i < 4 then
-            pieceName = "Symmetry0"..i
-            symPieceName = "Symmetry0"..(i + 10)
-            ap = piece(pieceName)
-            bp = piece(symPieceName)
+
+    Sleep(500)
+    resetT(TableOfPiecesGroups["Symmetry"])
+    hideTReg(TableOfPiecesGroups["Symmetry"])
+    for ix=1, 10 do
+        if not (maRa() == maRa()) or ix < 4 then
+            smyPieceOrgName = "Symmetry0"..ix
+            symPieceName = "Symmetry0"..(ix + 10)
+            ap = piece(smyPieceOrgName)
+
             assert(ap)
-            assert(bp)
+         
             randVal = math.random(1,8)*randSign()*45
             ShowReg(ap)
             WTurn(ap, x_axis, math.rad(randVal), 0)
 
             orgVal = 0 
-            if i == 1 then orgVal = 180 end
+            if ix == 1 then orgVal = 180 end
             symValue =  orgVal -randVal
+            bp = piece(symPieceName)
+            assert(bp)
             ShowReg(bp)
             WTurn(bp, x_axis, math.rad(symValue), 0)
         end
@@ -1113,7 +1120,7 @@ function setupMessage(myMessages)
     boolSpinning = maRa()
 
     downIndex = 1
-    lettercounter={}
+    local lettercounter={}
     stringlength = string.len(myMessage)
     rowIndex= 0
     columnIndex= 0
@@ -1149,13 +1156,14 @@ function setupMessage(myMessages)
 
             if boolContinue and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                
-                pieceName = TableOfPiecesGroups[letter][lettercounter[letter]] 
-                if pieceName then     
-                    table.insert(allLetters, pieceName)                
-                    ShowReg(pieceName)
-                    Move(pieceName, 3, -1*sizeDownLetter*rowIndex, 0)
-                    Move(pieceName,axis, -sizeSpacingLetter*(columnIndex), 0)
-                    posLetters[pieceName]= {0,-sizeSpacingLetter*(columnIndex),  -1*sizeDownLetter*rowIndex }
+                local letterName = TableOfPiecesGroups[letter][lettercounter[letter]] 
+                if letterName then     
+                    table.insert(allLetters, letterName)                
+                    ShowReg(letterName)
+                    Move(letterName, 3, -1*sizeDownLetter*rowIndex, 0)
+                    Move(letterName,axis, -sizeSpacingLetter*(columnIndex), 0)
+                    if not posLetters[letterName] then posLetters[letterName] = {} end
+                    posLetters[letterName][lettercounter] = {0,-sizeSpacingLetter*(columnIndex),  -1*sizeDownLetter*rowIndex }
                     if boolUpRight then
                         columnIndex= 0
                         rowIndex= rowIndex +1
@@ -1163,7 +1171,7 @@ function setupMessage(myMessages)
                     
                     if boolSpinning and boolUpright then
                         val = i *5
-                        Turn(pieceName, 2, math.rad(val), 0)
+                        Turn(letterName, 2, math.rad(val), 0)
                     end
                 end
             end
@@ -1181,9 +1189,11 @@ end
 function restoreMessageOriginalPosition(message, posLetters)
     foreach(message,
         function(id)
-            Move(id, 1, posLetters[id][1], 0)
-            Move(id, 2, posLetters[id][2], 0)
-            Move(id, 3, posLetters[id][3], 0)
+                for k= 1, #posLetters[id] do
+                    Move(id, 1, posLetters[id][k][1], 0)
+                    Move(id, 2, posLetters[id][k][2], 0)
+                    Move(id, 3, posLetters[id][k][3], 0)
+                end
             end
         )
 end
@@ -1191,7 +1201,7 @@ end
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessages)  
 
-    allLetters, posLetters = setupMessage(myMessages)
+    allLetters, posLetters, newMessage = setupMessage(myMessages)
 
     if maRa() and maRa() or boolIsEverChanging then 
 		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
@@ -1225,18 +1235,22 @@ function randomFLickerLetters(allLetters, posLetters)
 
             foreach(allLetters,
             function(id)
+            for k=1, #posLetters[id] do
               for axis=1,3 do
-                Move(id, axis, posLetters[id][axis] + math.random(-1*errorDrift,errorDrift), 100)
+                Move(id, axis, posLetters[id][k][axis] + math.random(-1*errorDrift,errorDrift), 100)
                end
+           end
             end)
             Sleep(flickerIntervall)
 		end
 		hideTReg(allLetters)  
         foreach(allLetters,
             function(id)
-              for axis=1,3 do
-                Move(id, axis, posLetters[id][axis], 15)
-               end
+                for k=1, #posLetters[id] do
+                  for axis=1,3 do
+                    Move(id, axis, posLetters[id][k][axis], 15)
+                   end
+                end
                ShowReg(id)
             end)
 	end		
@@ -1272,10 +1286,12 @@ function consoleLetters(allLetters, posLetters)
 
     foreach(allLetters,
     function(id)
-      for axis=1,3 do
-        Move(id, axis, posLetters[id][axis], 150)
-       end
-       ShowReg(id)
+        for k=1, #posLetters[id] do
+            for axis=1,3 do
+                Move(id, axis, posLetters[id][k][axis], 150)
+            end
+        end
+        ShowReg(id)
     end)
     Sleep(100)
     WaitForMoves(allLetters)
@@ -1312,7 +1328,7 @@ function dnaHelix(allLetters)
 	
 end
 
-function circleProject(allLetters, posLetters)
+function circleProject(allLetters)
     circumference = count(allLetters) * sizeSpacingLetter *2.0
     textCirumference = count(allLetters) * sizeSpacingLetter
     radius = circumference / (2 * math.pi)
@@ -1343,8 +1359,10 @@ function SpiralUpwards(allLetters, posLetters)
     hideTReg(allLetters)
     foreach(allLetters,
         function(id)
-                Move(id, 3, posLetters[id][3] - 5000, 0)     
+              for k=1, #posLetters[id] do
+                Move(id, 3, posLetters[id][k][3] - 5000, 0)     
                 Spin(id, spindropAxis, math.rad(42), 15)     
+            end
         end)
     Sleep(1000)
 
@@ -1365,8 +1383,10 @@ end
 function SwarmLetters(allLetters, posLetters)
     foreach(allLetters,
         function(id)
-            for i=1,3 do
-                Move(id, i, posLetters[id][i]+ math.random(0,1000)*randSign(), 0)
+            for k=1, #posLetters[id] do
+                for i=1,3 do
+                    Move(id, i, posLetters[id][k][i] + math.random(0,1000)*randSign(), 0)
+                end            
             end            
         end)
     Sleep(1000)
@@ -1470,10 +1490,10 @@ function addJHologramLetters()
     val = math.random(5,45)
     for i=1, stringlength do
         if TableOfPiecesGroups["JLetter"][message[i]] then
-            local pieceName = TableOfPiecesGroups["JLetter"][message[i]]                   
-            ShowReg(pieceName)
-            Move(pieceName, 3,  -sizeDownLetter*rowIndex, 0)
-            Move(pieceName,axis, sizeSpacingLetter*(columnIndex), 0)
+            local jPieceName = TableOfPiecesGroups["JLetter"][message[i]]                   
+            ShowReg(jPieceName)
+            Move(jPieceName, 3,  -sizeDownLetter*rowIndex, 0)
+            Move(jPieceName,axis, sizeSpacingLetter*(columnIndex), 0)
             if boolUpRight then
                 columnIndex= 0
                 rowIndex= rowIndex +1

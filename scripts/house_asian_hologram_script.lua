@@ -1,5 +1,5 @@
-include "createCorpse.lua"
 include "lib_OS.lua"
+include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
@@ -16,7 +16,7 @@ local TableOfPiecesGroups = {}
 local crossRotatePiece1 =  piece("HoloSpin72")
 local crossRotatePiece2 =  piece("HoloSpin74")
 local jumpScareRotor = piece("jumpScareRotor")
-local hours, minutes, seconds, percent = getDayTime()
+hours, minutes, seconds, percent = getDayTime()
 function clock()
     while true do
         hours, minutes, seconds, percent = getDayTime()
@@ -144,7 +144,6 @@ function showStreetSigns()
         end)
 end
 
-
 function grid()
     Sleep(100)
     while true do
@@ -153,12 +152,12 @@ function grid()
             boolFlip = maRa()
             upVal=math.random(3,4)
             lowVal= math.random(1,2)
-            if boolFlip then Turn(theGrid[1],x_axis, math.rad(180),0) end
+            if boolFlip then Turn(theGrid[1], x_axis, math.rad(180), 0) end
             Sleep(33)
             for i= lowVal, upVal do 
                 HideReg(theGrid)
                 ShowReg(theGrid[i])
-                Turn(theGrid[i], y_axis, math.rad(i*90),0)
+                Turn(theGrid[i], y_axis, math.rad(i * 90),0)
                 Sleep(33)
                 if maRa()then
                     Sleep(66)
@@ -167,7 +166,7 @@ function grid()
             for i= upVal, lowVal, -1 do 
                 HideReg(theGrid)
                 ShowReg(theGrid[i])
-                Turn(theGrid[i], y_axis, math.rad(i*90),0)
+                Turn(theGrid[i], y_axis, math.rad(i * 90),0)
                 Sleep(33)
                 if maRa()then
                     Sleep(66)
@@ -176,7 +175,7 @@ function grid()
             if maRa() == maRa() then
                 Sleep(500)
             end
-            if boolFlip then Turn(theGrid[1],x_axis, math.rad(0),0) end
+            if boolFlip then Turn(theGrid[1], x_axis, math.rad(0), 0) end
 
         end
         Sleep(33)
@@ -199,9 +198,9 @@ end
 function shapeSymmetry()
     for i=1, 10 do
         if not (maRa() == maRa()) or i < 4 then
-            pieceName = "Symmetry0"..i
+            sympPieceOrgName = "Symmetry0"..i
             symPieceName = "Symmetry0"..(i + 10)
-            a = piece(pieceName)
+            a = piece(sympPieceOrgName)
             b = piece(symPieceName)
             randVal = math.random(1,8)*randSign()*45
             ShowReg(a)
@@ -215,6 +214,19 @@ function shapeSymmetry()
     end
 end
 
+function showSubSpins(pieceID)
+   local pieceName = getUnitPieceName(unitID, pieceID)
+   subSpinPieceName = pieceName.."Spin"    
+   if TableOfPiecesGroups[subSpinPieceName] then  
+    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do
+        spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
+        ShowReg(spinPiece)
+        Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+    end
+   end
+end
+
 logoPiece = nil
 spinPieces = {}
 jumpScarePieces = {}
@@ -224,8 +236,9 @@ function deterministiceSetup()
            shapeSymmetry()
         else
             logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
+            showSubSpins(logoPiece)
             ShowReg(logoPiece)
-            Spin(logoPiece, y_axis, math.rad(0.2*randSign()), 0)
+            Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
         end
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do
