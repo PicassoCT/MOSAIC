@@ -212,7 +212,7 @@ vec3  GetUVAtPosInView(vec3 worldPos)
     vec3 ndcPosition = clipSpacePosition.xyz / clipSpacePosition.w;
 	vec2 ruv = vec2(ndcPosition.x * 0.5 + 0.5, ndcPosition.y * -0.5 + 0.5);
 
-	return vec3(ruv.x, ruv.y, ndcPosition.z);
+	return vec3(ruv.x, ruv.y, worldPos.z);
 }
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
@@ -480,7 +480,7 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
         vec3 newPos = GetWorldPosAtUV(curUV.xy, backgroundDepth );
         curLength = length(reflectionPosition - newPos);        
     }
-    return GREEN;
+    return NONE;
 }
 
 vec4 getReflection(vec3 reflectionPosition)
@@ -700,7 +700,7 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	gl_FragColor = RED;//getReflection(worldPos);
+	gl_FragColor = getReflection(worldPos);
 	//gl_FragColor = lind(depthAtPixel.rrrr);
 	return;
 

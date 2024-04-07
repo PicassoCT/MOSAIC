@@ -131,11 +131,11 @@ local timePercent = 0
 local hours = 12
 local minutes = 0
 local seconds = 0
-local sunDir = {0,0,0}
+
 local sunCol = {0,0,0}
 local skyCol = {0,0,0}
 local sunPos = {0.0,0.0, 1.0}
-local uniformSundir
+
 local uniformSunColor
 local uniformSkyColor
 local uniformSunPos
@@ -419,7 +419,7 @@ local function updateUniforms()
     local eyeDir = {spGetCameraDirection()}
     glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )
 
-    glUniform(uniformSundir, sunDir[1], sunDir[2], sunDir[3]);
+
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
     glUniform(uniformSunPos, sunPos[1], sunPos[2], sunPos[3]);
