@@ -205,6 +205,15 @@ vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 	return worldPos4.xyz;
 }
 
+vec3 GetNDCFromPosition(vec3 worldPos)
+{
+
+	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
+	// Convert to normalized device coordinates
+    vec3 ndcPosition = clipSpacePosition.xyz / clipSpacePosition.w;
+	return ndcPosition;
+	}
+
 vec3  GetUVAtPosInView(vec3 worldPos)
 {
 	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
@@ -435,7 +444,7 @@ const vec2 SAMPLE_OFFSETS[4] = vec2[4](
     vec2(0.0, -1.0)  // Down
 );
 
-vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
+vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
 	const float DepthCheckBias = 0.001;
 	int loops = 10;
@@ -447,19 +456,18 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
 	vec3 curUV = vec3(0.);
 	 
 	// The Current Length
-	float curLength = 1;
+	float curLength = 0.3; //This is not in world, but in pixelspace coordinates
 
-	// Now loop
     for (int i = 0; i < loops; i++)
     {
-        // Update the Current Position of the Ray
+        // Update the Current Position of the Ray in world
         curPos = reflectionPosition + reflectDir * curLength ;
         // Get the UV Coordinates of the current Ray
-        curUV = GetUVAtPosInView(curPos);
+        curUV = GetNDCFromPosition(curPos);
         // The Depth of the Current Pixel
         float backgroundDepth = texture2D(dephtCopyTex, curUV.xy).r;
 
-        //Sobelsample at cursor
+        //Sobelsample at cursor to close uvholes
         for (int j = 0; j < 4; j++)
         {
             if (abs(curUV.z - backgroundDepth) < DepthCheckBias)
@@ -470,17 +478,17 @@ vec4 rayMarchForRefletion(vec3 reflectionPosition, vec3 reflectDir)
 
             	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle);
             	//Detect the sky and avoid reflecting rooftops
-            	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) {return RED;}
-                return texture2D(screentex, curUV.xy);
+            	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) {return RED;} //not mirrored on the ground
+                return texture2D(screentex, curUV.xy);//reflected 
             }
             backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[j].xy * HalfPixel * 2.0)).r;
         }
 
         // Get the New Position and Vector
-        vec3 newPos = GetWorldPosAtUV(curUV.xy, backgroundDepth );
+        vec3 newPos = GetWorldPosAtUV(curUV.xy, backgroundDepth );    
         curLength = length(reflectionPosition - newPos);        
     }
-    return NONE;
+    return NONE; //No reflection
 }
 
 vec4 getReflection(vec3 reflectionPosition)
@@ -495,7 +503,7 @@ vec4 getReflection(vec3 reflectionPosition)
     // Assuming ground is flat, normal is (0,1,0)
     vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
 
-  	return rayMarchForRefletion(reflectionPosition,  reflectDir);
+  	return rayMarchForReflection(reflectionPosition ,  reflectDir);
     	
     }	
     return NONE;
