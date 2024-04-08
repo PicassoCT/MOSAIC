@@ -138,6 +138,8 @@ float screenScaleFactorY = 0.1;
 bool  NormalIsOnGround = false;
 bool  NormalIsOnUnit = false;
 bool NormalIsWaterPuddle = false;
+bool NormalIsSky = false;
+
 vec4 screen(vec4 a, vec4 b)
 {
 	return vec4(1.)-(vec4(1.)-a)*(vec4(1.)-b);
@@ -207,10 +209,9 @@ vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 
 vec3 GetNDCFromPosition(vec3 worldPos)
 {
-
 	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
 	// Convert to normalized device coordinates
-    vec3 ndcPosition = clipSpacePosition.xyz / clipSpacePosition.w;
+    vec3 ndcPosition = (clipSpacePosition.xyz / clipSpacePosition.w)*2.0;
 	return ndcPosition;
 	}
 
@@ -367,20 +368,21 @@ return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 #define OFFSET_Y 1
 #define DEPTH	 5.5
 
-vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, out bool IsWaterPuddle) 
+vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, out bool IsWaterPuddle, out bool IsSky) 
 {
 	vec4 unitVertexNormal = texture2D(normalunittex, theUV);
 	vec4 groundVertexNormal= texture2D(normaltex, theUV);
 
 	IsOnGround = groundVertexNormal != BLACK;
 	IsOnUnit = false;	
-	IsOnGround = true;
+	IsOnGround = false;
 	IsWaterPuddle =groundVertexNormal.g >= Y_NORMAL_CUTOFFVALUE ;
+	IsSky = groundVertexNormal == Black.rgb && unitVertexNormal == Black.rgb;
+
 	if (unitVertexNormal.rgb != BLACK.rgb && unitVertexNormal.a > 0.5) 
 	{
 		if (mapDepth.r < modelDepth.r  )
 		{
-			IsOnUnit = false;
 			IsOnGround = true;
 			return groundVertexNormal.rgb;
 		}
@@ -389,7 +391,7 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 		IsWaterPuddle =unitVertexNormal.g > Y_NORMAL_CUTOFFVALUE;
 		return unitVertexNormal.rgb;	
 	}
-
+	IsOnGround = true;
 	return groundVertexNormal.rgb;
 }
 
@@ -399,7 +401,8 @@ vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 	bool IsOnGround = false;
 	bool IsOnUnit = false;
 	bool IsWaterPuddle = false;
-	vec3 normal = GetGroundVertexNormal(ouv,  IsOnGround, IsOnUnit, IsWaterPuddle);
+	bool IsSky = false;
+	vec3 normal = GetGroundVertexNormal(ouv,  IsOnGround, IsOnUnit, IsWaterPuddle, IsSky);
 	if (IsOnGround || IsOnUnit) return normal.rgb;
 	return NONE.rgb;
 }
@@ -463,7 +466,7 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
         // Update the Current Position of the Ray in world
         curPos = reflectionPosition + reflectDir * curLength ;
         // Get the UV Coordinates of the current Ray
-        curUV = GetNDCFromPosition(curPos);
+        curUV = GetUVAtPosInView(curPos);
         // The Depth of the Current Pixel
         float backgroundDepth = texture2D(dephtCopyTex, curUV.xy).r;
 
@@ -475,10 +478,11 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
             	bool IsOnGround = false;
             	bool IsOnUnit = false;
             	bool IsPuddle = false;
+            	bool IsSky = false;
 
-            	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle);
+            	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle, IsSky);
             	//Detect the sky and avoid reflecting rooftops
-            	if (normal == BLACK.rgb || (IsPuddle && IsOnUnit)) {return RED;} //not mirrored on the ground
+            	if (IsSky || (IsPuddle && IsOnUnit)) {return RED;} //not mirrored on the ground
                 return texture2D(screentex, curUV.xy);//reflected 
             }
             backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[j].xy * HalfPixel * 2.0)).r;
@@ -682,7 +686,7 @@ void main(void)
 	depthAtPixel =  texture2D(dephtCopyTex, uv);
 	worldPos = GetWorldPosAtUV(uv, depthAtPixel.r);
 
-	vertexNormal = GetGroundVertexNormal(uv,  NormalIsOnGround,  NormalIsOnUnit, NormalIsWaterPuddle);
+	vertexNormal = GetGroundVertexNormal(uv,  NormalIsOnGround,  NormalIsOnUnit, NormalIsWaterPuddle, NormalIsSky);
 
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	//Debug code

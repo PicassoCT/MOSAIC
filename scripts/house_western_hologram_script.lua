@@ -1211,6 +1211,8 @@ function addHologramLetters( myMessages)
             WaitForMoves(allLetters)       
             restTime = math.max(5000, #allLetters*150)
             Sleep(restTime)
+            resetSpinDrop(allLetters)
+            WaitForTurns(allLetters)
             if boolIsEverChanging == true then
                 allLetters, posLetters, newMessage = setupMessage(myMessages)                
             end
@@ -1237,8 +1239,10 @@ function randomFLickerLetters(allLetters, posLetters)
               for axis=1,3 do
                 Move(id, axis, posLetters[id][k][axis] + math.random(-1*errorDrift,errorDrift), 100)
                end
+
            end
             end)
+            WaitForMoves(allLetters)
             Sleep(flickerIntervall)
 		end
 		hideTReg(allLetters)  
@@ -1247,7 +1251,7 @@ function randomFLickerLetters(allLetters, posLetters)
                 for k=1, #posLetters[id] do
                   for axis=1,3 do
                     Move(id, axis, posLetters[id][k][axis], 15)
-                   end
+                  end
                 end
                ShowReg(id)
             end)
@@ -1300,8 +1304,10 @@ function resetSpinDrop(allLetters)
 
          foreach(allLetters,
         function(id)   
-                StopSpin(id, spindropAxis, math.rad(15), 15)     
-                Turn(id, spindropAxis, math.rad(0), 15)    
+                StopSpin(id, spindropAxis, math.rad(0), 0)     
+                Turn(id, 1, math.rad(0), 0)    
+                Turn(id, 2, math.rad(0), 0)    
+                Turn(id, 3, math.rad(0), 0)    
         end)
 end
 
@@ -1323,6 +1329,7 @@ function dnaHelix(allLetters)
 			WTurn(id, spindropAxis, math.rad(0), 15) 
         end)
 	Sleep(5000)
+
 	
 end
 
@@ -1375,8 +1382,6 @@ function SpiralUpwards(allLetters, posLetters)
     WaitForMoves(allLetters)
     Sleep(2000)   
 
-    resetSpinDrop(allLetters)
-    WaitForTurns(allLetters)
 end
 
 
@@ -1412,8 +1417,6 @@ function SpinLetters(allLetters)
         ShowReg(id)
         end)
     Sleep(1000)
-    resetSpinDrop(allLetters)    
-    WaitForTurns(allLetters)
     hideTReg(allLetters)
     Sleep(2000)
 end
