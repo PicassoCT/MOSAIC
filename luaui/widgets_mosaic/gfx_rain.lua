@@ -154,6 +154,8 @@ local raincanvastexIndex    = 6
 local noisetexIndex         = 7
 local raintexIndex          = 8
 local dephtCopyTexIndex     = 9
+local emitmaptexIndex       = 10
+local emitunittexIndex      = 11
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
 
@@ -263,6 +265,8 @@ local function init()
         screentex = screentexIndex,
         normaltex = normaltexIndex,
         normalunittex= normalunittexIndex,
+        emitmaptex = emitmaptexIndex,
+        emitunittex = emitunittexIndex,
         raincanvastex = raincanvastexIndex,
         noisetex = noisetexIndex,
         raintex = raintexIndex,
@@ -470,6 +474,8 @@ local function prepareTextures()
     glTexture(raintexIndex, rainPicPath)
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
     glTexture(dephtCopyTexIndex, depthCopyTex)
+    glTexture(emitmaptexIndex, "$map_gbuffer_emittex")
+    glTexture(emitmodeltexIndex, "$model_gbuffer_emittex")
 end
 
 local function DrawRain()

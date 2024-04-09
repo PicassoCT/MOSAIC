@@ -10,6 +10,8 @@ uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
+uniform sampler2D emitmaptex;
+uniform sampler2D emitunittex;
 uniform sampler2D noisetex;
 uniform sampler2D raintex;
 uniform sampler2D dephtCopyTex;

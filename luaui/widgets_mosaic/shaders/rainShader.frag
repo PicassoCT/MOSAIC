@@ -60,6 +60,8 @@ uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
+uniform sampler2D emitmaptex;
+uniform sampler2D emitunittex;
 uniform sampler2D noisetex;
 uniform sampler2D raintex;
 uniform sampler2D dephtCopyTex;
@@ -139,6 +141,7 @@ bool  NormalIsOnGround = false;
 bool  NormalIsOnUnit = false;
 bool NormalIsWaterPuddle = false;
 bool NormalIsSky = false;
+float emissionAtPixel;
 
 vec4 screen(vec4 a, vec4 b)
 {
@@ -397,6 +400,7 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 	return groundVertexNormal.rgb;
 }
 
+
 vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 {
 	vec2 ouv = (uv + vec2(x, y)) / viewPortSize.xy;
@@ -440,6 +444,14 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 
 	float greyValue = 0.2989* color.r + 0.5870* color.g + 0.1140 *color.b;
 	return vec4(vec3(greyValue * skyCol), 1);
+}
+
+float getEmissionStrengthFactorAtUV(vec2 curUV, float minValue, bool IsOnGround, bool IsOnUnit)
+{
+	if (IsOnUnit) return max(minValue,texture2D(emitunittex, theUV).r);
+	if (IsOnGround) return max(minValue,texture2D(emitMapTex, theUV).r);
+	
+	return 0.0;
 }
  
 const vec2 SAMPLE_OFFSETS[4] = vec2[4](
@@ -486,7 +498,7 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
             	//Detect the sky and avoid reflecting rooftops
             	if (IsSky || (IsPuddle && IsOnUnit)) {return RED;} //not mirrored on the ground
                 return GREEN;
-                //return texture2D(screentex, curUV.xy);//reflected 
+                //return texture2D(screentex, curUV.xy) * getEmissionStrengthFactorAtUV(curUV, 0.5, IsOnGround, IsOnUnit); 
             }
             backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[j].xy * HalfPixel * 2.0)).r;
         }
@@ -540,7 +552,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos));		
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	
-	vec4 maskedColor= mix(	NONE,
+	vec4 maskedColor = mix(	NONE,
 			   				workingColorLayer,
 			  				groundMixFactor);
 
@@ -551,7 +563,6 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 }
 
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
-
 vec4 GetGroundReflection(in vec3 start, in vec3 end)
 {	
 	float l = length(end - start);
@@ -563,9 +574,6 @@ vec4 GetGroundReflection(in vec3 start, in vec3 end)
 
 	return accumulatedColor;
 }
-
-	
-
 
 bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 {
