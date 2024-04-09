@@ -567,10 +567,9 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	}
 
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-	workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));
-	workingColorLayer = dodge(workingColorLayer,  getReflection(worldPos));		
+	workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));	
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
-	
+	workingColorLayer = screen(workingColorLayer,  getReflection(worldPos));	
 	vec4 maskedColor = mix(	NONE,
 			   				workingColorLayer,
 			  				groundMixFactor);
@@ -743,9 +742,9 @@ void main(void)
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
 
-	gl_FragColor = getReflection(worldPos);
+	//gl_FragColor = getReflection(worldPos);
 	//gl_FragColor = lind(depthAtPixel.rrrr);
-	return;
+	//return;
 
 	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
 
