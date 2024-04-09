@@ -463,7 +463,7 @@ const vec2 SAMPLE_OFFSETS[4] = vec2[4](
 
 vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
-	const float DepthCheckBias = 0.001;
+	const float DepthCheckBias = 0.00001;
 	int loops = 64;
 	// The Current Position in 3D
 	vec3 curPos = vec3(0.);
