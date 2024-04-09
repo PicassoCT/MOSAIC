@@ -194,10 +194,8 @@ float absinthTime()
 
 vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 {
-
-	vec4 ppos;
-	ppos.xyz = vec3(uvs, depthPixel) * 2. - 1.; 
-	ppos.a   = 1.;
+	vec4 ppos = vec4( vec3(uvs* 2. - 1., depthPixel), 1.0);
+	//vec4 ppos =  vec4(vec3(uvs, depthPixel)* 2. - 1., 1.0);
 	vec4 worldPos4 = viewProjectionInv * ppos;
 	worldPos4.xyz /= worldPos4.w;
 
@@ -208,26 +206,17 @@ vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 		return eyePos + forward.xyz * abs(a);		
 	}
 	return worldPos4.xyz;
-}//https://virtexedgedesign.wordpress.com/2018/06/24/shader-series-basic-screen-space-reflections/
-//https://github.com/maorachow/monogameMinecraft/blob/1bb43fefb63819db91f89500db736cb90ecd9115/Content/ssreffect.fx#L81
-float3 GetUVFromPosition(float3 worldPos)
-{
-    float4 viewPos = mul(float4(worldPos, 1), matView);
-    float4 projectionPos = mul(viewPos, matProjection);
-
-    projectionPos.xyz /= projectionPos.w;
-    projectionPos.y = -projectionPos.y;
-    projectionPos.xy = projectionPos.xy * 0.5 + 0.5;
-    return projectionPos.xyz;
 }
+//https://virtexedgedesign.wordpress.com/2018/06/24/shader-series-basic-screen-space-reflections/
+//https://github.com/maorachow/monogameMinecraft/blob/1bb43fefb63819db91f89500db736cb90ecd9115/Content/ssreffect.fx#L81
+
 vec3  GetUVAtPosInView(vec3 worldPos)
 {
-	vec4 viewProjectionPos = viewProjection * vec4(worldPos, 1.0);
-	viewProjectionPos.xyz /= viewProjectionPos.w;
-	viewProjectionPos.y = -viewProjectionPos.y;
-    viewProjectionPos.xy = viewProjectionPos.xy * 0.5 + 0.5;
+	vec4 ProjectionPos =  viewProjection * vec4(worldPos, 1.0)  ;
+	ProjectionPos.xyz /= ProjectionPos.w;
+    ProjectionPos.xy = ProjectionPos.xy * 0.5 + 0.5;
 	// Convert to normalized device coordinates
-	return viewProjectionPos.xyz;
+	return ProjectionPos.xyz;
 }
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
@@ -448,8 +437,8 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 
 float getEmissionStrengthFactorAtUV(vec2 curUV, float minValue, bool IsOnGround, bool IsOnUnit)
 {
-	if (IsOnUnit) return max(minValue,texture2D(emitunittex, theUV).r);
-	if (IsOnGround) return max(minValue,texture2D(emitMapTex, theUV).r);
+	if (IsOnUnit) return max(minValue,texture2D(emitunittex, curUV).r);
+	if (IsOnGround) return max(minValue,texture2D(emitmaptex, curUV).r);
 	
 	return 0.0;
 }
@@ -460,20 +449,50 @@ const vec2 SAMPLE_OFFSETS[4] = vec2[4](
     vec2(0.0, 1.0),  // Up
     vec2(0.0, -1.0)  // Down
 );
+//viewspacedirectional offset vectors
+
+void findAlignedOffsets(vec2 direction, out vec2 alignedOffset[2]) 
+{
+    // Initialize variables to hold the most aligned offsets
+    float maxDotProduct1 = -1.0;
+    float maxDotProduct2 = -1.0;
+
+    // Iterate through each offset in the array
+    for (int i = 0; i < 4; ++i) {
+        // Calculate the dot product of the given vector and the current offset
+        float dotProduct = dot(normalize(direction), normalize(SAMPLE_OFFSETS[i]));
+
+        // Check if the dot product is greater than the previous maximums
+        if (dotProduct > maxDotProduct1) {
+            // Shift previous maximum to second maximum
+            alignedOffset[1] = alignedOffset[0];
+            maxDotProduct2 = maxDotProduct1;
+
+            // Update first maximum
+            alignedOffset[0] = SAMPLE_OFFSETS[i];
+            maxDotProduct1 = dotProduct;
+        } else if (dotProduct > maxDotProduct2) {
+            // Update second maximum
+            alignedOffset[1] = SAMPLE_OFFSETS[i];
+            maxDotProduct2 = dotProduct;
+        }
+    }
+}
 
 vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
 	const float DepthCheckBias = 0.00001;
 	int loops = 64;
 	// The Current Position in 3D
-	vec3 curPos = vec3(0.);
-	vec2 HalfPixel = vec2(0.5 / viewPortSize.x, 0.5 / viewPortSize.y);
-	 
+	vec3 curPos = reflectionPosition;
+	vec2 HalfPixel = vec2(0.5 / viewPortSize.x, 0.5 / viewPortSize.y)*2.0;
+	
+
 	// The Current UV
 	vec3 curUV = vec3(0.);
 	 
 	// The Current Length
-	float curLength = 0.3; //This is not in world, but in pixelspace coordinates
+	float curLength = 0.5; 
 
     for (int i = 0; i < loops; i++)
     {
@@ -482,32 +501,32 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
         // Get the UV Coordinates of the current Ray
         curUV = GetUVAtPosInView(curPos);
         // The Depth of the Current Pixel
-        float backgroundDepth = texture2D(dephtCopyTex, curUV.xy).r;
+        float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
 
         //Sobelsample at cursor to close uvholes
         for (int j = 0; j < 4; j++)
         {
-            if (abs(curUV.z - backgroundDepth) < DepthCheckBias)
+            if (abs(curUV.z - curDepth) < DepthCheckBias)
             {
-            	bool IsOnGround = false;
-            	bool IsOnUnit = false;
-            	bool IsPuddle = false;
-            	bool IsSky = false;
-
-            	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle, IsSky);
-            	//Detect the sky and avoid reflecting rooftops
-            	if (IsSky || (IsPuddle && IsOnUnit)) {return RED;} //not mirrored on the ground
-                return GREEN;
-                //return texture2D(screentex, curUV.xy) * getEmissionStrengthFactorAtUV(curUV, 0.5, IsOnGround, IsOnUnit); 
+                bool IsOnGround = false;
+                bool IsOnUnit = false;
+                bool IsPuddle = false;
+                bool IsSky = false;
+           
+                vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle, IsSky);
+                //Detect the sky and avoid reflecting rooftops
+                if (IsSky ) {return vec4(skyCol, 0.5);} //not mirrored on the ground
+               
+                //return GREEN;
+               return texture2D(screentex, curUV.xy) ;//* getEmissionStrengthFactorAtUV(curUV, 0.5, IsOnGround, IsOnUnit); 
             }
-            backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[j].xy * HalfPixel * 2.0)).r;
+            curDepth = texture2D(dephtCopyTex, curUV.xy + SAMPLE_OFFSETS[j].xy * HalfPixel).r;
         }
 
         // Get the New Position and Vector
-        vec3 newPos = GetWorldPosAtUV(curUV.xy, backgroundDepth );    
-        curLength = length(reflectionPosition - newPos);        
+        curLength = length(reflectionPosition - GetWorldPosAtUV(curUV.xy, curDepth ));        
     }
-    return BLUE;
+    return NONE;
     //return NONE; //No reflection
 }
 

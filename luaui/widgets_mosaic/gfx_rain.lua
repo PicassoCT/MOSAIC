@@ -475,7 +475,7 @@ local function prepareTextures()
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
     glTexture(dephtCopyTexIndex, depthCopyTex)
     glTexture(emitmaptexIndex, "$map_gbuffer_emittex")
-    glTexture(emitmodeltexIndex, "$model_gbuffer_emittex")
+    glTexture(emitunittexIndex, "$model_gbuffer_emittex")
 end
 
 local function DrawRain()
