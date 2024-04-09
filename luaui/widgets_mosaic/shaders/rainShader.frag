@@ -377,7 +377,7 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 	IsOnUnit = false;	
 	IsOnGround = false;
 	IsWaterPuddle =groundVertexNormal.g >= Y_NORMAL_CUTOFFVALUE ;
-	IsSky = groundVertexNormal == Black.rgb && unitVertexNormal == Black.rgb;
+	IsSky = groundVertexNormal.rgb == BLACK.rgb && unitVertexNormal.rgb == BLACK.rgb;
 
 	if (unitVertexNormal.rgb != BLACK.rgb && unitVertexNormal.a > 0.5) 
 	{
