@@ -7,10 +7,10 @@
 #define MAX_DEPTH_RESOLUTION 20.0
 #define E_CONST 2.718281828459045235360287471352
 #define NONE vec4(0.0,0.0,0.0,0.0)
-#define RED vec4(1.0, 0.0, 0.0, 1.0)
-#define GREEN vec4(0.0, 1.0, 0.0, 1.0)
-#define BLUE vec4(0.0, 0.0, 1.0, 1.0)
-#define BLACK vec4(0.0, 0.0, 0.0, 1.0)
+#define RED vec4(1.0, 0.0, 0.0, 0.95)
+#define GREEN vec4(0.0, 1.0, 0.0, 0.95)
+#define BLUE vec4(0.0, 0.0, 1.0, 0.95)
+#define BLACK vec4(0.0, 0.0, 0.0, 0.95)
 #define IDENTITY vec4(1.0,1.0,1.0,1.0)
 
 
@@ -205,24 +205,26 @@ vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 		return eyePos + forward.xyz * abs(a);		
 	}
 	return worldPos4.xyz;
-}
-
-vec3 GetNDCFromPosition(vec3 worldPos)
+}//https://virtexedgedesign.wordpress.com/2018/06/24/shader-series-basic-screen-space-reflections/
+//https://github.com/maorachow/monogameMinecraft/blob/1bb43fefb63819db91f89500db736cb90ecd9115/Content/ssreffect.fx#L81
+float3 GetUVFromPosition(float3 worldPos)
 {
-	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
-	// Convert to normalized device coordinates
-    vec3 ndcPosition = (clipSpacePosition.xyz / clipSpacePosition.w)*2.0;
-	return ndcPosition;
-	}
+    float4 viewPos = mul(float4(worldPos, 1), matView);
+    float4 projectionPos = mul(viewPos, matProjection);
 
+    projectionPos.xyz /= projectionPos.w;
+    projectionPos.y = -projectionPos.y;
+    projectionPos.xy = projectionPos.xy * 0.5 + 0.5;
+    return projectionPos.xyz;
+}
 vec3  GetUVAtPosInView(vec3 worldPos)
 {
-	vec4 clipSpacePosition = viewProjection * vec4(worldPos, 1.0);
+	vec4 viewProjectionPos = viewProjection * vec4(worldPos, 1.0);
+	viewProjectionPos.xyz /= viewProjectionPos.w;
+	viewProjectionPos.y = -viewProjectionPos.y;
+    viewProjectionPos.xy = viewProjectionPos.xy * 0.5 + 0.5;
 	// Convert to normalized device coordinates
-    vec3 ndcPosition = clipSpacePosition.xyz / clipSpacePosition.w;
-	vec2 ruv = vec2(ndcPosition.x * 0.5 + 0.5, ndcPosition.y * -0.5 + 0.5);
-
-	return vec3(ruv.x, ruv.y, worldPos.z);
+	return viewProjectionPos.xyz;
 }
 
 bool isInIntervallAround(float value, float targetValue, float intervall)
@@ -483,7 +485,8 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
             	vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle, IsSky);
             	//Detect the sky and avoid reflecting rooftops
             	if (IsSky || (IsPuddle && IsOnUnit)) {return RED;} //not mirrored on the ground
-                return texture2D(screentex, curUV.xy);//reflected 
+                return GREEN;
+                //return texture2D(screentex, curUV.xy);//reflected 
             }
             backgroundDepth = texture2D(dephtCopyTex, curUV .xy + (SAMPLE_OFFSETS[j].xy * HalfPixel * 2.0)).r;
         }
@@ -492,7 +495,8 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
         vec3 newPos = GetWorldPosAtUV(curUV.xy, backgroundDepth );    
         curLength = length(reflectionPosition - newPos);        
     }
-    return NONE; //No reflection
+    return BLUE;
+    //return NONE; //No reflection
 }
 
 vec4 getReflection(vec3 reflectionPosition)
