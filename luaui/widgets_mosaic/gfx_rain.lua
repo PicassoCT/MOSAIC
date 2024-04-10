@@ -264,9 +264,7 @@ local function init()
         rainDroplettTex = rainDroplettTexIndex,
         screentex = screentexIndex,
         normaltex = normaltexIndex,
-        normalunittex= normalunittexIndex,
-        emitmaptex = emitmaptexIndex,
-        emitunittex = emitunittexIndex,
+        normalunittex= normalunittexIndex,      
         raincanvastex = raincanvastexIndex,
         noisetex = noisetexIndex,
         raintex = raintexIndex,
@@ -474,8 +472,6 @@ local function prepareTextures()
     glTexture(raintexIndex, rainPicPath)
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
     glTexture(dephtCopyTexIndex, depthCopyTex)
-    glTexture(emitmaptexIndex, "$map_gbuffer_emittex")
-    glTexture(emitunittexIndex, "$model_gbuffer_emittex")
 end
 
 local function DrawRain()

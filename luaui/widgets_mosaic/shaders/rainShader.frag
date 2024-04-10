@@ -60,8 +60,7 @@ uniform sampler2D rainDroplettTex;
 uniform sampler2D screentex;
 uniform sampler2D normaltex;
 uniform sampler2D normalunittex;
-uniform sampler2D emitmaptex;
-uniform sampler2D emitunittex;
+
 uniform sampler2D noisetex;
 uniform sampler2D raintex;
 uniform sampler2D dephtCopyTex;
@@ -435,13 +434,6 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 	return vec4(vec3(greyValue * skyCol), 1);
 }
 
-float getEmissionStrengthFactorAtUV(vec2 curUV, float minValue, bool IsOnGround, bool IsOnUnit)
-{
-	if (IsOnUnit) return max(minValue,texture2D(emitunittex, curUV).r);
-	if (IsOnGround) return max(minValue,texture2D(emitmaptex, curUV).r);
-	
-	return 0.0;
-}
  
 const vec2 SAMPLE_OFFSETS[4] = vec2[4](
     vec2(1.0, 0.0),  // Right
@@ -518,7 +510,7 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
                 if (IsSky ) {return vec4(skyCol, 0.5);} //not mirrored on the ground
                
                 //return GREEN;
-               return texture2D(screentex, curUV.xy) ;//* getEmissionStrengthFactorAtUV(curUV, 0.5, IsOnGround, IsOnUnit); 
+               return texture2D(screentex, curUV.xy) ;
             }
             curDepth = texture2D(dephtCopyTex, curUV.xy + SAMPLE_OFFSETS[j].xy * HalfPixel).r;
         }

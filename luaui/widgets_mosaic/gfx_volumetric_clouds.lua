@@ -134,7 +134,7 @@ if (gnd_max < 0) then gnd_max = 0 end
 local vsx, vsy, vpx, vpy
 
 local depthShader
-local depthTexture
+local depthTex
 local fogTexture
 
 local uniformEyePos
@@ -208,6 +208,9 @@ struct AABB {
 };
 
 uniform mat4 viewProjectionInv;
+uniform sampler2D emitmaptex;
+uniform sampler2D emitunittex;
+uniform sampler2D modelDepthTex;
 
 out AABB aabbCamera;
 
@@ -263,9 +266,12 @@ const float noiseCloudness = float(0.7) * 0.5; // TODO: configurable
 	const vec3 vBB = vec3( 300000.0, fogHeight,  300000.0);
 #endif
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler3D tex2;
+uniform sampler2D depthtex;
+uniform sampler2D noisetex;
+uniform sampler3D noise3dtex;
+uniform sampler2D emitmaptex;
+uniform sampler2D emitunittex;
+uniform sampler2D modelDepthTex;
 
 uniform vec3 eyePos;
 uniform mat4 viewProjectionInv;
@@ -276,6 +282,14 @@ uniform float time;
 
 #define NORM2SNORM(value) (value * 2.0 - 1.0)
 #define SNORM2NORM(value) (value * 0.5 + 0.5)
+
+vec4 getEmissionColor(vec2 curUV, bool IsOnUnit)
+{
+	if (IsOnUnit) return texture2D(emitunittex, curUV);
+	if (!IsOnUnit) return texture2D(emitmaptex, curUV);
+	
+	return vec4(0.);
+}
 
 struct Ray {
 	vec3 Origin;
@@ -299,7 +313,7 @@ float noise_old(in vec3 x)
 	vec3 f = fract(x);
 	f = f*f*(3.0-2.0*f);
 	vec2 uv = (p.xz + vec2(37.0,17.0)*p.y) + f.xz;
-	vec2 rg = texture2D( tex1, (uv + 0.5) * noiseTexSizeInv).yx;
+	vec2 rg = texture2D( noisetex, (uv + 0.5) * noiseTexSizeInv).yx;
 	return smoothstep(0.5 - noiseCloudness, 0.5 + noiseCloudness, mix( rg.x, rg.y, f.y ));
 }
 
@@ -310,14 +324,14 @@ float noise(in vec3 x)
 	vec3 f = fract(x);
 	f = f*f*(3.0-2.0*f);
 	vec2 uv = (p.xz + vec2(37.0,17.0)*p.y) + f.xz;
-	vec2 rg = texture2D( tex1, (uv + 0.5) * noiseTexSizeInv).yx;
+	vec2 rg = texture2D( noisetex, (uv + 0.5) * noiseTexSizeInv).yx;
 	return smoothstep(0.5 - noiseCloudness, 0.5 + noiseCloudness, mix( rg.x, rg.y, f.y ));
 }
 */
 
 float noise(in vec3 x)
 {
-	return texture3D( tex2, x * 0.2).r;
+	return texture3D( noise3dtex, x * 0.2).r;
 }
 
 bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
@@ -443,7 +457,7 @@ vec4 Blend(in vec4 Src, in vec4 Dst)
 void main()
 {
 	// reconstruct worldpos from depthbuffer
-	float z = texture2D(tex0, gl_TexCoord[0].st).x;
+	float z = texture2D(depthtex, gl_TexCoord[0].st).x;
 	vec3 worldPos = GetWorldPos(z, gl_TexCoord[0].st);
 
 	gl_FragColor = vec4(0.0);
@@ -505,7 +519,10 @@ void main()
 			vec3 endPos   = r.Dir * t2 + r.Origin;
 
 			// finally raymarch the volume
+			vec4 	modelDepth = texture2D(modelDepthTex, gl_TexCoord[0].st).rrrr;
 			vec4 rmColor = RaymarchClouds(startPos, endPos, opacity);
+			vec4 emitCol =  getEmissionColor(gl_TexCoord[0].st, !(z  < modelDepth.r));
+			//TODO rmColor + = distanceToGlowSurface * lightStrength (as searchrange) * emitCol
 			gl_FragColor = Blend(gl_FragColor, rmColor);
 			#ifndef CLAMP_TO_MAP
 				// blend with distance to make endless fog have smooth horizon
@@ -553,9 +570,12 @@ local function init()
 			vertex = vertSrc,
 			fragment = fragSrc,
 			uniformInt = {
-				tex0 = 0,
-				tex1 = 1,
-				tex2 = 2,
+				depthtex = 0,
+				noisetex = 1,
+				noise3dtex = 2,
+				emitmaptex = 3,
+        emitunittex = 4,
+        modelDepthTex = 5,
 			},
 		})
 
@@ -622,13 +642,19 @@ local function renderToTextureFunc()
 	glTexture(1, false)
 	glTexture(2, noiseTex3D)
 	glTexture(2, false)
+	glTexture(3, "$map_gbuffer_emittex")
+	glTexture(4, "$model_gbuffer_emittex")
+	glTexture(5, "$model_gbuffer_zvaltex")
 
 	gl.TexRect(-1, -1, 1, 1, 0, 0, 1, 1)
+	glTexture(3, false)
+	glTexture(4, false)
+	glTexture(5, false)
 end
 
 local function DrawFogNew()
 	-- copy the depth buffer
-	glCopyToTexture(depthTexture, 0, 0, vpx, vpy, vsx, vsy) --FIXME scale down?
+	glCopyToTexture(depthTex, 0, 0, vpx, vpy, vsx, vsy) --FIXME scale down?
 
 	-- setup the shader and its uniform values
 	glUseShader(depthShader)
