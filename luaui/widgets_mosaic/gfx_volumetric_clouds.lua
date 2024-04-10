@@ -20,6 +20,7 @@ local noiseTex = ":l:luaui/images/rgbnoise.png"
 --local noiseTex = "LuaUI/Images/noisetextures/uniformnoise_128_rgba_1pixoffset.tga"
 local noiseTex3D = "luaui/images/noisetextures/worley_rgbnorm_01_asum_128_v1.dds"
 --https://github.com/beyond-all-reason/Beyond-All-Reason/tree/1e09d1ff75c1069ed0d77d5c655abdb32a2c5cf8/luaui  new version
+--https://www.shadertoy.com/view/ssV3zh
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
