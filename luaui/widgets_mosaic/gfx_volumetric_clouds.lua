@@ -220,7 +220,7 @@ local function init()
 		fade_alt, opacity*opacityMult, sunPenetration
 	)
 
-	fragSrc = fragSrc:gsub("###DEPTH_CLIP01###", tostring((Platform.glSupportClipSpaceControl and 1) or 0))
+	fragSrc = fragSrc:gsub("###DEPTH_CLIP01###", tostring((Platform and Platform.glSupportClipSpaceControl and 1) or 0))
 	fragSrc = fragSrc:gsub("###CLAMP_TO_MAP###", tostring((cloudsClamp and 1) or 0))
 
 	if enabled then

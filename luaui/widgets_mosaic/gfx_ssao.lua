@@ -8,7 +8,7 @@ function widget:GetInfo()
         date      = "2019",
         license   = "GPL",
         layer     = math.huge,
-        enabled   = false, 
+        enabled   = true, 
 		hidden = true,
     }
 end
@@ -303,7 +303,7 @@ function widget:Initialize()
 	local gbuffFuseShaderVert = VFS.LoadFile(shadersDir.."identity.vert.glsl")
 	local gbuffFuseShaderFrag = VFS.LoadFile(shadersDir.."gbuffFuse.frag.glsl")
 
-	gbuffFuseShaderFrag = gbuffFuseShaderFrag:gsub("###DEPTH_CLIP01###", tostring((Platform.glSupportClipSpaceControl and 1) or 0))
+	gbuffFuseShaderFrag = gbuffFuseShaderFrag:gsub("###DEPTH_CLIP01###", tostring((Platform and Platform.glSupportClipSpaceControl and 1) or 0))
 	gbuffFuseShaderFrag = gbuffFuseShaderFrag:gsub("###MERGE_MISC###", tostring((MERGE_MISC and 1) or 0))
 
 	gbuffFuseShader = LuaShader({

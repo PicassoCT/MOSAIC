@@ -477,7 +477,7 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 	int loops = 16;
 	// The Current Position in 3D
 	vec3 curPos = reflectionPosition;
-	vec2 HalfPixel = vec2(1.0 / viewPortSize.x, 1.0/ viewPortSize.y)*PI*4.0; 
+	vec2 HalfPixel = vec2(1.0 / viewPortSize.x, 1.0/ viewPortSize.y)* PI * 4.0;//(eyePos.z/2048.0)*PI; 
 	
 
 	// The Current UV
@@ -729,6 +729,19 @@ void main(void)
 		gl_FragColor = vec4(0.);
 		return;
 	}
+	vec2 rotatedUV = getRoatedUV();
+	if (NormalIsSky)
+	{
+		vec2 scale = vec2(8.0, 4.0);
+		vec2 rainUv = vec2(rotatedUV *scale);
+		
+		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y) * 0.125; 
+		vec4 rainColor = texture2D(noisetex , rainUv);
+		rainColor.a = rainColor.r*0.5;
+		gl_FragColor = vec4( GetDeterministicRainColor(rainUv.xy).rgb, (1.0-rainColor.r)* (0.125 + 0.125*absinthTime()));
+		  
+		return;
+	}
 
 	t1 = clamp(t1, 0.0, 1.0);
 	t2 = clamp(t2, 0.0, 1.0);
@@ -746,7 +759,7 @@ void main(void)
 	upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up orthogonal to ground and upwards
 
 
-	vec2 rotatedUV = getRoatedUV();
+	
 	//TODO, should pulsate depending on look vector due to the dropletss
 
 	
