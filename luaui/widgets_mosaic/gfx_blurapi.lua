@@ -31,7 +31,7 @@ end
 local quality  = 1
 local useNoise = false
 
-local noiseTexture = ":n:LuaUI/images/noise.png"
+local noiseTexture = ":n:luaui/images/noisetextures/noise.png"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

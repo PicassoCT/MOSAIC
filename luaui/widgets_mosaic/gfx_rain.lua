@@ -21,7 +21,7 @@ local rainShader = nil
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
 local shaderFilePath        = "luaui/widgets_mosaic/shaders/"
-local noisetextureFilePath  = ":l:luaui/images/rgbnoise.png"
+local noisetextureFilePath  = ":l:luaui/images/noisetextures/rgbnoise.png"
 local DAYLENGTH             = 28800
 
 --------------------------------------------------------------------------------
