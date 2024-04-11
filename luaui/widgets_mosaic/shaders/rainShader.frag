@@ -473,11 +473,11 @@ void findAlignedOffsets(vec2 direction, out vec2 alignedOffset[2])
 
 vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
-	const float DepthCheckBias = 0.000125;//0.00001;
-	const int loops = 16;
+	const float DepthCheckBias = 0.000125;//0.000125;;
+	int loops = 16;
 	// The Current Position in 3D
 	vec3 curPos = reflectionPosition;
-	vec2 HalfPixel = vec2(0.5 / viewPortSize.x, 0.5 / viewPortSize.y)*2.0;
+	vec2 HalfPixel = vec2(1.0 / viewPortSize.x, 1.0/ viewPortSize.y)*PI*4.0; 
 	
 
 	// The Current UV
@@ -561,8 +561,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
 	workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));
 	//Masked blend in for ReflectionColor TODO Test & Optimize
-	vec4 reflectionColor = 	getReflection(worldPos);
- 	workingColorLayer = mix(workingColorLayer, reflectionColor, !(reflectionColor == NONE));	
+ 	workingColorLayer = dodge(workingColorLayer, getReflection(worldPos));	//, !(reflectionColor == NONE)
  	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
 	
 	vec4 maskedColor = mix(	NONE,
