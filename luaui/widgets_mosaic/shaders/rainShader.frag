@@ -28,12 +28,10 @@
 
 //DayColors
 #define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
-#define DAY_RAIN_DARK_COL vec4(0.26,0.27,0.37,1.0)
-#define DAY_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
+#define DAY_RAIN_DARK_COL vec4(0.21,0.32,0.40,1.0)
 //NightColors
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
-#define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
-#define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
+#define NIGHT_RAIN_DARK_COL vec4(0.14,0.14,0.12,1.0)
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
 
@@ -737,8 +735,10 @@ void main(void)
 		
 		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y) * 0.125; 
 		vec4 rainColor = texture2D(noisetex , rainUv);
-		rainColor.a = rainColor.r*0.5;
-		gl_FragColor = vec4( GetDeterministicRainColor(rainUv.xy).rgb, (1.0-rainColor.r)* (0.125 + 0.125*absinthTime()));
+		vec3 rainColor = GetDeterministicRainColor(rainUv.xy).rgb;
+		float rainAlpha = max(0.06125,  (1.0-rainColor.r*0.5)* (0.125 + 0.125*absinthTime()));
+		vec4 rainTexture = vec4(rainColor,rainAlpha);
+		gl_FragColor = ;
 		  
 		return;
 	}
