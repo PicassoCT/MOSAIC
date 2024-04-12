@@ -3,7 +3,6 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_debug.lua"
-include "lib_physics.lua"
 
 IDGroupsDirection = { 
     "u", --upright
@@ -632,14 +631,13 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 	return false
 end
 
-function timeOfDay()
-    WholeDay = GameConfig.daylength
-    timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
-    return ((timeFrame % (WholeDay)) / (WholeDay))
+function GetPieceTableGroups()
+    return getPieceTableByNameGroups(false, true)
 end
 
 function script.Create()
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_asian_script_PiecesTable", GetPieceTableGroups)
+
 	assertPieceNamesUnique(unitID)
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)

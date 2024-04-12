@@ -15,6 +15,7 @@ local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
+local restaurantNeonLogos = include('restaurantNeonLogos.lua')
 
 local hours  =0
 local minutes=0
@@ -50,6 +51,7 @@ local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
 local qrcode = piece"buisness_holo056"
+boolIsRestaurant = false
 
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
@@ -310,13 +312,16 @@ function restartHologram()
     StartThread(tiglLilLoop)
 end
 
+function GetPieceTableGroups()
+    return getPieceTableByNameGroups(false, true)
+end
+
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
-    TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+    TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_hologram_script_PiecesTable", GetPieceTableGroups)
     restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
@@ -853,9 +858,8 @@ function HoloGrams()
         if not GG.RestaurantCounter then GG.RestaurantCounter = 0 end
         if GG.RestaurantCounter < 4 and (maRa()== maRa()) then    
             logo = piece("buisness_holo18")
-        end
-
-        if logo == piece("buisness_holo18") then            
+            boolIsRestaurant = true
+     
             GG.RestaurantCounter = GG.RestaurantCounter + 1
             symbol = math.random(8,11)
             ShowReg(TableOfPiecesGroups["buisness_holo18Spin"][symbol])
@@ -895,7 +899,7 @@ function HoloGrams()
                         Spin(spinLogoPiece,y_axis, math.rad(-42),0)
                     end
                 end
-                addHologramLetters(buisnessNeonSigns)
+              conditionalBuisnessLogo()
            end
         else
             if maRa() == maRa() then
@@ -904,11 +908,19 @@ function HoloGrams()
                     StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
                 end
             else
-                addHologramLetters(buisnessNeonSigns)
+                conditionalBuisnessLogo()
             end
         end
         return 
     end 
+end
+
+function conditionalBuisnessLogo()
+    if boolIsRestaurant then 
+        addHologramLetters(restaurantNeonLogos)
+    else
+        addHologramLetters(buisnessNeonSigns)
+    end
 end
 
 function dragonDance()
@@ -1473,7 +1485,7 @@ end
 
 
 function addJHologramLetters()
-    if maRa() == maRa() then return end
+    if maRa() == maRa()  then return end
     message = {}
     for i=1,6 do
         message[i] = math.random(1,41)

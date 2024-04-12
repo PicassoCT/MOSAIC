@@ -85,9 +85,12 @@ function timeOfDay()
 end
 
 BuildDeco = {}
+function GetPieceTableGroups()
+    return getPieceTableByNameGroups(false, true)
+end
 
 function script.Create()
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_western_script_PiecesTable", GetPieceTableGroups)
 
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)

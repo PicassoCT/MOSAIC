@@ -782,6 +782,18 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range,
     return true
 end
 
+function SetSharedOneTimeResult(key,  data)
+    if not GG.SharedResult then GG.SharedResult = {} end
+    if  not GG.SharedComputationResult[key] then
+       GG.SharedComputationResult[key] = data
+    end 
+end
+
+function GetSetSharedOneTimeResult(key, calcDataFunction)
+ if not GG.SharedResult then SetSharedOneTimeResult(key, calcDataFunction()) end
+ if not GG.SharedResult[key] then SetSharedOneTimeResult(key, calcDataFunction()) end
+ return GG.SharedComputationResult[key]
+end
 -- > shared Computation
 function sharedComputationResult(key, func, data, frameInterval, GameConfig)
     if not GG.SharedComputationResult then GG.SharedComputationResult = {} end
