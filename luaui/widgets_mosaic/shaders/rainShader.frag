@@ -644,7 +644,7 @@ vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		return vec4(mix( sunCol.rgb, resultColor.rgb, sunlightReflectionFactor), resultColor.a) ;
+		return vec4(mix( sunCol.rgb, resultColor.rgb, sunlightReflectionFactor), max(resultColor.a, sunlightReflectionFactor)) ;
 	}
 
 	return resultColor;
@@ -697,6 +697,25 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 	return  finalColor;	
 }
 
+void paintRainSky(vec2 rotatedUV )
+{
+		vec2 scale = vec2(8.0, 4.0);
+		vec2 rainUv = vec2(rotatedUV *scale);
+		
+		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y ) * 0.125; 
+		vec4 rainColor = texture2D(noisetex , rainUv);
+		vec3 rainRGB = GetDeterministicRainColor(rainUv.xy).rgb;
+		float rainAlpha = rainPercent*(1.0-rainColor.r*0.5)* (0.225 + 0.05*absinthTime());
+	float sunlightReflectionFactor = calculateLightReflectionFactor();
+	if (sunlightReflectionFactor > 0.1) 
+	{
+		gl_FragColor = vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
+	}else
+	{
+		gl_FragColor = vec4(rainRGB, rainAlpha);
+	}
+}
+
 
 void main(void)
 {
@@ -728,26 +747,19 @@ void main(void)
 		return;
 	}
 	vec2 rotatedUV = getRoatedUV();
-	if (NormalIsSky)
-	{
-		vec2 scale = vec2(8.0, 4.0);
-		vec2 rainUv = vec2(rotatedUV *scale);
-		
-		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y) * 0.125; 
-		vec4 rainColor = texture2D(noisetex , rainUv);
-		vec3 rainColor = GetDeterministicRainColor(rainUv.xy).rgb;
-		float rainAlpha = max(0.06125,  (1.0-rainColor.r*0.5)* (0.125 + 0.125*absinthTime()));
-		vec4 rainTexture = vec4(rainColor,rainAlpha);
-		gl_FragColor = ;
-		  
-		return;
-	}
+
 
 	t1 = clamp(t1, 0.0, 1.0);
 	t2 = clamp(t2, 0.0, 1.0);
 	vec3 startPos = r.Dir * t1 + eyePos;
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
+
+	if (NormalIsSky)
+	{
+		paintRainSky(rotatedUV);		  
+		return;
+	}
 
 	//gl_FragColor = getReflection(worldPos);
 	//gl_FragColor = lind(depthAtPixel.rrrr);

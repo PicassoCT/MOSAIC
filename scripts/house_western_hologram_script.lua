@@ -1203,6 +1203,7 @@ function restoreMessageOriginalPosition(message, posLetters)
                     Move(id, 1, posLetters[id][k][1], 0)
                     Move(id, 2, posLetters[id][k][2], 0)
                     Move(id, 3, posLetters[id][k][3], 0)
+                    WaitForMoves(id)
                 end
             end
         )
