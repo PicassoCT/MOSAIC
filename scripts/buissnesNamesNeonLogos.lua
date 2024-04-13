@@ -520,6 +520,10 @@ return {
 "Prepperhunting Safaris",
 "WetBulbbelttours",
 "Your companyname here",
-"St Mein Ruecken"
+"St Ouch my back",
+"HoloAdvertising",
+"Insert sd-media and reboot",
+"Splinternet connection offline",
+
 }
 
