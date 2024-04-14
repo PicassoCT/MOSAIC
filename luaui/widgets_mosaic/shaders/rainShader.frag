@@ -364,7 +364,7 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 	vec4 unitVertexNormal = texture2D(normalunittex, theUV);
 	vec4 groundVertexNormal= texture2D(normaltex, theUV);
 
-	IsOnGround = groundVertexNormal != BLACK;
+	IsOnGround = groundVertexNormal != BLACK || ;
 	IsOnUnit = false;	
 	IsOnGround = false;
 	IsWaterPuddle =groundVertexNormal.g >= Y_NORMAL_CUTOFFVALUE ;
@@ -372,7 +372,7 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 
 	if (unitVertexNormal.rgb != BLACK.rgb && unitVertexNormal.a > 0.5) 
 	{
-		if (mapDepth.r < modelDepth.r  )
+		if (mapDepth.r <= modelDepth.r  )
 		{
 			IsOnGround = true;
 			return groundVertexNormal.rgb;
