@@ -867,12 +867,9 @@ function HoloGrams()
             StartThread(addJHologramLetters)
         end
 
-        if logo == symmetryPiece or true then --DELME DEBUG
-        while true do 
+        if logo == symmetryPiece then --DELME DEBUG
             shapeSymmetry(symmetryPiece)
-            Sleep(1000)
-        end
-            return            
+            --return            
         end
 
         if logo == qrcode then 
@@ -1179,7 +1176,7 @@ function setupMessage(myMessages)
                     Move(letterName, 3, -1*sizeDownLetter*rowIndex, 0)
                     Move(letterName,axis, -sizeSpacingLetter*(columnIndex), 0)
                     if not posLetters[letterName] then posLetters[letterName] = {} end
-                    posLetters[letterName][lettercounter] = {0,-sizeSpacingLetter*(columnIndex),  -1*sizeDownLetter*rowIndex }
+                    posLetters[letterName][lettercounter] = {0,-sizeSpacingLetter * (columnIndex),  -1 * sizeDownLetter * rowIndex }
                     if boolUpRight then
                         columnIndex= 0
                         rowIndex= rowIndex +1
