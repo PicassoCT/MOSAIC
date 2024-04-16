@@ -1029,29 +1029,27 @@ end
 
 function shapeSymmetry(logo)
     Sleep(500)
-    resetT(TableOfPiecesGroups["Symmetry"])
+    resetT(TableOfPiecesGroups["Symmetry"], 0)
     hideTReg(TableOfPiecesGroups["Symmetry"])
     local symmetryLimit =11
     for ix=1, symmetryLimit do
-        if not (maRa() == maRa()) or ix < 2 then
+        if  (maRa() == maRa()) or ix < 2 then
             local smyPieceOrgName = "Symmetry0"..ix
             local symPieceName = "Symmetry0"..(ix + symmetryLimit)
-            echo("Symmetry PieceName "..smyPieceOrgName)
             local ap = piece(smyPieceOrgName)
             local symRoationVal = 0
             if ap then         
                 symRoationVal = math.random(1,8)*randSign()*45
-                WTurn(ap, x_axis, math.rad(symRoationVal), 0)
+                WTurn(ap, x_axis, math.rad(symRoationVal), 5000)
                 ShowReg(ap)
             end
 
             local orgVal = 0 
             if ix == 1 then orgVal = 180 end
             local symValue =  orgVal - symRoationVal
-            echo("Symmetry OrgPieceName "..symPieceName)
             local bp = piece(symPieceName)
             if bp then          
-                WTurn(bp, x_axis, math.rad(symValue), 0)
+                WTurn(bp, x_axis, math.rad(symValue), 5000)
                 ShowReg(bp)
             end
         end
@@ -1312,7 +1310,7 @@ function consoleLetters(allLetters, posLetters)
         for k=1, #posLetters[id] do
             for axis=1,3 do
                 Move(id, axis, posLetters[id][k][axis], 150)
-            end
+            end            
         end
         ShowReg(id)
     end)
