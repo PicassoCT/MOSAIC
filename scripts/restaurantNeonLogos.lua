@@ -92,7 +92,7 @@ return
 "pornstarbucks",
  "Breakfast club",
  "Maid Cafe",
- " KinkSpot",
+ "KinkSpot",
  "NipponNaughty",
  "SenshiSeduce",
  "FetishFusion",
@@ -113,7 +113,6 @@ return
  "PleasureParlor",
  "SushiSensual",
  "Kinkazuraskivvlybonqfetishwadjmpxlgro",
-
 "Molazzez for the masses"
 "Cucktales",
 "Electrobeer and beverages",
@@ -147,12 +146,7 @@ return
 "Sliced carbohydrate jelly",
 "Caffeinated veggies",
 "Carbonated lunatumors",
-"Insect onion bits",
-"Germinated vegewaffles",
-"Crunchy megaplums",
-"Recycled placenta nuggets",
-"Strawberry flavoured",
-"quadratic lion steak",
 "SavoirFare",
 "FinesseFarce",
+"Live Fuck Feast"
 }

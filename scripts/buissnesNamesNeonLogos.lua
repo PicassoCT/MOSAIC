@@ -181,7 +181,7 @@ return {
  "Uncle Enzo",
  "The Mafia- True Family",
  "Singularity Decorporated",
- "MadAddMe",
+ "MadAdd Me",
  "Titanic Security",
  "Neural Ink",
  "Ragrets Inc",
@@ -509,9 +509,31 @@ return {
 "HoloAdvertising",
 "Insert sd-media and reboot",
 "Splinternet connection offline",
-
+"Imperio Inc",
 "Haxxored",
 "Pube lick announcements be here",
+"Quetzal Collective",
+"Xochimilco Alliance",
+"Tonatiuh Coop",
+"Tlalocs Harvest",
+"Tezcatlipoca Unity",
+"Itzpapalotl Syndicate",
+"Coatlicue Consortium",
+"Huitzilopochtli Coalition",
+"Tenochtitlan Exchange",
+"Citlalmina Group",
+"Xipe Totec Circle",
+"Tlazolteotl Association",
+"Tlachtli Coop",
+"Cihuacoatl Collective",
+"Huehueteotl Collaborative",
+"Mictlantecuhtli Network",
+"Chalchiuhtlicue Alliance",
+"Mixcoatl Cooperative",
+"Tlalmanalco Syndicate",
+"Tlachinolli Partnership",
+
+
 
 }
 
