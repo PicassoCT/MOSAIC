@@ -28,12 +28,10 @@
 
 //DayColors
 #define DAY_RAIN_HIGH_COL vec4(1.0,1.0,1.0,1.0)
-#define DAY_RAIN_DARK_COL vec4(0.26,0.27,0.37,1.0)
-#define DAY_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
+#define DAY_RAIN_DARK_COL vec4(0.21,0.32,0.40,1.0)
 //NightColors
 #define NIGHT_RAIN_HIGH_COL vec4(0.75,0.75,0.75,1.0)
-#define NIGHT_RAIN_DARK_COL vec4(0.06,0.07,0.17,1.0)
-#define NIGHT_RAIN_CITYGLOW_COL vec4(0.72,0.505,0.52,1.0)
+#define NIGHT_RAIN_DARK_COL vec4(0.14,0.14,0.12,1.0)
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
 
@@ -374,7 +372,7 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 
 	if (unitVertexNormal.rgb != BLACK.rgb && unitVertexNormal.a > 0.5) 
 	{
-		if (mapDepth.r < modelDepth.r  )
+		if (mapDepth.r <= modelDepth.r  )
 		{
 			IsOnGround = true;
 			return groundVertexNormal.rgb;
@@ -551,7 +549,6 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 		//rivulets
 		if (!(vertexNormal.g  > 0.95)) return NONE;
 
-
 		rivuletRunning = getRivuletMask(vertexNormal); //TODO get ground coord 
 		if (!rivuletRunning) return NONE;
 
@@ -646,7 +643,7 @@ vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		return vec4(mix( sunCol.rgb, resultColor.rgb, sunlightReflectionFactor), resultColor.a) ;
+		return vec4(mix( sunCol.rgb, resultColor.rgb, sunlightReflectionFactor), max(resultColor.a, sunlightReflectionFactor)) ;
 	}
 
 	return resultColor;
@@ -699,6 +696,25 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 	return  finalColor;	
 }
 
+void paintRainSky(vec2 rotatedUV )
+{
+		vec2 scale = vec2(8.0, 4.0);
+		vec2 rainUv = vec2(rotatedUV *scale);
+		
+		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y ) * 0.125; 
+		vec4 rainColor = texture2D(noisetex , rainUv);
+		vec3 rainRGB = GetDeterministicRainColor(rainUv.xy).rgb;
+		float rainAlpha = rainPercent*(1.0-rainColor.r*0.5)* (0.225 + 0.05*absinthTime());
+	float sunlightReflectionFactor = calculateLightReflectionFactor();
+	if (sunlightReflectionFactor > 0.1) 
+	{
+		gl_FragColor = vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
+	}else
+	{
+		gl_FragColor = vec4(rainRGB, rainAlpha);
+	}
+}
+
 
 void main(void)
 {
@@ -730,24 +746,19 @@ void main(void)
 		return;
 	}
 	vec2 rotatedUV = getRoatedUV();
-	if (NormalIsSky)
-	{
-		vec2 scale = vec2(8.0, 4.0);
-		vec2 rainUv = vec2(rotatedUV *scale);
-		
-		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y) * 0.125; 
-		vec4 rainColor = texture2D(noisetex , rainUv);
-		rainColor.a = rainColor.r*0.5;
-		gl_FragColor = vec4( GetDeterministicRainColor(rainUv.xy).rgb, (1.0-rainColor.r)* (0.125 + 0.125*absinthTime()));
-		  
-		return;
-	}
+
 
 	t1 = clamp(t1, 0.0, 1.0);
 	t2 = clamp(t2, 0.0, 1.0);
 	vec3 startPos = r.Dir * t1 + eyePos;
 	vec3 endPos   = r.Dir * t2 + eyePos;
 	pixelDir = normalize(startPos - endPos);
+
+	if (NormalIsSky)
+	{
+		paintRainSky(rotatedUV);		  
+		return;
+	}
 
 	//gl_FragColor = getReflection(worldPos);
 	//gl_FragColor = lind(depthAtPixel.rrrr);
