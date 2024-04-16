@@ -132,13 +132,18 @@ vec3 pixelDir;
 vec4 origColor;
 vec3 vertexNormal;
 vec3 sunDir;
+vec3 greyScaleDetail;
 float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
 bool  NormalIsOnGround = false;
 bool  NormalIsOnUnit = false;
 bool NormalIsWaterPuddle = false;
 bool NormalIsSky = false;
-float emissionAtPixel;
+
+float avg(vec3 x)
+{
+return (x.x + x.y + x.z)/3.0;
+}
 
 vec4 screen(vec4 a, vec4 b)
 {
@@ -422,6 +427,7 @@ vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 	vec3 n = GetNormals(uv);
 	//Add screen normals to add detail
 	n =  n+ SobelNormalFromScreen(uv);
+	greyScaleDetail = n;
 	vec3 actualSunPos = sunPos*8192.0;
 	vec3 color = vertexNormal * dot(n, normalize(actualSunPos - pixelWorldPos));
     float e = 64.;
@@ -563,7 +569,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	
 	vec4 maskedColor = mix(	NONE,
 			   				workingColorLayer,
-			  				groundMixFactor);
+			  				mix(groundMixFactor, avg(greyScaleDetail), 0.25));
 
 	//clamp alpha
 	maskedColor.a = max(0.15, min(0.25, maskedColor.a));
