@@ -113,7 +113,7 @@ return
  "PleasureParlor",
  "SushiSensual",
  "Kinkazuraskivvlybonqfetishwadjmpxlgro",
-"Molazzez for the masses"
+"Molazzez for the masses",
 "Cucktales",
 "Electrobeer and beverages",
 "Synthomeat",
