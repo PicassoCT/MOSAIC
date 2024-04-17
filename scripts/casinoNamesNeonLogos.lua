@@ -189,6 +189,7 @@ return {
 "Regime Rhythm"," Order Opera",
 "Resistance Refrain"," Rebellion Rondo",
 "Data Dystopia"," Techno Tragedy",
+"Anything goes",
     "Wagerwise",
     "Betality",
     "Fortunify",

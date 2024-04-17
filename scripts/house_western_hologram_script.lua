@@ -1147,7 +1147,7 @@ function setupMessage(myMessages)
 
     if boolUpRight then
         if stringlength > 10 then        
-            Move(spinner, y_axis,(stringlength-10) * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
+            Move(spinner, 3 ,math.abs(stringlength-10) * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
         end
     end
 
