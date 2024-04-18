@@ -148,5 +148,10 @@ return
 "Carbonated lunatumors",
 "SavoirFare",
 "FinesseFarce",
-"Live Fuck Feast"
+"Live Fuck Feast",
+"Crusty brown donuts",
+"eighties revival",
+"Dance all day long",
+"FlashFM"
+
 }

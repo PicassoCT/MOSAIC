@@ -454,7 +454,7 @@ end
 boolIsEverChanging= math.random(1,10) < 3 
 
 function RainDrop(pieceID, delayMS, speed)
-	if not pieceID then return end
+    if not pieceID then return end
     maxDistance = 4000
     downAxis = 2
     Sleep(delayMS)
@@ -473,7 +473,7 @@ function holoRain(Name, speed)
     groupName = Name.."Rain"
     for i=1,#TableOfPiecesGroups[groupName] do
         delay= math.random(1,10)*50
-		StartThread(RainDrop,TableOfPiecesGroups[groupName][i], delay, speed)
+        StartThread(RainDrop,TableOfPiecesGroups[groupName][i], delay, speed)
     end
 end
 
@@ -1153,6 +1153,7 @@ function setupMessage(myMessages)
 
     allLetters = {} 
     posLetters = {}   
+    posLetters.boolUpRight = boolUpright
     for i=1, stringlength do
         columnIndex = columnIndex +1
         local letter = string.upper(string.sub(myMessage,i,i))
@@ -1218,13 +1219,15 @@ function addHologramLetters( myMessages)
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
     if maRa() and maRa() or boolIsEverChanging then 
-		allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
+        allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
         --TextAnimation
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
-		    allFunctions[math.random(1,#allFunctions)](allLetters, posLetters) 
-            WaitForMoves(allLetters)       
+            if not posLetters.boolUpRight then
+                allFunctions[math.random(1,#allFunctions)](allLetters, posLetters) 
+                WaitForMoves(allLetters)       
+            end
             restTime = math.max(5000, #allLetters*150)
             Sleep(restTime)
             resetSpinDrop(allLetters)
@@ -1241,13 +1244,13 @@ spindropAxis = y_axis
 function randomFLickerLetters(allLetters, posLetters)
     errorDrift = math.random(2,7)
     flickerIntervall = math.ceil(1000/25)
-	if (hours > 17 or hours < 7) then
-		for i=1,(3000/flickerIntervall) do
-			if i % 2 == 0 then      
-			   showTReg(allLetters) 
-			else
-				hideTReg(allLetters) 
-			end
+    if (hours > 17 or hours < 7) then
+        for i=1,(3000/flickerIntervall) do
+            if i % 2 == 0 then      
+               showTReg(allLetters) 
+            else
+                hideTReg(allLetters) 
+            end
 
             foreach(allLetters,
             function(id)
@@ -1260,8 +1263,8 @@ function randomFLickerLetters(allLetters, posLetters)
             end)
             WaitForMoves(allLetters)
             Sleep(flickerIntervall)
-		end
-		hideTReg(allLetters)  
+        end
+        hideTReg(allLetters)  
         foreach(allLetters,
             function(id)
                 for k=1, #posLetters[id] do
@@ -1271,25 +1274,25 @@ function randomFLickerLetters(allLetters, posLetters)
                 end
                ShowReg(id)
             end)
-	end		
+    end        
 end
 
 function syncToFrontLetters(allLetters)
     direction =  randSign()
-	hideTReg(allLetters)
+    hideTReg(allLetters)
     --Setup
     for j=1, #allLetters do
-		WMove(allLetters[j],backdropAxis, -500 + math.sin((j/#allLetters)*(math.pi/2))*50, 0)			
+        WMove(allLetters[j],backdropAxis, -500 + math.sin((j/#allLetters)*(math.pi/2))*50, 0)            
     end    
-	showTReg(allLetters)
-	for j=1, #allLetters do
-		WMove(allLetters[j],backdropAxis, 150 + math.cos((j/#allLetters)*(math.pi/2))*50, 250)			
+    showTReg(allLetters)
+    for j=1, #allLetters do
+        WMove(allLetters[j],backdropAxis, 150 + math.cos((j/#allLetters)*(math.pi/2))*50, 250)            
     end
-	for j=1, #allLetters do
-		WMove(allLetters[j],backdropAxis,0, 150)			
+    for j=1, #allLetters do
+        WMove(allLetters[j],backdropAxis,0, 150)            
     end
 
-	WaitForMoves(allLetters)
+    WaitForMoves(allLetters)
     rest = math.random(4, 16)*500
     Sleep(rest)
 end
@@ -1328,25 +1331,25 @@ function resetSpinDrop(allLetters)
 end
 
 function dnaHelix(allLetters)
-	index = 1
+    index = 1
     foreach(allLetters,
         function(id)
-			val = (index/ #allLetters) * 2 * 2 * math.pi
-			Turn(id, spindropAxis, math.rad(val), 0)    
-			Spin(id, spindropAxis, math.rad(42), 15)   
-			ShowReg(id)			
-			index = index +1
+            val = (index/ #allLetters) * 2 * 2 * math.pi
+            Turn(id, spindropAxis, math.rad(val), 0)    
+            Spin(id, spindropAxis, math.rad(42), 15)   
+            ShowReg(id)            
+            index = index +1
         end)
-		Sleep(9000)
-	
-	foreach(allLetters,
+        Sleep(9000)
+    
+    foreach(allLetters,
         function(id)
-			StopSpin(id, spindropAxis)
-			WTurn(id, spindropAxis, math.rad(0), 15) 
+            StopSpin(id, spindropAxis)
+            WTurn(id, spindropAxis, math.rad(0), 15) 
         end)
-	Sleep(5000)
+    Sleep(5000)
 
-	
+    
 end
 
 function circleProject(allLetters)
@@ -1441,10 +1444,10 @@ function HideLetters(allLetters)
     direction =  randSign()
     --Setup
      for j=1, #allLetters do
-    		HideReg(allLetters[j])
+            HideReg(allLetters[j])
             WMove(allLetters[j],backdropAxis, 150, 300)
-    		ShowReg(allLetters[j])
-    		Move(allLetters[j],backdropAxis, 0, 600)				
+            ShowReg(allLetters[j])
+            Move(allLetters[j],backdropAxis, 0, 600)                
      end
 
     rest = math.random(4, 16)*500
