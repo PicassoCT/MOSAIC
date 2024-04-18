@@ -317,6 +317,11 @@ return {
 "Try Recoil, the new, better hibernation framework",
 "Trolololo",
 "Pianokey napties",
+"We got terrorism at home.the terrorism at home",
+"Market crash as Antagon Protagon conflict drags on",
+"Racism rally ends in carcrash",
+"<suspect> killed today in driveby",
+"<suspect> suspected a serial killer"
 
 
 }

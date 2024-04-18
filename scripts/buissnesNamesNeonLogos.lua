@@ -577,7 +577,9 @@ return {
 "RedBullBallerz",
 "RedWood Nicotine",
 "Refreshing Crack",
-"Oral Hair Products"
+"Oral Hair Products",
+"Rivian",
+"Canyonarrow"
 
 }
 
