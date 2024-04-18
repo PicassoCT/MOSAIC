@@ -322,7 +322,8 @@ return {
 "Racism rally ends in carcrash",
 "<suspect> killed today in driveby",
 "<suspect> suspected a serial killer",
-"Vidya games blamed for violence"
+"Vidya games blamed for violence",
+"New Zealand:Prepper safari.Hunt wild antisocials",
 
 
 }

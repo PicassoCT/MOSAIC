@@ -76,5 +76,5 @@ return {
     "Thirsty? Enter the oasis <suspect>",
     "Hello sailor <suspect>.",
     "Get fucked <suspect>",
-    "New Zealand:Prepper safari.Hunt wild antisocials"
+    "Become the motherfucker you are <suspect>"
 }
