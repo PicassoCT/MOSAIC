@@ -321,7 +321,8 @@ return {
 "Market crash as Antagon Protagon conflict drags on",
 "Racism rally ends in carcrash",
 "<suspect> killed today in driveby",
-"<suspect> suspected a serial killer"
+"<suspect> suspected a serial killer",
+"Vidya games blamed for violence"
 
 
 }
