@@ -1153,6 +1153,7 @@ function setupMessage(myMessages)
 
     allLetters = {} 
     posLetters = {}   
+    posLetters.spacing = {}
     posLetters.boolUpRight = boolUpright
     for i=1, stringlength do
         columnIndex = columnIndex +1
@@ -1172,7 +1173,8 @@ function setupMessage(myMessages)
                
                 local letterName = TableOfPiecesGroups[letter][lettercounter[letter]] 
                 if letterName then     
-                    table.insert(allLetters, letterName)                
+                    table.insert(allLetters, letterName)
+                    table.insert(posLetters.spacing, letterName)                
                     ShowReg(letterName)
                     Move(letterName, 3, -1*sizeDownLetter*rowIndex, 0)
                     Move(letterName,axis, -sizeSpacingLetter*(columnIndex), 0)
@@ -1191,6 +1193,7 @@ function setupMessage(myMessages)
             end
         else
             if letter == " " then
+                table.insert(posLetters.spacing, " ")   
                 rowIndex= rowIndex +1
                 columnIndex= 0
             end
