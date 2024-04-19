@@ -140,6 +140,7 @@ bool  NormalIsOnUnit = false;
 bool NormalIsWaterPuddle = false;
 bool NormalIsSky = false;
 
+//TODO https://www.cs.columbia.edu/cg/normalmap/normalmap.pdf
 float extractRoughnessFromNormal(vec3 x)
 {
 return (x.x + x.y + x.z)/3.0;
