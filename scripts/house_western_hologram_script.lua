@@ -1326,7 +1326,7 @@ function resetSpinDrop(allLetters)
 
          foreach(allLetters,
         function(id)   
-                StopSpin(id, spindropAxis, math.rad(0), 0)     
+                StopSpin(id, spindropAxis, math.rad(0), 0)      
                 Turn(id, 1, math.rad(0), 0)    
                 Turn(id, 2, math.rad(0), 0)    
                 Turn(id, 3, math.rad(0), 0)    
@@ -1351,11 +1351,9 @@ function dnaHelix(allLetters)
             WTurn(id, spindropAxis, math.rad(0), 15) 
         end)
     Sleep(5000)
-
-    
 end
 
-function circleProject(allLetters)
+function circleProject(allLetters, posLetters)
     circumference = count(allLetters) * sizeSpacingLetter *2.0
     textCirumference = count(allLetters) * sizeSpacingLetter
     radius = circumference / (2 * math.pi)
@@ -1376,13 +1374,15 @@ function circleProject(allLetters)
         Move(pID,z_axis, zr, math.abs(zr)/2.0)
         Turn(pID,y_axis, math.pi + radiantVal, 0)
         i = i +1
+            if posLetters.spacing[i] == " " then
+                i = i+1
+            end
         end)
     Sleep(15000)
     hideTReg(allLetters) 
 end
 
 function SpiralUpwards(allLetters, posLetters)
-
     hideTReg(allLetters)
     foreach(allLetters,
         function(id)
@@ -1402,17 +1402,15 @@ function SpiralUpwards(allLetters, posLetters)
             Sleep(250)
         end)
     WaitForMoves(allLetters)
-    Sleep(2000)   
-
+    Sleep(2000) 
 end
-
 
 function SwarmLetters(allLetters, posLetters)
     foreach(allLetters,
         function(id)
             for k=1, #posLetters[id] do
                 for i=1,3 do
-                    Move(id, i, posLetters[id][k][i] + math.random(0,1000)*randSign(), 0)
+                    Move(id, i, posLetters[id][k][i] + math.random(50,1000)*randSign(), 0)
                 end            
             end            
         end)
@@ -1462,15 +1460,17 @@ function SinusLetter(allLetters)
     for i=1, 10 do
         timeStep = i * math.pi/#allLetters
         for j=1, #allLetters do
-            Move(allLetters[j],backdropAxis, 500 * math.sin(timeStep*j)*direction, 500)
+            Move(allLetters[j], backdropAxis, 500 * math.sin(timeStep*j)*direction, 500)
         end
         Sleep(500)
     end
     rest = math.random(4, 16)*500
     Sleep(rest)
     for j=1, #allLetters do
-        WMove(allLetters[j],backdropAxis, 0, 500)
+        Move(allLetters[j],backdropAxis, 0, 500)
     end
+    Sleep(1000)
+    WaitForMoves(allLetters)
 end
 
 function CrossLetters(allLetters)
