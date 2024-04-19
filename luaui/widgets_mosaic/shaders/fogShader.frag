@@ -1,4 +1,3 @@
-return [[
 #version 150 compatibility
 #line 10003
 const float noiseScale = 1. / float(%f);
@@ -295,5 +294,3 @@ void main()
 	}
 	#endif
 }
-
-]]
