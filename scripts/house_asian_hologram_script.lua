@@ -297,14 +297,20 @@ end
 
 function turnPixelOff(pixel)
     if pixel then
-    Turn(pixel, y_axis, math.rad(180),0)
+        HideReg(pixel)
+    end
+end
+
+function turnPixelOn(pixel)
+    if pixel then
+        ShowReg(pixel)
     end
 end
 
 function showHoloWall()
     HoloPieces = {}
     AltHoloPieces = {}    
-    hideT(TablesOfPiecesGroups["HoloTile"])
+    hideTReg(TablesOfPiecesGroups["HoloTile"])
     step = 6*4
     hindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
     althindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
@@ -313,14 +319,13 @@ function showHoloWall()
         for i=hindex * step,  (hindex+1) * step, 1 do
             if TablesOfPiecesGroups["HoloTile"][i] then
                 if (maRa() == maRa()) ~= maRa() then
-                    Hide(TablesOfPiecesGroups["HoloTile"][i])
+                    HideReg(TablesOfPiecesGroups["HoloTile"][i])
                 else
                     HoloPieces[#HoloPieces +1] = TablesOfPiecesGroups["HoloTile"][i]
                     if TablesOfPiecesGroups["HoloTile"][ai] then
                         AltHoloPieces[#AltHoloPieces +1] = TablesOfPiecesGroups["HoloTile"][ai]
                     end
-                    Show(TablesOfPiecesGroups["HoloTile"][i])
-                    addToShowTable( TablesOfPiecesGroups["HoloTile"][i], "showHoloWall", i)
+                    ShowReg(TablesOfPiecesGroups["HoloTile"][i])
                 end
             end
             ai= ai+1
@@ -362,7 +367,7 @@ function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
         --assert(piecesTable[i], i.." not in piecesTable")
-        Hide(piecesTable[i])
+        HideReg(piecesTable[i])
         Sleep(rest)
     end
     hideTReg(piecesTable)
@@ -468,7 +473,7 @@ function HoloFlicker(tiles,alttiles)
                                         restTimeMs = (math.random(1,100)/100)*10000
                                         Sleep(restTimeMs)
                                         for i=1, #tiles do
-                                            reset(tiles[i])
+                                            turnPixelOn(tiles[i])
                                         end
                                         Sleep(restTimeMs)
                                  end    
@@ -499,7 +504,7 @@ function HoloFlicker(tiles,alttiles)
                                 restTimeMs = (math.random(1,500)/100)*10000
                                 Sleep(restTimeMs)
                                 for i=1, #tiles do
-                                    reset(tiles[i])
+                                    turnPixelOn(tiles[i])
                                 end
                             end 
     --short dead line
@@ -511,7 +516,7 @@ function HoloFlicker(tiles,alttiles)
                                     restTimeMs = (math.random(1,100)/100)*1000
                                     Sleep(restTimeMs)
                                     for j=i, i+6 do
-                                       reset(tiles[j])
+                                       turnPixelOn(tiles[j])
                                     end                                 
                                 end
                             end 
@@ -554,30 +559,30 @@ function HoloFlicker(tiles,alttiles)
                                 WaitForTurns(tiles)                                
                                 restTimeMs = (math.random(1,500)/100)*10000
                                 Sleep(restTimeMs)
-                                hideT(tiles)
+                                hideTReg(tiles)
                                 for k, v in pairs(alttiles) do
                                     turnPixelOff(v)
                                 end
-                                showT(alttiles)
+                                showTReg(alttiles)
                                 for i=1, #alttiles do
-                                    reset(alttiles[i])
+                                    turnPixelOn(alttiles[i])
                                 end
    
                                 restTimeMs = (math.random(1,500)/100)*10000
                                 Sleep(restTimeMs)
-                                hideT(alttiles)
-                                showT(tiles)
+                                hideTReg(alttiles)
+                                showTReg(tiles)
                                 for i=1, #tiles do
-                                    reset(tiles[i])
+                                    turnPixelOn(tiles[i])
                                 end
                             end 
     mergedTiles = mergeTables(tiles, alttiles)
     while true do
         Sleep(10000)
         for i=1, #tiles do
-            reset(tiles[i])
+            turnPixelOn(tiles[i])
         end
-        showT(tiles)
+        showTReg(tiles)
         dice= math.random(1, #holoDecoFunctions)
         lecho("HololWallFunction"..dice)
         hideConditional(mergedTiles)

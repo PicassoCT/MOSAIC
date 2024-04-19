@@ -1156,7 +1156,13 @@ function setupMessage(myMessages)
     posLetters.spacing = {}
     posLetters.boolUpRight = boolUpright
     for i=1, stringlength do
-        columnIndex = columnIndex +1
+        --increment letter index
+        if boolUpRight then
+            rowIndex = rowIndex + 1
+        else
+            columnIndex = columnIndex + 1
+        end
+
         local letter = string.upper(string.sub(myMessage,i,i))
         if TableOfPiecesGroups[letter] then
             if not lettercounter[letter] then 
@@ -1165,7 +1171,6 @@ function setupMessage(myMessages)
             lettercounter[letter] = lettercounter[letter] + 1 
             boolContinue = true
             if lettercounter[letter] > #TableOfPiecesGroups[letter] then 
-                columnIndex= columnIndex +1
                 boolContinue =false
             end
 
@@ -1180,24 +1185,25 @@ function setupMessage(myMessages)
                     Move(letterName,axis, -sizeSpacingLetter*(columnIndex), 0)
                     if not posLetters[letterName] then posLetters[letterName] = {} end
                     posLetters[letterName][lettercounter] = {0,-sizeSpacingLetter * (columnIndex),  -1 * sizeDownLetter * rowIndex }
-                    if boolUpRight then
-                        columnIndex= 0
-                        rowIndex= rowIndex +1
-                    end
-                    
+                        
                     if boolSpinning and boolUpright then
                         val = i *5
                         Turn(letterName, 2, math.rad(val), 0)
                     end
                 end
             end
-        else
-            if letter == " " then
-                table.insert(posLetters.spacing, " ")   
-                rowIndex= rowIndex +1
-                columnIndex= 0
+        else -- non letter letter - space 
+            table.insert(posLetters.spacing, " ")   
+            if boolUpright then --spacing
+                rowIndex = rowIndex +1
+            else
+                if columnIndex > 12 then -- linebreak
+                    columnIndex = 0
+                    rowIndex = rowIndex +1
+                else
+                    columnIndex = columnIndex+1
+                end
             end
-            --all other letters lead to a column increment
         end
     end
     return allLetters, posLetters, myMessage

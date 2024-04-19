@@ -698,10 +698,6 @@ function buildHouse()
     hideAll(unitID)
     Sleep(1)
     buildBuilding()
-    if randChance(25)  then
-       Sleep(500)
-       StartThread(showHoloWall)
-    end
 end
 
 function absdiff(value, compval)

@@ -26,7 +26,7 @@ local Launcher = Building:New{
 	objectName        	= "launcher.dae",
 
 	name = "Launcher",
-	description = "Build icmb-stages to win the game",
+	description = "Build ICBM-stages to win the game",
 
 	canCloak =true,
 	cloakCost=0.0001,
