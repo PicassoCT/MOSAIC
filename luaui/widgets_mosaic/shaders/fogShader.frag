@@ -1,5 +1,5 @@
 #version 150 compatibility
-#line 10003
+#line 20002
 const float noiseScale = 1. / float(%f);
 const float fogHeight = float(%f);
 const float fogBottom = float(%f);

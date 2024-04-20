@@ -1,4 +1,5 @@
 #version 150 compatibility
+#line 10002
 const vec4 frustumCorners[8] = vec4[](
 	vec4(-1.0,  1.0, -1.0, 1.0),
 	vec4( 1.0,  1.0, -1.0, 1.0),
