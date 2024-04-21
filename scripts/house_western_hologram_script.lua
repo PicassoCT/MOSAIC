@@ -1293,7 +1293,7 @@ function randomFLickerLetters(allLetters, posLetters)
 end
 
 function syncToFrontLetters(allLetters)
-    echo("syncToFrontLetters with "..toString(allLetters))
+    --echo("syncToFrontLetters with "..toString(allLetters))
     direction =  randSign()
     hideTReg(allLetters)
     --Setup
@@ -1314,7 +1314,7 @@ function syncToFrontLetters(allLetters)
 end
 
 function consoleLetters(allLetters, posLetters)
-    echo("consoleLetters with "..toString(allLetters))
+   --echo("consoleLetters with "..toString(allLetters))
     foreach(allLetters,
     function(id)
       reset(id,0)
@@ -1347,7 +1347,7 @@ function resetSpinDrop(allLetters)
 end
 
 function dnaHelix(allLetters)
-    echo("dnaHelix with "..toString(allLetters))
+   --echo("dnaHelix with "..toString(allLetters))
     index = 1
     foreach(allLetters,
         function(id)
@@ -1397,7 +1397,7 @@ function circleProject(allLetters, posLetters)
 end
 
 function SpiralUpwards(allLetters, posLetters)
-    echo("SpiralUpwards with "..toString(allLetters))
+   --echo("SpiralUpwards with "..toString(allLetters))
     hideTReg(allLetters)
     foreach(allLetters,
         function(id)
@@ -1421,7 +1421,7 @@ function SpiralUpwards(allLetters, posLetters)
 end
 
 function SwarmLetters(allLetters, posLetters)
-    echo("SwarmLetters with "..toString(allLetters))
+   --echo("SwarmLetters with "..toString(allLetters))
     foreach(allLetters,
         function(id)
             for k=1, #posLetters[id] do
@@ -1446,7 +1446,7 @@ function SwarmLetters(allLetters, posLetters)
 end
 
 function SpinLetters(allLetters)
-    echo("SpinLetters with "..toString(allLetters))
+   --echo("SpinLetters with "..toString(allLetters))
     foreach(allLetters,
         function(id)
             rval = math.random(-360,360)
@@ -1459,7 +1459,7 @@ function SpinLetters(allLetters)
 end
 
 function HideLetters(allLetters)
-    echo("HideLetters with "..toString(allLetters))
+   --echo("HideLetters with "..toString(allLetters))
     direction =  randSign()
     --Setup
      for j=1, #allLetters do
@@ -1474,7 +1474,7 @@ function HideLetters(allLetters)
 end
 
 function SinusLetter(allLetters)
-    echo("SinusLetter with "..toString(allLetters))
+   --echo("SinusLetter with "..toString(allLetters))
     direction =  randSign()
     for i=1, 10 do
         timeStep = i * math.pi/#allLetters
@@ -1493,7 +1493,7 @@ function SinusLetter(allLetters)
 end
 
 function CrossLetters(allLetters)
-    echo("CrossLetters with "..toString(allLetters))
+   --echo("CrossLetters with "..toString(allLetters))
     direction =  randSign()
     -- Reset
     for i=1, #allLetters do
