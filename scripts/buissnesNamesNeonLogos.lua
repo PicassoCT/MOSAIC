@@ -554,7 +554,7 @@ return {
 "Pride not Prejudices",
 "Windsor Real Estate",
 "Nightlights Classes",
-"Man o pause Adventures",
+"Manopause Adventures",
 "Gastroband Surgery",
 "Floyds Scrapmetall emporium",
 "Bravado Cars",
@@ -579,7 +579,10 @@ return {
 "Refreshing Crack",
 "Oral Hair Products",
 "Rivian",
-"Canyonarrow"
+"Canyonarrow",
+"Vintage Gucci",
+"Lou Villtoine",
+"Christian Dior",
 
 }
 
