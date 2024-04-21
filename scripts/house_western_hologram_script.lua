@@ -1117,6 +1117,7 @@ end
 function setupMessage(myMessages)
     hideResetAllLetters()
     spinner =  piece("text_spin")
+    Move(spinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
     axis= 2
     startValue = 0
     myMessage = myMessages[math.random(1,#myMessages)]
