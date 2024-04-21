@@ -236,7 +236,7 @@ spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
  
-        if maRa()==maRa() then
+        if randChance(25) then
            shapeSymmetry()
         else
             logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
