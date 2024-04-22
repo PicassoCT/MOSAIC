@@ -118,7 +118,7 @@ end
 
 --Direction = piece("Direction")
 
-
+px,py,pz = Spring.GetUnitPosition(unitID)
 
 function restartHologram()
     Signal(SIG_CORE)
@@ -130,6 +130,10 @@ function restartHologram()
     StartThread(clock)
     StartThread(grid)
     StartThread(showStreetSigns)
+    if randChance(25) and isNearCityCenter(px,pz, GameConfig) then
+       Sleep(500)
+       showHoloWall()
+    end
 end
 
 
@@ -232,7 +236,7 @@ spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
  
-        if maRa()==maRa() then
+        if randChance(25) then
            shapeSymmetry()
         else
             logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
@@ -290,6 +294,48 @@ function HoloGrams()
     end
 end
 
+
+function turnPixelOff(pixel)
+    if pixel then
+        HideReg(pixel)
+    end
+end
+
+function turnPixelOn(pixel)
+    if pixel then
+        ShowReg(pixel)
+    end
+end
+
+function showHoloWall()
+    HoloPieces = {}
+    AltHoloPieces = {}    
+    hideTReg(TablesOfPiecesGroups["HoloTile"])
+    step = 6*4
+    hindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
+    althindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
+    if maRa() == maRa() then
+            ai= althindex * step
+        for i=hindex * step,  (hindex+1) * step, 1 do
+            if TablesOfPiecesGroups["HoloTile"][i] then
+                if (maRa() == maRa()) ~= maRa() then
+                    HideReg(TablesOfPiecesGroups["HoloTile"][i])
+                else
+                    HoloPieces[#HoloPieces +1] = TablesOfPiecesGroups["HoloTile"][i]
+                    if TablesOfPiecesGroups["HoloTile"][ai] then
+                        AltHoloPieces[#AltHoloPieces +1] = TablesOfPiecesGroups["HoloTile"][ai]
+                    end
+                    ShowReg(TablesOfPiecesGroups["HoloTile"][i])
+                end
+            end
+            ai= ai+1
+        end
+        HoloFlicker(HoloPieces, AltHoloPieces)   
+    end
+    --TODO the engine has a problem, right here and then. No error on erroneous access, just dead function and worser still, post processing shutd
+    --showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
+end
+
 function checkForBlackOut()
     while true do
         if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
@@ -321,7 +367,7 @@ function fadeOut(piecesTable, rest)
     --dissappearing
     for i =  #piecesTable, 1, -1 do
         --assert(piecesTable[i], i.." not in piecesTable")
-        Hide(piecesTable[i])
+        HideReg(piecesTable[i])
         Sleep(rest)
     end
     hideTReg(piecesTable)
@@ -403,5 +449,143 @@ function showOneOrAll(T)
             ShowReg(val)
         end
         return
+    end
+end
+
+
+function HoloFlicker(tiles,alttiles)
+    if not tiles or #tiles < 2 then return end
+    holoDecoFunctions= {}
+        --dead pixel
+    holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
+                                one = math.random(1,#tiles)
+                                if not tiles[one] then return end
+                                tile =tiles[one]
+                                if tile then
+                                    for i=1,5 do
+                                        turnPixelOff(tile)
+                                        restTimeMs = 250*i
+                                        Sleep(restTimeMs)
+                                        reset(tile)
+                                        Sleep(restTimeMs)
+                                    end
+                                        turnPixelOff(tile)
+                                        restTimeMs = (math.random(1,100)/100)*10000
+                                        Sleep(restTimeMs)
+                                        for i=1, #tiles do
+                                            turnPixelOn(tiles[i])
+                                        end
+                                        Sleep(restTimeMs)
+                                 end    
+                            end 
+
+    --Send Pixel drifting upwards
+    holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
+                                function moveUpardwsFlicker(tile)
+                                    Show(tile)
+                                    dist = math.random(100,250)
+                                    Move(tile, y_axis,  dist, 25)   
+                                    WaitForMoves(tile)
+                                    Hide(tile)
+                                    reset(tile)
+                                end
+                                for k, v in pairs(tiles) do
+                                    StartThread(moveUpardwsFlicker, v)
+                                end
+                                Sleep(250)
+                                WaitForMoves(tiles)
+                                Sleep(10000)
+                            end
+    --whole wall flicker dead
+    holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
+                                for k, v in pairs(tiles) do
+                                    turnPixelOff(v)
+                                end
+                                restTimeMs = (math.random(1,500)/100)*10000
+                                Sleep(restTimeMs)
+                                for i=1, #tiles do
+                                    turnPixelOn(tiles[i])
+                                end
+                            end 
+    --short dead line
+    holoDecoFunctions[#holoDecoFunctions+1]= function(tiles)
+                                for i=1,#tiles, 6 do
+                                    for j=i, i+6 do
+                                       turnPixelOff(tiles[j])
+                                    end                     
+                                    restTimeMs = (math.random(1,100)/100)*1000
+                                    Sleep(restTimeMs)
+                                    for j=i, i+6 do
+                                       turnPixelOn(tiles[j])
+                                    end                                 
+                                end
+                            end 
+    --Hide one Tile
+    holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
+            dice = getDeterministicRandom(unitID, #tiles) +1
+            tileFallingOff = tiles[dice]
+            if tileFallingOff then
+                WMove(tileFallingOff,y_axis, -10, 100)
+                Hide(tileFallingOff)
+                restTime = math.random(1,100)*25000
+                Sleep(restTime)
+                reset(tileFallingOff)
+                Show(tileFallingOff)
+            end
+        end
+    --scaleflair effect
+    holoDecoFunctions[#holoDecoFunctions+1] = function (tiles)
+            axis = y_axis
+            for i=1, #tiles do
+                factor = ((i%6)+1)/6
+                fraction = factor* 45
+                Move(tiles[i], z_axis, factor *-20 , 15)
+                Turn(tiles[i], axis, math.rad(fraction), 5)
+            end
+            WaitForTurns(tiles)
+            Sleep(5000)
+            for i=1, #tiles do
+                Move(tiles[i], z_axis, 0 , 15)
+                Turn(tiles[i], axis,0, 5)
+            end
+            WaitForTurns(tiles)
+            WaitForMoves(tiles)
+        end
+    --whole wall flicker dead
+    holoDecoFunctions[#holoDecoFunctions+1]= function(tiles, alttiles)
+                                for k, v in pairs(tiles) do
+                                    turnPixelOff(v)                                    
+                                end
+                                WaitForTurns(tiles)                                
+                                restTimeMs = (math.random(1,500)/100)*10000
+                                Sleep(restTimeMs)
+                                hideTReg(tiles)
+                                for k, v in pairs(alttiles) do
+                                    turnPixelOff(v)
+                                end
+                                showTReg(alttiles)
+                                for i=1, #alttiles do
+                                    turnPixelOn(alttiles[i])
+                                end
+   
+                                restTimeMs = (math.random(1,500)/100)*10000
+                                Sleep(restTimeMs)
+                                hideTReg(alttiles)
+                                showTReg(tiles)
+                                for i=1, #tiles do
+                                    turnPixelOn(tiles[i])
+                                end
+                            end 
+    mergedTiles = mergeTables(tiles, alttiles)
+    while true do
+        Sleep(10000)
+        for i=1, #tiles do
+            turnPixelOn(tiles[i])
+        end
+        showTReg(tiles)
+        dice= math.random(1, #holoDecoFunctions)
+        lecho("HololWallFunction"..dice)
+        hideConditional(mergedTiles)
+        holoDecoFunctions[dice](tiles, alttiles)
     end
 end

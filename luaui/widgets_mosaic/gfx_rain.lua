@@ -356,7 +356,7 @@ end
 local function isRaining()   
 
     if boolRainyArea == nil then
-        boolRainyArea = isRainyArea()
+        boolRainyArea = isRainyArea() or true
     end
     if boolRainyArea == false then
         return false

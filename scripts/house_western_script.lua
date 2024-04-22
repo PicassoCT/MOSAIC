@@ -16,7 +16,8 @@ factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
-local cubeDim = {
+local cubeDim = 
+{
     length = factor * 14.4 * 1.45,
     heigth = factor * 14.84 + heightoffset,
     roofHeigth = 700
@@ -31,8 +32,8 @@ supriseChances = {
     windowwall = 0.7,
     streetwall = 0.5,
     grafiti = 0.2
-
 }
+
 decoChances = {
     roof = 0.2,
     yard = 0.1,

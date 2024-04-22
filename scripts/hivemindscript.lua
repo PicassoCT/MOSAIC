@@ -73,7 +73,7 @@ end
 maxTurn = 6 * 90
 function showState()
     --Spring.SetUnitBuildSpeed ( unitID, 0.25)
-    description = "Provides information warfare("
+    description = "Provides information warfare capability"
     Spring.SetUnitTooltip(unitID, description .. level.. " / "..GameConfig.maxNumberIntegratedIntoHive ..")")
     bodyCount = count(TablesOfPiecesGroups["body"])
     for i = 1, innerLimit, 1 do

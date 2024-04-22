@@ -62,7 +62,7 @@ function updateDescriptionDelayed()
         alreadyBuildStages = GG.Launchers[myTeamID][unitID].steps
     end
 
-    description = alreadyBuildStages.." stages completed out of "..(GameConfig.LaunchReadySteps+1).." stages. Build icmb-stages to win the game."
+    description = alreadyBuildStages.." stages completed out of "..(GameConfig.LaunchReadySteps+1).." stages. Build ICBM-stages to win the game."
     Spring.SetUnitTooltip(unitID, description)
 end
 

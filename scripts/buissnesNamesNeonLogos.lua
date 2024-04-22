@@ -554,7 +554,7 @@ return {
 "Pride not Prejudices",
 "Windsor Real Estate",
 "Nightlights Classes",
-"Man o pause Adventures",
+"Manopause Adventures",
 "Gastroband Surgery",
 "Floyds Scrapmetall emporium",
 "Bravado Cars",
@@ -583,5 +583,9 @@ return {
 "Canyonarrow",
 "mile high club",
 "fuck u got mine inc"
+"Vintage Gucci",
+"Lou Villtoine",
+"Christian Dior",
+
 }
 
