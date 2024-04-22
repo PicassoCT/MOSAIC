@@ -18,7 +18,7 @@ function widget:GetInfo()
     author    = "(Floris (original: zwzsg, from trepan HighlightUnit)) horribly maimed by Picasso",
     date      = "Apr 24, 2009",
     license   = "GNU GPL, v2 or later",
-    layer     = -8,
+    layer     = math.huge,
     enabled   = true
   }
 end

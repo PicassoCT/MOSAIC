@@ -570,7 +570,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	
 	vec4 maskedColor = mix(	NONE,
 			   				workingColorLayer,
-			  				mix(groundMixFactor, extractRoughnessFromNormal(detailNormals), absinthTime()));
+			  				mix(groundMixFactor, extractRoughnessFromNormal(detailNormals), (0.9-rainPercent)+absinthTime()*0.1));
 
 	//clamp alpha
 	maskedColor.a = max(0.15, min(0.25, maskedColor.a));

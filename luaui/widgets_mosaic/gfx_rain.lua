@@ -98,7 +98,7 @@ local startOsClock
 local shaderMaxLightSrcLoc
 local shaderLightSourcescLoc  = {}
 local cityCenterLoc
-local boolRainyArea = false
+local boolRainyArea = nil
 local maxLightSources = 20
 local rainChangeIntervalSeconds = 90
 local lightSourceIndex = 0
@@ -356,7 +356,9 @@ end
 local function isRaining()   
 
     if boolRainyArea == nil then
-        boolRainyArea = isRainyArea() or true
+        boolRainyArea = isRainyArea() 
+        --boolRainyArea = true
+        Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
     end
     if boolRainyArea == false then
         return false
@@ -371,6 +373,7 @@ end
 local function split(self, delimiter)
   local result = { }
   local from  = 1
+
   local delim_from, delim_to = string.find( self, delimiter, from  )
   while delim_from do
     table.insert( result, string.sub( self, from , delim_from-1 ) )
@@ -386,12 +389,11 @@ function widget:Update(dt)
         rainPercent = 1.0
         return 
     end
-    local percentChange  = rainChangeIntervalSeconds/dt
+
     if isRaining() == true   then--isRaining() then
-        Spring.Echo("Its raining "..rainPercent)
-        rainPercent = math.min(1.0, rainPercent + percentChange)
+        rainPercent = math.min(1.0, rainPercent + 0.0001)
     else
-        rainPercent = math.max(0.0, rainPercent - percentChange)
+        rainPercent = math.max(0.0, rainPercent - 0.0001)
     end
 end
 

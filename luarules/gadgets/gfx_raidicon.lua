@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 0,
+        layer = 1024,
         version = 1,
         enabled = true
     }
