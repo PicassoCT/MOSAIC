@@ -316,14 +316,13 @@ return {
 "All fun and games until",
 "Try Recoil, the new, better hibernation framework",
 "Trolololo",
-"Pianokey napties",
+"Pianokey napties <suspect> invented them",
 "We got terrorism at home.the terrorism at home",
 "Market crash as Antagon Protagon conflict drags on",
-"Racism rally ends in carcrash",
+"Raceism rally ends in carcrash",
 "<suspect> killed today in driveby",
 "<suspect> suspected a serial killer",
 "Vidya games blamed for violence",
 "New Zealand:Prepper safari.Hunt wild antisocials",
-
-
+"<suspect> officially nuts",
 }
