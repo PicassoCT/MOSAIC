@@ -1,11 +1,11 @@
-- rainshader for floor vectors.. Depthmap
 - building destruction animation
-- grenadedrones no self damage/turrets
 - self-revealing of operators
+
+- performance optimization
+	- asian buildings creating memory overlflow
 - all maps tested through
 - selfilu windows for buildings
 - normaltexture for asian buildings
-- performance optimization
 - operator drop in water
 - vannishing safehouses on upgrade
 - minigame debbugging

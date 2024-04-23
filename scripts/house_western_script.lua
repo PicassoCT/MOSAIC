@@ -243,8 +243,7 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-    houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
-	return 1
+    return houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
 end
 
 function showOne(T, bNotDelayd)
@@ -1150,19 +1149,7 @@ hideT(TablesOfPiecesGroups["Rope"])
 end
 
 Icon = piece("Icon")
-
-function buildAnimation()
-   
-    Show(Icon)
-    for i=1, #TablesOfPiecesGroups["BuildDeco"] do
-        if maRa() == true then
-            Show(TablesOfPiecesGroups["BuildDeco"][i])
-        end
-    end
-
-    local builT = TablesOfPiecesGroups["Build"]
-    axis = _z_axis
-
+function buildAnimationEarlyOut()
     if Spring.GetGameSeconds() < 10 then
         hideT(builT)
         hideT(TablesOfPiecesGroups["Build01Sub"])
@@ -1176,13 +1163,48 @@ function buildAnimation()
         Hide(Icon)
         return
     end
+end
+
+function showBuildCompanysLogo()
+for i=1, #TablesOfPiecesGroups["BuildDeco"] do
+        if maRa() == true then
+            Show(TablesOfPiecesGroups["BuildDeco"][i])
+        end
+    end
+end
+
+function StartBuildCraneAnimation()
+    foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
+        craneFunction = function(id)
+            while true do
+                target = math.random(-120, 120)
+                WTurn(id, y_axis, math.rad(target), math.pi / 10)
+                WaitForMoves(Bucket1)
+                Sleep(500)
+            end
+        end
+
+        StartThread(craneFunction, id)
+    end)
+end
+
+function buildAnimation()
+    buildAnimationEarlyOut() 
+    showBuildCompanysLogo()
+    Show(Icon)
+    
+    local builT = TablesOfPiecesGroups["Build"]
+    axis = _z_axis
+
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
     Hide(Icon)
     StartThread(ropeLoop)
     local builT = TablesOfPiecesGroups["Build"]
-
-    for i = 1, 3 do 
-        WMove(builT[i], axis, i * -2000/3, 0) 
+    moveFactor = 2000/3
+    timePerStageSeconds= 5
+    for i = 3, 1, -1 do
+        Show(builtT[i]) 
+        WMove(builT[i], axis, i * -moveFactor, i * moveFactor/timePerStageSeconds) 
     end
 
     moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
@@ -1196,25 +1218,15 @@ function buildAnimation()
     moveSyncInTimeT(builT, 0, 0, 0, 5000)
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
     
-    foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
-        craneFunction = function(id)
-            while true do
-                target = math.random(-120, 120)
-                WTurn(id, y_axis, math.rad(target), math.pi / 10)
-                WaitForMoves(Bucket1)
-                Sleep(500)
-            end
-        end
-
-        StartThread(craneFunction, id)
-    end)
+    StartBuildCraneAnimation()
 
     Sleep(15000)
     while boolDoneShowing == false do Sleep(100) end
     showT(ToShowTable)
 
+    individualSpeed = (unitID % 5) + 5
     for i = 1, 3 do
-        Move(builT[i], axis, i * -cubeDim.heigth * 10, 3 * math.pi)
+        WMove(builT[i], axis, i * -cubeDim.heigth * 10, individualSpeed)
     end
 
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -3200, 0, 8000)

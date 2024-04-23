@@ -6295,6 +6295,7 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 		hideT(LevelPieces[i])
 	end
 	echo("End house destruction")
+    return 1
 end
 
 function getEngineVersion()
