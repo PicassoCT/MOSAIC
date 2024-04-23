@@ -6271,13 +6271,15 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 	echo("Destroyed house animation") -- TODO find out why scrapheap has vertices going to infinity
 	hideAll(id)
 	speed= 9.8
+    scale = 10
 	for i=#LevelPieces, 1, -1 do
 		for k= 1, #LevelPieces[i] do
 			Show(LevelPieces[i][k])
-			Move(LevelPieces[i][k], y_axis, 0, speed)
+			Move(LevelPieces[i][k], y_axis, 0, speed * scale)
 			turnPieceRandDir(LevelPieces[i][k], 0.1)
 		end
 		Sleep(i*1000)
+        WaitForMoves(LevelPieces[i])
 	end
 	
 	while(speed < maxSpeed)do
