@@ -357,7 +357,6 @@ local function isRaining()
 
     if boolRainyArea == nil then
         boolRainyArea = isRainyArea() 
-        --boolRainyArea = true
         Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
     end
     if boolRainyArea == false then
