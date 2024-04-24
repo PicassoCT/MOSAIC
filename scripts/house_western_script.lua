@@ -1199,7 +1199,7 @@ function buildAnimation()
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
     Hide(Icon)
     StartThread(ropeLoop)
-    local builT = TablesOfPiecesGroups["Build"]
+
     moveFactor = 2000/3
     timePerStageSeconds= 5
     for i = 3, 1, -1 do

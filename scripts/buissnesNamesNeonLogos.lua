@@ -582,7 +582,7 @@ return {
 "Rivian",
 "Canyonarrow",
 "mile high club",
-"fuck u got mine inc"
+"fuck u got mine inc",
 "Vintage Gucci",
 "Lou Villtoine",
 "Christian Dior",
