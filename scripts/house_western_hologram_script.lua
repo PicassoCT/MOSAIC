@@ -1256,7 +1256,7 @@ end
 backdropAxis = x_axis
 spindropAxis = y_axis
 function randomFLickerLetters(allLetters, posLetters)
-    echo("syncToFrontLetters with "..toString(allLetters))
+    --echo("syncToFrontLetters with "..toString(allLetters))
     errorDrift = math.random(2,7)
     flickerIntervall = math.ceil(1000/25)
     if (hours > 17 or hours < 7) then
