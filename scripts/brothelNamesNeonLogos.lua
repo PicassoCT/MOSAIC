@@ -471,4 +471,494 @@ return {
 "Like animals",
 "All night long",
 "Got milk",
+1. Anaconda
+2. Baloney pony
+3. Birdie
+4. Bobby
+5. Boonga
+
+6. Cack
+
+7. Choad
+
+8. Choda
+
+9. Chode
+
+10. Chopper
+
+11. Cock
+
+12. Crank
+
+13. Custard launcher
+
+14. Dick
+
+15. Dicklet
+
+16. Diddly
+
+17. Dingaling
+
+18. Ding-a-ling
+
+19. Ding-dong
+
+20. Dinger
+
+21. Dingle
+
+22. Dingus
+
+23. Dingy
+
+24. Dink
+
+25. Dinkle
+
+26. Dipstick
+
+27. Dirk
+
+28. Disco stick
+
+29. Dog bone
+
+30. Dong
+
+31. Donger
+
+32. Donkey Kong
+
+33. Doodle
+
+34. Dork
+
+35. Down
+
+36. Fire hose
+
+37. Fuckpole
+
+38. Gherkin
+
+39. Hairy canary
+
+40. Hammer
+
+41. Hot rod
+
+42. Hooter
+
+43. Jade stalk
+
+44. Jamoke
+
+45. Jigger
+
+46. Jimmy
+
+47. Jock
+
+48. Johnson
+
+49. John Thomas
+
+50. Joystick
+
+51. Kielbasa
+
+52. Knob
+
+53. Lad
+
+54. Langer
+
+55. Lingam
+
+56. Love muscle
+
+57. Love stick
+
+58. Love truncheon
+
+59. Machine
+
+60. Master John Goodfellow
+
+61. Male member
+
+62. Manhood
+
+63. Maypole
+
+64. Meat
+
+65. Meat puppet
+
+66. Meat rod
+
+67. Meatstick
+
+68. Meat stick
+
+69. Member
+
+70. Membrum virile
+
+71. Nature’s scythe
+
+72. Old chap
+
+73. One-eyed trouser snake
+
+74. Organ
+
+75. Package
+
+76. Pecker
+
+77. Peen
+
+78. Pee-pee
+
+79. Pee-wee
+
+80. Pego
+
+81. Penis
+
+82. Peter
+
+83. Phallus
+
+84. Pickle
+
+85. Piece
+
+86. Pike
+
+87. Pingas
+
+88. Pink cigar
+
+89. Pintle
+
+90. Pipe
+
+91. Pisser
+
+92. Pizzle
+
+93. Plonker
+
+94. Pork sword
+
+95. Prick
+
+96. Pud
+
+97. Putz
+
+98. P-word
+
+99. Python
+
+100. Ramrod
+
+101. Rape tool
+
+102. Rod
+
+103. Root
+
+104. Rutter
+
+105. Salami
+
+106. Sausage
+
+107. Schlong
+
+108. Schmuck
+
+109. Sex tool
+
+110. Shaft
+
+111. Shlong
+
+112. Shmekl
+
+113. Skin flute
+
+114. Snake
+
+115. Snausage
+
+116. Spitstick
+
+117. Stretcher
+
+118. Swipe
+
+119. Tadger
+
+120. Tagger
+
+121. Tail
+
+122. Tallywacker
+
+123. Tarse
+
+124. Thing
+
+125. Thingy
+
+126. Third leg
+
+127. Todger
+
+128. Tool
+
+129. Trouser monkey
+
+130. Trouser snake
+
+131. Truncheon
+
+132. Tube steak
+
+133. Unit
+
+134. Virile member
+
+135. Wang
+
+136. Weapon
+
+137. Wee-wee
+
+138. Weenie
+
+139. Weeny
+
+140. Whang
+
+141. Wick
+
+142. Widgie
+
+143. Widdler
+
+144. Wiener
+
+145. Willie
+
+146. Willy
+
+147. Wingwang
+
+148. Winkle
+
+149. Winky
+
+150. Yard
+
+151. Ying-yang
+1. Addressing the court
+
+2. BJ
+
+3. Bagpiping
+
+4. Basket lunch
+
+5. Beej
+
+6. Blowie
+
+7. Blowing the love whistle
+
+8. Bobbing for apples
+
+9. Bone-lipping
+
+10. Buccal onanism
+
+11. Brentwood hello
+
+12. Charming the snake
+
+13. Climbing the corporate ladder
+
+14. Cock-gobbling
+
+15. Copping a doodle
+
+16. Courting the gay vote
+
+17. Drinking a slurpee
+
+18. Dropping on it
+
+19. Earning your keep
+
+20. Essin’ the dee
+
+21. Face-frosting
+
+22. Fellatio
+
+23. Fluting
+
+24. French abortion
+
+25. Gator mouth
+
+26. Getting a facial
+
+27. Getting a lewinsky
+
+28. Getting a throat culture
+
+29. Getting to the cream filling
+
+30. Giving cone
+
+31. Giving face
+
+32. Giving head
+
+33. Gobbling pork
+
+34. Going down
+
+35. Gumming the root
+
+36. Punching
+
+37. Giving Big Jim and the twins a bath
+
+38. Giving brain
+
+39. Giving head
+
+40. Gum-rooting
+
+41. Gumming the green bean
+
+42. Head job
+
+43. Honkin’ bobo
+
+44. Huffing bone
+
+45. Hummer
+
+46. Interrogating the prisoner
+
+47. Kneeling at the altar
+
+48. Knob job
+
+49. Larking
+
+50. Laying some lip
+
+51. Licking the lollipop
+
+52. Making mouth music
+
+53. Making the blind see
+
+54. Meeting with Mr. One-Eye
+
+55. Mouth-fucking
+
+56. Mouth-holstering the nightstick
+
+57. Mouth-milking
+
+58. Mouth-to-junk resuscitation
+
+59. Opening wide for Dr. Chunky
+
+60. Oral sodomy
+
+61. Peeling the banana
+
+62. Penilingus
+
+63. Piston job
+
+64. Playing pan’s pipes
+
+65. Playing the pink oboe
+
+66. Playing the skin flute
+
+67. Pole-smoking
+
+68. Polishing the trailer hitch
+
+69. Pricknicking
+
+70. Protein milkshake
+
+71. Receiving holy communion
+
+72. Respecting your superiors
+
+73. Sampling the sausage
+
+74. Scooby-snacking
+
+75. Secretarial duties
+
+76. Singing to the choir
+
+77. Skull-buggery
+
+78. Skull-fucking
+
+79. Slobbin’ the knob
+
+80. Smiling at Mr. Winky
+
+81. Smoking the pink pipe
+
+82. Smoking pole
+
+83. Southern France
+
+84. Speaking into the bonophone
+
+85. Speaking low genitals
+
+86. Spit-shining a baseball bat
+
+87. Spraying the tonsils
+
+88. Sucking off
+
+89. Sucky-ducky
+
+90. Suck-starting the Harley
+
+91. Swallowing the baloney pony
+
+92. Sword-wwallowing
+93. Taking one’s temp with a meat thermometer
+94. Talking into the mic
+95. Telling it to the judge
+96. Waxing the carrot
+97. Worshiping at the altar
+98. Wringing it dry
+99. Yaffling the yogurt cannon
+100. Zipper dinner
+
+
 }
