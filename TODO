@@ -8,8 +8,6 @@
 - building destruction animation
 - self-revealing of operators
 
-- performance optimization
-	- asian buildings creating memory overlflow
 - all maps tested through
 - selfilu windows for buildings
 - normaltexture for asian buildings
