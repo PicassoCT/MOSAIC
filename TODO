@@ -1,3 +1,10 @@
+-BAR-Branch
+	- compile bar
+	- run bar
+	- create a compossable unitclass that has infinite pieces pointers
+	- optimize it for near zero-memory footprint (all pointers to one piecemodel, no copys)
+	- make houses that type of unit
+
 - building destruction animation
 - self-revealing of operators
 
