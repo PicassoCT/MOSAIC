@@ -157,6 +157,4 @@ return
 "Nantaimori",
 "Rosebud",
 "Kayne Western Cantina",
-
-
 }
