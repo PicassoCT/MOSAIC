@@ -1445,17 +1445,31 @@ function SwarmLetters(allLetters, posLetters)
     Sleep(2000)
 end
 
-function SpinLetters(allLetters)
+function SpinLetters(allLetters, posLetters)
    --echo("SpinLetters with "..toString(allLetters))
+   foreach(allLetters,
+    function(id)
+        for k=1, #posLetters[id] do
+            for i=1,3 do
+                Move(id, i, posLetters[id][k][i] + math.random(50,1000)*randSign(), 0)
+            end            
+        end            
+    end)
     foreach(allLetters,
         function(id)
+
             rval = math.random(-360,360)
         Spin(id, spindropAxis, math.rad(rval), 15)
         ShowReg(id)
         end)
-    Sleep(5000)
+    Sleep(10000)
     hideTReg(allLetters)
     Sleep(2000)
+        foreach(allLetters,
+        function(id)
+            rval = math.random(-360,360)
+        StopSpin(id, spindropAxis,0)        
+        end)
 end
 
 function HideLetters(allLetters)
