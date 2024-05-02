@@ -655,13 +655,13 @@ function script.Create()
 end
 
 function HoloGrams()
+    individualRest = math.random(1000,2000)
     while   boolDoneShowing == false do
-        Sleep(100)
+        Sleep(individualRest)
     end
-    rest= (7 + math.random(1,7))*1000
+    rest= (1+ (unitID %  10)) * 1000
     Sleep(rest)
-    if maRa() == maRa() and not  isNearCityCenter(px,pz, GameConfig) then return end
-
+ 
     for logoPiece,v in pairs(holoPieces)do
         if contains(ToShowTable, logoPiece) then 
             if not decoPieceUsedOrientation[logoPiece] then lecho(unitID..":"..pieceID_NameMap[logoPiece].." has no value assigned to it") end
