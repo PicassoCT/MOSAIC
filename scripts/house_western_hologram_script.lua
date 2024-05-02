@@ -1190,6 +1190,7 @@ function setupMessage(myMessages)
 
             if boolUpRight == true then
                 rowIndex = rowIndex + 1
+                columnIndex = 0
             else
                 columnIndex = columnIndex + 1
             end
@@ -1199,7 +1200,9 @@ function setupMessage(myMessages)
             if boolUpright == true then --spacing
                 columnIndex = 0
                 rowIndex = rowIndex +1
-            else -- horizontal
+            end
+
+            if boolUpright == false then -- horizontal
                 if columnIndex > 12 then -- linebreak
                     columnIndex = 0
                     rowIndex = rowIndex +1
@@ -1207,9 +1210,7 @@ function setupMessage(myMessages)
                     columnIndex = columnIndex + 1
                 end
             end
-        end
-
-  
+        end  
     end
     return allLetters, posLetters, myMessage
 end
