@@ -1249,7 +1249,9 @@ allFunctions = {
         ["circleProject"]  =  circleProject,
         ["ringProject"]  =  ringProject,
         ["cubeProject"]  =  cubeProject,
-        ["spiralProject"]  =  spiralProject
+        ["spiralProject"]  =  spiralProject,
+        ["matrixTextFx"]  =  matrixTextFx,
+        
         }
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
@@ -1363,6 +1365,25 @@ function resetSpinDrop(allLetters)
                 Turn(id, 2, math.rad(0), 0)    
                 Turn(id, 3, math.rad(0), 0)    
         end)
+end
+
+function matrixTextFx(allLetters, posLetters)
+    if posLetters.boolUpRight then
+        foreach(allLetters,
+            function(id)
+                reset(id)
+                ShowReg(id)
+                Move(posLetters,spindropAxis, posLetters[id][spindropAxis], 100)
+            end)
+
+         foreach(allLetters,
+            function(id)
+                WaitForMove(posLetters)
+            end)
+         Sleep(1000)
+        
+    end
+
 end
 
 function dnaHelix(allLetters)
