@@ -1240,16 +1240,28 @@ function addHologramLetters( myMessages)
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
     if maRa() and maRa() or boolIsEverChanging or true then 
-        allFunctions = {SinusLetter, CrossLetters, HideLetters,SpinLetters, SwarmLetters, SpiralUpwards, randomFLickerLetters, syncToFrontLetters, consoleLetters, dnaHelix, circleProject}
-        --TextAnimation
+        allFunctions = {
+                ["SinusLetter"]   = SinusLetter, 
+                ["CrossLetters"]  =  CrossLetters, 
+                ["HideLetters"]   = HideLetters,
+                ["SpinLetters"]   = SpinLetters, 
+                ["SwarmLetters"]  =  SwarmLetters, 
+                ["SpiralUpwards"] =   SpiralUpwards, 
+                ["randomFLickerLetters"] =   randomFLickerLetters, 
+                ["syncToFrontLetters"]=    syncToFrontLetters, 
+                ["consoleLetters"] =   consoleLetters, 
+                ["dnaHelix"]   = dnaHelix, 
+                ["circleProject"]  =  circleProject
+                }
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
             if not posLetters.boolUpRight then
-                --allFunctions[math.random(1,#allFunctions)](allLetters, posLetters) 
-                echo("Sinus Letters start")
+                name, textFX = randDict(allFunctions)
+                echo("Starting Hologram "..unitID.." textFX "..name)
+                textFX(allLetters, posLetters)                
                 HideLetters(allLetters,posLetters)
-                echo("Sinus Letters end")
+                echo("Ending Hologram "..unitID.." textFX "..name)
                 WaitForMoves(allLetters)       
             end
             restTime = math.max(5000, #allLetters*150)
@@ -1279,12 +1291,9 @@ function randomFLickerLetters(allLetters, posLetters)
 
             foreach(allLetters,
             function(id)
-
-              for a=1,3 do
-                Move(id, a, posLetters[id][k][a] + math.random(-1*errorDrift,errorDrift), 100)
-               end
-
-
+                for a=1,3 do
+                    Move(id, a, posLetters[id][k][a] + math.random(-1*errorDrift,errorDrift), 100)
+                end
             end)
             WaitForMoves(allLetters)
             Sleep(flickerIntervall)
@@ -1292,11 +1301,10 @@ function randomFLickerLetters(allLetters, posLetters)
         hideTReg(allLetters)  
         foreach(allLetters,
             function(id)
-                  for a=1,3 do
+                for a=1,3 do
                     Move(id, a, posLetters[id][k][a], 15)
-                  end
-                
-               ShowReg(id)
+                end                
+                ShowReg(id)
             end)
     end        
 end
@@ -1403,6 +1411,44 @@ function circleProject(allLetters, posLetters)
     hideTReg(allLetters) 
 end
 
+function convertNrToCubicCoordinate(index, sizeOfMessage)
+    cubeSize = 1
+    while (cubeSize^2 <  math.sqrt(sizeOfMessage))do cubeSize = cubeSize + 1 end
+
+    --layer
+    layerSize = 4 * cubeSize
+    layerIndex = math.ceil(index/layerSize)
+    layerPosition = index - layerIndex * layerSize
+    --position
+    layerDirection = layerPosition / 4
+    --TODO
+    --direction
+    return cx, cy, cz, math.floor(layerDirection)*90
+end
+
+function cubeProject(allLetters, posLetters)
+    circumference = count(allLetters) * sizeSpacingLetter *2.0
+    textCirumference = count(allLetters) * sizeSpacingLetter
+    radius = circumference / (2 * math.pi)
+    radiant = (math.pi *2)/(count(allLetters)*2.0)
+    hideTReg(allLetters)
+
+    i=0
+    foreach(allLetters,
+        function(pID)
+            i = i +1
+            if posLetters.spacing[i + 1] == " " then
+                i = i + 1
+            end
+            cx, cy, cz, rotation = convertNrToCubicCoordinate(i, #allLetters)
+            mP(pID, cx, cy, cz, 0)
+            Turn(pID, spindropAxis,math.rad(rotation),0)
+            ShowReg(pID)
+        end)
+    Sleep(15000)
+    hideTReg(allLetters) 
+end
+
 function SpiralUpwards(allLetters, posLetters)
    --echo("SpiralUpwards with "..toString(allLetters))
     hideTReg(allLetters)
@@ -1420,7 +1466,7 @@ function SpiralUpwards(allLetters, posLetters)
             Sleep(250)
         end)
     WaitForMoves(allLetters)
-    Sleep(2000) 
+    Sleep(5000) 
 end
 
 function SwarmLetters(allLetters, posLetters)
@@ -1435,10 +1481,10 @@ function SwarmLetters(allLetters, posLetters)
 
     foreach(allLetters,
         function(id)
-                for i=1,3 do
-                    Move(id, i, posLetters[id][i], 350)            
-                end
-            
+            for i=1,3 do
+                Move(id, i, posLetters[id][i], 350)            
+            end
+        
             ShowReg(id)
         end)
     WaitForMoves(allLetters)
@@ -1455,17 +1501,19 @@ function SpinLetters(allLetters, posLetters)
     end)
     foreach(allLetters,
         function(id)
-
             rval = math.random(-360,360)
-        Spin(id, spindropAxis, math.rad(rval), 15)
-        ShowReg(id)
+            Spin(id, spindropAxis, math.rad(rval), 15)
+            for i=1,3 do
+                Move(id, i, posLetters[id][i], 10)
+            end 
+            ShowReg(id)
         end)
     Sleep(10000)
         foreach(allLetters,
         function(id)
             rval = math.random(-360,360)
             StopSpin(id, spindropAxis,0.1)       
-            WTurn(id, spindropAxis, 0, 0.1) 
+            WTurn(id, spindropAxis, 0, 1.0) 
         end)
     Sleep(5000)
     hideTReg(allLetters)
