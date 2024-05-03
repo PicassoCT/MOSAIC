@@ -1247,8 +1247,9 @@ allFunctions = {
         ["consoleLetters"] =   consoleLetters, 
         ["dnaHelix"]   = dnaHelix, 
         ["circleProject"]  =  circleProject,
+        ["ringProject"]  =  ringProject,
         ["cubeProject"]  =  cubeProject,
-         ["spiralProject"]  =  circleProject,
+        ["spiralProject"]  =  spiralProject
         }
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
@@ -1332,7 +1333,7 @@ function syncToFrontLetters(allLetters)
     rest = math.random(4, 16)*500
     Sleep(rest)
 end
-
+--matrix like textfx
 function consoleLetters(allLetters, posLetters)
    --echo("consoleLetters with "..toString(allLetters))
     foreach(allLetters,
@@ -1350,7 +1351,7 @@ function consoleLetters(allLetters, posLetters)
     end)
     Sleep(100)
     WaitForMoves(allLetters)
-    Sleep(5000)
+    Sleep(10000)
 end
 
 function resetSpinDrop(allLetters)
@@ -1415,9 +1416,38 @@ function spiralProject(allLetters, posLetters)
     hideTReg(allLetters) 
 end
 
+function ringProject(allLetters, posLetters)
+    circumference = count(allLetters) * sizeSpacingLetter 
+
+    radius = circumference / (2 * math.pi)
+    radiant = (math.pi *2)/(count(allLetters)*2.0)
+    hideTReg(allLetters)
+
+    i=0
+    foreach(allLetters,
+        function(pID)
+
+        reset(pID, 0)
+        radiantVal = radiant*i
+        ShowReg(pID)
+        local xr = radius * math.cos(radiantVal)
+        local yr = radius * math.sin(radiantVal)
+
+        Move(pID,x_axis, xr, math.abs(xr)/2.0)
+        Move(pID,y_axis, yr, math.abs(zr)/2.0)
+        Turn(pID,z_axis, math.pi + radiantVal, 0)
+        i = i +1
+        if posLetters.spacing[i + 1] == " " then
+            i = i + 1
+        end
+        end)
+    Sleep(15000)
+    hideTReg(allLetters) 
+end
+
+
 function circleProject(allLetters, posLetters)
     circumference = count(allLetters) * sizeSpacingLetter *2.0
-    textCirumference = count(allLetters) * sizeSpacingLetter
     radius = circumference / (2 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
     hideTReg(allLetters)
