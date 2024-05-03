@@ -1471,7 +1471,7 @@ function SpinLetters(allLetters, posLetters)
     hideTReg(allLetters)
 end
 
-function HideLetters(allLetters)
+function HideLetters(allLetters, posLetters)
    --echo("HideLetters with "..toString(allLetters))
     direction =  randSign()
     --Setup
@@ -1479,7 +1479,7 @@ function HideLetters(allLetters)
             HideReg(allLetters[j])
             WMove(allLetters[j],backdropAxis, 150, 300)
             ShowReg(allLetters[j])
-            Move(allLetters[j],backdropAxis, 0, 600)                
+            Move(allLetters[j],backdropAxis, posLetters[allLetters[j]][backdropAxis], 600)                
      end
 
     rest = math.random(4, 16)*500
