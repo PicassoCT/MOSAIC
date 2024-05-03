@@ -677,7 +677,7 @@ function getGameConfig()
     end
     
     
-    function moveCtrlHologramToUnitPiece(parentID, holoDefID, pieceID, orientation)
+    function moveCtrlHologramToUnitPiece(parentID, holoDefID, pieceID, orientation, heightOffset)
         orientation =math.rad(orientation)
 
         assert(pieceID)
@@ -691,6 +691,9 @@ function getGameConfig()
     
         Spring.MoveCtrl.Enable(id, true)
         px, py, pz = Spring.GetUnitPiecePosDir(parentID, pieceID)
+        if minHeight then
+            py = py + heightOffset
+        end
         --echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
         Spring.MoveCtrl.SetRotation(id, 0,  orientation, 0)
         Spring.MoveCtrl.SetPosition(id, px, py, pz)

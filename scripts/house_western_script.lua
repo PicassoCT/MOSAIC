@@ -16,6 +16,7 @@ factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
+
 local cubeDim = 
 {
     length = factor * 14.4 * 1.45,
@@ -1149,9 +1150,10 @@ hideT(TablesOfPiecesGroups["Rope"])
 end
 
 Icon = piece("Icon")
-function buildAnimationEarlyOut()
+function buildAnimationEarlyOut(builtT)
     if Spring.GetGameSeconds() < 10 then
-        hideT(builT)
+        Show(Icon)
+        hideT(builtT)
         hideT(TablesOfPiecesGroups["Build01Sub"])
         hideT(TablesOfPiecesGroups["BuildCrane"])
 
@@ -1161,7 +1163,7 @@ function buildAnimationEarlyOut()
         Hide(Bucket1)
         hideT(TablesOfPiecesGroups["Rope"])
         Hide(Icon)
-        return
+        return true
     end
 end
 
@@ -1189,11 +1191,9 @@ function StartBuildCraneAnimation()
 end
 
 function buildAnimation()
-    buildAnimationEarlyOut() 
+    local builtT = TablesOfPiecesGroups["Build"]
+    if buildAnimationEarlyOut(builtT) then return end
     showBuildCompanysLogo()
-    Show(Icon)
-    
-    local builT = TablesOfPiecesGroups["Build"]
     axis = _z_axis
 
     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
@@ -1204,18 +1204,18 @@ function buildAnimation()
     timePerStageSeconds= 5
     for i = 3, 1, -1 do
         Show(builtT[i]) 
-        WMove(builT[i], axis, i * -moveFactor, i * moveFactor/timePerStageSeconds) 
+        WMove(builtT[i], axis, i * -moveFactor, i * moveFactor/timePerStageSeconds) 
     end
 
     moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
 
     WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
-    WaitForMoves(builT)
-    showT(builT)
+    WaitForMoves(builtT)
+    showT(builtT)
     showT(TablesOfPiecesGroups["Build01Sub"])
     showT(TablesOfPiecesGroups["BuildCrane"])
 
-    moveSyncInTimeT(builT, 0, 0, 0, 5000)
+    moveSyncInTimeT(builtT, 0, 0, 0, 5000)
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
     
     StartBuildCraneAnimation()
@@ -1226,7 +1226,7 @@ function buildAnimation()
 
     individualSpeed = (unitID % 5) + 5
     for i = 1, 3 do
-        WMove(builT[i], axis, i * -cubeDim.heigth * 10, individualSpeed)
+        WMove(builtT[i], axis, i * -cubeDim.heigth * 10, individualSpeed)
     end
 
     moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -3200, 0, 8000)
@@ -1237,8 +1237,8 @@ function buildAnimation()
      hideT(TablesOfPiecesGroups["Rope"])
     Sleep(7000)
     WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
-    WaitForMoves(builT)
-    hideT(builT)
+    WaitForMoves(builtT)
+    hideT(builtT)
     hideT(TablesOfPiecesGroups["Build01Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
     hideT(TablesOfPiecesGroups["BuildDeco"])

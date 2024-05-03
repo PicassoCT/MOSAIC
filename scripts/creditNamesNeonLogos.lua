@@ -28,5 +28,7 @@ return {
  "StafBeats",
  "harlemdaw",
  "Cyclez",
- "sakebeats"
+ "sakebeats",
+ "LoIc Norgeot",
+ "ivand"
 }

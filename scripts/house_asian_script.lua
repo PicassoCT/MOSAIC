@@ -18,8 +18,7 @@ pieceLimits = {
     ["Office_Pod_BaseAddition"] = 2
 }
 pieceCyclicOSTable = {}
-hideDuringDayPieceNames= {
-}
+hideDuringDayPieceNames= {}
 
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
@@ -57,10 +56,10 @@ local cubeDim = {
     roofHeigth = 50
 }
 
+holoHeightOffset =  10
+
 dayNightPieceNames = {}
 local SIG_SUBANIMATIONS = 2
-
-
 
 supriseChances = {
     roof = 0.35,
@@ -665,7 +664,7 @@ function HoloGrams()
     for logoPiece,v in pairs(holoPieces)do
         if contains(ToShowTable, logoPiece) then 
             if not decoPieceUsedOrientation[logoPiece] then lecho(unitID..":"..pieceID_NameMap[logoPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_asian_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece] )
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_asian_hologram_buisness", logoPiece, decoPieceUsedOrientation[logoPiece], holoHeightOffset )
             break
         end
     end
@@ -683,10 +682,10 @@ function HoloGrams()
 		
         if maRa()== true and contains(ToShowTable, hostPiece) == true then
             if not decoPieceUsedOrientation[hostPiece] then lecho( unitID..":"..pieceID_NameMap[hostPiece].." has no value assigned to it") end
-            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostPiece, decoPieceUsedOrientation[hostPiece] )
+            StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostPiece, decoPieceUsedOrientation[hostPiece],holoHeightOffset )
         else 
             if contains(ToShowTable, hostPiece) == true then 
-                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostPiece, decoPieceUsedOrientation[hostPiece] )
+                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostPiece, decoPieceUsedOrientation[hostPiece], holoHeightOffset )
             end
         end
     end  
