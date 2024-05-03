@@ -1235,24 +1235,27 @@ function restoreMessageOriginalPosition(message, posLetters)
         )
 end
 
+allFunctions = {
+        ["SinusLetter"]   = SinusLetter, 
+        ["CrossLetters"]  =  CrossLetters, 
+        ["HideLetters"]   = HideLetters,
+        ["SpinLetters"]   = SpinLetters, 
+        ["SwarmLetters"]  =  SwarmLetters, 
+        ["SpiralUpwards"] =   SpiralUpwards, 
+        ["randomFLickerLetters"] =   randomFLickerLetters, 
+        ["syncToFrontLetters"]=    syncToFrontLetters, 
+        ["consoleLetters"] =   consoleLetters, 
+        ["dnaHelix"]   = dnaHelix, 
+        ["circleProject"]  =  circleProject,
+        ["cubeProject"]  =  cubeProject,
+         ["spiralProject"]  =  circleProject,
+        }
+
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessages)  
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
     if maRa() and maRa() or boolIsEverChanging or true then 
-        allFunctions = {
-                ["SinusLetter"]   = SinusLetter, 
-                ["CrossLetters"]  =  CrossLetters, 
-                ["HideLetters"]   = HideLetters,
-                ["SpinLetters"]   = SpinLetters, 
-                ["SwarmLetters"]  =  SwarmLetters, 
-                ["SpiralUpwards"] =   SpiralUpwards, 
-                ["randomFLickerLetters"] =   randomFLickerLetters, 
-                ["syncToFrontLetters"]=    syncToFrontLetters, 
-                ["consoleLetters"] =   consoleLetters, 
-                ["dnaHelix"]   = dnaHelix, 
-                ["circleProject"]  =  circleProject
-                }
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
@@ -1382,6 +1385,36 @@ function dnaHelix(allLetters)
     Sleep(5000)
 end
 
+function spiralProject(allLetters, posLetters)
+    circumference = count(allLetters) * sizeSpacingLetter 
+    radius = circumference / (4 * math.pi)
+    radiant = (math.pi *2)/(count(allLetters)*2.0)
+    hideTReg(allLetters)
+
+    i = 0
+    spiralIncrease = sizeDownLetter/ (count(allLetters)*0.5)  
+    foreach(allLetters,
+        function(pID)
+
+        reset(pID, 0)
+        radiantVal = radiant*i
+        ShowReg(pID)
+        local xr = radius * math.cos(radiantVal)
+        local zr = radius * math.sin(radiantVal)
+
+        Move(pID,x_axis, xr, math.abs(xr)/2.0)
+        Move(pID,z_axis, zr, math.abs(zr)/2.0)
+        Move(pID,y_axis, i * spiralIncrease, 0)
+        Turn(pID,y_axis, math.pi + radiantVal, 0)
+        i = i +1
+        if posLetters.spacing[i + 1] == " " then
+            i = i + 1
+        end
+        end)
+    Sleep(15000)
+    hideTReg(allLetters) 
+end
+
 function circleProject(allLetters, posLetters)
     circumference = count(allLetters) * sizeSpacingLetter *2.0
     textCirumference = count(allLetters) * sizeSpacingLetter
@@ -1416,14 +1449,19 @@ function convertNrToCubicCoordinate(index, sizeOfMessage)
     while (cubeSize^2 <  math.sqrt(sizeOfMessage))do cubeSize = cubeSize + 1 end
 
     --layer
-    layerSize = 4 * cubeSize
+    sideSize = math.ceil(math.sqrt(cubeSize))
+    layerSize = 4 * sideSize
     layerIndex = math.ceil(index/layerSize)
     layerPosition = index - layerIndex * layerSize
     --position
-    layerDirection = layerPosition / 4
-    --TODO
+    layerDirection = math.floor(layerPosition/sideSize)
+    cy = math.floor(layerPosition / cubeSize)
+
+    -- Calculate x coordinate
+    cx = layerPosition % cubeSize
+
     --direction
-    return cx, cy, cz, math.floor(layerDirection)*90
+    return cx, cy, layerIndex, math.floor(layerDirection) * 90
 end
 
 function cubeProject(allLetters, posLetters)
