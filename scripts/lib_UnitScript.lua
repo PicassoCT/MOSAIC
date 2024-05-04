@@ -3002,7 +3002,35 @@ end
 -- ======================================================================================
 -- Section: Geometry/Math functions
 -- ======================================================================================
+function mapAngleToCube(cubeDim, angle)
+    local x, y
+    
+    -- Convert angle to degrees
+    local degrees = angle * 180 / math.pi
+    
+    -- Normalize angle to [0, 360] degrees
+    if degrees < 0 then
+        degrees = degrees + 360
+    end
+    
+    -- Determine quadrant
+    local quadrant = math.floor(degrees / 90) % 4
+    
+    if quadrant == 0 then
+        x = -1 * cubeDim * math.cos(angle)
+        y = -1
+    elseif quadrant == 1 then
+        x = -1
+        y = 1 * cubeDim * math.sin(angle)
+    elseif quadrant == 2 then
+        x = 1 * (cubeDim - cubeDim * math.cos(angle))
+        y = 1
+    elseif quadrant == 3 then
+        x = 1
+        y = -1 * (cubeDim - cubeDim * math.sin(angle))
 
+    return x, y
+end
 function getNearestPositionOnCircle(pCenter, Radius, pPos)
     local rPos = {x = 0, y = 0, z = 0}
 

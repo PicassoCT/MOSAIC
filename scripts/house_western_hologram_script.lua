@@ -1235,51 +1235,6 @@ function restoreMessageOriginalPosition(message, posLetters)
         )
 end
 
-allFunctions = {
-        ["SinusLetter"]   = SinusLetter, 
-        ["CrossLetters"]  =  CrossLetters, 
-        ["HideLetters"]   = HideLetters,
-        ["SpinLetters"]   = SpinLetters, 
-        ["SwarmLetters"]  =  SwarmLetters, 
-        ["SpiralUpwards"] =   SpiralUpwards, 
-        ["randomFLickerLetters"] =   randomFLickerLetters, 
-        ["syncToFrontLetters"]=    syncToFrontLetters, 
-        ["consoleLetters"] =   consoleLetters, 
-        ["dnaHelix"]   = dnaHelix, 
-        ["circleProject"]  =  circleProject,
-        ["ringProject"]  =  ringProject,
-        ["cubeProject"]  =  cubeProject,
-        ["spiralProject"]  =  spiralProject,
-        ["matrixTextFx"]  =  matrixTextFx,
-        
-        }
-
---myMessage = neonSigns[math.random(1,#neonSigns)]
-function addHologramLetters( myMessages)  
-    allLetters, posLetters, newMessage = setupMessage(myMessages)
-
-    if maRa() and maRa() or boolIsEverChanging or true then 
-
-        while true do
-            restoreMessageOriginalPosition(allLetters, posLetters)
-            if not posLetters.boolUpRight then
-                name, textFX = randDict(allFunctions)
-                echo("Starting Hologram "..unitID.." textFX "..name)
-                textFX(allLetters, posLetters)                
-                HideLetters(allLetters,posLetters)
-                echo("Ending Hologram "..unitID.." textFX "..name)
-                WaitForMoves(allLetters)       
-            end
-            restTime = math.max(5000, #allLetters*150)
-            Sleep(restTime)
-            resetSpinDrop(allLetters)
-            WaitForTurns(allLetters)
-            if boolIsEverChanging == true then
-                allLetters, posLetters, newMessage = setupMessage(myMessages)                
-            end
-        end
-    end 
-end
 
 backdropAxis = x_axis
 spindropAxis = y_axis
@@ -1347,7 +1302,7 @@ function consoleLetters(allLetters, posLetters)
     foreach(allLetters,
     function(id)
             for axis=1,3 do
-                Move(id, axis, posLetters[id][k][axis], 150)
+                Move(id, axis, posLetters[id][axis], 150)
             end            
         ShowReg(id)
     end)
@@ -1383,7 +1338,6 @@ function matrixTextFx(allLetters, posLetters)
          Sleep(1000)
         
     end
-
 end
 
 function dnaHelix(allLetters)
@@ -1438,7 +1392,7 @@ function spiralProject(allLetters, posLetters)
 end
 
 function ringProject(allLetters, posLetters)
-    circumference = count(allLetters) * sizeSpacingLetter 
+    circumference = count(allLetters) * sizeDownLetter + 10* sizeDownLetter
 
     radius = circumference / (2 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
@@ -1455,8 +1409,8 @@ function ringProject(allLetters, posLetters)
         local yr = radius * math.sin(radiantVal)
 
         Move(pID,x_axis, xr, math.abs(xr)/2.0)
-        Move(pID,y_axis, yr, math.abs(zr)/2.0)
-        Turn(pID,z_axis, math.pi + radiantVal, 0)
+        Move(pID,y_axis, yr, math.abs(yr)/2.0)
+        tP(pID,0,  radiantVal, 0, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -1497,22 +1451,19 @@ end
 
 function convertNrToCubicCoordinate(index, sizeOfMessage)
     cubeSize = 1
-    while (cubeSize^2 <  math.sqrt(sizeOfMessage))do cubeSize = cubeSize + 1 end
+    while (((cubeSize)^2)*4 <=  math.ceil(math.sqrt(sizeOfMessage)))do cubeSize = cubeSize + 1 end
 
     --layer
-    sideSize = math.ceil(math.sqrt(cubeSize))
-    layerSize = 4 * sideSize
+
+    layerSize = 4 * cubeSize
     layerIndex = math.ceil(index/layerSize)
-    layerPosition = index - layerIndex * layerSize
+    layerPosition = math.abs(index - (layerIndex * layerSize))
     --position
-    layerDirection = math.floor(layerPosition/sideSize)
-    cy = math.floor(layerPosition / cubeSize)
-
-    -- Calculate x coordinate
-    cx = layerPosition % cubeSize
-
+    layerDirection = math.floor(layerPosition/cubeSize)
+    angle = (layerPosition/ layerSize) * 2 * math.pi
+    cy,cx = mapAngleToCube(cubeSize, angle)
     --direction
-    return cx, cy, layerIndex, math.floor(layerDirection) * 90
+    return cx * sizeSpacingLetter, cy * sizeSpacingLetter, layerIndex * sizeDownLetter, math.ceil(layerDirection) * 90
 end
 
 function cubeProject(allLetters, posLetters)
@@ -1529,8 +1480,11 @@ function cubeProject(allLetters, posLetters)
             if posLetters.spacing[i + 1] == " " then
                 i = i + 1
             end
-            cx, cy, cz, rotation = convertNrToCubicCoordinate(i, #allLetters)
-            mP(pID, cx, cy, cz, 0)
+            cx, cz, cy, rotation = convertNrToCubicCoordinate(i, #allLetters)
+     
+            Move(pID, x_axis, cx, 0)
+            Move(pID, spindropAxis, cy, 0)
+            Move(pID, z_axis, cz, 0)
             Turn(pID, spindropAxis,math.rad(rotation),0)
             ShowReg(pID)
         end)
@@ -8761,5 +8715,55 @@ technoAnimations[#technoAnimations +1] = strikeAPose
 technoAnimations[#technoAnimations +1] = idle_stance_10
 technoAnimations[#technoAnimations +1] = idle_stance
                 
+
+
+
+
+--myMessage = neonSigns[math.random(1,#neonSigns)]
+function addHologramLetters( myMessages)  
+    allFunctions = {
+        ["SinusLetter"]   = SinusLetter, 
+        ["CrossLetters"]  =  CrossLetters, 
+        ["HideLetters"]   = HideLetters,
+        ["SpinLetters"]   = SpinLetters, 
+        ["SwarmLetters"]  =  SwarmLetters, 
+        ["SpiralUpwards"] =   SpiralUpwards, 
+        ["randomFLickerLetters"] =   randomFLickerLetters, 
+        ["syncToFrontLetters"]=    syncToFrontLetters, 
+        ["consoleLetters"] =   consoleLetters, 
+        ["dnaHelix"]   = dnaHelix, 
+        ["circleProject"]  =  circleProject,
+        ["ringProject"]  =  ringProject,
+        ["cubeProject"]  =  cubeProject,
+        ["spiralProject"]  =  spiralProject,
+        ["matrixTextFx"]  =  matrixTextFx
+        }
+    allLetters, posLetters, newMessage = setupMessage(myMessages)
+
+    if maRa() and maRa() or boolIsEverChanging or true then 
+
+        while true do
+            restoreMessageOriginalPosition(allLetters, posLetters)
+            if not posLetters.boolUpRight then
+                name, textFX = randDict(allFunctions)
+                if name then
+                    echo("Starting Hologram "..unitID.." textFX "..name)
+                   -- textFX(allLetters, posLetters)                
+                    cubeProject(allLetters, posLetters)                
+                    HideLetters(allLetters,posLetters)
+                    echo("Ending Hologram "..unitID.." textFX "..name)
+                end
+                WaitForMoves(allLetters)       
+            end
+            restTime = math.max(5000, #allLetters*150)
+            Sleep(restTime)
+            resetSpinDrop(allLetters)
+            WaitForTurns(allLetters)
+            if boolIsEverChanging == true then
+                allLetters, posLetters, newMessage = setupMessage(myMessages)                
+            end
+        end
+    end 
+end
 
 

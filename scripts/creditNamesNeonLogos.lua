@@ -30,5 +30,7 @@ return {
  "Cyclez",
  "sakebeats",
  "LoIc Norgeot",
- "ivand"
+ "ivand",
+ "GregorQuendel",
+ "neopolitansixth"
 }

@@ -134,7 +134,7 @@ if (gnd_max < 0) then gnd_max = 0 end
 local vsx, vsy, vpx, vpy
 
 local depthShader
-local depthTex
+local depthTexture
 local fogTexture
 
 local uniformEyePos
@@ -311,7 +311,7 @@ end
 
 local function DrawFogNew()
 	-- copy the depth buffer
-	glCopyToTexture(depthTex, 0, 0, vpx, vpy, vsx, vsy) --FIXME scale down?
+	glCopyToTexture(depthTexture, 0, 0, vpx, vpy, vsx, vsy) --FIXME scale down?
 
 	-- setup the shader and its uniform values
 	glUseShader(depthShader)
