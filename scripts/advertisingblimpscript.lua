@@ -9,11 +9,16 @@ myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 GameConfig = getGameConfig()
-
+advertisingFilePath = "sounds/advertising/"
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
-local maxSoundFiles = 55
+local maxSoundFiles = 65
 HoloCenter = piece("HoloCenter")
+
+function defineMaxSoundFiles()
+    fileList = VFS.DirList(advertisingFilePath, "advertisement*.ogg")
+    maxSoundFiles = math.max(maxSoundFiles,countDicct(fileList))
+end
 
 function showOne(T, bNotDelayd)
     if not T then return end
@@ -46,6 +51,7 @@ function setUnitActive(boolWantActive)
 end
 
 function script.Create()
+    defineMaxSoundFiles()
     --echo(UnitDefs[myDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
     setUnitActive(unitID, false)
@@ -74,7 +80,7 @@ function advertisingLoop()
     StartThread(attachHologram)
 
     while true do
-        soundFile = "sounds/advertising/advertisement"..math.random(1,maxSoundFiles)..".ogg"
+        soundFile = advertisingFilePath.."advertisement"..math.random(1,maxSoundFiles)..".ogg"
         loudness= 1.0
         hours, minutes, seconds, percent = getDayTime()
         if maRa() == maRa() and advertiseTimeOfDay(hours) then
