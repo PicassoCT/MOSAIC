@@ -1253,7 +1253,7 @@ function randomFLickerLetters(allLetters, posLetters)
             foreach(allLetters,
             function(id)
                 for a=1,3 do
-                    Move(id, a, posLetters[id][k][a] + math.random(-1*errorDrift,errorDrift), 100)
+                    Move(id, a, posLetters[id][a] + math.random(-1*errorDrift,errorDrift), 100)
                 end
             end)
             WaitForMoves(allLetters)
@@ -1263,7 +1263,7 @@ function randomFLickerLetters(allLetters, posLetters)
         foreach(allLetters,
             function(id)
                 for a=1,3 do
-                    Move(id, a, posLetters[id][k][a], 15)
+                    Move(id, a, posLetters[id][a], 15)
                 end                
                 ShowReg(id)
             end)
@@ -8740,7 +8740,7 @@ function addHologramLetters( myMessages)
         }
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
-    if maRa() and maRa() or boolIsEverChanging or true then 
+    if maRa() and maRa() or boolIsEverChanging then 
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
@@ -8748,10 +8748,8 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                 if name then
                     echo("Starting Hologram "..unitID.." textFX "..name)
-                   -- textFX(allLetters, posLetters)                
-                    cubeProject(allLetters, posLetters)                
+                    textFX(allLetters, posLetters)
                     HideLetters(allLetters,posLetters)
-                    echo("Ending Hologram "..unitID.." textFX "..name)
                 end
                 WaitForMoves(allLetters)       
             end

@@ -32,5 +32,6 @@ return {
  "LoIc Norgeot",
  "ivand",
  "GregorQuendel",
- "neopolitansixth"
+ "neopolitansixth",
+ "SergeQuadrado"
 }

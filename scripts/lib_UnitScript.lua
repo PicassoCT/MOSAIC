@@ -3028,9 +3028,11 @@ function mapAngleToCube(cubeDim, angle)
     elseif quadrant == 3 then
         x = 1
         y = -1 * (cubeDim - cubeDim * math.sin(angle))
-
+    end
+    
     return x, y
 end
+
 function getNearestPositionOnCircle(pCenter, Radius, pPos)
     local rPos = {x = 0, y = 0, z = 0}
 
