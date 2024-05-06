@@ -4,12 +4,12 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
-myTeamID = Spring.GetUnitTeam(unitID)
-gaiaTeamID = Spring.GetGaiaTeamID()
-GameConfig = getGameConfig()
-advertisingFilePath = "sounds/advertising/"
+local TablesOfPiecesGroups = {}
+local myDefID = Spring.GetUnitDefID(unitID)
+local myTeamID = Spring.GetUnitTeam(unitID)
+local gaiaTeamID = Spring.GetGaiaTeamID()
+local GameConfig = getGameConfig()
+local advertisingFilePath = "sounds/advertising/"
 local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
                                                             "civilian", UnitDefs)
 local maxSoundFiles = 65
@@ -18,6 +18,7 @@ HoloCenter = piece("HoloCenter")
 function defineMaxSoundFiles()
     fileList = VFS.DirList(advertisingFilePath, "advertisement*.ogg")
     maxSoundFiles = math.max(maxSoundFiles,countDicct(fileList))
+    Spring.Echo("maxSoundFiles: "..maxSoundFiles)
 end
 
 function showOne(T, bNotDelayd)
