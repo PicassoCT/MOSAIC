@@ -34,5 +34,6 @@ return {
  "GregorQuendel",
  "neopolitansixth",
  "SergeQuadrado",
- "AngelicWings"
+ "AngelicWings",
+ "URBAIN Guillaume"
 }
