@@ -1124,9 +1124,9 @@ function delayedFlickerSingleLetter(letterPiece)
         for i= math.random(5,10), 1, -1 do
             HideReg(letterPiece)
             intervallLength = math.ceil(5000/i)
-            Sleep(intervalLength)
+            Sleep(intervallLength)
             ShowReg(letterPiece)
-            showIntervall = (i/10) * 2000
+            showIntervall = math.max((i/10),0.1) * 2000
             Sleep(showIntervall)
         end
         Sleep(6000)
@@ -1388,7 +1388,7 @@ function dnaHelix(allLetters)
 end
 
 function spiralProject(allLetters, posLetters)
-    circumference = count(allLetters) * sizeSpacingLetter 
+    circumference = count(allLetters) * sizeSpacingLetter + 10*sizeSpacingLetter
     radius = circumference / (4 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
     hideTReg(allLetters)

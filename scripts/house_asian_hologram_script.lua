@@ -310,22 +310,23 @@ end
 function showHoloWall()
     HoloPieces = {}
     AltHoloPieces = {}    
-    hideTReg(TablesOfPiecesGroups["HoloTile"])
+
+    hideTReg(TableOfPiecesGroups["HoloTile"])
     step = 6*4
-    hindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
-    althindex = math.random(0,(#TablesOfPiecesGroups["HoloTile"]/step)-1)
+    hindex = math.random(0,(#TableOfPiecesGroups["HoloTile"]/step)-1)
+    althindex = math.random(0,(#TableOfPiecesGroups["HoloTile"]/step)-1)
     if maRa() == maRa() then
             ai= althindex * step
         for i=hindex * step,  (hindex+1) * step, 1 do
-            if TablesOfPiecesGroups["HoloTile"][i] then
+            if TableOfPiecesGroups["HoloTile"][i] then
                 if (maRa() == maRa()) ~= maRa() then
-                    HideReg(TablesOfPiecesGroups["HoloTile"][i])
+                    HideReg(TableOfPiecesGroups["HoloTile"][i])
                 else
-                    HoloPieces[#HoloPieces +1] = TablesOfPiecesGroups["HoloTile"][i]
-                    if TablesOfPiecesGroups["HoloTile"][ai] then
-                        AltHoloPieces[#AltHoloPieces +1] = TablesOfPiecesGroups["HoloTile"][ai]
+                    HoloPieces[#HoloPieces +1] = TableOfPiecesGroups["HoloTile"][i]
+                    if TableOfPiecesGroups["HoloTile"][ai] then
+                        AltHoloPieces[#AltHoloPieces +1] = TableOfPiecesGroups["HoloTile"][ai]
                     end
-                    ShowReg(TablesOfPiecesGroups["HoloTile"][i])
+                    ShowReg(TableOfPiecesGroups["HoloTile"][i])
                 end
             end
             ai= ai+1
@@ -333,7 +334,7 @@ function showHoloWall()
         HoloFlicker(HoloPieces, AltHoloPieces)   
     end
     --TODO the engine has a problem, right here and then. No error on erroneous access, just dead function and worser still, post processing shutd
-    --showT(TablesOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
+    --showT(TableOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
 end
 
 function checkForBlackOut()
@@ -584,7 +585,7 @@ function HoloFlicker(tiles,alttiles)
         end
         showTReg(tiles)
         dice= math.random(1, #holoDecoFunctions)
-        lecho("HololWallFunction"..dice)
+        --lecho("HololWallFunction"..dice)
         hideConditional(mergedTiles)
         holoDecoFunctions[dice](tiles, alttiles)
     end
