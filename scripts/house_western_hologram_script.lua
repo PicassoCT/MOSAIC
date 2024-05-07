@@ -98,6 +98,7 @@ local SIG_TALKHEAD = 16
 local SIG_GESTE = 32
 local SIG_ONTHEMOVE = 64
 local SIG_TIGLIL = 128
+local SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopy ={}
@@ -1114,7 +1115,26 @@ function hideResetAllLetters()
     end
 end
 
+function delayedFlickerSingleLetter(letterPiece)
+    Signal(SIG_FLICKER)
+    SetSignalMask(SIG_FLICKER)
+    while true do
+
+        --buildUpIntervall ever shorter
+        for i= math.random(5,10), 1, -1 do
+            HideReg(letterPiece)
+            intervallLength = math.ceil(5000/i)
+            Sleep(intervalLength)
+            ShowReg(letterPiece)
+            showIntervall = (i/10) * 2000
+            Sleep(showIntervall)
+        end
+        Sleep(6000)
+    end
+end
+
 function setupMessage(myMessages)
+    boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
     spinner =  piece("text_spin")
     Move(spinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
@@ -1131,6 +1151,7 @@ function setupMessage(myMessages)
     end
 
     boolSpinning = maRa()
+    boolFirstHighlight= true
 
     downIndex = 1
     local lettercounter={}
@@ -1170,8 +1191,12 @@ function setupMessage(myMessages)
             end
 
             if boolContinue and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
-               
                 local letterName = TableOfPiecesGroups[letter][(lettercounter[letter] % #TableOfPiecesGroups[letter]) + 1 ] 
+                --Highlight first
+                if boolHighlightFirstLetter and boolFirstHighlight then
+                    boolFirstHighlight =false
+                    StartThread(delayedFlickerSingleLetter, letterName)
+                end
                 if letterName then     
                     table.insert(allLetters, letterName)
                     table.insert(posLetters.spacing, letterName)          
@@ -1196,7 +1221,8 @@ function setupMessage(myMessages)
             end
 
         else -- non letter letter - space 
-            table.insert(posLetters.spacing, " ")   
+            table.insert(posLetters.spacing, " ")
+            boolFirstHighlight = true   
             if boolUpright == true then --spacing
                 columnIndex = 0
                 rowIndex = rowIndex +1
@@ -8749,6 +8775,7 @@ function addHologramLetters( myMessages)
                 if name then
                     echo("Starting Hologram "..unitID.." textFX "..name)
                     textFX(allLetters, posLetters)
+                    Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
                 end
                 WaitForMoves(allLetters)       

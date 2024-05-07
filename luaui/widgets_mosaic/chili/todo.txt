@@ -8,6 +8,7 @@
 - more different window controls -> background textures
 - use matrices for clientspace transformations
 - theme & layout handler
+- 
 
 controls:
 - combobox

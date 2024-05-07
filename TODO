@@ -1,15 +1,20 @@
 -BAR-Branch
+	- a pica walks into a BAR
 	- compile bar
 	- run bar
-	- create a compossable unitclass that has infinite pieces pointers
+	- create a compossable unitclass that has infinite pieces pointers + matrices, but does not a full memory copy of the model
+	-> or add bakedown to onePieceModel after composure
 	- optimize it for near zero-memory footprint (all pointers to one piecemodel, no copys)
 	- make houses that type of unit
 
-- building destruction animation
+- sundirection not working out
 - self-revealing of operators
-
+- recruited civilians kill themselve
+- units turn black
+- startup bug
 - all maps tested through
-- selfilu windows for buildings
+	- depends on memory stackoverflow solved due to building model copies 
+- selfilu windows for buildings (seperate texture channel that blends in/out over) the time of day - does not apply to holograms
 - normaltexture for asian buildings
 - operator drop in water
 - vannishing safehouses on upgrade
