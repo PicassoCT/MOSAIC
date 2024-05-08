@@ -1201,7 +1201,7 @@ function setupMessage(myMessages)
                     table.insert(allLetters, letterName)
                     table.insert(posLetters.spacing, letterName)          
                     ShowReg(letterName)                    
-                    posLetters[letterName]= {0,-sizeSpacingLetter * (columnIndex),  -1 * sizeDownLetter * rowIndex }
+                    posLetters[letterName]= {0,-1*sizeSpacingLetter * (columnIndex),  -1 * sizeDownLetter * rowIndex }
                     for ax=1,3 do
                         Move(letterName, ax, posLetters[letterName][ax], 0)
                     end
