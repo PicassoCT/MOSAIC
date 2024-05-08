@@ -1318,23 +1318,25 @@ function syncToFrontLetters(allLetters)
 end
 --matrix like textfx
 function consoleLetters(allLetters, posLetters)
-   --echo("consoleLetters with "..toString(allLetters))
-    foreach(allLetters,
-    function(id)
-      reset(id,0)
-      HideReg(id)
-    end)
+    if not posLetters.boolUpRight then
+       --echo("consoleLetters with "..toString(allLetters))
+        foreach(allLetters,
+        function(id)
+          reset(id,0)
+          HideReg(id)
+        end)
 
-    foreach(allLetters,
-    function(id)
-            for axis=1,3 do
-                Move(id, axis, posLetters[id][axis], 150)
-            end            
-        ShowReg(id)
-    end)
-    Sleep(100)
-    WaitForMoves(allLetters)
-    Sleep(10000)
+        foreach(allLetters,
+        function(id)
+                for axis=1,3 do
+                    Move(id, axis, posLetters[id][axis], 150)
+                end            
+            ShowReg(id)
+        end)
+        Sleep(100)
+        WaitForMoves(allLetters)
+        Sleep(10000)
+    end
 end
 
 function resetSpinDrop(allLetters)
@@ -1366,35 +1368,50 @@ function matrixTextFx(allLetters, posLetters)
     end
 end
 
-function dnaHelix(allLetters)
+function dnaHelix(allLetters, posLetters)
    --echo("dnaHelix with "..toString(allLetters))
-    index = 1
-    foreach(allLetters,
-        function(id)
-            val = (index/ #allLetters) * 2 * 2 * math.pi
-            Turn(id, spindropAxis, math.rad(val), 0)    
-            Spin(id, spindropAxis, math.rad(42), 15)   
-            ShowReg(id)            
-            index = index +1
-        end)
-        Sleep(9000)
-    
-    foreach(allLetters,
-        function(id)
-            StopSpin(id, spindropAxis)
-            WTurn(id, spindropAxis, math.rad(0), 15) 
-        end)
+    if posLetters.boolUpRight then
+        index = 1
+        foreach(allLetters,
+            function(id)
+                val = (index/ #allLetters) * 2 * 2 * math.pi
+                Turn(id, spindropAxis, math.rad(val), 0)    
+                ShowReg(id)            
+                index = index +1
+            end)
+            Sleep(9000)
+        
+        foreach(allLetters,
+            function(id)
+                WTurn(id, spindropAxis, math.rad(0), 15) 
+            end)
+    else
+        foreach(allLetters,
+            function(id)
+                val = (index/ #allLetters) * 2 * 2 * math.pi
+                Spin(id, spindropAxis, math.rad(val))    
+                ShowReg(id)            
+                index = index +1
+            end)
+            Sleep(9000)
+
+        foreach(allLetters,
+            function(id)
+                StopSin(id, spindropAxis, 0.1)
+                WTurn(id, spindropAxis, math.rad(0), 15) 
+            end)
+    end
     Sleep(5000)
 end
 
 function spiralProject(allLetters, posLetters)
-    circumference = count(allLetters) * sizeSpacingLetter + 10*sizeSpacingLetter
+    circumference = #allLetters * sizeSpacingLetter + 10 * sizeSpacingLetter
     radius = circumference / (4 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
     hideTReg(allLetters)
 
     i = 0
-    spiralIncrease = sizeDownLetter/ (count(allLetters)*0.5)  
+    spiralIncrease = sizeDownLetter
     foreach(allLetters,
         function(pID)
 
@@ -1406,8 +1423,8 @@ function spiralProject(allLetters, posLetters)
 
         Move(pID,x_axis, xr, math.abs(xr)/2.0)
         Move(pID,z_axis, zr, math.abs(zr)/2.0)
-        Move(pID,y_axis, i * spiralIncrease, 0)
-        Turn(pID,y_axis, math.pi + radiantVal, 0)
+        Move(pID,spindropAxis, i * spiralIncrease, 0)
+        Turn(pID,spindropAxis, math.pi + radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -1475,44 +1492,33 @@ function circleProject(allLetters, posLetters)
     hideTReg(allLetters) 
 end
 
-function convertNrToCubicCoordinate(index, sizeOfMessage)
-    cubeSize = 1
-    while (((cubeSize)^2)*4 <=  math.ceil(math.sqrt(sizeOfMessage)))do cubeSize = cubeSize + 1 end
-
-    --layer
-
-    layerSize = 4 * cubeSize
-    layerIndex = math.ceil(index/layerSize)
-    layerPosition = math.abs(index - (layerIndex * layerSize))
-    --position
-    layerDirection = math.floor(layerPosition/cubeSize)
-    angle = (layerPosition/ layerSize) * 2 * math.pi
-    cy,cx = mapAngleToCube(cubeSize, angle)
-    --direction
-    return cx * sizeSpacingLetter, cy * sizeSpacingLetter, layerIndex * sizeDownLetter, math.ceil(layerDirection) * 90
-end
 
 function cubeProject(allLetters, posLetters)
-    circumference = count(allLetters) * sizeSpacingLetter *2.0
-    textCirumference = count(allLetters) * sizeSpacingLetter
-    radius = circumference / (2 * math.pi)
-    radiant = (math.pi *2)/(count(allLetters)*2.0)
-    hideTReg(allLetters)
+    cubeSize = math.ceil(math.sqrt(#allLetters))
+    index = 1
 
-    i=0
-    foreach(allLetters,
-        function(pID)
-            i = i +1
-            if posLetters.spacing[i + 1] == " " then
-                i = i + 1
+        for x=1, cubeSize do
+            for y=1, cubeSize, do
+                for z=1, cubeSize do
+                    if allLetters[index] then
+                    pID = allLetters[index]
+                    Move(pID,x_axis, x*sizeSpacingLetter, 0)
+                    Move(pID,y_axis, y* sizeDownLetter, 0)
+                    Move(pID,z_axis, z* sizeSpacingLetter, 0)
+                    ShowReg(pID)
+                    end
+                    index = index +1
+                end
             end
-            cx, cz, cy, rotation = convertNrToCubicCoordinate(i, #allLetters)
-     
-            Move(pID, x_axis, cx, 0)
-            Move(pID, spindropAxis, cy, 0)
-            Move(pID, z_axis, cz, 0)
-            Turn(pID, spindropAxis,math.rad(rotation),0)
-            ShowReg(pID)
+        end
+    
+
+    foreach(allLetters,
+        function(id)
+            for i=1,3 do
+                Move(id,i, posLetters[id][i], 100)
+            end
+            Sleep(150)
         end)
     Sleep(15000)
     hideTReg(allLetters) 
@@ -1573,7 +1579,7 @@ function SpinLetters(allLetters, posLetters)
             rval = math.random(-360,360)
             Spin(id, spindropAxis, math.rad(rval), 15)
             for i=1,3 do
-                Move(id, i, posLetters[id][i], 10)
+                Move(id, i, posLetters[id][i], 100)
             end 
             ShowReg(id)
         end)

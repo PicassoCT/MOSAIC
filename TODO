@@ -10,7 +10,7 @@
 - sundirection not working out
 - self-revealing of operators
 - recruited civilians kill themselve
-- units turn black
+
 - startup bug
 - all maps tested through
 	- depends on memory stackoverflow solved due to building model copies 
