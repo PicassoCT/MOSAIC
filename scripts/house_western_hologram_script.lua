@@ -1433,7 +1433,44 @@ function spiralProject(allLetters, posLetters)
     Sleep(15000)
     hideTReg(allLetters) 
 end
+function fireWorksProjectTextFx(allLetters, posLetters)
+    lowPoint = -5000
+    highPoint = 1000
+    foreach(allLetters,
+        function(id)
+            Move(id, spindropAxis, lowPoint , 0)
+        end)
+    waitALlLetters(allLetters)
+    showTReg(allLetters)
+    foreach(allLetters,
+    function(id)
+        Move(id, spindropAxis, highPoint, 1000)
+    end)
+    waitALlLetters(allLetters)
+    foreach(allLetters,
+            function(id)
+                Move(id, spindropAxis)
+            end)
+    -- for downwards outwards circle
+    for i= 1, 250, 50 do
+        fallFactor = math.ceil(i/25)
+        circleProject(allLetters, posLetters, i, true, true)
+        foreach(allLetters,
+            function(id)
+                Move(id, spindropAxis, highPoint - fallFactor * sizeDownLetter , 150)
+            end)
+        Sleep(1000)
+    end
+    waitALlLetters(allLetters)
+    hideTReg(allLetters)
+end
 
+function waitALlLetters(allLetters)
+    foreach(allLetters,
+            function(id)
+                WaitForMove(id, spindropAxis)
+            end)
+end
 function ringProject(allLetters, posLetters)
     circumference = count(allLetters) * sizeDownLetter + 10* sizeDownLetter
 
@@ -1444,8 +1481,8 @@ function ringProject(allLetters, posLetters)
     i=0
     foreach(allLetters,
         function(pID)
-
-        reset(pID, 0)
+            reset(pID, 0)
+        
         radiantVal = radiant*i
         ShowReg(pID)
         local xr = radius * math.cos(radiantVal)
@@ -1459,22 +1496,26 @@ function ringProject(allLetters, posLetters)
             i = i + 1
         end
         end)
-    Sleep(15000)
-    hideTReg(allLetters) 
+    
+        Sleep(15000)    
+    hideTReg(allLetters)
 end
 
 
-function circleProject(allLetters, posLetters)
-    circumference = count(allLetters) * sizeSpacingLetter *2.0
-    radius = circumference / (2 * math.pi)
+function circleProject(allLetters, posLetters, radius, boolDoNotRest, boolDoNotReset)
+    if radius == nil then
+        radius = count(allLetters) * sizeSpacingLetter *2.0 / (2 * math.pi)
+    end 
+    circumference = radius * (2 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
     hideTReg(allLetters)
 
     i=0
     foreach(allLetters,
         function(pID)
-
+        if not boolDoNotReset then
         reset(pID, 0)
+        end
         radiantVal = radiant*i
         ShowReg(pID)
         local xr = radius * math.cos(radiantVal)
@@ -1487,8 +1528,10 @@ function circleProject(allLetters, posLetters)
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
         end
-        end)
-    Sleep(15000)
+        end)    
+    if not boolDoNotRest then
+        Sleep(15000)
+    end
     hideTReg(allLetters) 
 end
 
@@ -8768,7 +8811,8 @@ function addHologramLetters( myMessages)
         ["ringProject"]  =  ringProject,
         ["cubeProject"]  =  cubeProject,
         ["spiralProject"]  =  spiralProject,
-        ["matrixTextFx"]  =  matrixTextFx
+        ["matrixTextFx"]  =  matrixTextFx,
+        ["fireWorksProjectTextFx"] = fireWorksProjectTextFx
         }
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
