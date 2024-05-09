@@ -17,7 +17,7 @@ HoloCenter = piece("HoloCenter")
 
 function defineMaxSoundFiles()
     fileList = VFS.DirList(advertisingFilePath, "advertisement*.ogg")
-    maxSoundFiles = math.max(maxSoundFiles,countDicct(fileList))
+    maxSoundFiles = math.max(maxSoundFiles,  #fileList)
     Spring.Echo("maxSoundFiles: "..maxSoundFiles)
 end
 
@@ -104,7 +104,7 @@ function limitToMapLimits()
         x,y,z = Spring.GetUnitPosition(unitID)
         cx = clamp(1,x, Game.mapSizeX-1)
         cz = clamp(1,z, Game.mapSizeZ-1)
-        if cx ~= x or cz ~= z then
+        if y and cx and cx ~= x or cz ~= z then
             Spring.MoveCtrl.Enable(unitID)
             Spring.MoveCtrl.SetPosition(cx, y, cz)
             Spring.MoveCtrl.Disable(unitID) 

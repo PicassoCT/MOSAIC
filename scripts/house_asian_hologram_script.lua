@@ -129,10 +129,15 @@ function restartHologram()
     StartThread(checkForBlackOut)
     StartThread(clock)
     StartThread(grid)
-    StartThread(showStreetSigns)
-    if randChance(25) and isNearCityCenter(px,pz, GameConfig) then
-       Sleep(500)
-       showHoloWall()
+    if isNearCityCenter(px,pz, GameConfig) then
+        if randChance(50) then
+            StartThread(showStreetSigns)
+        end
+
+        if randChance(25)  then
+           Sleep(500)
+           showHoloWall()
+        end
     end
 end
 
@@ -140,7 +145,8 @@ end
 allGrids = nil
 
 function showStreetSigns()
-    foreach(TableOfPiecesGroups["StreetSigns"],
+    Sleep(100)
+    foreach(TableOfPiecesGroups["StreetSign"],
         function(id)
             if maRa() then
                 ShowReg(id)
@@ -586,7 +592,7 @@ function HoloFlicker(tiles,alttiles)
         showTReg(tiles)
         dice= math.random(1, #holoDecoFunctions)
         --lecho("HololWallFunction"..dice)
-        hideConditional(mergedTiles)
+        hideTReg(mergedTiles)
         holoDecoFunctions[dice](tiles, alttiles)
     end
 end

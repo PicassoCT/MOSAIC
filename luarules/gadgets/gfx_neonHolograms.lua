@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 0,
+        layer = 999999999999,
         version = 1,
         enabled = true,
         hidden = true,
@@ -184,7 +184,7 @@ else -- unsynced
     local DAYLENGTH                 = 28800
     local LuaShader                 = VFS.Include("luarules/gadgets/include/LuaShader.lua")
     local neoVertexShaderFirstPass  = VFS.LoadFile ("luarules/gadgets/shaders/neonHologramShader.vert")
-    local neoFragmenShaderFirstPass = VFS.LoadFile("luarules/gadgets/shaders/neonHologramShader.frag")
+    local neoFragmentShaderFirstPass = VFS.LoadFile("luarules/gadgets/shaders/neonHologramShader.frag")
 
     local spGetVisibleUnits         = Spring.GetVisibleUnits
     local spGetTeamColor            = Spring.GetTeamColor
@@ -378,7 +378,7 @@ end
 
         neonHologramShader = LuaShader({
             vertex =   neoVertexShaderFirstPass, --defaultVertexShader
-            fragment = neoFragmenShaderFirstPass,--defaultFragmentShader
+            fragment = neoFragmentShaderFirstPass,--defaultFragmentShader
             textures = {
                     [0] = tex1,
                     [1] = tex2,
