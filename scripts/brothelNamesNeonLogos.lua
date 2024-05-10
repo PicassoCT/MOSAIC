@@ -500,5 +500,6 @@
   "Speaking into the bonophone", "Speaking low genitals", "Spit shining a baseball bat", "Spraying the tonsils", "Sucking off", 
   "Sucky ducky", "Suck starting the Harley", "Swallowing the baloney pony", "Sword wwallowing", 
   "Taking ones temp with a meat thermometer", "Talking into the mic", "Telling it to the judge", "Waxing the carrot", 
-  "Worshiping at the altar", "Wringing it dry", "Yaffling the yogurt cannon", "Zipper dinner"
+  "Worshiping at the altar", "Wringing it dry", "Yaffling the yogurt cannon", "Zipper dinner", 
+  "Loveless"
 }
