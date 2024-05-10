@@ -1704,6 +1704,20 @@ function getSubRangeTable(T, min, max)
     return subT
 end
 
+function filterEventsUniqueByTime(filterTable, identifier, timeInFrames)
+    boolFilteredOut = false
+    if not filterTable[identifier] then
+      filterTable[identifier]  = Spring.GetGameFrame()
+      return filteTable, boolFilteredOut
+    end
+
+    if  filterTable[identifier] + timeInFrames >  Spring.GetGameFrame() then
+        return filteTable, true
+    end
+
+    return filteTable, boolFilteredOut
+end
+
 function delayedExecution(timeToSleep, func, ...)
     Sleep(timeToSleep)
     func(...)

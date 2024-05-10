@@ -49,9 +49,9 @@ if (gadgetHandler:IsSyncedCode()) then
         assert(MobileInterrogateAbleType[UnitDefNames["civilian_arab0"].id] ~= nil)
     end
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
-
-    --local targetLaserWeaponDefID = WeaponDefNames["targetlaser"].id
-    --Script.SetWatchWeapon(targetLaserWeaponDefID, true)  
+    -- Set Watch Weapon
+    local targetLaserWeaponDefID = WeaponDefNames["targetlaser"].id
+    Script.SetWatchWeapon(targetLaserWeaponDefID, true)  
     local closeCombatWeaponDefID = WeaponDefNames["closecombat"].id
     Script.SetWatchWeapon(closeCombatWeaponDefID, true)  
     local godRodMarkerWeaponDefID = WeaponDefNames["godrodmarkerweapon"].id
@@ -68,11 +68,11 @@ if (gadgetHandler:IsSyncedCode()) then
     Script.SetWatchWeapon(molotowDefID, true)   
     local antiscoutlettWeaponDefID = WeaponDefNames["antiairkamikaze"].id
     Script.SetWatchWeapon(antiscoutlettWeaponDefID, true)   
-
+    
     local FireWeapons = {
         [molotowDefID] = true
     }
-  
+   
     RaidExternalAbort = {}
 
     function getWeapondefByName(name)
@@ -243,12 +243,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
     GG.CloseCombatInvolved = {}
     function initiateCloseCombat(DamagedUnitID, AttackerID)
+        --echo("No Attacker"); 
         if not DamagedUnitID or not AttackerID then 
-            --echo("No Attacker"); 
             return 
         end
+
+        --echo("Self attack"); 
         if DamagedUnitID == AttackerID then 
-            --echo("Self attack"); 
             return 
         end
         
@@ -813,7 +814,7 @@ if (gadgetHandler:IsSyncedCode()) then
     -- Raid
     -----------------------------------------------------------------------------------------------------------------------
     -----------------------------------------------------------------------------------------------------------------------
-
+    filterUnitDamageEvents = {}
     UnitDamageFuncT[raidWeaponDefID] = function(unitID, unitDefID, unitTeam,
                                                 damage, paralyzer, weaponDefID,
                                                 attackerID, attackerDefID,
@@ -824,7 +825,7 @@ if (gadgetHandler:IsSyncedCode()) then
             attackerID = Spring.GetUnitLastAttacker(unitID)
         end
 
-                -- stupidity edition
+        -- stupidity edition
         if not attackerID then  conditionalEcho(boolDebugProjectile,"Raid: No valid attackerID derived"); return damage end
         if attackerID == unitID  then   conditionalEcho(boolDebugProjectile,"Raid:Aborted: attackerID == unitID"); return damage end
         houseID = unitID
@@ -834,6 +835,8 @@ if (gadgetHandler:IsSyncedCode()) then
             return
         end
 
+        filterUnitDamageEvents, boolFileredOut =  filterEventsUniqueByTime(filterUnitDamageEvents,""..houseID.."_"..unitID, 100*30 )
+        if boolFileredOut then return end
 
         -- make houses transparent if they have a safehouse
         if  GG.houseHasSafeHouseTable[unitID] then
