@@ -587,7 +587,10 @@ return {
 "Vintage Gucci",
 "Lou Villtoine",
 "Christian Dior",
-"Five horseman"
-
+"Five horseman",
+"princeton eugenics",
+"Septic thanks",
+"Sesame Seeds",
+"No idea for a good company name but yeah lets order the vindaloo"
 }
 

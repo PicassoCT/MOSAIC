@@ -1708,14 +1708,14 @@ function filterEventsUniqueByTime(filterTable, identifier, timeInFrames)
     boolFilteredOut = false
     if not filterTable[identifier] then
       filterTable[identifier]  = Spring.GetGameFrame()
-      return filteTable, boolFilteredOut
+      return filterTable, boolFilteredOut
     end
 
     if  filterTable[identifier] + timeInFrames >  Spring.GetGameFrame() then
-        return filteTable, true
+        return filterTable, true
     end
 
-    return filteTable, boolFilteredOut
+    return filterTable, boolFilteredOut
 end
 
 function delayedExecution(timeToSleep, func, ...)
