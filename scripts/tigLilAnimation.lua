@@ -98,6 +98,7 @@ function TigLilSetup()
     --echo("dancing tilgil a7")
     --changebookmark 
     Sleep(285)
+    Spring.Echo("TigLil Setup completed")
 end
 
 --------------------- IdleStance10-Fucntions-------
