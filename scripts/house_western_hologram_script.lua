@@ -17,7 +17,7 @@ local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local restaurantNeonLogos = include('restaurantNeonLogos.lua')
-
+civilianTypeTable = getCivilianTypeTable(UnitDefs)
 local hours  =0
 local minutes=0
 local seconds=0
@@ -53,7 +53,7 @@ local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
 local qrcode = piece"buisness_holo056"
 boolIsRestaurant = false
-
+textSpinner =  piece("text_spin")
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
 handr = piece "handr"
@@ -121,14 +121,15 @@ function updateCheckCache()
 end
 
 function ShowReg(pieceID)
-    assert(pieceID)
+    if not pieceID then return end
     Show(pieceID)
     cachedCopy[pieceID] = pieceID
     updateCheckCache()
 end
 
 function HideReg(pieceID)
-    assert(pieceID, "Not a valid pieceID "..toString(pieceID))
+    if not pieceID then return end
+    
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     cachedCopy[pieceID] = nil
@@ -192,6 +193,8 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
         end
     end
 end
+
+VFS.Include("scripts/tigLilAnimation.lua", nil, VFS.ZIP_FIRST)
 
 local function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
@@ -1165,8 +1168,7 @@ end
 function setupMessage(myMessages)
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
-    spinner =  piece("text_spin")
-    Move(spinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
+    Move(textSpinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
     axis= 2
     startValue = 0
     myMessage = myMessages[math.random(1,#myMessages)]
@@ -1190,14 +1192,14 @@ function setupMessage(myMessages)
 
     if boolSpinning then
 
-        reset(spinner)
+        reset(textSpinner)
         val = math.random(5,45)
-        Spin(spinner, y_axis, math.rad(val),0)
+        Spin(textSpinner, y_axis, math.rad(val),0)
     end
 
     if boolUpright then
         if stringlength > 10 then        
-            Move(spinner, 2 ,math.abs(stringlength-10) * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
+            Move(textSpinner, 2 ,math.abs(stringlength-10) * sizeDownLetter, 0) --Move the text spinner upward so letters dont vannish into the ground
         end
     end
 
@@ -1230,11 +1232,6 @@ function setupMessage(myMessages)
                     posLetters[letterName]= {0,  -1*sizeSpacingLetter * columnIndex,  -1 * sizeDownLetter * rowIndex }
                     for ax=1,3 do
                         Move(letterName, ax, posLetters[letterName][ax], 0)
-                    end
-                        
-                    if boolSpinning and boolUpright then
-                        val = i *5
-                        Turn(letterName, 2, math.rad(val), 0)
                     end
                 end
             end
@@ -1556,24 +1553,65 @@ function circleProject(allLetters, posLetters, radius, boolDoNotRest, boolDoNotR
     hideTReg(allLetters) 
 end
 
+function personalProject(allLetters, posLetters)
+    local spGetUnitDefID = Spring.GetUnitDefID
+    civiliansNearby = foreach(getAllNearUnit(unitID, 300),
+                            function(id)
+                                defID = spGetUnitDefID(id)
+                                if civilianTypeTable[defID] then
+                                    return id
+                                end
+                            end
+                            )
+
+    if #civiliansNearby > 0 then
+        restoreMessageOriginalPosition(allLetters, posLetters)
+        StopSpin(textSpinner, spindropAxis, 0)
+        civilian = getSafeRandom(civiliansNearby, civiliansNearby[1])
+      
+        timeCounter= math.random(10, 20) * 1000
+
+        while timeCounter > 0 and doesUnitExistAlive(civilianID) do
+            tx,ty,tz= Spring.GetUnitPosition(civilian)
+            ux,uy,uz = Spring.GetUnitPosition(unitID)
+            direction = getAngleFromCoordinates(tx-ux, tz- uz)
+            Turn(textSpinner, spindropAxis, direction, 0)
+            Sleep(1000)
+            timeCounter = timeCounter- 1000
+        end
+    end
+end
+
+function archProject(allLetters, posLetters)
+    if posLetters.boolUpright then
+        restoreMessageOriginalPosition(allLetters, posLetters)
+        stringlength = #allLetters
+        for i=1, stringlength do
+            letterName = allLetters[i]
+            val = (stringlength-i) * (90/stringlength)
+            Turn(letterName, 2, math.rad(-val), 0)
+            posLetters[letterName][1] = (stringlength-i) *sizeSpacingLetter
+            Move(letterName, 1, posLetters[letterName][1], 0)
+            ShowReg(letterName)
+        end
+        Sleep(35000)
+    end
+end
 
 function cubeProject(allLetters, posLetters)
     cubeSize = math.ceil(math.sqrt(#allLetters))
     index = 1
 
         for x=1, cubeSize do
-            for y=1, cubeSize do
-                for z=1, cubeSize do
-                    if allLetters[index] then
-                        pID = allLetters[index]
-                        Move(pID,x_axis, x*sizeSpacingLetter, 0)
-                        Move(pID,y_axis, y* sizeDownLetter, 0)
-                        Move(pID,z_axis, z* sizeSpacingLetter, 0)
-                        ShowReg(pID)
-                    end
-                    index = index +1
+            for z=1, cubeSize do
+                if allLetters[index] then
+                    pID = allLetters[index]
+                    Move(pID,x_axis, x*sizeSpacingLetter, 0)
+                    Move(pID,z_axis, z* sizeSpacingLetter, 0)
+                    ShowReg(pID)
                 end
-            end
+                index = index +1
+            end            
         end
     
 
@@ -1765,7 +1803,7 @@ function addJHologramLetters()
     end
 end
 
-VFS.Include("scripts/tigLilAnimation.lua", nil, VFS.ZIP_FIRST)
+
 
 idleAnimations[#idleAnimations +1] = idle_stance
 idleAnimations[#idleAnimations +1] = idle_stance2
@@ -1813,7 +1851,9 @@ function addHologramLetters( myMessages)
         ["cubeProject"]  =  cubeProject,
         ["spiralProject"]  =  spiralProject,
         ["matrixTextFx"]  =  matrixTextFx,
-        ["fireWorksProjectTextFx"] = fireWorksProjectTextFx
+        ["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
+        ["personalProject"] = personalProject,
+        ["archProject"] = archProject,
         }
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
@@ -1824,8 +1864,8 @@ function addHologramLetters( myMessages)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
                 if name then
-                    --echo("Starting Hologram "..unitID.." textFX "..name.." -> "..newMessage)
-                    textFX(allLetters, posLetters)
+                    echo("Starting Hologram "..unitID.." textFX "..name.." -> "..newMessage)
+                    archProject(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
                 end

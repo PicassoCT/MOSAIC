@@ -3750,6 +3750,11 @@ function dec(value) return value - 1 end
 function equal(valA, valB, treshold)
     return valA < (valB + treshold) and valA > (valB - treshold)
 end
+
+function getAngleFromCoordinates(x, z)
+    -- Compute the angle
+    return math.atan2(z, x) -- Using atan2 to handle all quadrants
+end
 -- ======================================================================================
 -- Section : Code Generation 
 -- ======================================================================================
