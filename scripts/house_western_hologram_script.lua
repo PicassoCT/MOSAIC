@@ -1830,7 +1830,29 @@ technoAnimations[#technoAnimations +1] = idle_stance_10
 technoAnimations[#technoAnimations +1] = idle_stance
                 
 
-
+function waterFallProject(allLetters, posLetters)
+    foreach(allLetters, 
+        function (id)
+            randomHeight = math.random(8,20)*1000
+            Move(id, spindropAxis, randomHeight, 0)
+            ShowReg(id)
+        end)
+    speed= 0
+    waitTime = 21000
+    while waitTime > 0 do
+        speed = speed + 9.81
+        foreach(allLetters, 
+        function (id)
+            for ax=1,3 do
+                Move(id, spindropAxis, posLetters[id][ax], speed)
+            end
+        end)
+        waitTime = waitTime - 1000
+        Sleep(1000)
+    end
+    Sleep(60000)
+    hideTReg(allLetters)
+end
 
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
@@ -1852,8 +1874,8 @@ function addHologramLetters( myMessages)
         ["spiralProject"]  =  spiralProject,
         ["matrixTextFx"]  =  matrixTextFx,
         ["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
+        ["waterFallProject"] = waterFallProject,
         ["personalProject"] = personalProject,
-        ["archProject"] = archProject,
         }
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
