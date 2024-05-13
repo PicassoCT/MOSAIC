@@ -1704,6 +1704,20 @@ function getSubRangeTable(T, min, max)
     return subT
 end
 
+function filterEventsUniqueByTime(filterTable, identifier, timeInFrames)
+    boolFilteredOut = false
+    if not filterTable[identifier] then
+      filterTable[identifier]  = Spring.GetGameFrame()
+      return filterTable, boolFilteredOut
+    end
+
+    if  filterTable[identifier] + timeInFrames >  Spring.GetGameFrame() then
+        return filterTable, true
+    end
+
+    return filterTable, boolFilteredOut
+end
+
 function delayedExecution(timeToSleep, func, ...)
     Sleep(timeToSleep)
     func(...)
@@ -3735,6 +3749,11 @@ function dec(value) return value - 1 end
 
 function equal(valA, valB, treshold)
     return valA < (valB + treshold) and valA > (valB - treshold)
+end
+
+function getAngleFromCoordinates(x, z)
+    -- Compute the angle
+    return math.atan2(z, x) -- Using atan2 to handle all quadrants
 end
 -- ======================================================================================
 -- Section : Code Generation 

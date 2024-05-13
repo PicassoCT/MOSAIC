@@ -1,4 +1,3 @@
---- http:--springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "raidarrest"
 local weaponDef = {
     name = "Raid Safehouses",
@@ -9,7 +8,7 @@ local weaponDef = {
 
     --Physic/flight path
     range                     = 175,
-    burst                     = 5,
+    burst                     = 7,
     burstrate                 = 0.025,
     reloadtime                = 120,
     flightTime                = 10,
@@ -50,7 +49,7 @@ local weaponDef = {
     damage = {
         default = 1
     },
-    areaOfEffect = 2,
+    areaOfEffect = 5,
     craterMult = 0,
 
     lineOfSight = true,

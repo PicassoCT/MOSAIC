@@ -7,7 +7,7 @@ function widget:GetInfo()
         author    = "ivand",
         date      = "2019",
         license   = "GPL",
-        layer     = math.huge,
+        layer     = 99999999999,
         enabled   = true, 
 		hidden = true,
     }

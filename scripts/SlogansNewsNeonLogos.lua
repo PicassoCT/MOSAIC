@@ -323,6 +323,7 @@ return {
 "<suspect> killed today in driveby",
 "<suspect> suspected a serial killer",
 "Vidya games blamed for violence",
-"New Zealand:Prepper safari.Hunt wild antisocials",
+"SMA INC :Prepper safari.Hunt wild antisocials",
 "<suspect> officially nuts",
+"Tasty Me cannibalism revisited",
 }
