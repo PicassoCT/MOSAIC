@@ -915,8 +915,13 @@ function HoloGrams()
         end
 
         Spin(logo,y_axis, math.rad(5),0)     
-           
         ShowReg(logo)
+
+        if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
+        if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end
+
+
+
         if maRa() then
            local logoName = getUnitPieceName(unitID, logo)
            logoTableName = logoName.."Spin"
@@ -1904,4 +1909,35 @@ function addHologramLetters( myMessages)
     end 
 end
 
+function flickerBuisnessLogo(logoA, logoB)
+    while true do
+        ShowReg(logoA)
+        Sleep(10000)
+        for i=1, 10 do
+            HideReg(logoA)
+            ShowReg(logoB)
+            Sleep(333)
+            HideReg(logoB)
+            ShowReg(logoA)
+            Sleep(333)
+            
+        end
+        Sleep(1000)
+    end
+end
 
+function flickerBuisnessAllLogos(logoA, allLogos)
+    while true do
+        ShowReg(logoA)
+        Sleep(10000)
+        for i=math.random(1,#allLogos-10), 10 do
+            HideReg(logoA)
+            ShowReg(allLogos[i])
+            Sleep(333)
+            HideReg(allLogos[i])
+            ShowReg(logoA)
+            Sleep(333)          
+        end
+        Sleep(1000)
+    end
+end
