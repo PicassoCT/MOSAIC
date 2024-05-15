@@ -1593,10 +1593,9 @@ function archProject(allLetters, posLetters)
         stringlength = #allLetters
         for i=1, stringlength do
             letterName = allLetters[i]
-            val = (stringlength-i) * (90/stringlength)
-            Turn(letterName, 2, math.rad(-val), 0)
-            posLetters[letterName][1] = (stringlength-i) *sizeSpacingLetter
-            Move(letterName, 1, posLetters[letterName][1], 0)
+            val = -(stringlength-i) * (90/stringlength)
+            Turn(letterName, 2, math.rad(val), 0)
+            Move(letterName, 1, (stringlength-i) *sizeSpacingLetter, 0)
             ShowReg(letterName)
         end
         Sleep(35000)
@@ -1881,10 +1880,12 @@ function addHologramLetters( myMessages)
         ["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
         ["waterFallProject"] = waterFallProject,
         ["personalProject"] = personalProject,
+        ["archProject"] = archProject,
+
         }
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
-    if maRa() and maRa() or boolIsEverChanging then 
+    if maRa() and maRa() or boolIsEverChanging or true then 
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
