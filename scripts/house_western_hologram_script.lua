@@ -23,6 +23,15 @@ local minutes=0
 local seconds=0
 local percent=0
 hours, minutes, seconds, percent = getDayTime()
+mx, my, mz = Spring.GetUnitPosition(unitID)
+
+function hashMaRa()
+    return mx + my + mz % 2 == 0 
+end
+
+function hashRandChance(chance)
+    return ((mx + my + mz) % 100 ) < chance
+end
 
 local buisness_spin = piece("buisness_spin")
 local wallSpin = piece("wallSpin")
@@ -171,7 +180,7 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
--- >Shows a Pieces Table
+-- >ShowsStupid question.. i want to merge two script files before they are parsed : VFS.Include("scripts/tigLilAnimation.lua", nil, VFS.ZIP_FIRST) should do that?  As in the code within the file is available to functions below the line and can use functions above the line? a Pieces Table
 function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     assert(l_tableName)
     if not l_tableName then
@@ -194,8 +203,8 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
-VFS.Include("scripts/tigLilAnimation.lua", nil, VFS.ZIP_FIRST)
-
+ VFS.Include("scripts/tigLilAnimation.lua")
+--include ("tigLilAnimation.lua")
 local function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
@@ -305,7 +314,7 @@ function mergePersonalizeMessages()
 
         if boolIsBrothel then 
             for i=1, #brothelsloganNamesNeonSigns do
-                brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
+                brothelsloganNamesNeonSigns[i] = brothelmaRa()sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
             end
              brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
              assert(brothelNamesNeonSigns)
@@ -362,7 +371,7 @@ end
 function ShowEmergencyElements () 
     EmergencyIcon = piece("EmergencyIcon")
     EmergencyText = piece("EmergencyText")
-    if maRa() then ShowReg(EmergencyIcon) end
+    if hashMaRa() then ShowReg(EmergencyIcon) end
     ShowReg(EmergencyText)
     id = showOne(TableOfPiecesGroups["EmergencyPillar"]) 
     element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
@@ -415,7 +424,7 @@ function getGrid()
         return TableOfPiecesGroups["BrothelGrid"][math.random(1,2)]
     end
 
-    if (maRa()== maRa())== maRa()then
+    if (hashRandChance(25)) then
         return getSafeRandom(allGrids, allGrids[1])
     end
     if boolIsBuisness then
@@ -693,7 +702,7 @@ function showWallDayTime(name)
     while true do
         randOffset =  randSign() 
         if (hours > 18 +randOffset or hours < 7 or boolDebugHologram) and isANormalDay() then 
-            if maRa() then
+            if hashMaRa() then
                 ShowReg(wallGrid)
             end
             encounter = math.random(4,7)    
@@ -809,11 +818,11 @@ function HoloGrams()
     
     --sexxxy time
     if boolIsBrothel then   
-        if maRa() then
+        if hashMaRa() then
           StartThread(showWallDayTime, "BrothelWall")
         end
-        StartThread(localflickerScript, flickerGroup, function() return maRa()==maRa(); end, 5, 250, 4,  2, math.random(5,7))
-        if maRa()  then
+        StartThread(localflickerScript, flickerGroup, function() return hashRandChance(25); end, 5, 250, 4,  2, math.random(5,7))
+        if hashMaRa()  then
           StartThread(holoGramNightTimes, "Japanese", _y_axis)
           StartThread(addJHologramLetters)
         end
@@ -824,16 +833,16 @@ function HoloGrams()
   
     if boolIsCasino then 
         if randChance(25) then StartThread(chipsDropping) end
-        StartThread(localflickerScript, CasinoflickerGroup, function() return maRa()==maRa(); end, 5, 250, 4,  3, math.random(4,7))
+        StartThread(localflickerScript, CasinoflickerGroup, function() return hashRandChance(25); end, 5, 250, 4,  3, math.random(4,7))
     
-        if maRa() then
+        if hashMaRa() then
           StartThread(showWallDayTime, "CasinoWall")
           StartThread(addJHologramLetters)
-          if maRa() then
+          if hashMaRa() then
             StartThread(fireWorks)
           end
         end           
-        if maRa() then
+        if hashMaRa() then
             addHologramLetters(casinoNamesNeonSigns)         
             return 
         end
@@ -841,7 +850,7 @@ function HoloGrams()
     
 
     if boolIsBuisness then 
-        if maRa() then
+        if hashMaRa() then
             StartThread(showWallDayTime, "BuisnessWall")
         end
         logo = nil
@@ -889,7 +898,7 @@ function HoloGrams()
         end
         
         if not GG.RestaurantCounter then GG.RestaurantCounter = 0 end
-        if GG.RestaurantCounter < 4 and (maRa()== maRa()) then    
+        if GG.RestaurantCounter < 4 and hashRandChance(25) then    
             logo = piece("buisness_holo18")
             boolIsRestaurant = true
      
@@ -937,7 +946,7 @@ function HoloGrams()
               conditionalBuisnessLogo()
            end
         else
-            if maRa() == maRa() then
+            if hashRandChance(25) then
                 addHologramLetters(creditNeonSigns)
                 if maRa() then
                     StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
@@ -1008,7 +1017,7 @@ function fireWorks()
     FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
     upaxis = 2
 
-    if maRa() == maRa() then
+    if hashMaRa() then
         StartThread(dragonDance) 
     end
 
