@@ -311,7 +311,7 @@ function mergePersonalizeMessages()
 
         if boolIsBrothel then 
             for i=1, #brothelsloganNamesNeonSigns do
-                brothelsloganNamesNeonSigns[i] = brothelmaRa()sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
+                brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
             end
              brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
              assert(brothelNamesNeonSigns)
@@ -1538,11 +1538,14 @@ function ringProject(allLetters, posLetters)
 end
 
 
-function circleProject(allLetters, posLetters, radius, boolDoNotRest, boolDoNotReset)
-    if radius == nil then
-        radius = (#allLetters * sizeSpacingLetter *2.0) / (2 * math.pi)
+function circleProject(allLetters, posLetters, extRadius, boolDoNotRest, boolDoNotReset)
+    circumference = count(allLetters) * sizeSpacingLetter *2.0
+    radius = circumference / (2 * math.pi)
+
+    if extRadius  ~= nil then      
+        radius = extRadius  
+        circumference = extRadius * (2 * math.pi)
     end 
-    circumference = radius * (2 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
     hideTReg(allLetters)
 
@@ -1864,8 +1867,8 @@ function waterFallProject(allLetters, posLetters)
                 Move(id, spindropAxis, posLetters[id][ax], speed)
             end
         end)
-        waitTime = waitTime - 1000
-        Sleep(1000)
+        waitTime = waitTime - 100
+        Sleep(100)
     end
     Sleep(60000)
     hideTReg(allLetters)
