@@ -284,6 +284,7 @@ return {
 "Illuminate the Dark: SolarGlow Lamps",
 "Break the Silence: SonicEar Implants",
 "Forge Ahead: NanoDrive Vehicles",
+"What goes up must come down BOEING",
 "Defend Your Space: SafeZone Shields",
 "Savor the Moment: MemoryPlex Implants",
 "Reimagine Reality: HoloVision Glasses",
@@ -326,4 +327,5 @@ return {
 "SMA INC :Prepper safari.Hunt wild antisocials",
 "<suspect> officially nuts",
 "Tasty Me cannibalism revisited",
+"Bl aI Bl aI Bl aI"
 }

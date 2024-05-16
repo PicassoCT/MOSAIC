@@ -789,7 +789,7 @@ function getGameConfig()
         return getMapNameHash(Game) + getCultureHash()
     end
 
-    function getLocationHash(x, z, maxs)
+    function getLocationBuildingHash(x, z, maxs)
         maxs = maxs or 4
         return (((x + z) % maxs) + 1)
     end
@@ -797,7 +797,7 @@ function getGameConfig()
     function getBuildingTypeHash(unitID, maxType)
         x, y, z = Spring.GetUnitPosition(unitID)
         x, z = math.ceil(x / 1000), math.ceil(z / 1000)
-        nice = getLocationHash(x,z, maxType)
+        nice = getLocationBuildingHash(x,z, maxType)
         return nice, x,y,z
     end
 
@@ -824,9 +824,9 @@ function getGameConfig()
     end
 
     function getCultureDependantRandomOffsets(culture, loc)
-        districtOffset = getLocationHash(math.ceil(loc.x / 1000), math.ceil(loc.z / 1000), 4)
+        districtOffset = getLocationBuildingHash(math.ceil(loc.x / 1000), math.ceil(loc.z / 1000), 4)
           if culture == Cultures.asian then
-            rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
+            rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationBuildingHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 50,
                 zRandOffset = 50,
@@ -835,7 +835,7 @@ function getGameConfig()
             }
         end
 		if culture == Cultures.arabic then
-            rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
+            rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationBuildingHash(loc.x,loc.z), 5, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 20,
                 zRandOffset = 20,
@@ -844,7 +844,7 @@ function getGameConfig()
             }
         end
         if culture == Cultures.western then  
-            --rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 1, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
+            --rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationBuildingHash(loc.x,loc.z), 1, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 3,
                 zRandOffset = 3,
@@ -853,7 +853,7 @@ function getGameConfig()
             }
         end
           if culture == Cultures.international then  
-            --rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationHash(loc.x,loc.z), 1, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
+            --rotDegOffset= getDeterministicRotationOffsetForDistrict(getLocationBuildingHash(loc.x,loc.z), 1, math.ceil(loc.x / 1000), math.ceil(loc.z / 1000))
             return {
                 xRandOffset = 3,
                 zRandOffset = 3,

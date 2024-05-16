@@ -23,14 +23,11 @@ local minutes=0
 local seconds=0
 local percent=0
 hours, minutes, seconds, percent = getDayTime()
-mx, my, mz = Spring.GetUnitPosition(unitID)
+
+
 
 function hashMaRa()
-    return mx + my + mz % 2 == 0 
-end
-
-function hashRandChance(chance)
-    return ((mx + my + mz) % 100 ) < chance
+    return getLocationHash(unitID) % 2 == 0
 end
 
 local buisness_spin = piece("buisness_spin")
@@ -371,7 +368,7 @@ end
 function ShowEmergencyElements () 
     EmergencyIcon = piece("EmergencyIcon")
     EmergencyText = piece("EmergencyText")
-    if hashMaRa() then ShowReg(EmergencyIcon) end
+    if maRa() then ShowReg(EmergencyIcon) end
     ShowReg(EmergencyText)
     id = showOne(TableOfPiecesGroups["EmergencyPillar"]) 
     element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
@@ -424,7 +421,7 @@ function getGrid()
         return TableOfPiecesGroups["BrothelGrid"][math.random(1,2)]
     end
 
-    if (hashRandChance(25)) then
+    if (randChance(25)) then
         return getSafeRandom(allGrids, allGrids[1])
     end
     if boolIsBuisness then
@@ -702,7 +699,7 @@ function showWallDayTime(name)
     while true do
         randOffset =  randSign() 
         if (hours > 18 +randOffset or hours < 7 or boolDebugHologram) and isANormalDay() then 
-            if hashMaRa() then
+            if maRa() then
                 ShowReg(wallGrid)
             end
             encounter = math.random(4,7)    
@@ -818,11 +815,11 @@ function HoloGrams()
     
     --sexxxy time
     if boolIsBrothel then   
-        if hashMaRa() then
+        if maRa() then
           StartThread(showWallDayTime, "BrothelWall")
         end
-        StartThread(localflickerScript, flickerGroup, function() return hashRandChance(25); end, 5, 250, 4,  2, math.random(5,7))
-        if hashMaRa()  then
+        StartThread(localflickerScript, flickerGroup, function() return randChance(25); end, 5, 250, 4,  2, math.random(5,7))
+        if maRa()  then
           StartThread(holoGramNightTimes, "Japanese", _y_axis)
           StartThread(addJHologramLetters)
         end
@@ -833,16 +830,16 @@ function HoloGrams()
   
     if boolIsCasino then 
         if randChance(25) then StartThread(chipsDropping) end
-        StartThread(localflickerScript, CasinoflickerGroup, function() return hashRandChance(25); end, 5, 250, 4,  3, math.random(4,7))
+        StartThread(localflickerScript, CasinoflickerGroup, function() return randChance(25); end, 5, 250, 4,  3, math.random(4,7))
     
-        if hashMaRa() then
+        if maRa() then
           StartThread(showWallDayTime, "CasinoWall")
           StartThread(addJHologramLetters)
-          if hashMaRa() then
+          if maRa() then
             StartThread(fireWorks)
           end
         end           
-        if hashMaRa() then
+        if maRa() then
             addHologramLetters(casinoNamesNeonSigns)         
             return 
         end
@@ -850,43 +847,48 @@ function HoloGrams()
     
 
     if boolIsBuisness then 
-        if hashMaRa() then
+        if maRa() then
             StartThread(showWallDayTime, "BuisnessWall")
         end
         logo = nil
         boolDone = false
-        if not GG.HoloLogoRegister  then GG.HoloLogoRegister = {}  end   
+        if not GG.HoloLogoRegister  then 
+            GG.HoloLogoRegister = {}
+            GG.HoloLogoRegister.western = {}
+            GG.HoloLogoRegister.eastern = {}
+          end   
 
         lowestIndex= nil
         lowestCounter = math.huge
-        start = math.random(1,#TableOfPiecesGroups["buisness_holo"])
+
+        start = (getLocationHash(unitID) % #TableOfPiecesGroups["buisness_holo"]) + 1
         for i=start, #TableOfPiecesGroups["buisness_holo"] do
             element = TableOfPiecesGroups["buisness_holo"][i]
 
-            if not GG.HoloLogoRegister[element] then
-                GG.HoloLogoRegister[element] = 1
+            if not GG.HoloLogoRegister.western[element] then
+                GG.HoloLogoRegister.western[element] = 1
                 logo = element
                 showSubSpins(element)
                 boolDone = true
                 break
-            elseif GG.HoloLogoRegister[element] < lowestCounter then
+            elseif GG.HoloLogoRegister.western[element] < lowestCounter then
                 lowestIndex = element
-                lowestCounter = GG.HoloLogoRegister[element]
+                lowestCounter = GG.HoloLogoRegister.western[element]
             end
         end
 
         if not boolDone then
             for i=1, start do
                 element = TableOfPiecesGroups["buisness_holo"][i]
-                if not GG.HoloLogoRegister[element] then
-                    GG.HoloLogoRegister[element] = 1
+                if not GG.HoloLogoRegister.western[element] then
+                    GG.HoloLogoRegister.western[element] = 1
                     logo = element
                     showSubSpins(element)
                     boolDone = true
                     break
-                elseif GG.HoloLogoRegister[element] < lowestCounter then
+                elseif GG.HoloLogoRegister.western[element] < lowestCounter then
                     lowestIndex = element
-                    lowestCounter = GG.HoloLogoRegister[element]
+                    lowestCounter = GG.HoloLogoRegister.western[element]
                 end
             end
         end
@@ -894,11 +896,11 @@ function HoloGrams()
         if not boolDone then
             --echo("Found no index for logo, selecting lowest")
             logo = lowestIndex
-            GG.HoloLogoRegister[logo] = GG.HoloLogoRegister[logo] +1      
+            GG.HoloLogoRegister.western[logo] = GG.HoloLogoRegister.western[logo] +1      
         end
         
         if not GG.RestaurantCounter then GG.RestaurantCounter = 0 end
-        if GG.RestaurantCounter < 4 and hashRandChance(25) then    
+        if GG.RestaurantCounter < 4 and randChance(25) then    
             logo = piece("buisness_holo18")
             boolIsRestaurant = true
      
@@ -910,6 +912,8 @@ function HoloGrams()
         end
 
         if logo == symmetryPiece then --DELME DEBUG
+            symmetryOrigin = piece("SymmetryOrigin")
+            if maRa() then showReg(symmetryOrigin) end
             shapeSymmetry(symmetryPiece)
             --return            
         end
@@ -946,7 +950,7 @@ function HoloGrams()
               conditionalBuisnessLogo()
            end
         else
-            if hashRandChance(25) then
+            if randChance(25) then
                 addHologramLetters(creditNeonSigns)
                 if maRa() then
                     StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
@@ -1017,7 +1021,7 @@ function fireWorks()
     FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
     upaxis = 2
 
-    if hashMaRa() then
+    if maRa() then
         StartThread(dragonDance) 
     end
 
@@ -1077,7 +1081,7 @@ function shapeSymmetry(logo)
     hideTReg(TableOfPiecesGroups["Symmetry"])
     local symmetryLimit =11
     for ix=1, symmetryLimit do
-        if  (maRa() == maRa()) or ix < 2 then
+        if  (randChance(65.0)) or ix < 2 then
             local smyPieceOrgName = "Symmetry0"..ix
             local symPieceName = "Symmetry0"..(ix + symmetryLimit)
             local ap = piece(smyPieceOrgName)
@@ -1483,7 +1487,7 @@ function fireWorksProjectTextFx(allLetters, posLetters)
     end)
     waitAllLetters(allLetters)
     -- for downwards outwards circle
-    for i= 1, 250, 50 do
+    for i= 100, 250, 50 do
         fallFactor = math.ceil(i/25)
         circleProject(allLetters, posLetters, i, true, true)
         foreach(allLetters,
@@ -1536,7 +1540,7 @@ end
 
 function circleProject(allLetters, posLetters, radius, boolDoNotRest, boolDoNotReset)
     if radius == nil then
-        radius = count(allLetters) * sizeSpacingLetter *2.0 / (2 * math.pi)
+        radius = (#allLetters * sizeSpacingLetter *2.0) / (2 * math.pi)
     end 
     circumference = radius * (2 * math.pi)
     radiant = (math.pi *2)/(count(allLetters)*2.0)
@@ -1546,7 +1550,7 @@ function circleProject(allLetters, posLetters, radius, boolDoNotRest, boolDoNotR
     foreach(allLetters,
         function(pID)
         if not boolDoNotReset then
-        reset(pID, 0)
+            reset(pID, 0)
         end
         radiantVal = radiant*i
         ShowReg(pID)
@@ -1902,7 +1906,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                 if name then
                     echo("Starting Hologram "..unitID.." textFX "..name.." -> "..newMessage)
-                    archProject(allLetters, posLetters)
+                    textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
                 end

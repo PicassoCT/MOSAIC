@@ -3047,6 +3047,16 @@ function mapAngleToCube(cubeDim, angle)
     return x, y
 end
 
+function getLocationHash(unitID)
+    mx, my, mz = Spring.GetUnitPosition(unitID)
+    mx = math.floor(mx /100)
+    mz = math.floor(mz /100)
+    -- Simple custom hash function
+    local prime1 = 73856093
+    local prime2 = 19349663
+    return math.bit_xor((mx * prime1),(mz * prime2))
+end
+
 function getNearestPositionOnCircle(pCenter, Radius, pPos)
     local rPos = {x = 0, y = 0, z = 0}
 

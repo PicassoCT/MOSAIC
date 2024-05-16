@@ -241,24 +241,24 @@ logoPiece = nil
 spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
- 
+
         if randChance(25) then
            shapeSymmetry()
         else
-            logoPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
+            logoPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
             showSubSpins(logoPiece)
             ShowReg(logoPiece)
             Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
         end
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do
-            spinPiece = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["HoloSpin"]), TableOfPiecesGroups["HoloSpin"])
+            spinPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloSpin"]), TableOfPiecesGroups["HoloSpin"])
             table.insert(spinPieces, spinPiece)
         end
 
         jumpScareNr = unitID % 5
         for i=1, jumpScareNr, 1 do
-            jumpScare = deterministicElement( getDeterministicRandom(unitID, #TableOfPiecesGroups["JumpScare"]), TableOfPiecesGroups["JumpScare"])
+            jumpScare = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["JumpScare"]), TableOfPiecesGroups["JumpScare"])
             table.insert(jumpScarePieces, jumpScare)
         end        
 end
