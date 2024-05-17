@@ -200,8 +200,8 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
- VFS.Include("scripts/tigLilAnimation.lua")
---include ("tigLilAnimation.lua")
+--VFS.Include("scripts/tigLilAnimation.lua")
+include ("tigLilAnimation.lua")
 local function tiglLilLoop()
     if unitID % 5 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
@@ -211,7 +211,10 @@ local function tiglLilLoop()
 
     while true do
         if (hours > 20 or hours < 6) then
-            if boolIsBuisness or boolIsCasino then
+            assert(dancingTiglil)
+            assert(technoAnimations)
+            assert(idleAnimations)
+            if boolIsBuisness or boolIsCasino then                
                 StartThread(dancingTiglil, technoAnimations, true)
             else
                 StartThread(dancingTiglil, idleAnimations)
@@ -1223,6 +1226,7 @@ function setupMessage(myMessages)
 
     allLetters = {} 
     posLetters = {}   
+    posLetters.myMessage = myMessage
     posLetters.spacing = {}
     posLetters.boolUpright = boolUpright
 
@@ -1539,7 +1543,7 @@ end
 
 
 function circleProject(allLetters, posLetters, extRadius, boolDoNotRest, boolDoNotReset)
-    circumference = count(allLetters) * sizeSpacingLetter *2.0
+    circumference = #allLetters * sizeSpacingLetter *2.0
     radius = circumference / (2 * math.pi)
 
     if extRadius  ~= nil then      

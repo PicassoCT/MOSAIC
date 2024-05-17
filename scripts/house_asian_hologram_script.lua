@@ -129,11 +129,10 @@ function restartHologram()
     StartThread(checkForBlackOut)
     StartThread(clock)
     StartThread(grid)
+    if randChance(25) then
+        StartThread(showStreetSigns)
+    end
     if isNearCityCenter(px,pz, GameConfig) then
-        if randChance(50) then
-            StartThread(showStreetSigns)
-        end
-
         if randChance(25)  then
            Sleep(500)
            showHoloWall()
