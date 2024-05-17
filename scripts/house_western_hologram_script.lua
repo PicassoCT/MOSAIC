@@ -1196,6 +1196,8 @@ function setupMessage(myMessages)
     if boolIsCasino  then startValue = 2 end
     if boolIsBrothel  then startValue = 3 end
     boolUpright = maRa()
+
+
     if boolUpright and boolIsBrothel then
         if maRa() == maRa() then
             StartThread(LightChain, TableOfPiecesGroups["LightChain"], 4, math.random(700,1200))
@@ -1210,9 +1212,8 @@ function setupMessage(myMessages)
     stringlength = string.len(myMessage)
     rowIndex= 0
     columnIndex= 0
-
+      
     if boolSpinning then
-
         reset(textSpinner)
         val = math.random(5,45)
         Spin(textSpinner, y_axis, math.rad(val),0)
@@ -1227,21 +1228,30 @@ function setupMessage(myMessages)
     allLetters = {} 
     posLetters = {}   
     posLetters.myMessage = myMessage
+    if stringlength < 12 and maRa() then
+        posLetters.IsThreeLetter= {}
+    end 
     posLetters.spacing = {}
     posLetters.boolUpright = boolUpright
 
     for i=1, stringlength do
         --increment letter index
         local letter = string.upper(string.sub(myMessage,i,i))
+
         if TableOfPiecesGroups[letter] then
             if not lettercounter[letter] then 
                 lettercounter[letter] = 0
             end            
+
             lettercounter[letter] = lettercounter[letter] + 1 
             boolContinue = not(lettercounter[letter] > #TableOfPiecesGroups[letter])
 
             if boolContinue == true and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                 local letterName = TableOfPiecesGroups[letter][(lettercounter[letter] % #TableOfPiecesGroups[letter]) + 1 ] 
+                if posLetters.IsThreeLetter then
+                    posLetters.IsThreeLetter[letterName] = TableOfPiecesGroups[letter]
+                end
+
                 --Highlight first
                 if boolHighlightFirstLetter and boolFirstHighlight then
                     boolFirstHighlight =false
@@ -1509,6 +1519,43 @@ function waitAllLetters(allLetters)
             function(id)
                 WaitForMove(id, spindropAxis)
             end)
+end
+
+--Produces a Holographic Sign made of several letters that shiver into different directions 
+function achromaticShivering(allLetters, posLetters)
+    if posLetters.IsThreeLetter then
+        usedLetters = {}
+        timeOut = math.random(10,25) * 1000
+        while timeOut > 0 do
+              letterIndex = 0
+              foreach(message,
+                function(letter)
+                    usedLetters[letter] = letter
+                    letterIndex= letterIndex +1
+                        if letter then                                 
+                            for ax=1,3 do
+                                for n = 1, #posLetters.IsThreeLetter[letter] do
+                                    letterSub = osLetters.IsThreeLetter[letter][n]
+                                    if (not usedLetters[letterSub]) then
+                                        WMove(letterSub, ax, posLetters[letter][ax], 0)
+                                        ShowReg(letterSub)
+                                        shiverIntervall = math.random(50, 250)* randSign()
+                                        Move(letterSub, ax, posLetters[letter][ax]+ shiverIntervall, 250)
+                                    end
+                                end
+                                WMove(letter, ax, posLetters[letter][ax], 0)
+                                shiverIntervall = math.random(50, 250)* randSign()
+                                Move(letter, ax, posLetters[letter][ax]+ shiverIntervall, 250)
+                            end
+                        end    
+                    end
+                )  
+    
+            Sleep(250)
+            timeOut = timeOut - 250
+        end
+        hideResetAllLetters()
+    end
 end
 
 function ringProject(allLetters, posLetters)
@@ -1901,6 +1948,7 @@ function addHologramLetters( myMessages)
         ["waterFallProject"] = waterFallProject,
         ["personalProject"] = personalProject,
         ["archProject"] = archProject,
+        ["achromaticShivering"] = achromaticShivering
 
         }
     allLetters, posLetters, newMessage = setupMessage(myMessages)
