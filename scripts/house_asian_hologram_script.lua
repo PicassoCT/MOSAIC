@@ -36,12 +36,14 @@ function updateCheckCache()
 end
 
 function ShowReg(pieceID)
+    assert(pieceID)
     Show(pieceID)
     table.insert(cachedCopy, pieceID)
     updateCheckCache()
 end
 
 function HideReg(pieceID)
+    assert(pieceID)
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     for i=1, #cachedCopy do
@@ -129,17 +131,16 @@ function restartHologram()
     StartThread(checkForBlackOut)
     StartThread(clock)
     StartThread(grid)
+
     if randChance(25) then
         StartThread(showStreetSigns)
     end
-    if isNearCityCenter(px,pz, GameConfig) then
-        if randChance(25)  then
-           Sleep(500)
-           showHoloWall()
-        end
+
+    if randChance(25)  then
+       Sleep(500)
+       showHoloWall()
     end
 end
-
 
 allGrids = nil
 
@@ -158,6 +159,7 @@ function grid()
     while true do
         if (hours > 19 or hours < 6) then
             theGrid = TableOfPiecesGroups["Grid"]
+            assert(theGrid)
             boolFlip = maRa()
             upVal=math.random(3,4)
             lowVal= math.random(1,2)
@@ -248,6 +250,12 @@ function deterministiceSetup()
             showSubSpins(logoPiece)
             ShowReg(logoPiece)
             Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+            if maRa() then
+                legoPiece = deterministicElement(getSafeRandom(TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
+                showSubSpins(legoPiece)
+                ShowReg(legoPiece)
+                Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+            end
         end
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do

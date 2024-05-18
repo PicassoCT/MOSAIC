@@ -1,5 +1,20 @@
 
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
+local tldrum = piece "tldrum"
+local dancepivot = piece "dancepivot"
+local deathpivot = piece "deathpivot"
+local tigLil = piece "tigLil"
+local tlHead = piece "tlHead"
+local tlhairup = piece "tlhairup"
+local tlhairdown = piece "tlhairdown"
+local tlarm = piece "tlarm"
+local tlarmr = piece "tlarmr"
+local tllegUp = piece "tllegUp"
+local tllegLow = piece "tllegLow"
+local tllegLowR = piece "tllegLowR"
+local tllegUpR = piece "tllegUpR"
+local tlpole = piece "tlpole"
+local tlflute = piece "tlflute"
 
 function TigLilSetup()    
     --echo("dancing tilgil a1")
