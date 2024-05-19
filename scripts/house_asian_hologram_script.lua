@@ -238,12 +238,29 @@ function showSubSpins(pieceID)
    end
 end
 
+function rotoScope()
+    oldPiece = TableOfPiecesGroups["HoloLogo"][math.random(49,68)]
+    while true do
+        restTime = math.random(5,12)*100
+        Sleep(restTime)
+        newPiece = TableOfPiecesGroups["HoloLogo"][math.random(49,68)]
+        HideReg(oldPiece)
+        ShowReg(newPiece)
+        oldPiece = newPiece
+    end
+
+end
+
 logoPiece = nil
 spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
 
-        if randChance(25) then
+        if randChance(5) then
+            StartThread(rotoScope)
+            return
+        end
+       if randChance(25) then
            shapeSymmetry()
        end
         
