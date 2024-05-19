@@ -1925,8 +1925,10 @@ function addHologramLetters( myMessages)
             end
             restTime = math.max(5000, #allLetters*150)
             Sleep(restTime)
+            restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
             WaitForTurns(allLetters)
+            Sleep(restTime)
             if boolIsEverChanging == true then
                 allLetters, posLetters, newMessage = setupMessage(myMessages)                
             end

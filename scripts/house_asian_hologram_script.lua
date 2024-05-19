@@ -245,7 +245,9 @@ function deterministiceSetup()
 
         if randChance(25) then
            shapeSymmetry()
-        else
+       end
+        
+        if randChance(75) then
             logoPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
             showSubSpins(logoPiece)
             ShowReg(logoPiece)
