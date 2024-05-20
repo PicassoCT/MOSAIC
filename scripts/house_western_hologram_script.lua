@@ -178,7 +178,7 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 end
 
 -- >ShowsStupid question.. i want to merge two script files before they are parsed : VFS.Include("scripts/tigLilAnimation.lua", nil, VFS.ZIP_FIRST) should do that?  As in the code within the file is available to functions below the line and can use functions above the line? a Pieces Table
-function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay) 
     assert(l_tableName)
     if not l_tableName then
         Spring.Echo("No table given as argument for showT")
@@ -288,9 +288,13 @@ function chipsDropping()
             randX = math.random(0, 1500)*randSign()
             randY = math.random(0, 1500)*randSign()
             randZ = math.random(0, 1500)*randSign()
-            downDirection = math.random(15000, 29000) *-1
+            downDirection = math.random(15000, 29000) * randSign()
             mP(chip, randX, randY, randZ, 100)
-            Move(chip, 3, downDirection, 300)
+        end
+        Sleep(2000)
+        for i=1, #chips do
+            local chip= chips[i]
+            Move(chip, math.random(1,3), downDirection, 300)
         end
         Sleep(15000)
         for i=1, #chips do
@@ -1611,8 +1615,8 @@ function circleProject(allLetters, posLetters, extRadius, boolDoNotRest, boolDoN
         local xr = radius * math.cos(radiantVal)
         local zr = radius * math.sin(radiantVal)
 
-        Move(pID,x_axis, xr, math.abs(xr)/2.0)
-        Move(pID,z_axis, zr, math.abs(zr)/2.0)
+        Move(pID,x_axis, xr, 10)
+        Move(pID,z_axis, zr,    10)
         Turn(pID,y_axis, math.pi + radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
@@ -1960,7 +1964,7 @@ function addHologramLetters( myMessages)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
                 if name then
-                    echo("Starting Hologram "..unitID.." textFX "..name.." -> "..newMessage)
+                    --echo("Starting Hologram "..unitID.." textFX "..name.." -> "..newMessage)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
@@ -1969,8 +1973,10 @@ function addHologramLetters( myMessages)
             end
             restTime = math.max(5000, #allLetters*150)
             Sleep(restTime)
+            restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
             WaitForTurns(allLetters)
+            Sleep(restTime)
             if boolIsEverChanging == true then
                 allLetters, posLetters, newMessage = setupMessage(myMessages)                
             end

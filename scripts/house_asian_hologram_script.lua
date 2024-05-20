@@ -36,12 +36,14 @@ function updateCheckCache()
 end
 
 function ShowReg(pieceID)
+    assert(pieceID)
     Show(pieceID)
     table.insert(cachedCopy, pieceID)
     updateCheckCache()
 end
 
 function HideReg(pieceID)
+    assert(pieceID)
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     for i=1, #cachedCopy do
@@ -129,17 +131,16 @@ function restartHologram()
     StartThread(checkForBlackOut)
     StartThread(clock)
     StartThread(grid)
+
     if randChance(25) then
         StartThread(showStreetSigns)
     end
-    if isNearCityCenter(px,pz, GameConfig) then
-        if randChance(25)  then
-           Sleep(500)
-           showHoloWall()
-        end
+
+    if randChance(25)  then
+       Sleep(500)
+       showHoloWall()
     end
 end
-
 
 allGrids = nil
 
@@ -158,6 +159,7 @@ function grid()
     while true do
         if (hours > 19 or hours < 6) then
             theGrid = TableOfPiecesGroups["Grid"]
+            assert(theGrid)
             boolFlip = maRa()
             upVal=math.random(3,4)
             lowVal= math.random(1,2)
@@ -236,18 +238,43 @@ function showSubSpins(pieceID)
    end
 end
 
+function rotoScope()
+    oldPiece = TableOfPiecesGroups["HoloLogo"][math.random(49,68)]
+    while true do
+        restTime = math.random(5,12)*100
+        Sleep(restTime)
+        newPiece = TableOfPiecesGroups["HoloLogo"][math.random(49,68)]
+        HideReg(oldPiece)
+        ShowReg(newPiece)
+        oldPiece = newPiece
+    end
+
+end
+
 logoPiece = nil
 spinPieces = {}
 jumpScarePieces = {}
 function deterministiceSetup()
 
-        if randChance(25) then
+        if randChance(5) then
+            StartThread(rotoScope)
+            return
+        end
+       if randChance(25) then
            shapeSymmetry()
-        else
+       end
+        
+        if randChance(75) then
             logoPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
             showSubSpins(logoPiece)
             ShowReg(logoPiece)
             Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+            if maRa() then
+                legoPiece = deterministicElement(getSafeRandom(TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
+                showSubSpins(legoPiece)
+                ShowReg(legoPiece)
+                Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+            end
         end
         nrSpins = unitID % 10
         for i=1, nrSpins, 1 do

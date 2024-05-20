@@ -1,5 +1,20 @@
 
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
+local tldrum = piece "tldrum"
+local dancepivot = piece "dancepivot"
+local deathpivot = piece "deathpivot"
+local tigLil = piece "tigLil"
+local tlHead = piece "tlHead"
+local tlhairup = piece "tlhairup"
+local tlhairdown = piece "tlhairdown"
+local tlarm = piece "tlarm"
+local tlarmr = piece "tlarmr"
+local tllegUp = piece "tllegUp"
+local tllegLow = piece "tllegLow"
+local tllegLowR = piece "tllegLowR"
+local tllegUpR = piece "tllegUpR"
+local tlpole = piece "tlpole"
+local tlflute = piece "tlflute"
 
 function TigLilSetup()    
     --echo("dancing tilgil a1")
@@ -6595,7 +6610,7 @@ function hairInWind(offset)
     auslenkung= math.random(20,35)
     while true do
         TurnTowardsWind(tlhairup, math.pi, 50)
-        sinA= (((spGetGameFrame())%60)/60)* 2*math.pi
+        sinA= (((Spring.GetGameFrame())%60)/60)* 2*math.pi
     
         sinA,saint = math.sin(sinA)*auslenkung,math.sin(sinA+math.pi/8)*auslenkung
         Turn(tlhairup,x_axis,math.rad(sinA+offset), 50)
