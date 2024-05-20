@@ -126,8 +126,6 @@ end
 function widget:Shutdown()
 end
 
-
-
 --------------------------------------------------------------------------------
 
 local selectedUnits = Spring.GetSelectedUnits()
@@ -135,8 +133,6 @@ local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local trackedUnits = {}
 local trackKey = 111 --'O'
 local untrackKey = 127 --'DELETE'
-
-
 
 function widget:RecvLuaMsg(msg, playerID)
 	if msg:sub(1,18) == 'LobbyOverlayActive' then

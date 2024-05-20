@@ -659,6 +659,11 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
   return boolDone, frame + 30, persPack
 end
 
+function displayConversationTextAt(idA, idB)
+    gossipMessage = gossipGenerator(idA, idB)
+    SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 1.0, 1.0, 1.0)
+end
+
 function sozialize(evtID, frame, persPack, startFrame, myID)
 boolDone = false
 
@@ -666,6 +671,7 @@ boolDone = false
     if  math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
         persPack.maxTimeChattingInFrames > 150  then
+            displayConversationTextAt(myID, persPack.chatPartnerID)
             persPack.chatPartnerID = spGetUnitNearestAlly(myID)
             if persPack.chatPartnerID and civilianWalkingTypeTable[spGetUnitDefID(persPack.chatPartnerID)] then 
                 persPack.boolStartAChat = true

@@ -274,7 +274,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
 
         if frame % 30 == 0 then
-
             for team, deedtable in pairs(accumulatedInSecond) do
                 for uid, v in pairs(deedtable) do
                     if v then
@@ -324,12 +323,19 @@ else -- UNSYNCED
     local colourWhite = {r = 255, g = 255, b = 255}
     
     -- Display Lost /Gained Money depending on team
-    local function DisplaytAtUnit(callname, unitID, team, damage, r, g, b)
+    local function DisplaytAtUnit(callname, unitID, team, message, r, g, b)
         --	 Spring.Echo("Display At Unit")
+            if type(message) == "number" then
+            if message < 0 then
+                message =  "\255\255\34\12 $ " .. valueT.message
+            else
+                message = "\255\171\236\183 $ " .. valueT.message
+            end
+
         Unit_StartFrame_Message[unitID] =
             {
                 team = team,
-                message = damage,
+                message = message,
                 frame = spGetGameFrame(),
                 col = {r = r, g = g, b = b}
             }
@@ -378,13 +384,7 @@ else -- UNSYNCED
                             frameOffset = (255 - (valueT.frame + DrawForFrames - currFrame)) * 0.25
                             local sx, sy =
                                 spWorldToScreenCoords(x, y + frameOffset, z)
-                            if valueT.message < 0 then
-                                gl.Text("\255\255\34\12 $ " .. valueT.message, sx, sy, 16, "od")
-                               
-                            else
-                                gl.Text("\255\171\236\183 $ " .. valueT.message, sx, sy, 16, "od")
-                               
-                            end                          
+                                gl.Text(valueT.message, sx, sy, 16, "od")                       
                         end
                     end
                 end

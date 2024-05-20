@@ -397,14 +397,16 @@ end
 
 
 function setIndividualCivilianName(id, culture)
-    name = getRandomCultureNames(culture)
-    GG.LastAssignedName = name
-    description = "Civilian : ".. name .. " <colateral>"
+    sur, name = getDeterministicCultureNames( id, culture)
+    fullName =  sur .." ".. name
+    GG.LastAssignedName =fullName
+    description = "Civilian : ".. fullName .. " <colateral>"
     Spring.SetUnitTooltip(id, description)
    return description
 end
 
- function getRandomCultureNames(culture)
+ function getDeterministicCultureNames( id, culture)
+        if not culture then culture = getInstanceCultureOrDefaultToo() end
             names = {
                 arabic = {
                     sur = {
@@ -433,6 +435,7 @@ end
                     }},
                  western = {
                         sur = {
+                            "Stephan", "Chris", "Kerstin", "Annah",
                             "Noel", "Joel", "Mateo", "Ergi", "Luis", "Aron", "Samuel", "Roan", "Roel", "Xhoel",
                             "Marc", "Eric", "Jan", " Daniel", "Enzo", "Ian", " Pol", " Àlex", "Jordi", "Martí",
                             "Lukas", "Maximilian", "Jakob", "David", "Tobias", "Paul", "Jonas", "Felix", "Alexander", "Elias",
@@ -492,7 +495,47 @@ end
             names.international = GG.NameCacheInternational
           end
 
-if math.random(1,100) == 42 then return "PWNED byHaxxor"end
+    if math.random(1,100) == 42 then return "PWNED", "byHaxxor"end
 
-return names[culture].sur[math.random(1, #names[culture].sur)] .. " "..names[culture].family[math.random(1, #names[culture].family)]
+    surHash =  (id % #names[culture].sur) + 1
+    familyHash =  ((id + 32416190071)% #names[culture].sur) + 1
+    return names[culture].sur[surHash], names[culture].family[familyHash]
+end
+
+
+function gossipGenerator(gossipyID, oppossingPartnerID)
+    -- Define the subjects, actions, and objects
+    subjects = {"Me", "I", "We", "They", "All of us"}
+    filler = {"and","or", "I swear","um", "uh", "like", "you know", "so", "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", "to be honest", "frankly", "seriously"}
+    actions = {"agree", "like", "love", "date", "hate", "laugh", "with", "talked", "mobbed", "networked", "worked", "fucked", "angered", "bought"}
+    objects = {"family", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith"}
+    techBabble = {"CENSORED", "NOT TRANSLATED", "REDACTED", "Translator Stack Error"}
+    if gossipyID then
+        sur, name = getDeterministicCultureNames(gossipyID)
+        table.insert(subjects, sur)
+        table.insert(subjects, name)
+    end
+    if oppossingPartnerID then 
+        sur, name = getDeterministicCultureNames(oppossingPartnerID)
+        table.insert(subjects, sur)
+        table.insert(subjects, name)
+    end
+
+    space = " "
+
+    conversationalRecursionDepth = math.random(1,9)
+    conversation = subjects[math.random(1, #subjects)] .. space
+    repeat 
+        conversation = conversation .. actions[math.random(1,#actions)]
+        if maRa() then
+            conversation = conversation .. filler[math.random(1,#filler)]
+        end
+
+        if randChance(10) then
+            conversation = conversation .. "["..techBabble[math.random(1,#techBabble)].."]"
+        end
+        conversationalRecursionDepth = conversationalRecursionDepth -1
+    until (conversationalRecursionDepth == 0) 
+
+    return conversation .. "the ".. objects[math.random(1,#objects)]..", ".. filler[math.random(1, #filler)]
 end

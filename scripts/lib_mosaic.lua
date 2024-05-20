@@ -783,8 +783,6 @@ function getGameConfig()
        return stringToHash(Game.mapName)
     end
 
-
-
     function getCultureMapNameHash(Game)   
         return getMapNameHash(Game) + getCultureHash()
     end
