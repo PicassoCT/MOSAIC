@@ -502,14 +502,13 @@ end
     return names[culture].sur[surHash], names[culture].family[familyHash]
 end
 
-
 function gossipGenerator(gossipyID, oppossingPartnerID)
     -- Define the subjects, actions, and objects
-    subjects = {"Me", "I", "We", "They", "All of us"}
-    filler = {"and","or", "I swear","um", "uh", "like", "you know", "so", "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", "to be honest", "frankly", "seriously"}
-    actions = {"agree", "like", "love", "date", "hate", "laugh", "with", "talked", "mobbed", "networked", "worked", "fucked", "angered", "bought"}
-    objects = {"family", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith"}
-    techBabble = {"CENSORED", "NOT TRANSLATED", "REDACTED", "Translator Stack Error"}
+    subjects = {"Me", "I", "We", "They", "All of us", "Society"}
+    filler = {"were", "and","or", "I swear","um", "uh", "like", "you know", "with", "feel me", "so", "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya"}
+    actions = {"agree", "like", "love", "date", "hate", "life", "laugh", "talked", "mobbed", "networked", "worked", "fucked", "angered", "bought", "murdered", "kicked", "rolled up", "fled", "yelled", "used", "cheat", "know someone who", "promoted", "got rich", "knew"}
+    objects = {"family", "me", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith", "mother", "father", "drugs", "booze", "problem", "flat", "gambling", "ghetto", "community", "highrise", "family", "crime", "hope", "implants", "drone", "music", "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "suka", "BLYAT", "motherfucker", "bastard", "beauty", "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "doctor", "lawyer", "secretary"}
+    techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[REDACTED]", "[TranslatorError]", "BURP", "[sobs]", ","}
     if gossipyID then
         sur, name = getDeterministicCultureNames(gossipyID)
         table.insert(subjects, sur)
@@ -524,18 +523,24 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
     space = " "
 
     conversationalRecursionDepth = math.random(1,9)
-    conversation = subjects[math.random(1, #subjects)] .. space
+    conversation = subjects[math.random(1, #subjects)]
+    conversation = conversation ..space.. actions[math.random(1,#actions)]
     repeat 
-        conversation = conversation .. actions[math.random(1,#actions)]
-        if maRa() then
-            conversation = conversation .. filler[math.random(1,#filler)]
-        end
 
+        if maRa() then
+            conversation = conversation ..space.. filler[math.random(1,#filler)]
+        end
+        
         if randChance(10) then
-            conversation = conversation .. "["..techBabble[math.random(1,#techBabble)].."]"
+            conversation = conversation ..space..techBabble[math.random(1,#techBabble)]
+        end
+        if randChance(15) then
+            conversation = conversation ..space.. actions[math.random(1,#actions)] 
+            conversation = conversation .. " the ".. objects[math.random(1,#objects)]
         end
         conversationalRecursionDepth = conversationalRecursionDepth -1
-    until (conversationalRecursionDepth == 0) 
+    until (conversationalRecursionDepth < 0) 
 
-    return conversation .. "the ".. objects[math.random(1,#objects)]..", ".. filler[math.random(1, #filler)]
+    return conversation .. " for the ".. objects[math.random(1,#objects)].."."
+    
 end
