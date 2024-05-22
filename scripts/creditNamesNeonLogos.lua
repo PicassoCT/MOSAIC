@@ -37,5 +37,6 @@ return {
  "AngelicWings",
  "URBAIN Guillaume",
  "rhodesmas",
- "copycAt"
+ "copycAt",
+ "cliftonmcarlson"
 }
