@@ -36,10 +36,6 @@ return {
  "SergeQuadrado",
  "AngelicWings",
  "URBAIN Guillaume",
- "Duisterwho",
- "funnymaneightfivehundred",
- "SilverIllusionist",
- "opethianlynn",
- "Iwan qubodup Gabovitch"
-
+ "rhodesmas",
+ "copycAt"
 }
