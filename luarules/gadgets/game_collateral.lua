@@ -321,15 +321,22 @@ else -- UNSYNCED
     local UID_Location_Message = {}
     local gaiaTeamID = Spring.GetGaiaTeamID()
     local colourWhite = {r = 255, g = 255, b = 255}
+
+
     
     -- Display Lost /Gained Money depending on team
-    local function DisplaytAtUnit(callname, unitID, team, message, r, g, b)
+    local function DisplaytAtUnit(callname, unitID, team, message, r, g, b, a)
+            local format =  "d"
         --	 Spring.Echo("Display At Unit")
             if type(message) == "number" then
-            if message < 0 then
-                message =  "\255\255\34\12 $ " .. valueT.message
+                format= "od"
+                if message < 0 then 
+                    message =  "\255\255\34\12 $ "  .. message
+                else
+                    message = "\255\171\236\183 $ " .. message
+                end
             else
-                message = "\255\171\236\183 $ " .. valueT.message
+                message = "\255\128\128\128 $ "  .. message
             end
 
         Unit_StartFrame_Message[unitID] =
@@ -337,12 +344,12 @@ else -- UNSYNCED
                 team = team,
                 message = message,
                 frame = spGetGameFrame(),
-                col = {r = r, g = g, b = b}
+                format = format
             }
 
     end
 
-    local function DisplayAtLocation(callname, uid, x,y,z, team, damage, r, g, b)
+    local function DisplayAtLocation(callname, uid, x,y,z, team, damage, r, g, b, a)
         Spring.Echo("Display at Location Widget called")
         local storedData ={}
         storedData.team = team
@@ -351,7 +358,7 @@ else -- UNSYNCED
         storedData.y = y
         storedData.z = z
         storedData.frame = frame
-        storedData.col = {r = r, g = g, b = b}
+        storedData.col = {r = r, g = g, b = b, a= a}
             
         UID_Location_Message[uid] = storedData
             
@@ -384,7 +391,10 @@ else -- UNSYNCED
                             frameOffset = (255 - (valueT.frame + DrawForFrames - currFrame)) * 0.25
                             local sx, sy =
                                 spWorldToScreenCoords(x, y + frameOffset, z)
-                                gl.Text(valueT.message, sx, sy, 16, "od")                       
+                                if valueT.col then
+                                     gl.Color(valueT.col.r, valueT.col.g, valueT.col.b, valueT.col.a)
+                                 end
+                                gl.Text(valueT.message, sx, sy, 16, valueT.format)                       
                         end
                     end
                 end

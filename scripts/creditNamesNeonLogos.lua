@@ -38,5 +38,8 @@ return {
  "URBAIN Guillaume",
  "rhodesmas",
  "copycAt",
- "cliftonmcarlson"
+ "cliftonmcarlson",
+ "klangfabrik",
+ "Erdie",
+ "Seelengold"
 }

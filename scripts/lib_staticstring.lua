@@ -406,6 +406,7 @@ function setIndividualCivilianName(id, culture)
 end
 
  function getDeterministicCultureNames( id, culture)
+    assert(id)
         if not culture then culture = getInstanceCultureOrDefaultToo() end
             names = {
                 arabic = {
@@ -504,10 +505,32 @@ end
 
 function gossipGenerator(gossipyID, oppossingPartnerID)
     -- Define the subjects, actions, and objects
-    subjects = {"Me", "I", "We", "They", "All of us", "Society"}
-    filler = {"were", "and","or", "I swear","um", "uh", "like", "you know", "with", "feel me", "so", "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya"}
-    actions = {"agree", "like", "love", "date", "hate", "life", "laugh", "talked", "mobbed", "networked", "worked", "fucked", "angered", "bought", "murdered", "kicked", "rolled up", "fled", "yelled", "used", "cheat", "know someone who", "promoted", "got rich", "knew"}
-    objects = {"family", "me", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith", "mother", "father", "drugs", "booze", "problem", "flat", "gambling", "ghetto", "community", "highrise", "family", "crime", "hope", "implants", "drone", "music", "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "suka", "BLYAT", "motherfucker", "bastard", "beauty", "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "doctor", "lawyer", "secretary"}
+    subjects = {"Me", "I", "We", "They", "All of us", "Society", "Your moma", "Motherfugger"}
+    filler = {"were", "and","or", "I swear","um", "uh", "like", "you know", "with", "fat", "freaking", "fuckyeah", "because", "feel me", "so", 
+    "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
+    "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on"}
+    actions = {"agree", "like", "is so", "love", "date", "owned", "hate", "life", "laugh", "talked", "mobbed", "networked", 
+    "worked", "stabbed", "fucked", "angered", "bought", "sold out", "murdered", "kicked", "rolled up", "fled", "yelled", "used", "cheat", "abused",
+     "knows someone who", "promoted", "blew", "got rich", "knew", "sucked up"}
+
+    property = {
+        "weird", "sad", "horrific", "outrageous", "disgusting", "funny", "ruthless", "nice", "cheap", "rare", 
+        "plenty", "slutty", "wealthy", "small", "big", "hard", "soft", "stupid", "clever", "better", "beautiful", 
+        "worse", "jerky", "stoned", "hardcore", "dilapidated", "polluted", "corrupt", "violent", "desperate", 
+        "oppressive", "chaotic", "filthy", "dark", "overcrowded", "deprived", "dangerous", "exploited", "isolated", 
+        "contaminated", "squalid", "malnourished", "hacked", "paranoid", "parasitic", "synthetic", "decaying", 
+        "enslaved", "dehumanized", "totalitarian", "controlled", "desensitized", "scavenged", "illicit", 
+        "underground", "rebellious", "manipulated", "forgotten", "abandoned", "subversive", "gritty", "lawless", 
+        "grim", "disconnected", "trapped", "sterile", "heartless", "ruthless", "merciless", "barren", "bleak", 
+        "desolate", "forsaken", "impoverished", "ransacked"
+    }
+    objects = {
+        "family", "me", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith", 
+        "mother", "father", "bread", "vegetables", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
+        "gambling", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
+        "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "BLYAT", "motherfucker", 
+        "bastard", "beauty", "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
+        "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.", "favourite", "company", "choom", "roller", "baller"}
     techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[REDACTED]", "[TranslatorError]", "BURP", "[sobs]", ","}
     if gossipyID then
         sur, name = getDeterministicCultureNames(gossipyID)
@@ -525,10 +548,14 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
     conversationalRecursionDepth = math.random(1,9)
     conversation = subjects[math.random(1, #subjects)]
     conversation = conversation ..space.. actions[math.random(1,#actions)]
+    linebreak = 1
     repeat 
 
         if maRa() then
             conversation = conversation ..space.. filler[math.random(1,#filler)]
+            if maRa() then
+            conversation = conversation ..space.. property[math.random(1,#property)]
+            end
         end
         
         if randChance(10) then
@@ -539,8 +566,16 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
             conversation = conversation .. " the ".. objects[math.random(1,#objects)]
         end
         conversationalRecursionDepth = conversationalRecursionDepth -1
+        if string.len(conversation) > linebreak * 15 then
+            conversation =conversation .. "\n"
+            linebreak = linebreak +1
+        end
     until (conversationalRecursionDepth < 0) 
+    optionalEndElement = ""
 
-    return conversation .. " for the ".. objects[math.random(1,#objects)].."."
-    
+    if randChance(25) then
+        optionalEndElement = " for the ".. objects[math.random(1,#objects)]
+    end
+
+    return conversation .. optionalEndElement.."."    
 end

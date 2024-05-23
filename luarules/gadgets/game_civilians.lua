@@ -661,7 +661,7 @@ end
 
 function displayConversationTextAt(idA, idB)
     gossipMessage = gossipGenerator(idA, idB)
-    SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 1.0, 1.0, 1.0)
+    SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
 end
 
 function sozialize(evtID, frame, persPack, startFrame, myID)
