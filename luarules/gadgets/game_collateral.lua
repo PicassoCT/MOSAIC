@@ -30,7 +30,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local AerosolTypes = getChemTrailTypes()
     local accumulatedInSecond = {}
     local accumulatedInSecondLocation = {}
-    local colourWhite = {r = 255, g = 255, b = 255}
+    local colourWhite = {r = 1.0, g = 1.0, b = 1.0, a = 1.0 }
 
     function addInSecond(team, uid_loc, rtype, damage, colour)
         if not accumulatedInSecond[team] then accumulatedInSecond[team] = {}  end
@@ -320,23 +320,31 @@ else -- UNSYNCED
     local Unit_StartFrame_Message = {}
     local UID_Location_Message = {}
     local gaiaTeamID = Spring.GetGaiaTeamID()
-    local colourWhite = {r = 255, g = 255, b = 255}
+
+    local colRed = {r =  34/255, g = 12/255, b = 1.0, a = 1.0}
+    local colGreen ={ r= 171/255, g=  236/255, b= 183/255, a= 255/255}
 
 
     
     -- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname, unitID, team, message, r, g, b, a)
+            local col = {r= r, g= g, b= b, a= a}
             local format =  "d"
+            local size = 16
         --	 Spring.Echo("Display At Unit")
             if type(message) == "number" then
                 format= "od"
                 if message < 0 then 
-                    message =  "\255\255\34\12 $ "  .. message
+                    message =   message
+                    col = colRed
                 else
-                    message = "\255\171\236\183 $ " .. message
+                    message =  message
+                    col= colGreen
                 end
             else
-                message = "\255\128\128\128 $ "  .. message
+                message = message
+                col.r, col.g, col.b, col.a= 175/255, 175/255, 175/255, 175/255
+                size = 12
             end
 
         Unit_StartFrame_Message[unitID] =
@@ -344,9 +352,10 @@ else -- UNSYNCED
                 team = team,
                 message = message,
                 frame = spGetGameFrame(),
-                format = format
+                format = format,
+                col = col, 
+                size = size
             }
-
     end
 
     local function DisplayAtLocation(callname, uid, x,y,z, team, damage, r, g, b, a)
@@ -394,7 +403,7 @@ else -- UNSYNCED
                                 if valueT.col then
                                      gl.Color(valueT.col.r, valueT.col.g, valueT.col.b, valueT.col.a)
                                  end
-                                gl.Text(valueT.message, sx, sy, 16, valueT.format)                       
+                                gl.Text(valueT.message, sx, sy, valueT.size, valueT.format)                       
                         end
                     end
                 end
