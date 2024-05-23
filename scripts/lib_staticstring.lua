@@ -577,5 +577,5 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
         optionalEndElement = " for the ".. objects[math.random(1,#objects)]
     end
 
-    return conversation .. optionalEndElement.."."    
+    return conversation .. optionalEndElement 
 end
