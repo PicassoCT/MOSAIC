@@ -396,8 +396,8 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
 end
 
 
-function setIndividualCivilianName(id, culture)
-    name, family = getDeterministicCultureNames( id, culture)
+function setIndividualCivilianName(id, culture, UnitDefs)
+    name, family = getDeterministicCultureNames( id,UnitDefs , culture )
     fullName = ""
     if culture == "western" or culture == "arabic" or culture == "international" then
         fullName =  name .." ".. family
@@ -411,9 +411,9 @@ function setIndividualCivilianName(id, culture)
 end
 
 
-function getCivilianSex(id)
+function getCivilianSex(id, UnitDefs)
     defID  = Spring.GetUnitDefID(id)
-    assert(UnitDefs)
+    assert(UnitDefs[defID])
     name = UnitDefs[defID].name
 
     mapping_male = {
@@ -434,13 +434,13 @@ function getCivilianSex(id)
 end
 
 
- function getDeterministicCultureNames( id, culture)
+ function getDeterministicCultureNames( id, UnitDefs, culture)
 
         if not culture then 
             culture = getInstanceCultureOrDefaultToo() 
         end
 
-        sex = getCivilianSex(id)
+        sex = getCivilianSex(id, UnitDefs)
         assert(sex)
             names = {
                 arabic = {
@@ -563,9 +563,9 @@ end
     return surName, familyName
 end
 
-function gossipGenerator(gossipyID, oppossingPartnerID)
+function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     -- Define the subjects, actions, and objects
-
+    assert(UnitDefs)
     questions = {"Why", "Where", "What", "How", "With", "Who"}
     space = " "
     
@@ -574,7 +574,8 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
     
     filler = {"where", "which", "we are", "and","or", "I swear","um", "uh", "like", "you know", "with", "fat", "freaking", "fuckyeah", "because", "feel me", "so", 
     "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
-    "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck", "then", "i swear", "my hand to god", "oath on that", "get me"}
+    "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck",
+     "then", "in", "hardcore", "far out man", "i swear", "my hand to god", "gods my wittnes", "get me"}
 
     actions = {
         "agree", "like", "is so", "told", "loved", "dated", "owned", "hated", "life", "laughed", "talked", "mobbed", "networked", 
@@ -590,22 +591,22 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
         "enslaved", "dehumanized", "totalitarian", "controlled", "desensitized", "scavenged", "illicit", 
         "underground", "rebellious", "manipulated", "forgotten", "abandoned", "subversive", "gritty", "lawless", 
         "grim", "disconnected", "trapped", "sterile", "heartless", "ruthless", "merciless", "barren", "bleak", 
-        "desolate", "forsaken", "impoverished", "ransacked", "pregnant", "shitty","favourite",
+        "desolate", "forsaken", "impoverished", "ransacked", "pregnant", "shitty","favourite","beauty"
     }
 
     objects = {
         "family", "me", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith", 
         "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
-        "gambling", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
+        "gambler", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
         "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "BLYAT", "motherfucker", 
-        "bastard", "beauty", "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
+        "bastard",  "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
         "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
         "conspiracy", "secret society", "cells", "agents", "antagon", "protagon", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs"}
     
     techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
 
     if gossipyID then
-        name, family = getDeterministicCultureNames(gossipyID)
+        name, family = getDeterministicCultureNames(gossipyID, UnitDefs)
         conversation = name..": "
         table.insert(subjects, family)
     end
@@ -616,7 +617,7 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
     end
 
     if oppossingPartnerID then 
-        name, family = getDeterministicCultureNames(oppossingPartnerID)
+        name, family = getDeterministicCultureNames(oppossingPartnerID, UnitDefs)
         table.insert(subjects, family)
         table.insert(subjects, name)
     end
@@ -656,9 +657,10 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
     optionalEndElement = ""
 
 
-    explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "that", "unblievable"}
+
     if randChance(35) then
-        optionalEndElement = explainer[math.random(1,#explainer)].. space ..objects[math.random(1,#objects)]
+        explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by"}
+        optionalEndElement = space..explainer[math.random(1,#explainer)].. space ..objects[math.random(1,#objects)]
     end    
     conversation = conversation .. optionalEndElement 
     if isQuestion then

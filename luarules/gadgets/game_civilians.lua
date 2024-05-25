@@ -141,7 +141,7 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
     end
   
     if individualNamedTypes[unitDefID] then
-        name = setIndividualCivilianName(unitID, GG.GameConfig.instance.culture)
+        name = setIndividualCivilianName(unitID, GG.GameConfig.instance.culture, UnitDefs)
     end
 end
 
@@ -660,7 +660,8 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
 end
 
 function displayConversationTextAt(idA, idB)
-    gossipMessage = gossipGenerator(idA, idB)
+    assert(UnitDefs)
+    gossipMessage = gossipGenerator(idA, idB, UnitDefs)
     SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
 end
 
