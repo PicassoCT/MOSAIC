@@ -1408,6 +1408,7 @@ function getGameConfig()
                 return GG.GlobalGameState == GG.GameConfig.GameState.normal
             end
 
+
             function getCivlianDisguiseBySexTypeTable(UnitDefs, sex)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)

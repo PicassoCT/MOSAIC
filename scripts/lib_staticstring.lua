@@ -397,29 +397,66 @@ end
 
 
 function setIndividualCivilianName(id, culture)
-    sur, name = getDeterministicCultureNames( id, culture)
-    fullName =  sur .." ".. name
+    name, family = getDeterministicCultureNames( id, culture)
+    fullName = ""
+    if culture == "western" or culture == "arabic" or culture == "international" then
+        fullName =  name .." ".. family
+    else
+        fullName =  family .." ".. name
+    end
     GG.LastAssignedName =fullName
     description = "Civilian : ".. fullName .. " <colateral>"
     Spring.SetUnitTooltip(id, description)
    return description
 end
 
+
+function getCivilianSex(id)
+    defID  = Spring.GetUnitDefID(id)
+    assert(UnitDefs)
+    name = UnitDefs[defID].name
+
+    mapping_male = {
+            ["civilian_arab1"] = true,
+            ["civilian_arab2"] = true,
+            ["civilian_western0"] = true,
+    }
+    if mapping_male[name] then return "male" end
+
+    mapping_female = {  
+                ["civilian_arab0"] = true,
+                ["civilian_arab3"] = true,
+                ["civilian_western1"] = true,
+                ["civilian_western2"] = true
+            }
+     if mapping_female[name] then return "female" end
+     return "divers"
+end
+
+
  function getDeterministicCultureNames( id, culture)
-    assert(id)
-        if not culture then culture = getInstanceCultureOrDefaultToo() end
+
+        if not culture then 
+            culture = getInstanceCultureOrDefaultToo() 
+        end
+
+        sex = getCivilianSex(id)
+        assert(sex)
             names = {
                 arabic = {
-                    sur = {
-                        "Jalal", "Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah", "Ahmad", "Omran", "Fateha",
-                        "Nada", "Um", "Sahar", "Khowla", "Samad", "Faris", "Saif", "Marwa", "Tabarek", "Safia", "Qassem", "Thamer", "Nujah",
-                        "Najia", "Haytham", "Arkan", "Walid", "Hilal", "Manal", "Mahroosa", "Valentina", "Samar", "Mohammad", "Nadia",
-                        "Zeena", "Mustafa", "Zain", "Zainab", "Hassan", "Ammar", "Noor", "Wissam", "Dr.Ihab", "Khairiah", "Kamaran", "Duaa",
-                        "Sa'la", "Alaa-eddin", "Wadhar", "Bashir", "Safa", "Sena", "Rana", "Maria", "Salma", "Lana", "Miriam", "Lava", "Salma",
-                        "Mohammed", "Said", "Shams", "Sami", "Tareq", "Taras", "Jose", "Vatche", "Hanna", "James", "Nicolas", "Edmund", "Wael",
-                        "Noor", "Abdul", "Hamsa", "Ali", "Abu", "Rowand", "Haithem", "Nora", "Arkan", "Khansa", "Muhammed", "Rashid", "Ghassan",
-                        "Arkan", "Uday", "Dana", "Lamiya", "Abdullah", "Salman", "Waleed", "Tuamer", "Hussein", "Sa'aleh", "Ghanam", "Raeed", "Daoud"
-                    },
+                    surf = {
+                         "Fateha", "Nada", "Um", "Sahar", "Khowla", "Marwa", "Tabarek", "Safia", "Nujah", "Najia",
+                            "Manal", "Mahroosa", "Valentina", "Samar", "Nadia", "Zeena", "Zainab", "Khairiah", "Duaa",
+                            "Sa'la", "Wadhar", "Safa", "Sena", "Rana", "Maria", "Salma", "Lana", "Miriam", "Lava",
+                            "Salma", "Noor", "Nora", "Khansa", "Dana", "Lamiya", "Hanna", "Hamsa"},
+                    surm = {
+                            "Jalal", "Hashim", "Ibrahim", "Ahmed", "Sufian", "Abdullah", "Ahmad", "Omran", "Samad",
+                            "Faris", "Saif", "Qassem", "Thamer", "Haytham", "Arkan", "Walid", "Hilal", "Mohammad",
+                            "Mustafa", "Hassan", "Ammar", "Wissam", "Dr.Ihab", "Kamaran", "Alaa-eddin", "Bashir",
+                            "Mohammed", "Said", "Sami", "Tareq", "Taras", "Jose", "Vatche", "James", "Nicolas",
+                            "Edmund", "Wael", "Abdul", "Ali", "Abu", "Haithem", "Muhammed", "Rashid", "Ghassan",
+                            "Uday", "Salman", "Waleed", "Tuamer", "Hussein", "Sa'aleh", "Ghanam", "Raeed", "Daoud"
+                        },
                     family = {
                         "al Yussuf", "Kamel Radi", "al Rahal", "al Batayneh", "al Ababneh", " al Enezi", "al Serihaine",
                         "Ghazzi", "Abdallah", "Aqeel-Khalil", "Khalil", "Abdel-Fattah", "Rabai", "El Baur", "Abbas", "Moussa", "Abdel-Wahid",
@@ -432,11 +469,11 @@ end
                         " Sabah ", "Sabah ", " Khader ", " Mohammed Omar ", " Ramzi ", " Salam Abdul Gafir ", " Mohammed Suleiman ",
                         " Tamini ", "Tamini ", " David Belu ", " a Thaib ", " al-Barheini ", " Majid ", " Majid ", "Majid ", "al Shimarey ",
                         "Ali ", " Ali ", "Abdul-Majeed al-Sa'doon", " Abu al-Heel ", "Saleh Abdel-Latif", " Abdel Hamid ", " Rashid ",
-                        " al Jumaili ", "Amar ", " Qais ", "al Rifaai"
+                        "al Jumaili ", "Amar ", " Qais ", "al Rifaai"
                     }},
                  western = {
-                        sur = {
-                            "Stephan", "Chris", "Kerstin", "Annah",
+                        surm = {
+                            "Stephan", "Chris", 
                             "Noel", "Joel", "Mateo", "Ergi", "Luis", "Aron", "Samuel", "Roan", "Roel", "Xhoel",
                             "Marc", "Eric", "Jan", " Daniel", "Enzo", "Ian", " Pol", " Àlex", "Jordi", "Martí",
                             "Lukas", "Maximilian", "Jakob", "David", "Tobias", "Paul", "Jonas", "Felix", "Alexander", "Elias",
@@ -455,7 +492,10 @@ end
                             "Leonardo", "Francesco", "Alessandro", "Lorenzo", " Mattia", "Andrea", "Gabriele", "Riccardo", "Tommaso", "Edoardo",
                             "William", " Oskar", "Lucas", "Mathias", " Filip", "Oliver", "Jakob/Jacob", " Emil", "Noah", "Aksel", "Hugo", "Daniel",
                             "Martín", "Pablo", "Alejandro", "Lucas", "Álvaro", "Adrián", "Mateo", "David",
-                            "Amelia", "Ajla", "Melisa", "Amelija", " Klea", "Sara", "Kejsi", "Noemi", "Alesia", "Leandra",
+                           
+                        },
+                        surf={
+                            "Kerstin", "Annah", "Amelia", "Ajla", "Melisa", "Amelija", " Klea", "Sara", "Kejsi", "Noemi", "Alesia", "Leandra",
                             "Anna", "Hannah", "Sophia", "Emma", "Marie", "Lena", "Sarah", "Sophie", "Laura", "Mia",
                             "Emma", "Louise", "Olivia", "Elise", "Alice", "Juliette", "Mila", "Lucie", "Marie", "Camille",
                             "Léa", " Lucie", "Emma", "Zoé", " Louise", "Camille", " Manon", "Chloé", "Alice", "Clara",
@@ -473,8 +513,12 @@ end
                             "Hodžić", "Hoxha", "Dimitrov", "Milevski", "Papadopoulos", "Öztürk", "Martin", "Smith"
                         }},
 					asian= {
-					sur ={"Tanaka","Wong","Patel","Kim","Gupta","Nakamura","Li","Sharma","Nguyen","Yamamoto","Desai","Tan","Chen","Singh","Chen","Nakamura","Rahman","Patel","Park","Choudhury","Shah","Takahashi","Rahman","Suzuki","Kapoor"},
-					family = {"Kai","Mei Ling","Raj","Ji-Yeon","Aarav","Sakura","Jia","Rohan","Hana","Kazuki","Leela","Hiroshi","Ying","Arjun","Ying Yue","Haruki","Zara","Aditi","Sora","Ravi","Meera","Tatsuya","Aisha","Yuki","Rahul","DB:Error:404"}
+					family ={"Tanaka","Wong","Patel","Kim","Gupta","Nakamura","Li","Sharma","Nguyen","Yamamoto","Desai","Tan","Chen","Singh","Chen",
+                           "Nakamura","Rahman","Patel","Park","Choudhury","Shah","Takahashi","Rahman","Suzuki","Kapoor"},
+                    surf = {
+                             "Aiko",  "Akira",  "Amara",  "Anika",  "Ayla",  "Chia",  "Daiyu",  "Eiko",  "Hana",  "Harumi",  "Jia",  "Kaida",  "Keiko",  "Kimiko",
+                            "Kumiko",  "Mai",  "Mei",  "Miko",  "Naomi",  "Ren",  "Sakura",  "Sana",  "Suki",  "Yoko",  "Yumi" ,"Mei Ling", },
+                    surm ={"Kai","Raj","Ji-Yeon","Aarav","Jia","Rohan","Hana","Kazuki","Leela","Hiroshi","Ying","Arjun","Ying Yue","Haruki","Zara","Aditi","Sora","Ravi","Meera","Tatsuya","Aisha","Yuki","Rahul"}
 					}
                     }
 		
@@ -482,11 +526,15 @@ end
           if culture == "international" then
             if not GG.NameCacheInternational then
               GG.NameCacheInternational ={}
-              GG.NameCacheInternational.sur = {}
+              GG.NameCacheInternational.surm = {}
+              GG.NameCacheInternational.surf = {}
               GG.NameCacheInternational.family = {}
     		  for culture, data in pairs(names) do
-                for i=1, #data.sur do
-                    GG.NameCacheInternational.sur[#GG.NameCacheInternational.sur+1] = data.sur[i]  
+                for i=1, #data.surm do
+                    GG.NameCacheInternational.surm[#GG.NameCacheInternational.surm+1] = data.surm[i]  
+                end   
+                for i=1, #data.surf do
+                    GG.NameCacheInternational.surf[#GG.NameCacheInternational.surf+1] = data.surf[i]  
                 end
                 for i=1, #data.family do
                     GG.NameCacheInternational.family[#GG.NameCacheInternational.family+1] = data.family[i]  
@@ -496,20 +544,40 @@ end
             names.international = GG.NameCacheInternational
           end
 
-    if math.random(1,100) == 42 then return "PWNED", "byHaxxor"end
+    if id % 100 == 42 then return "[Illegal ID]", "DB:Inconsistency error" end
 
-    surHash =  (id % #names[culture].sur) + 1
-    familyHash =  ((id + 32416190071)% #names[culture].sur) + 1
-    return names[culture].sur[surHash], names[culture].family[familyHash]
+    surName = "[Illegal ID]"
+
+    if sex == "male" then
+        surHash =  (id % #names[culture].surm) + 1
+        surName = names[culture].surm[surHash]
+    end
+
+    if sex == "female" then
+        surHash =  (id % #names[culture].surf) + 1
+        surName = names[culture].surf[surHash]
+    end
+    
+    familyHash =  (id % #names[culture].family) + 1
+    familyName =  names[culture].family[familyHash]
+    return surName, familyName
 end
 
 function gossipGenerator(gossipyID, oppossingPartnerID)
     -- Define the subjects, actions, and objects
-    subjects = {"Me", "I", "We", "They", "All of us", "Society", "Your moma", "Motherfugger", "Family"}
-    filler = {"were", "and","or", "I swear","um", "uh", "like", "you know", "with", "fat", "freaking", "fuckyeah", "because", "feel me", "so", 
+
+    questions = {"Why", "Where", "What", "How", "With", "Who"}
+    space = " "
+    
+    subjects = {
+    "Me", "I", "We", "They", "All of us", "Mum", "Dad","Society","Family", "Just", "Oh my god"}
+    
+    filler = {"where", "which", "we are", "and","or", "I swear","um", "uh", "like", "you know", "with", "fat", "freaking", "fuckyeah", "because", "feel me", "so", 
     "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
-    "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck"}
-    actions = {"agree", "like", "is so", "told", "loved", "dated", "owned", "hated", "life", "laughed", "talked", "mobbed", "networked", 
+    "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck", "then", "i swear", "my hand to god", "oath on that", "get me"}
+
+    actions = {
+        "agree", "like", "is so", "told", "loved", "dated", "owned", "hated", "life", "laughed", "talked", "mobbed", "networked", 
     "worked", "stabbed", "fucked", "angered", "bought", "sold out", "murdered", "kicked", "rolled up", "fled", "yelled", "used", "cheat", 
     "abused", "knows someone who", "promoted", "blew", "got rich", "knew", "sucked up"}
 
@@ -522,34 +590,48 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
         "enslaved", "dehumanized", "totalitarian", "controlled", "desensitized", "scavenged", "illicit", 
         "underground", "rebellious", "manipulated", "forgotten", "abandoned", "subversive", "gritty", "lawless", 
         "grim", "disconnected", "trapped", "sterile", "heartless", "ruthless", "merciless", "barren", "bleak", 
-        "desolate", "forsaken", "impoverished", "ransacked"
+        "desolate", "forsaken", "impoverished", "ransacked", "pregnant", "shitty","favourite",
     }
+
     objects = {
         "family", "me", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith", 
-        "mother", "father", "bread", "vegetables", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
+        "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
         "gambling", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
         "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "BLYAT", "motherfucker", 
         "bastard", "beauty", "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
-        "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.", "favourite", "company", "choom", "roller", "baller"}
-    techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[REDACTED]", "[TranslatorError]", "BURP", "[sobs]", " -"}
+        "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
+        "conspiracy", "secret society", "cells", "agents", "antagon", "protagon", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs"}
+    
+    techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
+
     if gossipyID then
-        sur, name = getDeterministicCultureNames(gossipyID)
+        name, family = getDeterministicCultureNames(gossipyID)
         conversation = name..": "
-        table.insert(subjects, sur)
+        table.insert(subjects, family)
     end
+
+    isQuestion = randChance(10)
+    if (isQuestion) then
+        conversation = conversation .. questions[math.random(1, #questions)]
+    end
+
     if oppossingPartnerID then 
-        sur, name = getDeterministicCultureNames(oppossingPartnerID)
-        table.insert(subjects, sur)
+        name, family = getDeterministicCultureNames(oppossingPartnerID)
+        table.insert(subjects, family)
         table.insert(subjects, name)
     end
 
     space = " "
-
+   
     conversationalRecursionDepth = math.random(1,9)
     conversation =  conversation .. subjects[math.random(1, #subjects)]
     conversation = conversation ..space.. actions[math.random(1,#actions)]
     linebreak = 1
     repeat 
+        if string.len(conversation) > linebreak * 32 then
+            conversation =conversation .. "\r"
+            linebreak = linebreak +1
+        end
 
         if maRa() then
             conversation = conversation ..space.. filler[math.random(1,#filler)]
@@ -563,19 +645,31 @@ function gossipGenerator(gossipyID, oppossingPartnerID)
         end
         if randChance(15) then
             conversation = conversation ..space.. actions[math.random(1,#actions)] 
+            if randChance(25) then
+                conversation = conversation ..space.. property[math.random(1,#property)]
+            end
             conversation = conversation .. " the ".. objects[math.random(1,#objects)]
         end
         conversationalRecursionDepth = conversationalRecursionDepth -1
-        if string.len(conversation) > linebreak * 15 then
-            conversation =conversation .. "\n"
-            linebreak = linebreak +1
-        end
+ 
     until (conversationalRecursionDepth < 0) 
     optionalEndElement = ""
 
-    if randChance(25) then
-        optionalEndElement = " for the ".. objects[math.random(1,#objects)]
+
+    explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "that", "unblievable"}
+    if randChance(35) then
+        optionalEndElement = explainer[math.random(1,#explainer)].. space ..objects[math.random(1,#objects)]
+    end    
+    conversation = conversation .. optionalEndElement 
+    if isQuestion then
+        conversation = conversation .. "?"
+    else
+        if maRa() then
+            conversation = conversation .. "."
+        else
+            conversation = conversation .. "!"
+        end
     end
 
-    return conversation .. optionalEndElement 
+    return conversation
 end

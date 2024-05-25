@@ -252,8 +252,8 @@ end
 -------Shader--2ndPass -----------------------------------------------------------
 --Glow Reflection etc.
 --Execution of the shader
-    function gadget:ViewResize(viewSizeX, viewSizeY) --TODO test/assert
-    	vsx, vsy = viewSizeX, viewSizeY
+    function gadget:ViewResize() --TODO test/assert
+    	vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
 
         screentex= glCreateTexture(vsx,vsy, {
             target = target,
@@ -265,12 +265,12 @@ end
 
         afterglowbuffertex = glCreateTexture(vsx,vsy,
             {
+            fbo = true,
             min_filter = GL.LINEAR, 
             mag_filter = GL.LINEAR,
             wrap_s = GL.CLAMP_TO_EDGE, 
             wrap_t = GL.CLAMP_TO_EDGE,
             })
-
     end
 
     local counterNeonUnits = 0

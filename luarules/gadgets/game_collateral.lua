@@ -323,6 +323,7 @@ else -- UNSYNCED
 
     local colRed = {r =  34/255, g = 12/255, b = 1.0, a = 1.0}
     local colGreen ={ r= 171/255, g=  236/255, b= 183/255, a= 255/255}
+    local colGray ={r = 175/255, g= 175/255, b= 175/255, a = 128/255}
 
 
     
@@ -343,8 +344,8 @@ else -- UNSYNCED
                 end
             else
                 message = message
-                col.r, col.g, col.b, col.a= 175/255, 175/255, 175/255, 175/255
-                size = 12
+                col.r, col.g, col.b, col.a= 175/255, 175/255, 175/255, 156/255
+                size = 10
             end
 
         Unit_StartFrame_Message[unitID] =

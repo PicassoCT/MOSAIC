@@ -36,14 +36,14 @@ function updateCheckCache()
 end
 
 function ShowReg(pieceID)
-    assert(pieceID)
+    if not pieceID then return end
     Show(pieceID)
     table.insert(cachedCopy, pieceID)
     updateCheckCache()
 end
 
 function HideReg(pieceID)
-    assert(pieceID)
+    if not pieceID then return end
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     for i=1, #cachedCopy do
