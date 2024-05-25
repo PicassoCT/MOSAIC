@@ -572,15 +572,19 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     subjects = {
     "Me", "I", "We", "They", "All of us", "Mum", "Dad","Society","Family", "Just", "Oh my god"}
     
-    filler = {"where", "which", "we are", "and","or", "I swear","um", "uh", "like", "you know", "with", "fat", "freaking", "fuckyeah", "because", "feel me", "so", 
+    filler = {  "we are","I swear","um", "uh", "like", "you know", "fat", "freaking", "fuck yeah", "because", "feel me", "so", 
     "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
     "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck",
-     "then", "in", "hardcore", "far out man", "i swear", "my hand to god", "gods my wittnes", "get me"}
+     "then", "in", "hardcore", "far out man", "i swear", "my hand to god", "gods my wittnes", "get me", "yo", "otherwise"}
+
+    conversationShift = {
+        "where", "which",  "and","or", "with", "but not", "but"
+    }
 
     actions = {
         "agree", "like", "is so", "told", "loved", "dated", "owned", "hated", "life", "laughed", "talked", "mobbed", "networked", 
     "worked", "stabbed", "fucked", "angered", "bought", "sold out", "murdered", "kicked", "rolled up", "fled", "yelled", "used", "cheat", 
-    "abused", "knows someone who", "promoted", "blew", "got rich", "knew", "sucked up"}
+    "abused", "knows someone who", "promoted", "blew", "got rich", "knew", "sucked up", "blame"}
 
     property = {
         "weird", "sad", "horrific", "outrageous", "disgusting", "funny", "ruthless", "nice", "cheap", "rare", 
@@ -595,17 +599,19 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     }
 
     objects = {
-        "family", "me", "situation", "car", "house", "kids","city", "money", "expenses", "government", "faith", 
+        "family", "me", "situation", "car", "house", "city", "money", "expenses", "government", "faith", 
         "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
         "gambler", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
         "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "BLYAT", "motherfucker", 
         "bastard",  "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
         "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
-        "conspiracy", "secret society", "cells", "agents", "antagon", "protagon", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs"}
+        "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
     
     techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
+    
+    explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by", "by the"}
 
-    if gossipyID then
+   if gossipyID then
         name, family = getDeterministicCultureNames(gossipyID, UnitDefs)
         conversation = name..": "
         table.insert(subjects, family)
@@ -613,7 +619,7 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
 
     isQuestion = randChance(10)
     if (isQuestion) then
-        conversation = conversation .. questions[math.random(1, #questions)]
+        conversation = conversation .. questions[math.random(1, #questions)]..space
     end
 
     if oppossingPartnerID then 
@@ -624,8 +630,10 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
 
     space = " "
    
-    conversationalRecursionDepth = math.random(1,9)
-    conversation =  conversation .. subjects[math.random(1, #subjects)]
+    conversationalRecursionDepth = math.random(1,5)
+    subject = subjects[math.random(1, #subjects)]
+    if isQuestion then subject = string.lower(subject) end
+    conversation =  conversation .. subject
     conversation = conversation ..space.. actions[math.random(1,#actions)]
     linebreak = 1
     repeat 
@@ -635,9 +643,16 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         end
 
         if maRa() then
-            conversation = conversation ..space.. filler[math.random(1,#filler)]
-            if maRa() then
-            conversation = conversation ..space.. property[math.random(1,#property)]
+            if randChance(75) then -- filler
+                conversation = conversation ..space.. filler[math.random(1,#filler)]
+                if maRa() then
+                    conversation = conversation ..space.. property[math.random(1,#property)]
+                end
+            else -- topic shift
+                conversation = conversation ..space.. conversationShift[math.random(1,#conversationShift)]
+                conversation = conversation ..space.. objects[math.random(1,#objects)]
+                addendum = {"is", "is not", "can", "can't", "however"}
+                conversation = conversation .. space .. addendum[math.random(1, # addendum)]
             end
         end
         
@@ -649,21 +664,19 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
             if randChance(25) then
                 conversation = conversation ..space.. property[math.random(1,#property)]
             end
-            conversation = conversation .. " the ".. objects[math.random(1,#objects)]
+            conversation = conversation .. space.. explainer[math.random(1,#explainer)] ..space.. objects[math.random(1,#objects)]
         end
         conversationalRecursionDepth = conversationalRecursionDepth -1
  
     until (conversationalRecursionDepth < 0) 
     optionalEndElement = ""
 
-
-
     if randChance(35) then
-        explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by"}
+
         optionalEndElement = space..explainer[math.random(1,#explainer)].. space ..objects[math.random(1,#objects)]
     end    
     conversation = conversation .. optionalEndElement 
-    if isQuestion then
+    if isQuestion == true then
         conversation = conversation .. "?"
     else
         if maRa() then
