@@ -26,9 +26,12 @@ local house_western_hologram = Abstract:New{
 
 }
 
+local house_western_brothel = house_western_hologram:New()
+house_western_brothel.objectName = "house_western_brothel_hologram.DAE"
+
 return lowerkeys({
 	--Temp
 	["house_western_hologram_buisness"] = house_western_hologram:New(),
-	["house_western_hologram_brothel"] = house_western_hologram:New(),
+	["house_western_hologram_brothel"] = house_western_brothel,
 	["house_western_hologram_casino"] = house_western_hologram:New(),
 })
