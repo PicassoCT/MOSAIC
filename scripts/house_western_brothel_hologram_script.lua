@@ -11,19 +11,16 @@ local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == myD
 local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == myDefID 
 
 local creditNeonSigns =  include('creditNamesNeonLogos.lua')
-local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
-local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
+local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
-local restaurantNeonLogos = include('restaurantNeonLogos.lua')
+
 civilianTypeTable = getCivilianTypeTable(UnitDefs)
 local hours  =0
 local minutes=0
 local seconds=0
 local percent=0
 hours, minutes, seconds, percent = getDayTime()
-
-
 
 function hashMaRa()
     return getLocationHash(unitID) % 2 == 0
@@ -35,7 +32,6 @@ local RainCenter = piece("RainCenter")
 local general_spin = piece("general_spin")
 local text_spin = piece("text_spin")
 local brothel_spin = piece("brothel_spin")
-local casino_spin = piece("casino_spin")
 local JLantern = piece("JLantern")
 local idleAnimations = {}
 local technoAnimations = {}
@@ -314,6 +310,14 @@ end
 
 function mergePersonalizeMessages()
   location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+
+        if boolIsBrothel then 
+            for i=1, #brothelsloganNamesNeonSigns do
+                brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
+            end
+             brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
+             assert(brothelNamesNeonSigns)
+        end
   
         for i=1, #sloganNamesNeonSigns do
             sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
@@ -415,17 +419,14 @@ function getGrid()
         end
     end
 
+    if boolIsBrothel then
+        return TableOfPiecesGroups["BrothelGrid"][math.random(1,2)]
+    end
 
     if (randChance(25)) then
         return getSafeRandom(allGrids, allGrids[1])
     end
-    if boolIsBuisness then
-        return TableOfPiecesGroups["BuisnessGrid"][math.random(1,2)]
-    end
-
-    if boolIsCasino then
-        return TableOfPiecesGroups["CasinoGrid"][math.random(1,2)]
-    end    
+ 
 end
 
 
@@ -784,316 +785,40 @@ end
 
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
-    assert(buisnessNeonSigns)
-    assert(buisnessNeonSigns)
+    assert(brothelNamesNeonSigns)
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
-    rotatorTable[#rotatorTable+1] = piece("casino_spin")
-    rotatorTable[#rotatorTable+1] = piece("buisness_spin")
     rotatorTable[#rotatorTable+1] = piece("general_spin")
     
     val = math.random(10,42)/10*randSign()
     Spin(rotatorTable[1], y_axis, math.rad(val), 0)
     val = math.random(10,42)/10*randSign()
     Spin(rotatorTable[2], y_axis, math.rad(val), 0)
-    val = math.random(10,42)/10*randSign()
-    Spin(rotatorTable[4], 2, math.rad(val), 0)
+
     Sleep(15000)
 
     
     local flickerGroup = TableOfPiecesGroups["BrothelFlicker"]
-    local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
     hideTReg(flickerGroup)
-    hideTReg(CasinoflickerGroup)
+
     
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
-  
-    if boolIsCasino then 
-        if randChance(25) then StartThread(chipsDropping) end
-        StartThread(localflickerScript, CasinoflickerGroup, function() return randChance(25); end, 5, 250, 4,  3, math.random(4,7))
     
+    --sexxxy time
+    if boolIsBrothel then   
         if maRa() then
-          StartThread(showWallDayTime, "CasinoWall")
+          StartThread(showWallDayTime, "BrothelWall")
+        end
+        StartThread(localflickerScript, flickerGroup, function() return randChance(25); end, 5, 250, 4,  2, math.random(5,7))
+        if maRa()  then
+          StartThread(holoGramNightTimes, "Japanese", _y_axis)
           StartThread(addJHologramLetters)
-          if maRa() then
-            StartThread(fireWorks)
-          end
-        end           
-        if maRa() then
-            addHologramLetters(casinoNamesNeonSigns)         
-            return 
         end
-    end
-    
+        addHologramLetters(brothelNamesNeonSigns)
 
-    if boolIsBuisness then 
-        if maRa() then
-            StartThread(showWallDayTime, "BuisnessWall")
-        end
-        logo = nil
-        boolDone = false
-        if not GG.HoloLogoRegister  then 
-            GG.HoloLogoRegister = {}
-            GG.HoloLogoRegister.western = {}
-            GG.HoloLogoRegister.eastern = {}
-          end   
-
-        lowestIndex= nil
-        lowestCounter = math.huge
-
-        start = (getLocationHash(unitID) % #TableOfPiecesGroups["buisness_holo"]) + 1
-        for i=start, #TableOfPiecesGroups["buisness_holo"] do
-            element = TableOfPiecesGroups["buisness_holo"][i]
-
-            if not GG.HoloLogoRegister.western[element] then
-                GG.HoloLogoRegister.western[element] = 1
-                logo = element
-                showSubSpins(element)
-                boolDone = true
-                break
-            elseif GG.HoloLogoRegister.western[element] < lowestCounter then
-                lowestIndex = element
-                lowestCounter = GG.HoloLogoRegister.western[element]
-            end
-        end
-
-        if not boolDone then
-            for i=1, start do
-                element = TableOfPiecesGroups["buisness_holo"][i]
-                if not GG.HoloLogoRegister.western[element] then
-                    GG.HoloLogoRegister.western[element] = 1
-                    logo = element
-                    showSubSpins(element)
-                    boolDone = true
-                    break
-                elseif GG.HoloLogoRegister.western[element] < lowestCounter then
-                    lowestIndex = element
-                    lowestCounter = GG.HoloLogoRegister.western[element]
-                end
-            end
-        end
-
-        if not boolDone then
-            --echo("Found no index for logo, selecting lowest")
-            logo = lowestIndex
-            GG.HoloLogoRegister.western[logo] = GG.HoloLogoRegister.western[logo] +1      
-        end
-        
-        if not GG.RestaurantCounter then GG.RestaurantCounter = 0 end
-        if GG.RestaurantCounter < 4 and randChance(25) then    
-            logo = piece("buisness_holo18")
-            boolIsRestaurant = true
-     
-            GG.RestaurantCounter = GG.RestaurantCounter + 1
-            symbol = math.random(8,11)
-            ShowReg(TableOfPiecesGroups["buisness_holo18Spin"][symbol])
-            StartThread(holoGramNightTimes, "GeneralDeco", nil, 5)
-            StartThread(addJHologramLetters)
-        end
-
-        if logo == symmetryPiece then --DELME DEBUG
-            symmetryOrigin = piece("SymmetryOrigin")
-            if maRa() then showReg(symmetryOrigin) end
-            shapeSymmetry(symmetryPiece)
-            --return            
-        end
-
-        if logo == qrcode then 
-            for i=1, #TableOfPiecesGroups["buisness_holo56Spin"] do
-                if TableOfPiecesGroups["buisness_holo56Spin"][i] and maRa() then
-                    ShowReg(TableOfPiecesGroups["buisness_holo56Spin"][i])
-                end
-            end
-
-        end
-
-        Spin(logo,y_axis, math.rad(5),0)     
-        ShowReg(logo)
-
-        if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
-        if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end
-
-
-
-        if maRa() then
-           local logoName = getUnitPieceName(unitID, logo)
-           logoTableName = logoName.."Spin"
-           if TableOfPiecesGroups[logoTableName] then   
-                for i=1, #TableOfPiecesGroups[logoTableName] do
-                    _, element = randDict(TableOfPiecesGroups[logoTableName])             
-                    if maRa() then
-                        spinLogoPiece = element
-                        ShowReg(spinLogoPiece)
-                        Spin(spinLogoPiece,y_axis, math.rad(-42),0)
-                    end
-                end
-              conditionalBuisnessLogo()
-           end
-        else
-            if randChance(25) then
-                addHologramLetters(creditNeonSigns)
-                if maRa() then
-                    StartThread(LightChain, TableOfPiecesGroups["Techno"], 4, 110)
-                end
-            else
-                conditionalBuisnessLogo()
-            end
-        end
         return 
-    end 
-end
-
-function conditionalBuisnessLogo()
-    if boolIsRestaurant then 
-        addHologramLetters(restaurantNeonLogos)
-    else
-        addHologramLetters(buisnessNeonSigns)
     end
 end
 
-function dragonDance()
-    local DragonTable = TableOfPiecesGroups["Dragon"]
-    local DragonHead = DragonTable[1]
-    dx,dz = math.random(-200,200),math.random(-200,200)
-
-    while true do
-        if (hours > 20 or hours < 6)  then
-            showTReg(DragonTable)
-            interval = 2 * math.pi
-            step = interval / #DragonTable
-            while (hours > 20 or hours < 6)  do
-                --movement                   
-                Move(DragonHead,1, dx, 50)
-                Move(DragonHead,3, dz, 50)       
-                --rotations
-                times = percent*30
-                for i=1, #DragonTable do
-                    val = math.sin(times * step * i)
-                    Turn(DragonTable[i], 3, val, 0.1)
-                end
-                Sleep(250)
-            end
-            hideTReg(DragonTable)
-            dx,dz = math.random(-200,200),math.random(-200,200)
-        end
-        Sleep(1000)
-    end
-end
-
-function fireWorksSet(fireSet, maxDistance, speed)
-    distanceX = math.random(maxDistance*0.75 ,maxDistance)*randSign()
-    distanceZ = math.random(maxDistance*0.75 ,maxDistance)*randSign()
-    distanceY = math.random(maxDistance*0.75 ,maxDistance)*randSign()
-    assert(fireSet)
-    for num, id in pairs(fireSet) do
-
-        mP(id, distanceX, distanceY, distanceZ, speed)
-        turnPieceRandDir(id, 0)    
-        spinRand(id,-10, 10, 0.25)
-        ShowReg(id)
-    end
-end
-
-function fireWorks()
-    local FireWorksCenter = piece("FireWorksCenter")
-    FireWorksTableB = TableOfPiecesGroups["BlueSpark"]
-    FireWorksTableR = TableOfPiecesGroups["RedSpark"]
-    FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
-    upaxis = 2
-
-    if maRa() then
-        StartThread(dragonDance) 
-    end
-
-    while true do
-        while (hours > 20 or hours < 6) do
-            ShowReg(FireWorksCenter)
-            reset(FireWorksCenter)
-            resetT(FireWorksTableB)
-            resetT(FireWorksTableR)
-            resetT(FireWorksTableY)
-            updistance = 3000
-
-            spreaddistance = 750 
-            fOffsetX=math.random(1000,2500)*randSign()
-            fOffsetZ=math.random(1000,2500)*randSign()
-            Move(FireWorksCenter, 1, fOffsetX,0)
-            Move(FireWorksCenter, 3, fOffsetZ,0)
-            WMove(FireWorksCenter, upaxis, updistance, 1000.5)
-            --Show and Expand
-
-             speed = math.random(25,35)
-            if maRa() then
-               fireWorksSet(FireWorksTableB, spreaddistance, spreaddistance)
-            end     
-
-            if maRa() then
-                fireWorksSet(FireWorksTableR, spreaddistance, spreaddistance)
-            end
-            
-            if maRa() then
-                fireWorksSet(FireWorksTableY, spreaddistance, spreaddistance)
-            end
-            HideReg( FireWorksCenter)          
-            WMove(FireWorksCenter, upaxis, updistance - 200, 250.5)
-            WMove(FireWorksCenter, upaxis, updistance - 1000, 500.5)
-            Move(FireWorksCenter, upaxis, updistance - 2000, 750)
-            Sleep(800) 
-            Move(FireWorksCenter, upaxis, 0, 1000)
-            for i=1, #FireWorksTableB do
-                HideReg(FireWorksTableB[i])
-                HideReg(FireWorksTableR[i])
-                HideReg(FireWorksTableY[i])
-                Sleep(200)
-            end     
-            WMove(FireWorksCenter, upaxis, 0, 1000)
-            timeBetweenShots= math.random(4,10)*1000
-            Sleep(1000)     
-
-        end
-    Sleep(5000)
-    end
-end
-
-function shapeSymmetry(logo)
-    Sleep(500)
-    resetT(TableOfPiecesGroups["Symmetry"], 0)
-    hideTReg(TableOfPiecesGroups["Symmetry"])
-    local symmetryLimit =11
-    for ix=1, symmetryLimit do
-        if  (randChance(65.0)) or ix < 2 then
-            local smyPieceOrgName = "Symmetry0"..ix
-            local symPieceName = "Symmetry0"..(ix + symmetryLimit)
-            local ap = piece(smyPieceOrgName)
-            local symRoationVal = 0
-            if ap then         
-                symRoationVal = math.random(1,8)*randSign()*45
-                WTurn(ap, x_axis, math.rad(symRoationVal), 5000)
-                ShowReg(ap)
-            end
-
-            local orgVal = 0 
-            if ix == 1 then orgVal = 180 end
-            local symValue =  orgVal - symRoationVal
-            local bp = piece(symPieceName)
-            if bp then          
-                WTurn(bp, x_axis, math.rad(symValue), 5000)
-                ShowReg(bp)
-            end
-        end
-    end
-   
-
-       
-    
-    if not maRa() then
-     ShowReg(logo)
-    end
-    if maRa() == maRa() then
-        addHologramLetters(creditNeonSigns)
-    else
-        addHologramLetters(buisnessNeonSigns)
-    end
-end
 
 function showOne(T)
     if not T then return end

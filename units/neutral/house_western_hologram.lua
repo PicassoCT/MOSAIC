@@ -28,6 +28,7 @@ local house_western_hologram = Abstract:New{
 
 local house_western_brothel = house_western_hologram:New()
 house_western_brothel.objectName = "house_western_brothel_hologram.DAE"
+house_western_brothel.script = "house_western_brothel_hologram_script.lua"
 
 return lowerkeys({
 	--Temp
