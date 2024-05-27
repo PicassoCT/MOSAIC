@@ -413,6 +413,7 @@ end
 
 function getCivilianSex(id, UnitDefs)
     defID  = Spring.GetUnitDefID(id)
+    if not defID or not UnitDefs[defID] then return "male" end
     assert(UnitDefs[defID], id.." has no UnitDef")
     name = UnitDefs[defID].name
 

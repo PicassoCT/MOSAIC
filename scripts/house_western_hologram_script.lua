@@ -1935,6 +1935,7 @@ function addHologramLetters( myMessages)
             restoreMessageOriginalPosition(allLetters, posLetters)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
+                name, textFx = "circleProject", circleProject
                 if name then
                     echo("Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)

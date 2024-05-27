@@ -52,7 +52,7 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
-local qrcode = piece"buisness_holo056"
+
 boolIsRestaurant = false
 textSpinner =  piece("text_spin")
 DirectionArcPoint = piece "DirectionArcPoint"
@@ -361,7 +361,7 @@ function script.Create()
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
-    TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_hologram_script_PiecesTable", GetPieceTableGroups)
+    TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_brothel_hologram_script_PiecesTable", GetPieceTableGroups)
     restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
@@ -737,7 +737,6 @@ function showWallDayTime(name)
     end
 end
 
-symmetryPiece = piece("buisness_holo064")
 
 function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutMs, maxInterval,  minImum, minMaximum)
     --assert(flickerGroup)
@@ -798,6 +797,7 @@ function HoloGrams()
 
     
     local flickerGroup = TableOfPiecesGroups["BrothelFlicker"]
+    assert(flickerGroup)
     hideTReg(flickerGroup)
 
     
@@ -818,7 +818,6 @@ function HoloGrams()
         return 
     end
 end
-
 
 function showOne(T)
     if not T then return end
