@@ -12,7 +12,6 @@ local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == my
 
 local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
-local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
@@ -315,14 +314,6 @@ end
 
 function mergePersonalizeMessages()
   location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
-
-        if boolIsBrothel then 
-            for i=1, #brothelsloganNamesNeonSigns do
-                brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
-            end
-             brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
-             assert(brothelNamesNeonSigns)
-        end
   
         for i=1, #sloganNamesNeonSigns do
             sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
@@ -424,9 +415,6 @@ function getGrid()
         end
     end
 
-    if boolIsBrothel then
-        return TableOfPiecesGroups["BrothelGrid"][math.random(1,2)]
-    end
 
     if (randChance(25)) then
         return getSafeRandom(allGrids, allGrids[1])
@@ -796,7 +784,6 @@ end
 
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
-    assert(brothelNamesNeonSigns)
     assert(buisnessNeonSigns)
     assert(buisnessNeonSigns)
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
@@ -819,21 +806,6 @@ function HoloGrams()
     hideTReg(CasinoflickerGroup)
     
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
-    
-    --sexxxy time
-    if boolIsBrothel then   
-        if maRa() then
-          StartThread(showWallDayTime, "BrothelWall")
-        end
-        StartThread(localflickerScript, flickerGroup, function() return randChance(25); end, 5, 250, 4,  2, math.random(5,7))
-        if maRa()  then
-          StartThread(holoGramNightTimes, "Japanese", _y_axis)
-          StartThread(addJHologramLetters)
-        end
-        addHologramLetters(brothelNamesNeonSigns)
-
-        return 
-    end
   
     if boolIsCasino then 
         if randChance(25) then StartThread(chipsDropping) end
@@ -1963,6 +1935,7 @@ function addHologramLetters( myMessages)
             restoreMessageOriginalPosition(allLetters, posLetters)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
+                name, textFx = "circleProject", circleProject
                 if name then
                     echo("Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)

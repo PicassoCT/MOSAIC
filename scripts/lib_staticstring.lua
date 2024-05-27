@@ -413,7 +413,8 @@ end
 
 function getCivilianSex(id, UnitDefs)
     defID  = Spring.GetUnitDefID(id)
-    assert(UnitDefs[defID])
+    if not defID or not UnitDefs[defID] then return "male" end
+    assert(UnitDefs[defID], id.." has no UnitDef")
     name = UnitDefs[defID].name
 
     mapping_male = {
@@ -435,13 +436,13 @@ end
 
 
  function getDeterministicCultureNames( id, UnitDefs, culture)
-
+        assert(id)
         if not culture then 
             culture = getInstanceCultureOrDefaultToo() 
         end
 
         sex = getCivilianSex(id, UnitDefs)
-        assert(sex)
+
             names = {
                 arabic = {
                     surf = {
