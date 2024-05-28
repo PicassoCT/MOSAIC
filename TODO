@@ -16,11 +16,11 @@
 	- depends on memory stackoverflow solved due to building model copies 
 - selfilu windows for buildings (seperate texture channel that blends in/out over) the time of day - does not apply to holograms
 - normaltexture for asian buildings
-- operator drop in water
 - vannishing safehouses on upgrade
 - minigame debbugging
 - no alpha texture
 - testgame:AI vs AI. 
+- divide and conquer performance testing debugging /buildings /no buildings
 
 https://www.shadertoy.com/view/wt2yW3
 
