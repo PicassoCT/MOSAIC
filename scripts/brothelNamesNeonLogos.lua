@@ -128,6 +128,8 @@
 "DNA Lounge",
 "Zeldas Nightclub",
 "Bottom of the Hill",
+"All you can fuck",
+"Meow",
 "The pit",
 "The nine circles",
 "CAT oF Ninetails",
@@ -499,7 +501,7 @@
   "Respecting your superiors", "Sampling the sausage", "Scooby snacking", "Secretarial duties", "Singing to the choir", "Skull buggery", 
   "Skull fucking", "Slobbin the knob", "Smiling at Mr Winky", "Smoking the pink pipe", "Smoking pole", "Southern France", 
   "Speaking into the bonophone", "Speaking low genitals", "Spit shining a baseball bat", "Spraying the tonsils", "Sucking off", 
-  "Sucky ducky", "Suck starting the Harley", "Swallowing the baloney pony", "Sword wwallowing", 
+  "Sucky ducky", "Suck starting the Harley", "Swallowing the baloney pony", "Sword swallowing", 
   "Taking ones temp with a meat thermometer", "Talking into the mic", "Telling it to the judge", "Waxing the carrot", 
   "Worshiping at the altar", "Wringing it dry", "Yaffling the yogurt cannon", "Zipper dinner", 
   "Loveless", "Fetish Friday"
