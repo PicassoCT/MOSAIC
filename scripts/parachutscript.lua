@@ -143,13 +143,12 @@ function fallingDown()
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
     boolIsAboveGround,_,_, _, gh = isPieceAboveGround(unitID, center, 15) 
     while boolIsAboveGround do    
-        if 
         xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
         Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)
         Sleep(1)
          boolIsAboveGround,x,z,y, gh = isPieceAboveGround(unitID, center, 15) 
          if not boolIsAboveGround and  gh < 0 then
-            Spring.MoveCtrl.SetPosition(unitID, x, y + math.random(36, 45), z)
+            Spring.MoveCtrl.SetPosition(unitID, x, math.max(y, gh + math.random(36, 45)), z)
             boolIsAboveGround,x,z,y, gh = isPieceAboveGround(unitID, center, 15) 
          end
     end
