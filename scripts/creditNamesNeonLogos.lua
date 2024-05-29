@@ -41,5 +41,6 @@ return {
  "cliftonmcarlson",
  "klangfabrik",
  "Erdie",
- "Seelengold"
+ "Seelengold",
+ "Big Sakura Bonsai by Michael Groenert CC-BY via Poly Pizza"
 }

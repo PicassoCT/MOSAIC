@@ -136,9 +136,45 @@ function restartHologram()
         StartThread(showStreetSigns)
     end
 
+    if randChance(3)  then
+        StartThread(sakuraTree, TablesOfPieceGroups["Money"])
+    end
     if randChance(25)  then
        Sleep(500)
        showHoloWall()
+    end
+end
+
+function sakuraTree(chips)
+   sakura = piece("Sakura")
+   Show(sakura)
+    while true do
+        if (hours > 20 or hours < 6)  then
+            for i=1, #chips do
+                local chip= chips[i]
+                reset(chip)
+                val= math.random(15, 55)*randSign()
+                Spin(chip, x_axis, math.rad(val),0)
+                val= math.random(15, 55)*randSign()
+                Spin(chip, z_axis, math.rad(val),0)
+                ShowReg(chip)
+                randX = math.random(0, 1500)*randSign()
+                randY = math.random(0, 1500)*randSign()
+                randZ = math.random(0, 1500)*randSign()
+                downDirection = math.random(15000, 29000) * randSign()
+                mP(chip, randX, randY, randZ, 100)
+            end
+            Sleep(2000)
+            for i=1, #chips do
+                local chip= chips[i]
+                Move(chip, math.random(1,3), downDirection, 300)
+            end
+            Sleep(15000)
+            for i=1, #chips do
+                HideReg(chips[i])
+            end
+        end
+        Sleep(1000)
     end
 end
 
