@@ -85,20 +85,24 @@ function detectStationary()
     while true do
         oldx,  oldz = x,z
         Sleep(100)
-        dist = math.sqrt((oldx-x)^2 + (oldz-z)^2)
-        if dist < stationaryTreshold then
-            accumulatedNonMovementTime = accumulatedNonMovementTime + 100
-            if accumulatedNonMovementTime > 5000 then
-                dropRate = stationaryDropRate
-                boolStationary = true
+        if Spring.GetGroundHeight(x,z) < 0 then
+            dropRate = 0.00000001
+        else
+            dist = math.sqrt((oldx-x)^2 + (oldz-z)^2)
+            if dist < stationaryTreshold then
+                accumulatedNonMovementTime = accumulatedNonMovementTime + 100
+                if accumulatedNonMovementTime > 5000 then
+                    dropRate = stationaryDropRate
+                    boolStationary = true
+                else
+                    dropRate = travellingDropRate
+                    boolStationary = false
+                end
             else
+                accumulatedNonMovementTime = 0
                 dropRate = travellingDropRate
                 boolStationary = false
             end
-        else
-            accumulatedNonMovementTime = 0
-            dropRate = travellingDropRate
-            boolStationary = false
         end
     end
 end
@@ -141,16 +145,12 @@ function fallingDown()
 
     Spring.UnitAttach(unitID, passengerID, step)
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
-    boolIsAboveGround,_,_, _, gh = isPieceAboveGround(unitID, center, 15) 
-    while boolIsAboveGround do    
+
+    while isPieceAboveGround(unitID, center, 15) == true do    
+        x, y, z = Spring.GetUnitPosition(unitID)
         xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
         Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)
         Sleep(1)
-         boolIsAboveGround,x,z,y, gh = isPieceAboveGround(unitID, center, 15) 
-         if not boolIsAboveGround and  gh < 0 then
-            Spring.MoveCtrl.SetPosition(unitID, x, math.max(y, gh + math.random(36, 45)), z)
-            boolIsAboveGround,x,z,y, gh = isPieceAboveGround(unitID, center, 15) 
-         end
     end
 
     Spring.UnitDetach(passengerID)
