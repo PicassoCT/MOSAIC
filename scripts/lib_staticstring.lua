@@ -608,14 +608,14 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
         "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
     
-    techBabble = {"[CENSORED]", "[Profanity]", "...", "[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
+    techBabble = {"[CENSORED]", "[Profanity]", "...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
     
     explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by", "by the"}
 
    if gossipyID then
         name, family = getDeterministicCultureNames(gossipyID, UnitDefs)
         conversation = name..": "
-        table.insert(subjects, family)
+        table.insert(subjects, family)property
     end
 
     isQuestion = randChance(10)
@@ -644,13 +644,14 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         end
 
         if maRa() then
-            if randChance(75) then -- filler
+            if randChance(25) then -- filler
                 conversation = conversation ..space.. filler[math.random(1,#filler)]
                 if maRa() then
                     conversation = conversation ..space.. property[math.random(1,#property)]
                 end
             else -- topic shift
                 conversation = conversation ..space.. conversationShift[math.random(1,#conversationShift)]
+                conversation = conversation ..space.. property[math.random(1,#property)]
                 conversation = conversation ..space.. objects[math.random(1,#objects)]
                 addendum = {"is", "is not", "can", "can't", "however"}
                 conversation = conversation .. space .. addendum[math.random(1, # addendum)]
@@ -673,9 +674,9 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     optionalEndElement = ""
 
     if randChance(35) then
-
         optionalEndElement = space..explainer[math.random(1,#explainer)].. space ..objects[math.random(1,#objects)]
-    end    
+    end 
+
     conversation = conversation .. optionalEndElement 
     if isQuestion == true then
         conversation = conversation .. "?"

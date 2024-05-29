@@ -557,15 +557,17 @@ end
 
 function holoGramNightTimes( name, axisToRotateAround, max)
     if max == nil then
-        max = 5
+        max = 6
     end
+    max = math.min(max, #TableOfPiecesGroups[name])
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
+    
     while true do
         if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellDict= {}
-            hcounter = math.random(3, 6)
+            hcounter = math.random(3, max)
             assert(#TableOfPiecesGroups[name] > 0, name)
             for i=1, #TableOfPiecesGroups[name] do
                 Sleep(500)
@@ -823,14 +825,14 @@ function HoloGrams()
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["Money"]) end
         StartThread(localflickerScript, CasinoflickerGroup, function() return randChance(25); end, 5, 250, 4,  3, math.random(4,7))
     
-        if maRa() then
+        if maRa() or isNearCityCenter(x,z, GameConfig)  then
           StartThread(showWallDayTime, "CasinoWall")
           StartThread(addJHologramLetters)
           if maRa() then
             StartThread(fireWorks)
           end
         end           
-        if maRa() then
+        if randChance(75) then
             addHologramLetters(casinoNamesNeonSigns)         
             return 
         end
@@ -838,7 +840,7 @@ function HoloGrams()
     
 
     if boolIsBuisness then 
-        if maRa() then
+        if maRa() or isNearCityCenter(x,z, GameConfig) then
             StartThread(showWallDayTime, "BuisnessWall")
         end
 
@@ -903,7 +905,7 @@ function HoloGrams()
             StartThread(addJHologramLetters)
         end
 
-        if logo == symmetryPiece then --DELME DEBUG
+        if logo == symmetryPiece then 
             symmetryOrigin = piece("SymmetryOrigin")
             if maRa() then showReg(symmetryOrigin) end
             shapeSymmetry(symmetryPiece)
@@ -924,8 +926,6 @@ function HoloGrams()
 
         if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
         if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end
-
-
 
         if maRa() then
            local logoName = getUnitPieceName(unitID, logo)
