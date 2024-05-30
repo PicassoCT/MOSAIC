@@ -608,14 +608,14 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
         "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
     
-    techBabble = {"[CENSORED]", "[Profanity]", "...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
+    techBabble = {"[CENSORED]", "[Profanity]", "[GCR]","[Generated Content removed]","...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
     
     explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by", "by the"}
 
    if gossipyID then
         name, family = getDeterministicCultureNames(gossipyID, UnitDefs)
         conversation = name..": "
-        table.insert(subjects, family)property
+        table.insert(subjects, family)
     end
 
     isQuestion = randChance(10)
