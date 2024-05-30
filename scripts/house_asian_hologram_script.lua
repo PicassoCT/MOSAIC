@@ -137,7 +137,7 @@ function restartHologram()
     end
 
 
-    StartThread(sakuraTree, TableOfPiecesGroups["Money"])
+    StartThread(sakuraTree)
 
     if randChance(25)  then
        Sleep(500)
@@ -145,43 +145,47 @@ function restartHologram()
     end
 end
 
-function sakuraTree(chips)
+function sakuraTree()
    Sleep(100)
    sakura = piece("Sakura")
     while true do
-        if (hours > 16 or hours < 8)  then
+        if  true or(hours > 16 or hours < 8)  then
             ShowReg(sakura)
-            while (hours > 16 or hours < 8)  do
+            while true or (hours > 16 or hours < 8)  do
                 dirx, diry, dirz= randSign(),randSign(),randSign()
 
-                for i=1, #chips do
-                    local chip= chips[i]
-                    WaitForMoves(chip)
-                    HideReg(chip)
-                    reset(chip)
-                    val= math.random(15, 55)*randSign()
-                    Spin(chip, x_axis, math.rad(val),0)
-                    val= math.random(15, 55)*randSign()
-                    Spin(chip, z_axis, math.rad(val),0)
-                    ShowReg(chip)
+                    foreach(TableOfPiecesGroups["Petal"],
+                        function(chip)
+                        WaitForMoves(chip)
+                        HideReg(chip)
+                        reset(chip)
+                        val= math.random(15, 55)*randSign()
+                        Spin(chip, x_axis, math.rad(val),0)
+                        val= math.random(15, 55)*randSign()
+                        Spin(chip, z_axis, math.rad(val),0)
+                        ShowReg(chip)
 
-                    randX = math.random(150, 1500) *dirx
-                    randY = math.random(150, 1500) *diry
-                    randZ = math.random(150, 1500) *dirz
-                    downDirection = math.random(15000, 29000) * diry
-                    mP(chip, randX, randY, randZ, 100)
-                    Sleep(150)
+                        randX = math.random(150, 1500) *dirx
+                        randY = math.random(150, 1500) *diry
+                        randZ = math.random(150, 1500) *dirz
+                        downDirection = math.random(15000, 29000) * diry
+                        mP(chip, randX, randY, randZ, 100)
+                        Sleep(150)
+                    end)
+
                 end
                 Sleep(2000)
-                for i=1, #chips do
-                    local chip= chips[i]
-                    Move(chip, math.random(1,3), downDirection, 300)
-                end  
-            end    
-            for i=1, #chips do
-                local chip= chips[i]
-                HideReg(chip)
-            end
+                foreach(TableOfPiecesGroups["Petal"],
+                function(chip)
+                        Move(chip, math.random(1,3), downDirection, 300)
+                    end
+                )
+                Sleep(2000)  
+            foreach(TableOfPiecesGroups["Petal"],
+                function(chip)
+                    HideReg(chip)
+                end)
+            
             HideReg(sakura)               
         end
         Sleep(1000)

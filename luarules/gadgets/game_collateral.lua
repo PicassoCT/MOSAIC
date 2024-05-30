@@ -325,7 +325,15 @@ else -- UNSYNCED
     local colGreen ={ r= 171/255, g=  236/255, b= 183/255, a= 255/255}
     local colGray ={r = 175/255, g= 175/255, b= 175/255, a = 128/255}
 
-
+    local function GetMoneyMessage(number)
+        local text =""
+        if number < 0 then
+            text=  "\255\255\34\12 $ " .. number
+        else
+           text = "\255\171\236\183 $ " .. number
+        end
+        return text
+    end
     
     -- Display Lost /Gained Money depending on team
     local function DisplaytAtUnit(callname, unitID, team, message, r, g, b, a)
@@ -335,13 +343,12 @@ else -- UNSYNCED
         --	 Spring.Echo("Display At Unit")
             if type(message) == "number" then
                 format= "od"
-                if message < 0 then 
-                    message =   message
+                 if message < 0 then                  
                     col = colRed
                 else
-                    message =  message
                     col= colGreen
                 end
+                message =   GetMoneyMessage(message)               
             else
                 message = message
                 col.r, col.g, col.b, col.a= 175/255, 175/255, 175/255, 156/255
