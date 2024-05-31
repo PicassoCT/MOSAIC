@@ -555,11 +555,9 @@ function holoGramRain()
     end
 end
 
-function holoGramNightTimes( name, axisToRotateAround, max)
-    if max == nil then
-        max = 6
-    end
-    max = math.min(max, #TableOfPiecesGroups[name])
+function holoGramNightTimes( name, axisToRotateAround, elementsMax)
+
+    elementsMax = math.max(math.min(elementsMax or 5, #TableOfPiecesGroups[name]),4)
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     
@@ -567,7 +565,7 @@ function holoGramNightTimes( name, axisToRotateAround, max)
         if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellDict= {}
-            hcounter = math.random(3, max)
+            hcounter = math.random(3, elementsMax)
             assert(#TableOfPiecesGroups[name] > 0, name)
             for i=1, #TableOfPiecesGroups[name] do
                 Sleep(500)
@@ -833,7 +831,7 @@ function HoloGrams()
           end
         end           
         if randChance(75) then
-            addHologramLetters(casinoNamesNeonSigns)         
+            StartThread(addHologramLetters, casinoNamesNeonSigns)         
             return 
         end
     end
@@ -873,7 +871,7 @@ function HoloGrams()
 
         if not boolDone then
             for i=1, start do
-                element = TableOfPiecesGroups["buisness_holo"][i]
+                element = TableOfPiecesGroups["buisness_holo"][i] 
                 if not GG.HoloLogoRegister.western[element] then
                     GG.HoloLogoRegister.western[element] = 1
                     logo = element
@@ -908,7 +906,7 @@ function HoloGrams()
         if logo == symmetryPiece then 
             symmetryOrigin = piece("SymmetryOrigin")
             if maRa() then showReg(symmetryOrigin) end
-            shapeSymmetry(symmetryPiece)
+            StartThread(shapeSymmetry, symmetryPiece)
             --return            
         end
 
