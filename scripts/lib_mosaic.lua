@@ -763,7 +763,7 @@ function getGameConfig()
     function isNearCityCenter(x,z, GameConfig)
         if not x or not GG.innerCityCenter or not GG.innerCityCenter.x then return false, math.huge, math.huge end
         distanceToCityCenter = distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) 
-        return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySiz
+        return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySize
     end
 
   function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
