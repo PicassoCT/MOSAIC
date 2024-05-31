@@ -12,7 +12,7 @@ local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopy ={}
 local lastFrame = Spring.GetGameFrame()
-local TableOfPiecesGroups = {}
+TableOfPiecesGroups = {}
 local crossRotatePiece1 =  piece("HoloSpin72")
 local crossRotatePiece2 =  piece("HoloSpin74")
 local jumpScareRotor = piece("jumpScareRotor")
@@ -132,57 +132,83 @@ function restartHologram()
     StartThread(clock)
     StartThread(grid)
 
-    if randChance(25) then
+    if randChance(25) or isNearCityCenter(px,pz, GameConfig) then
         StartThread(showStreetSigns)
     end
 
-
-    StartThread(sakuraTree)
-
-    if randChance(25)  then
+    if randChance(25) or isNearCityCenter(px,pz, GameConfig) then
        Sleep(500)
        showHoloWall()
     end
+
+    if randChance(10) or isNearCityCenter(px,pz, GameConfig) then
+        StartThread(sakuraTree)
+    end
 end
 
+function throwPetal(chip, interval)
+    if maRa() then      
+        Sleep(interval)
+    end 
+    sakuraValues=   GG.Sakura
+    reset(chip)
+    val= math.random(15, 55)*randSign()
+    Spin(chip, x_axis, math.rad(val),0)
+    val= math.random(15, 55)*randSign()
+    Spin(chip, z_axis, math.rad(val),0)
+    ShowReg(chip)
+
+    randX = math.random(150, 1500) *sakuraValues.dirx
+    randY = math.random(150, 1500) *sakuraValues.diry
+    randZ = math.random(150, 1500) *sakuraValues.dirz
+
+    mP(chip, randX, randY, randZ, sakuraValues.speed +  math.random(0,3)/10)
+    Sleep(15000)
+end
+
+
+function setSakuraValue()
+    if not GG.Sakura then GG.Sakura = {} end
+    if not GG.Sakura.frame or GG.Sakura.frame < Spring.GetGameFrame() + (30 * 30) then
+        GG.Sakura.frame =  Spring.GetGameFrame()
+          GG.Sakura.dirx= randSign()
+          GG.Sakura.diry= randSign()
+          GG.Sakura.dirz= randSign()
+          GG.Sakura.speed= math.random(1,5)/10
+    end
+end
+
+
 function sakuraTree()
+   chips = {}
    Sleep(100)
    sakura = piece("Sakura")
+    for i=1, 12 do
+        petalPiece= piece("Petal"..i)
+        if petalPiece then
+            chips[#chips +1] = petalPiece
+        else
+            echo("No petal piece for "..i)
+        end
+    end
+
     while true do
-        if  true or(hours > 16 or hours < 8)  then
+        if  (hours > 16 or hours < 8)  then
             ShowReg(sakura)
-            while true or (hours > 16 or hours < 8)  do
-                dirx, diry, dirz= randSign(),randSign(),randSign()
+            while  (hours > 16 or hours < 8)  do
+                setSakuraValue()
+                restTime = math.random(15,20)*1000   
+                interval = math.ceil(restTime/24)
+                for i=1, 12 do    
+                    chip= piece("Petal"..i)
+                    StartThread(throwPetal, chip, math.random(1,12)*interval)  
+                 end
+                 Sleep(restTime)
+            end
 
-                    foreach(TableOfPiecesGroups["Petal"],
-                        function(chip)
-                        WaitForMoves(chip)
-                        HideReg(chip)
-                        reset(chip)
-                        val= math.random(15, 55)*randSign()
-                        Spin(chip, x_axis, math.rad(val),0)
-                        val= math.random(15, 55)*randSign()
-                        Spin(chip, z_axis, math.rad(val),0)
-                        ShowReg(chip)
-
-                        randX = math.random(150, 1500) *dirx
-                        randY = math.random(150, 1500) *diry
-                        randZ = math.random(150, 1500) *dirz
-                        downDirection = math.random(15000, 29000) * diry
-                        mP(chip, randX, randY, randZ, 100)
-                        Sleep(150)
-                    end)
-
-                end
-                Sleep(2000)
-                foreach(TableOfPiecesGroups["Petal"],
+            foreach(chips,
                 function(chip)
-                        Move(chip, math.random(1,3), downDirection, 300)
-                    end
-                )
-                Sleep(2000)  
-            foreach(TableOfPiecesGroups["Petal"],
-                function(chip)
+                    WaitForMoves(chip)
                     HideReg(chip)
                 end)
             
