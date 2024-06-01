@@ -557,7 +557,8 @@ end
 
 function holoGramNightTimes( name, axisToRotateAround, elementsMax)
 
-    elementsMax = math.max(math.min(elementsMax or 5, #TableOfPiecesGroups[name]),4)
+    elementsMax = elementsMax or 5
+    elementsMax = math.max(math.min(elementsMax, #TableOfPiecesGroups[name]),4)
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     
@@ -794,6 +795,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
+    echo("begin western hologram initialisation")
     SetSignalMask(SIG_HOLO)
     assert(buisnessNeonSigns)
     assert(buisnessNeonSigns)
@@ -815,9 +817,9 @@ function HoloGrams()
     local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
     hideTReg(flickerGroup)
     hideTReg(CasinoflickerGroup)
-    
+    echo("Starting hologram GeneralDeco")
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
-  
+    echo("Starting hologram type specific initilisation")
     if boolIsCasino then 
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["CasinoChip"], maRa) end
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["Money"]) end
@@ -921,6 +923,7 @@ function HoloGrams()
 
         Spin(logo,y_axis, math.rad(5),0)     
         ShowReg(logo)
+        echo("buisness_holo logo is: "..getUnitPieceName(unitID, logo))
 
         if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
         if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end
