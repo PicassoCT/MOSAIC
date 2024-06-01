@@ -555,11 +555,10 @@ function holoGramRain()
     end
 end
 
-function holoGramNightTimes( name, axisToRotateAround, max)
-    if max == nil then
-        max = 6
-    end
-    max = math.min(max, #TableOfPiecesGroups[name])
+function holoGramNightTimes( name, axisToRotateAround, elementsMax)
+
+    elementsMax = elementsMax or 5
+    elementsMax = math.max(math.min(elementsMax, #TableOfPiecesGroups[name]),4)
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     
@@ -567,7 +566,7 @@ function holoGramNightTimes( name, axisToRotateAround, max)
         if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellDict= {}
-            hcounter = math.random(3, max)
+            hcounter = math.random(3, elementsMax)
             assert(#TableOfPiecesGroups[name] > 0, name)
             for i=1, #TableOfPiecesGroups[name] do
                 Sleep(500)
@@ -796,6 +795,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
+   -- echo("begin western hologram initialisation")
     SetSignalMask(SIG_HOLO)
     assert(buisnessNeonSigns)
     assert(buisnessNeonSigns)
@@ -817,9 +817,9 @@ function HoloGrams()
     local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
     hideTReg(flickerGroup)
     hideTReg(CasinoflickerGroup)
-    
+    --echo("Starting hologram GeneralDeco")
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
-  
+    --echo("Starting hologram type specific initilisation")
     if boolIsCasino then 
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["CasinoChip"], maRa) end
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["Money"]) end
@@ -833,7 +833,7 @@ function HoloGrams()
           end
         end           
         if randChance(75) then
-            addHologramLetters(casinoNamesNeonSigns)         
+            StartThread(addHologramLetters, casinoNamesNeonSigns)         
             return 
         end
     end
@@ -873,7 +873,7 @@ function HoloGrams()
 
         if not boolDone then
             for i=1, start do
-                element = TableOfPiecesGroups["buisness_holo"][i]
+                element = TableOfPiecesGroups["buisness_holo"][i] 
                 if not GG.HoloLogoRegister.western[element] then
                     GG.HoloLogoRegister.western[element] = 1
                     logo = element
@@ -908,7 +908,7 @@ function HoloGrams()
         if logo == symmetryPiece then 
             symmetryOrigin = piece("SymmetryOrigin")
             if maRa() then showReg(symmetryOrigin) end
-            shapeSymmetry(symmetryPiece)
+            StartThread(shapeSymmetry, symmetryPiece)
             --return            
         end
 
@@ -923,6 +923,7 @@ function HoloGrams()
 
         Spin(logo,y_axis, math.rad(5),0)     
         ShowReg(logo)
+        echo("buisness_holo logo is: "..getUnitPieceName(unitID, logo))
 
         if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
         if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end
