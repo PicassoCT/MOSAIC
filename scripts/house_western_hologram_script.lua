@@ -795,7 +795,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
-    echo("begin western hologram initialisation")
+   -- echo("begin western hologram initialisation")
     SetSignalMask(SIG_HOLO)
     assert(buisnessNeonSigns)
     assert(buisnessNeonSigns)
@@ -817,9 +817,9 @@ function HoloGrams()
     local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
     hideTReg(flickerGroup)
     hideTReg(CasinoflickerGroup)
-    echo("Starting hologram GeneralDeco")
+    --echo("Starting hologram GeneralDeco")
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
-    echo("Starting hologram type specific initilisation")
+    --echo("Starting hologram type specific initilisation")
     if boolIsCasino then 
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["CasinoChip"], maRa) end
         if randChance(25) then StartThread(chipsDropping, TableOfPiecesGroups["Money"]) end
