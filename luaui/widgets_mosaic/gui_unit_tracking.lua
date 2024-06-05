@@ -50,6 +50,7 @@ local glTranslate      = gl.Translate
 local glRotate         = gl.Rotate
 local glBillboard      = gl.Billboard
 local glDrawFuncAtUnit = gl.DrawFuncAtUnit
+local glDrawFuncAtGUI  = gl.glDrawFuncAtGUI
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local scale         = 1
@@ -199,6 +200,27 @@ local function DrawSuspectMarker(yshift, designator, name)
 end
 
 
+local function DrawSuspectMarkerUI(x,y, yshift, designator, name)
+
+  local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
+  glColor(baseWhite)
+  glRect(-1, maxstringlength+ iconsizeX/2, 1, 0)
+  glTranslate(0,yshift,0)
+  glRotate(0,0,90.0,0)
+  --Draw Base Plate
+  glColor(baseBlack)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength, -iconsizeZ)
+  glColor(suspectCol)
+  glRect(-iconsizeX, iconsizeZ, maxstringlength, 0)
+  glColor(baseBlack)
+  gl.BeginText ( ) 
+  glColor(baseBlack)
+  gl.Text ("\255\0\0\0◪ "..string.upper(designator), -iconsizeX+2, iconsizeZ*0.9, textSize*3.75 , "lto" ) 
+  glColor(suspectCol)
+  gl.Text ("\255\0\255\0⧉⬚ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lto" ) 
+  gl.EndText()
+end
+
 
 function widget:DrawWorld()
 	if chobbyInterface then return end
@@ -211,6 +233,10 @@ function widget:DrawWorld()
   
     for unitID,texData in pairs(trackedUnits) do
       glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[texData.unitDefID] + iconHeighth, trackedUnits[unitID].marker, trackedUnits[unitID].name)
+      local x,y,z = spGetUnitPosition(unitID)
+      x,y = Spring.WorldToScreenCoords ( x,  y,  z ) 
+
+      DrawSuspectMarkerUI(x,y, unitHeights[texData.unitDefID] + iconHeighth, trackedUnits[unitID].marker, trackedUnits[unitID].name)
     end   
   end
 
