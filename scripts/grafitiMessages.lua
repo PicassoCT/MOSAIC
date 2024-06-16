@@ -122,7 +122,7 @@ return {
     "TRY AND TERROR",
     "HIT AND MISS",
     "smoke weed",
-    "smoke weed & every day",
+    "smoke weed & fvfry day",
     "ü can suck cocks in hell",
     "kill the cop in your head",
     "bob marley must live on",
