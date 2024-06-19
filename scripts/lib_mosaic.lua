@@ -10,6 +10,7 @@ function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
     mapToCultureDictionary = {
       ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international, 
+      ["mosaic_lastdayofdubai_v2"] = GG.AllCultures.international, 
       ["dsdr 3.99"] = GG.AllCultures.international   
     }
 
@@ -441,7 +442,8 @@ function getGameConfig()
     function  getManualCivilianBuildingMaps(mapName)
         mapName = string.lower(mapName)
         ManualCivilianBuildingPlacement = {
-          ["mosaic_lastdayofdubai_v1"] = true
+          ["mosaic_lastdayofdubai_v1"] = true,
+          ["mosaic_lastdayofdubai_v2"] = true
         }
         
         if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
@@ -715,7 +717,8 @@ function getGameConfig()
 
     function getManualObjectiveSpawnMapNames()
         return {
-            ["MOSAIC_LastDayOfDubai_V1"] = true
+            ["MOSAIC_LastDayOfDubai_V1"] = true,
+            ["MOSAIC_LastDayOfDubai_V2"] = true
         }
     end
 
