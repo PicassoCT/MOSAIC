@@ -21,7 +21,6 @@ if (gadgetHandler:IsSyncedCode()) then
     local gaiaTeamID = Spring.GetGaiaTeamID()
     local objectiveTypes = getObjectiveTypes(UnitDefs)
     local deadObjectiveTypes = getDeadObjectiveType(UnitDefs)
-    local manuallyObjectiveSpawnMapNames = getManualObjectiveSpawnMapNames()
 
     local Objectives = {}
     local DeadObjectives = {}
@@ -33,7 +32,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function useMapControlledObjectiveSpawn()
         name = Game.mapName
         --if manuallyObjectiveSpawnMapNames[name] then echo("Using map controlled spawn") end
-        return (manuallyObjectiveSpawnMapNames[name] or manuallyObjectiveSpawnMapNames[string.lower(name)] )~=nil   
+        return getManualObjectiveSpawnMapNames(name) 
  end
 
     function defaultInit()
