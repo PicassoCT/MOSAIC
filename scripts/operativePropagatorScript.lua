@@ -189,7 +189,7 @@ function script.Create()
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 	hideAll(unitID)
-	hideT(TablesOfPiecesGroups["SoftRobot"])	
+	
 	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
 	StartThread(trenchCoateAnimation)
 	showBody()
@@ -222,34 +222,39 @@ function trenchCoateAnimation()
 
 	local trenchCoatTable = {}
 	local idleTrenchCoatTable = {}
-	trenchCoatTable[#trenchCoatTable+1] = piece ("HeadDeco7")
-	idleTrenchCoatTable[#idleTrenchCoatTable+1] = TablesOfPiecesGroups["SoftRobot"][1]
-	idleTrenchCoatTable[#idleTrenchCoatTable+1] = piece ("HeadDeco7")
-	idleTrenchCoatTable[#idleTrenchCoatTable+1] = TablesOfPiecesGroups["SoftRobot"][math.floor(#TablesOfPiecesGroups["SoftRobot"]/2)]
-	for i=1,#TablesOfPiecesGroups["SoftRobot"] do
-		trenchCoatTable[#trenchCoatTable + 1] = TablesOfPiecesGroups["SoftRobot"][i]
-	end
+	trenchCoatTable = TablesOfPiecesGroups["Coat_Running"]
+	idleTrenchCoatTable = TablesOfPiecesGroups["Coat_Idle"]s
 	
 	walkCycleLengthMs= math.ceil((45/30)*1000)
 	stepLength= math.ceil(walkCycleLengthMs/#trenchCoatTable)
 	while true do
-	hideT(trenchCoatTable)
-	Show(idleTrenchCoatTable[math.random(1,3)])
-		while boolWalking do
-			for x= #trenchCoatTable, 1, -1 do
-				hideT(trenchCoatTable)	
-				Show(trenchCoatTable[x])
-				Sleep(stepLength)
-			end			
+		hideT(trenchCoatTable)
+		Show(idleTrenchCoatTable[math.random(1,#idleTrenchCoatTable)])
+		if boolWalking then
+			while boolWalking do
+				hideT(idleTrenchCoatTable)
+				for x= #trenchCoatTable, 1, -1 do
+					hideT(trenchCoatTable)	
+					Show(trenchCoatTable[x])
+					Sleep(stepLength)
+				end		
+				for x= 1, #trenchCoatTable do
+					hideT(trenchCoatTable)	
+					Show(trenchCoatTable[x])
+					Sleep(stepLength)
+				end		
+			end
+			hideT(trenchCoatTable)
+			Show(idleTrenchCoatTable[math.random(1,#idleTrenchCoatTable)])
 		end
-	val= math.random(200,400)
-	Sleep(val)
-	if maRa() then
-		while not boolWalking and maRa() do
-			val= math.random(500,1000)
-			Sleep(val)
+		val= math.random(200,400)
+		Sleep(val)
+		if maRa() then
+			while not boolWalking and maRa() do
+				val= math.random(500,1000)
+				Sleep(val)
+			end
 		end
-	end
 	end
 end
 
