@@ -1102,6 +1102,7 @@ end
 function raidFireFunction(weaponID, heading, pitch)
 	StartThread(visibleAfterWeaponsFireTimer)
 	StartThread(delayedFlashBang)
+	StartThread(showDroneHovering)
 	return true
 end
 
@@ -1162,6 +1163,31 @@ end
 boolInterrogated = false
 function setBoolInterrogatedExternally(boolInterrogatedExternally)
 	boolInterrogated = boolInterrogatedExternally
+end
+drone = piece("Drone")
+policeLineDoNotCross = piece("DroneSpin")
+boolAlreadyHasRaidDrones = false
+function showDroneHovering()
+	if boolAlreadyHasRaidDrones then return end
+	boolAlreadyHasRaidDrones= true
+	Move(drone, y_axis, 250, 0)
+	Show(drone)
+	Move(drone, y_axis, 0, 250)
+	Spin(policeLineDoNotCross, y_axis, math.random(15)*randSign(), 0)
+	Show(policeLineDoNotCross)
+	showT(TablesOfPiecesGroups["WarnCone"])
+	while (not boolMoving and not boolCloaked) do
+		for axis=1,3 do
+			Move(drone,axis, math.random(1,3)*randSign())
+		end
+		Sleep(1000)
+	end
+	Hide(policeLineDoNotCross)
+	hideT(TablesOfPiecesGroups["WarnCone"])
+	Move(drone, y_axis, 250, 900)
+	Sleep(3000)
+	Hide(drone)
+	boolAlreadyHasRaidDrones = false
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
