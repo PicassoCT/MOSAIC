@@ -221,7 +221,7 @@ function achromaticShivering(allLetters, posLetters)
                 function(letter)
                     usedLetters[letter] = letter
                     letterIndex= letterIndex +1
-                        if letter then                                 
+                        if letter and posLetters.IsThreeLetter[letter] then                                 
                             for ax=1,3 do
                                 for n = 1, #posLetters.IsThreeLetter[letter] do
                                     letterSub = osLetters.IsThreeLetter[letter][n]

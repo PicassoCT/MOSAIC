@@ -9,11 +9,14 @@
 function  getMapCultureMap(mapName)
     mapName = string.lower(mapName)
     mapToCultureDictionary = {
-      ["mosaic_lastdayofdubai_v1"] = GG.AllCultures.international, 
+      ["mosaic_lastdayofdubai_v"] = GG.AllCultures.international, 
       ["dsdr 3.99"] = GG.AllCultures.international   
     }
 
-    if mapToCultureDictionary[mapName] then return mapToCultureDictionary[mapName]  end
+    for name, culture in pairs(mapToCultureDictionary)do
+        if string.find(mapName, name ) then return culture end
+    end
+    return nil
 end
 
 function GetRegionByHash(mapHash)
@@ -441,10 +444,14 @@ function getGameConfig()
     function  getManualCivilianBuildingMaps(mapName)
         mapName = string.lower(mapName)
         ManualCivilianBuildingPlacement = {
-          ["mosaic_lastdayofdubai_v1"] = true
+          ["mosaic_lastdayofdubai_v"] = true
         }
         
-        if ManualCivilianBuildingPlacement[mapName] then return ManualCivilianBuildingPlacement[mapName]  end
+        for name, value in pairs(ManualCivilianBuildingPlacement)do
+            if string.find(mapName, name ) then return true end
+        end
+
+        return false
    end
 
    function getPayloadTypes(UnitDefs)
@@ -713,10 +720,15 @@ function getGameConfig()
         return id
     end
 
-    function getManualObjectiveSpawnMapNames()
-        return {
-            ["MOSAIC_LastDayOfDubai_V1"] = true
+    function getManualObjectiveSpawnMapNames(mapName)
+        ManualBuildingPlacement = {        
+            ["mosaic_lastdayofdubai_v"] = true
         }
+
+          for name, value in pairs(ManualBuildingPlacement)do
+            if string.find(mapName, name ) then return true end
+        end
+        return false
     end
 
     function getDeadObjectiveType(UnitDefs)

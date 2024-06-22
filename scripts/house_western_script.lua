@@ -1293,6 +1293,7 @@ function addGrafiti(x,z, turnV,  axis)
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
 --[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
+    grafitiMessages = nil
     myMessage = string.gsub(myMessage, "Ü", playerName or "")
     --echo("Adding Grafiti with message:" ..myMessage)
     counter={}
@@ -1306,7 +1307,7 @@ function addGrafiti(x,z, turnV,  axis)
             end            
             counter[letter] = counter[letter] + 1 
 
-            if counter[letter] < 3 then 
+            if counter[letter] < 4 then 
                 Turnfactor = math.atan((i/stringlength)*math.pi*2)
                 if maRa() == true then
                     Turnfactor = math.sin((i/stringlength)*math.pi*2)
