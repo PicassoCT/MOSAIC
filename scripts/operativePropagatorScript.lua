@@ -220,10 +220,8 @@ function trenchCoateAnimation()
 	end
 	if not boolFoundTrenchCoat then return end
 
-	local trenchCoatTable = {}
-	local idleTrenchCoatTable = {}
-	trenchCoatTable = TablesOfPiecesGroups["Coat_Running"]
-	idleTrenchCoatTable = TablesOfPiecesGroups["Coat_Idle"]s
+	local trenchCoatTable = TablesOfPiecesGroups["Coat_Running"]
+	local idleTrenchCoatTable = TablesOfPiecesGroups["Coat_Idle"]
 	
 	walkCycleLengthMs= math.ceil((45/30)*1000)
 	stepLength= math.ceil(walkCycleLengthMs/#trenchCoatTable)
