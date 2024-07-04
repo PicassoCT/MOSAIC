@@ -382,6 +382,15 @@ local function split(self, delimiter)
   table.insert( result, string.sub( self, from  ) )
   return result
 end
+local tresholdCrossValueStore = 0.0
+local function onTresholdCrossWriteToMapTexture()
+    if math.abs(tresholdCrossValueStore - rainPercent) > 0.1 then
+        tresholdCrossValueStore = rainPercent
+
+        glCopyToTexture("$map_reflection", 0, 0, vpx, vpy, vsx, vsy)
+    end
+
+end
 
 function widget:Update(dt)   
     if boolDebugActive then  
@@ -394,6 +403,7 @@ function widget:Update(dt)
     else
         rainPercent = math.max(0.0, rainPercent - 0.0001)
     end
+    onTresholdCrossWriteToMapTexture()
 end
 
 function widget:Shutdown()
