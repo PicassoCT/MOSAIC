@@ -207,7 +207,6 @@ local antagonToProtagon = {
 	[UnitDefNames["ground_turret_dronegrenade"].id] = UnitDefNames["ground_turret_dronegrenade"].id,
 	[UnitDefNames["ground_walker_grenade"].id] = UnitDefNames["ground_walker_grenade"].id,
 	[UnitDefNames["ground_walker_mg"].id] = UnitDefNames["ground_walker_mg"].id,
-	[UnitDefNames["ground_tumbleweedspyder"].id] = UnitDefNames["ground_tumbleweedspyder"].id,
 	[UnitDefNames["ground_tank_day"].id] = UnitDefNames["ground_tank_day"].id,
 	[UnitDefNames["ground_truck_mg"].id] = UnitDefNames["ground_truck_mg"].id,
 	[UnitDefNames["ground_truck_ssied"].id] = UnitDefNames["ground_truck_ssied"].id,

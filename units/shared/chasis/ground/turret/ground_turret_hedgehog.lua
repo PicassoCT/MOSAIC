@@ -1,4 +1,4 @@
-local ground_tumbleweed_deployed = Turret:New{
+local ground_turret_hedgehog = Turret:New{
 	name = "TumbleWeedSpyder",
 	description = "2 mines deployed",
 	
@@ -19,10 +19,10 @@ local ground_tumbleweed_deployed = Turret:New{
 
 	footprintX = 2,
 	footprintZ = 2,
-	script 			= "tumbleweedspyder_deployedscript.lua",
-	objectName 	= "ground_turret_spyder.dae",
-	buildPic = "ground_turret_spyder.png",
-	iconType ="ground_turret_spyder",
+	script 			= "ground_turret_hedgehog_script.lua",
+	objectName 		= "ground_hedgehog.dae",
+	buildPic 		= "ground_turret_spyder.png",
+	iconType 		= "ground_turret_spyder",
 	
 	usepiececollisionvolumes = true,
 	customparams = {
@@ -30,21 +30,16 @@ local ground_tumbleweed_deployed = Turret:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
 	
-				weapons = {
-			
+	weapons = {			
 				[1]={name  = "spydermine",
 					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-				[2]={name  = "spydermine",
-					onlyTargetCategory = [[BUILDING GROUND]],
-					},
-					
-		},	
+					},					
+			},	
 }
 
 
 return lowerkeys({
-	["ground_tumbleweed_deployed"]	= ground_tumbleweed_deployed:New(),
+	["ground_turret_hedgehog"]	= ground_turret_hedgehog:New(),
 
 	
 })
