@@ -25,8 +25,8 @@ local weaponDef = {
     --flight behaviour
     startVelocity  = 500,
     trajectoryHeight = 0.01 ,
-    flightTime = 4.5 ,
-    weaponVelocity = 1050,
+    flightTime = 0.8 ,
+    weaponVelocity = 800,
     weaponAcceleration = 100,
 
     --impact behaviour
