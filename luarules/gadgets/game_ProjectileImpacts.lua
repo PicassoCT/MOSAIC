@@ -69,8 +69,8 @@ if (gadgetHandler:IsSyncedCode()) then
     Script.SetWatchWeapon(molotowDefID, true)   
     local antiscoutlettWeaponDefID = WeaponDefNames["antiairkamikaze"].id
     Script.SetWatchWeapon(antiscoutlettWeaponDefID, true)   
-    local hedgehogeWaponDefID = WeaponDefNames["hedhehog"].id
-    Script.SetWatchWeapon(hedgehogeWaponDefID, true)   
+    local hedgehogWaponDefID = WeaponDefNames["hedhehog"].id
+    Script.SetWatchWeapon(hedgehogWaponDefID, true)   
     local FireWeapons = {
         [molotowDefID] = true
     }
@@ -130,11 +130,28 @@ if (gadgetHandler:IsSyncedCode()) then
   local hedgeHogeRegister = {}
   function RegisterStartHedgeHogTracking(proID, proOwnerID)
         if proOwnerID then -- every owner just one hedgehog
-            hedgeHogeRegister[proOwnerID] = {activeProjID = proID,  
+            hedgeHogeRegister[proOwnerID] = {projID = proID,  
                                             ownerTeamID = Spring.GetUnitTeam(proOwnerID), 
                                             lifeTimeCounter = 9 }--persPack
         end
 
+  end
+
+  function getHedgeHogProjectileParams(px,py,pz, targetID, projOwnerID)
+    if not px or not targetID then return end
+    local wDefHedge = WeaponDefNames["hedgehog"]
+    tx,ty,tz = Spring.GetUnitPosition(targetID)
+    local projectileParams = {
+        pos = {px, py, pz},
+        speed = {wDefHedge.startvelocity, wDefHedge.startvelocity, wDefHedge.startvelocity},
+        owner = projOwnerID,
+        team = Spring.GetUnitTeam(projOwnerID),
+        ttl = 0.8*30,
+        tracking = targetID,
+        maxRange = wDefHedge.range,
+        }
+    projectileParams["end"] = {tx,ty,tz}
+    return projectileParams
   end
     -- ===========Explosion Functions ====================================================
     local hedgeHogTargetTypeTable = getHedgeHogTargetTypes(UnitDefs)
@@ -144,7 +161,7 @@ if (gadgetHandler:IsSyncedCode()) then
             end
 
   local explosionFunc = {
-    [hedgehogeWaponDefID] = function(weaponDefID, px, py, pz, ownerID, proID)
+    [hedgehogWaponDefID] = function(weaponDefID, px, py, pz, ownerID, proID)
         local persPack = hedgeHogeRegister[ownerID]
         if not persPack then echo("hedgehog has not registered owner");return end
         --damage everyone around you with shotgun damge
@@ -153,7 +170,8 @@ if (gadgetHandler:IsSyncedCode()) then
             doDamageToAllUnitsInRange(px, pz, GameConfig.HedgeHog.ShotgunDamage, GameConfig.HedgeHog.ShotgunRange, damagedByHedgeHogHops)
         else
              doDamageToAllUnitsInRange(px, pz, GameConfig.HedgeHog.ExplosionDamage, GameConfig.HedgeHog.ExplosionRange, damagedByHedgeHogHops)
-             hedgeHogeRegister[ownerID] = nil
+             hedgeHogeRegister[ownerID] = nil --consumed
+             echo("Hedgehog has reached end of life/target - mighty badaboom")
              return    
         end 
 
@@ -175,12 +193,18 @@ if (gadgetHandler:IsSyncedCode()) then
             )
 
         if shortestTargetID then -- spawn a rocket going to target
-            --TODO spawn a hedgehog projectile
+            hedgeProjectileDefTable =    getHedgeHogProjectileParams(px,py,pz, shortestTargetID, ownerID)
+            if hedgeProjectileDefTable then
+                newProjID = spawnProjectile(hedgehogWaponDefID, hedgeProjectileDefTable)
+                persPack.projID = newProjID
+                hedgeHogeRegister[ownerID] = persPack
+                echo("Hedgehoghop "..persPack.lifeTimeCounter )
+                return
+            end
         else --spawn a dormant version of the hedgehog with less distance in it
-            --TODO spawn a h
-            newHedgeHog = Spring.CreateUnit("ground_turret_hedgehog", px, 0, pz, persPack.ownerTeamID)
+            newHedgeHog = Spring.CreateUnit("ground_turret_hedgehog", px, 0, pz, 0, persPack.ownerTeamID)
             hedgeHogeRegister[newHedgeHog] = persPack
-            --TODO TeamInfo
+             echo("Hedgehog lands - goes dormant ")
             return 
         end
 
@@ -1041,7 +1065,7 @@ if (gadgetHandler:IsSyncedCode()) then
             ProjectileCreatedFunc[projWeaponDefID](proID, proOwnerID, projWeaponDefID) 
         end
 
-        if projWeaponDefID == hedgehogeWaponDefID and spGetUnitDefID(proOwnerID) == ground_turret_hedgehog_defID then
+        if projWeaponDefID == hedgehogWaponDefID and spGetUnitDefID(proOwnerID) == ground_turret_hedgehog_defID then
             RegisterStartHedgeHogTracking(proID, proOwnerID)
         end
 

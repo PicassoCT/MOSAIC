@@ -5498,6 +5498,10 @@ function doDamageToAllUnitsInRange(x,z, range, damage, filterFunction)
             )
 end
 
+function spawnProjectile( weaponDefID,  projectileParams)
+    return Spring.SpawnProjectile (  weaponDefID,  projectileParams )
+end
+
 
 --> Set Unit permanent flying
 function setUnitNeverLand(unitID, boolNeverLand)
