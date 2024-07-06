@@ -348,7 +348,13 @@ function getGameConfig()
         iconHoverGroundOffset = 125,
         iconBlackHoleComDeactivateRange = 630,
         LifeTimeBlackOutIcon = 5* 60 * 1000,
-
+        HedgeHog =
+        {
+            ShotgunRange = 75,
+            ShotgunDamage = 200,
+            ExplodingRange = 150,
+            ExplodingDamage = 900
+        },
         Satellite = {
             iconDistance = 150,
             shrapnellDistance = 450,
@@ -937,6 +943,27 @@ function getGameConfig()
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
                     "objective_powerplant"
+                }
+                return mergeTables(getTypeTable(UnitDefNames, typeTable),  getCivilianTypeTable(UnitDefs))
+        end
+
+        function getHedgeHogTargetTypes(UnitDefs)
+             local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "truck_arab1",
+                    "truck_arab2",
+                    "truck_arab3",
+                    "truck_arab4",
+                    "truck_arab5",
+                    "truck_arab6",
+                    "truck_arab7",
+                    "ground_walker_mg",
+                    "ground_walker_grenade",
+                    "ground_hedgehog",
+                    "ground_turret_ssied",
+                    "ground_turret_dronegrenade",
+                    "ground_turret_mg",
                 }
                 return getTypeTable(UnitDefNames, typeTable)
         end

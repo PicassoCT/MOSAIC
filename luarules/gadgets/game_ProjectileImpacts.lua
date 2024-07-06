@@ -129,18 +129,63 @@ if (gadgetHandler:IsSyncedCode()) then
 
   local hedgeHogeRegister = {}
   function RegisterStartHedgeHogTracking(proID, proOwnerID)
-        hedgeHogeRegister[hedgeHogeRegister] = {}--persPack
+        if proOwnerID then -- every owner just one hedgehog
+            hedgeHogeRegister[proOwnerID] = {activeProjID = proID,  
+                                            ownerTeamID = Spring.GetUnitTeam(proOwnerID), 
+                                            lifeTimeCounter = 9 }--persPack
+        end
 
   end
     -- ===========Explosion Functions ====================================================
+    local hedgeHogTargetTypeTable = getHedgeHogTargetTypes(UnitDefs)
+    local damagedByHedgeHogHops = function (id, allyTeam)
+                defID = Spring.GetUnitDefID(id)
+                return (hedgeHogTargetTypeTable[defID] and Spring.GetUnitTeam(id) ~= allyTeam )
+            end
+
   local explosionFunc = {
     [hedgehogeWaponDefID] = function(weaponDefID, px, py, pz, ownerID, proID)
+        local persPack = hedgeHogeRegister[ownerID]
+        if not persPack then echo("hedgehog has not registered owner");return end
         --damage everyone around you with shotgun damge
+        if persPack.lifeTimeCounter > 0 then
+            persPack.lifeTimeCounter = persPack.lifeTimeCounter -1
+            doDamageToAllUnitsInRange(px, pz, GameConfig.HedgeHog.ShotgunDamage, GameConfig.HedgeHog.ShotgunRange, damagedByHedgeHogHops)
+        else
+             doDamageToAllUnitsInRange(px, pz, GameConfig.HedgeHog.ExplosionDamage, GameConfig.HedgeHog.ExplosionRange, damagedByHedgeHogHops)
+             hedgeHogeRegister[ownerID] = nil
+             return    
+        end 
 
-        --check if out of lifes
-            --end with explosive damage
+        --detect the target
+        rangeLeft = persPack.lifeTimeCounter * weaponDefNames["hedgehog"].range
+        shortestTargetID= nil
+        shortestTargetDistance = math.huge
+        foreach(
+            getAllInCircle(px,pz, rangeLeft),
+            function (targetID)
+                if not damagedByHedgeHogHops(targetID, persPack.ownerTeamID) then return end
+                tx, ty, tz = Spring.GetUnitPosition(targetID)
+                distanceToTarget = distance(px,pz, tx,tz ) 
+                if distanceToTarget < shortestTargetDistance then
+                    shortestTargetDistance = distanceToTarget
+                    shortestTargetID = targetID
+                end
+            end
+            )
+
+        if shortestTargetID then -- spawn a rocket going to target
+            --TODO spawn a hedgehog projectile
+        else --spawn a dormant version of the hedgehog with less distance in it
+            --TODO spawn a h
+            newHedgeHog = Spring.CreateUnit("ground_turret_hedgehog", px, 0, pz, persPack.ownerTeamID)
+            hedgeHogeRegister[newHedgeHog] = persPack
+            --TODO TeamInfo
+            return 
+        end
 
         --spawn new hedgehog to replace the old with no owner
+        hedgeHogeRegister[ownerID] = persPack
     end,
     [impactorWeaponDefID] =  function(weaponDefID, px, py, pz, AttackerID)
             id = Spring.CreateUnit("impactor", px, py, pz, 1, GaiaTeamID)

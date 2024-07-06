@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 MA 02110-1301, USA.
 
 
-]] -- test
+]]
 
 -------------- DEBUG HEADER
 -- Central Debug Header Controlled in UnitScript
@@ -5485,6 +5485,20 @@ end
 -- ======================================================================================
 -- Section: Unit Commands
 -- ======================================================================================
+--> Do all damage in circle
+function doDamageToAllUnitsInRange(x,z, range, damage, filterFunction)
+    return foreach(
+            getAllInCircle(x, z, range),
+            function(id)
+                if not filterFunction or filterFunction(id) then
+                    Spring.AddUnitDamage(id, damage)
+                    return id
+                end
+            end
+            )
+end
+
+
 --> Set Unit permanent flying
 function setUnitNeverLand(unitID, boolNeverLand)
     if boolNeverLand == true then
