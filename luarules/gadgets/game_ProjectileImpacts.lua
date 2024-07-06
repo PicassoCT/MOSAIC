@@ -42,6 +42,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetTeamList = Spring.GetTeamList
     local spSpawnCEG = Spring.SpawnCEG
     local spEcho =  Spring.Echo --
+    local ground_turret_hedgehog_defID = UnitDefNames["ground_turret_hedgehog"].id
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
     local MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
@@ -68,7 +69,8 @@ if (gadgetHandler:IsSyncedCode()) then
     Script.SetWatchWeapon(molotowDefID, true)   
     local antiscoutlettWeaponDefID = WeaponDefNames["antiairkamikaze"].id
     Script.SetWatchWeapon(antiscoutlettWeaponDefID, true)   
-    
+    local hedgehogeWaponDefID = WeaponDefNames["hedhehog"].id
+    Script.SetWatchWeapon(hedgehogeWaponDefID, true)   
     local FireWeapons = {
         [molotowDefID] = true
     }
@@ -125,9 +127,21 @@ if (gadgetHandler:IsSyncedCode()) then
         Script.SetWatchWeapon(wId, true)
     end
 
+  local hedgeHogeRegister = {}
+  function RegisterStartHedgeHogTracking(proID, proOwnerID)
+        hedgeHogeRegister[hedgeHogeRegister] = {}--persPack
 
+  end
     -- ===========Explosion Functions ====================================================
   local explosionFunc = {
+    [hedgehogeWaponDefID] = function(weaponDefID, px, py, pz, ownerID, proID)
+        --damage everyone around you with shotgun damge
+
+        --check if out of lifes
+            --end with explosive damage
+
+        --spawn new hedgehog to replace the old with no owner
+    end,
     [impactorWeaponDefID] =  function(weaponDefID, px, py, pz, AttackerID)
             id = Spring.CreateUnit("impactor", px, py, pz, 1, GaiaTeamID)
             Spring.SetUnitBlocking(id, false)
@@ -216,8 +230,8 @@ if (gadgetHandler:IsSyncedCode()) then
                         }, Spring.GetGameFrame() + math.random(1,18)% 3 )
     end
 
-    function gadget:Explosion(weaponDefID, px, py, pz, AttackerID)
-        if explosionFunc[weaponDefID] then explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID) 
+    function gadget:Explosion(weaponDefID, px, py, pz, AttackerID, projectileID)
+        if explosionFunc[weaponDefID] then explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID, projectileID) 
             return true
         end
 
@@ -977,8 +991,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local NewUnitsInPanic = {}
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
+
         if ProjectileCreatedFunc[projWeaponDefID] then 
             ProjectileCreatedFunc[projWeaponDefID](proID, proOwnerID, projWeaponDefID) 
+        end
+
+        if projWeaponDefID == hedgehogeWaponDefID and spGetUnitDefID(proOwnerID) == ground_turret_hedgehog_defID then
+            RegisterStartHedgeHogTracking(proID, proOwnerID)
         end
 
         if panicWeapons[projWeaponDefID] then
