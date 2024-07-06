@@ -31,7 +31,7 @@ local ground_turret_hedgehog = Turret:New{
 	},
 	
 	weapons = {			
-				[1]={name  = "spydermine",
+				[1]={name  = "hedgehog",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},					
 			},	
