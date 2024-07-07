@@ -450,7 +450,7 @@ function getGameConfig()
     function  getManualCivilianBuildingMaps(mapName)
         mapName = string.lower(mapName)
         ManualCivilianBuildingPlacement = {
-          ["mosaic_lastdayofdubai_v"] = true
+          ["mosaic_lastdayofdubai"] = true
         }
         
         for name, value in pairs(ManualCivilianBuildingPlacement)do

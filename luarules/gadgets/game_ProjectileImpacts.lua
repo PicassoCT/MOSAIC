@@ -202,7 +202,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 return
             end
         else --spawn a dormant version of the hedgehog with less distance in it
-            newHedgeHog = Spring.CreateUnit("ground_turret_hedgehog", px, 0, pz, 0, persPack.ownerTeamID)
+            newHedgeHog = Spring.CreateUnit("ground_mobile_hedgehog", px, 0, pz, 0, persPack.ownerTeamID)
             hedgeHogeRegister[newHedgeHog] = persPack
              echo("Hedgehog lands - goes dormant ")
             return 
@@ -1067,6 +1067,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if projWeaponDefID == hedgehogWaponDefID and spGetUnitDefID(proOwnerID) == ground_turret_hedgehog_defID then
             RegisterStartHedgeHogTracking(proID, proOwnerID)
+            return
         end
 
         if panicWeapons[projWeaponDefID] then
