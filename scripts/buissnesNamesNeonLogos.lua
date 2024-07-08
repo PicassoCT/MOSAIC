@@ -1,5 +1,11 @@
 
 return {
+"Ninsei Enclave",
+"Metro holografix",
+"chiba clinics",
+"Loony Zone",
+"Pink Octagon",
+"chatsubo",
 "yebisu group",
 "kiryat anor",
 "sabotal international",
@@ -591,6 +597,7 @@ return {
 "princeton eugenics",
 "Septic thanks",
 "Sesame Seeds",
-"No idea for a good company name but yeah lets order the vindaloo"
+"No idea for a good company name but yeah lets order the vindaloo",
+"Bodymod Impro"
 }
 

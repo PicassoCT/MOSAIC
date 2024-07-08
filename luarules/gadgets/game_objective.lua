@@ -31,8 +31,13 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function useMapControlledObjectiveSpawn()
         name = Game.mapName
-        --if manuallyObjectiveSpawnMapNames[name] then echo("Using map controlled spawn") end
-        return getManualObjectiveSpawnMapNames(name) 
+        local boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name) 
+        if boolMapControlledSpawnthen then
+            echo("Using map controlled spawn") 
+        else 
+
+        end
+        return boolMapControlledSpawn
  end
 
     function defaultInit()
