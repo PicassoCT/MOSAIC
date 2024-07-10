@@ -69,7 +69,7 @@ if (gadgetHandler:IsSyncedCode()) then
     Script.SetWatchWeapon(molotowDefID, true)   
     local antiscoutlettWeaponDefID = WeaponDefNames["antiairkamikaze"].id
     Script.SetWatchWeapon(antiscoutlettWeaponDefID, true)   
-    local hedgehogWaponDefID = WeaponDefNames["hedhehog"].id
+    local hedgehogWaponDefID = WeaponDefNames["hedgehog"].id
     Script.SetWatchWeapon(hedgehogWaponDefID, true)   
     local FireWeapons = {
         [molotowDefID] = true
