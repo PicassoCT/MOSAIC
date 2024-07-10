@@ -31,14 +31,11 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function useMapControlledObjectiveSpawn()
         name = Game.mapName
-        local boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name) 
-        if boolMapControlledSpawnthen then
-            echo("Using map controlled spawn") 
-        else 
+        boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name) 
+        echo("Using map controlled objective spawn: "..toString(boolMapControlledSpawn)) 
 
-        end
         return boolMapControlledSpawn
- end
+    end
 
     function defaultInit()
     mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}
@@ -83,7 +80,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function onBoolInit()
         if useMapControlledObjectiveSpawn() == true then
-            if GG.MapCompletedBuildingPlacement and GG.MapCompletedBuildingPlacement == true then
+            if Game.MapCompletedBuildingPlacement and Game.MapCompletedBuildingPlacement == true then
                 boolInit = false 
             end
         else

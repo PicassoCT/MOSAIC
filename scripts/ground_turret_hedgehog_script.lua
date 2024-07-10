@@ -5,7 +5,7 @@ TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-center =Piece("Hedgehog")
+center = piece("Hedgehog")
 aimpiece = center
 boolDeployed = true
 

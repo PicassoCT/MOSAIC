@@ -727,6 +727,7 @@ function getGameConfig()
     end
 
     function getManualObjectiveSpawnMapNames(mapName)
+        mapName = string.lower(mapName)
         ManualBuildingPlacement = {        
             ["mosaic_lastdayofdubai_v"] = true
         }
