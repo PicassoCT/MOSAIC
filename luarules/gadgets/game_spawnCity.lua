@@ -64,9 +64,9 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local boolHasCityCenter = false 
 local boolCachedMapManualPlacementResult = nil
 
-function isMapControlledBuildingPlacement()
-   return string.find(string.lower(Game.mapName), "dubai") ~= nil
-end
+
+
+
 
 allreadyRegistredBuilding = {}
 function registerManuallyPlacedHouses()      
