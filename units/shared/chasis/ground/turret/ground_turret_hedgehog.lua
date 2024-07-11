@@ -20,7 +20,7 @@ local ground_turret_hedgehog = Turret:New{
 	footprintX = 2,
 	footprintZ = 2,
 	script 			= "ground_turret_hedgehog_script.lua",
-	objectName 		= "ground_hedgehog.dae",
+	objectName 		= "ground_turret_hedgehog.dae",
 	buildPic 		= "ground_turret_spyder.png",
 	iconType 		= "ground_turret_spyder",
 	

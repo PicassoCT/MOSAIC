@@ -320,7 +320,10 @@ function selectBase()
     StartThread(showDeployRobot)
  end
 
-function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
+function selectBackYard() 
+   backPiece= showOneOrNone(TablesOfPiecesGroups["back"]) 
+    showSubsAnimateSpinsByPiecename(pieceName_pieceNr[backPiece]) 
+end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
     local result = foreach(buildMaterial,

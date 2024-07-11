@@ -31,9 +31,11 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function useMapControlledObjectiveSpawn()
         name = Game.mapName
-        --if manuallyObjectiveSpawnMapNames[name] then echo("Using map controlled spawn") end
-        return getManualObjectiveSpawnMapNames(name) 
- end
+        boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name) 
+        echo("Using map controlled objective spawn: "..toString(boolMapControlledSpawn)) 
+
+        return boolMapControlledSpawn
+    end
 
     function defaultInit()
     mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}

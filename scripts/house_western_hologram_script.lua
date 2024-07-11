@@ -1413,7 +1413,7 @@ function addHologramLetters( myMessages)
     allFunctions = getAllTextFx()
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
-    if maRa() and maRa() or boolIsEverChanging or true then 
+    if maRa() and maRa() or boolIsEverChanging  then 
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
@@ -1421,7 +1421,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    echo("Hologram "..newMessage.." with textFX "..name)
+                    Spring.Log('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

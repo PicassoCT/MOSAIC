@@ -79,7 +79,7 @@ local AntagonSafeHouse = Building:New{
 		"ground_turret_sniper",
 		"ground_walker_grenade",
 
-		"ground_tumbleweedspyder",
+		"ground_turret_hedgehog",
 		"civilian_truck_ssied",
 		"ground_truck_assembly",
 
