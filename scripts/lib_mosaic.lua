@@ -446,6 +446,24 @@ function getGameConfig()
 
         return totalValue
     end
+
+function detectMapControlledPlacementComplete()
+    if Spring.GetGameFrame() < 1 then return false end
+    if GG.MapCompletedBuildingPlacement and GG.MapCompletedBuildingPlacement == true then return GG.MapCompletedBuildingPlacement end
+
+    allUnits = Spring.GetTeamUnitsByDefs(gaiaTeamID, UnitDefNames["map_placements_complete"].id)
+    if allUnits and #allUnits > 1 then
+        foreach(allUnits,
+                function (id)
+                    Spring.DestroyUnit(id, true, false)
+                end)
+            GG.MapCompletedBuildingPlacement = true
+    end
+end
+
+function isMapControlledBuildingPlacement()
+    return getManualCivilianBuildingMaps(Game.mapName)
+end
    
     function  getManualCivilianBuildingMaps(mapName)
         mapName = string.lower(mapName)

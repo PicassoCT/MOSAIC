@@ -78,9 +78,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function onBoolInit()
         if useMapControlledObjectiveSpawn() == true then
-            if GG.MapCompletedBuildingPlacement and GG.MapCompletedBuildingPlacement == true then
-                boolInit = false 
-            end
+            detectMapControlledPlacementComplete()
+            boolInit = (GG.MapCompletedBuildingPlacement and GG.MapCompletedBuildingPlacement == true)
         else
             defaultInit()
         end    
