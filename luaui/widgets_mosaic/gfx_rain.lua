@@ -339,8 +339,21 @@ local function getDetermenisticHash()
     return accumulated
 end
 
+local function isMapNameRainyOverride(mapName)
+    local map = string.lower(mapName)
+    ManualBuildingPlacement = {        
+        ["mosaic_lastdayofdubai_v"] = true
+    }
+
+      for i=1, #ManualBuildingPlacement do
+        if string.find(map, ManualBuildingPlacement[i] ) then return true end
+    end
+    return false
+
+end
+
 local function isRainyArea()
-    return getDetermenisticHash() % 2 == 0
+    return getDetermenisticHash() % 2 == 0 or  isMapNameRainyOverride(Game.mapName)
 end
 
 local function getDayTime()

@@ -726,6 +726,9 @@ function getGameConfig()
         return id
     end
 
+
+
+
     function getManualObjectiveSpawnMapNames(mapName)
         mapName = string.lower(mapName)
         ManualBuildingPlacement = {        
@@ -785,14 +788,14 @@ function getGameConfig()
         return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySize
     end
 
-  function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
- 	if not GG.DistrictRotationDeterministic then GG.DistrictRotationDeterministic = {} end
-	x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)
-	if not GG.DistrictRotationDeterministic[x] then GG.DistrictRotationDeterministic[x] = {} end
-	if not GG.DistrictRotationDeterministic[x][z] then GG.DistrictRotationDeterministic[x][z] = {} end	
-	if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,9)*45 end
-	return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
-  end
+    function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
+	    if not GG.DistrictRotationDeterministic then GG.DistrictRotationDeterministic = {} end
+        x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)
+        if not GG.DistrictRotationDeterministic[x] then GG.DistrictRotationDeterministic[x] = {} end
+        if not GG.DistrictRotationDeterministic[x][z] then GG.DistrictRotationDeterministic[x][z] = {} end	
+        if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,9)*45 end
+        return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
+    end
 
     function getCultureHash()
         return  stringToHash(getCultureName())
@@ -878,9 +881,6 @@ function getGameConfig()
                 districtRotationDeg = 0
             }
         end
-
-
-
     end
 
     function getWeaponTypeTable(WeaponDefs, StringTable)
@@ -1416,9 +1416,21 @@ function getGameConfig()
                 end
             end
 
+        function isMapNameRainyOverride(mapName)
+            mapName = string.lower(mapName)
+            ManualBuildingPlacement = {        
+                ["mosaic_lastdayofdubai_v"] = true
+            }
+
+              for name, value in pairs(ManualBuildingPlacement)do
+                if string.find(mapName, name ) then return true end
+            end
+            return false
+
+        end
             function isRaining(hour)
                 if GG.boolRainyArea == nil then
-                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0      
+                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0  or isMapNameRainyOverride() 
                   --  GG.boolRainyArea = true
                   --  echo("DELME Debug Setting override isRaining()")
                     echo("Is a Rainy area: "..toString( GG.boolRainyArea))             
