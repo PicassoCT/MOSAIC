@@ -57,18 +57,7 @@ local unitDef = {
 	},
 	
 	
-	
-	weapons = {
 
-		[1]={name = "slicergun",
-			
-			onlyTargetCategory = [[GROUND]],
-		},
-			[2]={name = "jbeanstalkshield",
-		},
-
-		
-	},
 	Category = [[GROUND]],
 	
 	

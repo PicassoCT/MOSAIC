@@ -1448,7 +1448,7 @@ end
         end
             function isRaining(hour)
                 if GG.boolRainyArea == nil then
-                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0  or isMapNameRainyOverride() 
+                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0  or isMapNameRainyOverride(Game.mapName) 
                   --  GG.boolRainyArea = true
                   --  echo("DELME Debug Setting override isRaining()")
                     echo("Is a Rainy area: "..toString( GG.boolRainyArea))             
