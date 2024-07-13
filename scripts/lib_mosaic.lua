@@ -1434,6 +1434,12 @@ end
                 end
             end
 
+            function isTrackedPerson(id)
+                if doesUnitExistAlive(id) then
+                    return GG.TrackedPersons and GG.TrackedPersons[id]
+                end
+            end
+
         function isMapNameRainyOverride(mapName)
             mapName = string.lower(mapName)
             ManualBuildingPlacement = {        

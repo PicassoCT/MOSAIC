@@ -312,7 +312,24 @@ function showDeployRobot()
 end
 
 function selectBase() 
-    showOne(TablesOfPiecesGroups["base"], true)
+     maxBase = count(TablesOfPiecesGroups["base"]) -1
+
+    if materialColourNameGround == "ghetto" or  materialColourNameWall == "ghetto" then
+        maxBase = count(TablesOfPiecesGroups["base"]) 
+    end
+    dice = math.random(1, count(maxBase))
+    c = 0
+    for k, v in pairs(T) do
+        if k and v then c = c + 1 end
+        if c == dice then
+            if bNotDelayd and bNotDelayd == true then
+                Show(v)
+            else
+                ToShowTable[#ToShowTable + 1] = v
+            end
+        end
+    end
+
     if maRa() and not isNotNearOcean(x,z, cubeDim.length*5)  or isOnSteepHill(x,z, cubeDim.length*5)then
         BasePillar = piece("BasePillar")
         Show(BasePillar)
@@ -684,6 +701,7 @@ end
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
+    materialColourNameGround = materialColourName
     assert(materialColourName)
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Door"})
 
@@ -1247,6 +1265,8 @@ function buildAnimation()
     hideT(TablesOfPiecesGroups["BuildDeco"])
 end
 
+materialColourNameGround = nil
+materialColourNameWall = nil
 function buildBuilding()
     --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
@@ -1256,9 +1276,12 @@ function buildBuilding()
     selectBackYard()
     --echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
+    materialColourNameGround =materialColourName
+    materialColourNameWall = materialColourNameGround
     --echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
         materialColourName = selectGroundBuildMaterial(true)
+        materialColourNameWall= materialColourName
     end
 
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
