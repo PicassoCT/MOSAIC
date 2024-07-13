@@ -661,8 +661,10 @@ end
 
 function displayConversationTextAt(idA, idB)
     assert(UnitDefs)
-    gossipMessage = gossipGenerator(idA, idB, UnitDefs)
-    SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
+    if isTrackedPerson(idA) or isTrackedPerson(idB) then
+        gossipMessage = gossipGenerator(idA, idB, UnitDefs)
+        SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
+    end
 end
 
 function sozialize(evtID, frame, persPack, startFrame, myID)
