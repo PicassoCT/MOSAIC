@@ -139,6 +139,18 @@ function widget:RecvLuaMsg(msg, playerID)
 		chobbyInterface = (msg:sub(1,19) == 'LobbyOverlayActive1')
 	end
 end
+
+local function setTrackedUnit(id)
+  local setTrackedMessage = "SET_TRACKED:".. id
+  SendLuaMsg(setTrackedMessage)
+end
+
+
+local function setUntrackedUnit(id)
+  local setUntrackedMessage = "SET_UNTRACKED:".. id
+  SendLuaMsg(setTrackedMessage)
+end
+
 local trackedUnitsCount = 0
 function widget:KeyRelease(key)
   if (key == trackKey) then
@@ -149,7 +161,9 @@ function widget:KeyRelease(key)
       if not houseTypeTable[defID] then
         if trackedUnits[unitID] then
           trackedUnits[unitID] = nil
+          setUntrackedUnit(unitID)
         else
+          setTrackedUnit(unitID)
           trackedUnits[unitID] = {}
           trackedUnits[unitID].marker ="SUSPECT "..trackedUnitsCount
           trackedUnits[unitID].name  = spGetUnitToolTip(unitID)
