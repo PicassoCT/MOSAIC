@@ -564,6 +564,198 @@ end
     return surName, familyName
 end
 
+-- Function to generate random sentences from provided options
+local function random_sentence(options)
+    return options[math.random(#options)]
+end
+
+-- Function to generate detailed conversations
+local function generate_conversation(idA, idB, groupName)
+    firstName1, lastName1 = getDeterministicCultureNames( idA, UnitDefs, GG.GameConfig.instance.culture)
+    firstName2, lastName2 = getDeterministicCultureNames( idB, UnitDefs, GG.GameConfig.instance.culture)
+    -- Conversational roles
+    local calmPerson = firstName1 .. " " .. lastName1..":"
+    local panickyPerson = firstName2 .. " " .. lastName2..":"
+
+    -- Stage Zero: Mundane activity
+    local mundaneActivities = {
+        "Hey, I'm making breakfast. Want to join?",
+        "I'm thinking of grabbing a beer. Care to join?",
+        "I'm about to have lunch. Want to come over?",
+        "I'm about to start my prayer. Would you like to join me?",
+        "Long life ".. groupName
+    }
+    name, family = getDeterministicCultureNames( idA+idB, UnitDefs, GG.GameConfig.instance.culture)
+    traitor = name.." sold us out. Never should have trusted a ".. family.." ! Fuck!"
+    -- Conversation topics and sentences
+    local coverBlown = {
+        traitor,
+        "Our cover was blown by a agent. They infiltrated our network.",
+        "Someone tipped off the authorities. They're closing in on us.",
+        "A surveillance breach revealed our operations. We have to move fast.",
+        "A traitor exposed our cell to the enemy. Trust no one.",
+        "They know! They know! They know about ".. groupName        
+    }
+
+    local shredDocuments = {
+        "Shred all documents and data devices now. No evidence left behind.",
+        "Destroy all sensitive materials immediately. Burn everything if you have to.",
+        "Get rid of all the evidence, quickly. We can't afford any mistakes.",
+        "Erase everything, don't leave any trace. Move!",
+    }
+
+    local stayGuard = {
+        "Stay on guard. Watch out for any suspicious activity. They're out there.",
+        "We need to be vigilant. Eyes open, everyone. Trust no one.",
+        "Keep watch. Don't let anyone near our safehouse. We can't let them find us.",
+        "Maintain a perimeter. No one gets in or out unnoticed. We have to survive this.", 
+        "Just look at the cameras. And arm the dead-man-switch. Blow it up."
+    }
+
+   
+    killInstruction = name.." needs to be taken care off. The ".. family .." needs to learn a lesson. Im sorry you have to do it."
+    killInstructionAlt = name.." needs to be taken care off. Yes, all of them. We need to send a message."
+    local eliminateTraitors = {
+        "Eliminate any traitors within our ranks. They know too much.",
+        killInstruction,
+        killInstructionAlt,
+        "Deal with the betrayers swiftly and quietly. No mercy.",
+        "Handle the traitors. No one can be trusted.",
+        "Remove the traitors from our midst. Do it now. No hesitation.",
+        "I will be over shortly if im not trailed and take care of them.",
+        "Just keep them busy. If they are tipped off, take them out.",
+        "Dose them, i will come over and do the cleanup.",
+    }
+
+    local interludes = {
+        "Stay calm. We need to stick to the plan. For the greater good.",
+        "Remember why we're doing this. For the greater cause.",
+        "Our loved ones are counting on us. Stay focused. We can't let them down.",
+        "Defecting is not an option. We have to see this through. No turning back.",
+        "The cause is all that matters. Be strong.",
+        "Take a derma-patch from the box. You need to be calm for this."
+    }
+
+    local backgroundNoise = {        
+        "(Music plays, soft moans) <Echo Analysis: Room is "..math.random(7,42).." m²>",
+        "(Plates clanking) <Echo Analysis: Room is 15 m²>",
+        "(cars honking in the background)  <Echo Analysis: Room is 10 m²>",
+        "Daddy, mummy, the special phone from uncle bob is ringing. <Echo Analysis: Room is 20 m²>",
+        "Yeah? Speak up man, barely can hear you! <Echo Analysis: Room is unknown m²>"
+    }
+
+    -- Generating conversation
+    local conversation = {}
+    -- Add environmental detail at the start
+    table.insert(conversation, random_sentence(environmentalDetails))
+
+    -- Add Stage Zero: Mundane activity
+    table.insert(conversation, panickyPerson .. random_sentence(mundaneActivities))
+    table.insert(conversation, calmPerson .. "I can't. Something urgent has come up. We need to talk. Now")
+
+    -- Step 1: Informing about the cover being blown
+    table.insert(conversation, calmPerson .. random_sentence(coverBlown))
+    table.insert(conversation, panickyPerson .. "This can't be happening! How did they find out about us? What do we do now?")
+    table.insert(conversation, calmPerson .. random_sentence(interludes))
+
+    -- Step 2: Shred documents and data devices
+    table.insert(conversation, calmPerson .. random_sentence(shredDocuments))
+    table.insert(conversation, panickyPerson .. "I'm doing it, but I'm terrified. What if they come for us next?")
+    table.insert(conversation, calmPerson .. random_sentence(interludes))
+
+    -- Step 3: Stay guard and watch out
+    table.insert(conversation, calmPerson .. random_sentence(stayGuard))
+    table.insert(conversation, panickyPerson .. "I'll try, but I'm not sure I can handle this. It's all too much.")
+    table.insert(conversation, calmPerson .. random_sentence(interludes))
+
+    -- Step 4: Eliminate traitors
+    table.insert(conversation, calmPerson .. random_sentence(eliminateTraitors))
+    table.insert(conversation, panickyPerson .. "Eliminate them? Are you serious? This is insane!")
+    table.insert(conversation, calmPerson .. random_sentence(interludes))
+
+    return conversation
+end
+
+function GetBadGuysGroupNames()
+    return {"Mr.RogerSendro", "Children of Elon", "GreenWar", "Isil", "AlNusra", }
+end
+
+function GetGoodGuysGroupName(hash)
+    threeLetterAgency= ""
+    for i=1, 2 do
+       threeLetterAgency= threeLetterAgency.. string.char(65 + ((hash %90)%65))
+    end
+    if hash % 2 == 0 then
+        return threeLetterAgency.."A"
+    else
+        return threeLetterAgency.."I"
+    end
+end
+
+
+function startRevealedUnitsChatEventStream(idA, idB)
+    boolValidConversation = false
+    if not GG.DiscoveredUnitConversationPartners then GG.DiscoveredUnitConversationPartners = {}end
+    if not GG.DiscoveredUnitConversationPartners[idA] then 
+        GG.DiscoveredUnitConversationPartners[idA] = {}
+        boolValidConversation= true
+    end
+    if not GG.DiscoveredUnitConversationPartners[idA][idB] then 
+        GG.DiscoveredUnitConversationPartners[idA][idB]= true
+        boolValidConversation= true
+    end
+
+    if not boolValidConversation then return end
+    
+    teamID = Spring.GetUnitTeam(idA)
+    teamName = ""
+    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier, customTeamKeys = Spring.GetTeamInfo ( teamID )
+    if string.lower(side) == "antagon" then
+        teamName = GetGoodGuysGroupName(teamID)
+    else
+        badGuys = GetBadGuysGroupNames()
+        teamName = badGuys[(teamID%#badGuys)+1]
+    end
+
+    local conversationHash = idA + idB
+    local persPack =  {
+        idA = idA, 
+        idB = idB, 
+        startFrame = Spring.GetGameFrame(),
+        rate = 3 * 30,
+        conversation = generate_conversation(idA, idB, teamName),
+        gaiaTeamID = Spring.GetGaiaTeamID()
+        }
+
+    local action =  function(id, frame, persPack)
+                        local idA = persPack.idA
+                        local idB = persPack.idB
+                        if not doesUnitExistAlive(persPack.idA) then
+                            GG.DiscoveredUnitConversationPartners[idA] = nil
+                            return nil, persPack
+                        end 
+                        if not doesUnitExistAlive(persPack.idB)then
+                            GG.DiscoveredUnitConversationPartners[idA][idB] = nil
+                            return nil, persPack
+                        end
+
+                        timeLine = math.ceil((Spring.GetGameFrame() - persPack.startFrame)/ persPack.rate)
+
+                        if not persPack.conversation[timeLine] then   
+                         return nil, persPack 
+                        end
+
+                        if timeLine % 2 == 0 then --operator
+                            SendToUnsynced("DisplaytAtUnit", idA, persPack.gaiaTeamID, persPack.conversation[timeLine], 0.75, 0.75, 0.75, 0.25)
+                        else 
+                            SendToUnsynced("DisplaytAtUnit", idB, persPack.gaiaTeamID, persPack.conversation[timeLine], 0.75, 0.75, 0.75, 0.25)
+                        end
+
+                        return Spring.GetGameFrame() + persPack.rate, persPack
+                    end
+     GG.EventStream:CreateEvent( action, persPack, startFrame)
+end
+
 function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     -- Define the subjects, actions, and objects
     assert(UnitDefs)

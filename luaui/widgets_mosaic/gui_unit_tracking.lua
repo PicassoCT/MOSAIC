@@ -142,13 +142,13 @@ end
 
 local function setTrackedUnit(id)
   local setTrackedMessage = "SET_TRACKED:".. id
-  SendLuaMsg(setTrackedMessage)
+  Spring.SendLuaRulesMsg(setTrackedMessage)
 end
 
 
 local function setUntrackedUnit(id)
   local setUntrackedMessage = "SET_UNTRACKED:".. id
-  SendLuaMsg(setTrackedMessage)
+  Spring.SendLuaRulesMsg (setTrackedMessage)
 end
 
 local trackedUnitsCount = 0

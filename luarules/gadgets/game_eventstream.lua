@@ -48,7 +48,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
         return boolRemovedFunction
     end
-
+    --GG.EventStream:CreateEvent(self, action, persPack, startFrame)
     local function CreateEvent(self, action, persPack, startFrame)
         startFrame = math.max(startFrame, Spring.GetGameFrame())
         --	Spring.Echo("Create event "..(GG.EventStreamID+1).. "waiting for frame  "..startFrame)

@@ -319,14 +319,11 @@ function selectBase()
     end
     dice = math.random(1, count(maxBase))
     c = 0
-    for k, v in pairs(T) do
+    for k, v in pairs(TablesOfPiecesGroups["base"]) do
         if k and v then c = c + 1 end
-        if c == dice then
-            if bNotDelayd and bNotDelayd == true then
-                Show(v)
-            else
-                ToShowTable[#ToShowTable + 1] = v
-            end
+        if c == dice then      
+            Show(v)
+            ToShowTable[#ToShowTable + 1] = v
         end
     end
 
@@ -1268,17 +1265,17 @@ end
 materialColourNameGround = nil
 materialColourNameWall = nil
 function buildBuilding()
-    --echo(getScriptName() .. "buildBuilding")
+   echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
-    --echo(getScriptName() .. "selectBase")
-    selectBase()
-    --echo(getScriptName() .. "selectBackYard")
+   echo(getScriptName() .. "selectBase")
+   echo(getScriptName() .. "selectBackYard")
     selectBackYard()
-    --echo(getScriptName() .. "buildDecorateGroundLvl started")
+   echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
     materialColourNameGround =materialColourName
     materialColourNameWall = materialColourNameGround
-    --echo(getScriptName() .. "buildDecorateGroundLvl ended")
+    selectBase()
+   echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
         materialColourName = selectGroundBuildMaterial(true)
         materialColourNameWall= materialColourName
@@ -1286,17 +1283,17 @@ function buildBuilding()
 
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
-        --echo(getScriptName() .. "buildDecorateLvl start")
+       echo(getScriptName() .. "buildDecorateLvl start")
         _, buildMaterial = buildDecorateLvl(i,
                                             materialColourName,
                                             buildMaterial
                                             )
-         --echo(getScriptName() .. "buildDecorateLvl ended")
+        echo(getScriptName() .. "buildDecorateLvl ended")
     end
-    --echo(getScriptName() .. "addRoofDeocrate started")
+   echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
     Show(BasePillars)
-        --echo(getScriptName() .. "addRoofDeocrate ended")
+       echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
 
@@ -1317,7 +1314,7 @@ function addGrafiti(x,z, turnV,  axis)
     boolTurnGraphiti = maRa()
     turnValue = turnV + 180*randSign() + 180 * randSign()
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
---[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
+
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
     grafitiMessages = nil
     myMessage = string.gsub(myMessage, "Ü", playerName or "")

@@ -2764,6 +2764,7 @@ end
 
         local parent = getParentOfUnit(Location.teamID, unitID)
         if parent and doesUnitExistAlive(parent) then
+            startRevealedUnitsChatEventStream(unitID, parent)
             Location.revealedUnits[parent] = {}
             x,y,z = Spring.GetUnitPosition(parent)
             Location.revealedUnits[parent].pos = {x=x,y=y,z=z}
@@ -2779,6 +2780,7 @@ end
         if children and count(children) > 0 then
             for childID, _ in pairs(children) do
                 if childID and doesUnitExistAlive(childID) then
+                    startRevealedUnitsChatEventStream(unitID, childID)
                     Location.revealedUnits[childID] = {}
                     x,y,z = Spring.GetUnitPosition(childID)
                     Location.revealedUnits[childID].pos = {x=x,y=y,z=z}
