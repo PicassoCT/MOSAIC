@@ -313,11 +313,11 @@ end
 
 function selectBase() 
      maxBase = count(TablesOfPiecesGroups["base"]) -1
-
+     assertType(TablesOfPiecesGroups["base"], "table")
     if materialColourNameGround == "ghetto" or  materialColourNameWall == "ghetto" then
         maxBase = count(TablesOfPiecesGroups["base"]) 
     end
-    dice = math.random(1, count(maxBase))
+    dice = math.random(1, maxBase)
     c = 0
     for k, v in pairs(TablesOfPiecesGroups["base"]) do
         if k and v then c = c + 1 end
@@ -1264,20 +1264,24 @@ materialColourNameWall = nil
 function buildBuilding()
    echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
-   echo(getScriptName() .. "selectBase")
+
    echo(getScriptName() .. "selectBackYard")
     selectBackYard()
    echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
     materialColourNameGround =materialColourName
     materialColourNameWall = materialColourNameGround
-    selectBase()
-   echo(getScriptName() .. "buildDecorateGroundLvl ended")
+
+    echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
+        echo(getScriptName() .. "pre selectGroundBuildMaterial")
         materialColourName = selectGroundBuildMaterial(true)
         materialColourNameWall= materialColourName
+        echo(getScriptName() .. "post selectGroundBuildMaterial")
     end
-
+    echo(getScriptName() .. "pre selectBase")
+    selectBase()
+    echo(getScriptName() .. "post selectBase")
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
        echo(getScriptName() .. "buildDecorateLvl start")
