@@ -184,7 +184,14 @@ if gadgetHandler:IsSyncedCode() then
     function setSunArc(daytimeFrames)
         daytimeFrames= daytimeFrames + DAYLENGTH*0.5
         local dayFactor = (daytimeFrames % DAYLENGTH) /DAYLENGTH
-        if dayFactor < 0.25 or dayFactor > 0.75 then return end -- not setting sun
+        if dayFactor < 0.25 or dayFactor > 0.75 then 
+            --night and thus moon rollover
+            if dayFactor < 0.25  then
+                dayFactor = 0.25 + dayFactor -- 0.25 - 0.5
+            else
+                dayFactor = dayFactor -0.25 -- 0.5 -0.75
+            end
+        end 
         dayFactor = (dayFactor - 0.25) * 2.0
 
         local SUN_MOVE_SPEED = 360.0 / (DAYLENGTH / 2.0)  -- Degrees per second
@@ -202,8 +209,8 @@ if gadgetHandler:IsSyncedCode() then
         local rAzimuth = math.rad(azimuth)
         local resultVec = {
             x= math.cos(rElevation) * math.cos(rAzimuth),
-            y=(math.cos(rElevation) * math.sin(rAzimuth)), --
-            z= math.sin(rElevation)
+            z=(math.cos(rElevation) * math.sin(rAzimuth)), --
+            y= math.sin(rElevation)
             }
 
         -- Normalize the vector
@@ -349,7 +356,7 @@ if gadgetHandler:IsSyncedCode() then
     -- set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
-            -- Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
+             Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
             aDay(n + startMorningOffset, DAYLENGTH)
         end
         setSunArc(n)
