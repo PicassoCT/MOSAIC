@@ -208,14 +208,14 @@ if gadgetHandler:IsSyncedCode() then
         local rElevation = math.rad(elevation)
         local rAzimuth = math.rad(azimuth)
         local resultVec = {
-            x= math.cos(rElevation) * math.cos(rAzimuth),
-            z=(math.cos(rElevation) * math.sin(rAzimuth)), --
-            y= math.sin(rElevation)
+            x= math.abs(math.cos(rElevation) * math.cos(rAzimuth)),
+            y= math.abs((math.cos(rElevation) * math.sin(rAzimuth))), --
+            z= math.sin(rElevation)
             }
 
         -- Normalize the vector
         local resultVec = normalizeVector(resultVec)
-
+        Spring.Echo(getDayTime(daytimeFrames, DAYLENGTH).."REG:"..REGIONAL_MAX_ALTITUDE.." -> ("..resultVec.x.."/"..resultVec.y .."/"..resultVec.z..")")
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
 
@@ -289,8 +289,14 @@ if gadgetHandler:IsSyncedCode() then
 
     -- Creates a DayString
     function getDayTime(now, total)
-        hours = math.floor((now / total) * 24)
-        minutes = math.ceil((((now / total) * 24) - hours) * 60)
+  
+        Frame = (Spring.GetGameFrame() + (DAYLENGTH / 2)) % DAYLENGTH
+        percent = Frame / DAYLENGTH
+        hours = math.floor((Frame / DAYLENGTH) * 24)
+        minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+        seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+        if minutes < 10 then minutes = "0"..minutes end
+        if hours < 10 then hours = "0"..hours end
         return hours .. ":" .. minutes
     end
 
@@ -356,7 +362,7 @@ if gadgetHandler:IsSyncedCode() then
     -- set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
-             Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
+
             aDay(n + startMorningOffset, DAYLENGTH)
         end
         setSunArc(n)
