@@ -182,17 +182,17 @@ if gadgetHandler:IsSyncedCode() then
     end
 
     function setSunArc(daytimeFrames)
-        daytimeFrames= daytimeFrames + DAYLENGTH*0.5
-        local dayFactor = (daytimeFrames % DAYLENGTH) /DAYLENGTH
-        if dayFactor < 0.25 or dayFactor > 0.75 then 
+
+        local dayPercent = (daytimeFrames % DAYLENGTH) /DAYLENGTH
+        if dayPercent < 0.25 or dayPercent > 0.75 then 
             --night and thus moon rollover
-            if dayFactor < 0.25  then
-                dayFactor = 0.25 + dayFactor -- 0.25 - 0.5
+            if dayPercent < 0.25  then
+                dayPercent = 0.25 + dayPercent -- 0.25 - 0.5
             else
-                dayFactor = dayFactor -0.25 -- 0.5 -0.75
+                dayPercent = dayPercent -0.25 -- 0.5 -0.75
             end
         end 
-        dayFactor = (dayFactor - 0.25) * 2.0
+        dayPercent = (dayPercent - 0.25) * 2.0
 
         local SUN_MOVE_SPEED = 360.0 / (DAYLENGTH / 2.0)  -- Degrees per second
 
@@ -200,7 +200,7 @@ if gadgetHandler:IsSyncedCode() then
         local azimuth = (daytimeFrames * SUN_MOVE_SPEED) % 360.0
 
         -- Adjust elevation angle for sunrise and sunset effect 
-        local elevation = math.abs(math.sin(dayFactor*math.pi))* REGIONAL_MAX_ALTITUDE 
+        local elevation = math.abs(math.sin(dayPercent*math.pi))* REGIONAL_MAX_ALTITUDE 
 
         elevation = math.max(1, math.min(90.0, math.abs(elevation)))
 
@@ -208,9 +208,9 @@ if gadgetHandler:IsSyncedCode() then
         local rElevation = math.rad(elevation)
         local rAzimuth = math.rad(azimuth)
         local resultVec = {
-            x= math.abs(math.cos(rElevation) * math.cos(rAzimuth)),
-            y= math.abs((math.cos(rElevation) * math.sin(rAzimuth))), --
-            z= math.sin(rElevation)
+            x= math.cos(rElevation) * math.cos(rAzimuth),
+            z= math.cos(rElevation) * math.sin(rAzimuth), --
+            y= math.abs(math.sin(rElevation))
             }
 
         -- Normalize the vector
@@ -354,17 +354,18 @@ if gadgetHandler:IsSyncedCode() then
 
         setSun(config, percent)
     end
-    startMorningOffset = DAYLENGTH / 2
+
     DAWN_FRAME = math.ceil((DAYLENGTH / EVERY_NTH_FRAME) * 0.25) *
                      EVERY_NTH_FRAME
     DUSK_FRAME = math.ceil((DAYLENGTH / EVERY_NTH_FRAME) * 0.75) *
                      EVERY_NTH_FRAME
+    HALF_DAY_OFFSET = DAYLENGTH / 0.5
     -- set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
 
-            aDay(n + startMorningOffset, DAYLENGTH)
+            aDay(n + HALF_DAY_OFFSET, DAYLENGTH)
         end
-        setSunArc(n)
+        setSunArc(n + HALF_DAY_OFFSET)
     end
 end
