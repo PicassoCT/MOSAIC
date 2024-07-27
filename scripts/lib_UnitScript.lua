@@ -5844,6 +5844,9 @@ function getPieceNrByName(id, name)
     return (Spring.GetUnitPieceMap(id))[name]
 end
 
+function getUnitCloaked(unitID)
+    return  GetUnitValue(COB.CLOAKED) == 1
+end
 
 function getUnitVariableEnv(unitID, ValueName)
     env = Spring.UnitScript.GetScriptEnv(unitID)
