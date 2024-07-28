@@ -709,6 +709,22 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+function showOneDeterministic(T, index)
+    if not T then return end
+    dice = (index % #T) + 1
+    c = 0
+    assert(T)
+    for k, v in pairs(T) do
+        if k and v then c = c + 1 end
+        if c == dice then
+            addToShowTable(v, "showOne", k)
+            return v
+        end
+    end
+end
+
+
+
 function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
@@ -1624,6 +1640,7 @@ function buildBuilding()
     lecho( "buildBuilding")
     if randChance(5) then
         showOne(TablesOfPiecesGroups["StandAlone"], true)
+        showOneDeterministic(TablesOfPiecesGroups["StandAloneLights"], unitID)
         boolDoneShowing = true
         return
     end

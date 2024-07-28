@@ -215,7 +215,7 @@ if gadgetHandler:IsSyncedCode() then
 
         -- Normalize the vector
         local resultVec = normalizeVector(resultVec)
-        Spring.Echo(getDayTime(daytimeFrames, DAYLENGTH).."REG:"..REGIONAL_MAX_ALTITUDE.." -> ("..resultVec.x.."/"..resultVec.y .."/"..resultVec.z..")")
+--        Spring.Echo(getDayTime(daytimeFrames, DAYLENGTH).."REG:"..REGIONAL_MAX_ALTITUDE.." -> ("..resultVec.x.."/"..resultVec.y .."/"..resultVec.z..")")
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
 
@@ -290,7 +290,7 @@ if gadgetHandler:IsSyncedCode() then
     -- Creates a DayString
     function getDayTime(now, total)
   
-        Frame = (Spring.GetGameFrame() + (DAYLENGTH / 2)) % DAYLENGTH
+        Frame = now % total
         percent = Frame / DAYLENGTH
         hours = math.floor((Frame / DAYLENGTH) * 24)
         minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)

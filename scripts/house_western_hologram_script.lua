@@ -907,7 +907,7 @@ function HoloGrams()
 
         if logo == symmetryPiece then 
             symmetryOrigin = piece("SymmetryOrigin")
-            if maRa() then showReg(symmetryOrigin) end
+            if maRa() then ShowReg(symmetryOrigin) end
             StartThread(shapeSymmetry, symmetryPiece)
             --return            
         end

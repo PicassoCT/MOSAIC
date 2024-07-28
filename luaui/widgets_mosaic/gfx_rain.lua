@@ -341,9 +341,8 @@ end
 
 local function isMapNameRainyOverride(mapName)
     local map = string.lower(mapName)
-    ManualBuildingPlacement = {        
-        ["mosaic_lastdayofdubai_v"] = true
-    }
+    local ManualBuildingPlacement = {}        
+        ManualBuildingPlacement[1] = "mosaic_lastdayofdubai_v"
 
       for i=1, #ManualBuildingPlacement do
         if string.find(map, ManualBuildingPlacement[i] ) then return true end
@@ -369,9 +368,10 @@ end
 local function isRaining()   
 
     if boolRainyArea == nil then
-        boolRainyArea = isRainyArea() 
+        boolRainyArea = isRainyArea()        
         Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
     end
+
     if boolRainyArea == false then
         return false
     end
@@ -402,7 +402,6 @@ local function onTresholdCrossWriteToMapTexture()
 
         glCopyToTexture("$map_reflection", 0, 0, vpx, vpy, vsx, vsy)
     end
-
 end
 
 function widget:Update(dt)   
@@ -413,9 +412,12 @@ function widget:Update(dt)
 
     if isRaining() == true   then--isRaining() then
         rainPercent = math.min(1.0, rainPercent + 0.0001)
+         Spring.Echo("Rainvalue:".. rainPercent)
     else
         rainPercent = math.max(0.0, rainPercent - 0.0001)
+         Spring.Echo("Rainvalue:".. rainPercent)
     end
+
     onTresholdCrossWriteToMapTexture()
 end
 

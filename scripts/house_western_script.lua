@@ -1262,39 +1262,39 @@ end
 materialColourNameGround = nil
 materialColourNameWall = nil
 function buildBuilding()
-   echo(getScriptName() .. "buildBuilding")
+   --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
 
-   echo(getScriptName() .. "selectBackYard")
+   --echo(getScriptName() .. "selectBackYard")
     selectBackYard()
-   echo(getScriptName() .. "buildDecorateGroundLvl started")
+   --echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
     materialColourNameGround =materialColourName
     materialColourNameWall = materialColourNameGround
 
-    echo(getScriptName() .. "buildDecorateGroundLvl ended")
+    --echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
-        echo(getScriptName() .. "pre selectGroundBuildMaterial")
+        --echo(getScriptName() .. "pre selectGroundBuildMaterial")
         materialColourName = selectGroundBuildMaterial(true)
         materialColourNameWall= materialColourName
-        echo(getScriptName() .. "post selectGroundBuildMaterial")
+        --echo(getScriptName() .. "post selectGroundBuildMaterial")
     end
-    echo(getScriptName() .. "pre selectBase")
+    --echo(getScriptName() .. "pre selectBase")
     selectBase()
-    echo(getScriptName() .. "post selectBase")
+    --echo(getScriptName() .. "post selectBase")
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
-       echo(getScriptName() .. "buildDecorateLvl start")
+       --echo(getScriptName() .. "buildDecorateLvl start")
         _, buildMaterial = buildDecorateLvl(i,
                                             materialColourName,
                                             buildMaterial
                                             )
-        echo(getScriptName() .. "buildDecorateLvl ended")
+        --echo(getScriptName() .. "buildDecorateLvl ended")
     end
-   echo(getScriptName() .. "addRoofDeocrate started")
+   --echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
     Show(BasePillars)
-       echo(getScriptName() .. "addRoofDeocrate ended")
+       --echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
 
