@@ -2548,6 +2548,46 @@ function getRegionByCulture(culture, hash)
   end
 end
 
+function getRegionDayColorBy(culture, hash)
+
+  if culture == "arabic" then
+    if hash % 3 == 0 then
+      return {252, 247, 156}--"MiddleEast"
+    end
+    if hash % 3 == 1 then
+      return {215, 167, 114} --"CentralAsia"
+    end
+    if hash % 3 == 2 then
+      return {252,254, 172}--"Africa"
+    end
+  end
+
+  if culture == "western" then 
+    if hash % 3 == 0 then
+      return {154, 201, 206}--"Europe"
+    end
+    if hash % 3 == 1 then
+      return {220, 230, 255}--"NorthAmerica"
+    end
+    if hash % 3 == 2 then
+      return {255, 204, 153}--"SouthAmerica"
+    end
+  end
+
+  if culture == "asian" then
+    if hash % 2 == 0 then
+      return {231, 157, 102}--"SouthEastAsia"
+    end
+    if hash % 2 == 1 then
+      return {215, 167, 114}--"CentralAsia"
+    end
+  end
+
+  if culture == "international" then
+    return {215, 167, 114} --"International"
+  end
+end
+
 function getAzimuthByRegion(culture, hash)
     returnHash= 0
     minimum = 0

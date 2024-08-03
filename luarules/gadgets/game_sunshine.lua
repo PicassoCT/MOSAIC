@@ -42,10 +42,11 @@ if gadgetHandler:IsSyncedCode() then
     -- if you want diffrent colours for your day, modify this table
     sunCol = {}
     -- night
-    LengthOfNightDay = 9
+    LengthOfNightDay = 12
     for i = 1, LengthOfNightDay do
-        sunCol[#sunCol + 1] = makeVector(54, 72, 126)
+        sunCol[#sunCol + 1] = mix(makeVector(54, 72, 126), makeVector(64, 84, 80), math.random(0,100)/100)
     end
+
     sunCol[#sunCol + 1] = makeVector(49, 66, 115)
     sunCol[#sunCol + 1] = makeVector(41, 56, 97)
     sunCol[#sunCol + 1] = makeVector(31, 43, 74)
@@ -59,22 +60,17 @@ if gadgetHandler:IsSyncedCode() then
     sunCol[#sunCol + 1] = makeVector(175, 57, 0)
     sunCol[#sunCol + 1] = makeVector(223, 73, 0)
     sunCol[#sunCol + 1] = makeVector(246, 66, 0)
-    sunCol[#sunCol + 1] = makeVector(255, 128, 0)
-    sunCol[#sunCol + 1] = makeVector(255, 191, 0)
-    -- noon
-    sunCol[#sunCol + 1] = makeVector(188, 193, 210)
-    sunCol[#sunCol + 1] = makeVector(203, 175, 167)
-    redShift = math.random(1, 45)
-    constLight = 210 + redShift
-    blueShift = 45 - redShift
+    regionalDayColor = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+
+    sunCol[#sunCol + 1] = mix(regionalDayColor, makeVector(255, 128, 0), 0.33)
+    sunCol[#sunCol + 1] = mix(regionalDayColor, makeVector(255, 191, 0), 0.66)
+
+    --noon
     for i = 1, LengthOfNightDay do
-        lightOffset = math.random(-5, 0)
-        sunCol[#sunCol + 1] = makeVector(constLight + lightOffset,
-                                         232 + lightOffset,
-                                         210 + blueShift + lightOffset)
+        sunCol[#sunCol + 1] = regionalDayColor
     end
     -- zenit
-    -- mirrored sunrise
+    -- mirrored sunrise aka sunset
     size = #sunCol
     for i = 1, size do sunCol[#sunCol + 1] = sunCol[size - i] end
     -- factor to divide the rgb values
