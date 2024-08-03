@@ -1,15 +1,30 @@
-local wiName = "SSAO"
+
+local isPotatoGpu = true
+local gpuMem = 1000 
+if Platform ~= nil then
+	gpuMem = (Platform.gpuMemorySize and Platform.gpuMemorySize or 1000) / 1000
+end
+
+if gpuMem > 1800  and Platform.gpuVendor ~= 'Intel' then
+	Platform.glSupportClipSpaceControl = 1
+	isPotatoGpu = false
+	Spring.Echo("gfx_ssao enabled: deactivated")
+else
+	Spring.Echo("gfx_ssao enabled: active")
+end
+
+
+local widgetName = "SSAO"
 function widget:GetInfo()
     return {
-        name      = wiName,
+        name      = widgetName,
         version	  = 2.0,
         desc      = "Screen-Space Ambient Occlusion",
         author    = "ivand",
         date      = "2019",
         license   = "GPL",
-        layer     = -11,
-        enabled   = true, 
-		hidden = true,
+        layer     = 999999,
+        enabled   = not isPotatoGpu,
     }
 end
 
@@ -51,28 +66,43 @@ local DEBUG_SSAO = false -- use for debug
 
 local math_sqrt = math.sqrt
 
-local preset = 1
+local strengthMult = 1
+
+local initialTonemapA = Spring.GetConfigFloat("tonemapA", 4.75)
+local initialTonemapD = Spring.GetConfigFloat("tonemapD", 0.85)
+local initialTonemapE = Spring.GetConfigFloat("tonemapE", 1.0)
+
+local preset = 2
 local presets = {
 	{
-		SSAO_KERNEL_SIZE = 24,
+		SSAO_KERNEL_SIZE = 32,
 		DOWNSAMPLE = 3,
 		BLUR_HALF_KERNEL_SIZE = 4,
 		BLUR_PASSES = 2,
-		BLUR_SIGMA = 2.4,
+		BLUR_SIGMA = 4,
+		tonemapA = 0.45,
+		tonemapD = -0.25,
+		tonemapE = -0.03,
+	},
+	{
+		SSAO_KERNEL_SIZE = 32,
+		DOWNSAMPLE = 2,
+		BLUR_HALF_KERNEL_SIZE = 4,
+		BLUR_PASSES = 2,
+		BLUR_SIGMA = 4,
+		tonemapA = 0.45,
+		tonemapD = -0.25,
+		tonemapE = -0.03,
 	},
 	{
 		SSAO_KERNEL_SIZE = 48,
-		DOWNSAMPLE = 2,
+		DOWNSAMPLE = 1,
 		BLUR_HALF_KERNEL_SIZE = 6,
 		BLUR_PASSES = 3,
-		BLUR_SIGMA = 4.5,
-	},
-	{
-		SSAO_KERNEL_SIZE = 64,
-		DOWNSAMPLE = 1,
-		BLUR_HALF_KERNEL_SIZE = 8,
-		BLUR_PASSES = 4,
-		BLUR_SIGMA = 6.5,
+		BLUR_SIGMA = 6,
+		tonemapA = 0.4,
+		tonemapD = -0.25,
+		tonemapE = -0.025,
 	},
 }
 
@@ -88,7 +118,7 @@ local luaShaderDir = baseDir.."include/"
 -----------------------------------------------------------------
 
 local LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
-assert(LuaShader)
+
 local vsx, vsy, vpx, vpy
 local firstTime
 
@@ -197,6 +227,10 @@ function widget:ViewResize()
 end
 
 function widget:Initialize()
+	if not gl.CreateShader then -- no shader support, so just remove the widget itself, especially for headless
+		widgetHandler:RemoveWidget()
+		return
+	end
 	WG['ssao'] = {}
 	WG['ssao'].getPreset = function()
 		return preset
@@ -224,7 +258,15 @@ function widget:Initialize()
 	end
 	local canContinue = LuaShader.isDeferredShadingEnabled and LuaShader.GetAdvShadingActive()
 	if not canContinue then
-		Spring.Echo(string.format("Error in [%s] widget: %s", wiName, "Deferred shading is not enabled or advanced shading is not active"))
+		Spring.Echo(string.format("Error in [%s] widget: %s", widgetName, "Deferred shading is not enabled or advanced shading is not active"))
+	end
+
+	-- make unit lighting brighter to compensate for darkening (also restoring values on Shutdown())
+	if presets[preset].tonemapA then
+		Spring.SetConfigFloat("tonemapA", initialTonemapA + (presets[preset].tonemapA * ((SSAO_ALPHA_POW * strengthMult)/11)))
+		Spring.SetConfigFloat("tonemapD", initialTonemapD + (presets[preset].tonemapD * ((SSAO_ALPHA_POW * strengthMult)/11)))
+		Spring.SetConfigFloat("tonemapE", initialTonemapE + (presets[preset].tonemapE * ((SSAO_ALPHA_POW * strengthMult)/11)))
+		Spring.SendCommands("luarules updatesun")
 	end
 
 	firstTime = true
@@ -278,7 +320,7 @@ function widget:Initialize()
 	end
 
 	if not gl.IsValidFBO(gbuffFuseFBO) then
-		Spring.Echo(string.format("Error in [%s] widget: %s", wiName, "Invalid gbuffFuseFBO"))
+		Spring.Echo(string.format("Error in [%s] widget: %s", widgetName, "Invalid gbuffFuseFBO"))
 	end
 
 	ssaoFBO = gl.CreateFBO({
@@ -286,7 +328,7 @@ function widget:Initialize()
 		drawbuffers = {GL_COLOR_ATTACHMENT0_EXT},
 	})
 	if not gl.IsValidFBO(ssaoFBO) then
-		Spring.Echo(string.format("Error in [%s] widget: %s", wiName, "Invalid ssaoFBO"))
+		Spring.Echo(string.format("Error in [%s] widget: %s", widgetName, "Invalid ssaoFBO"))
 	end
 
 	for i = 1, 2 do
@@ -295,7 +337,7 @@ function widget:Initialize()
 			drawbuffers = {GL_COLOR_ATTACHMENT0_EXT},
 		})
 		if not gl.IsValidFBO(ssaoBlurFBOs[i]) then
-			Spring.Echo(string.format("Error in [%s] widget: %s", wiName, string.format("Invalid ssaoBlurFBOs[%d]", i)))
+			Spring.Echo(string.format("Error in [%s] widget: %s", widgetName, string.format("Invalid ssaoBlurFBOs[%d]", i)))
 		end
 	end
 
@@ -303,7 +345,7 @@ function widget:Initialize()
 	local gbuffFuseShaderVert = VFS.LoadFile(shadersDir.."identity.vert.glsl")
 	local gbuffFuseShaderFrag = VFS.LoadFile(shadersDir.."gbuffFuse.frag.glsl")
 
-	gbuffFuseShaderFrag = gbuffFuseShaderFrag:gsub("###DEPTH_CLIP01###", tostring((Platform and Platform.glSupportClipSpaceControl and 1) or 0))
+	gbuffFuseShaderFrag = gbuffFuseShaderFrag:gsub("###DEPTH_CLIP01###", tostring((Platform.glSupportClipSpaceControl and 1) or 0))
 	gbuffFuseShaderFrag = gbuffFuseShaderFrag:gsub("###MERGE_MISC###", tostring((MERGE_MISC and 1) or 0))
 
 	gbuffFuseShader = LuaShader({
@@ -327,7 +369,7 @@ function widget:Initialize()
 		uniformFloat = {
 			viewPortSize = {vsx, vsy},
 		},
-	}, wiName..": G-buffer Fuse")
+	}, widgetName..": G-buffer Fuse")
 	gbuffFuseShader:Initialize()
 
 
@@ -340,7 +382,7 @@ function widget:Initialize()
 	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_MIN###", tostring(SSAO_MIN))
 	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_MAX###", tostring(SSAO_MAX))
 
-	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_ALPHA_POW###", tostring(SSAO_ALPHA_POW))
+	ssaoShaderFrag = ssaoShaderFrag:gsub("###SSAO_ALPHA_POW###", tostring(SSAO_ALPHA_POW * strengthMult))
 	ssaoShaderFrag = ssaoShaderFrag:gsub("###USE_MATERIAL_INDICES###", tostring((MERGE_MISC and 1) or 0))
 
 	ssaoShader = LuaShader({
@@ -354,7 +396,7 @@ function widget:Initialize()
 		uniformFloat = {
 			viewPortSize = {vsx / presets[preset].DOWNSAMPLE, vsy / presets[preset].DOWNSAMPLE},
 		},
-	}, wiName..": Processing")
+	}, widgetName..": Processing")
 	ssaoShader:Initialize()
 
 	ssaoShader:ActivateWith( function()
@@ -380,7 +422,7 @@ function widget:Initialize()
 		uniformFloat = {
 			viewPortSize = {vsx / presets[preset].DOWNSAMPLE, vsy / presets[preset].DOWNSAMPLE},
 		},
-	}, wiName..": Gaussian Blur")
+	}, widgetName..": Gaussian Blur")
 	gaussianBlurShader:Initialize()
 
 	local gaussWeights, gaussOffsets = GetGaussLinearWeightsOffsets(presets[preset].BLUR_SIGMA, presets[preset].BLUR_HALF_KERNEL_SIZE, 1.0)
@@ -401,6 +443,15 @@ function widget:SunChanged()
 end
 
 function widget:Shutdown()
+
+	-- restore unit lighting settings
+	if presets[preset].tonemapA then
+		Spring.SetConfigFloat("tonemapA", initialTonemapA)
+		Spring.SetConfigFloat("tonemapD", initialTonemapD)
+		Spring.SetConfigFloat("tonemapE", initialTonemapE)
+		Spring.SendCommands("luarules updatesun")
+	end
+
 	firstTime = nil
 
 	if screenQuadList then
@@ -410,7 +461,6 @@ function widget:Shutdown()
 	if screenWideList then
 		gl.DeleteList(screenWideList)
 	end
-
 
 	gl.DeleteTexture(ssaoTex)
 	gl.DeleteTexture(gbuffFuseViewPosTex)
@@ -423,20 +473,22 @@ function widget:Shutdown()
 		gl.DeleteTexture(ssaoBlurTexes[i])
 	end
 
-	gl.DeleteFBO(ssaoFBO)
-	gl.DeleteFBO(gbuffFuseFBO)
-	for i = 1, 2 do
-		gl.DeleteFBO(ssaoBlurFBOs[i])
+	if gl.DeleteFBO then
+		gl.DeleteFBO(ssaoFBO)
+		gl.DeleteFBO(gbuffFuseFBO)
+		for i = 1, 2 do
+			gl.DeleteFBO(ssaoBlurFBOs[i])
+		end
 	end
 
-	ssaoShader:Finalize()
-	gbuffFuseShader:Finalize()
-	gaussianBlurShader:Finalize()
+	if ssaoShader then ssaoShader:Finalize() end
+	if gbuffFuseShader then gbuffFuseShader:Finalize() end
+	if gaussianBlurShader then gaussianBlurShader:Finalize() end
 end
 
 local function DoDrawSSAO(isScreenSpace)
 	gl.DepthTest(false)
-	gl.DepthMask(false)
+	gl.DepthMask(false) --"BK OpenGL state resets", default is already false, could remove
 	gl.Blending(false)
 
 
@@ -450,8 +502,9 @@ local function DoDrawSSAO(isScreenSpace)
 		firstTime = false
 	end
 
-	gl.ActiveFBO(gbuffFuseFBO, function()
-		gbuffFuseShader:ActivateWith( function ()
+	local prevFBO
+	prevFBO = gl.RawBindFBO(gbuffFuseFBO)
+		gbuffFuseShader:Activate()
 
 			gbuffFuseShader:SetUniformMatrix("invProjMatrix", "projectioninverse")
 			gbuffFuseShader:SetUniformMatrix("viewMatrix", "view")
@@ -480,13 +533,16 @@ local function DoDrawSSAO(isScreenSpace)
 				gl.Texture(5, false)
 				gl.Texture(6, false)
 			end
-		end)
-	end)
+		gbuffFuseShader:Deactivate()
+	--end)
+	gl.RawBindFBO(nil, nil, prevFBO)
 
-	gl.ActiveFBO(ssaoFBO, function()
+	prevFBO = gl.RawBindFBO(ssaoFBO)
 		gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
-		ssaoShader:ActivateWith( function ()
+		ssaoShader:Activate()
 			ssaoShader:SetUniformMatrix("projMatrix", "projection")
+			local shadowDensity = gl.GetSun("shadowDensity", "unit")
+			ssaoShader:SetUniformFloat("shadowDensity", shadowDensity)
 
 			gl.Texture(0, gbuffFuseViewPosTex)
 			gl.Texture(1, gbuffFuseViewNormalTex)
@@ -501,27 +557,27 @@ local function DoDrawSSAO(isScreenSpace)
 			if MERGE_MISC then
 				gl.Texture(2, false)
 			end
-		end)
-	end)
+		ssaoShader:Deactivate()
+	gl.RawBindFBO(nil, nil, prevFBO)
 
 	gl.Texture(0, ssaoTex)
 
 	for i = 1, presets[preset].BLUR_PASSES do
-		gaussianBlurShader:ActivateWith( function ()
+		gaussianBlurShader:Activate()
 
 			gaussianBlurShader:SetUniform("dir", 1.0, 0.0) --horizontal blur
-			gl.ActiveFBO(ssaoBlurFBOs[1], function()
-				gl.CallList(screenQuadList) -- gl.TexRect(-1, -1, 1, 1)
-			end)
+			prevFBO = gl.RawBindFBO(ssaoBlurFBOs[1])
+			gl.CallList(screenQuadList) -- gl.TexRect(-1, -1, 1, 1)
+			gl.RawBindFBO(nil, nil, prevFBO)
 			gl.Texture(0, ssaoBlurTexes[1])
 
 			gaussianBlurShader:SetUniform("dir", 0.0, 1.0) --vertical blur
-			gl.ActiveFBO(ssaoBlurFBOs[2], function()
-				gl.CallList(screenQuadList) -- gl.TexRect(-1, -1, 1, 1)
-			end)
+			prevFBO = gl.RawBindFBO(ssaoBlurFBOs[2])
+			gl.CallList(screenQuadList) -- gl.TexRect(-1, -1, 1, 1)
+			gl.RawBindFBO(nil, nil, prevFBO)
 			gl.Texture(0, ssaoBlurTexes[2])
 
-		end)
+		gaussianBlurShader:Deactivate()
 	end
 
 
@@ -546,9 +602,6 @@ local function DoDrawSSAO(isScreenSpace)
 		gl.BlendEquation(GL_FUNC_ADD)
 	end
 
-
-
-
 	gl.Texture(0, false)
 	gl.Texture(1, false)
 	gl.Texture(2, false)
@@ -556,8 +609,8 @@ local function DoDrawSSAO(isScreenSpace)
 
 
 	gl.Blending("alpha")
-	--gl.DepthMask(true)
-	--gl.DepthTest(true)
+	--gl.DepthMask(true) --"BK OpenGL state resets", already commented out
+	--gl.DepthTest(true) --"BK OpenGL state resets", already commented out
 end
 
 function widget:DrawWorld()
@@ -567,7 +620,7 @@ function widget:DrawWorld()
 
 		gl.MatrixMode(GL.PROJECTION)
 		gl.PushMatrix()
-		gl.LoadIdentity();
+		gl.LoadIdentity()
 
 			DoDrawSSAO(false)
 
@@ -576,24 +629,32 @@ function widget:DrawWorld()
 
 	gl.MatrixMode(GL.MODELVIEW)
 	gl.PopMatrix()
+
+	if delayedUpdateSun and os.clock() > delayedUpdateSun then
+		Spring.SendCommands("luarules updatesun")
+		delayedUpdateSun = nil
+	end
 end
 
 function widget:GetConfigData(data)
-	savedTable = {}
-	savedTable.strength = SSAO_ALPHA_POW
-	savedTable.radius = SSAO_RADIUS
-	savedTable.preset = preset
-	return savedTable
+	return {
+		strength = SSAO_ALPHA_POW,
+		radius = SSAO_RADIUS,
+		preset = preset
+	}
 end
 
 function widget:SetConfigData(data)
 	if data.strength ~= nil then
 		SSAO_ALPHA_POW = data.strength
 	end
-	if data.strength ~= nil then
+	if data.radius ~= nil then
 		SSAO_RADIUS = data.radius
 	end
 	if data.preset ~= nil then
 		preset = data.preset
+		if preset > 3 then
+			preset = 3
+		end
 	end
 end
