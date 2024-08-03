@@ -400,7 +400,7 @@ local function onTresholdCrossWriteToMapTexture()
     if math.abs(tresholdCrossValueStore - rainPercent) > 0.1 then
         tresholdCrossValueStore = rainPercent
 
-        glCopyToTexture("$map_reflection", 0, 0, vpx, vpy, vsx, vsy)
+        --glCopyToTexture("$map_reflection", 0, 0, vpx, vpy, vsx, vsy)
     end
 end
 
@@ -411,14 +411,14 @@ function widget:Update(dt)
     end
 
     if isRaining() == true   then--isRaining() then
-        rainPercent = math.min(1.0, rainPercent + 0.0001)
-         Spring.Echo("Rainvalue:".. rainPercent)
+        rainPercent = math.min(1.0, rainPercent + 0.0002)
+        --Spring.Echo("Rainvalue:".. rainPercent)
     else
         rainPercent = math.max(0.0, rainPercent - 0.0001)
-         Spring.Echo("Rainvalue:".. rainPercent)
+        --Spring.Echo("Rainvalue:".. rainPercent)
     end
 
-    onTresholdCrossWriteToMapTexture()
+
 end
 
 function widget:Shutdown()
@@ -435,6 +435,7 @@ end
 
 
 local function updateUniforms()
+    onTresholdCrossWriteToMapTexture()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
     --Spring.Echo("Time passed:"..diffTime)
