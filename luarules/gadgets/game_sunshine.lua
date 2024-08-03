@@ -44,7 +44,7 @@ if gadgetHandler:IsSyncedCode() then
     -- night
     LengthOfNightDay = 12
     for i = 1, LengthOfNightDay do
-        sunCol[#sunCol + 1] = mix(makeVector(54, 72, 126), makeVector(64, 84, 80), math.random(0,100)/100)
+        sunCol[#sunCol + 1] = mix(makeVector(54, 72, 126), makeVector(64, 84, 80), math.random(0,100)/100)  
     end
 
     sunCol[#sunCol + 1] = makeVector(49, 66, 115)
@@ -60,8 +60,11 @@ if gadgetHandler:IsSyncedCode() then
     sunCol[#sunCol + 1] = makeVector(175, 57, 0)
     sunCol[#sunCol + 1] = makeVector(223, 73, 0)
     sunCol[#sunCol + 1] = makeVector(246, 66, 0)
-    regionalDayColor = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
-
+    assert(GameConfig.instance.culture)
+    assert(getDetermenisticMapHash(Game))
+    local regionalDayColor = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+    assert(regionalDayColor)
+    assert(type(regionalDayColor)=="table")
     sunCol[#sunCol + 1] = mix(regionalDayColor, makeVector(255, 128, 0), 0.33)
     sunCol[#sunCol + 1] = mix(regionalDayColor, makeVector(255, 191, 0), 0.66)
 

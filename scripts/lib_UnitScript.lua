@@ -4959,9 +4959,29 @@ function mix(vA, vB, fac)
     return mixTable(vA, vB, fac)
 end
 
+function lerp(a, b, t)
+    return a + (b - a) * t
+end
+function lerpTable(table1, table2, t)
+    -- Ensure tables have the same size
+    assert(#table1 == #table2, "Tables must be of the same size. Is ".. #table1.. "vs ".. #table2)
+
+    local result = {}
+
+    for i = 1, #table1 do
+        result[i] = lerp(table1[i], table2[i], t)
+    end
+
+    return result
+end
+
+
 function mixTable(TA, TB, factor)
+    assert(#TA == #TB, "Tables must be of the same size. Is ".. #TA.. "vs ".. #TB)
     local T = {}
-    for k, v in pairs(TA) do T[k] = v * factor + TB[k] * (1 - factor) end
+    for k, v in pairs(TA) do 
+        T[k] = v * factor + TB[k] * (1 - factor) 
+    end
     return T
 
 end

@@ -2548,7 +2548,7 @@ function getRegionByCulture(culture, hash)
   end
 end
 
-function getRegionDayColorBy(culture, hash)
+function xgetRegionDayColorBy(culture, hash)
 
   if culture == "arabic" then
     if hash % 3 == 0 then
@@ -2586,6 +2586,9 @@ function getRegionDayColorBy(culture, hash)
   if culture == "international" then
     return {215, 167, 114} --"International"
   end
+
+  Spring.Echo("Reverting to default")
+  return {215, 167, 114}
 end
 
 function getAzimuthByRegion(culture, hash)
