@@ -4977,7 +4977,7 @@ end
 
 
 function mixTable(TA, TB, factor)
-    assert(#TA == #TB, "Tables must be of the same size. Is ".. #TA.. "vs ".. #TB)
+    assert(count(TA) == count(TB), "Tables must be of the same size. Is ".. count(TA).. "vs ".. count(TB))
     local T = {}
     for k, v in pairs(TA) do 
         T[k] = v * factor + TB[k] * (1 - factor) 

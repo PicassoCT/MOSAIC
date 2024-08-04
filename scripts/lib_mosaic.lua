@@ -2548,47 +2548,47 @@ function getRegionByCulture(culture, hash)
   end
 end
 
-function xgetRegionDayColorBy(culture, hash)
-
+function getRegionDayColorBy(culture, hash)
+  Spring.Echo("getRegionDayColor for culture: "..culture)
   if culture == "arabic" then
     if hash % 3 == 0 then
-      return {252, 247, 156}--"MiddleEast"
+      return makeVector(252, 247, 156)--"MiddleEast"
     end
     if hash % 3 == 1 then
-      return {215, 167, 114} --"CentralAsia"
+      return makeVector(215, 167, 114)--"CentralAsia"
     end
     if hash % 3 == 2 then
-      return {252,254, 172}--"Africa"
+      return makeVector(252,254, 172)--"Africa"
     end
   end
 
   if culture == "western" then 
     if hash % 3 == 0 then
-      return {154, 201, 206}--"Europe"
+      return makeVector(154, 201, 206)--"Europe"
     end
     if hash % 3 == 1 then
-      return {220, 230, 255}--"NorthAmerica"
+      return makeVector(220, 230, 255)--"NorthAmerica"
     end
     if hash % 3 == 2 then
-      return {255, 204, 153}--"SouthAmerica"
+      return makeVector(255, 204, 153)--"SouthAmerica"
     end
   end
 
   if culture == "asian" then
     if hash % 2 == 0 then
-      return {231, 157, 102}--"SouthEastAsia"
+      return makeVector(231, 157, 102)--"SouthEastAsia"
     end
     if hash % 2 == 1 then
-      return {215, 167, 114}--"CentralAsia"
+      return makeVector(215, 167, 114)--"CentralAsia"
     end
   end
 
   if culture == "international" then
-    return {215, 167, 114} --"International"
+    return makeVector(215, 167, 114) --"International"
   end
 
-  Spring.Echo("Reverting to default")
-  return {215, 167, 114}
+
+  return makeVector(215, 167, 114)
 end
 
 function getAzimuthByRegion(culture, hash)
