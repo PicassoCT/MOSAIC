@@ -288,7 +288,6 @@ if gadgetHandler:IsSyncedCode() then
 
     -- Creates a DayString
     function getDayTime(now, total)
-  
         Frame = now % total
         percent = Frame / DAYLENGTH
         hours = math.floor((Frame / DAYLENGTH) * 24)
