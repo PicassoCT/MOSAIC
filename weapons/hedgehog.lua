@@ -1,6 +1,6 @@
 local weaponName = "hedgehog"
 local weaponDef = {
-    name = "Anti-Personal-Mine",  
+    name = "hedgehog",  
     weaponType = [[MissileLauncher]],
     --damage
     damage = {
@@ -38,7 +38,7 @@ local weaponDef = {
     --visuals
     smokeTrail = true,
     
-    model = "hedgehog.dae",
+    model = "rpg7rocket.s3o",
     explosionScar = true, 
     cameraShake = 0.5,
     explosionGenerator = "custom:missile_explosion",

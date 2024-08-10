@@ -74,18 +74,18 @@ else -- unsynced
 
     local glUnitRaw = gl.UnitRaw
     local glBlending = gl.Blending
-    local glDepthmask = gl.Depthmask
+    local glDepthMask = gl.DepthMask
     local GL_SRC_ALPHA           = GL.SRC_ALPHA
     local GL_ONE                 = GL.ONE
     local GL_ONE_MINUS_SRC_ALPHA = GL.ONE_MINUS_SRC_ALPHA
 
     function gadget:DrawUnit(unitID, drawMode)
         if  iconTables[unitID] then --transparent draw
-	    glDepthmask(false)
+	    glDepthMask(false)
             glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-	   glDepthmask(true)		
+	   glDepthMask(true)		
             return true 
         end
     end

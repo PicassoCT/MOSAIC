@@ -42,10 +42,11 @@ if gadgetHandler:IsSyncedCode() then
     -- if you want diffrent colours for your day, modify this table
     sunCol = {}
     -- night
-    LengthOfNightDay = 9
+    LengthOfNightDay = 12
     for i = 1, LengthOfNightDay do
-        sunCol[#sunCol + 1] = makeVector(54, 72, 126)
+        sunCol[#sunCol + 1] = mixTable(makeVector(54, 72, 126), makeVector(64, 84, 80), math.random(0,100)/100)  
     end
+
     sunCol[#sunCol + 1] = makeVector(49, 66, 115)
     sunCol[#sunCol + 1] = makeVector(41, 56, 97)
     sunCol[#sunCol + 1] = makeVector(31, 43, 74)
@@ -59,22 +60,20 @@ if gadgetHandler:IsSyncedCode() then
     sunCol[#sunCol + 1] = makeVector(175, 57, 0)
     sunCol[#sunCol + 1] = makeVector(223, 73, 0)
     sunCol[#sunCol + 1] = makeVector(246, 66, 0)
-    sunCol[#sunCol + 1] = makeVector(255, 128, 0)
-    sunCol[#sunCol + 1] = makeVector(255, 191, 0)
-    -- noon
-    sunCol[#sunCol + 1] = makeVector(188, 193, 210)
-    sunCol[#sunCol + 1] = makeVector(203, 175, 167)
-    redShift = math.random(1, 45)
-    constLight = 210 + redShift
-    blueShift = 45 - redShift
+    assert(GameConfig.instance.culture)
+    assert(getDetermenisticMapHash(Game))
+    local regionalDayColor = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+    assert(regionalDayColor)
+    assert(type(regionalDayColor)=="table")
+    sunCol[#sunCol + 1] = mixTable(regionalDayColor, makeVector(255, 128, 0), 0.33)
+    sunCol[#sunCol + 1] = mixTable(regionalDayColor, makeVector(255, 191, 0), 0.66)
+
+    --noon
     for i = 1, LengthOfNightDay do
-        lightOffset = math.random(-5, 0)
-        sunCol[#sunCol + 1] = makeVector(constLight + lightOffset,
-                                         232 + lightOffset,
-                                         210 + blueShift + lightOffset)
+        sunCol[#sunCol + 1] = regionalDayColor
     end
     -- zenit
-    -- mirrored sunrise
+    -- mirrored sunrise aka sunset
     size = #sunCol
     for i = 1, size do sunCol[#sunCol + 1] = sunCol[size - i] end
     -- factor to divide the rgb values
@@ -182,10 +181,17 @@ if gadgetHandler:IsSyncedCode() then
     end
 
     function setSunArc(daytimeFrames)
-        daytimeFrames= daytimeFrames + DAYLENGTH*0.5
-        local dayFactor = (daytimeFrames % DAYLENGTH) /DAYLENGTH
-        if dayFactor < 0.25 or dayFactor > 0.75 then return end -- not setting sun
-        dayFactor = (dayFactor - 0.25) * 2.0
+        
+        local dayPercent = (daytimeFrames % DAYLENGTH) /DAYLENGTH
+        if dayPercent < 0.25 or dayPercent > 0.75 then 
+            --night and thus moon rollover
+            if dayPercent < 0.25  then
+                dayPercent = 0.25 + dayPercent -- 0.25 - 0.5
+            else
+                dayPercent = dayPercent -0.25 -- 0.5 -0.75
+            end
+        end 
+        dayPercent = (dayPercent - 0.25) * 2.0
 
         local SUN_MOVE_SPEED = 360.0 / (DAYLENGTH / 2.0)  -- Degrees per second
 
@@ -193,7 +199,7 @@ if gadgetHandler:IsSyncedCode() then
         local azimuth = (daytimeFrames * SUN_MOVE_SPEED) % 360.0
 
         -- Adjust elevation angle for sunrise and sunset effect 
-        local elevation = math.abs(math.sin(dayFactor*math.pi))* REGIONAL_MAX_ALTITUDE 
+        local elevation = math.abs(math.sin(dayPercent*math.pi))* REGIONAL_MAX_ALTITUDE 
 
         elevation = math.max(1, math.min(90.0, math.abs(elevation)))
 
@@ -202,13 +208,13 @@ if gadgetHandler:IsSyncedCode() then
         local rAzimuth = math.rad(azimuth)
         local resultVec = {
             x= math.cos(rElevation) * math.cos(rAzimuth),
-            y=(math.cos(rElevation) * math.sin(rAzimuth)), --
-            z= math.sin(rElevation)
+            z= math.cos(rElevation) * math.sin(rAzimuth), --
+            y= math.abs(math.sin(rElevation))
             }
 
         -- Normalize the vector
         local resultVec = normalizeVector(resultVec)
-
+--        Spring.Echo(getDayTime(daytimeFrames, DAYLENGTH).."REG:"..REGIONAL_MAX_ALTITUDE.." -> ("..resultVec.x.."/"..resultVec.y .."/"..resultVec.z..")")
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
 
@@ -282,8 +288,13 @@ if gadgetHandler:IsSyncedCode() then
 
     -- Creates a DayString
     function getDayTime(now, total)
-        hours = math.floor((now / total) * 24)
-        minutes = math.ceil((((now / total) * 24) - hours) * 60)
+        Frame = now % total
+        percent = Frame / DAYLENGTH
+        hours = math.floor((Frame / DAYLENGTH) * 24)
+        minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+        seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+        if minutes < 10 then minutes = "0"..minutes end
+        if hours < 10 then hours = "0"..hours end
         return hours .. ":" .. minutes
     end
 
@@ -341,17 +352,18 @@ if gadgetHandler:IsSyncedCode() then
 
         setSun(config, percent)
     end
-    startMorningOffset = DAYLENGTH / 2
+
     DAWN_FRAME = math.ceil((DAYLENGTH / EVERY_NTH_FRAME) * 0.25) *
                      EVERY_NTH_FRAME
     DUSK_FRAME = math.ceil((DAYLENGTH / EVERY_NTH_FRAME) * 0.75) *
                      EVERY_NTH_FRAME
+    HALF_DAY_OFFSET = DAYLENGTH * 0.5
     -- set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
-            -- Spring.Echo(getDayTime((n + startMorningOffset)%DAYLENGTH, DAYLENGTH))
-            aDay(n + startMorningOffset, DAYLENGTH)
+
+            aDay(n + HALF_DAY_OFFSET, DAYLENGTH)
         end
-        setSunArc(n)
+        setSunArc(n + HALF_DAY_OFFSET)
     end
 end

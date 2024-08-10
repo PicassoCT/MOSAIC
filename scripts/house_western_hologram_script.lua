@@ -701,6 +701,38 @@ function glowWormFlight(speed)
     end
 end
 
+function lineTicker()
+    while true do
+        totalDeg = 0
+        for i=1,10 do
+            relativeDeg = math.random(-80,80) - totalDeg
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], x_axis, math.rad(relativeDeg),0)
+            totalDeg = totalDeg - relativeDeg
+            ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
+        end
+        if maRa() then
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], x_axis, math.rad(-totalDeg),0)
+            ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
+        end
+
+        totalDeg = 0
+        for i=11,20 do
+            relativeDeg = math.random(-80 -totalDeg,80 + totalDeg) 
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], x_axis, math.rad(relativeDeg),0)
+            totalDeg = totalDeg - relativeDeg
+            ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
+        end
+        if maRa() then
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22], x_axis, math.rad(-totalDeg),0)
+            ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
+        end
+        Sleep(15000)
+        hideTReg(TableOfPiecesGroups["BuisnessWall35Sub"])
+        Sleep(3000)
+    end
+end
+
+
 function showWallDayTime(name)
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
@@ -713,9 +745,13 @@ function showWallDayTime(name)
             while encounter > 0 do
                 _, element = randDict(TableOfPiecesGroups[name])
                 if element then
+                    if element ~= BuisnessWall35 then
                     encounter = encounter - 1
                     ShowReg(element)
                     showSubSpins(element)
+                    else
+                        StartThread(lineTicker)
+                    end
                 end
                 Sleep(10)   
             end         
@@ -907,7 +943,7 @@ function HoloGrams()
 
         if logo == symmetryPiece then 
             symmetryOrigin = piece("SymmetryOrigin")
-            if maRa() then showReg(symmetryOrigin) end
+            if maRa() then ShowReg(symmetryOrigin) end
             StartThread(shapeSymmetry, symmetryPiece)
             --return            
         end
@@ -1421,7 +1457,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    Spring.Log("Hologram "..newMessage.." with textFX "..name)
+                    Spring.Log('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

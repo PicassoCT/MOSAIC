@@ -446,6 +446,24 @@ function getGameConfig()
 
         return totalValue
     end
+
+function detectMapControlledPlacementComplete()
+    if Spring.GetGameFrame() < 1 then return false end
+    if GG.MapCompletedBuildingPlacement and GG.MapCompletedBuildingPlacement == true then return GG.MapCompletedBuildingPlacement end
+
+    allUnits = Spring.GetTeamUnitsByDefs(gaiaTeamID, UnitDefNames["map_placements_complete"].id)
+    if allUnits and #allUnits > 1 then
+        foreach(allUnits,
+                function (id)
+                    Spring.DestroyUnit(id, true, false)
+                end)
+            GG.MapCompletedBuildingPlacement = true
+    end
+end
+
+function isMapControlledBuildingPlacement()
+    return getManualCivilianBuildingMaps(Game.mapName)
+end
    
     function  getManualCivilianBuildingMaps(mapName)
         mapName = string.lower(mapName)
@@ -726,7 +744,11 @@ function getGameConfig()
         return id
     end
 
+
+
+
     function getManualObjectiveSpawnMapNames(mapName)
+        mapName = string.lower(mapName)
         ManualBuildingPlacement = {        
             ["mosaic_lastdayofdubai_v"] = true
         }
@@ -784,14 +806,14 @@ function getGameConfig()
         return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySize
     end
 
-  function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
- 	if not GG.DistrictRotationDeterministic then GG.DistrictRotationDeterministic = {} end
-	x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)
-	if not GG.DistrictRotationDeterministic[x] then GG.DistrictRotationDeterministic[x] = {} end
-	if not GG.DistrictRotationDeterministic[x][z] then GG.DistrictRotationDeterministic[x][z] = {} end	
-	if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,9)*45 end
-	return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
-  end
+    function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
+	    if not GG.DistrictRotationDeterministic then GG.DistrictRotationDeterministic = {} end
+        x,z = math.ceil(xDiv1000/10) , math.ceil(zDiv1000/10)
+        if not GG.DistrictRotationDeterministic[x] then GG.DistrictRotationDeterministic[x] = {} end
+        if not GG.DistrictRotationDeterministic[x][z] then GG.DistrictRotationDeterministic[x][z] = {} end	
+        if not GG.DistrictRotationDeterministic[x][z][districtID] then GG.DistrictRotationDeterministic[x][z][districtID]  = math.random(0,9)*45 end
+        return GG.DistrictRotationDeterministic[x][z][districtID] + math.random(0,cultureDeviation)* randSign()
+    end
 
     function getCultureHash()
         return  stringToHash(getCultureName())
@@ -877,9 +899,6 @@ function getGameConfig()
                 districtRotationDeg = 0
             }
         end
-
-
-
     end
 
     function getWeaponTypeTable(WeaponDefs, StringTable)
@@ -1415,9 +1434,27 @@ function getGameConfig()
                 end
             end
 
+            function isTrackedPerson(id)
+                if doesUnitExistAlive(id) then
+                    return GG.TrackedPersons and GG.TrackedPersons[id]
+                end
+            end
+
+        function isMapNameRainyOverride(mapName)
+            mapName = string.lower(mapName)
+            ManualBuildingPlacement = {        
+                ["mosaic_lastdayofdubai_v"] = true
+            }
+
+              for name, value in pairs(ManualBuildingPlacement)do
+                if string.find(mapName, name ) then return true end
+            end
+            return false
+
+        end
             function isRaining(hour)
                 if GG.boolRainyArea == nil then
-                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0      
+                    GG.boolRainyArea = getDetermenisticHash() % 2 == 0  or isMapNameRainyOverride(Game.mapName) 
                   --  GG.boolRainyArea = true
                   --  echo("DELME Debug Setting override isRaining()")
                     echo("Is a Rainy area: "..toString( GG.boolRainyArea))             
@@ -2511,6 +2548,49 @@ function getRegionByCulture(culture, hash)
   end
 end
 
+function getRegionDayColorBy(culture, hash)
+  Spring.Echo("getRegionDayColor for culture: "..culture)
+  if culture == "arabic" then
+    if hash % 3 == 0 then
+      return makeVector(252, 247, 156)--"MiddleEast"
+    end
+    if hash % 3 == 1 then
+      return makeVector(215, 167, 114)--"CentralAsia"
+    end
+    if hash % 3 == 2 then
+      return makeVector(252,254, 172)--"Africa"
+    end
+  end
+
+  if culture == "western" then 
+    if hash % 3 == 0 then
+      return makeVector(154, 201, 206)--"Europe"
+    end
+    if hash % 3 == 1 then
+      return makeVector(220, 230, 255)--"NorthAmerica"
+    end
+    if hash % 3 == 2 then
+      return makeVector(255, 204, 153)--"SouthAmerica"
+    end
+  end
+
+  if culture == "asian" then
+    if hash % 2 == 0 then
+      return makeVector(231, 157, 102)--"SouthEastAsia"
+    end
+    if hash % 2 == 1 then
+      return makeVector(215, 167, 114)--"CentralAsia"
+    end
+  end
+
+  if culture == "international" then
+    return makeVector(215, 167, 114) --"International"
+  end
+
+
+  return makeVector(215, 167, 114)
+end
+
 function getAzimuthByRegion(culture, hash)
     returnHash= 0
     minimum = 0
@@ -2727,6 +2807,7 @@ end
 
         local parent = getParentOfUnit(Location.teamID, unitID)
         if parent and doesUnitExistAlive(parent) then
+            startRevealedUnitsChatEventStream(unitID, parent)
             Location.revealedUnits[parent] = {}
             x,y,z = Spring.GetUnitPosition(parent)
             Location.revealedUnits[parent].pos = {x=x,y=y,z=z}
@@ -2742,6 +2823,7 @@ end
         if children and count(children) > 0 then
             for childID, _ in pairs(children) do
                 if childID and doesUnitExistAlive(childID) then
+                    startRevealedUnitsChatEventStream(unitID, childID)
                     Location.revealedUnits[childID] = {}
                     x,y,z = Spring.GetUnitPosition(childID)
                     Location.revealedUnits[childID].pos = {x=x,y=y,z=z}

@@ -312,7 +312,21 @@ function showDeployRobot()
 end
 
 function selectBase() 
-    showOne(TablesOfPiecesGroups["base"], true)
+     maxBase = count(TablesOfPiecesGroups["base"]) -1
+     assertType(TablesOfPiecesGroups["base"], "table")
+    if materialColourNameGround == "ghetto" or  materialColourNameWall == "ghetto" then
+        maxBase = count(TablesOfPiecesGroups["base"]) 
+    end
+    dice = math.random(1, maxBase)
+    c = 0
+    for k, v in pairs(TablesOfPiecesGroups["base"]) do
+        if k and v then c = c + 1 end
+        if c == dice then      
+            Show(v)
+            ToShowTable[#ToShowTable + 1] = v
+        end
+    end
+
     if maRa() and not isNotNearOcean(x,z, cubeDim.length*5)  or isOnSteepHill(x,z, cubeDim.length*5)then
         BasePillar = piece("BasePillar")
         Show(BasePillar)
@@ -681,6 +695,7 @@ end
 function buildDecorateGroundLvl()
     Sleep(1)
     local materialColourName = selectGroundBuildMaterial()
+    materialColourNameGround = materialColourName
     assert(materialColourName)
     local StreetDecoMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Street", "Floor", "Deco"}, {"Door"})
 
@@ -1244,33 +1259,42 @@ function buildAnimation()
     hideT(TablesOfPiecesGroups["BuildDeco"])
 end
 
+materialColourNameGround = nil
+materialColourNameWall = nil
 function buildBuilding()
-    --echo(getScriptName() .. "buildBuilding")
+   --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
-    --echo(getScriptName() .. "selectBase")
-    selectBase()
-    --echo(getScriptName() .. "selectBackYard")
+
+   --echo(getScriptName() .. "selectBackYard")
     selectBackYard()
-    --echo(getScriptName() .. "buildDecorateGroundLvl started")
+   --echo(getScriptName() .. "buildDecorateGroundLvl started")
     materialColourName = buildDecorateGroundLvl()
+    materialColourNameGround =materialColourName
+    materialColourNameWall = materialColourNameGround
+
     --echo(getScriptName() .. "buildDecorateGroundLvl ended")
     if boolIsCombinatorial then
+        --echo(getScriptName() .. "pre selectGroundBuildMaterial")
         materialColourName = selectGroundBuildMaterial(true)
+        materialColourNameWall= materialColourName
+        --echo(getScriptName() .. "post selectGroundBuildMaterial")
     end
-
+    --echo(getScriptName() .. "pre selectBase")
+    selectBase()
+    --echo(getScriptName() .. "post selectBase")
     local buildMaterial =  getMaterialElementsContaingNotContaining(materialColourName, {"Wall", "Block"}, {})
     for i = 1, 2 do
-        --echo(getScriptName() .. "buildDecorateLvl start")
+       --echo(getScriptName() .. "buildDecorateLvl start")
         _, buildMaterial = buildDecorateLvl(i,
                                             materialColourName,
                                             buildMaterial
                                             )
-         --echo(getScriptName() .. "buildDecorateLvl ended")
+        --echo(getScriptName() .. "buildDecorateLvl ended")
     end
-    --echo(getScriptName() .. "addRoofDeocrate started")
+   --echo(getScriptName() .. "addRoofDeocrate started")
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
     Show(BasePillars)
-        --echo(getScriptName() .. "addRoofDeocrate ended")
+       --echo(getScriptName() .. "addRoofDeocrate ended")
     boolDoneShowing = true
 end
 
@@ -1291,7 +1315,7 @@ function addGrafiti(x,z, turnV,  axis)
     boolTurnGraphiti = maRa()
     turnValue = turnV + 180*randSign() + 180 * randSign()
     Turn(TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11],3, math.rad(turnValue),0)
---[[    StartThread(spawnCegCyclicAtUnitPiece,unitID, TablesOfPiecesGroups["Ghetto_StreetYard_Floor_Deco"][11], "policelight", 1000)--]]
+
     myMessage = grafitiMessages[math.random(1,#grafitiMessages)]
     grafitiMessages = nil
     myMessage = string.gsub(myMessage, "Ü", playerName or "")

@@ -23,6 +23,18 @@ if (gadgetHandler:IsSyncedCode()) then
         if msg then
             -- Spring.Echo("RecvLuaMsg"..msg)
 
+            if string.find(msg, "SET_TRACKED:") then
+                idTracked = tonumber(msg:gsub( "SET_TRACKED:", ""))
+                if not GG.TrackedPersons then GG.TrackedPersons = {} end
+                GG.TrackedPersons[idTracked] = true
+            end
+
+            if string.find(msg, "SET_UNTRACKED:") then
+                idTracked = tonumber(msg:gsub( "SET_UNTRACKED:", ""))
+                if not GG.TrackedPersons then GG.TrackedPersons = {} end
+                GG.TrackedPersons[idTracked] = nil
+            end
+
             if string.find(msg, "SetGameState:") then 
                 msg = msg:gsub("SetGameState:", "")
                     GG.GlobalGameStateOverride = msg

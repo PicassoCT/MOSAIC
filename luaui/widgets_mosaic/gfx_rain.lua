@@ -339,8 +339,20 @@ local function getDetermenisticHash()
     return accumulated
 end
 
+local function isMapNameRainyOverride(mapName)
+    local map = string.lower(mapName)
+    local ManualBuildingPlacement = {}        
+        ManualBuildingPlacement[1] = "mosaic_lastdayofdubai_v"
+
+      for i=1, #ManualBuildingPlacement do
+        if string.find(map, ManualBuildingPlacement[i] ) then return true end
+    end
+    return false
+
+end
+
 local function isRainyArea()
-    return getDetermenisticHash() % 2 == 0
+    return getDetermenisticHash() % 2 == 0 or  isMapNameRainyOverride(Game.mapName)
 end
 
 local function getDayTime()
@@ -356,9 +368,10 @@ end
 local function isRaining()   
 
     if boolRainyArea == nil then
-        boolRainyArea = isRainyArea() 
+        boolRainyArea = isRainyArea()        
         Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
     end
+
     if boolRainyArea == false then
         return false
     end
@@ -387,9 +400,8 @@ local function onTresholdCrossWriteToMapTexture()
     if math.abs(tresholdCrossValueStore - rainPercent) > 0.1 then
         tresholdCrossValueStore = rainPercent
 
-        glCopyToTexture("$map_reflection", 0, 0, vpx, vpy, vsx, vsy)
+        --glCopyToTexture("$map_reflection", 0, 0, vpx, vpy, vsx, vsy)
     end
-
 end
 
 function widget:Update(dt)   
@@ -399,11 +411,14 @@ function widget:Update(dt)
     end
 
     if isRaining() == true   then--isRaining() then
-        rainPercent = math.min(1.0, rainPercent + 0.0001)
+        rainPercent = math.min(1.0, rainPercent + 0.0002)
+        --Spring.Echo("Rainvalue:".. rainPercent)
     else
         rainPercent = math.max(0.0, rainPercent - 0.0001)
+        --Spring.Echo("Rainvalue:".. rainPercent)
     end
-    onTresholdCrossWriteToMapTexture()
+
+
 end
 
 function widget:Shutdown()
@@ -420,6 +435,7 @@ end
 
 
 local function updateUniforms()
+    onTresholdCrossWriteToMapTexture()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
     --Spring.Echo("Time passed:"..diffTime)

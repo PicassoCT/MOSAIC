@@ -89,14 +89,12 @@ local function updateLocationData()
     end
 
     if GG.RevealedLocations then
-        local TableCopy = GG.RevealedLocations
-        
+        local TableCopy = GG.RevealedLocations        
         SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(TableCopy))
     end
 
     if storedRevealedLocationCount ~= #GG.RevealedLocations then
         storedRevealedLocationCount = #GG.RevealedLocations
---        Spring.Echo("Updating RevealedLocations "..#GG.RevealedLocations)
     end
 end
 

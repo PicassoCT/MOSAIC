@@ -43,5 +43,10 @@ return {
  "Erdie",
  "Seelengold",
  "Big Sakura Bonsai by Michael Groenert CC-BY via Poly Pizza",
- "Tobiasz unfa Karon" 
+ "Tobiasz unfa Karon" ,
+ "Philip_Goddard",
+ "wangzhuokun",
+ "DJmastah",
+ "ViraMiller",
+ "liezenE"
 }

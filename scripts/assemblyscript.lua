@@ -574,6 +574,9 @@ function buildAnimation(buildID)
                 Move(buildspot, z_axis, Plattformheight, math.pi * 15)
             end
         end
+        if getUnitCloaked(unitID) then
+            Spring.PlaySoundFile("sounds/assembly/producing.ogg", 0.5)
+        end
         Sleep(10)
     end
 
