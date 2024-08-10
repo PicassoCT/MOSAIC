@@ -28,7 +28,7 @@
 --   (slighly) higher priority than the corresponding
 --   projectile lights
 
-VFS.Include("scripts/lib_mosaic.lua")
+
 local allDynLightDefs = include("LuaRules/Configs/gfx_dynamic_lighting_defs.lua")
 local modDynLightDefs = allDynLightDefs[Game.gameShortName] or {}
 local weaponLightDefs = modDynLightDefs.weaponLightDefs or {}
@@ -41,7 +41,13 @@ local PROJECTILE_EXPLOSION_EVENT_ID = 10003
 local UNIT_CREATED_EVENT_ID         = 10004
 local UNIT_DESTROYED_EVENT_ID       = 10005
 local UPDATE_LIGHTS_9SEC_EVENT_ID   = 10006
-local hologramTypes = getHologramTypes()
+local hologramTypes = {}
+
+for i=1, #UnitDefs do
+    if string.find(UnitDefs[i].name, "_hologram_") then
+        hologramTypes[UnitDefs[i].id]= UnitDefs[i].id
+    end
+end
 
 if (gadgetHandler:IsSyncedCode()) then
     -- register/deregister for the synced Projectile*/Explosion call-ins
@@ -114,6 +120,15 @@ else
     local SpringUpdateMapLight = Spring.UpdateMapLight
     local SpringUpdateModelLight = Spring.UpdateModelLight
 
+    local function getUnitDefByName(name)
+        for i =1, #UnitDefs do
+            if UnitDefs[i].name == name then
+                return UnitDefs[i].id
+            end
+        end
+        Spring.Echo("No id found for name: "..name)
+    end
+
     local function LoadLightDefs()
         -- type(v) := {[1] = number, [2] = number, [3] = number}
         -- type(s) := number
@@ -175,7 +190,7 @@ else
         end 
 
         for buildingName, buildingLightDef in pairs(buildingLightDefs) do
-            local buildingDef = UnitDefNames[buildingName]
+            local buildingDef = getUnitDefByName(buildingName)
             local holoLightDef = buildingLightDef.holoLightDefs
 
             if (buildingDef ~= nil) then
@@ -220,7 +235,7 @@ else
         return hours > 19 and hours < 6, percent
     end
     
-    local function mixColor(coloarA, colorB, factor)
+    local function mixColor( colorB, coloarA, factor)
         return {
                 coloarA[1] * factor + colorB[1] * (1.0 -factor), 
                 coloarA[2] * factor + colorB[2] * (1.0 -factor), 
@@ -235,6 +250,7 @@ else
     end
 
     local function UpdateNightLightsEveryNineSeconds(everyNinthFrame)
+        Spring.Echo("UpdateNightLightsEveryNineSeconds "..everyNinthFrame)
         local boolIsNight, percent = isNight(everyNinthFrame) 
         if boolIsNight == true then
             for id, defID in pairs(holoLightUnitRegister) do
@@ -262,7 +278,7 @@ else
     local function UnitCreated(unitID, unitDefId, teamID)
         local buildingLightDef =  buildingLightDefs[unitDefId]
         if (buildingLightDef == nil) then return end
-        holoLightUnitRegister[unitID] = {defID = unitDefID, timeOffsetFrames = unitID*100 }
+        holoLightUnitRegister[unitID] = {defID = unitDefID}
     end
 
     local function UnitDestroyed(unitID, unitDefId, teamID)

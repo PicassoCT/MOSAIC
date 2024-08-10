@@ -702,6 +702,7 @@ function glowWormFlight(speed)
 end
 
 function lineTicker()
+    Spring.Echo("Starting lineTicker")
     while true do
         totalDeg = 0
         for i=1,10 do
@@ -734,6 +735,7 @@ end
 
 
 function showWallDayTime(name)
+    local BuisnessWall35 = piece("BuisnessWall35")
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
         randOffset =  randSign() 
@@ -746,9 +748,9 @@ function showWallDayTime(name)
                 _, element = randDict(TableOfPiecesGroups[name])
                 if element then
                     if element ~= BuisnessWall35 then
-                    encounter = encounter - 1
-                    ShowReg(element)
-                    showSubSpins(element)
+                        encounter = encounter - 1
+                        ShowReg(element)
+                        showSubSpins(element)
                     else
                         StartThread(lineTicker)
                     end
