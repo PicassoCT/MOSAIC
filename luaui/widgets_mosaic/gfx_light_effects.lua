@@ -202,19 +202,7 @@ loadWeaponDefs()
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local activeHoloGramRegister = {}
--- entryFormat:	unitId, color, brightness, sinScale, sinFactor, sinOffset
-
 -- Light Defs
-local function SetLightColorPerUnit(msg)
-	local deserializeTableFromString = deserializeTable(msg)
-	activeHoloGramRegister = deserializeTable
-end
-
-local function GetLightFromUnitDefs()
-
-
-end
 
 
 local function GetLightsFromUnitDefs()
@@ -507,11 +495,7 @@ local function GetProjectileLight(lightParams, pID, x, y, z)
 
 	return light
 end
-local function GetBuildingLights(beamLights, beamLightCount, pointLights, pointLightCount)
-	--inject holographic LightSources registrar into pointLights
-		--if visible
 
-end
 local function GetProjectileLights(beamLights, beamLightCount, pointLights, pointLightCount)
 	local cx, cy, cz = Spring.GetCameraPosition()
 
@@ -975,7 +959,6 @@ function widget:Initialize()
 	widgetHandler:RegisterGlobal('GadgetRemoveBeamLight', RemoveBeamLight)
 
 	if WG.DeferredLighting_RegisterFunction then
-		WG.DeferredLighting_RegisterFunction(GetBuildingLights)
 		WG.DeferredLighting_RegisterFunction(GetProjectileLights)
 		projectileLightTypes = GetLightsFromUnitDefs()
 	end
