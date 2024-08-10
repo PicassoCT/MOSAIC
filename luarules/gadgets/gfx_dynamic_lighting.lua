@@ -27,14 +27,21 @@
 --   we work around this by giving explosion lights a
 --   (slighly) higher priority than the corresponding
 --   projectile lights
+
+VFS.Include("scripts/lib_mosaic.lua")
 local allDynLightDefs = include("LuaRules/Configs/gfx_dynamic_lighting_defs.lua")
 local modDynLightDefs = allDynLightDefs[Game.gameShortName] or {}
 local weaponLightDefs = modDynLightDefs.weaponLightDefs or {}
+local buildingLightDefs = modDynLightDefs.buildingLightDefs or {}
 
 -- shared synced/unsynced globals
 local PROJECTILE_GENERATED_EVENT_ID = 10001
 local PROJECTILE_DESTROYED_EVENT_ID = 10002
 local PROJECTILE_EXPLOSION_EVENT_ID = 10003
+local UNIT_CREATED_EVENT_ID         = 10004
+local UNIT_DESTROYED_EVENT_ID       = 10005
+local UPDATE_LIGHTS_9SEC_EVENT_ID   = 10006
+local hologramTypes = getHologramTypes()
 
 if (gadgetHandler:IsSyncedCode()) then
     -- register/deregister for the synced Projectile*/Explosion call-ins
@@ -54,6 +61,21 @@ if (gadgetHandler:IsSyncedCode()) then
             if (weaponDef ~= nil) then
                 Script.SetWatchWeapon(weaponDef.id, false)
             end
+        end
+    end
+    function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
+        if hologramTypes[unitDefID] then
+            SendToUnsynced(UNIT_CREATED_EVENT_ID, unitID, unitDefID, unitTeam)
+        end
+    end
+    function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID)
+        if hologramTypes[unitDefID] then
+            SendToUnsynced(UNIT_DESTROYED_EVENT_ID, unitID, unitDefID, unitTeam)
+        end
+    end
+    function gadget:GameFrame(frame)
+        if frame % 270 == 0 then
+        SendToUnsynced(UPDATE_LIGHTS_9SEC_EVENT_ID, frame)
         end
     end
 
@@ -77,8 +99,10 @@ else
 
     local projectileLightDefs = {} -- indexed by unitDefID
     local explosionLightDefs = {} -- indexed by weaponDefID
+    local buildingLightDefs = {} -- indexed by buildingDefID
     local projectileLights = {} -- indexed by projectileID
     local explosionLights = {} -- indexed by "explosionID"
+    local buildingLights = {} -- indexed by "unitID"
 
     local unsyncedEventHandlers = {}
 
@@ -148,6 +172,102 @@ else
                             explosionLightDef.ttl or 1.0)
                 end
             end
+        end 
+
+        for buildingName, buildingLightDef in pairs(buildingLightDefs) do
+            local buildingDef = UnitDefNames[buildingName]
+            local holoLightDef = buildingLightDef.holoLightDefs
+
+            if (buildingDef ~= nil) then
+                buildingLightDefs[buildingDef] = holoLightDef
+   
+                -- NOTE: these rates are not sensible if the decay-type is exponential
+                -- Spring.Echo("pld :" .. projectileLightDef)
+                -- Spring.Echo("pld.dft :" .. projectileLightDef.decayFunctionType)
+
+                if (buildingLightDef ~= nil and
+                    buildingLightDef.decayFunctionType ~= nil) then
+                    buildingLightDefs[buildingDef].ambientDecayRate =
+                        vector_scalar_div(
+                            buildingLightDef.ambientColor or {0.0, 0.0, 0.0},
+                            buildingLightDef.ttl or 1.0)
+                    buildingLightDefs[buildingDef].diffuseDecayRate =
+                        vector_scalar_div(
+                            buildingLightDef.diffuseColor or {0.0, 0.0, 0.0},
+                            buildingLightDef.ttl or 1.0)
+                    buildingLightDefs[buildingDef].specularDecayRate =
+                        vector_scalar_div(
+                            buildingLightDef.specularColor or {0.0, 0.0, 0.0},
+                            buildingLightDef.ttl or 1.0)
+                end
+            end
+        end
+    end
+    
+        function getDayTime(frame)
+            local DAYLENGTH = 28800
+            morningOffset = (DAYLENGTH / 2)
+            Frame = (frame + morningOffset) % DAYLENGTH
+            percent = Frame / DAYLENGTH
+            hours = math.floor((Frame / DAYLENGTH) * 24)
+            minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+            seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+            return hours, minutes, seconds, percent 
+        end
+
+    local function isNight(frame)
+        hours, minutes, seconds, percent = getDayTime(frame)         
+        return hours > 19 and hours < 6, percent
+    end
+    
+    local function mixColor(coloarA, colorB, factor)
+        return {
+                coloarA[1] * factor + colorB[1] * (1.0 -factor), 
+                coloarA[2] * factor + colorB[2] * (1.0 -factor), 
+                coloarA[3] * factor + colorB[3] * (1.0 -factor)
+                }
+    end
+
+    local function mixPulseColors(colorsArray, id, everyNinthFrame, percent)
+        local startIndex = (math.ceil(id + percent * everyNinthFrame/(28800*0.5)) % #colorsArray) + 1
+        local endIndex = (startIndex % #colorsArray) + 1
+        return mixColor(colorsArray[startIndex], colorsArray[endIndex], percent)
+    end
+
+    local function UpdateNightLightsEveryNineSeconds(everyNinthFrame)
+        local boolIsNight, percent = isNight(everyNinthFrame) 
+        if boolIsNight == true then
+            for id, defID in pairs(holoLightUnitRegister) do
+                if defID then
+                    local name = UnitDefs[defID].name
+                    local buildingLightDef = buildingLightDefs[name]
+
+                    buildingLightDef.diffuseColor = mixPulseColors(buildingLightDef.diffuseColors, id, everyNinthFrame, percent)
+                    buildingLightDef.specularColor = mixPulseColors(buildingLightDef.specularColors, id, everyNinthFrame, percent)
+                    buildingLights[id] = 
+                    {
+                        [1] = SpringAddMapLight(buildingLightDef),
+                        [2] = SpringAddModelLight(buildingLightDef)
+                    }
+
+
+                    SpringSetMapLightTrackingState(buildingLights[id][1],id, false, false)
+                    SpringSetModelLightTrackingState(buildingLights[id][2],id, false, false)
+                end
+            end
+        end
+    end
+
+    holoLightUnitRegister = {}
+    local function UnitCreated(unitID, unitDefId, teamID)
+        local buildingLightDef =  buildingLightDefs[unitDefId]
+        if (buildingLightDef == nil) then return end
+        holoLightUnitRegister[unitID] = {defID = unitDefID, timeOffsetFrames = unitID*100 }
+    end
+
+    local function UnitDestroyed(unitID, unitDefId, teamID)
+        if holoLightUnitRegister[unitID] then
+            holoLightUnitRegister[unitID] = nil
         end
     end
 
@@ -160,10 +280,10 @@ else
         projectileLights[projectileID] =
             {
                 [1] = SpringAddMapLight(projectileLightDef),
-                [2] = SpringAddModelLight(projectileLightDef)
-                -- [3] = projectileOwnerID,
-                -- [4] = projectileWeaponDefID,
+                [2] = SpringAddModelLight(projectileLightDef)             
             }
+
+
         SpringSetMapLightTrackingState(projectileLights[projectileID][1],
                                        projectileID, true, false)
         SpringSetModelLightTrackingState(projectileLights[projectileID][2],
@@ -241,10 +361,11 @@ else
         end
 
         unsyncedEventHandlers[PROJECTILE_GENERATED_EVENT_ID] = ProjectileCreated
-        unsyncedEventHandlers[PROJECTILE_DESTROYED_EVENT_ID] =
-            ProjectileDestroyed
-        unsyncedEventHandlers[PROJECTILE_EXPLOSION_EVENT_ID] =
-            ProjectileExplosion
+        unsyncedEventHandlers[PROJECTILE_DESTROYED_EVENT_ID] = ProjectileDestroyed
+        unsyncedEventHandlers[PROJECTILE_EXPLOSION_EVENT_ID] = ProjectileExplosion
+        unsyncedEventHandlers[UNIT_CREATED_EVENT_ID]         = UnitCreated
+        unsyncedEventHandlers[UNIT_DESTROYED_EVENT_ID]       = UnitDestroyed
+        unsyncedEventHandlers[UPDATE_LIGHTS_9SEC_EVENT_ID]   = UpdateNightLightsEveryNineSeconds
 
         -- fill the {projectile, explosion}LightDef tables
         LoadLightDefs()
