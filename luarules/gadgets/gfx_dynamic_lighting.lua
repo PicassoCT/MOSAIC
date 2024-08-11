@@ -259,9 +259,10 @@ else
     end
 
     local function UpdateNightLightsEveryNineSeconds(everyNinthFrame)
-        Spring.Echo("UpdateNightLightsEveryNineSeconds "..everyNinthFrame)
+
         local boolIsNight, percent = isNight(everyNinthFrame) 
         if boolIsNight == true then
+            Spring.Echo("UpdateNightLightsEveryNineSeconds cause its night:"..everyNinthFrame)
             for id, defID in pairs(holoLightUnitRegister) do
                 if defID then
                     local name = UnitDefs[defID].name
