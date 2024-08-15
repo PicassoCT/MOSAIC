@@ -42,17 +42,21 @@ local PROJECTILE_EXPLOSION_EVENT_ID = "Projectile_Explosion"
 local UNIT_CREATED_EVENT_ID         = "Unit_Created"
 local UNIT_DESTROYED_EVENT_ID       = "Unit_Destroyed"
 local UPDATE_LIGHTS_9SEC_EVENT_ID   = "Update_Every_NinthSecond"
-local hologramTypes = {}
+local neonHologramTypeTable = {}
+
+
 
 for i=1, #UnitDefs do
     if string.find(UnitDefs[i].name, "_hologram_") then
-        hologramTypes[UnitDefs[i].id]= true
+        neonHologramTypeTable[UnitDefs[i].id]= true
     end
 end
 
 if (gadgetHandler:IsSyncedCode()) then
+    local myTeam = Spring.GetGaiaTeamID()
     -- register/deregister for the synced Projectile*/Explosion call-ins
     function gadget:Initialize()
+
         for weaponDefName, _ in pairs(weaponLightDefs) do
             local weaponDef = WeaponDefNames[weaponDefName]
 
@@ -71,20 +75,31 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
     function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-        if hologramTypes[unitDefID] then
+        if neonHologramTypeTable[unitDefID] then
             Spring.Echo("gfx_dynamic_lighting:Synced:UnitCreated: "..unitID)
             SendToUnsynced(UNIT_CREATED_EVENT_ID, unitID, unitDefID, unitTeam)
         end
     end
     function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID)
-        if hologramTypes[unitDefID] then
+        if neonHologramTypeTable[unitDefID] then
             SendToUnsynced(UNIT_DESTROYED_EVENT_ID, unitID, unitDefID, unitTeam)
         end
     end
+
+    function serializeTableToString(t)
+        result = ""
+        for k,v in pairs(t) do
+            result = result.."|"..k
+        end
+        return result
+    end
+    
+    neonUnitDataTransfer = {}
     function gadget:GameFrame(frame)
         if frame % 270 == 0 then
             Spring.Echo("Updating dynamic lighting ")
-            SendToUnsynced(UPDATE_LIGHTS_9SEC_EVENT_ID, frame)
+            local neonUnitsInLOSserialized = serializeTableToString(neonUnitDataTransfer)
+            SendToUnsynced(UPDATE_LIGHTS_9SEC_EVENT_ID, frame, neonUnitsInLOSserialized)
         end
     end
 
@@ -95,6 +110,22 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:ProjectileDestroyed(projectileID)
         SendToUnsynced(PROJECTILE_DESTROYED_EVENT_ID, projectileID)
+    end
+
+    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
+        if neonHologramTypeTable[unitDefID] then
+            if myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+                neonUnitDataTransfer[unitID] = unitID
+            end
+        end
+    end
+
+    function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+        if neonHologramTypeTable[unitDefID] then
+            if  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
+                neonUnitDataTransfer[unitID] = nil
+            end
+        end
     end
 
     function gadget:Explosion(weaponDefID, posx, posy, posz, ownerID)
@@ -236,11 +267,11 @@ else
         return hours > 19 and hours < 6, percent
     end
     
-    local function mixColor( colorB, coloarA, factor)
+    local function mixColor( colorB, colorA, factor)
         return {
-                coloarA[1] * factor + colorB[1] * (1.0 -factor), 
-                coloarA[2] * factor + colorB[2] * (1.0 -factor), 
-                coloarA[3] * factor + colorB[3] * (1.0 -factor)
+                colorA[1] * factor + colorB[1] * (1.0 -factor), 
+                colorA[2] * factor + colorB[2] * (1.0 -factor), 
+                colorA[3] * factor + colorB[3] * (1.0 -factor)
                 }
     end
 
@@ -249,25 +280,35 @@ else
         local percentOfTheNight = 0
         local HALF_DAY_FRAMES = 28800/2.0
         if percent > 0.75 then percentOfTheNight = ((percent-0.75)/0.25)*0.5 end
-        if percent < 0.25 then percentOfTheNight = 0.5 + (percent)/0.25)*0.5 end
+        if percent < 0.25 then percentOfTheNight = 0.5 + ((percent)/0.25)*0.5 end
         local frameOfTheNight = percentOfTheNight * HALF_DAY_FRAMES
         local NthIntervallOfTheNight = frameOfTheNight / (9*30)
 
-        local startIndex = math.ceil(id + NthIntervallOfTheNight) % #colorsArray) + 1
-        local endIndex = (id + NthIntervallOfTheNight + 1) % #colorsArray) + 1
+        local startIndex = math.ceil((id + NthIntervallOfTheNight) % #colorsArray) + 1
+        local endIndex = ((id + NthIntervallOfTheNight + 1) % #colorsArray) + 1
         return mixColor(colorsArray[startIndex], colorsArray[endIndex], percent)
     end
 
-    local function UpdateNightLightsEveryNineSeconds(everyNinthFrame)
+   local function splitToNumberedDict(msg)
+        local message = msg..'|'
+        local t = {}
+        for e in string.gmatch(message,'([^%|]+)%|') do
+            local pieceID = tonumber(e)
+            t[pieceID] = pieceID
+        end
+        return t
+    end
+    local holoLightUnitRegister = {}
+    local function UpdateNightLightsEveryNineSeconds(everyNinthFrame, unitsInSight)
 
         local boolIsNight, percent = isNight(everyNinthFrame) 
+        local unitsInLOS = splitToNumberedDict(unitsInSight)
         if boolIsNight == true then
-            Spring.Echo("UpdateNightLightsEveryNineSeconds cause its night:"..everyNinthFrame)
             for id, defID in pairs(holoLightUnitRegister) do
-                if defID then
+                if defID and unitsInLOS[id] then
                     local name = UnitDefs[defID].name
                     local buildingLightDef = buildingLightDefs[name]
-
+                    Spring.Echo("UpdateNightLightsEveryNineSeconds:UnitLightVisible:"..id)
                     buildingLightDef.diffuseColor = mixPulseColors(buildingLightDef.diffuseColors, id, everyNinthFrame, percent)
                     buildingLightDef.specularColor = mixPulseColors(buildingLightDef.specularColors, id, everyNinthFrame, percent)
                     buildingLights[id] = 
@@ -284,7 +325,7 @@ else
         end
     end
 
-    holoLightUnitRegister = {}
+    
     local function UnitCreated(unitID, unitDefId, teamID)
         local buildingLightDef =  buildingLightDefs[unitDefId]
         Spring.Echo("gfx_dynamic_lighting:UnitCreated:Unsynced:"..unitID)
