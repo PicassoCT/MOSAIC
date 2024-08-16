@@ -1,3 +1,17 @@
+function gadget:GetInfo()
+    return {
+        name = "gfx_dynamic_lighting",
+        desc = " ",
+        author = "Kloot",
+        date = "Year of no idea",
+        license = "GPL3",
+        layer = -12,
+        version = 1,
+        enabled = true,
+        hidden = true,
+    }
+end
+
 -- NOTES:
 --   games that rely on custom model shaders are SOL
 --
@@ -44,8 +58,6 @@ local UNIT_DESTROYED_EVENT_ID       = "Unit_Destroyed"
 local UPDATE_LIGHTS_9SEC_EVENT_ID   = "Update_Every_NinthSecond"
 local neonHologramTypeTable = {}
 
-
-
 for i=1, #UnitDefs do
     if string.find(UnitDefs[i].name, "_hologram_") then
         neonHologramTypeTable[UnitDefs[i].id]= true
@@ -53,10 +65,14 @@ for i=1, #UnitDefs do
 end
 
 if (gadgetHandler:IsSyncedCode()) then
-    local myTeam = Spring.GetGaiaTeamID()
+    local myTeam = nil
+    local myAllyTeamID = 0
     -- register/deregister for the synced Projectile*/Explosion call-ins
     function gadget:Initialize()
-
+        myAllyTeamID = 0--Spring.GetMyAllyTeamID()
+        if Spring.GetMyTeamID then
+            myTeam = Spring.GetMyTeamID () 
+        end
         for weaponDefName, _ in pairs(weaponLightDefs) do
             local weaponDef = WeaponDefNames[weaponDefName]
 
@@ -65,6 +81,16 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
     end
+
+    function gadget:PlayerChanged(playerID)
+        if Spring.GetMyAllyTeamID then
+            myAllyTeamID = Spring.GetMyAllyTeamID()
+        end
+        if Spring.GetMyTeamID then
+            myTeam = Spring.GetMyTeamID()
+        end
+    end
+
     function gadget:Shutdown()
         for weaponDefName, _ in pairs(weaponLightDefs) do
             local weaponDef = WeaponDefNames[weaponDefName]
@@ -74,22 +100,27 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
     end
+    local allNeonUnits = {}
     function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
         if neonHologramTypeTable[unitDefID] then
+            allNeonUnits[unitID] = true
             Spring.Echo("gfx_dynamic_lighting:Synced:UnitCreated: "..unitID)
             SendToUnsynced(UNIT_CREATED_EVENT_ID, unitID, unitDefID, unitTeam)
         end
     end
     function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID)
         if neonHologramTypeTable[unitDefID] then
+            allNeonUnits[unitID] = nil
             SendToUnsynced(UNIT_DESTROYED_EVENT_ID, unitID, unitDefID, unitTeam)
         end
     end
 
     function serializeTableToString(t)
-        result = ""
+        local result = ""
         for k,v in pairs(t) do
-            result = result.."|"..k
+            if v then
+                result = result.."|"..k
+            end
         end
         return result
     end
@@ -97,8 +128,9 @@ if (gadgetHandler:IsSyncedCode()) then
     neonUnitDataTransfer = {}
     function gadget:GameFrame(frame)
         if frame % 270 == 0 then
-            Spring.Echo("Updating dynamic lighting ")
+            
             local neonUnitsInLOSserialized = serializeTableToString(neonUnitDataTransfer)
+            Spring.Echo("Updating dynamic lighting ".. neonUnitsInLOSserialized)
             SendToUnsynced(UPDATE_LIGHTS_9SEC_EVENT_ID, frame, neonUnitsInLOSserialized)
         end
     end
@@ -113,28 +145,30 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] then
-            if myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+        if allNeonUnits[unitID] then
+           -- if myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+                Spring.Echo("Unit entered LOS "..unitID)
                 neonUnitDataTransfer[unitID] = unitID
-            end
+           -- end
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] then
-            if  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
+        if allNeonUnits[unitID] then
+            --if  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
+                Spring.Echo("Unit left LOS "..unitID)
                 neonUnitDataTransfer[unitID] = nil
-            end
+           -- end
         end
     end
 
     function gadget:Explosion(weaponDefID, posx, posy, posz, ownerID)
-        SendToUnsynced(PROJECTILE_EXPLOSION_EVENT_ID, weaponDefID, posx, posy,
-                       posz)
+        SendToUnsynced(PROJECTILE_EXPLOSION_EVENT_ID, weaponDefID, posx, posy, posz)
         return false -- noGFX
     end
 
 else
+    myTeam = Spring.GetMyTeamID()
     local projectileLightDefs = {} -- indexed by unitDefID
     local explosionLightDefs = {} -- indexed by weaponDefID
     local buildingLightDefs = {} -- indexed by buildingDefID
