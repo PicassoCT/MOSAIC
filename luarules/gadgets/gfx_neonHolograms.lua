@@ -156,17 +156,17 @@ if (gadgetHandler:IsSyncedCode()) then
     assert(unitDefID)
     assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
-            if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+           -- if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
                 neonUnitDataTransfer[unitID] = unitID
-            end
+           -- end
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
+            --if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
                     neonUnitDataTransfer[unitID] = nil
-            end
+           -- end
         end
     end
 
