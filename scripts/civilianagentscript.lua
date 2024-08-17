@@ -1109,15 +1109,21 @@ function conditionalFilterOutUpperBodyTable()
     end
 end
 
+function cigarettGlowAndSmoke()
+    Sleep(500)
+    spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
+end
+
 function showHideProps(selectedIdleFunction, bShow)
     -- 1 slaved
-    if selectedIdleFunction == 2 then
+    if selectedIdleFunction == 2 then --calling someone
         index = unitID % (#TablesOfPiecesGroups["cellphone"])
         index = math.min(#TablesOfPiecesGroups["cellphone"], math.max(1, index))
         showHide(TablesOfPiecesGroups["cellphone"][index], bShow)
     elseif selectedIdleFunction == 3 then -- consumption
         if unitID % 2 == 1 then
             showHide(cigarett, bShow)
+            StartThread(cigarettGlowAndSmoke)
         else
             showHide(cofee, bShow)
         end

@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Kloot",
         date = "Year of no idea",
         license = "GPL3",
-        layer = -12,
+        layer = -11,
         version = 1,
         enabled = true,
         hidden = true,
@@ -146,19 +146,15 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
         if allNeonUnits[unitID] then
-           -- if myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                Spring.Echo("Unit entered LOS "..unitID)
-                neonUnitDataTransfer[unitID] = unitID
-           -- end
+            Spring.Echo("Unit entered LOS ".. unitID)
+            neonUnitDataTransfer[unitID] = unitID
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        if allNeonUnits[unitID] then
-            --if  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
-                Spring.Echo("Unit left LOS "..unitID)
-                neonUnitDataTransfer[unitID] = nil
-           -- end
+        if neonUnitDataTransfer[unitID] then
+            Spring.Echo("Unit left LOS ".. unitID)
+            neonUnitDataTransfer[unitID] = nil
         end
     end
 

@@ -2,8 +2,6 @@
 
 return {
   ["bloodspray"] = {
-
-
     bitmapmuzzleflame = {
           air                = true,
           class              = [[CBitmapMuzzleFlame]],
@@ -23,9 +21,6 @@ return {
             ttl                = 20,
           },
         },
-	
-	
-	
   },
 
 }

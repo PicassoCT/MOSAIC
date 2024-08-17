@@ -510,6 +510,10 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolCoverWalk = true
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = true
+    if damage > 10 and randChance(10) then
+     bloodyHell= {"bloodspray", "bloodslay"}
+     StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
+    end
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
     damagedCoolDown = damagedCoolDown + (damage )
@@ -1299,6 +1303,11 @@ function conditionalFilterOutUpperBodyTable()
     end
 end
 
+function cigarettGlowAndSmoke()
+    Sleep(500)
+    spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
+end
+
 function showHideProps(selectedIdleFunction, bShow)
     -- 1 slaved
     if selectedIdleFunction == 2 then
@@ -1308,6 +1317,7 @@ function showHideProps(selectedIdleFunction, bShow)
     elseif selectedIdleFunction == 3 then -- consumption
         if unitID % 2 == 1 then
             showHide(cigarett, bShow)
+            StartThread(cigarettGlowAndSmoke)
         else
             showHide(cofee, bShow)
         end
