@@ -3546,7 +3546,9 @@ function buildRunDeterministicAdvertisement()
         pathDirectory= rootPath.."/".. identifierList[i]
         allFilesInPath = VFS.DirList(pathDirectory, "*.ogg")
         for f=1, #allFilesInPath do
-            element = {path = pathDirectory.."/"..allFilesInPath[f], time =allElementsTimeMs }
+            element = {path = pathDirectory.."/"..allFilesInPath[f], 
+            time = math.random(500 700) --allElementsTimeMs 
+        }
             elements[#elements +1] = element
         end
         soundFileType_NameengthDict[identifierList[i]] = elements
