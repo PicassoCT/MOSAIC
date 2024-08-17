@@ -3517,3 +3517,49 @@ function IsOnPremisesOfBuilding(unitID, houseID, houseSize)
     end
     return false
 end
+
+function buildRunDeterministicAdvertisement()
+    hash= getDetermenisticHash()
+    if not GG.DeterministicCounterAdvertsiement then  GG.DeterministicCounterAdvertsiement  = 0 end
+    GG.DeterministicCounterAdvertsiement  = (GG.DeterministicCounterAdvertsiement % 22) +1 
+
+    local thisAdvertisementIndex = GG.DeterministicCounterAdvertsiement 
+    rootPath = "sounds/marketing/media"
+    identifierList = {
+       "FirstSuperlative", --1
+       "SecondSuperlative",
+       "MaleName",
+       "MSurName",
+       "Binding",
+       "FemaleName",
+       "FSurName", 
+       "Starring",--8
+       "MediaName",
+       "MediaType",
+       "OrderNow",
+    }
+    allElementsTimeMs = {}
+
+    soundFileType_NameengthDict= {}
+    for i=1, # identifierList do
+        elements = {}
+        pathDirectory= rootPath.."/".. identifierList[i]
+        allFilesInPath = VFS.DirList(pathDirectory, "*.ogg")
+        for f=1, #allFilesInPath do
+            element = {path = pathDirectory.."/"..allFilesInPath[f], time =allElementsTimeMs }
+            elements[#elements +1] = element
+        end
+        soundFileType_NameengthDict[identifierList[i]] = elements
+    end
+
+    for i=1, # identifierList do
+        identifier = identifierList[i]
+        if identifier == "Binding" and maRa() then
+            identifier = "Starring"
+            i = 8
+        end 
+        element = soundFileType_NameengthDict[identifier][thisAdvertisementIndex % #soundFileType_NameengthDict[identifier] +1]
+        Spring.PlaySoundFile(element.path, 1.0)
+        Sleep(element.time)      
+    end
+end
