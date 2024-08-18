@@ -1,5 +1,3 @@
--- electric_explosion
-
 return {
   ["electric_arc"] = {
     electric1 = {

@@ -1,5 +1,3 @@
--- trail_ar2
-
 return {
   ["gunprojectile"] = {
   

@@ -1,7 +1,3 @@
-
-
--- dirt
-
 return {
   ["fireone"] = {
     dirtgw = {
@@ -32,8 +28,6 @@ return {
         useairlos          = false,
       },
     },
-  
   },
-
 }
 

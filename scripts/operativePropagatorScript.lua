@@ -671,6 +671,12 @@ function leftArmPoses(speed)
 	WaitForTurns(UpArm2,LowArm2, Hand2)
 end
 
+function cigarettGlowAndSmoke()
+	timeInTotal = (122/30)
+	cigarettDragMs = math.ceil(timeInTotal/2) * 1000
+    Sleep(cigarettDragMs)
+    spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
+end
 
 
 UpperAnimationStateFunctions ={
@@ -694,7 +700,8 @@ UpperAnimationStateFunctions ={
 									end
 
 									if maRa() then
-										StartThread(PlayAnimation,	 uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
+										StartThread(PlayAnimation, uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
+										StartThread(cigarettGlowAndSmoke)		
 									end
 
 									Sleep(250)

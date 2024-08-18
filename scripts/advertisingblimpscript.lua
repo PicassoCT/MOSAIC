@@ -91,7 +91,14 @@ function advertisingLoop()
         StartThread(PlaySoundByUnitDefID, myDefID, soundFile, loudness, 20000, 2)
         minimum, maximum = 5*60*1000, 10*60*1000
         restTime = math.random(minimum, maximum)
-        Sleep(restTime)
+        halfRestTime = math.ceil(restTime/2)
+        if maRa() then
+            Sleep(restTime)
+        else
+            Sleep(halfRestTime)
+            buildRunDeterministicAdvertisement()
+            Sleep(halfRestTime)
+        end
     end
 end
 

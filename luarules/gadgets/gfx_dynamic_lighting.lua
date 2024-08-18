@@ -134,20 +134,15 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
         if allNeonUnits[unitID] then
-           -- if myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                Spring.Echo("Unit entered LOS "..unitID)
-                neonUnitDataTransfer[unitID] = unitID
-           -- end
+            Spring.Echo("Unit entered LOS ".. unitID)
+            neonUnitDataTransfer[unitID] = unitID
         end
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        Spring.Echo("Unit left LOS "..unitID)
-        if allNeonUnits[unitID] then
-            --if  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
-
-                neonUnitDataTransfer[unitID] = nil
-           -- end
+       Spring.Echo("Unit left LOS "..unitID)
+        if neonUnitDataTransfer[unitID] then
+            neonUnitDataTransfer[unitID] = nil
         end
     end
 
