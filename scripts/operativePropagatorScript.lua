@@ -69,6 +69,8 @@ local scriptEnv = {
 	Pistol = Pistol,
 	Gun = Gun,
 	Head = Head,
+	Hand1  = Hand1,
+	Hand2  = Hand2,
 	UpLeg2 = UpLeg2,
 	LowLeg2 = LowLeg2,
 	UpLeg1 = UpLeg1,
@@ -675,7 +677,7 @@ function cigarettGlowAndSmoke()
 	timeInTotal = (122/30)
 	cigarettDragMs = math.ceil(timeInTotal/2) * 1000
     Sleep(cigarettDragMs)
-    spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
+    spawnCegAtPiece(unitID, Hand2, "cigarettglowsmoke")
 end
 
 

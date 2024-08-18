@@ -3606,7 +3606,7 @@ function buildRunDeterministicAdvertisement()
     }
     allElementsTimeMs = {}
 
-    soundFileType_NameengthDict= {}
+    soundFileType_NameTime_Map= {}
     for i=1, # identifierList do
         elements = {}
         pathDirectory= rootPath.."/".. identifierList[i]
@@ -3619,7 +3619,7 @@ function buildRunDeterministicAdvertisement()
                 }
             elements[#elements +1] = element
         end
-        soundFileType_NameengthDict[identifierList[i]] = elements
+        soundFileType_NameTime_Map[identifierList[i]] = elements
     end
 
     for i=1, # identifierList do
@@ -3629,8 +3629,14 @@ function buildRunDeterministicAdvertisement()
             identifier = "8Starring"
             i = 8
         end 
-        element = soundFileType_NameengthDict[identifier][thisAdvertisementIndex % #soundFileType_NameengthDict[identifier] +1]
-        Spring.PlaySoundFile(element.path, 1.0)
-        Sleep(element.time)      
+        deterministicIndex = (thisAdvertisementIndex % count(soundFileType_NameTime_Map[identifier])) +1
+        for k,element in pairs(soundFileType_NameTime_Map[identifier]) do
+            deterministicIndex = deterministicIndex -1 
+            if deterministicIndex < 0 then
+                Spring.PlaySoundFile(element.path, 1.0)
+                Sleep(element.time)       
+               break 
+            end
+        end       
     end
 end

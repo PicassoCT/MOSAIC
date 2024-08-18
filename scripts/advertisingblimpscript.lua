@@ -81,6 +81,12 @@ function advertisingLoop()
     StartThread(attachHologram)
 
     while true do
+        buildRunDeterministicAdvertisement()
+        Sleep(100000)
+        echo("Debug code in advertisingblimp")
+    end
+
+    while true do
         soundFile = advertisingFilePath.."advertisement"..math.random(1,maxSoundFiles)..".ogg"
         loudness= 1.0
         hours, minutes, seconds, percent = getDayTime()
@@ -92,7 +98,7 @@ function advertisingLoop()
         minimum, maximum = 5*60*1000, 10*60*1000
         restTime = math.random(minimum, maximum)
         halfRestTime = math.ceil(restTime/2)
-        if maRa() then
+        if maRa() or true == false then
             Sleep(restTime)
         else
             Sleep(halfRestTime)
