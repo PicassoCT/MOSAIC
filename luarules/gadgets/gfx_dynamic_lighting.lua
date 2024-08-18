@@ -1,16 +1,4 @@
-function gadget:GetInfo()
-    return {
-        name = "gfx_dynamic_lighting",
-        desc = " ",
-        author = "Kloot",
-        date = "Year of no idea",
-        license = "GPL3",
-        layer = -12,
-        version = 1,
-        enabled = true,
-        hidden = true,
-    }
-end
+
 
 -- NOTES:
 --   games that rely on custom model shaders are SOL
@@ -154,9 +142,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+        Spring.Echo("Unit left LOS "..unitID)
         if allNeonUnits[unitID] then
             --if  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
-                Spring.Echo("Unit left LOS "..unitID)
+
                 neonUnitDataTransfer[unitID] = nil
            -- end
         end
@@ -178,6 +167,7 @@ else
 
     local unsyncedEventHandlers = {}
 
+    local SpringIsUnitInView = Spring.IsUnitInView 
     local SpringGetProjectilePosition = Spring.GetProjectilePosition
     local SpringAddMapLight = Spring.AddMapLight
     local SpringAddModelLight = Spring.AddModelLight
@@ -327,8 +317,10 @@ else
         local message = msg..'|'
         local t = {}
         for e in string.gmatch(message,'([^%|]+)%|') do
-            local pieceID = tonumber(e)
-            t[pieceID] = pieceID
+            local unitID = tonumber(e)
+            if SpringIsUnitInView(unitID) then
+                t[unitID] = unitID
+            end
         end
         return t
     end
