@@ -696,14 +696,14 @@ UpperAnimationStateFunctions ={
 								resetT(lowerBodyPieces, 10)							
 								StartThread(leftArmPoses, math.pi)
 								while true do 		
-	
+									echo("operativepropagator:StandingAnimation:Alive")
 									if maRa() then
 										StartThread(leftArmPoses, math.pi)	
 									end
 
 									if maRa() then
-										StartThread(PlayAnimation, uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
 										StartThread(cigarettGlowAndSmoke)		
+										PlayAnimation( uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
 									end
 
 									Sleep(250)

@@ -6,7 +6,6 @@ local PhysicsPayload = Abstract:New{
 	buildtime			= 5*60,
 	buildCostMetal     	= 9000,
 	buildCostEnergy     = 9000,
-	explodeAs			= "none",
 	script 				= "warheadpayloadscript.lua",
 	objectName        	= "WarHeadIcon.dae",
 	buildPic 			= "physicalpayload.png",
@@ -14,6 +13,7 @@ local PhysicsPayload = Abstract:New{
 	alwaysupright		= true,
 	iconType 			= "launcher",
 	MaxSlope 			= 100,
+	"explodeAs"			= "commanderexplosion",
 
 	customparams = {
 		helptext		= "Warhead",
