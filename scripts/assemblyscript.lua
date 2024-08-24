@@ -320,7 +320,6 @@ function robotArmAnimation(robotID, posTable, speed, targetIDTable,
     WMoveRobotToPos(robotID, posTable.homepos, speed)
 
     while true do
-
         -- Check if there is stuff to be picked up
         local targetID
         if maRa() == true then
@@ -575,7 +574,7 @@ function buildAnimation(buildID)
             end
         end
         if getUnitCloaked(unitID) then
-            Spring.PlaySoundFile("sounds/assembly/producing.ogg", 0.5)
+            Spring.PlaySoundFile("sounds/assembly/assemblyworking.wav", 0.5)
         end
         Sleep(10)
     end
