@@ -1,30 +1,23 @@
 -BAR-Branch
-	- a pica walks into a BAR
 	- compile bar
 	- run bar
-	- create a compossable unitclass that has infinite pieces pointers + matrices, but does not a full memory copy of the model
-	-> or add bakedown to onePieceModel after composure
-	- optimize it for near zero-memory footprint (all pointers to one piecemodel, no copys)
-	- make houses that type of unit
+	- retry bar, uint8_t seems to have been replaced in master with in
 
-- sundirection not working out
+- healthbars /holograms are darkened by ssao -> fix, by excluding gui-elements from SSAO -> Port over from beherith (could be avoided) with working BAR fork
+
+
+Bugs:
 - self-revealing of operators
 - recruited civilians kill themselves
-- healthbars are darkened by ssao
 - rocket while build and transported - leg animation overshoots
 -letter axis wrong protestor western
-
-- startup bug
-- all maps tested through
-	- depends on memory stackoverflow solved due to building model copies 
-- selfilu windows for buildings (seperate texture channel that blends in/out over) the time of day - does not apply to holograms
-- normaltexture for asian buildings
 - vannishing safehouses on upgrade
-- minigame debbugging
-- no alpha texture
+
+Work:
+- selfilu windows for buildings (seperate texture channel that blends in/out over) the time of day - does not apply to
+	- Interior Textures?
+- depends on memory stackoverflow solved due to building model copies 
+
 - testgame:AI vs AI. 
 - divide and conquer performance testing debugging /buildings /no buildings
-
-https://www.shadertoy.com/view/wt2yW3
-
 - https://f3d.app//
