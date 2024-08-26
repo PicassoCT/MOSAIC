@@ -51,7 +51,10 @@ function howToBuildTheBombWatcher()
     end
 end
 
-function script.Killed(recentDamage, _) return 1 end
+function script.Killed(recentDamage, _) 
+    explodeTableOfPiecesGroupsExcludeTable(TablesOfPiecesGroups, {[Icon] = Icon})
+    return 1 
+end
 
 function script.Activate() return 1 end
 

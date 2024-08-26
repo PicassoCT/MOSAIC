@@ -271,8 +271,7 @@ function fold()
 end
 
 function script.Killed(recentDamage, _)
-
-    -- createCorpseCUnitGeneric(recentDamage)
+    explodeTableOfPiecesGroupsExcludeTable(TablesOfPiecesGroups, {})
     return 1
 end
 

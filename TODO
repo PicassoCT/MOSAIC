@@ -9,13 +9,12 @@
 Bugs:
 - self-revealing of operators
 - recruited civilians kill themselves
-- rocket while build and transported - leg animation overshoots
 -letter axis wrong protestor western
 - vannishing safehouses on upgrade
 
 Work:
 - selfilu windows for buildings (seperate texture channel that blends in/out over) the time of day - does not apply to
-	- Interior Textures?
+	- Interior Self-Ilumination- Textures? And faked depth
 - depends on memory stackoverflow solved due to building model copies 
 
 - testgame:AI vs AI. 

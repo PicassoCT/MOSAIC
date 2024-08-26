@@ -36,7 +36,10 @@ function script.Create()
     StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 end
 
-function script.Killed(recentDamage, _) return 1 end
+function script.Killed(recentDamage, _) 
+    explodeTableOfPiecesGroupsExcludeTable(TablesOfPiecesGroups, {[Icon] = Icon})
+    return 1 
+end
 
 function script.Activate() return 1 end
 

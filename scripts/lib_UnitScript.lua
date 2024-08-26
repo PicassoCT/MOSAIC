@@ -2692,6 +2692,20 @@ function explodeT(TableOfPieces, Conditions, StepSize)
     end
 end
 
+function explodeTableOfPiecesGroupsExcludeTable(TableOfPiecesGroups,  ExcludePiecesDict, Condition)
+    if Condition == nil then
+        Condition = SFX.FALL + SFX.FIRE
+    end
+
+    for groupName, group in pairs(TableOfPiecesGroups) do
+        for num, pieces in pairs(group) do 
+            if not ExcludePiecesDict[pieces] then
+                Explode(pieces, Condition) 
+            end
+        end
+    end
+end
+
 -- > Explodes a Table of Pieces 
 function explodeD(TableOfPieces, Conditions)
     lStepSize = StepSize or 1
@@ -4441,22 +4455,6 @@ function sanitizeRandom(lowerBound, UpperBound)
     if lowerBound >= UpperBound then return lowerBound end
 
     return math.random(lowerBound, UpperBound)
-end
-
-function getFrameDepUnqOff(limit)
-    if not GG.FrameDependentOffset then
-        GG.FrameDependentOffset = {val = 0, frame = Spring.GetGameFrame()}
-    end
-    if GG.FrameDependentOffset.frame ~= Spring.GetGameFrame() then
-        GG.FrameDependentOffset.val = 0;
-        GG.FrameDependentOffset.frame = Spring.GetGameFrame()
-    end
-
-    GG.FrameDependentOffset.val = GG.FrameDependentOffset.val + 1
-    sign = randSign()
-    return sign *
-               math.random(0, (GG.FrameDependentOffset.frame *
-                               GG.FrameDependentOffset.val) % limit + 1)
 end
 
 function addInputToSeed(...)
