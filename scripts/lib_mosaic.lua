@@ -676,7 +676,14 @@ end
                     [UnitDefNames["house_vtol"].id] = true     
                 }
     end  
-
+    function getWindowBuildingTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+                    [UnitDefNames["house_western0"].id] = true,           
+                    [UnitDefNames["house_asian0"].id] = true,           
+                    [UnitDefNames["house_arab0"].id] = true       
+                }
+    end  
     function getHologramTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
