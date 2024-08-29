@@ -3646,3 +3646,86 @@ function buildRunDeterministicAdvertisement()
         end       
     end
 end
+
+function shamusYoungCompanyName(hash)
+
+first = {
+"i", 
+"Green ", 
+"Mega",
+"Super",
+"Omni",
+"e",
+"Hyper",
+"Global ", 
+"Vital ", 
+"Next ", 
+"Pacific ", 
+"Metro",
+"Unity ", 
+"G-",
+"Trans",
+"Infinity ",  
+"Superior ", 
+"Monolith ", 
+"Best ", 
+"Atlantic ", 
+"First ", 
+"Union ", 
+"National"}
+
+second = {
+"Biotic",
+"Info",
+"Data",
+"Solar",
+"Aerospace",
+"Motors",
+"Nano",
+"Online",
+"Circuits",
+"Energy",
+"Med",
+"Robotic",
+"Exports",
+"Security",
+"Systems",
+"Financial",
+"Industrial",
+"Media",
+"Materials",
+"Foods",
+"Networks",
+"Shipping",
+"Tools",
+"Medical",
+"Publishing",
+"Enterprises",
+"Audio",
+"Health",
+"Bank",
+"Imports",
+"Apparel",
+"Petroleum", 
+"Studios"}
+
+third = {
+"Corp",
+" Inc",.
+"Co",
+"World",
+".Com",
+" USA",
+" Ltd",.
+"Net",
+" Tech",
+" Labs",
+" Mfg",.
+" UK",
+" Unlimited",
+" One",
+}
+
+secondHash = reHash(hash)
+thirdHash = reHash(secondHash)
+return first[(hash % #first)+1].. second[(second % #second)+1].. third[(third % #third)+1]

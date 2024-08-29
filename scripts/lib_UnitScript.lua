@@ -2773,6 +2773,10 @@ function stringToHash(hashString)
     return totalValue
 end
 
+function reHash(hash, limit)
+    return math.ceil(math.sqrt((math.pi^hash)*hash)) % (limit or hash)
+end
+
 -- >Generic to String
 function toString(element)
     if  element == nil then return "nil" end

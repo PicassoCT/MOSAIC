@@ -998,7 +998,12 @@ function conditionalBuisnessLogo()
     if boolIsRestaurant then 
         addHologramLetters(restaurantNeonLogos)
     else
-        addHologramLetters(buisnessNeonSigns)
+        if unitID % 5 == 0 then
+            hash = getDeterministicRandom()
+            addHologramLetters({ shamusYoungCompanyName(hash), shamusYoungCompanyName(reHash(hash))})
+        else
+            addHologramLetters(buisnessNeonSigns)
+        end
     end
 end
 

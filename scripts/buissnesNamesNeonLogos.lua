@@ -479,7 +479,7 @@ return {
 "ISin Org",
 "Come in find out",
 "Share and enjoy",
-"gatugo oldfolkshome",
+"gotugo oldfulkshume",
 "ghul ag",
 "Doordash",
 "Taskrabbid",
@@ -654,7 +654,7 @@ return {
 "princeton eugenics",
 "Septic thanks",
 "Sesame Seeds",
-"No idea for a good company name but yeah lets order the vindaloo",
+"lets order the vindaloo",
 "Bodymod Impro"
 }
 
