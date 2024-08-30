@@ -8,10 +8,6 @@
     #define NONE vec4(0.)
     #define PI 3.14159f
 
-    #define CASINO 1
-    #define BROTHEL 2
-    #define BUISNESS 3
-    #define ASIAN 4
 
     //////////////////////    //////////////////////    //////////////////////    //////////////////////
     //declare uniforms
@@ -26,121 +22,79 @@
     uniform float timepercent;
     uniform vec2 viewPortSize;
 
-    uniform vec3 unitCenterPosition;
-   // uniform vec3 vCamPositionWorld;
-
     uniform int typeDefID;
     // Varyings passed from the vertex shader
     in Data {
-        vec2 vSphericalUVs;
+
         vec3 vPixelPositionWorld;
         vec3 normal;
         vec3 sphericalNormal;
         vec2 orgColUv;
         };
 
-    //GLOBAL VARIABLES/////    //////////////////////    //////////////////////    //////////////////////
+vec3  light_colors[] = 
+{ 
+  vec3(0.04f,  0.9f,  0.93f ),   //Amber / pink
+  vec3(0.055f, 0.95f, 0.93f ),   //Slightly brighter amber 
+  vec3(0.08f,  0.7f,  0.93f ),   //Very pale amber
+  vec3(0.07f,  0.9f,  0.93f ),   //Very pale orange
+  vec3(0.1f,   0.9f,  0.85f ),   //Peach
+  vec3(0.13f,  0.9f,  0.93f ),   //Pale Yellow
+  vec3(0.15f,  0.9f,  0.93f ),   //Yellow
+  vec3(0.17f,  1.0f,  0.85f ),   //Saturated Yellow
+  vec3(0.55f,  0.9f,  0.93f ),   //Cyan
+  vec3(0.55f,  0.9f,  0.93f ),   //Cyan - pale, almost white
+  vec3(0.6f,   0.9f,  0.93f ),   //Pale blue
+  vec3(0.65f,  0.9f,  0.93f ),   //Pale Blue II, The Palening
+  vec3(0.65f,  0.4f,  0.99f ),   //Pure white. Bo-ring.
+  vec3(0.65f,  0.0f,  0.8f ),    //Dimmer white.
+  vec3(0.65f,  0.0f,  0.6f ),    //Dimmest white.
+}; 
 
-    float radius = 16.0;
-    vec2 pixelCoord;
 
-    //////////////////////    //////////////////////    //////////////////////    //////////////////////
+vec4 hslToRgb(vec3 hsl) {
+    float h = hsl.r;
+    float s = hsl.g;
+    float l = hsl.b;
+    vec4 rgba = vec4(0,0,0, 1.0);
+    float c = (1.0f - fabs(2.0f * l - 1.0f)) * s; // Chroma
+    float x = c * (1.0f - fabs(fmod(h / 60.0f, 2) - 1.0f));
+    float m = l - c / 2.0f;
 
-    float getLightPercentageFactorByTime()
-    {
-        return mix(0.35, 0.75,(1 + sin(timepercent * 2 * PI)) * 0.5);
-    }
-        
-    float getSineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
-    {
-        return sin((posOffset* posOffsetScale) +time * timeSpeedScale);
-    }
-    
-    float getCosineWave(float posOffset, float posOffsetScale, float time, float timeSpeedScale)
-    {
-        return cos((posOffset* posOffsetScale) +time * timeSpeedScale);
-    }
+    float r1, g1, b1;
 
-    float cubicTransparency(vec2 position) 
-    {
-        float cubeSize= 2.0;
-        if (mod(position.x, cubeSize) < 0.5 || 
-            mod(position.y, cubeSize) < 0.5 )
-        {         
-            return abs(0.35 + abs(sin(time)) * 0.5) * getLightPercentageFactorByTime();         
-        }
-        return getLightPercentageFactorByTime();
-    }
-
-    bool isCornerCase(vec2 uvCoord, float effectStart, float effectEnd, float glowSize)
-    {
-        if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
-           uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize )   { return true;}
-          
-        if (uvCoord.x > effectEnd -glowSize && uvCoord.x < effectEnd  &&
-           uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize )   { return true;}
-          
-        if (uvCoord.x > effectEnd -glowSize && uvCoord.x < effectEnd  &&
-           uvCoord.y >  effectEnd -glowSize && uvCoord.y < effectEnd )   { return true;}
-
-        if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
-           uvCoord.y >  effectEnd -glowSize && uvCoord.y < effectEnd )   { return true;}
-        return false;
+    if (h >= 0 && h < 60) {
+        r1 = c; g1 = x; b1 = 0;
+    } else if (h >= 60 && h < 120) {
+        r1 = x; g1 = c; b1 = 0;
+    } else if (h >= 120 && h < 180) {
+        r1 = 0; g1 = c; b1 = x;
+    } else if (h >= 180 && h < 240) {
+        r1 = 0; g1 = x; b1 = c;
+    } else if (h >= 240 && h < 300) {
+        r1 = x; g1 = 0; b1 = c;
+    } else {
+        r1 = c; g1 = 0; b1 = x;
     }
 
-    float GetHologramTransparency() 
-    { 
-        float sfactor = 4.0; //scaling factor position
-        float hologramTransparency = 0.0;
-        float baseInterferenceRipples   =   max(min(0.35 + sin(time)*0.1, 0.75), //0.25
-                                        0.5 
-                                        +  abs(0.3 * getSineWave(vPixelPositionWorld.y * sfactor, 0.10,  time * 6.0,  0.10))
-                                        - abs(  getSineWave(vPixelPositionWorld.y * sfactor, 1.0,  time,  0.2))
-                                        + 0.4 * abs(  getSineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  0.3))
-                                        - 0.15 * abs(  getCosineWave(vPixelPositionWorld.y * sfactor, 0.75,  time,  0.5))
-                                        + 0.15 * getCosineWave(vPixelPositionWorld.y * sfactor, 0.5,  time,  2.0)
-                                        ); 
+    rgba.r = (r1 + m) ;
+    rgba.g = (g1 + m) ;
+    rgba.b = (b1 + m) ;
+    return rgba; 
+}
 
-        if (typeDefID == CASINO) //casino
-        {
-           vec3 normedSphericalUvs = normalize(sphericalNormal);
-           float sphericalUVsValue = (normedSphericalUvs.x + normedSphericalUvs.y)/2.0;           
-           hologramTransparency = mix(mod(sphericalUVsValue + baseInterferenceRipples, 1.0), cubicTransparency(vSphericalUVs), 0.9);
-        }
-        if (typeDefID == BROTHEL || typeDefID == ASIAN) //brothel || asian buisness
-        {
-            float averageShadow = (sphericalNormal.x*sphericalNormal.x+sphericalNormal.y*sphericalNormal.y+sphericalNormal.z+sphericalNormal.z)/4.0;    
-            hologramTransparency = max(0.2, mix(baseInterferenceRipples , (2 + sin(time)) * 0.55, 0.5) + averageShadow);
-        }
+    vec4 windowLightColor (unsigned index)
+    {
 
-        if (typeDefID == BUISNESS) //buisness 
-        {
-            hologramTransparency = baseInterferenceRipples;
-        }
-        return hologramTransparency;
+      index %= 15;
+      return hslToRgb (light_colors[index].r, light_colors[index].g, light_colors[index].b);
+
     }
 
-    vec3 applyColorAberation(vec3 col)
+
+    float getPseudoRandom(float startHash)
     {
-        if (typeDefID == CASINO || typeDefID == ASIAN) //casino
-        {
-            return mix(col, sphericalNormal, max(sin(time), 0.0)/10.0);
-        }
-        if (typeDefID == BROTHEL) //brothel
-        {
-            float colHighLights = (-0.5 + ((abs(sphericalNormal.x) + abs(sphericalNormal.z))/2.0))/10.0;
-            return col + colHighLights;
-        }
-
-        if (typeDefID == BUISNESS) 
-        {
-            if (timepercent < 0.25 && mod(time, 60) < 0.1)
-            {
-                return sphericalNormal; //glitchy
-            }          
-        }
-
-        return col;
+        return fract(sin(dot(startHash, vec2(12.9898, 4.1414)))) * 43758.5453;
     }
 
     void main() 
@@ -148,41 +102,33 @@
     
 		//our original texcoord for this fragment
 		vec2 uv =  gl_FragCoord.xy / viewPortSize;    
-		
-		//the amount to blur, i.e. how far off center to sample from 
-		//1.0 -> blur by one pixel
-		//2.0 -> blur by two pixels, etc.
-		float blur = radius/1024.0; 
-		
-		//the direction of our blur
-		//(1.0, 0.0) -> x-axis blur
-		//(0.0, 1.0) -> y-axis blur
-		float hstep = 0.1;
-		float vstep = 1.0;
-			
-		//apply blurring, using a 9-tap filter with predefined gaussian weights
-        pixelCoord = gl_FragCoord.xy / viewPortSize;   
 
-        //build hybrid normals
-	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
-		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
-
-        float hologramTransparency = GetHologramTransparency(); 
-        
         vec4 orgCol = texture(tex1, orgColUv); 
-        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
-        
-        colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
+        vec4 selIluCol = texture(tex2, orgColUv); 
+        if (selIluCol.r > 0 ) //self-ilumination is active
+        {
+            //stable over time
+            int windowID = getPseudoRandom(uv.x + uv.y);
 
-        colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
+            //rando Advertisement Flicker
+                //rarely von SelfIluminated weg und zurück
+        
 
-        gl_FragColor = colWithBorderGlow;
-        
-        //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
-        //similar to a very bright lightsource shining on retina leaving afterimages
-        //Is storing for pieces anyway TODO find out write to framebuffer object syntax
-        //sampler2D(afterglowbuffertex, gl_FragCoord, gl_FragColor);
-        
-            
+        if (selIluCol.b > 0) //window 
+        {           
+         
+
+            //flickers over time 
+            isCurrentlyIluminated = mod(getPseudoRandom(windowID + timepercent* 4.0));
+
+
+            //Get window color similar to shamus young algo
+            vec4 windowColor = windowLightColor(unitID);
+
+            //project window ala spiderman
+
+        }
+         gl_FragColor = orgCol;
+        }        
 	}
 

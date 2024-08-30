@@ -89,20 +89,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local function transferDynamicLights(unitIDTable)
-        local totalMessage = ""
-        for i=1, #unitIDTable do
-            local x,y,z = Spring.GetUnitPosition(unitIDTable[i])
-            if x ~= nil then
-            ---pos.xyz, light.rgb, light strength TODO missing
-            local full = 1.0
-            local empty = 0.0
-            totalMessage = x.."/"..y.."/"..z.."/"..full.."/"..empty.."/"..empty.."/5.0"
-            Spring.SetGameRulesParam("dynamic_lights", totalMessage)
-            end
-        end
-      
-    end
+ 
     local function serializePiecesTableTostring(t)
         result = ""
         for i=1, #t do
@@ -323,42 +310,7 @@ end
 
     end
 
-    local afterglowVertexShader = 
-    [[
-       #version 150 compatibility
-        uniform vec2 viewPortSize;
-        uniform sampler2D afterglowbuffertex; 
-        out Data {
-            vec2 uv;
-        };
-        void main() {
-            uv = gl_MultiTexCoord0.xy;
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-        }
-    ]]
 
-    local afterglowFragmentShader = 
-    [[
-        #version 150 compatibility
-        uniform vec2 viewPortSize;
-        uniform sampler2D afterglowbuffertex; 
-        in Data {
-            vec2 uv;
-        };
-          
-        void main() 
-        {   
-            vec4 sampleBLurColor =  texture2D( afterglowbuffertex, uv);
-            //TODO write back to sampler texture2D( afterglowbuffertex, uv) *0.9;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-
-            gl_FragColor = finalColor;
-        }
-    ]]
- 
     local boolActivated = false
     function gadget:Initialize() 
 		InitializeTextures()
