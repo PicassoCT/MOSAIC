@@ -22,7 +22,7 @@
     uniform float timepercent;
     uniform vec2 viewPortSize;
 
-    uniform int typeDefID;
+    uniform int unitID;
     // Varyings passed from the vertex shader
     in Data {
 
@@ -107,28 +107,33 @@ vec4 hslToRgb(vec3 hsl) {
         vec4 selIluCol = texture(tex2, orgColUv); 
         if (selIluCol.r > 0 ) //self-ilumination is active
         {
-            //stable over time
-            int windowID = getPseudoRandom(uv.x + uv.y);
+            gl_FragColor = selfIluCol;
+            return; //TODO Debug
+            if (selIluCol.b > 0) //window 
+            {           
+                //stable over time
+                int windowID = getPseudoRandom(uv.x + uv.y);
 
-            //rando Advertisement Flicker
-                //rarely von SelfIluminated weg und zurück
+                //flickers over time 
+                isCurrentlyIluminated = mod(getPseudoRandom(windowID + timepercent* 4.0));
+                float currentlyIluminatedFactor = 1.0;
+                if (!isCurrentlyIluminated) currentlyIluminatedFactor = 1.0/(mod(float(windowID), 5.0));
+
+
+                //Get window color similar to shamus young algo
+                vec4 windowTintColor = windowLightColor(unitID);
+
+                //project window ala spiderman
+                
+                gl_FragColor = windowColor*currentlyIluminatedFactor;
+                return;
+            }
         
-
-        if (selIluCol.b > 0) //window 
-        {           
-         
-
-            //flickers over time 
-            isCurrentlyIluminated = mod(getPseudoRandom(windowID + timepercent* 4.0));
+            //rando Advertisement Flicker
+            //rarely von SelfIluminated weg und zurück
 
 
-            //Get window color similar to shamus young algo
-            vec4 windowColor = windowLightColor(unitID);
-
-            //project window ala spiderman
-
-        }
-         gl_FragColor = orgCol;
+            return selIluCol
         }        
 	}
-
+//https://www.shadertoy.com/view/XcBfR1

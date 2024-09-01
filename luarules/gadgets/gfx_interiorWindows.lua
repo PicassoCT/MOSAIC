@@ -340,7 +340,7 @@ end
                 normaltex = 2,
                 reflecttex = 3,
                 screentex = 4,
-                typeDefID = 0
+                unitID = 0
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
@@ -410,11 +410,11 @@ end
                 --variables
 
                 for unitID, WindowHoloParts in pairs(WindowUnitTables) do
-                    WindowHologramShader:SetUniformInt("typeDefID", typeDefID)
+                    
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
-                    WindowHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
+                    WindowHologramShader:SetUniformInt("unitID",  unitID)
                     local x,y,z = spGetUnitPosition(unitID)
                     WindowHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
                      local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0

@@ -465,7 +465,7 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
+              --    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
                     local unitDefID = spGetUnitDefID(unitID)
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
