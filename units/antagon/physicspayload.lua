@@ -13,7 +13,7 @@ local PhysicsPayload = Abstract:New{
 	alwaysupright		= true,
 	iconType 			= "launcher",
 	MaxSlope 			= 100,
-	"explodeAs"			= "commanderexplosion",
+	--"explodeAs"			= "commanderexplosion",
 
 	customparams = {
 		helptext		= "Warhead",

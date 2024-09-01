@@ -3711,16 +3711,16 @@ second = {
 
 third = {
 "Corp",
-" Inc",.
+" Inc.",
 "Co",
 "World",
 ".Com",
 " USA",
-" Ltd",.
+" Ltd.",
 "Net",
 " Tech",
 " Labs",
-" Mfg",.
+" Mfg.",
 " UK",
 " Unlimited",
 " One",
@@ -3729,3 +3729,4 @@ third = {
 secondHash = reHash(hash)
 thirdHash = reHash(secondHash)
 return first[(hash % #first)+1].. second[(second % #second)+1].. third[(third % #third)+1]
+end

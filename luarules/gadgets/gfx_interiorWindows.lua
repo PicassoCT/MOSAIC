@@ -7,10 +7,34 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = -13,
         version = 1,
-        enabled = true,
+        enabled = false,
         hidden = true,
     }
 end
+
+--[[
+
+0(20052) : error C7549: OpenGL does not allow C style initializers
+0(20060) : error C1503: undefined variable "fabs"
+0(20061) : error C1503: undefined variable "fabs"
+0(20061) : error C7506: OpenGL does not define the global function fmod
+0(20086) : error C0000: syntax error, unexpected identifier, expecting "::" at token "index"
+0(20089) : error C1503: undefined variable "index"
+0(20090) : error C1503: undefined variable "index"
+0(20090) : error C1503: undefined variable "index"
+0(20090) : error C1503: undefined variable "index"
+0(20090) : error C7011: implicit cast from "float" to "vec3"
+0(20090) : error C1104: too many parameters in function call
+0(20097) : error C1115: unable to find compatible overloaded function "dot(float, vec2)"
+0(20110) : error C1503: undefined variable "selfIluCol"
+0(20115) : error C7011: implicit cast from "float" to "int"
+0(20118) : error C1503: undefined variable "isCurrentlyIluminated"
+0(20118) : error C1115: unable to find compatible overloaded function "mod(float)"
+0(20120) : error C1503: undefined variable "isCurrentlyIluminated"
+0(20124) : error C1104: too many parameters in function call
+0(20128) : error C1503: undefined variable "windowColor"
+0(20137) : error C0000: syntax error, unexpected '}', expecting ',' or ';' at token "}"
+]]
 
 if (gadgetHandler:IsSyncedCode()) then
     
