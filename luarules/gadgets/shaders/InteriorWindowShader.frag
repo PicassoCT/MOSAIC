@@ -135,9 +135,8 @@ vec4 hslToRgb(vec3 hsl) {
         
             //rando Advertisement Flicker
             //rarely von SelfIluminated weg und zurück
-
-
-            return selIluCol
+            gl_FragColor = selIluCol;
+            return 
         }        
 	}
 //https://www.shadertoy.com/view/XcBfR1
