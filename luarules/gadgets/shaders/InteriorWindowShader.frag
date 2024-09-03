@@ -101,6 +101,15 @@ vec4 hslToRgb(vec3 hsl) {
         return fract(sin(dot(vec2(startHash), vec2(12.9898, 4.1414)))) * 43758.5453;
     }
 
+    //Makes all neon-advertisments go uniluminated simultanously over one building
+    //Not ideal, should be per piece
+    float GetRandomFlickerFactor()
+    {
+       float detMod = mod(unitID, 150.0);
+       float flickerFactor=  mod(time + unitID, detMod);
+       if (flickerFactor < 1.0) return flickerFactor;
+       return 1.0;
+    }
     void main() 
 	{	
     
@@ -132,7 +141,7 @@ vec4 hslToRgb(vec3 hsl) {
                 gl_FragColor = windowColor*currentlyIluminatedFactor;
                 return;
             }
-        
+            float randoFlickerFactor = GetRandomFlickerFactor();
             //rando Advertisement Flicker
             //rarely von SelfIluminated weg und zurück
             gl_FragColor = selIluCol;
