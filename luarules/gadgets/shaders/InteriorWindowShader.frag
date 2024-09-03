@@ -95,6 +95,17 @@ vec4 hslToRgb(vec3 hsl) {
 
     }
 
+    float rand(float v)
+    {
+         return fract(sin(v * 30.11));
+    }
+
+    vec3 Lerp(vec3 start_value, vec3 end_value, float pct)
+    {
+        return (start_value + (end_value - start_value) * pct);
+    }
+
+
 
     float getPseudoRandom(float startHash)
     {
@@ -110,24 +121,19 @@ vec4 hslToRgb(vec3 hsl) {
        if (flickerFactor < 1.0) return flickerFactor;
        return 1.0;
     }
+
+    // Interior room count (width, height, depth)
+    const vec3 asian_interior = vec3(50.0f, 50.0f, 1.0f);
+    const vec3 arab_interior = vec3(5.0f, 5.0f, 1.0f);
+    const vec3 western_interior = vec3(5.0f, 5.0f, 1.0f);
+
+
+
+
     vec4 projectionWindow(vec2 uv)
     {
         /*
-// Interior room count (width, height, depth)
-const vec3 interior = vec3(4.0f, 4.0f, 1.0f);
 
-float rand(float v){
-    return fract(sin(v * 30.11));
-}
-
-vec3 Lerp(vec3 start_value, vec3 end_value, float pct)
-{
-    return (start_value + (end_value - start_value) * pct);
-}
-
-
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = fragCoord/iResolution.xy;
 

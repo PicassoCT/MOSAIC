@@ -29,7 +29,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
-    
+
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
             myAllyTeamID = Spring.GetMyAllyTeamID()
@@ -127,17 +127,17 @@ if (gadgetHandler:IsSyncedCode()) then
             if count(neonUnitDataTransfer) > 0 then
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
-        			for id, value in pairs(neonUnitDataTransfer) do
+        			for id, defID in pairs(neonUnitDataTransfer) do
                         --DELME       
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
-        				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
+        				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                            -- printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
-                            local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
-                            cachedUnitPieces[id] = VisibleUnitPieces[value]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, serializedStringToSend )              
+                            local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
+                            cachedUnitPieces[id] = VisibleUnitPieces[id]
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )              
         				end
         			end 
-                    for id, value in pairs(oldneonUnitDataTransfer) do
+                    for id, defID in pairs(oldneonUnitDataTransfer) do
                         if not neonUnitDataTransfer[id] then
                             SendToUnsynced("unsetUnitNeonLuaDraw", id)       
                         end
@@ -157,7 +157,7 @@ if (gadgetHandler:IsSyncedCode()) then
     assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
            -- if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                neonUnitDataTransfer[unitID] = unitID
+                neonUnitDataTransfer[unitID] = unitDefID
            -- end
         end
     end
@@ -286,17 +286,19 @@ end
         return t
     end
 
-    local function setUnitNeonLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
+    local function setUnitNeonLuaDraw(callname, unitID, unitDefID listOfVisibleUnitPiecesString)
 
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
         neonUnitTables[unitID] =  piecesTable
-        counterNeonUnits= counterNeonUnits + 1
+        UnitUnitDefIDMap[unitID] = unitDefID
+        counterNeonUnits = counterNeonUnits + 1
     end	
 
     local function unsetUnitNeonLuaDraw(callname, unitID)
         neonUnitTables[unitID] = nil
+        UnitUnitDefIDMap[unitID] = nil
         counterNeonUnits= counterNeonUnits - 1
     end    
 
@@ -466,7 +468,7 @@ end
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
               --    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
-                    local unitDefID = spGetUnitDefID(unitID)
+                    local unitDefID = UnitUnitDefIDMap[unitID}
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
                     neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])

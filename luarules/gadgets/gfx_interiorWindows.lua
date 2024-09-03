@@ -14,19 +14,12 @@ end
 
 --[[
 
-0(20052) : error C7549: OpenGL does not allow C style initializers
-0(20060) : error C1503: undefined variable "fabs"
-0(20061) : error C1503: undefined variable "fabs"
+
 0(20061) : error C7506: OpenGL does not define the global function fmod
 0(20086) : error C0000: syntax error, unexpected identifier, expecting "::" at token "index"
-0(20089) : error C1503: undefined variable "index"
-0(20090) : error C1503: undefined variable "index"
-0(20090) : error C1503: undefined variable "index"
-0(20090) : error C1503: undefined variable "index"
 0(20090) : error C7011: implicit cast from "float" to "vec3"
 0(20090) : error C1104: too many parameters in function call
-0(20097) : error C1115: unable to find compatible overloaded function "dot(float, vec2)"
-0(20110) : error C1503: undefined variable "selfIluCol"
+0(20097) : error C1115: unable to find compatible overloaded function "dot(float, vec2)""
 0(20115) : error C7011: implicit cast from "float" to "int"
 0(20118) : error C1503: undefined variable "isCurrentlyIluminated"
 0(20118) : error C1115: unable to find compatible overloaded function "mod(float)"
@@ -115,7 +108,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
  
     local function serializePiecesTableTostring(t)
-        result = ""
+        local result = ""
         for i=1, #t do
             result = result.."|"..t[i]
         end
@@ -136,7 +129,7 @@ if (gadgetHandler:IsSyncedCode()) then
         				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
                             cachedUnitPieces[id] = VisibleUnitPieces[value]
-        					SendToUnsynced("setUnitWindowLuaDraw", id, serializedStringToSend )              
+        					SendToUnsynced("setUnitWindowLuaDraw", id, spGetUnitDefID(id) serializedStringToSend )              
         				end
         			end 
                     for id, value in pairs(oldWindowUnitDataTransfer) do
@@ -226,6 +219,7 @@ else -- unsynced
     local glCreateTexture           = gl.CreateTexture
     local glDeleteTexture           = gl.DeleteTexture
     local WindowUnitTables            = {}
+    local UnitDefIDMap            = {}
     local glUnitShapeTextures       = gl.UnitShapeTextures
     local glGetUniformLocation      = gl.GetUniformLocation
     local glUnit                    = gl.Unit
@@ -288,17 +282,19 @@ end
         return t
     end
 
-    local function setUnitWindowLuaDraw(callname, unitID, listOfVisibleUnitPiecesString)
+    local function setUnitWindowLuaDraw(callname, unitID, typeDefId, listOfVisibleUnitPiecesString)
 
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
         WindowUnitTables[unitID] =  piecesTable
+        UnitDefIDMap[unitID]= typeDefId
         counterWindowUnits= counterWindowUnits + 1
     end	
 
     local function unsetUnitWindowLuaDraw(callname, unitID)
         WindowUnitTables[unitID] = nil
+          UnitDefIDMap[unitID]= nil
         counterWindowUnits= counterWindowUnits - 1
     end    
 
@@ -364,7 +360,8 @@ end
                 normaltex = 2,
                 reflecttex = 3,
                 screentex = 4,
-                unitID = 0
+                unitID = 0,
+                unitDefId = 0
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
@@ -439,6 +436,7 @@ end
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
                     WindowHologramShader:SetUniformInt("unitID",  unitID)
+                    WindowHologramShader:SetUniformInt("unitDefId",   UnitDefIDMap[unitID] )
                     local x,y,z = spGetUnitPosition(unitID)
                     WindowHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
                      local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
