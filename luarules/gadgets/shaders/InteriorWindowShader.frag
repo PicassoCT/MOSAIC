@@ -110,6 +110,152 @@ vec4 hslToRgb(vec3 hsl) {
        if (flickerFactor < 1.0) return flickerFactor;
        return 1.0;
     }
+    vec4 projectionWindow(vec2 uv)
+    {
+        /*
+// Interior room count (width, height, depth)
+const vec3 interior = vec3(4.0f, 4.0f, 1.0f);
+
+float rand(float v){
+    return fract(sin(v * 30.11));
+}
+
+vec3 Lerp(vec3 start_value, vec3 end_value, float pct)
+{
+    return (start_value + (end_value - start_value) * pct);
+}
+
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+
+    // Pixel position
+    vec3 pixel = vec3(uv.x, uv.y, 0.0f);
+    // apply tiling
+    pixel = fract(pixel * interior);
+    
+    // Camera position
+    //vec3 camera = vec3(1.0f, 1.0f, 1.0f);
+    vec3 camera = vec3(0.5f + cos(iTime*0.5f)*0.5f, 0.5f + sin(iTime*0.5f)*0.5f, 1.0f);
+    // apply tiling offset
+    camera.xy -= (uv - pixel.xy);
+    
+    // Up vector
+    vec3 up = vec3(0.0f, 1.0f, 0.0f);
+    
+    // Right vector
+    vec3 right = vec3(1.0f, 0.0f, 0.0f);
+    
+    // View direction
+    vec3 viewDir = pixel - camera;
+
+    // Floor position
+    vec3 floor;
+    floor.y = 0.0f;
+    floor.z = ((pixel.y/camera.y)*camera.z) / (1.0f-(pixel.y/camera.y));
+    floor.x = (pixel.x-camera.x + (camera.z/(camera.z+floor.z))*camera.x) / (camera.z/(camera.z+floor.z));
+
+    // Ceiling position
+    vec3 ceiling;
+    ceiling.y = 1.0f;
+    ceiling.z = ((1.0f - pixel.y)/(1.0f-camera.y))*camera.z / (1.0f-((1.0f - pixel.y)/(1.0f-camera.y)));
+    ceiling.x = camera.x + (pixel.x-camera.x)*(ceiling.z+camera.z)/camera.z;
+    
+    // Left Wall position
+    vec3 leftWall;
+    leftWall.x = 0.0f;
+    leftWall.z = ((pixel.x/camera.x)*camera.z) / (1.0f-(pixel.x/camera.x));
+    leftWall.y = (pixel.y - (leftWall.z/(leftWall.z+camera.z))*camera.y) / (1.0f-leftWall.z/(leftWall.z+camera.z)); 
+    
+    // Right Wall position
+    vec3 rightWall;
+    rightWall.x = 1.0f;
+    rightWall.z = (((1.0f-pixel.x)/(1.0f-camera.x))*camera.z) / (1.0f-(1.0f-pixel.x)/(1.0f-camera.x));
+    rightWall.y = (pixel.y - (rightWall.z/(rightWall.z+camera.z))*camera.y) / (1.0f-rightWall.z/(rightWall.z+camera.z));;
+    
+    // Back Wall position
+    vec3 backWall;
+    backWall.z = interior.z;
+    backWall.x = (pixel.x-camera.x)*(camera.z+interior.z)/(camera.z) + camera.x;
+    backWall.y = (pixel.y-camera.y)*(camera.z+interior.z)/(camera.z) + camera.y;
+    
+    // Compute intersecting plane
+    bool isCeiling = dot(viewDir, up) > 0.0f;
+    bool isRightWall = dot(viewDir, right) > 0.0f;
+    
+    float leftRightWallsDepth = isRightWall? rightWall.z : leftWall.z;
+    float floorCeilingDepth = isCeiling? ceiling.z : floor.z;
+     
+    bool isWallsClosest = leftRightWallsDepth < floorCeilingDepth;
+    float closestHit = isWallsClosest? leftRightWallsDepth : floorCeilingDepth; 
+    
+    bool isBackClosest = interior.z < closestHit;
+     
+    // Sample texture
+    if(isBackClosest)
+    {
+        fragColor = texture(iChannel2, backWall.xy);
+    }
+    else if(isWallsClosest)   
+    {
+        if(isRightWall)
+        {
+            fragColor = texture(iChannel1, rightWall.zy);
+        }
+        else
+        {
+            fragColor = texture(iChannel1, leftWall.zy);
+        }
+    }
+    else
+    {
+        if(isCeiling)
+        {
+            fragColor = texture(iChannel0, ceiling.xz);
+        }
+        else
+        {
+            fragColor = texture(iChannel0, floor.xz);
+        }
+    }
+    
+        
+    // Chair Layer position
+    vec3 chairLayer;
+    chairLayer.z = interior.z * 0.5f;
+    chairLayer.x = (pixel.x-camera.x)*(camera.z+interior.z*0.5f)/(camera.z) + camera.x;
+    chairLayer.y = (pixel.y-camera.y)*(camera.z+interior.z*0.5f)/(camera.z) + camera.y;
+    bool isChairClosest = interior.z * 0.5f< closestHit;
+    
+    if(isChairClosest)
+    {
+        //borrowed from https://www.shadertoy.com/view/XfBfDW
+        float p = 0.05; // Percition
+        float a = mod(iTime, 3.0); // Amplitude
+        float i = iTime;
+        vec3 col = vec3(step(abs(0.5*sin(-i+uv.x)-uv.y*a), p), 
+        step(abs(0.5*sin(i+uv.x)-uv.y*a), p), 
+        step(abs(0.5*sin(i+uv.x)+0.5*sin(-i+uv.x)-uv.y*a), p));
+
+    
+        chairLayer.x = chairLayer.x+ sin(iTime);
+        vec4 chairTexture = texture(iChannel3, chairLayer.xy);
+        chairTexture.a = col.r;
+        fragColor = mix(fragColor, chairTexture, chairTexture.a);
+    }
+
+    // random "lighting" per room
+    vec2 room = ceil(uv * interior.xy);
+    float roomID = room.y * interior.x + room.x;
+    float slowShift = (iTime/100.0);
+    fragColor.rgb *= mix(0.5f, 1.5f, rand(roomID + slowShift));
+    
+}
+        */
+    }
+
     void main() 
 	{	
     
@@ -117,7 +263,8 @@ vec4 hslToRgb(vec3 hsl) {
 		vec2 uv =  gl_FragCoord.xy / viewPortSize;    
 
         vec4 orgCol = texture(tex1, orgColUv); 
-        vec4 selIluCol = texture(tex2, orgColUv); 
+        vec4 selIluCol = texture(tex2, orgColUv);
+        selfIluCol.a = 1.0; 
         if (selIluCol.r > 0 ) //self-ilumination is active
         {
             gl_FragColor = selIluCol;
@@ -136,6 +283,8 @@ vec4 hslToRgb(vec3 hsl) {
                 //Get window color similar to shamus young algo
                 vec4 windowTintColor = windowLightColor(unitID) ;
 
+                //projection windows
+                vec4 projWindow = projectionWindow();
                 //project window ala spiderman
                 vec4 windowColor = windowTintColor *colToBW(selIluCol);
                 gl_FragColor = windowColor*currentlyIluminatedFactor;
