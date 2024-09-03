@@ -143,7 +143,7 @@ vec4 hslToRgb(vec3 hsl) {
             }
             float randoFlickerFactor = GetRandomFlickerFactor();
             //rando Advertisement Flicker
-            //rarely von SelfIluminated weg und zurück
+            selfIluCol.rgb *= randoFlickerFactor;
             gl_FragColor = selIluCol;
             return 
         }        
