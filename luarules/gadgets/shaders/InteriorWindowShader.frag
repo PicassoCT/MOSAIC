@@ -34,6 +34,8 @@
       vec4 fragWorldPos;
     };
 
+    vec2 uv;
+
     vec4 colToBW(vec4 col) {
       float avg = sqrt(col.r * col.r + col.g * col.g + col.b * col.b);
       return vec4(vec3(avg), col.a);
@@ -82,7 +84,7 @@
       return rgba;
     }
 
-    bool isInRectangle(vec4 rec, vec2 tUV) {
+    bool isInRectangle(vec4 rec, vec2 tUv) {
       vec2 start = vec2(rec.rg / 4096.0);
       if (!(tUv.x >= start.x && tUv.y >= start.y)) return false;
       vec2 end = vec2(rec.ba / 4096.0);
@@ -90,20 +92,20 @@
       return true;
     }
 
-    vec3 getWindowScaleAndOffset(vec2 tUv) {
+    vec2 getWindowScaleAndOffset(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
-        if (isInRectangle(vec4(), tUv)) return vec3(1.0, 0, 0);
+        if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0), tUv);
 
       }
 
       if (typeDefID == 1) {
-        if (isInRectangle(vec4(), tUv)) return vec3(1.0, 0, 0);
+        if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0),tUv);
       }
 
       if (typeDefID == 2) {
-        if (isInRectangle(vec4(), tUv)) return vec3(1.0, 0, 0);
+        if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0), tUv);
       }
-      return vec3(0.1, 0, 0);
+      return tUV;
     }
 
     vec4 windowLightColor(unsigned int index) {
@@ -156,23 +158,23 @@
     const vec3 arab_interior = vec3(5.0 f, 5.0 f, 1.0 f);
     const vec3 western_interior = vec3(5.0 f, 5.0 f, 1.0 f);
 
-    vec4 getBackWallTexture(vec2 uv) {
+    vec4 getBackWallTexture(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(2810.0, 1466.0,
             3167.0, 1724.0));
       }
 
       if (typeDefID == 1) { //house western texture
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(1555.0, 5.0,
             2188.0, 370.0));
         /*
-           return mapUvToSubUvSquare(uv,
+           return mapUvToSubUvSquare(tUv,
                 vec4(   1561.0, 371.0,
                         2074.0, 733.0));
          
-            return mapUvToSubUvSquare(uv,
+            return mapUvToSubUvSquare(tUv,
                 vec4(1540.0, 732.0,
                     2166.0, 1016.0));
          
@@ -187,16 +189,16 @@
       return vec4(1.0, 0, 0, 1.0);
     }
 
-    vec4 getCeilingTexture(vec2 uv) {
+    vec4 getCeilingTexture(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(2050.0, 3592.0,
             2564.0, 4096.0));
       }
 
       if (typeDefID == 1) {
         //house western texture
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(1424.0, 3588.0,
             1647.0, 3806.0));
 
@@ -210,16 +212,16 @@
       return vec4(1.0, 1.0, 1.0, 1.0);
     }
 
-    vec4 getFloorTexture(vec2 uv) {
+    vec4 getFloorTexture(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(3436.0, 2458.0,
             4082.0, 2810.0));
       }
 
       if (typeDefID == 1) {
         //house western texture
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(1851.0, 3792.0,
             2048.0, 3990.0));
 
@@ -233,9 +235,9 @@
       return vec4(0.0, 1.0, 0, 1.0);
     }
 
-    vec4 getWallTexture(vec2 uv) {
+    vec4 getWallTexture(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(uv,
+        return mapUvToSubUvSquare(tUv,
           vec4(1546.0, 3097.0,
             1856.0, 3567.0));
 
@@ -244,15 +246,15 @@
 
           if (typeDefID == 1) {
             //house western texture
-            return mapUvToSubUvSquare(uv,
+            return mapUvToSubUvSquare(tUv,
               vec4(1555.0, 5.0,
                 2188.0, 370.0));
             /*
-               return mapUvToSubUvSquare(uv,
+               return mapUvToSubUvSquare(tUv,
                     vec4(1561.0, 371.0,
                     2074.0, 733.0));
              
-                return mapUvToSubUvSquare(uv,
+                return mapUvToSubUvSquare(tUv,
                     vec4(1540.0, 732.0,
                     2166.0, 1016.0));
              
@@ -269,7 +271,7 @@
       return vec4(0.0, 0.0, 1.0, 1.0);
     }
 
-    vec4 getFurniturePeopleTexture(vec2 uv) {
+    vec4 getFurniturePeopleTexture(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
         //TODO Create Silouttes and Furniture map and add to tex2
         return vec4(0, 0, 0, 0);
@@ -289,22 +291,22 @@
       return vec4(0.5, 0.5, 0.5, 1.0);
     }
 
-    vec2 mapUvToSubUvSquare(vec2 uv, vec4 startend) {
+    vec2 mapUvToSubUvSquare(vec2 tUv, vec4 startend) {
       vec2 start = vec2(startend.rg / 4096.0);
       vec2 end = vec2(startend.ba / 4096.0);
       vec2 scaledUVs = abs(start - end);
-      scaledUVs = mod(scaledUVs * uv, dimension);
+      scaledUVs = mod(scaledUVs * tUv, dimension);
       return texture(tex1, scaledUVs);
     }
 
     vec4 projectionWindow(vec2 tuv, int roomID) {
 
-        vec3 scaleOffset = getWindowScaleAndOffset(tuv);
-        vec2 uv = tuv * scaleOffset.x + scaleOffset.yz;
+
+        vec2 wUv = tuv * scaleOffset.x + scaleOffset.yz;
       vec4 PixelColResult = new v4(0, 0, 0, 0);
 
       // Pixel position
-      vec3 pixel = vec3(uv.x, uv.y, 0.0 f);
+      vec3 pixel = vec3(wUv.x, wUv.y, 0.0 f);
       // apply tiling
       pixel = fract(pixel * interior);
 
@@ -312,7 +314,7 @@
       //vec3 camera = vec3(1.0f, 1.0f, 1.0f);
       vec3 camera = vec3(0.5 f + cos(iTime * 0.5 f) * 0.5 f, 0.5 f + sin(iTime * 0.5 f) * 0.5 f, 1.0 f);
       // apply tiling offset
-      camera.xy -= (uv - pixel.xy);
+      camera.xy -= (wUv - pixel.xy);
 
       // Up vector
       vec3 up = vec3(0.0 f, 1.0 f, 0.0 f);
@@ -394,9 +396,9 @@
         float p = 0.05; // Percition
         float a = mod(iTime, 3.0); // Amplitude
         float i = iTime;
-        vec3 col = vec3(step(abs(0.5 * sin(-i + uv.x) - uv.y * a), p),
-          step(abs(0.5 * sin(i + uv.x) - uv.y * a), p),
-          step(abs(0.5 * sin(i + uv.x) + 0.5 * sin(-i + uv.x) - uv.y * a), p));
+        vec3 col = vec3(step(abs(0.5 * sin(-i + wUv.x) - wUv.y * a), p),
+          step(abs(0.5 * sin(i + wUv.x) - wUv.y * a), p),
+          step(abs(0.5 * sin(i + wUv.x) + 0.5 * sin(-i + wUv.x) - wUv.y * a), p));
 
         chairLayer.x = chairLayer.x + sin(iTime);
         vec4 chairTexture = getFurniturePeopleTexture(chairLayer.xy);
@@ -405,7 +407,7 @@
       }
 
       // random "lighting" per room
-      vec2 room = ceil(uv * interior.xy);
+      vec2 room = ceil(wUv * interior.xy);
       float roomID = room.y * interior.x + room.x;
       float slowShift = (iTime / 1000.0);
       PixelColResult.rgb *= mix(0.5 f, 1.5 f, rand(roomID + slowShift));
@@ -416,10 +418,10 @@
     void main() {
 
       //our original texcoord for this fragment
-      vec2 uv = gl_FragCoord.xy / viewPortSize;
+      uv = gl_FragCoord.xy / viewPortSize;
 
-      vec4 orgCol = texture(tex1, orgColUv);
-      vec4 selIluCol = texture(tex2, orgColUv);
+      vec4 orgCol = texture(tex1, uv);
+      vec4 selIluCol = texture(tex2, uv);
       selfIluCol.a = 1.0;
       if (selIluCol.r > 0) //self-ilumination is active
       {
@@ -428,6 +430,7 @@
         if (selIluCol.b > 0) //window 
         {
           //stable over time
+          vec2 scaledUvs = getWindowScaleAndOffset(uv)
           int windowID = getPseudoRandom(uv.x + uv.y);
 
           //flickers over time 
@@ -439,7 +442,7 @@
           vec4 windowTintColor = windowLightColor(unitID);
 
           //projection windows
-          vec4 projWindow = projectionWindow();
+          vec4 projWindow = projectionWindow(scaledUVs);
           //project window ala spiderman
           vec4 windowColor = windowTintColor * colToBW(selIluCol);
           gl_FragColor = windowColor * currentlyIluminatedFactor;
