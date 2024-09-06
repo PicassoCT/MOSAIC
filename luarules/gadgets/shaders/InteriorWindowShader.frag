@@ -19,6 +19,8 @@
 
     uniform float time;
     uniform float timepercent;
+    uniform vec3 eyePos;
+    uniform vec3 eyeDir;
     uniform vec2 viewPortSize;
 
     uniform int unitID;
@@ -92,7 +94,7 @@
       return true;
     }
 
-    vec2 getWindowScaleAndOffset(vec2 tUv) {
+    vec2 applyTextureLocationWindowScaleAndOffset(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
         if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0), tUv);
 
@@ -299,22 +301,35 @@
       return texture(tex1, scaledUVs);
     }
 
-    vec4 projectionWindow(vec2 tuv, int roomID) {
-
-
-        vec2 wUv = tuv * scaleOffset.x + scaleOffset.yz;
+    vec4 projectionWindow(vec2 tuv, int roomID) 
+    {
+      
       vec4 PixelColResult = new v4(0, 0, 0, 0);
 
       // Pixel position
-      vec3 pixel = vec3(wUv.x, wUv.y, 0.0 f);
+      vec3 pixel = vec3(tuv.x, tuv.y, 0.0 f);
       // apply tiling
-      pixel = fract(pixel * interior);
 
-      // Camera position
-      //vec3 camera = vec3(1.0f, 1.0f, 1.0f);
-      vec3 camera = vec3(0.5 f + cos(iTime * 0.5 f) * 0.5 f, 0.5 f + sin(iTime * 0.5 f) * 0.5 f, 1.0 f);
-      // apply tiling offset
-      camera.xy -= (wUv - pixel.xy);
+      // eyePos position
+      AABB box;
+      box.Min = vMinima;
+      box.Max = vMaxima;
+      float t1, t2;   
+      Ray r;
+      r.Origin = eyePos;
+      r.Dir = worldPos - eyePos;  
+      if (!IntersectBox(r, box, t1, t2))  
+      {
+          return vec4(0.);
+      }
+
+
+      t1 = clamp(t1, 0.0, 1.0);
+      t2 = clamp(t2, 0.0, 1.0);
+      vec3 startPos = r.Dir * t1 + eyePos;
+      vec3 endPos   = r.Dir * t2 + eyePos;
+      pixelDir = normalize(startPos - endPos);
+
 
       // Up vector
       vec3 up = vec3(0.0 f, 1.0 f, 0.0 f);
@@ -323,37 +338,37 @@
       vec3 right = vec3(1.0 f, 0.0 f, 0.0 f);
 
       // View direction
-      vec3 viewDir = pixel - camera;
+      vec3 viewDir = pixel - eyePos;
 
       // Floor position
       vec3 floor;
       floor.y = 0.0 f;
-      floor.z = ((pixel.y / camera.y) * camera.z) / (1.0 f - (pixel.y / camera.y));
-      floor.x = (pixel.x - camera.x + (camera.z / (camera.z + floor.z)) * camera.x) / (camera.z / (camera.z + floor.z));
+      floor.z = ((pixel.y / eyePos.y) * eyePos.z) / (1.0 f - (pixel.y / eyePos.y));
+      floor.x = (pixel.x - eyePos.x + (eyePos.z / (eyePos.z + floor.z)) * eyePos.x) / (eyePos.z / (eyePos.z + floor.z));
 
       // Ceiling position
       vec3 ceiling;
       ceiling.y = 1.0 f;
-      ceiling.z = ((1.0 f - pixel.y) / (1.0 f - camera.y)) * camera.z / (1.0 f - ((1.0 f - pixel.y) / (1.0 f - camera.y)));
-      ceiling.x = camera.x + (pixel.x - camera.x) * (ceiling.z + camera.z) / camera.z;
+      ceiling.z = ((1.0 f - pixel.y) / (1.0 f - eyePos.y)) * eyePos.z / (1.0 f - ((1.0 f - pixel.y) / (1.0 f - eyePos.y)));
+      ceiling.x = eyePos.x + (pixel.x - eyePos.x) * (ceiling.z + eyePos.z) / eyePos.z;
 
       // Left Wall position
       vec3 leftWall;
       leftWall.x = 0.0 f;
-      leftWall.z = ((pixel.x / camera.x) * camera.z) / (1.0 f - (pixel.x / camera.x));
-      leftWall.y = (pixel.y - (leftWall.z / (leftWall.z + camera.z)) * camera.y) / (1.0 f - leftWall.z / (leftWall.z + camera.z));
+      leftWall.z = ((pixel.x / eyePos.x) * eyePos.z) / (1.0 f - (pixel.x / eyePos.x));
+      leftWall.y = (pixel.y - (leftWall.z / (leftWall.z + eyePos.z)) * eyePos.y) / (1.0 f - leftWall.z / (leftWall.z + eyePos.z));
 
       // Right Wall position
       vec3 rightWall;
       rightWall.x = 1.0 f;
-      rightWall.z = (((1.0 f - pixel.x) / (1.0 f - camera.x)) * camera.z) / (1.0 f - (1.0 f - pixel.x) / (1.0 f - camera.x));
-      rightWall.y = (pixel.y - (rightWall.z / (rightWall.z + camera.z)) * camera.y) / (1.0 f - rightWall.z / (rightWall.z + camera.z));;
+      rightWall.z = (((1.0 f - pixel.x) / (1.0 f - eyePos.x)) * eyePos.z) / (1.0 f - (1.0 f - pixel.x) / (1.0 f - eyePos.x));
+      rightWall.y = (pixel.y - (rightWall.z / (rightWall.z + eyePos.z)) * eyePos.y) / (1.0 f - rightWall.z / (rightWall.z + eyePos.z));;
 
       // Back Wall position
       vec3 backWall;
       backWall.z = interior.z;
-      backWall.x = (pixel.x - camera.x) * (camera.z + interior.z) / (camera.z) + camera.x;
-      backWall.y = (pixel.y - camera.y) * (camera.z + interior.z) / (camera.z) + camera.y;
+      backWall.x = (pixel.x - eyePos.x) * (eyePos.z + interior.z) / (eyePos.z) + eyePos.x;
+      backWall.y = (pixel.y - eyePos.y) * (eyePos.z + interior.z) / (eyePos.z) + eyePos.y;
 
       // Compute intersecting plane
       bool isCeiling = dot(viewDir, up) > 0.0 f;
@@ -387,8 +402,8 @@
       // Chair Layer position
       vec3 chairLayer;
       chairLayer.z = interior.z * 0.5 f;
-      chairLayer.x = (pixel.x - camera.x) * (camera.z + interior.z * 0.5 f) / (camera.z) + camera.x;
-      chairLayer.y = (pixel.y - camera.y) * (camera.z + interior.z * 0.5 f) / (camera.z) + camera.y;
+      chairLayer.x = (pixel.x - eyePos.x) * (eyePos.z + interior.z * 0.5 f) / (eyePos.z) + eyePos.x;
+      chairLayer.y = (pixel.y - eyePos.y) * (eyePos.z + interior.z * 0.5 f) / (eyePos.z) + eyePos.y;
       bool isChairClosest = interior.z * 0.5 f < closestHit;
 
       if (isChairClosest) {
@@ -430,7 +445,7 @@
         if (selIluCol.b > 0) //window 
         {
           //stable over time
-          vec2 scaledUvs = getWindowScaleAndOffset(uv)
+          vec2 scaledUvs = applyTextureLocationWindowScaleAndOffset(uv);
           int windowID = getPseudoRandom(uv.x + uv.y);
 
           //flickers over time 

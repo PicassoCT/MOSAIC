@@ -2,6 +2,7 @@
     #line 100002
     //VertexShader
     // Set the precision for data types used in this shader
+   const float PI = 3.1415926535897932384626433832795;
 
     //declare uniforms
     uniform sampler2D tex1;
@@ -24,8 +25,6 @@
     uniform mat4 projection;
     uniform mat4 viewInv;
     uniform mat4 viewMatrix;
-
-   const float PI = 3.1415926535897932384626433832795;
 
     // Variables passed from vertex to fragment shader
     out Data {      
