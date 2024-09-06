@@ -15,6 +15,15 @@
     uniform float timepercent;
     uniform vec2 viewPortSize;
     uniform int unitID;
+    uniform int typeDefID;
+
+    uniform vec2 viewPortSize;
+    uniform vec3 cityCenter;
+    uniform mat4 viewProjectionInv;
+    uniform mat4 viewProjection;
+    uniform mat4 projection;
+    uniform mat4 viewInv;
+    uniform mat4 viewMatrix;
 
    const float PI = 3.1415926535897932384626433832795;
 
@@ -24,6 +33,8 @@
             vec3 normal;
             vec3 sphericalNormal;
             vec2 orgColUv;
+            vec3 viewDirection;
+            vec4 fragWorldPos;
         };
 
 
@@ -35,7 +46,7 @@ void main()
 
 	//Calculate the world Vertex Position ? Operation Order wrong?
     vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
-    
+    viewDirection = normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
     vec3 posCopy = gl_Vertex.xyz;
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
     vPixelPositionWorld = gl_Position.xyz;

@@ -12,22 +12,6 @@ function gadget:GetInfo()
     }
 end
 
---[[
-
-
-0(20061) : error C7506: OpenGL does not define the global function fmod
-0(20086) : error C0000: syntax error, unexpected identifier, expecting "::" at token "index"
-0(20090) : error C7011: implicit cast from "float" to "vec3"
-0(20090) : error C1104: too many parameters in function call
-0(20097) : error C1115: unable to find compatible overloaded function "dot(float, vec2)""
-0(20115) : error C7011: implicit cast from "float" to "int"
-0(20118) : error C1503: undefined variable "isCurrentlyIluminated"
-0(20118) : error C1115: unable to find compatible overloaded function "mod(float)"
-0(20120) : error C1503: undefined variable "isCurrentlyIluminated"
-0(20124) : error C1104: too many parameters in function call
-0(20128) : error C1503: undefined variable "windowColor"
-0(20137) : error C0000: syntax error, unexpected '}', expecting ',' or ';' at token "}"
-]]
 
 if (gadgetHandler:IsSyncedCode()) then
     
@@ -125,7 +109,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 if VisibleUnitPieces then
         			for id, value in pairs(WindowUnitDataTransfer) do
                         --DELME       
-                        -- echo(HEAD().." Start:Sending Window Hologram unit data:"..toString(VisibleUnitPieces[id] ))
+                        -- echo(HEAD().." Start:Sending Window  unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
                             cachedUnitPieces[id] = VisibleUnitPieces[value]
@@ -198,7 +182,7 @@ else -- unsynced
     local uniformViewPortSize 
     local uniformTime
     local GL_DEPTH_BITS             = 0x0D56
-    local GL_DEPTH_COMPONENT        = 0x1902
+    local GL_DEPTH_COMPONENT        prepareTextures= 0x1902
     local GL_DEPTH_COMPONENT16      = 0x81A5
     local GL_DEPTH_COMPONENT24      = 0x81A6
     local GL_DEPTH_COMPONENT32      = 0x81A7
@@ -206,6 +190,43 @@ else -- unsynced
     local GL_RGBA8                  = 0x8058
     local GL_FUNC_ADD               = 0x8006
     local GL_FUNC_REVERSE_SUBTRACT  = 0x800B
+
+    local timePercentLoc
+    local rainPercentLoc
+    local rainPercent = 0.0
+    local timePercent = 0
+    local hours = 12
+    local minutes = 0
+    local seconds = 0
+
+    local sunCol = {0,0,0}
+    local skyCol = {0,0,0}
+    local sunPos = {0.0,0.0, 1.0}
+
+    local uniformSunColor
+    local uniformSkyColor
+    local uniformSunPos
+    local uniformEyePos
+    local unformEyeDirection
+    local uniformProjection
+    local uniformTime
+    local uniformViewPortSize
+    local uniformViewPrjInv
+    local uniformViewInv
+    local uniformViewProjection
+    
+    local unitTex1Index             =  0
+    local startIndex = unitTex1Index
+    local unitTex2Index             =  1
+    local modelDepthTexIndex        =  2
+    local mapDepthTexIndex          =  3
+    local normaltexIndex            =  4
+    local normalunittexIndex        =  5
+    local noisetexIndex             =  6
+    local dephtCopyTexIndex         =  7
+    local emitmaptexIndex           =  8
+    local emitunittexIndex          =  9
+    local endIndex = emitunittexIndex
     
     local glPushPopMatrix           = gl.PushPopMatrix
     local glPushMatrix              = gl.PushMatrix
@@ -225,8 +246,8 @@ else -- unsynced
     local glUnit                    = gl.Unit
 -------Shader--FirstPass -----------------------------------------------------------
 
-    local WindowHologramShader
-    local glowReflectHologramShader
+    local WindowShader
+    local glowReflectShader
     local vsx, vsy,vpx,vpy
     local sunChanged = false
     local spGetUnitDefID = Spring.GetUnitDefID
@@ -339,7 +360,7 @@ end
         gadgetHandler:AddSyncAction("unsetUnitWindowLuaDraw", resetUnitWindowLuaDraw)
 		frameGameStart = Spring.GetGameFrame()+1
 
-        WindowHologramShader = LuaShader({
+        WindowShader = LuaShader({
             vertex =   neoVertexShaderFirstPass, --defaultVertexShader
             fragment = neoFragmentShaderFirstPass,--defaultFragmentShader
             textures = {
@@ -355,22 +376,24 @@ end
                 timepercent = 0.5
             },     
             uniformInt = {
-                tex1 = 0,
-                tex2 = 1,
-                normaltex = 2,
-                reflecttex = 3,
-                screentex = 4,
+                tex1 = unitTex1Index,
+                tex2 = unitTex2Index,      
+                modelDepthTex = modelDepthTexIndex,
+                mapDepthTex = mapDepthTexIndex,
+                normaltex = normaltexIndex,
+                normalunittex= normalunittexIndex,      
+                noisetex = noisetexIndex,
                 unitID = 0,
-                unitDefId = 0
+                typeDefID = 0
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
               unitCenterPosition = {0,0,0},
               --vCamPositionWorld = {0,0,0}
             },
-        }, "Window Hologram Shader")
+        }, "Window  Shader")
 
-        boolActivated = WindowHologramShader:Initialize()
+        boolActivated = WindowShader:Initialize()
         if not boolActivated then 
                 Spring.Echo("WindowShader:: did not compile")
                 gadgetHandler:RemoveGadget(self)
@@ -378,31 +401,41 @@ end
         end
 
        Spring.Echo("WindowShader:: did compile")
+
+        timePercentLoc                  = glGetUniformLocation(WindowShader, "timePercent")
+        rainPercentLoc                  = glGetUniformLocation(WindowShader, "rainPercent")
+        uniformViewPortSize             = glGetUniformLocation(WindowShader, "viewPortSize")
+        cityCenterLoc                   = glGetUniformLocation(WindowShader, "cityCenter")
+        uniformTime                     = glGetUniformLocation(WindowShader, "time")
+        uniformEyePos                   = glGetUniformLocation(WindowShader, "eyePos")
+        unformEyeDir                    = glGetUniformLocation(WindowShader, "eyeDir")
+
+        uniformViewPrjInv               = glGetUniformLocation(WindowShader, 'viewProjectionInv')
+        uniformViewInv                  = glGetUniformLocation(WindowShader, 'viewInv')
+        uniformViewMatrix               = glGetUniformLocation(WindowShader, 'viewMatrix')
+        uniformViewProjection           = glGetUniformLocation(WindowShader, 'viewProjection')
+        uniformProjection               = glGetUniformLocation(WindowShader, 'projection')
+        uniformSunColor                 = glGetUniformLocation(WindowShader, 'sunCol')
+        uniformSkyColor                 = glGetUniformLocation(WindowShader, 'skyCol')
+        uniformSunPos                   = glGetUniformLocation(WindowShader, 'sunPos')
     end
 
-    local holoDefIDTypeIDMap = {}
-    holoNameTypeIDMap = {
-        ["house_western_hologram_casino"]   =   1,
-        ["house_western_hologram_brothel"]  =   2,
-        ["house_western_hologram_buisness"] =   3,
-        ["house_asian_hologram_buisness"] =     4,
+    local windowDefIDTypeIDMap = {}
+    windowNameTypeIDMap = {
+        ["house_asian0"]   =   0,
+        ["house_western0"]   =   1,
+        ["house_arab0"]  =   2, 
     }
 
-    local holoDefID = nil
+    local windowDefID = nil
     for i=1,#UnitDefs do
-        if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
-            holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
-            Spring.Echo("gfx_WindowHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
-        end
-        if UnitDefs[i].name == "house_western_hologram" then
-            holoDefID =  UnitDefs[i].id
+        if windowNameTypeIDMap[UnitDefs[i].name] ~= nil then
+            windowDefIDTypeIDMap[UnitDefs[i].id] = windowNameTypeIDMap[UnitDefs[i].name] 
+            Spring.Echo("gfx_Windows.lua: Defined  types for "..UnitDefs[i].name.." as ".. windowNameTypeIDMap[UnitDefs[i].name] )
         end
     end       
 
-
-
     local function RenderAllWindowUnits()
-
         if counterWindowUnits == 0 or not boolActivated then
             return
         end 
@@ -411,7 +444,7 @@ end
         glDepthMask(false)
         glCulling(GL_BACK)
 
-        WindowHologramShader:ActivateWith(
+        WindowShader:ActivateWith(
             function()  
                 local _,_,_, timepercent = getDayTime()
                 if timepercent > 0.25 and timepercent < 0.75 then return end
@@ -419,9 +452,9 @@ end
                 glTexture(3, "$reflection") 
                 glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
 
-               -- WindowHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
-               --WindowHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
-                WindowHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
+               -- WindowShader:SetUniformMatrix("viewInvMat", "viewinverse")
+               --WindowShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
+                WindowShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
 
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
@@ -430,18 +463,18 @@ end
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
 
-                for unitID, WindowHoloParts in pairs(WindowUnitTables) do
+                for unitID, WindowwindowParts in pairs(WindowUnitTables) do
                     
-                    local unitDefID = spGetUnitDefID(unitID)
-                    glTexture(0, string.format("%%%d:0", unitDefID))
-                    glTexture(1, string.format("%%%d:1", unitDefID))
-                    WindowHologramShader:SetUniformInt("unitID",  unitID)
-                    WindowHologramShader:SetUniformInt("unitDefId",   UnitDefIDMap[unitID] )
+                    local typeDefID = spGetUnitDefID(unitID)
+                    glTexture(unitTex1Index, string.format("%%%d:0", unitDefID))
+                    glTexture(unitTex2Index, string.format("%%%d:1", unitDefID))
+                    WindowShader:SetUniformInt("unitID",  unitID)
+                    WindowShader:SetUniformInt("typeDefID",   UnitDefIDMap[unitID] )
                     local x,y,z = spGetUnitPosition(unitID)
-                    WindowHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
+                    WindowShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
                      local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
-                    WindowHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
-                    WindowHologramShader:SetUniformFloat("time", timeSeconds + unitID)
+                    WindowShader:SetUniformFloat("timepercent",  timePercentOffset)
+                    WindowShader:SetUniformFloat("time", timeSeconds + unitID)
 
                     glCulling(GL_FRONT)
                     for  _, pieceID in ipairs(WindowHoloParts)do
@@ -452,28 +485,52 @@ end
                             glUnitPiece(unitID, pieceID)
                         end)
                     end
-                       
-                    glCulling(GL_BACK)
-                    for _,pieceID in ipairs(WindowHoloParts)do
-                      glPushPopMatrix( function()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        end)
-                    end
+            
                 end  
 
-
-                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)    
                 --Cleanup
-                glTexture(0, false)
-                glTexture(1, false)
-                glTexture(2, false)
-                glTexture(3, false)        
-                glTexture(4, false)        
+                for i= startIndex, endIndex do
+                    glTexture(i, false)
+                end
+                
+                        
+                        
                 glDepthTest(false)
             end         
         )
+    end
+
+    local function prepareTextures()
+        glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
+        glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
+        glTexture(normaltexIndex,"$map_gbuffer_normtex")
+        glTexture(normalunittexIndex,"$model_gbuffer_normtex")
+        glTexture(noisetexIndex, noisetextureFilePath);
+    end
+
+    local function updateUniforms()
+        diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
+        diffTime = diffTime - pausedTime
+        --Spring.Echo("Time passed:"..diffTime)
+        glUniform(rainPercentLoc, rainPercent)
+        glUniform(timePercentLoc, timePercent)
+        glUniform(uniformViewPortSize, vsx, vsy )
+        glUniform(uniformTime, diffTime )
+        local eyePos = {spGetCameraPosition()}
+        glUniform(uniformEyePos,eyePos[1],eyePos[2], eyePos[3] )
+        local eyeDir = {spGetCameraDirection()}
+        glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )
+
+
+        glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
+        glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
+        glUniform(uniformSunPos, sunPos[1], sunPos[2], sunPos[3]);
+
+        glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
+        glUniformMatrix(uniformViewInv        , "viewinverse")
+        glUniformMatrix(uniformViewProjection , "viewprojection")
+        glUniformMatrix(uniformViewMatrix     , "view")
+        glUniformMatrix(uniformProjection     , "projection")
     end
 
     --TODO: Draw Texture Rectangle for glowy shine around the drawn pieces + afterglowbuffertex
@@ -482,12 +539,13 @@ end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
+        updateUniforms()
         RenderAllWindowUnits()
     end
 
     function gadget:Shutdown()
         Spring.Echo("WindowShader:: shutting down gadget")
-        WindowHologramShader:Finalize()
+        WindowShader:Finalize()
         gadgetHandler.RemoveSyncAction("setUnitWindowLuaDraw")
         gadgetHandler.RemoveSyncAction("unsetUnitWindowLuaDraw")
     end

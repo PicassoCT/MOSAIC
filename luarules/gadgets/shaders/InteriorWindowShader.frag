@@ -30,6 +30,8 @@
       vec3 normal;
       vec3 sphericalNormal;
       vec2 orgColUv;
+      vec3 viewDirection;
+      vec4 fragWorldPos;
     };
 
     vec4 colToBW(vec4 col) {
@@ -78,6 +80,30 @@
       rgba.g = (g1 + m);
       rgba.b = (b1 + m);
       return rgba;
+    }
+
+    bool isInRectangle(vec4 rec, vec2 tUV) {
+      vec2 start = vec2(rec.rg / 4096.0);
+      if (!(tUv.x >= start.x && tUv.y >= start.y)) return false;
+      vec2 end = vec2(rec.ba / 4096.0);
+      if (!(tUv.x <= end.x && tUv.y <= end.y)) return false;
+      return true;
+    }
+
+    vec3 getWindowScaleAndOffset(vec2 tUv) {
+      if (typeDefID == 0) { //Asian Building
+        if (isInRectangle(vec4(), tUv)) return vec3(1.0, 0, 0);
+
+      }
+
+      if (typeDefID == 1) {
+        if (isInRectangle(vec4(), tUv)) return vec3(1.0, 0, 0);
+      }
+
+      if (typeDefID == 2) {
+        if (isInRectangle(vec4(), tUv)) return vec3(1.0, 0, 0);
+      }
+      return vec3(0.1, 0, 0);
     }
 
     vec4 windowLightColor(unsigned int index) {
@@ -130,207 +156,151 @@
     const vec3 arab_interior = vec3(5.0 f, 5.0 f, 1.0 f);
     const vec3 western_interior = vec3(5.0 f, 5.0 f, 1.0 f);
 
+    vec4 getBackWallTexture(vec2 uv) {
+      if (typeDefID == 0) { //Asian Building
+        return mapUvToSubUvSquare(uv,
+          vec4(2810.0, 1466.0,
+            3167.0, 1724.0));
+      }
 
-    vec4 getBackWallTexture(vec2 uv)
-    {
-        if (typeDefID == 0)
-        { //Asian Building
-            return mapUvToSubUvSquare(uv,
-                vec2(2810.0/4096.0, 1466.0/4096.0),
-                vec2(3167.0/4096.0, 1724.0/4096.0));
-        }
-
-        if (typeDefID==  1)
-        {//house western texture
-            return mapUvToSubUvSquare(uv,
-                vec2(1555.0/4096.0, 5.0/4096.0),
-                vec2(2188.0/4096.0, 370.0/4096.0));
-            /*
+      if (typeDefID == 1) { //house western texture
+        return mapUvToSubUvSquare(uv,
+          vec4(1555.0, 5.0,
+            2188.0, 370.0));
+        /*
            return mapUvToSubUvSquare(uv,
-                vec2(1561.0/4096.0, 371.0/4096.0),
-                vec2(2074.0/4096.0, 733.0/4096.0));
+                vec4(   1561.0, 371.0,
+                        2074.0, 733.0));
          
             return mapUvToSubUvSquare(uv,
-                vec2(1540.0/4096.0, 732.0/4096.0),
-                vec2(2166.0/4096.0, 1016.0/4096.0));
+                vec4(1540.0, 732.0,
+                    2166.0, 1016.0));
          
             */
-        }
+      }
 
-        if (typeDefID ==  2)
-        {
-         //house middle east texture
+      if (typeDefID == 2) {
+        //house middle east texture
 
-        }
+      }
 
-        return vec4(1.0, 0, 0, 1.0);
+      return vec4(1.0, 0, 0, 1.0);
     }
 
+    vec4 getCeilingTexture(vec2 uv) {
+      if (typeDefID == 0) { //Asian Building
+        return mapUvToSubUvSquare(uv,
+          vec4(2050.0, 3592.0,
+            2564.0, 4096.0));
+      }
 
-    vec4 getCeilingTexture(vec2 uv)
-    {
-        if (typeDefID == 0)
-        { //Asian Building
-             return mapUvToSubUvSquare(uv,
-                vec2(2050.0/4096.0, 3592.0/4096.0),
-                vec2(2564.0/4096.0, 4096.0/4096.0));
-        }
+      if (typeDefID == 1) {
+        //house western texture
+        return mapUvToSubUvSquare(uv,
+          vec4(1424.0, 3588.0,
+            1647.0, 3806.0));
 
-        if (typeDefID==  1)
-        {
-         //house western texture
-            return mapUvToSubUvSquare(uv,
-                vec2(1424.0/4096.0, 3588.0/4096.0),
-                vec2(1647.0/4096.0, 3806.0/4096.0));
-         
-        }
+      }
 
-        if (typeDefID ==  2)
-        {
-         //house middle east texture
+      if (typeDefID == 2) {
+        //house middle east texture
 
-        }
+      }
 
-        return vec4(1.0, 1.0, 1.0, 1.0);
+      return vec4(1.0, 1.0, 1.0, 1.0);
     }
 
-    vec4 getFloorTexture(vec2 uv)
-    {
-        if (typeDefID == 0)
-        { //Asian Building
-            return mapUvToSubUvSquare(uv,
-                vec2(3436.0/4096.0, 2458.0/4096.0),
-                vec2(4082.0/4096.0, 2810.0/4096.0));
-        }
+    vec4 getFloorTexture(vec2 uv) {
+      if (typeDefID == 0) { //Asian Building
+        return mapUvToSubUvSquare(uv,
+          vec4(3436.0, 2458.0,
+            4082.0, 2810.0));
+      }
 
-        if (typeDefID==  1)
-        {
-         //house western texture
-           return mapUvToSubUvSquare(uv,
-                vec2(1851.0/4096.0, 3792.0/4096.0),
-                vec2(2048.0/4096.0, 3990.0/4096.0));
-        
+      if (typeDefID == 1) {
+        //house western texture
+        return mapUvToSubUvSquare(uv,
+          vec4(1851.0, 3792.0,
+            2048.0, 3990.0));
 
-        }
+      }
 
-        if (typeDefID ==  2)
-        {
-         //house middle east texture
+      if (typeDefID == 2) {
+        //house middle east texture
 
-        }
+      }
 
-        return vec4(0.0, 1.0, 0, 1.0);
+      return vec4(0.0, 1.0, 0, 1.0);
     }
 
+    vec4 getWallTexture(vec2 uv) {
+      if (typeDefID == 0) { //Asian Building
+        return mapUvToSubUvSquare(uv,
+          vec4(1546.0, 3097.0,
+            1856.0, 3567.0));
 
-     vec4 getLeftWallTexture(vec2 uv)
-    {
-        if (typeDefID == 0)
-        { //Asian Building
-            return mapUvToSubUvSquare(uv,
-                vec2(1546.0/4096.0, 3097.0/4096.0),
-                vec2(1856.0/4096.0, 3567.0/4096.0));
-        
-        }
+      }
 
-        if (typeDefID==  1)
-        {
-         //house western texture
+
+          if (typeDefID == 1) {
+            //house western texture
             return mapUvToSubUvSquare(uv,
-                vec2(1555.0/4096.0, 5.0/4096.0),
-                vec2(2188.0/4096.0, 370.0/4096.0));
+              vec4(1555.0, 5.0,
+                2188.0, 370.0));
             /*
-           return mapUvToSubUvSquare(uv,
-                vec2(1561.0/4096.0, 371.0/4096.0),
-                vec2(2074.0/4096.0, 733.0/4096.0));
-         
-            return mapUvToSubUvSquare(uv,
-                vec2(1540.0/4096.0, 732.0/4096.0),
-                vec2(2166.0/4096.0, 1016.0/4096.0));
-         
-            */
+               return mapUvToSubUvSquare(uv,
+                    vec4(1561.0, 371.0,
+                    2074.0, 733.0));
+             
+                return mapUvToSubUvSquare(uv,
+                    vec4(1540.0, 732.0,
+                    2166.0, 1016.0));
+             
+                */
         }
 
-        if (typeDefID ==  2)
-        {
-         //house middle east texture
+        if (typeDefID == 2) {
+            //house middle east texture
 
         }
 
-        return vec4(0.0, 0.0, 1.0, 1.0);
+    
+
+      return vec4(0.0, 0.0, 1.0, 1.0);
     }
 
+    vec4 getFurniturePeopleTexture(vec2 uv) {
+      if (typeDefID == 0) { //Asian Building
+        //TODO Create Silouttes and Furniture map and add to tex2
+        return vec4(0, 0, 0, 0);
+      }
 
-    vec4 getRightWallTexture(vec2 uv)
-    {
-        if (typeDefID == 0)
-        { //Asian Building
-          return mapUvToSubUvSquare(uv,
-                vec2(1546.0/4096.0, 3097.0/4096.0),
-                vec2(1856.0/4096.0, 3567.0/4096.0));
-        }
+      if (typeDefID == 1) {
+        //house western texture
+        //TODO
+        return vec4(0, 0, 0, 0);
+      }
 
-        if (typeDefID==  1)
-        {
-         //house western texture
-            return mapUvToSubUvSquare(uv,
-                vec2(1555.0/4096.0, 5.0/4096.0),
-                vec2(2188.0/4096.0, 370.0/4096.0));
-            /*
-           return mapUvToSubUvSquare(uv,
-                vec2(1561.0/4096.0, 371.0/4096.0),
-                vec2(2074.0/4096.0, 733.0/4096.0));
-         
-            return mapUvToSubUvSquare(uv,
-                vec2(1540.0/4096.0, 732.0/4096.0),
-                vec2(2166.0/4096.0, 1016.0/4096.0));
-         
-            */
-        }
+      if (typeDefID == 2) {
+        //house middle east texture
 
-        if (typeDefID ==  2)
-        {
-         //house middle east texture
+      }
 
-        }
-
-        return vec4(1.0, 0.0, 1.0, 1.0);
+      return vec4(0.5, 0.5, 0.5, 1.0);
     }
 
-    vec4 getFurniturePeopleTexture(vec2 uv)
-    {
-        if (typeDefID == 0)
-        { //Asian Building
-            //TODO Create Silouttes and Furniture map and add to tex2
-            return vec4(0,0,0,0);
-        }
-
-        if (typeDefID==  1)
-        {
-         //house western texture
-            //TODO
-            return vec4(0,0,0,0);
-        }
-
-        if (typeDefID ==  2)
-        {
-         //house middle east texture
-
-        }
-
-        return vec4(0.5, 0.5, 0.5, 1.0);
+    vec2 mapUvToSubUvSquare(vec2 uv, vec4 startend) {
+      vec2 start = vec2(startend.rg / 4096.0);
+      vec2 end = vec2(startend.ba / 4096.0);
+      vec2 scaledUVs = abs(start - end);
+      scaledUVs = mod(scaledUVs * uv, dimension);
+      return texture(tex1, scaledUVs);
     }
 
-    vec2 mapUvToSubUvSquare( vec2 uv, vec2 start, vec2 end)
-    {
-        vec2 scaledUVs = abs(start-end);
-        scaledUVs = mod(scaledUVs * uv, dimension);
-        return texture(tex1, scaledUVs);
-    }
+    vec4 projectionWindow(vec2 tuv, int roomID) {
 
-
-    vec4 projectionWindow(vec2 uv) {
-
+        vec3 scaleOffset = getWindowScaleAndOffset(tuv);
+        vec2 uv = tuv * scaleOffset.x + scaleOffset.yz;
       vec4 PixelColResult = new v4(0, 0, 0, 0);
 
       // Pixel position
@@ -397,18 +367,18 @@
 
       // Sample texture
       if (isBackClosest) {
-        PixelColResult = getBackWallTexture(backWall.xy);
+        PixelColResult = getBackWallTexture(backWall.xy, roomID);
       } else if (isWallsClosest) {
         if (isRightWall) {
-          PixelColResult = getRightWallTexture(rightWall.zy);
+          PixelColResult = getWallTexture(rightWall.zy, roomID);
         } else {
-          PixelColResult = getLeftWallTexture(leftWall.zy);
+          PixelColResult = getWallTexture(leftWall.zy, roomID);
         }
       } else {
         if (isCeiling) {
-          PixelColResult = getCeilingTexture(ceiling.xz);
+          PixelColResult = getCeilingTexture(ceiling.xz, roomID);
         } else {
-          PixelColResult = getFloorTexture(floor.xz);
+          PixelColResult = getFloorTexture(floor.xz, roomID);
         }
       }
 
