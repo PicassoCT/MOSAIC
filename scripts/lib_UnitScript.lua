@@ -4419,6 +4419,7 @@ end
 -- Section: Random 
 -- ======================================================================================
 function getDeterministicRandom(hash, maximum)
+    assert(hash)
     return hash % maximum
 end
 

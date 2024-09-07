@@ -1,13 +1,13 @@
 function gadget:GetInfo()
     return {
-        name = "Interior Windows Rendering ",
+        name = "Building Windows Rendering ",
         desc = " ",
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
         layer = -13,
         version = 1,
-        enabled = false,
+        enabled = true,
         hidden = true,
     }
 end
@@ -41,7 +41,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function HEAD()
-        return "window Rendering: "
+        return "Building Windows Rendering: "
     end
 
 
@@ -182,7 +182,7 @@ else -- unsynced
     local uniformViewPortSize 
     local uniformTime
     local GL_DEPTH_BITS             = 0x0D56
-    local GL_DEPTH_COMPONENT        prepareTextures= 0x1902
+    local GL_DEPTH_COMPONENT        = 0x1902
     local GL_DEPTH_COMPONENT16      = 0x81A5
     local GL_DEPTH_COMPONENT24      = 0x81A6
     local GL_DEPTH_COMPONENT32      = 0x81A7

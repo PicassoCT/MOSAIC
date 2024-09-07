@@ -964,7 +964,6 @@ end
                     "truck_arab7",
                     "ground_walker_mg",
                     "ground_walker_grenade",
-                    "ground_hedgehog",
                     "ground_turret_ssied",
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
@@ -986,7 +985,6 @@ end
                     "truck_arab7",
                     "ground_walker_mg",
                     "ground_walker_grenade",
-                    "ground_hedgehog",
                     "ground_turret_ssied",
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
@@ -1047,7 +1045,6 @@ end
                     "operativeinvestigator",
                     "ground_walker_mg",
                     "ground_walker_grenade",
-                    "ground_hedgehog",
                     "ground_turret_ssied",
                     "ground_turret_dronegrenade",
                     "ground_turret_mg",
@@ -3594,6 +3591,7 @@ function buildRunDeterministicAdvertisement()
         }
 
     hash= getDetermenisticHash()
+    assert(hash)
     if not GG.DeterministicCounterAdvertsiement then  GG.DeterministicCounterAdvertsiement  = 0 end
     GG.DeterministicCounterAdvertsiement  = (GG.DeterministicCounterAdvertsiement % 22) +1 
 

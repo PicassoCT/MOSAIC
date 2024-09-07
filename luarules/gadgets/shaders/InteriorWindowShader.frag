@@ -29,6 +29,11 @@
     uniform vec3 eyePos;
     uniform vec3 eyeDir;
     uniform vec2 viewPortSize;
+    uniform mat4 viewProjectionInv;
+    uniform mat4 viewProjection;
+    uniform mat4 projection;
+    uniform mat4 viewInv;
+    uniform mat4 viewMatrix;
 
     uniform int unitID;
     uniform int typeDefID;

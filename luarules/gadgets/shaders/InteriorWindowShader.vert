@@ -14,12 +14,12 @@
     
     uniform float time;
     uniform float timepercent;
+    uniform vec3 eyePos;
+    uniform vec3 eyeDir;
     uniform vec2 viewPortSize;
     uniform int unitID;
     uniform int typeDefID;
 
-    uniform vec2 viewPortSize;
-    uniform vec3 cityCenter;
     uniform mat4 viewProjectionInv;
     uniform mat4 viewProjection;
     uniform mat4 projection;

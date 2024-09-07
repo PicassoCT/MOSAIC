@@ -118,7 +118,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if frame % 270 == 0 then
             
             local neonUnitsInLOSserialized = serializeTableToString(neonUnitDataTransfer)
-            Spring.Echo("Updating dynamic lighting ".. neonUnitsInLOSserialized)
+            --echo("Updating dynamic lighting ".. neonUnitsInLOSserialized)
             SendToUnsynced(UPDATE_LIGHTS_9SEC_EVENT_ID, frame, neonUnitsInLOSserialized)
         end
     end
