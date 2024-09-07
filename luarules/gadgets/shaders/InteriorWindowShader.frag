@@ -75,9 +75,9 @@
       float s = hsl.g;
       float l = hsl.b;
       vec4 rgba = vec4(0, 0, 0, 1.0);
-      float c = (1.0 f - abs(2.0 f * l - 1.0 f)) * s; // Chroma
-      float x = c * (1.0 f - abs(mod(h / 60.0 f, 2) - 1.0 f));
-      float m = l - c / 2.0 f;
+      float c = (1.0f - abs(2.0f * l - 1.0f)) * s; // Chroma
+      float x = c * (1.0f - abs(mod(h / 60.0f, 2) - 1.0f));
+      float m = l - c / 2.0f;
 
       float r1, g1, b1;
 
@@ -185,21 +185,21 @@
 
     vec4 windowLightColor(unsigned int index) {
       vec3 light_colors[] = {
-        vec3(0.04 f, 0.9 f, 0.93 f), //Amber / pink
-        vec3(0.055 f, 0.95 f, 0.93 f), //Slightly brighter amber 
-        vec3(0.08 f, 0.7 f, 0.93 f), //Very pale amber
-        vec3(0.07 f, 0.9 f, 0.93 f), //Very pale orange
-        vec3(0.1 f, 0.9 f, 0.85 f), //Peach
-        vec3(0.13 f, 0.9 f, 0.93 f), //Pale Yellow
-        vec3(0.15 f, 0.9 f, 0.93 f), //Yellow
-        vec3(0.17 f, 1.0 f, 0.85 f), //Saturated Yellow
-        vec3(0.55 f, 0.9 f, 0.93 f), //Cyan
-        vec3(0.55 f, 0.9 f, 0.93 f), //Cyan - pale, almost white
-        vec3(0.6 f, 0.9 f, 0.93 f), //Pale blue
-        vec3(0.65 f, 0.9 f, 0.93 f), //Pale Blue II, The Palening
-        vec3(0.65 f, 0.4 f, 0.99 f), //Pure white. Bo-ring.
-        vec3(0.65 f, 0.0 f, 0.8 f), //Dimmer white.
-        vec3(0.65 f, 0.0 f, 0.6 f), //Dimmest white.
+        vec3(0.04f, 0.9f, 0.93f), //Amber / pink
+        vec3(0.055f, 0.95f, 0.93f), //Slightly brighter amber 
+        vec3(0.08f, 0.7f, 0.93f), //Very pale amber
+        vec3(0.07f, 0.9f, 0.93f), //Very pale orange
+        vec3(0.1f, 0.9f, 0.85f), //Peach
+        vec3(0.13f, 0.9f, 0.93f), //Pale Yellow
+        vec3(0.15f, 0.9f, 0.93f), //Yellow
+        vec3(0.17f, 1.0f, 0.85f), //Saturated Yellow
+        vec3(0.55f, 0.9f, 0.93f), //Cyan
+        vec3(0.55f, 0.9f, 0.93f), //Cyan - pale, almost white
+        vec3(0.6f, 0.9f, 0.93f), //Pale blue
+        vec3(0.65f, 0.9f, 0.93f), //Pale Blue II, The Palening
+        vec3(0.65f, 0.4f, 0.99f), //Pure white. Bo-ring.
+        vec3(0.65f, 0.0f, 0.8f), //Dimmer white.
+        vec3(0.65f, 0.0f, 0.6f), //Dimmest white.
       };
 
       index = mod(index, 15);
@@ -337,7 +337,7 @@
       vec4 PixelColResult = new v4(0, 0, 0, 0);
 
       // Pixel position
-      vec3 pixel = vec3(tuv.x, tuv.y, 0.0 f);
+      vec3 pixel = vec3(tuv.x, tuv.y, 0.0f);
       // apply tiling
 
       // eyePos position
@@ -362,37 +362,37 @@
 
 
       // Up vector
-      vec3 up = vec3(0.0 f, 1.0 f, 0.0 f);
+      vec3 up = vec3(0.0f, 1.0f, 0.0f);
 
       // Right vector
-      vec3 right = vec3(1.0 f, 0.0 f, 0.0 f);
+      vec3 right = vec3(1.0f, 0.0f, 0.0f);
 
       // View direction
       vec3 viewDir = pixel - eyePos;
 
       // Floor position
       vec3 floor;
-      floor.y = 0.0 f;
-      floor.z = ((pixel.y / eyePos.y) * eyePos.z) / (1.0 f - (pixel.y / eyePos.y));
+      floor.y = 0.0f;
+      floor.z = ((pixel.y / eyePos.y) * eyePos.z) / (1.0f - (pixel.y / eyePos.y));
       floor.x = (pixel.x - eyePos.x + (eyePos.z / (eyePos.z + floor.z)) * eyePos.x) / (eyePos.z / (eyePos.z + floor.z));
 
       // Ceiling position
       vec3 ceiling;
-      ceiling.y = 1.0 f;
-      ceiling.z = ((1.0 f - pixel.y) / (1.0 f - eyePos.y)) * eyePos.z / (1.0 f - ((1.0 f - pixel.y) / (1.0 f - eyePos.y)));
+      ceiling.y = 1.0f;
+      ceiling.z = ((1.0f - pixel.y) / (1.0f - eyePos.y)) * eyePos.z / (1.0f - ((1.0f - pixel.y) / (1.0f - eyePos.y)));
       ceiling.x = eyePos.x + (pixel.x - eyePos.x) * (ceiling.z + eyePos.z) / eyePos.z;
 
       // Left Wall position
       vec3 leftWall;
-      leftWall.x = 0.0 f;
-      leftWall.z = ((pixel.x / eyePos.x) * eyePos.z) / (1.0 f - (pixel.x / eyePos.x));
-      leftWall.y = (pixel.y - (leftWall.z / (leftWall.z + eyePos.z)) * eyePos.y) / (1.0 f - leftWall.z / (leftWall.z + eyePos.z));
+      leftWall.x = 0.0f;
+      leftWall.z = ((pixel.x / eyePos.x) * eyePos.z) / (1.0f - (pixel.x / eyePos.x));
+      leftWall.y = (pixel.y - (leftWall.z / (leftWall.z + eyePos.z)) * eyePos.y) / (1.0f - leftWall.z / (leftWall.z + eyePos.z));
 
       // Right Wall position
       vec3 rightWall;
-      rightWall.x = 1.0 f;
-      rightWall.z = (((1.0 f - pixel.x) / (1.0 f - eyePos.x)) * eyePos.z) / (1.0 f - (1.0 f - pixel.x) / (1.0 f - eyePos.x));
-      rightWall.y = (pixel.y - (rightWall.z / (rightWall.z + eyePos.z)) * eyePos.y) / (1.0 f - rightWall.z / (rightWall.z + eyePos.z));;
+      rightWall.x = 1.0f;
+      rightWall.z = (((1.0f - pixel.x) / (1.0f - eyePos.x)) * eyePos.z) / (1.0f - (1.0f - pixel.x) / (1.0f - eyePos.x));
+      rightWall.y = (pixel.y - (rightWall.z / (rightWall.z + eyePos.z)) * eyePos.y) / (1.0f - rightWall.z / (rightWall.z + eyePos.z));;
 
       // Back Wall position
       vec3 backWall;
@@ -401,8 +401,8 @@
       backWall.y = (pixel.y - eyePos.y) * (eyePos.z + interior.z) / (eyePos.z) + eyePos.y;
 
       // Compute intersecting plane
-      bool isCeiling = dot(viewDir, up) > 0.0 f;
-      bool isRightWall = dot(viewDir, right) > 0.0 f;
+      bool isCeiling = dot(viewDir, up) > 0.0f;
+      bool isRightWall = dot(viewDir, right) > 0.0f;
 
       float leftRightWallsDepth = isRightWall ? rightWall.z : leftWall.z;
       float floorCeilingDepth = isCeiling ? ceiling.z : floor.z;
@@ -431,10 +431,10 @@
 
       // Chair Layer position
       vec3 chairLayer;
-      chairLayer.z = interior.z * 0.5 f;
-      chairLayer.x = (pixel.x - eyePos.x) * (eyePos.z + interior.z * 0.5 f) / (eyePos.z) + eyePos.x;
-      chairLayer.y = (pixel.y - eyePos.y) * (eyePos.z + interior.z * 0.5 f) / (eyePos.z) + eyePos.y;
-      bool isChairClosest = interior.z * 0.5 f < closestHit;
+      chairLayer.z = interior.z * 0.5f;
+      chairLayer.x = (pixel.x - eyePos.x) * (eyePos.z + interior.z * 0.5f) / (eyePos.z) + eyePos.x;
+      chairLayer.y = (pixel.y - eyePos.y) * (eyePos.z + interior.z * 0.5f) / (eyePos.z) + eyePos.y;
+      bool isChairClosest = interior.z * 0.5f < closestHit;
 
       if (isChairClosest) {
         //borrowed from https://www.shadertoy.com/view/XfBfDW
@@ -455,7 +455,7 @@
       vec2 room = ceil(wUv * interior.xy);
       float roomID = room.y * interior.x + room.x;
       float slowShift = (iTime / 1000.0);
-      PixelColResult.rgb *= mix(0.5 f, 1.5 f, rand(roomID + slowShift));
+      PixelColResult.rgb *= mix(0.5f, 1.5f, rand(roomID + slowShift));
       return PixelColResult;
 
     }
