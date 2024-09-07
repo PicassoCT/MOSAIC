@@ -2,11 +2,18 @@
     #line 20002
     //Fragmentshader
     // Set the precision for data types used in this shader
-    #define RED vec4(1.0, 0.0, 0.0, 0.5)
-    #define GREEN vec4(0.0, 1.0, 0.0, 0.5)
-    #define BLUE vec4(0.0, 0.0, 1.0, 0.5)
-    #define NONE vec4(0.)
-    #define PI 3.14159 f
+    //CONSTANTS
+    #define PI 3.1415926535897932384626433832795
+    #define PI_HALF (PI*0.5)
+    #define MAX_DEPTH_RESOLUTION 20.0
+    #define E_CONST 2.718281828459045235360287471352
+    #define NONE vec4(0.0,0.0,0.0,0.0)
+    #define RED vec4(1.0, 0.0, 0.0, 0.95)
+    #define GREEN vec4(0.0, 1.0, 0.0, 0.95)
+    #define BLUE vec4(0.0, 0.0, 1.0, 0.95)
+    #define BLACK vec4(0.0, 0.0, 0.0, 0.95)
+    #define IDENTITY vec4(1.0,1.0,1.0,1.0)
+    #define DMAX /4096.
 
     //////////////////////    //////////////////////    //////////////////////    //////////////////////
     //declare uniforms
@@ -36,11 +43,26 @@
       vec4 fragWorldPos;
     };
 
+    struct Ray 
+    {
+        vec3 Origin;
+        vec3 Dir;
+    };
+    struct AABB {
+        vec3 Min;
+        vec3 Max;
+    };
+
     vec2 uv;
 
     vec4 colToBW(vec4 col) {
       float avg = sqrt(col.r * col.r + col.g * col.g + col.b * col.b);
       return vec4(vec3(avg), col.a);
+    }
+
+    float absinthTime()
+    {
+        return abs(sin(time));
     }
 
     vec4 hslToRgb(vec3 hsl) {
@@ -94,20 +116,66 @@
       return true;
     }
 
+    bool modulator(int value, int max, int truth)
+    {
+        return mod(value, max) == truth;
+    }
+
+
+    float rand(float v) {
+      return fract(sin(v * 30.11));
+    }
+
+    vec3 Lerp(vec3 start_value, vec3 end_value, float pct) {
+      return (start_value + (end_value - start_value) * pct);
+    }
+
+    float getPseudoRandom(float startHash) {
+      return fract(sin(dot(vec2(startHash), vec2(12.9898, 4.1414)))) * 43758.5453;
+    }
+
+    vec2 applyOffset(vec3 scaleOffset, vec2 orgUv)
+    {
+        float scale = scaleOffset.r / 4096.0;
+        vec2 proportionalOffset = scaleOffset.gb;
+        orgUv -= proportionalOffset;
+        return orgUv * (1./scale);
+    }
+
+////</TOOLING >//////////////////////////////////////////////////////////////////////////////////////
+  
     vec2 applyTextureLocationWindowScaleAndOffset(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
-        if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0), tUv);
+            if (isInRectangle(vec4(2410.,0.,2814.,200.), tUv)) return applyOffset(vec3(200.0, 2410.,0.),tUv);
+            if (isInRectangle(vec4(1997.,537.,2394.,761.), tUv)) return applyOffset(vec3(192.0, 1997.,537.),tUv);
+            if (isInRectangle(vec4(2824.,798.,2976.,1010.), tUv)) return applyOffset(vec3(220.0, 2824.,798.),tUv);
+            if (isInRectangle(vec4(1530.,242.,1730.,372.), tUv)) return applyOffset(vec3(60.0, 1530.,242.),tUv);
+            if (isInRectangle(vec4(1534.,616.,1982.,996.), tUv)) return applyOffset(vec3(60.0, 1534.,616.),tUv);
+            if (isInRectangle(vec4(1070., 2420., 2140., 2739.), tUv)) return applyOffset(vec3(160.,1070., 2420.),tUv);
+            if (isInRectangle(vec4(2808.,1016.,3276.,1136.), tUv)) return applyOffset(vec3(120.0, 2808.,1016.),tUv);
+            if (isInRectangle(vec4(3300.,1007.,4096.,1616.), tUv)) return applyOffset(vec3(120.0, 3300.,1007.),tUv);
+            if (isInRectangle(vec4(3796.,594.,4096.,930.), tUv)) return applyOffset(vec3(50.0, 3796.,594.),tUv);
+            if (isInRectangle(vec4(2450.,1016.,2798.,1196.), tUv)) return applyOffset(vec3(75.0, 2450.,1016.),tUv);
+            if (isInRectangle(vec4(1970., 1016., 2440.,1492.), tUv)) return applyOffset(vec3(20.,1970.,1016.),tUv);
+            if (isInRectangle(vec4(1530., 1225., 1968., 1450.), tUv)) return applyOffset(vec3(26.,1534.,1225.),tUv);
+            if (isInRectangle(vec4(1530., 1015., 1882., 1083.), tUv)) return applyOffset(vec3(60.,1530.,1015.),tUv);
+            if (isInRectangle(vec4(1530., 1075., 1607., 1224.), tUv)) return applyOffset(vec3(40.,1530.,1075.),tUv);
+            if (isInRectangle(vec4(1530., 1454., 1860., 1714.), tUv)) return applyOffset(vec3(50.,1530., 1454.),tUv);
+            if (isInRectangle(vec4(1865., 1515., 2079., 1714.), tUv)) return applyOffset(vec3(35.,1865., 1515.),tUv);
+            if (isInRectangle(vec4(2813., 1742., 3173., 2081.), tUv)) return applyOffset(vec3(55.,2813., 1742.),tUv);
+        }
 
+      if (typeDefID == 1) { //western
+        if (isInRectangle(vec4(1540., 1029., 2811., 2043.), tUv)) return applyOffset(vec3(325., 1540., 1029.), tUv);
+        if (isInRectangle(vec4(1839., 2049., 3540., 2325.), tUv)) return applyOffset(vec3(432., 1839., 2049.), tUv);
+        if (isInRectangle(vec4(1989., 2583., 3558., 2871.), tUv)) return applyOffset(vec3(408., 1989., 2583.), tUv);
+         }
+
+      if (typeDefID == 2) { //arab
+        if (isInRectangle(vec4(1852.,2048.,3558.,2858.), tUv)) return applyOffset(vec3(300.0,1852.,2048.), tUv);
       }
 
-      if (typeDefID == 1) {
-        if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0),tUv);
-      }
-
-      if (typeDefID == 2) {
-        if (isInRectangle(vec4(), tUv)) return applyOffset(vec3(1.0, 0, 0), tUv);
-      }
-      return tUV;
+      return applyOffset(vec3(4096./25.0, 0, 0), tUv);
     }
 
     vec4 windowLightColor(unsigned int index) {
@@ -134,18 +202,6 @@
 
     }
 
-    float rand(float v) {
-      return fract(sin(v * 30.11));
-    }
-
-    vec3 Lerp(vec3 start_value, vec3 end_value, float pct) {
-      return (start_value + (end_value - start_value) * pct);
-    }
-
-    float getPseudoRandom(float startHash) {
-      return fract(sin(dot(vec2(startHash), vec2(12.9898, 4.1414)))) * 43758.5453;
-    }
-
     //Makes all neon-advertisments go uniluminated simultanously over one building
     //Not ideal, should be per piece
     float GetRandomFlickerFactor() {
@@ -155,12 +211,8 @@
       return 1.0;
     }
 
-    // Interior room count (width, height, depth)
-    const vec3 asian_interior = vec3(50.0 f, 50.0 f, 1.0 f);
-    const vec3 arab_interior = vec3(5.0 f, 5.0 f, 1.0 f);
-    const vec3 western_interior = vec3(5.0 f, 5.0 f, 1.0 f);
 
-    vec4 getBackWallTexture(vec2 tUv) {
+    vec4 getBackWallTexture(vec2 tUv, int roomID) {
       if (typeDefID == 0) { //Asian Building
         return mapUvToSubUvSquare(tUv,
           vec4(2810.0, 1466.0,
@@ -168,19 +220,10 @@
       }
 
       if (typeDefID == 1) { //house western texture
-        return mapUvToSubUvSquare(tUv,
-          vec4(1555.0, 5.0,
-            2188.0, 370.0));
-        /*
-           return mapUvToSubUvSquare(tUv,
-                vec4(   1561.0, 371.0,
-                        2074.0, 733.0));
-         
-            return mapUvToSubUvSquare(tUv,
-                vec4(1540.0, 732.0,
-                    2166.0, 1016.0));
-         
-            */
+         if (mmodulator(roomID, 2, 0)) return mapUvToSubUvSquare(tUv,  vec4(1555.0, 5.0,   2188.0, 370.0));
+         if (mmodulator(roomID, 2, 1)) return mapUvToSubUvSquare(tUv,  vec4(   1561.0, 371.0,  2074.0, 733.0));
+         if (mmodulator(roomID, 2, 2))  return mapUvToSubUvSquare(tUv, vec4(1540.0, 732.0,  2166.0, 1016.0));
+
       }
 
       if (typeDefID == 2) {
@@ -191,86 +234,66 @@
       return vec4(1.0, 0, 0, 1.0);
     }
 
-    vec4 getCeilingTexture(vec2 tUv) {
-      if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(tUv,
-          vec4(2050.0, 3592.0,
-            2564.0, 4096.0));
+    vec4 getCeilingTexture(vec2 tUv, int roomID) 
+    {
+      if (typeDefID == 0)  //Asian Building
+      {
+        return mapUvToSubUvSquare(tUv, vec4(2050.0, 3592.0, 2564.0, 4096.0));
       }
 
-      if (typeDefID == 1) {
-        //house western texture
-        return mapUvToSubUvSquare(tUv,
-          vec4(1424.0, 3588.0,
-            1647.0, 3806.0));
-
+      if (typeDefID == 1)  //house western texture
+      {       
+        return mapUvToSubUvSquare(tUv, vec4(1424.0, 3588.0, 1647.0, 3806.0));
       }
 
-      if (typeDefID == 2) {
-        //house middle east texture
-
+      if (typeDefID == 2)        //house middle east texture
+      {
+        return GREEN;
       }
 
-      return vec4(1.0, 1.0, 1.0, 1.0);
+      return RED;
     }
 
-    vec4 getFloorTexture(vec2 tUv) {
-      if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(tUv,
-          vec4(3436.0, 2458.0,
-            4082.0, 2810.0));
+    vec4 getFloorTexture(vec2 tUv, int roomID)
+    {
+      if (typeDefID == 0) //Asian Building
+      {
+        return mapUvToSubUvSquare(tUv,   vec4(3436.0, 2458.0,  4082.0, 2810.0));
       }
 
-      if (typeDefID == 1) {
-        //house western texture
-        return mapUvToSubUvSquare(tUv,
-          vec4(1851.0, 3792.0,
-            2048.0, 3990.0));
-
+      if (typeDefID == 1)  //house western texture
+       {      
+        return mapUvToSubUvSquare(tUv,  vec4(1851.0, 3792.0, 2048.0, 3990.0));
       }
 
-      if (typeDefID == 2) {
-        //house middle east texture
-
+      if (typeDefID == 2) //house middle east texture
+       {
+       return BLUE;
       }
 
-      return vec4(0.0, 1.0, 0, 1.0);
+      return BLACK;
     }
 
-    vec4 getWallTexture(vec2 tUv) {
-      if (typeDefID == 0) { //Asian Building
-        return mapUvToSubUvSquare(tUv,
-          vec4(1546.0, 3097.0,
-            1856.0, 3567.0));
-
-      }
-
-
-          if (typeDefID == 1) {
-            //house western texture
-            return mapUvToSubUvSquare(tUv,
-              vec4(1555.0, 5.0,
-                2188.0, 370.0));
-            /*
-               return mapUvToSubUvSquare(tUv,
-                    vec4(1561.0, 371.0,
-                    2074.0, 733.0));
-             
-                return mapUvToSubUvSquare(tUv,
-                    vec4(1540.0, 732.0,
-                    2166.0, 1016.0));
-             
-                */
+    vec4 getWallTexture(vec2 tUv, int roomID) 
+    {
+        if (typeDefID == 0) //Asian Building
+        { 
+            return mapUvToSubUvSquare(tUv, vec4(1546.0, 3097.0, 1856.0, 3567.0));
         }
 
-        if (typeDefID == 2) {
-            //house middle east texture
-
+        if (typeDefID == 1) //house western texture
+        {            
+            if (mmodulator(roomID, 2, 0)) return mapUvToSubUvSquare(tUv, vec4(1555.0, 5.0,  2188.0, 370.0));
+            if (mmodulator(roomID, 2, 1)) return mapUvToSubUvSquare(tUv, vec4(1561.0, 371.0, 2074.0, 733.0));
+            if (mmodulator(roomID, 2, 2)) return mapUvToSubUvSquare(tUv, vec4(1540.0, 732.0, 2166.0, 1016.0)
         }
 
-    
+        if (typeDefID == 2) //house middle east texture
+        {
+            return GREEN;
+        }
 
-      return vec4(0.0, 0.0, 1.0, 1.0);
+      return RED * absinthTime();
     }
 
     vec4 getFurniturePeopleTexture(vec2 tUv) {
@@ -292,6 +315,8 @@
 
       return vec4(0.5, 0.5, 0.5, 1.0);
     }
+
+////</Config >//////////////////////////////////////////////////////////////////////////////////////
 
     vec2 mapUvToSubUvSquare(vec2 tUv, vec4 startend) {
       vec2 start = vec2(startend.rg / 4096.0);
