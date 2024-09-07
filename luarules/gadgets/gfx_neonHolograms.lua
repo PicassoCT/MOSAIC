@@ -30,6 +30,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
 
+
+
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
             myAllyTeamID = Spring.GetMyAllyTeamID()
@@ -104,7 +106,7 @@ if (gadgetHandler:IsSyncedCode()) then
       
     end
     local function serializePiecesTableTostring(t)
-        result = ""
+        local result = ""
         for i=1, #t do
             result = result.."|"..t[i]
         end
@@ -237,7 +239,7 @@ else -- unsynced
     local spGetUnitPosition = Spring.GetUnitPosition
     local screentex = nil
     local afterglowbuffertex = nil
-
+    local UnitUnitDefIDMap = {}
 -------------------------------------------------------------------------------------
 local function getDayTime()
     local morningOffset = (DAYLENGTH / 2)
@@ -286,7 +288,7 @@ end
         return t
     end
 
-    local function setUnitNeonLuaDraw(callname, unitID, unitDefID listOfVisibleUnitPiecesString)
+    local function setUnitNeonLuaDraw(callname, unitID, unitDefID, listOfVisibleUnitPiecesString)
 
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
@@ -467,8 +469,9 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-              --    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
-                    local unitDefID = UnitUnitDefIDMap[unitID}
+                    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
+                    --local unitDefID = spGetUnitDefId(unitID)
+                    local unitDefID = UnitUnitDefIDMap[unitID]
                     glTexture(0, string.format("%%%d:0", unitDefID))
                     glTexture(1, string.format("%%%d:1", unitDefID))
                     neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])

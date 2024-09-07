@@ -113,7 +113,7 @@ if (gadgetHandler:IsSyncedCode()) then
         				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
                             cachedUnitPieces[id] = VisibleUnitPieces[value]
-        					SendToUnsynced("setUnitWindowLuaDraw", id, spGetUnitDefID(id) serializedStringToSend )              
+        					SendToUnsynced("setUnitWindowLuaDraw", id, spGetUnitDefID(id), serializedStringToSend )              
         				end
         			end 
                     for id, value in pairs(oldWindowUnitDataTransfer) do
