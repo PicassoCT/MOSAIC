@@ -11,7 +11,7 @@ local unitDef = {
 	buildCostEnergy = 50,
 	buildTime =1,
 	--Health
-	maxDamage = 999999999999,
+	maxDamage = 100*60*10*10,-- 100 damage every 60 seconds for 10 minutes * 10 units destroy this heap
 	idleAutoHeal = 0,
 	--Movement
 

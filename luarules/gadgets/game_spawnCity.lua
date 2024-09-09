@@ -31,7 +31,7 @@ local spGetUnitDefID = Spring.GetUnitDefID
 local UnitDefNames = getUnitDefNames(UnitDefs)
 
 local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
-local TimeDelayedRespawn = {}
+ GG.TimeDelayedRespawn = {}
 local BuildingWithWaitingRespawn = {}
 
 GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
@@ -114,9 +114,9 @@ function spawnRubbleHeapAt(id)
 
         rubbleHeapID = spCreateUnit(randDict(scrapHeapTypeTable), x, y, z, 1,
                                     gaiaTeamID)
-        TimeDelayedRespawn[rubbleHeapID] =
+        GG.TimeDelayedRespawn[rubbleHeapID] =
             {
-                frame = GameConfig.TimeForScrapHeapDisappearanceInMs,
+                frame = GameConfig.TimeForScrapHeapDisappearanceInMs * (math.random(10,100)/100),
                 x = x,
                 z = z,
                 bID = id
@@ -536,17 +536,17 @@ end
 
 
 function countDownRespawnHouses(framesToSubstract)
-    for rubbleHeapID, tables in pairs(TimeDelayedRespawn) do
-        TimeDelayedRespawn[rubbleHeapID].frame =
-            TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
+    for rubbleHeapID, tables in pairs(GG.TimeDelayedRespawn) do
+        GG.TimeDelayedRespawn[rubbleHeapID].frame =
+            GG.TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
 
-        if TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
+        if GG.TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
             if isUnitAlive(rubbleHeapID) == true then
                 spDestroyUnit(rubbleHeapID, false, true)
             end
             regenerateRoutesTable()
             BuildingWithWaitingRespawn[tables.bID] = nil
-            TimeDelayedRespawn[rubbleHeapID] = nil
+            GG.TimeDelayedRespawn[rubbleHeapID] = nil
         end
     end
 end
