@@ -70,8 +70,13 @@ function excavator()
 end
 
 function waitForAnEnd()
-    hideT(ExcavatorTable)   
+    hideT(ExcavatorTable)
+    Sleep(10)
     timeForMoveInSec = GameConfig.TimeForScrapHeapDisappearanceInMs/1000
+    if GG.TimeDelayedRespawn and GG.TimeDelayedRespawn[unitID] and GG.TimeDelayedRespawn[unitID].frame  then
+        timeForMoveInSec = GG.TimeDelayedRespawn[unitID].frame/30
+    end 
+
     speed = distanceToGoDown / timeForMoveInSec
     Sleep(GameConfig.minutMS)
     StartThread(excavator)
