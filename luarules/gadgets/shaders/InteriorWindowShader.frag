@@ -51,9 +51,9 @@
     };
 
     // Interior room count (width, height, depth)
-    const vec3 asian_interior = vec3(5.0 f, 5.0 f, 1.0 f);
-    const vec3 arab_interior = vec3(5.0 f, 5.0 f, 1.0 f);
-    const vec3 western_interior = vec3(5.0 f, 5.0 f, 1.0 f);
+    const vec3 asian_interior = vec3(5.0f, 5.0f, 1.0f);
+    const vec3 arab_interior = vec3(5.0f, 5.0f, 1.0f);
+    const vec3 western_interior = vec3(5.0f, 5.0f, 1.0f);
 
     struct Ray 
     {
@@ -77,10 +77,8 @@
         return abs(sin(time));
     }
 
-    vec4 hslToRgb(vec3 hsl) {
-      float h = hsl.r;
-      float s = hsl.g;
-      float l = hsl.b;
+    vec4 hslToRgb(float h, float s, float l) {
+  
       vec4 rgba = vec4(0, 0, 0, 1.0);
       float c = (1.0f - abs(2.0f * l - 1.0f)) * s; // Chroma
       float x = c * (1.0f - abs(mod(h / 60.0f, 2) - 1.0f));
@@ -142,6 +140,10 @@
       return (start_value + (end_value - start_value) * pct);
     }
 
+    bool mmodulator(int roomID, int sizeMax, int expected){
+      return int(mod(roomID, sizeMax)) == expected;
+    }
+
     float getPseudoRandom(float startHash) {
       return fract(sin(dot(vec2(startHash), vec2(12.9898, 4.1414)))) * 43758.5453;
     }
@@ -154,8 +156,90 @@
         return orgUv * (1./scale);
     }
 
+    vec4 mapUvToSubUvSquareFetchTex(vec2 tUv, vec4 startend) {
+        float texSizeCubed = 4096.0;
+
+        // Normalize the start and end points of the sub-rectangle
+        vec2 start = startend.rg / texSizeCubed;  // bottom-left corner
+        vec2 end = startend.ba / texSizeCubed;    // top-right corner
+        vec2 subUvSize = end - start;
+        tUv = fract(tUv);
+        vec2 scaledUVs = start + tUv * subUvSize;
+        return texture(tex1, scaledUVs);
+    }
+
 ////</TOOLING >//////////////////////////////////////////////////////////////////////////////////////
-  
+    vec4 getWallTexture(vec2 tUv, int roomID) 
+    {
+        if (typeDefID == 0) //Asian Building
+        { 
+            int sizeMax = 64;
+            int modResult = mod(roomID, sizeMax);
+            switch(modResult){
+            case 0: return mapUvToSubUvSquareFetchTex(tUv, vec4(1546.0, 3097.0, 1856.0, 3567.0));
+            case 1:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1425.0, 3588.0, 1645.0, 3806.0));
+            case 2:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1651., 3586., 1841., 3793.));
+            case 3:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1840., 3586., 2042., 3786.));
+            case 4:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1850., 3791., 2048., 3985.));
+            case 5:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1838., 3933., 2055., 4096.));
+            case 6:  return mapUvToSubUvSquareFetchTex(tUv, vec4(3080., 2305., 3414., 2575.));
+            case 7: return mapUvToSubUvSquareFetchTex(tUv, vec4(248.0, 3652.0, 383.0, 3759.0));
+            case 8: return mapUvToSubUvSquareFetchTex(tUv, vec4(0.0, 3661.0, 237.0, 3831.0));
+            case 9: return mapUvToSubUvSquareFetchTex(tUv, vec4(0.0, 3940.0, 79.0, 4000.0));
+            case 10: return mapUvToSubUvSquareFetchTex(tUv, vec4(664.0, 3586.0, 1016.0, 3764.0));
+            case 11: return mapUvToSubUvSquareFetchTex(tUv, vec4(810.0, 3804.0, 972.0, 4056.0));
+            case 12: return mapUvToSubUvSquareFetchTex(tUv, vec4(1042.0, 3094.0, 1486.0, 3322.0));
+            case 13: return mapUvToSubUvSquareFetchTex(tUv, vec4(1530.0, 1725.0, 2010.0, 2076.0));
+            case 14: return mapUvToSubUvSquareFetchTex(tUv, vec4(2817.0, 1469.0, 3162.0, 1730.0));
+            case 15: return mapUvToSubUvSquareFetchTex(tUv, vec4(2811.0, 1145.0, 3282.0, 1451.0));
+            case 16: return mapUvToSubUvSquareFetchTex(tUv, vec4(2809.0, 1017.0, 3073.0, 1135.0));
+            case 17: return mapUvToSubUvSquareFetchTex(tUv, vec4(2408.0, 215.0, 2798.0, 491.0));
+            case 18: return mapUvToSubUvSquareFetchTex(tUv, vec4(2015.0, 267.0, 2393.0, 525.0));
+            case 19: return mapUvToSubUvSquareFetchTex(tUv, vec4(1539.0, 543.0, 1989.0, 603.0));
+            case 20: return mapUvToSubUvSquareFetchTex(tUv, vec4(1773.0, 282.0, 1989.0, 507.0));
+            case 21: return mapUvToSubUvSquareFetchTex(tUv, vec4(1521.0, 3.0, 1869.0, 228.0));
+            case 22: return mapUvToSubUvSquareFetchTex(tUv, vec4(2105.0, 10.0, 2399.0, 246.0));
+            case 23: return mapUvToSubUvSquareFetchTex(tUv, vec4(3437.0, 284.0, 3791.0, 584.0));
+            case 24: return mapUvToSubUvSquareFetchTex(tUv, vec4(3830.0, 425.0, 4067.0, 614.0));
+            case 25: return mapUvToSubUvSquareFetchTex(tUv, vec4(3662.0, 204.0, 3854.0, 345.0));
+            case 26: return mapUvToSubUvSquareFetchTex(tUv, vec4(3854.0, 1656.0, 4094.0, 1926.0));
+            case 27: return mapUvToSubUvSquareFetchTex(tUv, vec4(3731.0, 1940.0, 4096.0, 2081.0));
+            case 28: return mapUvToSubUvSquareFetchTex(tUv, vec4(3596.0, 2862.0, 3839.0, 3096.0));
+            case 29: return mapUvToSubUvSquareFetchTex(tUv, vec4(3596.0, 3101.0, 3830.0, 3335.0));
+            case 30: return mapUvToSubUvSquareFetchTex(tUv, vec4(3353.0, 3338.0, 3590.0, 3548.0));
+            case 31: return mapUvToSubUvSquareFetchTex(tUv, vec4(3386.0, 3612.0, 3662.0, 3840.0));
+            case 32: return mapUvToSubUvSquareFetchTex(tUv, vec4(3384.0, 3857.0, 3669.0, 4096.0));
+            case 33: return mapUvToSubUvSquareFetchTex(tUv, vec4(3615.0, 3620.0, 3852.0, 3851.0));
+            case 34: return mapUvToSubUvSquareFetchTex(tUv, vec4(1043.0, 3323.0, 1541.0, 3578.0));
+            case 35: return mapUvToSubUvSquareFetchTex(tUv, vec4(504.0, 3098.0, 1024.0, 3574.0));
+            case 36: return mapUvToSubUvSquareFetchTex(tUv, vec4(0.0, 2816.0, 460.0, 3048.0));
+            case 37: return mapUvToSubUvSquareFetchTex(tUv, vec4(184.0, 2384.0, 492.0, 2560.0));
+            case 38: return mapUvToSubUvSquareFetchTex(tUv, vec4(2544.0, 1301.0, 2700.0, 1471.0));
+            case 39: return mapUvToSubUvSquareFetchTex(tUv, vec4(2584.0, 799.0, 2824.0, 1013.0));
+            case 40: return mapUvToSubUvSquareFetchTex(tUv, vec4(149.0, 3912.0, 237.0, 4012.0));
+            case 41: return mapUvToSubUvSquareFetchTex(tUv, vec4(3082.0, 2873.0, 3290.0, 3063.0));
+          
+            default: return mapUvToSubUvSquareFetchTex(tUv, vec4(552.0, 2330.0, 772.0, 2470.0));
+            }
+        }
+
+        if (typeDefID == 1) //house western texture
+        {   
+            int sizeMax = 3; 
+
+            if (mmodulator(roomID, sizeMax, 0)) return mapUvToSubUvSquareFetchTex(tUv, vec4(1555.0, 5.0,  2188.0, 370.0));
+            if (mmodulator(roomID, sizeMax, 1)) return mapUvToSubUvSquareFetchTex(tUv, vec4(1561.0, 371.0, 2074.0, 733.0));
+            if (mmodulator(roomID, sizeMax, 2)) return mapUvToSubUvSquareFetchTex(tUv, vec4(1540.0, 732.0, 2166.0, 1016.0));
+        }
+
+        if (typeDefID == 2) //house middle east texture
+        {
+            return GREEN;
+        }
+
+      return RED * absinthTime();
+    }
+
     vec2 applyTextureLocationWindowScaleAndOffset(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
             if (isInRectangle(vec4(2410.,0.,2814.,200.), tUv)) return applyOffset(vec3(200.0, 2410.,0.),tUv);
@@ -190,7 +274,7 @@
       return applyOffset(vec3(4096./25.0, 0, 0), tUv);
     }
 
-    vec4 windowLightColor(unsigned int index) {
+    vec4 windowLightColor(int index) {
       vec3 light_colors[] = {
         vec3(0.04f, 0.9f, 0.93f), //Amber / pink
         vec3(0.055f, 0.95f, 0.93f), //Slightly brighter amber 
@@ -209,7 +293,7 @@
         vec3(0.65f, 0.0f, 0.6f), //Dimmest white.
       };
 
-      index = mod(index, 15);
+      index = int( mod(index, 15));
       return hslToRgb(light_colors[index].r, light_colors[index].g, light_colors[index].b);
 
     }
@@ -227,7 +311,7 @@
     vec4 getBackWallTexture(vec2 tUv, int roomID) {
       if (typeDefID == 0) { //Asian Building
         int sizeMax = 64;
-        int index = mod(roomID, sizeMax);
+        int index = int(mod(roomID, sizeMax));
         switch(index)
         {
             case 0:  return mapUvToSubUvSquareFetchTex(tUv, vec4(2810.0, 1466.0, 3167.0, 1724.0));
@@ -323,8 +407,8 @@
         switch(index){
             case 0: return mapUvToSubUvSquareFetchTex(tUv, vec4(1425.0, 3588.0, 1645.0, 3806.0));    
             case 1: return mapUvToSubUvSquareFetchTex(tUv, vec4(1651., 3586., 1841., 3793.));
-            case 2: return mapUvToSubUvSquareFetchTex(tUv, vec4(   1840, 3586, 2042, 3786));
-            case 3: return mapUvToSubUvSquareFetchTex(tUv, vec4(   1850, 3791, 2048, 3985));
+            case 2: return mapUvToSubUvSquareFetchTex(tUv, vec4(   1840., 3586., 2042., 3786.));
+            case 3: return mapUvToSubUvSquareFetchTex(tUv, vec4(   1850., 3791., 2048., 3985.));
             case 4: return mapUvToSubUvSquareFetchTex(tUv, vec4(241.0, 3758.0, 377.0, 3900.0));
             case 5: return mapUvToSubUvSquareFetchTex(tUv, vec4(3386.0, 3612.0, 3662.0, 3840.0));
             case 6: return mapUvToSubUvSquareFetchTex(tUv, vec4(3384.0, 3857.0, 3669.0, 4096.0));
@@ -360,75 +444,6 @@
       return BLACK;
     }
 
-    vec4 getWallTexture(vec2 tUv, int roomID) 
-    {
-        if (typeDefID == 0) //Asian Building
-        { 
-            int sizeMax = 38;
-            int modResult = mod(roomID, sizeMax);
-            switch(modResult){
-            case 0: return mapUvToSubUvSquareFetchTex(tUv, vec4(1546.0, 3097.0, 1856.0, 3567.0));
-            case 1:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1425.0, 3588.0, 1645.0, 3806.0));
-            case 2:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1651., 3586., 1841., 3793.));
-            case 3:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1840., 3586., 2042., 3786.));
-            case 4:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1850., 3791., 2048., 3985.));
-            case 5:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1838., 3933., 2055., 4096.));
-            case 6:  return mapUvToSubUvSquareFetchTex(tUv, vec4(3080., 2305., 3414., 2575.));
-            case 7: return mapUvToSubUvSquareFetchTex(tUv, vec4(248.0, 3652.0, 383.0, 3759.0));
-            case 8: return mapUvToSubUvSquareFetchTex(tUv, vec4(0.0, 3661.0, 237.0, 3831.0));
-            case 9: return mapUvToSubUvSquareFetchTex(tUv, vec4(0.0, 3940.0, 79.0, 4000.0));
-            case 10: return mapUvToSubUvSquareFetchTex(tUv, vec4(664.0, 3586.0, 1016.0, 3764.0));
-            case 11: return mapUvToSubUvSquareFetchTex(tUv, vec4(810.0, 3804.0, 972.0, 4056.0));
-            case 12: return mapUvToSubUvSquareFetchTex(tUv, vec4(1042.0, 3094.0, 1486.0, 3322.0));
-            case 13: return mapUvToSubUvSquareFetchTex(tUv, vec4(1530.0, 1725.0, 2010.0, 2076.0));
-            case 14: return mapUvToSubUvSquareFetchTex(tUv, vec4(2817.0, 1469.0, 3162.0, 1730.0));
-            case 15: return mapUvToSubUvSquareFetchTex(tUv, vec4(2811.0, 1145.0, 3282.0, 1451.0));
-            case 16: return mapUvToSubUvSquareFetchTex(tUv, vec4(2809.0, 1017.0, 3073.0, 1135.0));
-            case 17: return mapUvToSubUvSquareFetchTex(tUv, vec4(2408.0, 215.0, 2798.0, 491.0));
-            case 18: return mapUvToSubUvSquareFetchTex(tUv, vec4(2015.0, 267.0, 2393.0, 525.0));
-            case 19: return mapUvToSubUvSquareFetchTex(tUv, vec4(1539.0, 543.0, 1989.0, 603.0));
-            case 20: return mapUvToSubUvSquareFetchTex(tUv, vec4(1773.0, 282.0, 1989.0, 507.0));
-            case 21: return mapUvToSubUvSquareFetchTex(tUv, vec4(1521.0, 3.0, 1869.0, 228.0));
-            case 22: return mapUvToSubUvSquareFetchTex(tUv, vec4(2105.0, 10.0, 2399.0, 246.0));
-            case 23: return mapUvToSubUvSquareFetchTex(tUv, vec4(3437.0, 284.0, 3791.0, 584.0));
-            case 24: return mapUvToSubUvSquareFetchTex(tUv, vec4(3830.0, 425.0, 4067.0, 614.0));
-            case 25: return mapUvToSubUvSquareFetchTex(tUv, vec4(3662.0, 204.0, 3854.0, 345.0));
-            case 26: return mapUvToSubUvSquareFetchTex(tUv, vec4(3854.0, 1656.0, 4094.0, 1926.0));
-            case 27: return mapUvToSubUvSquareFetchTex(tUv, vec4(3731.0, 1940.0, 4096.0, 2081.0));
-            case 28: return mapUvToSubUvSquareFetchTex(tUv, vec4(3596.0, 2862.0, 3839.0, 3096.0));
-            case 29: return mapUvToSubUvSquareFetchTex(tUv, vec4(3596.0, 3101.0, 3830.0, 3335.0));
-            case 30: return mapUvToSubUvSquareFetchTex(tUv, vec4(3353.0, 3338.0, 3590.0, 3548.0));
-            case 31: return mapUvToSubUvSquareFetchTex(tUv, vec4(3386.0, 3612.0, 3662.0, 3840.0));
-            case 32: return mapUvToSubUvSquareFetchTex(tUv, vec4(3384.0, 3857.0, 3669.0, 4096.0));
-            case 33: return mapUvToSubUvSquareFetchTex(tUv, vec4(3615.0, 3620.0, 3852.0, 3851.0));
-            case 34: return mapUvToSubUvSquareFetchTex(tUv, vec4(1043.0, 3323.0, 1541.0, 3578.0));
-            case 35: return mapUvToSubUvSquareFetchTex(tUv, vec4(504.0, 3098.0, 1024.0, 3574.0));
-            case 36: return mapUvToSubUvSquareFetchTex(tUv, vec4(0.0, 2816.0, 460.0, 3048.0));
-            case 37: return mapUvToSubUvSquareFetchTex(tUv, vec4(184.0, 2384.0, 492.0, 2560.0));
-            case 38: return mapUvToSubUvSquareFetchTex(tUv, vec4(2544.0, 1301.0, 2700.0, 1471.0));
-            case 39: return mapUvToSubUvSquareFetchTex(tUv, vec4(2584.0, 799.0, 2824.0, 1013.0));
-            case 40: return mapUvToSubUvSquareFetchTex(tUv, vec4(149.0, 3912.0, 237.0, 4012.0));
-            case 41: return mapUvToSubUvSquareFetchTex(tUv, vec4(3082.0, 2873.0, 3290.0, 3063.0));
-          
-            default: return mapUvToSubUvSquareFetchTex(tUv, vec4(552.0, 2330.0, 772.0, 2470.0));
-            }
-        }
-
-        if (typeDefID == 1) //house western texture
-        {   
-            int sizeMax = 3;    
-            if (mmodulator(roomID, sizeMax, 0)) return mapUvToSubUvSquareFetchTex(tUv, vec4(1555.0, 5.0,  2188.0, 370.0));
-            if (mmodulator(roomID, sizeMax, 1)) return mapUvToSubUvSquareFetchTex(tUv, vec4(1561.0, 371.0, 2074.0, 733.0));
-            if (mmodulator(roomID, sizeMax, 2)) return mapUvToSubUvSquareFetchTex(tUv, vec4(1540.0, 732.0, 2166.0, 1016.0);
-        }
-
-        if (typeDefID == 2) //house middle east texture
-        {
-            return GREEN;
-        }
-
-      return RED * absinthTime();
-    }
 
     vec4 getFurniturePeopleTexture(vec2 tUv) {
       if (typeDefID == 0) { //Asian Building
@@ -452,17 +467,6 @@
 
 ////</Config >//////////////////////////////////////////////////////////////////////////////////////
 
-    vec4 mapUvToSubUvSquareFetchTex(vec2 tUv, vec4 startend) {
-        float texSizeCubed = 4096.0;
-
-        // Normalize the start and end points of the sub-rectangle
-        vec2 start = startend.rg / texSizeCubed;  // bottom-left corner
-        vec2 end = startend.ba / texSizeCubed;    // top-right corner
-        vec2 subUvSize = end - start;
-        tUv = fract(tUv);
-        vec2 scaledUVs = start + tUv * subUvSize;
-        return texture(tex1, scaledUVs);
-    }
 
     bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
     {
@@ -479,9 +483,9 @@
         return (abs(t0) <= t1);
     }
 
-    vec4 projectionWindow(vec2 tuv, int roomID) 
+    vec4 projectionWindow(vec2 tuv ) 
     {
-      
+      int roomID = int(floor(tuv.x*tuv.y));
       vec4 PixelColResult = new v4(0, 0, 0, 0);
       vec3 interior;
       switch(typeDefID)
@@ -494,7 +498,7 @@
             interior = arab_interior; break;
         default:
             interior = asian_interior; break;
-        }
+      }
 
       
 
@@ -601,13 +605,13 @@
       if (isChairClosest) {
         //borrowed from https://www.shadertoy.com/view/XfBfDW
         float p = 0.05; // Percition
-        float a = mod(Time, 3.0); // Amplitude
-        float i = Time;
+        float a = mod(time, 3.0); // Amplitude
+        float i = time;
         vec3 col = vec3(step(abs(0.5 * sin(-i + tuv.x) - tuv.y * a), p),
           step(abs(0.5 * sin(i + tuv.x) - tuv.y * a), p),
           step(abs(0.5 * sin(i + tuv.x) + 0.5 * sin(-i + tuv.x) - tuv.y * a), p));
 
-        chairLayer.x = chairLayer.x + sin(Time);
+        chairLayer.x = chairLayer.x + sin(time);
         vec4 chairTexture = getFurniturePeopleTexture(chairLayer.xy);
         chairTexture.a = col.r;
         PixelColResult = mix(PixelColResult, chairTexture, chairTexture.a);
@@ -615,21 +619,21 @@
 
       // random "lighting" per room
       vec2 room = ceil(tuv * interior.xy);
-      float roomID = room.y * interior.x + room.x;
-      float slowShift = (Time / 1000.0);
+    
+      float slowShift = (time / 1000.0);
       PixelColResult.rgb *= mix(0.5f, 1.5f, rand(roomID + slowShift));
       return PixelColResult;
 
     }
 
-    void main() {
-
+    void main()
+    {
       //our original texcoord for this fragment
       uv = gl_FragCoord.xy / viewPortSize;
 
       vec4 orgCol = texture(tex1, uv);
       vec4 selIluCol = texture(tex2, uv);
-      selfIluCol.a = 1.0;
+      selIluCol.a = 1.0;
       if (selIluCol.r > 0) //self-ilumination is active
       {
         gl_FragColor = selIluCol;
@@ -649,6 +653,7 @@
           vec4 windowTintColor = windowLightColor(unitID);
 
           //projection windows
+
           vec4 projWindow = projectionWindow(scaledUVs);
           //project window ala spiderman
           vec4 windowColor = windowTintColor * colToBW(selIluCol);
