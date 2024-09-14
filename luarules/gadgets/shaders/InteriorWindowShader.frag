@@ -36,7 +36,6 @@
     uniform mat4 projection;
     uniform mat4 viewInv;
     uniform mat4 viewMatrix;
-
     uniform int unitID;
     uniform int typeDefID;
     // Varyings passed from the vertex shader
@@ -55,6 +54,7 @@
     const vec3 arab_interior = vec3(5.0f, 5.0f, 1.0f);
     const vec3 western_interior = vec3(5.0f, 5.0f, 1.0f);
 
+
     struct Ray 
     {
         vec3 Origin;
@@ -64,8 +64,18 @@
         vec3 Min;
         vec3 Max;
     };
+    //Global Variables          //////////////////////////////////////////////////////////
 
     vec2 uv;
+    vec3 worldPos;
+    vec4 mapDepth;
+    vec4 depthAtPixel;
+    vec4 modelDepth;  
+    vec3 pixelDir;
+    vec4 depthAtPixel;
+    vec4 modelDepth;
+
+    //Global Variables          //////////////////////////////////////////////////////////
 
     vec4 colToBW(vec4 col) {
       float avg = sqrt(col.r * col.r + col.g * col.g + col.b * col.b);
@@ -174,7 +184,7 @@
         if (typeDefID == 0) //Asian Building
         { 
             int sizeMax = 64;
-            int modResult = mod(roomID, sizeMax);
+            int modResult = int(mod(roomID, sizeMax));
             switch(modResult){
             case 0: return mapUvToSubUvSquareFetchTex(tUv, vec4(1546.0, 3097.0, 1856.0, 3567.0));
             case 1:  return mapUvToSubUvSquareFetchTex(tUv, vec4(1425.0, 3588.0, 1645.0, 3806.0));
@@ -373,7 +383,7 @@
       if (typeDefID == 0)  //Asian Building
       {
         int sizeMax = 5;
-        int index = mod(roomID, sizeMax);
+        int index = int(mod(roomID, sizeMax));
         switch(index){
          case 0:return mapUvToSubUvSquareFetchTex(tUv, vec4(2050.0, 3592.0, 2564.0, 4096.0));
          case 1:return mapUvToSubUvSquareFetchTex(tUv, vec4(1922.0, 242.0, 1994.0, 310.0));
@@ -403,7 +413,7 @@
       if (typeDefID == 0) //Asian Building
       {
         int sizeMax = 32;
-        int index = mod(roomID, sizeMax);
+        int index = int(mod(roomID, sizeMax));
         switch(index){
             case 0: return mapUvToSubUvSquareFetchTex(tUv, vec4(1425.0, 3588.0, 1645.0, 3806.0));    
             case 1: return mapUvToSubUvSquareFetchTex(tUv, vec4(1651., 3586., 1841., 3793.));
@@ -483,10 +493,12 @@
         return (abs(t0) <= t1);
     }
 
+
+
     vec4 projectionWindow(vec2 tuv ) 
     {
       int roomID = int(floor(tuv.x*tuv.y));
-      vec4 PixelColResult = new v4(0, 0, 0, 0);
+      vec4 PixelColResult = vec4(0., 0., 0., 0.);
       vec3 interior;
       switch(typeDefID)
       {
@@ -633,7 +645,13 @@
 
       vec4 orgCol = texture(tex1, uv);
       vec4 selIluCol = texture(tex2, uv);
+      mapDepth = texture2D(mapDepthTex,uv).rrrr;
+      modelDepth = texture2D(modelDepthTex,uv).rrrr;
+      depthAtPixel =  texture2D(dephtCopyTex, uv);
+      worldPos = GetWorldPosAtUV(uv, depthAtPixel.r);
       selIluCol.a = 1.0;
+
+      //Preparation phase end
       if (selIluCol.r > 0) //self-ilumination is active
       {
         gl_FragColor = selIluCol;

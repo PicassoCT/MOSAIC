@@ -5,7 +5,7 @@ function widget:GetInfo()
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
-        layer = 1,
+        layer = -13,
         enabled = true, --  loaded by default?
         hidden = false
     }
