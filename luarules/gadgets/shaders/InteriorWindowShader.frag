@@ -25,6 +25,9 @@
     uniform sampler2D reflecttex;
     uniform sampler2D screentex;
     uniform sampler2D afterglowbuffertex;
+    uniform sampler2D modelDepthTex;
+    uniform sampler2D mapDepthTex;
+    uniform sampler2D dephtCopyTex;
 
     uniform float time;
     uniform float timepercent;
@@ -72,8 +75,6 @@
     vec4 depthAtPixel;
     vec4 modelDepth;  
     vec3 pixelDir;
-    vec4 depthAtPixel;
-    vec4 modelDepth;
 
     //Global Variables          //////////////////////////////////////////////////////////
 
@@ -174,10 +175,25 @@
         vec2 end = startend.ba / texSizeCubed;    // top-right corner
         vec2 subUvSize = end - start;
         tUv = fract(tUv);
-        vec2 scaledUVs = start + tUv * subUvSize;
+        vec2 scaledUVs  = start + tUv * subUvSize;
         return texture(tex1, scaledUVs);
     }
 
+    vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
+    {
+      vec4 ppos = vec4( vec3(uvs* 2. - 1., depthPixel), 1.0);
+      //vec4 ppos =  vec4(vec3(uvs, depthPixel)* 2. - 1., 1.0);
+      vec4 worldPos4 = viewProjectionInv * ppos;
+      worldPos4.xyz /= worldPos4.w;
+    
+      if (depthAtPixel == 1.0) 
+      {
+        vec3 forward = normalize(worldPos4.xyz - eyePos);
+        float a = max(4096.0 - eyePos.y, eyePos.y - 0) / forward.y;
+        return eyePos + forward.xyz * abs(a);   
+      }
+      return worldPos4.xyz;
+    }
 ////</TOOLING >//////////////////////////////////////////////////////////////////////////////////////
     vec4 getWallTexture(vec2 tUv, int roomID) 
     {
@@ -285,23 +301,23 @@
     }
 
     vec4 windowLightColor(int index) {
-      vec3 light_colors[] = {
-        vec3(0.04f, 0.9f, 0.93f), //Amber / pink
-        vec3(0.055f, 0.95f, 0.93f), //Slightly brighter amber 
-        vec3(0.08f, 0.7f, 0.93f), //Very pale amber
-        vec3(0.07f, 0.9f, 0.93f), //Very pale orange
-        vec3(0.1f, 0.9f, 0.85f), //Peach
-        vec3(0.13f, 0.9f, 0.93f), //Pale Yellow
-        vec3(0.15f, 0.9f, 0.93f), //Yellow
-        vec3(0.17f, 1.0f, 0.85f), //Saturated Yellow
-        vec3(0.55f, 0.9f, 0.93f), //Cyan
-        vec3(0.55f, 0.9f, 0.93f), //Cyan - pale, almost white
-        vec3(0.6f, 0.9f, 0.93f), //Pale blue
-        vec3(0.65f, 0.9f, 0.93f), //Pale Blue II, The Palening
-        vec3(0.65f, 0.4f, 0.99f), //Pure white. Bo-ring.
-        vec3(0.65f, 0.0f, 0.8f), //Dimmer white.
-        vec3(0.65f, 0.0f, 0.6f), //Dimmest white.
-      };
+      vec3 light_colors[15] = {};
+        light_colors[0] = vec3(0.04f, 0.9f, 0.93f), //Amber / pink
+        light_colors[1] = vec3(0.055f, 0.95f, 0.93f), //Slightly brighter amber 
+        light_colors[2] = vec3(0.08f, 0.7f, 0.93f), //Very pale amber
+        light_colors[3] = vec3(0.07f, 0.9f, 0.93f), //Very pale orange
+        light_colors[4] = vec3(0.1f, 0.9f, 0.85f), //Peach
+        light_colors[5] = vec3(0.13f, 0.9f, 0.93f), //Pale Yellow
+        light_colors[6] = vec3(0.15f, 0.9f, 0.93f), //Yellow
+        light_colors[7] = vec3(0.17f, 1.0f, 0.85f), //Saturated Yellow
+        light_colors[8] = vec3(0.55f, 0.9f, 0.93f), //Cyan
+        light_colors[9] = vec3(0.55f, 0.9f, 0.93f), //Cyan - pale, almost white
+        light_colors[10] = vec3(0.6f, 0.9f, 0.93f), //Pale blue
+        light_colors[11] = vec3(0.65f, 0.9f, 0.93f), //Pale Blue II, The Palening
+        light_colors[12] = vec3(0.65f, 0.4f, 0.99f), //Pure white. Bo-ring.
+        light_colors[13] = vec3(0.65f, 0.0f, 0.8f), //Dimmer white.
+        light_colors[14] = vec3(0.65f, 0.0f, 0.6f), //Dimmest white.
+
 
       index = int( mod(index, 15));
       return hslToRgb(light_colors[index].r, light_colors[index].g, light_colors[index].b);
