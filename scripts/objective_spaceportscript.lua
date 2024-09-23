@@ -107,3 +107,29 @@ function script.Deactivate() return 0 end
 
 -- Spring.SetUnitNanoPieces(unitID, { center })
 
+--Inginition
+    --Lift rocket (rocket is slow and becomes faster)
+    --Trusters
+    -- plattform firebloom
+        --Lift rocket
+        -- Plattform smoke swirls
+        -- Stage2 smoke Spin
+            --Lift Rocket
+            -- Stage2 smoke Spin
+            --Lift Rocket
+            -- Stage3 smoke Spin
+            --Lift Rocket
+            -- Stage4 smoke Spin
+                -- Decoupling thrusters
+                --Fireplum sinking back into Final Stage
+                --Slight Slowdown
+                --Fusion Engine kicks in
+                -- Thrusters return to crawlers (copiesfrom decoupling)
+                -- Landingplumes
+                -- Glowing buckleup Crawler rooftop
+                --Moving to reassembly
+                --New Capsule
+                
+
+
+             
