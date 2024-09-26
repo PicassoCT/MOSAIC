@@ -6475,3 +6475,12 @@ function GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, v
 
 	return resultPos[4]
 end
+
+function holdsForAllBool(T, state)
+    holdsForEach = true
+    foreach(T,
+            function(id)
+                if id ~= state then holdsForEach = false end 
+            end)
+    return holdsForEach
+end
