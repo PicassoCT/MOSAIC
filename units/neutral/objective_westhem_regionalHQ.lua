@@ -26,7 +26,7 @@ local objective_westhemhq = Building:New{
                     oooooooo]], 
     
     customparams = {
-        normaltex = "unittextures/component_atlas_normal.dds",
+        ormaltex = "unittextures/house_asian_normal.dds",
         helptext = "Civilian Building",
         baseclass = "Building", -- TODO: hacks
     },
