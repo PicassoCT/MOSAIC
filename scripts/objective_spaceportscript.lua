@@ -14,30 +14,40 @@ Fusion = {}
 TurbineBlades = ""
 SpaceHarbour="SpaceHarbour"
 CapsuleCrane="CapsuleCrane"
-CrawlerBooster="CrawlerBooster"
-BoosterRotator="BoosterRotator"
-ReturningBooster="ReturningBooster"
-ReturningBoosterNThrusterPlumN="ReturningBoosterNThrusterPlumN"
-LandedBooster="LandedBooster"
-CrawlerMain="CrawlerMain"
-Rocket="Rocket"
+CrawlerBoosterN="CrawlerBooster"
+BoosterRotatorN="BoosterRotator"
+ReturningBoosterN="ReturningBooster"
+ReturningBooster1ThrusterPlumN="ReturningBooster1ThrusterPlum"
+ReturningBooster2ThrusterPlumN="ReturningBooster2ThrusterPlum"
+ReturningBooster3ThrusterPlumN="ReturningBooster3ThrusterPlum"
+
+
+CrawlerMainHot="CrawlerMainHot"
+
 CapsuleRocket="CapsuleRocket"
-MainStage="MainStage"
-BoosterN="BoosterN"
+
+BoosterN="Booster"
 RocketThrustPillar="RocketThrustPillar"
-FusionLandingGearN="FusionLandingGearN"
+FusionLandingGearN="FusionLandingGear"
 RocketFusionPlume="RocketFusionPlume"
 RocketPlumeN="RocketPlumeN"
 RocketPlumeAN="RocketPlumeAN"
-LaunchCone="LaunchCone"
-FireFlowerN="FireFlowerN"
-GroundGases="GroundGases"
+
+FireFlowerN="FireFlower"
+
 GroundHeatedGasRing="GroundHeatedGasRing"
-GroundRearDoorN="GroundRearDoorN"
-GroundFrontDoorN="GroundFrontDoorN"
+GroundRearDoorN="GroundRearDoor"
+GroundFrontDoorN="GroundFrontDoor"
 turbine="turbine"
 turbineCold="turbineCold"
 turbineHot="turbineHot"
+
+CrawlerMain=piece("CrawlerMain")
+LaunchCone=piece("LaunchCone")
+Rocket=piece("Rocket")
+MainStage=piece("MainStage")
+GroundGases=piece("GroundGases")
+LandedBooster=piece("LandedBooster")
 
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -47,6 +57,23 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
 end
+
+function openDoor(name)
+    foreach(TablesOfPiecesGroups[name],
+        function(id)
+            WMove(id, x_axis, -25, doorSpeed)
+        )
+        WaitForMoves(TablesOfPiecesGroups[name])
+end
+
+function closeDoor(name)
+    resetT(TablesOfPiecesGroups[name], doorSpeed)
+    WaitForMoves(TablesOfPiecesGroups[name])
+end
+
+
+
+
 
 index = 1
 boosterReturned = {}
@@ -147,10 +174,19 @@ function spinUpTurbine()
     StopSpin(turbine, 0.1)
 end
 
+function driveOutMainStage()
+    openDoor(GroundFrontDoorN)
+    WMove(MainCrawler, x_axis, 500, 7)
+    WMove(CapsuleCrane, x_axis, -100,5)
+end
+
 --thrusterCloud
 launchState = "prepareForLaunch"
 function launchAnimation()
+    initialSetup()
     while true do
+    driveOutMainStage()    
+
     launchState = "launching"
     StartThread(spinUpTurbine)     
     --Inginition
