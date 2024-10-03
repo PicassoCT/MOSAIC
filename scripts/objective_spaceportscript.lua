@@ -41,6 +41,7 @@ GroundFrontDoorN="GroundFrontDoor"
 turbine="turbine"
 turbineCold="turbineCold"
 turbineHot="turbineHot"
+BoosterCrawlerN = "BoosterCrawler"
 
 CrawlerMain=piece("CrawlerMain")
 LaunchCone=piece("LaunchCone")
@@ -49,6 +50,7 @@ MainStage=piece("MainStage")
 GroundGases=piece("GroundGases")
 LandedBooster=piece("LandedBooster")
 
+CraneHead = piece("CraneHead")
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 function script.Create()
@@ -56,8 +58,18 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
+    initialSetup()
 end
 
+function initialSetup()
+    ShowT(TablesOfPiecesGroups[GroundRearDoorN])
+    ShowT(TablesOfPiecesGroups[GroundFrontDoorN])
+    Show(turbineCold)
+    Show(CraneHead)
+    ShowT(TablesOfPiecesGroups[BoosterCrawlerN])
+    Show(MainCrawler)
+    Show(CapsuleCrane)
+end
 function openDoor(name)
     foreach(TablesOfPiecesGroups[name],
         function(id)
@@ -175,17 +187,53 @@ function spinUpTurbine()
 end
 
 function driveOutMainStage()
+    Show(RocketOnCrawler)
     openDoor(GroundFrontDoorN)
-    WMove(MainCrawler, x_axis, 500, 7)
-    WMove(CapsuleCrane, x_axis, -100,5)
+    WMove(MainCrawler, x_axis, 500, 7)    
+end
+
+function driveBackCrawler()
+     WMove(MainCrawler, x_axis, 0, 7)    
+     closeDoor(GroundFrontDoorN)
+end
+
+function deployCapsule()
+    Show(CapsuleCrane)
+    WMove(CapsuleCrane, x_axis, 50, 5)
+    Hide(CapsuleCrane)
+    Show(CapsuleRocket)
+    WMove(CapsuleCrane, x_axis, 0, 10)
+end
+
+function ShowRocket()
+    --
+end
+
+function craneLoadToPlatform()
+    WTurn(CraneHead,y_axis, math.rad(crawlerRocketPosY), 5)
+    Hide(RocketOnCrawler)
+    Show(RocketOnCrane)
+    StartThread(driveBackCrawler)
+    WTurn(CraneHead,y_axis, math.rad(RocketOnPlatformPos), 5)
+    Hide(RocketOnCrane)
+    ShowRocket()
+    Turn(CraneHead,y_axis, math.rad(CraneOutOfTheWayPos), 5)
+    deployCapsule()
+    WTurn(CraneHead,y_axis, math.rad(CraneOutOfTheWayPos), 5)
+    
+end
+
+function deployCapsule()
+
 end
 
 --thrusterCloud
 launchState = "prepareForLaunch"
 function launchAnimation()
-    initialSetup()
+    
     while true do
     driveOutMainStage()    
+    craneLoadToPlatform()
 
     launchState = "launching"
     StartThread(spinUpTurbine)     
