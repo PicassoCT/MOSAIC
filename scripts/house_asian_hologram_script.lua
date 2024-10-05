@@ -122,6 +122,19 @@ end
 
 px,py,pz = Spring.GetUnitPosition(unitID)
 
+function technoDancer()
+    while (true) do
+        hideT(TablesOfPiecesGroups["Dancer"])
+        showOne(TablesOfPiecesGroups["Dancer"]
+        Sleep(1000)
+        hideT(TablesOfPiecesGroups["Dancer"])
+        Sleep(1000)
+
+    end
+
+end
+
+
 function restartHologram()
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
@@ -131,6 +144,9 @@ function restartHologram()
     StartThread(checkForBlackOut)
     StartThread(clock)
     StartThread(grid)
+    if randChance(2) then
+        StartThread(technoDancer)
+    end
 
     if randChance(25) or isNearCityCenter(px,pz, GameConfig) then
         StartThread(showStreetSigns)
