@@ -904,6 +904,24 @@ function addRoofDeocrate(Level, buildMaterial)
     end
 end
 
+function  noSunbathingConditons()
+    hours, minutes, seconds, percent = getDayTime()
+    return isRaining() or hours > 19 and hours < 6
+end
+
+function hideSunBathersInBadWeather()
+    while true do
+        Sleep(1500)
+        if noSunbathingConditons() then
+            hideT(TablesOfPiecesGroups["RoofDeco28Sub"])
+            while noSunbathingConditons() do 
+                Sleep(5000)
+            end
+            showOneOrAll(TablesOfPiecesGroups[RoofDeco28Sub])
+        end
+    end
+end
+
 boolDoneShowing = false
 
 function showHouse() Show(basePlate); showT(ToShowTable) end
