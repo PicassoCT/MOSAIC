@@ -83,7 +83,7 @@ function advertisingLoop()
     while true do
         buildRunDeterministicAdvertisement()
         Sleep(10000)
-        echo("Debug code in advertisingblimp")
+      --- echo("Debug code in advertisingblimp")
     end
 
     while true do

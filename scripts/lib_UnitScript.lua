@@ -4419,7 +4419,7 @@ end
 -- Section: Random 
 -- ======================================================================================
 function getDeterministicRandom(hash, maximum)
-    assert(hash)
+    if (hash == nil) then return function() return assert(false) end end
     return hash % maximum
 end
 

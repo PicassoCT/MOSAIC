@@ -3610,6 +3610,7 @@ function buildRunDeterministicAdvertisement()
        "10MediaType",
        "11OrderNow",
     }
+    debugConcat = ""
 
     soundFileType_NameTime_Map= {}
     for i=1, #identifierList do
@@ -3636,8 +3637,9 @@ function buildRunDeterministicAdvertisement()
         deterministicIndex = ((hash + thisAdvertisementIndex + i) % count(soundFileType_NameTime_Map[wordPosIdentifier])) + 1
         for k,element in pairs(soundFileType_NameTime_Map[wordPosIdentifier]) do
             deterministicIndex = deterministicIndex -1 
-            if deterministicIndex < 0 then
+            if deterministicIndex == 0 then
                 Spring.PlaySoundFile(element.path, 1.0)
+                echo("Playing generated advertising part :" ..element.path)
                 Sleep(element.time)       
                break 
             end

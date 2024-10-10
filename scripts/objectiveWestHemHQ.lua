@@ -22,7 +22,7 @@ function script.Create()
     StartThread(forInterval, 1, 6)
     StartThread(forInterval, 7, #TablesOfPiecesGroups["HyperLoop"])
     StartThread(delayShowAllElements)
-    StartThread(blinkLights)
+ 
     for i=1,#TablesOfPiecesGroups["Plane"] do
         StartThread(vtolStartLanding,TablesOfPiecesGroups["Plane"][i], TablesOfPiecesGroups["Plane"..i.."Sub"][1], TablesOfPiecesGroups["Plane"..i.."Sub"][2] )
     end
@@ -93,24 +93,9 @@ function vtolStartLanding(plane, rotor1, rotor2)
     end
 end
 
-function blinkLights()
-    for i=1, #TablesOfPiecesGroups["LightOn"] do
-        StartThread(howToBlinky, TablesOfPiecesGroups["LightOn"][i],TablesOfPiecesGroups["LightOff"][i] )
-    end
-end
 
-function howToBlinky(showOn, showOff)
-    while true do
-            Show(showOn)
-            Hide(showOff)
-            Sleeptime = math.random(500,2000)
-            Sleep(Sleeptime)
-            Show(showOff)
-            Hide(showOn)
-            Sleeptime = math.random(500,2000)
-            Sleep(Sleeptime)
-    end
-end
+
+
 
 function delayShowAllElements()
 

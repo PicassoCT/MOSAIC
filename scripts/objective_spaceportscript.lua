@@ -77,6 +77,7 @@ function openDoor(name)
     foreach(TablesOfPiecesGroups[name],
         function(id)
             WMove(id, x_axis, -25, doorSpeed)
+        end
         )
         WaitForMoves(TablesOfPiecesGroups[name])
 end
