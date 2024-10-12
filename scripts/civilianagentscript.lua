@@ -1110,7 +1110,7 @@ function conditionalFilterOutUpperBodyTable()
 end
 
 function cigarettGlowAndSmoke()
-    Sleep(500)
+    Sleep(10)
     spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
 end
 

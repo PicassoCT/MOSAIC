@@ -674,7 +674,7 @@ function leftArmPoses(speed)
 end
 
 function cigarettGlowAndSmoke()
-	timeInTotal = (122/30)
+	timeInTotal = (60/30)
 	cigarettDragMs = math.ceil(timeInTotal/2) * 1000
     Sleep(cigarettDragMs)
     spawnCegAtPiece(unitID, Hand2, "cigarettglowsmoke")
