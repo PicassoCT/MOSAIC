@@ -616,7 +616,7 @@ end
             [UnitDefNames["objective_military_gyland"].id] = "water",
             [UnitDefNames["objective_refugeegyland"].id] = "water",
             [UnitDefNames["objective_factoryship"].id] = "water",
-            [UnitDefNames["objective_spaceport_water"].id] = "water",
+            [UnitDefNames["objective_spaceport"].id] = "water",
             [UnitDefNames["objective_refugeecamp"].id] = "land",
             [UnitDefNames["objective_powerplant"].id] = "land",
             [UnitDefNames["objective_geoengineering"].id] = "land",

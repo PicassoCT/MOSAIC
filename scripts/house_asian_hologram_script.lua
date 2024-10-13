@@ -125,19 +125,16 @@ px,py,pz = Spring.GetUnitPosition(unitID)
 function technoDancer()
     while (true) do
         if  (hours > 16 or hours < 8)  then
-            hideT(TablesOfPiecesGroups["Dancer"])
-            showOne(TablesOfPiecesGroups["Dancer"])
+            hideT(TableOfPiecesGroups["Dancer"])
+            showOne(TableOfPiecesGroups["Dancer"])
             Sleep(1000)
-            hideT(TablesOfPiecesGroups["Dancer"])
+            hideT(TableOfPiecesGroups["Dancer"])
         end
         Sleep(1000)
         if randChance(5) then
             Sleep(15000)
         end
-
-
     end
-
 end
 
 

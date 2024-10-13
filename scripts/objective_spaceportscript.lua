@@ -7,11 +7,7 @@ include "lib_Animation.lua"
 TablesOfPiecesGroups = {}
 
 
-SpaceHarbour="SpaceHarbour"
-CapsuleCrane="CapsuleCrane"
-CrawlerBoosterN="CrawlerBooster"
-BoosterRotatorN="BoosterRotator"
-ReturningBoosterN="ReturningBooster"
+
 ReturningBooster1ThrusterPlumN="ReturningBooster1ThrusterPlum"
 ReturningBooster2ThrusterPlumN="ReturningBooster2ThrusterPlum"
 ReturningBooster3ThrusterPlumN="ReturningBooster3ThrusterPlum"
@@ -33,13 +29,20 @@ GroundFrontDoorN="GroundFrontDoor"
 CraneHeadClawN="CraneHeadClaw"
 BoosterN="Booster"
 ReturningBoosterN="ReturningBooster"
-
-RocketFusionPlume="RocketFusionPlume"
-GroundHeatedGasRing="GroundHeatedGasRing"
-turbine="turbine"
-turbineCold="turbineCold"
-turbineHot="turbineHot"
 BoosterCrawlerN = "BoosterCrawler"
+CrawlerBoosterN="CrawlerBooster"
+BoosterRotatorN="BoosterRotator"
+
+
+RocketFusionPlume   =piece("RocketFusionPlume")
+GroundHeatedGasRing =piece("GroundHeatedGasRing")
+turbine             =piece("turbine")
+turbineCold         =piece("turbineCold")
+turbineHot          =piece("turbineHot")
+
+SpaceHarbour=piece("SpaceHarbour")
+CapsuleCrane=piece("CapsuleCrane")
+
 
 CrawlerMain=piece("CrawlerMain")
 LaunchCone=piece("LaunchCone")
@@ -59,19 +62,20 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
     initialSetup()
+    StartThread(launchAnimation)
 end
 
 function initialSetup()
-    ShowT(TablesOfPiecesGroups[GroundRearDoorN])
-    ShowT(TablesOfPiecesGroups[GroundFrontDoorN])
-    ShowT(TablesOfPiecesGroups[CraneHeadClawN])
+    showT(TablesOfPiecesGroups[GroundRearDoorN])
+    showT(TablesOfPiecesGroups[GroundFrontDoorN])
+    showT(TablesOfPiecesGroups[CraneHeadClawN])
     Show(turbineCold)
     Show(CraneHead)
-    ShowT(TablesOfPiecesGroups[BoosterCrawlerN])
-    Show(MainCrawler)
+    showT(TablesOfPiecesGroups[BoosterCrawlerN])
+    Show(CrawlerMain)
     Show(CapsuleCrane)
-    Show(CraneHead)
     Show(RocketCrane)
+    Show(SpaceHarbour)
 end
 function openDoor(name)
     foreach(TablesOfPiecesGroups[name],
@@ -211,13 +215,13 @@ function spinUpTurbine()
 end
 
 function driveOutMainStage()
-    Show(RocketCrawler)
+    Show(CrawlerMain)
     openDoor(GroundFrontDoorN)
-    WMove(MainCrawler, x_axis, 500, 7)    
+    WMove(CrawlerMain, x_axis, 500, 7)    
 end
 
 function driveBackCrawler()
-     WMove(MainCrawler, x_axis, 0, 7)    
+     WMove(CrawlerMain, x_axis, 0, 7)    
      closeDoor(GroundFrontDoorN)
 end
 
@@ -235,14 +239,17 @@ function ShowRocket()
     Show(CapsuleRocket)
     showT(TablesOfPiecesGroups[BoosterN])
 end
+crawlerRocketPosY = 80
+RocketOnPlatformPos = 0
+CraneOutOfTheWayPos = 25
 
 function craneLoadToPlatform()
     WTurn(CraneHead,y_axis, math.rad(crawlerRocketPosY), 5)
-    Hide(RocketCrawler)
-    Show(CraneRocket)
+    Hide(CrawlerMain)
+    Show(RocketCrane)
     StartThread(driveBackCrawler)
     WTurn(CraneHead,y_axis, math.rad(RocketOnPlatformPos), 5)
-    Hide(CraneRocket)
+    Hide(RocketCrane)
     ShowRocket()
     Turn(CraneHead,y_axis, math.rad(CraneOutOfTheWayPos), 5)
     deployCapsule()
@@ -251,7 +258,11 @@ function craneLoadToPlatform()
 end
 
 function deployCapsule()
-
+    Show(CapsuleCrane)
+    WMove(CraneC, x_axis, 100, 25)
+    Hide(CapsuleCrane)
+    Show(CapsuleRocket)
+    Move(CraneC, x_axis, 0, 100)
 end
 
 --thrusterCloud
@@ -272,17 +283,17 @@ function launchAnimation()
     rspinT(TablesOfPiecesGroups["ThrusterPlum"], -50, 50)
 
     --Lift rocket (rocket is slow and becomes faster)
-    liftRocketShowStage(300, 5000, TableOfPiecesGroups["thrusterCloud"][1], math.random(-10,10), 10)
+    liftRocketShowStage(300, 5000, TableOfPiecesGroups[RocketPlume][1], math.random(-10,10), 10)
         --Lift rocket
-        liftRocketShowStage(600, 3400, TableOfPiecesGroups["thrusterCloud"][2], math.random(-10,10), 10) 
+        liftRocketShowStage(600, 3400, TableOfPiecesGroups[RocketPlume][2], math.random(-10,10), 10) 
         -- Stage2 smoke Spin
             --Lift Rocket
             -- Stage2 smoke Spin
             --Lift Rocket
-            liftRocketShowStage(1200, 3400, TableOfPiecesGroups["thrusterCloud"][3], math.random(-10,10), 10) 
+            liftRocketShowStage(1200, 3400, TableOfPiecesGroups[RocketPlume][3], math.random(-10,10), 10) 
             -- Stage3 smoke Spin
             --Lift Rocket
-            liftRocketShowStage(2400, 4400, TableOfPiecesGroups["thrusterCloud"][4], math.random(-10,10), 10) 
+            liftRocketShowStage(2400, 4400, TableOfPiecesGroups[RocketPlume][4], math.random(-10,10), 10) 
             -- Stage4 smoke Spin
                 -- Decoupling thrusters
                 StartThread(BoostersReturning)
@@ -295,7 +306,7 @@ function launchAnimation()
                 WMove(Rocket, y_axis, 3600, 1000)
                 Sleep(9000)
 
-                --Moving MainCrawler back to reassembly
+                --Moving CrawlerMain back to reassembly
                 launchState = "prepareForLaunch"
                 while (holdsForAllBool(boosterReturned, false)) do Sleep(1000) end
                               
