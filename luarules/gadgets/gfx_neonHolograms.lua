@@ -30,6 +30,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
 
+    -- TODO: Add bloomstage - write to low level aphabitmask
+    -- Texture back to resolution
+    -- read back and add_alpha to texture
+    
 
 
     function gadget:PlayerChanged(playerID)
