@@ -158,6 +158,9 @@ local emitmaptexIndex       = 10
 local emitunittexIndex      = 11
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
+--TODO: Rain is - highly Directional and reflects only from the ground
+-- directional- should instead reflect in all camera directions
+-- Debugstep: render only reflection, debug till it works for all diretions
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
