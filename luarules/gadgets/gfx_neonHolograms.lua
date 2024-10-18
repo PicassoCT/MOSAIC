@@ -645,6 +645,12 @@ end
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
+        if (gl.DeleteTextureFBO) then
+            gl.DeleteTextureFBO(blurtex)
+            gl.DeleteTextureFBO(blurtex2)
+        end
+        gl.DeleteTexture(screencopy or 0)
+
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
     end
