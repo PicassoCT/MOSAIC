@@ -8,8 +8,6 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-
-
 MegaBlocks = {}
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -33,8 +31,6 @@ function showOneDeterministic(T, index)
     end
 end
 
-
-
 function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
@@ -50,15 +46,10 @@ function showOne(T)
 end
 
 myShownMainPiece = nil
-
-
 toShowDict = {}
 ToShowTable = {}
 
 function addToShowTable(element)
-    assert(element)
-    assert(pieceID_NameMap[element])
-    --lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
     ToShowTable[#ToShowTable + 1] = element 
     toShowDict[element] = true
 end 
@@ -83,8 +74,6 @@ function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
 function script.Killed(recentDamage, _)
     return 1
 end
-
-
 
 function script.StartMoving() end
 

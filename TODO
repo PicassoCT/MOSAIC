@@ -6,9 +6,9 @@
 - healthbars /holograms are darkened by ssao -> fix, by excluding gui-elements from SSAO -> Port over from beherith (could be avoided) with working BAR fork
 
 Gfx:
-- Get windows working
-- selfilu windows for buildings (seperate texture channel that blends in/out over) the time of day - does not apply to
-	- Interior Self-Ilumination- Textures? And faked depth
+- update house arcology for house_asian standlone 
+- Get interior windows working 	-> Interior Self-Ilumination- Textures? And faked depth
+- reduce house_asian parts by extracting arcology into standalone
 - Get Light Bloom working
 - Fix rainreflecitons being one directional
 
