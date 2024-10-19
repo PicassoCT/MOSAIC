@@ -681,6 +681,7 @@ end
         return {
                     [UnitDefNames["house_western0"].id] = true,           
                     [UnitDefNames["house_asian0"].id] = true,           
+                    [UnitDefNames["house_asian1"].id] = true,           
                     [UnitDefNames["house_arab0"].id] = true       
                 }
     end  
@@ -1179,7 +1180,7 @@ end
                     ["civilian"] = {name = "civilian_western", range = 2},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
-                    ["house"] = {name = "house_asian", range = 0},
+                    ["house"] = {name = "house_asian", range = 1},
                     ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_western", range = 4}}
                 }
@@ -1218,6 +1219,7 @@ end
                     --translationAsian = getTranslation(Cultures.asian)
                     DicAsianNameDefID = expandNameSubSet_Dict_NameDefID(translationAsian[typeName], UnitDefs)
                     assertNameTypeInTable(DicAsianNameDefID, typeName == "house" , "house_asian0")
+                    assertNameTypeInTable(DicAsianNameDefID, typeName == "house" , "house_asian1")
 
                     DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs)
                     assertNameTypeInTable(DicWesternNameDefID, typeName == "civilian" , "civilian_western0")
