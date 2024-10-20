@@ -425,7 +425,7 @@ end
           })
 
           if (blurShader == nil) then
-            Spring.Log(widget:GetInfo().name, LOG.ERROR, "blurShader: shader error: "..gl.GetShaderLog())
+            Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurShader: shader error: "..gl.GetShaderLog())
             return false
           end
 
@@ -439,7 +439,7 @@ end
           })
 
           if (blurFsShader == nil) then
-            Spring.Log(widget:GetInfo().name, LOG.ERROR, "blurFsShader: shader error: "..gl.GetShaderLog())
+            Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurFsShader: shader error: "..gl.GetShaderLog())
             return false
           end
 

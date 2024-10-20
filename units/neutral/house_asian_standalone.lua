@@ -50,6 +50,6 @@ local house_asian_standalone = Building:New{
 
 return lowerkeys({
 	--Temp
-	["house_asian1"] = house_asian:New()
+	["house_asian1"] = house_asian_standalone:New()
 	
 })
