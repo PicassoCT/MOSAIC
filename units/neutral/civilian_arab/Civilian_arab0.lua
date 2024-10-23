@@ -5,7 +5,7 @@ local Civil = Civilian:New{
 	description = " innocent bystander <colateral>",
 	objectName        	= "civilian0_arab.dae",
 
-	
+	pushResistant = false,
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",

@@ -413,12 +413,12 @@ end
         }
     ]]
 
-    local function initilaizeBLurShader()
+    local function initializeBlurShader()
           blurShader = gl.CreateShader({
-            fragment = "uniform sampler2D tex2; " .. str_blurShader_part1 ..
-                       " float stencil = texture2D(tex2, texCoord).a; if (stencil<0.01) {gl_FragColor = texture2D(tex0, texCoord); return;} " ..
-                       str_blurShader_part2,
-            uniformInt = {
+            vertex = str_blurShader_part1,
+            fragment =  str_blurShader_part2,
+            uniformInt = 
+            {
               tex0 = 0,
               tex2 = 2,
             }
@@ -513,7 +513,7 @@ end
         end
 
        Spring.Echo("NeonShader:: did compile")
-       initilaizeBLurShader()
+       initializeBlurShader()
     end
 
     local holoDefIDTypeIDMap = {}
