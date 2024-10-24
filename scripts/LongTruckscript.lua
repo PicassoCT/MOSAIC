@@ -14,7 +14,7 @@ SIG_INTERNAL = 4
 
 center = piece("center")
 attachPoint = piece("attachPoint")
-colDetectPiece = piece("coldDetect")
+colDetectPiece = piece("Truck1")
 TruckCenter = center
 PayloadCenter = piece("PayloadCenter")
 myDefID = Spring.GetUnitDefID(unitID)
