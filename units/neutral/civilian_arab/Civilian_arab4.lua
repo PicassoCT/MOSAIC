@@ -9,6 +9,7 @@ local Civil = Civilian:New{
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",
+	pushResistant = false,
 	buildPic = "civilian.png",
 	iconType = "civilian",
 	customParams = {

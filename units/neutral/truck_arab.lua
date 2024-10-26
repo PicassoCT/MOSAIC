@@ -9,6 +9,7 @@ local CivilianTruck = Truck:New{
 	iconType = "truck",
 	mass = 7000,
 	buildCostEnergy = 5,
+	pushResistant = true,
 	buildCostMetal = 5,
 	explodeAs			= "none",
 	--conType			= "infantry",

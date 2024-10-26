@@ -1638,13 +1638,7 @@ end
 function buildBuilding()
     StartThread(buildAnimation)
     lecho( "buildBuilding")
-    if randChance(5) then
-        showOne(TablesOfPiecesGroups["StandAlone"], true)
-        showOneDeterministic(TablesOfPiecesGroups["StandAloneLights"], unitID)
-        boolDoneShowing = true
-        return
-    end
- 
+     
     --lecho( "selectBase")
     materialColourName = selectGroundBuildMaterial()
     --materialColourName = "office"
@@ -1696,7 +1690,6 @@ function script.Deactivate() return 0 end
 function script.QueryBuildInfo() return center end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-
 
 function traceRayRooftop(  vector_position, vector_direction)
 	return  GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)

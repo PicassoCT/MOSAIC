@@ -25,6 +25,7 @@ local groundturretssied =  Turret:New{
 	MaxWaterDepth = 0,
 	MovementClass = "VEHICLE",
 	mass = 1000,
+
 	sightDistance = 80,
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 250,
@@ -93,7 +94,7 @@ local groundturretmg =  Turret:New{
 	--Movement
 	alwaysUpright=false,
 	fireState=1,
-	
+	pushResistant = true,
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
@@ -152,7 +153,7 @@ local ground_turret_sniper =  Turret:New{
 	script = "groundturretsniperscript.lua",
 	buildPic = "ground_turret_mg.png",
 	iconType = "ground_turret_mg",
-
+	pushResistant = true,
 	--cost
 	buildCostEnergy  = 900,
 	buildCostMetal= 1500,
@@ -230,8 +231,8 @@ local ground_turret_antiarmor =  Turret:New{
 	idleAutoHeal = 0,
 	--Movement
 	mass = 750,
-	 fireState=1,
-	
+	fireState=1,
+	pushResistant = true,
 	FootprintX = 1,
 	FootprintZ = 1,
 	maxSlope = 50,
@@ -256,10 +257,7 @@ local ground_turret_antiarmor =  Turret:New{
 	onOffable = false,
 	LeaveTracks = false, 
 	canCloak =false,
-	
 	onoffable=true,
-
-
 
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
@@ -386,7 +384,7 @@ local ground_turret_rocket =  Turret:New{
 
 	MaxWaterDepth = 0,
 	MovementClass = "VEHICLE",
-
+	pushResistant = true,
 	
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 650,

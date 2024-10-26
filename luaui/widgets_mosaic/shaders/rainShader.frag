@@ -82,7 +82,7 @@ uniform mat4 viewInv;
 uniform mat4 viewMatrix;
 
 
-//Struc Definition				//////////////////////////////////////////////////////////
+//Struct Definition				//////////////////////////////////////////////////////////
 
 in Data {
 			vec3 viewDirection;
@@ -340,7 +340,6 @@ vec4 GetGroundPondRainRipples(vec2 groundUVs)
 	return vec4(vec3(dotProduct), 0.75);
 }
 
-
 bool getRivuletMask(vec3 normalAtPos)
 {
 	float treshold = 0.01;
@@ -478,13 +477,13 @@ void findAlignedOffsets(vec2 direction, out vec2 alignedOffset[2])
 
 vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
+	return vec4(reflectDir, 1.0);
 	const float DepthCheckBias = 0.000125;//0.000125;;
 	int loops = 16;
 	// The Current Position in 3D
 	vec3 curPos = reflectionPosition;
 	vec2 HalfPixel = vec2(1.0 / viewPortSize.x, 1.0/ viewPortSize.y)* PI * 4.0;//(eyePos.z/2048.0)*PI; 
 	
-
 	// The Current UV
 	vec3 curUV = vec3(0.);
 	 

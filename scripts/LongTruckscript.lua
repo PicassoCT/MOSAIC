@@ -14,6 +14,7 @@ SIG_INTERNAL = 4
 
 center = piece("center")
 attachPoint = piece("attachPoint")
+colDetectPiece = piece("Truck1")
 TruckCenter = center
 PayloadCenter = piece("PayloadCenter")
 myDefID = Spring.GetUnitDefID(unitID)
@@ -21,6 +22,9 @@ myTeamID = Spring.GetUnitTeam(unitID)
 boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 DetectPiece = piece"DetectPiece"
 GameConfig = getGameConfig()
+civilianWalkingTypeTable = getCultureUnitModelTypes(
+                                     GameConfig.instance.culture, "civilian",
+                                     UnitDefs)
 
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
@@ -248,7 +252,6 @@ function script.TransportDrop(passengerID, x, y, z)
     end
 end
 
-
 function script.Killed(recentDamage, _)
     if doesUnitExistAlive(loadOutUnitID) then
         Spring.DestroyUnit(loadOutUnitID, true, true)
@@ -258,6 +261,37 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+ function normalizeVector(vec)
+        local length = math.sqrt(vec.x^2 + vec.y^2 + vec.z^2)
+        vec.x = vec.x/length
+        vec.y = vec.y/length
+        vec.z = vec.z/length
+        return vec
+    end
+
+
+function collideWithPersonOnFoot()
+    massOfTruck = UnitDefs[myDefID].mass or 90000
+    maxSpeedOfTruck = UnitDefs[myDefID].maxVelocity or 2.81
+    colDetectPiece = Spring.GetUnitPiecePosDir(unitID, colDetectPiece)
+    foreach(colDetectPiece,
+        function (id)
+            personDefId = spGetUnitDefID(id)
+            if  civilianWalkingTypeTable[personDefId] then 
+                return id
+            end 
+        end,
+        function (id)
+            personDefId = spGetUnitDefID(id)
+            massOfCivilian =  UnitDefs[personDefId].mass or 900
+            px,py,pz = Spring.GetUnitPosition(person)
+            v= normalizeVector{x= px-ox, y= py-oy, z = pz-oz}
+            Impulsefaktor = (massOfTruck /maxSpeedOfTruck) * (1/massOfCivilian)
+            Spring.AddUnitImpulse(person,Impulsefaktor*v.x,Impulsefaktor* v.y,Impulsefaktor* v.z)
+        end)
+end
+
+ox,oy, oz = 0,0,0
 function monitorMoving()
     local spGetUnitPosition = Spring.GetUnitPosition
     ox,oy,oz = spGetUnitPosition(unitID)
@@ -270,11 +304,11 @@ function monitorMoving()
                 boolMoving = true
             else
                 boolMoving = false
+                collideWithPersonOnFoot()
             end    
         Sleep(125)    
     end
 end
-
 
 boolMoving = false
 function script.StartMoving()    
@@ -294,6 +328,7 @@ end
 function script.StopMoving() 
     stopSpinT(TablesOfPiecesGroups["Wheel"], x_axis, 3) 
     StartThread(honkIfHorny)
+
 end
 
 function script.Activate() return 1 end

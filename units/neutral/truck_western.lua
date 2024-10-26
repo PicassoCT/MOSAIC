@@ -17,6 +17,7 @@ local CivilianTruck = Truck:New{
 	acceleration = 2.7,
 	brakeRate = 0.3,
 	turninplace		= true,
+	pushResistant = false,
 	
 	transportSize = 16,
 	transportCapacity = 1,
@@ -71,6 +72,7 @@ end
 
 --Truck3
 CivilianTrucks["truck_western3"].script 			= "LongTruckscript.lua"
+CivilianTrucks["truck_western3"].pushResistant 		= true, 		
 CivilianTrucks["truck_western3"].turninplace 			= true
 CivilianTrucks["truck_western3"].acceleration = 0.25
 CivilianTrucks["truck_western3"].maxVelocity		= 2.5

@@ -35,6 +35,7 @@ return {
                 alwaysvisible = false,
                 useairlos = true
             }
+        }
         ,
         fire = {
             air = true,

@@ -8,6 +8,7 @@ local Civil = Civilian:New{
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
 	collisionvolumescales = "10 25 10",
+	pushResistant = false,
 	mass = 80,
 	buildPic = "civilian.png",
 	iconType = "civilian",

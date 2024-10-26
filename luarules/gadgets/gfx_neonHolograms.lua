@@ -12,6 +12,8 @@ function gadget:GetInfo()
     }
 end
 
+
+
 if (gadgetHandler:IsSyncedCode()) then
     
     VFS.Include("scripts/lib_mosaic.lua")    
@@ -30,6 +32,10 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
 
+    -- TODO: Add bloomstage - write to low level aphabitmask
+    -- Texture back to resolution
+    -- read back and add_alpha to texture
+    
 
 
     function gadget:PlayerChanged(playerID)
@@ -196,6 +202,9 @@ else -- unsynced
     local glDepthMask               = gl.DepthMask
     local glCulling                 = gl.Culling
     local glBlending                = gl.Blending
+    local blurtex1
+    local screencopy
+    local blurtex2
     
     local GL_SRC_ALPHA              = GL.SRC_ALPHA
     local GL_ONE                    = GL.ONE
@@ -229,10 +238,18 @@ else -- unsynced
     local glUnitShapeTextures       = gl.UnitShapeTextures
     local glGetUniformLocation      = gl.GetUniformLocation
     local glUnit                    = gl.Unit
+    local canRTT    = (gl.RenderToTexture ~= nil)
+    local canCTT    = (gl.CopyToTexture ~= nil)
+    local canShader = (gl.CreateShader ~= nil)
+    local canFBO    = (gl.DeleteTextureFBO ~= nil)
+    local NON_POWER_OF_TWO = gl.HasExtension("GL_ARB_texture_non_power_of_two")
+
+
 -------Shader--FirstPass -----------------------------------------------------------
 
     local neonHologramShader
-    local glowReflectHologramShader
+    local blurShader
+    local blurFsShader
     local vsx, vsy,vpx,vpy
     local sunChanged = false
     local spGetUnitDefID = Spring.GetUnitDefID
@@ -249,6 +266,36 @@ local function getDayTime()
     local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
     local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
     return hours, minutes, seconds, percent
+end
+
+
+local function CanDoBloom()
+  if (not canCTT) then
+    Spring.Echo("blur api: your hardware is missing the necessary CopyToTexture feature")
+    return false
+  end
+
+  if (not canRTT) then
+    Spring.Echo("blur api: your hardware is missing the necessary RenderToTexture feature")
+    return false
+  end
+
+  if (not canShader) then
+    Spring.Echo("blur api: your hardware does not support shaders")
+    return false
+  end
+
+  if (not canFBO) then
+    Spring.Echo("blur api: your hardware does not fbo textures")
+    return false
+  end
+
+  if (not NON_POWER_OF_TWO) then
+    Spring.Echo("blur api: your hardware does not non-2^n-textures")
+    return false
+  end
+
+  return true
 end
 
 -------Shader--2ndPass -----------------------------------------------------------
@@ -336,41 +383,84 @@ end
 
     end
 
-    local afterglowVertexShader = 
+    local str_blurShader_part1 = 
     [[
        #version 150 compatibility
-        uniform vec2 viewPortSize;
-        uniform sampler2D afterglowbuffertex; 
-        out Data {
-            vec2 uv;
-        };
+         uniform sampler2D tex0;
+    
         void main() {
-            uv = gl_MultiTexCoord0.xy;
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+          vec2 texCoord = vec2(gl_TextureMatrix[0] * gl_TexCoord[0]);
         }
     ]]
 
-    local afterglowFragmentShader = 
+    local str_blurShader_part2 = 
     [[
         #version 150 compatibility
-        uniform vec2 viewPortSize;
-        uniform sampler2D afterglowbuffertex; 
-        in Data {
-            vec2 uv;
-        };
-          
+ 
         void main() 
         {   
-            vec4 sampleBLurColor =  texture2D( afterglowbuffertex, uv);
-            //TODO write back to sampler texture2D( afterglowbuffertex, uv) *0.9;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(1.3846153846, 0.0) ) /256.0 ) * 0.3162162162;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv + vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
-            sampleBLurColor += texture2D( afterglowbuffertex, (uv - vec2(3.230769230, 0.0) )  /256.0 ) * 0.0702702703;
+        gl_FragColor = vec4(0.0,0.0,0.0,1.0);
 
-            gl_FragColor = finalColor;
+        gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2(-0.0017, -0.0017)).rgb;
+        gl_FragColor.rgb += 2.0/16.0 * texture2D(tex0, texCoord + vec2(-0.0017,  0.0)).rgb;
+        gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2(-0.0017,  0.0017)).rgb;
+        gl_FragColor.rgb += 2.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0,    -0.0017)).rgb;
+        gl_FragColor.rgb += 5.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0,     0.0)).rgb;
+        gl_FragColor.rgb += 2.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0,     0.0017)).rgb;
+        gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0017, -0.0017)).rgb;
+        gl_FragColor.rgb += 2.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0017,  0.0)).rgb;
+        gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0017,  0.0017)).rgb;
         }
     ]]
+
+    local function initializeBlurShader()
+          blurShader = gl.CreateShader({
+            vertex = str_blurShader_part1,
+            fragment =  str_blurShader_part2,
+            uniformInt = 
+            {
+              tex0 = 0,
+              tex2 = 2,
+            }
+          })
+
+          if (blurShader == nil) then
+            Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurShader: shader error: "..gl.GetShaderLog())
+            return false
+          end
+
+
+
+          blurFsShader = gl.CreateShader({
+            fragment = str_blurShader_part1 .. str_blurShader_part2,
+            uniformInt = {
+              tex0 = 0,
+            }
+          })
+
+          if (blurFsShader == nil) then
+            Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurFsShader: shader error: "..gl.GetShaderLog())
+            return false
+          end
+
+            screencopy = gl.CreateTexture(vsx, vsy, {
+                border = false,
+                min_filter = GL.NEAREST,
+                mag_filter = GL.NEAREST,
+              })
+              blurtex = gl.CreateTexture(ivsx, ivsy, {
+                border = false,
+                wrap_s = GL.CLAMP,
+                wrap_t = GL.CLAMP,
+                fbo = true,
+              })
+              blurtex2 = gl.CreateTexture(ivsx, ivsy, {
+                border = false,
+                wrap_s = GL.CLAMP,
+                wrap_t = GL.CLAMP,
+                fbo = true,
+              })
+    end
  
     local boolActivated = false
     function gadget:Initialize() 
@@ -417,7 +507,13 @@ end
                 return 
         end
 
+        if not CanDoBloom() then
+            gadgetHandler:RemoveGadget(self)
+            return 
+        end
+
        Spring.Echo("NeonShader:: did compile")
+       initializeBlurShader()
     end
 
     local holoDefIDTypeIDMap = {}
@@ -518,14 +614,43 @@ end
     --Shader does not apply to it
 
 
+    local function RenderBlurApplyBlur()
+        
+        gl.CopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
+        gl.Texture(screencopy)
+        gl.RenderToTexture(blurtex, gl.TexRect, -1,1,1,-1)
+        gl.UseShader(blurFsShader)
+
+        gl.Texture(blurtex)
+        gl.RenderToTexture(blurtex2, gl.TexRect, -1,1,1,-1)
+        gl.Texture(blurtex2)
+        gl.RenderToTexture(blurtex, gl.TexRect, -1,1,1,-1)
+
+        gl.Texture(blurtex)
+        gl.TexRect(0,vsy,vsx,0)
+
+        gl.Texture(false)
+        gl.UseShader(0)
+
+    --apply alpha
+    
+    end
+
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
         RenderAllNeonUnits()
+        RenderBlurApplyBlur()
     end
 
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
         neonHologramShader:Finalize()
+        if (gl.DeleteTextureFBO) then
+            gl.DeleteTextureFBO(blurtex)
+            gl.DeleteTextureFBO(blurtex2)
+        end
+        gl.DeleteTexture(screencopy or 0)
+
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
     end
