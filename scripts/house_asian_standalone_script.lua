@@ -1,5 +1,6 @@
 include "createCorpse.lua"
 include "lib_OS.lua"
+include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
@@ -7,7 +8,7 @@ include "lib_Animation.lua"
 TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+ 
 MegaBlocks = {}
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -55,7 +56,6 @@ function addToShowTable(element)
 end 
 
 function buildBuilding()
-
     myShownMainPiece = showOne(TablesOfPiecesGroups["StandAlone"], true)
     addToShowTable(myShownMainPiece)
     if MegaBlocks[myShownMainPiece]  then

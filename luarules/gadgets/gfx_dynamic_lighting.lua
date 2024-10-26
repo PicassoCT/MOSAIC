@@ -92,7 +92,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
         if neonHologramTypeTable[unitDefID] then
             allNeonUnits[unitID] = true
-            Spring.Echo("gfx_dynamic_lighting:Synced:UnitCreated: "..unitID)
+           -- Spring.Echo("gfx_dynamic_lighting:Synced:UnitCreated: "..unitID)
             SendToUnsynced(UNIT_CREATED_EVENT_ID, unitID, unitDefID, unitTeam)
         end
     end
@@ -177,7 +177,7 @@ else
                 return UnitDefs[i].id
             end
         end
-        Spring.Echo("gfx_dynamic_lighting:Unsynced: No id found for name: "..name)
+        --Spring.Echo("gfx_dynamic_lighting:Unsynced: No id found for name: "..name)
     end
 
     local function LoadLightDefs()
@@ -349,13 +349,13 @@ else
     
     local function UnitCreated(unitID, unitDefId, teamID)
         local buildingLightDef =  buildingLightDefs[unitDefId]
-        Spring.Echo("gfx_dynamic_lighting:UnitCreated:Unsynced:"..unitID)
+        --Spring.Echo("gfx_dynamic_lighting:UnitCreated:Unsynced:"..unitID)
         if (buildingLightDef == nil) then return end
         holoLightUnitRegister[unitID] = {defID = unitDefID}
     end
 
     local function UnitDestroyed(unitID, unitDefId, teamID)
-        Spring.Echo("gfx_dynamic_lighting:UnitDestroyed:Unsynced:"..unitID)
+        --Spring.Echo("gfx_dynamic_lighting:UnitDestroyed:Unsynced:"..unitID)
         if holoLightUnitRegister[unitID] then
             holoLightUnitRegister[unitID] = nil
         end

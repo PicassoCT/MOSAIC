@@ -4268,6 +4268,10 @@ end
 GG.Burst[gameFrame][#GG.Burst[gameFrame]+1] = stringToEcho
 end
 
+function echoEnter(state)
+    Spring.Echo("Enter: "..state)
+end
+
 boolBurst= false
 -- > echos out strings
 function echo(stringToEcho, ...)

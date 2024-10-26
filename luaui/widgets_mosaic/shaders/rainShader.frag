@@ -477,7 +477,7 @@ void findAlignedOffsets(vec2 direction, out vec2 alignedOffset[2])
 
 vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
-	return vec4(reflectDir, 1.0);
+
 	const float DepthCheckBias = 0.000125;//0.000125;;
 	int loops = 16;
 	// The Current Position in 3D

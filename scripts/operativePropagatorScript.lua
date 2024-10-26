@@ -677,7 +677,9 @@ function cigarettGlowAndSmoke()
 	timeInTotal = (60/30)
 	cigarettDragMs = math.ceil(timeInTotal/2) * 1000
     Sleep(cigarettDragMs)
-    spawnCegAtPiece(unitID, Hand2, "cigarettglowsmoke")
+    spawnCegAtPiece(unitID, Head, "cigarettglowsmoke", -10)
+    Sleep(cigarettDragMs)
+    spawnCegAtPiece(unitID, Head, "cigarettglowsmoke", math.random(-20, -10))
 end
 
 
