@@ -13,6 +13,7 @@ seconds = 3
 
 function script.Create()
     echo("cegtest unit deployed: Running ceg:"..cegToTestName.." every n seconds:"..seconds)
+    hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(CegTest)
  end

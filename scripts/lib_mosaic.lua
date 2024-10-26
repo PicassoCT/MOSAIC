@@ -3730,5 +3730,10 @@ third = {
 
 secondHash = reHash(hash)
 thirdHash = reHash(secondHash)
-return first[(hash % #first)+1].. second[(second % #second)+1].. third[(third % #third)+1]
+
+firstName = first[(hash % #first)+1] or first[math.random(1,#first)]
+secondName = second[(secondHash % #second)+1] or second[math.random(1,#second)]
+thirdName = third[(thirdHash % #third)+1] or third[math.random(1,#third)]
+
+return firstName..secondName..thirdName
 end

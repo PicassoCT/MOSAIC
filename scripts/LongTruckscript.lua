@@ -269,25 +269,22 @@ end
         return vec
     end
 
-
+local spGetUnitDefID = Spring.GetUnitDefID
 function collideWithPersonOnFoot()
     massOfTruck = UnitDefs[myDefID].mass or 90000
     maxSpeedOfTruck = UnitDefs[myDefID].maxVelocity or 2.81
-    colDetectPiece = Spring.GetUnitPiecePosDir(unitID, colDetectPiece)
-    foreach(colDetectPiece,
+    cx,cy,cz = Spring.GetUnitPiecePosDir(unitID, colDetectPiece)
+    foreach(getAllInCircle(cx,cz, 50, unitID),
         function (id)
             personDefId = spGetUnitDefID(id)
-            if  civilianWalkingTypeTable[personDefId] then 
+            if  not civilianWalkingTypeTable[personDefId] then 
                 return id
             end 
-        end,
-        function (id)
-            personDefId = spGetUnitDefID(id)
             massOfCivilian =  UnitDefs[personDefId].mass or 900
-            px,py,pz = Spring.GetUnitPosition(person)
+            px,py,pz = Spring.GetUnitPosition(id)
             v= normalizeVector{x= px-ox, y= py-oy, z = pz-oz}
             Impulsefaktor = (massOfTruck /maxSpeedOfTruck) * (1/massOfCivilian)
-            Spring.AddUnitImpulse(person,Impulsefaktor*v.x,Impulsefaktor* v.y,Impulsefaktor* v.z)
+            Spring.AddUnitImpulse(id,Impulsefaktor*v.x,Impulsefaktor* v.y,Impulsefaktor* v.z)
         end)
 end
 
@@ -304,7 +301,7 @@ function monitorMoving()
                 boolMoving = true
             else
                 boolMoving = false
-                collideWithPersonOnFoot()
+                StartThread(collideWithPersonOnFoot)
             end    
         Sleep(125)    
     end

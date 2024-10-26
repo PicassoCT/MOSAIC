@@ -243,6 +243,7 @@ else -- unsynced
     local canShader = (gl.CreateShader ~= nil)
     local canFBO    = (gl.DeleteTextureFBO ~= nil)
     local NON_POWER_OF_TWO = gl.HasExtension("GL_ARB_texture_non_power_of_two")
+    local quality = 1.0
 
 
 -------Shader--FirstPass -----------------------------------------------------------
@@ -386,21 +387,23 @@ end
     local str_blurShader_part1 = 
     [[
        #version 150 compatibility
-         uniform sampler2D tex0;
+       
     
         void main() {
           vec2 texCoord = vec2(gl_TextureMatrix[0] * gl_TexCoord[0]);
         }
     ]]
 
-    local str_blurShader_part2 = 
+    local blurShader = 
     [[
-        #version 150 compatibility
- 
-        void main() 
-        {   
-        gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+      uniform sampler2D tex0;
+     
+      void main(void)
+      {
 
+        vec2 texCoord = vec2(gl_TextureMatrix[0] * gl_TexCoord[0]);
+
+        gl_FragColor = vec4(0.0,0.0,0.0,1.0);
         gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2(-0.0017, -0.0017)).rgb;
         gl_FragColor.rgb += 2.0/16.0 * texture2D(tex0, texCoord + vec2(-0.0017,  0.0)).rgb;
         gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2(-0.0017,  0.0017)).rgb;
@@ -410,17 +413,15 @@ end
         gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0017, -0.0017)).rgb;
         gl_FragColor.rgb += 2.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0017,  0.0)).rgb;
         gl_FragColor.rgb += 1.0/16.0 * texture2D(tex0, texCoord + vec2( 0.0017,  0.0017)).rgb;
-        }
-    ]]
+      }
+  ]]
 
-    local function initializeBlurShader()
+    local function initializeBlurShader(vsx, vsy)
           blurShader = gl.CreateShader({
-            vertex = str_blurShader_part1,
-            fragment =  str_blurShader_part2,
+            fragment =  blurShader,
             uniformInt = 
             {
-              tex0 = 0,
-              tex2 = 2,
+              tex0 = 0
             }
           })
 
@@ -428,38 +429,24 @@ end
             Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurShader: shader error: "..gl.GetShaderLog())
             return false
           end
-
-
-
-          blurFsShader = gl.CreateShader({
-            fragment = str_blurShader_part1 .. str_blurShader_part2,
-            uniformInt = {
-              tex0 = 0,
-            }
+        local ivsx, ivsy = math.floor(vsx/quality), math.floor(vsy/quality)
+        screencopy = gl.CreateTexture(vsx, vsy, {
+            border = false,
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
           })
-
-          if (blurFsShader == nil) then
-            Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurFsShader: shader error: "..gl.GetShaderLog())
-            return false
-          end
-
-            screencopy = gl.CreateTexture(vsx, vsy, {
-                border = false,
-                min_filter = GL.NEAREST,
-                mag_filter = GL.NEAREST,
-              })
-              blurtex = gl.CreateTexture(ivsx, ivsy, {
-                border = false,
-                wrap_s = GL.CLAMP,
-                wrap_t = GL.CLAMP,
-                fbo = true,
-              })
-              blurtex2 = gl.CreateTexture(ivsx, ivsy, {
-                border = false,
-                wrap_s = GL.CLAMP,
-                wrap_t = GL.CLAMP,
-                fbo = true,
-              })
+          blurtex = gl.CreateTexture(ivsx, ivsy, {
+            border = false,
+            wrap_s = GL.CLAMP,
+            wrap_t = GL.CLAMP,
+            fbo = true,
+          })
+          blurtex2 = gl.CreateTexture(ivsx, ivsy, {
+            border = false,
+            wrap_s = GL.CLAMP,
+            wrap_t = GL.CLAMP,
+            fbo = true,
+          })
     end
  
     local boolActivated = false
@@ -511,9 +498,9 @@ end
             gadgetHandler:RemoveGadget(self)
             return 
         end
-
+       
+       initializeBlurShader(vsx, vsy)
        Spring.Echo("NeonShader:: did compile")
-       initializeBlurShader()
     end
 
     local holoDefIDTypeIDMap = {}
@@ -619,7 +606,7 @@ end
         gl.CopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
         gl.Texture(screencopy)
         gl.RenderToTexture(blurtex, gl.TexRect, -1,1,1,-1)
-        gl.UseShader(blurFsShader)
+        gl.UseShader(blurShader)
 
         gl.Texture(blurtex)
         gl.RenderToTexture(blurtex2, gl.TexRect, -1,1,1,-1)
