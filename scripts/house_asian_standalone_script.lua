@@ -1,6 +1,7 @@
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_mosaic.lua"
+include "lib_staticstring.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
@@ -10,12 +11,17 @@ myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
  
 MegaBlocks = {}
+Arcology = {}
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     MegaBlocks[TablesOfPiecesGroups["StandAlone"][1]] = true
     MegaBlocks[TablesOfPiecesGroups["StandAlone"][2]] = true
+    Arcology[TablesOfPiecesGroups["StandAlone"][3]] = true
+    Arcology[TablesOfPiecesGroups["StandAlone"][4]] = true
+    Arcology[TablesOfPiecesGroups["StandAlone"][5]] = true
     hideAll()
     buildBuilding()
+
 end
 
 function showOneDeterministic(T, index)
@@ -62,6 +68,7 @@ function buildBuilding()
         blockNumber = showOneDeterministic(TablesOfPiecesGroups["StandAloneLights"], unitID)
         addToShowTable(blockNumber)
     end
+    setArcologyName(unitID, Arcology[myShownMainPiece])
     boolDoneShowing = true
     return
 end

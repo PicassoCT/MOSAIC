@@ -25,12 +25,17 @@ function pwl() -- ???  (print widget list)
   end
 end
 
+function widgetEcho(strings)
+  Spring.Echo("widgets.lua::"..strings)
+end
 
 
 Spring.Utilities = {}
+widgetEcho("tablefunctions")
 VFS.Include("luarules/utilities/tablefunctions.lua")
+widgetEcho("versionCompare")
 VFS.Include("luarules/utilities/versionCompare.lua")
-
+widgetEcho("loading widgethandlers internals")
 local reverseCompat = not Spring.Utilities.IsCurrentVersionNewerThan(100, 0)
 
 if (select == nil) then
