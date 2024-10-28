@@ -891,7 +891,7 @@ end
 
 
 
-function setArcologyName(id, boolCorpo)
+function setArcologyProjectsName(id, boolCorpo, isArcology)
 name= {"Mega Haven"," Skybound Complex","Giga Gardens"," Horizon Sprawl",
 "Echelon Tower","Macropolis","Stratos Heights", "Panorama City","Prime Hive",
 "Vastara","Infinite Plaza","Titanium Reach"," Grand Nexus","Skyline Citadel",
@@ -911,7 +911,7 @@ if not boolCorpo then
     "Escape the world, forever",
     "Live freely, in designated zones",
     "Skylights for all, high above",
-    "Boundless views, of concrete landscapes",
+    "Boundless views, art in concrete",
     "Luxury living, tightly monitored",
     "Eco-friendly concrete and recycled air",
     "Embrace nature, digitally rendered",
@@ -923,7 +923,7 @@ if not boolCorpo then
     "Privacy assured, limited daylight",
     "Thriving community, curated interactions only",
     "Rediscover nature, in holographic parks",
-    "Sector 7 lockdown after rogue droids",
+    "Sector 7 lockdown after rogue anti-socials",
     "Neon District curfew extended again",
     "Unlicensed clones found in Sublevel 5",
     "Black Market implants spike in sales",

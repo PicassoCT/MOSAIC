@@ -10,18 +10,15 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
  
-MegaBlocks = {}
-Arcology = {}
-function script.Create()
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    MegaBlocks[TablesOfPiecesGroups["StandAlone"][1]] = true
-    MegaBlocks[TablesOfPiecesGroups["StandAlone"][2]] = true
-    Arcology[TablesOfPiecesGroups["StandAlone"][3]] = true
-    Arcology[TablesOfPiecesGroups["StandAlone"][4]] = true
-    Arcology[TablesOfPiecesGroups["StandAlone"][5]] = true
-    hideAll()
-    buildBuilding()
 
+isArcology = false
+function script.Create()
+    px,py,pz = Spring.GetUnitPosition(unitID)
+    isArcology =    isNearCityCenter(px, pz, GameConfig) and randChance(50) or  randChance(10)
+
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    hideAll(unitID)
+    buildBuilding()
 end
 
 function showOneDeterministic(T, index)
@@ -62,13 +59,19 @@ function addToShowTable(element)
 end 
 
 function buildBuilding()
-    myShownMainPiece = showOne(TablesOfPiecesGroups["StandAlone"], true)
+    if isArcology then
+        myShownMainPiece = showOne(TablesOfPiecesGroups["Arcology"], true)
+    else
+        myShownMainPiece = showOne(TablesOfPiecesGroups["Projects"], true)
+    end
     addToShowTable(myShownMainPiece)
-    if MegaBlocks[myShownMainPiece]  then
+
+    if  myShownMainPiece == TablesOfPiecesGroups["Projects"][1] or 
+        myShownMainPiece == TablesOfPiecesGroups["Projects"][2]  then
         blockNumber = showOneDeterministic(TablesOfPiecesGroups["StandAloneLights"], unitID)
         addToShowTable(blockNumber)
     end
-    setArcologyName(unitID, Arcology[myShownMainPiece])
+    setArcologyName(unitID, Arcology[myShownMainPiece], isArcology)
     boolDoneShowing = true
     return
 end
