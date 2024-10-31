@@ -304,11 +304,15 @@ function launchAnimation()
     StartThread(spinUpTurbine)     
     --Inginition
     -- plattform firebloom
-    echoEnter("plattFormFireBloom")
+
     StartThread(plattFormFireBloom)
     --Trusters
     showT(TablesOfPiecesGroups["ThrusterPlum"])
-    rspinT(TablesOfPiecesGroups["ThrusterPlum"], -50, 50)
+    forach(TablesOfPiecesGroups["ThrusterPlum"]
+        function(id)
+            val = math.random( -50, 50)
+            Spin(id, y_axis, math.rad(val), 50)
+        end)
     rocketPlumage = ""
         if maRa() then
             rocketPlumage = RocketPlumeN
