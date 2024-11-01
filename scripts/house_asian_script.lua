@@ -1676,8 +1676,6 @@ function buildBuilding()
     end
 	
 	addGroundPlaceables()
-
-    --lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
 
 	initAllPieces()
