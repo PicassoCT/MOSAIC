@@ -1604,7 +1604,7 @@ function buildAnimation()
 
 end
 
-function addGroundPlaceables(materialName)
+function addGroundPlaceables()
     x,y,z = Spring.GetUnitPosition(unitID)
     globalHeightUnit = Spring.GetGroundHeight(x, z)
 	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
@@ -1676,8 +1676,6 @@ function buildBuilding()
     end
 	
 	addGroundPlaceables()
-
-    --lecho( "addRoofDeocrate ended")
     boolDoneShowing = true
 
 	initAllPieces()
