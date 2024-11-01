@@ -1604,7 +1604,7 @@ function buildAnimation()
 
 end
 
-function addGroundPlaceables(materialName)
+function addGroundPlaceables()
     x,y,z = Spring.GetUnitPosition(unitID)
     globalHeightUnit = Spring.GetGroundHeight(x, z)
 	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})

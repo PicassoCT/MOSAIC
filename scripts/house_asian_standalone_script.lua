@@ -62,12 +62,12 @@ function buildBuilding()
     if isArcology then
         myShownMainPiece = showOne(TablesOfPiecesGroups["Arcology"], true)
     else
-        myShownMainPiece = showOne(TablesOfPiecesGroups["Projects"], true)
+        myShownMainPiece = showOne(TablesOfPiecesGroups["Project"], true)
     end
     addToShowTable(myShownMainPiece)
 
-    if  myShownMainPiece == TablesOfPiecesGroups["Projects"][1] or 
-        myShownMainPiece == TablesOfPiecesGroups["Projects"][2]  then
+    if  myShownMainPiece == TablesOfPiecesGroups["Project"][1] or 
+        myShownMainPiece == TablesOfPiecesGroups["Project"][2]  then
         blockNumber = showOneDeterministic(TablesOfPiecesGroups["StandAloneLights"], unitID)
         addToShowTable(blockNumber)
     end
