@@ -208,16 +208,24 @@ function addGroundPlaceables(materialName)
     end
 end
 
+
 function buildBuilding()
     Sleep(500)
     px,py,pz = Spring.GetUnitPosition(unitID)
     isArcology =    isNearCityCenter(px, pz, GameConfig) and randChance(50) or  randChance(10)
+    isDualProjectOrMix=  randChance(10)
     if isArcology then
         myShownMainPiece = showOne(TablesOfPiecesGroups["Arcology"], true)
+        addToShowTable(myShownMainPiece)
+        
     else
         myShownMainPiece = showOne(TablesOfPiecesGroups["Project"], true)
+        addToShowTable(myShownMainPiece)
     end
-    addToShowTable(myShownMainPiece)
+        if isDualProjectOrMix then
+            myShownMainPiece = showOne(TablesOfPiecesGroups["Project"], true)
+            addToShowTable(myShownMainPiece)
+        end
 
     if  myShownMainPiece == TablesOfPiecesGroups["Project"][1] or 
         myShownMainPiece == TablesOfPiecesGroups["Project"][2]  then
