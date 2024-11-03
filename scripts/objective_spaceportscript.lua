@@ -135,7 +135,7 @@ function boosterArrivedTravelIntoHangar(bosterNr)
 end
 
 function landBooster(boosterNr, booster)
-    plums = TableOfPiecesGroups["ReturningBooster" .. bosterNr .. "ThrusterPlum"]
+    plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     WMove(booster, y_axis, 9000, 0)
     yVal = math.random(0, 180) * randSign()
@@ -273,14 +273,12 @@ function craneLoadToPlatform()
     Hide(CraneRocket)
     ShowRocket()
     openClaw()
-    Move(RocketCraneBase, z_axis, -1000, 50)
+    Move(RocketCraneBase, z_axis, -4500, 100)
     deployCapsule()
     Turn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
-    WMove(RocketCraneBase, z_axis, -1000, 50)
-    Move(RocketCraneBase, z_axis, -4500, 15)
     WTurn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
-
-    Move(RocketCraneBase, z_axis, -4500, 15)
+    WMove(RocketCraneBase, z_axis, -4500, 15)
+    closeDoor(GroundFrontDoorN)
 end
 
 function deployCapsule()
