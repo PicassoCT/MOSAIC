@@ -5,8 +5,7 @@ include "lib_UnitScript.lua"
 
 TablesOfPieceGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
+
 
 function setArcologyProjectsName(id, isArcology)
     px, py, pz = Spring.GetUnitPosition(id)
@@ -60,6 +59,7 @@ function setArcologyProjectsName(id, isArcology)
         "Riverside Rebuild",
         "Todos Santos"
     }
+    descriptions = {}
 
     if not isArcology then
         descriptions = {
@@ -122,7 +122,7 @@ function setArcologyProjectsName(id, isArcology)
             "Enhanced surveillance ‘for residents’ safety’",
             "Hologram glitches ‘due to upgrades’",
             "Increased curfews ‘to enhance nightlife’",
-            "Bio-lab quarantine ‘a wellness initiative’"
+            "Bio-lab quarantine ‘a wellness initiativ"
         }
 
         name = names[(px + py)% #names +1] or "todo"
@@ -172,6 +172,8 @@ function setArcologyProjectsName(id, isArcology)
             "Stay worry-free, inside our safe zone",
             "Protected, comfortable, and free of worry"
         }
+       
+    end
         name = names[(px + py)% #names +1] or "todo"
         description = descriptions[(px + py + pz)% #descriptions + 1] or "todo"
         Spring.SetUnitTooltip(id,  name .. ":" .. description )
@@ -181,7 +183,7 @@ isArcology = false
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
-    buildBuilding()
+    StartThread(buildBuilding)
 end
 
 function showOneDeterministic(T, index)
@@ -232,13 +234,13 @@ end
 function addGroundPlaceables(materialName)
     x, y, z = Spring.GetUnitPosition(unitID)
     globalHeightUnit = Spring.GetGroundHeight(x, z)
-    placeAbles = getNameFilteredTable({}, {"Placeable"}, {})
+    placeAbles = TablesOfPieceGroups["Placeable"]
     if placeAbles and count(placeAbles) > 0 then
         groundPiecesToPlace = math.random(1, 5)
         randPlaceAbleID = ""
         while groundPiecesToPlace > 0 do
             randPlaceAbleID = getSafeRandom(placeAbles)
-            if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
+            if randPlaceAbleID and not toShowDict[randPlaceAbleID] then
                 opx = math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
                 opz = math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
                 WMove(randPlaceAbleID, 3, opz, 0)
@@ -264,23 +266,31 @@ function buildBuilding()
     Sleep(500)
     px, py, pz = Spring.GetUnitPosition(unitID)
     isArcology = isNearCityCenter(px, pz, GameConfig) and randChance(50) or randChance(10)
-    hash = getDetermenisticMapHash() + px + py
+    hash = getDetermenisticMapHash(Game) + px + py
     isDualProjectOrMix = randChance(10)
     if isArcology then
         myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Arcology"],hash )
-        addToShowTable(myShownMainPiece)
+        if myShownMainPiece then
+            addToShowTable(myShownMainPiece)
+        end
     else
-        myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Project"], hash))
-        addToShowTable(myShownMainPiece)
+        myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Project"], hash)
+        if myShownMainPiece then
+            addToShowTable(myShownMainPiece)
+        end
     end
     if isDualProjectOrMix then
         myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Project"], hash + unitID)
-        addToShowTable(myShownMainPiece)
+        if myShownMainPiece then
+            addToShowTable(myShownMainPiece)
+        end
     end
 
     if myShownMainPiece == TablesOfPieceGroups["Project"][1] or myShownMainPiece == TablesOfPieceGroups["Project"][2] then
         blockNumber = showOneDeterministic(TablesOfPieceGroups["StandAloneLights"], unitID)
+        if blockNumber then
         addToShowTable(blockNumber)
+        end
     end
     setArcologyProjectsName(unitID, isArcology)
     addGroundPlaceables()
