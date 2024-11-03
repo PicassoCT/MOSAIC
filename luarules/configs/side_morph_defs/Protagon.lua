@@ -26,11 +26,18 @@ local protagonDefs = {
 			name = 'Automatic Assembly',
 			text = 'Builds automated units',
 			facing = true,
+		},	
+			{
+			into = 'aicore',
+			metal = 5000,
+			energy = 2500,
+			time = 7*60,
+			name = 'AICore',
+			text = 'builds electronic warfare units',
+			facing = true,
 		},			
 		
 	},
-	
-
 
 }
 

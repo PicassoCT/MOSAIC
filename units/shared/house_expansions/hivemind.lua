@@ -124,8 +124,8 @@ local AICore = Building:New{
 	selfDestructCountdown = 3*60,
 	category = [[GROUND BUILDING RAIDABLE]],
 	buildoptions = 
-	{
-		--"slowmotionicon",		
+	{		
+		"socialengineeringicon",
 		"revealdoubleagent",	
 		"hijacksatelliteicon",	
 		"blackouticon",	
