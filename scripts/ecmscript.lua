@@ -22,10 +22,10 @@ function script.Create()
     Spring.SetUnitBlocking(unitID,false)
 
      StartThread(hoverAboveGrounds, GameConfig.iconHoverGroundOffset, 5*speedfactor, true)    
-     StartThread(eatAIcon)
+     StartThread(eatECMcon)
 end
 
-function eatAIcon()
+function eatECMcon()
     boolFoundSomething = false
     while true do
         foreach(getAllNearUnit(unitID, 100),

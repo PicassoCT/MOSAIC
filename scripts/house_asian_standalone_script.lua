@@ -18,7 +18,7 @@ name= {"Mega Haven"," Skybound Complex","Giga Gardens"," Horizon Sprawl",
 " Cedar Reach"," Maple Spire","Timber Path Haven","Lakeview Pinnacle","Rosemary Stretch",
 ," Oasis Rise"," Briar Canopy"," Silverleaf Plateau","Fernspire Peaks","Juniper Valley",
 "Forest Haven","Mistvale Ridge","Heatherview Crest"," Riverbend Sprawl","Sunbluff Terrace",
-"Kowloon 2", "Oz.ean. Views", "Arcos Sancti", "Arcology", "Withering Heights", "Riverside Rebuild"}
+"Kowloon 2", "Oz.ean. Views", "Arcos Sancti", "Arcology", "Withering Heights", "Riverside Rebuild", "Todos Santos"}
 if not isArcology then
     description =  {
     "Breathe fresh air, indoors only",
@@ -176,6 +176,20 @@ function addToShowTable(element)
     toShowDict[element] = true
 end 
 
+factor = 35
+heightoffset = 90
+maxNrAttempts = 40
+
+center = piece "center"
+Icon = piece("Icon")
+ErrorIcon = piece("ErrorIcon")
+    
+rotationOffset = 90
+local cubeDim = {
+    length = factor * 22,
+    heigth = factor * 14.44 + heightoffset,
+    roofHeigth = 50
+}
 
 function addGroundPlaceables(materialName)
     x,y,z = Spring.GetUnitPosition(unitID)
