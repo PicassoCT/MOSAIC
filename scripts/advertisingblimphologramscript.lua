@@ -83,6 +83,7 @@ end
 function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then
         Spring.Echo("No table given as argument for showT")
+        assert(false)
         return
     end
 

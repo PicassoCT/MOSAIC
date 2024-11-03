@@ -13,7 +13,7 @@ ReturningBooster3ThrusterPlumN = "ReturningBooster3ThrusterPlum"
 CapsuleRocket = piece "CapsuleRocket"
 
 BoosterN = "Booster"
-RocketThrustPillar = "RocketThrustPillar"
+RocketThrustPillarN = "RocketThrustPillar"
 FusionLandingGearN = "FusionLandingGear"
 landedBoosterN = "LandedBooster"
 RocketPlumeN = "RocketPlume"
@@ -213,9 +213,7 @@ function cloudFallingDown()
     end
 end
 
-function spinUpTurbine()
-    Spin(turbine, y_axis, math.rad(42), 0.1)
-    Show(turbineCold)
+function showHotColdTurbine()
     Sleep(4000)
     Show(turbineHot)
     Hide(turbineCold)
@@ -224,7 +222,7 @@ function spinUpTurbine()
     end
     Hide(turbineHot)
     Show(turbineCold)
-    StopSpin(turbine, 0.1)
+    StopSpin(turbine, y_axis, 0.1)
 end
 
 function driveOutMainStage()
@@ -302,17 +300,19 @@ function launchAnimation()
         echo("driveOutMainStage")
         driveOutMainStage()
         craneLoadToPlatform()
-        echoEnter("spinUpTurbine")
+        echoEnter("showHotColdTurbine")
+        Spin(turbine, y_axis, math.rad(42), 0.001)
+        Show(turbineCold)
         launchState = "launching"
-        StartThread(spinUpTurbine)
+
         --Inginition
         -- plattform firebloom
 
         StartThread(plattFormFireBloom)
         --Trusters
-        showT(TableOfPiecesGroups["ThrusterPlum"])
+        showT(TableOfPiecesGroups["RocketThrustPillarN"])
         foreach(
-            TableOfPiecesGroups["ThrusterPlum"],
+            TableOfPiecesGroups["RocketThrustPillarN"],
             function(id)
                 val = math.random(-50, 50)
                 Spin(id, y_axis, math.rad(val), 50)
@@ -324,6 +324,7 @@ function launchAnimation()
         else
             rocketPlumage = RocketPlumeAN
         end
+        StartThread(showHotColdTurbine)
 
         --Lift rocket (rocket is slow and becomes faster)
         liftRocketShowStage(3000, 5000, TableOfPiecesGroups[rocketPlumage][1], math.random(-10, 10), 10)

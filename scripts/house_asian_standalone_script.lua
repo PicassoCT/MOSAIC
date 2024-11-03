@@ -6,11 +6,23 @@ include "lib_UnitScript.lua"
 TablesOfPieceGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 
+factor = 35
+heightoffset = 90   
+rotationOffset = 90
+local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
+local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
+
+local cubeDim = {
+    length = factor * 22,
+    heigth = factor * 14.44 + heightoffset,
+    roofHeigth = 50
+}
+
 
 function setArcologyProjectsName(id, isArcology)
     px, py, pz = Spring.GetUnitPosition(id)
 
-    names = {
+    local names = {
         "Mega Haven",
         " Skybound Complex",
         "Giga Gardens",
@@ -59,7 +71,7 @@ function setArcologyProjectsName(id, isArcology)
         "Riverside Rebuild",
         "Todos Santos"
     }
-    descriptions = {}
+    local descriptions = {}
 
     if not isArcology then
         descriptions = {
@@ -124,11 +136,6 @@ function setArcologyProjectsName(id, isArcology)
             "Increased curfews ‘to enhance nightlife’",
             "Bio-lab quarantine ‘a wellness initiativ"
         }
-
-        name = names[(px + py)% #names +1] or "todo"
-        description = descriptions[(px + py + pz)% #descriptions + 1] or "todo"
-
-        Spring.SetUnitTooltip(id,  name .. ":" .. description )
     else
         descriptions = {
             "Live safely, away from the chaos",
@@ -174,8 +181,8 @@ function setArcologyProjectsName(id, isArcology)
         }
        
     end
-        name = names[(px + py)% #names +1] or "todo"
-        description = descriptions[(px + py + pz)% #descriptions + 1] or "todo"
+        name = names[(math.floor(px + py)% #names) +1] 
+        description = descriptions[(math.floor(px + py + pz)% #descriptions) + 1] 
         Spring.SetUnitTooltip(id,  name .. ":" .. description )
 end
 
@@ -184,6 +191,7 @@ function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
     StartThread(buildBuilding)
+    StartThread(addGroundPlaceables)
 end
 
 function showOneDeterministic(T, index)
@@ -232,6 +240,7 @@ function addToShowTable(element)
 end
 
 function addGroundPlaceables(materialName)
+    Sleep(300)
     x, y, z = Spring.GetUnitPosition(unitID)
     globalHeightUnit = Spring.GetGroundHeight(x, z)
     placeAbles = TablesOfPieceGroups["Placeable"]
@@ -252,7 +261,7 @@ function addGroundPlaceables(materialName)
                 if myHeight < globalHeightUnit then
                     heightdifference = -heightdifference
                 end
-
+                WMove(randPlaceAbleID,2, heightdifference, 0)
                 addToShowTable(randPlaceAbleID)
                 Show(randPlaceAbleID)
             end
@@ -293,7 +302,7 @@ function buildBuilding()
         end
     end
     setArcologyProjectsName(unitID, isArcology)
-    addGroundPlaceables()
+ 
     boolDoneShowing = true
     showHouse()
     return

@@ -94,6 +94,7 @@ end
 function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then
         Spring.Echo("No table given as argument for showT")
+        assert(false)
         return
     end
 
@@ -363,10 +364,16 @@ function deterministiceSetup()
             ShowReg(logoPiece)
             Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
             if maRa() then
-                legoPiece = deterministicElement(getSafeRandom(TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
+                index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
+                legoPiece = deterministicElement(index, TableOfPiecesGroups["HoloLogo"])
+                if legoPiece then
                 showSubSpins(legoPiece)
                 ShowReg(legoPiece)
                 Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+                else
+                    echo("No HologLogo for "..index)
+                    assert(false)
+                end
             end
         end
         nrSpins = unitID % 10
