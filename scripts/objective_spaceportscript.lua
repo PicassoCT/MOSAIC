@@ -65,6 +65,7 @@ function script.Create()
 end
 
 function initialSetup()
+    resetAll(unitID)
     showT(TableOfPiecesGroups[GroundRearDoorN])
     showT(TableOfPiecesGroups[GroundFrontDoorN])
     showT(TableOfPiecesGroups[CraneHeadClawN])
@@ -76,6 +77,7 @@ function initialSetup()
     Show(RocketCraneBase)
     Show(SpaceHarbour)
     Move(CapsuleCrane, x_axis, -5000, 0)
+    HideRocket()
 end
 doorSpeed = 70
 function openDoor(name)
@@ -114,27 +116,27 @@ function BoostersReturning()
     end
 end
 
-crawlerSpeed = 30
+crawlerSpeed = 1500
 function boosterArrivedTravelIntoHangar(bosterNr)
     openDoor(GroundRearDoorN)
     if bosterNr == 1 or bosterNr == 2 then
         turnSign = -1 ^ boosterNr
-        WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(90 * turnSign), crawlerSpeed * (50 / 90))
+        WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(90 * turnSign), 5)
     else
-        WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, -5000, crawlerSpeed)
+        WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, -15000, crawlerSpeed)
     end
-    Sleep(5000)
+    Sleep(2000)
     Hide(TableOfPiecesGroups[landedBoosterN][bosterNr])
-    reset(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], crawlerSpeed)
-
-    --KettenAnimation
-    --Open Door
-    --Drive Into Hangar
+    Sleep(3000)
+    closeDoor(GroundRearDoorN)
+    WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, 0, crawlerSpeed)
+    WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(0), 5)
 
     boosterReturned[boosterNr] = true
 end
 
 function landBooster(boosterNr, booster)
+    Sleep(boosterNr*10000)
     plums = TableOfPiecesGroups["ReturningBooster" .. bosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     WMove(booster, y_axis, 9000, 0)
@@ -223,6 +225,8 @@ function showHotColdTurbine()
     Hide(turbineHot)
     Show(turbineCold)
     StopSpin(turbine, y_axis, 0.1)
+    Sleep(9000)
+    Turn(turbine, y_axis, 0, 3)
 end
 
 function driveOutMainStage()
@@ -349,6 +353,8 @@ function launchAnimation()
         --Fusion Engine kicks in
         WMove(Rocket, y_axis, 64000, 100)
         Sleep(9000)
+        Hide(RocketFusionPlume)
+        HideRocket()
         echo("launch complete waiting for return")
         --Moving CrawlerMain back to reassembly
         launchState = "prepareForLaunch"
@@ -357,8 +363,12 @@ function launchAnimation()
             Sleep(1000)
         end
 
-        -- Thrusters return to crawlers (copiesfrom decoupling)
-
-        -- Landingplumes
+        initialSetup()
     end
+end
+
+function HideRocket()
+    Hide(MainStage)
+    Hide(RocketPod)
+    Hide(MainStageRocket)
 end
