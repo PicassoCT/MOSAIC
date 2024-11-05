@@ -91,8 +91,12 @@ function openDoor(name)
 end
 
 function closeDoor(name)
-    resetT(TableOfPiecesGroups[name], doorSpeed)
-    WaitForMoves(TableOfPiecesGroups[name])
+     foreach(
+        TableOfPiecesGroups[name],
+        function(id)
+            WMove(id, x_axis, 0, doorSpeed)
+        end
+    )  
 end
 
 index = 1
@@ -103,7 +107,7 @@ function BoostersReturning()
     hideT(TableOfPiecesGroups["ThrusterPlum"])
 
     foreach(
-        BoosterT,
+        TableOfPiecesGroups["ReturningBooster"],
         function(booster)
             boosterReturned[index] = false
             StartThread(landBooster, index, booster)
@@ -139,19 +143,19 @@ function landBooster(boosterNr, booster)
     Sleep(boosterNr*10000)
     plums = TableOfPiecesGroups["ReturningBooster" .. bosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
-    WMove(booster, y_axis, 9000, 0)
-    yVal = math.random(0, 180) * randSign()
-    Turn(booster, y_axis, math.rad(yVal), 0)
-    xVal = math.random(-5, 5)
-    Turn(booster, x_axis, math.rad(xVal), 0)
+    nextPos = 64000
+    boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
+    WMove(booster, y_axis, nextPos, 0)
+    Turn(boosterRotator, x_axis, math.rad(-5), 0)
     Show(booster)
     Turn(booster, x_axis, math.rad(0), 0.001)
-    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
-    Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr], y_axis, math.rad(690), 0)
+   
     x = 1
-    for i = 9000, 0, -100 do
-        WMove(booster, y_axis, 9000, 1000 / x)
+    for i = nextPos, 0, -1000 do
+        WMove(booster, y_axis, i, math.min(250,19000- x*250))
         if i < 1000 then
+            Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
+            Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr], y_axis, math.rad(690), 0)
             showT(plums)
             spinVal = math.random(40, 120)
             spinT(plums, y_axis, math.rad(spinVal))
@@ -179,7 +183,7 @@ function plattFormFireBloom()
     Spin(LaunchCone, y_axis, math.rad(42), 0)
     Move(fireCloud, y_axis, 0, math.pi)
 
-    while boolLaunching do
+    while launchState == "launching" do
         val = math.random(10, 77) * randSign()
         Spin(fireCloud, y_axis, math.rad(val), 0)
         shift = 360 / #TableOfPiecesGroups["FireFlower"]
@@ -195,9 +199,13 @@ function plattFormFireBloom()
     foreach(
         TableOfPiecesGroups["FireFlower"],
         function(id)
+            Hide(id)
             StopSpin(id, x_axis, 0)
         end
     )
+    Hide(LaunchCone)
+    Hide(fireCloud)
+    Hide(GroundHeatedGasRing)
     hideT(TableOfPiecesGroups["FireFlower"])
 end
 
@@ -216,6 +224,8 @@ function cloudFallingDown()
 end
 
 function showHotColdTurbine()
+    Spin(turbine, y_axis, math.rad(42), 0.1)
+    Show(turbineCold)
     Sleep(4000)
     Show(turbineHot)
     Hide(turbineCold)
@@ -305,10 +315,8 @@ function launchAnimation()
         driveOutMainStage()
         craneLoadToPlatform()
         echoEnter("showHotColdTurbine")
-        Spin(turbine, y_axis, math.rad(42), 0.001)
-        Show(turbineCold)
         launchState = "launching"
-
+        StartThread(spinUpTurbine)
         --Inginition
         -- plattform firebloom
 
