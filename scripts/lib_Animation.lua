@@ -2719,3 +2719,16 @@ function LightChain(elementGroup, modMax, restTimeMs)
         LightChainIndex = (LightChainIndex % modMax) + 1
     end
 end
+
+function GenericElevatorOS(Elevator, ElevatorParent, totalHeigth, allLayers, speed)
+    heightLayer = totalHeight /allLayers
+    while true do
+        WMove(Elevator, y_axis, 0, speed)
+        Sleep(5000)
+        while maRa() do
+            destination = getSafeRandom(allLayers,1 )
+            WMove(Elevator, y_axis, destination * heightLayer, speed) 
+            restTime = math.random(5,10)*1000
+            Sleep(restTime)
+        end   
+end

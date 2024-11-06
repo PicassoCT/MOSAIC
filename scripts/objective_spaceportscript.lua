@@ -12,7 +12,7 @@ ReturningBooster3ThrusterPlumN = "ReturningBooster3ThrusterPlum"
 
 CapsuleRocket = piece "CapsuleRocket"
 
-
+BoosterN = "Booster"
 RocketThrustPillarN = "RocketThrustPillar"
 FusionLandingGearN = "FusionLandingGear"
 landedBoosterN = "LandedBooster"
@@ -65,6 +65,7 @@ function script.Create()
 end
 
 function initialSetup()
+    resetAll(unitID)
     showT(TableOfPiecesGroups[GroundRearDoorN])
     showT(TableOfPiecesGroups[GroundFrontDoorN])
     showT(TableOfPiecesGroups[CraneHeadClawN])
@@ -76,6 +77,7 @@ function initialSetup()
     Show(RocketCraneBase)
     Show(SpaceHarbour)
     Move(CapsuleCrane, x_axis, -5000, 0)
+    HideRocket()
 end
 doorSpeed = 70
 function openDoor(name)
@@ -89,8 +91,12 @@ function openDoor(name)
 end
 
 function closeDoor(name)
-    resetT(TableOfPiecesGroups[name], doorSpeed)
-    WaitForMoves(TableOfPiecesGroups[name])
+     foreach(
+        TableOfPiecesGroups[name],
+        function(id)
+            WMove(id, x_axis, 0, doorSpeed)
+        end
+    )  
 end
 
 index = 1
@@ -102,7 +108,7 @@ function BoostersReturning()
 
 
     foreach(
-        BoosterT,
+        TableOfPiecesGroups["ReturningBooster"],
         function(booster)
             boosterReturned[index] = false
             StartThread(landBooster, index, booster)
@@ -115,42 +121,42 @@ function BoostersReturning()
     end
 end
 
-crawlerSpeed = 30
+crawlerSpeed = 1500
 function boosterArrivedTravelIntoHangar(bosterNr)
     openDoor(GroundRearDoorN)
     if bosterNr == 1 or bosterNr == 2 then
         turnSign = -1 ^ boosterNr
-        WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(90 * turnSign), crawlerSpeed * (50 / 90))
+        WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(90 * turnSign), 5)
     else
-        WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, -5000, crawlerSpeed)
+        WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, -15000, crawlerSpeed)
     end
-    Sleep(5000)
+    Sleep(2000)
     Hide(TableOfPiecesGroups[landedBoosterN][bosterNr])
-    reset(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], crawlerSpeed)
-
-    --KettenAnimation
-    --Open Door
-    --Drive Into Hangar
+    Sleep(3000)
+    closeDoor(GroundRearDoorN)
+    WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, 0, crawlerSpeed)
+    WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(0), 5)
 
     boosterReturned[boosterNr] = true
 end
 
 function landBooster(boosterNr, booster)
-    plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
+    Sleep(boosterNr*10000)
+    plums = TableOfPiecesGroups["ReturningBooster" .. bosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
-    WMove(booster, y_axis, 32000, 0)
-    yVal = math.random(0, 180) * randSign()
-    Turn(booster, y_axis, math.rad(yVal), 0)
-    xVal = math.random(-5, 5)
-    Turn(booster, x_axis, math.rad(xVal), 0)
+    nextPos = 64000
+    boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
+    WMove(booster, y_axis, nextPos, 0)
+    Turn(boosterRotator, x_axis, math.rad(-5), 0)
     Show(booster)
     Turn(booster, x_axis, math.rad(0), 0.001)
-    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
-    Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr], y_axis, math.rad(690), 0)
+   
     x = 1
-    for i = 32000, 0, -100 do
-        WMove(booster, y_axis, i, 1000 / x)
+    for i = nextPos, 0, -1000 do
+        WMove(booster, y_axis, i, math.min(250,19000- x*250))
         if i < 1000 then
+            Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
+            Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr], y_axis, math.rad(690), 0)
             showT(plums)
             spinVal = math.random(40, 120)
             spinT(plums, y_axis, math.rad(spinVal))
@@ -178,7 +184,7 @@ function plattFormFireBloom()
     Spin(LaunchCone, y_axis, math.rad(42), 0)
     Move(fireCloud, y_axis, 0, math.pi)
 
-    while boolLaunching do
+    while launchState == "launching" do
         val = math.random(10, 77) * randSign()
         Spin(fireCloud, y_axis, math.rad(val), 0)
         shift = 360 / #TableOfPiecesGroups["FireFlower"]
@@ -194,9 +200,13 @@ function plattFormFireBloom()
     foreach(
         TableOfPiecesGroups["FireFlower"],
         function(id)
+            Hide(id)
             StopSpin(id, x_axis, 0)
         end
     )
+    Hide(LaunchCone)
+    Hide(fireCloud)
+    Hide(GroundHeatedGasRing)
     hideT(TableOfPiecesGroups["FireFlower"])
 end
 
@@ -209,6 +219,8 @@ end
 
 
 function showHotColdTurbine()
+    Spin(turbine, y_axis, math.rad(42), 0.1)
+    Show(turbineCold)
     Sleep(4000)
     Show(turbineHot)
     Hide(turbineCold)
@@ -218,6 +230,8 @@ function showHotColdTurbine()
     Hide(turbineHot)
     Show(turbineCold)
     StopSpin(turbine, y_axis, 0.1)
+    Sleep(9000)
+    Turn(turbine, y_axis, 0, 3)
 end
 
 function driveOutMainStage()
@@ -287,7 +301,8 @@ end
 
 --thrusterCloud
 launchState = "prepareForLaunch"
-        rocketPlumage = RocketPlumeN
+rocketPlumage = RocketPlumeN
+
 function launchAnimation()
     while true do
              if maRa() then
@@ -299,26 +314,27 @@ function launchAnimation()
         driveOutMainStage()
         craneLoadToPlatform()
         echoEnter("showHotColdTurbine")
-        Spin(turbine, y_axis, math.rad(42), 0.001)
-        Show(turbineCold)
         launchState = "launching"
-
+        StartThread(spinUpTurbine)
         --Inginition
         -- plattform firebloom
 
         StartThread(plattFormFireBloom)
         --Trusters
-        
+        showT(TableOfPiecesGroups["RocketThrustPillarN"])
         foreach(
             TableOfPiecesGroups[RocketThrustPillarN],
             function(id)
-                Show(id)
                 val = math.random(-50, 50)
                 Spin(id, y_axis, math.rad(val), 50)
             end
         )
 
-   
+        if maRa() then
+            rocketPlumage = RocketPlumeN
+        else
+            rocketPlumage = RocketPlumeAN
+        end
         StartThread(showHotColdTurbine)
         Show(GroundHeatedGasRing)
         Spin(GroundHeatedGasRing,y_axis,math.rad(66),0)
@@ -340,14 +356,16 @@ function launchAnimation()
         -- Decoupling thrusters
         StartThread(BoostersReturning)
         --Launchplum sinking back into Final Stage
-   
+        StartThread(cloudFallingDown)
         --Slight Slowdown
         Show(RocketFusionPlume)
         Sleep(500)
         --Fusion Engine kicks in 
-        StartThread(cloudFallingDown)
+
         WMove(MainStage, y_axis, 92000, 16000)
         Sleep(9000)
+        Hide(RocketFusionPlume)
+        HideRocket()
         echo("launch complete waiting for return")
         --Moving CrawlerMain back to reassembly
         launchState = "prepareForLaunch"
@@ -356,14 +374,21 @@ function launchAnimation()
             Sleep(1000)
         end
 
-        -- Thrusters return to crawlers (copiesfrom decoupling)
-
-        -- Landingplumes
+        initialSetup()
     end
 end
+
 function cloudFallingDown()
     for i =  1, #TableOfPiecesGroups[rocketPlumage] do
         WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 1000)
         Hide(TableOfPiecesGroups[rocketPlumage][i])
     end
 end
+
+
+function HideRocket()
+    Hide(MainStage)
+    Hide(RocketPod)
+    Hide(MainStageRocket)
+end
+
