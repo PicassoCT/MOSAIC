@@ -12,7 +12,7 @@ ReturningBooster3ThrusterPlumN = "ReturningBooster3ThrusterPlum"
 
 CapsuleRocket = piece "CapsuleRocket"
 
-BoosterN = "Booster"
+
 RocketThrustPillarN = "RocketThrustPillar"
 FusionLandingGearN = "FusionLandingGear"
 landedBoosterN = "LandedBooster"
@@ -97,8 +97,9 @@ index = 1
 boosterReturned = {}
 function BoostersReturning()
     --Booster decoupling
-    hideT(TableOfPiecesGroups["CoupledBoosters"])
-    hideT(TableOfPiecesGroups["ThrusterPlum"])
+    hideT(TableOfPiecesGroups[BoosterN])
+    hideT(TableOfPiecesGroups[RocketThrustPillarN])
+
 
     foreach(
         BoosterT,
@@ -137,7 +138,7 @@ end
 function landBooster(boosterNr, booster)
     plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
-    WMove(booster, y_axis, 9000, 0)
+    WMove(booster, y_axis, 32000, 0)
     yVal = math.random(0, 180) * randSign()
     Turn(booster, y_axis, math.rad(yVal), 0)
     xVal = math.random(-5, 5)
@@ -147,8 +148,8 @@ function landBooster(boosterNr, booster)
     Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
     Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr], y_axis, math.rad(690), 0)
     x = 1
-    for i = 9000, 0, -100 do
-        WMove(booster, y_axis, 9000, 1000 / x)
+    for i = 32000, 0, -100 do
+        WMove(booster, y_axis, i, 1000 / x)
         if i < 1000 then
             showT(plums)
             spinVal = math.random(40, 120)
@@ -206,12 +207,6 @@ function liftRocketShowStage(distanceUp, timeUp, cloud, spinValue, startValue)
     WaitForMoves(Rocket)
 end
 
-function cloudFallingDown()
-    for i = #TableOfPiecesGroups[rocketPlumage], 1, -1 do
-        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -3000, 300)
-        Hide(TableOfPiecesGroups[rocketPlumage][i])
-    end
-end
 
 function showHotColdTurbine()
     Sleep(4000)
@@ -295,6 +290,11 @@ launchState = "prepareForLaunch"
         rocketPlumage = RocketPlumeN
 function launchAnimation()
     while true do
+             if maRa() then
+            rocketPlumage = RocketPlumeN
+        else
+            rocketPlumage = RocketPlumeAN
+        end
         echo("driveOutMainStage")
         driveOutMainStage()
         craneLoadToPlatform()
@@ -308,44 +308,45 @@ function launchAnimation()
 
         StartThread(plattFormFireBloom)
         --Trusters
-        showT(TableOfPiecesGroups["RocketThrustPillarN"])
+        
         foreach(
-            TableOfPiecesGroups["RocketThrustPillarN"],
+            TableOfPiecesGroups[RocketThrustPillarN],
             function(id)
+                Show(id)
                 val = math.random(-50, 50)
                 Spin(id, y_axis, math.rad(val), 50)
             end
         )
 
-        if maRa() then
-            rocketPlumage = RocketPlumeN
-        else
-            rocketPlumage = RocketPlumeAN
-        end
+   
         StartThread(showHotColdTurbine)
+        Show(GroundHeatedGasRing)
+        Spin(GroundHeatedGasRing,y_axis,math.rad(66),0)
 
         --Lift rocket (rocket is slow and becomes faster)
-        liftRocketShowStage(3000, 5000, TableOfPiecesGroups[rocketPlumage][1], math.random(-10, 10), 10)
+        liftRocketShowStage(3000, 6000, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign(), 10)
         --Lift rocket
-        liftRocketShowStage(12000, 8000, TableOfPiecesGroups[rocketPlumage][2], math.random(-10, 10), 10)
+        liftRocketShowStage(12000, 2000, TableOfPiecesGroups[rocketPlumage][2], math.random(20, 30)*randSign(), 10)
         -- Stage2 smoke Spin
         --Lift Rocket
         -- Stage2 smoke Spin
         --Lift Rocket
-        liftRocketShowStage(18000, 8000, TableOfPiecesGroups[rocketPlumage][3], math.random(-10, 10), 10)
+        liftRocketShowStage(18000, 2000, TableOfPiecesGroups[rocketPlumage][3], math.random(10, 20)*randSign(), 10)
         -- Stage3 smoke Spin
         --Lift Rocket
-        liftRocketShowStage(32000, 12000, TableOfPiecesGroups[rocketPlumage][4], math.random(-10, 10), 10)
+        liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign(), 10)
+        liftRocketShowStage(64000, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign(), 10)
         -- Stage4 smoke Spin
         -- Decoupling thrusters
         StartThread(BoostersReturning)
         --Launchplum sinking back into Final Stage
-        StartThread(cloudFallingDown)
+   
         --Slight Slowdown
         Show(RocketFusionPlume)
         Sleep(500)
-        --Fusion Engine kicks in
-        WMove(Rocket, y_axis, 64000, 100)
+        --Fusion Engine kicks in 
+        StartThread(cloudFallingDown)
+        WMove(MainStage, y_axis, 92000, 16000)
         Sleep(9000)
         echo("launch complete waiting for return")
         --Moving CrawlerMain back to reassembly
@@ -358,5 +359,11 @@ function launchAnimation()
         -- Thrusters return to crawlers (copiesfrom decoupling)
 
         -- Landingplumes
+    end
+end
+function cloudFallingDown()
+    for i =  1, #TableOfPiecesGroups[rocketPlumage] do
+        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 1000)
+        Hide(TableOfPiecesGroups[rocketPlumage][i])
     end
 end
