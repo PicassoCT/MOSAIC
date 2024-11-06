@@ -249,6 +249,21 @@ function weldingAnimation(set)
     end
 end
 
+function placeElevators()
+    foreach(TablesOfPiecesGroups["Elevator"],
+        function(id)
+            if toShowDict[id] then
+                ElevatorCabinName =pieceID_NameMap[id].."Cabin"
+                CabinId = TablesOfPiecesGroups[ElevatorCabinName][1]
+                if CabinId then 
+                    StartThread(GenericElevatorOS, CabinId, id, cubeDim.heigth * 3.0, 3.0, 5.0)
+                end
+            end
+        end
+    )
+
+end
+
 function oilrigAnimation(set)
    
 
