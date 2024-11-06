@@ -5,7 +5,7 @@ include "lib_UnitScript.lua"
 
 TablesOfPieceGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
-
+GameConfig = getGameConfig()
 factor = 35
 heightoffset = 90   
 rotationOffset = 90
@@ -186,22 +186,33 @@ function setArcologyProjectsName(id, isArcology)
         Spring.SetUnitTooltip(id,  name .. ":" .. description )
 end
 
+
+myShownMainPiece = nil
+toShowDict = {}
+ToShowTable = {}
+
+function addToShowTable(element)
+    ToShowTable[#ToShowTable + 1] = element
+    toShowDict[element] = true
+end
+
 isArcology = false
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
-    hideAll(unitID)
+
     StartThread(buildBuilding)
     StartThread(addGroundPlaceables)
 end
 
 function showOneDeterministic(T, index)
     if not T then
+        echo("House arcology failed with no table")
         return
     end
-    dice = (index % #T) + 1
+    dice = (index % count(T)) + 1
     c = 0
     assert(T)
-    for k, v in pairs(T) do
+    for k, v in ipairs(T) do
         if k and v then
             c = c + 1
         end
@@ -210,6 +221,8 @@ function showOneDeterministic(T, index)
             return v
         end
     end
+
+
 end
 
 function showOne(T)
@@ -230,75 +243,78 @@ function showOne(T)
     end
 end
 
-myShownMainPiece = nil
-toShowDict = {}
-ToShowTable = {}
 
-function addToShowTable(element)
-    ToShowTable[#ToShowTable + 1] = element
-    toShowDict[element] = true
-end
 
-function addGroundPlaceables(materialName)
-    Sleep(300)
-    x, y, z = Spring.GetUnitPosition(unitID)
+
+function addGroundPlaceables()
+    Sleep(500)
+    x,y,z = Spring.GetUnitPosition(unitID)
     globalHeightUnit = Spring.GetGroundHeight(x, z)
-    placeAbles = TablesOfPieceGroups["Placeable"]
+    placeAbles =  TablesOfPieceGroups["Placeable"]
     if placeAbles and count(placeAbles) > 0 then
-        groundPiecesToPlace = math.random(1, 5)
+        groundPiecesToPlace= math.random(1,5)
         randPlaceAbleID = ""
-        while groundPiecesToPlace > 0 do
-            randPlaceAbleID = getSafeRandom(placeAbles)
-            if randPlaceAbleID and not toShowDict[randPlaceAbleID] then
-                opx = math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
-                opz = math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
-                WMove(randPlaceAbleID, 3, opz, 0)
-                WMove(randPlaceAbleID, 1, opx, 0)
-                Sleep(1)
-                x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
-                myHeight = Spring.GetGroundHeight(x, z)
-                heightdifference = math.abs(globalHeightUnit - myHeight)
-                if myHeight < globalHeightUnit then
-                    heightdifference = -heightdifference
-                end
-                WMove(randPlaceAbleID,2, heightdifference, 0)
-                addToShowTable(randPlaceAbleID)
-                Show(randPlaceAbleID)
-            end
+            while groundPiecesToPlace > 0 do
 
-            groundPiecesToPlace = groundPiecesToPlace - 1
-        end
+                randPlaceAbleID = getSafeRandom(placeAbles)         
+                if randPlaceAbleID  then
+                    opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+                    opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+                    WMove(randPlaceAbleID,x_axis, opz, 0)
+                    WMove(randPlaceAbleID,z_axis, opx, 0)
+                    Sleep(1)
+                    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
+                    myHeight = Spring.GetGroundHeight(x, z)
+                    heightdifference = math.abs(globalHeightUnit - myHeight)
+                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
+                    WMove(randPlaceAbleID,y_axis, heightdifference, 0)
+
+                    addToShowTable(randPlaceAbleID)
+                    Show(randPlaceAbleID)    
+                end 
+            
+                groundPiecesToPlace = groundPiecesToPlace -1
+            end 
     end
 end
 
+
 function buildBuilding()
+    hideAll(unitID)
     Sleep(500)
     px, py, pz = Spring.GetUnitPosition(unitID)
-    isArcology = isNearCityCenter(px, pz, GameConfig) and randChance(50) or randChance(10)
+    isArcology = isNearCityCenter(px, pz, GameConfig) and randChance(50) or randChance(10) 
     hash = getDetermenisticMapHash(Game) + px + py
     isDualProjectOrMix = randChance(10)
-    if isArcology then
-        myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Arcology"],hash )
+    if isArcology  then
+        myShownMainPiece = showOne(TablesOfPieceGroups["Arcology"],hash )
+        Show(myShownMainPiece)
         if myShownMainPiece then
+            Show(myShownMainPiece)
             addToShowTable(myShownMainPiece)
         end
     else
-        myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Project"], hash)
+        myShownMainPiece = showOne(TablesOfPieceGroups["Project"], hash)
+        Show(myShownMainPiece)
         if myShownMainPiece then
+            Show(myShownMainPiece)
             addToShowTable(myShownMainPiece)
         end
     end
     if isDualProjectOrMix then
-        myShownMainPiece = showOneDeterministic(TablesOfPieceGroups["Project"], hash + unitID)
+        myShownMainPiece = showOne(TablesOfPieceGroups["Project"], hash + unitID)
+        Show(myShownMainPiece)
         if myShownMainPiece then
+            Show(myShownMainPiece)
             addToShowTable(myShownMainPiece)
         end
     end
 
     if myShownMainPiece == TablesOfPieceGroups["Project"][1] or myShownMainPiece == TablesOfPieceGroups["Project"][2] then
-        blockNumber = showOneDeterministic(TablesOfPieceGroups["StandAloneLights"], unitID)
+        blockNumber = showOne(TablesOfPieceGroups["StandAloneLights"], unitID)
         if blockNumber then
-        addToShowTable(blockNumber)
+            Show(blockNumber)
+            addToShowTable(blockNumber)
         end
     end
     setArcologyProjectsName(unitID, isArcology)

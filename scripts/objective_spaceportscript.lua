@@ -218,7 +218,7 @@ function liftRocketShowStage(distanceUp, timeUp, cloud, spinValue, startValue)
 end
 
 
-function showHotColdTurbine()
+function spinUpTurbine()
     Spin(turbine, y_axis, math.rad(42), 0.1)
     Show(turbineCold)
     Sleep(4000)

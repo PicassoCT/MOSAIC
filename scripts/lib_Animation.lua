@@ -2730,5 +2730,7 @@ function GenericElevatorOS(Elevator, ElevatorParent, totalHeigth, allLayers, spe
             WMove(Elevator, y_axis, destination * heightLayer, speed) 
             restTime = math.random(5,10)*1000
             Sleep(restTime)
-        end   
+        end
+        Sleep(1000)
+    end   
 end
