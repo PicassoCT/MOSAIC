@@ -15,7 +15,7 @@ end
 --------------------------------------------------------------------------------
 
 -- > debugEchoT(
-local boolDebugActive = false
+local boolDebugActive = true
 local rainShader = nil
 
 --------------------------------------------------------------------------------
