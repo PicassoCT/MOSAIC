@@ -3,9 +3,7 @@
 	- run bar
 	- retry bar, uint8_t seems to have been replaced in master with in
 
-- healthbars /holograms are darkened by ssao -> fix, by excluding gui-elements from SSAO -> Port over from beherith (could be avoided) with working BAR fork
-
-Gfx:
+- healthbars /holograms are darkened by ssao -> fix, by excluding gui-h
 - update house arcology for house_asian standlone 
 - Get interior windows working 	-> Interior Self-Ilumination- Textures? And faked depth
 - reduce house_asian parts by extracting arcology into standalone
