@@ -1110,6 +1110,7 @@ function conditionalFilterOutUpperBodyTable()
 end
 
 function cigarettGlowAndSmoke()
+    if isTransported(unitID) then return end
     Sleep(10)
     spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
 end
