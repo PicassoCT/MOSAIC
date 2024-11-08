@@ -763,6 +763,9 @@ function startRevealedUnitsChatEventStream(idA, idB)
 end
 
 function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
+
+
+
     -- Define the subjects, actions, and objects
     assert(UnitDefs)
     questions = {"Why", "Where", "What", "How", "With", "Who"}
@@ -814,6 +817,17 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         name, family = getDeterministicCultureNames(gossipyID, UnitDefs)
         conversation = name..": "
         table.insert(subjects, family)
+    end
+
+    isConsumerPragging = randChance(10)
+    if isConsumerism  then
+        ConsumerStarter = {"Today i bought a %s, best quality", "You wont believe the bargain i made with the %s ", "It was on sale and it was only 99$ for %s!",
+        "They do not make %s like they used too ", "%s was a total steal", "I can buy a %s for you too.", "Honey, we do not have the money, but i bought a %s!"}
+        consumerItem = {"Bread", "Meat", "Salad", "sausage", "shirt", "skirt", "trouser", "implant", "medicine", "fruit", "soylentils", "coat", 
+        "shoes", "gun", "knife", "injector", "car", "game", "stimsim", "heroin", "speed", "booze", "slave", "heart", "liver", "concubine"}
+
+        conversation = conversation..string.format(ConsumerStarter[math.random(1,#ConsumerStarter)], consumerItem[math.random(1,#consumerItem)])
+        return conversation
     end
 
     isQuestion = randChance(10)
