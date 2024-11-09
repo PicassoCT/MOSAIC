@@ -10,11 +10,6 @@ return {
                 airdrag = 0.97,
                 alwaysvisible = false,
                 colormap = [[   
-                                0 0 0 0
-                                0 0 0 0
-                                0 0 0 0
-                                0 0 0 0
-                                0 0 0 0
                                 0 0 0 0.01 
                                 0.92 0.05 0.05 0.025  
                                 0.92 0.05 0.05 0.05  
@@ -27,18 +22,18 @@ return {
                 directional = true,
                 emitrot = 0,
                 emitrotspread = 10,
-                emitvector = [[0, 0.001, 0]],
+                emitvector = [[0, 0.0, 0]],
                 gravity = [[0, 0, 0]],
                 numparticles = 1,
                 particlelife = 60,
                 particlelifespread = 0,
-                particlesize = 3,
+                particlesize = 0.1,
                 particlesizespread = 0,
                 particlespeed = 0,
                 particlespeedspread = 0,
-                pos = [[0, 10, 0]],
+                pos = [[0, -25, 0]],
                 sizegrowth = 0.0,
-                sizemod = 1.000000,
+                sizemod = 1.00001,
                 texture = [[spawnpointtop]],
                 alwaysvisible = false,
                 useairlos = true
@@ -74,8 +69,8 @@ return {
                 directional = true,
                 emitrot = 0,
                 emitrotspread = 10,
-                emitvector = [[0, 0.0001, 0]],
-                gravity = [[0, 0.001, 0]],
+                emitvector = [[0, 0, 0]],
+                gravity = [[0, -0.001, 0]],
                 numparticles = 1,
                 particlelife = 250,
                 particlelifespread = 25,

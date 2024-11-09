@@ -283,11 +283,12 @@ function buildBuilding()
     hideAll(unitID)
     Sleep(500)
     px, py, pz = Spring.GetUnitPosition(unitID)
-    isArcology = isNearCityCenter(px, pz, GameConfig) and randChance(50) or randChance(10) 
+    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and randChance(50) 
+                     or randChance(10) 
     hash = getDetermenisticMapHash(Game) + px + py
     isDualProjectOrMix = randChance(10)
     if isArcology  then
-        myShownMainPiece = showOne(TablesOfPieceGroups["Arcology"],hash )
+        myShownMainPiece = showOne(TablesOfPieceGroups["Arcology"], hash )
         Show(myShownMainPiece)
         if myShownMainPiece then
             Show(myShownMainPiece)
