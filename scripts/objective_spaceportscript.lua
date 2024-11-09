@@ -190,6 +190,7 @@ function plattFormFireBloom()
         shift = 360 / #TableOfPiecesGroups["FireFlower"]
         for i = 1, #TableOfPiecesGroups["FireFlower"] do
             cycle = TableOfPiecesGroups["FireFlower"][i]
+            rotation = math.random(-360,360)
             Turn(cycle, y_axis, math.rad(rotation), 0)
             startVal = 90 + randSign() * 90
             Turn(cycle, x_axis, math.rad(startVal), 360) --reset
@@ -335,7 +336,7 @@ function launchAnimation()
         else
             rocketPlumage = RocketPlumeAN
         end
-        StartThread(showHotColdTurbine)
+
         Show(GroundHeatedGasRing)
         Spin(GroundHeatedGasRing,y_axis,math.rad(66),0)
 
