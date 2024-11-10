@@ -26,36 +26,36 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 Progresscenter = piece "Progresscenter"
 talk={
-["protagon"] = {
-    "Team Standby", "Team Ready", "Go Go Go","Datastreams Isolated",
-    "SkyCastle Ready", "Retro-Observation-Results", "TAC Plan has go",
-    "<dart sounds>", "away from the window", "to the wall", "drop it",
-    "Defeat device removed", "Subjects are dosed and stable",
-    "Conversation Mimicry in Progress",
-    "System subverted", "Observation, Neutralization",
-    "Encapsulated Cloud Interrogation ", "Individual Deprecation ",
-    "Sampling Artefacts", "FragPellets in Sit, HiSpeedCam, Upload. Now.", "Drug-Injections. Go.", "Memory-formation prevented", 
-    "Virtual Interrogation started", "Suspect is drained, deprecating.",
-    "Investigating Distribution", "Systemic Coordination Scenario 9", 
-    "Deadmans Killswitch Defused", "Allah al Akbar", "Communication jammed. Fallback to Pre-Scenariotrees",
-    "Extraction. Complete."
-},
+    ["protagon"] = {
+        "Team Standby", "Team Ready", "Go Go Go","Datastreams Isolated",
+        "SkyCastle Ready", "Retro-Observation-Results", "TAC Plan has go",
+        "<dart sounds>", "away from the window", "to the wall", "drop it",
+        "Defeat device removed", "Subjects are dosed and stable",
+        "Conversation Mimicry in Progress",
+        "System subverted", "Observation, Neutralization",
+        "Encapsulated Cloud Interrogation ", "Individual Deprecation ",
+        "Sampling Artefacts", "FragPellets in Sit, HiSpeedCam, Upload. Now.", "Drug-Injections. Go.", "Memory-formation prevented", 
+        "Virtual Interrogation started", "Suspect is drained, deprecating.",
+        "Investigating Distribution", "Systemic Coordination Scenario 9", 
+        "Deadmans Killswitch Defused", "Allah al Akbar", "Communication jammed. Fallback to Pre-Scenariotrees",
+        "Extraction. Complete."
+    },
 
-["antagon"] = {
-    "Empire instead of the empire", "Allah al Akbar", "Jamming engaged",
-    "Death to the West", "Jamal, take them out-","Traitors and Treason to every word they say",
-    "Living the dream of sucking billionaire cock-", "Die Motherfuckers, die..",
-    "-your guests torture people", "kings things, puppets and strings",
-    "I m a old friend, i need the key for one day, to throw a suprise party..",
-    "Suprise, Motherfuckers", "God is greater", "This must hurt so much ?",
-    "Suffer like they did", "Talk, talk - your life depends on it",
-    "Your side simply gave you up..",
-    "Though i walk through the valley of shadows",
-    "we, we are your own shadow, thats what you fight",
-    "you would never betray them, but they already betrayed you",
-    "You shouldnt have fucked her-", "And though i walk in the valley of death",
-    "Fighting your fellow men, for mindcontrolling machines and stranger things.."
-}
+    ["antagon"] = {
+        "Empire instead of the empire", "Allah al Akbar", "Jamming engaged",
+        "Death to the West", "Jamal, take them out-","Traitors and Treason to every word they say",
+        "Living the dream of sucking billionaire cock-", "Die Motherfuckers, die..",
+        "-your guests torture people", "kings things, puppets and strings",
+        "I m a old friend, i need the key for one day, to throw a suprise party..",
+        "Suprise, Motherfuckers", "God is greater", "This must hurt so much ?",
+        "Suffer like they did", "Talk, talk - your life depends on it",
+        "Your side simply gave you up..",
+        "Though i walk through the valley of shadows",
+        "we, we are your own shadow, thats what you fight",
+        "you would never betray them, but they already betrayed you",
+        "You shouldnt have fucked her-", "And though i walk in the valley of death",
+        "Fighting your fellow men, for mindcontrolling machines and stranger things.."
+    }
 }
 
 DefenderWin = piece("DefenderWin")
@@ -66,8 +66,6 @@ raidNoUplink = piece("raidNoUplink")
 PlacementPhase = piece("PlacementPhase")
 EvaluationPhase = piece("EvaluationPhase")
 Satellite = piece("Satellite")
-
-
 
 local satelliteTypeTable = getSatteliteTypes(UnitDefs)
 
@@ -222,6 +220,7 @@ function UplinkAnimation()
         end
         WaitForMoves(TablesOfPiecesGroups["RaidUploadInProgress"])
         Sleep(250)  
+        spawnCegAtPiece(unitID, Satellite, "paperflying")
     end
     hideT(TablesOfPiecesGroups["RaidUploadRotor"])
     hideT(TablesOfPiecesGroups["RaidUploadInProgress"])
