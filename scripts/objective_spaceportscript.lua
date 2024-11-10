@@ -122,27 +122,27 @@ function BoostersReturning()
 end
 
 crawlerSpeed = 1500
-function boosterArrivedTravelIntoHangar(bosterNr)
+function boosterArrivedTravelIntoHangar(boosterNr)
     openDoor(GroundRearDoorN)
-    if bosterNr == 1 or bosterNr == 2 then
+    if boosterNr == 1 or boosterNr == 2 then
         turnSign = -1 ^ boosterNr
-        WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(90 * turnSign), 5)
+        WTurn(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], y_axis, math.rad(90 * turnSign), 5)
     else
-        WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, -15000, crawlerSpeed)
+        WMove(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], x_axis, -15000, crawlerSpeed)
     end
     Sleep(2000)
-    Hide(TableOfPiecesGroups[landedBoosterN][bosterNr])
+    Hide(TableOfPiecesGroups[landedBoosterN][boosterNr])
     Sleep(3000)
     closeDoor(GroundRearDoorN)
-    WMove(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], x_axis, 0, crawlerSpeed)
-    WTurn(TableOfPiecesGroups[CrawlerBoosterN][bosterNr], y_axis, math.rad(0), 5)
+    WMove(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], x_axis, 0, crawlerSpeed)
+    WTurn(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], y_axis, math.rad(0), 5)
 
     boosterReturned[boosterNr] = true
 end
 
 function landBooster(boosterNr, booster)
     Sleep(boosterNr*10000)
-    plums = TableOfPiecesGroups["ReturningBooster" .. bosterNr .. "ThrusterPlum"]
+    plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     nextPos = 64000
     boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
@@ -155,8 +155,8 @@ function landBooster(boosterNr, booster)
     for i = nextPos, 0, -1000 do
         WMove(booster, y_axis, i, math.min(250,19000- x*250))
         if i < 1000 then
-            Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
-            Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr], y_axis, math.rad(690), 0)
+            Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
+            Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
             showT(plums)
             spinVal = math.random(40, 120)
             spinT(plums, y_axis, math.rad(spinVal))
@@ -165,7 +165,7 @@ function landBooster(boosterNr, booster)
         end
         x = x + 1
     end
-    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][bosterNr])
+    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     hideT(plums)
     Hide(booster)
     showT(TableOfPiecesGroups[LandedBoosterN])

@@ -944,6 +944,7 @@ end
 function transitionToCloaked()
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
+	
 	StartThread(spawnDecoyCivilian)
 	return "cloaked"
 end
