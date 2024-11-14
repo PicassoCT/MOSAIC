@@ -15,7 +15,7 @@ CapsuleRocket = piece "CapsuleRocket"
 BoosterN = "Booster"
 RocketThrustPillarN = "RocketThrustPillar"
 FusionLandingGearN = "FusionLandingGear"
-landedBoosterN = "LandedBooster"
+LandedBoosterN = "LandedBooster"
 RocketPlumeN = "RocketPlume"
 RocketPlumeAN = "RocketPlumeA"
 FireFlowerN = "FireFlower"
@@ -135,7 +135,7 @@ function boosterArrivedTravelIntoHangar(boosterNr)
         WMove(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], x_axis, -15000, crawlerSpeed)
     end
     Sleep(2000)
-    Hide(TableOfPiecesGroups[landedBoosterN][boosterNr])
+    Hide(TableOfPiecesGroups[LandedBoosterN][boosterNr])
     Sleep(3000)
     closeDoor(GroundRearDoorN)
     WMove(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], x_axis, 0, crawlerSpeed)
