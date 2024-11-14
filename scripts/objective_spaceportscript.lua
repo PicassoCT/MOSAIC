@@ -389,7 +389,7 @@ end
 
 function HideRocket()
     Hide(MainStage)
-    Hide(RocketPod)
+    Hide(CapsuleRocket)
     Hide(MainStageRocket)
 end
 
