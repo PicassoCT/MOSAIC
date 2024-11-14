@@ -920,10 +920,11 @@ function getWantCloak()
 	return false
 end
 
-
+myCollideData = getCollideData(unitID)
 function transitionToUncloaked()
 	setSpeedEnv(unitID, 1.0)
 	setWantCloak(false)
+	restoreCollide(unitID, myCollideData)
 	if civilianID and doesUnitExistAlive(civilianID) == true then
 		GG.DiedPeacefully[civilianID] = true
 		Spring.DestroyUnit(civilianID, true, true)
@@ -939,12 +940,10 @@ function setWantCloak(boolWantCloak)
 	end
 end
 
-
-
 function transitionToCloaked()
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	
+	myCollideData = setNoneCollide(unitId)
 	StartThread(spawnDecoyCivilian)
 	return "cloaked"
 end
