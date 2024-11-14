@@ -84,7 +84,9 @@ function openDoor(name)
     foreach(
         TableOfPiecesGroups[name],
         function(id)
-            WMove(id, x_axis, -600, doorSpeed)
+            if id then
+                WMove(id, x_axis, -600, doorSpeed)
+            end
         end
     )
     WaitForMoves(TableOfPiecesGroups[name])
@@ -94,7 +96,9 @@ function closeDoor(name)
      foreach(
         TableOfPiecesGroups[name],
         function(id)
-            WMove(id, x_axis, 0, doorSpeed)
+            if id then
+                WMove(id, x_axis, 0, doorSpeed)
+            end
         end
     )  
 end
@@ -157,6 +161,7 @@ function landBooster(boosterNr, booster)
         if i < 1000 then
             Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
             Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
+            assert(plums)
             showT(plums)
             spinVal = math.random(40, 120)
             spinT(plums, y_axis, math.rad(spinVal))
@@ -168,6 +173,7 @@ function landBooster(boosterNr, booster)
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     hideT(plums)
     Hide(booster)
+    assert(TableOfPiecesGroups[LandedBoosterN])
     showT(TableOfPiecesGroups[LandedBoosterN])
     boosterArrivedTravelIntoHangar(boosterNr)
 end
@@ -322,7 +328,8 @@ function launchAnimation()
 
         StartThread(plattFormFireBloom)
         --Trusters
-        showT(TableOfPiecesGroups["RocketThrustPillarN"])
+        --assert(TableOfPiecesGroups[RocketThrustPillarN])
+        showT(TableOfPiecesGroups[RocketThrustPillarN])
         foreach(
             TableOfPiecesGroups[RocketThrustPillarN],
             function(id)

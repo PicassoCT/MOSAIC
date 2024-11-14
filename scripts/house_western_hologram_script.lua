@@ -706,26 +706,31 @@ function lineTicker()
     Spring.Echo("Starting lineTicker")
     while true do
         totalDeg = 0
+        absoluteRange = 180
         for i=1,10 do
-            relativeDeg = math.random(-80,80) - totalDeg
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], x_axis, math.rad(relativeDeg),0)
+            relativeRange = (absoluteRange - 90) - totalDeg
+            relativeDeg  = getSafeRandom(relativeRange, 0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], z_axis, math.rad(relativeDeg  - totalDeg),0)
             totalDeg = totalDeg - relativeDeg
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], x_axis, math.rad(-totalDeg),0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], z_axis, math.rad(-totalDeg),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
         totalDeg = 0
+        absoluteRange = 180
         for i=11,20 do
-            relativeDeg = math.random(-80 -totalDeg,80 + totalDeg) 
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], x_axis, math.rad(relativeDeg),0)
+            relativeRange = (absoluteRange - 90) - totalDeg
+            relativeDeg  = getSafeRandom(relativeRange, 0)
+
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i],z_axis, math.rad(relativeDeg - totalDeg),0)
             totalDeg = totalDeg - relativeDeg
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22], x_axis, math.rad(-totalDeg),0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],z_axis, math.rad(-totalDeg),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
         end
         Sleep(15000)

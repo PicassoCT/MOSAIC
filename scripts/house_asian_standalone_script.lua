@@ -290,6 +290,7 @@ function buildBuilding()
     if isArcology  then
         myShownMainPiece = showOne(TablesOfPieceGroups["Arcology"], hash )
         Show(myShownMainPiece)
+        showTSubSpins(myShownMainPiece, TablesOfPieceGroups)
         if myShownMainPiece then
             Show(myShownMainPiece)
             addToShowTable(myShownMainPiece)
@@ -297,6 +298,7 @@ function buildBuilding()
     else
         myShownMainPiece = showOne(TablesOfPieceGroups["Project"], hash)
         Show(myShownMainPiece)
+        showTSubSpins(myShownMainPiece, TablesOfPieceGroups)
         if myShownMainPiece then
             Show(myShownMainPiece)
             addToShowTable(myShownMainPiece)
@@ -305,6 +307,7 @@ function buildBuilding()
     if isDualProjectOrMix then
         myShownMainPiece = showOne(TablesOfPieceGroups["Project"], hash + unitID)
         Show(myShownMainPiece)
+        showTSubSpins(myShownMainPiece, TablesOfPieceGroups)
         if myShownMainPiece then
             Show(myShownMainPiece)
             addToShowTable(myShownMainPiece)
