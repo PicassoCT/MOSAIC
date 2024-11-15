@@ -35,9 +35,9 @@ function setArcologyProjectsName(id, isArcology)
         "Vastara",
         "Infinite Plaza",
         "Titanium Reach",
-        " Grand Nexus",
+        "Grand Nexus",
         "Skyline Citadel",
-        " Ultra Blocks",
+        "Ultra Blocks",
         "Terra Enclave",
         "Nimbus Crown",
         "Omega District",
@@ -48,14 +48,14 @@ function setArcologyProjectsName(id, isArcology)
         "Greenhollow Expanse",
         "Willow Horizon",
         "Eden Nest",
-        " Cedar Reach",
-        " Maple Spire",
+        "Cedar Reach",
+        "Maple Spire",
         "Timber Path Haven",
         "Lakeview Pinnacle",
         "Rosemary Stretch",
-        " Oasis Rise",
-        " Briar Canopy",
-        " Silverleaf Plateau",
+        "Oasis Rise",
+        "Briar Canopy",
+        "Silverleaf Plateau",
         "Fernspire Peaks",
         "Juniper Valley",
         "Forest Haven",
@@ -187,7 +187,7 @@ function setArcologyProjectsName(id, isArcology)
 end
 
 
-myShownMainPiece = nil
+pieceToShow = nil
 toShowDict = {}
 ToShowTable = {}
 
@@ -221,8 +221,6 @@ function showOneDeterministic(T, index)
             return v
         end
     end
-
-
 end
 
 function showOne(T)
@@ -242,9 +240,6 @@ function showOne(T)
         end
     end
 end
-
-
-
 
 function addGroundPlaceables()
     Sleep(500)
@@ -278,43 +273,34 @@ function addGroundPlaceables()
     end
 end
 
-
 function buildBuilding()
     hideAll(unitID)
     Sleep(500)
     px, py, pz = Spring.GetUnitPosition(unitID)
-    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and randChance(50) 
-                     or randChance(10) 
+    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and randChance(20) 
+                    
     hash = getDetermenisticMapHash(Game) + px + py
     isDualProjectOrMix = randChance(10)
     if isArcology  then
-        myShownMainPiece = showOne(TablesOfPieceGroups["Arcology"], hash )
-        Show(myShownMainPiece)
-        showTSubSpins(myShownMainPiece, TablesOfPieceGroups)
-        if myShownMainPiece then
-            Show(myShownMainPiece)
-            addToShowTable(myShownMainPiece)
-        end
+        pieceToShow = showOne(TablesOfPieceGroups["Arcology"], hash )
+        Show(pieceToShow)
+        addToShowTable(pieceToShow)
+        showTSubSpins(pieceToShow, TablesOfPieceGroups)
     else
-        myShownMainPiece = showOne(TablesOfPieceGroups["Project"], hash)
-        Show(myShownMainPiece)
-        showTSubSpins(myShownMainPiece, TablesOfPieceGroups)
-        if myShownMainPiece then
-            Show(myShownMainPiece)
-            addToShowTable(myShownMainPiece)
-        end
+        pieceToShow = showOne(TablesOfPieceGroups["Project"], hash)
+        Show(pieceToShow)
+        addToShowTable(pieceToShow)
+        showTSubSpins(pieceToShow, TablesOfPieceGroups)
     end
     if isDualProjectOrMix then
-        myShownMainPiece = showOne(TablesOfPieceGroups["Project"], hash + unitID)
-        Show(myShownMainPiece)
-        showTSubSpins(myShownMainPiece, TablesOfPieceGroups)
-        if myShownMainPiece then
-            Show(myShownMainPiece)
-            addToShowTable(myShownMainPiece)
-        end
+        pieceToShow = showOne(TablesOfPieceGroups["Project"], hash + unitID)
+        showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        Show(pieceToShow)
+        addToShowTable(pieceToShow)
+     
     end
 
-    if myShownMainPiece == TablesOfPieceGroups["Project"][1] or myShownMainPiece == TablesOfPieceGroups["Project"][2] then
+    if pieceToShow == TablesOfPieceGroups["Project"][1] or pieceToShow == TablesOfPieceGroups["Project"][2] then
         blockNumber = showOne(TablesOfPieceGroups["StandAloneLights"], unitID)
         if blockNumber then
             Show(blockNumber)
@@ -322,7 +308,9 @@ function buildBuilding()
         end
     end
     setArcologyProjectsName(unitID, isArcology)
- 
+    if toShowDict[TablesOfPieceGroups["Arcology"][8]] then
+            StartThread(placeElevators, TablesOfPiecesGroups, 200, 20)
+    end
     boolDoneShowing = true
     showHouse()
     return

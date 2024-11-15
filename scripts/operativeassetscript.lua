@@ -274,7 +274,7 @@ function transportControl()
     waitTillComplete(unitID)
     while true do
         if isTransported(unitID) == true then
-            transporterdefID Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
+            transporterdefID = spGetUnitDefID(Spring.GetUnitTransporter(unitID))
 
             if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
 

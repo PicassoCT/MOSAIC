@@ -2312,14 +2312,14 @@ function hideT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
-function placeElevators()
+function placeElevators(TablesOfPiecesGroups, elevatorHeight, nrLevels)
     foreach(TablesOfPiecesGroups["Cabin"],
         function(id)
             if toShowDict[id] then
                 ElevatorCabinName =pieceID_NameMap[id].."Cabin"
                 CabinId = TablesOfPiecesGroups[ElevatorCabinName][1]
                 if CabinId then 
-                    StartThread(GenericElevatorOS, CabinId, id, cubeDim.heigth * 3.0, 3.0, 5.0)
+                    StartThread(GenericElevatorOS, CabinId, id, elevatorHeight, nrLevels, 5.0)
                 end
             end
         end

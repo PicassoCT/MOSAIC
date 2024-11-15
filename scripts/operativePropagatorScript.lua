@@ -300,13 +300,12 @@ boolTransportedNoFiring = false
 motorBikeTypeTable = getMotorBikeTypeTable(UnitDefs)
 parachuteDefId = UnitDefNames["air_parachut"].id
 function transportControl()
-    Sleep(10)
-  
+    Sleep(10)  
 
     waitTillComplete(unitID)
     while true do
         if isTransported(unitID) == true then
-        	transporterdefID Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
+        	transporterdefID = spGetUnitDefID(Spring.GetUnitTransporter(unitID))
 
         	if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
 
