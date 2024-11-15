@@ -1669,10 +1669,9 @@ function delayedStop()
     Sleep(250)
     boolWalking = false
     -- Spring.Echo("Stopping")
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                              nil, true)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, true)
 
-    Sleep(500)
+    Sleep(2500)
     _,h, _ = Spring.GetUnitPosition(unitID)
     if h < -5 and not  GG.DisguiseCivilianFor[unitID] then
         Spring.DestroyUnit(unitID, false, true)

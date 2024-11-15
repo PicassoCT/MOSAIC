@@ -298,21 +298,29 @@ end
 
 boolTransportedNoFiring = false
 motorBikeTypeTable = getMotorBikeTypeTable(UnitDefs)
+parachuteDefId = UnitDefNames["air_parachut"].id
 function transportControl()
     Sleep(10)
   
 
     waitTillComplete(unitID)
     while true do
-        if isTransported(unitID) == true and motorBikeTypeTable[Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))] then
-            boolTransportedNoFiring = true    
+        if isTransported(unitID) == true then
+        	transporterdefID Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
+
+        	if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
 
             setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+	           
             while isTransported(unitID) == true do    
                 Sleep(100)
-                PlayAnimation("PARACHUTE_POSE")
+                if transporterdefID == parachuteDefId then
+                	PlayAnimation("PARACHUTE_POSE")
+            	end
             end
+        	
             boolTransportedNoFiring = false
+        
         end
         Sleep(1000)
     end
