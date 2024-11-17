@@ -196,10 +196,57 @@ function addToShowTable(element)
     toShowDict[element] = true
 end
 
+ArcoT= {}
+ProjectT = {}
+Mega = {}
 isArcology = false
+
+
+
+function filterArcoProjectTable()
+    ArcoT =  foreach(TablesOfPieceGroups["Arcology"], 
+                    function (id)
+                        if not Mega[id] then return id end
+                    end)            
+
+    ProjectT =  foreach(TablesOfPieceGroups["Project"], 
+                    function (id)
+                        if not Mega[id] then return id end
+                    end)
+end
+
+local UnitDefNames = getUnitDefNames(UnitDefs)
+function getDefIDUnitDefNames(name)
+
+    return UnitDefNames[name].id
+end
+
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
+    Mega = {
+    [getDefIDUnitDefNames("Arcology1")] = true,
+    [getDefIDUnitDefNames("Arcology2")] = true,
+    [getDefIDUnitDefNames("Arcology3")] = true,
+    [getDefIDUnitDefNames("Arcology5")] = true,
+    [getDefIDUnitDefNames("Arcology7")] = true,
+    [getDefIDUnitDefNames("Arcology8")] = true,
+    [getDefIDUnitDefNames("Arcology9")] = true,
+    [getDefIDUnitDefNames("Arcology10")] = true,
+    [getDefIDUnitDefNames("Arcology11")] = true,
+    [getDefIDUnitDefNames("Project1")] = true,
+    [getDefIDUnitDefNames("Project2")] = true,
+    [getDefIDUnitDefNames("Project6")] = true,
+    [getDefIDUnitDefNames("Project9")] = true,
+    [getDefIDUnitDefNames("Project11")] = true,
 
+    }
+    if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
+    GG.MegaBuildingMax = GG.MegaBuildingMax  +1
+    ArcoT = TablesOfPieceGroups["Arcology"]
+    ProjectT = TablesOfPieceGroups["Project"]
+    if GG.MegaBuildingMax > 7 then 
+        filterArcoProjectTable()
+    end
     StartThread(buildBuilding)
     StartThread(addGroundPlaceables)
 end
@@ -273,6 +320,8 @@ function addGroundPlaceables()
     end
 end
 
+
+
 function buildBuilding()
     hideAll(unitID)
     Sleep(500)
@@ -282,18 +331,18 @@ function buildBuilding()
     hash = getDetermenisticMapHash(Game) + px + py
     isDualProjectOrMix = randChance(10)
     if isArcology  then
-        pieceToShow = showOne(TablesOfPieceGroups["Arcology"], hash )
+        pieceToShow = showOne(ArcoT, hash )
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
     else
-        pieceToShow = showOne(TablesOfPieceGroups["Project"], hash)
+        pieceToShow = showOne(ProjectT, hash)
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
     end
     if isDualProjectOrMix then
-        pieceToShow = showOne(TablesOfPieceGroups["Project"], hash + unitID)
+        pieceToShow = showOne(ProjectT, hash + unitID)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
         Show(pieceToShow)
         addToShowTable(pieceToShow)
