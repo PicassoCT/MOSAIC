@@ -243,9 +243,7 @@ function script.Create()
     if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
     ArcoT = TablesOfPieceGroups["Arcology"]
     ProjectT = TablesOfPieceGroups["Project"]
-    if GG.MegaBuildingMax > 7 then 
-        filterArcoProjectTable()
-    end
+  
     StartThread(buildBuilding)
     StartThread(addGroundPlaceables)
 end
@@ -323,7 +321,10 @@ end
 
 function buildBuilding()
     hideAll(unitID)
-    Sleep(500)
+    Sleep(unitID%300)
+    if GG.MegaBuildingMax > 7 then 
+        filterArcoProjectTable()
+    end
     px, py, pz = Spring.GetUnitPosition(unitID)
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and randChance(20) 
                     
@@ -337,15 +338,18 @@ function buildBuilding()
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
     else
         pieceToShow = showOne(ProjectT, hash)
+        if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
     end
     if isDualProjectOrMix then
         pieceToShow = showOne(ProjectT, hash + unitID)
-        showTSubSpins(pieceToShow, TablesOfPieceGroups)
-        Show(pieceToShow)
-        addToShowTable(pieceToShow)
+        if not Mega[pieceToShow] then
+            showTSubSpins(pieceToShow, TablesOfPieceGroups)
+            Show(pieceToShow)
+            addToShowTable(pieceToShow)
+        end
      
     end
 
@@ -358,7 +362,7 @@ function buildBuilding()
     end
     setArcologyProjectsName(unitID, isArcology)
     if toShowDict[TablesOfPieceGroups["Arcology"][8]] then
-            StartThread(placeElevators, TablesOfPiecesGroups, 200, 20)
+            StartThread(placeElevators, TablesOfPieceGroups, 200, 20)
     end
     boolDoneShowing = true
     showHouse()
