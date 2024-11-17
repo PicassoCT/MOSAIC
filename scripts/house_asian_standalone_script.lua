@@ -215,33 +215,32 @@ function filterArcoProjectTable()
                     end)
 end
 
-local UnitDefNames = getUnitDefNames(UnitDefs)
-function getDefIDUnitDefNames(name)
 
-    return UnitDefNames[name].id
+function getPieceIdNameInMap(name)
+
+   
 end
-
+local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
     Mega = {
-    [getDefIDUnitDefNames("Arcology1")] = true,
-    [getDefIDUnitDefNames("Arcology2")] = true,
-    [getDefIDUnitDefNames("Arcology3")] = true,
-    [getDefIDUnitDefNames("Arcology5")] = true,
-    [getDefIDUnitDefNames("Arcology7")] = true,
-    [getDefIDUnitDefNames("Arcology8")] = true,
-    [getDefIDUnitDefNames("Arcology9")] = true,
-    [getDefIDUnitDefNames("Arcology10")] = true,
-    [getDefIDUnitDefNames("Arcology11")] = true,
-    [getDefIDUnitDefNames("Project1")] = true,
-    [getDefIDUnitDefNames("Project2")] = true,
-    [getDefIDUnitDefNames("Project6")] = true,
-    [getDefIDUnitDefNames("Project9")] = true,
-    [getDefIDUnitDefNames("Project11")] = true,
+        [pieceName_pieceNr["Arcology1"]] = true,
+        [pieceName_pieceNr["Arcology2"]] = true,
+        [pieceName_pieceNr["Arcology3"]] = true,
+        [pieceName_pieceNr["Arcology5"]] = true,
+        [pieceName_pieceNr["Arcology7"]] = true,
+        [pieceName_pieceNr["Arcology8"]] = true,
+        [pieceName_pieceNr["Arcology9"]] = true,
+        [pieceName_pieceNr["Arcology10"]] = true,
+        [pieceName_pieceNr["Arcology11"]] = true,
+        [pieceName_pieceNr["Project1"]] = true,
+        [pieceName_pieceNr["Project2"]] = true,
+        [pieceName_pieceNr["Project6"]] = true,
+        [pieceName_pieceNr["Project9"]] = true,
+        [pieceName_pieceNr["Project11"]] = true,
 
     }
     if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
-    GG.MegaBuildingMax = GG.MegaBuildingMax  +1
     ArcoT = TablesOfPieceGroups["Arcology"]
     ProjectT = TablesOfPieceGroups["Project"]
     if GG.MegaBuildingMax > 7 then 
@@ -332,6 +331,7 @@ function buildBuilding()
     isDualProjectOrMix = randChance(10)
     if isArcology  then
         pieceToShow = showOne(ArcoT, hash )
+        if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
