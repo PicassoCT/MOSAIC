@@ -533,11 +533,8 @@ vec4 getReflection(vec3 reflectionPosition)
 	if (getRandomFactor(reflectionPosition.xz /512.0) < rainPercent) //Puddles
     {
 	 	// Calculate reflection direction
-	    //Original: vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
-    	
-    	vec3 viewDir = viewDirection; // Alternative1: normalize(eyePos - (viewMatrix * gl_Vertex).xyz);
-    	//Altenrative2 : normalize(viewProjectionInv* vec4(eyeDir,1)).xyz;
-	    
+	    vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
+    	    
 	    // Assuming ground is flat, normal is (0,1,0)
 	    vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
 	    //return vec4(reflectDir, 1.0); //TODO: Remove debug for gfx debugging
