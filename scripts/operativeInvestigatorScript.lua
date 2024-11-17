@@ -912,7 +912,6 @@ function setWantCloak(boolWantCloak)
 	end
 end
 
-
 function transitionToCloaked()
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)

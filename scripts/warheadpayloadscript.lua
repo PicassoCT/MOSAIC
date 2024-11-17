@@ -134,14 +134,19 @@ if UnitDefs[myDefID].name == "informationpayload" then
  	foreach(Spring.GetAllUnits(),
                         function(id)
                         	defID = Spring.GetUnitDefID(id)
+                        	 if houseTypeTable[defID] then
+                        	   stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
+                        	   genericCallUnitFunctionPassArgs(unitID, "stunUnit", 30000)
+                        	end	
+
                              if automationPayloadDisabledType[defID] then
                                 stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
                                 spawnCegAtUnit(id, "electric_explosion",0, 50, 0)
                               end  
 								
 							 if automationPayloadDestroyedType[defID] then
+								spawnCegAtUnit(id, "electric_explosion")
 							 	GG.UnitsToKill:PushKillUnit(id, false, true)                             
-                              	spawnCegAtUnit(id, "electric_explosion")
                               end
                         	end)
 

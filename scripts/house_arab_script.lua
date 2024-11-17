@@ -10,6 +10,8 @@ local myDefID = Spring.GetUnitDefID(unitID)
 local spGetGroundHeight = Spring.GetGroundHeight
 local TablesOfPiecesGroups = {}
 gridOffset =  {}
+local RoofTopPieces = {}
+
 local cubeDim = {
     length = 14.4 * 1.45,
     heigth = 13.65 * 0.75 * 1.45,
@@ -108,7 +110,39 @@ function script.Create()
 
     StartThread(rotations)
     StartThread(decorateCity)
+    StartThread(threadStarter)
 end
+
+local accumulatedStun = 0
+
+boolStartStunThread = false
+function stunAnimation()
+    Signal(SIG_STUN)
+    SetSignalMask(SIG_STUN)
+    while accumulatedStun > 0 do
+        Sleep(500)      
+        randPiece = getSafeRandom(RoofTopPieces, RoofTopPieces[1])
+        spawnCegAtPiece(unitID, randPiece, "electric_arc")
+        accumulatedStun = accumulatedStun - 1000
+        Sleep(500) 
+    end
+end
+
+function stunUnit(lengthToStun)
+    accumulatedStun = accumulatedStun + lengthToStun
+    boolStartThread = true
+end
+
+function threadStarter()
+    while true do
+        Sleep(1000)
+        if boolStartStunThread = true then 
+            StartThread(stunAnimation)
+            boolStartStunThread = false
+        end
+    end
+end
+
 
 function delayedHeightMapTransform()
     value= math.random(1, 15) 
@@ -833,7 +867,7 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
 
     return buildMaterial, element
 end
-local RoofTopPieces = {}
+
 function addRoofDeocrate(Level, buildMaterial)
     countElements = 0
 

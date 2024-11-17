@@ -1855,6 +1855,18 @@ end
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
+              function genericCallUnitFunctionPassArgs(unitID, NameOfFunction, arg)
+                env = Spring.UnitScript.GetScriptEnv(unitID)
+                if env and env[NameOfFunction] then
+                    Spring.UnitScript.CallAsUnit(unitID,
+                        env.[NameOfFunction],
+                        arg)
+                    return true
+                end
+                return false
+            end
+
+
             function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
                 env = Spring.UnitScript.GetScriptEnv(unitID)
                 if env and env.startAerosolBehaviour then
