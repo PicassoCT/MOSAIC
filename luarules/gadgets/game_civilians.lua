@@ -268,13 +268,10 @@ end
 
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
-        Spring.Echo(id .. " is a loadable truck ")
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
 
         return attachPayload(payLoadID, id)
-    else 
-        Spring.Echo("Unit "..UnitDefs[spGetUnitDefID(id)].name .. " is not  a loadableTruckType")
     end
 end
 

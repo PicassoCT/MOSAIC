@@ -706,7 +706,7 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-	houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
+	houseDestroyWithDestructionTable(LevelPieces, 9.81, unitID)
     return 1
 end
 
