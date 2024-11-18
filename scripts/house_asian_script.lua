@@ -1642,16 +1642,16 @@ function stunAnimation()
     Signal(SIG_STUN)
     SetSignalMask(SIG_STUN)
     while accumulatedStun > 0 do
-        Sleep(500)      
         randPiece = getSafeRandom(RoofTopPieces, RoofTopPieces[1])
         spawnCegAtPiece(unitID, randPiece, "electric_arc")
-        accumulatedStun = accumulatedStun - 1000
-        Sleep(500) 
+        accumulatedStun = accumulatedStun - stunInteval
+        Sleep(stunInteval) 
     end
 end
-
-function stunUnit(lengthToStun)
+stunInteval = 1000
+function stunHouse(lengthToStun, interval)
     accumulatedStun = accumulatedStun + lengthToStun
+    stunInteval = interval
     boolStartThread = true
 end
 

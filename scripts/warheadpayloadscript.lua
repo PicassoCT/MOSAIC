@@ -135,8 +135,9 @@ if UnitDefs[myDefID].name == "informationpayload" then
                         function(id)
                         	defID = Spring.GetUnitDefID(id)
                         	 if houseTypeTable[defID] then
+                        	 	distance = distanceUnitToUnit(unitID, id)
                         	   stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
-                        	   genericCallUnitFunctionPassArgs(unitID, "stunUnit", 30000)
+                        	   genericCallUnitFunctionPassArgs(unitID, "stunHouse", 30000, math.max(1000, math.ceil(distance)))
                         	end	
 
                              if automationPayloadDisabledType[defID] then
