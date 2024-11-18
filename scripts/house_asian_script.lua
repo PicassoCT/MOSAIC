@@ -1658,7 +1658,7 @@ end
 function threadStarter()
     while true do
         Sleep(1000)
-        if boolStartStunThread = true then 
+        if boolStartStunThread == true then 
             StartThread(stunAnimation)
             boolStartStunThread = false
         end
