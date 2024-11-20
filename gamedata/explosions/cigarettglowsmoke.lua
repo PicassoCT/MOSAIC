@@ -23,15 +23,15 @@ return {
                 emitrot = 0,
                 emitrotspread = 10,
                 emitvector = [[0, 0.0, 0]],
-                gravity = [[0, 0, 0]],
+                gravity = [[0, 0.1, 0]],
                 numparticles = 1,
                 particlelife = 60,
                 particlelifespread = 0,
-                particlesize = 0.1,
+                particlesize = 0.05,
                 particlesizespread = 0,
                 particlespeed = 0,
                 particlespeedspread = 0,
-                pos = [[0, -25, 0]],
+                pos = [[0, 50, 0]],
                 sizegrowth = 0.0,
                 sizemod = 1.00001,
                 texture = [[spawnpointtop]],
@@ -70,17 +70,17 @@ return {
                 emitrot = 0,
                 emitrotspread = 10,
                 emitvector = [[0, 0, 0]],
-                gravity = [[0, -0.001, 0]],
+                gravity = [[0, 0.003, 0]],
                 numparticles = 1,
                 particlelife = 250,
                 particlelifespread = 25,
-                particlesize = 0.3,
+                particlesize = 0.1,
                 particlesizespread = 0,
                 particlespeed = 0,
                 particlespeedspread = 0,
-                pos = [[0, 10, 0]],
+                pos = [[0, 0, 0]],
                 sizegrowth = 0.0,
-                sizemod = 1.005,
+                sizemod = 1.02,
                 texture = [[foam]],
                 alwaysvisible = false,
                 useairlos = true
@@ -97,22 +97,21 @@ return {
             airdrag = 0.97,
             alwaysvisible = false,
             colormap = [[ 
-                            0.00 0.00 0.00  0.000
-                            0.00 0.00 0.00  0.000
-                            0.00 0.00 0.00  0.000
-                            0.00 0.00 0.00  0.000
-                            0.00 0.00 0.00  0.000
-                            0.00 0.00 0.00  0.000
-                            0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
+                        0.00 0.00 0.00  0.000
 
-
-                              1.0 0.423 0.25  0.1
-                              1.0 0.423 0.25  0.03
-                              0.85 0 0        0.045
-                              0.57 0.57 0.57  0.035
-                              0.25 0.25 0.25  0.020
-                              0.12 0.12 0.12  0.025
-                              0.05 0.05 0.05  0.001 ]],
+                        1.0 0.423 0.25  0.1
+                        1.0 0.423 0.25  0.03
+                        0.85 0 0        0.045
+                        0.57 0.57 0.57  0.035
+                        0.25 0.25 0.25  0.020
+                        0.12 0.12 0.12  0.025
+                        0.05 0.05 0.05  0.001 ]],
                 directional = true,
                 emitrot = 0,
                 emitrotspread = 10,
@@ -121,13 +120,13 @@ return {
                 numparticles = 1,
                 particlelife = 220,
                 particlelifespread = 25,
-                particlesize = 0.3,
+                particlesize = 0.1,
                 particlesizespread = 0,
                 particlespeed = 0,
                 particlespeedspread = 0,
-                pos = [[0, 10, 0]],
+                pos = [[0, 0, 0]],
                 sizegrowth = 0.0,
-                sizemod = 1.005,
+                sizemod = 1.02,
                 texture = [[smokeSwirls]],
                 alwaysvisible = false,
                 useairlos = true
@@ -148,7 +147,7 @@ return {
                                 0 0 0 0
                                 0 0 0 0
                                 0 0 0 0
-                                                                0 0 0 0
+                                0 0 0 0
                                 0 0 0 0
                                 0 0 0 0
                                 0 0 0 0
@@ -166,15 +165,15 @@ return {
                 emitrot = 0,
                 emitrotspread = 10,
                 emitvector = [[0, 0.001, 0]],
-                gravity = [[0, 0.0001, 0]],
+                gravity = [[0, -0.0001, 0]],
                 numparticles = 1,
                 particlelife = 240,
                 particlelifespread = 15,
-                particlesize = 5,
+                particlesize = 1,
                 particlesizespread = 0,
                 particlespeed = 0,
                 particlespeedspread = 0,
-                pos = [[0, 10, 0]],
+                pos = [[0, 50, 0]],
                 sizegrowth = 0.0,
                 sizemod = 1.000000,
                 texture = [[spawnpointtop]],
@@ -196,7 +195,7 @@ return {
                                 0 0 0 0
                                 0 0 0 0
                                 0 0 0 0
-                                                                0 0 0 0
+                                0 0 0 0
                                 0 0 0 0
                                 0 0 0 0
                                 0 0 0 0
@@ -213,16 +212,16 @@ return {
                 directional = true,
                 emitrot = 0,
                 emitrotspread = 10,
-                emitvector = [[0, 0.001, 0]],
-                gravity = [[0, 0.0001, 0]],
+                emitvector = [[0, 0, 0]],
+                gravity = [[0, -0.01, 0]],
                 numparticles = 1,
                 particlelife = 240,
                 particlelifespread = 15,
-                particlesize = 7,
+                particlesize = 3,
                 particlesizespread = 0,
                 particlespeed = 0,
                 particlespeedspread = 0,
-                pos = [[0, 10, 0]],
+                pos = [[0, 50, 0]],
                 sizegrowth = 0.0,
                 sizemod = 1.000000,
                 texture = [[fireSparks]],

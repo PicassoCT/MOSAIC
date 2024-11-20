@@ -60,6 +60,7 @@ holoHeightOffset =  10
 
 dayNightPieceNames = {}
 local SIG_SUBANIMATIONS = 2
+local SIG_STUN = 4
 
 supriseChances = {
     roof = 0.35,
@@ -705,7 +706,7 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-	houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
+	houseDestroyWithDestructionTable(LevelPieces, 9.81, unitID)
     return 1
 end
 
@@ -1611,32 +1612,62 @@ function addGroundPlaceables()
 	if placeAbles and count(placeAbles) > 0 then
 		groundPiecesToPlace= math.random(1,5)
 		randPlaceAbleID = ""
-			while groundPiecesToPlace > 0 do
+		while groundPiecesToPlace > 0 do
 
-				randPlaceAbleID = getSafeRandom(placeAbles)			
-				if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
-					opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-					opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-					WMove(randPlaceAbleID,3, opz, 0)
-					WMove(randPlaceAbleID,1, opx, 0)
-                    Sleep(1)
-                    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
-                    myHeight = Spring.GetGroundHeight(x, z)
-                    heightdifference = math.abs(globalHeightUnit - myHeight)
-                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
+			randPlaceAbleID = getSafeRandom(placeAbles)			
+			if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
+				opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+				opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+				WMove(randPlaceAbleID,3, opz, 0)
+				WMove(randPlaceAbleID,1, opx, 0)
+                Sleep(1)
+                x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
+                myHeight = Spring.GetGroundHeight(x, z)
+                heightdifference = math.abs(globalHeightUnit - myHeight)
+                if myHeight < globalHeightUnit then heightdifference = -heightdifference end
 
 
-					addToShowTable(randPlaceAbleID)
-					Show(randPlaceAbleID)    
-				end	
-			
-				groundPiecesToPlace = groundPiecesToPlace -1
+				addToShowTable(randPlaceAbleID)
+				Show(randPlaceAbleID)    
 			end	
+		
+			groundPiecesToPlace = groundPiecesToPlace -1
+		end	
 	end
+end
+
+local accumulatedStun = 0
+boolStartStunThread = false
+function stunAnimation()
+    Signal(SIG_STUN)
+    SetSignalMask(SIG_STUN)
+    while accumulatedStun > 0 do
+        randPiece = getSafeRandom(RoofTopPieces, RoofTopPieces[1])
+        spawnCegAtPiece(unitID, randPiece, "electric_arc")
+        accumulatedStun = accumulatedStun - stunInteval
+        Sleep(stunInteval) 
+    end
+end
+stunInteval = 1000
+function stunHouse(lengthToStun, interval)
+    accumulatedStun = accumulatedStun + lengthToStun
+    stunInteval = interval
+    boolStartThread = true
+end
+
+function threadStarter()
+    while true do
+        Sleep(1000)
+        if boolStartStunThread == true then 
+            StartThread(stunAnimation)
+            boolStartStunThread = false
+        end
+    end
 end
 
 function buildBuilding()
     StartThread(buildAnimation)
+    StartThread(threadStarter)
     lecho( "buildBuilding")
      
     --lecho( "selectBase")

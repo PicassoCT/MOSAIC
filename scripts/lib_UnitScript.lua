@@ -519,6 +519,43 @@ function removeFeaturesInCircle(px, pz, radius)
         )
 end
 
+
+function showTSubSpins(pieceID, TableOfPiecesGroups)
+   local pieceName = getUnitPieceName(unitID, pieceID)
+   subSpinPieceName = pieceName.."Spin"    
+   if TableOfPiecesGroups[subSpinPieceName] then  
+    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do
+        spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
+        ShowReg(spinPiece)
+        Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+    end
+   end
+end
+
+function setNoneCollide(unitId)
+    oldCol = getCollideData(unitID)
+    col = {}
+    col.isBlocking = false
+    col.isSolidObjectCollidable = false
+    col.isProjectileCollidable= false
+    col.isRaySegmentCollidable = true
+    col.crushable= false
+    col.blockEnemyPushing= false
+    col.blockHeightChanges  = false
+    restoreCollide(unitID, col)
+    return oldCol
+end
+
+function restoreCollide(unitID, col)
+    Spring.SetUnitBlocking(unitID, col.isBlocking, col.isSolidObjectCollidable, col.isProjectileCollidable, col.isRaySegmentCollidable, col.crushable, col.blockEnemyPushing, col.blockHeightChanges)
+end
+
+function getCollideData(unitID)
+    col = {}
+    col.isBlocking, col.isSolidObjectCollidable, col.isProjectileCollidable, col.isRaySegmentCollidable, col.crushable, col.blockEnemyPushing, col.blockHeightChanges = Spring.GetUnitBlocking(unitID)
+    return col
+end
 -- > kill All Units near Pieces Volume
 function killAtPiece(unitID, piecename, selfd, reclaimed, sfxfunction)
     px, py, pz = Spring.GetUnitPieceCollisionVolumeData(unitID, piecename)
@@ -2275,14 +2312,14 @@ function hideT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
-function placeElevators()
+function placeElevators(TablesOfPiecesGroups, elevatorHeight, nrLevels)
     foreach(TablesOfPiecesGroups["Cabin"],
         function(id)
             if toShowDict[id] then
                 ElevatorCabinName =pieceID_NameMap[id].."Cabin"
                 CabinId = TablesOfPiecesGroups[ElevatorCabinName][1]
                 if CabinId then 
-                    StartThread(GenericElevatorOS, CabinId, id, cubeDim.heigth * 3.0, 3.0, 5.0)
+                    StartThread(GenericElevatorOS, CabinId, id, elevatorHeight, nrLevels, 5.0)
                 end
             end
         end

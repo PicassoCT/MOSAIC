@@ -534,9 +534,7 @@ vec4 getReflection(vec3 reflectionPosition)
     {
 	 	// Calculate reflection direction
 	    vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
-    	//return vec4(viewDir, 1.0); //TODO: Remove debug for gfx debugging
-
-
+    	    
 	    // Assuming ground is flat, normal is (0,1,0)
 	    vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
 	    //return vec4(reflectDir, 1.0); //TODO: Remove debug for gfx debugging
@@ -556,10 +554,10 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	if (!NormalIsWaterPuddle) 
 	{
 		//rivulets
-		if (!(vertexNormal.g  > 0.95)) return NONE;
+		if (!(vertexNormal.g  > 0.95)) return  paintRainSky(sourceRotatedUV);
 
 		rivuletRunning = getRivuletMask(vertexNormal); //TODO get ground coord 
-		if (!rivuletRunning) return NONE;
+		if (!rivuletRunning) return  paintRainSky(sourceRotatedUV);
 
 		groundMixFactor= (abs(vertexNormal.r) + abs(vertexNormal.g) + abs(vertexNormal.b))/1.73205;
 	}
@@ -705,7 +703,7 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 	return  finalColor;	
 }
 
-void paintRainSky(vec2 rotatedUV )
+vec4 paintRainSky(vec2 rotatedUV)
 {
 		vec2 scale = vec2(8.0, 4.0);
 		vec2 rainUv = vec2(rotatedUV *scale);
@@ -717,14 +715,14 @@ void paintRainSky(vec2 rotatedUV )
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
-		gl_FragColor = vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
+		return vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
 	}else
 	{
-		gl_FragColor = vec4(rainRGB, rainAlpha);
+		return vec4(rainRGB, rainAlpha);
 	}
 }
 
-
+vec2 sourceRotatedUV;
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;
@@ -754,7 +752,7 @@ void main(void)
 		gl_FragColor = vec4(0.);
 		return;
 	}
-	vec2 rotatedUV = getRoatedUV();
+	sourceRotatedUV = getRoatedUV();
 
 
 	t1 = clamp(t1, 0.0, 1.0);
@@ -765,7 +763,7 @@ void main(void)
 
 	if (NormalIsSky)
 	{
-		paintRainSky(rotatedUV);		  
+		gl_FragColor = paintRainSky(sourceRotatedUV);		  
 		return;
 	}
 

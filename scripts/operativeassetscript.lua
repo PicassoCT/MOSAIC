@@ -267,19 +267,28 @@ end
 
 boolTransportedNoFiring = false
 motorBikeTypeTable = getMotorBikeTypeTable(UnitDefs)
+parachuteDefId = UnitDefNames["air_parachut"].id
 function transportControl()
-    Sleep(10)
-  
+    Sleep(10)  
 
     waitTillComplete(unitID)
     while true do
-        if isTransported(unitID) == true and motorBikeTypeTable[Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))] then
-            boolTransportedNoFiring = true    
+        if isTransported(unitID) == true then
+            transporterdefID = spGetUnitDefID(Spring.GetUnitTransporter(unitID))
+
+            if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
+
             setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+               
             while isTransported(unitID) == true do    
                 Sleep(100)
+                if transporterdefID == parachuteDefId then
+                    PlayAnimation("PARACHUTE_POSE")
+                end
             end
+            
             boolTransportedNoFiring = false
+        
         end
         Sleep(1000)
     end
@@ -901,12 +910,14 @@ function getWantCloak()
     return false
 end
 
+myCollideData = getCollideData(unitID)
 boolIsBuilding = false
 boolRunningPossible = false
 function transitionToUncloaked()
     boolRunningPossible = true
     setSpeedEnvCached(unitID, speedRunning)
     setWantCloak(false)
+    restoreCollide(unitID, myCollideData)
     if civilianID and doesUnitExistAlive(civilianID) == true then
         GG.DiedPeacefully[civilianID] = true
         Spring.DestroyUnit(civilianID, true, true)
@@ -926,6 +937,7 @@ function transitionToCloaked()
     setWantCloak(true)
     boolRunningPossible = false
     setSpeedEnvCached(unitID, speedCloaked)
+    myCollideData = setNoneCollide(unitId)
     StartThread(spawnDecoyCivilian)
     return "cloaked"
 end

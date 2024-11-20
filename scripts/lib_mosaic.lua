@@ -1081,7 +1081,7 @@ end
             return getTypeTable(UnitDefNames, typeTable)
         end
 
-        function getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
+        function getLoadAbleTruckTypes(UnitDefs, culture)
             assert(UnitDefs)
             local UnitDefNames = getUnitDefNames(UnitDefs)
             if culture == Cultures.arabic  then
@@ -1095,10 +1095,10 @@ end
             end
 
             if culture == Cultures.international then
-                    return mergeTables(
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.arabic),
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        
-                        getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
+                    return mergeDictionarys(
+                        getLoadAbleTruckTypes(UnitDefs, Cultures.arabic),
+                        getLoadAbleTruckTypes(UnitDefs, Cultures.western),                        
+                        getLoadAbleTruckTypes(UnitDefs, Cultures.asian))
             end
 
             return {}
@@ -1854,6 +1854,16 @@ end
 
                 return getTypeTable(UnitDefNames, typeTable)
             end
+
+            function genericCallUnitFunctionPassArgs(unitID, NameOfFunction, arg)
+                env = Spring.UnitScript.GetScriptEnv(unitID)
+                if env and env[NameOfFunction] then
+                    Spring.UnitScript.CallAsUnit(unitID, env[NameOfFunction], arg)
+                    return true
+                end
+                return false
+            end
+
 
             function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
                 env = Spring.UnitScript.GetScriptEnv(unitID)

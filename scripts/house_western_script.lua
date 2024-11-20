@@ -16,7 +16,8 @@ factor = 40
 heightoffset = 90
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
-
+local SIG_STUN = 2
+local RoofTopPieces = {}
 local cubeDim = 
 {
     length = factor * 14.4 * 1.45,
@@ -93,7 +94,7 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_western_script_PiecesTable", GetPieceTableGroups)
-
+    StartThread(threadStarter)
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
     math.randomseed(x + y + z)
@@ -117,6 +118,37 @@ function script.Create()
 
     StartThread(rotations)
     StartThread(HoloGrams)
+end
+
+local accumulatedStun = 0
+
+boolStartStunThread = false
+function stunAnimation()
+    Signal(SIG_STUN)
+    SetSignalMask(SIG_STUN)
+    while accumulatedStun > 0 do
+   
+        randPiece = getSafeRandom(RoofTopPieces, RoofTopPieces[1])
+        spawnCegAtPiece(unitID, randPiece, "electric_arc")
+        accumulatedStun = accumulatedStun - stunInterval
+        Sleep(stunInterval) 
+    end
+end
+stunInterval = 1000
+function stunHouse(lengthToStun, interval)
+    accumulatedStun = accumulatedStun + lengthToStun
+    stunInterval = interval
+    boolStartThread = true
+end
+
+function threadStarter()
+    while true do
+        Sleep(1000)
+        if boolStartStunThread == true then 
+            StartThread(stunAnimation)
+            boolStartStunThread = false
+        end
+    end
 end
 
 function rotations()
@@ -1036,7 +1068,7 @@ logoPiecesToHide = {
                 [piece("Office_Roof_Deco02")] = true
             }
 pieceNameMap = Spring.GetUnitPieceList( unitID ) 
-local RoofTopPieces = {}
+
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
     if materialColourName == "Office" and maRa() then

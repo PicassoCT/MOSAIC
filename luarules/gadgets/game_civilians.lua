@@ -68,7 +68,8 @@ local individualNamedTypes = getIndividualCulturalNamedTypes(UnitDefs)
 assert(civilianWalkingTypeTable)
 assert(count(civilianWalkingTypeTable) > 0)
 
-local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
+local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, GameConfig.instance.culture)
+echo("Loadable TruckTypes: ".. toString(loadableTruckType))
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
@@ -267,8 +268,7 @@ end
 
 function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
-        --Spring.Echo(id .. " is a loadable truck ")
---        Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
+        --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
 
         return attachPayload(payLoadID, id)
@@ -309,6 +309,7 @@ function checkReSpawnTraffic()
                 TruckType = randDict(TruckTypeTable)
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
+                    echo("calling truck loading")
                     loadTruck(id, "truckpayload") 
                 end
             end
