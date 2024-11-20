@@ -150,22 +150,22 @@ end
 
 
 function landBooster(boosterNr, booster)
-    resttime = boosterNr*10000
-    axis = 1
+    resttime = boosterNr*15000
+    axis = 3
     Sleep(boosterNr)
     plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     nextPos = 64000
     boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
-    Move(booster, axis, nextPos, 0)
+    WMove(booster, axis, nextPos, 0)
     --Turn(boosterRotator, x_axis, math.rad(-5), 0)
     Show(booster)
     --Turn(boosterRotator, x_axis, math.rad(0), 0.001)
    
-    x = 1
     for i = nextPos, 2000, -2000 do
-        WMove(booster, axis, i, 4000)
-        x = x + 1
+        Move(booster, axis, i, 4000)
+        Sleep(1)
+        WaitForMoves(booster)
     end
 
         Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
@@ -245,12 +245,7 @@ function spinUpTurbine()
     Sleep(4000)
     Show(turbineHot)
     Hide(turbineCold)
-    Sleep(40000)
-    Hide(turbineHot)
-    Show(turbineCold)
-    StopSpin(turbine, y_axis, 0.0001)
-    Sleep(9000)
-    Turn(turbine, y_axis, 0, 3)
+    
 
 end
 
@@ -403,10 +398,18 @@ end
 function cloudFallingDown()
     Move(Rocket,y_axis, 0, 100)
     for i =  1, #TableOfPiecesGroups[rocketPlumage] do
-        Move(TableOfPiecesGroups[rocketPlumage][i+1], y_axis, i*4500, 1000)
-        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 1000)
+        if TableOfPiecesGroups[rocketPlumage][i+1] then
+            Move(TableOfPiecesGroups[rocketPlumage][i+1], y_axis, i*4500, 4500)
+        end
+        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 4500)
         Hide(TableOfPiecesGroups[rocketPlumage][i])
     end
+    Sleep(4000)
+    Hide(turbineHot)
+    Show(turbineCold)
+    StopSpin(turbine, y_axis, 0.0001)
+    Sleep(9000)
+    Turn(turbine, y_axis, 0, 3)
 end
 
 
