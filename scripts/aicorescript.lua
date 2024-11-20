@@ -27,6 +27,39 @@ function instanciate()
         }
     end
 end
+membersIntegrated= 0
+
+function integrateNewMembers()
+    waitTillComplete(unitID)
+    x, y, z = Spring.GetUnitPosition(unitID)
+    local integrateAbleUnits = getCultureUnitModelTypes(  GG.GameConfig.instance.culture, "truck", UnitDefs)
+    px, py, pz = Spring.GetUnitPosition(unitID)
+    members = {}
+    while true do
+        if  membersIntegrated < GameConfig.maxNumberIntegratedIntoHive  then
+        foreach(getAllInCircle(x, z, IntegrationRadius), 
+            function(id)
+                team = Spring.GetUnitTeam(id)
+                if team == myTeamID then
+                    return nil
+                end
+                if GG.DisguiseCivilianFor[id] then
+                  return GG.DisguiseCivilianFor[id]
+                end
+                return id
+            end, 
+            function(id)
+                if integrateAbleUnits[Spring.GetUnitDefID(id)] and not isTransport(id) then           
+                    Spring.SetUnitPosition(id, px, py, pz)
+                    Spring.DestroyUnit(id, false, true)
+                    membersIntegrated = membersIntegrated  + 1
+                end
+            end
+            )
+        end
+        Sleep(100)
+    end
+end
 
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
@@ -37,6 +70,7 @@ function script.Create()
     hideT(TablesOfPiecesGroups["body"])
     StartThread(wiggleEye)
     StartThread(showState)
+    StartThread(integrateNewMembers)
 end
 
 function wiggleEye()

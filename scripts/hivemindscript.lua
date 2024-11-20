@@ -41,7 +41,7 @@ membersIntegrated= 0
 function integrateNewMembers()
     waitTillComplete(unitID)
     x, y, z = Spring.GetUnitPosition(unitID)
-    local integrateAbleUnits = getMobileCivilianDefIDTypeTable(UnitDefs)
+    local integrateAbleUnits = getCultureUnitModelTypes(  GG.GameConfig.instance.culture, "civilian", UnitDefs)
     px, py, pz = Spring.GetUnitPosition(unitID)
     members = {}
     while true do
