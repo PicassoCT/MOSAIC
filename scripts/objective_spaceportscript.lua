@@ -127,9 +127,10 @@ end
 
 crawlerSpeed = 750
 function boosterArrivedTravelIntoHangar(boosterNr)
-    rest =5000*boosterNr^2
-    Sleep()
+
     openDoor(GroundRearDoorN)
+    rest =5000*boosterNr^2 or 10000
+    Sleep(rest)
     if boosterNr == 1 or boosterNr == 3 then
         turnSign = -1 
         if boosterNr == 3 then turnSign = 1 end
@@ -147,32 +148,37 @@ function boosterArrivedTravelIntoHangar(boosterNr)
     boosterReturned[boosterNr] = true
 end
 
+
 function landBooster(boosterNr, booster)
-    Sleep(boosterNr*10000)
+    resttime = boosterNr*10000
+    axis = 1
+    Sleep(boosterNr)
     plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     nextPos = 64000
     boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
-    Move(booster, y_axis, nextPos, 0)
+    Move(booster, axis, nextPos, 0)
     --Turn(boosterRotator, x_axis, math.rad(-5), 0)
     Show(booster)
     --Turn(boosterRotator, x_axis, math.rad(0), 0.001)
    
     x = 1
-    for i = nextPos, 0, 2000 do
-        WMove(booster, y_axis, i, 4000)
+    for i = nextPos, 2000, -2000 do
+        WMove(booster, axis, i, 4000)
         x = x + 1
     end
 
         Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
         Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
         showT(plums)
-        spinVal = math.random(40, 120)
-        spinT(plums, y_axis, math.rad(spinVal))
+     
         Turn(booster, x_axis, math.rad(0), 0.5)
         Turn(booster, y_axis, math.rad(0), 3)
-        WMove(booster, y_axis, 0, 2000)
-  
+        for i= 2000, 0, -10 do
+            WMove(booster, axis, i, 500)
+           spinVal = math.random(40, 120)*randSign()
+           spinT(plums, y_axis, math.rad(spinVal))
+        end  
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     hideT(plums)
@@ -190,16 +196,20 @@ function plattFormFireBloom()
     Show(LaunchCone)
     Move(fireCloud, y_axis, -250, 0)
     Show(fireCloud)
-    Spin(fireCloud, y_axis, math.rad(42), 0)
-    Spin(LaunchCone, y_axis, math.rad(42), 0)
-    Move(fireCloud, y_axis, 0, math.pi)
+
+    Move(fireCloud, y_axis, 0, 50)
 
     while launchState == "launching" do
+        rVal = math.random(50,150) *randSign()
+        Spin(fireCloud, y_axis, math.rad(rVal), 0)
+        rVal = math.random(50,150) *randSign()
+        Spin(LaunchCone, y_axis, math.rad(rVal), 0)
         val = math.random(10, 77) * randSign()
         Spin(fireCloud, y_axis, math.rad(val), 0)
         shift = 360 / #TableOfPiecesGroups["FireFlower"]
         for i = 1, #TableOfPiecesGroups["FireFlower"] do
             cycle = TableOfPiecesGroups["FireFlower"][i]
+            Show(cycle)
             rotation = math.random(-360,360)
             Turn(cycle, y_axis, math.rad(rotation), 0)
             startVal = 90 + randSign() * 90
@@ -328,7 +338,7 @@ function launchAnimation()
         StartThread(spinUpTurbine)
         --Inginition
         -- plattform firebloom
-
+        Spring.PlaySoundFile("sounds/launcher/start"..math.random(1,2)..".ogg", 1.0)
         StartThread(plattFormFireBloom)
         --Trusters
         --assert(TableOfPiecesGroups[RocketThrustPillarN])
@@ -393,6 +403,7 @@ end
 function cloudFallingDown()
     Move(Rocket,y_axis, 0, 100)
     for i =  1, #TableOfPiecesGroups[rocketPlumage] do
+        Move(TableOfPiecesGroups[rocketPlumage][i+1], y_axis, i*4500, 1000)
         WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 1000)
         Hide(TableOfPiecesGroups[rocketPlumage][i])
     end

@@ -12,6 +12,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(launchMotion)
     StartThread(launchCloud)
+    Spring.PlaySoundFile("sounds/launcher/start"..math.random(1,2)..".ogg", 1.0)
 end
 
 function launchMotion()
