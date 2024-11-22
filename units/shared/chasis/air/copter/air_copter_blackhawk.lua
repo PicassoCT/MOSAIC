@@ -2,7 +2,7 @@ local unitName = "air_copter_blackhawk"
 
 local unitDef = {
 	name = "Blackhawk",
-	Description = "ground Assault Helicopter, drops bombs and waterbombs. <Air Ground Assault Unit>",
+	Description = "attack helicopter that can transport personal",
 	objectName = "chchopper.s3o",
 	script = "air_black_hawk_script.lua",
 	buildPic = "chunterchopper.png",

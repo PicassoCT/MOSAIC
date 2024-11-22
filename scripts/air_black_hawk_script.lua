@@ -355,14 +355,12 @@ end
 
 function emitSmoke()
     while (true) do
-        EmitSfx(bady, blackerthensmoke)
+        EmitSfx(bady, smokeEmit)
         Sleep(15)
     end
 end
 
 function script.Killed()
-
-
 
     EmitSfx(bady, rlexplode)
     createCorpseCUnitGeneric()
@@ -384,9 +382,7 @@ end
 
 
 function script.AimWeapon1(heading, pitch)
-
     if math.deg(pitch) < 0 then return false end
-
     Turn(turret, y_axis, heading, 5.2)
     Turn(gun, x_axis, pitch, 7.75)
     WaitForTurn(gun, x_axis)
@@ -403,104 +399,3 @@ function script.FireWeapon1()
     end
 end
 
---function: Impailor Weapon attaches and manages the Physix of two impaled Units
---If unit is crushable.
---weapon 2
-function reLoadThread()
-    Sleep(12000)
-    twoRockets = 2
-end
-
-twoRockets = 2
-function script.AimWeapon2(heading, pitch)
-    if twoRockets <= 0 then
-        return false
-
-    else
-        twoRockets = twoRockets - 1
-        if twoRockets <= 0 then StartThread(reLoadThread) end
-        return true
-    end
-end
-
-rocketPoints = {}
-rocketPoints[1] = {}
-rocketPoints[2] = {}
-rocketPoints[1] = piece "rockPoint1"
-rocketPoints[2] = piece "rockPoint2"
-function script.AimFromWeapon2()
-    if twoRockets > 0 and twoRockets < 3 then return rocketPoints[twoRockets]
-    else return rocketPoints[1]
-    end
-end
-
-
-function script.QueryWeapon2()
-    if twoRockets > 0 and twoRockets < 3 then return rocketPoints[twoRockets]
-    else return rocketPoints[1]
-    end
-end
-
-
-function script.FireWeapon2()
-    return true
-end
-
---weapon3
-boolMinesActive = true
-function script.AimWeapon3(heading, pitch)
-
-
-    return boolMinesActive
-end
-
-function script.AimFromWeapon3()
-
-
-
-    return aim2
-end
-
-function script.QueryWeapon3()
-    return aim2
-end
-
-function firePeriod()
-    boolMinesActive = true
-    Sleep(2000)
-    boolMinesActive = false
-    Sleep(15000)
-    boolThreadStart = false
-    boolMinesActive = true
-end
-
-boolThreadStart = false
-function script.FireWeapon3()
-    if boolThreadStart == false then
-        boolThreadStart = true
-        StartThread(firePeriod)
-    end
-    return true
-end
-
---weapon 4
-
--------- BUILDING---------
-function script.AimFromWeapon4()
-    return aim2
-end
-
-function script.QueryWeapon4()
-    return aim2
-end
-
-function script.FireWeapon4()
-    return true
-end
-
---weapon 4
-function script.AimWeapon4(heading, pitch)
-    return true
-end
-
---------BUILDING---------
