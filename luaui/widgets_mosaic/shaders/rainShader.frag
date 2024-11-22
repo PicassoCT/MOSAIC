@@ -124,6 +124,7 @@ void debug_testRenderColor(vec3 color)
 
 //Global Variables					//////////////////////////////////////////////////////////
 vec2 uv;
+vec2 sourceRotatedUV;
 vec3 worldPos;
 vec4 mapDepth;
 vec4 depthAtPixel;
@@ -546,6 +547,26 @@ vec4 getReflection(vec3 reflectionPosition)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+float calculateLightReflectionFactor();
+
+vec4 paintRainSky(vec2 rotatedUV)
+{
+		vec2 scale = vec2(8.0, 4.0);
+		vec2 rainUv = vec2(rotatedUV *scale);
+		
+		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y ) * 0.125; 
+		vec4 rainColor = texture2D(noisetex , rainUv);
+		vec3 rainRGB = GetDeterministicRainColor(rainUv.xy).rgb;
+		float rainAlpha = rainPercent*(1.0-rainColor.r*0.5)* (0.225 + 0.05*absinthTime());
+	float sunlightReflectionFactor = calculateLightReflectionFactor();
+	if (sunlightReflectionFactor > 0.1) 
+	{
+		return vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
+	}else
+	{
+		return vec4(rainRGB, rainAlpha);
+	}
+}
 
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
@@ -703,26 +724,8 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 	return  finalColor;	
 }
 
-vec4 paintRainSky(vec2 rotatedUV)
-{
-		vec2 scale = vec2(8.0, 4.0);
-		vec2 rainUv = vec2(rotatedUV *scale);
-		
-		rainUv.y = -1.0 * rainUv.y - (time + eyePos.y ) * 0.125; 
-		vec4 rainColor = texture2D(noisetex , rainUv);
-		vec3 rainRGB = GetDeterministicRainColor(rainUv.xy).rgb;
-		float rainAlpha = rainPercent*(1.0-rainColor.r*0.5)* (0.225 + 0.05*absinthTime());
-	float sunlightReflectionFactor = calculateLightReflectionFactor();
-	if (sunlightReflectionFactor > 0.1) 
-	{
-		return vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
-	}else
-	{
-		return vec4(rainRGB, rainAlpha);
-	}
-}
 
-vec2 sourceRotatedUV;
+
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;
@@ -781,8 +784,8 @@ void main(void)
 	//TODO, should pulsate depending on look vector due to the dropletss
 
 	
-	accumulatedLightColorRayDownward = mix( screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(rotatedUV, 3.0)), 
-										    screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(rotatedUV, 0.03)),
+	accumulatedLightColorRayDownward = mix( screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(sourceRotatedUV, 3.0)), 
+										    screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(sourceRotatedUV, 0.03)),
 											1.0-upwardnessFactor 
 											) ;
 	
