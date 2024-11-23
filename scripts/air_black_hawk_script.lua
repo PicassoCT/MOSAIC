@@ -331,9 +331,6 @@ end
 
 
 function script.AimFromWeapon1()
-
-    --	EmitSfx(frontAppendixTable[1],choppermuzzle)
-
     return aim1
 end
 

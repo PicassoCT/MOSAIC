@@ -203,7 +203,7 @@ end
 
 function tearGasState()
     while true do
-        if boolHasBeenHitBy == true and GG.GlobalGameState == GameConfig.GameState.anarchy then
+        if boolHasBeenHitBy == true and GG.GlobalGameState ~= GameConfig.GameState.normal then
             boolHasBeenHitBy = false
             StartThread(spawnRiotPolice)
         end

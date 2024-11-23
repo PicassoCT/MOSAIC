@@ -54,7 +54,6 @@ function script.Create()
     StartThread(lifeTime, unitID, timeTotal  - 5000 -1000, false, true)
 end
 
-
 function setupAnimation()
     local map = Spring.GetUnitPieceMap(unitID);
     local switchAxis = function(axis)
@@ -178,11 +177,45 @@ function animationLoop(name, speeds)
   end
 end
 
+
+function walkAnimation(speed)
+    Signal(SIG_WALK)
+    SetSignalMask(SIG_WALK)
+    while true do
+        Turn(UpArm1, z_axis, math.rad(60), speed)
+        Turn(UpArm2, z_axis, math.rad(-60), speed)
+
+        valRangeLeft = math.random(35, 45)
+        Turn(UpLeg2,x_axis, math.rad(-valRangeLeft), speed)
+        Turn(LowLeg2,x_axis, math.rad(valRangeLeft *0.6), speed)
+        valRangeRight = math.random(15, 25)
+        Turn(UpLeg1,x_axis, math.rad(valRangeRight), speed)
+        Turn(LowLeg1,x_axis, math.rad(valRangeRight * 0.8), speed)
+        Turn(UpArm1, y_axis, math.rad(30), speed*0.5)
+        Turn(UpArm2, y_axis, math.rad(-30), speed*0.5)
+
+        WaitForTurns({ LowLeg1, LowLeg2})
+        Sleep(250)
+        valRangeRight = math.random(35, 45)
+        Turn(UpLeg1,x_axis, math.rad(-valRangeRight), speed)
+        Turn(LowLeg1,x_axis, math.rad(valRangeRight *0.6), speed)
+        valRangeLeft = math.random(15, 25)
+        Turn(UpLeg2,x_axis, math.rad(valRangeLeft), speed)
+        Turn(LowLeg2,x_axis, math.rad(valRangeLeft * 0.8), speed)
+        Turn(UpArm1, y_axis, math.rad(-30), speed*0.5)
+        Turn(UpArm2, y_axis, math.rad(30), speed*0.5)
+
+        WaitForTurns({ LowLeg1, LowLeg2})
+        Sleep(250)
+    end
+end
+
 function script.StartMoving() 
-  StartThread(animationLoop, "FULLBODY_WALKING", 2)
+    StartThread(walkAnimation, 60)
 end
 
 function script.StopMoving() 
+  Signal(SIG_WALK)
   StartThread(animationLoop, "FULLBODY_STANDING_IDLE",math.random(75,100)/100)
 end
 
@@ -198,7 +231,7 @@ function script.AimWeapon1(Heading, pitch) return true end
 
 function script.FireWeapon1()
   Signal(SIG_ANIMATION)
-  PlayAnimation("FULLBODY_BEATDOWN",{},math.random(80,150)/100)
+  PlayAnimation("FULLBODY_BEATDOWN",{},math.random(80,150)/50)
   return true 
 
 end

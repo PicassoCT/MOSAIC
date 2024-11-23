@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
