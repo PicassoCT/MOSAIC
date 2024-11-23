@@ -11,7 +11,7 @@ center = piece "center"
 buildspot = piece "buildspot"
 Object = piece "Object1"
 teamID = Spring.GetUnitTeam(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 function getDistance(cmd, x, z)
     val = ((cmd.params[1] - x) ^ 2 + (cmd.params[3] - z) ^ 2) ^ 0.5

@@ -3,7 +3,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 local myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 SIG_PISTOL = 1
 SIG_RAID = 2

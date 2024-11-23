@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 SIG_DELAYEDSTOP = 1
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end

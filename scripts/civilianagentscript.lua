@@ -9,7 +9,7 @@ local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 include "lib_mosaic.lua"
 myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 SIG_ANIM = 1
 SIG_UP = 2

@@ -3,7 +3,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 GameConfig = getGameConfig()
 
 IntegrationRadius = GameConfig.integrationRadius

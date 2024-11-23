@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 local operativeTypeTable = getOperativeTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 

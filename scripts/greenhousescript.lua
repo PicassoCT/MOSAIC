@@ -13,7 +13,7 @@ Windmill = piece"Windmill"
 WindmillHead = piece"WindmillHead"
 WindMillRotor = piece"WindMillRotor"
 Solar = piece"Solar"
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 GameConfig = getGameConfig()
 offset = 0
 function script.Create()

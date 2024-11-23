@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 local Animations = include('animations_ground_walker.lua')
 include "lib_mosaic.lua"
 myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 local Muzzle
 local boolIsMgGroundWalker = false

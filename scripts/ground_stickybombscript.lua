@@ -2,7 +2,7 @@
 include "lib_UnitScript.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 stickyBombTimeMs = 5000
 maxDamagePerUnit = 1150
 maxDamageDistance = 150

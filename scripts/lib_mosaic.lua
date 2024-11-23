@@ -1285,6 +1285,7 @@ end
                 end
             end
 
+
             function getTypeUnitNameTable(culturename, typeDesignation, UnitDefs)
                 assert(UnitDefs)
                 defID_Name_Map = {}
@@ -3753,3 +3754,13 @@ thirdName = third[(thirdHash % #third)+1] or third[math.random(1,#third)]
 return firstName..secondName..thirdName
 end
 
+
+function getCivilianIdFromAgent(idA)
+      -- out of time to interrogate
+        for disguiseID, agentID in pairs(GG.DisguiseCivilianFor) do
+            if idA == agentID then
+                return disguiseID
+            end
+        end
+        return nil
+end

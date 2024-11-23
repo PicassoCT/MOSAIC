@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 local move1 = TablesOfPiecesGroups["move"][1]
 local turn1 = TablesOfPiecesGroups["rot"][1]

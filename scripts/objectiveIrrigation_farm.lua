@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 Irrigation1 = piece "Irrigation1"
 GameConfig = getGameConfig()
 

@@ -6,7 +6,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 

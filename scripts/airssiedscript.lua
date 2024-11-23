@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 

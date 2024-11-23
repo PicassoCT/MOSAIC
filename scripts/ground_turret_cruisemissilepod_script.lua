@@ -6,7 +6,7 @@ include "lib_Build.lua"
 
 SIG_LAUNCHCLOUD=1
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 groundFeetSensors = {}
 center = piece"Pod"
 rocketTransportableType = getRocketTransportableTypes(UnitDefs)

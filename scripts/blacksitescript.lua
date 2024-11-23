@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 myTeamID = Spring.GetUnitTeam(unitID)
 center = piece "center"
 emitor = piece "center"

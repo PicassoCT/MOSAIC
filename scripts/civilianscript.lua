@@ -8,7 +8,7 @@ local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 SIG_ANIM = 1
 SIG_UP = 2

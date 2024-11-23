@@ -4,7 +4,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 myDefID = Spring.GetUnitDefID(unitID)
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 SIG_PISTOL = 1
 SIG_GUN = 2

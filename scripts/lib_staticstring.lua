@@ -681,10 +681,33 @@ function GetBadGuysGroupNames(hash)
     badGuys= {"Mr.RogerSendro", "Children of Elon", "GreenWar", "TaliBanned","SwissStabilityDefenseGroup",
      "Isil", "AlNusra", "HareKrishnaSupremacy", "BrasilFirsters", "GliderGunDAOists", "CentralIntelligenceAgencyIregulars", "AmericanPatriotIrregulars","CheckaRemnants",
       "Xi-DynastyInExile", "ChaosAdventists", "Loop Worshipper", "Axiom Ascendants", "The Veilkeepers", "GospelOfJose","TantricHives",
-      "Realists", "EpicGeneticsCells", "HiveUnalive", "UmarTemplar", "SudoSims", "PuritySpiralists", "Stalinist" }
+      "Realists", "EpicGeneticsCells", "HiveUnalive", "UmarTemplar", "SudoSims", "PuritySpiralists", "RetroStalinist" , "NeoRomans"}
     return badGuys[(hash%#badGuys)+1]
 end
 
+function getDeadDropLastWords(unitID, killerId, )
+    teamName, isAntagon = getTeamNameIsAntagon(unitID)
+    civilianId = getCivilianIdFromAgent(unitID)
+    id = civilianID or unitID
+    agentName, SurName = getDeterministicCultureNames( id, UnitDefs, GG.GameConfig.instance.culture)
+
+    lastWords = {
+        "You ? But i thought you"
+        "Why? Its #### that gave me up, eh ?",
+        "Its glorious to die for " .. teamName,
+        "History shall avenge me..",
+        "Mr."..agentName.." i presume",
+        teamName.. " sends its regards", 
+        "Its all in the game ",
+        "Long live ".. teamName,
+        "Hey ".. SurName
+    }
+
+        return lastWords[math.random(1,#lastWords)]
+    }
+
+
+end
 
 function GetGoodGuysGroupName(hash)
     hash = hash + getDetermenisticMapHash(Game)
@@ -699,6 +722,15 @@ function GetGoodGuysGroupName(hash)
     end
 end
 
+function getTeamNameIsAntagon(id)
+    teamName = ""
+    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier, customTeamKeys = Spring.GetTeamInfo ( teamID )
+    if string.lower(side) == "antagon" then
+        return  GetGoodGuysGroupName(teamID), true
+    else
+        return GetBadGuysGroupNames(teamID), false  
+    end
+end
 
 function startRevealedUnitsChatEventStream(idA, idB)
     boolValidConversation = false
@@ -714,14 +746,9 @@ function startRevealedUnitsChatEventStream(idA, idB)
 
     if not boolValidConversation then return end
     
-    teamID = Spring.GetUnitTeam(idA)
-    teamName = ""
-    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier, customTeamKeys = Spring.GetTeamInfo ( teamID )
-    if string.lower(side) == "antagon" then
-        teamName = GetGoodGuysGroupName(teamID)
-    else
-        teamName = GetBadGuysGroupNames(teamID)    
-    end
+
+    teamName = getTeamNameIsAntagon(idA)
+
 
     local conversationHash = idA + idB
     local persPack =  {
