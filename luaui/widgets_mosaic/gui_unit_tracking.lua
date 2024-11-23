@@ -134,17 +134,23 @@ local trackedUnits = {}
 local trackKey = 111 --'O'
 local untrackKey = 127 --'DELETE'
 
-function widget:RecvLuaMsg(msg, playerID)
-	if msg:sub(1,18) == 'LobbyOverlayActive' then
-		chobbyInterface = (msg:sub(1,19) == 'LobbyOverlayActive1')
-	end
-end
-
 local function setTrackedUnit(id)
   local setTrackedMessage = "SET_TRACKED:".. id
   Spring.SendLuaRulesMsg(setTrackedMessage)
 end
 
+function widget:RecvLuaMsg(msg, playerID)
+	if msg:sub(1,18) == 'LobbyOverlayActive' then
+		chobbyInterface = (msg:sub(1,19) == 'LobbyOverlayActive1')
+	end
+
+  if msg:find("SEND_TRACKED:") then
+    local rawNumber = msg:gsub("SEND_TRACKED:", "")
+    local trackedId = string.tonumber(rawNumber)
+    Spring.Echo("TODO: Confirm working sending tracked "..rawNumber)
+    setTrackedUnit(trackedId)
+  end
+end
 
 local function setUntrackedUnit(id)
   local setUntrackedMessage = "SET_UNTRACKED:".. id

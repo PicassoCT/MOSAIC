@@ -143,10 +143,12 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
         if InterrogateableType[unitDefID]  then
             if attackerID and spGetUnitTeam(attackerID) == teamID then 
-                DeadDropLastWords = getDeadDropLastWords(unitID, attackerID)
+                DeadDropLastWords, agentName, surName = getDeadDropLastWords(unitID, attackerID)
                 say(DeadDropLastWords, 2500, { r = 1.0, g = 0.0, b = 0.0 }, { r = 1.0, g = 0.0, b = 0.0 }, "", unitID)
                 x,y,z = getFairDropPointNear(unitID)
                 copyID = Spring.CreateUnit("deaddropicon", teamID, x,y,z, 1 )
+                Spring.SetUnitTooltip(copyID, "Contains the secrets of betrayed "..agentName .. " "..surName..". Drive over to collect")
+               Spring.SendLuaRulesMsg ("SEND_TRACKED:"..copyID)
                 transferHierarchy(teamID, originalID, copyID)
             else
                 removeUnit(teamID, unitID) 

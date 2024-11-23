@@ -583,7 +583,8 @@ local function generate_conversation(idA, idB, groupName)
         "I'm thinking of grabbing a beer. Care to join?",
         "I'm about to have lunch. Want to come over?",
         "I'm about to start my prayer. Would you like to join me?",
-        "Long life ".. groupName
+        "Long life ".. groupName,
+        "Swordfish ?"
     }
     name, family = getDeterministicCultureNames( idA+idB, UnitDefs, GG.GameConfig.instance.culture)
     traitor = name.." sold us out. Never should have trusted a ".. family.." ! Fuck!"
@@ -700,10 +701,13 @@ function getDeadDropLastWords(unitID, killerId, )
         teamName.. " sends its regards", 
         "Its all in the game ",
         "Long live ".. teamName,
-        "Hey ".. SurName
+        "Hey ".. SurName,
+        "Et tu brute ? Et tu "..agentName,
+        "The ".. teamName.. " send there regards"
+
     }
 
-        return lastWords[math.random(1,#lastWords)]
+        return lastWords[math.random(1,#lastWords)], agentName, SurName
     }
 
 
@@ -828,7 +832,7 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     }
 
     objects = {
-        "family", "me", "situation", "car", "house", "city", "money", "expenses", "government", "faith", 
+        "family", "me", "situation", "car", "house", "city", "money", "expenses", "government", "faith", "lipstick", "arcology",
         "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
         "gambler", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
         "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "BLYAT", "motherfucker", 

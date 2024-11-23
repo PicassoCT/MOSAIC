@@ -4,17 +4,13 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function script.Create()
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
+
     StartThread(revealAllDoubleAgents)
 end
 

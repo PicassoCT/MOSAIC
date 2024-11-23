@@ -14,7 +14,7 @@ local DeadDropIcon =
     --
     alwaysUpright = true,
     name = "Dead Drop",
-    description = "Contains the secrets of a betrayed operative",
+    description = "Contains the secrets of a betrayed operative. Drive over to collect",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
