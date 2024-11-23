@@ -123,6 +123,7 @@ function BoostersReturning()
     while (holdsForAllBool(boosterReturned, false)) do
         Sleep(1000)
     end
+    closeDoor(GroundRearDoorN)
 end
 
 crawlerSpeed = 750
@@ -154,7 +155,9 @@ function landBooster(boosterNr, booster)
     axis = 3
     Sleep(boosterNr)
     plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
+    assert(plums)
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
+    assert(booster)
     nextPos = 64000
     boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
     WMove(booster, axis, nextPos, 0)
@@ -181,6 +184,7 @@ function landBooster(boosterNr, booster)
         end  
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
+    assert(plums)
     hideT(plums)
     Hide(booster)
     assert(TableOfPiecesGroups[LandedBoosterN])
@@ -386,8 +390,10 @@ function launchAnimation()
         --Moving CrawlerMain back to reassembly
         launchState = "recovery"
         WMove(RocketCraneBase, z_axis, 0, 15)
-        while (holdsForAllBool(boosterReturned, false)) do
+        watchDog = 90000
+        while (holdsForAllBool(boosterReturned, false) or watchDog < 0) do
             Sleep(1000)
+            watchDog = watchDog-1000
         end
         launchState = "prepareForLaunch"
         closeDoor(GroundRearDoorN)

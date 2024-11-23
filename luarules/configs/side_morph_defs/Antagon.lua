@@ -19,7 +19,7 @@ local antagonDefs = {
 			facing = true,
 		},		
 		{
-			into = 'assembly',
+			into = 'antagonassembly',
 			metal = 3500,
 			energy = 5000,
 			time = 60,

@@ -4,7 +4,7 @@ local protagonData = {
         units = {
         "operativeinvestigator",
         "propagandaserver",
-        "assembly",
+        "protagonassembly",
         "nimrod",
         "blacksite",
         "operativeasset"

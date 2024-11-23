@@ -6,7 +6,7 @@ local Vehicle = Unit:New{
 	iconType			= "vehicle",
 	moveState			= 0, -- Hold Position
 	onoffable           = true,
-	script				= "Vehicle.lua",
+	script				= "placeholder.lua",
 	-- usepiececollisionvolumes = true,
 	
 	customparams = {

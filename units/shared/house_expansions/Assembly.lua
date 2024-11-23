@@ -52,8 +52,33 @@ local Assembly = Building:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
-		buildoptions = 
-	{
+	buildoptions = {},
+	
+	category = [[GROUND BUILDING RAIDABLE]],
+	}
+
+local antagonAssembly = Assembly
+antagonAssembly.name = "Antagon Automated Assembly"
+antagonAssembly.buildOptions = {
+	--chassis
+	--air
+		 --copter  --jet -- bomber --long range rocket
+		"air_copter_scoutlett", 		"ground_truck_assembly", 	"ground_turret_cm_transport",
+		"air_copter_mg",				"air_copter_antiarmor", 	"air_copter_ssied",			 
+	--ground
+		--turrets
+		"ground_turret_mg",				"ground_turret_antiarmor",	"ground_turret_ssied",			
+		"ground_turret_dronegrenade" , 	"ground_turret_rocket", 	"ground_turret_sniper",
+		--walkers
+		"ground_walker_mg",				"ground_walker_grenade", 	"ground_tank_night",
+		--vehicles
+		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket", 
+	--weapon
+	}
+	
+local protagonAssembly = Assembly
+protagonAssembly.name = "Protagon Automated Assembly"
+protagonAssembly.buildOptions =  {
 	--chassis
 	--air
 		 --copter  --jet -- bomber --long range rocket
@@ -66,17 +91,15 @@ local Assembly = Building:New{
 		--walkers
 		"ground_walker_mg",				"ground_walker_grenade", 	"ground_tank_day",
 		--vehicles
-		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket", 
+		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket",
+
+		"air_copter_blackhawk"
+
 	--weapon
-	},
-	
-	category = [[GROUND BUILDING RAIDABLE]],
 	}
-
-
 
 return lowerkeys({
 	--Temp
-	["assembly"] = Assembly:New(),
-	
+	["antagonassembly"] = antagonAssembly:New(),
+	["protagonassembly"] = protagonAssembly:New()
 })

@@ -2312,6 +2312,12 @@ function hideT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
+function getCoordinateString(unitID)
+    px,py,pz = Spring.GetUnitPosition(unitID)
+    return "("..px.."/"..py.."/"..pz..")"
+
+end
+
 function placeElevators(TablesOfPiecesGroups, elevatorHeight, nrLevels)
     foreach(TablesOfPiecesGroups["Cabin"],
         function(id)

@@ -42,7 +42,7 @@ local unitDef = {
 	Canstop = true,--alt
 	LeaveTracks = false, 
 	
-	cruiseAlt= 65,
+	cruiseAlt= 165,
 	CanFly = true,
 	ActivateWhenBuilt=1,
 	--maxBank=0.4,
@@ -59,15 +59,15 @@ local unitDef = {
 	factoryHeadingTakeoff = false,
 	strafeToAttack=true,
 	customParams = {
-	  	baseclass ="vtol",
+	  	baseclass ="AIRCRAFT",
 	  	normaltex = "unittextures/air_copter_blackhawk_normal.dds",
 	  },
 
 	
 	Category = [[AIR]],
 	
-	explodeAs="citadelldrone",
-	selfDestructAs="cartdarkmat", 
+	--explodeAs="citadelldrone",
+	--selfDestructAs="cartdarkmat", 
 	ShowNanoSpray = false,
 	CanBeAssisted = false,
 	CanReclaim=false,	
@@ -75,7 +75,7 @@ local unitDef = {
 	customParams = {},
 	sfxtypes = {
 		explosiongenerators = {
-			"custom:chopperdirt",
+			"custom:chopperdirt",--1024
 			"custom:choppermuzzle",
 			"custom:flyinggrass",
 			"custom:blackerthensmoke",--1027
@@ -100,10 +100,6 @@ local unitDef = {
 		},	
 		
 		
-		
-	},
-	
-	
 }
-
+	
 return lowerkeys({ [unitName] = unitDef })

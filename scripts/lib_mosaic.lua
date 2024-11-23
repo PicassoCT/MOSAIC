@@ -576,7 +576,8 @@ end
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
             [UnitDefNames["aicore"].id] = true,
-            [UnitDefNames["assembly"].id] = true,
+            [UnitDefNames["protagonassembly"].id] = true,
+            [UnitDefNames["antagonassembly"].id] = true,
             [UnitDefNames["hivemind"].id] = true,
             [UnitDefNames["propagandaserver"].id] = true,
             [UnitDefNames["antagonsafehouse"].id] = true,
@@ -604,7 +605,8 @@ end
     function getTurnCoatFactoryType(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
-            [UnitDefNames["assembly"].id] = true,
+            [UnitDefNames["protagonassembly"].id] = true,
+            [UnitDefNames["antagonassembly"].id] = true,
             [UnitDefNames["nimrod"].id] = true
         }
     end
@@ -998,7 +1000,8 @@ end
 
                 typeTable = {
                     "propagandaserver",
-                    "assembly",
+                    "protagonassembly",
+                    "antagonassembly",
                     "objective_airport",
                     "ground_turret_cm_airstrike",
                     "ground_turret_cm_transport",
@@ -1599,7 +1602,8 @@ end
                     "antagonsafehouse",
                     "protagonsafehouse",
                     "propagandaserver",
-                    "assembly",
+                    "protagonassembly",
+                    "antagonassembly",
                     "hivemind",
                     "launcher",
                     "launcherstep",
@@ -1619,17 +1623,17 @@ end
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {}
                 if not myDefID then
-                    typeTable = {"nimrod", "propagandaserver", "assembly",  "warheadfactory"}
+                    typeTable = {"nimrod", "propagandaserver", "protagonassembly",  "warheadfactory"}
 
                 else
 
                     if myDefID == UnitDefNames["antagonsafehouse"].id then
                         typeTable = {
-                            "nimrod", "propagandaserver", "assembly", "launcher", "hivemind", "warheadfactory", "blacksite"
+                            "nimrod", "propagandaserver", "antagonassembly", "launcher", "hivemind", "warheadfactory", "blacksite"
                         }
                     else
                         typeTable = {
-                            "nimrod", "propagandaserver", "assembly", "aicore"
+                            "nimrod", "propagandaserver", "protagonassembly", "aicore"
                         }
                     end
                 end
@@ -1704,7 +1708,8 @@ end
                     "protagonsafehouse",
                     "nimrod", 
                     "propagandaserver", 
-                    "assembly", 
+                    "protagonassembly", 
+                    "antagonassembly", 
                     "launcher", 
                     "hivemind", 
                     "warheadfactory"

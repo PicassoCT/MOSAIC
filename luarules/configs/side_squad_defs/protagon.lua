@@ -19,7 +19,7 @@ local protagonDefs = {
 	{
 		members = {
 		"propagandaserver",
-		"assembly",
+		"protagonassembly",
 		"nimrod",
 		"launcher",
 		},

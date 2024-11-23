@@ -8,7 +8,7 @@ local AIRCRAFT = Unit:New{
 	footprintZ 					= 2,
 	iconType					= "aero",
 	moveState					= 0, -- Hold Position
-	script						= "Vehicle.lua",
+	script						= "placeholder.lua",
 	usepiececollisionvolumes 	= true,
 	
 	customparams = {
@@ -27,7 +27,7 @@ local Aero = Unit:New{
 	footprintZ 					= 2,
 	iconType					= "aero",
 	moveState					= 0, -- Hold Position
-	script						= "Vehicle.lua",
+	script						= "placeholder.lua",
 	usepiececollisionvolumes 	= true,
 	
 	customparams = {
@@ -47,7 +47,7 @@ local VTOL = Unit:New{
 	footprintZ 					= 2,
 	iconType					= "aero",
 	moveState					= 0, -- Hold Position
-	script						= "Vehicle.lua",
+	script						= "placeholder.lua",
 	usepiececollisionvolumes 	= true,
 	
 	customparams = {
@@ -68,7 +68,7 @@ local Rocket = Unit:New{
 	footprintZ 					= 2,
 	iconType					= "aero",
 	moveState					= 0, -- Hold Position
-	script						= "Vehicle.lua",
+	script						= "placeholder.lua",
 	usepiececollisionvolumes 	= true,
 	
 	customparams = {

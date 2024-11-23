@@ -24,7 +24,7 @@ dirtemit1 = piece "dirtemit1"
 dirtemit2 = piece "dirtemit2"
 
 
-soundfolder = "sounds/cHunterchopper/"
+soundfolder = "sounds/air/copter/"
 rotoscope = piece "rotoscope"
 
 

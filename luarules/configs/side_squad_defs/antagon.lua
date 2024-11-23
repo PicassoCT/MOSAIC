@@ -17,7 +17,7 @@ local antagonDefs = {
 	{
 		members = {
 		"propagandaserver",
-		"assembly",
+		"antagonassembly",
 		"nimrod",
 		"launcher",
 		},

@@ -93,6 +93,16 @@ local TutorialInfoTable= {
 		time = 3000,
 		text =  "\a|Propaganda Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
+		[getDefID("antagonassembly")] = 
+	{	--A assembly is a factory creating automated warmachines
+		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
+		--It can easily be lost through those though.
+		speach= "sounds/tutorial/assembly.ogg",
+		boolUponCreation = true,
+		active = true,
+		time = 5000,
+		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
+	},
 	[getDefID("antagonsafehouse")] = 
 	{	--We established our first cell in this city. Well hidden, dont leed them too it.
 		--In this cell we can train new members, and if needed we can upgrade it to anything needed.
@@ -194,6 +204,16 @@ protagon = {
 		active = true,
 		text =  "\a|Investigator Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
 	},
+		[getDefID("protagonassembly")] = 
+	{	--A assembly is a factory creating automated warmachines
+		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
+		--It can easily be lost through those though.
+		speach= "sounds/tutorial/assembly.ogg",
+		boolUponCreation = true,
+		active = true,
+		time = 5000,
+		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
+	},
 	[getDefID("protagonsafehouse")] = 
 	{	--Home is were the safehouse is
 		--No more glassy skyscrapers, no more centralization, no more banquets, glamour and partys. This is is all that remains.
@@ -228,16 +248,7 @@ protagon = {
 	},
 },
 general = {
-	[getDefID("assembly")] = 
-	{	--A assembly is a factory creating automated warmachines
-		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
-		--It can easily be lost through those though.
-		speach= "sounds/tutorial/assembly.ogg",
-		boolUponCreation = true,
-		active = true,
-		time = 5000,
-		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
-	},
+
 	[getDefID("nimrod")] = 
 	{	-- The nimrod is a cheap to build, reliable enough railgun
 		-- Used to launch low-weight microsats into super-fast orbits.
@@ -277,16 +288,6 @@ general = {
 		active = true,
 		time = 3000,
 		text =  "\a|Civilian Agent \n A recruited civilian spy"
-	},
-	[getDefID("assembly")] = 
-	{	--A assembly is a factory creating automated warmachines
-		--All this machinery should be last and least effort. This war is not won with grenades and bullets.
-		--It can easily be lost through those though.
-		speach= "sounds/tutorial/assembly.ogg",
-		boolUponCreation = true,
-		active = true,
-		time = 5000,
-		text =  "\a|Assembly \n Automated factory for war-units following the mosaic standard"
 	},
 	[getDefID("nimrod")] = 
 	{	-- The nimrod is a cheap to build, reliable enough railgun

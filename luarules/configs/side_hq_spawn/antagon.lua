@@ -5,7 +5,7 @@ local antagonData = {
             "operativepropagator",   
             "civilianaget",     
             "propagandaserver",
-            "assembly",
+            "antagonassembly",
             "nimrod",
             "launcher",
             "operativeasset"

@@ -24,8 +24,8 @@ local weaponDef = {
     craterMult = 0,
     burst = 128,
     burstrate = 0.2,
-    soundStart = "sounds/cHunterChopper/firelooper.wav",
-    soundHit = "sounds/cGunShip/electricbulletsImpact.ogg",
+    soundStart = "sounds/air/copter/firelooper.wav",
+    soundHit = "sounds/air/copter/electricbulletsImpact.ogg",
     soundtrigger = 1,
     SweepFire = 1,
     --apperance

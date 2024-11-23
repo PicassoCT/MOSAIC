@@ -19,7 +19,7 @@ local protagonDefs = {
 			facing = true,
 		},		
 		{
-			into = 'assembly',
+			into = 'antagonassembly',
 			metal = 2500,
 			energy = 5000,
 			time = 60,
