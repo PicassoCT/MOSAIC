@@ -4,36 +4,24 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_Build.lua"
 
-aim2 = piece "aim2"
 
 center = piece "center"
 imgoingdown = piece "imgoingdown"
 bady = piece "bady"
-air = piece "air"
 tailrotor = piece "tailrotor"
 tailrotors = piece "tailrotors"
-Nonair = piece "Nonair"
-Shield1 = piece "Shield1"
-Shield2 = piece "Shield2"
-whee = piece "whee"
-rotorhub = piece "rotorhub"
+
+
+wheel = piece "wheel"
+
 rotor = piece "rotor"
 rotors = piece "rotors"
 turret = piece "turret"
-gun = piece "gun"
+gun = piece "gun001"
 aim1 = piece "aim1"
-centCase = piece "centCase"
-centrotor = piece "centrotor"
-centrotors = piece "centrotors"
-nightlight = piece "nightlight"
-NLRed = piece "NLRed"
-NLBlue = piece "NLBlue"
+
 dirtemit1 = piece "dirtemit1"
 dirtemit2 = piece "dirtemit2"
-
-
-
---unitPieces
 
 
 soundfolder = "sounds/cHunterchopper/"
@@ -58,18 +46,8 @@ boolIsNight = true
 
 boolRedBlue = math.random(0, 1) == 1
 
-function hideNightlight()
-    Hide(NLBlue)
-    Hide(NLRed)
-end
 
-function showNightlight()
-    if boolRedBlue == true then
-        Show(NLBlue)
-    else
-        Show(NLRed)
-    end
-end
+
 
 function rotorsUp()
     Sleep(200)
@@ -81,24 +59,20 @@ function rotorsUp()
     --Spring.Echo("Imflying-Copterscript")
     Spin(rotor, y_axis, math.rad(-105192), 35.4)
     Spin(nightlight, y_axis, math.rad(105192), 35.4)
-    Spin(centrotor, x_axis, math.rad(-105192), 35.4)
+
     Spin(tailrotor, x_axis, math.rad(-105192), 35.4)
-    Spin(centrotors, x_axis, math.rad(272), 15.5)
+
     Spin(rotors, y_axis, math.rad(272), 15.5)
     Spin(tailrotors, x_axis, math.rad(72), 15)
     Sleep(2000)
     if boolAir == true then
         Show(tailrotors)
-        Show(centrotors)
         Show(rotors)
     end
     Sleep(350)
     Hide(rotor)
-    Hide(centrotor)
     Hide(tailrotor)
-    if boolIsNight == true and boolAir == true then
-        showNightlight()
-    end
+
 end
 
 function rotorsDown()
@@ -109,23 +83,20 @@ function rotorsDown()
     Spin(tailrotor, x_axis, math.rad(-190), 0.001)
     Spin(rotor, y_axis, math.rad(-190), 0.001)
     Spin(nightlight, y_axis, math.rad(190), 0.001)
-    Spin(centrotor, x_axis, math.rad(-190), 0.001)
     Sleep(350)
     Hide(tailrotors)
-    Hide(centrotors)
+
     Hide(rotors)
     StopSpin(rotors, y_axis, 0)
     StopSpin(tailrotors, x_axis, 0.01)
-    StopSpin(centrotors, x_axis, 0.01)
     if boolAir == true then
         Show(rotor)
-        Show(centrotor)
         Show(tailrotor)
     end
     Sleep(1000)
     Turn(center, x_axis, math.rad(-18), 0.25)
     Move(center, y_axis, -5.5, 2.8)
-    hideNightlight()
+
 end
 
 function script.Activate()
@@ -304,12 +275,9 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
         boolYouOnlyDieOnce = true
         StartThread(emitSmoke)
         EmitSfx(bady, rlexplode)
-        Explode(Shield1, SFX.FALL + SFX.FIRE)
+
 
         EmitSfx(bady, rlexplode)
-        Explode(Shield2, SFX.FALL + SFX.FIRE)
-        Hide(centrotors)
-        Show(centrotor)
         Spin(imgoingdown, y_axis, math.rad(-250), 0.01)
         EmitSfx(bady, rlexplode)
 
@@ -327,7 +295,6 @@ function script.Create()
     --test
     Turn(rotoscope, x_axis, math.rad(18), 0)
     Spin(rotoscope, y_axis, math.rad(640), 0)
-    hideNightlight()
     --/test
     Hide(dirtemit1)
     Hide(dirtemit2)
@@ -336,19 +303,14 @@ function script.Create()
     Hide(aim1)
     if boolAir == true then
         Hide(rotors)
-        Hide(centrotors)
-        Hide(Nonair)
         Hide(tailrotors)
     else
-        Hide(air)
         Hide(tailrotor)
         Hide(tailrotors)
         Hide(rotorhub)
         Hide(rotor)
         Hide(rotors)
-        Hide(centCase)
-        Hide(centrotor)
-        Hide(centrotors)
+
     end
     Hide(aim2)
 end

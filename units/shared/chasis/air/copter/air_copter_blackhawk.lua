@@ -3,7 +3,7 @@ local unitName = "air_copter_blackhawk"
 local unitDef = {
 	name = "Blackhawk",
 	Description = "attack helicopter that can transport personal",
-	objectName = "chchopper.s3o",
+	objectName = "air_copter_blackhawk.dae",
 	script = "air_black_hawk_script.lua",
 	buildPic = "chunterchopper.png",
 	
@@ -58,7 +58,11 @@ local unitDef = {
 	verticalSpeed = 2.0,
 	factoryHeadingTakeoff = false,
 	strafeToAttack=true,
-	
+	customParams = {
+	  	baseclass ="vtol",
+	  	normaltex = "unittextures/air_copter_blackhawk_normal.dds",
+	  },
+
 	
 	Category = [[AIR]],
 	
