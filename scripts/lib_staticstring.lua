@@ -706,10 +706,7 @@ function getDeadDropLastWords(unitID, killerId )
         "The ".. teamName.. " send there regards"
     }
 
-        return lastWords[math.random(1,#lastWords)], agentName, SurName
-    }
-
-
+    return lastWords[math.random(1,#lastWords)], agentName, SurName
 end
 
 function GetGoodGuysGroupName(hash)

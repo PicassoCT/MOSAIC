@@ -311,12 +311,13 @@ function transportControl()
 
             setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
 	           
-            while isTransported(unitID) == true do    
+            while isTransported(unitID) == true and transporterdefID == parachuteDefId do    
                 Sleep(100)
                 if transporterdefID == parachuteDefId then
                 	PlayAnimation("PARACHUTE_POSE")
             	end
             end
+    		reset(center,0)	
         	
             boolTransportedNoFiring = false
         

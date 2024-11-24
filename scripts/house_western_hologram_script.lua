@@ -703,7 +703,7 @@ function glowWormFlight(speed)
 end
 
 function lineTicker()
-    Spring.Echo("Starting lineTicker at "..getCoordinateString(unitId))
+    Spring.Echo("Starting lineTicker at "..getCoordinateString(unitID))
     while true do
         totalDeg = 0
         absoluteRange = 180

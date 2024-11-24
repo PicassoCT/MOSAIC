@@ -26,10 +26,37 @@ if (gadgetHandler:IsSyncedCode()) then
     local postRoundTimeInSeconds = 15
     local spGetUnitRotation = Spring.GetUnitRotation
     local spSetUnitRotation = Spring.SetUnitRotation
-    
+        local GameConfig = getGameConfig()
+    local civilianWalkingTypeTable = getCultureUnitModelTypes(
+                                         GameConfig.instance.culture,
+                                         "civilian", UnitDefs)
+
     function gadget:Initialize()
         if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
     end
+
+    function startInternalBehaviourOfState(unitID, name, ...)
+    local arg = arg;
+    if (not arg) then
+        arg = {...};
+        arg.n = #arg
+    end
+
+    env = Spring.UnitScript.GetScriptEnv(unitID)
+    if env and env.setOverrideAnimationState then
+        Spring.UnitScript.CallAsUnit(unitID, 
+                                     env[name],
+                                     arg[1] or nil,
+                                     arg[2] or nil,
+                                     arg[3] or nil,
+                                     arg[4] or nil
+                                     )
+    end
+    end    
+
+    GaiaTeamID = Spring.GetGaiaTeamID()
+
+    Cache= {}
 
     function rotateUnitTowardsPoint(id, positionT)
 
@@ -44,10 +71,22 @@ if (gadgetHandler:IsSyncedCode()) then
             if env and env.externalAimFunction then
                 Spring.UnitScript.CallAsUnit(id,  env.externalAimFunction)
             end      
-        end      
+        end   
+
+        if not Cache[id] or Cache[id] < Spring.GetGameFrame() + 100 then
+        Cache[id] = Spring.GetGameFrame() 
+        foreach(getAllOfTypeNearUnit(unitID, civilianWalkingTypeTable, 256)
+                function(id)
+                    defID = spGetUnitDefID(id)
+                    if spGetUnitTeam(id) == GaiaTeamID and
+                    not GG.AerosolAffectedCivilians[id] then
+                        startInternalBehaviourOfState(id,"startFleeing", unitID)
+                    return id
+                    end
+                end)
+
+        end
     end
-
-
 
     function gadget:RecvLuaMsg(msg, playerID)
         if msg and string.find(msg, "OPROTPOS") then

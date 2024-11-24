@@ -13,6 +13,7 @@ seconds = 3
 
 function script.Create()
     echo("cegtest unit deployed: Running ceg:"..cegToTestName.." every n seconds:"..seconds)
+    x,y,z = Spring.GetUnitPosition(unitID)
     echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
     hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

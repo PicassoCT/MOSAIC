@@ -114,6 +114,7 @@ function BoostersReturning()
     foreach(
         TableOfPiecesGroups["ReturningBooster"],
         function(booster)
+            assert(booster)
             boosterReturned[index] = false
             StartThread(landBooster, index, booster)
             index = inc(index)
@@ -130,7 +131,7 @@ crawlerSpeed = 750
 function boosterArrivedTravelIntoHangar(boosterNr)
 
     openDoor(GroundRearDoorN)
-    rest =5000*boosterNr^2 or 10000
+    rest =7000*boosterNr^2 or 10000
     Sleep(rest)
     if boosterNr == 1 or boosterNr == 3 then
         turnSign = -1 
@@ -152,7 +153,7 @@ end
 
 function landBooster(boosterNr, booster)
     resttime = boosterNr*15000
-    axis = 3
+    axis = 2
     Sleep(boosterNr)
     plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
     assert(plums)
@@ -160,6 +161,7 @@ function landBooster(boosterNr, booster)
     assert(booster)
     nextPos = 64000
     boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
+    assert(boosterRotator)
     WMove(booster, axis, nextPos, 0)
     --Turn(boosterRotator, x_axis, math.rad(-5), 0)
     Show(booster)
@@ -201,15 +203,13 @@ function plattFormFireBloom()
     Move(fireCloud, y_axis, -250, 0)
     Show(fireCloud)
 
-    Move(fireCloud, y_axis, 0, 50)
+    Move(fireCloud, y_axis, 450, 900)
 
     while launchState == "launching" do
-        rVal = math.random(50,150) *randSign()
+        rVal = math.random(300,950) *randSign()
         Spin(fireCloud, y_axis, math.rad(rVal), 0)
         rVal = math.random(50,150) *randSign()
         Spin(LaunchCone, y_axis, math.rad(rVal), 0)
-        val = math.random(10, 77) * randSign()
-        Spin(fireCloud, y_axis, math.rad(val), 0)
         shift = 360 / #TableOfPiecesGroups["FireFlower"]
         for i = 1, #TableOfPiecesGroups["FireFlower"] do
             cycle = TableOfPiecesGroups["FireFlower"][i]
@@ -218,9 +218,9 @@ function plattFormFireBloom()
             Turn(cycle, y_axis, math.rad(rotation), 0)
             startVal = 90 + randSign() * 90
             Turn(cycle, x_axis, math.rad(startVal), 360) --reset
-            Spin(cycle, x_axis, math.rad(val), fireBloomSpeed)
+            spinRand(cycle, 50, 500, fireBloomSpeed)
         end
-        Sleep(9000)
+        Sleep(3000)
     end
     foreach(
         TableOfPiecesGroups["FireFlower"],
@@ -391,7 +391,7 @@ function launchAnimation()
         launchState = "recovery"
         WMove(RocketCraneBase, z_axis, 0, 15)
         watchDog = 90000
-        while (holdsForAllBool(boosterReturned, false) or watchDog < 0) do
+        while (holdsForAllBool(boosterReturned, false) or watchDog > 0) do
             Sleep(1000)
             watchDog = watchDog-1000
         end
