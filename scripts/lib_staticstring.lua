@@ -686,14 +686,14 @@ function GetBadGuysGroupNames(hash)
     return badGuys[(hash%#badGuys)+1]
 end
 
-function getDeadDropLastWords(unitID, killerId, )
+function getDeadDropLastWords(unitID, killerId )
     teamName, isAntagon = getTeamNameIsAntagon(unitID)
-    civilianId = getCivilianIdFromAgent(unitID)
-    id = civilianID or unitID
+    civilianId = getCivilianIdFromAgent(unitID)  or unitID
     agentName, SurName = getDeterministicCultureNames( id, UnitDefs, GG.GameConfig.instance.culture)
 
     lastWords = {
-        "You ? But i thought you"
+        "We were brothers, "..agentName
+        "You ? But i thought you.."
         "Why? Its #### that gave me up, eh ?",
         "Its glorious to die for " .. teamName,
         "History shall avenge me..",
@@ -704,7 +704,6 @@ function getDeadDropLastWords(unitID, killerId, )
         "Hey ".. SurName,
         "Et tu brute ? Et tu "..agentName,
         "The ".. teamName.. " send there regards"
-
     }
 
         return lastWords[math.random(1,#lastWords)], agentName, SurName

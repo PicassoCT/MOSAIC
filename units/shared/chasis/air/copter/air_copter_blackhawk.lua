@@ -40,6 +40,9 @@ local unitDef = {
 	CanMove = true,
 	CanPatrol = true,
 	Canstop = true,--alt
+	canload                = true,
+	transportCapacity      = 1,
+  	transportSize          = 25,
 	LeaveTracks = false, 
 	
 	cruiseAlt= 165,
