@@ -88,13 +88,18 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	            cegTag = ""
 	            }
 
-	            id=Spring.SpawnProjectile ( weaponDefID, params) 
-	            Spring.SetProjectileAlwaysVisible (id, true)
+	             id = Spring.SpawnProjectile ( weaponDefID, params) 
+	             Spring.SetProjectileAlwaysVisible (id, true)
 	             protagonT = getAllTeamsOfType("protagon", UnitDefs)
 	             antagonT = getAllTeamsOfType("antagon", UnitDefs)
 	             local rubbleDefID = UnitDefNames["gcscrapheap"].id
-
-	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
+	             x, y, z = Spring.GetUnitPosition(unitID)
+	            for i=1, 512 do 
+	            	valx = math.random(-512, 512)
+	            	valz =  math.random(-512, 512)
+	            	Spring.SpawnCeg("ashflakes" x + valx, y + 1024 +  math.random(-128, 128), z + valz)
+	            end
+	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange )
 	             	function(id)
 	             		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
 	             			return id

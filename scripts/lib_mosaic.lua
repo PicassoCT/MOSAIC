@@ -2119,10 +2119,10 @@ end
                     return {
                         ["house"] = {
                             rural = {
+                                "house_western_decal3",
+                                "house_western_decal4", 
                                 "house_western_decal9",
                                 "house_western_decal11",
-                                "house_western_decal3",
-                                "house_western_decal4",  
                                 "house_western_decal10",
                             },
                             urban = {
@@ -2132,12 +2132,13 @@ end
                                 "house_western_decal6",
                                 "house_western_decal7",
                                 "house_western_decal8",
-                                "house_western_decal14",
+                                "house_western_decal9",
+                                "house_western_decal10",
                                 "house_western_decal12",
                                 "house_western_decal13",
-                                "house_western_decal10",                           
+                                "house_western_decal14",
                                 "house_western_decal15",   
-                                "house_western_decal9",                        
+                                                   
                             }}}
                 end
             
@@ -2186,6 +2187,8 @@ end
                                 "house_western_decal3",
                                 "house_western_decal4",  
                                 "house_western_decal10",
+                                "house_western_decal16",
+                                "house_arab_decal19" 
                             },
                         urban = {
                                 "house_western_decal1",
@@ -2198,6 +2201,7 @@ end
                                 "house_western_decal12",
                                 "house_western_decal13",
                                 "house_western_decal10",                           
+                                "house_western_decal16",   
                                 "house_western_decal15",   
                                 "house_western_decal9"                
                             }}

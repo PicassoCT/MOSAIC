@@ -1,7 +1,7 @@
 -- trail_ar2
 
 return {
-    ["ashFlakes"] = {
+    ["ashflakes"] = {
         ashflake = {
             air = true,
             class = [[CSimpleParticleSystem]],
