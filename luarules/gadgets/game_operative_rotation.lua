@@ -75,7 +75,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if not Cache[id] or Cache[id] < Spring.GetGameFrame() + 100 then
         Cache[id] = Spring.GetGameFrame() 
-        foreach(getAllOfTypeNearUnit(unitID, civilianWalkingTypeTable, 256)
+        foreach(getAllOfTypeNearUnit(unitID, civilianWalkingTypeTable, 256),
                 function(id)
                     defID = spGetUnitDefID(id)
                     if spGetUnitTeam(id) == GaiaTeamID and

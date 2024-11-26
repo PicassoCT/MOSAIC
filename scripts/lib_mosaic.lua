@@ -1657,7 +1657,7 @@ end
                 operatorTypeTable = {
                     "civilianagent", "operativeasset", "operativepropagator",
                     "operativeinvestigator", "antagonsafehouse", "protagonsafehouse",
-                    "propagandaserver", "assembly", "launcher", "hivemind", "aicore"
+                    "propagandaserver", "protagonassembly", "antagonassembly", "launcher", "hivemind", "aicore"
                 }
                 assert(GameConfig.instance.culture)
                 typeTable = mergeTables(operatorTypeTable, getTypeUnitNameTable(

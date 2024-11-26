@@ -709,7 +709,7 @@ function lineTicker()
         absoluteRange = 180
         for i=1,10 do
             relativeRange = (absoluteRange - 90) - totalDeg
-            relativeDeg  = getSafeRandom(relativeRange, 0)
+            relativeDeg  = sanitizeRandom(math.min(relativeRange, 0), math.max(relativeRange, 0))
             Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], z_axis, math.rad(relativeDeg  - totalDeg),0)
             totalDeg = totalDeg - relativeDeg
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
@@ -723,7 +723,7 @@ function lineTicker()
         absoluteRange = 180
         for i=11,20 do
             relativeRange = (absoluteRange - 90) - totalDeg
-            relativeDeg  = getSafeRandom(relativeRange, 0)
+            relativeDeg  = sanitizeRandom(math.min(relativeRange, 0), math.max(relativeRange, 0))
 
             Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i],z_axis, math.rad(relativeDeg - totalDeg),0)
             totalDeg = totalDeg - relativeDeg
