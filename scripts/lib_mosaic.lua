@@ -1029,6 +1029,29 @@ end
             return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
         end
 
+
+        function getMilitarySpawnExitTypes(UnitDefs)
+                typeTable = {           
+                    --"objective_military_gyland" = "water",
+                    "objective_westhemhq"  = "land",
+                    "objective_airport" = "land",
+                    "objective_combatoutpost" = "land",
+                    "objective_pumpstation" = "land"
+
+                }
+            return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
+        end
+
+        function getRefugeeSpawnExitTypes(Unitdefs)
+                typeTable = {           
+                    "objective_refugeecamp"  = "land",
+                    "objective_transrapid" = "land",
+                    "objective_combatoutpost" = "land"
+
+                }
+            return getTypeTable( getUnitDefNames(UnitDefs), typeTable)
+        end
+
         function getInterceptableAirDroneTypes(UnitDefs)
                 typeTable = {           
                     "air_copter_ssied",

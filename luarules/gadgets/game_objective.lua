@@ -22,8 +22,8 @@ if (gadgetHandler:IsSyncedCode()) then
     local objectiveTypes = getObjectiveTypes(UnitDefs)
     local deadObjectiveTypes = getDeadObjectiveType(UnitDefs)
 
-    local Objectives = {}
-    local DeadObjectives = {}
+    GG.Objectives = {}
+    GG.DeadObjectives = {}
     local GameConfig = getGameConfig()
 
     boolInit = false
@@ -115,12 +115,10 @@ if (gadgetHandler:IsSyncedCode()) then
         uDefID = Spring.GetUnitDefID(UnitID)
         if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID  then
             x, y, z = Spring.GetUnitPosition(UnitID)
-            Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = uDefID, boolProProtagon = getProProtagon(count(Objectives)) }
-            assert(Objectives[UnitID].defID)
-            setProConDescription(UnitID, Objectives[UnitID].boolProProtagon)
+            GG.Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = uDefID, boolProProtagon = getProProtagon(count(Objectives)) }
+            assert(GG.Objectives[UnitID].defID)
+            setProConDescription(UnitID, GG.Objectives[UnitID].boolProProtagon)
             Spring.SetUnitAlwaysVisible(UnitID, true)
-        elseif Objectives[UnitID] then
-
         end
     end
 
@@ -128,32 +126,32 @@ if (gadgetHandler:IsSyncedCode()) then
         uDefID = Spring.GetUnitDefID(UnitID)
         uTeamID = Spring.GetUnitTeam(UnitID)
 
-        if objectiveTypes[uDefID] and Objectives[UnitID] and uTeamID == gaiaTeamID then
+        if objectiveTypes[uDefID] and GG.Objectives[UnitID] and uTeamID == gaiaTeamID then
             iconID = Spring.CreateUnit ("destroyedobjectiveicon", Objectives[UnitID].x,Objectives[UnitID].y,Objectives[UnitID].z,0, gaiaTeamID)
-            DeadObjectives[iconID] = {}
-            DeadObjectives[iconID].x =  Objectives[UnitID].x
-            DeadObjectives[iconID].y =  Objectives[UnitID].y
-            DeadObjectives[iconID].z =  Objectives[UnitID].z
-            DeadObjectives[iconID].uid =  iconID
-            DeadObjectives[iconID].defID =  Objectives[UnitID].defID
+            GG.DeadObjectives[iconID] = {}
+            GG.DeadObjectives[iconID].x =  GG.Objectives[UnitID].x
+            GG.DeadObjectives[iconID].y =  GG.Objectives[UnitID].y
+            GG.DeadObjectives[iconID].z =  GG.Objectives[UnitID].z
+            GG.DeadObjectives[iconID].uid =  iconID
+            GG.DeadObjectives[iconID].defID =  GG.Objectives[UnitID].defID
             assert(Objectives[UnitID].defID)
-            assert(DeadObjectives[iconID].defID)
-            DeadObjectives[iconID].boolProProtagon =  not Objectives[UnitID].boolProProtagon
+            assert(GG.DeadObjectives[iconID].defID)
+            GG.DeadObjectives[iconID].boolProProtagon =  not GG.Objectives[UnitID].boolProProtagon
 
-            setDeadDescription(iconID,   DeadObjectives[iconID].boolProProtagon)
-            Objectives[UnitID] = nil
+            setDeadDescription(iconID,   GG.DeadObjectives[iconID].boolProProtagon)
+            GG.Objectives[UnitID] = nil
             return
         end
 
-        if deadObjectiveTypes[uDefID] and uTeamID == gaiaTeamID and DeadObjectives[UnitID]  then
+        if deadObjectiveTypes[uDefID] and uTeamID == gaiaTeamID and GG.DeadObjectives[UnitID]  then
             --recreate the objective
-            GG.UnitsToSpawn:PushCreateUnit( DeadObjectives[UnitID].defID, 
-                                            DeadObjectives[UnitID].x, 
-                                            DeadObjectives[UnitID].y, 
-                                            DeadObjectives[UnitID].z, 
+            GG.UnitsToSpawn:PushCreateUnit( GG.DeadObjectives[UnitID].defID, 
+                                            GG.DeadObjectives[UnitID].x, 
+                                            GG.DeadObjectives[UnitID].y, 
+                                            GG.DeadObjectives[UnitID].z, 
                                             0, 
                                             gaiaTeamID)
-            DeadObjectives[UnitID] = nil
+            GG.DeadObjectives[UnitID] = nil
             return 
         end
     end
@@ -167,7 +165,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if f % GameConfig.Objectives.RewardCyle == 0 then
 
-
+            local Objectives = GG.Objectives
             for id, types in pairs(Objectives) do
                 if types then
                     if types.boolProProtagon == true then
@@ -188,7 +186,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
                 end
             end
-
+            local DeadObjectives = GG.DeadObjectives
             for id, types in pairs(DeadObjectives) do
                 if types then
                     if types.boolProProtagon == true then
