@@ -50,6 +50,7 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 
 local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) 
 local MAX_STUCK_COUNTER = 3
+local isPeaceTime= true
 
 Spring.Echo("Game:Civilians: Map is a failed state ".. toString(isFailedState))
 
@@ -210,9 +211,9 @@ function getMilitaryPoint(index)
 end
 
 
-escapeeHash = getDetermenisticMapHash(Game)
-rStuck = {}
-refugeeTable = {}
+local escapeeHash = getDetermenisticMapHash(Game)
+local rStuck = {}
+local refugeeTable = {}
 function refugeeStream(frame)
     ex,ez = getRefugeeExitPoint(((escapeeHash + 1 + indexOffset)%4)+1)
     ey = spGetGroundHeight(ex,ez)
@@ -291,9 +292,9 @@ function refugeeStream(frame)
     end   
 end
 
-militaryTable = {}
-mStuck = {}
-militaryUnits = {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
+local militaryTable = {}
+local mStuck = {}
+local militaryUnits = {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
 function militaryStream(frame)
     local ex,ez = getMilitaryExitPoint(((escapeeHash + indexOffset)%4)+1)
     local ey = spGetGroundHeight(ex,ez)
@@ -370,7 +371,6 @@ function militaryStream(frame)
     end   
 end
 
-isPeaceTime= true
 function gadget:GameFrame(frame)
     if frame % 60 then
         isPeaceTime = GG.GlobalGameState == GameConfig.GameState.normal
