@@ -48,8 +48,9 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameCo
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
-local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) or true
+local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) 
 local MAX_STUCK_COUNTER = 3
+local isPeaceTime= true
 
 Spring.Echo("Game:Civilians: Map is a failed state ".. toString(isFailedState))
 
@@ -116,8 +117,92 @@ function gadget:Initialize()
     end
 end
 
+local militaryExitPointType = getMilitarySpawnExitTypes(UnitDefs)
+function getMilitaryObjectiveEntryPoint()
+    local result = {}
+    local objectives = GG.Objectives
+    for unitID, objective in pairs(objectives) do 
+        if militaryExitPointType[objective.defID] then
+            result[#result+1] = unitID
+        end 
+    end
+    return result
+end
+
+local refugeeEntryExitPointType = getRefugeeSpawnExitTypes(UnitDefs)
+function getRefugeeObjectiveEntryPoint()
+    local result = {}
+    local objectives = GG.Objectives
+    for unitID, objective in pairs(objectives) do 
+        if refugeeEntryExitPointType[objective.defID] then
+            result[#result+1] = unitID
+        end 
+    end
+    return result
+end
+
+function getMilitarySpawnPoint(index, boolIgnoreObjectives)
+    if not boolIgnoreObjectives then
+        militaryEntryPoints = getMilitaryObjectiveEntryPoint()
+        if #militaryEntryPoints > 0 then
+            mine = militaryEntryPoints[(index % #militaryEntryPoints) +1]
+            if mine then
+                x,y,z = spGetUnitPosition(mine)
+                return x, z
+            end 
+        end 
+    end
+    return getMilitaryPoint(index)
+end
+
+
+function getRefugeeExitPoint(index, boolIgnoreObjectives)
+    if not boolIgnoreObjectives and isPeaceTime then
+        refugeeEntryPoints = getRefugeeObjectiveEntryPoint()
+        if #refugeeEntryPoints > 0 then
+            mine = refugeeEntryPoints[(index % #refugeeEntryPoints) +1]
+            if mine then
+                x,y,z = spGetUnitPosition(mine)
+                return x, z
+            end 
+        end 
+    end
+    return getRefugeePoint(index)
+end
+
+function getRefugeeEntryPoint(index, boolIgnoreObjectives)
+    if not isPeaceTime then
+        unitId, pos =  randDict(GG.BuildingTable)
+        if unitId then
+            return pos.x, pos.z
+        end
+    end
+
+    if not boolIgnoreObjectives then
+        refugeeEntryPoints = getRefugeeObjectiveEntryPoint()
+        if #refugeeEntryPoints > 0 then
+            mine = getSafeRandom(refugeeEntryPoints, 1)
+            if mine then
+                x,y,z = spGetUnitPosition(mine)
+                return x, z
+            end 
+        end 
+    end
+    return getRefugeePoint(index)
+end
+
+function getMilitaryEntry()
+
 indexOffset = 0
-function getEscapePoint(index)
+function getRefugeePoint(index)
+    if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
+    if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
+    if index == 3 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, 25 end
+    if index == 4 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, Game.mapSizeZ end
+    Spring.Echo("Unknown EscapePoint")
+end
+
+function getMilitaryPoint(index)
     if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
     if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
     if index == 3 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, 25 end
@@ -126,11 +211,11 @@ function getEscapePoint(index)
 end
 
 
-escapeeHash = getDetermenisticMapHash(Game)
-rStuck = {}
-refugeeTable = {}
+local escapeeHash = getDetermenisticMapHash(Game)
+local rStuck = {}
+local refugeeTable = {}
 function refugeeStream(frame)
-    ex,ez = getEscapePoint(((escapeeHash + 1 + indexOffset)%4)+1)
+    ex,ez = getRefugeeExitPoint(((escapeeHash + 1 + indexOffset)%4)+1)
     ey = spGetGroundHeight(ex,ez)
     if ey < 0 then
         indexOffset = indexOffset +1
@@ -170,7 +255,7 @@ function refugeeStream(frame)
                     end
                 else
   
-                     ex,ez = getEscapePoint(((escapeeHash + 1+ indexOffset)%4)+1)
+                     ex,ez = getRefugeeExitPoint(((escapeeHash + 1+ indexOffset)%4)+1)
                      ey = spGetGroundHeight(ex,ez)
                      if ey < 0 then
                         indexOffset = indexOffset +1
@@ -190,7 +275,7 @@ function refugeeStream(frame)
     end
 
     if count(refugeeTable) < math.random(3,5) then
-       sx,sz = getEscapePoint(((escapeeHash+ indexOffset) % 4) + 1)
+       sx,sz = getRefugeeEntryPoint(((escapeeHash+ indexOffset) % 4) + 1), maRa())
        if spGetGroundHeight(sx,sz) < 0 then
             indexOffset = indexOffset +1
             return
@@ -207,21 +292,23 @@ function refugeeStream(frame)
     end   
 end
 
-militaryTable = {}
-mStuck = {}
-militaryUnits = {"ground_truck_mg", "ground_tank_day","ground_truck_rocket","ground_truck_antiarmor",}
+local militaryTable = {}
+local mStuck = {}
+local militaryUnits = {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
 function militaryStream(frame)
-    local ex,ez = getEscapePoint(((escapeeHash + indexOffset)%4)+1)
+    local ex,ez = getMilitaryExitPoint(((escapeeHash + indexOffset)%4)+1)
     local ey = spGetGroundHeight(ex,ez)
     if ey < 0 then
         indexOffset = indexOffset +1
         return
     end
 
-    boolLocalMilitaryEngagement = (GameConfig.GameState.normal ~= GG.GlobalGameState)
-    if boolLocalMilitaryEngagement == true then        
-        ex,ez =  GG.DamageHeatMap:getHighestDangerLocation()
-        ey = spGetGroundHeight(ex,ez)
+    if not isPeaceTime then        
+        aex,aez =  GG.DamageHeatMap:getHighestDangerLocation()
+        if aex then
+            ex, ez = aex, aez
+            ey = spGetGroundHeight(ex,ez)
+        end
     end
 
     boolAtLeastOnePath = false
@@ -273,7 +360,7 @@ function militaryStream(frame)
 
     target =  math.max(0,math.random(3,5) - count(militaryTable))
     for i= 1, target, 1 do
-       local sx,sz = getEscapePoint(((escapeeHash + indexOffset + 1)%4)+1)
+       local sx,sz = getMilitarySpawnPoint(((escapeeHash + indexOffset + 1)%4)+1)
        local id =  spawnUnit(militaryUnits[math.random(1,#militaryUnits)], sx, sz) 
        militaryTable[id]= id         
       
@@ -284,13 +371,17 @@ function militaryStream(frame)
     end   
 end
 
-
 function gadget:GameFrame(frame)
-    if isFailedState and frame % 60 == 0 then
+    if frame % 60 then
+        isPeaceTime = GG.GlobalGameState == GameConfig.GameState.normal
+    end
+
+    if isFailedState or not isPeaceTime and frame % 60 == 0 then
+
         refugeeStream(frame)
     end
 
-    if isFailedState and frame % 600 == 0 then
+    if isFailedState or not isPeaceTime and frame % 600 == 0 then
         militaryStream(frame)
     end
 end
