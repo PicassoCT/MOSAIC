@@ -145,6 +145,8 @@ if UnitDefs[myDefID].name == "physicspayload" then
                		  GG.UnitsToKill:PushKillUnit(id, true, false)
 					end
 					)
+	              id = createUnitAtUnit(gaiaTeamID, unitID, "nukedecalfactory")
+	              Spring.SetUnitAlwaysVisible(id, true)
 
 end
 
