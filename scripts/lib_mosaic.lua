@@ -137,6 +137,10 @@ function getGameConfig()
             Version = "Alpha: 0.918" 
         },
 
+        visuals = {
+            falloutParticlesMax = 128
+        },
+
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
         numberOfVehicles = math.ceil(60 * GG.unitFactor),
         numberOfPersons = math.ceil(75 * GG.unitFactor),

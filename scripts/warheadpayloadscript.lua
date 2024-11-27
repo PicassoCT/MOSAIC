@@ -64,6 +64,38 @@ function moveAItoLauncher()
 	end
 end
 
+function prepareDeformCraterTable(size, height, minimum)
+    cent = math.ceil(size / 2)
+    T = {}
+    for o = 1, size, 1 do
+        T[o] = {}
+        for i = 1, size, 1 do
+            --default
+            T[o][i] = 0
+            distcent = math.sqrt((cent - i) ^ 2 + (cent - o) ^ 2)
+
+            if distcent < cent - 1 then
+                T[o][i] = math.max(((cent - distcent) * height), minimum)
+            end
+        end
+    end
+
+    return T
+end
+
+
+function createCrater(x,y,z,defID)
+    if GG.DynDefMap == nil then GG.DynDefMap = {} end
+    if GG.DynRefMap == nil then GG.DynRefMap = {} end
+    GG.DynDefMap[#GG.DynDefMap + 1] = { creator=UnitDefs[defID].name, 
+    x = x / 8, z = z / 8, 
+	Size = size, 
+	blendType = "sub", 
+	filterType = "borderblur" }
+    GG.DynRefMap[#GG.DynRefMap + 1] = prepareDeformTable(1024, -8, -4)
+    GG.boolForceLandLordUpdate = true
+end
+
 function mightyBadaBoom(lastAttackerTeam)
 myDefID = Spring.GetUnitDefID(unitID)
 
@@ -94,11 +126,12 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	             antagonT = getAllTeamsOfType("antagon", UnitDefs)
 	             local rubbleDefID = UnitDefNames["gcscrapheap"].id
 	             x, y, z = Spring.GetUnitPosition(unitID)
-	            for i=1, 512 do 
-	            	valx = math.random(-512, 512)
-	            	valz =  math.random(-512, 512)
+	             createCrater(x,y,z, myDefID)
+	             for i=1, GameConfig.visuals.falloutParticlesMax do 
+	            	valx = math.random(-768, 768)
+	            	valz =  math.random(-768, 768)
 	            	Spring.SpawnCeg("ashflakes" x + valx, y + 1024 +  math.random(-128, 128), z + valz)
-	            end
+	             end
 	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange )
 	             	function(id)
 	             		if not( Spring.GetUnitDefID(id) == rubbleDefID) then

@@ -28,21 +28,34 @@ return {
                 texture = [[comend_nukering]],
                 useairlos = true
             }
+        },
+        orangeCore = {
+            ground = true,
+            air = true,
+            water = true,
+            class = [[CSpherePartSpawner]],
+            count = 1,
+            properties = {
+                alpha = 1.0,
+                alwaysvisible = true,
+                color = [[1, 0.4, 0]],
+                expansionspeed = [[2.5 r1]],
+                ttl = 150
+            }
+        },
+        whiteWall = {
+            ground = true,
+            air = true,
+            water = true,
+            class = [[CSpherePartSpawner]],
+            count = 1,
+            properties = {
+                alpha = 1.0,
+                alwaysvisible = true,
+                color = [[1, 1, 1]],
+                expansionspeed = [[3 r1]],
+                ttl = 150
+            }
         }
-             
-     whiteWall = {
-       ground             = true,
-       air                = true,
-        water           =true,
-      class              = [[CSpherePartSpawner]],
-      count              = 1,
-      properties = {
-        alpha              = 1.0,
-        alwaysvisible      = true,
-        color              = [[1, 1, 1]],
-        expansionspeed     = [[3 r1]],
-        ttl                = 150,
-      },
-    },
     }
 }

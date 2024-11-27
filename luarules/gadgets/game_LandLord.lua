@@ -152,13 +152,6 @@ if (gadgetHandler:IsSyncedCode()) then
                         for j = 1, #anyTable, 1 do
                             if boundCheck("z", j) == true then
                                 orgTerrainValue = orgTerrainMap[wStartX + i][wStartZ + j]
-                                --if orgTerrainValue then
-                                --if orgTerrainValue > h + anyTable[i][j] then
-                                --	anyTable[i][j]=0
-                                --else
-                                --	anyTable[i][j]= getGroundHeigthDistance(orgTerrainValue,h)+  anyTable[i][j]
-                                --end
-                                --end
                             end
                         end
                     end
