@@ -275,7 +275,7 @@ function refugeeStream(frame)
     end
 
     if count(refugeeTable) < math.random(3,5) then
-       sx,sz = getRefugeeEntryPoint(((escapeeHash+ indexOffset) % 4) + 1), maRa())
+       sx,sz = getRefugeeEntryPoint(((escapeeHash+ indexOffset) % 4) + 1, maRa())
        if spGetGroundHeight(sx,sz) < 0 then
             indexOffset = indexOffset +1
             return
