@@ -8,16 +8,14 @@ local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
+mortar = piece("Cylinder001")
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitBlocking(unitID,false)
-    -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-    -- StartThread(AnimationTest)
     makeWeaponsTable()
+    setFireState(unitID, "returnfire")
 end
 
 
@@ -40,6 +38,12 @@ function script.Deactivate() return 0 end
 
 
 
+function mortarAimFunc(weaponID, heading, pitch)
+    WTurn(mortar, y_axis, heading, 0.1)
+    return true
+end
+
+
 function mgAimFunc(weaponID, heading, pitch)
     WTurn(TablesOfPiecesGroups["Gun"][weaponID], y_axis, heading, 5)
     return true
@@ -60,6 +64,14 @@ function makeWeaponsTable()
         firefunc = mgFireFunc
     }
     end
+
+    WeaponsTable[#WeaponsTable+1] = {
+        aimpiece = mortar,
+        emitpiece = mortar,
+        aimfunc = mortarAimFunc,
+        firefunc = mgFireFunc
+    }
+
 end
 
 function script.AimFromWeapon(weaponID)

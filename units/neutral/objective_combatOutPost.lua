@@ -47,8 +47,13 @@ local objective_combatoutpost = Building:New{
         [4]={name  = "ak47",
             onlyTargetCategory = [[GROUND BUILDING]],
             turret = true
+            },     
+        [5]={name  = "javelinrocket",
+            onlyTargetCategory = [[GROUND BUILDING]],
+            turret = true
             },  
         },
+
 
     buildoptions =
     {
