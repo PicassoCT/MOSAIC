@@ -130,9 +130,9 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	             for i=1, GameConfig.visuals.falloutParticlesMax do 
 	            	valx = math.random(-768, 768)
 	            	valz =  math.random(-768, 768)
-	            	Spring.SpawnCeg("ashflakes" x + valx, y + 1024 +  math.random(-128, 128), z + valz)
+	            	Spring.SpawnCeg("ashflakes", x + valx, y + 1024 +  math.random(-128, 128), z + valz)
 	             end
-	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange )
+	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
 	             	function(id)
 	             		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
 	             			return id
