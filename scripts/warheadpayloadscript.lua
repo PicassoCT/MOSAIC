@@ -101,35 +101,18 @@ myDefID = Spring.GetUnitDefID(unitID)
 
 if UnitDefs[myDefID].name == "physicspayload" then
  	x,y,z = Spring.GetUnitPosition(unitID)
-	weaponDefID = WeaponDefNames["godrod"].id
-	            local params = {
-	                pos = { x,  y + 10,  z},
-	               ["end"] = { x,  y+ 5,  z},
-	            speed = {0,0,0},
-	            spread = {0,0,0},
-	            error = {0,0,0},
-	            owner = unitID,
-	            team = myTeamID,
-	            ttl = 1,
-	            gravity = 1.0,
-	            tracking = unitID,
-	            maxRange = 9000,
-	            startAlpha = 0.0,
-	            endAlpha = 0.1,
-	            model = "emptyObjectIsEmpty.s3o",
-	            cegTag = ""
-	            }
 
-	             id = Spring.SpawnProjectile ( weaponDefID, params) 
 	             Spring.SetProjectileAlwaysVisible (id, true)
 	             protagonT = getAllTeamsOfType("protagon", UnitDefs)
 	             antagonT = getAllTeamsOfType("antagon", UnitDefs)
 	             local rubbleDefID = UnitDefNames["gcscrapheap"].id
 	             x, y, z = Spring.GetUnitPosition(unitID)
+				Spring.SpawnCeg("nuclearexplosionbig", x ,y + 100, z )
 	             createCrater(x,y,z, myDefID)
 	             for i=1, GameConfig.visuals.falloutParticlesMax do 
 	            	valx = math.random(-768, 768)
 	            	valz =  math.random(-768, 768)
+
 	            	Spring.SpawnCeg("ashflakes", x + valx, y + 1024 +  math.random(-128, 128), z + valz)
 	             end
 	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),

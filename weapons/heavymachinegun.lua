@@ -9,7 +9,7 @@ local weaponDef = {
         HeavyArmor = 5,
     },
     areaOfEffect = 8,
-    explosionGenerator = "custom:gunimpact",
+    explosionGenerator =  "custom:Ricochet",
     cegTag = "gunprojectile",
     texture1 = "gunshot",
     avoidFriendly = false,
