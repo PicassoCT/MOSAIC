@@ -26,7 +26,7 @@ local weaponDef = {
  	model = "molotow.s3o",
 
     explosionGenerator="fireball",
-    CegTag="firesparks",
+    CegTag="molotowTrail",
 
     --- -TARGETING
     turret = true,

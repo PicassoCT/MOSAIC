@@ -17,7 +17,7 @@
               colormap           = [[1 0.6 0.2 0.025  1 0.6 0.12 0.025    0 0 0 0.025]],
             dir                = [[dir]],
             frontoffset        = 0,
-            fronttexture       = [[flash1]],
+            fronttexture       = [[flowerflash]],
             length             = 10,
             sidetexture        = [[burstside]],
             size               = 4,
