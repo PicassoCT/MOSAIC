@@ -1,15 +1,18 @@
 -- dirt
 
-return {
-	
-	["tollwutox"] = {
-	particles = {
+return 
+{	
+	["tollwutox"] = 
+	{
+		particles = 
+		{
 			air = true,
 			class = [[CSimpleParticleSystem]],
 			count = 1,
 			ground = true,
 			water = true,
-			properties = {
+			properties = 
+			{
 				airdrag = 0.75,
 				alwaysvisible = true,
 				colormap = [[
@@ -42,6 +45,7 @@ return {
 				sizeMod		= 1.0000000006,
 				texture = [[new_dirta]],--
 				useairlos = false,
+			}
 			
 		},	
 		particlesb = {
@@ -81,7 +85,7 @@ return {
 				pos = [[0, 0, 0]],
 				sizeGrowth	= 0.666,
 				sizeMod		= 1.0000000006,
-				texture = [[neodirta]],--
+				texture = [[neodirta]],
 				useairlos = false,
 			
 		},
@@ -92,7 +96,8 @@ return {
 			count = 1,
 			ground = true,
 			water = true,
-			properties = {
+			properties = 
+			{
 				airdrag = 0.75,
 				alwaysvisible = true,
 				colormap = [[
@@ -124,10 +129,9 @@ return {
 				sizeGrowth	= 0.666,
 				sizeMod		= 1.0000000006,
 				texture = [[fireSparks]],--
-				useairlos = false,
-			
-		},
+				useairlos = false			
+			},
 	}
-	},
+	}
 	
 }
