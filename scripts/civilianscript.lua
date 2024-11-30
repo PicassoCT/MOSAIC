@@ -40,7 +40,7 @@ local cigarett = piece('cigarett');
 local Handbag = piece('Handbag');
 local SittingBaby = piece('SittingBaby');
 local ak47 = piece('ak47')
-local cofee = piece('cofee');
+local cofee = nil
 local ProtestSign = piece "ProtestSign"
 local cellphone1 = piece "cellphone1"
 local cellphone2 = piece "cellphone2"
@@ -162,6 +162,13 @@ function script.Create()
    
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    if piece('cofee') then
+        cofee = piece('cofee')
+    else
+        if TablesOfPiecesGroups["cofee"] then
+            cofee = TablesOfPiecesGroups["cofee"][(unitID % #TablesOfPiecesGroups["cofee"])+1] 
+        end
+    end
 
     if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
     makeWeaponsTable(myGun)
@@ -197,7 +204,7 @@ end
 function rainyDayCare()
     westernCivilainDefIDTypeTable = getWesternUnitTypeMap("civilian", UnitDefs)
     if not westernCivilainDefIDTypeTable[myDefID] then return end
-    Umbrella = piece("Umbrella")
+    Umbrella = TableOfPiecesGroups["Umbrella"][(unitID % #TableOfPiecesGroups["Umbrella"] )+1]
     while Umbrella do
         if isRaining() then
             while isRaining() do

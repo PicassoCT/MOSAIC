@@ -73,6 +73,8 @@ SmallDecals[11].name = "house_western_decal15"
 
 SmallDecals[12] = copy
 SmallDecals[12].buildinggrounddecaltype ="decal_western/HouseDecal12_west_city.png"
+SmallDecals[12].buildinggrounddecalsizex = 8
+SmallDecals[12].buildinggrounddecalsizey = 8
 SmallDecals[12].name = "house_western_decal16"
 
 

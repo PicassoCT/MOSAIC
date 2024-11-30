@@ -39,25 +39,7 @@ return {
 				ttl = 10,
 			},
 		},
-	sparkstretchOnwards = {
-			air = true,
-			class = [[CBitmapMuzzleFlame]],
-			count = 1,
-			ground = true,
-			underwater = 1,
-			water = true,
-			properties = {
-				colormap = [[0.8 0.5 0.1 0.01	0.9 0.4 0.2 0.01	0.0 0.0 0.0 0.01]],
-				dir = [[-dir]],
-				frontoffset = 0,
-				fronttexture = [[]],
-				length = 20,
-				sidetexture = [[ricochet]],
-				size = 4,
-				sizegrowth = 6.01,
-				ttl = 10,
-			},
-		},
+	
 		
 		sparkcore = {
 			air = true,

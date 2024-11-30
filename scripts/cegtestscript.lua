@@ -8,7 +8,7 @@ local TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-cegToTestName = "cigarettglowsmoke"
+cegToTestName = "nuclearexplosionbig"
 seconds = 3
 
 function script.Create()
