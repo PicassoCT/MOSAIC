@@ -6,7 +6,12 @@ include "lib_Animation.lua"
 
 local TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+function script.HitByWeapon(x, z, weaponDefID, damage, attackerId) 
+    if doesUnitExistAlive(attackerId) then
+        Command(unitId, "attack", attackerId)
+    end
+
+end
 
 mortar = piece("Cylinder001")
 

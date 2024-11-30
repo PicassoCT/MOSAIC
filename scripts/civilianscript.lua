@@ -48,6 +48,7 @@ local molotow = piece "molotow"
 local ShoppingBag = piece "ShoppingBag"
 local RPG7
 local RPG7Rocket
+local map = Spring.GetUnitPieceMap(unitID);
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
@@ -157,12 +158,13 @@ orgHousePosTable = {}
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 myName = UnitDefs[myDefID].name
 local myGun = ak47
-
+UnitPieces = Spring.GetUnitPieceMap(unitID)
 function script.Create()
    
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    if piece('cofee') then
+    
+    if map["cofee"] then
         cofee = piece('cofee')
     else
         if TablesOfPiecesGroups["cofee"] then
@@ -204,7 +206,7 @@ end
 function rainyDayCare()
     westernCivilainDefIDTypeTable = getWesternUnitTypeMap("civilian", UnitDefs)
     if not westernCivilainDefIDTypeTable[myDefID] then return end
-    Umbrella = TableOfPiecesGroups["Umbrella"][(unitID % #TableOfPiecesGroups["Umbrella"] )+1]
+    Umbrella = TablesOfPiecesGroups["Umbrella"][(unitID % #TablesOfPiecesGroups["Umbrella"] )+1]
     while Umbrella do
         if isRaining() then
             while isRaining() do
@@ -889,7 +891,7 @@ end
 -- -Collapsing, Shivering, Coiling Up
 
 function setupAnimation()
-    local map = Spring.GetUnitPieceMap(unitID);
+
     local switchAxis = function(axis)
         if axis == z_axis then return y_axis end
         if axis == y_axis then return z_axis end

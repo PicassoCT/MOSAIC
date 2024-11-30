@@ -702,35 +702,54 @@ function glowWormFlight(speed)
     end
 end
 
+function lineBufferForward(buffer)
+        sum = 0
+        for j=2, #buffer do
+           buffer[j-1]= buffer[j]
+           sum= sum + buffer[j-1]
+        end
+        if maRa() then
+            buffer[#buffer] = math.random(-9,9)
+        else
+            max = math.min(90, sum +  math.random(-45,45)) 
+            min = math.max(-90, sum  + math.random(-45, 45)) 
+            buffer[#buffer] = math.random(math.min(min, max), math.max(min,max)+1)
+        end
+        sum = sum + buffer[#buffer]
+
+    return buffer, sum
+end
+
 function lineTicker()
     Spring.Echo("Starting lineTicker at "..getCoordinateString(unitID))
+    fbuffer = {}
+    sbuffer = {}
+    
+    for i=1, 10 do
+        fbuffer[i] = math.random(-9,9)
+        sbuffer[i] = math.random(-9,9)
+    end
+    axisline = x_axis
+
     while true do
-        totalDeg = 0
-        absoluteRange = 180
+        fbuffer, sum = lineBufferForward(fbuffer)
+
         for i=1,10 do
-            relativeRange = (absoluteRange - 90) - totalDeg
-            relativeDeg  = sanitizeRandom(math.min(relativeRange, 0), math.max(relativeRange, 0))
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], z_axis, math.rad(relativeDeg  - totalDeg),0)
-            totalDeg = totalDeg - relativeDeg
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(fbuffer[i]),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], z_axis, math.rad(-totalDeg),0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
-        totalDeg = 0
-        absoluteRange = 180
+        sbuffer, sum = lineBufferForward(sbuffer)
         for i=11,20 do
-            relativeRange = (absoluteRange - 90) - totalDeg
-            relativeDeg  = sanitizeRandom(math.min(relativeRange, 0), math.max(relativeRange, 0))
-
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i],z_axis, math.rad(relativeDeg - totalDeg),0)
-            totalDeg = totalDeg - relativeDeg
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(sbuffer[i-10]),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],z_axis, math.rad(-totalDeg),0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
         end
         Sleep(15000)

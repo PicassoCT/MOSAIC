@@ -66,6 +66,7 @@ end
 
 onMoveCounter = 0
 SIG_PARTICLE = 1
+SIG_SFX =2
 function showParticles()
     Signal(SIG_PARTICLE)
     SetSignalMask(SIG_PARTICLE)
@@ -146,10 +147,22 @@ function hoverAboveGrounds( distanceToHover, step, boolTurnTowardsGoal)
     end
 end
 
+function particleEmit()
+    Signal(SIG_SFX)
+    SetSignalMask(SIG_SFX)
+    while true do
+        spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
+        delay = math.random(250, 10000)
+        Sleep(delay)
+    end
+end
+
 function script.StartMoving() 
+    StartThread(particleEmit)
 end
 
 function script.StopMoving() 
+    Signal(SIG_SFX)
 end
 
 function script.Activate() return 1 end
