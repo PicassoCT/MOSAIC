@@ -1,17 +1,24 @@
 return {
-	["NuclearExplosionBig"] = {
+	["nuclearexplosionbig"] = {
 		
 		-- Flash of bright light
-		flash = {
+			flash = {
 			air = true,
-			class = [[CExpGenSpawner]],
+			class = [[CBitmapMuzzleFlame]],
 			count = 1,
 			ground = true,
 			water = true,
 			underwater = true,
 			properties = {
-				delay = 0,
-				explosiongenerator = [[custom:NuclearFlash]],
+				colormap = [[1 1 1 0.5  1 0.8 0.6 0.3  0.8 0.4 0.2 0.1  0 0 0 0]],
+				dir = [[0, 1, 0]],
+				frontoffset = 0,
+				fronttexture = [[explo]],
+				length = 20,
+				sidetexture = [[explo]],
+				size = 100,
+				sizegrowth = 0,
+				ttl = 5,
 			},
 		},
 		
@@ -135,27 +142,5 @@ return {
 			},
 		},
 		
-	},
-	
-	["NuclearFlash"] = {
-		flash = {
-			air = true,
-			class = [[CBitmapMuzzleFlame]],
-			count = 1,
-			ground = true,
-			water = true,
-			underwater = true,
-			properties = {
-				colormap = [[1 1 1 0.5  1 0.8 0.6 0.3  0.8 0.4 0.2 0.1  0 0 0 0]],
-				dir = [[0, 1, 0]],
-				frontoffset = 0,
-				fronttexture = [[explo]],
-				length = 20,
-				sidetexture = [[explo]],
-				size = 100,
-				sizegrowth = 0,
-				ttl = 5,
-			},
-		},
 	},
 }

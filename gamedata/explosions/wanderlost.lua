@@ -2,7 +2,6 @@
 
 return {
 
-
   ["wanderlost"] = {
 	particlesa = {
 			air = true,
@@ -124,9 +123,6 @@ return {
 			
 		},
 	}
-	}, 
-	
-	
-	
+	}
 	
 }
