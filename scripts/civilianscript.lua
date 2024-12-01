@@ -569,7 +569,6 @@ end
 attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
-    assert(enemyID)
     attackerID = enemyID
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
