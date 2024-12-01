@@ -1623,12 +1623,12 @@ function addGroundPlaceables()
                 Sleep(1)
                 x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
                 myHeight = Spring.GetGroundHeight(x, z)
-                heightdifference = math.abs(globalHeightUnit - myHeight)
-                if myHeight < globalHeightUnit then heightdifference = -heightdifference end
-
-
-				addToShowTable(randPlaceAbleID)
-				Show(randPlaceAbleID)    
+                if myHeight >0 then
+                    heightdifference = math.abs(globalHeightUnit - myHeight)
+                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
+				    addToShowTable(randPlaceAbleID)
+				    Show(randPlaceAbleID)    
+                end
 			end	
 		
 			groundPiecesToPlace = groundPiecesToPlace -1

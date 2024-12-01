@@ -26,6 +26,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local postRoundTimeInSeconds = 15
     local spGetUnitRotation = Spring.GetUnitRotation
     local spSetUnitRotation = Spring.SetUnitRotation
+    local spGetUnitTeam = Spring.GetUnitTeam
         local GameConfig = getGameConfig()
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
@@ -35,16 +36,16 @@ if (gadgetHandler:IsSyncedCode()) then
         if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
     end
 
-    function startInternalBehaviourOfState(unitID, name, ...)
+    function startInternalBehaviourOfState(id, name, ...)
     local arg = arg;
     if (not arg) then
         arg = {...};
         arg.n = #arg
     end
 
-    env = Spring.UnitScript.GetScriptEnv(unitID)
-    if env and env.setOverrideAnimationState then
-        Spring.UnitScript.CallAsUnit(unitID, 
+    env = Spring.UnitScript.GetScriptEnv(id)
+    if env  then
+        Spring.UnitScript.CallAsUnit(id, 
                                      env[name],
                                      arg[1] or nil,
                                      arg[2] or nil,
@@ -68,22 +69,22 @@ if (gadgetHandler:IsSyncedCode()) then
         if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < Spring.GetGameFrame()+30 then
             GG.OperativeTurnTable[id] =Spring.GetGameFrame()
             env = Spring.UnitScript.GetScriptEnv(id)
-            if env and env.externalAimFunction then
+            if env and env.setOverrideAnimationState then
                 Spring.UnitScript.CallAsUnit(id,  env.externalAimFunction)
             end      
         end   
 
         if not Cache[id] or Cache[id] < Spring.GetGameFrame() + 100 then
-        Cache[id] = Spring.GetGameFrame() 
-        foreach(getAllOfTypeNearUnit(unitID, civilianWalkingTypeTable, 256),
-                function(id)
-                    defID = spGetUnitDefID(id)
-                    if spGetUnitTeam(id) == GaiaTeamID and
-                    not GG.AerosolAffectedCivilians[id] then
-                        startInternalBehaviourOfState(id,"startFleeing", unitID)
-                    return id
-                    end
-                end)
+            Cache[id] = Spring.GetGameFrame() 
+            foreach(getAllOfTypeNearUnit(id, civilianWalkingTypeTable, 256),
+                    function(id)
+                        defID = spGetUnitDefID(id)
+                        if spGetUnitTeam(id) == GaiaTeamID and
+                        not GG.AerosolAffectedCivilians[id] then
+                            startInternalBehaviourOfState(id , "startFleeing", unitID)
+                        return id
+                        end
+                    end)
 
         end
     end

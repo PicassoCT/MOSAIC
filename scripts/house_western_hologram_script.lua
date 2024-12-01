@@ -708,12 +708,9 @@ function lineBufferForward(buffer)
            buffer[j-1]= buffer[j]
            sum= sum + buffer[j-1]
         end
+        sum = math.max(math.min(sum,90), -90)
         if maRa() then
             buffer[#buffer] = math.random(-9,9)
-        else
-            max = math.min(90, sum +  math.random(-45,45)) 
-            min = math.max(-90, sum  + math.random(-45, 45)) 
-            buffer[#buffer] = math.random(math.min(min, max), math.max(min,max)+1)
         end
         sum = sum + buffer[#buffer]
 

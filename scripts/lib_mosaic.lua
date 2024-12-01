@@ -1770,7 +1770,9 @@ end
 
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                    "civilianagent", "operativeasset", "operativepropagator",
+                    "civilianagent", 
+                    "operativeasset", 
+                    "operativepropagator",
                     "operativeinvestigator"
                 }
 

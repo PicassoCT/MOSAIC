@@ -309,7 +309,7 @@ function checkReSpawnTraffic()
                 TruckType = randDict(TruckTypeTable)
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
-                    echo("calling truck loading")
+                  --  echo("calling truck loading")
                     loadTruck(id, "truckpayload") 
                 end
             end

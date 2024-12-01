@@ -15,6 +15,7 @@ if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
+VFS.Include("scripts/lib_debug.lua")
 local spGetUnitPieceList = Spring.GetUnitPieceList
 local spGetUnitLastAttackedPiece = Spring.GetUnitLastAttackedPiece
 local spSpawnCEG = Spring.SpawnCEG
@@ -22,10 +23,12 @@ local spGetWind =Spring.GetWind
 local GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
 local windLimit = Game.windMax*0.75
-loal 
 
-local function getRandomPiece(unitID)
-        list = spGetUnitPieceList (  unitID ) 
+
+function getRandomPiece(unitID)
+        assertNum(unitID)
+        list = spGetUnitPieceList(unitID) 
+        assertTable(list)
         return  list[math.random(1,#list)]
 end
 local smokeSwirls = {}
@@ -38,11 +41,14 @@ end
 
 -- > create a CEG at the given Piece with direction or piecedirectional Vector
 function localspawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz )
+    assert(unitID)
+    assert(pieceId)
     if not dx then -- default to upvector 
         dx, dy, dz = 0, 1, 0
     end
 
     boolAdd = offset or 10
+
 
     x, y, z, mx, my, mz = spGetUnitPiecePosDir(unitID, pieceId)
 
@@ -52,15 +58,20 @@ function localspawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz )
     end
 end
  
-function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,weaponID, projectileID, attackerID, attackerDefID,attackerTeam)
+function gadget:UnitDamaged(unitID,unitDefID,teamID)
     if houseTypeTable[unitDefID] then
+       
         lastHitPiece = spGetUnitLastAttackedPiece ( unitID ) 
         if not lastHitPiece then
-            lastHitPiece = getRandomPiece(unitID)        
+            lastHitPiece = getRandomPiece(unitID)    
+            if not lastHitPiece then return damage end    
         end
+        echo("UnitDamaged:"..toString(lastHitPiece))
+        if lastHitPiece then
         localspawnCegAtPiece("civilbuildingdamage", unitID, lastHitPiece)
-        if true then
-            registerSmokeSwirl(unitID, lastHitPiece)
+            if houseTypeTable[unitDefID] then
+                registerSmokeSwirl(unitID, lastHitPiece)
+            end
         end
     end
 end
@@ -73,7 +84,7 @@ function gadget:GameFrame(frame)
             for i=1 , factor do
                 unitId, pos =  randDict(GG.BuildingTable)
                 if unitId then
-                    localspawnCegAtPiece("flyinggarbage", unitID, getRandomPiece(unitID))
+                    localspawnCegAtPiece("flyinggarbage", unitId, getRandomPiece(unitId))
                 end
             end
         end

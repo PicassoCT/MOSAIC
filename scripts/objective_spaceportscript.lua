@@ -148,6 +148,7 @@ function boosterArrivedTravelIntoHangar(boosterNr)
     WTurn(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], y_axis, math.rad(0), 0.1)
 
     boosterReturned[boosterNr] = true
+    if boosterNr == 3 then         closeDoor(GroundRearDoorN) end
 end
 
 
@@ -396,7 +397,7 @@ function launchAnimation()
             watchDog = watchDog-1000
         end
         launchState = "prepareForLaunch"
-        closeDoor(GroundRearDoorN)
+
         initialSetup()
     end
 end

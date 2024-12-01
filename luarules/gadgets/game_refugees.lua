@@ -191,8 +191,6 @@ function getRefugeeEntryPoint(index, boolIgnoreObjectives)
     return getRefugeePoint(index)
 end
 
-function getMilitaryEntry()
-
 indexOffset = 0
 function getRefugeePoint(index)
     if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
@@ -372,13 +370,12 @@ function militaryStream(frame)
 end
 
 function gadget:GameFrame(frame)
-    if frame % 60 then
+    if frame % 60 == 0 then
         isPeaceTime = GG.GlobalGameState == GameConfig.GameState.normal
-    end
 
-    if isFailedState or not isPeaceTime and frame % 60 == 0 then
-
-        refugeeStream(frame)
+        if isFailedState or not isPeaceTime  then
+            refugeeStream(frame)
+        end
     end
 
     if isFailedState or not isPeaceTime and frame % 600 == 0 then
