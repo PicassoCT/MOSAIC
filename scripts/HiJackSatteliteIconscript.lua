@@ -91,6 +91,7 @@ function hijackObservationSatellite()
           blinkPiece(Sat, 5000, 500)
           Spring.DestroyUnit(unitID, false, true) 
         end
+        spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
         Sleep(1000)
     end
 end

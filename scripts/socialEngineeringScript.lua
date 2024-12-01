@@ -30,6 +30,7 @@ function ringAnimation()
     showT(TablesOfPiecesGroups["Range"])
     interval = 5
     while true do
+    	spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
         for i=1, #TablesOfPiecesGroups["Range"] do
             timers = (((Spring.GetGameFrame()/30)+ i*((interval/2)/#TablesOfPiecesGroups["Range"]) % interval)/interval)* math.pi*2
             Move(TablesOfPiecesGroups["Range"][i],z_axis, 500 + math.sin(timers)*500, 666 )

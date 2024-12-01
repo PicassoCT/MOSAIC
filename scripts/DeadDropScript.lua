@@ -79,7 +79,8 @@ function checkForFinderLoop()
 						end
 					end
 					)
-	 Sleep(100)
+	   	spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
+	 	Sleep(100)
 	 if #UnitsNear > 0 then
 	 	boolDone = true
 	 	revealUnitsIfOfTeam()

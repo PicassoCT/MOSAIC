@@ -5,13 +5,13 @@ return {
             class = [[CBitmapParticleSpawner]],
             count = 10, -- Number of particles per frame
             ground = true,
-            water = false,
+            water = true,
             properties = {
-                alwaysvisible = true,
+                alwaysvisible = false,
                 useairlos = true,
                 dir = [[0, 1, 0]], -- Upward direction
                 emitrot = 0,
-                emitrotspread = 360, -- Spread to create some randomness
+                emitrotspread = 0, -- Spread to create some randomness
                 emitvector = [[0, 1, 0]], -- Emit straight upwards
                 gravity = [[0, 0, 0]], -- No gravity
                 particlelife = 20, -- Time each particle lasts

@@ -102,7 +102,7 @@ function blackOutCycle()
                 end
             end
         end
-
+        spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
         Sleep(1000)
     end
 end
