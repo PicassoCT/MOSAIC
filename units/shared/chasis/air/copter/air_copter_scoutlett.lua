@@ -14,6 +14,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	mass = 50,
 	--Health
 	maxDamage = 50,
+
 	idleAutoHeal = 0,
 	--Movement
 	Acceleration = 0.5,
@@ -66,7 +67,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 
 	 		weapons={
 			[1]={name  = "antiairkamikaze", --prevents other weapon usage
-				onlyTargetCategory = [[AIR SURVEILANCE]],
+				onlyTargetCategory = [[AIR SURVEILANCE GROUND]],
 			},				
 			},
 	  

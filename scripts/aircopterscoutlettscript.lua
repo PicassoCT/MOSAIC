@@ -22,13 +22,15 @@ function script.StartMoving()
 end
 SIG_LIFETIME =1
 
-lifeTimeMS = 1*60*1000
+startLifeTime = 1*60*1000
+lifeTimeMS = startLifeTime
 function lifeSpan()
     SetSignalMask(SIG_LIFETIME)
     Signal(SIG_LIFETIME)
     while lifeTimeMS >0 do
         Sleep(1000)
         lifeTimeMS = lifeTimeMS -1000
+        updateProgressBar(math.max(0,lifeTimeMS/startLifeTime))
     end
     Spring.DestroyUnit(unitID, true, false)
 end
@@ -37,6 +39,13 @@ function deployScoutletts()
     Spin(uprotor, y_axis, 9522, 350)
     Spin(lowrotor, y_axis, -9522, 350)
 end
+
+function updateProgressBar(status)
+    Description= "LifeTimeRemaining:"
+    Description = string.rep("|",  status * 20)  
+    Spring.SetUnitTooltip(unitID, Description)
+end
+
 
 function script.StopMoving()
 end
