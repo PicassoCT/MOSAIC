@@ -133,6 +133,7 @@ local barColors = {
   capture = { 1.00,0.50,0.00,barValueAlpha },
   build   = { 0.75,0.75,0.75,barValueAlpha },
   stock   = { 0.50,0.50,0.50,barValueAlpha },
+  fuel   = { 0.250,0.250,0.750,barValueAlpha },
   reload  = { 0.05,0.60,0.60,barValueAlpha },
   shield  = { 0.20,0.60,0.60,barValueAlpha },
   resurrect = { 1.00,0.50,0.00,barValueAlpha },
@@ -1000,6 +1001,7 @@ do
   local GetUnitStockpile     = Spring.GetUnitStockpile
   local GetUnitRulesParam    = Spring.GetUnitRulesParam
 
+
   local fullText
   local ux, uy, uz
   local dx, dy, dz, dist
@@ -1024,6 +1026,8 @@ do
         canStockpile  = ud.canStockpile,
         reloadTime    = ud.reloadTime,
         primaryWeapon = ud.primaryWeapon,
+        maxFuel = 0
+
       }
     end
     ux, uy, uz = GetUnitViewPosition(unitID)
@@ -1064,6 +1068,14 @@ do
           shieldPower = shieldPower / ci.maxShield
           AddBar("shield", shieldPower, "shield", (fullText and floor(shieldPower*100)..'%') or '')
         end
+      end
+
+      --// Fuel
+      if ci.maxFuel > 0 then
+          local fuelRemaining = GetUnitFuel(unitID)
+          local fuelPower = fuelPower / ci.maxShield
+          AddBar("fuel", fuelPower, "fuel", (fullText and floor(fuelPower*100)..'%') or '')
+
       end
 
       --// HEALTH

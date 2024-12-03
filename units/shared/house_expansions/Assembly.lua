@@ -25,8 +25,8 @@ local Assembly = Building:New{
 	script 				= "assemblyscript.lua",
 	objectName        	= "assembly.dae",
 
-	name 				= "MOSAIC Assembly",
-	description 		= " creates standardized drones <Automated Factory>",
+	name 				= "Modular Ordanance Assembly System",
+	description 		= " creates template drones <Automated Factory>",
 	buildPic			= "assembly.png",
 	canCloak 			= true,
 	canMove 		 	= true,
@@ -70,7 +70,7 @@ antagonAssembly.buildOptions = {
 		"ground_turret_mg",				"ground_turret_antiarmor",	"ground_turret_ssied",			
 		"ground_turret_dronegrenade" , 	"ground_turret_rocket", 	"ground_turret_sniper",
 		--walkers
-		"ground_walker_mg",				"ground_walker_grenade", 	"ground_tank_night",
+		"ground_walker_mg",				"ground_walker_grenade", 	
 		--vehicles
 		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket", 
 	--weapon
@@ -89,11 +89,8 @@ protagonAssembly.buildOptions =  {
 		"ground_turret_mg",				"ground_turret_antiarmor",	"ground_turret_ssied",			
 		"ground_turret_dronegrenade" , 	"ground_turret_rocket", 	"ground_turret_sniper",
 		--walkers
-		"ground_walker_mg",				"ground_walker_grenade", 	"ground_tank_day",
+		"ground_walker_mg",				"ground_walker_grenade", 	
 		--vehicles
-		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket",
-
-		"air_copter_blackhawk"
 
 	--weapon
 	}

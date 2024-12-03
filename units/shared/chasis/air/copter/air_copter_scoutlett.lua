@@ -38,6 +38,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	activateWhenBuilt = true,
 	MaxSlope  = 75,
 
+
 	--canHover=true,
 	CanAttack = true,
 	CanGuard = true,
@@ -61,6 +62,7 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	Category = [[AIR SURVEILANCE]],
 
 	  customParams = {
+	  	maxFuel = "100",	  	
 	  	baseclass ="vtol",
 	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },

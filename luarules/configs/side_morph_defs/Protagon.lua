@@ -19,7 +19,7 @@ local protagonDefs = {
 			facing = true,
 		},		
 		{
-			into = 'antagonassembly',
+			into = 'protagonassembly',
 			metal = 2500,
 			energy = 5000,
 			time = 60,
@@ -34,6 +34,15 @@ local protagonDefs = {
 			time = 7*60,
 			name = 'AICore',
 			text = 'builds electronic warfare units',
+			facing = true,
+		},		
+		{
+			into = 'armybase',
+			metal = 10000,
+			energy = 2500,
+			time = 7*60,
+			name = 'AICore',
+			text = 'supplies heavy assault vehicles',
 			facing = true,
 		},			
 		
