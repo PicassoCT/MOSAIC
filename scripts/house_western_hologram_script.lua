@@ -1481,9 +1481,16 @@ end
 function buildShareMessageT()
     result = {}
     up = maRa()
+    nonRepeating = {}
     for i=1,3 do
-      asciiValue = math.random(65, 90)
-      pieceName=  string.char(asciiValue)
+      randoVal  = math.random(65, 90)
+      while nonRepeating[randoVal] do
+        randoVal  =math.random(65, 90)
+        Sleep(1)
+      end
+      nonRepeating[randoVal] = randoVal
+      asciiValue = randoVal
+      pieceName =  string.char(asciiValue)
       if up then 
           result[#result +1] = TableOfPiecesGroups[pieceName][1]
       else
