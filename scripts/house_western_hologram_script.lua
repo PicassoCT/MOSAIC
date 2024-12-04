@@ -1026,7 +1026,11 @@ function conditionalBuisnessLogo()
             hash = getDeterministicRandom(mapHash, limit)
             addHologramLetters({ shamusYoungCompanyName(hash, limit), shamusYoungCompanyName(reHash(hash, limit))})
         else
-            addHologramLetters(buisnessNeonSigns)
+            if randChance(98) then
+                addHologramLetters(buisnessNeonSigns)
+            else
+                shareTickerRunning()
+            end
         end
     end
 end
@@ -1472,6 +1476,45 @@ function waterFallProject(allLetters, posLetters)
     end
     Sleep(60000)
     hideTReg(allLetters)
+end
+
+function buildShareMessageT()
+    result = {}
+    up = maRa()
+    for i=1,3 do
+      asciiValue = math.random(65, 90)
+      pieceName=  string.char(asciiValue)
+      if up then 
+          result[#result +1] = TableOfPiecesGroups[pieceName][1]
+      else
+          result[#result +1] = TableOfPiecesGroups[pieceName][3] 
+      end
+    end
+
+    return result 
+end
+
+function shareTickerRunning()
+    while true do
+        messageT = buildShareMessageT()
+        foreach(messageT,
+                function(id)
+                    reset(id, 0)
+                    Move(id, x_axis, -250, 0)
+                    Move(id, x_axis, 0, 50)
+                    Show(id)
+                    Sleep(500)
+                end)
+                WaitForMoves(messageT) 
+                Sleep(3000)
+                function(id)
+                        Turn(id, y_axis, math.rad(90),0)
+                        Move(id, z_axis, 150, 50)
+                end)
+
+                hideT(messageT)
+        Sleep(1000)
+    end
 end
 
 
