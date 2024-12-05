@@ -48,28 +48,17 @@ local ArmyBase = Building:New{
 		normaltex = "unittextures/component_atlas_normal.dds",
     },
 	
-	buildoptions = {},
+	buildoptions = {"ground_tank_day",		"ground_truck_mg", 	"ground_truck_antiarmor", 
+		"ground_truck_rocket",		"air_copter_blackhawk"},
+
 	
 	category = [[GROUND BUILDING RAIDABLE]],
 	}
 
 
-local armybase = ArmyBase
-protagonAssembly.name = "Protagon Automated Assembly"
-protagonAssembly.buildOptions =  {
-	--chassis
-	--air
-		 --copter  --jet -- bomber --long range rocket
-		"ground_tank_day",
-		--vehicles
-		"ground_truck_mg", 				"ground_truck_antiarmor", 	"ground_truck_rocket",
 
-		"air_copter_blackhawk"
-
-	--weapon
-	}
 
 return lowerkeys({
 	--Temp
-	["armybase"] = armybase:New()
+	["armybase"] = ArmyBase:New()
 })
