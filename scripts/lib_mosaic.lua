@@ -1402,8 +1402,9 @@ end
 
             function getTruckLoadOutTypeTable()
                 mapping = {
-                    ["ground_truck_mg"] = "ground_turret_mg",
-                    ["civilian_truck_ssied"] = "ground_turret_ssied",
+                    ["civilian_truck_mg"] = "ground_turret_mg",
+                     ["civilian_truck_ssied"] = "ground_turret_ssied",
+                    ["ground_truck_mg"] = "ground_turret_mg",                   
                     ["ground_truck_ssied"] = "ground_turret_ssied",
                     ["ground_truck_antiarmor"] = "ground_turret_antiarmor",
                     ["ground_truck_rocket"] = "ground_turret_rocket"
