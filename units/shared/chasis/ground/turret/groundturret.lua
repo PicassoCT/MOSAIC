@@ -143,6 +143,73 @@ local groundturretmg =  Turret:New{
 		},	
 }
 
+local groundturretmortar =  Turret:New{
+	name = "Stationary Mortar",
+	Description = " indirect attack unit< ",
+	
+	objectName = "ground_turret_mg.dae",
+	mass = 2500,
+	
+	script = "ground_turretscript.lua",
+	buildPic = "ground_turret_mg.png",
+	iconType = "ground_turret_mg",
+
+	--cost
+	buildCostEnergy  = 250,
+	buildCostMetal= 500,
+	buildTime = 35,
+	--Health
+	maxDamage = 2500,
+	idleAutoHeal = 0,
+	--Movement
+	alwaysUpright=false,
+	fireState=1,
+	pushResistant = true,
+	FootprintX = 1,
+	FootprintZ = 1,
+	maxSlope = 50,
+	
+	MaxWaterDepth = 0,
+	MovementClass = "VEHICLE",
+
+	nanocolor=[[0.20 0.411 0.611]],
+	sightDistance = 300,
+
+	cantBeTransported = false,
+
+	usepiececollisionvolumes = false,
+	--collisionVolumeType = "box",
+	--collisionvolumescales = "5 15 5",
+
+	CanAttack = true,
+	canFight  = true,
+	CanGuard = true,
+	CanMove = true,
+	CanPatrol = true,
+	Canstop  = true,
+	canCloak = false,
+	
+	Category = [[GROUND]],
+
+	  customParams = {
+	 	 baseclass = "turret",
+	 	 normaltex = "unittextures/component_atlas_normal.dds",
+	  },
+
+	 sfxtypes = {
+		explosiongenerators = {
+								"custom:bigbulletimpact",
+								"custom:gunmuzzle"
+							  },
+				},
+				
+		weapons = {
+		[1]={name  = "mortar",
+			onlyTargetCategory = [[GROUND BUILDING]]
+			},	
+		},	
+}
+
 local ground_turret_sniper =  Turret:New{
 	name = "Stationary Snipersentry",
 	Description = "Pillbox Emplacement ",
@@ -432,6 +499,7 @@ return lowerkeys(
 {
 	["ground_turret_ssied"] = groundturretssied:New(),
 	["ground_turret_mg"] = groundturretmg:New(),
+	["ground_turret_mortar"] = groundturretmortar:New(),
 	["ground_turret_antiarmor"] = ground_turret_antiarmor:New()	,
 	["ground_turret_rocket"] = ground_turret_rocket:New(),
 	["ground_turret_dronegrenade"] = ground_turret_dronegrenades:New(),
