@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 buildspot = piece"buildspot"
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -26,11 +26,11 @@ function blinkLights()
     Signal(SIG_BLINK)
     SetSignalMask(SIG_BLINK)
     while true do
-        Show(lightsOn)
-        Hide(lightsOff)
+        showT(TablesOfPiecesGroups["lightsOn"])
+        hideT(TablesOfPiecesGroups["lightsOff"])
         Sleep(blinkTime)
-        Show(lightsOff)
-        Hide(lightsOn)
+        hideT(TablesOfPiecesGroups["lightsOn"])
+        showT(TablesOfPiecesGroups["lightsOff"])
         Sleep(blinkTime)
     end
 end

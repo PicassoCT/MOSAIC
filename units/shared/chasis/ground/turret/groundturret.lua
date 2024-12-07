@@ -144,10 +144,10 @@ local groundturretmg =  Turret:New{
 }
 
 local groundturretmortar =  Turret:New{
-	name = "Stationary Mortar",
-	Description = " indirect attack unit< ",
+	name = " Mortar",
+	Description = " indirect attack unit<turret> ",
 	
-	objectName = "ground_turret_mg.dae",
+	objectName = "ground_turret_mortar.dae",
 	mass = 2500,
 	
 	script = "ground_turretscript.lua",

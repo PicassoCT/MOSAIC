@@ -1514,9 +1514,10 @@ function shareTickerRunning()
                 end)
                 WaitForMoves(messageT) 
                 Sleep(3000)
+        foreach(messageT,
                 function(id)
-                        Turn(id, y_axis, math.rad(90),0)
-                        Move(id, z_axis, 150, 50)
+                    Turn(id, y_axis, math.rad(90),0)
+                    Move(id, z_axis, 150, 50)
                 end)
 
                 hideT(messageT)

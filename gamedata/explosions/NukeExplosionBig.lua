@@ -1,3 +1,5 @@
+local scaleSpeed = 0.25
+
 return {
 	["nuclearexplosionbig"] = {
 		
@@ -33,12 +35,12 @@ return {
 			properties = {
 				colormap = [[1 0.8 0.4 0.04  0.8 0.4 0.1 0.03  0.5 0.2 0.05 0.02  0.1 0.1 0.1 0.01  0 0 0 0]],
 				dir = [[0, 1, 0]],
-				frontoffset = 0,
+				frontoffset = 1,
 				fronttexture = [[explosion]],
 				length = 50,
 				sidetexture = [[smokeSwirls]],
 				size = 30,
-				sizegrowth = 20,
+				sizegrowth = 1,
 				ttl = 50,
 			},
 		},
@@ -58,15 +60,15 @@ return {
 				fronttexture = [[nuke]],
 				length = 100,
 				sidetexture = [[bigexplo]],
-				size = 50,
+				size = 40,
 
-				sizegrowth = 60,
-				ttl = 20,
+				sizegrowth = 25,
+				ttl = 30,
 			},
 		},
 
 			-- Expanding glowing energy sphere
-		sphere = {
+		spherea = {
 			air = true,
 			class = [[CSpherePartSpawner]],
 			count = 1,
@@ -76,8 +78,54 @@ return {
 			properties = {
 				alpha = 0.6,                   -- Opacity of the sphere
 				alwaysvisible = true,          -- Sphere is always visible
+				color = [[1,0.75,0]],           -- Glowing orange sphere
+				expansionspeed = 15,           -- Speed at which the sphere grows
+				ttl = 35,                      -- How long the sphere lasts
+			},
+			},
+		sphereb = {
+			air = true,
+			class = [[CSpherePartSpawner]],
+			count = 1,
+			ground = true,
+			water = true,
+			underwater = true,
+			properties = {
+				alpha = 0.75,                   -- Opacity of the sphere
+				alwaysvisible = true,          -- Sphere is always visible
 				color = [[1,0.8,0]],           -- Glowing orange sphere
-				expansionspeed = 25,           -- Speed at which the sphere grows
+				expansionspeed = 14,           -- Speed at which the sphere grows
+				ttl = 33,                      -- How long the sphere lasts
+			},
+		},	
+		spherec = {
+			air = true,
+			class = [[CSpherePartSpawner]],
+			count = 1,
+			ground = true,
+			water = true,
+			underwater = true,
+			properties = {
+				alpha = 0.85,                   -- Opacity of the sphere
+				alwaysvisible = true,          -- Sphere is always visible
+				color = [[1,0.9,0]],           -- Glowing orange sphere
+				expansionspeed = 13,           -- Speed at which the sphere grows
+				ttl = 30,                      -- How long the sphere lasts
+			},
+		},	
+
+		sphered = {
+			air = true,
+			class = [[CSpherePartSpawner]],
+			count = 1,
+			ground = true,
+			water = true,
+			underwater = true,
+			properties = {
+				alpha = 0.99,                   -- Opacity of the sphere
+				alwaysvisible = true,          -- Sphere is always visible
+				color = [[1,1,0]],           -- Glowing orange sphere
+				expansionspeed = 10,           -- Speed at which the sphere grows
 				ttl = 30,                      -- How long the sphere lasts
 			},
 		},

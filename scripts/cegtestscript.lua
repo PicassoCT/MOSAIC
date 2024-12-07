@@ -23,7 +23,7 @@ function script.Create()
  function CegTest()
     while true do
         Sleep(seconds * 1000)
-        spawnCegAtUnit(unitID, cegToTestName, math.random(-500,500), math.random(500,1100),  math.random(-500,500))
+        spawnCegAtUnit(unitID, cegToTestName, 0, 25,  0)
         echo("cegtest:Execute")
     end
  end

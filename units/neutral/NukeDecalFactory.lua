@@ -39,10 +39,7 @@ LeaveTracks = false,
 -- Building	
 	  levelGround            = false,	
 	workerTime = 1,
-	buildoptions = 
-	{
-	"glava",
-	},
+
 
 
       

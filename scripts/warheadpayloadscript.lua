@@ -107,6 +107,7 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	             antagonT = getAllTeamsOfType("antagon", UnitDefs)
 	             local rubbleDefID = UnitDefNames["gcscrapheap"].id
 	             x, y, z = Spring.GetUnitPosition(unitID)
+				Spring.SpawnCeg("nukeshroom", x ,y + 10, z )
 				Spring.SpawnCeg("nuclearexplosionbig", x ,y + 100, z )
 	             createCrater(x,y,z, myDefID)
 	             for i=1, GameConfig.visuals.falloutParticlesMax do 
