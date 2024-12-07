@@ -150,7 +150,7 @@ local groundturretmortar =  Turret:New{
 	objectName = "ground_turret_mortar.dae",
 	mass = 2500,
 	
-	script = "ground_turretscript.lua",
+	script = "ground_turret_mortar_script.lua",
 	buildPic = "ground_turret_mg.png",
 	iconType = "ground_turret_mg",
 
