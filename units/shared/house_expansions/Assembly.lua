@@ -72,7 +72,7 @@ antagonAssembly.buildOptions = {
 		--walkers
 		"ground_walker_mg",				"ground_walker_grenade", 	
 		--vehicles
-		"civilian_truck_mg", 			"civilian_truck_mortar", 	"civilian_truck_mortar", 
+		"civilian_truck_mg", 			"civilian_truck_rocket", 	"civilian_truck_mortar", 
 	--weapon
 	}
 	

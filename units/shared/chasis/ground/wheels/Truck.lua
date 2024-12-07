@@ -47,6 +47,7 @@ local civilian_truck_rocket = Truck:New{
 	trackWidth =28,
 	
 }
+
 local civilian_truck_mortar = Truck:New{
 	buildtime= 80,
 	name = "Technical",
@@ -146,8 +147,59 @@ local civilian_truck_mg = Truck:New{
 }
 
 local ground_truck_mg = Truck:New{
-	name = "Machinegun Truck",
+	name = "Military Truck",
 	description = "Amored truck with Machinegun <Assault Vehicle>",
+	
+	corpse				= "",
+	maxDamage = 2500,
+	mass = 2000,
+	buildCostEnergy = 250,
+	buildCostMetal = 750,
+	explodeAs			= "none",
+	--conType			= "infantry",
+	maxVelocity		= 3.5 , --14.3, --86kph/20
+	--maxReverseVelocity= 2.15,
+	acceleration = 1.7,
+	brakeRate = 0.1,
+	buildtime= 80,
+	turninplace		= true,
+	footprintX = 1,
+	footprintZ = 1,
+	script 			= "Truckscript.lua",
+	objectName 	= "apc.dae",
+	movementClass   	= "VEHICLE",
+			buildPic = "truck_mg.png",
+			iconType = "truck_mg",
+	category = [[GROUND]],
+	transportSize = 16,
+	sightDistance = 50,
+	transportCapacity = 2,
+	isFirePlatform  = true,
+	canCloak= false,
+	collisionVolumeType = "box",
+	collisionvolumescales = "40 50 70",
+	fireState = 1,
+	customparams = {
+		helptext		= "Military Truck/Technical",
+		baseclass		= "Truck", -- TODO: hacks
+		normaltex = "unittextures/apc_normal.dds",
+	},
+	weapons = {
+			[1]={name  = "marker",
+				onlyTargetCategory = [[GROUND]],
+				},
+			},	
+	LeaveTracks = true,
+		canAttack = true,
+	trackType ="armst_tracks",
+	trackStrength=12,
+	trackWidth =28,
+	
+}
+
+local ground_truck_mortar = Truck:New{
+	name = "Military Truck",
+	description = "Amored truck with mortars <Assault Vehicle>",
 	
 	corpse				= "",
 	maxDamage = 2500,
@@ -453,6 +505,7 @@ return lowerkeys({
 	["policetruck"]				= PoliceTruck:New(),
 	["civilian_truck_mg"]		= civilian_truck_mg:New(),
 	["civilian_truck_mortar"]		= civilian_truck_mortar:New(),
+	["ground_truck_mortar"]		= ground_truck_mortar:New(),
 	["civilian_truck_rocket"]		= civilian_truck_rocket:New(),
 	["ground_truck_mg"]			= ground_truck_mg:New(),
 	["civilian_truck_ssied"]	= civilian_truck_ssied:New(),
