@@ -223,7 +223,7 @@ function plattFormFireBloom()
     Show(LaunchCone)
     Move(fireCloud, y_axis, -250, 0)
     Show(fireCloud)
-    Move(fireCloud, y_axis, 550, 1200)
+    Move(fireCloud, y_axis, 3000, 1200)
 
     while launchState == "launching" do
         rVal = math.random(300,950) *randSign()
