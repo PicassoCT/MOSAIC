@@ -46,7 +46,6 @@ CrawlerMain = piece("CrawlerMain")
 LaunchCone = piece("LaunchCone")
 Rocket = piece("Rocket")
 MainStage = piece("MainStage")
-GroundGases = piece("GroundGases")
 CraneHead = piece("CraneHead")
 RocketCraneBase = piece("RocketCrane")
 CraneRocket = piece("CraneRocket")
@@ -151,12 +150,28 @@ function boosterArrivedTravelIntoHangar(boosterNr)
     if boosterNr == 3 then         closeDoor(GroundRearDoorN) end
 end
 
+function getPlum(boosterNr)
+    if boosterNr == 1 then
+        assertTable( TableOfPiecesGroups[ReturningBooster1ThrusterPlumN])
+        return TableOfPiecesGroups[ReturningBooster1ThrusterPlumN]
+    end  
+    if boosterNr == 2 then
+        assertTable(TableOfPiecesGroups[ReturningBooster2ThrusterPlumN])
+        return TableOfPiecesGroups[ReturningBooster2ThrusterPlumN]
+    end
+    if boosterNr == 3 then
+        assertTable(TableOfPiecesGroups[ReturningBooster3ThrusterPlumN])
+        return TableOfPiecesGroups[ReturningBooster3ThrusterPlumN]
+    end
+end
+
 
 function landBooster(boosterNr, booster)
     resttime = boosterNr*15000
+    LandCone = TableOfPiecesGroups["LandCone"..boosterNr]
     axis = 2
     Sleep(boosterNr)
-    plums = TableOfPiecesGroups["ReturningBooster" .. boosterNr .. "ThrusterPlum"]
+    plums = getPlum(boosterNr)
     assert(plums)
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     assert(booster)
@@ -177,13 +192,18 @@ function landBooster(boosterNr, booster)
         Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
         Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
         showT(plums)
-     
+        Show(LandCone)
         Turn(booster, x_axis, math.rad(0), 0.5)
         Turn(booster, y_axis, math.rad(0), 3)
         for i= 2000, 0, -10 do
-            WMove(booster, axis, i, 500)
+           WMove(booster, axis, i, 500)
+
            spinVal = math.random(40, 120)*randSign()
-           spinT(plums, y_axis, math.rad(spinVal))
+           Spin(LandCone, y_axis, math.rad(spinVal))
+
+           spinVal = math.random(40, 120)*randSign()
+           Turn(plums, y_axis, math.rad(spinVal))
+           Spin(plums, y_axis, math.rad(spinVal))
         end  
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
@@ -203,8 +223,7 @@ function plattFormFireBloom()
     Show(LaunchCone)
     Move(fireCloud, y_axis, -250, 0)
     Show(fireCloud)
-
-    Move(fireCloud, y_axis, 450, 900)
+    Move(fireCloud, y_axis, 3000, 1200)
 
     while launchState == "launching" do
         rVal = math.random(300,950) *randSign()
@@ -223,6 +242,10 @@ function plattFormFireBloom()
         end
         Sleep(3000)
     end
+
+end
+
+function plattformFireBloomCleanup()
     foreach(
         TableOfPiecesGroups["FireFlower"],
         function(id)
@@ -235,6 +258,7 @@ function plattFormFireBloom()
     Hide(GroundHeatedGasRing)
     hideT(TableOfPiecesGroups["FireFlower"])
 end
+
 
 function liftRocketShowStage(distanceUp, timeUp, cloud, spinValue, startValue)
     Show(cloud)
@@ -361,17 +385,18 @@ function launchAnimation()
         Spin(GroundHeatedGasRing,y_axis,math.rad(66),0)
 
         --Lift rocket (rocket is slow and becomes faster)
-        liftRocketShowStage(3000, 1500, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign()/10, 10)
+        liftRocketShowStage(3000, 1500, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign()/10, 13)
         --Lift rocket
-        liftRocketShowStage(12000, 2000, TableOfPiecesGroups[rocketPlumage][2], math.random(20, 30)*randSign()/10, 5)
+        liftRocketShowStage(12000, 2000, TableOfPiecesGroups[rocketPlumage][2], math.random(20, 30)*randSign()/10, 11)
         -- Stage2 smoke Spin
         --Lift Rocket
         -- Stage2 smoke Spin
         --Lift Rocket
-        liftRocketShowStage(18000, 2000, TableOfPiecesGroups[rocketPlumage][3], math.random(10, 20)*randSign()/10, 3)
+        liftRocketShowStage(18000, 2000, TableOfPiecesGroups[rocketPlumage][3], math.random(10, 20)*randSign()/10, 5)
         -- Stage3 smoke Spin
         --Lift Rocket
-        liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign()/10, 2)
+        plattformFireBloomCleanup()
+        liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign()/10, 3)
         liftRocketShowStage(58000, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign()/10, 1)
         -- Stage4 smoke Spin
         -- Decoupling thrusters
