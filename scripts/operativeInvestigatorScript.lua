@@ -2,6 +2,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
+include "coatOfManyColors.lua"
 local myDefID = Spring.GetUnitDefID(unitID)
 local TablesOfPiecesGroups = {}
 
@@ -192,6 +193,7 @@ function script.Create()
     Show(FoldtopUnfolded)
 	StartThread(flyingMonitored)
 	StartThread(turnDetector)
+
 	
 	setOverrideAnimationState( eAnimState.slaved, eAnimState.standing,  true, nil, false)
 
@@ -1244,6 +1246,11 @@ function showHideIcon(boolShowIcon)
 		hideT(TablesOfPiecesGroups["Shell"])			
 		Show(FoldtopUnfolded)
 		Hide(FoldtopFolded)
+		if TablesOfPiecesGroups["Jacket"] then
+			if unitId % 3== 0 then 
+				showT(TablesOfPiecesGroups["Jacket"])
+			end
+		end
         Hide(Icon)
     end
 end
