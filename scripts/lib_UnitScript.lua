@@ -457,8 +457,8 @@ function recMapDown(unitID, Result, pieceMap, Name)
 end
 
 -- >Returns all Pieces in a Hierarchy below the named point
-function getPiecesBelow(unitID, PieceName, pieceFunction)
-    pieceMap = getPieceHierarchy(unitID, pieceFunction)
+function getPiecesBelow(unitID, PieceName)
+    pieceMap = getPieceHierarchy(unitID)
     return recMapDown(unitID, {}, pieceMap, PieceName)
 end
 

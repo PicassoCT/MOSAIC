@@ -168,7 +168,7 @@ end
 
 function landBooster(boosterNr, booster)
     resttime = boosterNr*15000
-    LandCone = TableOfPiecesGroups["LandCone"..boosterNr]
+    LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
     axis = 2
     Sleep(boosterNr)
     plums = getPlum(boosterNr)
@@ -188,27 +188,30 @@ function landBooster(boosterNr, booster)
         Sleep(1)
         WaitForMoves(booster)
     end
+    Show(LandCone)
+    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
+    Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
+    showT(plums)
+    Show(LandCone)
+    Turn(booster, x_axis, math.rad(0), 0.5)
+    Turn(booster, y_axis, math.rad(0), 3)
+    for i= 2000, 0, -10 do
+       WMove(booster, axis, i, 500)
 
-        Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
-        Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
-        showT(plums)
-        Show(LandCone)
-        Turn(booster, x_axis, math.rad(0), 0.5)
-        Turn(booster, y_axis, math.rad(0), 3)
-        for i= 2000, 0, -10 do
-           WMove(booster, axis, i, 500)
+       spinVal = math.random(40, 120)*randSign()
+       Spin(LandCone, y_axis, math.rad(spinVal))
 
-           spinVal = math.random(40, 120)*randSign()
-           Spin(LandCone, y_axis, math.rad(spinVal))
-
-           spinVal = math.random(40, 120)*randSign()
-           Turn(plums, y_axis, math.rad(spinVal))
-           Spin(plums, y_axis, math.rad(spinVal))
-        end  
+       spinVal = math.random(40, 120)*randSign()
+       Turn(plums, y_axis, math.rad(spinVal))
+       Spin(plums, y_axis, math.rad(spinVal))
+       spinVal = math.random(40, 120)*randSign()
+       Spin(LandCone, y_axis, math.rad(spinVal))
+    end  
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     assert(plums)
     hideT(plums)
+    Hide(LandCone)
     Hide(booster)
     assert(TableOfPiecesGroups[LandedBoosterN])
     showT(TableOfPiecesGroups[LandedBoosterN])

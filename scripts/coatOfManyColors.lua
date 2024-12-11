@@ -1,6 +1,10 @@
 -- Configuration for the trench coat bones
 
-
+function getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
+    leftNeighbor = TableOfPieceGroups[piceNr - coatstripeMaxNr]
+    rightNeighbor =  TableOfPieceGroups[piceNr + coatstripeMaxNr]
+    return leftNeighbor, rightNeighbor
+end
 
 function setupCoat(parentT)
     hierarchy, root = getPieceHierarchy(unitID)
