@@ -1,13 +1,32 @@
 -- Configuration for the trench coat bones
-local coatBoneParents = {
-    {boneName = "CoatTail1", neighbour1= nil, neighbour2 = nil,  child = nil,  localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}},
-
-}
 
 
-function setupCoat(TableOfPieceGroups, hierarchyMap, nameOfCoats)
 
+function setupCoat(parentT)
+    hierarchy, root = getPieceHierarchy(unitID)
+    coatMap = {}
+    for parent,p in pairs(parentT) do 
+        coatMap[#coatMap +1] = {bone = parent,  children = hierarchy[parent],  localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}}
+    end
+    
+    return coatBoneParents
+end
 
+function composeForces(constantForces, temporaryForces)
+    local globalForce = {x = 0, y= 0, z= 0 }
+        -- Apply gravity and wind
+        for i=1, #constantForces do   
+            globalForce.x = globalForce.x + constantForces[i].x,
+            globalForce.y = globalForce.y + constantForces[i].y,
+            globalForce.z = globalForce.z + constantForces[i].z,
+        end
+
+        for i=1, #temporaryForces do   
+            globalForce.x = globalForce.x + temporaryForces[i].x,
+            globalForce.y = globalForce.y + temporaryForces[i].y,
+            globalForce.z = globalForce.z + temporaryForces[i].z,
+        end
+    return globalForce
 end
 -- Physics parameters
 local damping = 0.9
@@ -21,25 +40,18 @@ local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
 
 -- Function to simulate coat physics
 function updateCloth(character, constantForces, temporaryForces, perPieceForces )
+
+    local globalForces = composeForces(constantForces, temporaryForces)
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
-
-    for i, bone in ipairs(coatBones) do
+    for coatStrip = 1, #coatMap do
+        local coatStripe = coatMap[i]
+    for i=1, #coatStripe.children do
+        local bone = coatStripe.children[i]
+        local parent = (i > 1) and coatStripe.children[i-1] or coatStripe.parent
         -- Get the current world position of the bone and parent bone
-        local worldPos = getBoneWorldPosition(character, bone.boneName)
-        local parentWorldPos = (i > 1) and getBoneWorldPosition(character, coatBones[i - 1].boneName) or nil
-      local globalForce = {x = 0, y= 0, z= 0 }
-        -- Apply gravity and wind
-        for i=1, #constantForces do   
-            globalForce.x = globalForce.x + constantForces[i].x,
-            globalForce.y = globalForce.y + constantForces[i].y,
-            globalForce.z = globalForce.z + constantForces[i].z,
-        end
-
-        for i=1, #temporaryForces do   
-            globalForce.x = globalForce.x + temporaryForces[i].x,
-            globalForce.y = globalForce.y + temporaryForces[i].y,
-            globalForce.z = globalForce.z + temporaryForces[i].z,
-        end
+        local worldPos = getBoneWorldPosition(character, bone)
+        local parentWorldPos =  getBoneWorldPosition(character, coatStripe.parent) 
+       
 
         -- Apply spring force to maintain connectivity with the parent
         if parentWorldPos then
@@ -78,5 +90,9 @@ function getBoneWorldPosition(character, boneName)
 end
 
 function setBoneLocalPosition(character, boneName, localPos)
-    -- Set the position of the bone relative to its parent
+    -- Derive the bone position from the local Pos
+
+     the position of the bone relative to its parent
+
+    -- Set only bone rotation 
 end

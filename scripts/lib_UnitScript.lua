@@ -407,17 +407,16 @@ function getPiecePosDir(unitID, Peace)
 end
 
 -- > creates a hierarchical table of pieces, descending from root
-function getPieceHierarchy(unitID, pieceFunction)
-
+function getPieceHierarchy(unitID)
+    local pieceMap = Spring.GetUnitPieceMap ( unitID ) 
     rootname, children = getRoot(unitID)
-    rootNumber = pieceFunction(rootname)
+    rootNumber = pieceMap[rootname]
     hierarchy = {}
     hierarchy[rootNumber] = {}
     openTable = {}
     for k, pieceName in pairs(children) do
-        hierarchy[rootNumber][#hierarchy[rootNumber] + 1] =
-            pieceFunction(pieceName)
-        table.insert(openTable, pieceFunction(pieceName))
+        hierarchy[rootNumber][#hierarchy[rootNumber] + 1] = pieceMap[pieceName]
+        table.insert(openTable, pieceMap[pieceName])
     end
 
     while table.getn(openTable) > 0 do
@@ -428,10 +427,10 @@ function getPieceHierarchy(unitID, pieceFunction)
             end
             if tables and tables.children then
                 for num, pieceName in pairs(tables.children) do
-                    newPieceNumber = pieceFunction(pieceName)
+                    newPieceNumber = pieceMap[pieceName]
                     hierarchy[pieceNumber][#hierarchy[pieceNumber] + 1] =
                         newPieceNumber
-                    table.insert(openTable, pieceFunction(pieceName))
+                    table.insert(openTable, pieceMap[pieceName])
                 end
                 table.remove(openTable, num)
             end
