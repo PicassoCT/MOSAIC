@@ -4,7 +4,11 @@ local coatBoneParents = {
 
 }
 
-
+function getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
+    leftNeighbor = TableOfPieceGroups[piceNr - coatstripeMaxNr]
+    rightNeighbor =  TableOfPieceGroups[piceNr + coatstripeMaxNr]
+    return leftNeighbor, rightNeighbor
+end
 function setupCoat(TableOfPieceGroups, hierarchyMap, nameOfCoats)
 
 
@@ -27,7 +31,7 @@ function updateCloth(character, constantForces, temporaryForces, perPieceForces 
         -- Get the current world position of the bone and parent bone
         local worldPos = getBoneWorldPosition(character, bone.boneName)
         local parentWorldPos = (i > 1) and getBoneWorldPosition(character, coatBones[i - 1].boneName) or nil
-      local globalForce = {x = 0, y= 0, z= 0 }
+        local globalForce = {x = 0, y= 0, z= 0 }
         -- Apply gravity and wind
         for i=1, #constantForces do   
             globalForce.x = globalForce.x + constantForces[i].x,
