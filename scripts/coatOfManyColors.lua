@@ -6,12 +6,18 @@ function getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
     return leftNeighbor, rightNeighbor
 end
 
+local posVelocDict  = {}
 function setupCoat(parentT)
     hierarchy, root = getPieceHierarchy(unitID)
+
     coatMap = {}
-    for parent,p in pairs(parentT) do 
-        coatMap[#coatMap +1] = {bone = parent,  children = hierarchy[parent],  localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}}
+    for num,parent in pairs(parentT) do 
+        coatMap[#coatMap +1] = {parent = parent, children = hierarchy[parent], }
+        for i=1, #hierarchy[parent] do
+            child = hierarchy[parent][i]
+            posVelocDict[child] = { localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}}
     end
+
     
     return coatBoneParents
 end
@@ -42,8 +48,32 @@ local deltaTime = 1 / 60 -- Assume 60 FPS
 local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
 local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
 
+
+function addNeighborAsForce(globalForce, worldPos, neighbor )
+      if not neighbor then return globalForce end
+      
+      local neighborWorldPos =  getBoneWorldPosition(unitID, neighbor) 
+
+        if neighborWorldPos then
+            local toNeighbor = {
+                x = neighborWorldPos.x - worldPos.x,
+                y = neighborWorldPos.y - worldPos.y,
+                z = neighborWorldPos.z - worldPos.z,
+            }
+            local length = math.sqrt(neighborWorldPos.x^2 + neighborWorldPos.y^2 + neighborWorldPos.z^2)
+            if length > 0 then
+                local norm = {x = toNeighbor.x / length, y = toNeighbor.y / length, z = toNeighbor.z / length}
+                globalForce.x = globalForce.x + norm.x * (length - 1) * neighborStiffness -- Assuming 1 unit is the rest length
+                globalForce.y = globalForce.y + norm.y * (length - 1) * neighborStiffness
+                globalForce.z = globalForce.z + norm.z * (length - 1) * neighborStiffness
+            end
+        end
+
+return globalForce
+end
+
 -- Function to simulate coat physics
-function updateCloth(character, constantForces, temporaryForces, perPieceForces )
+function updateCloth(unitID, constantForces, temporaryForces, perPieceForces, )
 
     local globalForces = composeForces(constantForces, temporaryForces)
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
@@ -53,50 +83,48 @@ function updateCloth(character, constantForces, temporaryForces, perPieceForces 
         local bone = coatStripe.children[i]
         local parent = (i > 1) and coatStripe.children[i-1] or coatStripe.parent
         -- Get the current world position of the bone and parent bone
-        local worldPos = getBoneWorldPosition(character, bone)
-        local parentWorldPos =  getBoneWorldPosition(character, coatStripe.parent) 
+        local worldPos = getBoneWorldPosition(unitID, bone)
+ 
+        local posVelocity= posVelocDict[bone]
+
+        globalForce = addNeighborAsForce(globalForce, worldPos, coatStripe.parent)
+        leftNeighbor, rightNeighbor = getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
+        globalForce = addNeighborAsForce(globalForce, worldPos,leftNeighbor)
+        globalForce = addNeighborAsForce(globalForce, worldPos,rightNeighbor)
        
 
         -- Apply spring force to maintain connectivity with the parent
-        if parentWorldPos then
-            local toParent = {
-                x = parentWorldPos.x - worldPos.x,
-                y = parentWorldPos.y - worldPos.y,
-                z = parentWorldPos.z - worldPos.z,
-            }
-            local length = math.sqrt(toParent.x^2 + toParent.y^2 + toParent.z^2)
-            if length > 0 then
-                local norm = {x = toParent.x / length, y = toParent.y / length, z = toParent.z / length}
-                globalForce.x = globalForce.x + norm.x * (length - 1) * neighborStiffness -- Assuming 1 unit is the rest length
-                globalForce.y = globalForce.y + norm.y * (length - 1) * neighborStiffness
-                globalForce.z = globalForce.z + norm.z * (length - 1) * neighborStiffness
-            end
-        end
+        
+        velocity = {}
+        localPos = {}
 
         -- Update velocity with damping
-        bone.velocity.x = (bone.velocity.x + globalForce.x * deltaTime) * damping
-        bone.velocity.y = (bone.velocity.y + globalForce.y * deltaTime) * damping
-        bone.velocity.z = (bone.velocity.z + globalForce.z * deltaTime) * damping
+        posVelocity.velocity.x = (posVelocity.velocity.x + globalForce.x * deltaTime) * damping
+        posVelocity.velocity.y = (posVelocity.velocity.y + globalForce.y * deltaTime) * damping
+        posVelocity.velocity.z = (posVelocity.velocity.z + globalForce.z * deltaTime) * damping
 
         -- Update position
-        bone.localPos.x = bone.localPos.x + bone.velocity.x * deltaTime
-        bone.localPos.y = bone.localPos.y + bone.velocity.y * deltaTime
-        bone.localPos.z = bone.localPos.z + bone.velocity.z * deltaTime
-
+        posVelocity.localPos.x = posVelocity.localPos.x + posVelocity.velocity.x * deltaTime
+        posVelocity.localPos.y = posVelocity.localPos.y + posVelocity.velocity.y * deltaTime
+        posVelocity.localPos.z = posVelocity.localPos.z + posVelocity.velocity.z * deltaTime
+        
+        posVelocDict[bone] = posVelocity
         -- Apply the position in local space (relative to parent bone)
-        setBoneLocalPosition(character, bone.boneName, bone.localPos)
+        setBoneLocalPosition(unitID, bone, posVelocity)
     end
 end
 
 -- Utility functions (to be implemented based on your engine)
-function getBoneWorldPosition(character, boneName)
+function getBoneWorldPosition(unitID, bone)
+    x,y,z, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, boneName)
     -- Return the world position of the bone
+    return x,y,z
 end
 
-function setBoneLocalPosition(character, boneName, localPos)
+function setBoneLocalPosition(unitID, bone, parent, localPos)
     -- Derive the bone position from the local Pos
 
-     the position of the bone relative to its parent
+    -- the position of the bone relative to its parent
 
     -- Set only bone rotation 
 end
