@@ -114,6 +114,10 @@ function updateCloth(unitID, constantForces, temporaryForces, perPieceForces, )
     end
 end
 
+function maxValue(a, b)
+    return math.max(math.abs(a),math.abs(b))
+end
+
 -- Utility functions (to be implemented based on your engine)
 function getBoneWorldPosition(unitID, bone)
     x,y,z, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, boneName)
@@ -121,10 +125,15 @@ function getBoneWorldPosition(unitID, bone)
     return x,y,z
 end
 
-function setBoneLocalPosition(unitID, bone, parent, localPos)
+function setBoneLocalPosition(unitID, length, bone, parent, targetPos, velocity)
+    cx, cy, cz = Spring.GetUnitPiecePosDir(unitId, parent)
+
     -- Derive the bone position from the local Pos
-
+    tx,ty,tz = cx - targetPos.x, cy- targetPos.y, cz - targetPos.z
+    norm=maxValue(tx,maxValue(ty,tz))
+    tx,ty,tz = tx /norm, ty /norm, tz /norm
     -- the position of the bone relative to its parent
-
-    -- Set only bone rotation 
+    Turn(parent,x_axis,tx, velocity.x )
+    Turn(parent,y_axis,ty, velocity.y )
+    Turn(parent,z_axis,tz, velocity.z )
 end
