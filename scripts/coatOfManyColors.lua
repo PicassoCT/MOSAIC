@@ -126,10 +126,11 @@ function getBoneWorldPosition(unitID, bone)
 end
 
 function setBoneLocalPosition(unitID, length, bone, parent, targetPos, velocity)
-    cx, cy, cz = Spring.GetUnitPiecePosDir(unitId, parent)
+    px, py, pz = Spring.GetUnitPiecePosDir(unitId, parent)
+    cx, cy, cz = Spring.GetUnitPiecePosDir(unitId, bone)
 
     -- Derive the bone position from the local Pos
-    tx,ty,tz = cx - targetPos.x, cy- targetPos.y, cz - targetPos.z
+    tx,ty,tz = cx - px, cy- py, cz - targetPos.z
     norm=maxValue(tx,maxValue(ty,tz))
     tx,ty,tz = tx /norm, ty /norm, tz /norm
     -- the position of the bone relative to its parent
