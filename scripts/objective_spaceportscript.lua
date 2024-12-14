@@ -61,6 +61,8 @@ function script.Create()
     hideAll(unitID)
     initialSetup()
     StartThread(launchAnimation)
+    StartThread(traffic)
+       StartThread(foldFuelTowers)
 end
 
 function initialSetup()
@@ -324,6 +326,7 @@ function craneLoadToPlatform()
     closeClaw()
     Hide(RocketCrawler)
     Show(CraneRocket)
+    unfoldFuelTowers()
     StartThread(driveBackCrawler)
     WTurn(CraneHead, y_axis, math.rad(RocketOnPlatformPos), 0.1)
     Hide(CraneRocket)
@@ -335,6 +338,21 @@ function craneLoadToPlatform()
     WTurn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
     WMove(RocketCraneBase, z_axis, -4500, 15)
     closeDoor(GroundFrontDoorN)
+    StartThread(foldFuelTowers)
+end
+
+function unfoldFuelTowers()
+    resetT(TableOfPiecesGroups["FuelCrane"], 20.0)
+    resetT(TableOfPiecesGroups["FuelCraneHead"], 20.0)
+end
+
+function foldFuelTowers()
+    showT(TableOfPiecesGroups["FuelCrane"])
+    showT(TableOfPiecesGroups["FuelCraneHead"])
+    Turn(TableOfPiecesGroups["FuelCrane"][1],z_axis, math.rad(-80), 20.0)
+    Turn(TableOfPiecesGroups["FuelCraneHead"][1],z_axis, math.rad(80), 20.0)
+Turn(TableOfPiecesGroups["FuelCrane"][2],x_axis, math.rad(80), 20.0)
+    Turn(TableOfPiecesGroups["FuelCraneHead"][2],x_axis, math.rad(-80), 20.0)
 end
 
 function deployCapsule()
@@ -344,6 +362,7 @@ function deployCapsule()
     Hide(CraneCapsule)
     Show(CapsuleRocket)
     WMove(CapsuleCrane, x_axis, -5000, 5000 / 10)
+
 end
 
 --thrusterCloud
@@ -431,6 +450,7 @@ function launchAnimation()
 end
 
 function cloudFallingDown()
+    hideT(TableOfPiecesGroups["FireFlower"])
     Move(Rocket,y_axis, 0, 100)
     for i =  1, #TableOfPiecesGroups[rocketPlumage] do
         if TableOfPiecesGroups[rocketPlumage][i+1] then
@@ -452,5 +472,42 @@ function HideRocket()
     Hide(MainStage)
     Hide(CapsuleRocket)
     Hide(MainStageRocket)
+end
+
+function trafficRun(index)
+    if maRa() then return end
+    runner = nil
+    turnSign= -1
+    if maRa() then
+        runner = TableOfPiecesGroups["ClockWise"][index]
+    else
+        turnSign= 1
+        runner = TableOfPiecesGroups["CounterClockWise"][index]
+    end
+    Show(runner)
+    speed= 1/index
+
+    firstPart = math.random(140, 179)*turnSign
+    WTurn(runner,y_axis, math.rad(firstPart), speed)
+    if maRa() then Sleep(3000) end
+    secondPart = math.random(180, 290)*turnSign
+    WTurn(runner,y_axis, math.rad(secondPart), speed)
+    if maRa() then Sleep(3000) end
+    WTurn(runner,y_axis, math.rad(360*turnSign), speed)
+    Hide(runner)
+    reset(runner)
+end
+
+function traffic()
+    while true do
+        while launchState ~= "launching" do
+            for i=1,4 do
+                StartThread(trafficRun, i)
+            end
+
+        Sleep(1000)
+        end
+        Sleep(1000)
+    end
 end
 

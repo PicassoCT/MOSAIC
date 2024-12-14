@@ -221,40 +221,16 @@ function trenchCoateAnimation()
 		end
 	end
 	if not boolFoundTrenchCoat then return end
-
-	local trenchCoatTable = TablesOfPiecesGroups["Coat_Running"]
-	local idleTrenchCoatTable = TablesOfPiecesGroups["Coat_Idle"]
-	
-	walkCycleLengthMs= math.ceil((45/30)*1000)
-	stepLength= math.ceil(walkCycleLengthMs/#trenchCoatTable)
+	showT(TablesOfPiecesGroups["Coat"])
+	showT(TablesOfPiecesGroups["CoatBone"])
+	parentBones = {}
+	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
+		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"]
+	end
+	simulationCoat = setupCoat(parentBones)
 	while true do
-		hideT(trenchCoatTable)
-		Show(idleTrenchCoatTable[math.random(1,#idleTrenchCoatTable)])
-		if boolWalking then
-			while boolWalking do
-				hideT(idleTrenchCoatTable)
-				for x= #trenchCoatTable, 1, -1 do
-					hideT(trenchCoatTable)	
-					Show(trenchCoatTable[x])
-					Sleep(stepLength)
-				end		
-				for x= 1, #trenchCoatTable do
-					hideT(trenchCoatTable)	
-					Show(trenchCoatTable[x])
-					Sleep(stepLength)
-				end		
-			end
-			hideT(trenchCoatTable)
-			Show(idleTrenchCoatTable[math.random(1,#idleTrenchCoatTable)])
-		end
-		val= math.random(200,400)
-		Sleep(val)
-		if maRa() then
-			while not boolWalking and maRa() do
-				val= math.random(500,1000)
-				Sleep(val)
-			end
-		end
+		updateCloth()
+		Sleep(100)
 	end
 end
 

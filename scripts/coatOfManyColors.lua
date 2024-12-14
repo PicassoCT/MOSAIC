@@ -73,7 +73,7 @@ return globalForce
 end
 
 -- Function to simulate coat physics
-function updateCloth(unitID, constantForces, temporaryForces, perPieceForces, )
+function updateCloth(unitID, constantForces, temporaryForces, perPieceForces)
 
     local globalForces = composeForces(constantForces, temporaryForces)
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined

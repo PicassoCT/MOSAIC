@@ -28,8 +28,7 @@ local windLimit = Game.windMax*0.75
 function getRandomPiece(unitID)
         assertNum(unitID)
         list = spGetUnitPieceList(unitID) 
-        assertTable(list)
-        return  list[math.random(1,#list)]
+        return  math.random(1,#list)
 end
 local smokeSwirls = {}
 local boolAnySmokeSwirlActive = true
@@ -40,7 +39,7 @@ function registerSmokeSwirl(unitID, pieceId)
 end
 
 -- > create a CEG at the given Piece with direction or piecedirectional Vector
-function localspawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz )
+function localspawnCegAtPiece(cegname, unitID, pieceId, offset, dx, dy, dz )
     assert(unitID)
     assert(pieceId)
     if not dx then -- default to upvector 
@@ -57,7 +56,7 @@ function localspawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz )
         spSpawnCEG(cegname, x, y, z, dx, dy, dz, 0, 0)
     end
 end
- 
+
 function gadget:UnitDamaged(unitID,unitDefID,teamID)
     if houseTypeTable[unitDefID] then
        
@@ -67,11 +66,10 @@ function gadget:UnitDamaged(unitID,unitDefID,teamID)
             if not lastHitPiece then return damage end    
         end
         echo("UnitDamaged:"..toString(lastHitPiece))
-        if lastHitPiece then
-        localspawnCegAtPiece("civilbuildingdamage", unitID, lastHitPiece)
-            if houseTypeTable[unitDefID] then
-                registerSmokeSwirl(unitID, lastHitPiece)
-            end
+        if lastHitPiece then            
+            localspawnCegAtPiece("civilbuildingdamage", unitID, lastHitPiece)
+            registerSmokeSwirl(unitID, lastHitPiece)
+
         end
     end
 end
