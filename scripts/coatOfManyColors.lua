@@ -82,6 +82,7 @@ function updateCloth(unitID, constantForces, temporaryForces, perPieceForces)
     for i=1, #coatStripe.children do
         local bone = coatStripe.children[i]
         local parent = (i > 1) and coatStripe.children[i-1] or coatStripe.parent
+        if bone == parent then return end
         -- Get the current world position of the bone and parent bone
         local worldPos = getBoneWorldPosition(unitID, bone)
  
@@ -130,7 +131,7 @@ function setBoneLocalPosition(unitID, length, bone, parent, targetPos, velocity)
     cx, cy, cz = Spring.GetUnitPiecePosDir(unitId, bone)
 
     -- Derive the bone position from the local Pos
-    tx,ty,tz = cx - px, cy- py, cz - targetPos.z
+    tx,ty,tz = px - targetPos.xx, py - targetPos.y, pz - targetPos.z
     norm=maxValue(tx,maxValue(ty,tz))
     tx,ty,tz = tx /norm, ty /norm, tz /norm
     -- the position of the bone relative to its parent
