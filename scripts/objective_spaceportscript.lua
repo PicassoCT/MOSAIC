@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_debug.lua"
 --include "lib_Build.lua"
 
 TableOfPiecesGroups = {}
@@ -474,8 +475,12 @@ function HideRocket()
     Hide(MainStageRocket)
 end
 
+
+returnedTraffic = {}
+
 function trafficRun(index)
     if maRa() then return end
+    returnedTraffic[index] = false
     runner = nil
     turnSign= -1
     if maRa() then
@@ -496,6 +501,7 @@ function trafficRun(index)
     WTurn(runner,y_axis, math.rad(360*turnSign), speed)
     Hide(runner)
     reset(runner)
+    returnedTraffic[index ] = true
 end
 
 function traffic()
@@ -503,6 +509,10 @@ function traffic()
         while launchState ~= "launching" do
             for i=1,4 do
                 StartThread(trafficRun, i)
+            end
+            Sleep(100)
+            while (holdsForAllBool(returnedTraffic, false)) do
+                Sleep(1000)
             end
 
         Sleep(1000)
