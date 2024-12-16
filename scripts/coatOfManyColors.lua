@@ -44,10 +44,6 @@ local stiffness = 5.0
 local neighborStiffness = 2.0
 local deltaTime = 1 / 60 -- Assume 60 FPS
 
--- External forces (e.g., wind)
-local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
-local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
-
 
 function addNeighborAsForce(globalForce, worldPos, neighbor )
       if not neighbor then return globalForce end
@@ -72,10 +68,11 @@ function addNeighborAsForce(globalForce, worldPos, neighbor )
 return globalForce
 end
 
--- Function to simulate coat physics
-function updateCloth(unitID, constantForces, temporaryForces, perPieceForces)
 
-    local globalForce = composeForces(constantForces, temporaryForces)
+-- Function to simulate coat physics
+function updateCloth(unitID, globalForce, perPieceForces)
+
+
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
     for coatStrip = 1, #coatMap do
         local coatStripe = coatMap[coatStrip]

@@ -230,9 +230,35 @@ function trenchCoateAnimation()
 	simulationCoat = setupCoat(parentBones)
 	local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
 	local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
+
+	-- External forces (e.g., wind)
+	local temporaryForces = {{x = 0.0, y = 0, z = 0}} --wind
+	local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
+
+	local globalForces = composeForces(constantForces,temporaryForces)
+	local perPieceForces = {}
+	local counter = 0
 	while true do
-		updateCloth(unitID, constantForces, temporaryForces, {} )
+		updateCloth(unitID, globalForces ,perPieceForces)
 		Sleep(100)
+		inc(counter)
+		if counter % 10 == 0 then
+			dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
+			temporaryForces[#temporaryForces+1] = {x=dirX, y = dirY, z = dirZ}
+			globalForces = composeForces(constantForces, temporaryForces)
+		end
+
+		if counter % 300 == 0 then
+			perPieceForces = {}
+			lx,ly,lz = Spring.GetUnitPiecePosDir(unitID, LowLeg1)
+			rx,ry,rz = Spring.GetUnitPiecePosDir(unitID, LowLeg1)
+			--detect collissions of knee with coat
+				--caclulate forces applied to coat pieces
+				--coatPieceLeft =
+				--coatPieceRight = 
+				--perPieceForces[] = {}
+
+		end
 	end
 end
 
